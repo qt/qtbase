@@ -43,7 +43,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLTexture>
 #include <QtGui/QMatrix4x4>
-#include <QtGui/private/qopengltextureblitter_p.h>
+#include <QtGui/qopengltextureblitter.h>
 #include <QtGui/qopenglfunctions.h>
 
 QMirClientBackingStore::QMirClientBackingStore(QWindow* window)
@@ -76,7 +76,7 @@ void QMirClientBackingStore::flush(QWindow* window, const QRegion& region, const
         mBlitter->create();
 
     mBlitter->bind();
-    mBlitter->setSwizzleRB(true);
+    mBlitter->setRedBlueSwizzle(true);
     mBlitter->blit(mTexture->textureId(), QMatrix4x4(), QOpenGLTextureBlitter::OriginTopLeft);
     mBlitter->release();
 

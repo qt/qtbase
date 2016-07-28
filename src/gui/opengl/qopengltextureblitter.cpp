@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qopengltextureblitter_p.h"
+#include "qopengltextureblitter.h"
 
 #include <QtGui/QOpenGLBuffer>
 #include <QtGui/QOpenGLShaderProgram>
@@ -50,6 +50,49 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+/*!
+    \class QOpenGLTextureBlitter
+    \brief The QOpenGLTextureBlitter class provides a convenient way to draw textured quads via OpenGL.
+    \since 5.8
+    \ingroup painting-3D
+    \inmodule QtGui
+
+    Drawing textured quads, in order to get the contents of a texture
+    onto the screen, is a common operation when developing 2D user
+    interfaces. QOpenGLTextureBlitter provides a convenience class to
+    avoid repeating vertex data, shader sources, buffer and program
+    management and matrix calculations.
+
+    For example, a QOpenGLWidget subclass can do the following to draw
+    the contents rendered into a framebuffer at the pixel position \c{(x, y)}:
+
+    \code
+    void OpenGLWidget::initializeGL()
+    {
+        m_blitter.create();
+        m_fbo = new QOpenGLFramebufferObject(size);
+    }
+
+    void OpenGLWidget::paintGL()
+    {
+        m_fbo->bind();
+        // update offscreen content
+        m_fbo->release();
+
+        m_blitter.bind();
+        const QRect targetRect(QPoint(x, y), m_fbo->size());
+        const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, QRect(QPoint(0, 0), m_fbo->size()));
+        m_blitter.blit(m_fbo->texture(), target, QOpenGLTextureBlitter::OriginBottomLeft);
+        m_blitter.release();
+    }
+    \endcode
+
+    The blitter implements GLSL shaders both for GLSL 1.00 (suitable
+    for OpenGL (ES) 2.x and compatibility profiles of newer OpenGL
+    versions) and version 150 (suitable for core profile contexts with
+    OpenGL 3.2 and newer).
+ */
 
 static const char vertex_shader150[] =
     "#version 150 core\n"
@@ -309,16 +352,44 @@ bool QOpenGLTextureBlitterPrivate::buildProgram(ProgramIndex idx, const char *vs
     return true;
 }
 
+/*!
+    Constructs a new QOpenGLTextureBlitter instance.
+
+    \note no graphics resources are initialized in the
+    constructor. This makes it safe to place plain
+    QOpenGLTextureBlitter members into classes because the actual
+    initialization that depends on the OpenGL context happens only in
+    create().
+ */
 QOpenGLTextureBlitter::QOpenGLTextureBlitter()
     : d_ptr(new QOpenGLTextureBlitterPrivate)
 {
 }
 
+/*!
+    Destructs the instance.
+
+    \note When the OpenGL context - or a context sharing resources
+    with it - that was current when calling create() is not current,
+    graphics resources will not be released. Therefore, it is
+    recommended to call destroy() manually instead of relying on the
+    destructor to perform OpenGL resource cleanup.
+ */
 QOpenGLTextureBlitter::~QOpenGLTextureBlitter()
 {
     destroy();
 }
 
+/*!
+    Initializes the graphics resources used by the blitter.
+
+    \return \c true if successful, \c false if there was a
+    failure. Failures can occur when there is no OpenGL context
+    current on the current thread, or when shader compilation fails
+    for some reason.
+
+    \sa isCreated(), destroy()
+ */
 bool QOpenGLTextureBlitter::create()
 {
     QOpenGLContext *currentContext = QOpenGLContext::currentContext();
@@ -358,12 +429,26 @@ bool QOpenGLTextureBlitter::create()
     return true;
 }
 
+/*!
+    \return \c true if create() was called and succeeded. \c false otherwise.
+
+    \sa create(), destroy()
+ */
 bool QOpenGLTextureBlitter::isCreated() const
 {
     Q_D(const QOpenGLTextureBlitter);
     return d->programs[QOpenGLTextureBlitterPrivate::TEXTURE_2D].glProgram;
 }
 
+/*!
+    Frees all graphics resources held by the blitter. Assumes that
+    the OpenGL context, or another context sharing resources with it,
+    that was current on the thread when invoking create() is current.
+
+    The function has no effect when the blitter is not in created state.
+
+    \sa create()
+ */
 void QOpenGLTextureBlitter::destroy()
 {
     if (!isCreated())
@@ -376,12 +461,29 @@ void QOpenGLTextureBlitter::destroy()
     d->vao.reset();
 }
 
+/*!
+    \return \c true when bind() accepts \c GL_TEXTURE_EXTERNAL_OES as
+    its target argument.
+
+    \sa bind(), blit()
+ */
 bool QOpenGLTextureBlitter::supportsExternalOESTarget() const
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     return ctx && ctx->isOpenGLES() && ctx->hasExtension("GL_OES_EGL_image_external");
 }
 
+/*!
+    Binds the graphics resources used by the blitter. This must be
+    called before calling blit(). Code modifying the OpenGL state
+    should be avoided between the call to bind() and blit() because
+    otherwise conflicts may arise.
+
+    \a target is the texture target for the source texture and must be
+    either \c GL_TEXTURE_2D or \c GL_OES_EGL_image_external.
+
+    \sa release(), blit()
+ */
 void QOpenGLTextureBlitter::bind(GLenum target)
 {
     Q_D(QOpenGLTextureBlitter);
@@ -404,6 +506,11 @@ void QOpenGLTextureBlitter::bind(GLenum target)
     d->textureBuffer.release();
 }
 
+/*!
+    Unbinds the graphics resources used by the blitter.
+
+    \sa bind()
+ */
 void QOpenGLTextureBlitter::release()
 {
     Q_D(QOpenGLTextureBlitter);
@@ -412,18 +519,64 @@ void QOpenGLTextureBlitter::release()
         d->vao->release();
 }
 
-void QOpenGLTextureBlitter::setSwizzleRB(bool swizzle)
+/*!
+    Enables or disables swizzling for the red and blue color
+    channels. An BGRA to RGBA conversion (occurring in the shader on
+    the GPU, instead of a slow CPU-side transformation) can be useful
+    when the source texture contains data from a QImage with a format
+    like QImage::Format_ARGB32 which maps to BGRA on little endian
+    systems.
+
+    By default the red-blue swizzle is disabled since this is what a
+    texture attached to an framebuffer object or a texture based on a
+    byte ordered QImage format (like QImage::Format_RGBA8888) needs.
+ */
+void QOpenGLTextureBlitter::setRedBlueSwizzle(bool swizzle)
 {
     Q_D(QOpenGLTextureBlitter);
     d->swizzle = swizzle;
 }
 
+/*!
+    Changes the opacity. The default opacity is 1.0.
+
+    \note the blitter does not alter the blend state. It is up to the
+    caller of blit() to ensure the correct blend settings are active.
+ */
 void QOpenGLTextureBlitter::setOpacity(float opacity)
 {
     Q_D(QOpenGLTextureBlitter);
     d->opacity = opacity;
 }
 
+/*!
+    \enum QOpenGLTextureBlitter::Origin
+
+    \value OriginBottomLeft Indicates that the data in the texture
+    follows the OpenGL convention of coordinate systems, meaning Y is
+    running from bottom to top.
+
+    \value OriginTopLeft Indicates that the data in the texture has Y
+    running from top to bottom, which is typical with regular,
+    unflipped image data.
+
+    \sa blit()
+ */
+
+/*!
+    Performs the blit with the source texture \a texture.
+
+    \a targetTransform specifies the transformation applied. This is
+    usually generated by the targetTransform() helper function.
+
+    \a sourceOrigin specifies if the image data needs flipping. When
+    \a texture corresponds to a texture attached to an FBO pass
+    OriginBottomLeft. On the other hand, when \a texture is based on
+    unflipped image data, pass OriginTopLeft. This is more efficient
+    than using QImage::mirrored().
+
+    \sa targetTransform(), Origin, bind()
+ */
 void QOpenGLTextureBlitter::blit(GLuint texture,
                                  const QMatrix4x4 &targetTransform,
                                  Origin sourceOrigin)
@@ -432,6 +585,19 @@ void QOpenGLTextureBlitter::blit(GLuint texture,
     d->blit(texture,targetTransform, sourceOrigin);
 }
 
+/*!
+    Performs the blit with the source texture \a texture.
+
+    \a targetTransform specifies the transformation applied. This is
+    usually generated by the targetTransform() helper function.
+
+    \a sourceTransform specifies the transformation applied to the
+    source. This allows using only a sub-rect of the source
+    texture. This is usually generated by the sourceTransform() helper
+    function.
+
+    \sa sourceTransform(), targetTransform(), Origin, bind()
+ */
 void QOpenGLTextureBlitter::blit(GLuint texture,
                                  const QMatrix4x4 &targetTransform,
                                  const QMatrix3x3 &sourceTransform)
@@ -440,6 +606,18 @@ void QOpenGLTextureBlitter::blit(GLuint texture,
     d->blit(texture, targetTransform, sourceTransform);
 }
 
+/*!
+    Calculates a target transform suitable for blit().
+
+    \a target is the target rectangle in pixels. \a viewport describes
+    the source dimensions and will in most cases be set to (0, 0,
+    image width, image height).
+
+    For unscaled output the size of \a target and \viewport should
+    match.
+
+    \sa blit()
+ */
 QMatrix4x4 QOpenGLTextureBlitter::targetTransform(const QRectF &target,
                                                   const QRect &viewport)
 {
@@ -460,6 +638,17 @@ QMatrix4x4 QOpenGLTextureBlitter::targetTransform(const QRectF &target,
     return matrix;
 }
 
+/*!
+    Calculates a 3x3 matrix suitable as the input to blit(). This is
+    used when only a part of the texture is to be used in the blit.
+
+    \a subTexture is the desired source rectangle in pixels, \a
+    textureSize is the full width and height of the texture data.  \a
+    origin specifies the orientation of the image data when it comes
+    to the Y axis.
+
+    \sa blit(), Origin
+ */
 QMatrix3x3 QOpenGLTextureBlitter::sourceTransform(const QRectF &subTexture,
                                                   const QSize &textureSize,
                                                   Origin origin)

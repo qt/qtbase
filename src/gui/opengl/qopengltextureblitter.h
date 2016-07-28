@@ -37,28 +37,20 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENGLTEXTUREBLITTER_P_H
-#define QOPENGLTEXTUREBLITTER_P_H
+#ifndef QOPENGLTEXTUREBLITTER_H
+#define QOPENGLTEXTUREBLITTER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtGui/qtguiglobal.h>
 
-#include <QtGui/private/qtguiglobal_p.h>
+#ifndef QT_NO_OPENGL
+
 #include <QtGui/qopengl.h>
 #include <QtGui/QMatrix3x3>
+#include <QtGui/QMatrix4x4>
 
 QT_BEGIN_NAMESPACE
 
 class QOpenGLTextureBlitterPrivate;
-
 
 class Q_GUI_EXPORT QOpenGLTextureBlitter
 {
@@ -80,7 +72,7 @@ public:
     void bind(GLenum target = GL_TEXTURE_2D);
     void release();
 
-    void setSwizzleRB(bool swizzle);
+    void setRedBlueSwizzle(bool swizzle);
     void setOpacity(float opacity);
 
     void blit(GLuint texture, const QMatrix4x4 &targetTransform, Origin sourceOrigin);
@@ -90,11 +82,13 @@ public:
     static QMatrix3x3 sourceTransform(const QRectF &subTexture, const QSize &textureSize, Origin origin);
 
 private:
-    Q_DISABLE_COPY(QOpenGLTextureBlitter);
-    Q_DECLARE_PRIVATE(QOpenGLTextureBlitter);
+    Q_DISABLE_COPY(QOpenGLTextureBlitter)
+    Q_DECLARE_PRIVATE(QOpenGLTextureBlitter)
     QScopedPointer<QOpenGLTextureBlitterPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif //QOPENGLTEXTUREBLITTER_P_H
+#endif
+
+#endif //QOPENGLTEXTUREBLITTER_H

@@ -41,7 +41,7 @@
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QGenericMatrix>
 #include <QtGui/QMatrix4x4>
-#include <QtGui/private/qopengltextureblitter_p.h>
+#include <QtGui/qopengltextureblitter.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <qpa/qplatformintegration.h>

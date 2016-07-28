@@ -49,7 +49,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLFunctions>
 #ifndef QT_NO_OPENGL
-#include <QtGui/private/qopengltextureblitter_p.h>
+#include <QtGui/qopengltextureblitter.h>
 #endif
 #include <qpa/qplatformgraphicsbuffer.h>
 #include <qpa/qplatformgraphicsbufferhelper.h>
@@ -389,7 +389,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     if (textureId) {
         if (d_ptr->needsSwizzle)
-            d_ptr->blitter->setSwizzleRB(true);
+            d_ptr->blitter->setRedBlueSwizzle(true);
         // The backingstore is for the entire tlw.
         // In case of native children offset tells the position relative to the tlw.
         const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(offset), d_ptr->textureSize.height());
@@ -398,7 +398,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
                                                                          origin);
         d_ptr->blitter->blit(textureId, QMatrix4x4(), source);
         if (d_ptr->needsSwizzle)
-            d_ptr->blitter->setSwizzleRB(false);
+            d_ptr->blitter->setRedBlueSwizzle(false);
     }
 
     // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.

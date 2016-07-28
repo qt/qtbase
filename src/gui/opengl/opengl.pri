@@ -32,7 +32,7 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopenglversionfunctionsfactory_p.h \
                opengl/qopenglvertexarrayobject.h \
                opengl/qopengldebug.h \
-               opengl/qopengltextureblitter_p.h \
+               opengl/qopengltextureblitter.h \
                opengl/qopengltexture.h \
                opengl/qopengltexture_p.h \
                opengl/qopengltexturehelper_p.h \

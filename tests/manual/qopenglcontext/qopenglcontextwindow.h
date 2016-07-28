@@ -31,9 +31,9 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLTextureBlitter>
 #include <QtGui/QImage>
 #include <QtCore/QVariant>
-#include <QtGui/private/qopengltextureblitter_p.h>
 
 class QOpenGLContextWindow : public QWindow
 {

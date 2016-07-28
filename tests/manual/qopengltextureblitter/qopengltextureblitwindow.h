@@ -31,7 +31,7 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLContext>
-#include <QtGui/private/qopengltextureblitter_p.h>
+#include <QtGui/QOpenGLTextureBlitter>
 
 class QOpenGLTextureBlitWindow : public QWindow
 {

@@ -123,9 +123,9 @@ void QOpenGLTextureBlitWindow::render()
     m_blitter.blit(texture.textureId(), topRightOriginTopLeftVertex, topLeftOrigin);
     m_blitter.blit(texture_mirrored.textureId(), bottomLeftOriginTopLeftVertex, topLeftOrigin);
 
-    m_blitter.setSwizzleRB(true);
+    m_blitter.setRedBlueSwizzle(true);
     m_blitter.blit(texture.textureId(), bottomRightOriginTopLeftVertex, texTopLeftOriginTopLeft);
-    m_blitter.setSwizzleRB(false);
+    m_blitter.setRedBlueSwizzle(false);
     m_blitter.release();
 
     if (m_blitter.supportsExternalOESTarget()) {

@@ -42,7 +42,7 @@
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QOpenGLFunctions>
-#include <QtGui/private/qopengltextureblitter_p.h>
+#include <QtGui/QOpenGLTextureBlitter>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QMatrix4x4>
