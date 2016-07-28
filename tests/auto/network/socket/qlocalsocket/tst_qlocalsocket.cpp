@@ -190,6 +190,7 @@ private slots:
     void slotConnected()
     {
         QCOMPARE(state(), QLocalSocket::ConnectedState);
+        QVERIFY(isOpen());
     }
     void slotDisconnected()
     {
