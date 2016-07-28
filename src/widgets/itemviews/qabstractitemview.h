@@ -40,6 +40,7 @@
 #include <QtWidgets/qabstractitemdelegate.h>
 
 class tst_QAbstractItemView;
+class tst_QTreeView;
 
 QT_BEGIN_NAMESPACE
 
@@ -362,6 +363,7 @@ private:
 #endif
 
     friend class ::tst_QAbstractItemView;
+    friend class ::tst_QTreeView;
     friend class QTreeViewPrivate; // needed to compile with MSVC
     friend class QListModeViewBase;
     friend class QListViewPrivate;
