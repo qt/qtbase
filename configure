@@ -4293,8 +4293,12 @@ compileTest()
     if [ "$CFG_SHARED" = "no" ]; then
         test_config="$QMAKE_CONFIG static"
     fi
+    TEST_CONFIG_FLAGS=
+    if [ -z "$PKG_CONFIG" ]; then
+        TEST_CONFIG_FLAGS="QT_CONFIG+=no-pkg-config"
+    fi
     echo $ECHO_N "checking for $name... $ECHO_C"
-    "$unixtests/compile.test" "$XQMAKESPEC" "$test_config" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
+    "$unixtests/compile.test" "$XQMAKESPEC" "$test_config" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS $TEST_CONFIG_FLAGS "$@"
 }
 
 compileTestWithPkgConfig()
