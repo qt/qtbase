@@ -120,12 +120,20 @@ public class QtServiceDelegate
             for (String className: loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY)) {
                 if (className.length() == 0)
                     continue;
-
                 try {
-                    Class<?> initClass = classLoader.loadClass(className);
-                    Object staticInitDataObject = initClass.newInstance(); // create an instance
-                    Method m = initClass.getMethod("setService", Service.class, Object.class);
-                    m.invoke(staticInitDataObject, m_service, this);
+                  Class<?> initClass = classLoader.loadClass(className);
+                  Object staticInitDataObject = initClass.newInstance(); // create an instance
+                  try {
+                      Method m = initClass.getMethod("setService", Service.class, Object.class);
+                      m.invoke(staticInitDataObject, m_service, this);
+                  } catch (Exception e) {
+                  }
+
+                  try {
+                      Method m = initClass.getMethod("setContext", Context.class);
+                      m.invoke(staticInitDataObject, (Context)m_service);
+                  } catch (Exception e) {
+                  }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

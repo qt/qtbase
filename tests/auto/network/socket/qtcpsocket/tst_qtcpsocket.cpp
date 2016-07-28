@@ -673,6 +673,12 @@ void tst_QTcpSocket::bindThenResolveHost()
 
     const quint16 port = 80;
     socket->connectToHost(hostName, port);
+    // Additionally, initiate a delayed close before the socket connects
+    // to ensure that we don't lose the socket engine in HostLookupState.
+    // After a connection has been established, socket should send all
+    // the pending data and close the socket engine automatically.
+    QVERIFY(socket->putChar(0));
+    socket->close();
     QVERIFY2(socket->waitForConnected(), (hostName.toLocal8Bit() + ": " + QByteArray::number(port) + ' '
                                           + QtNetworkSettings::msgSocketError(*socket)).constData());
 

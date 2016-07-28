@@ -225,11 +225,6 @@
             "type": "compile",
             "test": "unix/stl"
         },
-        "c++11": {
-            "description": "C++11 support",
-            "type": "compile",
-            "test": "common/c++11"
-        },
         "c++14": {
             "description": "C++14 support",
             "type": "compile",
@@ -1178,7 +1173,6 @@
         },
         "c++11": {
             "description": "C++11",
-            "condition": "tests.c++11",
             "output": [ "publicQtConfig" ]
         },
         "c++14": {
@@ -2330,11 +2324,6 @@ Please apply the patch corresponding to your Standard Library vendor, found in
             "type": "error",
             "condition": "!features.stl",
             "message": "Qt requires a compliant STL library."
-        },
-        {
-            "type": "error",
-            "condition": "!features.c++11",
-            "message": "Qt requires a C++11 compiler."
         }
     ],
 

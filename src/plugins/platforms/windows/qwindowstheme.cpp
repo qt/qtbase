@@ -389,8 +389,13 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return QVariant(booleanSystemParametersInfo(SPI_GETSNAPTODEFBUTTON, false));
     case ContextMenuOnMouseRelease:
         return QVariant(true);
-    case WheelScrollLines:
-        return QVariant(int(dWordSystemParametersInfo(SPI_GETWHEELSCROLLLINES, 3)));
+    case WheelScrollLines: {
+        int result = 3;
+        const DWORD scrollLines = dWordSystemParametersInfo(SPI_GETWHEELSCROLLLINES, DWORD(result));
+        if (scrollLines != DWORD(-1)) // Special value meaning "scroll one screen", unimplemented in Qt.
+            result = int(scrollLines);
+        return QVariant(result);
+    }
     default:
         break;
     }

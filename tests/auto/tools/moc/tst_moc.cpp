@@ -2034,6 +2034,13 @@ void tst_Moc::warnings_data()
         << 0
         << QString("IGNORE_ALL_STDOUT")
         << QStringLiteral("Warning: Failed to resolve include \"doesnotexist.h\" for moc file <standard input>");
+
+    QTest::newRow("QTBUG-54815: Crash on invalid input")
+        << QByteArray("class M{(})F<{}d000000000000000#0")
+        << QStringList()
+        << 0
+        << QString()
+        << QString("standard input:1: Note: No relevant classes found. No output generated.");
 }
 
 void tst_Moc::warnings()

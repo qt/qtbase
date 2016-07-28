@@ -81,15 +81,15 @@ if not "%icl.exe%" == "" (
     rem This must have a trailing space.
     echo QTSRC = %QTSRC% >> Makefile
     set tmpl=win32
-) else if not "%clang-cl.exe%" == "" (
-    echo CXX = clang-cl>>Makefile
-    echo EXTRA_CXXFLAGS = -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value>>Makefile
-    rem This must have a trailing space.
-    echo QTSRC = %QTSRC% >> Makefile
-    set tmpl=win32
 ) else if not "%cl.exe%" == "" (
     echo CXX = cl>>Makefile
     echo EXTRA_CXXFLAGS =>>Makefile
+    rem This must have a trailing space.
+    echo QTSRC = %QTSRC% >> Makefile
+    set tmpl=win32
+) else if not "%clang-cl.exe%" == "" (
+    echo CXX = clang-cl>>Makefile
+    echo EXTRA_CXXFLAGS = -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value>>Makefile
     rem This must have a trailing space.
     echo QTSRC = %QTSRC% >> Makefile
     set tmpl=win32

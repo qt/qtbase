@@ -73,6 +73,7 @@ public:
     static int fixedPixelMetric(QStyle::PixelMetric pm);
     static qreal devicePixelRatio(const QWidget *widget = 0)
         { return widget ? widget->devicePixelRatioF() : QWindowsStylePrivate::appDevicePixelRatio(); }
+    static qreal nativeMetricScaleFactor(const QWidget *widget = Q_NULLPTR);
 
     bool hasSeenAlt(const QWidget *widget) const;
     bool altDown() const { return alt_down; }
@@ -105,3 +106,4 @@ QT_END_NAMESPACE
 #endif // QT_NO_STYLE_WINDOWS
 
 #endif //QWINDOWSSTYLE_P_P_H
+;

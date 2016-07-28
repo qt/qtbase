@@ -489,11 +489,19 @@ public class QtActivityDelegate
                     continue;
 
                 try {
-                    @SuppressWarnings("rawtypes")
-                    Class<?> initClass = classLoader.loadClass(className);
-                    Object staticInitDataObject = initClass.newInstance(); // create an instance
-                    Method m = initClass.getMethod("setActivity", Activity.class, Object.class);
-                    m.invoke(staticInitDataObject, m_activity, this);
+                  Class<?> initClass = classLoader.loadClass(className);
+                  Object staticInitDataObject = initClass.newInstance(); // create an instance
+                  try {
+                      Method m = initClass.getMethod("setActivity", Activity.class, Object.class);
+                      m.invoke(staticInitDataObject, m_activity, this);
+                  } catch (Exception e) {
+                  }
+
+                  try {
+                      Method m = initClass.getMethod("setContext", Context.class);
+                      m.invoke(staticInitDataObject, (Context)m_activity);
+                  } catch (Exception e) {
+                  }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

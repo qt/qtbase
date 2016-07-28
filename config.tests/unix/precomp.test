@@ -5,7 +5,7 @@ COMPILER=$1
 VERBOSE=$2
 
 case "$COMPILER" in
-icpc)
+*icpc)
     cat >header.h <<EOF
 #define HEADER_H
 

@@ -417,7 +417,7 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
         exit 2
     fi
 
-    if ! /usr/bin/xcrun -find xcrun >/dev/null 2>&1; then
+    if ! /usr/bin/xcrun -find xcodebuild >/dev/null 2>&1; then
         echo >&2
         echo "   Xcode not set up properly. You may need to confirm the license" >&2
         echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2
@@ -1027,7 +1027,10 @@ case "$XPLATFORM" in
     *unsupported*)
         ;;
     *android-g++*)
-        XPLATFORM_ANDROID=yes
+        XPLATFORM_ANDROID=g++
+        ;;
+    *android-clang*)
+        XPLATFORM_ANDROID=clang
         ;;
 esac
 
@@ -1193,7 +1196,7 @@ fi
 # command line and environment validation
 #-------------------------------------------------------------------------------
 
-if [ "$XPLATFORM_ANDROID" = "yes" ]; then
+if [ "$XPLATFORM_ANDROID" != "no" ]; then
     if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
         case $PLATFORM in
         linux-*)
@@ -1336,7 +1339,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     mkdir -p "$outpath/mkspecs"
 fi
 
-if [ "$XPLATFORM_ANDROID" != "yes" ]; then
+if [ "$XPLATFORM_ANDROID" = "no" ]; then
     TEST_COMPILER=`getXQMakeConf QMAKE_CXX`
     GCC_MACHINE_DUMP=
     case "$TEST_COMPILER" in *g++) GCC_MACHINE_DUMP=$($TEST_COMPILER -dumpmachine);; esac

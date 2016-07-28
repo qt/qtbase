@@ -485,7 +485,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " -mousedelay ms      : Set default delay for mouse simulation to ms milliseconds\n"
          " -maxwarnings n      : Sets the maximum amount of messages to output.\n"
          "                       0 means unlimited, default: 2000\n"
-         " -nocrashhandler     : Disables the crash handler\n"
+         " -nocrashhandler     : Disables the crash handler. Useful for debugging crashes.\n"
          "\n"
          " Benchmarking options:\n"
 #ifdef QTESTLIB_USE_VALGRIND

@@ -1849,7 +1849,10 @@ static inline QImage alphaMapFromGlyphData(QFontEngineFT::Glyph *glyph, QFontEng
         Q_UNREACHABLE();
     };
 
-    return QImage(static_cast<const uchar *>(glyph->data), glyph->width, glyph->height, bytesPerLine, format);
+    QImage img(static_cast<const uchar *>(glyph->data), glyph->width, glyph->height, bytesPerLine, format);
+    if (format == QImage::Format_Mono)
+        img.setColor(1, QColor(Qt::white).rgba());  // Expands color table to 2 items; item 0 set to transparent.
+    return img;
 }
 
 QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixelPosition,

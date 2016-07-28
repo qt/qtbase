@@ -172,7 +172,8 @@ QString MimetypeModel::formatMimeTypeInfo(const QMimeType &t)
 
     str << "</td></tr>"
         << "<tr><td>Comment:</td><td>" << t.comment() << "</td></tr>"
-        << "<tr><td>Icon name:</td><td>" << t.iconName() << "</td></tr>";
+        << "<tr><td>Icon name:</td><td>" << t.iconName() << "</td></tr>"
+        << "<tr><td>Generic icon name</td><td>" << t.genericIconName() << "</td></tr>";
 
     const QString &filter = t.filterString();
     if (!filter.isEmpty())
