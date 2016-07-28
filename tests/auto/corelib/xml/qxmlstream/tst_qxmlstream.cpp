@@ -557,6 +557,8 @@ private slots:
     void checkCommentIndentation_data() const;
     void crashInXmlStreamReader() const;
     void write8bitCodec() const;
+    void invalidStringCharacters_data() const;
+    void invalidStringCharacters() const;
     void hasError() const;
 
 private:
@@ -1614,6 +1616,63 @@ void tst_QXmlStream::write8bitCodec() const
     QVERIFY(decodedText.startsWith(expected));
 }
 
+void tst_QXmlStream::invalidStringCharacters() const
+{
+    // test scan in attributes
+    QFETCH(QString, testString);
+    QFETCH(bool, expectedResultNoError);
+
+    QByteArray values = testString.toUtf8();
+    QBuffer inBuffer;
+    inBuffer.setData(values);
+    QVERIFY(inBuffer.open(QIODevice::ReadOnly));
+    QXmlStreamReader reader(&inBuffer);
+    do {
+        reader.readNext();
+    } while (!reader.atEnd());
+    QCOMPARE((reader.error() == QXmlStreamReader::NoError), expectedResultNoError);
+}
+
+void tst_QXmlStream::invalidStringCharacters_data() const
+{
+    // test scan in attributes
+    QTest::addColumn<bool>("expectedResultNoError");
+    QTest::addColumn<QString>("testString");
+    QChar ctrl(0x1A);
+    QTest::newRow("utf8, attributes, legal") << true << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'/>");
+    QTest::newRow("utf8, attributes, only char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='")+ctrl+QString("'/>");
+    QTest::newRow("utf8, attributes, 1st char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='")+ctrl+QString("abc'/>");
+    QTest::newRow("utf8, attributes, middle char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='abc")+ctrl+QString("efgx'/>");
+    QTest::newRow("utf8, attributes, last char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='abcde")+ctrl+QString("'/>");
+    //
+    QTest::newRow("utf8, text, legal") << true << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'>abcx1A</root>");
+    QTest::newRow("utf8, text, only, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'>")+ctrl+QString("</root>");
+    QTest::newRow("utf8, text, 1st char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'>abc")+ctrl+QString("def</root>");
+    QTest::newRow("utf8, text, middle char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'>abc")+ctrl+QString("efg</root>");
+    QTest::newRow("utf8, text, last char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'>abc")+ctrl+QString("</root>");
+    //
+    QTest::newRow("utf8, cdata text, legal") << true << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'><![CDATA[abcdefghi]]></root>");
+    QTest::newRow("utf8, cdata text, only, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'><![CDATA[")+ctrl+QString("]]></root>");
+    QTest::newRow("utf8, cdata text, 1st char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'><![CDATA[")+ctrl+QString("abcdefghi]]></root>");
+    QTest::newRow("utf8, cdata text, middle char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'><![CDATA[abcd")+ctrl+QString("efghi]]></root>");
+    QTest::newRow("utf8, cdata text, last char, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aa'><![CDATA[abcdefghi")+ctrl+QString("]]></root>");
+    //
+    QTest::newRow("utf8, mixed, control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='a")+ctrl+QString("a'><![CDATA[abcdefghi")+ctrl+QString("]]></root>");
+    QTest::newRow("utf8, tag") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><roo")+ctrl+QString("t attr='aa'><![CDATA[abcdefghi]]></roo")+ctrl+QString("t>");
+    //
+    QTest::newRow("utf8, attributes, 1st char, legal escaping hex") << true << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='a&#xA0;'/>");
+    QTest::newRow("utf8, attributes, 1st char, control escaping hex") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='&#x1A;aaa'/>");
+    QTest::newRow("utf8, attributes, middle char, legal escaping hex") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aaa&#x1A;aaa'/>");
+    QTest::newRow("utf8, attributes, last char, control escaping hex") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aaa&#x1A;'/>");
+    QTest::newRow("utf8, attributes, 1st char, legal escaping dec") << true << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='a&#160;'/>");
+    QTest::newRow("utf8, attributes, 1st char, control escaping dec") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='&#26;aaaa'/>");
+    QTest::newRow("utf8, attributes, middle char, legal escaping dec") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aaa&#26;aaaaa'/>");
+    QTest::newRow("utf8, attributes, last char, control escaping dec") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='aaaaaa&#26;'/>");
+    QTest::newRow("utf8, tag escaping") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><roo&#x1A;t attr='aa'><![CDATA[abcdefghi]]></roo&#x1A;t>");
+    //
+    QTest::newRow("utf8, mix of illegal control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='a&#0;&#x4;&#x1c;a'><![CDATA[abcdefghi]]></root>");
+    //
+}
 
 #include "tst_qxmlstream.moc"
 // vim: et:ts=4:sw=4:sts=4

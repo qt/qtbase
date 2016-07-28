@@ -5,6 +5,7 @@ filetest \
 embeddedintoforeignwindow \
 foreignwindows \
 gestures \
+highdpi \
 inputmethodhints \
 keypadnavigation \
 lance \
