@@ -1844,34 +1844,34 @@
             "condition": "features.egl",
             "output": [ "feature" ]
         },
-        "eglfs-brcm": {
+        "eglfs_brcm": {
             "description": "EGLFS Rasberry Pi",
             "condition": "features.eglfs && tests.eglfs-brcm",
             "output": [ "publicQtConfig" ]
         },
-        "eglfs-egldevice": {
+        "eglfs_egldevice": {
             "description": "EGLFS EGLDevice",
             "condition": "features.eglfs && tests.eglfs-egldevice",
             "output": [ "publicQtConfig" ]
         },
-        "eglfs-gbm": {
+        "eglfs_gbm": {
             "description": "EGLFS GBM",
             "condition": "features.eglfs && features.gbm && features.kms",
             "output": [ "publicQtConfig" ]
         },
-        "eglfs-mali": {
+        "eglfs_mali": {
             "description": "EGLFS Mali",
             "condition": "features.eglfs && tests.eglfs-mali",
             "output": [ "publicQtConfig" ]
         },
-        "eglfs-viv": {
+        "eglfs_viv": {
             "description": "EGLFS i.Mx6",
             "condition": "features.eglfs && tests.eglfs-viv",
             "output": [ "publicQtConfig" ]
         },
-        "eglfs-viv-wl": {
+        "eglfs_viv_wl": {
             "description": "EGLFS i.Mx6 Wayland",
-            "condition": "features.eglfs-viv && tests.wayland-server",
+            "condition": "features.eglfs_viv && tests.wayland-server",
             "output": [ "publicQtConfig" ]
         },
         "libudev": {
@@ -2508,7 +2508,7 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                             "section": "EGLFS details",
                             "condition": "features.eglfs",
                             "entries": [
-                                "eglfs-viv", "eglfs-viv-wl", "eglfs-egldevice", "eglfs-gbm", "eglfs-mali", "eglfs-brcm", "egl_x11"
+                                "eglfs_viv", "eglfs_viv_wl", "eglfs_egldevice", "eglfs_gbm", "eglfs_mali", "eglfs_brcm", "egl_x11"
                             ]
                         },
                         "linuxfb", "mirclient",
