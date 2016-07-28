@@ -3167,8 +3167,7 @@ QUrl QUrl::resolved(const QUrl &relative) const
     if (!relative.d) return *this;
 
     QUrl t;
-    // be non strict and allow scheme in relative url
-    if (!relative.d->scheme.isEmpty() && relative.d->scheme != d->scheme) {
+    if (!relative.d->scheme.isEmpty()) {
         t = relative;
         t.detach();
     } else {

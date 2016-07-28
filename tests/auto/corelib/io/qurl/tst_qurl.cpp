@@ -903,13 +903,11 @@ void tst_QUrl::resolving_data()
 
     // Some parsers allow the scheme name to be present in a relative URI
     // reference if it is the same as the base URI scheme.  This is
-    // considered to be a loophole in prior specifications of partial URI
-    // [RFC1630]. Its use should be avoided, but is allowed for backward
-    // compatibility.
-    // For strict parsers :
-//    QTest::newRow("http:g [for strict parsers]")         << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("http:g") << QString::fromLatin1("http:g");
-    // For backward compatibility :
-    QTest::newRow("http:g [for backward compatibility]") << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("http:g") << QString::fromLatin1("http://a/b/c/g");
+    // considered to be a loophole in prior specifications of partial URI [RFC1630],
+    //QTest::newRow("http:g [for backward compatibility]") << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("http:g") << QString::fromLatin1("http://a/b/c/g");
+    // However we don't do that anymore, as per RFC3986, in order for the data:subpage testcase below to work.
+    QTest::newRow("http:g")       << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("http:g") << QString::fromLatin1("http:g");
+    QTest::newRow("data:subpage") << QString::fromLatin1("data:text/plain, main page") << QString::fromLatin1("data:text/plain, subpage") << QString::fromLatin1("data:text/plain, subpage");
 
     // Resolve relative with relative
     QTest::newRow("../a (1)")  << QString::fromLatin1("b") << QString::fromLatin1("../a")  << QString::fromLatin1("a");
@@ -921,6 +919,10 @@ void tst_QUrl::resolving_data()
     QTest::newRow("../a (6)")  << QString::fromLatin1("/b/a") << QString::fromLatin1("../a")  << QString::fromLatin1("/a");
     QTest::newRow("../a (7)")  << QString::fromLatin1("/b/c/a") << QString::fromLatin1("../a")  << QString::fromLatin1("/b/a");
     QTest::newRow("../a (8)")  << QString::fromLatin1("/b") << QString::fromLatin1("/a")  << QString::fromLatin1("/a");
+
+    // More tests from KDE
+    QTest::newRow("brackets")  << QString::fromLatin1("http://www.calorieking.com/personal/diary/") << QString::fromLatin1("/personal/diary/rpc.php?C=jsrs1&F=getDiaryDay&P0=[2006-3-8]&U=1141858921458") << QString::fromLatin1("http://www.calorieking.com/personal/diary/rpc.php?C=jsrs1&F=getDiaryDay&P0=[2006-3-8]&U=1141858921458");
+    QTest::newRow("javascript")<< QString::fromLatin1("http://www.youtube.com/?v=JvOSnRD5aNk") << QString::fromLatin1("javascript:window.location+\"__flashplugin_unique__\"")  << QString::fromLatin1("javascript:window.location+%22__flashplugin_unique__%22");
 }
 
 void tst_QUrl::resolving()
