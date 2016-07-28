@@ -72,6 +72,10 @@ QEglFSCursor::QEglFSCursor(QPlatformScreen *screen)
     if (!m_visible)
         return;
 
+    int rotation = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ROTATION");
+    if (rotation)
+        m_rotationMatrix.rotate(rotation, 0, 0, 1);
+
     // Try to load the cursor atlas. If this fails, m_visible is set to false and
     // paintOnScreen() and setCurrentCursor() become no-ops.
     initCursorAtlas();
@@ -129,9 +133,10 @@ void QEglFSCursor::createShaderPrograms()
         "attribute highp vec2 vertexCoordEntry;\n"
         "attribute highp vec2 textureCoordEntry;\n"
         "varying highp vec2 textureCoord;\n"
+        "uniform highp mat4 mat;\n"
         "void main() {\n"
         "   textureCoord = textureCoordEntry;\n"
-        "   gl_Position = vec4(vertexCoordEntry, 1.0, 1.0);\n"
+        "   gl_Position = mat * vec4(vertexCoordEntry, 1.0, 1.0);\n"
         "}\n";
 
     static const char *textureFragmentProgram =
@@ -149,6 +154,7 @@ void QEglFSCursor::createShaderPrograms()
     m_program->link();
 
     m_textureEntry = m_program->uniformLocation("texture");
+    m_matEntry = m_program->uniformLocation("mat");
 }
 
 void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
@@ -492,6 +498,7 @@ void QEglFSCursor::draw(const QRectF &r)
     m_program->setAttributeArray(1, textureCoordinates, 2);
 
     m_program->setUniformValue(m_textureEntry, 0);
+    m_program->setUniformValue(m_matEntry, m_rotationMatrix);
 
     glDisable(GL_CULL_FACE);
     glFrontFace(GL_CCW);

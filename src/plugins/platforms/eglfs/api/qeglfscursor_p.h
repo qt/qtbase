@@ -54,6 +54,7 @@
 #include "qeglfsglobal.h"
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformscreen.h>
+#include <QtGui/QMatrix4x4>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/private/qinputdevicemanager_p.h>
 
@@ -138,8 +139,10 @@ private:
     QEglFSScreen *m_screen;
     QOpenGLShaderProgram *m_program;
     int m_textureEntry;
+    int m_matEntry;
     QEglFSCursorDeviceListener *m_deviceListener;
     bool m_updateRequested;
+    QMatrix4x4 m_rotationMatrix;
 };
 
 QT_END_NAMESPACE

@@ -65,6 +65,31 @@ QEglFSScreen::~QEglFSScreen()
 
 QRect QEglFSScreen::geometry() const
 {
+    QRect r = geometryForSurface();
+
+    static int rotation = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ROTATION");
+    switch (rotation) {
+    case 0:
+    case 180:
+    case -180:
+        break;
+    case 90:
+    case -90: {
+        int h = r.height();
+        r.setHeight(r.width());
+        r.setWidth(h);
+        break;
+    }
+    default:
+        qWarning("Invalid rotation %d specified in QT_QPA_EGLFS_ROTATION", rotation);
+        break;
+    }
+
+    return r;
+}
+
+QRect QEglFSScreen::geometryForSurface() const
+{
     return QRect(QPoint(0, 0), qt_egl_device_integration()->screenSize());
 }
 

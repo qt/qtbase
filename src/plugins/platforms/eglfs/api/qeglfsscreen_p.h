@@ -68,6 +68,7 @@ public:
     ~QEglFSScreen();
 
     QRect geometry() const Q_DECL_OVERRIDE;
+    QRect geometryForSurface() const;
     int depth() const Q_DECL_OVERRIDE;
     QImage::Format format() const Q_DECL_OVERRIDE;
 

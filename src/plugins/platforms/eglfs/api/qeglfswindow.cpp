@@ -142,7 +142,8 @@ void QEglFSWindow::create()
         context->setScreen(window()->screen());
         if (Q_UNLIKELY(!context->create()))
             qFatal("EGLFS: Failed to create compositing context");
-        compositor->setTarget(context, window());
+        compositor->setTarget(context, window(), screen->geometryForSurface());
+        compositor->setRotation(qEnvironmentVariableIntValue("QT_QPA_EGLFS_ROTATION"));
         // If there is a "root" window into which raster and QOpenGLWidget content is
         // composited, all other contexts must share with its context.
         if (!qt_gl_global_share_context()) {
@@ -189,7 +190,8 @@ void QEglFSWindow::resetSurface()
 
     m_config = QEglFSDeviceIntegration::chooseConfig(display, platformFormat);
     m_format = q_glFormatFromConfig(display, m_config, platformFormat);
-    m_window = qt_egl_device_integration()->createNativeWindow(this, screen()->geometry().size(), m_format);
+    const QSize surfaceSize = screen()->geometryForSurface().size();
+    m_window = qt_egl_device_integration()->createNativeWindow(this, surfaceSize, m_format);
     m_surface = eglCreateWindowSurface(display, m_config, m_window, NULL);
 }
 
