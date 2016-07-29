@@ -1,5 +1,5 @@
 ********* Start testing of tst_QExecStringList *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_QExecStringList::initTestCase()
 PASS   : tst_QExecStringList::testA()
 PASS   : tst_QExecStringList::testB(Data1)
@@ -7,10 +7,10 @@ PASS   : tst_QExecStringList::testB(Data2)
 PASS   : tst_QExecStringList::testB(Data3)
 PASS   : tst_QExecStringList::testC()
 PASS   : tst_QExecStringList::cleanupTestCase()
-Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_QExecStringList *********
 ********* Start testing of tst_QExecStringList *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_QExecStringList::initTestCase()
 PASS   : tst_QExecStringList::testA()
 PASS   : tst_QExecStringList::testB(Data1)
@@ -18,35 +18,35 @@ PASS   : tst_QExecStringList::testB(Data2)
 PASS   : tst_QExecStringList::testB(Data3)
 PASS   : tst_QExecStringList::testC()
 PASS   : tst_QExecStringList::cleanupTestCase()
-Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_QExecStringList *********
 ********* Start testing of tst_QExecStringList *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_QExecStringList::initTestCase()
 PASS   : tst_QExecStringList::testA()
 PASS   : tst_QExecStringList::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_QExecStringList *********
 ********* Start testing of tst_QExecStringList *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_QExecStringList::initTestCase()
 PASS   : tst_QExecStringList::testB(Data1)
 PASS   : tst_QExecStringList::testB(Data2)
 PASS   : tst_QExecStringList::testB(Data3)
 PASS   : tst_QExecStringList::cleanupTestCase()
-Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_QExecStringList *********
 ********* Start testing of tst_QExecStringList *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_QExecStringList::initTestCase()
 PASS   : tst_QExecStringList::testB(Data2)
 PASS   : tst_QExecStringList::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_QExecStringList *********
 ********* Start testing of tst_QExecStringList *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_QExecStringList::initTestCase()
 PASS   : tst_QExecStringList::testC()
 PASS   : tst_QExecStringList::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_QExecStringList *********

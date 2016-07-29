@@ -1,7 +1,7 @@
 ********* Start testing of tst_Exception *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_Exception::initTestCase()
 FAIL!  : tst_Exception::throwException() Caught unhandled exception
-   Loc: [/home/frederik/dev/qt/qt-src-dev/qtbase/src/testlib/qtestcase.cpp(2229)]
-Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted
+   Loc: [qtbase/src/testlib/qtestcase.cpp(0)]
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Exception *********

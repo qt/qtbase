@@ -1,5 +1,5 @@
 ********* Start testing of tst_Subtest *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 QDEBUG : tst_Subtest::initTestCase() initTestCase initTestCase (null)
 PASS   : tst_Subtest::initTestCase()
 QDEBUG : tst_Subtest::test1() init test1 (null)
@@ -35,16 +35,16 @@ QDEBUG : tst_Subtest::test3(data1) test2 test3 data1
 FAIL!  : tst_Subtest::test3(data1) Compared values are not the same
    Actual   (str)              : "hello1"
    Expected (QString("hello0")): "hello0"
-   Loc: [tst_subtest.cpp(154)]
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
 QDEBUG : tst_Subtest::test3(data1) cleanup test3 data1
 QDEBUG : tst_Subtest::test3(data2) init test3 data2
 QDEBUG : tst_Subtest::test3(data2) test2 test3 data2
 FAIL!  : tst_Subtest::test3(data2) Compared values are not the same
    Actual   (str)              : "hello2"
    Expected (QString("hello0")): "hello0"
-   Loc: [tst_subtest.cpp(154)]
+   Loc: [qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(0)]
 QDEBUG : tst_Subtest::test3(data2) cleanup test3 data2
 QDEBUG : tst_Subtest::cleanupTestCase() cleanupTestCase cleanupTestCase (null)
 PASS   : tst_Subtest::cleanupTestCase()
-Totals: 7 passed, 2 failed, 0 skipped, 0 blacklisted
+Totals: 7 passed, 2 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Subtest *********

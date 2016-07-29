@@ -7,64 +7,64 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareCharStars">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareByteArray">
-<Incident type="xfail" file="tst_strcmp.cpp" line="88">
+<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp" line="0">
     <Description><![CDATA[Next test should fail]]></Description>
 </Incident>
-<Incident type="xfail" file="tst_strcmp.cpp" line="95">
+<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp" line="0">
     <Description><![CDATA[Next test should fail]]></Description>
 </Incident>
-<Incident type="xfail" file="tst_strcmp.cpp" line="102">
+<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp" line="0">
     <Description><![CDATA[Next test should fail]]></Description>
 </Incident>
-<Incident type="fail" file="tst_strcmp.cpp" line="109">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (a): "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"...
    Expected (b): "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"...]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failByteArray">
-<Incident type="fail" file="tst_strcmp.cpp" line="115">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (QByteArray("abc")): "abc"
    Expected (QByteArray("cba")): "cba"]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failByteArrayNull">
-<Incident type="fail" file="tst_strcmp.cpp" line="121">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (QByteArray("foo")): "foo"
    Expected (QByteArray())     : ""]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failByteArrayEmpty">
-<Incident type="fail" file="tst_strcmp.cpp" line="126">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (QByteArray(""))   : ""
    Expected (QByteArray("foo")): "foo"]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failByteArraySingleChars">
-<Incident type="fail" file="tst_strcmp.cpp" line="133">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (QByteArray("6")): "6"
    Expected (QByteArray("7")): "7"]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

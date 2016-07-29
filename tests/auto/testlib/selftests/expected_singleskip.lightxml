@@ -5,16 +5,16 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="myTest">
-<Message type="skip" file="tst_singleskip.cpp" line="56">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/singleskip/tst_singleskip.cpp" line="0">
     <Description><![CDATA[skipping test]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>

@@ -5,19 +5,19 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testNumber1">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testNumber2">
 <Message type="qfatal" file="" line="0">
-    <Description><![CDATA[ASSERT: "false" in file tst_assert.cpp, line 66]]></Description>
+    <Description><![CDATA[ASSERT: "false" in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0]]></Description>
 </Message>
 <Incident type="fail" file="Unknown file" line="0">
     <Description><![CDATA[Received a fatal error.]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>

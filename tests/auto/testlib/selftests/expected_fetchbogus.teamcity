@@ -2,7 +2,7 @@
 ##teamcity[testStarted name='initTestCase()' flowId='tst_FetchBogus']
 ##teamcity[testFinished name='initTestCase()' flowId='tst_FetchBogus']
 ##teamcity[testStarted name='fetchBogus(foo)' flowId='tst_FetchBogus']
-##teamcity[testFailed name='fetchBogus(foo)' message='Failure! |[Loc: Unknown file(57)|]' details='Received a fatal error.' flowId='tst_FetchBogus']
+##teamcity[testFailed name='fetchBogus(foo)' message='Failure! |[Loc: Unknown file(0)|]' details='Received a fatal error.' flowId='tst_FetchBogus']
 ##teamcity[testStdOut name='fetchBogus(foo)' out='QFATAL: QFETCH: Requested testdata |'bubu|' not available, check your _data function.' flowId='tst_FetchBogus']
 ##teamcity[testFinished name='fetchBogus(foo)' flowId='tst_FetchBogus']
 ##teamcity[testSuiteFinished name='tst_FetchBogus' flowId='tst_FetchBogus']

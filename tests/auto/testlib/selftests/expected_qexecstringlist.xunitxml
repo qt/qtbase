@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" tests="5" name="tst_QExecStringList">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+    <property value="" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testA"/>
+  <testcase result="pass" name="testB"/>
+  <testcase result="pass" name="testC"/>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testA()
+PASS   : tst_QExecStringList::testB(Data1)
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::testB(Data3)
+PASS   : tst_QExecStringList::testC()
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testA()
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testB(Data1)
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::testB(Data3)
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testC()
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********

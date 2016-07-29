@@ -1,15 +1,15 @@
 ********* Start testing of tst_BenchlibWalltime *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_BenchlibWalltime::initTestCase()
 PASS   : tst_BenchlibWalltime::waitForOneThousand()
 RESULT : tst_BenchlibWalltime::waitForOneThousand():
-     1,006 msecs per iteration (total: 1,006, iterations: 1)
+     0 msecs per iteration (total: 0, iterations: 1)
 PASS   : tst_BenchlibWalltime::waitForFourThousand()
 RESULT : tst_BenchlibWalltime::waitForFourThousand():
-     4,008 msecs per iteration (total: 4,008, iterations: 1)
+     0 msecs per iteration (total: 0, iterations: 1)
 PASS   : tst_BenchlibWalltime::qbenchmark_once()
 RESULT : tst_BenchlibWalltime::qbenchmark_once():
      0 msecs per iteration (total: 0, iterations: 1)
 PASS   : tst_BenchlibWalltime::cleanupTestCase()
-Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_BenchlibWalltime *********

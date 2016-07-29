@@ -1,5 +1,5 @@
 ********* Start testing of tst_Warnings *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_Warnings::initTestCase()
 QWARN  : tst_Warnings::testWarnings() Warning
 QWARN  : tst_Warnings::testWarnings() Warning
@@ -24,5 +24,5 @@ INFO   : tst_Warnings::testMissingWarningsWithData(second row) Did not receive m
 INFO   : tst_Warnings::testMissingWarningsWithData(second row) Did not receive message: "Warning1"
 FAIL!  : tst_Warnings::testMissingWarningsWithData(second row) Not all expected messages were received
 PASS   : tst_Warnings::cleanupTestCase()
-Totals: 3 passed, 4 failed, 0 skipped, 0 blacklisted
+Totals: 3 passed, 4 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Warnings *********

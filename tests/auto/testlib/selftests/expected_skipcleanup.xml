@@ -7,17 +7,17 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="aTestFunction">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Message type="skip" file="tst_skipcleanup.cpp" line="59">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skipcleanup/tst_skipcleanup.cpp" line="0">
     <Description><![CDATA[Skip inside cleanupTestCase.]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

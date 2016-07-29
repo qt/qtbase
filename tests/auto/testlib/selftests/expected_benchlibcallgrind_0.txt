@@ -1,0 +1,8 @@
+********* Start testing of tst_BenchlibCallgrind *********
+Config: Using QtTest library
+PASS   : tst_BenchlibCallgrind::initTestCase()
+SKIP   : tst_BenchlibCallgrind::twoHundredMillionInstructions() This test is only defined for gcc and x86.
+   Loc: [qtbase/tests/auto/testlib/selftests/benchlibcallgrind/tst_benchlibcallgrind.cpp(0)]
+PASS   : tst_BenchlibCallgrind::cleanupTestCase()
+Totals: 2 passed, 0 failed, 1 skipped, 0 blacklisted
+********* Finished testing of tst_BenchlibCallgrind *********

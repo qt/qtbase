@@ -7,7 +7,7 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testPassPass">
 <Incident type="pass" file="" line="0">
@@ -16,104 +16,104 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testPassSkip">
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
 </Incident>
-<Message type="skip" file="tst_counting.cpp" line="118">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testPassFail">
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_counting.cpp" line="115">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipPass">
-<Message type="skip" file="tst_counting.cpp" line="118">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipSkip">
-<Message type="skip" file="tst_counting.cpp" line="118">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
-<Message type="skip" file="tst_counting.cpp" line="118">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipFail">
-<Message type="skip" file="tst_counting.cpp" line="118">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
-<Incident type="fail" file="tst_counting.cpp" line="115">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailPass">
-<Incident type="fail" file="tst_counting.cpp" line="115">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailSkip">
-<Incident type="fail" file="tst_counting.cpp" line="115">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Message type="skip" file="tst_counting.cpp" line="118">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailFail">
-<Incident type="fail" file="tst_counting.cpp" line="115">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Incident type="fail" file="tst_counting.cpp" line="115">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailInInit">
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[before]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_counting.cpp" line="234">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[fail]]></DataTag>
     <Description><![CDATA[Fail in init()]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailInCleanup">
 <Incident type="pass" file="" line="0">
@@ -123,27 +123,27 @@
     <DataTag><![CDATA[fail]]></DataTag>
     <Description><![CDATA[This test function should execute and then QFAIL in cleanup()]]></Description>
 </Message>
-<Incident type="fail" file="tst_counting.cpp" line="242">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[fail]]></DataTag>
     <Description><![CDATA[Fail in cleanup()]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipInInit">
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[before]]></DataTag>
 </Incident>
-<Message type="skip" file="tst_counting.cpp" line="236">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[skip]]></DataTag>
     <Description><![CDATA[Skip in init()]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipInCleanup">
 <Incident type="pass" file="" line="0">
@@ -153,18 +153,18 @@
     <DataTag><![CDATA[skip]]></DataTag>
     <Description><![CDATA[This test function should execute and then QSKIP in cleanup()]]></Description>
 </Message>
-<Message type="skip" file="tst_counting.cpp" line="244">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="0">
     <DataTag><![CDATA[skip]]></DataTag>
     <Description><![CDATA[Skip in cleanup()]]></Description>
 </Message>
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

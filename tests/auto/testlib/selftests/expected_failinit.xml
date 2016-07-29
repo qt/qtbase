@@ -6,14 +6,14 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Incident type="fail" file="tst_failinit.cpp" line="55">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/failinit/tst_failinit.cpp" line="0">
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

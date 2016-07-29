@@ -4,6 +4,6 @@
 ##teamcity[testStarted name='aTestFunction()' flowId='tst_FailCleanup']
 ##teamcity[testFinished name='aTestFunction()' flowId='tst_FailCleanup']
 ##teamcity[testStarted name='cleanupTestCase()' flowId='tst_FailCleanup']
-##teamcity[testFailed name='cleanupTestCase()' message='Failure! |[Loc: tst_failcleanup.cpp(51)|]' details='|'false|' returned FALSE. (Fail inside cleanupTestCase)' flowId='tst_FailCleanup']
+##teamcity[testFailed name='cleanupTestCase()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp(0)|]' details='|'false|' returned FALSE. (Fail inside cleanupTestCase)' flowId='tst_FailCleanup']
 ##teamcity[testFinished name='cleanupTestCase()' flowId='tst_FailCleanup']
 ##teamcity[testSuiteFinished name='tst_FailCleanup' flowId='tst_FailCleanup']

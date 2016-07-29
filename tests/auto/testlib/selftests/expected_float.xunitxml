@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="6" tests="4" name="tst_float">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+    <property value="" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="floatComparisons">
+    <failure tag="should FAIL 1" message="Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): 3" result="fail"/>
+    <failure tag="should FAIL 2" message="Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1e&#x002D;07
+   Expected (operandRight): 3e&#x002D;07" result="fail"/>
+    <failure tag="should FAIL 3" message="Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 99998
+   Expected (operandRight): 99999" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareFloatTests">
+    <failure tag="1e0" message="Compared floats are not the same (fuzzy compare)
+   Actual   (t1): 1
+   Expected (t3): 3" result="fail"/>
+    <failure tag="1e&#x002D;7" message="Compared floats are not the same (fuzzy compare)
+   Actual   (t1): 1e&#x002D;07
+   Expected (t3): 3e&#x002D;07" result="fail"/>
+    <failure tag="1e+7" message="Compared floats are not the same (fuzzy compare)
+   Actual   (t1): 1e+07
+   Expected (t3): 3e+07" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

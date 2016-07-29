@@ -1,6 +1,6 @@
 ##teamcity[testSuiteStarted name='tst_FailInit' flowId='tst_FailInit']
 ##teamcity[testStarted name='initTestCase()' flowId='tst_FailInit']
-##teamcity[testFailed name='initTestCase()' message='Failure! |[Loc: tst_failinit.cpp(47)|]' details='|'false|' returned FALSE. ()' flowId='tst_FailInit']
+##teamcity[testFailed name='initTestCase()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/failinit/tst_failinit.cpp(0)|]' details='|'false|' returned FALSE. ()' flowId='tst_FailInit']
 ##teamcity[testFinished name='initTestCase()' flowId='tst_FailInit']
 ##teamcity[testStarted name='cleanupTestCase()' flowId='tst_FailInit']
 ##teamcity[testFinished name='cleanupTestCase()' flowId='tst_FailInit']

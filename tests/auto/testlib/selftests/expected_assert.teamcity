@@ -5,6 +5,6 @@
 ##teamcity[testFinished name='testNumber1()' flowId='tst_Assert']
 ##teamcity[testStarted name='testNumber2()' flowId='tst_Assert']
 ##teamcity[testFailed name='testNumber2()' message='Failure! |[Loc: Unknown file(0)|]' details='Received a fatal error.' flowId='tst_Assert']
-##teamcity[testStdOut name='testNumber2()' out='QFATAL: ASSERT: "false" in file tst_assert.cpp, line 58' flowId='tst_Assert']
+##teamcity[testStdOut name='testNumber2()' out='QFATAL: ASSERT: "false" in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0' flowId='tst_Assert']
 ##teamcity[testFinished name='testNumber2()' flowId='tst_Assert']
 ##teamcity[testSuiteFinished name='tst_Assert' flowId='tst_Assert']

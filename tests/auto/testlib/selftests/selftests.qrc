@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>expected_alive.txt</file>
         <file>expected_assert.lightxml</file>
         <file>expected_assert.teamcity</file>
         <file>expected_assert.txt</file>
@@ -11,29 +10,40 @@
         <file>expected_badxml.txt</file>
         <file>expected_badxml.xml</file>
         <file>expected_badxml.xunitxml</file>
-        <file>expected_benchlibcallgrind.txt</file>
+        <file>expected_benchlibcallgrind_0.txt</file>
+        <file>expected_benchlibcallgrind_1.txt</file>
         <file>expected_benchlibcallgrind.csv</file>
+        <file>expected_benchlibcallgrind.lightxml</file>
+        <file>expected_benchlibcallgrind.xml</file>
+        <file>expected_benchlibcallgrind.xunitxml</file>
+        <file>expected_benchlibcounting.csv</file>
         <file>expected_benchlibcounting.lightxml</file>
         <file>expected_benchlibcounting.txt</file>
         <file>expected_benchlibcounting.xml</file>
         <file>expected_benchlibcounting.xunitxml</file>
-        <file>expected_benchlibcounting.csv</file>
+        <file>expected_benchlibeventcounter.csv</file>
         <file>expected_benchlibeventcounter.lightxml</file>
         <file>expected_benchlibeventcounter.txt</file>
         <file>expected_benchlibeventcounter.xml</file>
         <file>expected_benchlibeventcounter.xunitxml</file>
-        <file>expected_benchlibeventcounter.csv</file>
+        <file>expected_benchliboptions.lightxml</file>
         <file>expected_benchliboptions.txt</file>
+        <file>expected_benchliboptions.xml</file>
+        <file>expected_benchliboptions.xunitxml</file>
+        <file>expected_benchlibtickcounter.csv</file>
         <file>expected_benchlibtickcounter.lightxml</file>
         <file>expected_benchlibtickcounter.txt</file>
         <file>expected_benchlibtickcounter.xml</file>
         <file>expected_benchlibtickcounter.xunitxml</file>
-        <file>expected_benchlibtickcounter.csv</file>
+        <file>expected_benchlibwalltime.csv</file>
         <file>expected_benchlibwalltime.lightxml</file>
         <file>expected_benchlibwalltime.txt</file>
         <file>expected_benchlibwalltime.xml</file>
         <file>expected_benchlibwalltime.xunitxml</file>
-        <file>expected_benchlibwalltime.csv</file>
+        <file>expected_blacklisted.lightxml</file>
+        <file>expected_blacklisted.txt</file>
+        <file>expected_blacklisted.xml</file>
+        <file>expected_blacklisted.xunitxml</file>
         <file>expected_cmptest.lightxml</file>
         <file>expected_cmptest.teamcity</file>
         <file>expected_cmptest.txt</file>
@@ -62,7 +72,10 @@
         <file>expected_datetime.txt</file>
         <file>expected_datetime.xml</file>
         <file>expected_datetime.xunitxml</file>
+        <file>expected_differentexec.lightxml</file>
         <file>expected_differentexec.txt</file>
+        <file>expected_differentexec.xml</file>
+        <file>expected_differentexec.xunitxml</file>
         <file>expected_exceptionthrow.lightxml</file>
         <file>expected_exceptionthrow.teamcity</file>
         <file>expected_exceptionthrow.txt</file>
@@ -98,7 +111,10 @@
         <file>expected_findtestdata.txt</file>
         <file>expected_findtestdata.xml</file>
         <file>expected_findtestdata.xunitxml</file>
+        <file>expected_float.lightxml</file>
         <file>expected_float.txt</file>
+        <file>expected_float.xml</file>
+        <file>expected_float.xunitxml</file>
         <file>expected_globaldata.lightxml</file>
         <file>expected_globaldata.teamcity</file>
         <file>expected_globaldata.txt</file>
@@ -114,7 +130,10 @@
         <file>expected_maxwarnings.txt</file>
         <file>expected_maxwarnings.xml</file>
         <file>expected_maxwarnings.xunitxml</file>
+        <file>expected_multiexec.lightxml</file>
         <file>expected_multiexec.txt</file>
+        <file>expected_multiexec.xml</file>
+        <file>expected_multiexec.xunitxml</file>
         <file>expected_pairdiagnostics.lightxml</file>
         <file>expected_pairdiagnostics.teamcity</file>
         <file>expected_pairdiagnostics.txt</file>
@@ -122,9 +141,15 @@
         <file>expected_pairdiagnostics.xunitxml</file>
         <file>expected_printdatatags.txt</file>
         <file>expected_printdatatagswithglobaltags.txt</file>
+        <file>expected_qexecstringlist.lightxml</file>
         <file>expected_qexecstringlist.txt</file>
+        <file>expected_qexecstringlist.xml</file>
+        <file>expected_qexecstringlist.xunitxml</file>
+        <file>expected_silent.lightxml</file>
         <file>expected_silent.teamcity</file>
         <file>expected_silent.txt</file>
+        <file>expected_silent.xml</file>
+        <file>expected_silent.xunitxml</file>
         <file>expected_singleskip.lightxml</file>
         <file>expected_singleskip.teamcity</file>
         <file>expected_singleskip.txt</file>
@@ -150,8 +175,11 @@
         <file>expected_skipinitdata.txt</file>
         <file>expected_skipinitdata.xml</file>
         <file>expected_skipinitdata.xunitxml</file>
+        <file>expected_sleep.lightxml</file>
         <file>expected_sleep.teamcity</file>
         <file>expected_sleep.txt</file>
+        <file>expected_sleep.xml</file>
+        <file>expected_sleep.xunitxml</file>
         <file>expected_strcmp.lightxml</file>
         <file>expected_strcmp.teamcity</file>
         <file>expected_strcmp.txt</file>
@@ -187,6 +215,5 @@
         <file>expected_xunit.txt</file>
         <file>expected_xunit.xml</file>
         <file>expected_xunit.xunitxml</file>
-        <file>expected_blacklisted.txt</file>
     </qresource>
 </RCC>

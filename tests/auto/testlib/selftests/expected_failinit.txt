@@ -1,7 +1,7 @@
 ********* Start testing of tst_FailInit *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 FAIL!  : tst_FailInit::initTestCase() 'false' returned FALSE. ()
-   Loc: [tst_failinit.cpp(55)]
+   Loc: [qtbase/tests/auto/testlib/selftests/failinit/tst_failinit.cpp(0)]
 PASS   : tst_FailInit::cleanupTestCase()
-Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted
+Totals: 1 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_FailInit *********

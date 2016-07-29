@@ -6,10 +6,10 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Incident type="fail" file="tst_failinitdata.cpp" line="56">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/failinitdata/tst_failinitdata.cpp" line="0">
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

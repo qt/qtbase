@@ -7,28 +7,28 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="passingBenchmark">
 <Incident type="pass" file="" line="0" />
 <BenchmarkResult metric="Events" tag="" value="0" iterations="1" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="skippingBenchmark">
-<Message type="skip" file="tst_benchlibcounting.cpp" line="64">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/benchlibcounting/tst_benchlibcounting.cpp" line="0">
     <Description><![CDATA[This is a skipping benchmark]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failingBenchmark">
-<Incident type="fail" file="tst_benchlibcounting.cpp" line="71">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/benchlibcounting/tst_benchlibcounting.cpp" line="0">
     <Description><![CDATA[This is a failing benchmark]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

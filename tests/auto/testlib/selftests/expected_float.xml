@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCase name="tst_float">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QtBuild/>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="floatComparisons">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should SUCCEED 1]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL 1]]></DataTag>
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1
+   Expected (operandRight): 3]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL 2]]></DataTag>
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 1e-07
+   Expected (operandRight): 3e-07]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[should FAIL 3]]></DataTag>
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual   (operandLeft) : 99998
+   Expected (operandRight): 99999]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[should SUCCEED 2]]></DataTag>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="compareFloatTests">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[1e0]]></DataTag>
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual   (t1): 1
+   Expected (t3): 3]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[1e-7]]></DataTag>
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual   (t1): 1e-07
+   Expected (t3): 3e-07]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/float/tst_float.cpp" line="0">
+    <DataTag><![CDATA[1e+7]]></DataTag>
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual   (t1): 1e+07
+   Expected (t3): 3e+07]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
+<Duration msecs="0"/>
+</TestCase>

@@ -10,7 +10,7 @@
     <Description><![CDATA[initTestCase initTestCase (null)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="test1">
 <Message type="qdebug" file="" line="0">
@@ -23,7 +23,7 @@
     <Description><![CDATA[cleanup test1 (null)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="test2">
 <Message type="qdebug" file="" line="0">
@@ -89,7 +89,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="test3">
 <Message type="qdebug" file="" line="0">
@@ -125,7 +125,7 @@
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[test2 test3 data1]]></Description>
 </Message>
-<Incident type="fail" file="tst_subtest.cpp" line="154">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (str)              : "hello1"
@@ -143,7 +143,7 @@
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[test2 test3 data2]]></Description>
 </Message>
-<Incident type="fail" file="tst_subtest.cpp" line="154">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="0">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (str)              : "hello2"
@@ -153,14 +153,14 @@
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[cleanup test3 data2]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[cleanupTestCase cleanupTestCase (null)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

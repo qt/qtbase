@@ -5,22 +5,22 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="test">
-<Message type="skip" file="tst_skip.cpp" line="68">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
     <Description><![CDATA[skipping all]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="emptytest">
-<Message type="skip" file="tst_skip.cpp" line="78">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
     <Description><![CDATA[skipping all]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="singleSkip">
-<Message type="skip" file="tst_skip.cpp" line="97">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="0">
     <DataTag><![CDATA[local 1]]></DataTag>
     <Description><![CDATA[skipping one]]></Description>
 </Message>
@@ -31,10 +31,10 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[local 2]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCase name="tst_Blacklisted">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QtBuild/>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="pass">
+<Incident type="bpass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="skip">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+    <Description><![CDATA[This test should SKIP]]></Description>
+</Message>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="fail">
+<Incident type="bfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+    <Description><![CDATA['false' returned FALSE. (This test should BFAIL)]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="xfail">
+<Incident type="xfail" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+    <Description><![CDATA[This test should XFAIL then BFAIL]]></Description>
+</Incident>
+<Incident type="bpass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="xpass">
+<Incident type="xpass" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+    <Description><![CDATA['true' returned TRUE unexpectedly. (This test should XPASS, blacklist ignored for XPASS)]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="messages">
+<Message type="qwarn" file="" line="0">
+    <Description><![CDATA[This is a warning that should not appear in silent test output]]></Description>
+</Message>
+<Message type="warn" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+    <Description><![CDATA[This is an internal testlib warning that should not appear in silent test output]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[This is a debug message that should not appear in silent test output]]></Description>
+</Message>
+<Message type="system" file="" line="0">
+    <Description><![CDATA[This is a critical message that should not appear in silent test output]]></Description>
+</Message>
+<Message type="qinfo" file="" line="0">
+    <Description><![CDATA[This is an info message that should not appear in silent test output]]></Description>
+</Message>
+<Message type="info" file="qtbase/tests/auto/testlib/selftests/blacklisted/tst_blacklisted.cpp" line="0">
+    <Description><![CDATA[This is an internal testlib info message that should not appear in silent test output]]></Description>
+</Message>
+<Message type="qfatal" file="" line="0">
+    <Description><![CDATA[This is a fatal error message that should still appear in silent test output]]></Description>
+</Message>
+<Incident type="bfail" file="Unknown file" line="0">
+    <Description><![CDATA[Received a fatal error.]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<Duration msecs="0"/>
+</TestCase>

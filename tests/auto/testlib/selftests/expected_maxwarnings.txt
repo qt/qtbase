@@ -1,5 +1,5 @@
 ********* Start testing of MaxWarnings *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : MaxWarnings::initTestCase()
 QWARN  : MaxWarnings::warn() 0
 QWARN  : MaxWarnings::warn() 1
@@ -2005,5 +2005,5 @@ QWARN  : MaxWarnings::warn() 2000
 QSYSTEM: MaxWarnings::warn() Maximum amount of warnings exceeded. Use -maxwarnings to override.
 PASS   : MaxWarnings::warn()
 PASS   : MaxWarnings::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of MaxWarnings *********

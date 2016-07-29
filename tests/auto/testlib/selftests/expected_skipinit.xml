@@ -6,14 +6,14 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Message type="skip" file="tst_skipinit.cpp" line="55">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/skipinit/tst_skipinit.cpp" line="0">
     <Description><![CDATA[Skip inside initTestCase. This should skip all tests in the class.]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

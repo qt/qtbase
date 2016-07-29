@@ -8,7 +8,7 @@
     <Description><![CDATA[initTestCase initTestCase (null)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testGlobal">
 <Message type="qdebug" file="" line="0">
@@ -87,21 +87,21 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[2:local 2]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="skip">
-<Message type="skip" file="tst_globaldata.cpp" line="129">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
     <DataTag><![CDATA[1]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="skipLocal">
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[1:local 1]]></DataTag>
     <Description><![CDATA[init skipLocal local 1]]></Description>
 </Message>
-<Message type="skip" file="tst_globaldata.cpp" line="149">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
     <DataTag><![CDATA[1:local 1]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
 </Message>
@@ -113,7 +113,7 @@
     <DataTag><![CDATA[1:local 2]]></DataTag>
     <Description><![CDATA[init skipLocal local 2]]></Description>
 </Message>
-<Message type="skip" file="tst_globaldata.cpp" line="149">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
     <DataTag><![CDATA[1:local 2]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
 </Message>
@@ -121,7 +121,7 @@
     <DataTag><![CDATA[1:local 2]]></DataTag>
     <Description><![CDATA[cleanup skipLocal local 2]]></Description>
 </Message>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="skipSingle">
 <Message type="qdebug" file="" line="0">
@@ -158,7 +158,7 @@
     <DataTag><![CDATA[2:local 1]]></DataTag>
     <Description><![CDATA[init skipSingle local 1]]></Description>
 </Message>
-<Message type="skip" file="tst_globaldata.cpp" line="143">
+<Message type="skip" file="qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="0">
     <DataTag><![CDATA[2:local 1]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
 </Message>
@@ -181,13 +181,13 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[2:local 2]]></DataTag>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[cleanupTestCase cleanupTestCase (null)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>

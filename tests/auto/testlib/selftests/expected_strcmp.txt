@@ -1,33 +1,33 @@
 ********* Start testing of tst_StrCmp *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_StrCmp::initTestCase()
 PASS   : tst_StrCmp::compareCharStars()
 XFAIL  : tst_StrCmp::compareByteArray() Next test should fail
-   Loc: [tst_strcmp.cpp(88)]
+   Loc: [qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(0)]
 XFAIL  : tst_StrCmp::compareByteArray() Next test should fail
-   Loc: [tst_strcmp.cpp(95)]
+   Loc: [qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(0)]
 XFAIL  : tst_StrCmp::compareByteArray() Next test should fail
-   Loc: [tst_strcmp.cpp(102)]
+   Loc: [qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(0)]
 FAIL!  : tst_StrCmp::compareByteArray() Compared values are not the same
    Actual   (a): "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"...
    Expected (b): "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"...
-   Loc: [/home/thiago/src/qt/qt5/qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(109)]
+   Loc: [qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(0)]
 FAIL!  : tst_StrCmp::failByteArray() Compared values are not the same
    Actual   (QByteArray("abc")): "abc"
    Expected (QByteArray("cba")): "cba"
-   Loc: [/home/thiago/src/qt/qt5/qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(115)]
+   Loc: [qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(0)]
 FAIL!  : tst_StrCmp::failByteArrayNull() Compared values are not the same
    Actual   (QByteArray("foo")): "foo"
    Expected (QByteArray())     : ""
-   Loc: [/home/thiago/src/qt/qt5/qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(121)]
+   Loc: [qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(0)]
 FAIL!  : tst_StrCmp::failByteArrayEmpty() Compared values are not the same
    Actual   (QByteArray(""))   : ""
    Expected (QByteArray("foo")): "foo"
-   Loc: [/home/thiago/src/qt/qt5/qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(126)]
+   Loc: [qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(0)]
 FAIL!  : tst_StrCmp::failByteArraySingleChars() Compared values are not the same
    Actual   (QByteArray("6")): "6"
    Expected (QByteArray("7")): "7"
-   Loc: [/home/thiago/src/qt/qt5/qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(133)]
+   Loc: [qtbase/tests/auto/testlib/selftests/strcmp/tst_strcmp.cpp(0)]
 PASS   : tst_StrCmp::cleanupTestCase()
-Totals: 3 passed, 5 failed, 0 skipped, 0 blacklisted
+Totals: 3 passed, 5 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_StrCmp *********

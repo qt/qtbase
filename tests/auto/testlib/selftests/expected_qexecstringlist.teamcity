@@ -1,0 +1,57 @@
+##teamcity[testSuiteStarted name='tst_QExecStringList' flowId='tst_QExecStringList']
+##teamcity[testStarted name='initTestCase()' flowId='tst_QExecStringList']
+##teamcity[testFinished name='initTestCase()' flowId='tst_QExecStringList']
+##teamcity[testStarted name='testA()' flowId='tst_QExecStringList']
+##teamcity[testFinished name='testA()' flowId='tst_QExecStringList']
+##teamcity[testStarted name='testB(Data1)' flowId='tst_QExecStringList']
+##teamcity[testFinished name='testB(Data1)' flowId='tst_QExecStringList']
+##teamcity[testStarted name='testB(Data2)' flowId='tst_QExecStringList']
+##teamcity[testFinished name='testB(Data2)' flowId='tst_QExecStringList']
+##teamcity[testStarted name='testB(Data3)' flowId='tst_QExecStringList']
+##teamcity[testFinished name='testB(Data3)' flowId='tst_QExecStringList']
+##teamcity[testStarted name='testC()' flowId='tst_QExecStringList']
+##teamcity[testFinished name='testC()' flowId='tst_QExecStringList']
+##teamcity[testStarted name='cleanupTestCase()' flowId='tst_QExecStringList']
+##teamcity[testFinished name='cleanupTestCase()' flowId='tst_QExecStringList']
+##teamcity[testSuiteFinished name='tst_QExecStringList' flowId='tst_QExecStringList']
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testA()
+PASS   : tst_QExecStringList::testB(Data1)
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::testB(Data3)
+PASS   : tst_QExecStringList::testC()
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testA()
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testB(Data1)
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::testB(Data3)
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testB(Data2)
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********
+********* Start testing of tst_QExecStringList *********
+Config: Using QtTest library
+PASS   : tst_QExecStringList::initTestCase()
+PASS   : tst_QExecStringList::testC()
+PASS   : tst_QExecStringList::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_QExecStringList *********

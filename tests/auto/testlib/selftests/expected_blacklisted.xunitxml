@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="9" failures="3" tests="7" name="tst_Blacklisted">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+    <property value="" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="bpass" name="pass"/>
+  <testcase name="skip">
+    <!-- message="This test should SKIP" type="skip" -->
+  </testcase>
+  <testcase result="bfail" name="fail"/>
+  <testcase result="xfail" name="xfail">
+    <!-- message="This test should XFAIL then BFAIL" type="info" -->
+  </testcase>
+  <testcase result="xpass" name="xpass">
+    <failure message="&apos;true&apos; returned TRUE unexpectedly. (This test should XPASS, blacklist ignored for XPASS)" result="xpass"/>
+  </testcase>
+  <testcase result="bfail" name="messages">
+    <!-- message="This is a warning that should not appear in silent test output" type="qwarn" -->
+    <!-- message="This is an internal testlib warning that should not appear in silent test output" type="warn" -->
+    <!-- message="This is a debug message that should not appear in silent test output" type="qdebug" -->
+    <!-- message="This is a critical message that should not appear in silent test output" type="system" -->
+    <!-- message="This is an info message that should not appear in silent test output" type="qinfo" -->
+    <!-- message="This is an internal testlib info message that should not appear in silent test output" type="info" -->
+    <!-- message="This is a fatal error message that should still appear in silent test output" type="qfatal" -->
+  </testcase>
+  <system-err>
+<![CDATA[This test should SKIP]]>
+<![CDATA[This test should XFAIL then BFAIL]]>
+<![CDATA[This is a warning that should not appear in silent test output]]>
+<![CDATA[This is an internal testlib warning that should not appear in silent test output]]>
+<![CDATA[This is a debug message that should not appear in silent test output]]>
+<![CDATA[This is a critical message that should not appear in silent test output]]>
+<![CDATA[This is an info message that should not appear in silent test output]]>
+<![CDATA[This is an internal testlib info message that should not appear in silent test output]]>
+<![CDATA[This is a fatal error message that should still appear in silent test output]]>
+  </system-err>
+</testsuite>

@@ -7,7 +7,7 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testWarnings">
 <Message type="qwarn" file="" line="0">
@@ -41,7 +41,7 @@
     <Description><![CDATA[Babablabla]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testMissingWarnings">
 <Message type="info" file="" line="0">
@@ -53,7 +53,7 @@
 <Incident type="fail" file="" line="0">
     <Description><![CDATA[Not all expected messages were received]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testMissingWarningsRegularExpression">
 <Message type="info" file="" line="0">
@@ -62,7 +62,7 @@
 <Incident type="fail" file="" line="0">
     <Description><![CDATA[Not all expected messages were received]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testMissingWarningsWithData">
 <Message type="info" file="" line="0">
@@ -89,11 +89,11 @@
     <DataTag><![CDATA[second row]]></DataTag>
     <Description><![CDATA[Not all expected messages were received]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

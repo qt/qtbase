@@ -12,7 +12,7 @@
     <DataTag><![CDATA[fail end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
 </Message>
-<Incident type="fail" file="tst_badxml.cpp" line="114">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
     <DataTag><![CDATA[fail end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
@@ -28,7 +28,7 @@
     <DataTag><![CDATA[fail quotes " text" more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
 </Message>
-<Incident type="fail" file="tst_badxml.cpp" line="114">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
     <DataTag><![CDATA[fail quotes " text" more text]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
@@ -44,7 +44,7 @@
     <DataTag><![CDATA[fail xml close > open < tags < text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
 </Message>
-<Incident type="fail" file="tst_badxml.cpp" line="114">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
     <DataTag><![CDATA[fail xml close > open < tags < text]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
@@ -60,7 +60,7 @@
     <DataTag><![CDATA[fail all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     <Description><![CDATA[a message]]></Description>
 </Message>
-<Incident type="fail" file="tst_badxml.cpp" line="114">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="0">
     <DataTag><![CDATA[fail all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>

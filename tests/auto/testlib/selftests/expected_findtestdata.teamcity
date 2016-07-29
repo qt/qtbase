@@ -2,7 +2,7 @@
 ##teamcity[testStarted name='initTestCase()' flowId='FindTestData']
 ##teamcity[testFinished name='initTestCase()' flowId='FindTestData']
 ##teamcity[testStarted name='paths()' flowId='FindTestData']
-##teamcity[testStdOut name='paths()' out='WARNING |[Loc: findtestdata.cpp(146)|]: testdata testfile could not be located!' flowId='FindTestData']
+##teamcity[testStdOut name='paths()' out='WARNING |[Loc: qtbase/tests/auto/testlib/selftests/findtestdata/findtestdata.cpp(0)|]: testdata testfile could not be located!' flowId='FindTestData']
 ##teamcity[testFinished name='paths()' flowId='FindTestData']
 ##teamcity[testStarted name='cleanupTestCase()' flowId='FindTestData']
 ##teamcity[testFinished name='cleanupTestCase()' flowId='FindTestData']

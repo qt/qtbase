@@ -1,9 +1,9 @@
 ********* Start testing of tst_Assert *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_Assert::initTestCase()
 PASS   : tst_Assert::testNumber1()
-QFATAL : tst_Assert::testNumber2() ASSERT: "false" in file tst_assert.cpp, line 66
+QFATAL : tst_Assert::testNumber2() ASSERT: "false" in file qtbase/tests/auto/testlib/selftests/assert/tst_assert.cpp, line 0
 FAIL!  : tst_Assert::testNumber2() Received a fatal error.
    Loc: [Unknown file(0)]
-Totals: 2 passed, 1 failed, 0 skipped, 0 blacklisted
+Totals: 2 passed, 1 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Assert *********

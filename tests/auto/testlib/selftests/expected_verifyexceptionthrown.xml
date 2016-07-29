@@ -7,59 +7,59 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testCorrectStdTypes">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testCorrectStdExceptions">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testCorrectMyExceptions">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailInt">
-<Incident type="fail" file="tst_verifyexceptionthrown.cpp" line="128">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
     <Description><![CDATA[Expected exception of type double to be thrown but unknown exception caught]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailStdString">
-<Incident type="fail" file="tst_verifyexceptionthrown.cpp" line="133">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
     <Description><![CDATA[Expected exception of type char* to be thrown but unknown exception caught]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailStdRuntimeError">
-<Incident type="fail" file="tst_verifyexceptionthrown.cpp" line="138">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
     <Description><![CDATA[Expected exception of type std::runtime_error to be thrown but std::exception caught with message: logic error]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailMyException">
-<Incident type="fail" file="tst_verifyexceptionthrown.cpp" line="143">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
     <Description><![CDATA[Expected exception of type MyBaseException to be thrown but std::exception caught with message: logic error]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailMyDerivedException">
-<Incident type="fail" file="tst_verifyexceptionthrown.cpp" line="148">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
     <Description><![CDATA[Expected exception of type std::runtime_error to be thrown but std::exception caught with message: MyDerivedException]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailNoException">
-<Incident type="fail" file="tst_verifyexceptionthrown.cpp" line="153">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp" line="0">
     <Description><![CDATA[Expected exception of type std::exception to be thrown but no exception caught]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
 </TestCase>

@@ -1,5 +1,5 @@
 ********* Start testing of tst_DataTable *********
-Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library
 PASS   : tst_DataTable::initTestCase()
 PASS   : tst_DataTable::singleTestFunction1()
 PASS   : tst_DataTable::singleTestFunction2()
@@ -9,17 +9,17 @@ PASS   : tst_DataTable::fiveTablePasses(fiveTablePasses_data 3)
 PASS   : tst_DataTable::fiveTablePasses(fiveTablePasses_data 4)
 PASS   : tst_DataTable::fiveTablePasses(fiveTablePasses_data 5)
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 1) 'test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(91)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 2) 'test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(91)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 3) 'test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(91)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 4) 'test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(91)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 5) 'test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(91)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 FAIL!  : tst_DataTable::startsWithFailure(startsWithFailure_data 1) 'test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(91)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 PASS   : tst_DataTable::startsWithFailure(startsWithFailure_data 2)
 PASS   : tst_DataTable::startsWithFailure(startsWithFailure_data 3)
 PASS   : tst_DataTable::startsWithFailure(startsWithFailure_data 4)
@@ -29,23 +29,23 @@ PASS   : tst_DataTable::endsWithFailure(endsWithFailure 2)
 PASS   : tst_DataTable::endsWithFailure(endsWithFailure 3)
 PASS   : tst_DataTable::endsWithFailure(endsWithFailure 4)
 FAIL!  : tst_DataTable::endsWithFailure(endsWithFailure 5) 'test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(91)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 PASS   : tst_DataTable::failureInMiddle(failureInMiddle_data 1)
 PASS   : tst_DataTable::failureInMiddle(failureInMiddle_data 2)
 FAIL!  : tst_DataTable::failureInMiddle(failureInMiddle_data 3) 'test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(91)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 PASS   : tst_DataTable::failureInMiddle(failureInMiddle_data 4)
 PASS   : tst_DataTable::failureInMiddle(failureInMiddle_data 5)
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 1) '!test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(173)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 2) '!test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(173)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 3) '!test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(173)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 4) '!test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(173)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 5) '!test' returned FALSE. ()
-   Loc: [tst_datatable.cpp(173)]
+   Loc: [qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp(0)]
 PASS   : tst_DataTable::cleanupTestCase()
-Totals: 21 passed, 13 failed, 0 skipped, 0 blacklisted
+Totals: 21 passed, 13 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_DataTable *********

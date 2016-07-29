@@ -5,12 +5,12 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="throwException">
-<Incident type="fail" file="qtestcase.cpp" line="2235">
+<Incident type="fail" file="qtbase/src/testlib/qtestcase.cpp" line="0">
     <Description><![CDATA[Caught unhandled exception]]></Description>
 </Incident>
-<Duration msecs="0"/>
+    <Duration msecs="0"/>
 </TestFunction>
 <Duration msecs="0"/>
