@@ -48,12 +48,10 @@ QT_BEGIN_NAMESPACE
 
 void QSslDiffieHellmanParametersPrivate::decodeDer(const QByteArray &)
 {
-    Q_UNIMPLEMENTED();
 }
 
 void QSslDiffieHellmanParametersPrivate::decodePem(const QByteArray &)
 {
-    Q_UNIMPLEMENTED();
 }
 
 QT_END_NAMESPACE
