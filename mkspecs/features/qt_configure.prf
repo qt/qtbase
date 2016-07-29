@@ -402,6 +402,9 @@ defineTest(qtConfTest_compile) {
     else: \
         qmake_configs = "static"
 
+    use_gold_linker: \
+        qmake_configs += "use_gold_linker"
+
     # add console to the CONFIG variable when running the tests, so that they
     # can work with a regular main() entry point on Windows.
     qmake_configs += "console"
