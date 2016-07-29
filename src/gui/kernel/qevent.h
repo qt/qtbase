@@ -132,6 +132,8 @@ public:
     inline Qt::MouseButton button() const { return b; }
     inline Qt::MouseButtons buttons() const { return mouseState; }
 
+    inline void setLocalPos(const QPointF &localPosition) { l = localPosition; }
+
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QPointF posF() const { return l; }
 #endif

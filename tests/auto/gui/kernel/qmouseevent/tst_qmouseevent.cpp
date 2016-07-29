@@ -75,6 +75,7 @@ public slots:
     void cleanupTestCase();
     void init();
 private slots:
+    void mouseEventBasic();
     void checkMousePressEvent_data();
     void checkMousePressEvent();
     void checkMouseReleaseEvent_data();
@@ -105,6 +106,26 @@ void tst_QMouseEvent::init()
     testMouseWidget->mouseReleaseButton = 0;
     testMouseWidget->mouseReleaseButtons = 0;
     testMouseWidget->mouseReleaseModifiers = 0;
+}
+
+void tst_QMouseEvent::mouseEventBasic()
+{
+    QPointF local(100, 100);
+    QPointF scene(200, 200);
+    QPointF screen(300, 300);
+    QMouseEvent me(QEvent::MouseButtonPress, local, scene, screen, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QCOMPARE(me.isAccepted(), true);
+    QCOMPARE(me.button(), Qt::LeftButton);
+    QCOMPARE(me.buttons(), Qt::LeftButton);
+    QCOMPARE(me.localPos(), local);
+    QCOMPARE(me.windowPos(), scene);
+    QCOMPARE(me.screenPos(), screen);
+
+    QPointF changedLocal(33, 66);
+    me.setLocalPos(changedLocal);
+    QCOMPARE(me.localPos(), changedLocal);
+    QCOMPARE(me.windowPos(), scene);
+    QCOMPARE(me.screenPos(), screen);
 }
 
 void tst_QMouseEvent::checkMousePressEvent_data()

@@ -405,6 +405,18 @@ Qt::MouseEventFlags QMouseEvent::flags() const
 */
 
 /*!
+    \fn void QMouseEvent::setLocalPos(const QPointF &localPosition)
+
+    \since 5.8
+
+    \internal
+
+    Sets the local position in the mouse event to \a localPosition. This allows to re-use one event
+    when sending it to a series of receivers that expect the local pos in their
+    respective local coordinates.
+*/
+
+/*!
     \fn QPointF QMouseEvent::windowPos() const
 
     \since 5.0
