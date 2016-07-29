@@ -32,9 +32,18 @@
 # Usage: cd to the build directory corresponding to this script's
 # location; invoke this script; optionally pass the names of sub-dirs
 # to limit which tests to regenerate expected_* files for.
+#
+# The saved test output is used by ./tst_selftests.cpp, which compares
+# it to the output of each test, ignoring various boring changes.
+# This script canonicalises the parts that would exhibit those boring
+# changes, so as to avoid noise in git (and conflicts in merges) for
+# the saved copies of the output.  If you add or remove any files, be
+# sure to update selftests.qrc to match; the selftest only sees files
+# listed there.
 
 import os
 import subprocess
+import re
 
 class Fail (Exception): pass
 
@@ -58,14 +67,15 @@ class Cleaner (object):
         Takes two parameters: here is $PWD and command is how this
         script was invoked, from which we'll work out where it is; in
         a shadow build, the former is the build tree's location
-        corresponding to this last.  Checks $PWD does look as expected
-        in a build tree - raising Fail() if not - then invokes qmake
-        to discover Qt version (saved as .version for the benefit of
-        clients) and prepares the sequence of (regex, replace) pairs
-        that .clean() needs to do its job."""
-        self.version, self.__replace = self.__getPatterns(here, command)
+        corresponding to this last.  Saves the directory of this
+        script as self.sourceDir, so client can find tst_selftests.cpp
+        there.  Checks $PWD does look as expected in a build tree -
+        raising Fail() if not - then invokes qmake to discover Qt
+        version (saved as .version for the benefit of clients) and
+        prepares the sequence of (regex, replace) pairs that .clean()
+        needs to do its job."""
+        self.version, self.sourceDir, self.__replace = self.__getPatterns(here, command)
 
-    import re
     @staticmethod
     def __getPatterns(here, command,
                       patterns = (
@@ -131,8 +141,7 @@ class Cleaner (object):
             patterns += tuple((root.replace('-', '&#x0*2D;'), r'')
                               for root in roots if '-' in root)
 
-        return qtver, tuple((precook(p), r) for p, r in patterns)
-    del re
+        return qtver, scriptPath, tuple((precook(p), r) for p, r in patterns)
 
     def clean(self, data):
         """Remove volatile details from test output.
@@ -144,6 +153,62 @@ class Cleaner (object):
             for searchRe, replaceExp in self.__replace:
                 line = searchRe.sub(replaceExp, line)
             yield line
+
+class Scanner (object):
+    """Knows which subdirectories to generate output for.
+
+    Tell its constructor the name of this source directory (see
+    Cleaner's .sourceDir) and it'll scan tst_selftests.cpp for the
+    list.  Its .subdirs() can then filter a user-supplied list of
+    subdirs or generate the full list, when the user supplied
+    none."""
+    def __init__(self, srcDir):
+        self.__tested = tuple(self.__scan_cpp(os.path.join(srcDir, 'tst_selftests.cpp')))
+
+    @staticmethod
+    def __scan_cpp(name,
+                   trimc = re.compile(r'/\*.*?\*/').sub,
+                   trimcpp = re.compile(r'//.*$').sub,
+                   first = re.compile(r'(QStringList|auto)\s+tests\s*=\s*QStringList\(\)').match,
+                   match = re.compile(r'(?:tests\s*)?<<\s*"(\w+)"').match,
+                   last = re.compile(r'\bfor.*\b(LoggerSet|auto)\b.*\ballLoggerSets\(\)').search):
+        """Scans tst_selftests.cpp to find which subdirs matter.
+
+        There's a list, tests, to which all subdir names get added, if
+        they're to be tested.  Other sub-dirs aren't tested, so
+        there's no sense in generating output for them."""
+        scan = False
+        with open(name) as src:
+            for line in src:
+                line = trimcpp('', trimc('', line.strip())).strip()
+                if not scan:
+                    got = first(line)
+                    if got:
+                        scan, line = True, line[len(got.group()):]
+                if scan:
+                    if last(line): break
+                    got = match(line)
+                    while got:
+                        yield got.group(1)
+                        line = line[len(got.group()):].strip()
+                        got = match(line)
+
+    def subdirs(self, given):
+        if given:
+            for d in given:
+                if not os.path.isdir(d):
+                    print('No such directory:', d, '- skipped')
+                elif d in self.__tested:
+                    yield d
+                else:
+                    print('Directory', d, 'is not tested by tst_selftests.cpp')
+        else:
+            for d in self.__tested:
+                if os.path.isdir(d):
+                    yield d
+                else:
+                    print('tst_selftests.cpp names', d, "as a test, but it doesn't exist")
+del re
 
 def generateTestData(testname, clean,
                      formats = ('xml', 'txt', 'xunitxml', 'lightxml', 'teamcity'),
@@ -190,7 +255,7 @@ def main(name, *args):
     herePath = os.getcwd()
     cleaner = Cleaner(herePath, name)
 
-    tests = args if args else [d for d in os.listdir('.') if os.path.isdir(d)]
+    tests = tuple(Scanner(cleaner.sourceDir).subdirs(args))
     print("Generating", len(tests), "test results for", cleaner.version, "in:", herePath)
     for path in tests:
         generateTestData(path, cleaner.clean)
