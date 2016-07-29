@@ -251,9 +251,8 @@
         },
         "precompile_header": {
             "description": "precompiled header support",
-            "type": "shell",
-            "test": "unix/precomp.test",
-            "args": "$$QMAKE_CXX yes"
+            "type": "compile",
+            "test": "common/pch"
         },
         "use_gold_linker": {
             "description": "gold linker",
@@ -267,15 +266,13 @@
         },
         "reduce_exports": {
             "description": "symbol visibility support",
-            "type": "shell",
-            "test": "unix/fvisibility.test",
-            "args": "$$QMAKE_CXX yes"
+            "type": "compile",
+            "test": "unix/reduce_exports"
         },
         "reduce_relocations": {
             "description": "-Bsymbolic-functions support",
-            "type": "shell",
-            "test": "unix/bsymbolic_functions.test",
-            "args": "$$QMAKE_CXX yes"
+            "type": "compile",
+            "test": "unix/reduce_relocs"
         },
         "skip_modules": {
             "description": "modules to skip",

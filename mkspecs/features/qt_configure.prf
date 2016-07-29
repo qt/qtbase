@@ -248,25 +248,6 @@ defineTest(qtConfParseCommandLine) {
     }
 }
 
-defineTest(qtConfTest_shell) {
-    test = $$eval($${1}.test)
-    dir = $$replace(test, [^/]*$, "")
-    test = $$replace(test, ([^/]*/)*, "")
-    args = $$eval($${1}.args)
-    # replace any things like $$QMAKE_CXX by their values
-    eval(args = $$args)
-
-    test_dir = $$QMAKE_CONFIG_TESTS_DIR/$$dir
-    test_out_dir = $$shadowed($$test_dir)
-    test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
-
-    mkpath($$test_out_dir)|error()
-
-    qtRunLoggedCommand("$$test_cmd_base $$test_dir/$${test} $${args}"): \
-        return(false)
-    return(true)
-}
-
 defineReplace(qtConfToolchainSupportsFlag) {
     test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR)
     test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
