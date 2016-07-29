@@ -586,8 +586,7 @@ static void convertRGBToARGB_helper(const uchar *src, uint *dst, int width, int 
             uchar green = src[x + 1];
             uchar blue = src[x + 1 + offs];
             LcdFilter::filterPixel(red, green, blue);
-            // alpha = green
-            *dd++ = (green << 24) | (red << 16) | (green << 8) | blue;
+            *dd++ = (0xFF << 24) | (red << 16) | (green << 8) | blue;
         }
         dst += width;
         src += src_pitch;
@@ -612,8 +611,7 @@ static void convertRGBToARGB_V_helper(const uchar *src, uint *dst, int width, in
             uchar green = src[x + src_pitch];
             uchar blue = src[x + src_pitch + offs];
             LcdFilter::filterPixel(red, green, blue);
-            // alpha = green
-            *dst++ = (green << 24) | (red << 16) | (green << 8) | blue;
+            *dst++ = (0XFF << 24) | (red << 16) | (green << 8) | blue;
         }
         src += 3*src_pitch;
     }
@@ -1855,7 +1853,7 @@ static inline QImage alphaMapFromGlyphData(QFontEngineFT::Glyph *glyph, QFontEng
         bytesPerLine = (glyph->width + 3) & ~3;
         break;
     case QFontEngine::Format_A32:
-        format = QImage::Format_ARGB32;
+        format = QImage::Format_RGB32;
         bytesPerLine = glyph->width * 4;
         break;
     default:
