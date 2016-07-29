@@ -55,7 +55,7 @@
     TCP. See the QSctpSocket documentation for more protocol details.
 
     QSctpServer is a convenience subclass of QTcpServer that allows
-    you to accept incoming STCP socket connections either in TCP
+    you to accept incoming SCTP socket connections either in TCP
     emulation or in datagram mode.
 
     The most common way to use QSctpServer is to construct an object
@@ -157,7 +157,7 @@ QSctpServer::~QSctpServer()
     maximum number of channels value would be used. Negative \a count
     sets a TCP emulation mode.
 
-    Call this member only when QSctpServer is in UnconnectedState.
+    Call this method only when QSctpServer is in UnconnectedState.
 
     \sa maxChannelCount(), QSctpSocket
 */

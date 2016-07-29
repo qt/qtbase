@@ -1002,7 +1002,7 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
 
     \row
       \li SctpServer
-      \li Passive server sockets that listen on a SCTP port and await
+      \li Passive server sockets that listen on an SCTP port and await
          incoming connections from the network. Normally, only the
          local port is used, but the remote address could be used in
          specific circumstances, for example to indicate which remote
@@ -1032,7 +1032,7 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
                         connections from the network
     \value UrlRequest   a more complex request which involves loading
                         of a URL
-    \value SctpServer   a SCTP server that listens for incoming
+    \value SctpServer   an SCTP server that listens for incoming
                         connections from the network
 
     \sa queryType(), setQueryType()

@@ -60,7 +60,7 @@
     independent channels, so that if there is data loss in one stream,
     delivery will not be affected for the other streams.
 
-    As message-oriented, SCTP transports a sequence of messages,
+    Being message-oriented, SCTP transports a sequence of messages,
     rather than transporting an unbroken stream of bytes as does TCP.
     Like in UDP, in SCTP a sender sends a message in one operation,
     and that exact message is passed to the receiving application
@@ -83,17 +83,17 @@
     \endlist
 
     To set a continuous byte stream mode, instantiate QSctpSocket and
-    call setMaxChannelCount() with the negative number of channels. This
-    gives the ability to use QSctpSocket as a regular buffered
-    QTcpSocket. You can call connectToHost() to initiate connection
-    with endpoint, write() to transmit and read() to receive data from
-    the peer, but you cannot distinguish message boundaries.
+    call setMaxChannelCount() with a negative value. This gives the
+    ability to use QSctpSocket as a regular buffered QTcpSocket. You
+    can call connectToHost() to initiate connection with endpoint,
+    write() to transmit and read() to receive data from the peer, but
+    you cannot distinguish message boundaries.
 
     By default, QSctpSocket operates in datagram mode. Before
     connecting, call setMaxChannelCount() to set the maximum number of
     channels that the application is prepared to support. This number
-    is a negotiated parameter with remote endpoint and its value can
-    be bounded by the operating system. The default value of 0
+    is a parameter negotiated with the remote endpoint and its value
+    can be bounded by the operating system. The default value of 0
     indicates to use the peer's value. If both endpoints have default
     values, then number of connection channels is system-dependent.
     After establishing a connection, you can fetch the actual number
@@ -412,7 +412,7 @@ void QSctpSocket::disconnectFromHost()
     is 0, endpoint's value for maximum number of channels is used.
     Negative \a count sets a continuous byte stream mode.
 
-    Call this member only when QSctpSocket is in UnconnectedState.
+    Call this method only when QSctpSocket is in UnconnectedState.
 
     \sa maxChannelCount(), readChannelCount(), writeChannelCount()
 */

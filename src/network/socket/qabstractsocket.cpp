@@ -1289,7 +1289,7 @@ bool QAbstractSocketPrivate::readFromSocket()
 
 /*! \internal
 
-    Prevents from the recursive readyRead() emission.
+    Emits readyRead(), protecting against recursion.
 */
 void QAbstractSocketPrivate::emitReadyRead(int channel)
 {
@@ -1306,7 +1306,7 @@ void QAbstractSocketPrivate::emitReadyRead(int channel)
 
 /*! \internal
 
-    Prevents from the recursive bytesWritten() emission.
+    Emits bytesWritten(), protecting against recursion.
 */
 void QAbstractSocketPrivate::emitBytesWritten(qint64 bytes, int channel)
 {
