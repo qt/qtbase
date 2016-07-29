@@ -457,11 +457,22 @@ int runMoc(int argc, char **argv)
     const auto includeFiles = parser.values(includeOption);
     for (const QString &includeName : includeFiles) {
         QByteArray rawName = pp.resolveInclude(QFile::encodeName(includeName), moc.filename);
-        QFile f(QFile::decodeName(rawName));
-        if (f.open(QIODevice::ReadOnly)) {
-            moc.symbols += Symbol(0, MOC_INCLUDE_BEGIN, rawName);
-            moc.symbols += pp.preprocessed(rawName, &f);
-            moc.symbols += Symbol(0, MOC_INCLUDE_END, rawName);
+        if (rawName.isEmpty()) {
+            fprintf(stderr, "Warning: Failed to resolve include \"%s\" for moc file %s\n",
+                    includeName.toLocal8Bit().constData(),
+                    moc.filename.isEmpty() ? "<standard input>" : moc.filename.constData());
+        } else {
+            QFile f(QFile::decodeName(rawName));
+            if (f.open(QIODevice::ReadOnly)) {
+                moc.symbols += Symbol(0, MOC_INCLUDE_BEGIN, rawName);
+                moc.symbols += pp.preprocessed(rawName, &f);
+                moc.symbols += Symbol(0, MOC_INCLUDE_END, rawName);
+            } else {
+                fprintf(stderr, "Warning: Cannot open %s included by moc file %s: %s\n",
+                        rawName.constData(),
+                        moc.filename.isEmpty() ? "<standard input>" : moc.filename.constData(),
+                        f.errorString().toLocal8Bit().constData());
+            }
         }
     }
     moc.symbols += pp.preprocessed(moc.filename, &in);

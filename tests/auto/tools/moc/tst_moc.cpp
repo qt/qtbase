@@ -2027,6 +2027,13 @@ void tst_Moc::warnings_data()
         << 1
         << QString("IGNORE_ALL_STDOUT")
         << QString(":-1: Error: Unexpected character in macro argument list.");
+
+    QTest::newRow("Missing header warning")
+        << QByteArray("class X : public QObject { Q_OBJECT };")
+        << (QStringList() << QStringLiteral("--include") << QStringLiteral("doesnotexist.h"))
+        << 0
+        << QString("IGNORE_ALL_STDOUT")
+        << QStringLiteral("Warning: Failed to resolve include \"doesnotexist.h\" for moc file <standard input>");
 }
 
 void tst_Moc::warnings()
