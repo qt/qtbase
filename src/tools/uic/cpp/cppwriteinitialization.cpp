@@ -89,10 +89,14 @@ namespace {
         const QHash<QString, DomProperty *> properties = propertyMap(node->elementProperty());
                 output << "new QSpacerItem(";
 
+        int w = 0;
+        int h = 0;
         if (properties.contains(QLatin1String("sizeHint"))) {
             const DomSize *sizeHint = properties.value(QLatin1String("sizeHint"))->elementSize();
-            output << sizeHint->elementWidth() << ", " << sizeHint->elementHeight() << ", ";
+            w = sizeHint->elementWidth();
+            h = sizeHint->elementHeight();
         }
+        output << w << ", " << h << ", ";
 
         // size type
         QString sizeType = properties.contains(QLatin1String("sizeType"))  ?

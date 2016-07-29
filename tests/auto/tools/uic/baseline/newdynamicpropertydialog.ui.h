@@ -91,7 +91,7 @@ public:
 
         verticalLayout->addLayout(formLayout);
 
-        spacerItem = new QSpacerItem(QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         verticalLayout->addItem(spacerItem);
 
