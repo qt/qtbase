@@ -2001,7 +2001,7 @@ QString QFont::key() const
 QString QFont::toString() const
 {
     const QChar comma(QLatin1Char(','));
-    return family() + comma +
+    QString fontDescription = family() + comma +
         QString::number(     pointSizeF()) + comma +
         QString::number(      pixelSize()) + comma +
         QString::number((int) styleHint()) + comma +
@@ -2011,6 +2011,12 @@ QString QFont::toString() const
         QString::number((int) strikeOut()) + comma +
         QString::number((int)fixedPitch()) + comma +
         QString::number((int)   false);
+
+    QString fontStyle = styleName();
+    if (!fontStyle.isEmpty())
+        fontDescription += comma + fontStyle;
+
+    return fontDescription;
 }
 
 /*!
@@ -2054,7 +2060,7 @@ bool QFont::fromString(const QString &descrip)
         setUnderline(l[5].toInt());
         setStrikeOut(l[6].toInt());
         setFixedPitch(l[7].toInt());
-    } else if (count == 10) {
+    } else if (count >= 10) {
         if (l[2].toInt() > 0)
             setPixelSize(l[2].toInt());
         setStyleHint((StyleHint) l[3].toInt());
@@ -2063,7 +2069,10 @@ bool QFont::fromString(const QString &descrip)
         setUnderline(l[6].toInt());
         setStrikeOut(l[7].toInt());
         setFixedPitch(l[8].toInt());
+        if (count == 11)
+            d->request.styleName = l[10].toString();
     }
+
     if (count >= 9 && !d->request.fixedPitch) // assume 'false' fixedPitch equals default
         d->request.ignorePitch = true;
 

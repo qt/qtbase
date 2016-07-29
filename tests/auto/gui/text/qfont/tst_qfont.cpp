@@ -62,6 +62,7 @@ private slots:
     void styleName();
     void defaultFamily_data();
     void defaultFamily();
+    void toAndFromString();
 
     void sharing();
 };
@@ -537,6 +538,26 @@ void tst_QFont::defaultFamily()
     }
 
     QVERIFY2(isAcceptable, msgNotAcceptableFont(familyForHint, acceptableFamilies));
+}
+
+void tst_QFont::toAndFromString()
+{
+    QFont defaultFont = QGuiApplication::font();
+    QString family = defaultFont.family();
+
+    QFontDatabase fdb;
+    const QStringList stylesList = fdb.styles(family);
+    if (stylesList.size() == 0)
+        QSKIP("Default font doesn't have any styles");
+
+    for (const QString &style : stylesList) {
+        QFont result;
+        QFont initial = fdb.font(family, style, defaultFont.pointSize());
+
+        result.fromString(initial.toString());
+
+        QCOMPARE(result, initial);
+    }
 }
 
 void tst_QFont::sharing()
