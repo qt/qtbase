@@ -130,7 +130,7 @@ bool qt_get_hex_rgb(const QChar *str, int len, QRgb *rgb)
 #define rgb(r,g,b) (0xff000000 | (r << 16) |  (g << 8) | b)
 
 static const struct RGBData {
-    const char *name;
+    const char name[21];
     uint  value;
 } rgbTbl[] = {
     { "aliceblue", rgb(240, 248, 255) },
