@@ -669,33 +669,34 @@ void tst_QTreeView::dragDropModeFromDragEnabledAndAcceptDrops_data()
     QTest::addColumn<bool>("dragEnabled");
     QTest::addColumn<bool>("acceptDrops");
     QTest::addColumn<QAbstractItemView::DragDropMode>("dragDropMode");
-    QTest::addColumn<QAbstractItemView::DragDropMode>("setBehavior");
+    QTest::addColumn<bool>("setBehavior");
+    QTest::addColumn<QAbstractItemView::DragDropMode>("behavior");
 
-    QTest::newRow("NoDragDrop -1") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("NoDragDrop 0") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::NoDragDrop;
-    QTest::newRow("NoDragDrop 1") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::DragOnly;
-    QTest::newRow("NoDragDrop 2") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::DropOnly;
-    QTest::newRow("NoDragDrop 3") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::DragDrop;
-    QTest::newRow("NoDragDrop 4") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::InternalMove;
-    QTest::newRow("DragOnly -1") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("DragOnly 0") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::NoDragDrop;
-    QTest::newRow("DragOnly 1") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::DragOnly;
-    QTest::newRow("DragOnly 2") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::DropOnly;
-    QTest::newRow("DragOnly 3") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::DragDrop;
-    QTest::newRow("DragOnly 4") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::InternalMove;
-    QTest::newRow("DropOnly -1") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("DropOnly 0") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::NoDragDrop;
-    QTest::newRow("DropOnly 1") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::DragOnly;
-    QTest::newRow("DropOnly 2") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::DropOnly;
-    QTest::newRow("DropOnly 3") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::DragDrop;
-    QTest::newRow("DropOnly 4") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::InternalMove;
-    QTest::newRow("DragDrop -1") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("DragDrop 0") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("DragDrop 1") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::NoDragDrop;
-    QTest::newRow("DragDrop 2") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DragOnly;
-    QTest::newRow("DragDrop 3") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DropOnly;
-    QTest::newRow("DragDrop 4") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DragDrop;
-    QTest::newRow("DragDrop 5") << true << true << QAbstractItemView::InternalMove << QAbstractItemView::InternalMove;
+    QTest::newRow("NoDragDrop -1") << false << false << QAbstractItemView::NoDragDrop << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("NoDragDrop 0") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::NoDragDrop;
+    QTest::newRow("NoDragDrop 1") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::DragOnly;
+    QTest::newRow("NoDragDrop 2") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::DropOnly;
+    QTest::newRow("NoDragDrop 3") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::DragDrop;
+    QTest::newRow("NoDragDrop 4") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::InternalMove;
+    QTest::newRow("DragOnly -1") << true << false << QAbstractItemView::DragOnly << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("DragOnly 0") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::NoDragDrop;
+    QTest::newRow("DragOnly 1") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::DragOnly;
+    QTest::newRow("DragOnly 2") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::DropOnly;
+    QTest::newRow("DragOnly 3") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::DragDrop;
+    QTest::newRow("DragOnly 4") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::InternalMove;
+    QTest::newRow("DropOnly -1") << false << true << QAbstractItemView::DropOnly << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("DropOnly 0") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::NoDragDrop;
+    QTest::newRow("DropOnly 1") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::DragOnly;
+    QTest::newRow("DropOnly 2") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::DropOnly;
+    QTest::newRow("DropOnly 3") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::DragDrop;
+    QTest::newRow("DropOnly 4") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::InternalMove;
+    QTest::newRow("DragDrop -1") << true << true << QAbstractItemView::DragDrop << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("DragDrop 0") << true << true << QAbstractItemView::DragDrop << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("DragDrop 1") << true << true << QAbstractItemView::DragDrop << true << QAbstractItemView::NoDragDrop;
+    QTest::newRow("DragDrop 2") << true << true << QAbstractItemView::DragDrop << true << QAbstractItemView::DragOnly;
+    QTest::newRow("DragDrop 3") << true << true << QAbstractItemView::DragDrop << true << QAbstractItemView::DropOnly;
+    QTest::newRow("DragDrop 4") << true << true << QAbstractItemView::DragDrop << true << QAbstractItemView::DragDrop;
+    QTest::newRow("DragDrop 5") << true << true << QAbstractItemView::InternalMove << true << QAbstractItemView::InternalMove;
 }
 
 void tst_QTreeView::dragDropModeFromDragEnabledAndAcceptDrops()
@@ -703,13 +704,14 @@ void tst_QTreeView::dragDropModeFromDragEnabledAndAcceptDrops()
     QFETCH(bool, acceptDrops);
     QFETCH(bool, dragEnabled);
     QFETCH(QAbstractItemView::DragDropMode, dragDropMode);
-    QFETCH(QAbstractItemView::DragDropMode, setBehavior);
+    QFETCH(bool, setBehavior);
+    QFETCH(QAbstractItemView::DragDropMode, behavior);
 
     QTreeView view;
     QCOMPARE(view.dragDropMode(), QAbstractItemView::NoDragDrop);
 
-    if (setBehavior != QAbstractItemView::DragDropMode(-1))
-        view.setDragDropMode(setBehavior);
+    if (setBehavior)
+        view.setDragDropMode(behavior);
 
     view.setAcceptDrops(acceptDrops);
     view.setDragEnabled(dragEnabled);
