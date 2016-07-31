@@ -140,6 +140,7 @@ QTreeModel::QTreeModel(QTreeModelPrivate &dd, QTreeWidget *parent)
 QTreeModel::~QTreeModel()
 {
     clear();
+    headerItem->view = Q_NULLPTR;
     delete headerItem;
     rootItem->view = 0;
     delete rootItem;
