@@ -1735,11 +1735,13 @@
         },
         "sun-libiconv": {
             "description": "SUN iconv",
+            "disable": "input.iconv == 'no'",
             "condition": "!config.win32 && !tests.posix-iconv && tests.sun-iconv",
             "output": [ "publicQtConfig" ]
         },
         "gnu-libiconv": {
             "description": "GNU iconv",
+            "disable": "input.iconv == 'no'",
             "condition": "!config.win32 && !tests.posix-iconv && !tests.sun-iconv && tests.gnu-iconv",
             "output": [ "publicQtConfig" ]
         },
