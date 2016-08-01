@@ -28,8 +28,25 @@
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 @echo off
+setlocal ENABLEEXTENSIONS
+set ARGS=%*
 set QTSRC=%~dp0
 set QTDIR=%CD%
+
+:doargs
+    if "%~1" == "" goto doneargs
+
+    if "%~1" == "/?" goto help
+    if "%~1" == "-?" goto help
+    if /i "%~1" == "/h" goto help
+    if /i "%~1" == "-h" goto help
+    if /i "%~1" == "/help" goto help
+    if /i "%~1" == "-help" goto help
+    if /i "%~1" == "--help" goto help
+
+    shift
+    goto doargs
+:doneargs
 
 if not exist %QTSRC%.gitignore goto sconf
 echo Please wait while bootstrapping configure ...
@@ -114,9 +131,13 @@ if errorlevel 1 (cd ..\.. & exit /b 1)
 cd ..\..
 
 :conf
-configure.exe -srcdir %QTSRC% %*
+configure.exe -srcdir %QTSRC% %ARGS%
+goto exit
+
+:help
+type %QTSRC%config_help.txt
 goto exit
 
 :sconf
-%QTSRC%configure.exe %*
+%QTSRC%configure.exe %ARGS%
 :exit

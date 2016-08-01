@@ -44,8 +44,6 @@ int runConfigure( int argc, char** argv )
     app.parseCmdLine();
     if (!app.isOk())
         return 3;
-    if( app.displayHelp() )
-        return 1;
 
     // Read license now, and exit if it doesn't pass.
     // This lets the user see the command-line options of configure

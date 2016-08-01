@@ -6,6 +6,7 @@ are mentioned in the descriptions of the options they relate to.
 
 It is also possible to manipulate any QMAKE_* variable, to amend the values
 from the mkspec for the build of Qt itself, e.g., QMAKE_CXXFLAGS+=-g3.
+(Unix/MSys configure only)
 
 Top-level installation directories:
   -prefix <dir> ...... The deployment directory, as seen on the target device.
@@ -96,6 +97,8 @@ Build options:
                          Instrument with the specified compiler sanitizer.
 
   -c++std <edition> .... Select C++ standard <edition> [c++1z/c++14/c++11]
+                         (Not supported with MSVC)
+  -rtti ................ Build with Runtime Type Information [yes] (MSVC only)
 
   -sse2 ................ Use SSE2 instructions [auto]
   -sse3/-ssse3/-sse4.1/-sse4.2/-avx/-avx2/-avx512
@@ -115,11 +118,17 @@ Build options:
                          dynamic libraries and frameworks. [auto]
 
   -reduce-exports ...... Reduce amount of exported symbols [auto]
-  -reduce-relocations .. Reduce amount of relocations [auto]
+  -reduce-relocations .. Reduce amount of relocations [auto] (Unix only)
+
+  -plugin-manifests .... Embed manifests into plugins [no] (Windows only)
+  -static-runtime ...... With -static, use static runtime [no] (Windows only)
 
   -pch ................. Use precompiled headers [auto]
   -ltcg ................ Use Link Time Code Generation [no]
   -use-gold-linker ..... Use the GNU gold linker [auto]
+  -incredibuild-xge .... Use the IncrediBuild XGE [no] (Windows only)
+  -make-tool <tool> .... Use <tool> to build qmake [nmake] (Windows only)
+  -mp .................. Use multiple processors for compilation (MSVC only)
 
   -warnings-are-errors . Treat warnings as errors [no; yes if -developer-build]
   -silent .............. Reduce the build output so that warnings and errors
@@ -130,7 +139,7 @@ Build environment:
   -sysroot <dir> ....... Set <dir> as the target sysroot
   -gcc-sysroot ......... With -sysroot, pass --sysroot to the compiler [yes]
 
-  -pkg-config .......... Use pkg-config [auto]
+  -pkg-config .......... Use pkg-config [auto] (Unix only)
 
   -D <string> .......... Pass additional preprocessor define
   -I <string> .......... Pass additional include path
@@ -168,7 +177,8 @@ Component selection:
   -compile-examples .... When unset, install only the sources of examples [yes]
   -gui ................. Build the Qt GUI module and dependencies [yes]
   -widgets ............. Build the Qt Widgets module and dependencies [yes]
-  -no-dbus ............. Do not build the Qt D-Bus module [default on Android]
+  -no-dbus ............. Do not build the Qt D-Bus module
+                         [default on Android and Windows]
   -dbus-linked ......... Build Qt D-Bus and link to libdbus-1 [auto]
   -dbus-runtime ........ Build Qt D-Bus and dynamically load libdbus-1 [no]
                          DBUS_PATH= DBUS_HOST_PATH=
@@ -185,10 +195,10 @@ Core options:
 
   -doubleconversion .... Select used double conversion library [system/qt/no]
                          No implies use of sscanf_l and snprintf_l (imprecise).
-  -glib ................ Enable Glib support [auto]
+  -glib ................ Enable Glib support [no; auto on Unix]
   -eventfd ............. Enable eventfd support
   -inotify ............. Enable inotify support
-  -iconv ............... Enable iconv(3) support [posix/sun/gnu/no]
+  -iconv ............... Enable iconv(3) support [posix/sun/gnu/no] (Unix only)
   -icu ................. Enable ICU support [auto]
   -pps ................. Enable PPS support [auto] (QNX only)
   -pcre ................ Select used libpcre3 [system/qt]
@@ -196,17 +206,18 @@ Core options:
                          ZLIB_LIBS=
 
   Logging backends:
-    -journald .......... Enable journald support [no]
-    -syslog ............ Enable syslog support [no]
+    -journald .......... Enable journald support [no] (Unix only)
+    -syslog ............ Enable syslog support [no] (Unix only)
     -slog2 ............. Enable slog2 support [auto] (QNX only)
 
 Network options:
 
   -ssl ................. Enable either SSL support method [auto]
-  -no-openssl .......... Do not use OpenSSL [default on Apple]
+  -no-openssl .......... Do not use OpenSSL [default on Apple and WinRT]
   -openssl-linked ...... Use OpenSSL and link to libssl [no]
   -openssl-runtime ..... Use OpenSSL and dynamically load libssl [auto]
-                         OPENSSL_PATH= OPENSSL_LIBS=
+                         OPENSSL_PATH= OPENSSL_LIBS=, and on Windows also
+                         OPENSSL_LIBS_DEBUG= OPENSSL_LIBS_RELEASE=
   -securetransport ..... Use SecureTransport [auto] (Apple only)
 
   -sctp ................ Enable SCTP support [no]
@@ -216,9 +227,9 @@ Network options:
 
 Gui, printing, widget options:
 
-  -cups ................ Enable CUPS support [auto]
+  -cups ................ Enable CUPS support [auto] (Unix only)
 
-  -fontconfig .......... Enable Fontconfig support [auto]
+  -fontconfig .......... Enable Fontconfig support [auto] (Unix only)
   -freetype ............ Select used FreeType [system/qt/no]
   -harfbuzz ............ Select used HarfBuzz-NG [system/qt/no]
                          (Not auto-detected on Apple and Windows)
@@ -229,15 +240,18 @@ Gui, printing, widget options:
 
   -no-opengl ........... Disable OpenGL support
   -opengl <api> ........ Enable OpenGL support. Supported APIs:
-                         es2 (default on Windows), desktop (default on Unix)
+                         es2 (default on Windows), desktop (default on Unix),
+                         dynamic (Windows only)
   -opengles3 ........... Enable OpenGL ES 3.x support instead of ES 2.x [auto]
+  -angle ............... Use bundled ANGLE to support OpenGL ES 2.0 [auto]
+                         (Windows only)
 
   -qpa <name> .......... Select default QPA backend (e.g., xcb, cocoa, windows)
   -xcb-xlib............. Enable Xcb-Xlib support [auto]
 
   Platform backends:
     -directfb .......... Enable DirectFB support [no] (Unix only)
-    -eglfs ............. Enable EGLFS support [auto; no on Android]
+    -eglfs ............. Enable EGLFS support [auto; no on Android and Windows]
     -gbm ............... Enable backends for GBM [auto] (Linux only)
     -kms ............... Enable backends for KMS [auto] (Linux only)
     -linuxfb ........... Enable Linux Framebuffer support [auto] (Linux only)
@@ -279,3 +293,4 @@ Multimedia options:
   -no-gstreamer ........ Disable support for GStreamer
   -gstreamer [version] . Enable GStreamer support [auto]
                          With no parameter, 1.0 is tried first, then 0.10.
+  -wmf-backend ......... Enable WMF support [no] (Windows only)

@@ -43,7 +43,6 @@ public:
     ~Configure();
 
     void parseCmdLine();
-    bool displayHelp();
 
     QString defaultTo(const QString &option);
     bool checkAvailability(const QString &part);
@@ -146,9 +145,6 @@ private:
                            bool distClean = true);
     bool compilerSupportsFlag(const QString &compilerAndArgs);
 
-    void desc(const char *description, int startingAt = 0, int wrapIndent = 0);
-    void desc(const char *option, const char *description, bool skipIndent = false, char fillChar = '.');
-    void desc(const char *mark_option, const char *mark, const char *option, const char *description, char fillChar = '.');
     void applySpecSpecifics();
 
     QString formatConfigPath(const char *var);
