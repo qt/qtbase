@@ -65,8 +65,12 @@
 #include "qlistview.h"
 #include <private/qmath_p.h>
 #include <qmath.h>
+#include <QtGui/qscreen.h>
+#include <QtGui/qwindow.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include <private/qstylehelper_p.h>
 #include <private/qstyleanimation_p.h>
@@ -402,6 +406,47 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
     return QWindowsStylePrivate::InvalidMetric;
 }
 
+static QWindow *windowOf(const QWidget *w)
+{
+    QWindow *result = Q_NULLPTR;
+    if (w) {
+        result = w->windowHandle();
+        if (!result) {
+            if (const QWidget *np = w->nativeParentWidget())
+                result = np->windowHandle();
+        }
+    }
+    return result;
+}
+
+static QScreen *screenOf(const QWidget *w)
+{
+    if (const QWindow *window = windowOf(w))
+        return window->screen();
+    return QGuiApplication::primaryScreen();
+}
+
+// Calculate the overall scale factor to obtain Qt Device Independent
+// Pixels from a native Windows size. Divide by devicePixelRatio
+// and account for secondary screens with differing logical DPI.
+qreal QWindowsStylePrivate::nativeMetricScaleFactor(const QWidget *widget)
+{
+    if (!QHighDpiScaling::isActive())
+        return 1;
+    qreal result = qreal(1) / QWindowsStylePrivate::devicePixelRatio(widget);
+    if (QGuiApplicationPrivate::screen_list.size() > 1) {
+        const QScreen *primaryScreen = QGuiApplication::primaryScreen();
+        const QScreen *screen = screenOf(widget);
+        if (screen != primaryScreen) {
+            const qreal primaryLogicalDpi = primaryScreen->handle()->logicalDpi().first;
+            const qreal logicalDpi = screen->handle()->logicalDpi().first;
+            if (!qFuzzyCompare(primaryLogicalDpi, logicalDpi))
+                result *= logicalDpi / primaryLogicalDpi;
+        }
+    }
+    return result;
+}
+
 /*!
   \reimp
 */
@@ -409,7 +454,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 {
     int ret = QWindowsStylePrivate::pixelMetricFromSystemDp(pm, opt, widget);
     if (ret != QWindowsStylePrivate::InvalidMetric)
-        return qRound(qreal(ret) / QWindowsStylePrivate::devicePixelRatio(widget));
+        return qRound(qreal(ret) * QWindowsStylePrivate::nativeMetricScaleFactor(widget));
 
     ret = QWindowsStylePrivate::fixedPixelMetric(pm);
     if (ret != QWindowsStylePrivate::InvalidMetric)

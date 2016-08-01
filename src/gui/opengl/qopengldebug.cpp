@@ -42,6 +42,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglfunctions.h>
+#include <QtGui/qoffscreensurface.h>
 
 #include "qopengldebug.h"
 
@@ -1287,8 +1288,41 @@ void QOpenGLDebugLoggerPrivate::controlDebugMessages(QOpenGLDebugMessage::Source
 */
 void QOpenGLDebugLoggerPrivate::_q_contextAboutToBeDestroyed()
 {
+    Q_ASSERT(context);
+
+    // Re-make our context current somehow, otherwise stopLogging will fail.
+
+    // Save the current context and its surface in case we need to set them back
+    QOpenGLContext *currentContext = QOpenGLContext::currentContext();
+    QSurface *currentSurface = 0;
+
+    QScopedPointer<QOffscreenSurface> offscreenSurface;
+
+    if (context != currentContext) {
+        // Make our old context current on a temporary surface
+        if (currentContext)
+            currentSurface = currentContext->surface();
+
+        offscreenSurface.reset(new QOffscreenSurface);
+        offscreenSurface->setFormat(context->format());
+        offscreenSurface->create();
+        if (!context->makeCurrent(offscreenSurface.data()))
+            qWarning("QOpenGLDebugLoggerPrivate::_q_contextAboutToBeDestroyed(): could not make the owning GL context current for cleanup");
+    }
+
     Q_Q(QOpenGLDebugLogger);
     q->stopLogging();
+
+    if (offscreenSurface) {
+        // We did change the current context: set it back
+        if (currentContext)
+            currentContext->makeCurrent(currentSurface);
+        else
+            context->doneCurrent();
+    }
+
+    QObject::disconnect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
+    context = 0;
     initialized = false;
 }
 
@@ -1493,6 +1527,12 @@ void QOpenGLDebugLogger::stopLogging()
     Q_D(QOpenGLDebugLogger);
     if (!d->isLogging)
         return;
+
+    QOpenGLContext *currentContext = QOpenGLContext::currentContext();
+    if (!currentContext || currentContext != d->context) {
+        qWarning("QOpenGLDebugLogger::stopLogging(): attempting to stop logging with the wrong OpenGL context current");
+        return;
+    }
 
     d->isLogging = false;
 

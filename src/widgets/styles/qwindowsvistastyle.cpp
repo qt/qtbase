@@ -432,7 +432,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 XPThemeData themeSize = theme;
                 themeSize.partId = TVP_HOTGLYPH;
                 themeSize.stateId = GLPS_OPENED;
-                const QSizeF size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QSizeF size = themeSize.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
                 decoration_size = qRound(qMax(size.width(), size.height()));
             }
             int mid_h = option->rect.x() + option->rect.width() / 2;
@@ -994,7 +994,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 XPThemeData theme(widget, 0, QWindowsXPStylePrivate::ToolBarTheme,
                                   TP_DROPDOWNBUTTON);
                 if (theme.isValid()) {
-                    const QSizeF size = theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                    const QSizeF size = theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
                     if (!size.isEmpty()) {
                         mbiw = qRound(size.width());
                         mbih = qRound(size.height());
@@ -1190,8 +1190,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 XPThemeData themeSize = theme;
                 themeSize.partId = MENU_POPUPCHECK;
                 themeSize.stateId = 0;
-                const QSizeF size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-                const QMarginsF margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QSizeF size = themeSize.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
+                const QMarginsF margins = themeSize.margins() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
                 checkcol = qMax(menuitem->maxIconWidth, qRound(gutterWidth + size.width() + margins.left() + margins.right()));
             }
             QRect rect = option->rect;
@@ -1216,7 +1216,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 
             if (menuitem->menuItemType == QStyleOptionMenuItem::Separator) {
                 int yoff = y-2 + h / 2;
-                const int separatorSize = 6 / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const int separatorSize = qRound(qreal(6) * QWindowsStylePrivate::nativeMetricScaleFactor(widget));
                 QPoint p1 = QPoint(x + checkcol, yoff);
                 QPoint p2 = QPoint(x + w + separatorSize, yoff);
                 stateId = MBI_HOT;
@@ -1249,8 +1249,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 XPThemeData themeSize = theme;
                 themeSize.partId = MENU_POPUPCHECK;
                 themeSize.stateId = 0;
-                const QSizeF size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-                const QMarginsF margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QSizeF size = themeSize.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
+                const QMarginsF margins = themeSize.margins() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
                 QRect checkRect(0, 0, qRound(size.width() + margins.left() + margins.right()),
                                 qRound(size.height() + margins.bottom() + margins.top()));
                 checkRect.moveCenter(vCheckRect.center());
@@ -1862,8 +1862,8 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
             XPThemeData themeSize = theme;
             themeSize.partId = MENU_POPUPCHECK;
             themeSize.stateId = 0;
-            const QSizeF size = themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
-            const QMarginsF margins = themeSize.margins() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+            const QSizeF size = themeSize.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
+            const QMarginsF margins = themeSize.margins() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
             minimumHeight = qMax(qRound(size.height() + margins.bottom() + margins.top()), sz.height());
             sz.rwidth() += qRound(size.width() + margins.left() + margins.right());
         }
@@ -1973,7 +1973,7 @@ QRect QWindowsVistaStyle::subElementRect(SubElement element, const QStyleOption 
             int arrowWidth = 13;
             int arrowHeight = 5;
             if (theme.isValid()) {
-                const QSizeF size = theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget);
+                const QSizeF size = theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget);
                 if (!size.isEmpty()) {
                     arrowWidth = qRound(size.width());
                     arrowHeight = qRound(size.height());
@@ -2456,7 +2456,7 @@ QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
                               QWindowsXPStylePrivate::ButtonTheme,
                               BP_COMMANDLINKGLYPH, CMDLGS_NORMAL);
             if (theme.isValid()) {
-                const QSize size = (theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget)).toSize();
+                const QSize size = (theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
                 QIcon linkGlyph;
                 QPixmap pm(size);
                 pm.fill(Qt::transparent);

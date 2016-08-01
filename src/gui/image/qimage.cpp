@@ -841,17 +841,6 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
     d->cleanupFunction = cleanupFunction;
     d->cleanupInfo = cleanupInfo;
 
-    switch (format) {
-    case QImage::Format_Mono:
-    case QImage::Format_MonoLSB:
-        d->colortable.resize(2);
-        d->colortable[0] = QColor(Qt::black).rgba();
-        d->colortable[1] = QColor(Qt::white).rgba();
-        break;
-    default:
-        break;
-    }
-
     return d;
 }
 
@@ -2250,21 +2239,30 @@ QRgb QImage::pixel(int x, int y) const
     }
 
     const uchar *s = d->data + y * d->bytes_per_line;
-    switch(d->format) {
+
+    int index = -1;
+    switch (d->format) {
     case Format_Mono:
-        return d->colortable.at((*(s + (x >> 3)) >> (~x & 7)) & 1);
+        index = (*(s + (x >> 3)) >> (~x & 7)) & 1;
+        break;
     case Format_MonoLSB:
-        return d->colortable.at((*(s + (x >> 3)) >> (x & 7)) & 1);
+        index = (*(s + (x >> 3)) >> (x & 7)) & 1;
+        break;
     case Format_Indexed8:
-        {
-            int index = (int)s[x];
-            if (index < d->colortable.size()) {
-                return d->colortable.at(index);
-            } else {
-                qWarning("QImage::pixel: color table index %d out of range.", index);
-                return 0;
-            }
+        index = s[x];
+        break;
+    default:
+        break;
+    }
+    if (index >= 0) {    // Indexed format
+        if (index >= d->colortable.size()) {
+            qWarning("QImage::pixel: color table index %d out of range.", index);
+            return 0;
         }
+        return d->colortable.at(index);
+    }
+
+    switch (d->format) {
     case Format_RGB32:
         return 0xff000000 | reinterpret_cast<const QRgb *>(s)[x];
     case Format_ARGB32: // Keep old behaviour.

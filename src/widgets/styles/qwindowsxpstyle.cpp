@@ -489,7 +489,7 @@ const QPixmap *QWindowsXPStylePrivate::tabBody(QWidget *widget)
 {
     if (!tabbody) {
         XPThemeData theme(0, 0, QWindowsXPStylePrivate::TabTheme, TABP_BODY);
-        const QSize size = (theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget)).toSize();
+        const QSize size = (theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
 
         tabbody = new QPixmap(size.width(), QApplication::desktop()->screenGeometry().height());
         QPainter painter(tabbody);
@@ -3457,7 +3457,7 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
 
     int res = QWindowsXPStylePrivate::pixelMetricFromSystemDp(pm, option, widget);
     if (res != QWindowsStylePrivate::InvalidMetric)
-        return qRound(qreal(res) / QWindowsStylePrivate::devicePixelRatio(widget));
+        return qRound(qreal(res) * QWindowsStylePrivate::nativeMetricScaleFactor(widget));
 
     res = 0;
     switch (pm) {
@@ -3603,9 +3603,10 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
             const int height = tb->rect.height();
             const int width = tb->rect.width();
             const int buttonMargin = int(QStyleHelper::dpiScaled(4));
-            int buttonHeight = qRound(qreal(GetSystemMetrics(SM_CYSIZE)) / QWindowsStylePrivate::devicePixelRatio(widget))
+            const qreal factor = QWindowsStylePrivate::nativeMetricScaleFactor(widget);
+            int buttonHeight = qRound(qreal(GetSystemMetrics(SM_CYSIZE)) * factor)
                 - buttonMargin;
-            int buttonWidth = qRound(qreal(GetSystemMetrics(SM_CXSIZE)) / QWindowsStylePrivate::devicePixelRatio(widget))
+            int buttonWidth = qRound(qreal(GetSystemMetrics(SM_CXSIZE)) * factor)
                 - buttonMargin;
             const int delta = buttonWidth + 2;
             int controlTop = option->rect.bottom() - buttonHeight - 2;
@@ -3975,7 +3976,7 @@ QPixmap QWindowsXPStyle::standardPixmap(StandardPixmap standardPixmap, const QSt
             if (widget && widget->isWindow()) {
                 XPThemeData theme(widget, 0, QWindowsXPStylePrivate::WindowTheme, WP_SMALLCLOSEBUTTON, CBS_NORMAL);
                 if (theme.isValid()) {
-                    const QSize size = (theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget)).toSize();
+                    const QSize size = (theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
                     return QIcon(QWindowsStyle::standardPixmap(standardPixmap, option, widget)).pixmap(size);
                 }
             }
@@ -4009,7 +4010,7 @@ QIcon QWindowsXPStyle::standardIcon(StandardPixmap standardIcon,
                 XPThemeData theme(0, 0, QWindowsXPStylePrivate::WindowTheme,
                                   WP_MAXBUTTON, MAXBS_NORMAL);
                 if (theme.isValid()) {
-                    const QSize size = (themeSize.size() / QWindowsXPStylePrivate::devicePixelRatio(widget)).toSize();
+                    const QSize size = (themeSize.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
                     QPixmap pm(size);
                     pm.fill(Qt::transparent);
                     QPainter p(&pm);
@@ -4043,7 +4044,7 @@ QIcon QWindowsXPStyle::standardIcon(StandardPixmap standardIcon,
                 XPThemeData theme(0, 0, QWindowsXPStylePrivate::WindowTheme,
                                   WP_SMALLCLOSEBUTTON, CBS_NORMAL);
                 if (theme.isValid()) {
-                    const QSize size = (theme.size() / QWindowsXPStylePrivate::devicePixelRatio(widget)).toSize();
+                    const QSize size = (theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
                     QPixmap pm(size);
                     pm.fill(Qt::transparent);
                     QPainter p(&pm);

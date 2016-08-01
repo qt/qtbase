@@ -1599,7 +1599,7 @@ void QWindowsWindow::handleGeometryChange()
             QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
     }
     if (testFlag(SynchronousGeometryChangeEvent))
-        QWindowSystemInterface::flushWindowSystemEvents();
+        QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
     qCDebug(lcQpaEvents) << __FUNCTION__ << this << window() << m_data.geometry;
 }
@@ -1689,7 +1689,7 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
     // Our tests depend on it.
     fireExpose(QRegion(qrectFromRECT(ps.rcPaint)), true);
     if (!QWindowsContext::instance()->asyncExpose())
-        QWindowSystemInterface::flushWindowSystemEvents();
+        QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
     EndPaint(hwnd, &ps);
     return true;
@@ -1749,7 +1749,7 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
     switch (state) {
     case Qt::WindowMinimized:
         handleHidden();
-        QWindowSystemInterface::flushWindowSystemEvents(); // Tell QQuickWindow to stop rendering now.
+        QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents); // Tell QQuickWindow to stop rendering now.
         break;
     case Qt::WindowMaximized:
     case Qt::WindowFullScreen:
@@ -1772,7 +1772,7 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
             }
         }
         if (exposeEventsSent && !QWindowsContext::instance()->asyncExpose())
-            QWindowSystemInterface::flushWindowSystemEvents();
+            QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
     }
         break;
     default:
@@ -1878,7 +1878,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (!wasSync)
                 clearFlag(SynchronousGeometryChangeEvent);
             QWindowSystemInterface::handleGeometryChange(window(), r);
-            QWindowSystemInterface::flushWindowSystemEvents();
+            QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
         } else if (newState != Qt::WindowMinimized) {
             // Restore saved state.
             unsigned newStyle = m_savedStyle ? m_savedStyle : style();

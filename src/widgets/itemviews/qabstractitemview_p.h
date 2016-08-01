@@ -276,10 +276,7 @@ public:
     }
 
     const QEditorInfo &editorForIndex(const QModelIndex &index) const;
-    inline bool hasEditor(const QModelIndex &index) const {
-        // Search's implicit cast (QModelIndex to QPersistentModelIndex) is slow; use cheap pre-test to avoid when we can.
-        return !indexEditorHash.isEmpty() && indexEditorHash.contains(index);
-    }
+    bool hasEditor(const QModelIndex &index) const;
 
     QModelIndex indexForEditor(QWidget *editor) const;
     void addEditor(const QModelIndex &index, QWidget *editor, bool isStatic);

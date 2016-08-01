@@ -2195,8 +2195,11 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
     const bool isWheel = detail >= 4 && detail <= 7;
     if (!isWheel && window() != QGuiApplication::focusWindow()) {
         QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver();
-        if (!(w->flags() & Qt::WindowDoesNotAcceptFocus))
+        if (!(w->flags() & (Qt::WindowDoesNotAcceptFocus | Qt::BypassWindowManagerHint))
+                && w->type() != Qt::ToolTip
+                && w->type() != Qt::Popup) {
             w->requestActivate();
+        }
     }
 
     updateNetWmUserTime(timestamp);
