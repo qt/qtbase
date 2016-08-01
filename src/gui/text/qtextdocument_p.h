@@ -158,7 +158,7 @@ public:
 };
 Q_DECLARE_TYPEINFO(QTextUndoCommand, Q_PRIMITIVE_TYPE);
 
-class Q_AUTOTEST_EXPORT QTextDocumentPrivate : public QObjectPrivate
+class Q_GUI_EXPORT QTextDocumentPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTextDocument)
 public:
