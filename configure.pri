@@ -86,7 +86,7 @@ defineTest(qtConfTest_architecture) {
 defineTest(qtConfTest_avx_test_apple_clang) {
     !*g++*:!*-clang*: return(true)
 
-    compiler = $$system("$$QMAKE_CXX --version")
+    qtRunLoggedCommand("$$QMAKE_CXX --version", compiler)|return(false)
     contains(compiler, "Apple clang version [23]") {
         # Some clang versions produce internal compiler errors compiling Qt AVX code
         return(false)
@@ -99,7 +99,7 @@ defineTest(qtConfTest_gnumake) {
     make = $$qtConfFindInPath("gmake")
     isEmpty(make): make = $$qtConfFindInPath("make")
     !isEmpty(make) {
-        version = $$system("$$make -v", blob)
+        qtRunLoggedCommand("$$make -v", version)|return(false)
         contains(version, "^GNU Make.*"): return(true)
     }
     return(false)
@@ -146,8 +146,8 @@ defineTest(qtConfTest_detectPkgConfig) {
 
             pkgConfigLibdir = $$sysroot/usr/lib/pkgconfig:$$sysroot/usr/share/pkgconfig
             gcc {
-                gccMachineDump = $$system("$$QMAKE_CXX -dumpmachine")
-                !isEmpty(gccMachineDump): \
+                qtRunLoggedCommand("$$QMAKE_CXX -dumpmachine", gccMachineDump): \
+                        !isEmpty(gccMachineDump): \
                     pkgConfigLibdir = "$$pkgConfigLibdir:$$sysroot/usr/lib/$$gccMachineDump/pkgconfig"
             }
 
@@ -245,7 +245,7 @@ defineTest(qtConfTest_openssl) {
 
 defineTest(qtConfTest_checkCompiler) {
     contains(QMAKE_CXX, ".*clang.*") {
-        versionstr = "$$system($$QMAKE_CXX -v 2>&1)"
+        qtRunLoggedCommand("$$QMAKE_CXX -v 2>&1", versionstr)|return(false)
         contains(versionstr, "^Apple (clang|LLVM) version .*") {
             $${1}.compilerDescription = "Apple Clang"
             $${1}.compilerId = "apple_clang"
@@ -258,13 +258,14 @@ defineTest(qtConfTest_checkCompiler) {
             return(false)
         }
     } else: contains(QMAKE_CXX, ".*g\\+\\+.*") {
+        qtRunLoggedCommand("$$QMAKE_CXX -dumpversion", version)|return(false)
         $${1}.compilerDescription = "GCC"
         $${1}.compilerId = "gcc"
-        $${1}.compilerVersion = $$system($$QMAKE_CXX -dumpversion)
+        $${1}.compilerVersion = $$version
     } else: contains(QMAKE_CXX, ".*icpc"  ) {
+        qtRunLoggedCommand("$$QMAKE_CXX -v", version)|return(false)
         $${1}.compilerDescription = "ICC"
         $${1}.compilerId = "icc"
-        version = "$$system($$QMAKE_CXX -v)"
         $${1}.compilerVersion = $$replace(version, "icpc version ([0-9.]+).*", "\\1")
     } else: msvc {
         $${1}.compilerDescription = "MSVC"
@@ -292,13 +293,13 @@ defineTest(qtConfTest_psqlCompile) {
     isEmpty(pg_config): \
         pg_config = $$qtConfFindInPath("pg_config")
     !win32:!isEmpty(pg_config) {
-        libdir = $$system("$$pg_config --libdir", lines)
+        qtRunLoggedCommand("$$pg_config --libdir", libdir)|return(false)
+        qtRunLoggedCommand("$$pg_config --includedir", includedir)|return(false)
         libdir -= $$QMAKE_DEFAULT_LIBDIRS
         libs =
         !isEmpty(libdir): libs += "-L$$libdir"
         libs += "-lpq"
         $${1}.libs = "$$val_escape(libs)"
-        includedir = $$system("$$pg_config --includedir", lines)
         includedir -= $$QMAKE_DEFAULT_INCDIRS
         $${1}.includedir = "$$val_escape(includedir)"
         !isEmpty(includedir): \
@@ -322,20 +323,20 @@ defineTest(qtConfTest_mysqlCompile) {
     isEmpty(mysql_config): \
         mysql_config = $$qtConfFindInPath("mysql_config")
     !isEmpty(mysql_config) {
-        version = $$system("$$mysql_config --version")
+        qtRunLoggedCommand("$$mysql_config --version", version)|return(false)
         version = $$split(version, '.')
         version = $$first(version)
         isEmpty(version)|lessThan(version, 4): return(false)]
 
         # query is either --libs or --libs_r
         query = $$eval($${1}.query)
-        libs = $$system("$$mysql_config $$query", lines)
+        qtRunLoggedCommand("$$mysql_config $$query", libs)|return(false)
+        qtRunLoggedCommand("$$mysql_config --include", includedir)|return(false)
         eval(libs = $$libs)
         libs = $$filterLibraryPath($$libs)
         # -rdynamic should not be returned by mysql_config, but is on RHEL 6.6
         libs -= -rdynamic
         $${1}.libs = "$$val_escape(libs)"
-        includedir = $$system("$$mysql_config --include", lines)
         eval(includedir = $$includedir)
         includedir ~= s/^-I//g
         includedir -= $$QMAKE_DEFAULT_INCDIRS

@@ -331,13 +331,13 @@ defineTest(qtConfTest_pkgConfig) {
     !qtConfPkgConfigPackageExists($$pkg_config, $$args): \
         return(false)
 
-    $${1}.libs = $$system("$$pkg_config --libs $$args", lines)
-    $${1}.cflags = $$system("$$pkg_config --cflags $$args", lines)
-    includes = $$system("$$pkg_config --cflags-only-I $$args", lines)
+    qtRunLoggedCommand("$$pkg_config --modversion $$args", version)|return(false)
+    qtRunLoggedCommand("$$pkg_config --libs $$args", $${1}.libs)|return(false)
+    qtRunLoggedCommand("$$pkg_config --cflags $$args", $${1}.cflags)|return(false)
+    qtRunLoggedCommand("$$pkg_config --cflags-only-I $$args", includes)|return(false)
     eval(includes = $$includes)
     includes ~= s/^-I//g
     $${1}.includedir = "$$val_escape(includes)"
-    version = $$system("$$pkg_config --modversion $$args")
     $${1}.version = $$first(version)
     export($${1}.libs)
     export($${1}.cflags)
@@ -356,7 +356,7 @@ defineTest(qtConfTest_getPkgConfigVariable) {
         return(false)
 
     variable = $$eval($${1}.pkg-config-variable)
-    $${1}.value = $$system("$$pkg_config --variable=$$variable $$args")
+    qtRunLoggedCommand("$$pkg_config --variable=$$variable $$args", $${1}.value)|return(false)
     export($${1}.value)
     return(true)
 }

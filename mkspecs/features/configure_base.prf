@@ -26,14 +26,18 @@ isEmpty(QMAKE_CONFIG_VERBOSE): QMAKE_CONFIG_VERBOSE = false
 
 defineTest(qtLog) {
     write_file($$QMAKE_CONFIG_LOG, 1, append)
-    $$QMAKE_CONFIG_VERBOSE: log("$$1$$escape_expand(\\n)")
+    $$QMAKE_CONFIG_VERBOSE: for (l, 1): log("$$l$$escape_expand(\\n)")
 }
 
 defineTest(qtRunLoggedCommand) {
     qtLog("+ $$1")
 
-    output = $$system("( $$1 ) 2>&1", blob, result)
+    output = $$system("( $$1 ) 2>&1", lines, result)
     qtLog($$output)
+    !isEmpty(2) {
+        $$2 = $$output
+        export($$2)
+    }
 
     !equals(result, 0): return(false)
     return(true)
