@@ -25,13 +25,12 @@ QMAKE_MAKE = "$${SETENV_PFX}MAKEFLAGS=$$SETENV_SFX $$QMAKE_MAKE"
 isEmpty(QMAKE_CONFIG_VERBOSE): QMAKE_CONFIG_VERBOSE = false
 
 defineTest(qtLog) {
-    msg = "+ $$1"
-    write_file($$QMAKE_CONFIG_LOG, msg, append)
-    $$QMAKE_CONFIG_VERBOSE: log("$$msg$$escape_expand(\\n)")
+    write_file($$QMAKE_CONFIG_LOG, 1, append)
+    $$QMAKE_CONFIG_VERBOSE: log("$$1$$escape_expand(\\n)")
 }
 
 defineTest(qtRunLoggedCommand) {
-    qtLog($$1)
+    qtLog("+ $$1")
 
     output = $$system("( $$1 ) 2>&1", blob, result)
     write_file($${QMAKE_CONFIG_LOG}, output, append)
