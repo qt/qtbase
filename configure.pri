@@ -4,7 +4,6 @@ defineTest(qtConfCommandline_cxxstd) {
     arg = $${1}
     val = $${2}
     isEmpty(val): val = $$qtConfGetNextCommandlineArg()
-    message("setting c++std: $$arg/$$val")
     !contains(val, "^-.*"):!isEmpty(val) {
         contains(val, "(c\+\+)?11") {
             qtConfCommandlineSetInput("c++14", "no")
