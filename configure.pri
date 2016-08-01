@@ -15,10 +15,10 @@ defineTest(qtConfCommandline_cxxstd) {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++1z", "yes")
         } else {
-            error("Invalid argument $$val to command line parameter $$arg")
+            qtConfAddError("Invalid argument $$val to command line parameter $$arg")
         }
     } else {
-        error("Missing argument to command line parameter $$arg")
+        qtConfAddError("Missing argument to command line parameter $$arg")
     }
 }
 
@@ -36,10 +36,10 @@ defineTest(qtConfCommandline_sanitize) {
         } else: equals(val, "undefined") {
             qtConfCommandlineSetInput("sanitize_undefined", "yes")
         } else {
-            error("Invalid argument $$val to command line parameter $$arg")
+            qtConfAddError("Invalid argument $$val to command line parameter $$arg")
         }
     } else {
-        error("Missing argument to command line parameter $$arg")
+        qtConfAddError("Missing argument to command line parameter $$arg")
     }
 }
 
