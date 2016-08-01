@@ -33,8 +33,7 @@ defineTest(qtRunLoggedCommand) {
     qtLog("+ $$1")
 
     output = $$system("( $$1 ) 2>&1", blob, result)
-    write_file($${QMAKE_CONFIG_LOG}, output, append)
-    $$QMAKE_CONFIG_VERBOSE: log($$output)
+    qtLog($$output)
 
     !equals(result, 0): return(false)
     return(true)
