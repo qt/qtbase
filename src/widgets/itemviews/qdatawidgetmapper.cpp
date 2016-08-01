@@ -199,20 +199,6 @@ void QDataWidgetMapperPrivate::_q_commitData(QWidget *w)
     commit(widgetMap.at(idx));
 }
 
-class QFocusHelper: public QWidget
-{
-public:
-    bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE
-    {
-        return QWidget::focusNextPrevChild(next);
-    }
-
-    static inline void focusNextPrevChild(QWidget *w, bool next)
-    {
-        static_cast<QFocusHelper *>(w)->focusNextPrevChild(next);
-    }
-};
-
 void QDataWidgetMapperPrivate::_q_closeEditor(QWidget *w, QAbstractItemDelegate::EndEditHint hint)
 {
     int idx = findWidget(w);
@@ -224,10 +210,10 @@ void QDataWidgetMapperPrivate::_q_closeEditor(QWidget *w, QAbstractItemDelegate:
         populate(widgetMap[idx]);
         break; }
     case QAbstractItemDelegate::EditNextItem:
-        QFocusHelper::focusNextPrevChild(w, true);
+        w->focusNextChild();
         break;
     case QAbstractItemDelegate::EditPreviousItem:
-        QFocusHelper::focusNextPrevChild(w, false);
+        w->focusPreviousChild();
         break;
     case QAbstractItemDelegate::SubmitModelCache:
     case QAbstractItemDelegate::NoHint:

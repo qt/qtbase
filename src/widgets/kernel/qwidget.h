@@ -668,6 +668,7 @@ protected:
     void destroy(bool destroyWindow = true,
                  bool destroySubWindows = true);
 
+    friend class QDataWidgetMapperPrivate; // for access to focusNextPrevChild
     virtual bool focusNextPrevChild(bool next);
     inline bool focusNextChild() { return focusNextPrevChild(true); }
     inline bool focusPreviousChild() { return focusNextPrevChild(false); }
