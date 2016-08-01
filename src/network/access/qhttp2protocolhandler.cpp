@@ -1212,6 +1212,6 @@ void QHttp2ProtocolHandler::closeSession()
     m_channel->close();
 }
 
-#endif // !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
-
 QT_END_NAMESPACE
+
+#endif // !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
