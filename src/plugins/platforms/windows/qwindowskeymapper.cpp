@@ -37,6 +37,7 @@
 #include "qwindowswindow.h"
 #include "qwindowsinputcontext.h"
 
+#include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qguiapplication_p.h>
@@ -1072,6 +1073,21 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
         if (PeekMessage(&wm_char, 0, charType, charType, PM_REMOVE)) {
             // Found a ?_CHAR
             uch = QChar(ushort(wm_char.wParam));
+            if (uch.isHighSurrogate()) {
+                m_lastHighSurrogate = uch;
+                return true;
+            } else if (uch.isLowSurrogate() && !m_lastHighSurrogate.isNull()) {
+                if (QObject *focusObject = QGuiApplication::focusObject()) {
+                    const QChar chars[2] = {m_lastHighSurrogate, uch};
+                    QInputMethodEvent event;
+                    event.setCommitString(QString(chars, 2));
+                    QCoreApplication::sendEvent(focusObject, &event);
+                }
+                m_lastHighSurrogate = QChar();
+                return true;
+            } else {
+                m_lastHighSurrogate = QChar();
+            }
             if (msgType == WM_SYSKEYDOWN && uch.isLetter() && (msg.lParam & KF_ALTDOWN))
                 uch = uch.toLower(); // (See doc of WM_SYSCHAR) Alt-letter
             if (!code && !uch.row())
