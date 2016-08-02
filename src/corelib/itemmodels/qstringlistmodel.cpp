@@ -31,6 +31,11 @@ QT_BEGIN_NAMESPACE
     one column and a number of rows equal to the number of items in
     the list.
 
+    Since the only storage used is a QStringList, no item roles other
+    than Qt::DisplayRole and Qt::EditRole are supported, and these two
+    are synonyms. If you need support for different roles, such as
+    Qt::DecorationRole, you can use QStandardItemModel.
+
     Model indexes corresponding to items are obtained with the
     \l{QAbstractListModel::index()}{index()} function, and item flags
     are obtained with flags().  Item data is read with the data()
@@ -143,6 +148,8 @@ bool QStringListModel::setItemData(const QModelIndex &index, const QMap<int, QVa
 
     If the view requests an invalid index, an invalid variant is returned.
 
+    Only Qt::DisplayRole and Qt::EditRole are supported.
+
     \sa setData()
 */
 
@@ -179,6 +186,9 @@ Qt::ItemFlags QStringListModel::flags(const QModelIndex &index) const
 
     The dataChanged() signal is emitted if the item is changed.
     Returns \c true after emitting the dataChanged() signal.
+
+    Only Qt::DisplayRole and Qt::EditRole are supported for \a role, and
+    \a value needs to be convertible to QString.
 
     \sa Qt::ItemDataRole, data()
 */
