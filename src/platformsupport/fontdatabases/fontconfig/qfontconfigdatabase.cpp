@@ -493,7 +493,6 @@ static void populateFromPattern(FcPattern *pattern)
             altFamilyNameLang = familyNameLang;
 
         if (familyNameLang == altFamilyNameLang && altStyleName != styleName) {
-            const QString altStyleName = QString::fromUtf8((const char *)value);
             FontFile *altFontFile = new FontFile(*fontFile);
             QPlatformFontDatabase::registerFont(altFamilyName, altStyleName, QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,altFontFile);
         } else {
