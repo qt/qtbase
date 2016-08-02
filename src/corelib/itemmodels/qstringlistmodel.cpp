@@ -301,9 +301,9 @@ QStringList QStringListModel::stringList() const
 */
 void QStringListModel::setStringList(const QStringList &strings)
 {
-    emit beginResetModel();
+    beginResetModel();
     lst = strings;
-    emit endResetModel();
+    endResetModel();
 }
 
 /*!
