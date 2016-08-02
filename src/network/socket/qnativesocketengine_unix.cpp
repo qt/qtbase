@@ -915,7 +915,7 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
 
     if (recvResult == -1) {
         switch (errno) {
-#if EWOULDBLOCK-0 && EWOULDBLOCK != EAGAIN
+#if defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
         case EWOULDBLOCK:
 #endif
         case EAGAIN:
@@ -1105,7 +1105,7 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 
     if (sentBytes < 0) {
         switch (errno) {
-#if EWOULDBLOCK-0 && EWOULDBLOCK != EAGAIN
+#if defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
         case EWOULDBLOCK:
 #endif
         case EAGAIN:

@@ -118,13 +118,13 @@ void tst_QSctpSocket::constructing()
 
     char c;
     QCOMPARE(socket.getChar(&c), false);
-    QCOMPARE((int) socket.bytesAvailable(), 0);
+    QCOMPARE(socket.bytesAvailable(), Q_INT64_C(0));
     QCOMPARE(socket.canReadLine(), false);
     QCOMPARE(socket.readLine(), QByteArray());
-    QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
-    QCOMPARE((int) socket.localPort(), 0);
+    QCOMPARE(socket.socketDescriptor(), qintptr(-1));
+    QCOMPARE(int(socket.localPort()), 0);
     QVERIFY(socket.localAddress() == QHostAddress());
-    QCOMPARE((int) socket.peerPort(), 0);
+    QCOMPARE(int(socket.peerPort()), 0);
     QVERIFY(socket.peerAddress() == QHostAddress());
     QCOMPARE(socket.error(), QAbstractSocket::UnknownSocketError);
     QCOMPARE(socket.errorString(), QString("Unknown error"));
@@ -139,11 +139,11 @@ void tst_QSctpSocket::bind_data()
 
     // iterate all interfaces, add all addresses on them as test data
     QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
-    foreach (const QNetworkInterface &interface, interfaces) {
+    for (const QNetworkInterface &interface : interfaces) {
         if (!interface.isValid())
             continue;
 
-        foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
+        for (const QNetworkAddressEntry &entry : interface.addressEntries()) {
             if (entry.ip().isInSubnet(QHostAddress::parseSubnet("fe80::/10"))
                 || entry.ip().isInSubnet(QHostAddress::parseSubnet("169.254/16")))
                 continue; // link-local bind will fail, at least on Linux, so skip it.
@@ -178,11 +178,10 @@ void tst_QSctpSocket::bind()
     QSctpSocket socket;
     qDebug() << "Binding " << addr;
 
-    if (successExpected) {
+    if (successExpected)
         QVERIFY2(socket.bind(addr), qPrintable(socket.errorString()));
-    } else {
+    else
         QVERIFY(!socket.bind(addr));
-    }
 
     QCOMPARE(socket.localAddress(), expectedLocalAddress);
 }
@@ -191,9 +190,9 @@ void tst_QSctpSocket::bind()
 void tst_QSctpSocket::setInvalidSocketDescriptor()
 {
     QSctpSocket socket;
-    QCOMPARE(socket.socketDescriptor(), (qintptr)INVALID_SOCKET);
+    QCOMPARE(socket.socketDescriptor(), qintptr(INVALID_SOCKET));
     QVERIFY(!socket.setSocketDescriptor(-5, QAbstractSocket::UnconnectedState));
-    QCOMPARE(socket.socketDescriptor(), (qintptr)INVALID_SOCKET);
+    QCOMPARE(socket.socketDescriptor(), qintptr(INVALID_SOCKET));
 
     QCOMPARE(socket.error(), QAbstractSocket::UnsupportedSocketOperationError);
 }
@@ -211,7 +210,7 @@ void tst_QSctpSocket::setSocketDescriptor()
     QVERIFY(sock != INVALID_SOCKET);
     QSctpSocket socket;
     QVERIFY(socket.setSocketDescriptor(sock, QAbstractSocket::UnconnectedState));
-    QCOMPARE(socket.socketDescriptor(), (qintptr)sock);
+    QCOMPARE(socket.socketDescriptor(), qintptr(sock));
     QCOMPARE(socket.readChannelCount(), 0);
     QCOMPARE(socket.writeChannelCount(), 0);
 
@@ -237,7 +236,7 @@ void tst_QSctpSocket::socketDescriptor()
 
     QVERIFY(server.listen());
 
-    QCOMPARE(socket.socketDescriptor(), (qintptr)INVALID_SOCKET);
+    QCOMPARE(socket.socketDescriptor(), qintptr(INVALID_SOCKET));
     socket.connectToHost(QHostAddress::LocalHost, server.serverPort());
     QVERIFY(server.waitForNewConnection(3000));
     if (socket.state() != QAbstractSocket::ConnectedState) {

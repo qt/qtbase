@@ -37,8 +37,10 @@
 **
 ****************************************************************************/
 
-/* Sample program for configure to test for SCTP sockets support
-on target platforms. */
+/*
+   Sample program for configure to test for SCTP sockets support
+   on target platforms.
+*/
 
 #include <sys/types.h>
 #include <sys/socket.h>

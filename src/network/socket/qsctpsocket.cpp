@@ -162,8 +162,12 @@ bool QSctpSocketPrivate::canReadNotification()
         do {
             // Determine the size of the pending datagram.
             qint64 bytesToRead = socketEngine->bytesAvailable();
-            if (bytesToRead == 0)
+            if (bytesToRead == 0) {
+                // As a corner case, if we can't determine the size of the pending datagram,
+                // try to read 4K of data from the socket. Subsequent ::recvmsg call either
+                // fails or returns the actual length of the datagram.
                 bytesToRead = 4096;
+            }
 
             Q_ASSERT((datagramSize + int(bytesToRead)) < MaxByteArraySize);
             incomingDatagram.resize(datagramSize + int(bytesToRead));
@@ -479,7 +483,7 @@ QNetworkDatagram QSctpSocket::readDatagram()
     }
 
     if (d->currentReadChannel >= d->readHeaders.size()
-        || (d->readHeaders[d->currentReadChannel].size() == 0)) {
+        || d->readHeaders[d->currentReadChannel].size() == 0) {
         Q_ASSERT(d->buffer.isEmpty());
         return QNetworkDatagram();
     }

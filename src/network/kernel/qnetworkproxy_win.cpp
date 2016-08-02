@@ -288,7 +288,8 @@ static QList<QNetworkProxy> parseServerList(const QNetworkProxyQuery &query, con
     QHash<QString, QNetworkProxy> taggedProxies;
     const QString requiredTag = query.protocolTag();
     // windows tags are only for clients
-    bool checkTags = !requiredTag.isEmpty() && query.queryType() != QNetworkProxyQuery::TcpServer
+    bool checkTags = !requiredTag.isEmpty()
+            && query.queryType() != QNetworkProxyQuery::TcpServer
             && query.queryType() != QNetworkProxyQuery::SctpServer;
     for (const QString &entry : proxyList) {
         int server = 0;
