@@ -402,7 +402,7 @@ void QWindowPrivate::create(bool recursive)
         q->parent()->create();
 
     platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(q);
-    Q_ASSERT(platformWindow);
+    Q_ASSERT(platformWindow || q->type() == Qt::ForeignWindow);
 
     if (!platformWindow) {
         qWarning() << "Failed to create platform window for" << q << "with flags" << q->flags();
@@ -2432,7 +2432,8 @@ QWindow *QWindowPrivate::topLevelWindow() const
     This can be used, on platforms which support it, to embed a QWindow inside a
     native window, or to embed a native window inside a QWindow.
 
-    If foreign windows are not supported, this function returns 0.
+    If foreign windows are not supported or embedding the native window
+    failed in the platform plugin, this function returns 0.
 
     \note The resulting QWindow should not be used to manipulate the underlying
     native window (besides re-parenting), or to observe state changes of the
@@ -2453,6 +2454,10 @@ QWindow *QWindow::fromWinId(WId id)
     window->setFlags(Qt::ForeignWindow);
     window->setProperty("_q_foreignWinId", QVariant::fromValue(id));
     window->create();
+    if (!window->handle()) {
+        delete window;
+        return nullptr;
+    }
     return window;
 }
 

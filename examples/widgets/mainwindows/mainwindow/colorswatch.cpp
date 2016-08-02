@@ -61,6 +61,7 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QGridLayout>
+#include <QSignalBlocker>
 #include <QSpinBox>
 #include <QLabel>
 #include <QPainterPath>
@@ -426,20 +427,22 @@ void ColorSwatch::updateContextMenu()
         allowBottomAction->setEnabled(area != Qt::BottomDockWidgetArea);
     }
 
-    leftAction->blockSignals(true);
-    rightAction->blockSignals(true);
-    topAction->blockSignals(true);
-    bottomAction->blockSignals(true);
-
-    leftAction->setChecked(area == Qt::LeftDockWidgetArea);
-    rightAction->setChecked(area == Qt::RightDockWidgetArea);
-    topAction->setChecked(area == Qt::TopDockWidgetArea);
-    bottomAction->setChecked(area == Qt::BottomDockWidgetArea);
-
-    leftAction->blockSignals(false);
-    rightAction->blockSignals(false);
-    topAction->blockSignals(false);
-    bottomAction->blockSignals(false);
+    {
+        const QSignalBlocker blocker(leftAction);
+        leftAction->setChecked(area == Qt::LeftDockWidgetArea);
+    }
+    {
+        const QSignalBlocker blocker(rightAction);
+        rightAction->setChecked(area == Qt::RightDockWidgetArea);
+    }
+    {
+        const QSignalBlocker blocker(topAction);
+        topAction->setChecked(area == Qt::TopDockWidgetArea);
+    }
+    {
+        const QSignalBlocker blocker(bottomAction);
+        bottomAction->setChecked(area == Qt::BottomDockWidgetArea);
+    }
 
     if (areaActions->isEnabled()) {
         leftAction->setEnabled(areas & Qt::LeftDockWidgetArea);

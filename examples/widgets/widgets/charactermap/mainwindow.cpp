@@ -167,24 +167,26 @@ void MainWindow::findSizes(const QFont &font)
 {
     QFontDatabase fontDatabase;
     QString currentSize = sizeCombo->currentText();
-    sizeCombo->blockSignals(true);
-    sizeCombo->clear();
 
-    int size;
-    if(fontDatabase.isSmoothlyScalable(font.family(), fontDatabase.styleString(font))) {
-        foreach(size, QFontDatabase::standardSizes()) {
-            sizeCombo->addItem(QVariant(size).toString());
-            sizeCombo->setEditable(true);
-        }
+    {
+        const QSignalBlocker blocker(sizeCombo);
+        // sizeCombo signals are now blocked until end of scope
+        sizeCombo->clear();
 
-    } else {
-        foreach(size, fontDatabase.smoothSizes(font.family(), fontDatabase.styleString(font))) {
-            sizeCombo->addItem(QVariant(size).toString());
-            sizeCombo->setEditable(false);
+        int size;
+        if (fontDatabase.isSmoothlyScalable(font.family(), fontDatabase.styleString(font))) {
+            foreach (size, QFontDatabase::standardSizes()) {
+                sizeCombo->addItem(QVariant(size).toString());
+                sizeCombo->setEditable(true);
+            }
+
+        } else {
+            foreach (size, fontDatabase.smoothSizes(font.family(), fontDatabase.styleString(font))) {
+                sizeCombo->addItem(QVariant(size).toString());
+                sizeCombo->setEditable(false);
+            }
         }
     }
-
-    sizeCombo->blockSignals(false);
 
     int sizeIndex = sizeCombo->findText(currentSize);
 

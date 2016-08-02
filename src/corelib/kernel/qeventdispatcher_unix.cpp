@@ -421,7 +421,12 @@ void QEventDispatcherUNIX::unregisterSocketNotifier(QSocketNotifier *notifier)
     QSocketNotifier::Type type = notifier->type();
 #ifndef QT_NO_DEBUG
     if (notifier->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QSocketNotifier: socket notifiers cannot be disabled from another thread");
+        qWarning("QSocketNotifier: socket notifier (fd %d) cannot be disabled from another thread.\n"
+                "(Notifier's thread is %s(%p), event dispatcher's thread is %s(%p), current thread is %s(%p))",
+                sockfd,
+                notifier->thread() ? notifier->thread()->metaObject()->className() : "QThread", notifier->thread(),
+                thread() ? thread()->metaObject()->className() : "QThread", thread(),
+                QThread::currentThread() ? QThread::currentThread()->metaObject()->className() : "QThread", QThread::currentThread());
         return;
     }
 #endif

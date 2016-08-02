@@ -4325,6 +4325,12 @@ const QEditorInfo & QAbstractItemViewPrivate::editorForIndex(const QModelIndex &
     return it.value();
 }
 
+bool QAbstractItemViewPrivate::hasEditor(const QModelIndex &index) const
+{
+    // Search's implicit cast (QModelIndex to QPersistentModelIndex) is slow; use cheap pre-test to avoid when we can.
+    return !indexEditorHash.isEmpty() && indexEditorHash.contains(index);
+}
+
 QModelIndex QAbstractItemViewPrivate::indexForEditor(QWidget *editor) const
 {
     // do not try to search to avoid slow implicit cast from QModelIndex to QPersistentModelIndex

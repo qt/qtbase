@@ -94,6 +94,8 @@ private slots:
     void setPixel_data();
     void setPixel();
 
+    void defaultColorTable_data();
+    void defaultColorTable();
     void setColorCount();
     void setColor();
 
@@ -1448,6 +1450,38 @@ void tst_QImage::convertToFormatPreserveText()
                                             colorTable);
     QCOMPARE(imgResult2.text(), result);
     QCOMPARE(imgResult2.textKeys(), listResult);
+}
+
+void tst_QImage::defaultColorTable_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<int>("createdDataCount");
+    QTest::addColumn<int>("externalDataCount");
+
+    // For historical reasons, internally created mono images get a default colormap.
+    // Externally created and Indexed8 images do not.
+    QTest::newRow("Mono") << QImage::Format_Mono << 2 << 0;
+    QTest::newRow("MonoLSB") << QImage::Format_MonoLSB << 2 << 0;
+    QTest::newRow("Indexed8") << QImage::Format_Indexed8 << 0 << 0;
+    QTest::newRow("ARGB32_PM") << QImage::Format_A2BGR30_Premultiplied << 0 << 0;
+}
+
+void tst_QImage::defaultColorTable()
+{
+    QFETCH(QImage::Format, format);
+    QFETCH(int, createdDataCount);
+    QFETCH(int, externalDataCount);
+
+    QImage img1(1, 1, format);
+    QCOMPARE(img1.colorCount(), createdDataCount);
+    QCOMPARE(img1.colorTable().size(), createdDataCount);
+
+    quint32 buf;
+    QImage img2(reinterpret_cast<uchar *>(&buf), 1, 1, format);
+    QCOMPARE(img2.colorCount(), externalDataCount);
+
+    QImage nullImg(0, 0, format);
+    QCOMPARE(nullImg.colorCount(), 0);
 }
 
 void tst_QImage::setColorCount()
@@ -3194,8 +3228,8 @@ void tst_QImage::pixel()
         QImage monolsb(&a, 1, 1, QImage::Format_MonoLSB);
         QImage indexed(&a, 1, 1, QImage::Format_Indexed8);
 
-        QCOMPARE(QColor(mono.pixel(0, 0)), QColor(Qt::black));
-        QCOMPARE(QColor(monolsb.pixel(0, 0)), QColor(Qt::black));
+        mono.pixel(0, 0); // Don't crash
+        monolsb.pixel(0, 0); // Don't crash
         indexed.pixel(0, 0); // Don't crash
     }
 }

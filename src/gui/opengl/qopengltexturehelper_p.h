@@ -76,6 +76,14 @@ QT_BEGIN_NAMESPACE
 #define GL_TEXTURE_COMPARE_FUNC 0x884D
 #endif
 
+// use GL_APICALL only on Android + __clang__
+#if !defined(Q_OS_ANDROID) || !defined(__clang__)
+# undef GL_APICALL
+# define GL_APICALL
+#elif !defined(GL_APICALL)
+# define GL_APICALL
+#endif
+
 class QOpenGLContext;
 
 class QOpenGLTextureHelper
@@ -754,15 +762,15 @@ private:
     // OpenGL 1.3
     void (QOPENGLF_APIENTRYP GetCompressedTexImage)(GLenum target, GLint level, GLvoid *img);
     void (QOPENGLF_APIENTRYP CompressedTexSubImage1D)(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *data);
-    void (QOPENGLF_APIENTRYP CompressedTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *data);
+    GL_APICALL void (QOPENGLF_APIENTRYP CompressedTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *data);
     void (QOPENGLF_APIENTRYP CompressedTexSubImage3D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *data);
     void (QOPENGLF_APIENTRYP CompressedTexImage1D)(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLint border, GLsizei imageSize, const GLvoid *data);
-    void (QOPENGLF_APIENTRYP CompressedTexImage2D)(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *data);
+    GL_APICALL void (QOPENGLF_APIENTRYP CompressedTexImage2D)(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *data);
     void (QOPENGLF_APIENTRYP CompressedTexImage3D)(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *data);
-    void (QOPENGLF_APIENTRYP ActiveTexture)(GLenum texture);
+    GL_APICALL void (QOPENGLF_APIENTRYP ActiveTexture)(GLenum texture);
 
     // OpenGL 3.0
-    void (QOPENGLF_APIENTRYP GenerateMipmap)(GLenum target);
+    GL_APICALL void (QOPENGLF_APIENTRYP GenerateMipmap)(GLenum target);
 
     // OpenGL 3.2
     void (QOPENGLF_APIENTRYP TexImage3DMultisample)(GLenum target, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations);

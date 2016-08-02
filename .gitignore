@@ -152,6 +152,8 @@ tools/activeqt/testcon/testcon.tlb
 translations/*.qm
 translations/*_untranslated.ts
 qrc_*.cpp
+*.version
+*.version.in
 
 # Test generated files
 QObject.log
