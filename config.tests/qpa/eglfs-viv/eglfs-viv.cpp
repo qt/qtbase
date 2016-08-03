@@ -39,7 +39,6 @@
 
 #include <EGL/egl.h>
 #include <EGL/eglvivante.h>
-#include <GLES2/gl2.h>
 
 int main(int, char **)
 {

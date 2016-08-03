@@ -6,9 +6,7 @@ integrity {
 }
 CONFIG -= qt
 
-LIBS += -lEGL -lGLESv2 -lGAL
-
-for(p, QMAKE_LIBDIR_OPENGL_ES2) {
+for(p, QMAKE_LIBDIR_OPENGL_EGL) {
     exists($$p):LIBS += -L$$p
 }
 
