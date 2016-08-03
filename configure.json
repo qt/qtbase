@@ -717,6 +717,11 @@
             "type": "compile",
             "test": "qpa/eglfs-mali"
         },
+        "egl-mali-2": {
+            "description": "Mali 2 EGL",
+            "type": "compile",
+            "test": "qpa/eglfs-mali-2"
+        },
         "egl-viv": {
             "description": "i.Mx6 EGL",
             "type": "compile",
@@ -1855,7 +1860,7 @@
         },
         "eglfs_mali": {
             "description": "EGLFS Mali",
-            "condition": "features.eglfs && tests.egl-mali",
+            "condition": "features.eglfs && (tests.egl-mali || tests.egl-mali-2)",
             "output": [ "publicQtConfig" ]
         },
         "eglfs_viv": {
