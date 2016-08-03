@@ -139,22 +139,19 @@ void tst_QStringListModel::rowsAboutToBeRemoved_rowsRemoved()
     QFETCH(QStringList, aboutto);
     QFETCH(QStringList, res);
 
-    QStringListModel *model = new QStringListModel(input);
-    QModelListener *pListener = new QModelListener(&aboutto, &res, model);
-    pListener->connect(model,       SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-                       pListener,   SLOT(rowsAboutToBeRemovedOrInserted(QModelIndex,int,int))    );
+    QStringListModel model(input);
+    QModelListener listener(&aboutto, &res, &model);
+    connect(&model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            &listener, SLOT(rowsAboutToBeRemovedOrInserted(QModelIndex,int,int)));
 
-    pListener->connect(model,       SIGNAL(rowsRemoved(QModelIndex,int,int)),
-                       pListener,   SLOT(rowsRemovedOrInserted(QModelIndex,int,int))    );
+    connect(&model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            &listener, SLOT(rowsRemovedOrInserted(QModelIndex,int,int)));
 
-    model->removeRows(row,count);
+    model.removeRows(row, count);
     // At this point, control goes to our connected slots inn this order:
     // 1. rowsAboutToBeRemovedOrInserted
     // 2. rowsRemovedOrInserted
     // Control returns here
-
-    delete pListener;
-    delete model;
 }
 
 void tst_QStringListModel::rowsAboutToBeInserted_rowsInserted_data()
@@ -203,22 +200,19 @@ void tst_QStringListModel::rowsAboutToBeInserted_rowsInserted()
     QFETCH(QStringList, aboutto);
     QFETCH(QStringList, res);
 
-    QStringListModel *model = new QStringListModel(input);
-    QModelListener *pListener = new QModelListener(&aboutto, &res, model);
-    connect(model,       SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-                       pListener,   SLOT(rowsAboutToBeRemovedOrInserted(QModelIndex,int,int))    );
+    QStringListModel model(input);
+    QModelListener listener(&aboutto, &res, &model);
+    connect(&model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+            &listener, SLOT(rowsAboutToBeRemovedOrInserted(QModelIndex,int,int)));
 
-    connect(model,       SIGNAL(rowsInserted(QModelIndex,int,int)),
-                       pListener,   SLOT(rowsRemovedOrInserted(QModelIndex,int,int))    );
+    connect(&model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            &listener, SLOT(rowsRemovedOrInserted(QModelIndex,int,int)));
 
-    model->insertRows(row,count);
+    model.insertRows(row, count);
     // At this point, control goes to our connected slots inn this order:
     // 1. rowsAboutToBeRemovedOrInserted
     // 2. rowsRemovedOrInserted
     // Control returns here
-
-    delete pListener;
-    delete model;
 }
 
 void tst_QStringListModel::setData_emits_both_roles_data()
