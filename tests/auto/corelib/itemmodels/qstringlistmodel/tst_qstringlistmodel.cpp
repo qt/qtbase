@@ -40,6 +40,8 @@
 #include "qmodellistener.h"
 #include <qstringlistmodel.h>
 
+#include <algorithm>
+
 void QModelListener::rowsAboutToBeRemovedOrInserted(const QModelIndex & parent, int start, int end )
 {
     for (int i = 0; start + i <= end; i++) {
@@ -80,6 +82,9 @@ private slots:
 
     void rowsAboutToBeInserted_rowsInserted();
     void rowsAboutToBeInserted_rowsInserted_data();
+
+    void setData_emits_both_roles_data();
+    void setData_emits_both_roles();
 };
 
 void tst_QStringListModel::rowsAboutToBeRemoved_rowsRemoved_data()
@@ -214,6 +219,46 @@ void tst_QStringListModel::rowsAboutToBeInserted_rowsInserted()
 
     delete pListener;
     delete model;
+}
+
+void tst_QStringListModel::setData_emits_both_roles_data()
+{
+    QTest::addColumn<int>("row");
+    QTest::addColumn<QString>("data");
+    QTest::addColumn<int>("role");
+
+#define ROW(row, string, role) \
+    QTest::newRow(#row " -> " string) << row << QString(string) << int(Qt::role)
+    ROW(0, "1", EditRole);
+    ROW(1, "2", DisplayRole);
+#undef ROW
+}
+
+template <class C>
+C sorted(C c)
+{
+    std::sort(c.begin(), c.end());
+    return qMove(c);
+}
+
+void tst_QStringListModel::setData_emits_both_roles()
+{
+    QFETCH(int, row);
+    QFETCH(QString, data);
+    QFETCH(int, role);
+
+    QStringListModel model(QStringList() << "one" << "two");
+    QVector<int> expected;
+    expected.reserve(2);
+    expected.append(Qt::DisplayRole);
+    expected.append(Qt::EditRole);
+
+    QSignalSpy spy(&model, &QAbstractItemModel::dataChanged);
+    QVERIFY(spy.isValid());
+    model.setData(model.index(row, 0), data, role);
+    QCOMPARE(spy.size(), 1);
+    QCOMPARE(sorted(spy.at(0).at(2).value<QVector<int> >()),
+             expected);
 }
 
 QTEST_MAIN(tst_QStringListModel)

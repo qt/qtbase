@@ -2134,17 +2134,23 @@ void tst_QSortFilterProxyModel::changeSourceDataForwardsRoles_qtbug35440()
 
     QModelIndex index;
 
+    // QStringListModel doesn't distinguish between edit and display roles,
+    // so changing one always changes the other, too.
+    QVector<int> expectedChangedRoles;
+    expectedChangedRoles.append(Qt::DisplayRole);
+    expectedChangedRoles.append(Qt::EditRole);
+
     index = model.index(0, 0);
     QVERIFY(index.isValid());
     model.setData(index, QStringLiteral("teststring"), Qt::DisplayRole);
     QCOMPARE(spy.length(), 1);
-    QCOMPARE(spy.at(0).at(2).value<QVector<int> >(), QVector<int>() << Qt::DisplayRole);
+    QCOMPARE(spy.at(0).at(2).value<QVector<int> >(), expectedChangedRoles);
 
     index = model.index(1, 0);
     QVERIFY(index.isValid());
     model.setData(index, QStringLiteral("teststring2"), Qt::EditRole);
     QCOMPARE(spy.length(), 2);
-    QCOMPARE(spy.at(1).at(2).value<QVector<int> >(), QVector<int>() << Qt::EditRole);
+    QCOMPARE(spy.at(1).at(2).value<QVector<int> >(), expectedChangedRoles);
 }
 
 void tst_QSortFilterProxyModel::sortFilterRole()
