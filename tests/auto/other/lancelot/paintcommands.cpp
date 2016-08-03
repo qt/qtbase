@@ -165,7 +165,16 @@ const char *PaintCommands::imageFormatTable[] = {
     "Format_ARGB8555_Premultiplied",
     "Format_RGB888",
     "Format_RGB444",
-    "Format_ARGB4444_Premultiplied"
+    "Format_ARGB4444_Premultiplied",
+    "Format_RGBX8888",
+    "Format_RGBA8888",
+    "Format_RGBA8888_Premultiplied",
+    "Format_BGR30",
+    "Format_A2BGR30_Premultiplied",
+    "Format_RGB30",
+    "Format_A2RGB30_Premultiplied",
+    "Alpha8",
+    "Grayscale8",
 };
 
 int PaintCommands::translateEnum(const char *table[], const QString &pattern, int limit)

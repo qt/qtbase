@@ -89,11 +89,15 @@ QT_BEGIN_NAMESPACE
 
 #if defined __SSE2__
 #  define LOAD(ptr) _mm_loadl_epi64(reinterpret_cast<const __m128i *>(ptr))
-#  define CONVERT(value) _mm_shufflelo_epi16(_mm_cvtsi32_si128(value), _MM_SHUFFLE(0, 0, 0, 0))
+#ifdef Q_PROCESSOR_X86_64
+#  define CONVERT(value) _mm_cvtsi64_si128(value)
+#else
+#  define CONVERT(value) LOAD(&value)
+#endif
 #  define STORE(ptr, value) _mm_storel_epi64(reinterpret_cast<__m128i *>(ptr), value)
 #  define ADD(p, q) _mm_add_epi32(p, q)
 #  define ALPHA(c) _mm_shufflelo_epi16(c, _MM_SHUFFLE(3, 3, 3, 3))
-#  define CONST(n) CONVERT(n)
+#  define CONST(n) _mm_shufflelo_epi16(_mm_cvtsi32_si128(n), _MM_SHUFFLE(0, 0, 0, 0))
 #  define INVALPHA(c) _mm_sub_epi32(CONST(65535), ALPHA(c))
 #elif defined __ARM_NEON__
 #  define LOAD(ptr) vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(ptr)))
