@@ -414,6 +414,7 @@ QFontEngine::Properties QFreetypeFace::properties() const
     p.italicAngle = 0;
     p.capHeight = p.ascent;
     p.lineWidth = face->underline_thickness;
+
     return p;
 }
 
@@ -1297,6 +1298,18 @@ QFixed QFontEngineFT::ascent() const
     if (scalableBitmapScaleFactor != 1)
         v *= scalableBitmapScaleFactor;
     return v;
+}
+
+QFixed QFontEngineFT::capHeight() const
+{
+    TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
+    if (os2 && os2->version >= 2) {
+        lockFace();
+        QFixed answer = QFixed::fromFixed(FT_MulFix(os2->sCapHeight, freetype->face->size->metrics.y_scale));
+        unlockFace();
+        return answer;
+    }
+    return calculatedCapHeight();
 }
 
 QFixed QFontEngineFT::descent() const

@@ -325,6 +325,23 @@ qreal QRawFont::ascent() const
 }
 
 /*!
+   Returns the cap height of this QRawFont in pixel units.
+
+   \since 5.8
+
+   The cap height of a font is the height of a capital letter above
+   the baseline. It specifically is the height of capital letters
+   that are flat - such as H or I - as opposed to round letters such
+   as O, or pointed letters like A, both of which may display overshoot.
+
+   \sa QFontMetricsF::capHeight()
+*/
+qreal QRawFont::capHeight() const
+{
+    return d->isValid() ? d->fontEngine->capHeight().toReal() : 0.0;
+}
+
+/*!
    Returns the descent of this QRawFont in pixel units.
 
    \sa QFontMetricsF::descent()

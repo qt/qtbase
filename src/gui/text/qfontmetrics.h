@@ -73,6 +73,7 @@ public:
     { qSwap(d, other.d); }
 
     int ascent() const;
+    int capHeight() const;
     int descent() const;
     int height() const;
     int leading() const;
@@ -146,6 +147,7 @@ public:
     void swap(QFontMetricsF &other) { qSwap(d, other.d); }
 
     qreal ascent() const;
+    qreal capHeight() const;
     qreal descent() const;
     qreal height() const;
     qreal leading() const;

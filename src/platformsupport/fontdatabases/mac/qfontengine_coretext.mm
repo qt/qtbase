@@ -378,6 +378,19 @@ QFixed QCoreTextFontEngine::ascent() const
             ? QFixed::fromReal(CTFontGetAscent(ctfont)).round()
             : QFixed::fromReal(CTFontGetAscent(ctfont));
 }
+
+QFixed QCoreTextFontEngine::capHeight() const
+{
+    QFixed c = QFixed::fromReal(CTFontGetCapHeight(ctfont));
+    if (c <= 0)
+        return calculatedCapHeight();
+
+    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+        c = c.round();
+
+    return c;
+}
+
 QFixed QCoreTextFontEngine::descent() const
 {
     QFixed d = QFixed::fromReal(CTFontGetDescent(ctfont));

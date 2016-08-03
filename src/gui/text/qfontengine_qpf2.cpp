@@ -459,6 +459,11 @@ QFixed QFontEngineQPF2::ascent() const
     return QFixed::fromReal(extractHeaderField(fontData, Tag_Ascent).value<qreal>());
 }
 
+QFixed QFontEngineQPF2::capHeight() const
+{
+    return calculatedCapHeight();
+}
+
 QFixed QFontEngineQPF2::descent() const
 {
     return QFixed::fromReal(extractHeaderField(fontData, Tag_Descent).value<qreal>());

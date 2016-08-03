@@ -172,6 +172,7 @@ public:
     glyph_metrics_t boundingBox(glyph_t glyph) Q_DECL_OVERRIDE;
 
     QFixed ascent() const Q_DECL_OVERRIDE;
+    QFixed capHeight() const Q_DECL_OVERRIDE;
     QFixed descent() const Q_DECL_OVERRIDE;
     QFixed leading() const Q_DECL_OVERRIDE;
     qreal maxCharWidth() const Q_DECL_OVERRIDE;

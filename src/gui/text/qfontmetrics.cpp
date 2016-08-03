@@ -274,6 +274,24 @@ int QFontMetrics::ascent() const
     return qRound(engine->ascent());
 }
 
+/*!
+    Returns the cap height of the font.
+
+    \since 5.8
+
+    The cap height of a font is the height of a capital letter above
+    the baseline. It specifically is the height of capital letters
+    that are flat - such as H or I - as opposed to round letters such
+    as O, or pointed letters like A, both of which may display overshoot.
+
+    \sa ascent()
+*/
+int QFontMetrics::capHeight() const
+{
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
+    Q_ASSERT(engine != 0);
+    return qRound(engine->capHeight());
+}
 
 /*!
     Returns the descent of the font.
@@ -1138,6 +1156,24 @@ qreal QFontMetricsF::ascent() const
     return engine->ascent().toReal();
 }
 
+/*!
+    Returns the cap height of the font.
+
+    \since 5.8
+
+    The cap height of a font is the height of a capital letter above
+    the baseline. It specifically is the height of capital letters
+    that are flat - such as H or I - as opposed to round letters such
+    as O, or pointed letters like A, both of which may display overshoot.
+
+    \sa ascent()
+*/
+qreal QFontMetricsF::capHeight() const
+{
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
+    Q_ASSERT(engine != 0);
+    return engine->capHeight().toReal();
+}
 
 /*!
     Returns the descent of the font.

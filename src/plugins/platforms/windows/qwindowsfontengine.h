@@ -103,6 +103,7 @@ public:
     QFixed descent() const Q_DECL_OVERRIDE;
     QFixed leading() const Q_DECL_OVERRIDE;
     QFixed xHeight() const Q_DECL_OVERRIDE;
+    QFixed capHeight() const Q_DECL_OVERRIDE;
     QFixed averageCharWidth() const Q_DECL_OVERRIDE;
     qreal maxCharWidth() const Q_DECL_OVERRIDE;
     qreal minLeftBearing() const Q_DECL_OVERRIDE;
