@@ -118,7 +118,7 @@ static inline qreal initialGlobalScaleFactor()
     The devicePixelRatio seen by applications is the product of the Qt scale
     factor and the OS scale factor. The value of the scale factors may be 1,
     in which case two or more of the coordinate systems are equivalent. Platforms
-    that (may) have an OS scale factor include OS X, iOS and Wayland.
+    that (may) have an OS scale factor include \macos, iOS and Wayland.
 
     Note that the functions in this file do not work with the OS scale factor
     directly and are limited to converting between device independent and native

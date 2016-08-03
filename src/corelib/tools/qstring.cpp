@@ -5465,7 +5465,7 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
     platform-dependent manner. Use this function to present sorted
     lists of strings to the user.
 
-    On OS X and iOS this function compares according the
+    On \macos and iOS this function compares according the
     "Order for sorted lists" setting in the International preferences panel.
 
     \sa compare(), QLocale
@@ -7967,7 +7967,7 @@ QString QString::multiArg(int numArgs, const QString **args) const
 
     Constructs a new QString containing a copy of the \a string CFString.
 
-    \note this function is only available on OS X and iOS.
+    \note this function is only available on \macos and iOS.
 */
 
 /*! \fn CFStringRef QString::toCFString() const
@@ -7976,7 +7976,7 @@ QString QString::multiArg(int numArgs, const QString **args) const
     Creates a CFString from a QString. The caller owns the CFString and is
     responsible for releasing it.
 
-    \note this function is only available on OS X and iOS.
+    \note this function is only available on \macos and iOS.
 */
 
 /*! \fn QString QString::fromNSString(const NSString *string)
@@ -7984,7 +7984,7 @@ QString QString::multiArg(int numArgs, const QString **args) const
 
     Constructs a new QString containing a copy of the \a string NSString.
 
-    \note this function is only available on OS X and iOS.
+    \note this function is only available on \macos and iOS.
 */
 
 /*! \fn NSString QString::toNSString() const
@@ -7992,7 +7992,7 @@ QString QString::multiArg(int numArgs, const QString **args) const
 
     Creates a NSString from a QString. The NSString is autoreleased.
 
-    \note this function is only available on OS X and iOS.
+    \note this function is only available on \macos and iOS.
 */
 
 /*! \fn bool QString::isSimpleText() const
@@ -9316,7 +9316,7 @@ QStringRef QStringRef::appendTo(QString *string) const
     platform-dependent manner. Use this function to present sorted
     lists of strings to the user.
 
-    On OS X and iOS, this function compares according the
+    On \macos and iOS, this function compares according the
     "Order for sorted lists" setting in the International prefereces panel.
 
     \sa compare(), QLocale

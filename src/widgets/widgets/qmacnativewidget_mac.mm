@@ -42,13 +42,13 @@
 /*!
     \class QMacNativeWidget
     \since 4.5
-    \brief The QMacNativeWidget class provides a widget for OS X that provides
+    \brief The QMacNativeWidget class provides a widget for \macos that provides
     a way to put Qt widgets into Cocoa hierarchies.
 
     \ingroup advanced
     \inmodule QtWidgets
 
-    On OS X, there is a difference between a window and view;
+    On \macos, there is a difference between a window and view;
     normally expressed as widgets in Qt.  Qt makes assumptions about its
     parent-child hierarchy that make it complex to put an arbitrary Qt widget
     into a hierarchy of "normal" views from Apple frameworks. QMacNativeWidget

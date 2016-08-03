@@ -234,7 +234,7 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     isSymLink(). The symLinkTarget() function provides the name of the file
     the symlink points to.
 
-    On Unix (including OS X and iOS), the symlink has the same size() has
+    On Unix (including \macos and iOS), the symlink has the same size() has
     the file it points to, because Unix handles symlinks
     transparently; similarly, opening a symlink using QFile
     effectively opens the link's target. For example:
@@ -754,7 +754,7 @@ QString QFileInfo::fileName() const
     \since 4.3
     Returns the name of the bundle.
 
-    On OS X and iOS this returns the proper localized name for a bundle if the
+    On \macos and iOS this returns the proper localized name for a bundle if the
     path isBundle(). On all other platforms an empty QString is returned.
 
     Example:
@@ -1036,7 +1036,7 @@ bool QFileInfo::isDir() const
 /*!
     \since 4.3
     Returns \c true if this object points to a bundle or to a symbolic
-    link to a bundle on OS X and iOS; otherwise returns \c false.
+    link to a bundle on \macos and iOS; otherwise returns \c false.
 
     \sa isDir(), isSymLink(), isFile()
 */
@@ -1057,7 +1057,7 @@ bool QFileInfo::isBundle() const
     Returns \c true if this object points to a symbolic link (or to a
     shortcut on Windows); otherwise returns \c false.
 
-    On Unix (including OS X and iOS), opening a symlink effectively opens
+    On Unix (including \macos and iOS), opening a symlink effectively opens
     the \l{symLinkTarget()}{link's target}. On Windows, it opens the \c
     .lnk file itself.
 

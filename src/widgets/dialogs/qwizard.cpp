@@ -1817,7 +1817,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 
     \inmodule QtWidgets
 
-    A wizard (also called an assistant on OS X) is a special type
+    A wizard (also called an assistant on \macos) is a special type
     of input dialog that consists of a sequence of pages. A wizard's
     purpose is to guide the user through a process step by step.
     Wizards are useful for complex or infrequent tasks that users may
@@ -2115,10 +2115,10 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 
     This enum specifies the buttons in a wizard.
 
-    \value BackButton  The \uicontrol Back button (\uicontrol {Go Back} on OS X)
-    \value NextButton  The \uicontrol Next button (\uicontrol Continue on OS X)
+    \value BackButton  The \uicontrol Back button (\uicontrol {Go Back} on \macos)
+    \value NextButton  The \uicontrol Next button (\uicontrol Continue on \macos)
     \value CommitButton  The \uicontrol Commit button
-    \value FinishButton  The \uicontrol Finish button (\uicontrol Done on OS X)
+    \value FinishButton  The \uicontrol Finish button (\uicontrol Done on \macos)
     \value CancelButton  The \uicontrol Cancel button (see also NoCancelButton)
     \value HelpButton    The \uicontrol Help button (see also HaveHelpButton)
     \value CustomButton1  The first user-defined button (see also HaveCustomButton1)
@@ -2158,7 +2158,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 
     \value ClassicStyle  Classic Windows look
     \value ModernStyle  Modern Windows look
-    \value MacStyle  OS X look
+    \value MacStyle  \macos look
     \value AeroStyle  Windows Aero look
 
     \omitvalue NStyles
@@ -2631,7 +2631,7 @@ bool QWizard::testOption(WizardOption option) const
 
     \list
     \li Windows: HelpButtonOnRight.
-    \li OS X: NoDefaultButton and NoCancelButton.
+    \li \macos: NoDefaultButton and NoCancelButton.
     \li X11 and QWS (Qt for Embedded Linux): none.
     \endlist
 
@@ -2675,7 +2675,7 @@ QWizard::WizardOptions QWizard::options() const
     Sets the text on button \a which to be \a text.
 
     By default, the text on buttons depends on the wizardStyle. For
-    example, on OS X, the \uicontrol Next button is called \uicontrol
+    example, on \macos, the \uicontrol Next button is called \uicontrol
     Continue.
 
     To add extra buttons to the wizard (e.g., a \uicontrol Print button),
@@ -2707,7 +2707,7 @@ void QWizard::setButtonText(WizardButton which, const QString &text)
     If a text has ben set using setButtonText(), this text is returned.
 
     By default, the text on buttons depends on the wizardStyle. For
-    example, on OS X, the \uicontrol Next button is called \uicontrol
+    example, on \macos, the \uicontrol Next button is called \uicontrol
     Continue.
 
     \sa button(), setButton(), setButtonText(), QWizardPage::buttonText(),
@@ -2893,7 +2893,7 @@ void QWizard::setPixmap(WizardPixmap which, const QPixmap &pixmap)
     Returns the pixmap set for role \a which.
 
     By default, the only pixmap that is set is the BackgroundPixmap on
-    OS X.
+    \macos.
 
     \sa QWizardPage::pixmap(), {Elements of a Wizard Page}
 */
@@ -3805,7 +3805,7 @@ void QWizardPage::setButtonText(QWizard::WizardButton which, const QString &text
     this text is returned.
 
     By default, the text on buttons depends on the QWizard::wizardStyle.
-    For example, on OS X, the \uicontrol Next button is called \uicontrol
+    For example, on \macos, the \uicontrol Next button is called \uicontrol
     Continue.
 
     \sa setButtonText(), QWizard::buttonText(), QWizard::setButtonText()

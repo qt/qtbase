@@ -1223,7 +1223,7 @@ void QIcon::setIsMask(bool isMask)
 
     Returns \c true if this icon has been marked as a mask image.
     Certain platforms render mask icons differently (for example,
-    menu icons on OS X).
+    menu icons on \macos).
 
     \sa setIsMask()
 */

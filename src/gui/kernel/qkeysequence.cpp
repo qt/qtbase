@@ -147,7 +147,7 @@ static bool qt_sequence_no_mnemonics = false;
 
     Specifies whether mnemonics for menu items, labels, etc., should
     be honored or not. On Windows and X11, this feature is
-    on by default; on OS X, it is off. When this feature is off
+    on by default; on \macos, it is off. When this feature is off
     (that is, when \a b is false), QKeySequence::mnemonic() always
     returns an empty string.
 
@@ -211,7 +211,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
 
     QKeySequence objects can be cast to a QString to obtain a human-readable
     translated version of the sequence. Similarly, the toString() function
-    produces human-readable strings for use in menus. On OS X, the
+    produces human-readable strings for use in menus. On \macos, the
     appropriate symbols are used to describe keyboard shortcuts using special
     keys on the Macintosh keyboard.
 
@@ -219,12 +219,12 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     code point of the character; for example, 'A' gives the same key sequence
     as Qt::Key_A.
 
-    \note On OS X, references to "Ctrl", Qt::CTRL, Qt::Key_Control
+    \note On \macos, references to "Ctrl", Qt::CTRL, Qt::Key_Control
     and Qt::ControlModifier correspond to the \uicontrol Command keys on the
     Macintosh keyboard, and references to "Meta", Qt::META, Qt::Key_Meta and
     Qt::MetaModifier correspond to the \uicontrol Control keys. Developers on
-    OS X can use the same shortcut descriptions across all platforms,
-    and their applications will automatically work as expected on OS X.
+    \macos can use the same shortcut descriptions across all platforms,
+    and their applications will automatically work as expected on \macos.
 
     \section1 Standard Shortcuts
 
@@ -233,12 +233,12 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     setting up actions in a typical application. The table below shows
     some common key sequences that are often used for these standard
     shortcuts by applications on four widely-used platforms.  Note
-    that on OS X, the \uicontrol Ctrl value corresponds to the \uicontrol
+    that on \macos, the \uicontrol Ctrl value corresponds to the \uicontrol
     Command keys on the Macintosh keyboard, and the \uicontrol Meta value
     corresponds to the \uicontrol Control keys.
 
     \table
-    \header \li StandardKey      \li Windows                              \li OS X                 \li KDE          \li GNOME
+    \header \li StandardKey      \li Windows                              \li \macos                 \li KDE          \li GNOME
     \row    \li HelpContents     \li F1                                   \li Ctrl+?                   \li F1           \li F1
     \row    \li WhatsThis        \li Shift+F1                             \li Shift+F1                 \li Shift+F1     \li Shift+F1
     \row    \li Open             \li Ctrl+O                               \li Ctrl+O                   \li Ctrl+O       \li Ctrl+O
@@ -720,7 +720,7 @@ static const struct {
     \value InsertLineSeparator      Insert a new line.
     \value InsertParagraphSeparator Insert a new paragraph.
     \value Italic           Italic text.
-    \value MoveToEndOfBlock         Move cursor to end of block. This shortcut is only used on the OS X.
+    \value MoveToEndOfBlock         Move cursor to end of block. This shortcut is only used on the \macos.
     \value MoveToEndOfDocument      Move cursor to end of document.
     \value MoveToEndOfLine          Move cursor to end of line.
     \value MoveToNextChar           Move cursor to next character.
@@ -731,7 +731,7 @@ static const struct {
     \value MoveToPreviousLine       Move cursor to previous line.
     \value MoveToPreviousPage       Move cursor to previous page.
     \value MoveToPreviousWord       Move cursor to previous word.
-    \value MoveToStartOfBlock       Move cursor to start of a block. This shortcut is only used on OS X.
+    \value MoveToStartOfBlock       Move cursor to start of a block. This shortcut is only used on \macos.
     \value MoveToStartOfDocument    Move cursor to start of document.
     \value MoveToStartOfLine        Move cursor to start of line.
     \value New              Create new document.
@@ -749,7 +749,7 @@ static const struct {
     \value Save             Save document.
     \value SelectAll        Select all text.
     \value Deselect         Deselect text. Since 5.1
-    \value SelectEndOfBlock         Extend selection to the end of a text block. This shortcut is only used on OS X.
+    \value SelectEndOfBlock         Extend selection to the end of a text block. This shortcut is only used on \macos.
     \value SelectEndOfDocument      Extend selection to end of document.
     \value SelectEndOfLine          Extend selection to end of line.
     \value SelectNextChar           Extend selection to next character.
@@ -760,7 +760,7 @@ static const struct {
     \value SelectPreviousLine       Extend selection to previous line.
     \value SelectPreviousPage       Extend selection to previous page.
     \value SelectPreviousWord       Extend selection to previous word.
-    \value SelectStartOfBlock       Extend selection to the start of a text block. This shortcut is only used on OS X.
+    \value SelectStartOfBlock       Extend selection to the start of a text block. This shortcut is only used on \macos.
     \value SelectStartOfDocument    Extend selection to start of document.
     \value SelectStartOfLine        Extend selection to start of line.
     \value Underline        Underline text.
@@ -1516,7 +1516,7 @@ bool QKeySequence::isDetached() const
 
     If the key sequence has no keys, an empty string is returned.
 
-    On OS X, the string returned resembles the sequence that is
+    On \macos, the string returned resembles the sequence that is
     shown in the menu bar.
 
     \sa fromString()

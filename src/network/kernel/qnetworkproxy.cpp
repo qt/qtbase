@@ -1522,7 +1522,7 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     those settings are not found, this function will attempt to obtain
     Internet Explorer's settings and use them.
 
-    On MacOS X, this function will obtain the proxy settings using the
+    On \macos, this function will obtain the proxy settings using the
     SystemConfiguration framework from Apple. It will apply the FTP,
     HTTP and HTTPS proxy configurations for queries that contain the
     protocol tag "ftp", "http" and "https", respectively. If the SOCKS
@@ -1547,7 +1547,7 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     listed here.
 
     \list
-    \li On MacOS X, this function will ignore the Proxy Auto Configuration
+    \li On \macos, this function will ignore the Proxy Auto Configuration
     settings, since it cannot execute the associated ECMAScript code.
 
     \li On Windows platforms, this function may take several seconds to

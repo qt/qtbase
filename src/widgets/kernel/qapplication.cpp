@@ -1530,7 +1530,7 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
 
     \note Some styles do not use the palette for all drawing, for instance, if
     they make use of native theme engines. This is the case for the Windows XP,
-    Windows Vista, and OS X styles.
+    Windows Vista, and \macos styles.
 
     \sa QWidget::setPalette(), palette(), QStyle::polish()
 */
@@ -4021,7 +4021,7 @@ bool QApplication::keypadNavigationEnabled()
 
     Currently this function does nothing on Qt for Embedded Linux.
 
-    On OS X, this works more at the application level and will cause the
+    On \macos, this works more at the application level and will cause the
     application icon to bounce in the dock.
 
     On Windows, this causes the window's taskbar entry to flash for a time. If

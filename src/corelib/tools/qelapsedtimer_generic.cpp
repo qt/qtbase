@@ -139,7 +139,7 @@ qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
     number of milliseconds since January 1st, 1970 at 0:00 UTC (that is, it
     is the Unix time expressed in milliseconds).
 
-    On Linux, Windows and OS X/iOS systems, this value is usually the time
+    On Linux, Windows and Apple platforms, this value is usually the time
     since the system boot, though it usually does not include the time the
     system has spent in sleep states.
 

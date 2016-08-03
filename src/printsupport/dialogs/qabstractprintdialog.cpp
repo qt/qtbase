@@ -387,13 +387,13 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
     settings for each available printer can be modified via the dialog's
     \uicontrol{Properties} push button.
 
-    On Windows and OS X, the native print dialog is used, which means that
+    On Windows and \macos, the native print dialog is used, which means that
     some QWidget and QDialog properties set on the dialog won't be respected.
-    The native print dialog on OS X does not support setting printer options,
+    The native print dialog on \macos does not support setting printer options,
     i.e. setOptions() and setOption() have no effect.
 
     In Qt 4.4, it was possible to use the static functions to show a sheet on
-    OS X. This is no longer supported in Qt 4.5. If you want this
+    \macos. This is no longer supported in Qt 4.5. If you want this
     functionality, use QPrintDialog::open().
 
     \sa QPageSetupDialog, QPrinter
@@ -453,7 +453,7 @@ void QAbstractPrintDialog::setOptionTabs(const QList<QWidget*> &tabs)
   and exec() to return \a result.
 
   \note This function does not apply to the Native Print Dialog on the Mac
-  OS X and Windows platforms, because the dialog is required to be modal
+  \macos and Windows platforms, because the dialog is required to be modal
   and only the user can close it.
 
   \sa QDialog::done()

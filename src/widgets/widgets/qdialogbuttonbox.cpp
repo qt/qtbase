@@ -118,7 +118,7 @@ QT_BEGIN_NAMESPACE
     \endtable
 
     Additionally, button boxes that contain only buttons with ActionRole or
-    HelpRole can be considered modeless and have an alternate look on OS X:
+    HelpRole can be considered modeless and have an alternate look on \macos:
 
     \table
     \row \li modeless horizontal MacLayout
@@ -583,7 +583,7 @@ QDialogButtonBox::~QDialogButtonBox()
     contained in the button box.
 
     \value WinLayout Use a policy appropriate for applications on Windows.
-    \value MacLayout Use a policy appropriate for applications on OS X.
+    \value MacLayout Use a policy appropriate for applications on \macos.
     \value KdeLayout Use a policy appropriate for applications on KDE.
     \value GnomeLayout Use a policy appropriate for applications on GNOME.
 

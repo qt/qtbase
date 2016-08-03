@@ -870,7 +870,7 @@ QToolButton::ToolButtonPopupMode QToolButton::popupMode() const
 
     The default is disabled (i.e. false).
 
-    This property is currently ignored on OS X when using QMacStyle.
+    This property is currently ignored on \macos when using QMacStyle.
 */
 void QToolButton::setAutoRaise(bool enable)
 {

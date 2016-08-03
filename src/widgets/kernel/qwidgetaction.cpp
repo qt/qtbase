@@ -79,8 +79,8 @@ QT_BEGIN_NAMESPACE
     Note that it is up to the widget to activate the action, for example by
     reimplementing mouse event handlers and calling QAction::trigger().
 
-    \b {OS X}: If you add a widget to a menu in the application's menu
-    bar on OS X, the widget will be added and it will function but with some
+    \b {\macos}: If you add a widget to a menu in the application's menu
+    bar on \macos, the widget will be added and it will function but with some
     limitations:
     \list 1
         \li The widget is reparented away from the QMenu to the native menu
@@ -90,7 +90,7 @@ QT_BEGIN_NAMESPACE
         \li Due to Apple's design, mouse tracking on the widget currently does
             not work.
         \li Connecting the triggered() signal to a slot that opens a modal
-            dialog will cause a crash in Mac OS X 10.4 (known bug acknowledged
+            dialog will cause a crash in \macos 10.4 (known bug acknowledged
             by Apple), a workaround is to use a QueuedConnection instead of a
             DirectConnection.
     \endlist

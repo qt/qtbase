@@ -139,7 +139,7 @@ void QAbstractOpenGLFunctionsPrivate::removeExternalFunctions(QOpenGLContext *co
 
     Please note that some vendors, notably Apple, do not implement the
     Compatibility profile. Therefore if you wish to target new OpenGL features
-    on OS X then you should ensure that you request a Core profile context via
+    on \macos then you should ensure that you request a Core profile context via
     QSurfaceFormat::setProfile().
 
     Qt provides classes for all version and Core and Compatibility profile

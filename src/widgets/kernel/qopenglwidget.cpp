@@ -106,7 +106,7 @@ QT_BEGIN_NAMESPACE
 
   \note Calling QSurfaceFormat::setDefaultFormat() before constructing
   the QApplication instance is mandatory on some platforms (for example,
-  OS X) when an OpenGL core profile context is requested. This is to
+  \macos) when an OpenGL core profile context is requested. This is to
   ensure that resource sharing between contexts stays functional as all
   internal contexts are created using the correct version and profile.
 
@@ -461,7 +461,7 @@ QT_BEGIN_NAMESPACE
   recommended to limit the usage of this approach to cases where there
   is no other choice. Note that this option is not suitable for most
   embedded and mobile platforms, and it is known to have issues on
-  certain desktop platforms (e.g. OS X) too. The stable,
+  certain desktop platforms (e.g. \macos) too. The stable,
   cross-platform solution is always QOpenGLWidget.
 
   \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other

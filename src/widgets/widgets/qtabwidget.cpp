@@ -1316,7 +1316,7 @@ void QTabWidget::setUsesScrollButtons(bool useButtons)
 /*!
     \property QTabWidget::documentMode
     \brief Whether or not the tab widget is rendered in a mode suitable for document
-     pages. This is the same as document mode on OS X.
+     pages. This is the same as document mode on \macos.
     \since 4.5
 
     When this property is set the tab widget frame is not rendered. This mode is useful

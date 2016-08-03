@@ -66,7 +66,7 @@ inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePla
 /*!
     \since 5.2
 
-    Returns the native NSMenu for this menu. Available on OS X only.
+    Returns the native NSMenu for this menu. Available on \macos only.
 
     \note Qt sets the delegate on the native menu. If you need to set your own
     delegate, make sure you save the original one and forward any calls to it.
@@ -87,7 +87,7 @@ NSMenu *QMenu::toNSMenu()
     \since 5.2
 
     Set this menu to be the dock menu available by option-clicking
-    on the application dock icon. Available on OS X only.
+    on the application dock icon. Available on \macos only.
 */
 void QMenu::setAsDockMenu()
 {
@@ -105,7 +105,7 @@ void QMenu::setAsDockMenu()
     \deprecated
 
     Sets this \a menu to be the dock menu available by option-clicking
-    on the application dock icon. Available on OS X only.
+    on the application dock icon. Available on \macos only.
 
     Deprecated; use \l QMenu::setAsDockMenu() instead.
 */
@@ -135,7 +135,7 @@ void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* 
 /*!
     \since 5.2
 
-    Returns the native NSMenu for this menu bar. Available on OS X only.
+    Returns the native NSMenu for this menu bar. Available on \macos only.
 
     \note Qt may set the delegate on the native menu bar. If you need to set your
     own delegate, make sure you save the original one and forward any calls to it.

@@ -250,7 +250,7 @@ QByteArray QStorageInfo::fileSystemType() const
 /*!
     Returns the device for this volume.
 
-    For example, on Unix filesystems (including OS X), this returns the
+    For example, on Unix filesystems (including \macos), this returns the
     devpath like \c /dev/sda0 for local storages. On Windows, it returns the UNC
     path starting with \c \\\\?\\ for local storages (in other words, the volume GUID).
 

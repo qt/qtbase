@@ -558,7 +558,7 @@ void QScroller::stop()
 
     \note Please note that this value should be physically correct. The actual DPI settings
     that Qt returns for the display may be reported wrongly on purpose by the underlying
-    windowing system, for example on OS X.
+    windowing system, for example on \macos.
 */
 QPointF QScroller::pixelPerMeter() const
 {

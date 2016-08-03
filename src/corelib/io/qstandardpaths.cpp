@@ -146,7 +146,7 @@ QT_BEGIN_NAMESPACE
     paths, if any, represent non-writable locations.
 
     \table
-    \header \li Path type \li OS X  \li Windows
+    \header \li Path type \li \macos  \li Windows
     \row \li DesktopLocation
          \li "~/Desktop"
          \li "C:/Users/<USER>/Desktop"
@@ -622,7 +622,7 @@ QString QStandardPaths::displayName(StandardLocation type)
   On Unix, \c XDG_DATA_HOME is set to \e ~/.qttest/share, \c XDG_CONFIG_HOME is
   set to \e ~/.qttest/config, and \c XDG_CACHE_HOME is set to \e ~/.qttest/cache.
 
-  On OS X, data goes to \e ~/.qttest/Application Support, cache goes to
+  On \macos, data goes to \e ~/.qttest/Application Support, cache goes to
   \e ~/.qttest/Cache, and config goes to \e ~/.qttest/Preferences.
 
   On Windows, everything goes to a "qttest" directory under Application Data.

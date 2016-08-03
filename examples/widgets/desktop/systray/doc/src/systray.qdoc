@@ -137,7 +137,7 @@
     to show the message with the title, body, and icon for the time
     specified in milliseconds.
 
-    OS X users note: The Growl notification system must be
+    \macos users note: The Growl notification system must be
     installed for QSystemTrayIcon::showMessage() to display messages.
 
     QSystemTrayIcon also has the corresponding, \l {QSystemTrayIcon::}
@@ -172,7 +172,7 @@
 
     We have reimplemented the QWidget::closeEvent() event handler to
     receive widget close events, showing the above message to the
-    users when they are closing the editor window. On OS X we need to
+    users when they are closing the editor window. On \macos we need to
     avoid showing the message and accepting the close event when the
     user really intends to quit the application, that is, when the
     user has triggered "Quit" in the menu bar or pressed the Command+Q

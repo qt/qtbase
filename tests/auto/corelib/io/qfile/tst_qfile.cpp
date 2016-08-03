@@ -2547,7 +2547,7 @@ void tst_QFile::rename()
  \since 4.5
 
  Some special files have QFile::atEnd() returning true, even though there is
- more data available. True for corner cases, as well as some mounts on OS X.
+ more data available. True for corner cases, as well as some mounts on \macos.
 
  Here, we reproduce that condition by having a QFile sub-class with this
  peculiar atEnd() behavior.
