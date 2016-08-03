@@ -357,6 +357,16 @@ jobject QtAndroidPrivate::service()
     return g_jService;
 }
 
+jobject QtAndroidPrivate::context()
+{
+    if (g_jActivity)
+        return g_jActivity;
+    if (g_jService)
+        return g_jService;
+
+    return 0;
+}
+
 JavaVM *QtAndroidPrivate::javaVM()
 {
     return g_javaVM;
