@@ -1895,8 +1895,9 @@
         "xkbcommon-system": {
             "description": "Using system-provided xkbcommon",
             "emitIf": "features.xcb",
+            "enable": "input.xkbcommon == 'system'",
+            "disable": "input.xkbcommon == 'qt' || input.xkbcommon == 'no'",
             "condition": "tests.xkbcommon-x11",
-            "disable": "input.xkbcommon == 'qt'",
             "output": [
                 { "type": "publicQtConfig", "negative": true, "name": "xkbcommon-qt" },
                 { "type": "library", "name": "xkbcommon", "test": "xkbcommon-x11" }
