@@ -398,10 +398,7 @@ BUILD_ON_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
 fi
-DEV_NULL=/dev/null
 if [ "$OSTYPE" = "msys" ]; then
-    DEV_NULL=/tmp/empty-file
-    echo "" > $DEV_NULL
     relpath=`(cd "$relpath"; pwd -W)`
     outpath=`pwd -W`
 fi
@@ -1861,20 +1858,6 @@ if cmp -s "$HOST_VARS_FILE" "$HOST_VARS_OUTFILE"; then
 else
     mv -f $HOST_VARS_FILE "$HOST_VARS_OUTFILE"
     HOST_VARS_FILE="$HOST_VARS_OUTFILE"
-fi
-
-#-------------------------------------------------------------------------------
-# Verify makespec
-#-------------------------------------------------------------------------------
-QMAKE_OUTPUT=`"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" -E -nocache -spec "$XQMAKESPEC" "QT=" $DEV_NULL 2>&1`
-if [ $? != "0" ]; then
-    echo "Failed to process makespec for platform '$XPLATFORM'"
-    if [ "$OPT_VERBOSE" = "yes" ]; then
-        echo "$QMAKE_OUTPUT"
-    else
-        echo "Turn on verbose messaging (-v) to see the final report."
-    fi
-    exit 101
 fi
 
 #-------------------------------------------------------------------------------
