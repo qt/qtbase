@@ -764,6 +764,7 @@ void tst_QProcess::restartProcess()
 // Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::closeWriteChannel()
 {
+    QByteArray testData("Data to read");
     QProcess more;
     more.start("testProcessEOF/testProcessEOF");
 
@@ -771,19 +772,21 @@ void tst_QProcess::closeWriteChannel()
     QVERIFY(!more.waitForReadyRead(250));
     QCOMPARE(more.error(), QProcess::Timedout);
 
-    QVERIFY(more.write("Data to read") != -1);
+    QCOMPARE(more.write(testData), qint64(testData.size()));
 
     QVERIFY(!more.waitForReadyRead(250));
     QCOMPARE(more.error(), QProcess::Timedout);
 
     more.closeWriteChannel();
-
-    QVERIFY(more.waitForReadyRead(5000));
-    QVERIFY(more.readAll().startsWith("Data to read"));
+    // During closeWriteChannel() call, we might also get an I/O completion
+    // on the read pipe. So, take this into account before waiting for
+    // the new incoming data.
+    while (more.bytesAvailable() < testData.size())
+        QVERIFY(more.waitForReadyRead(5000));
+    QCOMPARE(more.readAll(), testData);
 
     if (more.state() == QProcess::Running)
-        more.write("q");
-    QVERIFY(more.waitForFinished(5000));
+        QVERIFY(more.waitForFinished(5000));
     QCOMPARE(more.exitStatus(), QProcess::NormalExit);
     QCOMPARE(more.exitCode(), 0);
 }
