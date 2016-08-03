@@ -4419,8 +4419,11 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     stderr. Under Windows, the message is sent to the debugger.
     On QNX the message is sent to slogger2. This
     function does nothing if \c QT_NO_WARNING_OUTPUT was defined
-    during compilation; it exits if the environment variable \c
-    QT_FATAL_WARNINGS is not empty.
+    during compilation; it exits if at the nth warning corresponding to the
+    counter in environment variable \c QT_FATAL_WARNINGS. That is, if the
+    environment variable contains the value 1, it will exit on the 1st message;
+    if it contains the value 10, it will exit on the 10th message. Any
+    non-numeric value is equivalent to 1.
 
     This function takes a format string and a list of arguments,
     similar to the C printf() function. The format should be a Latin-1

@@ -153,19 +153,39 @@ Q_NORETURN
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message);
 static void qt_message_print(QtMsgType, const QMessageLogContext &context, const QString &message);
 
+static int checked_var_value(const char *varname)
+{
+    // qEnvironmentVariableIntValue returns 0 on both parsing failure and on
+    // empty, but we need to distinguish between the two for backwards
+    // compatibility reasons.
+    QByteArray str = qgetenv(varname);
+    if (str.isEmpty())
+        return 0;
+
+    bool ok;
+    int value = str.toInt(&ok, 0);
+    return ok ? value : 1;
+}
+
 static bool isFatal(QtMsgType msgType)
 {
     if (msgType == QtFatalMsg)
         return true;
 
     if (msgType == QtCriticalMsg) {
-        static bool fatalCriticals = !qEnvironmentVariableIsEmpty("QT_FATAL_CRITICALS");
-        return fatalCriticals;
+        static QAtomicInt fatalCriticals = checked_var_value("QT_FATAL_CRITICALS");
+
+        // it's fatal if the current value is exactly 1,
+        // otherwise decrement if it's non-zero
+        return fatalCriticals.load() && fatalCriticals.fetchAndAddRelaxed(-1) == 1;
     }
 
     if (msgType == QtWarningMsg || msgType == QtCriticalMsg) {
-        static bool fatalWarnings = !qEnvironmentVariableIsEmpty("QT_FATAL_WARNINGS");
-        return fatalWarnings;
+        static QAtomicInt fatalWarnings = checked_var_value("QT_FATAL_WARNINGS");
+
+        // it's fatal if the current value is exactly 1,
+        // otherwise decrement if it's non-zero
+        return fatalWarnings.load() && fatalWarnings.fetchAndAddRelaxed(-1) == 1;
     }
 
     return false;
