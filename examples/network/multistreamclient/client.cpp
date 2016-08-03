@@ -1,12 +1,22 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 Alex Trotsenko <alex1973tr@gmail.com>
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -46,9 +56,11 @@
 #include "timeconsumer.h"
 #include "chatconsumer.h"
 
+#include "../shared/sctpchannels.h"
+
 Client::Client(QWidget *parent)
     : QDialog(parent)
-    , consumers(NumberOfChannels)
+    , consumers(SctpChannels::NumberOfChannels)
 {
     setWindowTitle(tr("Multi-stream Client"));
 
@@ -100,12 +112,12 @@ Client::Client(QWidget *parent)
     buttonBox->addButton(quitButton, QDialogButtonBox::AcceptRole);
 
     QLabel *movieLabel = new QLabel(tr("Movie stream:"));
-    consumers[Movie] = new MovieConsumer(this);
+    consumers[SctpChannels::Movie] = new MovieConsumer(this);
     QLabel *timeLabel = new QLabel(tr("Time stream:"));
-    consumers[Time] = new TimeConsumer(this);
+    consumers[SctpChannels::Time] = new TimeConsumer(this);
     QLabel *chatLabel = new QLabel(tr("&Chat:"));
-    consumers[Chat] = new ChatConsumer(this);
-    chatLabel->setBuddy(consumers[Chat]->widget());
+    consumers[SctpChannels::Chat] = new ChatConsumer(this);
+    chatLabel->setBuddy(consumers[SctpChannels::Chat]->widget());
 
     connect(hostCombo, &QComboBox::editTextChanged, this, &Client::enableConnectButton);
     connect(portLineEdit, &QLineEdit::textChanged, this, &Client::enableConnectButton);
@@ -116,8 +128,8 @@ Client::Client(QWidget *parent)
     connect(sctpSocket, &QSctpSocket::channelReadyRead, this, &Client::readDatagram);
     connect(sctpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SLOT(displayError(QAbstractSocket::SocketError)));
-    connect(consumers[Time], &Consumer::writeDatagram, this, &Client::writeDatagram);
-    connect(consumers[Chat], &Consumer::writeDatagram, this, &Client::writeDatagram);
+    connect(consumers[SctpChannels::Time], &Consumer::writeDatagram, this, &Client::writeDatagram);
+    connect(consumers[SctpChannels::Chat], &Consumer::writeDatagram, this, &Client::writeDatagram);
 
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->addWidget(hostLabel, 0, 0);
@@ -127,10 +139,10 @@ Client::Client(QWidget *parent)
     mainLayout->addWidget(buttonBox, 2, 0, 1, 2);
     mainLayout->addWidget(movieLabel, 3, 0);
     mainLayout->addWidget(timeLabel, 3, 1);
-    mainLayout->addWidget(consumers[Movie]->widget(), 4, 0);
-    mainLayout->addWidget(consumers[Time]->widget(), 4, 1);
+    mainLayout->addWidget(consumers[SctpChannels::Movie]->widget(), 4, 0);
+    mainLayout->addWidget(consumers[SctpChannels::Time]->widget(), 4, 1);
     mainLayout->addWidget(chatLabel, 5, 0);
-    mainLayout->addWidget(consumers[Chat]->widget(), 6, 0, 1, 2);
+    mainLayout->addWidget(consumers[SctpChannels::Chat]->widget(), 6, 0, 1, 2);
     setLayout(mainLayout);
 
     portLineEdit->setFocus();
@@ -143,7 +155,7 @@ Client::~Client()
 
 void Client::connected()
 {
-    consumers[Chat]->widget()->setFocus();
+    consumers[SctpChannels::Chat]->widget()->setFocus();
 }
 
 void Client::disconnected()
@@ -189,7 +201,7 @@ void Client::displayError(QAbstractSocket::SocketError socketError)
                                  .arg(sctpSocket->errorString()));
     }
 
-    connectButton->setEnabled(true);
+    enableConnectButton();
 }
 
 void Client::enableConnectButton()

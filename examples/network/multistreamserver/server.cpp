@@ -1,12 +1,22 @@
 /****************************************************************************
 **
 ** Copyright (C) 2015 Alex Trotsenko <alex1973tr@gmail.com>
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** BSD License Usage
+** Alternatively, you may use this file under the terms of the BSD license
+** as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are
@@ -47,9 +57,11 @@
 #include "timeprovider.h"
 #include "chatprovider.h"
 
+#include "../shared/sctpchannels.h"
+
 Server::Server(QWidget *parent)
     : QDialog(parent)
-    , providers(NumberOfChannels)
+    , providers(SctpChannels::NumberOfChannels)
 {
     setWindowTitle(tr("Multi-stream Server"));
 
@@ -59,15 +71,15 @@ Server::Server(QWidget *parent)
     statusLabel = new QLabel;
     QPushButton *quitButton = new QPushButton(tr("Quit"));
 
-    providers[Movie] = new MovieProvider(this);
-    providers[Time] = new TimeProvider(this);
-    providers[Chat] = new ChatProvider(this);
+    providers[SctpChannels::Movie] = new MovieProvider(this);
+    providers[SctpChannels::Time] = new TimeProvider(this);
+    providers[SctpChannels::Chat] = new ChatProvider(this);
 
     connect(sctpServer, &QSctpServer::newConnection, this, &Server::newConnection);
     connect(quitButton, &QPushButton::clicked, this, &Server::accept);
-    connect(providers[Movie], &Provider::writeDatagram, this, &Server::writeDatagram);
-    connect(providers[Time], &Provider::writeDatagram, this, &Server::writeDatagram);
-    connect(providers[Chat], &Provider::writeDatagram, this, &Server::writeDatagram);
+    connect(providers[SctpChannels::Movie], &Provider::writeDatagram, this, &Server::writeDatagram);
+    connect(providers[SctpChannels::Time], &Provider::writeDatagram, this, &Server::writeDatagram);
+    connect(providers[SctpChannels::Chat], &Provider::writeDatagram, this, &Server::writeDatagram);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(statusLabel);

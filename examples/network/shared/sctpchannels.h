@@ -48,26 +48,15 @@
 **
 ****************************************************************************/
 
-#include "movieprovider.h"
-#include <QMovie>
-#include <QString>
-#include <QDataStream>
+#ifndef SCTPCHANNELS_H
+#define SCTPCHANNELS_H
 
-MovieProvider::MovieProvider(QObject *parent)
-    : Provider(parent)
-{
-    movie = new QMovie(this);
-    movie->setCacheMode(QMovie::CacheAll);
-    movie->setFileName(QLatin1String("animation.gif"));
-    connect(movie, &QMovie::frameChanged, this, &MovieProvider::frameChanged);
-    movie->start();
-}
+enum SctpChannels {
+    Movie = 0,
+    Time = 1,
+    Chat = 2,
 
-void MovieProvider::frameChanged()
-{
-    QByteArray buf;
-    QDataStream ds(&buf, QIODevice::WriteOnly);
+    NumberOfChannels = 3
+};
 
-    ds << movie->currentImage();
-    emit writeDatagram(0, buf);
-}
+#endif
