@@ -1378,11 +1378,13 @@ void tst_QDateTime::toTimeSpec()
         QCOMPARE(utcToLocal.date(), fromLocal.date());
         QCOMPARE(utcToLocal.time(), fromLocal.time());
         QCOMPARE(utcToLocal.timeSpec(), Qt::LocalTime);
+        QCOMPARE(utcToLocal.toTimeSpec(Qt::UTC), fromUtc);
 
         QCOMPARE(localToUtc, fromUtc);
         QCOMPARE(localToUtc.date(), fromUtc.date());
         QCOMPARE(localToUtc.time(), fromUtc.time());
         QCOMPARE(localToUtc.timeSpec(), Qt::UTC);
+        QCOMPARE(localToUtc.toTimeSpec(Qt::LocalTime), fromLocal);
 
         QCOMPARE(utcToUtc, localToUtc);
         QCOMPARE(utcToUtc.date(), localToUtc.date());
@@ -1399,11 +1401,13 @@ void tst_QDateTime::toTimeSpec()
         QCOMPARE(utcToOffset.date(), fromUtc.date());
         QCOMPARE(utcToOffset.time(), fromUtc.time());
         QCOMPARE(utcToOffset.timeSpec(), Qt::UTC);
+        QCOMPARE(utcToOffset.toTimeSpec(Qt::UTC), fromUtc);
 
         QCOMPARE(localToOffset, fromUtc);
         QCOMPARE(localToOffset.date(), fromUtc.date());
         QCOMPARE(localToOffset.time(), fromUtc.time());
         QCOMPARE(localToOffset.timeSpec(), Qt::UTC);
+        QCOMPARE(localToOffset.toTimeSpec(Qt::LocalTime), fromLocal);
     } else {
         QSKIP("Not tested with timezone other than Central European (CET/CEST)");
     }
