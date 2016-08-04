@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the Android port of the Qt Toolkit.
@@ -143,6 +144,9 @@ public class QtActivityDelegate
     private int m_portraitKeyboardHeight = 0;
     private int m_landscapeKeyboardHeight = 0;
     private int m_probeKeyboardHeightDelay = 50; // ms
+    private CursorHandle m_cursorHandle;
+    private CursorHandle m_leftSelectionHandle;
+    private CursorHandle m_rightSelectionHandle;
 
     public void setFullScreen(boolean enterFullScreen)
     {
@@ -468,6 +472,49 @@ public class QtActivityDelegate
             return;
 
         m_imm.updateSelection(m_editText, selStart, selEnd, candidatesStart, candidatesEnd);
+    }
+
+    // Values coming from QAndroidInputContext::CursorHandleShowMode
+    private static final int CursorHandleNotShown = 0;
+    private static final int CursorHandleShowNormal = 1;
+    private static final int CursorHandleShowSelection = 2;
+
+    /* called from the C++ code when the position of the cursor or selection handles needs to
+       be adjusted
+
+       mode is one of QAndroidInputContext::CursorHandleShowMode)
+    */
+    public void updateHandles(int mode, int x1, int y1, int x2, int y2)
+    {
+        if (mode == CursorHandleNotShown) {
+            if (m_cursorHandle != null)
+                m_cursorHandle.hide();
+            if (m_rightSelectionHandle != null) {
+                m_rightSelectionHandle.hide();
+                m_leftSelectionHandle.hide();
+            }
+        } else if (mode == CursorHandleShowNormal) {
+            if (m_cursorHandle == null) {
+                m_cursorHandle = new CursorHandle(m_activity, m_layout, QtNative.IdCursorHandle,
+                                                  android.R.attr.textSelectHandle);
+            }
+            m_cursorHandle.setPosition(x1, y1);
+            if (m_rightSelectionHandle != null) {
+                m_rightSelectionHandle.hide();
+                m_leftSelectionHandle.hide();
+            }
+        } else if (mode == CursorHandleShowSelection) {
+            if (m_rightSelectionHandle == null) {
+                m_leftSelectionHandle = new CursorHandle(m_activity, m_layout, QtNative.IdLeftHandle,
+                                                         android.R.attr.textSelectHandleLeft);
+                m_rightSelectionHandle = new CursorHandle(m_activity, m_layout, QtNative.IdRightHandle,
+                                                          android.R.attr.textSelectHandleRight);
+            }
+            m_leftSelectionHandle.setPosition(x1,y1);
+            m_rightSelectionHandle.setPosition(x2,y2);
+            if (m_cursorHandle != null)
+                m_cursorHandle.hide();
+        }
     }
 
     public boolean loadApplication(Activity activity, ClassLoader classLoader, Bundle loaderParams)

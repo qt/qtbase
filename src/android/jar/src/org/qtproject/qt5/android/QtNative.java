@@ -492,6 +492,20 @@ public class QtNative
         });
     }
 
+    private static void updateHandles(final int mode,
+                                      final int x1,
+                                      final int y1,
+                                      final int x2,
+                                      final int y2)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.updateHandles(mode, x1, y1, x2, y2);
+            }
+        });
+    }
+
     private static void showSoftwareKeyboard(final int x,
                                              final int y,
                                              final int width,
@@ -776,6 +790,13 @@ public class QtNative
     public static native void keyboardVisibilityChanged(boolean visibility);
     public static native void keyboardGeometryChanged(int x, int y, int width, int height);
     // keyboard methods
+
+    // handle methods
+    public static final int IdCursorHandle = 1;
+    public static final int IdLeftHandle = 2;
+    public static final int IdRightHandle = 3;
+    public static native void handleLocationChanged(int id, int x, int y);
+    // handle methods
 
     // dispatch events methods
     public static native boolean dispatchGenericMotionEvent(MotionEvent ev);

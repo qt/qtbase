@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -94,6 +95,7 @@ public:
     bool isComposing() const;
     void clear();
     void setFocusObject(QObject *object);
+    void sendShortcut(const QKeySequence &);
 
     //---------------//
     jboolean beginBatchEdit();
@@ -117,6 +119,10 @@ public:
 
 public slots:
     void updateCursorPosition();
+    void updateSelectionHandles();
+    void handleLocationChanged(int handleId, int x, int y);
+    void touchDown(int x, int y);
+    void keyDown();
 
 private slots:
     void showInputPanelLater(Qt::ApplicationState);
@@ -138,6 +144,12 @@ private:
     int m_composingCursor;
     QMetaObject::Connection m_updateCursorPosConnection;
     bool m_blockUpdateSelection;
+    enum CursorHandleShowMode {
+        CursorHandleNotShown,
+        CursorHandleShowNormal = 1,
+        CursorHandleShowSelection = 2
+    };
+    CursorHandleShowMode m_cursorHandleShown;
     int m_batchEditNestingLevel;
     QObject *m_focusObject;
 };

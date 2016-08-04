@@ -56,6 +56,9 @@ namespace QtAndroidInput
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd);
     // Software keyboard support
 
+    // cursor/selection handles
+    void updateHandles(int handleCount, QPoint cursor = QPoint(), QPoint anchor = QPoint());
+
     bool registerNatives(JNIEnv *env);
 }
 
