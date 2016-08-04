@@ -769,8 +769,10 @@ void QAbstractItemView::setSelectionModel(QItemSelectionModel *selectionModel)
     QModelIndex oldCurrentIndex;
 
     if (d->selectionModel) {
-        oldSelection = d->selectionModel->selection();
-        oldCurrentIndex = d->selectionModel->currentIndex();
+        if (d->selectionModel->model() == selectionModel->model()) {
+            oldSelection = d->selectionModel->selection();
+            oldCurrentIndex = d->selectionModel->currentIndex();
+        }
 
         disconnect(d->selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                    this, SLOT(selectionChanged(QItemSelection,QItemSelection)));

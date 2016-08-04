@@ -1939,11 +1939,18 @@ void tst_QAbstractItemView::QTBUG50535_update_on_new_selection_model()
     {
     public:
         ListView()
-            : m_paintEventsCount(0)
+            : m_paintEventsCount(0), m_deselectedMustBeEmpty(false), m_selectionChangedOk(true)
         {
         }
 
+        void setSelectionModel(QItemSelectionModel *model) Q_DECL_OVERRIDE
+        {
+            m_deselectedMustBeEmpty = !selectionModel() || !model || selectionModel()->model() != model->model();
+            QListView::setSelectionModel(model);
+            m_deselectedMustBeEmpty = false;
+        }
         int m_paintEventsCount;
+        bool selectionChangedOk() const { return m_selectionChangedOk; }
 
     protected:
         bool viewportEvent(QEvent *event) Q_DECL_OVERRIDE
@@ -1952,6 +1959,24 @@ void tst_QAbstractItemView::QTBUG50535_update_on_new_selection_model()
                 ++m_paintEventsCount;
             return QListView::viewportEvent(event);
         }
+
+        void selectionChanged(const QItemSelection &selected,
+                              const QItemSelection &deselected) Q_DECL_OVERRIDE
+        {
+            if (m_deselectedMustBeEmpty && !deselected.isEmpty())
+                m_selectionChangedOk = false;
+
+            // Make sure both selections belong to the same model
+            foreach (const QModelIndex &nmi, selected.indexes()) {
+                foreach (const QModelIndex &omi, deselected.indexes()) {
+                    m_selectionChangedOk = m_selectionChangedOk && (nmi.model() == omi.model());
+                }
+            }
+            QListView::selectionChanged(selected, deselected);
+        }
+    private:
+        bool m_deselectedMustBeEmpty;
+        bool m_selectionChangedOk;
     };
 
     // keep the current/selected row in the "low range", i.e. be sure it's visible, otherwise we
@@ -1962,7 +1987,7 @@ void tst_QAbstractItemView::QTBUG50535_update_on_new_selection_model()
     view.selectionModel()->setCurrentIndex(model.index(1, 0), QItemSelectionModel::SelectCurrent);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-
+    QVERIFY(view.selectionChangedOk());
 
     QItemSelectionModel selectionModel(&model);
     selectionModel.setCurrentIndex(model.index(2, 0), QItemSelectionModel::Current);
@@ -1970,6 +1995,7 @@ void tst_QAbstractItemView::QTBUG50535_update_on_new_selection_model()
     int oldPaintEventsCount = view.m_paintEventsCount;
     view.setSelectionModel(&selectionModel);
     QTRY_VERIFY(view.m_paintEventsCount > oldPaintEventsCount);
+    QVERIFY(view.selectionChangedOk());
 
 
     QItemSelectionModel selectionModel2(&model);
@@ -1979,6 +2005,19 @@ void tst_QAbstractItemView::QTBUG50535_update_on_new_selection_model()
     oldPaintEventsCount = view.m_paintEventsCount;
     view.setSelectionModel(&selectionModel2);
     QTRY_VERIFY(view.m_paintEventsCount > oldPaintEventsCount);
+    QVERIFY(view.selectionChangedOk());
+
+    // Tests QAbstractItemView::selectionChanged
+    QStandardItemModel model1;
+    for (int i = 0; i < 10; ++i)
+        model1.appendRow(new QStandardItem(QString::number(i)));
+    view.setModel(&model1);
+
+    QItemSelectionModel selectionModel1(&model1);
+    selectionModel1.select(model1.index(0, 0), QItemSelectionModel::ClearAndSelect);
+    selectionModel1.setCurrentIndex(model1.index(1, 0), QItemSelectionModel::Current);
+    view.setSelectionModel(&selectionModel1);
+    QVERIFY(view.selectionChangedOk());
 }
 
 void tst_QAbstractItemView::testSelectionModelInSyncWithView()
