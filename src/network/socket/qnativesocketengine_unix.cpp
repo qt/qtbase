@@ -307,7 +307,7 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     // handle non-getsockopt cases first
     if (opt == QNativeSocketEngine::BindExclusively || opt == QNativeSocketEngine::NonBlockingSocketOption
             || opt == QNativeSocketEngine::BroadcastSocketOption)
-        return true;
+        return -1;
 
     int n, level;
     int v = -1;

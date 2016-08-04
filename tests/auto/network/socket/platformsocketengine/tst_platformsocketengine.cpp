@@ -139,6 +139,7 @@ void tst_PlatformSocketEngine::construction()
     QCOMPARE(socketDevice.peerAddress(), QHostAddress());
     QCOMPARE(socketDevice.peerPort(), quint16(0));
     QCOMPARE(socketDevice.error(), QAbstractSocket::UnknownSocketError);
+    QCOMPARE(socketDevice.option(QNativeSocketEngine::NonBlockingSocketOption), -1);
 
     QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::bytesAvailable() was called in QAbstractSocket::UnconnectedState");
     QCOMPARE(socketDevice.bytesAvailable(), -1);
