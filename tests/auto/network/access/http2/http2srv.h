@@ -33,9 +33,9 @@
 #include <QtNetwork/private/http2frames_p.h>
 #include <QtNetwork/private/hpack_p.h>
 
+#include <QtNetwork/qabstractsocket.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qtcpserver.h>
-#include <QtNetwork/qsslsocket.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qglobal.h>
 
@@ -62,7 +62,7 @@ class Http2Server : public QTcpServer
 {
     Q_OBJECT
 public:
-    Http2Server(const Http2Settings &serverSettings,
+    Http2Server(bool clearText, const Http2Settings &serverSettings,
                 const Http2Settings &clientSettings);
 
     ~Http2Server();
@@ -105,7 +105,7 @@ Q_SIGNALS:
     void windowUpdate(quint32 streamID);
 
 private slots:
-    void connectionEncrypted();
+    void connectionEstablished();
     void readReady();
 
 private:
@@ -113,7 +113,7 @@ private:
 
     quint32 clientSetting(Http2::Settings identifier, quint32 defaultValue);
 
-    QScopedPointer<QSslSocket> socket;
+    QScopedPointer<QAbstractSocket> socket;
 
     // Connection preface:
     bool waitingClientPreface = false;
@@ -155,6 +155,7 @@ private:
     quint32 streamRecvWindowSize = Http2::defaultSessionWindowSize;
 
     QByteArray responseBody;
+    bool clearTextHTTP2 = false;
 
 protected slots:
     void ignoreErrorSlot();

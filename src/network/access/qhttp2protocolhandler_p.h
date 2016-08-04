@@ -55,7 +55,7 @@
 #include <private/qabstractprotocolhandler_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 
-#if !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#if !defined(QT_NO_HTTP)
 
 #include "http2/http2protocol_p.h"
 #include "http2/http2streams_p.h"
@@ -202,6 +202,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#endif // !defined(QT_NO_HTTP)
 
 #endif

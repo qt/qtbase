@@ -33,9 +33,13 @@
 
 #include "http2srv.h"
 
+#ifndef QT_NO_SSL
 #include <QtNetwork/qsslconfiguration.h>
-#include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qsslkey.h>
+#endif
+
+#include <QtNetwork/qabstractsocket.h>
+
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qfile.h>
@@ -60,8 +64,9 @@ inline bool is_valid_client_stream(quint32 streamID)
 
 }
 
-Http2Server::Http2Server(const Http2Settings &ss, const Http2Settings &cs)
-    : serverSettings(ss)
+Http2Server::Http2Server(bool h2c, const Http2Settings &ss, const Http2Settings &cs)
+    : serverSettings(ss),
+      clearTextHTTP2(h2c)
 {
     for (const auto &s : cs)
         expectedClientSettings[quint16(s.identifier)] = s.value;
@@ -97,6 +102,11 @@ void Http2Server::setResponseBody(const QByteArray &body)
 
 void Http2Server::startServer()
 {
+#ifdef QT_NO_SSL
+    // Let the test fail with timeout.
+    if (!clearTextHTTP2)
+        return;
+#endif
     if (listen())
         emit serverStarted(serverPort());
 }
@@ -160,19 +170,17 @@ void Http2Server::sendDATA(quint32 streamID, quint32 windowSize)
     Q_ASSERT(offset < quint32(responseBody.size()));
 
     const quint32 bytes = std::min<quint32>(windowSize, responseBody.size() - offset);
-    outboundFrame.start(FrameType::DATA, FrameFlag::EMPTY, streamID);
+    const quint32 frameSizeLimit(clientSetting(Settings::MAX_FRAME_SIZE_ID, Http2::maxFrameSize));
+    const uchar *src = reinterpret_cast<const uchar *>(responseBody.constData() + offset);
     const bool last = offset + bytes == quint32(responseBody.size());
 
-    const quint32 frameSizeLimit(clientSetting(Settings::MAX_FRAME_SIZE_ID, Http2::maxFrameSize));
-    outboundFrame.writeDATA(*socket, frameSizeLimit,
-                            reinterpret_cast<const uchar *>(responseBody.constData() + offset),
-                            bytes);
+    outboundFrame.start(FrameType::DATA, FrameFlag::EMPTY, streamID);
+    outboundFrame.writeDATA(*socket, frameSizeLimit, src, bytes);
 
     if (last) {
         outboundFrame.start(FrameType::DATA, FrameFlag::END_STREAM, streamID);
         outboundFrame.setPayloadSize(0);
         outboundFrame.write(*socket);
-
         suspendedStreams.erase(it);
         activeRequests.erase(streamID);
 
@@ -194,31 +202,45 @@ void Http2Server::sendWINDOW_UPDATE(quint32 streamID, quint32 delta)
 
 void Http2Server::incomingConnection(qintptr socketDescriptor)
 {
-    socket.reset(new QSslSocket);
-    // Add HTTP2 as supported protocol:
-    auto conf = QSslConfiguration::defaultConfiguration();
-    auto protos = conf.allowedNextProtocols();
-    protos.prepend(QSslConfiguration::ALPNProtocolHTTP2);
-    conf.setAllowedNextProtocols(protos);
-    socket->setSslConfiguration(conf);
-    // SSL-related setup ...
-    socket->setPeerVerifyMode(QSslSocket::VerifyNone);
-    socket->setProtocol(QSsl::TlsV1_2OrLater);
-    connect(socket.data(), SIGNAL(sslErrors(QList<QSslError>)),
-            this, SLOT(ignoreErrorSlot()));
-    QFile file(SRCDIR "certs/fluke.key");
-    file.open(QIODevice::ReadOnly);
-    QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
-    socket->setPrivateKey(key);
-    auto localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
-    socket->setLocalCertificateChain(localCert);
-    socket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState);
-    // Stop listening.
-    close();
-    // Start SSL handshake and ALPN:
-    connect(socket.data(), SIGNAL(encrypted()),
-            this, SLOT(connectionEncrypted()));
-    socket->startServerEncryption();
+    if (clearTextHTTP2) {
+        socket.reset(new QTcpSocket);
+        const bool set = socket->setSocketDescriptor(socketDescriptor);
+        Q_UNUSED(set) Q_ASSERT(set);
+        // Stop listening:
+        close();
+        QMetaObject::invokeMethod(this, "connectionEstablished",
+                                  Qt::QueuedConnection);
+    } else {
+#ifndef QT_NO_SSL
+        socket.reset(new QSslSocket);
+        QSslSocket *sslSocket = static_cast<QSslSocket *>(socket.data());
+        // Add HTTP2 as supported protocol:
+        auto conf = QSslConfiguration::defaultConfiguration();
+        auto protos = conf.allowedNextProtocols();
+        protos.prepend(QSslConfiguration::ALPNProtocolHTTP2);
+        conf.setAllowedNextProtocols(protos);
+        sslSocket->setSslConfiguration(conf);
+        // SSL-related setup ...
+        sslSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
+        sslSocket->setProtocol(QSsl::TlsV1_2OrLater);
+        connect(sslSocket, SIGNAL(sslErrors(QList<QSslError>)),
+                this, SLOT(ignoreErrorSlot()));
+        QFile file(SRCDIR "certs/fluke.key");
+        file.open(QIODevice::ReadOnly);
+        QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+        sslSocket->setPrivateKey(key);
+        auto localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
+        sslSocket->setLocalCertificateChain(localCert);
+        sslSocket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState);
+        // Stop listening.
+        close();
+        // Start SSL handshake and ALPN:
+        connect(sslSocket, SIGNAL(encrypted()), this, SLOT(connectionEstablished()));
+        sslSocket->startServerEncryption();
+#else
+        Q_UNREACHABLE();
+#endif
+    }
 }
 
 quint32 Http2Server::clientSetting(Http2::Settings identifier, quint32 defaultValue)
@@ -229,7 +251,7 @@ quint32 Http2Server::clientSetting(Http2::Settings identifier, quint32 defaultVa
     return defaultValue;
 }
 
-void Http2Server::connectionEncrypted()
+void Http2Server::connectionEstablished()
 {
     using namespace Http2;
 
@@ -250,7 +272,9 @@ void Http2Server::connectionEncrypted()
 
 void Http2Server::ignoreErrorSlot()
 {
-    socket->ignoreSslErrors();
+#ifndef QT_NO_SSL
+    static_cast<QSslSocket *>(socket.data())->ignoreSslErrors();
+#endif
 }
 
 // Now HTTP2 "server" part:

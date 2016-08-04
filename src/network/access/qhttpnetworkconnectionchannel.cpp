@@ -179,8 +179,11 @@ void QHttpNetworkConnectionChannel::init()
         if (!sslConfiguration.isNull())
            sslSocket->setSslConfiguration(sslConfiguration);
     } else {
-#endif // QT_NO_SSL
-        protocolHandler.reset(new QHttpProtocolHandler(this));
+#endif // !QT_NO_SSL
+        if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2)
+            protocolHandler.reset(new QHttp2ProtocolHandler(this));
+        else
+            protocolHandler.reset(new QHttpProtocolHandler(this));
 #ifndef QT_NO_SSL
     }
 #endif
@@ -835,10 +838,17 @@ void QHttpNetworkConnectionChannel::_q_connected()
 #endif
     } else {
         state = QHttpNetworkConnectionChannel::IdleState;
-        if (!reply)
-            connection->d_func()->dequeueRequest(socket);
-        if (reply)
-            sendRequest();
+        if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+            if (spdyRequestsToSend.count() > 0) {
+                // wait for data from the server first (e.g. initial window, max concurrent requests)
+                QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+            }
+        } else {
+            if (!reply)
+                connection->d_func()->dequeueRequest(socket);
+            if (reply)
+                sendRequest();
+        }
     }
 }
 
@@ -972,9 +982,12 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         }
     } while (!connection->d_func()->highPriorityQueue.isEmpty()
              || !connection->d_func()->lowPriorityQueue.isEmpty());
+
+    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
 #ifndef QT_NO_SSL
-    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY ||
-        connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+        || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY
+#endif
+       ) {
         QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
         for (int a = 0; a < spdyPairs.count(); ++a) {
             // emit error for all replies
@@ -983,7 +996,6 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             emit currentReply->finishedWithError(errorCode, errorString);
         }
     }
-#endif // QT_NO_SSL
 
     // send the next request
     QMetaObject::invokeMethod(that, "_q_startNextRequest", Qt::QueuedConnection);
@@ -1005,20 +1017,19 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 #ifndef QT_NO_NETWORKPROXY
 void QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator* auth)
 {
+    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
 #ifndef QT_NO_SSL
-    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY ||
-        connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+        || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY
+#endif
+        ) {
         connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
     } else { // HTTP
-#endif // QT_NO_SSL
         // Need to dequeue the request before we can emit the error.
         if (!reply)
             connection->d_func()->dequeueRequest(socket);
         if (reply)
             connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
-#ifndef QT_NO_SSL
     }
-#endif // QT_NO_SSL
 }
 #endif
 
@@ -1077,9 +1088,10 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
     if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY ||
         connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
         // we call setSpdyWasUsed(true) on the replies in the SPDY handler when the request is sent
-        if (spdyRequestsToSend.count() > 0)
+        if (spdyRequestsToSend.count() > 0) {
             // wait for data from the server first (e.g. initial window, max concurrent requests)
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+        }
     } else { // HTTP
         if (!reply)
             connection->d_func()->dequeueRequest(socket);

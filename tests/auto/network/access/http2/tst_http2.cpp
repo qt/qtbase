@@ -49,7 +49,9 @@
 
 // At the moment our HTTP/2 imlpementation requires ALPN and this means OpenSSL.
 #if !defined(QT_NO_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)
-#define QT_ALPN
+const bool clearTextHTTP2 = false;
+#else
+const bool clearTextHTTP2 = true;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -139,9 +141,6 @@ tst_Http2::~tst_Http2()
 
 void tst_Http2::singleRequest()
 {
-#ifndef QT_ALPN
-    QSKIP("This test requires ALPN support");
-#endif
     clearHTTP2State();
 
     serverPort = 0;
@@ -154,7 +153,9 @@ void tst_Http2::singleRequest()
 
     QVERIFY(serverPort != 0);
 
-    const QUrl url(QString("https://127.0.0.1:%1/index.html").arg(serverPort));
+    const QString urlAsString(clearTextHTTP2 ? QString("http://127.0.0.1:%1/index.html")
+                                             : QString("https://127.0.0.1:%1/index.html"));
+    const QUrl url(urlAsString.arg(serverPort));
 
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
@@ -179,9 +180,6 @@ void tst_Http2::singleRequest()
 
 void tst_Http2::multipleRequests()
 {
-#ifndef QT_ALPN
-    QSKIP("This test requires ALPN support");
-#endif
     clearHTTP2State();
 
     serverPort = 0;
@@ -216,16 +214,12 @@ void tst_Http2::multipleRequests()
 
 void tst_Http2::flowControlClientSide()
 {
-#ifndef QT_ALPN
-    QSKIP("This test requires ALPN support");
-#endif
     // Create a server but impose limits:
     // 1. Small MAX frame size, so we test CONTINUATION frames.
     // 2. Small client windows so server responses cause client streams
     //    to suspend and server sends WINDOW_UPDATE frames.
     // 3. Few concurrent streams, to test protocol handler can resume
     //    suspended requests.
-
     using namespace Http2;
 
     clearHTTP2State();
@@ -238,7 +232,7 @@ void tst_Http2::flowControlClientSide()
 
     auto srv = newServer(serverSettings);
 
-    const QByteArray respond(int(Http2::defaultSessionWindowSize * 100), 'x');
+    const QByteArray respond(int(Http2::defaultSessionWindowSize * 50), 'x');
     srv->setResponseBody(respond);
 
     QMetaObject::invokeMethod(srv, "startServer", Qt::QueuedConnection);
@@ -249,7 +243,7 @@ void tst_Http2::flowControlClientSide()
     for (int i = 0; i < nRequests; ++i)
         sendRequest(i);
 
-    runEventLoop(10000);
+    runEventLoop(120000);
 
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
@@ -261,9 +255,6 @@ void tst_Http2::flowControlClientSide()
 
 void tst_Http2::flowControlServerSide()
 {
-#ifndef QT_ALPN
-    QSKIP("This test requires ALPN support");
-#endif
     // Quite aggressive test:
     // low MAX_FRAME_SIZE forces a lot of small DATA frames,
     // payload size exceedes stream/session RECV window sizes
@@ -281,7 +272,7 @@ void tst_Http2::flowControlServerSide()
 
     auto srv = newServer(serverSettings);
 
-    const QByteArray payload(int(Http2::defaultSessionWindowSize * 1000), 'x');
+    const QByteArray payload(int(Http2::defaultSessionWindowSize * 500), 'x');
 
     QMetaObject::invokeMethod(srv, "startServer", Qt::QueuedConnection);
 
@@ -333,7 +324,7 @@ Http2Server *tst_Http2::newServer(const Http2Settings &serverSettings)
     // Client's settings are fixed by qhttp2protocolhandler.
     const Http2Settings clientSettings = {{Settings::MAX_FRAME_SIZE_ID, quint32(Http2::maxFrameSize)},
                                           {Settings::ENABLE_PUSH_ID, quint32(0)}};
-    auto srv = new Http2Server(serverSettings, clientSettings);
+    auto srv = new Http2Server(clearTextHTTP2, serverSettings, clientSettings);
 
     using Srv = Http2Server;
     using Cl = tst_Http2;
@@ -357,7 +348,8 @@ void tst_Http2::sendRequest(int streamNumber,
                             QNetworkRequest::Priority priority,
                             const QByteArray &payload)
 {
-    static const QString urlAsString("https://127.0.0.1:%1/stream%2.html");
+    static const QString urlAsString(clearTextHTTP2 ? "http://127.0.0.1:%1/stream%2.html"
+                                                    : "https://127.0.0.1:%1/stream%2.html");
 
     const QUrl url(urlAsString.arg(serverPort).arg(streamNumber));
     QNetworkRequest request(url);
