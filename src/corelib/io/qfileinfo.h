@@ -130,7 +130,12 @@ public:
     qint64 size() const;
 
     // ### Qt6: inline these functions
+#if QT_DEPRECATED_SINCE(5, 10)
+    QT_DEPRECATED_X("Use either birthTime() or metadataChangeTime()")
     QDateTime created() const;
+#endif
+    QDateTime birthTime() const;
+    QDateTime metadataChangeTime() const;
     QDateTime lastModified() const;
     QDateTime lastRead() const;
     QDateTime fileTime(QFile::FileTime time) const;

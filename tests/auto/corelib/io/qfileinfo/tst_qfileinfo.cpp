@@ -1034,6 +1034,11 @@ void tst_QFileInfo::systemFiles()
     QVERIFY2(fi.exists(), msgDoesNotExist(fi.absoluteFilePath()).constData());
     QVERIFY(fi.size() > 0);
     QVERIFY(fi.lastModified().isValid());
+    QVERIFY(fi.metadataChangeTime().isValid());
+    QCOMPARE(fi.metadataChangeTime(), fi.lastModified());   // On Windows, they're the same
+    QVERIFY(fi.birthTime().isValid());
+    QVERIFY(fi.birthTime() <= fi.lastModified());
+    QCOMPARE(fi.created(), fi.birthTime());                 // On Windows, they're the same
 }
 
 void tst_QFileInfo::compare_data()
@@ -1145,6 +1150,8 @@ void tst_QFileInfo::fileTimes()
     QTest::qSleep(sleepTime);
     {
         QFileInfo fileInfo(fileName);
+        QVERIFY(!fileInfo.birthTime().isValid() || fileInfo.birthTime() < beforeWrite);
+        QVERIFY(fileInfo.metadataChangeTime() < beforeWrite);
         QVERIFY(fileInfo.created() < beforeWrite);
         QFile file(fileName);
         QVERIFY(file.open(QFile::ReadWrite | QFile::Text));
@@ -1156,10 +1163,8 @@ void tst_QFileInfo::fileTimes()
     QTest::qSleep(sleepTime);
     {
         QFileInfo fileInfo(fileName);
-// On unix created() returns the same as lastModified().
-#if !defined(Q_OS_UNIX)
-        QVERIFY(fileInfo.created() < beforeWrite);
-#endif
+        QVERIFY(!fileInfo.birthTime().isValid() || fileInfo.birthTime() < beforeWrite);
+        QVERIFY(fileInfo.metadataChangeTime() > beforeWrite);
         QVERIFY(fileInfo.lastModified() > beforeWrite);
         QFile file(fileName);
         QVERIFY(file.open(QFile::ReadOnly | QFile::Text));
@@ -1169,9 +1174,9 @@ void tst_QFileInfo::fileTimes()
     }
 
     QFileInfo fileInfo(fileName);
-#if !defined(Q_OS_UNIX)
-    QVERIFY(fileInfo.created() < beforeWrite);
-#endif
+    QVERIFY(!fileInfo.birthTime().isValid() || fileInfo.birthTime() < beforeWrite);
+    QVERIFY(fileInfo.metadataChangeTime() > beforeWrite);
+
     //In Vista the last-access timestamp is not updated when the file is accessed/touched (by default).
     //To enable this the HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisableLastAccessUpdate
     //is set to 0, in the test machine.
@@ -1901,6 +1906,8 @@ void tst_QFileInfo::invalidState()
         info.setCaching(false);
 
         info.created();
+        info.birthTime();
+        info.metadataChangeTime();
         info.lastRead();
         info.lastModified();
     }
@@ -1913,6 +1920,8 @@ void tst_QFileInfo::invalidState()
         info.setCaching(false);
 
         info.created();
+        info.birthTime();
+        info.metadataChangeTime();
         info.lastRead();
         info.lastModified();
     }
@@ -1925,6 +1934,8 @@ void tst_QFileInfo::invalidState()
         info.setCaching(false);
 
         info.created();
+        info.birthTime();
+        info.metadataChangeTime();
         info.lastRead();
         info.lastModified();
     }
@@ -1937,6 +1948,8 @@ void tst_QFileInfo::nonExistingFileDates()
     QFileInfo info("non-existing-file.foobar");
     QVERIFY(!info.exists());
     QVERIFY(!info.created().isValid());
+    QVERIFY(!info.birthTime().isValid());
+    QVERIFY(!info.metadataChangeTime().isValid());
     QVERIFY(!info.lastRead().isValid());
     QVERIFY(!info.lastModified().isValid());
 }

@@ -1300,20 +1300,50 @@ qint64 QFileInfo::size() const
     return d->fileSize;
 }
 
+#if QT_DEPRECATED_SINCE(5, 10)
 /*!
-    Returns the date and local time when the file was created.
+    \deprecated
 
-    On most Unix systems, this function returns the time of the last
-    status change. A status change occurs when the file is created,
-    but it also occurs whenever the user writes or sets inode
-    information (for example, changing the file permissions).
+    Returns the date and time when the file was created, the time its metadata
+    was last changed or the time of last modification, whichever one of the
+    three is available (in that order).
 
-    If neither creation time nor "last status change" time are not
-    available, returns the same as lastModified().
+    This function is deprecated. Instead, use the birthTime() function to get
+    the time the file was created, metadataChangeTime() to get the time its
+    metadata was last changed, or lastModified() to get the time it was last modified.
+
+    \sa birthTime(), metadataChangeTime(), lastModified(), lastRead()
+*/
+QDateTime QFileInfo::created() const
+{
+    return fileTime(QFile::FileCreationTime);
+}
+#endif
+
+/*!
+    \since 5.10
+    Returns the date and time when the file was created / born.
+
+    If the file birth time is not available, this function returns an invalid
+    QDateTime.
+
+    \sa lastModified(), lastRead(), metadataChangeTime()
+*/
+QDateTime QFileInfo::birthTime() const
+{
+    return fileTime(QFile::FileCreationTime);
+}
+
+/*!
+    \since 5.10
+    Returns the date and time when the file metadata was changed. A metadata
+    change occurs when the file is created, but it also occurs whenever the
+    user writes or sets inode information (for example, changing the file
+    permissions).
 
     \sa lastModified(), lastRead()
 */
-QDateTime QFileInfo::created() const
+QDateTime QFileInfo::metadataChangeTime() const
 {
     return fileTime(QFile::FileCreationTime);
 }
@@ -1321,7 +1351,7 @@ QDateTime QFileInfo::created() const
 /*!
     Returns the date and local time when the file was last modified.
 
-    \sa created(), lastRead(), fileTime()
+    \sa birthTime(), lastRead(), metadataChangeTime(), fileTime()
 */
 QDateTime QFileInfo::lastModified() const
 {
@@ -1334,7 +1364,7 @@ QDateTime QFileInfo::lastModified() const
     On platforms where this information is not available, returns the
     same as lastModified().
 
-    \sa created(), lastModified(), fileTime()
+    \sa birthTime(), lastModified(), metadataChangeTime(), fileTime()
 */
 QDateTime QFileInfo::lastRead() const
 {
