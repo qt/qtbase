@@ -2419,7 +2419,7 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
     }
 
     const char *sourceName = 0;
-    if (lcQpaXInput().isDebugEnabled()) {
+    if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled())) {
         const QMetaObject *metaObject = qt_getEnumMetaObject(source);
         const QMetaEnum me = metaObject->enumerator(metaObject->indexOfEnumerator(qt_getEnumName(source)));
         sourceName = me.valueToKey(source);
@@ -2427,17 +2427,20 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
 
     switch (ev->evtype) {
     case XI_ButtonPress:
-        qCDebug(lcQpaXInput, "XI2 mouse press, button %d, time %d, source %s", button, ev->time, sourceName);
+        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+            qCDebug(lcQpaXInputEvents, "XI2 mouse press, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButton(button, true);
         handleButtonPressEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, source);
         break;
     case XI_ButtonRelease:
-        qCDebug(lcQpaXInput, "XI2 mouse release, button %d, time %d, source %s", button, ev->time, sourceName);
+        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+            qCDebug(lcQpaXInputEvents, "XI2 mouse release, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButton(button, false);
         handleButtonReleaseEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, source);
         break;
     case XI_Motion:
-        qCDebug(lcQpaXInput, "XI2 mouse motion %d,%d, time %d, source %s", event_x, event_y, ev->time, sourceName);
+        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+            qCDebug(lcQpaXInputEvents, "XI2 mouse motion %d,%d, time %d, source %s", event_x, event_y, ev->time, sourceName);
         handleMotionNotifyEvent(event_x, event_y, root_x, root_y, modifiers, ev->time, source);
         break;
     default:

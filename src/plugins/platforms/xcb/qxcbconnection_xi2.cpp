@@ -555,8 +555,8 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
         case XI_TouchBegin:
         case XI_TouchUpdate:
         case XI_TouchEnd:
-            if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
-                qCDebug(lcQpaXInput, "XI2 touch event type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f on window %x",
+            if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+                qCDebug(lcQpaXInputEvents, "XI2 touch event type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f on window %x",
                         event->event_type, xiDeviceEvent->sequenceNumber, xiDeviceEvent->detail,
                         fixed1616ToReal(xiDeviceEvent->event_x), fixed1616ToReal(xiDeviceEvent->event_y),
                         fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y),xiDeviceEvent->event);
@@ -613,8 +613,8 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
             double value;
             if (!xi2GetValuatorValueIfSet(xiDeviceEvent, n, &value))
                 continue;
-            if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
-                qCDebug(lcQpaXInput, "   valuator %20s value %lf from range %lf -> %lf",
+            if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+                qCDebug(lcQpaXInputEvents, "   valuator %20s value %lf from range %lf -> %lf",
                         atomName(vci->label).constData(), value, vci->min, vci->max );
             if (vci->label == atom(QXcbAtom::RelX)) {
                 nx = valuatorNormalized(value, vci);
@@ -741,8 +741,8 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
     touchPoint.area = QRectF(x - w/2, y - h/2, w, h);
     touchPoint.normalPosition = QPointF(nx, ny);
 
-    if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
-        qCDebug(lcQpaXInput) << "   touchpoint "  << touchPoint.id << " state " << touchPoint.state << " pos norm " << touchPoint.normalPosition <<
+    if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+        qCDebug(lcQpaXInputEvents) << "   touchpoint "  << touchPoint.id << " state " << touchPoint.state << " pos norm " << touchPoint.normalPosition <<
             " area " << touchPoint.area << " pressure " << touchPoint.pressure;
     QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xiDeviceEvent->time, dev->qtTouchDevice, dev->touchPoints.values());
     if (touchPoint.state == Qt::TouchPointReleased)
@@ -874,8 +874,8 @@ void QXcbConnection::updateScrollingDevice(ScrollingDevice &scrollingDevice, int
                 scrollingDevice.lastScrollPosition.setY(vci->value);
         }
     }
-    if (lcQpaXInput().isDebugEnabled() && lastScrollPosition != scrollingDevice.lastScrollPosition)
-        qCDebug(lcQpaXInput, "scrolling device %d moved from (%f, %f) to (%f, %f)", scrollingDevice.deviceId,
+    if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled() && lastScrollPosition != scrollingDevice.lastScrollPosition))
+        qCDebug(lcQpaXInputEvents, "scrolling device %d moved from (%f, %f) to (%f, %f)", scrollingDevice.deviceId,
                 lastScrollPosition.x(), lastScrollPosition.y(),
                 scrollingDevice.lastScrollPosition.x(),
                 scrollingDevice.lastScrollPosition.y());
@@ -1108,9 +1108,10 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData, Q
                         }
                         // TODO maybe have a hash of tabletData->deviceId to device data so we can
                         // look up the tablet name here, and distinguish multiple tablets
-                        qCDebug(lcQpaXInput, "XI2 proximity change on tablet %d (USB %x): last tool: %x id %x current tool: %x id %x TabletDevice %d",
-                            tabletData->deviceId, ptr[_WACSER_USB_ID], ptr[_WACSER_LAST_TOOL_SERIAL], ptr[_WACSER_LAST_TOOL_ID],
-                            ptr[_WACSER_TOOL_SERIAL], ptr[_WACSER_TOOL_ID], tabletData->tool);
+                        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+                            qCDebug(lcQpaXInputEvents, "XI2 proximity change on tablet %d (USB %x): last tool: %x id %x current tool: %x id %x TabletDevice %d",
+                                    tabletData->deviceId, ptr[_WACSER_USB_ID], ptr[_WACSER_LAST_TOOL_SERIAL], ptr[_WACSER_LAST_TOOL_ID],
+                                    ptr[_WACSER_TOOL_SERIAL], ptr[_WACSER_TOOL_ID], tabletData->tool);
                     }
                     XFree(data);
                 }
@@ -1181,8 +1182,8 @@ void QXcbConnection::xi2ReportTabletEvent(TabletData &tabletData, void *event)
         }
     }
 
-    if (Q_UNLIKELY(lcQpaXInput().isDebugEnabled()))
-        qCDebug(lcQpaXInput, "XI2 event on tablet %d with tool %d type %d seq %d detail %d time %d "
+    if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+        qCDebug(lcQpaXInputEvents, "XI2 event on tablet %d with tool %d type %d seq %d detail %d time %d "
             "pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
             tabletData.deviceId, tabletData.tool, ev->evtype, ev->sequenceNumber, ev->detail, ev->time,
             fixed1616ToReal(ev->event_x), fixed1616ToReal(ev->event_y),
