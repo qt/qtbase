@@ -129,15 +129,6 @@ void QHttpProtocolHandler::_q_receiveReply()
                 } else {
                     replyPrivate->autoDecompress = false;
                 }
-                if (m_connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
-                    if (replyPrivate->statusCode == 101) {
-                        QMetaObject::invokeMethod(m_channel, "_q_protocolSwitch", Qt::QueuedConnection);
-                        return;
-                    }
-
-                    // HTTP/2 is not supported? TODO - but can it be something else?
-                    m_channel->requeueSpdyRequests();
-                }
                 if (replyPrivate->statusCode == 100) {
                     replyPrivate->clearHttpLayerInformation();
                     replyPrivate->state = QHttpNetworkReplyPrivate::ReadingStatusState;
