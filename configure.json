@@ -1788,7 +1788,7 @@
             "condition": "features.dbus && tests.dbus",
             "output": [
                 "publicQtConfig",
-                { "type": "library", "feature": "dbus", "test": "dbus" }
+                { "type": "library", "name": "dbus", "test": "dbus" }
             ]
         },
         "host-dbus": {

@@ -1134,15 +1134,13 @@ defineTest(qtConfProcessOneOutput) {
     !defined("qtConfOutput_$$call", test): \
         error("Undefined type '$$call' in output '$$2' of feature '$$feature'.")
 
-    isEmpty($${opfx}.feature): \
-        $${opfx}.feature = $$feature
-
     condition = $$eval($${opfx}.condition)
     !isEmpty(condition) {
         !$$qtConfEvaluate($$condition): \
             return(false)
     }
 
+    $${opfx}.feature = $$feature
     qtConfOutput_$${call}($$opfx, $$eval($${fpfx}.available))
 }
 
