@@ -521,9 +521,10 @@ QString QColor::name(NameFormat format) const
 {
     switch (format) {
     case HexRgb:
-        return QString::asprintf("#%02x%02x%02x", red(), green(), blue());
+        return QLatin1Char('#') + QString::number(rgba() | 0x1000000, 16).rightRef(6);
     case HexArgb:
-        return QString::asprintf("#%02x%02x%02x%02x", alpha(), red(), green(), blue());
+        // it's called rgba() but it does return AARRGGBB
+        return QLatin1Char('#') + QString::number(rgba() | 0x100000000, 16).rightRef(8);
     }
     return QString();
 }
