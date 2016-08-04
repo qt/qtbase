@@ -161,9 +161,10 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
     }
     if (!necessary)
         return Q_NULLPTR;
+    qreal dpr = qGuiApp->devicePixelRatio();
     QTemporaryFile *ret = new QTemporaryFile(TempFileTemplate, this);
     ret->open();
-    icon.pixmap(QSize(22, 22)).save(ret);
+    icon.pixmap(QSize(22 * dpr, 22 * dpr)).save(ret);
     ret->close();
     return ret;
 }
