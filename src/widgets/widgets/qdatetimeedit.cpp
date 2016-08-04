@@ -2388,18 +2388,21 @@ void QDateTimeEditPrivate::init(const QVariant &var)
     switch (var.type()) {
     case QVariant::Date:
         value = QDateTime(var.toDate(), QDATETIMEEDIT_TIME_MIN);
+        updateTimeSpec();
         q->setDisplayFormat(defaultDateFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
             q->setDisplayFormat(QLatin1String("dd/MM/yyyy"));
         break;
     case QVariant::DateTime:
         value = var;
+        updateTimeSpec();
         q->setDisplayFormat(defaultDateTimeFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
             q->setDisplayFormat(QLatin1String("dd/MM/yyyy hh:mm:ss"));
         break;
     case QVariant::Time:
         value = QDateTime(QDATETIMEEDIT_DATE_INITIAL, var.toTime());
+        updateTimeSpec();
         q->setDisplayFormat(defaultTimeFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
             q->setDisplayFormat(QLatin1String("hh:mm:ss"));
@@ -2412,7 +2415,6 @@ void QDateTimeEditPrivate::init(const QVariant &var)
     if (QApplication::keypadNavigationEnabled())
         q->setCalendarPopup(true);
 #endif
-    updateTimeSpec();
     q->setInputMethodHints(Qt::ImhPreferNumbers);
     setLayoutItemMargins(QStyle::SE_DateTimeEditLayoutItem);
 }

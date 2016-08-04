@@ -252,6 +252,7 @@ private slots:
     void timeSpec_data();
     void timeSpec();
     void timeSpecBug();
+    void timeSpecInit();
 
     void monthEdgeCase();
     void setLocale();
@@ -3213,6 +3214,13 @@ void tst_QDateTimeEdit::timeSpecBug()
     QTest::keyClick(testWidget, Qt::Key_Tab);
     QCOMPARE(oldDateTime, testWidget->dateTime());
     QCOMPARE(oldText, testWidget->text());
+}
+
+void tst_QDateTimeEdit::timeSpecInit()
+{
+    QDateTime utc(QDate(2000, 1, 1), QTime(12, 0, 0), Qt::UTC);
+    QDateTimeEdit widget(utc);
+    QCOMPARE(widget.dateTime(), utc);
 }
 
 void tst_QDateTimeEdit::cachedDayTest()
