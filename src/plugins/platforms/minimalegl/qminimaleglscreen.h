@@ -44,7 +44,7 @@
 
 #include <QtCore/QTextStream>
 
-#include <EGL/egl.h>
+#include <QtPlatformSupport/private/qt_egl_p.h>
 
 QT_BEGIN_NAMESPACE
 

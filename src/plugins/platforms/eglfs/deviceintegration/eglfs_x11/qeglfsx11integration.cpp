@@ -281,12 +281,12 @@ EGLNativeWindowType QEglFSX11Integration::createNativeWindow(QPlatformWindow *pl
 
     xcb_flush(m_connection);
 
-    return m_window;
+    return qt_egl_cast<EGLNativeWindowType>(m_window);
 }
 
 void QEglFSX11Integration::destroyNativeWindow(EGLNativeWindowType window)
 {
-    xcb_destroy_window(m_connection, window);
+    xcb_destroy_window(m_connection, qt_egl_cast<xcb_window_t>(window));
 }
 
 bool QEglFSX11Integration::hasCapability(QPlatformIntegration::Capability cap) const

@@ -49,7 +49,7 @@
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
-#include <EGL/egl.h>
+#include <QtPlatformSupport/private/qt_egl_p.h>
 
 QT_BEGIN_NAMESPACE
 
