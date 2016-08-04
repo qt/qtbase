@@ -39,6 +39,7 @@
 
 #ifndef ANDROIDJNIINPUT_H
 #define ANDROIDJNIINPUT_H
+
 #include <jni.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/QRect>

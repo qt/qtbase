@@ -175,6 +175,10 @@ namespace QtAndroidInput
 
     static void longPress(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
     {
+        QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
+        if (inputContext && qGuiApp)
+            QMetaObject::invokeMethod(inputContext, "longPress", Q_ARG(int, x), Q_ARG(int, y));
+
         //### TODO: add proper API for Qt 5.2
         static bool rightMouseFromLongPress = qEnvironmentVariableIntValue("QT_NECESSITAS_COMPATIBILITY_LONG_PRESS");
         if (!rightMouseFromLongPress)

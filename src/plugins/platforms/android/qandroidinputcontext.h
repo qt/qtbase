@@ -122,6 +122,7 @@ public slots:
     void updateSelectionHandles();
     void handleLocationChanged(int handleId, int x, int y);
     void touchDown(int x, int y);
+    void longPress(int x, int y);
     void keyDown();
 
 private slots:
@@ -147,7 +148,8 @@ private:
     enum CursorHandleShowMode {
         CursorHandleNotShown,
         CursorHandleShowNormal = 1,
-        CursorHandleShowSelection = 2
+        CursorHandleShowSelection = 2,
+        CursorHandleShowPopup = 3
     };
     CursorHandleShowMode m_cursorHandleShown;
     int m_batchEditNestingLevel;

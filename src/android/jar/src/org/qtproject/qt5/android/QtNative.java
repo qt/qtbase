@@ -583,7 +583,7 @@ public class QtNative
             m_clipboardManager.setText(text);
     }
 
-    private static boolean hasClipboardText()
+    public static boolean hasClipboardText()
     {
         if (m_clipboardManager != null)
             return m_clipboardManager.hasText();

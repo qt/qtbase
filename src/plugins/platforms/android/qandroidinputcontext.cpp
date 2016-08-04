@@ -550,7 +550,9 @@ void QAndroidInputContext::updateSelectionHandles()
 
         auto curRect = im->cursorRectangle();
         QPoint cursorPoint(curRect.center().x(), curRect.bottom());
-        QtAndroidInput::updateHandles(m_cursorHandleShown, cursorPoint * pixelDensity);
+        QPoint editMenuPoint(curRect.center().x(), curRect.top());
+        QtAndroidInput::updateHandles(m_cursorHandleShown, cursorPoint * pixelDensity,
+                                      editMenuPoint * pixelDensity);
         return;
     }
 
@@ -562,6 +564,11 @@ void QAndroidInputContext::updateSelectionHandles()
     QPoint leftPoint(leftRect.bottomLeft().toPoint() * pixelDensity);
     QPoint righPoint(rightRect.bottomRight().toPoint() * pixelDensity);
     QtAndroidInput::updateHandles(CursorHandleShowSelection, leftPoint, righPoint);
+
+    if (m_cursorHandleShown == CursorHandleShowPopup) {
+        // make sure the popup does not reappear when the selection menu closes
+        m_cursorHandleShown = QAndroidInputContext::CursorHandleNotShown;
+    }
 }
 
 /*
@@ -608,6 +615,15 @@ void QAndroidInputContext::touchDown(int x, int y)
     if (m_focusObject && inputItemRectangle().contains(x, y) && !m_cursorHandleShown) {
         // If the user touch the input rectangle, we can show the cursor handle
         m_cursorHandleShown = QAndroidInputContext::CursorHandleShowNormal;
+        updateSelectionHandles();
+    }
+}
+
+void QAndroidInputContext::longPress(int x, int y)
+{
+    if (m_focusObject && inputItemRectangle().contains(x, y)) {
+        // Show the paste menu if there is something to paste.
+        m_cursorHandleShown = QAndroidInputContext::CursorHandleShowPopup;
         updateSelectionHandles();
     }
 }
