@@ -1922,7 +1922,15 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
 - (BOOL) ignoreModifierKeysWhileDragging
 {
-    return NO;
+    // According to the "Dragging Sources" chapter on Cocoa DnD Programming
+    // (https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/DragandDrop/Concepts/dragsource.html),
+    // if the control, option, or command key is pressed, the source’s
+    // operation mask is filtered to only contain a reduced set of operations.
+    //
+    // Since Qt already takes care of tracking the keyboard modifiers, we
+    // don't need (or want) Cocoa to filter anything. Instead, we'll let
+    // the application do the actual filtering.
+    return YES;
 }
 
 - (BOOL)wantsPeriodicDraggingUpdates
