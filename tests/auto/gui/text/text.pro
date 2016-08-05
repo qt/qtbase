@@ -22,8 +22,8 @@ SUBDIRS=\
    qtextpiecetable \
    qtextscriptengine \
    qtexttable \
-
-contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
+   qzip \
+   qtextodfwriter
 
 win32:SUBDIRS -= qtextpiecetable
 
@@ -32,3 +32,5 @@ win32:SUBDIRS -= qtextpiecetable
            qcssparser \
            qtextlayout \
            qtextpiecetable \
+           qzip \
+           qtextodfwriter
