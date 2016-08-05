@@ -29,7 +29,7 @@
 #include <QtTest/QtTest>
 
 #include <qtextcodec.h>
-#include <qsharedpointer.h>
+#include <QScopedPointer>
 
 static const char utf8bom[] = "\xEF\xBB\xBF";
 
@@ -180,7 +180,7 @@ void tst_Utf8::charByChar()
 
     {
         // from utf16 to utf8 char by char:
-        QSharedPointer<QTextEncoder> encoder = QSharedPointer<QTextEncoder>(codec->makeEncoder());
+        const QScopedPointer<QTextEncoder> encoder(codec->makeEncoder());
         QByteArray encoded;
 
         for (int i = 0; i < utf16.length(); ++i) {
@@ -194,7 +194,7 @@ void tst_Utf8::charByChar()
     }
     {
         // from utf8 to utf16 char by char:
-        QSharedPointer<QTextDecoder> decoder = QSharedPointer<QTextDecoder>(codec->makeDecoder());
+        const QScopedPointer<QTextDecoder> decoder(codec->makeDecoder());
         QString decoded;
 
         for (int i = 0; i < utf8.length(); ++i) {
@@ -219,7 +219,7 @@ void tst_Utf8::invalidUtf8()
     QFETCH(QByteArray, utf8);
     QFETCH_GLOBAL(bool, useLocale);
 
-    QSharedPointer<QTextDecoder> decoder = QSharedPointer<QTextDecoder>(codec->makeDecoder());
+    const QScopedPointer<QTextDecoder> decoder(codec->makeDecoder());
     decoder->toUnicode(utf8);
 
     // Only enforce correctness on our UTF-8 decoder
@@ -280,7 +280,7 @@ void tst_Utf8::nonCharacters()
     QFETCH(QString, utf16);
     QFETCH_GLOBAL(bool, useLocale);
 
-    QSharedPointer<QTextDecoder> decoder = QSharedPointer<QTextDecoder>(codec->makeDecoder());
+    const QScopedPointer<QTextDecoder> decoder(codec->makeDecoder());
     decoder->toUnicode(utf8);
 
     // Only enforce correctness on our UTF-8 decoder
@@ -289,7 +289,7 @@ void tst_Utf8::nonCharacters()
     else if (decoder->hasFailure())
         qWarning("System codec reports failure when it shouldn't. Should report bug upstream.");
 
-    QSharedPointer<QTextEncoder> encoder(codec->makeEncoder());
+    const QScopedPointer<QTextEncoder> encoder(codec->makeEncoder());
     encoder->fromUnicode(utf16);
     if (!useLocale)
         QVERIFY(!encoder->hasFailure());
