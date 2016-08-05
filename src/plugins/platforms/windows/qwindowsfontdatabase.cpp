@@ -1810,7 +1810,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
                 if (SUCCEEDED(directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace2),
                                                                   reinterpret_cast<void **>(&directWriteFontFace2)))) {
                     if (directWriteFontFace2->IsColorFont())
-                        isColorFont = true;
+                        isColorFont = directWriteFontFace2->GetPaletteEntryCount() > 0;
                 }
 #endif
                 const QFont::HintingPreference hintingPreference =
