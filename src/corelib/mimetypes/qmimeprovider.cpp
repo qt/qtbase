@@ -536,11 +536,11 @@ void QMimeBinaryProvider::loadMimeTypeList()
         for (const QString &typeFilename : typesFilenames) {
             QFile file(typeFilename);
             if (file.open(QIODevice::ReadOnly)) {
-                while (!file.atEnd()) {
-                    QByteArray line = file.readLine();
-                    line.chop(1);
-                    m_mimetypeNames.insert(QString::fromLatin1(line.constData(), line.size()));
-                }
+                QTextStream stream(&file);
+                stream.setCodec("ISO 8859-1");
+                QString line;
+                while (stream.readLineInto(&line))
+                    m_mimetypeNames.insert(line);
             }
         }
     }
