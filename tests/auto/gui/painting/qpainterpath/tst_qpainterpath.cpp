@@ -840,22 +840,23 @@ void tst_QPainterPath::testArcMoveTo_data()
     QTest::addColumn<QRectF>("rect");
     QTest::addColumn<qreal>("angle");
 
-    QList<QRectF> rects;
-    rects << QRectF(100, 100, 100, 100)
-          << QRectF(100, 100, -100, 100)
-          << QRectF(100, 100, 100, -100)
-          << QRectF(100, 100, -100, -100);
+    static Q_CONSTEXPR QRectF rects[] = {
+        QRectF(100, 100, 100, 100),
+        QRectF(100, 100, -100, 100),
+        QRectF(100, 100, 100, -100),
+        QRectF(100, 100, -100, -100),
+    };
 
-    for (int domain=0; domain<rects.size(); ++domain) {
+    for (uint domain = 0; domain < sizeof rects / sizeof *rects; ++domain) {
         const QByteArray dB = QByteArray::number(domain);
         for (int i=-360; i<=360; ++i) {
             QTest::newRow(("test " + dB + ' ' + QByteArray::number(i)).constData())
-                << rects.at(domain) << (qreal) i;
+                << rects[domain] << (qreal) i;
         }
 
         // test low angles
-        QTest::newRow("low angles 1") << rects.at(domain) << (qreal) 1e-10;
-        QTest::newRow("low angles 2") << rects.at(domain) << (qreal)-1e-10;
+        QTest::newRow("low angles 1") << rects[domain] << (qreal) 1e-10;
+        QTest::newRow("low angles 2") << rects[domain] << (qreal)-1e-10;
     }
 }
 
