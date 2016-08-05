@@ -46,7 +46,6 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qisenum.h>
-#include <QtCore/qtypetraits.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobjectdefs.h>
 #endif
@@ -887,7 +886,7 @@ private:
     // is void* to avoid overloads conflicts. We do it by injecting unaccessible Dummy
     // type as part of the overload signature.
     struct Dummy {};
-    typedef typename QtPrivate::if_<QtPrivate::is_same<value_type, void*>::value, Dummy, value_type>::type value_type_OR_Dummy;
+    typedef typename std::conditional<std::is_same<value_type, void*>::value, Dummy, value_type>::type value_type_OR_Dummy;
 public:
     static void assign(void **ptr, const value_type_OR_Dummy *iterator )
     {
@@ -1092,7 +1091,7 @@ struct QSequentialIterableConvertFunctor
 }
 
 namespace QtMetaTypePrivate {
-template<typename T, bool = QtPrivate::is_same<typename T::const_iterator::value_type, typename T::mapped_type>::value>
+template<typename T, bool = std::is_same<typename T::const_iterator::value_type, typename T::mapped_type>::value>
 struct AssociativeContainerAccessor
 {
     static const typename T::key_type& getKey(const typename T::const_iterator &it)
@@ -1106,7 +1105,7 @@ struct AssociativeContainerAccessor
     }
 };
 
-template<typename T, bool = QtPrivate::is_same<typename T::const_iterator::value_type, std::pair<const typename T::key_type, typename T::mapped_type> >::value>
+template<typename T, bool = std::is_same<typename T::const_iterator::value_type, std::pair<const typename T::key_type, typename T::mapped_type> >::value>
 struct StlStyleAssociativeContainerAccessor;
 
 template<typename T>
@@ -1787,7 +1786,7 @@ template <typename T>
 struct QMetaTypeIdQObject<T, QMetaType::IsGadget>
 {
     enum {
-        Defined = QtPrivate::is_default_constructible<T>::value
+        Defined = std::is_default_constructible<T>::value
     };
 
     static int qt_metatype_id()

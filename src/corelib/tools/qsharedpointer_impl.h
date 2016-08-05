@@ -464,7 +464,7 @@ private:
     template <class X>
     inline void enableSharedFromThis(const QEnableSharedFromThis<X> *ptr)
     {
-        ptr->initializeFromSharedPointer(constCast<typename QtPrivate::remove_cv<T>::type>());
+        ptr->initializeFromSharedPointer(constCast<typename std::remove_cv<T>::type>());
     }
 
     inline void enableSharedFromThis(...) {}

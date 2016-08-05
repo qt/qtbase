@@ -46,7 +46,6 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qmetaobject.h>
-#include <QtCore/qtypetraits.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qtemporarydir.h>
 
@@ -312,7 +311,7 @@ namespace QTest
     template <typename T>
     inline void addColumn(const char *name, T * = 0)
     {
-        typedef QtPrivate::is_same<T, const char*> QIsSameTConstChar;
+        typedef std::is_same<T, const char*> QIsSameTConstChar;
         Q_STATIC_ASSERT_X(!QIsSameTConstChar::value, "const char* is not allowed as a test data format.");
         addColumnInternal(qMetaTypeId<T>(), name);
     }

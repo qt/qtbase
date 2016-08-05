@@ -38,11 +38,12 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qtypetraits.h>
 #include <QtCore/qisenum.h>
 
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H
+
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -60,7 +61,7 @@ class QTypeInfo
 public:
     enum {
         isPointer = false,
-        isIntegral = QtPrivate::is_integral<T>::value,
+        isIntegral = std::is_integral<T>::value,
         isComplex = true,
         isStatic = true,
         isRelocatable = Q_IS_ENUM(T),
@@ -247,7 +248,7 @@ public: \
         isRelocatable = !isStatic || ((FLAGS) & Q_RELOCATABLE_TYPE), \
         isLarge = (sizeof(TYPE)>sizeof(void*)), \
         isPointer = false, \
-        isIntegral = QtPrivate::is_integral< TYPE >::value, \
+        isIntegral = std::is_integral< TYPE >::value, \
         isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0), \
         sizeOf = sizeof(TYPE) \
     }; \

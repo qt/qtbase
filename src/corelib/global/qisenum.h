@@ -55,8 +55,7 @@
 #endif
 
 #ifndef Q_IS_ENUM
-#  include <QtCore/qtypetraits.h>
-#  define Q_IS_ENUM(x) QtPrivate::is_enum<x>::value
+#  define Q_IS_ENUM(x) std::is_enum<x>::value
 #endif
 
 // shut up syncqt

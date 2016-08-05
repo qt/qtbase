@@ -98,7 +98,7 @@ public:
 #else
     // addAction(QString): Connect to a QObject slot / functor or function pointer (with context)
     template<class Obj, typename Func1>
-    inline typename QtPrivate::QEnableIf<!QtPrivate::is_same<const char*, Func1>::value
+    inline typename QtPrivate::QEnableIf<!std::is_same<const char*, Func1>::value
         && QtPrivate::IsPointerToTypeDerivedFromQObject<Obj*>::Value, QAction *>::Type
         addAction(const QString &text, const Obj *object, Func1 slot, const QKeySequence &shortcut = 0)
     {
@@ -126,7 +126,7 @@ public:
     }
     // addAction(QIcon, QString): Connect to a QObject slot / functor or function pointer (with context)
     template<class Obj, typename Func1>
-    inline typename QtPrivate::QEnableIf<!QtPrivate::is_same<const char*, Func1>::value
+    inline typename QtPrivate::QEnableIf<!std::is_same<const char*, Func1>::value
         && QtPrivate::IsPointerToTypeDerivedFromQObject<Obj*>::Value, QAction *>::Type
         addAction(const QIcon &actionIcon, const QString &text, const Obj *object, Func1 slot, const QKeySequence &shortcut = 0)
     {

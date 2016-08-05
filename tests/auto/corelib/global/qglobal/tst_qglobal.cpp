@@ -28,7 +28,6 @@
 
 
 #include <QtTest/QtTest>
-#include <QtCore/qtypetraits.h>
 
 #include <QPair>
 #include <QTextCodec>
@@ -376,8 +375,8 @@ void tst_QGlobal::isEnum()
 #define IS_ENUM_TRUE(x)     (Q_IS_ENUM(x) == true)
 #define IS_ENUM_FALSE(x)    (Q_IS_ENUM(x) == false)
 #else
-#define IS_ENUM_TRUE(x)     (Q_IS_ENUM(x) == true && QtPrivate::is_enum<x>::value == true)
-#define IS_ENUM_FALSE(x)    (Q_IS_ENUM(x) == false && QtPrivate::is_enum<x>::value == false)
+#define IS_ENUM_TRUE(x)     (Q_IS_ENUM(x) == true && std::is_enum<x>::value == true)
+#define IS_ENUM_FALSE(x)    (Q_IS_ENUM(x) == false && std::is_enum<x>::value == false)
 #endif
 
     QVERIFY(IS_ENUM_TRUE(isEnum_B_Byte));

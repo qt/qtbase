@@ -102,7 +102,7 @@ public:
     // the definition below is too complex for qdoc
     typedef int Int;
 #else
-    typedef typename QtPrivate::if_<
+    typedef typename std::conditional<
             QtPrivate::is_unsigned<Enum>::value,
             unsigned int,
             signed int

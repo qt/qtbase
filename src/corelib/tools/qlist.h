@@ -125,10 +125,10 @@ class QList
 {
 public:
     struct MemoryLayout
-        : QtPrivate::if_<
+        : std::conditional<
             QTypeInfo<T>::isStatic || QTypeInfo<T>::isLarge,
             QListData::IndirectLayout,
-            typename QtPrivate::if_<
+            typename std::conditional<
                 sizeof(T) == sizeof(void*),
                 QListData::ArrayCompatibleLayout,
                 QListData::InlineWithPaddingLayout
