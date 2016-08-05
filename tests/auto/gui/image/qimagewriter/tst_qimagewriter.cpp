@@ -47,7 +47,7 @@
 #include <algorithm>
 
 typedef QMap<QString, QString> QStringMap;
-typedef QList<int> QIntList;
+typedef QVector<int> QIntList;
 Q_DECLARE_METATYPE(QImageWriter::ImageWriterError)
 Q_DECLARE_METATYPE(QImage::Format)
 
@@ -227,8 +227,15 @@ void tst_QImageWriter::writeImage2_data()
     QTest::addColumn<QByteArray>("format");
     QTest::addColumn<QImage>("image");
 
-    const QStringList formats = QStringList() << "bmp" << "xpm" << "png"
-                                              << "ppm" << "ico"; //<< "jpeg";
+    static const QLatin1String formats[] = {
+        QLatin1String("bmp"),
+        QLatin1String("xpm"),
+        QLatin1String("png"),
+        QLatin1String("ppm"),
+        QLatin1String("ico"),
+        // QLatin1String("jpeg"),
+    };
+
     QImage image0(70, 70, QImage::Format_ARGB32);
     image0.fill(QColor(Qt::red).rgb());
 
@@ -236,11 +243,11 @@ void tst_QImageWriter::writeImage2_data()
     while (imgFormat != QImage::NImageFormats) {
         QImage image = image0.convertToFormat(imgFormat);
         initializePadding(&image);
-        foreach (const QString format, formats) {
+        for (QLatin1String format : formats) {
             const QString fileName = QLatin1String("solidcolor_")
                 + QString::number(imgFormat) + QLatin1Char('.') + format;
             QTest::newRow(fileName.toLatin1()) << writePrefix + fileName
-                                               << format.toLatin1()
+                                               << QByteArray(format.data(), format.size())
                                                << image;
         }
         imgFormat = QImage::Format(int(imgFormat) + 1);
@@ -304,41 +311,38 @@ void tst_QImageWriter::writeImage2()
     QVERIFY(QFile::remove(fileName));
 }
 
+namespace {
+// C++98-library version of C++11 std::is_sorted
+template <typename C>
+bool is_sorted(const C &c)
+{
+    return std::adjacent_find(c.begin(), c.end(), std::greater_equal<typename C::value_type>()) == c.end();
+}
+}
+
 void tst_QImageWriter::supportedFormats()
 {
     QList<QByteArray> formats = QImageWriter::supportedImageFormats();
-    QList<QByteArray> sortedFormats = formats;
-    std::sort(sortedFormats.begin(), sortedFormats.end());
 
     // check that the list is sorted
-    QCOMPARE(formats, sortedFormats);
-
-    QSet<QByteArray> formatSet;
-    foreach (QByteArray format, formats)
-        formatSet << format;
+    QVERIFY(is_sorted(formats));
 
     // check that the list does not contain duplicates
-    QCOMPARE(formatSet.size(), formats.size());
+    QVERIFY(std::unique(formats.begin(), formats.end()) == formats.end());
 }
 
 void tst_QImageWriter::supportedMimeTypes()
 {
     QList<QByteArray> mimeTypes = QImageWriter::supportedMimeTypes();
-    QList<QByteArray> sortedMimeTypes = mimeTypes;
-    std::sort(sortedMimeTypes.begin(), sortedMimeTypes.end());
 
     // check that the list is sorted
-    QCOMPARE(mimeTypes, sortedMimeTypes);
-
-    QSet<QByteArray> mimeTypeSet;
-    foreach (QByteArray mimeType, mimeTypes)
-        mimeTypeSet << mimeType;
+    QVERIFY(is_sorted(mimeTypes));
 
     // check the list as a minimum contains image/bmp
-    QVERIFY(mimeTypeSet.contains("image/bmp"));
+    QVERIFY(mimeTypes.contains("image/bmp"));
 
     // check that the list does not contain duplicates
-    QCOMPARE(mimeTypeSet.size(), mimeTypes.size());
+    QVERIFY(std::unique(mimeTypes.begin(), mimeTypes.end()) == mimeTypes.end());
 }
 
 void tst_QImageWriter::writeToInvalidDevice()
@@ -412,30 +416,27 @@ void tst_QImageWriter::supportsOption()
     QFETCH(QString, fileName);
     QFETCH(QIntList, options);
 
-    QSet<QImageIOHandler::ImageOption> allOptions;
-    allOptions << QImageIOHandler::Size
-               << QImageIOHandler::ClipRect
-               << QImageIOHandler::Description
-               << QImageIOHandler::ScaledClipRect
-               << QImageIOHandler::ScaledSize
-               << QImageIOHandler::CompressionRatio
-               << QImageIOHandler::Gamma
-               << QImageIOHandler::Quality
-               << QImageIOHandler::Name
-               << QImageIOHandler::SubType
-               << QImageIOHandler::IncrementalReading
-               << QImageIOHandler::Endianness
-               << QImageIOHandler::Animation
-               << QImageIOHandler::BackgroundColor;
+    static Q_CONSTEXPR QImageIOHandler::ImageOption allOptions[] = {
+        QImageIOHandler::Size,
+        QImageIOHandler::ClipRect,
+        QImageIOHandler::Description,
+        QImageIOHandler::ScaledClipRect,
+        QImageIOHandler::ScaledSize,
+        QImageIOHandler::CompressionRatio,
+        QImageIOHandler::Gamma,
+        QImageIOHandler::Quality,
+        QImageIOHandler::Name,
+        QImageIOHandler::SubType,
+        QImageIOHandler::IncrementalReading,
+        QImageIOHandler::Endianness,
+        QImageIOHandler::Animation,
+        QImageIOHandler::BackgroundColor,
+    };
 
     QImageWriter writer(writePrefix + fileName);
-    for (int i = 0; i < options.size(); ++i) {
-        QVERIFY(writer.supportsOption(QImageIOHandler::ImageOption(options.at(i))));
-        allOptions.remove(QImageIOHandler::ImageOption(options.at(i)));
+    for (auto option : allOptions) {
+        QCOMPARE(writer.supportsOption(option), options.contains(option));
     }
-
-    foreach (QImageIOHandler::ImageOption option, allOptions)
-        QVERIFY(!writer.supportsOption(option));
 }
 
 void tst_QImageWriter::saveWithNoFormat_data()
