@@ -332,7 +332,8 @@ void tst_QTextCodec::codecForLocale()
 
     // find a codec that is not the codecForLocale()
     QTextCodec *codec2 = 0;
-    foreach (int mib, QTextCodec::availableMibs()) {
+    const auto availableMibs = QTextCodec::availableMibs();
+    for (int mib : availableMibs ) {
         if (mib != codec->mibEnum()) {
             codec2 = QTextCodec::codecForMib(mib);
             if (codec2)
@@ -2148,7 +2149,7 @@ public:
 void tst_QTextCodec::threadSafety()
 {
     QList<QByteArray> codecList = QTextCodec::availableCodecs();
-    QList<int> mibList = QTextCodec::availableMibs();
+    const QVector<int> mibList = QTextCodec::availableMibs().toVector();
     QThreadPool::globalInstance()->setMaxThreadCount(12);
 
     QVector<QByteArray> res;
@@ -2167,7 +2168,7 @@ void tst_QTextCodec::threadSafety()
     QThreadPool::globalInstance()->waitForDone();
 
     QCOMPARE(res.toList(), codecList);
-    QCOMPARE(res2.toList(), mibList);
+    QCOMPARE(res2, mibList);
 }
 
 void tst_QTextCodec::invalidNames()
@@ -2189,10 +2190,9 @@ void tst_QTextCodec::invalidNames()
 void tst_QTextCodec::checkAliases_data()
 {
     QTest::addColumn<QByteArray>("codecName");
-    QList<QByteArray> codecList = QTextCodec::availableCodecs();
-    foreach (const QByteArray &a, codecList) {
+    const QList<QByteArray> codecList = QTextCodec::availableCodecs();
+    for (const QByteArray &a : codecList)
         QTest::newRow( a.constData() ) << a;
-    }
 }
 
 void tst_QTextCodec::checkAliases()
@@ -2203,7 +2203,8 @@ void tst_QTextCodec::checkAliases()
     QCOMPARE(QTextCodec::codecForName(codecName), c);
     QCOMPARE(QTextCodec::codecForName(c->name()), c);
 
-    foreach(const QByteArray &a, c->aliases()) {
+    const auto aliases = c->aliases();
+    for (const QByteArray &a : aliases) {
         QCOMPARE(QTextCodec::codecForName(a), c);
     }
 }
