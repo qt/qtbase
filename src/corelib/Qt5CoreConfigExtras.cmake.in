@@ -116,7 +116,7 @@ set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS $<$<
 
 set_property(TARGET Qt5::Core PROPERTY INTERFACE_COMPILE_FEATURES cxx_decltype)
 
-!!IF contains(QT_CONFIG, reduce_exports)
+!!IF qtConfig(reduce_exports)
 set(QT_VISIBILITY_AVAILABLE \"True\")
 !!ENDIF
 

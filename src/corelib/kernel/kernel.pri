@@ -147,12 +147,12 @@ unix|integrity {
             kernel/qpoll_p.h \
             kernel/qtimerinfo_unix_p.h
 
-    contains(QT_CONFIG, poll_select): SOURCES += kernel/qpoll.cpp
-    contains(QT_CONFIG, poll_poll): DEFINES += QT_HAVE_POLL
-    contains(QT_CONFIG, poll_ppoll): DEFINES += QT_HAVE_POLL QT_HAVE_PPOLL
-    contains(QT_CONFIG, poll_pollts): DEFINES += QT_HAVE_POLL QT_HAVE_POLLTS
+    qtConfig(poll_select): SOURCES += kernel/qpoll.cpp
+    qtConfig(poll_poll): DEFINES += QT_HAVE_POLL
+    qtConfig(poll_ppoll): DEFINES += QT_HAVE_POLL QT_HAVE_PPOLL
+    qtConfig(poll_pollts): DEFINES += QT_HAVE_POLL QT_HAVE_POLLTS
 
-    contains(QT_CONFIG, glib) {
+    qtConfig(glib) {
         SOURCES += \
             kernel/qeventdispatcher_glib.cpp
         HEADERS += \
@@ -160,7 +160,7 @@ unix|integrity {
         QMAKE_USE_PRIVATE += glib
     }
 
-   contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
+   qtConfig(clock-gettime): include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
 
     !android {
         SOURCES += kernel/qsharedmemory_posix.cpp \

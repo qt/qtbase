@@ -49,14 +49,14 @@ SUBDIRS=\
     qprocess \
     qtextstream
 
-!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+!qtConfig(private_tests): SUBDIRS -= \
     qabstractfileengine \
     qfileinfo \
     qipaddress \
     qurlinternal \
     qloggingregistry
 
-win32:!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+win32:!qtConfig(private_tests): SUBDIRS -= \
     qfilesystementry
 
 winrt: SUBDIRS -= \

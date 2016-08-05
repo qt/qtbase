@@ -8,11 +8,10 @@ SOURCES += \
 
 INCLUDEPATH += $$PWD/../shared
 
-contains(QT_CONFIG, libudev) {
+qtConfig(libudev): \
     QMAKE_USE_PRIVATE += libudev
-}
 
-contains(QT_CONFIG, mtdev) {
+qtConfig(mtdev) {
     CONFIG += link_pkgconfig
     PKGCONFIG_PRIVATE += mtdev
 }

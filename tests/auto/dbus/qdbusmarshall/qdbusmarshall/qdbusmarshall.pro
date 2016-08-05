@@ -5,7 +5,7 @@ DESTDIR = ./
 
 QT = core-private dbus-private testlib
 
-contains(QT_CONFIG, dbus-linked) {
+qtConfig(dbus-linked) {
     DEFINES += QT_LINKED_LIBDBUS
     QMAKE_USE += dbus
 } else {

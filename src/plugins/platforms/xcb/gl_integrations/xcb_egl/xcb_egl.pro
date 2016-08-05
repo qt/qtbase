@@ -4,7 +4,7 @@ include(../gl_integrations_plugin_base.pri)
 
 CONFIG += egl
 
-contains(QT_CONFIG, xcb-xlib): DEFINES += XCB_USE_XLIB
+qtConfig(xcb-xlib): DEFINES += XCB_USE_XLIB
 
 HEADERS += \
     qxcbeglcontext.h \

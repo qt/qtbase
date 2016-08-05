@@ -33,7 +33,7 @@ win32 {
         LIBS_PRIVATE += -lwinspool -lcomdlg32 -lgdi32 -luser32
 }
 
-unix:!mac:contains(QT_CONFIG, cups): {
+unix:!darwin:qtConfig(cups) {
         SOURCES += $$PWD/qcups.cpp
         HEADERS += $$PWD/qcups_p.h
 }

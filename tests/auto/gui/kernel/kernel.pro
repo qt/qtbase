@@ -34,6 +34,6 @@ win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
 !qtHaveModule(network): SUBDIRS -= \
    qguieventloop
 
-!contains(QT_CONFIG, opengl(es2)?): SUBDIRS -= qopenglwindow
+!qtConfig(opengl(es2)?): SUBDIRS -= qopenglwindow
 
 uikit: SUBDIRS -= qclipboard

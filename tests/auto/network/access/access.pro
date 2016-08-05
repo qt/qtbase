@@ -15,7 +15,7 @@ SUBDIRS=\
    hpack \
    http2
 
-!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+!qtConfig(private_tests): SUBDIRS -= \
           qhttpnetworkconnection \
           qhttpnetworkreply \
           qftp \

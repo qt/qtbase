@@ -16,7 +16,7 @@ defineReplace(qtPlatformTargetSuffix) {
 
 defineReplace(qtLibraryTarget) {
    LIBRARY_NAME = $$1
-   CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
+   CONFIG(shared, static|shared):qtConfig(framework) {
       QMAKE_FRAMEWORK_BUNDLE_NAME = $$LIBRARY_NAME
       export(QMAKE_FRAMEWORK_BUNDLE_NAME)
    }
@@ -196,7 +196,7 @@ defineTest(qtAddTargetEnv) {
         } else:contains(QMAKE_HOST.os, Haiku) {
             deppath.name = LIBRARY_PATH
         } else:equals(QMAKE_HOST.os, Darwin) {
-            contains(QT_CONFIG, qt_framework): \
+            qtConfig(framework): \
                 deppath.name = DYLD_FRAMEWORK_PATH
             else: \
                 deppath.name = DYLD_LIBRARY_PATH
@@ -259,7 +259,7 @@ defineReplace(pkgConfigExecutable) {
 }
 
 defineTest(packagesExist) {
-    contains(QT_CONFIG, no-pkg-config) {
+    !qtConfig(pkg-config) {
         warning("pkg-config disabled, can't check package existence")
         return(false)
     }

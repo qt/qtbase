@@ -1,5 +1,5 @@
 # OpenSSL support; compile in QSslSocket.
-contains(QT_CONFIG, ssl) {
+qtConfig(ssl) {
     HEADERS += ssl/qasn1element_p.h \
                ssl/qssl.h \
                ssl/qssl_p.h \
@@ -45,7 +45,7 @@ contains(QT_CONFIG, ssl) {
                    ssl/qsslellipticcurve_dummy.cpp
     }
 
-    contains(QT_CONFIG, securetransport) {
+    qtConfig(securetransport) {
         HEADERS += ssl/qsslsocket_mac_p.h
         SOURCES += ssl/qsslcertificate_qt.cpp \
                    ssl/qssldiffiehellmanparameters_dummy.cpp \
@@ -56,7 +56,7 @@ contains(QT_CONFIG, ssl) {
                    ssl/qsslellipticcurve_dummy.cpp
     }
 
-    contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
+    qtConfig(openssl)|qtConfig(openssl-linked) {
         HEADERS += ssl/qsslcontext_openssl_p.h \
                    ssl/qsslsocket_openssl_p.h \
                    ssl/qsslsocket_openssl_symbols_p.h

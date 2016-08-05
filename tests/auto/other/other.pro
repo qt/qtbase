@@ -51,9 +51,9 @@ cross_compile: SUBDIRS -= \
    atwrapper \
    compiler
 
-!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
+!qtConfig(accessibility): SUBDIRS -= qaccessibility
 
-!contains(QT_CONFIG, accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
+!qtConfig(accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
 
 !mac: SUBDIRS -= \
            macgui \

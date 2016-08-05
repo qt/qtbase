@@ -53,11 +53,11 @@ dialogs \
 windowtransparency \
 unc
 
-!contains(QT_CONFIG, openssl):!contains(QT_CONFIG, openssl-linked):SUBDIRS -= qssloptions
+!qtConfig(openssl):!qtConfig(openssl-linked): SUBDIRS -= qssloptions
 
-contains(QT_CONFIG, opengl) {
+qtConfig(opengl) {
     SUBDIRS += qopengltextureblitter
-    contains(QT_CONFIG, egl): SUBDIRS += qopenglcontext
+    qtConfig(egl): SUBDIRS += qopenglcontext
 }
 
 win32: SUBDIRS -= network_remote_stresstest network_stresstest

@@ -1,9 +1,9 @@
-contains(QT_CONFIG, opengles2) {
+qtConfig(opengles2) {
 #   For Desktop, use the ANGLE library location passed on from configure.
     INCLUDEPATH += $$QMAKE_INCDIR_OPENGL_ES2
     CONFIG(debug, debug|release) {
         QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_DEBUG
-        contains(QT_CONFIG, angle) {
+        qtConfig(angle) {
             LIBS += $$QMAKE_LIBS_OPENGL_ES2_DEBUG
         } else {
             LIBS += $$QMAKE_LIBS_OPENGL_ES2
@@ -13,9 +13,9 @@ contains(QT_CONFIG, opengles2) {
         QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_RELEASE
     }
     DEFINES += QT_OPENGL_ES_2 QT_OPENGL_ES_2_ANGLE
-    contains(QT_CONFIG, static): DEFINES += QT_OPENGL_ES_2_ANGLE_STATIC GL_APICALL= EGLAPI=
+    qtConfig(static): DEFINES += QT_OPENGL_ES_2_ANGLE_STATIC GL_APICALL= EGLAPI=
 } else {
-    !contains(QT_CONFIG, dynamicgl) {
+    !qtConfig(dynamicgl) {
         QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
         QMAKE_LFLAGS += $$QMAKE_LFLAGS_OPENGL
     }

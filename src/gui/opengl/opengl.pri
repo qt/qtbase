@@ -1,9 +1,9 @@
 # Qt gui library, opengl module
 
-contains(QT_CONFIG, opengl):CONFIG += opengl
-contains(QT_CONFIG, opengles2):CONFIG += opengles2
+qtConfig(opengl): CONFIG += opengl
+qtConfig(opengles2): CONFIG += opengles2
 
-contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
+qtConfig(opengl(es2)?) {
 
     HEADERS += opengl/qopengl.h \
                opengl/qopengl_p.h \
@@ -63,7 +63,7 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopengltexturehelper.cpp \
                opengl/qopenglpixeltransferoptions.cpp
 
-    !contains(QT_CONFIG, opengles2) {
+    !qtConfig(opengles2) {
         HEADERS += opengl/qopenglfunctions_1_0.h \
                    opengl/qopenglfunctions_1_1.h \
                    opengl/qopenglfunctions_1_2.h \
@@ -122,7 +122,7 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                    opengl/qopengltimerquery.cpp
     }
 
-    contains(QT_CONFIG, opengles2) {
+    qtConfig(opengles2) {
         HEADERS += opengl/qopenglfunctions_es2.h
 
         SOURCES += opengl/qopenglfunctions_es2.cpp

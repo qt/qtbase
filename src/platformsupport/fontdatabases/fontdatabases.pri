@@ -1,11 +1,11 @@
-!win32|contains(QT_CONFIG, freetype):!mac {
+!win32|qtConfig(freetype):!darwin {
     include($$PWD/basic/basic.pri)
 }
 
 unix:!mac {
     CONFIG += qpa/genericunixfontdatabase
     include($$PWD/genericunix/genericunix.pri)
-    contains(QT_CONFIG,fontconfig) {
+    qtConfig(fontconfig) {
         include($$PWD/fontconfig/fontconfig.pri)
     }
 }

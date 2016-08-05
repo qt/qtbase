@@ -2,11 +2,11 @@ TEMPLATE = subdirs
 
 load(qfeatures)
 
-contains(QT_CONFIG, evdev) {
+qtConfig(evdev) {
     SUBDIRS += evdevmouse evdevtouch evdevkeyboard evdevtablet
 }
 
-contains(QT_CONFIG, tslib) {
+qtConfig(tslib) {
     SUBDIRS += tslib
 }
 
@@ -14,7 +14,7 @@ contains(QT_CONFIG, tslib) {
     SUBDIRS += tuiotouch
 }
 
-contains(QT_CONFIG, libinput) {
+qtConfig(libinput) {
     SUBDIRS += libinput
 }
 

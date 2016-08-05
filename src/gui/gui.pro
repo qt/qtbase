@@ -1,7 +1,7 @@
 TARGET     = QtGui
 QT = core-private
 
-contains(QT_CONFIG, opengl.*): MODULE_CONFIG = opengl
+qtConfig(opengl.*): MODULE_CONFIG = opengl
 
 DEFINES   += QT_NO_USING_NAMESPACE
 
@@ -18,7 +18,7 @@ MODULE_PLUGIN_TYPES = \
     egldeviceintegrations
 
 # This is here only because the platform plugin is no module, obviously.
-contains(QT_CONFIG, angle) {
+qtConfig(angle) {
     MODULE_AUX_INCLUDES = \
         \$\$QT_MODULE_INCLUDE_BASE/QtANGLE
 }
@@ -53,7 +53,7 @@ load(cmake_functions)
 
 win32: CMAKE_WINDOWS_BUILD = True
 
-contains(QT_CONFIG, angle) {
+qtConfig(angle) {
     CMAKE_GL_INCDIRS = $$CMAKE_INCLUDE_DIR
     CMAKE_ANGLE_EGL_DLL_RELEASE = libEGL.dll
     CMAKE_ANGLE_EGL_IMPLIB_RELEASE = libEGL.lib
@@ -66,22 +66,22 @@ contains(QT_CONFIG, angle) {
 
     CMAKE_QT_OPENGL_IMPLEMENTATION = GLESv2
 } else {
-    contains(QT_CONFIG, egl) {
+    qtConfig(egl) {
         CMAKE_EGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_EGL)
         !isEmpty(QMAKE_LIBDIR_EGL): CMAKE_EGL_LIBDIR += $$cmakeTargetPath($$QMAKE_LIBDIR_EGL)
     }
 
-    contains(QT_CONFIG, opengles2) {
+    qtConfig(opengles2) {
         !isEmpty(QMAKE_INCDIR_OPENGL_ES2): CMAKE_GL_INCDIRS = $$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL_ES2)
         CMAKE_OPENGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_OPENGL_ES2)
         CMAKE_OPENGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_OPENGL_ES2)
         !isEmpty(QMAKE_LIBDIR_OPENGL_ES2): CMAKE_OPENGL_LIBDIR = $$cmakePortablePaths($$QMAKE_LIBDIR_OPENGL_ES2)
         CMAKE_GL_HEADER_NAME = GLES2/gl2.h
         CMAKE_QT_OPENGL_IMPLEMENTATION = GLESv2
-    } else:contains(QT_CONFIG, opengl) {
+    } else: qtConfig(opengl) {
         !isEmpty(QMAKE_INCDIR_OPENGL): CMAKE_GL_INCDIRS = $$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL)
         CMAKE_OPENGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_OPENGL)
-        !contains(QT_CONFIG, dynamicgl): CMAKE_OPENGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_OPENGL)
+        !qtConfig(dynamicgl): CMAKE_OPENGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_OPENGL)
         !isEmpty(QMAKE_LIBDIR_OPENGL): CMAKE_OPENGL_LIBDIR = $$cmakePortablePaths($$QMAKE_LIBDIR_OPENGL)
         CMAKE_GL_HEADER_NAME = GL/gl.h
         mac: CMAKE_GL_HEADER_NAME = gl.h
@@ -89,6 +89,6 @@ contains(QT_CONFIG, angle) {
     }
 }
 
-contains(QT_CONFIG, egl): CMAKE_EGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_EGL)
+qtConfig(egl): CMAKE_EGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_EGL)
 
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist

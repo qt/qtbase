@@ -6,7 +6,6 @@ SOURCES += \
     $$PWD/qevdevmousehandler.cpp \
     $$PWD/qevdevmousemanager.cpp
 
-contains(QT_CONFIG, libudev) {
+qtConfig(libudev): \
     QMAKE_USE_PRIVATE += libudev
-}
 

@@ -2,7 +2,7 @@ requires(qtHaveModule(opengl))
 
 TEMPLATE      = subdirs
 
-!contains(QT_CONFIG, dynamicgl): !contains(QT_CONFIG, opengles2) {
+!qtConfig(dynamicgl):!qtConfig(opengles2) {
     # legacy desktop-only examples, no dynamic GL support
     SUBDIRS   = \
                 grabber \

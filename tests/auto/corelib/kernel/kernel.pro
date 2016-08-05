@@ -33,7 +33,7 @@ SUBDIRS=\
     qobject \
     qsocketnotifier
 
-!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+!qtConfig(private_tests): SUBDIRS -= \
     qsocketnotifier \
     qsharedmemory
 

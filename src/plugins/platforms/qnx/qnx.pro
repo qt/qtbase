@@ -75,7 +75,7 @@ CONFIG(qqnx_screeneventthread) {
 
 LIBS += -lscreen
 
-contains(QT_CONFIG, opengles2) {
+qtConfig(opengles2) {
     SOURCES += qqnxglcontext.cpp \
                qqnxeglwindow.cpp
 

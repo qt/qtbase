@@ -12,14 +12,14 @@
 QMAKE_DIR_REPLACE_SANE += DESTDIR
 CONFIG -= debug_and_release_target
 
-contains(QT_CONFIG, c++11): CONFIG += c++11 strict_c++
-contains(QT_CONFIG, c++14): CONFIG += c++14
-contains(QT_CONFIG, c++1z): CONFIG += c++1z
+qtConfig(c++11): CONFIG += c++11 strict_c++
+qtConfig(c++14): CONFIG += c++14
+qtConfig(c++1z): CONFIG += c++1z
 contains(TEMPLATE, .*lib) {
     # module and plugins
-    !host_build:contains(QT_CONFIG, reduce_exports): CONFIG += hide_symbols
-    unix:contains(QT_CONFIG, reduce_relocations): CONFIG += bsymbolic_functions
-    contains(QT_CONFIG, separate_debug_info): CONFIG += separate_debug_info
+    !host_build:qtConfig(reduce_exports): CONFIG += hide_symbols
+    unix:qtConfig(reduce_relocations): CONFIG += bsymbolic_functions
+    qtConfig(separate_debug_info): CONFIG += separate_debug_info
 
     !isEmpty(_QMAKE_SUPER_CACHE_): \
         rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*

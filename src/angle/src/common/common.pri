@@ -1,5 +1,5 @@
 # static builds should still link ANGLE dynamically when dynamic GL is enabled
-static:contains(QT_CONFIG, dynamicgl) {
+static:qtConfig(dynamicgl) {
     CONFIG -= static
     CONFIG += shared
 }

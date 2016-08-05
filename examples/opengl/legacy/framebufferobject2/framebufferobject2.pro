@@ -8,4 +8,4 @@ QT += opengl widgets
 target.path = $$[QT_INSTALL_EXAMPLES]/opengl/legacy/framebufferobject2
 INSTALLS += target
 
-contains(QT_CONFIG, opengles.|angle|dynamicgl):error("This example requires Qt to be configured with -opengl desktop")
+qtConfig(opengles.|angle|dynamicgl): error("This example requires Qt to be configured with -opengl desktop")

@@ -40,7 +40,7 @@ isEmpty(QMAKE_TARGET_BUNDLE_PREFIX) {
 # and put it into a dSYM file. We don't need that dSYM file in
 # the first place, since the information is available in the
 # object files inside the archives (static libraries).
-contains(QT_CONFIG, static): \
+macx-xcode:qtConfig(static): \
     QMAKE_XCODE_DEBUG_INFORMATION_FORMAT = dwarf
 
 # This variable is used by the xcode_dynamic_library_suffix

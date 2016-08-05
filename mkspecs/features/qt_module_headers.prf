@@ -16,7 +16,7 @@ load(qt_build_paths)
     minimal_syncqt {
         QMAKE_SYNCQT += -minimal $$QMAKE_SYNCQT_OPTIONS
     } else {
-        contains(QT_CONFIG, private_tests): \   # -developer-build
+        qtConfig(private_tests): \   # -developer-build
             QMAKE_SYNCQT += -check-includes
     }
     for(mod, MODULE_INCNAME): \
@@ -230,7 +230,7 @@ headersclean:!internal_module {
                         $$[QT_INSTALL_DATA/src]/mkspecs/features/data/dummy.cpp
     }
 
-    !isEmpty(hcleanCOMMAND):if(!contains(QT_CONFIG, debug_and_release)|CONFIG(release, debug|release)) {
+    !isEmpty(hcleanCOMMAND):if(!qtConfig(debug_and_release)|CONFIG(release, debug|release)) {
         header_check.dependency_type = TYPE_C
         header_check.CONFIG += no_link
         header_check.output = ${QMAKE_VAR_OBJECTS_DIR}header_${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}

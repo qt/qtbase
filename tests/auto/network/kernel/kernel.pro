@@ -18,7 +18,7 @@ winrt: SUBDIRS -= \
 osx: SUBDIRS -= \ # QTBUG-41847
     qhostinfo \
 
-!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+!qtConfig(private_tests): SUBDIRS -= \
     qauthenticator \
     qhostinfo \
 

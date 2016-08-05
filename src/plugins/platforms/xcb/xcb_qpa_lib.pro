@@ -40,11 +40,11 @@ HEADERS = \
 
 DEFINES += QT_BUILD_XCB_PLUGIN
 # needed by Xcursor ...
-contains(QT_CONFIG, xcb-xlib) {
+qtConfig(xcb-xlib) {
     DEFINES += XCB_USE_XLIB
     QMAKE_USE += xcb_xlib
 
-    contains(QT_CONFIG, xinput2) {
+    qtConfig(xinput2) {
         DEFINES += XCB_USE_XINPUT2
         SOURCES += qxcbconnection_xi2.cpp
         QMAKE_USE += xinput2
@@ -52,7 +52,7 @@ contains(QT_CONFIG, xcb-xlib) {
 }
 
 # build with session management support
-contains(QT_CONFIG, xcb-sm) {
+qtConfig(xcb-sm) {
     DEFINES += XCB_USE_SM
     QMAKE_USE += x11sm
     SOURCES += qxcbsessionmanager.cpp
@@ -63,11 +63,10 @@ include(gl_integrations/gl_integrations.pri)
 
 CONFIG += qpa/genericunixfontdatabase
 
-contains(QT_CONFIG, dbus-linked) {
+qtConfig(dbus-linked): \
     QT += dbus
-}
 
-contains(QT_CONFIG, xcb-qt) {
+!qtConfig(system-xcb) {
     DEFINES += XCB_USE_RENDER
     XCB_DIR = ../../../3rdparty/xcb
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
@@ -77,7 +76,7 @@ contains(QT_CONFIG, xcb-qt) {
     LIBS += -lxcb-xinerama  ### there is no configure test for this!
     qtConfig(xkb): QMAKE_USE += xcb_xkb
     # to support custom cursors with depth > 1
-    contains(QT_CONFIG, xcb-render) {
+    qtConfig(xcb-render) {
         DEFINES += XCB_USE_RENDER
         QMAKE_USE += xcb_render
     }
@@ -85,7 +84,7 @@ contains(QT_CONFIG, xcb-qt) {
 }
 
 # libxkbcommon
-contains(QT_CONFIG, xkbcommon-qt) {
+!qtConfig(xkbcommon-system) {
     include(../../../3rdparty/xkbcommon-x11.pri)
 } else {
     QMAKE_USE += xkbcommon

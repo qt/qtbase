@@ -1,7 +1,7 @@
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
 LIBS += -lole32 -luser32 -lwinspool -limm32 -lwinmm -loleaut32
 
-contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles2):!contains(QT_CONFIG, dynamicgl): LIBS *= -lopengl32
+qtConfig(opengl):!qtConfig(opengles2):!qtConfig(dynamicgl): LIBS *= -lopengl32
 
 mingw: LIBS *= -luuid
 # For the dialog helpers:
@@ -9,8 +9,8 @@ LIBS += -lshlwapi -lshell32 -ladvapi32
 
 DEFINES *= QT_NO_CAST_FROM_ASCII
 
-contains(QT_CONFIG, directwrite) {
-    contains(QT_CONFIG, directwrite2): \
+qtConfig(directwrite) {
+    qtConfig(directwrite2): \
         DEFINES *= QT_USE_DIRECTWRITE2
 
     SOURCES += $$PWD/qwindowsfontenginedirectwrite.cpp
@@ -65,18 +65,18 @@ HEADERS += \
 
 INCLUDEPATH += $$PWD
 
-contains(QT_CONFIG,opengl): HEADERS += $$PWD/qwindowsopenglcontext.h
+qtConfig(opengl): HEADERS += $$PWD/qwindowsopenglcontext.h
 
-contains(QT_CONFIG, opengles2) {
+qtConfig(opengles2) {
     SOURCES += $$PWD/qwindowseglcontext.cpp
     HEADERS += $$PWD/qwindowseglcontext.h
-} else: contains(QT_CONFIG,opengl) {
+} else: qtConfig(opengl) {
     SOURCES += $$PWD/qwindowsglcontext.cpp
     HEADERS += $$PWD/qwindowsglcontext.h
 }
 
 # Dynamic GL needs both WGL and EGL
-contains(QT_CONFIG,dynamicgl) {
+qtConfig(dynamicgl) {
     SOURCES += $$PWD/qwindowseglcontext.cpp
     HEADERS += $$PWD/qwindowseglcontext.h
 }
@@ -111,10 +111,10 @@ contains(QT_CONFIG,dynamicgl) {
 
 RESOURCES += $$PWD/openglblacklists.qrc
 
-contains(QT_CONFIG, freetype) {
+qtConfig(freetype) {
     HEADERS += $$PWD/qwindowsfontdatabase_ft.h
     SOURCES += $$PWD/qwindowsfontdatabase_ft.cpp
-    contains(QT_CONFIG, system-freetype) {
+    qtConfig(system-freetype) {
         include($$QT_SOURCE_TREE/src/platformsupport/fontdatabases/basic/basic.pri)
     } else {
         DEFINES *= QT_NO_FONTCONFIG
@@ -122,7 +122,7 @@ contains(QT_CONFIG, freetype) {
     }
 }
 
-contains(QT_CONFIG, accessibility):include($$PWD/accessible/accessible.pri)
+qtConfig(accessibility): include($$PWD/accessible/accessible.pri)
 
 DEFINES *= LIBEGL_NAME=$${LIBEGL_NAME}
 DEFINES *= LIBGLESV2_NAME=$${LIBGLESV2_NAME}

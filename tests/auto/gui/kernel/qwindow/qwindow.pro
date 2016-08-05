@@ -5,4 +5,4 @@ QT += core-private gui-private testlib
 
 SOURCES  += tst_qwindow.cpp
 
-contains(QT_CONFIG,dynamicgl):win32:!winrt: LIBS += -luser32
+qtConfig(dynamicgl):win32:!winrt: LIBS += -luser32

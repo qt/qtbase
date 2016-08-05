@@ -169,7 +169,7 @@ win32 {
                 io/qstorageinfo_unix.cpp
         }
 
-        linux|if(qnx:contains(QT_CONFIG, inotify)) {
+        linux|if(qnx:qtConfig(inotify)) {
             SOURCES += io/qfilesystemwatcher_inotify.cpp
             HEADERS += io/qfilesystemwatcher_inotify_p.h
         }

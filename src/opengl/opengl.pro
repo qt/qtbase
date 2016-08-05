@@ -9,8 +9,8 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 QMAKE_DOCS = $$PWD/doc/qtopengl.qdocconf
 
-contains(QT_CONFIG, opengl):CONFIG += opengl
-contains(QT_CONFIG, opengles2):CONFIG += opengles2
+qtConfig(opengl): CONFIG += opengl
+qtConfig(opengles2): CONFIG += opengles2
 
 HEADERS += qgl.h \
            qgl_p.h \

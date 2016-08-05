@@ -1,4 +1,4 @@
-contains(QT_CONFIG,egl) {
+qtConfig(egl) {
     HEADERS += \
         $$PWD/qeglconvenience_p.h \
         $$PWD/qeglstreamconvenience_p.h \
@@ -8,7 +8,7 @@ contains(QT_CONFIG,egl) {
         $$PWD/qeglconvenience.cpp \
         $$PWD/qeglstreamconvenience.cpp
 
-    contains(QT_CONFIG,opengl) {
+    qtConfig(opengl) {
         HEADERS += $$PWD/qeglplatformcontext_p.h \
                    $$PWD/qeglpbuffer_p.h
 
@@ -19,7 +19,7 @@ contains(QT_CONFIG,egl) {
     # Avoid X11 header collision, use generic EGL native types
     DEFINES += QT_EGL_NO_X11
 
-    contains(QT_CONFIG,xlib) {
+    qtConfig(xlib) {
         HEADERS += \
             $$PWD/qxlibeglintegration_p.h
         SOURCES += \

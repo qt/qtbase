@@ -1241,10 +1241,17 @@
             "condition": "!config.uikit && !config.integrity",
             "output": [
                 "shared",
+                "publicFeature",
                 "publicQtConfig",
-                "publicConfig",
-                { "type": "publicQtConfig", "negative": true, "name": "static" },
-                { "type": "publicConfig", "negative": true, "name": "static" }
+                "publicConfig"
+            ]
+        },
+        "static": {
+            "condition": "!features.shared",
+            "output": [
+                "publicFeature",
+                "publicQtConfig",
+                "publicConfig"
             ]
         },
         "cross_compile": {
@@ -1282,6 +1289,7 @@
             "autoDetect": "!config.darwin && !config.win32",
             "condition": "tests.pkg-config",
             "output": [
+                "publicFeature",
                 { "type": "publicQtConfig", "negative": true },
                 "pkgConfig"
             ]
@@ -1296,6 +1304,7 @@
             "autoDetect": false,
             "output": [
                 { "type": "define", "name": "QT_BUILD_INTERNAL" },
+                { "type": "privateFeature", "name": "private_tests" },
                 { "type": "publicQtConfig", "name": "private_tests" }
             ]
         },
@@ -1307,7 +1316,7 @@
             "description": "Compile libs in debug and release mode",
             "autoDetect": "input.debug == ''",
             "condition": "config.darwin || config.win32",
-            "output": [ "publicQtConfig", "debugAndRelease" ]
+            "output": [ "publicFeature", "publicQtConfig", "debugAndRelease" ]
         },
         "force_debug_info": {
             "description": "Add debug info in release mode",
@@ -1322,25 +1331,25 @@
                 "features.debug || features.debug_and_release || features.force_debug_info",
                 "config.darwin || tests.separate_debug_info"
             ],
-            "output": [ "publicQtConfig" ]
+            "output": [ "publicFeature", "publicQtConfig" ]
         },
         "release_tools": {
             "description": "Compile tools in release mode",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature", "publicQtConfig" ]
         },
         "simulator_and_device": {
             "description": "Build for both simulator and device",
             "condition": "config.uikit && input.sdk == ''",
-            "output": [ "publicQtConfig" ]
+            "output": [ "publicFeature", "publicQtConfig" ]
         },
         "build_all": {
             "condition": "features.debug_and_release || features.simulator_and_device",
-            "output": [ "publicQtConfig" ]
+            "output": [ "publicFeature", "publicQtConfig" ]
         },
         "rpath": {
             "description": "Build with RPATH",
             "autoDetect": "var.QMAKE_LFLAGS_RPATH != '' && features.shared",
-            "output": [ "publicQtConfig" ]
+            "output": [ "publicFeature", "publicQtConfig" ]
         },
         "rpath_dir": {
             "description": "RPATH directory",
@@ -1357,7 +1366,7 @@
         "force_asserts": {
             "description": "Force assertions",
             "autoDetect": false,
-            "output": [ "publicQtConfig" ]
+            "output": [ "publicFeature" ]
         },
         "warnings_are_errors": {
             "description": "WError",
@@ -1374,6 +1383,7 @@
             "condition": "config.darwin && features.shared",
             "output": [
                 { "type": "define", "name": "QT_MAC_FRAMEWORK_BUILD" },
+                "publicFeature",
                 { "type": "publicQtConfig", "name": "qt_framework"},
                 { "type": "publicConfig", "name": "qt_framework"}
             ]
@@ -1459,17 +1469,17 @@
         },
         "c++11": {
             "description": "C++11",
-            "output": [ "publicQtConfig" ]
+            "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c++14": {
             "description": "C++14",
             "condition": "features.c++11 && tests.c++14",
-            "output": [ "publicQtConfig" ]
+            "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c++1z": {
             "description": "C++1z",
             "condition": "features.c++14 && tests.c++1z",
-            "output": [ "publicQtConfig" ]
+            "output": [ "publicFeature", "publicQtConfig" ]
         },
         "compiler": {
             "description": "Compiler version",
@@ -1498,6 +1508,7 @@
             "description": "Reduce amount of exported symbols",
             "condition": "!config.win32 && tests.reduce_exports",
             "output": [
+                "privateFeature",
                 "publicQtConfig",
                 { "type": "define", "name": "QT_VISIBILITY_AVAILABLE" }
             ]
@@ -1506,6 +1517,7 @@
             "description": "Reduce amount of relocations",
             "condition": "!config.win32 && tests.reduce_relocations",
             "output": [
+                "privateFeature",
                 "publicQtConfig",
                 { "type": "define", "name": "QT_REDUCE_RELOCATIONS" }
             ]
@@ -1523,10 +1535,12 @@
         "std-atomic64": {
             "description": "64 bit atomic operations",
             "condition": "tests.atomic64 || libs.libatomic",
-            "output": [
-                { "type": "define", "negative": true, "name": "QT_NO_STD_ATOMIC64" },
-                { "type": "privateConfig", "name": "atomic64-libatomic", "condition": "!tests.atomic64" }
-            ]
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_STD_ATOMIC64" } ]
+        },
+        "libatomic": {
+            "description": "64 bit atomic operations in libatomic",
+            "condition": "!tests.atomic64 && libs.libatomic",
+            "output": [ "privateFeature" ]
         },
         "sse2": {
             "description": "SSE2",
@@ -1683,7 +1697,7 @@
         "clock-gettime": {
             "description": "clock_gettime()",
             "condition": "tests.clock-gettime",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "clock-monotonic": {
             "description": "POSIX monotonic clock",
@@ -1723,7 +1737,7 @@
         "inotify": {
             "description": "inotify",
             "condition": "tests.inotify",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "ipv6ifname": {
             "description": "IPv6 ifname",
@@ -1734,23 +1748,23 @@
             "description": "libproxy",
             "autoDetect": false,
             "condition": "libs.libproxy",
-            "output": [ "feature" ]
+            "output": [ "privateFeature" ]
         },
         "linuxfb": {
             "description": "LinuxFB",
             "condition": "tests.linuxfb",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "directfb": {
             "description": "DirectFB",
             "autoDetect": false,
             "condition": "libs.directfb",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "integrityfb": {
             "description": "INTEGRITY framebuffer",
             "condition": "config.integrity",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "kms": {
             "description": "KMS",
@@ -1760,7 +1774,7 @@
         "mirclient": {
             "description": "Mir client",
             "condition": "libs.mirclient",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "mremap": {
             "description": "mremap()",
@@ -1781,7 +1795,7 @@
         "posix_fallocate": {
             "description": "POSIX fallocate()",
             "condition": "tests.posix_fallocate",
-            "output": [ "feature" ]
+            "output": [ "privateFeature" ]
         },
         "syslog": {
             "description": "syslog",
@@ -1822,26 +1836,26 @@
             "description": "Native ppoll()",
             "emitIf": "!config.win32",
             "condition": "tests.ppoll",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "poll_pollts": {
             "description": "Native pollts()",
             "emitIf": "!config.win32",
             "condition": "!features.poll_ppoll && tests.pollts",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "poll_poll": {
             "description": "Native poll()",
             "emitIf": "!config.win32",
             "condition": "!features.poll_ppoll && !features.poll_pollts && tests.poll",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "poll_select": {
             "description": "Emulated poll()",
             "emitIf": "!config.win32",
             "condition": "!features.poll_ppoll && !features.poll_pollts && !features.poll_poll",
             "output": [
-                "publicQtConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_NO_NATIVE_POLL" }
             ]
         },
@@ -1878,14 +1892,14 @@
             "description": "CoreWLan",
             "condition": "libs.corewlan",
             "emitIf": "config.darwin",
-            "output": [ "feature" ]
+            "output": [ "feature", "privateFeature" ]
         },
         "securetransport": {
             "description": "SecureTransport",
             "disable": "input.securetransport == 'no' || input.ssl == 'no'",
             "condition": "config.darwin && (input.openssl == '' || input.openssl == 'no')",
             "output": [
-                "publicQtConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_SECURETRANSPORT" }
             ]
         },
@@ -1896,6 +1910,7 @@
             "autoDetect": "!config.winrt",
             "condition": "!features.securetransport && tests.openssl",
             "output": [
+                "privateFeature",
                 { "type": "publicQtConfig", "condition": "!features.openssl-linked" },
                 { "type": "define", "negative": true, "name": "QT_NO_OPENSSL" }
             ]
@@ -1906,7 +1921,7 @@
             "disable": "input.openssl != 'linked'",
             "condition": "features.openssl && libs.openssl",
             "output": [
-                "publicQtConfig",
+                "privateFeature",
                 { "type": "varAssign", "name": "OPENSSL_LIBS", "value": "libs.openssl.libs", "eval": "true" },
                 { "type": "varAssign", "name": "OPENSSL_LIBS_DEBUG", "value": "libs.openssl.builds.debug.libs",
                   "eval": "true", "condition": "config.win32" },
@@ -1918,41 +1933,40 @@
         "ssl": {
             "description": "SSL",
             "condition": "config.winrt || features.securetransport || features.openssl",
-            "output": [ "feature" ]
+            "output": [ "publicFeature", "feature" ]
         },
         "sctp": {
             "description": "SCTP",
             "autoDetect": false,
             "condition": "tests.sctp",
-            "output": [ "feature" ]
+            "output": [ "publicFeature", "feature" ]
         },
         "accessibility": {
             "description": "Accessibility",
-            "output": [ "feature" ]
+            "output": [ "publicFeature", "feature" ]
         },
         "accessibility-atspi-bridge": {
             "description": "ATSPI Bridge",
-            "emitIf": "features.accessibility && features.xcb",
-            "condition": "features.dbus",
-            "output": [ "feature" ]
+            "condition": "features.accessibility && features.xcb && features.dbus",
+            "output": [ "privateFeature", "feature" ]
         },
         "glib": {
             "description": "GLib",
             "autoDetect": "!config.win32",
             "condition": "libs.glib",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "gtk3": {
             "description": "GTK+",
             "autoDetect": "!config.darwin",
             "condition": "features.glib && libs.gtk3",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "icu": {
             "description": "ICU",
             "autoDetect": "!config.win32",
             "condition": "libs.icu",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "pulseaudio": {
             "description": "PulseAudio",
@@ -1962,13 +1976,13 @@
         "cups": {
             "description": "CUPS",
             "condition": "libs.cups",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "jpeg": {
             "description": "JPEG",
             "disable": "input.libjpeg == 'no'",
             "output": [
-                "publicQtConfig",
+                "privateFeature",
                 { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_JPEG" }
             ]
         },
@@ -1977,12 +1991,12 @@
             "disable": "input.libjpeg == 'qt'",
             "enable": "input.libjpeg == 'system'",
             "condition": "features.jpeg && libs.libjpeg",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "gif": {
             "description": "GIF",
             "output": [
-                "publicQtConfig",
+                "privateFeature",
                 { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_GIF" }
             ]
         },
@@ -1990,7 +2004,7 @@
             "description": "PNG",
             "disable": "input.libpng == 'no'",
             "output": [
-                "publicQtConfig",
+                "privateFeature",
                 { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_PNG" }
             ]
         },
@@ -1999,21 +2013,21 @@
             "disable": "input.libpng == 'qt'",
             "enable": "input.libpng == 'system'",
             "condition": "features.png && libs.libpng",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "ico": {
             "description": "ICO",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "system-zlib": {
             "description": "Using system zlib",
             "condition": "libs.zlib",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "iconv": {
             "description": "iconv",
             "condition": "features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "posix-libiconv": {
             "description": "POSIX iconv",
@@ -2026,18 +2040,18 @@
             "enable": "input.iconv == 'sun'",
             "disable": "input.iconv == 'posix' || input.iconv == 'gnu' || input.iconv == 'no'",
             "condition": "!config.win32 && !features.posix-libiconv && tests.sun-iconv",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature", "publicQtConfig" ]
         },
         "gnu-libiconv": {
             "description": "GNU iconv",
             "enable": "input.iconv == 'gnu'",
             "disable": "input.iconv == 'posix' || input.iconv == 'sun' || input.iconv == 'no'",
             "condition": "!config.win32 && !features.posix-libiconv && !features.sun-libiconv && libs.gnu_iconv",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "freetype": {
             "description": "FreeType",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "system-freetype": {
             "description": "  Using system FreeType",
@@ -2045,16 +2059,16 @@
             "disable": "input.freetype == 'qt'",
             "autoDetect": "!config.win32",
             "condition": "features.freetype && libs.freetype",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "fontconfig": {
             "description": "Fontconfig",
             "condition": "!config.win32 && features.system-freetype && libs.fontconfig",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "harfbuzz": {
             "description": "HarfBuzz",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "system-harfbuzz": {
             "description": "  Using system HarfBuzz",
@@ -2062,23 +2076,23 @@
             "disable": "input.harfbuzz == 'qt'",
             "autoDetect": "!config.darwin && !config.win32",
             "condition": "features.harfbuzz && libs.harfbuzz",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "concurrent": {
             "description": "Qt Concurrent",
-            "output": [ "feature" ]
+            "output": [ "publicFeature", "feature" ]
         },
         "dbus": {
             "description": "Qt D-Bus",
             "autoDetect": "!config.android && !config.winrt",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "dbus-linked": {
             "description": "Qt D-Bus directly linked to libdbus",
             "enable": "input.dbus == 'linked'",
             "disable": "input.dbus == 'runtime'",
             "condition": "features.dbus && libs.dbus",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "host-dbus": {
             "description": "Qt D-Bus (Host)",
@@ -2099,65 +2113,69 @@
         },
         "gui": {
             "description": "Qt Gui",
-            "output": [ { "type": "publicQtConfig", "negative": true } ]
+            "output": [
+                "privateFeature",
+                { "type": "publicQtConfig", "negative": true }
+            ]
         },
         "widgets": {
             "description": "Qt Widgets",
             "condition": "features.gui",
             "output": [
+                "privateFeature",
                 { "type": "define", "negative": true, "name": "QT_NO_WIDGETS" },
                 { "type": "publicQtConfig", "negative": true }
             ]
         },
         "system-proxies": {
             "description": "Use system proxies",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "egl": {
             "description": "EGL",
             "condition": "features.opengl && (features.angle || libs.egl)",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "egl_x11": {
             "description": "EGL on X11",
             "condition": "features.egl && tests.egl-x11",
-            "output": [ "feature" ]
+            "output": [ "privateFeature" ]
         },
         "eglfs": {
             "description": "EGLFS",
             "autoDetect": "!config.android && !config.win32",
             "condition": "features.egl",
-            "output": [ "feature" ]
+            "output": [ "privateFeature" ]
         },
         "eglfs_brcm": {
             "description": "EGLFS Rasberry Pi",
             "condition": "features.eglfs && tests.egl-brcm",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "eglfs_egldevice": {
             "description": "EGLFS EGLDevice",
             "condition": "features.eglfs && tests.egl-egldevice && features.kms",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "eglfs_gbm": {
             "description": "EGLFS GBM",
             "condition": "features.eglfs && features.gbm && features.kms",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "eglfs_mali": {
             "description": "EGLFS Mali",
             "condition": "features.eglfs && (tests.egl-mali || tests.egl-mali-2)",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "eglfs_viv": {
             "description": "EGLFS i.Mx6",
             "condition": "features.eglfs && tests.egl-viv",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "eglfs_viv_wl": {
             "description": "EGLFS i.Mx6 Wayland",
             "condition": "features.eglfs_viv && libs.wayland_server",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "libudev": {
             "description": "udev",
@@ -2172,7 +2190,7 @@
         "xkbcommon-evdev": {
             "description": "xkbcommon-evdev",
             "condition": "libs.xkbcommon",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "xkbcommon-system": {
             "description": "Using system-provided xkbcommon",
@@ -2180,7 +2198,7 @@
             "enable": "input.xkbcommon == 'system'",
             "disable": "input.xkbcommon == 'qt' || input.xkbcommon == 'no'",
             "condition": "libs.xkbcommon_x11",
-            "output": [ { "type": "publicQtConfig", "negative": true, "name": "xkbcommon-qt" } ]
+            "output": [ "privateFeature" ]
         },
         "xkb-config-root": {
             "description": "XKB config root",
@@ -2191,18 +2209,18 @@
         "xinput2": {
             "description": "Xinput2",
             "condition": "libs.xinput2",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "doubleconversion": {
             "description": "DoubleConversion",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "system-doubleconversion": {
             "description": "  Using system DoubleConversion",
             "enable": "input.doubleconversion == 'system'",
             "disable": "input.doubleconversion == 'qt'",
             "condition": "features.doubleconversion && libs.doubleconversion",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "system-pcre": {
             "description": "Using system PCRE",
@@ -2229,42 +2247,39 @@
             "description": "XCB",
             "autoDetect": "!config.darwin",
             "condition": "libs.xcb",
-            "output": [
-                "publicQtConfig",
-                { "type": "publicQtConfig", "name": "xcb-qt", "condition": "!features.system-xcb" },
-                { "type": "publicQtConfig", "name": "xcb-plugin" }
-            ]
+            "output": [ "privateFeature" ]
         },
         "system-xcb": {
             "description": "Using system provided XCB libraries",
             "enable": "input.xcb == 'system' || input.xcb == 'yes'",
             "disable": "input.xcb == 'qt' || input.xcb == 'no'",
             "autoDetect": "!config.darwin",
-            "condition": "libs.xcb && libs.xcb_syslibs"
+            "condition": "libs.xcb && libs.xcb_syslibs",
+            "output": [ "privateFeature" ]
         },
         "xcb-render": {
             "description": "XCB render",
             "emitIf": "features.system-xcb",
             "condition": "libs.xcb_render",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "xcb-glx": {
             "description": "XCB GLX",
             "emitIf": "features.xcb",
             "condition": "libs.xcb_glx",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "xcb-xlib": {
             "description": "XCB Xlib",
             "emitIf": "features.xcb",
             "condition": "libs.xcb_xlib",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "xcb-sm": {
             "description": "xcb-sm",
             "emitIf": "features.xcb",
             "condition": "features.sessionmanager && libs.x11sm",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "xkb": {
             "description": "XCB XKB",
@@ -2274,12 +2289,12 @@
         "xlib": {
             "description": "XLib",
             "condition": "tests.xlib",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "xrender": {
             "description": "Xrender",
             "condition": "libs.xrender",
-            "output": [ "feature" ]
+            "output": [ "privateFeature", "feature" ]
         },
         "x11-prefix": {
             "description": "X11 prefix",
@@ -2290,7 +2305,7 @@
             "description": "ANGLE",
             "autoDetect": "features.opengles2 || features.opengl-dynamic",
             "condition": "config.win32 && tests.directx",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "opengles2": {
             "description": "OpenGL ES 2.0",
@@ -2298,6 +2313,7 @@
             "disable": "input.opengl == 'desktop' || input.opengl == 'dynamic' || input.opengl == 'no'",
             "condition": "config.win32 || (!features.opengl-desktop && libs.opengl_es2)",
             "output": [
+                "publicFeature",
                 "publicQtConfig",
                 { "type": "define", "name": "QT_OPENGL_ES" },
                 { "type": "define", "name": "QT_OPENGL_ES_2" }
@@ -2306,12 +2322,18 @@
         "opengles3": {
             "description": "OpenGL ES 3.0",
             "condition": "features.opengles2 && !features.angle && tests.opengles3",
-            "output": [ { "type": "define", "name": "QT_OPENGL_ES_3" } ]
+            "output": [
+                "publicFeature",
+                { "type": "define", "name": "QT_OPENGL_ES_3" }
+            ]
         },
         "opengles31": {
             "description": "OpenGL ES 3.1",
             "condition": "features.opengles3 && tests.opengles31",
-            "output": [ { "type": "define", "name": "QT_OPENGL_ES_3_1" } ]
+            "output": [
+                "publicFeature",
+                { "type": "define", "name": "QT_OPENGL_ES_3_1" }
+            ]
         },
         "opengl-desktop": {
             "description": "Desktop OpenGL",
@@ -2326,14 +2348,14 @@
             "autoDetect": false,
             "condition": "config.win32 && !config.winrt",
             "output": [
-                { "type": "feature", "name": "dynamicgl" },
+                { "type": "publicFeature", "name": "dynamicgl" },
                 { "type": "define", "name": "QT_OPENGL_DYNAMIC" }
             ]
         },
         "opengl": {
             "description": "OpenGL",
             "condition": "features.opengl-desktop || features.opengl-dynamic || features.opengles2",
-            "output": [ "feature" ]
+            "output": [ "publicFeature", "feature" ]
         },
         "db2": {
             "description": "DB2 (IBM)",
@@ -2431,19 +2453,19 @@
             "description": "DirectWrite",
             "emitIf": "config.win32",
             "condition": "libs.directwrite",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "directwrite2": {
             "description": "DirectWrite 2",
             "emitIf": "config.win32",
             "condition": "features.directwrite && tests.directwrite2",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "direct2d": {
             "description": "Direct 2D",
             "autoDetect": false,
             "condition": "tests.direct2d",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "sessionmanager": {
             "description": "Session Management",

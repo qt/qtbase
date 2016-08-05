@@ -14,6 +14,6 @@ SUBDIRS=\
 !qtHaveModule(network): SUBDIRS -= \
     qimagereader
 
-!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+!qtConfig(private_tests): SUBDIRS -= \
            qpixmapcache \
 

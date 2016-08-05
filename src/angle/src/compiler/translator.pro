@@ -1,5 +1,5 @@
 CONFIG += static
-contains(QT_CONFIG, dynamicgl): CONFIG += not_installed
+qtConfig(dynamicgl): CONFIG += not_installed
 include(../config.pri)
 
 INCLUDEPATH += \

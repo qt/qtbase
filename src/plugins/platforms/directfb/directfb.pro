@@ -24,7 +24,7 @@ HEADERS = qdirectfbintegration.h \
     qdirectfbeglhooks.h
 
 # ### port the GL context
-contains(QT_CONFIG, directfb_egl) {
+qtConfig(directfb_egl) {
     HEADERS += qdirectfb_egl.h
     SOURCES += qdirectfb_egl.cpp
     DEFINES += DIRECTFB_GL_EGL

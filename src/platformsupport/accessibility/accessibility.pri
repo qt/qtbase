@@ -1,4 +1,4 @@
-contains(QT_CONFIG, accessibility) {
+qtConfig(accessibility) {
     INCLUDEPATH += $$PWD
 
     HEADERS += \

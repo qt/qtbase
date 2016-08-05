@@ -8,4 +8,4 @@ QT += gui-private core-private testlib
 
 SOURCES   += tst_qopengl.cpp
 
-linux:contains(QT_CONFIG, xcb-glx):contains(QT_CONFIG, xcb-xlib):!contains(QT_CONFIG, egl): DEFINES += USE_GLX
+linux:qtConfig(xcb-glx):qtConfig(xcb-xlib):!qtConfig(egl): DEFINES += USE_GLX

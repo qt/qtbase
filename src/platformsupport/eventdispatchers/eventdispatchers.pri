@@ -14,7 +14,7 @@ HEADERS +=\
     $$PWD/qwindowsguieventdispatcher_p.h
 }
 
-contains(QT_CONFIG, glib) {
+qtConfig(glib) {
     SOURCES +=$$PWD/qeventdispatcher_glib.cpp
     HEADERS +=$$PWD/qeventdispatcher_glib_p.h
     QMAKE_USE_PRIVATE += glib

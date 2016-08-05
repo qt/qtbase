@@ -12,7 +12,7 @@ HEADERS += $$PWD/qcomposeplatforminputcontext.h \
            $$PWD/generator/qtablegenerator.h \
 
 # libxkbcommon
-contains(QT_CONFIG, xkbcommon-qt): {
+!qtConfig(xkbcommon-system) {
     include(../../../3rdparty/xkbcommon.pri)
 } else {
     QMAKE_USE += xkbcommon

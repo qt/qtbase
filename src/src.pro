@@ -1,7 +1,5 @@
 TEMPLATE = subdirs
 
-load(qfeatures)
-
 src_qtzlib.file = $$PWD/corelib/qtzlib.pro
 src_qtzlib.target = sub-zlib
 
@@ -132,9 +130,9 @@ src_plugins.depends = src_sql src_xml src_network
 src_android.subdir = $$PWD/android
 
 # this order is important
-!contains(QT_CONFIG, system-zlib)|cross_compile {
+!qtConfig(system-zlib)|cross_compile {
     SUBDIRS += src_qtzlib
-    !contains(QT_CONFIG, system-zlib) {
+    !qtConfig(system-zlib) {
         src_3rdparty_libpng.depends += src_corelib
         src_3rdparty_freetype.depends += src_corelib
     }
@@ -148,44 +146,44 @@ SUBDIRS += src_corelib src_tools_qlalr
 TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
-contains(QT_CONFIG, dbus) {
-    force_bootstrap|contains(QT_CONFIG, private_tests): \
+qtConfig(dbus) {
+    force_bootstrap|qtConfig(private_tests): \
         SUBDIRS += src_tools_bootstrap_dbus
     SUBDIRS += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     TOOLS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
-    contains(QT_CONFIG, accessibility-atspi-bridge): \
+    qtConfig(accessibility-atspi-bridge): \
         src_platformsupport.depends += src_dbus src_tools_qdbusxml2cpp
     src_plugins.depends += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
 }
-contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
-!contains(QT_CONFIG, no-gui) {
-    contains(QT_CONFIG, harfbuzz):!contains(QT_CONFIG, system-harfbuzz) {
+qtConfig(concurrent): SUBDIRS += src_concurrent
+qtConfig(gui) {
+    qtConfig(harfbuzz):!qtConfig(system-harfbuzz) {
         SUBDIRS += src_3rdparty_harfbuzzng
         src_gui.depends += src_3rdparty_harfbuzzng
     }
-    contains(QT_CONFIG, angle) {
+    qtConfig(angle) {
         SUBDIRS += src_angle
         src_gui.depends += src_angle
     }
-    contains(QT_CONFIG, png) {
+    qtConfig(png) {
         SUBDIRS += src_3rdparty_libpng
         src_3rdparty_freetype.depends += src_3rdparty_libpng
         src_gui.depends += src_3rdparty_libpng
     }
-    contains(QT_CONFIG, freetype):!contains(QT_CONFIG, system-freetype) {
+    qtConfig(freetype):!qtConfig(system-freetype) {
         SUBDIRS += src_3rdparty_freetype
         src_platformsupport.depends += src_3rdparty_freetype
     }
     SUBDIRS += src_gui src_platformsupport src_platformheaders
-    contains(QT_CONFIG, opengl(es2)?):SUBDIRS += src_openglextensions
+    qtConfig(opengl(es2)?): SUBDIRS += src_openglextensions
     src_plugins.depends += src_gui src_platformsupport src_platformheaders
     src_testlib.depends += src_gui      # if QtGui is enabled, QtTest requires QtGui's headers
-    !contains(QT_CONFIG, no-widgets) {
+    qtConfig(widgets) {
         SUBDIRS += src_tools_uic src_widgets
         TOOLS += src_tools_uic
         src_plugins.depends += src_widgets
         src_testlib.depends += src_widgets        # if QtWidgets is enabled, QtTest requires QtWidgets's headers
-        contains(QT_CONFIG, opengl(es2)?) {
+        qtConfig(opengl(es2)?) {
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl
         }

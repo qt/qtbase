@@ -1,5 +1,5 @@
 CONFIG += qpa/basicunixfontdatabase
-contains(QT_CONFIG, fontconfig) {
+qtConfig(fontconfig) {
     DEFINES += Q_FONTCONFIGDATABASE
     LIBS_PRIVATE += -lfontconfig
 } else:!android {

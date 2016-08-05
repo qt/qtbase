@@ -17,7 +17,7 @@ SOURCES += \
     codecs/qtsciicodec.cpp \
     codecs/qutfcodec.cpp
 
-contains(QT_CONFIG,icu) {
+qtConfig(icu) {
     HEADERS += \
         codecs/qicucodec_p.h
     SOURCES += \
@@ -41,13 +41,13 @@ contains(QT_CONFIG,icu) {
         codecs/qbig5codec.cpp
 
     unix:!qnx:!darwin:!linux-android-* {
-        contains(QT_CONFIG, iconv) {
+        qtConfig(iconv) {
             HEADERS += codecs/qiconvcodec_p.h
             SOURCES += codecs/qiconvcodec.cpp
-            contains(QT_CONFIG, gnu-libiconv) {
+            qtConfig(gnu-libiconv) {
                 DEFINES += GNU_LIBICONV
                 QMAKE_USE_PRIVATE += iconv
-            } else: contains(QT_CONFIG, sun-libiconv) {
+            } else: qtConfig(sun-libiconv) {
                 DEFINES += GNU_LIBICONV
             }
         }
