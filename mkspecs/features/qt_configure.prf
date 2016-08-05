@@ -275,13 +275,17 @@ defineTest(qtConfTest_linkerSupportsFlag) {
     return($$qtConfToolchainSupportsFlag($$LFLAGS "-Wl,$$flag"))
 }
 
-defineReplace(qtConfFindInPath) {
-    ensurePathEnv()
-    for (dir, QMAKE_PATH_ENV) {
+defineReplace(qtConfFindInPathList) {
+    for (dir, 2) {
         exists("$$dir/$${1}"): \
             return("$$dir/$${1}")
     }
     return()
+}
+
+defineReplace(qtConfFindInPath) {
+    ensurePathEnv()
+    return($$qtConfFindInPathList($$1, $$QMAKE_PATH_ENV))
 }
 
 defineReplace(qtConfPkgConfigEnv) {
@@ -605,6 +609,27 @@ defineTest(qtConfTest_compile) {
     }
 
     return(false)
+}
+
+defineTest(qtConfTest_files) {
+    for(i, $${1}.files._KEYS_) {
+        f = $$eval($${1}.files.$${i})
+        qtLog("Searching for file $${f}.")
+        contains(f, ".*\.h") {
+            file = $$qtConfFindInPathList($$f, $$EXTRA_INCLUDEPATH $$QMAKE_DEFAULT_INCDIRS)
+        } else: contains(f, ".*\.(lib|so|a)") {
+            file = $$qtConfFindInPathList($$f, $$EXTRA_LIBDIR $$QMAKE_DEFAULT_LIBDIRS)
+        } else {
+            # assume we're looking for an executable
+            file = $$qtConfFindInPath($$f)
+        }
+        isEmpty(file) {
+            qtLog("    Not found.");
+            return(false)
+        }
+        qtLog("    Found at $${file}.")
+    }
+    return(true)
 }
 
 defineTest(logn) {
