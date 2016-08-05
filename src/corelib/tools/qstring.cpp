@@ -9468,7 +9468,7 @@ QString &QString::append(const QStringRef &str)
 {
     if (str.string() == this) {
         str.appendTo(this);
-    } else if (str.string()) {
+    } else if (!str.isNull()) {
         int oldSize = size();
         resize(oldSize + str.size());
         memcpy(data() + oldSize, str.unicode(), str.size() * sizeof(QChar));

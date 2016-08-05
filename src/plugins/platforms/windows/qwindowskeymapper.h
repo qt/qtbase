@@ -103,6 +103,7 @@ private:
     void deleteLayouts();
 
     QWindow *m_keyGrabber;
+    QChar m_lastHighSurrogate;
     static const size_t NumKeyboardLayoutItems = 256;
     KeyboardLayoutItem keyLayout[NumKeyboardLayoutItems];
 };

@@ -54,9 +54,29 @@
 #include "mainwindow.h"
 
 //! [0]
+
+Q_DECLARE_METATYPE(QFontComboBox::FontFilter)
+
 MainWindow::MainWindow()
 {
+    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
+    fileMenu->addAction(tr("Quit"), this, &QWidget::close);
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(tr("Show Font Info"), this, &MainWindow::showInfo);
+    helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
+
     QWidget *centralWidget = new QWidget;
+
+    QLabel *filterLabel = new QLabel(tr("Filter:"));
+    filterCombo = new QComboBox;
+    filterCombo->addItem(tr("All"), QVariant::fromValue(QFontComboBox::AllFonts));
+    filterCombo->addItem(tr("Scalable"), QVariant::fromValue(QFontComboBox::ScalableFonts));
+    filterCombo->addItem(tr("Monospaced"), QVariant::fromValue(QFontComboBox::MonospacedFonts));
+    filterCombo->addItem(tr("Proportional"), QVariant::fromValue(QFontComboBox::ProportionalFonts));
+    filterCombo->setCurrentIndex(0);
+    typedef void (QComboBox::*QComboBoxIntSignal)(int);
+    connect(filterCombo, static_cast<QComboBoxIntSignal>(&QComboBox::currentIndexChanged),
+            this, &MainWindow::filterChanged);
 
     QLabel *fontLabel = new QLabel(tr("Font:"));
     fontCombo = new QFontComboBox;
@@ -80,38 +100,39 @@ MainWindow::MainWindow()
 
 //! [2]
     lineEdit = new QLineEdit;
+    lineEdit->setClearButtonEnabled(true);
 #ifndef QT_NO_CLIPBOARD
     QPushButton *clipboardButton = new QPushButton(tr("&To clipboard"));
 //! [2]
 
-//! [3]
-    clipboard = QApplication::clipboard();
-//! [3]
 #endif
 
 //! [4]
-    connect(fontCombo, SIGNAL(currentFontChanged(QFont)),
-            this, SLOT(findStyles(QFont)));
-    connect(fontCombo, SIGNAL(currentFontChanged(QFont)),
-            this, SLOT(findSizes(QFont)));
-    connect(fontCombo, SIGNAL(currentFontChanged(QFont)),
-            characterWidget, SLOT(updateFont(QFont)));
-    connect(sizeCombo, SIGNAL(currentIndexChanged(QString)),
-            characterWidget, SLOT(updateSize(QString)));
-    connect(styleCombo, SIGNAL(currentIndexChanged(QString)),
-            characterWidget, SLOT(updateStyle(QString)));
+    connect(fontCombo, &QFontComboBox::currentFontChanged,
+            this, &MainWindow::findStyles);
+    connect(fontCombo, &QFontComboBox::currentFontChanged,
+            this, &MainWindow::findSizes);
+    connect(fontCombo, &QFontComboBox::currentFontChanged,
+            characterWidget, &CharacterWidget::updateFont);
+    typedef void (QComboBox::*QComboBoxStringSignal)(const QString &);
+    connect(sizeCombo, static_cast<QComboBoxStringSignal>(&QComboBox::currentIndexChanged),
+            characterWidget, &CharacterWidget::updateSize);
+    connect(styleCombo, static_cast<QComboBoxStringSignal>(&QComboBox::currentIndexChanged),
+            characterWidget, &CharacterWidget::updateStyle);
 //! [4] //! [5]
-    connect(characterWidget, SIGNAL(characterSelected(QString)),
-            this, SLOT(insertCharacter(QString)));
+    connect(characterWidget, &CharacterWidget::characterSelected,
+            this, &MainWindow::insertCharacter);
 
 #ifndef QT_NO_CLIPBOARD
-    connect(clipboardButton, SIGNAL(clicked()), this, SLOT(updateClipboard()));
+    connect(clipboardButton, &QAbstractButton::clicked, this, &MainWindow::updateClipboard);
 #endif
 //! [5]
-    connect(fontMerging, SIGNAL(toggled(bool)), characterWidget, SLOT(updateFontMerging(bool)));
+    connect(fontMerging, &QAbstractButton::toggled, characterWidget, &CharacterWidget::updateFontMerging);
 
 //! [6]
     QHBoxLayout *controlsLayout = new QHBoxLayout;
+    controlsLayout->addWidget(filterLabel);
+    controlsLayout->addWidget(filterCombo, 1);
     controlsLayout->addWidget(fontLabel);
     controlsLayout->addWidget(fontCombo, 1);
     controlsLayout->addWidget(sizeLabel);
@@ -163,6 +184,14 @@ void MainWindow::findStyles(const QFont &font)
 }
 //! [8]
 
+void MainWindow::filterChanged(int f)
+{
+    const QFontComboBox::FontFilter filter =
+        filterCombo->itemData(f).value<QFontComboBox::FontFilter>();
+    fontCombo->setFontFilters(filter);
+    statusBar()->showMessage(tr("%n font(s) found", 0, fontCombo->count()));
+}
+
 void MainWindow::findSizes(const QFont &font)
 {
     QFontDatabase fontDatabase;
@@ -208,9 +237,63 @@ void MainWindow::insertCharacter(const QString &character)
 void MainWindow::updateClipboard()
 {
 //! [11]
-    clipboard->setText(lineEdit->text(), QClipboard::Clipboard);
+    QGuiApplication::clipboard()->setText(lineEdit->text(), QClipboard::Clipboard);
 //! [11]
-    clipboard->setText(lineEdit->text(), QClipboard::Selection);
+    QGuiApplication::clipboard()->setText(lineEdit->text(), QClipboard::Selection);
 }
 #endif
+
+class FontInfoDialog : public QDialog
+{
+public:
+    explicit FontInfoDialog(QWidget *parent = Q_NULLPTR);
+
+private:
+    QString text() const;
+};
+
+FontInfoDialog::FontInfoDialog(QWidget *parent) : QDialog(parent)
+{
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QPlainTextEdit *textEdit = new QPlainTextEdit(text(), this);
+    textEdit->setReadOnly(true);
+    textEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    mainLayout->addWidget(textEdit);
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    mainLayout->addWidget(buttonBox);
+}
+
+QString FontInfoDialog::text() const
+{
+    QString text;
+    QTextStream str(&text);
+    const QFont defaultFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    const QFont titleFont = QFontDatabase::systemFont(QFontDatabase::TitleFont);
+    const QFont smallestReadableFont = QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont);
+
+    str << "Qt " << QT_VERSION_STR << " on " << QGuiApplication::platformName()
+        << ", " << logicalDpiX() << "DPI";
+    if (!qFuzzyCompare(devicePixelRatioF(), qreal(1)))
+        str  << ", device pixel ratio: " << devicePixelRatioF();
+    str << "\n\nDefault font : " << defaultFont.family() << ", " << defaultFont.pointSizeF() << "pt\n"
+        << "Fixed font   : " << fixedFont.family() << ", " << fixedFont.pointSizeF() << "pt\n"
+        << "Title font   : " << titleFont.family() << ", " << titleFont.pointSizeF() << "pt\n"
+        << "Smallest font: " << smallestReadableFont.family() << ", " << smallestReadableFont.pointSizeF() << "pt\n";
+
+    return text;
+}
+
+void MainWindow::showInfo()
+{
+    const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
+    FontInfoDialog *dialog = new FontInfoDialog(this);
+    dialog->setWindowTitle(tr("Fonts"));
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->resize(screenGeometry.width() / 4, screenGeometry.height() / 4);
+    dialog->show();
+}
+
 //! [10]

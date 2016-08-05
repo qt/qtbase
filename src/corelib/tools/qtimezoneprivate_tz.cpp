@@ -909,13 +909,12 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
     if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < forMSecsSinceEpoch
         && !m_posixRule.isEmpty() && forMSecsSinceEpoch >= 0) {
         const int year = QDateTime::fromMSecsSinceEpoch(forMSecsSinceEpoch, Qt::UTC).date().year();
-        const int lastMSecs = (m_tranTimes.size() > 0) ? m_tranTimes.last().atMSecsSinceEpoch : 0;
-        QVector<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
-                                                                               year + 1, lastMSecs);
+        QVector<QTimeZonePrivate::Data> posixTrans =
+            calculatePosixTransitions(m_posixRule, year - 1, year + 1,
+                                      m_tranTimes.last().atMSecsSinceEpoch);
         for (int i = posixTrans.size() - 1; i >= 0; --i) {
             if (posixTrans.at(i).atMSecsSinceEpoch <= forMSecsSinceEpoch) {
-                QTimeZonePrivate::Data data;
-                data = posixTrans.at(i);
+                QTimeZonePrivate::Data data = posixTrans.at(i);
                 data.atMSecsSinceEpoch = forMSecsSinceEpoch;
                 return data;
             }
@@ -953,9 +952,9 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSince
     if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < afterMSecsSinceEpoch
         && !m_posixRule.isEmpty() && afterMSecsSinceEpoch >= 0) {
         const int year = QDateTime::fromMSecsSinceEpoch(afterMSecsSinceEpoch, Qt::UTC).date().year();
-        const int lastMSecs = (m_tranTimes.size() > 0) ? m_tranTimes.last().atMSecsSinceEpoch : 0;
-        QVector<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
-                                                                               year + 1, lastMSecs);
+        QVector<QTimeZonePrivate::Data> posixTrans =
+            calculatePosixTransitions(m_posixRule, year - 1, year + 1,
+                                      m_tranTimes.last().atMSecsSinceEpoch);
         for (int i = 0; i < posixTrans.size(); ++i) {
             if (posixTrans.at(i).atMSecsSinceEpoch > afterMSecsSinceEpoch)
                 return posixTrans.at(i);
@@ -979,9 +978,9 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
     if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < beforeMSecsSinceEpoch
         && !m_posixRule.isEmpty() && beforeMSecsSinceEpoch > 0) {
         const int year = QDateTime::fromMSecsSinceEpoch(beforeMSecsSinceEpoch, Qt::UTC).date().year();
-        const int lastMSecs = (m_tranTimes.size() > 0) ? m_tranTimes.last().atMSecsSinceEpoch : 0;
-        QVector<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
-                                                                               year + 1, lastMSecs);
+        QVector<QTimeZonePrivate::Data> posixTrans =
+            calculatePosixTransitions(m_posixRule, year - 1, year + 1,
+                                      m_tranTimes.last().atMSecsSinceEpoch);
         for (int i = posixTrans.size() - 1; i >= 0; --i) {
             if (posixTrans.at(i).atMSecsSinceEpoch < beforeMSecsSinceEpoch)
                 return posixTrans.at(i);

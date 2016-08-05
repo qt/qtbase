@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 template <typename Type> class QDataBuffer
 {
-    Q_DISABLE_COPY(QDataBuffer);
+    Q_DISABLE_COPY(QDataBuffer)
 public:
     QDataBuffer(int res)
     {
