@@ -30,7 +30,7 @@
 #include <qdebug.h>
 #include <qglobal.h>
 #include <QtCore/QProcess>
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 
 class tst_qmessagehandler : public QObject
 {
@@ -841,7 +841,7 @@ void tst_qmessagehandler::qMessagePattern()
     QVERIFY(!output.isEmpty());
     QCOMPARE(!output.contains("QT_MESSAGE_PATTERN"), valid);
 
-    foreach (const QByteArray &e, expected) {
+    for (const QByteArray &e : qAsConst(expected)) {
         if (!output.contains(e)) {
             qDebug() << output;
             qDebug() << "expected: " << e;

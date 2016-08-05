@@ -81,7 +81,7 @@ void tst_QGlobal::qIsNull()
 
 void tst_QGlobal::for_each()
 {
-    QList<int> list;
+    QVector<int> list;
     list << 0 << 1 << 2 << 3 << 4 << 5;
 
     int counter = 0;
@@ -100,7 +100,7 @@ void tst_QGlobal::for_each()
 
     // check whether we can pass a constructor as container argument
     counter = 0;
-    foreach (int i, QList<int>(list)) {
+    foreach (int i, QVector<int>(list)) {
         QCOMPARE(i, counter++);
     }
     QCOMPARE(counter, list.count());
@@ -589,7 +589,7 @@ Q_DECLARE_METATYPE(stringpair)
 
 void tst_QGlobal::qprintable()
 {
-    QFETCH(QList<stringpair>, localestrings);
+    QFETCH(QVector<stringpair>, localestrings);
     QFETCH(int, utf8index);
 
     QVERIFY(utf8index >= 0 && utf8index < localestrings.count());
@@ -600,21 +600,21 @@ void tst_QGlobal::qprintable()
 
     QString string = QString::fromUtf8(utf8string);
 
-    foreach (const stringpair &pair, localestrings) {
+    for (const stringpair &pair : qAsConst(localestrings)) {
         QTextCodec *codec = QTextCodec::codecForName(pair.first);
         if (!codec)
             continue;
         QTextCodec::setCodecForLocale(codec);
         // test qPrintable()
         QVERIFY(qstrcmp(qPrintable(string), pair.second) == 0);
-        foreach (const stringpair &pair2, localestrings) {
+        for (const stringpair &pair2 : qAsConst(localestrings)) {
             if (pair2.second == pair.second)
                 continue;
             QVERIFY(qstrcmp(qPrintable(string), pair2.second) != 0);
         }
         // test qUtf8Printable()
         QVERIFY(qstrcmp(qUtf8Printable(string), utf8string) == 0);
-        foreach (const stringpair &pair2, localestrings) {
+        for (const stringpair &pair2 : qAsConst(localestrings)) {
             if (qstrcmp(pair2.second, utf8string) == 0)
                 continue;
             QVERIFY(qstrcmp(qUtf8Printable(string), pair2.second) != 0);
@@ -626,7 +626,7 @@ void tst_QGlobal::qprintable()
 
 void tst_QGlobal::qprintable_data()
 {
-    QTest::addColumn<QList<stringpair> >("localestrings");
+    QTest::addColumn<QVector<stringpair> >("localestrings");
     QTest::addColumn<int>("utf8index"); // index of utf8 string
 
     // Unicode: HIRAGANA LETTER A, I, U, E, O (U+3442, U+3444, U+3446, U+3448, U+344a)
@@ -634,7 +634,7 @@ void tst_QGlobal::qprintable_data()
     static const char *const eucjpstring = "\xa4\xa2\xa4\xa4\xa4\xa6\xa4\xa8\xa4\xaa";
     static const char *const sjisstring = "\x82\xa0\x82\xa2\x82\xa4\x82\xa6\x82\xa8";
 
-    QList<stringpair> japanesestrings;
+    QVector<stringpair> japanesestrings;
     japanesestrings << stringpair("UTF-8", utf8string)
                     << stringpair("EUC-JP", eucjpstring)
                     << stringpair("Shift_JIS", sjisstring);
