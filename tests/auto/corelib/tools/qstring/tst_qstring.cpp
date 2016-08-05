@@ -5012,6 +5012,12 @@ void tst_QString::operator_eqeq_nullstring()
     QVERIFY( QString("") == "" );
     QVERIFY( "" == QString("") );
 
+    QVERIFY(QString() == nullptr);
+    QVERIFY(nullptr == QString());
+
+    QVERIFY(QString("") == nullptr);
+    QVERIFY(nullptr == QString(""));
+
     QVERIFY( QString().size() == 0 );
 
     QVERIFY( QString("").size() == 0 );
@@ -5025,6 +5031,8 @@ void tst_QString::operator_smaller()
     QString null;
     QString empty("");
     QString foo("foo");
+    const char *nullC = nullptr;
+    const char *emptyC = "";
 
     QVERIFY( !(null < QString()) );
     QVERIFY( !(null > QString()) );
@@ -5034,6 +5042,12 @@ void tst_QString::operator_smaller()
 
     QVERIFY( !(null < empty) );
     QVERIFY( !(null > empty) );
+
+    QVERIFY( !(nullC < empty) );
+    QVERIFY( !(nullC > empty) );
+
+    QVERIFY( !(null < emptyC) );
+    QVERIFY( !(null > emptyC) );
 
     QVERIFY( null < foo );
     QVERIFY( !(null > foo) );

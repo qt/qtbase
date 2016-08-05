@@ -5402,7 +5402,7 @@ int QString::compare_helper(const QChar *data1, int length1, const char *data2, 
                             Qt::CaseSensitivity cs)
 {
     if (!data2)
-        return int(bool(data1));
+        return length1;
     if (Q_UNLIKELY(length2 < 0))
         length2 = int(strlen(data2));
     // ### make me nothrow in all cases
