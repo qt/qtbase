@@ -555,12 +555,11 @@ void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
 
 bool QNetworkManagerEngine::isConnectionActive(const QString &settingsPath) const
 {
-    QHashIterator<QString, QNetworkManagerConnectionActive*> i(activeConnectionsList);
-    while (i.hasNext()) {
-        i.next();
-        if (i.value()->connection().path() == settingsPath) {
-            if (i.value()->state() == NM_ACTIVE_CONNECTION_STATE_ACTIVATING
-                    || i.value()->state() == NM_ACTIVE_CONNECTION_STATE_ACTIVATED) {
+    for (QNetworkManagerConnectionActive *activeConnection : activeConnectionsList) {
+        if (activeConnection->connection().path() == settingsPath) {
+            const auto state = activeConnection->state();
+            if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATING
+                    || state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED) {
                 return true;
             } else {
                 break;
@@ -848,9 +847,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
 
         if (ofonoManager && ofonoManager->isValid()) {
             const QString contextPart = connectionPath.section('/', -1);
-            QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
-            while (i.hasNext()) {
-                i.next();
+            for (auto i = ofonoContextManagers.cbegin(), end = ofonoContextManagers.cend(); i != end; ++i) {
                 const QString path = i.key() + QLatin1Char('/') +contextPart;
                 if (isActiveContext(path)) {
                     cpPriv->state |= QNetworkConfiguration::Active;
@@ -867,10 +864,8 @@ bool QNetworkManagerEngine::isActiveContext(const QString &contextPath) const
 {
     if (ofonoManager && ofonoManager->isValid()) {
         const QString contextPart = contextPath.section('/', -1);
-        QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
-        while (i.hasNext()) {
-            i.next();
-            PathPropertiesList list = i.value()->contextsWithProperties();
+        for (QOfonoDataConnectionManagerInterface *iface : ofonoContextManagers) {
+            const PathPropertiesList list = iface->contextsWithProperties();
             for (int i = 0; i < list.size(); ++i) {
                 if (list.at(i).path.path().contains(contextPart)) {
                     return list.at(i).properties.value(QStringLiteral("Active")).toBool();
@@ -1012,10 +1007,7 @@ QNetworkSessionPrivate *QNetworkManagerEngine::createSessionBackend()
 
 QNetworkConfigurationPrivatePointer QNetworkManagerEngine::defaultConfiguration()
 {
-    QHashIterator<QString, QNetworkManagerConnectionActive*> i(activeConnectionsList);
-    while (i.hasNext()) {
-        i.next();
-        QNetworkManagerConnectionActive *activeConnection = i.value();
+    for (QNetworkManagerConnectionActive *activeConnection : qAsConst(activeConnectionsList)) {
         if ((activeConnection->defaultRoute() || activeConnection->default6Route())) {
             return accessPointConfigurations.value(activeConnection->connection().path());
         }
@@ -1027,9 +1019,7 @@ QNetworkConfigurationPrivatePointer QNetworkManagerEngine::defaultConfiguration(
 QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType(const QString &id) const
 {
     QString contextPart = id.section('/', -1);
-    QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
-    while (i.hasNext()) {
-        i.next();
+    for (auto i = ofonoContextManagers.begin(), end = ofonoContextManagers.end(); i != end; ++i) {
         QString contextPath = i.key() + QLatin1Char('/') +contextPart;
 
         if (i.value()->contexts().contains(contextPath)) {
@@ -1058,10 +1048,8 @@ QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType(const
 QString QNetworkManagerEngine::contextName(const QString &path) const
 {
     QString contextPart = path.section('/', -1);
-    QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
-    while (i.hasNext()) {
-        i.next();
-        PathPropertiesList list = i.value()->contextsWithProperties();
+    for (QOfonoDataConnectionManagerInterface *iface : ofonoContextManagers) {
+        const PathPropertiesList list = iface->contextsWithProperties();
         for (int i = 0; i < list.size(); ++i) {
             if (list.at(i).path.path().contains(contextPart)) {
                 return list.at(i).properties.value(QStringLiteral("Name")).toString();
