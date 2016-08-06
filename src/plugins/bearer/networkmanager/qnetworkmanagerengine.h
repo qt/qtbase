@@ -140,14 +140,14 @@ private:
 
     QOfonoManagerInterface *ofonoManager;
     QHash <QString, QOfonoDataConnectionManagerInterface *> ofonoContextManagers;
-    QNetworkConfiguration::BearerType currentBearerType(const QString &id);
-    QString contextName(const QString &path);
+    QNetworkConfiguration::BearerType currentBearerType(const QString &id) const;
+    QString contextName(const QString &path) const;
 
-    bool isConnectionActive(const QString &settingsPath);
+    bool isConnectionActive(const QString &settingsPath) const;
     QDBusServiceWatcher *ofonoWatcher;
     QDBusServiceWatcher *nmWatcher;
 
-    bool isActiveContext(const QString &contextPath);
+    bool isActiveContext(const QString &contextPath) const;
     bool nmAvailable;
     void setupConfigurations();
 };

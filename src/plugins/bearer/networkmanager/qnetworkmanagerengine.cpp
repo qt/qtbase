@@ -553,7 +553,7 @@ void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
     emit configurationAdded(ptr);
 }
 
-bool QNetworkManagerEngine::isConnectionActive(const QString &settingsPath)
+bool QNetworkManagerEngine::isConnectionActive(const QString &settingsPath) const
 {
     QHashIterator<QString, QNetworkManagerConnectionActive*> i(activeConnectionsList);
     while (i.hasNext()) {
@@ -863,7 +863,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
     return cpPriv;
 }
 
-bool QNetworkManagerEngine::isActiveContext(const QString &contextPath)
+bool QNetworkManagerEngine::isActiveContext(const QString &contextPath) const
 {
     if (ofonoManager && ofonoManager->isValid()) {
         const QString contextPart = contextPath.section('/', -1);
@@ -1024,7 +1024,7 @@ QNetworkConfigurationPrivatePointer QNetworkManagerEngine::defaultConfiguration(
     return QNetworkConfigurationPrivatePointer();
 }
 
-QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType(const QString &id)
+QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType(const QString &id) const
 {
     QString contextPart = id.section('/', -1);
     QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
@@ -1055,7 +1055,7 @@ QNetworkConfiguration::BearerType QNetworkManagerEngine::currentBearerType(const
     return QNetworkConfiguration::BearerUnknown;
 }
 
-QString QNetworkManagerEngine::contextName(const QString &path)
+QString QNetworkManagerEngine::contextName(const QString &path) const
 {
     QString contextPart = path.section('/', -1);
     QHashIterator<QString, QOfonoDataConnectionManagerInterface*> i(ofonoContextManagers);
