@@ -731,9 +731,8 @@ void QSystemTrayIconPrivate::addPlatformMenu(QMenu *menu) const
 
     // The recursion depth is the same as menu depth, so should not
     // be higher than 3 levels.
-    QListIterator<QAction *> it(menu->actions());
-    while (it.hasNext()) {
-        QAction *action = it.next();
+    const auto actions = menu->actions();
+    for (QAction *action : actions) {
         if (action->menu())
             addPlatformMenu(action->menu());
     }
