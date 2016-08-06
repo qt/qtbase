@@ -74,26 +74,26 @@ public:
 
     bool networkManagerAvailable() const;
 
-    QString getInterfaceFromId(const QString &id);
-    bool hasIdentifier(const QString &id);
+    QString getInterfaceFromId(const QString &id) override;
+    bool hasIdentifier(const QString &id) override;
 
-    void connectToId(const QString &id);
-    void disconnectFromId(const QString &id);
+    void connectToId(const QString &id) override;
+    void disconnectFromId(const QString &id) override;
 
     Q_INVOKABLE void initialize();
     Q_INVOKABLE void requestUpdate();
 
-    QNetworkSession::State sessionStateForId(const QString &id);
+    QNetworkSession::State sessionStateForId(const QString &id) override;
 
-    quint64 bytesWritten(const QString &id);
-    quint64 bytesReceived(const QString &id);
-    quint64 startTime(const QString &id);
+    quint64 bytesWritten(const QString &id) override;
+    quint64 bytesReceived(const QString &id) override;
+    quint64 startTime(const QString &id) override;
 
-    QNetworkConfigurationManager::Capabilities capabilities() const;
+    QNetworkConfigurationManager::Capabilities capabilities() const override;
 
-    QNetworkSessionPrivate *createSessionBackend();
+    QNetworkSessionPrivate *createSessionBackend() override;
 
-    QNetworkConfigurationPrivatePointer defaultConfiguration();
+    QNetworkConfigurationPrivatePointer defaultConfiguration() override;
 
 private Q_SLOTS:
     void interfacePropertiesChanged(const QMap<QString, QVariant> &properties);
