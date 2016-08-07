@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+extern void Q_CORE_EXPORT qt_call_post_routines();
+
 typedef QHash<QString, int> NameHash_t;
 
 class QCommandLineParserPrivate
@@ -580,6 +582,7 @@ void QCommandLineParser::process(const QStringList &arguments)
 {
     if (!d->parse(arguments)) {
         showParserMessage(errorText() + QLatin1Char('\n'), ErrorMessage);
+        qt_call_post_routines();
         ::exit(EXIT_FAILURE);
     }
 
@@ -990,6 +993,7 @@ Q_NORETURN void QCommandLineParser::showVersion()
     showParserMessage(QCoreApplication::applicationName() + QLatin1Char(' ')
                       + QCoreApplication::applicationVersion() + QLatin1Char('\n'),
                       UsageMessage);
+    qt_call_post_routines();
     ::exit(EXIT_SUCCESS);
 }
 
@@ -1007,6 +1011,7 @@ Q_NORETURN void QCommandLineParser::showVersion()
 Q_NORETURN void QCommandLineParser::showHelp(int exitCode)
 {
     showParserMessage(d->helpText(), UsageMessage);
+    qt_call_post_routines();
     ::exit(exitCode);
 }
 
