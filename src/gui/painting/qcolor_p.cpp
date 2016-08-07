@@ -337,14 +337,6 @@ bool qt_get_named_rgb(const QChar *name, int len, QRgb *rgb)
     return get_named_rgb(name_no_space, rgb);
 }
 
-
-uint qt_get_rgb_val(const char *name)
-{
-    QRgb r = 0;
-    qt_get_named_rgb(name,&r);
-    return r;
-}
-
 QStringList qt_get_colornames()
 {
     int i = 0;
@@ -362,10 +354,6 @@ bool qt_get_named_rgb(const char *, QRgb*)
     return false;
 }
 
-uint qt_get_rgb_val(const char *)
-{
-    return 0;
-}
 QStringList qt_get_colornames()
 {
     return QStringList();
