@@ -817,6 +817,24 @@ static bool testForColors(const QImage& image, const QColor& color, bool ensureP
     return false;
 }
 
+static const QList<QWidget*> sample_widgets() // returning const to avoid detaching when passing to range-for
+{
+    QList<QWidget *> widgets;
+    widgets << new QPushButton("TESTING TESTING");
+    widgets << new QLineEdit("TESTING TESTING");
+    widgets << new QLabel("TESTING TESTING");
+    QSpinBox *spinbox = new QSpinBox;
+    spinbox->setMaximum(1000000000);
+    spinbox->setValue(123456789);
+    widgets << spinbox;
+    QComboBox *combobox = new QComboBox;
+    combobox->setEditable(true);
+    combobox->addItems(QStringList() << "TESTING TESTING");
+    widgets << combobox;
+    widgets << new QLabel("<b>TESTING TESTING</b>");
+    return widgets;
+}
+
 void tst_QStyleSheetStyle::focusColors()
 {
     // Tests if colors can be changed by altering the focus of the widget.
@@ -833,22 +851,9 @@ void tst_QStyleSheetStyle::focusColors()
           " (for example, QTBUG-33959)."
           "That doesn't mean that the feature doesn't work in practice.");
 #endif
-    QList<QWidget *> widgets;
-    widgets << new QPushButton("TESTING TESTING");
-    widgets << new QLineEdit("TESTING TESTING");
-    widgets << new QLabel("TESTING TESTING");
-    QSpinBox *spinbox = new QSpinBox;
-    spinbox->setMaximum(1000000000);
-    spinbox->setValue(123456789);
-    widgets << spinbox;
-    QComboBox *combobox = new QComboBox;
-    combobox->setEditable(true);
-    combobox->addItems(QStringList() << "TESTING TESTING");
-    widgets << combobox;
-    widgets << new QLabel("TESTING TESTING");
 
 
-    foreach (QWidget *widget, widgets) {
+    for (QWidget *widget : sample_widgets()) {
         QDialog frame;
         QLayout* layout = new QGridLayout;
 
@@ -891,21 +896,8 @@ void tst_QStyleSheetStyle::hoverColors()
 #ifdef Q_OS_OSX
     QSKIP("This test is fragile on Mac, most likely due to QTBUG-33959.");
 #endif
-    QList<QWidget *> widgets;
-    widgets << new QPushButton("TESTING TESTING");
-    widgets << new QLineEdit("TESTING TESTING");
-    widgets << new QLabel("TESTING TESTING");
-    QSpinBox *spinbox = new QSpinBox;
-    spinbox->setMaximum(1000000000);
-    spinbox->setValue(123456789);
-    widgets << spinbox;
-    QComboBox *combobox = new QComboBox;
-    combobox->setEditable(true);
-    combobox->addItems(QStringList() << "TESTING TESTING");
-    widgets << combobox;
-    widgets << new QLabel("<b>TESTING TESTING</b>");
 
-    foreach (QWidget *widget, widgets) {
+    for (QWidget *widget : sample_widgets()) {
         //without Qt::X11BypassWindowManagerHint the window manager may move the window after we moved the cursor
         QDialog frame(0, Qt::X11BypassWindowManagerHint);
         QLayout* layout = new QGridLayout;
