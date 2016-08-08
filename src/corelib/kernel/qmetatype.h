@@ -45,7 +45,6 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qvarlengtharray.h>
-#include <QtCore/qisenum.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobjectdefs.h>
 #endif
@@ -1635,7 +1634,7 @@ namespace QtPrivate {
                      | (IsSharedPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::SharedPointerToQObject : 0)
                      | (IsWeakPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::WeakPointerToQObject : 0)
                      | (IsTrackingPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::TrackingPointerToQObject : 0)
-                     | (Q_IS_ENUM(T) ? QMetaType::IsEnumeration : 0)
+                     | (std::is_enum<T>::value ? QMetaType::IsEnumeration : 0)
                      | (IsGadgetHelper<T>::Value ? QMetaType::IsGadget : 0)
              };
     };

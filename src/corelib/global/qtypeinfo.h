@@ -38,12 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qisenum.h>
+#include <QtCore/qglobal.h>
 
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H
-
-#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +62,7 @@ public:
         isIntegral = std::is_integral<T>::value,
         isComplex = true,
         isStatic = true,
-        isRelocatable = Q_IS_ENUM(T),
+        isRelocatable = std::is_enum<T>::value,
         isLarge = (sizeof(T)>sizeof(void*)),
         isDummy = false, //### Qt6: remove
         sizeOf = sizeof(T)
