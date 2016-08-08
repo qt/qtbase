@@ -3014,6 +3014,11 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     header.swapSections(1, 11);
     QCOMPARE(header.sectionSize(1), someOtherSectionSize);
 
+    // Clear and re-add. This triggers a different code path than seColumnCount(0)
+    m.clear();
+    m.setColumnCount(3);
+    QVERIFY(header.sectionSize(2) >= biggerSizeThanAnySection);
+
     // Test import/export of the original (not stretched) sectionSize.
     m.setColumnCount(0);
     m.setColumnCount(10);
