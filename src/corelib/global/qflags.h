@@ -103,7 +103,7 @@ public:
     typedef int Int;
 #else
     typedef typename std::conditional<
-            QtPrivate::is_unsigned<Enum>::value,
+            QtPrivate::QIsUnsignedEnum<Enum>::value,
             unsigned int,
             signed int
         >::type Int;

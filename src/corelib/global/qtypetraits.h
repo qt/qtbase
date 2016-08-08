@@ -47,7 +47,8 @@ QT_BEGIN_NAMESPACE
 namespace QtPrivate {
 
 //
-// define custom is_signed, is_unsigned that also works with enum's
+// Define QIsUnsignedEnum, QIsSignedEnum -
+// std::is_signed, std::is_unsigned does not work for enum's
 //
 
 // a metafunction to invert an integral_constant:
@@ -57,37 +58,37 @@ struct not_
 
 // Checks whether a type is unsigned (T must be convertible to unsigned int):
 template <typename T>
-struct is_unsigned
+struct QIsUnsignedEnum
     : std::integral_constant<bool, (T(0) < T(-1))> {};
 
 // Checks whether a type is signed (T must be convertible to int):
 template <typename T>
-struct is_signed
-    : not_< is_unsigned<T> > {};
+struct QIsSignedEnum
+    : not_< QIsUnsignedEnum<T> > {};
 
-Q_STATIC_ASSERT(( is_unsigned<quint8>::value));
-Q_STATIC_ASSERT((!is_unsigned<qint8>::value));
+Q_STATIC_ASSERT(( QIsUnsignedEnum<quint8>::value));
+Q_STATIC_ASSERT((!QIsUnsignedEnum<qint8>::value));
 
-Q_STATIC_ASSERT((!is_signed<quint8>::value));
-Q_STATIC_ASSERT(( is_signed<qint8>::value));
+Q_STATIC_ASSERT((!QIsSignedEnum<quint8>::value));
+Q_STATIC_ASSERT(( QIsSignedEnum<qint8>::value));
 
-Q_STATIC_ASSERT(( is_unsigned<quint16>::value));
-Q_STATIC_ASSERT((!is_unsigned<qint16>::value));
+Q_STATIC_ASSERT(( QIsUnsignedEnum<quint16>::value));
+Q_STATIC_ASSERT((!QIsUnsignedEnum<qint16>::value));
 
-Q_STATIC_ASSERT((!is_signed<quint16>::value));
-Q_STATIC_ASSERT(( is_signed<qint16>::value));
+Q_STATIC_ASSERT((!QIsSignedEnum<quint16>::value));
+Q_STATIC_ASSERT(( QIsSignedEnum<qint16>::value));
 
-Q_STATIC_ASSERT(( is_unsigned<quint32>::value));
-Q_STATIC_ASSERT((!is_unsigned<qint32>::value));
+Q_STATIC_ASSERT(( QIsUnsignedEnum<quint32>::value));
+Q_STATIC_ASSERT((!QIsUnsignedEnum<qint32>::value));
 
-Q_STATIC_ASSERT((!is_signed<quint32>::value));
-Q_STATIC_ASSERT(( is_signed<qint32>::value));
+Q_STATIC_ASSERT((!QIsSignedEnum<quint32>::value));
+Q_STATIC_ASSERT(( QIsSignedEnum<qint32>::value));
 
-Q_STATIC_ASSERT(( is_unsigned<quint64>::value));
-Q_STATIC_ASSERT((!is_unsigned<qint64>::value));
+Q_STATIC_ASSERT(( QIsUnsignedEnum<quint64>::value));
+Q_STATIC_ASSERT((!QIsUnsignedEnum<qint64>::value));
 
-Q_STATIC_ASSERT((!is_signed<quint64>::value));
-Q_STATIC_ASSERT(( is_signed<qint64>::value));
+Q_STATIC_ASSERT((!QIsSignedEnum<quint64>::value));
+Q_STATIC_ASSERT(( QIsSignedEnum<qint64>::value));
 
 } // namespace QtPrivate
 
