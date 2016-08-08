@@ -159,7 +159,7 @@ static bool parseModeline(const QByteArray &text, drmModeModeInfoPtr mode)
     return true;
 }
 
-QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos)
+QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos)
 {
     const QByteArray connectorName = nameForConnector(connector);
 
@@ -173,8 +173,11 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
     QSize configurationSize;
     drmModeModeInfo configurationModeline;
 
-    const QByteArray mode = m_integration->outputSettings().value(QString::fromUtf8(connectorName))
-            .value(QStringLiteral("mode"), QStringLiteral("preferred")).toByteArray().toLower();
+    auto userConfig = m_integration->outputSettings();
+    auto userConnectorConfig = userConfig.value(QString::fromUtf8(connectorName));
+    // default to the preferred mode unless overridden in the config
+    const QByteArray mode = userConnectorConfig.value(QStringLiteral("mode"), QStringLiteral("preferred"))
+        .toByteArray().toLower();
     if (mode == "off") {
         configuration = OutputConfigOff;
     } else if (mode == "preferred") {
@@ -287,18 +290,25 @@ QEglFSKmsScreen *QEglFSKmsDevice::screenForConnector(drmModeResPtr resources, dr
         qCDebug(qLcEglfsKmsDebug) << "Selected mode" << selected_mode << ":" << width << "x" << height
                                   << '@' << refresh << "hz for output" << connectorName;
     }
+
+    // physical size from connector < config values < env vars
     static const int width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_WIDTH");
     static const int height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_HEIGHT");
-    QSizeF size(width, height);
-    if (size.isEmpty()) {
-        size.setWidth(connector->mmWidth);
-        size.setHeight(connector->mmHeight);
+    QSizeF physSize(width, height);
+    if (physSize.isEmpty()) {
+        physSize = QSize(userConnectorConfig.value(QStringLiteral("physicalWidth")).toInt(),
+                         userConnectorConfig.value(QStringLiteral("physicalHeight")).toInt());
+        if (physSize.isEmpty()) {
+            physSize.setWidth(connector->mmWidth);
+            physSize.setHeight(connector->mmHeight);
+        }
     }
+
     QEglFSKmsOutput output = {
         QString::fromUtf8(connectorName),
         connector->connector_id,
         crtc_id,
-        size,
+        physSize,
         selected_mode,
         false,
         drmModeGetCrtc(m_dri_fd, crtc_id),
@@ -360,7 +370,7 @@ void QEglFSKmsDevice::createScreens()
         if (!connector)
             continue;
 
-        QEglFSKmsScreen *screen = screenForConnector(resources, connector, pos);
+        QEglFSKmsScreen *screen = createScreenForConnector(resources, connector, pos);
         if (screen) {
             integration->addScreen(screen);
             pos.rx() += screen->geometry().width();
