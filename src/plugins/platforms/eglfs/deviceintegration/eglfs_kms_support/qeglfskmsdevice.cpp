@@ -376,6 +376,7 @@ void QEglFSKmsDevice::createScreens()
     drmModeFreeResources(resources);
 
     if (!m_integration->separateScreens()) {
+        // set up a virtual desktop
         Q_FOREACH (QPlatformScreen *screen, siblings)
             static_cast<QEglFSKmsScreen *>(screen)->setVirtualSiblings(siblings);
     }

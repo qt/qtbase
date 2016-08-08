@@ -81,7 +81,7 @@ QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
     , m_powerState(PowerStateOn)
     , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
 {
-    m_siblings << this;
+    m_siblings << this; // gets overridden by QEglFSKmsDevice later if !separateScreens
 }
 
 QEglFSKmsScreen::~QEglFSKmsScreen()

@@ -222,11 +222,6 @@ QEglFSWindow *QEglFSKmsEglDeviceIntegration::createWindow(QWindow *window) const
     return eglWindow;
 }
 
-bool QEglFSKmsEglDeviceIntegration::separateScreens() const
-{
-    return true;
-}
-
 QEglFSKmsDevice *QEglFSKmsEglDeviceIntegration::createDevice(const QString &devicePath)
 {
     Q_UNUSED(devicePath)
