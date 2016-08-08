@@ -41,6 +41,7 @@
 #include "qeglfskmsegldeviceintegration.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include "private/qeglfswindow_p.h"
+#include "private/qeglfscursor_p.h"
 #include "qeglfskmsegldevice.h"
 #include "qeglfskmsscreen.h"
 #include <QLoggingCategory>
@@ -256,6 +257,11 @@ bool QEglFSKmsEglDeviceIntegration::query_egl_device()
     }
 
     return true;
+}
+
+QPlatformCursor *QEglFSKmsEglDeviceIntegration::createCursor(QPlatformScreen *screen) const
+{
+    return separateScreens() ? new QEglFSCursor(screen) : nullptr;
 }
 
 QT_END_NAMESPACE

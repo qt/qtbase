@@ -65,6 +65,7 @@ public:
 
 protected:
     QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
 
 private:
     bool setup_kms();

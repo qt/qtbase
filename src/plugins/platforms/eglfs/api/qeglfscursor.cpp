@@ -59,12 +59,11 @@
 QT_BEGIN_NAMESPACE
 
 QEglFSCursor::QEglFSCursor(QPlatformScreen *screen)
-    : m_visible(true),
-      m_screen(static_cast<QEglFSScreen *>(screen)),
-      m_program(0),
-      m_textureEntry(0),
-      m_deviceListener(0),
-      m_updateRequested(false)
+  : m_visible(true),
+    m_screen(static_cast<QEglFSScreen *>(screen)),
+    m_activeScreen(nullptr),
+    m_deviceListener(0),
+    m_updateRequested(false)
 {
     QByteArray hideCursorVal = qgetenv("QT_QPA_EGLFS_HIDECURSOR");
     if (!hideCursorVal.isEmpty())
@@ -116,15 +115,14 @@ void QEglFSCursorDeviceListener::onDeviceListChanged(QInputDeviceManager::Device
 
 void QEglFSCursor::resetResources()
 {
-    if (QOpenGLContext::currentContext()) {
-        delete m_program;
-        glDeleteTextures(1, &m_cursor.customCursorTexture);
-        glDeleteTextures(1, &m_cursorAtlas.texture);
+    if (QOpenGLContext *ctx = QOpenGLContext::currentContext()) {
+        GraphicsContextData &gfx(m_gfx[ctx]);
+        delete gfx.program;
+        glDeleteTextures(1, &gfx.customCursorTexture);
+        glDeleteTextures(1, &gfx.atlasTexture);
+        gfx = GraphicsContextData();
     }
-    m_program = 0;
-    m_cursor.customCursorTexture = 0;
     m_cursor.customCursorPending = !m_cursor.customCursorImage.isNull();
-    m_cursorAtlas.texture = 0;
 }
 
 void QEglFSCursor::createShaderPrograms()
@@ -146,15 +144,16 @@ void QEglFSCursor::createShaderPrograms()
         "   gl_FragColor = texture2D(texture, textureCoord).bgra;\n"
         "}\n";
 
-    m_program = new QOpenGLShaderProgram;
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
-    m_program->bindAttributeLocation("vertexCoordEntry", 0);
-    m_program->bindAttributeLocation("textureCoordEntry", 1);
-    m_program->link();
+    GraphicsContextData &gfx(m_gfx[QOpenGLContext::currentContext()]);
+    gfx.program = new QOpenGLShaderProgram;
+    gfx.program->addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
+    gfx.program->addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
+    gfx.program->bindAttributeLocation("vertexCoordEntry", 0);
+    gfx.program->bindAttributeLocation("textureCoordEntry", 1);
+    gfx.program->link();
 
-    m_textureEntry = m_program->uniformLocation("texture");
-    m_matEntry = m_program->uniformLocation("mat");
+    gfx.textureEntry = gfx.program->uniformLocation("texture");
+    gfx.matEntry = gfx.program->uniformLocation("mat");
 }
 
 void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
@@ -214,7 +213,7 @@ void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
     Q_UNUSED(window);
     const QRect oldCursorRect = cursorRect();
     if (setCurrentCursor(cursor))
-        update(oldCursorRect | cursorRect());
+        update(oldCursorRect | cursorRect(), false);
 }
 
 bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
@@ -238,16 +237,17 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
                                       hs * (m_cursor.shape / m_cursorAtlas.cursorsPerRow),
                                       ws, hs);
         m_cursor.hotSpot = m_cursorAtlas.hotSpots[m_cursor.shape];
-        m_cursor.texture = m_cursorAtlas.texture;
+        m_cursor.useCustomCursor = false;
         m_cursor.size = QSize(m_cursorAtlas.cursorWidth, m_cursorAtlas.cursorHeight);
     } else {
         QImage image = cursor->pixmap().toImage();
         m_cursor.textureRect = QRectF(0, 0, 1, 1);
         m_cursor.hotSpot = cursor->hotSpot();
-        m_cursor.texture = 0; // will get updated in the next render()
+        m_cursor.useCustomCursor = false; // will get updated in the next render()
         m_cursor.size = image.size();
         m_cursor.customCursorImage = image;
         m_cursor.customCursorPending = true;
+        m_cursor.customCursorKey = m_cursor.customCursorImage.cacheKey();
     }
 
     return true;
@@ -257,17 +257,20 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
 class CursorUpdateEvent : public QEvent
 {
 public:
-    CursorUpdateEvent(const QPoint &pos, const QRegion &rgn)
+    CursorUpdateEvent(const QPoint &pos, const QRect &rect, bool allScreens)
         : QEvent(QEvent::Type(QEvent::User + 1)),
           m_pos(pos),
-          m_region(rgn)
+          m_rect(rect),
+          m_allScreens(allScreens)
         { }
     QPoint pos() const { return m_pos; }
-    QRegion region() const { return m_region; }
+    QRegion rect() const { return m_rect; }
+    bool allScreens() const { return m_allScreens; }
 
 private:
     QPoint m_pos;
-    QRegion m_region;
+    QRect m_rect;
+    bool m_allScreens;
 };
 
 bool QEglFSCursor::event(QEvent *e)
@@ -275,21 +278,30 @@ bool QEglFSCursor::event(QEvent *e)
     if (e->type() == QEvent::User + 1) {
         CursorUpdateEvent *ev = static_cast<CursorUpdateEvent *>(e);
         m_updateRequested = false;
-        QWindowSystemInterface::handleExposeEvent(m_screen->topLevelAt(ev->pos()), ev->region());
-        QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
+        if (!ev->allScreens()) {
+            QWindow *w = m_screen->topLevelAt(ev->pos()); // works for the entire virtual desktop, no need to loop
+            if (w) {
+                QWindowSystemInterface::handleExposeEvent(w, ev->rect());
+                QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
+            }
+        } else {
+            for (QWindow *w : qGuiApp->topLevelWindows())
+                QWindowSystemInterface::handleExposeEvent(w, w->geometry());
+            QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
+        }
         return true;
     }
     return QPlatformCursor::event(e);
 }
 
-void QEglFSCursor::update(const QRegion &rgn)
+void QEglFSCursor::update(const QRect &rect, bool allScreens)
 {
     if (!m_updateRequested) {
         // Must not flush the window system events directly from here since we are likely to
         // be a called directly from QGuiApplication's processMouseEvents. Flushing events
         // could cause reentering by dispatching more queued mouse events.
         m_updateRequested = true;
-        QCoreApplication::postEvent(this, new CursorUpdateEvent(m_cursor.pos, rgn));
+        QCoreApplication::postEvent(this, new CursorUpdateEvent(m_cursor.pos, rect, allScreens));
     }
 }
 
@@ -308,8 +320,9 @@ void QEglFSCursor::setPos(const QPoint &pos)
     QGuiApplicationPrivate::inputDeviceManager()->setCursorPos(pos);
     const QRect oldCursorRect = cursorRect();
     m_cursor.pos = pos;
-    update(oldCursorRect | cursorRect());
-    m_screen->handleCursorMove(m_cursor.pos);
+    update(oldCursorRect | cursorRect(), false);
+    for (QPlatformScreen *screen : m_screen->virtualSiblings())
+        static_cast<QEglFSScreen *>(screen)->handleCursorMove(m_cursor.pos);
 }
 
 void QEglFSCursor::pointerEvent(const QMouseEvent &event)
@@ -318,8 +331,9 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
         return;
     const QRect oldCursorRect = cursorRect();
     m_cursor.pos = event.screenPos().toPoint();
-    update(oldCursorRect | cursorRect());
-    m_screen->handleCursorMove(m_cursor.pos);
+    update(oldCursorRect | cursorRect(), false);
+    for (QPlatformScreen *screen : m_screen->virtualSiblings())
+        static_cast<QEglFSScreen *>(screen)->handleCursorMove(m_cursor.pos);
 }
 
 void QEglFSCursor::paintOnScreen()
@@ -327,15 +341,35 @@ void QEglFSCursor::paintOnScreen()
     if (!m_visible)
         return;
 
-    const QRectF cr = cursorRect();
-    const QRect screenRect(m_screen->geometry());
-    const GLfloat x1 = 2 * (cr.left() / screenRect.width()) - 1;
-    const GLfloat x2 = 2 * (cr.right() / screenRect.width()) - 1;
-    const GLfloat y1 = 1 - (cr.top() / screenRect.height()) * 2;
-    const GLfloat y2 = 1 - (cr.bottom() / screenRect.height()) * 2;
-    QRectF r(QPointF(x1, y1), QPointF(x2, y2));
+    QRect cr = cursorRect(); // hotspot included
 
-    draw(r);
+    // Support virtual desktop too. Backends with multi-screen support (e.g. all
+    // variants of KMS/DRM) will enable this by default. In this case all
+    // screens are siblings of each other. When not enabled, the sibling list
+    // only contains m_screen itself.
+    for (QPlatformScreen *screen : m_screen->virtualSiblings()) {
+        if (screen->geometry().contains(cr.topLeft() + m_cursor.hotSpot)
+            && QOpenGLContext::currentContext()->screen() == screen->screen())
+        {
+            cr.translate(-screen->geometry().topLeft());
+            const QSize screenSize = screen->geometry().size();
+            const GLfloat x1 = 2 * (cr.left() / GLfloat(screenSize.width())) - 1;
+            const GLfloat x2 = 2 * (cr.right() / GLfloat(screenSize.width())) - 1;
+            const GLfloat y1 = 1 - (cr.top() / GLfloat(screenSize.height())) * 2;
+            const GLfloat y2 = 1 - (cr.bottom() / GLfloat(screenSize.height())) * 2;
+            QRectF r(QPointF(x1, y1), QPointF(x2, y2));
+
+            draw(r);
+
+            if (screen != m_activeScreen) {
+                m_activeScreen = screen;
+                // Do not want a leftover cursor on the screen the cursor just left.
+                update(cursorRect(), true);
+            }
+
+            break;
+        }
+    }
 }
 
 // In order to prevent breaking code doing custom OpenGL rendering while
@@ -437,30 +471,33 @@ void QEglFSCursor::draw(const QRectF &r)
 {
     StateSaver stateSaver;
 
-    if (!m_program) {
+    GraphicsContextData &gfx(m_gfx[QOpenGLContext::currentContext()]);
+    if (!gfx.program) {
         // one time initialization
         initializeOpenGLFunctions();
 
         createShaderPrograms();
 
-        if (!m_cursorAtlas.texture) {
-            createCursorTexture(&m_cursorAtlas.texture, m_cursorAtlas.image);
+        if (!gfx.atlasTexture) {
+            createCursorTexture(&gfx.atlasTexture, m_cursorAtlas.image);
 
             if (m_cursor.shape != Qt::BitmapCursor)
-                m_cursor.texture = m_cursorAtlas.texture;
+                m_cursor.useCustomCursor = false;
         }
     }
 
-    if (m_cursor.shape == Qt::BitmapCursor && m_cursor.customCursorPending) {
+    if (m_cursor.shape == Qt::BitmapCursor && (m_cursor.customCursorPending || m_cursor.customCursorKey != gfx.customCursorKey)) {
         // upload the custom cursor
-        createCursorTexture(&m_cursor.customCursorTexture, m_cursor.customCursorImage);
-        m_cursor.texture = m_cursor.customCursorTexture;
+        createCursorTexture(&gfx.customCursorTexture, m_cursor.customCursorImage);
+        m_cursor.useCustomCursor = true;
         m_cursor.customCursorPending = false;
+        gfx.customCursorKey = m_cursor.customCursorKey;
     }
 
-    Q_ASSERT(m_cursor.texture);
+    GLuint cursorTexture = !m_cursor.useCustomCursor ? gfx.atlasTexture : gfx.customCursorTexture;
+    Q_ASSERT(cursorTexture);
 
-    m_program->bind();
+    gfx.program->bind();
 
     const GLfloat x1 = r.left();
     const GLfloat x2 = r.right();
@@ -485,20 +522,20 @@ void QEglFSCursor::draw(const QRectF &r)
     };
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_cursor.texture);
+    glBindTexture(GL_TEXTURE_2D, cursorTexture);
 
     if (stateSaver.vaoHelper->isValid())
         stateSaver.vaoHelper->glBindVertexArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    m_program->enableAttributeArray(0);
-    m_program->enableAttributeArray(1);
-    m_program->setAttributeArray(0, cursorCoordinates, 2);
-    m_program->setAttributeArray(1, textureCoordinates, 2);
+    gfx.program->enableAttributeArray(0);
+    gfx.program->enableAttributeArray(1);
+    gfx.program->setAttributeArray(0, cursorCoordinates, 2);
+    gfx.program->setAttributeArray(1, textureCoordinates, 2);
 
-    m_program->setUniformValue(m_textureEntry, 0);
-    m_program->setUniformValue(m_matEntry, m_rotationMatrix);
+    gfx.program->setUniformValue(gfx.textureEntry, 0);
+    gfx.program->setUniformValue(gfx.matEntry, m_rotationMatrix);
 
     glDisable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
@@ -508,9 +545,9 @@ void QEglFSCursor::draw(const QRectF &r)
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    m_program->disableAttributeArray(0);
-    m_program->disableAttributeArray(1);
-    m_program->release();
+    gfx.program->disableAttributeArray(0);
+    gfx.program->disableAttributeArray(1);
+    gfx.program->release();
 }
 
 QT_END_NAMESPACE

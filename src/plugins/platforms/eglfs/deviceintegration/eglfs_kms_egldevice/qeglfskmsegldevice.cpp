@@ -40,17 +40,23 @@
 #include "qeglfskmsegldevice.h"
 #include "qeglfskmsegldevicescreen.h"
 #include "qeglfskmsegldeviceintegration.h"
+#include "private/qeglfscursor_p.h"
 
 #include <QtCore/private/qcore_unix_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QEglFSKmsEglDevice::QEglFSKmsEglDevice(QEglFSKmsIntegration *integration, const QString &path)
-    : QEglFSKmsDevice(integration, path)
+    : QEglFSKmsDevice(integration, path),
+      m_globalCursor(nullptr)
 {
 }
 
 bool QEglFSKmsEglDevice::open()
 {
     Q_ASSERT(fd() == -1);
+
+    qCDebug(qLcEglfsKmsDebug, "Opening DRM device %s", qPrintable(devicePath()));
 
     int fd = drmOpen(devicePath().toLocal8Bit().constData(), Q_NULLPTR);
     if (Q_UNLIKELY(fd < 0))
@@ -63,6 +69,8 @@ bool QEglFSKmsEglDevice::open()
 
 void QEglFSKmsEglDevice::close()
 {
+    qCDebug(qLcEglfsKmsDebug, "Closing DRM device");
+
     if (qt_safe_close(fd()) == -1)
         qErrnoWarning("Could not close DRM device");
 
@@ -74,7 +82,26 @@ EGLNativeDisplayType QEglFSKmsEglDevice::nativeDisplay() const
     return static_cast<QEglFSKmsEglDeviceIntegration *>(m_integration)->eglDevice();
 }
 
-QEglFSKmsScreen *QEglFSKmsEglDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position)
+QEglFSKmsScreen *QEglFSKmsEglDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device,
+                                                  QEglFSKmsOutput output, QPoint position)
 {
-    return new QEglFSKmsEglDeviceScreen(integration, device, output, position);
+    QEglFSKmsScreen *screen = new QEglFSKmsEglDeviceScreen(integration, device, output, position);
+
+    if (!m_globalCursor && !integration->separateScreens()) {
+        qCDebug(qLcEglfsKmsDebug, "Creating new global mouse cursor");
+        m_globalCursor = new QEglFSCursor(screen);
+    }
+
+    return screen;
 }
+
+void QEglFSKmsEglDevice::destroyGlobalCursor()
+{
+    if (m_globalCursor) {
+        qCDebug(qLcEglfsKmsDebug, "Destroying global mouse cursor");
+        delete m_globalCursor;
+        m_globalCursor = nullptr;
+    }
+}
+
+QT_END_NAMESPACE

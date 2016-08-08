@@ -42,6 +42,8 @@
 
 #include <qeglfskmsscreen.h>
 
+QT_BEGIN_NAMESPACE
+
 class QEglFSKmsEglDeviceScreen : public QEglFSKmsScreen
 {
 public:
@@ -49,8 +51,13 @@ public:
                              QEglFSKmsDevice *device,
                              QEglFSKmsOutput output,
                              QPoint position);
+    ~QEglFSKmsEglDeviceScreen();
+
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
 
     void waitForFlip() Q_DECL_OVERRIDE;
 };
+
+QT_END_NAMESPACE
 
 #endif // QEGLFSKMSEGLDEVICESCREEN_H
