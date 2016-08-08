@@ -101,9 +101,29 @@ QEglFSKmsScreen::~QEglFSKmsScreen()
 QRect QEglFSKmsScreen::geometry() const
 {
     const int mode = m_output.mode;
-    return QRect(m_pos.x(), m_pos.y(),
-                 m_output.modes[mode].hdisplay,
-                 m_output.modes[mode].vdisplay);
+    QRect r(m_pos.x(), m_pos.y(),
+            m_output.modes[mode].hdisplay,
+            m_output.modes[mode].vdisplay);
+
+    static int rotation = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ROTATION");
+    switch (rotation) {
+    case 0:
+    case 180:
+    case -180:
+        break;
+    case 90:
+    case -90: {
+        int h = r.height();
+        r.setHeight(r.width());
+        r.setWidth(h);
+        break;
+    }
+    default:
+        qWarning("Invalid rotation %d specified in QT_QPA_EGLFS_ROTATION", rotation);
+        break;
+    }
+
+    return r;
 }
 
 int QEglFSKmsScreen::depth() const
