@@ -58,8 +58,7 @@ public:
 
     virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
                                           QEglFSKmsDevice *device,
-                                          QEglFSKmsOutput output,
-                                          QPoint position) Q_DECL_OVERRIDE;
+                                          QEglFSKmsOutput output) Q_DECL_OVERRIDE;
 
     QPlatformCursor *globalCursor() { return m_globalCursor; }
     void destroyGlobalCursor();

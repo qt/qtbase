@@ -159,7 +159,7 @@ static bool parseModeline(const QByteArray &text, drmModeModeInfoPtr mode)
     return true;
 }
 
-QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos)
+QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, int *virtualIndex)
 {
     const QByteArray connectorName = nameForConnector(connector);
 
@@ -192,6 +192,8 @@ QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resourc
         qWarning("Invalid mode \"%s\" for output %s", mode.constData(), connectorName.constData());
         configuration = OutputConfigPreferred;
     }
+    if (virtualIndex)
+        *virtualIndex = userConnectorConfig.value(QStringLiteral("virtualIndex"), INT_MAX).toInt();
 
     const uint32_t crtc_id = resources->crtcs[crtc];
 
@@ -303,6 +305,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resourc
             physSize.setHeight(connector->mmHeight);
         }
     }
+    qCDebug(qLcEglfsKmsDebug) << "Physical size is" << physSize << "mm" << "for output" << connectorName;
 
     QEglFSKmsOutput output = {
         QString::fromUtf8(connectorName),
@@ -320,7 +323,7 @@ QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resourc
     m_crtc_allocator |= (1 << output.crtc_id);
     m_connector_allocator |= (1 << output.connector_id);
 
-    return createScreen(m_integration, this, output, pos);
+    return createScreen(m_integration, this, output);
 }
 
 drmModePropertyPtr QEglFSKmsDevice::connectorProperty(drmModeConnectorPtr connector, const QByteArray &name)
@@ -352,6 +355,26 @@ QEglFSKmsDevice::~QEglFSKmsDevice()
 {
 }
 
+struct OrderedScreen
+{
+    OrderedScreen() : screen(nullptr), index(-1) { }
+    OrderedScreen(QEglFSKmsScreen *screen, int index) : screen(screen), index(index) { }
+    QEglFSKmsScreen *screen;
+    int index;
+};
+
+QDebug operator<<(QDebug dbg, const OrderedScreen &s)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "OrderedScreen(" << s.screen << " : " << s.index << ")";
+    return dbg;
+}
+
+static bool orderedScreenLessThan(const OrderedScreen &a, const OrderedScreen &b)
+{
+    return a.index < b.index;
+}
+
 void QEglFSKmsDevice::createScreens()
 {
     drmModeResPtr resources = drmModeGetResources(m_dri_fd);
@@ -360,38 +383,46 @@ void QEglFSKmsDevice::createScreens()
         return;
     }
 
-    QEglFSKmsScreen *primaryScreen = Q_NULLPTR;
-    QList<QPlatformScreen *> siblings;
-    QPoint pos(0, 0);
-    QEglFSIntegration *integration = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QVector<OrderedScreen> screens;
 
     for (int i = 0; i < resources->count_connectors; i++) {
         drmModeConnectorPtr connector = drmModeGetConnector(m_dri_fd, resources->connectors[i]);
         if (!connector)
             continue;
 
-        QEglFSKmsScreen *screen = createScreenForConnector(resources, connector, pos);
-        if (screen) {
-            integration->addScreen(screen);
-
-            if (m_integration->virtualDesktopLayout() == QEglFSKmsIntegration::VirtualDesktopLayoutVertical)
-                pos.ry() += screen->geometry().height();
-            else
-                pos.rx() += screen->geometry().width();
-
-            siblings << screen;
-
-            if (!primaryScreen)
-                primaryScreen = screen;
-        }
+        int virtualIndex;
+        QEglFSKmsScreen *screen = createScreenForConnector(resources, connector, &virtualIndex);
+        if (screen)
+            screens.append(OrderedScreen(screen, virtualIndex));
 
         drmModeFreeConnector(connector);
     }
 
     drmModeFreeResources(resources);
 
+    // Use stable sort to preserve the original order for outputs with unspecified indices.
+    std::stable_sort(screens.begin(), screens.end(), orderedScreenLessThan);
+    qCDebug(qLcEglfsKmsDebug) << "Sorted screen list:" << screens;
+
+    QPoint pos(0, 0);
+    QList<QPlatformScreen *> siblings;
+    QEglFSIntegration *qpaIntegration = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+
+    for (const OrderedScreen &orderedScreen : screens) {
+        QEglFSKmsScreen *s = orderedScreen.screen;
+        // set up a horizontal or vertical virtual desktop
+        s->setVirtualPosition(pos);
+        if (m_integration->virtualDesktopLayout() == QEglFSKmsIntegration::VirtualDesktopLayoutVertical)
+            pos.ry() += s->geometry().height();
+        else
+            pos.rx() += s->geometry().width();
+        qCDebug(qLcEglfsKmsDebug) << "Adding screen" << s << "to QPA with geometry" << s->geometry();
+        qpaIntegration->addScreen(s);
+        siblings << s;
+    }
+
     if (!m_integration->separateScreens()) {
-        // set up a virtual desktop
+        // enable the virtual desktop
         Q_FOREACH (QPlatformScreen *screen, siblings)
             static_cast<QEglFSKmsScreen *>(screen)->setVirtualSiblings(siblings);
     }
@@ -407,9 +438,9 @@ QString QEglFSKmsDevice::devicePath() const
     return m_path;
 }
 
-QEglFSKmsScreen *QEglFSKmsDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position)
+QEglFSKmsScreen *QEglFSKmsDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output)
 {
-    return new QEglFSKmsScreen(integration, device, output, position);
+    return new QEglFSKmsScreen(integration, device, output);
 }
 
 void QEglFSKmsDevice::setFd(int fd)

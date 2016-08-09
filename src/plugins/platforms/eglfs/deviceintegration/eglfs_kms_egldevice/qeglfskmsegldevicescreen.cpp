@@ -43,8 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QEglFSKmsEglDeviceScreen::QEglFSKmsEglDeviceScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output, QPoint position)
-    : QEglFSKmsScreen(integration, device, output, position)
+QEglFSKmsEglDeviceScreen::QEglFSKmsEglDeviceScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output)
+    : QEglFSKmsScreen(integration, device, output)
 {
 }
 

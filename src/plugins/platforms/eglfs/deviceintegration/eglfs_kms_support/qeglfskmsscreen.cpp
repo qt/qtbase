@@ -71,13 +71,11 @@ private:
 
 QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
                                  QEglFSKmsDevice *device,
-                                 QEglFSKmsOutput output,
-                                 QPoint position)
+                                 QEglFSKmsOutput output)
     : QEglFSScreen(eglGetDisplay(device->nativeDisplay()))
     , m_integration(integration)
     , m_device(device)
     , m_output(output)
-    , m_pos(position)
     , m_powerState(PowerStateOn)
     , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
 {
@@ -98,34 +96,19 @@ QEglFSKmsScreen::~QEglFSKmsScreen()
     delete m_interruptHandler;
 }
 
+void QEglFSKmsScreen::setVirtualPosition(const QPoint &pos)
+{
+    m_pos = pos;
+}
+
 // Reimplement rawGeometry(), not geometry(). The base class implementation of
 // geometry() calls rawGeometry() and may apply additional transforms.
 QRect QEglFSKmsScreen::rawGeometry() const
 {
     const int mode = m_output.mode;
-    QRect r(m_pos.x(), m_pos.y(),
-            m_output.modes[mode].hdisplay,
-            m_output.modes[mode].vdisplay);
-
-    static int rotation = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ROTATION");
-    switch (rotation) {
-    case 0:
-    case 180:
-    case -180:
-        break;
-    case 90:
-    case -90: {
-        int h = r.height();
-        r.setHeight(r.width());
-        r.setWidth(h);
-        break;
-    }
-    default:
-        qWarning("Invalid rotation %d specified in QT_QPA_EGLFS_ROTATION", rotation);
-        break;
-    }
-
-    return r;
+    return QRect(m_pos.x(), m_pos.y(),
+                 m_output.modes[mode].hdisplay,
+                 m_output.modes[mode].vdisplay);
 }
 
 int QEglFSKmsScreen::depth() const

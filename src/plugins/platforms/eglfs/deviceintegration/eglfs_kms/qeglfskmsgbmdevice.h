@@ -68,8 +68,7 @@ public:
 
     virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
                                           QEglFSKmsDevice *device,
-                                          QEglFSKmsOutput output,
-                                          QPoint position) Q_DECL_OVERRIDE;
+                                          QEglFSKmsOutput output) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QEglFSKmsGbmDevice)

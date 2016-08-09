@@ -83,9 +83,9 @@ EGLNativeDisplayType QEglFSKmsEglDevice::nativeDisplay() const
 }
 
 QEglFSKmsScreen *QEglFSKmsEglDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device,
-                                                  QEglFSKmsOutput output, QPoint position)
+                                                  QEglFSKmsOutput output)
 {
-    QEglFSKmsScreen *screen = new QEglFSKmsEglDeviceScreen(integration, device, output, position);
+    QEglFSKmsScreen *screen = new QEglFSKmsEglDeviceScreen(integration, device, output);
 
     if (!m_globalCursor && !integration->separateScreens()) {
         qCDebug(qLcEglfsKmsDebug, "Creating new global mouse cursor");

@@ -201,7 +201,7 @@ void QEglFSKmsIntegration::loadConfig()
         else if (vdOriString == QLatin1String("vertical"))
             m_virtualDesktopLayout = VirtualDesktopLayoutVertical;
         else
-            qCWarning(qLcEglfsKmsDebug) << "Unknown virtualDesktop value" << vdOriString;
+            qCWarning(qLcEglfsKmsDebug) << "Unknown virtualDesktopOrientation value" << vdOriString;
     }
 
     const QJsonArray outputs = object.value(QLatin1String("outputs")).toArray();

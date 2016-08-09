@@ -93,10 +93,9 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
 }
 
 QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QEglFSKmsIntegration *integration,
-                                 QEglFSKmsDevice *device,
-                                 QEglFSKmsOutput output,
-                                 QPoint position)
-    : QEglFSKmsScreen(integration, device, output, position)
+                                       QEglFSKmsDevice *device,
+                                       QEglFSKmsOutput output)
+    : QEglFSKmsScreen(integration, device, output)
     , m_gbm_surface(Q_NULLPTR)
     , m_gbm_bo_current(Q_NULLPTR)
     , m_gbm_bo_next(Q_NULLPTR)
