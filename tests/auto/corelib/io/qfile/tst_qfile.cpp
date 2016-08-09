@@ -155,10 +155,12 @@ private slots:
     void copyRemovesTemporaryFile() const;
     void copyShouldntOverwrite();
     void copyFallback();
+#ifndef Q_OS_WINRT
     void link();
     void linkToDir();
     void absolutePathLinkToRelativePath();
     void readBrokenLink();
+#endif
     void readTextFile_data();
     void readTextFile();
     void readTextFile2();
@@ -568,7 +570,7 @@ void tst_QFile::open()
         QSKIP("Running this test as root doesn't make sense");
 #endif
 
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINRT)
     QEXPECT_FAIL("noreadfile", "Windows does not currently support non-readable files.", Abort);
 #endif
     if (filename.isEmpty())
@@ -1226,7 +1228,7 @@ void tst_QFile::permissions()
         QFile::remove(file);
     }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     if (qt_ntfs_permission_lookup)
         QEXPECT_FAIL("readonly", "QTBUG-25630", Abort);
 #endif
@@ -1413,6 +1415,7 @@ static QString getWorkingDirectoryForLink(const QString &linkFileName)
 }
 #endif
 
+#ifndef Q_OS_WINRT
 void tst_QFile::link()
 {
     QFile::remove("myLink.lnk");
@@ -1433,7 +1436,7 @@ void tst_QFile::link()
 
     QCOMPARE(QFile::symLinkTarget("myLink.lnk"), referenceTarget);
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN)
     QString wd = getWorkingDirectoryForLink(info2.absoluteFilePath());
     QCOMPARE(QDir::fromNativeSeparators(wd), QDir::cleanPath(info1.absolutePath()));
 #endif
@@ -1487,6 +1490,7 @@ void tst_QFile::readBrokenLink()
     QVERIFY(QFile::link("ole/..", "myLink2.lnk"));
     QCOMPARE(QFileInfo("myLink2.lnk").symLinkTarget(), QDir::currentPath());
 }
+#endif // Q_OS_WINRT
 
 void tst_QFile::readTextFile_data()
 {
