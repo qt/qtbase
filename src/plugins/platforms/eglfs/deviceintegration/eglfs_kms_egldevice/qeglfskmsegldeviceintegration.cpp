@@ -194,8 +194,8 @@ void QEglJetsonTK1Window::resetSurface()
     m_format = q_glFormatFromConfig(display, m_config);
     qCDebug(qLcEglfsKmsDebug) << "Stream producer format is" << m_format;
 
-    const int w = cur_screen->geometry().width();
-    const int h = cur_screen->geometry().height();
+    const int w = cur_screen->rawGeometry().width();
+    const int h = cur_screen->rawGeometry().height();
     qCDebug(qLcEglfsKmsDebug, "Creating stream producer surface of size %dx%d", w, h);
 
     const EGLint stream_producer_attribs[] = {

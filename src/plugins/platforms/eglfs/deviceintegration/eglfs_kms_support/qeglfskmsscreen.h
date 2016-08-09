@@ -78,7 +78,7 @@ public:
                     QPoint position);
     ~QEglFSKmsScreen();
 
-    QRect geometry() const Q_DECL_OVERRIDE;
+    QRect rawGeometry() const Q_DECL_OVERRIDE;
     int depth() const Q_DECL_OVERRIDE;
     QImage::Format format() const Q_DECL_OVERRIDE;
 

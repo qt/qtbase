@@ -98,7 +98,9 @@ QEglFSKmsScreen::~QEglFSKmsScreen()
     delete m_interruptHandler;
 }
 
-QRect QEglFSKmsScreen::geometry() const
+// Reimplement rawGeometry(), not geometry(). The base class implementation of
+// geometry() calls rawGeometry() and may apply additional transforms.
+QRect QEglFSKmsScreen::rawGeometry() const
 {
     const int mode = m_output.mode;
     QRect r(m_pos.x(), m_pos.y(),
