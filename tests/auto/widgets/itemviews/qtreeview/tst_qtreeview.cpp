@@ -31,7 +31,7 @@
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
-#include <private/qabstractitemview_p.h>
+#include <private/qtreeview_p.h>
 
 #ifndef QT_NO_DRAGANDDROP
 Q_DECLARE_METATYPE(QAbstractItemView::DragDropMode)
@@ -56,49 +56,6 @@ static void initStandardTreeModel(QStandardItemModel *model)
     item->setIcon(QIcon());
     model->insertRow(2, item);
 }
-
-class tst_QTreeView;
-struct PublicView : public QTreeView
-{
-    friend class tst_QTreeView;
-    inline void executeDelayedItemsLayout()
-    { QTreeView::executeDelayedItemsLayout(); }
-
-    enum PublicCursorAction {
-        MoveUp = QAbstractItemView::MoveUp,
-        MoveDown = QAbstractItemView::MoveDown,
-        MoveLeft = QAbstractItemView::MoveLeft,
-        MoveRight = QAbstractItemView::MoveRight,
-        MoveHome = QAbstractItemView::MoveHome,
-        MoveEnd = QAbstractItemView::MoveEnd,
-        MovePageUp = QAbstractItemView::MovePageUp,
-        MovePageDown = QAbstractItemView::MovePageDown,
-        MoveNext = QAbstractItemView::MoveNext,
-        MovePrevious = QAbstractItemView::MovePrevious
-    };
-
-    // enum PublicCursorAction and moveCursor() are protected in QTreeView.
-    inline QModelIndex doMoveCursor(PublicCursorAction ca, Qt::KeyboardModifiers kbm)
-    { return QTreeView::moveCursor((CursorAction)ca, kbm); }
-
-    inline void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command)
-    {
-        QTreeView::setSelection(rect, command);
-    }
-    inline int state()
-    {
-        return QTreeView::state();
-    }
-
-    inline int rowHeight(QModelIndex idx) { return QTreeView::rowHeight(idx); }
-    inline int indexRowSizeHint(const QModelIndex &index) const { return QTreeView::indexRowSizeHint(index); }
-
-    inline QModelIndexList selectedIndexes() const { return QTreeView::selectedIndexes(); }
-
-    inline QStyleOptionViewItem viewOptions() const { return QTreeView::viewOptions(); }
-    inline int sizeHintForColumn(int column) const { return QTreeView::sizeHintForColumn(column); }
-    QAbstractItemViewPrivate* aiv_priv() { return static_cast<QAbstractItemViewPrivate*>(d_ptr.data()); }
-};
 
 // Make a widget frameless to prevent size constraints of title bars
 // from interfering (Windows).
@@ -631,33 +588,34 @@ void tst_QTreeView::dragDropModeFromDragEnabledAndAcceptDrops_data()
     QTest::addColumn<bool>("dragEnabled");
     QTest::addColumn<bool>("acceptDrops");
     QTest::addColumn<QAbstractItemView::DragDropMode>("dragDropMode");
-    QTest::addColumn<QAbstractItemView::DragDropMode>("setBehavior");
+    QTest::addColumn<bool>("setBehavior");
+    QTest::addColumn<QAbstractItemView::DragDropMode>("behavior");
 
-    QTest::newRow("NoDragDrop -1") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("NoDragDrop 0") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::NoDragDrop;
-    QTest::newRow("NoDragDrop 1") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::DragOnly;
-    QTest::newRow("NoDragDrop 2") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::DropOnly;
-    QTest::newRow("NoDragDrop 3") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::DragDrop;
-    QTest::newRow("NoDragDrop 4") << false << false << QAbstractItemView::NoDragDrop << QAbstractItemView::InternalMove;
-    QTest::newRow("DragOnly -1") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("DragOnly 0") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::NoDragDrop;
-    QTest::newRow("DragOnly 1") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::DragOnly;
-    QTest::newRow("DragOnly 2") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::DropOnly;
-    QTest::newRow("DragOnly 3") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::DragDrop;
-    QTest::newRow("DragOnly 4") << true << false << QAbstractItemView::DragOnly << QAbstractItemView::InternalMove;
-    QTest::newRow("DropOnly -1") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("DropOnly 0") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::NoDragDrop;
-    QTest::newRow("DropOnly 1") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::DragOnly;
-    QTest::newRow("DropOnly 2") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::DropOnly;
-    QTest::newRow("DropOnly 3") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::DragDrop;
-    QTest::newRow("DropOnly 4") << false << true << QAbstractItemView::DropOnly << QAbstractItemView::InternalMove;
-    QTest::newRow("DragDrop -1") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("DragDrop 0") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DragDropMode(-1);
-    QTest::newRow("DragDrop 1") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::NoDragDrop;
-    QTest::newRow("DragDrop 2") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DragOnly;
-    QTest::newRow("DragDrop 3") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DropOnly;
-    QTest::newRow("DragDrop 4") << true << true << QAbstractItemView::DragDrop << QAbstractItemView::DragDrop;
-    QTest::newRow("DragDrop 5") << true << true << QAbstractItemView::InternalMove << QAbstractItemView::InternalMove;
+    QTest::newRow("NoDragDrop -1") << false << false << QAbstractItemView::NoDragDrop << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("NoDragDrop 0") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::NoDragDrop;
+    QTest::newRow("NoDragDrop 1") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::DragOnly;
+    QTest::newRow("NoDragDrop 2") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::DropOnly;
+    QTest::newRow("NoDragDrop 3") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::DragDrop;
+    QTest::newRow("NoDragDrop 4") << false << false << QAbstractItemView::NoDragDrop << true << QAbstractItemView::InternalMove;
+    QTest::newRow("DragOnly -1") << true << false << QAbstractItemView::DragOnly << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("DragOnly 0") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::NoDragDrop;
+    QTest::newRow("DragOnly 1") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::DragOnly;
+    QTest::newRow("DragOnly 2") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::DropOnly;
+    QTest::newRow("DragOnly 3") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::DragDrop;
+    QTest::newRow("DragOnly 4") << true << false << QAbstractItemView::DragOnly << true << QAbstractItemView::InternalMove;
+    QTest::newRow("DropOnly -1") << false << true << QAbstractItemView::DropOnly << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("DropOnly 0") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::NoDragDrop;
+    QTest::newRow("DropOnly 1") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::DragOnly;
+    QTest::newRow("DropOnly 2") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::DropOnly;
+    QTest::newRow("DropOnly 3") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::DragDrop;
+    QTest::newRow("DropOnly 4") << false << true << QAbstractItemView::DropOnly << true << QAbstractItemView::InternalMove;
+    QTest::newRow("DragDrop -1") << true << true << QAbstractItemView::DragDrop << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("DragDrop 0") << true << true << QAbstractItemView::DragDrop << false << QAbstractItemView::DragDropMode();
+    QTest::newRow("DragDrop 1") << true << true << QAbstractItemView::DragDrop << true << QAbstractItemView::NoDragDrop;
+    QTest::newRow("DragDrop 2") << true << true << QAbstractItemView::DragDrop << true << QAbstractItemView::DragOnly;
+    QTest::newRow("DragDrop 3") << true << true << QAbstractItemView::DragDrop << true << QAbstractItemView::DropOnly;
+    QTest::newRow("DragDrop 4") << true << true << QAbstractItemView::DragDrop << true << QAbstractItemView::DragDrop;
+    QTest::newRow("DragDrop 5") << true << true << QAbstractItemView::InternalMove << true << QAbstractItemView::InternalMove;
 }
 
 void tst_QTreeView::dragDropModeFromDragEnabledAndAcceptDrops()
@@ -665,13 +623,14 @@ void tst_QTreeView::dragDropModeFromDragEnabledAndAcceptDrops()
     QFETCH(bool, acceptDrops);
     QFETCH(bool, dragEnabled);
     QFETCH(QAbstractItemView::DragDropMode, dragDropMode);
-    QFETCH(QAbstractItemView::DragDropMode, setBehavior);
+    QFETCH(bool, setBehavior);
+    QFETCH(QAbstractItemView::DragDropMode, behavior);
 
     QTreeView view;
     QCOMPARE(view.dragDropMode(), QAbstractItemView::NoDragDrop);
 
-    if (setBehavior != QAbstractItemView::DragDropMode(-1))
-        view.setDragDropMode(setBehavior);
+    if (setBehavior)
+        view.setDragDropMode(behavior);
 
     view.setAcceptDrops(acceptDrops);
     view.setDragEnabled(dragEnabled);
@@ -1743,7 +1702,7 @@ void tst_QTreeView::moveCursor()
     QFETCH(bool, scrollPerPixel);
     QtTestModel model(8, 6);
 
-    PublicView view;
+    QTreeView view;
     view.setUniformRowHeights(uniformRowHeights);
     view.setModel(&model);
     view.setRowHidden(0, QModelIndex(), true);
@@ -1762,7 +1721,7 @@ void tst_QTreeView::moveCursor()
     QCOMPARE(view.currentIndex(), expected);
 
     //then pressing down should go to the next line
-    QModelIndex actual = view.doMoveCursor(PublicView::MoveDown, Qt::NoModifier);
+    QModelIndex actual = view.moveCursor(QTreeView::MoveDown, Qt::NoModifier);
     expected = model.index(2, 1, QModelIndex());
     QCOMPARE(actual, expected);
 
@@ -1771,7 +1730,7 @@ void tst_QTreeView::moveCursor()
 
     // PageUp was broken with uniform row heights turned on
     view.setCurrentIndex(model.index(1, 0));
-    actual = view.doMoveCursor(PublicView::MovePageUp, Qt::NoModifier);
+    actual = view.moveCursor(QTreeView::MovePageUp, Qt::NoModifier);
     expected = model.index(0, 0, QModelIndex());
     QCOMPARE(actual, expected);
 
@@ -1870,7 +1829,7 @@ void tst_QTreeView::setSelection()
     QtTestModel model(10, 5);
     model.levels = 1;
     model.setDecorationsEnabled(true);
-    PublicView view;
+    QTreeView view;
     view.resize(400, 300);
     view.show();
     view.setRootIsDecorated(false);
@@ -2058,7 +2017,7 @@ void tst_QTreeView::rowsAboutToBeRemoved()
         }
     }
 
-    PublicView view;
+    QTreeView view;
     view.setModel(&model);
     view.show();
     QModelIndex index = model.index(0,0, QModelIndex());
@@ -2072,7 +2031,7 @@ void tst_QTreeView::rowsAboutToBeRemoved()
     QSignalSpy spy1(&model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
 
     model.removeRows(1,1);
-    QCOMPARE(view.state(), 0);
+    QCOMPARE(int(view.state()), 0);
     // Should not be 5 (or any other number for that sake :)
     QCOMPARE(spy1.count(), 1);
 
@@ -2175,7 +2134,7 @@ void tst_QTreeView::rowsAboutToBeRemoved_move()
     view.resize(600,800);
     view.show();
     view.doItemsLayout();
-    static_cast<PublicView *>(&view)->executeDelayedItemsLayout();
+    static_cast<QTreeView *>(&view)->executeDelayedItemsLayout();
     parent = indexThatWantsToLiveButWillDieDieITellYou.parent();
     QCOMPARE(view.isExpanded(indexThatWantsToLiveButWillDieDieITellYou), true);
     QCOMPARE(parent.isValid(), true);
@@ -2283,7 +2242,7 @@ void tst_QTreeView::spanningItems()
 {
     QtTestModel model;
     model.rows = model.cols = 10;
-    PublicView view;
+    QTreeView view;
     view.setModel(&model);
     view.show();
 
@@ -2422,7 +2381,7 @@ void tst_QTreeView::selectionWithHiddenItems()
 void tst_QTreeView::selectAll()
 {
     QStandardItemModel model(4,4);
-    PublicView view2;
+    QTreeView view2;
     view2.setModel(&model);
     view2.setSelectionMode(QAbstractItemView::ExtendedSelection);
     view2.selectAll();  // Should work with an empty model
@@ -2431,13 +2390,13 @@ void tst_QTreeView::selectAll()
 
     for (int i = 0; i < model.rowCount(); ++i)
         model.setData(model.index(i,0), QLatin1String("row ") + QString::number(i));
-    PublicView view;
+    QTreeView view;
     view.setModel(&model);
     int selectedCount = view.selectedIndexes().count();
     view.selectAll();
     QCOMPARE(view.selectedIndexes().count(), selectedCount);
 
-    PublicView view3;
+    QTreeView view3;
     view3.setModel(&model);
     view3.setSelectionMode(QAbstractItemView::NoSelection);
     view3.selectAll();
@@ -2800,7 +2759,7 @@ void tst_QTreeView::evilModel()
 {
     QFETCH(bool, visible);
     // init
-    PublicView view;
+    QTreeView view;
     EvilModel model;
     view.setModel(&model);
     view.setVisible(visible);
@@ -2858,7 +2817,7 @@ void tst_QTreeView::evilModel()
     view.setSelection(rect, QItemSelectionModel::Select);
     model.change();
 
-    view.doMoveCursor(PublicView::MoveDown, Qt::NoModifier);
+    view.moveCursor(QTreeView::MoveDown, Qt::NoModifier);
     model.change();
 
     view.resizeColumnToContents(1);
@@ -2969,7 +2928,7 @@ void tst_QTreeView::evilModel()
 void tst_QTreeView::indexRowSizeHint()
 {
     QStandardItemModel model(10, 1);
-    PublicView view;
+    QTreeView view;
 
     view.setModel(&model);
 
@@ -3015,7 +2974,7 @@ void tst_QTreeView::renderToPixmap_data()
 void tst_QTreeView::renderToPixmap()
 {
     QFETCH(int, row);
-    PublicView view;
+    QTreeView view;
     QStandardItemModel model;
 
     model.appendRow(new QStandardItem("Spanning"));
@@ -3031,7 +2990,7 @@ void tst_QTreeView::renderToPixmap()
         // We select the index at row=1 for coverage.
         QItemSelection sel(model.index(row,0), model.index(row,1));
         QRect rect;
-        view.aiv_priv()->renderToPixmap(sel.indexes(), &rect);
+        view.d_func()->renderToPixmap(sel.indexes(), &rect);
     }
 #endif
 }
@@ -3093,7 +3052,7 @@ void tst_QTreeView::styleOptionViewItem()
             bool allCollapsed;
     };
 
-    PublicView view;
+    QTreeView view;
     QStandardItemModel model;
     view.setModel(&model);
     MyDelegate delegate;
@@ -3149,7 +3108,7 @@ void tst_QTreeView::styleOptionViewItem()
         delegate.count = 0;
         QItemSelection sel(model.index(0,0), model.index(0,modelColumns-1));
         QRect rect;
-        view.aiv_priv()->renderToPixmap(sel.indexes(), &rect);
+        view.d_func()->renderToPixmap(sel.indexes(), &rect);
         if (delegate.count != visibleColumns) {
             qDebug() << rect << view.rect() << view.isVisible();
         }
@@ -3177,7 +3136,7 @@ void tst_QTreeView::styleOptionViewItem()
     delegate.count = 0;
     QItemSelection sel(model.index(0,0), model.index(0,modelColumns-1));
     QRect rect;
-    view.aiv_priv()->renderToPixmap(sel.indexes(), &rect);
+    view.d_func()->renderToPixmap(sel.indexes(), &rect);
     if (delegate.count != visibleColumns) {
         qDebug() << rect << view.rect() << view.isVisible();
     }
@@ -4139,7 +4098,7 @@ void tst_QTreeView::taskQTBUG_13567_removeLastItemRegression()
 // Note: define QT_BUILD_INTERNAL to run this test
 void tst_QTreeView::taskQTBUG_25333_adjustViewOptionsForIndex()
 {
-    PublicView view;
+    QTreeView view;
     QStandardItemModel model;
     QStandardItem *item1 = new QStandardItem("Item1");
     QStandardItem *item2 = new QStandardItem("Item2");
@@ -4165,9 +4124,9 @@ void tst_QTreeView::taskQTBUG_25333_adjustViewOptionsForIndex()
     {
         QStyleOptionViewItem option;
 
-        view.aiv_priv()->adjustViewOptionsForIndex(&option, model.indexFromItem(item1));
+        view.d_func()->adjustViewOptionsForIndex(&option, model.indexFromItem(item1));
 
-        view.aiv_priv()->adjustViewOptionsForIndex(&option, model.indexFromItem(item3));
+        view.d_func()->adjustViewOptionsForIndex(&option, model.indexFromItem(item3));
     }
 #endif
 
@@ -4273,7 +4232,7 @@ void tst_QTreeView::quickExpandCollapse()
     //this unit tests makes sure the state after the animation is restored correctly
     //after starting a 2nd animation while the first one was still on-going
     //this tests that the stateBeforeAnimation is not set to AnimatingState
-    PublicView tree;
+    QTreeView tree;
     tree.setAnimated(true);
     QStandardItemModel model;
     QStandardItem *root = new QStandardItem("root");
@@ -4287,13 +4246,13 @@ void tst_QTreeView::quickExpandCollapse()
     tree.show();
     QTest::qWaitForWindowExposed(&tree);
 
-    int initialState = tree.state();
+    const QAbstractItemView::State initialState = tree.state();
 
     tree.expand(rootIndex);
-    QCOMPARE(tree.state(), (int)PublicView::AnimatingState);
+    QCOMPARE(tree.state(), QTreeView::AnimatingState);
 
     tree.collapse(rootIndex);
-    QCOMPARE(tree.state(), (int)PublicView::AnimatingState);
+    QCOMPARE(tree.state(), QTreeView::AnimatingState);
 
     QTest::qWait(500); //the animation lasts for 250ms max so 500 should be enough
 

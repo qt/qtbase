@@ -46,6 +46,9 @@
 #include <QtCore/qitemselectionmodel.h>
 #include <QtWidgets/qabstractitemdelegate.h>
 
+class tst_QAbstractItemView;
+class tst_QTreeView;
+
 QT_BEGIN_NAMESPACE
 
 
@@ -368,6 +371,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_scrollerStateChanged())
 #endif
 
+    friend class ::tst_QAbstractItemView;
+    friend class ::tst_QTreeView;
     friend class QTreeViewPrivate; // needed to compile with MSVC
     friend class QListModeViewBase;
     friend class QListViewPrivate;

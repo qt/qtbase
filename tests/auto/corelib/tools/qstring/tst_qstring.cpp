@@ -123,7 +123,7 @@ template <>
 class Arg<QStringRef> : ArgBase
 {
     QStringRef ref() const
-    { return this->pinned.isNull() ? QStringRef() : this->pinned.midRef(0) ; }
+    { return QStringRef(&pinned); }
 public:
     explicit Arg(const char *str) : ArgBase(str) {}
 

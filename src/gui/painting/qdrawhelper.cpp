@@ -2897,10 +2897,16 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                         sbuf2[i * 2 + 1] = ((const uint*)s2)[x2];
                         fx += fdx;
                     }
+                    int fastLen;
+                    if (fdx > 0)
+                        fastLen = qMin(len, int((image_x2 - (fx >> 16)) / data->m11));
+                    else
+                        fastLen = qMin(len, int((image_x1 - (fx >> 16)) / data->m11));
+                    fastLen -= 3;
 
                     const __m128i v_fdx = _mm_set1_epi32(fdx*4);
                     __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
-                    for (; i < len-3; i+=4) {
+                    for (; i < fastLen; i += 4) {
                         int offset = _mm_extract_epi16(v_fx, 1);
                         sbuf1[i * 2 + 0] = ((const uint*)s1)[offset];
                         sbuf1[i * 2 + 1] = ((const uint*)s1)[offset + 1];

@@ -40,6 +40,7 @@
 #include "qwindowsfontdatabase.h"
 #include "qwindowsfontdatabase_ft.h" // for default font
 #include "qwindowscontext.h"
+#include "qwindowsintegration.h"
 #include "qwindowsfontengine.h"
 #include "qwindowsfontenginedirectwrite.h"
 #include <QtCore/qt_windows.h>
@@ -107,6 +108,18 @@ static void createDirectWriteFactory(IDWriteFactory **factory)
     }
 
     *factory = static_cast<IDWriteFactory *>(result);
+}
+
+static inline bool useDirectWrite(QFont::HintingPreference hintingPreference, bool isColorFont = false)
+{
+    const unsigned options = QWindowsIntegration::instance()->options();
+    if (Q_UNLIKELY(options & QWindowsIntegration::DontUseDirectWriteFonts))
+        return false;
+    if (isColorFont)
+        return (options & QWindowsIntegration::DontUseColorFonts) == 0;
+    return hintingPreference == QFont::PreferNoHinting
+        || hintingPreference == QFont::PreferVerticalHinting
+        || (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting);
 }
 #endif // !QT_NO_DIRECTWRITE
 
@@ -1199,11 +1212,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
     QFontEngine *fontEngine = 0;
 
 #if !defined(QT_NO_DIRECTWRITE)
-    bool useDirectWrite = (hintingPreference == QFont::PreferNoHinting)
-                       || (hintingPreference == QFont::PreferVerticalHinting)
-                       || (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting);
-
-    if (!useDirectWrite)
+    if (!useDirectWrite(hintingPreference))
 #endif
     {
         GUID guid;
@@ -1838,15 +1847,16 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
                 if (SUCCEEDED(directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace2),
                                                                   reinterpret_cast<void **>(&directWriteFontFace2)))) {
                     if (directWriteFontFace2->IsColorFont())
-                        isColorFont = true;
+                        isColorFont = directWriteFontFace2->GetPaletteEntryCount() > 0;
                 }
 #endif
-
-                bool useDirectWrite = (request.hintingPreference == QFont::PreferNoHinting)
-                                   || (request.hintingPreference == QFont::PreferVerticalHinting)
-                                   || (QHighDpiScaling::isActive() && request.hintingPreference == QFont::PreferDefaultHinting)
-                                   || isColorFont;
-                if (useDirectWrite) {
+                const QFont::HintingPreference hintingPreference =
+                    static_cast<QFont::HintingPreference>(request.hintingPreference);
+                const bool useDw = useDirectWrite(hintingPreference, isColorFont);
+                qCDebug(lcQpaFonts) << __FUNCTION__ << request.family << request.pointSize
+                    << "pt" << "hintingPreference=" << hintingPreference << "color=" << isColorFont
+                    << dpi << "dpi" << "useDirectWrite=" << useDw;
+                if (useDw) {
                     QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
                                                                                             request.pixelSize,
                                                                                             data);
