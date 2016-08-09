@@ -200,6 +200,13 @@ void testAdoptedThreadStorageWin(void *p)
     }
     QObject::connect(QThread::currentThread(), SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 }
+#ifdef Q_OS_WINRT
+unsigned __stdcall testAdoptedThreadStorageWinRT(void *p)
+{
+    testAdoptedThreadStorageWin(p);
+    return 0;
+}
+#endif
 void *testAdoptedThreadStorageUnix(void *pointers)
 {
     testAdoptedThreadStorageWin(pointers);
@@ -217,7 +224,12 @@ void tst_QThreadStorage::adoptedThreads()
         const int state = pthread_create(&thread, 0, testAdoptedThreadStorageUnix, &pointers);
         QCOMPARE(state, 0);
         pthread_join(thread, 0);
-#elif defined Q_OS_WIN && !defined(Q_OS_WINRT)
+#elif defined Q_OS_WINRT
+        HANDLE thread;
+        thread = (HANDLE) _beginthreadex(NULL, 0, testAdoptedThreadStorageWinRT, &pointers, 0, 0);
+        QVERIFY(thread);
+        WaitForSingleObjectEx(thread, INFINITE, FALSE);
+#elif defined Q_OS_WIN
         HANDLE thread;
         thread = (HANDLE)_beginthread(testAdoptedThreadStorageWin, 0, &pointers);
         QVERIFY(thread);
