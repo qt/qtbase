@@ -68,24 +68,6 @@ static void preventDllUnload();
 
 Q_GLOBAL_STATIC(QDBusConnectionManager, _q_manager)
 
-// can be replaced with a lambda in Qt 5.7
-class QDBusConnectionDispatchEnabler : public QObject
-{
-    Q_OBJECT
-    QDBusConnectionPrivate *con;
-public:
-    QDBusConnectionDispatchEnabler(QDBusConnectionPrivate *con) : con(con) {}
-
-public slots:
-    void execute()
-    {
-        con->setDispatchEnabled(true);
-        if (!con->ref.deref())
-            con->deleteLater();
-        deleteLater();
-    }
-};
-
 struct QDBusConnectionManager::ConnectionRequestData
 {
     enum RequestType {
@@ -1280,8 +1262,6 @@ QByteArray QDBusConnection::localMachineId()
 */
 
 QT_END_NAMESPACE
-
-#include "qdbusconnection.moc"
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>

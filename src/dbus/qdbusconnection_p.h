@@ -375,6 +375,25 @@ extern QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNod
                                      const QDBusMessage &msg);
 extern QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &node,
                                         const QDBusMessage &msg);
+
+// can be replaced with a lambda in Qt 5.7
+class QDBusConnectionDispatchEnabler : public QObject
+{
+    Q_OBJECT
+    QDBusConnectionPrivate *con;
+public:
+    QDBusConnectionDispatchEnabler(QDBusConnectionPrivate *con) : con(con) {}
+
+public slots:
+    void execute()
+    {
+        con->setDispatchEnabled(true);
+        if (!con->ref.deref())
+            con->deleteLater();
+        deleteLater();
+    }
+};
+
 #endif // QT_BOOTSTRAPPED
 
 QT_END_NAMESPACE
