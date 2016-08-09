@@ -129,7 +129,7 @@
     \c{freeBytes.available()} is \c BufferSize - 1 and
     \c{usedBytes.available()} is 1. At that point, two things can
     happen: Either the consumer thread takes over and reads that
-    byte, or the consumer gets to produce a second byte.
+    byte, or the producer thread gets to produce a second byte.
 
     The producer-consumer model presented in this example makes it
     possible to write highly concurrent multithreaded applications.
