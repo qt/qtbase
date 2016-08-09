@@ -373,7 +373,12 @@ void QEglFSKmsDevice::createScreens()
         QEglFSKmsScreen *screen = createScreenForConnector(resources, connector, pos);
         if (screen) {
             integration->addScreen(screen);
-            pos.rx() += screen->geometry().width();
+
+            if (m_integration->virtualDesktopLayout() == QEglFSKmsIntegration::VirtualDesktopLayoutVertical)
+                pos.ry() += screen->geometry().height();
+            else
+                pos.rx() += screen->geometry().width();
+
             siblings << screen;
 
             if (!primaryScreen)

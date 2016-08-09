@@ -65,6 +65,7 @@ QEglFSKmsIntegration::QEglFSKmsIntegration()
     , m_hwCursor(false)
     , m_pbuffers(false)
     , m_separateScreens(false)
+    , m_virtualDesktopLayout(VirtualDesktopLayoutHorizontal)
 {}
 
 void QEglFSKmsIntegration::platformInit()
@@ -149,6 +150,11 @@ bool QEglFSKmsIntegration::separateScreens() const
     return m_separateScreens;
 }
 
+QEglFSKmsIntegration::VirtualDesktopLayout QEglFSKmsIntegration::virtualDesktopLayout() const
+{
+    return m_virtualDesktopLayout;
+}
+
 QMap<QString, QVariantMap> QEglFSKmsIntegration::outputSettings() const
 {
     return m_outputSettings;
@@ -169,15 +175,15 @@ void QEglFSKmsIntegration::loadConfig()
 
     QFile file(QString::fromUtf8(json));
     if (!file.open(QFile::ReadOnly)) {
-        qCDebug(qLcEglfsKmsDebug) << "Could not open config file"
-                                  << json << "for reading";
+        qCWarning(qLcEglfsKmsDebug) << "Could not open config file"
+                                    << json << "for reading";
         return;
     }
 
     const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     if (!doc.isObject()) {
-        qCDebug(qLcEglfsKmsDebug) << "Invalid config file" << json
-                                  << "- no top-level JSON object";
+        qCWarning(qLcEglfsKmsDebug) << "Invalid config file" << json
+                                    << "- no top-level JSON object";
         return;
     }
 
@@ -187,6 +193,16 @@ void QEglFSKmsIntegration::loadConfig()
     m_pbuffers = object.value(QLatin1String("pbuffers")).toBool(m_pbuffers);
     m_devicePath = object.value(QLatin1String("device")).toString();
     m_separateScreens = object.value(QLatin1String("separateScreens")).toBool(m_separateScreens);
+
+    const QString vdOriString = object.value(QLatin1String("virtualDesktopLayout")).toString();
+    if (!vdOriString.isEmpty()) {
+        if (vdOriString == QLatin1String("horizontal"))
+            m_virtualDesktopLayout = VirtualDesktopLayoutHorizontal;
+        else if (vdOriString == QLatin1String("vertical"))
+            m_virtualDesktopLayout = VirtualDesktopLayoutVertical;
+        else
+            qCWarning(qLcEglfsKmsDebug) << "Unknown virtualDesktop value" << vdOriString;
+    }
 
     const QJsonArray outputs = object.value(QLatin1String("outputs")).toArray();
     for (int i = 0; i < outputs.size(); i++) {
@@ -207,6 +223,7 @@ void QEglFSKmsIntegration::loadConfig()
                               << "\thwcursor:" << m_hwCursor << "\n"
                               << "\tpbuffers:" << m_pbuffers << "\n"
                               << "\tseparateScreens:" << m_separateScreens << "\n"
+                              << "\tvirtualDesktopLayout:" << m_virtualDesktopLayout << "\n"
                               << "\toutputs:" << m_outputSettings;
 }
 
