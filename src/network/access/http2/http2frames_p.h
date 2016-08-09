@@ -101,13 +101,20 @@ private:
     bool readHeader(QAbstractSocket &socket);
     bool readPayload(QAbstractSocket &socket);
 
+    enum ReaderState {
+        Idle,
+        ReadingHeader,
+        ReadingPayload
+    };
+
+    ReaderState state = Idle;
+
     // As soon as we got a header, we
     // know payload size, offset is
     // needed if we do not have enough
     // data and will read the next chunk.
-    bool incompleteRead = false;
     quint32 offset = 0;
-    std::vector<uchar> framePayload;
+    std::vector<uchar> frameBuffer;
 };
 
 class Q_AUTOTEST_EXPORT FrameWriter

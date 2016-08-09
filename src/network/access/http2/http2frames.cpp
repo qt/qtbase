@@ -148,7 +148,7 @@ FrameStatus validate_frame_payload(FrameType type, FrameFlags flags,
 
 
 FrameReader::FrameReader(FrameReader &&rhs)
-    : framePayload(std::move(rhs.framePayload))
+    : frameBuffer(std::move(rhs.frameBuffer))
 {
     type = rhs.type;
     rhs.type = FrameType::LAST_FRAME_TYPE;
@@ -162,8 +162,8 @@ FrameReader::FrameReader(FrameReader &&rhs)
     payloadSize = rhs.payloadSize;
     rhs.payloadSize = 0;
 
-    incompleteRead = rhs.incompleteRead;
-    rhs.incompleteRead = false;
+    state = rhs.state;
+    rhs.state = Idle;
 
     offset = rhs.offset;
     rhs.offset = 0;
@@ -171,7 +171,7 @@ FrameReader::FrameReader(FrameReader &&rhs)
 
 FrameReader &FrameReader::operator = (FrameReader &&rhs)
 {
-    framePayload = std::move(rhs.framePayload);
+    frameBuffer = std::move(rhs.frameBuffer);
 
     type = rhs.type;
     rhs.type = FrameType::LAST_FRAME_TYPE;
@@ -185,8 +185,8 @@ FrameReader &FrameReader::operator = (FrameReader &&rhs)
     payloadSize = rhs.payloadSize;
     rhs.payloadSize = 0;
 
-    incompleteRead = rhs.incompleteRead;
-    rhs.incompleteRead = false;
+    state = rhs.state;
+    rhs.state = Idle;
 
     offset = rhs.offset;
     rhs.offset = 0;
@@ -196,9 +196,12 @@ FrameReader &FrameReader::operator = (FrameReader &&rhs)
 
 FrameStatus FrameReader::read(QAbstractSocket &socket)
 {
-    if (!incompleteRead) {
+    if (state != ReadingPayload) {
+        // Either Idle or ReadingHeader:
         if (!readHeader(socket))
             return FrameStatus::incompleteFrame;
+
+        Q_ASSERT(state == Idle);
 
         const auto status = validate_frame_header(type, flags, payloadSize);
         if (status != FrameStatus::goodFrame) {
@@ -209,16 +212,17 @@ FrameStatus FrameReader::read(QAbstractSocket &socket)
         if (Http2PredefinedParameters::maxFrameSize < payloadSize)
             return FrameStatus::sizeError;
 
-        framePayload.resize(payloadSize);
+        frameBuffer.resize(payloadSize);
         offset = 0;
     }
 
-    if (framePayload.size()) {
+    if (frameBuffer.size()) {
         if (!readPayload(socket))
             return FrameStatus::incompleteFrame;
+        Q_ASSERT(state == Idle);
     }
 
-    return validate_frame_payload(type, flags, framePayload);
+    return validate_frame_payload(type, flags, frameBuffer);
 }
 
 bool FrameReader::padded(uchar *pad) const
@@ -231,8 +235,8 @@ bool FrameReader::padded(uchar *pad) const
     if (type == FrameType::DATA
         || type == FrameType::PUSH_PROMISE
         || type == FrameType::HEADERS) {
-        Q_ASSERT(framePayload.size() >= 1);
-        *pad = framePayload[0];
+        Q_ASSERT(frameBuffer.size() >= 1);
+        *pad = frameBuffer[0];
         return true;
     }
 
@@ -244,10 +248,10 @@ bool FrameReader::priority(quint32 *streamID, uchar *weight) const
     Q_ASSERT(streamID);
     Q_ASSERT(weight);
 
-    if (!framePayload.size())
+    if (!frameBuffer.size())
         return false;
 
-    const uchar *src = &framePayload[0];
+    const uchar *src = &frameBuffer[0];
     if (type == FrameType::HEADERS && flags.testFlag(FrameFlag::PADDED))
         ++src;
 
@@ -263,7 +267,7 @@ bool FrameReader::priority(quint32 *streamID, uchar *weight) const
 
 quint32 FrameReader::dataSize() const
 {
-    quint32 size = quint32(framePayload.size());
+    quint32 size = quint32(frameBuffer.size());
     uchar pad = 0;
     if (padded(&pad)) {
         // + 1 one for a byte with padding number itself:
@@ -280,10 +284,10 @@ quint32 FrameReader::dataSize() const
 
 const uchar *FrameReader::dataBegin() const
 {
-    if (!framePayload.size())
+    if (!frameBuffer.size())
         return nullptr;
 
-    const uchar *src = &framePayload[0];
+    const uchar *src = &frameBuffer[0];
     uchar dummyPad = 0;
     if (padded(&dummyPad))
         ++src;
@@ -298,14 +302,30 @@ const uchar *FrameReader::dataBegin() const
 
 bool FrameReader::readHeader(QAbstractSocket &socket)
 {
-    if (socket.bytesAvailable() < frameHeaderSize)
+    Q_ASSERT(state != ReadingPayload);
+
+    if (state == Idle) {
+        offset = 0;
+        frameBuffer.resize(frameHeaderSize);
+        state = ReadingHeader;
+    }
+
+    Q_ASSERT(offset < frameHeaderSize);
+
+    const auto chunkSize = socket.read(reinterpret_cast<char *>(&frameBuffer[offset]),
+                                       frameHeaderSize - offset);
+    if (chunkSize > 0)
+        offset += chunkSize;
+
+    if (offset < frameHeaderSize)
         return false;
 
-    uchar src[frameHeaderSize] = {};
-    socket.read(reinterpret_cast<char*>(src), frameHeaderSize);
+    // We got a complete frame header:
+    state = Idle;
+
+    const uchar *src = &frameBuffer[0];
 
     payloadSize = src[0] << 16 | src[1] << 8 | src[2];
-
     type = FrameType(src[3]);
     if (int(type) >= int(FrameType::LAST_FRAME_TYPE))
         type = FrameType::LAST_FRAME_TYPE; // To be ignored, 5.1
@@ -318,16 +338,23 @@ bool FrameReader::readHeader(QAbstractSocket &socket)
 
 bool FrameReader::readPayload(QAbstractSocket &socket)
 {
-    Q_ASSERT(offset <= framePayload.size());
+    Q_ASSERT(offset < frameBuffer.size());
+    Q_ASSERT(state != ReadingHeader);
+
+    state = ReadingPayload;
 
     // Casts and ugliness - to deal with MSVC. Values are guaranteed to fit into quint32.
-    if (const auto residue = std::min(qint64(framePayload.size() - offset), socket.bytesAvailable())) {
-        socket.read(reinterpret_cast<char *>(&framePayload[offset]), residue);
-        offset += quint32(residue);
-    }
+    const auto residue = qint64(frameBuffer.size() - offset);
+    const auto chunkSize = socket.read(reinterpret_cast<char *>(&frameBuffer[offset]), residue);
+    if (chunkSize > 0)
+        offset += quint32(chunkSize);
 
-    incompleteRead = offset < framePayload.size();
-    return !incompleteRead;
+    if (offset < frameBuffer.size())
+        return false;
+
+    // Complete payload read:
+    state = Idle;
+    return true;
 }
 
 

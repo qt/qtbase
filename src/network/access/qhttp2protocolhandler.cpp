@@ -170,64 +170,60 @@ void QHttp2ProtocolHandler::_q_receiveReply()
     Q_ASSERT(m_socket);
     Q_ASSERT(m_channel);
 
-    const auto result = inboundFrame.read(*m_socket);
-    switch (result) {
-    case FrameStatus::incompleteFrame:
-        return;
-    case FrameStatus::protocolError:
-        return connectionError(PROTOCOL_ERROR, "invalid frame");
-    case FrameStatus::sizeError:
-        return connectionError(FRAME_SIZE_ERROR, "invalid frame size");
-    default:
-        break;
-    }
+    do {
+        const auto result = inboundFrame.read(*m_socket);
+        switch (result) {
+        case FrameStatus::incompleteFrame:
+            return;
+        case FrameStatus::protocolError:
+            return connectionError(PROTOCOL_ERROR, "invalid frame");
+        case FrameStatus::sizeError:
+            return connectionError(FRAME_SIZE_ERROR, "invalid frame size");
+        default:
+            break;
+        }
 
-    Q_ASSERT(result == FrameStatus::goodFrame);
+        Q_ASSERT(result == FrameStatus::goodFrame);
 
-    if (continuationExpected && inboundFrame.type != FrameType::CONTINUATION)
-        return connectionError(PROTOCOL_ERROR, "CONTINUATION expected");
+        if (continuationExpected && inboundFrame.type != FrameType::CONTINUATION)
+            return connectionError(PROTOCOL_ERROR, "CONTINUATION expected");
 
-    switch (inboundFrame.type) {
-    case FrameType::DATA:
-        handleDATA();
-        break;
-    case FrameType::HEADERS:
-        handleHEADERS();
-        break;
-    case FrameType::PRIORITY:
-        handlePRIORITY();
-        break;
-    case FrameType::RST_STREAM:
-        handleRST_STREAM();
-        break;
-    case FrameType::SETTINGS:
-        handleSETTINGS();
-        break;
-    case FrameType::PUSH_PROMISE:
-        handlePUSH_PROMISE();
-        break;
-    case FrameType::PING:
-        handlePING();
-        break;
-    case FrameType::GOAWAY:
-        handleGOAWAY();
-        break;
-    case FrameType::WINDOW_UPDATE:
-        handleWINDOW_UPDATE();
-        break;
-    case FrameType::CONTINUATION:
-        handleCONTINUATION();
-        break;
-    case FrameType::LAST_FRAME_TYPE:
-        // 5.1 - ignore unknown frames.
-        break;
-    }
-
-    if (goingAway && !activeStreams.size())
-        return;
-
-    if (m_socket->bytesAvailable())
-        QMetaObject::invokeMethod(m_channel, "_q_receiveReply", Qt::QueuedConnection);
+        switch (inboundFrame.type) {
+        case FrameType::DATA:
+            handleDATA();
+            break;
+        case FrameType::HEADERS:
+            handleHEADERS();
+            break;
+        case FrameType::PRIORITY:
+            handlePRIORITY();
+            break;
+        case FrameType::RST_STREAM:
+            handleRST_STREAM();
+            break;
+        case FrameType::SETTINGS:
+            handleSETTINGS();
+            break;
+        case FrameType::PUSH_PROMISE:
+            handlePUSH_PROMISE();
+            break;
+        case FrameType::PING:
+            handlePING();
+            break;
+        case FrameType::GOAWAY:
+            handleGOAWAY();
+            break;
+        case FrameType::WINDOW_UPDATE:
+            handleWINDOW_UPDATE();
+            break;
+        case FrameType::CONTINUATION:
+            handleCONTINUATION();
+            break;
+        case FrameType::LAST_FRAME_TYPE:
+            // 5.1 - ignore unknown frames.
+            break;
+        }
+    } while (!goingAway || activeStreams.size());
 }
 
 bool QHttp2ProtocolHandler::sendRequest()
