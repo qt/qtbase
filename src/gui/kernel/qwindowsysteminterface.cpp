@@ -442,6 +442,11 @@ void QWindowSystemInterface::unregisterTouchDevice(const QTouchDevice *device)
     QTouchDevicePrivate::unregisterDevice(device);
 }
 
+bool QWindowSystemInterface::isTouchDeviceRegistered(const QTouchDevice *device)
+{
+    return QTouchDevicePrivate::isRegistered(device);
+}
+
 void QWindowSystemInterface::handleTouchEvent(QWindow *w, QTouchDevice *device,
                                               const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
