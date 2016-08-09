@@ -41,6 +41,7 @@
 #include <libinput.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,7 +64,8 @@ QLibInputTouch::DeviceState *QLibInputTouch::deviceState(libinput_event_touch *e
 
 static inline QPointF getPos(libinput_event_touch *e)
 {
-    const QSize screenSize = QGuiApplication::primaryScreen()->geometry().size();
+    QScreen *screen = QGuiApplication::primaryScreen();
+    const QSize screenSize = QHighDpi::toNativePixels(screen->geometry().size(), screen);
     const double x = libinput_event_touch_get_x_transformed(e, screenSize.width());
     const double y = libinput_event_touch_get_y_transformed(e, screenSize.height());
     return QPointF(x, y);
