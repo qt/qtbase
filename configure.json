@@ -701,23 +701,23 @@
             "test": "qpa/egl-x11",
             "pkg-config-args": "egl"
         },
-        "eglfs-brcm": {
+        "egl-brcm": {
             "description": "Broadcom EGL (Rasberry Pi)",
             "type": "compile",
             "test": "qpa/eglfs-brcm",
             "pkg-config-args": "egl"
         },
-        "eglfs-egldevice": {
+        "egl-egldevice": {
             "description": "EGLDevice",
             "type": "compile",
             "test": "qpa/eglfs-egldevice"
         },
-        "eglfs-mali": {
+        "egl-mali": {
             "description": "Mali EGL",
             "type": "compile",
             "test": "qpa/eglfs-mali"
         },
-        "eglfs-viv": {
+        "egl-viv": {
             "description": "i.Mx6 EGL",
             "type": "compile",
             "test": "qpa/eglfs-viv"
@@ -1840,12 +1840,12 @@
         },
         "eglfs_brcm": {
             "description": "EGLFS Rasberry Pi",
-            "condition": "features.eglfs && tests.eglfs-brcm",
+            "condition": "features.eglfs && tests.egl-brcm",
             "output": [ "publicQtConfig" ]
         },
         "eglfs_egldevice": {
             "description": "EGLFS EGLDevice",
-            "condition": "features.eglfs && tests.eglfs-egldevice",
+            "condition": "features.eglfs && tests.egl-egldevice",
             "output": [ "publicQtConfig" ]
         },
         "eglfs_gbm": {
@@ -1855,12 +1855,12 @@
         },
         "eglfs_mali": {
             "description": "EGLFS Mali",
-            "condition": "features.eglfs && tests.eglfs-mali",
+            "condition": "features.eglfs && tests.egl-mali",
             "output": [ "publicQtConfig" ]
         },
         "eglfs_viv": {
             "description": "EGLFS i.Mx6",
-            "condition": "features.eglfs && tests.eglfs-viv",
+            "condition": "features.eglfs && tests.egl-viv",
             "output": [ "publicQtConfig" ]
         },
         "eglfs_viv_wl": {
