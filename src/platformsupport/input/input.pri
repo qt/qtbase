@@ -12,3 +12,7 @@ contains(QT_CONFIG, tslib) {
 contains(QT_CONFIG, libinput) {
     include($$PWD/libinput/libinput.pri)
 }
+
+contains(QT_CONFIG, evdev)|contains(QT_CONFIG, libinput) {
+    include($$PWD/shared/shared.pri)
+}

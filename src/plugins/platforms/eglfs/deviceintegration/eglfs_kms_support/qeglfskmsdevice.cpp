@@ -417,6 +417,9 @@ void QEglFSKmsDevice::createScreens()
         else
             pos.rx() += s->geometry().width();
         qCDebug(qLcEglfsKmsDebug) << "Adding screen" << s << "to QPA with geometry" << s->geometry();
+        // The order in qguiapp's screens list will match the order set by
+        // virtualIndex. This is not only handy but also required since for instance
+        // evdevtouch relies on it when performing touch device - screen mapping.
         qpaIntegration->addScreen(s);
         siblings << s;
     }
