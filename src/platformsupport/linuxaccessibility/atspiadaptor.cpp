@@ -2079,7 +2079,6 @@ QVariantList AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, in
     QSpiAttributeSet map;
     int startOffset;
     int endOffset;
-    bool defined;
 
     joined = interface->textInterface()->attributes(offset, &startOffset, &endOffset);
     attributes = joined.split (QLatin1Char(';'), QString::SkipEmptyParts, Qt::CaseSensitive);
@@ -2091,7 +2090,7 @@ QVariantList AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, in
             map[attribute.name] = attribute.value;
     }
     mapped = map[attributeName];
-    defined = mapped.isEmpty();
+    const bool defined = !mapped.isEmpty();
     QVariantList list;
     list << mapped << startOffset << endOffset << defined;
     return list;
