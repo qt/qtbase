@@ -5,7 +5,6 @@ QT += core-private gui-private platformsupport-private eglfsdeviceintegration-pr
 INCLUDEPATH += $$PWD/../..
 CONFIG += egl
 DEFINES += LINUX=1 EGL_API_FB=1
-LIBS += -lGAL
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 SOURCES += $$PWD/qeglfsvivwlmain.cpp \
