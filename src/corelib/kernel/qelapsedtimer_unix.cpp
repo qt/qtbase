@@ -101,54 +101,48 @@ static inline void qt_clock_gettime(int, struct timespec *ts)
     ts->tv_nsec = tv.tv_usec * 1000;
 }
 
-#  ifdef _POSIX_MONOTONIC_CLOCK
-#    undef _POSIX_MONOTONIC_CLOCK
-#    define _POSIX_MONOTONIC_CLOCK -1
-#  endif
+static inline int regularClock()
+{
+    return 0;
+}
 #else
 static inline void qt_clock_gettime(clockid_t clock, struct timespec *ts)
 {
     clock_gettime(clock, ts);
 }
-#endif
 
-static int unixCheckClockType()
+static inline clock_t regularClockCheck()
 {
-#ifdef Q_OS_LINUX
+    struct timespec regular_clock_resolution;
+    int r = -1;
+
+#  ifdef CLOCK_MONOTONIC
+    // try the monotonic clock
+    r = clock_getres(CLOCK_MONOTONIC, &regular_clock_resolution);
+
+#    ifdef Q_OS_LINUX
     // Despite glibc claiming that we should check at runtime, the Linux kernel
     // always supports the monotonic clock
+    Q_ASSERT(r == 0);
     return CLOCK_MONOTONIC;
-#elif (_POSIX_MONOTONIC_CLOCK-0 == 0) && defined(_SC_MONOTONIC_CLOCK)
-    // we need a value we can store in a clockid_t that isn't a valid clock
-    // check if the valid ones are both non-negative or both non-positive
-#  if CLOCK_MONOTONIC >= 0 && CLOCK_REALTIME >= 0
-#    define IS_VALID_CLOCK(clock)    (clock >= 0)
-#    define INVALID_CLOCK            -1
-#  elif CLOCK_MONOTONIC <= 0 && CLOCK_REALTIME <= 0
-#    define IS_VALID_CLOCK(clock)    (clock <= 0)
-#    define INVALID_CLOCK            1
-#  else
-#    error "Sorry, your system has weird values for CLOCK_MONOTONIC and CLOCK_REALTIME"
+#    endif
+
+    if (r == 0)
+        return CLOCK_MONOTONIC;
 #  endif
 
-    static QBasicAtomicInt clockToUse = Q_BASIC_ATOMIC_INITIALIZER(INVALID_CLOCK);
-    int clock = clockToUse.loadAcquire();
-    if (Q_LIKELY(IS_VALID_CLOCK(clock)))
-        return clock;
-
-    // detect if the system supports monotonic timers
-    clock = sysconf(_SC_MONOTONIC_CLOCK) > 0 ? CLOCK_MONOTONIC : CLOCK_REALTIME;
-    clockToUse.storeRelease(clock);
-    return clock;
-
-#  undef INVALID_CLOCK
-#  undef IS_VALID_CLOCK
-#elif (_POSIX_MONOTONIC_CLOCK-0) > 0
-    return CLOCK_MONOTONIC;
-#else
+    // no monotonic, try the realtime clock
+    r = clock_getres(CLOCK_REALTIME, &regular_clock_resolution);
+    Q_ASSERT(r == 0);
     return CLOCK_REALTIME;
-#endif
 }
+
+static inline clock_t regularClock()
+{
+    static const clock_t clock = regularClockCheck();
+    return clock;
+}
+#endif
 
 bool QElapsedTimer::isMonotonic() noexcept
 {
@@ -157,13 +151,13 @@ bool QElapsedTimer::isMonotonic() noexcept
 
 QElapsedTimer::ClockType QElapsedTimer::clockType() noexcept
 {
-    return unixCheckClockType() == CLOCK_REALTIME ? SystemTime : MonotonicClock;
+    return regularClock() == CLOCK_REALTIME ? SystemTime : MonotonicClock;
 }
 
 static inline void do_gettime(qint64 *sec, qint64 *frac)
 {
     timespec ts;
-    qt_clock_gettime(unixCheckClockType(), &ts);
+    qt_clock_gettime(regularClock(), &ts);
     *sec = ts.tv_sec;
     *frac = ts.tv_nsec;
 }
