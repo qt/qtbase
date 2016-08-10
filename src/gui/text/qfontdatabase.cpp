@@ -2801,6 +2801,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         req.fallBackFamilies.clear();
     }
 
+    Q_ASSERT(fe);
     if (fe->symbol || (d->request.styleStrategy & QFont::NoFontMerging)) {
         for (int i = 0; i < QChar::ScriptCount; ++i) {
             if (!d->engineData->engines[i]) {

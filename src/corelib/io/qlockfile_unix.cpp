@@ -188,7 +188,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
                           % localHostName() % '\n';
 
     const QByteArray lockFileName = QFile::encodeName(fileName);
-    const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY | O_CREAT | O_EXCL, 0644);
+    const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY | O_CREAT | O_EXCL, 0666);
     if (fd < 0) {
         switch (errno) {
         case EEXIST:
@@ -229,7 +229,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
 bool QLockFilePrivate::removeStaleLock()
 {
     const QByteArray lockFileName = QFile::encodeName(fileName);
-    const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY, 0644);
+    const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY, 0666);
     if (fd < 0) // gone already?
         return false;
     bool success = setNativeLocks(fileName, fd) && (::unlink(lockFileName) == 0);

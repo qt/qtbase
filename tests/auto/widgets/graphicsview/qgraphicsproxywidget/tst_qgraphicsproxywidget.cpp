@@ -397,6 +397,7 @@ void tst_QGraphicsProxyWidget::setWidget()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+    QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Fusion")));
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QPointer<SubQGraphicsProxyWidget> proxy = new SubQGraphicsProxyWidget;
     SubQGraphicsProxyWidget parentProxy;
@@ -419,7 +420,7 @@ void tst_QGraphicsProxyWidget::setWidget()
 #endif
     widget->setPalette(QPalette(Qt::magenta));
     widget->setLayoutDirection(Qt::RightToLeft);
-    widget->setStyle(QStyleFactory::create(QLatin1String("Fusion")));
+    widget->setStyle(style.data());
     widget->setFont(QFont("Times"));
     widget->setVisible(true);
     QApplication::setActiveWindow(widget);
