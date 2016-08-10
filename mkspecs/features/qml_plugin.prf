@@ -40,7 +40,7 @@ URI = $$replace(TARGETPATH, "/", ".")
 QMAKE_MOC_OPTIONS += -Muri=$$URI
 
 QMLTYPEFILE = $$_PRO_FILE_PWD_/plugins.qmltypes
-exists($$QMLTYPEFILE): QML_FILES += $$QMLTYPEFILE
+exists($$QMLTYPEFILE): AUX_QML_FILES += $$QMLTYPEFILE
 
 # Install rules
 
