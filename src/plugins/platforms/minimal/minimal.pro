@@ -11,7 +11,6 @@ HEADERS =   qminimalintegration.h \
 OTHER_FILES += minimal.json
 
 CONFIG += qpa/genericunixfontdatabase
-win32|darwin: DEFINES += QT_NO_FONTCONFIG
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QMinimalIntegrationPlugin

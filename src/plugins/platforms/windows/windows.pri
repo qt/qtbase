@@ -117,7 +117,6 @@ qtConfig(freetype) {
     qtConfig(system-freetype) {
         include($$QT_SOURCE_TREE/src/platformsupport/fontdatabases/basic/basic.pri)
     } else {
-        DEFINES *= QT_NO_FONTCONFIG
         include($$QT_SOURCE_TREE/src/3rdparty/freetype_dependency.pri)
     }
 }

@@ -2063,7 +2063,7 @@
         },
         "fontconfig": {
             "description": "Fontconfig",
-            "condition": "!config.win32 && features.system-freetype && libs.fontconfig",
+            "condition": "!config.win32 && !config.darwin && features.system-freetype && libs.fontconfig",
             "output": [ "privateFeature", "feature" ]
         },
         "harfbuzz": {
