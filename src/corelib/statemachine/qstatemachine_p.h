@@ -66,7 +66,7 @@
 QT_BEGIN_NAMESPACE
 
 class QEvent;
-#ifndef QT_NO_STATEMACHINE_EVENTFILTER
+#if QT_CONFIG(qeventtransition)
 class QEventTransition;
 #endif
 class QSignalEventGenerator;
@@ -186,7 +186,7 @@ public:
     void registerSignalTransition(QSignalTransition *transition);
     void unregisterSignalTransition(QSignalTransition *transition);
     void registerMultiThreadedSignalTransitions();
-#ifndef QT_NO_STATEMACHINE_EVENTFILTER
+#if QT_CONFIG(qeventtransition)
     void maybeRegisterEventTransition(QEventTransition *transition);
     void registerEventTransition(QEventTransition *transition);
     void unregisterEventTransition(QEventTransition *transition);
@@ -301,7 +301,7 @@ public:
 
     QHash<const QObject*, QVector<int> > connections;
     QMutex connectionsMutex;
-#ifndef QT_NO_STATEMACHINE_EVENTFILTER
+#if QT_CONFIG(qeventtransition)
     QHash<QObject*, QHash<QEvent::Type, int> > qobjectEvents;
 #endif
     QFreeList<void> delayedEventIdFreeList;

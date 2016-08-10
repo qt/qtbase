@@ -2518,6 +2518,10 @@
             "description": "Mimetype handling",
             "output": [ "publicFeature", "feature" ]
         },
+        "qeventtransition": {
+            "description": "QEventTransition class",
+            "output": [ "publicFeature" ]
+        },
         "extra_features": {
             "comment": "### remove, once qfeatures.txt is ported to the new system",
             "output": [ "extraFeatures" ]
