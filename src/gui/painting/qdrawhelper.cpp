@@ -2180,6 +2180,8 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 
                 if (blendType != BlendTransformedBilinearTiled) {
 #define BILINEAR_DOWNSCALE_BOUNDS_PROLOG \
+                    const qint64 min_fx = qint64(image_x1) * fixed_scale; \
+                    const qint64 max_fx = qint64(image_x2) * fixed_scale; \
                     while (b < end) { \
                         int x1 = (fx >> 16); \
                         int x2; \
@@ -2195,11 +2197,11 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         fx += fdx; \
                         ++b; \
                     } \
-                    uint *boundedEnd; \
+                    uint *boundedEnd = end; \
                     if (fdx > 0) \
-                        boundedEnd = qMin(end, buffer + uint((image_x2 - (fx >> 16)) / data->m11)); \
-                    else \
-                        boundedEnd = qMin(end, buffer + uint((image_x1 - (fx >> 16)) / data->m11)); \
+                        boundedEnd = qMin(boundedEnd, b + (max_fx - fx) / fdx); \
+                    else if (fdx < 0) \
+                        boundedEnd = qMin(boundedEnd, b + (min_fx - fx) / fdx); \
                     boundedEnd -= 3;
 
 #if defined(__SSE2__)
@@ -2333,6 +2335,10 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 
                 if (blendType != BlendTransformedBilinearTiled) {
 #define BILINEAR_ROTATE_BOUNDS_PROLOG \
+                    const qint64 min_fx = qint64(image_x1) * fixed_scale; \
+                    const qint64 max_fx = qint64(image_x2) * fixed_scale; \
+                    const qint64 min_fy = qint64(image_y1) * fixed_scale; \
+                    const qint64 max_fy = qint64(image_y2) * fixed_scale; \
                     while (b < end) { \
                         int x1 = (fx >> 16); \
                         int x2; \
@@ -2355,7 +2361,15 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         fy += fdy; \
                         ++b; \
                     } \
-                    uint *boundedEnd = end - 3; \
+                    uint *boundedEnd = end; \
+                    if (fdx > 0) \
+                        boundedEnd = qMin(boundedEnd, b + (max_fx - fx) / fdx); \
+                    else if (fdx < 0) \
+                        boundedEnd = qMin(boundedEnd, b + (min_fx - fx) / fdx); \
+                    if (fdy > 0) \
+                        boundedEnd = qMin(boundedEnd, b + (max_fy - fy) / fdy); \
+                    else if (fdy < 0) \
+                        boundedEnd = qMin(boundedEnd, b + (min_fy - fy) / fdy); \
                     boundedEnd -= 3;
 
 #if defined(__SSE2__)
@@ -2374,15 +2388,6 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     const __m128i vbpl = _mm_shufflelo_epi16(_mm_cvtsi32_si128(bytesPerLine/4), _MM_SHUFFLE(0, 0, 0, 0));
 
                     while (b < boundedEnd) {
-                        if (fdx > 0 && (short)_mm_extract_epi16(v_fx, 7) >= image_x2)
-                            break;
-                        if (fdx < 0 && (short)_mm_extract_epi16(v_fx, 7) < image_x1)
-                            break;
-                        if (fdy > 0 && (short)_mm_extract_epi16(v_fy, 7) >= image_y2)
-                            break;
-                        if (fdy < 0 && (short)_mm_extract_epi16(v_fy, 7) < image_y1)
-                            break;
-
                         const __m128i vy = _mm_packs_epi32(_mm_srli_epi32(v_fy, 16), _mm_setzero_si128());
                         // 4x16bit * 4x16bit -> 4x32bit
                         __m128i offset = _mm_unpacklo_epi16(_mm_mullo_epi16(vy, vbpl), _mm_mulhi_epi16(vy, vbpl));
