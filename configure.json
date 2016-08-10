@@ -2514,6 +2514,10 @@
                   "condition": "!features.shared" }
             ]
         },
+        "mimetype": {
+            "description": "Mimetype handling",
+            "output": [ "publicFeature", "feature" ]
+        },
         "extra_features": {
             "comment": "### remove, once qfeatures.txt is ported to the new system",
             "output": [ "extraFeatures" ]
