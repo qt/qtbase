@@ -147,7 +147,8 @@ void tst_NetworkRemoteStressTest::init()
 void tst_NetworkRemoteStressTest::clearManager()
 {
 #ifdef QT_BUILD_INTERNAL
-    QNetworkAccessManagerPrivate::clearCache(&manager);
+    QNetworkAccessManagerPrivate::clearAuthenticationCache(&manager);
+    QNetworkAccessManagerPrivate::clearConnectionCache(&manager);
     manager.setProxy(QNetworkProxy());
     manager.setCache(0);
 #endif

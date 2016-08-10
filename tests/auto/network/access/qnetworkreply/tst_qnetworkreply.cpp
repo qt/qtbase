@@ -6812,7 +6812,8 @@ void tst_QNetworkReply::authenticationCacheAfterCancel()
         // QTBUG-23136 workaround (needed even with danted v1.1.19):
         if (proxy.port() == 1081) {
 #ifdef QT_BUILD_INTERNAL
-            QNetworkAccessManagerPrivate::clearCache(&manager);
+            QNetworkAccessManagerPrivate::clearAuthenticationCache(&manager);
+            QNetworkAccessManagerPrivate::clearConnectionCache(&manager);
 #else
             return;
 #endif

@@ -1352,10 +1352,26 @@ QStringList QNetworkAccessManager::supportedSchemesImplementation() const
 
     This function is useful for doing auto tests.
 
+    \sa clearConnectionCache()
 */
 void QNetworkAccessManager::clearAccessCache()
 {
-    QNetworkAccessManagerPrivate::clearCache(this);
+    QNetworkAccessManagerPrivate::clearAuthenticationCache(this);
+    QNetworkAccessManagerPrivate::clearConnectionCache(this);
+}
+
+/*!
+    \since 5.9
+
+    Flushes the internal cache of network connections.
+    In contrast to clearAccessCache() the authentication data
+    is preserved.
+
+    \sa clearAccessCache()
+*/
+void QNetworkAccessManager::clearConnectionCache()
+{
+    QNetworkAccessManagerPrivate::clearConnectionCache(this);
 }
 
 void QNetworkAccessManagerPrivate::_q_replyFinished()
@@ -1552,11 +1568,14 @@ QList<QNetworkProxy> QNetworkAccessManagerPrivate::queryProxy(const QNetworkProx
 }
 #endif
 
-void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
+void QNetworkAccessManagerPrivate::clearAuthenticationCache(QNetworkAccessManager *manager)
+{
+    manager->d_func()->authenticationManager->clearCache();
+}
+
+void QNetworkAccessManagerPrivate::clearConnectionCache(QNetworkAccessManager *manager)
 {
     manager->d_func()->objectCache.clear();
-    manager->d_func()->authenticationManager->clearCache();
-
     manager->d_func()->destroyThread();
 }
 

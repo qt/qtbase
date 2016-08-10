@@ -106,6 +106,8 @@ public:
 
     void clearAccessCache();
 
+    void clearConnectionCache();
+
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy proxy() const;
     void setProxy(const QNetworkProxy &proxy);

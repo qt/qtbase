@@ -202,7 +202,8 @@ public:
     QNetworkAccessCache objectCache;
     static inline QNetworkAccessCache *getObjectCache(QNetworkAccessBackend *backend)
     { return &backend->manager->objectCache; }
-    Q_AUTOTEST_EXPORT static void clearCache(QNetworkAccessManager *manager);
+    Q_AUTOTEST_EXPORT static void clearAuthenticationCache(QNetworkAccessManager *manager);
+    Q_AUTOTEST_EXPORT static void clearConnectionCache(QNetworkAccessManager *manager);
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_AUTOTEST_EXPORT static const QWeakPointer<const QNetworkSession> getNetworkSession(const QNetworkAccessManager *manager);
 #endif
