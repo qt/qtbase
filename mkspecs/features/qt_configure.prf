@@ -123,6 +123,7 @@ defineTest(qtConfCommandline_string) {
     val = $${2}
     isEmpty(val): val = $$qtConfGetNextCommandlineArg()
 
+    # Note: Arguments which are variable assignments are legit here.
     contains(val, "^-.*")|isEmpty(val) {
         qtConfAddError("No value supplied to command line option '$$opt'.")
         return()
@@ -139,7 +140,7 @@ defineTest(qtConfCommandline_optionalString) {
     val = $${2}
     isEmpty(val) {
         v = $$qtConfPeekNextCommandlineArg()
-        contains(v, "^-.*")|isEmpty(v): \
+        contains(v, "^-.*|[A-Z_]+=.*")|isEmpty(v): \
             val = "yes"
         else: \
             val = $$qtConfGetNextCommandlineArg()
@@ -157,7 +158,7 @@ defineTest(qtConfCommandline_addString) {
     val = $${2}
     isEmpty(val): val = $$qtConfGetNextCommandlineArg()
 
-    contains(val, "^-.*")|isEmpty(val) {
+    contains(val, "^-.*|[A-Z_]+=.*")|isEmpty(val) {
         qtConfAddError("No value supplied to command line option '$$opt'.")
         return()
     }
@@ -186,6 +187,19 @@ defineTest(qtConfParseCommandLine) {
         contains(c, "^-no-v")|contains(c, "^--?no-verbose") {
             QMAKE_CONFIG_VERBOSE = false
             export(QMAKE_CONFIG_VERBOSE)
+            next()
+        }
+
+        contains(c, "([A-Z_]+)=(.*)") {
+            opt = $$replace(c, "^([A-Z_]+)=(.*)", "\\1")
+            val = $$replace(c, "^([A-Z_]+)=(.*)", "\\2")
+            var = $$eval(config.commandline.assignments.$${opt})
+            isEmpty(var) {
+                qtConfAddError("Assigning unknown variable '$$opt' on command line.")
+                return()
+            }
+            config.input.$$var = $$val
+            export(config.input.$$var)
             next()
         }
 
@@ -353,14 +367,60 @@ defineTest(qtConfSetupLibraries) {
             }
         }
     }
+
+    # reverse mapping for assignments on command line.
+    for (a, config.commandline.assignments._KEYS_) {
+        apfx = config.commandline.assignments.$${a}
+        ra = config.commandline.rev_assignments.$$eval($$apfx)
+        $$ra = $$a
+        export($$ra)
+    }
 }
 
 # the library is specified inline in a 'libs' field.
-# this source type cannot fail.
+# overrides from the command line are accepted.
 defineTest(qtConfLibrary_inline) {
     lib = $$eval($${1}.library)
     !defined($${1}.libs, var): \
         error("'inline' source in library '$$lib' does not specify 'libs'.")
+
+    # direct libs. overwrites inline libs.
+    defined(config.input.$${lib}.libs, var) {
+        $${1}.libs = $$eval(config.input.$${lib}.libs)
+        export($${1}.libs)
+    }
+
+    # build-specific direct libs. overwrites inline libs.
+    vars =
+    any = false
+    all = true
+    for (b, $${1}.builds._KEYS_) {
+        iv = $${lib}.libs.$${b}
+        vars += $$eval(config.commandline.rev_assignments.$${iv})
+        defined(config.input.$${iv}, var) {
+            $${1}.builds.$${b}.libs = $$eval(config.input.$${iv})
+            export($${1}.builds.$${b}.libs)
+            any = true
+        } else {
+            all = false
+        }
+    }
+    $$any:!$$all {
+        qtConfAddError("Either none or all of $$join(vars, ", ", [, ]) must be specified.")
+        return(false)
+    }
+
+    # prefix. prepends to (possibly overwritten) inline libs.
+    prefix = $$val_escape(config.input.$${lib}.prefix)
+    !isEmpty(prefix) {
+        $${1}.includedir = $$prefix/include
+        export($${1}.includedir)
+        $${1}.cflags = -I$$prefix/include
+        export($${1}.cflags)
+        $${1}.libs = "-L$$prefix/lib $$eval($${1}.libs)"
+        export($${1}.libs)
+    }
+
     return(true)
 }
 

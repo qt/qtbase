@@ -1,4 +1,8 @@
-Usage:  configure [options]
+Usage:  configure [options] [assignments]
+
+Configure understands variable assignments like VAR=value on the command line.
+These override any values possibly obtained from pkg-config. The variables
+are mentioned in the descriptions of the options they relate to.
 
 Top-level installation directories:
   -prefix <dir> ...... The deployment directory, as seen on the target device.
@@ -161,6 +165,7 @@ Component selection:
   -no-dbus ............. Do not build the Qt D-Bus module [default on Android]
   -dbus-linked ......... Build Qt D-Bus and link to libdbus-1 [auto]
   -dbus-runtime ........ Build Qt D-Bus and dynamically load libdbus-1 [no]
+                         DBUS_PATH= DBUS_HOST_PATH=
   -feature-<feature> ... Enable <feature>. The available features are described
                          in src/corelib/global/qfeatures.txt. [all enabled]
   -accessibility ....... Enable accessibility support [yes]
@@ -182,6 +187,7 @@ Core options:
   -pps ................. Enable PPS support [auto] (QNX only)
   -pcre ................ Select used libpcre3 [system/qt]
   -zlib ................ Select used zlib [system/qt]
+                         ZLIB_LIBS=
 
   Logging backends:
     -journald .......... Enable journald support [no]
@@ -194,6 +200,7 @@ Network options:
   -no-openssl .......... Do not use OpenSSL [default on Apple]
   -openssl-linked ...... Use OpenSSL and link to libssl [no]
   -openssl-runtime ..... Use OpenSSL and dynamically load libssl [auto]
+                         OPENSSL_PATH= OPENSSL_LIBS=
   -securetransport ..... Use SecureTransport [auto] (Apple only)
 
   -sctp ................ Enable SCTP support [no]
@@ -256,6 +263,7 @@ Database options:
   -sql-<driver> ........ Enable SQL <driver> plugin. Supported drivers:
                          db2 ibase mysql oci odbc psql sqlite2 sqlite tds
                          [all auto]
+                         MYSQL_PATH= PSQL_LIBS= SYBASE= SYBASE_LIBS=
   -sqlite .............. Select used sqlite3 [system/qt]
 
 Multimedia options:
