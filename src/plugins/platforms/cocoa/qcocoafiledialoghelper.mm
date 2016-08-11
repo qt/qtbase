@@ -582,6 +582,15 @@ void QCocoaFileDialogHelper::QNSOpenSavePanelDelegate_panelClosed(bool accepted)
     QCocoaMenuBar::resetKnownMenuItemsToQt();
     if (accepted) {
         emit accept();
+
+        QString filter = selectedNameFilter();
+        if (filter.isEmpty())
+            emit filterSelected(filter);
+
+        QList<QUrl> files = selectedFiles();
+        emit filesSelected(files);
+        if (files.count() == 1)
+            emit fileSelected(files.first());
     } else {
         emit reject();
     }
