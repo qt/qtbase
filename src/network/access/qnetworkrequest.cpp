@@ -260,6 +260,14 @@ QT_BEGIN_NAMESPACE
         Indicates whether SPDY was used for receiving
         this reply.
 
+    \value HTTP2AllowedAttribute
+        Requests only, type: QMetaType::Bool (default: false)
+        Indicates whether the QNetworkAccessManager code is
+        allowed to use HTTP/2 with this request. This applies
+        to SSL requests or 'cleartext' HTTP/2.
+
+    \omitvalue HTTP2WasUsedAttribute
+
     \value EmitAllUploadProgressSignalsAttribute
         Requests only, type: QMetaType::Bool (default: false)
         Indicates whether all upload signals should be emitted.
