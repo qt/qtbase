@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>566</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QCheckBox" name="checkBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>151</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Enable &quot;Stuff&quot; Menu</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>321</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>The &quot;Help&quot; menu should NOT be visible.</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>80</y>
+      <width>211</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Populate Dynamic Submenu</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>566</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuStuff">
+    <property name="title">
+     <string>Stuff</string>
+    </property>
+    <widget class="QMenu" name="menuSubmenu">
+     <property name="title">
+      <string>Submenu</string>
+     </property>
+     <widget class="QMenu" name="menuMore_Submenu_2">
+      <property name="title">
+       <string>More Submenu</string>
+      </property>
+      <addaction name="actionMOARH"/>
+     </widget>
+     <addaction name="actionWith_More_Stuff"/>
+     <addaction name="menuMore_Submenu_2"/>
+    </widget>
+    <widget class="QMenu" name="menuDisabled_Submenu">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Disabled Submenu</string>
+     </property>
+     <widget class="QMenu" name="menuMore_Submenu">
+      <property name="title">
+       <string>More Submenu</string>
+      </property>
+      <addaction name="actionShould_be_Disabled_Too"/>
+     </widget>
+     <addaction name="actionShould_be_Disabled"/>
+     <addaction name="menuMore_Submenu"/>
+    </widget>
+    <addaction name="actionItem"/>
+    <addaction name="menuSubmenu"/>
+    <addaction name="actionDisabled_Item"/>
+    <addaction name="menuDisabled_Submenu"/>
+   </widget>
+   <widget class="QMenu" name="menuDisabled_Stuff">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="title">
+     <string>Disabled Stuff</string>
+    </property>
+    <widget class="QMenu" name="menuSubmenu_2">
+     <property name="title">
+      <string>Disabled Submenu</string>
+     </property>
+     <widget class="QMenu" name="menuSubsubmenu">
+      <property name="title">
+       <string>Disabled Subsubmenu</string>
+      </property>
+      <addaction name="actionWith_its_own_Stuff"/>
+     </widget>
+     <addaction name="actionMore_Disabled_Stuff"/>
+     <addaction name="menuSubsubmenu"/>
+    </widget>
+    <addaction name="actionItem_2"/>
+    <addaction name="menuSubmenu_2"/>
+   </widget>
+   <widget class="QMenu" name="menuShould_NOT_Be_Visible">
+    <property name="title">
+     <string>Should NOT Be Visible</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout_Qt"/>
+   </widget>
+   <widget class="QMenu" name="menuDynamic_Stuff">
+    <property name="title">
+     <string>Dynamic Stuff</string>
+    </property>
+    <widget class="QMenu" name="menuAfter_aboutToShow">
+     <property name="title">
+      <string>Populated After aboutToShow()</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuOn_Click">
+     <property name="title">
+      <string>Click Button to Populate</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuPopulated_by_Timer">
+     <property name="title">
+      <string>Populated by Timer</string>
+     </property>
+    </widget>
+    <addaction name="menuOn_Click"/>
+    <addaction name="menuAfter_aboutToShow"/>
+    <addaction name="menuPopulated_by_Timer"/>
+   </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionNew"/>
+    <addaction name="actionNo_Empty_Spaces_Below"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuStuff"/>
+   <addaction name="menuDisabled_Stuff"/>
+   <addaction name="menuShould_NOT_Be_Visible"/>
+   <addaction name="menuDynamic_Stuff"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionWith_More_Stuff">
+   <property name="text">
+    <string>With More Stuff</string>
+   </property>
+  </action>
+  <action name="actionDisabled_Item">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Disabled Item</string>
+   </property>
+  </action>
+  <action name="actionItem">
+   <property name="text">
+    <string>Item</string>
+   </property>
+  </action>
+  <action name="actionShould_be_Disabled">
+   <property name="text">
+    <string>Should be Disabled</string>
+   </property>
+  </action>
+  <action name="actionShould_be_Disabled_Too">
+   <property name="text">
+    <string>Should be Disabled Too</string>
+   </property>
+  </action>
+  <action name="actionMOARH">
+   <property name="text">
+    <string>MOAR!!</string>
+   </property>
+  </action>
+  <action name="actionItem_2">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Disabled Item</string>
+   </property>
+  </action>
+  <action name="actionMore_Disabled_Stuff">
+   <property name="text">
+    <string>More Disabled Stuff</string>
+   </property>
+  </action>
+  <action name="actionWith_its_own_Stuff">
+   <property name="text">
+    <string>With its own Disabled Stuff</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="text">
+    <string>New...</string>
+   </property>
+  </action>
+  <action name="actionNo_Empty_Spaces_Below">
+   <property name="text">
+    <string>No Empty Spaces Below</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>checkBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>enableStuffMenu(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>62</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>72</x>
+     <y>73</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>enableStuffMenu(bool)</slot>
+ </slots>
+</ui>
