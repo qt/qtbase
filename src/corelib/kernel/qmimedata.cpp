@@ -122,7 +122,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
             const QList<QVariant> list = data.toList();
             for (int i = 0; i < list.size(); ++i) {
                 if (list.at(i).type() == QVariant::Url) {
-                    text.append(list.at(i).toUrl().toDisplayString() + QLatin1Char('\n'));
+                    text += list.at(i).toUrl().toDisplayString() + QLatin1Char('\n');
                     ++numUrls;
                 }
             }
