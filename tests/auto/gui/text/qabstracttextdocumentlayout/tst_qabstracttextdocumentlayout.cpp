@@ -194,7 +194,7 @@ void tst_QAbstractTextDocumentLayout::imageAt()
     QCOMPARE(documentLayout->anchorAt(imagePoint), QString("link"));
 
     // imageAt on start returns nothing (there's the "foo" text)
-    QPointF fooPoint(fooBr.width() + blockStart.x(), (fooBr.height() / 2) + blockStart.y());
+    QPointF fooPoint(blockStart.x() + (fooBr.width() / 2), (fooBr.height() / 2) + blockStart.y());
     QCOMPARE(documentLayout->imageAt(fooPoint), QString());
 }
 
@@ -221,7 +221,7 @@ void tst_QAbstractTextDocumentLayout::formatAt()
     QVERIFY(format.isImageFormat());
 
     // move over the unformatted "foo" text)
-    QPointF fooPoint(fooBr.width() + blockStart.x(), (fooBr.height() / 2) + blockStart.y());
+    QPointF fooPoint(blockStart.x() + (fooBr.width() / 2), (fooBr.height() / 2) + blockStart.y());
     format = documentLayout->formatAt(fooPoint);
     QVERIFY(format.isCharFormat());
     QVERIFY(!format.toCharFormat().isAnchor());
