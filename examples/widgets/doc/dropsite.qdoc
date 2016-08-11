@@ -222,7 +222,7 @@
     and Qt::AlignLeft.
 
     A QString object, \c text, is customized to display data according to the
-    contents of \c format. We invoke {QString}'s \l{QString::simplified()}
+    contents of \c format. We invoke \l{QString}'s \l{QString::simplified()}
     {simplified()} function on \c text, to obtain a string that has no
     additional space before, after or in between words.
 
