@@ -40,20 +40,17 @@ qtConfig(icu) {
         codecs/qeuckrcodec.cpp \
         codecs/qbig5codec.cpp
 
-    unix:!qnx:!darwin:!linux-android-* {
-        qtConfig(iconv) {
-            HEADERS += codecs/qiconvcodec_p.h
-            SOURCES += codecs/qiconvcodec.cpp
-            qtConfig(gnu-libiconv) {
-                DEFINES += GNU_LIBICONV
-                QMAKE_USE_PRIVATE += iconv
-            } else: qtConfig(sun-libiconv) {
-                DEFINES += GNU_LIBICONV
-            }
+    qtConfig(iconv) {
+        HEADERS += codecs/qiconvcodec_p.h
+        SOURCES += codecs/qiconvcodec.cpp
+        qtConfig(gnu-libiconv) {
+            DEFINES += GNU_LIBICONV
+            QMAKE_USE_PRIVATE += iconv
+        } else: qtConfig(sun-libiconv) {
+            DEFINES += GNU_LIBICONV
         }
-    } else:!win32-msvc* {
-        DEFINES += QT_NO_ICONV
     }
+
     win32 {
         SOURCES += codecs/qwindowscodec.cpp
         HEADERS += codecs/qwindowscodec_p.h
