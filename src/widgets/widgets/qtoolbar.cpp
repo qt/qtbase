@@ -399,7 +399,7 @@ void QToolBarPrivate::plug(const QRect &r)
     When a toolbar is resized in such a way that it is too small to
     show all the items it contains, an extension button will appear as
     the last item in the toolbar. Pressing the extension button will
-    pop up a menu containing the items that does not currently fit in
+    pop up a menu containing the items that do not currently fit in
     the toolbar.
 
     When a QToolBar is not a child of a QMainWindow, it loses the ability
