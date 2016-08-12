@@ -42,6 +42,7 @@ HEADERS += \
         painting/qpolygonclipper_p.h \
         painting/qrasterdefs_p.h \
         painting/qrasterizer_p.h \
+        painting/qrbtree_p.h \
         painting/qregion.h \
         painting/qrgb.h \
         painting/qrgba64.h \
@@ -49,6 +50,8 @@ HEADERS += \
         painting/qstroker_p.h \
         painting/qtextureglyphcache_p.h \
         painting/qtransform.h \
+        painting/qtriangulatingstroker_p.h \
+        painting/qtriangulator_p.h \
         painting/qplatformbackingstore.h \
         painting/qpathsimplifier_p.h
 
@@ -92,6 +95,8 @@ SOURCES += \
         painting/qstroker.cpp \
         painting/qtextureglyphcache.cpp \
         painting/qtransform.cpp \
+        painting/qtriangulatingstroker.cpp \
+        painting/qtriangulator.cpp \
         painting/qplatformbackingstore.cpp \
         painting/qpathsimplifier.cpp
 

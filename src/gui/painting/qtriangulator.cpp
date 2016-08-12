@@ -50,9 +50,10 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qalgorithms.h>
-
-#include <private/qopenglcontext_p.h>
-#include <private/qopenglextensions_p.h>
+#ifndef QT_NO_OPENGL
+# include <private/qopenglcontext_p.h>
+# include <private/qopenglextensions_p.h>
+#endif
 #include <private/qrbtree_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -2267,10 +2268,14 @@ void QTriangulator<T>::MonotoneToTriangles::decompose()
 
 static bool hasElementIndexUint()
 {
+#ifndef QT_NO_OPENGL
     QOpenGLContext *context = QOpenGLContext::currentContext();
     if (!context)
         return false;
     return static_cast<QOpenGLExtensions *>(context->functions())->hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
+#else
+    return false;
+#endif
 }
 
 Q_GUI_EXPORT QTriangleSet qTriangulate(const qreal *polygon,
