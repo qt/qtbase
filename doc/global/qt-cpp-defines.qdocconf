@@ -1,6 +1,7 @@
 versionsym              = QT_VERSION_STR
 
 defines                 += Q_QDOC \
+                          Q_CLANG_QDOC \
                           QT_.*_SUPPORT \
                           QT_.*_LIB \
                           QT_COMPAT \
@@ -17,6 +18,53 @@ defines                 += Q_QDOC \
                           Q_COMPILER_UNICODE_STRINGS \
                           Q_COMPILER_UNIFORM_INIT \
                           Q_COMPILER_RVALUE_REFS
+
+clangdefines            += __cplusplus \
+                           Q_QDOC \
+                           Q_CLANG_QDOC \
+                           QT_COMPAT \
+                           QT3_SUPPORT \
+                           QT_BUILD_CORE_LIB \
+                           QT_BUILD_EGL_DEVICE_LIB \
+                           QT_BUILD_LOCATION_LIB \
+                           QT_BUILD_SCRIPT_LIB \
+                           QT_BUILD_TESTLIB_LIB \
+                           QT_BUILD_WIDGETS_LIB \
+                           QT_CORE_LIB \
+                           QT_DEPRECATED \
+                           QT_GUI_LIB \
+                           QT_KEYPAD_NAVIGATION \
+                           QT_LARGEFILE_SUPPORT \
+                           QT_NETWORK_LIB \
+                           QT_NO_EGL \
+                           QT_OPENGL_SUPPORT \
+                           QT_SCRIPT_LIB \
+                           QT_SHARED_POINTER_BACKTRACE_SUPPORT \
+                           QT_WIDGETS_LIB \
+                           Q_BYTE_ORDER \
+                           Q_CC_CLANG \
+                           Q_COMPILER_CONSTEXPR \
+                           Q_COMPILER_DEFAULT_MEMBERS \
+                           Q_COMPILER_DELETE_MEMBERS \
+                           Q_COMPILER_EXPLICIT_OVERRIDES \
+                           Q_COMPILER_INITIALIZER_LISTS \
+                           Q_COMPILER_MANGLES_RETURN_TYPE \
+                           Q_COMPILER_NOEXCEPT \
+                           Q_COMPILER_NULLPTR \
+                           Q_COMPILER_RVALUE_REFS \
+                           Q_COMPILER_STATIC_ASSERT \
+                           Q_COMPILER_UNIFORM_INIT \
+                           Q_COMPILER_UNICODE_STRINGS \
+                           Q_COMPILER_VARIADIC_MACROS \
+                           Q_COMPILER_VARIADIC_TEMPLATES \
+                           Q_ATOMIC_INT16_IS_SUPPORTED \
+                           Q_ATOMIC_INT64_IS_SUPPORTED \
+                           Q_ATOMIC_INT8_IS_SUPPORTED \
+                           Q_DEAD_CODE_FROM_QT4_MAC \
+                           Q_DEAD_CODE_FROM_QT4_WIN \
+                           Q_DEAD_CODE_FROM_QT4_X11
+
+# Q_COMPILER_REF_QUALIFIERS is not yet supported by all compilers
 
 Cpp.ignoretokens        += \
                           ENGINIOCLIENT_EXPORT \
