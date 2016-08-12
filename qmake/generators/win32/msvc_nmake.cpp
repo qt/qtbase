@@ -423,6 +423,12 @@ void NmakeMakefileGenerator::init()
         if (!defines.contains("NDEBUG"))
             defines.append("NDEBUG");
     }
+
+    if (project->values("QMAKE_APP_FLAG").isEmpty() && project->isActiveConfig("dll")) {
+        ProStringList &defines = project->values("DEFINES");
+        if (!defines.contains("_WINDLL"))
+            defines.append("_WINDLL");
+    }
 }
 
 QStringList NmakeMakefileGenerator::sourceFilesForImplicitRulesFilter()

@@ -141,7 +141,7 @@ static QBasicMutex fcntlLock;
 /*!
   \internal
   Checks that the OS isn't using POSIX locks to emulate flock().
-  OS X is one of those.
+  \macos is one of those.
 */
 static bool fcntlWorksAfterFlock(const QString &fn)
 {

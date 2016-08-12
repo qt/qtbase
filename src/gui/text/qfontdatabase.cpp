@@ -2045,7 +2045,7 @@ bool QFontDatabase::hasFamily(const QString &family) const
 
     Returns \c true if and only if the \a family font family is private.
 
-    This happens, for instance, on OS X and iOS, where the system UI fonts are not
+    This happens, for instance, on \macos and iOS, where the system UI fonts are not
     accessible to the user. For completeness, QFontDatabase::families() returns all
     font families, including the private ones. You should use this function if you
     are developing a font selection control in order to keep private fonts hidden.

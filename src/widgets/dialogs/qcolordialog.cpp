@@ -541,8 +541,8 @@ QColor QColorDialog::customColor(int index)
 /*!
     Sets the custom color at \a index to the QColor \a color value.
 
-    \note This function does not apply to the Native Color Dialog on the Mac
-    OS X platform. If you still require this function, use the
+    \note This function does not apply to the Native Color Dialog on the
+    \macos platform. If you still require this function, use the
     QColorDialog::DontUseNativeDialog option.
 */
 void QColorDialog::setCustomColor(int index, QColor color)
@@ -563,8 +563,8 @@ QColor QColorDialog::standardColor(int index)
 /*!
     Sets the standard color at \a index to the QColor \a color value.
 
-    \note This function does not apply to the Native Color Dialog on the Mac
-    OS X platform. If you still require this function, use the
+    \note This function does not apply to the Native Color Dialog on the
+    \macos platform. If you still require this function, use the
     QColorDialog::DontUseNativeDialog option.
 */
 void QColorDialog::setStandardColor(int index, QColor color)

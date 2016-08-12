@@ -2722,7 +2722,7 @@ qlonglong QVariant::toLongLong(bool *ok) const
 }
 
 /*!
-    Returns the variant as as an unsigned long long int if the
+    Returns the variant as an unsigned long long int if the
     variant has type() \l QMetaType::ULongLong, \l QMetaType::Bool,
     \l QMetaType::QByteArray, \l QMetaType::QChar, \l QMetaType::Double,
     \l QMetaType::Int, \l QMetaType::LongLong, \l QMetaType::QString, or
