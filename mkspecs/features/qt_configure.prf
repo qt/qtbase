@@ -468,6 +468,8 @@ defineTest(qtConfHandleLibrary) {
     lpfx = config.libraries.$$1
     defined($${lpfx}.result, var): return()
 
+    qtConfEnsureTestTypeDeps("library")
+
     qtLogTestIntro($${lpfx})
     msg = "looking for library $${1}"
     write_file($$QMAKE_CONFIG_LOG, msg, append)
@@ -515,6 +517,11 @@ defineTest(qtConfHandleLibrary) {
 
     $${lpfx}.result = $$result
     export($${lpfx}.result)
+}
+
+# This is a fake test type for the test dependency system.
+defineTest(qtConfTest_library) {
+    error("The test type 'library' may not be instantiated.")
 }
 
 defineTest(qtConfTestPrepare_compile) {
@@ -639,6 +646,54 @@ defineTest(qtConfIsBoolean) {
     return(false)
 }
 
+defineTest(qtConfSetupTestTypeDeps) {
+    for (tt, config.testTypeDependencies._KEYS_) {
+        !defined(qtConfTest_$${tt}, test): \
+            error("Declaring dependency for undefined test type '$$tt'.")
+        for (f, config.testTypeDependencies.$${tt}._KEYS_) {
+            feature = $$eval(config.testTypeDependencies.$${tt}.$${f})
+            isEmpty(config.features.$${feature}._KEYS_): \
+                error("Test type '$$tt' depends on undefined feature '$$feature'.")
+        }
+    }
+    # Test type aliasing means that one test type's callback is called by
+    # another test type's callback. Put differently, one callback forwards
+    # the call to another one. The former representation is more natural
+    # (and concise) to write, while the latter is more efficient to process.
+    # Hence, this function inverts the mapping.
+    for (tt, config.testTypeAliases._KEYS_) {
+        !defined(qtConfTest_$${tt}, test): \
+            error("Aliasing undefined test type '$$tt'.")
+        for (tta, config.testTypeAliases.$${tt}._KEYS_) {
+            type = $$eval(config.testTypeAliases.$${tt}.$${tta})
+            !defined(qtConfTest_$${type}, test): \
+                error("Aliasing '$$tt' to undefined test type '$$type'.")
+            config.testTypeForwards.$${type} += $$tt
+            export(config.testTypeForwards.$${type})
+        }
+    }
+}
+
+defineTest(qtConfEnsureTestTypeDeps) {
+    depsn = config.testTypeDependencies.$${1}._KEYS_
+    !isEmpty($$depsn) {
+        for (dep, $$depsn) {
+            feature = $$eval(config.testTypeDependencies.$${1}.$${dep})
+            !qtConfCheckFeature($$feature): \
+                error("Test type '$$1' depends on non-emitted feature $${feature}.")
+        }
+        $$depsn =
+        export($$depsn)
+    }
+    fwdsn = config.testTypeForwards.$${1}
+    !isEmpty($$fwdsn) {
+        for (fwd, $$fwdsn): \
+           qtConfEnsureTestTypeDeps($$fwd)
+        $$fwdsn =
+        export($$fwdsn)
+    }
+}
+
 defineTest(qtRunSingleTest) {
     tpfx = config.tests.$${1}
     defined($${tpfx}.result, var): \
@@ -649,6 +704,8 @@ defineTest(qtRunSingleTest) {
     call = "qtConfTest_$$type"
     !defined($$call, test): \
         error("Configure test $${1} refers to nonexistent type $$type")
+
+    qtConfEnsureTestTypeDeps($$type)
 
     preCall = "qtConfTestPrepare_$$type"
     defined($$preCall, test): \
@@ -738,6 +795,8 @@ defineReplace(qtConfEvaluateSingleExpression) {
     } else: contains(e, "^arch\..*") {
         var = $$replace(e, "^arch\.", "")
         result = false
+        isEmpty(QT_ARCH): \
+            qtConfCheckFeature(architecture)
         contains(QT_ARCH, $$var): result = true
     } else: contains(e, "^input\..*") {
         result = $$eval(config.$$e)
@@ -903,27 +962,8 @@ defineTest(qtConfCheckFeature) {
 
 
 defineTest(qtConfProcessFeatures) {
-    priorities = 0
     for (feature, config.features._KEYS_): \
-        priorities += $$eval(config.features.$${feature}.priority)
-    priorities = $$unique(priorities)
-
-    for (p, priorities): \
-        opriorities += $$format_number($$num_add($$p, 10000), width=5 zeropad)
-    opriorities = $$sorted(opriorities)
-
-    priorities =
-    for (op, opriorities): \
-        priorities += $$num_add($$op, -10000)
-
-    for (priority, priorities) {
-        for (feature, config.features._KEYS_) {
-            p = $$eval(config.features.$${feature}.priority)
-            isEmpty(p): p = 0
-            equals(p, $$priority): \
-                qtConfCheckFeature($$feature)
-        }
-    }
+        qtConfCheckFeature($$feature)
 }
 
 #
@@ -1315,6 +1355,7 @@ defineTest(qtConfigure) {
         error("Invalid or non-existent file $${1}.")
 
     qtConfSetupLibraries()
+    qtConfSetupTestTypeDeps()
 
     qtConfParseCommandLine()
 

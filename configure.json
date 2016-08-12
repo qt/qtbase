@@ -742,6 +742,20 @@
         }
     },
 
+    "testTypeDependencies": {
+        "linkerSupportsFlag": [ "use_gold_linker" ],
+        "compile": [ "shared", "use_gold_linker", "compiler-flags", "gcc-sysroot" ],
+        "detectPkgConfig": [ "cross_compile" ],
+        "library": [ "pkg-config" ],
+        "getPkgConfigVariable": [ "pkg-config" ],
+        "neon": [ "architecture" ]
+    },
+
+    "testTypeAliases": {
+        "compile": [ "library", "architecture" ],
+        "getPkgConfigVariable": [ "xkbConfigRoot" ]
+    },
+
     "tests": {
         "architecture": {
             "description": "target architecture",
@@ -1173,8 +1187,7 @@
                 "publicConfig",
                 { "type": "publicQtConfig", "negative": true, "name": "static" },
                 { "type": "publicConfig", "negative": true, "name": "static" }
-            ],
-            "priority": -3
+            ]
         },
         "cross_compile": {
             "description": "Cross compiling",
@@ -1187,24 +1200,20 @@
             "output": [ { "type": "publicConfig", "name": "c++11" } ]
         },
         "compiler-flags": {
-            "output": [ "compilerFlags" ],
-            "priority": -3
+            "output": [ "compilerFlags" ]
         },
         "gcc-sysroot": {
             "output": [ "gccSysroot" ],
-            "condition": "input.sysroot != ''",
-            "priority": -3
+            "condition": "input.sysroot != ''"
         },
         "use_gold_linker": {
             "description": "Using gold linker",
             "condition": "tests.use_gold_linker",
-            "output": [ "privateConfig", "useGoldLinker" ],
-            "priority": -2
+            "output": [ "privateConfig", "useGoldLinker" ]
         },
         "architecture": {
             "description": "Architecture",
-            "output": [ "architecture" ],
-            "priority": -1
+            "output": [ "architecture" ]
         },
         "pkg-config": {
             "description": "Using pkg-config",
@@ -1213,8 +1222,7 @@
             "output": [
                 { "type": "publicQtConfig", "negative": true },
                 "pkgConfig"
-            ],
-            "priority": -1
+            ]
         },
 
         "developer-build": {
