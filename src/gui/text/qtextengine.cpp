@@ -922,7 +922,7 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     if (item == -1)
         return;
 
-    const int end = findItem(line.from + line.length - 1, item);
+    const int end = findItem(line.from + line.length + line.trailingSpaces - 1, item);
     for ( ; item <= end; ++item) {
         QScriptItem &si = layoutData->items[item];
         if (si.analysis.flags == QScriptAnalysis::Tab) {
