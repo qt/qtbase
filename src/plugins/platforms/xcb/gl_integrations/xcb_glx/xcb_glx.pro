@@ -5,12 +5,11 @@ include(../gl_integrations_plugin_base.pri)
 #should be removed from the sources
 DEFINES += XCB_USE_GLX XCB_USE_XLIB
 
-LIBS += -lxcb
-
 contains(QT_CONFIG, xcb-glx) {
     DEFINES += XCB_HAS_XCB_GLX
-    LIBS += -lxcb-glx
+    QMAKE_USE += xcb_glx
 }
+QMAKE_USE += xcb
 
 LIBS += $$QMAKE_LIBS_DYNLOAD
 

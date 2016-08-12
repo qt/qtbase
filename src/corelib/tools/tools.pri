@@ -193,7 +193,7 @@ INCLUDEPATH += ../3rdparty/md5 \
                ../3rdparty/sha3
 
 contains(QT_CONFIG, system-doubleconversion) {
-    LIBS_PRIVATE += -ldouble-conversion
+    QMAKE_USE_PRIVATE += doubleconversion
 } else: contains(QT_CONFIG, doubleconversion) {
     include($$PWD/../../3rdparty/double-conversion/double-conversion.pri)
 }

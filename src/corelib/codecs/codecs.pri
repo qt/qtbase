@@ -46,7 +46,7 @@ contains(QT_CONFIG,icu) {
             SOURCES += codecs/qiconvcodec.cpp
             contains(QT_CONFIG, gnu-libiconv) {
                 DEFINES += GNU_LIBICONV
-                LIBS_PRIVATE *= -liconv
+                QMAKE_USE_PRIVATE += iconv
             } else: contains(QT_CONFIG, sun-libiconv) {
                 DEFINES += GNU_LIBICONV
             }

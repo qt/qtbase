@@ -183,7 +183,7 @@ vxworks {
 }
 
 qqnx_pps {
-        LIBS_PRIVATE += -lpps
+        QMAKE_USE_PRIVATE += pps
         SOURCES += \
                 kernel/qppsattribute.cpp \
                 kernel/qppsobject.cpp

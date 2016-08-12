@@ -4,7 +4,7 @@ SOURCES = main.cpp
 
 QT += gui-private platformsupport-private
 
-LIBS += -lts
+QMAKE_USE += tslib
 
 OTHER_FILES += tslib.json
 

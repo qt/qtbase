@@ -3,7 +3,7 @@ TARGET = qsqlite2
 HEADERS += $$PWD/qsql_sqlite2_p.h
 SOURCES += $$PWD/qsql_sqlite2.cpp $$PWD/smain.cpp
 
-!contains(LIBS, .*sqlite.*):LIBS += -lsqlite
+QMAKE_USE += sqlite2
 
 OTHER_FILES += sqlite2.json
 

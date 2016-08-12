@@ -42,12 +42,12 @@ DEFINES += QT_BUILD_XCB_PLUGIN
 # needed by Xcursor ...
 contains(QT_CONFIG, xcb-xlib) {
     DEFINES += XCB_USE_XLIB
-    LIBS += -lX11 -lX11-xcb
+    QMAKE_USE += xcb_xlib
 
     contains(QT_CONFIG, xinput2) {
         DEFINES += XCB_USE_XINPUT2
         SOURCES += qxcbconnection_xi2.cpp
-        LIBS += -lXi
+        QMAKE_USE += xinput2
         !isEmpty(QMAKE_XINPUT2_VERSION_MAJOR) {
             DEFINES += LIBXI_MAJOR=$$QMAKE_XINPUT2_VERSION_MAJOR \
                        LIBXI_MINOR=$$QMAKE_XINPUT2_VERSION_MINOR \
@@ -59,13 +59,13 @@ contains(QT_CONFIG, xcb-xlib) {
 # to support custom cursors with depth > 1
 contains(QT_CONFIG, xcb-render) {
     DEFINES += XCB_USE_RENDER
-    LIBS += -lxcb-render -lxcb-render-util
+    QMAKE_USE += xcb_render
 }
 
 # build with session management support
 contains(QT_CONFIG, xcb-sm) {
     DEFINES += XCB_USE_SM
-    LIBS += -lSM -lICE
+    QMAKE_USE += x11sm
     SOURCES += qxcbsessionmanager.cpp
     HEADERS += qxcbsessionmanager.h
 }
@@ -86,7 +86,7 @@ contains(QT_CONFIG, xcb-qt) {
     QMAKE_USE += xcb
 } else {
     LIBS += -lxcb-xinerama  ### there is no configure test for this!
-    !contains(DEFINES, QT_NO_XKB):LIBS += -lxcb-xkb
+    !contains(DEFINES, QT_NO_XKB): QMAKE_USE += xcb_xkb
     QMAKE_USE += xcb_syslibs
 }
 

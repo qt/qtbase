@@ -64,6 +64,6 @@ osx:SOURCES += kernel/qnetworkproxy_mac.cpp
 else:win32:SOURCES += kernel/qnetworkproxy_win.cpp
 else:contains(QT_CONFIG, libproxy) {
     SOURCES += kernel/qnetworkproxy_libproxy.cpp
-    LIBS_PRIVATE += -lproxy
+    QMAKE_USE_PRIVATE += libproxy
 }
 else:SOURCES += kernel/qnetworkproxy_generic.cpp

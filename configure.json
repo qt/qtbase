@@ -236,7 +236,6 @@
     "libraries": {
         "libatomic": {
             "description": "64 bit atomics in libatomic",
-            "export": "",
             "test": "common/atomic64",
             "sources": [
                 "-latomic"
@@ -252,7 +251,6 @@
         },
         "doubleconversion": {
             "description": "DoubleConversion",
-            "export": "",
             "test": "unix/doubleconversion",
             "sources": [
                 "-ldouble-conversion"
@@ -260,7 +258,6 @@
         },
         "pcre": {
             "description": "PCRE",
-            "export": "",
             "test": "unix/pcre",
             "sources": [
                 "-lpcre16"
@@ -269,7 +266,6 @@
         "zlib": {
             "description": "zlib",
             "test": "unix/zlib",
-            "export": "",
             "sources": [
                 { "libs": "-lzdll", "condition": "config.msvc" },
                 { "libs": "-lz", "condition": "!config.msvc" }
@@ -277,7 +273,7 @@
         },
         "gnu_iconv": {
             "description": "GNU libiconv",
-            "export": "",
+            "export": "iconv",
             "test": "unix/gnu-libiconv",
             "sources": [
                 "-liconv"
@@ -333,7 +329,6 @@
         },
         "libproxy": {
             "description": "libproxy",
-            "export": "",
             "test": "common/libproxy",
             "sources": [
                 "-lproxy"
@@ -354,7 +349,6 @@
         },
         "cups": {
             "description": "CUPS",
-            "export": "",
             "test": "unix/cups",
             "sources": [
                 "-lcups"
@@ -362,7 +356,6 @@
         },
         "libjpeg": {
             "description": "libjpeg",
-            "export": "",
             "test": "unix/libjpeg",
             "sources": [
                 { "libs": "-llibjpeg", "condition": "config.msvc" },
@@ -371,7 +364,6 @@
         },
         "libpng": {
             "description": "libpng",
-            "export": "",
             "test": "unix/libpng",
             "sources": [
                 { "type": "pkgConfig", "args": "libpng" },
@@ -430,7 +422,6 @@
         },
         "harfbuzz": {
             "description": "HarfBuzz",
-            "export": "",
             "test": "unix/harfbuzz",
             "sources": [
                 "-lharfbuzz"
@@ -477,7 +468,6 @@
         },
         "tslib": {
             "description": "tslib",
-            "export": "",
             "test": "unix/tslib",
             "sources": [
                 "-lts"
@@ -516,7 +506,6 @@
         },
         "xrender": {
             "description": "XRender",
-            "export": "",
             "test": "x11/xrender",
             "sources": [
                 "-lXrender"
@@ -541,7 +530,6 @@
         },
         "xcb_xlib": {
             "description": "XCB Xlib",
-            "export": "",
             "test": "qpa/xcb-xlib",
             "sources": [
                 { "type": "pkgConfig", "args": "X11-xcb x11 xcb" },
@@ -550,7 +538,6 @@
         },
         "xcb_xkb": {
             "description": "XCB XKB >= 1.10",
-            "export": "",
             "test": "qpa/xcb-xkb",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-xkb >= 1.10 xcb" },
@@ -575,7 +562,6 @@
         },
         "x11sm": {
             "description": "X11 session management",
-            "export": "",
             "sources": [
                 { "type": "pkgConfig", "args": "sm ice" }
             ]
@@ -612,7 +598,6 @@
         },
         "gbm": {
             "description": "GBM",
-            "export": "",
             "test": "qpa/gbm",
             "sources": [
                 { "type": "pkgConfig", "args": "gbm" }
@@ -620,7 +605,6 @@
         },
         "drm": {
             "description": "KMS",
-            "export": "",
             "test": "qpa/kms",
             "sources": [
                 { "type": "pkgConfig", "args": "libdrm" },
@@ -685,7 +669,6 @@
         },
         "pps": {
             "description": "PPS",
-            "export": "",
             "test": "unix/pps",
             "sources": [
                 "-lpps"
@@ -694,7 +677,6 @@
         "lgmon": {
             "description": "lgmon",
             "test": "unix/lgmon",
-            "export": "",
             "sources": [
                 "-llgmon"
             ]
@@ -2024,7 +2006,7 @@
         },
         "system-zlib": {
             "description": "Using system zlib",
-            "condition": "config.darwin || libs.zlib",
+            "condition": "libs.zlib",
             "output": [ "publicQtConfig" ]
         },
         "iconv": {

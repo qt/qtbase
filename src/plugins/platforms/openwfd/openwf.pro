@@ -31,7 +31,8 @@ SOURCES += \
     qopenwfdportmode.cpp \
     qopenwfdwindow.cpp
 
-LIBS += -lWFD -lgbm -lGLESv2 -lEGL
+LIBS += -lWFD
+QMAKE_USE += gbm opengl_es2 egl
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QOpenWFDIntegrationPlugin
