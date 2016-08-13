@@ -171,7 +171,7 @@ QGtk3ColorDialogHelper::QGtk3ColorDialogHelper()
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
     connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
 
-    g_signal_connect_swapped(d->gtkDialog(), "color-activated", G_CALLBACK(onColorChanged), this);
+    g_signal_connect_swapped(d->gtkDialog(), "notify::rgba", G_CALLBACK(onColorChanged), this);
 }
 
 QGtk3ColorDialogHelper::~QGtk3ColorDialogHelper()
