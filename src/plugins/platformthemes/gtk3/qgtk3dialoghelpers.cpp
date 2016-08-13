@@ -218,7 +218,6 @@ QColor QGtk3ColorDialogHelper::currentColor() const
 void QGtk3ColorDialogHelper::onAccepted()
 {
     emit accept();
-    emit colorSelected(currentColor());
 }
 
 void QGtk3ColorDialogHelper::onColorChanged(QGtk3ColorDialogHelper *dialog)
@@ -357,11 +356,6 @@ QString QGtk3FileDialogHelper::selectedNameFilter() const
 void QGtk3FileDialogHelper::onAccepted()
 {
     emit accept();
-
-    QList<QUrl> files = selectedFiles();
-    emit filesSelected(files);
-    if (files.count() == 1)
-        emit fileSelected(files.first());
 }
 
 void QGtk3FileDialogHelper::onSelectionChanged(GtkDialog *gtkDialog, QGtk3FileDialogHelper *helper)
@@ -593,7 +587,6 @@ QFont QGtk3FontDialogHelper::currentFont() const
 void QGtk3FontDialogHelper::onAccepted()
 {
     emit accept();
-    emit fontSelected(currentFont());
 }
 
 void QGtk3FontDialogHelper::onFontChanged(QGtk3FontDialogHelper *dialog)
