@@ -136,6 +136,7 @@ private Q_SLOTS:
     void onAccepted();
 
 private:
+    static void onFontChanged(QGtk3FontDialogHelper *helper);
     void applyOptions();
 
     QScopedPointer<QGtk3Dialog> d;

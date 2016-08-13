@@ -483,6 +483,8 @@ QGtk3FontDialogHelper::QGtk3FontDialogHelper()
     d.reset(new QGtk3Dialog(gtk_font_chooser_dialog_new("", 0)));
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
     connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
+
+    g_signal_connect_swapped(d->gtkDialog(), "notify::font", G_CALLBACK(onFontChanged), this);
 }
 
 QGtk3FontDialogHelper::~QGtk3FontDialogHelper()
@@ -588,9 +590,13 @@ QFont QGtk3FontDialogHelper::currentFont() const
 
 void QGtk3FontDialogHelper::onAccepted()
 {
-    emit currentFontChanged(currentFont());
     emit accept();
     emit fontSelected(currentFont());
+}
+
+void QGtk3FontDialogHelper::onFontChanged(QGtk3FontDialogHelper *dialog)
+{
+    emit dialog->currentFontChanged(dialog->currentFont());
 }
 
 void QGtk3FontDialogHelper::applyOptions()
