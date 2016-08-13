@@ -177,8 +177,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 {
     Q_UNUSED(notification);
     [self updateQtColor];
-    if (mHelper)
-        emit mHelper->colorSelected(mQtColor);
 }
 
 - (void)windowWillClose:(NSNotification *)notification
