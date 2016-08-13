@@ -1863,7 +1863,7 @@
         },
         "eglfs_egldevice": {
             "description": "EGLFS EGLDevice",
-            "condition": "features.eglfs && tests.egl-egldevice",
+            "condition": "features.eglfs && tests.egl-egldevice && features.kms",
             "output": [ "publicQtConfig" ]
         },
         "eglfs_gbm": {

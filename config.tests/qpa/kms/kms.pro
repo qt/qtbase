@@ -1,4 +1,8 @@
 SOURCES = kms.cpp
-CONFIG += link_pkgconfig
-PKGCONFIG += libdrm
+!contains(QT_CONFIG, no-pkg-config) {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += libdrm
+} else {
+    LIBS += -ldrm
+}
 CONFIG -= qt
