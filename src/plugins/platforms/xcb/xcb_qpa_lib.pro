@@ -72,26 +72,22 @@ contains(QT_CONFIG, xcb-sm) {
 
 include(gl_integrations/gl_integrations.pri)
 
-DEFINES += $$QMAKE_DEFINES_XCB
-LIBS += $$QMAKE_LIBS_XCB
-QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
-QMAKE_CFLAGS += $$QMAKE_CFLAGS_XCB
-
 CONFIG += qpa/genericunixfontdatabase
 
 contains(QT_CONFIG, dbus-linked) {
     QT += dbus
-    LIBS += $$QMAKE_LIBS_DBUS
 }
 
 contains(QT_CONFIG, xcb-qt) {
     DEFINES += XCB_USE_RENDER
     XCB_DIR = ../../../3rdparty/xcb
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
-    LIBS += -lxcb -L$$MODULE_BASE_OUTDIR/lib -lxcb-static$$qtPlatformTargetSuffix()
+    LIBS += -L$$MODULE_BASE_OUTDIR/lib -lxcb-static$$qtPlatformTargetSuffix()
+    QMAKE_USE += xcb
 } else {
-    LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr -lxcb-shape -lxcb-keysyms -lxcb-xinerama
+    LIBS += -lxcb-xinerama  ### there is no configure test for this!
     !contains(DEFINES, QT_NO_XKB):LIBS += -lxcb-xkb
+    QMAKE_USE += xcb_syslibs
 }
 
 # libxkbcommon
@@ -99,8 +95,7 @@ contains(QT_CONFIG, xkbcommon-qt) {
     QT_CONFIG += use-xkbcommon-x11support
     include(../../../3rdparty/xkbcommon.pri)
 } else {
-    LIBS += $$QMAKE_LIBS_XKBCOMMON
-    QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
+    QMAKE_USE += xkbcommon
 }
 
 load(qt_module)

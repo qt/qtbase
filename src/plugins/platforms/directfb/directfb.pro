@@ -2,8 +2,7 @@ TARGET = qdirectfb
 
 QT += core-private gui-private platformsupport-private
 
-LIBS += $$QMAKE_LIBS_DIRECTFB
-QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_DIRECTFB
+QMAKE_USE += directfb
 
 SOURCES = main.cpp \
     qdirectfbintegration.cpp \

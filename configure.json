@@ -532,7 +532,6 @@
         },
         "xcb_syslibs": {
             "description": "XCB (secondary)",
-            "export": "",
             "test": "qpa/xcb-syslibs",
             "sources": [
                 { "type": "pkgConfig",
@@ -702,7 +701,6 @@
         },
         "db2": {
             "description": "DB2 (IBM)",
-            "export": "",
             "test": "unix/db2",
             "sources": [
                 { "libs": "-ldb2cli", "condition": "config.win32" },
@@ -711,7 +709,6 @@
         },
         "ibase": {
             "description": "InterBase",
-            "export": "",
             "test": "unix/ibase",
             "sources": [
                 { "libs": "-lgds32_ms", "condition": "config.win32" },
@@ -748,7 +745,6 @@
         },
         "oci": {
             "description": "OCI (Oracle)",
-            "export": "",
             "test": "unix/oci",
             "sources": [
                 { "libs": "-loci", "condition": "config.win32" },
@@ -766,7 +762,6 @@
         },
         "sqlite2": {
             "description": "SQLite (version 2)",
-            "export": "",
             "test": "unix/sqlite2",
             "sources": [
                 "-lsqlite"

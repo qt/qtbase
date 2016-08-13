@@ -7,5 +7,5 @@ SOURCES += \
     $$PWD/qevdevtabletmanager.cpp
 
 contains(QT_CONFIG, libudev) {
-    LIBS_PRIVATE += $$QMAKE_LIBS_LIBUDEV
+    QMAKE_USE_PRIVATE += libudev
 }
