@@ -108,6 +108,8 @@ private:
     ~QStandardPaths();
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QStandardPaths::LocateOptions)
+
 #endif // QT_NO_STANDARDPATHS
 
 QT_END_NAMESPACE
