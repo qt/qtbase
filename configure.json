@@ -11,6 +11,8 @@
             "DBUS_PATH": "dbus.prefix",
             "MYSQL_PATH": "mysql.prefix",
             "OPENSSL_LIBS": "openssl.libs",
+            "OPENSSL_LIBS_DEBUG": "openssl.libs.debug",
+            "OPENSSL_LIBS_RELEASE": "openssl.libs.release",
             "OPENSSL_PATH": "openssl.prefix",
             "PSQL_LIBS": "psql.libs",
             "SYBASE": "tds.prefix",
@@ -53,6 +55,7 @@
 
             "accessibility": "boolean",
             "alsa": "boolean",
+            "angle": "boolean",
             "audio-backend": "boolean",
             "avx": "boolean",
             "avx2": "boolean",
@@ -99,6 +102,7 @@
             "iconv": { "type": "enum", "values": [ "no", "yes", "posix", "sun", "gnu" ] },
             "icu": "boolean",
             "imf": { "type": "boolean", "name": "qqnx_imf" },
+            "incredibuild-xge": { "type": "boolean", "name": "incredibuild_xge" },
             "inotify": "boolean",
             "journald": "boolean",
             "lgmon": "boolean",
@@ -111,13 +115,16 @@
             "ltcg": "boolean",
             "kms": "boolean",
             "make": { "type": "addString", "values": [ "examples", "libs", "tests", "tools" ] },
+            "make-tool": "string",
             "mips_dsp": "boolean",
             "mips_dspr2": "boolean",
             "mirclient": "boolean",
+            "mp": { "type": "boolean", "name": "msvc_mp" },
             "mtdev": "boolean",
             "mysql_config": "string",
             "nomake": { "type": "addString", "values": [ "examples", "tests", "tools" ] },
-            "opengl": { "type": "optionalString", "values": [ "no", "yes", "desktop", "es2" ] },
+            "opengl": { "type": "optionalString", "values": [ "no", "yes", "desktop", "es2", "dynamic" ] },
+            "opengl-es-2": { "type": "void", "name": "opengl", "value": "es2" },
             "opengles3": "boolean",
             "opensource": { "type": "void", "name": "commercial", "value": "no" },
             "openssl": { "type": "optionalString", "values": [ "no", "yes", "linked", "runtime" ] },
@@ -129,6 +136,7 @@
             "pcre": { "type": "enum", "values": [ "qt", "system" ] },
             "pkg-config": "boolean",
             "platform": "string",
+            "plugin-manifests": "boolean",
             "pps": { "type": "boolean", "name": "qqnx_pps" },
             "posix-ipc": { "type": "boolean", "name": "ipc_posix" },
             "profile": "boolean",
@@ -144,6 +152,7 @@
             "reduce-relocations": { "type": "boolean", "name": "reduce_relocations" },
             "release": { "type": "enum", "name": "debug", "values": { "yes": "no", "no": "yes" } },
             "rpath": "boolean",
+            "rtti": "boolean",
             "sanitize": "sanitize",
             "sctp": "boolean",
             "sdk": "string",
@@ -172,6 +181,7 @@
             "plugin-sql-sqlite": { "type": "void", "name": "sqlite" },
             "plugin-sql-sqlite2": { "type": "void", "name": "sqlite2" },
             "plugin-sql-tds": { "type": "void", "name": "tds" },
+            "qdbus": { "type": "boolean", "name": "dbus" },
             "sqlite": { "type": "enum", "name": "system-sqlite", "values": { "qt": "no", "system": "yes" } },
             "sse2": "boolean",
             "sse3": "boolean",
@@ -180,6 +190,7 @@
             "ssl": "boolean",
             "ssse3": "boolean",
             "static": { "type": "enum", "name": "shared", "values": { "yes": "no", "no": "yes" } },
+            "static-runtime": { "type": "boolean", "name": "static_runtime" },
             "strip": "boolean",
             "style-windows": "boolean",
             "style-windowsxp": "boolean",
@@ -187,6 +198,7 @@
             "style-fusion": "boolean",
             "style-mac": "boolean",
             "style-android": "boolean",
+            "syncqt": "boolean",
             "syslog": "boolean",
             "sysroot": "string",
             "system-proxies": "boolean",
@@ -196,6 +208,7 @@
             "warnings-are-errors": { "type": "boolean", "name": "warnings_are_errors" },
             "Werror": { "type": "boolean", "name": "warnings_are_errors" },
             "widgets": "boolean",
+            "wmf-backend": "boolean",
             "xcb": { "type": "enum", "values": [ "no", "yes", "qt", "system" ] },
             "xcb-xlib": "boolean",
             "xinput2": "boolean",
@@ -304,6 +317,15 @@
             "export": "",
             "sources": [
                 { "type": "openssl" },
+                {
+                    "comment": "placeholder for OPENSSL_LIBS{,_{DEBUG,RELEASE}}",
+                    "libs": "",
+                    "builds": {
+                        "debug": "",
+                        "release": ""
+                    },
+                    "condition": "config.win32 && !features.shared"
+                },
                 { "libs": "-lssleay32 -llibeay32", "condition": "config.win32 && features.shared" },
                 { "libs": "-lssl -lcrypto", "condition": "!config.win32" }
             ]
@@ -767,11 +789,13 @@
         "detectPkgConfig": [ "cross_compile" ],
         "library": [ "pkg-config" ],
         "getPkgConfigVariable": [ "pkg-config" ],
-        "neon": [ "architecture" ]
+        "neon": [ "architecture" ],
+        "directX": [ "architecture", "sse2" ]
     },
 
     "testTypeAliases": {
         "compile": [ "library", "architecture" ],
+        "files": [ "directX" ],
         "getPkgConfigVariable": [ "xkbConfigRoot" ]
     },
 
@@ -1171,6 +1195,15 @@
             "pkg-config-variable": "xkb_base",
             "log": "value"
         },
+        "directx": {
+            "description": "DirectX SDK",
+            "type": "directX",
+            "files": [
+                "d3dcompiler.h",
+                "d3d11.lib",
+                "fxc.exe"
+            ]
+        },
         "opengles3": {
             "description": "OpenGL ES 3.0",
             "type": "compile",
@@ -1193,6 +1226,22 @@
             "description": "uxtheme.h",
             "type": "files",
             "files": [ "uxtheme.h" ]
+        },
+        "direct2d": {
+            "description": "Direct 2D",
+            "type": "compile",
+            "test": "qpa/direct2d",
+            "use": "direct2d"
+        },
+        "incredibuild_xge": {
+            "description": "IncrediBuild",
+            "type": "files",
+            "files": [ "BuildConsole.exe", "xgConsole.exe" ]
+        },
+        "wmf": {
+            "description": "WMF",
+            "type": "files",
+            "files": [ "mfapi.h", "mf.lib" ]
         },
         "qpa_default_platform": {
             "description": "default QPA platform",
@@ -1236,7 +1285,7 @@
         },
         "use_gold_linker": {
             "description": "Using gold linker",
-            "condition": "tests.use_gold_linker",
+            "condition": "!config.msvc && tests.use_gold_linker",
             "output": [ "privateConfig", "useGoldLinker" ]
         },
         "architecture": {
@@ -1245,7 +1294,7 @@
         },
         "pkg-config": {
             "description": "Using pkg-config",
-            "autoDetect": "!config.darwin",
+            "autoDetect": "!config.darwin && !config.win32",
             "condition": "tests.pkg-config",
             "output": [
                 { "type": "publicQtConfig", "negative": true },
@@ -1342,8 +1391,7 @@
         },
         "largefile": {
             "description": "Large file support",
-            "emitIf": "!config.win32",
-            "condition": "!config.android && !config.integrity",
+            "condition": "!config.android && !config.integrity && !config.winrt",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_LARGEFILE_SUPPORT", "value": 64 }
@@ -1395,6 +1443,12 @@
             "condition": "tests.GNUmake",
             "output": [ "privateConfig" ]
         },
+        "plugin-manifests": {
+            "description": "Embed manifests in plugins",
+            "emitIf": "config.win32",
+            "autoDetect": false,
+            "output": [ { "type": "publicConfig", "negative": true, "name": "no_plugin_manifest" } ]
+        },
         "profile": {
             "description": "GNU profiling support",
             "autoDetect": false,
@@ -1435,7 +1489,7 @@
         },
         "precompile_header": {
             "description": "Using precompiled headers",
-            "condition": "!config.uikit && tests.precompile_header",
+            "condition": "config.msvc || (!config.uikit && tests.precompile_header)",
             "output": [
                 "privateConfig",
                 { "type": "varRemove", "negative": true, "name": "CONFIG", "value": "'precompile_header'" }
@@ -1461,7 +1515,7 @@
         },
         "reduce_relocations": {
             "description": "Reduce amount of relocations",
-            "condition": "tests.reduce_relocations",
+            "condition": "!config.win32 && tests.reduce_relocations",
             "output": [
                 "publicQtConfig",
                 { "type": "define", "name": "QT_REDUCE_RELOCATIONS" }
@@ -1777,21 +1831,25 @@
         },
         "poll_ppoll": {
             "description": "Native ppoll()",
+            "emitIf": "!config.win32",
             "condition": "tests.ppoll",
             "output": [ "publicQtConfig" ]
         },
         "poll_pollts": {
             "description": "Native pollts()",
+            "emitIf": "!config.win32",
             "condition": "!features.poll_ppoll && tests.pollts",
             "output": [ "publicQtConfig" ]
         },
         "poll_poll": {
             "description": "Native poll()",
+            "emitIf": "!config.win32",
             "condition": "!features.poll_ppoll && !features.poll_pollts && tests.poll",
             "output": [ "publicQtConfig" ]
         },
         "poll_select": {
             "description": "Emulated poll()",
+            "emitIf": "!config.win32",
             "condition": "!features.poll_ppoll && !features.poll_pollts && !features.poll_poll",
             "output": [
                 "publicQtConfig",
@@ -1800,6 +1858,7 @@
         },
         "ipc_posix": {
             "description": "Using POSIX IPC",
+            "autoDetect": "!config.win32",
             "condition": "!tests.ipc_sysv && tests.ipc_posix",
             "output": [ { "type": "define", "name": "QT_POSIX_IPC" } ]
         },
@@ -1845,6 +1904,7 @@
             "description": "OpenSSL",
             "enable": "input.openssl == 'yes' || input.openssl == 'linked' || input.openssl == 'runtime'",
             "disable": "input.openssl == 'no' || input.ssl == 'no'",
+            "autoDetect": "!config.winrt",
             "condition": "!features.securetransport && tests.openssl",
             "output": [
                 { "type": "publicQtConfig", "condition": "!features.openssl-linked" },
@@ -1859,12 +1919,16 @@
             "output": [
                 "publicQtConfig",
                 { "type": "varAssign", "name": "OPENSSL_LIBS", "value": "libs.openssl.libs", "eval": "true" },
+                { "type": "varAssign", "name": "OPENSSL_LIBS_DEBUG", "value": "libs.openssl.builds.debug.libs",
+                  "eval": "true", "condition": "config.win32" },
+                { "type": "varAssign", "name": "OPENSSL_LIBS_RELEASE", "value": "libs.openssl.builds.release.libs",
+                  "eval": "true", "condition": "config.win32" },
                 { "type": "define", "name": "QT_LINKED_OPENSSL" }
             ]
         },
         "ssl": {
             "description": "SSL",
-            "condition": "features.securetransport || features.openssl",
+            "condition": "config.winrt || features.securetransport || features.openssl",
             "output": [ "feature" ]
         },
         "sctp": {
@@ -1885,6 +1949,7 @@
         },
         "glib": {
             "description": "GLib",
+            "autoDetect": "!config.win32",
             "condition": "libs.glib",
             "output": [ "feature" ]
         },
@@ -1991,7 +2056,7 @@
         },
         "fontconfig": {
             "description": "Fontconfig",
-            "condition": "features.system-freetype && libs.fontconfig",
+            "condition": "!config.win32 && features.system-freetype && libs.fontconfig",
             "output": [ "feature" ]
         },
         "harfbuzz": {
@@ -2002,7 +2067,7 @@
             "description": "  Using system HarfBuzz",
             "enable": "input.harfbuzz == 'system'",
             "disable": "input.harfbuzz == 'qt'",
-            "autoDetect": "!config.darwin",
+            "autoDetect": "!config.darwin && !config.win32",
             "condition": "features.harfbuzz && libs.harfbuzz",
             "output": [ "publicQtConfig" ]
         },
@@ -2012,7 +2077,7 @@
         },
         "dbus": {
             "description": "Qt D-Bus",
-            "autoDetect": "!config.android",
+            "autoDetect": "!config.android && !config.winrt",
             "output": [ "feature" ]
         },
         "dbus-linked": {
@@ -2057,7 +2122,7 @@
         },
         "egl": {
             "description": "EGL",
-            "condition": "features.opengl && libs.egl",
+            "condition": "features.opengl && (features.angle || libs.egl)",
             "output": [ "feature" ]
         },
         "egl_x11": {
@@ -2067,7 +2132,7 @@
         },
         "eglfs": {
             "description": "EGLFS",
-            "autoDetect": "!config.android",
+            "autoDetect": "!config.android && !config.win32",
             "condition": "features.egl",
             "output": [ "feature" ]
         },
@@ -2228,11 +2293,17 @@
             "emitIf": "features.xcb",
             "output": [ { "type": "varAssign", "name": "QMAKE_X11_PREFIX", "value": "tests.x11prefix.value" } ]
         },
+        "angle": {
+            "description": "ANGLE",
+            "autoDetect": "features.opengles2 || features.opengl-dynamic",
+            "condition": "config.win32 && tests.directx",
+            "output": [ "publicQtConfig" ]
+        },
         "opengles2": {
             "description": "OpenGL ES 2.0",
             "enable": "input.opengl == 'es2'",
-            "disable": "input.opengl == 'desktop' || input.opengl == 'no'",
-            "condition": "!features.opengl-desktop && libs.opengl_es2",
+            "disable": "input.opengl == 'desktop' || input.opengl == 'dynamic' || input.opengl == 'no'",
+            "condition": "config.win32 || (!features.opengl-desktop && libs.opengl_es2)",
             "output": [
                 "publicQtConfig",
                 { "type": "define", "name": "QT_OPENGL_ES" },
@@ -2241,7 +2312,7 @@
         },
         "opengles3": {
             "description": "OpenGL ES 3.0",
-            "condition": "features.opengles2 && tests.opengles3",
+            "condition": "features.opengles2 && !features.angle && tests.opengles3",
             "output": [ { "type": "define", "name": "QT_OPENGL_ES_3" } ]
         },
         "opengles31": {
@@ -2252,12 +2323,23 @@
         "opengl-desktop": {
             "description": "Desktop OpenGL",
             "enable": "input.opengl == 'desktop'",
-            "disable": "input.opengl == 'es2' || input.opengl == 'no'",
-            "condition": "libs.opengl"
+            "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
+            "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl))
+                          || (!config.win32 && libs.opengl)"
+        },
+        "opengl-dynamic": {
+            "description": "Dynamic OpenGL",
+            "enable": "input.opengl == 'dynamic'",
+            "autoDetect": false,
+            "condition": "config.win32 && !config.winrt",
+            "output": [
+                { "type": "feature", "name": "dynamicgl" },
+                { "type": "define", "name": "QT_OPENGL_DYNAMIC" }
+            ]
         },
         "opengl": {
             "description": "OpenGL",
-            "condition": "features.opengl-desktop || features.opengles2",
+            "condition": "features.opengl-desktop || features.opengl-dynamic || features.opengles2",
             "output": [ "feature" ]
         },
         "db2": {
@@ -2364,6 +2446,12 @@
             "condition": "features.directwrite && tests.directwrite2",
             "output": [ "publicQtConfig" ]
         },
+        "direct2d": {
+            "description": "Direct 2D",
+            "autoDetect": false,
+            "condition": "tests.direct2d",
+            "output": [ "publicQtConfig" ]
+        },
         "sessionmanager": {
             "description": "Session Management",
             "output": [ "feature" ]
@@ -2375,6 +2463,32 @@
         "compile_examples": {
             "description": "Compile examples",
             "output": [ "privateConfig" ]
+        },
+        "incredibuild_xge": {
+            "description": "IncrediBuild",
+            "emitIf": "var.QMAKE_HOST.os == 'Windows'",
+            "condition": "tests.incredibuild_xge",
+            "output": [ "publicConfig" ]
+        },
+        "msvc_mp": {
+            "description": "Use multiple processors when compiling with MSVC",
+            "emitIf": "config.msvc",
+            "autoDetect": "false",
+            "output": [ "privateConfig" ]
+        },
+        "static_runtime": {
+            "description": "Statically link the C/C++ runtime library",
+            "emitIf": "config.win32",
+            "autoDetect": false,
+            "condition": "!features.shared",
+            "output": [ "publicConfig", "publicQtConfig" ]
+        },
+        "wmf-backend": {
+            "description": "Windows Media Foundation backend for Qt Multimedia",
+            "emitIf": "config.win32",
+            "autoDetect": false,
+            "condition": "tests.wmf",
+            "output": [ "publicQtConfig" ]
         },
         "qpa_default_platform": {
             "description": "QPA default platform",
@@ -2444,6 +2558,13 @@ or are able to read the logged output from journald, syslog or slog2."
         },
         {
             "type": "warning",
+            "condition": "config.win32 && !config.msvc && features.oci",
+            "message": "Qt does not support compiling the Oracle database driver with
+MinGW, due to lack of such support from Oracle. Consider disabling the
+Oracle driver, as the current build will most likely fail."
+        },
+        {
+            "type": "warning",
             "condition": "features.gui && config.linux && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb && !features.mirclient",
             "message": "No QPA platform plugin enabled! This will
 produce a Qt that cannot run GUI applications.
@@ -2465,7 +2586,7 @@ XKB configuration data. This is required for keyboard input support."
         {
             "type": "note",
             "condition": "features.openssl-linked && libs.openssl.source != 0
-                          && input.openssl.prefix == '' && input.openssl.libs == ''",
+                          && input.openssl.prefix == '' && input.openssl.libs == '' && input.openssl.libs.debug == ''",
             "message": "When linking against OpenSSL, you can override the default
 library names through OPENSSL_LIBS.
 For example:
@@ -2482,6 +2603,13 @@ For example:
             "message": "Accessibility disabled. This configuration of Qt is unsupported."
         },
         {
+            "type": "warning",
+            "condition": "config.win32 && (features.opengles2 || features.opengl-dynamic) && !features.angle",
+            "message": "Using OpenGL ES 2.0 on Windows without ANGLE.
+The build will most likely fail.
+Specify -opengl desktop to use regular OpenGL."
+        },
+        {
             "type": "note",
             "condition": "features.accessibility && features.xcb && !features.accessibility-atspi-bridge",
             "message": "Disabling Linux Accessibility Bridge: D-Bus is missing."
@@ -2493,7 +2621,7 @@ For example:
         },
         {
             "type": "error",
-            "condition": "features.gui && input.opengl != 'no' && !features.opengl-desktop && !features.opengles2",
+            "condition": "features.gui && input.opengl != 'no' && !features.opengl-desktop && !features.opengles2 && !features.opengl-dynamic",
             "message": "The OpenGL functionality tests failed!
 You might need to modify the include and library search paths by editing QMAKE_INCDIR_OPENGL[_ES2],
 QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your platform."
@@ -2662,8 +2790,18 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                 {
                     "section": "OpenGL",
                     "entries": [
+                        {
+                            "type": "feature",
+                            "args": "angle",
+                            "condition": "config.win32"
+                        },
                         "egl",
                         "opengl-desktop",
+                        {
+                            "type": "feature",
+                            "args": "opengl-dynamic",
+                            "condition": "config.win32"
+                        },
                         "opengles2",
                         "opengles3",
                         "opengles31"

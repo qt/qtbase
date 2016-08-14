@@ -6,7 +6,6 @@ are mentioned in the descriptions of the options they relate to.
 
 It is also possible to manipulate any QMAKE_* variable, to amend the values
 from the mkspec for the build of Qt itself, e.g., QMAKE_CXXFLAGS+=-g3.
-(Unix/MSys configure only)
 
 Top-level installation directories:
   -prefix <dir> ...... The deployment directory, as seen on the target device.

@@ -75,29 +75,12 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
-    // Auto-detect modules and settings.
-    app.autoDetection();
-
-    // After reading all command-line arguments, and doing all the
-    // auto-detection, it's time to do some last minute validation.
-    // If the validation fails, we cannot continue.
-    if (!app.verifyConfiguration())
+    // run qmake based configure
+    app.configure();
+    if (!app.isOk())
         return 3;
 
-    app.generateOutputVars();
-
-    if( !app.isDone() )
-        app.generateCachefile();
-    if( !app.isDone() )
-        app.generateConfigfiles();
-    if (!app.isDone())
-        app.generateQConfigPri();
-    if (!app.isDone())
-        app.displayConfig();
-    if( !app.isDone() )
-        app.generateMakefiles();
-    if( !app.isDone() )
-        app.showSummary();
+    app.generateMakefiles();
     if( !app.isOk() )
         return 2;
 

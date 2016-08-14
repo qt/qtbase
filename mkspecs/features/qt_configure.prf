@@ -312,7 +312,7 @@ defineReplace(qtConfFindInPathList) {
 
 defineReplace(qtConfFindInPath) {
     ensurePathEnv()
-    return($$qtConfFindInPathList($$1, $$QMAKE_PATH_ENV))
+    return($$qtConfFindInPathList($$1, $$2 $$QMAKE_PATH_ENV))
 }
 
 defineReplace(qtConfPkgConfigEnv) {
@@ -694,7 +694,7 @@ defineTest(qtConfTest_files) {
             file = $$qtConfFindInPathList($$f, $$EXTRA_LIBDIR $$QMAKE_DEFAULT_LIBDIRS)
         } else {
             # assume we're looking for an executable
-            file = $$qtConfFindInPath($$f)
+            file = $$qtConfFindInPath($$f, $$EXTRA_PATH)
         }
         isEmpty(file) {
             qtLog("    Not found.");
