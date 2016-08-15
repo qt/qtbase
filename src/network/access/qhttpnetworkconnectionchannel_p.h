@@ -133,9 +133,9 @@ public:
     void ignoreSslErrors(const QList<QSslError> &errors);
     void setSslConfiguration(const QSslConfiguration &config);
     void requeueSpdyRequests(); // when we wanted SPDY but got HTTP
+#endif
     // to emit the signal for all in-flight replies:
     void emitFinishedWithError(QNetworkReply::NetworkError error, const char *message);
-#endif
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;
 #endif

@@ -1039,6 +1039,19 @@ void QHttpNetworkConnectionChannel::_q_uploadDataReadyRead()
         sendRequest();
 }
 
+void QHttpNetworkConnectionChannel::emitFinishedWithError(QNetworkReply::NetworkError error,
+                                                          const char *message)
+{
+    if (reply)
+        emit reply->finishedWithError(error, QHttpNetworkConnectionChannel::tr(message));
+    QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
+    for (int a = 0; a < spdyPairs.count(); ++a) {
+        QHttpNetworkReply *currentReply = spdyPairs.at(a).second;
+        Q_ASSERT(currentReply);
+        emit currentReply->finishedWithError(error, QHttpNetworkConnectionChannel::tr(message));
+    }
+}
+
 #ifndef QT_NO_SSL
 void QHttpNetworkConnectionChannel::_q_encrypted()
 {
@@ -1111,19 +1124,6 @@ void QHttpNetworkConnectionChannel::requeueSpdyRequests()
         connection->d_func()->requeueRequest(spdyPairs.at(a));
     }
     spdyRequestsToSend.clear();
-}
-
-void QHttpNetworkConnectionChannel::emitFinishedWithError(QNetworkReply::NetworkError error,
-                                                          const char *message)
-{
-    if (reply)
-        emit reply->finishedWithError(error, QHttpNetworkConnectionChannel::tr(message));
-    QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
-    for (int a = 0; a < spdyPairs.count(); ++a) {
-        QHttpNetworkReply *currentReply = spdyPairs.at(a).second;
-        Q_ASSERT(currentReply);
-        emit currentReply->finishedWithError(error, QHttpNetworkConnectionChannel::tr(message));
-    }
 }
 
 void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)

@@ -35,10 +35,11 @@
 
 #ifndef QT_NO_SSL
 #include <QtNetwork/qsslconfiguration.h>
+#include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qsslkey.h>
 #endif
 
-#include <QtNetwork/qabstractsocket.h>
+#include <QtNetwork/qtcpsocket.h>
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
