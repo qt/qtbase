@@ -91,8 +91,6 @@ public:
     QObject *instance(int index) const;
 };
 
-#ifdef Q_COMPILER_VARIADIC_TEMPLATES
-
 template <class PluginInterface, class FactoryInterface, typename ...Args>
 PluginInterface *qLoadPlugin(const QFactoryLoader *loader, const QString &key, Args &&...args)
 {
@@ -105,68 +103,6 @@ PluginInterface *qLoadPlugin(const QFactoryLoader *loader, const QString &key, A
     }
     return nullptr;
 }
-
-#else
-
-template <class PluginInterface, class FactoryInterface>
-    PluginInterface *qLoadPlugin(const QFactoryLoader *loader, const QString &key)
-{
-    const int index = loader->indexOf(key);
-    if (index != -1) {
-        QObject *factoryObject = loader->instance(index);
-        if (FactoryInterface *factory = qobject_cast<FactoryInterface *>(factoryObject))
-            if (PluginInterface *result = factory->create(key))
-                return result;
-    }
-    return 0;
-}
-
-template <class PluginInterface, class FactoryInterface, class P1>
-PluginInterface *qLoadPlugin(const QFactoryLoader *loader,
-                              const QString &key,
-                              P1 &&p1)
-{
-    const int index = loader->indexOf(key);
-    if (index != -1) {
-        QObject *factoryObject = loader->instance(index);
-        if (FactoryInterface *factory = qobject_cast<FactoryInterface *>(factoryObject))
-            if (PluginInterface *result = factory->create(key, std::forward<P1>(p1)))
-                return result;
-    }
-    return 0;
-}
-
-template <class PluginInterface, class FactoryInterface, class P1, class P2>
-PluginInterface *qLoadPlugin(const QFactoryLoader *loader,
-                              const QString &key,
-                              P1 &&p1, P2 &&p2)
-{
-    const int index = loader->indexOf(key);
-    if (index != -1) {
-        QObject *factoryObject = loader->instance(index);
-        if (FactoryInterface *factory = qobject_cast<FactoryInterface *>(factoryObject))
-            if (PluginInterface *result = factory->create(key, std::forward<P1>(p1), std::forward<P2>(p2)))
-                return result;
-    }
-    return 0;
-}
-
-template <class PluginInterface, class FactoryInterface, class P1, class P2, class P3>
-PluginInterface *qLoadPlugin(const QFactoryLoader *loader,
-                              const QString &key,
-                              P1 &&p1, P2 &&p2, P3 &&p3)
-{
-    const int index = loader->indexOf(key);
-    if (index != -1) {
-        QObject *factoryObject = loader->instance(index);
-        if (FactoryInterface *factory = qobject_cast<FactoryInterface *>(factoryObject))
-            if (PluginInterface *result = factory->create(key, std::forward<P1>(p1), std::forward<P2>(p2), std::forward<P3>(p3)))
-                return result;
-    }
-    return 0;
-}
-
-#endif
 
 template <class PluginInterface, class FactoryInterface, typename Arg>
 Q_DECL_DEPRECATED PluginInterface *qLoadPlugin1(const QFactoryLoader *loader, const QString &key, Arg &&arg)
