@@ -826,6 +826,8 @@ defineTest(qtRunSingleTest) {
 defineReplace(qtConfEvaluate) {
     isEmpty(1): return(true)
 
+    1 ~= s/$$escape_expand(\\t)/ /g
+    1 ~= s/$$escape_expand(\\r)//g
     1 ~= s/$$escape_expand(\\n) */ /g
     expr = $${1}
     expr ~= s/&&/ && /g
