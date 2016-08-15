@@ -2711,7 +2711,7 @@ static QString stringMidRetainingBidiCC(const QString &string,
             suffix += c;
     }
 
-    return prefix + ellidePrefix + string.mid(midStart, midLength) + ellideSuffix + suffix;
+    return prefix + ellidePrefix + string.midRef(midStart, midLength) + ellideSuffix + suffix;
 }
 
 QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int flags, int from, int count) const
@@ -2874,7 +2874,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         if (prevCharJoins(layoutData->string, rightPos))
             ellipsisText.append(QChar(0x200d) /* ZWJ */);
 
-        return layoutData->string.mid(from, leftPos - from) + ellipsisText + layoutData->string.mid(rightPos, to - rightPos);
+        return layoutData->string.midRef(from, leftPos - from) + ellipsisText + layoutData->string.midRef(rightPos, to - rightPos);
     }
 
     return layoutData->string.mid(from, to - from);
