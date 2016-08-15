@@ -40,4 +40,4 @@ SUBDIRS=\
 # This test is only applicable on Windows
 !win32*|winrt: SUBDIRS -= qwineventnotifier
 
-android|uikit: SUBDIRS -= qsharedmemory qsystemsemaphore
+android|uikit: SUBDIRS -= qclipboard qobject qsharedmemory qsystemsemaphore
