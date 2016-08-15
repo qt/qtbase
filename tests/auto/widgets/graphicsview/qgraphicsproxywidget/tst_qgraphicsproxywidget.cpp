@@ -280,6 +280,7 @@ void tst_QGraphicsProxyWidget::initTestCase()
     QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
     // Disable combo for QTBUG_43780_visibility()/Windows Vista.
     QApplication::setEffectEnabled(Qt::UI_AnimateCombo, false);
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 }
 
 // This will be called after every test function.
