@@ -12,8 +12,7 @@ qtConfig(opengles2) {
         LIBS += $$QMAKE_LIBS_OPENGL_ES2
         QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_RELEASE
     }
-    DEFINES += QT_OPENGL_ES_2 QT_OPENGL_ES_2_ANGLE
-    qtConfig(static): DEFINES += QT_OPENGL_ES_2_ANGLE_STATIC GL_APICALL= EGLAPI=
+    qtConfig(static): DEFINES += GL_APICALL= EGLAPI=
 } else {
     !qtConfig(dynamicgl) {
         QMAKE_LIBS += $$QMAKE_LIBS_OPENGL

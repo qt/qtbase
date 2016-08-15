@@ -2305,7 +2305,10 @@
             "description": "ANGLE",
             "autoDetect": "features.opengles2 || features.opengl-dynamic",
             "condition": "config.win32 && tests.directx",
-            "output": [ "privateFeature" ]
+            "output": [
+                "privateFeature",
+                { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" }
+            ]
         },
         "opengles2": {
             "description": "OpenGL ES 2.0",
