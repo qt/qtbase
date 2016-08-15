@@ -212,7 +212,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                 if (format == QLatin1String("text/uri-list")) {
                     const QStringList urls = str.split(QLatin1Char('\n'));
                     QList<QVariant> list;
-                    foreach (const QString &s, urls) {
+                    for (const QString &s : urls) {
                         const QUrl url(s.trimmed());
                         if (url.isValid())
                             list.append(url);
