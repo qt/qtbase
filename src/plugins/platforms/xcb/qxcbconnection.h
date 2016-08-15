@@ -580,6 +580,8 @@ private:
         };
         QHash<int, ValuatorClassInfo> valuatorInfo;
     };
+    friend class QTypeInfo<TabletData>;
+    friend class QTypeInfo<TabletData::ValuatorClassInfo>;
     bool xi2HandleTabletEvent(const void *event, TabletData *tabletData);
     void xi2ReportTabletEvent(const void *event, TabletData *tabletData);
     QVector<TabletData> m_tabletData;
@@ -682,6 +684,8 @@ private:
 
     friend class QXcbEventReader;
 };
+Q_DECLARE_TYPEINFO(QXcbConnection::TabletData::ValuatorClassInfo, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
 #define CREATE_VISUALINFO_FROM_DEFAULT_VISUALID(object) ((XVisualInfo *)(object->connection()->createVisualInfoForDefaultVisualId()))
