@@ -95,7 +95,7 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
 {
     // Delayed creation of the platform, ensuring that
     // that qobject_cast<> on the dialog works in the plugin.
-    if (!m_platformHelperCreated) {
+    if (!m_platformHelperCreated && canBeNativeDialog()) {
         m_platformHelperCreated = true;
         QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
         QDialog *dialog = ncThis->q_func();

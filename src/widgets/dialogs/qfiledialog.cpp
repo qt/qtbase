@@ -2800,7 +2800,7 @@ void QFileDialogPrivate::init(const QUrl &directory, const QString &nameFilter,
     }
 
     q->setAcceptMode(QFileDialog::AcceptOpen);
-    nativeDialogInUse = (canBeNativeDialog() && platformFileDialogHelper() != 0);
+    nativeDialogInUse = platformFileDialogHelper() != 0;
     if (!nativeDialogInUse)
         createWidgets();
     q->setFileMode(QFileDialog::AnyFile);

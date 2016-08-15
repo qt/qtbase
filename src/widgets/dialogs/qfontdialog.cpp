@@ -824,10 +824,8 @@ void QFontDialog::setCurrentFont(const QFont &font)
     d->strikeout->setChecked(font.strikeOut());
     d->underline->setChecked(font.underline());
     d->updateFamilies();
-    if (d->canBeNativeDialog()) {
-        if (QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
-            helper->setCurrentFont(font);
-    }
+    if (QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
+        helper->setCurrentFont(font);
 }
 
 /*!
@@ -840,10 +838,8 @@ void QFontDialog::setCurrentFont(const QFont &font)
 QFont QFontDialog::currentFont() const
 {
     Q_D(const QFontDialog);
-    if (d->canBeNativeDialog()) {
-        if (const QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
-            return helper->currentFont();
-    }
+    if (const QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
+        return helper->currentFont();
     return d->sampleEdit->font();
 }
 
