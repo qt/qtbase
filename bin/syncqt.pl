@@ -879,6 +879,10 @@ loadSyncProfile(\$basedir, \$out_basedir);
 
 @modules_to_sync = keys(%modules) if($#modules_to_sync == -1);
 
+for my $p (keys %inject_headers) {
+    push @ignore_for_include_check, @{$inject_headers{$p}};
+}
+
 my %allmoduleheadersprivate = map { $_ => 1 } @allmoduleheadersprivate;
 %ignore_for_include_check = map { $_ => 1 } @ignore_for_include_check;
 %ignore_for_qt_begin_namespace_check = map { $_ => 1 } @ignore_for_qt_begin_namespace_check;
