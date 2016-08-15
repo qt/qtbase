@@ -322,11 +322,75 @@ defineReplace(qtConfPrepareArgs) {
     return($$args)
 }
 
-defineTest(qtConfTest_pkgConfig) {
+defineTest(qtConfSetupLibraries) {
+    for (l, config.libraries._KEYS_) {
+        lpfx = config.libraries.$${l}
+        # 'export' may be omitted, in which case it falls back to the library's name
+        !defined($${lpfx}.export, var) {
+            $${lpfx}.export = $$l
+            export($${lpfx}.export)
+        }
+        isEmpty($${lpfx}.sources._KEYS_): \
+            error("Library $$l defines no sources")
+        for (s, $${lpfx}.sources._KEYS_) {
+            spfx = $${lpfx}.sources.$${s}
+            # link back to parent object
+            $${spfx}.library = $$l
+            export($${spfx}.library)
+            # a plain string is transformed into a structure
+            isEmpty($${spfx}._KEYS_) {
+                $${spfx}.libs = $$eval($${spfx})
+                export($${spfx}.libs)
+            }
+            # if the type is missing (implicitly in the case of plain strings), assume 'inline'
+            isEmpty($${spfx}.type) {
+                $${spfx}.type = inline
+                export($${spfx}.type)
+            }
+        }
+    }
+}
+
+# the library is specified inline in a 'libs' field.
+# this source type cannot fail.
+defineTest(qtConfLibrary_inline) {
+    lib = $$eval($${1}.library)
+    !defined($${1}.libs, var): \
+        error("'inline' source in library '$$lib' does not specify 'libs'.")
+    return(true)
+}
+
+# the library is provided by the qmake spec.
+# this source type cannot fail.
+defineTest(qtConfLibrary_makeSpec) {
+    spec = $$eval($${1}.spec)
+    isEmpty(spec): \
+        error("makeSpec source in library '$$eval($${1}.library)' does not specify 'spec'.")
+
+    $${1}.includedir = "$$val_escape(QMAKE_INCDIR_$$spec)"
+    export($${1}.includedir)
+    $${1}.cflags = "$$val_escape(QMAKE_CFLAGS_$$spec)"
+    export($${1}.cflags)
+    libs =
+    for (l, QMAKE_LIBDIR_$$spec): \
+        libs += -L$$l
+    libs += $$eval(QMAKE_LIBS_$$spec)
+    $${1}.libs = "$$val_escape(libs)"
+    export($${1}.libs)
+
+    # the library definition is always in scope, so no point in exporting it.
+    $${1}.export = false
+    export($${1}.export)
+
+    return(true)
+}
+
+# the library is found via pkg-config.
+defineTest(qtConfLibrary_pkgConfig) {
     pkg_config = $$qtConfPkgConfig($$eval($${1}.host))
     isEmpty(pkg_config): \
         return(false)
-    args = $$qtConfPrepareArgs($$eval($${1}.pkg-config-args))
+    args = $$qtConfPrepareArgs($$eval($${1}.args))
 
     !qtConfPkgConfigPackageExists($$pkg_config, $$args): \
         return(false)
@@ -361,13 +425,116 @@ defineTest(qtConfTest_getPkgConfigVariable) {
     return(true)
 }
 
+defineReplace(qtConfLibraryArgs) {
+    qmake_args =
+    libs = $$eval($${1}.libs)
+    !isEmpty(libs): \
+        qmake_args += $$system_quote(LIBS += $$libs)
+    for (b, $${1}.builds._KEYS_): \
+        qmake_args += $$system_quote(LIBS_$$upper($$b) += $$eval($${1}.builds.$${b}))
+    includedir = $$eval($${1}.includedir)
+    !isEmpty(includedir): \
+        qmake_args += $$system_quote(INCLUDEPATH *= $$includedir)
+    return($$qmake_args)
+}
+
+defineTest(qtConfExportLibrary) {
+    isEmpty(2): return()
+    !$$qtConfEvaluate($$eval($${1}.export)): return()
+
+    output = privatePro
+
+    eval(libs = $$eval($${1}.libs))
+    eval(cflags = $$eval($${1}.cflags))
+    eval(includes = $$eval($${1}.includedir))
+    version = $$split($${1}.version, '.')
+
+    NAME = $$upper($$2)
+    !isEmpty(libs): qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
+    for (b, $${1}.builds._KEYS_): \
+        qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), \
+                                          $$eval($${1}.builds.$${b}))
+    !isEmpty(cflags): qtConfOutputVar(assign, $$output, QMAKE_CFLAGS_$$NAME, $$cflags)
+    !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
+    !isEmpty(version) {
+        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_MAJOR, $$member(version, 0))
+        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_MINOR, $$member(version, 1))
+        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_PATCH, $$member(version, 2))
+    }
+    export(config.output.$${output})
+}
+
+defineTest(qtConfHandleLibrary) {
+    lpfx = config.libraries.$$1
+    defined($${lpfx}.result, var): return()
+
+    qtLogTestIntro($${lpfx})
+    msg = "looking for library $${1}"
+    write_file($$QMAKE_CONFIG_LOG, msg, append)
+
+    result = false
+    for (s, $${lpfx}.sources._KEYS_) {
+        qtLog("Trying source $$s of library $${1}.")
+        spfx = $${lpfx}.sources.$${s}
+
+        t = $$eval($${spfx}.type)
+        call = qtConfLibrary_$$t
+        !defined($$call, test): \
+            error("Library $${1} source $${s} has unknown type '$$t'")
+
+        !$$qtConfEvaluate($$eval($${spfx}.condition)) {
+            qtLog("Source $$s of library $$1 failed condition.")
+            next()
+        }
+
+        !$${call}($$spfx) {
+            qtLog("Source $$s of library $$1 produced no result.")
+            next()
+        }
+
+        # if the library defines a test, use it to verify the source.
+        !isEmpty($${lpfx}.test) {
+            $${lpfx}.literal_args = $$qtConfLibraryArgs($$spfx)
+            $${lpfx}.host = $$eval($${spfx}.host)
+            !qtConfTest_compile($$lpfx) {
+                qtLog("Source $$s of library $$1 failed verification.")
+                next()
+            }
+        }
+
+        # immediately output the library as well.
+        qtConfExportLibrary($${spfx}, $$eval($${lpfx}.export))
+
+        $${lpfx}.source = $$s
+        export($${lpfx}.source)
+        result = true
+        break()
+    }
+
+    qtLogTestResult($${lpfx}, $$result)
+
+    $${lpfx}.result = $$result
+    export($${lpfx}.result)
+}
+
+defineTest(qtConfTestPrepare_compile) {
+    for (u, $$list($$eval($${1}.use))) {
+        !contains(config.libraries._KEYS_, $$u): \
+            error("Test $$1 tries to use undeclared library '$$u'")
+        qtConfHandleLibrary($$u)
+        lpfx = config.libraries.$${u}
+        isEmpty($${lpfx}.source): \
+            return(false)
+        $${1}.literal_args += $$qtConfLibraryArgs($${lpfx}.sources.$$eval($${lpfx}.source))
+    }
+    export($${1}.literal_args)
+    return(true)
+}
+
 defineTest(qtConfTest_compile) {
     test = $$eval($${1}.test)
     host = $$eval($${1}.host)
     isEmpty(host): host = false
-
-    # get package config information
-    qtConfTest_pkgConfig($${1})
 
     test_dir = $$QMAKE_CONFIG_TESTS_DIR/$$test
     test_out_dir = $$shadowed($$test_dir)
@@ -416,14 +583,6 @@ defineTest(qtConfTest_compile) {
         qmake_args += $$EXTRA_QMAKE_ARGS
     }
 
-    libs = $$eval($${1}.libs)
-    !isEmpty(libs): \
-        qmake_args += "\"LIBS += $$libs\""
-
-    includedir = $$eval($${1}.includedir)
-    !isEmpty(includedir): \
-        qmake_args += "\"INCLUDEPATH *= $$includedir\""
-
     # Clean up after previous run
     exists($$test_out_dir/Makefile): \
         QMAKE_MAKE = "$$QMAKE_MAKE clean && $$QMAKE_MAKE"
@@ -431,7 +590,7 @@ defineTest(qtConfTest_compile) {
     mkpath($$test_out_dir)|error()
 
     # add possible command line args
-    qmake_args += $$qtConfPrepareArgs($$eval($${1}.args))
+    qmake_args += $$qtConfPrepareArgs($$eval($${1}.args)) $$eval($${1}.literal_args)
 
     qtRunLoggedCommand("$$test_cmd_base $$qmake_args $$system_quote($$test_dir)") {
         qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE"): \
@@ -445,7 +604,19 @@ defineTest(logn) {
     log("$${1}$$escape_expand(\\n)")
 }
 
+defineTest(qtLogTestIntro) {
+    description = $$eval($${1}.description)
+    isEmpty(description): return()
+
+    msg = "Checking for $${description}... "
+    log($$msg)
+    $$QMAKE_CONFIG_VERBOSE: log("$$escape_expand(\\n)")
+    write_file($$QMAKE_CONFIG_LOG, msg, append)
+}
+
 defineTest(qtLogTestResult) {
+    isEmpty($${1}.description): return()
+
     !isEmpty($${1}.log) {
         field = $$eval($${1}.log)
         log_msg = $$eval($${1}.$$field)
@@ -472,27 +643,27 @@ defineTest(qtRunSingleTest) {
     tpfx = config.tests.$${1}
     defined($${tpfx}.result, var): \
         return()
+    result = true
 
     type = $$eval($${tpfx}.type)
     call = "qtConfTest_$$type"
     !defined($$call, test): \
         error("Configure test $${1} refers to nonexistent type $$type")
 
-    description = $$eval($${tpfx}.description)
-    !isEmpty(description) {
-        msg = "checking for $${description}... "
-        log($$msg)
-        $$QMAKE_CONFIG_VERBOSE: log("$$escape_expand(\\n)")
+    preCall = "qtConfTestPrepare_$$type"
+    defined($$preCall, test): \
+        !$${preCall}($${tpfx}): result = false
+
+    $$result {
+        qtLogTestIntro($${tpfx})
+        msg = "executing config test $${1}"
         write_file($$QMAKE_CONFIG_LOG, msg, append)
+
+        !$${call}($${tpfx}): result = false
+
+        qtLogTestResult($${tpfx}, $$result)
     }
 
-    msg = "executing config test $${1}"
-    write_file($$QMAKE_CONFIG_LOG, msg, append)
-
-    result = false
-    $${call}($${tpfx}): result = true
-
-    !isEmpty(description): qtLogTestResult($${tpfx}, $$result)
     $${tpfx}.result = $$result
     export($${tpfx}.result)
 }
@@ -537,6 +708,19 @@ defineReplace(qtConfEvaluateSingleExpression) {
             error("Unknown test object $${test} in expression '$${1}'.")
         qtRunSingleTest($$test)
         result = $$eval(config.tests.$${test}.$${var})
+    } else: contains(e, "^libs\..*") {
+        !qt_conf_tests_allowed: \
+            error("Expression '$${1}' refers to a library, which is not allowed at this stage of configuring.")
+        lib = $$section(e, ".", 1, 1)
+        var = $$section(e, ".", 2, -1)
+        isEmpty(var): \
+            var = result
+        !contains(config.libraries._KEYS_, $$lib): \
+            error("Unknown library object $${lib} in expression '$${1}'.")
+        qtConfHandleLibrary($$lib)
+        !defined(config.libraries.$${lib}.$${var}, var): \
+            var = sources.$$eval(config.libraries.$${lib}.$${source}).$$var
+        result = $$eval(config.libraries.$${lib}.$${var})
     } else: contains(e, "^features\..*") {
         feature = $$section(e, ".", 1, 1)
         var = $$section(e, ".", 2, -1)
@@ -1067,39 +1251,6 @@ defineTest(qtConfOutput_privateFeature) {
     }
 }
 
-
-defineTest(qtConfOutput_library) {
-    !$${2}: return()
-
-    output = privatePro
-    name = "$$eval($${1}.name)"
-    isEmpty(name): \
-        name = $$eval($${1}.feature)
-    NAME = $$upper($$replace(name, [-.], _))
-
-    test = $$eval($${1}.test)
-    isEmpty(test): \
-        error("Output type 'library' used in feature '$$eval($${1}.feature)' without a 'test' entry.")
-    lookup = "config.tests.$$test"
-    isEmpty($${lookup}._KEYS_): \
-        error("Output type 'library' used in feature '$$eval($${1}.feature)' refers to undefined test '$$test'.")
-
-    eval(libs = $$eval($${lookup}.libs))
-    eval(cflags = $$eval($${lookup}.cflags))
-    eval(includes = $$eval($${lookup}.includedir))
-    version = $$split($${lookup}.version, '.')
-
-    !isEmpty(libs): qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
-    !isEmpty(cflags): qtConfOutputVar(assign, $$output, QMAKE_CFLAGS_$$NAME, $$cflags)
-    !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
-    !isEmpty(version) {
-        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_MAJOR, $$first(version))
-        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_MINOR, $$member(version, 1))
-        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_PATCH, $$member(version, 2))
-    }
-    export(config.output.$${output})
-}
-
 defineTest(qtConfProcessOneOutput) {
     feature = $${1}
     fpfx = config.features.$${feature}
@@ -1162,6 +1313,8 @@ defineTest(qtConfigure) {
     configure_data = $$cat($${1}, blob)
     !parseJson(configure_data, config): \
         error("Invalid or non-existent file $${1}.")
+
+    qtConfSetupLibraries()
 
     qtConfParseCommandLine()
 

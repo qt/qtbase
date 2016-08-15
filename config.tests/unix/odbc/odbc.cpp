@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#ifdef __MINGW32__
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
 #include <windows.h>
 #endif
 #include <sql.h>
@@ -45,5 +45,7 @@
 
 int main(int, char **)
 {
+    SQLHANDLE env;
+    SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
     return 0;
 }

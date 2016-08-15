@@ -2,4 +2,8 @@ SOURCES = icu.cpp
 CONFIG += console
 CONFIG -= qt dylib
 
-include($$PWD/../../../src/3rdparty/icu_dependency.pri)
+CONFIG += build_all
+CONFIG(debug, debug|release): \
+    LIBS += $$LIBS_DEBUG
+else: \
+    LIBS += $$LIBS_RELEASE

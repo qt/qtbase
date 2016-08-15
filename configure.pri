@@ -228,19 +228,14 @@ defineTest(qtConfTest_buildParts) {
     return(true)
 }
 
-defineTest(qtConfTest_openssl) {
+defineTest(qtConfLibrary_openssl) {
     libs = $$getenv("OPENSSL_LIBS")
-
     !isEmpty(libs) {
         $${1}.libs = $$libs
         export($${1}.libs)
+        return(true)
     }
-
-    $${1}.showNote = false
-    isEmpty(libs): $${1}.showNote = true
-    export($${1}.showNote)
-
-    return(true)
+    return(false)
 }
 
 defineTest(qtConfTest_checkCompiler) {
@@ -288,7 +283,7 @@ defineReplace(filterLibraryPath) {
     return($$str)
 }
 
-defineTest(qtConfTest_psqlCompile) {
+defineTest(qtConfLibrary_psqlConfig) {
     pg_config = $$config.input.psql_config
     isEmpty(pg_config): \
         pg_config = $$qtConfFindInPath("pg_config")
@@ -304,21 +299,25 @@ defineTest(qtConfTest_psqlCompile) {
         $${1}.includedir = "$$val_escape(includedir)"
         !isEmpty(includedir): \
             $${1}.cflags = "-I$$val_escape(includedir)"
+        export($${1}.libs)
+        export($${1}.includedir)
+        export($${1}.cflags)
+        return(true)
     }
-
-    # Respect PSQL_LIBS if set
-    PSQL_LIBS = $$getenv(PSQL_LIBS)
-    !isEmpty($$PSQL_LIBS): $${1}.libs = $$PSQL_LIBS
-
-    export($${1}.libs)
-    export($${1}.includedir)
-    export($${1}.cflags)
-
-    qtConfTest_compile($${1}): return(true)
     return(false)
 }
 
-defineTest(qtConfTest_mysqlCompile) {
+defineTest(qtConfLibrary_psqlEnv) {
+    # Respect PSQL_LIBS if set
+    PSQL_LIBS = $$getenv(PSQL_LIBS)
+    !isEmpty(PSQL_LIBS) {
+        $${1}.libs = $$PSQL_LIBS
+        export($${1}.libs)
+    }
+    return(true)
+}
+
+defineTest(qtConfLibrary_mysqlConfig) {
     mysql_config = $$config.input.mysql_config
     isEmpty(mysql_config): \
         mysql_config = $$qtConfFindInPath("mysql_config")
@@ -346,23 +345,22 @@ defineTest(qtConfTest_mysqlCompile) {
         export($${1}.libs)
         export($${1}.includedir)
         export($${1}.cflags)
+        return(true)
     }
-
-    qtConfTest_compile($${1}): return(true)
     return(false)
 }
 
-defineTest(qtConfTest_tdsCompile) {
+defineTest(qtConfLibrary_sybaseEnv) {
     libs =
     sybase = $$getenv(SYBASE)
     !isEmpty(sybase): \
         libs += "-L$${sybase}/lib"
     libs += $$getenv(SYBASE_LIBS)
-    $${1}.libs = "$$val_escape(libs)"
-    export($${1}.libs)
-
-    qtConfTest_compile($${1}): return(true)
-    return(false)
+    !isEmpty(libs) {
+        $${1}.libs = "$$val_escape(libs)"
+        export($${1}.libs)
+    }
+    return(true)
 }
 
 
