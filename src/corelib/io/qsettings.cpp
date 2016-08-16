@@ -2270,16 +2270,20 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     On Windows, the following files are used:
 
     \list 1
-    \li \c{%APPDATA%\MySoft\Star Runner.ini}
-    \li \c{%APPDATA%\MySoft.ini}
-    \li \c{%COMMON_APPDATA%\MySoft\Star Runner.ini}
-    \li \c{%COMMON_APPDATA%\MySoft.ini}
+    \li \c{CSIDL_APPDATA\MySoft\Star Runner.ini}
+    \li \c{CSIDL_APPDATA\MySoft.ini}
+    \li \c{CSIDL_COMMON_APPDATA\MySoft\Star Runner.ini}
+    \li \c{CSIDL_COMMON_APPDATA\MySoft.ini}
     \endlist
 
-    The \c %APPDATA% path is usually \tt{C:\\Documents and
-    Settings\\\e{User Name}\\Application Data}; the \c
-    %COMMON_APPDATA% path is usually \tt{C:\\Documents and
-    Settings\\All Users\\Application Data}.
+    The identifiers prefixed by \c{CSIDL_} are special item ID lists to be passed
+    to the Win32 API function \c{SHGetSpecialFolderPath()} to obtain the
+    corresponding path.
+
+    \c{CSIDL_APPDATA} usually points to \tt{C:\\Users\\\e{User Name}\\AppData\\Roaming},
+    also shown by the environment variable \c{%APPDATA%}.
+
+    \c{CSIDL_COMMON_APPDATA} usually points to \tt{C:\\ProgramData}.
 
     On BlackBerry only a single file is used (see \l{Platform Limitations}).
     If the file format is IniFormat, this is "Settings/MySoft/Star Runner.ini"
@@ -3385,8 +3389,8 @@ void QSettings::setUserIniPath(const QString &dir)
 
     \table
     \header \li Platform         \li Format                       \li Scope       \li Path
-    \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c %APPDATA%
-    \row                                                        \li SystemScope \li \c %COMMON_APPDATA%
+    \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c CSIDL_APPDATA
+    \row                                                        \li SystemScope \li \c CSIDL_COMMON_APPDATA
     \row    \li{1,2} Unix        \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/.config
     \row                                                        \li SystemScope \li \c /etc/xdg
     \row    \li{1,2} Qt for Embedded Linux \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/Settings
