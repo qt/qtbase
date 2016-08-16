@@ -786,6 +786,9 @@ struct AnimState {
     int time;
     int state;
 };
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(AnimState, Q_MOVABLE_TYPE);
+QT_END_NAMESPACE
 
 #define Running QAbstractAnimation::Running
 #define Stopped QAbstractAnimation::Stopped
