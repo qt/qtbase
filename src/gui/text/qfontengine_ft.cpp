@@ -1328,33 +1328,25 @@ QFixed QFontEngineFT::leading() const
 
 QFixed QFontEngineFT::xHeight() const
 {
-    if (!isScalableBitmap()) {
-        TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
-        if (os2 && os2->sxHeight) {
-            lockFace();
-            QFixed answer = QFixed(os2->sxHeight * freetype->face->size->metrics.y_ppem) / emSquareSize();
-            unlockFace();
-            return answer;
-        }
-    } else {
-        return QFixed(freetype->face->size->metrics.y_ppem) * scalableBitmapScaleFactor;
+    TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
+    if (os2 && os2->sxHeight) {
+        lockFace();
+        QFixed answer = QFixed(os2->sxHeight * freetype->face->size->metrics.y_ppem) / emSquareSize();
+        unlockFace();
+        return answer;
     }
+
     return QFontEngine::xHeight();
 }
 
 QFixed QFontEngineFT::averageCharWidth() const
 {
-     if (!isScalableBitmap()) {
-         TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
-         if (os2 && os2->xAvgCharWidth) {
-             lockFace();
-             QFixed answer = QFixed(os2->xAvgCharWidth * freetype->face->size->metrics.x_ppem) / emSquareSize();
-             unlockFace();
-             return answer;
-         }
-     } else {
-         const qreal aspectRatio = (qreal)xsize / ysize;
-         return QFixed::fromReal(fontDef.pixelSize * aspectRatio);
+     TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
+     if (os2 && os2->xAvgCharWidth) {
+         lockFace();
+         QFixed answer = QFixed(os2->xAvgCharWidth * freetype->face->size->metrics.x_ppem) / emSquareSize();
+         unlockFace();
+         return answer;
      }
 
      return QFontEngine::averageCharWidth();
