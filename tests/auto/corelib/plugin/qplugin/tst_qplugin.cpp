@@ -61,7 +61,8 @@ void tst_QPlugin::initTestCase()
 
 void tst_QPlugin::loadDebugPlugin()
 {
-    foreach (QString fileName, dir.entryList(QStringList() << "*debug*", QDir::Files)) {
+    const auto fileNames = dir.entryList(QStringList() << "*debug*", QDir::Files);
+    for (const QString &fileName : fileNames) {
         if (!QLibrary::isLibrary(fileName))
             continue;
         QPluginLoader loader(dir.filePath(fileName));
@@ -87,8 +88,8 @@ void tst_QPlugin::loadDebugPlugin()
 
 void tst_QPlugin::loadReleasePlugin()
 {
-    foreach (QString fileName, dir.entryList(QStringList() << "*release*", QDir::Files)) {
-        if (!QLibrary::isLibrary(fileName))
+    const auto fileNames = dir.entryList(QStringList() << "*release*", QDir::Files);
+    for (const QString &fileName : fileNames) {
             continue;
         QPluginLoader loader(dir.filePath(fileName));
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
