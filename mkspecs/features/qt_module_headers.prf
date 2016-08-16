@@ -106,9 +106,10 @@ alien_syncqt: return()
 
 for (injection, SYNCQT.INJECTIONS) {
     injects = $$split(injection, :)
+    dst_hdr = $$absolute_path($$member(injects, 0), $$INC_PATH/include/$$MODULE_INCNAME)
     fwd_hdr = $$member(injects, 1)
     MAIN_FWD = $$INC_PATH/include/$$MODULE_INCNAME/$$fwd_hdr
-    MAIN_FWD_CONT = '$${LITERAL_HASH}include "$$member(injects, 0)"'
+    MAIN_FWD_CONT = '$${LITERAL_HASH}include "$$relative_path($$dst_hdr, $$dirname(MAIN_FWD))"'
     write_file($$MAIN_FWD, MAIN_FWD_CONT)|error()
     !git_build: QMAKE_DISTCLEAN += $$MAIN_FWD
     injects = $$member(injects, 2, -1)
