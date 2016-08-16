@@ -83,7 +83,7 @@ DESTINATION_MESSAGE = "Running $(call tolower,$(CONFIGURATION)) $(ACTION) \
 
 xcodebuild-%:
 		@$(if $(DESTINATION_NAME), echo $(DESTINATION_MESSAGE),)
-		xcodebuild $(ACTION) -project $(TARGET).xcodeproj -scheme $(TARGET) $(if $(SDK), -sdk $(SDK),) $(if $(CONFIGURATION), -configuration $(CONFIGURATION),) $(if $(DESTINATION), -destination $(DESTINATION) -destination-timeout 1,)
+		xcodebuild $(ACTION) -project $(TARGET).xcodeproj -scheme $(TARGET) $(if $(SDK), -sdk $(SDK),) $(if $(CONFIGURATION), -configuration $(CONFIGURATION),) $(if $(DESTINATION), -destination $(DESTINATION) -destination-timeout 1,) $(if $(INSTALL_ROOT), DSTROOT=$(INSTALL_ROOT),)
 
 xcodebuild-check-device_%: DESTINATION_ID=$(lastword $(subst _, ,$@))
 
