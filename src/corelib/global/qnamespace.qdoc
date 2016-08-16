@@ -137,7 +137,7 @@
 
     \value AA_DontUseNativeMenuBar All menubars created while this attribute is
            set to true won't be used as a native menubar (e.g, the menubar at
-           the top of the main screen on \macos or at the bottom in Windows CE).
+           the top of the main screen on \macos).
 
     \value AA_MacDontSwapCtrlAndMeta On \macos by default, Qt swaps the
            Control and Meta (Command) keys (i.e., whenever Control is pressed, Qt
@@ -925,9 +925,6 @@
 
     \value WA_InputMethodEnabled Enables input methods for Asian languages.
     Must be set when creating custom text editing widgets.
-    On Windows CE this flag can be used in addition to
-    QApplication::autoSipEnabled to automatically display the SIP when
-    entering a widget.
 
     \value WA_KeyboardFocusChange Set on a toplevel window when
     the users changes focus with the keyboard (tab, backtab, or shortcut).
@@ -2221,11 +2218,9 @@
            the bottom.  This window hint is currently not implemented
            for \macos.
 
-    \value WindowOkButtonHint Adds an OK button to the window decoration of a dialog.
-           Only supported for Windows CE.
+    \omitvalue WindowOkButtonHint
 
-    \value WindowCancelButtonHint Adds a Cancel button to the window decoration of a dialog.
-           Only supported for Windows CE.
+    \omitvalue WindowCancelButtonHint
 
     \value WindowTransparentForInput Informs the window system that this window
            is used only for output (displaying something) and does not take input.
