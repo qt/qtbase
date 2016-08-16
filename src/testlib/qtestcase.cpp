@@ -1294,8 +1294,13 @@ void TestMethods::invokeTests(QObject *testObject) const
         m_initTestCaseDataMethod.invoke(testObject, Qt::DirectConnection);
 
     QScopedPointer<WatchDog> watchDog;
-    if (!debuggerPresent())
+    if (!debuggerPresent()
+#ifdef QTESTLIB_USE_VALGRIND
+        && QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindChildProcess
+#endif
+       ) {
         watchDog.reset(new WatchDog);
+    }
 
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
         if (m_initTestCaseMethod.isValid())

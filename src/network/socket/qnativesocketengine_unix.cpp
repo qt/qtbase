@@ -317,7 +317,7 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     case QNativeSocketEngine::BindExclusively:
     case QNativeSocketEngine::NonBlockingSocketOption:
     case QNativeSocketEngine::BroadcastSocketOption:
-        return true;
+        return -1;
     case QNativeSocketEngine::MaxStreamsSocketOption: {
 #ifndef QT_NO_SCTP
         sctp_initmsg sctpInitMsg;

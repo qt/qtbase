@@ -18,10 +18,15 @@ fq_qml_files = $$qmldir_file
 
 for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
 
-qml1_target: \
+load(qt_build_paths)
+
+qml1_target {
+    DESTDIR = $$MODULE_BASE_OUTDIR/imports/$$TARGETPATH
     instbase = $$[QT_INSTALL_IMPORTS]
-else: \
+} else {
+    DESTDIR = $$MODULE_BASE_OUTDIR/qml/$$TARGETPATH
     instbase = $$[QT_INSTALL_QML]
+}
 
 !qml1_target:static: CONFIG += builtin_resources
 
@@ -41,4 +46,13 @@ else: qmldir.files = $$qmldir_file
 qmldir.path = $$instbase/$$TARGETPATH
 INSTALLS += qmldir
 
-!prefix_build: COPIES += qmldir
+!debug_and_release|!build_all|CONFIG(release, debug|release) {
+    !prefix_build {
+        COPIES += qmldir
+    } else {
+        # For non-installed static builds, qmlimportscanner needs qmldir file in build dir
+        qmldir2build.files = $$qmldir_file
+        qmldir2build.path = $$DESTDIR
+        COPIES += qmldir2build
+    }
+}

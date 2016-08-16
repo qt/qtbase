@@ -730,7 +730,7 @@ void QFont::setFamily(const QString &family)
     Returns the requested font style name, it will be used to match the
     font with irregular styles (that can't be normalized in other style
     properties). It depends on system font support, thus only works for
-    OS X and X11 so far. On Windows irregular styles will be added
+    \macos and X11 so far. On Windows irregular styles will be added
     as separate font families so there is no need for this.
 
     \sa setFamily(), setStyle()
@@ -825,7 +825,7 @@ int QFont::pointSize() const
     \li Vertical hinting (light)
     \li Full hinting
     \row
-    \li Cocoa on OS X
+    \li Cocoa on \macos
     \li No hinting
     \li No hinting
     \li No hinting

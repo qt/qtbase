@@ -2516,7 +2516,7 @@ QWidget *QWidget::find(WId id)
     If a widget is non-native (alien) and winId() is invoked on it, that widget
     will be provided a native handle.
 
-    On OS X, the type returned depends on which framework Qt was linked
+    On \macos, the type returned depends on which framework Qt was linked
     against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
     is using Cocoa, {WId} is a pointer to an NSView.
 
@@ -2643,7 +2643,7 @@ QWindow *QWidget::windowHandle() const
     The style sheet contains a textual description of customizations to the
     widget's style, as described in the \l{Qt Style Sheets} document.
 
-    Since Qt 4.5, Qt style sheets fully supports OS X.
+    Since Qt 4.5, Qt style sheets fully supports \macos.
 
     \warning Qt style sheets are currently not supported for custom QStyle
     subclasses. We plan to address this in some future release.
@@ -5136,7 +5136,7 @@ void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
     Transformations and settings applied to the \a painter will be used
     when rendering.
 
-    \note The \a painter must be active. On OS X the widget will be
+    \note The \a painter must be active. On \macos the widget will be
     rendered into a QPixmap and then drawn by the \a painter.
 
     \sa QPainter::device()
@@ -6280,7 +6280,7 @@ QString QWidget::windowIconText() const
     If the window title is set at any point, then the window title takes precedence and
     will be shown instead of the file path string.
 
-    Additionally, on OS X, this has an added benefit that it sets the
+    Additionally, on \macos, this has an added benefit that it sets the
     \l{http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/XHIGWindows/chapter_17_section_3.html}{proxy icon}
     for the window, assuming that the file path exists.
 
@@ -11319,7 +11319,7 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 
   By default the value of this property is 1.0.
 
-  This feature is available on Embedded Linux, OS X, Windows,
+  This feature is available on Embedded Linux, \macos, Windows,
   and X11 platforms that support the Composite extension.
 
   This feature is not available on Windows CE.
@@ -11382,7 +11382,7 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 
     A modified window is a window whose content has changed but has
     not been saved to disk. This flag will have different effects
-    varied by the platform. On OS X the close button will have a
+    varied by the platform. On \macos the close button will have a
     modified look; on other platforms, the window title will have an
     '*' (asterisk).
 
@@ -12531,7 +12531,7 @@ static void releaseMouseGrabOfWidget(QWidget *widget)
 
     \note On Windows, grabMouse() only works when the mouse is inside a window
     owned by the process.
-    On OS X, grabMouse() only works when the mouse is inside the frame of that widget.
+    On \macos, grabMouse() only works when the mouse is inside the frame of that widget.
 
     \sa releaseMouse(), grabKeyboard(), releaseKeyboard()
 */
@@ -13003,7 +13003,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
     This function will return 0 if no painter context can be established, or if the handle
     could not be created.
 
-    \warning This function is only available on OS X.
+    \warning This function is only available on \macos.
 */
 /*! \fn Qt::HANDLE QWidget::macQDHandle() const
     \internal
@@ -13012,7 +13012,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
     This function will return 0 if QuickDraw is not supported, or if the handle could
     not be created.
 
-    \warning This function is only available on OS X.
+    \warning This function is only available on \macos.
 */
 /*! \fn const QX11Info &QWidget::x11Info() const
     \internal

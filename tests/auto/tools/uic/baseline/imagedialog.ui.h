@@ -155,7 +155,7 @@ public:
 
         vboxLayout->addLayout(gridLayout);
 
-        spacerItem = new QSpacerItem(QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         vboxLayout->addItem(spacerItem);
 
@@ -166,7 +166,7 @@ public:
         hboxLayout->setContentsMargins(1, 1, 1, 1);
         hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         hboxLayout->setObjectName(QStringLiteral(""));
-        spacerItem1 = new QSpacerItem(QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem1 = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         hboxLayout->addItem(spacerItem1);
 

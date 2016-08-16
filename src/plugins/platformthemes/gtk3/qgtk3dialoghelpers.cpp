@@ -117,8 +117,10 @@ void QGtk3Dialog::exec()
 
 bool QGtk3Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
 {
-    connect(parent, &QWindow::destroyed, this, &QGtk3Dialog::onParentWindowDestroyed,
-            Qt::UniqueConnection);
+    if (parent) {
+        connect(parent, &QWindow::destroyed, this, &QGtk3Dialog::onParentWindowDestroyed,
+                Qt::UniqueConnection);
+    }
     setParent(parent);
     setFlags(flags);
     setModality(modality);

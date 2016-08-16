@@ -1071,8 +1071,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \endlist
 
     Some constants are defined only on certain platforms. You can use
-    the preprocessor symbols Q_OS_WIN and Q_OS_OSX to test that
-    the application is compiled under Windows or OS X.
+    the preprocessor symbols Q_OS_WIN and Q_OS_MACOS to test that
+    the application is compiled under Windows or \macos.
 
     \sa QLibraryInfo
 */
@@ -1111,7 +1111,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
 /*!
     \fn QSysInfo::MacVersion QSysInfo::macVersion()
 
-    Returns the version of Darwin (OS X or iOS) on which the
+    Returns the version of Darwin (\macos or iOS) on which the
     application is run, or MV_None if the operating system
     is not a version of Darwin.
 */
@@ -1179,24 +1179,24 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \enum QSysInfo::MacVersion
 
     This enum provides symbolic names for the various versions of the
-    Darwin operating system, covering both OS X and iOS. The
+    Darwin operating system, covering both \macos and iOS. The
     QSysInfo::MacintoshVersion variable gives the version of the
     system on which the application is run.
 
-    \value MV_9        Mac OS 9
-    \value MV_10_0     Mac OS X 10.0
-    \value MV_10_1     Mac OS X 10.1
-    \value MV_10_2     Mac OS X 10.2
-    \value MV_10_3     Mac OS X 10.3
-    \value MV_10_4     Mac OS X 10.4
-    \value MV_10_5     Mac OS X 10.5
-    \value MV_10_6     Mac OS X 10.6
-    \value MV_10_7     Mac OS X 10.7
-    \value MV_10_8     OS X 10.8
-    \value MV_10_9     OS X 10.9
-    \value MV_10_10    OS X 10.10
-    \value MV_10_11    OS X 10.11
-    \value MV_10_12    macOS 10.12
+    \value MV_9        \macos 9
+    \value MV_10_0     \macos 10.0
+    \value MV_10_1     \macos 10.1
+    \value MV_10_2     \macos 10.2
+    \value MV_10_3     \macos 10.3
+    \value MV_10_4     \macos 10.4
+    \value MV_10_5     \macos 10.5
+    \value MV_10_6     \macos 10.6
+    \value MV_10_7     \macos 10.7
+    \value MV_10_8     \macos 10.8
+    \value MV_10_9     \macos 10.9
+    \value MV_10_10    \macos 10.10
+    \value MV_10_11    \macos 10.11
+    \value MV_10_12    \macos 10.12
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1247,7 +1247,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \macro Q_OS_DARWIN
     \relates <QtGlobal>
 
-    Defined on Darwin-based operating systems such as macOS, iOS, watchOS, and tvOS.
+    Defined on Darwin-based operating systems such as \macOS, iOS, watchOS, and tvOS.
 */
 
 /*!
@@ -1268,7 +1268,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \macro Q_OS_MACOS
     \relates <QtGlobal>
 
-    Defined on macOS.
+    Defined on \macos.
  */
 
 /*!
@@ -2568,7 +2568,7 @@ static QString unknownText()
     Note that this function may return surprising values: it returns "linux"
     for all operating systems running Linux (including Android), "qnx" for all
     operating systems running QNX, "freebsd" for
-    Debian/kFreeBSD, and "darwin" for OS X and iOS. For information on the type
+    Debian/kFreeBSD, and "darwin" for \macos and iOS. For information on the type
     of product the application is running on, see productType().
 
     \sa QFileSelector, kernelVersion(), productType(), productVersion(), prettyProductName()
@@ -2590,7 +2590,7 @@ QString QSysInfo::kernelType()
 
     Returns the release version of the operating system kernel. On Windows, it
     returns the version of the NT kernel. On Unix systems, including
-    Android and OS X, it returns the same as the \c{uname -r}
+    Android and \macos, it returns the same as the \c{uname -r}
     command would return.
 
     If the version could not be determined, this function may return an empty
@@ -2631,11 +2631,11 @@ QString QSysInfo::kernelVersion()
     to determine the distribution name and returns that. If determining the
     distribution name failed, it returns "unknown".
 
-    \b{Darwin, macOS, iOS and tvOS note}: this function returns "macos" for macOS
+    \b{Darwin, \macOS, iOS and tvOS note}: this function returns "macos" for macOS
     systems, "ios" for iOS systems, "tvos" for tvOS systems and "darwin" in case
     the system could not be determined.
 
-    \b{OS X note}: this function returns "osx" for versions of macOS prior to 10.12.
+    \b{OS X note}: this function returns "osx" for versions of \macos prior to 10.12.
 
     \b{FreeBSD note}: this function returns "debian" for Debian/kFreeBSD and
     "unknown" otherwise.
@@ -2690,7 +2690,7 @@ QString QSysInfo::productType()
     Returns the product version of the operating system in string form. If the
     version could not be determined, this function returns "unknown".
 
-    It will return the Android, iOS, OS X, Windows full-product
+    It will return the Android, iOS, \macos, Windows full-product
     versions on those systems. In particular, on OS X, iOS and Windows, the
     returned string is similar to the macVersion() or windowsVersion() enums.
 

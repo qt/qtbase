@@ -907,7 +907,7 @@ void QIODevicePrivate::seekBuffer(qint64 newPos)
     For some devices, atEnd() can return true even though there is more data
     to read. This special case only applies to devices that generate data in
     direct response to you calling read() (e.g., \c /dev or \c /proc files on
-    Unix and OS X, or console input / \c stdin on all platforms).
+    Unix and \macos, or console input / \c stdin on all platforms).
 
     \sa bytesAvailable(), read(), isSequential()
 */

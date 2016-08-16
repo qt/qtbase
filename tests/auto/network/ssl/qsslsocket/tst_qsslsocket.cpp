@@ -1402,7 +1402,8 @@ void tst_QSslSocket::setLocalCertificateChain()
     QEventLoop loop;
     QTimer::singleShot(5000, &loop, SLOT(quit()));
 
-    socket = new QSslSocket();
+    const QScopedPointer<QSslSocket, QScopedPointerDeleteLater> client(new QSslSocket);
+    socket = client.data();
     connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
@@ -1414,8 +1415,6 @@ void tst_QSslSocket::setLocalCertificateChain()
     QCOMPARE(chain.size(), 2);
     QCOMPARE(chain[0].serialNumber(), QByteArray("10:a0:ad:77:58:f6:6e:ae:46:93:a3:43:f9:59:8a:9e"));
     QCOMPARE(chain[1].serialNumber(), QByteArray("3b:eb:99:c5:ea:d8:0b:5d:0b:97:5d:4f:06:75:4b:e1"));
-
-    socket->deleteLater();
 }
 
 void tst_QSslSocket::setPrivateKey()

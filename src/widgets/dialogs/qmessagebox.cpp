@@ -550,7 +550,7 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
 
     This is the approach recommended in the
     \l{http://developer.apple.com/library/mac/documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-BABCAJID}
-    {OS X Guidelines}. Similar guidelines apply for the other
+    {\macos Guidelines}. Similar guidelines apply for the other
     platforms, but note the different ways the
     \l{QMessageBox::informativeText} {informative text} is handled for
     different platforms.
@@ -765,7 +765,7 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
     Constructs a message box with no text and no buttons. \a parent is
     passed to the QDialog constructor.
 
-    On OS X, if you want your message box to appear
+    On \macos, if you want your message box to appear
     as a Qt::Sheet of its \a parent, set the message box's
     \l{setWindowModality()} {window modality} to Qt::WindowModal or use open().
     Otherwise, the message box will be a standard dialog.
@@ -787,7 +787,7 @@ QMessageBox::QMessageBox(QWidget *parent)
     The message box is an \l{Qt::ApplicationModal} {application modal}
     dialog box.
 
-    On OS X, if \a parent is not 0 and you want your message box
+    On \macos, if \a parent is not 0 and you want your message box
     to appear as a Qt::Sheet of that parent, set the message box's
     \l{setWindowModality()} {window modality} to Qt::WindowModal
     (default). Otherwise, the message box will be a standard dialog.
@@ -955,7 +955,7 @@ QAbstractButton *QMessageBox::button(StandardButton which) const
     \list 1
     \li If there is only one button, it is made the escape button.
     \li If there is a \l Cancel button, it is made the escape button.
-    \li On OS X only, if there is exactly one button with the role
+    \li On \macos only, if there is exactly one button with the role
        QMessageBox::RejectRole, it is made the escape button.
     \endlist
 
@@ -1731,7 +1731,7 @@ QMessageBox::StandardButton QMessageBox::critical(QWidget *parent, const QString
     \li As a last resort it uses the Information icon.
     \endlist
 
-    The about box has a single button labelled "OK". On OS X, the
+    The about box has a single button labelled "OK". On \macos, the
     about box is popped up as a modeless window; on other platforms,
     it is currently application modal.
 
@@ -1785,7 +1785,7 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
 
     QApplication provides this functionality as a slot.
 
-    On OS X, the about box is popped up as a modeless window; on
+    On \macos, the about box is popped up as a modeless window; on
     other platforms, it is currently application modal.
 
     \sa QApplication::aboutQt()
@@ -2544,8 +2544,8 @@ void QMessageBox::setInformativeText(const QString &text)
 
     This function shadows QWidget::setWindowTitle().
 
-    Sets the title of the message box to \a title. On OS X,
-    the window title is ignored (as required by the OS X
+    Sets the title of the message box to \a title. On \macos,
+    the window title is ignored (as required by the \macos
     Guidelines).
 */
 void QMessageBox::setWindowTitle(const QString &title)
@@ -2566,7 +2566,7 @@ void QMessageBox::setWindowTitle(const QString &title)
 
     Sets the modality of the message box to \a windowModality.
 
-    On OS X, if the modality is set to Qt::WindowModal and the message box
+    On \macos, if the modality is set to Qt::WindowModal and the message box
     has a parent, then the message box will be a Qt::Sheet, otherwise the
     message box will be a standard dialog.
 */

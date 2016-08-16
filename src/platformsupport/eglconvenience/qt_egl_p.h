@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,44 +37,81 @@
 **
 ****************************************************************************/
 
-#ifndef QMINIMALEGLSCREEN_H
-#define QMINIMALEGLSCREEN_H
+#ifndef QT_EGL_P_H
+#define QT_EGL_P_H
 
-#include <qpa/qplatformscreen.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QtCore/QTextStream>
+#ifdef QT_EGL_NO_X11
+# define MESA_EGL_NO_X11_HEADERS // MESA
+# define WIN_INTERFACE_CUSTOM    // NV
+#endif // QT_EGL_NO_X11
 
-#include <QtPlatformSupport/private/qt_egl_p.h>
+#ifdef QT_EGL_WAYLAND
+# define WAYLAND // NV
+#endif // QT_EGL_WAYLAND
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
+#include <stdint.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformOpenGLContext;
+namespace QtInternal {
 
-class QMinimalEglScreen : public QPlatformScreen
+template <class FromType, class ToType>
+struct QtEglConverter
 {
-public:
-    QMinimalEglScreen(EGLNativeDisplayType display);
-    ~QMinimalEglScreen();
-
-    QRect geometry() const Q_DECL_OVERRIDE;
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
-
-    QPlatformOpenGLContext *platformContext() const;
-
-    EGLSurface surface() const { return m_surface; }
-
-private:
-    void createAndSetPlatformContext() const;
-    void createAndSetPlatformContext();
-
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QPlatformOpenGLContext *m_platformContext;
-    EGLDisplay m_dpy;
-    EGLSurface m_surface;
+    static inline ToType convert(FromType v)
+    { return v; }
 };
 
+template <>
+struct QtEglConverter<uint32_t, uintptr_t>
+{
+    static inline uintptr_t convert(uint32_t v)
+    { return v; }
+};
+
+#if Q_PROCESSOR_WORDSIZE > 4
+template <>
+struct QtEglConverter<uintptr_t, uint32_t>
+{
+    static inline uint32_t convert(uintptr_t v)
+    { return uint32_t(v); }
+};
+#endif
+
+template <>
+struct QtEglConverter<uint32_t, void *>
+{
+    static inline void *convert(uint32_t v)
+    { return reinterpret_cast<void *>(uintptr_t(v)); }
+};
+
+template <>
+struct QtEglConverter<void *, uint32_t>
+{
+    static inline uint32_t convert(void *v)
+    { return uintptr_t(v); }
+};
+
+} // QtInternal
+
+template <class ToType, class FromType>
+static inline ToType qt_egl_cast(FromType from)
+{ return QtInternal::QtEglConverter<FromType, ToType>::convert(from); }
+
 QT_END_NAMESPACE
-#endif // QMINIMALEGLSCREEN_H
+
+#endif // QT_EGL_P_H

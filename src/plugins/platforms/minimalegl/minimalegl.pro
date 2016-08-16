@@ -6,8 +6,8 @@ QT += core-private gui-private platformsupport-private
 
 #DEFINES += Q_OPENKODE
 
-#Avoid X11 header collision
-DEFINES += MESA_EGL_NO_X11_HEADERS
+# Avoid X11 header collision, use generic EGL native types
+DEFINES += QT_EGL_NO_X11
 
 SOURCES =   main.cpp \
             qminimaleglintegration.cpp \

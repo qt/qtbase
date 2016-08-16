@@ -1069,6 +1069,7 @@ bool QOpenGLFramebufferObject::bind()
     d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
 
     QOpenGLContextPrivate::get(current)->qgl_current_fbo_invalid = true;
+    QOpenGLContextPrivate::get(current)->qgl_current_fbo = this;
 
     if (d->format.samples() == 0) {
         // Create new textures to replace the ones stolen via takeTexture().
@@ -1108,7 +1109,9 @@ bool QOpenGLFramebufferObject::release()
     if (current) {
         d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->defaultFramebufferObject());
 
-        QOpenGLContextPrivate::get(current)->qgl_current_fbo_invalid = true;
+        QOpenGLContextPrivate *contextPrv = QOpenGLContextPrivate::get(current);
+        contextPrv->qgl_current_fbo_invalid = true;
+        contextPrv->qgl_current_fbo = Q_NULLPTR;
     }
 
     return true;

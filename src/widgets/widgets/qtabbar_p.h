@@ -169,6 +169,7 @@ public:
 #endif //QT_NO_ANIMATION
     };
     QList<Tab> tabList;
+    mutable QHash<QString, QSize> textSizes;
 
     int calculateNewPosition(int from, int to, int index) const;
     void slide(int from, int to);
@@ -201,6 +202,8 @@ public:
     void setupMovableTab();
     void autoHideTabs();
     QRect normalizedScrollRect(int index = -1);
+
+    void initBasicStyleOption(QStyleOptionTab *option, int tabIndex) const;
 
     void makeVisible(int index);
     QSize iconSize;

@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS = \
+        qcolor \
         qpainter \
         qregion \
         qtransform \
