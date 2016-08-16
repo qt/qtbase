@@ -11,11 +11,6 @@ contains(QT_CONFIG, xcb-xlib) {
     }
 }
 
-# to support custom cursors with depth > 1
-contains(QT_CONFIG, xcb-render) {
-    DEFINES += XCB_USE_RENDER
-}
-
 # build with session management support
 contains(QT_CONFIG, xcb-sm) {
     DEFINES += XCB_USE_SM
@@ -31,5 +26,9 @@ contains(QT_CONFIG, xcb-qt) {
     QMAKE_USE += xcb
 } else {
     qtConfig(xkb): QMAKE_USE += xcb_xkb
+    # to support custom cursors with depth > 1
+    contains(QT_CONFIG, xcb-render) {
+        DEFINES += XCB_USE_RENDER
+    }
     QMAKE_USE += xcb_syslibs
 }

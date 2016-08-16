@@ -51,12 +51,6 @@ contains(QT_CONFIG, xcb-xlib) {
     }
 }
 
-# to support custom cursors with depth > 1
-contains(QT_CONFIG, xcb-render) {
-    DEFINES += XCB_USE_RENDER
-    QMAKE_USE += xcb_render
-}
-
 # build with session management support
 contains(QT_CONFIG, xcb-sm) {
     DEFINES += XCB_USE_SM
@@ -82,6 +76,11 @@ contains(QT_CONFIG, xcb-qt) {
 } else {
     LIBS += -lxcb-xinerama  ### there is no configure test for this!
     qtConfig(xkb): QMAKE_USE += xcb_xkb
+    # to support custom cursors with depth > 1
+    contains(QT_CONFIG, xcb-render) {
+        DEFINES += XCB_USE_RENDER
+        QMAKE_USE += xcb_render
+    }
     QMAKE_USE += xcb_syslibs
 }
 
