@@ -101,6 +101,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)setMaskRegion:(const QRegion *)region;
 - (void)invalidateWindowShadowIfNeeded;
 - (void)drawRect:(NSRect)dirtyRect;
+- (void)drawBackingStoreUsingCoreGraphics:(NSRect)dirtyRect;
 - (void)updateGeometry;
 - (void)notifyWindowStateChanged:(Qt::WindowState)newState;
 - (void)windowNotification : (NSNotification *) windowNotification;

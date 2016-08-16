@@ -569,6 +569,18 @@ static bool _q_dontOverrideCtrlLMB = false;
     if (m_platformWindow->m_drawContentBorderGradient)
         NSDrawWindowBackground(dirtyRect);
 
+    if (m_backingStore)
+        [self drawBackingStoreUsingCoreGraphics:dirtyRect];
+
+    [self invalidateWindowShadowIfNeeded];
+}
+
+// Draws the backing store content to the QNSView using Core Graphics.
+// This function assumes that the QNSView is in a configuration that
+// supports Core Graphics, such as "classic" mode or layer mode with
+// the default layer.
+- (void)drawBackingStoreUsingCoreGraphics:(NSRect)dirtyRect
+{
     if (!m_backingStore)
         return;
 
@@ -623,8 +635,6 @@ static bool _q_dontOverrideCtrlLMB = false;
     CGImageRelease(cleanImg);
     CGImageRelease(subMask);
     CGImageRelease(bsCGImage);
-
-    [self invalidateWindowShadowIfNeeded];
 }
 
 - (BOOL) isFlipped
