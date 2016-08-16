@@ -171,7 +171,7 @@ void QHttp2ProtocolHandler::_q_receiveReply()
     Q_ASSERT(m_channel);
 
     do {
-        const auto result = inboundFrame.read(*m_socket);
+        const auto result = frameReader.read(*m_socket);
         switch (result) {
         case FrameStatus::incompleteFrame:
             return;
@@ -185,10 +185,13 @@ void QHttp2ProtocolHandler::_q_receiveReply()
 
         Q_ASSERT(result == FrameStatus::goodFrame);
 
-        if (continuationExpected && inboundFrame.type != FrameType::CONTINUATION)
+        inboundFrame = std::move(frameReader.inboundFrame());
+
+        const auto frameType = inboundFrame.type();
+        if (continuationExpected && frameType != FrameType::CONTINUATION)
             return connectionError(PROTOCOL_ERROR, "CONTINUATION expected");
 
-        switch (inboundFrame.type) {
+        switch (frameType) {
         case FrameType::DATA:
             handleDATA();
             break;
@@ -289,14 +292,14 @@ bool QHttp2ProtocolHandler::sendClientPreface()
         return false;
 
     // 6.5 SETTINGS
-    outboundFrame.start(FrameType::SETTINGS, FrameFlag::EMPTY, Http2::connectionStreamID);
+    frameWriter.start(FrameType::SETTINGS, FrameFlag::EMPTY, Http2::connectionStreamID);
     // MAX frame size (16 kb), disable PUSH
-    outboundFrame.append(Settings::MAX_FRAME_SIZE_ID);
-    outboundFrame.append(quint32(Http2::maxFrameSize));
-    outboundFrame.append(Settings::ENABLE_PUSH_ID);
-    outboundFrame.append(quint32(0));
+    frameWriter.append(Settings::MAX_FRAME_SIZE_ID);
+    frameWriter.append(quint32(Http2::maxFrameSize));
+    frameWriter.append(Settings::ENABLE_PUSH_ID);
+    frameWriter.append(quint32(0));
 
-    if (!outboundFrame.write(*m_socket))
+    if (!frameWriter.write(*m_socket))
         return false;
 
     sessionRecvWindowSize = sessionMaxRecvWindowSize;
@@ -319,38 +322,38 @@ bool QHttp2ProtocolHandler::sendSETTINGS_ACK()
     if (!prefaceSent && !sendClientPreface())
         return false;
 
-    outboundFrame.start(FrameType::SETTINGS, FrameFlag::ACK, Http2::connectionStreamID);
+    frameWriter.start(FrameType::SETTINGS, FrameFlag::ACK, Http2::connectionStreamID);
 
-    return outboundFrame.write(*m_socket);
+    return frameWriter.write(*m_socket);
 }
 
 bool QHttp2ProtocolHandler::sendHEADERS(Stream &stream)
 {
     using namespace HPack;
 
-    outboundFrame.start(FrameType::HEADERS, FrameFlag::PRIORITY,
-                        stream.streamID);
+    frameWriter.start(FrameType::HEADERS, FrameFlag::PRIORITY | FrameFlag::END_HEADERS,
+                      stream.streamID);
 
     if (!stream.data()) {
-        outboundFrame.addFlag(FrameFlag::END_STREAM);
+        frameWriter.addFlag(FrameFlag::END_STREAM);
         stream.state = Stream::halfClosedLocal;
     } else {
         stream.state = Stream::open;
     }
 
-    outboundFrame.append(quint32()); // No stream dependency in Qt.
-    outboundFrame.append(stream.weight());
+    frameWriter.append(quint32()); // No stream dependency in Qt.
+    frameWriter.append(stream.weight());
 
     const auto headers = build_headers(stream.request(), maxHeaderListSize);
     if (!headers.size()) // nothing fits into maxHeaderListSize
         return false;
 
     // Compress in-place:
-    BitOStream outputStream(outboundFrame.frameBuffer);
+    BitOStream outputStream(frameWriter.outboundFrame().buffer);
     if (!encoder.encodeRequest(outputStream, headers))
         return false;
 
-    return outboundFrame.writeHEADERS(*m_socket, maxFrameSize);
+    return frameWriter.writeHEADERS(*m_socket, maxFrameSize);
 }
 
 bool QHttp2ProtocolHandler::sendDATA(Stream &stream)
@@ -380,10 +383,10 @@ bool QHttp2ProtocolHandler::sendDATA(Stream &stream)
             return true;
         }
 
-        outboundFrame.start(FrameType::DATA, FrameFlag::EMPTY, stream.streamID);
+        frameWriter.start(FrameType::DATA, FrameFlag::EMPTY, stream.streamID);
         const qint32 bytesWritten = std::min<qint32>(slot, chunkSize);
 
-        if (!outboundFrame.writeDATA(*m_socket, maxFrameSize, src, bytesWritten))
+        if (!frameWriter.writeDATA(*m_socket, maxFrameSize, src, bytesWritten))
             return false;
 
         stream.data()->advanceReadPointer(bytesWritten);
@@ -396,9 +399,9 @@ bool QHttp2ProtocolHandler::sendDATA(Stream &stream)
     }
 
     if (replyPrivate->totallyUploadedData == request.contentLength()) {
-        outboundFrame.start(FrameType::DATA, FrameFlag::END_STREAM, stream.streamID);
-        outboundFrame.setPayloadSize(0);
-        outboundFrame.write(*m_socket);
+        frameWriter.start(FrameType::DATA, FrameFlag::END_STREAM, stream.streamID);
+        frameWriter.setPayloadSize(0);
+        frameWriter.write(*m_socket);
         stream.state = Stream::halfClosedLocal;
         stream.data()->disconnect(this);
         removeFromSuspended(stream.streamID);
@@ -413,61 +416,61 @@ bool QHttp2ProtocolHandler::sendWINDOW_UPDATE(quint32 streamID, quint32 delta)
 {
     Q_ASSERT(m_socket);
 
-    outboundFrame.start(FrameType::WINDOW_UPDATE, FrameFlag::EMPTY, streamID);
-    outboundFrame.append(delta);
-    return outboundFrame.write(*m_socket);
+    frameWriter.start(FrameType::WINDOW_UPDATE, FrameFlag::EMPTY, streamID);
+    frameWriter.append(delta);
+    return frameWriter.write(*m_socket);
 }
 
 bool QHttp2ProtocolHandler::sendRST_STREAM(quint32 streamID, quint32 errorCode)
 {
     Q_ASSERT(m_socket);
 
-    outboundFrame.start(FrameType::RST_STREAM, FrameFlag::EMPTY, streamID);
-    outboundFrame.append(errorCode);
-    return outboundFrame.write(*m_socket);
+    frameWriter.start(FrameType::RST_STREAM, FrameFlag::EMPTY, streamID);
+    frameWriter.append(errorCode);
+    return frameWriter.write(*m_socket);
 }
 
 bool QHttp2ProtocolHandler::sendGOAWAY(quint32 errorCode)
 {
     Q_ASSERT(m_socket);
 
-    outboundFrame.start(FrameType::GOAWAY, FrameFlag::EMPTY, connectionStreamID);
-    outboundFrame.append(quint32(connectionStreamID));
-    outboundFrame.append(errorCode);
-    return outboundFrame.write(*m_socket);
+    frameWriter.start(FrameType::GOAWAY, FrameFlag::EMPTY, connectionStreamID);
+    frameWriter.append(quint32(connectionStreamID));
+    frameWriter.append(errorCode);
+    return frameWriter.write(*m_socket);
 }
 
 void QHttp2ProtocolHandler::handleDATA()
 {
-    Q_ASSERT(inboundFrame.type == FrameType::DATA);
+    Q_ASSERT(inboundFrame.type() == FrameType::DATA);
 
-    const auto streamID = inboundFrame.streamID;
+    const auto streamID = inboundFrame.streamID();
     if (streamID == connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "DATA on stream 0x0");
 
     if (!activeStreams.contains(streamID) && !streamWasReset(streamID))
         return connectionError(ENHANCE_YOUR_CALM, "DATA on invalid stream");
 
-    if (qint32(inboundFrame.payloadSize) > sessionRecvWindowSize)
+    if (qint32(inboundFrame.payloadSize()) > sessionRecvWindowSize)
         return connectionError(FLOW_CONTROL_ERROR, "Flow control error");
 
-    sessionRecvWindowSize -= inboundFrame.payloadSize;
+    sessionRecvWindowSize -= inboundFrame.payloadSize();
 
     if (activeStreams.contains(streamID)) {
         auto &stream = activeStreams[streamID];
 
-        if (qint32(inboundFrame.payloadSize) > stream.recvWindow) {
+        if (qint32(inboundFrame.payloadSize()) > stream.recvWindow) {
             finishStreamWithError(stream, QNetworkReply::ProtocolInvalidOperationError,
                                   QLatin1String("flow control error"));
             sendRST_STREAM(streamID, FLOW_CONTROL_ERROR);
             markAsReset(streamID);
             deleteActiveStream(streamID);
         } else {
-            stream.recvWindow -= inboundFrame.payloadSize;
+            stream.recvWindow -= inboundFrame.payloadSize();
             // Uncompress data if needed and append it ...
             updateStream(stream, inboundFrame);
 
-            if (inboundFrame.flags.testFlag(FrameFlag::END_STREAM)) {
+            if (inboundFrame.flags().testFlag(FrameFlag::END_STREAM)) {
                 finishStream(stream);
                 deleteActiveStream(stream.streamID);
             } else if (stream.recvWindow < streamInitialRecvWindowSize / 2) {
@@ -489,22 +492,23 @@ void QHttp2ProtocolHandler::handleDATA()
 
 void QHttp2ProtocolHandler::handleHEADERS()
 {
-    Q_ASSERT(inboundFrame.type == FrameType::HEADERS);
+    Q_ASSERT(inboundFrame.type() == FrameType::HEADERS);
 
-    const auto streamID = inboundFrame.streamID;
+    const auto streamID = inboundFrame.streamID();
     if (streamID == connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "HEADERS on 0x0 stream");
 
     if (!activeStreams.contains(streamID) && !streamWasReset(streamID))
         return connectionError(ENHANCE_YOUR_CALM, "HEADERS on invalid stream");
 
-    if (inboundFrame.flags.testFlag(FrameFlag::PRIORITY)) {
+    const auto flags = inboundFrame.flags();
+    if (flags.testFlag(FrameFlag::PRIORITY)) {
         handlePRIORITY();
         if (goingAway)
             return;
     }
 
-    const bool endHeaders = inboundFrame.flags.testFlag(FrameFlag::END_HEADERS);
+    const bool endHeaders = flags.testFlag(FrameFlag::END_HEADERS);
     continuedFrames.clear();
     continuedFrames.push_back(std::move(inboundFrame));
     if (!endHeaders) {
@@ -517,10 +521,10 @@ void QHttp2ProtocolHandler::handleHEADERS()
 
 void QHttp2ProtocolHandler::handlePRIORITY()
 {
-    Q_ASSERT(inboundFrame.type == FrameType::PRIORITY ||
-             inboundFrame.type == FrameType::HEADERS);
+    Q_ASSERT(inboundFrame.type() == FrameType::PRIORITY ||
+             inboundFrame.type() == FrameType::HEADERS);
 
-    const auto streamID = inboundFrame.streamID;
+    const auto streamID = inboundFrame.streamID();
     if (streamID == connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "PIRORITY on 0x0 stream");
 
@@ -544,37 +548,38 @@ void QHttp2ProtocolHandler::handlePRIORITY()
 
 void QHttp2ProtocolHandler::handleRST_STREAM()
 {
-    Q_ASSERT(inboundFrame.type == FrameType::RST_STREAM);
+    Q_ASSERT(inboundFrame.type() == FrameType::RST_STREAM);
 
     // "RST_STREAM frames MUST be associated with a stream.
     // If a RST_STREAM frame is received with a stream identifier of 0x0,
     // the recipient MUST treat this as a connection error (Section 5.4.1)
     // of type PROTOCOL_ERROR.
-    if (inboundFrame.streamID == connectionStreamID)
+    const auto streamID = inboundFrame.streamID();
+    if (streamID == connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "RST_STREAM on 0x0");
 
-    if (!(inboundFrame.streamID & 0x1)) {
+    if (!(streamID & 0x1)) {
         // RST_STREAM on a promised stream:
         // since we do not keep track of such streams,
         // just ignore.
         return;
     }
 
-    if (inboundFrame.streamID >= nextID) {
+    if (streamID >= nextID) {
         // "RST_STREAM frames MUST NOT be sent for a stream
         // in the "idle" state. .. the recipient MUST treat this
         // as a connection error (Section 5.4.1) of type PROTOCOL_ERROR."
         return connectionError(PROTOCOL_ERROR, "RST_STREAM on idle stream");
     }
 
-    if (!activeStreams.contains(inboundFrame.streamID)) {
+    if (!activeStreams.contains(streamID)) {
         // 'closed' stream, ignore.
         return;
     }
 
     Q_ASSERT(inboundFrame.dataSize() == 4);
 
-    Stream &stream = activeStreams[inboundFrame.streamID];
+    Stream &stream = activeStreams[streamID];
     finishStreamWithError(stream, qFromBigEndian<quint32>(inboundFrame.dataBegin()));
     markAsReset(stream.streamID);
     deleteActiveStream(stream.streamID);
@@ -583,12 +588,12 @@ void QHttp2ProtocolHandler::handleRST_STREAM()
 void QHttp2ProtocolHandler::handleSETTINGS()
 {
     // 6.5 SETTINGS.
-    Q_ASSERT(inboundFrame.type == FrameType::SETTINGS);
+    Q_ASSERT(inboundFrame.type() == FrameType::SETTINGS);
 
-    if (inboundFrame.streamID != connectionStreamID)
+    if (inboundFrame.streamID() != connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "SETTINGS on invalid stream");
 
-    if (inboundFrame.flags.testFlag(FrameFlag::ACK)) {
+    if (inboundFrame.flags().testFlag(FrameFlag::ACK)) {
         if (!waitingForSettingsACK)
             return connectionError(PROTOCOL_ERROR, "unexpected SETTINGS ACK");
         waitingForSettingsACK = false;
@@ -614,7 +619,7 @@ void QHttp2ProtocolHandler::handleSETTINGS()
 void QHttp2ProtocolHandler::handlePUSH_PROMISE()
 {
     // 6.6 PUSH_PROMISE.
-    Q_ASSERT(inboundFrame.type == FrameType::PUSH_PROMISE);
+    Q_ASSERT(inboundFrame.type() == FrameType::PUSH_PROMISE);
 
     if (prefaceSent && !waitingForSettingsACK) {
         // This means, server ACKed our 'NO PUSH',
@@ -622,7 +627,7 @@ void QHttp2ProtocolHandler::handlePUSH_PROMISE()
         return connectionError(PROTOCOL_ERROR, "unexpected PUSH_PROMISE frame");
     }
 
-    const auto streamID = inboundFrame.streamID;
+    const auto streamID = inboundFrame.streamID();
     if (streamID == connectionStreamID) {
         return connectionError(PROTOCOL_ERROR,
                                "PUSH_PROMISE with invalid associated stream (0x0)");
@@ -644,7 +649,7 @@ void QHttp2ProtocolHandler::handlePUSH_PROMISE()
     sendRST_STREAM(reservedID, REFUSE_STREAM);
     markAsReset(reservedID);
 
-    const bool endHeaders = inboundFrame.flags.testFlag(FrameFlag::END_HEADERS);
+    const bool endHeaders = inboundFrame.flags().testFlag(FrameFlag::END_HEADERS);
     continuedFrames.clear();
     continuedFrames.push_back(std::move(inboundFrame));
 
@@ -660,30 +665,30 @@ void QHttp2ProtocolHandler::handlePING()
 {
     // Since we're implementing a client and not
     // a server, we only reply to a PING, ACKing it.
-    Q_ASSERT(inboundFrame.type == FrameType::PING);
+    Q_ASSERT(inboundFrame.type() == FrameType::PING);
     Q_ASSERT(m_socket);
 
-    if (inboundFrame.streamID != connectionStreamID)
+    if (inboundFrame.streamID() != connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "PING on invalid stream");
 
-    if (inboundFrame.flags & FrameFlag::ACK)
+    if (inboundFrame.flags() & FrameFlag::ACK)
         return connectionError(PROTOCOL_ERROR, "unexpected PING ACK");
 
     Q_ASSERT(inboundFrame.dataSize() == 8);
 
-    outboundFrame.start(FrameType::PING, FrameFlag::ACK, connectionStreamID);
-    outboundFrame.append(inboundFrame.dataBegin(), inboundFrame.dataBegin() + 8);
-    outboundFrame.write(*m_socket);
+    frameWriter.start(FrameType::PING, FrameFlag::ACK, connectionStreamID);
+    frameWriter.append(inboundFrame.dataBegin(), inboundFrame.dataBegin() + 8);
+    frameWriter.write(*m_socket);
 }
 
 void QHttp2ProtocolHandler::handleGOAWAY()
 {
     // 6.8 GOAWAY
 
-    Q_ASSERT(inboundFrame.type == FrameType::GOAWAY);
+    Q_ASSERT(inboundFrame.type() == FrameType::GOAWAY);
     // "An endpoint MUST treat a GOAWAY frame with a stream identifier
     // other than 0x0 as a connection error (Section 5.4.1) of type PROTOCOL_ERROR."
-    if (inboundFrame.streamID != connectionStreamID)
+    if (inboundFrame.streamID() != connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "GOAWAY on invalid stream");
 
     const auto src = inboundFrame.dataBegin();
@@ -736,12 +741,12 @@ void QHttp2ProtocolHandler::handleGOAWAY()
 
 void QHttp2ProtocolHandler::handleWINDOW_UPDATE()
 {
-    Q_ASSERT(inboundFrame.type == FrameType::WINDOW_UPDATE);
+    Q_ASSERT(inboundFrame.type() == FrameType::WINDOW_UPDATE);
 
 
     const quint32 delta = qFromBigEndian<quint32>(inboundFrame.dataBegin());
     const bool valid = delta && delta <= quint32(std::numeric_limits<qint32>::max());
-    const auto streamID = inboundFrame.streamID;
+    const auto streamID = inboundFrame.streamID();
 
     if (streamID == Http2::connectionStreamID) {
         if (!valid || sum_will_overflow(sessionSendWindowSize, delta))
@@ -772,13 +777,13 @@ void QHttp2ProtocolHandler::handleWINDOW_UPDATE()
 
 void QHttp2ProtocolHandler::handleCONTINUATION()
 {
-    Q_ASSERT(inboundFrame.type == FrameType::CONTINUATION);
+    Q_ASSERT(inboundFrame.type() == FrameType::CONTINUATION);
     Q_ASSERT(continuedFrames.size()); // HEADERS frame must be already in.
 
-    if (inboundFrame.streamID != continuedFrames.front().streamID)
+    if (inboundFrame.streamID() != continuedFrames.front().streamID())
         return connectionError(PROTOCOL_ERROR, "CONTINUATION on invalid stream");
 
-    const bool endHeaders = inboundFrame.flags.testFlag(FrameFlag::END_HEADERS);
+    const bool endHeaders = inboundFrame.flags().testFlag(FrameFlag::END_HEADERS);
     continuedFrames.push_back(std::move(inboundFrame));
 
     if (!endHeaders)
@@ -792,9 +797,9 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
 {
     Q_ASSERT(continuedFrames.size());
 
-    const auto streamID = continuedFrames[0].streamID;
+    const auto streamID = continuedFrames[0].streamID();
 
-    if (continuedFrames[0].type == FrameType::HEADERS) {
+    if (continuedFrames[0].type() == FrameType::HEADERS) {
         if (activeStreams.contains(streamID)) {
             Stream &stream = activeStreams[streamID];
             if (stream.state != Stream::halfClosedLocal) {
@@ -837,11 +842,11 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
     if (!decoder.decodeHeaderFields(inputStream))
         return connectionError(COMPRESSION_ERROR, "HPACK decompression failed");
 
-    if (continuedFrames[0].type == FrameType::HEADERS) {
+    if (continuedFrames[0].type() == FrameType::HEADERS) {
         if (activeStreams.contains(streamID)) {
             Stream &stream = activeStreams[streamID];
             updateStream(stream, decoder.decodedHeader());
-            if (continuedFrames[0].flags & FrameFlag::END_STREAM) {
+            if (continuedFrames[0].flags() & FrameFlag::END_STREAM) {
                 finishStream(stream);
                 deleteActiveStream(stream.streamID);
             }
@@ -949,9 +954,9 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
     emit httpReply->headerChanged();
 }
 
-void QHttp2ProtocolHandler::updateStream(Stream &stream, const Http2::FrameReader &frame)
+void QHttp2ProtocolHandler::updateStream(Stream &stream, const Frame &frame)
 {
-    Q_ASSERT(frame.type == FrameType::DATA);
+    Q_ASSERT(frame.type() == FrameType::DATA);
 
     if (const auto length = frame.dataSize()) {
         const char *data = reinterpret_cast<const char *>(frame.dataBegin());

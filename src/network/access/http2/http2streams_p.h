@@ -73,11 +73,10 @@ struct Q_AUTOTEST_EXPORT Stream
         closed
     };
 
-    Stream() = default;
+    Stream();
     Stream(const HttpMessagePair &message, quint32 streamID, qint32 sendSize,
            qint32 recvSize);
 
-    // TODO: check includes!!!
     QHttpNetworkReply *reply() const;
     const QHttpNetworkRequest &request() const;
     QHttpNetworkRequest &request();

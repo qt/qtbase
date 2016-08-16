@@ -68,59 +68,53 @@ class QAbstractSocket;
 namespace Http2
 {
 
-class Q_AUTOTEST_EXPORT FrameReader
+struct Q_AUTOTEST_EXPORT Frame
 {
-    friend class QT_PREPEND_NAMESPACE(QHttp2ProtocolHandler);
+    Frame();
+    // Reading these values without first forming a valid frame
+    // (either reading it from a socket or building it) will result
+    // in undefined behavior:
+    FrameType type() const;
+    quint32 streamID() const;
+    FrameFlags flags() const;
+    quint32 payloadSize() const;
+    uchar padding() const;
+    // In HTTP/2 a stream's priority is specified by its weight
+    // and a stream (id) it depends on:
+    bool priority(quint32 *streamID = nullptr,
+                  uchar *weight = nullptr) const;
 
-public:
-    FrameReader() = default;
+    FrameStatus validateHeader() const;
+    FrameStatus validatePayload() const;
 
-    FrameReader(const FrameReader &) = default;
-    FrameReader(FrameReader &&rhs);
-
-    FrameReader &operator = (const FrameReader &) = default;
-    FrameReader &operator = (FrameReader &&rhs);
-
-    FrameStatus read(QAbstractSocket &socket);
-
-    bool padded(uchar *pad) const;
-    bool priority(quint32 *streamID, uchar *weight) const;
-
-    // N of bytes without padding and/or priority
+    // Number of payload bytes without padding and/or priority
     quint32 dataSize() const;
     // Beginning of payload without priority/padding
     // bytes.
     const uchar *dataBegin() const;
 
-    FrameType type = FrameType::LAST_FRAME_TYPE;
-    FrameFlags flags = FrameFlag::EMPTY;
-    quint32 streamID = 0;
-    quint32 payloadSize = 0;
+    std::vector<uchar> buffer;
+};
 
+class Q_AUTOTEST_EXPORT FrameReader
+{
+public:
+    FrameStatus read(QAbstractSocket &socket);
+
+    Frame &inboundFrame()
+    {
+        return frame;
+    }
 private:
     bool readHeader(QAbstractSocket &socket);
     bool readPayload(QAbstractSocket &socket);
 
-    enum ReaderState {
-        Idle,
-        ReadingHeader,
-        ReadingPayload
-    };
-
-    ReaderState state = Idle;
-
-    // As soon as we got a header, we
-    // know payload size, offset is
-    // needed if we do not have enough
-    // data and will read the next chunk.
     quint32 offset = 0;
-    std::vector<uchar> frameBuffer;
+    Frame frame;
 };
 
 class Q_AUTOTEST_EXPORT FrameWriter
 {
-    friend class QT_PREPEND_NAMESPACE(QHttp2ProtocolHandler);
-
 public:
     using payload_type = std::vector<uchar>;
     using size_type = payload_type::size_type;
@@ -128,19 +122,17 @@ public:
     FrameWriter();
     FrameWriter(FrameType type, FrameFlags flags, quint32 streamID);
 
+    Frame &outboundFrame()
+    {
+        return frame;
+    }
+
+    // Frame 'builders':
     void start(FrameType type, FrameFlags flags, quint32 streamID);
-
     void setPayloadSize(quint32 size);
-    quint32 payloadSize() const;
-
     void setType(FrameType type);
-    FrameType type() const;
-
     void setFlags(FrameFlags flags);
     void addFlag(FrameFlag flag);
-    FrameFlags flags() const;
-
-    quint32 streamID() const;
 
     // All append functions also update frame's payload
     // length.
@@ -151,7 +143,11 @@ public:
         qToBigEndian(val, wired);
         append(wired, wired + sizeof val);
     }
-    void append(uchar val);
+    void append(uchar val)
+    {
+        frame.buffer.push_back(val);
+        updatePayloadSize();
+    }
     void append(Settings identifier)
     {
         append(quint16(identifier));
@@ -163,25 +159,23 @@ public:
 
     void append(const uchar *begin, const uchar *end);
 
-    // Write 'frameBuffer' as a single frame:
+    // Write as a single frame:
     bool write(QAbstractSocket &socket) const;
-    // Write as a single frame if we can, or write headers and
-    // CONTINUATION(s) frame(s).
+    // Two types of frames we are sending are affected by
+    // frame size limits: HEADERS and DATA. HEADERS' payload
+    // (hpacked HTTP headers, following a frame header)
+    // is always in our 'buffer', we send the initial HEADERS
+    // frame first and then CONTINUTATION frame(s) if needed:
     bool writeHEADERS(QAbstractSocket &socket, quint32 sizeLimit);
-    // Write either a single DATA frame or several DATA frames
-    // depending on 'sizeLimit'. Data itself is 'external' to
-    // FrameWriter, since it's a 'readPointer' from QNonContiguousData.
+    // With DATA frames the actual payload is never in our 'buffer',
+    // it's a 'readPointer' from QNonContiguousData. We split
+    // this payload as needed into DATA frames with correct
+    // payload size fitting into frame size limit:
     bool writeDATA(QAbstractSocket &socket, quint32 sizeLimit,
                    const uchar *src, quint32 size);
-
-    std::vector<uchar> &rawFrameBuffer()
-    {
-        return frameBuffer;
-    }
-
 private:
     void updatePayloadSize();
-    std::vector<uchar> frameBuffer;
+    Frame frame;
 };
 
 }

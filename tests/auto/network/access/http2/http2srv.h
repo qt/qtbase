@@ -126,10 +126,11 @@ private:
 
     bool connectionError = false;
 
-    Http2::FrameReader inboundFrame;
-    Http2::FrameWriter outboundFrame;
+    Http2::FrameReader reader;
+    Http2::Frame inboundFrame;
+    Http2::FrameWriter writer;
 
-    using FrameSequence = std::vector<Http2::FrameReader>;
+    using FrameSequence = std::vector<Http2::Frame>;
     FrameSequence continuedRequest;
 
     std::map<quint32, quint32> streamWindows;

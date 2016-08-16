@@ -120,14 +120,14 @@ void Http2Server::sendServerSettings()
     if (!serverSettings.size())
         return;
 
-    outboundFrame.start(FrameType::SETTINGS, FrameFlag::EMPTY, connectionStreamID);
+    writer.start(FrameType::SETTINGS, FrameFlag::EMPTY, connectionStreamID);
     for (const auto &s : serverSettings) {
-        outboundFrame.append(s.identifier);
-        outboundFrame.append(s.value);
+        writer.append(s.identifier);
+        writer.append(s.value);
         if (s.identifier == Settings::INITIAL_WINDOW_SIZE_ID)
             streamRecvWindowSize = s.value;
     }
-    outboundFrame.write(*socket);
+    writer.write(*socket);
     // Now, let's update our peer on a session recv window size:
     const quint32 updatedSize = 10 * streamRecvWindowSize;
     if (sessionRecvWindowSize < updatedSize) {
@@ -145,19 +145,19 @@ void Http2Server::sendGOAWAY(quint32 streamID, quint32 error, quint32 lastStream
 {
     Q_ASSERT(socket);
 
-    outboundFrame.start(FrameType::GOAWAY, FrameFlag::EMPTY, streamID);
-    outboundFrame.append(lastStreamID);
-    outboundFrame.append(error);
-    outboundFrame.write(*socket);
+    writer.start(FrameType::GOAWAY, FrameFlag::EMPTY, streamID);
+    writer.append(lastStreamID);
+    writer.append(error);
+    writer.write(*socket);
 }
 
 void Http2Server::sendRST_STREAM(quint32 streamID, quint32 error)
 {
     Q_ASSERT(socket);
 
-    outboundFrame.start(FrameType::RST_STREAM, FrameFlag::EMPTY, streamID);
-    outboundFrame.append(error);
-    outboundFrame.write(*socket);
+    writer.start(FrameType::RST_STREAM, FrameFlag::EMPTY, streamID);
+    writer.append(error);
+    writer.write(*socket);
 }
 
 void Http2Server::sendDATA(quint32 streamID, quint32 windowSize)
@@ -175,13 +175,13 @@ void Http2Server::sendDATA(quint32 streamID, quint32 windowSize)
     const uchar *src = reinterpret_cast<const uchar *>(responseBody.constData() + offset);
     const bool last = offset + bytes == quint32(responseBody.size());
 
-    outboundFrame.start(FrameType::DATA, FrameFlag::EMPTY, streamID);
-    outboundFrame.writeDATA(*socket, frameSizeLimit, src, bytes);
+    writer.start(FrameType::DATA, FrameFlag::EMPTY, streamID);
+    writer.writeDATA(*socket, frameSizeLimit, src, bytes);
 
     if (last) {
-        outboundFrame.start(FrameType::DATA, FrameFlag::END_STREAM, streamID);
-        outboundFrame.setPayloadSize(0);
-        outboundFrame.write(*socket);
+        writer.start(FrameType::DATA, FrameFlag::END_STREAM, streamID);
+        writer.setPayloadSize(0);
+        writer.write(*socket);
         suspendedStreams.erase(it);
         activeRequests.erase(streamID);
 
@@ -196,9 +196,9 @@ void Http2Server::sendWINDOW_UPDATE(quint32 streamID, quint32 delta)
 {
     Q_ASSERT(socket);
 
-    outboundFrame.start(FrameType::WINDOW_UPDATE, FrameFlag::EMPTY, streamID);
-    outboundFrame.append(delta);
-    outboundFrame.write(*socket);
+    writer.start(FrameType::WINDOW_UPDATE, FrameFlag::EMPTY, streamID);
+    writer.append(delta);
+    writer.write(*socket);
 }
 
 void Http2Server::incomingConnection(qintptr socketDescriptor)
@@ -298,7 +298,7 @@ void Http2Server::readReady()
     if (waitingClientPreface) {
         handleConnectionPreface();
     } else {
-        const auto status = inboundFrame.read(*socket);
+        const auto status = reader.read(*socket);
         switch (status) {
         case FrameStatus::incompleteFrame:
             break;
@@ -349,9 +349,11 @@ void Http2Server::handleIncomingFrame()
     // 7. RST_STREAM
     // 8. GOAWAY
 
+    inboundFrame = std::move(reader.inboundFrame());
+
     if (continuedRequest.size()) {
-        if (inboundFrame.type != FrameType::CONTINUATION ||
-            inboundFrame.streamID != continuedRequest.front().streamID) {
+        if (inboundFrame.type() != FrameType::CONTINUATION ||
+            inboundFrame.streamID() != continuedRequest.front().streamID()) {
             sendGOAWAY(connectionStreamID, PROTOCOL_ERROR, connectionStreamID);
             emit invalidFrame();
             connectionError = true;
@@ -359,7 +361,7 @@ void Http2Server::handleIncomingFrame()
         }
     }
 
-    switch (inboundFrame.type) {
+    switch (inboundFrame.type()) {
     case FrameType::SETTINGS:
         handleSETTINGS();
         break;
@@ -391,9 +393,9 @@ void Http2Server::handleSETTINGS()
 {
     // SETTINGS is either a part of the connection preface,
     // or a SETTINGS ACK.
-    Q_ASSERT(inboundFrame.type == FrameType::SETTINGS);
+    Q_ASSERT(inboundFrame.type() == FrameType::SETTINGS);
 
-    if (inboundFrame.flags.testFlag(FrameFlag::ACK)) {
+    if (inboundFrame.flags().testFlag(FrameFlag::ACK)) {
         if (!waitingClientAck || inboundFrame.dataSize()) {
             emit invalidFrame();
             connectionError = true;
@@ -434,17 +436,17 @@ void Http2Server::handleSETTINGS()
     }
 
     // Send SETTINGS ACK:
-    outboundFrame.start(FrameType::SETTINGS, FrameFlag::ACK, connectionStreamID);
-    outboundFrame.write(*socket);
+    writer.start(FrameType::SETTINGS, FrameFlag::ACK, connectionStreamID);
+    writer.write(*socket);
     waitingClientSettings = false;
     emit clientPrefaceOK();
 }
 
 void Http2Server::handleDATA()
 {
-    Q_ASSERT(inboundFrame.type == FrameType::DATA);
+    Q_ASSERT(inboundFrame.type() == FrameType::DATA);
 
-    const auto streamID = inboundFrame.streamID;
+    const auto streamID = inboundFrame.streamID();
 
     if (!is_valid_client_stream(streamID) ||
         closedStreams.find(streamID) != closedStreams.end()) {
@@ -454,7 +456,8 @@ void Http2Server::handleDATA()
         return;
     }
 
-    if (sessionCurrRecvWindow < inboundFrame.payloadSize) {
+    const auto payloadSize = inboundFrame.payloadSize();
+    if (sessionCurrRecvWindow < payloadSize) {
         // Client does not respect our session window size!
         emit invalidRequest(streamID);
         connectionError = true;
@@ -466,20 +469,21 @@ void Http2Server::handleDATA()
     if (it == streamWindows.end())
         it = streamWindows.insert(std::make_pair(streamID, streamRecvWindowSize)).first;
 
-    if (it->second < inboundFrame.payloadSize) {
+
+    if (it->second < payloadSize) {
         emit invalidRequest(streamID);
         connectionError = true;
         sendGOAWAY(connectionStreamID, FLOW_CONTROL_ERROR, connectionStreamID);
         return;
     }
 
-    it->second -= inboundFrame.payloadSize;
+    it->second -= payloadSize;
     if (it->second < streamRecvWindowSize / 2) {
         sendWINDOW_UPDATE(streamID, streamRecvWindowSize / 2);
         it->second += streamRecvWindowSize / 2;
     }
 
-    sessionCurrRecvWindow -= inboundFrame.payloadSize;
+    sessionCurrRecvWindow -= payloadSize;
 
     if (sessionCurrRecvWindow < sessionRecvWindowSize / 2) {
         // This is some quite naive and trivial logic on when to update.
@@ -488,7 +492,7 @@ void Http2Server::handleDATA()
         sessionCurrRecvWindow += sessionRecvWindowSize / 2;
     }
 
-    if (inboundFrame.flags.testFlag(FrameFlag::END_STREAM)) {
+    if (inboundFrame.flags().testFlag(FrameFlag::END_STREAM)) {
         closedStreams.insert(streamID); // Enter "half-closed remote" state.
         streamWindows.erase(it);
         emit receivedData(streamID);
@@ -497,7 +501,7 @@ void Http2Server::handleDATA()
 
 void Http2Server::handleWINDOW_UPDATE()
 {
-    const auto streamID = inboundFrame.streamID;
+    const auto streamID = inboundFrame.streamID();
     if (!streamID) // We ignore this for now to keep things simple.
         return;
 
@@ -527,9 +531,9 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
 {
     Q_ASSERT(activeRequests.find(streamID) != activeRequests.end());
 
-    outboundFrame.start(FrameType::HEADERS, FrameFlag::END_HEADERS, streamID);
+    writer.start(FrameType::HEADERS, FrameFlag::END_HEADERS, streamID);
     if (emptyBody)
-        outboundFrame.addFlag(FrameFlag::END_STREAM);
+        writer.addFlag(FrameFlag::END_STREAM);
 
     HttpHeader header = {{":status", "200"}};
     if (!emptyBody) {
@@ -537,13 +541,13 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
                          QString("%1").arg(responseBody.size()).toLatin1()));
     }
 
-    HPack::BitOStream ostream(outboundFrame.rawFrameBuffer());
+    HPack::BitOStream ostream(writer.outboundFrame().buffer);
     const bool result = encoder.encodeResponse(ostream, header);
     Q_ASSERT(result);
     Q_UNUSED(result)
 
     const quint32 maxFrameSize(clientSetting(Settings::MAX_FRAME_SIZE_ID, Http2::maxFrameSize));
-    outboundFrame.writeHEADERS(*socket, maxFrameSize);
+    writer.writeHEADERS(*socket, maxFrameSize);
 
     if (!emptyBody) {
         Q_ASSERT(suspendedStreams.find(streamID) == suspendedStreams.end());
@@ -563,7 +567,7 @@ void Http2Server::processRequest()
 {
     Q_ASSERT(continuedRequest.size());
 
-    if (!continuedRequest.back().flags.testFlag(FrameFlag::END_HEADERS))
+    if (!continuedRequest.back().flags().testFlag(FrameFlag::END_HEADERS))
         return;
 
     // We test here:
@@ -571,7 +575,7 @@ void Http2Server::processRequest()
     // 2. has priority set and dependency (it's 0x0 at the moment).
     // 3. header can be decompressed.
     const auto &headersFrame = continuedRequest.front();
-    const auto streamID = headersFrame.streamID;
+    const auto streamID = headersFrame.streamID();
     if (!is_valid_client_stream(streamID)) {
         emit invalidRequest(streamID);
         connectionError = true;
@@ -627,7 +631,7 @@ void Http2Server::processRequest()
 
     // Actually, if needed, we can do a comparison here.
     activeRequests[streamID] = decoder.decodedHeader();
-    if (headersFrame.flags.testFlag(FrameFlag::END_STREAM))
+    if (headersFrame.flags().testFlag(FrameFlag::END_STREAM))
         emit receivedRequest(streamID);
     // else - we're waiting for incoming DATA frames ...
     continuedRequest.clear();
