@@ -14,7 +14,6 @@ contains(QT_CONFIG, opengles2) {
     }
     DEFINES += QT_OPENGL_ES_2 QT_OPENGL_ES_2_ANGLE
     contains(QT_CONFIG, static): DEFINES += QT_OPENGL_ES_2_ANGLE_STATIC GL_APICALL= EGLAPI=
-    QT_CONFIG -= opengl
 } else {
     !contains(QT_CONFIG, dynamicgl) {
         QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
