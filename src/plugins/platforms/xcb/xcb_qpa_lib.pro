@@ -86,8 +86,7 @@ contains(QT_CONFIG, xcb-qt) {
 
 # libxkbcommon
 contains(QT_CONFIG, xkbcommon-qt) {
-    QT_CONFIG += use-xkbcommon-x11support
-    include(../../../3rdparty/xkbcommon.pri)
+    include(../../../3rdparty/xkbcommon-x11.pri)
 } else {
     QMAKE_USE += xkbcommon
 }

@@ -13,8 +13,6 @@ HEADERS += $$PWD/qcomposeplatforminputcontext.h \
 
 # libxkbcommon
 contains(QT_CONFIG, xkbcommon-qt): {
-    # dont't need x11 dependency for compose key plugin
-    QT_CONFIG -= use-xkbcommon-x11support
     include(../../../3rdparty/xkbcommon.pri)
 } else {
     QMAKE_USE += xkbcommon
