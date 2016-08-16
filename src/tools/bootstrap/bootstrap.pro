@@ -6,6 +6,10 @@ CONFIG += minimal_syncqt internal_module force_bootstrap
 
 MODULE_INCNAME = QtCore QtXml
 MODULE_DEFINES = \
+        QT_VERSION_STR=$$shell_quote(\"$$QT_VERSION\") \
+        QT_VERSION_MAJOR=$$QT_MAJOR_VERSION \
+        QT_VERSION_MINOR=$$QT_MINOR_VERSION \
+        QT_VERSION_PATCH=$$QT_PATCH_VERSION \
         QT_BOOTSTRAPPED \
         QT_LITE_UNICODE \
         QT_NO_CAST_TO_ASCII \

@@ -148,21 +148,11 @@ FEATURES_PRI = \
     "QT_DISABLED_FEATURES = \$\$unique(QT_DISABLED_FEATURES)"
 write_file($$OUT_PWD/mkspecs/qfeatures.pri, FEATURES_PRI)|error()
 
-# Create forwarding headers for qconfig.h
-FWD_QCONFIG_H = \
-    '$${LITERAL_HASH}include "../../src/corelib/global/qconfig.h"'
-write_file($$OUT_PWD/include/QtCore/qconfig.h, FWD_QCONFIG_H)|error()
-FWD_QTCONFIG = \
-    '$${LITERAL_HASH}include "qconfig.h"'
-write_file($$OUT_PWD/include/QtCore/QtConfig, FWD_QTCONFIG)|error()
-
 # Files created by us
 QMAKE_DISTCLEAN += \
     src/corelib/global/qfeatures.h \
     include/QtCore/qfeatures.h \
-    mkspecs/qfeatures.pri \
-    include/QtCore/qconfig.h \
-    include/QtCore/QtConfig
+    mkspecs/qfeatures.pri
 
 #mkspecs
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
