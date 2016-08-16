@@ -232,15 +232,15 @@ QString QMimeType::name() const
 /*!
     Returns the description of the MIME type to be displayed on user interfaces.
 
-    The system language (QLocale::system().name()) is used to select the appropriate translation.
+    The default language (QLocale().name()) is used to select the appropriate translation.
  */
 QString QMimeType::comment() const
 {
     QMimeDatabasePrivate::instance()->provider()->loadMimeTypePrivate(*d);
 
     QStringList languageList;
-    languageList << QLocale::system().name();
-    languageList << QLocale::system().uiLanguages();
+    languageList << QLocale().name();
+    languageList << QLocale().uiLanguages();
     Q_FOREACH (const QString &language, languageList) {
         const QString lang = language == QLatin1String("C") ? QLatin1String("en_US") : language;
         const QString comm = d->localeComments.value(lang);
