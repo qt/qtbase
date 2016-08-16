@@ -218,6 +218,10 @@ void QNetworkManagerEngine::disconnectFromId(const QString &id)
     QMutexLocker locker(&mutex);
 
     QNetworkManagerSettingsConnection *connection = connectionFromId(id);
+
+    if (!connection)
+        return;
+
     QNmSettingsMap map = connection->getSettings();
     bool connectionAutoconnect = map.value("connection").value("autoconnect",true).toBool(); //if not present is true !!
     if (connectionAutoconnect) { //autoconnect connections will simply be reconnected by nm
@@ -563,7 +567,7 @@ bool QNetworkManagerEngine::isConnectionActive(const QString &settingsPath)
     }
 
     QNetworkManagerSettingsConnection *settingsConnection = connectionFromId(settingsPath);
-    if (settingsConnection->getType() == DEVICE_TYPE_MODEM) {
+    if (settingsConnection && settingsConnection->getType() == DEVICE_TYPE_MODEM) {
         return isActiveContext(settingsConnection->path());
     }
 
