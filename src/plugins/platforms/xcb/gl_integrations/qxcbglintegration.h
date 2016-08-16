@@ -54,6 +54,7 @@ public:
     virtual bool initialize(QXcbConnection *connection) = 0;
 
     virtual bool supportsThreadedOpenGL() const { return false; }
+    virtual bool supportsSwitchableWidgetComposition()  const { return true; }
     virtual bool handleXcbEvent(xcb_generic_event_t *event, uint responseType);
 
     virtual QXcbWindow *createWindow(QWindow *window) const = 0;
