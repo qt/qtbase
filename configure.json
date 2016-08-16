@@ -1513,7 +1513,7 @@
             "condition": "tests.syslog",
             "output": [ "privateConfig" ]
         },
-        "stack_protector_strong": {
+        "stack-protector-strong": {
             "description": "stack protection",
             "condition": "config.qnx && tests.stack_protector",
             "output": [ "publicQtConfig" ]
