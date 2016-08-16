@@ -1083,6 +1083,8 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
     }
 
     d->edit->event(event);
+    if (!d->edit->text().isEmpty())
+        d->cleared = false;
     if (!isVisible())
         d->ignoreUpdateEdit = true;
 }

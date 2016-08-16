@@ -143,6 +143,8 @@ private slots:
 
     void positiveSign();
 
+    void interpretOnLosingFocus();
+
     void setGroupSeparatorShown_data();
     void setGroupSeparatorShown();
 
@@ -1148,6 +1150,33 @@ void tst_QSpinBox::positiveSign()
     QTest::keyClick(&spinBox, Qt::Key_2);
     QTest::keyClick(&spinBox, Qt::Key_0);
     QCOMPARE(spinBox.text(), QLatin1String("+20"));
+}
+
+void tst_QSpinBox::interpretOnLosingFocus()
+{
+    // QTBUG-55249: When typing an invalid value after QSpinBox::clear(),
+    // it should be fixed up on losing focus.
+
+    static const int minimumValue = 10;
+    static const int maximumValue = 20;
+
+    QWidget widget;
+    widget.setWindowTitle(QTest::currentTestFunction());
+    QVBoxLayout *layout = new QVBoxLayout(&widget);
+    QLineEdit *focusDummy = new QLineEdit("focusDummy", &widget);
+    layout->addWidget(focusDummy);
+    SpinBox *spinBox = new SpinBox(&widget);
+    spinBox->setRange(minimumValue, maximumValue);
+    spinBox->setValue(minimumValue);
+    layout->addWidget(spinBox);
+    spinBox->clear();
+    spinBox->setFocus();
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+    QTest::keyClick(spinBox, Qt::Key_1); // Too small
+    focusDummy->setFocus();
+    QCOMPARE(spinBox->value(), minimumValue);
+    QCOMPARE(spinBox->lineEdit()->text().toInt(), minimumValue);
 }
 
 void tst_QSpinBox::setGroupSeparatorShown_data()
