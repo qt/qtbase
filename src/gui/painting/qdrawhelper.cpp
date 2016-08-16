@@ -2417,6 +2417,87 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     }
                     fx = _mm_cvtsi128_si32(v_fx);
                     fy = _mm_cvtsi128_si32(v_fy);
+#elif defined(__ARM_NEON__)
+                    BILINEAR_ROTATE_BOUNDS_PROLOG
+
+                    const int16x8_t colorMask = vdupq_n_s16(0x00ff);
+                    const int16x8_t invColorMask = vmvnq_s16(colorMask);
+                    const int16x8_t v_256 = vdupq_n_s16(256);
+                    int32x4_t v_fdx = vdupq_n_s32(fdx * 4);
+                    int32x4_t v_fdy = vdupq_n_s32(fdy * 4);
+
+                    const uchar *textureData = data->texture.imageData;
+                    const int bytesPerLine = data->texture.bytesPerLine;
+
+                    int32x4_t v_fx = vmovq_n_s32(fx);
+                    int32x4_t v_fy = vmovq_n_s32(fy);
+                    fx += fdx; fy += fdy;
+                    v_fx = vsetq_lane_s32(fx, v_fx, 1);
+                    v_fy = vsetq_lane_s32(fy, v_fy, 1);
+                    fx += fdx; fy += fdy;
+                    v_fx = vsetq_lane_s32(fx, v_fx, 2);
+                    v_fy = vsetq_lane_s32(fy, v_fy, 2);
+                    fx += fdx; fy += fdy;
+                    v_fx = vsetq_lane_s32(fx, v_fx, 3);
+                    v_fy = vsetq_lane_s32(fy, v_fy, 3);
+                    fx += fdx; fy += fdy;
+
+                    const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
+                    const int32x4_t v_round = vdupq_n_s32(0x0800);
+
+                    while (b < boundedEnd) {
+                        uint32x4x2_t v_top, v_bot;
+
+                        int32x4_t v_fx_shifted, v_fy_shifted;
+                        v_fx_shifted = vshrq_n_s32(v_fx, 16);
+                        v_fy_shifted = vshrq_n_s32(v_fy, 16);
+
+                        int x1 = vgetq_lane_s32(v_fx_shifted, 0);
+                        int y1 = vgetq_lane_s32(v_fy_shifted, 0);
+                        const uchar *sl = textureData + bytesPerLine * y1;
+                        const uint *s1 = reinterpret_cast<const uint *>(sl);
+                        const uint *s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
+                        v_top = vld2q_lane_u32(s1 + x1, v_top, 0);
+                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 0);
+                        x1 = vgetq_lane_s32(v_fx_shifted, 1);
+                        y1 = vgetq_lane_s32(v_fy_shifted, 1);
+                        sl = textureData + bytesPerLine * y1;
+                        s1 = reinterpret_cast<const uint *>(sl);
+                        s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
+                        v_top = vld2q_lane_u32(s1 + x1, v_top, 1);
+                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 1);
+                        x1 = vgetq_lane_s32(v_fx_shifted, 2);
+                        y1 = vgetq_lane_s32(v_fy_shifted, 2);
+                        sl = textureData + bytesPerLine * y1;
+                        s1 = reinterpret_cast<const uint *>(sl);
+                        s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
+                        v_top = vld2q_lane_u32(s1 + x1, v_top, 2);
+                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 2);
+                        x1 = vgetq_lane_s32(v_fx_shifted, 3);
+                        y1 = vgetq_lane_s32(v_fy_shifted, 3);
+                        sl = textureData + bytesPerLine * y1;
+                        s1 = reinterpret_cast<const uint *>(sl);
+                        s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
+                        v_top = vld2q_lane_u32(s1 + x1, v_top, 3);
+                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 3);
+
+                        int32x4_t v_distx = vshrq_n_s32(vaddq_s32(vandq_s32(v_fx, v_ffff_mask), v_round), 12);
+                        int32x4_t v_disty = vshrq_n_s32(vaddq_s32(vandq_s32(v_fy, v_ffff_mask), v_round), 12);
+                        v_distx = vorrq_s32(v_distx, vshlq_n_s32(v_distx, 16));
+                        v_disty = vorrq_s32(v_disty, vshlq_n_s32(v_disty, 16));
+                        int16x8_t v_disty_ = vshlq_n_s16(vreinterpretq_s16_s32(v_disty), 4);
+
+                        interpolate_4_pixels_16_neon(
+                                    vreinterpretq_s16_u32(v_top.val[0]), vreinterpretq_s16_u32(v_top.val[1]),
+                                    vreinterpretq_s16_u32(v_bot.val[0]), vreinterpretq_s16_u32(v_bot.val[1]),
+                                    vreinterpretq_s16_s32(v_distx), vreinterpretq_s16_s32(v_disty),
+                                    v_disty_, colorMask, invColorMask, v_256, b);
+                        b += 4;
+                        v_fx = vaddq_s32(v_fx, v_fdx);
+                        v_fy = vaddq_s32(v_fy, v_fdy);
+                    }
+                    fx = vgetq_lane_s32(v_fx, 0);
+                    fy = vgetq_lane_s32(v_fy, 0);
 #endif
                 }
 
