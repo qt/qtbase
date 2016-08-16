@@ -2906,9 +2906,8 @@ qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone
     QDateTime takes into account the system's time zone information
     when dealing with DST. On modern Unix systems, this means it
     applies the correct historical DST data whenever possible. On
-    Windows and Windows CE, where the system doesn't support
-    historical DST data, historical accuracy is not maintained with
-    respect to DST.
+    Windows, where the system doesn't support historical DST data,
+    historical accuracy is not maintained with respect to DST.
 
     The range of valid dates taking DST into account is 1970-01-01 to
     the present, and rules are in place for handling DST correctly

@@ -153,10 +153,6 @@ QT_BEGIN_NAMESPACE
     On Windows, the variable names are case-insensitive, but case-preserving.
     QProcessEnvironment behaves accordingly.
 
-    On Windows CE, the concept of environment does not exist. This class will
-    keep the values set for compatibility with other platforms, but the values
-    set will have no effect on the processes being created.
-
     \sa QProcess, QProcess::systemEnvironment(), QProcess::setProcessEnvironment()
 */
 
@@ -505,9 +501,6 @@ void QProcessPrivate::Channel::clear()
     used as an input source for QXmlReader, or for generating data to
     be uploaded using QNetworkAccessManager.
 
-    \note On Windows CE, reading and writing to a process
-    is not supported.
-
     When the process exits, QProcess reenters the \l NotRunning state
     (the initial state), and emits finished().
 
@@ -753,7 +746,7 @@ void QProcessPrivate::Channel::clear()
 
 /*!
     \typedef QProcess::CreateProcessArgumentModifier
-    \note This typedef is only available on desktop Windows and Windows CE.
+    \note This typedef is only available on desktop Windows.
 
     On Windows, QProcess uses the Win32 API function \c CreateProcess to
     start child processes. While QProcess provides a comfortable way to start
@@ -1787,9 +1780,6 @@ void QProcess::setEnvironment(const QStringList &environment)
     using setEnvironment(). If no environment has been set, the
     environment of the calling process will be used.
 
-    \note The environment settings are ignored on Windows CE,
-    as there is no concept of an environment.
-
     \sa processEnvironment(), setEnvironment(), systemEnvironment()
 */
 QStringList QProcess::environment() const
@@ -1822,9 +1812,6 @@ void QProcess::setProcessEnvironment(const QProcessEnvironment &environment)
     process, or an empty object if no environment has been set using
     setEnvironment() or setProcessEnvironment(). If no environment has
     been set, the environment of the calling process will be used.
-
-    \note The environment settings are ignored on Windows CE,
-    as there is no concept of an environment.
 
     \sa setProcessEnvironment(), setEnvironment(), QProcessEnvironment::isEmpty()
 */

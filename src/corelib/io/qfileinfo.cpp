@@ -713,9 +713,6 @@ bool QFileInfo::exists(const QString &file)
 /*!
     Refreshes the information about the file, i.e. reads in information
     from the file system the next time a cached property is fetched.
-
-   \note On Windows CE, there might be a delay for the file system driver
-    to detect changes on the file.
 */
 void QFileInfo::refresh()
 {

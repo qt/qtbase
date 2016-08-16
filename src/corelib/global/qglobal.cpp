@@ -1147,19 +1147,17 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value WV_6_3   Operating system version 6.3, corresponds to Windows 8.1, introduced in Qt 5.2
     \value WV_10_0  Operating system version 10.0, corresponds to Windows 10, introduced in Qt 5.5
 
-    CE-based versions:
-
-    \value WV_CE    Windows CE
-    \value WV_CENET Windows CE .NET
-    \value WV_CE_5  Windows CE 5.x
-    \value WV_CE_6  Windows CE 6.x
+    \omitvalue WV_CE
+    \omitvalue WV_CENET
+    \omitvalue WV_CE_5
+    \omitvalue WV_CE_6
 
     The following masks can be used for testing whether a Windows
-    version is MS-DOS-based, NT-based, or CE-based:
+    version is MS-DOS-based or NT-based:
 
     \value WV_DOS_based MS-DOS-based version of Windows
     \value WV_NT_based  NT-based version of Windows
-    \value WV_CE_based  CE-based version of Windows
+    \omitvalue WV_CE_based
 
     \value WV_None Operating system other than Windows.
 
@@ -1282,14 +1280,14 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined on all supported versions of Windows. That is, if
-    \l Q_OS_WIN32, \l Q_OS_WIN64, \l Q_OS_WINCE or \l Q_OS_WINRT is defined.
+    \l Q_OS_WIN32, \l Q_OS_WIN64, or \l Q_OS_WINRT is defined.
 */
 
 /*!
     \macro Q_OS_WIN32
     \relates <QtGlobal>
 
-    Defined on 32-bit and 64-bit versions of Windows (not on Windows CE).
+    Defined on 32-bit and 64-bit versions of Windows.
 */
 
 /*!
@@ -1297,13 +1295,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined on 64-bit versions of Windows.
-*/
-
-/*!
-    \macro Q_OS_WINCE
-    \relates <QtGlobal>
-
-    Defined on Windows CE.
 */
 
 /*!
@@ -2596,11 +2587,11 @@ static QString unknownText()
     so applications can rely on the returned value as an identifier, except
     that new OS kernel types may be added over time.
 
-    On Windows, this function returns the type of Windows kernel, like "wince"
-    or "winnt". On Unix systems, it returns the same as the output of \c{uname
+    On Windows, this function returns the type of Windows kernel, like "winnt".
+    On Unix systems, it returns the same as the output of \c{uname
     -s} (lowercased).
 
-    Note that this function may return surprising values: it returns "linux"
+    \note This function may return surprising values: it returns "linux"
     for all operating systems running Linux (including Android), "qnx" for all
     operating systems running QNX, "freebsd" for
     Debian/kFreeBSD, and "darwin" for \macos and iOS. For information on the type
@@ -2678,8 +2669,7 @@ QString QSysInfo::kernelVersion()
     "unknown" otherwise.
 
     \b{Windows note}: this function returns "winphone" for builds for Windows
-    Phone, "winrt" for WinRT builds, "wince" for Windows CE and Embedded
-    Compact builds, and "windows" for normal desktop builds.
+    Phone, "winrt" for WinRT builds, and "windows" for normal desktop builds.
 
     For other Unix-type systems, this function usually returns "unknown".
 
