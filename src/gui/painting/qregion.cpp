@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
 
     \section1 Additional License Information
 
-    On Embedded Linux, Windows CE and X11 platforms, parts of this class rely on
+    On Embedded Linux and X11 platforms, parts of this class rely on
     code obtained under the following licenses:
 
     \legalese
