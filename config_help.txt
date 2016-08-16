@@ -58,6 +58,9 @@ Configure meta:
   -redo ................ Re-configure with previously used options.
                          Additional options may be passed, but will not be
                          saved for later use by -redo.
+  -recheck ............. Discard cached negative configure test results.
+                         Use this after installing missing dependencies.
+  -recheck-all ......... Discard all cached configure test results.
 
 Build options:
 

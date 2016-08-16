@@ -92,6 +92,8 @@ defineTest(qtConfTest_architecture) {
     export($${1}.subarch)
     qtLog("Detected architecture: $$eval($${1}.arch) ($$eval($${1}.subarch))")
 
+    $${1}.cache += arch subarch
+    export($${1}.cache)
     return(true)
 }
 
@@ -182,9 +184,12 @@ defineTest(qtConfTest_detectPkgConfig) {
         export($${1}.pkgConfigLibdir)
         $${1}.pkgConfigSysrootDir = $$pkgConfigSysrootDir
         export($${1}.pkgConfigSysrootDir)
+        $${1}.cache += pkgConfigLibdir pkgConfigSysrootDir
     }
     $${1}.pkgConfig = $$pkgConfig
     export($${1}.pkgConfig)
+    $${1}.cache += pkgConfig
+    export($${1}.cache)
 
     PKG_CONFIG = $$pkgConfig
     export(PKG_CONFIG)
@@ -215,6 +220,8 @@ defineTest(qtConfTest_skipModules) {
     }
     $${1}.value = $$unique(skip)
     export($${1}.value)
+    $${1}.cache += value
+    export($${1}.cache)
     return(true)
 }
 
@@ -236,6 +243,8 @@ defineTest(qtConfTest_buildParts) {
 
     $${1}.value = $$parts
     export($${1}.value)
+    $${1}.cache += value
+    export($${1}.cache)
     return(true)
 }
 
@@ -283,6 +292,8 @@ defineTest(qtConfTest_checkCompiler) {
     export($${1}.compilerDescription)
     export($${1}.compilerId)
     export($${1}.compilerVersion)
+    $${1}.cache += compilerDescription compilerId compilerVersion
+    export($${1}.cache)
     return(true)
 }
 
@@ -409,6 +420,8 @@ defineTest(qtConfTest_xkbConfigRoot) {
         exists($$dir) {
             $${1}.value = $$dir
             export($${1}.value)
+            $${1}.cache += value
+            export($${1}.cache)
             return(true)
         }
     }
@@ -434,6 +447,8 @@ defineTest(qtConfTest_qpaDefaultPlatform) {
     export($${1}.value)
     export($${1}.plugin)
     export($${1}.name)
+    $${1}.cache += value plugin name
+    export($${1}.cache)
     return(true)
 }
 

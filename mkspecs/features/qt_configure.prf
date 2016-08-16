@@ -1,6 +1,9 @@
 CONFIG -= qt debug_and_release
 load(configure_base)
 
+QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_CACHE_)/config.cache
+QMAKE_CONFIG_CACHE_USE = all
+
 QT_CONFIGURE_REPORT =
 QT_CONFIGURE_NOTES =
 QT_CONFIGURE_WARNINGS =
@@ -195,6 +198,17 @@ defineTest(qtConfParseCommandLine) {
         contains(c, "^-no-v")|contains(c, "^--?no-verbose") {
             QMAKE_CONFIG_VERBOSE = false
             export(QMAKE_CONFIG_VERBOSE)
+            next()
+        }
+
+        contains(c, "^--?recheck") {
+            QMAKE_CONFIG_CACHE_USE = positive
+            export(QMAKE_CONFIG_CACHE_USE)
+            next()
+        }
+        contains(c, "^--?recheck-all") {
+            QMAKE_CONFIG_CACHE_USE = none
+            export(QMAKE_CONFIG_CACHE_USE)
             next()
         }
 
@@ -499,6 +513,8 @@ defineTest(qtConfTest_getPkgConfigVariable) {
     variable = $$eval($${1}.pkg-config-variable)
     qtRunLoggedCommand("$$pkg_config --variable=$$variable $$args", $${1}.value)|return(false)
     export($${1}.value)
+    $${1}.cache += value
+    export($${1}.cache)
     return(true)
 }
 
@@ -562,6 +578,11 @@ defineTest(qtConfHandleLibrary) {
 
     qtConfEnsureTestTypeDeps("library")
 
+    qtConfLoadResult($${lpfx}, $$1) {
+        qtConfExportLibrary($${lpfx}.sources.$$eval($${lpfx}.source), $$eval($${lpfx}.export))
+        return()
+    }
+
     qtLogTestIntro($${lpfx})
     msg = "looking for library $${1}"
     write_file($$QMAKE_CONFIG_LOG, msg, append)
@@ -596,6 +617,12 @@ defineTest(qtConfHandleLibrary) {
             }
         }
 
+        $${lpfx}.cache += source
+        for (v, $$list(libs includes cflags version export)): \
+            $${lpfx}.cache += sources.$${s}.$${v}
+        for (b, $${spfx}.builds._KEYS_): \
+            $${lpfx}.cache += sources.$${s}.builds.$${b}
+
         # immediately output the library as well.
         qtConfExportLibrary($${spfx}, $$eval($${lpfx}.export))
 
@@ -609,6 +636,7 @@ defineTest(qtConfHandleLibrary) {
 
     $${lpfx}.result = $$result
     export($${lpfx}.result)
+    qtConfSaveResult($${lpfx}, $$1)
 }
 
 # This is a fake test type for the test dependency system.
@@ -760,6 +788,28 @@ defineTest(qtLogTestResult) {
     write_file($$QMAKE_CONFIG_LOG, msg, append)
 }
 
+defineTest(qtConfSaveResult) {
+    keys = result $$eval($${1}.cache)
+    cont = "cache.$${2}._KEYS_ = $$keys"
+    for (k, keys): \
+        cont += "cache.$${2}.$${k} = $$val_escape($${1}.$${k})"
+    write_file($$QMAKE_CONFIG_CACHE, cont, append)|error()
+}
+
+defineTest(qtConfLoadResult) {
+    equals(QMAKE_CONFIG_CACHE_USE, none): \
+        return(false)
+    isEmpty(cache.$${2}._KEYS_): \
+        return(false)
+    equals(QMAKE_CONFIG_CACHE_USE, positive):!$$eval(cache.$${2}.result): \
+        return(false)
+    for (k, cache.$${2}._KEYS_) {
+        $${1}.$${k} = $$eval(cache.$${2}.$${k})
+        export($${1}.$${k})
+    }
+    return(true)
+}
+
 defineTest(qtConfIsBoolean) {
     equals(1, "true")|equals(1, "false"): \
         return(true)
@@ -832,6 +882,12 @@ defineTest(qtRunSingleTest) {
         !$${preCall}($${tpfx}): result = false
 
     $$result {
+        # note: we do this only after resolving the dependencies and the
+        # preparation (which may resolve libraries), so that caching does
+        # not alter the execution order (and thus the output).
+        qtConfLoadResult($${tpfx}, $$1): \
+            return()
+
         qtLogTestIntro($${tpfx})
         msg = "executing config test $${1}"
         write_file($$QMAKE_CONFIG_LOG, msg, append)
@@ -843,6 +899,7 @@ defineTest(qtRunSingleTest) {
 
     $${tpfx}.result = $$result
     export($${tpfx}.result)
+    qtConfSaveResult($${tpfx}, $$1)
 }
 
 defineReplace(qtConfEvaluate) {
@@ -1495,6 +1552,20 @@ defineTest(qtConfigure) {
     qtConfSetupTestTypeDeps()
 
     qtConfParseCommandLine()
+
+    !equals(QMAKE_CONFIG_CACHE_USE, none) {
+        include($$QMAKE_CONFIG_CACHE, , true)
+        # this crudely determines when to discard the cache. this also catches the case
+        # of no cache being there in the first place.
+        !equals(cache.platform, $$[QMAKE_SPEC])|!equals(cache.xplatform, $$[QMAKE_XSPEC]): \
+            QMAKE_CONFIG_CACHE_USE = none
+    }
+    equals(QMAKE_CONFIG_CACHE_USE, none) {
+        cont = \
+            "cache.platform = $$[QMAKE_SPEC]" \
+            "cache.xplatform = $$[QMAKE_XSPEC]"
+        write_file($$QMAKE_CONFIG_CACHE, cont)
+    }
 
     # do early checks, mainly to validate the command line
     qtConfProcessEarlyChecks()
