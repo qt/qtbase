@@ -113,7 +113,8 @@ uint QDBusMenuLayoutItem::populate(int id, int depth, const QStringList &propert
 
 void QDBusMenuLayoutItem::populate(const QDBusPlatformMenu *menu, int depth, const QStringList &propertyNames)
 {
-    Q_FOREACH (QDBusPlatformMenuItem *item, menu->items()) {
+    const auto items = menu->items();
+    for (QDBusPlatformMenuItem *item : items) {
         QDBusMenuLayoutItem child;
         child.populate(item, depth - 1, propertyNames);
         m_children << child;
@@ -136,7 +137,7 @@ const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuLayoutItem &i
     arg.beginStructure();
     arg << item.m_id << item.m_properties;
     arg.beginArray(qMetaTypeId<QDBusVariant>());
-    foreach (const QDBusMenuLayoutItem& child, item.m_children)
+    for (const QDBusMenuLayoutItem &child : item.m_children)
         arg << QDBusVariant(QVariant::fromValue<QDBusMenuLayoutItem>(child));
     arg.endArray();
     arg.endStructure();
@@ -213,9 +214,9 @@ QDBusMenuItemList QDBusMenuItem::items(const QList<int> &ids, const QStringList 
 {
     Q_UNUSED(propertyNames)
     QDBusMenuItemList ret;
-    QList<const QDBusPlatformMenuItem *> items = QDBusPlatformMenuItem::byIds(ids);
+    const QList<const QDBusPlatformMenuItem *> items = QDBusPlatformMenuItem::byIds(ids);
     ret.reserve(items.size());
-    Q_FOREACH (const QDBusPlatformMenuItem *item, items)
+    for (const QDBusPlatformMenuItem *item : items)
         ret << QDBusMenuItem(item);
     return ret;
 }
