@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \property QAbstractProxyModel::sourceModel
 
-    \brief the source model this proxy model.
+    \brief the source model of this proxy model.
 */
 
 //detects the deletion of the source model
