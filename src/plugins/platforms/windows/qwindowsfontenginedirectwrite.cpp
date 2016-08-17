@@ -46,6 +46,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QtEndian>
 #include <QtCore/QVarLengthArray>
+#include <QtCore/QFile>
 #include <private/qstringiterator_p.h>
 #include <QtCore/private/qsystemlibrary_p.h>
 
@@ -236,6 +237,82 @@ QWindowsFontEngineDirectWrite::~QWindowsFontEngineDirectWrite()
         m_directWriteBitmapRenderTarget->Release();
 }
 
+#ifndef Q_CC_MINGW
+typedef IDWriteLocalFontFileLoader QIdWriteLocalFontFileLoader;
+
+static UUID uuidIdWriteLocalFontFileLoader()
+{
+    return __uuidof(IDWriteLocalFontFileLoader);
+}
+#else // !Q_CC_MINGW
+DECLARE_INTERFACE_(QIdWriteLocalFontFileLoader, IDWriteFontFileLoader)
+{
+    STDMETHOD(GetFilePathLengthFromKey)(THIS_ void const *, UINT32, UINT32*) PURE;
+    STDMETHOD(GetFilePathFromKey)(THIS_ void const *, UINT32, WCHAR *, UINT32) PURE;
+    STDMETHOD(GetLastWriteTimeFromKey)(THIS_ void const *, UINT32, FILETIME *) PURE;
+};
+
+static UUID uuidIdWriteLocalFontFileLoader()
+{
+    static const UUID result = { 0xb2d9f3ec, 0xc9fe, 0x4a11, {0xa2, 0xec, 0xd8, 0x62, 0x8, 0xf7, 0xc0, 0xa2}};
+    return result;
+}
+#endif // Q_CC_MINGW
+
+QString QWindowsFontEngineDirectWrite::filenameFromFontFile(IDWriteFontFile *fontFile)
+{
+    IDWriteFontFileLoader *loader = Q_NULLPTR;
+
+    HRESULT hr = fontFile->GetLoader(&loader);
+    if (FAILED(hr)) {
+        qErrnoWarning("%s: GetLoader failed", __FUNCTION__);
+        return QString();
+    }
+
+    QIdWriteLocalFontFileLoader *localLoader = Q_NULLPTR;
+    hr = loader->QueryInterface(uuidIdWriteLocalFontFileLoader(),
+                                reinterpret_cast<void **>(&localLoader));
+
+    const void *fontFileReferenceKey = Q_NULLPTR;
+    UINT32 fontFileReferenceKeySize = 0;
+    if (SUCCEEDED(hr)) {
+        hr = fontFile->GetReferenceKey(&fontFileReferenceKey,
+                                       &fontFileReferenceKeySize);
+        if (FAILED(hr))
+            qErrnoWarning(hr, "%s: GetReferenceKey failed", __FUNCTION__);
+    }
+
+    UINT32 filePathLength = 0;
+    if (SUCCEEDED(hr)) {
+        hr = localLoader->GetFilePathLengthFromKey(fontFileReferenceKey,
+                                                   fontFileReferenceKeySize,
+                                                   &filePathLength);
+        if (FAILED(hr))
+            qErrnoWarning(hr, "GetFilePathLength failed", __FUNCTION__);
+    }
+
+    QString ret;
+    if (SUCCEEDED(hr) && filePathLength > 0) {
+        QVarLengthArray<wchar_t> filePath(filePathLength + 1);
+
+        hr = localLoader->GetFilePathFromKey(fontFileReferenceKey,
+                                             fontFileReferenceKeySize,
+                                             filePath.data(),
+                                             filePathLength + 1);
+        if (FAILED(hr))
+            qErrnoWarning(hr, "%s: GetFilePathFromKey failed", __FUNCTION__);
+        else
+            ret = QString::fromWCharArray(filePath.data());
+    }
+
+    if (localLoader != Q_NULLPTR)
+        localLoader->Release();
+
+    if (loader != Q_NULLPTR)
+        loader->Release();
+    return ret;
+}
+
 void QWindowsFontEngineDirectWrite::collectMetrics()
 {
     DWRITE_FONT_METRICS metrics;
@@ -250,6 +327,13 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
     m_xHeight = DESIGN_TO_LOGICAL(metrics.xHeight);
     m_lineGap = DESIGN_TO_LOGICAL(metrics.lineGap);
     m_underlinePosition = DESIGN_TO_LOGICAL(metrics.underlinePosition);
+
+    IDWriteFontFile *fontFile = Q_NULLPTR;
+    UINT32 numberOfFiles = 1;
+    if (SUCCEEDED(m_directWriteFontFace->GetFiles(&numberOfFiles, &fontFile))) {
+        m_faceId.filename = QFile::encodeName(filenameFromFontFile(fontFile));
+        fontFile->Release();
+    }
 }
 
 QFixed QWindowsFontEngineDirectWrite::underlinePosition() const
@@ -349,6 +433,11 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
         recalcAdvances(glyphs, 0);
 
     return true;
+}
+
+QFontEngine::FaceId QWindowsFontEngineDirectWrite::faceId() const
+{
+    return m_faceId;
 }
 
 void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags) const
