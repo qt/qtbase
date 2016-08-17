@@ -46,6 +46,7 @@ static BaselineProtocol proto;
 static bool connected = false;
 static bool triedConnecting = false;
 static bool dryRunMode = false;
+static enum { UploadMissing, UploadAll, UploadNone } baselinePolicy = UploadMissing;
 
 static QByteArray curFunction;
 static ImageItemList itemList;
@@ -77,6 +78,10 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
         } else if (arg == "-adhoc") {
             customAutoModeSet = true;
             customInfo.setAdHocRun(true);
+        } else if (arg == "-setbaselines") {
+            baselinePolicy = UploadAll;
+        } else if (arg == "-nosetbaselines") {
+            baselinePolicy = UploadNone;
         } else if (arg == "-compareto") {
             i++;
             int split = qMax(0, nextArg.indexOf('='));
@@ -108,6 +113,8 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
         out << " -simfail            : Force an image comparison mismatch. For testing purposes.\n";
         out << " -auto               : Inform server that this run is done by a daemon, CI system or similar.\n";
         out << " -adhoc (default)    : The inverse of -auto; this run is done by human, e.g. for testing.\n";
+        out << " -setbaselines       : Store ALL rendered images as new baselines. Forces replacement of previous baselines.\n";
+        out << " -nosetbaselines     : Do not store rendered images as new baselines when previous baselines are missing.\n";
         out << " -compareto KEY=VAL  : Force comparison to baselines from a different client,\n";
         out << "                       for example: -compareto QtVersion=4.8.0\n";
         out << "                       Multiple -compareto client specifications may be given.\n";
@@ -276,8 +283,8 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         return true;
         break;
     case ImageItem::BaselineNotFound:
-        if (!customInfo.overrides().isEmpty()) {
-            qWarning() << "Cannot compare to other system's baseline: No such baseline found on server.";
+        if (!customInfo.overrides().isEmpty() || baselinePolicy == UploadNone) {
+            qWarning() << "Cannot compare to baseline: No such baseline found on server.";
             return true;
         }
         if (proto.submitNewBaseline(item, &srvMsg))
@@ -296,6 +303,14 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
     if (baseline.imageChecksums.contains(item.imageChecksums.at(0))) {
         if (!proto.submitMatch(item, &srvMsg))
             qWarning() << "Failed to report image match to server:" << srvMsg;
+        return true;
+    }
+    // At this point, we have established a legitimate mismatch
+    if (baselinePolicy == UploadAll) {
+        if (proto.submitNewBaseline(item, &srvMsg))
+            qDebug() << msg->constData() << "Forcing new baseline; uploaded ok.";
+        else
+            qDebug() << msg->constData() << "Forcing new baseline; uploading failed:" << srvMsg;
         return true;
     }
     bool fuzzyMatch = false;
