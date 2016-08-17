@@ -282,7 +282,9 @@ void QWinRTWindow::setWindowTitle(const QString &title)
 {
     Q_D(QWinRTWindow);
     d->windowTitle = title;
-    d->screen->updateWindowTitle();
+
+    if (d->screen->topWindow() == window())
+        d->screen->updateWindowTitle(title);
 }
 
 void QWinRTWindow::raise()

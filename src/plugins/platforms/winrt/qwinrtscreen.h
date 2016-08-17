@@ -106,7 +106,7 @@ public:
     void raise(QWindow *window);
     void lower(QWindow *window);
 
-    void updateWindowTitle();
+    void updateWindowTitle(const QString &title);
 
     ABI::Windows::UI::Core::ICoreWindow *coreWindow() const;
     ABI::Windows::UI::Xaml::IDependencyObject *canvas() const;
