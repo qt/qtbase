@@ -128,7 +128,7 @@ QSslDiffieHellmanParameters::QSslDiffieHellmanParameters(const QByteArray &encod
 
 /*!
     Constructs a QSslDiffieHellmanParameters object by
-    reading from \a device in either PEM or DER form.
+    reading from \a device in either PEM or DER form as specified by \a encoding.
 
     After construction, the isValid() method should be used
     to check whether the Diffie-Hellman parameters were valid
