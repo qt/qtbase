@@ -3401,14 +3401,12 @@ void tst_QObject::dumpObjectInfo()
     QObject a, b;
     QObject::connect(&a, SIGNAL(destroyed(QObject*)), &b, SLOT(deleteLater()));
     a.disconnect(&b);
-#ifdef QT_DEBUG
     QTest::ignoreMessage(QtDebugMsg, "OBJECT QObject::unnamed");
     QTest::ignoreMessage(QtDebugMsg, "  SIGNALS OUT");
     QTest::ignoreMessage(QtDebugMsg, "        signal: destroyed(QObject*)");
     QTest::ignoreMessage(QtDebugMsg, "          <Disconnected receiver>");
     QTest::ignoreMessage(QtDebugMsg, "  SIGNALS IN");
     QTest::ignoreMessage(QtDebugMsg, "        <None>");
-#endif
     a.dumpObjectInfo(); // should not crash
 }
 

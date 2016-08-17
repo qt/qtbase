@@ -3943,7 +3943,6 @@ QList<QByteArray> QObject::dynamicPropertyNames() const
 
 static void dumpRecursive(int level, QObject *object)
 {
-#if defined(QT_DEBUG)
     if (object) {
         QByteArray buf;
         buf.fill(' ', level / 2 * 8);
@@ -3972,18 +3971,10 @@ static void dumpRecursive(int level, QObject *object)
                 dumpRecursive(level+1, children.at(i));
         }
     }
-#else
-    Q_UNUSED(level)
-        Q_UNUSED(object)
-#endif
 }
 
 /*!
     Dumps a tree of children to the debug output.
-
-    This function is useful for debugging, but does nothing if the
-    library has been compiled in release mode (i.e. without debugging
-    information).
 
     \sa dumpObjectInfo()
 */
@@ -3997,16 +3988,11 @@ void QObject::dumpObjectTree()
     Dumps information about signal connections, etc. for this object
     to the debug output.
 
-    This function is useful for debugging, but does nothing if the
-    library has been compiled in release mode (i.e. without debugging
-    information).
-
     \sa dumpObjectTree()
 */
 
 void QObject::dumpObjectInfo()
 {
-#if defined(QT_DEBUG)
     qDebug("OBJECT %s::%s", metaObject()->className(),
            objectName().isEmpty() ? "unnamed" : objectName().toLocal8Bit().data());
 
@@ -4066,7 +4052,6 @@ void QObject::dumpObjectInfo()
     } else {
         qDebug("        <None>");
     }
-#endif
 }
 
 #ifndef QT_NO_USERDATA
