@@ -760,7 +760,7 @@ void QWinRTScreen::addWindow(QWindow *window)
 {
     Q_D(QWinRTScreen);
     qCDebug(lcQpaWindows) << __FUNCTION__ << window;
-    if (window == topWindow())
+    if (window == topWindow() || window->surfaceClass() == QSurface::Offscreen)
         return;
 
     d->visibleWindows.prepend(window);
@@ -803,6 +803,8 @@ void QWinRTScreen::lower(QWindow *window)
     Q_D(QWinRTScreen);
     const bool wasTopWindow = window == topWindow();
     if (wasTopWindow && d->visibleWindows.size() == 1)
+        return;
+    if (window->surfaceClass() == QSurface::Offscreen)
         return;
     d->visibleWindows.removeAll(window);
     d->visibleWindows.append(window);

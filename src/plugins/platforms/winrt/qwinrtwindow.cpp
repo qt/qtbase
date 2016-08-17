@@ -189,6 +189,8 @@ QWinRTWindow::~QWinRTWindow()
     });
     RETURN_VOID_IF_FAILED("Failed to completely destroy window resources, likely because the application is shutting down");
 
+    d->screen->removeWindow(window());
+
     if (!d->surface)
         return;
 
