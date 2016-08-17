@@ -242,20 +242,20 @@ public:
 
     void retranslateUi(QWidget *qdesigner_internal__PreviewWidget)
     {
-        qdesigner_internal__PreviewWidget->setWindowTitle(QApplication::translate("qdesigner_internal::PreviewWidget", "Preview Window", 0));
-        LineEdit1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "LineEdit", 0));
+        qdesigner_internal__PreviewWidget->setWindowTitle(QApplication::translate("qdesigner_internal::PreviewWidget", "Preview Window", Q_NULLPTR));
+        LineEdit1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "LineEdit", Q_NULLPTR));
         ComboBox1->clear();
         ComboBox1->insertItems(0, QStringList()
-         << QApplication::translate("qdesigner_internal::PreviewWidget", "ComboBox", 0)
+         << QApplication::translate("qdesigner_internal::PreviewWidget", "ComboBox", Q_NULLPTR)
         );
-        PushButton1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "PushButton", 0));
-        ButtonGroup2->setTitle(QApplication::translate("qdesigner_internal::PreviewWidget", "ButtonGroup2", 0));
-        CheckBox1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "CheckBox1", 0));
-        CheckBox2->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "CheckBox2", 0));
-        ButtonGroup1->setTitle(QApplication::translate("qdesigner_internal::PreviewWidget", "ButtonGroup", 0));
-        RadioButton1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "RadioButton1", 0));
-        RadioButton2->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "RadioButton2", 0));
-        RadioButton3->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "RadioButton3", 0));
+        PushButton1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "PushButton", Q_NULLPTR));
+        ButtonGroup2->setTitle(QApplication::translate("qdesigner_internal::PreviewWidget", "ButtonGroup2", Q_NULLPTR));
+        CheckBox1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "CheckBox1", Q_NULLPTR));
+        CheckBox2->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "CheckBox2", Q_NULLPTR));
+        ButtonGroup1->setTitle(QApplication::translate("qdesigner_internal::PreviewWidget", "ButtonGroup", Q_NULLPTR));
+        RadioButton1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "RadioButton1", Q_NULLPTR));
+        RadioButton2->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "RadioButton2", Q_NULLPTR));
+        RadioButton3->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "RadioButton3", Q_NULLPTR));
     } // retranslateUi
 
 };

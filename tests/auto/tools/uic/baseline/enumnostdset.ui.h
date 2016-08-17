@@ -41,7 +41,7 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Form", 0));
+        Form->setWindowTitle(QApplication::translate("Form", "Form", Q_NULLPTR));
     } // retranslateUi
 
 };

@@ -77,10 +77,10 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Form", 0));
-        fileicon->setText(QApplication::translate("Form", "fileicon", 0));
-        fileandthemeicon->setText(QApplication::translate("Form", "PushButton", 0));
-        themeicon->setText(QApplication::translate("Form", "PushButton", 0));
+        Form->setWindowTitle(QApplication::translate("Form", "Form", Q_NULLPTR));
+        fileicon->setText(QApplication::translate("Form", "fileicon", Q_NULLPTR));
+        fileandthemeicon->setText(QApplication::translate("Form", "PushButton", Q_NULLPTR));
+        themeicon->setText(QApplication::translate("Form", "PushButton", Q_NULLPTR));
     } // retranslateUi
 
 };

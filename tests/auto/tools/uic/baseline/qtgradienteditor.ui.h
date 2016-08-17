@@ -591,119 +591,119 @@ public:
 
     void retranslateUi(QWidget *QtGradientEditor)
     {
-        QtGradientEditor->setWindowTitle(QApplication::translate("QtGradientEditor", "Form", 0));
+        QtGradientEditor->setWindowTitle(QApplication::translate("QtGradientEditor", "Form", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        gradientWidget->setToolTip(QApplication::translate("QtGradientEditor", "Gradient Editor", 0));
+        gradientWidget->setToolTip(QApplication::translate("QtGradientEditor", "Gradient Editor", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        gradientWidget->setWhatsThis(QApplication::translate("QtGradientEditor", "This area shows a preview of the gradient being edited. It also allows you to edit parameters specific to the gradient's type such as start and final point, radius, etc. by drag & drop.", 0));
+        gradientWidget->setWhatsThis(QApplication::translate("QtGradientEditor", "This area shows a preview of the gradient being edited. It also allows you to edit parameters specific to the gradient's type such as start and final point, radius, etc. by drag & drop.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        label1->setText(QApplication::translate("QtGradientEditor", "1", 0));
-        label2->setText(QApplication::translate("QtGradientEditor", "2", 0));
-        label3->setText(QApplication::translate("QtGradientEditor", "3", 0));
-        label4->setText(QApplication::translate("QtGradientEditor", "4", 0));
-        label5->setText(QApplication::translate("QtGradientEditor", "5", 0));
+        label1->setText(QApplication::translate("QtGradientEditor", "1", Q_NULLPTR));
+        label2->setText(QApplication::translate("QtGradientEditor", "2", Q_NULLPTR));
+        label3->setText(QApplication::translate("QtGradientEditor", "3", Q_NULLPTR));
+        label4->setText(QApplication::translate("QtGradientEditor", "4", Q_NULLPTR));
+        label5->setText(QApplication::translate("QtGradientEditor", "5", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        gradientStopsWidget->setToolTip(QApplication::translate("QtGradientEditor", "Gradient Stops Editor", 0));
+        gradientStopsWidget->setToolTip(QApplication::translate("QtGradientEditor", "Gradient Stops Editor", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        gradientStopsWidget->setWhatsThis(QApplication::translate("QtGradientEditor", "This area allows you to edit gradient stops. Double click on the existing stop handle to duplicate it. Double click outside of the existing stop handles to create a new stop. Drag & drop the handle to reposition it. Use right mouse button to popup context menu with extra actions.", 0));
+        gradientStopsWidget->setWhatsThis(QApplication::translate("QtGradientEditor", "This area allows you to edit gradient stops. Double click on the existing stop handle to duplicate it. Double click outside of the existing stop handles to create a new stop. Drag & drop the handle to reposition it. Use right mouse button to popup context menu with extra actions.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        zoomLabel->setText(QApplication::translate("QtGradientEditor", "Zoom", 0));
+        zoomLabel->setText(QApplication::translate("QtGradientEditor", "Zoom", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        zoomAllButton->setToolTip(QApplication::translate("QtGradientEditor", "Reset Zoom", 0));
+        zoomAllButton->setToolTip(QApplication::translate("QtGradientEditor", "Reset Zoom", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        zoomAllButton->setText(QApplication::translate("QtGradientEditor", "Reset Zoom", 0));
-        positionLabel->setText(QApplication::translate("QtGradientEditor", "Position", 0));
+        zoomAllButton->setText(QApplication::translate("QtGradientEditor", "Reset Zoom", Q_NULLPTR));
+        positionLabel->setText(QApplication::translate("QtGradientEditor", "Position", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        hLabel->setToolTip(QApplication::translate("QtGradientEditor", "Hue", 0));
+        hLabel->setToolTip(QApplication::translate("QtGradientEditor", "Hue", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        hLabel->setText(QApplication::translate("QtGradientEditor", "H", 0));
+        hLabel->setText(QApplication::translate("QtGradientEditor", "H", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        hueColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Hue", 0));
+        hueColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Hue", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        hueLabel->setText(QApplication::translate("QtGradientEditor", "Hue", 0));
+        hueLabel->setText(QApplication::translate("QtGradientEditor", "Hue", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        sLabel->setToolTip(QApplication::translate("QtGradientEditor", "Saturation", 0));
+        sLabel->setToolTip(QApplication::translate("QtGradientEditor", "Saturation", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        sLabel->setText(QApplication::translate("QtGradientEditor", "S", 0));
+        sLabel->setText(QApplication::translate("QtGradientEditor", "S", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        saturationColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Saturation", 0));
+        saturationColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Saturation", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        saturationLabel->setText(QApplication::translate("QtGradientEditor", "Sat", 0));
+        saturationLabel->setText(QApplication::translate("QtGradientEditor", "Sat", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        vLabel->setToolTip(QApplication::translate("QtGradientEditor", "Value", 0));
+        vLabel->setToolTip(QApplication::translate("QtGradientEditor", "Value", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        vLabel->setText(QApplication::translate("QtGradientEditor", "V", 0));
+        vLabel->setText(QApplication::translate("QtGradientEditor", "V", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        valueColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Value", 0));
+        valueColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Value", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        valueLabel->setText(QApplication::translate("QtGradientEditor", "Val", 0));
+        valueLabel->setText(QApplication::translate("QtGradientEditor", "Val", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        aLabel->setToolTip(QApplication::translate("QtGradientEditor", "Alpha", 0));
+        aLabel->setToolTip(QApplication::translate("QtGradientEditor", "Alpha", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        aLabel->setText(QApplication::translate("QtGradientEditor", "A", 0));
+        aLabel->setText(QApplication::translate("QtGradientEditor", "A", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        alphaColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Alpha", 0));
+        alphaColorLine->setToolTip(QApplication::translate("QtGradientEditor", "Alpha", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        alphaLabel->setText(QApplication::translate("QtGradientEditor", "Alpha", 0));
+        alphaLabel->setText(QApplication::translate("QtGradientEditor", "Alpha", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        typeComboBox->setToolTip(QApplication::translate("QtGradientEditor", "Type", 0));
+        typeComboBox->setToolTip(QApplication::translate("QtGradientEditor", "Type", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        spreadComboBox->setToolTip(QApplication::translate("QtGradientEditor", "Spread", 0));
+        spreadComboBox->setToolTip(QApplication::translate("QtGradientEditor", "Spread", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        colorLabel->setText(QApplication::translate("QtGradientEditor", "Color", 0));
+        colorLabel->setText(QApplication::translate("QtGradientEditor", "Color", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        colorButton->setToolTip(QApplication::translate("QtGradientEditor", "Current stop's color", 0));
+        colorButton->setToolTip(QApplication::translate("QtGradientEditor", "Current stop's color", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
         colorButton->setText(QString());
 #ifndef QT_NO_TOOLTIP
-        hsvRadioButton->setToolTip(QApplication::translate("QtGradientEditor", "Show HSV specification", 0));
+        hsvRadioButton->setToolTip(QApplication::translate("QtGradientEditor", "Show HSV specification", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        hsvRadioButton->setText(QApplication::translate("QtGradientEditor", "HSV", 0));
+        hsvRadioButton->setText(QApplication::translate("QtGradientEditor", "HSV", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        rgbRadioButton->setToolTip(QApplication::translate("QtGradientEditor", "Show RGB specification", 0));
+        rgbRadioButton->setToolTip(QApplication::translate("QtGradientEditor", "Show RGB specification", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        rgbRadioButton->setText(QApplication::translate("QtGradientEditor", "RGB", 0));
+        rgbRadioButton->setText(QApplication::translate("QtGradientEditor", "RGB", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        positionSpinBox->setToolTip(QApplication::translate("QtGradientEditor", "Current stop's position", 0));
+        positionSpinBox->setToolTip(QApplication::translate("QtGradientEditor", "Current stop's position", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        zoomSpinBox->setSuffix(QApplication::translate("QtGradientEditor", "%", 0));
+        zoomSpinBox->setSuffix(QApplication::translate("QtGradientEditor", "%", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        zoomInButton->setToolTip(QApplication::translate("QtGradientEditor", "Zoom In", 0));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_TOOLTIP
-        zoomOutButton->setToolTip(QApplication::translate("QtGradientEditor", "Zoom Out", 0));
+        zoomInButton->setToolTip(QApplication::translate("QtGradientEditor", "Zoom In", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        detailsButton->setToolTip(QApplication::translate("QtGradientEditor", "Toggle details extension", 0));
+        zoomOutButton->setToolTip(QApplication::translate("QtGradientEditor", "Zoom Out", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        detailsButton->setText(QApplication::translate("QtGradientEditor", ">", 0));
 #ifndef QT_NO_TOOLTIP
-        linearButton->setToolTip(QApplication::translate("QtGradientEditor", "Linear Type", 0));
+        detailsButton->setToolTip(QApplication::translate("QtGradientEditor", "Toggle details extension", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        linearButton->setText(QApplication::translate("QtGradientEditor", "...", 0));
+        detailsButton->setText(QApplication::translate("QtGradientEditor", ">", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        radialButton->setToolTip(QApplication::translate("QtGradientEditor", "Radial Type", 0));
+        linearButton->setToolTip(QApplication::translate("QtGradientEditor", "Linear Type", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        radialButton->setText(QApplication::translate("QtGradientEditor", "...", 0));
+        linearButton->setText(QApplication::translate("QtGradientEditor", "...", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        conicalButton->setToolTip(QApplication::translate("QtGradientEditor", "Conical Type", 0));
+        radialButton->setToolTip(QApplication::translate("QtGradientEditor", "Radial Type", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        conicalButton->setText(QApplication::translate("QtGradientEditor", "...", 0));
+        radialButton->setText(QApplication::translate("QtGradientEditor", "...", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        padButton->setToolTip(QApplication::translate("QtGradientEditor", "Pad Spread", 0));
+        conicalButton->setToolTip(QApplication::translate("QtGradientEditor", "Conical Type", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        padButton->setText(QApplication::translate("QtGradientEditor", "...", 0));
+        conicalButton->setText(QApplication::translate("QtGradientEditor", "...", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        repeatButton->setToolTip(QApplication::translate("QtGradientEditor", "Repeat Spread", 0));
+        padButton->setToolTip(QApplication::translate("QtGradientEditor", "Pad Spread", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        repeatButton->setText(QApplication::translate("QtGradientEditor", "...", 0));
+        padButton->setText(QApplication::translate("QtGradientEditor", "...", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        reflectButton->setToolTip(QApplication::translate("QtGradientEditor", "Reflect Spread", 0));
+        repeatButton->setToolTip(QApplication::translate("QtGradientEditor", "Repeat Spread", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        reflectButton->setText(QApplication::translate("QtGradientEditor", "...", 0));
+        repeatButton->setText(QApplication::translate("QtGradientEditor", "...", Q_NULLPTR));
+#ifndef QT_NO_TOOLTIP
+        reflectButton->setToolTip(QApplication::translate("QtGradientEditor", "Reflect Spread", Q_NULLPTR));
+#endif // QT_NO_TOOLTIP
+        reflectButton->setText(QApplication::translate("QtGradientEditor", "...", Q_NULLPTR));
     } // retranslateUi
 
 };

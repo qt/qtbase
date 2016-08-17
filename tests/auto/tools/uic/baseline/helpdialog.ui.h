@@ -303,77 +303,77 @@ public:
 
     void retranslateUi(QWidget *HelpDialog)
     {
-        HelpDialog->setWindowTitle(QApplication::translate("HelpDialog", "Help", 0));
+        HelpDialog->setWindowTitle(QApplication::translate("HelpDialog", "Help", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        HelpDialog->setWhatsThis(QApplication::translate("HelpDialog", "<b>Help</b><p>Choose the topic you want help on from the contents list, or search the index for keywords.</p>", 0));
+        HelpDialog->setWhatsThis(QApplication::translate("HelpDialog", "<b>Help</b><p>Choose the topic you want help on from the contents list, or search the index for keywords.</p>", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_WHATSTHIS
-        tabWidget->setWhatsThis(QApplication::translate("HelpDialog", "Displays help topics organized by category, index or bookmarks. Another tab inherits the full text search.", 0));
+        tabWidget->setWhatsThis(QApplication::translate("HelpDialog", "Displays help topics organized by category, index or bookmarks. Another tab inherits the full text search.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
         QTreeWidgetItem *___qtreewidgetitem = listContents->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("HelpDialog", "column 1", 0));
+        ___qtreewidgetitem->setText(0, QApplication::translate("HelpDialog", "column 1", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        listContents->setWhatsThis(QApplication::translate("HelpDialog", "<b>Help topics organized by category.</b><p>Double-click an item to see the topics in that category. To view a topic, just double-click it.</p>", 0));
+        listContents->setWhatsThis(QApplication::translate("HelpDialog", "<b>Help topics organized by category.</b><p>Double-click an item to see the topics in that category. To view a topic, just double-click it.</p>", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        tabWidget->setTabText(tabWidget->indexOf(contentPage), QApplication::translate("HelpDialog", "Con&tents", 0));
-        TextLabel1->setText(QApplication::translate("HelpDialog", "&Look For:", 0));
+        tabWidget->setTabText(tabWidget->indexOf(contentPage), QApplication::translate("HelpDialog", "Con&tents", Q_NULLPTR));
+        TextLabel1->setText(QApplication::translate("HelpDialog", "&Look For:", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        editIndex->setToolTip(QApplication::translate("HelpDialog", "Enter keyword", 0));
+        editIndex->setToolTip(QApplication::translate("HelpDialog", "Enter keyword", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        editIndex->setWhatsThis(QApplication::translate("HelpDialog", "<b>Enter a keyword.</b><p>The list will select an item that matches the entered string best.</p>", 0));
+        editIndex->setWhatsThis(QApplication::translate("HelpDialog", "<b>Enter a keyword.</b><p>The list will select an item that matches the entered string best.</p>", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_WHATSTHIS
-        listIndex->setWhatsThis(QApplication::translate("HelpDialog", "<b>List of available help topics.</b><p>Double-click on an item to open its help page. If more than one is found, you must specify which page you want.</p>", 0));
+        listIndex->setWhatsThis(QApplication::translate("HelpDialog", "<b>List of available help topics.</b><p>Double-click on an item to open its help page. If more than one is found, you must specify which page you want.</p>", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        tabWidget->setTabText(tabWidget->indexOf(indexPage), QApplication::translate("HelpDialog", "&Index", 0));
+        tabWidget->setTabText(tabWidget->indexOf(indexPage), QApplication::translate("HelpDialog", "&Index", Q_NULLPTR));
         QTreeWidgetItem *___qtreewidgetitem1 = listBookmarks->headerItem();
-        ___qtreewidgetitem1->setText(0, QApplication::translate("HelpDialog", "column 1", 0));
+        ___qtreewidgetitem1->setText(0, QApplication::translate("HelpDialog", "column 1", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        listBookmarks->setWhatsThis(QApplication::translate("HelpDialog", "Displays the list of bookmarks.", 0));
+        listBookmarks->setWhatsThis(QApplication::translate("HelpDialog", "Displays the list of bookmarks.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_TOOLTIP
-        buttonAdd->setToolTip(QApplication::translate("HelpDialog", "Add new bookmark", 0));
+        buttonAdd->setToolTip(QApplication::translate("HelpDialog", "Add new bookmark", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        buttonAdd->setWhatsThis(QApplication::translate("HelpDialog", "Add the currently displayed page as a new bookmark.", 0));
+        buttonAdd->setWhatsThis(QApplication::translate("HelpDialog", "Add the currently displayed page as a new bookmark.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        buttonAdd->setText(QApplication::translate("HelpDialog", "&New", 0));
+        buttonAdd->setText(QApplication::translate("HelpDialog", "&New", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        buttonRemove->setToolTip(QApplication::translate("HelpDialog", "Delete bookmark", 0));
+        buttonRemove->setToolTip(QApplication::translate("HelpDialog", "Delete bookmark", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        buttonRemove->setWhatsThis(QApplication::translate("HelpDialog", "Delete the selected bookmark.", 0));
+        buttonRemove->setWhatsThis(QApplication::translate("HelpDialog", "Delete the selected bookmark.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        buttonRemove->setText(QApplication::translate("HelpDialog", "&Delete", 0));
-        tabWidget->setTabText(tabWidget->indexOf(bookmarkPage), QApplication::translate("HelpDialog", "&Bookmarks", 0));
-        TextLabel1_2->setText(QApplication::translate("HelpDialog", "Searching f&or:", 0));
+        buttonRemove->setText(QApplication::translate("HelpDialog", "&Delete", Q_NULLPTR));
+        tabWidget->setTabText(tabWidget->indexOf(bookmarkPage), QApplication::translate("HelpDialog", "&Bookmarks", Q_NULLPTR));
+        TextLabel1_2->setText(QApplication::translate("HelpDialog", "Searching f&or:", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        termsEdit->setToolTip(QApplication::translate("HelpDialog", "Enter searchword(s).", 0));
+        termsEdit->setToolTip(QApplication::translate("HelpDialog", "Enter searchword(s).", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        termsEdit->setWhatsThis(QApplication::translate("HelpDialog", "<b>Enter search word(s).</b><p>Enter here the word(s) you are looking for. The words may contain wildcards (*). For a sequence of words quote them.</p>", 0));
+        termsEdit->setWhatsThis(QApplication::translate("HelpDialog", "<b>Enter search word(s).</b><p>Enter here the word(s) you are looking for. The words may contain wildcards (*). For a sequence of words quote them.</p>", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_WHATSTHIS
-        resultBox->setWhatsThis(QApplication::translate("HelpDialog", "<b>Found documents</b><p>This list contains all found documents from the last search. The documents are ordered, i.e. the first document has the most matches.</p>", 0));
+        resultBox->setWhatsThis(QApplication::translate("HelpDialog", "<b>Found documents</b><p>This list contains all found documents from the last search. The documents are ordered, i.e. the first document has the most matches.</p>", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        TextLabel2->setText(QApplication::translate("HelpDialog", "Found &Documents:", 0));
+        TextLabel2->setText(QApplication::translate("HelpDialog", "Found &Documents:", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        helpButton->setToolTip(QApplication::translate("HelpDialog", "Display the help page.", 0));
+        helpButton->setToolTip(QApplication::translate("HelpDialog", "Display the help page.", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        helpButton->setWhatsThis(QApplication::translate("HelpDialog", "Display the help page for the full text search.", 0));
+        helpButton->setWhatsThis(QApplication::translate("HelpDialog", "Display the help page for the full text search.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        helpButton->setText(QApplication::translate("HelpDialog", "He&lp", 0));
+        helpButton->setText(QApplication::translate("HelpDialog", "He&lp", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        searchButton->setToolTip(QApplication::translate("HelpDialog", "Start searching.", 0));
+        searchButton->setToolTip(QApplication::translate("HelpDialog", "Start searching.", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
-        searchButton->setWhatsThis(QApplication::translate("HelpDialog", "Pressing this button starts the search.", 0));
+        searchButton->setWhatsThis(QApplication::translate("HelpDialog", "Pressing this button starts the search.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        searchButton->setText(QApplication::translate("HelpDialog", "&Search", 0));
-        tabWidget->setTabText(tabWidget->indexOf(searchPage), QApplication::translate("HelpDialog", "&Search", 0));
-        labelPrepare->setText(QApplication::translate("HelpDialog", "Preparing...", 0));
+        searchButton->setText(QApplication::translate("HelpDialog", "&Search", Q_NULLPTR));
+        tabWidget->setTabText(tabWidget->indexOf(searchPage), QApplication::translate("HelpDialog", "&Search", Q_NULLPTR));
+        labelPrepare->setText(QApplication::translate("HelpDialog", "Preparing...", Q_NULLPTR));
     } // retranslateUi
 
 };

@@ -201,40 +201,40 @@ public:
 
     void retranslateUi(QDialog *FindDialog)
     {
-        FindDialog->setWindowTitle(QApplication::translate("FindDialog", "Find", 0));
+        FindDialog->setWindowTitle(QApplication::translate("FindDialog", "Find", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        FindDialog->setWhatsThis(QApplication::translate("FindDialog", "This window allows you to search for some text in the translation source file.", 0));
+        FindDialog->setWhatsThis(QApplication::translate("FindDialog", "This window allows you to search for some text in the translation source file.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        findWhat->setText(QApplication::translate("FindDialog", "&Find what:", 0));
+        findWhat->setText(QApplication::translate("FindDialog", "&Find what:", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        led->setWhatsThis(QApplication::translate("FindDialog", "Type in the text to search for.", 0));
+        led->setWhatsThis(QApplication::translate("FindDialog", "Type in the text to search for.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        groupBox->setTitle(QApplication::translate("FindDialog", "Options", 0));
+        groupBox->setTitle(QApplication::translate("FindDialog", "Options", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        sourceText->setWhatsThis(QApplication::translate("FindDialog", "Source texts are searched when checked.", 0));
+        sourceText->setWhatsThis(QApplication::translate("FindDialog", "Source texts are searched when checked.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        sourceText->setText(QApplication::translate("FindDialog", "&Source texts", 0));
+        sourceText->setText(QApplication::translate("FindDialog", "&Source texts", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        translations->setWhatsThis(QApplication::translate("FindDialog", "Translations are searched when checked.", 0));
+        translations->setWhatsThis(QApplication::translate("FindDialog", "Translations are searched when checked.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        translations->setText(QApplication::translate("FindDialog", "&Translations", 0));
+        translations->setText(QApplication::translate("FindDialog", "&Translations", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        matchCase->setWhatsThis(QApplication::translate("FindDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", 0));
+        matchCase->setWhatsThis(QApplication::translate("FindDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        matchCase->setText(QApplication::translate("FindDialog", "&Match case", 0));
+        matchCase->setText(QApplication::translate("FindDialog", "&Match case", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        comments->setWhatsThis(QApplication::translate("FindDialog", "Comments and contexts are searched when checked.", 0));
+        comments->setWhatsThis(QApplication::translate("FindDialog", "Comments and contexts are searched when checked.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        comments->setText(QApplication::translate("FindDialog", "&Comments", 0));
-        ignoreAccelerators->setText(QApplication::translate("FindDialog", "Ignore &accelerators", 0));
+        comments->setText(QApplication::translate("FindDialog", "&Comments", Q_NULLPTR));
+        ignoreAccelerators->setText(QApplication::translate("FindDialog", "Ignore &accelerators", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        findNxt->setWhatsThis(QApplication::translate("FindDialog", "Click here to find the next occurrence of the text you typed in.", 0));
+        findNxt->setWhatsThis(QApplication::translate("FindDialog", "Click here to find the next occurrence of the text you typed in.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        findNxt->setText(QApplication::translate("FindDialog", "Find Next", 0));
+        findNxt->setText(QApplication::translate("FindDialog", "Find Next", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        cancel->setWhatsThis(QApplication::translate("FindDialog", "Click here to close this window.", 0));
+        cancel->setWhatsThis(QApplication::translate("FindDialog", "Click here to close this window.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        cancel->setText(QApplication::translate("FindDialog", "Cancel", 0));
+        cancel->setText(QApplication::translate("FindDialog", "Cancel", Q_NULLPTR));
     } // retranslateUi
 
 };

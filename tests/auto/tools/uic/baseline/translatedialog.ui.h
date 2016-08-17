@@ -213,34 +213,34 @@ public:
 
     void retranslateUi(QDialog *TranslateDialog)
     {
-        TranslateDialog->setWindowTitle(QApplication::translate("TranslateDialog", "Qt Linguist", 0));
+        TranslateDialog->setWindowTitle(QApplication::translate("TranslateDialog", "Qt Linguist", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        TranslateDialog->setWhatsThis(QApplication::translate("TranslateDialog", "This window allows you to search for some text in the translation source file.", 0));
+        TranslateDialog->setWhatsThis(QApplication::translate("TranslateDialog", "This window allows you to search for some text in the translation source file.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
 #ifndef QT_NO_WHATSTHIS
-        ledTranslateTo->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", 0));
+        ledTranslateTo->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        findWhat->setText(QApplication::translate("TranslateDialog", "Find &source text:", 0));
-        translateTo->setText(QApplication::translate("TranslateDialog", "&Translate to:", 0));
+        findWhat->setText(QApplication::translate("TranslateDialog", "Find &source text:", Q_NULLPTR));
+        translateTo->setText(QApplication::translate("TranslateDialog", "&Translate to:", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        ledFindWhat->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", 0));
+        ledFindWhat->setWhatsThis(QApplication::translate("TranslateDialog", "Type in the text to search for.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        groupBox->setTitle(QApplication::translate("TranslateDialog", "Search options", 0));
+        groupBox->setTitle(QApplication::translate("TranslateDialog", "Search options", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        ckMatchCase->setWhatsThis(QApplication::translate("TranslateDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", 0));
+        ckMatchCase->setWhatsThis(QApplication::translate("TranslateDialog", "Texts such as 'TeX' and 'tex' are considered as different when checked.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        ckMatchCase->setText(QApplication::translate("TranslateDialog", "Match &case", 0));
-        ckMarkFinished->setText(QApplication::translate("TranslateDialog", "Mark new translation as &finished", 0));
+        ckMatchCase->setText(QApplication::translate("TranslateDialog", "Match &case", Q_NULLPTR));
+        ckMarkFinished->setText(QApplication::translate("TranslateDialog", "Mark new translation as &finished", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        findNxt->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to find the next occurrence of the text you typed in.", 0));
+        findNxt->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to find the next occurrence of the text you typed in.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        findNxt->setText(QApplication::translate("TranslateDialog", "Find Next", 0));
-        translate->setText(QApplication::translate("TranslateDialog", "Translate", 0));
-        translateAll->setText(QApplication::translate("TranslateDialog", "Translate All", 0));
+        findNxt->setText(QApplication::translate("TranslateDialog", "Find Next", Q_NULLPTR));
+        translate->setText(QApplication::translate("TranslateDialog", "Translate", Q_NULLPTR));
+        translateAll->setText(QApplication::translate("TranslateDialog", "Translate All", Q_NULLPTR));
 #ifndef QT_NO_WHATSTHIS
-        cancel->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to close this window.", 0));
+        cancel->setWhatsThis(QApplication::translate("TranslateDialog", "Click here to close this window.", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
-        cancel->setText(QApplication::translate("TranslateDialog", "Cancel", 0));
+        cancel->setText(QApplication::translate("TranslateDialog", "Cancel", Q_NULLPTR));
     } // retranslateUi
 
 };

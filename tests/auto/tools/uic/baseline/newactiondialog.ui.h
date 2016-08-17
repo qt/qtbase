@@ -167,10 +167,10 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__NewActionDialog)
     {
-        qdesigner_internal__NewActionDialog->setWindowTitle(QApplication::translate("qdesigner_internal::NewActionDialog", "New Action...", 0));
-        label->setText(QApplication::translate("qdesigner_internal::NewActionDialog", "&Text:", 0));
-        label_3->setText(QApplication::translate("qdesigner_internal::NewActionDialog", "Object &name:", 0));
-        label_2->setText(QApplication::translate("qdesigner_internal::NewActionDialog", "&Icon:", 0));
+        qdesigner_internal__NewActionDialog->setWindowTitle(QApplication::translate("qdesigner_internal::NewActionDialog", "New Action...", Q_NULLPTR));
+        label->setText(QApplication::translate("qdesigner_internal::NewActionDialog", "&Text:", Q_NULLPTR));
+        label_3->setText(QApplication::translate("qdesigner_internal::NewActionDialog", "Object &name:", Q_NULLPTR));
+        label_2->setText(QApplication::translate("qdesigner_internal::NewActionDialog", "&Icon:", Q_NULLPTR));
     } // retranslateUi
 
 };

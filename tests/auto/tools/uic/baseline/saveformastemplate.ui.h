@@ -139,10 +139,10 @@ public:
 
     void retranslateUi(QDialog *SaveFormAsTemplate)
     {
-        SaveFormAsTemplate->setWindowTitle(QApplication::translate("SaveFormAsTemplate", "Save Form As Template", 0));
-        label->setText(QApplication::translate("SaveFormAsTemplate", "&Name:", 0));
+        SaveFormAsTemplate->setWindowTitle(QApplication::translate("SaveFormAsTemplate", "Save Form As Template", Q_NULLPTR));
+        label->setText(QApplication::translate("SaveFormAsTemplate", "&Name:", Q_NULLPTR));
         templateNameEdit->setText(QString());
-        label_2->setText(QApplication::translate("SaveFormAsTemplate", "&Category:", 0));
+        label_2->setText(QApplication::translate("SaveFormAsTemplate", "&Category:", Q_NULLPTR));
     } // retranslateUi
 
 };

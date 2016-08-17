@@ -283,63 +283,63 @@ public:
 
     void retranslateUi(QDialog *qdesigner_internal__TreeWidgetEditor)
     {
-        qdesigner_internal__TreeWidgetEditor->setWindowTitle(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Edit Tree Widget", 0));
-        itemsBox->setTitle(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Tree Items", 0));
+        qdesigner_internal__TreeWidgetEditor->setWindowTitle(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Edit Tree Widget", Q_NULLPTR));
+        itemsBox->setTitle(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Tree Items", Q_NULLPTR));
         QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("qdesigner_internal::TreeWidgetEditor", "1", 0));
+        ___qtreewidgetitem->setText(0, QApplication::translate("qdesigner_internal::TreeWidgetEditor", "1", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        treeWidget->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Tree Items", 0));
+        treeWidget->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Tree Items", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        newItemButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New Item", 0));
+        newItemButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New Item", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        newItemButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "&New", 0));
+        newItemButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "&New", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        newSubItemButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New Subitem", 0));
+        newSubItemButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New Subitem", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        newSubItemButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New &Subitem", 0));
+        newSubItemButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New &Subitem", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        deleteItemButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Delete Item", 0));
+        deleteItemButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Delete Item", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        deleteItemButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "&Delete", 0));
+        deleteItemButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "&Delete", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        moveItemLeftButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Item Left (before Parent Item)", 0));
+        moveItemLeftButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Item Left (before Parent Item)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        moveItemLeftButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "L", 0));
+        moveItemLeftButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "L", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        moveItemRightButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Item Right (as a First Subitem of the Next Sibling Item)", 0));
+        moveItemRightButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Item Right (as a First Subitem of the Next Sibling Item)", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        moveItemRightButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "R", 0));
+        moveItemRightButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "R", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        moveItemUpButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Item Up", 0));
+        moveItemUpButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Item Up", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        moveItemUpButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "U", 0));
+        moveItemUpButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "U", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        moveItemDownButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Item Down", 0));
+        moveItemDownButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Item Down", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        moveItemDownButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "D", 0));
-        label_2->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Icon", 0));
-        columnsBox->setTitle(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Columns", 0));
+        moveItemDownButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "D", Q_NULLPTR));
+        label_2->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Icon", Q_NULLPTR));
+        columnsBox->setTitle(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Columns", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        listWidget->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Tree Columns", 0));
+        listWidget->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Tree Columns", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        newColumnButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New Column", 0));
+        newColumnButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New Column", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        newColumnButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New", 0));
+        newColumnButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "New", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        deleteColumnButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Delete Column", 0));
+        deleteColumnButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Delete Column", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        deleteColumnButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Delete", 0));
+        deleteColumnButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Delete", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        moveColumnUpButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Column Up", 0));
+        moveColumnUpButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Column Up", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        moveColumnUpButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "U", 0));
+        moveColumnUpButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "U", Q_NULLPTR));
 #ifndef QT_NO_TOOLTIP
-        moveColumnDownButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Column Down", 0));
+        moveColumnDownButton->setToolTip(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Move Column Down", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
-        moveColumnDownButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "D", 0));
-        label->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Icon", 0));
+        moveColumnDownButton->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "D", Q_NULLPTR));
+        label->setText(QApplication::translate("qdesigner_internal::TreeWidgetEditor", "Icon", Q_NULLPTR));
     } // retranslateUi
 
 };

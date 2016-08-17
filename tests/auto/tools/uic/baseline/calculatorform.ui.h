@@ -173,13 +173,13 @@ public:
 
     void retranslateUi(QWidget *CalculatorForm)
     {
-        CalculatorForm->setWindowTitle(QApplication::translate("CalculatorForm", "Calculator Builder", 0));
-        label->setText(QApplication::translate("CalculatorForm", "Input 1", 0));
-        label_3->setText(QApplication::translate("CalculatorForm", "+", 0));
-        label_2->setText(QApplication::translate("CalculatorForm", "Input 2", 0));
-        label_3_2->setText(QApplication::translate("CalculatorForm", "=", 0));
-        label_2_2_2->setText(QApplication::translate("CalculatorForm", "Output", 0));
-        outputWidget->setText(QApplication::translate("CalculatorForm", "0", 0));
+        CalculatorForm->setWindowTitle(QApplication::translate("CalculatorForm", "Calculator Builder", Q_NULLPTR));
+        label->setText(QApplication::translate("CalculatorForm", "Input 1", Q_NULLPTR));
+        label_3->setText(QApplication::translate("CalculatorForm", "+", Q_NULLPTR));
+        label_2->setText(QApplication::translate("CalculatorForm", "Input 2", Q_NULLPTR));
+        label_3_2->setText(QApplication::translate("CalculatorForm", "=", Q_NULLPTR));
+        label_2_2_2->setText(QApplication::translate("CalculatorForm", "Output", Q_NULLPTR));
+        outputWidget->setText(QApplication::translate("CalculatorForm", "0", Q_NULLPTR));
     } // retranslateUi
 
 };

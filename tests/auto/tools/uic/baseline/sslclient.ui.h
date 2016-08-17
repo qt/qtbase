@@ -158,20 +158,20 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Secure Socket Client", 0));
-        hostNameLabel->setText(QApplication::translate("Form", "Host name:", 0));
-        hostNameEdit->setText(QApplication::translate("Form", "imap.example.com", 0));
-        portLabel->setText(QApplication::translate("Form", "Port:", 0));
-        connectButton->setText(QApplication::translate("Form", "Connect to host", 0));
-        sessionBox->setTitle(QApplication::translate("Form", "Active session", 0));
-        cipherText->setText(QApplication::translate("Form", "Cryptographic Cipher:", 0));
-        cipherLabel->setText(QApplication::translate("Form", "<none>", 0));
+        Form->setWindowTitle(QApplication::translate("Form", "Secure Socket Client", Q_NULLPTR));
+        hostNameLabel->setText(QApplication::translate("Form", "Host name:", Q_NULLPTR));
+        hostNameEdit->setText(QApplication::translate("Form", "imap.example.com", Q_NULLPTR));
+        portLabel->setText(QApplication::translate("Form", "Port:", Q_NULLPTR));
+        connectButton->setText(QApplication::translate("Form", "Connect to host", Q_NULLPTR));
+        sessionBox->setTitle(QApplication::translate("Form", "Active session", Q_NULLPTR));
+        cipherText->setText(QApplication::translate("Form", "Cryptographic Cipher:", Q_NULLPTR));
+        cipherLabel->setText(QApplication::translate("Form", "<none>", Q_NULLPTR));
         sessionOutput->setHtml(QApplication::translate("Form", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>", 0));
-        sessionInputLabel->setText(QApplication::translate("Form", "Input:", 0));
-        sendButton->setText(QApplication::translate("Form", "&Send", 0));
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>", Q_NULLPTR));
+        sessionInputLabel->setText(QApplication::translate("Form", "Input:", Q_NULLPTR));
+        sendButton->setText(QApplication::translate("Form", "&Send", Q_NULLPTR));
     } // retranslateUi
 
 };

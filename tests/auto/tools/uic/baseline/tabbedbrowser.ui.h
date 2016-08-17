@@ -188,14 +188,14 @@ public:
 
     void retranslateUi(QWidget *TabbedBrowser)
     {
-        TabbedBrowser->setWindowTitle(QApplication::translate("TabbedBrowser", "TabbedBrowser", 0));
-        tab->setTabText(tab->indexOf(frontpage), QApplication::translate("TabbedBrowser", "Untitled", 0));
+        TabbedBrowser->setWindowTitle(QApplication::translate("TabbedBrowser", "TabbedBrowser", Q_NULLPTR));
+        tab->setTabText(tab->indexOf(frontpage), QApplication::translate("TabbedBrowser", "Untitled", Q_NULLPTR));
         toolClose->setText(QString());
-        toolPrevious->setText(QApplication::translate("TabbedBrowser", "Previous", 0));
-        toolNext->setText(QApplication::translate("TabbedBrowser", "Next", 0));
-        checkCase->setText(QApplication::translate("TabbedBrowser", "Case Sensitive", 0));
-        checkWholeWords->setText(QApplication::translate("TabbedBrowser", "Whole words", 0));
-        labelWrapped->setText(QApplication::translate("TabbedBrowser", "<img src=\":/qt-project.org/assistant/images/wrap.png\">&nbsp;Search wrapped", 0));
+        toolPrevious->setText(QApplication::translate("TabbedBrowser", "Previous", Q_NULLPTR));
+        toolNext->setText(QApplication::translate("TabbedBrowser", "Next", Q_NULLPTR));
+        checkCase->setText(QApplication::translate("TabbedBrowser", "Case Sensitive", Q_NULLPTR));
+        checkWholeWords->setText(QApplication::translate("TabbedBrowser", "Whole words", Q_NULLPTR));
+        labelWrapped->setText(QApplication::translate("TabbedBrowser", "<img src=\":/qt-project.org/assistant/images/wrap.png\">&nbsp;Search wrapped", Q_NULLPTR));
     } // retranslateUi
 
 };

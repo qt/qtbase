@@ -108,11 +108,11 @@ public:
 
     void retranslateUi(QWidget *QtGradientView)
     {
-        QtGradientView->setWindowTitle(QApplication::translate("QtGradientView", "Gradient View", 0));
-        newButton->setText(QApplication::translate("QtGradientView", "New...", 0));
-        editButton->setText(QApplication::translate("QtGradientView", "Edit...", 0));
-        renameButton->setText(QApplication::translate("QtGradientView", "Rename", 0));
-        removeButton->setText(QApplication::translate("QtGradientView", "Remove", 0));
+        QtGradientView->setWindowTitle(QApplication::translate("QtGradientView", "Gradient View", Q_NULLPTR));
+        newButton->setText(QApplication::translate("QtGradientView", "New...", Q_NULLPTR));
+        editButton->setText(QApplication::translate("QtGradientView", "Edit...", Q_NULLPTR));
+        renameButton->setText(QApplication::translate("QtGradientView", "Rename", Q_NULLPTR));
+        removeButton->setText(QApplication::translate("QtGradientView", "Remove", Q_NULLPTR));
     } // retranslateUi
 
 };
