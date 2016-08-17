@@ -307,7 +307,7 @@ class Latin1String;
 class String
 {
 public:
-    String(const char *data) { d = (Data *)data; }
+    explicit String(const char *data) { d = (Data *)data; }
 
     struct Data {
         qle_int length;
@@ -381,7 +381,7 @@ public:
 class Latin1String
 {
 public:
-    Latin1String(const char *data) { d = (Data *)data; }
+    explicit Latin1String(const char *data) { d = (Data *)data; }
 
     struct Data {
         qle_short length;
