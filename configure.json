@@ -2125,7 +2125,7 @@
         },
         "widgets": {
             "description": "Qt Widgets",
-            "condition": "features.gui && !config.tvos",
+            "condition": "features.gui",
             "output": [
                 { "type": "define", "negative": true, "name": "QT_NO_WIDGETS" },
                 { "type": "publicQtConfig", "negative": true }
