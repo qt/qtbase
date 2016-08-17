@@ -625,12 +625,12 @@ void Http2Server::processRequest()
         return;
     }
 
-    continuedRequest.clear();
     // Actually, if needed, we can do a comparison here.
     activeRequests[streamID] = decoder.decodedHeader();
     if (headersFrame.flags.testFlag(FrameFlag::END_STREAM))
         emit receivedRequest(streamID);
     // else - we're waiting for incoming DATA frames ...
+    continuedRequest.clear();
 }
 
 QT_END_NAMESPACE
