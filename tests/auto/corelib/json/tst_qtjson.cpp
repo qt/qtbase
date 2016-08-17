@@ -2751,8 +2751,9 @@ void tst_QtJson::unicodeKeys()
     QCOMPARE(error.error, QJsonParseError::NoError);
     QJsonObject o = doc.object();
 
-    QCOMPARE(o.keys().size(), 5);
-    Q_FOREACH (const QString &key, o.keys()) {
+    const auto keys = o.keys();
+    QCOMPARE(keys.size(), 5);
+    for (const QString &key : keys) {
         QString suffix = key.mid(key.indexOf(QLatin1Char('_')));
         QCOMPARE(o[key].toString(), QString("hello") + suffix);
     }
