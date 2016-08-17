@@ -478,6 +478,7 @@ bool FrameWriter::writeHEADERS(QAbstractSocket &socket, quint32 sizeLimit)
         sizeLimit = quint32(maxPayloadSize);
 
     if (quint32(frameBuffer.size() - frameHeaderSize) <= sizeLimit) {
+        addFlag(FrameFlag::END_HEADERS);
         updatePayloadSize();
         return write(socket);
     }

@@ -328,7 +328,7 @@ bool QHttp2ProtocolHandler::sendHEADERS(Stream &stream)
 {
     using namespace HPack;
 
-    outboundFrame.start(FrameType::HEADERS, FrameFlag::PRIORITY | FrameFlag::END_HEADERS,
+    outboundFrame.start(FrameType::HEADERS, FrameFlag::PRIORITY,
                         stream.streamID);
 
     if (!stream.data()) {
