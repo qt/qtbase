@@ -422,26 +422,10 @@ public:
         return *this;
     }
 
-    inline bool operator ==(const QString &str) const {
-        return QLatin1String(d->latin1, d->length) == str;
-    }
-    inline bool operator !=(const QString &str) const {
-        return !operator ==(str);
-    }
-    inline bool operator >=(const QString &str) const {
-        return QLatin1String(d->latin1, d->length) >= str;
+    QLatin1String toQLatin1String() const Q_DECL_NOTHROW {
+        return QLatin1String(d->latin1, d->length);
     }
 
-    inline bool operator ==(const Latin1String &str) const {
-        return d->length == str.d->length && !strcmp(d->latin1, str.d->latin1);
-    }
-    inline bool operator >=(const Latin1String &str) const {
-        int l = qMin(d->length, str.d->length);
-        int val = strncmp(d->latin1, str.d->latin1, l);
-        if (!val)
-            val = d->length - str.d->length;
-        return val >= 0;
-    }
     inline bool operator<(const String &str) const
     {
         const qle_ushort *uc = (qle_ushort *) str.d->utf16;
@@ -471,6 +455,36 @@ public:
         return QString::fromLatin1(d->latin1, d->length);
     }
 };
+
+#define DEF_OP(op) \
+    inline bool operator op(Latin1String lhs, Latin1String rhs) Q_DECL_NOTHROW \
+    { \
+        return lhs.toQLatin1String() op rhs.toQLatin1String(); \
+    } \
+    inline bool operator op(QLatin1String lhs, Latin1String rhs) Q_DECL_NOTHROW \
+    { \
+        return lhs op rhs.toQLatin1String(); \
+    } \
+    inline bool operator op(Latin1String lhs, QLatin1String rhs) Q_DECL_NOTHROW \
+    { \
+        return lhs.toQLatin1String() op rhs; \
+    } \
+    inline bool operator op(const QString &lhs, Latin1String rhs) Q_DECL_NOTHROW \
+    { \
+        return lhs op rhs.toQLatin1String(); \
+    } \
+    inline bool operator op(Latin1String lhs, const QString &rhs) Q_DECL_NOTHROW \
+    { \
+        return lhs.toQLatin1String() op rhs; \
+    } \
+    /*end*/
+DEF_OP(==)
+DEF_OP(!=)
+DEF_OP(< )
+DEF_OP(> )
+DEF_OP(<=)
+DEF_OP(>=)
+#undef DEF_OP
 
 inline bool String::operator ==(const Latin1String &str) const
 {
