@@ -229,7 +229,6 @@ defineTest(qtConfTest_buildParts) {
             parts += tools
     }
 
-    ios|tvos: parts -= examples
     parts -= $$config.input.nomake
 
     # always add libs, as it's required to build Qt
