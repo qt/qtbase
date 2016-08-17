@@ -332,7 +332,10 @@ static QString classNameForInterface(const QString &interface, ClassType classTy
     return retval;
 }
 
-static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection::Annotations &annotations, int paramId = -1, const char *direction = "Out")
+// ### Qt6 Remove the two isSignal ifs
+// They are only here because before signal arguments where previously searched as "In" so to maintain compatibility
+// we first search for "Out" and if not found we search for "In"
+static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection::Annotations &annotations, int paramId = -1, const char *direction = "Out", bool isSignal = false)
 {
     int type = QDBusMetaType::signatureToType(signature.toLatin1());
     if (type == QVariant::Invalid) {
@@ -349,9 +352,15 @@ static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection:
         qttype = annotations.value(oldAnnotationName);
 
         if (qttype.isEmpty()) {
-            fprintf(stderr, "Got unknown type `%s'\n", qPrintable(signature));
-            fprintf(stderr, "You should add <annotation name=\"%s\" value=\"<type>\"/> to the XML description\n",
-                    qPrintable(annotationName));
+            if (!isSignal || qstrcmp(direction, "Out") == 0) {
+                fprintf(stderr, "Got unknown type `%s'\n", qPrintable(signature));
+                fprintf(stderr, "You should add <annotation name=\"%s\" value=\"<type>\"/> to the XML description\n",
+                        qPrintable(annotationName));
+            }
+
+            if (isSignal)
+                return qtTypeName(signature, annotations, paramId, "In", isSignal);
+
             exit(1);
         }
 
@@ -447,6 +456,23 @@ static void writeArgList(QTextStream &ts, const QStringList &argNames,
             ts << ", ";
         ts << nonConstRefArg(qtTypeName(arg.type, annotations, i, "Out"))
            << argNames.at(argPos++);
+        first = false;
+    }
+}
+
+static void writeSignalArgList(QTextStream &ts, const QStringList &argNames,
+                         const QDBusIntrospection::Annotations &annotations,
+                         const QDBusIntrospection::Arguments &outputArgs)
+{
+    bool first = true;
+    int argPos = 0;
+    for (int i = 0; i < outputArgs.count(); ++i) {
+        const QDBusIntrospection::Argument &arg = outputArgs.at(i);
+        QString type = constRefArg(qtTypeName(arg.type, annotations, i, "Out", true /* isSignal */));
+
+        if (!first)
+            ts << ", ";
+        ts << type << argNames.at(argPos++);
         first = false;
     }
 }
@@ -765,7 +791,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
             hs << "void " << signal.name << "(";
 
             QStringList argNames = makeArgNames(signal.outputArgs);
-            writeArgList(hs, argNames, signal.annotations, signal.outputArgs);
+            writeSignalArgList(hs, argNames, signal.annotations, signal.outputArgs);
 
             hs << ");" << endl; // finished for header
         }
@@ -1109,7 +1135,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
             hs << "void " << signal.name << "(";
 
             QStringList argNames = makeArgNames(signal.outputArgs);
-            writeArgList(hs, argNames, signal.annotations, signal.outputArgs);
+            writeSignalArgList(hs, argNames, signal.annotations, signal.outputArgs);
 
             hs << ");" << endl; // finished for header
         }
