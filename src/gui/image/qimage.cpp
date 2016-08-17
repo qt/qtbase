@@ -2117,7 +2117,7 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
 */
 QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Qt::ImageConversionFlags flags) const
 {
-    if (d->format == format)
+    if (!d || d->format == format)
         return *this;
 
     if (format <= QImage::Format_Indexed8 && depth() == 32) {
