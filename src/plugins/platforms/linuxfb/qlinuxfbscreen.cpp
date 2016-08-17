@@ -320,7 +320,7 @@ bool QLinuxFbScreen::initialize()
     bool doSwitchToGraphicsMode = true;
 
     // Parse arguments
-    foreach (const QString &arg, mArgs) {
+    for (const QString &arg : qAsConst(mArgs)) {
         QRegularExpressionMatch match;
         if (arg == QLatin1String("nographicsmodeswitch"))
             doSwitchToGraphicsMode = false;
