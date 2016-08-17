@@ -782,7 +782,7 @@ void QWinRTScreen::removeWindow(QWindow *window)
     if (!d->visibleWindows.removeAll(window))
         return;
     if (wasTopWindow)
-        QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
+        QWindowSystemInterface::handleWindowActivated(Q_NULLPTR, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents();
 #if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
