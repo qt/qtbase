@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 static QString pixelToPoint(qreal pixels)
 {
     // we hardcode 96 DPI, we do the same in the ODF importer to have a perfect roundtrip.
-    return QString::number(pixels * 72 / 96) + QString::fromLatin1("pt");
+    return QString::number(pixels * 72 / 96) + QLatin1String("pt");
 }
 
 // strategies

@@ -1665,7 +1665,8 @@ QString QDB2Driver::formatValue(const QSqlField &field, bool trimStrings) const
         }
         case QVariant::ByteArray: {
             QByteArray ba = field.value().toByteArray();
-            QString res = QString::fromLatin1("BLOB(X'");
+            QString res;
+            res += QLatin1String("BLOB(X'");
             static const char hexchars[] = "0123456789abcdef";
             for (int i = 0; i < ba.size(); ++i) {
                 uchar s = (uchar) ba[i];

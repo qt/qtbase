@@ -79,7 +79,7 @@ static bool ignoreProxyFor(const QNetworkProxyQuery &query)
         if (!peerHostName.startsWith('.'))
             peerHostName.prepend('.');
 
-        if (peerHostName.endsWith(QString::fromLatin1(token)))
+        if (peerHostName.endsWith(QLatin1String(token)))
             return true;
     }
 

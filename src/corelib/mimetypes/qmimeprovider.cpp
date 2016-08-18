@@ -572,10 +572,9 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 
     const QString file = data.name + QLatin1String(".xml");
     // shared-mime-info since 1.3 lowercases the xml files
-    QStringList mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file.toLower());
-    if (mimeFiles.isEmpty()) {
-        mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QString::fromLatin1("mime/") + file); // pre-1.3
-    }
+    QStringList mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime/") + file.toLower());
+    if (mimeFiles.isEmpty())
+        mimeFiles = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime/") + file); // pre-1.3
     if (mimeFiles.isEmpty()) {
         qWarning() << "No file found for" << file << ", even though update-mime-info said it would exist.\n"
                       "Either it was just removed, or the directory doesn't have executable permission..."
@@ -807,7 +806,7 @@ bool QMimeXMLProvider::load(const QString &fileName, QString *errorMessage)
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         if (errorMessage)
-            *errorMessage = QString::fromLatin1("Cannot open %1: %2").arg(fileName, file.errorString());
+            *errorMessage = QLatin1String("Cannot open ") + fileName + QLatin1String(": ") + file.errorString();
         return false;
     }
 

@@ -135,7 +135,7 @@ bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
 
     qCDebug(lcDD) << "doing static device discovery for " << device;
 
-    if ((m_types & Device_DRM) && device.contains(QString::fromLatin1(QT_DRM_DEVICE_PREFIX))) {
+    if ((m_types & Device_DRM) && device.contains(QLatin1String(QT_DRM_DEVICE_PREFIX))) {
         QT_CLOSE(fd);
         return true;
     }

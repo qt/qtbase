@@ -334,7 +334,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
 
     QString caption = QCoreApplication::translate("QPrintPreviewDialog", "Print Preview");
     if (!printer->docName().isEmpty())
-        caption += QString::fromLatin1(": ") + printer->docName();
+        caption += QLatin1String(": ") + printer->docName();
     q->setWindowTitle(caption);
 
     if (!printer->isValid()
