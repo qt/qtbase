@@ -299,12 +299,11 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 
     lock.relock();
 
-    if (!(d->state & Running))
-        return;
-
-    const int waitIndex = (resultIndex == -1) ? INT_MAX : resultIndex;
-    while ((d->state & Running) && d->internal_isResultReadyAt(waitIndex) == false)
-        d->waitCondition.wait(&d->m_mutex);
+    if (d->state & Running) {
+        const int waitIndex = (resultIndex == -1) ? INT_MAX : resultIndex;
+        while ((d->state & Running) && d->internal_isResultReadyAt(waitIndex) == false)
+            d->waitCondition.wait(&d->m_mutex);
+    }
 
     d->m_exceptionStore.throwPossibleException();
 }

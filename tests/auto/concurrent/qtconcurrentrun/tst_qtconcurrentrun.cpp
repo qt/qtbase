@@ -440,6 +440,19 @@ int throwFunctionReturn()
     return 0;
 }
 
+class SlowTask : public QRunnable
+{
+public:
+    static QAtomicInt cancel;
+    void run() Q_DECL_OVERRIDE {
+        int iter = 60;
+        while (--iter && !cancel.load())
+            QThread::currentThread()->msleep(25);
+    }
+};
+
+QAtomicInt SlowTask::cancel;
+
 void tst_QtConcurrentRun::exceptions()
 {
     QThreadPool pool;
@@ -480,6 +493,30 @@ void tst_QtConcurrentRun::exceptions()
     }
     if (!caught)
         QFAIL("did not get exception");
+
+    caught = false;
+    try  {
+        QtConcurrent::run(&pool, throwFunctionReturn).result();
+    } catch (QException &) {
+        caught = true;
+    }
+    QVERIFY2(caught, "did not get exception");
+
+    // Force the task to be run on this thread.
+    caught = false;
+    QThreadPool shortPool;
+    shortPool.setMaxThreadCount(1);
+    SlowTask *st = new SlowTask();
+    try  {
+        shortPool.start(st);
+        QtConcurrent::run(&shortPool, throwFunctionReturn).result();
+    } catch (QException &) {
+        caught = true;
+    }
+
+    SlowTask::cancel.store(true);
+
+    QVERIFY2(caught, "did not get exception");
 }
 #endif
 
