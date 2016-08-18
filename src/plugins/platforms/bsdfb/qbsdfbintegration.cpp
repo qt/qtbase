@@ -48,7 +48,7 @@
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 
-#if !defined(QT_NO_TSLIB)
+#if QT_CONFIG(tslib)
 #include <QtPlatformSupport/private/qtslib_p.h>
 #endif
 
@@ -127,7 +127,7 @@ QPlatformServices *QBsdFbIntegration::services() const
 
 void QBsdFbIntegration::createInputHandlers()
 {
-#ifndef QT_NO_TSLIB
+#if QT_CONFIG(tslib)
     const bool useTslib = qEnvironmentVariableIntValue("QT_QPA_FB_TSLIB");
     if (useTslib)
         new QTsLibMouseHandler(QLatin1String("TsLib"), QString());

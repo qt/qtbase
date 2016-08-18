@@ -49,7 +49,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <private/qinputdevicemanager_p_p.h>
-#ifndef QT_NO_LIBINPUT
+#if QT_CONFIG(libinput)
 #include <QtPlatformSupport/private/qlibinputhandler_p.h>
 #endif
 

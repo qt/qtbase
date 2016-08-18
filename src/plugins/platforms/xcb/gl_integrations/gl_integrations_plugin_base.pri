@@ -30,6 +30,6 @@ contains(QT_CONFIG, xcb-qt) {
     LIBS += -L$$MODULE_BASE_OUTDIR/lib -lxcb-static$$qtPlatformTargetSuffix()
     QMAKE_USE += xcb
 } else {
-    !contains(DEFINES, QT_NO_XKB): QMAKE_USE += xcb_xkb
+    qtConfig(xkb): QMAKE_USE += xcb_xkb
     QMAKE_USE += xcb_syslibs
 }

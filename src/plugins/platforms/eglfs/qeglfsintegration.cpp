@@ -70,17 +70,17 @@
 
 #include <QtPlatformHeaders/QEGLNativeContext>
 
-#ifndef QT_NO_LIBINPUT
+#if QT_CONFIG(libinput)
 #include <QtPlatformSupport/private/qlibinputhandler_p.h>
 #endif
 
-#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(evdev)
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
 #include <QtPlatformSupport/private/qevdevtouchmanager_p.h>
 #endif
 
-#if !defined(QT_NO_TSLIB) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(tslib)
 #include <QtPlatformSupport/private/qtslib_p.h>
 #endif
 
@@ -386,7 +386,7 @@ QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::na
 
 QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function) const
 {
-#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(evdev)
     if (function == QEglFSFunctions::loadKeymapTypeIdentifier())
         return QFunctionPointer(loadKeymapStatic);
 #else
@@ -398,7 +398,7 @@ QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function)
 
 void QEglFSIntegration::loadKeymapStatic(const QString &filename)
 {
-#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(evdev)
     QEglFSIntegration *self = static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration());
     if (self->m_kbdMgr)
         self->m_kbdMgr->loadKeymap(filename);
@@ -411,22 +411,22 @@ void QEglFSIntegration::loadKeymapStatic(const QString &filename)
 
 void QEglFSIntegration::createInputHandlers()
 {
-#ifndef QT_NO_LIBINPUT
+#if QT_CONFIG(libinput)
     if (!qEnvironmentVariableIntValue("QT_QPA_EGLFS_NO_LIBINPUT")) {
         new QLibInputHandler(QLatin1String("libinput"), QString());
         return;
     }
 #endif
 
-#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(evdev)
     m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
-#ifndef QT_NO_TSLIB
+#if QT_CONFIG(tslib)
     const bool useTslib = qEnvironmentVariableIntValue("QT_QPA_EGLFS_TSLIB");
     if (useTslib)
         new QTsLibMouseHandler(QLatin1String("TsLib"), QString() /* spec */);
     else
-#endif // QT_NO_TSLIB
+#endif
         new QEvdevTouchManager(QLatin1String("EvdevTouch"), QString() /* spec */, this);
 #endif
 }

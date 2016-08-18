@@ -58,7 +58,7 @@
 #include <QtCore/private/qthread_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
 struct mtdev;
 #endif
 
@@ -88,7 +88,7 @@ private:
     int m_fd;
     QEvdevTouchScreenData *d;
     QTouchDevice *m_device;
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
     mtdev *m_mtdev;
 #endif
 };

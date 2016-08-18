@@ -47,7 +47,7 @@ SOURCES += \
     $$PWD/xkbcommon/src/xkbcomp/xkbcomp.c \
     $$PWD/xkbcommon/src/xkbcomp/parser.c
 
-!contains(DEFINES, QT_NO_XKB):contains(QT_CONFIG, use-xkbcommon-x11support): {
+qtConfig(xkb):contains(QT_CONFIG, use-xkbcommon-x11support): {
     # Build xkbcommon-x11 support library, it depends on -lxcb and -lxcb-xkb, linking is done
     # in xcb-plugin.pro (linked to system libraries or if Qt was configured with -qt-xcb then
     # linked to -lxcb-static).

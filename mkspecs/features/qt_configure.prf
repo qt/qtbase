@@ -1419,12 +1419,14 @@ defineTest(qtConfOutput_privateFeature) {
     name = "$$eval($${1}.name)"
     isEmpty(name): \
         name = $$eval($${1}.feature)
+    feature = $$replace(name, [-+.], _)
 
     $${2} {
-        qtConfOutputVar(append, "publicPro", "QT_CONFIG", $$name)
+        qtConfOutputVar(append, "privatePro", "QT.global.enabled_features", $$name)
+        qtConfOutputSetDefine("privateHeader", "QT_FEATURE_$$feature", 1)
     } else {
-        f = $$upper($$replace(name, -, _))
-        qtConfOutputVar(append, "privatePro", "DEFINES", "QT_NO_$$f")
+        qtConfOutputVar(append, "privatePro", "QT.global.disabled_features", $$name)
+        qtConfOutputSetDefine("privateHeader", "QT_FEATURE_$$feature", -1)
     }
 }
 

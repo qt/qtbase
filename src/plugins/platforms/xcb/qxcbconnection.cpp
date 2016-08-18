@@ -599,7 +599,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     xcb_extension_t *extensions[] = {
         &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
-#ifndef QT_NO_XKB
+#if QT_CONFIG(xkb)
         &xcb_xkb_id,
 #endif
 #ifdef XCB_USE_RENDER
@@ -1069,7 +1069,7 @@ Qt::MouseButton QXcbConnection::translateMouseButton(xcb_button_t s)
     }
 }
 
-#ifndef QT_NO_XKB
+#if QT_CONFIG(xkb)
 namespace {
     typedef union {
         /* All XKB events share these fields. */
@@ -1252,7 +1252,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
                     s->handleScreenChange(change_event);
             }
             handled = true;
-#ifndef QT_NO_XKB
+#if QT_CONFIG(xkb)
         } else if (response_type == xkb_first_event) { // https://bugs.freedesktop.org/show_bug.cgi?id=51295
             _xkb_event *xkb_event = reinterpret_cast<_xkb_event *>(event);
             if (xkb_event->any.deviceID == m_keyboard->coreDeviceId()) {
@@ -2174,7 +2174,7 @@ void QXcbConnection::initializeXShape()
 
 void QXcbConnection::initializeXKB()
 {
-#ifndef QT_NO_XKB
+#if QT_CONFIG(xkb)
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xkb_id);
     if (!reply || !reply->present) {
         qWarning("Qt: XKEYBOARD extension not present on the X server.");

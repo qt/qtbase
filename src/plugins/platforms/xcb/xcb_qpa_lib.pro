@@ -81,7 +81,7 @@ contains(QT_CONFIG, xcb-qt) {
     QMAKE_USE += xcb
 } else {
     LIBS += -lxcb-xinerama  ### there is no configure test for this!
-    !contains(DEFINES, QT_NO_XKB): QMAKE_USE += xcb_xkb
+    qtConfig(xkb): QMAKE_USE += xcb_xkb
     QMAKE_USE += xcb_syslibs
 }
 

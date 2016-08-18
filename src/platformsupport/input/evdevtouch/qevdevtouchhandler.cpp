@@ -50,7 +50,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <linux/input.h>
 
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
 extern "C" {
 #include <mtdev.h>
 }
@@ -150,7 +150,7 @@ QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, co
 #define LONG_BITS (sizeof(long) << 3)
 #define NUM_LONGS(bits) (((bits) + LONG_BITS - 1) / LONG_BITS)
 
-#if defined(QT_NO_MTDEV)
+#if !QT_CONFIG(mtdev)
 static inline bool testBit(long bit, const long *array)
 {
     return (array[bit / LONG_BITS] >> bit % LONG_BITS) & 1;
@@ -159,7 +159,7 @@ static inline bool testBit(long bit, const long *array)
 
 QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const QString &spec, QObject *parent)
     : QObject(parent), m_notify(Q_NULLPTR), m_fd(-1), d(Q_NULLPTR), m_device(Q_NULLPTR)
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
       , m_mtdev(Q_NULLPTR)
 #endif
 {
@@ -203,7 +203,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
         return;
     }
 
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
     m_mtdev = static_cast<mtdev *>(calloc(1, sizeof(mtdev)));
     int mtdeverr = mtdev_open(m_mtdev, m_fd);
     if (mtdeverr) {
@@ -215,7 +215,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
 
     d = new QEvdevTouchScreenData(this, args);
 
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
     const char *mtdevStr = "(mtdev)";
     d->m_typeB = true;
 #else
@@ -312,7 +312,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
 
 QEvdevTouchScreenHandler::~QEvdevTouchScreenHandler()
 {
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
     if (m_mtdev) {
         mtdev_close(m_mtdev);
         free(m_mtdev);
@@ -337,7 +337,7 @@ void QEvdevTouchScreenHandler::readData()
     ::input_event buffer[32];
     int events = 0;
 
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
     forever {
         do {
             events = mtdev_get(m_mtdev, m_fd, buffer, sizeof(buffer) / sizeof(::input_event));
