@@ -693,14 +693,6 @@ bool QAbstractSocketPrivate::canReadNotification()
     qDebug("QAbstractSocketPrivate::canReadNotification()");
 #endif
 
-    if (!isBuffered) {
-        if (hasPendingData) {
-            socketEngine->setReadNotificationEnabled(false);
-            return true;
-        }
-        hasPendingData = true;
-    }
-
     // If buffered, read data from the socket into the read buffer
     if (isBuffered) {
         const qint64 oldBufferSize = buffer.size();
@@ -730,18 +722,21 @@ bool QAbstractSocketPrivate::canReadNotification()
             // to indicate that the data was discarded.
             return !q->isReadable();
         }
+    } else {
+        if (hasPendingData) {
+            socketEngine->setReadNotificationEnabled(false);
+            return true;
+        }
+        hasPendingData = true;
     }
 
     emitReadyRead();
 
-    // If we were closed as a result of the readyRead() signal,
-    // return.
-    if (state == QAbstractSocket::UnconnectedState || state == QAbstractSocket::ClosingState) {
 #if defined (QABSTRACTSOCKET_DEBUG)
+    // If we were closed as a result of the readyRead() signal.
+    if (state == QAbstractSocket::UnconnectedState || state == QAbstractSocket::ClosingState)
         qDebug("QAbstractSocketPrivate::canReadNotification() socket is closing - returning");
 #endif
-        return true;
-    }
 
     return true;
 }
