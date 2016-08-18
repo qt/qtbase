@@ -62,13 +62,23 @@
 #endif
 
 // The QT_SUPPORTS macro is deprecated. Don't use it in new code.
-// Instead, use #ifdef/ndef QT_NO_feature.
+// Instead, use QT_CONFIG(feature)
 // ### Qt6: remove macro
 #ifdef _MSC_VER
 #  define QT_SUPPORTS(FEATURE) (!defined QT_NO_##FEATURE)
 #else
 #  define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
 #endif
+
+/*
+    The QT_CONFIG macro implements a safe compile time check for features of Qt.
+    Features can be in three states:
+        0 or undefined: This will lead to a compile error when testing for it
+        -1: The feature is not available
+        1: The feature is available
+*/
+#define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #  define QT_NO_UNSHARABLE_CONTAINERS
 #endif

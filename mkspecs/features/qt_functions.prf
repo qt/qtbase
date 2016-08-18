@@ -302,3 +302,12 @@ defineTest(prepareRecursiveTarget) {
     export($${target}.CONFIG)
     export($${target}.recurse_target)
 }
+
+defineTest(qtConfig) {
+    contains(QT.global.enabled_features, $$1): \
+        return(true)
+    contains(QT.global.disabled_features, $$1): \
+        return(false)
+
+    error("Could not find feature $${1}.")
+}

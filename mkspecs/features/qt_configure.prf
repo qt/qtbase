@@ -1397,6 +1397,21 @@ defineTest(qtConfOutput_feature) {
     }
 }
 
+defineTest(qtConfOutput_publicFeature) {
+    name = "$$eval($${1}.name)"
+    isEmpty(name): \
+        name = $$eval($${1}.feature)
+    feature = $$replace(name, [-+.], _)
+
+    $${2} {
+        qtConfOutputVar(append, "publicPro", "QT.global.enabled_features", $$name)
+        qtConfOutputSetDefine("publicHeader", "QT_FEATURE_$$feature", 1)
+    } else {
+        qtConfOutputVar(append, "publicPro", "QT.global.disabled_features", $$name)
+        qtConfOutputSetDefine("publicHeader", "QT_FEATURE_$$feature", -1)
+    }
+}
+
 # currently this is somewhat inconsistent, as the feature is output to the public pro file,
 # whereas the define is being added to the private pro file.
 # This should get cleaned up to add to the private pro and header instead.
