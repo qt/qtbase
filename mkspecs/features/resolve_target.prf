@@ -32,7 +32,17 @@ win32 {
 
     mac {
         equals(TEMPLATE, lib) {
-            lib_bundle {
+            plugin:plugin_bundle {
+                !isEmpty(QMAKE_PLUGIN_BUNDLE_NAME): \
+                    plugin_target = $$QMAKE_PLUGIN_BUNDLE_NAME
+                else: \
+                    plugin_target = $$TARGET
+                QMAKE_RESOLVED_BUNDLE = $${QMAKE_RESOLVED_TARGET}$${plugin_target}.plugin
+                !shallow_bundle: \
+                    QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}/Contents/MacOS/$${TARGET}
+                else: \
+                    QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_BUNDLE}$${TARGET}
+            } else: !plugin:lib_bundle {
                 !isEmpty(QMAKE_FRAMEWORK_BUNDLE_NAME): \
                     framework_target = $$QMAKE_FRAMEWORK_BUNDLE_NAME
                 else: \
