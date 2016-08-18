@@ -778,7 +778,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             } else {
                 info_plist = escapeFilePath(fileFixify(info_plist));
             }
-            bool isFramework = project->first("TEMPLATE") == "lib" && project->isActiveConfig("lib_bundle");
+            bool isFramework = project->first("TEMPLATE") == "lib"
+                && !project->isActiveConfig("plugin")
+                && project->isActiveConfig("lib_bundle");
             bool isShallowBundle = project->isActiveConfig("shallow_bundle");
             QString info_plist_out = bundle_dir +
                 (!isShallowBundle
