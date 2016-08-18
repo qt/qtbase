@@ -250,7 +250,7 @@ Arguments:
   code         the compiled regex
   stringname   the name of the capturing substring
   ovector      the vector of matched substrings
-  stringcount  number of captured substrings 
+  stringcount  number of captured substrings
 
 Returns:       the number of the first that is set,
                or the number of the last one if none are set,
@@ -464,7 +464,7 @@ for (i = 0; i < double_count; i += 2)
   {
   size += sizeof(pcre_uchar *) + IN_UCHARS(1);
   if (ovector[i+1] > ovector[i]) size += IN_UCHARS(ovector[i+1] - ovector[i]);
-  } 
+  }
 
 stringlist = (pcre_uchar **)(PUBL(malloc))(size);
 if (stringlist == NULL) return PCRE_ERROR_NOMEMORY;

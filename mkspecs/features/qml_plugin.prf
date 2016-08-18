@@ -73,6 +73,29 @@ load(qt_common)
 # directory.  Then review and commit the changes made to plugins.qmltypes.
 #
 !cross_compile {
+    qml1_target {
+        qmlplugindump = qml1plugindump
+        importpath.name = QML_IMPORT_PATH
+    } else {
+        qmlplugindump = qmlplugindump
+        importpath.name = QML2_IMPORT_PATH
+    }
+    importpath.value =
+    for(qmod, QTREPOS) {
+        qml1_target: \
+            qmod = $$qmod/imports
+        else: \
+            qmod = $$qmod/qml
+        exists($$qmod): importpath.value += $$shell_path($$qmod)
+    }
+    importpath.value = $$unique(importpath.value)
+    QT_TOOL_ENV = importpath
+    qtPrepareTool(QMLPLUGINDUMP, $$qmlplugindump)
+    QT_TOOL_ENV =
+
+    # qtPrepareTool() must be called outside a build pass, as it protects
+    # against concurrent wrapper creation by omitting it during build passes.
+    # However, creating the actual targets is reserved to the build passes.
     build_pass|!debug_and_release {
         isEmpty(IMPORT_VERSION) {
             no_cxx_module {
@@ -84,25 +107,6 @@ load(qt_common)
         }
 
         load(resolve_target)
-        qml1_target {
-            qmlplugindump = qml1plugindump
-            importpath.name = QML_IMPORT_PATH
-        } else {
-            qmlplugindump = qmlplugindump
-            importpath.name = QML2_IMPORT_PATH
-        }
-        importpath.value =
-        for(qmod, QTREPOS) {
-            qml1_target: \
-                qmod = $$qmod/imports
-            else: \
-                qmod = $$qmod/qml
-            exists($$qmod): importpath.value += $$shell_path($$qmod)
-        }
-        importpath.value = $$unique(importpath.value)
-        QT_TOOL_ENV = importpath
-        qtPrepareTool(QMLPLUGINDUMP, $$qmlplugindump)
-        QT_TOOL_ENV =
         TARGETPATHBASE = $$replace(TARGETPATH, \\.\\d+\$, )
         qmltypes.target = qmltypes
         qmltypes.commands = $$QMLPLUGINDUMP -nonrelocatable $$replace(TARGETPATHBASE, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE
