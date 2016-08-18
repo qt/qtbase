@@ -1175,9 +1175,9 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             // windows always has a check column, regardless whether we have an icon or not
-            const qreal devicePixelRatio = QWindowsXPStylePrivate::devicePixelRatio(widget);
-            int checkcol = qRound(qreal(25) / devicePixelRatio);
-            const int gutterWidth = qRound(qreal(3) / devicePixelRatio);
+            const qreal factor = QWindowsXPStylePrivate::nativeMetricScaleFactor(widget);
+            int checkcol = qRound(qreal(25) * factor);
+            const int gutterWidth = qRound(qreal(3) * factor);
             {
                 XPThemeData theme(widget, 0, QWindowsXPStylePrivate::MenuTheme,
                                   MENU_POPUPCHECKBACKGROUND, MBI_HOT);
@@ -2166,8 +2166,9 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
             const bool isToolTitle = false;
             const int height = tb->rect.height();
             const int width = tb->rect.width();
-            int buttonWidth = GetSystemMetrics(SM_CXSIZE) / QWindowsStylePrivate::devicePixelRatio(widget)
-                - int(QStyleHelper::dpiScaled(4));
+            const int buttonWidth =
+                qRound(qreal(GetSystemMetrics(SM_CXSIZE)) * QWindowsStylePrivate::nativeMetricScaleFactor(widget)
+                       - QStyleHelper::dpiScaled(4));
 
             const int frameWidth = proxy()->pixelMetric(PM_MdiSubWindowFrameWidth, option, widget);
             const bool sysmenuHint  = (tb->titleBarFlags & Qt::WindowSystemMenuHint) != 0;
