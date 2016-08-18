@@ -111,12 +111,14 @@ for (injection, SYNCQT.INJECTIONS) {
     MAIN_FWD = $$INC_PATH/include/$$MODULE_INCNAME/$$fwd_hdr
     MAIN_FWD_CONT = '$${LITERAL_HASH}include "$$relative_path($$dst_hdr, $$dirname(MAIN_FWD))"'
     write_file($$MAIN_FWD, MAIN_FWD_CONT)|error()
+    touch($$MAIN_FWD, $$dst_hdr)
     !git_build: QMAKE_DISTCLEAN += $$MAIN_FWD
     injects = $$member(injects, 2, -1)
     for (inject, injects) {
         CLASS_FWD = $$INC_PATH/include/$$MODULE_INCNAME/$$inject
         CLASS_FWD_CONT = '$${LITERAL_HASH}include "$$fwd_hdr"'
         write_file($$CLASS_FWD, CLASS_FWD_CONT)|error()
+        touch($$CLASS_FWD, $$dst_hdr)
         !git_build: QMAKE_DISTCLEAN += $$CLASS_FWD
     }
 }
