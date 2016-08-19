@@ -570,9 +570,15 @@ void Moc::parse()
                             case Q_ENUM_NS_TOKEN:
                                 parseEnumOrFlag(&def, false);
                                 break;
+                            case Q_ENUM_TOKEN:
+                                error("Q_ENUM can't be used in a Q_NAMESPACE, use Q_ENUM_NS instead");
+                                break;
                             case Q_FLAGS_TOKEN:
                             case Q_FLAG_NS_TOKEN:
                                 parseEnumOrFlag(&def, true);
+                                break;
+                            case Q_FLAG_TOKEN:
+                                error("Q_FLAG can't be used in a Q_NAMESPACE, use Q_FLAG_NS instead");
                                 break;
                             case Q_DECLARE_FLAGS_TOKEN:
                                 parseFlag(&def);
@@ -736,9 +742,15 @@ void Moc::parse()
                 case Q_ENUM_TOKEN:
                     parseEnumOrFlag(&def, false);
                     break;
+                case Q_ENUM_NS_TOKEN:
+                    error("Q_ENUM_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_ENUM instead");
+                    break;
                 case Q_FLAGS_TOKEN:
                 case Q_FLAG_TOKEN:
                     parseEnumOrFlag(&def, true);
+                    break;
+                case Q_FLAG_NS_TOKEN:
+                    error("Q_FLAG_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_FLAG instead");
                     break;
                 case Q_DECLARE_FLAGS_TOKEN:
                     parseFlag(&def);
