@@ -5,9 +5,11 @@ lessThan(QMAKE_XCODE_VERSION, "7.0") {
         QMAKE_CFLAGS           += -fembed-bitcode
         QMAKE_CXXFLAGS         += -fembed-bitcode
         QMAKE_OBJECTIVE_CFLAGS += -fembed-bitcode
+        QMAKE_LFLAGS           += -fembed-bitcode
     } else {
         QMAKE_CFLAGS           += -fembed-bitcode-marker
         QMAKE_CXXFLAGS         += -fembed-bitcode-marker
         QMAKE_OBJECTIVE_CFLAGS += -fembed-bitcode-marker
+        QMAKE_LFLAGS           += -fembed-bitcode-marker
     }
 }
