@@ -405,7 +405,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
 
 static const struct {
     int key;
-    const char* name;
+    const char name[25];
 } keyname[] = {
     //: This and all following "incomprehensible" strings in QShortcut context
     //: are key names. Please use the localized names appearing on actual
