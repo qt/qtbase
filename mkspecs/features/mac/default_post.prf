@@ -31,6 +31,8 @@ qt {
     equals(TEMPLATE, lib):!plugin:lib_bundle: QMAKE_RPATHDIR += @loader_path/Frameworks
 }
 
+!bitcode: QMAKE_LFLAGS += $$QMAKE_LFLAGS_HEADERPAD
+
 macx-xcode:!isEmpty(QMAKE_XCODE_DEBUG_INFORMATION_FORMAT) {
     debug_information_format.name = DEBUG_INFORMATION_FORMAT
     debug_information_format.value = $$QMAKE_XCODE_DEBUG_INFORMATION_FORMAT
