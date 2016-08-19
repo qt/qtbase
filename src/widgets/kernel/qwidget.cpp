@@ -11331,9 +11331,7 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
   This feature is available on Embedded Linux, \macos, Windows,
   and X11 platforms that support the Composite extension.
 
-  This feature is not available on Windows CE.
-
-  Note that under X11 you need to have a composite manager running,
+  \note On X11 you need to have a composite manager running,
   and the X11 specific _NET_WM_WINDOW_OPACITY atom needs to be
   supported by the window manager you are using.
 
