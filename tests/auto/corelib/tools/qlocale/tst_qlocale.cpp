@@ -1754,6 +1754,30 @@ void tst_QLocale::numberOptions()
     QVERIFY(ok);
     locale.toDouble(QString("1.24e+01"), &ok);
     QVERIFY(!ok);
+
+    QCOMPARE(locale.toString(12.4, 'g', 5), QString("12.4"));
+    locale.setNumberOptions(QLocale::IncludeTrailingZeroesAfterDot);
+    QCOMPARE(locale.numberOptions(), QLocale::IncludeTrailingZeroesAfterDot);
+    QCOMPARE(locale.toString(12.4, 'g', 5), QString("12.400"));
+
+    locale.toDouble(QString("1.24e+01"), &ok);
+    QVERIFY(ok);
+    locale.toDouble(QString("1.2400e+01"), &ok);
+    QVERIFY(ok);
+    locale.toDouble(QString("12.4"), &ok);
+    QVERIFY(ok);
+    locale.toDouble(QString("12.400"), &ok);
+    QVERIFY(ok);
+    locale.setNumberOptions(QLocale::RejectTrailingZeroesAfterDot);
+    QCOMPARE(locale.numberOptions(), QLocale::RejectTrailingZeroesAfterDot);
+    locale.toDouble(QString("1.24e+01"), &ok);
+    QVERIFY(ok);
+    locale.toDouble(QString("1.2400e+01"), &ok);
+    QVERIFY(!ok);
+    locale.toDouble(QString("12.4"), &ok);
+    QVERIFY(ok);
+    locale.toDouble(QString("12.400"), &ok);
+    QVERIFY(!ok);
 }
 
 void tst_QLocale::negativeNumbers()

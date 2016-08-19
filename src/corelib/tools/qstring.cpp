@@ -5908,7 +5908,10 @@ static uint parse_flag_characters(const char * &c) Q_DECL_NOTHROW
     uint flags = QLocaleData::ZeroPadExponent;
     while (true) {
         switch (*c) {
-        case '#': flags |= QLocaleData::Alternate; break;
+        case '#':
+            flags |= QLocaleData::ShowBase | QLocaleData::AddTrailingZeroes
+                    | QLocaleData::ForcePoint;
+            break;
         case '0': flags |= QLocaleData::ZeroPadded; break;
         case '-': flags |= QLocaleData::LeftAdjusted; break;
         case ' ': flags |= QLocaleData::BlankBeforePositive; break;
@@ -6166,7 +6169,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
             case 'p': {
                 void *arg = va_arg(ap, void*);
                 const quint64 i = reinterpret_cast<quintptr>(arg);
-                flags |= QLocaleData::Alternate;
+                flags |= QLocaleData::ShowBase;
                 subst = QLocaleData::c()->unsLongLongToString(i, precision, 16, width, flags);
                 ++c;
                 break;
@@ -7741,10 +7744,13 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
     if (d.locale_occurrences > 0) {
         QLocale locale;
 
-        if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
+        const QLocale::NumberOptions numberOptions = locale.numberOptions();
+        if (!(numberOptions & QLocale::OmitGroupSeparator))
             flags |= QLocaleData::ThousandsGroup;
-        if (!(locale.numberOptions() & QLocale::OmitLeadingZeroInExponent))
+        if (!(numberOptions & QLocale::OmitLeadingZeroInExponent))
             flags |= QLocaleData::ZeroPadExponent;
+        if (numberOptions & QLocale::IncludeTrailingZeroesAfterDot)
+            flags |= QLocaleData::AddTrailingZeroes;
         locale_arg = locale.d->m_data->doubleToString(a, prec, form, fieldWidth, flags);
     }
 

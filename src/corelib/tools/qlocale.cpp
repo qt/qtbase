@@ -2024,6 +2024,8 @@ QString QLocale::toString(double i, char f, int prec) const
         flags |= QLocaleData::ThousandsGroup;
     if (!(d->m_numberOptions & OmitLeadingZeroInExponent))
         flags |= QLocaleData::ZeroPadExponent;
+    if (d->m_numberOptions & IncludeTrailingZeroesAfterDot)
+        flags |= QLocaleData::AddTrailingZeroes;
     return d->m_data->doubleToString(i, prec, form, -1, flags);
 }
 
@@ -2785,7 +2787,7 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
                 reinterpret_cast<ushort *>(digits.data())[i] += z;
         }
 
-        bool always_show_decpt = (flags & Alternate || flags & ForcePoint);
+        bool always_show_decpt = (flags & ForcePoint);
         switch (form) {
             case DFExponent: {
                 num_str = exponentForm(_zero, decimal, exponential, group, plus, minus,
@@ -2800,7 +2802,7 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
                 break;
             }
             case DFSignificantDigits: {
-                PrecisionMode mode = (flags & Alternate) ?
+                PrecisionMode mode = (flags & AddTrailingZeroes) ?
                             PMSignificantDigits : PMChopTrailingZeros;
 
                 int cutoff = precision < 0 ? 6 : precision;
@@ -2905,7 +2907,7 @@ QString QLocaleData::longLongToString(const QChar zero, const QChar group,
     for (int i = num_str.length()/* - cnt_thousand_sep*/; i < precision; ++i)
         num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
 
-    if ((flags & Alternate || flags & ShowBase)
+    if ((flags & ShowBase)
             && base == 8
             && (num_str.isEmpty() || num_str[0].unicode() != QLatin1Char('0')))
         num_str.prepend(QLatin1Char('0'));
@@ -2926,10 +2928,10 @@ QString QLocaleData::longLongToString(const QChar zero, const QChar group,
             --num_pad_chars;
 
         // leave space for optional '0x' in hex form
-        if (base == 16 && (flags & Alternate || flags & ShowBase))
+        if (base == 16 && (flags & ShowBase))
             num_pad_chars -= 2;
         // leave space for optional '0b' in binary form
-        else if (base == 2 && (flags & Alternate || flags & ShowBase))
+        else if (base == 2 && (flags & ShowBase))
             num_pad_chars -= 2;
 
         for (int i = 0; i < num_pad_chars; ++i)
@@ -2939,9 +2941,9 @@ QString QLocaleData::longLongToString(const QChar zero, const QChar group,
     if (flags & CapitalEorX)
         num_str = num_str.toUpper();
 
-    if (base == 16 && (flags & Alternate || flags & ShowBase))
+    if (base == 16 && (flags & ShowBase))
         num_str.prepend(QLatin1String(flags & UppercaseBase ? "0X" : "0x"));
-    if (base == 2 && (flags & Alternate || flags & ShowBase))
+    if (base == 2 && (flags & ShowBase))
         num_str.prepend(QLatin1String(flags & UppercaseBase ? "0B" : "0b"));
 
     // add sign
@@ -2988,7 +2990,7 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
     for (int i = num_str.length()/* - cnt_thousand_sep*/; i < precision; ++i)
         num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
 
-    if ((flags & Alternate || flags & ShowBase)
+    if ((flags & ShowBase)
             && base == 8
             && (num_str.isEmpty() || num_str[0].unicode() != QLatin1Char('0')))
         num_str.prepend(QLatin1Char('0'));
@@ -3003,10 +3005,10 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
         int num_pad_chars = width - num_str.length();
 
         // leave space for optional '0x' in hex form
-        if (base == 16 && flags & Alternate)
+        if (base == 16 && flags & ShowBase)
             num_pad_chars -= 2;
         // leave space for optional '0b' in binary form
-        else if (base == 2 && flags & Alternate)
+        else if (base == 2 && flags & ShowBase)
             num_pad_chars -= 2;
 
         for (int i = 0; i < num_pad_chars; ++i)
@@ -3016,9 +3018,9 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
     if (flags & CapitalEorX)
         num_str = num_str.toUpper();
 
-    if (base == 16 && (flags & Alternate || flags & ShowBase))
+    if (base == 16 && flags & ShowBase)
         num_str.prepend(QLatin1String(flags & UppercaseBase ? "0X" : "0x"));
-    else if (base == 2 && (flags & Alternate || flags & ShowBase))
+    else if (base == 2 && flags & ShowBase)
         num_str.prepend(QLatin1String(flags & UppercaseBase ? "0B" : "0b"));
 
     // add sign
@@ -3079,25 +3081,37 @@ bool QLocaleData::numberToCLocale(const QChar *str, int len, QLocale::NumberOpti
                 out = in.toLatin1();
             else
                 break;
+        } else if (out == '.') {
+            // Fail if more than one decimal point or point after e
+            if (decpt_idx != -1 || exponent_idx != -1)
+                return false;
+            decpt_idx = idx;
+        } else if (out == 'e' || out == 'E') {
+            exponent_idx = idx;
         }
 
         if (number_options & QLocale::RejectLeadingZeroInExponent) {
-            if (out == 'e' || out == 'E') {
-                exponent_idx = idx;
-            } else if (exponent_idx != -1) {
-                if (out >= '1' && out <= '9')
-                    exponent_idx = -1; // leading digit is not 0, forget exponent_idx
-                else if (out == '0' && idx < l - 1)
+            if (exponent_idx != -1 && out == '0' && idx < l - 1) {
+                // After the exponent there can only be '+', '-' or digits.
+                // If we find a '0' directly after some non-digit, then that is a leading zero.
+                if (result->last() < '0' || result->last() > '9')
                     return false;
             }
+        }
+
+        if (number_options & QLocale::RejectTrailingZeroesAfterDot) {
+            // If we've seen a decimal point and the last character after the exponent is 0, then
+            // that is a trailing zero.
+            if (decpt_idx >= 0 && idx == exponent_idx && result->last() == '0')
+                    return false;
         }
 
         if (!(number_options & QLocale::RejectGroupSeparator)) {
             if (start_of_digits_idx == -1 && out >= '0' && out <= '9') {
                 start_of_digits_idx = idx;
             } else if (out == ',') {
-                // Don't allow group chars after the decimal point
-                if (decpt_idx != -1)
+                // Don't allow group chars after the decimal point or exponent
+                if (decpt_idx != -1 || exponent_idx != -1)
                     return false;
 
                 // check distance from the last separator or from the beginning of the digits
@@ -3114,12 +3128,6 @@ bool QLocaleData::numberToCLocale(const QChar *str, int len, QLocale::NumberOpti
                 ++idx;
                 continue;
             } else if (out == '.' || out == 'e' || out == 'E') {
-                // Fail if more than one decimal point
-                if (out == '.' && decpt_idx != -1)
-                    return false;
-                if (decpt_idx == -1)
-                    decpt_idx = idx;
-
                 // check distance from the last separator
                 // ### FIXME: Some locales allow other groupings! See https://en.wikipedia.org/wiki/Thousands_separator
                 if (last_separator_idx != -1 && idx - last_separator_idx != 4)
@@ -3142,6 +3150,12 @@ bool QLocaleData::numberToCLocale(const QChar *str, int len, QLocale::NumberOpti
             return false;
         // were there enough digits since the last separator?
         if (last_separator_idx != -1 && idx - last_separator_idx != 4)
+            return false;
+    }
+
+    if (number_options & QLocale::RejectTrailingZeroesAfterDot) {
+        // In decimal form, the last character can be a trailing zero if we've seen a decpt.
+        if (decpt_idx != -1 && exponent_idx == -1 && result->last() == '0')
             return false;
     }
 

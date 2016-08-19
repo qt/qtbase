@@ -969,7 +969,8 @@
     setNumberOptions().
 
     \value DefaultNumberOptions This option represents the default behavior, with
-            group separators and with one leading zero in single digit exponents.
+            group separators, with one leading zero in single digit exponents, and
+            without trailing zeroes after the decimal dot.
     \value OmitGroupSeparator If this option is set, the number-to-string functions
             will not insert group separators in their return values. The default
             is to insert group separators.
@@ -984,6 +985,14 @@
             functions will fail if they encounter an exponent padded with zeroes when
             parsing a floating point number in scientific notation. The default is to
             accept such padding.
+    \value IncludeTrailingZeroesAfterDot If this option is set, the number-to-string
+            functions will pad numbers with zeroes to the requested precision in "g"
+            or "most concise" mode, even if the number of significant digits is lower
+            than the requested precision. The default is to omit trailing zeroes.
+    \value RejectTrailingZeroesAfterDot If this option is set, the string-to-number
+            functions will fail if they encounter trailing zeroes after the decimal
+            dot when parsing a number in scientific or decimal representation. The
+            default is to accept trailing zeroes.
 
     \sa setNumberOptions(), numberOptions()
 */

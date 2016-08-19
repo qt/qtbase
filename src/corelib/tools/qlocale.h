@@ -897,7 +897,9 @@ public:
         OmitGroupSeparator = 0x01,
         RejectGroupSeparator = 0x02,
         OmitLeadingZeroInExponent = 0x04,
-        RejectLeadingZeroInExponent = 0x08
+        RejectLeadingZeroInExponent = 0x08,
+        IncludeTrailingZeroesAfterDot = 0x10,
+        RejectTrailingZeroesAfterDot = 0x20
     };
     Q_DECLARE_FLAGS(NumberOptions, NumberOption)
 
