@@ -68,6 +68,7 @@ Cpp.ignoretokens        += \
                           Q_LOCATION_EXPORT \
                           Q_POSITIONING_EXPORT \
                           Q_MULTIMEDIA_EXPORT \
+                          Q_NAMESPACE \
                           Q_NETWORK_EXPORT \
                           Q_NEVER_INLINE \
                           Q_NORETURN \

@@ -144,12 +144,18 @@ struct ClassInfoDef
 };
 Q_DECLARE_TYPEINFO(ClassInfoDef, Q_MOVABLE_TYPE);
 
-struct ClassDef {
-    ClassDef():
-        hasQObject(false), hasQGadget(false), notifyableProperties(0)
-        , revisionedMethods(0), revisionedProperties(0), begin(0), end(0){}
+struct BaseDef {
     QByteArray classname;
     QByteArray qualified;
+    QVector<ClassInfoDef> classInfoList;
+    QMap<QByteArray, bool> enumDeclarations;
+    QVector<EnumDef> enumList;
+    QMap<QByteArray, QByteArray> flagAliases;
+    int begin = 0;
+    int end = 0;
+};
+
+struct ClassDef : BaseDef {
     QVector<QPair<QByteArray, FunctionDef::Access> > superclassList;
 
     struct Interface
@@ -162,8 +168,8 @@ struct ClassDef {
     };
     QVector<QVector<Interface> >interfaceList;
 
-    bool hasQObject;
-    bool hasQGadget;
+    bool hasQObject = false;
+    bool hasQGadget = false;
 
     struct PluginData {
         QByteArray iid;
@@ -173,25 +179,17 @@ struct ClassDef {
 
     QVector<FunctionDef> constructorList;
     QVector<FunctionDef> signalList, slotList, methodList, publicList;
-    int notifyableProperties;
+    int notifyableProperties = 0;
     QVector<PropertyDef> propertyList;
-    QVector<ClassInfoDef> classInfoList;
-    QMap<QByteArray, bool> enumDeclarations;
-    QVector<EnumDef> enumList;
-    QMap<QByteArray, QByteArray> flagAliases;
-    int revisionedMethods;
-    int revisionedProperties;
+    int revisionedMethods = 0;
+    int revisionedProperties = 0;
 
-    int begin;
-    int end;
 };
 Q_DECLARE_TYPEINFO(ClassDef, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(ClassDef::Interface, Q_MOVABLE_TYPE);
 
-struct NamespaceDef {
-    QByteArray name;
-    int begin;
-    int end;
+struct NamespaceDef : BaseDef {
+    bool hasQNamespace = false;
 };
 Q_DECLARE_TYPEINFO(NamespaceDef, Q_MOVABLE_TYPE);
 
@@ -240,9 +238,9 @@ public:
     void parseProperty(ClassDef *def);
     void parsePluginData(ClassDef *def);
     void createPropertyDef(PropertyDef &def);
-    void parseEnumOrFlag(ClassDef *def, bool isFlag);
-    void parseFlag(ClassDef *def);
-    void parseClassInfo(ClassDef *def);
+    void parseEnumOrFlag(BaseDef *def, bool isFlag);
+    void parseFlag(BaseDef *def);
+    void parseClassInfo(BaseDef *def);
     void parseInterfaces(ClassDef *def);
     void parseDeclareInterface();
     void parseDeclareMetatype();

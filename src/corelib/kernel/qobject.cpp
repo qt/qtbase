@@ -4248,7 +4248,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     This macro registers an enum type with the meta-object system.
     It must be placed after the enum declaration in a class that has the Q_OBJECT or the
-    Q_GADGET macro.
+    Q_GADGET macro. For namespaces use \l Q_ENUM_NS instead.
 
     For example:
 
@@ -4275,7 +4275,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     This macro registers a single \l{QFlags}{flags type} with the
     meta-object system. It is typically used in a class definition to declare
     that values of a given enum can be used as flags and combined using the
-    bitwise OR operator.
+    bitwise OR operator. For namespaces use \l Q_FLAG_NS instead.
 
     The macro must be placed after the enum declaration.
 
@@ -4290,6 +4290,48 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \note The Q_FLAG macro takes care of registering individual flag values
     with the meta-object system, so it is unnecessary to use Q_ENUM()
     in addition to this macro.
+
+    \sa {Qt's Property System}
+*/
+
+/*!
+    \macro Q_ENUM_NS(...)
+    \since 5.8
+
+    This macro registers an enum type with the meta-object system.
+    It must be placed after the enum declaration in a namespace that
+    has the Q_NAMESPACE macro. It is the same as \l Q_ENUM but in a
+    namespace.
+
+    Enumerations that are declared with Q_ENUM_NS have their QMetaEnum
+    registered in the enclosing QMetaObject. You can also use
+    QMetaEnum::fromType() to get the QMetaEnum.
+
+    Registered enumerations are automatically registered also to the Qt meta
+    type system, making them known to QMetaType without the need to use
+    Q_DECLARE_METATYPE(). This will enable useful features; for example, if
+    used in a QVariant, you can convert them to strings. Likewise, passing them
+    to QDebug will print out their names.
+
+    \sa {Qt's Property System}
+*/
+
+
+/*!
+    \macro Q_FLAG_NS(...)
+    \since 5.8
+
+    This macro registers a single \l{QFlags}{flags type} with the
+    meta-object system. It is used in a namespace that has the
+    Q_NAMESPACE macro, to declare that values of a given enum can be
+    used as flags and combined using the bitwise OR operator.
+    It is the same as \l Q_FLAG but in a namespace.
+
+    The macro must be placed after the enum declaration.
+
+    \note The Q_FLAG_NS macro takes care of registering individual flag
+    values with the meta-object system, so it is unnecessary to use
+    Q_ENUM_NS() in addition to this macro.
 
     \sa {Qt's Property System}
 */
@@ -4332,6 +4374,21 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     Q_GADGET makes a class member, \c{staticMetaObject}, available.
     \c{staticMetaObject} is of type QMetaObject and provides access to the
     enums declared with Q_ENUMS.
+*/
+
+/*!
+    \macro Q_NAMESPACE
+    \since 5.8
+
+    The Q_NAMESPACE macro can be used to add QMetaObject capabilities
+    to a namespace.
+
+    Q_NAMESPACEs can have Q_CLASSINFO, Q_ENUM_NS, Q_FLAG_NS, but they
+    cannot have Q_ENUM, Q_FLAG, Q_PROPERTY, Q_INVOKABLE, signals nor slots.
+
+    Q_NAMESPACE makes an external variable, \c{staticMetaObject}, available.
+    \c{staticMetaObject} is of type QMetaObject and provides access to the
+    enums declared with Q_ENUM_NS/Q_FLAG_NS.
 */
 
 /*!
