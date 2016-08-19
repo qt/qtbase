@@ -53,15 +53,10 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include "QtGui/qrgb.h"
-#include "QtCore/qstringlist.h"
 
 QT_BEGIN_NAMESPACE
 
-bool qt_get_named_rgb(const char *, QRgb*);
-bool qt_get_named_rgb(const QChar *, int len, QRgb*);
 bool qt_get_hex_rgb(const char *, QRgb *);
-bool qt_get_hex_rgb(const QChar *, int len, QRgb *);
-QStringList qt_get_colornames();
 
 QT_END_NAMESPACE
 
