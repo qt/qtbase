@@ -245,6 +245,7 @@ QGtk3FileDialogHelper::QGtk3FileDialogHelper()
 
     g_signal_connect(GTK_FILE_CHOOSER(d->gtkDialog()), "selection-changed", G_CALLBACK(onSelectionChanged), this);
     g_signal_connect_swapped(GTK_FILE_CHOOSER(d->gtkDialog()), "current-folder-changed", G_CALLBACK(onCurrentFolderChanged), this);
+    g_signal_connect_swapped(GTK_FILE_CHOOSER(d->gtkDialog()), "notify::filter", G_CALLBACK(onFilterChanged), this);
 }
 
 QGtk3FileDialogHelper::~QGtk3FileDialogHelper()
@@ -357,10 +358,6 @@ void QGtk3FileDialogHelper::onAccepted()
 {
     emit accept();
 
-    QString filter = selectedNameFilter();
-    if (filter.isEmpty())
-        emit filterSelected(filter);
-
     QList<QUrl> files = selectedFiles();
     emit filesSelected(files);
     if (files.count() == 1)
@@ -381,6 +378,11 @@ void QGtk3FileDialogHelper::onSelectionChanged(GtkDialog *gtkDialog, QGtk3FileDi
 void QGtk3FileDialogHelper::onCurrentFolderChanged(QGtk3FileDialogHelper *dialog)
 {
     emit dialog->directoryEntered(dialog->directory());
+}
+
+void QGtk3FileDialogHelper::onFilterChanged(QGtk3FileDialogHelper *dialog)
+{
+    emit dialog->filterSelected(dialog->selectedNameFilter());
 }
 
 static GtkFileChooserAction gtkFileChooserAction(const QSharedPointer<QFileDialogOptions> &options)
