@@ -1,4 +1,4 @@
-CONFIG = sdk rez $$CONFIG
+CONFIG = rez $$CONFIG
 load(default_pre)
 
 isEmpty(QMAKE_XCODE_DEVELOPER_PATH) {
