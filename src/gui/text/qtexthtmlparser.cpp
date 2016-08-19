@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 // see also tst_qtextdocumentfragment.cpp
 #define MAX_ENTITY 258
-static const struct QTextHtmlEntity { const char *name; quint16 code; } entities[MAX_ENTITY]= {
+static const struct QTextHtmlEntity { const char name[9]; quint16 code; } entities[]= {
     { "AElig", 0x00c6 },
     { "AMP", 38 },
     { "Aacute", 0x00c1 },
@@ -314,6 +314,7 @@ static const struct QTextHtmlEntity { const char *name; quint16 code; } entities
     { "zwj", 0x200d },
     { "zwnj", 0x200c }
 };
+Q_STATIC_ASSERT(MAX_ENTITY == sizeof entities / sizeof *entities);
 
 #if defined(Q_CC_MSVC) && _MSC_VER < 1600
 bool operator<(const QTextHtmlEntity &entity1, const QTextHtmlEntity &entity2)

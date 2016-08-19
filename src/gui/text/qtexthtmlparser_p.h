@@ -138,7 +138,7 @@ enum QTextHTMLElements {
 
 struct QTextHtmlElement
 {
-    const char *name;
+    const char name[11];
     QTextHTMLElements id;
     enum DisplayMode { DisplayBlock, DisplayInline, DisplayTable, DisplayNone } displayMode;
 };
