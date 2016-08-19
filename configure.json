@@ -2084,7 +2084,7 @@
         },
         "dbus": {
             "description": "Qt D-Bus",
-            "autoDetect": "!config.android && !config.winrt",
+            "autoDetect": "!config.uikit && !config.android && !config.winrt",
             "output": [ "privateFeature", "feature" ]
         },
         "dbus-linked": {
