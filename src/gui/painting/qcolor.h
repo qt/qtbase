@@ -73,7 +73,8 @@ public:
     QColor(QRgb rgb) Q_DECL_NOTHROW;
     QColor(QRgba64 rgba64) Q_DECL_NOTHROW;
     QColor(const QString& name);
-    QColor(const char *name);
+    QColor(const char *aname) : QColor(QLatin1String(aname)) {}
+    QColor(QLatin1String name);
     QColor(Spec spec) Q_DECL_NOTHROW;
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -93,7 +94,9 @@ public:
     // ### Qt 6: merge overloads
     QString name() const;
     QString name(NameFormat format) const;
+
     void setNamedColor(const QString& name);
+    void setNamedColor(QLatin1String name);
 
     static QStringList colorNames();
 
@@ -219,11 +222,13 @@ public:
     operator QVariant() const;
 
     static bool isValidColor(const QString &name);
+    static bool isValidColor(QLatin1String) Q_DECL_NOTHROW;
 
 private:
 
     void invalidate() Q_DECL_NOTHROW;
-    bool setColorFromString(const QString &name);
+    template <typename String>
+    bool setColorFromString(const String &name);
 
     Spec cspec;
     union {
@@ -272,8 +277,8 @@ inline QColor::QColor() Q_DECL_NOTHROW
 inline QColor::QColor(int r, int g, int b, int a)
 { setRgb(r, g, b, a); }
 
-inline QColor::QColor(const char *aname)
-{ setNamedColor(QLatin1String(aname)); }
+inline QColor::QColor(QLatin1String aname)
+{ setNamedColor(aname); }
 
 inline QColor::QColor(const QString& aname)
 { setNamedColor(aname); }

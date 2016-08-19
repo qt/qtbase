@@ -323,7 +323,6 @@ static bool get_named_rgb_no_space(const char *name_no_space, QRgb *rgb)
     return false;
 }
 
-#ifdef QCOLOR_THIS_IS_CURRENTLY_UNUSED_BUT_WILL_BE_USED_SOON
 static bool get_named_rgb(const char *name, int len, QRgb* rgb)
 {
     if (len > 255)
@@ -338,7 +337,6 @@ static bool get_named_rgb(const char *name, int len, QRgb* rgb)
 
     return get_named_rgb_no_space(name_no_space, rgb);
 }
-#endif
 
 static bool get_named_rgb(const QChar *name, int len, QRgb *rgb)
 {
@@ -796,12 +794,14 @@ QColor::QColor(Spec spec) Q_DECL_NOTHROW
 
 /*!
     \fn QColor::QColor(const char *name)
+    \overload
+    \sa setNamedColor(), name(), isValid()
+*/
 
-    Constructs a named color in the same way as setNamedColor() using
-    the given \a name.
-
-    The color is left invalid if the \a name cannot be parsed.
-
+/*!
+    \fn QColor::QColor(QLatin1String name)
+    \overload
+    \since 5.8
     \sa setNamedColor(), name(), isValid()
 */
 
@@ -882,6 +882,16 @@ void QColor::setNamedColor(const QString &name)
 }
 
 /*!
+    \overload
+    \since 5.8
+*/
+
+void QColor::setNamedColor(QLatin1String name)
+{
+    setColorFromString(name);
+}
+
+/*!
    \since 4.7
 
    Returns \c true if the \a name is a valid color name and can
@@ -897,16 +907,26 @@ bool QColor::isValidColor(const QString &name)
     return !name.isEmpty() && QColor().setColorFromString(name);
 }
 
-bool QColor::setColorFromString(const QString &name)
+/*!
+    \overload
+    \since 5.8
+*/
+bool QColor::isValidColor(QLatin1String name) Q_DECL_NOTHROW
 {
-    if (name.isEmpty()) {
+    return name.size() && QColor().setColorFromString(name);
+}
+
+template <typename String>
+bool QColor::setColorFromString(const String &name)
+{
+    if (!name.size()) {
         invalidate();
         return true;
     }
 
-    if (name.startsWith(QLatin1Char('#'))) {
+    if (name[0] == QLatin1Char('#')) {
         QRgb rgba;
-        if (get_hex_rgb(name.constData(), name.length(), &rgba)) {
+        if (get_hex_rgb(name.data(), name.size(), &rgba)) {
             setRgba(rgba);
             return true;
         } else {
@@ -917,7 +937,7 @@ bool QColor::setColorFromString(const QString &name)
 
 #ifndef QT_NO_COLORNAMES
     QRgb rgb;
-    if (get_named_rgb(name.constData(), name.length(), &rgb)) {
+    if (get_named_rgb(name.data(), name.size(), &rgb)) {
         setRgba(rgb);
         return true;
     } else
