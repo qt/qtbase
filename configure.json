@@ -2120,6 +2120,7 @@
         },
         "widgets": {
             "description": "Qt Widgets",
+            "autoDetect": "!config.tvos && !config.watchos",
             "condition": "features.gui",
             "output": [
                 "privateFeature",
