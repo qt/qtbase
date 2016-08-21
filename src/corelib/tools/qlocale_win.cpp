@@ -841,7 +841,6 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case ZeroDigit:
         return d->zeroDigit();
     case LanguageId:
-    case ScriptId:
     case CountryId: {
         QString locale = QString::fromLatin1(getWinLocaleName());
         QLocale::Language lang;
@@ -850,12 +849,12 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         QLocalePrivate::getLangAndCountry(locale, lang, script, cntry);
         if (type == LanguageId)
             return lang;
-        if (type == ScriptId)
-            return script == QLocale::AnyScript ? fallbackUiLocale().script() : script;
         if (cntry == QLocale::AnyCountry)
             return fallbackUiLocale().country();
         return cntry;
     }
+    case ScriptId:
+        return QVariant(QLocale::AnyScript);
     case MeasurementSystem:
         return d->measurementSystem();
     case AMText:
