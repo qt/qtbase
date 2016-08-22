@@ -1519,7 +1519,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         if (m_cumulative)
             flags = LoadSilent;
         if (args.count() >= 2) {
-            parseInto = args.at(1).toQString(m_tmp2);
+            if (!args.at(1).isEmpty())
+                parseInto = args.at(1) + QLatin1Char('.');
             if (args.count() >= 3 && isTrue(args.at(2)))
                 flags = LoadSilent;
         }
@@ -1536,17 +1537,15 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                         it = m_valuemapStack.top().constBegin(),
                         end = m_valuemapStack.top().constEnd();
                         it != end; ++it) {
-                    const QString &ky = it.key().toQString(m_tmp1);
-                    if (!(ky.startsWith(parseInto) &&
-                          (ky.length() == parseInto.length()
-                           || ky.at(parseInto.length()) == QLatin1Char('.'))))
+                    const ProString &ky = it.key();
+                    if (!ky.startsWith(parseInto))
                         newMap[it.key()] = it.value();
                 }
                 for (ProValueMap::ConstIterator it = symbols.constBegin();
                      it != symbols.constEnd(); ++it) {
                     const QString &ky = it.key().toQString(m_tmp1);
                     if (!ky.startsWith(QLatin1Char('.')))
-                        newMap.insert(ProKey(parseInto + QLatin1Char('.') + ky), it.value());
+                        newMap.insert(ProKey(parseInto + ky), it.value());
                 }
                 m_valuemapStack.top() = newMap;
             }
