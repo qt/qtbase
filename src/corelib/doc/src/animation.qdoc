@@ -120,10 +120,8 @@
 
     As mentioned in the previous section, the QPropertyAnimation class can
     interpolate over Qt properties. It is often this class that should be used
-    for animation of values; in fact, its superclass, QVariantAnimation, has an
-    empty implementation of \l{QAbstractAnimation::}{updateCurrentValue()}, and
-    does not change any value unless we change it ourselves on the
-    \l{QVariantAnimation::valueChanged()}{valueChanged signal}.
+    for animation of values. Its superclass, QVariantAnimation, does not change
+    any value unless we change it ourselves on the \l{QVariantAnimation::valueChanged()}{valueChanged signal}.
 
     A major reason we chose to animate Qt properties is that it
     presents us with freedom to animate already existing classes in
