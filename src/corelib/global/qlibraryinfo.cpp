@@ -616,10 +616,10 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 #if !defined(QT_BUILD_QMAKE) && !defined(QT_NO_SETTINGS)
     QScopedPointer<const QSettings> settings(QLibraryInfoPrivate::findConfiguration());
     if (!settings.isNull()) {
-        QString key = QLatin1String(platformsSection);
-        key += QLatin1Char('/');
-        key += platformName;
-        key += QLatin1String("Arguments");
+        const QString key = QLatin1String(platformsSection)
+                + QLatin1Char('/')
+                + platformName
+                + QLatin1String("Arguments");
         return settings->value(key).toStringList();
     }
 #endif // !QT_BUILD_QMAKE && !QT_NO_SETTINGS

@@ -663,11 +663,8 @@ struct QtFontDesc
 static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef, bool multi)
 {
     fontDef->family = desc.family->name;
-    if (! desc.foundry->name.isEmpty() && desc.family->count > 1) {
-        fontDef->family += QString::fromLatin1(" [");
-        fontDef->family += desc.foundry->name;
-        fontDef->family += QLatin1Char(']');
-    }
+    if (! desc.foundry->name.isEmpty() && desc.family->count > 1)
+        fontDef->family += QLatin1String(" [") + desc.foundry->name + QLatin1Char(']');
 
     if (desc.style->smoothScalable
         || QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fontsAlwaysScalable()
