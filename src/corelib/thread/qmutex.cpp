@@ -571,34 +571,11 @@ const int FreeListConstants::Sizes[FreeListConstants::BlockCount] = {
 
 typedef QFreeList<QMutexPrivate, FreeListConstants> FreeList;
 // We cannot use Q_GLOBAL_STATIC because it uses QMutex
-#if defined(Q_COMPILER_THREADSAFE_STATICS)
+static FreeList freeList_;
 FreeList *freelist()
 {
-    static FreeList list;
-    return &list;
+    return &freeList_;
 }
-#else
-static QBasicAtomicPointer<FreeList> freeListPtr;
-
-FreeList *freelist()
-{
-    FreeList *local = freeListPtr.loadAcquire();
-    if (!local) {
-        local = new FreeList;
-        if (!freeListPtr.testAndSetRelease(0, local)) {
-            delete local;
-            local = freeListPtr.loadAcquire();
-        }
-    }
-    return local;
-}
-
-static void qFreeListDeleter()
-{
-    delete freeListPtr.load();
-}
-Q_DESTRUCTOR_FUNCTION(qFreeListDeleter)
-#endif
 }
 
 QMutexPrivate *QMutexPrivate::allocate()
