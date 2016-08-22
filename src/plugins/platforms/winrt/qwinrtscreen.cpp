@@ -802,6 +802,17 @@ QWindow *QWinRTScreen::topWindow() const
     return d->visibleWindows.isEmpty() ? 0 : d->visibleWindows.first();
 }
 
+QWindow *QWinRTScreen::windowAt(const QPoint &pos)
+{
+    Q_D(const QWinRTScreen);
+    for (auto w : qAsConst(d->visibleWindows)) {
+        if (w->geometry().contains(pos))
+            return w;
+    }
+    qCDebug(lcQpaWindows) << __FUNCTION__ << ": No window found at:" << pos;
+    return nullptr;
+}
+
 void QWinRTScreen::addWindow(QWindow *window)
 {
     Q_D(QWinRTScreen);
@@ -810,8 +821,12 @@ void QWinRTScreen::addWindow(QWindow *window)
         return;
 
     d->visibleWindows.prepend(window);
-    updateWindowTitle(window->title());
-    QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
+    const Qt::WindowType type = window->type();
+    if (type != Qt::Popup && type != Qt::ToolTip && type != Qt::Tool) {
+        updateWindowTitle(window->title());
+        QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
+    }
+
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents();
 
@@ -828,7 +843,9 @@ void QWinRTScreen::removeWindow(QWindow *window)
     const bool wasTopWindow = window == topWindow();
     if (!d->visibleWindows.removeAll(window))
         return;
-    if (wasTopWindow)
+
+    const Qt::WindowType type = window->type();
+    if (wasTopWindow && type != Qt::Popup && type != Qt::ToolTip && type != Qt::Tool)
         QWindowSystemInterface::handleWindowActivated(Q_NULLPTR, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents();
@@ -1044,9 +1061,12 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     pointerPoint->get_Position(&point);
     QPointF pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
     QPointF localPos = pos;
-    if (topWindow()) {
-        const QPointF globalPosDelta = pos - pos.toPoint();
-        localPos = topWindow()->mapFromGlobal(pos.toPoint()) + globalPosDelta;
+
+    const QPoint posPoint = pos.toPoint();
+    QWindow *targetWindow = windowAt(posPoint);
+    if (targetWindow) {
+        const QPointF globalPosDelta = pos - posPoint;
+        localPos = targetWindow->mapFromGlobal(posPoint) + globalPosDelta;
     }
 
     VirtualKeyModifiers modifiers;
@@ -1081,7 +1101,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
             boolean isHorizontal;
             properties->get_IsHorizontalMouseWheel(&isHorizontal);
             QPoint angleDelta(isHorizontal ? delta : 0, isHorizontal ? 0 : delta);
-            QWindowSystemInterface::handleWheelEvent(topWindow(), localPos, pos, QPoint(), angleDelta, mods);
+            QWindowSystemInterface::handleWheelEvent(targetWindow, localPos, pos, QPoint(), angleDelta, mods);
             break;
         }
 
@@ -1107,7 +1127,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         if (isPressed)
             buttons |= Qt::XButton2;
 
-        QWindowSystemInterface::handleMouseEvent(topWindow(), localPos, pos, buttons, mods);
+        QWindowSystemInterface::handleMouseEvent(targetWindow, localPos, pos, buttons, mods);
 
         break;
     }
@@ -1159,7 +1179,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         it.value().normalPosition = QPointF(point.X/d->logicalRect.width(), point.Y/d->logicalRect.height());
         it.value().pressure = pressure;
 
-        QWindowSystemInterface::handleTouchEvent(topWindow(), d->touchDevice, d->touchPoints.values(), mods);
+        QWindowSystemInterface::handleTouchEvent(targetWindow, d->touchDevice, d->touchPoints.values(), mods);
 
         // Fall-through for pen to generate tablet event
         if (pointerDeviceType != PointerDeviceType_Pen)
@@ -1178,7 +1198,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         float rotation;
         properties->get_Twist(&rotation);
 
-        QWindowSystemInterface::handleTabletEvent(topWindow(), isPressed, pos, pos, 0,
+        QWindowSystemInterface::handleTabletEvent(targetWindow, isPressed, pos, pos, 0,
                                                   pointerType, pressure, xTilt, yTilt,
                                                   0, rotation, 0, id, mods);
 

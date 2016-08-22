@@ -104,6 +104,7 @@ public:
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
 
     QWindow *topWindow() const;
+    QWindow *windowAt(const QPoint &pos);
     void addWindow(QWindow *window);
     void removeWindow(QWindow *window);
     void raise(QWindow *window);
