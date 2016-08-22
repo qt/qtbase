@@ -4007,12 +4007,14 @@ void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName, const
     QVERIFY_SQL(q, exec("DROP TABLE IF EXISTS " + tableName));
     QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id " + type + ")"));
 
-    const int steps = 20;
-    const T increment = max / steps - min / steps;
+    const int steps = (max == min + 1) ? 2 : 20;
+    const T increment = (max == min + 1) ? 1 : (max / steps - min / steps);
 
     // insert some values
     QVector<T> values;
+    QVector<QVariant> variantValues;
     values.resize(steps);
+    variantValues.resize(steps);
     T v = min;
     if (withPreparedStatement) {
         QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (id) VALUES (?)"));
@@ -4025,17 +4027,30 @@ void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName, const
             QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (" + QString::number(v) + ")"));
         }
         values[i] = v;
+        variantValues[i] = QVariant::fromValue(v);
         v += increment;
     }
 
     // ensure we can read them back properly
-    QVERIFY_SQL(q, exec("SELECT id FROM " + tableName));
+    if (withPreparedStatement) {
+        QVERIFY_SQL(q, prepare("SELECT id FROM " + tableName));
+        QVERIFY_SQL(q, exec());
+    } else {
+        QVERIFY_SQL(q, exec("SELECT id FROM " + tableName));
+    }
     QVector<T> actualValues;
+    QVector<QVariant> actualVariantValues;
     actualValues.reserve(values.size());
     while (q.next()) {
-        actualValues << q.value(0).value<T>();
+        QVariant value = q.value(0);
+        actualVariantValues << value;
+        actualValues << value.value<T>();
+        QVERIFY(actualVariantValues.last().userType() != qMetaTypeId<char>());
+        QVERIFY(actualVariantValues.last().userType() != qMetaTypeId<signed char>());
+        QVERIFY(actualVariantValues.last().userType() != qMetaTypeId<unsigned char>());
     }
     QCOMPARE(actualValues, values);
+    QCOMPARE(actualVariantValues, variantValues);
 }
 
 void tst_QSqlQuery::integralTypesMysql()
@@ -4046,16 +4061,18 @@ void tst_QSqlQuery::integralTypesMysql()
 
     for (int i = 0; i < 2; ++i) {
         const bool withPreparedStatement = (i == 1);
-        runIntegralTypesMysqlTest<char>(db, "tinyIntTest", "TINYINT", withPreparedStatement);
-        runIntegralTypesMysqlTest<unsigned char>(db, "unsignedTinyIntTest", "TINYINT UNSIGNED", withPreparedStatement);
-        runIntegralTypesMysqlTest<char>(db, "smallIntTest", "SMALLINT", withPreparedStatement);
-        runIntegralTypesMysqlTest<unsigned char>(db, "unsignedSmallIntTest", "SMALLINT UNSIGNED", withPreparedStatement);
-        runIntegralTypesMysqlTest<int>(db, "mediumIntTest", "MEDIUMINT", withPreparedStatement, -(1 << 23), (1 << 23) - 1);
-        runIntegralTypesMysqlTest<unsigned int>(db, "unsignedMediumIntTest", "MEDIUMINT UNSIGNED", withPreparedStatement, 0, (1 << 24) - 1);
-        runIntegralTypesMysqlTest<int>(db, "intTest", "INT", withPreparedStatement);
-        runIntegralTypesMysqlTest<unsigned int>(db, "unsignedIntTest", "INT UNSIGNED", withPreparedStatement);
-        runIntegralTypesMysqlTest<long long>(db, "bigIntTest", "BIGINT", withPreparedStatement);
-        runIntegralTypesMysqlTest<unsigned long long>(db, "unsignedBigIntTest", "BIGINT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<bool>(db, "tinyInt1Test", "TINYINT(1)", withPreparedStatement);
+        runIntegralTypesMysqlTest<bool>(db, "unsignedTinyInt1Test", "TINYINT(1) UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<qint8>(db, "tinyIntTest", "TINYINT", withPreparedStatement);
+        runIntegralTypesMysqlTest<quint8>(db, "unsignedTinyIntTest", "TINYINT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<qint16>(db, "smallIntTest", "SMALLINT", withPreparedStatement);
+        runIntegralTypesMysqlTest<quint16>(db, "unsignedSmallIntTest", "SMALLINT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<qint32>(db, "mediumIntTest", "MEDIUMINT", withPreparedStatement, -(1 << 23), (1 << 23) - 1);
+        runIntegralTypesMysqlTest<quint32>(db, "unsignedMediumIntTest", "MEDIUMINT UNSIGNED", withPreparedStatement, 0, (1 << 24) - 1);
+        runIntegralTypesMysqlTest<qint32>(db, "intTest", "INT", withPreparedStatement);
+        runIntegralTypesMysqlTest<quint32>(db, "unsignedIntTest", "INT UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<qint64>(db, "bigIntTest", "BIGINT", withPreparedStatement);
+        runIntegralTypesMysqlTest<quint64>(db, "unsignedBigIntTest", "BIGINT UNSIGNED", withPreparedStatement);
     }
 }
 
