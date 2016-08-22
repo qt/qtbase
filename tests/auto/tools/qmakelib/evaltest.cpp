@@ -1326,9 +1326,9 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << true;
 
     QTest::newRow("$$system(): bad number of arguments")
-            << "VAR = $$system(1, 2, 3)"
+            << "VAR = $$system(1, 2, 3, 4)"
             << "VAR ="
-            << "##:1: system(execute) requires one or two arguments."
+            << "##:1: system(command, [mode], [stsvar]) requires one to three arguments."
             << true;
 
     QTest::newRow("$$unique()")
@@ -2346,10 +2346,16 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << "Project WARNING: World, be warned!"
             << true;
 
-    QTest::newRow("error()")
+    QTest::newRow("error(message)")
             << "error('World, you FAIL!'): OK = 1\nOKE = 1"
             << "OK = UNDEF\nOKE = UNDEF"
             << "Project ERROR: World, you FAIL!"
+            << false;
+
+    QTest::newRow("error(empty)")
+            << "error(): OK = 1\nOKE = 1"
+            << "OK = UNDEF\nOKE = UNDEF"
+            << ""
             << false;
 
     QTest::newRow("if(error())")

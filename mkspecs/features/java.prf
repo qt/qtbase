@@ -28,7 +28,7 @@ javac.commands = javac -source 6 -target 6 -Xlint:unchecked -bootclasspath $$AND
 javac.depends = FORCE
 QMAKE_EXTRA_COMPILERS += javac
 
-mkpath($$absolute_path($$CLASS_DIR, $$OUT_PWD)) | error("Aborting.")
+mkpath($$absolute_path($$CLASS_DIR, $$OUT_PWD))|error()
 
 # Disable all linker flags since we are overriding the regular linker
 QMAKE_LFLAGS =

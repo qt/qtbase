@@ -6,6 +6,10 @@ CONFIG += minimal_syncqt internal_module force_bootstrap
 
 MODULE_INCNAME = QtCore QtXml
 MODULE_DEFINES = \
+        QT_VERSION_STR=$$shell_quote(\"$$QT_VERSION\") \
+        QT_VERSION_MAJOR=$$QT_MAJOR_VERSION \
+        QT_VERSION_MINOR=$$QT_MINOR_VERSION \
+        QT_VERSION_PATCH=$$QT_PATCH_VERSION \
         QT_BOOTSTRAPPED \
         QT_LITE_UNICODE \
         QT_NO_CAST_TO_ASCII \
@@ -134,7 +138,7 @@ macx {
         ../../corelib/io/qstandardpaths_win.cpp
 }
 
-!contains(QT_CONFIG, system-zlib)|cross_compile {
+!qtConfig(system-zlib)|cross_compile {
     include(../../3rdparty/zlib.pri)
 } else {
     CONFIG += no_core_dep

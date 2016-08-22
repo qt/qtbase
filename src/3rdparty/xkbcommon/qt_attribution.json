@@ -1,0 +1,26 @@
+{
+    "Id": "xkbcommon",
+    "Name": "xkbcommon",
+    "QDocModule": "qtgui",
+    "QtUsage": "Used in xcb platform plugin. Configure with -system-xkbcommon-x11 to avoid.",
+
+    "Description": "xkbcommon is a keymap compiler and support library which processes a reduced subset of keymaps as defined by the XKB specification.",
+    "Homepage": "http://xkbcommon.org/",
+    "License": "MIT Licenses (with no-advertisement clause)",
+    "LicenseId": "MIT",
+    "LicenseFile": "COPYING",
+    "Copyright": "Copyright 1985, 1987, 1988, 1990, 1998  The Open Group
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts.
+Copyright 1993, 1994, 1995, 1996 by Silicon Graphics Computer Systems, Inc.
+Copyright 1996 by Joseph Moss
+Copyright 2002-2007 Free Software Foundation, Inc.
+Copyright 2003-2004 Dmitry Golubev <lastguru@mail.ru>
+Copyright 2004, Gregory Mokhin <mokhin@bog.msu.ru>
+Copyright 2006 Erdal Ronahî
+Copyright 2008, 2009 Dan Nicholson
+Copyright 2009-2012 Daniel Stone
+Copyright 2010, 2012 Intel Corporation
+Copyright 2010 Francisco Jerez <currojerez@riseup.net>
+Copyright 2011 Joseph Adams <joeyadams3.14159@gmail.com>
+Copyright 2012 Ran Benita <ran234@gmail.com>"
+}

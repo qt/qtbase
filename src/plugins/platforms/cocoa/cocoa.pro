@@ -71,7 +71,7 @@ HEADERS += qcocoaintegration.h \
     messages.h \
     qcocoamimetypes.h
 
-contains(QT_CONFIG, opengl.*) {
+qtConfig(opengl.*) {
     OBJECTIVE_SOURCES += qcocoaglcontext.mm
 
     HEADERS += qcocoaglcontext.h

@@ -25,7 +25,7 @@ include(platformcompositor/platformcompositor.pri)
 # dbus convenience, but not for darwin: the platform
 # plugins for these platforms do not use dbus and we
 # don't want to create a false dependency.
-!darwin: contains(QT_CONFIG, dbus) {
+!darwin:qtConfig(dbus) {
     include(dbusmenu/dbusmenu.pri)
     include(dbustray/dbustray.pri)
 }

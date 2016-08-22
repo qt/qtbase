@@ -2,14 +2,14 @@ CONFIG *= thread
 
 #handle defines
 win32 {
-   contains(QT_CONFIG, shared) {
+   qtConfig(shared) {
       # this variable is read by qmake in qmake/generators/win32/msvc_vcproj.cpp
       # function VcprojGenerator::initDeploymentTool()
       QMAKE_DLL_PATHS += $$[QT_INSTALL_BINS/get]
    }
 }
 CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG
-contains(QT_CONFIG, force_asserts):DEFINES += QT_FORCE_ASSERTS
+qtConfig(force_asserts): DEFINES += QT_FORCE_ASSERTS
 no_keywords:DEFINES += QT_NO_KEYWORDS
 plugin { #Qt plugins
    static:DEFINES += QT_STATICPLUGIN
@@ -165,7 +165,7 @@ for(ever) {
 qt_module_deps = $$CLEAN_QT $$CLEAN_QT_PRIVATE
 qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 
-!no_qt_rpath:!static:contains(QT_CONFIG, rpath):!contains(QT_CONFIG, static):\
+!no_qt_rpath:!static:qtConfig(rpath):!qtConfig(static):\
         contains(qt_module_deps, core) {
     relative_qt_rpath:!isEmpty(QMAKE_REL_RPATH_BASE):contains(INSTALLS, target):\
             isEmpty(target.files):isEmpty(target.commands):isEmpty(target.extra) {
@@ -176,7 +176,7 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
     }
 }
 
-!isEmpty(QMAKE_LFLAGS_RPATHLINK):!contains(QT_CONFIG, static) {
+!isEmpty(QMAKE_LFLAGS_RPATHLINK):!qtConfig(static) {
     # -rpath-link is used by the linker to find dependencies of dynamic
     # libraries which were NOT specified on the command line.
     # This means that paths of direct dependencies (QT & QT_PRIVATE)
@@ -191,7 +191,7 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 
 # static builds: link qml import plugins into the app.
 contains(qt_module_deps, qml): \
-        contains(QT_CONFIG, static):contains(TEMPLATE, .*app):!host_build:!no_import_scan {
+        qtConfig(static):contains(TEMPLATE, .*app):!host_build:!no_import_scan {
     !isEmpty(QTREPOS) {
         for (qrep, QTREPOS): \
             exists($$qrep/qml): \
@@ -238,7 +238,7 @@ contains(qt_module_deps, qml): \
             }
         }
         QML_IMPORT_CPP = $$OUT_PWD/$$lower($$basename(TARGET))_qml_plugin_import.cpp
-        write_file($$QML_IMPORT_CPP, IMPORT_FILE_CONT)|error("Aborting.")
+        write_file($$QML_IMPORT_CPP, IMPORT_FILE_CONT)|error()
         GENERATED_SOURCES += $$QML_IMPORT_CPP
         QMAKE_DISTCLEAN += $$QML_IMPORT_CPP
 
@@ -261,7 +261,7 @@ contains(qt_module_deps, qml): \
                 "[Paths]" \
                 "Imports = $$QMAKE_QML_BUNDLE_PATH" \
                 "Qml2Imports = $$QMAKE_QML_BUNDLE_PATH"
-            write_file("$$OUT_PWD/qt.conf", QT_CONF_CONTENTS)|error("Aborting.")
+            write_file("$$OUT_PWD/qt.conf", QT_CONF_CONTENTS)|error()
 
             # write qt.conf and copy each qml import dir into the bundle.
             # But strip away archives and other files that are not needed:
@@ -318,7 +318,7 @@ contains(TEMPLATE, .*app) {
 }
 
 QT_PLUGIN_VERIFY = DEPLOYMENT_PLUGIN
-contains(QT_CONFIG, static) {
+qtConfig(static) {
     QT_PLUGIN_VERIFY += QTPLUGIN
     force_import_plugins|contains(TEMPLATE, .*app) {
         import_plugins:!isEmpty(QTPLUGIN) {
@@ -334,7 +334,7 @@ contains(QT_CONFIG, static) {
                     warning("Plugin class name could not be determined for $$IMPORT_PLUG plugin.")
             }
             IMPORT_CPP = $$OUT_PWD/$$lower($$basename(TARGET))_plugin_import.cpp
-            write_file($$IMPORT_CPP, IMPORT_FILE_CONT)|error("Aborting.")
+            write_file($$IMPORT_CPP, IMPORT_FILE_CONT)|error()
             GENERATED_SOURCES += $$IMPORT_CPP
             QMAKE_DISTCLEAN += $$IMPORT_CPP
         }

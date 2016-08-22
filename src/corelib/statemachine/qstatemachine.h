@@ -141,7 +141,7 @@ public:
 
     QSet<QAbstractState*> configuration() const;
 
-#ifndef QT_NO_STATEMACHINE_EVENTFILTER
+#if QT_CONFIG(qeventtransition)
     bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
 #endif
 

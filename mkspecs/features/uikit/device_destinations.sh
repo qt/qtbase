@@ -44,6 +44,8 @@ echo "SIMULATOR_DEVICES = $booted_simulator"
 
 xcodebuild test -scheme $2 -destination 'id=0' -destination-timeout 1 2>&1| sed -n 's/{ \(platform:.*\) }/\1/p' | while read destination; do
     id=$(echo $destination | sed -n -E 's/.*id:([^ ,]+).*/\1/p')
+    [[ $id == *"placeholder"* ]] && continue
+
     echo $destination | tr ',' '\n' | while read keyval; do
         key=$(echo $keyval | cut -d ':' -f 1 | tr '[:lower:]' '[:upper:]')
         val=$(echo $keyval | cut -d ':' -f 2)
@@ -57,6 +59,10 @@ xcodebuild test -scheme $2 -destination 'id=0' -destination-timeout 1 2>&1| sed 
             elif [ "$val" = "tvOS" ]; then
                 echo "HARDWARE_DEVICES += $id"
             elif [ "$val" = "tvOS Simulator" -a "$id" != "$booted_simulator" ]; then
+                echo "SIMULATOR_DEVICES += $id"
+            elif [ "$val" = "watchOS" ]; then
+                echo "HARDWARE_DEVICES += $id"
+            elif [ "$val" = "watchOS Simulator" -a "$id" != "$booted_simulator" ]; then
                 echo "SIMULATOR_DEVICES += $id"
             fi
         fi

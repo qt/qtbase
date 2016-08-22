@@ -1,0 +1,17 @@
+{
+    "Id": "harfbuzz",
+    "Name": "HarfBuzz",
+    "QDocModule": "qtgui",
+    "QtUsage": "Optionally used in Qt GUI. Configure with -system-harfbuzz or -qt-harfbuzz to avoid.",
+
+    "License": "MIT License",
+    "LicenseId": "MIT",
+    "LicenseFile": "COPYING",
+    "Copyright": "Copyright (c) 1992, 1993
+    The Regents of the University of California. All rights reserved.
+
+Copyright (c) 2011 The FreeBSD Foundation
+All rights reserved.
+Portions of this software were developed by David Chisnall
+under sponsorship from the FreeBSD Foundation."
+}

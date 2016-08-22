@@ -134,6 +134,7 @@ public:
 
     static void registerTouchDevice(const QTouchDevice *device);
     static void unregisterTouchDevice(const QTouchDevice *device);
+    static bool isTouchDeviceRegistered(const QTouchDevice *device);
     static void handleTouchEvent(QWindow *w, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
     static void handleTouchEvent(QWindow *w, ulong timestamp, QTouchDevice *device,

@@ -3,7 +3,7 @@ TARGET = qcorewlanbearer
 QT = core-private network-private
 LIBS += -framework Foundation -framework SystemConfiguration
 
-contains(QT_CONFIG, corewlan) {
+qtConfig(corewlan) {
     LIBS += -framework CoreWLAN -framework Security
 }
 

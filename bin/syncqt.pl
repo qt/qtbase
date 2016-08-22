@@ -333,8 +333,8 @@ sub check_header {
     my ($lib, $header, $iheader, $public_header, $private_header) = @_;
     my $header_skip_qt_begin_namespace_test = 0;
 
+    return if ($ignore_for_include_check{$header});
     if ($public_header) {
-        return if ($ignore_for_include_check{$header});
         $header_skip_qt_begin_namespace_test = 1 if ($ignore_for_qt_begin_namespace_check{$header});
     }
 
@@ -878,6 +878,10 @@ our %inject_headers = ();
 loadSyncProfile(\$basedir, \$out_basedir);
 
 @modules_to_sync = keys(%modules) if($#modules_to_sync == -1);
+
+for my $p (keys %inject_headers) {
+    push @ignore_for_include_check, @{$inject_headers{$p}};
+}
 
 my %allmoduleheadersprivate = map { $_ => 1 } @allmoduleheadersprivate;
 %ignore_for_include_check = map { $_ => 1 } @ignore_for_include_check;

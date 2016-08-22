@@ -46,10 +46,10 @@
 
 #if defined(Q_OS_WIN)
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
-#elif defined(QT_NO_FONTCONFIG)
-#include <qpa/qplatformfontdatabase.h>
-#else
+#elif QT_CONFIG(fontconfig)
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#else
+#include <qpa/qplatformfontdatabase.h>
 #endif
 
 #if !defined(Q_OS_WIN)
@@ -118,7 +118,7 @@ public:
 QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
 {
     if (m_options & EnableFonts) {
-#ifndef QT_NO_FONTCONFIG
+#if QT_CONFIG(fontconfig)
         if (!m_fontDatabase)
             m_fontDatabase = new QGenericUnixFontDatabase;
 #else

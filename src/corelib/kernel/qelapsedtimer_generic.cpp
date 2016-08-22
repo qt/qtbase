@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qelapsedtimer.h"
+#include "qdeadlinetimer.h"
 #include "qdatetime.h"
 
 QT_BEGIN_NAMESPACE
@@ -145,7 +146,7 @@ qint64 QElapsedTimer::elapsed() const Q_DECL_NOTHROW
     number of milliseconds since January 1st, 1970 at 0:00 UTC (that is, it
     is the Unix time expressed in milliseconds).
 
-    On Linux, Windows and OS X/iOS systems, this value is usually the time
+    On Linux, Windows and Apple platforms, this value is usually the time
     since the system boot, though it usually does not include the time the
     system has spent in sleep states.
 
@@ -199,6 +200,14 @@ qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) Q_DECL_NOTHROW
 {
     return v1.t1 < v2.t1;
+}
+
+QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) Q_DECL_NOTHROW
+{
+    QDeadlineTimer result;
+    result.t1 = QDateTime::currentMSecsSinceEpoch() * 1000 * 1000;
+    result.type = timerType;
+    return result;
 }
 
 QT_END_NAMESPACE

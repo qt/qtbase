@@ -45,7 +45,7 @@
 #include <private/qcoreapplication_p.h>
 #include <private/qcore_unix_p.h>
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_DARWIN)
 #  include <private/qeventdispatcher_cf_p.h>
 #else
 #  if !defined(QT_NO_GLIB)
@@ -279,7 +279,7 @@ typedef void*(*QtThreadCallback)(void*);
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_DARWIN)
     bool ok = false;
     int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
     if (ok && value > 0)

@@ -1,4 +1,4 @@
-contains(QT_CONFIG, opengles2) {
+qtConfig(opengles2) {
     INCLUDEPATH += $$QMAKE_INCDIR_OPENGL_ES2
     !isEmpty(QMAKE_LIBDIR_OPENGL_ES2):QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2
     target_qt:LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL_ES2

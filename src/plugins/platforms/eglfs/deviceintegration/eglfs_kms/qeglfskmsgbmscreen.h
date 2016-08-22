@@ -55,9 +55,8 @@ class QEglFSKmsGbmScreen : public QEglFSKmsScreen
 {
 public:
     QEglFSKmsGbmScreen(QEglFSKmsIntegration *integration,
-                    QEglFSKmsDevice *device,
-                    QEglFSKmsOutput output,
-                    QPoint position);
+                       QEglFSKmsDevice *device,
+                       QEglFSKmsOutput output);
     ~QEglFSKmsGbmScreen();
 
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;

@@ -1,6 +1,6 @@
-contains(QT_CONFIG, system-harfbuzz) {
-    LIBS_PRIVATE += -lharfbuzz
-} else: contains(QT_CONFIG, harfbuzz) {
+qtConfig(system-harfbuzz) {
+    QMAKE_USE_PRIVATE += harfbuzz
+} else: qtConfig(harfbuzz) {
     INCLUDEPATH += $$PWD/harfbuzz-ng/include
     LIBS_PRIVATE += -L$$QT_BUILD_TREE/lib -lqtharfbuzzng$$qtPlatformTargetSuffix()
 }

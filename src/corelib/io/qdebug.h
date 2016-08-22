@@ -438,8 +438,8 @@ inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
 
 #define QT_FORWARD_DECLARE_CF_TYPE(type) Q_FORWARD_DECLARE_CF_TYPE(type);
 #define QT_FORWARD_DECLARE_MUTABLE_CF_TYPE(type) Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type);
-#define QT_FORWARD_DECLARE_CG_TYPE(type) typedef const struct type *type ## Ref;
-#define QT_FORWARD_DECLARE_MUTABLE_CG_TYPE(type) typedef struct type *type ## Ref;
+#define QT_FORWARD_DECLARE_CG_TYPE(type) Q_FORWARD_DECLARE_CG_TYPE(type);
+#define QT_FORWARD_DECLARE_MUTABLE_CG_TYPE(type) Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(type);
 
 QT_END_NAMESPACE
 Q_FORWARD_DECLARE_CF_TYPE(CFString);

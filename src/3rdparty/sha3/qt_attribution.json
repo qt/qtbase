@@ -1,0 +1,29 @@
+[
+    {
+        "Id": "sha3_endian",
+        "Name": "Secure Hash Algorithm SHA-3 - brg_endian",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core (QCryptographicHash).",
+
+        "Description": "SHA-3, originally known as Keccak, is a cryptographic hash function.",
+        "License": "BSD 3-clause \"New\" or \"Revised\" License",
+        "LicenseFile": "BRG_ENDIAN_LICENSE",
+        "LicenseId": "BSD-3-Clause",
+        "Copyright": "Copyright (c) 1998-2008, Brian Gladman, Worcester, UK. All rights reserved."
+    },
+    {
+        "Id": "sha3_keccak",
+        "Name": "Secure Hash Algorithm SHA-3 - Keccak",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core (QCryptographicHash).",
+
+        "Description": "SHA-3, originally known as Keccak, is a cryptographic hash function.",
+        "License": "Creative Commons Zero v1.0 Universal",
+        "LicenseId": "CC0-1.0",
+        "LicenseFile": "CC0_LICENSE",
+        "Copyright": "Guido Bertoni, Joan Daemen, Michaël Peeters and Gilles Van Assche.
+
+To the extent possible under law, the implementers have waived all copyright
+and related or neighboring rights to the source code in this file."
+    }
+]

@@ -107,7 +107,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
     winrt: MODULE_PRI_CONT += \
         "QT.$${MODULE_ID}.winrt_capabilities =$$join(MODULE_WINRT_CAPABILITIES, " ", " ")" \
         "QT.$${MODULE_ID}.winrt_capabilities_device =$$join(MODULE_WINRT_CAPABILITIES_DEVICE, " ", " ")"
-    write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
+    write_file($$MODULE_PRI, MODULE_PRI_CONT)|error()
     !internal_module:!no_private_module {
         module_build_type += internal_module
         private_deps = $$QT
@@ -127,7 +127,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
             "QT.$${MODULE}_private.frameworks =" \
             "QT.$${MODULE}_private.depends = $$private_deps" \
             "QT.$${MODULE}_private.module_config =$$join(module_build_type, " ", " ")"
-        write_file($$MODULE_PRIVATE_PRI, MODULE_PRIVATE_PRI_CONT)|error("Aborting.")
+        write_file($$MODULE_PRIVATE_PRI, MODULE_PRIVATE_PRI_CONT)|error()
     }
     MODULE_PRI_FILES = $$MODULE_PRI $$MODULE_PRIVATE_PRI
 
@@ -162,7 +162,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
                 MODULE_FWD_PRI_CONT += \
                     "QT.$${MODULE}_private.includes $$pls= $$MODULE_FWD_PRIVATE_INCLUDES"
         }
-        write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
+        write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error()
         touch($$MODULE_FWD_PRI, $$MODULE_PRI)
         MODULE_PRI_FILES += $$MODULE_FWD_PRI
 

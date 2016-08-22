@@ -192,6 +192,10 @@ static inline unsigned parseOptions(const QStringList &paramList,
             }
         } else if (param == QLatin1String("gl=gdi")) {
             options |= QWindowsIntegration::DisableArb;
+        } else if (param == QLatin1String("nodirectwrite")) {
+            options |= QWindowsIntegration::DontUseDirectWriteFonts;
+        } else if (param == QLatin1String("nocolorfonts")) {
+            options |= QWindowsIntegration::DontUseColorFonts;
         } else if (param == QLatin1String("nomousefromtouch")) {
             options |= QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch;
         } else if (parseIntOption(param, QLatin1String("verbose"), 0, INT_MAX, &QWindowsContext::verbose)
@@ -304,7 +308,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     if (window->type() == Qt::ForeignWindow) {
         const HWND hwnd = reinterpret_cast<HWND>(window->winId());
         if (!IsWindow(hwnd)) {
-           qWarning("Windows QPA: Invalid foreign window ID %p.");
+           qWarning("Windows QPA: Invalid foreign window ID %p.", hwnd);
            return nullptr;
         }
         QWindowsForeignWindow *result = new QWindowsForeignWindow(window, hwnd);

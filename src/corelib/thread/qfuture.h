@@ -65,13 +65,7 @@ public:
     explicit QFuture(QFutureInterface<T> *p) // internal
         : d(*p)
     { }
-    QFuture(const QFuture &other)
-        : d(other.d)
-    { }
-    ~QFuture()
-    { }
 
-    inline QFuture &operator=(const QFuture &other);
     bool operator==(const QFuture &other) const { return (d == other.d); }
     bool operator!=(const QFuture &other) const { return (d != other.d); }
 
@@ -157,13 +151,6 @@ public: // Warning: the d pointer is not documented and is considered private.
 };
 
 template <typename T>
-inline QFuture<T> &QFuture<T>::operator=(const QFuture<T> &other)
-{
-    d = other.d;
-    return *this;
-}
-
-template <typename T>
 inline T QFuture<T>::result() const
 {
     d.waitForResult(0);
@@ -195,13 +182,7 @@ public:
     explicit QFuture(QFutureInterfaceBase *p) // internal
         : d(*p)
     { }
-    QFuture(const QFuture &other)
-        : d(other.d)
-    { }
-    ~QFuture()
-    { }
 
-    QFuture &operator=(const QFuture &other);
     bool operator==(const QFuture &other) const { return (d == other.d); }
     bool operator!=(const QFuture &other) const { return (d != other.d); }
 
@@ -247,12 +228,6 @@ public:
 #endif
     mutable QFutureInterfaceBase d;
 };
-
-inline QFuture<void> &QFuture<void>::operator=(const QFuture<void> &other)
-{
-    d = other.d;
-    return *this;
-}
 
 inline QFuture<void> QFutureInterface<void>::future()
 {

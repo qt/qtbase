@@ -81,7 +81,7 @@ void tst_QSslDiffieHellmanParameters::constructionDefault()
 void tst_QSslDiffieHellmanParameters::constructionDER()
 {
     // Uniquely generated with 'openssl dhparam -outform DER -out out.der -check -2 4096'
-    QSslDiffieHellmanParameters dh(QByteArray::fromBase64(QByteArrayLiteral(
+    const auto dh = QSslDiffieHellmanParameters::fromEncoded(QByteArray::fromBase64(QByteArrayLiteral(
         "MIICCAKCAgEAsbQYx57ZlyEyWF8jD5WYEswGR2aTVFsHqP3026SdyTwcjY+YlMOae0EagK"
         "jDA0UlPcih1kguQOvOVgyc5gI3YbBb4pCNEdy048xITlsdqG7qC3+2VvFR3vfixEbQQll9"
         "2cGIIneD/36p7KJcDnBNUwwWj/VJKhTwelTfKTj2T39si9xGMkqZiQuCaXRk6vSKZ4ZDPk"
@@ -103,7 +103,7 @@ void tst_QSslDiffieHellmanParameters::constructionDER()
 void tst_QSslDiffieHellmanParameters::constructionPEM()
 {
     // Uniquely generated with 'openssl dhparam -outform PEM -out out.pem -check -2 4096'
-    QSslDiffieHellmanParameters dh(QByteArrayLiteral(
+    const auto dh = QSslDiffieHellmanParameters::fromEncoded(QByteArrayLiteral(
         "-----BEGIN DH PARAMETERS-----\n"
         "MIICCAKCAgEA9QTdqhQkbGuhWzBsW5X475AjjrITpg1BHX5+mp1sstUd84Lshq1T\n"
         "+S2QQQtdl25EPoUblpyyLAf8krFSH4YwR7jjLWklA8paDOwRYod0zLmVZ1Wx6og3\n"
@@ -128,7 +128,7 @@ void tst_QSslDiffieHellmanParameters::constructionPEM()
 void tst_QSslDiffieHellmanParameters::unsafe512Bits()
 {
     // Uniquely generated with 'openssl dhparam -outform PEM -out out.pem -check -2 512'
-    QSslDiffieHellmanParameters dh(QByteArrayLiteral(
+    const auto dh = QSslDiffieHellmanParameters::fromEncoded(QByteArrayLiteral(
         "-----BEGIN DH PARAMETERS-----\n"
         "MEYCQQCf8goDn56akiliAtEL1ZG7VH+9wfLxsv8/B1emTUG+rMKB1yaVAU7HaAiM\n"
         "Gtmo2bAWUqBczUTOTzqmWTm28P6bAgEC\n"
@@ -145,7 +145,7 @@ void tst_QSslDiffieHellmanParameters::unsafeNonPrime()
 {
     // Uniquely generated with 'openssl dhparam -outform DER -out out.der -check -2 1024'
     // and then modified by hand to make P not be a prime number.
-    QSslDiffieHellmanParameters dh(QByteArray::fromBase64(QByteArrayLiteral(
+    const auto dh = QSslDiffieHellmanParameters::fromEncoded(QByteArray::fromBase64(QByteArrayLiteral(
         "MIGHAoGBALLcOLg+ow8TMnbCUeNjwys6wUTIH9mn4ZSeIbD6qvCsJgg4cUxXwJQmPY"
         "Xl15AsKXgkXWh0n+/N6tjH0sSRJnzDvN2H3KxFLKkvxmBYrDOJMdCuMgZD50aOsVyd"
         "vholAW9zilkoYkB6sqwxY1Z2dbpTWajCsUAWZQ0AIP4Y5nesAgEC"

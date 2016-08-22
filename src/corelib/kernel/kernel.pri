@@ -4,6 +4,8 @@ HEADERS += \
         kernel/qabstracteventdispatcher.h \
         kernel/qabstractnativeeventfilter.h \
         kernel/qbasictimer.h \
+        kernel/qdeadlinetimer.h \
+        kernel/qdeadlinetimer_p.h \
         kernel/qelapsedtimer.h \
         kernel/qeventloop.h\
         kernel/qpointer.h \
@@ -46,6 +48,7 @@ SOURCES += \
         kernel/qabstracteventdispatcher.cpp \
         kernel/qabstractnativeeventfilter.cpp \
         kernel/qbasictimer.cpp \
+        kernel/qdeadlinetimer.cpp \
         kernel/qelapsedtimer.cpp \
         kernel/qeventloop.cpp \
         kernel/qcoreapplication.cpp \
@@ -120,6 +123,11 @@ mac {
         # We need UIKit for UIDevice
         LIBS_PRIVATE += -framework UIKit
     }
+
+    watchos {
+        # We need WatchKit for WKExtension in qeventdispatcher_cf.mm
+        LIBS_PRIVATE += -framework WatchKit
+    }
 }
 
 nacl {
@@ -144,21 +152,20 @@ unix|integrity {
             kernel/qpoll_p.h \
             kernel/qtimerinfo_unix_p.h
 
-    contains(QT_CONFIG, poll_select): SOURCES += kernel/qpoll.cpp
-    contains(QT_CONFIG, poll_poll): DEFINES += QT_HAVE_POLL
-    contains(QT_CONFIG, poll_ppoll): DEFINES += QT_HAVE_POLL QT_HAVE_PPOLL
-    contains(QT_CONFIG, poll_pollts): DEFINES += QT_HAVE_POLL QT_HAVE_POLLTS
+    qtConfig(poll_select): SOURCES += kernel/qpoll.cpp
+    qtConfig(poll_poll): DEFINES += QT_HAVE_POLL
+    qtConfig(poll_ppoll): DEFINES += QT_HAVE_POLL QT_HAVE_PPOLL
+    qtConfig(poll_pollts): DEFINES += QT_HAVE_POLL QT_HAVE_POLLTS
 
-    contains(QT_CONFIG, glib) {
+    qtConfig(glib) {
         SOURCES += \
             kernel/qeventdispatcher_glib.cpp
         HEADERS += \
             kernel/qeventdispatcher_glib_p.h
-        QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_GLIB
-        LIBS_PRIVATE +=$$QMAKE_LIBS_GLIB
+        QMAKE_USE_PRIVATE += glib
     }
 
-   contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
+   qtConfig(clock-gettime): include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
 
     !android {
         SOURCES += kernel/qsharedmemory_posix.cpp \
@@ -181,7 +188,7 @@ vxworks {
 }
 
 qqnx_pps {
-        LIBS_PRIVATE += -lpps
+        QMAKE_USE_PRIVATE += pps
         SOURCES += \
                 kernel/qppsattribute.cpp \
                 kernel/qppsobject.cpp

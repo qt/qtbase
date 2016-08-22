@@ -9,7 +9,9 @@ load(qt_helper_lib)
 
 # built-in shapers list configuration:
 SHAPERS += opentype       # HB's main shaper; enabling it should be enough most of the time
-mac: SHAPERS += coretext  # native shaper on OSX/iOS; could be used alone to handle both OT and AAT fonts
+
+# native shaper on Apple platforms; could be used alone to handle both OT and AAT fonts
+darwin:!if(watchos:CONFIG(simulator, simulator|device)): SHAPERS += coretext
 
 DEFINES += HAVE_CONFIG_H
 DEFINES += HB_NO_UNICODE_FUNCS HB_DISABLE_DEPRECATED
@@ -147,7 +149,7 @@ contains(SHAPERS, coretext) {
         $$PWD/src/hb-coretext.h
 
     uikit: \
-        # On iOS/tvOS CoreText and CoreGraphics are stand-alone frameworks
+        # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
         LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
     else: \
         # On Mac OS they are part of the ApplicationServices umbrella framework,

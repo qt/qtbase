@@ -37,6 +37,10 @@
     \title Downloads
 */
 /*!
+    \externalpage http://www.qt.io/about-us/
+    \title The Qt Company
+*/
+/*!
     \externalpage http://qt.io/licensing/
     \title Qt Licensing Overview
 */
@@ -70,7 +74,7 @@
     \title Qt Quarterly: Another Look at Events
 */
 /*!
-    \externalpage http://qt-project.org/videos/watch/livecoding-video-effects-with-qt5
+    \externalpage https://www.youtube.com/watch?v=P4kv-AoAJ-Q
     \title Livecoding video effects with Qt5
 */
 /*!

@@ -56,19 +56,29 @@
 */
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
-#if !defined(QT_BUILD_QMAKE) && !defined(QT_BUILD_CONFIGURE)
+#ifndef QT_BOOTSTRAPPED
 #include <QtCore/qconfig.h>
 #include <QtCore/qfeatures.h>
 #endif
 
 // The QT_SUPPORTS macro is deprecated. Don't use it in new code.
-// Instead, use #ifdef/ndef QT_NO_feature.
+// Instead, use QT_CONFIG(feature)
 // ### Qt6: remove macro
 #ifdef _MSC_VER
 #  define QT_SUPPORTS(FEATURE) (!defined QT_NO_##FEATURE)
 #else
 #  define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
 #endif
+
+/*
+    The QT_CONFIG macro implements a safe compile time check for features of Qt.
+    Features can be in three states:
+        0 or undefined: This will lead to a compile error when testing for it
+        -1: The feature is not available
+        1: The feature is available
+*/
+#define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #  define QT_NO_UNSHARABLE_CONTAINERS
 #endif
@@ -537,6 +547,12 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 #endif
 #ifndef Q_FORWARD_DECLARE_MUTABLE_CF_TYPE
 #  define Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type) typedef struct __ ## type * type ## Ref
+#endif
+#ifndef Q_FORWARD_DECLARE_CG_TYPE
+#define Q_FORWARD_DECLARE_CG_TYPE(type) typedef const struct type *type ## Ref;
+#endif
+#ifndef Q_FORWARD_DECLARE_MUTABLE_CG_TYPE
+#define Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(type) typedef struct type *type ## Ref;
 #endif
 
 #ifdef Q_OS_DARWIN

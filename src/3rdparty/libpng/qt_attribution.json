@@ -1,0 +1,15 @@
+{
+    "Id": "libpng",
+    "Name": "LibPNG",
+    "QDocModule": "qtgui",
+    "QtUsage": "Used in the qpng image plugin. Configure with -system-png or -no-png to avoid.",
+
+    "Description": "libpng is the official PNG reference library.",
+    "Homepage": "http://www.libpng.org/pub/png/libpng.html",
+    "License": "libpng License",
+    "LicenseId": "Libpng",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (c) 1998-2015 Glenn Randers-Pehrson
+Copyright (c) 1996-1997 Andreas Dilger
+Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc."
+}

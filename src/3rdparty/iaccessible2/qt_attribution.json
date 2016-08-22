@@ -1,0 +1,17 @@
+{
+    "Id": "iaccessible2",
+    "Name": "IAccessible2 IDL Specification",
+    "QDocModule": "qtgui",
+    "QtUsage": "Optionally used in the Windows platform plugin. Configure with -no-accessibility to avoid.",
+
+    "Description": "IAccessible2 is a new accessibility API which complements Microsoft's earlier work on MSAA",
+    "Homepage": "http://www.linuxfoundation.org/collaborate/workgroups/accessibility/iaccessible2",
+    "License": "BSD 3-clause \"New\" or \"Revised\" License",
+    "LicenseId": "BSD-3-Clause",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (c) 2000, 2006 Sun Microsystems, Inc.
+Copyright (c) 2006 IBM Corporation
+Copyright (c) 2007, 2010, 2012, 2013 Linux Foundation
+
+IAccessible2 is a trademark of the Linux Foundation. The IAccessible2 mark may be used in accordance with the Linux Foundation Trademark Policy to indicate compliance with the IAccessible2 specification."
+}

@@ -66,8 +66,9 @@
 #include <float.h>
 #endif
 
-#if !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || !defined(__cplusplus) || __cplusplus < 201103L)
-#include <math.h>
+#if !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || defined(Q_CC_INTEL) || !defined(__cplusplus))
+#  include <math.h>
+#  define QT_MATH_H_DEFINES_MACROS
 QT_BEGIN_NAMESPACE
 namespace qnumeric_std_wrapper {
 // the 'using namespace std' below is cases where the stdlib already put the math.h functions in the std namespace and undefined the macros.
@@ -96,7 +97,8 @@ static inline bool isfinite(double d) { return !!_finite(d); }
 static inline bool isnan(float f) { return !!_isnan(f); }
 static inline bool isinf(float f) { return !_finite(f) && !_isnan(f); }
 static inline bool isfinite(float f) { return !!_finite(f); }
-#elif !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || !defined(__cplusplus) || __cplusplus < 201103L)
+#elif defined(QT_MATH_H_DEFINES_MACROS)
+#  undef QT_MATH_H_DEFINES_MACROS
 static inline bool isnan(double d) { return math_h_isnan(d); }
 static inline bool isinf(double d) { return math_h_isinf(d); }
 static inline bool isfinite(double d) { return math_h_isfinite(d); }

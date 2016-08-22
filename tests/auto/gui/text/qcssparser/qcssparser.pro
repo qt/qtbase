@@ -3,7 +3,7 @@ TARGET = tst_qcssparser
 SOURCES += tst_qcssparser.cpp
 QT += xml gui-private testlib
 
-requires(contains(QT_CONFIG,private_tests))
+requires(qtConfig(private_tests))
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 android {

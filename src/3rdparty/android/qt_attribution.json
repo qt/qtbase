@@ -1,0 +1,11 @@
+{
+    "Id": "android-native-style",
+    "Name": "Native Style for Android",
+    "QDocModule": "qtgui",
+    "QtUsage": "Used in Android platform plugin.",
+
+    "License": "Apache License 2.0",
+    "LicenseId": "Apache-2.0",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright (C) 2005 The Android Open Source Project"
+}

@@ -320,7 +320,7 @@ init_context:
     }
 
     if (!dhparams.isEmpty()) {
-        const QByteArray &params = dhparams.d.data()->derData;
+        const QByteArray &params = dhparams.d->derData;
         const char *ptr = params.constData();
         DH *dh = q_d2i_DHparams(NULL, reinterpret_cast<const unsigned char **>(&ptr), params.length());
         if (dh == NULL)

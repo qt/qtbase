@@ -27,7 +27,7 @@ SOURCES += socket/qabstractsocketengine.cpp \
 
 # SCTP support.
 
-contains(QT_CONFIG, sctp) {
+qtConfig(sctp) {
     HEADERS += socket/qsctpserver.h \
                 socket/qsctpserver_p.h \
                 socket/qsctpsocket.h \
@@ -80,6 +80,6 @@ integrity: {
     DEFINES += QT_LOCALSOCKET_TCP
 }
 
-contains(QT_CONFIG, system-proxies) {
+qtConfig(system-proxies) {
     DEFINES += QT_USE_SYSTEM_PROXIES
 }

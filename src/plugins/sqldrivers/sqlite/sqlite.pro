@@ -3,11 +3,10 @@ TARGET = qsqlite
 HEADERS += $$PWD/qsql_sqlite_p.h
 SOURCES += $$PWD/qsql_sqlite.cpp $$PWD/smain.cpp
 
-!system-sqlite:!contains(LIBS, .*sqlite3.*) {
+!system-sqlite {
     include($$PWD/../../../3rdparty/sqlite.pri)
 } else {
-    LIBS += $$QMAKE_LIBS_SQLITE
-    QMAKE_CXXFLAGS *= $$QMAKE_CFLAGS_SQLITE
+    QMAKE_USE += sqlite
 }
 
 OTHER_FILES += sqlite.json

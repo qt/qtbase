@@ -299,7 +299,7 @@ static inline int qt_safe_close(int fd)
 #undef QT_CLOSE
 #define QT_CLOSE qt_safe_close
 
-// - VxWorks & iOS/tvOS don't have processes
+// - VxWorks & iOS/tvOS/watchOS don't have processes
 #if !defined(Q_OS_VXWORKS) && !defined(QT_NO_PROCESS)
 static inline int qt_safe_execve(const char *filename, char *const argv[],
                                  char *const envp[])

@@ -7,6 +7,6 @@ include(../platformsocketengine/platformsocketengine.pri)
 
 MOC_DIR=tmp
 
-requires(contains(QT_CONFIG,private_tests))
+requires(qtConfig(private_tests))
 QT = core-private network-private testlib
 

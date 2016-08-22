@@ -285,21 +285,13 @@ template <>
 class QFutureInterface<void> : public QFutureInterfaceBase
 {
 public:
-    QFutureInterface<void>(State initialState = NoState)
+    explicit QFutureInterface<void>(State initialState = NoState)
         : QFutureInterfaceBase(initialState)
-    { }
-    QFutureInterface<void>(const QFutureInterface<void> &other)
-        : QFutureInterfaceBase(other)
     { }
 
     static QFutureInterface<void> canceledResult()
     { return QFutureInterface(State(Started | Finished | Canceled)); }
 
-    QFutureInterface<void> &operator=(const QFutureInterface<void> &other)
-    {
-        QFutureInterfaceBase::operator=(other);
-        return *this;
-    }
 
     inline QFuture<void> future(); // implemented in qfuture.h
 

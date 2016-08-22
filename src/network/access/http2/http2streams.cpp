@@ -49,6 +49,10 @@ QT_BEGIN_NAMESPACE
 namespace Http2
 {
 
+Stream::Stream()
+{
+}
+
 Stream::Stream(const HttpMessagePair &message, quint32 id, qint32 sendSize, qint32 recvSize)
     : httpPair(message),
       streamID(id),

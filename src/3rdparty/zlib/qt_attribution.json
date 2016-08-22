@@ -1,0 +1,15 @@
+{
+    "Id": "zlib",
+    "Name": "Data Compression Library (zlib)",
+    "QDocModule": "qtcore",
+    "QtUsage": "Optionally used in Qt Core and and development tools. Configure with -system-zlib to avoid.",
+
+    "Description": "zlib is a general purpose data compression library.",
+    "Homepage": "http://zlib.net/",
+    "Version": "1.2.5",
+
+    "License": "ZLib license",
+    "LicenseId": "Zlib",
+    "LicenseFile": "LICENSE",
+    "Copyright": "(C) 1995-2010 Jean-loup Gailly and Mark Adler"
+}

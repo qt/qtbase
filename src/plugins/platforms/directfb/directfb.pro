@@ -2,8 +2,7 @@ TARGET = qdirectfb
 
 QT += core-private gui-private platformsupport-private
 
-LIBS += $$QMAKE_LIBS_DIRECTFB
-QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_DIRECTFB
+QMAKE_USE += directfb
 
 SOURCES = main.cpp \
     qdirectfbintegration.cpp \
@@ -25,7 +24,7 @@ HEADERS = qdirectfbintegration.h \
     qdirectfbeglhooks.h
 
 # ### port the GL context
-contains(QT_CONFIG, directfb_egl) {
+qtConfig(directfb_egl) {
     HEADERS += qdirectfb_egl.h
     SOURCES += qdirectfb_egl.cpp
     DEFINES += DIRECTFB_GL_EGL

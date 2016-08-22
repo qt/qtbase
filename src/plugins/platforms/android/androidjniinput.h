@@ -39,6 +39,7 @@
 
 #ifndef ANDROIDJNIINPUT_H
 #define ANDROIDJNIINPUT_H
+
 #include <jni.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/QRect>
@@ -55,6 +56,9 @@ namespace QtAndroidInput
     QRect softwareKeyboardRect();
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd);
     // Software keyboard support
+
+    // cursor/selection handles
+    void updateHandles(int handleCount, QPoint cursor = QPoint(), QPoint anchor = QPoint());
 
     bool registerNatives(JNIEnv *env);
 }

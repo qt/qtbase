@@ -69,8 +69,8 @@ for (dep, dependentmodules): \
         mod_deps += $$cmakeModuleName($$dep)
 dependentmodules = $$join(mod_deps, ";")
 
-contains(QT_CONFIG, angle): CMAKE_GL_DEFINES = -DQT_WITH_ANGLE=True
-!contains(QT_CONFIG, egl): CMAKE_GL_DEFINES += -DNO_EGL=True
+qtConfig(angle): CMAKE_GL_DEFINES = -DQT_WITH_ANGLE=True
+!qtConfig(egl): CMAKE_GL_DEFINES += -DNO_EGL=True
 
 CMAKE_MODULE_VERSIONS =
 CMAKE_MODULES_UNDER_TEST =

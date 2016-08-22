@@ -1,0 +1,10 @@
+{
+    "Id": "md4",
+    "Name": "MD4",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used in Qt Core (QCryptographicHash). Configure with -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1 to avoid.",
+
+    "Description": "An OpenSSL-compatible implementation of the RSA Data Security, Inc. MD4 Message-Digest Algorithm.",
+    "License": "Public Domain",
+    "Copyright": "Written by Alexander Peslyak - better known as Solar Designer <solar@openwall.com> - in 2001, and placed in the public domain. There's absolutely no warranty."
+}

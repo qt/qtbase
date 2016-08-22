@@ -56,14 +56,15 @@ win32: {
 }
 
 mac {
-    LIBS_PRIVATE += -framework SystemConfiguration -framework CoreFoundation
+    LIBS_PRIVATE += -framework CoreFoundation
     !uikit: LIBS_PRIVATE += -framework CoreServices
+    !if(watchos:CONFIG(device, simulator|device)): LIBS_PRIVATE += -framework SystemConfiguration
 }
 
 osx:SOURCES += kernel/qnetworkproxy_mac.cpp
 else:win32:SOURCES += kernel/qnetworkproxy_win.cpp
-else:contains(QT_CONFIG, libproxy) {
+else: qtConfig(libproxy) {
     SOURCES += kernel/qnetworkproxy_libproxy.cpp
-    LIBS_PRIVATE += -lproxy
+    QMAKE_USE_PRIVATE += libproxy
 }
 else:SOURCES += kernel/qnetworkproxy_generic.cpp

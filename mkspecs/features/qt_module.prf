@@ -32,17 +32,17 @@ host_build {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS_SPLIT_SECTIONS
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_SPLIT_SECTIONS
     force_bootstrap {
-        !build_pass:contains(QT_CONFIG, release_tools): CONFIG += release
+        !build_pass:qtConfig(release_tools): CONFIG += release
         contains(QT, core(-private)?|xml) {
             QT -= core core-private xml
             QT += bootstrap-private
         }
     } else {
-        !build_pass:contains(QT_CONFIG, debug_and_release): CONFIG += release
+        !build_pass:qtConfig(debug_and_release): CONFIG += release
     }
 }
 
-CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework): \
+CONFIG(shared, static|shared):qtConfig(framework): \
     CONFIG += lib_bundle
 
 CONFIG += relative_qt_rpath  # Qt libraries should be relocatable
@@ -89,9 +89,9 @@ INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.inclu
 # If Qt was configured with -debug-and-release then build the module the same way
 # - unless this is a host library
 !host_build:if(win32|mac):!macx-xcode {
-    contains(QT_CONFIG, simulator_and_device): CONFIG += simulator_and_device
-    contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release
-    contains(QT_CONFIG, build_all): CONFIG += build_all
+    qtConfig(simulator_and_device): CONFIG += simulator_and_device
+    qtConfig(debug_and_release): CONFIG += debug_and_release
+    qtConfig(build_all): CONFIG += build_all
 }
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
@@ -140,7 +140,7 @@ mac {
        QMAKE_CXXFLAGS += -fconstant-cfstrings
    }
 
-   contains(QT_CONFIG, rpath): \
+   qtConfig(rpath): \
        QMAKE_SONAME_PREFIX = @rpath
    else: \
        CONFIG += absolute_library_soname
@@ -167,7 +167,7 @@ aix-g++* {
      QMAKE_CXXFLAGS += -mminimal-toc
 }
 
-sse2:!contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):!host_build:!if(static:contains(QT_CONFIG, shared)) {
+sse2:!contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):!host_build:!if(static:qtConfig(shared)) {
     # If the compiler supports SSE2, enable it unconditionally in all of Qt shared libraries
     # (and only the libraries). This is not expected to be a problem because:
     # - on Windows, sharing of libraries is uncommon
@@ -235,7 +235,7 @@ android: CONFIG += qt_android_deps no_linker_version_script
 
         verscript = $$verscript_in
     }
-    write_file($$OUT_PWD/$$verscript, verscript_content)|error("Aborting.")
+    write_file($$OUT_PWD/$$verscript, verscript_content)|error()
     unset(current)
     unset(previous)
     unset(verscript)

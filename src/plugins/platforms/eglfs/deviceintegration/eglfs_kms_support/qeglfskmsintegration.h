@@ -56,6 +56,11 @@ Q_EGLFS_EXPORT Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 class Q_EGLFS_EXPORT QEglFSKmsIntegration : public QEglFSDeviceIntegration
 {
 public:
+    enum VirtualDesktopLayout {
+        VirtualDesktopLayoutHorizontal,
+        VirtualDesktopLayoutVertical
+    };
+
     QEglFSKmsIntegration();
 
     void platformInit() Q_DECL_OVERRIDE;
@@ -70,6 +75,7 @@ public:
 
     virtual bool hwCursor() const;
     virtual bool separateScreens() const;
+    virtual VirtualDesktopLayout virtualDesktopLayout() const;
     QMap<QString, QVariantMap> outputSettings() const;
 
     QEglFSKmsDevice *device() const;
@@ -83,6 +89,7 @@ protected:
     bool m_hwCursor;
     bool m_pbuffers;
     bool m_separateScreens;
+    VirtualDesktopLayout m_virtualDesktopLayout;
     QString m_devicePath;
     QMap<QString, QVariantMap> m_outputSettings;
 };

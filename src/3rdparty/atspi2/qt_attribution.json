@@ -1,0 +1,11 @@
+{
+    "Id": "atspi2",
+    "Name": "at-spi2 (Assistive Technology Service Provider Interface)",
+    "QDocModule": "qtgui",
+    "QtUsage": "Optionally ysed on Linux for accessibility. Configure without dbus (QT_CONFIG-=accessibility-atspi-bridge) to avoid.",
+
+    "License": "GNU Library General Public License v2 or later",
+    "LicenseId": "LGPL-2.0+",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright 2010, 2011 Novell, Inc., Copyright (c) 2012 SUSE LINUX Products GmbH, Nuernberg, Germany."
+}

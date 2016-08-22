@@ -86,7 +86,7 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
 , channelCount((type == QHttpNetworkConnection::ConnectionTypeSPDY || type == QHttpNetworkConnection::ConnectionTypeHTTP2)
               ? 1 : defaultHttpChannelCount)
 #else
-, channelCount(defaultHttpChannelCount)
+, channelCount(type == QHttpNetworkConnection::ConnectionTypeHTTP2 ? 1 : defaultHttpChannelCount)
 #endif // QT_NO_SSL
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
@@ -619,13 +619,11 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
             break;
         }
     }
-#ifndef QT_NO_SSL
-    else { // SPDY
+    else { // SPDY, HTTP/2
         if (!pair.second->d_func()->requestIsPrepared)
             prepareRequest(pair);
         channels[0].spdyRequestsToSend.insertMulti(request.priority(), pair);
     }
-#endif // QT_NO_SSL
 
     // For Happy Eyeballs the networkLayerState is set to Unknown
     // untill we have started the first connection attempt. So no
@@ -1013,9 +1011,9 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         }
         break;
     }
-    case QHttpNetworkConnection::ConnectionTypeSPDY:
-    case QHttpNetworkConnection::ConnectionTypeHTTP2: {
-#ifndef QT_NO_SSL
+    case QHttpNetworkConnection::ConnectionTypeHTTP2:
+    case QHttpNetworkConnection::ConnectionTypeSPDY: {
+
         if (channels[0].spdyRequestsToSend.isEmpty())
             return;
 
@@ -1027,7 +1025,6 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         if (channels[0].socket && channels[0].socket->state() == QAbstractSocket::ConnectedState
                 && !channels[0].pendingEncrypt)
             channels[0].sendRequest();
-#endif // QT_NO_SSL
         break;
     }
     }

@@ -47,7 +47,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 
 QT_BEGIN_NAMESPACE
 
-class QMacNativeWidgetPrivate;
 class Q_WIDGETS_EXPORT QMacNativeWidget : public QWidget
 {
     Q_OBJECT
@@ -60,9 +59,6 @@ public:
 
 protected:
     bool event(QEvent *ev);
-
-private:
-    Q_DECLARE_PRIVATE(QMacNativeWidget)
 };
 
 QT_END_NAMESPACE

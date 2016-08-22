@@ -48,10 +48,10 @@ SUBDIRS=\
    qtoolbutton \
 
 # The following tests depend on private API:
-!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+!qtConfig(private_tests): SUBDIRS -= \
            qcombobox \
            qmainwindow \
            qtextedit \
            qtoolbar \
 
-contains(QT_CONFIG, opengl): SUBDIRS += qopenglwidget
+qtConfig(opengl): SUBDIRS += qopenglwidget

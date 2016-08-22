@@ -1,12 +1,14 @@
 *msvc2015 {
-    # Note that the order is important, ucrt(d) has to be first
-    # Otherwise the linker might use malloc from a different library
-    # but free_dbg() from the runtime, causing assert when deleting
-    # items from different heaps
+    # Note that the order is important - ucrt(d) has to be first.
+    # Otherwise, the linker might use malloc from a different library,
+    # but free_dbg() from the runtime, causing an assertion failure
+    # due to deleting an item from a different heap.
+    # vcruntime(d) is necessary when we don't link to any libraries
+    # which would pull it in transitively.
     CONFIG(debug, debug|release): \
-        QMAKE_LIBS = ucrtd.lib $$QMAKE_LIBS
+        QMAKE_LIBS = ucrtd.lib vcruntimed.lib $$QMAKE_LIBS
     else: \
-        QMAKE_LIBS = ucrt.lib $$QMAKE_LIBS
+        QMAKE_LIBS = ucrt.lib vcruntime.lib $$QMAKE_LIBS
 }
 
 equals(TEMPLATE, "vcapp"): CONFIG += windeployqt

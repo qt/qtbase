@@ -4,35 +4,31 @@ INCLUDEPATH += $$PWD
 INCLUDEPATH += $$PWD/../
 
 # needed by Xcursor ...
-contains(QT_CONFIG, xcb-xlib) {
+qtConfig(xcb-xlib) {
     DEFINES += XCB_USE_XLIB
-    contains(QT_CONFIG, xinput2) {
+    qtConfig(xinput2) {
         DEFINES += XCB_USE_XINPUT2
     }
 }
 
-# to support custom cursors with depth > 1
-contains(QT_CONFIG, xcb-render) {
-    DEFINES += XCB_USE_RENDER
-}
-
 # build with session management support
-contains(QT_CONFIG, xcb-sm) {
+qtConfig(xcb-sm) {
     DEFINES += XCB_USE_SM
 }
 
-DEFINES += $$QMAKE_DEFINES_XCB
-LIBS += $$QMAKE_LIBS_XCB
-QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
-
 CONFIG += qpa/genericunixfontdatabase
 
-contains(QT_CONFIG, xcb-qt) {
+!qtConfig(system-xcb) {
     DEFINES += XCB_USE_RENDER
     XCB_DIR = $$clean_path($$PWD/../../../../3rdparty/xcb)
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/include/xcb $$XCB_DIR/sysinclude
-    LIBS += -lxcb -L$$MODULE_BASE_OUTDIR/lib -lxcb-static$$qtPlatformTargetSuffix()
+    LIBS += -L$$MODULE_BASE_OUTDIR/lib -lxcb-static$$qtPlatformTargetSuffix()
+    QMAKE_USE += xcb
 } else {
-    LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr -lxcb-shape -lxcb-keysyms
-    !contains(DEFINES, QT_NO_XKB):LIBS += -lxcb-xkb
+    qtConfig(xkb): QMAKE_USE += xcb_xkb
+    # to support custom cursors with depth > 1
+    qtConfig(xcb-render) {
+        DEFINES += XCB_USE_RENDER
+    }
+    QMAKE_USE += xcb_syslibs
 }

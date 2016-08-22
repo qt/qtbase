@@ -1,10 +1,21 @@
 # custom command line handling
 
+defineTest(qtConfCommandline_qmakeArgs) {
+    contains(1, QMAKE_[A-Z_]+ *[-+]?=.*) {
+        config.input.qmakeArgs += $$1
+        export(config.input.qmakeArgs)
+        return(true)
+    }
+    return(false)
+}
+
 defineTest(qtConfCommandline_cxxstd) {
+    msvc: \
+        qtConfAddError("Command line option -c++std is not supported with MSVC compilers.")
+
     arg = $${1}
     val = $${2}
     isEmpty(val): val = $$qtConfGetNextCommandlineArg()
-    message("setting c++std: $$arg/$$val")
     !contains(val, "^-.*"):!isEmpty(val) {
         contains(val, "(c\+\+)?11") {
             qtConfCommandlineSetInput("c++14", "no")
@@ -15,10 +26,10 @@ defineTest(qtConfCommandline_cxxstd) {
             qtConfCommandlineSetInput("c++14", "yes")
             qtConfCommandlineSetInput("c++1z", "yes")
         } else {
-            error("Invalid argument $$val to command line parameter $$arg")
+            qtConfAddError("Invalid argument $$val to command line parameter $$arg")
         }
     } else {
-        error("Missing argument to command line parameter $$arg")
+        qtConfAddError("Missing argument to command line parameter $$arg")
     }
 }
 
@@ -36,10 +47,10 @@ defineTest(qtConfCommandline_sanitize) {
         } else: equals(val, "undefined") {
             qtConfCommandlineSetInput("sanitize_undefined", "yes")
         } else {
-            error("Invalid argument $$val to command line parameter $$arg")
+            qtConfAddError("Invalid argument $$val to command line parameter $$arg")
         }
     } else {
-        error("Missing argument to command line parameter $$arg")
+        qtConfAddError("Missing argument to command line parameter $$arg")
     }
 }
 
@@ -59,11 +70,11 @@ defineTest(qtConfTest_architecture) {
 
     test = $$eval($${1}.test)
     test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR/$$test)
-    exists($$test_out_dir/arch): \
+    unix:exists($$test_out_dir/arch): \
         content = $$cat($$test_out_dir/arch, blob)
-    else: exists($$test_out_dir/arch.exe): \
+    else: win32:exists($$test_out_dir/arch.exe): \
         content = $$cat($$test_out_dir/arch.exe, blob)
-    else: exists($$test_out_dir/libarch.so): \
+    else: android:exists($$test_out_dir/libarch.so): \
         content = $$cat($$test_out_dir/libarch.so, blob)
     else: \
         error("$$eval($${1}.description) detection binary not found.")
@@ -81,13 +92,15 @@ defineTest(qtConfTest_architecture) {
     export($${1}.subarch)
     qtLog("Detected architecture: $$eval($${1}.arch) ($$eval($${1}.subarch))")
 
+    $${1}.cache += arch subarch
+    export($${1}.cache)
     return(true)
 }
 
 defineTest(qtConfTest_avx_test_apple_clang) {
     !*g++*:!*-clang*: return(true)
 
-    compiler = $$system("$$QMAKE_CXX --version")
+    qtRunLoggedCommand("$$QMAKE_CXX --version", compiler)|return(false)
     contains(compiler, "Apple clang version [23]") {
         # Some clang versions produce internal compiler errors compiling Qt AVX code
         return(false)
@@ -100,7 +113,7 @@ defineTest(qtConfTest_gnumake) {
     make = $$qtConfFindInPath("gmake")
     isEmpty(make): make = $$qtConfFindInPath("make")
     !isEmpty(make) {
-        version = $$system("$$make -v", blob)
+        qtRunLoggedCommand("$$make -v", version)|return(false)
         contains(version, "^GNU Make.*"): return(true)
     }
     return(false)
@@ -147,8 +160,8 @@ defineTest(qtConfTest_detectPkgConfig) {
 
             pkgConfigLibdir = $$sysroot/usr/lib/pkgconfig:$$sysroot/usr/share/pkgconfig
             gcc {
-                gccMachineDump = $$system("$$QMAKE_CXX -dumpmachine")
-                !isEmpty(gccMachineDump): \
+                qtRunLoggedCommand("$$QMAKE_CXX -dumpmachine", gccMachineDump): \
+                        !isEmpty(gccMachineDump): \
                     pkgConfigLibdir = "$$pkgConfigLibdir:$$sysroot/usr/lib/$$gccMachineDump/pkgconfig"
             }
 
@@ -171,9 +184,12 @@ defineTest(qtConfTest_detectPkgConfig) {
         export($${1}.pkgConfigLibdir)
         $${1}.pkgConfigSysrootDir = $$pkgConfigSysrootDir
         export($${1}.pkgConfigSysrootDir)
+        $${1}.cache += pkgConfigLibdir pkgConfigSysrootDir
     }
     $${1}.pkgConfig = $$pkgConfig
     export($${1}.pkgConfig)
+    $${1}.cache += pkgConfig
+    export($${1}.cache)
 
     PKG_CONFIG = $$pkgConfig
     export(PKG_CONFIG)
@@ -188,9 +204,9 @@ defineTest(qtConfTest_neon) {
 
 defineTest(qtConfTest_skipModules) {
     skip =
-    ios|tvos {
+    uikit {
         skip += qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples
-        tvos: skip += qtscript
+        !ios: skip += qtscript
     }
 
     for (m, config.input.skip) {
@@ -204,6 +220,8 @@ defineTest(qtConfTest_skipModules) {
     }
     $${1}.value = $$unique(skip)
     export($${1}.value)
+    $${1}.cache += value
+    export($${1}.cache)
     return(true)
 }
 
@@ -218,7 +236,6 @@ defineTest(qtConfTest_buildParts) {
             parts += tools
     }
 
-    ios|tvos: parts -= examples
     parts -= $$config.input.nomake
 
     # always add libs, as it's required to build Qt
@@ -226,27 +243,24 @@ defineTest(qtConfTest_buildParts) {
 
     $${1}.value = $$parts
     export($${1}.value)
+    $${1}.cache += value
+    export($${1}.cache)
     return(true)
 }
 
-defineTest(qtConfTest_openssl) {
+defineTest(qtConfLibrary_openssl) {
     libs = $$getenv("OPENSSL_LIBS")
-
     !isEmpty(libs) {
         $${1}.libs = $$libs
         export($${1}.libs)
+        return(true)
     }
-
-    $${1}.showNote = false
-    isEmpty(libs): $${1}.showNote = true
-    export($${1}.showNote)
-
-    return(true)
+    return(false)
 }
 
 defineTest(qtConfTest_checkCompiler) {
     contains(QMAKE_CXX, ".*clang.*") {
-        versionstr = "$$system($$QMAKE_CXX -v 2>&1)"
+        qtRunLoggedCommand("$$QMAKE_CXX -v 2>&1", versionstr)|return(false)
         contains(versionstr, "^Apple (clang|LLVM) version .*") {
             $${1}.compilerDescription = "Apple Clang"
             $${1}.compilerId = "apple_clang"
@@ -259,13 +273,14 @@ defineTest(qtConfTest_checkCompiler) {
             return(false)
         }
     } else: contains(QMAKE_CXX, ".*g\\+\\+.*") {
+        qtRunLoggedCommand("$$QMAKE_CXX -dumpversion", version)|return(false)
         $${1}.compilerDescription = "GCC"
         $${1}.compilerId = "gcc"
-        $${1}.compilerVersion = $$system($$QMAKE_CXX -dumpversion)
+        $${1}.compilerVersion = $$version
     } else: contains(QMAKE_CXX, ".*icpc"  ) {
+        qtRunLoggedCommand("$$QMAKE_CXX -v", version)|return(false)
         $${1}.compilerDescription = "ICC"
         $${1}.compilerId = "icc"
-        version = "$$system($$QMAKE_CXX -v)"
         $${1}.compilerVersion = $$replace(version, "icpc version ([0-9.]+).*", "\\1")
     } else: msvc {
         $${1}.compilerDescription = "MSVC"
@@ -277,6 +292,8 @@ defineTest(qtConfTest_checkCompiler) {
     export($${1}.compilerDescription)
     export($${1}.compilerId)
     export($${1}.compilerVersion)
+    $${1}.cache += compilerDescription compilerId compilerVersion
+    export($${1}.cache)
     return(true)
 }
 
@@ -288,75 +305,113 @@ defineReplace(filterLibraryPath) {
     return($$str)
 }
 
-defineTest(qtConfTest_psqlCompile) {
+defineTest(qtConfLibrary_psqlConfig) {
     pg_config = $$config.input.psql_config
     isEmpty(pg_config): \
         pg_config = $$qtConfFindInPath("pg_config")
     !win32:!isEmpty(pg_config) {
-        libdir = $$system("$$pg_config --libdir")
+        qtRunLoggedCommand("$$pg_config --libdir", libdir)|return(false)
+        qtRunLoggedCommand("$$pg_config --includedir", includedir)|return(false)
         libdir -= $$QMAKE_DEFAULT_LIBDIRS
-        !isEmpty(libdir): libs = "-L$$libdir"
+        libs =
+        !isEmpty(libdir): libs += "-L$$libdir"
         libs += "-lpq"
-        $${1}.libs = $$libs
-        $${1}.includedir = $$system("$$pg_config --includedir")
-        $${1}.includedir -= $$QMAKE_DEFAULT_INCDIRS
-        !isEmpty($${1}.includedir): \
-            $${1}.cflags = "-I$$eval($${1}.includedir)"
+        $${1}.libs = "$$val_escape(libs)"
+        includedir -= $$QMAKE_DEFAULT_INCDIRS
+        $${1}.includedir = "$$val_escape(includedir)"
+        !isEmpty(includedir): \
+            $${1}.cflags = "-I$$val_escape(includedir)"
+        export($${1}.libs)
+        export($${1}.includedir)
+        export($${1}.cflags)
+        return(true)
     }
-
-    # Respect PSQL_LIBS if set
-    PSQL_LIBS = $$getenv(PSQL_LIBS)
-    !isEmpty($$PSQL_LIBS): $${1}.libs = $$PSQL_LIBS
-
-    export($${1}.libs)
-    export($${1}.includedir)
-    export($${1}.cflags)
-
-    qtConfTest_compile($${1}): return(true)
     return(false)
 }
 
-defineTest(qtConfTest_mysqlCompile) {
+defineTest(qtConfLibrary_psqlEnv) {
+    # Respect PSQL_LIBS if set
+    PSQL_LIBS = $$getenv(PSQL_LIBS)
+    !isEmpty(PSQL_LIBS) {
+        $${1}.libs = $$PSQL_LIBS
+        export($${1}.libs)
+    }
+    return(true)
+}
+
+defineTest(qtConfLibrary_mysqlConfig) {
     mysql_config = $$config.input.mysql_config
     isEmpty(mysql_config): \
         mysql_config = $$qtConfFindInPath("mysql_config")
     !isEmpty(mysql_config) {
-        version = $$system("$$mysql_config --version")
+        qtRunLoggedCommand("$$mysql_config --version", version)|return(false)
         version = $$split(version, '.')
         version = $$first(version)
         isEmpty(version)|lessThan(version, 4): return(false)]
 
         # query is either --libs or --libs_r
         query = $$eval($${1}.query)
-        $${1}.libs = $$filterLibraryPath($$system("$$mysql_config $$query"))
+        qtRunLoggedCommand("$$mysql_config $$query", libs)|return(false)
+        qtRunLoggedCommand("$$mysql_config --include", includedir)|return(false)
+        eval(libs = $$libs)
+        libs = $$filterLibraryPath($$libs)
         # -rdynamic should not be returned by mysql_config, but is on RHEL 6.6
-        $${1}.libs -= -rdynamic
-        includedir = $$system("$$mysql_config --include")
+        libs -= -rdynamic
+        $${1}.libs = "$$val_escape(libs)"
+        eval(includedir = $$includedir)
         includedir ~= s/^-I//g
         includedir -= $$QMAKE_DEFAULT_INCDIRS
-        $${1}.includedir = $$includedir
-        !isEmpty($${1}.includedir): \
-            $${1}.cflags = "-I$$eval($${1}.includedir)"
+        $${1}.includedir = "$$val_escape(includedir)"
+        !isEmpty(includedir): \
+            $${1}.cflags = "-I$$val_escape(includedir)"
         export($${1}.libs)
         export($${1}.includedir)
         export($${1}.cflags)
+        return(true)
     }
-
-    qtConfTest_compile($${1}): return(true)
     return(false)
 }
 
-defineTest(qtConfTest_tdsCompile) {
+defineTest(qtConfLibrary_sybaseEnv) {
+    libs =
     sybase = $$getenv(SYBASE)
     !isEmpty(sybase): \
-        $${1}.libs = "-L$${sybase}/lib"
-    $${1}.libs += $$getenv(SYBASE_LIBS)
-    export($${1}.libs)
-
-    qtConfTest_compile($${1}): return(true)
-    return(false)
+        libs += "-L$${sybase}/lib"
+    libs += $$getenv(SYBASE_LIBS)
+    !isEmpty(libs) {
+        $${1}.libs = "$$val_escape(libs)"
+        export($${1}.libs)
+    }
+    return(true)
 }
 
+# Check for Direct X SDK (include, lib, and direct shader compiler 'fxc').
+# Up to Direct X SDK June 2010 and for MinGW, this is pointed to by the
+# DXSDK_DIR variable. Starting with Windows Kit 8, it is included in
+# the Windows SDK. Checking for the header is not sufficient, since it
+# is also present in MinGW.
+defineTest(qtConfTest_directX) {
+    dxdir = $$getenv("DXSDK_DIR")
+    !isEmpty(dxdir) {
+        EXTRA_INCLUDEPATH += $$dxdir/include
+        arch = $$qtConfEvaluate("tests.architecture.arch")
+        equals(arch, x86_64): \
+            EXTRA_LIBDIR += $$dxdir/lib/x64
+        else: \
+            EXTRA_LIBDIR += $$dxdir/lib/x86
+        EXTRA_PATH += $$dxdir/Utilities/bin/x86
+    }
+
+    $$qtConfEvaluate("features.sse2") {
+        ky = $$size($${1}.files._KEYS_)
+        $${1}.files._KEYS_ += $$ky
+        # Not present on MinGW-32
+        $${1}.files.$${ky} = "intrin.h"
+    }
+
+    qtConfTest_files($${1}): return(true)
+    return(false)
+}
 
 defineTest(qtConfTest_xkbConfigRoot) {
     qtConfTest_getPkgConfigVariable($${1}): return(true)
@@ -365,6 +420,8 @@ defineTest(qtConfTest_xkbConfigRoot) {
         exists($$dir) {
             $${1}.value = $$dir
             export($${1}.value)
+            $${1}.cache += value
+            export($${1}.cache)
             return(true)
         }
     }
@@ -375,6 +432,7 @@ defineTest(qtConfTest_qpaDefaultPlatform) {
     name =
     !isEmpty(config.input.qpa_default_platform): name = $$config.input.qpa_default_platform
     else: !isEmpty(QT_QPA_DEFAULT_PLATFORM): name = $$QT_QPA_DEFAULT_PLATFORM
+    else: winrt: name = winrt
     else: win32: name = windows
     else: android: name = android
     else: osx: name = cocoa
@@ -389,6 +447,8 @@ defineTest(qtConfTest_qpaDefaultPlatform) {
     export($${1}.value)
     export($${1}.plugin)
     export($${1}.name)
+    $${1}.cache += value plugin name
+    export($${1}.cache)
     return(true)
 }
 
@@ -443,7 +503,7 @@ defineTest(qtConfOutput_architecture) {
 defineTest(qtConfOutput_styles) {
     !$${2}: return()
 
-    style = $$replace($${1}.feature, "-style", "")
+    style = $$replace($${1}.feature, "style-", "")
     qtConfOutputVar(append, "privatePro", "styles", $$style)
 }
 
@@ -554,11 +614,6 @@ defineTest(qtConfOutput_extraFeatures) {
 }
 
 
-defineTest(qtConfOutputPostProcess_privatePro) {
-    config.output.privatePro += $$cat($$OUT_PWD/.qmake.vars, lines)
-    export(config.output.privatePro)
-}
-
 defineTest(qtConfOutput_compilerFlags) {
     # this output also exports the variables locally, so that subsequent compiler tests can use them
 
@@ -576,23 +631,23 @@ defineTest(qtConfOutput_compilerFlags) {
     !isEmpty(config.input.defines) {
         EXTRA_DEFINES += $$config.input.defines
         export(EXTRA_DEFINES)
-        output += "EXTRA_DEFINES += $$config.input.defines"
+        output += "EXTRA_DEFINES += $$val_escape(config.input.defines)"
     }
     !isEmpty(config.input.includes) {
         EXTRA_INCLUDEPATH += $$config.input.includes
         export(EXTRA_INCLUDEPATH)
-        output += "EXTRA_INCLUDEPATH += $$config.input.includes"
+        output += "EXTRA_INCLUDEPATH += $$val_escape(config.input.includes)"
     }
 
     !isEmpty(config.input.lpaths) {
         EXTRA_LIBDIR += $$config.input.lpaths
         export(EXTRA_LIBDIR)
-        output += "EXTRA_LIBDIR += $$config.input.lpaths"
+        output += "EXTRA_LIBDIR += $$val_escape(config.input.lpaths)"
     }
     darwin:!isEmpty(config.input.fpaths) {
         EXTRA_FRAMEWORKPATH += $$config.input.fpaths
         export(EXTRA_FRAMEWORKPATH)
-        output += "EXTRA_FRAMEWORKPATH += $$config.input.fpaths"
+        output += "EXTRA_FRAMEWORKPATH += $$val_escape(config.input.fpaths)"
     }
 
     config.output.privatePro += $$output
@@ -604,7 +659,7 @@ defineTest(qtConfOutput_gccSysroot) {
 
     # This variable also needs to be exported immediately, so the compilation tests
     # can pick it up.
-    EXTRA_QMAKE_ARGS = \
+    EXTRA_QMAKE_ARGS += \
         "\"QMAKE_CFLAGS += --sysroot=$$config.input.sysroot\"" \
         "\"QMAKE_CXXFLAGS += --sysroot=$$config.input.sysroot\"" \
         "\"QMAKE_LFLAGS += --sysroot=$$config.input.sysroot\""
@@ -618,6 +673,19 @@ defineTest(qtConfOutput_gccSysroot) {
         "}"
     config.output.publicPro += $$output
     export(config.output.publicPro)
+}
+
+defineTest(qtConfOutput_qmakeArgs) {
+    !$${2}: return()
+
+    config.output.privatePro = "!host_build {"
+    for (a, config.input.qmakeArgs) {
+        config.output.privatePro += "    $$a"
+        EXTRA_QMAKE_ARGS += $$system_quote($$a)
+    }
+    config.output.privatePro += "}"
+    export(EXTRA_QMAKE_ARGS)
+    export(config.output.privatePro)
 }
 
 defineTest(qtConfOutputPostProcess_publicPro) {

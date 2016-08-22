@@ -101,65 +101,23 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list)
     return result;
 }
 
-static void qt_mac_deleteImage(void *image, const void *, size_t)
-{
-    delete static_cast<QImage *>(image);
-}
-
-// Creates a CGDataProvider with the data from the given image.
-// The data provider retains a copy of the image.
-CGDataProviderRef qt_mac_CGDataProvider(const QImage &image)
-{
-    return CGDataProviderCreateWithData(new QImage(image), image.bits(),
-                                        image.byteCount(), qt_mac_deleteImage);
-}
-
 CGImageRef qt_mac_toCGImage(const QImage &inImage)
 {
-    if (inImage.isNull())
-        return 0;
+    CGImageRef cgImage = inImage.toCGImage();
+    if (cgImage)
+        return cgImage;
 
-    QImage image = inImage;
-
-    uint cgflags = kCGImageAlphaNone;
-    switch (image.format()) {
-    case QImage::Format_ARGB32:
-        cgflags = kCGImageAlphaFirst | kCGBitmapByteOrder32Host;
-        break;
-    case QImage::Format_RGB32:
-        cgflags = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
-        break;
-    case QImage::Format_RGB888:
-        cgflags = kCGImageAlphaNone | kCGBitmapByteOrder32Big;
-        break;
-    case QImage::Format_RGBA8888_Premultiplied:
-        cgflags = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big;
-        break;
-    case QImage::Format_RGBA8888:
-        cgflags = kCGImageAlphaLast | kCGBitmapByteOrder32Big;
-        break;
-    case QImage::Format_RGBX8888:
-        cgflags = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
-        break;
-    default:
-        // Everything not recognized explicitly is converted to ARGB32_Premultiplied.
-        image = inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-        // no break;
-    case QImage::Format_ARGB32_Premultiplied:
-        cgflags = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host;
-        break;
-    }
-
-    QCFType<CGDataProviderRef> dataProvider = qt_mac_CGDataProvider(image);
-    return CGImageCreate(image.width(), image.height(), 8, 32,
-                         image.bytesPerLine(),
-                         qt_mac_genericColorSpace(),
-                         cgflags, dataProvider, 0, false, kCGRenderingIntentDefault);
+    // Convert image data to a known-good format if the fast conversion fails.
+    return inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied).toCGImage();
 }
 
 CGImageRef qt_mac_toCGImageMask(const QImage &image)
 {
-    QCFType<CGDataProviderRef> dataProvider = qt_mac_CGDataProvider(image);
+    static const auto deleter = [](void *image, const void *, size_t) { delete static_cast<QImage *>(image); };
+    QCFType<CGDataProviderRef> dataProvider =
+            CGDataProviderCreateWithData(new QImage(image), image.bits(),
+                                                    image.byteCount(), deleter);
+
     return CGImageMaskCreate(image.width(), image.height(), 8, image.depth(),
                               image.bytesPerLine(), dataProvider, NULL, false);
 }
@@ -647,7 +605,7 @@ QString qt_mac_removeAmpersandEscapes(QString s)
  returned if it can't be obtained. It is the caller's responsibility to
  CGContextRelease the context when finished using it.
 
- \warning This function is only available on OS X.
+ \warning This function is only available on \macos.
  \warning This function is duplicated in qmacstyle_mac.mm
  */
 CGContextRef qt_mac_cg_context(QPaintDevice *pdev)

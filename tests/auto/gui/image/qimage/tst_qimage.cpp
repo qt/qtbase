@@ -39,6 +39,10 @@
 #include <private/qimage_p.h>
 #include <private/qdrawhelper_p.h>
 
+#ifdef Q_OS_DARWIN
+#include <CoreGraphics/CoreGraphics.h>
+#endif
+
 Q_DECLARE_METATYPE(QImage::Format)
 Q_DECLARE_METATYPE(Qt::GlobalColor)
 
@@ -200,6 +204,11 @@ private slots:
 
     void ditherGradient_data();
     void ditherGradient();
+
+#ifdef Q_OS_DARWIN
+    void toCGImage_data();
+    void toCGImage();
+#endif
 
 private:
     const QString m_prefix;
@@ -3306,6 +3315,42 @@ void tst_QImage::ditherGradient()
     }
     QVERIFY(observedGradientSteps >= minimumExpectedGradient);
 }
+
+#ifdef Q_OS_DARWIN
+
+void tst_QImage::toCGImage_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<bool>("supported");
+
+    // Populate test data with supported status for all QImage formats.
+    QSet<QImage::Format> supported =
+        { QImage::Format_ARGB32, QImage::Format_RGB32, QImage::Format_RGBA8888_Premultiplied,
+          QImage::Format_RGBA8888, QImage::Format_RGBX8888, QImage::Format_ARGB32_Premultiplied };
+
+    for (int i = QImage::Format_Invalid; i < QImage::Format_Grayscale8; ++i) {
+        QTest::newRow(qPrintable(formatToString(QImage::Format(i))))
+            << QImage::Format(i) << supported.contains(QImage::Format(i));
+    }
+}
+
+// Verify that toCGImage() returns a valid CGImageRef for supported image formats.
+void tst_QImage::toCGImage()
+{
+    QFETCH(QImage::Format, format);
+    QFETCH(bool, supported);
+
+    QImage qimage(64, 64, format);
+    qimage.fill(Qt::red);
+
+    CGImageRef cgimage = qimage.toCGImage();
+    QCOMPARE(cgimage != nullptr, supported);
+
+    CGImageRelease(cgimage);
+}
+
+#endif
+
 
 QTEST_GUILESS_MAIN(tst_QImage)
 #include "tst_qimage.moc"

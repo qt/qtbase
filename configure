@@ -80,23 +80,50 @@ if [ x"$1" = x"-top-level" ]; then
     shift
 fi
 
-# later cache the command line in config.status
-OPT_CMDLINE=
+CFG_REDO=no
+OPT_CMDLINE=  # excluding -verbose (for config.opt)
+QMAKE_CMDLINE=  # including -verbose (for actual parsing)
+set -f  # suppress globbing in for loop
+SAVED_IFS=$IFS
+IFS='
+'
 for i in "$@"; do
+    case $i in
+        -redo|--redo)
+            if ! test -f config.opt; then
+                echo >&2 "No config.opt present - cannot redo configuration."
+                exit 1
+            fi
+            for a in `cat config.opt`; do
+                OPT_CMDLINE="$OPT_CMDLINE
+$a"
+                QMAKE_CMDLINE="$QMAKE_CMDLINE
+$a"
+            done
+            CFG_REDO=yes  # suppress repeated config.opt writeout
+            continue
+            ;;
+        -v|-verbose|--verbose|-no-v|-no-verbose|--no-verbose)
+            ;;
+        *)
+            OPT_CMDLINE="$OPT_CMDLINE
+$i"
+            ;;
+    esac
     QMAKE_CMDLINE="$QMAKE_CMDLINE
 $i"
-    if [ "x$i" != "x-v" ]; then
-        [ -z "${i##* *}" ] && i="'$i'"
-        OPT_CMDLINE="$OPT_CMDLINE $i"
-    fi
 done
+set --
+for i in $QMAKE_CMDLINE; do
+    set -- "$@" "$i"
+done
+set +f
+IFS=$SAVED_IFS
 
 # initialize global variables
-QMAKE_VARS_FILE=.qmake.vars
 DEVICE_VARS_FILE=.device.vars
 HOST_VARS_FILE=.host.vars
 
-:> "$QMAKE_VARS_FILE"
 :> "$DEVICE_VARS_FILE"
 :> "$HOST_VARS_FILE"
 
@@ -122,29 +149,6 @@ makeabs()
         RES=$nres
     done
     echo "$RES" | sed 's,//,/,g; s,/$,,'
-}
-
-# Adds a new qmake variable to the cache
-# Usage: QMakeVar mode varname contents
-#   where mode is one of: set, add, del
-QMakeVar()
-{
-    case "$1" in
-	set)
-	    eq="="
-	    ;;
-	add)
-	    eq="+="
-	    ;;
-	del)
-	    eq="-="
-	    ;;
-	*)
-	    echo >&2 "BUG: wrong command to QMakeVar: $1"
-	    ;;
-    esac
-
-    echo "$2" "$eq" "$3" >> "$QMAKE_VARS_FILE"
 }
 
 # Helper function for getQMakeConf. It parses include statements in
@@ -275,6 +279,12 @@ macSDKify()
         appletvsimulator*)
             version_min_flag="-mtvos-simulator-version-min=$(getSingleQMakeVariable QMAKE_TVOS_DEPLOYMENT_TARGET "$1")"
         ;;
+        watchos*)
+            version_min_flag="-mwatchos-version-min=$(getSingleQMakeVariable QMAKE_WATCHOS_DEPLOYMENT_TARGET "$1")"
+        ;;
+        watchsimulator*)
+            version_min_flag="-mwatchos-simulator-version-min=$(getSingleQMakeVariable QMAKE_WATCHOS_DEPLOYMENT_TARGET "$1")"
+        ;;
         *)
         ;;
     esac
@@ -394,12 +404,7 @@ BUILD_ON_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
 fi
-HOST_DIRLIST_SEP=":"
-DEV_NULL=/dev/null
 if [ "$OSTYPE" = "msys" ]; then
-    HOST_DIRLIST_SEP=";"
-    DEV_NULL=/tmp/empty-file
-    echo "" > $DEV_NULL
     relpath=`(cd "$relpath"; pwd -W)`
     outpath=`pwd -W`
 fi
@@ -447,32 +452,10 @@ fi
 # initalize variables
 #-------------------------------------------------------------------------------
 
-SYSTEM_VARIABLES="AR RANLIB STRIP OBJDUMP LD CC CXX CFLAGS CXXFLAGS LDFLAGS"
-for varname in $SYSTEM_VARIABLES; do
-    qmakevarname="${varname}"
-    qmakecmdargs=""
-    # use LDFLAGS for autoconf compat, but qmake uses QMAKE_LFLAGS
-    if [ "${varname}" = "LDFLAGS" ]; then
-        qmakevarname="LFLAGS"
-    elif [ "${varname}" = "LD" ]; then
-        qmakevarname="LINK"
-    elif [ "${varname}" = "AR" ]; then
-        # QMAKE_AR needs to be set to "/path/to/ar cqs" but the
-        # environment variable will be set to the command only so we
-        # need to append " cqs" for autoconf compatibility
-        qmakecmdargs=" cqs"
-    fi
-    cmd=`echo \
-'if [ -n "\$'${varname}'" ]; then
-    QMakeVar set QMAKE_'${qmakevarname}' "\$'${varname}${qmakecmdargs}'"
-fi'`
-    eval "$cmd"
-done
-
 # Use CC/CXX to run config.tests
 mkdir -p "$outpath/config.tests"
 rm -f "$outpath/config.tests/.qmake.cache"
-cp "$QMAKE_VARS_FILE" "$outpath/config.tests/.qmake.cache"
+: > "$outpath/config.tests/.qmake.cache"
 
 # QTDIR may be set and point to an old or system-wide Qt installation
 unset QTDIR
@@ -482,9 +465,10 @@ CFG_RELEASE_TOOLS=no
 CFG_ANDROID_STYLE_ASSETS=yes
 
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
-XPLATFORM_MAC=no        # Whether target platform is OS X, iOS or tvOS
+XPLATFORM_MAC=no        # Whether target platform is macOS, iOS, tvOS, or watchOS
 XPLATFORM_IOS=no        # Whether target platform is iOS
 XPLATFORM_TVOS=no       # Whether target platform is tvOS
+XPLATFORM_WATCHOS=no    # Whether target platform is watchOS
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 PLATFORM=$QMAKESPEC
@@ -1017,6 +1001,10 @@ case "$XPLATFORM" in
     *tvos*)
         XPLATFORM_MAC=yes
         XPLATFORM_TVOS=yes
+        ;;
+    *watchos*)
+        XPLATFORM_MAC=yes
+        XPLATFORM_WATCHOS=yes
         ;;
     *macx*)
         XPLATFORM_MAC=yes
@@ -1884,20 +1872,6 @@ else
 fi
 
 #-------------------------------------------------------------------------------
-# Verify makespec
-#-------------------------------------------------------------------------------
-QMAKE_OUTPUT=`"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" -E -nocache -spec "$XQMAKESPEC" "QT=" $DEV_NULL 2>&1`
-if [ $? != "0" ]; then
-    echo "Failed to process makespec for platform '$XPLATFORM'"
-    if [ "$OPT_VERBOSE" = "yes" ]; then
-        echo "$QMAKE_OUTPUT"
-    else
-        echo "Turn on verbose messaging (-v) to see the final report."
-    fi
-    exit 101
-fi
-
-#-------------------------------------------------------------------------------
 # run configure tests
 #-------------------------------------------------------------------------------
 
@@ -1910,7 +1884,6 @@ config.input.extra_features = $CFG_FEATURES
 config.input.qt_edition = $Edition
 config.input.qt_licheck = $Licheck
 config.input.qt_release_date = $ReleaseDate
-config.input.sysroot = $CFG_SYSROOT
 EOF
 
 # create a clean qmodule/qconfig.pri for running the tests
@@ -1959,18 +1932,6 @@ else
     echo
 fi
 
-if [ "$OPT_VERBOSE" = "yes" ]; then
-    echo $ECHO_N "qmake vars .......... $ECHO_C"
-    cat "$QMAKE_VARS_FILE" | tr '\n' ' '
-    echo
-fi
-
-sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`
-PROCS=1
-EXEC=""
-
-rm -f "$QMAKE_VARS_FILE" 2>/dev/null
-
 #-------------------------------------------------------------------------------
 # build makefiles based on the configuration
 #-------------------------------------------------------------------------------
@@ -1990,29 +1951,17 @@ rm -f "$QMAKE_VARS_FILE" 2>/dev/null
 #-------------------------------------------------------------------------------
 # finally save the executed command to another script
 #-------------------------------------------------------------------------------
-if [ `basename $0` != "config.status" ]; then
-    CONFIG_STATUS="$relpath/$relconf$OPT_CMDLINE"
+if [ $CFG_REDO = no ]; then
+    echo "$OPT_CMDLINE" | grep '\-confirm\-license' >/dev/null 2>&1 || OPT_CMDLINE="$OPT_CMDLINE
+-confirm-license"
 
-    # add the system variables
-    for varname in $SYSTEM_VARIABLES; do
-        cmd=`echo \
-'if [ -n "\$'${varname}'" ]; then
-    CONFIG_STATUS="'${varname}'='"'\\\$${varname}'"' \$CONFIG_STATUS"
-fi'`
-	eval "$cmd"
-    done
-
-    echo "$CONFIG_STATUS" | grep '\-confirm\-license' >/dev/null 2>&1 || CONFIG_STATUS="$CONFIG_STATUS -confirm-license"
+    # skip first line, as it's always empty due to unconditional field separation
+    echo "$OPT_CMDLINE" | tail -n +2 > "$outpath/config.opt"
 
     [ -f "$outpath/config.status" ] && rm -f "$outpath/config.status"
     echo "#!/bin/sh" > "$outpath/config.status"
-    echo "$CONFIG_STATUS \"\$@\"" >> "$outpath/config.status"
+    echo "$relpath/$relconf -redo \"\$@\"" >> "$outpath/config.status"
     chmod +x "$outpath/config.status"
-fi
-
-if [ -n "$RPATH_MESSAGE" ]; then
-    echo
-    echo "$RPATH_MESSAGE"
 fi
 
 if [ -n "$PREFIX_COMPLAINTS" ]; then

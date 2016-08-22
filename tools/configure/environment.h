@@ -50,20 +50,9 @@ class Environment
 public:
     static Compiler detectCompiler();
     static QString detectQMakeSpec();
-    static Compiler compilerFromQMakeSpec(const QString &qmakeSpec);
-    static QString gccVersion();
 
     static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
     static QString execute(const QString &command, int *returnCode = 0);
-    static bool cpdir(const QString &srcDir, const QString &destDir);
-    static bool rmdir(const QString &name);
-
-    static QString findFileInPaths(const QString &fileName, const QStringList &paths);
-    static QStringList path();
-
-    static QString detectDirectXSdk();
-    static QStringList headerPaths(Compiler compiler);
-    static QStringList libraryPaths(Compiler compiler);
 
 private:
     static Compiler detectedCompiler;

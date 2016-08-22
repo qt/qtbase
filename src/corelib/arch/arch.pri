@@ -4,4 +4,4 @@ HEADERS += \
     arch/qatomic_bootstrap.h \
     arch/qatomic_cxx11.h
 
-atomic64-libatomic: LIBS += -latomic
+qtConfig(libatomic): QMAKE_USE += libatomic

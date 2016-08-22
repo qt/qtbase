@@ -1,7 +1,7 @@
 
 # In case the user sets the SDK manually
 contains(QMAKE_MAC_SDK, ^$${simulator.sdk}.*) {
-    contains(QT_CONFIG, simulator_and_device): \
+    qtConfig(simulator_and_device): \
         error("Simulator is handled automatically for simulator_and_device")
 
     CONFIG += simulator $${simulator.sdk}
@@ -11,9 +11,6 @@ build_pass:simulator: \
     QMAKE_MAC_SDK ~= s,^$${device.sdk},$${simulator.sdk},
 
 load(sdk)
-
-lessThan(QMAKE_MAC_SDK_VERSION, "8.0"): \
-    error("Current $$QMAKE_MAC_SDK SDK version ($$QMAKE_MAC_SDK_VERSION) is too old. Please upgrade Xcode.")
 
 macx-xcode {
     sdk_path_device.name = "QMAKE_MAC_SDK_PATH[sdk=$${device.sdk}*]"

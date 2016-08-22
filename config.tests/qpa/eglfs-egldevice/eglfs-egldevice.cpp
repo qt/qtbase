@@ -37,23 +37,13 @@
 **
 ****************************************************************************/
 
-// Test both EGLDevice/Output/Stream and DRM as we only use them in combination.
-//
-// Other KMS/DRM tests relying on pkgconfig for libdrm are not suitable since
-// some systems do not use pkgconfig for the graphics stuff.
-
-#include <stdlib.h>
-#include <stdint.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include <xf86drm.h>
-#include <xf86drmMode.h>
 
 int main(int, char **)
 {
     EGLDeviceEXT device = 0;
     EGLStreamKHR stream = 0;
     EGLOutputLayerEXT layer = 0;
-    drmModeCrtcPtr currentMode = drmModeGetCrtc(0, 0);
     return EGL_DRM_CRTC_EXT;
 }

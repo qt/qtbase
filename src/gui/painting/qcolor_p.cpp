@@ -40,31 +40,37 @@
 #include "qglobal.h"
 #include "qrgb.h"
 #include "qstringlist.h"
+#include "private/qtools_p.h"
 
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
-static inline int h2i(char hex)
-{
-    if (hex >= '0' && hex <= '9')
-        return hex - '0';
-    if (hex >= 'a' && hex <= 'f')
-        return hex - 'a' + 10;
-    if (hex >= 'A' && hex <= 'F')
-        return hex - 'A' + 10;
-    return -1;
-}
-
+/*!
+    \internal
+    If s[0..1] is a valid hex number, returns its integer value,
+    otherwise returns -1.
+ */
 static inline int hex2int(const char *s)
 {
-    return (h2i(s[0]) << 4) | h2i(s[1]);
+    const int hi = QtMiscUtils::fromHex(s[0]);
+    if (hi < 0)
+        return -1;
+    const int lo = QtMiscUtils::fromHex(s[1]);
+    if (lo < 0)
+        return -1;
+    return (hi << 4) | lo;
 }
 
+/*!
+    \internal
+    If s is a valid hex digit, returns its integer value,
+    multiplied by 0x11, otherwise returns -1.
+ */
 static inline int hex2int(char s)
 {
-    int h = h2i(s);
-    return (h << 4) | h;
+    const int h = QtMiscUtils::fromHex(s);
+    return h < 0 ? h : (h << 4) | h;
 }
 
 bool qt_get_hex_rgb(const char *name, QRgb *rgb)
@@ -130,7 +136,7 @@ bool qt_get_hex_rgb(const QChar *str, int len, QRgb *rgb)
 #define rgb(r,g,b) (0xff000000 | (r << 16) |  (g << 8) | b)
 
 static const struct RGBData {
-    const char *name;
+    const char name[21];
     uint  value;
 } rgbTbl[] = {
     { "aliceblue", rgb(240, 248, 255) },

@@ -5,4 +5,4 @@ SOURCES = $$PWD/tst_qeventloop.cpp
 
 win32:!winrt: LIBS += -luser32
 
-contains(QT_CONFIG, glib): DEFINES += HAVE_GLIB
+qtConfig(glib): DEFINES += HAVE_GLIB

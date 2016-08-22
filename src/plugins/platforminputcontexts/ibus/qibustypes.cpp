@@ -73,10 +73,7 @@ void QIBusSerializable::serializeTo(QDBusArgument &argument) const
 
     argument.beginMap(qMetaTypeId<QString>(), qMetaTypeId<QDBusVariant>());
 
-    QHashIterator<QString, QDBusArgument> i(attachments);
-    while (i.hasNext()) {
-        i.next();
-
+    for (auto i = attachments.begin(), end = attachments.end(); i != end; ++i) {
         argument.beginMapEntry();
         argument << i.key();
 

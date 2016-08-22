@@ -5,11 +5,8 @@ QT += core-private gui-private
 SOURCES += main.cpp qjpeghandler.cpp
 HEADERS += main.h qjpeghandler_p.h
 
-contains(QT_CONFIG, system-jpeg) {
-    msvc: \
-        LIBS += libjpeg.lib
-    else: \
-        LIBS += -ljpeg
+qtConfig(system-jpeg) {
+    QMAKE_USE += libjpeg
 } else {
     include($$PWD/../../../3rdparty/libjpeg.pri)
 }

@@ -17,4 +17,4 @@ win32 {
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
-requires(contains(QT_CONFIG,private_tests))
+requires(qtConfig(private_tests))

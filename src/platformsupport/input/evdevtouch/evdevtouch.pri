@@ -6,12 +6,12 @@ SOURCES += \
     $$PWD/qevdevtouchhandler.cpp \
     $$PWD/qevdevtouchmanager.cpp
 
-contains(QT_CONFIG, libudev) {
-    LIBS_PRIVATE += $$QMAKE_LIBS_LIBUDEV
-}
+INCLUDEPATH += $$PWD/../shared
 
-contains(QT_CONFIG, mtdev) {
+qtConfig(libudev): \
+    QMAKE_USE_PRIVATE += libudev
+
+qtConfig(mtdev) {
     CONFIG += link_pkgconfig
     PKGCONFIG_PRIVATE += mtdev
 }
-

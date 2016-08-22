@@ -83,6 +83,9 @@ QT_BEGIN_NAMESPACE
 
     \snippet qelapsedtimer/main.cpp 2
 
+    It is often more convenient to use \ref{QDeadlineTimer} in this case, which
+    counts towards a timeout in the future instead of tracking elapsed time.
+
     \section1 Reference Clocks
 
     QElapsedTimer will use the platform's monotonic reference clock in all
@@ -120,7 +123,7 @@ QT_BEGIN_NAMESPACE
     The information on which clocks types may overflow and how to remedy that
     issue is documented along with the clock types.
 
-    \sa QTime, QTimer
+    \sa QTime, QTimer, QDeadlineTimer
 */
 
 /*!
@@ -137,7 +140,7 @@ QT_BEGIN_NAMESPACE
     \value SystemTime         The human-readable system time. This clock is not monotonic.
     \value MonotonicClock     The system's monotonic clock, usually found in Unix systems. This clock is monotonic and does not overflow.
     \value TickCounter        The system's tick counter, used on Windows systems. This clock may overflow.
-    \value MachAbsoluteTime   The Mach kernel's absolute time (OS X and iOS). This clock is monotonic and does not overflow.
+    \value MachAbsoluteTime   The Mach kernel's absolute time (\macos and iOS). This clock is monotonic and does not overflow.
     \value PerformanceCounter The high-resolution performance counter provided by Windows. This clock is monotonic and does not overflow.
 
     \section2 SystemTime
@@ -179,8 +182,8 @@ QT_BEGIN_NAMESPACE
     \section2 MachAbsoluteTime
 
     This clock type is based on the absolute time presented by Mach kernels,
-    such as that found on OS X. This clock type is presented separately
-    from MonotonicClock since OS X and iOS are also Unix systems and may support
+    such as that found on \macos. This clock type is presented separately
+    from MonotonicClock since \macos and iOS are also Unix systems and may support
     a POSIX monotonic clock with values differing from the Mach absolute
     time.
 
@@ -255,7 +258,7 @@ bool QElapsedTimer::isValid() const Q_DECL_NOTHROW
     The value of \a timeout can be -1 to indicate that this timer does not
     expire, in which case this function will always return false.
 
-    \sa elapsed()
+    \sa elapsed(), QDeadlineTimer
 */
 bool QElapsedTimer::hasExpired(qint64 timeout) const Q_DECL_NOTHROW
 {

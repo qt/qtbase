@@ -78,6 +78,73 @@ const char *string_hash_hash = STRING_HASH_HASH("baz");
 
 Q_DECLARE_METATYPE(const QMetaObject*);
 
+namespace TestNonQNamespace {
+
+struct TestGadget {
+    Q_GADGET
+    Q_CLASSINFO("key", "value")
+public:
+    enum class TestGEnum1 {
+        Key1 = 11,
+        Key2
+    };
+    Q_ENUM(TestGEnum1)
+
+    enum class TestGEnum2 {
+        Key1 = 17,
+        Key2
+    };
+    Q_ENUM(TestGEnum2)
+};
+
+}
+
+namespace TestQNamespace {
+    Q_NAMESPACE
+    enum class TestEnum1 {
+        Key1 = 11,
+        Key2
+    };
+    Q_ENUM_NS(TestEnum1)
+
+    enum class TestEnum2 {
+        Key1 = 17,
+        Key2
+    };
+    Q_ENUM_NS(TestEnum2)
+
+    // try to dizzy moc by adding a struct in between
+    struct TestGadget {
+        Q_GADGET
+    public:
+        enum class TestGEnum1 {
+            Key1 = 13,
+            Key2
+        };
+        enum class TestGEnum2 {
+            Key1 = 23,
+            Key2
+        };
+        Q_ENUM(TestGEnum1)
+        Q_ENUM(TestGEnum2)
+    };
+
+    enum class TestFlag1 {
+        None = 0,
+        Flag1 = 1,
+        Flag2 = 2,
+        Any = Flag1 | Flag2
+    };
+    Q_FLAG_NS(TestFlag1)
+
+    enum class TestFlag2 {
+        None = 0,
+        Flag1 = 4,
+        Flag2 = 8,
+        Any = Flag1 | Flag2
+    };
+    Q_FLAG_NS(TestFlag2)
+}
 
 QT_USE_NAMESPACE
 
@@ -627,6 +694,7 @@ private slots:
     void gadgetHierarchy();
     void optionsFileError_data();
     void optionsFileError();
+    void testQNamespace();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -2006,6 +2074,13 @@ void tst_Moc::warnings_data()
         << 1
         << QString()
         << QString("standard input:5: Error: Class declaration lacks Q_OBJECT macro.");
+
+    QTest::newRow("Namespace declaration lacks Q_NAMESPACE macro.")
+        << QByteArray("namespace X {\nQ_CLASSINFO(\"key\",\"value\")\nenum class MyEnum {Key1 = 1}\nQ_ENUMS(MyEnum)\n}\n")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:1: Error: Namespace declaration lacks Q_NAMESPACE macro.");
 
     QTest::newRow("Invalid macro definition")
         << QByteArray("#define Foo(a, b, c) a b c #a #b #c a##b##c #d\n Foo(45, 42, 39);")
@@ -3635,6 +3710,41 @@ void tst_Moc::optionsFileError()
     QVERIFY(err.contains("moc: "));
     QVERIFY(!err.contains("QCommandLineParser"));
 #endif
+}
+
+static void checkEnum(const QMetaEnum &enumerator, const QByteArray &name, const QVector<QPair<QByteArray, int >> &keys)
+{
+    QCOMPARE(name, QByteArray{enumerator.name()});
+    QCOMPARE(keys.size(), enumerator.keyCount());
+    for (int i = 0; i < enumerator.keyCount(); ++i) {
+        QCOMPARE(keys[i].first, QByteArray{enumerator.key(i)});
+        QCOMPARE(keys[i].second, enumerator.value(i));
+    }
+}
+
+void tst_Moc::testQNamespace()
+{
+    QCOMPARE(TestQNamespace::staticMetaObject.enumeratorCount(), 4);
+    checkEnum(TestQNamespace::staticMetaObject.enumerator(0), "TestEnum1",
+                {{"Key1", 11}, {"Key2", 12}});
+    checkEnum(TestQNamespace::staticMetaObject.enumerator(1), "TestEnum2",
+                {{"Key1", 17}, {"Key2", 18}});
+    checkEnum(TestQNamespace::staticMetaObject.enumerator(2), "TestFlag1",
+                {{"None", 0}, {"Flag1", 1}, {"Flag2", 2}, {"Any", 1 | 2}});
+    checkEnum(TestQNamespace::staticMetaObject.enumerator(3), "TestFlag2",
+                {{"None", 0}, {"Flag1", 4}, {"Flag2", 8}, {"Any", 4 | 8}});
+
+    QCOMPARE(TestQNamespace::TestGadget::staticMetaObject.enumeratorCount(), 2);
+    checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(0), "TestGEnum1",
+                {{"Key1", 13}, {"Key2", 14}});
+    checkEnum(TestQNamespace::TestGadget::staticMetaObject.enumerator(1), "TestGEnum2",
+                {{"Key1", 23}, {"Key2", 24}});
+
+    QMetaEnum meta = QMetaEnum::fromType<TestQNamespace::TestEnum1>();
+    QVERIFY(meta.isValid());
+    QCOMPARE(meta.name(), "TestEnum1");
+    QCOMPARE(meta.enclosingMetaObject(), &TestQNamespace::staticMetaObject);
+    QCOMPARE(meta.keyCount(), 2);
 }
 
 QTEST_MAIN(tst_Moc)

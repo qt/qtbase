@@ -1,5 +1,3 @@
-DEFINES += QT_NO_FONTCONFIG
-
 HEADERS += \
         $$PWD/qbasicfontdatabase_p.h \
         $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft_p.h

@@ -1,0 +1,12 @@
+{
+    "Id": "sha1",
+    "Name": "Secure Hash Algorithm SHA-1",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used in Qt Core (QCryptographicHash).",
+
+    "Description": "Implements the Secure Hash Algorithms SHA 1",
+    "Homepage": "http://www.dominik-reichl.de/projects/csha1/",
+    "License": "Public Domain",
+    "Copyright": "Copyright (C) Dominik Reichl <dominik.reichl@t-online.de>
+Copyright (C) 2016 The Qt Company Ltd"
+}

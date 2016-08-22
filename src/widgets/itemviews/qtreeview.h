@@ -43,6 +43,8 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractitemview.h>
 
+class tst_QTreeView;
+
 QT_BEGIN_NAMESPACE
 
 
@@ -220,6 +222,7 @@ protected:
     void currentChanged(const QModelIndex &current, const QModelIndex &previous) Q_DECL_OVERRIDE;
 
 private:
+    friend class ::tst_QTreeView;
     friend class QAccessibleTable;
     friend class QAccessibleTree;
     friend class QAccessibleTableCell;

@@ -10,8 +10,8 @@ MODULE = eglfsdeviceintegration
 QT += core-private gui-private platformsupport-private
 LIBS += $$QMAKE_LIBS_DYNLOAD
 
-# Avoid X11 header collision
-DEFINES += MESA_EGL_NO_X11_HEADERS
+# Avoid X11 header collision, use generic EGL native types
+DEFINES += QT_EGL_NO_X11
 
 DEFINES += QT_BUILD_EGL_DEVICE_LIB
 

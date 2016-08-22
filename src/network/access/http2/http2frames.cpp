@@ -51,46 +51,125 @@ namespace Http2
 
 // HTTP/2 frames are defined by RFC7540, clauses 4 and 6.
 
-FrameStatus validate_frame_header(FrameType type, FrameFlags flags, quint32 payloadSize)
+Frame::Frame()
+    : buffer(frameHeaderSize)
 {
+}
+
+FrameType Frame::type() const
+{
+    Q_ASSERT(buffer.size() >= frameHeaderSize);
+
+    if (int(buffer[3]) >= int(FrameType::LAST_FRAME_TYPE))
+        return FrameType::LAST_FRAME_TYPE;
+
+    return FrameType(buffer[3]);
+}
+
+quint32 Frame::streamID() const
+{
+    Q_ASSERT(buffer.size() >= frameHeaderSize);
+    return qFromBigEndian<quint32>(&buffer[5]);
+}
+
+FrameFlags Frame::flags() const
+{
+    Q_ASSERT(buffer.size() >= frameHeaderSize);
+    return FrameFlags(buffer[4]);
+}
+
+quint32 Frame::payloadSize() const
+{
+    Q_ASSERT(buffer.size() >= frameHeaderSize);
+    return buffer[0] << 16 | buffer[1] << 8 | buffer[2];
+}
+
+uchar Frame::padding() const
+{
+    Q_ASSERT(validateHeader() == FrameStatus::goodFrame);
+
+    if (!flags().testFlag(FrameFlag::PADDED))
+        return 0;
+
+    switch (type()) {
+    case FrameType::DATA:
+    case FrameType::PUSH_PROMISE:
+    case FrameType::HEADERS:
+        Q_ASSERT(buffer.size() > frameHeaderSize);
+        return buffer[frameHeaderSize];
+    default:
+        return 0;
+    }
+}
+
+bool Frame::priority(quint32 *streamID, uchar *weight) const
+{
+    Q_ASSERT(validatePayload() == FrameStatus::goodFrame);
+
+    if (buffer.size() <= frameHeaderSize)
+        return false;
+
+    const uchar *src = &buffer[0] + frameHeaderSize;
+    if (type() == FrameType::HEADERS && flags().testFlag(FrameFlag::PADDED))
+        ++src;
+
+    if ((type() == FrameType::HEADERS && flags().testFlag(FrameFlag::PRIORITY))
+        || type() == FrameType::PRIORITY) {
+        if (streamID)
+            *streamID = qFromBigEndian<quint32>(src);
+        if (weight)
+            *weight = src[4];
+        return true;
+    }
+
+    return false;
+}
+
+FrameStatus Frame::validateHeader() const
+{
+    // Should be called only on a frame with
+    // a complete header.
+    Q_ASSERT(buffer.size() >= frameHeaderSize);
+
+    const auto framePayloadSize = payloadSize();
     // 4.2 Frame Size
-    if (payloadSize > maxPayloadSize)
+    if (framePayloadSize > maxPayloadSize)
         return FrameStatus::sizeError;
 
-    switch (type) {
+    switch (type()) {
     case FrameType::SETTINGS:
         // SETTINGS ACK can not have any payload.
         // The payload of a SETTINGS frame consists of zero
         // or more parameters, each consisting of an unsigned
         // 16-bit setting identifier and an unsigned 32-bit value.
         // Thus the payload size must be a multiple of 6.
-        if (flags.testFlag(FrameFlag::ACK) ? payloadSize : payloadSize % 6)
+        if (flags().testFlag(FrameFlag::ACK) ? framePayloadSize : framePayloadSize % 6)
             return FrameStatus::sizeError;
         break;
     case FrameType::PRIORITY:
         // 6.3 PRIORITY
-        if (payloadSize != 5)
+        if (framePayloadSize != 5)
             return FrameStatus::sizeError;
         break;
     case FrameType::PING:
         // 6.7 PING
-        if (payloadSize != 8)
+        if (framePayloadSize != 8)
             return FrameStatus::sizeError;
         break;
     case FrameType::GOAWAY:
         // 6.8 GOAWAY
-        if (payloadSize < 8)
+        if (framePayloadSize < 8)
             return FrameStatus::sizeError;
         break;
     case FrameType::RST_STREAM:
     case FrameType::WINDOW_UPDATE:
         // 6.4 RST_STREAM, 6.9 WINDOW_UPDATE
-        if (payloadSize != 4)
+        if (framePayloadSize != 4)
             return FrameStatus::sizeError;
         break;
     case FrameType::PUSH_PROMISE:
         // 6.6 PUSH_PROMISE
-        if (payloadSize < 4)
+        if (framePayloadSize < 4)
             return FrameStatus::sizeError;
     default:
         // DATA/HEADERS/CONTINUATION will be verified
@@ -102,31 +181,37 @@ FrameStatus validate_frame_header(FrameType type, FrameFlags flags, quint32 payl
     return FrameStatus::goodFrame;
 }
 
-FrameStatus validate_frame_payload(FrameType type, FrameFlags flags,
-                                   quint32 size, const uchar *src)
+FrameStatus Frame::validatePayload() const
 {
-    Q_ASSERT(!size || src);
+    // Should be called only on a complete frame with a valid header.
+    Q_ASSERT(validateHeader() == FrameStatus::goodFrame);
 
     // Ignored, 5.1
-    if (type == FrameType::LAST_FRAME_TYPE)
+    if (type() == FrameType::LAST_FRAME_TYPE)
         return FrameStatus::goodFrame;
 
+    auto size = payloadSize();
+    Q_ASSERT(buffer.size() >= frameHeaderSize && size == buffer.size() - frameHeaderSize);
+
+    const uchar *src = size ? &buffer[0] + frameHeaderSize : nullptr;
+    const auto frameFlags = flags();
+    switch (type()) {
     // 6.1 DATA, 6.2 HEADERS
-    if (type == FrameType::DATA || type == FrameType::HEADERS) {
-        if (flags.testFlag(FrameFlag::PADDED)) {
+    case FrameType::DATA:
+    case FrameType::HEADERS:
+        if (frameFlags.testFlag(FrameFlag::PADDED)) {
             if (!size || size < src[0])
                 return FrameStatus::sizeError;
             size -= src[0];
         }
-        if (type == FrameType::HEADERS && flags.testFlag(FrameFlag::PRIORITY)) {
+        if (type() == FrameType::HEADERS && frameFlags.testFlag(FrameFlag::PRIORITY)) {
             if (size < 5)
                 return FrameStatus::sizeError;
         }
-    }
-
+        break;
     // 6.6 PUSH_PROMISE
-    if (type == FrameType::PUSH_PROMISE) {
-        if (flags.testFlag(FrameFlag::PADDED)) {
+    case FrameType::PUSH_PROMISE:
+        if (frameFlags.testFlag(FrameFlag::PADDED)) {
             if (!size || size < src[0])
                 return FrameStatus::sizeError;
             size -= src[0];
@@ -134,284 +219,158 @@ FrameStatus validate_frame_payload(FrameType type, FrameFlags flags,
 
         if (size < 4)
             return FrameStatus::sizeError;
+        break;
+    default:
+        break;
     }
 
     return FrameStatus::goodFrame;
 }
 
-FrameStatus validate_frame_payload(FrameType type, FrameFlags flags,
-                                   const std::vector<uchar> &payload)
+
+quint32 Frame::dataSize() const
 {
-    const uchar *src = payload.size() ? &payload[0] : nullptr;
-    return validate_frame_payload(type, flags, quint32(payload.size()), src);
-}
+    Q_ASSERT(validatePayload() == FrameStatus::goodFrame);
 
-
-FrameReader::FrameReader(FrameReader &&rhs)
-    : framePayload(std::move(rhs.framePayload))
-{
-    type = rhs.type;
-    rhs.type = FrameType::LAST_FRAME_TYPE;
-
-    flags = rhs.flags;
-    rhs.flags = FrameFlag::EMPTY;
-
-    streamID = rhs.streamID;
-    rhs.streamID = 0;
-
-    payloadSize = rhs.payloadSize;
-    rhs.payloadSize = 0;
-
-    incompleteRead = rhs.incompleteRead;
-    rhs.incompleteRead = false;
-
-    offset = rhs.offset;
-    rhs.offset = 0;
-}
-
-FrameReader &FrameReader::operator = (FrameReader &&rhs)
-{
-    framePayload = std::move(rhs.framePayload);
-
-    type = rhs.type;
-    rhs.type = FrameType::LAST_FRAME_TYPE;
-
-    flags = rhs.flags;
-    rhs.flags = FrameFlag::EMPTY;
-
-    streamID = rhs.streamID;
-    rhs.streamID = 0;
-
-    payloadSize = rhs.payloadSize;
-    rhs.payloadSize = 0;
-
-    incompleteRead = rhs.incompleteRead;
-    rhs.incompleteRead = false;
-
-    offset = rhs.offset;
-    rhs.offset = 0;
-
-    return *this;
-}
-
-FrameStatus FrameReader::read(QAbstractSocket &socket)
-{
-    if (!incompleteRead) {
-        if (!readHeader(socket))
-            return FrameStatus::incompleteFrame;
-
-        const auto status = validate_frame_header(type, flags, payloadSize);
-        if (status != FrameStatus::goodFrame) {
-            // No need to read any payload.
-            return status;
-        }
-
-        if (Http2PredefinedParameters::maxFrameSize < payloadSize)
-            return FrameStatus::sizeError;
-
-        framePayload.resize(payloadSize);
-        offset = 0;
-    }
-
-    if (framePayload.size()) {
-        if (!readPayload(socket))
-            return FrameStatus::incompleteFrame;
-    }
-
-    return validate_frame_payload(type, flags, framePayload);
-}
-
-bool FrameReader::padded(uchar *pad) const
-{
-    Q_ASSERT(pad);
-
-    if (!flags.testFlag(FrameFlag::PADDED))
-        return false;
-
-    if (type == FrameType::DATA
-        || type == FrameType::PUSH_PROMISE
-        || type == FrameType::HEADERS) {
-        Q_ASSERT(framePayload.size() >= 1);
-        *pad = framePayload[0];
-        return true;
-    }
-
-    return false;
-}
-
-bool FrameReader::priority(quint32 *streamID, uchar *weight) const
-{
-    Q_ASSERT(streamID);
-    Q_ASSERT(weight);
-
-    if (!framePayload.size())
-        return false;
-
-    const uchar *src = &framePayload[0];
-    if (type == FrameType::HEADERS && flags.testFlag(FrameFlag::PADDED))
-        ++src;
-
-    if ((type == FrameType::HEADERS && flags.testFlag(FrameFlag::PRIORITY))
-        || type == FrameType::PRIORITY) {
-        *streamID = qFromBigEndian<quint32>(src);
-        *weight = src[4];
-        return true;
-    }
-
-    return false;
-}
-
-quint32 FrameReader::dataSize() const
-{
-    quint32 size = quint32(framePayload.size());
-    uchar pad = 0;
-    if (padded(&pad)) {
+    quint32 size = payloadSize();
+    if (const uchar pad = padding()) {
         // + 1 one for a byte with padding number itself:
         size -= pad + 1;
     }
 
-    quint32 dummyID = 0;
-    uchar dummyW = 0;
-    if (priority(&dummyID, &dummyW))
+    if (priority())
         size -= 5;
 
     return size;
 }
 
-const uchar *FrameReader::dataBegin() const
+const uchar *Frame::dataBegin() const
 {
-    if (!framePayload.size())
+    Q_ASSERT(validatePayload() == FrameStatus::goodFrame);
+    if (buffer.size() <= frameHeaderSize)
         return nullptr;
 
-    const uchar *src = &framePayload[0];
-    uchar dummyPad = 0;
-    if (padded(&dummyPad))
+    const uchar *src = &buffer[0] + frameHeaderSize;
+    if (padding())
         ++src;
 
-    quint32 dummyID = 0;
-    uchar dummyW = 0;
-    if (priority(&dummyID, &dummyW))
+    if (priority())
         src += 5;
 
     return src;
 }
 
+FrameStatus FrameReader::read(QAbstractSocket &socket)
+{
+    if (offset < frameHeaderSize) {
+        if (!readHeader(socket))
+            return FrameStatus::incompleteFrame;
+
+        const auto status = frame.validateHeader();
+        if (status != FrameStatus::goodFrame) {
+            // No need to read any payload.
+            return status;
+        }
+
+        if (Http2PredefinedParameters::maxFrameSize < frame.payloadSize())
+            return FrameStatus::sizeError;
+
+        frame.buffer.resize(frame.payloadSize() + frameHeaderSize);
+    }
+
+    if (offset < frame.buffer.size() && !readPayload(socket))
+        return FrameStatus::incompleteFrame;
+
+    // Reset the offset, our frame can be re-used
+    // now (re-read):
+    offset = 0;
+
+    return frame.validatePayload();
+}
+
 bool FrameReader::readHeader(QAbstractSocket &socket)
 {
-    if (socket.bytesAvailable() < frameHeaderSize)
-        return false;
+    Q_ASSERT(offset < frameHeaderSize);
 
-    uchar src[frameHeaderSize] = {};
-    socket.read(reinterpret_cast<char*>(src), frameHeaderSize);
+    auto &buffer = frame.buffer;
+    if (buffer.size() < frameHeaderSize)
+        buffer.resize(frameHeaderSize);
 
-    payloadSize = src[0] << 16 | src[1] << 8 | src[2];
+    const auto chunkSize = socket.read(reinterpret_cast<char *>(&buffer[offset]),
+                                       frameHeaderSize - offset);
+    if (chunkSize > 0)
+        offset += chunkSize;
 
-    type = FrameType(src[3]);
-    if (int(type) >= int(FrameType::LAST_FRAME_TYPE))
-        type = FrameType::LAST_FRAME_TYPE; // To be ignored, 5.1
-
-    flags = FrameFlags(src[4]);
-    streamID = qFromBigEndian<quint32>(src + 5);
-
-    return true;
+    return offset == frameHeaderSize;
 }
 
 bool FrameReader::readPayload(QAbstractSocket &socket)
 {
-    Q_ASSERT(offset <= framePayload.size());
+    Q_ASSERT(offset < frame.buffer.size());
+    Q_ASSERT(frame.buffer.size() > frameHeaderSize);
 
+    auto &buffer = frame.buffer;
     // Casts and ugliness - to deal with MSVC. Values are guaranteed to fit into quint32.
-    if (const auto residue = std::min(qint64(framePayload.size() - offset), socket.bytesAvailable())) {
-        socket.read(reinterpret_cast<char *>(&framePayload[offset]), residue);
-        offset += quint32(residue);
-    }
+    const auto chunkSize = socket.read(reinterpret_cast<char *>(&buffer[offset]),
+                                       qint64(buffer.size() - offset));
+    if (chunkSize > 0)
+        offset += quint32(chunkSize);
 
-    incompleteRead = offset < framePayload.size();
-    return !incompleteRead;
+    return offset == buffer.size();
 }
-
 
 FrameWriter::FrameWriter()
 {
-    frameBuffer.reserve(Http2PredefinedParameters::maxFrameSize +
-                        Http2PredefinedParameters::frameHeaderSize);
 }
 
 FrameWriter::FrameWriter(FrameType type, FrameFlags flags, quint32 streamID)
 {
-    frameBuffer.reserve(Http2PredefinedParameters::maxFrameSize +
-                        Http2PredefinedParameters::frameHeaderSize);
     start(type, flags, streamID);
 }
 
 void FrameWriter::start(FrameType type, FrameFlags flags, quint32 streamID)
 {
-    frameBuffer.resize(frameHeaderSize);
+    auto &buffer = frame.buffer;
+
+    buffer.resize(frameHeaderSize);
     // The first three bytes - payload size, which is 0 for now.
-    frameBuffer[0] = 0;
-    frameBuffer[1] = 0;
-    frameBuffer[2] = 0;
+    buffer[0] = 0;
+    buffer[1] = 0;
+    buffer[2] = 0;
 
-    frameBuffer[3] = uchar(type);
-    frameBuffer[4] = uchar(flags);
+    buffer[3] = uchar(type);
+    buffer[4] = uchar(flags);
 
-    qToBigEndian(streamID, &frameBuffer[5]);
+    qToBigEndian(streamID, &buffer[5]);
 }
 
 void FrameWriter::setPayloadSize(quint32 size)
 {
-    Q_ASSERT(frameBuffer.size() >= frameHeaderSize);
+    auto &buffer = frame.buffer;
+
+    Q_ASSERT(buffer.size() >= frameHeaderSize);
     Q_ASSERT(size < maxPayloadSize);
 
-    frameBuffer[0] = size >> 16;
-    frameBuffer[1] = size >> 8;
-    frameBuffer[2] = size;
-}
-
-quint32 FrameWriter::payloadSize() const
-{
-    Q_ASSERT(frameBuffer.size() >= frameHeaderSize);
-    return frameBuffer[0] << 16 | frameBuffer[1] << 8 | frameBuffer[2];
+    buffer[0] = size >> 16;
+    buffer[1] = size >> 8;
+    buffer[2] = size;
 }
 
 void FrameWriter::setType(FrameType type)
 {
-    Q_ASSERT(frameBuffer.size() >= frameHeaderSize);
-    frameBuffer[3] = uchar(type);
-}
-
-FrameType FrameWriter::type() const
-{
-    Q_ASSERT(frameBuffer.size() >= frameHeaderSize);
-    return FrameType(frameBuffer[3]);
+    Q_ASSERT(frame.buffer.size() >= frameHeaderSize);
+    frame.buffer[3] = uchar(type);
 }
 
 void FrameWriter::setFlags(FrameFlags flags)
 {
-    Q_ASSERT(frameBuffer.size() >= frameHeaderSize);
-    frameBuffer[4] = uchar(flags);
+    Q_ASSERT(frame.buffer.size() >= frameHeaderSize);
+    frame.buffer[4] = uchar(flags);
 }
 
 void FrameWriter::addFlag(FrameFlag flag)
 {
-    setFlags(flags() | flag);
-}
-
-FrameFlags FrameWriter::flags() const
-{
-    Q_ASSERT(frameBuffer.size() >= frameHeaderSize);
-    return FrameFlags(frameBuffer[4]);
-}
-
-quint32 FrameWriter::streamID() const
-{
-    return qFromBigEndian<quint32>(&frameBuffer[5]);
-}
-
-void FrameWriter::append(uchar val)
-{
-    frameBuffer.push_back(val);
-    updatePayloadSize();
+    setFlags(frame.flags() | flag);
 }
 
 void FrameWriter::append(const uchar *begin, const uchar *end)
@@ -419,64 +378,71 @@ void FrameWriter::append(const uchar *begin, const uchar *end)
     Q_ASSERT(begin && end);
     Q_ASSERT(begin < end);
 
-    frameBuffer.insert(frameBuffer.end(), begin, end);
+    frame.buffer.insert(frame.buffer.end(), begin, end);
     updatePayloadSize();
 }
 
 void FrameWriter::updatePayloadSize()
 {
-    // First, compute size:
-    const quint32 payloadSize = quint32(frameBuffer.size() - frameHeaderSize);
-    Q_ASSERT(payloadSize <= maxPayloadSize);
-    setPayloadSize(payloadSize);
+    const quint32 size = quint32(frame.buffer.size() - frameHeaderSize);
+    Q_ASSERT(size <= maxPayloadSize);
+    setPayloadSize(size);
 }
 
 bool FrameWriter::write(QAbstractSocket &socket) const
 {
-    Q_ASSERT(frameBuffer.size() >= frameHeaderSize);
+    auto &buffer = frame.buffer;
+    Q_ASSERT(buffer.size() >= frameHeaderSize);
     // Do some sanity check first:
-    Q_ASSERT(int(type()) < int(FrameType::LAST_FRAME_TYPE));
-    Q_ASSERT(validate_frame_header(type(), flags(), payloadSize()) == FrameStatus::goodFrame);
 
-    const auto nWritten = socket.write(reinterpret_cast<const char *>(&frameBuffer[0]),
-                                       frameBuffer.size());
-    return nWritten != -1 && size_type(nWritten) == frameBuffer.size();
+    Q_ASSERT(int(frame.type()) < int(FrameType::LAST_FRAME_TYPE));
+    Q_ASSERT(frame.validateHeader() == FrameStatus::goodFrame);
+
+    const auto nWritten = socket.write(reinterpret_cast<const char *>(&buffer[0]),
+                                       buffer.size());
+    return nWritten != -1 && size_type(nWritten) == buffer.size();
 }
 
 bool FrameWriter::writeHEADERS(QAbstractSocket &socket, quint32 sizeLimit)
 {
-    Q_ASSERT(frameBuffer.size() >= frameHeaderSize);
+    auto &buffer = frame.buffer;
+    Q_ASSERT(buffer.size() >= frameHeaderSize);
 
     if (sizeLimit > quint32(maxPayloadSize))
         sizeLimit = quint32(maxPayloadSize);
 
-    if (quint32(frameBuffer.size() - frameHeaderSize) <= sizeLimit) {
+    if (quint32(buffer.size() - frameHeaderSize) <= sizeLimit) {
+        addFlag(FrameFlag::END_HEADERS);
         updatePayloadSize();
         return write(socket);
     }
 
+    // Our HPACK block does not fit into the size limit, remove
+    // END_HEADERS bit from the first frame, we'll later set
+    // it on the last CONTINUATION frame:
+    setFlags(frame.flags() & ~FrameFlags(FrameFlag::END_HEADERS));
     // Write a frame's header (not controlled by sizeLimit) and
     // as many bytes of payload as we can within sizeLimit,
     // then send CONTINUATION frames, as needed.
     setPayloadSize(sizeLimit);
     const quint32 firstChunkSize = frameHeaderSize + sizeLimit;
-    qint64 written = socket.write(reinterpret_cast<const char *>(&frameBuffer[0]),
+    qint64 written = socket.write(reinterpret_cast<const char *>(&buffer[0]),
                                   firstChunkSize);
 
     if (written != qint64(firstChunkSize))
         return false;
 
-    FrameWriter continuationFrame(FrameType::CONTINUATION, FrameFlag::EMPTY, streamID());
+    FrameWriter continuationWriter(FrameType::CONTINUATION, FrameFlag::EMPTY, frame.streamID());
     quint32 offset = firstChunkSize;
 
-    while (offset != frameBuffer.size()) {
-        const auto chunkSize = std::min(sizeLimit, quint32(frameBuffer.size() - offset));
-        if (chunkSize + offset == frameBuffer.size())
-            continuationFrame.addFlag(FrameFlag::END_HEADERS);
-        continuationFrame.setPayloadSize(chunkSize);
-        if (!continuationFrame.write(socket))
+    while (offset != buffer.size()) {
+        const auto chunkSize = std::min(sizeLimit, quint32(buffer.size() - offset));
+        if (chunkSize + offset == buffer.size())
+            continuationWriter.addFlag(FrameFlag::END_HEADERS);
+        continuationWriter.setPayloadSize(chunkSize);
+        if (!continuationWriter.write(socket))
             return false;
-        written = socket.write(reinterpret_cast<const char *>(&frameBuffer[offset]),
+        written = socket.write(reinterpret_cast<const char *>(&buffer[offset]),
                                chunkSize);
         if (written != qint64(chunkSize))
             return false;
@@ -524,6 +490,6 @@ bool FrameWriter::writeDATA(QAbstractSocket &socket, quint32 sizeLimit,
     return true;
 }
 
-}
+} // Namespace Http2
 
 QT_END_NAMESPACE

@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 QSslDiffieHellmanParameters QSslDiffieHellmanParameters::defaultParameters()
 {
     // The 1024-bit MODP group from RFC 2459 (Second Oakley Group)
-    return QSslDiffieHellmanParameters(
+    return fromEncoded(
         QByteArray::fromBase64(QByteArrayLiteral(
             "MIGHAoGBAP//////////yQ/aoiFowjTExmKLgNwc0SkCTgiKZ8x0Agu+pjsTmyJR"
             "Sgh5jjQE3e+VGbPNOkMbMCsKbfJfFDdP4TVtbVHCReSFtXZiXn7G9ExC6aY37WsL"
@@ -100,73 +100,82 @@ QSslDiffieHellmanParameters QSslDiffieHellmanParameters::defaultParameters()
 QSslDiffieHellmanParameters::QSslDiffieHellmanParameters()
     : d(new QSslDiffieHellmanParametersPrivate)
 {
+    d->ref.ref();
 }
 
 /*!
     Constructs a QSslDiffieHellmanParameters object using
     the byte array \a encoded in either PEM or DER form as specified by \a encoding.
 
-    After construction, the isValid() method should be used to
+    Use the isValid() method on the returned object to
     check whether the Diffie-Hellman parameters were valid and
     loaded correctly.
 
     \sa isValid()
     \sa QSslConfiguration
 */
-QSslDiffieHellmanParameters::QSslDiffieHellmanParameters(const QByteArray &encoded, QSsl::EncodingFormat encoding)
-    : d(new QSslDiffieHellmanParametersPrivate)
+QSslDiffieHellmanParameters QSslDiffieHellmanParameters::fromEncoded(const QByteArray &encoded, QSsl::EncodingFormat encoding)
 {
+    QSslDiffieHellmanParameters result;
     switch (encoding) {
     case QSsl::Der:
-        d->decodeDer(encoded);
+        result.d->decodeDer(encoded);
         break;
     case QSsl::Pem:
-        d->decodePem(encoded);
+        result.d->decodePem(encoded);
         break;
     }
+    return result;
 }
 
 /*!
     Constructs a QSslDiffieHellmanParameters object by
     reading from \a device in either PEM or DER form as specified by \a encoding.
 
-    After construction, the isValid() method should be used
+    Use the isValid() method on the returned object
     to check whether the Diffie-Hellman parameters were valid
     and loaded correctly.
+
+    In particular, if \a device is \c nullptr or not open for reading, an invalid
+    object will be returned.
 
     \sa isValid()
     \sa QSslConfiguration
 */
-QSslDiffieHellmanParameters::QSslDiffieHellmanParameters(QIODevice *device, QSsl::EncodingFormat encoding)
-    : d(new QSslDiffieHellmanParametersPrivate)
+QSslDiffieHellmanParameters QSslDiffieHellmanParameters::fromEncoded(QIODevice *device, QSsl::EncodingFormat encoding)
 {
-    if (!device)
-        return;
-
-    const QByteArray encoded = device->readAll();
-
-    switch (encoding) {
-    case QSsl::Der:
-        d->decodeDer(encoded);
-        break;
-    case QSsl::Pem:
-        d->decodePem(encoded);
-        break;
-    }
+    if (device)
+        return fromEncoded(device->readAll(), encoding);
+    else
+        return QSslDiffieHellmanParameters();
 }
 
 /*!
     Constructs an identical copy of \a other.
 */
-QSslDiffieHellmanParameters::QSslDiffieHellmanParameters(const QSslDiffieHellmanParameters &other) : d(other.d)
+QSslDiffieHellmanParameters::QSslDiffieHellmanParameters(const QSslDiffieHellmanParameters &other)
+    : d(other.d)
 {
+    if (d)
+        d->ref.ref();
 }
+
+/*!
+    \fn QSslDiffieHellmanParameters(QSslDiffieHellmanParameters &&other)
+
+    Move-constructs from \a other.
+
+    \note The moved-from object \a other is placed in a partially-formed state, in which
+    the only valid operations are destruction and assignment of a new value.
+*/
 
 /*!
     Destroys the QSslDiffieHellmanParameters object.
 */
 QSslDiffieHellmanParameters::~QSslDiffieHellmanParameters()
 {
+    if (d && !d->ref.deref())
+        delete d;
 }
 
 /*!
@@ -177,7 +186,8 @@ QSslDiffieHellmanParameters::~QSslDiffieHellmanParameters()
 */
 QSslDiffieHellmanParameters &QSslDiffieHellmanParameters::operator=(const QSslDiffieHellmanParameters &other)
 {
-    d = other.d;
+    QSslDiffieHellmanParameters copy(other);
+    swap(copy);
     return *this;
 }
 
@@ -185,6 +195,9 @@ QSslDiffieHellmanParameters &QSslDiffieHellmanParameters::operator=(const QSslDi
     \fn QSslDiffieHellmanParameters &QSslDiffieHellmanParameters::operator=(QSslDiffieHellmanParameters &&other)
 
     Move-assigns \a other to this QSslDiffieHellmanParameters instance.
+
+    \note The moved-from object \a other is placed in a partially-formed state, in which
+    the only valid operations are destruction and assignment of a new value.
 */
 
 /*!
@@ -265,6 +278,7 @@ QString QSslDiffieHellmanParameters::errorString() const Q_DECL_NOTHROW
 }
 
 /*!
+    \since 5.8
     \relates QSslDiffieHellmanParameters
 
     Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
@@ -276,6 +290,7 @@ bool operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanP
 
 #ifndef QT_NO_DEBUG_STREAM
 /*!
+    \since 5.8
     \relates QSslDiffieHellmanParameters
 
     Writes the set of Diffie-Hellman parameters in \a dhparam into the debug object \a debug for
@@ -295,7 +310,8 @@ QDebug operator<<(QDebug debug, const QSslDiffieHellmanParameters &dhparam)
 #endif
 
 /*!
-    \relates QHash
+    \since 5.8
+    \relates QSslDiffieHellmanParameters
 
     Returns an hash value for \a dhparam, using \a seed to seed
     the calculation.

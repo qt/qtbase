@@ -25,23 +25,22 @@ QMAKE_MAKE = "$${SETENV_PFX}MAKEFLAGS=$$SETENV_SFX $$QMAKE_MAKE"
 isEmpty(QMAKE_CONFIG_VERBOSE): QMAKE_CONFIG_VERBOSE = false
 
 defineTest(qtLog) {
-    msg = "+ $$1"
-    write_file($$QMAKE_CONFIG_LOG, msg, append)
-    $$QMAKE_CONFIG_VERBOSE: log("$$msg$$escape_expand(\\n)")
+    write_file($$QMAKE_CONFIG_LOG, 1, append)
+    $$QMAKE_CONFIG_VERBOSE: for (l, 1): log("$$l$$escape_expand(\\n)")
 }
 
 defineTest(qtRunLoggedCommand) {
-    qtLog($$1)
-    write_file($${QMAKE_CONFIG_LOG}.part, "")
-    result = false
-    system("$$1 > \"$${QMAKE_CONFIG_LOG}.part\" 2>&1"): result = true
+    qtLog("+ $$1")
 
-    output = $$cat($${QMAKE_CONFIG_LOG}.part, blob)
+    output = $$system("( $$1 ) 2>&1", lines, result)
+    qtLog($$output)
+    !isEmpty(2) {
+        $$2 = $$output
+        export($$2)
+    }
 
-    write_file($${QMAKE_CONFIG_LOG}, output, append)
-    $$QMAKE_CONFIG_VERBOSE: log($$output)
-
-    return($$result)
+    !equals(result, 0): return(false)
+    return(true)
 }
 
 isEmpty(QMAKE_CONFIG_TESTS_DIR): QMAKE_CONFIG_TESTS_DIR = $$_PRO_FILE_PWD_/config.tests

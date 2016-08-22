@@ -2,7 +2,7 @@ TARGET  = qtaccessiblewidgets
 
 QT += core-private gui-private widgets-private
 
-QTDIR_build:REQUIRES += "contains(QT_CONFIG, accessibility)"
+QTDIR_build:REQUIRES += "qtConfig(accessibility)"
 
 SOURCES  += main.cpp \
             simplewidgets.cpp \

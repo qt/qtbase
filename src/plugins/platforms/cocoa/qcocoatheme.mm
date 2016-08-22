@@ -287,7 +287,8 @@ public:
         const qreal devicePixelRatio = qGuiApp->devicePixelRatio();
         const int sizes[] = {
             qRound(16 * devicePixelRatio), qRound(32 * devicePixelRatio),
-            qRound(64 * devicePixelRatio), qRound(128 * devicePixelRatio)
+            qRound(64 * devicePixelRatio), qRound(128 * devicePixelRatio),
+            qRound(256 * devicePixelRatio)
         };
         return QAbstractFileIconEngine::toSizeList(sizes, sizes + sizeof(sizes) / sizeof(sizes[0]));
     }

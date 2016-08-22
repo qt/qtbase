@@ -778,9 +778,8 @@ void AtSpiAdaptor::updateEventListeners()
     QDBusReply<QSpiEventListenerArray> listenersReply = m_dbus->connection().call(m);
     if (listenersReply.isValid()) {
         const QSpiEventListenerArray evList = listenersReply.value();
-        Q_FOREACH (const QSpiEventListener &ev, evList) {
+        for (const QSpiEventListener &ev : evList)
             setBitFlag(ev.eventName);
-        }
         m_applicationAdaptor->sendEvents(!evList.isEmpty());
     } else {
         qAtspiDebug("Could not query active accessibility event listeners.");
@@ -1508,11 +1507,10 @@ QStringList AtSpiAdaptor::accessibleInterfaces(QAccessibleInterface *interface) 
 QSpiRelationArray AtSpiAdaptor::relationSet(QAccessibleInterface *interface, const QDBusConnection &connection) const
 {
     typedef QPair<QAccessibleInterface*, QAccessible::Relation> RelationPair;
-    QVector<RelationPair> relationInterfaces;
-    relationInterfaces = interface->relations();
+    const QVector<RelationPair> relationInterfaces = interface->relations();
 
     QSpiRelationArray relations;
-    Q_FOREACH (const RelationPair &pair, relationInterfaces) {
+    for (const RelationPair &pair : relationInterfaces) {
 // FIXME: this loop seems a bit strange... "related" always have one item when we check.
 //And why is it a list, when it always have one item? And it seems to assume that the QAccessible::Relation enum maps directly to AtSpi
         QSpiObjectReferenceArray related;
@@ -1757,24 +1755,20 @@ QSpiActionArray AtSpiAdaptor::getActions(QAccessibleInterface *interface) const
     QSpiActionArray actions;
     const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
     actions.reserve(actionNames.size());
-    Q_FOREACH (const QString &actionName, actionNames) {
+    for (const QString &actionName : actionNames) {
         QSpiAction action;
-        QStringList keyBindings;
 
         action.name = actionName;
         if (actionInterface) {
             action.description = actionInterface->localizedActionDescription(actionName);
-            keyBindings = actionInterface->keyBindingsForAction(actionName);
+            const QStringList keyBindings = actionInterface->keyBindingsForAction(actionName);
+            if (!keyBindings.isEmpty())
+                action.keyBinding = keyBindings.front();
         } else {
             action.description = qAccessibleLocalizedActionDescription(actionName);
         }
 
-        if (keyBindings.length() > 0)
-            action.keyBinding = keyBindings[0];
-        else
-            action.keyBinding = QString();
-
-        actions << action;
+        actions.append(std::move(action));
     }
     return actions;
 }
@@ -2085,7 +2079,6 @@ QVariantList AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, in
     QSpiAttributeSet map;
     int startOffset;
     int endOffset;
-    bool defined;
 
     joined = interface->textInterface()->attributes(offset, &startOffset, &endOffset);
     attributes = joined.split (QLatin1Char(';'), QString::SkipEmptyParts, Qt::CaseSensitive);
@@ -2097,7 +2090,7 @@ QVariantList AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, in
             map[attribute.name] = attribute.value;
     }
     mapped = map[attributeName];
-    defined = mapped.isEmpty();
+    const bool defined = !mapped.isEmpty();
     QVariantList list;
     list << mapped << startOffset << endOffset << defined;
     return list;

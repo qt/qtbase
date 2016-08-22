@@ -39,8 +39,9 @@
 
 #include "qfbvthandler_p.h"
 #include <QtCore/QSocketNotifier>
+#include <QtCore/private/qglobal_p.h>
 
-#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && (!defined(QT_NO_EVDEV) || !defined(QT_NO_LIBINPUT))
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && (QT_CONFIG(evdev) || QT_CONFIG(libinput))
 
 #define VTH_ENABLED
 

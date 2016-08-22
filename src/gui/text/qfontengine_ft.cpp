@@ -1830,7 +1830,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
 
 static inline QImage alphaMapFromGlyphData(QFontEngineFT::Glyph *glyph, QFontEngine::GlyphFormat glyphFormat)
 {
-    if (glyph == Q_NULLPTR)
+    if (glyph == Q_NULLPTR || glyph->height == 0 || glyph->width == 0)
         return QImage();
 
     QImage::Format format = QImage::Format_Invalid;
@@ -1878,10 +1878,14 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
 
     currentlyLockedAlphaMap = alphaMapFromGlyphData(glyph, neededFormat);
 
+    const bool glyphHasGeometry = glyph != Q_NULLPTR && glyph->height != 0 && glyph->width != 0;
     if (!cacheEnabled && glyph != &emptyGlyph) {
         currentlyLockedAlphaMap = currentlyLockedAlphaMap.copy();
         delete glyph;
     }
+
+    if (!glyphHasGeometry)
+        return Q_NULLPTR;
 
     if (currentlyLockedAlphaMap.isNull())
         return QFontEngine::lockedAlphaMapForGlyph(glyphIndex, subPixelPosition, neededFormat, t, offset);

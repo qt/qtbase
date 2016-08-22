@@ -122,6 +122,7 @@ public:
 #define Q_MV_OSX(major, minor) (major == 10 ? minor + 2 : (major == 9 ? 1 : 0))
 #define Q_MV_IOS(major, minor) (QSysInfo::MV_IOS | major << 4 | minor)
 #define Q_MV_TVOS(major, minor) (QSysInfo::MV_TVOS | major << 4 | minor)
+#define Q_MV_WATCHOS(major, minor) (QSysInfo::MV_WATCHOS | major << 4 | minor)
     enum MacVersion {
         MV_None    = 0xffff,
         MV_Unknown = 0x0000,
@@ -182,7 +183,14 @@ public:
         MV_TVOS_9_0 = Q_MV_TVOS(9, 0),
         MV_TVOS_9_1 = Q_MV_TVOS(9, 1),
         MV_TVOS_9_2 = Q_MV_TVOS(9, 2),
-        MV_TVOS_10_0 = Q_MV_TVOS(10, 0)
+        MV_TVOS_10_0 = Q_MV_TVOS(10, 0),
+
+        /* watchOS */
+        MV_WATCHOS     = 1 << 10,
+        MV_WATCHOS_2_0 = Q_MV_WATCHOS(2, 0),
+        MV_WATCHOS_2_1 = Q_MV_WATCHOS(2, 1),
+        MV_WATCHOS_2_2 = Q_MV_WATCHOS(2, 2),
+        MV_WATCHOS_3_0 = Q_MV_WATCHOS(3, 0)
     };
 #if defined(Q_OS_MAC)
     static const MacVersion MacintoshVersion;

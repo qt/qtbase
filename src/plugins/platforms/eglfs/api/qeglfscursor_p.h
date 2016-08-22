@@ -105,30 +105,29 @@ private:
     bool setCurrentCursor(QCursor *cursor);
 #endif
     void draw(const QRectF &rect);
-    void update(const QRegion &region);
+    void update(const QRect &rect, bool allScreens);
     void createShaderPrograms();
     void createCursorTexture(uint *texture, const QImage &image);
     void initCursorAtlas();
 
     // current cursor information
     struct Cursor {
-        Cursor() : texture(0), shape(Qt::BlankCursor), customCursorTexture(0), customCursorPending(false) { }
-        uint texture; // a texture from 'image' or the atlas
+        Cursor() : shape(Qt::BlankCursor), customCursorPending(false), customCursorKey(0), useCustomCursor(false) { }
         Qt::CursorShape shape;
         QRectF textureRect; // normalized rect inside texture
         QSize size; // size of the cursor
         QPoint hotSpot;
         QImage customCursorImage;
         QPoint pos; // current cursor position
-        uint customCursorTexture;
         bool customCursorPending;
+        qint64 customCursorKey;
+        bool useCustomCursor;
     } m_cursor;
 
     // cursor atlas information
     struct CursorAtlas {
-        CursorAtlas() : cursorsPerRow(0), texture(0), cursorWidth(0), cursorHeight(0) { }
+        CursorAtlas() : cursorsPerRow(0), cursorWidth(0), cursorHeight(0) { }
         int cursorsPerRow;
-        uint texture;
         int width, height; // width and height of the atlas
         int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
         QList<QPoint> hotSpots;
@@ -137,12 +136,22 @@ private:
 
     bool m_visible;
     QEglFSScreen *m_screen;
-    QOpenGLShaderProgram *m_program;
-    int m_textureEntry;
-    int m_matEntry;
+    QPlatformScreen *m_activeScreen;
     QEglFSCursorDeviceListener *m_deviceListener;
     bool m_updateRequested;
     QMatrix4x4 m_rotationMatrix;
+
+    struct GraphicsContextData {
+        GraphicsContextData() : program(nullptr), textureEntry(0), matEntry(0),
+            customCursorTexture(0), atlasTexture(0), customCursorKey(0) { }
+        QOpenGLShaderProgram *program;
+        int textureEntry;
+        int matEntry;
+        uint customCursorTexture;
+        uint atlasTexture;
+        qint64 customCursorKey;
+    };
+    QHash<QOpenGLContext *, GraphicsContextData> m_gfx;
 };
 
 QT_END_NAMESPACE

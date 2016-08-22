@@ -41,6 +41,7 @@
 #include "qeglfskmsegldeviceintegration.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include "private/qeglfswindow_p.h"
+#include "private/qeglfscursor_p.h"
 #include "qeglfskmsegldevice.h"
 #include "qeglfskmsscreen.h"
 #include <QLoggingCategory>
@@ -193,8 +194,8 @@ void QEglJetsonTK1Window::resetSurface()
     m_format = q_glFormatFromConfig(display, m_config);
     qCDebug(qLcEglfsKmsDebug) << "Stream producer format is" << m_format;
 
-    const int w = cur_screen->geometry().width();
-    const int h = cur_screen->geometry().height();
+    const int w = cur_screen->rawGeometry().width();
+    const int h = cur_screen->rawGeometry().height();
     qCDebug(qLcEglfsKmsDebug, "Creating stream producer surface of size %dx%d", w, h);
 
     const EGLint stream_producer_attribs[] = {
@@ -220,11 +221,6 @@ QEglFSWindow *QEglFSKmsEglDeviceIntegration::createWindow(QWindow *window) const
         qFatal("Required extensions missing!");
 
     return eglWindow;
-}
-
-bool QEglFSKmsEglDeviceIntegration::separateScreens() const
-{
-    return true;
 }
 
 QEglFSKmsDevice *QEglFSKmsEglDeviceIntegration::createDevice(const QString &devicePath)
@@ -261,6 +257,11 @@ bool QEglFSKmsEglDeviceIntegration::query_egl_device()
     }
 
     return true;
+}
+
+QPlatformCursor *QEglFSKmsEglDeviceIntegration::createCursor(QPlatformScreen *screen) const
+{
+    return separateScreens() ? new QEglFSCursor(screen) : nullptr;
 }
 
 QT_END_NAMESPACE

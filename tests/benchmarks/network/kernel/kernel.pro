@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 
-contains(QT_CONFIG,private_tests):SUBDIRS += \
+qtConfig(private_tests): SUBDIRS += \
         qhostinfo

@@ -130,6 +130,7 @@ namespace QTest
         void commit(bool processEvents = true)
         {
             if (!points.isEmpty()) {
+                qSleep(1);
                 if (targetWindow)
                 {
                     qt_handleTouchEvent(targetWindow, device, points.values());

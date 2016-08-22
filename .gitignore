@@ -116,6 +116,7 @@ bin/qt.conf
 bin/servicefw*
 bin/sfwlisten*
 configure.cache
+config.opt
 config.status
 config.summary
 config.log

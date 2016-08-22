@@ -672,7 +672,7 @@ QHoverEvent::~QHoverEvent()
     wheel event delta: angleDelta() returns the delta in wheel
     degrees. This value is always provided. pixelDelta() returns
     the delta in screen pixels and is available on platforms that
-    have high-resolution trackpads, such as OS X. If that is the
+    have high-resolution trackpads, such as \macos. If that is the
     case, source() will return Qt::MouseEventSynthesizedBySystem.
 
     The functions pos() and globalPos() return the mouse cursor's
@@ -958,7 +958,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 
     Returns the scrolling distance in pixels on screen. This value is
     provided on platforms that support high-resolution pixel-based
-    delta values, such as OS X. The value should be used directly
+    delta values, such as \macos. The value should be used directly
     to scroll content on screen.
 
     Example:
@@ -1099,7 +1099,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     Returns the scrolling phase of this wheel event.
 
     \note The Qt::ScrollBegin and Qt::ScrollEnd phases are currently
-    supported only on OS X.
+    supported only on \macos.
 */
 
 
@@ -1717,7 +1717,7 @@ QCloseEvent::~QCloseEvent()
    \ingroup events
 
    Icon drag events are sent to widgets when the main icon of a window
-   has been dragged away. On OS X, this happens when the proxy
+   has been dragged away. On \macos, this happens when the proxy
    icon of a window is dragged off the title bar.
 
    It is normal to begin using drag and drop in response to this
@@ -2727,15 +2727,15 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \row
         \li Qt::ZoomNativeGesture
         \li Magnification delta in percent.
-        \li OS X: Two-finger pinch.
+        \li \macos: Two-finger pinch.
     \row
         \li Qt::SmartZoomNativeGesture
         \li Boolean magnification state.
-        \li OS X: Two-finger douple tap (trackpad) / One-finger douple tap (magic mouse).
+        \li \macos: Two-finger douple tap (trackpad) / One-finger douple tap (magic mouse).
     \row
         \li Qt::RotateNativeGesture
         \li Rotation delta in degrees.
-        \li OS X: Two-finger rotate.
+        \li \macos: Two-finger rotate.
     \endtable
 
 
@@ -2758,7 +2758,7 @@ Qt::MouseButtons QTabletEvent::buttons() const
     gesture position relative to the receiving widget or item,
     window, and screen, respectively.
 
-    \a realValue is the OS X event parameter, \a sequenceId and \a intValue are the Windows event parameters.
+    \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
 */
 QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
                                          const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
@@ -3495,16 +3495,16 @@ QShowEvent::~QShowEvent()
     when the operating system requests that a file or URL should be opened.
     This is a high-level event that can be caused by different user actions
     depending on the user's desktop environment; for example, double
-    clicking on an file icon in the Finder on OS X.
+    clicking on an file icon in the Finder on \macos.
 
     This event is only used to notify the application of a request.
     It may be safely ignored.
 
-    \note This class is currently supported for OS X only.
+    \note This class is currently supported for \macos only.
 
-    \section1 OS X Example
+    \section1 \macos Example
 
-    In order to trigger the event on OS X, the application must be configured
+    In order to trigger the event on \macos, the application must be configured
     to let the OS know what kind of file(s) it should react on.
 
     For example, the following \c Info.plist file declares that the application
@@ -3581,13 +3581,13 @@ bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
     \internal
     \class QToolBarChangeEvent
     \brief The QToolBarChangeEvent class provides an event that is
-    sent whenever a the toolbar button is clicked on OS X.
+    sent whenever a the toolbar button is clicked on \macos.
 
     \ingroup events
     \inmodule QtGui
 
-    The QToolBarChangeEvent is sent when the toolbar button is clicked. On Mac
-    OS X, this is the long oblong button on the right side of the window
+    The QToolBarChangeEvent is sent when the toolbar button is clicked. On
+    \macos, this is the long oblong button on the right side of the window
     title bar. The default implementation is to toggle the appearance (hidden or
     shown) of the associated toolbars for the window.
 */

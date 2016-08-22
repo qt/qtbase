@@ -143,6 +143,7 @@ private slots:
     void noMapAfterSourceDelete();
     void forwardDropApi();
     void canDropMimeData();
+    void filterHint();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -2128,17 +2129,23 @@ void tst_QSortFilterProxyModel::changeSourceDataForwardsRoles_qtbug35440()
 
     QModelIndex index;
 
+    // QStringListModel doesn't distinguish between edit and display roles,
+    // so changing one always changes the other, too.
+    QVector<int> expectedChangedRoles;
+    expectedChangedRoles.append(Qt::DisplayRole);
+    expectedChangedRoles.append(Qt::EditRole);
+
     index = model.index(0, 0);
     QVERIFY(index.isValid());
     model.setData(index, QStringLiteral("teststring"), Qt::DisplayRole);
     QCOMPARE(spy.length(), 1);
-    QCOMPARE(spy.at(0).at(2).value<QVector<int> >(), QVector<int>() << Qt::DisplayRole);
+    QCOMPARE(spy.at(0).at(2).value<QVector<int> >(), expectedChangedRoles);
 
     index = model.index(1, 0);
     QVERIFY(index.isValid());
     model.setData(index, QStringLiteral("teststring2"), Qt::EditRole);
     QCOMPARE(spy.length(), 2);
-    QCOMPARE(spy.at(1).at(2).value<QVector<int> >(), QVector<int>() << Qt::EditRole);
+    QCOMPARE(spy.at(1).at(2).value<QVector<int> >(), expectedChangedRoles);
 }
 
 void tst_QSortFilterProxyModel::sortFilterRole()
@@ -3802,6 +3809,12 @@ void tst_QSortFilterProxyModel::moveSourceRows()
     QCOMPARE(filterBeforeParents.size(), 1);
     QCOMPARE(filterAfterParents.size(), 1);
 
+    QCOMPARE(
+        filterBeforeParentLayoutSpy.first().at(1).value<QAbstractItemModel::LayoutChangeHint>(),
+        QAbstractItemModel::NoLayoutChangeHint);
+    QCOMPARE(filterAfterParentLayoutSpy.first().at(1).value<QAbstractItemModel::LayoutChangeHint>(),
+             QAbstractItemModel::NoLayoutChangeHint);
+
     QCOMPARE(filterBothBeforeParentLayoutSpy.size(), 0);
     QCOMPARE(filterBothAfterParentLayoutSpy.size(), 0);
 }
@@ -4121,6 +4134,51 @@ void tst_QSortFilterProxyModel::resortingDoesNotBreakTreeModels()
     QModelIndex pi1 = proxy.index(1, 0);
     QCOMPARE(pi1.data().toString(), QString("entry1"));
     QCOMPARE(proxy.rowCount(pi1), 1);
+}
+
+void tst_QSortFilterProxyModel::filterHint()
+{
+    // test that a filtering model does not emit layoutChanged with a hint
+    QStringListModel model(QStringList() << "one"
+                                         << "two"
+                                         << "three"
+                                         << "four"
+                                         << "five"
+                                         << "six");
+    QSortFilterProxyModel proxy1;
+    proxy1.setSourceModel(&model);
+    proxy1.setSortRole(Qt::DisplayRole);
+    proxy1.setDynamicSortFilter(true);
+    proxy1.sort(0);
+
+    QSortFilterProxyModel proxy2;
+    proxy2.setSourceModel(&proxy1);
+    proxy2.setFilterRole(Qt::DisplayRole);
+    proxy2.setFilterRegExp("^[^ ]*$");
+    proxy2.setDynamicSortFilter(true);
+
+    QSignalSpy proxy1BeforeSpy(&proxy1, &QSortFilterProxyModel::layoutAboutToBeChanged);
+    QSignalSpy proxy1AfterSpy(&proxy1, &QSortFilterProxyModel::layoutChanged);
+    QSignalSpy proxy2BeforeSpy(&proxy2, &QSortFilterProxyModel::layoutAboutToBeChanged);
+    QSignalSpy proxy2AfterSpy(&proxy2, &QSortFilterProxyModel::layoutChanged);
+
+    model.setData(model.index(2), QStringLiteral("modified three"), Qt::DisplayRole);
+
+    // The first proxy was re-sorted as one item as changed.
+    QCOMPARE(proxy1BeforeSpy.size(), 1);
+    QCOMPARE(proxy1BeforeSpy.first().at(1).value<QAbstractItemModel::LayoutChangeHint>(),
+             QAbstractItemModel::VerticalSortHint);
+    QCOMPARE(proxy1AfterSpy.size(), 1);
+    QCOMPARE(proxy1AfterSpy.first().at(1).value<QAbstractItemModel::LayoutChangeHint>(),
+             QAbstractItemModel::VerticalSortHint);
+
+    // But the second proxy must not have the VerticalSortHint since an item was filtered
+    QCOMPARE(proxy2BeforeSpy.size(), 1);
+    QCOMPARE(proxy2BeforeSpy.first().at(1).value<QAbstractItemModel::LayoutChangeHint>(),
+             QAbstractItemModel::NoLayoutChangeHint);
+    QCOMPARE(proxy2AfterSpy.size(), 1);
+    QCOMPARE(proxy2AfterSpy.first().at(1).value<QAbstractItemModel::LayoutChangeHint>(),
+             QAbstractItemModel::NoLayoutChangeHint);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

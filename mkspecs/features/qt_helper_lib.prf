@@ -18,15 +18,15 @@ QT =  # In case qt is re-added.
 CONFIG -= warning_clean  # Don't presume 3rd party code to be clean
 load(qt_common)
 
-contains(QT_CONFIG, simulator_and_device): CONFIG += simulator_and_device
-contains(QT_CONFIG, debug_and_release): CONFIG += debug_and_release
-contains(QT_CONFIG, build_all): CONFIG += build_all
+qtConfig(simulator_and_device): CONFIG += simulator_and_device
+qtConfig(debug_and_release): CONFIG += debug_and_release
+qtConfig(build_all): CONFIG += build_all
 
 DESTDIR = $$MODULE_BASE_OUTDIR/lib
 DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
 
 # In static builds of Qt, convenience libraries must be installed,
 # as in this case they are not linked to the final library/plugin.
-installed|if(!not_installed:contains(QT_CONFIG, static)): load(qt_installs)
+installed|if(!not_installed:qtConfig(static)): load(qt_installs)
 
 TARGET = $$qt5LibraryTarget($$TARGET)

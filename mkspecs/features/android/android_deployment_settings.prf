@@ -65,6 +65,6 @@ contains(TEMPLATE, ".*app"):!build_pass: {
 
     isEmpty(ANDROID_DEPLOYMENT_SETTINGS_FILE): ANDROID_DEPLOYMENT_SETTINGS_FILE = $$OUT_PWD/android-$$TARGET-deployment-settings.json
 
-    write_file($$ANDROID_DEPLOYMENT_SETTINGS_FILE, FILE_CONTENT) | error("Aborting.")
+    write_file($$ANDROID_DEPLOYMENT_SETTINGS_FILE, FILE_CONTENT)|error()
 }
 

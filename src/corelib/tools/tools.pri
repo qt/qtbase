@@ -146,14 +146,14 @@ else:win32 {
     SOURCES += tools/qlocale_unix.cpp
 }
 
-contains(QT_CONFIG, system-zlib) {
+qtConfig(system-zlib) {
     include($$PWD/../../3rdparty/zlib_dependency.pri)
 } else {
     CONFIG += no_core_dep
     include($$PWD/../../3rdparty/zlib.pri)
 }
 
-contains(QT_CONFIG,icu) {
+qtConfig(icu) {
     include($$PWD/../../3rdparty/icu_dependency.pri)
 
     SOURCES += tools/qlocale_icu.cpp \
@@ -192,9 +192,9 @@ INCLUDEPATH += ../3rdparty/md5 \
                ../3rdparty/md4 \
                ../3rdparty/sha3
 
-contains(QT_CONFIG, system-doubleconversion) {
-    LIBS_PRIVATE += -ldouble-conversion
-} else: contains(QT_CONFIG, doubleconversion) {
+qtConfig(system-doubleconversion) {
+    QMAKE_USE_PRIVATE += doubleconversion
+} else: qtConfig(doubleconversion) {
     include($$PWD/../../3rdparty/double-conversion/double-conversion.pri)
 }
 

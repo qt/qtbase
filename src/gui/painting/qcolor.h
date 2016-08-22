@@ -264,6 +264,7 @@ private:
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QColor &);
 #endif
 };
+Q_DECLARE_TYPEINFO(QColor, QT_VERSION >= QT_VERSION_CHECK(6,0,0) ? Q_MOVABLE_TYPE : Q_RELOCATABLE_TYPE);
 
 inline QColor::QColor() Q_DECL_NOTHROW
 { invalidate(); }

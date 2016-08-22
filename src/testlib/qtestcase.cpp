@@ -1294,8 +1294,13 @@ void TestMethods::invokeTests(QObject *testObject) const
         m_initTestCaseDataMethod.invoke(testObject, Qt::DirectConnection);
 
     QScopedPointer<WatchDog> watchDog;
-    if (!debuggerPresent())
+    if (!debuggerPresent()
+#ifdef QTESTLIB_USE_VALGRIND
+        && QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindChildProcess
+#endif
+       ) {
         watchDog.reset(new WatchDog);
+    }
 
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
         if (m_initTestCaseMethod.isValid())
@@ -1383,7 +1388,7 @@ FatalSignalHandler::FatalSignalHandler()
 
 // tvOS/watchOS both define SA_ONSTACK (in sys/signal.h) but mark sigaltstack() as
 // unavailable (__WATCHOS_PROHIBITED __TVOS_PROHIBITED in signal.h)
-#if defined(SA_ONSTACK) && !defined(Q_OS_TVOS)
+#if defined(SA_ONSTACK) && !defined(Q_OS_TVOS) && !defined(Q_OS_WATCHOS)
     // Let the signal handlers use an alternate stack
     // This is necessary if SIGSEGV is to catch a stack overflow
 #  if defined(Q_CC_GNU) && defined(Q_OF_ELF)

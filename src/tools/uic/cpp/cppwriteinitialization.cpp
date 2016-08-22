@@ -84,10 +84,14 @@ namespace {
         const QHash<QString, DomProperty *> properties = propertyMap(node->elementProperty());
                 output << "new QSpacerItem(";
 
+        int w = 0;
+        int h = 0;
         if (properties.contains(QLatin1String("sizeHint"))) {
             const DomSize *sizeHint = properties.value(QLatin1String("sizeHint"))->elementSize();
-            output << sizeHint->elementWidth() << ", " << sizeHint->elementHeight() << ", ";
+            w = sizeHint->elementWidth();
+            h = sizeHint->elementHeight();
         }
+        output << w << ", " << h << ", ";
 
         // size type
         QString sizeType = properties.contains(QLatin1String("sizeType"))  ?
@@ -1713,9 +1717,7 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
 
     // new format
     const QList<DomColorRole *> colorRoles = colorGroup->elementColorRole();
-    QListIterator<DomColorRole *> itRole(colorRoles);
-    while (itRole.hasNext()) {
-        const DomColorRole *colorRole = itRole.next();
+    for (const DomColorRole *colorRole : colorRoles) {
         if (colorRole->hasAttributeRole()) {
             const QString brushName = writeBrushInitialization(colorRole->elementBrush());
             m_output << m_indent << paletteName << ".setBrush(" << group
@@ -1792,9 +1794,7 @@ void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brush
         }
 
        const  QList<DomGradientStop *> stops = gradient->elementGradientStop();
-        QListIterator<DomGradientStop *> it(stops);
-        while (it.hasNext()) {
-            const DomGradientStop *stop = it.next();
+        for (const DomGradientStop *stop : stops) {
             const DomColor *color = stop->elementColor();
             m_output << m_indent << gradientName << ".setColorAt("
                 << stop->attributePosition() << ", "

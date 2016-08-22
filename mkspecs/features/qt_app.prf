@@ -21,14 +21,14 @@ QMAKE_LFLAGS += $$QMAKE_LFLAGS_GCSECTIONS
 
 host_build: QT -= gui   # no host tool will ever use gui
 host_build:force_bootstrap {
-    !build_pass:contains(QT_CONFIG, release_tools): CONFIG += release
+    !build_pass:qtConfig(release_tools): CONFIG += release
     contains(QT, core(-private)?|xml) {
         QT -= core core-private xml
         QT += bootstrap-private
     }
     target.path = $$[QT_HOST_BINS]
 } else {
-    !build_pass:contains(QT_CONFIG, debug_and_release): CONFIG += release
+    !build_pass:qtConfig(debug_and_release): CONFIG += release
     target.path = $$[QT_INSTALL_BINS]
     CONFIG += relative_qt_rpath  # Qt's tools and apps should be relocatable
 }

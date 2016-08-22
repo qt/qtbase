@@ -10,13 +10,13 @@ SUBDIRS=\
    platformsocketengine \
    qsctpsocket \
 
-!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+!qtConfig(private_tests): SUBDIRS -= \
    platformsocketengine \
    qtcpsocket \
    qhttpsocketengine \
    qsocks5socketengine \
 
-!contains(QT_CONFIG, sctp): SUBDIRS -= \
+!qtConfig(sctp): SUBDIRS -= \
    qsctpsocket \
 
 winrt: SUBDIRS -= \

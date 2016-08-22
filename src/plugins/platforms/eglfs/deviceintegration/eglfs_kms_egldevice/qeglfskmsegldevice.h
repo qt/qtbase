@@ -42,6 +42,10 @@
 
 #include <qeglfskmsdevice.h>
 
+QT_BEGIN_NAMESPACE
+
+class QPlatformCursor;
+
 class QEglFSKmsEglDevice: public QEglFSKmsDevice
 {
 public:
@@ -54,8 +58,15 @@ public:
 
     virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
                                           QEglFSKmsDevice *device,
-                                          QEglFSKmsOutput output,
-                                          QPoint position) Q_DECL_OVERRIDE;
+                                          QEglFSKmsOutput output) Q_DECL_OVERRIDE;
+
+    QPlatformCursor *globalCursor() { return m_globalCursor; }
+    void destroyGlobalCursor();
+
+private:
+    QPlatformCursor *m_globalCursor;
 };
+
+QT_END_NAMESPACE
 
 #endif // QEGLFSKMSEGLDEVICE_H

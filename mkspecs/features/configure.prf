@@ -37,7 +37,7 @@ defineTest(qtCompileTest) {
     # Clean up after previous run
     exists($$test_out_dir/Makefile):qtRunLoggedCommand("$$test_cmd_base $$QMAKE_MAKE distclean")
 
-    mkpath($$test_out_dir)|error("Aborting.")
+    mkpath($$test_out_dir)|error()
 
     !isEmpty (QMAKE_QTCONF): qtconfarg = -qtconf $$QMAKE_QTCONF
 

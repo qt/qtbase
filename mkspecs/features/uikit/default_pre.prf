@@ -2,7 +2,7 @@
 load(default_pre)
 
 # In case Qt was built for a specific SDK
-!contains(QT_CONFIG, simulator_and_device):contains(QMAKE_MAC_SDK, ^$${simulator.sdk}.*): \
+!isEmpty(QT_VERSION):!qtConfig(simulator_and_device):contains(QMAKE_MAC_SDK, ^$${simulator.sdk}.*): \
     CONFIG += simulator $${simulator.sdk}
 
 # Check for supported Xcode versions
@@ -11,7 +11,7 @@ lessThan(QMAKE_XCODE_VERSION, "4.3"): \
 
 build_pass:simulator {
     # For a simulator_and_device build all the config tests
-    # are based on the iPhoneOS ARM SDK, but we know that the simulator
+    # are based on the iPhoneOS/WatchOS ARM SDK, but we know that the simulator
     # is i386 and that we support SSE/SSE2.
     QT_ARCH = i386
     QT_CPU_FEATURES.i386 = sse sse2

@@ -68,8 +68,7 @@ public:
 protected:
     virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
                                           QEglFSKmsDevice *device,
-                                          QEglFSKmsOutput output,
-                                          QPoint position);
+                                          QEglFSKmsOutput output);
     void setFd(int fd);
 
     QEglFSKmsIntegration *m_integration;
@@ -80,7 +79,7 @@ protected:
     quint32 m_connector_allocator;
 
     int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
-    QEglFSKmsScreen *screenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, QPoint pos);
+    QEglFSKmsScreen *createScreenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, int *virtualIndex);
     drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
 
     static void pageFlipHandler(int fd,

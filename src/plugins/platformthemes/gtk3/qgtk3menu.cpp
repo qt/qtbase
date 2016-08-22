@@ -371,7 +371,7 @@ void QGtk3Menu::insertMenuItem(QPlatformMenuItem *item, QPlatformMenuItem *befor
 void QGtk3Menu::removeMenuItem(QPlatformMenuItem *item)
 {
     QGtk3MenuItem *gitem = static_cast<QGtk3MenuItem *>(item);
-    if (!gitem && !m_items.removeOne(gitem))
+    if (!gitem || !m_items.removeOne(gitem))
         return;
 
     GtkWidget *handle = gitem->handle();

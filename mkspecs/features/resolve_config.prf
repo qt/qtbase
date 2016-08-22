@@ -41,7 +41,7 @@ CONFIG(debug, debug|release) {
     # or not debug_and_release is active.
     for(build, $$list(debug release)) {
         suffix =
-        contains(QT_CONFIG, debug_and_release) {
+        qtConfig(debug_and_release) {
             equals(build, debug): \
                 suffix = _debug
         } else {

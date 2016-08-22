@@ -365,6 +365,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
                 emit mHelper->reject();
             } else {
                 emit mHelper->accept();
+                emit mHelper->fontSelected(mHelper->currentFont());
             }
         }
     }

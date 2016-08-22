@@ -41,6 +41,7 @@
 #include "qeglfsintegration.h"
 #include "qeglfscursor_p.h"
 #include "qeglfswindow_p.h"
+#include "qeglfsscreen_p.h"
 #include "qeglfshooks_p.h"
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
@@ -311,7 +312,7 @@ bool QEglFSDeviceIntegration::hasCapability(QPlatformIntegration::Capability cap
 
 QPlatformCursor *QEglFSDeviceIntegration::createCursor(QPlatformScreen *screen) const
 {
-    return new QEglFSCursor(screen);
+    return new QEglFSCursor(static_cast<QEglFSScreen *>(screen));
 }
 
 void QEglFSDeviceIntegration::waitForVSync(QPlatformSurface *surface) const

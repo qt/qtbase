@@ -1,4 +1,4 @@
-contains(QT_CONFIG, opengl) {
+qtConfig(opengl) {
     SOURCES += $$PWD/qopenglcompositor.cpp \
                $$PWD/qopenglcompositorbackingstore.cpp
 

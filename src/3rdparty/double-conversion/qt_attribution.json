@@ -1,0 +1,14 @@
+{
+    "Id": "doubleconversion",
+    "Name": "Efficient Binary-Decimal and Decimal-Binary Conversion Routines for IEEE Doubles",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used in Qt Core. Configure with -system-doubleconversion or -no-doubleconversion to avoid.",
+
+    "Homepage": "https://github.com/google/double-conversion",
+    "Version": "2.0.1",
+    "DownloadLocation": "https://github.com/google/double-conversion/commit/2fb03de56faa32bbba5e02222528e7b760f71d77",
+    "License": "BSD 3-clause \"New\" or \"Revised\" License",
+    "LicenseId": "BSD-3-Clause",
+    "LicenseFile": "LICENSE",
+    "Copyright": "Copyright 2006-2012, the V8 project authors"
+}

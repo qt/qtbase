@@ -65,7 +65,7 @@ QEglFSScreen::~QEglFSScreen()
 
 QRect QEglFSScreen::geometry() const
 {
-    QRect r = geometryForSurface();
+    QRect r = rawGeometry();
 
     static int rotation = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ROTATION");
     switch (rotation) {
@@ -88,7 +88,7 @@ QRect QEglFSScreen::geometry() const
     return r;
 }
 
-QRect QEglFSScreen::geometryForSurface() const
+QRect QEglFSScreen::rawGeometry() const
 {
     return QRect(QPoint(0, 0), qt_egl_device_integration()->screenSize());
 }

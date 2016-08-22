@@ -8,7 +8,7 @@ TEMPLATE = subdirs
 #win32:SUBDIRS += nla
 win32:SUBDIRS += generic
 win32:!winrt: SUBDIRS += nativewifi
-mac:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
+darwin:qtConfig(corewlan): SUBDIRS += corewlan
 mac:SUBDIRS += generic
 android:SUBDIRS += android
 

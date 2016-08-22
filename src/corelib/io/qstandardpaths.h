@@ -41,6 +41,7 @@
 #define QSTANDARDPATHS_H
 
 #include <QtCore/qstringlist.h>
+#include <QtCore/qobjectdefs.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -49,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QStandardPaths
 {
+    Q_GADGET
+
 public:
     // Do not re-order, must match QDesktopServices
     enum StandardLocation {
@@ -73,6 +76,7 @@ public:
         AppConfigLocation,
         AppLocalDataLocation = DataLocation
     };
+    Q_ENUM(StandardLocation)
 
     static QString writableLocation(StandardLocation type);
     static QStringList standardLocations(StandardLocation type);
@@ -82,6 +86,7 @@ public:
         LocateDirectory = 0x1
     };
     Q_DECLARE_FLAGS(LocateOptions, LocateOption)
+    Q_FLAG(LocateOptions)
 
     static QString locate(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
     static QStringList locateAll(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
@@ -102,6 +107,8 @@ private:
     QStandardPaths();
     ~QStandardPaths();
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QStandardPaths::LocateOptions)
 
 #endif // QT_NO_STANDARDPATHS
 

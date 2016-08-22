@@ -13,7 +13,7 @@ HEADERS =   qoffscreenintegration.h \
 
 OTHER_FILES += offscreen.json
 
-contains(QT_CONFIG, xlib):contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles2) {
+qtConfig(xlib):qtConfig(opengl):!qtConfig(opengles2) {
     SOURCES += qoffscreenintegration_x11.cpp
     HEADERS += qoffscreenintegration_x11.h
     system(echo "Using X11 offscreen integration with GLX")

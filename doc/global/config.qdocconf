@@ -10,6 +10,6 @@ dita.metadata.default.audience = programmer
 #Set the main Qt index.html
 navigation.homepage = "Qt $QT_VER"
 
-sourcedirs += includes
+sourcedirs += includes $$BUILDDIR
 
 url = http://doc.qt.io/qt-5

@@ -1917,7 +1917,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     Users normally expect an application to remember its settings
     (window sizes and positions, options, etc.) across sessions. This
     information is often stored in the system registry on Windows,
-    and in property list files on OS X and iOS. On Unix systems, in the
+    and in property list files on \macos and iOS. On Unix systems, in the
     absence of a standard, many applications (including the KDE
     applications) use INI text files.
 
@@ -1962,8 +1962,8 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \snippet settings/settings.cpp 4
 
     (Here, we also specify the organization's Internet domain. When
-    the Internet domain is set, it is used on OS X and iOS instead of the
-    organization name, since OS X and iOS applications conventionally use
+    the Internet domain is set, it is used on \macos and iOS instead of the
+    organization name, since \macos and iOS applications conventionally use
     Internet domains to identify themselves. If no domain is set, a
     fake domain is derived from the organization name. See the
     \l{Platform-Specific Notes} below for details.)
@@ -2021,7 +2021,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     Setting keys can contain any Unicode characters. The Windows
     registry and INI files use case-insensitive keys, whereas the
-    CFPreferences API on OS X and iOS uses case-sensitive keys. To
+    CFPreferences API on \macos and iOS uses case-sensitive keys. To
     avoid portability problems, follow these simple rules:
 
     \list 1
@@ -2195,7 +2195,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \li \c{/etc/xdg/MySoft.conf}
     \endlist
 
-    On Mac OS X versions 10.2 and 10.3, these files are used by
+    On \macos versions 10.2 and 10.3, these files are used by
     default:
 
     \list 1
@@ -2223,7 +2223,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     in the application's home directory.
 
     If the file format is IniFormat, the following files are
-    used on Unix, OS X, and iOS:
+    used on Unix, \macos, and iOS:
 
     \list 1
     \li \c{$HOME/.config/MySoft/Star Runner.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.ini})
@@ -2250,7 +2250,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     in the application's home directory.
 
     The paths for the \c .ini and \c .conf files can be changed using
-    setPath(). On Unix, OS X, and iOS the user can override them by
+    setPath(). On Unix, \macos, and iOS the user can override them by
     setting the \c XDG_CONFIG_HOME environment variable; see
     setPath() for details.
 
@@ -2267,7 +2267,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     You can then use the QSettings object to read and write settings
     in the file.
 
-    On OS X and iOS, you can access property list \c .plist files by passing
+    On \macos and iOS, you can access property list \c .plist files by passing
     QSettings::NativeFormat as second argument. For example:
 
     \snippet code/src_corelib_io_qsettings.cpp 3
@@ -2321,13 +2321,13 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         limitations is to store the settings using the IniFormat
         instead of the NativeFormat.
 
-    \li  On OS X and iOS, allKeys() will return some extra keys for global
+    \li  On \macos and iOS, allKeys() will return some extra keys for global
         settings that apply to all applications. These keys can be
         read using value() but cannot be changed, only shadowed.
         Calling setFallbacksEnabled(false) will hide these global
         settings.
 
-    \li  On OS X and iOS, the CFPreferences API used by QSettings expects
+    \li  On \macos and iOS, the CFPreferences API used by QSettings expects
         Internet domain names rather than organization names. To
         provide a uniform API, QSettings derives a fake domain name
         from the organization name (unless the organization name
@@ -2344,7 +2344,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
         \snippet code/src_corelib_io_qsettings.cpp 7
 
-    \li On OS X, permissions to access settings not belonging to the
+    \li On \macos, permissions to access settings not belonging to the
        current user (i.e. SystemScope) have changed with 10.7 (Lion). Prior to
        that version, users having admin rights could access these. For 10.7 and
        10.8 (Mountain Lion), only root can. However, 10.9 (Mavericks) changes
@@ -2373,7 +2373,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \value NativeFormat     Store the settings using the most
                             appropriate storage format for the platform.
                             On Windows, this means the system registry;
-                            on OS X and iOS, this means the CFPreferences
+                            on \macos and iOS, this means the CFPreferences
                             API; on Unix, this means textual
                             configuration files in INI format.
     \value Registry32Format Windows only: Explicitly access the 32-bit system registry
@@ -2546,7 +2546,7 @@ QSettings::QSettings(Format format, Scope scope, const QString &organization,
 
     If \a format is QSettings::NativeFormat, the meaning of \a
     fileName depends on the platform. On Unix, \a fileName is the
-    name of an INI file. On OS X and iOS, \a fileName is the name of a
+    name of an INI file. On \macos and iOS, \a fileName is the name of a
     \c .plist file. On Windows, \a fileName is a path in the system
     registry.
 
@@ -2599,7 +2599,7 @@ QSettings::QSettings(const QString &fileName, Format format, QObject *parent)
     called, the QSettings object will not be able to read or write
     any settings, and status() will return AccessError.
 
-    On OS X and iOS, if both a name and an Internet domain are specified
+    On \macos and iOS, if both a name and an Internet domain are specified
     for the organization, the domain is preferred over the name. On
     other platforms, the name is preferred over the domain.
 
@@ -3115,7 +3115,7 @@ bool QSettings::isWritable() const
   exists, the previous value is overwritten.
 
   Note that the Windows registry and INI files use case-insensitive
-  keys, whereas the CFPreferences API on OS X and iOS uses
+  keys, whereas the CFPreferences API on \macos and iOS uses
   case-sensitive keys. To avoid portability problems, see the
   \l{Section and Key Syntax} rules.
 
@@ -3154,7 +3154,7 @@ void QSettings::setValue(const QString &key, const QVariant &value)
     \snippet code/src_corelib_io_qsettings.cpp 25
 
     Note that the Windows registry and INI files use case-insensitive
-    keys, whereas the CFPreferences API on OS X and iOS uses
+    keys, whereas the CFPreferences API on \macos and iOS uses
     case-sensitive keys. To avoid portability problems, see the
     \l{Section and Key Syntax} rules.
 
@@ -3189,7 +3189,7 @@ void QSettings::remove(const QString &key)
     relative to that group.
 
     Note that the Windows registry and INI files use case-insensitive
-    keys, whereas the CFPreferences API on OS X and iOS uses
+    keys, whereas the CFPreferences API on \macos and iOS uses
     case-sensitive keys. To avoid portability problems, see the
     \l{Section and Key Syntax} rules.
 
@@ -3251,7 +3251,7 @@ bool QSettings::event(QEvent *event)
     returned.
 
     Note that the Windows registry and INI files use case-insensitive
-    keys, whereas the CFPreferences API on OS X and iOS uses
+    keys, whereas the CFPreferences API on \macos and iOS uses
     case-sensitive keys. To avoid portability problems, see the
     \l{Section and Key Syntax} rules.
 
@@ -3354,18 +3354,18 @@ void QSettings::setUserIniPath(const QString &dir)
     \row                                                        \li SystemScope \li \c /etc/xdg
     \row    \li{1,2} Qt for Embedded Linux \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/Settings
     \row                                                        \li SystemScope \li \c /etc/xdg
-    \row    \li{1,2} OS X and iOS   \li{1,2} IniFormat               \li UserScope   \li \c $HOME/.config
+    \row    \li{1,2} \macos and iOS   \li{1,2} IniFormat               \li UserScope   \li \c $HOME/.config
     \row                                                        \li SystemScope \li \c /etc/xdg
     \endtable
 
-    The default UserScope paths on Unix, OS X, and iOS (\c
+    The default UserScope paths on Unix, \macos, and iOS (\c
     $HOME/.config or $HOME/Settings) can be overridden by the user by setting the
     \c XDG_CONFIG_HOME environment variable. The default SystemScope
-    paths on Unix, OS X, and iOS (\c /etc/xdg) can be overridden when
+    paths on Unix, \macos, and iOS (\c /etc/xdg) can be overridden when
     building the Qt library using the \c configure script's \c
     -sysconfdir flag (see QLibraryInfo for details).
 
-    Setting the NativeFormat paths on Windows, OS X, and iOS has no
+    Setting the NativeFormat paths on Windows, \macos, and iOS has no
     effect.
 
     \warning This function doesn't affect existing QSettings objects.

@@ -811,7 +811,7 @@ static CTFontDescriptorRef fontDescriptorFromTheme(QPlatformTheme::Font f)
         UIFontDescriptor *desc = [UIFontDescriptor preferredFontDescriptorWithTextStyle:textStyle];
         return static_cast<CTFontDescriptorRef>(CFBridgingRetain(desc));
     }
-#endif // Q_OS_IOS, Q_OS_TVOS
+#endif // Q_OS_IOS, Q_OS_TVOS, Q_OS_WATCHOS
 
     // OSX default case and iOS fallback case
     CTFontUIFontType fontType = fontTypeFromTheme(f);

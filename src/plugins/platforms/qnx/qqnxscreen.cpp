@@ -385,10 +385,8 @@ Qt::ScreenOrientation QQnxScreen::orientation() const
 
 QWindow *QQnxScreen::topLevelAt(const QPoint &point) const
 {
-    QListIterator<QQnxWindow*> it(m_childWindows);
-    it.toBack();
-    while (it.hasPrevious()) {
-        QWindow *win = it.previous()->window();
+    for (auto it = m_childWindows.rbegin(), end = m_childWindows.rend(); it != end; ++it) {
+        QWindow *win = (*it)->window();
         if (win->geometry().contains(point))
             return win;
     }

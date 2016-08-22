@@ -72,7 +72,7 @@
 
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_UNIX)
-# if defined(Q_OS_OSX)
+# if defined(Q_OS_DARWIN)
 #  include "qeventdispatcher_cf_p.h"
 # else
 #  if !defined(QT_NO_GLIB)
@@ -483,7 +483,7 @@ void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
 #if defined(Q_OS_UNIX)
-#  if defined(Q_OS_OSX)
+#  if defined(Q_OS_DARWIN)
     bool ok = false;
     int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
     if (ok && value > 0)
@@ -687,7 +687,7 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
 
     If you are doing graphical changes inside a loop that does not
     return to the event loop on asynchronous window systems like X11
-    or double buffered window systems like Quartz (OS X and iOS), and you want to
+    or double buffered window systems like Quartz (\macos and iOS), and you want to
     visualize these changes immediately (e.g. Splash Screens), call
     this function.
 
@@ -2059,7 +2059,7 @@ void QCoreApplicationPrivate::setApplicationFilePath(const QString &path)
     directory, and you run the \c{regexp} example, this function will
     return "C:/Qt/examples/tools/regexp".
 
-    On OS X and iOS this will point to the directory actually containing
+    On \macos and iOS this will point to the directory actually containing
     the executable, which may be inside an application bundle (if the
     application is bundled).
 

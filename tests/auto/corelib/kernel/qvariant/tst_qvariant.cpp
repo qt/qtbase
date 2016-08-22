@@ -275,6 +275,7 @@ private slots:
     void metaEnums();
     void compareSanity_data();
     void compareSanity();
+    void compareRich();
 
     void accessSequentialContainerKey();
 
@@ -4773,6 +4774,60 @@ void tst_QVariant::compareSanity()
         QVERIFY(value1 != value2);
         QVERIFY((value1 < value2) || (value1 > value2));
     }
+}
+
+static void richComparison(const QVariant& less, const QVariant& more)
+{
+    QVERIFY(less.type() == more.type());
+
+    QVERIFY(less < more);
+    QVERIFY(!(more < less));
+
+    QVERIFY(more > less);
+    QVERIFY(!(less > more));
+
+    QVERIFY(less <= more);
+    QVERIFY(!(more <= less));
+    QVERIFY(less <= less);
+
+    QVERIFY(more >= less);
+    QVERIFY(!(less >= more));
+    QVERIFY(more >= more);
+}
+
+void tst_QVariant::compareRich()
+{
+    richComparison(QUuid("{49d8ad2a-2ee8-4c3d-949f-1b5a3765ddf0}"),
+                   QUuid("{f6d56824-16e9-4543-a375-add2877c2d05}"));
+    richComparison(QByteArray::fromRawData("a", 1),
+                   QByteArray::fromRawData("b", 1));
+    richComparison(QStringLiteral("a"), QStringLiteral("b"));
+    richComparison(QLatin1String("a"), QLatin1String("b"));
+    richComparison(QChar('a'), QChar('b'));
+    richComparison(QDate(2016, 7, 23), QDate(2016, 7, 24));
+    richComparison(QTime(0, 0), QTime(0, 1));
+    richComparison(QDateTime(QDate(2016, 7, 23), QTime(0, 0)),
+                   QDateTime(QDate(2016, 7, 23), QTime(0, 1)));
+
+    richComparison(QStringList(), QStringList() << QStringLiteral("a"));
+    richComparison(QStringList(), QStringList() << QStringLiteral("a")
+                                                << QStringLiteral("b"));
+    richComparison(QStringList() << QStringLiteral("a"),
+                   QStringList() << QStringLiteral("b"));
+    richComparison(QStringList() << QStringLiteral("a"),
+                   QStringList() << QStringLiteral("b")
+                                 << QStringLiteral("c"));
+    richComparison(QStringList() << QStringLiteral("a")
+                                 << QStringLiteral("c"),
+                   QStringList() << QStringLiteral("b"));
+    richComparison(QStringList() << QStringLiteral("a")
+                                 << QStringLiteral("c"),
+                   QStringList() << QStringLiteral("b")
+                                 << QStringLiteral("d"));
+    richComparison(QStringList() << QStringLiteral("a")
+                                 << QStringLiteral("c"),
+                   QStringList() << QStringLiteral("a")
+                                 << QStringLiteral("d"));
 }
 
 void tst_QVariant::accessSequentialContainerKey()

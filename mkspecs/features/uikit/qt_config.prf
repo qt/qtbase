@@ -10,6 +10,7 @@ isEmpty(QT_ARCH) {
     } else { # Simulator
         ios: QT_ARCH = i386
         tvos: QT_ARCH = x64
+        watchos: QT_ARCH = i386
     }
 
     # Prevent the arch/config tests from building as multi-arch binaries,

@@ -41,67 +41,54 @@ HEADERS = \
 
 DEFINES += QT_BUILD_XCB_PLUGIN
 # needed by Xcursor ...
-contains(QT_CONFIG, xcb-xlib) {
+qtConfig(xcb-xlib) {
     DEFINES += XCB_USE_XLIB
-    LIBS += -lX11 -lX11-xcb
+    QMAKE_USE += xcb_xlib
 
-    contains(QT_CONFIG, xinput2) {
+    qtConfig(xinput2) {
         DEFINES += XCB_USE_XINPUT2
         SOURCES += qxcbconnection_xi2.cpp
-        LIBS += -lXi
-        !isEmpty(QMAKE_XINPUT2_VERSION_MAJOR) {
-            DEFINES += LIBXI_MAJOR=$$QMAKE_XINPUT2_VERSION_MAJOR \
-                       LIBXI_MINOR=$$QMAKE_XINPUT2_VERSION_MINOR \
-                       LIBXI_PATCH=$$QMAKE_XINPUT2_VERSION_PATCH
-        }
+        QMAKE_USE += xinput2
     }
 }
 
-# to support custom cursors with depth > 1
-contains(QT_CONFIG, xcb-render) {
-    DEFINES += XCB_USE_RENDER
-    LIBS += -lxcb-render -lxcb-render-util
-}
-
 # build with session management support
-contains(QT_CONFIG, xcb-sm) {
+qtConfig(xcb-sm) {
     DEFINES += XCB_USE_SM
-    LIBS += -lSM -lICE
+    QMAKE_USE += x11sm
     SOURCES += qxcbsessionmanager.cpp
     HEADERS += qxcbsessionmanager.h
 }
 
 include(gl_integrations/gl_integrations.pri)
 
-DEFINES += $$QMAKE_DEFINES_XCB
-LIBS += $$QMAKE_LIBS_XCB
-QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
-QMAKE_CFLAGS += $$QMAKE_CFLAGS_XCB
-
 CONFIG += qpa/genericunixfontdatabase
 
-contains(QT_CONFIG, dbus-linked) {
+qtConfig(dbus-linked): \
     QT += dbus
-    LIBS += $$QMAKE_LIBS_DBUS
-}
 
-contains(QT_CONFIG, xcb-qt) {
+!qtConfig(system-xcb) {
     DEFINES += XCB_USE_RENDER
     XCB_DIR = ../../../3rdparty/xcb
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
-    LIBS += -lxcb -L$$MODULE_BASE_OUTDIR/lib -lxcb-static$$qtPlatformTargetSuffix()
+    LIBS += -L$$MODULE_BASE_OUTDIR/lib -lxcb-static$$qtPlatformTargetSuffix()
+    QMAKE_USE += xcb
 } else {
-    LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr -lxcb-shape -lxcb-keysyms -lxcb-xinerama
-    !contains(DEFINES, QT_NO_XKB):LIBS += -lxcb-xkb
+    LIBS += -lxcb-xinerama  ### there is no configure test for this!
+    qtConfig(xkb): QMAKE_USE += xcb_xkb
+    # to support custom cursors with depth > 1
+    qtConfig(xcb-render) {
+        DEFINES += XCB_USE_RENDER
+        QMAKE_USE += xcb_render
+    }
+    QMAKE_USE += xcb_syslibs
 }
 
 # libxkbcommon
-contains(QT_CONFIG, xkbcommon-qt) {
-    QT_CONFIG += use-xkbcommon-x11support
-    include(../../../3rdparty/xkbcommon.pri)
+!qtConfig(xkbcommon-system) {
+    include(../../../3rdparty/xkbcommon-x11.pri)
 } else {
-    LIBS += $$QMAKE_LIBS_XKBCOMMON
-    QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
+    QMAKE_USE += xkbcommon
 }
 
 load(qt_module)

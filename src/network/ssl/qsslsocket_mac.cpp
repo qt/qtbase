@@ -204,7 +204,7 @@ bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
 bool QSslSocketPrivate::s_loadRootCertsOnDemand = false;
 
 
-#if !defined(QT_PLATFORM_UIKIT) // dhparam is not used on iOS or tvOS. (see the SSLSetDiffieHellmanParams call below)
+#if !defined(QT_PLATFORM_UIKIT) // dhparam is only used on macOS. (see the SSLSetDiffieHellmanParams call below)
 static const uint8_t dhparam[] =
     "\x30\x82\x01\x08\x02\x82\x01\x01\x00\x97\xea\xd0\x46\xf7\xae\xa7\x76\x80"
     "\x9c\x74\x56\x98\xd8\x56\x97\x2b\x20\x6c\x77\xe2\x82\xbb\xc8\x84\xbe\xe7"
@@ -223,7 +223,7 @@ static const uint8_t dhparam[] =
     "\x90\x0b\x35\x64\xff\xd9\xe3\xac\xf2\xf2\xeb\x3a\x63\x02\x01\x02";
 #endif
 
-// No ioErr on iOS/tvOS. (defined in MacErrors.h on OS X)
+// No ioErr on iOS/tvOS/watchOS. (defined in MacErrors.h on macOS)
 #if defined(QT_PLATFORM_UIKIT)
 #  define ioErr -36
 #endif

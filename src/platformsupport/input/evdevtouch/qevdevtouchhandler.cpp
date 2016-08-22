@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qevdevtouchhandler_p.h"
+#include "qtouchoutputmapping_p.h"
 #include <QStringList>
 #include <QHash>
 #include <QSocketNotifier>
@@ -49,7 +50,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <linux/input.h>
 
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
 extern "C" {
 #include <mtdev.h>
 }
@@ -116,6 +117,7 @@ public:
     int findClosestContact(const QHash<int, Contact> &contacts, int x, int y, int *dist);
     void addTouchPoint(const Contact &contact, Qt::TouchPointStates *combinedStates);
     void reportPoints();
+    void loadMultiScreenMappings();
 
     int hw_range_x_min;
     int hw_range_x_max;
@@ -124,10 +126,12 @@ public:
     int hw_pressure_min;
     int hw_pressure_max;
     QString hw_name;
+    QString deviceNode;
     bool m_forceToActiveWindow;
     bool m_typeB;
     QTransform m_rotate;
     bool m_singleTouch;
+    int m_screenIndex;
 };
 
 QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, const QStringList &args)
@@ -137,7 +141,8 @@ QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, co
       hw_range_x_min(0), hw_range_x_max(0),
       hw_range_y_min(0), hw_range_y_max(0),
       hw_pressure_min(0), hw_pressure_max(0),
-      m_typeB(false), m_singleTouch(false)
+      m_typeB(false), m_singleTouch(false),
+      m_screenIndex(-1)
 {
     m_forceToActiveWindow = args.contains(QLatin1String("force_window"));
 }
@@ -145,7 +150,7 @@ QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, co
 #define LONG_BITS (sizeof(long) << 3)
 #define NUM_LONGS(bits) (((bits) + LONG_BITS - 1) / LONG_BITS)
 
-#if defined(QT_NO_MTDEV)
+#if !QT_CONFIG(mtdev)
 static inline bool testBit(long bit, const long *array)
 {
     return (array[bit / LONG_BITS] >> bit % LONG_BITS) & 1;
@@ -154,7 +159,7 @@ static inline bool testBit(long bit, const long *array)
 
 QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const QString &spec, QObject *parent)
     : QObject(parent), m_notify(Q_NULLPTR), m_fd(-1), d(Q_NULLPTR), m_device(Q_NULLPTR)
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
       , m_mtdev(Q_NULLPTR)
 #endif
 {
@@ -198,7 +203,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
         return;
     }
 
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
     m_mtdev = static_cast<mtdev *>(calloc(1, sizeof(mtdev)));
     int mtdeverr = mtdev_open(m_mtdev, m_fd);
     if (mtdeverr) {
@@ -210,7 +215,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
 
     d = new QEvdevTouchScreenData(this, args);
 
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
     const char *mtdevStr = "(mtdev)";
     d->m_typeB = true;
 #else
@@ -222,7 +227,9 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     }
 #endif
 
-    qCDebug(qLcEvdevTouch, "evdevtouch: %s: Protocol type %c %s (%s)", qPrintable(device),
+    d->deviceNode = device;
+
+    qCDebug(qLcEvdevTouch, "evdevtouch: %s: Protocol type %c %s (%s)", qPrintable(d->deviceNode),
             d->m_typeB ? 'B' : 'A', mtdevStr, d->m_singleTouch ? "single" : "multi");
 
     input_absinfo absInfo;
@@ -292,12 +299,20 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     if (inverty)
         d->m_rotate *= QTransform::fromTranslate(0.5, 0.5).scale(1.0, -1.0).translate(-0.5, -0.5);
 
+    QTouchOutputMapping mapping;
+    if (mapping.load()) {
+        d->m_screenIndex = mapping.screenIndexForDeviceNode(d->deviceNode);
+        if (d->m_screenIndex >= 0)
+            qCDebug(qLcEvdevTouch, "evdevtouch: Mapping device %s to screen index %d",
+                    qPrintable(d->deviceNode), d->m_screenIndex);
+    }
+
     registerTouchDevice();
 }
 
 QEvdevTouchScreenHandler::~QEvdevTouchScreenHandler()
 {
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
     if (m_mtdev) {
         mtdev_close(m_mtdev);
         free(m_mtdev);
@@ -322,7 +337,7 @@ void QEvdevTouchScreenHandler::readData()
     ::input_event buffer[32];
     int events = 0;
 
-#if !defined(QT_NO_MTDEV)
+#if QT_CONFIG(mtdev)
     forever {
         do {
             events = mtdev_get(m_mtdev, m_fd, buffer, sizeof(buffer) / sizeof(::input_event));
@@ -400,9 +415,13 @@ void QEvdevTouchScreenHandler::unregisterTouchDevice()
     if (!m_device)
         return;
 
-    QWindowSystemInterface::unregisterTouchDevice(m_device);
+    // At app exit the cleanup may have already been done, avoid
+    // double delete by checking the list first.
+    if (QWindowSystemInterface::isTouchDeviceRegistered(m_device)) {
+        QWindowSystemInterface::unregisterTouchDevice(m_device);
+        delete m_device;
+    }
 
-    delete m_device;
     m_device = Q_NULLPTR;
 }
 
@@ -643,8 +662,23 @@ void QEvdevTouchScreenData::reportPoints()
             return;
         winRect = QHighDpi::toNativePixels(win->geometry(), win);
     } else {
-        QScreen *primary = QGuiApplication::primaryScreen();
-        winRect = QHighDpi::toNativePixels(primary->geometry(), primary);
+        // Now it becomes tricky. Traditionally we picked the primaryScreen()
+        // and were done with it. But then, enter multiple screens, and
+        // suddenly it was all broken.
+        //
+        // For now we only support the display configuration of the KMS/DRM
+        // backends of eglfs. See QTouchOutputMapping.
+        //
+        // The good news it that once winRect refers to the correct screen
+        // geometry in the full virtual desktop space, there is nothing else
+        // left to do since qguiapp will handle the rest.
+        QScreen *screen = QGuiApplication::primaryScreen();
+        if (m_screenIndex >= 0) {
+            const QList<QScreen *> screens = QGuiApplication::screens();
+            if (m_screenIndex < screens.count())
+                screen = screens.at(m_screenIndex);
+        }
+        winRect = QHighDpi::toNativePixels(screen->geometry(), screen);
     }
 
     const int hw_w = hw_range_x_max - hw_range_x_min;
@@ -675,8 +709,10 @@ void QEvdevTouchScreenData::reportPoints()
             tp.pressure = (tp.pressure - hw_pressure_min) / qreal(hw_pressure_max - hw_pressure_min);
     }
 
+    // Let qguiapp pick the target window.
     QWindowSystemInterface::handleTouchEvent(Q_NULLPTR, q->touchDevice(), m_touchPoints);
 }
+
 
 
 QEvdevTouchScreenHandlerThread::QEvdevTouchScreenHandlerThread(const QString &device, const QString &spec, QObject *parent)

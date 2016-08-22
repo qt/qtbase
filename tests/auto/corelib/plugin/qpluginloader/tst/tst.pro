@@ -1,7 +1,7 @@
 CONFIG += testcase
 TARGET  = ../tst_qpluginloader
 QT = core testlib
-contains(QT_CONFIG, private_tests): QT += core-private
+qtConfig(private_tests): QT += core-private
 SOURCES = ../tst_qpluginloader.cpp ../fakeplugin.cpp
 HEADERS = ../theplugin/plugininterface.h
 CONFIG -= app_bundle

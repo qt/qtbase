@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include <EGL/egl.h>
-#include <GLES2/gl2.h>
 #include <bcm_host.h>
 
 int main(int, char **)

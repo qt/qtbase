@@ -53,6 +53,8 @@ SOURCES += \
 
 win32:!winrt: SOURCES += image/qpixmap_win.cpp
 
+darwin: OBJECTIVE_SOURCES += image/qimage_darwin.mm
+
 NO_PCH_SOURCES += image/qimage_compat.cpp
 false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
 
@@ -69,7 +71,7 @@ SOURCES += \
         image/qxbmhandler.cpp \
         image/qxpmhandler.cpp
 
-contains(QT_CONFIG, png) {
+qtConfig(png) {
     HEADERS += image/qpnghandler_p.h
     SOURCES += image/qpnghandler.cpp
     include($$PWD/../../3rdparty/png_dependency.pri)

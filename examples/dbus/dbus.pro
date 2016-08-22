@@ -2,8 +2,9 @@ requires(qtHaveModule(dbus))
 
 TEMPLATE = subdirs
 SUBDIRS = listnames \
-	  pingpong \
-	  complexpingpong
+    pingpong
+
+!uikit: SUBDIRS += complexpingpong
 
 qtHaveModule(widgets) {
     SUBDIRS += chat \

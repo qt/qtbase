@@ -55,7 +55,7 @@
 #include <private/qabstractprotocolhandler_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 
-#if !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#if !defined(QT_NO_HTTP)
 
 #include "http2/http2protocol_p.h"
 #include "http2/http2streams_p.h"
@@ -124,7 +124,7 @@ private:
     bool acceptSetting(Http2::Settings identifier, quint32 newValue);
 
     void updateStream(Stream &stream, const HPack::HttpHeader &headers);
-    void updateStream(Stream &stream, const Http2::FrameReader &dataFrame);
+    void updateStream(Stream &stream, const Http2::Frame &dataFrame);
     void finishStream(Stream &stream);
     // Error code send by a peer (GOAWAY/RST_STREAM):
     void finishStreamWithError(Stream &stream, quint32 errorCode);
@@ -161,12 +161,13 @@ private:
     // Peer's max frame size.
     quint32 maxFrameSize = Http2::maxFrameSize;
 
-    Http2::FrameReader inboundFrame;
-    Http2::FrameWriter outboundFrame;
+    Http2::FrameReader frameReader;
+    Http2::Frame inboundFrame;
+    Http2::FrameWriter frameWriter;
     // Temporary storage to assemble HEADERS' block
     // from several CONTINUATION frames ...
     bool continuationExpected = false;
-    std::vector<Http2::FrameReader> continuedFrames;
+    std::vector<Http2::Frame> continuedFrames;
 
     // Peer's max number of streams ...
     quint32 maxConcurrentStreams = Http2::maxConcurrentStreams;
@@ -202,6 +203,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#endif // !defined(QT_NO_HTTP)
 
 #endif

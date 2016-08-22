@@ -76,13 +76,6 @@ private:
     QPoint hot;
 };
 
-class QPlatformCursor;
-
-class Q_GUI_EXPORT QPlatformCursorPrivate {
-public:
-    static QList<QPlatformCursor *> getInstances();
-};
-
 class Q_GUI_EXPORT QPlatformCursor : public QObject {
 public:
     QPlatformCursor();
@@ -96,7 +89,6 @@ public:
     virtual void setPos(const QPoint &pos);
 
 private:
-    Q_DECLARE_PRIVATE(QPlatformCursor)
     friend void qt_qpa_set_cursor(QWidget * w, bool force);
     friend class QApplicationPrivate;
 };

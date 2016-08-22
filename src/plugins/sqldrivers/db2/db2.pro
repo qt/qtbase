@@ -3,11 +3,7 @@ TARGET = qsqldb2
 HEADERS += $$PWD/qsql_db2_p.h
 SOURCES += $$PWD/qsql_db2.cpp $$PWD/main.cpp
 
-unix {
-    !contains(LIBS, .*db2.*):LIBS += -ldb2
-} else {
-    !contains(LIBS, .*db2.*):LIBS += -ldb2cli
-}
+QMAKE_USE += db2
 
 OTHER_FILES += db2.json
 

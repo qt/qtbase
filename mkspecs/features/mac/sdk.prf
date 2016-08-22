@@ -62,6 +62,7 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
             version_identifier = $$device.deployment_identifier
         ios: deployment_target = $$QMAKE_IOS_DEPLOYMENT_TARGET
         tvos: deployment_target = $$QMAKE_TVOS_DEPLOYMENT_TARGET
+        watchos: deployment_target = $$QMAKE_WATCHOS_DEPLOYMENT_TARGET
     } else: osx {
         version_identifier = macosx
         deployment_target = $$QMAKE_MACOSX_DEPLOYMENT_TARGET

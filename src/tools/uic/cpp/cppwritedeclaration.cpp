@@ -44,27 +44,16 @@ QT_BEGIN_NAMESPACE
 
 namespace {
     void openNameSpaces(const QStringList &namespaceList, QTextStream &output) {
-        if (namespaceList.empty())
-            return;
-        const QStringList::const_iterator cend = namespaceList.constEnd();
-        for (QStringList::const_iterator it = namespaceList.constBegin(); it != cend; ++it) {
-            if (!it->isEmpty()) {
+        for (auto it = namespaceList.begin(), end = namespaceList.end(); it != end; ++it) {
+            if (!it->isEmpty())
                 output << "namespace " << *it << " {\n";
-            }
         }
     }
 
     void closeNameSpaces(const QStringList &namespaceList, QTextStream &output) {
-        if (namespaceList.empty())
-            return;
-
-        QListIterator<QString> it(namespaceList);
-        it.toBack();
-        while (it.hasPrevious()) {
-            const QString ns = it.previous();
-            if (!ns.isEmpty()) {
-                output << "} // namespace " << ns << "\n";
-            }
+        for (auto it = namespaceList.rbegin(), end = namespaceList.rend(); it != end; ++it) {
+            if (!it->isEmpty())
+                output << "} // namespace " << *it << "\n";
         }
     }
 

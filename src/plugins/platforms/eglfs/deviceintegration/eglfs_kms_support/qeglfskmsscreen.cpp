@@ -71,17 +71,15 @@ private:
 
 QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
                                  QEglFSKmsDevice *device,
-                                 QEglFSKmsOutput output,
-                                 QPoint position)
+                                 QEglFSKmsOutput output)
     : QEglFSScreen(eglGetDisplay(device->nativeDisplay()))
     , m_integration(integration)
     , m_device(device)
     , m_output(output)
-    , m_pos(position)
     , m_powerState(PowerStateOn)
     , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
 {
-    m_siblings << this;
+    m_siblings << this; // gets overridden by QEglFSKmsDevice later if !separateScreens
 }
 
 QEglFSKmsScreen::~QEglFSKmsScreen()
@@ -98,7 +96,14 @@ QEglFSKmsScreen::~QEglFSKmsScreen()
     delete m_interruptHandler;
 }
 
-QRect QEglFSKmsScreen::geometry() const
+void QEglFSKmsScreen::setVirtualPosition(const QPoint &pos)
+{
+    m_pos = pos;
+}
+
+// Reimplement rawGeometry(), not geometry(). The base class implementation of
+// geometry() calls rawGeometry() and may apply additional transforms.
+QRect QEglFSKmsScreen::rawGeometry() const
 {
     const int mode = m_output.mode;
     return QRect(m_pos.x(), m_pos.y(),
