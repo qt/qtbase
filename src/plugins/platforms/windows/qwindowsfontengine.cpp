@@ -587,7 +587,7 @@ namespace {
 QFixed QWindowsFontEngine::capHeight() const
 {
     const QByteArray tableData = getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
-    if (tableData.size() >= sizeof(OS2Table)) {
+    if (size_t(tableData.size()) >= sizeof(OS2Table)) {
         const OS2Table *table = reinterpret_cast<const OS2Table *>(tableData.constData());
         if (qFromBigEndian<quint16>(table->version) >= 2) {
             qint16 capHeight = qFromBigEndian<qint16>(table->capHeight);
