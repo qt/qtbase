@@ -447,7 +447,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::boundingBox(glyph_t g)
                                width,
                                height,
                                advanceWidth,
-                               advanceHeight);
+                               0);
     } else {
         qErrnoWarning("%s: GetDesignGlyphMetrics failed", __FUNCTION__);
     }

@@ -181,6 +181,8 @@ tests/auto/cmake/build
 *.exe.embed.manifest
 *.exe_manifest.rc
 *.exe_manifest.res
+*.appxmanifest
+.qmake.winrt_uuid_*
 
 # MinGW generated files
 *.Debug

@@ -75,6 +75,14 @@ public:
         return QPlatformHeaderHelper::callPlatformFunction<void, SetWmWindowType, QWindow *, WmWindowType>(setWmWindowTypeIdentifier(), window, type);
     }
 
+    typedef void (*SetWmWindowRole)(QWindow *window, const QByteArray &role);
+    static const QByteArray setWmWindowRoleIdentifier() { return QByteArrayLiteral("XcbSetWmWindowRole"); }
+
+    static void setWmWindowRole(QWindow *window, const QByteArray &role)
+    {
+        return QPlatformHeaderHelper::callPlatformFunction<void, SetWmWindowRole, QWindow *, const QByteArray &>(setWmWindowRoleIdentifier(), window, role);
+    }
+
     typedef void (*SetWmWindowIconText)(QWindow *window, const QString &text);
     static const QByteArray setWmWindowIconTextIdentifier() { return QByteArrayLiteral("XcbSetWmWindowIconText"); }
     static void setWmWindowIconText(QWindow *window, const QString &text)

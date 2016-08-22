@@ -67,7 +67,9 @@ QT_BEGIN_NAMESPACE
 
 extern QRegion qt_dirtyRegion(QWidget *);
 
+#ifndef QT_NO_OPENGL
 Q_GLOBAL_STATIC(QPlatformTextureList, qt_dummy_platformTextureList)
+#endif
 
 /**
  * Flushes the contents of the \a backingStore into the screen area of \a widget.

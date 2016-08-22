@@ -210,7 +210,7 @@ enum PseudoElement {
 
 struct PseudoElementInfo {
     QStyle::SubControl subControl;
-    const char *name;
+    const char name[19];
 };
 
 static const PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
@@ -595,7 +595,7 @@ public:
 Q_DECLARE_TYPEINFO(QRenderRule, Q_MOVABLE_TYPE);
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-static const char *const knownStyleHints[] = {
+static const char knownStyleHints[][45] = {
     "activate-on-singleclick",
     "alignment",
     "arrow-keys-navigate-into-children",

@@ -1482,6 +1482,9 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     data.window_flags = win->flags();
 
+    if (!topData()->role.isNull())
+        QXcbWindowFunctions::setWmWindowRole(win, topData()->role.toLatin1());
+
     QBackingStore *store = q->backingStore();
 
     if (!store) {
@@ -6359,13 +6362,11 @@ QString QWidget::windowRole() const
 */
 void QWidget::setWindowRole(const QString &role)
 {
-#if defined(Q_DEAD_CODE_FROM_QT4_X11)
     Q_D(QWidget);
+    d->createTLExtra();
     d->topData()->role = role;
-    d->setWindowRole();
-#else
-    Q_UNUSED(role)
-#endif
+    if (windowHandle())
+        QXcbWindowFunctions::setWmWindowRole(windowHandle(), role.toLatin1());
 }
 
 /*!
