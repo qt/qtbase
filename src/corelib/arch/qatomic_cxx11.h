@@ -73,7 +73,7 @@ QT_END_NAMESPACE
 
 // ### Qt 6: make non-constexpr (see above)
 template <int N> struct QAtomicTraits
-{ static Q_DECL_CONSTEXPR inline bool isLockFree() Q_DECL_NOTHROW; };
+{ static Q_DECL_CONSTEXPR inline bool isLockFree(); };
 
 #define Q_ATOMIC_INT32_IS_SUPPORTED
 #if ATOMIC_INT_LOCK_FREE == 2
@@ -86,7 +86,7 @@ template <int N> struct QAtomicTraits
 #  define Q_ATOMIC_INT32_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #  define Q_ATOMIC_INT32_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<4>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<4>::isLockFree()
 { return true; }
 #elif ATOMIC_INT_LOCK_FREE == 1
 #  define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
@@ -98,7 +98,7 @@ template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<4>::isLockFree() Q_DECL_N
 #  define Q_ATOMIC_INT32_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #  define Q_ATOMIC_INT32_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<4>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<4>::isLockFree()
 { return false; }
 #else
 #  define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_NEVER_NATIVE
@@ -110,7 +110,7 @@ template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<4>::isLockFree() Q_DECL_N
 #  define Q_ATOMIC_INT32_FETCH_AND_STORE_IS_NEVER_NATIVE
 #  define Q_ATOMIC_INT32_FETCH_AND_ADD_IS_NEVER_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<4>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<4>::isLockFree()
 { return false; }
 #endif
 
@@ -139,7 +139,7 @@ template<> struct QAtomicOpsSupport<1> { enum { IsSupported = 1 }; };
 #  define Q_ATOMIC_INT8_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #  define Q_ATOMIC_INT8_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<1>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<1>::isLockFree()
 { return true; }
 #elif ATOMIC_CHAR_LOCK_FREE == 1
 #  define Q_ATOMIC_INT8_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
@@ -147,7 +147,7 @@ template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<1>::isLockFree() Q_DECL_N
 #  define Q_ATOMIC_INT8_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #  define Q_ATOMIC_INT8_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<1>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<1>::isLockFree()
 { return false; }
 #else
 #  define Q_ATOMIC_INT8_REFERENCE_COUNTING_IS_NEVER_NATIVE
@@ -155,7 +155,7 @@ template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<1>::isLockFree() Q_DECL_N
 #  define Q_ATOMIC_INT8_FETCH_AND_STORE_IS_NEVER_NATIVE
 #  define Q_ATOMIC_INT8_FETCH_AND_ADD_IS_NEVER_NATIVE
 
-template <> Q_DECL_CONSTEXPR bool QAtomicTraits<1>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR bool QAtomicTraits<1>::isLockFree()
 { return false; }
 #endif
 
@@ -167,7 +167,7 @@ template<> struct QAtomicOpsSupport<2> { enum { IsSupported = 1 }; };
 #  define Q_ATOMIC_INT16_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #  define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<2>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<2>::isLockFree()
 { return false; }
 #elif ATOMIC_SHORT_LOCK_FREE == 1
 #  define Q_ATOMIC_INT16_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
@@ -175,7 +175,7 @@ template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<2>::isLockFree() Q_DECL_N
 #  define Q_ATOMIC_INT16_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #  define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<2>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<2>::isLockFree()
 { return false; }
 #else
 #  define Q_ATOMIC_INT16_REFERENCE_COUNTING_IS_NEVER_NATIVE
@@ -183,7 +183,7 @@ template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<2>::isLockFree() Q_DECL_N
 #  define Q_ATOMIC_INT16_FETCH_AND_STORE_IS_NEVER_NATIVE
 #  define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_NEVER_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<2>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<2>::isLockFree()
 { return false; }
 #endif
 
@@ -196,7 +196,7 @@ template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 #    define Q_ATOMIC_INT16_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #    define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<8>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<8>::isLockFree()
 { return true; }
 #  elif ATOMIC_LLONG_LOCK_FREE == 1
 #    define Q_ATOMIC_INT16_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
@@ -204,7 +204,7 @@ template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<8>::isLockFree() Q_DECL_N
 #    define Q_ATOMIC_INT16_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #    define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<8>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<8>::isLockFree()
 { return false; }
 #  else
 #    define Q_ATOMIC_INT16_REFERENCE_COUNTING_IS_NEVER_NATIVE
@@ -212,7 +212,7 @@ template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<8>::isLockFree() Q_DECL_N
 #    define Q_ATOMIC_INT16_FETCH_AND_STORE_IS_NEVER_NATIVE
 #    define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_NEVER_NATIVE
 
-template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<8>::isLockFree() Q_DECL_NOTHROW
+template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<8>::isLockFree()
 { return false; }
 #  endif
 #endif
