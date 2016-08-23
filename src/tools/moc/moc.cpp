@@ -560,7 +560,8 @@ void Moc::parse()
                         until(RBRACE);
                         def.end = index;
                         index = def.begin + 1;
-                        while (inNamespace(&def) && hasNext()) {
+                        const bool parseNamespace = currentFilenames.size() <= 1;
+                        while (parseNamespace && inNamespace(&def) && hasNext()) {
                             switch (next()) {
                             case Q_NAMESPACE_TOKEN:
                                 def.hasQNamespace = true;
