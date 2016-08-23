@@ -66,9 +66,6 @@ std::ostream &operator<<(std::ostream &s, const QString &val) {
 
 using namespace std;
 
-// Macros to simplify options marking
-#define MARK_OPTION(x,y) ( dictionary[ #x ] == #y ? "*" : " " )
-
 static inline void promptKeyPress()
 {
     cout << "(Press any key to continue...)";
@@ -78,18 +75,6 @@ static inline void promptKeyPress()
 
 Configure::Configure(int& argc, char** argv)
 {
-    // Default values for indentation
-    optionIndent = 4;
-    descIndent   = 25;
-    outputWidth  = 0;
-    // Get console buffer output width
-    CONSOLE_SCREEN_BUFFER_INFO info;
-    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (GetConsoleScreenBufferInfo(hStdout, &info))
-        outputWidth = info.dwSize.X - 1;
-    outputWidth = qMin(outputWidth, 79); // Anything wider gets unreadable
-    if (outputWidth < 35) // Insanely small, just use 79
-        outputWidth = 79;
     int i;
 
     for (i = 1; i < argc; i++)

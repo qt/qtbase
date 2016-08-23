@@ -77,11 +77,6 @@ private:
     QString sourcePath, buildPath;
     QDir sourceDir, buildDir;
 
-    // Variables for usage output
-    int optionIndent;
-    int descIndent;
-    int outputWidth;
-
     QString confStrOffsets[2];
     QString confStrings[2];
     int confStringOff;
