@@ -63,7 +63,6 @@ class QNetworkProxyQuery;
 class QNetworkRequest;
 class QStringList;
 class QUrl;
-class QUrlInfo;
 class QSslConfiguration;
 
 class QNetworkAccessManagerPrivate;
