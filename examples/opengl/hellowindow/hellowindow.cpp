@@ -93,6 +93,8 @@ HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer, QScreen *scre
 void HelloWindow::exposeEvent(QExposeEvent *)
 {
     m_renderer->setAnimating(this, isExposed());
+    if (isExposed())
+        m_renderer->render();
 }
 
 void HelloWindow::mousePressEvent(QMouseEvent *)

@@ -70,7 +70,7 @@ public:
 
     void setAnimating(HelloWindow *window, bool animating);
 
-private slots:
+public slots:
     void render();
 
 private:
