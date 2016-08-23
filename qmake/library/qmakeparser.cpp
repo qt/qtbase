@@ -165,7 +165,7 @@ QMakeParser::QMakeParser(ProFileCache *cache, QMakeVfs *vfs, QMakeParserHandler 
 ProFile *QMakeParser::parsedProFile(const QString &fileName, ParseFlags flags)
 {
     ProFile *pro;
-    if ((flags & ParseUseCache) && m_cache) {
+    if ((flags & (ParseUseCache|ParseOnlyCached)) && m_cache) {
         ProFileCache::Entry *ent;
 #ifdef PROPARSER_THREAD_SAFE
         QMutexLocker locker(&m_cache->mutex);
@@ -187,7 +187,7 @@ ProFile *QMakeParser::parsedProFile(const QString &fileName, ParseFlags flags)
 #endif
             if ((pro = ent->pro))
                 pro->ref();
-        } else {
+        } else if (!(flags & ParseOnlyCached)) {
             ent = &m_cache->parsed_files[fileName];
 #ifdef PROPARSER_THREAD_SAFE
             ent->locker = new ProFileCache::Entry::Locker;
@@ -212,13 +212,17 @@ ProFile *QMakeParser::parsedProFile(const QString &fileName, ParseFlags flags)
                 ent->locker = 0;
             }
 #endif
+        } else {
+            pro = 0;
         }
-    } else {
+    } else if (!(flags & ParseOnlyCached)) {
         pro = new ProFile(fileName);
         if (!read(pro, flags)) {
             delete pro;
             pro = 0;
         }
+    } else {
+        pro = 0;
     }
     return pro;
 }
