@@ -511,7 +511,7 @@ GLuint QOpenGLWindow::defaultFramebufferObject() const
 extern Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha);
 
 /*!
-  Returns a 32-bit RGB image of the framebuffer.
+  Returns a copy of the framebuffer.
 
   \note This is a potentially expensive operation because it relies on
   glReadPixels() to read back the pixels. This may be slow and can stall the
@@ -531,7 +531,9 @@ QImage QOpenGLWindow::grabFramebuffer()
         return QImage();
 
     makeCurrent();
-    QImage img = qt_gl_read_framebuffer(size() * devicePixelRatio(), false, false);
+
+    const bool hasAlpha = format().hasAlpha();
+    QImage img = qt_gl_read_framebuffer(size() * devicePixelRatio(), hasAlpha, hasAlpha);
     img.setDevicePixelRatio(devicePixelRatio());
     return img;
 }

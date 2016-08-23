@@ -938,7 +938,8 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer()
         q->makeCurrent();
     }
 
-    QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatioF(), false, false);
+    const bool hasAlpha = q->format().hasAlpha();
+    QImage res = qt_gl_read_framebuffer(q->size() * q->devicePixelRatioF(), hasAlpha, hasAlpha);
     res.setDevicePixelRatio(q->devicePixelRatioF());
 
     // While we give no guarantees of what is going to be left bound, prefer the
