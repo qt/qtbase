@@ -908,7 +908,7 @@
     UIFont *uifont = [UIFont fontWithName:qfont.family().toNSString() size:qfont.pointSize()];
     if (!uifont)
         return [NSDictionary dictionary];
-    return [NSDictionary dictionaryWithObject:uifont forKey:UITextInputTextFontKey];
+    return [NSDictionary dictionaryWithObject:uifont forKey:NSFontAttributeName];
 }
 
 - (NSDictionary *)markedTextStyle
