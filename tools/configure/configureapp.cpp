@@ -184,9 +184,13 @@ QString Configure::formatPath(const QString &path)
 
 void Configure::parseCmdLine()
 {
+    sourcePathMangled = sourcePath;
+    buildPathMangled = buildPath;
     if (configCmdLine.size() && configCmdLine.at(0) == "-top-level") {
         dictionary[ "TOPLEVEL" ] = "yes";
         configCmdLine.removeAt(0);
+        sourcePathMangled = QFileInfo(sourcePath).path();
+        buildPathMangled = QFileInfo(buildPath).path();
     }
 
     int argCount = configCmdLine.size();
@@ -1025,12 +1029,6 @@ void Configure::generateMakefiles()
 {
         QString pwd = QDir::currentPath();
         {
-            QString sourcePathMangled = sourcePath;
-            QString buildPathMangled = buildPath;
-            if (dictionary.contains("TOPLEVEL")) {
-                sourcePathMangled = QFileInfo(sourcePath).path();
-                buildPathMangled = QFileInfo(buildPath).path();
-            }
             QStringList args;
             args << buildPath + "/bin/qmake" << sourcePathMangled;
 
@@ -1180,11 +1178,14 @@ void Configure::readLicense()
 void Configure::reloadCmdLine(int idx)
 {
     if (dictionary[ "REDO" ] == "yes") {
-        QFile inFile(buildPath + "/config.opt");
+        QFile inFile(buildPathMangled + "/config.opt");
         if (!inFile.open(QFile::ReadOnly)) {
-            inFile.setFileName(buildPath + "/configure.cache");
-            if (!inFile.open(QFile::ReadOnly))
-                return;
+            inFile.setFileName(buildPath + "/config.opt");
+            if (!inFile.open(QFile::ReadOnly)) {
+                inFile.setFileName(buildPath + "/configure.cache");
+                if (!inFile.open(QFile::ReadOnly))
+                    return;
+            }
         }
         QTextStream inStream(&inFile);
         while (!inStream.atEnd())
@@ -1195,7 +1196,7 @@ void Configure::reloadCmdLine(int idx)
 void Configure::saveCmdLine()
 {
     if (dictionary[ "REDO" ] != "yes") {
-        QFile outFile(buildPath + "/config.opt");
+        QFile outFile(buildPathMangled + "/config.opt");
         if (outFile.open(QFile::WriteOnly | QFile::Text)) {
             QTextStream outStream(&outFile);
             for (QStringList::Iterator it = configCmdLine.begin(); it != configCmdLine.end(); ++it) {

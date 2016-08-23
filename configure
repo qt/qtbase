@@ -75,8 +75,12 @@ fi
 
 # do this early so we don't store it in config.status
 CFG_TOPLEVEL=
+relpathMangled=$relpath
+outpathPrefix=
 if [ x"$1" = x"-top-level" ]; then
     CFG_TOPLEVEL=yes
+    relpathMangled=`dirname "$relpath"`
+    outpathPrefix=../
     shift
 fi
 
@@ -90,11 +94,15 @@ IFS='
 for i in "$@"; do
     case $i in
         -redo|--redo)
-            if ! test -f config.opt; then
+            optfile=${outpathPrefix}config.opt
+            if test -n "$CFG_TOPLEVEL" && ! test -f $optfile; then
+                optfile=config.opt
+            fi
+            if ! test -f $optfile; then
                 echo >&2 "No config.opt present - cannot redo configuration."
                 exit 1
             fi
-            for a in `cat config.opt`; do
+            for a in `cat $optfile`; do
                 OPT_CMDLINE="$OPT_CMDLINE
 $a"
                 QMAKE_CMDLINE="$QMAKE_CMDLINE
@@ -1917,17 +1925,11 @@ fi
 # build makefiles based on the configuration
 #-------------------------------------------------------------------------------
 
-(   # fork to make the cd stay local
+if [ -n "$CFG_TOPLEVEL" ]; then
+    cd ..
+fi
 
-    relpathMangled=$relpath
-    if [ -n "$CFG_TOPLEVEL" ]; then
-        relpathMangled=`dirname "$relpath"`
-        cd ..
-    fi
-
-    "$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled"
-
-) || exit
+"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled" || exit
 
 #-------------------------------------------------------------------------------
 # finally save the executed command to another script
@@ -1937,12 +1939,12 @@ if [ $CFG_REDO = no ]; then
 -confirm-license"
 
     # skip first line, as it's always empty due to unconditional field separation
-    echo "$OPT_CMDLINE" | tail -n +2 > "$outpath/config.opt"
+    echo "$OPT_CMDLINE" | tail -n +2 > config.opt
 
-    [ -f "$outpath/config.status" ] && rm -f "$outpath/config.status"
-    echo "#!/bin/sh" > "$outpath/config.status"
-    echo "$relpath/$relconf -redo \"\$@\"" >> "$outpath/config.status"
-    chmod +x "$outpath/config.status"
+    [ -f "config.status" ] && rm -f config.status
+    echo "#!/bin/sh" > config.status
+    echo "$relpathMangled/$relconf -redo \"\$@\"" >> config.status
+    chmod +x config.status
 fi
 
 if [ -n "$PREFIX_COMPLAINTS" ]; then

@@ -75,6 +75,7 @@ private:
 
     QTextStream outStream;
     QString sourcePath, buildPath;
+    QString sourcePathMangled, buildPathMangled;
     QDir sourceDir, buildDir;
 
     QString confStrOffsets[2];
