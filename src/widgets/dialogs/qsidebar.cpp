@@ -192,7 +192,9 @@ void QUrlModel::setUrl(const QModelIndex &index, const QUrl &url, const QModelIn
 
         QIcon newIcon = qvariant_cast<QIcon>(dirIndex.data(Qt::DecorationRole));
         if (!dirIndex.isValid()) {
-            newIcon = fileSystemModel->iconProvider()->icon(QFileIconProvider::Folder);
+            const QFileIconProvider *provider = fileSystemModel->iconProvider();
+            if (provider)
+                newIcon = provider->icon(QFileIconProvider::Folder);
             newName = QFileInfo(url.toLocalFile()).fileName();
             if (!invalidUrls.contains(url))
                 invalidUrls.append(url);
