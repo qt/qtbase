@@ -143,7 +143,7 @@ void QWinRTClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         return;
 
 #ifndef Q_OS_WINPHONE
-    const QString text = data->text();
+    const QString text = data ? data->text() : QString();
     HRESULT hr = QEventDispatcherWinRT::runOnXamlThread([this, text]() {
         HRESULT hr;
         ComPtr<IDataPackage> package;
