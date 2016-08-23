@@ -1,6 +1,5 @@
 TEMPLATE=subdirs
 SUBDIRS=\
-   # atwrapper \ # QTBUG-19452
    compiler \
    gestures \
    lancelot \
