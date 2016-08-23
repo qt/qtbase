@@ -966,7 +966,7 @@ static QTtfGlyph generateGlyph(int index, const QPainterPath &path, qreal advanc
     glyph.advanceWidth = qRound(advance * 2048. / ppem);
     glyph.lsb = qRound(lsb * 2048. / ppem);
 
-    if (!path.elementCount()) {
+    if (path.isEmpty()) {
         //qDebug("glyph %d is empty", index);
         lsb = 0;
         glyph.xMin = glyph.xMax = glyph.yMin = glyph.yMax = 0;
