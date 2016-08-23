@@ -773,6 +773,10 @@ defineTest(qtConfReport_buildMode) {
     qtConfReportPadded($$1, $$build_mode)
 }
 
+# ensure pristine environment for configuration
+discard_from($$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)
+discard_from($$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)
+
 # load and process input from configure
 exists("$$OUT_PWD/config.tests/configure.cfg") {
     include("$$OUT_PWD/config.tests/configure.cfg")

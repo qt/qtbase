@@ -1886,14 +1886,6 @@ config.input.qt_licheck = $Licheck
 config.input.qt_release_date = $ReleaseDate
 EOF
 
-# create a clean qmodule/qconfig.pri for running the tests
-# .qmake.cache loads qt_build_parts which requires that qmodule.pri exists
-for arg in qconfig qmodule; do
-    file="$outpath/mkspecs/$arg.pri"
-    [ ! -f "$file.old" ] && [ -f "$file" ] && mv "$file" "$file.old"
-    : > "$file"
-done
-
 # recreate command line for qmake
 set -f
 SAVED_IFS=$IFS
@@ -1908,17 +1900,6 @@ IFS=$SAVED_IFS
 # redirect qmake's output to a dummy Makefile
 $CFG_QMAKE_PATH -o Makefile.cfg -qtconf "$QTCONFFILE" $relpath/configure.pri -- "$@" || exit 101
 rm Makefile.cfg
-
-# Re-use old file if unchanged, to avoid needless rebuilds
-for arg in qconfig qmodule; do
-    file="$outpath/mkspecs/$arg.pri"
-    if cmp -s "$file" "$file.old"; then
-        rm -f "$file"
-        mv "$file.old" "$file"
-    else
-        rm -f "$file.old"
-    fi
-done
 
 #-------------------------------------------------------------------------------
 # give feedback on configuration

@@ -999,21 +999,6 @@ void Configure::buildQmake()
 
 void Configure::configure()
 {
-    static const char * const files[] = { "qmodule", "qconfig" };
-
-    for (int i = 0; i < 2; i++) {
-        QFile file(buildPath + "/mkspecs/" + files[i] + ".pri");
-        QString oldfn = file.fileName() + ".old";
-        if (file.exists() && !QFileInfo::exists(oldfn))
-            QFile::rename(file.fileName(), oldfn);
-        if (!file.open(QFile::WriteOnly | QFile::Text)) {
-            cout << "Failed to create file " << qPrintable(file.fileName()) << endl;
-            dictionary[ "DONE" ] = "error";
-            return;
-        }
-        file.close();
-    }
-
     FileWriter ci(buildPath + "/config.tests/configure.cfg");
     ci << "# Feature defaults set by configure command line\n"
        << "config.input.qt_edition = " << dictionary["EDITION"] << "\n"
@@ -1033,19 +1018,6 @@ void Configure::configure()
     if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
         cout << "Qmake failed, return code " << exitCode  << endl << endl;
         dictionary[ "DONE" ] = "error";
-    }
-
-    for (int i = 0; i < 2; i++) {
-        QFile file(buildPath + "/mkspecs/" + files[i] + ".pri");
-        QFile oldFile(file.fileName() + ".old");
-        if (oldFile.open(QIODevice::ReadOnly | QIODevice::Text)
-                && file.open(QIODevice::ReadOnly | QIODevice::Text)
-                && oldFile.readAll() == file.readAll()) {
-            file.remove();
-            oldFile.rename(file.fileName());
-        } else {
-            oldFile.remove();
-        }
     }
 }
 
