@@ -87,6 +87,7 @@ public:
 
 private:
     QTouchDevicePrivate *d;
+    friend class QTouchDevicePrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchDevice::Capabilities)

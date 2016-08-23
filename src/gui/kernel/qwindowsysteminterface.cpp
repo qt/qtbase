@@ -502,9 +502,41 @@ bool QWindowSystemInterface::isTouchDeviceRegistered(const QTouchDevice *device)
     return QTouchDevicePrivate::isRegistered(device);
 }
 
+static int g_nextPointId = 1;
+
+// map from device-independent point id (arbitrary) to "Qt point" ids
+typedef QMap<quint64, int> PointIdMap;
+Q_GLOBAL_STATIC(PointIdMap, g_pointIdMap)
+
+/*!
+    \internal
+    This function maps potentially arbitrary point ids \a pointId in the 32 bit
+    value space to start from 1 and increase incrementally for each touch point
+    held down. If all touch points are released it will reset the id back to 1
+    for the following touch point.
+
+    We can then assume that the touch points ids will never become too large,
+    and it will then put the device identifier \a deviceId in the upper 8 bits.
+    This leaves us with max 255 devices, and 16.7M taps without full release
+    before we run out of value space.
+*/
+static int acquireCombinedPointId(quint8 deviceId, int pointId)
+{
+    quint64 combinedId64 = (quint64(deviceId) << 32) + pointId;
+    auto it = g_pointIdMap->constFind(combinedId64);
+    int uid;
+    if (it == g_pointIdMap->constEnd()) {
+        uid = g_nextPointId++;
+        g_pointIdMap->insert(combinedId64, uid);
+    } else {
+        uid = *it;
+    }
+    return (deviceId << 24) + uid;
+}
+
 QList<QTouchEvent::TouchPoint>
     QWindowSystemInterfacePrivate::fromNativeTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points,
-                                                         const QWindow *window,
+                                                         const QWindow *window, quint8 deviceId,
                                                          QEvent::Type *type)
 {
     QList<QTouchEvent::TouchPoint> touchPoints;
@@ -515,7 +547,7 @@ QList<QTouchEvent::TouchPoint>
     QList<QWindowSystemInterface::TouchPoint>::const_iterator point = points.constBegin();
     QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
-        p.setId(point->id);
+        p.setId(acquireCombinedPointId(deviceId, point->id));
         if (point->uniqueId >= 0)
             p.setUniqueId(point->uniqueId);
         p.setPressure(point->pressure);
@@ -546,6 +578,11 @@ QList<QTouchEvent::TouchPoint>
             *type = QEvent::TouchBegin;
         else if (states == Qt::TouchPointReleased)
             *type = QEvent::TouchEnd;
+    }
+
+    if (states == Qt::TouchPointReleased) {
+        g_nextPointId = 1;
+        g_pointIdMap->clear();
     }
 
     return touchPoints;
@@ -589,7 +626,8 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *tlw, ulong timestam
         return;
 
     QEvent::Type type;
-    QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, tlw, &type);
+    QList<QTouchEvent::TouchPoint> touchPoints =
+            QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, tlw, QTouchDevicePrivate::get(device)->id, &type);
 
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, device, touchPoints, mods);
