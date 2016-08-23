@@ -65,7 +65,8 @@ public:
     void swap(QDeadlineTimer &other)
     { qSwap(t1, other.t1); qSwap(t2, other.t2); qSwap(type, other.type); }
 
-    bool isForever() const Q_DECL_NOTHROW;
+    Q_DECL_CONSTEXPR bool isForever() const Q_DECL_NOTHROW
+    { return t1 == (std::numeric_limits<qint64>::max)(); }
     bool hasExpired() const Q_DECL_NOTHROW;
 
     Qt::TimerType timerType() const Q_DECL_NOTHROW
