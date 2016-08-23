@@ -1484,7 +1484,7 @@
         },
         "precompile_header": {
             "description": "Using precompiled headers",
-            "condition": "config.msvc || (!config.uikit && tests.precompile_header)",
+            "condition": "config.msvc || tests.precompile_header",
             "output": [
                 "privateConfig",
                 { "type": "varRemove", "negative": true, "name": "CONFIG", "value": "'precompile_header'" }

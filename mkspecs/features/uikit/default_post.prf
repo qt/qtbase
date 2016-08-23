@@ -114,4 +114,6 @@ macx-xcode {
     QMAKE_CFLAGS += $$arch_flags
     QMAKE_CXXFLAGS += $$arch_flags
     QMAKE_LFLAGS += $$arch_flags
+
+    QMAKE_PCH_ARCHS = $$VALID_ARCHS
 }
