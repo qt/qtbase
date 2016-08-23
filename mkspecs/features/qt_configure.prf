@@ -1271,7 +1271,6 @@ defineTest(qtConfProcessEarlyChecks) {
 
 
 defineTest(qtConfCreateReport) {
-    qtConfAddReport(" ")
     qtConfCreateReportRecurse(config.report, false)
 }
 
