@@ -2269,9 +2269,6 @@ QString MakefileGenerator::build_args()
 {
     QString ret = "$(QMAKE)";
 
-    // general options and arguments
-    ret += buildArgs();
-
     //output
     QString ofile = fileFixify(Option::output.fileName());
     if(!ofile.isEmpty() && ofile != project->first("QMAKE_MAKEFILE"))
@@ -2279,6 +2276,9 @@ QString MakefileGenerator::build_args()
 
     //inputs
     ret += " " + escapeFilePath(fileFixify(project->projectFile()));
+
+    // general options and arguments
+    ret += buildArgs();
 
     return ret;
 }
@@ -2442,7 +2442,7 @@ MakefileGenerator::writeSubTargetCall(QTextStream &t,
         if (!in_directory.isEmpty())
             t << "\n\t" << mkdir_p_asstring(out_directory);
         pfx = "( " + chkexists.arg(out) +
-              + " $(QMAKE) " + in + buildArgs() + " -o " + out
+              + " $(QMAKE) -o " + out + ' ' + in + buildArgs()
               + " ) && ";
     }
     writeSubMakeCall(t, out_directory_cdin + pfx, makefilein);
@@ -2513,7 +2513,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin;
             }
-            t << "$(QMAKE) " << in << buildArgs() << " -o " << out;
+            t << "$(QMAKE) -o " << out << ' ' << in << buildArgs();
             if (!dont_recurse)
                 writeSubMakeCall(t, out_directory_cdin, makefilein + " qmake_all");
             else
@@ -2710,7 +2710,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
     if(project->isEmpty("QMAKE_FAILED_REQUIREMENTS") && !project->isEmpty("QMAKE_INTERNAL_PRL_FILE")) {
         QStringList files = escapeFilePaths(fileFixify(Option::mkfile::project_files));
         t << escapeDependencyPath(project->first("QMAKE_INTERNAL_PRL_FILE").toQString()) << ": \n\t"
-          << "@$(QMAKE) -prl " << buildArgs() << " " << files.join(' ') << endl;
+          << "@$(QMAKE) -prl " << files.join(' ') << ' ' << buildArgs() << endl;
     }
 
         QString qmake = build_args();
