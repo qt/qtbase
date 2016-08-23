@@ -532,9 +532,6 @@ void Configure::parseCmdLine()
             cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
         }
     }
-
-    if ((dictionary["REDO"] != "yes") && (dictionary["DONE"] != "error"))
-        saveCmdLine();
 }
 
 /*!
@@ -1026,6 +1023,9 @@ void Configure::configure()
         cout << "Qmake failed, return code " << exitCode  << endl << endl;
         dictionary[ "DONE" ] = "error";
     }
+
+    if ((dictionary["REDO"] != "yes") && (dictionary["DONE"] != "error"))
+        saveCmdLine();
 }
 
 void Configure::generateMakefiles()
@@ -1093,6 +1093,7 @@ bool Configure::showLicense(QString orgLicenseFile)
         accept = tolower(accept);
 
         if (accept == 'y') {
+            configCmdLine << "-confirm-license";
             return true;
         } else if (accept == 'n') {
             return false;
@@ -1172,9 +1173,16 @@ void Configure::readLicense()
     } else if (openSource) {
         cout << endl << "Cannot find the GPL license files! Please download the Open Source version of the library." << endl;
         dictionary["DONE"] = "error";
+        return;
     }
     else {
         Tools::checkLicense(dictionary, sourcePath, buildPath);
+    }
+    if (dictionary["BUILDTYPE"] == "none") {
+        if (openSource)
+            configCmdLine << "-opensource";
+        else
+            configCmdLine << "-commercial";
     }
 }
 

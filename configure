@@ -1045,9 +1045,13 @@ if [ "$COMMERCIAL_USER" = "ask" ]; then
         echo
         if [ "$commercial" = "c" ]; then
             COMMERCIAL_USER="yes"
+            OPT_CMDLINE="$OPT_CMDLINE
+-commercial"
             break
         elif [ "$commercial" = "o" ]; then
             COMMERCIAL_USER="no"
+            OPT_CMDLINE="$OPT_CMDLINE
+-opensource"
             break
         fi
     done
@@ -1935,8 +1939,10 @@ fi
 # finally save the executed command to another script
 #-------------------------------------------------------------------------------
 if [ $CFG_REDO = no ]; then
-    echo "$OPT_CMDLINE" | grep '\-confirm\-license' >/dev/null 2>&1 || OPT_CMDLINE="$OPT_CMDLINE
+    if [ "$OPT_CONFIRM_LICENSE" = "no" ]; then
+        OPT_CMDLINE="$OPT_CMDLINE
 -confirm-license"
+    fi
 
     # skip first line, as it's always empty due to unconditional field separation
     echo "$OPT_CMDLINE" | tail -n +2 > config.opt
