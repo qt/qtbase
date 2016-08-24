@@ -69,12 +69,15 @@
 
 class Window : public QOpenGLWindow
 {
+    Q_OBJECT
 public:
     Window(int n) : idx(n) {
         r = g = b = fps = 0;
         y = 0;
         resize(200, 200);
-        t2.start();
+
+        connect(this, SIGNAL(frameSwapped()), SLOT(frameSwapped()));
+        fpsTimer.start();
     }
 
     void paintGL() {
@@ -106,20 +109,27 @@ public:
         if (y > height() - 20)
             y = 20;
 
-        if (t2.elapsed() > 1000) {
-            fps = 1000.0 / t.elapsed();
-            t2.restart();
-        }
-        t.restart();
-
         update();
+    }
+
+public slots:
+    void frameSwapped() {
+        ++framesSwapped;
+        if (fpsTimer.elapsed() > 1000) {
+            fps = qRound(framesSwapped * (1000.0 / fpsTimer.elapsed()));
+            framesSwapped = 0;
+            fpsTimer.restart();
+        }
     }
 
 private:
     int idx;
-    GLfloat r, g, b, fps;
+    GLfloat r, g, b;
     int y;
-    QElapsedTimer t, t2;
+
+    int framesSwapped;
+    QElapsedTimer fpsTimer;
+    int fps;
 };
 
 int main(int argc, char **argv)
@@ -167,3 +177,5 @@ int main(int argc, char **argv)
     qDeleteAll(extraWindows);
     return r;
 }
+
+#include "main.moc"
