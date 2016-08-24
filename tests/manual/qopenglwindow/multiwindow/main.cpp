@@ -37,26 +37,21 @@
 #include <QOpenGLFunctions>
 #include <QPainter>
 #include <QElapsedTimer>
+#include <QCommandLineParser>
 
-// This application opens three windows and continuously schedules updates for
-// them.  Each of them is a separate QOpenGLWindow so there will be a separate
-// context and swapBuffers call for each.
-//
-// By default the swap interval is 1 so the effect of three blocking swapBuffers
-// on the main thread can be examined. (the result is likely to be different
-// between platforms, for example OS X is buffer queuing meaning that it can
-// block outside swap, resulting in perfect vsync for all three windows, while
-// other systems that block on swap will kill the frame rate due to blocking the
-// thread three times)
-//
-// Pass --novsync to set a swap interval of 0. This should give an unthrottled
-// refresh on all platforms for all three windows.
-//
-// Passing --vsyncone sets swap interval to 1 for the first window and 0 to the
-// others.
-//
-// Pass --extrawindows N to open N windows in addition to the default 3.
-//
+const char applicationDescription[] = "\n\
+This application opens multiple windows and continuously schedules updates for\n\
+them. Each of them is a separate QOpenGLWindow so there will be a separate\n\
+context and swapBuffers call for each.\n\
+\n\
+By default the swap interval is 1 so the effect of multiple blocking swapBuffers\n\
+on the main thread can be examined. (the result is likely to be different\n\
+between platforms, for example OS X is buffer queuing meaning that it can\n\
+block outside swap, resulting in perfect vsync for all three windows, while\n\
+other systems that block on swap will kill the frame rate due to blocking the\n\
+thread three times)\
+";
+
 // For reference, below is a table of some test results.
 //
 //                                    swap interval 1 for all             swap interval 1 for only one and 0 for others
@@ -135,8 +130,26 @@ private:
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription(applicationDescription);
+    parser.addHelpOption();
+
+    QCommandLineOption noVsyncOption("novsync", "Disable Vsync by setting swap interval to 0. "
+        "This should give an unthrottled refresh on all platforms for all windows.");
+    parser.addOption(noVsyncOption);
+
+    QCommandLineOption vsyncOneOption("vsyncone", "Enable Vsync only for first window, "
+        "by setting swap interval to 1 for the first window and 0 for the others.");
+    parser.addOption(vsyncOneOption);
+
+    QCommandLineOption extraWindowsOption("extrawindows", "Open <N> windows in addition to the default 3.", "N", "0");
+    parser.addOption(extraWindowsOption);
+
+    parser.process(app);
+
     QSurfaceFormat fmt;
-    if (QGuiApplication::arguments().contains(QLatin1String("--novsync"))) {
+    if (parser.isSet(noVsyncOption)) {
         qDebug("swap interval 0 (no throttling)");
         fmt.setSwapInterval(0);
     } else {
@@ -145,7 +158,7 @@ int main(int argc, char **argv)
     QSurfaceFormat::setDefaultFormat(fmt);
 
     Window w1(0);
-    if (QGuiApplication::arguments().contains(QLatin1String("--vsyncone"))) {
+    if (parser.isSet(vsyncOneOption)) {
         qDebug("swap interval 1 for first window only");
         QSurfaceFormat w1fmt = fmt;
         w1fmt.setSwapInterval(1);
@@ -163,9 +176,7 @@ int main(int argc, char **argv)
     w3.show();
 
     QList<QWindow *> extraWindows;
-    int countIdx;
-    if ((countIdx = QGuiApplication::arguments().indexOf(QLatin1String("--extrawindows"))) >= 0) {
-        int extraWindowCount = QGuiApplication::arguments().at(countIdx + 1).toInt();
+    if (int extraWindowCount = parser.value(extraWindowsOption).toInt()) {
         for (int i = 0; i < extraWindowCount; ++i) {
             Window *w = new Window(3 + i);
             extraWindows << w;
