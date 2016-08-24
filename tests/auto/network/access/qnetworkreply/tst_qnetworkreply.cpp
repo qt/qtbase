@@ -1422,14 +1422,12 @@ static QByteArray msgWaitForFinished(QNetworkReplyPtr &reply)
     QString result;
     QDebug debug(&result);
     debug << reply->url();
-    if (reply->isFinished()) {
-        if (reply->error() == QNetworkReply::NoError)
-            debug << "finished.";
-        else
-            debug << "failed: #" << reply->error() << reply->errorString();
-    } else {
+    if (!reply->isFinished())
         debug << "timed out.";
-    }
+    else if (reply->error() == QNetworkReply::NoError)
+        debug << "finished.";
+    else
+        debug << "failed: #" << reply->error() << reply->errorString();
     return result.toLocal8Bit();
 }
 
