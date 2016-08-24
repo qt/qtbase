@@ -201,7 +201,10 @@ void Configure::parseCmdLine()
         if (configCmdLine.at(k) == "-redo") {
             dictionary["REDO"] = "yes";
             configCmdLine.removeAt(k);
-            reloadCmdLine(k);
+            if (!reloadCmdLine(k)) {
+                dictionary["DONE"] = "error";
+                return;
+            }
             argCount = configCmdLine.size();
             break;
         }
@@ -1175,20 +1178,23 @@ void Configure::readLicense()
     }
 }
 
-void Configure::reloadCmdLine(int idx)
+bool Configure::reloadCmdLine(int idx)
 {
         QFile inFile(buildPathMangled + "/config.opt");
         if (!inFile.open(QFile::ReadOnly)) {
             inFile.setFileName(buildPath + "/config.opt");
             if (!inFile.open(QFile::ReadOnly)) {
                 inFile.setFileName(buildPath + "/configure.cache");
-                if (!inFile.open(QFile::ReadOnly))
-                    return;
+                if (!inFile.open(QFile::ReadOnly)) {
+                    cout << "No config.opt present - cannot redo configuration." << endl;
+                    return false;
+                }
             }
         }
         QTextStream inStream(&inFile);
         while (!inStream.atEnd())
             configCmdLine.insert(idx++, inStream.readLine().trimmed());
+        return true;
 }
 
 void Configure::saveCmdLine()

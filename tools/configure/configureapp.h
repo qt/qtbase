@@ -85,7 +85,7 @@ private:
     void addConfStr(int group, const QString &val);
     QString formatPath(const QString &path);
 
-    void reloadCmdLine(int idx);
+    bool reloadCmdLine(int idx);
     void saveCmdLine();
 
     void applySpecSpecifics();
