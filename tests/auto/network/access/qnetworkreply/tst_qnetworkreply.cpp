@@ -104,10 +104,10 @@ class tst_QNetworkReply: public QObject
     Q_OBJECT
 
 #ifndef QT_NO_NETWORKPROXY
-    struct ProxyData {
+    struct ProxyData
+    {
         ProxyData(const QNetworkProxy &p, const QByteArray &t, bool auth)
-            : tag(t), proxy(p), requiresAuthentication(auth)
-        { }
+            : tag(t), proxy(p), requiresAuthentication(auth) {}
         QByteArray tag;
         QNetworkProxy proxy;
         bool requiresAuthentication;
@@ -115,7 +115,8 @@ class tst_QNetworkReply: public QObject
 #endif // !QT_NO_NETWORKPROXY
 
     static bool seedCreated;
-    static QString createUniqueExtension() {
+    static QString createUniqueExtension()
+    {
         if (!seedCreated) {
             qsrand(QTime(0,0,0).msecsTo(QTime::currentTime()) + QCoreApplication::applicationPid());
             seedCreated = true; // not thread-safe, but who cares
@@ -616,7 +617,8 @@ protected:
         ++totalConnections;
     }
 
-    virtual void reply() {
+    virtual void reply()
+    {
         Q_ASSERT(!client.isNull());
         // we need to emulate the bytesWrittenSlot call if the data is empty.
         if (dataToTransmit.size() == 0) {
@@ -673,7 +675,8 @@ public slots:
         }
     }
 
-    void bytesWrittenSlot() {
+    void bytesWrittenSlot()
+    {
         Q_ASSERT(!client.isNull());
         // Disconnect and delete in next cycle (else Windows clients will fail with RemoteHostClosedError).
         if (doClose && client->bytesToWrite() == 0) {
@@ -918,7 +921,8 @@ class BlockingTcpServer : public QTcpServer
 public:
     BlockingTcpServer(bool ssl) : doSsl(ssl), sslSocket(0) {}
 
-    QTcpSocket* waitForNextConnectionSocket() {
+    QTcpSocket* waitForNextConnectionSocket()
+    {
         waitForNewConnection(-1);
         if (doSsl) {
             if (!sslSocket)
@@ -4764,11 +4768,13 @@ void tst_QNetworkReply::ioPostToHttpNoBufferFlag()
 }
 
 #ifndef QT_NO_SSL
-class SslServer : public QTcpServer {
+class SslServer : public QTcpServer
+{
     Q_OBJECT
 public:
     SslServer() : socket(0), m_ssl(true) {}
-    void incomingConnection(qintptr socketDescriptor) {
+    void incomingConnection(qintptr socketDescriptor)
+    {
         QSslSocket *serverSocket = new QSslSocket;
         serverSocket->setParent(this);
 
@@ -4796,11 +4802,13 @@ signals:
     void newEncryptedConnection(QSslSocket *s);
     void newPlainConnection(QSslSocket *s);
 public slots:
-    void encryptedSlot() {
+    void encryptedSlot()
+    {
         socket = (QSslSocket*) sender();
         emit newEncryptedConnection(socket);
     }
-    void readyReadSlot() {
+    void readyReadSlot()
+    {
         // for the incoming sockets, not the server socket
         //qDebug() << static_cast<QSslSocket*>(sender())->bytesAvailable() << static_cast<QSslSocket*>(sender())->encryptedBytesAvailable();
     }
@@ -5699,12 +5707,14 @@ void tst_QNetworkReply::httpProxyCommands()
     QCOMPARE(uaheader, QByteArray("User-Agent: QNetworkReplyAutoTest/1.0"));
 }
 
-class ProxyChangeHelper : public QObject {
+class ProxyChangeHelper : public QObject
+{
     Q_OBJECT
 public:
     ProxyChangeHelper() : QObject(), signalCount(0) {};
 public slots:
-    void finishedSlot() {
+    void finishedSlot()
+    {
         signalCount++;
         if (signalCount == 2)
             QMetaObject::invokeMethod(&QTestEventLoop::instance(), "exitLoop", Qt::QueuedConnection);
@@ -5950,7 +5960,8 @@ void tst_QNetworkReply::httpReUsingConnectionSequential()
     reply2->deleteLater();
 }
 
-class HttpReUsingConnectionFromFinishedSlot : public QObject {
+class HttpReUsingConnectionFromFinishedSlot : public QObject
+{
     Q_OBJECT
 public:
     QNetworkReply* reply1;
@@ -5958,7 +5969,8 @@ public:
     QUrl url;
     QNetworkAccessManager manager;
 public slots:
-    void finishedSlot() {
+    void finishedSlot()
+    {
         QVERIFY(!reply1->error());
 
         QFETCH(bool, doDeleteLater);
@@ -6006,7 +6018,8 @@ void tst_QNetworkReply::httpReUsingConnectionFromFinishedSlot()
     QCOMPARE(server.totalConnections, 1);
 }
 
-class HttpRecursiveCreationHelper : public QObject {
+class HttpRecursiveCreationHelper : public QObject
+{
     Q_OBJECT
 public:
 
@@ -6022,7 +6035,8 @@ public:
     int requestsStartedCount_readyRead;
     int requestsFinishedCount;
 public slots:
-    void finishedSlot() {
+    void finishedSlot()
+    {
         requestsFinishedCount++;
 
         QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
@@ -6041,7 +6055,8 @@ public slots:
 
         reply->deleteLater();
     }
-    void readyReadSlot() {
+    void readyReadSlot()
+    {
         QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
         QVERIFY(!reply->error());
 
@@ -6050,7 +6065,8 @@ public slots:
             requestsStartedCount_readyRead++;
         }
     }
-    void startOne() {
+    void startOne()
+    {
         QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/fluke.gif";
         QNetworkRequest request(url);
         QNetworkReply *reply = manager.get(request);
@@ -6419,7 +6435,8 @@ void tst_QNetworkReply::getFromHttpIntoBuffer()
 }
 
 // FIXME we really need to consolidate all those server implementations
-class GetFromHttpIntoBuffer2Server : QObject {
+class GetFromHttpIntoBuffer2Server : QObject
+{
     Q_OBJECT
     qint64 dataSize;
     qint64 dataSent;
@@ -6429,26 +6446,28 @@ class GetFromHttpIntoBuffer2Server : QObject {
     bool chunkedEncoding;
 
 public:
-    GetFromHttpIntoBuffer2Server (qint64 ds, bool sscl, bool ce) : dataSize(ds), dataSent(0),
-    client(0), serverSendsContentLength(sscl), chunkedEncoding(ce) {
+    GetFromHttpIntoBuffer2Server (qint64 ds, bool sscl, bool ce)
+        : dataSize(ds), dataSent(0), client(0),
+          serverSendsContentLength(sscl), chunkedEncoding(ce)
+    {
         server.listen();
         connect(&server, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()));
     }
 
-    int serverPort() {
-        return server.serverPort();
-    }
+    int serverPort() { return server.serverPort(); }
 
 public slots:
 
-    void newConnectionSlot() {
+    void newConnectionSlot()
+    {
         client = server.nextPendingConnection();
         client->setParent(this);
         connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
         connect(client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot(qint64)));
     }
 
-    void readyReadSlot() {
+    void readyReadSlot()
+    {
         client->readAll();
         client->write("HTTP/1.0 200 OK\n");
         if (serverSendsContentLength)
@@ -6458,7 +6477,8 @@ public slots:
         client->write("Connection: close\n\n");
     }
 
-    void bytesWrittenSlot(qint64 amount) {
+    void bytesWrittenSlot(qint64 amount)
+    {
         Q_UNUSED(amount);
         if (dataSent == dataSize && client) {
             // close eventually
@@ -6492,7 +6512,8 @@ public slots:
     }
 };
 
-class GetFromHttpIntoBuffer2Client : QObject {
+class GetFromHttpIntoBuffer2Client : QObject
+{
     Q_OBJECT
 private:
     bool useDownloadBuffer;
@@ -6509,7 +6530,8 @@ public:
     }
 
     public slots:
-    void metaDataChangedSlot() {
+    void metaDataChangedSlot()
+    {
         if (useDownloadBuffer) {
             QSharedPointer<char> sharedPointer = qvariant_cast<QSharedPointer<char> >(reply->attribute(QNetworkRequest::DownloadBufferAttribute));
             QVERIFY(!sharedPointer.isNull()); // It will be 0 if it failed
@@ -6519,7 +6541,8 @@ public:
         QVERIFY(bytesAvailableList.isEmpty());
     }
 
-    void readyReadSlot() {
+    void readyReadSlot()
+    {
         QVERIFY(!reply->isFinished());
 
         qint64 bytesAvailable = reply->bytesAvailable();
@@ -6541,7 +6564,8 @@ public:
         // Add bytesAvailable to a list an parse
     }
 
-    void finishedSlot() {
+    void finishedSlot()
+    {
         // We should have already received all readyRead
         QVERIFY(!bytesAvailableList.isEmpty());
         QCOMPARE(bytesAvailableList.last(), uploadSize);
@@ -6947,17 +6971,17 @@ void tst_QNetworkReply::authenticationWithDifferentRealm()
 }
 #endif // !QT_NO_NETWORKPROXY
 
-class QtBug13431Helper : public QObject {
+class QtBug13431Helper : public QObject
+{
     Q_OBJECT
 public:
     QNetworkReply* m_reply;
     QTimer m_dlTimer;
 public slots:
-    void replyFinished(QNetworkReply*) {
-        QTestEventLoop::instance().exitLoop();
-    }
+    void replyFinished(QNetworkReply*) { QTestEventLoop::instance().exitLoop(); }
 
-    void onReadAndReschedule() {
+    void onReadAndReschedule()
+    {
         const qint64 bytesReceived = m_reply->bytesAvailable();
         if (bytesReceived && m_reply->readBufferSize()) {
            QByteArray data = m_reply->read(bytesReceived);
@@ -7105,7 +7129,8 @@ void tst_QNetworkReply::qtbug22660gzipNoContentLengthEmptyContent()
     QCOMPARE(reply->readAll(), QByteArray());
 }
 
-class QtBug27161Helper : public QObject {
+class QtBug27161Helper : public QObject
+{
     Q_OBJECT
 public:
     QtBug27161Helper(MiniHttpServer & server, const QByteArray & data):
@@ -7115,16 +7140,19 @@ public:
         connect(&m_server, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()));
     }
 public slots:
-    void newConnectionSlot(){
+    void newConnectionSlot()
+    {
         connect(m_server.client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot()));
     }
 
-    void bytesWrittenSlot(){
+    void bytesWrittenSlot()
+    {
         disconnect(m_server.client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot()));
         m_Timer.singleShot(100, this, SLOT(timeoutSlot()));
     }
 
-    void timeoutSlot(){
+    void timeoutSlot()
+    {
         m_server.doClose = true;
         // we need to emulate the bytesWrittenSlot call if the data is empty.
         if (m_data.size() == 0)
@@ -7553,10 +7581,12 @@ void tst_QNetworkReply::httpUserAgent()
 
 void tst_QNetworkReply::synchronousAuthenticationCache()
 {
-    class MiniAuthServer : public MiniHttpServer {
+    class MiniAuthServer : public MiniHttpServer
+    {
     public:
-        MiniAuthServer(QThread *thread) : MiniHttpServer(QByteArray(), false, thread) {};
-        virtual void reply() {
+        MiniAuthServer(QThread *thread) : MiniHttpServer(QByteArray(), false, thread) {}
+        virtual void reply()
+        {
 
             dataToTransmit =
                 "HTTP/1.0 401 Unauthorized\r\n"
@@ -7968,7 +7998,8 @@ public:
     qint64 bandwidthQuota;
     QTimer timer;
 
-    RateLimitedUploadDevice(QByteArray d) : QIODevice(),data(d),read(0),bandwidthQuota(0) {
+    RateLimitedUploadDevice(QByteArray d) : QIODevice(),data(d),read(0),bandwidthQuota(0)
+    {
         buffer.setData(data);
         buffer.open(QIODevice::ReadOnly);
         timer.setInterval(200);
@@ -7976,12 +8007,14 @@ public:
         timer.start();
     }
 
-    virtual qint64 writeData(const char* , qint64 ) {
+    virtual qint64 writeData(const char* , qint64 )
+    {
         Q_ASSERT(false);
         return 0;
     }
 
-    virtual qint64 readData(char* data, qint64 maxlen) {
+    virtual qint64 readData(char* data, qint64 maxlen)
+    {
         //qDebug() << Q_FUNC_INFO << maxlen << bandwidthQuota;
         maxlen = qMin(maxlen, buffer.bytesAvailable());
         maxlen = qMin(maxlen, bandwidthQuota);
@@ -7998,24 +8031,17 @@ public:
         //qDebug() << Q_FUNC_INFO << maxlen << bandwidthQuota << read << ret << buffer.bytesAvailable();
         return ret;
     }
-    virtual bool atEnd() const {
-        return buffer.atEnd();
-    }
-    virtual qint64 size() const{
-        return data.length();
-    }
+    virtual bool atEnd() const { return buffer.atEnd(); }
+    virtual qint64 size() const { return data.length(); }
     qint64 bytesAvailable() const
     {
         return buffer.bytesAvailable() + QIODevice::bytesAvailable();
     }
-    virtual bool isSequential() const{ // random access, we can seek
-        return false;
-    }
-    virtual bool seek ( qint64 pos ) {
-        return buffer.seek(pos);
-    }
+    virtual bool isSequential() const { return false; } // random access, we can seek
+    virtual bool seek (qint64 pos) { return buffer.seek(pos); }
 protected slots:
-    void timeoutSlot() {
+    void timeoutSlot()
+    {
         //qDebug() << Q_FUNC_INFO;
         bandwidthQuota = 8*1024; // fill quota
         emit readyRead();
@@ -8205,9 +8231,7 @@ signals:
     void corruptFileUploadReceived();
 
 public slots:
-    void closeDelayed() {
-        m_socket->close();
-    }
+    void closeDelayed() { m_socket->close(); }
 
     void readyReadSlot()
     {
@@ -8259,26 +8283,26 @@ public:
     int m_repliesFinished;
     int m_expectedReplies;
     QByteArray m_expectedData;
-    PutWithServerClosingConnectionImmediatelyServer() : SslServer(), m_correctUploads(0), m_corruptUploads(0), m_repliesFinished(0), m_expectedReplies(0)
+    PutWithServerClosingConnectionImmediatelyServer()
+        : SslServer(), m_correctUploads(0), m_corruptUploads(0),
+          m_repliesFinished(0), m_expectedReplies(0)
     {
         QObject::connect(this, SIGNAL(newEncryptedConnection(QSslSocket*)), this, SLOT(createHandlerForConnection(QSslSocket*)));
         QObject::connect(this, SIGNAL(newPlainConnection(QSslSocket*)), this, SLOT(createHandlerForConnection(QSslSocket*)));
     }
 
 public slots:
-    void createHandlerForConnection(QSslSocket* s) {
+    void createHandlerForConnection(QSslSocket* s)
+    {
         PutWithServerClosingConnectionImmediatelyHandler *handler = new PutWithServerClosingConnectionImmediatelyHandler(s, m_expectedData);
         handler->setParent(this);
         QObject::connect(handler, SIGNAL(correctFileUploadReceived()), this, SLOT(increaseCorrect()));
         QObject::connect(handler, SIGNAL(corruptFileUploadReceived()), this, SLOT(increaseCorrupt()));
     }
-    void increaseCorrect() {
-        m_correctUploads++;
-    }
-    void increaseCorrupt() {
-        m_corruptUploads++;
-    }
-    void replyFinished() {
+    void increaseCorrect() { m_correctUploads++; }
+    void increaseCorrupt() { m_corruptUploads++; }
+    void replyFinished()
+    {
         m_repliesFinished++;
         if (m_repliesFinished == m_expectedReplies) {
             QTestEventLoop::instance().exitLoop();
