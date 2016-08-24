@@ -1177,7 +1177,6 @@ void Configure::readLicense()
 
 void Configure::reloadCmdLine(int idx)
 {
-    if (dictionary[ "REDO" ] == "yes") {
         QFile inFile(buildPathMangled + "/config.opt");
         if (!inFile.open(QFile::ReadOnly)) {
             inFile.setFileName(buildPath + "/config.opt");
@@ -1190,7 +1189,6 @@ void Configure::reloadCmdLine(int idx)
         QTextStream inStream(&inFile);
         while (!inStream.atEnd())
             configCmdLine.insert(idx++, inStream.readLine().trimmed());
-    }
 }
 
 void Configure::saveCmdLine()
