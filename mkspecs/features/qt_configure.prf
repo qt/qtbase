@@ -870,7 +870,6 @@ defineTest(qtRunSingleTest) {
     tpfx = config.tests.$${1}
     defined($${tpfx}.result, var): \
         return()
-    result = true
 
     type = $$eval($${tpfx}.type)
     call = "qtConfTest_$$type"
@@ -880,24 +879,27 @@ defineTest(qtRunSingleTest) {
     qtConfEnsureTestTypeDeps($$type)
 
     preCall = "qtConfTestPrepare_$$type"
-    defined($$preCall, test): \
-        !$${preCall}($${tpfx}): result = false
-
-    $$result {
-        # note: we do this only after resolving the dependencies and the
-        # preparation (which may resolve libraries), so that caching does
-        # not alter the execution order (and thus the output).
-        qtConfLoadResult($${tpfx}, $$1): \
-            return()
-
-        qtLogTestIntro($${tpfx})
-        msg = "executing config test $${1}"
-        write_file($$QMAKE_CONFIG_LOG, msg, append)
-
-        !$${call}($${tpfx}): result = false
-
-        qtLogTestResult($${tpfx}, $$result)
+    defined($$preCall, test):!$${preCall}($${tpfx}) {
+        $${tpfx}.result = false
+        export($${tpfx}.result)
+        # don't cache the result; the pre-deps have their own caches.
+        return()
     }
+
+    # note: we do this only after resolving the dependencies and the
+    # preparation (which may resolve libraries), so that caching does
+    # not alter the execution order (and thus the output).
+    qtConfLoadResult($${tpfx}, $$1): \
+        return()
+
+    qtLogTestIntro($${tpfx})
+    msg = "executing config test $${1}"
+    write_file($$QMAKE_CONFIG_LOG, msg, append)
+
+    result = false
+    $${call}($${tpfx}): result = true
+
+    qtLogTestResult($${tpfx}, $$result)
 
     $${tpfx}.result = $$result
     export($${tpfx}.result)
