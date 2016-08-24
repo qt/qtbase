@@ -136,7 +136,18 @@ Q_DECLARE_TYPEINFO(QConfFileCustomFormat, Q_MOVABLE_TYPE);
 
 typedef QHash<QString, QConfFile *> ConfFileHash;
 typedef QCache<QString, QConfFile> ConfFileCache;
-typedef QHash<int, QString> PathHash;
+namespace {
+    struct Path
+    {
+        // Note: Defining constructors explicitly because of buggy C++11
+        // implementation in MSVC (uniform initialization).
+        Path() {}
+        Path(const QString & p, bool ud) : path(p), userDefined(ud) {}
+        QString path;
+        bool userDefined; //!< true - user defined, overridden by setPath
+    };
+}
+typedef QHash<int, Path> PathHash;
 typedef QVector<QConfFileCustomFormat> CustomFormatVector;
 
 Q_GLOBAL_STATIC(ConfFileHash, usedHashFunc)
@@ -1065,22 +1076,22 @@ static void initDefaultPaths(QMutexLocker *locker)
        */
 #ifdef Q_OS_WIN
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::UserScope),
-                         windowsConfigPath(CSIDL_APPDATA) + QDir::separator());
+                         Path(windowsConfigPath(CSIDL_APPDATA) + QDir::separator(), false));
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::SystemScope),
-                         windowsConfigPath(CSIDL_COMMON_APPDATA) + QDir::separator());
+                         Path(windowsConfigPath(CSIDL_COMMON_APPDATA) + QDir::separator(), false));
 #else
         const QString userPath = make_user_path();
-        pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::UserScope), userPath);
-        pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::SystemScope), systemPath);
+        pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::UserScope), Path(userPath, false));
+        pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::SystemScope), Path(systemPath, false));
 #ifndef Q_OS_MAC
-        pathHash->insert(pathHashKey(QSettings::NativeFormat, QSettings::UserScope), userPath);
-        pathHash->insert(pathHashKey(QSettings::NativeFormat, QSettings::SystemScope), systemPath);
+        pathHash->insert(pathHashKey(QSettings::NativeFormat, QSettings::UserScope), Path(userPath, false));
+        pathHash->insert(pathHashKey(QSettings::NativeFormat, QSettings::SystemScope), Path(systemPath, false));
 #endif
 #endif // Q_OS_WIN
     }
 }
 
-static QString getPath(QSettings::Format format, QSettings::Scope scope)
+static Path getPath(QSettings::Format format, QSettings::Scope scope)
 {
     Q_ASSERT((int)QSettings::NativeFormat == 0);
     Q_ASSERT((int)QSettings::IniFormat == 1);
@@ -1090,13 +1101,22 @@ static QString getPath(QSettings::Format format, QSettings::Scope scope)
     if (pathHash->isEmpty())
         initDefaultPaths(&locker);
 
-    QString result = pathHash->value(pathHashKey(format, scope));
-    if (!result.isEmpty())
+    Path result = pathHash->value(pathHashKey(format, scope));
+    if (!result.path.isEmpty())
         return result;
 
     // fall back on INI path
     return pathHash->value(pathHashKey(QSettings::IniFormat, scope));
 }
+
+#if defined(QT_BUILD_INTERNAL) && defined(Q_XDG_PLATFORM) && !defined(QT_NO_STANDARDPATHS)
+// Note: Suitable only for autotests.
+void Q_AUTOTEST_EXPORT clearDefaultPaths()
+{
+    QMutexLocker locker(&settingsGlobalMutex);
+    pathHashFunc()->clear();
+}
+#endif // QT_BUILD_INTERNAL && Q_XDG_PLATFORM && !QT_NO_STANDARDPATHS
 
 QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
                                                    QSettings::Scope scope,
@@ -1117,16 +1137,44 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
     QString orgFile = org + extension;
 
     if (scope == QSettings::UserScope) {
-        QString userPath = getPath(format, QSettings::UserScope);
+        Path userPath = getPath(format, QSettings::UserScope);
         if (!application.isEmpty())
-            confFiles.append(QConfFile::fromName(userPath + appFile, true));
-        confFiles.append(QConfFile::fromName(userPath + orgFile, true));
+            confFiles.append(QConfFile::fromName(userPath.path + appFile, true));
+        confFiles.append(QConfFile::fromName(userPath.path + orgFile, true));
     }
 
-    QString systemPath = getPath(format, QSettings::SystemScope);
-    if (!application.isEmpty())
-        confFiles.append(QConfFile::fromName(systemPath + appFile, false));
-    confFiles.append(QConfFile::fromName(systemPath + orgFile, false));
+    Path systemPath = getPath(format, QSettings::SystemScope);
+#if defined(Q_XDG_PLATFORM) && !defined(QT_NO_STANDARDPATHS)
+    // check if the systemPath wasn't overridden by QSettings::setPath()
+    if (!systemPath.userDefined) {
+        // Note: We can't use QStandardPaths::locateAll() as we need all the
+        // possible files (not just the existing ones) and there is no way
+        // to exclude user specific (XDG_CONFIG_HOME) directory from the search.
+        QStringList dirs = QStandardPaths::standardLocations(QStandardPaths::GenericConfigLocation);
+        // remove the QStandardLocation::writableLocation() (XDG_CONFIG_HOME)
+        if (!dirs.isEmpty())
+            dirs.takeFirst();
+        QStringList paths;
+        if (!application.isEmpty()) {
+            paths.reserve(dirs.size() * 2);
+            for (const auto &dir : qAsConst(dirs))
+                paths.append(dir + QLatin1Char('/') + appFile);
+        } else {
+            paths.reserve(dirs.size());
+        }
+        for (const auto &dir : qAsConst(dirs))
+            paths.append(dir + QLatin1Char('/') + orgFile);
+
+        // Note: No check for existence of files is done intentionaly.
+        for (const auto &path : qAsConst(paths))
+            confFiles.append(QConfFile::fromName(path, false));
+    } else
+#endif // Q_XDG_PLATFORM && !QT_NO_STANDARDPATHS
+    {
+        if (!application.isEmpty())
+            confFiles.append(QConfFile::fromName(systemPath.path + appFile, false));
+        confFiles.append(QConfFile::fromName(systemPath.path + orgFile, false));
+    }
 
     initAccess();
 }
@@ -2169,9 +2217,10 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \list 1
     \li \c{$HOME/.config/MySoft/Star Runner.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.conf})
     \li \c{$HOME/.config/MySoft.conf} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.conf})
-    \li \c{/etc/xdg/MySoft/Star Runner.conf}
-    \li \c{/etc/xdg/MySoft.conf}
+    \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft/Star Runner.conf}
+    \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft.conf}
     \endlist
+    \note If XDG_CONFIG_DIRS is unset, the default value of \c{/etc/xdg} is used.
 
     On \macos versions 10.2 and 10.3, these files are used by
     default:
@@ -2206,9 +2255,10 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \list 1
     \li \c{$HOME/.config/MySoft/Star Runner.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft/Star Runner.ini})
     \li \c{$HOME/.config/MySoft.ini} (Qt for Embedded Linux: \c{$HOME/Settings/MySoft.ini})
-    \li \c{/etc/xdg/MySoft/Star Runner.ini}
-    \li \c{/etc/xdg/MySoft.ini}
+    \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft/Star Runner.ini}
+    \li for each directory <dir> in $XDG_CONFIG_DIRS: \c{<dir>/MySoft.ini}
     \endlist
+    \note If XDG_CONFIG_DIRS is unset, the default value of \c{/etc/xdg} is used.
 
     On Windows, the following files are used:
 
@@ -3360,7 +3410,7 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
     PathHash *pathHash = pathHashFunc();
     if (pathHash->isEmpty())
         initDefaultPaths(&locker);
-    pathHash->insert(pathHashKey(format, scope), path + QDir::separator());
+    pathHash->insert(pathHashKey(format, scope), Path(path + QDir::separator(), true));
 }
 
 /*!

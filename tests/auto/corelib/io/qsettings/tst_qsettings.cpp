@@ -159,6 +159,7 @@ private slots:
     void iniCodec();
     void bom();
 
+    void testXdg();
 private:
     void cleanupTestFiles();
 
@@ -3396,6 +3397,78 @@ void tst_QSettings::consistentRegistryStorage()
     }
 }
 #endif
+
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(QT_NO_STANDARDPATHS)
+QT_BEGIN_NAMESPACE
+extern void clearDefaultPaths();
+QT_END_NAMESPACE
+#endif
+void tst_QSettings::testXdg()
+{
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(QT_NO_STANDARDPATHS)
+    // Note: The XDG_CONFIG_DIRS test must be done before overriding the system path
+    // by QSettings::setPath/setSystemIniPath (used in cleanupTestFiles()).
+    clearDefaultPaths();
+
+    // Initialize the env. variable & populate testing files.
+    const QStringList config_dirs = { settingsPath("xdg_1st"), settingsPath("xdg_2nd"), settingsPath("xdg_3rd") };
+    qputenv("XDG_CONFIG_DIRS", config_dirs.join(':').toUtf8());
+    QList<QSettings *> xdg_orgs, xdg_apps;
+    for (const auto & dir : config_dirs) {
+        xdg_orgs << new QSettings{dir + "/software.org.conf", QSettings::NativeFormat};
+        xdg_apps << new QSettings{dir + "/software.org/KillerAPP.conf", QSettings::NativeFormat};
+    }
+    Q_ASSERT(config_dirs.size() == 3 && xdg_orgs.size() == 3 && xdg_apps.size() == 3);
+    for (int i = 0; i < 3; ++i) {
+        xdg_orgs[i]->setValue("all", QString{"all_org%1"}.arg(i));
+        xdg_apps[i]->setValue("all", QString{"all_app%1"}.arg(i));
+        xdg_orgs[i]->setValue("all_only_org", QString{"all_only_org%1"}.arg(i));
+        xdg_apps[i]->setValue("all_only_app", QString{"all_only_app%1"}.arg(i));
+
+        if (i > 0) {
+            xdg_orgs[i]->setValue("from2nd", QString{"from2nd_org%1"}.arg(i));
+            xdg_apps[i]->setValue("from2nd", QString{"from2nd_app%1"}.arg(i));
+            xdg_orgs[i]->setValue("from2nd_only_org", QString{"from2nd_only_org%1"}.arg(i));
+            xdg_apps[i]->setValue("from2nd_only_app", QString{"from2nd_only_app%1"}.arg(i));
+        }
+
+        if (i > 1) {
+            xdg_orgs[i]->setValue("from3rd", QString{"from3rd_org%1"}.arg(i));
+            xdg_apps[i]->setValue("from3rd", QString{"from3rd_app%1"}.arg(i));
+            xdg_orgs[i]->setValue("from3rd_only_org", QString{"from3rd_only_org%1"}.arg(i));
+            xdg_apps[i]->setValue("from3rd_only_app", QString{"from3rd_only_app%1"}.arg(i));
+        }
+    }
+    qDeleteAll(xdg_apps);
+    qDeleteAll(xdg_orgs);
+
+    // Do the test.
+    QSettings app{QSettings::SystemScope, "software.org", "KillerAPP"}, org{QSettings::SystemScope, "software.org"};
+
+    QVERIFY(app.value("all").toString() == "all_app0");
+    QVERIFY(org.value("all").toString() == "all_org0");
+    QVERIFY(app.value("all_only_org").toString() == "all_only_org0");
+    QVERIFY(org.value("all_only_org").toString() == "all_only_org0");
+    QVERIFY(app.value("all_only_app").toString() == "all_only_app0");
+    QVERIFY(org.value("all_only_app").toString() == QString{});
+
+    QVERIFY(app.value("from2nd").toString() == "from2nd_app1");
+    QVERIFY(org.value("from2nd").toString() == "from2nd_org1");
+    QVERIFY(app.value("from2nd_only_org").toString() == "from2nd_only_org1");
+    QVERIFY(org.value("from2nd_only_org").toString() == "from2nd_only_org1");
+    QVERIFY(app.value("from2nd_only_app").toString() == "from2nd_only_app1");
+    QVERIFY(org.value("from2nd_only_app").toString() == QString{});
+
+    QVERIFY(app.value("from3rd").toString() == "from3rd_app2");
+    QVERIFY(org.value("from3rd").toString() == "from3rd_org2");
+    QVERIFY(app.value("from3rd_only_org").toString() == "from3rd_only_org2");
+    QVERIFY(org.value("from3rd_only_org").toString() == "from3rd_only_org2");
+    QVERIFY(app.value("from3rd_only_app").toString() == "from3rd_only_app2");
+    QVERIFY(org.value("from3rd_only_app").toString() == QString{});
+#else
+    QSKIP("This test is performed in QT_BUILD_INTERNAL on Q_XDG_PLATFORM with use of standard paths only.");
+#endif
+}
 
 QTEST_MAIN(tst_QSettings)
 #include "tst_qsettings.moc"
