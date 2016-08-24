@@ -188,7 +188,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     , m_forcedDpi(-1)
     , m_pixelDensity(1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
-    , m_noFontHinting(false)
     , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
     , m_antialiasingEnabled(-1)
 {
