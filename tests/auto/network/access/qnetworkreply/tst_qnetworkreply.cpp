@@ -4845,7 +4845,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     disconnect(&server, SIGNAL(newEncryptedConnection(QSslSocket*)), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
 
-    incomingSocket->setReadBufferSize(1*1024);
+    incomingSocket->setReadBufferSize(1024);
     // some progress should have been made
     QTRY_VERIFY(!spy.isEmpty());
     QList<QVariant> args = spy.last();
@@ -4996,7 +4996,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     QVERIFY(incomingSocket);
     disconnect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-    incomingSocket->setReadBufferSize(1*1024);
+    incomingSocket->setReadBufferSize(1024);
     QTestEventLoop::instance().enterLoop(5);
     // some progress should have been made
     QVERIFY(!spy.isEmpty());
