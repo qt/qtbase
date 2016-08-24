@@ -547,6 +547,7 @@ static void setupSslServer(QSslSocket* serverSocket)
     serverSocket->setProtocol(QSsl::AnyProtocol);
     serverSocket->setLocalCertificate(testDataDir + "/certs/server.pem");
     serverSocket->setPrivateKey(testDataDir + "/certs/server.key");
+    serverSocket->startServerEncryption();
 }
 #endif
 
@@ -596,7 +597,6 @@ protected:
         if (!doSsl) {
             client = new QTcpSocket;
             client->setSocketDescriptor(socketDescriptor);
-            connectSocketSignals();
         } else {
 #ifndef QT_NO_SSL
             QSslSocket *serverSocket = new QSslSocket;
@@ -604,15 +604,14 @@ protected:
             if (serverSocket->setSocketDescriptor(socketDescriptor)) {
                 connect(serverSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
                 setupSslServer(serverSocket);
-                serverSocket->startServerEncryption();
                 client = serverSocket;
-                connectSocketSignals();
             } else {
                 delete serverSocket;
                 return;
             }
 #endif
         }
+        connectSocketSignals();
         client->setParent(this);
         ++totalConnections;
     }
@@ -943,7 +942,6 @@ public:
             serverSocket->setSocketDescriptor(socketDescriptor);
             connect(serverSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
             setupSslServer(serverSocket);
-            serverSocket->startServerEncryption();
             sslSocket = serverSocket;
         } else
 #endif
@@ -4784,16 +4782,9 @@ public:
                 emit newPlainConnection(serverSocket);
                 return;
             }
-            QString testDataDir = QFileInfo(QFINDTESTDATA("rfc3252.txt")).absolutePath();
-            if (testDataDir.isEmpty())
-                testDataDir = QCoreApplication::applicationDirPath();
-
             connect(serverSocket, SIGNAL(encrypted()), this, SLOT(encryptedSlot()));
-            serverSocket->setProtocol(QSsl::AnyProtocol);
             connect(serverSocket, SIGNAL(sslErrors(QList<QSslError>)), serverSocket, SLOT(ignoreSslErrors()));
-            serverSocket->setLocalCertificate(testDataDir + "/certs/server.pem");
-            serverSocket->setPrivateKey(testDataDir + "/certs/server.key");
-            serverSocket->startServerEncryption();
+            setupSslServer(serverSocket);
         } else {
             delete serverSocket;
         }
