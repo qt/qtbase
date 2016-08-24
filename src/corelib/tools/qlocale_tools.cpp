@@ -224,7 +224,7 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
             const char *endptr;
             decpt = qstrtoll(target.data() + eSign + 1, &endptr, 10, &ok) + 1;
             Q_ASSERT(ok);
-            Q_ASSERT(endptr - target.data() <= length - eSign -1);
+            Q_ASSERT(endptr - target.data() <= length);
         } else {
             // No 'e' found, so it's the 'f' form. Variants of snprintf generate numbers with
             // potentially multiple digits before the '.', but without decimal exponent then. So we
