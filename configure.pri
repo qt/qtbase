@@ -203,6 +203,9 @@ defineTest(qtConfTest_neon) {
 }
 
 defineTest(qtConfTest_skipModules) {
+    $${1}.cache = -
+    export($${1}.cache)
+
     skip =
     uikit {
         skip += qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples
@@ -220,8 +223,6 @@ defineTest(qtConfTest_skipModules) {
     }
     $${1}.value = $$unique(skip)
     export($${1}.value)
-    $${1}.cache += value
-    export($${1}.cache)
     return(true)
 }
 
@@ -243,7 +244,7 @@ defineTest(qtConfTest_buildParts) {
 
     $${1}.value = $$parts
     export($${1}.value)
-    $${1}.cache += value
+    $${1}.cache = -
     export($${1}.cache)
     return(true)
 }

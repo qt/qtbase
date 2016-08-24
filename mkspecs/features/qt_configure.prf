@@ -789,6 +789,8 @@ defineTest(qtLogTestResult) {
 }
 
 defineTest(qtConfSaveResult) {
+    equals($${1}.cache, -): \
+        return()
     keys = result $$eval($${1}.cache)
     cont = "cache.$${2}._KEYS_ = $$keys"
     for (k, keys): \
