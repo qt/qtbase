@@ -534,7 +534,7 @@ QT_END_NAMESPACE
         QString errorMsg = call;                \
         if (!errorMsg.isEmpty())                \
             QFAIL(qPrintable(errorMsg));        \
-    } while (0);
+    } while (0)
 
 #ifndef QT_NO_SSL
 static void setupSslServer(QSslSocket* serverSocket)
