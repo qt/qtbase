@@ -1456,12 +1456,14 @@ int tst_QNetworkReply::waitForFinish(QNetworkReplyPtr &reply)
 
 void tst_QNetworkReply::finished()
 {
-    loop->exit(returnCode = Success);
+    if (loop)
+        loop->exit(returnCode = Success);
 }
 
 void tst_QNetworkReply::gotError()
 {
-    loop->exit(returnCode = Failure);
+    if (loop)
+        loop->exit(returnCode = Failure);
     disconnect(QObject::sender(), SIGNAL(finished()), this, 0);
 }
 
