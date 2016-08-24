@@ -493,6 +493,7 @@ defineTest(qtConfLibrary_pkgConfig) {
     eval(includes = $$includes)
     includes ~= s/^-I//g
     $${1}.includedir = "$$val_escape(includes)"
+    version ~= s/[^0-9.].*$//
     $${1}.version = $$first(version)
     export($${1}.libs)
     export($${1}.cflags)
