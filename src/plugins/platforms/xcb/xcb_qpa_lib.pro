@@ -88,7 +88,11 @@ qtConfig(dbus-linked): \
 
 # libxkbcommon
 !qtConfig(xkbcommon-system) {
-    include(../../../3rdparty/xkbcommon-x11.pri)
+    qtConfig(xkb) {
+        include(../../../3rdparty/xkbcommon-x11.pri)
+    } else {
+        include(../../../3rdparty/xkbcommon.pri)
+    }
 } else {
     QMAKE_USE += xkbcommon
 }
