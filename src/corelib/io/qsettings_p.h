@@ -236,19 +236,6 @@ public:
                                        QTextCodec *codec);
     static QStringList splitArgs(const QString &s, int idx);
 
-    /*
-    The numeric values of these enums define their search order. For example,
-    F_User | F_Organization is searched before F_System | F_Application,
-    because their values are respectively 1 and 2.
-    */
-    enum {
-        F_Application = 0x0,
-        F_Organization = 0x1,
-        F_User = 0x0,
-        F_System = 0x2,
-        NumConfFiles = 4
-    };
-
     QSettings::Format format;
     QSettings::Scope scope;
     QString organizationName;
@@ -258,7 +245,6 @@ public:
 protected:
     QStack<QSettingsGroup> groupStack;
     QString groupPrefix;
-    int spec;
     bool fallbacks;
     bool pendingChanges;
     mutable QSettings::Status status;
@@ -293,7 +279,7 @@ public:
 private:
     void initFormat();
     void initAccess();
-    void syncConfFile(int confFileNo);
+    void syncConfFile(QConfFile *confFile);
     bool writeIniFile(QIODevice &device, const ParsedSettingsMap &map);
 #ifdef Q_OS_MAC
     bool readPlistFile(const QByteArray &data, ParsedSettingsMap *map) const;
@@ -302,7 +288,7 @@ private:
     void ensureAllSectionsParsed(QConfFile *confFile) const;
     void ensureSectionParsed(QConfFile *confFile, const QSettingsKey &key) const;
 
-    QScopedSharedPointer<QConfFile> confFiles[NumConfFiles];
+    QVector<QConfFile *> confFiles;
     QSettings::ReadFunc readFunc;
     QSettings::WriteFunc writeFunc;
     QString extension;

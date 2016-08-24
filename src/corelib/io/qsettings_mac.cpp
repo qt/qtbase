@@ -419,20 +419,15 @@ QMacSettingsPrivate::QMacSettingsPrivate(QSettings::Scope scope, const QString &
         javaPackageName.prepend(QLatin1String("com."));
     suiteId = javaPackageName;
 
-    if (scope == QSettings::SystemScope)
-        spec |= F_System;
-
-    if (application.isEmpty()) {
-        spec |= F_Organization;
-    } else {
+    if (!application.isEmpty()) {
         javaPackageName += QLatin1Char('.');
         javaPackageName += application;
         applicationId = javaPackageName;
     }
 
     numDomains = 0;
-    for (int i = (spec & F_System) ? 1 : 0; i < 2; ++i) {
-        for (int j = (spec & F_Organization) ? 1 : 0; j < 3; ++j) {
+    for (int i = (scope == QSettings::SystemScope) ? 1 : 0; i < 2; ++i) {
+        for (int j = (application.isEmpty()) ? 1 : 0; j < 3; ++j) {
             SearchDomain &domain = domains[numDomains++];
             domain.userName = (i == 0) ? kCFPreferencesCurrentUser : kCFPreferencesAnyUser;
             if (j == 0)
@@ -573,7 +568,7 @@ bool QMacSettingsPrivate::isWritable() const
 QString QMacSettingsPrivate::fileName() const
 {
     QString result;
-    if ((spec & F_System) == 0)
+    if (scope == QSettings::UserScope)
         result = QDir::homePath();
     result += QLatin1String("/Library/Preferences/");
     result += QCFString::toQString(domains[0].applicationOrSuiteId);
