@@ -11,7 +11,7 @@ load(qt_helper_lib)
 SHAPERS += opentype       # HB's main shaper; enabling it should be enough most of the time
 
 # native shaper on Apple platforms; could be used alone to handle both OT and AAT fonts
-darwin:!if(watchos:CONFIG(simulator, simulator|device)): SHAPERS += coretext
+darwin: SHAPERS += coretext
 
 DEFINES += HAVE_CONFIG_H
 DEFINES += HB_NO_UNICODE_FUNCS HB_DISABLE_DEPRECATED
@@ -155,4 +155,14 @@ contains(SHAPERS, coretext) {
         # On Mac OS they are part of the ApplicationServices umbrella framework,
         # even in 10.8 where they were also made available stand-alone.
         LIBS_PRIVATE += -framework ApplicationServices
+
+    # CoreText is documented to be available on watchOS, but the headers aren't present
+    # in the watchOS Simulator SDK like they are supposed to be. Work around the problem
+    # by adding the device SDK's headers to the search path as a fallback.
+    # rdar://25314492, rdar://27844864
+    watchos:CONFIG(simulator, simulator|device) {
+        QMAKE_CXXFLAGS += \
+            -F$$xcodeSDKInfo(Path, $${simulator.sdk})/System/Library/Frameworks \
+            -F$$xcodeSDKInfo(Path, $${device.sdk})/System/Library/Frameworks
+    }
 }

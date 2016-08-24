@@ -1,4 +1,4 @@
-darwin:!if(watchos:CONFIG(simulator, simulator|device)) {
+darwin {
     include($$PWD/mac/coretext.pri)
 } else {
     !win32|qtConfig(freetype) {
