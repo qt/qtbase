@@ -594,22 +594,22 @@ protected:
     void incomingConnection(qintptr socketDescriptor)
     {
         //qDebug() << "incomingConnection" << socketDescriptor << "doSsl:" << doSsl << "ipv6:" << ipv6;
-        if (!doSsl) {
-            client = new QTcpSocket;
-            client->setSocketDescriptor(socketDescriptor);
-        } else {
 #ifndef QT_NO_SSL
-            QSslSocket *serverSocket = new QSslSocket;
-            serverSocket->setParent(this);
-            if (serverSocket->setSocketDescriptor(socketDescriptor)) {
-                connect(serverSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
-                setupSslServer(serverSocket);
-                client = serverSocket;
-            } else {
+        if (doSsl) {
+            QSslSocket *serverSocket = new QSslSocket(this);
+            if (!serverSocket->setSocketDescriptor(socketDescriptor)) {
                 delete serverSocket;
                 return;
             }
+            connect(serverSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+            // connect(serverSocket, &QSslSocket::encrypted, this, &SslServer::ready); ?
+            setupSslServer(serverSocket);
+            client = serverSocket;
+        } else
 #endif
+        {
+            client = new QTcpSocket;
+            client->setSocketDescriptor(socketDescriptor);
         }
         connectSocketSignals();
         client->setParent(this);
