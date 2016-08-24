@@ -8247,17 +8247,18 @@ public slots:
             // We had received some data but it is corrupt!
             qDebug() << "CORRUPT" << m_receivedData.count();
 
-            // Use this to track down the pattern of the corruption and conclude the source
-//            QFile a("/tmp/corrupt");
-//            a.open(QIODevice::WriteOnly);
-//            a.write(m_receivedData);
-//            a.close();
+#if 0 // Use this to track down the pattern of the corruption and conclude the source
+            QFile a("/tmp/corrupt");
+            a.open(QIODevice::WriteOnly);
+            a.write(m_receivedData);
+            a.close();
 
-//            QFile b("/tmp/correct");
-//            b.open(QIODevice::WriteOnly);
-//            b.write(m_expectedData);
-//            b.close();
+            QFile b("/tmp/correct");
+            b.open(QIODevice::WriteOnly);
+            b.write(m_expectedData);
+            b.close();
             //exit(1);
+#endif
             emit corruptFileUploadReceived();
         } else {
             emit correctFileUploadReceived();
