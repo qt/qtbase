@@ -4949,7 +4949,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
 
     QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), (qint64)testData.size());
     if (reader.data.size() < testData.size()) { // oops?
-        QCOMPARE(reader.data, testData.mid(0, reader.data.size()));
+        QCOMPARE(reader.data, testData.left(reader.data.size()));
         qDebug() << "The data is incomplete, the last" << testData.size() - reader.data.size() << "bytes are missing";
     }
     QCOMPARE(reader.data.size(), testData.size());
