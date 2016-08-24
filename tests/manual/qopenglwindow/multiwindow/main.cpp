@@ -38,6 +38,7 @@
 #include <QPainter>
 #include <QElapsedTimer>
 #include <QCommandLineParser>
+#include <QScreen>
 
 const char applicationDescription[] = "\n\
 This application opens multiple windows and continuously schedules updates for\n\
@@ -143,8 +144,8 @@ int main(int argc, char **argv)
         "by setting swap interval to 1 for the first window and 0 for the others.");
     parser.addOption(vsyncOneOption);
 
-    QCommandLineOption extraWindowsOption("extrawindows", "Open <N> windows in addition to the default 3.", "N", "0");
-    parser.addOption(extraWindowsOption);
+    QCommandLineOption numWindowsOption("numwindows", "Open <N> windows instead of the default 3.", "N", "3");
+    parser.addOption(numWindowsOption);
 
     parser.process(app);
 
@@ -157,35 +158,40 @@ int main(int argc, char **argv)
     }
     QSurfaceFormat::setDefaultFormat(fmt);
 
-    Window w1(0);
-    if (parser.isSet(vsyncOneOption)) {
-        qDebug("swap interval 1 for first window only");
-        QSurfaceFormat w1fmt = fmt;
-        w1fmt.setSwapInterval(1);
-        w1.setFormat(w1fmt);
-        fmt.setSwapInterval(0);
-        QSurfaceFormat::setDefaultFormat(fmt);
-    }
-    Window w2(1);
-    Window w3(2);
-    w1.setGeometry(QRect(QPoint(10, 100), w1.size()));
-    w2.setGeometry(QRect(QPoint(300, 100), w2.size()));
-    w3.setGeometry(QRect(QPoint(600, 100), w3.size()));
-    w1.show();
-    w2.show();
-    w3.show();
+    QRect availableGeometry = app.primaryScreen()->availableGeometry();
 
-    QList<QWindow *> extraWindows;
-    if (int extraWindowCount = parser.value(extraWindowsOption).toInt()) {
-        for (int i = 0; i < extraWindowCount; ++i) {
-            Window *w = new Window(3 + i);
-            extraWindows << w;
-            w->show();
+    int numberOfWindows = qMax(parser.value(numWindowsOption).toInt(), 1);
+    QList<QWindow *> windows;
+    for (int i = 0; i < numberOfWindows; ++i) {
+        Window *w = new Window(i + 1);
+        windows << w;
+
+        if (i == 0 && parser.isSet(vsyncOneOption)) {
+            qDebug("swap interval 1 for first window only");
+            QSurfaceFormat vsyncedSurfaceFormat = fmt;
+            vsyncedSurfaceFormat.setSwapInterval(1);
+            w->setFormat(vsyncedSurfaceFormat);
+            fmt.setSwapInterval(0);
+            QSurfaceFormat::setDefaultFormat(fmt);
         }
+
+        static int windowWidth = w->width() + 20;
+        static int windowHeight = w->height() + 20;
+
+        static int windowsPerRow = availableGeometry.width() / windowWidth;
+
+        int col = i;
+        int row = col / windowsPerRow;
+        col -= row * windowsPerRow;
+
+        QPoint position = availableGeometry.topLeft();
+        position += QPoint(col * windowWidth, row * windowHeight);
+        w->setFramePosition(position);
+        w->show();
     }
 
     int r = app.exec();
-    qDeleteAll(extraWindows);
+    qDeleteAll(windows);
     return r;
 }
 
