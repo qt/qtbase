@@ -31,14 +31,7 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QOpenGLWindow>
-#include <QOpenGLContext>
-#include <QOpenGLFunctions>
-#include <QPainter>
-#include <QElapsedTimer>
-#include <QCommandLineParser>
-#include <QScreen>
+#include <QtGui>
 
 const char applicationDescription[] = "\n\
 This application opens multiple windows and continuously schedules updates for\n\
@@ -67,10 +60,13 @@ class Window : public QOpenGLWindow
 {
     Q_OBJECT
 public:
-    Window(int n) : idx(n) {
-        r = g = b = fps = 0;
-        y = 0;
+    Window(int index) : windowNumber(index + 1), y(0), fps(0) {
+
+        color = QColor::fromHsl((index * 30) % 360, 255, 127).toRgb();
+
         resize(200, 200);
+
+        setObjectName(QString("Window %1").arg(windowNumber));
 
         connect(this, SIGNAL(frameSwapped()), SLOT(frameSwapped()));
         fpsTimer.start();
@@ -78,29 +74,12 @@ public:
 
     void paintGL() {
         QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-        f->glClearColor(r, g, b, 1);
+        f->glClearColor(color.redF(), color.greenF(), color.blueF(), 1);
         f->glClear(GL_COLOR_BUFFER_BIT);
-        switch (idx % 3) {
-        case 0:
-            r += 0.005f;
-            break;
-        case 1:
-            g += 0.005f;
-            break;
-        case 2:
-            b += 0.005f;
-            break;
-        }
-        if (r > 1)
-            r = 0;
-        if (g > 1)
-            g = 0;
-        if (b > 1)
-            b = 0;
 
         QPainter p(this);
         p.setPen(Qt::white);
-        p.drawText(QPoint(20, y), QString(QLatin1String("Window %1 (%2 FPS)")).arg(idx).arg(fps));
+        p.drawText(QPoint(20, y), QString(QLatin1String("Window %1 (%2 FPS)")).arg(windowNumber).arg(fps));
         y += 1;
         if (y > height() - 20)
             y = 20;
@@ -118,9 +97,17 @@ public slots:
         }
     }
 
+protected:
+    void mousePressEvent(QMouseEvent *event) {
+        qDebug() << this << event;
+        color.setHsl((color.hue() + 90) % 360, color.saturation(), color.lightness());
+        color = color.toRgb();
+    }
+
 private:
-    int idx;
-    GLfloat r, g, b;
+    int windowNumber;
+    QColor color;
+
     int y;
 
     int framesSwapped;
@@ -163,7 +150,7 @@ int main(int argc, char **argv)
     int numberOfWindows = qMax(parser.value(numWindowsOption).toInt(), 1);
     QList<QWindow *> windows;
     for (int i = 0; i < numberOfWindows; ++i) {
-        Window *w = new Window(i + 1);
+        Window *w = new Window(i);
         windows << w;
 
         if (i == 0 && parser.isSet(vsyncOneOption)) {
