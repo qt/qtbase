@@ -318,7 +318,7 @@ void QDBusMarshaller::open(QDBusMarshaller &sub, int code, const char *signature
             case DBUS_TYPE_ARRAY:
                 *ba += char(code);
                 *ba += signature;
-                // fall through
+                Q_FALLTHROUGH();
 
             case DBUS_TYPE_DICT_ENTRY:
                 sub.closeCode = 0;
@@ -495,9 +495,9 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
             return true;
 
         default:
-            ;                   // fall through
+            ;
         }
-        // fall through
+        Q_FALLTHROUGH();
 
     case DBUS_TYPE_STRUCT:
     case DBUS_STRUCT_BEGIN_CHAR:
@@ -513,7 +513,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
             append(qvariant_cast<QDBusUnixFileDescriptor>(arg));
             return true;
         }
-        // fall through
+        Q_FALLTHROUGH();
 
     default:
         qWarning("QDBusMarshaller::appendVariantInternal: Found unknown D-BUS type '%s'",

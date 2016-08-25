@@ -976,11 +976,11 @@ bool QXmlStreamReaderPrivate::scanUntil(const char *str, short tokenToInject)
         case '\r':
             if ((c = filterCarriageReturn()) == 0)
                 break;
-            // fall through
+            Q_FALLTHROUGH();
         case '\n':
             ++lineNumber;
             lastLineStart = characterOffset + readBufferPos;
-            // fall through
+            Q_FALLTHROUGH();
         case '\t':
             textBuffer += QChar(c);
             continue;
@@ -1158,11 +1158,11 @@ inline int QXmlStreamReaderPrivate::fastScanLiteralContent()
         case '\r':
             if (filterCarriageReturn() == 0)
                 return n;
-            // fall through
+            Q_FALLTHROUGH();
         case '\n':
             ++lineNumber;
             lastLineStart = characterOffset + readBufferPos;
-            // fall through
+            Q_FALLTHROUGH();
         case ' ':
         case '\t':
             if (normalizeLiterals)
@@ -1179,7 +1179,7 @@ inline int QXmlStreamReaderPrivate::fastScanLiteralContent()
                 putChar(c);
                 return n;
             }
-            // fall through
+            Q_FALLTHROUGH();
         default:
             if (c < 0x20) {
                 putChar(c);
@@ -1201,11 +1201,11 @@ inline int QXmlStreamReaderPrivate::fastScanSpace()
         case '\r':
             if ((c = filterCarriageReturn()) == 0)
                 return n;
-            // fall through
+            Q_FALLTHROUGH();
         case '\n':
             ++lineNumber;
             lastLineStart = characterOffset + readBufferPos;
-            // fall through
+            Q_FALLTHROUGH();
         case ' ':
         case '\t':
             textBuffer += QChar(c);
@@ -1259,11 +1259,11 @@ inline int QXmlStreamReaderPrivate::fastScanContentCharList()
         case '\r':
             if ((c = filterCarriageReturn()) == 0)
                 return n;
-            // fall through
+            Q_FALLTHROUGH();
         case '\n':
             ++lineNumber;
             lastLineStart = characterOffset + readBufferPos;
-            // fall through
+            Q_FALLTHROUGH();
         case ' ':
         case '\t':
             textBuffer += QChar(ushort(c));
@@ -1275,7 +1275,7 @@ inline int QXmlStreamReaderPrivate::fastScanContentCharList()
                 putChar(c);
                 return n;
             }
-            // fall through
+            Q_FALLTHROUGH();
         default:
             if (c < 0x20) {
                 putChar(c);
@@ -1339,7 +1339,7 @@ inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
                 putChar(c);
                 return n;
             }
-            // fall through
+            Q_FALLTHROUGH();
         default:
             textBuffer += QChar(c);
             ++n;
@@ -2123,7 +2123,7 @@ QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
                     result += readElementText(behaviour);
                     break;
                 }
-                // Fall through (for ErrorOnUnexpectedElement)
+                Q_FALLTHROUGH();
             default:
                 if (d->error || behaviour == ErrorOnUnexpectedElement) {
                     if (!d->error)

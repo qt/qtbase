@@ -50,9 +50,10 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qalgorithms.h>
-
-#include <private/qopenglcontext_p.h>
-#include <private/qopenglextensions_p.h>
+#ifndef QT_NO_OPENGL
+# include <private/qopenglcontext_p.h>
+# include <private/qopenglextensions_p.h>
+#endif
 #include <private/qrbtree_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -873,7 +874,7 @@ void QTriangulator<T>::initialize(const QVectorPath &path, const QTransform &mat
             case QPainterPath::MoveToElement:
                 if (!m_indices.isEmpty())
                     m_indices.push_back(T(-1)); // Q_TRIANGULATE_END_OF_POLYGON
-                // Fall through.
+                Q_FALLTHROUGH();
             case QPainterPath::LineToElement:
                 m_indices.push_back(T(m_vertices.size()));
                 m_vertices.resize(m_vertices.size() + 1);
@@ -2099,7 +2100,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
             } else {
                 qWarning("Inconsistent polygon. (#3)");
             }
-            // Fall through.
+            Q_FALLTHROUGH();
         case StartVertex:
             if (m_clockwiseOrder) {
                 leftEdgeNode = searchEdgeLeftOfEdge(j);
@@ -2128,7 +2129,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
             } else {
                 qWarning("Inconsistent polygon. (#4)");
             }
-            // Fall through.
+            Q_FALLTHROUGH();
         case EndVertex:
             if (m_clockwiseOrder) {
                 if (m_edges.at(m_edges.at(i).helper).type == MergeVertex)
@@ -2267,10 +2268,14 @@ void QTriangulator<T>::MonotoneToTriangles::decompose()
 
 static bool hasElementIndexUint()
 {
+#ifndef QT_NO_OPENGL
     QOpenGLContext *context = QOpenGLContext::currentContext();
     if (!context)
         return false;
     return static_cast<QOpenGLExtensions *>(context->functions())->hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
+#else
+    return false;
+#endif
 }
 
 Q_GUI_EXPORT QTriangleSet qTriangulate(const qreal *polygon,

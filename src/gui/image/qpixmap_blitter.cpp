@@ -113,10 +113,10 @@ int QBlittablePlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) con
         return qRound(h * 25.4 / qt_defaultDpiY());
     case QPaintDevice::PdmDepth:
         return 32;
-    case QPaintDevice::PdmDpiX: // fall-through
+    case QPaintDevice::PdmDpiX:
     case QPaintDevice::PdmPhysicalDpiX:
         return qt_defaultDpiX();
-    case QPaintDevice::PdmDpiY: // fall-through
+    case QPaintDevice::PdmDpiY:
     case QPaintDevice::PdmPhysicalDpiY:
         return qt_defaultDpiY();
     case QPaintDevice::PdmDevicePixelRatio:

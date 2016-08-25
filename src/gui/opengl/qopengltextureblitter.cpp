@@ -520,8 +520,8 @@ void QOpenGLTextureBlitter::release()
 }
 
 /*!
-    Enables or disables swizzling for the red and blue color
-    channels. An BGRA to RGBA conversion (occurring in the shader on
+    Sets whether swizzling is enabled for the red and blue color channels to
+    \a swizzle. An BGRA to RGBA conversion (occurring in the shader on
     the GPU, instead of a slow CPU-side transformation) can be useful
     when the source texture contains data from a QImage with a format
     like QImage::Format_ARGB32 which maps to BGRA on little endian
@@ -538,10 +538,11 @@ void QOpenGLTextureBlitter::setRedBlueSwizzle(bool swizzle)
 }
 
 /*!
-    Changes the opacity. The default opacity is 1.0.
+    Changes the opacity to \a opacity. The default opacity is 1.0.
 
     \note the blitter does not alter the blend state. It is up to the
     caller of blit() to ensure the correct blend settings are active.
+
  */
 void QOpenGLTextureBlitter::setOpacity(float opacity)
 {
@@ -613,7 +614,7 @@ void QOpenGLTextureBlitter::blit(GLuint texture,
     the source dimensions and will in most cases be set to (0, 0,
     image width, image height).
 
-    For unscaled output the size of \a target and \viewport should
+    For unscaled output the size of \a target and \a viewport should
     match.
 
     \sa blit()

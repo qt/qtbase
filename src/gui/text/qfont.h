@@ -113,6 +113,7 @@ public:
     };
 
     enum Stretch {
+        AnyStretch     =   0,
         UltraCondensed =  50,
         ExtraCondensed =  62,
         Condensed      =  75,

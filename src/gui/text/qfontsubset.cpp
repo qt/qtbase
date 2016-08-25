@@ -740,7 +740,7 @@ static void convertPath(const QPainterPath &path, QVector<TTF_POINT> *points, QV
                     points->takeLast();
                 endPoints->append(points->size() - 1);
             }
-            // fall through
+            Q_FALLTHROUGH();
         case QPainterPath::LineToElement:
             p.flags = OnCurve;
             break;
@@ -966,7 +966,7 @@ static QTtfGlyph generateGlyph(int index, const QPainterPath &path, qreal advanc
     glyph.advanceWidth = qRound(advance * 2048. / ppem);
     glyph.lsb = qRound(lsb * 2048. / ppem);
 
-    if (!path.elementCount()) {
+    if (path.isEmpty()) {
         //qDebug("glyph %d is empty", index);
         lsb = 0;
         glyph.xMin = glyph.xMax = glyph.yMin = glyph.yMax = 0;

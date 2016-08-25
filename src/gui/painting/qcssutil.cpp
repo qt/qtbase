@@ -197,7 +197,7 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
         if ((style == BorderStyle_Outset && (edge == TopEdge || edge == LeftEdge))
             || (style == BorderStyle_Inset && (edge == BottomEdge || edge == RightEdge)))
             c = c.color().lighter();
-        // fall through!
+        Q_FALLTHROUGH();
     case BorderStyle_Solid: {
         p->setPen(Qt::NoPen);
         p->setBrush(c);

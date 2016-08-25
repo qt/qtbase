@@ -4232,7 +4232,6 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             switch (sc) {
             case SC_GroupBoxFrame:
-                // FALL THROUGH
             case SC_GroupBoxContents: {
                 int topMargin = 0;
                 int topHeight = 0;
@@ -4261,7 +4260,6 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                 break;
             }
             case SC_GroupBoxCheckBox:
-                // FALL THROUGH
             case SC_GroupBoxLabel: {
                 QFontMetrics fontMetrics = groupBox->fontMetrics;
                 int h = fontMetrics.height();
@@ -4327,7 +4325,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             if (numSubControls == 1)
                 break;
             offset += buttonWidth + 2;
-            //FALL THROUGH
+            Q_FALLTHROUGH();
         case SC_MdiNormalButton:
             // No offset needed if
             // 1) There's only one sub control
@@ -4895,7 +4893,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case CT_ProgressBar:
     case CT_TabBarTab:
         // just return the contentsSize for now
-        // fall through intended
+        Q_FALLTHROUGH();
     default:
         break;
     }

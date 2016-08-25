@@ -59,10 +59,10 @@ static inline QString typeNameToXml(const char *typeName)
 {
     // ### copied from qtextdocument.cpp
     // ### move this into Qt Core at some point
-    QString plain = QLatin1String(typeName);
+    const QLatin1String plain(typeName);
     QString rich;
-    rich.reserve(int(plain.length() * 1.1));
-    for (int i = 0; i < plain.length(); ++i) {
+    rich.reserve(int(plain.size() * 1.1));
+    for (int i = 0; i < plain.size(); ++i) {
         if (plain.at(i) == QLatin1Char('<'))
             rich += QLatin1String("&lt;");
         else if (plain.at(i) == QLatin1Char('>'))

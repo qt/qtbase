@@ -211,6 +211,7 @@ public:
     glyph_metrics_t tightBoundingBox(const QGlyphLayout &glyphs);
 
     virtual QFixed ascent() const = 0;
+    virtual QFixed capHeight() const = 0;
     virtual QFixed descent() const = 0;
     virtual QFixed leading() const = 0;
     virtual QFixed xHeight() const;
@@ -348,6 +349,7 @@ protected:
     QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
 
     inline void setUserData(const QVariant &userData) { m_userData = userData; }
+    QFixed calculatedCapHeight() const;
 
 private:
     struct GlyphCacheEntry {
@@ -414,6 +416,7 @@ public:
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
 
     virtual QFixed ascent() const Q_DECL_OVERRIDE;
+    virtual QFixed capHeight() const Q_DECL_OVERRIDE;
     virtual QFixed descent() const Q_DECL_OVERRIDE;
     virtual QFixed leading() const Q_DECL_OVERRIDE;
     virtual qreal maxCharWidth() const Q_DECL_OVERRIDE;
@@ -451,6 +454,7 @@ public:
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0) Q_DECL_OVERRIDE;
 
     virtual QFixed ascent() const Q_DECL_OVERRIDE;
+    virtual QFixed capHeight() const Q_DECL_OVERRIDE;
     virtual QFixed descent() const Q_DECL_OVERRIDE;
     virtual QFixed leading() const Q_DECL_OVERRIDE;
     virtual QFixed xHeight() const Q_DECL_OVERRIDE;

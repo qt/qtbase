@@ -115,14 +115,14 @@ namespace QTest
         case MouseDClick:
             qt_handleMouseEvent(w, pos, global, button, stateKey, ++lastMouseTimestamp);
             qt_handleMouseEvent(w, pos, global, Qt::NoButton, stateKey, ++lastMouseTimestamp);
-            // fall through
+            Q_FALLTHROUGH();
         case MousePress:
         case MouseClick:
             qt_handleMouseEvent(w, pos, global, button, stateKey, ++lastMouseTimestamp);
             lastMouseButton = button;
             if (action == MousePress)
                 break;
-            // fall through
+            Q_FALLTHROUGH();
         case MouseRelease:
             qt_handleMouseEvent(w, pos, global, Qt::NoButton, stateKey, ++lastMouseTimestamp);
             lastMouseTimestamp += 500; // avoid double clicks being generated

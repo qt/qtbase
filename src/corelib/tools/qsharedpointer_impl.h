@@ -67,10 +67,6 @@ QT_END_NAMESPACE
 #endif
 #include <QtCore/qhashfunctions.h>
 
-#if defined(Q_COMPILER_RVALUE_REFS) && defined(Q_COMPILER_VARIADIC_TEMPLATES)
-#  include <utility>           // for std::forward
-#endif
-
 QT_BEGIN_NAMESPACE
 
 
@@ -428,7 +424,6 @@ public:
 
     QWeakPointer<T> toWeakRef() const;
 
-#if defined(Q_COMPILER_RVALUE_REFS) && defined(Q_COMPILER_VARIADIC_TEMPLATES)
     template <typename... Args>
     static QSharedPointer create(Args && ...arguments)
     {
@@ -450,49 +445,6 @@ public:
         result.enableSharedFromThis(result.data());
         return result;
     }
-#else
-    static inline QSharedPointer create()
-    {
-        typedef QtSharedPointer::ExternalRefCountWithContiguousData<T> Private;
-# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-        typename Private::DestroyerFn destroy = &Private::safetyCheckDeleter;
-# else
-        typename Private::DestroyerFn destroy = &Private::deleter;
-# endif
-        QSharedPointer result(Qt::Uninitialized);
-        result.d = Private::create(&result.value, destroy);
-
-        // now initialize the data
-        new (result.data()) T();
-# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-        internalSafetyCheckAdd(result.d, result.value);
-# endif
-        result.d->setQObjectShared(result.value, true);
-        result.enableSharedFromThis(result.data());
-        return result;
-    }
-
-    template <typename Arg>
-    static inline QSharedPointer create(const Arg &arg)
-    {
-        typedef QtSharedPointer::ExternalRefCountWithContiguousData<T> Private;
-# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-        typename Private::DestroyerFn destroy = &Private::safetyCheckDeleter;
-# else
-        typename Private::DestroyerFn destroy = &Private::deleter;
-# endif
-        QSharedPointer result(Qt::Uninitialized);
-        result.d = Private::create(&result.value, destroy);
-
-        // now initialize the data
-        new (result.data()) T(arg);
-# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-        internalSafetyCheckAdd(result.d, result.value);
-# endif
-        result.d->setQObjectShared(result.value, true);
-        return result;
-    }
-#endif
 
 private:
     explicit QSharedPointer(Qt::Initialization) {}

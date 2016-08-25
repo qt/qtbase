@@ -2563,7 +2563,7 @@ void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
             int section = logicalIndexAt(pos);
             updateSection(section);
         }
-        // fall through
+        Q_FALLTHROUGH();
     case QHeaderViewPrivate::NoState:
         if (d->clickableSections) {
             int section = logicalIndexAt(pos);
@@ -2669,7 +2669,7 @@ bool QHeaderView::viewportEvent(QEvent *e)
     case QEvent::FontChange:
     case QEvent::StyleChange:
         d->invalidateCachedSizeHint();
-        // Fall through
+        Q_FALLTHROUGH();
     case QEvent::Hide:
     case QEvent::Show: {
         QAbstractScrollArea *parent = qobject_cast<QAbstractScrollArea *>(parentWidget());

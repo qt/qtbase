@@ -418,6 +418,13 @@ glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix
     return metrics;
 }
 
+QFixed QFontEngine::calculatedCapHeight() const
+{
+    const glyph_t glyph = glyphIndex('H');
+    glyph_metrics_t bb = const_cast<QFontEngine *>(this)->boundingBox(glyph);
+    return bb.height;
+}
+
 QFixed QFontEngine::xHeight() const
 {
     const glyph_t glyph = glyphIndex('x');
@@ -1703,6 +1710,11 @@ QFixed QFontEngineBox::ascent() const
     return _size;
 }
 
+QFixed QFontEngineBox::capHeight() const
+{
+    return _size;
+}
+
 QFixed QFontEngineBox::descent() const
 {
     return 0;
@@ -2162,6 +2174,9 @@ glyph_metrics_t QFontEngineMulti::boundingBox(glyph_t glyph)
 
 QFixed QFontEngineMulti::ascent() const
 { return engine(0)->ascent(); }
+
+QFixed QFontEngineMulti::capHeight() const
+{ return engine(0)->capHeight(); }
 
 QFixed QFontEngineMulti::descent() const
 { return engine(0)->descent(); }

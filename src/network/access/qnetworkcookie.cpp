@@ -644,7 +644,7 @@ static QDateTime parseDateString(const QByteArray &dateString)
             switch (end - 1) {
             case 4:
                 minutes = atoi(dateString.mid(at + 3, 2).constData());
-                // fall through
+                Q_FALLTHROUGH();
             case 2:
                 hours = atoi(dateString.mid(at + 1, 2).constData());
                 break;

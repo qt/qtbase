@@ -136,8 +136,12 @@ public:
         Node *i;
         inline iterator() : i(0) {}
         inline iterator(Node *n) : i(n) {}
-        inline iterator(const iterator &o) : i(o.i) {}
-        inline iterator &operator=(const iterator &o) { i = o.i; return *this; }
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        iterator(const iterator &other) Q_DECL_NOTHROW : i(other.i) {}
+        iterator &operator=(const iterator &other) Q_DECL_NOTHROW { i = other.i; return *this; }
+        iterator(iterator &&other) Q_DECL_NOTHROW : i(other.i) {}
+        iterator &operator=(iterator &&other) Q_DECL_NOTHROW { return *this = other; }
+#endif
         inline T &operator*() const { return i->t; }
         inline T *operator->() const { return &i->t; }
         inline bool operator==(const iterator &o) const { return i == o.i; }
@@ -169,9 +173,13 @@ public:
         Node *i;
         inline const_iterator() : i(0) {}
         inline const_iterator(Node *n) : i(n) {}
-        inline const_iterator(const const_iterator &o) : i(o.i){}
         inline const_iterator(iterator ci) : i(ci.i){}
-        inline const_iterator &operator=(const const_iterator &o) { i = o.i; return *this; }
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        const_iterator(const const_iterator &other) Q_DECL_NOTHROW : i(other.i) {}
+        const_iterator &operator=(const const_iterator &other) Q_DECL_NOTHROW { i = other.i; return *this; }
+        const_iterator(const_iterator &&other) Q_DECL_NOTHROW : i(other.i) {}
+        const_iterator &operator=(const_iterator &&other) Q_DECL_NOTHROW { return *this = other; }
+#endif
         inline const T &operator*() const { return i->t; }
         inline const T *operator->() const { return &i->t; }
         inline bool operator==(const const_iterator &o) const { return i == o.i; }

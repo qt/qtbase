@@ -504,7 +504,7 @@ QNetworkDatagram QSctpSocket::readDatagram()
 }
 
 /*!
-    Writes a datagram to the buffer of the current write channel.
+    Writes a \a datagram to the buffer of the current write channel.
     Returns true on success; otherwise returns false.
 
     \sa readDatagram(), inDatagramMode(), currentWriteChannel()

@@ -1122,10 +1122,10 @@
 */
 
 /*!
-    \fn QTest::createTouchDevice()
+    \fn QTouchDevice *QTest::createTouchDevice(QTouchDevice::DeviceType devType = QTouchDevice::TouchScreen)
     \since 5.8
 
-    Creates a dummy touch device for simulation of touch events.
+    Creates a dummy touch device of type \a devType for simulation of touch events.
 
     The touch device will be registered with the QPA window system interface,
     and deleted automatically when the QCoreApplication is deleted. So you

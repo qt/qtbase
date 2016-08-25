@@ -450,8 +450,8 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
         QApplication::changeOverrideCursor((!sentEvent || !e.isAccepted())?
                                            Qt::ForbiddenCursor:Qt::WhatsThisCursor);
 #endif
+        Q_FALLTHROUGH();
     }
-    // fall through
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
         if (leaveOnMouseRelease && e->type() == QEvent::MouseButtonRelease)

@@ -489,7 +489,7 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
             if (ret > 0)
                 return ret;
 
-            // fall through
+            Q_FALLTHROUGH();
     }
     default:
         return QPlatformTheme::themeHint(hint);

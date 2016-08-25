@@ -742,7 +742,7 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
         }
 
         case QVariant::ByteArray:
-            // fallthrough intended
+            Q_FALLTHROUGH();
 
         default: {
             // If the string does not contain '\0', we can use REG_SZ, the native registry

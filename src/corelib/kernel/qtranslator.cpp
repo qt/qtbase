@@ -489,8 +489,7 @@ bool QTranslator::load(const QString & filename, const QString & directory,
     const QString suffixOrDotQM = suffix.isNull() ? dotQmLiteral() : suffix;
     QStringRef fname(&filename);
     QString realname;
-    QString delims;
-    delims = search_delimiters.isNull() ? QStringLiteral("_.") : search_delimiters;
+    const QString delims = search_delimiters.isNull() ? QStringLiteral("_.") : search_delimiters;
 
     for (;;) {
         QFileInfo fi;

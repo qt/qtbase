@@ -3011,7 +3011,7 @@ int QRegExpEngine::getEscape()
     case 'I':
         if (xmlSchemaExtensions) {
             yyCharClass->setNegative(!yyCharClass->negative());
-            // fall through
+            Q_FALLTHROUGH();
         } else {
             break;
         }
@@ -3051,7 +3051,7 @@ int QRegExpEngine::getEscape()
     case 'C':
         if (xmlSchemaExtensions) {
             yyCharClass->setNegative(!yyCharClass->negative());
-            // fall through
+            Q_FALLTHROUGH();
         } else {
             break;
         }
@@ -3097,7 +3097,7 @@ int QRegExpEngine::getEscape()
     case 'P':
         if (xmlSchemaExtensions) {
             yyCharClass->setNegative(!yyCharClass->negative());
-            // fall through
+            Q_FALLTHROUGH();
         } else {
             break;
         }

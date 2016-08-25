@@ -2023,7 +2023,7 @@ void WriteInitialization::addInitializer(Item *item,
         const QString &name, int column, const QString &value, const QString &directive, bool translatable) const
 {
     if (!value.isEmpty())
-        item->addSetter(QLatin1String("->set") + name.at(0).toUpper() + name.mid(1) +
+        item->addSetter(QLatin1String("->set") + name.at(0).toUpper() + name.midRef(1) +
                     QLatin1Char('(') + (column < 0 ? QString() : QString::number(column) +
                     QLatin1String(", ")) + value + QLatin1String(");"), directive, translatable);
 }

@@ -99,7 +99,7 @@ void QHttpProtocolHandler::_q_receiveReply()
         switch (state) {
         case QHttpNetworkReplyPrivate::NothingDoneState: {
             m_reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
-            // fallthrough
+            Q_FALLTHROUGH();
         }
         case QHttpNetworkReplyPrivate::ReadingStatusState: {
             qint64 statusBytes = m_reply->d_func()->readStatus(m_socket);
@@ -213,7 +213,8 @@ void QHttpProtocolHandler::_q_receiveReply()
             if (replyPrivate->state == QHttpNetworkReplyPrivate::ReadingDataState)
                 break;
 
-            // everything done, fall through
+            // everything done
+            Q_FALLTHROUGH();
             }
       case QHttpNetworkReplyPrivate::AllDoneState:
             m_channel->allDone();
@@ -428,7 +429,7 @@ bool QHttpProtocolHandler::sendRequest()
     }
     case QHttpNetworkConnectionChannel::ReadingState:
         // ignore _q_bytesWritten in these states
-        // fall through
+        Q_FALLTHROUGH();
     default:
         break;
     }

@@ -172,7 +172,7 @@ QFontEngine::GlyphFormat QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
     CGAffineTransform transform = CGAffineTransformIdentity;
-    if (fontDef.stretch != 100)
+    if (fontDef.stretch && fontDef.stretch != 100)
         transform = CGAffineTransformMakeScale(float(fontDef.stretch) / float(100), 1);
     return transform;
 }
@@ -378,6 +378,19 @@ QFixed QCoreTextFontEngine::ascent() const
             ? QFixed::fromReal(CTFontGetAscent(ctfont)).round()
             : QFixed::fromReal(CTFontGetAscent(ctfont));
 }
+
+QFixed QCoreTextFontEngine::capHeight() const
+{
+    QFixed c = QFixed::fromReal(CTFontGetCapHeight(ctfont));
+    if (c <= 0)
+        return calculatedCapHeight();
+
+    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
+        c = c.round();
+
+    return c;
+}
+
 QFixed QCoreTextFontEngine::descent() const
 {
     QFixed d = QFixed::fromReal(CTFontGetDescent(ctfont));
