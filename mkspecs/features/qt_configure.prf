@@ -579,7 +579,8 @@ defineTest(qtConfHandleLibrary) {
     qtConfEnsureTestTypeDeps("library")
 
     qtConfLoadResult($${lpfx}, $$1) {
-        qtConfExportLibrary($${lpfx}.sources.$$eval($${lpfx}.source), $$eval($${lpfx}.export))
+        $$eval($${lpfx}.result): \
+            qtConfExportLibrary($${lpfx}.sources.$$eval($${lpfx}.source), $$eval($${lpfx}.export))
         return()
     }
 
