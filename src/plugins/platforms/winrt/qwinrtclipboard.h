@@ -70,7 +70,7 @@ private:
 #ifndef Q_OS_WINPHONE
     Microsoft::WRL::ComPtr<ABI::Windows::ApplicationModel::DataTransfer::IClipboardStatics> m_nativeClipBoard;
 #endif
-    QMimeData m_mimeData;
+    QMimeData *m_mimeData;
 };
 
 QT_END_NAMESPACE
