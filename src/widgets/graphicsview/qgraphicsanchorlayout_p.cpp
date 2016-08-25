@@ -2575,10 +2575,12 @@ void QGraphicsAnchorLayoutPrivate::identifyFloatItems(const QSet<AnchorData *> &
     for (const AnchorData *ad : visited)
         identifyNonFloatItems_helper(ad, &nonFloating);
 
-    QSet<QGraphicsLayoutItem *> allItems;
-    foreach (QGraphicsLayoutItem *item, items)
-        allItems.insert(item);
-    m_floatItems[orientation] = allItems - nonFloating;
+    QSet<QGraphicsLayoutItem *> floatItems;
+    for (QGraphicsLayoutItem *item : qAsConst(items)) {
+        if (!nonFloating.contains(item))
+            floatItems.insert(item);
+    }
+    m_floatItems[orientation] = std::move(floatItems);
 }
 
 
