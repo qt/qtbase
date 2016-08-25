@@ -3014,6 +3014,37 @@ template<class T> inline void do_mirror_data(QImageData *dst, QImageData *src,
     }
 }
 
+inline void do_flip(QImageData *dst, QImageData *src, int w, int h, int depth)
+{
+    const int data_bytes_per_line = w * (depth / 8);
+    if (dst == src) {
+        uint *srcPtr = reinterpret_cast<uint *>(src->data);
+        uint *dstPtr = reinterpret_cast<uint *>(dst->data + (h - 1) * dst->bytes_per_line);
+        h = h / 2;
+        const int uint_per_line = (data_bytes_per_line + 3) >> 2; // bytes per line must be a multiple of 4
+        for (int y = 0; y < h; ++y) {
+            // This is auto-vectorized, no need for SSE2 or NEON versions:
+            for (int x = 0; x < uint_per_line; x++) {
+                const uint d = dstPtr[x];
+                const uint s = srcPtr[x];
+                dstPtr[x] = s;
+                srcPtr[x] = d;
+            }
+            srcPtr += src->bytes_per_line >> 2;
+            dstPtr -= dst->bytes_per_line >> 2;
+        }
+
+    } else {
+        const uchar *srcPtr = src->data;
+        uchar *dstPtr = dst->data + (h - 1) * dst->bytes_per_line;
+        for (int y = 0; y < h; ++y) {
+            memcpy(dstPtr, srcPtr, data_bytes_per_line);
+            srcPtr += src->bytes_per_line;
+            dstPtr -= dst->bytes_per_line;
+        }
+    }
+}
+
 inline void do_mirror(QImageData *dst, QImageData *src, bool horizontal, bool vertical)
 {
     Q_ASSERT(src->width == dst->width && src->height == dst->height && src->depth == dst->depth);
@@ -3024,6 +3055,12 @@ inline void do_mirror(QImageData *dst, QImageData *src, bool horizontal, bool ve
     if (src->depth == 1) {
         w = (w + 7) / 8; // byte aligned width
         depth = 8;
+    }
+
+    if (vertical && !horizontal) {
+        // This one is simple and common, so do it a little more optimized
+        do_flip(dst, src, w, h, depth);
+        return;
     }
 
     int dstX0 = 0, dstXIncr = 1;
