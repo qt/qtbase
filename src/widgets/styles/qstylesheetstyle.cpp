@@ -1002,15 +1002,17 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
         }
     }
 
-    if (const QWidget *widget = qobject_cast<const QWidget *>(object)) {
-        QStyleSheetStyle *style = const_cast<QStyleSheetStyle *>(globalStyleSheetStyle);
-        if (!style)
-            style = qobject_cast<QStyleSheetStyle *>(widget->style());
-        if (style)
-            fixupBorder(style->nativeFrameWidth(widget));
+    if (hasBorder()) {
+        if (const QWidget *widget = qobject_cast<const QWidget *>(object)) {
+            QStyleSheetStyle *style = const_cast<QStyleSheetStyle *>(globalStyleSheetStyle);
+            if (!style)
+                style = qobject_cast<QStyleSheetStyle *>(widget->style());
+            if (style)
+                fixupBorder(style->nativeFrameWidth(widget));
+        }
+        if (border()->hasBorderImage())
+            defaultBackground = QBrush();
     }
-    if (hasBorder() && border()->hasBorderImage())
-        defaultBackground = QBrush();
 }
 
 QRect QRenderRule::borderRect(const QRect& r) const

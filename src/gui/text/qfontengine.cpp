@@ -1039,46 +1039,45 @@ QByteArray QFontEngine::getSfntTable(uint tag) const
     return table;
 }
 
-void QFontEngine::clearGlyphCache(const void *key)
+void QFontEngine::clearGlyphCache(const void *context)
 {
-    for (QLinkedList<GlyphCacheEntry>::iterator it = m_glyphCaches.begin(), end = m_glyphCaches.end(); it != end; ) {
-        if (it->context == key)
-            it = m_glyphCaches.erase(it);
-        else
-            ++it;
-    }
+    m_glyphCaches.remove(context);
 }
 
-void QFontEngine::setGlyphCache(const void *key, QFontEngineGlyphCache *data)
+void QFontEngine::setGlyphCache(const void *context, QFontEngineGlyphCache *cache)
 {
-    Q_ASSERT(data);
+    Q_ASSERT(cache);
+
+    GlyphCaches &caches = m_glyphCaches[context];
+    for (GlyphCaches::const_iterator it = caches.constBegin(), end = caches.constEnd(); it != end; ++it) {
+        if (cache == it->cache.data())
+            return;
+    }
+
+    // Limit the glyph caches to 4 per context. This covers all 90 degree rotations,
+    // and limits memory use when there is continuous or random rotation
+    if (caches.size() == 4)
+        caches.removeLast();
 
     GlyphCacheEntry entry;
-    entry.context = key;
-    entry.cache = data;
-    if (m_glyphCaches.contains(entry))
-        return;
-
-    // Limit the glyph caches to 4. This covers all 90 degree rotations and limits
-    // memory use when there is continuous or random rotation
-    if (m_glyphCaches.size() == 4)
-        m_glyphCaches.removeLast();
-
-    m_glyphCaches.push_front(entry);
+    entry.cache = cache;
+    caches.push_front(entry);
 
 }
 
-QFontEngineGlyphCache *QFontEngine::glyphCache(const void *key, GlyphFormat format, const QTransform &transform) const
+QFontEngineGlyphCache *QFontEngine::glyphCache(const void *context, GlyphFormat format, const QTransform &transform) const
 {
-    for (QLinkedList<GlyphCacheEntry>::const_iterator it = m_glyphCaches.constBegin(), end = m_glyphCaches.constEnd(); it != end; ++it) {
-        QFontEngineGlyphCache *c = it->cache.data();
-        if (key == it->context
-            && format == c->glyphFormat()
-            && qtransform_equals_no_translate(c->m_transform, transform)) {
-            return c;
-        }
+    const QHash<const void*, GlyphCaches>::const_iterator caches = m_glyphCaches.constFind(context);
+    if (caches == m_glyphCaches.cend())
+        return Q_NULLPTR;
+
+    for (GlyphCaches::const_iterator it = caches->begin(), end = caches->end(); it != end; ++it) {
+        QFontEngineGlyphCache *cache = it->cache.data();
+        if (format == cache->glyphFormat() && qtransform_equals_no_translate(cache->m_transform, transform))
+            return cache;
     }
-    return 0;
+
+    return Q_NULLPTR;
 }
 
 static inline QFixed kerning(int left, int right, const QFontEngine::KernPair *pairs, int numPairs)
@@ -1558,12 +1557,11 @@ QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)
 
 
 QFontEngine::GlyphCacheEntry::GlyphCacheEntry()
-    : context(0)
 {
 }
 
 QFontEngine::GlyphCacheEntry::GlyphCacheEntry(const GlyphCacheEntry &o)
-    : context(o.context), cache(o.cache)
+    : cache(o.cache)
 {
 }
 
@@ -1573,7 +1571,6 @@ QFontEngine::GlyphCacheEntry::~GlyphCacheEntry()
 
 QFontEngine::GlyphCacheEntry &QFontEngine::GlyphCacheEntry::operator=(const GlyphCacheEntry &o)
 {
-    context = o.context;
     cache = o.cache;
     return *this;
 }

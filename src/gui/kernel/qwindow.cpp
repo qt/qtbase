@@ -210,6 +210,8 @@ QWindow::~QWindow()
 {
     destroy();
     QGuiApplicationPrivate::window_list.removeAll(this);
+    if (!QGuiApplicationPrivate::is_app_closing)
+        QGuiApplicationPrivate::instance()->modalWindowList.removeOne(this);
 }
 
 void QWindowPrivate::init()

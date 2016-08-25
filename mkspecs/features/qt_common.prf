@@ -44,9 +44,9 @@ contains(TEMPLATE, .*lib) {
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
 }
 
-# The remainder of this file must not apply to bootstrapped tools,
+# The remainder of this file must not apply to host tools/libraries,
 # as the host compiler's version and capabilities are not checked.
-host_build:force_bootstrap: return()
+host_build:cross_compile: return()
 
 # Extra warnings for Qt non-example code, to ensure cleanliness of the sources.
 # The block below may turn these warnings into errors for some Qt targets.
