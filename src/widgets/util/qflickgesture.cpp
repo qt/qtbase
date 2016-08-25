@@ -551,11 +551,11 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
 
     case QEvent::TouchBegin:
         inputType = QScroller::InputPress;
-        // fall through
+        Q_FALLTHROUGH();
     case QEvent::TouchEnd:
         if (!inputType)
             inputType = QScroller::InputRelease;
-        // fallthrough
+        Q_FALLTHROUGH();
     case QEvent::TouchUpdate:
         if (!inputType)
             inputType = QScroller::InputMove;
@@ -669,7 +669,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
                     event->accept();
                 }
             }
-            // fall through
+            Q_FALLTHROUGH();
         case QEvent::TouchBegin:
             q->setHotSpot(globalPos);
             result |= scrollerIsActive ? TriggerGesture : MayBeGesture;
@@ -681,7 +681,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
 #endif
             if (PressDelayHandler::instance()->isDelaying())
                 result |= ConsumeEventHint;
-            // fall through
+            Q_FALLTHROUGH();
         case QEvent::TouchUpdate:
             result |= scrollerIsActive ? TriggerGesture : Ignore;
             break;
@@ -692,7 +692,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         case QEvent::MouseButtonRelease:
             if (PressDelayHandler::instance()->released(event, scrollerWasDragging || scrollerWasScrolling, scrollerIsActive))
                 result |= ConsumeEventHint;
-            // fall through
+            Q_FALLTHROUGH();
         case QEvent::TouchEnd:
             result |= scrollerIsActive ? FinishGesture : CancelGesture;
             break;

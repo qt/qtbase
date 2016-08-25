@@ -339,7 +339,7 @@ bool Value::isValid(const Base *b) const
     case QJsonValue::Double:
         if (latinOrIntValue)
             break;
-        // fall through
+        Q_FALLTHROUGH();
     case QJsonValue::String:
     case QJsonValue::Array:
     case QJsonValue::Object:
@@ -418,7 +418,7 @@ uint Value::valueToStore(const QJsonValue &v, uint offset)
         if (c != INT_MAX)
             return c;
     }
-        // fall through
+        Q_FALLTHROUGH();
     case QJsonValue::String:
     case QJsonValue::Array:
     case QJsonValue::Object:

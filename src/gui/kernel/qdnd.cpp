@@ -149,17 +149,12 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
 #if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
 
-static QStringList imageReadMimeFormats()
+static QStringList imageMimeFormats(const QList<QByteArray> &imageFormats)
 {
     QStringList formats;
-    QList<QByteArray> imageFormats = QImageReader::supportedImageFormats();
-    const int numImageFormats = imageFormats.size();
-    formats.reserve(numImageFormats);
-    for (int i = 0; i < numImageFormats; ++i) {
-        QString format = QLatin1String("image/");
-        format += QString::fromLatin1(imageFormats.at(i).toLower());
-        formats.append(format);
-    }
+    formats.reserve(imageFormats.size());
+    for (const auto &format : imageFormats)
+        formats.append(QLatin1String("image/") + QLatin1String(format.toLower()));
 
     //put png at the front because it is best
     int pngIndex = formats.indexOf(QLatin1String("image/png"));
@@ -169,25 +164,15 @@ static QStringList imageReadMimeFormats()
     return formats;
 }
 
-
-static QStringList imageWriteMimeFormats()
+static inline QStringList imageReadMimeFormats()
 {
-    QStringList formats;
-    QList<QByteArray> imageFormats = QImageWriter::supportedImageFormats();
-    const int numImageFormats = imageFormats.size();
-    formats.reserve(numImageFormats);
-    for (int i = 0; i < numImageFormats; ++i) {
-        QString format = QLatin1String("image/");
-        format += QString::fromLatin1(imageFormats.at(i).toLower());
-        formats.append(format);
-    }
+    return imageMimeFormats(QImageReader::supportedImageFormats());
+}
 
-    //put png at the front because it is best
-    int pngIndex = formats.indexOf(QLatin1String("image/png"));
-    if (pngIndex != -1 && pngIndex != 0)
-        formats.move(pngIndex, 0);
 
-    return formats;
+static inline QStringList imageWriteMimeFormats()
+{
+    return imageMimeFormats(QImageWriter::supportedImageFormats());
 }
 
 QInternalMimeData::QInternalMimeData()

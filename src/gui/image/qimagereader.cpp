@@ -1151,7 +1151,7 @@ bool QImageReader::autoTransform() const
     case QImageReaderPrivate::UsePluginDefault:
         if (d->initHandler())
             return d->handler->supportsOption(QImageIOHandler::TransformedByDefault);
-        // no break
+        Q_FALLTHROUGH();
     default:
         break;
     }

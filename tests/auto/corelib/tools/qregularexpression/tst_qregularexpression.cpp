@@ -61,6 +61,9 @@ struct Match
     QStringList captured;
     QHash<QString, QString> namedCaptured;
 };
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(Match, Q_MOVABLE_TYPE);
+QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(Match)
 
@@ -85,9 +88,9 @@ bool operator==(const QRegularExpressionMatch &rem, const Match &m)
             }
         }
 
-        Q_FOREACH (const QString &name, m.namedCaptured.keys()) {
-            QString remCaptured = rem.captured(name);
-            QString mCaptured = m.namedCaptured.value(name);
+        for (auto it = m.namedCaptured.begin(), end = m.namedCaptured.end(); it != end; ++it) {
+            const QString remCaptured = rem.captured(it.key());
+            const QString mCaptured = it.value();
             if (remCaptured != mCaptured
                 || remCaptured.isNull() != mCaptured.isNull()
                 || remCaptured.isEmpty() != mCaptured.isEmpty()) {
@@ -115,12 +118,11 @@ bool operator!=(const Match &m, const QRegularExpressionMatch &rem)
 }
 
 
-bool operator==(const QRegularExpressionMatchIterator &iterator, const QList<Match> &expectedMatchList)
+bool operator==(const QRegularExpressionMatchIterator &iterator, const QVector<Match> &expectedMatchList)
 {
     QRegularExpressionMatchIterator i = iterator;
 
-    foreach (const Match &expectedMatch, expectedMatchList)
-    {
+    for (const Match &expectedMatch : expectedMatchList) {
         if (!i.hasNext())
             return false;
 
@@ -135,17 +137,17 @@ bool operator==(const QRegularExpressionMatchIterator &iterator, const QList<Mat
     return true;
 }
 
-bool operator==(const QList<Match> &expectedMatchList, const QRegularExpressionMatchIterator &iterator)
+bool operator==(const QVector<Match> &expectedMatchList, const QRegularExpressionMatchIterator &iterator)
 {
     return operator==(iterator, expectedMatchList);
 }
 
-bool operator!=(const QRegularExpressionMatchIterator &iterator, const QList<Match> &expectedMatchList)
+bool operator!=(const QRegularExpressionMatchIterator &iterator, const QVector<Match> &expectedMatchList)
 {
     return !operator==(iterator, expectedMatchList);
 }
 
-bool operator!=(const QList<Match> &expectedMatchList, const QRegularExpressionMatchIterator &iterator)
+bool operator!=(const QVector<Match> &expectedMatchList, const QRegularExpressionMatchIterator &iterator)
 {
     return !operator==(expectedMatchList, iterator);
 }
@@ -1117,9 +1119,9 @@ void tst_QRegularExpression::globalMatch_data()
     QTest::addColumn<int>("offset");
     QTest::addColumn<QRegularExpression::MatchType>("matchType");
     QTest::addColumn<QRegularExpression::MatchOptions>("matchOptions");
-    QTest::addColumn<QList<Match> >("matchList");
+    QTest::addColumn<QVector<Match> >("matchList");
 
-    QList<Match> matchList;
+    QVector<Match> matchList;
     Match m;
 
     matchList.clear();
@@ -1375,7 +1377,7 @@ void tst_QRegularExpression::globalMatch()
     QFETCH(int, offset);
     QFETCH(QRegularExpression::MatchType, matchType);
     QFETCH(QRegularExpression::MatchOptions, matchOptions);
-    QFETCH(QList<Match>, matchList);
+    QFETCH(QVector<Match>, matchList);
 
     testMatch<QRegularExpressionMatchIterator>(regexp,
                                                static_cast<QREGlobalMatchStringPMF>(&QRegularExpression::globalMatch),

@@ -813,7 +813,7 @@ StNormal:
                 ++i;
                 goto StSkipSpaces;
             }
-            // fallthrough
+            Q_FALLTHROUGH();
         default: {
             int j = i + 1;
             while (j < to) {

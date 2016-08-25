@@ -159,6 +159,7 @@ private:
         QPointer<QDrag> drag;
         QTime time;
     };
+    friend class QTypeInfo<Transaction>;
     QVector<Transaction> transactions;
 
     int transaction_expiry_timer;
@@ -167,6 +168,7 @@ private:
     int findTransactionByTime(xcb_timestamp_t timestamp);
     xcb_window_t findRealWindow(const QPoint & pos, xcb_window_t w, int md, bool ignoreNonXdndAwareWindows);
 };
+Q_DECLARE_TYPEINFO(QXcbDrag::Transaction, Q_MOVABLE_TYPE);
 
 #endif // QT_NO_DRAGANDDROP
 

@@ -860,7 +860,6 @@ class VCConfiguration
 public:
     // Functions
     VCConfiguration();
-    ~VCConfiguration(){}
 
     bool                    suppressUnknownOptionWarnings;
     DotNET                  CompilerVersion;
@@ -936,7 +935,6 @@ class VCFilter
 public:
     // Functions
     VCFilter();
-    ~VCFilter(){}
 
     void addFile(const QString& filename);
     void addFile(const VCFilterFile& fileInfo);
@@ -962,7 +960,7 @@ public:
     VCCLCompilerTool        CompilerTool;
 };
 
-typedef QList<VCFilter> VCFilterList;
+typedef QVector<VCFilter> VCFilterList;
 class VCProjectSingleConfig
 {
 public:
@@ -976,9 +974,6 @@ public:
         Resources,
         Extras
     };
-    // Functions
-    VCProjectSingleConfig(){}
-    ~VCProjectSingleConfig(){}
 
     // Variables
     QString                 Name;
@@ -1009,6 +1004,7 @@ public:
     const VCFilter &filterByName(const QString &name) const;
     const VCFilter &filterForExtraCompiler(const QString &compilerName) const;
 };
+Q_DECLARE_TYPEINFO(VCProjectSingleConfig, Q_MOVABLE_TYPE);
 
 // Tree & Flat view of files --------------------------------------------------
 class VCFilter;

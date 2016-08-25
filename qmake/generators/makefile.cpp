@@ -612,7 +612,7 @@ MakefileGenerator::init()
     int x;
 
     //build up a list of compilers
-    QList<Compiler> compilers;
+    QVector<Compiler> compilers;
     {
         const char *builtins[] = { "OBJECTS", "SOURCES", "PRECOMPILED_HEADER", 0 };
         for(x = 0; builtins[x]; ++x) {

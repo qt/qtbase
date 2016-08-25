@@ -155,6 +155,8 @@ protected:
         };
         uint flags, type;
     };
+    friend class QTypeInfo<Compiler>;
+
     void initCompiler(const Compiler &comp);
     enum VPATHFlag {
         VPATH_NoFlag             = 0x00,
@@ -264,6 +266,7 @@ public:
     bool isWindowsShell() const { return Option::dir_sep == QLatin1String("\\"); }
     QString shellQuote(const QString &str);
 };
+Q_DECLARE_TYPEINFO(MakefileGenerator::Compiler, Q_MOVABLE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(MakefileGenerator::FileFixifyTypes)
 
 inline void MakefileGenerator::setNoIO(bool o)

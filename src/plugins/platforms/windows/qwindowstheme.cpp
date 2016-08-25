@@ -551,14 +551,14 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &pixmapSiz
         break;
     case FileLinkIcon:
         stockFlags = SHGSI_LINKOVERLAY;
-        // Fall through
+        Q_FALLTHROUGH();
     case FileIcon:
         stockId = SIID_DOCNOASSOC;
         resourceId = 1;
         break;
     case DirLinkIcon:
         stockFlags = SHGSI_LINKOVERLAY;
-        // Fall through
+        Q_FALLTHROUGH();
     case DirClosedIcon:
     case DirIcon:
         stockId = SIID_FOLDER;
@@ -572,7 +572,7 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &pixmapSiz
         break;
     case DirLinkOpenIcon:
         stockFlags = SHGSI_LINKOVERLAY;
-        // Fall through
+        Q_FALLTHROUGH();
     case DirOpenIcon:
         stockId = SIID_FOLDEROPEN;
         resourceId = 5;

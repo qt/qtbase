@@ -192,6 +192,7 @@ void QWindowsFontEngine::getCMap()
         lineWidth = otm->otmsUnderscoreSize;
         fsType = otm->otmfsType;
         free(otm);
+
     } else {
         unitsPerEm = tm.tmHeight;
     }
@@ -540,6 +541,62 @@ QFixed QWindowsFontEngine::leading() const
     return tm.tmExternalLeading;
 }
 
+namespace {
+#   pragma pack(1)
+
+    struct OS2Table
+    {
+        quint16 version;
+        qint16  avgCharWidth;
+        quint16 weightClass;
+        quint16 widthClass;
+        quint16 type;
+        qint16  subscriptXSize;
+        qint16  subscriptYSize;
+        qint16  subscriptXOffset;
+        qint16  subscriptYOffset;
+        qint16  superscriptXSize;
+        qint16  superscriptYSize;
+        qint16  superscriptXOffset;
+        qint16  superscriptYOffset;
+        qint16  strikeOutSize;
+        qint16  strikeOutPosition;
+        qint16  familyClass;
+        quint8  panose[10];
+        quint32 unicodeRanges[4];
+        quint8  vendorID[4];
+        quint16 selection;
+        quint16 firstCharIndex;
+        quint16 lastCharIndex;
+        qint16  typoAscender;
+        qint16  typoDescender;
+        qint16  typoLineGap;
+        quint16 winAscent;
+        quint16 winDescent;
+        quint32 codepageRanges[2];
+        qint16  height;
+        qint16  capHeight;
+        quint16 defaultChar;
+        quint16 breakChar;
+        quint16 maxContext;
+    };
+
+#   pragma pack()
+}
+
+QFixed QWindowsFontEngine::capHeight() const
+{
+    const QByteArray tableData = getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
+    if (size_t(tableData.size()) >= sizeof(OS2Table)) {
+        const OS2Table *table = reinterpret_cast<const OS2Table *>(tableData.constData());
+        if (qFromBigEndian<quint16>(table->version) >= 2) {
+            qint16 capHeight = qFromBigEndian<qint16>(table->capHeight);
+            if (capHeight > 0)
+                return QFixed(capHeight) / designToDevice;
+        }
+    }
+    return calculatedCapHeight();
+}
 
 QFixed QWindowsFontEngine::xHeight() const
 {

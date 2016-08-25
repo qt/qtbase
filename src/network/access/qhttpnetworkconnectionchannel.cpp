@@ -1060,7 +1060,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
 
     if (!protocolHandler) {
         switch (sslSocket->sslConfiguration().nextProtocolNegotiationStatus()) {
-        case QSslConfiguration::NextProtocolNegotiationNegotiated: /* fall through */
+        case QSslConfiguration::NextProtocolNegotiationNegotiated:
         case QSslConfiguration::NextProtocolNegotiationUnsupported: {
             QByteArray nextProtocol = sslSocket->sslConfiguration().nextNegotiatedProtocol();
             if (nextProtocol == QSslConfiguration::NextProtocolHttp1_1) {
@@ -1080,6 +1080,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
                                       "detected unknown Next Protocol Negotiation protocol");
                 break;
             }
+            Q_FALLTHROUGH();
         }
         case QSslConfiguration::NextProtocolNegotiationNone:
             protocolHandler.reset(new QHttpProtocolHandler(this));

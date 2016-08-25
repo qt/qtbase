@@ -414,6 +414,7 @@ QFontEngine::Properties QFreetypeFace::properties() const
     p.italicAngle = 0;
     p.capHeight = p.ascent;
     p.lineWidth = face->underline_thickness;
+
     return p;
 }
 
@@ -585,8 +586,7 @@ static void convertRGBToARGB_helper(const uchar *src, uint *dst, int width, int 
             uchar green = src[x + 1];
             uchar blue = src[x + 1 + offs];
             LcdFilter::filterPixel(red, green, blue);
-            // alpha = green
-            *dd++ = (green << 24) | (red << 16) | (green << 8) | blue;
+            *dd++ = (0xFF << 24) | (red << 16) | (green << 8) | blue;
         }
         dst += width;
         src += src_pitch;
@@ -611,8 +611,7 @@ static void convertRGBToARGB_V_helper(const uchar *src, uint *dst, int width, in
             uchar green = src[x + src_pitch];
             uchar blue = src[x + src_pitch + offs];
             LcdFilter::filterPixel(red, green, blue);
-            // alpha = green
-            *dst++ = (green << 24) | (red << 16) | (green << 8) | blue;
+            *dst++ = (0XFF << 24) | (red << 16) | (green << 8) | blue;
         }
         src += 3*src_pitch;
     }
@@ -1299,6 +1298,18 @@ QFixed QFontEngineFT::ascent() const
     return v;
 }
 
+QFixed QFontEngineFT::capHeight() const
+{
+    TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
+    if (os2 && os2->version >= 2) {
+        lockFace();
+        QFixed answer = QFixed::fromFixed(FT_MulFix(os2->sCapHeight, freetype->face->size->metrics.y_scale));
+        unlockFace();
+        return answer;
+    }
+    return calculatedCapHeight();
+}
+
 QFixed QFontEngineFT::descent() const
 {
     QFixed v = QFixed::fromFixed(-metrics.descender);
@@ -1317,33 +1328,25 @@ QFixed QFontEngineFT::leading() const
 
 QFixed QFontEngineFT::xHeight() const
 {
-    if (!isScalableBitmap()) {
-        TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
-        if (os2 && os2->sxHeight) {
-            lockFace();
-            QFixed answer = QFixed(os2->sxHeight * freetype->face->size->metrics.y_ppem) / emSquareSize();
-            unlockFace();
-            return answer;
-        }
-    } else {
-        return QFixed(freetype->face->size->metrics.y_ppem) * scalableBitmapScaleFactor;
+    TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
+    if (os2 && os2->sxHeight) {
+        lockFace();
+        QFixed answer = QFixed(os2->sxHeight * freetype->face->size->metrics.y_ppem) / emSquareSize();
+        unlockFace();
+        return answer;
     }
+
     return QFontEngine::xHeight();
 }
 
 QFixed QFontEngineFT::averageCharWidth() const
 {
-     if (!isScalableBitmap()) {
-         TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
-         if (os2 && os2->xAvgCharWidth) {
-             lockFace();
-             QFixed answer = QFixed(os2->xAvgCharWidth * freetype->face->size->metrics.x_ppem) / emSquareSize();
-             unlockFace();
-             return answer;
-         }
-     } else {
-         const qreal aspectRatio = (qreal)xsize / ysize;
-         return QFixed::fromReal(fontDef.pixelSize * aspectRatio);
+     TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(freetype->face, ft_sfnt_os2);
+     if (os2 && os2->xAvgCharWidth) {
+         lockFace();
+         QFixed answer = QFixed(os2->xAvgCharWidth * freetype->face->size->metrics.x_ppem) / emSquareSize();
+         unlockFace();
+         return answer;
      }
 
      return QFontEngine::averageCharWidth();
@@ -1842,7 +1845,7 @@ static inline QImage alphaMapFromGlyphData(QFontEngineFT::Glyph *glyph, QFontEng
         bytesPerLine = (glyph->width + 3) & ~3;
         break;
     case QFontEngine::Format_A32:
-        format = QImage::Format_ARGB32;
+        format = QImage::Format_RGB32;
         bytesPerLine = glyph->width * 4;
         break;
     default:

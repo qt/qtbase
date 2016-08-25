@@ -154,14 +154,14 @@ bool QPlatformGraphicsBufferHelper::bindSWToTexture(const QPlatformGraphicsBuffe
         switch (imageformat) {
         case QImage::Format_ARGB32_Premultiplied:
             premultiplied = true;
-            // no break
+            Q_FALLTHROUGH();
         case QImage::Format_RGB32:
         case QImage::Format_ARGB32:
             swizzle = true;
             break;
         case QImage::Format_RGBA8888_Premultiplied:
             premultiplied = true;
-            // no break
+            Q_FALLTHROUGH();
         case QImage::Format_RGBX8888:
         case QImage::Format_RGBA8888:
             break;

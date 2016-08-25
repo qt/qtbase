@@ -335,28 +335,28 @@ static void parseCmdLine(QStringList &arguments)
         switch (c) {
         case 'P':
             flags |= QDBusConnection::ExportNonScriptableProperties;
-            // fall through
+            Q_FALLTHROUGH();
         case 'p':
             flags |= QDBusConnection::ExportScriptableProperties;
             break;
 
         case 'S':
             flags |= QDBusConnection::ExportNonScriptableSignals;
-            // fall through
+            Q_FALLTHROUGH();
         case 's':
             flags |= QDBusConnection::ExportScriptableSignals;
             break;
 
         case 'M':
             flags |= QDBusConnection::ExportNonScriptableSlots;
-            // fall through
+            Q_FALLTHROUGH();
         case 'm':
             flags |= QDBusConnection::ExportScriptableSlots;
             break;
 
         case 'A':
             flags |= QDBusConnection::ExportNonScriptableContents;
-            // fall through
+            Q_FALLTHROUGH();
         case 'a':
             flags |= QDBusConnection::ExportScriptableContents;
             break;

@@ -251,7 +251,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     }
                     token = FLOATING_LITERAL;
                     ++data;
-                    // fall through
+                    Q_FALLTHROUGH();
                 case FLOATING_LITERAL:
                     while (is_digit_char(*data))
                         ++data;
@@ -321,7 +321,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                         ++data;
                     }
                     token = WHITESPACE; // one comment, one whitespace
-                    // fall through;
+                    Q_FALLTHROUGH();
                 case WHITESPACE:
                     if (column == 1)
                         column = 0;
@@ -428,7 +428,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                 }
                 token = PP_FLOATING_LITERAL;
                 ++data;
-                // fall through
+                Q_FALLTHROUGH();
             case PP_FLOATING_LITERAL:
                 while (is_digit_char(*data))
                     ++data;
@@ -482,7 +482,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     ++data;
                 }
                 token = PP_WHITESPACE; // one comment, one whitespace
-                // fall through;
+                Q_FALLTHROUGH();
             case PP_WHITESPACE:
                 while (*data && (*data == ' ' || *data == '\t'))
                     ++data;
@@ -1177,7 +1177,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
         case PP_ELIF:
         case PP_ELSE:
             skipUntilEndif();
-            // fall through
+            Q_FALLTHROUGH();
         case PP_ENDIF:
             until(PP_NEWLINE);
             continue;

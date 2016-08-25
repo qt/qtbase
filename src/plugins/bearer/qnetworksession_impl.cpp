@@ -111,10 +111,10 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
     case QNetworkConfiguration::ServiceNetwork:
         serviceConfig = publicConfig;
         // Defer setting engine and signals until open().
-        // fall through
+        Q_FALLTHROUGH();
     case QNetworkConfiguration::UserChoice:
         // Defer setting serviceConfig and activeConfig until open().
-        // fall through
+        Q_FALLTHROUGH();
     default:
         engine = 0;
     }

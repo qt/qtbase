@@ -1871,7 +1871,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         decls << decl;
         if (node.id == Html_b || node.id == Html_strong)
             break;
-        // Delibrate fall through
+        Q_FALLTHROUGH();
     case Html_big:
     case Html_small:
         if (node.id != Html_th) {
@@ -1892,7 +1892,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
             decls << decl;
             break;
         }
-        // Delibrate fall through
+        Q_FALLTHROUGH();
     case Html_center:
     case Html_td:
         decl = QCss::Declaration();
@@ -1969,7 +1969,7 @@ QVector<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode 
         }
         if (node.id != Html_pre)
             break;
-        // Delibrate fall through
+        Q_FALLTHROUGH();
     case Html_br:
     case Html_nobr:
         decl = QCss::Declaration();

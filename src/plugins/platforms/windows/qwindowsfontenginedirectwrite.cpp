@@ -208,6 +208,7 @@ QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *di
     , m_lineThickness(-1)
     , m_unitsPerEm(-1)
     , m_ascent(-1)
+    , m_capHeight(-1)
     , m_descent(-1)
     , m_xHeight(-1)
     , m_lineGap(-1)
@@ -244,6 +245,7 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
 
     m_lineThickness = DESIGN_TO_LOGICAL(metrics.underlineThickness);
     m_ascent = DESIGN_TO_LOGICAL(metrics.ascent);
+    m_capHeight = DESIGN_TO_LOGICAL(metrics.capHeight);
     m_descent = DESIGN_TO_LOGICAL(metrics.descent);
     m_xHeight = DESIGN_TO_LOGICAL(metrics.xHeight);
     m_lineGap = DESIGN_TO_LOGICAL(metrics.lineGap);
@@ -459,6 +461,16 @@ QFixed QWindowsFontEngineDirectWrite::ascent() const
     return fontDef.styleStrategy & QFont::ForceIntegerMetrics
             ? m_ascent.round()
             : m_ascent;
+}
+
+QFixed QWindowsFontEngineDirectWrite::capHeight() const
+{
+    if (m_capHeight <= 0)
+        return calculatedCapHeight();
+
+    return fontDef.styleStrategy & QFont::ForceIntegerMetrics
+            ? m_capHeight.round()
+            : m_capHeight;
 }
 
 QFixed QWindowsFontEngineDirectWrite::descent() const

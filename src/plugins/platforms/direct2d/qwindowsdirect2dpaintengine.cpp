@@ -563,7 +563,7 @@ public:
             if (newPen.widthF() <= 1.0)
                 props.startCap = props.endCap = props.dashCap = D2D1_CAP_STYLE_FLAT;
 
-            // fall through
+            Q_FALLTHROUGH();
         default:
             props.dashStyle = D2D1_DASH_STYLE_CUSTOM;
             break;

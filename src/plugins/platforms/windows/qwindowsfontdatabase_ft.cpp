@@ -160,6 +160,7 @@ static const FontKey *findFontKey(const QString &name, int *indexIn = Q_NULLPTR)
 }
 
 static bool addFontToDatabase(const QString &faceName,
+                              const QString &styleName,
                               const QString &fullName,
                               uchar charSet,
                               const TEXTMETRIC *textmetric,
@@ -247,19 +248,19 @@ static bool addFontToDatabase(const QString &faceName,
     if (!QDir::isAbsolutePath(value))
         value.prepend(QFile::decodeName(qgetenv("windir") + "\\Fonts\\"));
 
-    QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, weight, style, stretch,
+    QPlatformFontDatabase::registerFont(faceName, styleName, foundryName, weight, style, stretch,
         antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
 
     // add fonts windows can generate for us:
-    if (weight <= QFont::DemiBold)
+    if (weight <= QFont::DemiBold && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, QFont::Bold, style, stretch,
                                             antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
 
-    if (style != QFont::StyleItalic)
+    if (style != QFont::StyleItalic && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, weight, QFont::StyleItalic, stretch,
                                             antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
 
-    if (weight <= QFont::DemiBold && style != QFont::StyleItalic)
+    if (weight <= QFont::DemiBold && style != QFont::StyleItalic && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, QFont::Bold, QFont::StyleItalic, stretch,
                                             antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
 
@@ -274,6 +275,7 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
 {
     const ENUMLOGFONTEX *f = reinterpret_cast<const ENUMLOGFONTEX *>(logFont);
     const QString faceName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
+    const QString styleName = QString::fromWCharArray(f->elfStyle);
     const QString fullName = QString::fromWCharArray(f->elfFullName);
     const uchar charSet = f->elfLogFont.lfCharSet;
 
@@ -283,7 +285,7 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
     const FONTSIGNATURE *signature = Q_NULLPTR;
     if (type & TRUETYPE_FONTTYPE)
         signature = &reinterpret_cast<const NEWTEXTMETRICEX *>(textmetric)->ntmFontSig;
-    addFontToDatabase(faceName, fullName, charSet, textmetric, signature, type, false);
+    addFontToDatabase(faceName, styleName, fullName, charSet, textmetric, signature, type, false);
 
     // keep on enumerating
     return 1;

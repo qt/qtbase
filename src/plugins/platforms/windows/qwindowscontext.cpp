@@ -945,7 +945,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     switch (et) {
     case QtWindows::KeyboardLayoutChangeEvent:
         if (QWindowsInputContext *wic = windowsInputContext())
-            wic->handleInputLanguageChanged(wParam, lParam); // fallthrough intended.
+            wic->handleInputLanguageChanged(wParam, lParam);
+        Q_FALLTHROUGH();
     case QtWindows::KeyDownEvent:
     case QtWindows::KeyEvent:
     case QtWindows::InputMethodKeyEvent:

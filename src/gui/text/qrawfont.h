@@ -118,6 +118,7 @@ public:
     QFont::HintingPreference hintingPreference() const;
 
     qreal ascent() const;
+    qreal capHeight() const;
     qreal descent() const;
     qreal leading() const;
     qreal xHeight() const;

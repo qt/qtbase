@@ -1,5 +1,6 @@
 TARGET     = QtXcbQpa
 CONFIG += no_module_headers internal_module
+DEFINES += QT_NO_FOREACH
 
 QT += core-private gui-private platformsupport-private
 

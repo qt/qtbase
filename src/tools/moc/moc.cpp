@@ -163,7 +163,7 @@ Type Moc::parseType()
             case SIGNED:
             case UNSIGNED:
                 hasSignedOrUnsigned = true;
-                // fall through
+                Q_FALLTHROUGH();
             case CONST:
             case VOLATILE:
                 type.name += lexem();

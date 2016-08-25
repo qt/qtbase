@@ -321,7 +321,7 @@ QMakeEvaluator::quoteValue(const ProString &val)
                 break;
             case 32:
                 quote = true;
-                // fallthrough
+                Q_FALLTHROUGH();
             default:
                 ret += c;
                 break;

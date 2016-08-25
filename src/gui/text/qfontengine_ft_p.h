@@ -209,6 +209,7 @@ private:
     int synthesized() const Q_DECL_OVERRIDE;
 
     QFixed ascent() const Q_DECL_OVERRIDE;
+    QFixed capHeight() const Q_DECL_OVERRIDE;
     QFixed descent() const Q_DECL_OVERRIDE;
     QFixed leading() const Q_DECL_OVERRIDE;
     QFixed xHeight() const Q_DECL_OVERRIDE;

@@ -2656,7 +2656,7 @@ static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
     case Qt::TimeZone:
         // Use system time zone instead
         spec = Qt::LocalTime;
-        // fallthrough
+        Q_FALLTHROUGH();
     case Qt::UTC:
     case Qt::LocalTime:
         offsetSeconds = 0;

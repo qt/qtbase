@@ -87,6 +87,7 @@ public:
                                         const QTransform &matrix, GlyphFormat) Q_DECL_OVERRIDE;
 
     QFixed ascent() const Q_DECL_OVERRIDE;
+    QFixed capHeight() const Q_DECL_OVERRIDE;
     QFixed descent() const Q_DECL_OVERRIDE;
     QFixed leading() const Q_DECL_OVERRIDE;
     QFixed xHeight() const Q_DECL_OVERRIDE;
@@ -122,6 +123,7 @@ private:
     QFixed m_underlinePosition;
     int m_unitsPerEm;
     QFixed m_ascent;
+    QFixed m_capHeight;
     QFixed m_descent;
     QFixed m_xHeight;
     QFixed m_lineGap;

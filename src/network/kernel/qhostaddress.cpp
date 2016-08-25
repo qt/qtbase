@@ -536,7 +536,7 @@ QHostAddress::QHostAddress(SpecialAddress address)
 
     case LocalHostIPv6:
         ip6[15] = 1;
-        // fall through
+        Q_FALLTHROUGH();
     case AnyIPv6:
         d->setAddress(ip6);
         return;

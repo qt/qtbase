@@ -84,11 +84,11 @@ public:
 
     template <typename MemFun>
     void apply0(QString &s, MemFun mf) const
-    { Q_FOREACH (QChar ch, this->pinned) (s.*mf)(ch); }
+    { for (QChar ch : qAsConst(this->pinned)) (s.*mf)(ch); }
 
     template <typename MemFun, typename A1>
     void apply1(QString &s, MemFun mf, A1 a1) const
-    { Q_FOREACH (QChar ch, this->pinned) (s.*mf)(a1, ch); }
+    { for (QChar ch : qAsConst(this->pinned)) (s.*mf)(a1, ch); }
 };
 
 template <>
@@ -254,6 +254,9 @@ public:
 };
 
 } // unnamed namespace
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(CharStarContainer, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(CharStarContainer)
 
@@ -645,7 +648,7 @@ QString verifyZeroTermination(const QString &str)
     } while (0)                                                         \
     /**/
 
-typedef QList<int> IntList;
+typedef QVector<int> IntList;
 
 tst_QString::tst_QString()
 {

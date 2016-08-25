@@ -438,7 +438,7 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
         if (relativePos < blockIt.length()-1)
             ++position;
 
-        // FALL THROUGH!
+        Q_FALLTHROUGH();
     }
     case QTextCursor::PreviousWord:
     case QTextCursor::WordLeft:
@@ -590,9 +590,9 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
         adjustX = false;
         break;
     }
-    case QTextCursor::NextCell: // fall through
-    case QTextCursor::PreviousCell: // fall through
-    case QTextCursor::NextRow: // fall through
+    case QTextCursor::NextCell:
+    case QTextCursor::PreviousCell:
+    case QTextCursor::NextRow:
     case QTextCursor::PreviousRow: {
         QTextTable *table = qobject_cast<QTextTable *>(priv->frameAt(position));
         if (!table)

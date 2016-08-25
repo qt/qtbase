@@ -1738,9 +1738,6 @@ void tst_QSharedPointer::creating()
 
 void tst_QSharedPointer::creatingVariadic()
 {
-#if !defined(Q_COMPILER_RVALUE_REFS) || !defined(Q_COMPILER_VARIADIC_TEMPLATES)
-    QSKIP("This compiler is not in C++11 mode or it doesn't support rvalue refs and variadic templates");
-#else
     int i = 42;
 
     {
@@ -1768,12 +1765,10 @@ void tst_QSharedPointer::creatingVariadic()
         QCOMPARE(ptr->i, 2);
         QCOMPARE(ptr->ptr, (void*)0);
 
-#ifdef Q_COMPILER_NULLPTR
         NoDefaultConstructor2(nullptr, 3); // control check
         ptr = QSharedPointer<NoDefaultConstructor2>::create(nullptr, 3);
         QCOMPARE(ptr->i, 3);
         QCOMPARE(ptr->ptr, (void*)nullptr);
-#endif
     }
     {
         NoDefaultConstructorRef1 x(i); // control check
@@ -1809,7 +1804,6 @@ void tst_QSharedPointer::creatingVariadic()
         QCOMPARE(ptr->str, QString("bytearray"));
         QCOMPARE(ptr->i, 42);
     }
-#endif
 }
 
 void tst_QSharedPointer::creatingQObject()

@@ -1888,7 +1888,7 @@ void QImage::invertPixels(InvertMode mode)
         case QImage::Format_RGBA8888:
             if (mode == InvertRgba)
                 break;
-            // no break
+            Q_FALLTHROUGH();
         case QImage::Format_RGBX8888:
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
             xorbits = 0xffffff00;
@@ -1900,7 +1900,7 @@ void QImage::invertPixels(InvertMode mode)
         case QImage::Format_ARGB32:
             if (mode == InvertRgba)
                 break;
-            // no break
+            Q_FALLTHROUGH();
         case QImage::Format_RGB32:
             xorbits = 0x00ffffff;
             break;
