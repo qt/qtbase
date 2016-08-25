@@ -490,45 +490,6 @@ private:
 
 bool tst_QNetworkReply::seedCreated = false;
 
-QT_BEGIN_NAMESPACE
-
-namespace QTest {
-    template<>
-    char *toString(const QNetworkReply::NetworkError& code)
-    {
-        const QMetaObject *mo = &QNetworkReply::staticMetaObject;
-        int index = mo->indexOfEnumerator("NetworkError");
-        if (index == -1)
-            return qstrdup("");
-
-        QMetaEnum qme = mo->enumerator(index);
-        return qstrdup(qme.valueToKey(code));
-    }
-
-    template<>
-    char *toString(const QNetworkCookie &cookie)
-    {
-        return qstrdup(cookie.toRawForm());
-    }
-
-    template<>
-    char *toString(const QList<QNetworkCookie> &list)
-    {
-        QByteArray result = "QList(";
-        bool first = true;
-        foreach (QNetworkCookie cookie, list) {
-            if (!first)
-                result += ", ";
-            first = false;
-            result += "QNetworkCookie(" + cookie.toRawForm() + ')';
-        }
-        result.append(')');
-        return qstrdup(result.constData());
-    }
-}
-
-QT_END_NAMESPACE
-
 #define RUN_REQUEST(call)                       \
     do {                                        \
         QString errorMsg = call;                \

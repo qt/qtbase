@@ -28,6 +28,7 @@ HEADERS = qbenchmark.h \
     qtesteventloop.h \
     qtest_global.h \
     qtest_gui.h \
+    qtest_network.h \
     qtest_widgets.h \
     qtest.h \
     qtestkeyboard.h \

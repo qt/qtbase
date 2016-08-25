@@ -58,10 +58,6 @@
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
 
-#ifdef QT_NETWORK_LIB
-#  include <QtNetwork/qhostaddress.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 
@@ -191,26 +187,6 @@ template<> inline char *toString(const QVariant &v)
 
     return qstrdup(vstring.constData());
 }
-
-#ifdef QT_NETWORK_LIB
-/*!
-    \internal
- */
-template<> inline char *toString(const QHostAddress &addr)
-{
-    switch (addr.protocol()) {
-    case QAbstractSocket::UnknownNetworkLayerProtocol:
-        return qstrdup("<unknown address (parse error)>");
-    case QAbstractSocket::AnyIPProtocol:
-        return qstrdup("QHostAddress::Any");
-    case QAbstractSocket::IPv4Protocol:
-    case QAbstractSocket::IPv6Protocol:
-        break;
-    }
-
-    return qstrdup(addr.toString().toLatin1().constData());
-}
-#endif
 
 inline char *toString(std::nullptr_t)
 {
@@ -355,6 +331,10 @@ int main(int argc, char *argv[]) \
 #else
 #  define QTEST_ADD_GPU_BLACKLIST_SUPPORT_DEFS
 #  define QTEST_ADD_GPU_BLACKLIST_SUPPORT
+#endif
+
+#if defined(QT_NETWORK_LIB)
+#  include <QtTest/qtest_network.h>
 #endif
 
 #if defined(QT_WIDGETS_LIB)
