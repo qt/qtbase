@@ -116,7 +116,7 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
         options |= QQnxIntegration::FullScreenApplication;
     }
 
-    if (!paramList.contains(QLatin1String("flush-screen-context"))) {
+    if (paramList.contains(QLatin1String("flush-screen-context"))) {
         options |= QQnxIntegration::AlwaysFlushScreenContext;
     }
 
