@@ -462,21 +462,15 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
 QAccessibleDisplay::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
     QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
-    if (match & QAccessible::Labelled) {
-        QVarLengthArray<QObject *, 4> relatedObjects;
-
 #ifndef QT_NO_SHORTCUT
+    if (match & QAccessible::Labelled) {
         if (QLabel *label = qobject_cast<QLabel*>(object())) {
-            relatedObjects.append(label->buddy());
-        }
-#endif
-        for (int i = 0; i < relatedObjects.count(); ++i) {
             const QAccessible::Relation rel = QAccessible::Labelled;
-            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(relatedObjects.at(i));
-            if (iface)
+            if (QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(label->buddy()))
                 rels.append(qMakePair(iface, rel));
         }
     }
+#endif
     return rels;
 }
 
