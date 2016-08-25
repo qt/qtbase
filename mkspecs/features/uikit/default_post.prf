@@ -91,15 +91,16 @@ macx-xcode {
     only_active_arch.build = debug
     QMAKE_MAC_XCODE_SETTINGS += only_active_arch
 } else {
-    # Be more specific about which architecture we're targeting
-    contains(QT_ARCH, arm.*) {
-        ios: VALID_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS
-        tvos: VALID_ARCHS = $$QMAKE_TVOS_DEVICE_ARCHS
-        watchos: VALID_ARCHS = $$QMAKE_WATCHOS_DEVICE_ARCHS
-    } else {
-        ios: VALID_ARCHS = $$QMAKE_IOS_SIMULATOR_ARCHS
-        tvos: VALID_ARCHS = $$QMAKE_TVOS_SIMULATOR_ARCHS
-        watchos: VALID_ARCHS = $$QMAKE_WATCHOS_SIMULATOR_ARCHS
+    VALID_ARCHS =
+    !simulator|simulator_and_device {
+        ios: VALID_ARCHS += $$QMAKE_IOS_DEVICE_ARCHS
+        tvos: VALID_ARCHS += $$QMAKE_TVOS_DEVICE_ARCHS
+        watchos: VALID_ARCHS += $$QMAKE_WATCHOS_DEVICE_ARCHS
+    }
+    simulator {
+        ios: VALID_ARCHS += $$QMAKE_IOS_SIMULATOR_ARCHS
+        tvos: VALID_ARCHS += $$QMAKE_TVOS_SIMULATOR_ARCHS
+        watchos: VALID_ARCHS += $$QMAKE_WATCHOS_SIMULATOR_ARCHS
     }
 
     single_arch: VALID_ARCHS = $$first(VALID_ARCHS)
