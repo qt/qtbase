@@ -41,6 +41,7 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qobjectdefs.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -50,6 +51,7 @@ class QSurfaceFormatPrivate;
 
 class Q_GUI_EXPORT QSurfaceFormat
 {
+    Q_GADGET
 public:
     enum FormatOption {
         StereoBuffers            = 0x0001,
@@ -57,6 +59,7 @@ public:
         DeprecatedFunctions      = 0x0004,
         ResetNotification        = 0x0008
     };
+    Q_ENUM(FormatOption)
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
 
     enum SwapBehavior {
@@ -65,6 +68,7 @@ public:
         DoubleBuffer,
         TripleBuffer
     };
+    Q_ENUM(SwapBehavior)
 
     enum RenderableType {
         DefaultRenderableType = 0x0,
@@ -72,12 +76,14 @@ public:
         OpenGLES              = 0x2,
         OpenVG                = 0x4
     };
+    Q_ENUM(RenderableType)
 
     enum OpenGLContextProfile {
         NoProfile,
         CoreProfile,
         CompatibilityProfile
     };
+    Q_ENUM(OpenGLContextProfile)
 
     QSurfaceFormat();
     /*implicit*/ QSurfaceFormat(FormatOptions options);
