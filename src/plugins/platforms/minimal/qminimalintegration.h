@@ -67,7 +67,8 @@ class QMinimalIntegration : public QPlatformIntegration
 public:
     enum Options { // Options to be passed on command line or determined from environment
         DebugBackingStore = 0x1,
-        EnableFonts = 0x2
+        EnableFonts = 0x2,
+        FreeTypeFontDatabase = 0x4
     };
 
     explicit QMinimalIntegration(const QStringList &parameters);
