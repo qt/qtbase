@@ -88,6 +88,18 @@ public slots:
     }
 
 protected:
+    void exposeEvent(QExposeEvent *event) {
+        if (!isExposed())
+            return;
+
+        QSurfaceFormat format = context()->format();
+        qDebug() << this << format.swapBehavior() << "with Vsync =" << (format.swapInterval() ? "ON" : "OFF");
+        if (format.swapInterval() != requestedFormat().swapInterval())
+            qWarning() << "WARNING: Did not get requested swap interval of" << requestedFormat().swapInterval() << "for" << this;
+
+        QOpenGLWindow::exposeEvent(event);
+    }
+
     void mousePressEvent(QMouseEvent *event) {
         qDebug() << this << event;
         color.setHsl((color.hue() + 90) % 360, color.saturation(), color.lightness());
@@ -158,14 +170,9 @@ int main(int argc, char **argv)
 
     parser.process(app);
 
-    QSurfaceFormat fmt;
-    if (parser.isSet(noVsyncOption)) {
-        qDebug("swap interval 0 (no throttling)");
-        fmt.setSwapInterval(0);
-    } else {
-        qDebug("swap interval 1 (sync to vblank)");
-    }
-    QSurfaceFormat::setDefaultFormat(fmt);
+    QSurfaceFormat defaultSurfaceFormat;
+    defaultSurfaceFormat.setSwapInterval(parser.isSet(noVsyncOption) ? 0 : 1);
+    QSurfaceFormat::setDefaultFormat(defaultSurfaceFormat);
 
     QRect availableGeometry = app.primaryScreen()->availableGeometry();
 
@@ -176,12 +183,11 @@ int main(int argc, char **argv)
         windows << w;
 
         if (i == 0 && parser.isSet(vsyncOneOption)) {
-            qDebug("swap interval 1 for first window only");
-            QSurfaceFormat vsyncedSurfaceFormat = fmt;
+            QSurfaceFormat vsyncedSurfaceFormat = defaultSurfaceFormat;
             vsyncedSurfaceFormat.setSwapInterval(1);
             w->setFormat(vsyncedSurfaceFormat);
-            fmt.setSwapInterval(0);
-            QSurfaceFormat::setDefaultFormat(fmt);
+            defaultSurfaceFormat.setSwapInterval(0);
+            QSurfaceFormat::setDefaultFormat(defaultSurfaceFormat);
         }
 
         static int windowWidth = w->width() + 20;
