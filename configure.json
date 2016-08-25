@@ -162,7 +162,6 @@
             "separate-debug-info": { "type": "boolean", "name": "separate_debug_info" },
             "shared": "boolean",
             "silent": "void",
-            "skip": "addString",
             "slog2": "boolean",
             "sm": { "type": "boolean", "name": "sessionmanager" },
             "sql-db2": "boolean",
@@ -856,9 +855,6 @@
             "description": "-Bsymbolic-functions support",
             "type": "compile",
             "test": "unix/reduce_relocs"
-        },
-        "skip_modules": {
-            "type": "skipModules"
         },
         "build_parts": {
             "type": "buildParts"
@@ -2095,9 +2091,6 @@
             "autoDetect": "!config.android",
             "condition": "libs.host_dbus",
             "output": [ { "type": "varAppend", "name": "QT_HOST_CFLAGS_DBUS", "value": "libs.host_dbus.cflags", "eval": "true" } ]
-        },
-        "skip_modules": {
-            "output": [ { "type": "varAssign", "name": "QT_SKIP_MODULES", "value": "tests.skip_modules.value" } ]
         },
         "build_parts": {
             "output": [ { "type": "varAppend", "name": "QT_BUILD_PARTS", "value": "tests.build_parts.value" } ]

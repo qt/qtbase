@@ -195,32 +195,8 @@ defineTest(qtConfTest_detectPkgConfig) {
 }
 
 defineTest(qtConfTest_neon) {
-    contains(config.tests.architecture.subarch, "neon"): return(true)
+    contains($${currentConfig}.tests.architecture.subarch, "neon"): return(true)
     return(false)
-}
-
-defineTest(qtConfTest_skipModules) {
-    $${1}.cache = -
-    export($${1}.cache)
-
-    skip =
-    uikit {
-        skip += qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples
-        !ios: skip += qtscript
-    }
-
-    for (m, config.input.skip) {
-        # normalize the command line input
-        m ~= s/^(qt)?/qt/
-        !exists($$_PRO_FILE_PWD_/../$$m) {
-            qtConfAddError("-skip command line argument called with non-existent module '$$m'.")
-            return(false)
-        }
-        skip += $$m
-    }
-    $${1}.value = $$unique(skip)
-    export($${1}.value)
-    return(true)
 }
 
 defineTest(qtConfTest_buildParts) {
@@ -491,10 +467,10 @@ defineTest(qtConfOutput_architecture) {
             "QT_ARCH = $$arch"
     }
 
-    config.output.publicPro += $$publicPro
-    export(config.output.publicPro)
-    config.output.privatePro += $$privatePro
-    export(config.output.privatePro)
+    $${currentConfig}.output.publicPro += $$publicPro
+    export($${currentConfig}.output.publicPro)
+    $${currentConfig}.output.privatePro += $$privatePro
+    export($${currentConfig}.output.privatePro)
 
     # setup QT_ARCH variable used by qtConfEvaluate
     QT_ARCH = $$arch
@@ -522,15 +498,15 @@ defineTest(qtConfOutput_qreal) {
 defineTest(qtConfOutput_pkgConfig) {
     !$${2}: return()
 
-    PKG_CONFIG = $$eval(config.tests.pkg-config.pkgConfig)
+    PKG_CONFIG = $$eval($${currentConfig}.tests.pkg-config.pkgConfig)
     export(PKG_CONFIG)
     # this method also exports PKG_CONFIG_(LIB|SYSROOT)DIR, so that tests using pkgConfig will work correctly
-    PKG_CONFIG_SYSROOT_DIR = $$eval(config.tests.pkg-config.pkgConfigSysrootDir)
+    PKG_CONFIG_SYSROOT_DIR = $$eval($${currentConfig}.tests.pkg-config.pkgConfigSysrootDir)
     !isEmpty(PKG_CONFIG_SYSROOT_DIR) {
         qtConfOutputVar(assign, "publicPro", "PKG_CONFIG_SYSROOT_DIR", $$PKG_CONFIG_SYSROOT_DIR)
         export(PKG_CONFIG_SYSROOT_DIR)
     }
-    PKG_CONFIG_LIBDIR = $$eval(config.tests.pkg-config.pkgConfigLibdir)
+    PKG_CONFIG_LIBDIR = $$eval($${currentConfig}.tests.pkg-config.pkgConfigLibdir)
     !isEmpty(PKG_CONFIG_LIBDIR) {
         qtConfOutputVar(assign, "publicPro", "PKG_CONFIG_LIBDIR", $$PKG_CONFIG_LIBDIR)
         export(PKG_CONFIG_LIBDIR)
@@ -560,20 +536,20 @@ defineTest(qtConfOutput_debugAndRelease) {
 defineTest(qtConfOutput_compilerVersion) {
     !$${2}: return()
 
-    name = $$upper($$config.tests.compiler.compilerId)
-    version = $$config.tests.compiler.compilerVersion
+    name = $$upper($$eval($${currentConfig}.tests.compiler.compilerId))
+    version = $$eval($${currentConfig}.tests.compiler.compilerVersion)
     major = $$section(version, '.', 0, 0)
     minor = $$section(version, '.', 1, 1)
     patch = $$section(version, '.', 2, 2)
     isEmpty(minor): minor = 0
     isEmpty(patch): patch = 0
 
-    config.output.publicPro += \
+    $${currentConfig}.output.publicPro += \
         "QT_$${name}_MAJOR_VERSION = $$major" \
         "QT_$${name}_MINOR_VERSION = $$minor" \
         "QT_$${name}_PATCH_VERSION = $$patch"
 
-    export(config.output.publicPro)
+    export($${currentConfig}.output.publicPro)
 }
 
 # should go away when qfeatures.txt is ported
@@ -581,17 +557,17 @@ defineTest(qtConfOutput_extraFeatures) {
     isEmpty(config.input.extra_features): return()
 
     # write to qconfig.pri
-    config.output.publicPro += "$${LITERAL_HASH}ifndef QT_BOOTSTRAPPED"
+    $${currentConfig}.output.publicPro += "$${LITERAL_HASH}ifndef QT_BOOTSTRAPPED"
     for (f, config.input.extra_features) {
         feature = $$replace(f, "^no-", "")
         FEATURE = $$upper($$replace(feature, -, _))
         contains(f, "^no-.*") {
-            config.output.publicPro += \
+            $${currentConfig}.output.publicPro += \
                 "$${LITERAL_HASH}ifndef QT_NO_$$FEATURE" \
                 "$${LITERAL_HASH}define QT_NO_$$FEATURE" \
                 "$${LITERAL_HASH}endif"
         } else {
-            config.output.publicPro += \
+            $${currentConfig}.output.publicPro += \
                 "$${LITERAL_HASH}if defined(QT_$$FEATURE) && defined(QT_NO_$$FEATURE)" \
                 "$${LITERAL_HASH}undef QT_$$FEATURE" \
                 "$${LITERAL_HASH}elif !defined(QT_$$FEATURE) && !defined(QT_NO_$$FEATURE)" \
@@ -599,8 +575,8 @@ defineTest(qtConfOutput_extraFeatures) {
                 "$${LITERAL_HASH}endif"
         }
     }
-    config.output.publicPro += "$${LITERAL_HASH}endif"
-    export(config.output.publicPro)
+    $${currentConfig}.output.publicPro += "$${LITERAL_HASH}endif"
+    export($${currentConfig}.output.publicPro)
 
     # write to qmodule.pri
     disabled_features =
@@ -649,8 +625,8 @@ defineTest(qtConfOutput_compilerFlags) {
         output += "EXTRA_FRAMEWORKPATH += $$val_escape(config.input.fpaths)"
     }
 
-    config.output.privatePro += $$output
-    export(config.output.privatePro)
+    $${currentConfig}.output.privatePro += $$output
+    export($${currentConfig}.output.privatePro)
 }
 
 defineTest(qtConfOutput_gccSysroot) {
@@ -670,21 +646,21 @@ defineTest(qtConfOutput_gccSysroot) {
         "    QMAKE_CXXFLAGS  += --sysroot=\$\$[QT_SYSROOT]" \
         "    QMAKE_LFLAGS    += --sysroot=\$\$[QT_SYSROOT]" \
         "}"
-    config.output.publicPro += $$output
-    export(config.output.publicPro)
+    $${currentConfig}.output.publicPro += $$output
+    export($${currentConfig}.output.publicPro)
 }
 
 defineTest(qtConfOutput_qmakeArgs) {
     !$${2}: return()
 
-    config.output.privatePro = "!host_build {"
+    $${currentConfig}.output.privatePro = "!host_build {"
     for (a, config.input.qmakeArgs) {
-        config.output.privatePro += "    $$a"
+        $${currentConfig}.output.privatePro += "    $$a"
         EXTRA_QMAKE_ARGS += $$system_quote($$a)
     }
-    config.output.privatePro += "}"
+    $${currentConfig}.output.privatePro += "}"
     export(EXTRA_QMAKE_ARGS)
-    export(config.output.privatePro)
+    export($${currentConfig}.output.privatePro)
 }
 
 defineTest(qtConfOutputPostProcess_publicPro) {
@@ -706,8 +682,8 @@ defineTest(qtConfOutputPostProcess_publicPro) {
             "QT_RELEASE_DATE = $$config.input.qt_release_date"
     }
 
-    config.output.publicPro += $$output
-    export(config.output.publicPro)
+    $${currentConfig}.output.publicPro += $$output
+    export($${currentConfig}.output.publicPro)
 }
 
 defineTest(qtConfOutputPostProcess_publicHeader) {
@@ -729,8 +705,8 @@ defineTest(qtConfOutputPostProcess_publicHeader) {
     !isEmpty(config.input.qt_libinfix): \
         output += "$${LITERAL_HASH}define QT_LIBINFIX \"$$eval(config.input.qt_libinfix)\""
 
-    config.output.publicHeader += $$output
-    export(config.output.publicHeader)
+    $${currentConfig}.output.publicHeader += $$output
+    export($${currentConfig}.output.publicHeader)
 }
 
 
@@ -748,7 +724,7 @@ defineTest(qtConfReport_buildTypeAndConfig) {
         qtConfAddReport("Building for: $$qtConfEvaluate('tests.architecture.arch')")
     }
     qtConfAddReport()
-    qtConfAddReport("Configuration: $$config.output.privatePro.append.CONFIG $$config.output.publicPro.append.QT_CONFIG")
+    qtConfAddReport("Configuration: $$eval($${currentConfig}.output.privatePro.append.CONFIG) $$eval($${currentConfig}.output.publicPro.append.QT_CONFIG)")
     qtConfAddReport()
 }
 
@@ -775,10 +751,10 @@ defineTest(qtConfReport_buildMode) {
 # ensure pristine environment for configuration
 discard_from($$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)
 discard_from($$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)
+# ... and cause them to be reloaded afterwards
+QMAKE_POST_CONFIGURE += \
+    "include(\$\$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)" \
+    "include(\$\$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)"
 
-# load and process input from configure
-exists("$$OUT_PWD/config.tests/configure.cfg") {
-    include("$$OUT_PWD/config.tests/configure.cfg")
-}
-
-load(qt_configure)
+# load and process input from configure.sh/.exe
+include($$shadowed($$PWD)/config.tests/configure.cfg)

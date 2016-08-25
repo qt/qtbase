@@ -1911,31 +1911,15 @@ done
 set +f
 IFS=$SAVED_IFS
 
-# redirect qmake's output to a dummy Makefile
-$CFG_QMAKE_PATH -o Makefile.cfg -qtconf "$QTCONFFILE" $relpath/configure.pri -- "$@" || exit 101
-rm Makefile.cfg
-
 #-------------------------------------------------------------------------------
-# give feedback on configuration
-#-------------------------------------------------------------------------------
-
-if [ -n "$PLATFORM_NOTES" ]; then
-    echo
-    echo "Platform notes:"
-    echo "$PLATFORM_NOTES"
-else
-    echo
-fi
-
-#-------------------------------------------------------------------------------
-# build makefiles based on the configuration
+# configure and build top-level makefile
 #-------------------------------------------------------------------------------
 
 if [ -n "$CFG_TOPLEVEL" ]; then
     cd ..
 fi
 
-"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled" || exit
+"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled" -- "$@" || exit
 
 #-------------------------------------------------------------------------------
 # finally save the executed command to another script
@@ -1953,6 +1937,18 @@ if [ $CFG_REDO = no ]; then
     echo "#!/bin/sh" > config.status
     echo "$relpathMangled/$relconf -redo \"\$@\"" >> config.status
     chmod +x config.status
+fi
+
+#-------------------------------------------------------------------------------
+# final notes for the user
+#-------------------------------------------------------------------------------
+
+if [ -n "$PLATFORM_NOTES" ]; then
+    echo
+    echo "Platform notes:"
+    echo "$PLATFORM_NOTES"
+else
+    echo
 fi
 
 if [ -n "$PREFIX_COMPLAINTS" ]; then

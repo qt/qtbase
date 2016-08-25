@@ -300,10 +300,16 @@ defineTest(prepareRecursiveTarget) {
 }
 
 defineTest(qtConfig) {
-    contains(QT.global.enabled_features, $$1): \
-        return(true)
-    contains(QT.global.disabled_features, $$1): \
-        return(false)
-
+    modules = $$QT $$QT_PRIVATE $$QT_FOR_CONFIG
+    modules ~= s,-private$,_private,g
+    modules = $$resolve_depends(modules, "QT.", ".depends")
+    modules += global global_private
+    modules = $$reverse(modules)
+    for (module, modules) {
+        contains(QT.$${module}.enabled_features, $$1): \
+            return(true)
+        contains(QT.$${module}.disabled_features, $$1): \
+            return(false)
+    }
     error("Could not find feature $${1}.")
 }

@@ -24,7 +24,6 @@ DISTCLEAN_DEPS += qmake-clean
 # config.status (and configure.cache, which is the same for Windows)
 # are omitted for convenience of rebuilds.
 QMAKE_DISTCLEAN += \
-    config.cache \
     config.summary \
     config.tests/.qmake.cache \
     mkspecs/qconfig.pri \

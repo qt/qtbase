@@ -51,7 +51,6 @@ public:
     void configure();
 
     void generateHeaders();
-    void generateMakefiles();
     void generateQDevicePri();
     void prepareConfigTests();
 

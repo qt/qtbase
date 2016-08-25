@@ -1,8 +1,3 @@
-CONFIG -= qt debug_and_release
-load(configure_base)
-
-QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_CACHE_)/config.cache
-QMAKE_CONFIG_CACHE_USE = all
 
 QT_CONFIGURE_REPORT =
 QT_CONFIGURE_NOTES =
@@ -36,8 +31,8 @@ defineTest(qtConfAddError) {
 defineTest(qtConfCommandlineSetInput) {
     arg = $${1}
     val = $${2}
-    !isEmpty(config.commandline.options.$${arg}.name): \
-        arg = $$eval(config.commandline.options.$${arg}.name)
+    !isEmpty($${currentConfig}.commandline.options.$${arg}.name): \
+        arg = $$eval($${currentConfig}.commandline.options.$${arg}.name)
 
     config.input.$$arg = $$val
     export(config.input.$$arg)
@@ -74,7 +69,7 @@ defineTest(qtConfCommandline_void) {
         return()
     }
 
-    val = $$eval(config.commandline.options.$${opt}.value)
+    val = $$eval($${currentConfig}.commandline.options.$${opt}.value)
     isEmpty(val): val = yes
 
     qtConfCommandlineSetInput($$opt, $$val)
@@ -86,11 +81,11 @@ defineTest(qtConfCommandline_enum) {
     isEmpty(val): val = yes
 
     # validate and map value
-    mapped = $$eval(config.commandline.options.$${opt}.values.$${val})
+    mapped = $$eval($${currentConfig}.commandline.options.$${opt}.values.$${val})
     isEmpty(mapped) {
         # just a list of allowed values
-        for (i, config.commandline.options.$${opt}.values._KEYS_) {
-            equals(config.commandline.options.$${opt}.values.$${i}, $$val) {
+        for (i, $${currentConfig}.commandline.options.$${opt}.values._KEYS_) {
+            equals($${currentConfig}.commandline.options.$${opt}.values.$${i}, $$val) {
                 mapped = $$val
                 break()
             }
@@ -108,12 +103,12 @@ defineTest(qtConfValidateValue) {
     opt = $${1}
     val = $${2}
 
-    validValues = $$eval(config.commandline.options.$${opt}.values._KEYS_)
+    validValues = $$eval($${currentConfig}.commandline.options.$${opt}.values._KEYS_)
     isEmpty(validValues): \
         return(true)
 
     for (i, validValues) {
-        equals(config.commandline.options.$${opt}.values.$${i}, $$val): \
+        equals($${currentConfig}.commandline.options.$${opt}.values.$${i}, $$val): \
             return(true)
     }
 
@@ -169,20 +164,24 @@ defineTest(qtConfCommandline_addString) {
     !qtConfValidateValue($$opt, $$val): \
         return()
 
-    !isEmpty(config.commandline.options.$${opt}.name): \
-        opt = $$eval(config.commandline.options.$${opt}.name)
+    !isEmpty($${currentConfig}.commandline.options.$${opt}.name): \
+        opt = $$eval($${currentConfig}.commandline.options.$${opt}.name)
 
     config.input.$$opt += $$val
     export(config.input.$$opt)
 }
 
 defineTest(qtConfParseCommandLine) {
-    custom = $$config.commandline.custom
-    customCall =
-    !isEmpty(custom) {
-        customCall = qtConfCommandline_$$custom
-        !defined($$customCall, test): \
-            error("Custom command line callback '$$custom' is undefined.")
+    customCalls =
+    for (cc, allConfigs) {
+        custom = $$eval($${cc}.commandline.custom)
+
+        !isEmpty(custom) {
+            customCall = qtConfCommandline_$$custom
+            !defined($$customCall, test): \
+                error("Custom command line callback '$$custom' is undefined.")
+            customCalls += $$customCall
+        }
     }
 
     for (ever) {
@@ -212,15 +211,24 @@ defineTest(qtConfParseCommandLine) {
             next()
         }
 
-        !isEmpty(customCall) {
-            $${customCall}($$c): \
-                next()
+        didCustomCall = false
+        for (customCall, customCalls) {
+            $${customCall}($$c) {
+                didCustomCall = true
+                break()
+            }
         }
+        $$didCustomCall: \
+            next()
 
         contains(c, "([A-Z_]+)=(.*)") {
             opt = $$replace(c, "^([A-Z_]+)=(.*)", "\\1")
             val = $$replace(c, "^([A-Z_]+)=(.*)", "\\2")
-            var = $$eval(config.commandline.assignments.$${opt})
+            for (cc, allConfigs) {
+                var = $$eval($${cc}.commandline.assignments.$${opt})
+                !isEmpty(var): \
+                    break()
+            }
             isEmpty(var) {
                 qtConfAddError("Assigning unknown variable '$$opt' on command line.")
                 return()
@@ -254,19 +262,25 @@ defineTest(qtConfParseCommandLine) {
             return()
         }
 
-        type = $$eval(config.commandline.options.$${opt})
-        isEmpty(type): \
-            type = $$eval(config.commandline.options.$${opt}.type)
-        isEmpty(type) {
-            # no match in the regular options, try matching the prefixes
-            for (p, config.commandline.prefix._KEYS_) {
-                e = "^-$${p}(.*)"
-                contains(c, $$e) {
-                    opt = $$eval(config.commandline.prefix.$${p})
-                    val = $$replace(c, $$e, "\\1")
-                    type = "addString"
-                    break()
+        for (cc, allConfigs) {
+            type = $$eval($${cc}.commandline.options.$${opt})
+            isEmpty(type): \
+                type = $$eval($${cc}.commandline.options.$${opt}.type)
+            isEmpty(type) {
+                # no match in the regular options, try matching the prefixes
+                for (p, $${cc}.commandline.prefix._KEYS_) {
+                    e = "^-$${p}(.*)"
+                    contains(c, $$e) {
+                        opt = $$eval($${cc}.commandline.prefix.$${p})
+                        val = $$replace(c, $$e, "\\1")
+                        type = "addString"
+                        break()
+                    }
                 }
+            }
+            !isEmpty(type) {
+                currentConfig = $$cc
+                break()
             }
         }
         # handle builtin [-no]-feature-xxx
@@ -368,8 +382,8 @@ defineReplace(qtConfPrepareArgs) {
 }
 
 defineTest(qtConfSetupLibraries) {
-    for (l, config.libraries._KEYS_) {
-        lpfx = config.libraries.$${l}
+    for (l, $${currentConfig}.libraries._KEYS_) {
+        lpfx = $${currentConfig}.libraries.$${l}
         # 'export' may be omitted, in which case it falls back to the library's name
         !defined($${lpfx}.export, var) {
             $${lpfx}.export = $$l
@@ -396,8 +410,8 @@ defineTest(qtConfSetupLibraries) {
     }
 
     # reverse mapping for assignments on command line.
-    for (a, config.commandline.assignments._KEYS_) {
-        apfx = config.commandline.assignments.$${a}
+    for (a, $${currentConfig}.commandline.assignments._KEYS_) {
+        apfx = $${currentConfig}.commandline.assignments.$${a}
         ra = config.commandline.rev_assignments.$$eval($$apfx)
         $$ra = $$a
         export($$ra)
@@ -570,10 +584,12 @@ defineTest(qtConfExportLibrary) {
         qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_MINOR, $$member(version, 1))
         qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_PATCH, $$member(version, 2))
     }
+    !isEmpty($${currentConfig}.module): \
+        qtConfExtendVar($$output, "QT.$${currentModule}_private.libraries", $$2)
 }
 
 defineTest(qtConfHandleLibrary) {
-    lpfx = config.libraries.$$1
+    lpfx = $${currentConfig}.libraries.$$1
     defined($${lpfx}.result, var): return()
 
     qtConfEnsureTestTypeDeps("library")
@@ -647,10 +663,10 @@ defineTest(qtConfTest_library) {
 
 defineTest(qtConfTestPrepare_compile) {
     for (u, $$list($$eval($${1}.use))) {
-        !contains(config.libraries._KEYS_, $$u): \
+        !contains($${currentConfig}.libraries._KEYS_, $$u): \
             error("Test $$1 tries to use undeclared library '$$u'")
         qtConfHandleLibrary($$u)
-        lpfx = config.libraries.$${u}
+        lpfx = $${currentConfig}.libraries.$${u}
         isEmpty($${lpfx}.source): \
             return(false)
         $${1}.literal_args += $$qtConfLibraryArgs($${lpfx}.sources.$$eval($${lpfx}.source))
@@ -820,12 +836,12 @@ defineTest(qtConfIsBoolean) {
 }
 
 defineTest(qtConfSetupTestTypeDeps) {
-    for (tt, config.testTypeDependencies._KEYS_) {
+    for (tt, $${currentConfig}.testTypeDependencies._KEYS_) {
         !defined(qtConfTest_$${tt}, test): \
             error("Declaring dependency for undefined test type '$$tt'.")
-        for (f, config.testTypeDependencies.$${tt}._KEYS_) {
-            feature = $$eval(config.testTypeDependencies.$${tt}.$${f})
-            isEmpty(config.features.$${feature}._KEYS_): \
+        for (f, $${currentConfig}.testTypeDependencies.$${tt}._KEYS_) {
+            feature = $$eval($${currentConfig}.testTypeDependencies.$${tt}.$${f})
+            isEmpty($${currentConfig}.features.$${feature}._KEYS_): \
                 error("Test type '$$tt' depends on undefined feature '$$feature'.")
         }
     }
@@ -834,31 +850,31 @@ defineTest(qtConfSetupTestTypeDeps) {
     # the call to another one. The former representation is more natural
     # (and concise) to write, while the latter is more efficient to process.
     # Hence, this function inverts the mapping.
-    for (tt, config.testTypeAliases._KEYS_) {
+    for (tt, $${currentConfig}.testTypeAliases._KEYS_) {
         !defined(qtConfTest_$${tt}, test): \
             error("Aliasing undefined test type '$$tt'.")
-        for (tta, config.testTypeAliases.$${tt}._KEYS_) {
-            type = $$eval(config.testTypeAliases.$${tt}.$${tta})
+        for (tta, $${currentConfig}.testTypeAliases.$${tt}._KEYS_) {
+            type = $$eval($${currentConfig}.testTypeAliases.$${tt}.$${tta})
             !defined(qtConfTest_$${type}, test): \
                 error("Aliasing '$$tt' to undefined test type '$$type'.")
-            config.testTypeForwards.$${type} += $$tt
-            export(config.testTypeForwards.$${type})
+            $${currentConfig}.testTypeForwards.$${type} += $$tt
+            export($${currentConfig}.testTypeForwards.$${type})
         }
     }
 }
 
 defineTest(qtConfEnsureTestTypeDeps) {
-    depsn = config.testTypeDependencies.$${1}._KEYS_
+    depsn = $${currentConfig}.testTypeDependencies.$${1}._KEYS_
     !isEmpty($$depsn) {
         for (dep, $$depsn) {
-            feature = $$eval(config.testTypeDependencies.$${1}.$${dep})
+            feature = $$eval($${currentConfig}.testTypeDependencies.$${1}.$${dep})
             !qtConfCheckFeature($$feature): \
                 error("Test type '$$1' depends on non-emitted feature $${feature}.")
         }
         $$depsn =
         export($$depsn)
     }
-    fwdsn = config.testTypeForwards.$${1}
+    fwdsn = $${currentConfig}.testTypeForwards.$${1}
     !isEmpty($$fwdsn) {
         for (fwd, $$fwdsn): \
            qtConfEnsureTestTypeDeps($$fwd)
@@ -868,7 +884,7 @@ defineTest(qtConfEnsureTestTypeDeps) {
 }
 
 defineTest(qtRunSingleTest) {
-    tpfx = config.tests.$${1}
+    tpfx = $${currentConfig}.tests.$${1}
     defined($${tpfx}.result, var): \
         return()
 
@@ -945,10 +961,10 @@ defineReplace(qtConfEvaluateSingleExpression) {
         var = $$section(e, ".", 2, -1)
         isEmpty(var): \
             var = result
-        !contains(config.tests._KEYS_, $$test): \
+        !contains($${currentConfig}.tests._KEYS_, $$test): \
             error("Unknown test object $${test} in expression '$${1}'.")
         qtRunSingleTest($$test)
-        result = $$eval(config.tests.$${test}.$${var})
+        result = $$eval($${currentConfig}.tests.$${test}.$${var})
     } else: contains(e, "^libs\..*") {
         !qt_conf_tests_allowed: \
             error("Expression '$${1}' refers to a library, which is not allowed at this stage of configuring.")
@@ -956,22 +972,36 @@ defineReplace(qtConfEvaluateSingleExpression) {
         var = $$section(e, ".", 2, -1)
         isEmpty(var): \
             var = result
-        !contains(config.libraries._KEYS_, $$lib): \
+        !contains($${currentConfig}.libraries._KEYS_, $$lib): \
             error("Unknown library object $${lib} in expression '$${1}'.")
         qtConfHandleLibrary($$lib)
-        !defined(config.libraries.$${lib}.$${var}, var): \
-            var = sources.$$eval(config.libraries.$${lib}.$${source}).$$var
-        result = $$eval(config.libraries.$${lib}.$${var})
+        !defined($${currentConfig}.libraries.$${lib}.$${var}, var): \
+            var = sources.$$eval($${currentConfig}.libraries.$${lib}.$${source}).$$var
+        result = $$eval($${currentConfig}.libraries.$${lib}.$${var})
     } else: contains(e, "^features\..*") {
         feature = $$section(e, ".", 1, 1)
         var = $$section(e, ".", 2, -1)
         isEmpty(var): \
             var = available
-        !contains(config.features._KEYS_, $$feature): \
+        !contains($${currentConfig}.features._KEYS_, $$feature) {
+            # this is basically a copy of what qtConfig() in qt_build_config.prf
+            # does, but we produce a nicer error message.
+            for (module, QMAKE_CONFIG_DEPS) {
+                contains(QT.$${module}.enabled_features, $$feature): \
+                    result = true
+                else: contains(QT.$${module}.disabled_features, $$feature): \
+                    result = false
+                else: \
+                    next()
+                !equals(var, available): \
+                    error("Expression '$$1' is accessing field '$$var' of non-local feature $${feature}.")
+                return($$result)
+            }
             error("Unknown feature object $${feature} in expression '$${1}'.")
+        }
         !qtConfCheckFeature($$feature): \
             error("Expression '$$1' is accessing non-emitted feature $${feature}.")
-        result = $$eval(config.features.$${feature}.$${var})
+        result = $$eval($${currentConfig}.features.$${feature}.$${var})
     } else: contains(e, "^config\..*") {
         var = $$replace(e, "^config\.", "")
         result = false
@@ -1059,7 +1089,7 @@ defineReplace(qtConfEvaluateSubExpression) {
 }
 
 defineReplace(qtIsFeatureEnabled) {
-    enable = $$eval(config.features.$${1}.enable)
+    enable = $$eval($${currentConfig}.features.$${1}.enable)
     !isEmpty(enable) {
         $$qtConfEvaluate($$enable): \
             return(true)
@@ -1072,7 +1102,7 @@ defineReplace(qtIsFeatureEnabled) {
 }
 
 defineReplace(qtIsFeatureDisabled) {
-    disable = $$eval(config.features.$${1}.disable)
+    disable = $$eval($${currentConfig}.features.$${1}.disable)
     !isEmpty(disable) {
         $$qtConfEvaluate($$disable): \
             return(true)
@@ -1100,7 +1130,7 @@ defineReplace(qtConfCheckSingleCondition) {
 }
 
 defineTest(qtConfCheckFeature) {
-    fpfx = config.features.$${1}
+    fpfx = $${currentConfig}.features.$${1}
 
     available = $$eval($${fpfx}.available)
     !isEmpty(available): return(true)
@@ -1138,7 +1168,7 @@ defineTest(qtConfCheckFeature) {
     $${fpfx}.available = $$result
     export($${fpfx}.available)
 
-    for (i, config.features.$${feature}.output._KEYS_): \
+    for (i, $${currentConfig}.features.$${feature}.output._KEYS_): \
         qtConfProcessOneOutput($$feature, $$i)
 
     return(true)
@@ -1146,7 +1176,7 @@ defineTest(qtConfCheckFeature) {
 
 
 defineTest(qtConfProcessFeatures) {
-    for (feature, config.features._KEYS_): \
+    for (feature, $${currentConfig}.features._KEYS_): \
         qtConfCheckFeature($$feature)
 }
 
@@ -1167,8 +1197,8 @@ defineTest(qtConfReportPadded) {
 defineReplace(qtConfCollectFeatures) {
     l =
     for (feature, $$list($${1})) {
-        $$eval(config.features.$${feature}.available): \
-            l += $$eval(config.features.$${feature}.description)
+        $$eval($${currentConfig}.features.$${feature}.available): \
+            l += $$eval($${currentConfig}.features.$${feature}.description)
     }
 
     isEmpty(l): return("<none>")
@@ -1181,10 +1211,10 @@ defineTest(qtConfReport_featureList) {
 
 defineReplace(qtConfFindFirstAvailableFeature) {
     for (feature, $$list($${1})) {
-        isEmpty(config.features.$${feature}._KEYS_): \
+        isEmpty($${currentConfig}.features.$${feature}._KEYS_): \
             error("Asking for a report on undefined feature $${2}.")
-        $$eval(config.features.$${feature}.available): \
-            return($$eval(config.features.$${feature}.description))
+        $$eval($${currentConfig}.features.$${feature}.available): \
+            return($$eval($${currentConfig}.features.$${feature}.description))
     }
 
     return("<none>")
@@ -1195,14 +1225,14 @@ defineTest(qtConfReport_firstAvailableFeature) {
 }
 
 defineTest(qtConfReport_feature) {
-    !contains(config.features._KEYS_, $$2): \
+    !contains($${currentConfig}.features._KEYS_, $$2): \
         error("Asking for a report on undefined feature $${2}.")
 
     # hide report for not emitted features
-    isEmpty(config.features.$${2}.available): \
+    isEmpty($${currentConfig}.features.$${2}.available): \
         return()
 
-    $$eval(config.features.$${2}.available) {
+    $$eval($${currentConfig}.features.$${2}.available) {
         result = "yes"
         !isEmpty(3): result = "$${3}"
     } else {
@@ -1210,7 +1240,7 @@ defineTest(qtConfReport_feature) {
         !isEmpty(4): result = "$${4}"
     }
 
-    text = $$eval(config.features.$${2}.description)
+    text = $$eval($${currentConfig}.features.$${2}.description)
 
     qtConfReportPadded($${1}$$text, $$result)
 }
@@ -1270,17 +1300,15 @@ defineTest(qtConfCreateReportRecurse) {
 }
 
 defineTest(qtConfProcessEarlyChecks) {
-    qtConfCreateReportRecurse(config.earlyReport, false)
-    qtConfCheckErrors()
+    qtConfCreateReportRecurse($${currentConfig}.earlyReport, false)
 }
 
-
 defineTest(qtConfCreateReport) {
-    qtConfCreateReportRecurse(config.report, false)
+    qtConfCreateReportRecurse($${currentConfig}.report, false)
 }
 
 defineTest(qtConfCreateSummary) {
-    qtConfCreateReportRecurse(config.summary, "")
+    qtConfCreateReportRecurse($${currentConfig}.summary, "")
 }
 
 defineTest(qtConfPrintReport) {
@@ -1322,15 +1350,6 @@ defineTest(qtConfCheckErrors) {
 # output generation
 #
 
-defineReplace(qtConfOutputSelectProFile) {
-    !isEmpty($${1}.public) {
-        $$eval($${1}.public): \
-            return(publicPro)
-    }
-    return(privatePro)
-}
-
-
 # qtConfOutputVar(modifier, output, name, value)
 defineTest(qtConfOutputVar) {
     modifier = $$1
@@ -1338,35 +1357,53 @@ defineTest(qtConfOutputVar) {
     name = $$3
     value = $$val_escape(4)
 
-    !isEmpty(config.output.$${output}.assign.$${name}): \
+    defined($${currentConfig}.output.$${output}.assign.$${name}, var): \
         error("Trying to overwrite assigned variable '$$name' in '$$output' using modifier '$$modifier'.")
 
     equals(modifier, assign) {
-        !isEmpty(config.output.$${output}.append.$${name})|!isEmpty(config.output.$${output}.remove.$${name}): \
+        !isEmpty($${currentConfig}.output.$${output}.append.$${name})|!isEmpty($${currentConfig}.output.$${output}.remove.$${name}): \
             error("Trying to assign variable '$$name' in '$$output', which has already appended or removed parts.")
-        config.output.$${output}.assign.$${name} = $$value
+        $${currentConfig}.output.$${output}.assign.$${name} = $$value
     } else: equals(modifier, append) {
-        contains(config.output.$${output}.remove.$${name}, $$value): \
+        contains($${currentConfig}.output.$${output}.remove.$${name}, $$value): \
             error("Trying to append removed '$$value' to variable '$$name' in '$$output'.")
-        config.output.$${output}.append.$${name} += $$value
+        $${currentConfig}.output.$${output}.append.$${name} += $$value
     } else: equals(modifier, remove) {
-        contains(config.output.$${output}.append.$${name}, $$value): \
+        contains($${currentConfig}.output.$${output}.append.$${name}, $$value): \
             error("Trying to remove appended '$$value' to variable '$$name' in '$$output'.")
-        config.output.$${output}.remove.$${name} += $$value
+        $${currentConfig}.output.$${output}.remove.$${name} += $$value
     } else {
         error("Invalid modifier '$$modifier' passed to qtConfOutputVar.")
     }
-    config.output.$${output}.$${modifier}._KEYS_ *= $${name}
-    export(config.output.$${output}.$${modifier}.$${name})
-    export(config.output.$${output}.$${modifier}._KEYS_)
+    $${currentConfig}.output.$${output}.$${modifier}._KEYS_ *= $${name}
+    export($${currentConfig}.output.$${output}.$${modifier}.$${name})
+    export($${currentConfig}.output.$${output}.$${modifier}._KEYS_)
+}
+
+# qtConfExtendVar(output, name, value)
+defineTest(qtConfExtendVar) {
+    output = $$1
+    name = $$2
+    value = $$val_escape(3)
+
+    !defined($${currentConfig}.output.$${output}.assign.$${name}, var): \
+        error("Trying to extend undefined variable '$$name' in '$$output'.")
+
+    $${currentConfig}.output.$${output}.assign.$${name} += $$value
+    export($${currentConfig}.output.$${output}.assign.$${name})
 }
 
 defineTest(qtConfOutputVarHelper) {
+    !isEmpty($${2}.public):$$eval($${2}.public) {
+        output = "publicPro"
+    } else {
+        output = "privatePro"
+    }
+
     negative = $$eval($${2}.negative)
     isEmpty(negative): negative = false
     equals(3, $$negative): return()
 
-    output = $$qtConfOutputSelectProFile($${2})
     name = $$eval($${2}.name)
     isEmpty(name): \
         error("Output type 'var$$title($$1)' used in feature '$$eval($${2}.feature)' without a 'name' entry.")
@@ -1375,6 +1412,8 @@ defineTest(qtConfOutputVarHelper) {
     !isEmpty($${2}.eval):$$qtConfEvaluate($$eval($${2}.eval)): \
         eval(value = $$value)
     qtConfOutputVar($$1, $$output, $$name, $$value)
+    equals(output, "publicPro"):!isEmpty($${currentConfig}.module): \
+        qtConfExtendVar($$output, "QT.$${currentModule}.exports", $$name)
 }
 
 defineTest(qtConfOutput_varAssign) {
@@ -1392,6 +1431,8 @@ defineTest(qtConfOutput_varRemove) {
 defineTest(qtConfOutputConfigVar) {
     pro = $$3
     var = $$4
+    modular = $$5
+
     negative = $$eval($${1}.negative)
     isEmpty(negative): negative = false
     equals(2, $$negative): return()
@@ -1402,26 +1443,31 @@ defineTest(qtConfOutputConfigVar) {
         $$negative: val = no-$$val
     }
 
-    qtConfOutputVar(append, $$pro, $$var, $$val)
+    isEmpty($${currentConfig}.module)|!$$modular: \
+        qtConfOutputVar(append, $$pro, $$var, $$val)
+    else: \
+        qtConfExtendVar($$pro, "QT.$${currentModule}.$$var", $$val)
 }
 
 defineTest(qtConfOutput_publicQtConfig) {
-    qtConfOutputConfigVar($$1, $$2, "publicPro", "QT_CONFIG")
+    qtConfOutputConfigVar($$1, $$2, "publicPro", "QT_CONFIG", true)
 }
 
 defineTest(qtConfOutput_publicConfig) {
-    qtConfOutputConfigVar($$1, $$2, "publicPro", "CONFIG")
+    !isEmpty($${currentConfig}.module): \
+        error("Cannot use output type 'publicConfig' in module-local feature '$$eval($${1}.feature)'.")
+    qtConfOutputConfigVar($$1, $$2, "publicPro", "CONFIG", false)
 }
 
 defineTest(qtConfOutput_privateConfig) {
-    qtConfOutputConfigVar($$1, $$2, "privatePro", "CONFIG")
+    qtConfOutputConfigVar($$1, $$2, "privatePro", "CONFIG", false)
 }
 
 defineTest(qtConfOutputSetDefine) {
-    config.output.$${1}.$${2} = $${3}
-    config.output.$${1}._KEYS_ *= $${2}
-    export(config.output.$${1}.$${2})
-    export(config.output.$${1}._KEYS_)
+    $${currentConfig}.output.$${1}.$${2} = $${3}
+    $${currentConfig}.output.$${1}._KEYS_ *= $${2}
+    export($${currentConfig}.output.$${1}.$${2})
+    export($${currentConfig}.output.$${1}._KEYS_)
 }
 
 defineTest(qtConfOutput_define) {
@@ -1444,10 +1490,32 @@ defineTest(qtConfOutput_feature) {
         name = $$eval($${1}.feature)
 
     $${2} {
-        qtConfOutputVar(append, "publicPro", "QT_CONFIG", $$name)
+        isEmpty($${currentConfig}.module): \
+            qtConfOutputVar(append, "publicPro", "QT_CONFIG", $$name)
+        else: \
+            qtConfExtendVar("publicPro", "QT.$${currentModule}.QT_CONFIG", $$name)
     } else {
         f = $$upper($$replace(name, -, _))
         qtConfOutputSetDefine("publicHeader", "QT_NO_$$f")
+    }
+}
+
+defineTest(qtConfSetModuleName) {
+    currentModule = $$eval($${currentConfig}.module)
+    isEmpty(currentModule): \
+        currentModule = global
+    export(currentModule)
+}
+
+defineTest(qtConfSetupModuleOutputs) {
+    qtConfOutputVar(assign, "publicPro", "QT.$${currentModule}.enabled_features", )
+    qtConfOutputVar(assign, "publicPro", "QT.$${currentModule}.disabled_features", )
+    qtConfOutputVar(assign, "privatePro", "QT.$${currentModule}_private.enabled_features", )
+    qtConfOutputVar(assign, "privatePro", "QT.$${currentModule}_private.disabled_features", )
+    !isEmpty($${currentConfig}.module) {
+        qtConfOutputVar(assign, "publicPro", "QT.$${currentModule}.QT_CONFIG", )
+        qtConfOutputVar(assign, "publicPro", "QT.$${currentModule}.exports", )
+        qtConfOutputVar(assign, "privatePro", "QT.$${currentModule}_private.libraries", )
     }
 }
 
@@ -1458,10 +1526,14 @@ defineTest(qtConfOutput_publicFeature) {
     feature = $$replace(name, [-+.], _)
 
     $${2} {
-        qtConfOutputVar(append, "publicPro", "QT.global.enabled_features", $$name)
+        qtConfExtendVar("publicPro", "QT.$${currentModule}.enabled_features", $$name)
+        QT.$${currentModule}.enabled_features += $$name
+        export(QT.$${currentModule}.enabled_features)
         qtConfOutputSetDefine("publicHeader", "QT_FEATURE_$$feature", 1)
     } else {
-        qtConfOutputVar(append, "publicPro", "QT.global.disabled_features", $$name)
+        qtConfExtendVar("publicPro", "QT.$${currentModule}.disabled_features", $$name)
+        QT.$${currentModule}.disabled_features += $$name
+        export(QT.$${currentModule}.disabled_features)
         qtConfOutputSetDefine("publicHeader", "QT_FEATURE_$$feature", -1)
     }
 }
@@ -1476,17 +1548,21 @@ defineTest(qtConfOutput_privateFeature) {
     feature = $$replace(name, [-+.], _)
 
     $${2} {
-        qtConfOutputVar(append, "privatePro", "QT.global.enabled_features", $$name)
+        qtConfExtendVar("privatePro", "QT.$${currentModule}_private.enabled_features", $$name)
+        QT.$${currentModule}_private.enabled_features += $$name
+        export(QT.$${currentModule}_private.enabled_features)
         qtConfOutputSetDefine("privateHeader", "QT_FEATURE_$$feature", 1)
     } else {
-        qtConfOutputVar(append, "privatePro", "QT.global.disabled_features", $$name)
+        qtConfExtendVar("privatePro", "QT.$${currentModule}_private.disabled_features", $$name)
+        QT.$${currentModule}_private.disabled_features += $$name
+        export(QT.$${currentModule}_private.disabled_features)
         qtConfOutputSetDefine("privateHeader", "QT_FEATURE_$$feature", -1)
     }
 }
 
 defineTest(qtConfProcessOneOutput) {
     feature = $${1}
-    fpfx = config.features.$${feature}
+    fpfx = $${currentConfig}.features.$${feature}
     opfx = $${fpfx}.output.$${2}
 
     condition = $$eval($${opfx}.condition)
@@ -1512,64 +1588,167 @@ defineTest(qtConfProcessOneOutput) {
 }
 
 defineTest(qtConfProcessOutput) {
+    !contains($${currentConfig}._KEYS_, "features"): \
+        return()
+
+    basedir = $$shadowed($$eval($${currentConfig}.dir))
+    module = $$eval($${currentConfig}.module)
+
     # write it to the output files
-    for (type, config.files._KEYS_) {
-        file = $$OUT_PWD/$$eval(config.files.$${type})
+    isEmpty($${currentConfig}.files._KEYS_) {
+        # set defaults that should work for most Qt modules
+        isEmpty(module): \
+            error("Neither module nor files section specified in configuration file.")
+
+        $${currentConfig}.files._KEYS_ = publicPro privatePro publicHeader privateHeader
+        $${currentConfig}.files.publicPro = qt$${module}-config.pri
+        $${currentConfig}.files.privatePro = qt$${module}-config.pri  # sic!
+        $${currentConfig}.files.publicHeader = qt$${module}-config.h
+        $${currentConfig}.files.privateHeader = qt$${module}-config_p.h
+    }
+
+    for (type, $${currentConfig}.files._KEYS_) {
         contains(type, ".*Pro") {
-            for (k, config.output.$${type}.assign._KEYS_): \
-                config.output.$$type += "$$k = $$eval(config.output.$${type}.assign.$$k)"
-            for (k, config.output.$${type}.remove._KEYS_): \
-                config.output.$$type += "$$k -= $$eval(config.output.$${type}.remove.$$k)"
-            for (k, config.output.$${type}.append._KEYS_): \
-                config.output.$$type += "$$k += $$eval(config.output.$${type}.append.$$k)"
+            for (k, $${currentConfig}.output.$${type}.assign._KEYS_): \
+                $${currentConfig}.output.$$type += "$$k = $$eval($${currentConfig}.output.$${type}.assign.$$k)"
+            for (k, $${currentConfig}.output.$${type}.remove._KEYS_): \
+                $${currentConfig}.output.$$type += "$$k -= $$eval($${currentConfig}.output.$${type}.remove.$$k)"
+            for (k, $${currentConfig}.output.$${type}.append._KEYS_): \
+                $${currentConfig}.output.$$type += "$$k += $$eval($${currentConfig}.output.$${type}.append.$$k)"
         } else {
-            for (define, config.output.$${type}._KEYS_) {
-                value = $$eval(config.output.$${type}.$${define})
-                config.output.$$type += "$${LITERAL_HASH}define $$define $$value"
+            for (define, $${currentConfig}.output.$${type}._KEYS_) {
+                value = $$eval($${currentConfig}.output.$${type}.$${define})
+                $${currentConfig}.output.$$type += "$${LITERAL_HASH}define $$define $$value"
             }
         }
-        defined(qtConfOutputPostProcess_$${type}, test): \
-            qtConfOutputPostProcess_$${type}()
 
-        write_file($$file, config.output.$${type})|error()
+        ppScope =
+        !isEmpty(module): ppScope = $${module}_
+        defined(qtConfOutputPostProcess_$${ppScope}$${type}, test): \
+            qtConfOutputPostProcess_$${ppScope}$${type}()
+
+        file = $$eval($${currentConfig}.files.$${type})
+        fileCont.$$file += $$eval($${currentConfig}.output.$${type})
+        fileCont._KEYS_ *= $$file
     }
+
+    for (file, fileCont._KEYS_): \
+        write_file($$basedir/$$file, fileCont.$$file)|error()
 }
 
 #
 # tie it all together
 #
 
-defineTest(qtConfigure) {
+cfgs =
+isEmpty(_QMAKE_SUPER_CACHE_)|equals(OUT_PWD, $$dirname(_QMAKE_SUPER_CACHE_)) {
+    c = $$basename(_PRO_FILE_PWD_)
+    config.$${c}.dir = $$_PRO_FILE_PWD_
+    cfgs += $$c
+    !isEmpty(_QMAKE_SUPER_CACHE_) {
+        for (s, SUBDIRS) {
+            config.$${s}.dir = $$_PRO_FILE_PWD_/$${s}
+            cfgs += $$s
+        }
+    }
+}
+configsToProcess =
+for (c, cfgs) {
+    s = $$eval(config.$${c}.dir)
+    exists($$s/configure.json): \
+        configsToProcess += $$c
+}
+isEmpty(configsToProcess): \
+    return()
+
+load(configure_base)
+
+QMAKE_POST_CONFIGURE =
+allConfigs =
+for(ever) {
+    isEmpty(configsToProcess): \
+        break()
+
+    currentConfig = config.$$take_first(configsToProcess)
+    thisDir = $$eval($${currentConfig}.dir)
+    jsonFile = $$thisDir/configure.json
+    priFile = $$thisDir/configure.pri
+
+    allConfigs += $$currentConfig
+
     # load configuration data
-    configure_data = $$cat($${1}, blob)
-    !parseJson(configure_data, config): \
-        error("Invalid or non-existent file $${1}.")
+    configure_data = $$cat($$jsonFile, blob)
+    !parseJson(configure_data, $$currentConfig): \
+        error("Invalid or non-existent file $${jsonFile}.")
+    exists($$priFile): \
+        !include($$priFile): error()
 
+    # prepend all subconfigs to files to keep a depth first search order
+    subconfigs =
+    for(n, $${currentConfig}.subconfigs._KEYS_) {
+        subconfig = $$eval($${currentConfig}.subconfigs.$${n})
+        name = $$basename(subconfig)
+        config.$${name}.dir = $$thisDir/$$subconfig
+        subconfigs += $$name
+    }
+    configsToProcess = $$subconfigs $$configsToProcess
+}
+
+for (currentConfig, allConfigs): \
     qtConfSetupLibraries()
-    qtConfSetupTestTypeDeps()
 
-    qtConfParseCommandLine()
+!isEmpty(_QMAKE_SUPER_CACHE_): \
+    QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_SUPER_CACHE_)/config.cache
+else: \
+    QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_CACHE_)/config.cache
+QMAKE_CONFIG_CACHE_USE = all
 
-    !equals(QMAKE_CONFIG_CACHE_USE, none) {
-        include($$QMAKE_CONFIG_CACHE, , true)
-        # this crudely determines when to discard the cache. this also catches the case
-        # of no cache being there in the first place.
-        !equals(cache.platform, $$[QMAKE_SPEC])|!equals(cache.xplatform, $$[QMAKE_XSPEC]): \
-            QMAKE_CONFIG_CACHE_USE = none
-    }
-    equals(QMAKE_CONFIG_CACHE_USE, none) {
-        cont = \
-            "cache.platform = $$[QMAKE_SPEC]" \
-            "cache.xplatform = $$[QMAKE_XSPEC]"
-        write_file($$QMAKE_CONFIG_CACHE, cont)
-    }
+qtConfParseCommandLine()
 
+!equals(QMAKE_CONFIG_CACHE_USE, none) {
+    include($$QMAKE_CONFIG_CACHE, , true)
+    # this crudely determines when to discard the cache. this also catches the case
+    # of no cache being there in the first place.
+    !equals(cache.platform, $$[QMAKE_SPEC])|!equals(cache.xplatform, $$[QMAKE_XSPEC]): \
+        QMAKE_CONFIG_CACHE_USE = none
+}
+equals(QMAKE_CONFIG_CACHE_USE, none) {
+    cont = \
+        "cache.platform = $$[QMAKE_SPEC]" \
+        "cache.xplatform = $$[QMAKE_XSPEC]"
+    write_file($$QMAKE_CONFIG_CACHE, cont)
+}
+
+for (currentConfig, allConfigs) {
+    qtConfSetModuleName()
+    qtConfSetupModuleOutputs()
     # do early checks, mainly to validate the command line
     qtConfProcessEarlyChecks()
+}
+qtConfCheckErrors()
 
-    CONFIG += qt_conf_tests_allowed
-    logn()
-    logn("Running configuration tests...")
+CONFIG += qt_conf_tests_allowed
+logn()
+logn("Running configuration tests...")
+
+for (currentConfig, allConfigs) {
+    tdir = $$eval($${currentConfig}.testDir)
+    isEmpty(tdir): tdir = config.tests
+    QMAKE_CONFIG_TESTS_DIR = $$absolute_path($$tdir, $$eval($${currentConfig}.dir))
+
+    qtConfSetModuleName()
+
+    qtConfSetupTestTypeDeps()
+
+    # correctly setup dependencies
+    QMAKE_CONFIG_DEPS = global global_private
+    !isEmpty($${currentConfig}.module) {
+        for (d, $${currentConfig}.depends._KEYS_) {
+            dep = $$replace($${currentConfig}.depends.$$d, -private$, _private)
+            dep *= $$replace(dep, _private$, )
+            QMAKE_CONFIG_DEPS += $$dep
+        }
+    }
 
     # process all features
     qtConfProcessFeatures()
@@ -1578,14 +1757,15 @@ defineTest(qtConfigure) {
     qtConfProcessOutput()
     qtConfCreateReport()
     qtConfCreateSummary()
-
-    logn("Done running configuration tests.")
-    logn()
 }
 
-qtConfigure($$_PRO_FILE_PWD_/configure.json)
+# these come from the pri files loaded above.
+for (p, QMAKE_POST_CONFIGURE): \
+    eval($$p)
+
+logn("Done running configuration tests.")
+logn()
 
 logn("Configure summary:")
 logn()
-
 qtConfPrintReport()

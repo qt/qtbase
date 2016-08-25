@@ -12,6 +12,8 @@
 # Ensure that each module has a .qmake.cache when properly qmake'd.
 cache()
 
+load(qt_configure)
+
 load(qt_build_config)
 
 TEMPLATE = subdirs
@@ -74,6 +76,7 @@ QT_BUILD_PARTS -= libs tools examples tests
 
 QMAKE_DISTCLEAN += \
     .qmake.cache \
+    config.cache \
     config.log \
     mkspecs/modules/*.pri \
     mkspecs/modules-inst/*.pri
