@@ -187,7 +187,7 @@ int main(int argc, char **argv)
         QPoint position = availableGeometry.topLeft();
         position += QPoint(col * windowWidth, row * windowHeight);
         w->setFramePosition(position);
-        w->show();
+        w->showNormal();
     }
 
     int r = app.exec();
