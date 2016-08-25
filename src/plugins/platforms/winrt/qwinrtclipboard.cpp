@@ -175,7 +175,6 @@ void QWinRTClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         return S_OK;
     });
     RETURN_VOID_IF_FAILED("Could not set clipboard text.");
-    emitChanged(mode);
 #else // Q_OS_WINPHONE
     QPlatformClipboard::setMimeData(data, mode);
 #endif // Q_OS_WINPHONE
