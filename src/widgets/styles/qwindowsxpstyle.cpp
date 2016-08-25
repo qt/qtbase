@@ -2106,7 +2106,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             themeNumber = QWindowsXPStylePrivate::StatusTheme;
             partId = SP_GRIPPER;
             XPThemeData theme(0, p, themeNumber, partId, 0);
-            QSize size = (theme.size() / QWindowsStylePrivate::devicePixelRatio(widget)).toSize();
+            QSize size = (theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
             size.rheight()--;
             if (const QStyleOptionSizeGrip *sg = qstyleoption_cast<const QStyleOptionSizeGrip *>(option)) {
                 switch (sg->corner) {
@@ -2177,7 +2177,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                                   QWindowsXPStylePrivate::ToolBarTheme,
                                   TP_SPLITBUTTONDROPDOWN);
                 if (theme.isValid()) {
-                    const QSize size = (theme.size() / QWindowsStylePrivate::devicePixelRatio(widget)).toSize();
+                    const QSize size = (theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
                     mbiw = size.width();
                     mbih = size.height();
                 }
@@ -2640,10 +2640,11 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
 QRect QWindowsXPStylePrivate::scrollBarGripperBounds(QStyle::State flags, const QWidget *widget, XPThemeData *theme)
 {
     const bool horizontal = flags & QStyle::State_Horizontal;
-    const QMargins contentsMargin = (theme->margins(theme->rect, TMT_SIZINGMARGINS)
-                                     / QWindowsStylePrivate::devicePixelRatio(widget)).toMargins();
+    const qreal factor = QWindowsStylePrivate::nativeMetricScaleFactor(widget);
+    const QMargins contentsMargin =
+        (theme->margins(theme->rect, TMT_SIZINGMARGINS) * factor).toMargins();
     theme->partId = horizontal ? SBP_GRIPPERHORZ : SBP_GRIPPERVERT;
-    const QSize size = (theme->size() / QWindowsStylePrivate::devicePixelRatio(widget)).toSize();
+    const QSize size = (theme->size() * factor).toSize();
 
     const int hSpace = theme->rect.width() - size.width();
     const int vSpace = theme->rect.height() - size.height();
@@ -3801,12 +3802,13 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
         {
             XPThemeData buttontheme(widget, 0, QWindowsXPStylePrivate::ButtonTheme, BP_PUSHBUTTON, PBS_NORMAL);
             if (buttontheme.isValid()) {
-                const qreal devicePixelRatio = QWindowsXPStylePrivate::devicePixelRatio(widget);
-                const QMarginsF borderSize = buttontheme.margins() / devicePixelRatio;
+                const qreal factor = QWindowsXPStylePrivate::nativeMetricScaleFactor(widget);
+                const QMarginsF borderSize = buttontheme.margins() * factor;
                 if (!borderSize.isNull()) {
-                    const qreal margin = qreal(2) / devicePixelRatio;
+                    const qreal margin = qreal(2) * factor;
                     sz.rwidth() += qRound(borderSize.left() + borderSize.right() - margin);
-                    sz.rheight() += int(borderSize.bottom() + borderSize.top() - margin + devicePixelRatio - 1);
+                    sz.rheight() += int(borderSize.bottom() + borderSize.top() - margin
+                        + qreal(1) / factor - 1);
                 }
                 const int textMargins = 2*(proxy()->pixelMetric(PM_FocusFrameHMargin) + 1);
                 sz += QSize(qMax(pixelMetric(QStyle::PM_ScrollBarExtent, option, widget)
@@ -4080,7 +4082,7 @@ QIcon QWindowsXPStyle::standardIcon(StandardPixmap standardIcon,
                 XPThemeData theme(0, 0, QWindowsXPStylePrivate::WindowTheme,
                                   WP_RESTOREBUTTON, RBS_NORMAL);
                 if (theme.isValid()) {
-                    const QSize size = (themeSize.size() / QWindowsStylePrivate::devicePixelRatio(widget)).toSize();
+                    const QSize size = (themeSize.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
                     QPixmap pm(size);
                     pm.fill(Qt::transparent);
                     QPainter p(&pm);

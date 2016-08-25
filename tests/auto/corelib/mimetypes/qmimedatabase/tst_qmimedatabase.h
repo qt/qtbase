@@ -55,6 +55,7 @@ private slots:
     void listAliases_data();
     void listAliases();
     void icons();
+    void comment();
     void mimeTypeForFileWithContent();
     void mimeTypeForUrl();
     void mimeTypeForData_data();
