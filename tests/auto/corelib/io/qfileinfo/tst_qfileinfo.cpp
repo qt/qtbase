@@ -1204,55 +1204,29 @@ void tst_QFileInfo::fileTimes()
 
 void tst_QFileInfo::fileTimes_oldFile()
 {
-    // This is not supported on WinRT
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    // All files are opened in share mode (both read and write).
-    DWORD shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+    // This is 2^{31} seconds before 1970-01-01 15:14:8,
+    // i.e. shortly after the start of time_t, in any time-zone:
+    const QDateTime early(QDate(1901, 12, 14), QTime(12, 0));
+    QFile file("ancientfile.txt");
+    file.open(QIODevice::WriteOnly);
+    file.write("\n", 1);
+    file.close();
 
-    // All files on Windows can be read; there's no such thing as an
-    // unreadable file. Add GENERIC_WRITE if WriteOnly is passed.
-    int accessRights = GENERIC_READ | GENERIC_WRITE;
+    /*
+      QFile's setFileTime calls QFSFileEngine::setFileTime() which fails unless
+      the file is open at the time.  Of course, when writing, close() changes
+      modification time, so need to re-open for read in order to setFileTime().
+     */
+    file.open(QIODevice::ReadOnly);
+    bool ok = file.setFileTime(early, QFileDevice::FileModificationTime);
+    file.close();
 
-    SECURITY_ATTRIBUTES securityAtts = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
-
-    // Regular file mode. In Unbuffered mode, pass the no-buffering flag.
-    DWORD flagsAndAtts = FILE_ATTRIBUTE_NORMAL;
-
-    // WriteOnly can create files, ReadOnly cannot.
-    DWORD creationDisp = OPEN_ALWAYS;
-
-    // Create the file handle.
-    HANDLE fileHandle = CreateFile(L"oldfile.txt",
-        accessRights,
-        shareMode,
-        &securityAtts,
-        creationDisp,
-        flagsAndAtts,
-        NULL);
-
-    // Set file times back to 1601.
-    SYSTEMTIME stime;
-    stime.wYear = 1601;
-    stime.wMonth = 1;
-    stime.wDayOfWeek = 1;
-    stime.wDay = 1;
-    stime.wHour = 1;
-    stime.wMinute = 0;
-    stime.wSecond = 0;
-    stime.wMilliseconds = 0;
-
-    FILETIME ctime;
-    QVERIFY(SystemTimeToFileTime(&stime, &ctime));
-    FILETIME atime = ctime;
-    FILETIME mtime = atime;
-    QVERIFY(fileHandle);
-    QVERIFY(SetFileTime(fileHandle, &ctime, &atime, &mtime) != 0);
-
-    CloseHandle(fileHandle);
-
-    QFileInfo info("oldfile.txt");
-    QCOMPARE(info.lastModified(), QDateTime(QDate(1601, 1, 1), QTime(1, 0), Qt::UTC).toLocalTime());
-#endif
+    if (ok) {
+        QFileInfo info(file.fileName());
+        QCOMPARE(info.lastModified(), early);
+    } else {
+        QSKIP("Unable to set file metadata to ancient values");
+    }
 }
 
 void tst_QFileInfo::isSymLink_data()
