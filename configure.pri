@@ -191,9 +191,6 @@ defineTest(qtConfTest_detectPkgConfig) {
     $${1}.cache += pkgConfig
     export($${1}.cache)
 
-    PKG_CONFIG = $$pkgConfig
-    export(PKG_CONFIG)
-
     return(true)
 }
 
@@ -526,6 +523,8 @@ defineTest(qtConfOutput_qreal) {
 defineTest(qtConfOutput_pkgConfig) {
     !$${2}: return()
 
+    PKG_CONFIG = $$eval(config.tests.pkg-config.pkgConfig)
+    export(PKG_CONFIG)
     # this method also exports PKG_CONFIG_(LIB|SYSROOT)DIR, so that tests using pkgConfig will work correctly
     PKG_CONFIG_SYSROOT_DIR = $$eval(config.tests.pkg-config.pkgConfigSysrootDir)
     !isEmpty(PKG_CONFIG_SYSROOT_DIR) {
