@@ -976,7 +976,7 @@ XKB configuration data. This is required for keyboard input support."
         },
         {
             "type": "warning",
-            "condition": "features.gui && config.linux && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb && !features.mirclient",
+            "condition": "features.gui && config.linux && !config.android && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb && !features.mirclient",
             "message": "No QPA platform plugin enabled! This will
 produce a Qt that cannot run GUI applications.
 The dependencies needed for xcb to build are listed in
