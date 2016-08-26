@@ -1508,6 +1508,33 @@ void tst_QPixmap::loadAsBitmapOrPixmap()
     QVERIFY(!bitmap.isNull());
     QCOMPARE(bitmap.depth(), 1);
     QVERIFY(bitmap.isQBitmap());
+
+    // check that a QBitmap stays a QBitmap even when loading fails:
+    ok = bitmap.load(QString());
+    QVERIFY(!ok);
+    QVERIFY(bitmap.isNull());
+    QVERIFY(bitmap.isQBitmap());
+
+    ok = bitmap.load("does not exist");
+    QVERIFY(!ok);
+    QVERIFY(bitmap.isNull());
+    QVERIFY(bitmap.isQBitmap());
+
+    ok = bitmap.load("does not exist.png");
+    QVERIFY(!ok);
+    QVERIFY(bitmap.isNull());
+    QVERIFY(bitmap.isQBitmap());
+
+    QTemporaryFile garbage;
+    QVERIFY(garbage.open());
+    const QString garbagePath = garbage.fileName();
+    garbage.write(reinterpret_cast<const char *>(&garbage), sizeof garbage);
+    garbage.close();
+
+    ok = bitmap.load(garbagePath);
+    QVERIFY(!ok);
+    QVERIFY(bitmap.isNull());
+    QVERIFY(bitmap.isQBitmap());
 }
 
 void tst_QPixmap::toImageDeepCopy()
