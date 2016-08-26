@@ -777,17 +777,17 @@ defineTest(logn) {
 }
 
 defineTest(qtLogTestIntro) {
-    description = $$eval($${1}.description)
-    isEmpty(description): return()
+    label = $$eval($${1}.label)
+    isEmpty(label): return()
 
-    msg = "Checking for $${description}... "
+    msg = "Checking for $${label}... "
     log($$msg)
     $$QMAKE_CONFIG_VERBOSE: log("$$escape_expand(\\n)")
     write_file($$QMAKE_CONFIG_LOG, msg, append)
 }
 
 defineTest(qtLogTestResult) {
-    isEmpty($${1}.description): return()
+    isEmpty($${1}.label): return()
 
     !isEmpty($${1}.log) {
         field = $$eval($${1}.log)
@@ -1198,7 +1198,7 @@ defineReplace(qtConfCollectFeatures) {
     l =
     for (feature, $$list($${1})) {
         $$eval($${currentConfig}.features.$${feature}.available): \
-            l += $$eval($${currentConfig}.features.$${feature}.description)
+            l += $$eval($${currentConfig}.features.$${feature}.label)
     }
 
     isEmpty(l): return("<none>")
@@ -1214,7 +1214,7 @@ defineReplace(qtConfFindFirstAvailableFeature) {
         isEmpty($${currentConfig}.features.$${feature}._KEYS_): \
             error("Asking for a report on undefined feature $${2}.")
         $$eval($${currentConfig}.features.$${feature}.available): \
-            return($$eval($${currentConfig}.features.$${feature}.description))
+            return($$eval($${currentConfig}.features.$${feature}.label))
     }
 
     return("<none>")
@@ -1240,7 +1240,7 @@ defineTest(qtConfReport_feature) {
         !isEmpty(4): result = "$${4}"
     }
 
-    text = $$eval($${currentConfig}.features.$${2}.description)
+    text = $$eval($${currentConfig}.features.$${2}.label)
 
     qtConfReportPadded($${1}$$text, $$result)
 }

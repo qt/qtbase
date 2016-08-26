@@ -66,7 +66,7 @@ defineReplace(qtConfFunc_crossCompile) {
 
 defineTest(qtConfTest_architecture) {
     !qtConfTest_compile($${1}): \
-        error("Could not determine $$eval($${1}.description). See config.log for details.")
+        error("Could not determine $$eval($${1}.label). See config.log for details.")
 
     test = $$eval($${1}.test)
     test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR/$$test)
@@ -77,13 +77,13 @@ defineTest(qtConfTest_architecture) {
     else: android:exists($$test_out_dir/libarch.so): \
         content = $$cat($$test_out_dir/libarch.so, blob)
     else: \
-        error("$$eval($${1}.description) detection binary not found.")
+        error("$$eval($${1}.label) detection binary not found.")
 
     arch_magic = ".*==Qt=magic=Qt== Architecture:([^\\0]*).*"
     subarch_magic = ".*==Qt=magic=Qt== Sub-architecture:([^\\0]*).*"
 
     !contains(content, $$arch_magic)|!contains(content, $$subarch_magic): \
-        error("$$eval($${1}.description) detection binary does not contain expected data.")
+        error("$$eval($${1}.label) detection binary does not contain expected data.")
 
     $${1}.arch = $$replace(content, $$arch_magic, "\\1")
     $${1}.subarch = $$replace(content, $$subarch_magic, "\\1")

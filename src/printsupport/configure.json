@@ -15,7 +15,7 @@
 
     "libraries": {
         "cups": {
-            "description": "CUPS",
+            "label": "CUPS",
             "test": "unix/cups",
             "sources": [
                 "-lcups"
@@ -25,7 +25,7 @@
 
     "features": {
         "cups": {
-            "description": "CUPS",
+            "label": "CUPS",
             "condition": "libs.cups",
             "output": [ "privateFeature", "feature" ]
         }

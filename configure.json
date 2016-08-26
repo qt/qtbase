@@ -149,7 +149,7 @@
 
     "libraries": {
         "zlib": {
-            "description": "zlib",
+            "label": "zlib",
             "test": "unix/zlib",
             "sources": [
                 { "libs": "-lzdll", "condition": "config.msvc" },
@@ -157,7 +157,7 @@
             ]
         },
         "alsa": {
-            "description": "ALSA",
+            "label": "ALSA",
             "export": "",
             "test": "unix/alsa",
             "sources": [
@@ -165,14 +165,14 @@
             ]
         },
         "pulseaudio": {
-            "description": "PulseAudio >= 0.9.10",
+            "label": "PulseAudio >= 0.9.10",
             "test": "unix/pulseaudio",
             "sources": [
                 { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
             ]
         },
         "gstreamer_1_0": {
-            "description": "GStreamer 1.0",
+            "label": "GStreamer 1.0",
             "export": "",
             "test": "unix/gstreamer",
             "sources": [
@@ -181,7 +181,7 @@
             ]
         },
         "gstreamer_0_10": {
-            "description": "GStreamer 0.10",
+            "label": "GStreamer 0.10",
             "export": "",
             "test": "unix/gstreamer",
             "sources": [
@@ -190,7 +190,7 @@
             ]
         },
         "dbus": {
-            "description": "D-Bus >= 1.2",
+            "label": "D-Bus >= 1.2",
             "test": "unix/dbus",
             "sources": [
                 { "type": "pkgConfig", "args": "dbus-1 >= 1.2" },
@@ -206,7 +206,7 @@
             ]
         },
         "host_dbus": {
-            "description": "D-Bus >= 1.2 (host)",
+            "label": "D-Bus >= 1.2 (host)",
             "export": "",
             "sources": [
                 { "type": "pkgConfig", "host": true, "args": "dbus-1 >= 1.2" },
@@ -214,7 +214,7 @@
             ]
         },
         "libudev": {
-            "description": "udev",
+            "label": "udev",
             "test": "unix/libudev",
             "sources": [
                 { "type": "pkgConfig", "args": "libudev" },
@@ -239,18 +239,18 @@
 
     "tests": {
         "verifyspec": {
-            "description": "valid makespec",
+            "label": "valid makespec",
             "type": "verifySpec",
             "test": "common/verifyspec"
         },
         "architecture": {
-            "description": "target architecture",
+            "label": "target architecture",
             "type": "architecture",
             "test": "arch",
             "log": "arch"
         },
         "host_architecture": {
-            "description": "host architecture",
+            "label": "host architecture",
             "type": "architecture",
             "test": "arch",
             "host": true,
@@ -258,60 +258,60 @@
             "log": "arch"
         },
         "GNUmake": {
-            "description": "GNU make",
+            "label": "GNU make",
             "type": "gnumake"
         },
         "pkg-config": {
-            "description": "pkg-config",
+            "label": "pkg-config",
             "type": "detectPkgConfig"
         },
         "stl": {
-            "description": "STL compatibility",
+            "label": "STL compatibility",
             "type": "compile",
             "test": "unix/stl"
         },
         "c++14": {
-            "description": "C++14 support",
+            "label": "C++14 support",
             "type": "compile",
             "test": "common/c++14"
         },
         "c++1z": {
-            "description": "C++1z support",
+            "label": "C++1z support",
             "type": "compile",
             "test": "common/c++1z"
         },
         "cxx98default": {
-            "description": "compiler defaulting to C++98",
+            "label": "compiler defaulting to C++98",
             "type": "compile",
             "test": "common/c++98default"
         },
         "compiler": {
-            "description": "Compiler",
+            "label": "Compiler",
             "type": "checkCompiler",
             "log": "compilerDescription"
         },
         "precompile_header": {
-            "description": "precompiled header support",
+            "label": "precompiled header support",
             "type": "compile",
             "test": "common/pch"
         },
         "use_gold_linker": {
-            "description": "gold linker",
+            "label": "gold linker",
             "type": "compilerSupportsFlag",
             "flag": "-fuse-ld=gold"
         },
         "enable_new_dtags": {
-            "description": "new dtags support",
+            "label": "new dtags support",
             "type": "linkerSupportsFlag",
             "flag": "--enable-new-dtags"
         },
         "reduce_exports": {
-            "description": "symbol visibility support",
+            "label": "symbol visibility support",
             "type": "compile",
             "test": "unix/reduce_exports"
         },
         "reduce_relocations": {
-            "description": "-Bsymbolic-functions support",
+            "label": "-Bsymbolic-functions support",
             "type": "compile",
             "test": "unix/reduce_relocs"
         },
@@ -319,140 +319,140 @@
             "type": "buildParts"
         },
         "separate_debug_info": {
-            "description": "separate debug information support",
+            "label": "separate debug information support",
             "type": "compile",
             "test": "unix/objcopy"
         },
         "sse2": {
-            "description": "SSE2 instructions",
+            "label": "SSE2 instructions",
             "type": "compile",
             "test": "common/sse2"
         },
         "sse3": {
-            "description": "SSE3 instructions",
+            "label": "SSE3 instructions",
             "type": "compile",
             "test": "common/sse3"
         },
         "ssse3": {
-            "description": "SSSE3 instructions",
+            "label": "SSSE3 instructions",
             "type": "compile",
             "test": "common/ssse3"
         },
         "sse4_1": {
-            "description": "SSE4.1 instructions",
+            "label": "SSE4.1 instructions",
             "type": "compile",
             "test": "common/sse4_1"
         },
         "sse4_2": {
-            "description": "SSE4.2 instructions",
+            "label": "SSE4.2 instructions",
             "type": "compile",
             "test": "common/sse4_2"
         },
         "avx": {
-            "description": "AVX instructions",
+            "label": "AVX instructions",
             "type": "compile",
             "test": "common/avx"
         },
         "avx_apple_clang": {
-            "description": "bugfree AVX support in compiler",
+            "label": "bugfree AVX support in compiler",
             "type": "avx_test_apple_clang"
         },
         "avx2": {
-            "description": "AVX2 instructions",
+            "label": "AVX2 instructions",
             "type": "compile",
             "test": "common/avx2"
         },
         "avx512f": {
-            "description": "AVX512 F instructions",
+            "label": "AVX512 F instructions",
             "type": "compile",
             "test": "common/avx512",
             "args": "AVX512=F"
         },
         "avx512er": {
-            "description": "AVX512 ER instructions",
+            "label": "AVX512 ER instructions",
             "type": "compile",
             "test": "common/avx512",
             "args": "AVX512=ER"
         },
         "avx512cd": {
-            "description": "AVX512 CD instructions",
+            "label": "AVX512 CD instructions",
             "type": "compile",
             "test": "common/avx512",
             "args": "AVX512=CD"
         },
         "avx512pf": {
-            "description": "AVX512 PF instructions",
+            "label": "AVX512 PF instructions",
             "type": "compile",
             "test": "common/avx512",
             "args": "AVX512=PF"
         },
         "avx512dq": {
-            "description": "AVX512 DQ instructions",
+            "label": "AVX512 DQ instructions",
             "type": "compile",
             "test": "common/avx512",
             "args": "AVX512=DQ"
         },
         "avx512bw": {
-            "description": "AVX512 BW instructions",
+            "label": "AVX512 BW instructions",
             "type": "compile",
             "test": "common/avx512",
             "args": "AVX512=BW"
         },
         "avx512vl": {
-            "description": "AVX512 VL instructions",
+            "label": "AVX512 VL instructions",
             "type": "compile",
             "test": "common/avx512",
             "args": "AVX512=VL"
         },
         "avx512ifma": {
-            "description": "AVX512 IFMA instructions",
+            "label": "AVX512 IFMA instructions",
             "type": "compile",
             "test": "common/avx512",
             "args": "AVX512=IFMA"
         },
         "avx512vbmi": {
-            "description": "AVX512 VBMI instructions",
+            "label": "AVX512 VBMI instructions",
             "type": "compile",
             "test": "common/avx512",
             "args": "AVX512=VBMI"
         },
         "mips_dsp": {
-            "description": "MIPS DSP instructions",
+            "label": "MIPS DSP instructions",
             "type": "compile",
             "test": "unix/mips_dsp"
         },
         "mips_dspr2": {
-            "description": "MIPS DSPr2 instructions",
+            "label": "MIPS DSPr2 instructions",
             "type": "compile",
             "test": "common/mips_dspr2"
         },
         "neon": {
-            "description": "NEON instructions",
+            "label": "NEON instructions",
             "type": "neon"
         },
 
         "mremap": {
-            "description": "mremap()",
+            "label": "mremap()",
             "type": "compile",
             "test": "unix/mremap"
         },
         "posix_fallocate": {
-            "description": "POSIX fallocate()",
+            "label": "POSIX fallocate()",
             "type": "compile",
             "test": "unix/posix_fallocate"
         },
         "stack_protector": {
-            "description": "stack protection",
+            "label": "stack protection",
             "type": "compilerSupportsFlag",
             "test": "-fstack-protector-strong"
         },
         "incredibuild_xge": {
-            "description": "IncrediBuild",
+            "label": "IncrediBuild",
             "type": "files",
             "files": [ "BuildConsole.exe", "xgConsole.exe" ]
         },
         "wmf": {
-            "description": "WMF",
+            "label": "WMF",
             "type": "files",
             "files": [ "mfapi.h", "mf.lib" ]
         }
@@ -460,7 +460,7 @@
 
     "features": {
         "shared": {
-            "description": "Building shared libraries",
+            "label": "Building shared libraries",
             "condition": "!config.uikit && !config.integrity",
             "output": [
                 "shared",
@@ -478,12 +478,12 @@
             ]
         },
         "cross_compile": {
-            "description": "Cross compiling",
+            "label": "Cross compiling",
             "condition": "call.crossCompile",
             "output": [ "publicConfig", "privateConfig" ]
         },
         "cxx98default": {
-            "description": "Compiler defaults to C++98",
+            "label": "Compiler defaults to C++98",
             "condition": "tests.cxx98default",
             "output": [ { "type": "publicConfig", "name": "c++11" } ]
         },
@@ -499,16 +499,16 @@
             "condition": "input.qmakeArgs != ''"
         },
         "use_gold_linker": {
-            "description": "Using gold linker",
+            "label": "Using gold linker",
             "condition": "!config.msvc && tests.use_gold_linker",
             "output": [ "privateConfig", "useGoldLinker" ]
         },
         "architecture": {
-            "description": "Architecture",
+            "label": "Architecture",
             "output": [ "architecture" ]
         },
         "pkg-config": {
-            "description": "Using pkg-config",
+            "label": "Using pkg-config",
             "autoDetect": "!config.darwin && !config.win32",
             "condition": "tests.pkg-config",
             "output": [
@@ -518,11 +518,11 @@
             ]
         },
         "verifyspec": {
-            "description": "Have valid makespec",
+            "label": "Have valid makespec",
             "condition": "tests.verifyspec"
         },
         "developer-build": {
-            "description": "Developer build",
+            "label": "Developer build",
             "autoDetect": false,
             "output": [
                 { "type": "define", "name": "QT_BUILD_INTERNAL" },
@@ -531,22 +531,22 @@
             ]
         },
         "debug": {
-            "description": "Build for debugging",
+            "label": "Build for debugging",
             "autoDetect": "features.developer-build || config.win32 || config.darwin"
         },
         "debug_and_release": {
-            "description": "Compile libs in debug and release mode",
+            "label": "Compile libs in debug and release mode",
             "autoDetect": "input.debug == ''",
             "condition": "config.darwin || config.win32",
             "output": [ "publicFeature", "publicQtConfig", "debugAndRelease" ]
         },
         "force_debug_info": {
-            "description": "Add debug info in release mode",
+            "label": "Add debug info in release mode",
             "autoDetect": false,
             "output": [ "privateConfig" ]
         },
         "separate_debug_info": {
-            "description": "Split off debug information",
+            "label": "Split off debug information",
             "autoDetect": false,
             "condition": [
                 "features.shared",
@@ -556,11 +556,11 @@
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "release_tools": {
-            "description": "Compile tools in release mode",
+            "label": "Compile tools in release mode",
             "output": [ "privateFeature", "publicQtConfig" ]
         },
         "simulator_and_device": {
-            "description": "Build for both simulator and device",
+            "label": "Build for both simulator and device",
             "condition": "config.uikit && input.sdk == ''",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
@@ -569,39 +569,39 @@
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "rpath": {
-            "description": "Build with RPATH",
+            "label": "Build with RPATH",
             "autoDetect": "var.QMAKE_LFLAGS_RPATH != '' && features.shared",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "rpath_dir": {
-            "description": "RPATH directory",
+            "label": "RPATH directory",
             "enable": "input.rpaths != ''",
             "autoDetect": false,
             "output": [ { "type": "varAppend", "name": "EXTRA_RPATHS", "value": "input.rpaths" } ]
         },
         "rtti": {
-            "description": "Build with RTTI",
+            "label": "Build with RTTI",
             "comment": "mkspecs/features/win32/default_pre.prf sets no-rtti. Follow default behavior of configure.exe by overriding with rtti.",
             "condition": "config.win32",
             "output": [ "publicConfig" ]
         },
         "force_asserts": {
-            "description": "Force assertions",
+            "label": "Force assertions",
             "autoDetect": false,
             "output": [ "publicFeature" ]
         },
         "warnings_are_errors": {
-            "description": "WError",
+            "label": "WError",
             "autoDetect": "features.developer-build",
             "output": [ "privateConfig" ]
         },
         "headersclean": {
-            "description": "Check for clean headers",
+            "label": "Check for clean headers",
             "autoDetect": "features.developer-build",
             "output": [ "privateConfig" ]
         },
         "framework": {
-            "description": "Build Apple Frameworks",
+            "label": "Build Apple Frameworks",
             "condition": "config.darwin && features.shared",
             "output": [
                 { "type": "define", "name": "QT_MAC_FRAMEWORK_BUILD" },
@@ -611,7 +611,7 @@
             ]
         },
         "largefile": {
-            "description": "Large file support",
+            "label": "Large file support",
             "condition": "!config.android && !config.integrity && !config.winrt",
             "output": [
                 "privateConfig",
@@ -619,59 +619,59 @@
             ]
         },
         "testcocoon": {
-            "description": "Testcocoon support",
+            "label": "Testcocoon support",
             "autoDetect": false,
             "output": [ "publicConfig" ]
         },
         "gcov": {
-            "description": "gcov support",
+            "label": "gcov support",
             "autoDetect": false,
             "output": [ "publicConfig" ]
         },
         "silent": {
-            "description": "Silent build",
+            "label": "Silent build",
             "autoDetect": false,
             "output": [ "privateConfig" ]
         },
         "sanitize_address": {
-            "description": "Addresses",
+            "label": "Addresses",
             "autoDetect": false,
             "output": [ "publicConfig" ]
         },
         "sanitize_thread": {
-            "description": "Threads",
+            "label": "Threads",
             "autoDetect": false,
             "output": [ "publicConfig" ]
         },
         "sanitize_memory": {
-            "description": "Memory",
+            "label": "Memory",
             "autoDetect": false,
             "output": [ "publicConfig" ]
         },
         "sanitize_undefined": {
-            "description": "Undefined",
+            "label": "Undefined",
             "autoDetect": false,
             "output": [ "publicConfig" ]
         },
         "sanitizer": {
-            "description": "Sanitizers",
+            "label": "Sanitizers",
             "condition": "features.sanitize_address || features.sanitize_thread || features.sanitize_memory || features.sanitize_undefined",
             "output": [ "publicConfig" ]
         },
         "GNUmake": {
-            "description": "GNU make",
+            "label": "GNU make",
             "autoDetect": false,
             "condition": "tests.GNUmake",
             "output": [ "privateConfig" ]
         },
         "plugin-manifests": {
-            "description": "Embed manifests in plugins",
+            "label": "Embed manifests in plugins",
             "emitIf": "config.win32",
             "autoDetect": false,
             "output": [ { "type": "publicConfig", "negative": true, "name": "no_plugin_manifest" } ]
         },
         "profile": {
-            "description": "GNU profiling support",
+            "label": "GNU profiling support",
             "autoDetect": false,
             "output": [
                 { "type": "varAppend", "name": "QMAKE_CFLAGS", "value": "'-pg'" },
@@ -680,36 +680,36 @@
             ]
         },
         "strip": {
-            "description": "Strip binaries",
+            "label": "Strip binaries",
             "condition": "!features.profile",
             "output": [ { "type": "privateConfig", "negative": true, "name": "nostrip" } ]
         },
         "stl": {
-            "description": "STL compatibility",
+            "label": "STL compatibility",
             "condition": "tests.stl",
             "output": [ "publicQtConfig" ]
         },
         "c++11": {
-            "description": "C++11",
+            "label": "C++11",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c++14": {
-            "description": "C++14",
+            "label": "C++14",
             "condition": "features.c++11 && tests.c++14",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c++1z": {
-            "description": "C++1z",
+            "label": "C++1z",
             "condition": "features.c++14 && tests.c++1z",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "compiler": {
-            "description": "Compiler version",
+            "label": "Compiler version",
             "condition": "tests.compiler",
             "output": [ "compilerVersion" ]
         },
         "precompile_header": {
-            "description": "Using precompiled headers",
+            "label": "Using precompiled headers",
             "condition": "config.msvc || tests.precompile_header",
             "output": [
                 "privateConfig",
@@ -717,17 +717,17 @@
             ]
         },
         "ltcg": {
-            "description": "Using LTCG",
+            "label": "Using LTCG",
             "autoDetect": false,
             "output": [ "privateConfig" ]
         },
         "enable_new_dtags": {
-            "description": "Using new DTAGS",
+            "label": "Using new DTAGS",
             "condition": "config.linux && tests.enable_new_dtags",
             "output": [ "privateConfig" ]
         },
         "reduce_exports": {
-            "description": "Reduce amount of exported symbols",
+            "label": "Reduce amount of exported symbols",
             "condition": "!config.win32 && tests.reduce_exports",
             "output": [
                 "privateFeature",
@@ -736,7 +736,7 @@
             ]
         },
         "reduce_relocations": {
-            "description": "Reduce amount of relocations",
+            "label": "Reduce amount of relocations",
             "condition": "!config.win32 && tests.reduce_relocations",
             "output": [
                 "privateFeature",
@@ -745,7 +745,7 @@
             ]
         },
         "sse2": {
-            "description": "SSE2",
+            "label": "SSE2",
             "condition": "(arch.i386 || arch.x86_64) && tests.sse2",
             "output": [
                 "privateConfig",
@@ -754,7 +754,7 @@
             ]
         },
         "sse3": {
-            "description": "SSE3",
+            "label": "SSE3",
             "condition": "features.sse2 && tests.sse3",
             "output": [
                 "privateConfig",
@@ -762,7 +762,7 @@
             ]
         },
         "ssse3": {
-            "description": "SSSE3",
+            "label": "SSSE3",
             "condition": "features.sse3 && tests.ssse3",
             "output": [
                 "privateConfig",
@@ -770,7 +770,7 @@
             ]
         },
         "sse4_1": {
-            "description": "SSE4.1",
+            "label": "SSE4.1",
             "condition": "features.ssse3 && tests.sse4_1",
             "output": [
                 "privateConfig",
@@ -778,7 +778,7 @@
             ]
         },
         "sse4_2": {
-            "description": "SSE4.2",
+            "label": "SSE4.2",
             "condition": "features.sse4_1 && tests.sse4_2",
             "output": [
                 "privateConfig",
@@ -786,7 +786,7 @@
             ]
         },
         "avx": {
-            "description": "AVX",
+            "label": "AVX",
             "condition": "features.sse4_2 && tests.avx && tests.avx_apple_clang",
             "output": [
                 "privateConfig",
@@ -794,7 +794,7 @@
             ]
         },
         "avx2": {
-            "description": "AVX2",
+            "label": "AVX2",
             "condition": "features.avx && tests.avx2",
             "output": [
                 "privateConfig",
@@ -802,7 +802,7 @@
             ]
         },
         "avx512f": {
-            "description": "F",
+            "label": "F",
             "condition": "features.avx2 && tests.avx512f",
             "output": [
                 "privateConfig",
@@ -810,7 +810,7 @@
             ]
         },
         "avx512er": {
-            "description": "ER",
+            "label": "ER",
             "condition": "features.avx512f && tests.avx512er",
             "output": [
                 "privateConfig",
@@ -818,7 +818,7 @@
             ]
         },
         "avx512cd": {
-            "description": "CD",
+            "label": "CD",
             "condition": "features.avx512f && tests.avx512cd",
             "output": [
                 "privateConfig",
@@ -826,7 +826,7 @@
             ]
         },
         "avx512pf": {
-            "description": "PF",
+            "label": "PF",
             "condition": "features.avx512f && tests.avx512pf",
             "output": [
                 "privateConfig",
@@ -834,7 +834,7 @@
             ]
         },
         "avx512dq": {
-            "description": "DQ",
+            "label": "DQ",
             "condition": "features.avx512f && tests.avx512dq",
             "output": [
                 "privateConfig",
@@ -842,7 +842,7 @@
             ]
         },
         "avx512bw": {
-            "description": "BW",
+            "label": "BW",
             "condition": "features.avx512f && tests.avx512bw",
             "output": [
                 "privateConfig",
@@ -850,7 +850,7 @@
             ]
         },
         "avx512vl": {
-            "description": "VL",
+            "label": "VL",
             "condition": "features.avx512f && tests.avx512vl",
             "output": [
                 "privateConfig",
@@ -858,7 +858,7 @@
             ]
         },
         "avx512ifma": {
-            "description": "IFMA",
+            "label": "IFMA",
             "condition": "features.avx512f && tests.avx512ifma",
             "output": [
                 "privateConfig",
@@ -866,7 +866,7 @@
             ]
         },
         "avx512vbmi": {
-            "description": "VBMI",
+            "label": "VBMI",
             "condition": "features.avx512f && tests.avx512vbmi",
             "output": [
                 "privateConfig",
@@ -874,7 +874,7 @@
             ]
         },
         "mips_dsp": {
-            "description": "DSP",
+            "label": "DSP",
             "condition": "arch.mips && tests.mips_dsp",
             "output": [
                 "privateConfig",
@@ -882,7 +882,7 @@
             ]
         },
         "mips_dspr2": {
-            "description": "DSPr2",
+            "label": "DSPr2",
             "condition": "arch.mips && tests.mips_dspr2",
             "output": [
                 "privateConfig",
@@ -890,7 +890,7 @@
             ]
         },
         "neon": {
-            "description": "NEON",
+            "label": "NEON",
             "condition": "(arch.arm || arch.arm64) && tests.neon",
             "output": [
                 "privateConfig",
@@ -898,57 +898,57 @@
             ]
         },
         "alsa": {
-            "description": "ALSA",
+            "label": "ALSA",
             "condition": "libs.alsa",
             "output": [ "feature" ]
         },
         "mremap": {
-            "description": "mremap()",
+            "label": "mremap()",
             "condition": "tests.mremap",
             "output": [ "feature" ]
         },
         "posix_fallocate": {
-            "description": "POSIX fallocate()",
+            "label": "POSIX fallocate()",
             "condition": "tests.posix_fallocate",
             "output": [ "privateFeature" ]
         },
         "stack-protector-strong": {
-            "description": "stack protection",
+            "label": "stack protection",
             "condition": "config.qnx && tests.stack_protector",
             "output": [ "publicQtConfig" ]
         },
         "accessibility": {
-            "description": "Accessibility",
+            "label": "Accessibility",
             "output": [ "publicFeature", "feature" ]
         },
         "pulseaudio": {
-            "description": "PulseAudio",
+            "label": "PulseAudio",
             "condition": "libs.pulseaudio",
             "output": [ "feature" ]
         },
         "system-zlib": {
-            "description": "Using system zlib",
+            "label": "Using system zlib",
             "condition": "libs.zlib",
             "output": [ "privateFeature" ]
         },
         "concurrent": {
-            "description": "Qt Concurrent",
+            "label": "Qt Concurrent",
             "output": [ "publicFeature", "feature" ]
         },
         "dbus": {
-            "description": "Qt D-Bus",
+            "label": "Qt D-Bus",
             "autoDetect": "!config.uikit && !config.android && !config.winrt",
             "output": [ "privateFeature", "feature" ]
         },
         "dbus-linked": {
-            "description": "Qt D-Bus directly linked to libdbus",
+            "label": "Qt D-Bus directly linked to libdbus",
             "enable": "input.dbus == 'linked'",
             "disable": "input.dbus == 'runtime'",
             "condition": "features.dbus && libs.dbus",
             "output": [ "privateFeature" ]
         },
         "host-dbus": {
-            "description": "Qt D-Bus (Host)",
+            "label": "Qt D-Bus (Host)",
             "autoDetect": "!config.android",
             "condition": "libs.host_dbus",
             "output": [ { "type": "varAppend", "name": "QT_HOST_CFLAGS_DBUS", "value": "libs.host_dbus.cflags", "eval": "true" } ]
@@ -957,18 +957,18 @@
             "output": [ { "type": "varAppend", "name": "QT_BUILD_PARTS", "value": "tests.build_parts.value" } ]
         },
         "qreal": {
-            "description": "Type for qreal",
+            "label": "Type for qreal",
             "output": [ "qreal" ]
         },
         "gui": {
-            "description": "Qt Gui",
+            "label": "Qt Gui",
             "output": [
                 "privateFeature",
                 { "type": "publicQtConfig", "negative": true }
             ]
         },
         "widgets": {
-            "description": "Qt Widgets",
+            "label": "Qt Widgets",
             "condition": "features.gui",
             "output": [
                 "privateFeature",
@@ -977,57 +977,57 @@
             ]
         },
         "libudev": {
-            "description": "udev",
+            "label": "udev",
             "condition": "libs.libudev",
             "output": [ "privateFeature" ]
         },
         "gstreamer-1_0": {
-            "description": "GStreamer 1.0",
+            "label": "GStreamer 1.0",
             "disable": "input.gstreamer == '0.10' || input.gstreamer == 'no'",
             "enable": "input.gstreamer == '1.0'",
             "condition": "libs.gstreamer_1_0",
             "output": [ { "type": "publicQtConfig", "name": "gstreamer-1.0" } ]
         },
         "gstreamer-0_10": {
-            "description": "GStreamer 0.10",
+            "label": "GStreamer 0.10",
             "disable": "input.gstreamer == 'no'",
             "enable": "input.gstreamer == '0.10'",
             "condition": "!features.gstreamer-1_0 && libs.gstreamer_0_10",
             "output": [ { "type": "publicQtConfig", "name": "gstreamer-0.10" } ]
         },
         "audio-backend": {
-            "description": "Audio backend",
+            "label": "Audio backend",
             "output": [ "publicQtConfig" ]
         },
         "qml-debug": {
-            "description": "QML debugging",
+            "label": "QML debugging",
             "output": [ { "type": "publicQtConfig", "negative": true } ]
         },
         "compile_examples": {
-            "description": "Compile examples",
+            "label": "Compile examples",
             "output": [ "privateConfig" ]
         },
         "incredibuild_xge": {
-            "description": "IncrediBuild",
+            "label": "IncrediBuild",
             "emitIf": "var.QMAKE_HOST.os == 'Windows'",
             "condition": "tests.incredibuild_xge",
             "output": [ "publicConfig" ]
         },
         "msvc_mp": {
-            "description": "Use multiple processors when compiling with MSVC",
+            "label": "Use multiple processors when compiling with MSVC",
             "emitIf": "config.msvc",
             "autoDetect": "false",
             "output": [ "privateConfig" ]
         },
         "static_runtime": {
-            "description": "Statically link the C/C++ runtime library",
+            "label": "Statically link the C/C++ runtime library",
             "emitIf": "config.win32",
             "autoDetect": false,
             "condition": "!features.shared",
             "output": [ "publicConfig", "publicQtConfig" ]
         },
         "wmf-backend": {
-            "description": "Windows Media Foundation backend for Qt Multimedia",
+            "label": "Windows Media Foundation backend for Qt Multimedia",
             "emitIf": "config.win32",
             "autoDetect": false,
             "condition": "tests.wmf",

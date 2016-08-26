@@ -26,7 +26,7 @@
 
     "libraries": {
         "corewlan": {
-            "description": "CoreWLan",
+            "label": "CoreWLan",
             "export": "",
             "test": "mac/corewlan",
             "sources": [
@@ -40,14 +40,14 @@
             ]
         },
         "libproxy": {
-            "description": "libproxy",
+            "label": "libproxy",
             "test": "common/libproxy",
             "sources": [
                 "-lproxy"
             ]
         },
         "openssl": {
-            "description": "OpenSSL Libraries",
+            "label": "OpenSSL Libraries",
             "export": "",
             "sources": [
                 { "type": "openssl" },
@@ -68,30 +68,30 @@
 
     "tests": {
         "getaddrinfo": {
-            "description": "getaddrinfo()",
+            "label": "getaddrinfo()",
             "type": "compile",
             "test": "unix/getaddrinfo",
             "use": "network"
         },
         "getifaddrs": {
-            "description": "getifaddrs()",
+            "label": "getifaddrs()",
             "type": "compile",
             "test": "unix/getifaddrs",
             "use": "network"
         },
         "ipv6ifname": {
-            "description": "IPv6 ifname",
+            "label": "IPv6 ifname",
             "type": "compile",
             "test": "unix/ipv6ifname",
             "use": "network"
         },
         "openssl": {
-            "description": "OpenSSL",
+            "label": "OpenSSL",
             "type": "compile",
             "test": "unix/openssl"
         },
         "sctp": {
-            "description": "SCTP support",
+            "label": "SCTP support",
             "type": "compile",
             "test": "unix/sctp",
             "use": "network"
@@ -100,34 +100,34 @@
 
     "features": {
         "corewlan": {
-            "description": "CoreWLan",
+            "label": "CoreWLan",
             "condition": "libs.corewlan",
             "emitIf": "config.darwin",
             "output": [ "feature", "privateFeature" ]
         },
         "getaddrinfo": {
-            "description": "getaddrinfo()",
+            "label": "getaddrinfo()",
             "condition": "tests.getaddrinfo",
             "output": [ "feature" ]
         },
         "getifaddrs": {
-            "description": "getifaddrs()",
+            "label": "getifaddrs()",
             "condition": "tests.getifaddrs",
             "output": [ "feature" ]
         },
         "ipv6ifname": {
-            "description": "IPv6 ifname",
+            "label": "IPv6 ifname",
             "condition": "tests.ipv6ifname",
             "output": [ "feature" ]
         },
         "libproxy": {
-            "description": "libproxy",
+            "label": "libproxy",
             "autoDetect": false,
             "condition": "libs.libproxy",
             "output": [ "privateFeature" ]
         },
         "openssl": {
-            "description": "OpenSSL",
+            "label": "OpenSSL",
             "enable": "input.openssl == 'yes' || input.openssl == 'linked' || input.openssl == 'runtime'",
             "disable": "input.openssl == 'no' || input.ssl == 'no'",
             "autoDetect": "!config.winrt",
@@ -139,7 +139,7 @@
             ]
         },
         "openssl-linked": {
-            "description": "  Qt directly linked to OpenSSL",
+            "label": "  Qt directly linked to OpenSSL",
             "enable": "input.openssl == 'linked'",
             "disable": "input.openssl != 'linked'",
             "condition": "features.openssl && libs.openssl",
@@ -154,7 +154,7 @@
             ]
         },
         "securetransport": {
-            "description": "SecureTransport",
+            "label": "SecureTransport",
             "disable": "input.securetransport == 'no' || input.ssl == 'no'",
             "condition": "config.darwin && (input.openssl == '' || input.openssl == 'no')",
             "output": [
@@ -163,18 +163,18 @@
             ]
         },
         "ssl": {
-            "description": "SSL",
+            "label": "SSL",
             "condition": "config.winrt || features.securetransport || features.openssl",
             "output": [ "publicFeature", "feature" ]
         },
         "sctp": {
-            "description": "SCTP",
+            "label": "SCTP",
             "autoDetect": false,
             "condition": "tests.sctp",
             "output": [ "publicFeature", "feature" ]
         },
         "system-proxies": {
-            "description": "Use system proxies",
+            "label": "Use system proxies",
             "output": [ "privateFeature" ]
         }
     },

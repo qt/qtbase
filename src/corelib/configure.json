@@ -21,21 +21,21 @@
 
     "libraries": {
         "doubleconversion": {
-            "description": "DoubleConversion",
+            "label": "DoubleConversion",
             "test": "unix/doubleconversion",
             "sources": [
                 "-ldouble-conversion"
             ]
         },
         "glib": {
-            "description": "GLib",
+            "label": "GLib",
             "test": "unix/glib",
             "sources": [
                 { "type": "pkgConfig", "args": "glib-2.0 gthread-2.0" }
             ]
         },
         "gnu_iconv": {
-            "description": "GNU libiconv",
+            "label": "GNU libiconv",
             "export": "iconv",
             "test": "unix/gnu-libiconv",
             "sources": [
@@ -43,7 +43,7 @@
             ]
         },
         "icu": {
-            "description": "ICU",
+            "label": "ICU",
             "export": "",
             "test": "unix/icu",
             "sources": [
@@ -59,7 +59,7 @@
             ]
         },
         "journald": {
-            "description": "journald",
+            "label": "journald",
             "test": "unix/journald",
             "export": "",
             "sources": [
@@ -68,14 +68,14 @@
             ]
         },
         "libatomic": {
-            "description": "64 bit atomics in libatomic",
+            "label": "64 bit atomics in libatomic",
             "test": "common/atomic64",
             "sources": [
                 "-latomic"
             ]
         },
         "libdl": {
-            "description": "dlopen() in libdl",
+            "label": "dlopen() in libdl",
             "export": "",
             "test": "unix/dlopen",
             "sources": [
@@ -83,21 +83,21 @@
             ]
         },
         "pcre": {
-            "description": "PCRE",
+            "label": "PCRE",
             "test": "unix/pcre",
             "sources": [
                 "-lpcre16"
             ]
         },
         "pps": {
-            "description": "PPS",
+            "label": "PPS",
             "test": "unix/pps",
             "sources": [
                 "-lpps"
             ]
         },
         "slog2": {
-            "description": "slog2",
+            "label": "slog2",
             "test": "unix/slog2",
             "export": "",
             "sources": [
@@ -108,92 +108,92 @@
 
     "tests": {
         "atomic64": {
-            "description": "64 bit atomics",
+            "label": "64 bit atomics",
             "type": "compile",
             "test": "common/atomic64"
         },
         "atomicfptr": {
-            "description": "working std::atomic for function pointers",
+            "label": "working std::atomic for function pointers",
             "type": "compile",
             "test": "common/atomicfptr"
         },
         "clock-gettime": {
-            "description": "clock_gettime()",
+            "label": "clock_gettime()",
             "type": "compile",
             "test": "unix/clock-gettime"
         },
         "clock-monotonic": {
-            "description": "POSIX monotonic clock",
+            "label": "POSIX monotonic clock",
             "type": "compile",
             "test": "unix/clock-monotonic"
         },
         "cloexec": {
-            "description": "O_CLOEXEC",
+            "label": "O_CLOEXEC",
             "type": "compile",
             "test": "unix/cloexec"
         },
         "dlopen": {
-            "description": "dlopen() in libc",
+            "label": "dlopen() in libc",
             "type": "compile",
             "test": "unix/dlopen"
         },
         "eventfd": {
-            "description": "eventfd",
+            "label": "eventfd",
             "type": "compile",
             "test": "unix/eventfd"
         },
         "posix-iconv": {
-            "description": "POSIX iconv",
+            "label": "POSIX iconv",
             "type": "compile",
             "test": "unix/iconv"
         },
         "sun-iconv": {
-            "description": "SUN libiconv",
+            "label": "SUN libiconv",
             "type": "compile",
             "test": "unix/sun-libiconv"
         },
         "inotify": {
-            "description": "inotify",
+            "label": "inotify",
             "type": "compile",
             "test": "unix/inotify"
         },
         "ipc_sysv": {
-            "description": "SysV IPC",
+            "label": "SysV IPC",
             "type": "compile",
             "test": "unix/ipc_sysv"
         },
         "ipc_posix": {
-            "description": "POSIX IPC",
+            "label": "POSIX IPC",
             "type": "compile",
             "test": "unix/ipc_posix"
         },
         "journald": {
-            "description": "journald",
+            "label": "journald",
             "type": "compile",
             "test": "unix/journald"
         },
         "ppoll": {
-            "description": "ppoll()",
+            "label": "ppoll()",
             "type": "compile",
             "test": "unix/ppoll"
         },
         "pollts": {
-            "description": "pollts()",
+            "label": "pollts()",
             "type": "compile",
             "test": "unix/pollts"
         },
         "poll": {
-            "description": "poll()",
+            "label": "poll()",
             "type": "compile",
             "test": "unix/poll"
         },
         "syslog": {
-            "description": "syslog",
+            "label": "syslog",
             "type": "compile",
             "test": "unix/syslog"
         },
         "xlocalescanprint": {
-            "description": "xlocale.h (or equivalents)",
+            "label": "xlocale.h (or equivalents)",
             "type": "compile",
             "test": "common/xlocalescanprint"
         }
@@ -201,111 +201,111 @@
 
     "features": {
         "clock-gettime": {
-            "description": "clock_gettime()",
+            "label": "clock_gettime()",
             "condition": "tests.clock-gettime",
             "output": [ "privateFeature" ]
         },
         "clock-monotonic": {
-            "description": "POSIX monotonic clock",
+            "label": "POSIX monotonic clock",
             "condition": "features.clock-gettime && tests.clock-monotonic",
             "output": [ "feature" ]
         },
         "dlopen": {
-            "description": "dlopen()",
+            "label": "dlopen()",
             "condition": "tests.dlopen || libs.libdl",
             "output": [ { "type": "define", "negative": true, "name": "QT_NO_DYNAMIC_LIBRARY" } ]
         },
         "libdl": {
-            "description": "dlopen() in libdl",
+            "label": "dlopen() in libdl",
             "condition": "!tests.dlopen && libs.libdl",
             "output": [ { "type": "privateConfig", "negative": true } ]
         },
         "doubleconversion": {
-            "description": "DoubleConversion",
+            "label": "DoubleConversion",
             "output": [ "privateFeature", "feature" ]
         },
         "system-doubleconversion": {
-            "description": "  Using system DoubleConversion",
+            "label": "  Using system DoubleConversion",
             "enable": "input.doubleconversion == 'system'",
             "disable": "input.doubleconversion == 'qt'",
             "condition": "features.doubleconversion && libs.doubleconversion",
             "output": [ "privateFeature" ]
         },
         "eventfd": {
-            "description": "eventfd",
+            "label": "eventfd",
             "condition": "tests.eventfd",
             "output": [ "feature" ]
         },
         "glib": {
-            "description": "GLib",
+            "label": "GLib",
             "autoDetect": "!config.win32",
             "condition": "libs.glib",
             "output": [ "privateFeature", "feature" ]
         },
         "iconv": {
-            "description": "iconv",
+            "label": "iconv",
             "condition": "features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv",
             "output": [ "privateFeature", "feature" ]
         },
         "posix-libiconv": {
-            "description": "POSIX iconv",
+            "label": "POSIX iconv",
             "enable": "input.iconv == 'posix'",
             "disable": "input.iconv == 'sun' || input.iconv == 'gnu' || input.iconv == 'no'",
             "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && tests.posix-iconv"
         },
         "sun-libiconv": {
-            "description": "SUN iconv",
+            "label": "SUN iconv",
             "enable": "input.iconv == 'sun'",
             "disable": "input.iconv == 'posix' || input.iconv == 'gnu' || input.iconv == 'no'",
             "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && tests.sun-iconv",
             "output": [ "privateFeature", "publicQtConfig" ]
         },
         "gnu-libiconv": {
-            "description": "GNU iconv",
+            "label": "GNU iconv",
             "enable": "input.iconv == 'gnu'",
             "disable": "input.iconv == 'posix' || input.iconv == 'sun' || input.iconv == 'no'",
             "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && !features.sun-libiconv && libs.gnu_iconv",
             "output": [ "privateFeature" ]
         },
         "icu": {
-            "description": "ICU",
+            "label": "ICU",
             "autoDetect": "!config.win32",
             "condition": "libs.icu",
             "output": [ "privateFeature" ]
         },
         "inotify": {
-            "description": "inotify",
+            "label": "inotify",
             "condition": "tests.inotify",
             "output": [ "privateFeature", "feature" ]
         },
         "ipc_posix": {
-            "description": "Using POSIX IPC",
+            "label": "Using POSIX IPC",
             "autoDetect": "!config.win32",
             "condition": "!tests.ipc_sysv && tests.ipc_posix",
             "output": [ { "type": "define", "name": "QT_POSIX_IPC" } ]
         },
         "journald": {
-            "description": "journald",
+            "label": "journald",
             "autoDetect": false,
             "condition": "libs.journald",
             "output": [ "privateConfig" ]
         },
         "std-atomic64": {
-            "description": "64 bit atomic operations",
+            "label": "64 bit atomic operations",
             "condition": "tests.atomic64 || libs.libatomic",
             "output": [ { "type": "define", "negative": true, "name": "QT_NO_STD_ATOMIC64" } ]
         },
         "libatomic": {
-            "description": "64 bit atomic operations in libatomic",
+            "label": "64 bit atomic operations in libatomic",
             "condition": "!tests.atomic64 && libs.libatomic",
             "output": [ "privateFeature" ]
         },
         "mimetype": {
-            "description": "Mimetype handling",
+            "label": "Mimetype handling",
             "output": [ "publicFeature", "feature" ]
         },
         "system-pcre": {
-            "description": "Using system PCRE",
+            "label": "Using system PCRE",
             "disable": "input.pcre == 'qt'",
             "enable": "input.pcre == 'system'",
             "condition": "libs.pcre",
@@ -315,25 +315,25 @@
             ]
         },
         "poll_ppoll": {
-            "description": "Native ppoll()",
+            "label": "Native ppoll()",
             "emitIf": "!config.win32",
             "condition": "tests.ppoll",
             "output": [ "privateFeature" ]
         },
         "poll_pollts": {
-            "description": "Native pollts()",
+            "label": "Native pollts()",
             "emitIf": "!config.win32",
             "condition": "!features.poll_ppoll && tests.pollts",
             "output": [ "privateFeature" ]
         },
         "poll_poll": {
-            "description": "Native poll()",
+            "label": "Native poll()",
             "emitIf": "!config.win32",
             "condition": "!features.poll_ppoll && !features.poll_pollts && tests.poll",
             "output": [ "privateFeature" ]
         },
         "poll_select": {
-            "description": "Emulated poll()",
+            "label": "Emulated poll()",
             "emitIf": "!config.win32",
             "condition": "!features.poll_ppoll && !features.poll_pollts && !features.poll_poll",
             "output": [
@@ -342,39 +342,39 @@
             ]
         },
         "qqnx_pps": {
-            "description": "PPS",
+            "label": "PPS",
             "emitIf": "config.qnx",
             "condition": "libs.pps",
             "output": [ "privateConfig" ]
         },
         "qeventtransition": {
-            "description": "QEventTransition class",
+            "label": "QEventTransition class",
             "output": [ "publicFeature" ]
         },
         "sharedmemory": {
-            "description": "Enable QSharedMemory",
+            "label": "Enable QSharedMemory",
             "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
             "output": [ { "type": "define", "negative": true, "name": "QT_NO_SHAREDMEMORY" } ]
         },
         "slog2": {
-            "description": "slog2",
+            "label": "slog2",
             "condition": "libs.slog2",
             "emitIf": "config.qnx",
             "output": [ "privateConfig" ]
         },
         "syslog": {
-            "description": "syslog",
+            "label": "syslog",
             "autoDetect": false,
             "condition": "tests.syslog",
             "output": [ "privateConfig" ]
         },
         "systemsemaphore": {
-            "description": "Enable QSystemSemaphore",
+            "label": "Enable QSystemSemaphore",
             "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
             "output": [ { "type": "define", "negative": true, "name": "QT_NO_SYSTEMSEMAPHORE" } ]
         },
         "threadsafe-cloexec": {
-            "description": "Threadsafe pipe creation",
+            "label": "Threadsafe pipe creation",
             "condition": "tests.cloexec",
             "output": [
                 "publicQtConfig",

@@ -39,7 +39,7 @@
 
     "libraries": {
         "db2": {
-            "description": "DB2 (IBM)",
+            "label": "DB2 (IBM)",
             "test": "unix/db2",
             "sources": [
                 { "libs": "-ldb2cli", "condition": "config.win32" },
@@ -47,7 +47,7 @@
             ]
         },
         "ibase": {
-            "description": "InterBase",
+            "label": "InterBase",
             "test": "unix/ibase",
             "sources": [
                 { "libs": "-lgds32_ms", "condition": "config.win32" },
@@ -55,7 +55,7 @@
             ]
         },
         "mysql": {
-            "description": "MySQL",
+            "label": "MySQL",
             "test": "unix/mysql",
             "sources": [
                 { "type": "mysqlConfig", "query": "--libs_r" },
@@ -66,7 +66,7 @@
             ]
         },
         "psql": {
-            "description": "PostgreSQL",
+            "label": "PostgreSQL",
             "test": "unix/psql",
             "sources": [
                 { "type": "psqlConfig" },
@@ -75,7 +75,7 @@
             ]
         },
         "tds": {
-            "description": "TDS (Sybase)",
+            "label": "TDS (Sybase)",
             "test": "unix/tds",
             "sources": [
                 { "type": "sybaseEnv", "libs": "-lNTWDBLIB", "condition": "config.win32" },
@@ -83,7 +83,7 @@
             ]
         },
         "oci": {
-            "description": "OCI (Oracle)",
+            "label": "OCI (Oracle)",
             "test": "unix/oci",
             "sources": [
                 { "libs": "-loci", "condition": "config.win32" },
@@ -91,7 +91,7 @@
             ]
         },
         "odbc": {
-            "description": "ODBC",
+            "label": "ODBC",
             "test": "unix/odbc",
             "sources": [
                 { "libs": "-lodbc32", "condition": "config.win32" },
@@ -100,14 +100,14 @@
             ]
         },
         "sqlite2": {
-            "description": "SQLite (version 2)",
+            "label": "SQLite (version 2)",
             "test": "unix/sqlite2",
             "sources": [
                 "-lsqlite"
             ]
         },
         "sqlite3": {
-            "description": "SQLite (version 3)",
+            "label": "SQLite (version 3)",
             "export": "sqlite",
             "test": "unix/sqlite",
             "sources": [
@@ -123,57 +123,57 @@
 
     "features": {
         "sql-db2": {
-            "description": "DB2 (IBM)",
+            "label": "DB2 (IBM)",
             "condition": "libs.db2",
             "output": [ "publicFeature" ]
         },
         "sql-ibase": {
-            "description": "InterBase",
+            "label": "InterBase",
             "condition": "libs.ibase",
             "output": [ "publicFeature" ]
         },
         "sql-mysql": {
-            "description": "MySql",
+            "label": "MySql",
             "condition": "libs.mysql",
             "output": [ "publicFeature" ]
         },
         "use_libmysqlclient_r": {
-            "description": "MySql (threadsafe)",
+            "label": "MySql (threadsafe)",
             "condition": "features.sql-mysql && (libs.mysql.source == 0 || libs.mysql.source == 2)",
             "output": [ "privateConfig" ]
         },
         "sql-oci": {
-            "description": "OCI (Oracle)",
+            "label": "OCI (Oracle)",
             "condition": "libs.oci",
             "output": [ "publicFeature" ]
         },
         "sql-odbc": {
-            "description": "ODBC",
+            "label": "ODBC",
             "condition": "libs.odbc",
             "output": [ "publicFeature" ]
         },
         "sql-psql": {
-            "description": "PostgreSQL",
+            "label": "PostgreSQL",
             "condition": "libs.psql",
             "output": [ "publicFeature" ]
         },
         "sql-sqlite2": {
-            "description": "SQLite2",
+            "label": "SQLite2",
             "condition": "libs.sqlite2",
             "output": [ "publicFeature" ]
         },
         "sql-sqlite": {
-            "description": "SQLite",
+            "label": "SQLite",
             "output": [ "publicFeature" ]
         },
         "system-sqlite": {
-            "description": "  Using system provided SQLite",
+            "label": "  Using system provided SQLite",
             "autoDetect": false,
             "condition": "features.sql-sqlite && libs.sqlite3",
             "output": [ "publicQtConfig" ]
         },
         "sql-tds": {
-            "description": "TDS (Sybase)",
+            "label": "TDS (Sybase)",
             "condition": "libs.tds",
             "output": [ "publicFeature" ]
         }

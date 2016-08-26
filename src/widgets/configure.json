@@ -21,7 +21,7 @@
 
     "libraries": {
         "gtk3": {
-            "description": "GTK+",
+            "label": "GTK+",
             "sources": [
                 { "type": "pkgConfig", "args": "gtk+-3.0" }
             ]
@@ -30,7 +30,7 @@
 
     "tests": {
         "uxtheme": {
-            "description": "uxtheme.h",
+            "label": "uxtheme.h",
             "type": "files",
             "files": [ "uxtheme.h" ]
         }
@@ -38,41 +38,41 @@
 
     "features": {
         "gtk3": {
-            "description": "GTK+",
+            "label": "GTK+",
             "autoDetect": "!config.darwin",
             "condition": "features.glib && libs.gtk3",
             "output": [ "privateFeature" ]
         },
         "style-fusion": {
-            "description": "Fusion Style",
+            "label": "Fusion Style",
             "output": [ "styles" ]
         },
         "style-mac": {
-            "description": "Mac Style",
+            "label": "Mac Style",
             "condition": "config.osx",
             "output": [ "styles" ]
         },
         "style-windows": {
-            "description": "Windows Style",
+            "label": "Windows Style",
             "output": [ "styles" ]
         },
         "style-windowsxp": {
-            "description": "Windows XP Style",
+            "label": "Windows XP Style",
             "condition": "features.style-windows && config.win32 && !config.winrt && tests.uxtheme",
             "output": [ "styles" ]
         },
         "style-windowsvista": {
-            "description": "Windows Vista Style",
+            "label": "Windows Vista Style",
             "condition": "features.style-windowsxp",
             "output": [ "styles" ]
         },
         "style-android": {
-            "description": "Android Style",
+            "label": "Android Style",
             "autoDetect": "config.android",
             "output": [ "styles" ]
         },
         "android-style-assets": {
-            "description": "Android Style Assets",
+            "label": "Android Style Assets",
             "condition": "features.style-android",
             "output": [ "privateConfig" ]
         }

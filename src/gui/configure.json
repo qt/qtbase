@@ -55,14 +55,14 @@
             ]
         },
         "directfb": {
-            "description": "DirectFB",
+            "label": "DirectFB",
             "test": "qpa/directfb",
             "sources": [
                 { "type": "pkgConfig", "args": "directfb" }
             ]
         },
         "directwrite": {
-            "description": "DirectWrite",
+            "label": "DirectWrite",
             "export": "",
             "test": "win/directwrite",
             "sources": [
@@ -70,7 +70,7 @@
             ]
         },
         "drm": {
-            "description": "KMS",
+            "label": "KMS",
             "test": "qpa/kms",
             "sources": [
                 { "type": "pkgConfig", "args": "libdrm" },
@@ -78,7 +78,7 @@
             ]
         },
         "egl": {
-            "description": "EGL",
+            "label": "EGL",
             "test": "qpa/egl",
             "sources": [
                 { "type": "pkgConfig", "args": "egl" },
@@ -86,7 +86,7 @@
             ]
         },
         "freetype": {
-            "description": "FreeType",
+            "label": "FreeType",
             "export": "",
             "test": "unix/freetype",
             "sources": [
@@ -94,7 +94,7 @@
             ]
         },
         "fontconfig": {
-            "description": "Fontconfig",
+            "label": "Fontconfig",
             "test": "unix/fontconfig",
             "sources": [
                 { "type": "pkgConfig", "args": "fontconfig freetype2" },
@@ -102,21 +102,21 @@
             ]
         },
         "gbm": {
-            "description": "GBM",
+            "label": "GBM",
             "test": "qpa/gbm",
             "sources": [
                 { "type": "pkgConfig", "args": "gbm" }
             ]
         },
         "harfbuzz": {
-            "description": "HarfBuzz",
+            "label": "HarfBuzz",
             "test": "unix/harfbuzz",
             "sources": [
                 "-lharfbuzz"
             ]
         },
         "imf": {
-            "description": "IMF",
+            "label": "IMF",
             "export": "",
             "test": "unix/qqnx_imf",
             "sources": [
@@ -124,21 +124,21 @@
             ]
         },
         "lgmon": {
-            "description": "lgmon",
+            "label": "lgmon",
             "test": "unix/lgmon",
             "sources": [
                 "-llgmon"
             ]
         },
         "libinput": {
-            "description": "libinput",
+            "label": "libinput",
             "test": "unix/libinput",
             "sources": [
                 { "type": "pkgConfig", "args": "libinput" }
             ]
         },
         "libjpeg": {
-            "description": "libjpeg",
+            "label": "libjpeg",
             "test": "unix/libjpeg",
             "sources": [
                 { "libs": "-llibjpeg", "condition": "config.msvc" },
@@ -146,7 +146,7 @@
             ]
         },
         "libpng": {
-            "description": "libpng",
+            "label": "libpng",
             "test": "unix/libpng",
             "sources": [
                 { "type": "pkgConfig", "args": "libpng" },
@@ -155,7 +155,7 @@
             ]
         },
         "mirclient": {
-            "description": "Mir client libraries",
+            "label": "Mir client libraries",
             "export": "",
             "test": "qpa/mirclient",
             "sources": [
@@ -163,7 +163,7 @@
             ]
         },
         "mtdev": {
-            "description": "mtdev",
+            "label": "mtdev",
             "export": "",
             "test": "unix/mtdev",
             "sources": [
@@ -171,7 +171,7 @@
             ]
         },
         "opengl": {
-            "description": "Desktop OpenGL",
+            "label": "Desktop OpenGL",
             "test": "unix/opengldesktop",
             "sources": [
                 { "type": "pkgConfig", "args": "gl" },
@@ -179,7 +179,7 @@
             ]
         },
         "opengl_es2": {
-            "description": "OpenGL ES 2.0",
+            "label": "OpenGL ES 2.0",
             "test": "unix/opengles2",
             "sources": [
                 { "type": "pkgConfig", "args": "glesv2" },
@@ -187,14 +187,14 @@
             ]
         },
         "tslib": {
-            "description": "tslib",
+            "label": "tslib",
             "test": "unix/tslib",
             "sources": [
                 "-lts"
             ]
         },
         "wayland_server": {
-            "description": "Wayland Server",
+            "label": "Wayland Server",
             "export": "",
             "test": "qpa/wayland-server",
             "sources": [
@@ -202,13 +202,13 @@
             ]
         },
         "x11sm": {
-            "description": "X11 session management",
+            "label": "X11 session management",
             "sources": [
                 { "type": "pkgConfig", "args": "sm ice" }
             ]
         },
         "xcb": {
-            "description": "XCB >= 1.5 (core)",
+            "label": "XCB >= 1.5 (core)",
             "test": "qpa/xcb",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb >= 1.5" },
@@ -216,7 +216,7 @@
             ]
         },
         "xcb_syslibs": {
-            "description": "XCB (secondary)",
+            "label": "XCB (secondary)",
             "test": "qpa/xcb-syslibs",
             "sources": [
                 { "type": "pkgConfig",
@@ -225,7 +225,7 @@
             ]
         },
         "xcb_xlib": {
-            "description": "XCB Xlib",
+            "label": "XCB Xlib",
             "test": "qpa/xcb-xlib",
             "sources": [
                 { "type": "pkgConfig", "args": "X11-xcb x11 xcb" },
@@ -233,7 +233,7 @@
             ]
         },
         "xcb_xkb": {
-            "description": "XCB XKB >= 1.10",
+            "label": "XCB XKB >= 1.10",
             "test": "qpa/xcb-xkb",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-xkb >= 1.10 xcb" },
@@ -241,7 +241,7 @@
             ]
         },
         "xcb_render": {
-            "description": "XCB XRender",
+            "label": "XCB XRender",
             "test": "qpa/xcb-render",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-renderutil xcb-render xcb" },
@@ -249,7 +249,7 @@
             ]
         },
         "xcb_glx": {
-            "description": "XCB GLX",
+            "label": "XCB GLX",
             "test": "qpa/xcb-glx",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-glx xcb" },
@@ -257,7 +257,7 @@
             ]
         },
         "xinput2": {
-            "description": "Xinput2",
+            "label": "Xinput2",
             "test": "x11/xinput2",
             "sources": [
                 { "type": "pkgConfig", "args": "xi" },
@@ -265,7 +265,7 @@
             ]
         },
         "xkbcommon": {
-            "description": "xkbcommon",
+            "label": "xkbcommon",
             "export": "xkbcommon_evdev",
             "test": "unix/xkbcommon",
             "sources": [
@@ -273,14 +273,14 @@
             ]
         },
         "xkbcommon_x11": {
-            "description": "xkbcommon-x11 >= 0.4.1",
+            "label": "xkbcommon-x11 >= 0.4.1",
             "export": "xkbcommon",
             "sources": [
                 { "type": "pkgConfig", "args": "xkbcommon xkbcommon-x11 >= 0.4.1" }
             ]
         },
         "xrender": {
-            "description": "XRender",
+            "label": "XRender",
             "test": "x11/xrender",
             "sources": [
                 "-lXrender"
@@ -295,19 +295,19 @@
 
     "tests": {
         "direct2d": {
-            "description": "Direct 2D",
+            "label": "Direct 2D",
             "type": "compile",
             "test": "qpa/direct2d",
             "use": "direct2d"
         },
         "directwrite2": {
-            "description": "DirectWrite 2",
+            "label": "DirectWrite 2",
             "type": "compile",
             "test": "win/directwrite2",
             "use": "directwrite"
         },
         "directx": {
-            "description": "DirectX SDK",
+            "label": "DirectX SDK",
             "type": "directX",
             "files": [
                 "d3dcompiler.h",
@@ -316,70 +316,70 @@
             ]
         },
         "egl-x11": {
-            "description": "EGL on X11",
+            "label": "EGL on X11",
             "type": "compile",
             "test": "qpa/egl-x11",
             "use": "egl xcb_xlib"
         },
         "egl-brcm": {
-            "description": "Broadcom EGL (Rasberry Pi)",
+            "label": "Broadcom EGL (Rasberry Pi)",
             "type": "compile",
             "test": "qpa/eglfs-brcm",
             "use": "egl bcm_host"
         },
         "egl-egldevice": {
-            "description": "EGLDevice",
+            "label": "EGLDevice",
             "type": "compile",
             "test": "qpa/eglfs-egldevice",
             "use": "egl"
         },
         "egl-mali": {
-            "description": "Mali EGL",
+            "label": "Mali EGL",
             "type": "compile",
             "test": "qpa/eglfs-mali",
             "use": "egl"
         },
         "egl-mali-2": {
-            "description": "Mali 2 EGL",
+            "label": "Mali 2 EGL",
             "type": "compile",
             "test": "qpa/eglfs-mali-2",
             "use": "egl"
         },
         "egl-viv": {
-            "description": "i.Mx6 EGL",
+            "label": "i.Mx6 EGL",
             "type": "compile",
             "test": "qpa/eglfs-viv",
             "use": "egl"
         },
         "evdev": {
-            "description": "evdev",
+            "label": "evdev",
             "type": "compile",
             "test": "unix/evdev"
         },
         "linuxfb": {
-            "description": "LinuxFB",
+            "label": "LinuxFB",
             "type": "compile",
             "test": "qpa/linuxfb"
         },
         "opengles3": {
-            "description": "OpenGL ES 3.0",
+            "label": "OpenGL ES 3.0",
             "type": "compile",
             "test": "unix/opengles3",
             "use": "opengl_es2"
         },
         "opengles31": {
-            "description": "OpenGL ES 3.1",
+            "label": "OpenGL ES 3.1",
             "type": "compile",
             "test": "unix/opengles31",
             "use": "opengl_es2"
         },
         "qpa_default_platform": {
-            "description": "default QPA platform",
+            "label": "default QPA platform",
             "type": "qpaDefaultPlatform",
             "log": "value"
         },
         "x11prefix": {
-            "description": "X11 prefix",
+            "label": "X11 prefix",
             "type": "getPkgConfigVariable",
             "pkg-config-args": "x11",
             "pkg-config-variable": "prefix",
@@ -387,14 +387,14 @@
             "log": "value"
         },
         "xkbconfigroot": {
-            "description": "XKB config root",
+            "label": "XKB config root",
             "type": "xkbConfigRoot",
             "pkg-config-args": "xkeyboard-config",
             "pkg-config-variable": "xkb_base",
             "log": "value"
         },
         "xlib": {
-            "description": "XLib",
+            "label": "XLib",
             "type": "compile",
             "test": "x11/xlib"
         }
@@ -402,12 +402,12 @@
 
     "features": {
         "accessibility-atspi-bridge": {
-            "description": "ATSPI Bridge",
+            "label": "ATSPI Bridge",
             "condition": "features.accessibility && features.xcb && features.dbus",
             "output": [ "privateFeature", "feature" ]
         },
         "angle": {
-            "description": "ANGLE",
+            "label": "ANGLE",
             "autoDetect": "features.opengles2 || features.opengl-dynamic",
             "condition": "config.win32 && tests.directx",
             "output": [
@@ -416,40 +416,40 @@
             ]
         },
         "directfb": {
-            "description": "DirectFB",
+            "label": "DirectFB",
             "autoDetect": false,
             "condition": "libs.directfb",
             "output": [ "privateFeature" ]
         },
         "directwrite": {
-            "description": "DirectWrite",
+            "label": "DirectWrite",
             "emitIf": "config.win32",
             "condition": "libs.directwrite",
             "output": [ "privateFeature" ]
         },
         "directwrite2": {
-            "description": "DirectWrite 2",
+            "label": "DirectWrite 2",
             "emitIf": "config.win32",
             "condition": "features.directwrite && tests.directwrite2",
             "output": [ "privateFeature" ]
         },
         "direct2d": {
-            "description": "Direct 2D",
+            "label": "Direct 2D",
             "autoDetect": false,
             "condition": "tests.direct2d",
             "output": [ "privateFeature" ]
         },
         "evdev": {
-            "description": "evdev",
+            "label": "evdev",
             "condition": "tests.evdev",
             "output": [ "privateFeature" ]
         },
         "freetype": {
-            "description": "FreeType",
+            "label": "FreeType",
             "output": [ "privateFeature", "feature" ]
         },
         "system-freetype": {
-            "description": "  Using system FreeType",
+            "label": "  Using system FreeType",
             "enable": "input.freetype == 'system'",
             "disable": "input.freetype == 'qt'",
             "autoDetect": "!config.win32",
@@ -457,21 +457,21 @@
             "output": [ "privateFeature" ]
         },
         "fontconfig": {
-            "description": "Fontconfig",
+            "label": "Fontconfig",
             "condition": "!config.win32 && !config.darwin && features.system-freetype && libs.fontconfig",
             "output": [ "privateFeature", "feature" ]
         },
         "gbm": {
-            "description": "GBM",
+            "label": "GBM",
             "condition": "libs.gbm",
             "output": [ "publicQtConfig" ]
         },
         "harfbuzz": {
-            "description": "HarfBuzz",
+            "label": "HarfBuzz",
             "output": [ "privateFeature", "feature" ]
         },
         "system-harfbuzz": {
-            "description": "  Using system HarfBuzz",
+            "label": "  Using system HarfBuzz",
             "enable": "input.harfbuzz == 'system'",
             "disable": "input.harfbuzz == 'qt'",
             "autoDetect": "!config.darwin && !config.win32",
@@ -479,49 +479,49 @@
             "output": [ "privateFeature" ]
         },
         "qqnx_imf": {
-            "description": "IMF",
+            "label": "IMF",
             "emitIf": "config.qnx",
             "condition": "libs.imf",
             "output": [ "privateConfig" ]
         },
         "integrityfb": {
-            "description": "INTEGRITY framebuffer",
+            "label": "INTEGRITY framebuffer",
             "condition": "config.integrity",
             "output": [ "privateFeature" ]
         },
         "kms": {
-            "description": "KMS",
+            "label": "KMS",
             "condition": "libs.drm",
             "output": [ "publicQtConfig" ]
         },
         "libinput": {
-            "description": "libinput",
+            "label": "libinput",
             "condition": "features.libudev && libs.libinput",
             "output": [ "privateFeature" ]
         },
         "lgmon": {
-            "description": "lgmon",
+            "label": "lgmon",
             "emitIf": "config.qnx",
             "condition": "libs.lgmon",
             "output": [ "privateConfig" ]
         },
         "linuxfb": {
-            "description": "LinuxFB",
+            "label": "LinuxFB",
             "condition": "tests.linuxfb",
             "output": [ "privateFeature" ]
         },
         "mirclient": {
-            "description": "Mir client",
+            "label": "Mir client",
             "condition": "libs.mirclient",
             "output": [ "privateFeature" ]
         },
         "mtdev": {
-            "description": "mtdev",
+            "label": "mtdev",
             "condition": "libs.mtdev",
             "output": [ "privateFeature" ]
         },
         "opengles2": {
-            "description": "OpenGL ES 2.0",
+            "label": "OpenGL ES 2.0",
             "enable": "input.opengl == 'es2'",
             "disable": "input.opengl == 'desktop' || input.opengl == 'dynamic' || input.opengl == 'no'",
             "condition": "config.win32 || (!config.watchos && !features.opengl-desktop && libs.opengl_es2)",
@@ -533,7 +533,7 @@
             ]
         },
         "opengles3": {
-            "description": "OpenGL ES 3.0",
+            "label": "OpenGL ES 3.0",
             "condition": "features.opengles2 && !features.angle && tests.opengles3",
             "output": [
                 "publicFeature",
@@ -541,7 +541,7 @@
             ]
         },
         "opengles31": {
-            "description": "OpenGL ES 3.1",
+            "label": "OpenGL ES 3.1",
             "condition": "features.opengles3 && tests.opengles31",
             "output": [
                 "publicFeature",
@@ -549,14 +549,14 @@
             ]
         },
         "opengl-desktop": {
-            "description": "Desktop OpenGL",
+            "label": "Desktop OpenGL",
             "enable": "input.opengl == 'desktop'",
             "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
             "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl))
                           || (!config.watchos && !config.win32 && libs.opengl)"
         },
         "opengl-dynamic": {
-            "description": "Dynamic OpenGL",
+            "label": "Dynamic OpenGL",
             "enable": "input.opengl == 'dynamic'",
             "autoDetect": false,
             "condition": "config.win32 && !config.winrt",
@@ -566,69 +566,69 @@
             ]
         },
         "opengl": {
-            "description": "OpenGL",
+            "label": "OpenGL",
             "condition": "features.opengl-desktop || features.opengl-dynamic || features.opengles2",
             "output": [ "publicFeature", "feature" ]
         },
         "egl": {
-            "description": "EGL",
+            "label": "EGL",
             "condition": "features.opengl && (features.angle || libs.egl)",
             "output": [ "privateFeature", "feature" ]
         },
         "egl_x11": {
-            "description": "EGL on X11",
+            "label": "EGL on X11",
             "condition": "features.egl && tests.egl-x11",
             "output": [ "privateFeature" ]
         },
         "eglfs": {
-            "description": "EGLFS",
+            "label": "EGLFS",
             "autoDetect": "!config.android && !config.win32",
             "condition": "features.egl",
             "output": [ "privateFeature" ]
         },
         "eglfs_brcm": {
-            "description": "EGLFS Rasberry Pi",
+            "label": "EGLFS Rasberry Pi",
             "condition": "features.eglfs && tests.egl-brcm",
             "output": [ "privateFeature" ]
         },
         "eglfs_egldevice": {
-            "description": "EGLFS EGLDevice",
+            "label": "EGLFS EGLDevice",
             "condition": "features.eglfs && tests.egl-egldevice && features.kms",
             "output": [ "privateFeature" ]
         },
         "eglfs_gbm": {
-            "description": "EGLFS GBM",
+            "label": "EGLFS GBM",
             "condition": "features.eglfs && features.gbm && features.kms",
             "output": [ "privateFeature" ]
         },
         "eglfs_mali": {
-            "description": "EGLFS Mali",
+            "label": "EGLFS Mali",
             "condition": "features.eglfs && (tests.egl-mali || tests.egl-mali-2)",
             "output": [ "privateFeature" ]
         },
         "eglfs_viv": {
-            "description": "EGLFS i.Mx6",
+            "label": "EGLFS i.Mx6",
             "condition": "features.eglfs && tests.egl-viv",
             "output": [ "privateFeature" ]
         },
         "eglfs_viv_wl": {
-            "description": "EGLFS i.Mx6 Wayland",
+            "label": "EGLFS i.Mx6 Wayland",
             "condition": "features.eglfs_viv && libs.wayland_server",
             "output": [ "privateFeature" ]
         },
         "gif": {
-            "description": "GIF",
+            "label": "GIF",
             "output": [
                 "privateFeature",
                 { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_GIF" }
             ]
         },
         "ico": {
-            "description": "ICO",
+            "label": "ICO",
             "output": [ "privateFeature", "feature" ]
         },
         "jpeg": {
-            "description": "JPEG",
+            "label": "JPEG",
             "disable": "input.libjpeg == 'no'",
             "output": [
                 "privateFeature",
@@ -636,14 +636,14 @@
             ]
         },
         "system-jpeg": {
-            "description": "  Using system libjpeg",
+            "label": "  Using system libjpeg",
             "disable": "input.libjpeg == 'qt'",
             "enable": "input.libjpeg == 'system'",
             "condition": "features.jpeg && libs.libjpeg",
             "output": [ "privateFeature" ]
         },
         "png": {
-            "description": "PNG",
+            "label": "PNG",
             "disable": "input.libpng == 'no'",
             "output": [
                 "privateFeature",
@@ -651,14 +651,14 @@
             ]
         },
         "system-png": {
-            "description": "  Using system libpng",
+            "label": "  Using system libpng",
             "disable": "input.libpng == 'qt'",
             "enable": "input.libpng == 'system'",
             "condition": "features.png && libs.libpng",
             "output": [ "privateFeature" ]
         },
         "qpa_default_platform": {
-            "description": "QPA default platform",
+            "label": "QPA default platform",
             "condition": "features.gui",
             "output": [
                 { "type": "define", "name": "QT_QPA_DEFAULT_PLATFORM_NAME", "value": "tests.qpa_default_platform.name" },
@@ -667,22 +667,22 @@
             ]
         },
         "sessionmanager": {
-            "description": "Session Management",
+            "label": "Session Management",
             "output": [ "feature" ]
         },
         "tslib": {
-            "description": "tslib",
+            "label": "tslib",
             "condition": "libs.tslib",
             "output": [ "privateFeature" ]
         },
         "xcb": {
-            "description": "XCB",
+            "label": "XCB",
             "autoDetect": "!config.darwin",
             "condition": "libs.xcb",
             "output": [ "privateFeature" ]
         },
         "system-xcb": {
-            "description": "Using system provided XCB libraries",
+            "label": "Using system provided XCB libraries",
             "enable": "input.xcb == 'system' || input.xcb == 'yes'",
             "disable": "input.xcb == 'qt' || input.xcb == 'no'",
             "autoDetect": "!config.darwin",
@@ -690,46 +690,46 @@
             "output": [ "privateFeature" ]
         },
         "x11-prefix": {
-            "description": "X11 prefix",
+            "label": "X11 prefix",
             "emitIf": "features.xcb",
             "output": [ { "type": "varAssign", "name": "QMAKE_X11_PREFIX", "value": "tests.x11prefix.value" } ]
         },
         "xcb-glx": {
-            "description": "XCB GLX",
+            "label": "XCB GLX",
             "emitIf": "features.xcb",
             "condition": "libs.xcb_glx",
             "output": [ "privateFeature" ]
         },
         "xcb-render": {
-            "description": "XCB render",
+            "label": "XCB render",
             "emitIf": "features.system-xcb",
             "condition": "libs.xcb_render",
             "output": [ "privateFeature" ]
         },
         "xcb-xlib": {
-            "description": "XCB Xlib",
+            "label": "XCB Xlib",
             "emitIf": "features.xcb",
             "condition": "libs.xcb_xlib",
             "output": [ "privateFeature" ]
         },
         "xcb-sm": {
-            "description": "xcb-sm",
+            "label": "xcb-sm",
             "emitIf": "features.xcb",
             "condition": "features.sessionmanager && libs.x11sm",
             "output": [ "privateFeature" ]
         },
         "xinput2": {
-            "description": "Xinput2",
+            "label": "Xinput2",
             "condition": "libs.xinput2",
             "output": [ "privateFeature" ]
         },
         "xkbcommon-evdev": {
-            "description": "xkbcommon-evdev",
+            "label": "xkbcommon-evdev",
             "condition": "libs.xkbcommon",
             "output": [ "privateFeature" ]
         },
         "xkbcommon-system": {
-            "description": "Using system-provided xkbcommon",
+            "label": "Using system-provided xkbcommon",
             "emitIf": "features.xcb",
             "enable": "input.xkbcommon == 'system'",
             "disable": "input.xkbcommon == 'qt' || input.xkbcommon == 'no'",
@@ -737,23 +737,23 @@
             "output": [ "privateFeature" ]
         },
         "xkb": {
-            "description": "XCB XKB",
+            "label": "XCB XKB",
             "condition": "features.system-xcb && libs.xcb_xkb",
             "output": [ "privateFeature" ]
         },
         "xkb-config-root": {
-            "description": "XKB config root",
+            "label": "XKB config root",
             "emitIf": "features.xcb",
             "condition": "features.xcb && !features.xkbcommon-system && tests.xkbconfigroot",
             "output": [ { "type": "varAssign", "name": "QMAKE_XKB_CONFIG_ROOT", "value": "tests.xkbconfigroot.value"} ]
         },
         "xlib": {
-            "description": "XLib",
+            "label": "XLib",
             "condition": "tests.xlib",
             "output": [ "privateFeature" ]
         },
         "xrender": {
-            "description": "Xrender",
+            "label": "Xrender",
             "condition": "libs.xrender",
             "output": [ "privateFeature", "feature" ]
         }
