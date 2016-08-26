@@ -794,9 +794,17 @@ void tst_QByteArray::qstrncpy()
 {
     QByteArray src(1024, 'a'), dst(1024, 'b');
 
-    // singularities
-    QCOMPARE(::qstrncpy(0, 0,0), (char*)0);
-    QCOMPARE(::qstrncpy(dst.data(), 0, 0), (char*)0);
+    // dst == nullptr
+    QCOMPARE(::qstrncpy(0, src.data(),  0), (char*)0);
+    QCOMPARE(::qstrncpy(0, src.data(), 10), (char*)0);
+
+    // src == nullptr
+    QCOMPARE(::qstrncpy(dst.data(), 0,  0), (char*)0);
+    QCOMPARE(::qstrncpy(dst.data(), 0, 10), (char*)0);
+
+    // valid pointers, but len == 0
+    QCOMPARE(::qstrncpy(dst.data(), src.data(), 0), dst.data());
+    QCOMPARE(*dst.data(), 'b'); // must not have written to dst
 
     // normal copy
     QCOMPARE(::qstrncpy(dst.data(), src.data(), src.size()), dst.data());

@@ -208,13 +208,14 @@ char *qstrncpy(char *dst, const char *src, uint len)
 {
     if (!src || !dst)
         return 0;
+    if (len > 0) {
 #if defined(_MSC_VER) && _MSC_VER >= 1400
-    strncpy_s(dst, len, src, len-1);
+        strncpy_s(dst, len, src, len - 1);
 #else
-    strncpy(dst, src, len);
+        strncpy(dst, src, len);
 #endif
-    if (len > 0)
         dst[len-1] = '\0';
+    }
     return dst;
 }
 
