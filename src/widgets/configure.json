@@ -44,30 +44,30 @@
             "output": [ "privateFeature" ]
         },
         "style-fusion": {
-            "label": "Fusion Style",
+            "label": "Fusion",
             "output": [ "styles" ]
         },
         "style-mac": {
-            "label": "Mac Style",
+            "label": "macOS",
             "condition": "config.osx",
             "output": [ "styles" ]
         },
         "style-windows": {
-            "label": "Windows Style",
+            "label": "Windows",
             "output": [ "styles" ]
         },
         "style-windowsxp": {
-            "label": "Windows XP Style",
+            "label": "WindowsXP",
             "condition": "features.style-windows && config.win32 && !config.winrt && tests.uxtheme",
             "output": [ "styles" ]
         },
         "style-windowsvista": {
-            "label": "Windows Vista Style",
+            "label": "WindowsVista",
             "condition": "features.style-windowsxp",
             "output": [ "styles" ]
         },
         "style-android": {
-            "label": "Android Style",
+            "label": "Android",
             "autoDetect": "config.android",
             "output": [ "styles" ]
         },
