@@ -2173,7 +2173,8 @@ QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QStr
 
 QRgb QColorDialog::getRgba(QRgb initial, bool *ok, QWidget *parent)
 {
-    QColor color(getColor(QColor(initial), parent, QString(), ShowAlphaChannel));
+    const QColor color = getColor(QColor::fromRgba(initial), parent, QString(),
+                                  ShowAlphaChannel);
     QRgb result = color.isValid() ? color.rgba() : initial;
     if (ok)
         *ok = color.isValid();
