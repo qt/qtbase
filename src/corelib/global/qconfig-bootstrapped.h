@@ -73,6 +73,7 @@
 #define QT_NO_QOBJECT
 #define QT_NO_SYSTEMLOCALE
 #define QT_NO_THREAD
+#define QT_FEATURE_timezone -1
 #define QT_NO_TRANSLATION
 #define QT_FEATURE_translation -1
 #define QT_NO_GEOM_VARIANT

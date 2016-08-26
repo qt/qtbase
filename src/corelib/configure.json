@@ -564,6 +564,12 @@
             "purpose": "Optimizes SHA3 for speed instead of size.",
             "section": "Utilities",
             "output": [ "privateFeature" ]
+        },
+        "timezone": {
+            "label": "QTimeZone",
+            "purpose": "Provides support for timezone handling.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
         }
     },
 
