@@ -1344,15 +1344,15 @@ defineTest(qtConfOutputVar) {
     equals(modifier, assign) {
         !isEmpty(config.output.$${output}.append.$${name})|!isEmpty(config.output.$${output}.remove.$${name}): \
             error("Trying to assign variable '$$name' in '$$output', which has already appended or removed parts.")
-        config.output.$${output}.$${modifier}.$${name} = $$value
+        config.output.$${output}.assign.$${name} = $$value
     } else: equals(modifier, append) {
         contains(config.output.$${output}.remove.$${name}, $$value): \
             error("Trying to append removed '$$value' to variable '$$name' in '$$output'.")
-        config.output.$${output}.$${modifier}.$${name} += $$value
+        config.output.$${output}.append.$${name} += $$value
     } else: equals(modifier, remove) {
         contains(config.output.$${output}.append.$${name}, $$value): \
             error("Trying to remove appended '$$value' to variable '$$name' in '$$output'.")
-        config.output.$${output}.$${modifier}.$${name} += $$value
+        config.output.$${output}.remove.$${name} += $$value
     } else {
         error("Invalid modifier '$$modifier' passed to qtConfOutputVar.")
     }
