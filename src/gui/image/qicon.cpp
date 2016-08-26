@@ -47,6 +47,8 @@
 #include "private/qiconloader_p.h"
 #include "qpainter.h"
 #include "qfileinfo.h"
+#include <qmimedatabase.h>
+#include <qmimetype.h>
 #include "qpixmapcache.h"
 #include "qvariant.h"
 #include "qcache.h"
@@ -976,6 +978,18 @@ void QIcon::addPixmap(const QPixmap &pixmap, Mode mode, State state)
     d->engine->addPixmap(pixmap, mode, state);
 }
 
+static QIconEngine *iconEngineFromSuffix(const QString &fileName, const QString &suffix)
+{
+    if (!suffix.isEmpty()) {
+        const int index = loader()->indexOf(suffix);
+        if (index != -1) {
+            if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
+                return factory->create(fileName);
+            }
+        }
+    }
+    return nullptr;
+}
 
 /*!  Adds an image from the file with the given \a fileName to the
      icon, as a specialization for \a size, \a mode and \a state. The
@@ -1013,25 +1027,15 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
         return;
     detach();
     if (!d) {
+
         QFileInfo info(fileName);
-        QString suffix = info.suffix();
-        if (!suffix.isEmpty()) {
-            // first try version 2 engines..
-            const int index = loader()->indexOf(suffix);
-            if (index != -1) {
-                if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
-                    if (QIconEngine *engine = factory->create(fileName)) {
-                        d = new QIconPrivate;
-                        d->engine = engine;
-                    }
-                }
-            }
-        }
-        // ...then fall back to the default engine
-        if (!d) {
-            d = new QIconPrivate;
-            d->engine = new QPixmapIconEngine;
-        }
+        QIconEngine *engine = iconEngineFromSuffix(fileName, info.suffix());
+#ifndef QT_NO_MIMETYPE
+        if (!engine)
+            engine = iconEngineFromSuffix(fileName, QMimeDatabase().mimeTypeForFile(info).preferredSuffix());
+#endif // !QT_NO_MIMETYPE
+        d = new QIconPrivate;
+        d->engine = engine ? engine : new QPixmapIconEngine;
     }
 
     d->engine->addFile(fileName, size, mode, state);
