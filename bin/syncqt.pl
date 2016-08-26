@@ -934,6 +934,7 @@ foreach my $lib (@modules_to_sync) {
         foreach my $subdir (@subdirs) {
             if (opendir DIR, $subdir) {
                 foreach my $t (sort { $b cmp $a } readdir(DIR)) {
+                    next if ($t =~ /\.pri$/);
                     my $file = "$subdir/$t";
                     if(-d $file) {
                         push @subdirs, $file unless($t eq "." || $t eq "..");
