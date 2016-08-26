@@ -22,10 +22,10 @@ include(linuxaccessibility/linuxaccessibility.pri)
 include(clipboard/clipboard.pri)
 include(platformcompositor/platformcompositor.pri)
 
-# dbus convenience, but not for darwin: the platform
+# dbus convenience for unix except darwin: the platform
 # plugins for these platforms do not use dbus and we
 # don't want to create a false dependency.
-!darwin:qtConfig(dbus) {
+unix:!darwin:qtConfig(dbus) {
     include(dbusmenu/dbusmenu.pri)
     include(dbustray/dbustray.pri)
 }
