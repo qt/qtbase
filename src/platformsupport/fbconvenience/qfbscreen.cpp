@@ -138,15 +138,16 @@ void QFbScreen::lower(QFbWindow *window)
 
 QWindow *QFbScreen::topWindow() const
 {
-    foreach (QFbWindow *fbw, mWindowStack)
+    for (QFbWindow *fbw : mWindowStack) {
         if (fbw->window()->type() == Qt::Window || fbw->window()->type() == Qt::Dialog)
             return fbw->window();
+    }
     return 0;
 }
 
 QWindow *QFbScreen::topLevelAt(const QPoint & p) const
 {
-    foreach (QFbWindow *fbw, mWindowStack) {
+    for (QFbWindow *fbw : mWindowStack) {
         if (fbw->geometry().contains(p, false) && fbw->window()->isVisible())
             return fbw->window();
     }

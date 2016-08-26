@@ -90,10 +90,9 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse | QDeviceDiscovery::Device_Touchpad, this);
         if (m_deviceDiscovery) {
             // scan and add already connected keyboards
-            QStringList devices = m_deviceDiscovery->scanConnectedDevices();
-            foreach (const QString &device, devices) {
+            const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            for (const QString &device : devices)
                 addMouse(device);
-            }
 
             connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addMouse(QString)));
             connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeMouse(QString)));

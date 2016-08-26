@@ -84,10 +84,9 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Keyboard, this);
         if (m_deviceDiscovery) {
             // scan and add already connected keyboards
-            QStringList devices = m_deviceDiscovery->scanConnectedDevices();
-            foreach (const QString &device, devices) {
+            const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            for (const QString &device : devices)
                 addKeyboard(device);
-            }
 
             connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addKeyboard(QString)));
             connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeKeyboard(QString)));

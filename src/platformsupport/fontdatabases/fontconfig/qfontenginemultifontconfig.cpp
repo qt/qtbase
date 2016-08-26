@@ -50,7 +50,7 @@ QFontEngineMultiFontConfig::QFontEngineMultiFontConfig(QFontEngine *fe, int scri
 
 QFontEngineMultiFontConfig::~QFontEngineMultiFontConfig()
 {
-    Q_FOREACH (FcPattern *pattern, cachedMatchPatterns) {
+    for (FcPattern *pattern : qAsConst(cachedMatchPatterns)) {
         if (pattern)
             FcPatternDestroy(pattern);
     }

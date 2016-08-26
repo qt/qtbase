@@ -77,7 +77,8 @@ void QBasicFontDatabase::populateFontDatabase()
                 << QLatin1String("*.pfb")
                 << QLatin1String("*.otf");
 
-    foreach (const QFileInfo &fi, dir.entryInfoList(nameFilters, QDir::Files)) {
+    const auto fis = dir.entryInfoList(nameFilters, QDir::Files);
+    for (const QFileInfo &fi : fis) {
         const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
         QBasicFontDatabase::addTTFile(QByteArray(), file);
     }

@@ -183,7 +183,7 @@ QCoreTextFontDatabase::QCoreTextFontDatabase(bool useFreeType)
 
 QCoreTextFontDatabase::~QCoreTextFontDatabase()
 {
-    foreach (CTFontDescriptorRef ref, m_systemFontDescriptors)
+    for (CTFontDescriptorRef ref : qAsConst(m_systemFontDescriptors))
         CFRelease(ref);
 }
 
@@ -877,7 +877,7 @@ void QCoreTextFontDatabase::removeApplicationFonts()
     if (m_applicationFonts.isEmpty())
         return;
 
-    foreach (const QVariant &font, m_applicationFonts) {
+    for (const QVariant &font : qAsConst(m_applicationFonts)) {
         CFErrorRef error;
         if (font.canConvert(qMetaTypeId<QCFType<CGFontRef> >())) {
             CTFontManagerUnregisterGraphicsFont(font.value<QCFType<CGFontRef> >(), &error);
