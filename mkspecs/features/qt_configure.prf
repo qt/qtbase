@@ -1363,8 +1363,7 @@ defineTest(qtConfOutputVar) {
 defineTest(qtConfOutputVarHelper) {
     negative = $$eval($${2}.negative)
     isEmpty(negative): negative = false
-    !$${3}:!$$negative: return()
-    $${3}:$$negative: return()
+    equals(3, $$negative): return()
 
     output = $$qtConfOutputSelectProFile($${2})
     name = $$eval($${2}.name)
@@ -1394,6 +1393,7 @@ defineTest(qtConfOutputConfigVar) {
     var = $$4
     negative = $$eval($${1}.negative)
     isEmpty(negative): negative = false
+    equals(2, $$negative): return()
 
     val = $$eval($${1}.name)
     isEmpty(val) {
@@ -1401,11 +1401,7 @@ defineTest(qtConfOutputConfigVar) {
         $$negative: val = no-$$val
     }
 
-    $${2} {
-        !$$negative: qtConfOutputVar(append, $$pro, $$var, $$val)
-    } else {
-        $$negative: qtConfOutputVar(append, $$pro, $$var, $$val)
-    }
+    qtConfOutputVar(append, $$pro, $$var, $$val)
 }
 
 defineTest(qtConfOutput_publicQtConfig) {
@@ -1436,12 +1432,9 @@ defineTest(qtConfOutput_define) {
 
     negative = $$eval($${1}.negative)
     isEmpty(negative): negative = false
+    equals(2, $$negative): return()
 
-    $${2} {
-        !$$negative: qtConfOutputSetDefine($$output, $$define, $$value)
-    } else {
-        $$negative: qtConfOutputSetDefine($$output, $$define, $$value)
-    }
+    qtConfOutputSetDefine($$output, $$define, $$value)
 }
 
 defineTest(qtConfOutput_feature) {
