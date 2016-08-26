@@ -55,6 +55,8 @@
 #include "QtCore/qurl.h"
 #include "QtCore/qstring.h"
 
+QT_REQUIRE_CONFIG(topleveldomain);
+
 QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain);

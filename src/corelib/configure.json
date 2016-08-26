@@ -576,6 +576,12 @@
             "purpose": "Provides support for command line parsing.",
             "section": "Utilities",
             "output": [ "publicFeature" ]
+        },
+        "topleveldomain": {
+            "label": "QUrl::topLevelDomain()",
+            "description": "Provides support for extracting the top level domain from URLs.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
         }
     },
 

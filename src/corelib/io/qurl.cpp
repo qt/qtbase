@@ -3117,6 +3117,7 @@ bool QUrl::hasFragment() const
     return d->hasFragment();
 }
 
+#if QT_CONFIG(topleveldomain)
 /*!
     \since 4.8
 
@@ -3151,6 +3152,7 @@ QString QUrl::topLevelDomain(ComponentFormattingOptions options) const
     }
     return tld;
 }
+#endif
 
 /*!
     Returns the result of the merge of this URL with \a relative. This
