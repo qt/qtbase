@@ -569,7 +569,6 @@ defineTest(qtConfExportLibrary) {
         qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_MINOR, $$member(version, 1))
         qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_PATCH, $$member(version, 2))
     }
-    export(config.output.$${output})
 }
 
 defineTest(qtConfHandleLibrary) {
