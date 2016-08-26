@@ -11,6 +11,7 @@
         "src/network",
         "src/sql",
         "src/gui",
+        "src/xml",
         "src/widgets",
         "src/printsupport"
     ],
@@ -933,6 +934,8 @@
         },
         "concurrent": {
             "label": "Qt Concurrent",
+            "purpose": "Provides a high-level multi-threading API.",
+            "section": "Kernel",
             "output": [ "publicFeature", "feature" ]
         },
         "dbus": {
@@ -1032,10 +1035,6 @@
             "autoDetect": false,
             "condition": "tests.wmf",
             "output": [ "publicQtConfig" ]
-        },
-        "extra_features": {
-            "comment": "### remove, once qfeatures.txt is ported to the new system",
-            "output": [ "extraFeatures" ]
         }
     },
 

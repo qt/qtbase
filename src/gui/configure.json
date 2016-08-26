@@ -668,7 +668,9 @@
         },
         "sessionmanager": {
             "label": "Session Management",
-            "output": [ "feature" ]
+            "purpose": "Provides an interface to the windowing system's session management.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
         },
         "tslib": {
             "label": "tslib",
@@ -756,6 +758,194 @@
             "label": "Xrender",
             "condition": "libs.xrender",
             "output": [ "privateFeature", "feature" ]
+        },
+        "texthtmlparser": {
+            "label": "HtmlParser",
+            "purpose": "Provides a parser for HTML.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "textodfwriter": {
+            "label": "OdfWriter",
+            "purpose": "Provides an ODF writer.",
+            "section": "Kernel",
+            "condition": "features.xmlstreamwriter",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "cssparser": {
+            "label": "CssParser",
+            "purpose": "Provides a parser for Cascading Style Sheets.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "draganddrop": {
+            "label": "Drag and Drop",
+            "purpose": "Supports the drag and drop mechansim.",
+            "section": "Kernel",
+            "condition": "features.imageformat_xpm",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "shortcut": {
+            "label": "QShortcut",
+            "purpose": "Provides keyboard accelerators and shortcuts.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "action": {
+            "label": "QAction",
+            "purpose": "Provides widget actions.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "cursor": {
+            "label": "QCursor",
+            "purpose": "Provides mouse cursors.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "clipboard": {
+            "label": "QClipboard",
+            "purpose": "Provides cut and paste operations.",
+            "section": "Kernel",
+            "condition": "!config.integrity && !config.qnx",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "wheelevent": {
+            "label": "QWheelEvent",
+            "purpose": "Supports wheel events.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "tabletevent": {
+            "label": "QTabletEvent",
+            "purpose": "Supports tablet events.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "im": {
+            "label": "QInputContext",
+            "purpose": "Provides complex input methods.",
+            "section": "Kernel",
+            "condition": "features.library",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "validator": {
+            "label": "QValidator",
+            "purpose": "Supports validation of input text.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "standarditemmodel": {
+            "label": "QStandardItemModel",
+            "purpose": "Provides a generic model for storing custom data.",
+            "section": "ItemViews",
+            "condition": "features.itemmodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformatplugin": {
+            "label": "QImageIOPlugin",
+            "purpose": "Provides a base for writing a image format plugins.",
+            "section": "Images",
+            "condition": "features.library",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "movie": {
+            "label": "QMovie",
+            "purpose": "Supports animated images.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_bmp": {
+            "label": "BMP Image Format",
+            "purpose": "Supports Microsoft's Bitmap image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_ppm": {
+            "label": "PPM Image Format",
+            "purpose": "Supports the Portable Pixmap image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_xbm": {
+            "label": "XBM Image Format",
+            "purpose": "Supports the X11 Bitmap image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_xpm": {
+            "label": "XPM Image Format",
+            "purpose": "Supports the X11 Pixmap image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_png": {
+            "label": "PNG Image Format",
+            "purpose": "Supports the Portable Network Graphics image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_jpeg": {
+            "label": "JPEG Image Format",
+            "purpose": "Supports the Joint Photographic Experts Group image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "image_heuristic_mask": {
+            "label": "QImage::createHeuristicMask()",
+            "purpose": "Supports creating a 1-bpp heuristic mask for images.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "image_text": {
+            "label": "Image Text",
+            "purpose": "Supports image file text strings.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "picture": {
+            "label": "QPicture",
+            "purpose": "Supports recording and replaying QPainter commands.",
+            "section": "Painting",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "colornames": {
+            "label": "Color Names",
+            "purpose": "Supports color names such as \"red\", used by QColor and by some HTML documents.",
+            "section": "Painting",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "pdf": {
+            "label": "QPdf",
+            "purpose": "Provides a PDF backend for QPainter.",
+            "section": "Painting",
+            "condition": "features.temporaryfile",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "freetype": {
+            "label": "Freetype Font Engine",
+            "purpose": "Supports the FreeType 2 font engine (and its supported font formats).",
+            "section": "Fonts",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "desktopservices": {
+            "label": "QDesktopServices",
+            "purpose": "Provides methods for accessing common desktop services.",
+            "section": "Utilities",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "systemtrayicon": {
+            "label": "QSystemTrayIcon",
+            "purpose": "Provides an icon for an application in the system tray.",
+            "section": "Utilities",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "accessibility": {
+            "label": "Accessibility",
+            "purpose": "Provides accessibility support.",
+            "section": "Utilities",
+            "condition": "features.properties",
+            "output": [ "publicFeature", "feature" ]
         }
     },
 

@@ -285,8 +285,20 @@ defineTest(qtConfParseCommandLine) {
         }
         # handle builtin [-no]-feature-xxx
         isEmpty(type):contains(opt, "feature-(.*)") {
-            # simply skip for now
-            next()
+            opt ~= s,^feature-,,
+            found = false
+            for (cc, allConfigs) {
+                contains($${cc}.features._KEYS_, $$opt) {
+                    found = true
+                    break()
+                }
+            }
+            !$$found {
+                qtConfAddError("Enabling/Disabling unknown feature '$$opt'.")
+                return()
+            }
+            # this is a boolean enabling/disabling the corresponding feature
+            type = boolean
         }
 
         isEmpty(type) {

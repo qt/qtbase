@@ -19,8 +19,7 @@ qtHaveModule(widgets) {
                 multicastreceiver \
                 multicastsender
 
-    load(qfeatures)
-    !contains(QT_DISABLED_FEATURES, bearermanagement) {
+    qtConfig(bearermanagement) {
         # no QProcess
         !vxworks:!qnx:!winrt:!integrity:!uikit: SUBDIRS += network-chat
 

@@ -168,7 +168,7 @@ qtConfig(icu) {
     SOURCES += tools/qcollator_posix.cpp
 }
 
-!contains(QT_DISABLED_FEATURES, regularexpression) {
+qtConfig(regularexpression) {
     include($$PWD/../../3rdparty/pcre_dependency.pri)
 
     HEADERS += tools/qregularexpression.h

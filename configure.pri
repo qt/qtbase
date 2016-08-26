@@ -379,43 +379,6 @@ defineTest(qtConfOutput_compilerVersion) {
     export($${currentConfig}.output.publicPro)
 }
 
-# should go away when qfeatures.txt is ported
-defineTest(qtConfOutput_extraFeatures) {
-    isEmpty(config.input.extra_features): return()
-
-    # write to qconfig.pri
-    $${currentConfig}.output.publicPro += "$${LITERAL_HASH}ifndef QT_BOOTSTRAPPED"
-    for (f, config.input.extra_features) {
-        feature = $$replace(f, "^no-", "")
-        FEATURE = $$upper($$replace(feature, -, _))
-        contains(f, "^no-.*") {
-            $${currentConfig}.output.publicPro += \
-                "$${LITERAL_HASH}ifndef QT_NO_$$FEATURE" \
-                "$${LITERAL_HASH}define QT_NO_$$FEATURE" \
-                "$${LITERAL_HASH}endif"
-        } else {
-            $${currentConfig}.output.publicPro += \
-                "$${LITERAL_HASH}if defined(QT_$$FEATURE) && defined(QT_NO_$$FEATURE)" \
-                "$${LITERAL_HASH}undef QT_$$FEATURE" \
-                "$${LITERAL_HASH}elif !defined(QT_$$FEATURE) && !defined(QT_NO_$$FEATURE)" \
-                "$${LITERAL_HASH}define QT_$$FEATURE" \
-                "$${LITERAL_HASH}endif"
-        }
-    }
-    $${currentConfig}.output.publicPro += "$${LITERAL_HASH}endif"
-    export($${currentConfig}.output.publicPro)
-
-    # write to qmodule.pri
-    disabled_features =
-    for (f, config.input.extra_features) {
-        feature = $$replace(f, "^no-", "")
-        FEATURE = $$upper($$replace(feature, -, _))
-        contains(f, "^no-.*"): disabled_features += $$FEATURE
-    }
-    !isEmpty(disabled_features): qtConfOutputVar(assign, "privatePro", QT_NO_DEFINES, $$disabled_features)
-}
-
-
 defineTest(qtConfOutput_compilerFlags) {
     # this output also exports the variables locally, so that subsequent compiler tests can use them
 

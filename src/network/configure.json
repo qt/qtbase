@@ -176,6 +176,64 @@
         "system-proxies": {
             "label": "Use system proxies",
             "output": [ "privateFeature" ]
+        },
+        "ftp": {
+            "label": "FTP",
+            "purpose": "Provides support for the File Transfer Protocol in QNetworkAccessManager.",
+            "section": "Networking",
+            "condition": "features.textdate",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "http": {
+            "label": "HTTP",
+            "purpose": "Provides support for the Hypertext Transfer Protocol in QNetworkAccessManager.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "udpsocket": {
+            "label": "QUdpSocket",
+            "purpose": "Provides access to UDP sockets.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "networkproxy": {
+            "label": "QNetworkProxy",
+            "purpose": "Provides network proxy support.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "socks5": {
+            "label": "SOCKS5",
+            "purpose": "Provides SOCKS5 support in QNetworkProxy.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "networkinterface": {
+            "label": "QNetworkInterface",
+            "purpose": "Supports enumerating a host's IP addresses and network interfaces.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "networkdiskcache": {
+            "label": "QNetworkDiskCache",
+            "purpose": "Provides a disk cache for network resources.",
+            "section": "Networking",
+            "condition": "features.temporaryfile",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "bearermanagement": {
+            "label": "Bearer management",
+            "purpose": "Provides bearer management for the network stack.",
+            "section": "Networking",
+            "condition": "features.library && features.networkinterface && features.properties",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "localserver": {
+            "label": "QLocalServer",
+            "purpose": "Provides a local socket based server.",
+            "section": "Networking",
+            "condition": "features.temporaryfile",
+            "output": [ "publicFeature", "feature" ]
         }
     },
 

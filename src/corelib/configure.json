@@ -244,6 +244,8 @@
         },
         "iconv": {
             "label": "iconv",
+            "purpose": "Provides internationalization on Unix.",
+            "section": "Internationalization",
             "condition": "features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv",
             "output": [ "privateFeature", "feature" ]
         },
@@ -302,6 +304,8 @@
         },
         "mimetype": {
             "label": "Mimetype handling",
+            "purpose": "Provides MIME type handling.",
+            "section": "Utilities",
             "output": [ "publicFeature", "feature" ]
         },
         "system-pcre": {
@@ -380,6 +384,179 @@
                 "publicQtConfig",
                 { "type": "define", "name": "QT_THREADSAFE_CLOEXEC", "value": 1 }
             ]
+        },
+        "properties": {
+            "label": "Properties",
+            "purpose": "Supports scripting Qt-based applications.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "regularexpression": {
+            "label": "QRegularExpression",
+            "purpose": "Provides an API to Perl-compatible regular expressions.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "sharedmemory": {
+            "label": "QSharedMemory",
+            "purpose": "Provides access to a shared memory segment.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "systemsemaphore": {
+            "label": "QSystemSemaphore",
+            "purpose": "Provides a general counting system semaphore.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "xmlstream": {
+            "label": "XML Streaming APIs",
+            "purpose": "Provides a simple streaming API for XML.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "xmlstreamreader": {
+            "label": "QXmlStreamReader",
+            "purpose": "Provides a well-formed XML parser with a simple streaming API.",
+            "section": "Kernel",
+            "condition": "features.xmlstream",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "xmlstreamwriter": {
+            "label": "QXmlStreamWriter",
+            "purpose": "Provides a XML writer with a simple streaming API.",
+            "section": "Kernel",
+            "condition": "features.xmlstream",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "textdate": {
+            "label": "Text Date",
+            "purpose": "Supports month and day names in dates.",
+            "section": "Data structures",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "datestring": {
+            "label": "QDate/QTime/QDateTime",
+            "purpose": "Provides convertion between dates and strings.",
+            "section": "Data structures",
+            "condition": "features.textdate",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "process": {
+            "label": "QProcess",
+            "purpose": "Supports external process invocation.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "temporaryfile": {
+            "label": "QTemporaryFile",
+            "purpose": "Provides an I/O device that operates on temporary files.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "library": {
+            "label": "QLibrary",
+            "purpose": "Provides a wrapper for dynamically loaded libraries.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "settings": {
+            "label": "QSettings",
+            "purpose": "Provides persistent application settings.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "filesystemwatcher": {
+            "label": "QFileSystemWatcher",
+            "purpose": "Provides an interface for monitoring files and directories for modifications.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "filesystemiterator": {
+            "label": "QFileSystemIterator",
+            "purpose": "Provides fast file system iteration.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "itemmodel": {
+            "label": "Qt Item Model",
+            "purpose": "Provides the item model for item views",
+            "section": "ItemViews",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "proxymodel": {
+            "label": "QAbstractProxyModel",
+            "purpose": "Supports processing of data passed between another model and a view.",
+            "section": "ItemViews",
+            "condition": "features.itemmodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "sortfilterproxymodel": {
+            "label": "QSortFilterProxyModel",
+            "purpose": "Supports sorting and filtering of data passed between another model and a view.",
+            "section": "ItemViews",
+            "condition": "features.proxymodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "identityproxymodel": {
+            "label": "QIdentityProxyModel",
+            "purpose": "Supports proxying a source model unmodified.",
+            "section": "ItemViews",
+            "condition": "features.proxymodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "stringlistmodel": {
+            "label": "QStringListModel",
+            "purpose": "Provides a model that supplies strings to views.",
+            "section": "ItemViews",
+            "condition": "features.itemmodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "translation": {
+            "label": "Translation",
+            "purpose": "Supports translations using QObject::tr().",
+            "section": "Internationalization",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "textcodec": {
+            "label": "QTextCodec",
+            "purpose": "Supports conversions between text encodings.",
+            "section": "Internationalization",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "codecs": {
+            "label": "Codecs",
+            "purpose": "Supports non-unicode text conversions.",
+            "section": "Internationalization",
+            "condition": "features.textcodec",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "big_codecs": {
+            "label": "Big Codecs",
+            "purpose": "Supports big codecs, e.g. CJK.",
+            "section": "Internationalization",
+            "condition": "features.textcodec",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "animation": {
+            "label": "Animation",
+            "purpose": "Provides a framework for animations.",
+            "section": "Utilities",
+            "condition": "features.properties",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "statemachine": {
+            "label": "State machine",
+            "purpose": "Provides hierarchical finite state machines.",
+            "section": "Utilities",
+            "condition": "features.properties",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "gestures": {
+            "label": "Gesture",
+            "purpose": "Provides a framework for gestures.",
+            "section": "Utilities",
+            "output": [ "publicFeature", "feature" ]
         }
     },
 

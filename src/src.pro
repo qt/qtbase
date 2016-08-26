@@ -134,7 +134,7 @@ src_android.subdir = $$PWD/android
     }
 }
 SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc
-!contains(QT_DISABLED_FEATURES, regularexpression):pcre {
+qtConfig(regularexpression):pcre {
     SUBDIRS += src_3rdparty_pcre
     src_corelib.depends += src_3rdparty_pcre
 }

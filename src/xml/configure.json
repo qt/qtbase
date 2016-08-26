@@ -1,0 +1,16 @@
+{
+    "module": "xml",
+    "depends": [
+        "core"
+    ],
+    "testDir": "../../config.tests",
+
+    "features": {
+        "dom": {
+            "label": "DOM",
+            "purpose": "Supports the Document Object Model.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        }
+    }
+}

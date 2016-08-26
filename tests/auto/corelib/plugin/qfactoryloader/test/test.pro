@@ -19,7 +19,6 @@ win32 {
 
 mac: CONFIG -= app_bundle
 
-load(qfeatures)
-contains(QT_DISABLED_FEATURES, library) {
+!qtConfig(library) {
     LIBS += -L ../bin/ -lplugin1 -lplugin2
 }
