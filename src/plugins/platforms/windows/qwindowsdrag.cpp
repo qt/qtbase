@@ -190,6 +190,20 @@ static inline Qt::KeyboardModifiers toQtKeyboardModifiers(DWORD keyState)
     return modifiers;
 }
 
+static inline Qt::MouseButtons toQtMouseButtons(DWORD keyState)
+{
+    Qt::MouseButtons buttons = Qt::NoButton;
+
+    if (keyState & MK_LBUTTON)
+        buttons |= Qt::LeftButton;
+    if (keyState & MK_RBUTTON)
+        buttons |= Qt::RightButton;
+    if (keyState & MK_MBUTTON)
+        buttons |= Qt::MidButton;
+
+    return buttons;
+}
+
 /*!
     \class QWindowsOleDropSource
     \brief Implementation of IDropSource
@@ -405,16 +419,7 @@ QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
             break;
         }
 
-    // grfKeyState is broken on CE & some Windows XP versions,
-    // therefore we need to check the state manually
-    if ((GetAsyncKeyState(VK_LBUTTON) == 0)
-        && (GetAsyncKeyState(VK_MBUTTON) == 0)
-        && (GetAsyncKeyState(VK_RBUTTON) == 0)) {
-        hr = ResultFromScode(DRAGDROP_S_DROP);
-        break;
-    }
-
-    const Qt::MouseButtons buttons =  QWindowsMouseHandler::keyStateToMouseButtons(grfKeyState);
+    const Qt::MouseButtons buttons =  toQtMouseButtons(grfKeyState);
     if (m_currentButtons == Qt::NoButton) {
         m_currentButtons = buttons;
     } else {
@@ -538,7 +543,7 @@ void QWindowsOleDropTarget::handleDrag(QWindow *window, DWORD grfKeyState,
     QWindowsDrag *windowsDrag = QWindowsDrag::instance();
     const Qt::DropActions actions = translateToQDragDropActions(*pdwEffect);
     QGuiApplicationPrivate::modifier_buttons = toQtKeyboardModifiers(grfKeyState);
-    QGuiApplicationPrivate::mouse_buttons = QWindowsMouseHandler::keyStateToMouseButtons(grfKeyState);
+    QGuiApplicationPrivate::mouse_buttons = toQtMouseButtons(grfKeyState);
 
     const QPlatformDragQtResponse response =
           QWindowSystemInterface::handleDrag(window, windowsDrag->dropData(), m_lastPoint, actions);
