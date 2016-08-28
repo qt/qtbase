@@ -341,6 +341,7 @@ void tst_QStringList::join() const
     QFETCH(QString, expectedResult);
 
     QCOMPARE(input.join(separator), expectedResult);
+    QCOMPARE(input.join(QLatin1String(separator.toLatin1())), expectedResult);
 }
 
 void tst_QStringList::join_data() const

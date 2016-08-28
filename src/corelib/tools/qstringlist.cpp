@@ -447,6 +447,17 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularEx
 #endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
 
+static int accumulatedSize(const QStringList &list, int seplen)
+{
+    int result = 0;
+    if (!list.isEmpty()) {
+        for (const auto &e : list)
+            result += e.size() + seplen;
+        result -= seplen;
+    }
+    return result;
+}
+
 /*!
     \fn QString QStringList::join(const QString &separator) const
 
@@ -464,14 +475,8 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularEx
 */
 QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, int seplen)
 {
-    int totalLength = 0;
+    const int totalLength = accumulatedSize(*that, seplen);
     const int size = that->size();
-
-    for (int i = 0; i < size; ++i)
-        totalLength += that->at(i).size();
-
-    if(size > 0)
-        totalLength += seplen * (size - 1);
 
     QString res;
     if (totalLength == 0)
@@ -483,6 +488,27 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, i
         res += that->at(i);
     }
     return res;
+}
+
+/*!
+    \fn QString QStringList::join(QLatin1String separator) const
+    \since 5.8
+    \overload join()
+*/
+QString QtPrivate::QStringList_join(const QStringList &list, QLatin1String sep)
+{
+    QString result;
+    if (!list.isEmpty()) {
+        result.reserve(accumulatedSize(list, sep.size()));
+        const auto end = list.end();
+        auto it = list.begin();
+        result += *it;
+        while (++it != end) {
+            result += sep;
+            result += *it;
+        }
+    }
+    return result;
 }
 
 /*!
