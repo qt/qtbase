@@ -96,10 +96,10 @@ void Server::sendFortune()
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_4_0);
-    out << (quint16)0;
+    out << (quint32)0;
     out << fortunes.at(qrand() % fortunes.size());
     out.device()->seek(0);
-    out << (quint16)(block.size() - sizeof(quint16));
+    out << (quint32)(block.size() - sizeof(quint32));
 
     QLocalSocket *clientConnection = server->nextPendingConnection();
     connect(clientConnection, SIGNAL(disconnected()),

@@ -100,12 +100,13 @@ void Client::readFortune()
     in.setVersion(QDataStream::Qt_4_0);
 
     if (blockSize == 0) {
-        if (socket->bytesAvailable() < (int)sizeof(quint16))
+        // Relies on the fact that QDataStream format streams a quint32 into sizeof(quint32) bytes
+        if (socket->bytesAvailable() < (int)sizeof(quint32))
             return;
         in >> blockSize;
     }
 
-    if (in.atEnd())
+    if (socket->bytesAvailable() < blockSize || in.atEnd())
         return;
 
     QString nextFortune;

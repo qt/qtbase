@@ -76,7 +76,7 @@ private:
 
     QLocalSocket *socket;
     QString currentFortune;
-    quint16 blockSize;
+    quint32 blockSize;
 };
 
 #endif
