@@ -90,7 +90,7 @@ QAbstractNativeEventFilter::~QAbstractNativeEventFilter()
     In both cases, the \a message can be casted to a MSG pointer.
     The \a result pointer is only used on Windows, and corresponds to the LRESULT pointer.
 
-    On Mac, \a eventType is set to "mac_generic_NSEvent", and the \a message can be casted to an EventRef.
+    On macOS, \a eventType is set to "mac_generic_NSEvent", and the \a message can be casted to an NSEvent pointer.
 
     On Blackberry (not plain QNX) \a eventType is set to "bps_event_t", and the \a message can be casted
     to a bps_event_t pointer.
@@ -99,8 +99,19 @@ QAbstractNativeEventFilter::~QAbstractNativeEventFilter()
     the \a message out, i.e. stop it being handled further, return
     true; otherwise return false.
 
-    Example:
+    \b {Linux example}
     \snippet code/src_corelib_kernel_qabstractnativeeventfilter.cpp 0
+
+    \b {macOS example}
+
+    mycocoaeventfilter.h:
+    \snippet code/src_corelib_kernel_qabstractnativeeventfilter.h 0
+
+    mycocoaeventfilter.mm:
+    \snippet code/src_corelib_kernel_qabstractnativeeventfilter.mm 0
+
+    myapp.pro:
+    \snippet code/src_corelib_kernel_qabstractnativeeventfilter.pro 0
 */
 
 QT_END_NAMESPACE
