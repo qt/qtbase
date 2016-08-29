@@ -3,6 +3,8 @@ QT += core-private gui-private platformsupport-private xcb_qpa_lib-private
 INCLUDEPATH += $$PWD
 INCLUDEPATH += $$PWD/../
 
+load(qt_build_paths)
+
 # needed by Xcursor ...
 contains(QT_CONFIG, xcb-xlib) {
     DEFINES += XCB_USE_XLIB
