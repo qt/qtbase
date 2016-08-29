@@ -284,7 +284,7 @@ void QSystemTrayIconPrivate::install_sys()
 QRect QSystemTrayIconPrivate::geometry_sys() const
 {
     if (qpa_sys)
-        return geometry_sys_qpa();
+        return qpa_sys->geometry();
     if (!sys)
         return QRect();
     return sys->globalGeometry();
@@ -307,7 +307,7 @@ void QSystemTrayIconPrivate::remove_sys()
 void QSystemTrayIconPrivate::updateIcon_sys()
 {
     if (qpa_sys) {
-        updateIcon_sys_qpa();
+        qpa_sys->updateIcon(icon);
         return;
     }
     if (sys)
@@ -316,14 +316,16 @@ void QSystemTrayIconPrivate::updateIcon_sys()
 
 void QSystemTrayIconPrivate::updateMenu_sys()
 {
-    if (qpa_sys)
-        updateMenu_sys_qpa();
+    if (qpa_sys && menu) {
+        addPlatformMenu(menu);
+        qpa_sys->updateMenu(menu->platformMenu());
+    }
 }
 
 void QSystemTrayIconPrivate::updateToolTip_sys()
 {
     if (qpa_sys) {
-        updateToolTip_sys_qpa();
+        qpa_sys->updateToolTip(toolTip);
         return;
     }
     if (!sys)
@@ -360,7 +362,8 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString
                                    const QIcon &icon, QSystemTrayIcon::MessageIcon msgIcon, int msecs)
 {
     if (qpa_sys) {
-        showMessage_sys_qpa(title, message, icon, msgIcon, msecs);
+        qpa_sys->showMessage(title, message, icon,
+                         static_cast<QPlatformSystemTrayIcon::MessageIcon>(msgIcon), msecs);
         return;
     }
     if (!sys)

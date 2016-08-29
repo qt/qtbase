@@ -102,12 +102,7 @@ public:
 private:
     void install_sys_qpa();
     void remove_sys_qpa();
-    void updateIcon_sys_qpa();
-    void updateToolTip_sys_qpa();
-    void updateMenu_sys_qpa();
-    QRect geometry_sys_qpa() const;
-    void showMessage_sys_qpa(const QString &title, const QString &msg, const QIcon &icon,
-                         QSystemTrayIcon::MessageIcon msgIcon, int msecs);
+
     void addPlatformMenu(QMenu *menu) const;
 };
 

@@ -699,39 +699,6 @@ void QSystemTrayIconPrivate::remove_sys_qpa()
     qpa_sys->cleanup();
 }
 
-QRect QSystemTrayIconPrivate::geometry_sys_qpa() const
-{
-    return qpa_sys->geometry();
-}
-
-void QSystemTrayIconPrivate::updateIcon_sys_qpa()
-{
-    qpa_sys->updateIcon(icon);
-}
-
-void QSystemTrayIconPrivate::updateMenu_sys_qpa()
-{
-    if (menu) {
-        addPlatformMenu(menu);
-        qpa_sys->updateMenu(menu->platformMenu());
-    }
-}
-
-void QSystemTrayIconPrivate::updateToolTip_sys_qpa()
-{
-    qpa_sys->updateToolTip(toolTip);
-}
-
-void QSystemTrayIconPrivate::showMessage_sys_qpa(const QString &title,
-                                                 const QString &message,
-                                                 const QIcon &icon,
-                                                 QSystemTrayIcon::MessageIcon msgIcon,
-                                                 int msecs)
-{
-    qpa_sys->showMessage(title, message, icon,
-                     static_cast<QPlatformSystemTrayIcon::MessageIcon>(msgIcon), msecs);
-}
-
 void QSystemTrayIconPrivate::addPlatformMenu(QMenu *menu) const
 {
     if (menu->platformMenu())
