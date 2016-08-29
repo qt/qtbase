@@ -39,6 +39,8 @@ HEADERS = \
         qxcbxsettings.h \
         qxcbsystemtraytracker.h
 
+load(qt_build_paths)
+
 DEFINES += QT_BUILD_XCB_PLUGIN
 # needed by Xcursor ...
 qtConfig(xcb-xlib) {

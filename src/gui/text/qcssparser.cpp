@@ -60,7 +60,7 @@ using namespace QCss;
 
 struct QCssKnownValue
 {
-    const char *name;
+    const char name[28];
     quint64 id;
 };
 

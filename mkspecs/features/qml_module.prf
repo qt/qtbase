@@ -14,9 +14,12 @@ equals(TEMPLATE, app): TEMPLATE = aux
 isEmpty(TARGETPATH): error("Must set TARGETPATH (QML import name)")
 
 qmldir_file = $$_PRO_FILE_PWD_/qmldir
-fq_qml_files = $$qmldir_file
 
+fq_qml_files =
 for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
+
+fq_aux_qml_files =
+for(qmlf, AUX_QML_FILES): fq_aux_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
 
 load(qt_build_paths)
 
@@ -32,8 +35,9 @@ qml1_target {
 
 builtin_resources {
     URITARGET = $$replace(URI, "\\.", "_")
-    # Ensure the qml files are included in the resources
-    $${URITARGET}.files = $$fq_qml_files
+    # Ensure the QML files are included in the resources. In static builds,
+    # the QML engine reads also the qmldir file from the resources.
+    $${URITARGET}.files = $$qmldir_file $$fq_qml_files
     # qt-project.org/imports is the path used for locating imports inside the resources
     $${URITARGET}.prefix = /qt-project.org/imports/$$TARGETPATH
     RESOURCES += $${URITARGET}
@@ -41,8 +45,9 @@ builtin_resources {
 
 # Install rules
 qmldir.base = $$_PRO_FILE_PWD_
-!builtin_resources: qmldir.files = $$fq_qml_files
-else: qmldir.files = $$qmldir_file
+# Tools need qmldir and plugins.qmltypes always installed on the file system
+qmldir.files = $$qmldir_file $$fq_aux_qml_files
+!builtin_resources: qmldir.files += $$fq_qml_files
 qmldir.path = $$instbase/$$TARGETPATH
 INSTALLS += qmldir
 
@@ -50,8 +55,9 @@ INSTALLS += qmldir
     !prefix_build {
         COPIES += qmldir
     } else {
-        # For non-installed static builds, qmlimportscanner needs qmldir file in build dir
-        qmldir2build.files = $$qmldir_file
+        # For non-installed static builds, tools need qmldir and plugins.qmltypes
+        # files in the build dir
+        qmldir2build.files = $$qmldir_file $$fq_aux_qml_files
         qmldir2build.path = $$DESTDIR
         COPIES += qmldir2build
     }

@@ -374,9 +374,6 @@ QDataStream &operator>>(QDataStream &s, QCursor &c)
     because this size is supported on all platforms. Some platforms
     also support 16 x 16, 48 x 48, and 64 x 64 cursors.
 
-    \note On Windows CE, the cursor size is fixed. If the pixmap
-    is bigger than the system size, it will be scaled.
-
     \sa QPixmap::QPixmap(), QPixmap::setMask()
 */
 
@@ -432,9 +429,6 @@ QCursor::QCursor(const QPixmap &pixmap, int hotX, int hotY)
     underlying window system). We recommend using 32 x 32 cursors,
     because this size is supported on all platforms. Some platforms
     also support 16 x 16, 48 x 48, and 64 x 64 cursors.
-
-    \note On Windows CE, the cursor size is fixed. If the pixmap
-    is bigger than the system size, it will be scaled.
 
     \sa QBitmap::QBitmap(), QBitmap::setMask()
 */

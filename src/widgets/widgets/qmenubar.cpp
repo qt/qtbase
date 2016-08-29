@@ -662,18 +662,6 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     the application's bundle. See \l{Qt for macOS - Deployment}
     for more information.
 
-    \section1 QMenuBar on Windows CE
-
-    QMenuBar on Windows CE is a wrapper for using the system-wide menu bar,
-    similar to the Mac.  This feature is activated for Windows Mobile
-    and integrates QMenuBar with the native soft keys. The left soft
-    key can be controlled with QMenuBar::setDefaultAction() and the
-    right soft key can be used to access the menu bar.
-
-    The hovered() signal is not supported for the native menu
-    integration. Also, it is not possible to display an icon in a
-    native menu on Windows Mobile.
-
     \section1 Examples
 
     The \l{mainwindows/menus}{Menus} example shows how to use QMenuBar
@@ -1795,10 +1783,9 @@ QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
     \brief Whether or not a menubar will be used as a native menubar on platforms that support it
     \since 4.6
 
-    This property specifies whether or not the menubar should be used as a native menubar on platforms
-    that support it. The currently supported platforms are \macos and Windows CE. On these platforms
-    if this property is \c true, the menubar is used in the native menubar and is not in the window of
-    its parent, if false the menubar remains in the window. On other platforms the value of this
+    This property specifies whether or not the menubar should be used as a native menubar on \macos.
+    If this property is \c true, the menubar is used in the native menubar and is not in the window of
+    its parent, if \c false the menubar remains in the window. On other platforms the value of this
     attribute has no effect.
 
     The default is to follow whether the Qt::AA_DontUseNativeMenuBar attribute

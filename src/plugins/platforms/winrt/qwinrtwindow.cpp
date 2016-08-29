@@ -191,6 +191,8 @@ QWinRTWindow::~QWinRTWindow()
     });
     RETURN_VOID_IF_FAILED("Failed to completely destroy window resources, likely because the application is shutting down");
 
+    d->screen->removeWindow(window());
+
     if (!d->surface)
         return;
 
@@ -282,7 +284,9 @@ void QWinRTWindow::setWindowTitle(const QString &title)
 {
     Q_D(QWinRTWindow);
     d->windowTitle = title;
-    d->screen->updateWindowTitle();
+
+    if (d->screen->topWindow() == window())
+        d->screen->updateWindowTitle(title);
 }
 
 void QWinRTWindow::raise()

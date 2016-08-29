@@ -255,8 +255,6 @@ bool QFileDevice::isSequential() const
 
   If the file is not open, or there is an error, handle() returns -1.
 
-  This function is not supported on Windows CE.
-
   \sa QSocketNotifier
 */
 int QFileDevice::handle() const
@@ -681,8 +679,7 @@ bool QFileDevice::setPermissions(Permissions permissions)
     be written to disk.  Any such modifications will be lost when the
     memory is unmapped.  It is unspecified whether modifications made
     to the file made after the mapping is created will be visible through
-    the mapped memory.  This flag is not supported on Windows CE.
-    This enum value was introduced in Qt 5.4.
+    the mapped memory. This enum value was introduced in Qt 5.4.
 */
 
 /*!
@@ -699,8 +696,6 @@ bool QFileDevice::setPermissions(Permissions permissions)
     Any mapping options can be passed through \a flags.
 
     Returns a pointer to the memory or 0 if there is an error.
-
-    \note On Windows CE 5.0 the file will be closed before mapping occurs.
 
     \sa unmap()
  */

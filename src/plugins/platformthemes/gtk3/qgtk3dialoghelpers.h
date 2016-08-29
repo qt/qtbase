@@ -107,6 +107,7 @@ private Q_SLOTS:
 private:
     static void onSelectionChanged(GtkDialog *dialog, QGtk3FileDialogHelper *helper);
     static void onCurrentFolderChanged(QGtk3FileDialogHelper *helper);
+    static void onFilterChanged(QGtk3FileDialogHelper *helper);
     void applyOptions();
     void setNameFilters(const QStringList &filters);
 
@@ -136,6 +137,7 @@ private Q_SLOTS:
     void onAccepted();
 
 private:
+    static void onFontChanged(QGtk3FontDialogHelper *helper);
     void applyOptions();
 
     QScopedPointer<QGtk3Dialog> d;

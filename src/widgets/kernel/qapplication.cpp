@@ -1010,8 +1010,8 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     the WA_InputMethodEnabled attribute set, and is typically used to launch
     a virtual keyboard on devices which have very few or no keys.
 
-    \b{ The property only has an effect on platforms which use software input
-    panels, such as Windows CE.}
+    \b{ The property only has an effect on platforms that use software input
+    panels.}
 
     The default is platform dependent.
 */
@@ -3869,12 +3869,7 @@ void QApplicationPrivate::openPopup(QWidget *popup)
 /*!
     Sets the kind of focus navigation Qt should use to \a mode.
 
-    This feature is available in Qt for Embedded Linux, and Windows CE
-    only.
-
-    \note On Windows CE this feature is disabled by default for touch device
-          mkspecs. To enable keypad navigation, build Qt with
-          QT_KEYPAD_NAVIGATION defined.
+    This feature is available in Qt for Embedded Linux only.
 
     \since 4.6
 
@@ -3888,11 +3883,7 @@ void QApplication::setNavigationMode(Qt::NavigationMode mode)
 /*!
     Returns what kind of focus navigation Qt is using.
 
-    This feature is available in Qt for Embedded Linux, and Windows CE only.
-
-    \note On Windows CE this feature is disabled by default for touch device
-          mkspecs. To enable keypad navigation, build Qt with
-          QT_KEYPAD_NAVIGATION defined.
+    This feature is available in Qt for Embedded Linux only.
 
     \since 4.6
 

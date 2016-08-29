@@ -137,8 +137,8 @@ void QCocoaInputContext::updateLocale()
             m_locale = locale;
             emitLocaleChanged();
         }
-        CFRelease(langRef);
     }
+    CFRelease(source);
 }
 
 QT_END_NAMESPACE

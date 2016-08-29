@@ -1435,12 +1435,6 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     \warning To make QMenu visible on the screen, exec() or popup() should be
     used instead of show().
 
-    \section1 QMenu on Qt for Windows CE
-
-    If a menu is integrated into the native menubar on Windows Mobile we
-    do not support the signals: aboutToHide (), aboutToShow () and hovered ().
-    It is not possible to display an icon in a native menu on Windows Mobile.
-
     \section1 QMenu on \macos with Qt Build Against Cocoa
 
     QMenu can be inserted only once in a menu/menubar. Subsequent insertions will

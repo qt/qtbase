@@ -923,8 +923,6 @@ bool QFile::open(OpenMode mode)
            you cannot use this QFile with a QFileInfo.
     \endlist
 
-    \note For Windows CE you may not be able to call resize().
-
     \sa close()
 
     \b{Note for the Windows Platform}
@@ -991,9 +989,6 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
     1 (\c stdout), or 2 (\c stderr), you may not be able to seek(). In
     those cases, size() returns \c 0.  See QIODevice::isSequential()
     for more information.
-
-    \warning For Windows CE you may not be able to call seek(), and size()
-             returns \c 0.
 
     \warning Since this function opens the file without specifying the file name,
              you cannot use this QFile with a QFileInfo.

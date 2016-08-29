@@ -80,6 +80,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 int main(int argc, char *argv[])
 {
+    for (int a = 1; a < argc; ++a) {
+        if (!qstrcmp(argv[a], "-n")) {
+            qDebug("AA_DontUseNativeDialogs");
+            QCoreApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
+        }
+    }
     QApplication a(argc, argv);
     MainWindow w;
     w.move(500, 200);

@@ -171,7 +171,7 @@ QGtk3ColorDialogHelper::QGtk3ColorDialogHelper()
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
     connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
 
-    g_signal_connect_swapped(d->gtkDialog(), "color-activated", G_CALLBACK(onColorChanged), this);
+    g_signal_connect_swapped(d->gtkDialog(), "notify::rgba", G_CALLBACK(onColorChanged), this);
 }
 
 QGtk3ColorDialogHelper::~QGtk3ColorDialogHelper()
@@ -217,10 +217,7 @@ QColor QGtk3ColorDialogHelper::currentColor() const
 
 void QGtk3ColorDialogHelper::onAccepted()
 {
-    const QColor color = currentColor();
-    emit currentColorChanged(color);
     emit accept();
-    emit colorSelected(color);
 }
 
 void QGtk3ColorDialogHelper::onColorChanged(QGtk3ColorDialogHelper *dialog)
@@ -247,6 +244,7 @@ QGtk3FileDialogHelper::QGtk3FileDialogHelper()
 
     g_signal_connect(GTK_FILE_CHOOSER(d->gtkDialog()), "selection-changed", G_CALLBACK(onSelectionChanged), this);
     g_signal_connect_swapped(GTK_FILE_CHOOSER(d->gtkDialog()), "current-folder-changed", G_CALLBACK(onCurrentFolderChanged), this);
+    g_signal_connect_swapped(GTK_FILE_CHOOSER(d->gtkDialog()), "notify::filter", G_CALLBACK(onFilterChanged), this);
 }
 
 QGtk3FileDialogHelper::~QGtk3FileDialogHelper()
@@ -358,15 +356,6 @@ QString QGtk3FileDialogHelper::selectedNameFilter() const
 void QGtk3FileDialogHelper::onAccepted()
 {
     emit accept();
-
-    QString filter = selectedNameFilter();
-    if (filter.isEmpty())
-        emit filterSelected(filter);
-
-    QList<QUrl> files = selectedFiles();
-    emit filesSelected(files);
-    if (files.count() == 1)
-        emit fileSelected(files.first());
 }
 
 void QGtk3FileDialogHelper::onSelectionChanged(GtkDialog *gtkDialog, QGtk3FileDialogHelper *helper)
@@ -383,6 +372,11 @@ void QGtk3FileDialogHelper::onSelectionChanged(GtkDialog *gtkDialog, QGtk3FileDi
 void QGtk3FileDialogHelper::onCurrentFolderChanged(QGtk3FileDialogHelper *dialog)
 {
     emit dialog->directoryEntered(dialog->directory());
+}
+
+void QGtk3FileDialogHelper::onFilterChanged(QGtk3FileDialogHelper *dialog)
+{
+    emit dialog->filterSelected(dialog->selectedNameFilter());
 }
 
 static GtkFileChooserAction gtkFileChooserAction(const QSharedPointer<QFileDialogOptions> &options)
@@ -488,6 +482,8 @@ QGtk3FontDialogHelper::QGtk3FontDialogHelper()
     d.reset(new QGtk3Dialog(gtk_font_chooser_dialog_new("", 0)));
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
     connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
+
+    g_signal_connect_swapped(d->gtkDialog(), "notify::font", G_CALLBACK(onFontChanged), this);
 }
 
 QGtk3FontDialogHelper::~QGtk3FontDialogHelper()
@@ -593,10 +589,12 @@ QFont QGtk3FontDialogHelper::currentFont() const
 
 void QGtk3FontDialogHelper::onAccepted()
 {
-    const QFont font = currentFont();
-    emit currentFontChanged(font);
     emit accept();
-    emit fontSelected(font);
+}
+
+void QGtk3FontDialogHelper::onFontChanged(QGtk3FontDialogHelper *dialog)
+{
+    emit dialog->currentFontChanged(dialog->currentFont());
 }
 
 void QGtk3FontDialogHelper::applyOptions()
