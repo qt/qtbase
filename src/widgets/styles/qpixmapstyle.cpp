@@ -187,7 +187,9 @@ void QPixmapStyle::polish(QWidget *widget)
             view->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
             view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
         }
+#if QT_CONFIG(gestures)
         QScroller::grabGesture(scrollArea->viewport(), QScroller::LeftMouseButtonGesture);
+#endif
     }
 
     if (qobject_cast<QScrollBar*>(widget))
@@ -217,8 +219,10 @@ void QPixmapStyle::unpolish(QWidget *widget)
     if (qstrcmp(widget->metaObject()->className(),"QComboBoxPrivateContainer") == 0)
         widget->removeEventFilter(this);
 
+#if QT_CONFIG(gestures)
     if (QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget))
         QScroller::ungrabGesture(scrollArea->viewport());
+#endif
 
     QCommonStyle::unpolish(widget);
 }

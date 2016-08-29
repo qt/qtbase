@@ -258,7 +258,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         free_prop = true;
     }
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     static const QTextCodec* mapper = QTextCodec::codecForLocale();
     int errCode = 0;
     if (mapper) {
@@ -274,6 +274,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         mapper = QTextCodec::codecForName("latin1");
         if (!mapper || !mapper->canEncode(s))
             return Q_NULLPTR;
+#endif
         static QByteArray qcs;
         qcs = s.toLatin1();
         tp.value = (uchar*)qcs.data();
@@ -281,6 +282,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         tp.format = 8;
         tp.nitems = qcs.length();
         free_prop = false;
+#if QT_CONFIG(textcodec)
     }
 #endif
     return &tp;
