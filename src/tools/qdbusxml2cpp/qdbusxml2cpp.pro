@@ -1,4 +1,6 @@
 option(host_build)
+!force_bootstrap:!qtConfig(commandlineparser): \
+    CONFIG += force_bootstrap
 QT = core-private
 force_bootstrap: QT += bootstrap_dbus-private
 else: QT += dbus-private
