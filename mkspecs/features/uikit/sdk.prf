@@ -1,7 +1,7 @@
 
 # In case the user sets the SDK manually
 contains(QMAKE_MAC_SDK, ^$${simulator.sdk}.*) {
-    qtConfig(simulator_and_device): \
+    !isEmpty(QT_VERSION):qtConfig(simulator_and_device): \
         error("Simulator is handled automatically for simulator_and_device")
 
     CONFIG += simulator $${simulator.sdk}
