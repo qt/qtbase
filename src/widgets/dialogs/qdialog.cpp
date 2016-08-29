@@ -557,8 +557,8 @@ int QDialog::exec()
 void QDialog::done(int r)
 {
     Q_D(QDialog);
-    hide();
     setResult(r);
+    hide();
 
     d->close_helper(QWidgetPrivate::CloseNoEvent);
     d->resetModalitySetByOpen();
