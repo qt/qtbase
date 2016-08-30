@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include "qstatemachine.h"
-
-#ifndef QT_NO_STATEMACHINE
-
 #include "qstate.h"
 #include "qstate_p.h"
 #include "qstatemachine_p.h"
@@ -3235,5 +3232,3 @@ QT_END_NAMESPACE
 
 #include "qstatemachine.moc"
 #include "moc_qstatemachine.cpp"
-
-#endif //QT_NO_STATEMACHINE

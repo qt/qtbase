@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qeventtransition.h>
 
+QT_REQUIRE_CONFIG(qeventtransition);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STATEMACHINE
 
 class QKeyEventTransitionPrivate;
 class Q_WIDGETS_EXPORT QKeyEventTransition : public QEventTransition
@@ -74,8 +73,6 @@ private:
     Q_DISABLE_COPY(QKeyEventTransition)
     Q_DECLARE_PRIVATE(QKeyEventTransition)
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

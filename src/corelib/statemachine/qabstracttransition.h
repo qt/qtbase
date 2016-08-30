@@ -44,10 +44,9 @@
 
 #include <QtCore/qlist.h>
 
+QT_REQUIRE_CONFIG(statemachine);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STATEMACHINE
 
 class QEvent;
 class QAbstractState;
@@ -112,8 +111,6 @@ private:
     Q_DISABLE_COPY(QAbstractTransition)
     Q_DECLARE_PRIVATE(QAbstractTransition)
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

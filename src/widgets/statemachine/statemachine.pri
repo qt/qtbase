@@ -1,5 +1,8 @@
-SOURCES += $$PWD/qguistatemachine.cpp
-!contains(DEFINES, QT_NO_STATEMACHINE_EVENTFILTER) {
+
+qtConfig(statemachine): \
+    SOURCES += $$PWD/qguistatemachine.cpp
+
+qtConfig(qeventtransition) {
     HEADERS += \
 	   $$PWD/qkeyeventtransition.h \
 	   $$PWD/qmouseeventtransition.h \

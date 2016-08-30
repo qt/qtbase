@@ -63,6 +63,8 @@
 #include <QtCore/qvector.h>
 #include <private/qfreelist_p.h>
 
+QT_REQUIRE_CONFIG(statemachine);
+
 QT_BEGIN_NAMESPACE
 
 class QEvent;

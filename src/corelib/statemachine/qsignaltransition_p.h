@@ -53,6 +53,8 @@
 
 #include "private/qabstracttransition_p.h"
 
+QT_REQUIRE_CONFIG(statemachine);
+
 QT_BEGIN_NAMESPACE
 
 class QSignalTransition;

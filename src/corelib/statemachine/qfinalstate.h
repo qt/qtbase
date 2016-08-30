@@ -42,9 +42,9 @@
 
 #include <QtCore/qabstractstate.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(statemachine);
 
-#ifndef QT_NO_STATEMACHINE
+QT_BEGIN_NAMESPACE
 
 class QFinalStatePrivate;
 class Q_CORE_EXPORT QFinalState : public QAbstractState
@@ -67,8 +67,6 @@ private:
     Q_DISABLE_COPY(QFinalState)
     Q_DECLARE_PRIVATE(QFinalState)
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

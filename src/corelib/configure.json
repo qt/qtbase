@@ -353,6 +353,7 @@
         },
         "qeventtransition": {
             "label": "QEventTransition class",
+            "condition": "features.statemachine",
             "output": [ "publicFeature" ]
         },
         "sharedmemory": {
