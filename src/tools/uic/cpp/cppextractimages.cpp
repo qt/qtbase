@@ -33,7 +33,6 @@
 #include "utils.h"
 #include "uic.h"
 
-#include <qdatastream.h>
 #include <qtextstream.h>
 #include <qtextcodec.h>
 #include <qdir.h>
