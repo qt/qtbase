@@ -251,15 +251,19 @@ defineTest(qtConfParseCommandLine) {
         } else: contains(c, "^--(.*)") {
             opt = $$replace(c, "^--(.*)", "\\1")
             val = yes
-        } else: contains(c, "^-qt-(.*)") {
-            opt = $$replace(c, "^-qt-(.*)", "\\1")
-            val = qt
-        } else: contains(c, "^-system-(.*)") {
-            opt = $$replace(c, "^-system-(.*)", "\\1")
-            val = system
         } else: contains(c, "^-(.*)") {
             opt = $$replace(c, "^-(.*)", "\\1")
             val =
+            for (cc, allConfigs) {
+                type = $$eval($${cc}.commandline.options.$${opt})
+                !isEmpty(type): break()
+                type = $$eval($${cc}.commandline.options.$${opt}.type)
+                !isEmpty(type): break()
+            }
+            isEmpty(type):contains(opt, "(qt|system)-.*") {
+                val = $$replace(opt, "(qt|system)-(.*)", "\\1")
+                opt = $$replace(opt, "(qt|system)-(.*)", "\\2")
+            }
         } else {
             qtConfAddError("Invalid command line parameter '$$c'.")
             return()
