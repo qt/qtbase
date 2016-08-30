@@ -64,12 +64,12 @@ class Cleaner (object):
     def __init__(self, here, command):
         """Set up the details we need for later cleaning.
 
-        Takes two parameters: here is $PWD and command is how this
-        script was invoked, from which we'll work out where it is; in
-        a shadow build, the former is the build tree's location
+        Takes two parameters: here is os.getcwd() and command is how
+        this script was invoked, from which we'll work out where it
+        is; in a shadow build, the former is the build tree's location
         corresponding to this last.  Saves the directory of this
         script as self.sourceDir, so client can find tst_selftests.cpp
-        there.  Checks $PWD does look as expected in a build tree -
+        there.  Checks here does look as expected in a build tree -
         raising Fail() if not - then invokes qmake to discover Qt
         version (saved as .version for the benefit of clients) and
         prepares the sequence of (regex, replace) pairs that .clean()
@@ -90,9 +90,10 @@ class Cleaner (object):
             (r'( *<QtBuild)>[^<]+</QtBuild>', r'\1/>'), # xml, lightxml
             (r'(<property value=")[^"]+(" name="QtBuild"/>)', r'\1\2'), # xunitxml
             # Line numbers in source files:
+            (r'(ASSERT: ".*" in file .*, line) \d+', r'\1 0'), # lightxml
             (r'(Loc: \[[^[\]()]+)\(\d+\)', r'\1(0)'), # txt
             (r'(\[Loc: [^[\]()]+)\(\d+\)', r'\1(0)'), # teamcity
-            (r'(<Incident.*\bfile=.*\bline=)"\d+"', r'\1"0"'), # lightxml, xml
+            (r'(<(?:Incident|Message)\b.*\bfile=.*\bline=)"\d+"', r'\1"0"'), # lightxml, xml
             ),
                       precook = re.compile):
         """Private implementation details of __init__()."""
