@@ -1044,12 +1044,15 @@ void QWindowsNativeFileDialogBase::setDirectory(const QUrl &directory)
 
 QString QWindowsNativeFileDialogBase::directory() const
 {
+    QString result;
 #ifndef Q_OS_WINCE
     IShellItem *item = 0;
-    if (m_fileDialog && SUCCEEDED(m_fileDialog->GetFolder(&item)) && item)
-        return QWindowsNativeFileDialogBase::itemPath(item);
+    if (m_fileDialog && SUCCEEDED(m_fileDialog->GetFolder(&item)) && item) {
+        result = QWindowsNativeFileDialogBase::itemPath(item);
+        item->Release();
+    }
 #endif
-    return QString();
+    return result;
 }
 
 void QWindowsNativeFileDialogBase::doExec(HWND owner)
@@ -1514,8 +1517,10 @@ QList<QUrl> QWindowsNativeSaveFileDialog::selectedFiles() const
     QList<QUrl> result;
     IShellItem *item = 0;
     const HRESULT hr = fileDialog()->GetCurrentSelection(&item);
-    if (SUCCEEDED(hr) && item)
+    if (SUCCEEDED(hr) && item) {
         result.push_back(QUrl::fromLocalFile(QWindowsNativeSaveFileDialog::itemPath(item)));
+        item->Release();
+    }
     return result;
 }
 
