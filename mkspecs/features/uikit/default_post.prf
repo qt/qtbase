@@ -68,21 +68,10 @@ macx-xcode {
 macx-xcode {
     arch_device.name = "ARCHS[sdk=$${device.sdk}*]"
     arch_simulator.name = "ARCHS[sdk=$${simulator.sdk}*]"
-    ios {
-        arch_device.value = $$QMAKE_IOS_DEVICE_ARCHS
-        arch_simulator.value = $$QMAKE_IOS_SIMULATOR_ARCHS
-        QMAKE_XCODE_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS $$QMAKE_IOS_SIMULATOR_ARCHS
-    }
-    tvos {
-        arch_device.value = $$QMAKE_TVOS_DEVICE_ARCHS
-        arch_simulator.value = $$QMAKE_TVOS_SIMULATOR_ARCHS
-        QMAKE_XCODE_ARCHS = $$QMAKE_TVOS_DEVICE_ARCHS $$QMAKE_TVOS_SIMULATOR_ARCHS
-    }
-    watchos {
-        arch_device.value = $$QMAKE_WATCHOS_DEVICE_ARCHS
-        arch_simulator.value = $$QMAKE_WATCHOS_SIMULATOR_ARCHS
-        QMAKE_XCODE_ARCHS = $$QMAKE_WATCHOS_DEVICE_ARCHS $$QMAKE_WATCHOS_SIMULATOR_ARCHS
-    }
+
+    arch_device.value = $$QMAKE_APPLE_DEVICE_ARCHS
+    arch_simulator.value = $$QMAKE_APPLE_SIMULATOR_ARCHS
+    QMAKE_XCODE_ARCHS = $$QMAKE_APPLE_DEVICE_ARCHS $$QMAKE_APPLE_SIMULATOR_ARCHS
 
     QMAKE_MAC_XCODE_SETTINGS += arch_device arch_simulator
 
@@ -92,16 +81,8 @@ macx-xcode {
     QMAKE_MAC_XCODE_SETTINGS += only_active_arch
 } else {
     VALID_ARCHS =
-    !simulator|simulator_and_device {
-        ios: VALID_ARCHS += $$QMAKE_IOS_DEVICE_ARCHS
-        tvos: VALID_ARCHS += $$QMAKE_TVOS_DEVICE_ARCHS
-        watchos: VALID_ARCHS += $$QMAKE_WATCHOS_DEVICE_ARCHS
-    }
-    simulator {
-        ios: VALID_ARCHS += $$QMAKE_IOS_SIMULATOR_ARCHS
-        tvos: VALID_ARCHS += $$QMAKE_TVOS_SIMULATOR_ARCHS
-        watchos: VALID_ARCHS += $$QMAKE_WATCHOS_SIMULATOR_ARCHS
-    }
+    !simulator|simulator_and_device: VALID_ARCHS += $$QMAKE_APPLE_DEVICE_ARCHS
+    simulator: VALID_ARCHS += $$QMAKE_APPLE_SIMULATOR_ARCHS
 
     single_arch: VALID_ARCHS = $$first(VALID_ARCHS)
 

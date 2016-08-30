@@ -50,13 +50,12 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
 
 !equals(MAKEFILE_GENERATOR, XCODE) {
     uikit:!host_build {
-        ios: os_var = IOS
-        tvos: os_var = TVOS
-        watchos: os_var = WATCHOS
+        ios: deployment_target = $$QMAKE_IOS_DEPLOYMENT_TARGET
+        tvos: deployment_target = $$QMAKE_TVOS_DEPLOYMENT_TARGET
+        watchos: deployment_target = $$QMAKE_WATCHOS_DEPLOYMENT_TARGET
 
-        deployment_target = $$eval(QMAKE_$${os_var}_DEPLOYMENT_TARGET)
-        !simulator|simulator_and_device: device_archs = $$eval(QMAKE_$${os_var}_DEVICE_ARCHS)
-        simulator: simulator_archs = $$eval(QMAKE_$${os_var}_SIMULATOR_ARCHS)
+        !simulator|simulator_and_device: device_archs = $$QMAKE_APPLE_DEVICE_ARCHS
+        simulator: simulator_archs = $$QMAKE_APPLE_SIMULATOR_ARCHS
         archs = $$device_archs $$simulator_archs
 
         QMAKE_XARCH_CFLAGS =
