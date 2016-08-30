@@ -601,6 +601,24 @@ void tst_QWindow::isActive()
     // child has focus
     QVERIFY(window.isActive());
 
+    // test focus back to parent and then back to child (QTBUG-39362)
+    // also verify the cumulative FocusOut and FocusIn counts
+    // activate parent
+    window.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
+    QVERIFY(window.isActive());
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(child.received(QEvent::FocusOut), 1);
+    QTRY_COMPARE(window.received(QEvent::FocusIn), 2);
+
+    // activate child again
+    child.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &child);
+    QVERIFY(child.isActive());
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.received(QEvent::FocusOut), 2);
+    QTRY_COMPARE(child.received(QEvent::FocusIn), 2);
+
     Window dialog;
     dialog.setTransientParent(&window);
     dialog.setGeometry(QRect(m_availableTopLeft + QPoint(110, 100), m_testWindowSize));
@@ -625,7 +643,7 @@ void tst_QWindow::isActive()
     QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
     QCoreApplication::processEvents();
     QTRY_COMPARE(dialog.received(QEvent::FocusOut), 1);
-    QTRY_COMPARE(window.received(QEvent::FocusIn), 2);
+    QTRY_COMPARE(window.received(QEvent::FocusIn), 3);
 
     QVERIFY(window.isActive());
 
