@@ -245,17 +245,20 @@ defineTest(qtConfParseCommandLine) {
         } else: contains(c, "^--?(disable|no)-(.*)") {
             opt = $$replace(c, "^--?(disable|no)-(.*)", "\\2")
             val = no
-        } else: contains(c, "^--?qt-(.*)") {
-            opt = $$replace(c, "^--?qt-(.*)", "\\1")
+        } else: contains(c, "^--([^=]+)=(.*)") {
+            opt = $$replace(c, "^--?([^=]+)=(.*)", "\\1")
+            val = $$replace(c, "^--?([^=]+)=(.*)", "\\2")
+        } else: contains(c, "^--(.*)") {
+            opt = $$replace(c, "^--(.*)", "\\1")
+            val = yes
+        } else: contains(c, "^-qt-(.*)") {
+            opt = $$replace(c, "^-qt-(.*)", "\\1")
             val = qt
-        } else: contains(c, "^--?system-(.*)") {
-            opt = $$replace(c, "^--?system-(.*)", "\\1")
+        } else: contains(c, "^-system-(.*)") {
+            opt = $$replace(c, "^-system-(.*)", "\\1")
             val = system
-        } else: contains(c, "^--?([^-].*)=(.*)") {
-            opt = $$replace(c, "^--?([^-].*)=(.*)", "\\1")
-            val = $$replace(c, "^--?([^-].*)=(.*)", "\\2")
-        } else: contains(c, "^--?([^-].*)") {
-            opt = $$replace(c, "^--?([^-].*)", "\\1")
+        } else: contains(c, "^-(.*)") {
+            opt = $$replace(c, "^-(.*)", "\\1")
             val =
         } else {
             qtConfAddError("Invalid command line parameter '$$c'.")
