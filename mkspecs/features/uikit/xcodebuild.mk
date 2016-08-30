@@ -56,14 +56,14 @@ simulator-install: ACTION = build
 release-%: CONFIGURATION = Release
 debug-%: CONFIGURATION = Debug
 
-SPECDIR := $(dir $(lastword $(MAKEFILE_LIST)))
+MAKEFILE_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
 # Test and build (device) destinations
 ifneq ($(filter check%,$(MAKECMDGOALS)),)
   ifeq ($(DEVICES),)
     $(info Enumerating test destinations (you may override this by setting DEVICES explicitly), please wait...)
     DESTINATIONS_INCLUDE = /tmp/device_destinations.mk
-    $(shell $(SPECDIR)/../features/uikit/device_destinations.sh '$(EXPORT_DEVICE_FILTER)' $(TARGET) > $(DESTINATIONS_INCLUDE))
+    $(shell $(MAKEFILE_DIR)device_destinations.sh '$(EXPORT_DEVICE_FILTER)' $(TARGET) > $(DESTINATIONS_INCLUDE))
     include $(DESTINATIONS_INCLUDE)
   endif
 endif
@@ -72,7 +72,7 @@ endif
 %-device: DEVICES = $(HARDWARE_DEVICES)
 
 GENERIC_DEVICE_DESTINATION := $(EXPORT_GENERIC_DEVICE_DESTINATION)
-GENERIC_SIMULATOR_DESTINATION := "id=$(shell $(SPECDIR)/ios_devices.pl '$(EXPORT_DEVICE_FILTER)' "NOT unavailable" | tail -n 1)"
+GENERIC_SIMULATOR_DESTINATION := "id=$(shell $(MAKEFILE_DIR)devices.pl '$(EXPORT_DEVICE_FILTER)' "NOT unavailable" | tail -n 1)"
 
 %-simulator: DESTINATION = $(if $(DESTINATION_ID),"id=$(DESTINATION_ID)",$(GENERIC_SIMULATOR_DESTINATION))
 %-device: DESTINATION = $(if $(DESTINATION_ID),"id=$(DESTINATION_ID)",$(GENERIC_DEVICE_DESTINATION))
