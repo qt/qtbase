@@ -233,8 +233,13 @@ bool QLockFile::tryLock(int timeout)
             }
             break;
         }
-        if (timer.hasExpired())
+
+        int remainingTime = timer.remainingTime();
+        if (remainingTime == 0)
             return false;
+        else if (uint(sleepTime) > uint(remainingTime))
+            sleepTime = remainingTime;
+
         QThread::msleep(sleepTime);
         if (sleepTime < 5 * 1000)
             sleepTime *= 2;
