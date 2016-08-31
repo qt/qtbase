@@ -405,7 +405,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
 
 static const struct {
     int key;
-    const char* name;
+    const char name[25];
 } keyname[] = {
     //: This and all following "incomprehensible" strings in QShortcut context
     //: are key names. Please use the localized names appearing on actual
@@ -687,8 +687,8 @@ static const struct {
     { Qt::Key_TouchpadOn,  QT_TRANSLATE_NOOP("QShortcut", "Touchpad On") },
     { Qt::Key_TouchpadOff,  QT_TRANSLATE_NOOP("QShortcut", "Touchpad Off") },
 
-    { 0, 0 }
 };
+static Q_CONSTEXPR int numKeyNames = sizeof keyname / sizeof *keyname;
 
 /*!
     \enum QKeySequence::StandardKey
@@ -1172,7 +1172,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
         for (int tran = 0; tran < 2; ++tran) {
             if (!nativeText)
                 ++tran;
-            for (int i = 0; keyname[i].name; ++i) {
+            for (int i = 0; i < numKeyNames; ++i) {
                 QString keyName(tran == 0
                                 ? QCoreApplication::translate("QShortcut", keyname[i].name)
                                 : QString::fromLatin1(keyname[i].name));
@@ -1311,7 +1311,7 @@ QString QKeySequencePrivate::keyName(int key, QKeySequence::SequenceFormat forma
 #if defined(Q_OS_MACX)
 NonSymbol:
 #endif
-            while (keyname[i].name) {
+            while (i < numKeyNames) {
                 if (key == keyname[i].key) {
                     p = nativeText ? QCoreApplication::translate("QShortcut", keyname[i].name)
                                    : QString::fromLatin1(keyname[i].name);
@@ -1323,7 +1323,7 @@ NonSymbol:
             // fall back on the unicode representation of it...
             // Or else characters like Qt::Key_aring may not get displayed
             // (Really depends on you locale)
-            if (!keyname[i].name) {
+            if (i >= numKeyNames) {
                 if (!QChar::requiresSurrogates(key)) {
                     p = QChar(ushort(key)).toUpper();
                 } else {

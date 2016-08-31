@@ -705,6 +705,7 @@ static Q_ALWAYS_INLINE uint BYTE_MUL_RGB16_32(uint x, uint a) {
     return t;
 }
 
+// qt_div_255 is a fast rounded division by 255 using an approximation that is accurate for all positive 16-bit integers
 static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
 static Q_DECL_CONSTEXPR Q_ALWAYS_INLINE uint qt_div_65535(uint x) { return (x + (x>>16) + 0x8000U) >> 16; }
 

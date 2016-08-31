@@ -10340,14 +10340,13 @@ void QWidgetPrivate::setWindowFlags(Qt::WindowFlags flags)
         // the old type was a window and/or the new type is a window
         QPoint oldPos = q->pos();
         bool visible = q->isVisible();
+        const bool windowFlagChanged = (q->data->window_flags ^ flags) & Qt::Window;
         q->setParent(q->parentWidget(), flags);
 
         // if both types are windows or neither of them are, we restore
         // the old position
-        if (!((q->data->window_flags ^ flags) & Qt::Window)
-            && (visible || q->testAttribute(Qt::WA_Moved))) {
+        if (!windowFlagChanged && (visible || q->testAttribute(Qt::WA_Moved)))
             q->move(oldPos);
-        }
         // for backward-compatibility we change Qt::WA_QuitOnClose attribute value only when the window was recreated.
         adjustQuitOnCloseAttribute();
     } else {

@@ -108,6 +108,9 @@ bool QWinRTMessageDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModa
     Q_D(QWinRTMessageDialogHelper);
 
     QSharedPointer<QMessageDialogOptions> options = this->options();
+    if (!options.data())
+        return false;
+
     const QString informativeText = options->informativeText();
     const QString title = options->windowTitle();
     const QString text = informativeText.isEmpty() ? options->text() : (options->text() + QLatin1Char('\n') + informativeText);

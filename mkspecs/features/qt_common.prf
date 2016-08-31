@@ -44,9 +44,9 @@ contains(TEMPLATE, .*lib) {
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
 }
 
-# The remainder of this file must not apply to bootstrapped tools,
+# The remainder of this file must not apply to host tools/libraries,
 # as the host compiler's version and capabilities are not checked.
-host_build:force_bootstrap: return()
+host_build:cross_compile: return()
 
 warnings_are_errors:warning_clean {
     # If the module declares that it has does its clean-up of warnings, enable -Werror.
@@ -54,10 +54,10 @@ warnings_are_errors:warning_clean {
     # compiler.
     clang:!ios {
         # Apple clang 4.0-4.2,5.0-5.1,6.0-6.4
-        # Regular clang 3.3-3.8
+        # Regular clang 3.3-3.9
         apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
         reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
-        contains(apple_ver, "4\\.[012]|5\\.[01]|6\\.[01234]")|contains(reg_ver, "3\\.[3-8]") {
+        contains(apple_ver, "4\\.[012]|5\\.[01]|6\\.[01234]")|contains(reg_ver, "3\\.[3-9]") {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
         }
     } else:intel_icc:linux {

@@ -132,6 +132,7 @@ tst_QMimeDatabase::tst_QMimeDatabase()
 
 void tst_QMimeDatabase::initTestCase()
 {
+    QLocale::setDefault(QLocale::c());
     QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
     QStandardPaths::setTestModeEnabled(true);
     m_localMimeDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/mime";
@@ -448,6 +449,21 @@ void tst_QMimeDatabase::icons()
     QCOMPARE(pub.name(), QString::fromLatin1("application/epub+zip"));
     QCOMPARE(pub.iconName(), QString::fromLatin1("application-epub+zip"));
     QCOMPARE(pub.genericIconName(), QString::fromLatin1("x-office-document"));
+}
+
+void tst_QMimeDatabase::comment()
+{
+    struct RestoreLocale
+    {
+        ~RestoreLocale() { QLocale::setDefault(QLocale::c()); }
+    } restoreLocale;
+
+    QLocale::setDefault(QLocale("de"));
+    QMimeDatabase db;
+    QMimeType directory = db.mimeTypeForName(QStringLiteral("inode/directory"));
+    QCOMPARE(directory.comment(), QStringLiteral("Ordner"));
+    QLocale::setDefault(QLocale("fr"));
+    QCOMPARE(directory.comment(), QStringLiteral("dossier"));
 }
 
 // In here we do the tests that need some content in a temporary file.

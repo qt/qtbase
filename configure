@@ -4293,8 +4293,12 @@ compileTest()
     if [ "$CFG_SHARED" = "no" ]; then
         test_config="$QMAKE_CONFIG static"
     fi
+    TEST_CONFIG_FLAGS=
+    if [ -z "$PKG_CONFIG" ]; then
+        TEST_CONFIG_FLAGS="QT_CONFIG+=no-pkg-config"
+    fi
     echo $ECHO_N "checking for $name... $ECHO_C"
-    "$unixtests/compile.test" "$XQMAKESPEC" "$test_config" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
+    "$unixtests/compile.test" "$XQMAKESPEC" "$test_config" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS $TEST_CONFIG_FLAGS "$@"
 }
 
 compileTestWithPkgConfig()
@@ -4781,8 +4785,9 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
 		[ -z "$CFG_MYSQL_CONFIG" ] && CFG_MYSQL_CONFIG=`"$WHICH" mysql_config`
                 if [ -x "$CFG_MYSQL_CONFIG" ]; then
                     QT_CFLAGS_MYSQL=`$CFG_MYSQL_CONFIG --include 2>/dev/null | filterIncludeOptions`
-                    QT_LFLAGS_MYSQL_R=`$CFG_MYSQL_CONFIG --libs_r 2>/dev/null | filterLibraryOptions`
-                    QT_LFLAGS_MYSQL=`$CFG_MYSQL_CONFIG --libs 2>/dev/null | filterLibraryOptions`
+                    # -rdynamic should not be returned by mysql_config, but is on RHEL 6.6
+                    QT_LFLAGS_MYSQL_R=`$CFG_MYSQL_CONFIG --libs_r 2>/dev/null | filterLibraryOptions | sed "s/-rdynamic//"`
+                    QT_LFLAGS_MYSQL=`$CFG_MYSQL_CONFIG --libs 2>/dev/null | filterLibraryOptions | sed "s/-rdynamic//"`
 		    QT_MYSQL_VERSION=`$CFG_MYSQL_CONFIG --version 2>/dev/null`
                     QT_MYSQL_VERSION_MAJOR=`echo $QT_MYSQL_VERSION | cut -d . -f 1`
                 fi

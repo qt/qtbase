@@ -124,10 +124,14 @@ public:
         state(QPrinter::Idle),
         resolution(0),
         m_pageLayout(QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0, 0, 0, 0))),
+        stretch_x(1), stretch_y(1), origin_x(0), origin_y(0),
+        dpi_x(96), dpi_y(96), dpi_display(96),
         num_copies(1),
         printToFile(false),
         reinit(false),
-        embed_fonts(true)
+        complex_xform(false), has_pen(false), has_brush(false), has_custom_paper_size(false),
+        embed_fonts(true),
+        txop(0 /* QTransform::TxNone */)
     {
     }
 

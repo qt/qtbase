@@ -37,26 +37,22 @@
 #include <QOpenGLFunctions>
 #include <QPainter>
 #include <QElapsedTimer>
+#include <QCommandLineParser>
+#include <QScreen>
 
-// This application opens three windows and continuously schedules updates for
-// them.  Each of them is a separate QOpenGLWindow so there will be a separate
-// context and swapBuffers call for each.
-//
-// By default the swap interval is 1 so the effect of three blocking swapBuffers
-// on the main thread can be examined. (the result is likely to be different
-// between platforms, for example OS X is buffer queuing meaning that it can
-// block outside swap, resulting in perfect vsync for all three windows, while
-// other systems that block on swap will kill the frame rate due to blocking the
-// thread three times)
-//
-// Pass --novsync to set a swap interval of 0. This should give an unthrottled
-// refresh on all platforms for all three windows.
-//
-// Passing --vsyncone sets swap interval to 1 for the first window and 0 to the
-// others.
-//
-// Pass --extrawindows N to open N windows in addition to the default 3.
-//
+const char applicationDescription[] = "\n\
+This application opens multiple windows and continuously schedules updates for\n\
+them. Each of them is a separate QOpenGLWindow so there will be a separate\n\
+context and swapBuffers call for each.\n\
+\n\
+By default the swap interval is 1 so the effect of multiple blocking swapBuffers\n\
+on the main thread can be examined. (the result is likely to be different\n\
+between platforms, for example OS X is buffer queuing meaning that it can\n\
+block outside swap, resulting in perfect vsync for all three windows, while\n\
+other systems that block on swap will kill the frame rate due to blocking the\n\
+thread three times)\
+";
+
 // For reference, below is a table of some test results.
 //
 //                                    swap interval 1 for all             swap interval 1 for only one and 0 for others
@@ -69,12 +65,15 @@
 
 class Window : public QOpenGLWindow
 {
+    Q_OBJECT
 public:
     Window(int n) : idx(n) {
         r = g = b = fps = 0;
         y = 0;
         resize(200, 200);
-        t2.start();
+
+        connect(this, SIGNAL(frameSwapped()), SLOT(frameSwapped()));
+        fpsTimer.start();
     }
 
     void paintGL() {
@@ -106,27 +105,52 @@ public:
         if (y > height() - 20)
             y = 20;
 
-        if (t2.elapsed() > 1000) {
-            fps = 1000.0 / t.elapsed();
-            t2.restart();
-        }
-        t.restart();
-
         update();
+    }
+
+public slots:
+    void frameSwapped() {
+        ++framesSwapped;
+        if (fpsTimer.elapsed() > 1000) {
+            fps = qRound(framesSwapped * (1000.0 / fpsTimer.elapsed()));
+            framesSwapped = 0;
+            fpsTimer.restart();
+        }
     }
 
 private:
     int idx;
-    GLfloat r, g, b, fps;
+    GLfloat r, g, b;
     int y;
-    QElapsedTimer t, t2;
+
+    int framesSwapped;
+    QElapsedTimer fpsTimer;
+    int fps;
 };
 
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription(applicationDescription);
+    parser.addHelpOption();
+
+    QCommandLineOption noVsyncOption("novsync", "Disable Vsync by setting swap interval to 0. "
+        "This should give an unthrottled refresh on all platforms for all windows.");
+    parser.addOption(noVsyncOption);
+
+    QCommandLineOption vsyncOneOption("vsyncone", "Enable Vsync only for first window, "
+        "by setting swap interval to 1 for the first window and 0 for the others.");
+    parser.addOption(vsyncOneOption);
+
+    QCommandLineOption numWindowsOption("numwindows", "Open <N> windows instead of the default 3.", "N", "3");
+    parser.addOption(numWindowsOption);
+
+    parser.process(app);
+
     QSurfaceFormat fmt;
-    if (QGuiApplication::arguments().contains(QLatin1String("--novsync"))) {
+    if (parser.isSet(noVsyncOption)) {
         qDebug("swap interval 0 (no throttling)");
         fmt.setSwapInterval(0);
     } else {
@@ -134,36 +158,41 @@ int main(int argc, char **argv)
     }
     QSurfaceFormat::setDefaultFormat(fmt);
 
-    Window w1(0);
-    if (QGuiApplication::arguments().contains(QLatin1String("--vsyncone"))) {
-        qDebug("swap interval 1 for first window only");
-        QSurfaceFormat w1fmt = fmt;
-        w1fmt.setSwapInterval(1);
-        w1.setFormat(w1fmt);
-        fmt.setSwapInterval(0);
-        QSurfaceFormat::setDefaultFormat(fmt);
-    }
-    Window w2(1);
-    Window w3(2);
-    w1.setGeometry(QRect(QPoint(10, 100), w1.size()));
-    w2.setGeometry(QRect(QPoint(300, 100), w2.size()));
-    w3.setGeometry(QRect(QPoint(600, 100), w3.size()));
-    w1.show();
-    w2.show();
-    w3.show();
+    QRect availableGeometry = app.primaryScreen()->availableGeometry();
 
-    QList<QWindow *> extraWindows;
-    int countIdx;
-    if ((countIdx = QGuiApplication::arguments().indexOf(QLatin1String("--extrawindows"))) >= 0) {
-        int extraWindowCount = QGuiApplication::arguments().at(countIdx + 1).toInt();
-        for (int i = 0; i < extraWindowCount; ++i) {
-            Window *w = new Window(3 + i);
-            extraWindows << w;
-            w->show();
+    int numberOfWindows = qMax(parser.value(numWindowsOption).toInt(), 1);
+    QList<QWindow *> windows;
+    for (int i = 0; i < numberOfWindows; ++i) {
+        Window *w = new Window(i + 1);
+        windows << w;
+
+        if (i == 0 && parser.isSet(vsyncOneOption)) {
+            qDebug("swap interval 1 for first window only");
+            QSurfaceFormat vsyncedSurfaceFormat = fmt;
+            vsyncedSurfaceFormat.setSwapInterval(1);
+            w->setFormat(vsyncedSurfaceFormat);
+            fmt.setSwapInterval(0);
+            QSurfaceFormat::setDefaultFormat(fmt);
         }
+
+        static int windowWidth = w->width() + 20;
+        static int windowHeight = w->height() + 20;
+
+        static int windowsPerRow = availableGeometry.width() / windowWidth;
+
+        int col = i;
+        int row = col / windowsPerRow;
+        col -= row * windowsPerRow;
+
+        QPoint position = availableGeometry.topLeft();
+        position += QPoint(col * windowWidth, row * windowHeight);
+        w->setFramePosition(position);
+        w->show();
     }
 
     int r = app.exec();
-    qDeleteAll(extraWindows);
+    qDeleteAll(windows);
     return r;
 }
+
+#include "main.moc"

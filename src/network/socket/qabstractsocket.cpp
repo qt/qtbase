@@ -103,12 +103,12 @@
     To close the socket, call disconnectFromHost(). QAbstractSocket enters
     QAbstractSocket::ClosingState. After all pending data has been written to
     the socket, QAbstractSocket actually closes the socket, enters
-    QAbstractSocket::ClosedState, and emits disconnected(). If you want to
-    abort a connection immediately, discarding all pending data, call abort()
-    instead. If the remote host closes the connection, QAbstractSocket will
-    emit error(QAbstractSocket::RemoteHostClosedError), during which the socket
-    state will still be ConnectedState, and then the disconnected() signal
-    will be emitted.
+    QAbstractSocket::UnconnectedState, and emits disconnected(). If you want
+    to abort a connection immediately, discarding all pending data, call
+    abort() instead. If the remote host closes the connection,
+    QAbstractSocket will emit error(QAbstractSocket::RemoteHostClosedError),
+    during which the socket state will still be ConnectedState, and then the
+    disconnected() signal will be emitted.
 
     The port and address of the connected peer is fetched by calling
     peerPort() and peerAddress(). peerName() returns the host name of
