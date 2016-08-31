@@ -3975,6 +3975,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << ')';
     }
         break;
+#ifndef QT_NO_SHORTCUT
     case QEvent::Shortcut: {
         const QShortcutEvent *se = static_cast<const QShortcutEvent *>(e);
         dbg << "QShortcutEvent(" << se->key().toString() << ", id=" << se->shortcutId();
@@ -3983,6 +3984,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << ')';
     }
         break;
+#endif
     case QEvent::FocusAboutToChange:
     case QEvent::FocusIn:
     case QEvent::FocusOut:

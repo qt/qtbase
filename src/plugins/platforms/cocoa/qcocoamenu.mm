@@ -155,10 +155,10 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem
 {
-    if (![menuItem tag])
+    QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>(menuItem.tag);
+    if (!cocoaItem)
         return YES;
 
-    QCocoaMenuItem* cocoaItem = reinterpret_cast<QCocoaMenuItem *>([menuItem tag]);
     return cocoaItem->isEnabled();
 }
 
@@ -256,6 +256,7 @@ QCocoaMenu::QCocoaMenu() :
     m_attachedItem(0),
     m_tag(0),
     m_enabled(true),
+    m_parentEnabled(true),
     m_visible(true),
     m_isOpen(false)
 {
@@ -331,6 +332,8 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
     else if (isOpen() && item->nsItem()) // Someone's adding new items after aboutToShow() was emitted
         item->menu()->setAttachedItem(item->nsItem());
 
+    item->setParentEnabled(isEnabled());
+
     if (item->isMerged())
         return;
 
@@ -374,6 +377,9 @@ void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 
     if (cocoaItem->menuParent() == this)
         cocoaItem->setMenuParent(0);
+
+    // Ignore any parent enabled state
+    cocoaItem->setParentEnabled(true);
 
     m_menuItems.removeOne(cocoaItem);
     if (!cocoaItem->isMerged()) {
@@ -465,13 +471,17 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
 
 void QCocoaMenu::setEnabled(bool enabled)
 {
+    if (m_enabled == enabled)
+        return;
     m_enabled = enabled;
-    syncModalState(!m_enabled);
+    const bool wasParentEnabled = m_parentEnabled;
+    propagateEnabledState(m_enabled);
+    m_parentEnabled = wasParentEnabled; // Reset to the parent value
 }
 
 bool QCocoaMenu::isEnabled() const
 {
-    return m_attachedItem ? [m_attachedItem isEnabled] : m_enabled;
+    return m_attachedItem ? [m_attachedItem isEnabled] : m_enabled && m_parentEnabled;
 }
 
 void QCocoaMenu::setVisible(bool visible)
@@ -605,20 +615,19 @@ QList<QCocoaMenuItem *> QCocoaMenu::merged() const
     return result;
 }
 
-void QCocoaMenu::syncModalState(bool modal)
+void QCocoaMenu::propagateEnabledState(bool enabled)
 {
-    QMacAutoReleasePool pool;
+    QMacAutoReleasePool pool; // FIXME Is this still needed for Creator? See 6a0bb4206a2928b83648
 
-    if (!m_enabled)
-        modal = true;
+    m_parentEnabled = enabled;
+    if (!m_enabled && enabled) // Some ancestor was enabled, but this menu is not
+        return;
 
     foreach (QCocoaMenuItem *item, m_menuItems) {
-        if (item->menu()) { // recurse into submenus
-            item->menu()->syncModalState(modal);
-            continue;
-        }
-
-        item->syncModalState(modal);
+        if (QCocoaMenu *menu = item->menu())
+            menu->propagateEnabledState(enabled);
+        else
+            item->setParentEnabled(enabled);
     }
 }
 

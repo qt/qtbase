@@ -39,6 +39,8 @@
 
 #include "qiosplatformaccessibility.h"
 
+#ifndef QT_NO_ACCESSIBILITY
+
 #include <QtGui/QtGui>
 #include "qioswindow.h"
 
@@ -85,3 +87,5 @@ void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *even
         break;
     }
 }
+
+#endif

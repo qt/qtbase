@@ -39,7 +39,8 @@
 ##
 #############################################################################
 
-booted_simulator=$(xcrun simctl list devices | grep -E '$1' | grep -v unavailable | grep Booted | perl -lne 'print $2 if /\((.*?)\)/')
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+booted_simulator=$($DIR/devices.pl "$1" "Booted" "NOT unavailable" | tail -n 1)
 echo "SIMULATOR_DEVICES = $booted_simulator"
 
 xcodebuild test -scheme $2 -destination 'id=0' -destination-timeout 1 2>&1| sed -n 's/{ \(platform:.*\) }/\1/p' | while read destination; do

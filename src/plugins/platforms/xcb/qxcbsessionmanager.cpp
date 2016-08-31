@@ -40,6 +40,8 @@
 
 #include "qxcbsessionmanager.h"
 
+#ifndef QT_NO_SESSIONMANAGER
+
 #include <qguiapplication.h>
 #include <qdatetime.h>
 #include <qfileinfo.h>
@@ -491,3 +493,5 @@ void QXcbSessionManager::exitEventLoop()
 }
 
 #include "qxcbsessionmanager.moc"
+
+#endif

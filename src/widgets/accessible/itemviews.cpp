@@ -81,13 +81,22 @@ QAccessibleTable::QAccessibleTable(QWidget *w)
 {
     Q_ASSERT(view());
 
+#ifndef QT_NO_TABLEVIEW
     if (qobject_cast<const QTableView*>(view())) {
         m_role = QAccessible::Table;
-    } else if (qobject_cast<const QTreeView*>(view())) {
+    } else
+#endif
+#ifndef QT_NO_TREEVIEW
+    if (qobject_cast<const QTreeView*>(view())) {
         m_role = QAccessible::Tree;
-    } else if (qobject_cast<const QListView*>(view())) {
+    } else
+#endif
+#ifndef QT_NO_LISTVIEW
+    if (qobject_cast<const QListView*>(view())) {
         m_role = QAccessible::List;
-    } else {
+    } else
+#endif
+    {
         // is this our best guess?
         m_role = QAccessible::Table;
     }
@@ -664,6 +673,8 @@ void QAccessibleTable::modelChange(QAccessibleTableModelChangeEvent *event)
     }
 }
 
+#ifndef QT_NO_TREEVIEW
+
 // TREE VIEW
 
 QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const
@@ -713,7 +724,6 @@ int QAccessibleTree::childCount() const
     int hHeader = horizontalHeader() ? 1 : 0;
     return (treeView->d_func()->viewItems.count() + hHeader)* view()->model()->columnCount();
 }
-
 
 QAccessibleInterface *QAccessibleTree::child(int logicalIndex) const
 {
@@ -836,6 +846,8 @@ bool QAccessibleTree::selectRow(int row)
     return true;
 }
 
+#endif // QT_NO_TREEVIEW
+
 // TABLE CELL
 
 QAccessibleTableCell::QAccessibleTableCell(QAbstractItemView *view_, const QModelIndex &index_, QAccessible::Role role_)
@@ -912,12 +924,14 @@ int QAccessibleTableCell::columnIndex() const
 
 int QAccessibleTableCell::rowIndex() const
 {
+#ifndef QT_NO_TREEVIEW
     if (role() == QAccessible::TreeItem) {
        const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
        Q_ASSERT(treeView);
        int row = treeView->d_func()->viewIndex(m_index);
        return row;
     }
+#endif
     return m_index.row();
 }
 
@@ -1046,6 +1060,7 @@ QAccessible::State QAccessibleTableCell::state() const
         if (view->selectionMode() == QAbstractItemView::ExtendedSelection)
             st.extSelectable = true;
     }
+#ifndef QT_NO_TREEVIEW
     if (m_role == QAccessible::TreeItem) {
         const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
         if (treeView->model()->hasChildren(m_index))
@@ -1053,6 +1068,7 @@ QAccessible::State QAccessibleTableCell::state() const
         if (treeView->isExpanded(m_index))
             st.expanded = true;
     }
+#endif
     return st;
 }
 

@@ -68,7 +68,9 @@ public:
     void setRole(MenuRole role) Q_DECL_OVERRIDE;
     void setCheckable(bool) Q_DECL_OVERRIDE {}
     void setChecked(bool) Q_DECL_OVERRIDE {}
+#ifndef QT_NO_SHORTCUT
     void setShortcut(const QKeySequence&) Q_DECL_OVERRIDE;
+#endif
     void setEnabled(bool enabled) Q_DECL_OVERRIDE;
     void setIconSize(int) Q_DECL_OVERRIDE {}
 

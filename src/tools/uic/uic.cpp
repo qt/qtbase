@@ -46,7 +46,6 @@
 #include <qxmlstream.h>
 #include <qfileinfo.h>
 #include <qtextstream.h>
-#include <qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 

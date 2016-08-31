@@ -1,6 +1,8 @@
 VAR = val
 .VAR = nope
 
+PLUS += more
+
 fake-*: MATCH = 1
 
 defineTest(func) {

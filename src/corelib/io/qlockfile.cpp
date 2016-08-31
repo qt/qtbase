@@ -42,7 +42,7 @@
 #include "qlockfile_p.h"
 
 #include <QtCore/qthread.h>
-#include <QtCore/qelapsedtimer.h>
+#include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
@@ -210,9 +210,7 @@ bool QLockFile::lock()
 bool QLockFile::tryLock(int timeout)
 {
     Q_D(QLockFile);
-    QElapsedTimer timer;
-    if (timeout > 0)
-        timer.start();
+    QDeadlineTimer timer(qMax(timeout, -1));    // QDT only takes -1 as "forever"
     int sleepTime = 100;
     forever {
         d->lockError = d->tryLock_sys();
@@ -235,8 +233,13 @@ bool QLockFile::tryLock(int timeout)
             }
             break;
         }
-        if (timeout == 0 || (timeout > 0 && timer.hasExpired(timeout)))
+
+        int remainingTime = timer.remainingTime();
+        if (remainingTime == 0)
             return false;
+        else if (uint(sleepTime) > uint(remainingTime))
+            sleepTime = remainingTime;
+
         QThread::msleep(sleepTime);
         if (sleepTime < 5 * 1000)
             sleepTime *= 2;

@@ -48,7 +48,6 @@ set QTDIR=%CD%
     goto doargs
 :doneargs
 
-if not exist %QTSRC%.gitignore goto sconf
 echo Please wait while bootstrapping configure ...
 
 for %%C in (clang-cl.exe cl.exe icl.exe g++.exe perl.exe jom.exe) do set %%C=%%~$PATH:C
@@ -136,8 +135,5 @@ goto exit
 
 :help
 type %QTSRC%config_help.txt
-goto exit
 
-:sconf
-%QTSRC%configure.exe %ARGS%
 :exit

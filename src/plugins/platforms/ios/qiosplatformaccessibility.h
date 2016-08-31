@@ -42,6 +42,8 @@
 
 #include <qpa/qplatformaccessibility.h>
 
+#ifndef QT_NO_ACCESSIBILITY
+
 QT_BEGIN_NAMESPACE
 
 class QIOSPlatformAccessibility: public QPlatformAccessibility
@@ -54,5 +56,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif
 
 #endif

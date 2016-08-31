@@ -763,10 +763,11 @@ void QWinRTScreen::addWindow(QWindow *window)
 {
     Q_D(QWinRTScreen);
     qCDebug(lcQpaWindows) << __FUNCTION__ << window;
-    if (window == topWindow())
+    if (window == topWindow() || window->surfaceClass() == QSurface::Offscreen)
         return;
 
     d->visibleWindows.prepend(window);
+    updateWindowTitle(window->title());
     QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents();
@@ -785,7 +786,7 @@ void QWinRTScreen::removeWindow(QWindow *window)
     if (!d->visibleWindows.removeAll(window))
         return;
     if (wasTopWindow)
-        QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
+        QWindowSystemInterface::handleWindowActivated(Q_NULLPTR, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents();
 #if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
@@ -807,6 +808,8 @@ void QWinRTScreen::lower(QWindow *window)
     const bool wasTopWindow = window == topWindow();
     if (wasTopWindow && d->visibleWindows.size() == 1)
         return;
+    if (window->surfaceClass() == QSurface::Offscreen)
+        return;
     d->visibleWindows.removeAll(window);
     d->visibleWindows.append(window);
     if (wasTopWindow)
@@ -814,15 +817,10 @@ void QWinRTScreen::lower(QWindow *window)
     handleExpose();
 }
 
-void QWinRTScreen::updateWindowTitle()
+void QWinRTScreen::updateWindowTitle(const QString &title)
 {
     Q_D(QWinRTScreen);
 
-    QWindow *window = topWindow();
-    if (!window)
-        return;
-
-    const QString title = window->title();
     HStringReference titleRef(reinterpret_cast<LPCWSTR>(title.utf16()), title.length());
     HRESULT hr = d->view->put_Title(titleRef.Get());
     RETURN_VOID_IF_FAILED("Unable to set window title");

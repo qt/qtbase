@@ -41,6 +41,9 @@
 #define QCOCOACLIPBOARD_H
 
 #include <qpa/qplatformclipboard.h>
+
+#ifndef QT_NO_CLIPBOARD
+
 #include "qmacclipboard.h"
 #include <QtCore/QScopedPointer>
 
@@ -71,4 +74,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_CLIPBOARD
+
+#endif // QCOCOACLIPBOARD_H

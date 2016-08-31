@@ -52,6 +52,8 @@
 
 #include <qpa/qplatformsessionmanager.h>
 
+#ifndef QT_NO_SESSIONMANAGER
+
 QT_BEGIN_NAMESPACE
 
 class QEventLoop;
@@ -88,5 +90,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_SESSIONMANAGER
 
 #endif //QXCBSESSIONMANAGER_H

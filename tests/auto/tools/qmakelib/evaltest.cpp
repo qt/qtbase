@@ -2325,6 +2325,18 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << "##:1: load(feature) requires one or two arguments."
             << true;
 
+    QTest::newRow("discard_from()")
+            << "HERE = 1\nPLUS = one\ninclude(include/inc.pri)\ndiscard_from(include/inc.pri): OK = 1"
+            << "OK = 1\nHERE = 1\nPLUS = one\nVAR = UNDEF"
+            << ""
+            << true;
+
+    QTest::newRow("discard_from(): bad number of arguments")
+            << "discard_from(1, 2): OK = 1"
+            << "OK = UNDEF"
+            << "##:1: discard_from(file) requires one argument."
+            << true;
+
     // We don't test debug() and log(), because they print directly to stderr.
 
     QTest::newRow("message()")
@@ -2744,7 +2756,8 @@ void tst_qmakelib::proEval()
     QMakeTestHandler handler;
     handler.setExpectedMessages(msgs.replace("##:", infile + ':').split('\n', QString::SkipEmptyParts));
     QMakeVfs vfs;
-    QMakeParser parser(0, &vfs, &handler);
+    ProFileCache cache;
+    QMakeParser parser(&cache, &vfs, &handler);
     QMakeGlobals globals;
     globals.do_cache = false;
     globals.xqmakespec = "fake-g++";

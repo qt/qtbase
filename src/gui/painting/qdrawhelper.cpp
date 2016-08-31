@@ -5925,9 +5925,9 @@ static inline void rgbBlendPixel(quint32 *dst, int coverage, int sr, int sg, int
     dg = gamma[dg];
     db = gamma[db];
 
-    int nr = qt_div_255((sr - dr) * mr) + dr;
-    int ng = qt_div_255((sg - dg) * mg) + dg;
-    int nb = qt_div_255((sb - db) * mb) + db;
+    int nr = qt_div_255(sr * mr + dr * (255 - mr));
+    int ng = qt_div_255(sg * mg + dg * (255 - mg));
+    int nb = qt_div_255(sb * mb + db * (255 - mb));
 
     nr = invgamma[nr];
     ng = invgamma[ng];
@@ -5952,9 +5952,9 @@ static inline void grayBlendPixel(quint32 *dst, int coverage, int sr, int sg, in
 
     int alpha = coverage;
     int ialpha = 255 - alpha;
-    int nr = (sr * alpha + ialpha * dr) / 255;
-    int ng = (sg * alpha + ialpha * dg) / 255;
-    int nb = (sb * alpha + ialpha * db) / 255;
+    int nr = qt_div_255(sr * alpha + dr * ialpha);
+    int ng = qt_div_255(sg * alpha + dg * ialpha);
+    int nb = qt_div_255(sb * alpha + db * ialpha);
 
     nr = invgamma[nr];
     ng = invgamma[ng];

@@ -391,9 +391,11 @@ void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rec
 
 QColor backgroundColor(const QPalette &pal, const QWidget* widget)
 {
+#ifndef QT_NO_SCROLLBAR
     if (qobject_cast<const QScrollBar *>(widget) && widget->parent() &&
             qobject_cast<const QAbstractScrollArea *>(widget->parent()->parent()))
         return widget->parentWidget()->parentWidget()->palette().color(QPalette::Base);
+#endif
     return pal.color(QPalette::Base);
 }
 

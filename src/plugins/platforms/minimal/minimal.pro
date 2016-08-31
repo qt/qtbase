@@ -2,6 +2,8 @@ TARGET = qminimal
 
 QT += core-private gui-private platformsupport-private
 
+DEFINES += QT_NO_FOREACH
+
 SOURCES =   main.cpp \
             qminimalintegration.cpp \
             qminimalbackingstore.cpp

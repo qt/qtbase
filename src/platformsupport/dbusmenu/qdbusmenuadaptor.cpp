@@ -105,7 +105,7 @@ QList<int> QDBusMenuAdaptor::AboutToShowGroup(const QList<int> &ids, QList<int> 
     qCDebug(qLcMenu) << ids;
     Q_UNUSED(idErrors)
     idErrors.clear();
-    Q_FOREACH (int id, ids)
+    for (int id : ids)
         AboutToShow(id);
     return QList<int>(); // updatesNeeded
 }
@@ -134,7 +134,7 @@ void QDBusMenuAdaptor::Event(int id, const QString &eventId, const QDBusVariant 
 
 QList<int> QDBusMenuAdaptor::EventGroup(const QDBusMenuEventList &events)
 {
-    Q_FOREACH (const QDBusMenuEvent &ev, events)
+    for (const QDBusMenuEvent &ev : events)
         Event(ev.m_id, ev.m_eventId, ev.m_data, ev.m_timestamp);
     return QList<int>(); // idErrors
 }

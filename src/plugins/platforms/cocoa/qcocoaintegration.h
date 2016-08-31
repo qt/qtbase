@@ -130,7 +130,9 @@ public:
 #ifndef QT_NO_ACCESSIBILITY
     QCocoaAccessibility *accessibility() const Q_DECL_OVERRIDE;
 #endif
+#ifndef QT_NO_CLIPBOARD
     QCocoaClipboard *clipboard() const Q_DECL_OVERRIDE;
+#endif
     QCocoaDrag *drag() const Q_DECL_OVERRIDE;
 
     QStringList themeNames() const Q_DECL_OVERRIDE;
@@ -169,7 +171,9 @@ private:
 #endif
     QScopedPointer<QPlatformTheme> mPlatformTheme;
     QList<QCocoaScreen *> mScreens;
+#ifndef QT_NO_CLIPBOARD
     QCocoaClipboard  *mCocoaClipboard;
+#endif
     QScopedPointer<QCocoaDrag> mCocoaDrag;
     QScopedPointer<QCocoaNativeInterface> mNativeInterface;
     QScopedPointer<QCocoaServices> mServices;

@@ -66,9 +66,6 @@ std::ostream &operator<<(std::ostream &s, const QString &val) {
 
 using namespace std;
 
-// Macros to simplify options marking
-#define MARK_OPTION(x,y) ( dictionary[ #x ] == #y ? "*" : " " )
-
 static inline void promptKeyPress()
 {
     cout << "(Press any key to continue...)";
@@ -78,18 +75,6 @@ static inline void promptKeyPress()
 
 Configure::Configure(int& argc, char** argv)
 {
-    // Default values for indentation
-    optionIndent = 4;
-    descIndent   = 25;
-    outputWidth  = 0;
-    // Get console buffer output width
-    CONSOLE_SCREEN_BUFFER_INFO info;
-    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (GetConsoleScreenBufferInfo(hStdout, &info))
-        outputWidth = info.dwSize.X - 1;
-    outputWidth = qMin(outputWidth, 79); // Anything wider gets unreadable
-    if (outputWidth < 35) // Insanely small, just use 79
-        outputWidth = 79;
     int i;
 
     for (i = 1; i < argc; i++)
@@ -199,9 +184,13 @@ QString Configure::formatPath(const QString &path)
 
 void Configure::parseCmdLine()
 {
+    sourcePathMangled = sourcePath;
+    buildPathMangled = buildPath;
     if (configCmdLine.size() && configCmdLine.at(0) == "-top-level") {
         dictionary[ "TOPLEVEL" ] = "yes";
         configCmdLine.removeAt(0);
+        sourcePathMangled = QFileInfo(sourcePath).path();
+        buildPathMangled = QFileInfo(buildPath).path();
     }
 
     int argCount = configCmdLine.size();
@@ -212,7 +201,10 @@ void Configure::parseCmdLine()
         if (configCmdLine.at(k) == "-redo") {
             dictionary["REDO"] = "yes";
             configCmdLine.removeAt(k);
-            reloadCmdLine(k);
+            if (!reloadCmdLine(k)) {
+                dictionary["DONE"] = "error";
+                return;
+            }
             argCount = configCmdLine.size();
             break;
         }
@@ -540,9 +532,6 @@ void Configure::parseCmdLine()
             cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
         }
     }
-
-    if ((dictionary["REDO"] != "yes") && (dictionary["DONE"] != "error"))
-        saveCmdLine();
 }
 
 /*!
@@ -1014,21 +1003,6 @@ void Configure::buildQmake()
 
 void Configure::configure()
 {
-    static const char * const files[] = { "qmodule", "qconfig" };
-
-    for (int i = 0; i < 2; i++) {
-        QFile file(buildPath + "/mkspecs/" + files[i] + ".pri");
-        QString oldfn = file.fileName() + ".old";
-        if (file.exists() && !QFileInfo::exists(oldfn))
-            QFile::rename(file.fileName(), oldfn);
-        if (!file.open(QFile::WriteOnly | QFile::Text)) {
-            cout << "Failed to create file " << qPrintable(file.fileName()) << endl;
-            dictionary[ "DONE" ] = "error";
-            return;
-        }
-        file.close();
-    }
-
     FileWriter ci(buildPath + "/config.tests/configure.cfg");
     ci << "# Feature defaults set by configure command line\n"
        << "config.input.qt_edition = " << dictionary["EDITION"] << "\n"
@@ -1050,30 +1024,14 @@ void Configure::configure()
         dictionary[ "DONE" ] = "error";
     }
 
-    for (int i = 0; i < 2; i++) {
-        QFile file(buildPath + "/mkspecs/" + files[i] + ".pri");
-        QFile oldFile(file.fileName() + ".old");
-        if (oldFile.open(QIODevice::ReadOnly | QIODevice::Text)
-                && file.open(QIODevice::ReadOnly | QIODevice::Text)
-                && oldFile.readAll() == file.readAll()) {
-            file.remove();
-            oldFile.rename(file.fileName());
-        } else {
-            oldFile.remove();
-        }
-    }
+    if ((dictionary["REDO"] != "yes") && (dictionary["DONE"] != "error"))
+        saveCmdLine();
 }
 
 void Configure::generateMakefiles()
 {
         QString pwd = QDir::currentPath();
         {
-            QString sourcePathMangled = sourcePath;
-            QString buildPathMangled = buildPath;
-            if (dictionary.contains("TOPLEVEL")) {
-                sourcePathMangled = QFileInfo(sourcePath).path();
-                buildPathMangled = QFileInfo(buildPath).path();
-            }
             QStringList args;
             args << buildPath + "/bin/qmake" << sourcePathMangled;
 
@@ -1135,6 +1093,7 @@ bool Configure::showLicense(QString orgLicenseFile)
         accept = tolower(accept);
 
         if (accept == 'y') {
+            configCmdLine << "-confirm-license";
             return true;
         } else if (accept == 'n') {
             return false;
@@ -1214,31 +1173,42 @@ void Configure::readLicense()
     } else if (openSource) {
         cout << endl << "Cannot find the GPL license files! Please download the Open Source version of the library." << endl;
         dictionary["DONE"] = "error";
+        return;
     }
     else {
         Tools::checkLicense(dictionary, sourcePath, buildPath);
     }
+    if (dictionary["BUILDTYPE"] == "none") {
+        if (openSource)
+            configCmdLine << "-opensource";
+        else
+            configCmdLine << "-commercial";
+    }
 }
 
-void Configure::reloadCmdLine(int idx)
+bool Configure::reloadCmdLine(int idx)
 {
-    if (dictionary[ "REDO" ] == "yes") {
-        QFile inFile(buildPath + "/config.opt");
+        QFile inFile(buildPathMangled + "/config.opt");
         if (!inFile.open(QFile::ReadOnly)) {
-            inFile.setFileName(buildPath + "/configure.cache");
-            if (!inFile.open(QFile::ReadOnly))
-                return;
+            inFile.setFileName(buildPath + "/config.opt");
+            if (!inFile.open(QFile::ReadOnly)) {
+                inFile.setFileName(buildPath + "/configure.cache");
+                if (!inFile.open(QFile::ReadOnly)) {
+                    cout << "No config.opt present - cannot redo configuration." << endl;
+                    return false;
+                }
+            }
         }
         QTextStream inStream(&inFile);
         while (!inStream.atEnd())
             configCmdLine.insert(idx++, inStream.readLine().trimmed());
-    }
+        return true;
 }
 
 void Configure::saveCmdLine()
 {
     if (dictionary[ "REDO" ] != "yes") {
-        QFile outFile(buildPath + "/config.opt");
+        QFile outFile(buildPathMangled + "/config.opt");
         if (outFile.open(QFile::WriteOnly | QFile::Text)) {
             QTextStream outStream(&outFile);
             for (QStringList::Iterator it = configCmdLine.begin(); it != configCmdLine.end(); ++it) {

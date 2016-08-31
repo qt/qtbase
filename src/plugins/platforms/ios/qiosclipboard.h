@@ -40,10 +40,13 @@
 #ifndef QIOSCLIPBOARD_H
 #define QIOSCLIPBOARD_H
 
+#include <qpa/qplatformclipboard.h>
+
+#ifndef QT_NO_CLIPBOARD
+
 #import <UIKit/UIKit.h>
 
 #include <QMimeData>
-#include <qpa/qplatformclipboard.h>
 
 @class QUIClipboard;
 
@@ -66,5 +69,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_CLIPBOARD
 
 #endif // QIOSCLIPBOARD_H

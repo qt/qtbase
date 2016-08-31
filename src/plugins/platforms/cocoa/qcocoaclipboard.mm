@@ -39,6 +39,8 @@
 
 #include "qcocoaclipboard.h"
 
+#ifndef QT_NO_CLIPBOARD
+
 QT_BEGIN_NAMESPACE
 
 QCocoaClipboard::QCocoaClipboard()
@@ -105,3 +107,5 @@ void QCocoaClipboard::handleApplicationStateChanged(Qt::ApplicationState state)
 #include "moc_qcocoaclipboard.cpp"
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_CLIPBOARD

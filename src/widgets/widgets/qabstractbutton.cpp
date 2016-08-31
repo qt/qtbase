@@ -1100,6 +1100,7 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
         break;
     }
     default:
+#ifndef QT_NO_SHORTCUT
         if (e->matches(QKeySequence::Cancel) && d->down) {
             setDown(false);
             repaint(); //flush paint event before invoking potentially expensive operation
@@ -1107,6 +1108,7 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
             d->emitReleased();
             return;
         }
+#endif
         e->ignore();
     }
 }

@@ -569,7 +569,6 @@ defineTest(qtConfExportLibrary) {
         qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_MINOR, $$member(version, 1))
         qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_PATCH, $$member(version, 2))
     }
-    export(config.output.$${output})
 }
 
 defineTest(qtConfHandleLibrary) {
@@ -579,7 +578,8 @@ defineTest(qtConfHandleLibrary) {
     qtConfEnsureTestTypeDeps("library")
 
     qtConfLoadResult($${lpfx}, $$1) {
-        qtConfExportLibrary($${lpfx}.sources.$$eval($${lpfx}.source), $$eval($${lpfx}.export))
+        $$eval($${lpfx}.result): \
+            qtConfExportLibrary($${lpfx}.sources.$$eval($${lpfx}.source), $$eval($${lpfx}.export))
         return()
     }
 
@@ -789,6 +789,8 @@ defineTest(qtLogTestResult) {
 }
 
 defineTest(qtConfSaveResult) {
+    equals($${1}.cache, -): \
+        return()
     keys = result $$eval($${1}.cache)
     cont = "cache.$${2}._KEYS_ = $$keys"
     for (k, keys): \
@@ -868,7 +870,6 @@ defineTest(qtRunSingleTest) {
     tpfx = config.tests.$${1}
     defined($${tpfx}.result, var): \
         return()
-    result = true
 
     type = $$eval($${tpfx}.type)
     call = "qtConfTest_$$type"
@@ -878,24 +879,27 @@ defineTest(qtRunSingleTest) {
     qtConfEnsureTestTypeDeps($$type)
 
     preCall = "qtConfTestPrepare_$$type"
-    defined($$preCall, test): \
-        !$${preCall}($${tpfx}): result = false
-
-    $$result {
-        # note: we do this only after resolving the dependencies and the
-        # preparation (which may resolve libraries), so that caching does
-        # not alter the execution order (and thus the output).
-        qtConfLoadResult($${tpfx}, $$1): \
-            return()
-
-        qtLogTestIntro($${tpfx})
-        msg = "executing config test $${1}"
-        write_file($$QMAKE_CONFIG_LOG, msg, append)
-
-        !$${call}($${tpfx}): result = false
-
-        qtLogTestResult($${tpfx}, $$result)
+    defined($$preCall, test):!$${preCall}($${tpfx}) {
+        $${tpfx}.result = false
+        export($${tpfx}.result)
+        # don't cache the result; the pre-deps have their own caches.
+        return()
     }
+
+    # note: we do this only after resolving the dependencies and the
+    # preparation (which may resolve libraries), so that caching does
+    # not alter the execution order (and thus the output).
+    qtConfLoadResult($${tpfx}, $$1): \
+        return()
+
+    qtLogTestIntro($${tpfx})
+    msg = "executing config test $${1}"
+    write_file($$QMAKE_CONFIG_LOG, msg, append)
+
+    result = false
+    $${call}($${tpfx}): result = true
+
+    qtLogTestResult($${tpfx}, $$result)
 
     $${tpfx}.result = $$result
     export($${tpfx}.result)
@@ -1271,7 +1275,6 @@ defineTest(qtConfProcessEarlyChecks) {
 
 
 defineTest(qtConfCreateReport) {
-    qtConfAddReport(" ")
     qtConfCreateReportRecurse(config.report, false)
 }
 
@@ -1340,15 +1343,15 @@ defineTest(qtConfOutputVar) {
     equals(modifier, assign) {
         !isEmpty(config.output.$${output}.append.$${name})|!isEmpty(config.output.$${output}.remove.$${name}): \
             error("Trying to assign variable '$$name' in '$$output', which has already appended or removed parts.")
-        config.output.$${output}.$${modifier}.$${name} = $$value
+        config.output.$${output}.assign.$${name} = $$value
     } else: equals(modifier, append) {
         contains(config.output.$${output}.remove.$${name}, $$value): \
             error("Trying to append removed '$$value' to variable '$$name' in '$$output'.")
-        config.output.$${output}.$${modifier}.$${name} += $$value
+        config.output.$${output}.append.$${name} += $$value
     } else: equals(modifier, remove) {
         contains(config.output.$${output}.append.$${name}, $$value): \
             error("Trying to remove appended '$$value' to variable '$$name' in '$$output'.")
-        config.output.$${output}.$${modifier}.$${name} += $$value
+        config.output.$${output}.remove.$${name} += $$value
     } else {
         error("Invalid modifier '$$modifier' passed to qtConfOutputVar.")
     }
@@ -1360,8 +1363,7 @@ defineTest(qtConfOutputVar) {
 defineTest(qtConfOutputVarHelper) {
     negative = $$eval($${2}.negative)
     isEmpty(negative): negative = false
-    !$${3}:!$$negative: return()
-    $${3}:$$negative: return()
+    equals(3, $$negative): return()
 
     output = $$qtConfOutputSelectProFile($${2})
     name = $$eval($${2}.name)
@@ -1391,6 +1393,7 @@ defineTest(qtConfOutputConfigVar) {
     var = $$4
     negative = $$eval($${1}.negative)
     isEmpty(negative): negative = false
+    equals(2, $$negative): return()
 
     val = $$eval($${1}.name)
     isEmpty(val) {
@@ -1398,11 +1401,7 @@ defineTest(qtConfOutputConfigVar) {
         $$negative: val = no-$$val
     }
 
-    $${2} {
-        !$$negative: qtConfOutputVar(append, $$pro, $$var, $$val)
-    } else {
-        $$negative: qtConfOutputVar(append, $$pro, $$var, $$val)
-    }
+    qtConfOutputVar(append, $$pro, $$var, $$val)
 }
 
 defineTest(qtConfOutput_publicQtConfig) {
@@ -1433,12 +1432,9 @@ defineTest(qtConfOutput_define) {
 
     negative = $$eval($${1}.negative)
     isEmpty(negative): negative = false
+    equals(2, $$negative): return()
 
-    $${2} {
-        !$$negative: qtConfOutputSetDefine($$output, $$define, $$value)
-    } else {
-        $$negative: qtConfOutputSetDefine($$output, $$define, $$value)
-    }
+    qtConfOutputSetDefine($$output, $$define, $$value)
 }
 
 defineTest(qtConfOutput_feature) {

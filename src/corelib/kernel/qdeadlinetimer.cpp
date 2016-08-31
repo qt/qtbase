@@ -408,16 +408,14 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
 */
 
 /*!
+    \fn bool QDeadlineTimer::isForever() const
+
     Returns true if this QDeadlineTimer object never expires, false otherwise.
     For timers that never expire, remainingTime() always returns -1 and
     deadline() returns the maximum value.
 
     \sa ForeverConstant, hasExpired(), remainingTime()
 */
-bool QDeadlineTimer::isForever() const Q_DECL_NOTHROW
-{
-    return t1 == (std::numeric_limits<qint64>::max)();
-}
 
 /*!
     Returns true if this QDeadlineTimer object has expired, false if there

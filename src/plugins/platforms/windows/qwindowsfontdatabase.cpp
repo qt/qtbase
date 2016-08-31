@@ -867,7 +867,7 @@ static FontNames getCanonicalFontNames(const uchar *table, quint32 bytes)
 
         quint16 length = getUShort(names + 8 + i*NameRecordSize);
         quint16 offset = getUShort(names + 10 + i*NameRecordSize);
-        if (DWORD(string_offset + offset + length) >= bytes)
+        if (DWORD(string_offset + offset + length) > bytes)
             continue;
 
         if ((platform_id == PlatformId_Microsoft
@@ -890,7 +890,7 @@ static FontNames getCanonicalFontNames(const uchar *table, quint32 bytes)
 
     QString strings[4];
     for (int i = 0; i < 4; ++i) {
-        if (idStatus[0] == NotFound)
+        if (idStatus[i] == NotFound)
             continue;
         int id = ids[i];
         quint16 length = getUShort(names +  8 + id * NameRecordSize);

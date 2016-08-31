@@ -101,11 +101,13 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
     QString socketPath = QIBusPlatformInputContextPrivate::getSocketPath();
     QFile file(socketPath);
     if (file.open(QFile::ReadOnly)) {
+#ifndef QT_NO_FILESYSTEMWATCHER
         // If KDE session save is used or restart ibus-daemon,
         // the applications could run before ibus-daemon runs.
         // We watch the getSocketPath() to get the launching ibus-daemon.
         m_socketWatcher.addPath(socketPath);
         connect(&m_socketWatcher, SIGNAL(fileChanged(QString)), this, SLOT(socketChanged(QString)));
+#endif
     }
 
     m_timer.setSingleShot(true);
@@ -408,8 +410,10 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
             && window != NULL) {
             const QPoint globalPos = window->screen()->handle()->cursor()->pos();
             const QPoint pos = window->mapFromGlobal(globalPos);
+#ifndef QT_NO_CONTEXTMENU
             QWindowSystemInterface::handleContextMenuEvent(window, false, pos,
                                                            globalPos, modifiers);
+#endif
         }
 #endif // QT_NO_CONTEXTMENU
         QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
@@ -449,8 +453,10 @@ void QIBusPlatformInputContext::connectToBus()
     d->initBus();
     connectToContextSignals();
 
+#ifndef QT_NO_FILESYSTEMWATCHER
     if (m_socketWatcher.files().size() == 0)
         m_socketWatcher.addPath(QIBusPlatformInputContextPrivate::getSocketPath());
+#endif
 }
 
 void QIBusPlatformInputContext::globalEngineChanged(const QString &engine_name)

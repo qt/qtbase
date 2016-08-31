@@ -168,8 +168,6 @@
     If you are not using a Microsoft compiler, replace \c nmake with \c
     make in the line above.
 
-    \note This database plugin is not supported for Windows CE.
-
     \note Including \c{"-o Makefile"} as an argument to \l qmake to
     tell it where to build the makefile can cause the plugin to be
     built in release mode only. If you are expecting a debug version
@@ -260,8 +258,6 @@
     path to your \c PATH environment variable:
 
     \snippet code/doc_src_sql-driver.qdoc 9
-
-    \b{Note:} This database plugin is not supported for Windows CE.
 
     \target QODBC
     \section2 QODBC for Open Database Connectivity (ODBC)
@@ -365,8 +361,6 @@
     If you are not using a Microsoft compiler, replace \c nmake with \c
     make in the line above.
 
-    \b{Note:} This database plugin is not officially supported for Windows CE.
-
     \target QPSQL
     \section2 QPSQL for PostgreSQL (Version 7.3 and Above)
 
@@ -426,8 +420,6 @@
     Users of MinGW may wish to consult the following online document:
     \l{http://www.postgresql.org/docs/current/static/installation-platform-notes.html#INSTALLATION-NOTES-MINGW}{PostgreSQL MinGW/Native Windows}.
 
-    \b{Note:} This database plugin is not supported for Windows CE.
-
     \target QTDS
     \section2 QTDS for Sybase Adaptive Server
 
@@ -475,8 +467,6 @@
     are not using a Microsoft compiler, replace \c nmake with \c make in
     the line above.
 
-    \b{Note:} This database plugin is not supported for Windows CE.
-
     \target QDB2
     \section2 QDB2 for IBM DB2 (Version 7.1 and Above)
 
@@ -511,8 +501,6 @@
 
     If you are not using a Microsoft compiler, replace \c nmake
     with \c make in the line above.
-
-    \b{Note:} This database plugin is not supported for Windows CE.
 
     \target QSQLITE2
     \section2 QSQLITE2 for SQLite Version 2
@@ -673,8 +661,6 @@
     with \c make in the line above.
 
     Note that \c{C:\interbase\bin} must be in the \c PATH.
-
-    \b{Note:} This database plugin is not supported for Windows CE.
 
     \target troubleshooting
     \section1 Troubleshooting

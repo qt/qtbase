@@ -44,6 +44,9 @@ PropertyField::PropertyField(QObject* subject, const QMetaProperty& prop, QWidge
 
 QString PropertyField::valueToString(QVariant val)
 {
+    if (m_prop.isEnumType())
+        return QString::fromUtf8(m_prop.enumerator().valueToKey(val.toInt()));
+
     QString text;
     switch (val.type()) {
     case QVariant::Double:

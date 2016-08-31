@@ -191,9 +191,6 @@ defineTest(qtConfTest_detectPkgConfig) {
     $${1}.cache += pkgConfig
     export($${1}.cache)
 
-    PKG_CONFIG = $$pkgConfig
-    export(PKG_CONFIG)
-
     return(true)
 }
 
@@ -203,6 +200,9 @@ defineTest(qtConfTest_neon) {
 }
 
 defineTest(qtConfTest_skipModules) {
+    $${1}.cache = -
+    export($${1}.cache)
+
     skip =
     uikit {
         skip += qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples
@@ -220,8 +220,6 @@ defineTest(qtConfTest_skipModules) {
     }
     $${1}.value = $$unique(skip)
     export($${1}.value)
-    $${1}.cache += value
-    export($${1}.cache)
     return(true)
 }
 
@@ -243,7 +241,7 @@ defineTest(qtConfTest_buildParts) {
 
     $${1}.value = $$parts
     export($${1}.value)
-    $${1}.cache += value
+    $${1}.cache = -
     export($${1}.cache)
     return(true)
 }
@@ -525,6 +523,8 @@ defineTest(qtConfOutput_qreal) {
 defineTest(qtConfOutput_pkgConfig) {
     !$${2}: return()
 
+    PKG_CONFIG = $$eval(config.tests.pkg-config.pkgConfig)
+    export(PKG_CONFIG)
     # this method also exports PKG_CONFIG_(LIB|SYSROOT)DIR, so that tests using pkgConfig will work correctly
     PKG_CONFIG_SYSROOT_DIR = $$eval(config.tests.pkg-config.pkgConfigSysrootDir)
     !isEmpty(PKG_CONFIG_SYSROOT_DIR) {
@@ -772,6 +772,10 @@ defineTest(qtConfReport_buildMode) {
 
     qtConfReportPadded($$1, $$build_mode)
 }
+
+# ensure pristine environment for configuration
+discard_from($$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)
+discard_from($$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)
 
 # load and process input from configure
 exists("$$OUT_PWD/config.tests/configure.cfg") {

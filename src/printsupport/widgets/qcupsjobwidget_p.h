@@ -54,12 +54,12 @@
 //
 
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
-#include <ui_qcupsjobwidget.h>
 #include <private/qcups_p.h>
 
-QT_BEGIN_NAMESPACE
-
 #if !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS)
+#include <ui_qcupsjobwidget.h>
+
+QT_BEGIN_NAMESPACE
 
 class QString;
 class QTime;
@@ -107,8 +107,8 @@ private:
     Q_DISABLE_COPY(QCupsJobWidget)
 };
 
-#endif // QT_NO_PRINTER / QT_NO_CUPS
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_PRINTER / QT_NO_CUPS
 
 #endif  // QCUPSJOBWIDGET_P_H

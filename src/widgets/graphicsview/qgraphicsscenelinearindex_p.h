@@ -114,8 +114,8 @@ private:
     int m_numSortedElements;
 };
 
-#endif // QT_NO_GRAPHICSVIEW
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_GRAPHICSVIEW
 
 #endif // QGRAPHICSSCENELINEARINDEX_H

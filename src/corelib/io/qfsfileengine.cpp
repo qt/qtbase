@@ -880,9 +880,8 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 
 /*! \fn QFileInfoList QFSFileEngine::drives()
   For Windows, returns the list of drives in the file system as a list
-  of QFileInfo objects. On Unix and Windows CE, only the
-  root path is returned.  On Windows, this function returns all drives
-  (A:\, C:\, D:\, etc.).
+  of QFileInfo objects. On Unix, only the root path is returned.
+  On Windows, this function returns all drives (A:\, C:\, D:\, and so on).
 
   For Unix, the list contains just the root path "/".
 */

@@ -83,7 +83,9 @@ public:
     virtual void setRole(MenuRole role) = 0;
     virtual void setCheckable(bool checkable) = 0;
     virtual void setChecked(bool isChecked) = 0;
+#ifndef QT_NO_SHORTCUT
     virtual void setShortcut(const QKeySequence& shortcut) = 0;
+#endif
     virtual void setEnabled(bool enabled) = 0;
     virtual void setIconSize(int size) = 0;
     virtual void setNativeContents(WId item) { Q_UNUSED(item); }

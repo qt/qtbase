@@ -368,7 +368,7 @@ void QKdeThemePrivate::refresh()
 
 QVariant QKdeThemePrivate::readKdeSetting(const QString &key, const QStringList &kdeDirs, int kdeVersion, QHash<QString, QSettings*> &kdeSettings)
 {
-    foreach (const QString &kdeDir, kdeDirs) {
+    for (const QString &kdeDir : kdeDirs) {
         QSettings *settings = kdeSettings.value(kdeDir);
         if (!settings) {
             const QString kdeGlobalsPath = kdeGlobals(kdeDir, kdeVersion);
@@ -501,7 +501,7 @@ QStringList QKdeThemePrivate::kdeIconThemeSearchPaths(const QStringList &kdeDirs
 {
     QStringList paths = QGenericUnixTheme::xdgIconThemePaths();
     const QString iconPath = QStringLiteral("/share/icons");
-    foreach (const QString &candidate, kdeDirs) {
+    for (const QString &candidate : kdeDirs) {
         const QFileInfo fi(candidate + iconPath);
         if (fi.isDir())
             paths.append(fi.absoluteFilePath());
@@ -798,8 +798,8 @@ QStringList QGenericUnixTheme::themeNames()
                              << "MATE"
                              << "XFCE"
                              << "LXDE";
-        QList<QByteArray> desktopNames = desktopEnvironment.split(':');
-        Q_FOREACH (const QByteArray &desktopName, desktopNames) {
+        const QList<QByteArray> desktopNames = desktopEnvironment.split(':');
+        for (const QByteArray &desktopName : desktopNames) {
             if (desktopEnvironment == "KDE") {
 #ifndef QT_NO_SETTINGS
                 result.push_back(QLatin1String(QKdeTheme::name));

@@ -2473,10 +2473,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         break;
 #endif
     default: {
+#ifndef QT_NO_SHORTCUT
        if (event == QKeySequence::SelectAll && selectionMode() != NoSelection) {
             selectAll();
             break;
         }
+#endif
 #ifdef Q_OS_OSX
         if (event->key() == Qt::Key_O && event->modifiers() & Qt::ControlModifier && currentIndex().isValid()) {
             emit activated(currentIndex());

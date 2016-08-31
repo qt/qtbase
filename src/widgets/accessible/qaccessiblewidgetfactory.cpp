@@ -139,9 +139,11 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QMenu")) {
         iface = new QAccessibleMenu(widget);
 #endif
-#ifndef QT_NO_ITEMVIEWS
+#ifndef QT_NO_TREEVIEW
     } else if (classname == QLatin1String("QTreeView")) {
         iface = new QAccessibleTree(widget);
+#endif // QT_NO_TREEVIEW
+#ifndef QT_NO_ITEMVIEWS
     } else if (classname == QLatin1String("QTableView") || classname == QLatin1String("QListView")) {
         iface = new QAccessibleTable(widget);
     // ### This should be cleaned up. We return the parent for the scrollarea to hide it.

@@ -119,7 +119,8 @@ mac {
         ../../corelib/kernel/qcoreapplication_mac.cpp \
         ../../corelib/kernel/qcore_mac.cpp
     OBJECTIVE_SOURCES += \
-        ../../corelib/kernel/qcore_mac_objc.mm
+        ../../corelib/kernel/qcore_mac_objc.mm \
+        ../../corelib/kernel/qcore_foundation.mm
 
     LIBS += -framework Foundation
     osx: LIBS_PRIVATE += -framework CoreServices

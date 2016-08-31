@@ -141,7 +141,7 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
 static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();
-#ifdef Q_OS_MAC
+#if defined(Q_OS_DARWIN) && !defined(QT_NO_MENUBAR)
     if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
@@ -204,7 +204,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
 static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();
-#ifdef Q_OS_MAC
+#if defined(Q_OS_DARWIN) && !defined(QT_NO_MENUBAR)
     if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
@@ -272,7 +272,7 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
         QWidget *w = widgets.at(i);
 #ifndef QT_NO_MENU
         if (QMenu *menu = qobject_cast<QMenu *>(w)) {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
             // On Mac, menu item shortcuts are processed before reaching any window.
             // That means that if a menu action shortcut has not been already processed
             // (and reaches this point), then the menu item itself has been disabled.

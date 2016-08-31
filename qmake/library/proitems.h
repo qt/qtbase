@@ -208,9 +208,13 @@ inline QString operator+(const QString &one, const ProString &two)
     { return ProString(one) + two; }
 
 inline QString operator+(const ProString &one, const char *two)
-    { return one + ProString(two); } // XXX optimize
+    { QString ret = one.toQStringRef() + two; ret.detach(); return ret; }
 inline QString operator+(const char *one, const ProString &two)
-    { return ProString(one) + two; } // XXX optimize
+    { QString ret = one + two.toQStringRef(); ret.detach(); return ret;  }
+inline QString operator+(const ProString &one, QChar two)
+    { return one.toQStringRef() + two; }
+inline QString operator+(QChar one, const ProString &two)
+    { return one + two.toQStringRef(); }
 
 inline QString &operator+=(QString &that, const ProString &other)
     { return that += other.toQStringRef(); }

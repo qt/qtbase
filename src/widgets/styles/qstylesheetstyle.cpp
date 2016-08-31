@@ -210,7 +210,7 @@ enum PseudoElement {
 
 struct PseudoElementInfo {
     QStyle::SubControl subControl;
-    const char *name;
+    const char name[19];
 };
 
 static const PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
@@ -595,7 +595,7 @@ public:
 Q_DECLARE_TYPEINFO(QRenderRule, Q_MOVABLE_TYPE);
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-static const char *const knownStyleHints[] = {
+static const char knownStyleHints[][45] = {
     "activate-on-singleclick",
     "alignment",
     "arrow-keys-navigate-into-children",
@@ -1002,15 +1002,17 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
         }
     }
 
-    if (const QWidget *widget = qobject_cast<const QWidget *>(object)) {
-        QStyleSheetStyle *style = const_cast<QStyleSheetStyle *>(globalStyleSheetStyle);
-        if (!style)
-            style = qobject_cast<QStyleSheetStyle *>(widget->style());
-        if (style)
-            fixupBorder(style->nativeFrameWidth(widget));
+    if (hasBorder()) {
+        if (const QWidget *widget = qobject_cast<const QWidget *>(object)) {
+            QStyleSheetStyle *style = const_cast<QStyleSheetStyle *>(globalStyleSheetStyle);
+            if (!style)
+                style = qobject_cast<QStyleSheetStyle *>(widget->style());
+            if (style)
+                fixupBorder(style->nativeFrameWidth(widget));
+        }
+        if (border()->hasBorderImage())
+            defaultBackground = QBrush();
     }
-    if (hasBorder() && border()->hasBorderImage())
-        defaultBackground = QBrush();
 }
 
 QRect QRenderRule::borderRect(const QRect& r) const

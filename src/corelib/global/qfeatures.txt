@@ -107,7 +107,7 @@ Name: QSharedMemory
 Feature: SYSTEMSEMAPHORE
 Description: Provides a general counting system semaphore.
 Section: Kernel
-Requires:
+Requires: SHAREDMEMORY
 Name: QSystemSemaphore
 
 Feature: XMLSTREAM
@@ -500,7 +500,7 @@ Name: QColorDialog
 Feature: FILEDIALOG
 Description: Supports a dialog widget for selecting files or directories.
 Section: Dialogs
-Requires: DIRMODEL TREEVIEW COMBOBOX TOOLBUTTON BUTTONGROUP TOOLTIP SPLITTER STACKEDWIDGET PROXYMODEL
+Requires: FILESYSTEMMODEL TREEVIEW COMBOBOX TOOLBUTTON BUTTONGROUP TOOLTIP SPLITTER STACKEDWIDGET PROXYMODEL
 Name: QFileDialog
 
 Feature: FONTDIALOG
@@ -512,7 +512,7 @@ Name: QFontDialog
 Feature: PRINTDIALOG
 Description: Supports a dialog widget for specifying printer configuration.
 Section: Dialogs
-Requires: PRINTER COMBOBOX BUTTONGROUP SPINBOX TREEVIEW TABWIDGET
+Requires: PRINTER COMBOBOX BUTTONGROUP SPINBOX TABWIDGET
 Name: QPrintDialog
 
 Feature: PRINTPREVIEWDIALOG

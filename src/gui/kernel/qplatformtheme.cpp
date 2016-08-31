@@ -153,6 +153,7 @@ QT_BEGIN_NAMESPACE
 */
 
 
+#ifndef QT_NO_SHORTCUT
 // Table of key bindings. It must be sorted on key sequence:
 // The integer value of VK_KEY | Modifier Keys (e.g., VK_META, and etc.)
 // A priority of 1 indicates that this is the primary key binding when multiple are defined.
@@ -336,6 +337,7 @@ const QKeyBinding QPlatformThemePrivate::keyBindings[] = {
 };
 
 const uint QPlatformThemePrivate::numberOfKeyBindings = sizeof(QPlatformThemePrivate::keyBindings)/(sizeof(QKeyBinding));
+#endif
 
 QPlatformThemePrivate::QPlatformThemePrivate()
         : systemPalette(0)
@@ -591,6 +593,7 @@ static inline int maybeSwapShortcut(int shortcut)
 }
 #endif
 
+#ifndef QT_NO_SHORTCUT
 // mixed-mode predicate: all of these overloads are actually needed (but not all for every compiler)
 struct ByStandardKey {
     typedef bool result_type;
@@ -641,6 +644,7 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
 
     return list;
 }
+#endif
 
 /*!
    Returns the text of a standard \a button.
@@ -738,10 +742,12 @@ unsigned QPlatformThemePrivate::currentKeyPlatforms()
 {
     const uint keyboardScheme = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::KeyboardScheme).toInt();
     unsigned result = 1u << keyboardScheme;
+#ifndef QT_NO_SHORTCUT
     if (keyboardScheme == QPlatformTheme::KdeKeyboardScheme
         || keyboardScheme == QPlatformTheme::GnomeKeyboardScheme
         || keyboardScheme == QPlatformTheme::CdeKeyboardScheme)
         result |= KB_X11;
+#endif
     return result;
 }
 

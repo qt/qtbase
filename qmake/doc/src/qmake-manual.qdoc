@@ -2693,6 +2693,13 @@
     \row
         \li version
         \li The version number of the package. Defaults to \c{1.0.0.0}.
+    \row
+        \li minVersion
+        \li The minimum required Windows version to run the package. Defaults to the environment variable \c UCRTVersion.
+    \row
+        \li maxVersionTested
+        \li The maximum Windows version the package has been tested against. Defaults to \c WINRT_MANIFEST.minVersion
+
     \endtable
 
     You can use any combination of those values.

@@ -52,6 +52,8 @@
 # include <qthreadpool.h>
 #endif
 
+#include <algorithm>
+
 #ifdef Q_OS_UNIX
 #include <time.h>
 #include <utime.h>
@@ -97,7 +99,7 @@ enum ExpandFunc {
 enum TestFunc {
     T_INVALID = 0, T_REQUIRES, T_GREATERTHAN, T_LESSTHAN, T_EQUALS,
     T_EXISTS, T_EXPORT, T_CLEAR, T_UNSET, T_EVAL, T_CONFIG, T_SYSTEM,
-    T_DEFINED, T_CONTAINS, T_INFILE,
+    T_DEFINED, T_DISCARD_FROM, T_CONTAINS, T_INFILE,
     T_COUNT, T_ISEMPTY, T_PARSE_JSON, T_INCLUDE, T_LOAD, T_DEBUG, T_LOG, T_MESSAGE, T_WARNING, T_ERROR, T_IF,
     T_MKPATH, T_WRITE_FILE, T_TOUCH, T_CACHE
 };
@@ -178,6 +180,7 @@ void QMakeEvaluator::initFunctionStatics()
         { "if", T_IF },
         { "isActiveConfig", T_CONFIG },
         { "system", T_SYSTEM },
+        { "discard_from", T_DISCARD_FROM },
         { "defined", T_DEFINED },
         { "contains", T_CONTAINS },
         { "infile", T_INFILE },
@@ -1292,6 +1295,38 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         }
         return ReturnTrue;
     }
+    case T_DISCARD_FROM: {
+        if (args.count() != 1 || args.at(0).isEmpty()) {
+            evalError(fL1S("discard_from(file) requires one argument."));
+            return ReturnFalse;
+        }
+        if (m_valuemapStack.count() != 1) {
+            evalError(fL1S("discard_from() cannot be called from functions."));
+            return ReturnFalse;
+        }
+        QString fn = resolvePath(args.at(0).toQString(m_tmp1));
+        ProFile *pro = m_parser->parsedProFile(fn, QMakeParser::ParseOnlyCached);
+        if (!pro)
+            return ReturnFalse;
+        ProValueMap &vmap = m_valuemapStack.first();
+        for (auto vit = vmap.begin(); vit != vmap.end(); ) {
+            if (!vit->isEmpty()) {
+                auto isFrom = [pro](const ProString &s) {
+                    return s.sourceFile() == pro;
+                };
+                vit->erase(std::remove_if(vit->begin(), vit->end(), isFrom), vit->end());
+                if (vit->isEmpty()) {
+                    // When an initially non-empty variable becomes entirely empty,
+                    // undefine it altogether.
+                    vit = vmap.erase(vit);
+                    continue;
+                }
+            }
+            ++vit;
+        }
+        pro->deref();
+        return ReturnTrue;
+    }
     case T_INFILE:
         if (args.count() < 2 || args.count() > 3) {
             evalError(fL1S("infile(file, var, [values]) requires two or three arguments."));
@@ -1519,7 +1554,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         if (m_cumulative)
             flags = LoadSilent;
         if (args.count() >= 2) {
-            parseInto = args.at(1).toQString(m_tmp2);
+            if (!args.at(1).isEmpty())
+                parseInto = args.at(1) + QLatin1Char('.');
             if (args.count() >= 3 && isTrue(args.at(2)))
                 flags = LoadSilent;
         }
@@ -1536,17 +1572,15 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                         it = m_valuemapStack.top().constBegin(),
                         end = m_valuemapStack.top().constEnd();
                         it != end; ++it) {
-                    const QString &ky = it.key().toQString(m_tmp1);
-                    if (!(ky.startsWith(parseInto) &&
-                          (ky.length() == parseInto.length()
-                           || ky.at(parseInto.length()) == QLatin1Char('.'))))
+                    const ProString &ky = it.key();
+                    if (!ky.startsWith(parseInto))
                         newMap[it.key()] = it.value();
                 }
                 for (ProValueMap::ConstIterator it = symbols.constBegin();
                      it != symbols.constEnd(); ++it) {
                     const QString &ky = it.key().toQString(m_tmp1);
                     if (!ky.startsWith(QLatin1Char('.')))
-                        newMap.insert(ProKey(parseInto + QLatin1Char('.') + ky), it.value());
+                        newMap.insert(ProKey(parseInto + ky), it.value());
                 }
                 m_valuemapStack.top() = newMap;
             }

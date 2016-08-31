@@ -85,8 +85,8 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
         qCDebug(qLcEvdevTouch) << "evdevtouch: Using device discovery";
         m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_Touchpad | QDeviceDiscovery::Device_Touchscreen, this);
         if (m_deviceDiscovery) {
-            QStringList devices = m_deviceDiscovery->scanConnectedDevices();
-            foreach (const QString &device, devices)
+            const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
+            for (const QString &device : devices)
                 addDevice(device);
             connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addDevice(QString)));
             connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeDevice(QString)));

@@ -132,10 +132,12 @@ void QDBusPlatformMenuItem::setHasExclusiveGroup(bool hasExclusiveGroup)
     m_hasExclusiveGroup = hasExclusiveGroup;
 }
 
+#ifndef QT_NO_SHORTCUT
 void QDBusPlatformMenuItem::setShortcut(const QKeySequence &shortcut)
 {
     m_shortcut = shortcut;
 }
+#endif
 
 void QDBusPlatformMenuItem::trigger()
 {
@@ -154,7 +156,7 @@ QDBusPlatformMenuItem *QDBusPlatformMenuItem::byId(int id)
 QList<const QDBusPlatformMenuItem *> QDBusPlatformMenuItem::byIds(const QList<int> &ids)
 {
     QList<const QDBusPlatformMenuItem *> ret;
-    Q_FOREACH (int id, ids) {
+    for (int id : ids) {
         if (menuItemsByID.contains(id))
             ret << menuItemsByID[id];
     }

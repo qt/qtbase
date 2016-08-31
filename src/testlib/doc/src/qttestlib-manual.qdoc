@@ -349,82 +349,18 @@
     counters can be obtained by running any benchmark executable with the
     option \c -perfcounterlist.
 
-    Note that using the performance counter may require enabling access to non-privileged applications.
-
-    \note Depending on the device configuration, tick counters on the
-     Windows CE platform may not be as fine-grained, compared to other platforms.
-     Devices that do not support high-resolution timers default to
-     one-millisecond granularity.
+    \list
+    \li \b Notes:
+    \list
+    \li Using the performance counter may require enabling access to non-privileged
+        applications.
+    \li Devices that do not support high-resolution timers default to
+        one-millisecond granularity.
+    \endlist
+    \endlist
 
     See \l {Chapter 5: Writing a Benchmark}{Writing a Benchmark} in the Qt Test
     Tutorial for more benchmarking examples.
-
-    \section1 Using Qt Test Remotely on Windows CE
-
-    The \c cetest convenience application enables you to launch an
-    application remotely on a Windows CE device or emulator.
-
-    It needs to be executed after the unit test has been successfully compiled.
-
-    Prior to launching, the following files are copied to the device:
-
-    \list
-    \li all Qt libraries the project links to
-    \li \l {QtRemote}{QtRemote.dll}
-    \li the c runtime library specified during installation
-    \li all files specified in the \c .pro file following the \l DEPLOYMENT rules.
-    \endlist
-
-    \section2 Syntax
-    The syntax to execute an autotest takes the following simple form:
-
-    \snippet code/doc_src_qtestlib.qdoc 6
-
-    \section2 Options
-    \c cetest provides the same options as those for unit-testing on non cross-compiled
-    platforms. See \l {Qt Test Command Line Arguments} {Command Line Arguments} for
-    more information.
-
-    The following commands are also included:
-
-    \list
-    \li \c -debug \br
-    Compiles the test version in debug mode.
-    \li \c -release \br
-    Compiles the test version in release mode.
-    \li \c -libpath \e path \br
-    Copies Qt libraries to the specified path.
-    \li \c -qt-delete \br
-    Deletes Qt libraries after execution.
-    \li \c -project-delete \br
-    Deletes project files after execution.
-    \li \c -delete \br
-    Deletes project and Qt libraries after execution.
-    \li \c -conf \br
-    Specifies a qt.conf file to be deployed to remote directory.
-    \endlist
-
-    \note \c{debug} is the default build option.
-
-    \section2 QtRemote
-    \c QtRemote is a small library which is built after Qt Test. It allows the host
-    system to create a process on a remote device and waits until its execution has
-    been finished.
-
-    \section2 Requirements
-    \c cetest uses Microsoft ActiveSync to establish a remote connection between the
-    host computer and the device. Thus header files and libraries are needed to compile
-    cetest and QtRemote successfully.
-
-    Prior to \l{Installing Qt for Windows CE}{installation} of Qt, you need to set your
-    \c INCLUDE and \c LIB environment variables properly.
-
-    A default installation of Windows Mobile 5 for Pocket PC can be obtained by:
-
-    \snippet code/doc_src_qtestlib.qdoc 7
-
-    Note that Qt will remember the path, so you do not need to set it again
-    after switching the environments for cross-compilation.
 
     \section1 3rd Party Code
 

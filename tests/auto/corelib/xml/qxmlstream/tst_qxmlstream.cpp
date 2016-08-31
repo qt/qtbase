@@ -65,6 +65,16 @@ static inline int best(int a, int b, int c)
     return qMin(qMin(a, b), c);
 }
 
+template <typename C>
+const C sorted_by_name(C c) { // return by const value so we can feed directly into range-for loops below
+    using T = typename C::value_type;
+    auto byName = [](const T &lhs, const T &rhs) {
+        return lhs.name() < rhs.name();
+    };
+    std::sort(c.begin(), c.end(), byName);
+    return c;
+}
+
 /**
  *  Opens \a filename and returns content produced as per
  *  xmlconf/xmltest/canonxml.html.
@@ -97,7 +107,8 @@ static QByteArray makeCanonical(const QString &filename,
         while (!reader.atEnd()) {
             reader.readNext();
             if (reader.isDTD()) {
-                if (!reader.notationDeclarations().isEmpty()) {
+                const auto notationDeclarations = reader.notationDeclarations();
+                if (!notationDeclarations.isEmpty()) {
                     QString dtd;
                     QTextStream writeDtd(&dtd);
 
@@ -105,10 +116,7 @@ static QByteArray makeCanonical(const QString &filename,
                     writeDtd << docType;
                     writeDtd << " [";
                     writeDtd << endl;
-                    QMap<QString, QXmlStreamNotationDeclaration> sortedNotationDeclarations;
-                    foreach (QXmlStreamNotationDeclaration notation, reader.notationDeclarations())
-                        sortedNotationDeclarations.insert(notation.name().toString(), notation);
-                    foreach (QXmlStreamNotationDeclaration notation, sortedNotationDeclarations.values()) {
+                    for (const QXmlStreamNotationDeclaration &notation : sorted_by_name(notationDeclarations)) {
                         writeDtd << "<!NOTATION ";
                         writeDtd << notation.name().toString();
                         if (notation.publicId().isEmpty()) {
@@ -135,11 +143,7 @@ static QByteArray makeCanonical(const QString &filename,
                 }
             } else if (reader.isStartElement()) {
                 writer.writeStartElement(reader.namespaceUri().toString(), reader.name().toString());
-
-                QMap<QString, QXmlStreamAttribute> sortedAttributes;
-                foreach(QXmlStreamAttribute attribute, reader.attributes())
-                    sortedAttributes.insert(attribute.name().toString(), attribute);
-                foreach(QXmlStreamAttribute attribute, sortedAttributes.values())
+                for (const QXmlStreamAttribute &attribute : sorted_by_name(reader.attributes()))
                     writer.writeAttribute(attribute);
                 writer.writeCharacters(QString()); // write empty string to avoid having empty xml tags
             } else if (reader.isCharacters()) {
@@ -236,6 +240,8 @@ public:
      */
     class MissedBaseline
     {
+        friend class QVector<MissedBaseline>;
+        MissedBaseline() {} // for QVector, don't use
     public:
         MissedBaseline(const QString &aId,
                        const QByteArray &aExpected,
@@ -247,13 +253,20 @@ public:
                 qFatal("%s: aId must not be an empty string", Q_FUNC_INFO);
         }
 
+        void swap(MissedBaseline &other) Q_DECL_NOTHROW
+        {
+            qSwap(id, other.id);
+            qSwap(expected, other.expected);
+            qSwap(output, other.output);
+        }
+
         QString     id;
         QByteArray  expected;
         QByteArray  output;
     };
 
-    QList<GeneralFailure> failures;
-    QList<MissedBaseline> missedBaselines;
+    QVector<GeneralFailure> failures;
+    QVector<MissedBaseline> missedBaselines;
 
     /**
      * The count of how many tests that were run.
@@ -507,6 +520,9 @@ private:
     QString                 m_ch;
     QStack<QUrl>            m_baseURI;
 };
+QT_BEGIN_NAMESPACE
+Q_DECLARE_SHARED(TestSuiteHandler::MissedBaseline)
+QT_END_NAMESPACE
 
 class tst_QXmlStream: public QObject
 {
@@ -718,8 +734,9 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
             writer << " qualifiedName=\"" << reader.qualifiedName().toString() << '"';
         if (!reader.prefix().isEmpty())
             writer << " prefix=\"" << reader.prefix().toString() << '"';
-        if (reader.attributes().size()) {
-            foreach(QXmlStreamAttribute attribute, reader.attributes()) {
+        const auto attributes = reader.attributes();
+        if (attributes.size()) {
+            for (const QXmlStreamAttribute &attribute : attributes) {
                 writer << endl << "    Attribute(";
                 if (!attribute.name().isEmpty())
                     writer << " name=\"" << attribute.name().toString() << '"';
@@ -734,8 +751,9 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
                 writer << " )" << endl;
             }
         }
-        if (reader.namespaceDeclarations().size()) {
-            foreach(QXmlStreamNamespaceDeclaration namespaceDeclaration, reader.namespaceDeclarations()) {
+        const auto namespaceDeclarations = reader.namespaceDeclarations();
+        if (namespaceDeclarations.size()) {
+            for (const QXmlStreamNamespaceDeclaration &namespaceDeclaration : namespaceDeclarations) {
                 writer << endl << "    NamespaceDeclaration(";
                 if (!namespaceDeclaration.prefix().isEmpty())
                     writer << " prefix=\"" << namespaceDeclaration.prefix().toString() << '"';
@@ -744,8 +762,9 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
                 writer << " )" << endl;
             }
         }
-        if (reader.notationDeclarations().size()) {
-            foreach(QXmlStreamNotationDeclaration notationDeclaration, reader.notationDeclarations()) {
+        const auto notationDeclarations = reader.notationDeclarations();
+        if (notationDeclarations.size()) {
+            for (const QXmlStreamNotationDeclaration &notationDeclaration : notationDeclarations) {
                 writer << endl << "    NotationDeclaration(";
                 if (!notationDeclaration.name().isEmpty())
                     writer << " name=\"" << notationDeclaration.name().toString() << '"';
@@ -756,8 +775,9 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
                 writer << " )" << endl;
             }
         }
-        if (reader.entityDeclarations().size()) {
-            foreach(QXmlStreamEntityDeclaration entityDeclaration, reader.entityDeclarations()) {
+        const auto entityDeclarations = reader.entityDeclarations();
+        if (entityDeclarations.size()) {
+            for (const QXmlStreamEntityDeclaration &entityDeclaration : entityDeclarations) {
                 writer << endl << "    EntityDeclaration(";
                 if (!entityDeclaration.name().isEmpty())
                     writer << " name=\"" << entityDeclaration.name().toString() << '"';
@@ -803,7 +823,8 @@ void tst_QXmlStream::testReader_data() const
     QTest::addColumn<QString>("ref");
     QDir dir;
     dir.cd(QFINDTESTDATA("data/"));
-    foreach(QString filename , dir.entryList(QStringList() << "*.xml")) {
+    const auto fileNames = dir.entryList(QStringList() << "*.xml");
+    for (const QString &filename : fileNames) {
         QString reference =  QFileInfo(filename).baseName() + ".ref";
         QTest::newRow(dir.filePath(filename).toLatin1().data()) << dir.filePath(filename) << dir.filePath(reference);
     }

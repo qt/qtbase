@@ -67,7 +67,7 @@ static const char debugBackingStoreEnvironmentVariable[] = "QT_DEBUG_BACKINGSTOR
 static inline unsigned parseOptions(const QStringList &paramList)
 {
     unsigned options = 0;
-    foreach (const QString &param, paramList) {
+    for (const QString &param : paramList) {
         if (param == QLatin1String("enable_fonts"))
             options |= QMinimalIntegration::EnableFonts;
     }

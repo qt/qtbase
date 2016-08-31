@@ -110,7 +110,9 @@ public Q_SLOTS:
 private:
     QIBusPlatformInputContextPrivate *d;
     bool m_eventFilterUseSynchronousMode;
+#ifndef QT_NO_FILESYSTEMWATCHER
     QFileSystemWatcher m_socketWatcher;
+#endif
     QTimer m_timer;
 
     void connectToContextSignals();

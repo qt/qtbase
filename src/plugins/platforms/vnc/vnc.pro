@@ -7,6 +7,8 @@ load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private network
 
+DEFINES += QT_NO_FOREACH
+
 SOURCES = \
     main.cpp \
     qvncintegration.cpp \

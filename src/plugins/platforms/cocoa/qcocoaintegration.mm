@@ -283,7 +283,9 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 #ifndef QT_NO_ACCESSIBILITY
     , mAccessibility(new QCocoaAccessibility)
 #endif
+#ifndef QT_NO_CLIPBOARD
     , mCocoaClipboard(new QCocoaClipboard)
+#endif
     , mCocoaDrag(new QCocoaDrag)
     , mNativeInterface(new QCocoaNativeInterface)
     , mServices(new QCocoaServices)
@@ -366,11 +368,13 @@ QCocoaIntegration::~QCocoaIntegration()
         [[NSApplication sharedApplication] setDelegate: 0];
     }
 
+#ifndef QT_NO_CLIPBOARD
     // Delete the clipboard integration and destroy mime type converters.
     // Deleting the clipboard integration flushes promised pastes using
     // the mime converters - the ordering here is important.
     delete mCocoaClipboard;
     QMacInternalPasteboardMime::destroyMimeTypes();
+#endif
 
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!mScreens.isEmpty()) {
@@ -531,10 +535,12 @@ QCocoaAccessibility *QCocoaIntegration::accessibility() const
 }
 #endif
 
+#ifndef QT_NO_CLIPBOARD
 QCocoaClipboard *QCocoaIntegration::clipboard() const
 {
     return mCocoaClipboard;
 }
+#endif
 
 QCocoaDrag *QCocoaIntegration::drag() const
 {

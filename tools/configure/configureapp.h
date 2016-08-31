@@ -75,12 +75,8 @@ private:
 
     QTextStream outStream;
     QString sourcePath, buildPath;
+    QString sourcePathMangled, buildPathMangled;
     QDir sourceDir, buildDir;
-
-    // Variables for usage output
-    int optionIndent;
-    int descIndent;
-    int outputWidth;
 
     QString confStrOffsets[2];
     QString confStrings[2];
@@ -89,7 +85,7 @@ private:
     void addConfStr(int group, const QString &val);
     QString formatPath(const QString &path);
 
-    void reloadCmdLine(int idx);
+    bool reloadCmdLine(int idx);
     void saveCmdLine();
 
     void applySpecSpecifics();

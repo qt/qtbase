@@ -54,8 +54,9 @@ enum { debug = 0 };
 
 static inline bool shellExecute(const QUrl &url)
 {
-    const QString nativeFilePath =
-            url.isLocalFile() ? QDir::toNativeSeparators(url.toLocalFile()) : url.toString(QUrl::FullyEncoded);
+    const QString nativeFilePath = url.isLocalFile() && !url.hasFragment() && !url.hasQuery()
+        ? QDir::toNativeSeparators(url.toLocalFile())
+        : url.toString(QUrl::FullyEncoded);
     const quintptr result =
         reinterpret_cast<quintptr>(ShellExecute(0, 0,
                                                 reinterpret_cast<const wchar_t *>(nativeFilePath.utf16()),

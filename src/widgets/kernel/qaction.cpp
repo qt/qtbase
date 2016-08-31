@@ -1304,8 +1304,10 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug d, const QAction *action)
             d << " toolTip=" << action->toolTip();
         if (action->isCheckable())
             d << " checked=" << action->isChecked();
+#ifndef QT_NO_SHORTCUT
         if (!action->shortcut().isEmpty())
             d << " shortcut=" << action->shortcut();
+#endif
         d << " menuRole=";
         QtDebugUtils::formatQEnum(d, action->menuRole());
         d << " visible=" << action->isVisible();

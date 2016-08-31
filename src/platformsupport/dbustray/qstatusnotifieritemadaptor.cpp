@@ -48,9 +48,10 @@
     QMetaObject::invokeMethod().
 */
 
+#include "qstatusnotifieritemadaptor_p.h"
+
 #ifndef QT_NO_SYSTEMTRAYICON
 
-#include "qstatusnotifieritemadaptor_p.h"
 #include "qdbustrayicon_p.h"
 
 QT_BEGIN_NAMESPACE

@@ -858,14 +858,10 @@
             "test": "unix/reduce_relocs"
         },
         "skip_modules": {
-            "description": "modules to skip",
-            "type": "skipModules",
-            "log": "value"
+            "type": "skipModules"
         },
         "build_parts": {
-            "description": "parts of Qt to build",
-            "type": "buildParts",
-            "log": "value"
+            "type": "buildParts"
         },
         "dlopen": {
             "description": "dlopen() in libc",
@@ -2104,7 +2100,6 @@
             "output": [ { "type": "varAssign", "name": "QT_SKIP_MODULES", "value": "tests.skip_modules.value" } ]
         },
         "build_parts": {
-            "description": "Qt build parts",
             "output": [ { "type": "varAppend", "name": "QT_BUILD_PARTS", "value": "tests.build_parts.value" } ]
         },
         "qreal": {
@@ -2307,7 +2302,7 @@
             "autoDetect": "features.opengles2 || features.opengl-dynamic",
             "condition": "config.win32 && tests.directx",
             "output": [
-                "privateFeature",
+                "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" }
             ]
         },

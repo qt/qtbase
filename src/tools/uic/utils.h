@@ -132,14 +132,6 @@ inline QHash<QString, DomProperty *> propertyMap(const QList<DomProperty *> &pro
     return map;
 }
 
-inline QStringList unique(const QStringList &lst)
-{
-    QHash<QString, bool> h;
-    for (int i=0; i<lst.size(); ++i)
-        h.insert(lst.at(i), true);
-    return h.keys();
-}
-
 QT_END_NAMESPACE
 
 #endif // UTILS_H

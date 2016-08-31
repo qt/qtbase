@@ -33,7 +33,6 @@
 #include "utils.h"
 #include "uic.h"
 
-#include <qdatastream.h>
 #include <qtextstream.h>
 #include <qtextcodec.h>
 #include <qdir.h>
@@ -77,7 +76,9 @@ void ExtractImages::acceptUI(DomUI *node)
         m_imagesDir = dir;
 
         m_output = new QTextStream(&f);
+#ifndef QT_NO_TEXTCODEC
         m_output->setCodec(QTextCodec::codecForName("UTF-8"));
+#endif
 
         QTextStream &out = *m_output;
 
@@ -121,7 +122,9 @@ void ExtractImages::acceptImage(DomImage *image)
 
     if (isXPM_GZ) {
         QTextStream *imageOut = new QTextStream(&f);
+#ifndef QT_NO_TEXTCODEC
         imageOut->setCodec(QTextCodec::codecForName("UTF-8"));
+#endif
 
         CPP::WriteIconData::writeImage(*imageOut, QString(), m_option.limitXPM_LineLength, image);
         delete imageOut;

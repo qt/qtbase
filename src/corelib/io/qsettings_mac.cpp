@@ -613,24 +613,11 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format,
     }
 }
 
-static QCFType<CFURLRef> urlFromFileName(const QString &fileName)
+bool QConfFileSettingsPrivate::readPlistFile(const QByteArray &data, ParsedSettingsMap *map) const
 {
-    return CFURLCreateWithFileSystemPath(kCFAllocatorDefault, QCFString(fileName),
-                                         kCFURLPOSIXPathStyle, false);
-}
-
-bool QConfFileSettingsPrivate::readPlistFile(const QString &fileName, ParsedSettingsMap *map) const
-{
-    QCFType<CFDataRef> resource;
-    SInt32 code;
-    if (!CFURLCreateDataAndPropertiesFromResource(kCFAllocatorDefault, urlFromFileName(fileName),
-                                                  &resource, 0, 0, &code))
-        return false;
-
-    QCFString errorStr;
+    QCFType<CFDataRef> cfData = data.toRawCFData();
     QCFType<CFPropertyListRef> propertyList =
-            CFPropertyListCreateFromXMLData(kCFAllocatorDefault, resource, kCFPropertyListImmutable,
-                                            &errorStr);
+            CFPropertyListCreateWithData(kCFAllocatorDefault, cfData, kCFPropertyListImmutable, Q_NULLPTR, Q_NULLPTR);
 
     if (!propertyList)
         return true;
@@ -651,8 +638,7 @@ bool QConfFileSettingsPrivate::readPlistFile(const QString &fileName, ParsedSett
     return true;
 }
 
-bool QConfFileSettingsPrivate::writePlistFile(const QString &fileName,
-                                              const ParsedSettingsMap &map) const
+bool QConfFileSettingsPrivate::writePlistFile(QIODevice &file, const ParsedSettingsMap &map) const
 {
     QVarLengthArray<QCFType<CFStringRef> > cfkeys(map.size());
     QVarLengthArray<QCFType<CFPropertyListRef> > cfvalues(map.size());
@@ -675,8 +661,7 @@ bool QConfFileSettingsPrivate::writePlistFile(const QString &fileName,
     QCFType<CFDataRef> xmlData = CFPropertyListCreateData(
                  kCFAllocatorDefault, propertyList, kCFPropertyListXMLFormat_v1_0, 0, 0);
 
-    SInt32 code;
-    return CFURLWriteDataAndPropertiesToResource(urlFromFileName(fileName), xmlData, 0, &code);
+    return file.write(QByteArray::fromRawCFData(xmlData)) == CFDataGetLength(xmlData);
 }
 
 QT_END_NAMESPACE

@@ -2414,8 +2414,7 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     native file dialog and not a QFileDialog. However, the native Windows file
     dialog does not support displaying files in the directory chooser. You need
     to pass \l{QFileDialog::}{DontUseNativeDialog} to display files using a
-    QFileDialog. On Windows CE, if the device has no native file dialog, a
-    QFileDialog will be used.
+    QFileDialog.
 
     On Unix/X11, the normal behavior of the file dialog is to resolve and
     follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},
@@ -2792,7 +2791,7 @@ void QFileDialogPrivate::init(const QUrl &directory, const QString &nameFilter,
     }
 
     q->setAcceptMode(QFileDialog::AcceptOpen);
-    nativeDialogInUse = (canBeNativeDialog() && platformFileDialogHelper() != 0);
+    nativeDialogInUse = platformFileDialogHelper() != 0;
     if (!nativeDialogInUse)
         createWidgets();
     q->setFileMode(QFileDialog::AnyFile);

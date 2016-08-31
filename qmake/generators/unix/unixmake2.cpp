@@ -732,7 +732,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
         if(!meta_files.isEmpty())
             t << escapeDependencyPaths(meta_files).join(" ") << ": \n\t"
-              << "@$(QMAKE) -prl " << buildArgs() << ' ' << escapeFilePath(project->projectFile()) << endl;
+              << "@$(QMAKE) -prl " << escapeFilePath(project->projectFile()) << ' ' << buildArgs() << endl;
     }
 
     if (!project->isEmpty("QMAKE_BUNDLE")) {

@@ -73,12 +73,6 @@ cetest [options] ...
 //! [6]
 
 
-//! [7]
-set INCLUDE=C:\Program Files\Windows CE Tools\wce500\Windows Mobile 5.0 Pocket PC SDK\Activesync\Inc;%INCLUDE%
-set LIB=C:\Program Files\Windows CE Tools\wce500\Windows Mobile 5.0 Pocket PC SDK\Activesync\Lib;%LIB%
-//! [7]
-
-
 //! [9]
 /myTestDirectory$ qmake -project "QT += testlib"
 /myTestDirectory$ qmake

@@ -404,8 +404,10 @@ QAccessible::Role QAccessibleDisplay::role() const
     } else if (qobject_cast<QProgressBar*>(object())) {
         return QAccessible::ProgressBar;
 #endif
+#ifndef QT_NO_STATUSBAR
     } else if (qobject_cast<QStatusBar*>(object())) {
         return QAccessible::StatusBar;
+#endif
     }
     return QAccessibleWidget::role();
 }
@@ -428,8 +430,10 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
                     str = doc.toPlainText();
                 }
 #endif
+#ifndef QT_NO_SHORTCUT
                 if (label->buddy())
                     str = qt_accStripAmp(str);
+#endif
 #ifndef QT_NO_LCDNUMBER
             } else if (qobject_cast<QLCDNumber*>(object())) {
                 QLCDNumber *l = qobject_cast<QLCDNumber*>(object());
@@ -438,8 +442,10 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
                 else
                     str = QString::number(l->intValue());
 #endif
+#ifndef QT_NO_STATUSBAR
             } else if (qobject_cast<QStatusBar*>(object())) {
                 return qobject_cast<QStatusBar*>(object())->currentMessage();
+#endif
             }
         }
         break;

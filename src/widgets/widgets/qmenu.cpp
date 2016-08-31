@@ -1435,12 +1435,6 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     \warning To make QMenu visible on the screen, exec() or popup() should be
     used instead of show().
 
-    \section1 QMenu on Qt for Windows CE
-
-    If a menu is integrated into the native menubar on Windows Mobile we
-    do not support the signals: aboutToHide (), aboutToShow () and hovered ().
-    It is not possible to display an icon in a native menu on Windows Mobile.
-
     \section1 QMenu on \macos with Qt Build Against Cocoa
 
     QMenu can be inserted only once in a menu/menubar. Subsequent insertions will
@@ -2731,7 +2725,10 @@ QMenu::event(QEvent *e)
             if (kev->key() == Qt::Key_Up || kev->key() == Qt::Key_Down
                 || kev->key() == Qt::Key_Left || kev->key() == Qt::Key_Right
                 || kev->key() == Qt::Key_Enter || kev->key() == Qt::Key_Return
-                || kev->matches(QKeySequence::Cancel)) {
+#ifndef QT_NO_SHORTCUT
+                || kev->matches(QKeySequence::Cancel)
+#endif
+                    ) {
                 e->accept();
                 return true;
             }
@@ -3059,7 +3056,11 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         key_consumed = false;
     }
 
-    if (!key_consumed && (e->matches(QKeySequence::Cancel)
+    if (!key_consumed && (
+        false
+#ifndef QT_NO_SHORTCUT
+        || e->matches(QKeySequence::Cancel)
+#endif
 #ifdef QT_KEYPAD_NAVIGATION
         || e->key() == Qt::Key_Back
 #endif
@@ -3275,7 +3276,9 @@ static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *i
         item->setIcon(QIcon());
     }
     item->setVisible(action->isVisible());
+#ifndef QT_NO_SHORTCUT
     item->setShortcut(action->shortcut());
+#endif
     item->setCheckable(action->isCheckable());
     item->setChecked(action->isChecked());
     item->setHasExclusiveGroup(action->actionGroup() && action->actionGroup()->isExclusive());

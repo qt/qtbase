@@ -1355,7 +1355,6 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
 {
     QConfFile *confFile = confFiles[confFileNo].data();
     bool readOnly = confFile->addedKeys.isEmpty() && confFile->removedKeys.isEmpty();
-    bool ok;
 
     /*
         We can often optimize the read-only case, if the file on disk
@@ -1415,31 +1414,26 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
             because they don't exist) are treated as empty files.
         */
         if (file.isReadable() && fileInfo.size() != 0) {
+            bool ok = false;
 #ifdef Q_OS_MAC
             if (format == QSettings::NativeFormat) {
-                ok = readPlistFile(confFile->name, &confFile->originalKeys);
+                QByteArray data = file.readAll();
+                ok = readPlistFile(data, &confFile->originalKeys);
             } else
 #endif
-            {
-                if (format <= QSettings::IniFormat) {
-                    QByteArray data = file.readAll();
-                    ok = readIniFile(data, &confFile->unparsedIniSections);
-                } else {
-                    if (readFunc) {
-                        QSettings::SettingsMap tempNewKeys;
-                        ok = readFunc(file, tempNewKeys);
+            if (format <= QSettings::IniFormat) {
+                QByteArray data = file.readAll();
+                ok = readIniFile(data, &confFile->unparsedIniSections);
+            } else if (readFunc) {
+                QSettings::SettingsMap tempNewKeys;
+                ok = readFunc(file, tempNewKeys);
 
-                        if (ok) {
-                            QSettings::SettingsMap::const_iterator i = tempNewKeys.constBegin();
-                            while (i != tempNewKeys.constEnd()) {
-                                confFile->originalKeys.insert(QSettingsKey(i.key(),
-                                                                           caseSensitivity),
-                                                              i.value());
-                                ++i;
-                            }
-                        }
-                    } else {
-                        ok = false;
+                if (ok) {
+                    QSettings::SettingsMap::const_iterator i = tempNewKeys.constBegin();
+                    while (i != tempNewKeys.constEnd()) {
+                        confFile->originalKeys.insert(QSettingsKey(i.key(), caseSensitivity),
+                                                      i.value());
+                        ++i;
                     }
                 }
             }
@@ -1457,44 +1451,42 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         so everything is under control.
     */
     if (!readOnly) {
+        bool ok = false;
         ensureAllSectionsParsed(confFile);
         ParsedSettingsMap mergedKeys = confFile->mergedKeyMap();
 
+#ifndef QT_BOOTSTRAPPED
+        QSaveFile sf(confFile->name);
+#else
+        QFile sf(confFile->name);
+#endif
+        if (!sf.open(QIODevice::WriteOnly)) {
+            setStatus(QSettings::AccessError);
+            return;
+        }
+
 #ifdef Q_OS_MAC
         if (format == QSettings::NativeFormat) {
-            ok = writePlistFile(confFile->name, mergedKeys);
+            ok = writePlistFile(sf, mergedKeys);
         } else
 #endif
-        {
-#ifndef QT_BOOTSTRAPPED
-            QSaveFile sf(confFile->name);
-#else
-            QFile sf(confFile->name);
-#endif
-            if (!sf.open(QIODevice::WriteOnly)) {
-                setStatus(QSettings::AccessError);
-                ok = false;
-            } else if (format <= QSettings::IniFormat) {
-                ok = writeIniFile(sf, mergedKeys);
-            } else {
-                if (writeFunc) {
-                    QSettings::SettingsMap tempOriginalKeys;
+        if (format <= QSettings::IniFormat) {
+            ok = writeIniFile(sf, mergedKeys);
+        } else if (writeFunc) {
+            QSettings::SettingsMap tempOriginalKeys;
 
-                    ParsedSettingsMap::const_iterator i = mergedKeys.constBegin();
-                    while (i != mergedKeys.constEnd()) {
-                        tempOriginalKeys.insert(i.key(), i.value());
-                        ++i;
-                    }
-                    ok = writeFunc(sf, tempOriginalKeys);
-                } else {
-                    ok = false;
-                }
+            ParsedSettingsMap::const_iterator i = mergedKeys.constBegin();
+            while (i != mergedKeys.constEnd()) {
+                tempOriginalKeys.insert(i.key(), i.value());
+                ++i;
             }
-#ifndef QT_BOOTSTRAPPED
-            if (ok)
-                ok = sf.commit();
-#endif
+            ok = writeFunc(sf, tempOriginalKeys);
         }
+
+#ifndef QT_BOOTSTRAPPED
+        if (ok)
+            ok = sf.commit();
+#endif
 
         if (ok) {
             confFile->unparsedIniSections.clear();
@@ -2235,16 +2227,20 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     On Windows, the following files are used:
 
     \list 1
-    \li \c{%APPDATA%\MySoft\Star Runner.ini}
-    \li \c{%APPDATA%\MySoft.ini}
-    \li \c{%COMMON_APPDATA%\MySoft\Star Runner.ini}
-    \li \c{%COMMON_APPDATA%\MySoft.ini}
+    \li \c{CSIDL_APPDATA\MySoft\Star Runner.ini}
+    \li \c{CSIDL_APPDATA\MySoft.ini}
+    \li \c{CSIDL_COMMON_APPDATA\MySoft\Star Runner.ini}
+    \li \c{CSIDL_COMMON_APPDATA\MySoft.ini}
     \endlist
 
-    The \c %APPDATA% path is usually \tt{C:\\Documents and
-    Settings\\\e{User Name}\\Application Data}; the \c
-    %COMMON_APPDATA% path is usually \tt{C:\\Documents and
-    Settings\\All Users\\Application Data}.
+    The identifiers prefixed by \c{CSIDL_} are special item ID lists to be passed
+    to the Win32 API function \c{SHGetSpecialFolderPath()} to obtain the
+    corresponding path.
+
+    \c{CSIDL_APPDATA} usually points to \tt{C:\\Users\\\e{User Name}\\AppData\\Roaming},
+    also shown by the environment variable \c{%APPDATA%}.
+
+    \c{CSIDL_COMMON_APPDATA} usually points to \tt{C:\\ProgramData}.
 
     If the file format is IniFormat, this is "Settings/MySoft/Star Runner.ini"
     in the application's home directory.
@@ -3348,8 +3344,8 @@ void QSettings::setUserIniPath(const QString &dir)
 
     \table
     \header \li Platform         \li Format                       \li Scope       \li Path
-    \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c %APPDATA%
-    \row                                                        \li SystemScope \li \c %COMMON_APPDATA%
+    \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c CSIDL_APPDATA
+    \row                                                        \li SystemScope \li \c CSIDL_COMMON_APPDATA
     \row    \li{1,2} Unix        \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/.config
     \row                                                        \li SystemScope \li \c /etc/xdg
     \row    \li{1,2} Qt for Embedded Linux \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/Settings

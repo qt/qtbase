@@ -37,9 +37,10 @@
 **
 ****************************************************************************/
 
+#include "qdbustrayicon_p.h"
+
 #ifndef QT_NO_SYSTEMTRAYICON
 
-#include "qdbustrayicon_p.h"
 #include "qdbusmenuconnection_p.h"
 #include "qstatusnotifieritemadaptor_p.h"
 #include "qdbusmenuadaptor_p.h"
@@ -299,4 +300,3 @@ bool QDBusTrayIcon::isSystemTrayAvailable() const
 
 QT_END_NAMESPACE
 #endif //QT_NO_SYSTEMTRAYICON
-

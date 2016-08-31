@@ -2,6 +2,8 @@ TARGET = qxcb
 
 QT += core-private gui-private platformsupport-private xcb_qpa_lib-private
 
+DEFINES += QT_NO_FOREACH
+
 SOURCES = \
     qxcbmain.cpp
 OTHER_FILES += xcb.json README

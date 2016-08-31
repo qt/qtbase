@@ -258,6 +258,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         free_prop = true;
     }
 
+#ifndef QT_NO_TEXTCODEC
     static const QTextCodec* mapper = QTextCodec::codecForLocale();
     int errCode = 0;
     if (mapper) {
@@ -281,6 +282,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         tp.nitems = qcs.length();
         free_prop = false;
     }
+#endif
     return &tp;
 }
 #endif // XCB_USE_XLIB
@@ -306,6 +308,7 @@ static QWindow *childWindowAt(QWindow *win, const QPoint &p)
 }
 
 static const char *wm_window_type_property_id = "_q_xcb_wm_window_type";
+static const char *wm_window_role_property_id = "_q_xcb_wm_window_role";
 
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
@@ -588,6 +591,11 @@ void QXcbWindow::create()
         setOpacity(opacity);
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
+
+    if (window()->dynamicPropertyNames().contains(wm_window_role_property_id)) {
+        QByteArray wmWindowRole = window()->property(wm_window_role_property_id).toByteArray();
+        setWmWindowRole(wmWindowRole);
+    }
 }
 
 QXcbWindow::~QXcbWindow()
@@ -1722,6 +1730,14 @@ void QXcbWindow::setWindowIconTextStatic(QWindow *window, const QString &text)
         static_cast<QXcbWindow *>(window->handle())->setWindowIconText(text);
 }
 
+void QXcbWindow::setWmWindowRoleStatic(QWindow *window, const QByteArray &role)
+{
+    if (window->handle())
+        static_cast<QXcbWindow *>(window->handle())->setWmWindowRole(role);
+    else
+        window->setProperty(wm_window_role_property_id, role);
+}
+
 uint QXcbWindow::visualIdStatic(QWindow *window)
 {
     if (window && window->handle())
@@ -1885,6 +1901,13 @@ void QXcbWindow::setWmWindowType(QXcbWindowFunctions::WmWindowTypes types, Qt::W
                                        atoms.count(), atoms.constData()));
     }
     xcb_flush(xcb_connection());
+}
+
+void QXcbWindow::setWmWindowRole(const QByteArray &role)
+{
+    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                   atom(QXcbAtom::WM_WINDOW_ROLE), XCB_ATOM_STRING, 8,
+                                   role.size(), role.constData()));
 }
 
 void QXcbWindow::setParentRelativeBackPixmapStatic(QWindow *window)
@@ -2415,7 +2438,7 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
     }
 
     const char *sourceName = 0;
-    if (lcQpaXInput().isDebugEnabled()) {
+    if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled())) {
         const QMetaObject *metaObject = qt_getEnumMetaObject(source);
         const QMetaEnum me = metaObject->enumerator(metaObject->indexOfEnumerator(qt_getEnumName(source)));
         sourceName = me.valueToKey(source);
@@ -2423,17 +2446,20 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
 
     switch (ev->evtype) {
     case XI_ButtonPress:
-        qCDebug(lcQpaXInput, "XI2 mouse press, button %d, time %d, source %s", button, ev->time, sourceName);
+        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+            qCDebug(lcQpaXInputEvents, "XI2 mouse press, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButton(button, true);
         handleButtonPressEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, source);
         break;
     case XI_ButtonRelease:
-        qCDebug(lcQpaXInput, "XI2 mouse release, button %d, time %d, source %s", button, ev->time, sourceName);
+        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+            qCDebug(lcQpaXInputEvents, "XI2 mouse release, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButton(button, false);
         handleButtonReleaseEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, source);
         break;
     case XI_Motion:
-        qCDebug(lcQpaXInput, "XI2 mouse motion %d,%d, time %d, source %s", event_x, event_y, ev->time, sourceName);
+        if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
+            qCDebug(lcQpaXInputEvents, "XI2 mouse motion %d,%d, time %d, source %s", event_x, event_y, ev->time, sourceName);
         handleMotionNotifyEvent(event_x, event_y, root_x, root_y, modifiers, ev->time, source);
         break;
     default:

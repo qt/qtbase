@@ -39,6 +39,8 @@
 
 #include "quiaccessibilityelement.h"
 
+#ifndef QT_NO_ACCESSIBILITY
+
 #include "private/qaccessiblecache_p.h"
 
 @implementation QMacAccessibilityElement
@@ -221,3 +223,5 @@
 }
 
 @end
+
+#endif

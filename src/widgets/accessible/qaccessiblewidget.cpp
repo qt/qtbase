@@ -142,9 +142,11 @@ QString qt_accStripAmp(const QString &text)
 
 QString qt_accHotKey(const QString &text)
 {
+#ifndef QT_NO_SHORTCUT
     int ampIndex = qt_accAmpIndex(text);
     if (ampIndex != -1)
         return QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + text.at(ampIndex + 1);
+#endif
 
     return QString();
 }

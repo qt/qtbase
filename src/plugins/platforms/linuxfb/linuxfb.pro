@@ -1,5 +1,7 @@
 TARGET = qlinuxfb
 
+DEFINES += QT_NO_FOREACH
+
 QT += core-private gui-private platformsupport-private
 
 SOURCES = main.cpp qlinuxfbintegration.cpp qlinuxfbscreen.cpp

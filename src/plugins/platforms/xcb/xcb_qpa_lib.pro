@@ -39,6 +39,8 @@ HEADERS = \
         qxcbxsettings.h \
         qxcbsystemtraytracker.h
 
+load(qt_build_paths)
+
 DEFINES += QT_BUILD_XCB_PLUGIN
 # needed by Xcursor ...
 qtConfig(xcb-xlib) {
@@ -86,7 +88,11 @@ qtConfig(dbus-linked): \
 
 # libxkbcommon
 !qtConfig(xkbcommon-system) {
-    include(../../../3rdparty/xkbcommon-x11.pri)
+    qtConfig(xkb) {
+        include(../../../3rdparty/xkbcommon-x11.pri)
+    } else {
+        include(../../../3rdparty/xkbcommon.pri)
+    }
 } else {
     QMAKE_USE += xkbcommon
 }

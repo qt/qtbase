@@ -12,7 +12,7 @@
 !contains(QMAKE_INTERNAL_INCLUDED_FILES, .*qmodule\\.pri) {
     QMAKE_QT_MODULE = $$[QT_HOST_DATA/get]/mkspecs/qmodule.pri
     !exists($$QMAKE_QT_MODULE)|!include($$QMAKE_QT_MODULE, "", true) {
-        error("Cannot load qmodule.pri!")
+        debug(1, "Cannot load qmodule.pri!")
     } else {
         debug(1, "Loaded qmodule.pri from ($$QMAKE_QT_MODULE)")
     }

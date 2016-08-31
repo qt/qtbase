@@ -62,6 +62,8 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_SYSTEMTRAYICON
 
 #include <QtCore/QObject>
