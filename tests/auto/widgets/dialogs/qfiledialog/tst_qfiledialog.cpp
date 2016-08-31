@@ -1360,6 +1360,7 @@ void tst_QFiledialog::widgetlessNativeDialog()
     QVERIFY(!model);
     QPushButton *button = fd.findChild<QPushButton*>();
     QVERIFY(!button);
+    QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, true);
 }
 
 void tst_QFiledialog::selectedFilesWithoutWidgets()
