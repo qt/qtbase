@@ -60,7 +60,7 @@ class Window : public QOpenGLWindow
 {
     Q_OBJECT
 public:
-    Window(int index) : windowNumber(index + 1), y(0), fps(0) {
+    Window(int index) : windowNumber(index + 1), x(0), framesSwapped(0) {
 
         color = QColor::fromHsl((index * 30) % 360, 255, 127).toRgb();
 
@@ -69,7 +69,6 @@ public:
         setObjectName(QString("Window %1").arg(windowNumber));
 
         connect(this, SIGNAL(frameSwapped()), SLOT(frameSwapped()));
-        fpsTimer.start();
     }
 
     void paintGL() {
@@ -77,23 +76,14 @@ public:
         f->glClearColor(color.redF(), color.greenF(), color.blueF(), 1);
         f->glClear(GL_COLOR_BUFFER_BIT);
 
-        QPainter p(this);
-        p.setPen(Qt::white);
-        p.drawText(QPoint(20, y), QString(QLatin1String("Window %1 (%2 FPS)")).arg(windowNumber).arg(fps));
-        y += 1;
-        if (y > height() - 20)
-            y = 20;
+        QPainter painter(this);
+        painter.drawLine(x, 0, x, height());
+        x = ++x % width();
     }
 
 public slots:
     void frameSwapped() {
         ++framesSwapped;
-        if (fpsTimer.elapsed() > 1000) {
-            fps = qRound(framesSwapped * (1000.0 / fpsTimer.elapsed()));
-            framesSwapped = 0;
-            fpsTimer.restart();
-        }
-
         update();
     }
 
@@ -107,13 +97,45 @@ protected:
 private:
     int windowNumber;
     QColor color;
-
-    int y;
+    int x;
 
     int framesSwapped;
-    QElapsedTimer fpsTimer;
-    int fps;
+    friend void printFps();
 };
+
+static const qreal kFpsInterval = 500;
+
+void printFps()
+{
+    static QElapsedTimer timer;
+    if (!timer.isValid()) {
+        timer.start();
+        return;
+    }
+
+    const qreal frameFactor = (kFpsInterval / timer.elapsed()) * (1000.0 / kFpsInterval);
+
+    QDebug output = qDebug().nospace();
+
+    qreal averageFps = 0;
+    const QWindowList windows = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < windows.size(); ++i) {
+        Window *w = qobject_cast<Window*>(windows.at(i));
+        Q_ASSERT(w);
+
+        int fps = qRound(w->framesSwapped * frameFactor);
+        output << (i + 1) << "=" << fps << ", ";
+
+        averageFps += fps;
+        w->framesSwapped = 0;
+    }
+    averageFps = qRound(averageFps / windows.size());
+    qreal msPerFrame = 1000.0 / averageFps;
+
+    output << "avg=" << averageFps << ", ms=" << msPerFrame;
+
+    timer.restart();
+}
 
 int main(int argc, char **argv)
 {
@@ -176,6 +198,12 @@ int main(int argc, char **argv)
         w->setFramePosition(position);
         w->showNormal();
     }
+
+    QTimer fpsTimer;
+    fpsTimer.setInterval(kFpsInterval);
+    fpsTimer.setTimerType(Qt::PreciseTimer);
+    QObject::connect(&fpsTimer, &QTimer::timeout, &printFps);
+    fpsTimer.start();
 
     int r = app.exec();
     qDeleteAll(windows);
