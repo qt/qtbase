@@ -83,8 +83,6 @@ public:
         y += 1;
         if (y > height() - 20)
             y = 20;
-
-        update();
     }
 
 public slots:
@@ -95,6 +93,8 @@ public slots:
             framesSwapped = 0;
             fpsTimer.restart();
         }
+
+        update();
     }
 
 protected:
