@@ -243,16 +243,23 @@ headersclean:!internal_module {
     }
 
     !isEmpty(hcleanCOMMAND):if(!qtConfig(debug_and_release)|CONFIG(release, debug|release)) {
+        CLEAN_HEADERS =
+        for (h, SYNCQT.CLEAN_HEADER_FILES) {
+            hh = $$split(h, :)
+            hr = $$member(hh, 1)
+            isEmpty(hr)|qtConfig($$hr): \
+                CLEAN_HEADERS += $$member(hh, 0)
+        }
+        CLEAN_HEADERS -= $$HEADERSCLEAN_EXCLUDE
         header_check.dependency_type = TYPE_C
         header_check.CONFIG += no_link
         header_check.output = ${QMAKE_VAR_OBJECTS_DIR}header_${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-        header_check.input = SYNCQT.CLEAN_HEADER_FILES
+        header_check.input = CLEAN_HEADERS
         header_check.variable_out = PRE_TARGETDEPS
         header_check.name = headercheck ${QMAKE_FILE_IN}
         header_check.commands = $$hcleanCOMMAND
         silent:header_check.commands = @echo compiling[header] ${QMAKE_FILE_IN} && $$hcleanCOMMAND
         QMAKE_EXTRA_COMPILERS += header_check
-        SYNCQT.CLEAN_HEADER_FILES -= $$HEADERSCLEAN_EXCLUDE
     }
     unset(hcleanCOMMAND)
     unset(hcleanFLAGS)
