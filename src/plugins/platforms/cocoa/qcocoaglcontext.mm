@@ -323,6 +323,11 @@ void QCocoaGLContext::updateSurfaceFormat()
 
     [pixelFormat release];
 
+    GLint swapInterval = -1;
+    [m_context getValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
+    if (swapInterval >= 0)
+        m_format.setSwapInterval(swapInterval);
+
     // Restore the original context
     CGLSetCurrentContext(oldContext);
 }
