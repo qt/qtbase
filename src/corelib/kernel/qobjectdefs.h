@@ -173,7 +173,7 @@ inline void qYouForgotTheQ_OBJECT_Macro(T1, T2) {}
 
 #if defined(Q_CC_CLANG) && Q_CC_CLANG >= 306
 #  define Q_OBJECT_NO_OVERRIDE_WARNING      QT_WARNING_DISABLE_CLANG("-Winconsistent-missing-override")
-#elif defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 510
+#elif defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && Q_CC_GNU >= 501
 #  define Q_OBJECT_NO_OVERRIDE_WARNING      QT_WARNING_DISABLE_GCC("-Wsuggest-override")
 #else
 #  define Q_OBJECT_NO_OVERRIDE_WARNING
