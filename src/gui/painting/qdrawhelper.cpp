@@ -2176,7 +2176,8 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                 fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
                 const uint *s1 = (const uint *)data->texture.scanLine(y1);
                 const uint *s2 = (const uint *)data->texture.scanLine(y2);
-                int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
+                const int disty8 = (fy & 0x0000ffff) >> 8;
+                const int disty4 = (disty8 + 0x08) >> 4;
 
                 if (blendType != BlendTransformedBilinearTiled) {
 #define BILINEAR_DOWNSCALE_BOUNDS_PROLOG \
@@ -2188,12 +2189,9 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2); \
                         if (x1 != x2) \
                             break; \
-                        uint tl = s1[x1]; \
-                        uint tr = s1[x2]; \
-                        uint bl = s2[x1]; \
-                        uint br = s2[x2]; \
-                        int distx = ((fx & 0x0000ffff) + 0x0800) >> 12; \
-                        *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty); \
+                        uint top = s1[x1]; \
+                        uint bot = s2[x1]; \
+                        *b = INTERPOLATE_PIXEL_256(top, 256 - disty8, bot, disty8); \
                         fx += fdx; \
                         ++b; \
                     } \
@@ -2209,7 +2207,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 
                     const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
                     const __m128i v_256 = _mm_set1_epi16(256);
-                    const __m128i v_disty = _mm_set1_epi16(disty);
+                    const __m128i v_disty = _mm_set1_epi16(disty4);
                     const __m128i v_fdx = _mm_set1_epi32(fdx*4);
                     const __m128i v_fx_r = _mm_set1_epi32(0x8);
                     __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
@@ -2241,7 +2239,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     const int16x8_t colorMask = vdupq_n_s16(0x00ff);
                     const int16x8_t invColorMask = vmvnq_s16(colorMask);
                     const int16x8_t v_256 = vdupq_n_s16(256);
-                    const int16x8_t v_disty = vdupq_n_s16(disty);
+                    const int16x8_t v_disty = vdupq_n_s16(disty4);
                     const int16x8_t v_disty_ = vshlq_n_s16(v_disty, 4);
                     int32x4_t v_fdx = vdupq_n_s32(fdx*4);
 
@@ -2298,8 +2296,14 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     uint tr = s1[x2];
                     uint bl = s2[x1];
                     uint br = s2[x2];
-                    int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
-                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
+#if defined(__SSE2__) || defined(__ARM_NEON__)
+                    // The optimized interpolate_4_pixels are faster than interpolate_4_pixels_16.
+                    int distx8 = (fx & 0x0000ffff) >> 8;
+                    *b = interpolate_4_pixels(tl, tr, bl, br, distx8, disty8);
+#else
+                    int distx4 = ((fx & 0x0000ffff) + 0x0800) >> 12;
+                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx4, disty4);
+#endif
                     fx += fdx;
                     ++b;
                 }
@@ -2980,10 +2984,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                         fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
                         if (x1 != x2)
                             break;
-                        sbuf1[i * 2 + 0] = ((const uint*)s1)[x1];
-                        sbuf1[i * 2 + 1] = ((const uint*)s1)[x2];
-                        sbuf2[i * 2 + 0] = ((const uint*)s2)[x1];
-                        sbuf2[i * 2 + 1] = ((const uint*)s2)[x2];
+                        sbuf1[i * 2 + 0] = sbuf1[i * 2 + 1] = ((const uint*)s1)[x1];
+                        sbuf2[i * 2 + 0] = sbuf2[i * 2 + 1] = ((const uint*)s2)[x1];
                         fx += fdx;
                     }
                     int fastLen;
@@ -3102,6 +3104,16 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                         fx += fdx;
                         fy += fdy;
                     }
+                    int fastLen = len;
+                    if (fdx > 0)
+                        fastLen = qMin(fastLen, int((qint64(image_x2) * fixed_scale - fx) / fdx));
+                    else if (fdx < 0)
+                        fastLen = qMin(fastLen, int((qint64(image_x1) * fixed_scale - fx) / fdx));
+                    if (fdy > 0)
+                        fastLen = qMin(fastLen, int((qint64(image_y2) * fixed_scale - fy) / fdy));
+                    else if (fdy < 0)
+                        fastLen = qMin(fastLen, int((qint64(image_y1) * fixed_scale - fy) / fdy));
+                    fastLen -= 3;
 
                     const __m128i v_fdx = _mm_set1_epi32(fdx*4);
                     const __m128i v_fdy = _mm_set1_epi32(fdy*4);
@@ -3111,15 +3123,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                     const uchar *s1 = data->texture.imageData;
                     const uchar *s2 = s1 + bytesPerLine;
                     const __m128i vbpl = _mm_shufflelo_epi16(_mm_cvtsi32_si128(bytesPerLine/4), _MM_SHUFFLE(0, 0, 0, 0));
-                    for (; i < len-3; i+=4) {
-                        if (fdx > 0 && (short)_mm_extract_epi16(v_fx, 7) >= image_x2)
-                            break;
-                        if (fdx < 0 && (short)_mm_extract_epi16(v_fx, 7) < image_x1)
-                            break;
-                        if (fdy > 0 && (short)_mm_extract_epi16(v_fy, 7) >= image_y2)
-                            break;
-                        if (fdy < 0 && (short)_mm_extract_epi16(v_fy, 7) < image_y1)
-                            break;
+                    for (; i < fastLen; i += 4) {
                         const __m128i vy = _mm_packs_epi32(_mm_srai_epi32(v_fy, 16), _mm_setzero_si128());
                         __m128i voffset = _mm_unpacklo_epi16(_mm_mullo_epi16(vy, vbpl), _mm_mulhi_epu16(vy, vbpl));
                         voffset = _mm_add_epi32(voffset, _mm_srli_epi32(v_fx, 16));
