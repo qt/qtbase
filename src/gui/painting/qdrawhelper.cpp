@@ -2244,13 +2244,9 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     int32x4_t v_fdx = vdupq_n_s32(fdx*4);
 
                     int32x4_t v_fx = vmovq_n_s32(fx);
-                    fx += fdx;
-                    v_fx = vsetq_lane_s32(fx, v_fx, 1);
-                    fx += fdx;
-                    v_fx = vsetq_lane_s32(fx, v_fx, 2);
-                    fx += fdx;
-                    v_fx = vsetq_lane_s32(fx, v_fx, 3);
-                    fx += fdx;
+                    v_fx = vsetq_lane_s32(fx + fdx, v_fx, 1);
+                    v_fx = vsetq_lane_s32(fx + fdx * 2, v_fx, 2);
+                    v_fx = vsetq_lane_s32(fx + fdx * 3, v_fx, 3);
 
                     const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
                     const int32x4_t v_fx_r = vdupq_n_s32(0x0800);
@@ -2258,18 +2254,20 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     while (b < boundedEnd) {
                         uint32x4x2_t v_top, v_bot;
 
-                        int32x4_t v_fx_shifted = vshrq_n_s32(v_fx, 16);
-
-                        int x1 = vgetq_lane_s32(v_fx_shifted, 0);
+                        int x1 = (fx >> 16);
+                        fx += fdx;
                         v_top = vld2q_lane_u32(s1 + x1, v_top, 0);
                         v_bot = vld2q_lane_u32(s2 + x1, v_bot, 0);
-                        x1 = vgetq_lane_s32(v_fx_shifted, 1);
+                        x1 = (fx >> 16);
+                        fx += fdx;
                         v_top = vld2q_lane_u32(s1 + x1, v_top, 1);
                         v_bot = vld2q_lane_u32(s2 + x1, v_bot, 1);
-                        x1 = vgetq_lane_s32(v_fx_shifted, 2);
+                        x1 = (fx >> 16);
+                        fx += fdx;
                         v_top = vld2q_lane_u32(s1 + x1, v_top, 2);
                         v_bot = vld2q_lane_u32(s2 + x1, v_bot, 2);
-                        x1 = vgetq_lane_s32(v_fx_shifted, 3);
+                        x1 = (fx >> 16);
+                        fx += fdx;
                         v_top = vld2q_lane_u32(s1 + x1, v_top, 3);
                         v_bot = vld2q_lane_u32(s2 + x1, v_bot, 3);
 
@@ -2284,7 +2282,6 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         b+=4;
                         v_fx = vaddq_s32(v_fx, v_fdx);
                     }
-                    fx = vgetq_lane_s32(v_fx, 0);
 #endif
                 }
 
@@ -2440,16 +2437,12 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 
                     int32x4_t v_fx = vmovq_n_s32(fx);
                     int32x4_t v_fy = vmovq_n_s32(fy);
-                    fx += fdx; fy += fdy;
-                    v_fx = vsetq_lane_s32(fx, v_fx, 1);
-                    v_fy = vsetq_lane_s32(fy, v_fy, 1);
-                    fx += fdx; fy += fdy;
-                    v_fx = vsetq_lane_s32(fx, v_fx, 2);
-                    v_fy = vsetq_lane_s32(fy, v_fy, 2);
-                    fx += fdx; fy += fdy;
-                    v_fx = vsetq_lane_s32(fx, v_fx, 3);
-                    v_fy = vsetq_lane_s32(fy, v_fy, 3);
-                    fx += fdx; fy += fdy;
+                    v_fx = vsetq_lane_s32(fx + fdx, v_fx, 1);
+                    v_fy = vsetq_lane_s32(fy + fdy, v_fy, 1);
+                    v_fx = vsetq_lane_s32(fx + fdx * 2, v_fx, 2);
+                    v_fy = vsetq_lane_s32(fy + fdy * 2, v_fy, 2);
+                    v_fx = vsetq_lane_s32(fx + fdx * 3, v_fx, 3);
+                    v_fy = vsetq_lane_s32(fy + fdy * 3, v_fy, 3);
 
                     const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
                     const int32x4_t v_round = vdupq_n_s32(0x0800);
@@ -2457,33 +2450,33 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                     while (b < boundedEnd) {
                         uint32x4x2_t v_top, v_bot;
 
-                        int32x4_t v_fx_shifted, v_fy_shifted;
-                        v_fx_shifted = vshrq_n_s32(v_fx, 16);
-                        v_fy_shifted = vshrq_n_s32(v_fy, 16);
-
-                        int x1 = vgetq_lane_s32(v_fx_shifted, 0);
-                        int y1 = vgetq_lane_s32(v_fy_shifted, 0);
+                        int x1 = (fx >> 16);
+                        int y1 = (fy >> 16);
+                        fx += fdx; fy += fdy;
                         const uchar *sl = textureData + bytesPerLine * y1;
                         const uint *s1 = reinterpret_cast<const uint *>(sl);
                         const uint *s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
                         v_top = vld2q_lane_u32(s1 + x1, v_top, 0);
                         v_bot = vld2q_lane_u32(s2 + x1, v_bot, 0);
-                        x1 = vgetq_lane_s32(v_fx_shifted, 1);
-                        y1 = vgetq_lane_s32(v_fy_shifted, 1);
+                        x1 = (fx >> 16);
+                        y1 = (fy >> 16);
+                        fx += fdx; fy += fdy;
                         sl = textureData + bytesPerLine * y1;
                         s1 = reinterpret_cast<const uint *>(sl);
                         s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
                         v_top = vld2q_lane_u32(s1 + x1, v_top, 1);
                         v_bot = vld2q_lane_u32(s2 + x1, v_bot, 1);
-                        x1 = vgetq_lane_s32(v_fx_shifted, 2);
-                        y1 = vgetq_lane_s32(v_fy_shifted, 2);
+                        x1 = (fx >> 16);
+                        y1 = (fy >> 16);
+                        fx += fdx; fy += fdy;
                         sl = textureData + bytesPerLine * y1;
                         s1 = reinterpret_cast<const uint *>(sl);
                         s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
                         v_top = vld2q_lane_u32(s1 + x1, v_top, 2);
                         v_bot = vld2q_lane_u32(s2 + x1, v_bot, 2);
-                        x1 = vgetq_lane_s32(v_fx_shifted, 3);
-                        y1 = vgetq_lane_s32(v_fy_shifted, 3);
+                        x1 = (fx >> 16);
+                        y1 = (fy >> 16);
+                        fx += fdx; fy += fdy;
                         sl = textureData + bytesPerLine * y1;
                         s1 = reinterpret_cast<const uint *>(sl);
                         s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
@@ -2505,8 +2498,6 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                         v_fx = vaddq_s32(v_fx, v_fdx);
                         v_fy = vaddq_s32(v_fy, v_fdy);
                     }
-                    fx = vgetq_lane_s32(v_fx, 0);
-                    fy = vgetq_lane_s32(v_fy, 0);
 #endif
                 }
 
