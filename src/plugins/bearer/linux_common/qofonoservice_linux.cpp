@@ -103,9 +103,9 @@ QStringList QOfonoManagerInterface::getModems()
         QDBusPendingReply<PathPropertiesList> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetModems"), argumentList);
         reply.waitForFinished();
         if (!reply.isError()) {
-            foreach (const ObjectPathProperties &modem, reply.value()) {
+            const auto modems = reply.value();
+            for (const ObjectPathProperties &modem : modems)
                 modemList << modem.path.path();
-            }
         }
     }
 
@@ -114,8 +114,8 @@ QStringList QOfonoManagerInterface::getModems()
 
 QString QOfonoManagerInterface::currentModem()
 {
-    QStringList modems = getModems();
-    foreach (const QString &modem, modems) {
+    const QStringList modems = getModems();
+    for (const QString &modem : modems) {
         QOfonoModemInterface device(modem);
         if (device.isPowered() && device.isOnline()
                 && device.interfaces().contains(QStringLiteral("org.ofono.NetworkRegistration")))
@@ -266,9 +266,9 @@ QStringList QOfonoDataConnectionManagerInterface::contexts()
         QDBusPendingReply<PathPropertiesList > reply = call(QLatin1String("GetContexts"));
         reply.waitForFinished();
         if (!reply.isError()) {
-            foreach (const ObjectPathProperties &context, reply.value()) {
+            const auto contexts = reply.value();
+            for (const ObjectPathProperties &context : contexts)
                 contextList << context.path.path();
-            }
         }
     }
     return contextList;

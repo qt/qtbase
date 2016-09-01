@@ -54,7 +54,8 @@ static QBearerEngineImpl *getEngineFromId(const QString &id)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
 
-    foreach (QBearerEngine *engine, priv->engines()) {
+    const auto engines = priv->engines();
+    for (QBearerEngine *engine : engines) {
         QBearerEngineImpl *engineImpl = qobject_cast<QBearerEngineImpl *>(engine);
         if (engineImpl && engineImpl->hasIdentifier(id))
             return engineImpl;
@@ -306,7 +307,8 @@ void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
 {
     QNetworkSession::State oldState = state;
 
-    foreach (const QNetworkConfiguration &config, serviceConfig.children()) {
+    const auto configs = serviceConfig.children();
+    for (const QNetworkConfiguration &config : configs) {
         if ((config.state() & QNetworkConfiguration::Active) != QNetworkConfiguration::Active)
             continue;
 

@@ -127,7 +127,8 @@ void QNetworkManagerEngine::setupConfigurations()
 {
     QMutexLocker locker(&mutex);
     // Get active connections.
-    foreach (const QDBusObjectPath &acPath, managerInterface->activeConnections()) {
+    const auto acPaths = managerInterface->activeConnections();
+    for (const QDBusObjectPath &acPath : acPaths) {
 
         if (activeConnectionsList.contains(acPath.path()))
             continue;
@@ -144,8 +145,10 @@ void QNetworkManagerEngine::setupConfigurations()
             connectionInterfaces.insert(activeConnection->connection().path(),device.networkInterface());
         }
     }
+
     // Get connections.
-    foreach (const QDBusObjectPath &settingsPath, systemSettings->listConnections()) {
+    const auto settingsPaths = systemSettings->listConnections();
+    for (const QDBusObjectPath &settingsPath : settingsPaths) {
         locker.unlock();
         if (!hasIdentifier(settingsPath.path()))
             newConnection(settingsPath, systemSettings); //add system connection configs
@@ -189,21 +192,13 @@ void QNetworkManagerEngine::connectToId(const QString &id)
     if (isConnectionActive(settingsPath))
         return;
 
-    QHashIterator<QString, QNetworkManagerInterfaceDevice*> i(interfaceDevices);
-    while (i.hasNext()) {
-        i.next();
-        if (i.value()->deviceType() == DEVICE_TYPE_ETHERNET &&
-            connectionType == DEVICE_TYPE_ETHERNET) {
-            dbusDevicePath = i.key();
-            break;
-        } else if (i.value()->deviceType() == DEVICE_TYPE_WIFI &&
-                   connectionType == DEVICE_TYPE_WIFI) {
-            dbusDevicePath = i.key();
-            break;
-        } else if (i.value()->deviceType() == DEVICE_TYPE_MODEM &&
-                connectionType == DEVICE_TYPE_MODEM) {
-            dbusDevicePath = i.key();
-            break;
+    for (auto i = interfaceDevices.cbegin(), end = interfaceDevices.cend(); i != end; ++i) {
+        const auto type = i.value()->deviceType();
+        if (type == DEVICE_TYPE_ETHERNET || type == DEVICE_TYPE_WIFI || type == DEVICE_TYPE_MODEM) {
+            if (type == connectionType) {
+                dbusDevicePath = i.key();
+                break;
+            }
         }
     }
 
@@ -230,9 +225,7 @@ void QNetworkManagerEngine::disconnectFromId(const QString &id)
         return;
     }
 
-    QHashIterator<QString, QNetworkManagerConnectionActive*> i(activeConnectionsList);
-    while (i.hasNext()) {
-        i.next();
+    for (auto i = activeConnectionsList.cbegin(), end = activeConnectionsList.cend(); i != end; ++i) {
         if (id == i.value()->connection().path() && accessPointConfigurations.contains(id)) {
             managerInterface->deactivateConnection(QDBusObjectPath(i.key()));
             break;
@@ -243,11 +236,8 @@ void QNetworkManagerEngine::disconnectFromId(const QString &id)
 void QNetworkManagerEngine::requestUpdate()
 {
     if (managerInterface && managerInterface->wirelessEnabled()) {
-        QHashIterator<QString, QNetworkManagerInterfaceDeviceWireless *> i(wirelessDevices);
-        while (i.hasNext()) {
-            i.next();
-            i.value()->requestScan();
-        }
+        for (auto *wirelessDevice : qAsConst(wirelessDevices))
+            wirelessDevice->requestScan();
     }
     QMetaObject::invokeMethod(this, "updateCompleted", Qt::QueuedConnection);
 }
@@ -255,20 +245,17 @@ void QNetworkManagerEngine::requestUpdate()
 void QNetworkManagerEngine::interfacePropertiesChanged(const QMap<QString, QVariant> &properties)
 {
     QMutexLocker locker(&mutex);
-    QMapIterator<QString, QVariant> i(properties);
-    while (i.hasNext()) {
-        i.next();
 
+    for (auto i = properties.cbegin(), end = properties.cend(); i != end; ++i) {
         if (i.key() == QLatin1String("ActiveConnections")) {
             // Active connections changed, update configurations.
 
-            QList<QDBusObjectPath> activeConnections =
-                qdbus_cast<QList<QDBusObjectPath> >(i.value().value<QDBusArgument>());
+            const auto activeConnections = qdbus_cast<QList<QDBusObjectPath> >(i.value().value<QDBusArgument>());
 
             QStringList identifiers = accessPointConfigurations.keys();
             QStringList priorActiveConnections = activeConnectionsList.keys();
 
-            foreach (const QDBusObjectPath &acPath, activeConnections) {
+            for (const QDBusObjectPath &acPath : activeConnections) {
                 priorActiveConnections.removeOne(acPath.path());
                 QNetworkManagerConnectionActive *activeConnection =
                     activeConnectionsList.value(acPath.path());
@@ -399,7 +386,8 @@ void QNetworkManagerEngine::wiredCarrierChanged(bool carrier)
     if (!deviceWired)
         return;
     QMutexLocker locker(&mutex);
-    foreach (const QDBusObjectPath &settingsPath, systemSettings->listConnections()) {
+    const auto settingsPaths = systemSettings->listConnections();
+    for (const QDBusObjectPath &settingsPath : settingsPaths) {
         for (int i = 0; i < connections.count(); ++i) {
             QNetworkManagerSettingsConnection *connection = connections.at(i);
             if (connection->getType() == DEVICE_TYPE_ETHERNET
@@ -477,12 +465,9 @@ void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
         cpPriv->state |= QNetworkConfiguration::Active;
 
     if (deviceType == DEVICE_TYPE_ETHERNET) {
-        QHashIterator<QString, QNetworkManagerInterfaceDevice*> i(interfaceDevices);
-        while (i.hasNext()) {
-             i.next();
-             if (i.value()->deviceType() == deviceType) {
-                QNetworkManagerInterfaceDeviceWired *wiredDevice
-                        = wiredDevices.value(i.value()->path());
+        for (const auto *interfaceDevice : interfaceDevices) {
+             if (interfaceDevice->deviceType() == deviceType) {
+                 auto *wiredDevice = wiredDevices.value(interfaceDevice->path());
                  if (wiredDevice && wiredDevice->carrier()) {
                      cpPriv->state |= QNetworkConfiguration::Discovered;
                  }
@@ -559,7 +544,8 @@ void QNetworkManagerEngine::updateConnection()
     QNetworkConfigurationPrivate *cpPriv = parseConnection(settingsPath, connection->getSettings());
 
     // Check if connection is active.
-    foreach (const QDBusObjectPath &acPath, managerInterface->activeConnections()) {
+    const auto acPaths = managerInterface->activeConnections();
+    for (const QDBusObjectPath &acPath : acPaths) {
         QNetworkManagerConnectionActive activeConnection(acPath.path());
 
         if (activeConnection.connection().path() == settingsPath &&
@@ -635,7 +621,8 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
     if (connectionType == QLatin1String("802-3-ethernet")) {
         cpPriv->bearerType = QNetworkConfiguration::BearerEthernet;
 
-        foreach (const QDBusObjectPath &devicePath, managerInterface->getDevices()) {
+        const auto devicePaths = managerInterface->getDevices();
+        for (const QDBusObjectPath &devicePath : devicePaths) {
             QNetworkManagerInterfaceDevice device(devicePath.path(),this);
             if (device.deviceType() == DEVICE_TYPE_ETHERNET) {
                 QNetworkManagerInterfaceDeviceWired *wiredDevice = wiredDevices.value(device.path());
@@ -729,9 +716,7 @@ QNetworkSession::State QNetworkManagerEngine::sessionStateForId(const QString &i
     if (!ptr->isValid)
         return QNetworkSession::Invalid;
 
-    foreach (const QString &acPath, activeConnectionsList.keys()) {
-        QNetworkManagerConnectionActive *activeConnection = activeConnectionsList.value(acPath);
-
+    for (QNetworkManagerConnectionActive *activeConnection : activeConnectionsList) {
         const QString identifier = activeConnection->connection().path();
 
         if (id == identifier) {
@@ -932,7 +917,8 @@ void QNetworkManagerEngine::ofonoRegistered(const QString &)
     }
     ofonoManager = new QOfonoManagerInterface(this);
     if (ofonoManager && ofonoManager->isValid()) {
-        Q_FOREACH (const QString &modem, ofonoManager->getModems()) {
+        const auto modems = ofonoManager->getModems();
+        for (const QString &modem : modems) {
             QOfonoDataConnectionManagerInterface *ofonoContextManager
                     = new QOfonoDataConnectionManagerInterface(modem,this);
             ofonoContextManagers.insert(modem, ofonoContextManager);
