@@ -1623,9 +1623,11 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li z \li the milliseconds without leading zeroes (0 to 999)
     \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
     \row \li AP or A
-         \li use AM/PM display. \e A/AP will be replaced by either "AM" or "PM".
+         \li use AM/PM display. \e A/AP will be replaced by either
+             QLocale::amText() or QLocale::pmText().
     \row \li ap or a
-         \li use am/pm display. \e a/ap will be replaced by either "am" or "pm".
+         \li use am/pm display. \e a/ap will be replaced by a lower-case version of
+             QLocale::amText() or QLocale::pmText().
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
@@ -1634,7 +1636,8 @@ QString QTime::toString(Qt::DateFormat format) const
     expression. Two consecutive single quotes ("''") are replaced by a singlequote
     in the output. Formats without separators (e.g. "HHmm") are currently not supported.
 
-    Example format strings (assuming that the QTime is 14:13:09.042)
+    Example format strings (assuming that the QTime is 14:13:09.042 and the system
+    locale is \c{en_US})
 
     \table
     \header \li Format \li Result
