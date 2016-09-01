@@ -281,8 +281,11 @@ defineTest(qtConfTest_checkCompiler) {
         $${1}.compilerId = "icc"
         $${1}.compilerVersion = $$replace(version, "icpc version ([0-9.]+).*", "\\1")
     } else: msvc {
+        qtRunLoggedCommand("$$QMAKE_CXX /? 2>&1", version)|return(false)
+        version = "$$version"
         $${1}.compilerDescription = "MSVC"
         $${1}.compilerId = "cl"
+        $${1}.compilerVersion = $$replace(version, "^.*Compiler Version ([0-9.]+) for.*$", "\\1")
     } else {
         return(false)
     }
