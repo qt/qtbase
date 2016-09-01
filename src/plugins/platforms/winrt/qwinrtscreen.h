@@ -116,6 +116,9 @@ public:
 
     void initialize();
 
+    void setCursorRect(const QRectF &cursorRect);
+    void setKeyboardRect(const QRectF &keyboardRect);
+
 private:
     void handleExpose();
 
@@ -140,6 +143,7 @@ private:
 #endif
 
     QScopedPointer<QWinRTScreenPrivate> d_ptr;
+    QRectF mCursorRect;
     Q_DECLARE_PRIVATE(QWinRTScreen)
 };
 

@@ -753,6 +753,49 @@ void QWinRTScreen::initialize()
     onVisibilityChanged(nullptr, nullptr);
 }
 
+void QWinRTScreen::setCursorRect(const QRectF &cursorRect)
+{
+    mCursorRect = cursorRect;
+}
+
+void QWinRTScreen::setKeyboardRect(const QRectF &keyboardRect)
+{
+    Q_D(QWinRTScreen);
+    QRectF visibleRectF;
+    HRESULT hr;
+    Rect windowSize;
+
+    hr = d->coreWindow->get_Bounds(&windowSize);
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to get window bounds");
+        return;
+    }
+    d->logicalRect = QRectF(windowSize.X, windowSize.Y, windowSize.Width, windowSize.Height);
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+    Rect visibleRect;
+    hr = d->view2->get_VisibleBounds(&visibleRect);
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to get window visible bounds");
+        return;
+    }
+    visibleRectF = QRectF(visibleRect.X, visibleRect.Y, visibleRect.Width, visibleRect.Height);
+#else
+    visibleRectF = d->logicalRect;
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+    // if keyboard is snapped to the bottom of the screen and would cover the cursor the content is
+    // moved up to make it visible
+    if (keyboardRect.intersects(mCursorRect)
+            && qFuzzyCompare(geometry().height(), keyboardRect.y() + keyboardRect.height())) {
+        visibleRectF.moveTop(visibleRectF.top() - keyboardRect.height() / d->scaleFactor);
+    }
+    d->visibleRect = visibleRectF;
+
+    qCDebug(lcQpaWindows) << __FUNCTION__ << d->visibleRect;
+    QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
+    QPlatformScreen::resizeMaximizedWindows();
+    handleExpose();
+}
+
 QWindow *QWinRTScreen::topWindow() const
 {
     Q_D(const QWinRTScreen);

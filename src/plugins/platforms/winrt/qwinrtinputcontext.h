@@ -79,6 +79,9 @@ public:
     void hideInputPanel();
 #endif
 
+private slots:
+    void updateScreenCursorRect();
+
 private:
     HRESULT onShowing(ABI::Windows::UI::ViewManagement::IInputPane *,
                       ABI::Windows::UI::ViewManagement::IInputPaneVisibilityEventArgs *);
@@ -89,6 +92,7 @@ private:
 
     QWinRTScreen *m_screen;
     QRectF m_keyboardRect;
+    QRectF m_cursorRect;
     bool m_isInputPanelVisible;
 };
 
