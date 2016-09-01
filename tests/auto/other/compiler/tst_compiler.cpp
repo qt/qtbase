@@ -875,11 +875,14 @@ void tst_Compiler::cxx11_default_members()
     };
     class DefaultMembersChild: public DefaultMembers
     {
+        DefaultMembersChild(const DefaultMembersChild &) : DefaultMembers() {}
     public:
         DefaultMembersChild():DefaultMembers() {};
+        DefaultMembersChild(DefaultMembersChild &&) = default;
     };
     DefaultMembersChild dm;
-    Q_UNUSED(dm);
+    DefaultMembersChild dm2 = std::move(dm);
+    Q_UNUSED(dm2);
 #endif
 }
 
