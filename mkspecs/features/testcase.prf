@@ -181,6 +181,11 @@ isEmpty(BUILDS)|build_pass {
 
 builtin_testdata {
     ALL_TESTDATA = $$TESTDATA $$GENERATED_TESTDATA
+
+    # BLACKLIST needs to be added to the testdata
+    BLACKLISTPATH = $$_PRO_FILE_PWD_/BLACKLIST
+    exists($$BLACKLISTPATH): ALL_TESTDATA *= $$BLACKLISTPATH
+
     # RESOURCES does not support wildcards (for good reasons)
     for(td, ALL_TESTDATA): \
         testdata.files += $$files($$absolute_path($$td, $$_PRO_FILE_PWD_))
