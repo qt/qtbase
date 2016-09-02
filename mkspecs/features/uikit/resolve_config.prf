@@ -32,37 +32,3 @@ macx-xcode {
 } else {
     addExclusiveBuilds(simulator, device)
 }
-
-equals(TEMPLATE, subdirs) {
-    # Prevent recursion into host_builds
-    for(subdir, SUBDIRS) {
-        contains($${subdir}.CONFIG, host_build) {
-            $${subdir}.CONFIG += no_$${simulator.target}_target no_$${device.target}_target
-
-            # Other targets which we do want to recurse into may depend on this target,
-            # for example corelib depends on moc, rcc, bootstrap, etc, and other libs
-            # may depend on host-tools that are needed to build the lib, so we resolve
-            # the final target name and redirect it to the base target, so that the
-            # dependency chain is not broken for the other targets.
-
-            !isEmpty($${subdir}.target) {
-                target = $$eval($${subdir}.target)
-            } else {
-                !isEmpty($${subdir}.file): \
-                    file = $$eval($${subdir}.file)
-                else: !isEmpty($${subdir}.subdir): \
-                    file = $$eval($${subdir}.subdir)
-                else: \
-                    file = $$subdir
-
-                target = sub-$$file
-            }
-
-            target ~= s,[^a-zA-Z0-9_],-,
-
-            $${target}-$${simulator.target}.depends = $$target
-            $${target}-$${device.target}.depends = $$target
-            QMAKE_EXTRA_TARGETS += $${target}-$${simulator.target} $${target}-$${device.target}
-        }
-    }
-}
