@@ -162,11 +162,19 @@ bool QComposeInputContext::checkComposeTable()
         TableGenerator reader;
         m_tableState = reader.tableState();
 
-        if ((m_tableState & TableGenerator::NoErrors) == TableGenerator::NoErrors)
-            m_composeTable = reader.composeTable();
-
         m_compositionTableInitialized = true;
+        if ((m_tableState & TableGenerator::NoErrors) == TableGenerator::NoErrors) {
+            m_composeTable = reader.composeTable();
+        } else {
+#ifdef DEBUG_COMPOSING
+            qDebug( "### FAILED_PARSING ###" );
+#endif
+            // if we have errors, don' try to look things up anyways.
+            reset();
+            return false;
+        }
     }
+    Q_ASSERT(!m_composeTable.isEmpty());
     QVector<QComposeTableElement>::const_iterator it =
             std::lower_bound(m_composeTable.constBegin(), m_composeTable.constEnd(), m_composeBuffer, Compare());
 
