@@ -93,9 +93,9 @@ public:
 
     void retranslateUi(QDialog *HistoryDialog)
     {
-        HistoryDialog->setWindowTitle(QApplication::translate("HistoryDialog", "History", 0));
-        removeButton->setText(QApplication::translate("HistoryDialog", "&Remove", 0));
-        removeAllButton->setText(QApplication::translate("HistoryDialog", "Remove &All", 0));
+        HistoryDialog->setWindowTitle(QApplication::translate("HistoryDialog", "History", Q_NULLPTR));
+        removeButton->setText(QApplication::translate("HistoryDialog", "&Remove", Q_NULLPTR));
+        removeAllButton->setText(QApplication::translate("HistoryDialog", "Remove &All", Q_NULLPTR));
     } // retranslateUi
 
 };

@@ -143,15 +143,15 @@ public:
 
     void retranslateUi(QWidget *QPrintWidget)
     {
-        QPrintWidget->setWindowTitle(QApplication::translate("QPrintWidget", "Form", 0));
-        printerGroup->setTitle(QApplication::translate("QPrintWidget", "Printer", 0));
-        label->setText(QApplication::translate("QPrintWidget", "&Name:", 0));
-        properties->setText(QApplication::translate("QPrintWidget", "P&roperties", 0));
-        label_2->setText(QApplication::translate("QPrintWidget", "Location:", 0));
-        preview->setText(QApplication::translate("QPrintWidget", "Preview", 0));
-        label_3->setText(QApplication::translate("QPrintWidget", "Type:", 0));
-        lOutput->setText(QApplication::translate("QPrintWidget", "Output &file:", 0));
-        fileBrowser->setText(QApplication::translate("QPrintWidget", "...", 0));
+        QPrintWidget->setWindowTitle(QApplication::translate("QPrintWidget", "Form", Q_NULLPTR));
+        printerGroup->setTitle(QApplication::translate("QPrintWidget", "Printer", Q_NULLPTR));
+        label->setText(QApplication::translate("QPrintWidget", "&Name:", Q_NULLPTR));
+        properties->setText(QApplication::translate("QPrintWidget", "P&roperties", Q_NULLPTR));
+        label_2->setText(QApplication::translate("QPrintWidget", "Location:", Q_NULLPTR));
+        preview->setText(QApplication::translate("QPrintWidget", "Preview", Q_NULLPTR));
+        label_3->setText(QApplication::translate("QPrintWidget", "Type:", Q_NULLPTR));
+        lOutput->setText(QApplication::translate("QPrintWidget", "Output &file:", Q_NULLPTR));
+        fileBrowser->setText(QApplication::translate("QPrintWidget", "...", Q_NULLPTR));
     } // retranslateUi
 
 };

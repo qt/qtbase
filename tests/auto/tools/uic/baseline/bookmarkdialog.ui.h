@@ -150,13 +150,13 @@ public:
 
     void retranslateUi(QDialog *BookmarkDialog)
     {
-        BookmarkDialog->setWindowTitle(QApplication::translate("BookmarkDialog", "Add Bookmark", 0));
-        label->setText(QApplication::translate("BookmarkDialog", "Bookmark:", 0));
-        label_2->setText(QApplication::translate("BookmarkDialog", "Add in Folder:", 0));
-        toolButton->setText(QApplication::translate("BookmarkDialog", "+", 0));
+        BookmarkDialog->setWindowTitle(QApplication::translate("BookmarkDialog", "Add Bookmark", Q_NULLPTR));
+        label->setText(QApplication::translate("BookmarkDialog", "Bookmark:", Q_NULLPTR));
+        label_2->setText(QApplication::translate("BookmarkDialog", "Add in Folder:", Q_NULLPTR));
+        toolButton->setText(QApplication::translate("BookmarkDialog", "+", Q_NULLPTR));
         QTreeWidgetItem *___qtreewidgetitem = bookmarkWidget->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("BookmarkDialog", "1", 0));
-        newFolderButton->setText(QApplication::translate("BookmarkDialog", "New Folder", 0));
+        ___qtreewidgetitem->setText(0, QApplication::translate("BookmarkDialog", "1", Q_NULLPTR));
+        newFolderButton->setText(QApplication::translate("BookmarkDialog", "New Folder", Q_NULLPTR));
     } // retranslateUi
 
 };

@@ -942,7 +942,8 @@
 #    endif /* VC 11 */
 #    if _MSC_VER >= 1800
        /* C++11 features in VC12 = VC2013 */
-#      define Q_COMPILER_DEFAULT_MEMBERS
+/* Implemented, but can't be used on move special members */
+/* #      define Q_COMPILER_DEFAULT_MEMBERS */
 #      define Q_COMPILER_DELETE_MEMBERS
 #      define Q_COMPILER_DELEGATING_CONSTRUCTORS
 #      define Q_COMPILER_EXPLICIT_CONVERSIONS
@@ -960,6 +961,7 @@
 #    endif /* VC 12 SP 2 RC */
 #    if _MSC_VER >= 1900
        /* C++11 features in VC14 = VC2015 */
+#      define Q_COMPILER_DEFAULT_MEMBERS
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 // Partial support, insufficient for Qt

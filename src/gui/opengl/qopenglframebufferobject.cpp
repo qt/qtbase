@@ -1283,11 +1283,11 @@ static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool includ
                               ? context->hasExtension(QByteArrayLiteral("GL_EXT_read_format_bgra"))
                               : context->hasExtension(QByteArrayLiteral("GL_EXT_bgra"));
 
+#ifndef Q_OS_IOS
     const char *renderer = reinterpret_cast<const char *>(funcs->glGetString(GL_RENDERER));
     const char *ver = reinterpret_cast<const char *>(funcs->glGetString(GL_VERSION));
 
     // Blacklist GPU chipsets that have problems with their BGRA support.
-#ifndef Q_OS_IOS
     const bool blackListed = (qstrcmp(renderer, "PowerVR Rogue G6200") == 0
                              && ::strstr(ver, "1.3") != 0) ||
                              (qstrcmp(renderer, "Mali-T760") == 0

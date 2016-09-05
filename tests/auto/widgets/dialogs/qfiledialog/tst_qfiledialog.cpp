@@ -132,7 +132,6 @@ private slots:
     void saveButtonText();
     void clearLineEdit();
     void enableChooseButton();
-    void widgetlessNativeDialog();
     void selectedFilesWithoutWidgets();
     void trailingDotsAndSpaces();
 #ifdef Q_OS_UNIX
@@ -143,6 +142,20 @@ private slots:
 #endif
     void rejectModalDialogs();
     void QTBUG49600_nativeIconProviderCrash();
+
+    // NOTE: Please keep widgetlessNativeDialog() as the LAST test!
+    //
+    // widgetlessNativeDialog() is the only test function that creates
+    // a native file dialog instance. GTK+ versions prior 3.15.5 have
+    // a nasty bug (https://bugzilla.gnome.org/show_bug.cgi?id=725164)
+    // in GtkFileChooserWidget, which makes it leak its folder change
+    // callback, causing a crash "at some point later". Running the
+    // native test last is enough to avoid spinning the event loop after
+    // the test, and that way circumvent the crash.
+    //
+    // The crash has been fixed in GTK+ 3.15.5, but the RHEL 7.2 CI has
+    // GTK+ 3.14.13 installed (QTBUG-55276).
+    void widgetlessNativeDialog();
 
 private:
     void cleanupSettingsFile();
