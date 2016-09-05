@@ -170,7 +170,7 @@
             "label": "  Using system provided SQLite",
             "autoDetect": false,
             "condition": "features.sql-sqlite && libs.sqlite3",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "sql-tds": {
             "label": "TDS (Sybase)",
