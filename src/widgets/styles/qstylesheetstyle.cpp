@@ -3818,6 +3818,13 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 ParentStyle::drawControl(ce, opt, p, w);
                 return;
             }
+            if (subRule.hasFont) {
+                const QFont oldFont = p->font();
+                p->setFont(subRule.font.resolve(p->font()));
+                baseStyle()->drawControl(ce, opt, p, w);
+                p->setFont(oldFont);
+                return;
+            }
         }
         break;
     case CE_HeaderSection:
@@ -4931,13 +4938,14 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     case CT_HeaderSection: {
             if (const QStyleOptionHeader *hdr = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
-                if (subRule.hasGeometry() || subRule.hasBox() || !subRule.hasNativeBorder()) {
+                if (subRule.hasGeometry() || subRule.hasBox() || !subRule.hasNativeBorder() || subRule.hasFont) {
                     sz = subRule.adjustSize(csz);
                     if (!subRule.hasGeometry()) {
                         QSize nativeContentsSize;
                         bool nullIcon = hdr->icon.isNull();
                         int iconSize = nullIcon ? 0 : pixelMetric(QStyle::PM_SmallIconSize, hdr, w);
-                        QSize txt = hdr->fontMetrics.size(0, hdr->text);
+                        const QSize txt = subRule.hasFont ? QFontMetrics(subRule.font).size(0, hdr->text)
+                                                          : hdr->fontMetrics.size(0, hdr->text);
                         nativeContentsSize.setHeight(qMax(iconSize, txt.height()));
                         nativeContentsSize.setWidth(iconSize + txt.width());
                         sz = sz.expandedTo(nativeContentsSize);

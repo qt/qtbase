@@ -924,13 +924,13 @@ void QWin32PrintEnginePrivate::initialize()
     Q_ASSERT(hPrinter);
     Q_ASSERT(pInfo);
 
+    initHDC();
+
     if (devMode) {
         num_copies = devMode->dmCopies;
         devMode->dmCollate = DMCOLLATE_TRUE;
         updatePageLayout();
     }
-
-    initHDC();
 
 #if defined QT_DEBUG_DRAW || defined QT_DEBUG_METRICS
     qDebug("QWin32PrintEngine::initialize()");

@@ -212,23 +212,23 @@ public:
 
     void retranslateUi(QDialog *AddTorrentFile)
     {
-        AddTorrentFile->setWindowTitle(QApplication::translate("AddTorrentFile", "Add a torrent", 0));
-        groupBox->setTitle(QApplication::translate("AddTorrentFile", "Select a torrent source", 0));
-        label_4->setText(QApplication::translate("AddTorrentFile", "Destination:", 0));
-        label_2->setText(QApplication::translate("AddTorrentFile", "Tracker URL:", 0));
-        browseTorrents->setText(QApplication::translate("AddTorrentFile", "Browse", 0));
-        label_5->setText(QApplication::translate("AddTorrentFile", "File(s):", 0));
-        label_3->setText(QApplication::translate("AddTorrentFile", "Size:", 0));
-        label_6->setText(QApplication::translate("AddTorrentFile", "Creator:", 0));
-        announceUrl->setText(QApplication::translate("AddTorrentFile", "<none>", 0));
-        label->setText(QApplication::translate("AddTorrentFile", "Torrent file:", 0));
-        browseDestination->setText(QApplication::translate("AddTorrentFile", "Browse", 0));
-        label_7->setText(QApplication::translate("AddTorrentFile", "Comment:", 0));
-        commentLabel->setText(QApplication::translate("AddTorrentFile", "<none>", 0));
-        creatorLabel->setText(QApplication::translate("AddTorrentFile", "<none>", 0));
-        sizeLabel->setText(QApplication::translate("AddTorrentFile", "0", 0));
-        okButton->setText(QApplication::translate("AddTorrentFile", "&OK", 0));
-        cancelButton->setText(QApplication::translate("AddTorrentFile", "&Cancel", 0));
+        AddTorrentFile->setWindowTitle(QApplication::translate("AddTorrentFile", "Add a torrent", Q_NULLPTR));
+        groupBox->setTitle(QApplication::translate("AddTorrentFile", "Select a torrent source", Q_NULLPTR));
+        label_4->setText(QApplication::translate("AddTorrentFile", "Destination:", Q_NULLPTR));
+        label_2->setText(QApplication::translate("AddTorrentFile", "Tracker URL:", Q_NULLPTR));
+        browseTorrents->setText(QApplication::translate("AddTorrentFile", "Browse", Q_NULLPTR));
+        label_5->setText(QApplication::translate("AddTorrentFile", "File(s):", Q_NULLPTR));
+        label_3->setText(QApplication::translate("AddTorrentFile", "Size:", Q_NULLPTR));
+        label_6->setText(QApplication::translate("AddTorrentFile", "Creator:", Q_NULLPTR));
+        announceUrl->setText(QApplication::translate("AddTorrentFile", "<none>", Q_NULLPTR));
+        label->setText(QApplication::translate("AddTorrentFile", "Torrent file:", Q_NULLPTR));
+        browseDestination->setText(QApplication::translate("AddTorrentFile", "Browse", Q_NULLPTR));
+        label_7->setText(QApplication::translate("AddTorrentFile", "Comment:", Q_NULLPTR));
+        commentLabel->setText(QApplication::translate("AddTorrentFile", "<none>", Q_NULLPTR));
+        creatorLabel->setText(QApplication::translate("AddTorrentFile", "<none>", Q_NULLPTR));
+        sizeLabel->setText(QApplication::translate("AddTorrentFile", "0", Q_NULLPTR));
+        okButton->setText(QApplication::translate("AddTorrentFile", "&OK", Q_NULLPTR));
+        cancelButton->setText(QApplication::translate("AddTorrentFile", "&Cancel", Q_NULLPTR));
     } // retranslateUi
 
 };

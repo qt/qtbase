@@ -92,10 +92,10 @@ public:
 
     void retranslateUi(QWidget *IdentifierPage)
     {
-        IdentifierPage->setWindowTitle(QApplication::translate("IdentifierPage", "Form", 0));
-        identifierCheckBox->setText(QApplication::translate("IdentifierPage", "Create identifiers", 0));
-        globalButton->setText(QApplication::translate("IdentifierPage", "Global prefix:", 0));
-        fileNameButton->setText(QApplication::translate("IdentifierPage", "Inherit prefix from file names", 0));
+        IdentifierPage->setWindowTitle(QApplication::translate("IdentifierPage", "Form", Q_NULLPTR));
+        identifierCheckBox->setText(QApplication::translate("IdentifierPage", "Create identifiers", Q_NULLPTR));
+        globalButton->setText(QApplication::translate("IdentifierPage", "Global prefix:", Q_NULLPTR));
+        fileNameButton->setText(QApplication::translate("IdentifierPage", "Inherit prefix from file names", Q_NULLPTR));
     } // retranslateUi
 
 };
