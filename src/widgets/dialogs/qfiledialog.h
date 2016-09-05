@@ -125,6 +125,7 @@ public:
     void setNameFilters(const QStringList &filters);
     QStringList nameFilters() const;
     void selectNameFilter(const QString &filter);
+    QString selectedMimeTypeFilter() const;
     QString selectedNameFilter() const;
 
 #ifndef QT_NO_MIMETYPE

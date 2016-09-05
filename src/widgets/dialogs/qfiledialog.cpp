@@ -1461,6 +1461,19 @@ void QFileDialog::selectNameFilter(const QString &filter)
 }
 
 /*!
+ * \since 5.9
+ * \return The mimetype of the file that the user selected in the file dialog.
+ */
+QString QFileDialog::selectedMimeTypeFilter() const
+{
+    Q_D(const QFileDialog);
+    if (!d->usingWidgets())
+        return d->selectedMimeTypeFilter_sys();
+
+    return d->options->initiallySelectedMimeTypeFilter();
+}
+
+/*!
     \since 4.4
 
     Returns the filter that the user selected in the file dialog.
@@ -1579,9 +1592,19 @@ QStringList QFileDialog::mimeTypeFilters() const
 */
 void QFileDialog::selectMimeTypeFilter(const QString &filter)
 {
-    const QString text = nameFilterForMime(filter);
-    if (!text.isEmpty())
-        selectNameFilter(text);
+    Q_D(QFileDialog);
+    d->options->setInitiallySelectedMimeTypeFilter(filter);
+
+    const QString filterForMime = nameFilterForMime(filter);
+
+    if (!d->usingWidgets()) {
+        d->selectMimeTypeFilter_sys(filter);
+        if (d->selectedMimeTypeFilter_sys().isEmpty() && !filterForMime.isEmpty()) {
+            selectNameFilter(filterForMime);
+        }
+    } else if (!filterForMime.isEmpty()) {
+        selectNameFilter(filterForMime);
+    }
 }
 
 #endif // QT_NO_MIMETYPE

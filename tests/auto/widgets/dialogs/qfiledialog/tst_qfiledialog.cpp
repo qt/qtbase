@@ -119,6 +119,8 @@ private slots:
     void selectFilter();
     void viewMode();
     void proxymodel();
+    void setMimeTypeFilters_data();
+    void setMimeTypeFilters();
     void setNameFilter_data();
     void setNameFilter();
     void setEmptyNameFilter();
@@ -1037,6 +1039,34 @@ void tst_QFiledialog::proxymodel()
 
     fd.setProxyModel(0);
     QCOMPARE(fd.proxyModel(), nullptr);
+}
+
+void tst_QFiledialog::setMimeTypeFilters_data()
+{
+    QTest::addColumn<QStringList>("mimeTypeFilters");
+    QTest::addColumn<QString>("targetMimeTypeFilter");
+    QTest::addColumn<QString>("expectedSelectedMimeTypeFilter");
+
+    const auto headerMime = QStringLiteral("text/x-chdr");
+    const auto jsonMime = QStringLiteral("application/json");
+    const auto zipMime = QStringLiteral("application/zip");
+
+    QTest::newRow("single mime filter (C header file)") << QStringList {headerMime} << headerMime << headerMime;
+    QTest::newRow("single mime filter (JSON file)") << QStringList {jsonMime} << jsonMime << jsonMime;
+    QTest::newRow("multiple mime filters") << QStringList {jsonMime, zipMime} << jsonMime << jsonMime;
+}
+
+void tst_QFiledialog::setMimeTypeFilters()
+{
+    QFETCH(QStringList, mimeTypeFilters);
+    QFETCH(QString, targetMimeTypeFilter);
+    QFETCH(QString, expectedSelectedMimeTypeFilter);
+
+    QFileDialog fd;
+    fd.setMimeTypeFilters(mimeTypeFilters);
+    fd.selectMimeTypeFilter(targetMimeTypeFilter);
+
+    QCOMPARE(fd.selectedMimeTypeFilter(), expectedSelectedMimeTypeFilter);
 }
 
 void tst_QFiledialog::setEmptyNameFilter()

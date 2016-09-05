@@ -258,6 +258,8 @@ public:
     void selectFile_sys(const QUrl &filename);
     QList<QUrl> selectedFiles_sys() const;
     void setFilter_sys();
+    void selectMimeTypeFilter_sys(const QString &filter);
+    QString selectedMimeTypeFilter_sys() const;
     void selectNameFilter_sys(const QString &filter);
     QString selectedNameFilter_sys() const;
     //////////////////////////////////////////////
@@ -398,6 +400,20 @@ inline void QFileDialogPrivate::setFilter_sys()
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
         helper->setFilter();
+}
+
+inline void QFileDialogPrivate::selectMimeTypeFilter_sys(const QString &filter)
+{
+    if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
+        helper->selectMimeTypeFilter(filter);
+}
+
+QString QFileDialogPrivate::selectedMimeTypeFilter_sys() const
+{
+    if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
+        return helper->selectedMimeTypeFilter();
+
+    return QString();
 }
 
 inline void QFileDialogPrivate::selectNameFilter_sys(const QString &filter)

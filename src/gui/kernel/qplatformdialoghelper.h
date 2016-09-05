@@ -372,6 +372,9 @@ public:
     QUrl initialDirectory() const;
     void setInitialDirectory(const QUrl &);
 
+    QString initiallySelectedMimeTypeFilter() const;
+    void setInitiallySelectedMimeTypeFilter(const QString &);
+
     QString initiallySelectedNameFilter() const;
     void setInitiallySelectedNameFilter(const QString &);
 
@@ -397,7 +400,9 @@ public:
     virtual void selectFile(const QUrl &filename) = 0;
     virtual QList<QUrl> selectedFiles() const = 0;
     virtual void setFilter() = 0;
+    virtual void selectMimeTypeFilter(const QString &filter);
     virtual void selectNameFilter(const QString &filter) = 0;
+    virtual QString selectedMimeTypeFilter() const;
     virtual QString selectedNameFilter() const = 0;
 
     virtual bool isSupportedUrl(const QUrl &url) const;

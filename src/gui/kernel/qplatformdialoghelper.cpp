@@ -451,6 +451,7 @@ public:
     QString defaultSuffix;
     QStringList history;
     QUrl initialDirectory;
+    QString initiallySelectedMimeTypeFilter;
     QString initiallySelectedNameFilter;
     QList<QUrl> initiallySelectedFiles;
     QStringList supportedSchemes;
@@ -668,6 +669,16 @@ void QFileDialogOptions::setInitialDirectory(const QUrl &directory)
     d->initialDirectory = directory;
 }
 
+QString QFileDialogOptions::initiallySelectedMimeTypeFilter() const
+{
+    return d->initiallySelectedMimeTypeFilter;
+}
+
+void QFileDialogOptions::setInitiallySelectedMimeTypeFilter(const QString &filter)
+{
+    d->initiallySelectedMimeTypeFilter = filter;
+}
+
 QString QFileDialogOptions::initiallySelectedNameFilter() const
 {
     return d->initiallySelectedNameFilter;
@@ -697,6 +708,16 @@ void QFileDialogOptions::setSupportedSchemes(const QStringList &schemes)
 QStringList QFileDialogOptions::supportedSchemes() const
 {
     return d->supportedSchemes;
+}
+
+void QPlatformFileDialogHelper::selectMimeTypeFilter(const QString &filter)
+{
+    Q_UNUSED(filter)
+}
+
+QString QPlatformFileDialogHelper::selectedMimeTypeFilter() const
+{
+    return QString();
 }
 
 // Return true if the URL is supported by the filedialog implementation *and* by the application.
