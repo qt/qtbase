@@ -1318,7 +1318,7 @@ bool QMYSQLDriver::open(const QString& db,
                                            : sslCipher.toLocal8Bit().constData());
     }
 
-#if MYSQL_VERSION_ID >= 50000
+#if MYSQL_VERSION_ID >= 50100
     if (connectTimeout != 0)
         mysql_options(d->mysql, MYSQL_OPT_CONNECT_TIMEOUT, &connectTimeout);
     if (readTimeout != 0)
@@ -1347,7 +1347,7 @@ bool QMYSQLDriver::open(const QString& db,
             setOpenError(true);
             return false;
         }
-#if MYSQL_VERSION_ID >= 50000
+#if MYSQL_VERSION_ID >= 50100
         if (reconnect)
             mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
 #endif
