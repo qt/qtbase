@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods")
 
-inline QRectF getInputPaneRect(IInputPane *pane, qreal scaleFactor)
+inline QRectF getInputPaneRect(ComPtr<IInputPane> pane, qreal scaleFactor)
 {
     Rect rect;
     pane->get_OccludedRect(&rect);
@@ -85,16 +85,15 @@ QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
 {
     qCDebug(lcQpaInputMethods) << __FUNCTION__ << screen;
 
-    IInputPaneStatics *statics;
+    ComPtr<IInputPaneStatics> statics;
     if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_InputPane).Get(),
                                     &statics))) {
         qWarning("failed to retrieve input pane statics.");
         return;
     }
 
-    IInputPane *inputPane;
+    ComPtr<IInputPane> inputPane;
     statics->GetForCurrentView(&inputPane);
-    statics->Release();
     if (inputPane) {
         EventRegistrationToken showToken, hideToken;
         inputPane->add_Showing(Callback<InputPaneVisibilityHandler>(
