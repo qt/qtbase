@@ -686,8 +686,12 @@ private:
 
     friend class QXcbEventReader;
 };
+#ifdef XCB_USE_XINPUT2
+#ifndef QT_NO_TABLETEVENT
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData::ValuatorClassInfo, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
+#endif
+#endif
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
 #define CREATE_VISUALINFO_FROM_DEFAULT_VISUALID(object) ((XVisualInfo *)(object->connection()->createVisualInfoForDefaultVisualId()))
