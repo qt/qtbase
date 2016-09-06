@@ -417,7 +417,8 @@
     // We do this by assuming that there are no cases where a
     // sub-set of the active touch events are intentionally cancelled.
 
-    if (touches && (static_cast<NSInteger>([touches count]) != m_activeTouches.count()))
+    NSInteger count = static_cast<NSInteger>([touches count]);
+    if (count != 0 && count != m_activeTouches.count())
         qWarning("Subset of active touches cancelled by UIKit");
 
     m_activeTouches.clear();

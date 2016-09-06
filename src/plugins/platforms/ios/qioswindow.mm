@@ -85,7 +85,7 @@ QIOSWindow::~QIOSWindow()
     // practice this doesn't seem to happen when removing the view from its superview. To ensure that
     // Qt's internal state for touch and mouse handling is kept consistent, we therefor have to force
     // cancellation of all touch events.
-    [m_view touchesCancelled:0 withEvent:0];
+    [m_view touchesCancelled:[NSSet set] withEvent:0];
 
     clearAccessibleCache();
     m_view->m_qioswindow = 0;
