@@ -1488,6 +1488,7 @@ bool QMenuBar::eventFilter(QObject *object, QEvent *event)
             case QEvent::FocusIn:
             case QEvent::FocusOut:
             case QEvent::ActivationChange:
+            case QEvent::Shortcut:
                 d->altPressed = false;
                 qApp->removeEventFilter(this);
                 break;

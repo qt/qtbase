@@ -130,6 +130,7 @@ private slots:
     void cornerWidgets_data();
     void cornerWidgets();
     void taskQTBUG53205_crashReparentNested();
+    void taskQTBUG46812_doNotLeaveMenubarHighlighted();
 
 protected slots:
     void onSimpleActivated( QAction*);
@@ -222,9 +223,14 @@ TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb)
     menu = mb->addMenu(QStringLiteral("accel1"));
     action = menu->addAction(QStringLiteral("&Open...") );
     action->setShortcut(Qt::Key_O);
+    result.actions << action;
+
+    action = menu->addAction(QStringLiteral("action"));
+    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Z));
+    result.actions << action;
+
     result.menus << menu;
     connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
-    result.actions << action;
 
     m_lastSimpleAcceleratorId = 0;
     m_simpleActivatedCount = 0;
@@ -1494,6 +1500,37 @@ void tst_QMenuBar::slotForTaskQTBUG53205()
     taskQTBUG53205MenuBar->setParent(parent);
 }
 
+void tst_QMenuBar::taskQTBUG46812_doNotLeaveMenubarHighlighted()
+{
+    QMainWindow mainWindow;
+    QWidget *centralWidget = new QWidget;
+    centralWidget->setFocusPolicy(Qt::StrongFocus);
+    mainWindow.setCentralWidget(centralWidget);
+    initWindowWithSimpleMenuBar(mainWindow);
+
+    mainWindow.show();
+    QApplication::setActiveWindow(&mainWindow);
+    QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
+
+    QVERIFY(!mainWindow.menuBar()->hasFocus());
+    QCOMPARE(m_simpleActivatedCount, 0);
+
+    QTest::keyPress(&mainWindow, Qt::Key_Alt, Qt::AltModifier);
+    QVERIFY(!mainWindow.menuBar()->hasFocus());
+    QCOMPARE(m_simpleActivatedCount, 0);
+
+    QTest::keyPress(&mainWindow, Qt::Key_Z, Qt::AltModifier);
+    QVERIFY(!mainWindow.menuBar()->hasFocus());
+    QCOMPARE(m_simpleActivatedCount, 2); // the action AND the menu will activate
+
+    QTest::keyRelease(&mainWindow, Qt::Key_Alt, Qt::NoModifier);
+    QVERIFY(!mainWindow.menuBar()->hasFocus());
+    QCOMPARE(m_simpleActivatedCount, 2);
+
+    QTest::keyRelease(&mainWindow, Qt::Key_Z, Qt::NoModifier);
+    QVERIFY(!mainWindow.menuBar()->hasFocus());
+    QCOMPARE(m_simpleActivatedCount, 2);
+}
 
 
 QTEST_MAIN(tst_QMenuBar)
