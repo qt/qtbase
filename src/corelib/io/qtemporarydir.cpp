@@ -305,7 +305,7 @@ QString QTemporaryDir::path() const
 }
 
 /*!
-    \since 5.8
+    \since 5.9
 
     Returns the path name of a file in the temporary directory.
     Does \e not check if the file actually exists in the directory.
