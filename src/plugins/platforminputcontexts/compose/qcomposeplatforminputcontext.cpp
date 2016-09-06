@@ -155,11 +155,8 @@ void QComposeInputContext::update(Qt::InputMethodQueries q)
 
 static bool isDuplicate(const QComposeTableElement &lhs, const QComposeTableElement &rhs)
 {
-    for (size_t i = 0; i < QT_KEYSEQUENCE_MAX_LEN; i++) {
-        if (lhs.keys[i] != rhs.keys[i])
-            return false;
-    }
-    return true;
+    return std::equal(lhs.keys, lhs.keys + QT_KEYSEQUENCE_MAX_LEN,
+                      QT_MAKE_CHECKED_ARRAY_ITERATOR(rhs.keys, QT_KEYSEQUENCE_MAX_LEN));
 }
 
 bool QComposeInputContext::checkComposeTable()
@@ -182,7 +179,7 @@ bool QComposeInputContext::checkComposeTable()
     }
     Q_ASSERT(!m_composeTable.isEmpty());
     QVector<QComposeTableElement>::const_iterator it =
-            std::lower_bound(m_composeTable.constBegin(), m_composeTable.constEnd(), m_composeBuffer, Compare());
+            std::lower_bound(m_composeTable.constBegin(), m_composeTable.constEnd(), m_composeBuffer, ByKeys());
 
     // prevent dereferencing an 'end' iterator, which would result in a crash
     if (it == m_composeTable.constEnd())

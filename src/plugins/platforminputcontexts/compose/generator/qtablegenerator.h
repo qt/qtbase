@@ -45,7 +45,9 @@
 #include <QtCore/QMap>
 #include <QtCore/QString>
 
-#define QT_KEYSEQUENCE_MAX_LEN 6
+#include <algorithm>
+
+static Q_CONSTEXPR int QT_KEYSEQUENCE_MAX_LEN = 6;
 
 //#define DEBUG_GENERATOR
 
@@ -65,25 +67,30 @@ Q_DECLARE_TYPEINFO(QComposeTableElement, Q_PRIMITIVE_TYPE);
 QT_END_NAMESPACE
 #endif
 
-class Compare
+struct ByKeys
 {
-public:
-    bool operator () (const QComposeTableElement &lhs, const uint rhs[QT_KEYSEQUENCE_MAX_LEN])
+    using uint_array = uint[QT_KEYSEQUENCE_MAX_LEN];
+    using result_type = bool;
+
+    bool operator()(const uint_array &lhs, const uint_array &rhs) const Q_DECL_NOTHROW
     {
-        for (size_t i = 0; i < QT_KEYSEQUENCE_MAX_LEN; i++) {
-            if (lhs.keys[i] != rhs[i])
-                return (lhs.keys[i] < rhs[i]);
-        }
-        return false;
+        return std::lexicographical_compare(lhs, lhs + QT_KEYSEQUENCE_MAX_LEN,
+                                            rhs, rhs + QT_KEYSEQUENCE_MAX_LEN);
     }
 
-    bool operator () (const QComposeTableElement &lhs, const QComposeTableElement &rhs)
+    bool operator()(const uint_array &lhs, const QComposeTableElement &rhs) const Q_DECL_NOTHROW
     {
-        for (size_t i = 0; i < QT_KEYSEQUENCE_MAX_LEN; i++) {
-            if (lhs.keys[i] != rhs.keys[i])
-                return (lhs.keys[i] < rhs.keys[i]);
-        }
-        return false;
+        return operator()(lhs, rhs.keys);
+    }
+
+    bool operator()(const QComposeTableElement &lhs, const uint_array &rhs) const Q_DECL_NOTHROW
+    {
+        return operator()(lhs.keys, rhs);
+    }
+
+    bool operator()(const QComposeTableElement &lhs, const QComposeTableElement &rhs) const Q_DECL_NOTHROW
+    {
+        return operator()(lhs.keys, rhs.keys);
     }
 };
 
