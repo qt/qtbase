@@ -6548,6 +6548,15 @@ static void qInitDrawhelperFunctions()
 
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_sse2;
 
+    extern void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+    extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
+    extern void QT_FASTCALL comp_func_Source_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+    extern void QT_FASTCALL comp_func_Plus_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_sse2;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_sse2;
+    qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_sse2;
+    qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_sse2;
+
 #ifdef QT_COMPILER_SUPPORTS_SSSE3
     if (qCpuHasFeature(SSSE3)) {
         extern void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
@@ -6592,24 +6601,39 @@ static void qInitDrawhelperFunctions()
     }
 #endif
 
-#if defined(QT_COMPILER_SUPPORTS_AVX2) && !defined(__AVX2__)
+#if defined(QT_COMPILER_SUPPORTS_AVX2)
     if (qCpuHasFeature(AVX2)) {
+#if !defined(__AVX2__)
         extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
                                                                     const QVector<QRgb> *, QDitherInfo *);
         extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
                                                                       const QVector<QRgb> *, QDitherInfo *);
         qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_avx2;
         qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_avx2;
+#endif
+        extern void qt_blend_rgb32_on_rgb32_avx2(uchar *destPixels, int dbpl,
+                                                 const uchar *srcPixels, int sbpl,
+                                                 int w, int h, int const_alpha);
+        extern void qt_blend_argb32_on_argb32_avx2(uchar *destPixels, int dbpl,
+                                                   const uchar *srcPixels, int sbpl,
+                                                   int w, int h, int const_alpha);
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_avx2;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_avx2;
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
+        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_avx2;
+        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_avx2;
+        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
+        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
+
+        extern void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, uint color, uint const_alpha);
+        extern void QT_FASTCALL comp_func_Source_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_avx2;
+        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_avx2;
+        qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_avx2;
     }
 #endif
-    extern void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-    extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
-    extern void QT_FASTCALL comp_func_Source_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-    extern void QT_FASTCALL comp_func_Plus_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_sse2;
-    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_sse2;
-    qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_sse2;
-    qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_sse2;
 
 #endif // SSE2
 
