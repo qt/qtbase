@@ -1869,9 +1869,8 @@ void QTabBar::mouseMoveEvent(QMouseEvent *event)
             }
         }
 
-        int offset = (event->pos() - d->dragStartPosition).manhattanLength();
         if (event->buttons() == Qt::LeftButton
-            && offset > QApplication::startDragDistance()
+            && d->dragInProgress
             && d->validIndex(d->pressedIndex)) {
             bool vertical = verticalTabs(d->shape);
             int dragDistance;
