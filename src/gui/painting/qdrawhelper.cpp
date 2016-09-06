@@ -5555,17 +5555,17 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         blend_src_generic, // ARGB32
         blend_transformed_argb, // ARGB32_Premultiplied
         blend_transformed_rgb565,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
+        blend_src_generic, // ARGB8565_Premultiplied
+        blend_src_generic, // RGB666
+        blend_src_generic, // ARGB6666_Premultiplied
+        blend_src_generic, // RGB555
+        blend_src_generic, // ARGB8555_Premultiplied
+        blend_src_generic, // RGB888
+        blend_src_generic, // RGB444
+        blend_src_generic, // ARGB4444_Premultiplied
+        blend_src_generic, // RGBX8888
+        blend_src_generic, // RGBA8888
+        blend_src_generic, // RGBA8888_Premultiplied
         blend_src_generic_rgb64,
         blend_src_generic_rgb64,
         blend_src_generic_rgb64,
@@ -5583,16 +5583,17 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         blend_src_generic, // ARGB32
         blend_transformed_tiled_argb, // ARGB32_Premultiplied
         blend_transformed_tiled_rgb565,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
+        blend_src_generic, // ARGB8565_Premultiplied
+        blend_src_generic, // RGB666
+        blend_src_generic, // ARGB6666_Premultiplied
+        blend_src_generic, // RGB555
+        blend_src_generic, // ARGB8555_Premultiplied
+        blend_src_generic, // RGB888
+        blend_src_generic, // RGB444
+        blend_src_generic, // ARGB4444_Premultiplied
+        blend_src_generic, // RGBX8888
+        blend_src_generic, // RGBA8888
+        blend_src_generic, // RGBA8888_Premultiplied
         blend_src_generic_rgb64,
         blend_src_generic_rgb64,
         blend_src_generic_rgb64,
@@ -5610,17 +5611,17 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         blend_src_generic, // ARGB32
         blend_src_generic, // ARGB32_Premultiplied
         blend_transformed_bilinear_rgb565,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
-        blend_src_generic,
+        blend_src_generic, // ARGB8565_Premultiplied
+        blend_src_generic, // RGB666
+        blend_src_generic, // ARGB6666_Premultiplied
+        blend_src_generic, // RGB555
+        blend_src_generic, // ARGB8555_Premultiplied
+        blend_src_generic, // RGB888
+        blend_src_generic, // RGB444
+        blend_src_generic, // ARGB4444_Premultiplied
+        blend_src_generic, // RGBX8888
+        blend_src_generic, // RGBA8888
+        blend_src_generic, // RGBA8888_Premultiplied
         blend_src_generic_rgb64,
         blend_src_generic_rgb64,
         blend_src_generic_rgb64,

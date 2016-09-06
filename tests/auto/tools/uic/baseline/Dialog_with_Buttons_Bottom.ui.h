@@ -44,7 +44,7 @@ public:
 
     void retranslateUi(QDialog *Dialog)
     {
-        Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", 0));
+        Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", Q_NULLPTR));
     } // retranslateUi
 
 };

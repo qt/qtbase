@@ -842,9 +842,13 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
     return retList;
 }
 
+static void initializeDb();
+
 static QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
 {
     QFontDatabasePrivate *db = privateDb();
+    if (!db->count)
+        initializeDb();
 
     const FallbacksCacheKey cacheKey = { family, style, styleHint, script };
 
