@@ -668,7 +668,7 @@ void QSslSocketBackendPrivate::transmit()
 
     if (connectionEncrypted) {
         QVarLengthArray<char, 4096> data;
-        while (context) {
+        while (context && (!readBufferMaxSize || buffer.size() < readBufferMaxSize)) {
             size_t readBytes = 0;
             data.resize(4096);
             const OSStatus err = SSLRead(context, data.data(), data.size(), &readBytes);

@@ -229,6 +229,7 @@ private slots:
     void ecdhServer();
     void verifyClientCertificate_data();
     void verifyClientCertificate();
+    void readBufferMaxSize();
     void setEmptyDefaultConfiguration(); // this test should be last
 
 #ifndef QT_NO_OPENSSL
@@ -3041,6 +3042,68 @@ void tst_QSslSocket::verifyClientCertificate()
     // check client socket
     QCOMPARE(int(client->state()), int(expectedState));
     QCOMPARE(client->isEncrypted(), works);
+}
+
+void tst_QSslSocket::readBufferMaxSize()
+{
+#ifdef QT_SECURETRANSPORT
+    // QTBUG-55170:
+    // SecureTransport back-end was ignoring read-buffer
+    // size limit, resulting (potentially) in a constantly
+    // growing internal buffer.
+    // The test's logic is: we set a small read buffer size on a client
+    // socket (to some ridiculously small value), server sends us
+    // a bunch of bytes , we ignore readReady signal so
+    // that socket's internal buffer size stays
+    // >= readBufferMaxSize, we wait for a quite long time
+    // (which previously would be enough to read completely)
+    // and we check socket's bytesAvaiable to be less than sent.
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer server;
+    QVERIFY(server.listen());
+
+    QEventLoop loop;
+
+    QSslSocketPtr client(new QSslSocket);
+    socket = client.data();
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+    connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+
+    client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(),
+                                   server.serverPort());
+
+    // Wait for 'encrypted' first:
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(client->state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(client->mode(), QSslSocket::SslClientMode);
+
+    client->setReadBufferSize(10);
+    const QByteArray message(int(0xffff), 'a');
+    server.socket->write(message);
+
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
+    loop.exec();
+
+    int readSoFar = client->bytesAvailable();
+    QVERIFY(readSoFar > 0 && readSoFar < message.size());
+    // Now, let's check that we still can read the rest of it:
+    QCOMPARE(client->readAll().size(), readSoFar);
+
+    client->setReadBufferSize(0);
+
+    QTimer::singleShot(1500, &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(client->bytesAvailable() + readSoFar, message.size());
+#else
+    // Not needed, QSslSocket works correctly with other back-ends.
+#endif
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last, as it has some side effects
