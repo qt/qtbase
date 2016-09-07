@@ -58,6 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 class QRunnable;
+class QStringList;
 
 namespace QtAndroidPrivate
 {
@@ -97,7 +98,13 @@ namespace QtAndroidPrivate
         virtual bool handleKeyEvent(jobject event) = 0;
     };
 
+    enum class PermissionsResult {
+        Granted,
+        Denied
+    };
+    typedef QHash<QString,  QtAndroidPrivate::PermissionsResult> PermissionsHash;
     typedef std::function<void()> Runnable;
+    typedef std::function<void(const PermissionsHash &)> PermissionsResultFunc;
 
     Q_CORE_EXPORT jobject activity();
     Q_CORE_EXPORT jobject service();
@@ -109,6 +116,10 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT void runOnAndroidThread(const Runnable &runnable, JNIEnv *env);
     Q_CORE_EXPORT void runOnAndroidThreadSync(const Runnable &runnable, JNIEnv *env, int timeoutMs = INT_MAX);
     Q_CORE_EXPORT void runOnUiThread(QRunnable *runnable, JNIEnv *env);
+    Q_CORE_EXPORT void requestPermissions(JNIEnv *env, const QStringList &permissions, const PermissionsResultFunc &callbackFunc, bool directCall = false);
+    Q_CORE_EXPORT QHash<QString, PermissionsResult> requestPermissionsSync(JNIEnv *env, const QStringList &permissions, int timeoutMs = INT_MAX);
+    Q_CORE_EXPORT PermissionsResult checkPermission(const QString &permission);
+    Q_CORE_EXPORT bool shouldShowRequestPermissionRationale(const QString &permission);
 
     Q_CORE_EXPORT void handleActivityResult(jint requestCode, jint resultCode, jobject data);
     Q_CORE_EXPORT void registerActivityResultListener(ActivityResultListener *listener);
