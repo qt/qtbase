@@ -1010,13 +1010,11 @@ void QMenuBar::paintEvent(QPaintEvent *e)
 */
 void QMenuBar::setVisible(bool visible)
 {
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     if (isNativeMenuBar()) {
         if (!visible)
             QWidget::setVisible(false);
         return;
     }
-#endif
     QWidget::setVisible(visible);
 }
 
@@ -1559,11 +1557,7 @@ QRect QMenuBar::actionGeometry(QAction *act) const
 QSize QMenuBar::minimumSizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     const bool as_gui_menubar = !isNativeMenuBar();
-#else
-    const bool as_gui_menubar = true;
-#endif
 
     ensurePolished();
     QSize ret(0, 0);
@@ -1615,12 +1609,7 @@ QSize QMenuBar::minimumSizeHint() const
 QSize QMenuBar::sizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     const bool as_gui_menubar = !isNativeMenuBar();
-#else
-    const bool as_gui_menubar = true;
-#endif
-
 
     ensurePolished();
     QSize ret(0, 0);
@@ -1673,11 +1662,7 @@ QSize QMenuBar::sizeHint() const
 int QMenuBar::heightForWidth(int) const
 {
     Q_D(const QMenuBar);
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
     const bool as_gui_menubar = !isNativeMenuBar();
-#else
-    const bool as_gui_menubar = true;
-#endif
 
     const_cast<QMenuBarPrivate*>(d)->updateGeometries();
     int height = 0;
@@ -1822,10 +1807,8 @@ QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
 void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
 {
     Q_D(QMenuBar);
-    if (d->nativeMenuBar == -1 || (nativeMenuBar != bool(d->nativeMenuBar))) {
-        d->nativeMenuBar = nativeMenuBar;
-
-        if (!d->nativeMenuBar) {
+    if (nativeMenuBar != bool(d->platformMenuBar)) {
+        if (!nativeMenuBar) {
             delete d->platformMenuBar;
             d->platformMenuBar = 0;
         } else {
@@ -1834,7 +1817,7 @@ void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
         }
 
         updateGeometry();
-        if (!d->nativeMenuBar && parentWidget())
+        if (!nativeMenuBar && parentWidget())
             setVisible(true);
     }
 }
@@ -1842,10 +1825,7 @@ void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
 bool QMenuBar::isNativeMenuBar() const
 {
     Q_D(const QMenuBar);
-    if (d->nativeMenuBar == -1) {
-        return !QApplication::instance()->testAttribute(Qt::AA_DontUseNativeMenuBar);
-    }
-    return d->nativeMenuBar;
+    return bool(d->platformMenuBar);
 }
 
 /*!
