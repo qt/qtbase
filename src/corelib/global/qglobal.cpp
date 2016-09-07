@@ -958,7 +958,8 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
 
     \snippet code/src_corelib_global_qglobal.cpp 53
 
-    \sa qConstOverload(), qNonConstOverload()
+    \sa qConstOverload(), qNonConstOverload(), {Differences between String-Based
+    and Functor-Based Connections}
 */
 
 /*! \fn auto qConstOverload(T memberFunctionPointer)
@@ -969,7 +970,8 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
 
     \snippet code/src_corelib_global_qglobal.cpp 54
 
-    \sa qOverload, qNonConstOverload
+    \sa qOverload, qNonConstOverload, {Differences between String-Based
+    and Functor-Based Connections}
 */
 
 /*! \fn auto qNonConstOverload(T memberFunctionPointer)
@@ -980,7 +982,8 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
 
     \snippet code/src_corelib_global_qglobal.cpp 54
 
-    \sa qOverload, qNonConstOverload
+    \sa qOverload, qNonConstOverload, {Differences between String-Based
+    and Functor-Based Connections}
 */
 
 /*!
