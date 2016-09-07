@@ -664,7 +664,7 @@ T qstyleoption_cast(const QStyleOption *opt)
         || (int(Opt::Type) == QStyleOption::SO_Complex
             && opt->type > QStyleOption::SO_Complex)))
         return static_cast<T>(opt);
-    return 0;
+    return Q_NULLPTR;
 }
 
 template <typename T>
@@ -676,7 +676,7 @@ T qstyleoption_cast(QStyleOption *opt)
         || (int(Opt::Type) == QStyleOption::SO_Complex
             && opt->type > QStyleOption::SO_Complex)))
         return static_cast<T>(opt);
-    return 0;
+    return Q_NULLPTR;
 }
 
 // -------------------------- QStyleHintReturn -------------------------------
@@ -725,7 +725,7 @@ T qstyleoption_cast(const QStyleHintReturn *hint)
     if (hint && hint->version <= Opt::Version &&
         (hint->type == Opt::Type || int(Opt::Type) == QStyleHintReturn::SH_Default))
         return static_cast<T>(hint);
-    return 0;
+    return Q_NULLPTR;
 }
 
 template <typename T>
@@ -735,7 +735,7 @@ T qstyleoption_cast(QStyleHintReturn *hint)
     if (hint && hint->version <= Opt::Version &&
         (hint->type == Opt::Type || int(Opt::Type) == QStyleHintReturn::SH_Default))
         return static_cast<T>(hint);
-    return 0;
+    return Q_NULLPTR;
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)
