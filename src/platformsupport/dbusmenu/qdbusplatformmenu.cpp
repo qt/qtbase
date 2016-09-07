@@ -60,6 +60,8 @@ QDBusPlatformMenuItem::QDBusPlatformMenuItem(quintptr tag)
 QDBusPlatformMenuItem::~QDBusPlatformMenuItem()
 {
     menuItemsByID.remove(m_dbusID);
+    if (m_subMenu)
+        static_cast<QDBusPlatformMenu *>(m_subMenu)->setContainingMenuItem(Q_NULLPTR);
 }
 
 void QDBusPlatformMenuItem::setTag(quintptr tag)
@@ -162,6 +164,8 @@ QDBusPlatformMenu::QDBusPlatformMenu(quintptr tag)
 
 QDBusPlatformMenu::~QDBusPlatformMenu()
 {
+    if (m_containingMenuItem)
+        m_containingMenuItem->setMenu(Q_NULLPTR);
 }
 
 void QDBusPlatformMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)
