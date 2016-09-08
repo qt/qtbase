@@ -508,10 +508,6 @@ defineTest(qtConfOutput_styles) {
     qtConfOutputVar(append, "privatePro", "styles", $$style)
 }
 
-defineTest(qtConfOutput_sqldriver) {
-    $${2}: qtConfOutputVar(append, "privatePro", "sql-drivers", $$eval($${1}.feature))
-}
-
 defineTest(qtConfOutput_qreal) {
     qreal = $$config.input.qreal
     isEmpty(qreal): qreal = "double"

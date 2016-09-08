@@ -165,24 +165,24 @@
             "skip": "addString",
             "slog2": "boolean",
             "sm": { "type": "boolean", "name": "sessionmanager" },
-            "sql-db2": { "type": "boolean", "name": "db2" },
-            "sql-ibase": { "type": "boolean", "name": "ibase" },
-            "sql-mysql": { "type": "boolean", "name": "mysql" },
-            "sql-oci": { "type": "boolean", "name": "oci" },
-            "sql-odbc": { "type": "boolean", "name": "odbc" },
-            "sql-psql": { "type": "boolean", "name": "psql" },
-            "sql-sqlite": { "type": "boolean", "name": "sqlite" },
-            "sql-sqlite2": { "type": "boolean", "name": "sqlite2" },
-            "sql-tds": { "type": "boolean", "name": "tds" },
-            "plugin-sql-db2": { "type": "void", "name": "db2" },
-            "plugin-sql-ibase": { "type": "void", "name": "ibase" },
-            "plugin-sql-mysql": { "type": "void", "name": "mysql" },
-            "plugin-sql-oci": { "type": "void", "name": "oci" },
-            "plugin-sql-odbc": { "type": "void", "name": "odbc" },
-            "plugin-sql-psql": { "type": "void", "name": "psql" },
-            "plugin-sql-sqlite": { "type": "void", "name": "sqlite" },
-            "plugin-sql-sqlite2": { "type": "void", "name": "sqlite2" },
-            "plugin-sql-tds": { "type": "void", "name": "tds" },
+            "sql-db2": "boolean",
+            "sql-ibase": "boolean",
+            "sql-mysql": "boolean",
+            "sql-oci": "boolean",
+            "sql-odbc": "boolean",
+            "sql-psql": "boolean",
+            "sql-sqlite": "boolean",
+            "sql-sqlite2": "boolean",
+            "sql-tds": "boolean",
+            "plugin-sql-db2": { "type": "void", "name": "sql-db2" },
+            "plugin-sql-ibase": { "type": "void", "name": "sql-ibase" },
+            "plugin-sql-mysql": { "type": "void", "name": "sql-mysql" },
+            "plugin-sql-oci": { "type": "void", "name": "sql-oci" },
+            "plugin-sql-odbc": { "type": "void", "name": "sql-odbc" },
+            "plugin-sql-psql": { "type": "void", "name": "sql-psql" },
+            "plugin-sql-sqlite": { "type": "void", "name": "sql-sqlite" },
+            "plugin-sql-sqlite2": { "type": "void", "name": "sql-sqlite2" },
+            "plugin-sql-tds": { "type": "void", "name": "sql-tds" },
             "qdbus": { "type": "boolean", "name": "dbus" },
             "sqlite": { "type": "enum", "name": "system-sqlite", "values": { "qt": "no", "system": "yes" } },
             "sse2": "boolean",
@@ -2355,60 +2355,60 @@
             "condition": "features.opengl-desktop || features.opengl-dynamic || features.opengles2",
             "output": [ "publicFeature", "feature" ]
         },
-        "db2": {
+        "sql-db2": {
             "description": "DB2 (IBM)",
             "condition": "libs.db2",
-            "output": [ "sqldriver" ]
+            "output": [ "publicFeature" ]
         },
-        "ibase": {
+        "sql-ibase": {
             "description": "InterBase",
             "condition": "libs.ibase",
-            "output": [ "sqldriver" ]
+            "output": [ "publicFeature" ]
         },
-        "mysql": {
+        "sql-mysql": {
             "description": "MySql",
             "condition": "libs.mysql",
-            "output": [ "sqldriver" ]
+            "output": [ "publicFeature" ]
         },
         "use_libmysqlclient_r": {
             "description": "MySql (threadsafe)",
-            "condition": "features.mysql && (libs.mysql.source == 0 || libs.mysql.source == 2)",
+            "condition": "features.sql-mysql && (libs.mysql.source == 0 || libs.mysql.source == 2)",
             "output": [ "privateConfig" ]
         },
-        "oci": {
+        "sql-oci": {
             "description": "OCI (Oracle)",
             "condition": "libs.oci",
-            "output": [ "sqldriver" ]
+            "output": [ "publicFeature" ]
         },
-        "odbc": {
+        "sql-odbc": {
             "description": "ODBC",
             "condition": "libs.odbc",
-            "output": [ "sqldriver" ]
+            "output": [ "publicFeature" ]
         },
-        "psql": {
+        "sql-psql": {
             "description": "PostgreSQL",
             "condition": "libs.psql",
-            "output": [ "sqldriver" ]
+            "output": [ "publicFeature" ]
         },
-        "sqlite2": {
+        "sql-sqlite2": {
             "description": "SQLite2",
             "condition": "libs.sqlite2",
-            "output": [ "sqldriver" ]
+            "output": [ "publicFeature" ]
         },
-        "sqlite": {
+        "sql-sqlite": {
             "description": "SQLite",
-            "output": [ "sqldriver" ]
+            "output": [ "publicFeature" ]
         },
         "system-sqlite": {
             "description": "  Using system provided SQLite",
             "autoDetect": false,
-            "condition": "features.sqlite && libs.sqlite3",
+            "condition": "features.sql-sqlite && libs.sqlite3",
             "output": [ "publicQtConfig" ]
         },
-        "tds": {
+        "sql-tds": {
             "description": "TDS (Sybase)",
             "condition": "libs.tds",
-            "output": [ "sqldriver" ]
+            "output": [ "publicFeature" ]
         },
         "style-fusion": {
             "description": "Fusion Style",
@@ -2579,7 +2579,7 @@ or are able to read the logged output from journald, syslog or slog2."
         },
         {
             "type": "warning",
-            "condition": "config.win32 && !config.msvc && features.oci",
+            "condition": "config.win32 && !config.msvc && features.sql-oci",
             "message": "Qt does not support compiling the Oracle database driver with
 MinGW, due to lack of such support from Oracle. Consider disabling the
 Oracle driver, as the current build will most likely fail."
@@ -2862,7 +2862,8 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                 {
                     "section": "SQL drivers",
                     "entries": [
-                        "db2", "ibase", "mysql", "oci", "odbc", "psql", "sqlite2", "sqlite", "system-sqlite", "tds"
+                        "sql-db2", "sql-ibase", "sql-mysql", "sql-oci", "sql-odbc", "sql-psql",
+                        "sql-sqlite2", "sql-sqlite", "system-sqlite", "sql-tds"
                     ]
                 },
                 "tslib",
