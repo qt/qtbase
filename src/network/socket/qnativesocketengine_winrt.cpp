@@ -84,6 +84,69 @@ typedef IAsyncOperationWithProgress<IBuffer *, UINT32> IAsyncBufferOperation;
 
 QT_BEGIN_NAMESPACE
 
+static inline QString qt_QStringFromHString(const HString &string)
+{
+    UINT32 length;
+    PCWSTR rawString = string.GetRawBuffer(&length);
+    return QString::fromWCharArray(rawString, length);
+}
+
+class SocketEngineWorker : public QObject
+{
+    Q_OBJECT
+signals:
+    void newDatagramsReceived(const QList<WinRtDatagram> &datagram);
+
+public slots:
+    Q_INVOKABLE void notifyAboutNewDatagrams()
+    {
+        QMutexLocker locker(&mutex);
+        QList<WinRtDatagram> datagrams = pendingDatagrams;
+        pendingDatagrams.clear();
+        emit newDatagramsReceived(datagrams);
+    }
+
+public:
+    HRESULT OnNewDatagramReceived(IDatagramSocket *, IDatagramSocketMessageReceivedEventArgs *args)
+    {
+        WinRtDatagram datagram;
+        QHostAddress returnAddress;
+        ComPtr<IHostName> remoteHost;
+        HRESULT hr = args->get_RemoteAddress(&remoteHost);
+        RETURN_OK_IF_FAILED("Could not obtain remote host");
+        HString remoteHostString;
+        hr = remoteHost->get_CanonicalName(remoteHostString.GetAddressOf());
+        RETURN_OK_IF_FAILED("Could not obtain remote host's canonical name");
+        returnAddress.setAddress(qt_QStringFromHString(remoteHostString));
+        datagram.header.senderAddress = returnAddress;
+        HString remotePort;
+        hr = args->get_RemotePort(remotePort.GetAddressOf());
+        RETURN_OK_IF_FAILED("Could not obtain remote port");
+        datagram.header.senderPort = qt_QStringFromHString(remotePort).toInt();
+
+        ComPtr<IDataReader> reader;
+        hr = args->GetDataReader(&reader);
+        RETURN_OK_IF_FAILED("Could not obtain data reader");
+        quint32 length;
+        hr = reader->get_UnconsumedBufferLength(&length);
+        RETURN_OK_IF_FAILED("Could not obtain unconsumed buffer length");
+        datagram.data.resize(length);
+        hr = reader->ReadBytes(length, reinterpret_cast<BYTE *>(datagram.data.data()));
+        RETURN_OK_IF_FAILED("Could not read datagram");
+        QMutexLocker locker(&mutex);
+        // Notify the engine about new datagrams being present at the next event loop iteration
+        if (pendingDatagrams.isEmpty())
+            QMetaObject::invokeMethod(this, "notifyAboutNewDatagrams", Qt::QueuedConnection);
+        pendingDatagrams << datagram;
+
+        return S_OK;
+    }
+
+private:
+    QList<WinRtDatagram> pendingDatagrams;
+    QMutex mutex;
+};
+
 static QByteArray socketDescription(const QAbstractSocketEngine *s)
 {
     QByteArray result;
@@ -159,13 +222,6 @@ struct SocketGlobal
 };
 Q_GLOBAL_STATIC(SocketGlobal, g)
 
-static inline QString qt_QStringFromHString(const HString &string)
-{
-    UINT32 length;
-    PCWSTR rawString = string.GetRawBuffer(&length);
-    return QString::fromWCharArray(rawString, length);
-}
-
 #define READ_BUFFER_SIZE 65536
 
 template <typename T>
@@ -206,6 +262,7 @@ static qint64 writeIOStream(ComPtr<IOutputStream> stream, const char *data, qint
 QNativeSocketEngine::QNativeSocketEngine(QObject *parent)
     : QAbstractSocketEngine(*new QNativeSocketEnginePrivate(), parent)
 {
+    qRegisterMetaType<WinRtDatagram>();
 #ifndef QT_NO_SSL
     Q_D(QNativeSocketEngine);
     if (parent)
@@ -215,6 +272,7 @@ QNativeSocketEngine::QNativeSocketEngine(QObject *parent)
     connect(this, SIGNAL(connectionReady()), SLOT(connectionNotification()), Qt::QueuedConnection);
     connect(this, SIGNAL(readReady()), SLOT(readNotification()), Qt::QueuedConnection);
     connect(this, SIGNAL(writeReady()), SLOT(writeNotification()), Qt::QueuedConnection);
+    connect(d->worker, &SocketEngineWorker::newDatagramsReceived, this, &QNativeSocketEngine::handleNewDatagrams, Qt::QueuedConnection);
 }
 
 QNativeSocketEngine::~QNativeSocketEngine()
@@ -634,6 +692,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
 {
 #ifndef QT_NO_UDPSOCKET
     Q_D(QNativeSocketEngine);
+    d->readMutex.lock();
     if (d->socketType != QAbstractSocket::UdpSocket || d->pendingDatagrams.isEmpty()) {
         if (header)
             header->clear();
@@ -653,6 +712,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     } else {
         readOrigin = datagram.data;
     }
+    d->readMutex.unlock();
     memcpy(data, readOrigin, qMin(maxlen, qint64(datagram.data.length())));
     return readOrigin.length();
 #else
@@ -880,6 +940,24 @@ void QNativeSocketEngine::establishRead()
     Q_ASSERT_SUCCEEDED(hr);
 }
 
+void QNativeSocketEngine::handleNewDatagrams(const QList<WinRtDatagram> &datagrams)
+{
+    Q_D(QNativeSocketEngine);
+    // Defer putting the datagrams into the list until the next event loop iteration
+    // (where the readyRead signal is emitted as well)
+    QMetaObject::invokeMethod(this, "putIntoPendingDatagramsList", Qt::QueuedConnection,
+                              Q_ARG(QList<WinRtDatagram>, datagrams));
+    if (d->notifyOnRead)
+        emit readReady();
+}
+
+void QNativeSocketEngine::putIntoPendingDatagramsList(const QList<WinRtDatagram> &datagrams)
+{
+    Q_D(QNativeSocketEngine);
+    QMutexLocker locker(&d->readMutex);
+    d->pendingDatagrams.append(datagrams);
+}
+
 bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType, QAbstractSocket::NetworkLayerProtocol &socketProtocol)
 {
     Q_UNUSED(socketProtocol);
@@ -899,8 +977,11 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         RETURN_FALSE_IF_FAILED("createNewSocket: Could not create socket instance");
         socketDescriptor = qintptr(socket.Detach());
         QEventDispatcherWinRT::runOnXamlThread([&hr, this]() {
-            hr = udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(this, &QNativeSocketEnginePrivate::handleNewDatagram).Get(), &connectionToken);
-            RETURN_OK_IF_FAILED("createNewSocket: Could not add \"message received\" callback")
+            hr = udpSocket()->add_MessageReceived(Callback<DatagramReceivedHandler>(worker, &SocketEngineWorker::OnNewDatagramReceived).Get(), &connectionToken);
+            if (FAILED(hr)) {
+                qErrnoWarning(hr, "createNewSocket: Could not add \"message received\" callback");
+                return hr;
+            }
             return S_OK;
         });
         if (FAILED(hr))
@@ -931,6 +1012,7 @@ QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
     , notifyOnException(false)
     , closingDown(false)
     , socketDescriptor(-1)
+    , worker(new SocketEngineWorker)
     , sslSocket(Q_NULLPTR)
     , connectionToken( { -1 } )
 {
@@ -947,6 +1029,8 @@ QNativeSocketEnginePrivate::~QNativeSocketEnginePrivate()
     else if (socketType == QAbstractSocket::TcpSocket)
         hr = tcpListener->remove_ConnectionReceived(connectionToken);
     Q_ASSERT_SUCCEEDED(hr);
+
+    worker->deleteLater();
 }
 
 void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, ErrorString errorString) const
@@ -1436,11 +1520,11 @@ HRESULT QNativeSocketEnginePrivate::handleNewDatagram(IDatagramSocket *socket, I
     datagram.data.resize(length);
     hr = reader->ReadBytes(length, reinterpret_cast<BYTE *>(datagram.data.data()));
     RETURN_OK_IF_FAILED("Could not read datagram");
-    pendingDatagrams.append(datagram);
-    if (notifyOnRead)
-        emit q->readReady();
+    emit q->newDatagramReceived(datagram);
 
     return S_OK;
 }
 
 QT_END_NAMESPACE
+
+#include "qnativesocketengine_winrt.moc"
