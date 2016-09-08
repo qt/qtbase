@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
+
 #ifndef QT_NO_PRINTER
 
 #include "qprintengine_win_p.h"

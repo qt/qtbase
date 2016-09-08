@@ -43,6 +43,8 @@
 #include "private/qfactoryloader_p.h"
 #include <qcoreapplication.h>
 
+#ifndef QT_NO_PRINTER
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
@@ -86,3 +88,5 @@ QPlatformPrinterSupport *QPlatformPrinterSupportPlugin::get()
 }
 
 QT_END_NAMESPACE
+
+#endif
