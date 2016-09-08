@@ -926,7 +926,7 @@ QString QDate::toString(Qt::DateFormat format) const
 */
 QString QDate::toString(const QString& format) const
 {
-    return QLocale::system().toString(*this, format);
+    return QLocale::system().toString(*this, format); // QLocale::c() ### Qt6
 }
 #endif //QT_NO_DATESTRING
 
@@ -1328,6 +1328,7 @@ QDate QDate::fromString(const QString &string, const QString &format)
     QDate date;
 #ifndef QT_BOOTSTRAPPED
     QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString);
+    // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
         dt.fromString(string, &date, 0);
 #else
@@ -1664,7 +1665,7 @@ QString QTime::toString(Qt::DateFormat format) const
 */
 QString QTime::toString(const QString& format) const
 {
-    return QLocale::system().toString(*this, format);
+    return QLocale::system().toString(*this, format); // QLocale::c() ### Qt6
 }
 #endif //QT_NO_DATESTRING
 /*!
@@ -2014,6 +2015,7 @@ QTime QTime::fromString(const QString &string, const QString &format)
     QTime time;
 #ifndef QT_BOOTSTRAPPED
     QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString);
+    // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
         dt.fromString(string, 0, &time);
 #else
@@ -3876,7 +3878,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
 */
 QString QDateTime::toString(const QString& format) const
 {
-    return QLocale::system().toString(*this, format);
+    return QLocale::system().toString(*this, format); // QLocale::c() ### Qt6
 }
 #endif //QT_NO_DATESTRING
 
@@ -4927,6 +4929,7 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format)
     QDate date;
 
     QDateTimeParser dt(QVariant::DateTime, QDateTimeParser::FromString);
+    // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format) && dt.fromString(string, &date, &time))
         return QDateTime(date, time);
 #else
