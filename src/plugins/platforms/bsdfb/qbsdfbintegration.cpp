@@ -63,7 +63,7 @@ QBsdFbIntegration::QBsdFbIntegration(const QStringList &paramList)
 
 QBsdFbIntegration::~QBsdFbIntegration()
 {
-    destroyScreen(m_primaryScreen.data());
+    destroyScreen(m_primaryScreen.take());
 }
 
 void QBsdFbIntegration::initialize()
