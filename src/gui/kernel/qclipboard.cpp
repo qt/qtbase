@@ -438,6 +438,10 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
     The text(), image(), and pixmap() functions are simpler
     wrappers for retrieving text, image, and pixmap data.
 
+    \note The pointer returned might become invalidated when the contents
+    of the clipboard changes; either by calling one of the setter functions
+    or externally by the system clipboard changing.
+
     \sa setMimeData()
 */
 const QMimeData* QClipboard::mimeData(Mode mode) const
