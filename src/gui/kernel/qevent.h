@@ -793,21 +793,45 @@ inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key){return (e ? 
 inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? e->matches(key) : false);}
 #endif // QT_NO_SHORTCUT
 
-class QPointerUniqueIdPrivate;
 class Q_GUI_EXPORT QPointerUniqueId
 {
     Q_GADGET
-    Q_PROPERTY(qint64 numeric READ numeric CONSTANT)
+    // ### kept these to keep other modules compiling. Remove before 5.8.0 final!
+#if QT_DEPRECATED_SINCE(5, 8)
+    Q_PROPERTY(qint64 numeric READ numericId CONSTANT)
+#endif
+    Q_PROPERTY(qint64 numericId READ numericId CONSTANT)
 public:
-    explicit QPointerUniqueId(qint64 id = -1);
+    Q_ALWAYS_INLINE
+    Q_DECL_CONSTEXPR QPointerUniqueId() Q_DECL_NOTHROW : m_numericId(-1) {}
+    // compiler-generated copy/move ctor/assignment operators are ok!
+    // compiler-generated dtor is ok!
 
-    qint64 numeric() const;
+    static QPointerUniqueId fromNumericId(qint64 id);
 
+    Q_ALWAYS_INLINE Q_DECL_CONSTEXPR bool isValid() const Q_DECL_NOTHROW { return m_numericId != -1; }
+    qint64 numericId() const Q_DECL_NOTHROW;
+
+    // ### kept these to keep other modules compiling. Remove before 5.8.0 final!
+#if QT_DEPRECATED_SINCE(5, 8)
+    Q_ALWAYS_INLINE Q_DECL_DEPRECATED qint64 numeric() const { return numericId(); }
+    Q_ALWAYS_INLINE Q_DECL_DEPRECATED explicit QPointerUniqueId(qint64 id) : m_numericId(id) {}
+#endif
 private:
-    // TODO for TUIO 2, or any other type of complex token ID, a d-pointer can replace
-    // m_numericId without changing the size of this class.
+    // TODO: for TUIO 2, or any other type of complex token ID, an internal
+    // array (or hash) can be added to hold additional properties.
+    // In this case, m_numericId will then turn into an index into that array (or hash).
     qint64 m_numericId;
 };
+Q_DECLARE_TYPEINFO(QPointerUniqueId, Q_MOVABLE_TYPE);
+template <> class QList<QPointerUniqueId> {}; // to prevent instantiation: use QVector instead
+
+Q_GUI_EXPORT bool operator==(QPointerUniqueId lhs, QPointerUniqueId rhs) Q_DECL_NOTHROW;
+inline bool operator!=(QPointerUniqueId lhs, QPointerUniqueId rhs) Q_DECL_NOTHROW
+{ return !operator==(lhs, rhs); }
+Q_GUI_EXPORT uint qHash(QPointerUniqueId key, uint seed = 0) Q_DECL_NOTHROW;
+
+
 
 class QTouchEventTouchPointPrivate;
 class Q_GUI_EXPORT QTouchEvent : public QInputEvent
