@@ -29,6 +29,6 @@ unix:!darwin:qtConfig(dbus) {
     include(dbusmenu/dbusmenu.pri)
     include(dbustray/dbustray.pri)
 }
-uikit: include(graphics/graphics.pri)
+darwin: include(graphics/graphics.pri)
 
 load(qt_module)
