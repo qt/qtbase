@@ -118,6 +118,8 @@ void QDBusTrayIcon::cleanup()
         dBusConnection()->unregisterTrayIcon(this);
     delete m_dbusConnection;
     m_dbusConnection = Q_NULLPTR;
+    delete m_notifier;
+    m_notifier = Q_NULLPTR;
     m_registered = false;
 }
 
