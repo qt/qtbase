@@ -2669,7 +2669,7 @@ QString QSysInfo::productType()
 */
 QString QSysInfo::productVersion()
 {
-#if defined(Q_OS_DARWIN)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN)
     const auto version = QOperatingSystemVersion::current();
     return QString::number(version.majorVersion()) + QLatin1Char('.') + QString::number(version.minorVersion());
 #elif defined(Q_OS_WIN)
@@ -2680,9 +2680,6 @@ QString QSysInfo::productVersion()
     }
     // fall through
 
-// Android should not fall through to the Unix code
-#elif defined(Q_OS_ANDROID)
-    return QJNIObjectPrivate::getStaticObjectField("android/os/Build$VERSION", "RELEASE", "Ljava/lang/String;").toString();
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion;
     findUnixOsVersion(unixOsVersion);
