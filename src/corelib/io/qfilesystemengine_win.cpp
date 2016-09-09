@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qfilesystemengine_p.h"
-
+#include "qoperatingsystemversion.h"
 #include "qplatformdefs.h"
 #include "qsysinfo.h"
 #include "private/qabstractfileengine_p.h"
@@ -637,7 +637,7 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
                     FILE_SHARE_READ, OPEN_EXISTING, NULL);
 #endif // Q_OS_WINRT
     if (handle) {
-        result = QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS8 ?
+        result = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8 ?
                  fileIdWin8(handle) : fileId(handle);
         CloseHandle(handle);
     }

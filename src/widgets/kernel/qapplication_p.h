@@ -91,12 +91,6 @@ extern Q_GUI_EXPORT bool qt_is_gui_used;
 extern QClipboard *qt_clipboard;
 #endif
 
-#if defined (Q_OS_WIN32) || defined (Q_OS_CYGWIN)
-extern QSysInfo::WinVersion qt_winver;
-#elif defined (Q_OS_MAC)
-extern QSysInfo::MacVersion qt_macver;
-#endif
-
 typedef QHash<QByteArray, QFont> FontHash;
 FontHash *qt_app_fonts_hash();
 

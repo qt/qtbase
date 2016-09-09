@@ -42,6 +42,7 @@
 
 #include "qopenglcontext.h"
 #include "qopenglfunctions.h"
+#include "qoperatingsystemversion.h"
 #include "qoffscreensurface.h"
 
 #include <QtCore/QDebug>
@@ -221,29 +222,25 @@ struct OsTypeTerm
     static QString hostOsRelease() {
         QString ver;
 #ifdef Q_OS_WIN
-        switch (QSysInfo::windowsVersion()) {
-        case QSysInfo::WV_XP:
-        case QSysInfo::WV_2003:
-            ver = QStringLiteral("xp");
-            break;
-        case QSysInfo::WV_VISTA:
-            ver = QStringLiteral("vista");
-            break;
-        case QSysInfo::WV_WINDOWS7:
+        const auto osver = QOperatingSystemVersion::current();
+#define Q_WINVER(major, minor) (major << 8 | minor)
+        switch (Q_WINVER(osver.majorVersion(), osver.minorVersion())) {
+        case Q_WINVER(6, 1):
             ver = QStringLiteral("7");
             break;
-        case QSysInfo::WV_WINDOWS8:
+        case Q_WINVER(6, 2):
             ver = QStringLiteral("8");
             break;
-        case QSysInfo::WV_WINDOWS8_1:
+        case Q_WINVER(6, 3):
             ver = QStringLiteral("8.1");
             break;
-        case QSysInfo::WV_WINDOWS10:
+        case Q_WINVER(10, 0):
             ver = QStringLiteral("10");
             break;
         default:
             break;
         }
+#undef Q_WINVER
 #endif
         return ver;
     }

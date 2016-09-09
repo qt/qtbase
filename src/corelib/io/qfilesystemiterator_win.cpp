@@ -39,6 +39,7 @@
 
 #include "qfilesystemiterator_p.h"
 #include "qfilesystemengine_p.h"
+#include "qoperatingsystemversion.h"
 #include "qplatformdefs.h"
 #include "qvector.h"
 
@@ -93,7 +94,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         haveData = true;
         int infoLevel = 0 ;         // FindExInfoStandard;
         DWORD dwAdditionalFlags  = 0;
-        if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows7) {
             dwAdditionalFlags = 2;  // FIND_FIRST_EX_LARGE_FETCH
             infoLevel = 1 ;         // FindExInfoBasic;
         }

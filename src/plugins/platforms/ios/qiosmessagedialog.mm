@@ -39,6 +39,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
@@ -109,7 +110,7 @@ bool QIOSMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality win
     if (m_alertController // Ensure that the dialog is not showing already
             || !options() // Some message dialogs don't have options (QErrorMessage)
             || windowModality != Qt::ApplicationModal // We can only do app modal dialogs
-            || QSysInfo::MacintoshVersion < QSysInfo::MV_IOS_8_0) // API limitation
+            || QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::IOS, 8)) // API limitation
         return false;
 
     m_alertController = [[UIAlertController

@@ -46,6 +46,7 @@
 #include "qwizard.h"
 #include "qpaintengine.h"
 #include "qapplication.h"
+#include <QtCore/QOperatingSystemVersion>
 #include <QtCore/QVariant>
 #include <QtCore/QDebug>
 #include <QtGui/QMouseEvent>
@@ -715,7 +716,7 @@ int QVistaHelper::topOffset()
     if (vistaState() != VistaAero)
         return titleBarSize() + 3;
     static const int aeroOffset =
-        QSysInfo::WindowsVersion == QSysInfo::WV_WINDOWS7 ?
+        QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8 ?
         QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
     return aeroOffset + titleBarSize();
 }

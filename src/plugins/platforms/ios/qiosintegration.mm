@@ -60,6 +60,7 @@
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 #include <QtPlatformSupport/private/qmacmime_p.h>
 #include <QDir>
+#include <QOperatingSystemVersion>
 
 #import <AudioToolbox/AudioServices.h>
 
@@ -117,7 +118,7 @@ QIOSIntegration::QIOSIntegration()
     m_touchDevice = new QTouchDevice;
     m_touchDevice->setType(QTouchDevice::TouchScreen);
     QTouchDevice::Capabilities touchCapabilities = QTouchDevice::Position | QTouchDevice::NormalizedPosition;
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_9_0) {
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 9)) {
         if (mainScreen.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
             touchCapabilities |= QTouchDevice::Pressure;
     }

@@ -67,7 +67,7 @@
 + (NSGraphicsContext *)qt_graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState
 {
 #if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_10, __IPHONE_NA)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXYosemite)
         return [self graphicsContextWithCGContext:graphicsPort flipped:initialFlippedState];
 #endif
     return [self graphicsContextWithGraphicsPort:graphicsPort flipped:initialFlippedState];

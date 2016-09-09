@@ -90,19 +90,14 @@ PlatformInfo PlatformInfo::localHostInfo()
 #endif
 #if defined(Q_OS_LINUX)
     pi.insert(PI_OSName, QLS("Linux"));
-    QProcess uname;
-    uname.start(QLS("uname"), QStringList() << QLS("-r"));
-    if (uname.waitForFinished(3000))
-        pi.insert(PI_OSVersion, QString::fromLocal8Bit(uname.readAllStandardOutput().constData()).simplified());
 #elif defined(Q_OS_WIN)
     pi.insert(PI_OSName, QLS("Windows"));
-    pi.insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
-#elif defined(Q_OS_MAC)
-    pi.insert(PI_OSName, QLS("MacOS"));
-    pi.insert(PI_OSVersion, QString::number(QSysInfo::macVersion()));
+#elif defined(Q_OS_DARWIN)
+    pi.insert(PI_OSName, QLS("Darwin"));
 #else
     pi.insert(PI_OSName, QLS("Other"));
 #endif
+    pi.insert(PI_OSVersion, QSysInfo::kernelVersion());
 
 #ifndef QT_NO_PROCESS
     QProcess git;

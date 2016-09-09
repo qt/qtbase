@@ -39,6 +39,7 @@
 
 #include "qwindowsvistastyle_p.h"
 #include "qwindowsvistastyle_p_p.h"
+#include <qoperatingsystemversion.h>
 #include <qscreen.h>
 #include <qwindow.h>
 #include <private/qstyleanimation_p.h>
@@ -1752,7 +1753,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                     theme.stateId = stateId;
                     d->drawBackground(theme);
 
-                    if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8) {
+                    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8) {
                         const QRect gripperBounds = QWindowsXPStylePrivate::scrollBarGripperBounds(flags, widget, &theme);
                         // Draw gripper if there is enough space
                         if (!gripperBounds.isEmpty() && flags & State_Enabled) {

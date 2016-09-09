@@ -84,6 +84,7 @@
 #include <qtoolbutton.h>
 #include <qtreeview.h>
 #include <qtableview.h>
+#include <qoperatingsystemversion.h>
 #include <qwizard.h>
 #include <qdebug.h>
 #include <qlibrary.h>
@@ -1431,7 +1432,7 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
         bdi->adornment = kThemeAdornmentFocus;
     if (combo->activeSubControls & QStyle::SC_ComboBoxArrow)
         bdi->state = kThemeStatePressed;
-    else if (tds == kThemeStateInactive && QSysInfo::MacintoshVersion < QSysInfo::MV_10_10)
+    else if (tds == kThemeStateInactive && QOperatingSystemVersion::current() < QOperatingSystemVersion::OSXYosemite)
         bdi->state = kThemeStateActive;
     else
         bdi->state = tds;
@@ -1753,7 +1754,7 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
             || slider->tickPosition == QSlider::TicksBothSides;
 
     tdi->bounds = qt_hirectForQRect(slider->rect);
-    if (isScrollbar || QSysInfo::MacintoshVersion < QSysInfo::MV_10_10) {
+    if (isScrollbar || QOperatingSystemVersion::current() < QOperatingSystemVersion::OSXYosemite) {
         tdi->min = slider->minimum;
         tdi->max = slider->maximum;
         tdi->value = slider->sliderPosition;
@@ -2065,7 +2066,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
     const bool button = opt->type == QStyleOption::SO_Button;
     const bool viewItem = opt->type == QStyleOption::SO_ViewItem;
     const bool pressed = bdi->state == kThemeStatePressed;
-    const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10;
+    const bool usingYosemiteOrLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXYosemite;
 
     if (button && pressed) {
         if (bdi->kind == kThemePushButton) {
@@ -3700,7 +3701,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     QWindow *window = w && w->window() ? w->window()->windowHandle() :
                      QStyleHelper::styleObjectWindow(opt->styleObject);
     const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
-    const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10;
+    const bool usingYosemiteOrLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXYosemite;
     switch (ce) {
     case CE_HeaderSection:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
@@ -4092,7 +4093,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             bool hasIcon = !btn.icon.isNull();
             bool hasText = !btn.text.isEmpty();
 
-            if (!hasMenu && QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10) {
+            if (!hasMenu && QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXYosemite) {
                 if (tds == kThemeStatePressed
                     || (tds == kThemeStateActive
                         && ((btn.features & QStyleOptionButton::DefaultButton && !d->autoDefaultButton)
@@ -4197,8 +4198,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             QStyleOptionComboBox comboCopy = *cb;
             comboCopy.direction = Qt::LeftToRight;
             if (opt->state & QStyle::State_Small)
-                comboCopy.rect.translate(0, w ? 0 : (QSysInfo::macVersion() >= QSysInfo::MV_10_10 ? 0 : -2)); // Supports Qt Quick Controls
-            else if (QSysInfo::macVersion() == QSysInfo::MV_10_9)
+                comboCopy.rect.translate(0, w ? 0 : (QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXYosemite ? 0 : -2)); // Supports Qt Quick Controls
+            else if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXMavericks
+                  && QOperatingSystemVersion::current() < QOperatingSystemVersion::OSXYosemite)
                 comboCopy.rect.translate(0, 1);
             QCommonStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
         }
@@ -5410,7 +5412,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     QWindow *window = widget && widget->window() ? widget->window()->windowHandle() :
                      QStyleHelper::styleObjectWindow(opt->styleObject);
     const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
-    const bool usingYosemiteOrLater = QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10;
+    const bool usingYosemiteOrLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXYosemite;
     switch (cc) {
     case CC_Slider:
     case CC_ScrollBar:
@@ -6054,7 +6056,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     drawToolbarButtonArrow(tb->rect, tds, cg);
                 }
                 if (tb->state & State_On) {
-                    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10) {
+                    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXYosemite) {
                         QWindow *window = 0;
                         if (widget && widget->window())
                             window = widget->window()->windowHandle();
@@ -6418,7 +6420,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             switch (sc) {
             case SC_ComboBoxEditField:{
                 ret = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
-                if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10)
+                if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXYosemite)
                     ret.setHeight(ret.height() - 1);
                 break; }
             case SC_ComboBoxArrow:{
@@ -6877,7 +6879,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case CT_ComboBox: {
         sz.rwidth() += 50;
         const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt);
-        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_10 || (cb && !cb->editable))
+        if (QOperatingSystemVersion::current() < QOperatingSystemVersion::OSXYosemite || (cb && !cb->editable))
             sz.rheight() += 2;
         break;
     }

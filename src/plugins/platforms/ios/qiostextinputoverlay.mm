@@ -219,7 +219,7 @@ static void executeBlockWithoutAnimation(Block block)
         borderLayer.borderColor = [[UIColor lightGrayColor] CGColor];
         [self addSublayer:borderLayer];
 
-        if (QSysInfo::MacintoshVersion < QSysInfo::MV_IOS_7_0) {
+        if (QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::IOS, 7)) {
             // [UIView snapshotViewAfterScreenUpdates:] is available since iOS 7.0.
             // Just silently ignore showing the loupe for older versions.
             self.hidden = YES;
@@ -267,7 +267,7 @@ static void executeBlockWithoutAnimation(Block block)
 
 - (void)display
 {
-     if (QSysInfo::MacintoshVersion < QSysInfo::MV_IOS_7_0)
+     if (QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::IOS, 7))
          return;
 
      // Take a snapshow of the target view, magnify the area around the focal

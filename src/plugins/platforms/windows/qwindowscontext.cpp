@@ -68,6 +68,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QStringList>
 #include <QtCore/QDebug>
+#include <QtCore/QOperatingSystemVersion>
 #include <QtCore/QSysInfo>
 #include <QtCore/QScopedArrayPointer>
 #include <QtCore/private/qsystemlibrary_p.h>
@@ -186,7 +187,7 @@ QWindowsShcoreDLL::QWindowsShcoreDLL()
 
 void QWindowsShcoreDLL::init()
 {
-    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS8_1)
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8_1)
         return;
     QSystemLibrary library(QStringLiteral("SHCore"));
     getProcessDpiAwareness = (GetProcessDpiAwareness)library.resolve("GetProcessDpiAwareness");

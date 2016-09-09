@@ -1336,7 +1336,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (bool)handleGestureAsBeginEnd:(NSEvent *)event
 {
-    if (QSysInfo::QSysInfo::MacintoshVersion < QSysInfo::MV_10_11)
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::OSXElCapitan)
         return false;
 
     if ([event phase] == NSEventPhaseBegan) {

@@ -45,6 +45,7 @@
 #include "qiosapplicationdelegate.h"
 #include "qiosviewcontroller.h"
 #include "quiview.h"
+#include <QtCore/qoperatingsystemversion.h>
 
 #include <QtGui/private/qwindow_p.h>
 
@@ -271,7 +272,7 @@ void QIOSScreen::updateProperties()
     if (m_uiScreen == [UIScreen mainScreen]) {
         Qt::ScreenOrientation statusBarOrientation = toQtScreenOrientation(UIDeviceOrientation([UIApplication sharedApplication].statusBarOrientation));
 
-        if (QSysInfo::MacintoshVersion < QSysInfo::MV_IOS_8_0) {
+        if (QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::IOS, 8)) {
             // On iOS < 8.0 the UIScreen geometry is always in portait, and the system applies
             // the screen rotation to the root view-controller's view instead of directly to the
             // screen, like iOS 8 and above does.
@@ -299,7 +300,7 @@ void QIOSScreen::updateProperties()
 
     if (m_geometry != previousGeometry) {
         QRectF physicalGeometry;
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_8_0) {
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 8)) {
              // We can't use the primaryOrientation of screen(), as we haven't reported the new geometry yet
             Qt::ScreenOrientation primaryOrientation = m_geometry.width() >= m_geometry.height() ?
                 Qt::LandscapeOrientation : Qt::PortraitOrientation;
@@ -404,7 +405,7 @@ Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
     CGRect nativeBounds =
 #if !defined(Q_OS_TVOS) && QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_8_0)
-        QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_8_0 ? m_uiScreen.nativeBounds :
+        QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 8) ? m_uiScreen.nativeBounds :
 #endif
         m_uiScreen.bounds;
 

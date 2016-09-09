@@ -42,6 +42,7 @@
 
 #include "qcoreapplication.h"
 #include <private/qsystemlibrary_p.h>
+#include "qoperatingsystemversion.h"
 #include "qpair.h"
 #include "qset.h"
 #include "qsocketnotifier.h"
@@ -236,7 +237,7 @@ static inline UINT inputTimerMask()
     // QTBUG 28513, QTBUG-29097, QTBUG-29435: QS_TOUCH, QS_POINTER became part of
     // QS_INPUT in Windows Kit 8. They should not be used when running on pre-Windows 8.
 #if WINVER > 0x0601
-    if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8)
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8)
         result &= ~(QS_TOUCH | QS_POINTER);
 #endif //  WINVER > 0x0601
     return result;

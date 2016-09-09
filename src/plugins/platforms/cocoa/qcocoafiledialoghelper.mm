@@ -62,6 +62,7 @@
 #include <stdlib.h>
 #include <qabstracteventdispatcher.h>
 #include <qsysinfo.h>
+#include <qoperatingsystemversion.h>
 #include <qglobal.h>
 #include <QDir>
 
@@ -163,7 +164,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
     [mSavePanel setDelegate:self];
 
 #if QT_OSX_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_11)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_11)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXElCapitan)
         mOpenPanel.accessoryViewDisclosed = YES;
 #endif
 

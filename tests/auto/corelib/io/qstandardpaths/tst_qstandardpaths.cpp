@@ -372,7 +372,7 @@ void tst_qstandardpaths::testFindExecutable_data()
     QTest::newRow("win-cmd-nosuffix")
         << QString() << QString::fromLatin1("cmd") << cmdPath;
 
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS8) {
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8) {
         // The logo executable on Windows 8 is perfectly suited for testing that the
         // suffix mechanism is not thrown off by dots in the name.
         const QString logo = QLatin1String("microsoft.windows.softwarelogo.showdesktop");
