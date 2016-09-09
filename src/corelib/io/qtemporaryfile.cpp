@@ -666,7 +666,7 @@ QString QTemporaryFile::fileTemplate() const
 
 /*!
    Sets the static portion of the file name to \a name. If the file
-   template ends in XXXXXX that will automatically be replaced with
+   template contains XXXXXX that will automatically be replaced with
    the unique part of the filename, otherwise a filename will be
    determined automatically based on the static portion specified.
 
