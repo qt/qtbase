@@ -1,4 +1,6 @@
 TEMPLATE=subdirs
+QT_FOR_CONFIG += network
+
 SUBDIRS=\
    qsslcertificate \
    qsslcipher \

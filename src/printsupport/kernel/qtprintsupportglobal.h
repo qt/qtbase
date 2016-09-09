@@ -41,6 +41,7 @@
 #define QTPRINTSUPPORTGLOBAL_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
+#include <QtPrintSupport/qtprintsupport-config.h>
 
 QT_BEGIN_NAMESPACE
 

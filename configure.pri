@@ -222,16 +222,6 @@ defineTest(qtConfTest_buildParts) {
     return(true)
 }
 
-defineTest(qtConfLibrary_openssl) {
-    libs = $$getenv("OPENSSL_LIBS")
-    !isEmpty(libs) {
-        $${1}.libs = $$libs
-        export($${1}.libs)
-        return(true)
-    }
-    return(false)
-}
-
 defineTest(qtConfTest_checkCompiler) {
     contains(QMAKE_CXX, ".*clang.*") {
         qtRunLoggedCommand("$$QMAKE_CXX -v 2>&1", versionstr)|return(false)
@@ -273,162 +263,6 @@ defineTest(qtConfTest_checkCompiler) {
     export($${1}.cache)
     return(true)
 }
-
-defineReplace(filterLibraryPath) {
-    str = $${1}
-    for (l, QMAKE_DEFAULT_LIBDIRS): \
-        str -= "-L$$l"
-
-    return($$str)
-}
-
-defineTest(qtConfLibrary_psqlConfig) {
-    pg_config = $$config.input.psql_config
-    isEmpty(pg_config): \
-        pg_config = $$qtConfFindInPath("pg_config")
-    !win32:!isEmpty(pg_config) {
-        qtRunLoggedCommand("$$pg_config --libdir", libdir)|return(false)
-        qtRunLoggedCommand("$$pg_config --includedir", includedir)|return(false)
-        libdir -= $$QMAKE_DEFAULT_LIBDIRS
-        libs =
-        !isEmpty(libdir): libs += "-L$$libdir"
-        libs += "-lpq"
-        $${1}.libs = "$$val_escape(libs)"
-        includedir -= $$QMAKE_DEFAULT_INCDIRS
-        $${1}.includedir = "$$val_escape(includedir)"
-        !isEmpty(includedir): \
-            $${1}.cflags = "-I$$val_escape(includedir)"
-        export($${1}.libs)
-        export($${1}.includedir)
-        export($${1}.cflags)
-        return(true)
-    }
-    return(false)
-}
-
-defineTest(qtConfLibrary_psqlEnv) {
-    # Respect PSQL_LIBS if set
-    PSQL_LIBS = $$getenv(PSQL_LIBS)
-    !isEmpty(PSQL_LIBS) {
-        $${1}.libs = $$PSQL_LIBS
-        export($${1}.libs)
-    }
-    return(true)
-}
-
-defineTest(qtConfLibrary_mysqlConfig) {
-    mysql_config = $$config.input.mysql_config
-    isEmpty(mysql_config): \
-        mysql_config = $$qtConfFindInPath("mysql_config")
-    !isEmpty(mysql_config) {
-        qtRunLoggedCommand("$$mysql_config --version", version)|return(false)
-        version = $$split(version, '.')
-        version = $$first(version)
-        isEmpty(version)|lessThan(version, 4): return(false)]
-
-        # query is either --libs or --libs_r
-        query = $$eval($${1}.query)
-        qtRunLoggedCommand("$$mysql_config $$query", libs)|return(false)
-        qtRunLoggedCommand("$$mysql_config --include", includedir)|return(false)
-        eval(libs = $$libs)
-        libs = $$filterLibraryPath($$libs)
-        # -rdynamic should not be returned by mysql_config, but is on RHEL 6.6
-        libs -= -rdynamic
-        $${1}.libs = "$$val_escape(libs)"
-        eval(includedir = $$includedir)
-        includedir ~= s/^-I//g
-        includedir -= $$QMAKE_DEFAULT_INCDIRS
-        $${1}.includedir = "$$val_escape(includedir)"
-        !isEmpty(includedir): \
-            $${1}.cflags = "-I$$val_escape(includedir)"
-        export($${1}.libs)
-        export($${1}.includedir)
-        export($${1}.cflags)
-        return(true)
-    }
-    return(false)
-}
-
-defineTest(qtConfLibrary_sybaseEnv) {
-    libs =
-    sybase = $$getenv(SYBASE)
-    !isEmpty(sybase): \
-        libs += "-L$${sybase}/lib"
-    libs += $$getenv(SYBASE_LIBS)
-    !isEmpty(libs) {
-        $${1}.libs = "$$val_escape(libs)"
-        export($${1}.libs)
-    }
-    return(true)
-}
-
-# Check for Direct X SDK (include, lib, and direct shader compiler 'fxc').
-# Up to Direct X SDK June 2010 and for MinGW, this is pointed to by the
-# DXSDK_DIR variable. Starting with Windows Kit 8, it is included in
-# the Windows SDK. Checking for the header is not sufficient, since it
-# is also present in MinGW.
-defineTest(qtConfTest_directX) {
-    dxdir = $$getenv("DXSDK_DIR")
-    !isEmpty(dxdir) {
-        EXTRA_INCLUDEPATH += $$dxdir/include
-        arch = $$qtConfEvaluate("tests.architecture.arch")
-        equals(arch, x86_64): \
-            EXTRA_LIBDIR += $$dxdir/lib/x64
-        else: \
-            EXTRA_LIBDIR += $$dxdir/lib/x86
-        EXTRA_PATH += $$dxdir/Utilities/bin/x86
-    }
-
-    $$qtConfEvaluate("features.sse2") {
-        ky = $$size($${1}.files._KEYS_)
-        $${1}.files._KEYS_ += $$ky
-        # Not present on MinGW-32
-        $${1}.files.$${ky} = "intrin.h"
-    }
-
-    qtConfTest_files($${1}): return(true)
-    return(false)
-}
-
-defineTest(qtConfTest_xkbConfigRoot) {
-    qtConfTest_getPkgConfigVariable($${1}): return(true)
-
-    for (dir, $$list("/usr/share/X11/xkb", "/usr/local/share/X11/xkb")) {
-        exists($$dir) {
-            $${1}.value = $$dir
-            export($${1}.value)
-            $${1}.cache += value
-            export($${1}.cache)
-            return(true)
-        }
-    }
-    return(false)
-}
-
-defineTest(qtConfTest_qpaDefaultPlatform) {
-    name =
-    !isEmpty(config.input.qpa_default_platform): name = $$config.input.qpa_default_platform
-    else: !isEmpty(QT_QPA_DEFAULT_PLATFORM): name = $$QT_QPA_DEFAULT_PLATFORM
-    else: winrt: name = winrt
-    else: win32: name = windows
-    else: android: name = android
-    else: osx: name = cocoa
-    else: ios: name = ios
-    else: qnx: name = qnx
-    else: integrity: name = integrityfb
-    else: name = xcb
-
-    $${1}.value = $$name
-    $${1}.plugin = q$$name
-    $${1}.name = "\"$$name\""
-    export($${1}.value)
-    export($${1}.plugin)
-    export($${1}.name)
-    $${1}.cache += value plugin name
-    export($${1}.cache)
-    return(true)
-}
-
 
 # custom outputs
 
@@ -475,13 +309,6 @@ defineTest(qtConfOutput_architecture) {
     # setup QT_ARCH variable used by qtConfEvaluate
     QT_ARCH = $$arch
     export(QT_ARCH)
-}
-
-defineTest(qtConfOutput_styles) {
-    !$${2}: return()
-
-    style = $$replace($${1}.feature, "style-", "")
-    qtConfOutputVar(append, "privatePro", "styles", $$style)
 }
 
 defineTest(qtConfOutput_qreal) {

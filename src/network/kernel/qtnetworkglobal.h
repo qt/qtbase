@@ -41,6 +41,7 @@
 #define QTNETWORKGLOBAL_H
 
 #include <QtCore/qglobal.h>
+#include <QtNetwork/qtnetwork-config.h>
 
 QT_BEGIN_NAMESPACE
 

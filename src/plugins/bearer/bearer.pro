@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
+QT_FOR_CONFIG += network-private
 
 !android:linux*:qtHaveModule(dbus) {
     SUBDIRS += generic

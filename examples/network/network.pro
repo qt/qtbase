@@ -1,6 +1,7 @@
 requires(qtHaveModule(network))
 
 TEMPLATE      = subdirs
+QT_FOR_CONFIG += network-private
 SUBDIRS       = \
                 download \
                 downloadmanager

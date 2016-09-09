@@ -1,4 +1,6 @@
 TEMPLATE=subdirs
+QT_FOR_CONFIG += gui-private
+
 SUBDIRS=\
    # atwrapper \ # QTBUG-19452
    compiler \

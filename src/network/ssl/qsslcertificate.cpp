@@ -111,7 +111,7 @@
     \value EmailAddress The email address associated with the certificate
 */
 
-#include <QtCore/qglobal.h>
+#include <QtNetwork/qtnetworkglobal.h>
 #ifndef QT_NO_OPENSSL
 #include "qsslsocket_openssl_symbols_p.h"
 #endif

@@ -1,0 +1,42 @@
+{
+    "module": "printsupport",
+    "depends": [
+        "core",
+        "gui",
+        "widgets"
+    ],
+    "testDir": "../../config.tests",
+
+    "commandline": {
+        "options": {
+            "cups": "boolean"
+        }
+    },
+
+    "libraries": {
+        "cups": {
+            "description": "CUPS",
+            "test": "unix/cups",
+            "sources": [
+                "-lcups"
+            ]
+        }
+    },
+
+    "features": {
+        "cups": {
+            "description": "CUPS",
+            "condition": "libs.cups",
+            "output": [ "privateFeature", "feature" ]
+        }
+    },
+
+    "summary": [
+        {
+            "section": "Qt PrintSupport",
+            "entries": [
+                "cups"
+            ]
+        }
+    ]
+}

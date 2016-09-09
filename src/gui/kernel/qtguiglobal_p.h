@@ -53,5 +53,6 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/private/qglobal_p.h>
+#include <QtGui/private/qtgui-config_p.h>
 
 #endif // QTGUIGLOBAL_P_H

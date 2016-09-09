@@ -1,0 +1,434 @@
+{
+    "module": "core",
+    "testDir": "../../config.tests",
+
+    "commandline": {
+        "options": {
+            "doubleconversion": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "eventfd": "boolean",
+            "glib": "boolean",
+            "iconv": { "type": "enum", "values": [ "no", "yes", "posix", "sun", "gnu" ] },
+            "icu": "boolean",
+            "inotify": "boolean",
+            "journald": "boolean",
+            "pcre": { "type": "enum", "values": [ "qt", "system" ] },
+            "posix-ipc": { "type": "boolean", "name": "ipc_posix" },
+            "pps": { "type": "boolean", "name": "qqnx_pps" },
+            "slog2": "boolean",
+            "syslog": "boolean"
+        }
+    },
+
+    "libraries": {
+        "doubleconversion": {
+            "description": "DoubleConversion",
+            "test": "unix/doubleconversion",
+            "sources": [
+                "-ldouble-conversion"
+            ]
+        },
+        "glib": {
+            "description": "GLib",
+            "test": "unix/glib",
+            "sources": [
+                { "type": "pkgConfig", "args": "glib-2.0 gthread-2.0" }
+            ]
+        },
+        "gnu_iconv": {
+            "description": "GNU libiconv",
+            "export": "iconv",
+            "test": "unix/gnu-libiconv",
+            "sources": [
+                "-liconv"
+            ]
+        },
+        "icu": {
+            "description": "ICU",
+            "export": "",
+            "test": "unix/icu",
+            "sources": [
+                {
+                    "builds": {
+                        "debug": "-lsicuind -lsicuucd -lsicudtd",
+                        "release": "-lsicuin -lsicuuc -lsicudt"
+                    },
+                    "condition": "config.win32 && !features.shared"
+                },
+                { "libs": "-licuin -licuuc -licudt", "condition": "config.win32 && features.shared" },
+                { "libs": "-licui18n -licuuc -licudata", "condition": "!config.win32" }
+            ]
+        },
+        "journald": {
+            "description": "journald",
+            "test": "unix/journald",
+            "export": "",
+            "sources": [
+                { "type": "pkgConfig", "args": "libsystemd" },
+                { "type": "pkgConfig", "args": "libsystemd-journal" }
+            ]
+        },
+        "libatomic": {
+            "description": "64 bit atomics in libatomic",
+            "test": "common/atomic64",
+            "sources": [
+                "-latomic"
+            ]
+        },
+        "libdl": {
+            "description": "dlopen() in libdl",
+            "export": "",
+            "test": "unix/dlopen",
+            "sources": [
+                "-ldl"
+            ]
+        },
+        "pcre": {
+            "description": "PCRE",
+            "test": "unix/pcre",
+            "sources": [
+                "-lpcre16"
+            ]
+        },
+        "pps": {
+            "description": "PPS",
+            "test": "unix/pps",
+            "sources": [
+                "-lpps"
+            ]
+        },
+        "slog2": {
+            "description": "slog2",
+            "test": "unix/slog2",
+            "export": "",
+            "sources": [
+                "-lslog2"
+            ]
+        }
+    },
+
+    "tests": {
+        "atomic64": {
+            "description": "64 bit atomics",
+            "type": "compile",
+            "test": "common/atomic64"
+        },
+        "atomicfptr": {
+            "description": "working std::atomic for function pointers",
+            "type": "compile",
+            "test": "common/atomicfptr"
+        },
+        "clock-gettime": {
+            "description": "clock_gettime()",
+            "type": "compile",
+            "test": "unix/clock-gettime"
+        },
+        "clock-monotonic": {
+            "description": "POSIX monotonic clock",
+            "type": "compile",
+            "test": "unix/clock-monotonic"
+        },
+        "cloexec": {
+            "description": "O_CLOEXEC",
+            "type": "compile",
+            "test": "unix/cloexec"
+        },
+        "dlopen": {
+            "description": "dlopen() in libc",
+            "type": "compile",
+            "test": "unix/dlopen"
+        },
+        "eventfd": {
+            "description": "eventfd",
+            "type": "compile",
+            "test": "unix/eventfd"
+        },
+        "posix-iconv": {
+            "description": "POSIX iconv",
+            "type": "compile",
+            "test": "unix/iconv"
+        },
+        "sun-iconv": {
+            "description": "SUN libiconv",
+            "type": "compile",
+            "test": "unix/sun-libiconv"
+        },
+        "inotify": {
+            "description": "inotify",
+            "type": "compile",
+            "test": "unix/inotify"
+        },
+        "ipc_sysv": {
+            "description": "SysV IPC",
+            "type": "compile",
+            "test": "unix/ipc_sysv"
+        },
+        "ipc_posix": {
+            "description": "POSIX IPC",
+            "type": "compile",
+            "test": "unix/ipc_posix"
+        },
+        "journald": {
+            "description": "journald",
+            "type": "compile",
+            "test": "unix/journald"
+        },
+        "ppoll": {
+            "description": "ppoll()",
+            "type": "compile",
+            "test": "unix/ppoll"
+        },
+        "pollts": {
+            "description": "pollts()",
+            "type": "compile",
+            "test": "unix/pollts"
+        },
+        "poll": {
+            "description": "poll()",
+            "type": "compile",
+            "test": "unix/poll"
+        },
+        "syslog": {
+            "description": "syslog",
+            "type": "compile",
+            "test": "unix/syslog"
+        },
+        "xlocalescanprint": {
+            "description": "xlocale.h (or equivalents)",
+            "type": "compile",
+            "test": "common/xlocalescanprint"
+        }
+    },
+
+    "features": {
+        "clock-gettime": {
+            "description": "clock_gettime()",
+            "condition": "tests.clock-gettime",
+            "output": [ "privateFeature" ]
+        },
+        "clock-monotonic": {
+            "description": "POSIX monotonic clock",
+            "condition": "features.clock-gettime && tests.clock-monotonic",
+            "output": [ "feature" ]
+        },
+        "dlopen": {
+            "description": "dlopen()",
+            "condition": "tests.dlopen || libs.libdl",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_DYNAMIC_LIBRARY" } ]
+        },
+        "libdl": {
+            "description": "dlopen() in libdl",
+            "condition": "!tests.dlopen && libs.libdl",
+            "output": [ { "type": "privateConfig", "negative": true } ]
+        },
+        "doubleconversion": {
+            "description": "DoubleConversion",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "system-doubleconversion": {
+            "description": "  Using system DoubleConversion",
+            "enable": "input.doubleconversion == 'system'",
+            "disable": "input.doubleconversion == 'qt'",
+            "condition": "features.doubleconversion && libs.doubleconversion",
+            "output": [ "privateFeature" ]
+        },
+        "eventfd": {
+            "description": "eventfd",
+            "condition": "tests.eventfd",
+            "output": [ "feature" ]
+        },
+        "glib": {
+            "description": "GLib",
+            "autoDetect": "!config.win32",
+            "condition": "libs.glib",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "iconv": {
+            "description": "iconv",
+            "condition": "features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "posix-libiconv": {
+            "description": "POSIX iconv",
+            "enable": "input.iconv == 'posix'",
+            "disable": "input.iconv == 'sun' || input.iconv == 'gnu' || input.iconv == 'no'",
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && tests.posix-iconv"
+        },
+        "sun-libiconv": {
+            "description": "SUN iconv",
+            "enable": "input.iconv == 'sun'",
+            "disable": "input.iconv == 'posix' || input.iconv == 'gnu' || input.iconv == 'no'",
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && tests.sun-iconv",
+            "output": [ "privateFeature", "publicQtConfig" ]
+        },
+        "gnu-libiconv": {
+            "description": "GNU iconv",
+            "enable": "input.iconv == 'gnu'",
+            "disable": "input.iconv == 'posix' || input.iconv == 'sun' || input.iconv == 'no'",
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && !features.sun-libiconv && libs.gnu_iconv",
+            "output": [ "privateFeature" ]
+        },
+        "icu": {
+            "description": "ICU",
+            "autoDetect": "!config.win32",
+            "condition": "libs.icu",
+            "output": [ "privateFeature" ]
+        },
+        "inotify": {
+            "description": "inotify",
+            "condition": "tests.inotify",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "ipc_posix": {
+            "description": "Using POSIX IPC",
+            "autoDetect": "!config.win32",
+            "condition": "!tests.ipc_sysv && tests.ipc_posix",
+            "output": [ { "type": "define", "name": "QT_POSIX_IPC" } ]
+        },
+        "journald": {
+            "description": "journald",
+            "autoDetect": false,
+            "condition": "libs.journald",
+            "output": [ "privateConfig" ]
+        },
+        "std-atomic64": {
+            "description": "64 bit atomic operations",
+            "condition": "tests.atomic64 || libs.libatomic",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_STD_ATOMIC64" } ]
+        },
+        "libatomic": {
+            "description": "64 bit atomic operations in libatomic",
+            "condition": "!tests.atomic64 && libs.libatomic",
+            "output": [ "privateFeature" ]
+        },
+        "mimetype": {
+            "description": "Mimetype handling",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "system-pcre": {
+            "description": "Using system PCRE",
+            "disable": "input.pcre == 'qt'",
+            "enable": "input.pcre == 'system'",
+            "condition": "libs.pcre",
+            "output": [
+                "privateFeature",
+                { "type": "privateConfig", "negative": true, "name": "pcre" }
+            ]
+        },
+        "poll_ppoll": {
+            "description": "Native ppoll()",
+            "emitIf": "!config.win32",
+            "condition": "tests.ppoll",
+            "output": [ "privateFeature" ]
+        },
+        "poll_pollts": {
+            "description": "Native pollts()",
+            "emitIf": "!config.win32",
+            "condition": "!features.poll_ppoll && tests.pollts",
+            "output": [ "privateFeature" ]
+        },
+        "poll_poll": {
+            "description": "Native poll()",
+            "emitIf": "!config.win32",
+            "condition": "!features.poll_ppoll && !features.poll_pollts && tests.poll",
+            "output": [ "privateFeature" ]
+        },
+        "poll_select": {
+            "description": "Emulated poll()",
+            "emitIf": "!config.win32",
+            "condition": "!features.poll_ppoll && !features.poll_pollts && !features.poll_poll",
+            "output": [
+                "privateFeature",
+                { "type": "define", "name": "QT_NO_NATIVE_POLL" }
+            ]
+        },
+        "qqnx_pps": {
+            "description": "PPS",
+            "emitIf": "config.qnx",
+            "condition": "libs.pps",
+            "output": [ "privateConfig" ]
+        },
+        "qeventtransition": {
+            "description": "QEventTransition class",
+            "output": [ "publicFeature" ]
+        },
+        "sharedmemory": {
+            "description": "Enable QSharedMemory",
+            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_SHAREDMEMORY" } ]
+        },
+        "slog2": {
+            "description": "slog2",
+            "condition": "libs.slog2",
+            "emitIf": "config.qnx",
+            "output": [ "privateConfig" ]
+        },
+        "syslog": {
+            "description": "syslog",
+            "autoDetect": false,
+            "condition": "tests.syslog",
+            "output": [ "privateConfig" ]
+        },
+        "systemsemaphore": {
+            "description": "Enable QSystemSemaphore",
+            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_SYSTEMSEMAPHORE" } ]
+        },
+        "threadsafe-cloexec": {
+            "description": "Threadsafe pipe creation",
+            "condition": "tests.cloexec",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "name": "QT_THREADSAFE_CLOEXEC", "value": 1 }
+            ]
+        }
+    },
+
+    "report": [
+        {
+            "type": "note",
+            "condition": "features.journald || features.syslog || (config.qnx && features.slog2)",
+            "message": "journald, syslog or slog2 integration is enabled.
+If your users intend to develop applications against this build,
+ensure that the IDEs they use either set QT_LOGGING_TO_CONSOLE to 1
+or are able to read the logged output from journald, syslog or slog2."
+        },
+        {
+            "type": "error",
+            "condition": "input.doubleconversion == 'no' && !tests.xlocalescanprint",
+            "message": "Your C library does not provide sscanf_l or snprintf_l.
+You need to use libdouble-conversion for double/string conversion."
+        },
+        {
+            "type": "error",
+            "condition": "!tests.atomicfptr",
+            "message": "detected a std::atomic implementation that fails for function pointers.
+Please apply the patch corresponding to your Standard Library vendor, found in
+  qtbase/config.tests/common/atomicfptr"
+        }
+    ],
+
+    "summary": [
+        {
+            "section": "Qt Core",
+            "entries": [
+                "doubleconversion",
+                "system-doubleconversion",
+                "glib",
+                "iconv",
+                "icu",
+                {
+                    "section": "Logging backends",
+                    "entries": [
+                        "journald", "syslog", "slog2"
+                    ]
+                },
+                {
+                    "type": "feature",
+                    "args": "qqnx_pps",
+                    "condition": "config.qnx"
+                },
+                "system-pcre"
+            ]
+        }
+    ]
+}

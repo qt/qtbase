@@ -1,0 +1,97 @@
+{
+    "module": "widgets",
+    "depends": [
+        "core-private",
+        "gui"
+    ],
+    "testDir": "../../config.tests",
+
+    "commandline": {
+        "options": {
+            "android-style-assets": "boolean",
+            "gtk": { "type": "boolean", "name": "gtk3" },
+            "style-windows": "boolean",
+            "style-windowsxp": "boolean",
+            "style-windowsvista": "boolean",
+            "style-fusion": "boolean",
+            "style-mac": "boolean",
+            "style-android": "boolean"
+        }
+    },
+
+    "libraries": {
+        "gtk3": {
+            "description": "GTK+",
+            "sources": [
+                { "type": "pkgConfig", "args": "gtk+-3.0" }
+            ]
+        }
+    },
+
+    "tests": {
+        "uxtheme": {
+            "description": "uxtheme.h",
+            "type": "files",
+            "files": [ "uxtheme.h" ]
+        }
+    },
+
+    "features": {
+        "gtk3": {
+            "description": "GTK+",
+            "autoDetect": "!config.darwin",
+            "condition": "features.glib && libs.gtk3",
+            "output": [ "privateFeature" ]
+        },
+        "style-fusion": {
+            "description": "Fusion Style",
+            "output": [ "styles" ]
+        },
+        "style-mac": {
+            "description": "Mac Style",
+            "condition": "config.osx",
+            "output": [ "styles" ]
+        },
+        "style-windows": {
+            "description": "Windows Style",
+            "output": [ "styles" ]
+        },
+        "style-windowsxp": {
+            "description": "Windows XP Style",
+            "condition": "features.style-windows && config.win32 && !config.winrt && tests.uxtheme",
+            "output": [ "styles" ]
+        },
+        "style-windowsvista": {
+            "description": "Windows Vista Style",
+            "condition": "features.style-windowsxp",
+            "output": [ "styles" ]
+        },
+        "style-android": {
+            "description": "Android Style",
+            "autoDetect": "config.android",
+            "output": [ "styles" ]
+        },
+        "android-style-assets": {
+            "description": "Android Style Assets",
+            "condition": "features.style-android",
+            "output": [ "privateConfig" ]
+        }
+    },
+
+    "report": [
+    ],
+
+    "summary": [
+        {
+            "section": "Qt Widgets",
+            "entries": [
+                "gtk3",
+                {
+                    "message": "Styles",
+                    "type": "featureList",
+                    "args": "style-fusion style-mac style-windows style-windowsxp style-windowsvista style-android"
+                }
+            ]
+        }
+    ]
+}

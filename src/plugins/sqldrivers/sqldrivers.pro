@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
+QT_FOR_CONFIG += sql
 
 qtConfig(sql-psql)     : SUBDIRS += psql
 qtConfig(sql-mysql)    : SUBDIRS += mysql

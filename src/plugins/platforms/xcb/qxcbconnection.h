@@ -43,6 +43,7 @@
 #include <xcb/xcb.h>
 #include <xcb/randr.h>
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qxcbexport.h"
 #include <QHash>
 #include <QList>

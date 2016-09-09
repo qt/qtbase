@@ -1,5 +1,9 @@
 TEMPLATE = subdirs
 
+QT_FOR_CONFIG += gui-private
+include($$OUT_PWD/corelib/qtcore-config.pri)
+include($$OUT_PWD/gui/qtgui-config.pri)
+
 src_qtzlib.file = $$PWD/corelib/qtzlib.pro
 src_qtzlib.target = sub-zlib
 

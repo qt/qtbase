@@ -1,5 +1,5 @@
 TARGET = tst_json
-QT = core testlib
+QT = core-private testlib
 CONFIG -= app_bundle
 CONFIG += testcase
 

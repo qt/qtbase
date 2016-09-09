@@ -58,7 +58,7 @@
 
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/qconfig.h>
-#include <QtCore/qfeatures.h>
+#include <QtCore/qtcore-config.h>
 #endif
 
 // The QT_SUPPORTS macro is deprecated. Don't use it in new code.
