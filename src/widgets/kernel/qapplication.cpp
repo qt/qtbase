@@ -1068,15 +1068,17 @@ QStyle *QApplication::style()
     if (!QApplicationPrivate::app_style) {
         // Compile-time search for default style
         //
-        QString style;
-        if (!QApplicationPrivate::styleOverride.isEmpty()) {
-            style = QApplicationPrivate::styleOverride.toLower();
-        } else {
-            style = QApplicationPrivate::desktopStyleKey();
-        }
-
         QStyle *&app_style = QApplicationPrivate::app_style;
-        app_style = QStyleFactory::create(style);
+
+        if (!QApplicationPrivate::styleOverride.isEmpty()) {
+            const QString style = QApplicationPrivate::styleOverride.toLower();
+            app_style = QStyleFactory::create(style);
+            if (!app_style)
+                qWarning("QApplication: invalid style override passed, ignoring it.");
+        }
+        if (!app_style)
+            app_style = QStyleFactory::create(QApplicationPrivate::desktopStyleKey());
+
         if (!app_style) {
             const QStringList styles = QStyleFactory::keys();
             for (const auto &style : styles) {
