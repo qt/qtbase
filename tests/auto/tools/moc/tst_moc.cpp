@@ -3397,6 +3397,9 @@ void tst_Moc::parseDefines()
 
     index = mo->indexOfSignal("cmdlineSignal(QMap<int,int>)");
     QVERIFY(index != -1);
+
+    index = mo->indexOfSignal("signalQTBUG55853()");
+    QVERIFY(index != -1);
 }
 
 void tst_Moc::preprocessorOnly()

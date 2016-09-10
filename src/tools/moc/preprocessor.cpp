@@ -696,9 +696,9 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                     next = arg.at(0);
                 }
 
-                Symbol last = expansion.constLast();
-                if (!expansion.isEmpty() && last.token == s.token && last.token != STRING_LITERAL) {
-                    expansion.pop_back();
+                if (!expansion.isEmpty() && expansion.constLast().token == s.token
+                    && expansion.constLast().token != STRING_LITERAL) {
+                    Symbol last = expansion.takeLast();
 
                     QByteArray lexem = last.lexem() + next.lexem();
                     expansion += Symbol(lineNum, last.token, lexem);
