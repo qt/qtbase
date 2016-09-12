@@ -211,6 +211,9 @@ private slots:
     void cdBelowRoot_data();
     void cdBelowRoot();
 
+    void emptyDir();
+    void nonEmptyDir();
+
 private:
 #ifdef BUILTIN_TESTDATA
     QString m_dataPath;
@@ -2279,6 +2282,26 @@ void tst_QDir::cdBelowRoot()
     QCOMPARE(dir.path(), targetPath);
     QVERIFY(dir.cd(".."));
     QCOMPARE(dir.path(), rootPath);
+}
+
+void tst_QDir::emptyDir()
+{
+    const QString tempDir = QDir::currentPath() + "/tmpdir/";
+    QVERIFY(QDir().mkdir(tempDir));
+    QVERIFY(QDir(tempDir).mkdir("emptyDirectory"));
+
+    QDir testDir(tempDir + "emptyDirectory");
+    QVERIFY(testDir.isEmpty());
+    QVERIFY(!testDir.isEmpty(QDir::AllEntries));
+    QVERIFY(!testDir.isEmpty(QDir::AllEntries | QDir::NoDot));
+    QVERIFY(!testDir.isEmpty(QDir::AllEntries | QDir::NoDotDot));
+    QVERIFY(QDir(tempDir).removeRecursively());
+}
+
+void tst_QDir::nonEmptyDir()
+{
+    const QDir dir(m_dataPath);
+    QVERIFY(!dir.isEmpty());
 }
 
 QTEST_MAIN(tst_QDir)

@@ -144,6 +144,8 @@ public:
     void setSorting(SortFlags sort);
 
     uint count() const;
+    bool isEmpty(Filters filters = Filters(AllEntries | NoDotAndDotDot)) const;
+
     QString operator[](int) const;
 
     static QStringList nameFiltersFromString(const QString &nameFilter);

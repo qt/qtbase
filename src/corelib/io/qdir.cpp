@@ -1843,6 +1843,26 @@ bool QDir::exists(const QString &name) const
 }
 
 /*!
+    Returns whether the directory is empty.
+
+    Equivalent to \c{count() == 0} with filters
+    \c{QDir::AllEntries | QDir::NoDotAndDotDot}, but faster as it just checks
+    whether the directory contains at least one entry.
+
+    \note Unless you set the \p filters flags to include \c{QDir::NoDotAndDotDot}
+          (as the default value does), no directory is empty.
+
+    \sa count(), entryList(), setFilter()
+    \since 5.9
+*/
+bool QDir::isEmpty(Filters filters) const
+{
+    const auto d = d_ptr.constData();
+    QDirIterator it(d->dirEntry.filePath(), d->nameFilters, filters);
+    return !it.hasNext();
+}
+
+/*!
     Returns a list of the root directories on this system.
 
     On Windows this returns a list of QFileInfo objects containing "C:/",
