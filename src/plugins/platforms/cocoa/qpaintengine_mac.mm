@@ -63,6 +63,7 @@
 #include <private/qpainter_p.h>
 #include <private/qpainterpath_p.h>
 #include <private/qtextengine_p.h>
+#include <private/qcoregraphics_p.h>
 
 #include "qcocoahelpers.h"
 
@@ -73,84 +74,6 @@ QT_BEGIN_NAMESPACE
 /*****************************************************************************
   QCoreGraphicsPaintEngine utility functions
  *****************************************************************************/
-
-static void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform)
-{
-    CGAffineTransform old_xform = CGAffineTransformIdentity;
-    if (orig_xform) { //setup xforms
-        old_xform = CGContextGetCTM(hd);
-        CGContextConcatCTM(hd, CGAffineTransformInvert(old_xform));
-        CGContextConcatCTM(hd, *orig_xform);
-    }
-
-    //do the clipping
-    CGContextBeginPath(hd);
-    if (rgn.isEmpty()) {
-        CGContextAddRect(hd, CGRectMake(0, 0, 0, 0));
-    } else {
-        for (const QRect &r : rgn) {
-            CGRect mac_r = CGRectMake(r.x(), r.y(), r.width(), r.height());
-            CGContextAddRect(hd, mac_r);
-        }
-    }
-    CGContextClip(hd);
-
-    if (orig_xform) {//reset xforms
-        CGContextConcatCTM(hd, CGAffineTransformInvert(CGContextGetCTM(hd)));
-        CGContextConcatCTM(hd, old_xform);
-    }
-}
-
-// Implemented for qt_mac_p.h
-QMacCGContext::QMacCGContext(QPainter *p)
-{
-    QPaintEngine *pe = p->paintEngine();
-#ifndef QT_NO_PRINTER
-    if (pe->type() == QPaintEngine::MacPrinter)
-        pe = static_cast<QMacPrintEngine*>(pe)->paintEngine();
-#endif
-    pe->syncState();
-    context = 0;
-    if (pe->type() == QPaintEngine::CoreGraphics)
-        context = static_cast<QCoreGraphicsPaintEngine*>(pe)->handle();
-
-    int devType = p->device()->devType();
-    if (pe->type() == QPaintEngine::Raster
-            && (devType == QInternal::Widget || devType == QInternal::Pixmap || devType == QInternal::Image)) {
-
-        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pe->paintDevice());
-        uint flags = kCGImageAlphaPremultipliedFirst;
-#ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-        flags |= kCGBitmapByteOrder32Host;
-#endif
-        const QImage *image = (const QImage *) pe->paintDevice();
-
-        context = CGBitmapContextCreate((void *) image->bits(), image->width(), image->height(),
-                                        8, image->bytesPerLine(), colorspace, flags);
-
-        CGContextTranslateCTM(context, 0, image->height());
-        CGContextScaleCTM(context, 1, -1);
-
-        if (devType == QInternal::Widget) {
-            QRegion clip = p->paintEngine()->systemClip();
-            QTransform native = p->deviceTransform();
-
-            if (p->hasClipping()) {
-                QRegion r = p->clipRegion();
-                r.translate(native.dx(), native.dy());
-                if (clip.isEmpty())
-                    clip = r;
-                else
-                    clip &= r;
-            }
-            qt_mac_clip_cg(context, clip, 0);
-
-            CGContextTranslateCTM(context, native.dx(), native.dy());
-        }
-    } else {
-        CGContextRetain(context);
-    }
-}
 
 void qt_mac_cgimage_data_free(void *, const void *memoryToFree, size_t)
 {
@@ -453,7 +376,7 @@ static void qt_mac_draw_pattern(void *info, CGContextRef c)
             const QColor c0(0, 0, 0, 0), c1(255, 255, 255, 255);
             QPixmap pm(w*QMACPATTERN_MASK_MULTIPLIER, h*QMACPATTERN_MASK_MULTIPLIER);
             pm.fill(c0);
-            CGContextRef pm_ctx = qt_mac_cg_context(&pm);
+            QMacCGContext pm_ctx(&pm);
             CGContextSetFillColorWithColor(c, cgColorForQColor(c1, pat->pdev));
             CGRect rect = CGRectMake(0, 0, w, h);
             for (int x = 0; x < QMACPATTERN_MASK_MULTIPLIER; ++x) {
@@ -543,7 +466,8 @@ QCoreGraphicsPaintEngine::begin(QPaintDevice *pdev)
     d->cosmeticPenSize = 1;
     d->current.clipEnabled = false;
     d->pixelSize = QPoint(1,1);
-    d->hd = qt_mac_cg_context(pdev);
+    QMacCGContext ctx(pdev);
+    d->hd = CGContextRetain(ctx);
     if (d->hd) {
         d->saveGraphicsState();
         d->orig_xform = CGContextGetCTM(d->hd);

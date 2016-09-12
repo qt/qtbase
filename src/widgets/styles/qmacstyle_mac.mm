@@ -96,6 +96,7 @@
 #include <private/qstyleanimation_p.h>
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformtheme.h>
+#include <QtGui/private/qcoregraphics_p.h>
 
 QT_USE_NAMESPACE
 
@@ -520,47 +521,6 @@ static QString qt_mac_removeMnemonics(const QString &original)
     return returnText;
 }
 
-static CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
-
-namespace {
-class QMacCGContext
-{
-    CGContextRef context;
-public:
-    QMacCGContext(QPainter *p);
-    inline QMacCGContext() { context = 0; }
-    inline QMacCGContext(const QPaintDevice *pdev) {
-        context = qt_mac_cg_context(pdev);
-    }
-    inline QMacCGContext(CGContextRef cg, bool takeOwnership=false) {
-        context = cg;
-        if (!takeOwnership)
-            CGContextRetain(context);
-    }
-    inline QMacCGContext(const QMacCGContext &copy) : context(0) { *this = copy; }
-    inline ~QMacCGContext() {
-        if (context)
-            CGContextRelease(context);
-    }
-    inline bool isNull() const { return context; }
-    inline operator CGContextRef() { return context; }
-    inline QMacCGContext &operator=(const QMacCGContext &copy) {
-        if (context)
-            CGContextRelease(context);
-        context = copy.context;
-        CGContextRetain(context);
-        return *this;
-    }
-    inline QMacCGContext &operator=(CGContextRef cg) {
-        if (context)
-            CGContextRelease(context);
-        context = cg;
-        CGContextRetain(context); //we do not take ownership
-        return *this;
-    }
-};
-} // anonymous namespace
-
 OSStatus qt_mac_shape2QRegionHelper(int inMessage, HIShapeRef, const CGRect *inRect, void *inRefcon)
 {
     QRegion *region = static_cast<QRegion *>(inRefcon);
@@ -580,7 +540,6 @@ OSStatus qt_mac_shape2QRegionHelper(int inMessage, HIShapeRef, const CGRect *inR
     }
     return noErr;
 }
-
 
 /*!
     \internal
@@ -609,86 +568,6 @@ QRegion qt_mac_fromHIShapeRef(HIShapeRef shape)
     //returnRegion.detach();
     HIShapeEnumerate(shape, kHIShapeParseFromTopLeft, qt_mac_shape2QRegionHelper, &returnRegion);
     return returnRegion;
-}
-
-CGColorSpaceRef m_genericColorSpace = 0;
-static QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
-bool m_postRoutineRegistered = false;
-
-static CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
-static CGColorSpaceRef qt_mac_genericColorSpace()
-{
-#if 0
-    if (!m_genericColorSpace) {
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-            m_genericColorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-        } else
-        {
-            m_genericColorSpace = CGColorSpaceCreateDeviceRGB();
-        }
-        if (!m_postRoutineRegistered) {
-            m_postRoutineRegistered = true;
-            qAddPostRoutine(QCoreGraphicsPaintEngine::cleanUpMacColorSpaces);
-        }
-    }
-    return m_genericColorSpace;
-#else
-    // Just return the main display colorspace for the moment.
-    return qt_mac_displayColorSpace(0);
-#endif
-}
-
-static void qt_mac_cleanUpMacColorSpaces()
-{
-    if (m_genericColorSpace) {
-        CFRelease(m_genericColorSpace);
-        m_genericColorSpace = 0;
-    }
-    QHash<CGDirectDisplayID, CGColorSpaceRef>::const_iterator it = m_displayColorSpaceHash.constBegin();
-    while (it != m_displayColorSpaceHash.constEnd()) {
-        if (it.value())
-            CFRelease(it.value());
-        ++it;
-    }
-    m_displayColorSpaceHash.clear();
-}
-
-/*
-    Ideally, we should pass the widget in here, and use CGGetDisplaysWithRect() etc.
-    to support multiple displays correctly.
-*/
-static CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget)
-{
-    CGColorSpaceRef colorSpace;
-
-    CGDirectDisplayID displayID;
-    if (widget == 0) {
-        displayID = CGMainDisplayID();
-    } else {
-        displayID = CGMainDisplayID();
-        /*
-        ### get correct display
-        const QRect &qrect = widget->window()->geometry();
-        CGRect rect = CGRectMake(qrect.x(), qrect.y(), qrect.width(), qrect.height());
-        CGDisplayCount throwAway;
-        CGDisplayErr dErr = CGGetDisplaysWithRect(rect, 1, &displayID, &throwAway);
-        if (dErr != kCGErrorSuccess)
-            return macDisplayColorSpace(0); // fall back on main display
-        */
-    }
-    if ((colorSpace = m_displayColorSpaceHash.value(displayID)))
-        return colorSpace;
-
-    colorSpace = CGDisplayCopyColorSpace(displayID);
-    if (colorSpace == 0)
-        colorSpace = CGColorSpaceCreateDeviceRGB();
-
-    m_displayColorSpaceHash.insert(displayID, colorSpace);
-    if (!m_postRoutineRegistered) {
-        m_postRoutineRegistered = true;
-        qAddPostRoutine(qt_mac_cleanUpMacColorSpaces);
-    }
-    return colorSpace;
 }
 
 bool qt_macWindowIsTextured(const QWidget *window)
@@ -2283,7 +2162,7 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush 
 
         painter->setClipRegion(rgn);
 
-        QCFType<CGContextRef> cg = qt_mac_cg_context(target);
+        QMacCGContext cg(target);
         CGContextSaveGState(cg);
         HIThemeSetFill(kThemeBrushDialogBackgroundActive, 0, cg, kHIThemeOrientationInverted);
 
@@ -2357,7 +2236,7 @@ void QMacStyle::polish(QWidget* w)
             mtinfo.menuType = kThemeMenuTypePopUp;
             // HIRect rect = CGRectMake(0, 0, px.width(), px.height());
             // ###
-            //HIThemeDrawMenuBackground(&rect, &mtinfo, QCFType<CGContextRef>(qt_mac_cg_context(&px)),
+            //HIThemeDrawMenuBackground(&rect, &mtinfo, QMacCGContext(&px)),
             //                          kHIThemeOrientationNormal);
             QPalette pal = w->palette();
             QBrush background(px);
@@ -7185,158 +7064,6 @@ int QMacStyle::layoutSpacing(QSizePolicy::ControlType control1,
         result looks too cramped.
     */
     return_SIZE(10, 8, 6);  // guess
-}
-
-static void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform)
-{
-    CGAffineTransform old_xform = CGAffineTransformIdentity;
-    if (orig_xform) { //setup xforms
-        old_xform = CGContextGetCTM(hd);
-        CGContextConcatCTM(hd, CGAffineTransformInvert(old_xform));
-        CGContextConcatCTM(hd, *orig_xform);
-    }
-
-    //do the clipping
-    CGContextBeginPath(hd);
-    if (rgn.isEmpty()) {
-        CGContextAddRect(hd, CGRectMake(0, 0, 0, 0));
-    } else {
-        QCFType<HIMutableShapeRef> shape = qt_mac_toHIMutableShape(rgn);
-        Q_ASSERT(!HIShapeIsEmpty(shape));
-        HIShapeReplacePathInCGContext(shape, hd);
-    }
-    CGContextClip(hd);
-
-    if (orig_xform) {//reset xforms
-        CGContextConcatCTM(hd, CGAffineTransformInvert(CGContextGetCTM(hd)));
-        CGContextConcatCTM(hd, old_xform);
-    }
-}
-
-// move to QRegion?
-void qt_mac_scale_region(QRegion *region, qreal scaleFactor)
-{
-    if (!region || !region->rectCount())
-        return;
-
-    QVector<QRect> scaledRects;
-    scaledRects.reserve(region->rectCount());
-
-    for (const QRect &rect : *region)
-        scaledRects.append(QRect(rect.topLeft() * scaleFactor, rect.size() * scaleFactor));
-
-    region->setRects(&scaledRects[0], scaledRects.count());
-}
-
-static CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
-
-namespace {
-QMacCGContext::QMacCGContext(QPainter *p)
-{
-    QPaintEngine *pe = p->paintEngine();
-    pe->syncState();
-    context = 0;
-
-    int devType = p->device()->devType();
-    if (pe->type() == QPaintEngine::Raster
-            && (devType == QInternal::Widget ||
-                devType == QInternal::Pixmap ||
-                devType == QInternal::Image)) {
-
-        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pe->paintDevice());
-        uint flags = kCGImageAlphaPremultipliedFirst;
-        flags |= kCGBitmapByteOrder32Host;
-
-        const QImage *image = (const QImage *) pe->paintDevice();
-
-        context = CGBitmapContextCreate((void *) image->bits(), image->width(), image->height(),
-                                        8, image->bytesPerLine(), colorspace, flags);
-
-        // Invert y axis.
-        CGContextTranslateCTM(context, 0, image->height());
-        CGContextScaleCTM(context, 1, -1);
-
-        const qreal devicePixelRatio = image->devicePixelRatio();
-
-        if (devType == QInternal::Widget) {
-            // Set the clip rect which is an intersection of the system clip
-            // and the painter clip. To make matters more interesting these
-            // are in device pixels and device-independent pixels, respectively.
-            QRegion clip = p->paintEngine()->systemClip(); // get system clip in device pixels
-            QTransform native = p->deviceTransform();      // get device transform. dx/dy is in device pixels
-
-            if (p->hasClipping()) {
-                QRegion r = p->clipRegion();               // get painter clip, which is in device-independent pixels
-                qt_mac_scale_region(&r, devicePixelRatio); // scale painter clip to device pixels
-                r.translate(native.dx(), native.dy());
-                if (clip.isEmpty())
-                    clip = r;
-                else
-                    clip &= r;
-            }
-            qt_mac_clip_cg(context, clip, 0); // clip in device pixels
-
-            // Scale the context so that painting happens in device-independet pixels.
-            CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
-            CGContextTranslateCTM(context, native.dx() / devicePixelRatio, native.dy() / devicePixelRatio);
-        } else {
-            // Scale to paint in device-independent pixels.
-            CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
-        }
-    } else {
-        qDebug() << "QMacCGContext:: Unsupported painter devtype type" << devType;
-    }
-}
-
-} // anonymous namespace
-
-static CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice)
-{
-    bool isWidget = (paintDevice->devType() == QInternal::Widget);
-    return qt_mac_displayColorSpace(isWidget ? static_cast<const QWidget *>(paintDevice) : 0);
-}
-
-/*! \internal
-
-    Returns the CoreGraphics CGContextRef of the paint device. 0 is
-    returned if it can't be obtained. It is the caller's responsibility to
-    CGContextRelease the context when finished using it.
-
-    \warning This function is only available on \macos.
-    \warning This function is duplicated in the Cocoa platform plugin.
-*/
-
-CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
-{
-    if (pdev->devType() == QInternal::Pixmap) {
-        const QPixmap *pm = static_cast<const QPixmap*>(pdev);
-        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
-        uint flags = kCGImageAlphaPremultipliedFirst;
-        flags |= kCGBitmapByteOrder32Host;
-        CGContextRef ret = 0;
-
-        QPlatformPixmap *data = const_cast<QPixmap *>(pm)->data_ptr().data();
-        if (data->classId() == QPlatformPixmap::RasterClass) {
-            QImage *image = data->buffer();
-            ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
-                                        8, image->bytesPerLine(), colorspace, flags);
-        } else {
-            qDebug("qt_mac_cg_context: Unsupported pixmap class");
-        }
-
-        CGContextTranslateCTM(ret, 0, pm->height());
-        qreal devicePixelRatio = pdev->devicePixelRatioF();
-        CGContextScaleCTM(ret, devicePixelRatio, devicePixelRatio);
-        CGContextScaleCTM(ret, 1, -1);
-        return ret;
-    } else if (pdev->devType() == QInternal::Widget) {
-        //CGContextRef ret = static_cast<CGContextRef>(static_cast<const QWidget *>(pdev)->macCGHandle());
-        ///CGContextRetain(ret);
-        //return ret;
-        qDebug("qt_mac_cg_context: not implemented: Widget class");
-        return 0;
-    }
-    return 0;
 }
 
 /*

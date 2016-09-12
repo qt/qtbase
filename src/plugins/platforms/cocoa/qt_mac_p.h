@@ -90,44 +90,6 @@ public:
     }
 };
 
-class QMacCGContext
-{
-    CGContextRef context;
-public:
-    QMacCGContext(QPainter *p); //qpaintengine_mac.mm
-    inline QMacCGContext() { context = 0; }
-    inline QMacCGContext(QPaintDevice *pdev) {
-        extern CGContextRef qt_mac_cg_context(QPaintDevice *);
-        context = qt_mac_cg_context(pdev);
-    }
-    inline QMacCGContext(CGContextRef cg, bool takeOwnership=false) {
-        context = cg;
-        if(!takeOwnership)
-            CGContextRetain(context);
-    }
-    inline QMacCGContext(const QMacCGContext &copy) : context(0) { *this = copy; }
-    inline ~QMacCGContext() {
-        if(context)
-            CGContextRelease(context);
-    }
-    inline bool isNull() const { return context; }
-    inline operator CGContextRef() { return context; }
-    inline QMacCGContext &operator=(const QMacCGContext &copy) {
-        if(context)
-            CGContextRelease(context);
-        context = copy.context;
-        CGContextRetain(context);
-        return *this;
-    }
-    inline QMacCGContext &operator=(CGContextRef cg) {
-        if(context)
-            CGContextRelease(context);
-        context = cg;
-        CGContextRetain(context); //we do not take ownership
-        return *this;
-    }
-};
-
 class QMacInternalPasteboardMime;
 class QMimeData;
 

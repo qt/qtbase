@@ -58,6 +58,8 @@
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <QtCore/qcoreapplication.h>
 
+#include <QtGui/private/qcoregraphics_p.h>
+
 #include <IOKit/graphics/IOGraphicsLib.h>
 
 static void initResources()
@@ -199,8 +201,6 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
     return window;
 }
 
-extern CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
-
 QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height) const
 {
     // TODO window should be handled
@@ -251,9 +251,8 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
         QPixmap pix(w, h);
         pix.fill(Qt::transparent);
         CGRect rect = CGRectMake(0, 0, w, h);
-        CGContextRef ctx = qt_mac_cg_context(&pix);
+        QMacCGContext ctx(&pix);
         qt_mac_drawCGImage(ctx, &rect, image);
-        CGContextRelease(ctx);
 
         QPainter painter(&windowPixmap);
         painter.drawPixmap(0, 0, pix);

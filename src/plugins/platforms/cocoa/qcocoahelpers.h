@@ -95,9 +95,6 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions);
 
 // Misc
 void qt_mac_transformProccessToForegroundApplication();
-CGColorSpaceRef qt_mac_genericColorSpace();
-CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
-CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
 QString qt_mac_applicationName();
 
 int qt_mac_flipYCoordinate(int y);
@@ -142,8 +139,6 @@ public:
         [target release];
     }
 };
-
-CGContextRef qt_mac_cg_context(QPaintDevice *pdev);
 
 template<typename T>
 T qt_mac_resolveOption(const T &fallback, const QByteArray &environment)

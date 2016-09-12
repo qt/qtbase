@@ -47,6 +47,7 @@
 #include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
+#include <QtGui/private/qcoregraphics_p.h>
 
 #ifndef QT_NO_WIDGETS
 #include <QtWidgets/QWidget>
@@ -402,97 +403,6 @@ void qt_mac_transformProccessToForegroundApplication()
         [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyRegular];
     }
 }
-static CGColorSpaceRef m_genericColorSpace = 0;
-static QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
-static bool m_postRoutineRegistered = false;
-
-CGColorSpaceRef qt_mac_genericColorSpace()
-{
-#if 0
-    if (!m_genericColorSpace) {
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-            m_genericColorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-        } else
-        {
-            m_genericColorSpace = CGColorSpaceCreateDeviceRGB();
-        }
-        if (!m_postRoutineRegistered) {
-            m_postRoutineRegistered = true;
-            qAddPostRoutine(QCoreGraphicsPaintEngine::cleanUpMacColorSpaces);
-        }
-    }
-    return m_genericColorSpace;
-#else
-    // Just return the main display colorspace for the moment.
-    return qt_mac_displayColorSpace(0);
-#endif
-}
-
-/*
-    Ideally, we should pass the widget in here, and use CGGetDisplaysWithRect() etc.
-    to support multiple displays correctly.
-*/
-CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget)
-{
-    CGColorSpaceRef colorSpace;
-
-    CGDirectDisplayID displayID;
-    if (widget == 0) {
-        displayID = CGMainDisplayID();
-    } else {
-        displayID = CGMainDisplayID();
-        /*
-        ### get correct display
-        const QRect &qrect = widget->window()->geometry();
-        CGRect rect = CGRectMake(qrect.x(), qrect.y(), qrect.width(), qrect.height());
-        CGDisplayCount throwAway;
-        CGDisplayErr dErr = CGGetDisplaysWithRect(rect, 1, &displayID, &throwAway);
-        if (dErr != kCGErrorSuccess)
-            return macDisplayColorSpace(0); // fall back on main display
-        */
-    }
-    if ((colorSpace = m_displayColorSpaceHash.value(displayID)))
-        return colorSpace;
-
-    colorSpace = CGDisplayCopyColorSpace(displayID);
-    if (colorSpace == 0)
-        colorSpace = CGColorSpaceCreateDeviceRGB();
-
-    m_displayColorSpaceHash.insert(displayID, colorSpace);
-    if (!m_postRoutineRegistered) {
-        m_postRoutineRegistered = true;
-        void qt_mac_cleanUpMacColorSpaces();
-        qAddPostRoutine(qt_mac_cleanUpMacColorSpaces);
-    }
-    return colorSpace;
-}
-
-void qt_mac_cleanUpMacColorSpaces()
-{
-    if (m_genericColorSpace) {
-        CFRelease(m_genericColorSpace);
-        m_genericColorSpace = 0;
-    }
-    QHash<CGDirectDisplayID, CGColorSpaceRef>::const_iterator it = m_displayColorSpaceHash.constBegin();
-    while (it != m_displayColorSpaceHash.constEnd()) {
-        if (it.value())
-            CFRelease(it.value());
-        ++it;
-    }
-    m_displayColorSpaceHash.clear();
-}
-
-CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice)
-{
-#ifdef QT_NO_WIDGETS
-    Q_UNUSED(paintDevice)
-    return qt_mac_displayColorSpace(0);
-#else
-    bool isWidget = (paintDevice->devType() == QInternal::Widget);
-    return qt_mac_displayColorSpace(isWidget ? static_cast<const QWidget *>(paintDevice): 0);
-#endif
-
-}
 
 QString qt_mac_applicationName()
 {
@@ -599,49 +509,6 @@ QString qt_mac_removeAmpersandEscapes(QString s)
     return QPlatformTheme::removeMnemonics(s).trimmed();
 }
 
-/*! \internal
-
- Returns the CoreGraphics CGContextRef of the paint device. 0 is
- returned if it can't be obtained. It is the caller's responsibility to
- CGContextRelease the context when finished using it.
-
- \warning This function is only available on \macos.
- \warning This function is duplicated in qmacstyle_mac.mm
- */
-CGContextRef qt_mac_cg_context(QPaintDevice *pdev)
-{
-    // In Qt 5, QWidget and QPixmap (and QImage) paint devices are all QImages under the hood.
-    QImage *image = 0;
-    if (pdev->devType() == QInternal::Image) {
-        image = static_cast<QImage *>(pdev);
-    } else if (pdev->devType() == QInternal::Pixmap) {
-
-        const QPixmap *pm = static_cast<const QPixmap*>(pdev);
-        QPlatformPixmap *data = const_cast<QPixmap *>(pm)->data_ptr().data();
-        if (data && data->classId() == QPlatformPixmap::RasterClass) {
-            image = data->buffer();
-        } else {
-            qDebug("qt_mac_cg_context: Unsupported pixmap class");
-        }
-    } else if (pdev->devType() == QInternal::Widget) {
-        // TODO test: image = static_cast<QImage *>(static_cast<const QWidget *>(pdev)->backingStore()->paintDevice());
-        qDebug("qt_mac_cg_context: not implemented: Widget class");
-    }
-
-    if (!image)
-        return 0; // Context type not supported.
-
-    CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
-    uint flags = kCGImageAlphaPremultipliedFirst;
-    flags |= kCGBitmapByteOrder32Host;
-    CGContextRef ret = 0;
-    ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
-                                8, image->bytesPerLine(), colorspace, flags);
-    CGContextTranslateCTM(ret, 0, image->height());
-    CGContextScaleCTM(ret, 1, -1);
-    return ret;
-}
-
 QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
 {
     const NSSize pixmapSize = NSMakeSize(size.width(), size.height());
@@ -669,9 +536,8 @@ QImage qt_mac_toQImage(CGImageRef image)
     QImage ret(w, h, QImage::Format_ARGB32_Premultiplied);
     ret.fill(Qt::transparent);
     CGRect rect = CGRectMake(0, 0, w, h);
-    CGContextRef ctx = qt_mac_cg_context(&ret);
+    QMacCGContext ctx(&ret);
     qt_mac_drawCGImage(ctx, &rect, image);
-    CGContextRelease(ctx);
     return ret;
 }
 

@@ -149,6 +149,9 @@ public:
     PMPageFormat format() const { return static_cast<PMPageFormat>([printInfo PMPageFormat]); }
     PMPrintSession session() const { return static_cast<PMPrintSession>([printInfo PMPrintSession]); }
     PMPrintSettings settings() const { return static_cast<PMPrintSettings>([printInfo PMPrintSettings]); }
+
+    QPaintEngine *aggregateEngine() Q_DECL_OVERRIDE { return paintEngine; }
+    Qt::HANDLE nativeHandle() Q_DECL_OVERRIDE { return q_func()->handle(); }
 };
 
 QT_END_NAMESPACE
