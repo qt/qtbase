@@ -43,6 +43,7 @@
 #ifndef QT_NO_WIDGETS
 #include <QtWidgets/qwidget.h>
 #endif
+#include <QtGui/private/qcoregraphics_p.h>
 
 QT_BEGIN_NAMESPACE
 

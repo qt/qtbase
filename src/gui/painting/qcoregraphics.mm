@@ -35,13 +35,156 @@
 
 #include <private/qcore_mac_p.h>
 #include <qpa/qplatformpixmap.h>
-
+#include <QtGui/qicon.h>
 #include <QtGui/private/qpaintengine_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qcoreapplication.h>
 
 QT_BEGIN_NAMESPACE
 
+// ---------------------- Images ----------------------
+
+CGImageRef qt_mac_toCGImage(const QImage &inImage)
+{
+    CGImageRef cgImage = inImage.toCGImage();
+    if (cgImage)
+        return cgImage;
+
+    // Convert image data to a known-good format if the fast conversion fails.
+    return inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied).toCGImage();
+}
+
+CGImageRef qt_mac_toCGImageMask(const QImage &image)
+{
+    static const auto deleter = [](void *image, const void *, size_t) { delete static_cast<QImage *>(image); };
+    QCFType<CGDataProviderRef> dataProvider =
+            CGDataProviderCreateWithData(new QImage(image), image.bits(),
+                                                    image.byteCount(), deleter);
+
+    return CGImageMaskCreate(image.width(), image.height(), 8, image.depth(),
+                              image.bytesPerLine(), dataProvider, NULL, false);
+}
+
+OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
+{
+    // Verbatim copy if HIViewDrawCGImage (as shown on Carbon-Dev)
+    OSStatus err = noErr;
+
+#ifdef Q_OS_MACOS
+    require_action(inContext != NULL, InvalidContext, err = paramErr);
+    require_action(inBounds != NULL, InvalidBounds, err = paramErr);
+    require_action(inImage != NULL, InvalidImage, err = paramErr);
+#endif
+
+    CGContextSaveGState( inContext );
+    CGContextTranslateCTM (inContext, 0, inBounds->origin.y + CGRectGetMaxY(*inBounds));
+    CGContextScaleCTM(inContext, 1, -1);
+
+    CGContextDrawImage(inContext, *inBounds, inImage);
+
+    CGContextRestoreGState(inContext);
+
+#ifdef Q_OS_MACOS
+InvalidImage:
+InvalidBounds:
+InvalidContext:
+#endif
+    return err;
+}
+
+QImage qt_mac_toQImage(CGImageRef image)
+{
+    const size_t w = CGImageGetWidth(image),
+                 h = CGImageGetHeight(image);
+    QImage ret(w, h, QImage::Format_ARGB32_Premultiplied);
+    ret.fill(Qt::transparent);
+    CGRect rect = CGRectMake(0, 0, w, h);
+    QMacCGContext ctx(&ret);
+    qt_mac_drawCGImage(ctx, &rect, image);
+    return ret;
+}
+
+#ifdef Q_OS_MACOS
+
+QT_END_NAMESPACE
+
+@interface NSGraphicsContext (QtAdditions)
+
++ (NSGraphicsContext *)qt_graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState;
+
+@end
+
+@implementation NSGraphicsContext (QtAdditions)
+
++ (NSGraphicsContext *)qt_graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState
+{
+#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_10, __IPHONE_NA)
+    if (QT_PREPEND_NAMESPACE(QSysInfo::MacintoshVersion) >= QT_PREPEND_NAMESPACE(QSysInfo::MV_10_10))
+        return [self graphicsContextWithCGContext:graphicsPort flipped:initialFlippedState];
+#endif
+    return [self graphicsContextWithGraphicsPort:graphicsPort flipped:initialFlippedState];
+}
+
+@end
+
+QT_BEGIN_NAMESPACE
+
+static NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
+{
+    NSImage *newImage = [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
+    return newImage;
+}
+
+NSImage *qt_mac_create_nsimage(const QPixmap &pm)
+{
+    if (pm.isNull())
+        return 0;
+    QImage image = pm.toImage();
+    CGImageRef cgImage = qt_mac_toCGImage(image);
+    NSImage *nsImage = qt_mac_cgimage_to_nsimage(cgImage);
+    CGImageRelease(cgImage);
+    return nsImage;
+}
+
+NSImage *qt_mac_create_nsimage(const QIcon &icon)
+{
+    if (icon.isNull())
+        return nil;
+
+    NSImage *nsImage = [[NSImage alloc] init];
+    foreach (QSize size, icon.availableSizes()) {
+        QPixmap pm = icon.pixmap(size);
+        QImage image = pm.toImage();
+        CGImageRef cgImage = qt_mac_toCGImage(image);
+        NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
+        [nsImage addRepresentation:imageRep];
+        [imageRep release];
+        CGImageRelease(cgImage);
+    }
+    return nsImage;
+}
+
+QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
+{
+    const NSSize pixmapSize = NSMakeSize(size.width(), size.height());
+    QPixmap pixmap(pixmapSize.width, pixmapSize.height);
+    pixmap.fill(Qt::transparent);
+    [image setSize:pixmapSize];
+    const NSRect iconRect = NSMakeRect(0, 0, pixmapSize.width, pixmapSize.height);
+    QMacCGContext ctx(&pixmap);
+    if (!ctx)
+        return QPixmap();
+    NSGraphicsContext *gc = [NSGraphicsContext qt_graphicsContextWithCGContext:ctx flipped:YES];
+    if (!gc)
+        return QPixmap();
+    [NSGraphicsContext saveGraphicsState];
+    [NSGraphicsContext setCurrentContext:gc];
+    [image drawInRect:iconRect fromRect:iconRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+    [NSGraphicsContext restoreGraphicsState];
+    return pixmap;
+}
+
+#endif // Q_OS_MACOS
 
 // ---------------------- Color Management ----------------------
 

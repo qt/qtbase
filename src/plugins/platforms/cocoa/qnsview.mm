@@ -52,6 +52,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/qsysinfo.h>
 #include <private/qguiapplication_p.h>
+#include <private/qcoregraphics_p.h>
 #include "qcocoabackingstore.h"
 #ifndef QT_NO_OPENGL
 #include "qcocoaglcontext.h"

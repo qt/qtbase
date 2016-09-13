@@ -86,6 +86,7 @@
 
 #include "qt_mac_p.h"
 #include "qcocoahelpers.h"
+#include <QtGui/private/qcoregraphics_p.h>
 
 #import <AppKit/AppKit.h>
 

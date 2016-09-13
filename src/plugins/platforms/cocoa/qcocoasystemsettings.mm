@@ -43,6 +43,7 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/qfont.h>
+#include <QtGui/private/qcoregraphics_p.h>
 
 #include <Carbon/Carbon.h>
 

@@ -64,6 +64,8 @@
 #include <qpa/qplatformprintersupport.h>
 #endif
 
+#include <QtGui/private/qcoregraphics_p.h>
+
 #include <QtPlatformHeaders/qcocoawindowfunctions.h>
 
 #include <AppKit/AppKit.h>

@@ -49,8 +49,22 @@
 #include <QtGui/qregion.h>
 
 #include <CoreGraphics/CoreGraphics.h>
+#ifdef Q_OS_MACOS
+#include <AppKit/AppKit.h>
+#endif
 
 QT_BEGIN_NAMESPACE
+
+#ifdef Q_OS_MACOS
+Q_GUI_EXPORT NSImage *qt_mac_create_nsimage(const QPixmap &pm);
+Q_GUI_EXPORT NSImage *qt_mac_create_nsimage(const QIcon &icon);
+Q_GUI_EXPORT QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
+#endif
+Q_GUI_EXPORT CGImageRef qt_mac_toCGImage(const QImage &qImage);
+Q_GUI_EXPORT CGImageRef qt_mac_toCGImageMask(const QImage &qImage);
+Q_GUI_EXPORT QImage qt_mac_toQImage(CGImageRef image);
+
+Q_GUI_EXPORT OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
 
 Q_GUI_EXPORT CGColorSpaceRef qt_mac_genericColorSpace();
 Q_GUI_EXPORT CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
