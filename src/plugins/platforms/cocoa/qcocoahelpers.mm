@@ -158,16 +158,6 @@ NSImage *qt_mac_create_nsimage(const QIcon &icon)
     return nsImage;
 }
 
-HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region)
-{
-    HIMutableShapeRef shape = HIShapeCreateMutable();
-    for (const QRect &rect : region) {
-        CGRect cgRect = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
-        HIShapeUnionWithRect(shape, &cgRect);
-    }
-    return shape;
-}
-
 QColor qt_mac_toQColor(const NSColor *color)
 {
     QColor qtColor;
