@@ -181,13 +181,7 @@ long QSslSocketPrivate::sslLibraryVersionNumber()
 
 QString QSslSocketPrivate::sslLibraryVersionString()
 {
-    switch (QSysInfo::windowsVersion()) {
-    case QSysInfo::WV_WINDOWS8_1:
-        return QStringLiteral("Windows Runtime 8.1 SSL library");
-    default:
-        break;
-    }
-    return QStringLiteral("Windows Runtime SSL library");
+    return QStringLiteral("Windows Runtime, ") + QSysInfo::prettyProductName();
 }
 
 long QSslSocketPrivate::sslLibraryBuildVersionNumber()
