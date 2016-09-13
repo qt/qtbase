@@ -803,7 +803,7 @@ bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 
     bool translucentToplevel = false;
     const QPaintDevice *paintDevice = painter->device();
-    const qreal aditionalDevicePixelRatio = themeData.widget ? themeData.widget->devicePixelRatio() : 1;
+    const qreal aditionalDevicePixelRatio = themeData.widget ? themeData.widget->devicePixelRatioF() : qreal(1);
     if (paintDevice->devType() == QInternal::Widget) {
         const QWidget *window = static_cast<const QWidget *>(paintDevice)->window();
         translucentToplevel = window->testAttribute(Qt::WA_TranslucentBackground);
@@ -832,28 +832,28 @@ bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 
     const HDC dc = canDrawDirectly ? hdcForWidgetBackingStore(themeData.widget) : HDC(0);
     const bool result = dc
-        ? drawBackgroundDirectly(dc, themeData, qRound(aditionalDevicePixelRatio))
-        : drawBackgroundThruNativeBuffer(themeData, qRound(aditionalDevicePixelRatio));
+        ? drawBackgroundDirectly(dc, themeData, aditionalDevicePixelRatio)
+        : drawBackgroundThruNativeBuffer(themeData, aditionalDevicePixelRatio);
     painter->restore();
     return result;
 }
 
-static inline QRect scaleRect(const QRect &r, int factor)
+static inline QRectF scaleRect(const QRectF &r, qreal factor)
 {
     return r.isValid() && factor > 1
-        ? QRect(r.topLeft() * factor, r.size() * factor)
+        ? QRectF(r.topLeft() * factor, r.size() * factor)
         : r;
 }
 
-static QRegion scaleRegion(const QRegion &region, int factor)
+static QRegion scaleRegion(const QRegion &region, qreal factor)
 {
-    if (region.isEmpty() || factor == 1)
+    if (region.isEmpty() || qFuzzyCompare(factor, qreal(1)))
         return region;
     if (region.rectCount() == 1)
-        return QRegion(scaleRect(region.boundingRect(), factor));
+        return QRegion(scaleRect(QRectF(region.boundingRect()), factor).toRect());
     QRegion result;
     foreach (const QRect &rect, region.rects())
-        result += QRect(rect.topLeft() * factor, rect.size() * factor);
+        result += QRectF(QPointF(rect.topLeft()) * factor, QSizeF(rect.size() * factor)).toRect();
     return result;
 }
 
@@ -862,13 +862,12 @@ static QRegion scaleRegion(const QRegion &region, int factor)
     Do not use this if you need to perform other transformations on the
     resulting data.
 */
-bool QWindowsXPStylePrivate::drawBackgroundDirectly(HDC dc, XPThemeData &themeData, int additionalDevicePixelRatio)
+bool QWindowsXPStylePrivate::drawBackgroundDirectly(HDC dc, XPThemeData &themeData, qreal additionalDevicePixelRatio)
 {
     QPainter *painter = themeData.painter;
 
-    QPoint redirectionDelta(int(painter->deviceMatrix().dx()),
-                            int(painter->deviceMatrix().dy()));
-    QRect area = scaleRect(themeData.rect, additionalDevicePixelRatio).translated(redirectionDelta);
+    const QPointF redirectionDelta(painter->deviceMatrix().dx(), painter->deviceMatrix().dy());
+    const QRect area = scaleRect(QRectF(themeData.rect), additionalDevicePixelRatio).translated(redirectionDelta).toRect();
 
     QRegion sysRgn = painter->paintEngine()->systemClip();
     if (sysRgn.isEmpty())
@@ -876,7 +875,7 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(HDC dc, XPThemeData &themeDa
     else
         sysRgn &= area;
     if (painter->hasClipping())
-        sysRgn &= scaleRegion(painter->clipRegion(), additionalDevicePixelRatio).translated(redirectionDelta);
+        sysRgn &= scaleRegion(painter->clipRegion(), additionalDevicePixelRatio).translated(redirectionDelta.toPoint());
     HRGN hrgn = qt_hrgn_from_qregion(sysRgn);
     SelectClipRgn(dc, hrgn);
 
@@ -948,15 +947,16 @@ bool QWindowsXPStylePrivate::drawBackgroundDirectly(HDC dc, XPThemeData &themeDa
     engine).
 */
 bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeData,
-                                                            int additionalDevicePixelRatio)
+                                                            qreal additionalDevicePixelRatio)
 {
     QPainter *painter = themeData.painter;
-    QRect rect = scaleRect(themeData.rect, additionalDevicePixelRatio);
+    QRectF rectF = scaleRect(QRectF(themeData.rect), additionalDevicePixelRatio);
 
     if ((themeData.rotate + 90) % 180 == 0) { // Catch 90,270,etc.. degree flips.
-        rect = QRect(0, 0, rect.height(), rect.width());
+        rectF = QRectF(0, 0, rectF.height(), rectF.width());
     }
-    rect.moveTo(0,0);
+    rectF.moveTo(0, 0);
+    QRect rect = rectF.toRect();
     int partId = themeData.partId;
     int stateId = themeData.stateId;
     int w = rect.width();
