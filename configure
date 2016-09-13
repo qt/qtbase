@@ -515,6 +515,24 @@ QT_EXT_PREFIX=
 # default qpa platform
 
 # Android vars
+if [ -z "$ANDROID_SDK_ROOT" ]; then
+    if [ "$UNAME_SYSTEM" = "Darwin" ] && [ -d "$HOME/Library/Android/sdk" ]; then
+        ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
+    elif [ "$UNAME_SYSTEM" = "Linux" ] && [ -d "$HOME/Android/Sdk" ]; then
+        ANDROID_SDK_ROOT="$HOME/Android/Sdk"
+    fi
+fi
+
+if [ -z "$ANDROID_NDK_ROOT" ]; then
+    if [ -d "$ANDROID_SDK_ROOT/ndk-bundle" ]; then
+        ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk-bundle"
+    elif [ "$UNAME_SYSTEM" = "Darwin" ] && [ -d "$HOME/Library/Android/sdk/ndk-bundle" ]; then
+        ANDROID_NDK_ROOT="$HOME/Library/Android/sdk/ndk-bundle"
+    elif [ "$UNAME_SYSTEM" = "Linux" ] && [ -d "$HOME/Android/Sdk/ndk-bundle" ]; then
+        ANDROID_NDK_ROOT="$HOME/Android/Sdk/ndk-bundle"
+    fi
+fi
+
 CFG_DEFAULT_ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
 CFG_DEFAULT_ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
 CFG_DEFAULT_ANDROID_PLATFORM=android-16
