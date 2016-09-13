@@ -76,6 +76,12 @@ IPHONESIMULATOR_GENERIC_DESTINATION := "id=$(shell $(SPECDIR)/ios_devices.pl "iP
 
 DESTINATION = $(if $(DESTINATION_ID),"id=$(DESTINATION_ID)",$(value $(call toupper,$(call basesdk,$(SDK)))_GENERIC_DESTINATION))
 
+XCODE_VERSION_MAJOR := $(shell xcodebuild -version | grep Xcode | sed -e 's/Xcode //' | sed -e 's/\..*//')
+
+ifeq ($(shell test $(XCODE_VERSION_MAJOR) -gt 7; echo $$?),0)
+  XCODEBUILD_FLAGS += $(shell echo "$(MAKEFLAGS)" | sed -e 's/\([^ ]*\).*/\1/' | grep -qv 's' || echo -quiet)
+endif
+
 # Xcodebuild
 
 DESTINATION_MESSAGE = "Running $(call tolower,$(CONFIGURATION)) $(ACTION) \
@@ -83,7 +89,7 @@ DESTINATION_MESSAGE = "Running $(call tolower,$(CONFIGURATION)) $(ACTION) \
 
 xcodebuild-%:
 		@$(if $(DESTINATION_NAME), echo $(DESTINATION_MESSAGE),)
-		xcodebuild $(ACTION) -scheme $(TARGET) $(if $(SDK), -sdk $(SDK),) $(if $(CONFIGURATION), -configuration $(CONFIGURATION),) $(if $(DESTINATION), -destination $(DESTINATION) -destination-timeout 1,)
+		xcodebuild $(ACTION) $(XCODEBUILD_FLAGS) -scheme $(TARGET) $(if $(SDK), -sdk $(SDK),) $(if $(CONFIGURATION), -configuration $(CONFIGURATION),) $(if $(DESTINATION), -destination $(DESTINATION) -destination-timeout 1,)
 
 xcodebuild-check-device_%: DESTINATION_ID=$(lastword $(subst _, ,$@))
 
