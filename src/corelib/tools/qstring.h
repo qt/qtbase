@@ -1440,7 +1440,8 @@ public:
     QStringRef mid(int pos, int n = -1) const Q_REQUIRED_RESULT;
 
     void truncate(int pos) Q_DECL_NOTHROW { m_size = qBound(0, pos, m_size); }
-    void chop(int n) Q_DECL_NOTHROW {
+    void chop(int n) Q_DECL_NOTHROW
+    {
         if (n >= m_size)
             m_size = 0;
         else if (n > 0)
