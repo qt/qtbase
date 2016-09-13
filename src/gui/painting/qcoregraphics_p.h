@@ -47,6 +47,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qregion.h>
+#include <QtGui/qpalette.h>
 
 #include <CoreGraphics/CoreGraphics.h>
 #ifdef Q_OS_MACOS
@@ -70,6 +71,13 @@ Q_GUI_EXPORT CGColorSpaceRef qt_mac_genericColorSpace();
 Q_GUI_EXPORT CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
 
 Q_GUI_EXPORT void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform);
+
+#ifdef Q_OS_MACOS
+Q_GUI_EXPORT QColor qt_mac_toQColor(const NSColor *color);
+Q_GUI_EXPORT QBrush qt_mac_toQBrush(const NSColor *color, QPalette::ColorGroup colorGroup = QPalette::Normal);
+#endif
+Q_GUI_EXPORT QColor qt_mac_toQColor(CGColorRef color);
+Q_GUI_EXPORT QBrush qt_mac_toQBrush(CGColorRef color);
 
 class Q_GUI_EXPORT QMacCGContext
 {

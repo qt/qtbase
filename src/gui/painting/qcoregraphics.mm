@@ -186,6 +186,139 @@ QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
 
 #endif // Q_OS_MACOS
 
+// ---------------------- Colors and Brushes ----------------------
+
+QColor qt_mac_toQColor(CGColorRef color)
+{
+    QColor qtColor;
+    CGColorSpaceModel model = CGColorSpaceGetModel(CGColorGetColorSpace(color));
+    const CGFloat *components = CGColorGetComponents(color);
+    if (model == kCGColorSpaceModelRGB) {
+        qtColor.setRgbF(components[0], components[1], components[2], components[3]);
+    } else if (model == kCGColorSpaceModelCMYK) {
+        qtColor.setCmykF(components[0], components[1], components[2], components[3]);
+    } else if (model == kCGColorSpaceModelMonochrome) {
+        qtColor.setRgbF(components[0], components[0], components[0], components[1]);
+    } else {
+        // Colorspace we can't deal with.
+        qWarning("Qt: qt_mac_toQColor: cannot convert from colorspace model: %d", model);
+        Q_ASSERT(false);
+    }
+    return qtColor;
+}
+
+#ifdef Q_OS_MACOS
+QColor qt_mac_toQColor(const NSColor *color)
+{
+    QColor qtColor;
+    NSString *colorSpace = [color colorSpaceName];
+    if (colorSpace == NSDeviceCMYKColorSpace) {
+        CGFloat cyan, magenta, yellow, black, alpha;
+        [color getCyan:&cyan magenta:&magenta yellow:&yellow black:&black alpha:&alpha];
+        qtColor.setCmykF(cyan, magenta, yellow, black, alpha);
+    } else {
+        NSColor *tmpColor;
+        tmpColor = [color colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+        CGFloat red, green, blue, alpha;
+        [tmpColor getRed:&red green:&green blue:&blue alpha:&alpha];
+        qtColor.setRgbF(red, green, blue, alpha);
+    }
+    return qtColor;
+}
+#endif
+
+QBrush qt_mac_toQBrush(CGColorRef color)
+{
+    QBrush qtBrush;
+    CGColorSpaceModel model = CGColorSpaceGetModel(CGColorGetColorSpace(color));
+    if (model == kCGColorSpaceModelPattern) {
+        // Colorspace we can't deal with; the color is drawn directly using a callback.
+        qWarning("Qt: qt_mac_toQBrush: cannot convert from colorspace model: %d", model);
+        Q_ASSERT(false);
+    } else {
+        qtBrush.setStyle(Qt::SolidPattern);
+        qtBrush.setColor(qt_mac_toQColor(color));
+    }
+    return qtBrush;
+}
+
+#ifdef Q_OS_MACOS
+static bool qt_mac_isSystemColorOrInstance(const NSColor *color, NSString *colorNameComponent, NSString *className)
+{
+    // We specifically do not want isKindOfClass: here
+    if ([color.className isEqualToString:className]) // NSPatternColorSpace
+        return true;
+    if ([color.catalogNameComponent isEqualToString:@"System"] &&
+        [color.colorNameComponent isEqualToString:colorNameComponent] &&
+        [color.colorSpaceName isEqualToString:NSNamedColorSpace])
+        return true;
+    return false;
+}
+
+QBrush qt_mac_toQBrush(const NSColor *color, QPalette::ColorGroup colorGroup)
+{
+    QBrush qtBrush;
+
+    // QTBUG-49773: This calls NSDrawMenuItemBackground to render a 1 by n gradient; could use HITheme
+    if ([color.className isEqualToString:@"NSMenuItemHighlightColor"]) {
+        qWarning("Qt: qt_mac_toQBrush: cannot convert from NSMenuItemHighlightColor");
+        return qtBrush;
+    }
+
+    // Not a catalog color or a manifestation of System.windowBackgroundColor;
+    // only retrieved from NSWindow.backgroundColor directly
+    if ([color.className isEqualToString:@"NSMetalPatternColor"]) {
+        // NSTexturedBackgroundWindowMask, could theoretically handle this without private API by
+        // creating a window with the appropriate properties and then calling NSWindow.backgroundColor.patternImage,
+        // which returns a texture sized 1 by (window height, including frame), backed by a CGPattern
+        // which follows the window key state... probably need to allow QBrush to store a function pointer
+        // like CGPattern does
+        qWarning("Qt: qt_mac_toQBrush: cannot convert from NSMetalPatternColor");
+        return qtBrush;
+    }
+
+    // No public API to get these colors/stops;
+    // both accurately obtained through runtime object inspection on OS X 10.11
+    // (the NSColor object has NSGradient i-vars for both color groups)
+    if (qt_mac_isSystemColorOrInstance(color, @"_sourceListBackgroundColor", @"NSSourceListBackgroundColor")) {
+        QLinearGradient gradient;
+        if (colorGroup == QPalette::Active) {
+            gradient.setColorAt(0, QColor(233, 237, 242));
+            gradient.setColorAt(0.5, QColor(225, 229, 235));
+            gradient.setColorAt(1, QColor(209, 216, 224));
+        } else {
+            gradient.setColorAt(0, QColor(248, 248, 248));
+            gradient.setColorAt(0.5, QColor(240, 240, 240));
+            gradient.setColorAt(1, QColor(235, 235, 235));
+        }
+        return QBrush(gradient);
+    }
+
+    // A couple colors are special... they are actually instances of NSGradientPatternColor, which
+    // override set/setFill/setStroke to instead initialize an internal color
+    // ([NSColor colorWithCalibratedWhite:0.909804 alpha:1.000000]) while still returning the
+    // ruled lines pattern image (from OS X 10.4) to the user from -[NSColor patternImage]
+    // (and providing no public API to get the underlying color without this insanity)
+    if (qt_mac_isSystemColorOrInstance(color, @"controlColor", @"NSGradientPatternColor") ||
+        qt_mac_isSystemColorOrInstance(color, @"windowBackgroundColor", @"NSGradientPatternColor")) {
+        qtBrush.setStyle(Qt::SolidPattern);
+        qtBrush.setColor(qt_mac_toQColor(color.CGColor));
+        return qtBrush;
+    }
+
+    if (NSColor *patternColor = [color colorUsingColorSpaceName:NSPatternColorSpace]) {
+        NSImage *patternImage = patternColor.patternImage;
+        const QSizeF sz(patternImage.size.width, patternImage.size.height);
+        // FIXME: QBrush is not resolution independent (QTBUG-49774)
+        qtBrush.setTexture(qt_mac_toQPixmap(patternImage, sz));
+    } else {
+        qtBrush.setStyle(Qt::SolidPattern);
+        qtBrush.setColor(qt_mac_toQColor(color));
+    }
+    return qtBrush;
+}
+#endif
+
 // ---------------------- Color Management ----------------------
 
 static CGColorSpaceRef m_genericColorSpace = 0;
