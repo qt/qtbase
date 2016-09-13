@@ -87,10 +87,10 @@ public:
         BackgroundRequestAttribute,
         SpdyAllowedAttribute,
         SpdyWasUsedAttribute,
-        HTTP2AllowedAttribute,
-        HTTP2WasUsedAttribute,
         EmitAllUploadProgressSignalsAttribute,
         FollowRedirectsAttribute,
+        HTTP2AllowedAttribute,
+        HTTP2WasUsedAttribute,
 
         User = 1000,
         UserMax = 32767
