@@ -159,7 +159,9 @@ static bool parseModeline(const QByteArray &text, drmModeModeInfoPtr mode)
     return true;
 }
 
-QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, int *virtualIndex)
+QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resources,
+                                                           drmModeConnectorPtr connector,
+                                                           VirtualDesktopInfo *vinfo)
 {
     const QByteArray connectorName = nameForConnector(connector);
 
@@ -192,8 +194,16 @@ QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resourc
         qWarning("Invalid mode \"%s\" for output %s", mode.constData(), connectorName.constData());
         configuration = OutputConfigPreferred;
     }
-    if (virtualIndex)
-        *virtualIndex = userConnectorConfig.value(QStringLiteral("virtualIndex"), INT_MAX).toInt();
+    if (vinfo) {
+        *vinfo = VirtualDesktopInfo();
+        vinfo->virtualIndex = userConnectorConfig.value(QStringLiteral("virtualIndex"), INT_MAX).toInt();
+        if (userConnectorConfig.contains(QStringLiteral("virtualPos"))) {
+            const QByteArray vpos = userConnectorConfig.value(QStringLiteral("virtualPos")).toByteArray();
+            const QByteArrayList vposComp = vpos.split(',');
+            if (vposComp.count() == 2)
+                vinfo->virtualPos = QPoint(vposComp[0].trimmed().toInt(), vposComp[1].trimmed().toInt());
+        }
+    }
 
     const uint32_t crtc_id = resources->crtcs[crtc];
 
@@ -357,22 +367,24 @@ QEglFSKmsDevice::~QEglFSKmsDevice()
 
 struct OrderedScreen
 {
-    OrderedScreen() : screen(nullptr), index(-1) { }
-    OrderedScreen(QEglFSKmsScreen *screen, int index) : screen(screen), index(index) { }
+    OrderedScreen() : screen(nullptr) { }
+    OrderedScreen(QEglFSKmsScreen *screen, const QEglFSKmsDevice::VirtualDesktopInfo &vinfo)
+        : screen(screen), vinfo(vinfo) { }
     QEglFSKmsScreen *screen;
-    int index;
+    QEglFSKmsDevice::VirtualDesktopInfo vinfo;
 };
 
 QDebug operator<<(QDebug dbg, const OrderedScreen &s)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "OrderedScreen(" << s.screen << " : " << s.index << ")";
+    dbg.nospace() << "OrderedScreen(" << s.screen << " : " << s.vinfo.virtualIndex
+                  << " / " << s.vinfo.virtualPos << ")";
     return dbg;
 }
 
 static bool orderedScreenLessThan(const OrderedScreen &a, const OrderedScreen &b)
 {
-    return a.index < b.index;
+    return a.vinfo.virtualIndex < b.vinfo.virtualIndex;
 }
 
 void QEglFSKmsDevice::createScreens()
@@ -390,10 +402,10 @@ void QEglFSKmsDevice::createScreens()
         if (!connector)
             continue;
 
-        int virtualIndex;
-        QEglFSKmsScreen *screen = createScreenForConnector(resources, connector, &virtualIndex);
+        VirtualDesktopInfo vinfo;
+        QEglFSKmsScreen *screen = createScreenForConnector(resources, connector, &vinfo);
         if (screen)
-            screens.append(OrderedScreen(screen, virtualIndex));
+            screens.append(OrderedScreen(screen, vinfo));
 
         drmModeFreeConnector(connector);
     }
@@ -411,11 +423,15 @@ void QEglFSKmsDevice::createScreens()
     for (const OrderedScreen &orderedScreen : screens) {
         QEglFSKmsScreen *s = orderedScreen.screen;
         // set up a horizontal or vertical virtual desktop
-        s->setVirtualPosition(pos);
-        if (m_integration->virtualDesktopLayout() == QEglFSKmsIntegration::VirtualDesktopLayoutVertical)
-            pos.ry() += s->geometry().height();
-        else
-            pos.rx() += s->geometry().width();
+        if (orderedScreen.vinfo.virtualPos.isNull()) {
+            s->setVirtualPosition(pos);
+            if (m_integration->virtualDesktopLayout() == QEglFSKmsIntegration::VirtualDesktopLayoutVertical)
+                pos.ry() += s->geometry().height();
+            else
+                pos.rx() += s->geometry().width();
+        } else {
+            s->setVirtualPosition(orderedScreen.vinfo.virtualPos);
+        }
         qCDebug(qLcEglfsKmsDebug) << "Adding screen" << s << "to QPA with geometry" << s->geometry();
         // The order in qguiapp's screens list will match the order set by
         // virtualIndex. This is not only handy but also required since for instance
