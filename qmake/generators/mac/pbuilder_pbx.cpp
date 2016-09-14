@@ -38,6 +38,7 @@
 #include <qregexp.h>
 #include <qcryptographichash.h>
 #include <qdebug.h>
+#include <qsettings.h>
 #include <qstring.h>
 #include <stdlib.h>
 #include <time.h>
@@ -1405,6 +1406,28 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         QString configName = (as_release ? "Release" : "Debug");
 
         QMap<QString, QString> settings;
+        if (!project->isActiveConfig("no_xcode_development_team")) {
+            const QSettings xcodeSettings(
+                QDir::homePath() + QLatin1String("/Library/Preferences/com.apple.dt.Xcode.plist"),
+                QSettings::NativeFormat);
+            const QVariantMap teams = xcodeSettings.value(QLatin1String("IDEProvisioningTeams")).toMap();
+            if (!teams.isEmpty()) {
+                for (QVariantMap::const_iterator it = teams.begin(), end = teams.end(); it != end; ++it) {
+                    const QVariantMap team = it.value().toMap();
+                    const QString teamType = team.value(QLatin1String("teamType")).toString();
+
+                    // Skip Company teams because signing permissions may not be available under all
+                    // circumstances for users who are not the Team Agent
+                    if (teamType != QLatin1String("Company")) {
+                        const QString teamId = team.value(QLatin1String("teamID")).toString();
+                        settings.insert("DEVELOPMENT_TEAM", teamId);
+
+                        // first suitable team we found is the one we'll use by default
+                        break;
+                    }
+                }
+            }
+        }
         settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
         // Bitcode is only supported with a deployment target >= iOS 6.0.
         // Disable it for now, and consider switching it on when later
