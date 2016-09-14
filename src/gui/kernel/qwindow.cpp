@@ -2175,11 +2175,14 @@ void QWindowPrivate::deliverUpdateRequest()
     Schedules a QEvent::UpdateRequest event to be delivered to this window.
 
     The event is delivered in sync with the display vsync on platforms
-    where this is possible. When driving animations, this function should
-    be called once after drawing has completed.
+    where this is possible. Otherwise, the event is delivered after a
+    delay of 5 ms. The additional time is there to give the event loop
+    a bit of idle time to gather system events, and can be overridden
+    using the QT_QPA_UPDATE_IDLE_TIME environment variable.
 
-    Calling this function multiple times will result in a single event
-    being delivered to the window.
+    When driving animations, this function should be called once after drawing
+    has completed. Calling this function multiple times will result in a single
+    event being delivered to the window.
 
     Subclasses of QWindow should reimplement event(), intercept the event and
     call the application's rendering code, then call the base class

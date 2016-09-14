@@ -82,7 +82,6 @@ protected:
     void exposeEvent(QExposeEvent *event) override;
 
 private:
-    bool m_update_pending;
     bool m_animating;
 
     QOpenGLContext *m_context;

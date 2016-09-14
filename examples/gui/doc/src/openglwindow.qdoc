@@ -34,6 +34,9 @@
 
     \image openglwindow-example.png Screenshot of the OpenGLWindow example
 
+    \note This is a low level example of how to use QWindow with OpenGL.
+    In practice you should consider using the higher level QOpenGLWindow class.
+
     \section1 OpenGLWindow Super Class
 
     Our OpenGLWindow class acts as an API which is then subclassed to do the
@@ -70,9 +73,8 @@
 
     \snippet openglwindow/openglwindow.cpp 2
 
-    The renderLater() function simply puts an update request event on
-    the event loop, which leads to renderNow() being called once the event
-    gets processed.
+    The renderLater() function simply calls QWindow::requestUpdate() to schedule
+    an update for when the system is ready to repaint.
 
     We also call renderNow() when we get an expose event. The exposeEvent() is
     the notification to the window that its exposure, meaning visibility, on
@@ -109,11 +111,11 @@
     \l {http://www.khronos.org/registry/gles/}{Khronos OpenGL ES API Registry}.
 
     If animation has been enabled with OpenGLWindow::setAnimating(true), we
-    call renderLater() to put another update request on the event loop.
+    call renderLater() to schedule another update request.
 
     \snippet openglwindow/openglwindow.cpp 4
 
-    Enabling animation also triggers an update request as shown in the
+    Enabling animation also schedules an update request as shown in the
     following code snippet.
 
     \snippet openglwindow/openglwindow.cpp 5

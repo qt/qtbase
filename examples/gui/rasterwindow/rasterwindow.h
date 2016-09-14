@@ -74,7 +74,6 @@ protected:
 
 private:
     QBackingStore *m_backingStore;
-    bool m_update_pending;
 };
 //! [1]
 #endif // RASTERWINDOW_H
