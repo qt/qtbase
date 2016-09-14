@@ -51,7 +51,7 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qset.h> // ### Qt 6: Remove
 #include <QtCore/qurl.h>
-#include <QtCore/qfile.h> // ### Qt 6: Replace by <qiodevice.h> and forward declare QFile
+#include <QtCore/qfile.h> // ### Qt 6: Replace by <QtCore/qiodevice.h> and forward declare QFile
 #include <QtGui/qvector2d.h>
 #include <QtGui/qtouchdevice.h> // ### Qt 6: Replace by forward declaration
 
