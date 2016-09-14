@@ -35,7 +35,7 @@
 #  include <chrono>
 #endif
 
-static const int minResolution = 100; // the minimum resolution for the tests
+static const int minResolution = 400; // the minimum resolution for the tests
 
 Q_DECLARE_METATYPE(Qt::TimerType)
 
