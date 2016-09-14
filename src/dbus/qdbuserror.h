@@ -94,8 +94,8 @@ public:
     QDBusError(const QDBusError &other);
 #ifdef Q_COMPILER_RVALUE_REFS
     QDBusError(QDBusError &&other) Q_DECL_NOTHROW
-        : code(other.code), msg(std::move(other.msg)), nm(std::move(other.nm)), unused(other.unused)
-    { other.unused = Q_NULLPTR; }
+        : code(other.code), msg(std::move(other.msg)), nm(std::move(other.nm))
+    {}
     QDBusError &operator=(QDBusError &&other) Q_DECL_NOTHROW { swap(other); return *this; }
 #endif
     QDBusError &operator=(const QDBusError &other);
@@ -108,7 +108,6 @@ public:
         qSwap(code,   other.code);
         qSwap(msg,    other.msg);
         qSwap(nm,     other.nm);
-        qSwap(unused, other.unused);
     }
 
     ErrorType type() const;
@@ -122,6 +121,8 @@ private:
     ErrorType code;
     QString msg;
     QString nm;
+    // ### This class has an implicit (therefore inline) destructor
+    // so the following field cannot be used:
     void *unused;
 };
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QDBusError)
