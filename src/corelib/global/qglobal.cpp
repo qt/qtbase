@@ -1172,6 +1172,12 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     \value WV_None Operating system other than Windows.
 
+    \omitvalue WV_CE
+    \omitvalue WV_CENET
+    \omitvalue WV_CE_5
+    \omitvalue WV_CE_6
+    \omitvalue WV_CE_based
+
     \sa MacVersion
 */
 
