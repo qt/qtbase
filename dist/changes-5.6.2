@@ -309,6 +309,8 @@ Linux
  - [QTBUG-54733] It is now possible to opt out from installing signal
    handlers when running with eglfs and linuxfb by setting the
    QT_QPA_NO_SIGNAL_HANDLER environment variable to a non-zero value.
+ - Fixed the value of the 'defined' field in ATSPI GetAttributeValue
+   results.
 
 macOS
 -----
@@ -326,12 +328,6 @@ Windows
 -------
 
  - Fixed a new[]/delete mismatch in Windows tablet support.
-
-X11 / XCB
----------
-
- - Fixed the value of the 'defined' field in ATSPI GetAttributeValue
-   results.
 
 ****************************************************************************
 *                                Tools                                     *
