@@ -35,6 +35,15 @@
 
 #include <QString>
 
+// Preserve QLatin1String-ness (QVariant(QLatin1String) creates a QVariant::String):
+struct QLatin1StringContainer {
+    QLatin1String l1;
+};
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(QLatin1StringContainer, Q_MOVABLE_TYPE);
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(QLatin1StringContainer)
+
 class tst_QLatin1String : public QObject
 {
     Q_OBJECT
@@ -42,6 +51,8 @@ class tst_QLatin1String : public QObject
 private Q_SLOTS:
     void nullString();
     void emptyString();
+    void relationalOperators_data();
+    void relationalOperators();
 };
 
 void tst_QLatin1String::nullString()
@@ -119,7 +130,53 @@ void tst_QLatin1String::emptyString()
     }
 }
 
+void tst_QLatin1String::relationalOperators_data()
+{
+    QTest::addColumn<QLatin1StringContainer>("lhs");
+    QTest::addColumn<int>("lhsOrderNumber");
+    QTest::addColumn<QLatin1StringContainer>("rhs");
+    QTest::addColumn<int>("rhsOrderNumber");
 
+    struct Data {
+        QLatin1String l1;
+        int order;
+    } data[] = {
+        { QLatin1String(),     0 },
+        { QLatin1String(""),   0 },
+        { QLatin1String("a"),  1 },
+        { QLatin1String("aa"), 2 },
+        { QLatin1String("b"),  3 },
+    };
+
+    for (Data *lhs = data; lhs != data + sizeof data / sizeof *data; ++lhs) {
+        for (Data *rhs = data; rhs != data + sizeof data / sizeof *data; ++rhs) {
+            QLatin1StringContainer l = { lhs->l1 }, r = { rhs->l1 };
+            QTest::newRow(qPrintable(QString::asprintf("\"%s\" <> \"%s\"",
+                                                       lhs->l1.data() ? lhs->l1.data() : "nullptr",
+                                                       rhs->l1.data() ? rhs->l1.data() : "nullptr")))
+                << l << lhs->order << r << rhs->order;
+        }
+    }
+}
+
+void tst_QLatin1String::relationalOperators()
+{
+    QFETCH(QLatin1StringContainer, lhs);
+    QFETCH(int, lhsOrderNumber);
+    QFETCH(QLatin1StringContainer, rhs);
+    QFETCH(int, rhsOrderNumber);
+
+#define CHECK(op) \
+    QCOMPARE(lhs.l1 op rhs.l1, lhsOrderNumber op rhsOrderNumber) \
+    /*end*/
+    CHECK(==);
+    CHECK(!=);
+    CHECK(< );
+    CHECK(> );
+    CHECK(<=);
+    CHECK(>=);
+#undef CHECK
+}
 
 QTEST_APPLESS_MAIN(tst_QLatin1String)
 
