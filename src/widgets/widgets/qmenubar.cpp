@@ -616,9 +616,10 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     for items in the menu bar are only shown when the \uicontrol{Alt} key is
     pressed.
 
-    \section1 QMenuBar on \macos
+    \section1 QMenuBar as a Global Menu Bar
 
-    QMenuBar on \macos is a wrapper for using the system-wide menu bar.
+    On \macos and on certain Linux desktop environments such as
+    Ubuntu Unity, QMenuBar is a wrapper for using the system-wide menu bar.
     If you have multiple menu bars in one dialog the outermost menu bar
     (normally inside a widget with widget flag Qt::Window) will
     be used for the system-wide menu bar.
@@ -661,10 +662,15 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     as its parent. That menu bar would only be displayed for the
     parent QMainWindow.
 
-    \b{Note:} The text used for the application name in the menu
+    \b{Note:} The text used for the application name in the \macos menu
     bar is obtained from the value set in the \c{Info.plist} file in
     the application's bundle. See \l{Qt for macOS - Deployment}
     for more information.
+
+    \b{Note:} On Linux, if the com.canonical.AppMenu.Registrar
+    service is available on the D-Bus session bus, then Qt will
+    communicate with it to install the application's menus into the
+    global menu bar, as described.
 
     \section1 Examples
 
@@ -1809,14 +1815,16 @@ QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
     \brief Whether or not a menubar will be used as a native menubar on platforms that support it
     \since 4.6
 
-    This property specifies whether or not the menubar should be used as a native menubar on \macos.
+    This property specifies whether or not the menubar should be used as a native menubar on
+    platforms that support it. The currently supported platforms are \macos, and
+    Linux desktops which use the com.canonical.dbusmenu D-Bus interface (such as Ubuntu Unity).
     If this property is \c true, the menubar is used in the native menubar and is not in the window of
-    its parent, if \c false the menubar remains in the window. On other platforms the value of this
-    attribute has no effect.
+    its parent; if \c false the menubar remains in the window. On other platforms,
+    setting this attribute has no effect, and reading this attribute will always return \c false.
 
     The default is to follow whether the Qt::AA_DontUseNativeMenuBar attribute
-    is set for the application. Explicitly settings this property overrides
-    the presence (or abscence) of the attribute.
+    is set for the application. Explicitly setting this property overrides
+    the presence (or absence) of the attribute.
 */
 
 void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
