@@ -355,7 +355,7 @@ sub check_header {
                 $include = 0;
             }
             if ($include && $public_header) {
-                print STDERR "$lib: ERROR: $iheader includes private header $include\n" if ($include =~ /_p.h$/);
+                print STDERR "$lib: ERROR: $iheader includes private header $include\n" if ($include =~ /_p\.h$/);
                 for my $trylib (keys(%modules)) {
                     if (-e "$out_basedir/include/$trylib/$include") {
                         print STDERR "$lib: WARNING: $iheader includes $include when it should include $trylib/$include\n";
@@ -982,7 +982,7 @@ foreach my $lib (@modules_to_sync) {
                 my $header_dirname = "";
                 foreach my $header (@headers) {
                     my $shadow = ($header =~ s/^\*//);
-                    $header = 0 if($header =~ /^ui_.*.h/);
+                    $header = 0 if ($header =~ /^ui_.*\.h$/);
                     foreach (@ignore_headers) {
                         $header = 0 if($header eq $_);
                     }
@@ -994,7 +994,7 @@ foreach my $lib (@modules_to_sync) {
                         if(isQpaHeader($public_header)) {
                             $public_header = 0;
                             $qpa_header = 1;
-                        } elsif($allheadersprivate || $thisprivate || $public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
+                        } elsif ($allheadersprivate || $thisprivate || $public_header =~ /_p(ch)?\.h$/) {
                             $public_header = 0;
                         } else {
                             foreach (@ignore_for_master_contents) {
