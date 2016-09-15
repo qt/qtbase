@@ -960,6 +960,9 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     } else {
         dropData = platformDropData();
         supported_drop_actions = accepted_drop_action;
+
+        // Drop coming from another app? Update keyboard modifiers.
+        QGuiApplicationPrivate::modifier_buttons = QGuiApplication::queryKeyboardModifiers();
     }
 
     if (!dropData)
