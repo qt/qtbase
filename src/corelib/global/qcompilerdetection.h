@@ -1031,7 +1031,8 @@
 // critical definitions. (Reported as Intel Issue ID 6000117277)
 #  define __USE_CONSTEXPR 1
 #  define __USE_NOEXCEPT 1
-# elif defined(Q_CC_MSVC) && (defined(Q_CC_CLANG) || defined(Q_CC_INTEL))
+# endif
+# if defined(Q_CC_MSVC) && defined(Q_CC_CLANG)
 // Clang and the Intel compiler support more C++ features than the Microsoft compiler
 // so make sure we don't enable them if the MS headers aren't properly adapted.
 #  ifndef _HAS_CONSTEXPR
@@ -1058,7 +1059,8 @@
 #  ifndef _HAS_VARIADIC_TEMPLATES
 #   undef Q_COMPILER_VARIADIC_TEMPLATES
 #  endif
-# elif defined(_LIBCPP_VERSION)
+# endif
+# if defined(_LIBCPP_VERSION)
 // libc++ uses __has_feature(cxx_atomic), so disable the feature if the compiler
 // doesn't support it. That's required for the Intel compiler 14.x or earlier on OS X, for example.
 #  if !__has_feature(cxx_atomic)
