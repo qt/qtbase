@@ -37,9 +37,10 @@ extern "C" {
 #include <jpeglib.h>
 }
 
+j_compress_ptr cinfo;
+
 int main(int, char **)
 {
-    j_compress_ptr cinfo;
     jpeg_create_compress(cinfo);
     return 0;
 }
