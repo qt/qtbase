@@ -123,12 +123,25 @@ inline QDataStream &operator<<(QDataStream &ds, const QEvdevKeyboardMap::Composi
     return ds << c.first << c.second << c.result;
 }
 
+class QFdContainer
+{
+    int m_fd;
+    Q_DISABLE_COPY(QFdContainer);
+public:
+    explicit QFdContainer(int fd = -1) Q_DECL_NOTHROW : m_fd(fd) {}
+    ~QFdContainer() { reset(); }
+
+    int get() const Q_DECL_NOTHROW { return m_fd; }
+
+    int release() Q_DECL_NOTHROW { int result = m_fd; m_fd = -1; return result; }
+    void reset() Q_DECL_NOTHROW;
+};
 
 class QEvdevKeyboardHandler : public QObject
 {
     Q_OBJECT
 public:
-    QEvdevKeyboardHandler(const QString &device, int fd, bool disableZap, bool enableCompose, const QString &keymapFile);
+    QEvdevKeyboardHandler(const QString &device, QFdContainer &fd, bool disableZap, bool enableCompose, const QString &keymapFile);
     ~QEvdevKeyboardHandler();
 
     enum KeycodeAction {
@@ -181,7 +194,7 @@ private:
     void switchLed(int, bool);
 
     QString m_device;
-    int m_fd;
+    QFdContainer m_fd;
     QSocketNotifier *m_notify;
 
     // keymap handling
