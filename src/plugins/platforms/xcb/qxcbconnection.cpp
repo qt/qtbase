@@ -1497,7 +1497,8 @@ xcb_window_t QXcbConnection::getQtSelectionOwner()
 {
     if (!m_qtSelectionOwner) {
         xcb_screen_t *xcbScreen = primaryVirtualDesktop()->screen();
-        int x = 0, y = 0, w = 3, h = 3;
+        int16_t x = 0, y = 0;
+        uint16_t w = 3, h = 3;
         m_qtSelectionOwner = xcb_generate_id(xcb_connection());
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                      XCB_COPY_FROM_PARENT,               // depth -- same as root
