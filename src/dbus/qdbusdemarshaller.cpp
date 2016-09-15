@@ -33,6 +33,9 @@
 
 #include "qdbusargument_p.h"
 #include "qdbusconnection.h"
+
+#include <qscopedpointer.h>
+
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -417,12 +420,12 @@ QDBusDemarshaller *QDBusDemarshaller::endCommon()
 
 QDBusArgument QDBusDemarshaller::duplicate()
 {
-    QDBusDemarshaller *d = new QDBusDemarshaller(capabilities);
+    QScopedPointer<QDBusDemarshaller> d(new QDBusDemarshaller(capabilities));
     d->iterator = iterator;
     d->message = q_dbus_message_ref(message);
 
     q_dbus_message_iter_next(&iterator);
-    return QDBusArgumentPrivate::create(d);
+    return QDBusArgumentPrivate::create(d.take());
 }
 
 QT_END_NAMESPACE
