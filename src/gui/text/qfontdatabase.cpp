@@ -663,11 +663,8 @@ struct QtFontDesc
 static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef, bool multi)
 {
     fontDef->family = desc.family->name;
-    if (! desc.foundry->name.isEmpty() && desc.family->count > 1) {
-        fontDef->family += QString::fromLatin1(" [");
-        fontDef->family += desc.foundry->name;
-        fontDef->family += QLatin1Char(']');
-    }
+    if (! desc.foundry->name.isEmpty() && desc.family->count > 1)
+        fontDef->family += QLatin1String(" [") + desc.foundry->name + QLatin1Char(']');
 
     if (desc.style->smoothScalable
         || QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fontsAlwaysScalable()
@@ -842,9 +839,13 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
     return retList;
 }
 
+static void initializeDb();
+
 static QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
 {
     QFontDatabasePrivate *db = privateDb();
+    if (!db->count)
+        initializeDb();
 
     const FallbacksCacheKey cacheKey = { family, style, styleHint, script };
 

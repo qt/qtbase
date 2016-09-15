@@ -41,6 +41,9 @@
 #define QTXMLGLOBAL_H
 
 #include <QtCore/qglobal.h>
+#ifndef QT_BOOTSTRAPPED
+#  include <QtXml/qtxml-config.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

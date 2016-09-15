@@ -31,8 +31,6 @@ ANDROID_PERMISSIONS = \
 # OpenBSD 6.0 will include environ in libc.
 freebsd|openbsd: QMAKE_LFLAGS_NOUNDEF =
 
-load(qfeatures)
-
 include(animation/animation.pri)
 include(arch/arch.pri)
 include(global/global.pri)
@@ -100,6 +98,7 @@ cmake_umbrella_config_version_file.output = $$DESTDIR/cmake/Qt5/Qt5ConfigVersion
 
 load(cmake_functions)
 
+##### This requires fixing, so that the feature system works with cmake as well
 CMAKE_DISABLED_FEATURES = $$join(QT_DISABLED_FEATURES, "$$escape_expand(\\n)    ")
 
 CMAKE_HOST_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA/src], $$[QT_INSTALL_PREFIX])

@@ -1015,33 +1015,19 @@ void Configure::configure()
 
     QStringList args;
     args << buildPath + "/bin/qmake"
-         << "-o" << "Makefile.cfg"
-         << sourcePath + "/configure.pri"
+         << sourcePathMangled
          << "--" << configCmdLine;
 
+    QString pwd = QDir::currentPath();
+    QDir::setCurrent(buildPathMangled);
     if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
         cout << "Qmake failed, return code " << exitCode  << endl << endl;
         dictionary[ "DONE" ] = "error";
     }
+    QDir::setCurrent(pwd);
 
     if ((dictionary["REDO"] != "yes") && (dictionary["DONE"] != "error"))
         saveCmdLine();
-}
-
-void Configure::generateMakefiles()
-{
-        QString pwd = QDir::currentPath();
-        {
-            QStringList args;
-            args << buildPath + "/bin/qmake" << sourcePathMangled;
-
-            QDir::setCurrent(buildPathMangled);
-            if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
-                cout << "Qmake failed, return code " << exitCode  << endl << endl;
-                dictionary[ "DONE" ] = "error";
-            }
-        }
-        QDir::setCurrent(pwd);
 }
 
 bool Configure::showLicense(QString orgLicenseFile)

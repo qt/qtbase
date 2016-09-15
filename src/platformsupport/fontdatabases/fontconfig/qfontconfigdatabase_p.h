@@ -62,6 +62,7 @@ class QFontconfigDatabase : public QBasicFontDatabase
 {
 public:
     void populateFontDatabase() Q_DECL_OVERRIDE;
+    void invalidate() Q_DECL_OVERRIDE;
     QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script) Q_DECL_OVERRIDE;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) Q_DECL_OVERRIDE;
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) Q_DECL_OVERRIDE;

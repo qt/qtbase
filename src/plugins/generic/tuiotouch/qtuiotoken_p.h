@@ -138,6 +138,7 @@ private:
     float m_angularAcceleration;
     Qt::TouchPointState m_state;
 };
+Q_DECLARE_TYPEINFO(QTuioToken, Q_MOVABLE_TYPE); // Q_PRIMITIVE_TYPE: not possible: m_id, m_classId == -1
 
 QT_END_NAMESPACE
 

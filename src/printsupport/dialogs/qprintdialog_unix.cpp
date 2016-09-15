@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qplatformdefs.h"
+#include <QtPrintSupport/qtprintsupportglobal.h>
 
 #ifndef QT_NO_PRINTDIALOG
 

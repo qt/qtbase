@@ -636,6 +636,22 @@ static Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
 }
 #endif
 
+static Q_ALWAYS_INLINE void blend_pixel(quint32 &dst, const quint32 src)
+{
+    if (src >= 0xff000000)
+        dst = src;
+    else if (src != 0)
+        dst = src + BYTE_MUL(dst, qAlpha(~src));
+}
+
+static Q_ALWAYS_INLINE void blend_pixel(quint32 &dst, const quint32 src, const int const_alpha)
+{
+    if (src != 0) {
+        const quint32 s = BYTE_MUL(src, const_alpha);
+        dst = s + BYTE_MUL(dst, qAlpha(~s));
+    }
+}
+
 #if defined(__SSE2__)
 static Q_ALWAYS_INLINE uint interpolate_4_pixels_sse2(__m128i vt, __m128i vb, uint distx, uint disty)
 {

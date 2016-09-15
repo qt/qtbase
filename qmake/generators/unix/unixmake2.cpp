@@ -1021,7 +1021,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (language.isEmpty())
                     continue;
 
-                precomp_files += precomph_out_dir + header_prefix + language + header_suffix;
+                ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
+                if (pchArchs.isEmpty())
+                    pchArchs << ProString(); // normal single-arch PCH
+                for (const ProString &arch : qAsConst(pchArchs)) {
+                    auto suffix = header_suffix.toQString();
+                    if (!arch.isEmpty())
+                        suffix.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
+                    precomp_files += precomph_out_dir + header_prefix + language + suffix;
+                }
             }
         }
         t << "-$(DEL_FILE) " << escapeFilePaths(precomp_files).join(' ') << "\n\t";
@@ -1077,6 +1085,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         QString pchInput = project->first("PRECOMPILED_HEADER").toQString();
         t << "###### Precompiled headers\n";
         for (const ProString &compiler : project->values("QMAKE_BUILTIN_COMPILERS")) {
+            QString pchOutputDir;
             QString pchFlags = var(ProKey("QMAKE_" + compiler + "FLAGS_PRECOMPILE"));
             if(pchFlags.isEmpty())
                 continue;
@@ -1087,6 +1096,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             else
                 cflags += " $(CXXFLAGS)";
 
+            ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
+            if (pchArchs.isEmpty())
+                pchArchs << ProString(); // normal single-arch PCH
             ProString pchBaseName = project->first("QMAKE_ORIG_TARGET");
             ProString pchOutput;
             if(!project->isEmpty("PRECOMPILED_DIR"))
@@ -1113,30 +1125,47 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 ProString header_suffix = project->isActiveConfig("clang_pch_style")
                                   ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
                 pchOutput += Option::dir_sep;
-                QString pchOutputDir = pchOutput.toQString();
+                pchOutputDir = pchOutput.toQString();
 
                 QString language = project->first(ProKey("QMAKE_LANGUAGE_" + compiler)).toQString();
                 if (language.isEmpty())
                     continue;
 
                 pchOutput += header_prefix + language + header_suffix;
-
-                t << escapeDependencyPath(pchOutput) << ": " << escapeDependencyPath(pchInput) << ' '
-                  << escapeDependencyPaths(findDependencies(pchInput)).join(" \\\n\t\t")
-                  << "\n\t" << mkdir_p_asstring(pchOutputDir);
             }
             pchFlags.replace(QLatin1String("${QMAKE_PCH_INPUT}"), escapeFilePath(pchInput))
-                    .replace(QLatin1String("${QMAKE_PCH_OUTPUT_BASE}"), escapeFilePath(pchBaseName.toQString()))
-                    .replace(QLatin1String("${QMAKE_PCH_OUTPUT}"), escapeFilePath(pchOutput.toQString()));
+                    .replace(QLatin1String("${QMAKE_PCH_OUTPUT_BASE}"), escapeFilePath(pchBaseName.toQString()));
+            for (const ProString &arch : qAsConst(pchArchs)) {
+                auto pchArchOutput = pchOutput.toQString();
+                if (!arch.isEmpty())
+                    pchArchOutput.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
 
-            QString compilerExecutable;
-            if (compiler == "C" || compiler == "OBJC")
-                compilerExecutable = "$(CC)";
-            else
-                compilerExecutable = "$(CXX)";
+                if (!project->isActiveConfig("icc_pch_style")) {
+                    const auto pchFilePath_d = escapeDependencyPath(pchArchOutput);
+                    if (!arch.isEmpty()) {
+                        t << pchFilePath_d << ": " << "EXPORT_ARCH_ARGS = -arch " << arch << "\n\n";
+                        t << pchFilePath_d << ": "
+                          << "EXPORT_QMAKE_XARCH_CFLAGS = $(EXPORT_QMAKE_XARCH_CFLAGS_" << arch << ")" << "\n\n";
+                        t << pchFilePath_d << ": "
+                          << "EXPORT_QMAKE_XARCH_LFLAGS = $(EXPORT_QMAKE_XARCH_LFLAGS_" << arch << ")" << "\n\n";
+                    }
+                    t << pchFilePath_d << ": " << escapeDependencyPath(pchInput) << ' '
+                      << escapeDependencyPaths(findDependencies(pchInput)).join(" \\\n\t\t")
+                      << "\n\t" << mkdir_p_asstring(pchOutputDir);
+                }
 
-            // compile command
-            t << "\n\t" << compilerExecutable << cflags << " $(INCPATH) " << pchFlags << endl << endl;
+                auto pchArchFlags = pchFlags;
+                pchArchFlags.replace(QLatin1String("${QMAKE_PCH_OUTPUT}"), escapeFilePath(pchArchOutput));
+
+                QString compilerExecutable;
+                if (compiler == "C" || compiler == "OBJC")
+                    compilerExecutable = "$(CC)";
+                else
+                    compilerExecutable = "$(CXX)";
+
+                // compile command
+                t << "\n\t" << compilerExecutable << cflags << " $(INCPATH) " << pchArchFlags << endl << endl;
+            }
         }
     }
 

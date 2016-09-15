@@ -1,6 +1,5 @@
 TEMPLATE = subdirs
-
-load(qfeatures)
+QT_FOR_CONFIG += gui-private network-private
 
 qtConfig(evdev) {
     SUBDIRS += evdevmouse evdevtouch evdevkeyboard evdevtablet
@@ -10,7 +9,7 @@ qtConfig(tslib) {
     SUBDIRS += tslib
 }
 
-!contains(QT_DISABLED_FEATURES, udpsocket) {
+qtConfig(udpsocket) {
     SUBDIRS += tuiotouch
 }
 

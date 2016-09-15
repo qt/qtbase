@@ -38,19 +38,22 @@
 **
 ****************************************************************************/
 
-#include <QLoggingCategory>
-#include <QRect>
-#include <QWindow>
-#include <QGuiApplication>
-#include <QTouchDevice>
-#include <qmath.h>
-
-#include <qpa/qwindowsysteminterface.h>
+#include "qtuiohandler_p.h"
 
 #include "qtuiocursor_p.h"
 #include "qtuiotoken_p.h"
-#include "qtuiohandler_p.h"
 #include "qoscbundle_p.h"
+#include "qoscmessage_p.h"
+
+#include <qpa/qwindowsysteminterface.h>
+
+#include <QTouchDevice>
+#include <QWindow>
+#include <QGuiApplication>
+
+#include <QLoggingCategory>
+#include <QRect>
+#include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -151,7 +154,7 @@ void QTuioHandler::processPackets()
         // messages. The FSEQ frame ID is incremented for each delivered bundle,
         // while redundant bundles can be marked using the frame sequence ID
         // -1."
-        QList<QOscMessage> messages;
+        QVector<QOscMessage> messages;
 
         QOscBundle bundle(datagram);
         if (bundle.isValid()) {

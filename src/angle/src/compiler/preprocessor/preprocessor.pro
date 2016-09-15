@@ -1,4 +1,5 @@
 CONFIG += static
+include(../../../../gui/qtgui-config.pri)
 qtConfig(dynamicgl): CONFIG += not_installed
 include(../../config.pri)
 

@@ -171,11 +171,7 @@ QT_BEGIN_NAMESPACE
 \
     /* First, get dst aligned. */ \
     ALIGNMENT_PROLOGUE_16BYTES(dst, x, length) { \
-        uint s = src[x]; \
-        if (s >= 0xff000000) \
-            dst[x] = s; \
-        else if (s != 0) \
-            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s)); \
+        blend_pixel(dst[x], src[x]); \
     } \
 \
     for (; x < length-3; x += 4) { \
@@ -183,11 +179,7 @@ QT_BEGIN_NAMESPACE
         BLEND_SOURCE_OVER_ARGB32_SSE2_helper(dst, srcVector, nullVector, half, one, colorMask, alphaMask) \
     } \
     for (; x < length; ++x) { \
-        uint s = src[x]; \
-        if (s >= 0xff000000) \
-            dst[x] = s; \
-        else if (s != 0) \
-            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s)); \
+        blend_pixel(dst[x], src[x]); \
     } \
 }
 
@@ -207,11 +199,7 @@ QT_BEGIN_NAMESPACE
     int x = 0; \
 \
     ALIGNMENT_PROLOGUE_16BYTES(dst, x, length) { \
-        quint32 s = src[x]; \
-        if (s != 0) { \
-            s = BYTE_MUL(s, const_alpha); \
-            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s)); \
-        } \
+        blend_pixel(dst[x], src[x], const_alpha); \
     } \
 \
     for (; x < length-3; x += 4) { \
@@ -232,11 +220,7 @@ QT_BEGIN_NAMESPACE
         } \
     } \
     for (; x < length; ++x) { \
-        quint32 s = src[x]; \
-        if (s != 0) { \
-            s = BYTE_MUL(s, const_alpha); \
-            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s)); \
-        } \
+        blend_pixel(dst[x], src[x], const_alpha); \
     } \
 }
 

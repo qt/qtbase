@@ -69,6 +69,7 @@
 
 #include "non-gadget-parent-class.h"
 #include "grand-parent-gadget-class.h"
+#include "namespace.h"
 
 #ifdef Q_MOC_RUN
 // check that moc can parse these constructs, they are being used in Windows winsock2.h header
@@ -2081,6 +2082,34 @@ void tst_Moc::warnings_data()
         << 1
         << QString()
         << QString("standard input:1: Error: Namespace declaration lacks Q_NAMESPACE macro.");
+
+    QTest::newRow("Wrong Q_ENUM context.")
+        << QByteArray("namespace X {\nQ_NAMESPACE\n\nenum class MyEnum {Key1 = 1}\nQ_ENUM(MyEnum)\n}\n")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:5: Error: Q_ENUM can't be used in a Q_NAMESPACE, use Q_ENUM_NS instead");
+
+    QTest::newRow("Wrong Q_FLAG context.")
+        << QByteArray("namespace X {\nQ_NAMESPACE\n\nenum class MyEnum {Key1 = 1}\nQ_FLAG(MyEnum)\n}\n")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:5: Error: Q_FLAG can't be used in a Q_NAMESPACE, use Q_FLAG_NS instead");
+
+    QTest::newRow("Wrong Q_ENUM_NS context.")
+        << QByteArray("class X {\nQ_GADGET\n\nenum class MyEnum {Key1 = 1}\nQ_ENUM_NS(MyEnum)\n};\n")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:5: Error: Q_ENUM_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_ENUM instead");
+
+    QTest::newRow("Wrong Q_FLAG_NS context.")
+        << QByteArray("class X {\nQ_GADGET\n\nenum class MyEnum {Key1 = 1}\nQ_FLAG_NS(MyEnum)\n};\n")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:5: Error: Q_FLAG_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_FLAG instead");
 
     QTest::newRow("Invalid macro definition")
         << QByteArray("#define Foo(a, b, c) a b c #a #b #c a##b##c #d\n Foo(45, 42, 39);")

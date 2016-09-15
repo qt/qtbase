@@ -69,6 +69,7 @@ for (dep, dependentmodules): \
         mod_deps += $$cmakeModuleName($$dep)
 dependentmodules = $$join(mod_deps, ";")
 
+QT_FOR_CONFIG += gui-private
 qtConfig(angle): CMAKE_GL_DEFINES = -DQT_WITH_ANGLE=True
 !qtConfig(egl): CMAKE_GL_DEFINES += -DNO_EGL=True
 

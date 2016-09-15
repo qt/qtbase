@@ -52,10 +52,10 @@
 
 #include <string.h>
 
+#include <type_traits>
 #ifndef QT_NO_EXCEPTIONS
 #  include <exception>
 #endif // QT_NO_EXCEPTIONS
-
 
 QT_BEGIN_NAMESPACE
 
@@ -204,11 +204,11 @@ do {\
         return;\
 } while (0)
 
-#define QFETCH(type, name)\
-    type name = *static_cast<type *>(QTest::qData(#name, ::qMetaTypeId<type >()))
+#define QFETCH(Type, name)\
+    Type name = *static_cast<Type *>(QTest::qData(#name, ::qMetaTypeId<typename std::remove_cv<Type >::type>()))
 
-#define QFETCH_GLOBAL(type, name)\
-    type name = *static_cast<type *>(QTest::qGlobalData(#name, ::qMetaTypeId<type >()))
+#define QFETCH_GLOBAL(Type, name)\
+    Type name = *static_cast<Type *>(QTest::qGlobalData(#name, ::qMetaTypeId<typename std::remove_cv<Type >::type>()))
 
 #define QTEST(actual, testElement)\
 do {\

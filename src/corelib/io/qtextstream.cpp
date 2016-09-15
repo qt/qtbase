@@ -2651,6 +2651,7 @@ QTextStream &QTextStream::operator<<(const char *string)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
+    // ### Qt6: consider changing to UTF-8
     d->putString(QLatin1String(string));
     return *this;
 }

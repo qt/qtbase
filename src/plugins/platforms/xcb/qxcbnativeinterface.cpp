@@ -85,7 +85,6 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("gettimestamp"), QByteArrayLiteral("x11screen"),
         QByteArrayLiteral("rootwindow"),
         QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingenabled"),
-        QByteArrayLiteral("nofonthinting"),
         QByteArrayLiteral("atspibus"),
         QByteArrayLiteral("compositingenabled")
     };
@@ -241,9 +240,6 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
         break;
     case GetTimestamp:
         result = getTimestamp(xcbScreen);
-        break;
-    case NoFontHinting:
-        result = xcbScreen->noFontHinting() ? this : 0; //qboolptr...
         break;
     case RootWindow:
         result = reinterpret_cast<void *>(xcbScreen->root());

@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include <qglobal.h>
+#include <qtprintsupportglobal.h>
 
 #ifndef QT_NO_PRINTER
 #include <qdebug.h>

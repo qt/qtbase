@@ -65,7 +65,7 @@ my @zlib_headers = ( "zconf.h", "zlib.h" );
 @ignore_headers = ( @internal_zlib_headers );
 @ignore_for_include_check = ( "qsystemdetection.h", "qcompilerdetection.h", "qprocessordetection.h", @zlib_headers, @angle_headers);
 @ignore_for_qt_begin_namespace_check = ( "qt_windows.h", @zlib_headers, @angle_headers);
-%inject_headers = ( "$basedir/src/corelib/global" => [ "qconfig.h", "qconfig_p.h", "qfeatures.h" ] );
+%inject_headers = ( "$basedir/src/corelib/global" => [ "qconfig.h", "qconfig_p.h" ] );
 # Module dependencies.
 # Every module that is required to build this module should have one entry.
 # Each of the module version specifiers can take one of the following values:

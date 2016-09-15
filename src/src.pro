@@ -1,48 +1,44 @@
 TEMPLATE = subdirs
 
+QT_FOR_CONFIG += gui-private
+include($$OUT_PWD/corelib/qtcore-config.pri)
+include($$OUT_PWD/gui/qtgui-config.pri)
+
 src_qtzlib.file = $$PWD/corelib/qtzlib.pro
 src_qtzlib.target = sub-zlib
 
 src_tools_bootstrap.subdir = tools/bootstrap
 src_tools_bootstrap.target = sub-bootstrap
-src_tools_bootstrap.CONFIG = host_build
 
 src_tools_moc.subdir = tools/moc
 src_tools_moc.target = sub-moc
 src_tools_moc.depends = src_tools_bootstrap
-src_tools_moc.CONFIG = host_build
 
 src_tools_rcc.subdir = tools/rcc
 src_tools_rcc.target = sub-rcc
 src_tools_rcc.depends = src_tools_bootstrap
-src_tools_rcc.CONFIG = host_build
 
 src_tools_qlalr.subdir = tools/qlalr
 src_tools_qlalr.target = sub-qlalr
-src_tools_qlalr.CONFIG = host_build
 force_bootstrap: src_tools_qlalr.depends = src_tools_bootstrap
 else: src_tools_qlalr.depends = src_corelib
 
 src_tools_uic.subdir = tools/uic
 src_tools_uic.target = sub-uic
-src_tools_uic.CONFIG = host_build
 force_bootstrap: src_tools_uic.depends = src_tools_bootstrap
 else: src_tools_uic.depends = src_corelib
 
 src_tools_bootstrap_dbus.subdir = tools/bootstrap-dbus
 src_tools_bootstrap_dbus.target = sub-bootstrap_dbus
 src_tools_bootstrap_dbus.depends = src_tools_bootstrap
-src_tools_bootstrap_dbus.CONFIG = host_build
 
 src_tools_qdbusxml2cpp.subdir = tools/qdbusxml2cpp
 src_tools_qdbusxml2cpp.target = sub-qdbusxml2cpp
-src_tools_qdbusxml2cpp.CONFIG = host_build
 force_bootstrap: src_tools_qdbusxml2cpp.depends = src_tools_bootstrap_dbus
 else: src_tools_qdbusxml2cpp.depends = src_dbus
 
 src_tools_qdbuscpp2xml.subdir = tools/qdbuscpp2xml
 src_tools_qdbuscpp2xml.target = sub-qdbuscpp2xml
-src_tools_qdbuscpp2xml.CONFIG = host_build
 force_bootstrap: src_tools_qdbuscpp2xml.depends = src_tools_bootstrap_dbus
 else: src_tools_qdbuscpp2xml.depends = src_dbus
 
@@ -138,7 +134,7 @@ src_android.subdir = $$PWD/android
     }
 }
 SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc
-!contains(QT_DISABLED_FEATURES, regularexpression):pcre {
+qtConfig(regularexpression):pcre {
     SUBDIRS += src_3rdparty_pcre
     src_corelib.depends += src_3rdparty_pcre
 }

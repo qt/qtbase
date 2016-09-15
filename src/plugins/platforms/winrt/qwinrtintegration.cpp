@@ -197,9 +197,9 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
 
     QEventDispatcherWinRT::runOnXamlThread([d]() {
         d->mainScreen = new QWinRTScreen;
-        d->inputContext.reset(new QWinRTInputContext(d->mainScreen));
         return S_OK;
     });
+    d->inputContext.reset(new QWinRTInputContext(d->mainScreen));
 
     screenAdded(d->mainScreen);
     d->platformServices = new QWinRTServices;

@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
+QT_FOR_CONFIG += gui-private
 
 android: SUBDIRS += android
 

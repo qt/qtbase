@@ -704,10 +704,10 @@ void QPSQLDriverPrivate::detectBackslashEscape()
         hasBackslashEscape = true;
     } else {
         hasBackslashEscape = false;
-        PGresult* result = exec(QLatin1Literal("SELECT '\\\\' x"));
+        PGresult* result = exec(QLatin1String("SELECT '\\\\' x"));
         int status = PQresultStatus(result);
         if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK)
-            if (QString::fromLatin1(PQgetvalue(result, 0, 0)) == QLatin1Literal("\\"))
+            if (QString::fromLatin1(PQgetvalue(result, 0, 0)) == QLatin1String("\\"))
                 hasBackslashEscape = true;
         PQclear(result);
     }

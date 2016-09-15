@@ -38,16 +38,19 @@
 **
 ****************************************************************************/
 
+#include "qoscbundle_p.h"
+#include "qtuio_p.h"
+
 #include <QtEndian>
 #include <QDebug>
 #include <QLoggingCategory>
 
-#include "qoscbundle_p.h"
-#include "qtuio_p.h"
 
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcTuioBundle, "qt.qpa.tuio.bundle")
+
+QOscBundle::QOscBundle() {}
 
 // TUIO packets are transmitted using the OSC protocol, located at:
 //   http://opensoundcontrol.org/specification
@@ -170,22 +173,6 @@ QOscBundle::QOscBundle(const QByteArray &data)
             return;
         }
     }
-}
-
-
-bool QOscBundle::isValid() const
-{
-    return m_isValid;
-}
-
-QList<QOscBundle> QOscBundle::bundles() const
-{
-    return m_bundles;
-}
-
-QList<QOscMessage> QOscBundle::messages() const
-{
-    return m_messages;
 }
 
 QT_END_NAMESPACE

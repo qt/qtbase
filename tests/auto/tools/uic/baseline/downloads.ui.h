@@ -81,9 +81,9 @@ public:
 
     void retranslateUi(QDialog *DownloadDialog)
     {
-        DownloadDialog->setWindowTitle(QApplication::translate("DownloadDialog", "Downloads", 0));
-        cleanupButton->setText(QApplication::translate("DownloadDialog", "Clean up", 0));
-        itemCount->setText(QApplication::translate("DownloadDialog", "0 Items", 0));
+        DownloadDialog->setWindowTitle(QApplication::translate("DownloadDialog", "Downloads", Q_NULLPTR));
+        cleanupButton->setText(QApplication::translate("DownloadDialog", "Clean up", Q_NULLPTR));
+        itemCount->setText(QApplication::translate("DownloadDialog", "0 Items", Q_NULLPTR));
     } // retranslateUi
 
 };

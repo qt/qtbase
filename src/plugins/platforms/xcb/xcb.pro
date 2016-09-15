@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 CONFIG += ordered
+QT_FOR_CONFIG += gui-private
 
 !qtConfig(system-xcb): SUBDIRS += xcb-static
 

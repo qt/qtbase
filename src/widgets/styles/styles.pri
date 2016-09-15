@@ -35,6 +35,8 @@ SOURCES += \
 
 RESOURCES += styles/qstyle.qrc
 
+include($$OUT_PWD/qtwidgets-config.pri)
+
 contains( styles, mac ) {
     HEADERS += \
         styles/qmacstyle_mac_p.h \

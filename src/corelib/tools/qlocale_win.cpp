@@ -57,7 +57,7 @@
 #include <wrl.h>
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
-#include <windows.globalization.h>
+#include <windows.system.userprofile.h>
 #endif // Q_OS_WINRT
 
 QT_BEGIN_NAMESPACE
@@ -70,6 +70,7 @@ static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::System::UserProfile;
 
 static QByteArray getWinLocaleName(LPWSTR id = LOCALE_NAME_USER_DEFAULT);
 static const char *winLangCodeToIsoName(int code);
@@ -624,16 +625,17 @@ QVariant QSystemLocalePrivate::uiLanguages()
     return result;
 #else // !Q_OS_WINRT
     QStringList result;
-    ComPtr<ABI::Windows::Globalization::IApplicationLanguagesStatics> appLanguagesStatics;
-    if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Globalization_ApplicationLanguages).Get(), &appLanguagesStatics))) {
+
+    ComPtr<IGlobalizationPreferencesStatics> preferences;
+    HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_UserProfile_GlobalizationPreferences).Get(), &preferences);
+    if (FAILED(hr)) {
         qWarning("Could not obtain ApplicationLanguagesStatic");
         return QStringList();
     }
 
     ComPtr<ABI::Windows::Foundation::Collections::IVectorView<HSTRING> > languageList;
-    // Languages is a ranked list of "long names" (e.g. en-US) of preferred languages, which matches
-    // languages from the manifest with languages from the user's system.
-    HRESULT hr = appLanguagesStatics->get_Languages(&languageList);
+    // Languages is a ranked list of "long names" (e.g. en-US) of preferred languages
+    hr = preferences->get_Languages(&languageList);
     Q_ASSERT_SUCCEEDED(hr);
     unsigned int size;
     hr = languageList->get_Size(&size);
@@ -646,36 +648,6 @@ QVariant QSystemLocalePrivate::uiLanguages()
         UINT32 length;
         PCWSTR rawString = language.GetRawBuffer(&length);
         result << QString::fromWCharArray(rawString, length);
-    }
-
-    // ManifestLanguages covers all languages given in the manifest and uses short names (like "en").
-    hr = appLanguagesStatics->get_ManifestLanguages(&languageList);
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = languageList->get_Size(&size);
-    Q_ASSERT_SUCCEEDED(hr);
-    for (unsigned int i = 0; i < size; ++i) {
-        HString language;
-        hr = languageList->GetAt(i, language.GetAddressOf());
-        Q_ASSERT_SUCCEEDED(hr);
-        UINT32 length;
-        PCWSTR rawString = language.GetRawBuffer(&length);
-        const QString qLanguage = QString::fromWCharArray(rawString, length);
-        bool found = false;
-        // Since ApplicationLanguages:::Languages uses long names, we compare the "pre-dash" part of
-        // the language and filter it out, if it is already covered by a more specialized form.
-        for (const QString &lang : qAsConst(result)) {
-            int dashIndex = lang.indexOf('-');
-            // There will not be any long name after the first short name was found, so we can stop.
-            if (dashIndex == -1)
-                break;
-
-            if (lang.leftRef(dashIndex) == qLanguage) {
-                found = true;
-                break;
-            }
-        }
-        if (!found)
-            result << qLanguage;
     }
 
     return result;

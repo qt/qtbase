@@ -95,3 +95,26 @@ defineTest(qtNomakeTools) {
         export($${d}.CONFIG)
     }
 }
+
+# This overloads the same function from qt_functions.prf.
+# This is not in qt_module.prf, as that gets loaded too late.
+defineTest(qtConfig) {
+    modules = $$QT $$QT_PRIVATE $$QT_FOR_PRIVATE $$QT_FOR_CONFIG
+    modules ~= s,-private$,_private,g
+    modules = $$resolve_depends(modules, "QT.", ".depends")
+    isEmpty(MODULE): \
+        MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
+    exists($$OUT_PWD/qt$${MODULE}-config.pri) {
+        include($$OUT_PWD/qt$${MODULE}-config.pri)
+        modules += $${MODULE} $${MODULE}_private
+    }
+    modules += global global_private
+    modules = $$reverse(modules)
+    for (module, modules) {
+        contains(QT.$${module}.enabled_features, $$1): \
+            return(true)
+        contains(QT.$${module}.disabled_features, $$1): \
+            return(false)
+    }
+    error("Could not find feature $${1}.")
+}

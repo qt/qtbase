@@ -68,6 +68,8 @@ DEFINES += FT2_BUILD_LIBRARY
 DEFINES += FT_CONFIG_OPTION_SYSTEM_ZLIB
 include(../zlib_dependency.pri)
 
+QT_FOR_CONFIG += gui-private
+include(../../gui/qtgui-config.pri)
 DEFINES += FT_CONFIG_OPTION_USE_PNG
 include($$PWD/../png_dependency.pri)
 

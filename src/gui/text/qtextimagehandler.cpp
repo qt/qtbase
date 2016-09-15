@@ -61,10 +61,10 @@ static QString resolveFileName(QString fileName, QUrl *url, qreal targetDevicePi
     // Also, QFile{Info}::exists works only on filepaths (not urls)
 
     if (url->isValid()) {
-      if (url->scheme() == QLatin1Literal("qrc")) {
+      if (url->scheme() == QLatin1String("qrc")) {
         fileName = fileName.right(fileName.length() - 3);
       }
-      else if (url->scheme() == QLatin1Literal("file")) {
+      else if (url->scheme() == QLatin1String("file")) {
         fileName = url->toLocalFile();
       }
     }

@@ -36,7 +36,6 @@
 #include <qhash.h>
 #include <quuid.h>
 #include <stdlib.h>
-#include <qlinkedlist.h>
 
 //#define DEBUG_SOLUTION_GEN
 
