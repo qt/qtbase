@@ -359,25 +359,25 @@ void tst_QMdiSubWindow::mainWindowSupport()
     mainWindow.show();
     mainWindow.menuBar()->setVisible(true);
     qApp->setActiveWindow(&mainWindow);
+    bool nativeMenuBar = mainWindow.menuBar()->isNativeMenuBar();
 
-    // QMainWindow's window title is empty
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
-    {
-    QCOMPARE(mainWindow.windowTitle(), QString());
-    QMdiSubWindow *window = workspace->addSubWindow(new QPushButton(QLatin1String("Test")));
-    QString expectedTitle = QLatin1String("MainWindow's title is empty");
-    window->setWindowTitle(expectedTitle);
-    QCOMPARE(window->windowTitle(), expectedTitle);
-    window->showMaximized();
-    QVERIFY(window->isMaximized());
-    QCOMPARE(window->windowTitle(), expectedTitle);
-    QCOMPARE(mainWindow.windowTitle(), expectedTitle);
-    window->showNormal();
-    QCOMPARE(window->windowTitle(), expectedTitle);
-    QCOMPARE(mainWindow.windowTitle(), QString());
-    window->close();
+    // QMainWindow's window title is empty, so on a platform which does NOT have a native menubar,
+    // the maximized subwindow's title is imposed onto the main window's titlebar.
+    if (!nativeMenuBar) {
+        QCOMPARE(mainWindow.windowTitle(), QString());
+        QMdiSubWindow *window = workspace->addSubWindow(new QPushButton(QLatin1String("Test")));
+        QString expectedTitle = QLatin1String("MainWindow's title is empty");
+        window->setWindowTitle(expectedTitle);
+        QCOMPARE(window->windowTitle(), expectedTitle);
+        window->showMaximized();
+        QVERIFY(window->isMaximized());
+        QCOMPARE(window->windowTitle(), expectedTitle);
+        QCOMPARE(mainWindow.windowTitle(), expectedTitle);
+        window->showNormal();
+        QCOMPARE(window->windowTitle(), expectedTitle);
+        QCOMPARE(mainWindow.windowTitle(), QString());
+        window->close();
     }
-#endif
 
     QString originalWindowTitle = QString::fromLatin1("MainWindow");
     mainWindow.setWindowTitle(originalWindowTitle);
@@ -413,16 +413,16 @@ void tst_QMdiSubWindow::mainWindowSupport()
         window->showMaximized();
         qApp->processEvents();
         QVERIFY(window->isMaximized());
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
-        QVERIFY(window->maximizedButtonsWidget());
-        QCOMPARE(window->maximizedButtonsWidget(), mainWindow.menuBar()->cornerWidget(Qt::TopRightCorner));
-        QVERIFY(window->maximizedSystemMenuIconWidget());
-        QCOMPARE(window->maximizedSystemMenuIconWidget(), qobject_cast<QWidget *>(mainWindow.menuBar()
-                                                                    ->cornerWidget(Qt::TopLeftCorner)));
-        const QString expectedTitle = originalWindowTitle + QLatin1String(" - [")
-            + window->widget()->windowTitle() + QLatin1Char(']');
-        QCOMPARE(mainWindow.windowTitle(), expectedTitle);
-#endif
+        if (!nativeMenuBar) {
+            QVERIFY(window->maximizedButtonsWidget());
+            QCOMPARE(window->maximizedButtonsWidget(), mainWindow.menuBar()->cornerWidget(Qt::TopRightCorner));
+            QVERIFY(window->maximizedSystemMenuIconWidget());
+            QCOMPARE(window->maximizedSystemMenuIconWidget(),
+                     qobject_cast<QWidget *>(mainWindow.menuBar()->cornerWidget(Qt::TopLeftCorner)));
+            const QString expectedTitle = originalWindowTitle + QLatin1String(" - [")
+                + window->widget()->windowTitle() + QLatin1Char(']');
+            QCOMPARE(mainWindow.windowTitle(), expectedTitle);
+        }
 
         // Check that nested child windows don't set window title
         nestedWorkspace->show();
@@ -436,15 +436,14 @@ void tst_QMdiSubWindow::mainWindowSupport()
         QVERIFY(!nestedWindow->maximizedButtonsWidget());
         QVERIFY(!nestedWindow->maximizedSystemMenuIconWidget());
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_QNX)
-        QCOMPARE(mainWindow.windowTitle(), QString::fromLatin1("%1 - [%2]")
-                                           .arg(originalWindowTitle, window->widget()->windowTitle()));
-#endif
+        if (!nativeMenuBar) {
+            QCOMPARE(mainWindow.windowTitle(), QString::fromLatin1("%1 - [%2]")
+                     .arg(originalWindowTitle, window->widget()->windowTitle()));
+        }
     }
 
-#if defined(Q_OS_MAC) || defined(Q_OS_WINCE)
-    return;
-#endif
+    if (nativeMenuBar)
+        return;
 
     workspace->activateNextSubWindow();
     qApp->processEvents();
@@ -1911,14 +1910,14 @@ void tst_QMdiSubWindow::mdiArea()
 
 void tst_QMdiSubWindow::task_182852()
 {
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
-
     QMdiArea *workspace = new QMdiArea;
     QMainWindow mainWindow;
     mainWindow.setCentralWidget(workspace);
     mainWindow.show();
     mainWindow.menuBar()->setVisible(true);
     qApp->setActiveWindow(&mainWindow);
+    if (mainWindow.menuBar()->isNativeMenuBar())
+        return; // The main window's title is not overwritten if we have a native menubar (macOS, Unity etc.)
 
     QString originalWindowTitle = QString::fromLatin1("MainWindow - [foo]");
     mainWindow.setWindowTitle(originalWindowTitle);
@@ -1954,9 +1953,6 @@ void tst_QMdiSubWindow::task_182852()
 
     QCOMPARE(mainWindow.windowTitle(), QString::fromLatin1("%1 - [%2]")
             .arg(originalWindowTitle, window->widget()->windowTitle()));
-
-
-#endif
 }
 
 void tst_QMdiSubWindow::task_233197()
