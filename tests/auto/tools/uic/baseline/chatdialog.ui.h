@@ -100,8 +100,8 @@ public:
 
     void retranslateUi(QDialog *ChatDialog)
     {
-        ChatDialog->setWindowTitle(QApplication::translate("ChatDialog", "Chat", 0));
-        label->setText(QApplication::translate("ChatDialog", "Message:", 0));
+        ChatDialog->setWindowTitle(QApplication::translate("ChatDialog", "Chat", Q_NULLPTR));
+        label->setText(QApplication::translate("ChatDialog", "Message:", Q_NULLPTR));
     } // retranslateUi
 
 };

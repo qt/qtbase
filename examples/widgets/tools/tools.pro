@@ -16,8 +16,7 @@ SUBDIRS       = \
 
 contains(DEFINES, QT_NO_TRANSLATION): SUBDIRS -= i18n
 
-load(qfeatures)
-contains(QT_DISABLED_FEATURES, library) {
+!qtConfig(library) {
     SUBDIRS -= \
         echoplugin \
         plugandpaint

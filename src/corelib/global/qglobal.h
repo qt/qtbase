@@ -58,7 +58,7 @@
 
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/qconfig.h>
-#include <QtCore/qfeatures.h>
+#include <QtCore/qtcore-config.h>
 #endif
 
 // The QT_SUPPORTS macro is deprecated. Don't use it in new code.
@@ -943,10 +943,11 @@ template <typename T>
 class QForeachContainer {
     QForeachContainer &operator=(const QForeachContainer &) Q_DECL_EQ_DELETE;
 public:
-    inline QForeachContainer(const T& t) : c(t), i(c.begin()), e(c.end()), control(1) { }
+    QForeachContainer(const T &t) : c(t) {}
+    QForeachContainer(T &&t) : c(std::move(t)) {}
     const T c;
-    typename T::const_iterator i, e;
-    int control;
+    typename T::const_iterator i = c.begin(), e = c.end();
+    int control = 1;
 };
 
 // Explanation of the control word:

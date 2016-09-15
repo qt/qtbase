@@ -50,6 +50,7 @@
 
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/private/qconfig_p.h>
+#include <QtCore/private/qtcore-config_p.h>
 #endif
 
 #define QT_LIBRARY_VERSION(lib) QT_LIBRARY_VERSION_##lib

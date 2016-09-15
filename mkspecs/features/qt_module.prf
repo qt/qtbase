@@ -119,8 +119,7 @@ lib_bundle {
         QMAKE_INFO_PLIST = $$QMAKESPEC/Info.plist.lib
    }
    !build_all| \
-           if(if(!debug_and_release|CONFIG(release, debug|release)): \
-              if(!simulator_and_device|CONFIG(device, simulator|device))) {
+           if(if(!debug_and_release|CONFIG(release, debug|release))) {
         FRAMEWORK_HEADERS.version = Versions
         FRAMEWORK_HEADERS.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
         FRAMEWORK_HEADERS.path = Headers

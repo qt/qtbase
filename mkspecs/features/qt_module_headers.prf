@@ -106,6 +106,16 @@ alien_syncqt: return()
 
 MODULE_INC_OUTDIR = $$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME
 
+exists($$OUT_PWD/qt$${MODULE}-config.h) {
+    fwd_rel = $$relative_path($$OUT_PWD, $$MODULE_INC_OUTDIR)
+    SYNCQT.INJECTIONS += \
+        $$fwd_rel/qt$${MODULE}-config.h:qt$${MODULE}-config.h \
+        $$fwd_rel/qt$${MODULE}-config_p.h:$$MODULE_VERSION/$$MODULE_INCNAME/private/qt$${MODULE}-config_p.h
+    inst_rel = $$relative_path($$OUT_PWD, $$_PRO_FILE_PWD_)
+    SYNCQT.HEADER_FILES += $$inst_rel/qt$${MODULE}-config.h
+    SYNCQT.PRIVATE_HEADER_FILES += $$inst_rel/qt$${MODULE}-config_p.h
+}
+
 for (injection, SYNCQT.INJECTIONS) {
     injects = $$split(injection, :)
     dst_hdr = $$absolute_path($$member(injects, 0), $$MODULE_INC_OUTDIR)

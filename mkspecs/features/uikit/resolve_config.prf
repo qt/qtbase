@@ -1,68 +1,11 @@
 
 xcodebuild {
     # Xcode project files always support both Debug and Release configurations
-    # and iOS device and simulator targets, so we make sure the wrapper-makefile
+    # and device and simulator targets, so we make sure the wrapper-makefile
     # also does.
     CONFIG += debug_and_release simulator_and_device
 }
 
 load(resolve_config)
 
-# Legacy exclusive build configurations for backwards compatibility
-CONFIG($${device.CONFIG}, $${device.CONFIG}|$${simulator.CONFIG}): \
-    CONFIG += device
-else: CONFIG($${simulator.CONFIG}, $${device.CONFIG}|$${simulator.CONFIG}): \
-    CONFIG += simulator
-
-CONFIG(simulator, simulator|device): \
-    CONFIG -= device $${device.CONFIG}
-else: \
-    CONFIG -= simulator $${simulator.CONFIG}
-
-macx-xcode {
-    # There is no way to genereate Xcode projects that are limited to either
-    # simulator or device builds, so simulator_and_device is always
-    # effectivly active, even if the user disabled it explicitly.
-    # The Xcode generator doesn't support multiple BUILDS though (exclusive
-    # builds), so we have to manually set up the simulator suffix.
-    library_suffix_simulator.name = "$${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING}[sdk=$${simulator.sdk}*]"
-    library_suffix_simulator.value = "_$${simulator.sdk}$($${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING})"
-    QMAKE_MAC_XCODE_SETTINGS += library_suffix_simulator
-    CONFIG *= xcode_dynamic_library_suffix
-} else {
-    addExclusiveBuilds(simulator, device)
-}
-
-equals(TEMPLATE, subdirs) {
-    # Prevent recursion into host_builds
-    for(subdir, SUBDIRS) {
-        contains($${subdir}.CONFIG, host_build) {
-            $${subdir}.CONFIG += no_$${simulator.target}_target no_$${device.target}_target
-
-            # Other targets which we do want to recurse into may depend on this target,
-            # for example corelib depends on moc, rcc, bootstrap, etc, and other libs
-            # may depend on host-tools that are needed to build the lib, so we resolve
-            # the final target name and redirect it to the base target, so that the
-            # dependency chain is not broken for the other targets.
-
-            !isEmpty($${subdir}.target) {
-                target = $$eval($${subdir}.target)
-            } else {
-                !isEmpty($${subdir}.file): \
-                    file = $$eval($${subdir}.file)
-                else: !isEmpty($${subdir}.subdir): \
-                    file = $$eval($${subdir}.subdir)
-                else: \
-                    file = $$subdir
-
-                target = sub-$$file
-            }
-
-            target ~= s,[^a-zA-Z0-9_],-,
-
-            $${target}-$${simulator.target}.depends = $$target
-            $${target}-$${device.target}.depends = $$target
-            QMAKE_EXTRA_TARGETS += $${target}-$${simulator.target} $${target}-$${device.target}
-        }
-    }
-}
+!macx-xcode:xcodebuild: addExclusiveBuilds(simulator, device)

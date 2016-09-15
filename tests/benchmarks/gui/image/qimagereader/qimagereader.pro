@@ -1,4 +1,5 @@
 QT += testlib
+QT_FOR_CONFIG += gui-private
 
 TEMPLATE = app
 TARGET = tst_bench_qimagereader

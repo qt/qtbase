@@ -705,9 +705,7 @@ static void resourceDataFileMapRecursion(const RCCFileInfo *m_root, const QStrin
     const ChildConstIterator cend = m_root->m_children.constEnd();
     for (ChildConstIterator it = m_root->m_children.constBegin(); it != cend; ++it) {
         const RCCFileInfo *child = it.value();
-        QString childName = path;
-        childName += slash;
-        childName += child->m_name;
+        const QString childName = path + slash + child->m_name;
         if (child->m_flags & RCCFileInfo::Directory) {
             resourceDataFileMapRecursion(child, childName, m);
         } else {

@@ -53,5 +53,6 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtWidgets/private/qtwidgets-config_p.h>
 
 #endif // QTWIDGETSGLOBAL_P_H

@@ -228,22 +228,22 @@ QString QTeamCityLogger::tcEscapedString(const QString &str) const
 
         switch (ch.toLatin1()) {
         case '\n':
-            formattedString.append(QLatin1Literal("|n"));
+            formattedString.append(QLatin1String("|n"));
             break;
         case '\r':
-            formattedString.append(QLatin1Literal("|r"));
+            formattedString.append(QLatin1String("|r"));
             break;
         case '|':
-            formattedString.append(QLatin1Literal("||"));
+            formattedString.append(QLatin1String("||"));
             break;
         case '[':
-            formattedString.append(QLatin1Literal("|["));
+            formattedString.append(QLatin1String("|["));
             break;
         case ']':
-            formattedString.append(QLatin1Literal("|]"));
+            formattedString.append(QLatin1String("|]"));
             break;
         case '\'':
-            formattedString.append(QLatin1Literal("|'"));
+            formattedString.append(QLatin1String("|'"));
             break;
         default:
             formattedString.append(ch);

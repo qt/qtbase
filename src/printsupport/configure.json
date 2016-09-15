@@ -1,0 +1,72 @@
+{
+    "module": "printsupport",
+    "depends": [
+        "core",
+        "gui",
+        "widgets"
+    ],
+    "testDir": "../../config.tests",
+
+    "commandline": {
+        "options": {
+            "cups": "boolean"
+        }
+    },
+
+    "libraries": {
+        "cups": {
+            "label": "CUPS",
+            "test": "unix/cups",
+            "sources": [
+                "-lcups"
+            ]
+        }
+    },
+
+    "features": {
+        "cups": {
+            "label": "CUPS",
+            "purpose": "Provides support for the Common Unix Printing System.",
+            "section": "Painting",
+            "condition": "libs.cups",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "printer": {
+            "label": "QPrinter",
+            "purpose": "Provides a printer backend of QPainter.",
+            "section": "Painting",
+            "condition": "!config.android && !config.uikit && !config.winrt && features.picture && features.temporaryfile && features.pdf",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "printpreviewwidget": {
+            "label": "QPrintPreviewWidget",
+            "purpose": "Provides a widget for previewing page layouts for printer output.",
+            "section": "Widgets",
+            "condition": "features.graphicsview && features.printer && features.mainwindow",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "printdialog": {
+            "label": "QPrintDialog",
+            "purpose": "Provides a dialog widget for specifying printer configuration.",
+            "section": "Dialogs",
+            "condition": "features.printer && features.combobox && features.buttongroup && features.spinbox && features.treeview && features.tabwidget",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "printpreviewdialog": {
+            "label": "QPrintPreviewDialog",
+            "purpose": "Provides a dialog for previewing and configuring page layouts for printer output.",
+            "section": "Dialogs",
+            "condition": "features.printpreviewwidget && features.printdialog && features.toolbar",
+            "output": [ "publicFeature", "feature" ]
+        }
+    },
+
+    "summary": [
+        {
+            "section": "Qt PrintSupport",
+            "entries": [
+                "cups"
+            ]
+        }
+    ]
+}

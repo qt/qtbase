@@ -1,0 +1,201 @@
+{
+    "module": "sql",
+    "depends": [
+        "core"
+    ],
+    "testDir": "../../config.tests",
+
+    "commandline": {
+        "assignments": {
+            "MYSQL_PATH": "mysql.prefix",
+            "PSQL_LIBS": "psql.libs",
+            "SYBASE": "tds.prefix",
+            "SYBASE_LIBS": "tds.libs"
+        },
+        "options": {
+            "mysql_config": "string",
+            "psql_config": "string",
+            "sqlite": { "type": "enum", "name": "system-sqlite", "values": { "qt": "no", "system": "yes" } },
+            "sql-db2": "boolean",
+            "sql-ibase": "boolean",
+            "sql-mysql": "boolean",
+            "sql-oci": "boolean",
+            "sql-odbc": "boolean",
+            "sql-psql": "boolean",
+            "sql-sqlite": "boolean",
+            "sql-sqlite2": "boolean",
+            "sql-tds": "boolean",
+            "plugin-sql-db2": { "type": "void", "name": "sql-db2" },
+            "plugin-sql-ibase": { "type": "void", "name": "sql-ibase" },
+            "plugin-sql-mysql": { "type": "void", "name": "sql-mysql" },
+            "plugin-sql-oci": { "type": "void", "name": "sql-oci" },
+            "plugin-sql-odbc": { "type": "void", "name": "sql-odbc" },
+            "plugin-sql-psql": { "type": "void", "name": "sql-psql" },
+            "plugin-sql-sqlite": { "type": "void", "name": "sql-sqlite" },
+            "plugin-sql-sqlite2": { "type": "void", "name": "sql-sqlite2" },
+            "plugin-sql-tds": { "type": "void", "name": "sql-tds" }
+        }
+    },
+
+    "libraries": {
+        "db2": {
+            "label": "DB2 (IBM)",
+            "test": "unix/db2",
+            "sources": [
+                { "libs": "-ldb2cli", "condition": "config.win32" },
+                { "libs": "-ldb2", "condition": "!config.win32" }
+            ]
+        },
+        "ibase": {
+            "label": "InterBase",
+            "test": "unix/ibase",
+            "sources": [
+                { "libs": "-lgds32_ms", "condition": "config.win32" },
+                { "libs": "-lgds", "condition": "!config.win32" }
+            ]
+        },
+        "mysql": {
+            "label": "MySQL",
+            "test": "unix/mysql",
+            "sources": [
+                { "type": "mysqlConfig", "query": "--libs_r" },
+                { "type": "mysqlConfig", "query": "--libs" },
+                { "libs": "-lmysqlclient_r", "condition": "!config.win32" },
+                { "libs": "-llibmysql", "condition": "config.win32" },
+                { "libs": "-lmysqlclient", "condition": "!config.win32" }
+            ]
+        },
+        "psql": {
+            "label": "PostgreSQL",
+            "test": "unix/psql",
+            "sources": [
+                { "type": "psqlConfig" },
+                { "type": "psqlEnv", "libs": "-llibpq -lws2_32 -ladvapi32", "condition": "config.win32" },
+                { "type": "psqlEnv", "libs": "-lpq", "condition": "!config.win32" }
+            ]
+        },
+        "tds": {
+            "label": "TDS (Sybase)",
+            "test": "unix/tds",
+            "sources": [
+                { "type": "sybaseEnv", "libs": "-lNTWDBLIB", "condition": "config.win32" },
+                { "type": "sybaseEnv", "libs": "-lsybdb", "condition": "!config.win32" }
+            ]
+        },
+        "oci": {
+            "label": "OCI (Oracle)",
+            "test": "unix/oci",
+            "sources": [
+                { "libs": "-loci", "condition": "config.win32" },
+                { "libs": "-lclntsh", "condition": "!config.win32" }
+            ]
+        },
+        "odbc": {
+            "label": "ODBC",
+            "test": "unix/odbc",
+            "sources": [
+                { "libs": "-lodbc32", "condition": "config.win32" },
+                { "libs": "-liodbc", "condition": "config.darwin" },
+                { "libs": "-lodbc", "condition": "!config.win32 && !config.darwin" }
+            ]
+        },
+        "sqlite2": {
+            "label": "SQLite (version 2)",
+            "test": "unix/sqlite2",
+            "sources": [
+                "-lsqlite"
+            ]
+        },
+        "sqlite3": {
+            "label": "SQLite (version 3)",
+            "export": "sqlite",
+            "test": "unix/sqlite",
+            "sources": [
+                { "type": "pkgConfig", "args": "sqlite3" },
+                { "libs": "-lsqlite3", "condition": "config.win32" },
+                { "libs": "-lsqlite3 -lz", "condition": "!config.win32" }
+            ]
+        }
+    },
+
+    "tests": {
+    },
+
+    "features": {
+        "sql-db2": {
+            "label": "DB2 (IBM)",
+            "condition": "libs.db2",
+            "output": [ "publicFeature" ]
+        },
+        "sql-ibase": {
+            "label": "InterBase",
+            "condition": "libs.ibase",
+            "output": [ "publicFeature" ]
+        },
+        "sql-mysql": {
+            "label": "MySql",
+            "condition": "libs.mysql",
+            "output": [ "publicFeature" ]
+        },
+        "use_libmysqlclient_r": {
+            "label": "MySql (threadsafe)",
+            "condition": "features.sql-mysql && (libs.mysql.source == 0 || libs.mysql.source == 2)",
+            "output": [ "privateConfig" ]
+        },
+        "sql-oci": {
+            "label": "OCI (Oracle)",
+            "condition": "libs.oci",
+            "output": [ "publicFeature" ]
+        },
+        "sql-odbc": {
+            "label": "ODBC",
+            "condition": "libs.odbc",
+            "output": [ "publicFeature" ]
+        },
+        "sql-psql": {
+            "label": "PostgreSQL",
+            "condition": "libs.psql",
+            "output": [ "publicFeature" ]
+        },
+        "sql-sqlite2": {
+            "label": "SQLite2",
+            "condition": "libs.sqlite2",
+            "output": [ "publicFeature" ]
+        },
+        "sql-sqlite": {
+            "label": "SQLite",
+            "output": [ "publicFeature" ]
+        },
+        "system-sqlite": {
+            "label": "  Using system provided SQLite",
+            "autoDetect": false,
+            "condition": "features.sql-sqlite && libs.sqlite3",
+            "output": [ "publicQtConfig" ]
+        },
+        "sql-tds": {
+            "label": "TDS (Sybase)",
+            "condition": "libs.tds",
+            "output": [ "publicFeature" ]
+        }
+    },
+
+    "report": [
+        {
+            "type": "warning",
+            "condition": "config.win32 && !config.msvc && features.sql-oci",
+            "message": "Qt does not support compiling the Oracle database driver with
+MinGW, due to lack of such support from Oracle. Consider disabling the
+Oracle driver, as the current build will most likely fail."
+        }
+    ],
+
+    "summary": [
+        {
+            "section": "Qt Sql",
+            "entries": [
+                "sql-db2", "sql-ibase", "sql-mysql", "sql-oci", "sql-odbc", "sql-psql",
+                "sql-sqlite2", "sql-sqlite", "system-sqlite", "sql-tds"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,611 @@
+{
+    "module": "core",
+    "testDir": "../../config.tests",
+
+    "commandline": {
+        "options": {
+            "doubleconversion": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "eventfd": "boolean",
+            "glib": "boolean",
+            "iconv": { "type": "enum", "values": [ "no", "yes", "posix", "sun", "gnu" ] },
+            "icu": "boolean",
+            "inotify": "boolean",
+            "journald": "boolean",
+            "pcre": { "type": "enum", "values": [ "qt", "system" ] },
+            "posix-ipc": { "type": "boolean", "name": "ipc_posix" },
+            "pps": { "type": "boolean", "name": "qqnx_pps" },
+            "slog2": "boolean",
+            "syslog": "boolean"
+        }
+    },
+
+    "libraries": {
+        "doubleconversion": {
+            "label": "DoubleConversion",
+            "test": "unix/doubleconversion",
+            "sources": [
+                "-ldouble-conversion"
+            ]
+        },
+        "glib": {
+            "label": "GLib",
+            "test": "unix/glib",
+            "sources": [
+                { "type": "pkgConfig", "args": "glib-2.0 gthread-2.0" }
+            ]
+        },
+        "gnu_iconv": {
+            "label": "GNU libiconv",
+            "export": "iconv",
+            "test": "unix/gnu-libiconv",
+            "sources": [
+                "-liconv"
+            ]
+        },
+        "icu": {
+            "label": "ICU",
+            "export": "",
+            "test": "unix/icu",
+            "sources": [
+                {
+                    "builds": {
+                        "debug": "-lsicuind -lsicuucd -lsicudtd",
+                        "release": "-lsicuin -lsicuuc -lsicudt"
+                    },
+                    "condition": "config.win32 && !features.shared"
+                },
+                { "libs": "-licuin -licuuc -licudt", "condition": "config.win32 && features.shared" },
+                { "libs": "-licui18n -licuuc -licudata", "condition": "!config.win32" }
+            ]
+        },
+        "journald": {
+            "label": "journald",
+            "test": "unix/journald",
+            "export": "",
+            "sources": [
+                { "type": "pkgConfig", "args": "libsystemd" },
+                { "type": "pkgConfig", "args": "libsystemd-journal" }
+            ]
+        },
+        "libatomic": {
+            "label": "64 bit atomics in libatomic",
+            "test": "common/atomic64",
+            "sources": [
+                "-latomic"
+            ]
+        },
+        "libdl": {
+            "label": "dlopen() in libdl",
+            "export": "",
+            "test": "unix/dlopen",
+            "sources": [
+                "-ldl"
+            ]
+        },
+        "pcre": {
+            "label": "PCRE",
+            "test": "unix/pcre",
+            "sources": [
+                "-lpcre16"
+            ]
+        },
+        "pps": {
+            "label": "PPS",
+            "test": "unix/pps",
+            "sources": [
+                "-lpps"
+            ]
+        },
+        "slog2": {
+            "label": "slog2",
+            "test": "unix/slog2",
+            "export": "",
+            "sources": [
+                "-lslog2"
+            ]
+        }
+    },
+
+    "tests": {
+        "atomic64": {
+            "label": "64 bit atomics",
+            "type": "compile",
+            "test": "common/atomic64"
+        },
+        "atomicfptr": {
+            "label": "working std::atomic for function pointers",
+            "type": "compile",
+            "test": "common/atomicfptr"
+        },
+        "clock-gettime": {
+            "label": "clock_gettime()",
+            "type": "compile",
+            "test": "unix/clock-gettime"
+        },
+        "clock-monotonic": {
+            "label": "POSIX monotonic clock",
+            "type": "compile",
+            "test": "unix/clock-monotonic"
+        },
+        "cloexec": {
+            "label": "O_CLOEXEC",
+            "type": "compile",
+            "test": "unix/cloexec"
+        },
+        "dlopen": {
+            "label": "dlopen() in libc",
+            "type": "compile",
+            "test": "unix/dlopen"
+        },
+        "eventfd": {
+            "label": "eventfd",
+            "type": "compile",
+            "test": "unix/eventfd"
+        },
+        "posix-iconv": {
+            "label": "POSIX iconv",
+            "type": "compile",
+            "test": "unix/iconv"
+        },
+        "sun-iconv": {
+            "label": "SUN libiconv",
+            "type": "compile",
+            "test": "unix/sun-libiconv"
+        },
+        "inotify": {
+            "label": "inotify",
+            "type": "compile",
+            "test": "unix/inotify"
+        },
+        "ipc_sysv": {
+            "label": "SysV IPC",
+            "type": "compile",
+            "test": "unix/ipc_sysv"
+        },
+        "ipc_posix": {
+            "label": "POSIX IPC",
+            "type": "compile",
+            "test": "unix/ipc_posix"
+        },
+        "journald": {
+            "label": "journald",
+            "type": "compile",
+            "test": "unix/journald"
+        },
+        "ppoll": {
+            "label": "ppoll()",
+            "type": "compile",
+            "test": "unix/ppoll"
+        },
+        "pollts": {
+            "label": "pollts()",
+            "type": "compile",
+            "test": "unix/pollts"
+        },
+        "poll": {
+            "label": "poll()",
+            "type": "compile",
+            "test": "unix/poll"
+        },
+        "syslog": {
+            "label": "syslog",
+            "type": "compile",
+            "test": "unix/syslog"
+        },
+        "xlocalescanprint": {
+            "label": "xlocale.h (or equivalents)",
+            "type": "compile",
+            "test": "common/xlocalescanprint"
+        }
+    },
+
+    "features": {
+        "clock-gettime": {
+            "label": "clock_gettime()",
+            "condition": "tests.clock-gettime",
+            "output": [ "privateFeature" ]
+        },
+        "clock-monotonic": {
+            "label": "POSIX monotonic clock",
+            "condition": "features.clock-gettime && tests.clock-monotonic",
+            "output": [ "feature" ]
+        },
+        "dlopen": {
+            "label": "dlopen()",
+            "condition": "tests.dlopen || libs.libdl",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_DYNAMIC_LIBRARY" } ]
+        },
+        "libdl": {
+            "label": "dlopen() in libdl",
+            "condition": "!tests.dlopen && libs.libdl",
+            "output": [ { "type": "privateConfig", "negative": true } ]
+        },
+        "doubleconversion": {
+            "label": "DoubleConversion",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "system-doubleconversion": {
+            "label": "  Using system DoubleConversion",
+            "enable": "input.doubleconversion == 'system'",
+            "disable": "input.doubleconversion == 'qt'",
+            "condition": "features.doubleconversion && libs.doubleconversion",
+            "output": [ "privateFeature" ]
+        },
+        "eventfd": {
+            "label": "eventfd",
+            "condition": "tests.eventfd",
+            "output": [ "feature" ]
+        },
+        "glib": {
+            "label": "GLib",
+            "autoDetect": "!config.win32",
+            "condition": "libs.glib",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "iconv": {
+            "label": "iconv",
+            "purpose": "Provides internationalization on Unix.",
+            "section": "Internationalization",
+            "condition": "features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "posix-libiconv": {
+            "label": "POSIX iconv",
+            "enable": "input.iconv == 'posix'",
+            "disable": "input.iconv == 'sun' || input.iconv == 'gnu' || input.iconv == 'no'",
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && tests.posix-iconv"
+        },
+        "sun-libiconv": {
+            "label": "SUN iconv",
+            "enable": "input.iconv == 'sun'",
+            "disable": "input.iconv == 'posix' || input.iconv == 'gnu' || input.iconv == 'no'",
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && tests.sun-iconv",
+            "output": [ "privateFeature", "publicQtConfig" ]
+        },
+        "gnu-libiconv": {
+            "label": "GNU iconv",
+            "enable": "input.iconv == 'gnu'",
+            "disable": "input.iconv == 'posix' || input.iconv == 'sun' || input.iconv == 'no'",
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && !features.sun-libiconv && libs.gnu_iconv",
+            "output": [ "privateFeature" ]
+        },
+        "icu": {
+            "label": "ICU",
+            "autoDetect": "!config.win32",
+            "condition": "libs.icu",
+            "output": [ "privateFeature" ]
+        },
+        "inotify": {
+            "label": "inotify",
+            "condition": "tests.inotify",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "ipc_posix": {
+            "label": "Using POSIX IPC",
+            "autoDetect": "!config.win32",
+            "condition": "!tests.ipc_sysv && tests.ipc_posix",
+            "output": [ { "type": "define", "name": "QT_POSIX_IPC" } ]
+        },
+        "journald": {
+            "label": "journald",
+            "autoDetect": false,
+            "condition": "libs.journald",
+            "output": [ "privateConfig" ]
+        },
+        "std-atomic64": {
+            "label": "64 bit atomic operations",
+            "condition": "tests.atomic64 || libs.libatomic",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_STD_ATOMIC64" } ]
+        },
+        "libatomic": {
+            "label": "64 bit atomic operations in libatomic",
+            "condition": "!tests.atomic64 && libs.libatomic",
+            "output": [ "privateFeature" ]
+        },
+        "mimetype": {
+            "label": "Mimetype handling",
+            "purpose": "Provides MIME type handling.",
+            "section": "Utilities",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "system-pcre": {
+            "label": "Using system PCRE",
+            "disable": "input.pcre == 'qt'",
+            "enable": "input.pcre == 'system'",
+            "condition": "libs.pcre",
+            "output": [
+                "privateFeature",
+                { "type": "privateConfig", "negative": true, "name": "pcre" }
+            ]
+        },
+        "poll_ppoll": {
+            "label": "Native ppoll()",
+            "emitIf": "!config.win32",
+            "condition": "tests.ppoll",
+            "output": [ "privateFeature" ]
+        },
+        "poll_pollts": {
+            "label": "Native pollts()",
+            "emitIf": "!config.win32",
+            "condition": "!features.poll_ppoll && tests.pollts",
+            "output": [ "privateFeature" ]
+        },
+        "poll_poll": {
+            "label": "Native poll()",
+            "emitIf": "!config.win32",
+            "condition": "!features.poll_ppoll && !features.poll_pollts && tests.poll",
+            "output": [ "privateFeature" ]
+        },
+        "poll_select": {
+            "label": "Emulated poll()",
+            "emitIf": "!config.win32",
+            "condition": "!features.poll_ppoll && !features.poll_pollts && !features.poll_poll",
+            "output": [
+                "privateFeature",
+                { "type": "define", "name": "QT_NO_NATIVE_POLL" }
+            ]
+        },
+        "qqnx_pps": {
+            "label": "PPS",
+            "emitIf": "config.qnx",
+            "condition": "libs.pps",
+            "output": [ "privateConfig" ]
+        },
+        "qeventtransition": {
+            "label": "QEventTransition class",
+            "output": [ "publicFeature" ]
+        },
+        "sharedmemory": {
+            "label": "Enable QSharedMemory",
+            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_SHAREDMEMORY" } ]
+        },
+        "slog2": {
+            "label": "slog2",
+            "condition": "libs.slog2",
+            "emitIf": "config.qnx",
+            "output": [ "privateConfig" ]
+        },
+        "syslog": {
+            "label": "syslog",
+            "autoDetect": false,
+            "condition": "tests.syslog",
+            "output": [ "privateConfig" ]
+        },
+        "systemsemaphore": {
+            "label": "Enable QSystemSemaphore",
+            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
+            "output": [ { "type": "define", "negative": true, "name": "QT_NO_SYSTEMSEMAPHORE" } ]
+        },
+        "threadsafe-cloexec": {
+            "label": "Threadsafe pipe creation",
+            "condition": "tests.cloexec",
+            "output": [
+                "publicQtConfig",
+                { "type": "define", "name": "QT_THREADSAFE_CLOEXEC", "value": 1 }
+            ]
+        },
+        "properties": {
+            "label": "Properties",
+            "purpose": "Supports scripting Qt-based applications.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "regularexpression": {
+            "label": "QRegularExpression",
+            "purpose": "Provides an API to Perl-compatible regular expressions.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "sharedmemory": {
+            "label": "QSharedMemory",
+            "purpose": "Provides access to a shared memory segment.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "systemsemaphore": {
+            "label": "QSystemSemaphore",
+            "purpose": "Provides a general counting system semaphore.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "xmlstream": {
+            "label": "XML Streaming APIs",
+            "purpose": "Provides a simple streaming API for XML.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "xmlstreamreader": {
+            "label": "QXmlStreamReader",
+            "purpose": "Provides a well-formed XML parser with a simple streaming API.",
+            "section": "Kernel",
+            "condition": "features.xmlstream",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "xmlstreamwriter": {
+            "label": "QXmlStreamWriter",
+            "purpose": "Provides a XML writer with a simple streaming API.",
+            "section": "Kernel",
+            "condition": "features.xmlstream",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "textdate": {
+            "label": "Text Date",
+            "purpose": "Supports month and day names in dates.",
+            "section": "Data structures",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "datestring": {
+            "label": "QDate/QTime/QDateTime",
+            "purpose": "Provides convertion between dates and strings.",
+            "section": "Data structures",
+            "condition": "features.textdate",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "process": {
+            "label": "QProcess",
+            "purpose": "Supports external process invocation.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "temporaryfile": {
+            "label": "QTemporaryFile",
+            "purpose": "Provides an I/O device that operates on temporary files.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "library": {
+            "label": "QLibrary",
+            "purpose": "Provides a wrapper for dynamically loaded libraries.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "settings": {
+            "label": "QSettings",
+            "purpose": "Provides persistent application settings.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "filesystemwatcher": {
+            "label": "QFileSystemWatcher",
+            "purpose": "Provides an interface for monitoring files and directories for modifications.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "filesystemiterator": {
+            "label": "QFileSystemIterator",
+            "purpose": "Provides fast file system iteration.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "itemmodel": {
+            "label": "Qt Item Model",
+            "purpose": "Provides the item model for item views",
+            "section": "ItemViews",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "proxymodel": {
+            "label": "QAbstractProxyModel",
+            "purpose": "Supports processing of data passed between another model and a view.",
+            "section": "ItemViews",
+            "condition": "features.itemmodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "sortfilterproxymodel": {
+            "label": "QSortFilterProxyModel",
+            "purpose": "Supports sorting and filtering of data passed between another model and a view.",
+            "section": "ItemViews",
+            "condition": "features.proxymodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "identityproxymodel": {
+            "label": "QIdentityProxyModel",
+            "purpose": "Supports proxying a source model unmodified.",
+            "section": "ItemViews",
+            "condition": "features.proxymodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "stringlistmodel": {
+            "label": "QStringListModel",
+            "purpose": "Provides a model that supplies strings to views.",
+            "section": "ItemViews",
+            "condition": "features.itemmodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "translation": {
+            "label": "Translation",
+            "purpose": "Supports translations using QObject::tr().",
+            "section": "Internationalization",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "textcodec": {
+            "label": "QTextCodec",
+            "purpose": "Supports conversions between text encodings.",
+            "section": "Internationalization",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "codecs": {
+            "label": "Codecs",
+            "purpose": "Supports non-unicode text conversions.",
+            "section": "Internationalization",
+            "condition": "features.textcodec",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "big_codecs": {
+            "label": "Big Codecs",
+            "purpose": "Supports big codecs, e.g. CJK.",
+            "section": "Internationalization",
+            "condition": "features.textcodec",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "animation": {
+            "label": "Animation",
+            "purpose": "Provides a framework for animations.",
+            "section": "Utilities",
+            "condition": "features.properties",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "statemachine": {
+            "label": "State machine",
+            "purpose": "Provides hierarchical finite state machines.",
+            "section": "Utilities",
+            "condition": "features.properties",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "gestures": {
+            "label": "Gesture",
+            "purpose": "Provides a framework for gestures.",
+            "section": "Utilities",
+            "output": [ "publicFeature", "feature" ]
+        }
+    },
+
+    "report": [
+        {
+            "type": "note",
+            "condition": "features.journald || features.syslog || (config.qnx && features.slog2)",
+            "message": "journald, syslog or slog2 integration is enabled.
+If your users intend to develop applications against this build,
+ensure that the IDEs they use either set QT_LOGGING_TO_CONSOLE to 1
+or are able to read the logged output from journald, syslog or slog2."
+        },
+        {
+            "type": "error",
+            "condition": "input.doubleconversion == 'no' && !tests.xlocalescanprint",
+            "message": "Your C library does not provide sscanf_l or snprintf_l.
+You need to use libdouble-conversion for double/string conversion."
+        },
+        {
+            "type": "error",
+            "condition": "!tests.atomicfptr",
+            "message": "detected a std::atomic implementation that fails for function pointers.
+Please apply the patch corresponding to your Standard Library vendor, found in
+  qtbase/config.tests/common/atomicfptr"
+        }
+    ],
+
+    "summary": [
+        {
+            "section": "Qt Core",
+            "entries": [
+                "doubleconversion",
+                "system-doubleconversion",
+                "glib",
+                "iconv",
+                "icu",
+                {
+                    "section": "Logging backends",
+                    "entries": [
+                        "journald", "syslog", "slog2"
+                    ]
+                },
+                {
+                    "type": "feature",
+                    "args": "qqnx_pps",
+                    "condition": "config.qnx"
+                },
+                "system-pcre"
+            ]
+        }
+    ]
+}

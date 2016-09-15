@@ -19,10 +19,13 @@ equals(TEMPLATE, app):qt {
 load(default_post)
 
 macx-xcode {
+    ios:isEmpty(QMAKE_APPLE_TARGETED_DEVICE_FAMILY):!isEmpty(QMAKE_IOS_TARGETED_DEVICE_FAMILY) {
+        warning("QMAKE_IOS_TARGETED_DEVICE_FAMILY is deprecated; use QMAKE_APPLE_TARGETED_DEVICE_FAMILY")
+        QMAKE_APPLE_TARGETED_DEVICE_FAMILY = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
+    }
+
     device_family.name = TARGETED_DEVICE_FAMILY
-    ios: device_family.value = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
-    tvos: device_family.value = $$QMAKE_TVOS_TARGETED_DEVICE_FAMILY
-    watchos: device_family.value = $$QMAKE_WATCHOS_TARGETED_DEVICE_FAMILY
+    device_family.value = $$QMAKE_APPLE_TARGETED_DEVICE_FAMILY
     QMAKE_MAC_XCODE_SETTINGS += device_family
 
     ios {
@@ -68,21 +71,10 @@ macx-xcode {
 macx-xcode {
     arch_device.name = "ARCHS[sdk=$${device.sdk}*]"
     arch_simulator.name = "ARCHS[sdk=$${simulator.sdk}*]"
-    ios {
-        arch_device.value = $$QMAKE_IOS_DEVICE_ARCHS
-        arch_simulator.value = $$QMAKE_IOS_SIMULATOR_ARCHS
-        QMAKE_XCODE_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS $$QMAKE_IOS_SIMULATOR_ARCHS
-    }
-    tvos {
-        arch_device.value = $$QMAKE_TVOS_DEVICE_ARCHS
-        arch_simulator.value = $$QMAKE_TVOS_SIMULATOR_ARCHS
-        QMAKE_XCODE_ARCHS = $$QMAKE_TVOS_DEVICE_ARCHS $$QMAKE_TVOS_SIMULATOR_ARCHS
-    }
-    watchos {
-        arch_device.value = $$QMAKE_WATCHOS_DEVICE_ARCHS
-        arch_simulator.value = $$QMAKE_WATCHOS_SIMULATOR_ARCHS
-        QMAKE_XCODE_ARCHS = $$QMAKE_WATCHOS_DEVICE_ARCHS $$QMAKE_WATCHOS_SIMULATOR_ARCHS
-    }
+
+    arch_device.value = $$QMAKE_APPLE_DEVICE_ARCHS
+    arch_simulator.value = $$QMAKE_APPLE_SIMULATOR_ARCHS
+    QMAKE_XCODE_ARCHS = $$QMAKE_APPLE_DEVICE_ARCHS $$QMAKE_APPLE_SIMULATOR_ARCHS
 
     QMAKE_MAC_XCODE_SETTINGS += arch_device arch_simulator
 
@@ -91,16 +83,9 @@ macx-xcode {
     only_active_arch.build = debug
     QMAKE_MAC_XCODE_SETTINGS += only_active_arch
 } else {
-    # Be more specific about which architecture we're targeting
-    contains(QT_ARCH, arm.*) {
-        ios: VALID_ARCHS = $$QMAKE_IOS_DEVICE_ARCHS
-        tvos: VALID_ARCHS = $$QMAKE_TVOS_DEVICE_ARCHS
-        watchos: VALID_ARCHS = $$QMAKE_WATCHOS_DEVICE_ARCHS
-    } else {
-        ios: VALID_ARCHS = $$QMAKE_IOS_SIMULATOR_ARCHS
-        tvos: VALID_ARCHS = $$QMAKE_TVOS_SIMULATOR_ARCHS
-        watchos: VALID_ARCHS = $$QMAKE_WATCHOS_SIMULATOR_ARCHS
-    }
+    VALID_ARCHS =
+    !simulator|simulator_and_device: VALID_ARCHS += $$QMAKE_APPLE_DEVICE_ARCHS
+    simulator: VALID_ARCHS += $$QMAKE_APPLE_SIMULATOR_ARCHS
 
     single_arch: VALID_ARCHS = $$first(VALID_ARCHS)
 
@@ -114,4 +99,6 @@ macx-xcode {
     QMAKE_CFLAGS += $$arch_flags
     QMAKE_CXXFLAGS += $$arch_flags
     QMAKE_LFLAGS += $$arch_flags
+
+    QMAKE_PCH_ARCHS = $$VALID_ARCHS
 }

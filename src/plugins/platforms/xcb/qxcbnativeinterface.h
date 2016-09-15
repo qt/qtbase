@@ -73,7 +73,6 @@ public:
         RootWindow,
         ScreenSubpixelType,
         ScreenAntialiasingEnabled,
-        NoFontHinting,
         AtspiBus,
         CompositingEnabled
     };

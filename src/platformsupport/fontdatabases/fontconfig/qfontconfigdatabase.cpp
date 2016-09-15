@@ -504,7 +504,7 @@ static void populateFromPattern(FcPattern *pattern)
 
 void QFontconfigDatabase::populateFontDatabase()
 {
-    FcInitReinitialize();
+    FcInit();
     FcFontSet  *fonts;
 
     {
@@ -566,6 +566,12 @@ void QFontconfigDatabase::populateFontDatabase()
 //    QFont font("Sans Serif");
 //    font.setPointSize(9);
 //    QApplication::setFont(font);
+}
+
+void QFontconfigDatabase::invalidate()
+{
+    // Clear app fonts.
+    FcConfigAppFontClear(0);
 }
 
 QFontEngineMulti *QFontconfigDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)

@@ -172,7 +172,6 @@ public:
     void readXResources();
 
     QFontEngine::HintStyle hintStyle() const { return m_hintStyle; }
-    bool noFontHinting() const { return m_noFontHinting; }
     QFontEngine::SubpixelAntialiasingType subpixelType() const { return m_subpixelType; }
     int antialiasingEnabled() const { return m_antialiasingEnabled; }
 
@@ -208,7 +207,6 @@ private:
     int m_forcedDpi;
     int m_pixelDensity;
     QFontEngine::HintStyle m_hintStyle;
-    bool m_noFontHinting;
     QFontEngine::SubpixelAntialiasingType m_subpixelType;
     int m_antialiasingEnabled;
 };

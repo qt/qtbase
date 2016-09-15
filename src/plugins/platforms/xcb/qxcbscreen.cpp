@@ -61,8 +61,7 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
     , m_number(number)
     , m_xSettings(Q_NULLPTR)
 {
-    QByteArray cmAtomName("_NET_WM_CM_S");
-    cmAtomName += QByteArray::number(m_number);
+    const QByteArray cmAtomName =  "_NET_WM_CM_S" + QByteArray::number(m_number);
     m_net_wm_cm_atom = connection->internAtom(cmAtomName.constData());
     m_compositingActive = connection->getSelectionOwner(m_net_wm_cm_atom);
 
@@ -188,7 +187,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     , m_forcedDpi(-1)
     , m_pixelDensity(1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
-    , m_noFontHinting(false)
     , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
     , m_antialiasingEnabled(-1)
 {

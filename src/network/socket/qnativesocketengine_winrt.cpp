@@ -1306,10 +1306,12 @@ HRESULT QNativeSocketEnginePrivate::handleConnectOpFinished(IAsyncAction *action
     if (socketType != QAbstractSocket::TcpSocket)
         return S_OK;
 
+#ifndef QT_NO_SSL
     // Delay the reader so that the SSL socket can upgrade
     if (sslSocket)
         QObject::connect(qobject_cast<QSslSocket *>(sslSocket), &QSslSocket::encrypted, q, &QNativeSocketEngine::establishRead);
     else
+#endif
         q->establishRead();
     return S_OK;
 }

@@ -66,7 +66,7 @@ defineReplace(qtConfFunc_crossCompile) {
 
 defineTest(qtConfTest_architecture) {
     !qtConfTest_compile($${1}): \
-        error("Could not determine $$eval($${1}.description). See config.log for details.")
+        error("Could not determine $$eval($${1}.label). See config.log for details.")
 
     test = $$eval($${1}.test)
     test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR/$$test)
@@ -77,13 +77,13 @@ defineTest(qtConfTest_architecture) {
     else: android:exists($$test_out_dir/libarch.so): \
         content = $$cat($$test_out_dir/libarch.so, blob)
     else: \
-        error("$$eval($${1}.description) detection binary not found.")
+        error("$$eval($${1}.label) detection binary not found.")
 
     arch_magic = ".*==Qt=magic=Qt== Architecture:([^\\0]*).*"
     subarch_magic = ".*==Qt=magic=Qt== Sub-architecture:([^\\0]*).*"
 
     !contains(content, $$arch_magic)|!contains(content, $$subarch_magic): \
-        error("$$eval($${1}.description) detection binary does not contain expected data.")
+        error("$$eval($${1}.label) detection binary does not contain expected data.")
 
     $${1}.arch = $$replace(content, $$arch_magic, "\\1")
     $${1}.subarch = $$replace(content, $$subarch_magic, "\\1")
@@ -195,32 +195,8 @@ defineTest(qtConfTest_detectPkgConfig) {
 }
 
 defineTest(qtConfTest_neon) {
-    contains(config.tests.architecture.subarch, "neon"): return(true)
+    contains($${currentConfig}.tests.architecture.subarch, "neon"): return(true)
     return(false)
-}
-
-defineTest(qtConfTest_skipModules) {
-    $${1}.cache = -
-    export($${1}.cache)
-
-    skip =
-    uikit {
-        skip += qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples
-        !ios: skip += qtscript
-    }
-
-    for (m, config.input.skip) {
-        # normalize the command line input
-        m ~= s/^(qt)?/qt/
-        !exists($$_PRO_FILE_PWD_/../$$m) {
-            qtConfAddError("-skip command line argument called with non-existent module '$$m'.")
-            return(false)
-        }
-        skip += $$m
-    }
-    $${1}.value = $$unique(skip)
-    export($${1}.value)
-    return(true)
 }
 
 defineTest(qtConfTest_buildParts) {
@@ -244,16 +220,6 @@ defineTest(qtConfTest_buildParts) {
     $${1}.cache = -
     export($${1}.cache)
     return(true)
-}
-
-defineTest(qtConfLibrary_openssl) {
-    libs = $$getenv("OPENSSL_LIBS")
-    !isEmpty(libs) {
-        $${1}.libs = $$libs
-        export($${1}.libs)
-        return(true)
-    }
-    return(false)
 }
 
 defineTest(qtConfTest_checkCompiler) {
@@ -281,8 +247,11 @@ defineTest(qtConfTest_checkCompiler) {
         $${1}.compilerId = "icc"
         $${1}.compilerVersion = $$replace(version, "icpc version ([0-9.]+).*", "\\1")
     } else: msvc {
+        qtRunLoggedCommand("$$QMAKE_CXX /? 2>&1", version)|return(false)
+        version = "$$version"
         $${1}.compilerDescription = "MSVC"
         $${1}.compilerId = "cl"
+        $${1}.compilerVersion = $$replace(version, "^.*Compiler Version ([0-9.]+) for.*$", "\\1")
     } else {
         return(false)
     }
@@ -294,162 +263,6 @@ defineTest(qtConfTest_checkCompiler) {
     export($${1}.cache)
     return(true)
 }
-
-defineReplace(filterLibraryPath) {
-    str = $${1}
-    for (l, QMAKE_DEFAULT_LIBDIRS): \
-        str -= "-L$$l"
-
-    return($$str)
-}
-
-defineTest(qtConfLibrary_psqlConfig) {
-    pg_config = $$config.input.psql_config
-    isEmpty(pg_config): \
-        pg_config = $$qtConfFindInPath("pg_config")
-    !win32:!isEmpty(pg_config) {
-        qtRunLoggedCommand("$$pg_config --libdir", libdir)|return(false)
-        qtRunLoggedCommand("$$pg_config --includedir", includedir)|return(false)
-        libdir -= $$QMAKE_DEFAULT_LIBDIRS
-        libs =
-        !isEmpty(libdir): libs += "-L$$libdir"
-        libs += "-lpq"
-        $${1}.libs = "$$val_escape(libs)"
-        includedir -= $$QMAKE_DEFAULT_INCDIRS
-        $${1}.includedir = "$$val_escape(includedir)"
-        !isEmpty(includedir): \
-            $${1}.cflags = "-I$$val_escape(includedir)"
-        export($${1}.libs)
-        export($${1}.includedir)
-        export($${1}.cflags)
-        return(true)
-    }
-    return(false)
-}
-
-defineTest(qtConfLibrary_psqlEnv) {
-    # Respect PSQL_LIBS if set
-    PSQL_LIBS = $$getenv(PSQL_LIBS)
-    !isEmpty(PSQL_LIBS) {
-        $${1}.libs = $$PSQL_LIBS
-        export($${1}.libs)
-    }
-    return(true)
-}
-
-defineTest(qtConfLibrary_mysqlConfig) {
-    mysql_config = $$config.input.mysql_config
-    isEmpty(mysql_config): \
-        mysql_config = $$qtConfFindInPath("mysql_config")
-    !isEmpty(mysql_config) {
-        qtRunLoggedCommand("$$mysql_config --version", version)|return(false)
-        version = $$split(version, '.')
-        version = $$first(version)
-        isEmpty(version)|lessThan(version, 4): return(false)]
-
-        # query is either --libs or --libs_r
-        query = $$eval($${1}.query)
-        qtRunLoggedCommand("$$mysql_config $$query", libs)|return(false)
-        qtRunLoggedCommand("$$mysql_config --include", includedir)|return(false)
-        eval(libs = $$libs)
-        libs = $$filterLibraryPath($$libs)
-        # -rdynamic should not be returned by mysql_config, but is on RHEL 6.6
-        libs -= -rdynamic
-        $${1}.libs = "$$val_escape(libs)"
-        eval(includedir = $$includedir)
-        includedir ~= s/^-I//g
-        includedir -= $$QMAKE_DEFAULT_INCDIRS
-        $${1}.includedir = "$$val_escape(includedir)"
-        !isEmpty(includedir): \
-            $${1}.cflags = "-I$$val_escape(includedir)"
-        export($${1}.libs)
-        export($${1}.includedir)
-        export($${1}.cflags)
-        return(true)
-    }
-    return(false)
-}
-
-defineTest(qtConfLibrary_sybaseEnv) {
-    libs =
-    sybase = $$getenv(SYBASE)
-    !isEmpty(sybase): \
-        libs += "-L$${sybase}/lib"
-    libs += $$getenv(SYBASE_LIBS)
-    !isEmpty(libs) {
-        $${1}.libs = "$$val_escape(libs)"
-        export($${1}.libs)
-    }
-    return(true)
-}
-
-# Check for Direct X SDK (include, lib, and direct shader compiler 'fxc').
-# Up to Direct X SDK June 2010 and for MinGW, this is pointed to by the
-# DXSDK_DIR variable. Starting with Windows Kit 8, it is included in
-# the Windows SDK. Checking for the header is not sufficient, since it
-# is also present in MinGW.
-defineTest(qtConfTest_directX) {
-    dxdir = $$getenv("DXSDK_DIR")
-    !isEmpty(dxdir) {
-        EXTRA_INCLUDEPATH += $$dxdir/include
-        arch = $$qtConfEvaluate("tests.architecture.arch")
-        equals(arch, x86_64): \
-            EXTRA_LIBDIR += $$dxdir/lib/x64
-        else: \
-            EXTRA_LIBDIR += $$dxdir/lib/x86
-        EXTRA_PATH += $$dxdir/Utilities/bin/x86
-    }
-
-    $$qtConfEvaluate("features.sse2") {
-        ky = $$size($${1}.files._KEYS_)
-        $${1}.files._KEYS_ += $$ky
-        # Not present on MinGW-32
-        $${1}.files.$${ky} = "intrin.h"
-    }
-
-    qtConfTest_files($${1}): return(true)
-    return(false)
-}
-
-defineTest(qtConfTest_xkbConfigRoot) {
-    qtConfTest_getPkgConfigVariable($${1}): return(true)
-
-    for (dir, $$list("/usr/share/X11/xkb", "/usr/local/share/X11/xkb")) {
-        exists($$dir) {
-            $${1}.value = $$dir
-            export($${1}.value)
-            $${1}.cache += value
-            export($${1}.cache)
-            return(true)
-        }
-    }
-    return(false)
-}
-
-defineTest(qtConfTest_qpaDefaultPlatform) {
-    name =
-    !isEmpty(config.input.qpa_default_platform): name = $$config.input.qpa_default_platform
-    else: !isEmpty(QT_QPA_DEFAULT_PLATFORM): name = $$QT_QPA_DEFAULT_PLATFORM
-    else: winrt: name = winrt
-    else: win32: name = windows
-    else: android: name = android
-    else: osx: name = cocoa
-    else: ios: name = ios
-    else: qnx: name = qnx
-    else: integrity: name = integrityfb
-    else: name = xcb
-
-    $${1}.value = $$name
-    $${1}.plugin = q$$name
-    $${1}.name = "\"$$name\""
-    export($${1}.value)
-    export($${1}.plugin)
-    export($${1}.name)
-    $${1}.cache += value plugin name
-    export($${1}.cache)
-    return(true)
-}
-
 
 # custom outputs
 
@@ -488,25 +301,14 @@ defineTest(qtConfOutput_architecture) {
             "QT_ARCH = $$arch"
     }
 
-    config.output.publicPro += $$publicPro
-    export(config.output.publicPro)
-    config.output.privatePro += $$privatePro
-    export(config.output.privatePro)
+    $${currentConfig}.output.publicPro += $$publicPro
+    export($${currentConfig}.output.publicPro)
+    $${currentConfig}.output.privatePro += $$privatePro
+    export($${currentConfig}.output.privatePro)
 
     # setup QT_ARCH variable used by qtConfEvaluate
     QT_ARCH = $$arch
     export(QT_ARCH)
-}
-
-defineTest(qtConfOutput_styles) {
-    !$${2}: return()
-
-    style = $$replace($${1}.feature, "style-", "")
-    qtConfOutputVar(append, "privatePro", "styles", $$style)
-}
-
-defineTest(qtConfOutput_sqldriver) {
-    $${2}: qtConfOutputVar(append, "privatePro", "sql-drivers", $$eval($${1}.feature))
 }
 
 defineTest(qtConfOutput_qreal) {
@@ -523,15 +325,15 @@ defineTest(qtConfOutput_qreal) {
 defineTest(qtConfOutput_pkgConfig) {
     !$${2}: return()
 
-    PKG_CONFIG = $$eval(config.tests.pkg-config.pkgConfig)
+    PKG_CONFIG = $$eval($${currentConfig}.tests.pkg-config.pkgConfig)
     export(PKG_CONFIG)
     # this method also exports PKG_CONFIG_(LIB|SYSROOT)DIR, so that tests using pkgConfig will work correctly
-    PKG_CONFIG_SYSROOT_DIR = $$eval(config.tests.pkg-config.pkgConfigSysrootDir)
+    PKG_CONFIG_SYSROOT_DIR = $$eval($${currentConfig}.tests.pkg-config.pkgConfigSysrootDir)
     !isEmpty(PKG_CONFIG_SYSROOT_DIR) {
         qtConfOutputVar(assign, "publicPro", "PKG_CONFIG_SYSROOT_DIR", $$PKG_CONFIG_SYSROOT_DIR)
         export(PKG_CONFIG_SYSROOT_DIR)
     }
-    PKG_CONFIG_LIBDIR = $$eval(config.tests.pkg-config.pkgConfigLibdir)
+    PKG_CONFIG_LIBDIR = $$eval($${currentConfig}.tests.pkg-config.pkgConfigLibdir)
     !isEmpty(PKG_CONFIG_LIBDIR) {
         qtConfOutputVar(assign, "publicPro", "PKG_CONFIG_LIBDIR", $$PKG_CONFIG_LIBDIR)
         export(PKG_CONFIG_LIBDIR)
@@ -561,58 +363,21 @@ defineTest(qtConfOutput_debugAndRelease) {
 defineTest(qtConfOutput_compilerVersion) {
     !$${2}: return()
 
-    name = $$upper($$config.tests.compiler.compilerId)
-    version = $$config.tests.compiler.compilerVersion
+    name = $$upper($$eval($${currentConfig}.tests.compiler.compilerId))
+    version = $$eval($${currentConfig}.tests.compiler.compilerVersion)
     major = $$section(version, '.', 0, 0)
     minor = $$section(version, '.', 1, 1)
     patch = $$section(version, '.', 2, 2)
     isEmpty(minor): minor = 0
     isEmpty(patch): patch = 0
 
-    config.output.publicPro += \
+    $${currentConfig}.output.publicPro += \
         "QT_$${name}_MAJOR_VERSION = $$major" \
         "QT_$${name}_MINOR_VERSION = $$minor" \
         "QT_$${name}_PATCH_VERSION = $$patch"
 
-    export(config.output.publicPro)
+    export($${currentConfig}.output.publicPro)
 }
-
-# should go away when qfeatures.txt is ported
-defineTest(qtConfOutput_extraFeatures) {
-    isEmpty(config.input.extra_features): return()
-
-    # write to qconfig.pri
-    config.output.publicPro += "$${LITERAL_HASH}ifndef QT_BOOTSTRAPPED"
-    for (f, config.input.extra_features) {
-        feature = $$replace(f, "^no-", "")
-        FEATURE = $$upper($$replace(feature, -, _))
-        contains(f, "^no-.*") {
-            config.output.publicPro += \
-                "$${LITERAL_HASH}ifndef QT_NO_$$FEATURE" \
-                "$${LITERAL_HASH}define QT_NO_$$FEATURE" \
-                "$${LITERAL_HASH}endif"
-        } else {
-            config.output.publicPro += \
-                "$${LITERAL_HASH}if defined(QT_$$FEATURE) && defined(QT_NO_$$FEATURE)" \
-                "$${LITERAL_HASH}undef QT_$$FEATURE" \
-                "$${LITERAL_HASH}elif !defined(QT_$$FEATURE) && !defined(QT_NO_$$FEATURE)" \
-                "$${LITERAL_HASH}define QT_$$FEATURE" \
-                "$${LITERAL_HASH}endif"
-        }
-    }
-    config.output.publicPro += "$${LITERAL_HASH}endif"
-    export(config.output.publicPro)
-
-    # write to qmodule.pri
-    disabled_features =
-    for (f, config.input.extra_features) {
-        feature = $$replace(f, "^no-", "")
-        FEATURE = $$upper($$replace(feature, -, _))
-        contains(f, "^no-.*"): disabled_features += $$FEATURE
-    }
-    !isEmpty(disabled_features): qtConfOutputVar(assign, "privatePro", QT_NO_DEFINES, $$disabled_features)
-}
-
 
 defineTest(qtConfOutput_compilerFlags) {
     # this output also exports the variables locally, so that subsequent compiler tests can use them
@@ -650,8 +415,8 @@ defineTest(qtConfOutput_compilerFlags) {
         output += "EXTRA_FRAMEWORKPATH += $$val_escape(config.input.fpaths)"
     }
 
-    config.output.privatePro += $$output
-    export(config.output.privatePro)
+    $${currentConfig}.output.privatePro += $$output
+    export($${currentConfig}.output.privatePro)
 }
 
 defineTest(qtConfOutput_gccSysroot) {
@@ -671,21 +436,21 @@ defineTest(qtConfOutput_gccSysroot) {
         "    QMAKE_CXXFLAGS  += --sysroot=\$\$[QT_SYSROOT]" \
         "    QMAKE_LFLAGS    += --sysroot=\$\$[QT_SYSROOT]" \
         "}"
-    config.output.publicPro += $$output
-    export(config.output.publicPro)
+    $${currentConfig}.output.publicPro += $$output
+    export($${currentConfig}.output.publicPro)
 }
 
 defineTest(qtConfOutput_qmakeArgs) {
     !$${2}: return()
 
-    config.output.privatePro = "!host_build {"
+    $${currentConfig}.output.privatePro = "!host_build {"
     for (a, config.input.qmakeArgs) {
-        config.output.privatePro += "    $$a"
+        $${currentConfig}.output.privatePro += "    $$a"
         EXTRA_QMAKE_ARGS += $$system_quote($$a)
     }
-    config.output.privatePro += "}"
+    $${currentConfig}.output.privatePro += "}"
     export(EXTRA_QMAKE_ARGS)
-    export(config.output.privatePro)
+    export($${currentConfig}.output.privatePro)
 }
 
 defineTest(qtConfOutputPostProcess_publicPro) {
@@ -707,8 +472,8 @@ defineTest(qtConfOutputPostProcess_publicPro) {
             "QT_RELEASE_DATE = $$config.input.qt_release_date"
     }
 
-    config.output.publicPro += $$output
-    export(config.output.publicPro)
+    $${currentConfig}.output.publicPro += $$output
+    export($${currentConfig}.output.publicPro)
 }
 
 defineTest(qtConfOutputPostProcess_publicHeader) {
@@ -730,8 +495,8 @@ defineTest(qtConfOutputPostProcess_publicHeader) {
     !isEmpty(config.input.qt_libinfix): \
         output += "$${LITERAL_HASH}define QT_LIBINFIX \"$$eval(config.input.qt_libinfix)\""
 
-    config.output.publicHeader += $$output
-    export(config.output.publicHeader)
+    $${currentConfig}.output.publicHeader += $$output
+    export($${currentConfig}.output.publicHeader)
 }
 
 
@@ -749,7 +514,7 @@ defineTest(qtConfReport_buildTypeAndConfig) {
         qtConfAddReport("Building for: $$qtConfEvaluate('tests.architecture.arch')")
     }
     qtConfAddReport()
-    qtConfAddReport("Configuration: $$config.output.privatePro.append.CONFIG $$config.output.publicPro.append.QT_CONFIG")
+    qtConfAddReport("Configuration: $$eval($${currentConfig}.output.privatePro.append.CONFIG) $$eval($${currentConfig}.output.publicPro.append.QT_CONFIG)")
     qtConfAddReport()
 }
 
@@ -776,10 +541,10 @@ defineTest(qtConfReport_buildMode) {
 # ensure pristine environment for configuration
 discard_from($$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)
 discard_from($$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)
+# ... and cause them to be reloaded afterwards
+QMAKE_POST_CONFIGURE += \
+    "include(\$\$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)" \
+    "include(\$\$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)"
 
-# load and process input from configure
-exists("$$OUT_PWD/config.tests/configure.cfg") {
-    include("$$OUT_PWD/config.tests/configure.cfg")
-}
-
-load(qt_configure)
+# load and process input from configure.sh/.exe
+include($$shadowed($$PWD)/config.tests/configure.cfg)

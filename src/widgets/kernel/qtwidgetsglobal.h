@@ -41,6 +41,7 @@
 #define QTWIDGETSGLOBAL_H
 
 #include <QtGui/qtguiglobal.h>
+#include <QtWidgets/qtwidgets-config.h>
 
 QT_BEGIN_NAMESPACE
 

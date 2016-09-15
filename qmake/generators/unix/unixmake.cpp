@@ -194,6 +194,18 @@ UnixMakefileGenerator::init()
                 if (!language.isEmpty()) {
                     pchFlags.replace(QLatin1String("${QMAKE_PCH_OUTPUT}"),
                                      escapeFilePath(pchBaseName + language + headerSuffix));
+                    const ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
+                    for (const ProString &arch : pchArchs) {
+                        QString suffix = headerSuffix;
+                        suffix.replace(QLatin1String("${QMAKE_PCH_ARCH}"), arch.toQString());
+                        if (project->isActiveConfig("clang_pch_style")
+                            && (suffix.endsWith(QLatin1String(".pch"))
+                                || suffix.endsWith(QLatin1String(".gch")))) {
+                            suffix.chop(4); // must omit header suffix for -include to recognize the PCH
+                        }
+                        pchFlags.replace(QLatin1String("${QMAKE_PCH_OUTPUT_") + arch + QLatin1Char('}'),
+                                         escapeFilePath(pchBaseName + language + suffix));
+                    }
                 }
             }
 
@@ -351,9 +363,17 @@ QStringList
                     if (!file.endsWith(extension.toQString()))
                         continue;
 
-                    QString precompiledHeader = header_prefix + language + header_suffix;
-                    if (!ret.contains(precompiledHeader))
-                        ret += precompiledHeader;
+                    ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
+                    if (pchArchs.isEmpty())
+                        pchArchs << ProString(); // normal single-arch PCH
+                    for (const ProString &arch : qAsConst(pchArchs)) {
+                        QString suffix = header_suffix;
+                        if (!arch.isEmpty())
+                            suffix.replace(QLatin1String("${QMAKE_PCH_ARCH}"), arch.toQString());
+                        QString precompiledHeader = header_prefix + language + suffix;
+                        if (!ret.contains(precompiledHeader))
+                            ret += precompiledHeader;
+                    }
 
                     goto foundPrecompiledDependency;
                 }

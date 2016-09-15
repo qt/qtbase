@@ -59,10 +59,10 @@ public:
 
     void retranslateUi(QDialog *MyDialog)
     {
-        MyDialog->setWindowTitle(QApplication::translate("MyDialog", "Mach 2!", 0));
-        aLabel->setText(QApplication::translate("MyDialog", "Join the life in the fastlane; - PCH enable your project today! -", 0));
-        aButton->setText(QApplication::translate("MyDialog", "&Quit", 0));
-        aButton->setShortcut(QApplication::translate("MyDialog", "Alt+Q", 0));
+        MyDialog->setWindowTitle(QApplication::translate("MyDialog", "Mach 2!", Q_NULLPTR));
+        aLabel->setText(QApplication::translate("MyDialog", "Join the life in the fastlane; - PCH enable your project today! -", Q_NULLPTR));
+        aButton->setText(QApplication::translate("MyDialog", "&Quit", Q_NULLPTR));
+        aButton->setShortcut(QApplication::translate("MyDialog", "Alt+Q", Q_NULLPTR));
     } // retranslateUi
 
 };

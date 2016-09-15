@@ -80,10 +80,6 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
-    app.generateMakefiles();
-    if( !app.isOk() )
-        return 2;
-
     return 0;
 }
 

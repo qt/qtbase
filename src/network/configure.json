@@ -1,0 +1,274 @@
+{
+    "module": "network",
+    "depends": [
+        "core"
+    ],
+    "testDir": "../../config.tests",
+
+    "commandline": {
+        "assignments": {
+            "OPENSSL_LIBS": "openssl.libs",
+            "OPENSSL_LIBS_DEBUG": "openssl.libs.debug",
+            "OPENSSL_LIBS_RELEASE": "openssl.libs.release",
+            "OPENSSL_PATH": "openssl.prefix"
+        },
+        "options": {
+            "libproxy": "boolean",
+            "openssl": { "type": "optionalString", "values": [ "no", "yes", "linked", "runtime" ] },
+            "openssl-linked": { "type": "void", "name": "openssl", "value": "linked" },
+            "openssl-runtime": { "type": "void", "name": "openssl", "value": "runtime" },
+            "sctp": "boolean",
+            "securetransport": "boolean",
+            "ssl": "boolean",
+            "system-proxies": "boolean"
+        }
+    },
+
+    "libraries": {
+        "corewlan": {
+            "label": "CoreWLan",
+            "export": "",
+            "test": "mac/corewlan",
+            "sources": [
+                "-framework CoreWLAN -framework Foundation"
+            ]
+        },
+        "network": {
+            "export": "",
+            "sources": [
+                { "type": "makeSpec", "spec": "NETWORK" }
+            ]
+        },
+        "libproxy": {
+            "label": "libproxy",
+            "test": "common/libproxy",
+            "sources": [
+                "-lproxy"
+            ]
+        },
+        "openssl": {
+            "label": "OpenSSL Libraries",
+            "export": "",
+            "sources": [
+                { "type": "openssl" },
+                {
+                    "comment": "placeholder for OPENSSL_LIBS{,_{DEBUG,RELEASE}}",
+                    "libs": "",
+                    "builds": {
+                        "debug": "",
+                        "release": ""
+                    },
+                    "condition": "config.win32 && !features.shared"
+                },
+                { "libs": "-lssleay32 -llibeay32", "condition": "config.win32 && features.shared" },
+                { "libs": "-lssl -lcrypto", "condition": "!config.win32" }
+            ]
+        }
+    },
+
+    "tests": {
+        "getaddrinfo": {
+            "label": "getaddrinfo()",
+            "type": "compile",
+            "test": "unix/getaddrinfo",
+            "use": "network"
+        },
+        "getifaddrs": {
+            "label": "getifaddrs()",
+            "type": "compile",
+            "test": "unix/getifaddrs",
+            "use": "network"
+        },
+        "ipv6ifname": {
+            "label": "IPv6 ifname",
+            "type": "compile",
+            "test": "unix/ipv6ifname",
+            "use": "network"
+        },
+        "openssl": {
+            "label": "OpenSSL",
+            "type": "compile",
+            "test": "unix/openssl"
+        },
+        "sctp": {
+            "label": "SCTP support",
+            "type": "compile",
+            "test": "unix/sctp",
+            "use": "network"
+        }
+    },
+
+    "features": {
+        "corewlan": {
+            "label": "CoreWLan",
+            "condition": "libs.corewlan",
+            "emitIf": "config.darwin",
+            "output": [ "feature", "privateFeature" ]
+        },
+        "getaddrinfo": {
+            "label": "getaddrinfo()",
+            "condition": "tests.getaddrinfo",
+            "output": [ "feature" ]
+        },
+        "getifaddrs": {
+            "label": "getifaddrs()",
+            "condition": "tests.getifaddrs",
+            "output": [ "feature" ]
+        },
+        "ipv6ifname": {
+            "label": "IPv6 ifname",
+            "condition": "tests.ipv6ifname",
+            "output": [ "feature" ]
+        },
+        "libproxy": {
+            "label": "libproxy",
+            "autoDetect": false,
+            "condition": "libs.libproxy",
+            "output": [ "privateFeature" ]
+        },
+        "openssl": {
+            "label": "OpenSSL",
+            "enable": "input.openssl == 'yes' || input.openssl == 'linked' || input.openssl == 'runtime'",
+            "disable": "input.openssl == 'no' || input.ssl == 'no'",
+            "autoDetect": "!config.winrt",
+            "condition": "!features.securetransport && tests.openssl",
+            "output": [
+                "privateFeature",
+                { "type": "publicQtConfig", "condition": "!features.openssl-linked" },
+                { "type": "define", "negative": true, "name": "QT_NO_OPENSSL" }
+            ]
+        },
+        "openssl-linked": {
+            "label": "  Qt directly linked to OpenSSL",
+            "enable": "input.openssl == 'linked'",
+            "disable": "input.openssl != 'linked'",
+            "condition": "features.openssl && libs.openssl",
+            "output": [
+                "privateFeature",
+                { "type": "varAssign", "name": "OPENSSL_LIBS", "value": "libs.openssl.libs", "eval": "true" },
+                { "type": "varAssign", "name": "OPENSSL_LIBS_DEBUG", "value": "libs.openssl.builds.debug.libs",
+                  "eval": "true", "condition": "config.win32" },
+                { "type": "varAssign", "name": "OPENSSL_LIBS_RELEASE", "value": "libs.openssl.builds.release.libs",
+                  "eval": "true", "condition": "config.win32" },
+                { "type": "define", "name": "QT_LINKED_OPENSSL" }
+            ]
+        },
+        "securetransport": {
+            "label": "SecureTransport",
+            "disable": "input.securetransport == 'no' || input.ssl == 'no'",
+            "condition": "config.darwin && (input.openssl == '' || input.openssl == 'no')",
+            "output": [
+                "privateFeature",
+                { "type": "define", "name": "QT_SECURETRANSPORT" }
+            ]
+        },
+        "ssl": {
+            "label": "SSL",
+            "condition": "config.winrt || features.securetransport || features.openssl",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "sctp": {
+            "label": "SCTP",
+            "autoDetect": false,
+            "condition": "tests.sctp",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "system-proxies": {
+            "label": "Use system proxies",
+            "output": [ "privateFeature" ]
+        },
+        "ftp": {
+            "label": "FTP",
+            "purpose": "Provides support for the File Transfer Protocol in QNetworkAccessManager.",
+            "section": "Networking",
+            "condition": "features.textdate",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "http": {
+            "label": "HTTP",
+            "purpose": "Provides support for the Hypertext Transfer Protocol in QNetworkAccessManager.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "udpsocket": {
+            "label": "QUdpSocket",
+            "purpose": "Provides access to UDP sockets.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "networkproxy": {
+            "label": "QNetworkProxy",
+            "purpose": "Provides network proxy support.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "socks5": {
+            "label": "SOCKS5",
+            "purpose": "Provides SOCKS5 support in QNetworkProxy.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "networkinterface": {
+            "label": "QNetworkInterface",
+            "purpose": "Supports enumerating a host's IP addresses and network interfaces.",
+            "section": "Networking",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "networkdiskcache": {
+            "label": "QNetworkDiskCache",
+            "purpose": "Provides a disk cache for network resources.",
+            "section": "Networking",
+            "condition": "features.temporaryfile",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "bearermanagement": {
+            "label": "Bearer management",
+            "purpose": "Provides bearer management for the network stack.",
+            "section": "Networking",
+            "condition": "features.library && features.networkinterface && features.properties",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "localserver": {
+            "label": "QLocalServer",
+            "purpose": "Provides a local socket based server.",
+            "section": "Networking",
+            "condition": "features.temporaryfile",
+            "output": [ "publicFeature", "feature" ]
+        }
+    },
+
+    "report": [
+        {
+            "type": "note",
+            "condition": "features.openssl-linked && libs.openssl.source != 0
+                          && input.openssl.prefix == '' && input.openssl.libs == '' && input.openssl.libs.debug == ''",
+            "message": "When linking against OpenSSL, you can override the default
+library names through OPENSSL_LIBS.
+For example:
+    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
+        }
+    ],
+
+    "summary": [
+        {
+            "section": "Qt Network",
+            "entries": [
+                {
+                    "type": "feature",
+                    "args": "corewlan",
+                    "condition": "config.darwin"
+                },
+                "getaddrinfo", "getifaddrs", "ipv6ifname", "libproxy",
+                {
+                    "type": "feature",
+                    "args": "securetransport",
+                    "condition": "config.darwin"
+                },
+                "openssl",
+                "openssl-linked",
+                "sctp",
+                "system-proxies"
+            ]
+        }
+    ]
+}

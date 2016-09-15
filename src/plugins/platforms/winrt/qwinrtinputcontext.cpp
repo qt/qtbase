@@ -39,6 +39,7 @@
 
 #include "qwinrtinputcontext.h"
 #include "qwinrtscreen.h"
+#include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <private/qeventdispatcher_winrt_p.h>
 
@@ -59,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods")
 
-inline QRectF getInputPaneRect(IInputPane *pane, qreal scaleFactor)
+inline QRectF getInputPaneRect(ComPtr<IInputPane> pane, qreal scaleFactor)
 {
     Rect rect;
     pane->get_OccludedRect(&rect);
@@ -85,28 +86,32 @@ QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
 {
     qCDebug(lcQpaInputMethods) << __FUNCTION__ << screen;
 
-    IInputPaneStatics *statics;
+    ComPtr<IInputPaneStatics> statics;
     if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_InputPane).Get(),
                                     &statics))) {
         qWarning("failed to retrieve input pane statics.");
         return;
     }
 
-    IInputPane *inputPane;
+    ComPtr<IInputPane> inputPane;
     statics->GetForCurrentView(&inputPane);
-    statics->Release();
     if (inputPane) {
-        EventRegistrationToken showToken, hideToken;
-        inputPane->add_Showing(Callback<InputPaneVisibilityHandler>(
-                                   this, &QWinRTInputContext::onShowing).Get(), &showToken);
-        inputPane->add_Hiding(Callback<InputPaneVisibilityHandler>(
-                                  this, &QWinRTInputContext::onHiding).Get(), &hideToken);
+        QEventDispatcherWinRT::runOnXamlThread([this, inputPane]() {
+            EventRegistrationToken showToken, hideToken;
+            inputPane->add_Showing(Callback<InputPaneVisibilityHandler>(
+                this, &QWinRTInputContext::onShowing).Get(), &showToken);
+            inputPane->add_Hiding(Callback<InputPaneVisibilityHandler>(
+                this, &QWinRTInputContext::onHiding).Get(), &hideToken);
+            return S_OK;
+        });
 
         m_keyboardRect = getInputPaneRect(inputPane, m_screen->scaleFactor());
         m_isInputPanelVisible = !m_keyboardRect.isEmpty();
     } else {
         qWarning("failed to retrieve InputPane.");
     }
+    connect(QGuiApplication::inputMethod(), &QInputMethod::cursorRectangleChanged,
+            this, &QWinRTInputContext::updateScreenCursorRect);
 }
 
 QRectF QWinRTInputContext::keyboardRect() const
@@ -117,6 +122,11 @@ QRectF QWinRTInputContext::keyboardRect() const
 bool QWinRTInputContext::isInputPanelVisible() const
 {
     return m_isInputPanelVisible;
+}
+
+void QWinRTInputContext::updateScreenCursorRect()
+{
+    m_screen->setCursorRect(QGuiApplication::inputMethod()->cursorRectangle());
 }
 
 HRESULT QWinRTInputContext::onShowing(IInputPane *pane, IInputPaneVisibilityEventArgs *)
@@ -141,6 +151,7 @@ HRESULT QWinRTInputContext::handleVisibilityChange(IInputPane *pane)
     const QRectF keyboardRect = getInputPaneRect(pane, m_screen->scaleFactor());
     if (m_keyboardRect != keyboardRect) {
         m_keyboardRect = keyboardRect;
+        m_screen->setKeyboardRect(m_keyboardRect);
         emitKeyboardRectChanged();
     }
     return S_OK;

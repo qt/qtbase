@@ -93,9 +93,9 @@ void QConnmanEngine::initialize()
     connect(connmanManager,SIGNAL(servicesReady(QStringList)),this,SLOT(servicesReady(QStringList)));
     connect(connmanManager,SIGNAL(scanFinished(bool)),this,SLOT(finishedScan(bool)));
 
-    foreach (const QString &servPath, connmanManager->getServices()) {
+    const auto servPaths = connmanManager->getServices();
+    for (const QString &servPath : servPaths)
         addServiceConfiguration(servPath);
-    }
     Q_EMIT updateCompleted();
 }
 
@@ -115,9 +115,8 @@ void QConnmanEngine::changedModem()
 void QConnmanEngine::servicesReady(const QStringList &list)
 {
     QMutexLocker locker(&mutex);
-    foreach (const QString &servPath, list) {
+    for (const QString &servPath : list)
         addServiceConfiguration(servPath);
-    }
 
     Q_EMIT updateCompleted();
 }
@@ -329,7 +328,8 @@ QNetworkSessionPrivate *QConnmanEngine::createSessionBackend()
 QNetworkConfigurationPrivatePointer QConnmanEngine::defaultConfiguration()
 {
     const QMutexLocker locker(&mutex);
-    Q_FOREACH (const QString &servPath, connmanManager->getServices()) {
+    const auto servPaths = connmanManager->getServices();
+    for (const QString &servPath : servPaths) {
         if (connmanServiceInterfaces.contains(servPath)) {
             if (accessPointConfigurations.contains(servPath))
                 return accessPointConfigurations.value(servPath);
@@ -461,7 +461,8 @@ QNetworkConfiguration::BearerType QConnmanEngine::ofonoTechToBearerType(const QS
 
 bool QConnmanEngine::isRoamingAllowed(const QString &context)
 {
-    foreach (const QString &dcPath, ofonoContextManager->contexts()) {
+    const auto dcPaths = ofonoContextManager->contexts();
+    for (const QString &dcPath : dcPaths) {
         if (dcPath.contains(context.section("_",-1))) {
             return ofonoContextManager->roamingAllowed();
         }
@@ -557,7 +558,8 @@ bool QConnmanEngine::requiresPolling() const
 
 void QConnmanEngine::reEvaluateCellular()
 {
-    Q_FOREACH (const QString &servicePath, connmanManager->getServices()) {
+    const auto servicePaths = connmanManager->getServices();
+    for (const QString &servicePath : servicePaths) {
         if (servicePath.contains("cellular") && accessPointConfigurations.contains(servicePath)) {
             configurationChange(connmanServiceInterfaces.value(servicePath));
         }

@@ -1,0 +1,1095 @@
+{
+    "module": "gui",
+    "depends": [
+        "core"
+    ],
+    "testDir": "../../config.tests",
+
+    "commandline": {
+        "options": {
+            "angle": "boolean",
+            "directfb": "boolean",
+            "directwrite": "boolean",
+            "egl": "boolean",
+            "eglfs": "boolean",
+            "evdev": "boolean",
+            "fontconfig": "boolean",
+            "freetype": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "gbm": "boolean",
+            "gif": "boolean",
+            "harfbuzz": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "ico": "boolean",
+            "imf": { "type": "boolean", "name": "qqnx_imf" },
+            "kms": "boolean",
+            "lgmon": "boolean",
+            "libinput": "boolean",
+            "libjpeg": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "libpng": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "linuxfb": "boolean",
+            "mirclient": "boolean",
+            "mtdev": "boolean",
+            "opengl": { "type": "optionalString", "values": [ "no", "yes", "desktop", "es2", "dynamic" ] },
+            "opengl-es-2": { "type": "void", "name": "opengl", "value": "es2" },
+            "opengles3": "boolean",
+            "qpa": { "type": "string", "name": "qpa_default_platform" },
+            "qpa-platform-guard": "boolean",
+            "sm": { "type": "boolean", "name": "sessionmanager" },
+            "tslib": "boolean",
+            "xcb": { "type": "enum", "values": [ "no", "yes", "qt", "system" ] },
+            "xcb-xlib": "boolean",
+            "xinput2": "boolean",
+            "xkb": "boolean",
+            "xkb-config-root": "string",
+            "xkbcommon": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "xkbcommon-evdev": "boolean",
+            "xkbcommon-x11": { "type": "enum", "name": "xkbcommon", "values": [ "no", "qt", "system" ] },
+            "xrender": "boolean"
+        }
+    },
+
+    "libraries": {
+        "bcm_host": {
+            "export": "",
+            "sources": [
+                "-lbcm_host"
+            ]
+        },
+        "directfb": {
+            "label": "DirectFB",
+            "test": "qpa/directfb",
+            "sources": [
+                { "type": "pkgConfig", "args": "directfb" }
+            ]
+        },
+        "directwrite": {
+            "label": "DirectWrite",
+            "export": "",
+            "test": "win/directwrite",
+            "sources": [
+                "-ldwrite"
+            ]
+        },
+        "drm": {
+            "label": "KMS",
+            "test": "qpa/kms",
+            "sources": [
+                { "type": "pkgConfig", "args": "libdrm" },
+                "-ldrm"
+            ]
+        },
+        "egl": {
+            "label": "EGL",
+            "test": "qpa/egl",
+            "sources": [
+                { "type": "pkgConfig", "args": "egl" },
+                { "type": "makeSpec", "spec": "EGL" }
+            ]
+        },
+        "freetype": {
+            "label": "FreeType",
+            "export": "",
+            "test": "unix/freetype",
+            "sources": [
+                "-lfreetype"
+            ]
+        },
+        "fontconfig": {
+            "label": "Fontconfig",
+            "test": "unix/fontconfig",
+            "sources": [
+                { "type": "pkgConfig", "args": "fontconfig freetype2" },
+                "-lfontconfig -lfreetype"
+            ]
+        },
+        "gbm": {
+            "label": "GBM",
+            "test": "qpa/gbm",
+            "sources": [
+                { "type": "pkgConfig", "args": "gbm" }
+            ]
+        },
+        "harfbuzz": {
+            "label": "HarfBuzz",
+            "test": "unix/harfbuzz",
+            "sources": [
+                "-lharfbuzz"
+            ]
+        },
+        "imf": {
+            "label": "IMF",
+            "export": "",
+            "test": "unix/qqnx_imf",
+            "sources": [
+                "-linput_client"
+            ]
+        },
+        "lgmon": {
+            "label": "lgmon",
+            "test": "unix/lgmon",
+            "sources": [
+                "-llgmon"
+            ]
+        },
+        "libinput": {
+            "label": "libinput",
+            "test": "unix/libinput",
+            "sources": [
+                { "type": "pkgConfig", "args": "libinput" }
+            ]
+        },
+        "libjpeg": {
+            "label": "libjpeg",
+            "test": "unix/libjpeg",
+            "sources": [
+                { "libs": "-llibjpeg", "condition": "config.msvc" },
+                { "libs": "-ljpeg", "condition": "!config.msvc" }
+            ]
+        },
+        "libpng": {
+            "label": "libpng",
+            "test": "unix/libpng",
+            "sources": [
+                { "type": "pkgConfig", "args": "libpng" },
+                { "libs": "-llibpng", "condition": "config.msvc" },
+                { "libs": "-lpng", "condition": "!config.msvc" }
+            ]
+        },
+        "mirclient": {
+            "label": "Mir client libraries",
+            "export": "",
+            "test": "qpa/mirclient",
+            "sources": [
+                { "type": "pkgConfig", "args": "egl mirclient ubuntu-platform-api" }
+            ]
+        },
+        "mtdev": {
+            "label": "mtdev",
+            "export": "",
+            "test": "unix/mtdev",
+            "sources": [
+                { "type": "pkgConfig", "args": "mtdev" }
+            ]
+        },
+        "opengl": {
+            "label": "Desktop OpenGL",
+            "test": "unix/opengldesktop",
+            "sources": [
+                { "type": "pkgConfig", "args": "gl" },
+                { "type": "makeSpec", "spec": "OPENGL" }
+            ]
+        },
+        "opengl_es2": {
+            "label": "OpenGL ES 2.0",
+            "test": "unix/opengles2",
+            "sources": [
+                { "type": "pkgConfig", "args": "glesv2" },
+                { "type": "makeSpec", "spec": "OPENGL_ES2" }
+            ]
+        },
+        "tslib": {
+            "label": "tslib",
+            "test": "unix/tslib",
+            "sources": [
+                "-lts"
+            ]
+        },
+        "wayland_server": {
+            "label": "Wayland Server",
+            "export": "",
+            "test": "qpa/wayland-server",
+            "sources": [
+                { "type": "pkgConfig", "args": "wayland-server" }
+            ]
+        },
+        "x11sm": {
+            "label": "X11 session management",
+            "sources": [
+                { "type": "pkgConfig", "args": "sm ice" }
+            ]
+        },
+        "xcb": {
+            "label": "XCB >= 1.5 (core)",
+            "test": "qpa/xcb",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb >= 1.5" },
+                "-lxcb"
+            ]
+        },
+        "xcb_syslibs": {
+            "label": "XCB (secondary)",
+            "test": "qpa/xcb-syslibs",
+            "sources": [
+                { "type": "pkgConfig",
+                  "args": "xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape" },
+                "-lxcb -lxcb-shm -lxcb-sync -lxcb-xfixes -lxcb-randr -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-shape"
+            ]
+        },
+        "xcb_xlib": {
+            "label": "XCB Xlib",
+            "test": "qpa/xcb-xlib",
+            "sources": [
+                { "type": "pkgConfig", "args": "X11-xcb x11 xcb" },
+                "-lxcb -lX11 -lX11-xcb"
+            ]
+        },
+        "xcb_xkb": {
+            "label": "XCB XKB >= 1.10",
+            "test": "qpa/xcb-xkb",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-xkb >= 1.10 xcb" },
+                "-lxcb-xkb -lxcb"
+            ]
+        },
+        "xcb_render": {
+            "label": "XCB XRender",
+            "test": "qpa/xcb-render",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-renderutil xcb-render xcb" },
+                "-lxcb-render-util -lxcb-render -lxcb"
+            ]
+        },
+        "xcb_glx": {
+            "label": "XCB GLX",
+            "test": "qpa/xcb-glx",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-glx xcb" },
+                "-lxcb-glx -lxcb"
+            ]
+        },
+        "xinput2": {
+            "label": "Xinput2",
+            "test": "x11/xinput2",
+            "sources": [
+                { "type": "pkgConfig", "args": "xi" },
+                "-lXi"
+            ]
+        },
+        "xkbcommon": {
+            "label": "xkbcommon",
+            "export": "xkbcommon_evdev",
+            "test": "unix/xkbcommon",
+            "sources": [
+                { "type": "pkgConfig", "args": "xkbcommon" }
+            ]
+        },
+        "xkbcommon_x11": {
+            "label": "xkbcommon-x11 >= 0.4.1",
+            "export": "xkbcommon",
+            "sources": [
+                { "type": "pkgConfig", "args": "xkbcommon xkbcommon-x11 >= 0.4.1" }
+            ]
+        },
+        "xrender": {
+            "label": "XRender",
+            "test": "x11/xrender",
+            "sources": [
+                "-lXrender"
+            ]
+        }
+    },
+
+    "testTypeAliases": {
+        "files": [ "directX" ],
+        "getPkgConfigVariable": [ "xkbConfigRoot" ]
+    },
+
+    "tests": {
+        "direct2d": {
+            "label": "Direct 2D",
+            "type": "compile",
+            "test": "qpa/direct2d",
+            "use": "direct2d"
+        },
+        "directwrite2": {
+            "label": "DirectWrite 2",
+            "type": "compile",
+            "test": "win/directwrite2",
+            "use": "directwrite"
+        },
+        "directx": {
+            "label": "DirectX SDK",
+            "type": "directX",
+            "files": [
+                "d3dcompiler.h",
+                "d3d11.lib",
+                "fxc.exe"
+            ]
+        },
+        "egl-x11": {
+            "label": "EGL on X11",
+            "type": "compile",
+            "test": "qpa/egl-x11",
+            "use": "egl xcb_xlib"
+        },
+        "egl-brcm": {
+            "label": "Broadcom EGL (Rasberry Pi)",
+            "type": "compile",
+            "test": "qpa/eglfs-brcm",
+            "use": "egl bcm_host"
+        },
+        "egl-egldevice": {
+            "label": "EGLDevice",
+            "type": "compile",
+            "test": "qpa/eglfs-egldevice",
+            "use": "egl"
+        },
+        "egl-mali": {
+            "label": "Mali EGL",
+            "type": "compile",
+            "test": "qpa/eglfs-mali",
+            "use": "egl"
+        },
+        "egl-mali-2": {
+            "label": "Mali 2 EGL",
+            "type": "compile",
+            "test": "qpa/eglfs-mali-2",
+            "use": "egl"
+        },
+        "egl-viv": {
+            "label": "i.Mx6 EGL",
+            "type": "compile",
+            "test": "qpa/eglfs-viv",
+            "use": "egl"
+        },
+        "evdev": {
+            "label": "evdev",
+            "type": "compile",
+            "test": "unix/evdev"
+        },
+        "linuxfb": {
+            "label": "LinuxFB",
+            "type": "compile",
+            "test": "qpa/linuxfb"
+        },
+        "opengles3": {
+            "label": "OpenGL ES 3.0",
+            "type": "compile",
+            "test": "unix/opengles3",
+            "use": "opengl_es2"
+        },
+        "opengles31": {
+            "label": "OpenGL ES 3.1",
+            "type": "compile",
+            "test": "unix/opengles31",
+            "use": "opengl_es2"
+        },
+        "qpa_default_platform": {
+            "label": "default QPA platform",
+            "type": "qpaDefaultPlatform",
+            "log": "value"
+        },
+        "x11prefix": {
+            "label": "X11 prefix",
+            "type": "getPkgConfigVariable",
+            "pkg-config-args": "x11",
+            "pkg-config-variable": "prefix",
+            "value": "/usr",
+            "log": "value"
+        },
+        "xkbconfigroot": {
+            "label": "XKB config root",
+            "type": "xkbConfigRoot",
+            "pkg-config-args": "xkeyboard-config",
+            "pkg-config-variable": "xkb_base",
+            "log": "value"
+        },
+        "xlib": {
+            "label": "XLib",
+            "type": "compile",
+            "test": "x11/xlib"
+        }
+     },
+
+    "features": {
+        "accessibility-atspi-bridge": {
+            "label": "ATSPI Bridge",
+            "condition": "features.accessibility && features.xcb && features.dbus",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "angle": {
+            "label": "ANGLE",
+            "autoDetect": "features.opengles2 || features.opengl-dynamic",
+            "condition": "config.win32 && tests.directx",
+            "output": [
+                "publicFeature",
+                { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" }
+            ]
+        },
+        "directfb": {
+            "label": "DirectFB",
+            "autoDetect": false,
+            "condition": "libs.directfb",
+            "output": [ "privateFeature" ]
+        },
+        "directwrite": {
+            "label": "DirectWrite",
+            "emitIf": "config.win32",
+            "condition": "libs.directwrite",
+            "output": [ "privateFeature" ]
+        },
+        "directwrite2": {
+            "label": "DirectWrite 2",
+            "emitIf": "config.win32",
+            "condition": "features.directwrite && tests.directwrite2",
+            "output": [ "privateFeature" ]
+        },
+        "direct2d": {
+            "label": "Direct 2D",
+            "autoDetect": false,
+            "condition": "tests.direct2d",
+            "output": [ "privateFeature" ]
+        },
+        "evdev": {
+            "label": "evdev",
+            "condition": "tests.evdev",
+            "output": [ "privateFeature" ]
+        },
+        "freetype": {
+            "label": "FreeType",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "system-freetype": {
+            "label": "  Using system FreeType",
+            "enable": "input.freetype == 'system'",
+            "disable": "input.freetype == 'qt'",
+            "autoDetect": "!config.win32",
+            "condition": "features.freetype && libs.freetype",
+            "output": [ "privateFeature" ]
+        },
+        "fontconfig": {
+            "label": "Fontconfig",
+            "condition": "!config.win32 && !config.darwin && features.system-freetype && libs.fontconfig",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "gbm": {
+            "label": "GBM",
+            "condition": "libs.gbm",
+            "output": [ "publicQtConfig" ]
+        },
+        "harfbuzz": {
+            "label": "HarfBuzz",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "system-harfbuzz": {
+            "label": "  Using system HarfBuzz",
+            "enable": "input.harfbuzz == 'system'",
+            "disable": "input.harfbuzz == 'qt'",
+            "autoDetect": "!config.darwin && !config.win32",
+            "condition": "features.harfbuzz && libs.harfbuzz",
+            "output": [ "privateFeature" ]
+        },
+        "qqnx_imf": {
+            "label": "IMF",
+            "emitIf": "config.qnx",
+            "condition": "libs.imf",
+            "output": [ "privateConfig" ]
+        },
+        "integrityfb": {
+            "label": "INTEGRITY framebuffer",
+            "condition": "config.integrity",
+            "output": [ "privateFeature" ]
+        },
+        "kms": {
+            "label": "KMS",
+            "condition": "libs.drm",
+            "output": [ "publicQtConfig" ]
+        },
+        "libinput": {
+            "label": "libinput",
+            "condition": "features.libudev && libs.libinput",
+            "output": [ "privateFeature" ]
+        },
+        "lgmon": {
+            "label": "lgmon",
+            "emitIf": "config.qnx",
+            "condition": "libs.lgmon",
+            "output": [ "privateConfig" ]
+        },
+        "linuxfb": {
+            "label": "LinuxFB",
+            "condition": "tests.linuxfb",
+            "output": [ "privateFeature" ]
+        },
+        "mirclient": {
+            "label": "Mir client",
+            "condition": "libs.mirclient",
+            "output": [ "privateFeature" ]
+        },
+        "mtdev": {
+            "label": "mtdev",
+            "condition": "libs.mtdev",
+            "output": [ "privateFeature" ]
+        },
+        "opengles2": {
+            "label": "OpenGL ES 2.0",
+            "enable": "input.opengl == 'es2'",
+            "disable": "input.opengl == 'desktop' || input.opengl == 'dynamic' || input.opengl == 'no'",
+            "condition": "config.win32 || (!config.watchos && !features.opengl-desktop && libs.opengl_es2)",
+            "output": [
+                "publicFeature",
+                "publicQtConfig",
+                { "type": "define", "name": "QT_OPENGL_ES" },
+                { "type": "define", "name": "QT_OPENGL_ES_2" }
+            ]
+        },
+        "opengles3": {
+            "label": "OpenGL ES 3.0",
+            "condition": "features.opengles2 && !features.angle && tests.opengles3",
+            "output": [
+                "publicFeature",
+                { "type": "define", "name": "QT_OPENGL_ES_3" }
+            ]
+        },
+        "opengles31": {
+            "label": "OpenGL ES 3.1",
+            "condition": "features.opengles3 && tests.opengles31",
+            "output": [
+                "publicFeature",
+                { "type": "define", "name": "QT_OPENGL_ES_3_1" }
+            ]
+        },
+        "opengl-desktop": {
+            "label": "Desktop OpenGL",
+            "enable": "input.opengl == 'desktop'",
+            "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
+            "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl))
+                          || (!config.watchos && !config.win32 && libs.opengl)"
+        },
+        "opengl-dynamic": {
+            "label": "Dynamic OpenGL",
+            "enable": "input.opengl == 'dynamic'",
+            "autoDetect": false,
+            "condition": "config.win32 && !config.winrt",
+            "output": [
+                { "type": "publicFeature", "name": "dynamicgl" },
+                { "type": "define", "name": "QT_OPENGL_DYNAMIC" }
+            ]
+        },
+        "opengl": {
+            "label": "OpenGL",
+            "condition": "features.opengl-desktop || features.opengl-dynamic || features.opengles2",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "egl": {
+            "label": "EGL",
+            "condition": "features.opengl && (features.angle || libs.egl)",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "egl_x11": {
+            "label": "EGL on X11",
+            "condition": "features.egl && tests.egl-x11",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs": {
+            "label": "EGLFS",
+            "autoDetect": "!config.android && !config.win32",
+            "condition": "features.egl",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_brcm": {
+            "label": "EGLFS Rasberry Pi",
+            "condition": "features.eglfs && tests.egl-brcm",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_egldevice": {
+            "label": "EGLFS EGLDevice",
+            "condition": "features.eglfs && tests.egl-egldevice && features.kms",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_gbm": {
+            "label": "EGLFS GBM",
+            "condition": "features.eglfs && features.gbm && features.kms",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_mali": {
+            "label": "EGLFS Mali",
+            "condition": "features.eglfs && (tests.egl-mali || tests.egl-mali-2)",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_viv": {
+            "label": "EGLFS i.Mx6",
+            "condition": "features.eglfs && tests.egl-viv",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_viv_wl": {
+            "label": "EGLFS i.Mx6 Wayland",
+            "condition": "features.eglfs_viv && libs.wayland_server",
+            "output": [ "privateFeature" ]
+        },
+        "gif": {
+            "label": "GIF",
+            "output": [
+                "privateFeature",
+                { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_GIF" }
+            ]
+        },
+        "ico": {
+            "label": "ICO",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "jpeg": {
+            "label": "JPEG",
+            "disable": "input.libjpeg == 'no'",
+            "output": [
+                "privateFeature",
+                { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_JPEG" }
+            ]
+        },
+        "system-jpeg": {
+            "label": "  Using system libjpeg",
+            "disable": "input.libjpeg == 'qt'",
+            "enable": "input.libjpeg == 'system'",
+            "condition": "features.jpeg && libs.libjpeg",
+            "output": [ "privateFeature" ]
+        },
+        "png": {
+            "label": "PNG",
+            "disable": "input.libpng == 'no'",
+            "output": [
+                "privateFeature",
+                { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_PNG" }
+            ]
+        },
+        "system-png": {
+            "label": "  Using system libpng",
+            "disable": "input.libpng == 'qt'",
+            "enable": "input.libpng == 'system'",
+            "condition": "features.png && libs.libpng",
+            "output": [ "privateFeature" ]
+        },
+        "qpa_default_platform": {
+            "label": "QPA default platform",
+            "condition": "features.gui",
+            "output": [
+                { "type": "define", "name": "QT_QPA_DEFAULT_PLATFORM_NAME", "value": "tests.qpa_default_platform.name" },
+                { "type": "varAssign", "public": true, "name": "QT_DEFAULT_QPA_PLUGIN", "value": "tests.qpa_default_platform.plugin",
+                  "condition": "!features.shared" }
+            ]
+        },
+        "sessionmanager": {
+            "label": "Session Management",
+            "purpose": "Provides an interface to the windowing system's session management.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "tslib": {
+            "label": "tslib",
+            "condition": "libs.tslib",
+            "output": [ "privateFeature" ]
+        },
+        "xcb": {
+            "label": "XCB",
+            "autoDetect": "!config.darwin",
+            "condition": "libs.xcb",
+            "output": [ "privateFeature" ]
+        },
+        "system-xcb": {
+            "label": "Using system provided XCB libraries",
+            "enable": "input.xcb == 'system' || input.xcb == 'yes'",
+            "disable": "input.xcb == 'qt' || input.xcb == 'no'",
+            "autoDetect": "!config.darwin",
+            "condition": "libs.xcb && libs.xcb_syslibs",
+            "output": [ "privateFeature" ]
+        },
+        "x11-prefix": {
+            "label": "X11 prefix",
+            "emitIf": "features.xcb",
+            "output": [ { "type": "varAssign", "name": "QMAKE_X11_PREFIX", "value": "tests.x11prefix.value" } ]
+        },
+        "xcb-glx": {
+            "label": "XCB GLX",
+            "emitIf": "features.xcb",
+            "condition": "libs.xcb_glx",
+            "output": [ "privateFeature" ]
+        },
+        "xcb-render": {
+            "label": "XCB render",
+            "emitIf": "features.system-xcb",
+            "condition": "libs.xcb_render",
+            "output": [ "privateFeature" ]
+        },
+        "xcb-xlib": {
+            "label": "XCB Xlib",
+            "emitIf": "features.xcb",
+            "condition": "libs.xcb_xlib",
+            "output": [ "privateFeature" ]
+        },
+        "xcb-sm": {
+            "label": "xcb-sm",
+            "emitIf": "features.xcb",
+            "condition": "features.sessionmanager && libs.x11sm",
+            "output": [ "privateFeature" ]
+        },
+        "xinput2": {
+            "label": "Xinput2",
+            "condition": "libs.xinput2",
+            "output": [ "privateFeature" ]
+        },
+        "xkbcommon-evdev": {
+            "label": "xkbcommon-evdev",
+            "condition": "libs.xkbcommon",
+            "output": [ "privateFeature" ]
+        },
+        "xkbcommon-system": {
+            "label": "Using system-provided xkbcommon",
+            "emitIf": "features.xcb",
+            "enable": "input.xkbcommon == 'system'",
+            "disable": "input.xkbcommon == 'qt' || input.xkbcommon == 'no'",
+            "condition": "libs.xkbcommon_x11",
+            "output": [ "privateFeature" ]
+        },
+        "xkb": {
+            "label": "XCB XKB",
+            "condition": "features.system-xcb && libs.xcb_xkb",
+            "output": [ "privateFeature" ]
+        },
+        "xkb-config-root": {
+            "label": "XKB config root",
+            "emitIf": "features.xcb",
+            "condition": "features.xcb && !features.xkbcommon-system && tests.xkbconfigroot",
+            "output": [ { "type": "varAssign", "name": "QMAKE_XKB_CONFIG_ROOT", "value": "tests.xkbconfigroot.value"} ]
+        },
+        "xlib": {
+            "label": "XLib",
+            "condition": "tests.xlib",
+            "output": [ "privateFeature" ]
+        },
+        "xrender": {
+            "label": "Xrender",
+            "condition": "libs.xrender",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "texthtmlparser": {
+            "label": "HtmlParser",
+            "purpose": "Provides a parser for HTML.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "textodfwriter": {
+            "label": "OdfWriter",
+            "purpose": "Provides an ODF writer.",
+            "section": "Kernel",
+            "condition": "features.xmlstreamwriter",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "cssparser": {
+            "label": "CssParser",
+            "purpose": "Provides a parser for Cascading Style Sheets.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "draganddrop": {
+            "label": "Drag and Drop",
+            "purpose": "Supports the drag and drop mechansim.",
+            "section": "Kernel",
+            "condition": "features.imageformat_xpm",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "shortcut": {
+            "label": "QShortcut",
+            "purpose": "Provides keyboard accelerators and shortcuts.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "action": {
+            "label": "QAction",
+            "purpose": "Provides widget actions.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "cursor": {
+            "label": "QCursor",
+            "purpose": "Provides mouse cursors.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "clipboard": {
+            "label": "QClipboard",
+            "purpose": "Provides cut and paste operations.",
+            "section": "Kernel",
+            "condition": "!config.integrity && !config.qnx",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "wheelevent": {
+            "label": "QWheelEvent",
+            "purpose": "Supports wheel events.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "tabletevent": {
+            "label": "QTabletEvent",
+            "purpose": "Supports tablet events.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "im": {
+            "label": "QInputContext",
+            "purpose": "Provides complex input methods.",
+            "section": "Kernel",
+            "condition": "features.library",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "validator": {
+            "label": "QValidator",
+            "purpose": "Supports validation of input text.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "standarditemmodel": {
+            "label": "QStandardItemModel",
+            "purpose": "Provides a generic model for storing custom data.",
+            "section": "ItemViews",
+            "condition": "features.itemmodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformatplugin": {
+            "label": "QImageIOPlugin",
+            "purpose": "Provides a base for writing a image format plugins.",
+            "section": "Images",
+            "condition": "features.library",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "movie": {
+            "label": "QMovie",
+            "purpose": "Supports animated images.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_bmp": {
+            "label": "BMP Image Format",
+            "purpose": "Supports Microsoft's Bitmap image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_ppm": {
+            "label": "PPM Image Format",
+            "purpose": "Supports the Portable Pixmap image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_xbm": {
+            "label": "XBM Image Format",
+            "purpose": "Supports the X11 Bitmap image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_xpm": {
+            "label": "XPM Image Format",
+            "purpose": "Supports the X11 Pixmap image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_png": {
+            "label": "PNG Image Format",
+            "purpose": "Supports the Portable Network Graphics image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "imageformat_jpeg": {
+            "label": "JPEG Image Format",
+            "purpose": "Supports the Joint Photographic Experts Group image file format.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "image_heuristic_mask": {
+            "label": "QImage::createHeuristicMask()",
+            "purpose": "Supports creating a 1-bpp heuristic mask for images.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "image_text": {
+            "label": "Image Text",
+            "purpose": "Supports image file text strings.",
+            "section": "Images",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "picture": {
+            "label": "QPicture",
+            "purpose": "Supports recording and replaying QPainter commands.",
+            "section": "Painting",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "colornames": {
+            "label": "Color Names",
+            "purpose": "Supports color names such as \"red\", used by QColor and by some HTML documents.",
+            "section": "Painting",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "pdf": {
+            "label": "QPdf",
+            "purpose": "Provides a PDF backend for QPainter.",
+            "section": "Painting",
+            "condition": "features.temporaryfile",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "freetype": {
+            "label": "Freetype Font Engine",
+            "purpose": "Supports the FreeType 2 font engine (and its supported font formats).",
+            "section": "Fonts",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "desktopservices": {
+            "label": "QDesktopServices",
+            "purpose": "Provides methods for accessing common desktop services.",
+            "section": "Utilities",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "systemtrayicon": {
+            "label": "QSystemTrayIcon",
+            "purpose": "Provides an icon for an application in the system tray.",
+            "section": "Utilities",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "accessibility": {
+            "label": "Accessibility",
+            "purpose": "Provides accessibility support.",
+            "section": "Utilities",
+            "condition": "features.properties",
+            "output": [ "publicFeature", "feature" ]
+        }
+    },
+
+    "earlyReport": [
+        {
+            "type": "error",
+            "condition": "input.xcb != '' && input.xcb != 'no' && input.xkbcommon == 'no'",
+            "message": "XCB plugin requires libxkbcommon. See -qt-xkbcommon-x11 and -system-xkbcommon-x11."
+        }
+    ],
+
+    "report": [
+        {
+            "type": "warning",
+            "condition": "features.xcb && !features.xkbcommon-system && !features.xkb-config-root",
+            "message": "Could not find XKB config root, use -xkb-config-root to set a path to
+XKB configuration data. This is required for keyboard input support."
+        },
+        {
+            "type": "note",
+            "condition": "features.accessibility && features.xcb && !features.accessibility-atspi-bridge",
+            "message": "Disabling Linux Accessibility Bridge: D-Bus is missing."
+        },
+        {
+            "type": "warning",
+            "condition": "input.qpa-platform-guard != ''",
+            "message": "The [-no]-qpa-platform-guard argument is deprecated and has no effect."
+        },
+        {
+            "type": "warning",
+            "condition": "features.gui && config.linux && !config.android && !features.xcb && !features.eglfs && !features.directfb && !features.linuxfb && !features.mirclient",
+            "message": "No QPA platform plugin enabled! This will
+produce a Qt that cannot run GUI applications.
+The dependencies needed for xcb to build are listed in
+src/plugins/platforms/xcb/README"
+        },
+        {
+            "type": "warning",
+            "condition": "config.win32 && (features.opengles2 || features.opengl-dynamic) && !features.angle",
+            "message": "Using OpenGL ES 2.0 on Windows without ANGLE.
+The build will most likely fail.
+Specify -opengl desktop to use regular OpenGL."
+        },
+        {
+            "type": "warning",
+            "condition": "config.darwin && features.system-harfbuzz",
+            "message": "On OS X, AAT is supported only with -qt-harfbuzz."
+        },
+        {
+            "type": "error",
+            "condition": "features.gui && !config.watchos && input.opengl != 'no' && !features.opengl-desktop && !features.opengles2 && !features.opengl-dynamic",
+            "message": "The OpenGL functionality tests failed!
+You might need to modify the include and library search paths by editing QMAKE_INCDIR_OPENGL[_ES2],
+QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your platform."
+        }
+    ],
+
+    "summary": [
+        {
+            "section": "Qt Gui",
+            "entries": [
+                "freetype",
+                "system-freetype",
+                "harfbuzz",
+                "system-harfbuzz",
+                "fontconfig",
+                {
+                    "section": "Image formats",
+                    "entries": [
+                        "gif", "ico", "jpeg", "system-jpeg", "png", "system-png"
+                    ]
+                },
+                {
+                    "section": "OpenGL",
+                    "entries": [
+                        {
+                            "type": "feature",
+                            "args": "angle",
+                            "condition": "config.win32"
+                        },
+                        "egl",
+                        "opengl-desktop",
+                        {
+                            "type": "feature",
+                            "args": "opengl-dynamic",
+                            "condition": "config.win32"
+                        },
+                        "opengles2",
+                        "opengles3",
+                        "opengles31"
+                    ]
+                },
+                "sessionmanager"
+            ]
+        },
+        {
+            "section": "Features used by QPA backends",
+            "entries": [
+                "evdev",
+                "libinput",
+                "mtdev",
+                "tslib",
+                "xkbcommon-evdev"
+            ]
+        },
+        {
+            "section": "QPA backends",
+            "entries": [
+                "directfb", "eglfs",
+                {
+                    "section": "EGLFS details",
+                    "condition": "features.eglfs",
+                    "entries": [
+                        "eglfs_viv", "eglfs_viv_wl", "eglfs_egldevice", "eglfs_gbm", "eglfs_mali", "eglfs_brcm", "egl_x11"
+                    ]
+                },
+                "linuxfb", "mirclient",
+                {
+                    "message": "INTEGRITY framebuffer",
+                    "condition": "config.integrity",
+                    "args": "integrityfb"
+                },
+                {
+                    "section": "QNX",
+                    "condition": "config.qnx",
+                    "entries": [
+                        "lgmon", "qqnx_imf"
+                    ]
+                },
+                {
+                    "section": "X11",
+                    "condition": "features.xcb",
+                    "entries": [
+                        "system-xcb", "egl_x11", "xinput2", "xkb", "xlib", "xrender", "xcb-render", "xcb-glx", "xcb-xlib", "xkbcommon-system"
+                    ]
+                },
+                {
+                    "section": "Windows",
+                    "condition": "config.win32",
+                    "entries": [
+                        "direct2d", "directwrite", "directwrite2"
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -239,7 +239,7 @@ void tst_QImageWriter::writeImage2_data()
         foreach (const QString format, formats) {
             const QString fileName = QLatin1String("solidcolor_")
                 + QString::number(imgFormat) + QLatin1Char('.') + format;
-            QTest::newRow(fileName.toLatin1()) << fileName
+            QTest::newRow(fileName.toLatin1()) << writePrefix + fileName
                                                << format.toLatin1()
                                                << image;
         }
@@ -510,7 +510,7 @@ void tst_QImageWriter::saveToTemporaryFile()
     }
     {
         // 3) Via QImageWriter's API, with a named temp file
-        QTemporaryFile file("tempXXXXXX");
+        QTemporaryFile file(writePrefix + QLatin1String("tempXXXXXX"));
         QVERIFY2(file.open(), qPrintable(file.errorString()));
         QImageWriter writer(&file, "PNG");
         QVERIFY(writer.write(image));
@@ -518,7 +518,7 @@ void tst_QImageWriter::saveToTemporaryFile()
     }
     {
         // 4) Via QImage's API, with a named temp file
-        QTemporaryFile file("tempXXXXXX");
+        QTemporaryFile file(writePrefix + QLatin1String("tempXXXXXX"));
         QVERIFY2(file.open(), qPrintable(file.errorString()));
         QVERIFY(image.save(&file, "PNG"));
         file.reset();

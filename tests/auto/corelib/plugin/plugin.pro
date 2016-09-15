@@ -3,8 +3,7 @@ SUBDIRS=\
     qfactoryloader \
     quuid
 
-load(qfeatures)
-!contains(QT_DISABLED_FEATURES, library): SUBDIRS += \
+qtConfig(library): SUBDIRS += \
     qpluginloader \
     qplugin \
     qlibrary

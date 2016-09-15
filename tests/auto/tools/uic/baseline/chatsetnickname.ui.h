@@ -115,10 +115,10 @@ public:
 
     void retranslateUi(QDialog *NicknameDialog)
     {
-        NicknameDialog->setWindowTitle(QApplication::translate("NicknameDialog", "Set nickname", 0));
-        label->setText(QApplication::translate("NicknameDialog", "New nickname:", 0));
-        okButton->setText(QApplication::translate("NicknameDialog", "OK", 0));
-        cancelButton->setText(QApplication::translate("NicknameDialog", "Cancel", 0));
+        NicknameDialog->setWindowTitle(QApplication::translate("NicknameDialog", "Set nickname", Q_NULLPTR));
+        label->setText(QApplication::translate("NicknameDialog", "New nickname:", Q_NULLPTR));
+        okButton->setText(QApplication::translate("NicknameDialog", "OK", Q_NULLPTR));
+        cancelButton->setText(QApplication::translate("NicknameDialog", "Cancel", Q_NULLPTR));
     } // retranslateUi
 
 };

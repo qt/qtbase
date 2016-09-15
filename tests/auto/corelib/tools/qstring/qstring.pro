@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qstring
-QT = core testlib
+QT = core-private testlib
 SOURCES = tst_qstring.cpp
 DEFINES += QT_NO_CAST_TO_ASCII
 qtConfig(icu): DEFINES += QT_USE_ICU

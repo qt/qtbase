@@ -53,6 +53,8 @@
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 
+#ifndef QT_NO_PRINTER
+
 QT_BEGIN_NAMESPACE
 
 
@@ -73,5 +75,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif
 
 #endif // QPLATFORMPRINTPLUGIN_H

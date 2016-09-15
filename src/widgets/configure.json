@@ -1,0 +1,567 @@
+{
+    "module": "widgets",
+    "depends": [
+        "core-private",
+        "gui"
+    ],
+    "testDir": "../../config.tests",
+
+    "commandline": {
+        "options": {
+            "android-style-assets": "boolean",
+            "gtk": { "type": "boolean", "name": "gtk3" },
+            "style-windows": "boolean",
+            "style-windowsxp": "boolean",
+            "style-windowsvista": "boolean",
+            "style-fusion": "boolean",
+            "style-mac": "boolean",
+            "style-android": "boolean"
+        }
+    },
+
+    "libraries": {
+        "gtk3": {
+            "label": "GTK+",
+            "sources": [
+                { "type": "pkgConfig", "args": "gtk+-3.0" }
+            ]
+        }
+    },
+
+    "tests": {
+        "uxtheme": {
+            "label": "uxtheme.h",
+            "type": "files",
+            "files": [ "uxtheme.h" ]
+        }
+    },
+
+    "features": {
+        "gtk3": {
+            "label": "GTK+",
+            "autoDetect": "!config.darwin",
+            "condition": "features.glib && libs.gtk3",
+            "output": [ "privateFeature" ]
+        },
+        "style-fusion": {
+            "label": "Fusion",
+            "output": [ "styles" ]
+        },
+        "style-mac": {
+            "label": "macOS",
+            "condition": "config.osx",
+            "output": [ "styles" ]
+        },
+        "style-windows": {
+            "label": "Windows",
+            "output": [ "styles" ]
+        },
+        "style-windowsxp": {
+            "label": "WindowsXP",
+            "condition": "features.style-windows && config.win32 && !config.winrt && tests.uxtheme",
+            "output": [ "styles" ]
+        },
+        "style-windowsvista": {
+            "label": "WindowsVista",
+            "condition": "features.style-windowsxp",
+            "output": [ "styles" ]
+        },
+        "style-android": {
+            "label": "Android",
+            "autoDetect": "config.android",
+            "output": [ "styles" ]
+        },
+        "style-stylesheet": {
+            "label": "QStyleSheetStyle",
+            "purpose": "Provides a widget style which is configurable via CSS.",
+            "section": "Styles",
+            "condition": "features.style-windows && features.properties && features.cssparser",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "android-style-assets": {
+            "label": "Android Style Assets",
+            "condition": "features.style-android",
+            "output": [ "privateConfig" ]
+        },
+        "effects": {
+            "label": "Effects",
+            "purpose": "Provides special widget effects (e.g. fading and scrolling).",
+            "section": "Kernel"
+        },
+        "filesystemmodel": {
+            "label": "QFileSystemModel",
+            "purpose": "Provides a data model for the local filesystem.",
+            "section": "File I/O",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "itemviews": {
+            "label": "The Model/View Framework",
+            "purpose": "Provides the model/view architecture managing the relationship between data and the way it is presented to the user.",
+            "section": "ItemViews",
+            "condition": "features.itemmodel && features.rubberband && features.scrollarea",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "treewidget": {
+            "label": "QTreeWidget",
+            "purpose": "Provides views using tree models.",
+            "section": "Widgets",
+            "condition": "features.treeview",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "listwidget": {
+            "label": "QListWidget",
+            "purpose": "Provides item-based list widgets.",
+            "section": "Widgets",
+            "condition": "features.listview",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "tablewidget": {
+            "label": "QTableWidget",
+            "purpose": "Provides item-based table views.",
+            "section": "Widgets",
+            "condition": "features.tableview",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "datetimeedit": {
+            "label": "QDateTimeEdit",
+            "purpose": "Supports editing dates and times.",
+            "section": "Widgets",
+            "condition": "features.calendarwidget && features.datestring",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "stackedwidget": {
+            "label": "QStackedWidget",
+            "purpose": "Provides stacked widgets.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "textbrowser": {
+            "label": "QTextBrowser",
+            "purpose": "Supports HTML document browsing.",
+            "section": "Widgets",
+            "condition": "features.textedit",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "splashscreen": {
+            "label": "QSplashScreen",
+            "purpose": "Supports splash screens that can be shown during application startup.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "splitter": {
+            "label": "QSplitter",
+            "purpose": "Provides user controlled splitter widgets.",
+            "section": "Widgets",
+            "condition": "features.rubberband",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "lcdnumber": {
+            "label": "QLCDNumber",
+            "purpose": "Provides LCD-like digits.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "menu": {
+            "label": "QMenu",
+            "purpose": "Provides popup-menus.",
+            "section": "Widgets",
+            "condition": "features.action",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "lineedit": {
+            "label": "QLineEdit",
+            "purpose": "Provides single-line edits.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "spinbox": {
+            "label": "QSpinBox",
+            "purpose": "Provides spin boxes handling integers and discrete sets of values.",
+            "section": "Widgets",
+            "condition": "features.spinwidget && features.lineedit && features.validator",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "tabbar": {
+            "label": "QTabBar",
+            "purpose": "Provides tab bars, e.g., for use in tabbed dialogs.",
+            "section": "Widgets",
+            "condition": "features.toolbutton",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "tabwidget": {
+            "label": "QTabWidget",
+            "purpose": "Supports stacking tabbed widgets.",
+            "section": "Widgets",
+            "condition": "features.tabbar && features.stackedwidget",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "combobox": {
+            "label": "QComboBox",
+            "purpose": "Provides drop-down boxes presenting a list of options to the user.",
+            "section": "Widgets",
+            "condition": "features.lineedit && features.standarditemmodel && features.listview",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "fontcombobox": {
+            "label": "QFontComboBox",
+            "purpose": "Provides a combobox that lets the user select a font family.",
+            "section": "Widgets",
+            "condition": "features.combobox && features.stringlistmodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "toolbutton": {
+            "label": "QToolButton",
+            "purpose": "Provides quick-access buttons to commands and options.",
+            "section": "Widgets",
+            "condition": "features.action",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "toolbar": {
+            "label": "QToolBar",
+            "purpose": "Provides movable panels containing a set of controls.",
+            "section": "Widgets",
+            "condition": "features.mainwindow",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "toolbox": {
+            "label": "QToolBox",
+            "purpose": "Provides columns of tabbed widget items.",
+            "section": "Widgets",
+            "condition": "features.toolbutton && features.scrollarea",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "groupbox": {
+            "label": "QGroupBox",
+            "purpose": "Provides widget grouping boxes with frames.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "buttongroup": {
+            "label": "QButtonGroup",
+            "purpose": "Supports organizing groups of button widgets.",
+            "section": "Widgets",
+            "condition": "features.groupbox",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "mainwindow": {
+            "label": "QMainWindow",
+            "purpose": "Provides main application windows.",
+            "section": "Widgets",
+            "condition": "features.menu && features.resizehandler && features.toolbutton",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "dockwidget": {
+            "label": "QDockwidget",
+            "purpose": "Supports docking widgets inside a QMainWindow or floated as a top-level window on the desktop.",
+            "section": "Widgets",
+            "condition": "features.rubberband && features.mainwindow",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "mdiarea": {
+            "label": "QMdiArea",
+            "purpose": "Provides an area in which MDI windows are displayed.",
+            "section": "Widgets",
+            "condition": "features.scrollarea",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "resizehandler": {
+            "label": "QWidgetResizeHandler",
+            "purpose": "Provides an internal resize handler for dock widgets.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "statusbar": {
+            "label": "QStatusBar",
+            "purpose": "Supports presentation of status information.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "menubar": {
+            "label": "QMenuBar",
+            "purpose": "Provides pull-down menu items.",
+            "section": "Widgets",
+            "condition": "features.menu && features.toolbutton",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "contextmenu": {
+            "label": "Context menus",
+            "purpose": "Adds pop-up menus on right mouse click to numerous widgets.",
+            "section": "Widgets",
+            "condition": "features.menu",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "progressbar": {
+            "label": "QProgressBar",
+            "purpose": "Supports presentation of operation progress.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "slider": {
+            "label": "QSlider",
+            "purpose": "Provides sliders controlling a bounded value.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "scrollbar": {
+            "label": "QScrollBar",
+            "purpose": "Provides scrollbars allowing the user access parts of a document that is larger than the widget used to display it.",
+            "section": "Widgets",
+            "condition": "features.slider",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "dial": {
+            "label": "QDial",
+            "purpose": "Provides a rounded range control, e.g., like a speedometer.",
+            "section": "Widgets",
+            "condition": "features.slider",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "scrollarea": {
+            "label": "QScrollArea",
+            "purpose": "Supports scrolling views onto widgets.",
+            "section": "Widgets",
+            "condition": "features.scrollbar",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "graphicsview": {
+            "label": "QGraphicsView",
+            "purpose": "Provides a canvas/sprite framework.",
+            "section": "Widgets",
+            "condition": "features.scrollarea",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "graphicseffect": {
+            "label": "QGraphicsEffect",
+            "purpose": "Provides various graphics effects.",
+            "section": "Widgets",
+            "condition": "features.graphicsview",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "spinbox": {
+            "label": "QSpinBox",
+            "purpose": "Provides spinbox control widgets.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "textedit": {
+            "label": "QTextEdit",
+            "purpose": "Supports rich text editing.",
+            "section": "Widgets",
+            "condition": "features.scrollarea && features.properties",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "syntaxhighlighter": {
+            "label": "QSyntaxHighlighter",
+            "purpose": "Supports custom syntax highlighting.",
+            "section": "Widgets",
+            "condition": "features.textedit",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "rubberband": {
+            "label": "QRubberBand",
+            "purpose": "Supports using rubberbands to indicate selections and boundaries.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "tooltip": {
+            "label": "QToolTip",
+            "purpose": "Supports presentation of tooltips.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "statustip": {
+            "label": "Status Tip",
+            "purpose": "Supports status tip functionality and events.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "whatsthis": {
+            "label": "QWhatsThis",
+            "purpose": "Supports displaying \"What's this\" help.",
+            "section": "Widgets",
+            "condition": "features.toolbutton",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "sizegrip": {
+            "label": "QSizeGrip",
+            "purpose": "Provides corner-grips for resizing top-level windows.",
+            "section": "Widgets",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "calendarwidget": {
+            "label": "QCalendarWidget",
+            "purpose": "Provides a monthly based calendar widget allowing the user to select a date.",
+            "section": "Widgets",
+            "condition": "features.tableview && features.menu && features.textdate && features.spinbox && features.toolbutton",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "keysequenceedit": {
+            "label": "QKeySequenceEdit",
+            "purpose": "Provides a widget for editing QKeySequences.",
+            "section": "Widgets",
+            "condition": "features.lineedit && features.shortcut",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "messagebox": {
+            "label": "QMessageBox",
+            "purpose": "Provides message boxes displaying informative messages and simple questions.",
+            "section": "Dialogs",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "colordialog": {
+            "label": "QColorDialog",
+            "purpose": "Provides a dialog widget for specifying colors.",
+            "section": "Dialogs",
+            "condition": "features.spinbox",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "filedialog": {
+            "label": "QFileDialog",
+            "purpose": "Provides a dialog widget for selecting files or directories.",
+            "section": "Dialogs",
+            "condition": "features.dirmodel && features.treeview && features.combobox && features.toolbutton && features.buttongroup && features.tooltip && features.splitter && features.stackedwidget && features.proxymodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "fontdialog": {
+            "label": "QFontDialog",
+            "purpose": "Provides a dialog widget for selecting fonts.",
+            "section": "Dialogs",
+            "condition": "features.stringlistmodel && features.combobox && features.validator && features.groupbox",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "progressdialog": {
+            "label": "QProgressDialog",
+            "purpose": "Provides feedback on the progress of a slow operation.",
+            "section": "Dialogs",
+            "condition": "features.progressbar",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "inputdialog": {
+            "label": "QInputDialog",
+            "purpose": "Provides a simple convenience dialog to get a single value from the user.",
+            "section": "Dialogs",
+            "condition": "features.combobox && features.spinbox && features.stackedwidget",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "errormessage": {
+            "label": "QErrorMessage",
+            "purpose": "Provides an error message display dialog.",
+            "section": "Dialogs",
+            "condition": "features.textedit",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "wizard": {
+            "label": "QWizard",
+            "purpose": "Provides a framework for multi-page click-through dialogs.",
+            "section": "Dialogs",
+            "condition": "features.properties",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "dirmodel": {
+            "label": "QDirModel",
+            "purpose": "Provides a data model for the local filesystem.",
+            "section": "ItemViews",
+            "condition": "features.itemviews && features.filesystemmodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "listview": {
+            "label": "QListView",
+            "purpose": "Provides a list or icon view onto a model.",
+            "section": "ItemViews",
+            "condition": "features.itemviews",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "tableview": {
+            "label": "QTableView",
+            "purpose": "Provides a default model/view implementation of a table view.",
+            "section": "ItemViews",
+            "condition": "features.itemviews",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "treeview": {
+            "label": "QTreeView",
+            "purpose": "Provides a default model/view implementation of a tree view.",
+            "section": "ItemViews",
+            "condition": "features.itemviews",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "datawidgetmapper": {
+            "label": "QDataWidgetMapper",
+            "purpose": "Provides mapping between a section of a data model to widgets.",
+            "section": "ItemViews",
+            "condition": "features.itemviews && features.properties",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "columnview": {
+            "label": "QColumnView",
+            "purpose": "Provides a model/view implementation of a column view.",
+            "section": "ItemViews",
+            "condition": "features.listview",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "paint_debug": {
+            "label": "Painting Debug Utilities",
+            "purpose": "Enabled debugging painting with the environment variables QT_FLUSH_UPDATE and QT_FLUSH_PAINT.",
+            "section": "Painting",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "completer": {
+            "label": "QCompleter",
+            "purpose": "Provides completions based on an item model.",
+            "section": "Utilities",
+            "condition": "features.proxymodel",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "fscompleter": {
+            "label": "QFSCompleter",
+            "purpose": "Provides file name completion in QFileDialog.",
+            "section": "Utilities",
+            "condition": "features.filesystemmodel && features.completer",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "undocommand": {
+            "label": "QUndoCommand",
+            "purpose": "Applies (redo or) undo of a single change in a document.",
+            "section": "Utilities",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "undostack": {
+            "label": "QUndoStack",
+            "purpose": "Provides the ability to (redo or) undo a list of changes in a document.",
+            "section": "Utilities",
+            "condition": "features.undocommand",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "undogroup": {
+            "label": "QUndoGroup",
+            "purpose": "Provides the ability to cluster QUndoCommands.",
+            "section": "Utilities",
+            "condition": "features.undostack",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "undoview": {
+            "label": "QUndoView",
+            "purpose": "Provides a widget which shows the contents of an undo stack.",
+            "section": "Utilities",
+            "condition": "features.undostack && features.listview",
+            "output": [ "publicFeature", "feature" ]
+        }
+    },
+
+    "report": [
+    ],
+
+    "summary": [
+        {
+            "section": "Qt Widgets",
+            "entries": [
+                "gtk3",
+                {
+                    "message": "Styles",
+                    "type": "featureList",
+                    "args": "style-fusion style-mac style-windows style-windowsxp style-windowsvista style-android"
+                }
+            ]
+        }
+    ]
+}

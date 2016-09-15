@@ -1,6 +1,7 @@
 requires(qtHaveModule(network))
 
 TEMPLATE      = subdirs
+QT_FOR_CONFIG += network-private
 SUBDIRS       = \
                 download \
                 downloadmanager
@@ -18,8 +19,7 @@ qtHaveModule(widgets) {
                 multicastreceiver \
                 multicastsender
 
-    load(qfeatures)
-    !contains(QT_DISABLED_FEATURES, bearermanagement) {
+    qtConfig(bearermanagement) {
         # no QProcess
         !vxworks:!qnx:!winrt:!integrity:!uikit: SUBDIRS += network-chat
 

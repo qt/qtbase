@@ -160,15 +160,15 @@ public:
 
     void retranslateUi(QDialog *CookiesExceptionsDialog)
     {
-        CookiesExceptionsDialog->setWindowTitle(QApplication::translate("CookiesExceptionsDialog", "Cookie Exceptions", 0));
-        newExceptionGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "New Exception", 0));
-        label->setText(QApplication::translate("CookiesExceptionsDialog", "Domain:", 0));
-        blockButton->setText(QApplication::translate("CookiesExceptionsDialog", "Block", 0));
-        allowForSessionButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow For Session", 0));
-        allowButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow", 0));
-        ExceptionsGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "Exceptions", 0));
-        removeButton->setText(QApplication::translate("CookiesExceptionsDialog", "&Remove", 0));
-        removeAllButton->setText(QApplication::translate("CookiesExceptionsDialog", "Remove &All", 0));
+        CookiesExceptionsDialog->setWindowTitle(QApplication::translate("CookiesExceptionsDialog", "Cookie Exceptions", Q_NULLPTR));
+        newExceptionGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "New Exception", Q_NULLPTR));
+        label->setText(QApplication::translate("CookiesExceptionsDialog", "Domain:", Q_NULLPTR));
+        blockButton->setText(QApplication::translate("CookiesExceptionsDialog", "Block", Q_NULLPTR));
+        allowForSessionButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow For Session", Q_NULLPTR));
+        allowButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow", Q_NULLPTR));
+        ExceptionsGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "Exceptions", Q_NULLPTR));
+        removeButton->setText(QApplication::translate("CookiesExceptionsDialog", "&Remove", Q_NULLPTR));
+        removeAllButton->setText(QApplication::translate("CookiesExceptionsDialog", "Remove &All", Q_NULLPTR));
     } // retranslateUi
 
 };

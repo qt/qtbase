@@ -199,7 +199,7 @@ private:
 QIconCacheGtkReader::QIconCacheGtkReader(const QString &dirName)
     : m_isValid(false)
 {
-    QFileInfo info(dirName + QLatin1Literal("/icon-theme.cache"));
+    QFileInfo info(dirName + QLatin1String("/icon-theme.cache"));
     if (!info.exists() || info.lastModified() < QFileInfo(dirName).lastModified())
         return;
     m_file.setFileName(info.absoluteFilePath());

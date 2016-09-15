@@ -144,10 +144,9 @@ void QConnmanManagerInterface::servicesReply(QDBusPendingCallWatcher *call)
         qDebug() << serv_reply.error().message();
     } else {
         servicesList.clear(); //connman list changes order
-        ConnmanMap connmanobj;
-        Q_FOREACH (connmanobj, serv_reply.value()) {
+        const ConnmanMapList connmanobjs = serv_reply.value();
+        for (const ConnmanMap &connmanobj : connmanobjs)
             servicesList << connmanobj.objectPath.path();
-        }
         Q_EMIT servicesReady(servicesList);
     }
     call->deleteLater();
@@ -181,7 +180,7 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
 void QConnmanManagerInterface::onServicesChanged(const ConnmanMapList &changed, const QList<QDBusObjectPath> &removed)
 {
     servicesList.clear(); //connman list changes order
-    Q_FOREACH (const ConnmanMap &connmanobj, changed) {
+    for (const ConnmanMap &connmanobj : changed) {
         const QString svcPath(connmanobj.objectPath.path());
         servicesList << svcPath;
     }
@@ -225,7 +224,8 @@ QStringList QConnmanManagerInterface::getTechnologies()
         QDBusPendingReply<ConnmanMapList> reply = call(QLatin1String("GetTechnologies"));
         reply.waitForFinished();
         if (!reply.isError()) {
-            Q_FOREACH (const ConnmanMap &map, reply.value()) {
+            const ConnmanMapList maps = reply.value();
+            for (const ConnmanMap &map : maps) {
                 if (!technologiesMap.contains(map.objectPath.path())) {
                     technologyAdded(map.objectPath, map.propertyMap);
                 }
@@ -241,9 +241,9 @@ QStringList QConnmanManagerInterface::getServices()
         QDBusPendingReply<ConnmanMapList> reply = call(QLatin1String("GetServices"));
         reply.waitForFinished();
         if (!reply.isError()) {
-            Q_FOREACH (const ConnmanMap &map, reply.value()) {
+            const ConnmanMapList maps = reply.value();
+            for (const ConnmanMap &map : maps)
                 servicesList << map.objectPath.path();
-            }
         }
     }
     return servicesList;

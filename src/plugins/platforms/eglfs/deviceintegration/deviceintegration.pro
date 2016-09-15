@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
+QT_FOR_CONFIG += gui-private
 
 qtConfig(egl_x11): SUBDIRS += eglfs_x11
 qtConfig(eglfs_gbm): SUBDIRS += eglfs_kms_support eglfs_kms

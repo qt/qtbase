@@ -53,5 +53,6 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/private/qglobal_p.h>
+#include <QtNetwork/private/qtnetwork-config_p.h>
 
 #endif // QTNETWORKGLOBAL_P_H
