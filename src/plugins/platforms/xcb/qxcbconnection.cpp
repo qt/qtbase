@@ -130,7 +130,7 @@ typedef struct qt_xcb_ge_event_t {
 
 static inline bool isXIEvent(xcb_generic_event_t *event, int opCode)
 {
-    qt_xcb_ge_event_t *e = (qt_xcb_ge_event_t *)event;
+    qt_xcb_ge_event_t *e = reinterpret_cast<qt_xcb_ge_event_t *>(event);
     return e->extension == opCode;
 }
 
@@ -249,7 +249,7 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                 // Find a fake screen
                 const auto scrs = virtualDesktop->screens();
                 for (QPlatformScreen *scr : scrs) {
-                    QXcbScreen *xcbScreen = (QXcbScreen *)scr;
+                    QXcbScreen *xcbScreen = static_cast<QXcbScreen *>(scr);
                     if (xcbScreen->output() == XCB_NONE) {
                         screen = xcbScreen;
                         break;
@@ -375,7 +375,7 @@ void QXcbConnection::destroyScreen(QXcbScreen *screen)
         // When primary screen is removed, set the new primary screen
         // which belongs to the primary virtual desktop.
         if (screen->isPrimary()) {
-            QXcbScreen *newPrimary = (QXcbScreen *)virtualDesktop->screens().at(0);
+            QXcbScreen *newPrimary = static_cast<QXcbScreen *>(virtualDesktop->screens().at(0));
             newPrimary->setPrimary(true);
             const int idx = m_screens.indexOf(newPrimary);
             if (idx > 0)
@@ -709,7 +709,7 @@ QXcbConnection::~QXcbConnection()
     delete m_glIntegration;
 
 #ifdef XCB_USE_XLIB
-    XCloseDisplay((Display *)m_xlib_display);
+    XCloseDisplay(static_cast<Display *>(m_xlib_display));
 #else
     xcb_disconnect(xcb_connection());
 #endif
@@ -752,7 +752,7 @@ QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
 
 #define HANDLE_PLATFORM_WINDOW_EVENT(event_t, windowMember, handler) \
 { \
-    event_t *e = (event_t *)event; \
+    event_t *e = reinterpret_cast<event_t *>(event); \
     if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->windowMember))  { \
         handled = eventListener->handleGenericEvent(event, &result); \
         if (!handled) \
@@ -763,7 +763,7 @@ break;
 
 #define HANDLE_KEYBOARD_EVENT(event_t, handler) \
 { \
-    event_t *e = (event_t *)event; \
+    event_t *e = reinterpret_cast<event_t *>(event); \
     if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->event)) { \
         handled = eventListener->handleGenericEvent(event, &result); \
         if (!handled) \
@@ -1182,11 +1182,11 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             m_keyboard->updateXKBStateFromCore(((xcb_key_release_event_t *)event)->state);
             HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
         case XCB_MAPPING_NOTIFY:
-            m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
+            m_keyboard->handleMappingNotifyEvent(reinterpret_cast<xcb_mapping_notify_event_t *>(event));
             break;
         case XCB_SELECTION_REQUEST:
         {
-            xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)event;
+            xcb_selection_request_event_t *sr = reinterpret_cast<xcb_selection_request_event_t *>(event);
 #ifndef QT_NO_DRAGANDDROP
             if (sr->selection == atom(QXcbAtom::XdndSelection))
                 m_drag->handleSelectionRequest(sr);
@@ -1200,19 +1200,19 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             break;
         }
         case XCB_SELECTION_CLEAR:
-            setTime(((xcb_selection_clear_event_t *)event)->time);
+            setTime((reinterpret_cast<xcb_selection_clear_event_t *>(event))->time);
 #ifndef QT_NO_CLIPBOARD
-            m_clipboard->handleSelectionClearRequest((xcb_selection_clear_event_t *)event);
+            m_clipboard->handleSelectionClearRequest(reinterpret_cast<xcb_selection_clear_event_t *>(event));
 #endif
             handled = true;
             break;
         case XCB_SELECTION_NOTIFY:
-            setTime(((xcb_selection_notify_event_t *)event)->time);
+            setTime((reinterpret_cast<xcb_selection_notify_event_t *>(event))->time);
             handled = false;
             break;
         case XCB_PROPERTY_NOTIFY:
         {
-            xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
+            xcb_property_notify_event_t *pn = reinterpret_cast<xcb_property_notify_event_t *>(event);
             if (pn->atom == atom(QXcbAtom::_NET_WORKAREA)) {
                 QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(pn->window);
                 if (virtualDesktop)
@@ -1237,7 +1237,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 
     if (!handled) {
         if (response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
-            xcb_xfixes_selection_notify_event_t *notify_event = (xcb_xfixes_selection_notify_event_t *)event;
+            xcb_xfixes_selection_notify_event_t *notify_event = reinterpret_cast<xcb_xfixes_selection_notify_event_t *>(event);
             setTime(notify_event->timestamp);
 #ifndef QT_NO_CLIPBOARD
             m_clipboard->handleXFixesSelectionRequest(notify_event);
@@ -1247,10 +1247,10 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 
             handled = true;
         } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_NOTIFY) {
-            updateScreens((xcb_randr_notify_event_t *)event);
+            updateScreens(reinterpret_cast<xcb_randr_notify_event_t *>(event));
             handled = true;
         } else if (has_randr_extension && response_type == xrandr_first_event + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
-            xcb_randr_screen_change_notify_event_t *change_event = (xcb_randr_screen_change_notify_event_t *)event;
+            xcb_randr_screen_change_notify_event_t *change_event = reinterpret_cast<xcb_randr_screen_change_notify_event_t *>(event);
             for (QXcbScreen *s : qAsConst(m_screens)) {
                 if (s->root() == change_event->root )
                     s->handleScreenChange(change_event);
@@ -1359,7 +1359,7 @@ void QXcbEventReader::run()
 void QXcbEventReader::addEvent(xcb_generic_event_t *event)
 {
     if ((event->response_type & ~0x80) == XCB_CLIENT_MESSAGE
-        && ((xcb_client_message_event_t *)event)->type == m_connection->atom(QXcbAtom::_QT_CLOSE_CONNECTION))
+        && (reinterpret_cast<xcb_client_message_event_t *>(event))->type == m_connection->atom(QXcbAtom::_QT_CLOSE_CONNECTION))
         m_connection = 0;
     m_events << event;
 }
@@ -1425,7 +1425,7 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
     event.type = atom(a);
     event.data.data32[0] = id;
 
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, eventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, eventListener, XCB_EVENT_MASK_NO_EVENT, reinterpret_cast<const char *>(&event)));
     Q_XCB_CALL(xcb_destroy_window(m_connection, eventListener));
     xcb_flush(xcb_connection());
 }
@@ -1445,7 +1445,7 @@ namespace
             if ((event->response_type & ~0x80) != type) {
                 return false;
             } else {
-                xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
+                xcb_property_notify_event_t *pn = reinterpret_cast<xcb_property_notify_event_t *>(event);
                 if ((pn->window == window) && (pn->atom == atom))
                     return true;
             }
@@ -1473,7 +1473,7 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
         event = checkEvent(checker);
     }
 
-    xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
+    xcb_property_notify_event_t *pn = reinterpret_cast<xcb_property_notify_event_t *>(event);
     xcb_timestamp_t timestamp = pn->time;
     free(event);
 
@@ -1687,7 +1687,7 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
         for (int j = nextIndex; j < eventqueue->size(); ++j) {
             xcb_generic_event_t *next = eventqueue->at(j);
             if (isValid(next) && next->response_type == XCB_CONFIGURE_NOTIFY
-                && ((xcb_configure_notify_event_t *)next)->event == ((xcb_configure_notify_event_t*)event)->event)
+                && reinterpret_cast<xcb_configure_notify_event_t *>(next)->event == reinterpret_cast<xcb_configure_notify_event_t *>(event)->event)
             {
                 return true;
             }
@@ -1716,7 +1716,7 @@ void QXcbConnection::processXcbEvents()
         (*eventqueue)[i] = 0;
 
         if (!(event->response_type & ~0x80)) {
-            handleXcbError((xcb_generic_error_t *)event);
+            handleXcbError(reinterpret_cast<xcb_generic_error_t *>(event));
             continue;
         }
 
