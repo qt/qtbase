@@ -216,7 +216,7 @@ bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
     return false;
 }
 
-#if defined(QT_EXT_QNX_READDIR_R)
+#if defined(_DEXTRA_FIRST)
 static void fillStat64fromStat32(struct stat64 *statBuf64, const struct stat &statBuf32)
 {
     statBuf64->st_mode = statBuf32.st_mode;
@@ -281,7 +281,7 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 
 void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
 {
-#if defined(QT_EXT_QNX_READDIR_R)
+#if defined(_DEXTRA_FIRST)
     knownFlagsMask = 0;
     entryFlags = 0;
     for (dirent_extra *extra = _DEXTRA_FIRST(&entry); _DEXTRA_VALID(extra, &entry);

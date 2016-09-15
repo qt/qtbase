@@ -87,14 +87,6 @@ private:
 #else
     QT_DIR *dir;
     QT_DIRENT *dirEntry;
-#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN) || defined(QT_EXT_QNX_READDIR_R)
-    // for readdir_r
-    QScopedPointer<QT_DIRENT, QScopedPointerPodDeleter> mt_file;
-#if defined(QT_EXT_QNX_READDIR_R)
-    // for _readdir_r
-    size_t direntSize;
-#endif
-#endif
     int lastError;
 #endif
 
