@@ -4550,11 +4550,6 @@ Configure::ProjectType Configure::projectType(const QString& proFileName)
 
 bool Configure::showLicense(QString orgLicenseFile)
 {
-    if (dictionary["LICENSE_CONFIRMED"] == "yes") {
-        cout << "You have already accepted the terms of the license." << endl << endl;
-        return true;
-    }
-
     bool showLgpl2 = true;
     QString licenseFile = orgLicenseFile;
     QString theLicense;
@@ -4665,21 +4660,32 @@ void Configure::readLicense()
         }
     }
     if (hasOpenSource && openSource) {
-        cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl;
+        cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl << endl;
         dictionary["LICENSEE"] = "Open Source";
         dictionary["EDITION"] = "OpenSource";
-        cout << endl;
-        if (!showLicense(dictionary["LICENSE FILE"])) {
-            cout << "Configuration aborted since license was not accepted";
-            dictionary["DONE"] = "error";
-            return;
-        }
     } else if (openSource) {
         cout << endl << "Cannot find the GPL license files! Please download the Open Source version of the library." << endl;
         dictionary["DONE"] = "error";
+    } else {
+        QString tpLicense = sourcePath + "/LICENSE.PREVIEW.COMMERCIAL";
+        if (QFile::exists(tpLicense)) {
+            cout << endl << "This is the Qt Preview Edition." << endl << endl;
+
+            dictionary["EDITION"] = "Preview";
+            dictionary["LICENSE FILE"] = tpLicense;
+        } else {
+            Tools::checkLicense(dictionary, sourcePath, buildPath);
+        }
     }
-    else {
-        Tools::checkLicense(dictionary, sourcePath, buildPath);
+
+    if (dictionary["LICENSE_CONFIRMED"] != "yes") {
+        if (!showLicense(dictionary["LICENSE FILE"])) {
+            cout << "Configuration aborted since license was not accepted" << endl;
+            dictionary["DONE"] = "error";
+            return;
+        }
+    } else if (dictionary["LICHECK"].isEmpty()) { // licheck executable shows license
+        cout << "You have already accepted the terms of the license." << endl << endl;
     }
 }
 

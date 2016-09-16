@@ -47,13 +47,6 @@ using namespace std;
 void Tools::checkLicense(QMap<QString,QString> &dictionary,
                          const QString &sourcePath, const QString &buildPath)
 {
-    QString tpLicense = sourcePath + "/LICENSE.PREVIEW.COMMERCIAL";
-    if (QFile::exists(tpLicense)) {
-        dictionary["EDITION"] = "Preview";
-        dictionary["LICENSE FILE"] = tpLicense;
-        return;
-    }
-
     dictionary["LICHECK"] = "licheck.exe";
 
     const QString licenseChecker =
@@ -80,6 +73,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary,
         } else {
             foreach (const QString &var, licheckOutput.split('\n'))
                 dictionary[var.section('=', 0, 0).toUpper()] = var.section('=', 1, 1);
+            dictionary["LICENSE_CONFIRMED"] = "yes";
         }
     } else {
         cout << endl << "Error: Could not find licheck.exe" << endl
