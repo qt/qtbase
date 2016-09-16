@@ -76,6 +76,8 @@ QT_BEGIN_NAMESPACE
     \value RasterGLSurface The surface can be rendered to using a software rasterizer,
     and also supports OpenGL. This surface type is intended for internal Qt use, and
     requires the use of private API.
+    \value OpenVGSurface The surface is an OpenVG compatible surface and can be used
+    in conjunction with OpenVG contexts.
  */
 
 

@@ -100,17 +100,23 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
     configAttributes.append(EGL_ALPHA_SIZE);
     configAttributes.append(alphaSize > 0 ? alphaSize : 0);
 
-    configAttributes.append(EGL_DEPTH_SIZE);
-    configAttributes.append(depthSize > 0 ? depthSize : 0);
-
-    configAttributes.append(EGL_STENCIL_SIZE);
-    configAttributes.append(stencilSize > 0 ? stencilSize : 0);
-
     configAttributes.append(EGL_SAMPLES);
     configAttributes.append(sampleCount > 0 ? sampleCount : 0);
 
     configAttributes.append(EGL_SAMPLE_BUFFERS);
     configAttributes.append(sampleCount > 0);
+
+    if (format.renderableType() != QSurfaceFormat::OpenVG) {
+        configAttributes.append(EGL_DEPTH_SIZE);
+        configAttributes.append(depthSize > 0 ? depthSize : 0);
+
+        configAttributes.append(EGL_STENCIL_SIZE);
+        configAttributes.append(stencilSize > 0 ? stencilSize : 0);
+    } else {
+        // OpenVG needs alpha mask for clipping
+        configAttributes.append(EGL_ALPHA_MASK_SIZE);
+        configAttributes.append(8);
+    }
 
     return configAttributes;
 }

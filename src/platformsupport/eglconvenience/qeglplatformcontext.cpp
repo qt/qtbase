@@ -167,6 +167,13 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
                                 : EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR);
         }
     }
+
+    // Special Options for OpenVG surfaces
+    if (m_format.renderableType() == QSurfaceFormat::OpenVG) {
+        contextAttrs.append(EGL_ALPHA_MASK_SIZE);
+        contextAttrs.append(8);
+    }
+
     contextAttrs.append(EGL_NONE);
     m_contextAttrs = contextAttrs;
 

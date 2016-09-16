@@ -279,7 +279,8 @@ enum ResourceType {
     EglConfig,
     NativeDisplay,
     XlibDisplay,
-    WaylandDisplay
+    WaylandDisplay,
+    EglSurface
 };
 
 static int resourceType(const QByteArray &key)
@@ -291,7 +292,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("eglconfig"),
         QByteArrayLiteral("nativedisplay"),
         QByteArrayLiteral("display"),
-        QByteArrayLiteral("server_wl_display")
+        QByteArrayLiteral("server_wl_display"),
+        QByteArrayLiteral("eglsurface")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -352,6 +354,10 @@ void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWi
     case EglWindow:
         if (window && window->handle())
             result = reinterpret_cast<void*>(static_cast<QEglFSWindow *>(window->handle())->eglWindow());
+        break;
+    case EglSurface:
+        if (window && window->handle())
+            result = reinterpret_cast<void*>(static_cast<QEglFSWindow *>(window->handle())->surface());
         break;
     default:
         break;
