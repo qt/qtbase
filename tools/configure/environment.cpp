@@ -169,6 +169,30 @@ QString Environment::gccVersion()
     return version;
 }
 
+QString Environment::msvcVersion()
+{
+    int returnValue = 0;
+    // Extract version from standard error output of "cl /?"
+    const QString command = QFile::decodeName(qgetenv("ComSpec"))
+        + QLatin1String(" /c ") + QLatin1String(compilerInfo(CC_MSVC2015)->executable)
+        + QLatin1String(" /? 2>&1");
+    QString version = execute(command, &returnValue);
+    if (returnValue != 0) {
+        cout << "Could not get cl version" << returnValue << qPrintable(version) << '\n';;
+        version.clear();
+    } else {
+        QRegExp versionRegexp(QStringLiteral("^.*Compiler Version ([0-9.]+) for.*$"));
+        Q_ASSERT(versionRegexp.isValid());
+        if (versionRegexp.exactMatch(version)) {
+            version = versionRegexp.cap(1);
+        } else {
+            cout << "Unable to determine cl version from the output of \""
+                << qPrintable(command) << "\"\n";
+        }
+    }
+    return version;
+}
+
 /*!
     Returns the enum of the compiler which was detected on the system.
     The compilers are detected in the order as entered into the

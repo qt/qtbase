@@ -57,6 +57,7 @@ public:
     static QString detectQMakeSpec();
     static Compiler compilerFromQMakeSpec(const QString &qmakeSpec);
     static QString gccVersion();
+    static QString msvcVersion();
 
     static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
     static QString execute(const QString &command, int *returnCode = 0);
