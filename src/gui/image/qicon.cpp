@@ -137,8 +137,8 @@ static qreal qt_effective_device_pixel_ratio(QWindow *window = 0)
     return qApp->devicePixelRatio(); // Don't know which window to target.
 }
 
-QIconPrivate::QIconPrivate()
-    : engine(0), ref(1),
+QIconPrivate::QIconPrivate(QIconEngine *e)
+    : engine(e), ref(1),
     serialNum(serialNumCounter.fetchAndAddRelaxed(1)),
     detach_no(0),
     is_mask(false)
@@ -673,9 +673,8 @@ QIcon::QIcon(const QString &fileName)
     ownership of the engine.
 */
 QIcon::QIcon(QIconEngine *engine)
-    :d(new QIconPrivate)
+    :d(new QIconPrivate(engine))
 {
-    d->engine = engine;
 }
 
 /*!
@@ -950,8 +949,7 @@ void QIcon::detach()
             d = 0;
             return;
         } else if (d->ref.load() != 1) {
-            QIconPrivate *x = new QIconPrivate;
-            x->engine = d->engine->clone();
+            QIconPrivate *x = new QIconPrivate(d->engine->clone());
             if (!d->ref.deref())
                 delete d;
             d = x;
@@ -974,10 +972,8 @@ void QIcon::addPixmap(const QPixmap &pixmap, Mode mode, State state)
     if (pixmap.isNull())
         return;
     detach();
-    if (!d) {
-        d = new QIconPrivate;
-        d->engine = new QPixmapIconEngine;
-    }
+    if (!d)
+        d = new QIconPrivate(new QPixmapIconEngine);
     d->engine->addPixmap(pixmap, mode, state);
 }
 
@@ -1037,8 +1033,7 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
         if (!engine)
             engine = iconEngineFromSuffix(fileName, QMimeDatabase().mimeTypeForFile(info).preferredSuffix());
 #endif // !QT_NO_MIMETYPE
-        d = new QIconPrivate;
-        d->engine = engine ? engine : new QPixmapIconEngine;
+        d = new QIconPrivate(engine ? engine : new QPixmapIconEngine);
     }
 
     d->engine->addFile(fileName, size, mode, state);
@@ -1240,12 +1235,10 @@ bool QIcon::hasThemeIcon(const QString &name)
 */
 void QIcon::setIsMask(bool isMask)
 {
-    if (!d) {
-        d = new QIconPrivate;
-        d->engine = new QPixmapIconEngine;
-    } else {
+    if (!d)
+        d = new QIconPrivate(new QPixmapIconEngine);
+    else
         detach();
-    }
     d->is_mask = isMask;
 }
 
@@ -1326,22 +1319,17 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
         QString key;
         s >> key;
         if (key == QLatin1String("QPixmapIconEngine")) {
-            icon.d = new QIconPrivate;
-            QIconEngine *engine = new QPixmapIconEngine;
-            icon.d->engine = engine;
-            engine->read(s);
+            icon.d = new QIconPrivate(new QPixmapIconEngine);
+            icon.d->engine->read(s);
         } else if (key == QLatin1String("QIconLoaderEngine")) {
-            icon.d = new QIconPrivate;
-            QIconEngine *engine = new QIconLoaderEngine();
-            icon.d->engine = engine;
-            engine->read(s);
+            icon.d = new QIconPrivate(new QIconLoaderEngine());
+            icon.d->engine->read(s);
         } else {
             const int index = loader()->indexOf(key);
             if (index != -1) {
                 if (QIconEnginePlugin *factory = qobject_cast<QIconEnginePlugin*>(loader()->instance(index))) {
                     if (QIconEngine *engine= factory->create()) {
-                        icon.d = new QIconPrivate;
-                        icon.d->engine = engine;
+                        icon.d = new QIconPrivate(engine);
                         engine->read(s);
                     } // factory
                 } // instance

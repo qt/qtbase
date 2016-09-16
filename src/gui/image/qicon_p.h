@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 class QIconPrivate
 {
 public:
-    QIconPrivate();
+    explicit QIconPrivate(QIconEngine *e);
 
     ~QIconPrivate() {
         delete engine;
