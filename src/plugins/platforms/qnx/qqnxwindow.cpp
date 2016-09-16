@@ -581,7 +581,7 @@ void QQnxWindow::setFocus(screen_window_t newFocusWindow)
     screen_get_window_property_pv(nativeHandle(), SCREEN_PROPERTY_GROUP,
                                   reinterpret_cast<void**>(&screenGroup));
     if (screenGroup) {
-        screen_set_group_property_pv(screenGroup, SCREEN_PROPERTY_KEYBOARD_FOCUS,
+        screen_set_group_property_pv(screenGroup, SCREEN_PROPERTY_FOCUS,
                                  reinterpret_cast<void**>(&newFocusWindow));
     }
 }

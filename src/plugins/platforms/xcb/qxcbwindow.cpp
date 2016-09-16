@@ -2537,8 +2537,13 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
 
             if (reply && reply->format == 32 && reply->type == atom(QXcbAtom::WM_STATE)) {
                 const quint32 *data = (const quint32 *)xcb_get_property_value(reply);
-                if (reply->length != 0 && XCB_WM_STATE_ICONIC == data[0])
-                    newState = Qt::WindowMinimized;
+                if (reply->length != 0) {
+                    if (data[0] == XCB_WM_STATE_ICONIC
+                            || (data[0] == XCB_WM_STATE_WITHDRAWN
+                                && m_lastWindowStateEvent == Qt::WindowMinimized)) {
+                        newState = Qt::WindowMinimized;
+                    }
+                }
             }
             free(reply);
         } else { // _NET_WM_STATE can't change minimized state

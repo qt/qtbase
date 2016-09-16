@@ -770,7 +770,7 @@ void QWinRTScreen::addWindow(QWindow *window)
     updateWindowTitle(window->title());
     QWindowSystemInterface::handleWindowActivated(window, Qt::OtherFocusReason);
     handleExpose();
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
 #if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
     QWinRTDrag::instance()->setDropTarget(window);
@@ -788,7 +788,7 @@ void QWinRTScreen::removeWindow(QWindow *window)
     if (wasTopWindow)
         QWindowSystemInterface::handleWindowActivated(Q_NULLPTR, Qt::OtherFocusReason);
     handleExpose();
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 #if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
     if (wasTopWindow)
         QWinRTDrag::instance()->setDropTarget(topWindow());

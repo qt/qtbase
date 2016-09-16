@@ -752,6 +752,8 @@ public:
     uint renderToTextureReallyDirty : 1;
     uint renderToTextureComposeActive : 1;
 #endif
+    uint childrenHiddenByWState : 1;
+    uint childrenShownByExpose : 1;
 
     // *************************** Platform specific ************************************
 #if defined(Q_OS_WIN)

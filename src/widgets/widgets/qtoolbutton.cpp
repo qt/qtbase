@@ -196,7 +196,6 @@ QToolButton::QToolButton(QWidget * parent)
 void QToolButtonPrivate::init()
 {
     Q_Q(QToolButton);
-    delay = q->style()->styleHint(QStyle::SH_ToolButton_PopupDelay, 0, q);
     defaultAction = 0;
 #ifndef QT_NO_TOOLBAR
     if (qobject_cast<QToolBar*>(parent))
@@ -222,7 +221,7 @@ void QToolButtonPrivate::init()
 #endif
 
     setLayoutItemMargins(QStyle::SE_ToolButtonLayoutItem);
-
+    delay = q->style()->styleHint(QStyle::SH_ToolButton_PopupDelay, 0, q);
 }
 
 /*!
