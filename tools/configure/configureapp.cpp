@@ -314,6 +314,12 @@ Configure::Configure(int& argc, char** argv) : verbose(0)
         dictionary["QT_GCC_MAJOR_VERSION"] = parts.value(0, zero);
         dictionary["QT_GCC_MINOR_VERSION"] = parts.value(1, zero);
         dictionary["QT_GCC_PATCH_VERSION"] = parts.value(2, zero);
+    } else if (dictionary["QMAKESPEC"].contains(QString("msvc"))) {
+        const QString zero = QStringLiteral("0");
+        const QStringList parts = Environment::msvcVersion().split(QLatin1Char('.'));
+        dictionary["QT_CL_MAJOR_VERSION"] = parts.value(0, zero);
+        dictionary["QT_CL_MINOR_VERSION"] = parts.value(1, zero);
+        dictionary["QT_CL_PATCH_VERSION"] = parts.value(2, zero);
     }
 }
 
@@ -3629,6 +3635,10 @@ void Configure::generateQConfigPri()
             configStream << "QT_GCC_MAJOR_VERSION = " << dictionary["QT_GCC_MAJOR_VERSION"] << endl
                          << "QT_GCC_MINOR_VERSION = " << dictionary["QT_GCC_MINOR_VERSION"] << endl
                          << "QT_GCC_PATCH_VERSION = " << dictionary["QT_GCC_PATCH_VERSION"] << endl;
+        } else if (!dictionary["QT_CL_MAJOR_VERSION"].isEmpty()) {
+            configStream << "QT_CL_MAJOR_VERSION = " << dictionary["QT_CL_MAJOR_VERSION"] << endl
+                         << "QT_CL_MINOR_VERSION = " << dictionary["QT_CL_MINOR_VERSION"] << endl
+                         << "QT_CL_PATCH_VERSION = " << dictionary["QT_CL_PATCH_VERSION"] << endl;
         }
 
         if (dictionary.value("XQMAKESPEC").startsWith("wince")) {

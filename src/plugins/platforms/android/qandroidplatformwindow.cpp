@@ -149,7 +149,7 @@ void QAndroidPlatformWindow::updateStatusBarVisibility()
     if (!isNonRegularWindow) {
         if (m_windowState & Qt::WindowFullScreen)
             QtAndroid::hideStatusBar();
-        else if (m_windowState & Qt::WindowMaximized)
+        else
             QtAndroid::showStatusBar();
     }
 }
