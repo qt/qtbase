@@ -2145,6 +2145,22 @@ void tst_Moc::warnings_data()
         << 0
         << QString()
         << QString("standard input:1: Note: No relevant classes found. No output generated.");
+
+    QTest::newRow("Q_PLUGIN_METADATA: invalid file")
+        << QByteArray("class X { \n Q_PLUGIN_METADATA(FILE \"does.not.exists\") \n };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:2: Error: Plugin Metadata file \"does.not.exists\" does not exist. Declaration will be ignored");
+
+#ifdef Q_OS_LINUX  // Limit to Linux because the error message is platform-dependent
+    QTest::newRow("Q_PLUGIN_METADATA: unreadable file")
+        << QByteArray("class X { \n Q_PLUGIN_METADATA(FILE \".\") \n };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:2: Error: Plugin Metadata file \".\" could not be opened: file to open is a directory");
+#endif
 }
 
 void tst_Moc::warnings()

@@ -1294,7 +1294,12 @@ void Moc::parsePluginData(ClassDef *def)
                 return;
             }
             QFile file(fi.canonicalFilePath());
-            file.open(QFile::ReadOnly);
+            if (!file.open(QFile::ReadOnly)) {
+                QByteArray msg = "Plugin Metadata file " + lexem() + " could not be opened: "
+                    + file.errorString().toUtf8();
+                error(msg.constData());
+                return;
+            }
             metaData = file.readAll();
         }
     }
