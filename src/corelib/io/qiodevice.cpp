@@ -1047,26 +1047,29 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
 /*!
     \internal
 */
-qint64 QIODevicePrivate::read(char *data, qint64 maxSize)
+qint64 QIODevicePrivate::read(char *data, qint64 maxSize, bool peeking)
 {
     Q_Q(QIODevice);
 
     const bool buffered = (openMode & QIODevice::Unbuffered) == 0;
     const bool sequential = isSequential();
-    const bool keepDataInBuffer = sequential && transactionStarted;
+    const bool keepDataInBuffer = sequential
+                                  ? peeking || transactionStarted
+                                  : peeking && buffered;
+    const qint64 savedPos = pos;
     qint64 readSoFar = 0;
     bool madeBufferReadsOnly = true;
     bool deviceAtEof = false;
     char *readPtr = data;
+    qint64 bufferPos = (sequential && transactionStarted) ? transactionPos : Q_INT64_C(0);
     forever {
         // Try reading from the buffer.
         qint64 bufferReadChunkSize = keepDataInBuffer
-                                     ? buffer.peek(data, maxSize, transactionPos)
+                                     ? buffer.peek(data, maxSize, bufferPos)
                                      : buffer.read(data, maxSize);
         if (bufferReadChunkSize > 0) {
-            if (keepDataInBuffer)
-                transactionPos += bufferReadChunkSize;
-            else if (!sequential)
+            bufferPos += bufferReadChunkSize;
+            if (!sequential)
                 pos += bufferReadChunkSize;
 #if defined QIODEVICE_DEBUG
             printf("%p \treading %lld bytes from buffer into position %lld\n", q,
@@ -1158,6 +1161,16 @@ qint64 QIODevicePrivate::read(char *data, qint64 maxSize)
         }
 
         break;
+    }
+
+    // Restore positions after reading
+    if (keepDataInBuffer) {
+        if (peeking)
+            pos = savedPos; // does nothing on sequential devices
+        else
+            transactionPos = bufferPos;
+    } else if (peeking) {
+        seekBuffer(savedPos); // unbuffered random-access device
     }
 
     if (madeBufferReadsOnly && isBufferEmpty())
@@ -1773,27 +1786,7 @@ bool QIODevicePrivate::putCharHelper(char c)
 */
 qint64 QIODevicePrivate::peek(char *data, qint64 maxSize)
 {
-    Q_Q(QIODevice);
-
-    if (transactionStarted) {
-        const qint64 savedTransactionPos = transactionPos;
-        const qint64 savedPos = pos;
-
-        qint64 readBytes = q->read(data, maxSize);
-
-        // Restore initial position
-        if (isSequential())
-            transactionPos = savedTransactionPos;
-        else
-            seekBuffer(savedPos);
-        return readBytes;
-    }
-
-    q->startTransaction();
-    qint64 readBytes = q->read(data, maxSize);
-    q->rollbackTransaction();
-
-    return readBytes;
+    return read(data, maxSize, true);
 }
 
 /*!
@@ -1801,25 +1794,16 @@ qint64 QIODevicePrivate::peek(char *data, qint64 maxSize)
 */
 QByteArray QIODevicePrivate::peek(qint64 maxSize)
 {
-    Q_Q(QIODevice);
+    QByteArray result(maxSize, Qt::Uninitialized);
 
-    if (transactionStarted) {
-        const qint64 savedTransactionPos = transactionPos;
-        const qint64 savedPos = pos;
+    const qint64 readBytes = read(result.data(), maxSize, true);
 
-        QByteArray result = q->read(maxSize);
-
-        // Restore initial position
-        if (isSequential())
-            transactionPos = savedTransactionPos;
+    if (readBytes < maxSize) {
+        if (readBytes <= 0)
+            result.clear();
         else
-            seekBuffer(savedPos);
-        return result;
+            result.resize(readBytes);
     }
-
-    q->startTransaction();
-    QByteArray result = q->read(maxSize);
-    q->rollbackTransaction();
 
     return result;
 }
@@ -1858,7 +1842,12 @@ bool QIODevice::getChar(char *c)
 */
 qint64 QIODevice::peek(char *data, qint64 maxSize)
 {
-    return d_func()->peek(data, maxSize);
+    Q_D(QIODevice);
+
+    CHECK_MAXLEN(peek, qint64(-1));
+    CHECK_READABLE(peek, qint64(-1));
+
+    return d->peek(data, maxSize);
 }
 
 /*!
@@ -1880,7 +1869,13 @@ qint64 QIODevice::peek(char *data, qint64 maxSize)
 */
 QByteArray QIODevice::peek(qint64 maxSize)
 {
-    return d_func()->peek(maxSize);
+    Q_D(QIODevice);
+
+    CHECK_MAXLEN(peek, QByteArray());
+    CHECK_MAXBYTEARRAYSIZE(peek);
+    CHECK_READABLE(peek, QByteArray());
+
+    return d->peek(maxSize);
 }
 
 /*!
