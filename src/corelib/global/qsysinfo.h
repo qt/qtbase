@@ -79,7 +79,8 @@ public:
 #  endif
     };
 #endif
-    enum WinVersion {
+#if QT_DEPRECATED_SINCE(5, 9)
+    enum QT_DEPRECATED_X("Use QOperatingSystemVersion") WinVersion {
         WV_None     = 0x0000,
 
         WV_32s      = 0x0001,
@@ -112,18 +113,18 @@ public:
         WV_10_0     = WV_WINDOWS10
     };
 #if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
-    static const WinVersion WindowsVersion;
-    static WinVersion windowsVersion();
+    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion;
+    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static WinVersion windowsVersion();
 #else
-    static const WinVersion WindowsVersion = WV_None;
-    static WinVersion windowsVersion() { return WV_None; }
+    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion = WV_None;
+    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static WinVersion windowsVersion() { return WV_None; }
 #endif
 
 #define Q_MV_OSX(major, minor) (major == 10 ? minor + 2 : (major == 9 ? 1 : 0))
 #define Q_MV_IOS(major, minor) (QSysInfo::MV_IOS | major << 4 | minor)
 #define Q_MV_TVOS(major, minor) (QSysInfo::MV_TVOS | major << 4 | minor)
 #define Q_MV_WATCHOS(major, minor) (QSysInfo::MV_WATCHOS | major << 4 | minor)
-    enum MacVersion {
+    enum QT_DEPRECATED_X("Use QOperatingSystemVersion") MacVersion {
         MV_None    = 0xffff,
         MV_Unknown = 0x0000,
 
@@ -193,12 +194,13 @@ public:
         MV_WATCHOS_3_0 = Q_MV_WATCHOS(3, 0)
     };
 #if defined(Q_OS_MAC)
-    static const MacVersion MacintoshVersion;
-    static MacVersion macVersion();
+    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const MacVersion MacintoshVersion;
+    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static MacVersion macVersion();
 #else
-    static const MacVersion MacintoshVersion = MV_None;
-    static MacVersion macVersion() { return MV_None; }
+    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const MacVersion MacintoshVersion = MV_None;
+    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static MacVersion macVersion() { return MV_None; }
 #endif
+#endif // QT_DEPRECATED_SINCE(5, 9)
 
     static QString buildCpuArchitecture();
     static QString currentCpuArchitecture();

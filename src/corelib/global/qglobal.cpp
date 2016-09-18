@@ -1090,12 +1090,14 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \deprecated
     \variable QSysInfo::WindowsVersion
     \brief the version of the Windows operating system on which the
            application is run.
 */
 
 /*!
+    \deprecated
     \fn QSysInfo::WindowsVersion QSysInfo::windowsVersion()
     \since 4.4
 
@@ -1105,12 +1107,14 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \deprecated
     \variable QSysInfo::MacintoshVersion
     \brief the version of the Macintosh operating system on which
            the application is run.
 */
 
 /*!
+    \deprecated
     \fn QSysInfo::MacVersion QSysInfo::macVersion()
 
     Returns the version of Darwin (\macos or iOS) on which the
@@ -1128,6 +1132,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \deprecated
     \enum QSysInfo::WinVersion
 
     This enum provides symbolic names for the various versions of the
@@ -1178,6 +1183,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \deprecated
     \enum QSysInfo::MacVersion
 
     This enum provides symbolic names for the various versions of the
@@ -1939,6 +1945,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qnamespace.h"
 QT_END_INCLUDE_NAMESPACE
 
+#if QT_DEPRECATED_SINCE(5, 9)
 QSysInfo::MacVersion QSysInfo::macVersion()
 {
     const auto version = QOperatingSystemVersion::current();
@@ -1955,6 +1962,7 @@ QSysInfo::MacVersion QSysInfo::macVersion()
 #endif
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
+#endif
 
 #ifdef Q_OS_DARWIN
 static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSystemVersion::current())
@@ -2016,6 +2024,7 @@ QWindowsSockInit::~QWindowsSockInit()
 Q_GLOBAL_STATIC(QWindowsSockInit, winsockInit)
 #  endif // QT_BOOTSTRAPPED
 
+#if QT_DEPRECATED_SINCE(5, 9)
 QSysInfo::WinVersion QSysInfo::windowsVersion()
 {
     const auto version = QOperatingSystemVersion::current();
@@ -2029,6 +2038,8 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
         return QSysInfo::WV_WINDOWS10;
     return QSysInfo::WV_NT_based;
 }
+const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion();
+#endif
 
 static QString winSp_helper()
 {
@@ -2066,8 +2077,6 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
     // unknown, future version
     return 0;
 }
-
-const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion();
 
 #endif
 #if defined(Q_OS_UNIX)

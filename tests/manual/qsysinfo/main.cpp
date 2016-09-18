@@ -27,11 +27,12 @@
 ****************************************************************************/
 
 #include <QCoreApplication>
+#include <QOperatingSystemVersion>
 #include <QSysInfo>
 
 #include <stdio.h>
 
-// I'm lazy
+#if QT_DEPRECATED_SINCE(5, 9)
 #define CASE_VERSION(v)     case QSysInfo::v:   return QT_STRINGIFY(v)
 
 QByteArray windowsVersionToString(QSysInfo::WinVersion v)
@@ -108,6 +109,7 @@ QByteArray macVersionToString(QSysInfo::MacVersion v)
     }
     return "MacVersion(Q_MV_OSX(10, " + QByteArray::number(v - 2) + "))";
 }
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -116,10 +118,12 @@ int main(int argc, char *argv[])
     printf("QSysInfo::WordSize = %d\n", QSysInfo::WordSize);
     printf("QSysInfo::ByteOrder = QSysInfo::%sEndian\n",
            QSysInfo::ByteOrder == QSysInfo::LittleEndian ? "Little" : "Big");
+#if QT_DEPRECATED_SINCE(5, 9)
     printf("QSysInfo::WindowsVersion = QSysInfo::%s\n",
            windowsVersionToString(QSysInfo::WindowsVersion).constData());
     printf("QSysInfo::MacintoshVersion = QSysInfo::%s\n",
            macVersionToString(QSysInfo::MacintoshVersion).constData());
+#endif
     printf("QSysInfo::buildCpuArchitecture() = %s\n", qPrintable(QSysInfo::buildCpuArchitecture()));
     printf("QSysInfo::currentCpuArchitecture() = %s\n", qPrintable(QSysInfo::currentCpuArchitecture()));
     printf("QSysInfo::buildAbi() = %s\n", qPrintable(QSysInfo::buildAbi()));
@@ -129,6 +133,13 @@ int main(int argc, char *argv[])
     printf("QSysInfo::productVersion() = %s\n", qPrintable(QSysInfo::productVersion()));
     printf("QSysInfo::prettyProductName() = %s\n", qPrintable(QSysInfo::prettyProductName()));
     printf("QSysInfo::machineHostName() = %s\n", qPrintable(QSysInfo::machineHostName()));
+
+    const auto osv = QOperatingSystemVersion::current();
+    printf("QOperatingSystemVersion::current() = %s %d.%d.%d\n",
+        qPrintable(osv.name()),
+        osv.majorVersion(),
+        osv.minorVersion(),
+        osv.microVersion());
 
     return 0;
 }
