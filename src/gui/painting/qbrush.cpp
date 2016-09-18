@@ -579,7 +579,7 @@ void QBrush::detach(Qt::BrushStyle newStyle)
     if (newStyle == d->style && d->ref.load() == 1)
         return;
 
-    QScopedPointer<QBrushData> x;
+    QScopedPointer<QBrushData, QBrushDataPointerDeleter> x;
     switch(newStyle) {
     case Qt::TexturePattern: {
         QTexturedBrushData *tbd = new QTexturedBrushData;
@@ -595,28 +595,30 @@ void QBrush::detach(Qt::BrushStyle newStyle)
         }
     case Qt::LinearGradientPattern:
     case Qt::RadialGradientPattern:
-    case Qt::ConicalGradientPattern:
-        x.reset(new QGradientBrushData);
+    case Qt::ConicalGradientPattern: {
+        QGradientBrushData *gbd = new QGradientBrushData;
         switch (d->style) {
         case Qt::LinearGradientPattern:
         case Qt::RadialGradientPattern:
         case Qt::ConicalGradientPattern:
-            static_cast<QGradientBrushData *>(x.data())->gradient =
+            gbd->gradient =
                     static_cast<QGradientBrushData *>(d.data())->gradient;
             break;
         default:
             break;
         }
+        x.reset(gbd);
         break;
+        }
     default:
         x.reset(new QBrushData);
         break;
     }
-    x->ref.store(1);
+    x->ref.store(1); // must be first lest the QBrushDataPointerDeleter turns into a no-op
     x->style = newStyle;
     x->color = d->color;
     x->transform = d->transform;
-    d.reset(x.take());
+    d.swap(x);
 }
 
 
