@@ -76,6 +76,10 @@ private slots:
     void testRasterRGB32();
     void testRasterRGB16_data();
     void testRasterRGB16();
+    void testRasterARGB8565PM_data();
+    void testRasterARGB8565PM();
+    void testRasterGrayscale8_data();
+    void testRasterGrayscale8();
 
 #ifndef QT_NO_OPENGL
     void testOpenGL_data();
@@ -152,6 +156,28 @@ void tst_Lancelot::testRasterRGB16_data()
 void tst_Lancelot::testRasterRGB16()
 {
     runTestSuite(Raster, QImage::Format_RGB16);
+}
+
+
+void tst_Lancelot::testRasterARGB8565PM_data()
+{
+    setupTestSuite();
+}
+
+void tst_Lancelot::testRasterARGB8565PM()
+{
+    runTestSuite(Raster, QImage::Format_ARGB8565_Premultiplied);
+}
+
+
+void tst_Lancelot::testRasterGrayscale8_data()
+{
+    setupTestSuite();
+}
+
+void tst_Lancelot::testRasterGrayscale8()
+{
+    runTestSuite(Raster, QImage::Format_Grayscale8);
 }
 
 
