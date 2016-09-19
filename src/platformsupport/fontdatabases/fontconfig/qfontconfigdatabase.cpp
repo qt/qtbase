@@ -355,6 +355,12 @@ static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)
     return stylehint;
 }
 
+static inline bool requiresOpenType(int writingSystem)
+{
+    return ((writingSystem >= QFontDatabase::Syriac && writingSystem <= QFontDatabase::Sinhala)
+            || writingSystem == QFontDatabase::Khmer || writingSystem == QFontDatabase::Nko);
+}
+
 static void populateFromPattern(FcPattern *pattern)
 {
     QString familyName;
@@ -419,7 +425,7 @@ static void populateFromPattern(FcPattern *pattern)
                 FcLangResult langRes = FcLangSetHasLang(langset, lang);
                 if (langRes != FcLangDifferentLang) {
 #if FC_VERSION >= 20297
-                    if (capabilityForWritingSystem[j] != Q_NULLPTR) {
+                    if (capabilityForWritingSystem[j] != Q_NULLPTR && requiresOpenType(j)) {
                         if (cap == Q_NULLPTR)
                             capRes = FcPatternGetString(pattern, FC_CAPABILITY, 0, &cap);
                         if (capRes == FcResultMatch && strstr(reinterpret_cast<const char *>(cap), capabilityForWritingSystem[j]) == 0)
