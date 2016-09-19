@@ -176,6 +176,8 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 // -------------------------------------------------------------------------
 
+QT_BEGIN_NAMESPACE
+
 /*!
     Returns the model identifier of the device.
 

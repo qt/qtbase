@@ -48,9 +48,9 @@
 class QIOSContext;
 class QIOSWindow;
 
-QT_BEGIN_NAMESPACE
-
 @class QUIView;
+
+QT_BEGIN_NAMESPACE
 
 class QIOSWindow : public QObject, public QPlatformWindow
 {

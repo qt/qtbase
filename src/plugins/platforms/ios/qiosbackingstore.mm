@@ -49,6 +49,8 @@
 
 #include <QtDebug>
 
+QT_BEGIN_NAMESPACE
+
 class QIOSPaintDevice : public QOpenGLPaintDevice
 {
 public:

@@ -43,9 +43,9 @@
 #include <QtCore/qeventloop.h>
 #include <qpa/qplatformdialoghelper.h>
 
-QT_BEGIN_NAMESPACE
-
 Q_FORWARD_DECLARE_OBJC_CLASS(UIViewController);
+
+QT_BEGIN_NAMESPACE
 
 class QIOSFileDialog : public QPlatformFileDialogHelper
 {

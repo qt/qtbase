@@ -59,7 +59,7 @@
     return [CAEAGLLayer class];
 }
 
-- (id)initWithQIOSWindow:(QIOSWindow *)window
+- (id)initWithQIOSWindow:(QT_PREPEND_NAMESPACE(QIOSWindow) *)window
 {
     if (self = [self initWithFrame:window->geometry().toCGRect()])
         m_qioswindow = window;
@@ -524,7 +524,7 @@
 - (QWindow *)qwindow
 {
     if ([self isKindOfClass:[QUIView class]]) {
-        if (QIOSWindow *w = static_cast<QUIView *>(self)->m_qioswindow)
+        if (QT_PREPEND_NAMESPACE(QIOSWindow) *w = static_cast<QUIView *>(self)->m_qioswindow)
             return w->window();
     }
     return nil;

@@ -51,12 +51,12 @@ const char kImePlatformDataInputView[] = "inputView";
 const char kImePlatformDataInputAccessoryView[] = "inputAccessoryView";
 const char kImePlatformDataReturnKeyType[] = "returnKeyType";
 
-QT_BEGIN_NAMESPACE
-
 @class QIOSLocaleListener;
 @class QIOSKeyboardListener;
 @class QIOSTextInputResponder;
 @protocol KeyboardState;
+
+QT_BEGIN_NAMESPACE
 
 struct KeyboardState
 {

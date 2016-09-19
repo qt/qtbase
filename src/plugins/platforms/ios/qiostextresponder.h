@@ -42,19 +42,23 @@
 #include <QtCore/qstring.h>
 #include <QtGui/qevent.h>
 
+QT_BEGIN_NAMESPACE
+
 class QIOSInputContext;
+
+QT_END_NAMESPACE
 
 @interface QIOSTextInputResponder : UIResponder <UITextInputTraits, UIKeyInput, UITextInput>
 {
   @private
-    QIOSInputContext *m_inputContext;
-    QInputMethodQueryEvent *m_configuredImeState;
+    QT_PREPEND_NAMESPACE(QIOSInputContext) *m_inputContext;
+    QT_PREPEND_NAMESPACE(QInputMethodQueryEvent) *m_configuredImeState;
     QString m_markedText;
     BOOL m_inSendEventToFocusObject;
     BOOL m_inSelectionChange;
 }
 
-- (id)initWithInputContext:(QIOSInputContext *)context;
+- (id)initWithInputContext:(QT_PREPEND_NAMESPACE(QIOSInputContext) *)context;
 - (BOOL)needsKeyboardReconfigure:(Qt::InputMethodQueries)updatedProperties;
 
 - (void)notifyInputDelegate:(Qt::InputMethodQueries)updatedProperties;

@@ -54,6 +54,8 @@
 
 #include <QtDebug>
 
+QT_BEGIN_NAMESPACE
+
 QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_view([[QUIView alloc] initWithQIOSWindow:this])
