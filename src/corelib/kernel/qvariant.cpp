@@ -74,6 +74,7 @@
 #include "qline.h"
 #endif
 
+#include <cmath>
 #include <float.h>
 #include <cstring>
 
@@ -3472,8 +3473,17 @@ static int numericCompare(const QVariant::Private *d1, const QVariant::Private *
     Q_ASSERT(ok);
     qreal r2 = qConvertToRealNumber(d2, &ok);
     Q_ASSERT(ok);
-    if (r1 == r2 || qFuzzyCompare(r1, r2))
+    if (r1 == r2)
         return 0;
+
+    // only do fuzzy comparisons for finite, non-zero numbers
+    int c1 = std::fpclassify(r1);
+    int c2 = std::fpclassify(r2);
+    if ((c1 == FP_NORMAL || c1 == FP_SUBNORMAL) && (c2 == FP_NORMAL || c2 == FP_SUBNORMAL)) {
+        if (qFuzzyCompare(r1, r2))
+            return 0;
+    }
+
     return r1 < r2 ? -1 : 1;
 }
 
