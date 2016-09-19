@@ -109,4 +109,19 @@
     return YES;
 }
 
+- (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu
+{
+    Q_UNUSED(window);
+    Q_UNUSED(menu);
+    return m_cocoaWindow && m_cocoaWindow->m_hasWindowFilePath;
+}
+
+- (BOOL)window:(NSWindow *)window shouldDragDocumentWithEvent:(NSEvent *)event from:(NSPoint)dragImageLocation withPasteboard:(NSPasteboard *)pasteboard
+{
+    Q_UNUSED(window);
+    Q_UNUSED(event);
+    Q_UNUSED(dragImageLocation);
+    Q_UNUSED(pasteboard);
+    return m_cocoaWindow && m_cocoaWindow->m_hasWindowFilePath;
+}
 @end
