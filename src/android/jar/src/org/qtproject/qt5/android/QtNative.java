@@ -456,7 +456,7 @@ public class QtNative
     }
 
     public static Context getContext() {
-        if (m_activity == null)
+        if (m_activity != null)
             return m_activity;
         return m_service;
     }
