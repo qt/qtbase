@@ -1,7 +1,8 @@
 # The device integration plugin base class has to live in a shared library,
 # placing it into a static lib like platformsupport is not sufficient since we
 # have to keep the QObject magic like qobject_cast working.
-# Hence this header-less, private-only module.
+# Hence this private-only module.
+# By having _p headers, it also enables developing out-of-tree integration plugins.
 
 TARGET = QtEglFSDeviceIntegration
 CONFIG += internal_module
@@ -15,19 +16,9 @@ DEFINES += QT_EGL_NO_X11
 
 DEFINES += QT_BUILD_EGL_DEVICE_LIB
 
-SOURCES +=  $$PWD/qeglfsintegration.cpp \
-            $$PWD/qeglfscontext.cpp \
-            $$PWD/qeglfsoffscreenwindow.cpp \
-
-HEADERS +=  $$PWD/qeglfsintegration.h \
-            $$PWD/qeglfscontext.h \
-            $$PWD/qeglfsoffscreenwindow.h \
-
 include($$PWD/api/api.pri)
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
-
-INCLUDEPATH += $$PWD
 
 !isEmpty(EGLFS_PLATFORM_HOOKS_SOURCES) {
     HEADERS += $$EGLFS_PLATFORM_HOOKS_HEADERS

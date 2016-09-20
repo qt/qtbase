@@ -42,7 +42,7 @@
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
 
-#include "qeglfscontext.h"
+#include "qeglfscontext_p.h"
 #include "qeglfswindow_p.h"
 #include "qeglfshooks_p.h"
 #include "qeglfscursor_p.h"

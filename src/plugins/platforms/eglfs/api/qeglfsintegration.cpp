@@ -51,11 +51,11 @@
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <private/qgenericunixthemes_p.h>
 
-#include "qeglfsintegration.h"
+#include "qeglfsintegration_p.h"
 #include "qeglfswindow_p.h"
 #include "qeglfshooks_p.h"
-#include "qeglfscontext.h"
-#include "qeglfsoffscreenwindow.h"
+#include "qeglfscontext_p.h"
+#include "qeglfsoffscreenwindow_p.h"
 #include "qeglfscursor_p.h"
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>

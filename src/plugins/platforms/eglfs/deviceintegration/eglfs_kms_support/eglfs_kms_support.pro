@@ -4,7 +4,7 @@ load(qt_module)
 
 QT += core-private gui-private platformsupport-private eglfsdeviceintegration-private
 
-INCLUDEPATH += $$PWD/../..
+INCLUDEPATH += $$PWD/../../api
 
 # Avoid X11 header collision, use generic EGL native types
 DEFINES += QT_EGL_NO_X11

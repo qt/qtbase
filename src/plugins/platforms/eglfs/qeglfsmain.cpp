@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include <qpa/qplatformintegrationplugin.h>
-#include "qeglfsintegration.h"
+#include "qeglfsintegration_p.h"
 
 QT_BEGIN_NAMESPACE
 

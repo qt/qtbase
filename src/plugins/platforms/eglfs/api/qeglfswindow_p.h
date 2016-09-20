@@ -52,7 +52,7 @@
 //
 
 #include "qeglfsglobal.h"
-#include "qeglfsintegration.h"
+#include "qeglfsintegration_p.h"
 #include "qeglfsscreen_p.h"
 
 #include <qpa/qplatformwindow.h>
