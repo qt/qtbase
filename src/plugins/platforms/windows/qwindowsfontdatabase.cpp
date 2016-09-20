@@ -1257,6 +1257,7 @@ QT_WARNING_POP
             request.pixelSize = pixelSize;
             request.styleStrategy = QFont::PreferMatch;
             request.hintingPreference = hintingPreference;
+            request.stretch = QFont::Unstretched;
 
             fontEngine = QWindowsFontDatabase::createEngine(request,
                                                             QWindowsContext::instance()->defaultDPI(),
