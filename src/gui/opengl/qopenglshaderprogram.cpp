@@ -516,16 +516,26 @@ bool QOpenGLShader::compileSourceCode(const char *source)
 
         QVarLengthArray<const char *, 5> sourceChunks;
         QVarLengthArray<GLint, 5> sourceChunkLengths;
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
 
         if (versionDirectivePosition.hasPosition()) {
-            // Append source up to #version directive
+            // Append source up to and including the #version directive
             sourceChunks.append(source);
             sourceChunkLengths.append(GLint(versionDirectivePosition.position));
+        } else {
+            // QTBUG-55733: Intel on Windows with Compatibility profile requires a #version always
+            if (ctx->format().profile() == QSurfaceFormat::CompatibilityProfile) {
+                const char *vendor = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_VENDOR));
+                if (vendor && !strcmp(vendor, "Intel")) {
+                    static const char version110[] = "#version 110\n";
+                    sourceChunks.append(version110);
+                    sourceChunkLengths.append(GLint(sizeof(version110)) - 1);
+                }
+            }
         }
 
         // The precision qualifiers are useful on OpenGL/ES systems,
         // but usually not present on desktop systems.
-        QOpenGLContext *ctx = QOpenGLContext::currentContext();
         const QSurfaceFormat currentSurfaceFormat = ctx->format();
         QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(QOpenGLContext::currentContext());
         if (currentSurfaceFormat.renderableType() == QSurfaceFormat::OpenGL
