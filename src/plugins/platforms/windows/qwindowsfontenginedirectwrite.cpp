@@ -48,6 +48,8 @@
 #include <QtCore/QVarLengthArray>
 #include <private/qstringiterator_p.h>
 #include <QtCore/private/qsystemlibrary_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 #if defined(QT_USE_DIRECTWRITE2)
 #  include <dwrite_2.h>
@@ -233,6 +235,11 @@ QWindowsFontEngineDirectWrite::~QWindowsFontEngineDirectWrite()
 
     if (m_directWriteBitmapRenderTarget != 0)
         m_directWriteBitmapRenderTarget->Release();
+
+    if (!m_uniqueFamilyName.isEmpty()) {
+        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+        static_cast<QWindowsFontDatabase *>(pfdb)->derefUniqueFont(m_uniqueFamilyName);
+    }
 }
 
 void QWindowsFontEngineDirectWrite::collectMetrics()
@@ -765,12 +772,17 @@ QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
 
 QFontEngine *QWindowsFontEngineDirectWrite::cloneWithSize(qreal pixelSize) const
 {
-    QFontEngine *fontEngine = new QWindowsFontEngineDirectWrite(m_directWriteFontFace,
-                                                                pixelSize,
-                                                                m_fontEngineData);
+    QWindowsFontEngineDirectWrite *fontEngine = new QWindowsFontEngineDirectWrite(m_directWriteFontFace,
+                                                                                  pixelSize,
+                                                                                  m_fontEngineData);
 
     fontEngine->fontDef = fontDef;
     fontEngine->fontDef.pixelSize = pixelSize;
+    if (!m_uniqueFamilyName.isEmpty()) {
+        fontEngine->setUniqueFamilyName(m_uniqueFamilyName);
+        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+        static_cast<QWindowsFontDatabase *>(pfdb)->refUniqueFont(m_uniqueFamilyName);
+    }
 
     return fontEngine;
 }
