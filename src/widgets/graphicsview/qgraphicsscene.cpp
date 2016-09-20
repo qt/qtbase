@@ -710,7 +710,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
             ++it;
     }
 
-    QGraphicsObject *dummy = static_cast<QGraphicsObject *>(item);
+    QGraphicsObject *dummy = item->toGraphicsObject();
     cachedTargetItems.removeOne(dummy);
     cachedItemGestures.remove(dummy);
     cachedAlreadyDeliveredGestures.remove(dummy);
