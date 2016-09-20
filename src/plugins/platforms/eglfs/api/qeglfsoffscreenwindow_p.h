@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "qeglfsglobal.h"
+#include "qeglfsglobal_p.h"
 #include <qpa/qplatformoffscreensurface.h>
 
 QT_BEGIN_NAMESPACE

@@ -16,6 +16,6 @@ HEADERS +=  $$PWD/qeglfswindow_p.h \
             $$PWD/qeglfsintegration_p.h \
             $$PWD/qeglfscontext_p.h \
             $$PWD/qeglfsoffscreenwindow_p.h \
-            $$PWD/qeglfsglobal.h
+            $$PWD/qeglfsglobal_p.h
 
 INCLUDEPATH += $$PWD
