@@ -138,6 +138,7 @@ QBackingStore::QBackingStore(QWindow *window)
     : d_ptr(new QBackingStorePrivate(window))
 {
     d_ptr->platformBackingStore = QGuiApplicationPrivate::platformIntegration()->createPlatformBackingStore(window);
+    d_ptr->platformBackingStore->setBackingStore(this);
 }
 
 /*!

@@ -39,6 +39,7 @@
 
 #include "qrasterbackingstore_p.h"
 
+#include <QtGui/qbackingstore.h>
 #include <QtGui/qpainter.h>
 
 QT_BEGIN_NAMESPACE
@@ -104,6 +105,10 @@ bool QRasterBackingStore::scroll(const QRegion &region, int dx, int dy)
 
 void QRasterBackingStore::beginPaint(const QRegion &region)
 {
+    // Keep backing store device pixel ratio in sync with window
+    if (m_image.devicePixelRatio() != window()->devicePixelRatio())
+        resize(backingStore()->size(), backingStore()->staticContents());
+
     if (!m_image.hasAlphaChannel())
         return;
 
