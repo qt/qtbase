@@ -88,7 +88,7 @@ void QEglFSKmsEglDeviceScreen::waitForFlip()
 
         qCDebug(qLcEglfsKmsDebug, "Setting mode");
         int ret = drmModeSetCrtc(device()->fd(), output().crtc_id,
-                                 -1, 0, 0,
+                                 uint32_t(-1), 0, 0,
                                  &output().connector_id, 1,
                                  &output().modes[output().mode]);
         if (ret)
