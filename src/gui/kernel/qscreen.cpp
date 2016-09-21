@@ -667,6 +667,10 @@ void QScreenPrivate::updatePrimaryOrientation()
     that are not part of the application, window system frames, and so
     on.
 
+    \warning Grabbing windows that are not part of the application is
+    not supported on systems such as iOS, where sandboxing/security
+    prevents reading pixels of windows not owned by the application.
+
     The grabWindow() function grabs pixels from the screen, not from
     the window, i.e. if there is another window partially or entirely
     over the one you grab, you get pixels from the overlying window,

@@ -118,6 +118,11 @@ public:
     virtual void systemStateChanged() { }
 
     void drawBoxTextItem(const QPointF &p, const QTextItemInt &ti);
+
+    static QPaintEnginePrivate *get(QPaintEngine *paintEngine) { return paintEngine->d_func(); }
+
+    virtual QPaintEngine *aggregateEngine() { return 0; }
+    virtual Qt::HANDLE nativeHandle() { return 0; }
 };
 
 QT_END_NAMESPACE

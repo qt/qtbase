@@ -64,6 +64,7 @@ public class QtApplication extends Application
     public static Method onKeyShortcut = null;
     public static Method dispatchGenericMotionEvent = null;
     public static Method onGenericMotionEvent = null;
+    public static Method onRequestPermissionsResult = null;
     private static String activityClassName;
     public static void setQtContextDelegate(Class<?> clazz, Object listener)
     {

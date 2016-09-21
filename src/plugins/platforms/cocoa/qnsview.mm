@@ -52,6 +52,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/qsysinfo.h>
 #include <private/qguiapplication_p.h>
+#include <private/qcoregraphics_p.h>
 #include "qcocoabackingstore.h"
 #ifndef QT_NO_OPENGL
 #include "qcocoaglcontext.h"
@@ -494,7 +495,7 @@ static bool _q_dontOverrideCtrlLMB = false;
     qCDebug(lcQpaCocoaWindow) << "[QNSView flushBackingStore:]" << m_window << region.rectCount() << region.boundingRect() << offset;
 
     m_backingStore = backingStore;
-    m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
+    m_backingStoreOffset = offset * m_backingStore->paintDevice()->devicePixelRatio();
     for (const QRect &rect : region)
         [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
 }
@@ -576,7 +577,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
     // The backing store source rect will be larger on retina displays.
     // Scale dirtyRect by the device pixel ratio:
-    const qreal devicePixelRatio = m_backingStore->getBackingStoreDevicePixelRatio();
+    const qreal devicePixelRatio = m_backingStore->paintDevice()->devicePixelRatio();
     CGRect dirtyBackingRect = CGRectMake(dirtyRect.origin.x * devicePixelRatio,
                                          dirtyRect.origin.y * devicePixelRatio,
                                          dirtyRect.size.width * devicePixelRatio,

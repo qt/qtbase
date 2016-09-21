@@ -48,6 +48,7 @@
 #include <QtCore/qoperatingsystemversion.h>
 
 #include <QtGui/private/qwindow_p.h>
+#include <private/qcoregraphics_p.h>
 
 #include <sys/sysctl.h>
 
@@ -175,6 +176,8 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 @end
 
 // -------------------------------------------------------------------------
+
+QT_BEGIN_NAMESPACE
 
 /*!
     Returns the model identifier of the device.
@@ -456,6 +459,38 @@ void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
         m_orientationListener = [[QIOSOrientationListener alloc] initWithQIOSScreen:this];
         updateProperties();
     }
+}
+
+QPixmap QIOSScreen::grabWindow(WId window, int x, int y, int width, int height) const
+{
+    if (window && ![reinterpret_cast<id>(window) isKindOfClass:[UIView class]])
+        return QPixmap();
+
+    UIView *view = window ? reinterpret_cast<UIView *>(window) : m_uiWindow;
+
+    if (width < 0)
+        width = qMax(view.bounds.size.width - x, CGFloat(0));
+    if (height < 0)
+        height = qMax(view.bounds.size.height - y, CGFloat(0));
+
+    CGRect captureRect = [m_uiWindow convertRect:CGRectMake(x, y, width, height) fromView:view];
+    captureRect = CGRectIntersection(captureRect, m_uiWindow.bounds);
+
+    UIGraphicsBeginImageContextWithOptions(captureRect.size, NO, 0.0);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextTranslateCTM(context, -captureRect.origin.x, -captureRect.origin.y);
+
+    // Draws the complete view hierarchy of m_uiWindow into the given rect, which
+    // needs to be the same aspect ratio as the m_uiWindow's size. Since we've
+    // translated the graphics context, and are potentially drawing into a smaller
+    // context than the full window, the resulting image will be a subsection of the
+    // full screen.
+    [m_uiWindow drawViewHierarchyInRect:m_uiWindow.bounds afterScreenUpdates:NO];
+
+    UIImage *screenshot = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return QPixmap::fromImage(qt_mac_toQImage(screenshot.CGImage));
 }
 
 UIScreen *QIOSScreen::uiScreen() const

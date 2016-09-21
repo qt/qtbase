@@ -63,7 +63,7 @@
 
     QAccessibleCache *cache = QAccessibleCache::instance();
 
-    QMacAccessibilityElement *element = cache->elementForId(anId);
+    QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element = cache->elementForId(anId);
     if (!element) {
         Q_ASSERT(QAccessible::accessibleInterface(anId));
         element = [[self alloc] initWithId:anId withAccessibilityContainer: view];

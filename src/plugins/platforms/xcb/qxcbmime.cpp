@@ -173,7 +173,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
 //    qDebug() << "mimeConvertDataToFormat" << format << atomName << data;
 
     if (!encoding.isEmpty()
-        && atomName == format + QLatin1String(";charset=") + QString::fromLatin1(encoding)) {
+        && atomName == format + QLatin1String(";charset=") + QLatin1String(encoding)) {
 
 #ifndef QT_NO_TEXTCODEC
         if (requestedType == QVariant::String) {

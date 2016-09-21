@@ -319,9 +319,9 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
         if (systemLocale == QLatin1String("C"))
             acceptLanguage = QString::fromLatin1("en,*");
         else if (systemLocale.startsWith(QLatin1String("en-")))
-            acceptLanguage = QString::fromLatin1("%1,*").arg(systemLocale);
+            acceptLanguage = systemLocale + QLatin1String(",*");
         else
-            acceptLanguage = QString::fromLatin1("%1,en,*").arg(systemLocale);
+            acceptLanguage = systemLocale + QLatin1String(",en,*");
         request.setHeaderField("Accept-Language", acceptLanguage.toLatin1());
     }
 

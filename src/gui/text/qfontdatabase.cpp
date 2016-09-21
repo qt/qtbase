@@ -2439,7 +2439,7 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     }
 
     if (font.fileName.isEmpty() && !fontData.isEmpty())
-        font.fileName = QString::fromLatin1(":qmemoryfonts/") + QString::number(i);
+        font.fileName = QLatin1String(":qmemoryfonts/") + QString::number(i);
 
     registerFont(&font);
     if (font.families.isEmpty())

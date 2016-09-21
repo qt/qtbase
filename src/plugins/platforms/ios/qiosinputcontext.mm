@@ -97,14 +97,14 @@ static QUIView *focusView()
 
 @interface QIOSKeyboardListener : UIGestureRecognizer <UIGestureRecognizerDelegate> {
   @private
-    QIOSInputContext *m_context;
+    QT_PREPEND_NAMESPACE(QIOSInputContext) *m_context;
 }
 @property BOOL hasDeferredScrollToCursor;
 @end
 
 @implementation QIOSKeyboardListener
 
-- (id)initWithQIOSInputContext:(QIOSInputContext *)context
+- (id)initWithQIOSInputContext:(QT_PREPEND_NAMESPACE(QIOSInputContext) *)context
 {
     if (self = [super initWithTarget:self action:@selector(gestureStateChanged:)]) {
 
@@ -290,6 +290,8 @@ static QUIView *focusView()
 @end
 
 // -------------------------------------------------------------------------
+
+QT_BEGIN_NAMESPACE
 
 Qt::InputMethodQueries ImeState::update(Qt::InputMethodQueries properties)
 {
@@ -713,3 +715,5 @@ QLocale QIOSInputContext::locale() const
 {
     return QLocale(QString::fromNSString([[NSLocale currentLocale] objectForKey:NSLocaleIdentifier]));
 }
+
+QT_END_NAMESPACE

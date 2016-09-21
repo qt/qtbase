@@ -981,4 +981,11 @@ public class QtActivity extends Activity
     //---------------------------------------------------------------------------
 //@ANDROID-12
 
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        if (QtApplication.m_delegateObject != null && QtApplication.onRequestPermissionsResult != null) {
+            QtApplication.invokeDelegateMethod(QtApplication.onRequestPermissionsResult, requestCode , permissions, grantResults);
+            return;
+        }
+    }
 }

@@ -58,7 +58,7 @@
 
 @interface QIOSViewController () {
   @public
-    QPointer<QIOSScreen> m_screen;
+    QPointer<QT_PREPEND_NAMESPACE(QIOSScreen)> m_screen;
     BOOL m_updatingProperties;
     QMetaObject::Connection m_focusWindowChangeConnection;
 }
@@ -126,7 +126,7 @@
 {
     Q_UNUSED(subview);
 
-    QIOSScreen *screen = self.qtViewController->m_screen;
+    QT_PREPEND_NAMESPACE(QIOSScreen) *screen = self.qtViewController->m_screen;
 
     // The 'window' property of our view is not valid until the window
     // has been shown, so we have to access it through the QIOSScreen.
@@ -229,7 +229,7 @@
 
 @implementation QIOSViewController
 
-- (id)initWithQIOSScreen:(QIOSScreen *)screen
+- (id)initWithQIOSScreen:(QT_PREPEND_NAMESPACE(QIOSScreen) *)screen
 {
     if (self = [self init]) {
         m_screen = screen;

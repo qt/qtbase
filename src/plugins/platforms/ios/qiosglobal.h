@@ -74,6 +74,8 @@ QT_END_NAMESPACE
 + (id)currentFirstResponder;
 @end
 
+QT_BEGIN_NAMESPACE
+
 class FirstResponderCandidate : public QScopedValueRollback<UIResponder *>
 {
 public:
@@ -83,5 +85,7 @@ public:
 private:
     static UIResponder *s_firstResponderCandidate;
 };
+
+QT_END_NAMESPACE
 
 #endif // QIOSGLOBAL_H

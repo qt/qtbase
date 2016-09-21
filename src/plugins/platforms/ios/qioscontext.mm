@@ -48,6 +48,8 @@
 #import <OpenGLES/ES2/glext.h>
 #import <QuartzCore/CAEAGLLayer.h>
 
+QT_BEGIN_NAMESPACE
+
 Q_LOGGING_CATEGORY(lcQpaGLContext, "qt.qpa.glcontext");
 
 QIOSContext::QIOSContext(QOpenGLContext *context)
@@ -314,3 +316,4 @@ bool QIOSContext::isSharing() const
 
 #include "moc_qioscontext.cpp"
 
+QT_END_NAMESPACE

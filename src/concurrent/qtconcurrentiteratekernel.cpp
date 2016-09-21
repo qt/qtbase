@@ -39,20 +39,7 @@
 
 #include "qtconcurrentiteratekernel.h"
 
-#if defined(Q_OS_MAC)
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#include <unistd.h>
-#elif defined(Q_OS_UNIX)
-#if defined(Q_OS_HURD)
-#include <sys/time.h>
-#endif
-#include <time.h>
-#include <unistd.h>
-#elif defined(Q_OS_WIN)
-#include <qt_windows.h>
-#endif
-
+#include <qdeadlinetimer.h>
 #include "private/qfunctions_p.h"
 
 
@@ -65,68 +52,10 @@ enum {
     MedianSize = 7
 };
 
-#if defined(Q_OS_MAC)
-
 static qint64 getticks()
 {
-    return mach_absolute_time();
+    return QDeadlineTimer::current(Qt::PreciseTimer).deadlineNSecs();
 }
-
-#elif defined(Q_OS_UNIX)
-
-
-static qint64 getticks()
-{
-#if (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0)) || defined(Q_OS_OPENBSD)
-    clockid_t clockId;
-
-#ifndef _POSIX_THREAD_CPUTIME
-    clockId = CLOCK_REALTIME;
-#elif (_POSIX_THREAD_CPUTIME-0 <= 0)
-    // if we don't have CLOCK_THREAD_CPUTIME_ID, we have to just use elapsed realtime instead
-    clockId = CLOCK_REALTIME;
-
-#  if (_POSIX_THREAD_CPUTIME-0 == 0)
-    // detect availablility of CLOCK_THREAD_CPUTIME_ID
-    static QBasicAtomicInt sUseThreadCpuTime = Q_BASIC_ATOMIC_INITIALIZER(-2);
-    int useThreadCpuTime = sUseThreadCpuTime.load();
-    if (useThreadCpuTime == -2) {
-        // sysconf() will return either -1L or _POSIX_VERSION
-        // (don't care about sysconf's exact return value)
-        useThreadCpuTime = sysconf(_SC_THREAD_CPUTIME) == -1L ? -1 : 0 ;
-        sUseThreadCpuTime.store(useThreadCpuTime); // might happen multiple times, but doesn't matter
-    }
-    if (useThreadCpuTime != -1)
-        clockId = CLOCK_THREAD_CPUTIME_ID;
-#  endif
-#else
-    clockId = CLOCK_THREAD_CPUTIME_ID;
-#endif
-
-    struct timespec ts;
-    if (clock_gettime(clockId, &ts) == -1)
-        return 0;
-    return (ts.tv_sec * 1000000000) + ts.tv_nsec;
-#else
-
-    // no clock_gettime(), fall back to wall time
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    return (tv.tv_sec * 1000000) + tv.tv_usec;
-#endif
-}
-
-#elif defined(Q_OS_WIN)
-
-static qint64 getticks()
-{
-    LARGE_INTEGER x;
-    if (!QueryPerformanceCounter(&x))
-        return 0;
-    return x.QuadPart;
-}
-
-#endif
 
 static double elapsed(qint64 after, qint64 before)
 {

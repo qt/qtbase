@@ -69,25 +69,6 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list);
 inline NSMutableArray *qt_mac_QStringListToNSMutableArray(const QStringList &qstrlist)
 { return reinterpret_cast<NSMutableArray *>(qt_mac_QStringListToNSMutableArrayVoid(qstrlist)); }
 
-NSImage *qt_mac_cgimage_to_nsimage(CGImageRef iamge);
-NSImage *qt_mac_create_nsimage(const QPixmap &pm);
-NSImage *qt_mac_create_nsimage(const QIcon &icon);
-CGImageRef qt_mac_toCGImage(const QImage &qImage);
-CGImageRef qt_mac_toCGImageMask(const QImage &qImage);
-QImage qt_mac_toQImage(CGImageRef image);
-QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
-
-QColor qt_mac_toQColor(const NSColor *color);
-QColor qt_mac_toQColor(CGColorRef color);
-
-QBrush qt_mac_toQBrush(CGColorRef color);
-QBrush qt_mac_toQBrush(const NSColor *color, QPalette::ColorGroup colorGroup = QPalette::Normal);
-
-// Creates a mutable shape, it's the caller's responsibility to release.
-HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
-
-OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
-
 NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
 NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
 Qt::DropAction qt_mac_mapNSDragOperation(NSDragOperation nsActions);
@@ -95,9 +76,6 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions);
 
 // Misc
 void qt_mac_transformProccessToForegroundApplication();
-CGColorSpaceRef qt_mac_genericColorSpace();
-CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
-CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
 QString qt_mac_applicationName();
 
 int qt_mac_flipYCoordinate(int y);
@@ -142,8 +120,6 @@ public:
         [target release];
     }
 };
-
-CGContextRef qt_mac_cg_context(QPaintDevice *pdev);
 
 template<typename T>
 T qt_mac_resolveOption(const T &fallback, const QByteArray &environment)

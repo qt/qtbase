@@ -116,8 +116,7 @@ static QString generateSubObjectXml(QObject *object)
     for ( ; it != end; ++it) {
         QString name = (*it)->objectName();
         if (!name.isEmpty() && QDBusUtil::isValidPartOfObjectPath(name))
-            retval += QString::fromLatin1("  <node name=\"%1\"/>\n")
-                      .arg(name);
+            retval += QLatin1String("  <node name=\"") + name + QLatin1String("\"/>\n");
     }
     return retval;
 }
@@ -192,8 +191,7 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
             node.children.constEnd();
         for ( ; it != end; ++it)
             if (it->obj || !it->children.isEmpty())
-                xml_data += QString::fromLatin1("  <node name=\"%1\"/>\n")
-                            .arg(it->name);
+                xml_data += QLatin1String("  <node name=\"") + it->name + QLatin1String("\"/>\n");
     }
 
     xml_data += QLatin1String("</node>\n");

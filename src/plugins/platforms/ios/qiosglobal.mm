@@ -114,6 +114,8 @@ int infoPlistValue(NSString* key, int defaultValue)
     return value ? [value intValue] : defaultValue;
 }
 
+QT_END_NAMESPACE
+
 // -------------------------------------------------------------------------
 
 @interface QtFirstResponderEvent : UIEvent
@@ -163,6 +165,8 @@ int infoPlistValue(NSString* key, int defaultValue)
         event.firstResponder = [self isFirstResponder] ? self : nil;
 }
 @end
+
+QT_BEGIN_NAMESPACE
 
 FirstResponderCandidate::FirstResponderCandidate(UIResponder *responder)
     : QScopedValueRollback<UIResponder *>(s_firstResponderCandidate, responder)

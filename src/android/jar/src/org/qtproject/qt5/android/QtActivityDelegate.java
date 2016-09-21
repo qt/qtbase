@@ -1455,4 +1455,9 @@ public class QtActivityDelegate
         }
         return false;
     }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        QtNative.sendRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 }

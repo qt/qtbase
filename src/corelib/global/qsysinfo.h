@@ -110,7 +110,13 @@ public:
         WV_6_1      = WV_WINDOWS7,
         WV_6_2      = WV_WINDOWS8,
         WV_6_3      = WV_WINDOWS8_1,
-        WV_10_0     = WV_WINDOWS10
+        WV_10_0     = WV_WINDOWS10,
+
+        WV_CE       = 0x0100,
+        WV_CENET    = 0x0200,
+        WV_CE_5     = 0x0300,
+        WV_CE_6     = 0x0400,
+        WV_CE_based = 0x0f00
     };
 #if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
     QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion;

@@ -40,6 +40,7 @@
 #include "qcocoacursor.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
+#include <QtGui/private/qcoregraphics_p.h>
 
 #include <QtGui/QBitmap>
 

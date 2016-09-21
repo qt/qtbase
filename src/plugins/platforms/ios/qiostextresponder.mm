@@ -163,7 +163,7 @@
 
 @implementation QIOSTextInputResponder
 
-- (id)initWithInputContext:(QIOSInputContext *)inputContext
+- (id)initWithInputContext:(QT_PREPEND_NAMESPACE(QIOSInputContext) *)inputContext
 {
     if (!(self = [self init]))
         return self;

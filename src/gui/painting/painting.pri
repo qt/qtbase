@@ -99,6 +99,11 @@ SOURCES += \
         painting/qplatformbackingstore.cpp \
         painting/qpathsimplifier.cpp
 
+darwin {
+    HEADERS += painting/qcoregraphics_p.h
+    SOURCES += painting/qcoregraphics.mm
+}
+
 SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
 SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
 SSE4_1_SOURCES += painting/qdrawhelper_sse4.cpp \
