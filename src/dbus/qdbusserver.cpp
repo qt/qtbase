@@ -103,12 +103,14 @@ QDBusServer::QDBusServer(QObject *parent)
 */
 QDBusServer::~QDBusServer()
 {
+    QWriteLocker locker(&d->lock);
     if (QDBusConnectionManager::instance()) {
         QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
         for (const QString &name : qAsConst(d->serverConnectionNames))
             QDBusConnectionManager::instance()->removeConnection(name);
         d->serverConnectionNames.clear();
     }
+    d->serverObject = nullptr;
     d->ref.store(0);
     d->deleteLater();
 }

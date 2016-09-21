@@ -299,7 +299,11 @@ static void executeBlockWithoutAnimation(Block block)
 
 // -------------------------------------------------------------------------
 
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_10_0)
+@interface QIOSHandleLayer : CALayer <CAAnimationDelegate> {
+#else
 @interface QIOSHandleLayer : CALayer {
+#endif
     CALayer *_handleCursorLayer;
     CALayer *_handleKnobLayer;
     Qt::Edge _selectionEdge;

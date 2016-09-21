@@ -640,8 +640,15 @@ QVariant QMYSQLResult::data(int field)
         if (f.nullIndicator)
             return QVariant(f.type);
 
-        if (qIsInteger(f.type))
-            return QVariant(f.type, f.outField);
+        if (qIsInteger(f.type)) {
+            QVariant variant(f.type, f.outField);
+            // we never want to return char variants here, see QTBUG-53397
+            if (static_cast<int>(f.type) == QMetaType::UChar)
+                return variant.toUInt();
+            else if (static_cast<int>(f.type) == QMetaType::Char)
+                return variant.toInt();
+            return variant;
+        }
 
         if (f.type != QVariant::ByteArray)
             val = toUnicode(d->drv_d_func()->tc, f.outField, f.bufLength);
@@ -1371,7 +1378,7 @@ bool QMYSQLDriver::open(const QString& db,
                                            : sslCipher.toLocal8Bit().constData());
     }
 
-#if MYSQL_VERSION_ID >= 50000
+#if MYSQL_VERSION_ID >= 50100
     if (connectTimeout != 0)
         mysql_options(d->mysql, MYSQL_OPT_CONNECT_TIMEOUT, &connectTimeout);
     if (readTimeout != 0)
@@ -1400,7 +1407,7 @@ bool QMYSQLDriver::open(const QString& db,
             setOpenError(true);
             return false;
         }
-#if MYSQL_VERSION_ID >= 50000
+#if MYSQL_VERSION_ID >= 50100
         if (reconnect)
             mysql_options(d->mysql, MYSQL_OPT_RECONNECT, &reconnect);
 #endif

@@ -1393,10 +1393,11 @@ void QXcbKeyboard::resolveMaskConflicts()
 class KeyChecker
 {
 public:
-    KeyChecker(xcb_window_t window, xcb_keycode_t code, xcb_timestamp_t time)
+    KeyChecker(xcb_window_t window, xcb_keycode_t code, xcb_timestamp_t time, quint16 state)
         : m_window(window)
         , m_code(code)
         , m_time(time)
+        , m_state(state)
         , m_error(false)
         , m_release(true)
     {
@@ -1413,7 +1414,7 @@ public:
 
         xcb_key_press_event_t *event = (xcb_key_press_event_t *)ev;
 
-        if (event->event != m_window || event->detail != m_code) {
+        if (event->event != m_window || event->detail != m_code || event->state != m_state) {
             m_error = true;
             return false;
         }
@@ -1441,6 +1442,7 @@ private:
     xcb_window_t m_window;
     xcb_keycode_t m_code;
     xcb_timestamp_t m_time;
+    quint16 m_state;
 
     bool m_error;
     bool m_release;
@@ -1505,7 +1507,7 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
         }
     } else {
         // look ahead for auto-repeat
-        KeyChecker checker(source->xcb_window(), code, time);
+        KeyChecker checker(source->xcb_window(), code, time, state);
         xcb_generic_event_t *event = connection()->checkEvent(checker);
         if (event) {
             isAutoRepeat = true;

@@ -672,11 +672,6 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
         QAndroidEventDispatcherStopper::instance()->goingToStop(true);
         QCoreApplication::processEvents();
         QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
-        {
-            AndroidDeadlockProtector protector;
-            if (protector.acquire())
-                QWindowSystemInterface::flushWindowSystemEvents();
-        }
         if (state == Qt::ApplicationSuspended)
             QAndroidEventDispatcherStopper::instance()->stopAll();
     } else {
