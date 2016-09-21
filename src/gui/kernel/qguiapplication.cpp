@@ -2794,10 +2794,10 @@ void QGuiApplicationPrivate::reportRefreshRateChange(QWindowSystemInterfacePriva
 
 void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e)
 {
-    if (!e->exposed)
+    if (!e->window)
         return;
 
-    QWindow *window = e->exposed.data();
+    QWindow *window = e->window.data();
     if (!window)
         return;
     QWindowPrivate *p = qt_window_private(window);
