@@ -102,7 +102,7 @@ static FontFile * createFontFile(const QString &fileName, int index)
 }
 
 extern bool localizedName(const QString &name);
-extern QString getEnglishName(const QString &familyName);
+extern QString getEnglishName(const QString &familyName, bool includeStyle = false);
 
 namespace {
 struct FontKey
@@ -235,9 +235,19 @@ static bool addFontToDatabase(const QString &faceName,
     }
 
     int index = 0;
-    const FontKey *key = findFontKey(faceName, &index);
+    const FontKey *key = findFontKey(fullName, &index);
     if (!key) {
-        key = findFontKey(fullName, &index);
+        // On non-English locales, the styles of the font may be localized in enumeration, but
+        // not in the registry.
+        QLocale systemLocale = QLocale::system();
+        if (systemLocale.language() != QLocale::C
+                && systemLocale.language() != QLocale::English
+                && styleName != QLatin1String("Italic")
+                && styleName != QLatin1String("Bold")) {
+            key = findFontKey(getEnglishName(fullName, true), &index);
+        }
+        if (!key)
+            key = findFontKey(faceName, &index);
         if (!key && !registerAlias && englishName.isEmpty() && localizedName(faceName))
             englishName = getEnglishName(faceName);
         if (!key && !englishName.isEmpty())
