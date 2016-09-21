@@ -1033,7 +1033,9 @@ void QFontDialog::done(int result)
 
 bool QFontDialogPrivate::canBeNativeDialog() const
 {
-    Q_Q(const QFontDialog);
+    // Don't use Q_Q here! This function is called from ~QDialog,
+    // so Q_Q calling q_func() invokes undefined behavior (invalid cast in q_func()).
+    const QDialog * const q = static_cast<const QDialog*>(q_ptr);
     if (nativeDialogInUse)
         return true;
     if (q->testAttribute(Qt::WA_DontShowOnScreen))
