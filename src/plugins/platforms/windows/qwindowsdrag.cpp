@@ -412,34 +412,39 @@ QWindowsOleDropSource::Release(void)
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
 {
-    HRESULT hr = S_OK;
-    do {
-        if (fEscapePressed || QWindowsDrag::isCanceled()) {
-            hr = ResultFromScode(DRAGDROP_S_CANCEL);
-            break;
-        }
+    Qt::MouseButtons buttons = toQtMouseButtons(grfKeyState);
 
-    const Qt::MouseButtons buttons =  toQtMouseButtons(grfKeyState);
-    if (m_currentButtons == Qt::NoButton) {
-        m_currentButtons = buttons;
+    SCODE result = S_OK;
+    if (fEscapePressed || QWindowsDrag::isCanceled()) {
+        result = DRAGDROP_S_CANCEL;
+        buttons = Qt::NoButton;
     } else {
-        // Button changed: Complete Drop operation.
-        if (!(m_currentButtons & buttons)) {
-            hr = ResultFromScode(DRAGDROP_S_DROP);
-            break;
+        if (buttons && !m_currentButtons) {
+            m_currentButtons = buttons;
+        } else if (!(m_currentButtons & buttons)) { // Button changed: Complete Drop operation.
+            result = DRAGDROP_S_DROP;
         }
     }
 
-    QGuiApplication::processEvents();
+    switch (result) {
+        case DRAGDROP_S_DROP:
+        case DRAGDROP_S_CANCEL:
+            QGuiApplicationPrivate::modifier_buttons = toQtKeyboardModifiers(grfKeyState);
+            QGuiApplicationPrivate::mouse_buttons = buttons;
+            m_currentButtons = Qt::NoButton;
+            break;
 
-    } while (false);
+        default:
+            QGuiApplication::processEvents();
+            break;
+    }
 
-    if (QWindowsContext::verbose > 1 || hr != S_OK) {
+    if (QWindowsContext::verbose > 1 || result != S_OK) {
         qCDebug(lcQpaMime) << __FUNCTION__ << "fEscapePressed=" << fEscapePressed
             << "grfKeyState=" << grfKeyState << "buttons" << m_currentButtons
-            << "returns 0x" << hex <<int(hr) << dec;
+            << "returns 0x" << hex << int(result) << dec;
     }
-    return hr;
+    return ResultFromScode(result);
 }
 
 /*!
@@ -610,6 +615,12 @@ QWindowsOleDropTarget::DragLeave()
     qCDebug(lcQpaMime) << __FUNCTION__ << ' ' << m_window;
 
     QWindowSystemInterface::handleDrag(m_window, 0, QPoint(), Qt::IgnoreAction);
+
+    if (!QDragManager::self()->source()) {
+        QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
+        QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
+        m_lastKeyState = 0;
+    }
     QWindowsDrag::instance()->releaseDropDataObject();
 
     return NOERROR;
@@ -628,11 +639,9 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
         << "keys=" << grfKeyState << "pt=" << pt.x << ',' << pt.y;
 
     m_lastPoint = QWindowsGeometryHint::mapFromGlobal(m_window, QPoint(pt.x,pt.y));
-    // grfKeyState does not all ways contain button state in the drop so if
-    // it doesn't then use the last known button state;
-    if ((grfKeyState & KEY_STATE_BUTTON_MASK) == 0)
-        grfKeyState |= m_lastKeyState & KEY_STATE_BUTTON_MASK;
-    m_lastKeyState = grfKeyState;
+    // grfKeyState does not all ways contain button state in the drop
+    QGuiApplicationPrivate::mouse_buttons = toQtMouseButtons(m_lastKeyState);
+    QGuiApplicationPrivate::modifier_buttons = toQtKeyboardModifiers(grfKeyState);
 
     QWindowsDrag *windowsDrag = QWindowsDrag::instance();
 
@@ -640,6 +649,10 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
         QWindowSystemInterface::handleDrop(m_window, windowsDrag->dropData(),
                                            m_lastPoint,
                                            translateToQDragDropActions(*pdwEffect));
+
+    QGuiApplicationPrivate::mouse_buttons = toQtMouseButtons(grfKeyState);
+    m_lastKeyState = grfKeyState;
+
     if (response.isAccepted()) {
         const Qt::DropAction action = response.acceptedAction();
         if (action == Qt::MoveAction || action == Qt::TargetMoveAction) {
