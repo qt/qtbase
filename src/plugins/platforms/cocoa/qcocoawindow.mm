@@ -514,7 +514,7 @@ QRect QCocoaWindow::geometry() const
         NSRect screenRect = [[m_contentView window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
         NSPoint screenPoint = screenRect.origin;
         QPoint position = qt_mac_flipPoint(screenPoint).toPoint();
-        QSize size = QRectF::fromCGRect([m_contentView bounds]).toRect().size();
+        QSize size = QRectF::fromCGRect(NSRectToCGRect([m_contentView bounds])).toRect().size();
         return QRect(position, size);
     }
 
@@ -1117,7 +1117,7 @@ void QCocoaWindow::propagateSizeHints()
     QSize sizeIncrement = windowSizeIncrement();
     if (sizeIncrement.isEmpty())
         sizeIncrement = QSize(1, 1);
-    [m_nsWindow setResizeIncrements:sizeIncrement.toCGSize()];
+    [m_nsWindow setResizeIncrements:NSSizeFromCGSize(sizeIncrement.toCGSize())];
 
     QRect rect = geometry();
     QSize baseSize = windowBaseSize();
