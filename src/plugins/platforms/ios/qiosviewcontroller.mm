@@ -228,6 +228,10 @@
 
 @implementation QIOSViewController
 
+@synthesize prefersStatusBarHidden;
+@synthesize preferredStatusBarUpdateAnimation;
+@synthesize preferredStatusBarStyle;
+
 - (id)initWithQIOSScreen:(QIOSScreen *)screen
 {
     if (self = [self init]) {
