@@ -455,20 +455,25 @@ public class QtNative
         }
     }
 
-    public static int checkSelfPermission(final String permission)
+    public static Context getContext() {
+        if (m_activity != null)
+            return m_activity;
+        return m_service;
+    }
+
+    public static int checkSelfPermission(String permission)
     {
         int perm = PackageManager.PERMISSION_DENIED;
         synchronized (m_mainActivityMutex) {
-            if (m_activity == null)
-                return perm;
+            Context context = getContext();
             try {
                 if (Build.VERSION.SDK_INT >= 23) {
                     if (m_checkSelfPermissionMethod == null)
                         m_checkSelfPermissionMethod = Context.class.getMethod("checkSelfPermission", String.class);
-                    perm = (Integer)m_checkSelfPermissionMethod.invoke(m_activity, permission);
+                    perm = (Integer)m_checkSelfPermissionMethod.invoke(context, permission);
                 } else {
-                    final PackageManager pm = m_activity.getPackageManager();
-                    perm = pm.checkPermission(permission, m_activity.getPackageName());
+                    final PackageManager pm = context.getPackageManager();
+                    perm = pm.checkPermission(permission, context.getApplicationContext().getPackageName());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -830,6 +835,8 @@ public class QtNative
     public static native void onNewIntent(Intent data);
 
     public static native void runPendingCppRunnables();
+
+    public static native void sendRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
 
     private static native void setNativeActivity(Activity activity);
     private static native void setNativeService(Service service);

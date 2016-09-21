@@ -139,6 +139,9 @@ public slots:
 signals:
     DEFINE_CMDLINE_SIGNAL;
 
+#define QTBUG55853(X) PD_DEFINE1(X, signalQTBUG55853)
+#define PD_EMPTY /* empty */
+    void QTBUG55853(PD_EMPTY)();
 };
 
 #undef QString

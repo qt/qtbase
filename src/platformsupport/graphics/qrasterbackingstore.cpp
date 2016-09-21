@@ -62,11 +62,18 @@ void QRasterBackingStore::resize(const QSize &size, const QRegion &staticContent
     if (m_image.size() == effectiveBufferSize)
         return;
 
-    QImage::Format format = window()->format().hasAlpha() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
-    m_image = QImage(effectiveBufferSize, format);
+    m_image = QImage(effectiveBufferSize, format());
     m_image.setDevicePixelRatio(windowDevicePixelRatio);
-    if (format == QImage::Format_ARGB32_Premultiplied)
+    if (m_image.format() == QImage::Format_ARGB32_Premultiplied)
         m_image.fill(Qt::transparent);
+}
+
+QImage::Format QRasterBackingStore::format() const
+{
+    if (window()->format().hasAlpha())
+        return QImage::Format_ARGB32_Premultiplied;
+    else
+        return QImage::Format_RGB32;
 }
 
 QPaintDevice *QRasterBackingStore::paintDevice()

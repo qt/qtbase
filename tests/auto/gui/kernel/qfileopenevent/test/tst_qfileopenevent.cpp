@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QTemporaryDir>
 #include <QtTest/QtTest>
 #include <QtGui/qevent.h>
 
@@ -38,6 +39,7 @@ public:
 
 public slots:
     void initTestCase();
+    void cleanupTestCase();
 
 private slots:
     void constructor();
@@ -54,6 +56,9 @@ private:
     bool appendFileContent(QFileOpenEvent& event, const QByteArray& writeContent);
 
     bool event(QEvent *);
+
+    QTemporaryDir m_temporaryDir;
+    QString m_originalCurrent;
 };
 
 tst_qfileopenevent::~tst_qfileopenevent()
@@ -62,6 +67,13 @@ tst_qfileopenevent::~tst_qfileopenevent()
 
 void tst_qfileopenevent::initTestCase()
 {
+    m_originalCurrent = QDir::currentPath();
+    QDir::setCurrent(m_temporaryDir.path());
+}
+
+void tst_qfileopenevent::cleanupTestCase()
+{
+    QDir::setCurrent(m_originalCurrent);
 }
 
 void tst_qfileopenevent::createFile(const QString &filename, const QByteArray &content)

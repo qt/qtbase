@@ -135,8 +135,8 @@ public:
     template <class Rep, class Period>
     bool try_lock_for(std::chrono::duration<Rep, Period> duration)
     {
-        // § 30.4.1.3.5 [thread.timedmutex.requirements] specifies that a
-        // duration less than or equal to duration.zero() shall result in a
+        // N4606 § 30.4.1.3 [thread.timedmutex.requirements]/5 specifies that
+        // a duration less than or equal to duration.zero() shall result in a
         // try_lock, unlike QMutex's tryLock with a negative duration which
         // results in a lock.
 
@@ -150,7 +150,7 @@ public:
     bool try_lock_until(std::chrono::time_point<Clock, Duration> timePoint)
     {
         // Implemented in terms of try_lock_for to honor the similar
-        // requirement in § 30.4.1.3.12 [thread.timedmutex.requirements]
+        // requirement in N4606 § 30.4.1.3 [thread.timedmutex.requirements]/12.
 
         return try_lock_for(timePoint - Clock::now());
     }

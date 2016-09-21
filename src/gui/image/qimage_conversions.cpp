@@ -134,7 +134,8 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     Q_ASSERT(dest->format > QImage::Format_Indexed8);
     Q_ASSERT(src->format > QImage::Format_Indexed8);
     const int buffer_size = 2048;
-    uint buffer[buffer_size];
+    uint buf[buffer_size];
+    uint *buffer = buf;
     const QPixelLayout *srcLayout = &qPixelLayouts[src->format];
     const QPixelLayout *destLayout = &qPixelLayouts[dest->format];
     const uchar *srcData = src->data;
@@ -169,11 +170,16 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
         int x = 0;
         while (x < src->width) {
             dither.x = x;
-            int l = qMin(src->width - x, buffer_size);
+            int l = src->width - x;
+            if (destLayout->bpp == QPixelLayout::BPP32)
+                buffer = reinterpret_cast<uint *>(destData) + x;
+            else
+                l = qMin(l, buffer_size);
             const uint *ptr = fetch(buffer, srcData, x, l);
             ptr = convertToARGB32PM(buffer, ptr, l, 0, ditherPtr);
             ptr = convertFromARGB32PM(buffer, ptr, l, 0, ditherPtr);
-            store(destData, ptr, x, l);
+            if (ptr != reinterpret_cast<uint *>(destData))
+                store(destData, ptr, x, l);
             x += l;
         }
         srcData += src->bytes_per_line;

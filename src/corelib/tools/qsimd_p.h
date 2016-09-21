@@ -468,6 +468,9 @@ static inline quint64 qCpuFeatures()
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)
 
+#define ALIGNMENT_PROLOGUE_32BYTES(ptr, i, length) \
+    for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((8 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x7)) & 0x7))); ++i)
+
 QT_END_NAMESPACE
 
 #endif // QSIMD_P_H

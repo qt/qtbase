@@ -68,6 +68,8 @@ public:
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
     void setOrientationUpdateMask(Qt::ScreenOrientations mask) Q_DECL_OVERRIDE;
 
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const override;
+
     UIScreen *uiScreen() const;
     UIWindow *uiWindow() const;
 

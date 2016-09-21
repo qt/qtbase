@@ -62,13 +62,16 @@ public:
     QRasterBackingStore(QWindow *window);
     ~QRasterBackingStore();
 
-    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
-    QImage toImage() const Q_DECL_OVERRIDE;
-    void resize (const QSize &size, const QRegion &) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
     bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
     void beginPaint(const QRegion &region) Q_DECL_OVERRIDE;
 
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    QImage toImage() const Q_DECL_OVERRIDE;
+
 protected:
+    virtual QImage::Format format() const;
+
     QImage m_image;
 };
 

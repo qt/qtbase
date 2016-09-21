@@ -1211,9 +1211,13 @@ QString QKeySequence::encodeString(int key)
 
 static inline void addKey(QString &str, const QString &theKey, QKeySequence::SequenceFormat format)
 {
-    if (!str.isEmpty())
-        str += (format == QKeySequence::NativeText) ? QCoreApplication::translate("QShortcut", "+")
-                                                    : QString::fromLatin1("+");
+    if (!str.isEmpty()) {
+        if (format == QKeySequence::NativeText)
+            str += QCoreApplication::translate("QShortcut", "+");
+        else
+            str += QLatin1Char('+');
+    }
+
     str += theKey;
 }
 

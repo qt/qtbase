@@ -49,6 +49,7 @@
 
 struct IDWriteFont;
 struct IDWriteFontFace;
+struct IDWriteFontFile;
 struct IDWriteFactory;
 struct IDWriteBitmapRenderTarget;
 struct IDWriteGdiInterop;
@@ -92,6 +93,7 @@ public:
     QFixed leading() const Q_DECL_OVERRIDE;
     QFixed xHeight() const Q_DECL_OVERRIDE;
     qreal maxCharWidth() const Q_DECL_OVERRIDE;
+    FaceId faceId() const Q_DECL_OVERRIDE;
 
     bool supportsSubPixelPositions() const Q_DECL_OVERRIDE;
 
@@ -113,6 +115,7 @@ private:
     QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
     void collectMetrics();
     void renderGlyphRun(QImage *destination, float r, float g, float b, float a, IDWriteGlyphRunAnalysis *glyphAnalysis, const QRect &boundingRect);
+    static QString filenameFromFontFile(IDWriteFontFile *fontFile);
 
     const QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
 

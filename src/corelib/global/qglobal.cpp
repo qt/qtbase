@@ -1179,6 +1179,12 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     \value WV_None Operating system other than Windows.
 
+    \omitvalue WV_CE
+    \omitvalue WV_CENET
+    \omitvalue WV_CE_5
+    \omitvalue WV_CE_6
+    \omitvalue WV_CE_based
+
     \sa MacVersion
 */
 
@@ -1255,7 +1261,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \macro Q_OS_DARWIN
     \relates <QtGlobal>
 
-    Defined on Darwin-based operating systems such as \macOS, iOS, watchOS, and tvOS.
+    Defined on Darwin-based operating systems such as \macos, iOS, watchOS, and tvOS.
 */
 
 /*!

@@ -56,6 +56,7 @@
 
 #include <QtCore/qfileinfo.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/qpainter.h>
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 #include <QtPlatformSupport/private/qabstractfileiconengine_p.h>
@@ -197,7 +198,7 @@ QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height)
 
     CGRect rect = CGRectMake(0, 0, width, height);
 
-    CGContextRef ctx = qt_mac_cg_context(&ret);
+    QMacCGContext ctx(&ret);
     CGAffineTransform old_xform = CGContextGetCTM(ctx);
     CGContextConcatCTM(ctx, CGAffineTransformInvert(old_xform));
     CGContextConcatCTM(ctx, CGAffineTransformIdentity);
@@ -205,7 +206,6 @@ QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height)
     ::RGBColor b;
     b.blue = b.green = b.red = 255*255;
     PlotIconRefInContext(ctx, &rect, kAlignNone, kTransformNone, &b, kPlotIconRefNormalFlags, icon);
-    CGContextRelease(ctx);
     return ret;
 }
 

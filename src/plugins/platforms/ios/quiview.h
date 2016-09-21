@@ -44,14 +44,18 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
+QT_BEGIN_NAMESPACE
+
 class QIOSWindow;
+
+QT_END_NAMESPACE
 
 @class QIOSViewController;
 
 @interface QUIView : UIView
 {
   @public
-    QIOSWindow *m_qioswindow;
+    QT_PREPEND_NAMESPACE(QIOSWindow) *m_qioswindow;
   @private
     QHash<UITouch *, QWindowSystemInterface::TouchPoint> m_activeTouches;
     int m_nextTouchId;
@@ -60,7 +64,7 @@ class QIOSWindow;
     NSMutableArray *m_accessibleElements;
 };
 
-- (id)initWithQIOSWindow:(QIOSWindow *)window;
+- (id)initWithQIOSWindow:(QT_PREPEND_NAMESPACE(QIOSWindow) *)window;
 - (void)sendUpdatedExposeEvent;
 - (BOOL)isActiveWindow;
 @end

@@ -415,7 +415,7 @@ QSize QPushButton::sizeHint() const
     QString s(text());
     bool empty = s.isEmpty();
     if (empty)
-        s = QString::fromLatin1("XXXX");
+        s = QStringLiteral("XXXX");
     QFontMetrics fm = fontMetrics();
     QSize sz = fm.size(Qt::TextShowMnemonic, s);
     if(!empty || !w)

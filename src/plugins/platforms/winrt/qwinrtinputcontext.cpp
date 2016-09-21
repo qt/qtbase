@@ -86,30 +86,31 @@ QWinRTInputContext::QWinRTInputContext(QWinRTScreen *screen)
 {
     qCDebug(lcQpaInputMethods) << __FUNCTION__ << screen;
 
-    ComPtr<IInputPaneStatics> statics;
-    if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_InputPane).Get(),
-                                    &statics))) {
-        qWarning("failed to retrieve input pane statics.");
-        return;
-    }
+    QEventDispatcherWinRT::runOnXamlThread([this]() {
+        ComPtr<IInputPaneStatics> statics;
+        if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_InputPane).Get(),
+                                        &statics))) {
+            qWarning("failed to retrieve input pane statics.");
+            return S_OK;
+        }
 
-    ComPtr<IInputPane> inputPane;
-    statics->GetForCurrentView(&inputPane);
-    if (inputPane) {
-        QEventDispatcherWinRT::runOnXamlThread([this, inputPane]() {
+        ComPtr<IInputPane> inputPane;
+        statics->GetForCurrentView(&inputPane);
+        if (inputPane) {
             EventRegistrationToken showToken, hideToken;
             inputPane->add_Showing(Callback<InputPaneVisibilityHandler>(
                 this, &QWinRTInputContext::onShowing).Get(), &showToken);
             inputPane->add_Hiding(Callback<InputPaneVisibilityHandler>(
                 this, &QWinRTInputContext::onHiding).Get(), &hideToken);
-            return S_OK;
-        });
 
-        m_keyboardRect = getInputPaneRect(inputPane, m_screen->scaleFactor());
-        m_isInputPanelVisible = !m_keyboardRect.isEmpty();
-    } else {
-        qWarning("failed to retrieve InputPane.");
-    }
+            m_keyboardRect = getInputPaneRect(inputPane, m_screen->scaleFactor());
+            m_isInputPanelVisible = !m_keyboardRect.isEmpty();
+        } else {
+            qWarning("failed to retrieve InputPane.");
+        }
+        return S_OK;
+    });
+
     connect(QGuiApplication::inputMethod(), &QInputMethod::cursorRectangleChanged,
             this, &QWinRTInputContext::updateScreenCursorRect);
 }

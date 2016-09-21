@@ -52,6 +52,7 @@
 #include <private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
+#include <QtGui/private/qcoregraphics_p.h>
 
 #include <AppKit/AppKit.h>
 

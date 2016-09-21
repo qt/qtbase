@@ -43,10 +43,10 @@
 #include <QtCore/qeventloop.h>
 #include <qpa/qplatformdialoghelper.h>
 
-QT_BEGIN_NAMESPACE
-
 Q_FORWARD_DECLARE_OBJC_CLASS(UIAlertController);
 Q_FORWARD_DECLARE_OBJC_CLASS(UIAlertAction);
+
+QT_BEGIN_NAMESPACE
 
 class QIOSMessageDialog : public QPlatformMessageDialogHelper
 {

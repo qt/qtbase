@@ -3263,341 +3263,71 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
     return buffer;
 }
 
-static SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
-    // Untransformed
-    {
-        0, // Invalid
-        fetchUntransformed,         // Mono
-        fetchUntransformed,         // MonoLsb
-        fetchUntransformed,         // Indexed8
-        fetchUntransformedARGB32PM, // RGB32
-        fetchUntransformed,         // ARGB32
-        fetchUntransformedARGB32PM, // ARGB32_Premultiplied
-        fetchUntransformedRGB16,    // RGB16
-        fetchUntransformed,         // ARGB8565_Premultiplied
-        fetchUntransformed,         // RGB666
-        fetchUntransformed,         // ARGB6666_Premultiplied
-        fetchUntransformed,         // RGB555
-        fetchUntransformed,         // ARGB8555_Premultiplied
-        fetchUntransformed,         // RGB888
-        fetchUntransformed,         // RGB444
-        fetchUntransformed,         // ARGB4444_Premultiplied
-        fetchUntransformed,         // RGBX8888
-        fetchUntransformed,         // RGBA8888
-        fetchUntransformed,         // RGBA8888_Premultiplied
-        fetchUntransformed,         // Format_BGR30
-        fetchUntransformed,         // Format_A2BGR30_Premultiplied
-        fetchUntransformed,         // Format_RGB30
-        fetchUntransformed,         // Format_A2RGB30_Premultiplied
-        fetchUntransformed,         // Alpha8
-        fetchUntransformed,         // Grayscale8
-    },
-    // Tiled
-    {
-        0, // Invalid
-        fetchUntransformed,         // Mono
-        fetchUntransformed,         // MonoLsb
-        fetchUntransformed,         // Indexed8
-        fetchUntransformedARGB32PM, // RGB32
-        fetchUntransformed,         // ARGB32
-        fetchUntransformedARGB32PM, // ARGB32_Premultiplied
-        fetchUntransformedRGB16,    // RGB16
-        fetchUntransformed,         // ARGB8565_Premultiplied
-        fetchUntransformed,         // RGB666
-        fetchUntransformed,         // ARGB6666_Premultiplied
-        fetchUntransformed,         // RGB555
-        fetchUntransformed,         // ARGB8555_Premultiplied
-        fetchUntransformed,         // RGB888
-        fetchUntransformed,         // RGB444
-        fetchUntransformed,         // ARGB4444_Premultiplied
-        fetchUntransformed,         // RGBX8888
-        fetchUntransformed,         // RGBA8888
-        fetchUntransformed,         // RGBA8888_Premultiplied
-        fetchUntransformed,         // BGR30
-        fetchUntransformed,         // A2BGR30_Premultiplied
-        fetchUntransformed,         // RGB30
-        fetchUntransformed,         // A2RGB30_Premultiplied
-        fetchUntransformed,         // Alpha8
-        fetchUntransformed,         // Grayscale8
-    },
-    // Transformed
-    {
-        0, // Invalid
-        fetchTransformed<BlendTransformed>,         // Mono
-        fetchTransformed<BlendTransformed>,         // MonoLsb
-        fetchTransformed<BlendTransformed>,         // Indexed8
-        fetchTransformedARGB32PM<BlendTransformed>, // RGB32
-        fetchTransformed<BlendTransformed>,         // ARGB32
-        fetchTransformedARGB32PM<BlendTransformed>, // ARGB32_Premultiplied
-        fetchTransformed<BlendTransformed>,         // RGB16
-        fetchTransformed<BlendTransformed>,         // ARGB8565_Premultiplied
-        fetchTransformed<BlendTransformed>,         // RGB666
-        fetchTransformed<BlendTransformed>,         // ARGB6666_Premultiplied
-        fetchTransformed<BlendTransformed>,         // RGB555
-        fetchTransformed<BlendTransformed>,         // ARGB8555_Premultiplied
-        fetchTransformed<BlendTransformed>,         // RGB888
-        fetchTransformed<BlendTransformed>,         // RGB444
-        fetchTransformed<BlendTransformed>,         // ARGB4444_Premultiplied
-        fetchTransformed<BlendTransformed>,         // RGBX8888
-        fetchTransformed<BlendTransformed>,         // RGBA8888
-        fetchTransformed<BlendTransformed>,         // RGBA8888_Premultiplied
-        fetchTransformed<BlendTransformed>,         // BGR30
-        fetchTransformed<BlendTransformed>,         // A2BGR30_Premultiplied
-        fetchTransformed<BlendTransformed>,         // RGB30
-        fetchTransformed<BlendTransformed>,         // A2RGB30_Premultiplied
-        fetchTransformed<BlendTransformed>,         // Alpah8
-        fetchTransformed<BlendTransformed>,         // Grayscale8
-    },
-    {
-        0, // TransformedTiled
-        fetchTransformed<BlendTransformedTiled>,            // Mono
-        fetchTransformed<BlendTransformedTiled>,            // MonoLsb
-        fetchTransformed<BlendTransformedTiled>,            // Indexed8
-        fetchTransformedARGB32PM<BlendTransformedTiled>,    // RGB32
-        fetchTransformed<BlendTransformedTiled>,            // ARGB32
-        fetchTransformedARGB32PM<BlendTransformedTiled>,    // ARGB32_Premultiplied
-        fetchTransformed<BlendTransformedTiled>,            // RGB16
-        fetchTransformed<BlendTransformedTiled>,            // ARGB8565_Premultiplied
-        fetchTransformed<BlendTransformedTiled>,            // RGB666
-        fetchTransformed<BlendTransformedTiled>,            // ARGB6666_Premultiplied
-        fetchTransformed<BlendTransformedTiled>,            // RGB555
-        fetchTransformed<BlendTransformedTiled>,            // ARGB8555_Premultiplied
-        fetchTransformed<BlendTransformedTiled>,            // RGB888
-        fetchTransformed<BlendTransformedTiled>,            // RGB444
-        fetchTransformed<BlendTransformedTiled>,            // ARGB4444_Premultiplied
-        fetchTransformed<BlendTransformedTiled>,            // RGBX8888
-        fetchTransformed<BlendTransformedTiled>,            // RGBA8888
-        fetchTransformed<BlendTransformedTiled>,            // RGBA8888_Premultiplied
-        fetchTransformed<BlendTransformedTiled>,            // BGR30
-        fetchTransformed<BlendTransformedTiled>,            // A2BGR30_Premultiplied
-        fetchTransformed<BlendTransformedTiled>,            // RGB30
-        fetchTransformed<BlendTransformedTiled>,            // A2RGB30_Premultiplied
-        fetchTransformed<BlendTransformedTiled>,            // Alpha8
-        fetchTransformed<BlendTransformedTiled>,            // Grayscale8
-    },
-    {
-        0, // Bilinear
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // Mono
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // MonoLsb
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // Indexed8
-        fetchTransformedBilinearARGB32PM<BlendTransformedBilinear>, // RGB32
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // ARGB32
-        fetchTransformedBilinearARGB32PM<BlendTransformedBilinear>, // ARGB32_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGB16
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // ARGB8565_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGB666
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // ARGB6666_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGB555
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // ARGB8555_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGB888
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGB444
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // ARGB4444_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGBX8888
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGBA8888
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGBA8888_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // BGR30
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // A2BGR30_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGB30
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // A2RGB30_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // Alpha8
-        fetchTransformedBilinear<BlendTransformedBilinear>,         // Grayscale8
-    },
-    {
-        0, // BilinearTiled
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // Mono
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // MonoLsb
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // Indexed8
-        fetchTransformedBilinearARGB32PM<BlendTransformedBilinearTiled>,    // RGB32
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // ARGB32
-        fetchTransformedBilinearARGB32PM<BlendTransformedBilinearTiled>,    // ARGB32_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGB16
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // ARGB8565_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGB666
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // ARGB6666_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGB555
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // ARGB8555_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGB888
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGB444
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // ARGB4444_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGBX8888
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGBA8888
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGBA8888_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // BGR30
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // A2BGR30_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGB30
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // A2RGB30_Premultiplied
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // Alpha8
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // Grayscale8
-    },
+// FetchUntransformed can have more specialized methods added depending on SIMD features.
+static SourceFetchProc sourceFetchUntransformed[QImage::NImageFormats] = {
+    0,                          // Invalid
+    fetchUntransformed,         // Mono
+    fetchUntransformed,         // MonoLsb
+    fetchUntransformed,         // Indexed8
+    fetchUntransformedARGB32PM, // RGB32
+    fetchUntransformed,         // ARGB32
+    fetchUntransformedARGB32PM, // ARGB32_Premultiplied
+    fetchUntransformedRGB16,    // RGB16
+    fetchUntransformed,         // ARGB8565_Premultiplied
+    fetchUntransformed,         // RGB666
+    fetchUntransformed,         // ARGB6666_Premultiplied
+    fetchUntransformed,         // RGB555
+    fetchUntransformed,         // ARGB8555_Premultiplied
+    fetchUntransformed,         // RGB888
+    fetchUntransformed,         // RGB444
+    fetchUntransformed,         // ARGB4444_Premultiplied
+    fetchUntransformed,         // RGBX8888
+    fetchUntransformed,         // RGBA8888
+    fetchUntransformed,         // RGBA8888_Premultiplied
+    fetchUntransformed,         // Format_BGR30
+    fetchUntransformed,         // Format_A2BGR30_Premultiplied
+    fetchUntransformed,         // Format_RGB30
+    fetchUntransformed,         // Format_A2RGB30_Premultiplied
+    fetchUntransformed,         // Alpha8
+    fetchUntransformed,         // Grayscale8
 };
 
-static SourceFetchProc64 sourceFetch64[NBlendTypes][QImage::NImageFormats] = {
-    // Untransformed
-    {
-        0, // Invalid
-        fetchUntransformed64,         // Mono
-        fetchUntransformed64,         // MonoLsb
-        fetchUntransformed64,         // Indexed8
-        fetchUntransformed64,         // RGB32
-        fetchUntransformed64,         // ARGB32
-        fetchUntransformed64,         // ARGB32_Premultiplied
-        fetchUntransformed64,         // RGB16
-        fetchUntransformed64,         // ARGB8565_Premultiplied
-        fetchUntransformed64,         // RGB666
-        fetchUntransformed64,         // ARGB6666_Premultiplied
-        fetchUntransformed64,         // RGB555
-        fetchUntransformed64,         // ARGB8555_Premultiplied
-        fetchUntransformed64,         // RGB888
-        fetchUntransformed64,         // RGB444
-        fetchUntransformed64,         // ARGB4444_Premultiplied
-        fetchUntransformed64,         // RGBX8888
-        fetchUntransformed64,         // RGBA8888
-        fetchUntransformed64,         // RGBA8888_Premultiplied
-        fetchUntransformed64,         // Format_BGR30
-        fetchUntransformed64,         // Format_A2BGR30_Premultiplied
-        fetchUntransformed64,         // Format_RGB30
-        fetchUntransformed64,         // Format_A2RGB30_Premultiplied
-        fetchUntransformed64,         // Alpha8
-        fetchUntransformed64,         // Grayscale8
-    },
-    // Tiled
-    {
-        0, // Invalid
-        fetchUntransformed64,         // Mono
-        fetchUntransformed64,         // MonoLsb
-        fetchUntransformed64,         // Indexed8
-        fetchUntransformed64,         // RGB32
-        fetchUntransformed64,         // ARGB32
-        fetchUntransformed64,         // ARGB32_Premultiplied
-        fetchUntransformed64,         // RGB16
-        fetchUntransformed64,         // ARGB8565_Premultiplied
-        fetchUntransformed64,         // RGB666
-        fetchUntransformed64,         // ARGB6666_Premultiplied
-        fetchUntransformed64,         // RGB555
-        fetchUntransformed64,         // ARGB8555_Premultiplied
-        fetchUntransformed64,         // RGB888
-        fetchUntransformed64,         // RGB444
-        fetchUntransformed64,         // ARGB4444_Premultiplied
-        fetchUntransformed64,         // RGBX8888
-        fetchUntransformed64,         // RGBA8888
-        fetchUntransformed64,         // RGBA8888_Premultiplied
-        fetchUntransformed64,         // BGR30
-        fetchUntransformed64,         // A2BGR30_Premultiplied
-        fetchUntransformed64,         // RGB30
-        fetchUntransformed64,         // A2RGB30_Premultiplied
-        fetchUntransformed64,         // Alpha8
-        fetchUntransformed64,         // Grayscale8
-    },
-    // Transformed
-    {
-        0, // Invalid
-        fetchTransformed64<BlendTransformed>,         // Mono
-        fetchTransformed64<BlendTransformed>,         // MonoLsb
-        fetchTransformed64<BlendTransformed>,         // Indexed8
-        fetchTransformed64<BlendTransformed>,         // RGB32
-        fetchTransformed64<BlendTransformed>,         // ARGB32
-        fetchTransformed64<BlendTransformed>,         // ARGB32_Premultiplied
-        fetchTransformed64<BlendTransformed>,         // RGB16
-        fetchTransformed64<BlendTransformed>,         // ARGB8565_Premultiplied
-        fetchTransformed64<BlendTransformed>,         // RGB666
-        fetchTransformed64<BlendTransformed>,         // ARGB6666_Premultiplied
-        fetchTransformed64<BlendTransformed>,         // RGB555
-        fetchTransformed64<BlendTransformed>,         // ARGB8555_Premultiplied
-        fetchTransformed64<BlendTransformed>,         // RGB888
-        fetchTransformed64<BlendTransformed>,         // RGB444
-        fetchTransformed64<BlendTransformed>,         // ARGB4444_Premultiplied
-        fetchTransformed64<BlendTransformed>,         // RGBX8888
-        fetchTransformed64<BlendTransformed>,         // RGBA8888
-        fetchTransformed64<BlendTransformed>,         // RGBA8888_Premultiplied
-        fetchTransformed64<BlendTransformed>,         // BGR30
-        fetchTransformed64<BlendTransformed>,         // A2BGR30_Premultiplied
-        fetchTransformed64<BlendTransformed>,         // RGB30
-        fetchTransformed64<BlendTransformed>,         // A2RGB30_Premultiplied
-        fetchTransformed64<BlendTransformed>,         // Alpah8
-        fetchTransformed64<BlendTransformed>,         // Grayscale8
-    },
-    {
-        0, // TransformedTiled
-        fetchTransformed64<BlendTransformedTiled>,            // Mono
-        fetchTransformed64<BlendTransformedTiled>,            // MonoLsb
-        fetchTransformed64<BlendTransformedTiled>,            // Indexed8
-        fetchTransformed64<BlendTransformedTiled>,            // RGB32
-        fetchTransformed64<BlendTransformedTiled>,            // ARGB32
-        fetchTransformed64<BlendTransformedTiled>,            // ARGB32_Premultiplied
-        fetchTransformed64<BlendTransformedTiled>,            // RGB16
-        fetchTransformed64<BlendTransformedTiled>,            // ARGB8565_Premultiplied
-        fetchTransformed64<BlendTransformedTiled>,            // RGB666
-        fetchTransformed64<BlendTransformedTiled>,            // ARGB6666_Premultiplied
-        fetchTransformed64<BlendTransformedTiled>,            // RGB555
-        fetchTransformed64<BlendTransformedTiled>,            // ARGB8555_Premultiplied
-        fetchTransformed64<BlendTransformedTiled>,            // RGB888
-        fetchTransformed64<BlendTransformedTiled>,            // RGB444
-        fetchTransformed64<BlendTransformedTiled>,            // ARGB4444_Premultiplied
-        fetchTransformed64<BlendTransformedTiled>,            // RGBX8888
-        fetchTransformed64<BlendTransformedTiled>,            // RGBA8888
-        fetchTransformed64<BlendTransformedTiled>,            // RGBA8888_Premultiplied
-        fetchTransformed64<BlendTransformedTiled>,            // BGR30
-        fetchTransformed64<BlendTransformedTiled>,            // A2BGR30_Premultiplied
-        fetchTransformed64<BlendTransformedTiled>,            // RGB30
-        fetchTransformed64<BlendTransformedTiled>,            // A2RGB30_Premultiplied
-        fetchTransformed64<BlendTransformedTiled>,            // Alpha8
-        fetchTransformed64<BlendTransformedTiled>,            // Grayscale8
-    },
-    {
-        0, // Bilinear
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // Mono
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // MonoLsb
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // Indexed8
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGB32
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // ARGB32
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // ARGB32_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGB16
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // ARGB8565_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGB666
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // ARGB6666_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGB555
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // ARGB8555_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGB888
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGB444
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // ARGB4444_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGBX8888
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGBA8888
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGBA8888_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // BGR30
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // A2BGR30_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // RGB30
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // A2RGB30_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // Alpha8
-        fetchTransformedBilinear64<BlendTransformedBilinear>,         // Grayscale8
-    },
-    {
-        0, // BilinearTiled
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // Mono
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // MonoLsb
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // Indexed8
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGB32
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // ARGB32
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // ARGB32_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGB16
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // ARGB8565_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGB666
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // ARGB6666_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGB555
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // ARGB8555_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGB888
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGB444
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // ARGB4444_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGBX8888
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGBA8888
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGBA8888_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // BGR30
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // A2BGR30_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // RGB30
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // A2RGB30_Premultiplied
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // Alpha8
-        fetchTransformedBilinear64<BlendTransformedBilinearTiled>,            // Grayscale8
-    },
+static const SourceFetchProc sourceFetchGeneric[NBlendTypes] = {
+    fetchUntransformed,                                     // Untransformed
+    fetchUntransformed,                                     // Tiled
+    fetchTransformed<BlendTransformed>,                     // Transformed
+    fetchTransformed<BlendTransformedTiled>,                // TransformedTiled
+    fetchTransformedBilinear<BlendTransformedBilinear>,     // Bilinear
+    fetchTransformedBilinear<BlendTransformedBilinearTiled> // BilinearTiled
 };
+
+static SourceFetchProc sourceFetchARGB32PM[NBlendTypes] = {
+    fetchUntransformedARGB32PM,                                     // Untransformed
+    fetchUntransformedARGB32PM,                                     // Tiled
+    fetchTransformedARGB32PM<BlendTransformed>,                     // Transformed
+    fetchTransformedARGB32PM<BlendTransformedTiled>,                // TransformedTiled
+    fetchTransformedBilinearARGB32PM<BlendTransformedBilinear>,     // Bilinear
+    fetchTransformedBilinearARGB32PM<BlendTransformedBilinearTiled> // BilinearTiled
+};
+
+static const SourceFetchProc64 sourceFetchGeneric64[NBlendTypes] = {
+    fetchUntransformed64,                                     // Untransformed
+    fetchUntransformed64,                                     // Tiled
+    fetchTransformed64<BlendTransformed>,                     // Transformed
+    fetchTransformed64<BlendTransformedTiled>,                // TransformedTiled
+    fetchTransformedBilinear64<BlendTransformedBilinear>,     // Bilinear
+    fetchTransformedBilinear64<BlendTransformedBilinearTiled> // BilinearTiled
+};
+
+static inline SourceFetchProc getSourceFetch(TextureBlendType blendType, QImage::Format format)
+{
+    if (format == QImage::Format_RGB32 || format == QImage::Format_ARGB32_Premultiplied)
+        return sourceFetchARGB32PM[blendType];
+    if (blendType == BlendUntransformed || blendType == BlendTiled)
+        return sourceFetchUntransformed[format];
+    return sourceFetchGeneric[blendType];
+}
+
 
 #define FIXPT_BITS 8
 #define FIXPT_SIZE (1<<FIXPT_BITS)
@@ -3939,8 +3669,8 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
         break;
     case QSpanData::Texture:
         solidSource = !data->texture.hasAlpha;
-        op.srcFetch = sourceFetch[getBlendType(data)][data->texture.format];
-        op.srcFetch64 = sourceFetch64[getBlendType(data)][data->texture.format];
+        op.srcFetch = getSourceFetch(getBlendType(data), data->texture.format);
+        op.srcFetch64 = sourceFetchGeneric64[getBlendType(data)];
         break;
     default:
         Q_UNREACHABLE();
@@ -5483,181 +5213,67 @@ static void blend_transformed_tiled_rgb565(int count, const QSpan *spans, void *
 
 
 /* Image formats here are target formats */
-static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats] = {
-    // Untransformed
-    {
-        0, // Invalid
-        blend_untransformed_generic, // Mono
-        blend_untransformed_generic, // MonoLsb
-        blend_untransformed_generic, // Indexed8
-        blend_untransformed_generic, // RGB32
-        blend_untransformed_generic, // ARGB32
-        blend_untransformed_argb, // ARGB32_Premultiplied
-        blend_untransformed_rgb565,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-        blend_untransformed_generic_rgb64,
-        blend_untransformed_generic_rgb64,
-        blend_untransformed_generic_rgb64,
-        blend_untransformed_generic_rgb64,
-        blend_untransformed_generic,
-        blend_untransformed_generic,
-    },
-    // Tiled
-    {
-        0, // Invalid
-        blend_tiled_generic, // Mono
-        blend_tiled_generic, // MonoLsb
-        blend_tiled_generic, // Indexed8
-        blend_tiled_generic, // RGB32
-        blend_tiled_generic, // ARGB32
-        blend_tiled_argb, // ARGB32_Premultiplied
-        blend_tiled_rgb565,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic,
-        blend_tiled_generic_rgb64,
-        blend_tiled_generic_rgb64,
-        blend_tiled_generic_rgb64,
-        blend_tiled_generic_rgb64,
-        blend_tiled_generic,
-        blend_tiled_generic,
-    },
-    // Transformed
-    {
-        0, // Invalid
-        blend_src_generic, // Mono
-        blend_src_generic, // MonoLsb
-        blend_src_generic, // Indexed8
-        blend_src_generic, // RGB32
-        blend_src_generic, // ARGB32
-        blend_transformed_argb, // ARGB32_Premultiplied
-        blend_transformed_rgb565,
-        blend_src_generic, // ARGB8565_Premultiplied
-        blend_src_generic, // RGB666
-        blend_src_generic, // ARGB6666_Premultiplied
-        blend_src_generic, // RGB555
-        blend_src_generic, // ARGB8555_Premultiplied
-        blend_src_generic, // RGB888
-        blend_src_generic, // RGB444
-        blend_src_generic, // ARGB4444_Premultiplied
-        blend_src_generic, // RGBX8888
-        blend_src_generic, // RGBA8888
-        blend_src_generic, // RGBA8888_Premultiplied
-        blend_src_generic_rgb64,
-        blend_src_generic_rgb64,
-        blend_src_generic_rgb64,
-        blend_src_generic_rgb64,
-        blend_src_generic,
-        blend_src_generic,
-    },
-     // TransformedTiled
-    {
-        0,
-        blend_src_generic, // Mono
-        blend_src_generic, // MonoLsb
-        blend_src_generic, // Indexed8
-        blend_src_generic, // RGB32
-        blend_src_generic, // ARGB32
-        blend_transformed_tiled_argb, // ARGB32_Premultiplied
-        blend_transformed_tiled_rgb565,
-        blend_src_generic, // ARGB8565_Premultiplied
-        blend_src_generic, // RGB666
-        blend_src_generic, // ARGB6666_Premultiplied
-        blend_src_generic, // RGB555
-        blend_src_generic, // ARGB8555_Premultiplied
-        blend_src_generic, // RGB888
-        blend_src_generic, // RGB444
-        blend_src_generic, // ARGB4444_Premultiplied
-        blend_src_generic, // RGBX8888
-        blend_src_generic, // RGBA8888
-        blend_src_generic, // RGBA8888_Premultiplied
-        blend_src_generic_rgb64,
-        blend_src_generic_rgb64,
-        blend_src_generic_rgb64,
-        blend_src_generic_rgb64,
-        blend_src_generic,
-        blend_src_generic,
-    },
-    // Bilinear
-    {
-        0,
-        blend_src_generic, // Mono
-        blend_src_generic, // MonoLsb
-        blend_src_generic, // Indexed8
-        blend_src_generic, // RGB32
-        blend_src_generic, // ARGB32
-        blend_src_generic, // ARGB32_Premultiplied
-        blend_transformed_bilinear_rgb565,
-        blend_src_generic, // ARGB8565_Premultiplied
-        blend_src_generic, // RGB666
-        blend_src_generic, // ARGB6666_Premultiplied
-        blend_src_generic, // RGB555
-        blend_src_generic, // ARGB8555_Premultiplied
-        blend_src_generic, // RGB888
-        blend_src_generic, // RGB444
-        blend_src_generic, // ARGB4444_Premultiplied
-        blend_src_generic, // RGBX8888
-        blend_src_generic, // RGBA8888
-        blend_src_generic, // RGBA8888_Premultiplied
-        blend_src_generic_rgb64,
-        blend_src_generic_rgb64,
-        blend_src_generic_rgb64,
-        blend_src_generic_rgb64,
-        blend_src_generic,
-        blend_src_generic,
-    },
-    // BilinearTiled
-    {
-        0,
-        blend_src_generic, // Mono
-        blend_src_generic, // MonoLsb
-        blend_src_generic, // Indexed8
-        blend_src_generic, // RGB32
-        blend_src_generic, // ARGB32
-        blend_src_generic, // ARGB32_Premultiplied
-        blend_src_generic, // RGB16
-        blend_src_generic, // ARGB8565_Premultiplied
-        blend_src_generic, // RGB666
-        blend_src_generic, // ARGB6666_Premultiplied
-        blend_src_generic, // RGB555
-        blend_src_generic, // ARGB8555_Premultiplied
-        blend_src_generic, // RGB888
-        blend_src_generic, // RGB444
-        blend_src_generic, // ARGB4444_Premultiplied
-        blend_src_generic, // RGBX8888
-        blend_src_generic, // RGBA8888
-        blend_src_generic, // RGBA8888_Premultiplied
-        blend_src_generic_rgb64, // BGR30
-        blend_src_generic_rgb64, // A2BGR30_Premultiplied
-        blend_src_generic_rgb64, // RGB30
-        blend_src_generic_rgb64, // A2RGB30_Premultiplied
-        blend_src_generic, // Alpha8
-        blend_src_generic, // Grayscale8
-    }
+static const ProcessSpans processTextureSpansARGB32PM[NBlendTypes] = {
+    blend_untransformed_argb,           // Untransformed
+    blend_tiled_argb,                   // Tiled
+    blend_transformed_argb,             // Transformed
+    blend_transformed_tiled_argb,       // TransformedTiled
+    blend_src_generic,                  // TransformedBilinear
+    blend_src_generic                   // TransformedBilinearTiled
+};
+
+static const ProcessSpans processTextureSpansRGB16[NBlendTypes] = {
+    blend_untransformed_rgb565,         // Untransformed
+    blend_tiled_rgb565,                 // Tiled
+    blend_transformed_rgb565,           // Transformed
+    blend_transformed_tiled_rgb565,     // TransformedTiled
+    blend_transformed_bilinear_rgb565,  // TransformedBilinear
+    blend_src_generic                   // TransformedBilinearTiled
+};
+
+static const ProcessSpans processTextureSpansGeneric[NBlendTypes] = {
+    blend_untransformed_generic,        // Untransformed
+    blend_tiled_generic,                // Tiled
+    blend_src_generic,                  // Transformed
+    blend_src_generic,                  // TransformedTiled
+    blend_src_generic,                  // TransformedBilinear
+    blend_src_generic                   // TransformedBilinearTiled
+};
+
+static const ProcessSpans processTextureSpansGeneric64[NBlendTypes] = {
+    blend_untransformed_generic_rgb64,  // Untransformed
+    blend_tiled_generic_rgb64,          // Tiled
+    blend_src_generic_rgb64,            // Transformed
+    blend_src_generic_rgb64,            // TransformedTiled
+    blend_src_generic_rgb64,            // TransformedBilinear
+    blend_src_generic_rgb64             // TransformedBilinearTiled
 };
 
 void qBlendTexture(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-    ProcessSpans proc = processTextureSpans[getBlendType(data)][data->rasterBuffer->format];
+    TextureBlendType blendType = getBlendType(data);
+    ProcessSpans proc;
+    switch (data->rasterBuffer->format) {
+    case QImage::Format_ARGB32_Premultiplied:
+        proc = processTextureSpansARGB32PM[blendType];
+        break;
+    case QImage::Format_RGB16:
+        proc = processTextureSpansRGB16[blendType];
+        break;
+    case QImage::Format_BGR30:
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_RGB30:
+    case QImage::Format_A2RGB30_Premultiplied:
+        proc = processTextureSpansGeneric64[blendType];
+        break;
+    case QImage::Format_Invalid:
+        Q_UNREACHABLE();
+        return;
+    default:
+        proc = processTextureSpansGeneric[blendType];
+        break;
+    }
     proc(count, spans, userData);
 }
 
@@ -6548,6 +6164,15 @@ static void qInitDrawhelperFunctions()
 
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_sse2;
 
+    extern void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+    extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
+    extern void QT_FASTCALL comp_func_Source_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+    extern void QT_FASTCALL comp_func_Plus_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_sse2;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_sse2;
+    qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_sse2;
+    qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_sse2;
+
 #ifdef QT_COMPILER_SUPPORTS_SSSE3
     if (qCpuHasFeature(SSSE3)) {
         extern void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
@@ -6563,8 +6188,7 @@ static void qInitDrawhelperFunctions()
         qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qStorePixels[QPixelLayout::BPP24] = storePixelsBPP24_ssse3;
-        sourceFetch[BlendUntransformed][QImage::Format_RGB888] = qt_fetchUntransformed_888_ssse3;
-        sourceFetch[BlendTiled][QImage::Format_RGB888] = qt_fetchUntransformed_888_ssse3;
+        sourceFetchUntransformed[QImage::Format_RGB888] = qt_fetchUntransformed_888_ssse3;
     }
 #endif // SSSE3
 
@@ -6592,24 +6216,39 @@ static void qInitDrawhelperFunctions()
     }
 #endif
 
-#if defined(QT_COMPILER_SUPPORTS_AVX2) && !defined(__AVX2__)
+#if defined(QT_COMPILER_SUPPORTS_AVX2)
     if (qCpuHasFeature(AVX2)) {
+#if !defined(__AVX2__)
         extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
                                                                     const QVector<QRgb> *, QDitherInfo *);
         extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
                                                                       const QVector<QRgb> *, QDitherInfo *);
         qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_avx2;
         qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_avx2;
+#endif
+        extern void qt_blend_rgb32_on_rgb32_avx2(uchar *destPixels, int dbpl,
+                                                 const uchar *srcPixels, int sbpl,
+                                                 int w, int h, int const_alpha);
+        extern void qt_blend_argb32_on_argb32_avx2(uchar *destPixels, int dbpl,
+                                                   const uchar *srcPixels, int sbpl,
+                                                   int w, int h, int const_alpha);
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_avx2;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_avx2;
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
+        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_avx2;
+        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_avx2;
+        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
+        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
+
+        extern void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, uint color, uint const_alpha);
+        extern void QT_FASTCALL comp_func_Source_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_avx2;
+        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_avx2;
+        qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_avx2;
     }
 #endif
-    extern void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-    extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
-    extern void QT_FASTCALL comp_func_Source_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-    extern void QT_FASTCALL comp_func_Plus_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_sse2;
-    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_sse2;
-    qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_sse2;
-    qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_sse2;
 
 #endif // SSE2
 
@@ -6634,8 +6273,7 @@ static void qInitDrawhelperFunctions()
 
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
 
-    sourceFetch[BlendUntransformed][QImage::Format_RGB888] = qt_fetchUntransformed_888_neon;
-    sourceFetch[BlendTiled][QImage::Format_RGB888] = qt_fetchUntransformed_888_neon;
+    sourceFetchUntransformed[QImage::Format_RGB888] = qt_fetchUntransformed_888_neon;
 
 #if defined(ENABLE_PIXMAN_DRAWHELPERS)
     // The RGB16 helpers are using Arm32 assemblythat has not been ported to AArch64
@@ -6696,14 +6334,9 @@ static void qInitDrawhelperFunctions()
 
         destStoreProc[QImage::Format_ARGB32] = qt_destStoreARGB32_mips_dsp;
 
-        sourceFetch[BlendUntransformed][QImage::Format_RGB888] = qt_fetchUntransformed_888_mips_dsp;
-        sourceFetch[BlendTiled][QImage::Format_RGB888] = qt_fetchUntransformed_888_mips_dsp;
-
-        sourceFetch[BlendUntransformed][QImage::Format_RGB444] = qt_fetchUntransformed_444_mips_dsp;
-        sourceFetch[BlendTiled][QImage::Format_RGB444] = qt_fetchUntransformed_444_mips_dsp;
-
-        sourceFetch[BlendUntransformed][QImage::Format_ARGB8565_Premultiplied] = qt_fetchUntransformed_argb8565_premultiplied_mips_dsp;
-        sourceFetch[BlendTiled][QImage::Format_ARGB8565_Premultiplied] = qt_fetchUntransformed_argb8565_premultiplied_mips_dsp;
+        sourceFetchUntransformed[QImage::Format_RGB888] = qt_fetchUntransformed_888_mips_dsp;
+        sourceFetchUntransformed[QImage::Format_RGB444] = qt_fetchUntransformed_444_mips_dsp;
+        sourceFetchUntransformed[QImage::Format_ARGB8565_Premultiplied] = qt_fetchUntransformed_argb8565_premultiplied_mips_dsp;
 
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
         qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_mips_dspr2;
