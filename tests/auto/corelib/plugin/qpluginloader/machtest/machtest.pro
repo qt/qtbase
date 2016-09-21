@@ -6,11 +6,16 @@ OTHER_FILES += \
 # Needs explicit load()ing due to aux template. Relies on QT being non-empty.
 load(qt)
 
+i386_d.target = good.i386.dylib
+i386_d.depends = EXPORT_VALID_ARCHS=i386
 i386.target = good.i386.dylib
-i386.commands = $(CXX) $(CXXFLAGS) -shared -arch i386 -o $@ -I$(INCPATH) $<
+i386.commands = $(CXX) $(CXXFLAGS) -shared -o $@ -I$(INCPATH) $<
 i386.depends += $$PWD/../fakeplugin.cpp
+
+x86_64_d.target = good.x86_64.dylib
+x86_64_d.depends = EXPORT_VALID_ARCHS=x86_64
 x86_64.target = good.x86_64.dylib
-x86_64.commands = $(CXX) $(CXXFLAGS) -shared -arch x86_64 -o $@ -I$(INCPATH) $<
+x86_64.commands = $(CXX) $(CXXFLAGS) -shared -o $@ -I$(INCPATH) $<
 x86_64.depends += $$PWD/../fakeplugin.cpp
 
 # Current Mac OS X toolchains have no compiler for PPC anymore
@@ -49,7 +54,7 @@ bad.depends += $$PWD/generate-bad.pl
 MYTARGETS = $$fat_all.depends fat_all fat_no_x86_64 fat_no_i386 \
             fat_stub_i386 fat_stub_x86_64 bad
 all.depends += $$MYTARGETS
-QMAKE_EXTRA_TARGETS += $$MYTARGETS all
+QMAKE_EXTRA_TARGETS += i386_d x86_64_d $$MYTARGETS all
 
 QMAKE_CLEAN += $$i386.target $$x86_64.target $$ppc64.target $$fat_all.target \
             $$fat_no_i386.target $$fat_no_x86_64.target \

@@ -7,7 +7,7 @@ contains(QMAKE_MAC_SDK, ^$${simulator.sdk}.*) {
     CONFIG += simulator $${simulator.sdk}
 }
 
-build_pass:simulator: \
+build_pass:!simulator_and_device:simulator: \
     QMAKE_MAC_SDK ~= s,^$${device.sdk},$${simulator.sdk},
 
 load(sdk)

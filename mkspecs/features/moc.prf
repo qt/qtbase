@@ -27,7 +27,7 @@ win32:count(MOC_INCLUDEPATH, 40, >) {
 # QNX's compiler sets "gcc" config, but does not support the -dM option;
 # UIKit builds are always multi-arch due to simulator_and_device (unless
 # -sdk is used) so this feature cannot possibly work.
-if(gcc|intel_icl|msvc):!rim_qcc:!uikit {
+if(gcc|intel_icl|msvc):!rim_qcc:!uikit:if(!macos|count(QMAKE_APPLE_DEVICE_ARCHS, 1)) {
     moc_predefs.CONFIG = no_link
     gcc:            moc_predefs.commands = $$QMAKE_CXX $$QMAKE_CXXFLAGS -dM -E -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
     else:intel_icl: moc_predefs.commands = $$QMAKE_CXX $$QMAKE_CXXFLAGS -QdM -P -Fi${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
