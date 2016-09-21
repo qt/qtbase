@@ -1862,12 +1862,14 @@ void QColorDialogPrivate::retranslateStrings()
 
 bool QColorDialogPrivate::canBeNativeDialog() const
 {
-    Q_Q(const QColorDialog);
+    // Don't use Q_Q here! This function is called from ~QDialog,
+    // so Q_Q calling q_func() invokes undefined behavior (invalid cast in q_func()).
+    const QDialog * const q = static_cast<const QDialog*>(q_ptr);
     if (nativeDialogInUse)
         return true;
     if (q->testAttribute(Qt::WA_DontShowOnScreen))
         return false;
-    if (q->options() & QColorDialog::DontUseNativeDialog)
+    if (options->options() & QColorDialog::DontUseNativeDialog)
         return false;
 
     QLatin1String staticName(QColorDialog::staticMetaObject.className());
