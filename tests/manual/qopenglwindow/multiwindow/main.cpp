@@ -26,14 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QOpenGLWindow>
-#include <QOpenGLContext>
-#include <QOpenGLFunctions>
-#include <QPainter>
-#include <QElapsedTimer>
-#include <QCommandLineParser>
-#include <QScreen>
+#include <QtGui>
 
 const char applicationDescription[] = "\n\
 This application opens multiple windows and continuously schedules updates for\n\
@@ -62,66 +55,94 @@ class Window : public QOpenGLWindow
 {
     Q_OBJECT
 public:
-    Window(int n) : idx(n) {
-        r = g = b = fps = 0;
-        y = 0;
+    Window(int index) : windowNumber(index + 1), x(0), framesSwapped(0) {
+
+        color = QColor::fromHsl((index * 30) % 360, 255, 127).toRgb();
+
         resize(200, 200);
 
+        setObjectName(QString("Window %1").arg(windowNumber));
+
         connect(this, SIGNAL(frameSwapped()), SLOT(frameSwapped()));
-        fpsTimer.start();
     }
 
     void paintGL() {
         QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-        f->glClearColor(r, g, b, 1);
+        f->glClearColor(color.redF(), color.greenF(), color.blueF(), 1);
         f->glClear(GL_COLOR_BUFFER_BIT);
-        switch (idx % 3) {
-        case 0:
-            r += 0.005f;
-            break;
-        case 1:
-            g += 0.005f;
-            break;
-        case 2:
-            b += 0.005f;
-            break;
-        }
-        if (r > 1)
-            r = 0;
-        if (g > 1)
-            g = 0;
-        if (b > 1)
-            b = 0;
 
-        QPainter p(this);
-        p.setPen(Qt::white);
-        p.drawText(QPoint(20, y), QString(QLatin1String("Window %1 (%2 FPS)")).arg(idx).arg(fps));
-        y += 1;
-        if (y > height() - 20)
-            y = 20;
-
-        update();
+        QPainter painter(this);
+        painter.drawLine(x, 0, x, height());
+        x = ++x % width();
     }
 
 public slots:
     void frameSwapped() {
         ++framesSwapped;
-        if (fpsTimer.elapsed() > 1000) {
-            fps = qRound(framesSwapped * (1000.0 / fpsTimer.elapsed()));
-            framesSwapped = 0;
-            fpsTimer.restart();
-        }
+        update();
+    }
+
+protected:
+    void exposeEvent(QExposeEvent *event) {
+        if (!isExposed())
+            return;
+
+        QSurfaceFormat format = context()->format();
+        qDebug() << this << format.swapBehavior() << "with Vsync =" << (format.swapInterval() ? "ON" : "OFF");
+        if (format.swapInterval() != requestedFormat().swapInterval())
+            qWarning() << "WARNING: Did not get requested swap interval of" << requestedFormat().swapInterval() << "for" << this;
+
+        QOpenGLWindow::exposeEvent(event);
+    }
+
+    void mousePressEvent(QMouseEvent *event) {
+        qDebug() << this << event;
+        color.setHsl((color.hue() + 90) % 360, color.saturation(), color.lightness());
+        color = color.toRgb();
     }
 
 private:
-    int idx;
-    GLfloat r, g, b;
-    int y;
+    int windowNumber;
+    QColor color;
+    int x;
 
     int framesSwapped;
-    QElapsedTimer fpsTimer;
-    int fps;
+    friend void printFps();
 };
+
+static const qreal kFpsInterval = 500;
+
+void printFps()
+{
+    static QElapsedTimer timer;
+    if (!timer.isValid()) {
+        timer.start();
+        return;
+    }
+
+    const qreal frameFactor = (kFpsInterval / timer.elapsed()) * (1000.0 / kFpsInterval);
+
+    QDebug output = qDebug().nospace();
+
+    qreal averageFps = 0;
+    const QWindowList windows = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < windows.size(); ++i) {
+        Window *w = qobject_cast<Window*>(windows.at(i));
+        Q_ASSERT(w);
+
+        int fps = qRound(w->framesSwapped * frameFactor);
+        output << (i + 1) << "=" << fps << ", ";
+
+        averageFps += fps;
+        w->framesSwapped = 0;
+    }
+    averageFps = qRound(averageFps / windows.size());
+    qreal msPerFrame = 1000.0 / averageFps;
+
+    output << "avg=" << averageFps << ", ms=" << msPerFrame;
+
+    timer.restart();
+}
 
 int main(int argc, char **argv)
 {
@@ -144,30 +165,24 @@ int main(int argc, char **argv)
 
     parser.process(app);
 
-    QSurfaceFormat fmt;
-    if (parser.isSet(noVsyncOption)) {
-        qDebug("swap interval 0 (no throttling)");
-        fmt.setSwapInterval(0);
-    } else {
-        qDebug("swap interval 1 (sync to vblank)");
-    }
-    QSurfaceFormat::setDefaultFormat(fmt);
+    QSurfaceFormat defaultSurfaceFormat;
+    defaultSurfaceFormat.setSwapInterval(parser.isSet(noVsyncOption) ? 0 : 1);
+    QSurfaceFormat::setDefaultFormat(defaultSurfaceFormat);
 
     QRect availableGeometry = app.primaryScreen()->availableGeometry();
 
     int numberOfWindows = qMax(parser.value(numWindowsOption).toInt(), 1);
     QList<QWindow *> windows;
     for (int i = 0; i < numberOfWindows; ++i) {
-        Window *w = new Window(i + 1);
+        Window *w = new Window(i);
         windows << w;
 
         if (i == 0 && parser.isSet(vsyncOneOption)) {
-            qDebug("swap interval 1 for first window only");
-            QSurfaceFormat vsyncedSurfaceFormat = fmt;
+            QSurfaceFormat vsyncedSurfaceFormat = defaultSurfaceFormat;
             vsyncedSurfaceFormat.setSwapInterval(1);
             w->setFormat(vsyncedSurfaceFormat);
-            fmt.setSwapInterval(0);
-            QSurfaceFormat::setDefaultFormat(fmt);
+            defaultSurfaceFormat.setSwapInterval(0);
+            QSurfaceFormat::setDefaultFormat(defaultSurfaceFormat);
         }
 
         static int windowWidth = w->width() + 20;
@@ -182,8 +197,14 @@ int main(int argc, char **argv)
         QPoint position = availableGeometry.topLeft();
         position += QPoint(col * windowWidth, row * windowHeight);
         w->setFramePosition(position);
-        w->show();
+        w->showNormal();
     }
+
+    QTimer fpsTimer;
+    fpsTimer.setInterval(kFpsInterval);
+    fpsTimer.setTimerType(Qt::PreciseTimer);
+    QObject::connect(&fpsTimer, &QTimer::timeout, &printFps);
+    fpsTimer.start();
 
     int r = app.exec();
     qDeleteAll(windows);
