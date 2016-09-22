@@ -1,0 +1,42 @@
+[
+    {
+        "Id": "callgrind",
+        "Name": "Callgrind",
+        "QDocModule": "qttestlib",
+        "QtUsage": "Used on Linux ond MacOS in the Qt Test module.",
+
+        "Description": "callgrind_p.h is part of Valgrind: an instrumentation framework for building dynamic analysis tools.",
+        "Homepage": "http://valgrind.org/",
+        "License": "BSD 4-clause \"Original\" or \"Old\" License",
+        "LicenseId": "BSD-4-Clause",
+        "LicenseFile": "CALLGRIND_LICENSE.txt",
+        "Copyright": "Copyright (C) 2003-2007 Josef Weidendorfer.  All rights reserved."
+    },
+    {
+        "Id": "cycle",
+        "Name": "Cycle",
+        "QDocModule": "qttestlib",
+        "QtUsage": "Used in the Qt Test module.",
+
+        "Description": "cycle_p.h allows to access the CPU's cycle counters.",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "CYCLE_LICENSE.txt",
+        "Copyright": "Copyright (c) 2003, 2006 Matteo Frigo
+Copyright (c) 2003, 2006 Massachusetts Institute of Technology"
+    },
+    {
+        "Id": "linuxperf",
+        "Name": "Linux Performance Events",
+        "QDocModule": "qttestlib",
+        "QtUsage": "Used on Linux and Android in the Qt Test module.",
+
+        "Description": "linux_perf_event_p.h allows access to the LInux kernel's performance events.",
+        "License": "GNU General Public License v2.0 only",
+        "LicenseId": "GPL-2.0",
+        "LicenseFile": "LINUX_LICENSE.txt",
+        "Copyright": "Copyright (C) 2008-2009, Thomas Gleixner <tglx@linutronix.de>
+Copyright (C) 2008-2011, Red Hat, Inc., Ingo Molnar
+Copyright (C) 2008-2011, Red Hat, Inc., Peter Zijlstra"
+    }
+]
