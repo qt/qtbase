@@ -352,6 +352,9 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
             if (seenIndexes.contains(ifindex))
                 continue;
 
+            seenInterfaces.insert(name);
+            seenIndexes.append(ifindex);
+
             QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
             interfaces << iface;
             iface->name = name;
