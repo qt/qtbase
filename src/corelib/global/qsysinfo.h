@@ -118,6 +118,11 @@ public:
         WV_CE_6     = 0x0400,
         WV_CE_based = 0x0f00
     };
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_INTEL(1478)
+QT_WARNING_DISABLE_MSVC(4996)
 #if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
     QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion;
     QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static WinVersion windowsVersion();
@@ -125,6 +130,7 @@ public:
     QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion = WV_None;
     QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static WinVersion windowsVersion() { return WV_None; }
 #endif
+QT_WARNING_POP
 
 #define Q_MV_OSX(major, minor) (major == 10 ? minor + 2 : (major == 9 ? 1 : 0))
 #define Q_MV_IOS(major, minor) (QSysInfo::MV_IOS | major << 4 | minor)
@@ -199,6 +205,11 @@ public:
         MV_WATCHOS_2_2 = Q_MV_WATCHOS(2, 2),
         MV_WATCHOS_3_0 = Q_MV_WATCHOS(3, 0)
     };
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_INTEL(1478)
+QT_WARNING_DISABLE_MSVC(4996)
 #if defined(Q_OS_MAC)
     QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const MacVersion MacintoshVersion;
     QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static MacVersion macVersion();
@@ -206,6 +217,7 @@ public:
     QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const MacVersion MacintoshVersion = MV_None;
     QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static MacVersion macVersion() { return MV_None; }
 #endif
+QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(5, 9)
 
     static QString buildCpuArchitecture();
