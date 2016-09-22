@@ -219,3 +219,21 @@ Cpp.ignoredirectives    += \
 # Qt 6: Remove
 falsehoods              += \
                           "QT_VERSION >= QT_VERSION_CHECK\\(6,0,0\\)"
+
+
+excludefiles += \
+                "*_p.cpp" \
+                "*_posix.cpp" \
+                "*_android.cpp" \
+                "*_win.cpp" \
+                "*_icu.cpp" \
+                "*_msvc.cpp" \
+                "*_wince.cpp" \
+                "*_winrt.cpp" \
+                "*_mac.cpp" \
+                "*_macx.cpp" \
+                "*_unix.cpp" \
+                "*_udev.cpp" \
+                "*_vxworks.cpp" \
+                "*_darwin.cpp" \
+                "*_x11.cpp"
