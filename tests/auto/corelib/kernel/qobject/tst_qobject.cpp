@@ -6333,6 +6333,29 @@ signals:
     CountedStruct mySignal(const CountedStruct &s1, CountedStruct s2);
 };
 
+class CountedExceptionThrower : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit CountedExceptionThrower(bool throwException, QObject *parent = Q_NULLPTR)
+        : QObject(parent)
+    {
+        if (throwException)
+            throw ObjectException();
+        ++counter;
+    }
+
+    ~CountedExceptionThrower()
+    {
+        --counter;
+    }
+
+    static int counter;
+};
+
+int CountedExceptionThrower::counter = 0;
+
 void tst_QObject::exceptions()
 {
 #ifndef QT_NO_EXCEPTIONS
@@ -6394,6 +6417,59 @@ void tst_QObject::exceptions()
     }
     QCOMPARE(countedStructObjectsCount, 0);
 
+    // Child object reaping in case of exceptions thrown by constructors
+    {
+        QCOMPARE(CountedExceptionThrower::counter, 0);
+
+        try {
+            class ParentObject : public QObject {
+            public:
+                explicit ParentObject(QObject *parent = Q_NULLPTR)
+                    : QObject(parent)
+                {
+                    new CountedExceptionThrower(false, this);
+                    new CountedExceptionThrower(false, this);
+                    new CountedExceptionThrower(true, this); // throws
+                }
+            };
+
+            ParentObject p;
+            QFAIL("Exception not thrown");
+        } catch (const ObjectException &) {
+        } catch (...) {
+            QFAIL("Wrong exception thrown");
+        }
+
+        QCOMPARE(CountedExceptionThrower::counter, 0);
+
+        try {
+            QObject o;
+            new CountedExceptionThrower(false, &o);
+            new CountedExceptionThrower(false, &o);
+            new CountedExceptionThrower(true, &o); // throws
+
+            QFAIL("Exception not thrown");
+        } catch (const ObjectException &) {
+        } catch (...) {
+            QFAIL("Wrong exception thrown");
+        }
+
+        QCOMPARE(CountedExceptionThrower::counter, 0);
+
+        try {
+            QObject o;
+            CountedExceptionThrower c1(false, &o);
+            CountedExceptionThrower c2(false, &o);
+            CountedExceptionThrower c3(true, &o); // throws
+
+            QFAIL("Exception not thrown");
+        } catch (const ObjectException &) {
+        } catch (...) {
+            QFAIL("Wrong exception thrown");
+        }
+
+        QCOMPARE(CountedExceptionThrower::counter, 0);
+    }
 
 #else
     QSKIP("Needs exceptions");
