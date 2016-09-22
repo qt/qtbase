@@ -1641,7 +1641,7 @@ QString::QString(QChar ch)
     \internal
 */
 
-/*! \fn QString &QString::operator=(const Null &)
+/*! \fn QString &QString::operator=(const QString::Null &)
     \internal
 */
 
@@ -4886,6 +4886,7 @@ QString QString::fromUcs4(const uint *unicode, int size)
     }
     return QUtf32::convertToUnicode((const char *)unicode, size*4, 0);
 }
+
 
 /*!
     Resizes the string to \a size characters and copies \a unicode
