@@ -1723,14 +1723,14 @@ void tst_QDom::germanUmlautToFile() const
 
     QDomDocument d("test");
     d.appendChild(d.createElement(name));
-    QFile file("germanUmlautToFile.xml");
-    QVERIFY(file.open(QIODevice::WriteOnly));
+    QTemporaryFile file;
+    QVERIFY(file.open());
     QTextStream ts(&file);
     ts.setCodec("UTF-8");
     ts << d.toString();
     file.close();
 
-    QFile inFile("germanUmlautToFile.xml");
+    QFile inFile(file.fileName());
     QVERIFY(inFile.open(QIODevice::ReadOnly));
 
     QString baseline(QLatin1String("<!DOCTYPE test>\n<german"));
