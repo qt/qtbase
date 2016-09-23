@@ -107,29 +107,6 @@ QImage qt_mac_toQImage(CGImageRef image)
 
 #ifdef Q_OS_MACOS
 
-QT_END_NAMESPACE
-
-@interface NSGraphicsContext (QtAdditions)
-
-+ (NSGraphicsContext *)qt_graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState;
-
-@end
-
-@implementation NSGraphicsContext (QtAdditions)
-
-+ (NSGraphicsContext *)qt_graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState
-{
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_10, __IPHONE_NA)
-    if (QT_PREPEND_NAMESPACE(QOperatingSystemVersion::current()) >= QT_PREPEND_NAMESPACE(QOperatingSystemVersion::OSXYosemite))
-        return [self graphicsContextWithCGContext:graphicsPort flipped:initialFlippedState];
-#endif
-    return [self graphicsContextWithGraphicsPort:graphicsPort flipped:initialFlippedState];
-}
-
-@end
-
-QT_BEGIN_NAMESPACE
-
 static NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
 {
     NSImage *newImage = [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
@@ -178,7 +155,7 @@ QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
     QMacCGContext ctx(&pixmap);
     if (!ctx)
         return QPixmap();
-    NSGraphicsContext *gc = [NSGraphicsContext qt_graphicsContextWithCGContext:ctx flipped:YES];
+    NSGraphicsContext *gc = [NSGraphicsContext graphicsContextWithCGContext:ctx flipped:YES];
     if (!gc)
         return QPixmap();
     [NSGraphicsContext saveGraphicsState];
