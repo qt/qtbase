@@ -81,7 +81,7 @@ Q_SIGNALS:
 private slots:
     void doEmitFileChanged(const QString &path, bool removed);
     void doEmitDirectoryChanged(const QString &path, bool removed);
-    void restartStream();
+    bool restartStream();
 
 private:
     struct Info {
@@ -112,6 +112,19 @@ private:
     typedef QHash<QString, DirInfo> DirsByName;
     typedef QHash<QString, qint64> PathRefCounts;
 
+    struct WatchingState {
+        // These fields go hand-in-hand. FSEvents watches paths, and there is no use in watching
+        // the same path multiple times. So, the "refcount" on a path is the number of watched
+        // files that have the same path, plus the number of directories that have the same path.
+        //
+        // If the stream fails to start after adding files/directories, the watcher will try to
+        // keep watching files/directories that it was already watching. It does that by restoring
+        // the previous WatchingState and restarting the stream.
+        FilesByPath watchedFiles;
+        DirsByName watchedDirectories;
+        PathRefCounts watchedPaths;
+    };
+
     QFseventsFileSystemWatcherEngine(QObject *parent);
     bool startStream();
     void stopStream(bool isStopped = false);
@@ -125,10 +138,8 @@ private:
     QMutex lock;
     dispatch_queue_t queue;
     FSEventStreamRef stream;
-    FilesByPath watchedFiles;
-    DirsByName watchedDirectories;
-    PathRefCounts watchedPaths;
     FSEventStreamEventId lastReceivedEvent;
+    WatchingState watchingState;
 };
 
 QT_END_NAMESPACE
