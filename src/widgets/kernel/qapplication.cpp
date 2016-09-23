@@ -3178,11 +3178,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     key->accept();
                 else
                     key->ignore();
-                res = d->notify_helper(receiver, e);
                 QWidget *w = isWidget ? static_cast<QWidget *>(receiver) : 0;
 #ifndef QT_NO_GRAPHICSVIEW
                 QGraphicsWidget *gw = isGraphicsWidget ? static_cast<QGraphicsWidget *>(receiver) : 0;
 #endif
+                res = d->notify_helper(receiver, e);
 
                 if ((res && key->isAccepted())
                     /*
