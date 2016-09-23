@@ -65,7 +65,7 @@ int main (int argc, char *argv[])
   bool no_lines = false;
   bool debug_info = true;
   bool qt_copyright = false;
-  QString file_name = 0;
+  QString file_name;
 
   const QStringList args = app.arguments().mid(1);
   for (const QString &arg : args) {

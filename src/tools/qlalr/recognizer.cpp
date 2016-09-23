@@ -178,7 +178,8 @@ int Recognizer::nextToken()
 
       text.clear ();
       if (! _M_no_lines)
-        text += QLatin1String ("\n#line ") + QString::number (_M_action_line) + " \"" + _M_input_file + "\"\n";
+        text += QLatin1String("\n#line ") + QString::number (_M_action_line)
+                + QLatin1String(" \"") + _M_input_file + QLatin1String("\"\n");
       inp (); // skip ':'
 
       forever
@@ -215,7 +216,8 @@ int Recognizer::nextToken()
 
       text.clear ();
       if (! _M_no_lines)
-        text += QLatin1String ("\n#line ") + QString::number (_M_action_line) + " \"" + _M_input_file + "\"\n";
+        text += QLatin1String ("\n#line ") + QString::number (_M_action_line) +
+                QLatin1String(" \"") + _M_input_file + QLatin1String("\"\n");
 
       inp (); // skip ':'
 
