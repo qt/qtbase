@@ -717,7 +717,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
             ++it;
     }
 
-    QGraphicsObject *dummy = static_cast<QGraphicsObject *>(item);
+    QGraphicsObject *dummy = item->toGraphicsObject();
     cachedTargetItems.removeOne(dummy);
     cachedItemGestures.remove(dummy);
     cachedAlreadyDeliveredGestures.remove(dummy);
@@ -996,7 +996,7 @@ void QGraphicsScenePrivate::ungrabMouse(QGraphicsItem *item, bool itemIsDying)
         // If the item is a popup, go via removePopup to ensure state
         // consistency and that it gets hidden correctly - beware that
         // removePopup() reenters this function to continue removing the grab.
-        removePopup((QGraphicsWidget *)item, itemIsDying);
+        removePopup(popupWidgets.constLast(), itemIsDying);
         return;
     }
 

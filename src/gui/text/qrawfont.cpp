@@ -317,6 +317,13 @@ bool QRawFont::operator==(const QRawFont &other) const
 /*!
    Returns the ascent of this QRawFont in pixel units.
 
+   The ascent of a font is the distance from the baseline to the
+   highest position characters extend to. In practice, some font
+   designers break this rule, e.g. when they put more than one accent
+   on top of a character, or to accommodate an unusual character in
+   an exotic language, so it is possible (though rare) that this
+   value will be too small.
+
    \sa QFontMetricsF::ascent()
 */
 qreal QRawFont::ascent() const
@@ -326,6 +333,11 @@ qreal QRawFont::ascent() const
 
 /*!
    Returns the descent of this QRawFont in pixel units.
+
+   The descent is the distance from the base line to the lowest point
+   characters extend to. In practice, some font designers break this rule,
+   e.g. to accommodate an unusual character in an exotic language, so
+   it is possible (though rare) that this value will be too small.
 
    \sa QFontMetricsF::descent()
 */
@@ -337,6 +349,8 @@ qreal QRawFont::descent() const
 /*!
    Returns the xHeight of this QRawFont in pixel units.
 
+   This is often but not always the same as the height of the character 'x'.
+
    \sa QFontMetricsF::xHeight()
 */
 qreal QRawFont::xHeight() const
@@ -346,6 +360,8 @@ qreal QRawFont::xHeight() const
 
 /*!
    Returns the leading of this QRawFont in pixel units.
+
+   This is the natural inter-line spacing.
 
    \sa QFontMetricsF::leading()
 */

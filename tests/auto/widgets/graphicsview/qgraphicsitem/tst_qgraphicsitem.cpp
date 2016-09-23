@@ -5062,9 +5062,10 @@ void tst_QGraphicsItem::sceneEventFilter()
     delete ti;
 }
 
-class GeometryChanger : public QGraphicsItem
+class GeometryChanger : public QGraphicsRectItem
 {
 public:
+    explicit GeometryChanger(QRectF r) : QGraphicsRectItem(r) {}
     void changeGeometry()
     { prepareGeometryChange(); }
 };
@@ -5073,10 +5074,12 @@ void tst_QGraphicsItem::prepareGeometryChange()
 {
     {
         QGraphicsScene scene;
-        QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
-        QVERIFY(scene.items(QRectF(0, 0, 100, 100)).contains(item));
-        ((GeometryChanger *)item)->changeGeometry();
-        QVERIFY(scene.items(QRectF(0, 0, 100, 100)).contains(item));
+        const QRectF rect(0, 0, 100, 100);
+        GeometryChanger item(rect);
+        scene.addItem(&item);
+        QVERIFY(scene.items(rect).contains(&item));
+        item.changeGeometry();
+        QVERIFY(scene.items(rect).contains(&item));
     }
 }
 

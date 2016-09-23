@@ -2392,7 +2392,7 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
     bool lastWindowClosed = true;
     for (int i = 0; i < list.size(); ++i) {
         QWindow *w = list.at(i);
-        if (!w->isVisible() || w->transientParent())
+        if (!w->isVisible() || w->transientParent() || w->type() == Qt::ToolTip)
             continue;
         lastWindowClosed = false;
         break;
