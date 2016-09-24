@@ -54,32 +54,6 @@
 
 QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
-QT_BEGIN_NAMESPACE
-
-class QCocoaWindowPointer
-{
-public:
-    void assign(QCocoaWindow *w);
-    void clear();
-
-    QCocoaWindow *data() const
-    { return watcher.isNull() ? Q_NULLPTR : window; }
-    bool isNull() const
-    { return watcher.isNull(); }
-    operator QCocoaWindow*() const
-    { return data(); }
-    QCocoaWindow *operator->() const
-    { return data(); }
-    QCocoaWindow &operator*() const
-    { return *data(); }
-
-private:
-    QPointer<QObject> watcher;
-    QCocoaWindow *window;
-};
-
-QT_END_NAMESPACE
-
 @class QT_MANGLE_NAMESPACE(QNSWindowHelper);
 
 @protocol QNSWindowProtocol
@@ -96,13 +70,13 @@ typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 @interface QT_MANGLE_NAMESPACE(QNSWindowHelper) : NSObject
 {
     QCocoaNSWindow *_window;
-    QCocoaWindowPointer _platformWindow;
+    QPointer<QCocoaWindow> _platformWindow;
     BOOL _grabbingMouse;
     BOOL _releaseOnMouseUp;
 }
 
 @property (nonatomic, readonly) QCocoaNSWindow *window;
-@property (nonatomic, readonly) QCocoaWindowPointer platformWindow;
+@property (nonatomic, readonly) QCocoaWindow *platformWindow;
 @property (nonatomic) BOOL grabbingMouse;
 @property (nonatomic) BOOL releaseOnMouseUp;
 
@@ -169,8 +143,9 @@ QT_BEGIN_NAMESPACE
 
 class QCocoaMenuBar;
 
-class QCocoaWindow : public QPlatformWindow
+class QCocoaWindow : public QObject, public QPlatformWindow
 {
+    Q_OBJECT
 public:
     QCocoaWindow(QWindow *tlw);
     ~QCocoaWindow();
@@ -288,7 +263,7 @@ public: // for QNSView
     NSView *m_contentView;
     QNSView *m_qtView;
     QCocoaNSWindow *m_nsWindow;
-    QCocoaWindowPointer m_forwardWindow;
+    QPointer<QCocoaWindow> m_forwardWindow;
 
     // TODO merge to one variable if possible
     bool m_contentViewIsEmbedded; // true if the m_contentView is actually embedded in a "foreign" NSView hiearchy
@@ -350,10 +325,6 @@ public: // for QNSView
     };
     QHash<quintptr, BorderRange> m_contentBorderAreas; // identifer -> uppper/lower
     QHash<quintptr, bool> m_enabledContentBorderAreas; // identifer -> enabled state (true/false)
-
-    // This object is tracked by QCocoaWindowPointer,
-    // preventing the use of dangling pointers.
-    QObject sentinel;
 };
 
 QT_END_NAMESPACE

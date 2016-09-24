@@ -90,16 +90,20 @@ static void qt_closePopups()
 @implementation QNSWindowHelper
 
 @synthesize window = _window;
-@synthesize platformWindow = _platformWindow;
 @synthesize grabbingMouse = _grabbingMouse;
 @synthesize releaseOnMouseUp = _releaseOnMouseUp;
+
+- (QCocoaWindow *)platformWindow
+{
+    return _platformWindow.data();
+}
 
 - (id)initWithNSWindow:(QCocoaNSWindow *)window platformWindow:(QCocoaWindow *)platformWindow
 {
     self = [super init];
     if (self) {
         _window = window;
-        _platformWindow.assign(platformWindow);
+        _platformWindow = platformWindow;
 
         _window.delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:_platformWindow];
 
@@ -170,7 +174,7 @@ static void qt_closePopups()
 
 - (void)detachFromPlatformWindow
 {
-    self.platformWindow.clear();
+    _platformWindow.clear();
     [self.window.delegate release];
     self.window.delegate = nil;
 }
@@ -191,7 +195,7 @@ static void qt_closePopups()
 - (void)dealloc
 {
     _window = nil;
-    self.platformWindow.clear();
+    _platformWindow.clear();
     [super dealloc];
 }
 
@@ -343,18 +347,6 @@ static void qt_closePopups()
 
 @end
 
-void QCocoaWindowPointer::assign(QCocoaWindow *w)
-{
-    window = w;
-    watcher = &w->sentinel;
-}
-
-void QCocoaWindowPointer::clear()
-{
-    window = Q_NULLPTR;
-    watcher.clear();
-}
-
 const int QCocoaWindow::NoAlertRequest = -1;
 
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
@@ -419,7 +411,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
         [m_contentView setWantsLayer:enable];
     }
     setGeometry(tlw->geometry());
-    recreateWindow(parent());
+    recreateWindow(QPlatformWindow::parent());
     tlw->setGeometry(geometry());
     if (tlw->isTopLevel())
         setWindowIcon(tlw->icon());
@@ -662,7 +654,7 @@ void QCocoaWindow::setVisible(bool visible)
     if (visible) {
         // We need to recreate if the modality has changed as the style mask will need updating
         if (m_windowModality != window()->modality() || isNativeWindowTypeInconsistent())
-            recreateWindow(parent());
+            recreateWindow(QPlatformWindow::parent());
 
         // Register popup windows. The Cocoa platform plugin will forward mouse events
         // to them and close them when needed.
@@ -1205,7 +1197,7 @@ void QCocoaWindow::setContentView(NSView *contentView)
     [contentView retain];
     m_contentView = contentView;
     m_qtView = 0; // The new content view is not a QNSView.
-    recreateWindow(parent()); // Adds the content view to parent NSView
+    recreateWindow(QPlatformWindow::parent()); // Adds the content view to parent NSView
 }
 
 QNSView *QCocoaWindow::qtView() const
@@ -1360,7 +1352,7 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         if (oldParentCocoaWindow) {
             if (!m_isNSWindowChild || oldParentCocoaWindow != m_parentCocoaWindow)
                 oldParentCocoaWindow->removeChildWindow(this);
-            m_forwardWindow.assign(oldParentCocoaWindow);
+            m_forwardWindow = oldParentCocoaWindow;
         }
 
         setNSWindow(m_nsWindow);
@@ -1960,3 +1952,5 @@ void QCocoaWindow::setFrameStrutEventsEnabled(bool enabled)
 {
     m_frameStrutEventsEnabled = enabled;
 }
+
+#include "moc_qcocoawindow.cpp"
