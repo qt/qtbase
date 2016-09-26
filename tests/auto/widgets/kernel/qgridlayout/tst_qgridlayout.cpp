@@ -353,6 +353,8 @@ void tst_QGridLayout::setMinAndMaxSize()
 
 
     layout.removeItem(spacer);
+    delete spacer;
+    spacer = Q_NULLPTR;
 
     rightChild.hide();
     QApplication::sendPostedEvents(0, 0);
@@ -1601,10 +1603,10 @@ void tst_QGridLayout::contentsRect()
 void tst_QGridLayout::distributeMultiCell()
 {
     QWidget w;
-    Qt42Style *style = new Qt42Style();
-    style->spacing = 9;
+    Qt42Style style;
+    style.spacing = 9;
 
-    w.setStyle(style);
+    w.setStyle(&style);
     QGridLayout grid;
     w.setLayout(&grid);
 
