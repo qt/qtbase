@@ -400,7 +400,7 @@ void tst_QStackedLayout::replaceWidget()
 
     QCOMPARE(stackLayout->indexOf(replaceFrom), 1);
     QCOMPARE(stackLayout->indexOf(replaceTo), -1);
-    stackLayout->replaceWidget(replaceFrom, replaceTo);
+    delete stackLayout->replaceWidget(replaceFrom, replaceTo);
 
     QCOMPARE(stackLayout->indexOf(replaceFrom), -1);
     QCOMPARE(stackLayout->indexOf(replaceTo), 1);
