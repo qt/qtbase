@@ -188,7 +188,7 @@ void tst_QBoxLayout::sizeConstraints()
     window.show();
     QTest::qWaitForWindowExposed(&window);
     QSize sh = window.sizeHint();
-    lay->takeAt(1);
+    delete lay->takeAt(1);
     QVERIFY(sh.width() >= window.sizeHint().width() &&
             sh.height() >= window.sizeHint().height());
 
@@ -517,7 +517,7 @@ void tst_QBoxLayout::replaceWidget()
 
     QCOMPARE(boxLayout->indexOf(replaceFrom), 1);
     QCOMPARE(boxLayout->indexOf(replaceTo), -1);
-    boxLayout->replaceWidget(replaceFrom, replaceTo);
+    delete boxLayout->replaceWidget(replaceFrom, replaceTo);
 
     QCOMPARE(boxLayout->indexOf(replaceFrom), -1);
     QCOMPARE(boxLayout->indexOf(replaceTo), 1);
