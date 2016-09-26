@@ -540,7 +540,7 @@ void QLayout::invalidate()
     update();
 }
 
-static bool removeWidgetRecursively(QLayoutItem *li, QWidget *w)
+static bool removeWidgetRecursively(QLayoutItem *li, QObject *w)
 {
     QLayout *lay = li->layout();
     if (!lay)
@@ -603,12 +603,11 @@ void QLayout::widgetEvent(QEvent *e)
         {
             QChildEvent *c = (QChildEvent *)e;
             if (c->child()->isWidgetType()) {
-                QWidget *w = (QWidget *)c->child();
 #ifndef QT_NO_MENUBAR
-                if (w == d->menubar)
+                if (c->child() == d->menubar)
                     d->menubar = 0;
 #endif
-                removeWidgetRecursively(this, w);
+                removeWidgetRecursively(this, c->child());
             }
         }
         break;
