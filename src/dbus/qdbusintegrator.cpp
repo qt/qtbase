@@ -315,9 +315,21 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     // setPeer does the error handling for us
     QDBusErrorInternal error;
     newConnection->setPeer(connection, error);
+    newConnection->setDispatchEnabled(false);
 
     // this is a queued connection and will resume in the QDBusServer's thread
     emit serverConnection->newServerConnection(newConnection);
+
+    // we've disabled dispatching of events, so now we post an event to the
+    // QDBusServer's thread in order to enable it after the
+    // QDBusServer::newConnection() signal has been received by the
+    // application's code
+    newConnection->ref.ref();
+    QReadLocker serverLock(&serverConnection->lock);
+    QDBusConnectionDispatchEnabler *o = new QDBusConnectionDispatchEnabler(newConnection);
+    QTimer::singleShot(0, o, SLOT(execute()));
+    if (serverConnection->serverObject)
+        o->moveToThread(serverConnection->serverObject->thread());
 }
 
 void QDBusConnectionPrivate::_q_newConnection(QDBusConnectionPrivate *newConnection)
@@ -1250,6 +1262,7 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
             break;
         }
 
+    checkThread();
     QDBusReadLocker locker(RelaySignalAction, this);
     QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), interface,
                                                       QLatin1String(memberName));
@@ -2358,12 +2371,9 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
             connector->connectAllSignals(node->obj);
         }
 
-        // disconnect and reconnect to avoid duplicates
-        connector->disconnect(SIGNAL(relaySignal(QObject*,const QMetaObject*,int,QVariantList)),
-                              this, SLOT(relaySignal(QObject*,const QMetaObject*,int,QVariantList)));
         connect(connector, SIGNAL(relaySignal(QObject*,const QMetaObject*,int,QVariantList)),
                 this, SLOT(relaySignal(QObject*,const QMetaObject*,int,QVariantList)),
-                Qt::DirectConnection);
+                Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
     }
 }
 

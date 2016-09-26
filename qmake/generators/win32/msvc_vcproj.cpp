@@ -969,7 +969,7 @@ void VcprojGenerator::initProject()
     vcProject.Keyword = project->first("VCPROJ_KEYWORD").toQString();
     if (!project->isEmpty("VCPROJ_ARCH")) {
         vcProject.PlatformName = project->first("VCPROJ_ARCH").toQString();
-    } else if (project->isHostBuild()) {
+    } else {
         vcProject.PlatformName = (is64Bit ? "x64" : "Win32");
     }
     vcProject.SdkVersion = project->first("WINSDK_VER").toQString();
@@ -1051,7 +1051,7 @@ void VcprojGenerator::initConfiguration()
     conf.ConfigurationName = conf.Name;
     if (!project->isEmpty("VCPROJ_ARCH")) {
         conf.Name += "|" + project->first("VCPROJ_ARCH");
-    } else if (project->isHostBuild()) {
+    } else {
         conf.Name += (is64Bit ? "|x64" : "|Win32");
     }
     conf.ATLMinimizesCRunTimeLibraryUsage = (project->first("ATLMinimizesCRunTimeLibraryUsage").isEmpty() ? _False : _True);

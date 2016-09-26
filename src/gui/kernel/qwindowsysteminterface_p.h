@@ -330,8 +330,8 @@ public:
 
     class ExposeEvent : public WindowSystemEvent {
     public:
-        ExposeEvent(QWindow *exposed, const QRegion &region);
-        QPointer<QWindow> exposed;
+        ExposeEvent(QWindow *window, const QRegion &region);
+        QPointer<QWindow> window;
         bool isExposed;
         QRegion region;
     };

@@ -59,8 +59,15 @@ Q_LOGGING_CATEGORY(qLcEvdevKeyMap, "qt.qpa.input.keymap")
 // simple builtin US keymap
 #include "qevdevkeyboard_defaultmap_p.h"
 
-QEvdevKeyboardHandler::QEvdevKeyboardHandler(const QString &device, int fd, bool disableZap, bool enableCompose, const QString &keymapFile)
-    : m_device(device), m_fd(fd), m_notify(Q_NULLPTR),
+void QFdContainer::reset() Q_DECL_NOTHROW
+{
+    if (m_fd >= 0)
+        qt_safe_close(m_fd);
+    m_fd = -1;
+}
+
+QEvdevKeyboardHandler::QEvdevKeyboardHandler(const QString &device, QFdContainer &fd, bool disableZap, bool enableCompose, const QString &keymapFile)
+    : m_device(device), m_fd(fd.release()), m_notify(Q_NULLPTR),
       m_modifiers(0), m_composing(0), m_dead_unicode(0xffff),
       m_no_zap(disableZap), m_do_compose(enableCompose),
       m_keymap(0), m_keymap_size(0), m_keycompose(0), m_keycompose_size(0)
@@ -75,16 +82,13 @@ QEvdevKeyboardHandler::QEvdevKeyboardHandler(const QString &device, int fd, bool
         unloadKeymap();
 
     // socket notifier for events on the keyboard device
-    m_notify = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
+    m_notify = new QSocketNotifier(m_fd.get(), QSocketNotifier::Read, this);
     connect(m_notify, SIGNAL(activated(int)), this, SLOT(readKeycode()));
 }
 
 QEvdevKeyboardHandler::~QEvdevKeyboardHandler()
 {
     unloadKeymap();
-
-    if (m_fd >= 0)
-        qt_safe_close(m_fd);
 }
 
 QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
@@ -118,13 +122,12 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
 
     qCDebug(qLcEvdevKey) << "Opening keyboard at" << device;
 
-    int fd;
-    fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
-    if (fd >= 0) {
-        ::ioctl(fd, EVIOCGRAB, grab);
+    QFdContainer fd(qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0));
+    if (fd.get() >= 0) {
+        ::ioctl(fd.get(), EVIOCGRAB, grab);
         if (repeatDelay > 0 && repeatRate > 0) {
             int kbdrep[2] = { repeatDelay, repeatRate };
-            ::ioctl(fd, EVIOCSREP, kbdrep);
+            ::ioctl(fd.get(), EVIOCSREP, kbdrep);
         }
 
         return new QEvdevKeyboardHandler(device, fd, disableZap, enableCompose, keymapFile);
@@ -144,7 +147,7 @@ void QEvdevKeyboardHandler::switchLed(int led, bool state)
     led_ie.code = led;
     led_ie.value = state;
 
-    qt_safe_write(m_fd, &led_ie, sizeof(led_ie));
+    qt_safe_write(m_fd.get(), &led_ie, sizeof(led_ie));
 }
 
 void QEvdevKeyboardHandler::readKeycode()
@@ -153,7 +156,7 @@ void QEvdevKeyboardHandler::readKeycode()
     int n = 0;
 
     forever {
-        int result = qt_safe_read(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
+        int result = qt_safe_read(m_fd.get(), reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
 
         if (result == 0) {
             qWarning("evdevkeyboard: Got EOF from the input device");
@@ -166,8 +169,7 @@ void QEvdevKeyboardHandler::readKeycode()
                 if (errno == ENODEV) {
                     delete m_notify;
                     m_notify = Q_NULLPTR;
-                    qt_safe_close(m_fd);
-                    m_fd = -1;
+                    m_fd.reset();
                 }
                 return;
             }
@@ -478,7 +480,7 @@ void QEvdevKeyboardHandler::unloadKeymap()
     //Set locks according to keyboard leds
     quint16 ledbits[1];
     memset(ledbits, 0, sizeof(ledbits));
-    if (::ioctl(m_fd, EVIOCGLED(sizeof(ledbits)), ledbits) < 0) {
+    if (::ioctl(m_fd.get(), EVIOCGLED(sizeof(ledbits)), ledbits) < 0) {
         qWarning("evdevkeyboard: Failed to query led states");
         switchLed(LED_NUML,false);
         switchLed(LED_CAPSL, false);

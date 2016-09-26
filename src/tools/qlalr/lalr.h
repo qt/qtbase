@@ -337,6 +337,7 @@ public:
   Grammar ();
 
   Name intern (const QString &id);
+  Name intern (const char *id) { return intern(QString::fromUtf8(id)); }
 
   inline bool isTerminal (Name name) const
   { return terminals.find (name) != terminals.end (); }

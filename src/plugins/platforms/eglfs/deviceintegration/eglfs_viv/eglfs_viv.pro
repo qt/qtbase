@@ -2,7 +2,7 @@ TARGET = qeglfs-viv-integration
 
 QT += core-private gui-private platformsupport-private eglfsdeviceintegration-private
 
-INCLUDEPATH += $$PWD/../..
+INCLUDEPATH += $$PWD/../../api
 CONFIG += egl
 DEFINES += LINUX=1 EGL_API_FB=1
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF

@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "qeglfsglobal.h"
+#include "qeglfsglobal_p.h"
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 #include <QtCore/QString>

@@ -203,10 +203,10 @@ contains(qt_module_deps, qml): \
     # run qmlimportscanner
     qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner, , system)
     for (QMLPATH, QMLPATHS): \
-        IMPORTPATHS += -importPath $$QMLPATH
+        IMPORTPATHS += -importPath $$system_quote($$QMLPATH)
 
     #message(run $$QMLIMPORTSCANNER $$_PRO_FILE_PWD_  $$IMPORTPATHS)
-    JSON = $$system($$QMLIMPORTSCANNER $$_PRO_FILE_PWD_ $$IMPORTPATHS)
+    JSON = $$system($$QMLIMPORTSCANNER $$system_quote($$_PRO_FILE_PWD_) $$IMPORTPATHS)
 
     parseJson(JSON, IMPORTS)| error("Failed to parse qmlimportscanner output.")
 
@@ -267,13 +267,13 @@ contains(qt_module_deps, qml): \
             # But strip away archives and other files that are not needed:
             !isEmpty(QMAKE_POST_LINK): QMAKE_POST_LINK += ";"
             QMAKE_POST_LINK += \
-                "cp $$OUT_PWD/qt.conf $$qtconfTargetPath; " \
-                "test -d $$qmlTargetPath && rm -r $$qmlTargetPath; " \
-                "mkdir -p $$qmlTargetPath && " \
+                "cp $$shell_quote($$OUT_PWD/qt.conf) \"$$qtconfTargetPath\"; " \
+                "test -d \"$$qmlTargetPath\" && rm -r \"$$qmlTargetPath\"; " \
+                "mkdir -p \"$$qmlTargetPath\" && " \
                 "for p in $$QMLPATHS; do" \
                     "rsync -r --exclude='*.a' --exclude='*.prl' --exclude='*.qmltypes' "
-            macx-xcode: QMAKE_POST_LINK += "$p/ $$qmlTargetPath; done"
-            else: QMAKE_POST_LINK += "\$\$p/ $$qmlTargetPath; done"
+            macx-xcode: QMAKE_POST_LINK += "$p/ \"$$qmlTargetPath\"; done"
+            else: QMAKE_POST_LINK += "\$\$p/ \"$$qmlTargetPath\"; done"
         }
     }
 }

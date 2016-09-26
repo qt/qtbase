@@ -1,0 +1,3 @@
+#QTBUG-55155
+[runSubTest:maxwarnings all loggers]
+osx-10.11

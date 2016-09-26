@@ -73,8 +73,10 @@ void tst_QClipboard::cleanupTestCase()
 
 void tst_QClipboard::init()
 {
+#ifndef QT_NO_PROCESS
     const QString testdataDir = QFileInfo(QFINDTESTDATA("copier")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
+#endif
 }
 
 Q_DECLARE_METATYPE(QClipboard::Mode)

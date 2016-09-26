@@ -53,7 +53,6 @@
 //! [1]
 RasterWindow::RasterWindow(QWindow *parent)
     : QWindow(parent)
-    , m_update_pending(false)
 {
     create();
     m_backingStore = new QBackingStore(this);
@@ -68,7 +67,6 @@ RasterWindow::RasterWindow(QWindow *parent)
 bool RasterWindow::event(QEvent *event)
 {
     if (event->type() == QEvent::UpdateRequest) {
-        m_update_pending = false;
         renderNow();
         return true;
     }
@@ -79,10 +77,7 @@ bool RasterWindow::event(QEvent *event)
 //! [6]
 void RasterWindow::renderLater()
 {
-    if (!m_update_pending) {
-        m_update_pending = true;
-        QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
-    }
+    requestUpdate();
 }
 //! [6]
 
@@ -99,9 +94,8 @@ void RasterWindow::resizeEvent(QResizeEvent *resizeEvent)
 //! [2]
 void RasterWindow::exposeEvent(QExposeEvent *)
 {
-    if (isExposed()) {
+    if (isExposed())
         renderNow();
-    }
 }
 //! [2]
 

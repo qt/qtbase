@@ -1,0 +1,339 @@
+Qt 5.6.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.6.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+  http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.6 series is binary compatible with the 5.5.x series.
+Applications compiled for 5.5 will continue to run with 5.6.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+******************************************************************************
+*                     Important Behavior Changes                             *
+******************************************************************************
+
+ - [QTBUG-45031] The NSURLConnection backend of QNetworkAccessManager has
+   been removed, since SecureTransport is the default SSL backend on iOS
+   and is enabled by default. This means that building with -no-openssl
+   -no-securetransport will no longer provide SSL capabilities on iOS.
+
+ - QUrl::resolved() no longer treats a URL with a scheme as a relative URL
+   if it matches this URL's scheme. For now it still treats "file:name.txt"
+   as relative for compatibility, but be warned that in Qt 5.8 it will no
+   longer consider those to be relative. Both isRelative() and RFC 3986 say
+   that such URLs are not relative, so starting from Qt 5.8, resolved() will
+   return them as is.
+
+ - [QTBUG-47815] QDateTime now uses QLocale to get the "AM" and "PM" strings
+   when parsing times, instead of strings obtained from the loaded
+   translations.
+
+******************************************************************************
+*                                Library                                     *
+******************************************************************************
+
+QtCore
+------
+
+ - Optimized toLatin1()/toUtf8() called on a QStringBuilder expression.
+ - [QTBUG-18729][QTBUG-32457] Fixed a bug that caused Windows to show
+   dialogs prompting the user to insert media when certain operations were
+   made with Qt I/O classes, particularly QStorageInfo::mountedVolumes().
+
+ - QCommandLineParser:
+   * The methods that exit() the application will now call cleanup routines
+     registered with qAddPostRoutine.
+
+ - QDataStream:
+   * Fixed compatibility of QTime serialization with Qt 3.
+
+ - QDebug:
+   * Fixed streaming of QChars.
+
+ - QJsonObject:
+   * Optimized equality operator.
+
+ - QJsonValue:
+   * Fixed use-after-free in assignment operator.
+
+ - QLockFile:
+   * Fixed permissions on lock files on Unix to allow for adjustments via
+     umask.
+   * [QTBUG-53392] Improved the robustness of detecting stale lock files on
+     Windows.
+
+ - QMutex:
+   * [QTBUG-54831] Fixed a bug that caused some applications to crash on
+     exit, depending on the order of creation of certain statics inside Qt.
+
+ - QObject:
+   * Fixed a crash when connecting a signal to a lambda or functor while
+     using Qt::UniqueConnection (note: the connection is still not unique).
+
+ - QStringListModel:
+   * Fixed dataChanged()'s 'roles' parameter to always contain both
+     Qt::EditRole and Qt::DisplayRole.
+
+ - QTemporaryFile:
+   * [QTBUG-54810] Fixed a bug that caused QTemporaryFile to fail when the
+     file name contained non-ASCII characters, on Windows.
+
+ - QTimeZone:
+   * [QTBUG-53071] Fixed a bug that caused QTimeZone to mis-parse time zones
+     whose names were not simple letter and digit combinations.
+
+ - QUrl:
+   * Made QUrl stricter in what it accepts for schemes, to comply with the
+     relevant standards. QUrl will no longer accept schemes starting with a
+     plus (+), a dash (-) or a dot (.).
+
+ - QVariant:
+   * [QTBUG-53384] Fixed QVariant::canConvert and conversion from integer
+     types to enumeration types.
+   * [QTBUG-54893] Fixed a bug that caused QVariants not to compare properly
+     if they contained QStringLists.
+
+ - QVector:
+   * [QTBUG-51758] Fixed a bug that would cause QVector to crash if one
+     called reserve(0).
+
+ - QXmlStreamReader:
+   * Fixed a bug in the XML parser that prevented to load XML that
+     contained invalid characters for XML 1.0.
+
+ - QXmlStreamWriter:
+   * Fixed a bug that prevented the generation of valid XML files when
+     using encoding with 8 bit per character but not ASCII compatible.
+     QXMLStreamWriter generated XML markup using always ASCII in this case.
+
+QtGui
+-----
+
+ - Fixed UBSan errors in
+   * QColor
+   * QGrayRaster
+   * QRasterizer
+
+ - Removed a total of 1610 relocations from the library.
+
+ - QGuiApplication:
+   * [QTBUG-51703] Fixed a bug that would cause QGuiApplication::sync() to
+     be left undefined for Qt builds without session management support.
+
+ - QIconLoaderEngine:
+   * Fixed theme lookup for scalable entries.
+
+ - Text:
+   * [QTBUG-42033] Fixed bug where a QTextLayout with
+     ShowLineAndParagraphSeparators would modify the layout's input string.
+   * [QTBUG-49452] Fixed a performance regression in Freetype engine that
+     was introduced in Qt 5.5.
+   * [QTBUG-54180] Fixed performance regression when rapidly switching
+     between a large set of fonts.
+
+ - Windows:
+   * [QTBUG-54494] Fixed stretch when combined with either no or vertical
+     hinting preference or a device pixel ratio different from 1.
+   * [QTBUG-51024] Fixed height of text bounding box when using no or
+     vertical hinting preference, or when the device pixel ratio is
+     different from 1.
+
+QtNetwork
+---------
+
+ - QAuthenticator:
+   * [QTBUG-53338] Fixed crash when comparing an initialized QAuthenticator
+     with an uninitialized QAuthenticator.
+
+QtSql
+-----
+
+ - [QTBUG-53969][QTBUG-53237] Fixed QSqlQuery::prepare value truncation
+   error when using UNSIGNED values in a MySQL database.
+
+QtWidgets
+---------
+
+ - Fixed UBSan/Coverity errors in:
+   * QAbstractItemView
+   * QDataWidgetMapper
+   * QTreeWidget
+   * QWidgetLineControl
+
+ - Removed a total of 167 relocations from the library.
+
+ - QAbstractItemDelegate:
+   * [QTBUG-16469] Show localized detailed tooltips and "What's this?"
+     texts.
+
+- QAbstractItemView:
+   * [QTBUG-53541] Fixed a bug involving drawing the drop indicator
+     where it shouldn't be drawn.
+   * Fixed a bug in setSelectionModel() which could lead to model indexes
+     from a different model be reused on a new model.
+
+ - QAbstractSpinBox:
+   * [QTBUG-55249] Fixed a bug related to first key press.
+
+ - QColorDialog:
+   * Fixed ignored alpha channel in getRgb().
+
+ - QComboBox:
+   * [QTBUG-54191] Fixed a crash on setEditable(false) called from
+     editTextChanged().
+
+ - QCompleter:
+   * [QTBUG-54642] Fixed wrong completion role after a QFileSystemModel
+     has been used.
+
+ - QDesktopWidget:
+   * [QTBUG-52101] Fixed tracking of QScreens.
+   * [QTBUG-52606] Fixed a bug related to DPI-scaling in screenNumber().
+
+ - QDialog:
+   * [QTBUG-52735] Fixed a bug involving moves between screens with
+     different DPI-scaling factors.
+
+ - QDockWidget:
+   * [QTBUG-52107][QTBUG-53754] Fixed bugs related to floating group tab
+     window title.
+   * [QTBUG-52108] A QDockWidgetGroupWindow can now be dragged into one of
+     its QDockWidgets.
+   * [QTBUG-53808] Fixed a bug that caused an undocked dock widget to lose
+     its decoration.
+   * [QTBUG-54185] Unbroke drag-and-drop.
+
+ - QGraphicsProxyWidget:
+   * [QTBUG-55112] Fixed a bug that caused the widget to receive events
+     during construction.
+
+ - QLineEdit:
+   * [QTBUG-49374] Fixed icons being too small on a High DPI screen
+     without scaling.
+   * [QTBUG-52796] Fixed QKeySequence::MoveToStartOfLine shortcut
+     being ignored.
+   * [QTBUG-54425] Fixed missing clear button on macOS.
+
+ - QMainWindow:
+   * [QTBUG-50491] Fixed a bug related to restoring dock widgets with
+     GroupedDragging.
+   * [QTBUG-52108] Fixed a bug related to context menus in the presence of
+     floating tabs.
+
+ - QMenu:
+   * [QTBUG-53054] Submenus can now be opened on left mouse button
+     press, too.
+
+ - QMenuBar:
+   * [QTBUG-53205] Fixed bugs (incl. crashes) involving reparented
+     menu bars.
+
+ - QOpenGLWidget:
+   * [QTBUG-50818][QTBUG-51815][QTBUG-54241][QTBUG-52419] Fixed several
+     repainting bugs and other drawing artifacts.
+
+ - QSideBar:
+   * Fixed a nullptr dereference on platforms that do not support
+     QFileSystemWatcher.
+
+ - QSystemTrayIcon:
+   * [QTBUG-53591] Use large icon for balloon message on Windows systems.
+
+ - QTabBar:
+   * Fixed a performance problem involving font metrics.
+
+ - QTreeView:
+   * [QTBUG-52793] Fixed a key navigation bug when the columns were
+     reordered.
+
+- QTreeWidget:
+   * [QTBUG-50207] Now handles device pixel ratio in animations correctly.
+
+- QWidget:
+   * [QTBUG-39887] Restored documented behavior for the
+     WA_X11NetWmWindowType* attributes.
+   * [QTBUG-41135][QTBUG-50030][QTBUG-50136][QTBUG-52507] Fixed
+     mapTo/FromGlobal() in case of widget hierarchies embedded into
+     QGraphicsView with transformations.
+   * [QTBUG-45484] Fixed setWindowRole().
+   * [QTBUG-50796] Reduced paint-events when resizing native widgets.
+   * [QTBUG-52123] Fixed a bug by which opaque texture-based widgets
+     were not always shown.
+   * [QTBUG-53515] Added a workaround for render-to-texture widgets in
+     fullscreen windows.
+   * [QTBUG-54734] Worked around an issue with translucent GL windows
+     on Windows.
+   * [QTBUG-54906] Fixed a bug relaed to fullscreen handling on Windows.
+
+ - Styles:
+   * Fixed several cases of QStyleOptions being created with null
+     version.
+   * [QTBUG-51266] Fixed painting of small progress bars on Vista+.
+   * [QTBUG-54630] Fixed a crash in QMacStyle::styleHint().
+   * [QTBUG-49374] The Windows style now takes the monitor's differing
+     logical DPI into account when calculating native metrics.
+
+******************************************************************************
+*                     Platform-specific Changes                              *
+******************************************************************************
+
+Android
+-------
+
+ - [QTBUG-50724] Added support for clang compiler.
+ - [QTBUG-53511] Fixed CJK font resolution on Android 7.
+
+BSDs
+----
+
+ - The freebsd-g++ mkspec was moved back and no longer requires the
+   "unsupported/" prefix, matching the FreeBSD ports tree, as FreeBSD 9.3
+   still defaults to using GCC. Users of GCC that did not previously use
+   the ports patch will need to adapt their build scripts and drop the
+   "unsupported/" prefix.
+ - Fixed a number of compilation issues on FreeBSD, NetBSD and OpenBSD. Qt
+   should now build out-of-the-box (no patches needed) on those systems.
+
+Linux
+-----
+
+ - [QTBUG-54733] It is now possible to opt out from installing signal
+   handlers when running with eglfs and linuxfb by setting the
+   QT_QPA_NO_SIGNAL_HANDLER environment variable to a non-zero value.
+ - Fixed the value of the 'defined' field in ATSPI GetAttributeValue
+   results.
+
+macOS
+-----
+
+ - [QTBUG-48953] Pasting text from Qt applications to Apple Mail now works.
+ - [QTBUG-48953] “text/vcard” is now required as the mime type when
+   placing vCards on the clipboard.
+ - OS X => macOS rename in Q_OS_ macros/docs, qmake scopes,
+   file selectors, etc.
+ - Add new QSysInfo values and MAC_OS_X / __MAC_ / __IPHONE_ values for
+   macOS 10.12 and iOS 9.1 through 10.0.
+ - Update prettyProductName with new macOS "Sierra" codename.
+
+Windows
+-------
+
+ - Fixed a new[]/delete mismatch in Windows tablet support.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+moc
+---
+ - [QTBUG-53441] Fixed crash on file ending with a backslash followed by
+   carriage return

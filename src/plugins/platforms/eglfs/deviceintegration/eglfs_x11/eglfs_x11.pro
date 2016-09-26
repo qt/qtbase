@@ -5,7 +5,7 @@ QT += core-private gui-private platformsupport-private eglfsdeviceintegration-pr
 # Avoid X11 header collision, use generic EGL native types
 DEFINES += QT_EGL_NO_X11
 
-INCLUDEPATH += $$PWD/../..
+INCLUDEPATH += $$PWD/../../api
 
 CONFIG += egl
 QMAKE_USE += xcb_xlib

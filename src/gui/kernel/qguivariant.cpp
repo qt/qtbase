@@ -260,8 +260,7 @@ static bool convert(const QVariant::Private *d, int t,
             static_cast<QColor *>(result)->setNamedColor(*v_cast<QString>(d));
             return static_cast<QColor *>(result)->isValid();
         } else if (d->type == QVariant::ByteArray) {
-            static_cast<QColor *>(result)->setNamedColor(QString::fromLatin1(
-                                *v_cast<QByteArray>(d)));
+            static_cast<QColor *>(result)->setNamedColor(QLatin1String(*v_cast<QByteArray>(d)));
             return true;
         } else if (d->type == QVariant::Brush) {
             if (v_cast<QBrush>(d)->style() == Qt::SolidPattern) {

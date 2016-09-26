@@ -828,7 +828,7 @@ void QWinRTScreen::addWindow(QWindow *window)
     }
 
     handleExpose();
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
 #if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
     QWinRTDrag::instance()->setDropTarget(window);
@@ -848,7 +848,7 @@ void QWinRTScreen::removeWindow(QWindow *window)
     if (wasTopWindow && type != Qt::Popup && type != Qt::ToolTip && type != Qt::Tool)
         QWindowSystemInterface::handleWindowActivated(Q_NULLPTR, Qt::OtherFocusReason);
     handleExpose();
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 #if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
     if (wasTopWindow)
         QWinRTDrag::instance()->setDropTarget(topWindow());
@@ -1156,6 +1156,12 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
 #else
         properties->get_IsLeftButtonPressed(&isPressed); // IsInContact not reliable on phone
 #endif
+
+        // Devices like the Hololens set a static pressure of 0.5 independent
+        // of the pressed state. In those cases we need to synthesize the
+        // pressure value. To our knowledge this does not apply to pens
+        if (pointerDeviceType == PointerDeviceType_Touch && pressure == 0.5f)
+            pressure = isPressed ? 1. : 0.;
 
         const QRectF areaRect(area.X * d->scaleFactor, area.Y * d->scaleFactor,
                         area.Width * d->scaleFactor, area.Height * d->scaleFactor);

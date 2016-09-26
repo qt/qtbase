@@ -361,10 +361,10 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
 }
 
 
-QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *exposed, const QRegion &region)
+QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *window, const QRegion &region)
     : WindowSystemEvent(Expose)
-    , exposed(exposed)
-    , isExposed(exposed && exposed->handle() ? exposed->handle()->isExposed() : false)
+    , window(window)
+    , isExposed(window && window->handle() ? window->handle()->isExposed() : false)
     , region(region)
 {
 }

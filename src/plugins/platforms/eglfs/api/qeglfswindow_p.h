@@ -51,8 +51,8 @@
 // We mean it.
 //
 
-#include "qeglfsglobal.h"
-#include "qeglfsintegration.h"
+#include "qeglfsglobal_p.h"
+#include "qeglfsintegration_p.h"
 #include "qeglfsscreen_p.h"
 
 #include <qpa/qplatformwindow.h>

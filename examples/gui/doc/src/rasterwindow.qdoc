@@ -143,19 +143,16 @@
     \snippet rasterwindow/rasterwindow.cpp 6
 
     We went through a few places where the window needed to repainted
-    immediately. There are some cases where this is not desierable,
+    immediately. There are some cases where this is not desirable,
     but rather let the application return to the event loop and
-    later. We acheive this by posting an even to ourself which will
-    then be delivered when the application returns to the \l
-    QGuiApplication event loop. To avoid posting new requests when one
-    is already pending, we store this state in the \c m_update_pending
-    variable.
+    schedule the repaint for later. We achieve this by requesting
+    an update, using QWindow::requestUpdate(), which will then be
+    delivered when the system is ready to repaint.
 
     \snippet rasterwindow/rasterwindow.cpp 7
 
     We reimplement the virtual \l QObject::event() function to handle
-    the update event we posted to ourselves. When the event comes in
-    we reset the pending update flag and call renderNow() to render
-    the window right away.
+    the update event. When the event comes in we call renderNow() to
+    render the window right away.
 
   */

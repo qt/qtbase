@@ -71,21 +71,21 @@ bool QTouchOutputMapping::load()
         const QVariantMap output = outputs.at(i).toObject().toVariantMap();
         if (!output.contains(QStringLiteral("touchDevice")))
             continue;
-        if (!output.contains(QStringLiteral("virtualIndex"))) {
-            qWarning("evdevtouch: Output %d specifies touchDevice but not virtualIndex, this is wrong", i);
+        if (!output.contains(QStringLiteral("name"))) {
+            qWarning("evdevtouch: Output %d specifies touchDevice but not name, this is wrong", i);
             continue;
         }
         const QString &deviceNode = output.value(QStringLiteral("touchDevice")).toString();
-        const int screenIndex = output.value(QStringLiteral("virtualIndex")).toInt();
-        m_screenIndexTable.insert(deviceNode, screenIndex);
+        const QString &screenName = output.value(QStringLiteral("name")).toString();
+        m_screenTable.insert(deviceNode, screenName);
     }
 
     return true;
 }
 
-int QTouchOutputMapping::screenIndexForDeviceNode(const QString &deviceNode)
+QString QTouchOutputMapping::screenNameForDeviceNode(const QString &deviceNode)
 {
-    return m_screenIndexTable.value(deviceNode, -1);
+    return m_screenTable.value(deviceNode);
 }
 
 QT_END_NAMESPACE

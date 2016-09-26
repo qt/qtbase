@@ -42,7 +42,7 @@
 #include "qeglfskmsgbmscreen.h"
 #include "qeglfskmsgbmdevice.h"
 #include "qeglfskmsgbmcursor.h"
-#include "qeglfsintegration.h"
+#include "qeglfsintegration_p.h"
 
 #include <QtCore/QLoggingCategory>
 

@@ -79,12 +79,12 @@ static inline int hex2int(char s)
     return h < 0 ? h : (h << 4) | h;
 }
 
-bool qt_get_hex_rgb(const char *name, QRgb *rgb)
+static bool get_hex_rgb(const char *name, int len, QRgb *rgb)
 {
     if (name[0] != '#')
         return false;
     name++;
-    int len = qstrlen(name);
+    --len;
     int a, r, g, b;
     a = 255;
     if (len == 12) {
@@ -119,15 +119,19 @@ bool qt_get_hex_rgb(const char *name, QRgb *rgb)
     return true;
 }
 
-bool qt_get_hex_rgb(const QChar *str, int len, QRgb *rgb)
+bool qt_get_hex_rgb(const char *name, QRgb *rgb)
+{
+    return get_hex_rgb(name, qstrlen(name), rgb);
+}
+
+static bool get_hex_rgb(const QChar *str, int len, QRgb *rgb)
 {
     if (len > 13)
         return false;
     char tmp[16];
     for (int i = 0; i < len; ++i)
         tmp[i] = str[i].toLatin1();
-    tmp[len] = 0;
-    return qt_get_hex_rgb(tmp, rgb);
+    return get_hex_rgb(tmp, len, rgb);
 }
 
 #ifndef QT_NO_COLORNAMES
@@ -309,7 +313,7 @@ inline bool operator<(const char *name, const RGBData &data)
 inline bool operator<(const RGBData &data, const char *name)
 { return qstrcmp(data.name, name) < 0; }
 
-static bool get_named_rgb(const char *name_no_space, QRgb *rgb)
+static bool get_named_rgb_no_space(const char *name_no_space, QRgb *rgb)
 {
     const RGBData *r = std::lower_bound(rgbTbl, rgbTbl + rgbTblSize, name_no_space);
     if ((r != rgbTbl + rgbTblSize) && !(name_no_space < *r)) {
@@ -319,9 +323,8 @@ static bool get_named_rgb(const char *name_no_space, QRgb *rgb)
     return false;
 }
 
-bool qt_get_named_rgb(const char *name, QRgb* rgb)
+static bool get_named_rgb(const char *name, int len, QRgb* rgb)
 {
-    int len = int(strlen(name));
     if (len > 255)
         return false;
     char name_no_space[256];
@@ -332,10 +335,10 @@ bool qt_get_named_rgb(const char *name, QRgb* rgb)
     }
     name_no_space[pos] = 0;
 
-    return get_named_rgb(name_no_space, rgb);
+    return get_named_rgb_no_space(name_no_space, rgb);
 }
 
-bool qt_get_named_rgb(const QChar *name, int len, QRgb *rgb)
+static bool get_named_rgb(const QChar *name, int len, QRgb *rgb)
 {
     if (len > 255)
         return false;
@@ -346,31 +349,21 @@ bool qt_get_named_rgb(const QChar *name, int len, QRgb *rgb)
             name_no_space[pos++] = name[i].toLower().toLatin1();
     }
     name_no_space[pos] = 0;
-    return get_named_rgb(name_no_space, rgb);
+    return get_named_rgb_no_space(name_no_space, rgb);
 }
 
-QStringList qt_get_colornames()
+#endif // QT_NO_COLORNAMES
+
+static QStringList get_colornames()
 {
-    int i = 0;
     QStringList lst;
+#ifndef QT_NO_COLORNAMES
     lst.reserve(rgbTblSize);
-    for (i = 0; i < rgbTblSize; i++)
+    for (int i = 0; i < rgbTblSize; i++)
         lst << QLatin1String(rgbTbl[i].name);
+#endif
     return lst;
 }
-
-#else
-
-bool qt_get_named_rgb(const char *, QRgb*)
-{
-    return false;
-}
-
-QStringList qt_get_colornames()
-{
-    return QStringList();
-}
-#endif // QT_NO_COLORNAMES
 
 /*!
     \class QColor
@@ -801,12 +794,14 @@ QColor::QColor(Spec spec) Q_DECL_NOTHROW
 
 /*!
     \fn QColor::QColor(const char *name)
+    \overload
+    \sa setNamedColor(), name(), isValid()
+*/
 
-    Constructs a named color in the same way as setNamedColor() using
-    the given \a name.
-
-    The color is left invalid if the \a name cannot be parsed.
-
+/*!
+    \fn QColor::QColor(QLatin1String name)
+    \overload
+    \since 5.8
     \sa setNamedColor(), name(), isValid()
 */
 
@@ -887,6 +882,16 @@ void QColor::setNamedColor(const QString &name)
 }
 
 /*!
+    \overload
+    \since 5.8
+*/
+
+void QColor::setNamedColor(QLatin1String name)
+{
+    setColorFromString(name);
+}
+
+/*!
    \since 4.7
 
    Returns \c true if the \a name is a valid color name and can
@@ -902,16 +907,26 @@ bool QColor::isValidColor(const QString &name)
     return !name.isEmpty() && QColor().setColorFromString(name);
 }
 
-bool QColor::setColorFromString(const QString &name)
+/*!
+    \overload
+    \since 5.8
+*/
+bool QColor::isValidColor(QLatin1String name) Q_DECL_NOTHROW
 {
-    if (name.isEmpty()) {
+    return name.size() && QColor().setColorFromString(name);
+}
+
+template <typename String>
+bool QColor::setColorFromString(const String &name)
+{
+    if (!name.size()) {
         invalidate();
         return true;
     }
 
-    if (name.startsWith(QLatin1Char('#'))) {
+    if (name[0] == QLatin1Char('#')) {
         QRgb rgba;
-        if (qt_get_hex_rgb(name.constData(), name.length(), &rgba)) {
+        if (get_hex_rgb(name.data(), name.size(), &rgba)) {
             setRgba(rgba);
             return true;
         } else {
@@ -922,7 +937,7 @@ bool QColor::setColorFromString(const QString &name)
 
 #ifndef QT_NO_COLORNAMES
     QRgb rgb;
-    if (qt_get_named_rgb(name.constData(), name.length(), &rgb)) {
+    if (get_named_rgb(name.data(), name.size(), &rgb)) {
         setRgba(rgb);
         return true;
     } else
@@ -940,11 +955,7 @@ bool QColor::setColorFromString(const QString &name)
 */
 QStringList QColor::colorNames()
 {
-#ifndef QT_NO_COLORNAMES
-    return qt_get_colornames();
-#else
-    return QStringList();
-#endif
+    return get_colornames();
 }
 
 /*!

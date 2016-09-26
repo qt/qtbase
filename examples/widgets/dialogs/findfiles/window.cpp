@@ -304,15 +304,19 @@ void Window::contextMenu(const QPoint &pos)
     if (!item)
         return;
     QMenu menu;
+#ifndef QT_NO_CLIPBOARD
     QAction *copyAction = menu.addAction("Copy Name");
+#endif
     QAction *openAction = menu.addAction("Open");
     QAction *action = menu.exec(filesTable->mapToGlobal(pos));
     if (!action)
         return;
     const QString fileName = fileNameOfItem(item);
-    if (action == copyAction)
-        QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(fileName));
-    else if (action == openAction)
+    if (action == openAction)
         openFile(fileName);
+#ifndef QT_NO_CLIPBOARD
+    else if (action == copyAction)
+        QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(fileName));
+#endif
 }
 //! [16]

@@ -261,9 +261,13 @@ void QRawFont::loadFromData(const QByteArray &fontData,
    \a glyphIndex in the underlying font, using the \a transform specified.
    If the QRawFont is not valid, this function will return an invalid QImage.
 
-   If \a antialiasingType is set to QRawFont::SubPixelAntialiasing, then the resulting image will be
-   in QImage::Format_RGB32 and the RGB values of each pixel will represent the subpixel opacities of
-   the pixel in the rasterization of the glyph. Otherwise, the image will be in the format of
+   If the font is a color font, then the resulting image will contain the rendered
+   glyph at the current pixel size. In this case, the \a antialiasingType will be
+   ignored.
+
+   Otherwise, if \a antialiasingType is set to QRawFont::SubPixelAntialiasing, then the resulting image
+   will be in QImage::Format_RGB32 and the RGB values of each pixel will represent the subpixel opacities
+   of the pixel in the rasterization of the glyph. Otherwise, the image will be in the format of
    QImage::Format_Indexed8 and each pixel will contain the opacity of the pixel in the
    rasterization.
 
@@ -274,6 +278,9 @@ QImage QRawFont::alphaMapForGlyph(quint32 glyphIndex, AntialiasingType antialias
 {
     if (!d->isValid())
         return QImage();
+
+    if (d->fontEngine->glyphFormat == QFontEngine::Format_ARGB)
+        return d->fontEngine->bitmapForGlyph(glyphIndex, QFixed(), transform);
 
     if (antialiasingType == SubPixelAntialiasing)
         return d->fontEngine->alphaRGBMapForGlyph(glyphIndex, QFixed(), transform);

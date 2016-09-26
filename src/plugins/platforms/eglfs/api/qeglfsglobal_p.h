@@ -37,30 +37,44 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSOFFSCREENWINDOW_H
-#define QEGLFSOFFSCREENWINDOW_H
+#ifndef QEGLFSGLOBAL_H
+#define QEGLFSGLOBAL_H
 
-#include "qeglfsglobal.h"
-#include <qpa/qplatformoffscreensurface.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qglobal.h>
+
+#include <QtPlatformSupport/private/qt_egl_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_EGLFS_EXPORT QEglFSOffscreenWindow : public QPlatformOffscreenSurface
-{
-public:
-    QEglFSOffscreenWindow(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface);
-    ~QEglFSOffscreenWindow();
+#ifdef QT_BUILD_EGL_DEVICE_LIB
+#define Q_EGLFS_EXPORT Q_DECL_EXPORT
+#else
+#define Q_EGLFS_EXPORT Q_DECL_IMPORT
+#endif
 
-    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
-    bool isValid() const Q_DECL_OVERRIDE { return m_surface != EGL_NO_SURFACE; }
-
-private:
-    QSurfaceFormat m_format;
-    EGLDisplay m_display;
-    EGLSurface m_surface;
-    EGLNativeWindowType m_window;
-};
+#undef Status
+#undef None
+#undef Bool
+#undef CursorShape
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef FontChange
+#undef Expose
+#undef Unsorted
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSOFFSCREENWINDOW_H
+#endif

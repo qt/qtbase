@@ -908,7 +908,7 @@ static FontNames getCanonicalFontNames(const uchar *table, quint32 bytes)
 
 } // namespace
 
-QString getEnglishName(const QString &familyName)
+QString getEnglishName(const QString &familyName, bool includeStyle = false)
 {
     QString i18n_name;
     QString faceName = familyName;
@@ -946,7 +946,12 @@ QString getEnglishName(const QString &familyName)
     if ( bytes == GDI_ERROR )
         goto error;
 
-    i18n_name = getCanonicalFontNames(table, bytes).name;
+    {
+        const FontNames names = getCanonicalFontNames(table, bytes);
+        i18n_name = names.name;
+        if (includeStyle)
+            i18n_name += QLatin1Char(' ') + names.style;
+    }
 error:
     delete [] table;
     SelectObject( hdc, oldobj );
@@ -1252,6 +1257,7 @@ QT_WARNING_POP
             request.pixelSize = pixelSize;
             request.styleStrategy = QFont::PreferMatch;
             request.hintingPreference = hintingPreference;
+            request.stretch = QFont::Unstretched;
 
             fontEngine = QWindowsFontDatabase::createEngine(request,
                                                             QWindowsContext::instance()->defaultDPI(),

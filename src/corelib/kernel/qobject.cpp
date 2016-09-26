@@ -222,7 +222,7 @@ QObjectPrivate::QObjectPrivate(int version)
     blockSig = false;                           // not blocking signals
     wasDeleted = false;                         // double-delete catcher
     isDeletingChildren = false;                 // set by deleteChildren()
-    sendChildEvents = true;                     // if we should send ChildInsert and ChildRemove events to parent
+    sendChildEvents = true;                     // if we should send ChildAdded and ChildRemoved events to parent
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;

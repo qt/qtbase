@@ -187,7 +187,7 @@ Grammar::Grammar ():
 
   tk_end = intern ("$end");
   terminals.insert (tk_end);
-  spells.insert (tk_end, "end of file");
+  spells.insert (tk_end, QLatin1String("end of file"));
 
   /*tk_error= terminals.insert (intern ("error"))*/;
 }

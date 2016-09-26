@@ -59,7 +59,6 @@
 //! [1]
 OpenGLWindow::OpenGLWindow(QWindow *parent)
     : QWindow(parent)
-    , m_update_pending(false)
     , m_animating(false)
     , m_context(0)
     , m_device(0)
@@ -99,17 +98,13 @@ void OpenGLWindow::render()
 //! [3]
 void OpenGLWindow::renderLater()
 {
-    if (!m_update_pending) {
-        m_update_pending = true;
-        QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
-    }
+    requestUpdate();
 }
 
 bool OpenGLWindow::event(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::UpdateRequest:
-        m_update_pending = false;
         renderNow();
         return true;
     default:

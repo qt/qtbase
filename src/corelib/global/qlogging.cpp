@@ -1199,7 +1199,8 @@ void QMessagePattern::setPattern(const QString &pattern)
 #if defined(QLOGGING_HAVE_BACKTRACE) && !defined(QT_BOOTSTRAPPED)
 // make sure the function has "Message" in the name so the function is removed
 
-#if (defined(Q_CC_GNU) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)) || QT_HAS_ATTRIBUTE(optimize)
+#if ((defined(Q_CC_GNU) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)) || QT_HAS_ATTRIBUTE(optimize)) \
+    && !defined(Q_CC_INTEL)
 // force skipping the frame pointer, to save the backtrace() function some work
 __attribute__((optimize("omit-frame-pointer")))
 #endif

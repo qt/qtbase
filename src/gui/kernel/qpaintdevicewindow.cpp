@@ -187,9 +187,6 @@ void QPaintDeviceWindow::exposeEvent(QExposeEvent *exposeEvent)
         // sometimes relative to the parent, depending on the platform plugin.
         // We require local coords here.
         d->doFlush(QRect(QPoint(0, 0), size()));
-    } else if (!d->dirtyRegion.isEmpty()) {
-        // Updates while non-exposed were ignored. Schedule an update now.
-        requestUpdate();
     }
 }
 

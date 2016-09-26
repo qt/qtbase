@@ -131,7 +131,8 @@ public:
     bool m_typeB;
     QTransform m_rotate;
     bool m_singleTouch;
-    int m_screenIndex;
+    QString m_screenName;
+    QPointer<QScreen> m_screen;
 };
 
 QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, const QStringList &args)
@@ -141,8 +142,7 @@ QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, co
       hw_range_x_min(0), hw_range_x_max(0),
       hw_range_y_min(0), hw_range_y_max(0),
       hw_pressure_min(0), hw_pressure_max(0),
-      m_typeB(false), m_singleTouch(false),
-      m_screenIndex(-1)
+      m_typeB(false), m_singleTouch(false)
 {
     m_forceToActiveWindow = args.contains(QLatin1String("force_window"));
 }
@@ -301,10 +301,10 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
 
     QTouchOutputMapping mapping;
     if (mapping.load()) {
-        d->m_screenIndex = mapping.screenIndexForDeviceNode(d->deviceNode);
-        if (d->m_screenIndex >= 0)
-            qCDebug(qLcEvdevTouch, "evdevtouch: Mapping device %s to screen index %d",
-                    qPrintable(d->deviceNode), d->m_screenIndex);
+        d->m_screenName = mapping.screenNameForDeviceNode(d->deviceNode);
+        if (!d->m_screenName.isEmpty())
+            qCDebug(qLcEvdevTouch, "evdevtouch: Mapping device %s to screen %s",
+                    qPrintable(d->deviceNode), qPrintable(d->m_screenName));
     }
 
     registerTouchDevice();
@@ -673,10 +673,18 @@ void QEvdevTouchScreenData::reportPoints()
         // geometry in the full virtual desktop space, there is nothing else
         // left to do since qguiapp will handle the rest.
         QScreen *screen = QGuiApplication::primaryScreen();
-        if (m_screenIndex >= 0) {
-            const QList<QScreen *> screens = QGuiApplication::screens();
-            if (m_screenIndex < screens.count())
-                screen = screens.at(m_screenIndex);
+        if (!m_screenName.isEmpty()) {
+            if (!m_screen) {
+                const QList<QScreen *> screens = QGuiApplication::screens();
+                for (QScreen *s : screens) {
+                    if (s->name() == m_screenName) {
+                        m_screen = s;
+                        break;
+                    }
+                }
+            }
+            if (m_screen)
+                screen = m_screen;
         }
         winRect = QHighDpi::toNativePixels(screen->geometry(), screen);
     }

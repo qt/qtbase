@@ -53,6 +53,12 @@ QT_BEGIN_NAMESPACE
 class Q_EGLFS_EXPORT QEglFSKmsDevice
 {
 public:
+    struct VirtualDesktopInfo {
+        VirtualDesktopInfo() : virtualIndex(0) { }
+        int virtualIndex;
+        QPoint virtualPos;
+    };
+
     QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QString &path);
     virtual ~QEglFSKmsDevice();
 
@@ -79,7 +85,9 @@ protected:
     quint32 m_connector_allocator;
 
     int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
-    QEglFSKmsScreen *createScreenForConnector(drmModeResPtr resources, drmModeConnectorPtr connector, int *virtualIndex);
+    QEglFSKmsScreen *createScreenForConnector(drmModeResPtr resources,
+                                              drmModeConnectorPtr connector,
+                                              VirtualDesktopInfo *vinfo);
     drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
 
     static void pageFlipHandler(int fd,

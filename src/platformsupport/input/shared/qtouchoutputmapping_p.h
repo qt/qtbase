@@ -60,10 +60,10 @@ class QTouchOutputMapping
 {
 public:
     bool load();
-    int screenIndexForDeviceNode(const QString &deviceNode);
+    QString screenNameForDeviceNode(const QString &deviceNode);
 
 private:
-    QHash<QString, int> m_screenIndexTable;
+    QHash<QString, QString> m_screenTable;
 };
 
 QT_END_NAMESPACE
