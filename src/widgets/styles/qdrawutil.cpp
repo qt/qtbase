@@ -763,7 +763,6 @@ void qDrawPlainRect(QPainter *p, const QRect &r, const QColor &c,
     \fn void qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
     \relates <qdrawutil.h>
     \since 4.6
-    \overload
 
     \brief The qDrawBorderPixmap function is for drawing a pixmap into
     the margins of a rectangle.
