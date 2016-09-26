@@ -326,6 +326,44 @@ bool QNetworkConfiguration::isValid() const
 }
 
 /*!
+    \since 5.9
+
+    Returns the connect timeout of this configuration.
+
+    \sa setConnectTimeout
+*/
+int QNetworkConfiguration::connectTimeout() const
+{
+    if (!d)
+        return QNetworkConfigurationPrivate::DefaultTimeout;
+    QMutexLocker locker(&d->mutex);
+    return d->timeout;
+}
+
+/*!
+    \since 5.9
+
+    Sets the connect timeout of this configuration.
+    This allows control of the timeout used by \c QAbstractSocket
+    to establish a connection.
+
+    \warning This will have no effect if the bearer plugin doesn't have
+    the CanStartAndStopInterfaces capability.
+
+    Returns true if succeeded.
+
+    \sa connectTimeout
+*/
+bool QNetworkConfiguration::setConnectTimeout(int timeout)
+{
+    if (!d)
+        return false;
+    QMutexLocker locker(&d->mutex);
+    d->timeout = timeout;
+    return true;
+}
+
+/*!
     Returns the current state of the configuration.
 */
 QNetworkConfiguration::StateFlags QNetworkConfiguration::state() const

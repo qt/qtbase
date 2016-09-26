@@ -53,6 +53,7 @@ private slots:
     void comparison();
     void children();
     void isRoamingAvailable();
+    void connectTimeout();
 #endif
 };
 
@@ -179,6 +180,21 @@ void tst_QNetworkConfiguration::isRoamingAvailable()
         } else {
             QVERIFY(!c.isRoamingAvailable());
         }
+    }
+}
+
+void tst_QNetworkConfiguration::connectTimeout()
+{
+    QNetworkConfigurationManager manager;
+    QList<QNetworkConfiguration> configs = manager.allConfigurations();
+
+    foreach (QNetworkConfiguration networkConfiguration, configs) {
+        QCOMPARE(networkConfiguration.connectTimeout(), 30000);
+
+        bool result = networkConfiguration.setConnectTimeout(100);
+        QVERIFY(result);
+
+        QCOMPARE(networkConfiguration.connectTimeout(), 100);
     }
 }
 #endif

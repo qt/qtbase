@@ -69,7 +69,8 @@ public:
         type(QNetworkConfiguration::Invalid),
         purpose(QNetworkConfiguration::UnknownPurpose),
         bearerType(QNetworkConfiguration::BearerUnknown),
-        isValid(false), roamingSupported(false)
+        isValid(false), roamingSupported(false),
+        timeout(DefaultTimeout)
     {}
     virtual ~QNetworkConfigurationPrivate()
     {
@@ -91,6 +92,9 @@ public:
 
     bool isValid;
     bool roamingSupported;
+    int timeout;
+
+    static Q_CONSTEXPR int DefaultTimeout = 30000;
 
 private:
     Q_DISABLE_COPY(QNetworkConfigurationPrivate)

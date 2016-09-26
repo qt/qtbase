@@ -120,6 +120,9 @@ public:
     QString name() const;
     bool isValid() const;
 
+    int connectTimeout() const;
+    bool setConnectTimeout(int timeout);
+
 private:
     friend class QNetworkConfigurationPrivate;
     friend class QNetworkConfigurationManager;

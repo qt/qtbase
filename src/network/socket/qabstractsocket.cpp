@@ -491,7 +491,6 @@
 #ifndef QABSTRACTSOCKET_BUFFERSIZE
 #define QABSTRACTSOCKET_BUFFERSIZE 32768
 #endif
-#define QT_CONNECT_TIMEOUT 30000
 #define QT_TRANSFER_TIMEOUT 120000
 
 QT_BEGIN_NAMESPACE
@@ -1137,7 +1136,15 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
                                  q, SLOT(_q_abortConnectionAttempt()),
                                  Qt::DirectConnection);
             }
-            connectTimer->start(QT_CONNECT_TIMEOUT);
+            int connectTimeout = QNetworkConfigurationPrivate::DefaultTimeout;
+#ifndef QT_NO_BEARERMANAGEMENT
+            QSharedPointer<QNetworkSession> networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(q->property("_q_networksession"));
+            if (networkSession) {
+                QNetworkConfiguration networkConfiguration = networkSession->configuration();
+                connectTimeout = networkConfiguration.connectTimeout();
+            }
+#endif
+            connectTimer->start(connectTimeout);
         }
 
         // Wait for a write notification that will eventually call
@@ -2095,6 +2102,10 @@ bool QAbstractSocket::waitForConnected(int msecs)
     QElapsedTimer stopWatch;
     stopWatch.start();
 
+#ifndef QT_NO_BEARERMANAGEMENT
+    QSharedPointer<QNetworkSession> networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(property("_q_networksession"));
+#endif
+
     if (d->state == HostLookupState) {
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::waitForConnected(%i) doing host name lookup", msecs);
@@ -2102,10 +2113,7 @@ bool QAbstractSocket::waitForConnected(int msecs)
         QHostInfo::abortHostLookup(d->hostLookupId);
         d->hostLookupId = -1;
 #ifndef QT_NO_BEARERMANAGEMENT
-        QSharedPointer<QNetworkSession> networkSession;
-        QVariant v(property("_q_networksession"));
-        if (v.isValid()) {
-            networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(v);
+        if (networkSession) {
             d->_q_startConnecting(QHostInfoPrivate::fromName(d->hostName, networkSession));
         } else
 #endif
@@ -2123,14 +2131,21 @@ bool QAbstractSocket::waitForConnected(int msecs)
     if (state() == UnconnectedState)
         return false; // connect not im progress anymore!
 
+    int connectTimeout = QNetworkConfigurationPrivate::DefaultTimeout;
+#ifndef QT_NO_BEARERMANAGEMENT
+    if (networkSession) {
+        QNetworkConfiguration networkConfiguration = networkSession->configuration();
+        connectTimeout = networkConfiguration.connectTimeout();
+    }
+#endif
     bool timedOut = true;
 #if defined (QABSTRACTSOCKET_DEBUG)
     int attempt = 1;
 #endif
     while (state() == ConnectingState && (msecs == -1 || stopWatch.elapsed() < msecs)) {
         int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-        if (msecs != -1 && timeout > QT_CONNECT_TIMEOUT)
-            timeout = QT_CONNECT_TIMEOUT;
+        if (msecs != -1 && timeout > connectTimeout)
+            timeout = connectTimeout;
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::waitForConnected(%i) waiting %.2f secs for connection attempt #%i",
                msecs, timeout / 1000.0, attempt++);
