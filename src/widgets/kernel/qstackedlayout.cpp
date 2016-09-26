@@ -35,7 +35,7 @@
 #include "qlayout_p.h"
 
 #include <qlist.h>
-#include <qwidget.h>
+#include "private/qwidget_p.h"
 #include "private/qlayoutengine_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -245,14 +245,10 @@ QLayoutItem *QStackedLayout::itemAt(int index) const
 // Code that enables proper handling of the case that takeAt() is
 // called somewhere inside QObject destructor (can't call hide()
 // on the object then)
-
-class QtFriendlyLayoutWidget : public QWidget
+static bool qt_wasDeleted(const QWidget *w)
 {
-public:
-    inline bool wasDeleted() const { return d_ptr->wasDeleted; }
-};
-
-static bool qt_wasDeleted(const QWidget *w) { return static_cast<const QtFriendlyLayoutWidget*>(w)->wasDeleted(); }
+    return QWidgetPrivate::get(w)->wasDeleted;
+}
 
 
 /*!
