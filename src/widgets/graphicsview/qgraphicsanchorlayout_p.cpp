@@ -2090,7 +2090,7 @@ QList<AnchorData *> getVariables(const QList<QSimplexConstraint *> &constraints)
 void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     QGraphicsAnchorLayoutPrivate::Orientation orientation)
 {
-#if defined(QT_DEBUG) || defined(Q_AUTOTEST_EXPORT)
+#if defined(QT_DEBUG) || defined(QT_BUILD_INTERNAL)
     lastCalculationUsedSimplex[orientation] = false;
 #endif
 
@@ -2254,7 +2254,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const
         sizeHints[orientation][Qt::MaximumSize] = ad->sizeAtMaximum;
     }
 
-#if defined(QT_DEBUG) || defined(Q_AUTOTEST_EXPORT)
+#if defined(QT_DEBUG) || defined(QT_BUILD_INTERNAL)
     lastCalculationUsedSimplex[orientation] = needsSimplex;
 #endif
 
