@@ -183,8 +183,10 @@ defineTest(qtAddTargetEnv) {
     deps = $$replace($$2, -private$, _private)
     deps = $$resolve_depends(deps, "QT.", ".depends" ".run_depends")
     !isEmpty(deps) {
+        libs = libs
         deppath.CONFIG = prepend
         equals(QMAKE_HOST.os, Windows) {
+            libs = bins
             deppath.CONFIG = always_prepend
             deppath.name = PATH
         } else:contains(QMAKE_HOST.os, Linux|FreeBSD|OpenBSD|NetBSD|DragonFly|SunOS|HP-UX|QNX|GNU) {
@@ -204,9 +206,9 @@ defineTest(qtAddTargetEnv) {
         ptypes =
         for(dep, deps) {
             isEmpty(3): \
-                deppath += $$shell_path($$eval(QT.$${dep}.libs))
+                deppath += $$shell_path($$eval(QT.$${dep}.$$libs))
             else: \
-                deppath += $$system_path($$eval(QT.$${dep}.libs))
+                deppath += $$system_path($$eval(QT.$${dep}.$$libs))
             ptypes += $$eval(QT.$${dep}.plugin_types)
         }
         deppath.value = $$unique(deppath)
