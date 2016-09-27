@@ -1410,18 +1410,15 @@ static QLayoutItem *ownershipCleanedItem(QFormLayoutItem *item, QFormLayout *lay
     return i;
 }
 
-static void clearQLayoutItem(QLayoutItem *item)
+static void clearAndDestroyQLayoutItem(QLayoutItem *item)
 {
     if (Q_LIKELY(item)) {
-        if (QLayout *layout = item->layout()) {
-            while (QLayoutItem *child = layout->takeAt(0)) {
-                clearQLayoutItem(child);
-                delete child;
-            }
-            delete layout;
-        }
         delete item->widget();
-        delete item->spacerItem();
+        if (QLayout *layout = item->layout()) {
+            while (QLayoutItem *child = layout->takeAt(0))
+                clearAndDestroyQLayoutItem(child);
+        }
+        delete item;
     }
 }
 
@@ -1453,8 +1450,8 @@ static void clearQLayoutItem(QLayoutItem *item)
 void QFormLayout::removeRow(int row)
 {
     TakeRowResult result = takeRow(row);
-    clearQLayoutItem(result.labelItem);
-    clearQLayoutItem(result.fieldItem);
+    clearAndDestroyQLayoutItem(result.labelItem);
+    clearAndDestroyQLayoutItem(result.fieldItem);
 }
 
 /*!
@@ -1485,8 +1482,8 @@ void QFormLayout::removeRow(int row)
 void QFormLayout::removeRow(QWidget *widget)
 {
     TakeRowResult result = takeRow(widget);
-    clearQLayoutItem(result.labelItem);
-    clearQLayoutItem(result.fieldItem);
+    clearAndDestroyQLayoutItem(result.labelItem);
+    clearAndDestroyQLayoutItem(result.fieldItem);
 }
 
 /*!
@@ -1518,8 +1515,8 @@ void QFormLayout::removeRow(QWidget *widget)
 void QFormLayout::removeRow(QLayout *layout)
 {
     TakeRowResult result = takeRow(layout);
-    clearQLayoutItem(result.labelItem);
-    clearQLayoutItem(result.fieldItem);
+    clearAndDestroyQLayoutItem(result.labelItem);
+    clearAndDestroyQLayoutItem(result.fieldItem);
 }
 
 /*!
