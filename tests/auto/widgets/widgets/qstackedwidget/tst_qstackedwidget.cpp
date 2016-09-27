@@ -168,7 +168,8 @@ private:
 
 void tst_QStackedWidget::dynamicPages()
 {
-    QStackedWidget *sw = new QStackedWidget;
+    QStackedWidget stackedWidget;
+    QStackedWidget *sw = &stackedWidget;
 
     TestPage *w1 = new TestPage(true);
     w1->setN(3);
