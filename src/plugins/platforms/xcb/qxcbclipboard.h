@@ -92,7 +92,7 @@ private:
     QClipboard::Mode modeForAtom(xcb_atom_t atom) const;
 
     // Selection and Clipboard
-    QXcbClipboardMime *m_xClipboard[2];
+    QScopedPointer<QXcbClipboardMime> m_xClipboard[2];
     QMimeData *m_clientClipboard[2];
     xcb_timestamp_t m_timestamp[2];
 

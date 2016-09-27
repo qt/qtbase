@@ -269,8 +269,6 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
 {
     Q_ASSERT(QClipboard::Clipboard == 0);
     Q_ASSERT(QClipboard::Selection == 1);
-    m_xClipboard[QClipboard::Clipboard] = 0;
-    m_xClipboard[QClipboard::Selection] = 0;
     m_clientClipboard[QClipboard::Clipboard] = 0;
     m_clientClipboard[QClipboard::Selection] = 0;
     m_timestamp[QClipboard::Clipboard] = XCB_CURRENT_TIME;
@@ -323,6 +321,10 @@ QXcbClipboard::~QXcbClipboard()
         }
         free(reply);
     }
+
+    if (m_clientClipboard[QClipboard::Clipboard] != m_clientClipboard[QClipboard::Selection])
+        delete m_clientClipboard[QClipboard::Clipboard];
+    delete m_clientClipboard[QClipboard::Selection];
 }
 
 void QXcbClipboard::incrTransactionPeeker(xcb_generic_event_t *ge, bool &accepted)
@@ -372,9 +374,9 @@ QMimeData * QXcbClipboard::mimeData(QClipboard::Mode mode)
         return m_clientClipboard[mode];
     } else {
         if (!m_xClipboard[mode])
-            m_xClipboard[mode] = new QXcbClipboardMime(mode, this);
+            m_xClipboard[mode].reset(new QXcbClipboardMime(mode, this));
 
-        return m_xClipboard[mode];
+        return m_xClipboard[mode].data();
     }
 }
 
@@ -724,7 +726,7 @@ void QXcbClipboard::handleXFixesSelectionRequest(xcb_xfixes_selection_notify_eve
     // here we care only about the xfixes events that come from non Qt processes
     if (event->owner != XCB_NONE && event->owner != owner()) {
         if (!m_xClipboard[mode]) {
-            m_xClipboard[mode] = new QXcbClipboardMime(mode, this);
+            m_xClipboard[mode].reset(new QXcbClipboardMime(mode, this));
         } else {
             m_xClipboard[mode]->reset();
         }
