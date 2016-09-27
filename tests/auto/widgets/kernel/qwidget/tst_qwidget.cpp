@@ -10430,14 +10430,13 @@ public slots:
 
     bool eventFilter(QObject *o, QEvent *e)
     {
-        if (modal && modal->button && o == modal->button) {
-            switch (e->type()) {
-            case QEvent::Enter:
+        switch (e->type()) {
+        case QEvent::Enter:
+            if (modal && modal->button && o == modal->button)
                 enters++;
-                break;
-            default:
-                break;
-            }
+            break;
+        default:
+            break;
         }
         return QDialog::eventFilter(o, e);
     }
