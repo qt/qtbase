@@ -1103,6 +1103,7 @@ void tst_QtJson::fromVariant()
     jsonObject["string"] = stringValue;
     jsonObject["array"] = jsonArray_variant;
 
+    QCOMPARE(QJsonValue::fromVariant(QVariant::fromValue(nullptr)), QJsonValue(QJsonValue::Null));
     QCOMPARE(QJsonValue::fromVariant(QVariant(boolValue)), QJsonValue(boolValue));
     QCOMPARE(QJsonValue::fromVariant(QVariant(intValue)), QJsonValue(intValue));
     QCOMPARE(QJsonValue::fromVariant(QVariant(uintValue)), QJsonValue(static_cast<double>(uintValue)));
@@ -1179,7 +1180,7 @@ void tst_QtJson::toVariantMap()
     array.append(true);
     array.append(999.);
     array.append(QLatin1String("string"));
-    array.append(QJsonValue());
+    array.append(QJsonValue::Null);
     object.insert("Array", array);
 
     map = object.toVariantMap();
@@ -1203,12 +1204,12 @@ void tst_QtJson::toVariantHash()
     QVERIFY(hash.isEmpty());
 
     object.insert("Key", QString("Value"));
-    object.insert("null", QJsonValue());
+    object.insert("null", QJsonValue::Null);
     QJsonArray array;
     array.append(true);
     array.append(999.);
     array.append(QLatin1String("string"));
-    array.append(QJsonValue());
+    array.append(QJsonValue::Null);
     object.insert("Array", array);
 
     hash = object.toVariantHash();
