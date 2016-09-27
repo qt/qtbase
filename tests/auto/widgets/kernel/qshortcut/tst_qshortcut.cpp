@@ -1211,7 +1211,8 @@ QShortcut *tst_QShortcut::setupShortcut(QWidget *parent, const char *name, int t
 
 void tst_QShortcut::shortcutDestroyed(QObject* obj)
 {
-    shortcuts.removeAll(static_cast<QShortcut *>(obj));
+    shortcuts.erase(std::remove(shortcuts.begin(), shortcuts.end(), obj),
+                    shortcuts.end());
 }
 
 void tst_QShortcut::sendKeyEvents(int k1, QChar c1, int k2, QChar c2, int k3, QChar c3, int k4, QChar c4)
