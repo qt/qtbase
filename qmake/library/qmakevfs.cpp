@@ -65,6 +65,7 @@ bool QMakeVfs::writeFile(const QString &fn, QIODevice::OpenMode mode, bool exe,
     else
         *cont = contents;
     Q_UNUSED(errStr)
+    Q_UNUSED(exe)
     return true;
 #else
     QFileInfo qfi(fn);
