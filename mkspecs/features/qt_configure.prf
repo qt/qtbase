@@ -475,8 +475,6 @@ defineTest(qtConfLibrary_inline) {
     !isEmpty(prefix) {
         $${1}.includedir = $$prefix/include
         export($${1}.includedir)
-        $${1}.cflags = -I$$prefix/include
-        export($${1}.cflags)
         $${1}.libs = "-L$$prefix/lib $$eval($${1}.libs)"
         export($${1}.libs)
     }
@@ -493,8 +491,6 @@ defineTest(qtConfLibrary_makeSpec) {
 
     $${1}.includedir = "$$val_escape(QMAKE_INCDIR_$$spec)"
     export($${1}.includedir)
-    $${1}.cflags = "$$val_escape(QMAKE_CFLAGS_$$spec)"
-    export($${1}.cflags)
     libs =
     for (l, QMAKE_LIBDIR_$$spec): \
         libs += -L$$l
@@ -522,15 +518,8 @@ defineTest(qtConfLibrary_pkgConfig) {
     qtRunLoggedCommand("$$pkg_config --modversion $$args", version)|return(false)
     qtRunLoggedCommand("$$pkg_config --libs-only-L --libs-only-l $$args", $${1}.libs)|return(false)
     qtRunLoggedCommand("$$pkg_config --cflags $$args", $${1}.cflags)|return(false)
-    qtRunLoggedCommand("$$pkg_config --cflags-only-I $$args", includes)|return(false)
-    eval(includes = $$includes)
-    includes ~= s/^-I//g
-    $${1}.includedir = "$$val_escape(includes)"
     version ~= s/[^0-9.].*$//
     $${1}.version = $$first(version)
-    export($${1}.libs)
-    export($${1}.cflags)
-    export($${1}.includedir)
     export($${1}.version)
     return(true)
 }
@@ -562,6 +551,9 @@ defineReplace(qtConfLibraryArgs) {
     includedir = $$eval($${1}.includedir)
     !isEmpty(includedir): \
         qmake_args += $$system_quote(INCLUDEPATH *= $$includedir)
+    cflags = $$eval($${1}.cflags)
+    !isEmpty(cflags): \
+        qmake_args += $$system_quote(QMAKE_CFLAGS += $$cflags) $$system_quote(QMAKE_CXXFLAGS += $$cflags)
     return($$qmake_args)
 }
 
@@ -588,12 +580,31 @@ defineTest(qtConfExportLibrary) {
     eval(includes = $$eval($${1}.includedir))
     version = $$eval($${1}.version)
 
+    # Split $$cflags into stuff that goes into DEFINES, INCLUDEPATH, and other stuff.
+    defines =
+    ignored =
+    for (i, cflags) {
+        contains(i, "-I.*") {
+            i ~= s/^-I//
+            includes += $$i
+        } else: contains(i, "-D.*") {
+            i ~= s/^-D//
+            defines += $$i
+        } else {
+            # Sometimes, pkg-config files or *-config scripts include other flags
+            # we really don't need and shouldn't add (pg_config is really bad).
+            ignored += $$i
+        }
+    }
+    !isEmpty(ignored): \
+        qtConfAddNote("Dropped compiler flags '$$ignored' when detecting library '$$2'.")
+
     NAME = $$upper($$2)
     !isEmpty(libs): qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
     for (b, $${1}.builds._KEYS_): \
         qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), \
                                           $$eval($${1}.builds.$${b}))
-    !isEmpty(cflags): qtConfOutputVar(assign, $$output, QMAKE_CFLAGS_$$NAME, $$cflags)
+    !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
     !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
     !isEmpty(version) {
         qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION, $$version)

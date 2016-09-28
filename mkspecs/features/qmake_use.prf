@@ -10,16 +10,17 @@ for(ever) {
         else: \
             libs = $$eval(QMAKE_LIBS_$${nu}_RELEASE)
         libs += $$eval(QMAKE_LIBS_$$nu)
-        cflags = $$eval(QMAKE_CFLAGS_$${nu})
+        defines = $$eval(QMAKE_DEFINES_$${nu})
+        includes = $$eval(QMAKE_INCDIR_$${nu})
 
-        isEmpty(libs):isEmpty(cflags): \
+        isEmpty(libs):isEmpty(defines):isEmpty(includes): \
             error("Library '$$name' is not defined.")
 
         !contains(use, nolink): \
             LIBS$${suffix} += $$libs
         !contains(use, linkonly) {
-            QMAKE_CFLAGS += $$cflags
-            QMAKE_CXXFLAGS += $$cflags
+            DEFINES += $$defines
+            INCLUDEPATH += $$includes
         }
     }
     !isEmpty(suffix): break()
