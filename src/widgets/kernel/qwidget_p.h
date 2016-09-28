@@ -329,6 +329,7 @@ public:
     ~QWidgetPrivate();
 
     static QWidgetPrivate *get(QWidget *w) { return w->d_func(); }
+    static const QWidgetPrivate *get(const QWidget *w) { return w->d_func(); }
 
     QWExtra *extraData() const;
     QTLWExtra *topData() const;

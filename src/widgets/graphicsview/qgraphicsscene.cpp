@@ -717,10 +717,11 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
             ++it;
     }
 
-    QGraphicsObject *dummy = item->toGraphicsObject();
-    cachedTargetItems.removeOne(dummy);
-    cachedItemGestures.remove(dummy);
-    cachedAlreadyDeliveredGestures.remove(dummy);
+    if (QGraphicsObject *dummy = item->toGraphicsObject()) {
+        cachedTargetItems.removeOne(dummy);
+        cachedItemGestures.remove(dummy);
+        cachedAlreadyDeliveredGestures.remove(dummy);
+    }
 
     foreach (Qt::GestureType gesture, item->d_ptr->gestureContext.keys())
         ungrabGesture(item, gesture);

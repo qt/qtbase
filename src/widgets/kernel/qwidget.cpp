@@ -5231,8 +5231,10 @@ static void sendResizeEvents(QWidget *target)
 
     const QObjectList children = target->children();
     for (int i = 0; i < children.size(); ++i) {
+        if (!children.at(i)->isWidgetType())
+            continue;
         QWidget *child = static_cast<QWidget*>(children.at(i));
-        if (child->isWidgetType() && !child->isWindow() && child->testAttribute(Qt::WA_PendingResizeEvent))
+        if (!child->isWindow() && child->testAttribute(Qt::WA_PendingResizeEvent))
             sendResizeEvents(child);
     }
 }
