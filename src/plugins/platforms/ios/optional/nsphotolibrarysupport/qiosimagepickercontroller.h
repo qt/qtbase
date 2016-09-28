@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -31,46 +31,12 @@
 **
 ****************************************************************************/
 
-#ifndef QIOSFILEDIALOG_H
-#define QIOSFILEDIALOG_H
+#import <UIKit/UIKit.h>
 
-#include <QtCore/qeventloop.h>
-#include <qpa/qplatformdialoghelper.h>
+#include "../../qiosfiledialog.h"
 
-QT_BEGIN_NAMESPACE
-
-Q_FORWARD_DECLARE_OBJC_CLASS(UIViewController);
-
-class QIOSFileDialog : public QPlatformFileDialogHelper
-{
-public:
-    QIOSFileDialog();
-    ~QIOSFileDialog();
-
-    void exec() Q_DECL_OVERRIDE;
-    bool defaultNameFilterDisables() const Q_DECL_OVERRIDE { return false; }
-    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) Q_DECL_OVERRIDE;
-    void hide() Q_DECL_OVERRIDE;
-    void setDirectory(const QUrl &) Q_DECL_OVERRIDE {}
-    QUrl directory() const Q_DECL_OVERRIDE { return QUrl(); }
-    void selectFile(const QUrl &) Q_DECL_OVERRIDE {}
-    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
-    void setFilter() Q_DECL_OVERRIDE {}
-    void selectNameFilter(const QString &) Q_DECL_OVERRIDE {}
-    QString selectedNameFilter() const Q_DECL_OVERRIDE { return QString(); }
-
-    void selectedFilesChanged(QList<QUrl> selection);
-
-private:
-    QUrl m_directory;
-    QList<QUrl> m_selection;
-    QEventLoop m_eventLoop;
-    UIViewController *m_viewController;
-
-    bool showImagePickerDialog(QWindow *parent);
-};
-
-QT_END_NAMESPACE
-
-#endif // QIOSFILEDIALOG_H
-
+@interface QIOSImagePickerController : UIImagePickerController <UIImagePickerControllerDelegate, UINavigationControllerDelegate> {
+    QIOSFileDialog *m_fileDialog;
+}
+- (id)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog;
+@end

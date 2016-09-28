@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -31,46 +31,34 @@
 **
 ****************************************************************************/
 
-#ifndef QIOSFILEDIALOG_H
-#define QIOSFILEDIALOG_H
+#include "../../qiosoptionalplugininterface.h"
+#include "../../qiosfiledialog.h"
 
-#include <QtCore/qeventloop.h>
-#include <qpa/qplatformdialoghelper.h>
+#include "qiosimagepickercontroller.h"
+#include "qiosfileenginefactory.h"
 
 QT_BEGIN_NAMESPACE
 
-Q_FORWARD_DECLARE_OBJC_CLASS(UIViewController);
-
-class QIOSFileDialog : public QPlatformFileDialogHelper
+class QIosOptionalPlugin_NSPhotoLibrary : public QObject, QIosOptionalPluginInterface
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID QIosOptionalPluginInterface_iid FILE "plugin.json")
+    Q_INTERFACES(QIosOptionalPluginInterface)
+
 public:
-    QIOSFileDialog();
-    ~QIOSFileDialog();
+    explicit QIosOptionalPlugin_NSPhotoLibrary(QObject* = 0) {};
+    ~QIosOptionalPlugin_NSPhotoLibrary() {}
 
-    void exec() Q_DECL_OVERRIDE;
-    bool defaultNameFilterDisables() const Q_DECL_OVERRIDE { return false; }
-    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) Q_DECL_OVERRIDE;
-    void hide() Q_DECL_OVERRIDE;
-    void setDirectory(const QUrl &) Q_DECL_OVERRIDE {}
-    QUrl directory() const Q_DECL_OVERRIDE { return QUrl(); }
-    void selectFile(const QUrl &) Q_DECL_OVERRIDE {}
-    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
-    void setFilter() Q_DECL_OVERRIDE {}
-    void selectNameFilter(const QString &) Q_DECL_OVERRIDE {}
-    QString selectedNameFilter() const Q_DECL_OVERRIDE { return QString(); }
-
-    void selectedFilesChanged(QList<QUrl> selection);
+    UIViewController* createImagePickerController(QIOSFileDialog *fileDialog) const override
+    {
+        return [[[QIOSImagePickerController alloc] initWithQIOSFileDialog:fileDialog] autorelease];
+    }
 
 private:
-    QUrl m_directory;
-    QList<QUrl> m_selection;
-    QEventLoop m_eventLoop;
-    UIViewController *m_viewController;
+    QIOSFileEngineFactory m_fileEngineFactory;
 
-    bool showImagePickerDialog(QWindow *parent);
 };
 
 QT_END_NAMESPACE
 
-#endif // QIOSFILEDIALOG_H
-
+#include "plugin.moc"

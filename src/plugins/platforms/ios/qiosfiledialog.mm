@@ -31,52 +31,18 @@
 **
 ****************************************************************************/
 
-#include "qiosfiledialog.h"
-
 #import <UIKit/UIKit.h>
 
 #include <QtCore/qstandardpaths.h>
 #include <QtGui/qwindow.h>
+#include <QDebug>
 
-@interface QIOSImagePickerController : UIImagePickerController <UIImagePickerControllerDelegate, UINavigationControllerDelegate> {
-    QIOSFileDialog *m_fileDialog;
-}
-@end
-
-@implementation QIOSImagePickerController
-
-- (id)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog
-{
-    self = [super init];
-    if (self) {
-        m_fileDialog = fileDialog;
-        [self setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-        [self setDelegate:self];
-    }
-    return self;
-}
-
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
-{
-    Q_UNUSED(picker);
-    NSURL *url = [info objectForKey:UIImagePickerControllerReferenceURL];
-    QUrl fileUrl = QUrl::fromLocalFile(QString::fromNSString([url description]));
-    m_fileDialog->selectedFilesChanged(QList<QUrl>() << fileUrl);
-    emit m_fileDialog->accept();
-}
-
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
-{
-    Q_UNUSED(picker)
-    emit m_fileDialog->reject();
-}
-
-@end
-
-// --------------------------------------------------------------------------
+#include "qiosfiledialog.h"
+#include "qiosintegration.h"
+#include "qiosoptionalplugininterface.h"
 
 QIOSFileDialog::QIOSFileDialog()
-    : m_viewController(0)
+    : m_viewController(Q_NULLPTR)
 {
 }
 
@@ -98,15 +64,34 @@ bool QIOSFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality window
     bool acceptOpen = options()->acceptMode() == QFileDialogOptions::AcceptOpen;
     QString directory = options()->initialDirectory().toLocalFile();
 
-    if (acceptOpen && directory.startsWith(QLatin1String("assets-library:"))) {
-        m_viewController = [[QIOSImagePickerController alloc] initWithQIOSFileDialog:this];
-        UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
-            : [UIApplication sharedApplication].keyWindow;
-        [window.rootViewController presentViewController:m_viewController animated:YES completion:nil];
-        return true;
-    }
+    if (acceptOpen && directory.startsWith(QLatin1String("assets-library:")))
+        return showImagePickerDialog(parent);
 
     return false;
+}
+
+bool QIOSFileDialog::showImagePickerDialog(QWindow *parent)
+{
+    if (!m_viewController) {
+        QFactoryLoader *plugins = QIOSIntegration::instance()->optionalPlugins();
+        for (int i = 0; i < plugins->metaData().size(); ++i) {
+            QIosOptionalPluginInterface *plugin = qobject_cast<QIosOptionalPluginInterface *>(plugins->instance(i));
+            m_viewController = [plugin->createImagePickerController(this) retain];
+            if (m_viewController)
+                break;
+        }
+    }
+
+    if (!m_viewController) {
+        qWarning() << "QIOSFileDialog: Could not resolve Qt plugin that gives access to photos on iOS";
+        return false;
+    }
+
+    UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
+        : [UIApplication sharedApplication].keyWindow;
+    [window.rootViewController presentViewController:m_viewController animated:YES completion:nil];
+
+    return true;
 }
 
 void QIOSFileDialog::hide()
@@ -120,6 +105,8 @@ void QIOSFileDialog::hide()
     emit directoryEntered(QUrl::fromLocalFile(QDir::currentPath()));
 
     [m_viewController dismissViewControllerAnimated:YES completion:nil];
+    [m_viewController release];
+    m_viewController = Q_NULLPTR;
     m_eventLoop.exit();
 }
 
