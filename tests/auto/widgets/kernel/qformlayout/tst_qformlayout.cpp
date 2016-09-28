@@ -51,6 +51,44 @@ static inline void setFrameless(QWidget *w)
     w->setWindowFlags(flags);
 }
 
+struct QFormLayoutTakeRowResultHolder {
+    QFormLayoutTakeRowResultHolder(QFormLayout::TakeRowResult result) Q_DECL_NOTHROW
+        : labelItem(result.labelItem),
+          fieldItem(result.fieldItem)
+    {
+    }
+    ~QFormLayoutTakeRowResultHolder()
+    {
+        // re-use a QFormLayout to recursively reap the QLayoutItems:
+        QFormLayout disposer;
+        if (labelItem)
+            disposer.setItem(0, QFormLayout::LabelRole, labelItem);
+        if (fieldItem)
+            disposer.setItem(0, QFormLayout::FieldRole, fieldItem);
+    }
+    QFormLayoutTakeRowResultHolder(QFormLayoutTakeRowResultHolder &&other) Q_DECL_NOTHROW
+        : labelItem(other.labelItem),
+          fieldItem(other.fieldItem)
+    {
+        other.labelItem = nullptr;
+        other.fieldItem = nullptr;
+    }
+    QFormLayoutTakeRowResultHolder &operator=(QFormLayoutTakeRowResultHolder &&other) Q_DECL_NOTHROW
+    {
+        swap(other);
+        return *this;
+    }
+
+    void swap(QFormLayoutTakeRowResultHolder &other) Q_DECL_NOTHROW
+    {
+        qSwap(labelItem, other.labelItem);
+        qSwap(fieldItem, other.fieldItem);
+    }
+
+    QLayoutItem *labelItem;
+    QLayoutItem *fieldItem;
+};
+
 class tst_QFormLayout : public QObject
 {
     Q_OBJECT
@@ -814,7 +852,7 @@ void tst_QFormLayout::takeRow()
     QCOMPARE(layout->count(), 3);
     QCOMPARE(layout->rowCount(), 2);
 
-    QFormLayout::TakeRowResult result = layout->takeRow(1);
+    QFormLayoutTakeRowResultHolder result = layout->takeRow(1);
 
     QVERIFY(w2);
     QVERIFY(result.fieldItem);
@@ -853,7 +891,7 @@ void tst_QFormLayout::takeRow_QWidget()
     QCOMPARE(layout->count(), 3);
     QCOMPARE(layout->rowCount(), 2);
 
-    QFormLayout::TakeRowResult result = layout->takeRow(w1);
+    QFormLayoutTakeRowResultHolder result = layout->takeRow(w1);
 
     QVERIFY(w1);
     QVERIFY(result.fieldItem);
@@ -898,7 +936,7 @@ void tst_QFormLayout::takeRow_QLayout()
     QCOMPARE(layout->count(), 3);
     QCOMPARE(layout->rowCount(), 2);
 
-    QFormLayout::TakeRowResult result = layout->takeRow(l1);
+    QFormLayoutTakeRowResultHolder result = layout->takeRow(l1);
 
     QVERIFY(l1);
     QVERIFY(w1);
