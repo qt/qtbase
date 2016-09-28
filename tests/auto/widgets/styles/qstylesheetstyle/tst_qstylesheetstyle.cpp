@@ -484,12 +484,12 @@ void tst_QStyleSheetStyle::widgetStyle()
     window1->setStyleSheet(""); // remove stylesheet
     QCOMPARE(window1->style(), qApp->style()); // is this cool or what
     QCOMPARE(widget1->style(), qApp->style()); // annoying child follows...
-    QStyle *wndStyle = QStyleFactory::create("Windows");
-    window1->setStyle(wndStyle);
+    QScopedPointer<QStyle> wndStyle(QStyleFactory::create("Windows"));
+    window1->setStyle(wndStyle.data());
     QCOMPARE(window1->style()->metaObject()->className(), "QStyleSheetStyle"); // auto wraps it
     QCOMPARE(widget1->style(), window1->style()); // and auto propagates to child
     qApp->setStyleSheet(""); // remove the app stylesheet
-    QCOMPARE(window1->style(), wndStyle); // auto dewrap
+    QCOMPARE(window1->style(), wndStyle.data()); // auto dewrap
     QCOMPARE(widget1->style(), qApp->style()); // and child state is restored
     window1->setStyle(0); // let sanity prevail
     qApp->setStyle(0);
