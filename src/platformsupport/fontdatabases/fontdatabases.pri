@@ -8,7 +8,7 @@ darwin:!if(watchos:CONFIG(simulator, simulator|device)) {
     unix {
         CONFIG += qpa/genericunixfontdatabase
         include($$PWD/genericunix/genericunix.pri)
-        contains(QT_CONFIG,fontconfig) {
+        qtConfig(fontconfig) {
             include($$PWD/fontconfig/fontconfig.pri)
         }
     }
