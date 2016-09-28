@@ -1228,7 +1228,7 @@ void tst_QCompleter::task178797_activatedOnReturn()
     words << "foobar1" << "foobar2";
     QLineEdit ledit;
     setFrameless(&ledit);
-    QCompleter *completer = new QCompleter(words);
+    QCompleter *completer = new QCompleter(words, &ledit);
     ledit.setCompleter(completer);
     QSignalSpy spy(completer, SIGNAL(activated(QString)));
     QCOMPARE(spy.count(), 0);
@@ -1335,7 +1335,7 @@ public:
 
     task250064_TextEdit()
     {
-        completer = new QCompleter;
+        completer = new QCompleter(this);
         completer->setWidget(this);
     }
 

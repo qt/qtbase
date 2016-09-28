@@ -382,8 +382,8 @@ static QString glue(const QString &s1, const QString &s2)
 void tst_QUndoGroup::checkSignals()
 {
     QUndoGroup group;
-    QAction *undo_action = group.createUndoAction(0, QString("foo"));
-    QAction *redo_action = group.createRedoAction(0, QString("bar"));
+    const QScopedPointer<QAction> undo_action(group.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redo_action(group.createRedoAction(0, QString("bar")));
     QSignalSpy indexChangedSpy(&group, SIGNAL(indexChanged(int)));
     QSignalSpy cleanChangedSpy(&group, SIGNAL(cleanChanged(bool)));
     QSignalSpy canUndoChangedSpy(&group, SIGNAL(canUndoChanged(bool)));
@@ -595,9 +595,6 @@ void tst_QUndoGroup::checkSignals()
                 true,       // indexChanged
                 true,       // undoChanged
                 true)       // redoChanged
-
-    delete undo_action;
-    delete redo_action;
 }
 
 void tst_QUndoGroup::addStackAndDie()
@@ -634,8 +631,8 @@ void tst_QUndoGroup::commandTextFormat()
     qApp->installTranslator(&translator);
 
     QUndoGroup group;
-    QAction *undo_action = group.createUndoAction(0);
-    QAction *redo_action = group.createRedoAction(0);
+    const QScopedPointer<QAction> undo_action(group.createUndoAction(0));
+    const QScopedPointer<QAction> redo_action(group.createRedoAction(0));
 
     QCOMPARE(undo_action->text(), QString("Undo-default-text"));
     QCOMPARE(redo_action->text(), QString("Redo-default-text"));
