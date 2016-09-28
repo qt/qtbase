@@ -179,7 +179,7 @@ public:
 
     int insertRow(int row);
     void insertRows(int row, int count);
-    void setItem(int row, QFormLayout::ItemRole role, QLayoutItem *item);
+    bool setItem(int row, QFormLayout::ItemRole role, QLayoutItem *item);
     void setLayout(int row, QFormLayout::ItemRole role, QLayout *layout);
     void setWidget(int row, QFormLayout::ItemRole role, QWidget *widget);
 
@@ -941,21 +941,21 @@ void QFormLayoutPrivate::insertRows(int row, int count)
     }
 }
 
-void QFormLayoutPrivate::setItem(int row, QFormLayout::ItemRole role, QLayoutItem *item)
+bool QFormLayoutPrivate::setItem(int row, QFormLayout::ItemRole role, QLayoutItem *item)
 {
     const bool fullRow = role == QFormLayout::SpanningRole;
     const int column =  role == QFormLayout::SpanningRole ? 1 : static_cast<int>(role);
     if (uint(row) >= uint(m_matrix.rowCount()) || uint(column) > 1U) {
         qWarning("QFormLayoutPrivate::setItem: Invalid cell (%d, %d)", row, column);
-        return;
+        return false;
     }
 
     if (!item)
-        return;
+        return false;
 
     if (m_matrix(row, column)) {
         qWarning("QFormLayoutPrivate::setItem: Cell (%d, %d) already occupied", row, column);
-        return;
+        return false;
     }
 
     QFormLayoutItem *i = new QFormLayoutItem(item);
@@ -963,6 +963,7 @@ void QFormLayoutPrivate::setItem(int row, QFormLayout::ItemRole role, QLayoutIte
     m_matrix(row, column) = i;
 
     m_things.append(i);
+    return true;
 }
 
 void QFormLayoutPrivate::setLayout(int row, QFormLayout::ItemRole role, QLayout *layout)
@@ -979,7 +980,9 @@ void QFormLayoutPrivate::setWidget(int row, QFormLayout::ItemRole role, QWidget 
     if (widget) {
         Q_Q(QFormLayout);
         q->addChildWidget(widget);
-        setItem(row, role, QLayoutPrivate::createWidgetItem(q, widget));
+        QWidgetItem *item = QLayoutPrivate::createWidgetItem(q, widget);
+        if (!setItem(row, role, item))
+            delete item;
     }
 }
 
