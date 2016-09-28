@@ -111,6 +111,8 @@ public:
 
     IDWriteFontFace *directWriteFontFace() const { return m_directWriteFontFace; }
 
+    void setUniqueFamilyName(const QString &newName) { m_uniqueFamilyName = newName; }
+
 private:
     QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
     void collectMetrics();
@@ -131,6 +133,7 @@ private:
     QFixed m_xHeight;
     QFixed m_lineGap;
     FaceId m_faceId;
+    QString m_uniqueFamilyName;
 };
 
 QT_END_NAMESPACE

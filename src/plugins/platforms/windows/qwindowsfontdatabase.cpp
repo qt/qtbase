@@ -1274,8 +1274,23 @@ QT_WARNING_POP
                     Q_ASSERT(fontEngine->ref.load() == 0);
 
                     // Override the generated font name
-                    static_cast<QWindowsFontEngine *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
-                    fontEngine->fontDef.family = actualFontName;
+                    switch (fontEngine->type()) {
+                    case QFontEngine::Win:
+                        static_cast<QWindowsFontEngine *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
+                        fontEngine->fontDef.family = actualFontName;
+                        break;
+
+#if !defined(QT_NO_DIRECTWRITE)
+                    case QFontEngine::DirectWrite:
+                        static_cast<QWindowsFontEngineDirectWrite *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
+                        fontEngine->fontDef.family = actualFontName;
+                        break;
+#endif // !QT_NO_DIRECTWRITE
+
+                    default:
+                        Q_ASSERT_X(false, Q_FUNC_INFO, "Unhandled font engine.");
+                    }
+
                     UniqueFontData uniqueData;
                     uniqueData.handle = fontHandle;
                     uniqueData.refCount.ref();

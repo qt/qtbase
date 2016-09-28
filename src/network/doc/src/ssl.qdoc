@@ -36,10 +36,12 @@
     the Secure Sockets Layer (SSL) protocol, using the OpenSSL Toolkit (\l{http://www.openssl.org/})
     to perform encryption and protocol handling.
 
+    From Qt version 5.2 onwards, the officially supported version for OpenSSL
+    is 1.0.0 or later. Versions >= 0.9.7 and < 1.0.0 might work, but are not
+    guaranteed to work.
+
     \annotatedlist ssl
 
-    See the \l {openssl-v1later}{OpenSSL Compatibility} page for information about the
-    versions of OpenSSL that are known to work with Qt.
 
     \section1 Enabling and Disabling SSL Support
 

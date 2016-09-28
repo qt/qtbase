@@ -41,6 +41,11 @@ information about a particular change.
 *                                Library                                     *
 ******************************************************************************
 
+General
+-------
+
+ - [QTBUG-45291] Qt headers are now gcc -Wzero-as-null-pointer-constant clean.
+
 QtCore
 ------
 
@@ -335,5 +340,47 @@ Windows
 
 moc
 ---
+
  - [QTBUG-53441] Fixed crash on file ending with a backslash followed by
    carriage return
+
+configure & build system
+------------------------
+
+ - [QTBUG-35886][QTBUG-51417] Fixed Fontconfig vs. system FreeType
+   configuration.
+ - [QTBUG-43784][X11] Fixed detection of GLX with -qt-xcb.
+ - [QTBUG-52951] Fixed dynamic library support detection for platforms
+   without libdl.
+ - [QTBUG-53038] Fixed running of configure tests outside qtbase when
+   cross compiling on Windows (for example for Android).
+ - [QTBUG-53312] The flags supplied by the configure -D/-I/-L/-l options
+   are now applied after Qt's own flags. This helps in some cases when
+   the provided paths contain files which conflict with the Qt build.
+ - [QTBUG-55011][Unix] Fixed -no-pkg-config being ignored by some
+   configure tests, which led to build failures later on.
+ - Fixed configure tests outside qtbase when $MAKEFLAGS contains the
+   -i flag.
+ - [Android] Some unused plugins are not built anymore.
+ - [MinGW] Added support for -separate-debug-info.
+ - [Unix] Added configure -no-opengles3 option.
+ - [Unix] Fixed MySQL detection/use on RHEL 6.6.
+
+qmake
+-----
+
+ - [QTBUG-41830] Fixed nested custom functions inheriting their callers'
+   arguments.
+ - [QTBUG-53895][MSVC] Started using separate PDB files for compiling
+   and linking.
+ - [QTBUG-54036][Darwin] Fixed installation of debug symbols.
+ - [QTBUG-54550] Fixed access to freed memory in $$absolute_path().
+ - [QTBUG-55183][nmake] _WINDLL is now automatically defined when building
+   a DLL, consistently with Visual Studio.
+ - [QTBUG-55649][QTBUG-55915][Xcode] Fixed support for Xcode 8.
+ - Fixed several cases where the error() function would not abort qmake.
+ - Interrupting a command run via system() will now abort qmake as well.
+ - The packagesExist() function will now warn when used when Qt was
+   configured with -no-pkg-config.
+ - [Android] The default compiler flags were adjusted to match newer
+   NDK versions.

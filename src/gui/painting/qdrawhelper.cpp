@@ -5331,15 +5331,16 @@ static void qt_gradient_quint16(int count, const QSpan *spans, void *userData)
         int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
         int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
 
-        QRgba64 oldColor = data->solid.color;
+        // Save the fillData since we overwrite it when setting solid.color.
+        QGradientData gradient = data->gradient;
         while (count--) {
             int y = spans->y;
 
-            data->solid.color = QRgba64::fromArgb32(qt_gradient_pixel_fixed(&data->gradient, yinc * y + off));
+            data->solid.color = QRgba64::fromArgb32(qt_gradient_pixel_fixed(&gradient, yinc * y + off));
             blend_color_rgb16(1, spans, userData);
             ++spans;
         }
-        data->solid.color = oldColor;
+        data->gradient = gradient;
 
     } else {
         blend_src_generic(count, spans, userData);
