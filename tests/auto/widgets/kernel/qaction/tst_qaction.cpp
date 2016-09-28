@@ -329,7 +329,7 @@ void tst_QAction::enabledVisibleInteraction()
 
 void tst_QAction::task200823_tooltip()
 {
-    QAction *action = new QAction("foo", 0);
+    const QScopedPointer<QAction> action(new QAction("foo", Q_NULLPTR));
     QString shortcut("ctrl+o");
     action->setShortcut(shortcut);
 
@@ -343,8 +343,8 @@ void tst_QAction::task200823_tooltip()
 void tst_QAction::task229128TriggeredSignalWithoutActiongroup()
 {
     // test without a group
-    QAction *actionWithoutGroup = new QAction("Test", qApp);
-    QSignalSpy spyWithoutGroup(actionWithoutGroup, SIGNAL(triggered(bool)));
+    const QScopedPointer<QAction> actionWithoutGroup(new QAction("Test", Q_NULLPTR));
+    QSignalSpy spyWithoutGroup(actionWithoutGroup.data(), SIGNAL(triggered(bool)));
     QCOMPARE(spyWithoutGroup.count(), 0);
     actionWithoutGroup->trigger();
     // signal should be emitted

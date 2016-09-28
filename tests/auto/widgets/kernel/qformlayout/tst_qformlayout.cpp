@@ -395,7 +395,8 @@ void tst_QFormLayout::setFormStyle()
     QCOMPARE(layout.rowWrapPolicy(), QFormLayout::DontWrapRows);
 #endif
 
-    widget.setStyle(QStyleFactory::create("windows"));
+    const QScopedPointer<QStyle> windowsStyle(QStyleFactory::create("windows"));
+    widget.setStyle(windowsStyle.data());
 
     QCOMPARE(layout.labelAlignment(), Qt::AlignLeft);
     QVERIFY(layout.formAlignment() == (Qt::AlignLeft | Qt::AlignTop));
@@ -406,14 +407,16 @@ void tst_QFormLayout::setFormStyle()
        this test is cross platform.. so create dummy styles that
        return all the right stylehints.
      */
-    widget.setStyle(new DummyMacStyle());
+    DummyMacStyle macStyle;
+    widget.setStyle(&macStyle);
 
     QCOMPARE(layout.labelAlignment(), Qt::AlignRight);
     QVERIFY(layout.formAlignment() == (Qt::AlignHCenter | Qt::AlignTop));
     QCOMPARE(layout.fieldGrowthPolicy(), QFormLayout::FieldsStayAtSizeHint);
     QCOMPARE(layout.rowWrapPolicy(), QFormLayout::DontWrapRows);
 
-    widget.setStyle(new DummyQtopiaStyle());
+    DummyQtopiaStyle qtopiaStyle;
+    widget.setStyle(&qtopiaStyle);
 
     QCOMPARE(layout.labelAlignment(), Qt::AlignRight);
     QVERIFY(layout.formAlignment() == (Qt::AlignLeft | Qt::AlignTop));
@@ -891,7 +894,7 @@ void tst_QFormLayout::takeAt()
     QCOMPARE(layout->count(), 7);
 
     for (int i = 6; i >= 0; --i) {
-        layout->takeAt(0);
+        delete layout->takeAt(0);
         QCOMPARE(layout->count(), i);
     }
 }
@@ -983,7 +986,7 @@ void tst_QFormLayout::replaceWidget()
     QFormLayout::ItemRole role;
 
     // replace editor
-    layout->replaceWidget(edit1, edit3);
+    delete layout->replaceWidget(edit1, edit3);
     edit1->hide(); // Not strictly needed for the test, but for normal usage it is.
     QCOMPARE(layout->indexOf(edit1), -1);
     QCOMPARE(layout->indexOf(edit3), editIndex);
@@ -994,7 +997,7 @@ void tst_QFormLayout::replaceWidget()
     QCOMPARE(rownum, 0);
     QCOMPARE(role, QFormLayout::FieldRole);
 
-    layout->replaceWidget(label1, label2);
+    delete layout->replaceWidget(label1, label2);
     label1->hide();
     QCOMPARE(layout->indexOf(label1), -1);
     QCOMPARE(layout->indexOf(label2), labelIndex);
