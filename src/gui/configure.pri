@@ -1,5 +1,20 @@
 # custom tests
 
+defineTest(qtConfLibrary_freetype) {
+    TRY_INCLUDEPATHS = $$EXTRA_INCLUDEPATH $$QMAKE_INCDIR_X11
+    haiku: TRY_INCLUDEPATHS += /system/develop/headers
+    TRY_INCLUDEPATHS += $$QMAKE_DEFAULT_INCDIR
+    for (p, TRY_INCLUDEPATHS) {
+        includedir = $$p/freetype2
+        exists($$includedir) {
+            $${1}.includedir = "$$val_escape(includedir)"
+            export($${1}.includedir)
+            return(true)
+        }
+    }
+    return(false)
+}
+
 # Check for Direct X SDK (include, lib, and direct shader compiler 'fxc').
 # Up to Direct X SDK June 2010 and for MinGW, this is pointed to by the
 # DXSDK_DIR variable. Starting with Windows Kit 8, it is included in

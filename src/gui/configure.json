@@ -87,10 +87,10 @@
         },
         "freetype": {
             "label": "FreeType",
-            "export": "",
             "test": "unix/freetype",
             "sources": [
-                "-lfreetype"
+                { "type": "pkgConfig", "args": "freetype2" },
+                { "type": "freetype", "libs": "-lfreetype" }
             ]
         },
         "fontconfig": {
@@ -98,7 +98,7 @@
             "test": "unix/fontconfig",
             "sources": [
                 { "type": "pkgConfig", "args": "fontconfig freetype2" },
-                "-lfontconfig -lfreetype"
+                { "type": "freetype", "libs": "-lfontconfig -lfreetype" }
             ]
         },
         "gbm": {
