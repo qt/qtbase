@@ -781,8 +781,14 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
 
                 FT_Select_Size(face, i);
                 if (face->size->metrics.ascender + face->size->metrics.descender > 0) {
+                    FT_Pos leading = metrics.height - metrics.ascender + metrics.descender;
                     metrics.ascender = face->size->metrics.ascender;
                     metrics.descender = face->size->metrics.descender;
+                    if (metrics.descender > 0
+                            && QString::fromUtf8(face->family_name) == QLatin1String("Courier New")) {
+                        metrics.descender *= -1;
+                    }
+                    metrics.height = metrics.ascender - metrics.descender + leading;
                 }
                 FT_Set_Char_Size(face, xsize, ysize, 0, 0);
 
