@@ -3777,6 +3777,10 @@ void tst_Moc::testQNamespace()
     QCOMPARE(meta.name(), "TestEnum1");
     QCOMPARE(meta.enclosingMetaObject(), &TestQNamespace::staticMetaObject);
     QCOMPARE(meta.keyCount(), 2);
+
+    QCOMPARE(FooNamespace::staticMetaObject.enumeratorCount(), 1);
+    QCOMPARE(FooNamespace::FooNestedNamespace::staticMetaObject.enumeratorCount(), 2);
+    QCOMPARE(FooNamespace::FooNestedNamespace::FooMoreNestedNamespace::staticMetaObject.enumeratorCount(), 1);
 }
 
 QTEST_MAIN(tst_Moc)

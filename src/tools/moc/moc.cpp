@@ -538,7 +538,6 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     return true;
 }
 
-
 void Moc::parse()
 {
     QVector<NamespaceDef> namespaceList;
@@ -560,9 +559,27 @@ void Moc::parse()
                         until(RBRACE);
                         def.end = index;
                         index = def.begin + 1;
+
                         const bool parseNamespace = currentFilenames.size() <= 1;
+                        if (parseNamespace) {
+                            for (int i = namespaceList.size() - 1; i >= 0; --i) {
+                                if (inNamespace(&namespaceList.at(i))) {
+                                    def.qualified.prepend(namespaceList.at(i).classname + "::");
+                                }
+                            }
+                        }
                         while (parseNamespace && inNamespace(&def) && hasNext()) {
                             switch (next()) {
+                            case NAMESPACE:
+                                if (test(IDENTIFIER)) {
+                                    if (test(EQ)) {
+                                        // namespace Foo = Bar::Baz;
+                                        until(SEMIC);
+                                    } else if (!test(SEMIC)) {
+                                        until(RBRACE);
+                                    }
+                                }
+                                break;
                             case Q_NAMESPACE_TOKEN:
                                 def.hasQNamespace = true;
                                 break;
@@ -857,13 +874,22 @@ void Moc::parse()
             continue;
         ClassDef def;
         static_cast<BaseDef &>(def) = static_cast<BaseDef>(n);
-        if (!def.qualified.isEmpty())
-            def.qualified += "::";
         def.qualified += def.classname;
         def.hasQGadget = true;
-        classList += def;
-        knownGadgets.insert(def.classname, def.qualified);
-        knownGadgets.insert(def.qualified, def.qualified);
+        auto it = std::find_if(classList.begin(), classList.end(), [&def](const ClassDef &val) {
+            return def.classname == val.classname && def.qualified == val.qualified;
+        });
+
+        if (it != classList.end()) {
+            it->classInfoList += def.classInfoList;
+            it->enumDeclarations.unite(def.enumDeclarations);
+            it->enumList += def.enumList;
+            it->flagAliases.unite(def.flagAliases);
+        } else {
+            knownGadgets.insert(def.classname, def.qualified);
+            knownGadgets.insert(def.qualified, def.qualified);
+            classList += def;
+        }
     }
 }
 
