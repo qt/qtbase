@@ -2258,7 +2258,7 @@
     \enum Qt::ItemSelectionMode
 
     This enum is used in QGraphicsItem, QGraphicsScene and QGraphicsView to
-    specify how items are selected, or how to determine if a shapes and items
+    specify how items are selected, or how to determine if shapes and items
     collide.
 
     \value ContainsItemShape The output list contains only items whose

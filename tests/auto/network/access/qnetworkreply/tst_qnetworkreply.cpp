@@ -4943,7 +4943,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
         const int maxRate = rate * 1024 * (100+allowedDeviation) / 100;
         qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << "?";
         // The test takes too long to run if sending enough data to overwhelm the
-        // reciever's kernel buffers.
+        // receiver's kernel buffers.
         //QEXPECT_FAIL("http+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
         //QEXPECT_FAIL("https+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
         //QVERIFY(server.transferRate >= minRate && server.transferRate <= maxRate);

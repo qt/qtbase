@@ -88,7 +88,7 @@ QString QSqlRecordPrivate::createField(int index, const QString &prefix) const
     view within the database). QSqlRecord supports adding and
     removing fields as well as setting and retrieving field values.
 
-    The values of a record's fields' can be set by name or position
+    The values of a record's fields can be set by name or position
     with setValue(); if you want to set a field to null use
     setNull(). To find the position of a field by name use indexOf(),
     and to find the name of a field at a particular position use

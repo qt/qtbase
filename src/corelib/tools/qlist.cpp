@@ -373,7 +373,7 @@ void **QListData::erase(void **xi)
     application must interface with a C API.
 
     \note Iterators into a QLinkedList and references into
-    heap-allocating QLists remain valid long as the referenced items
+    heap-allocating QLists remain valid as long as the referenced items
     remain in the container. This is not true for iterators and
     references into a QVector and non-heap-allocating QLists.
 
