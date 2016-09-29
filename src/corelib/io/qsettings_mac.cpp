@@ -175,17 +175,12 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
         break;
     case QVariant::DateTime:
         {
-            /*
-                CFDate, unlike QDateTime, doesn't store timezone information.
-            */
-            QDateTime dt = value.toDateTime();
-            if (dt.timeSpec() == Qt::LocalTime) {
-                QDateTime reference;
-                reference.setSecsSinceEpoch(qint64(kCFAbsoluteTimeIntervalSince1970));
-                result = CFDateCreate(kCFAllocatorDefault, CFAbsoluteTime(reference.secsTo(dt)));
-            } else {
+            QDateTime dateTime = value.toDateTime();
+            // CFDate, unlike QDateTime, doesn't store timezone information
+            if (dateTime.timeSpec() == Qt::LocalTime)
+                result = dateTime.toCFDate();
+            else
                 goto string_case;
-            }
         }
         break;
     case QVariant::Bool:
@@ -303,9 +298,7 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
         }
         return map;
     } else if (typeId == CFDateGetTypeID()) {
-        QDateTime dt;
-        dt.setSecsSinceEpoch(qint64(kCFAbsoluteTimeIntervalSince1970));
-        return dt.addSecs((int)CFDateGetAbsoluteTime(static_cast<CFDateRef>(cfvalue)));
+        return QDateTime::fromCFDate(static_cast<CFDateRef>(cfvalue));
     }
     return QVariant();
 }

@@ -41,6 +41,10 @@
 #include <QtCore/QSysInfo>
 #include <QtGui/QKeySequence>
 
+#include <QtCore>
+#include <QtGui>
+#include "tst_qmetatype.h"
+
 #include <cctype>
 #include <stdlib.h>
 #if defined(Q_OS_WIN) && defined(Q_CC_GNU)
@@ -165,6 +169,8 @@ private slots:
     void testNormalizedKey();
     void testVariantTypes_data();
     void testVariantTypes();
+    void testMetaTypes_data();
+    void testMetaTypes();
 #endif
     void rainersSyncBugOnMac_data();
     void rainersSyncBugOnMac();
@@ -1121,6 +1127,102 @@ void tst_QSettings::setValue()
 }
 
 #ifdef QT_BUILD_INTERNAL
+
+template<int MetaTypeId>
+static void testMetaTypesHelper(QSettings::Format format)
+{
+    typedef typename MetaEnumToType<MetaTypeId>::Type Type;
+    const char *key = QMetaType::typeName(MetaTypeId);
+    Type *value = TestValueFactory<MetaTypeId>::create();
+    QVariant inputVariant = QVariant::fromValue(*value);
+
+    static const QSettings::Scope scope = QSettings::UserScope;
+    static const QString organization("example.org");
+    static const QString applicationName("FooApp");
+
+    {
+        QSettings settings(format, scope, organization, applicationName);
+        settings.setValue(key, inputVariant);
+    }
+
+    QConfFile::clearCache();
+
+    {
+        QSettings settings(format, scope, organization, applicationName);
+        QVariant outputVariant = settings.value(key);
+        if (MetaTypeId != QMetaType::QVariant)
+            QVERIFY(outputVariant.canConvert(MetaTypeId));
+        if (outputVariant.type() != inputVariant.type())
+            qWarning() << "type mismatch between" << inputVariant << "and" << outputVariant;
+        QCOMPARE(qvariant_cast<Type >(outputVariant), *value);
+    }
+
+    delete value;
+}
+
+#define FOR_EACH_NONSUPPORTED_METATYPE(F)\
+    F(Void) \
+    F(Nullptr) \
+    F(QObjectStar) \
+    F(QModelIndex) \
+    F(QJsonObject) \
+    F(QJsonValue) \
+    F(QJsonArray) \
+    F(QJsonDocument) \
+    F(QPersistentModelIndex) \
+
+#define EXCLUDE_NON_SUPPORTED_METATYPES(MetaTypeName) \
+template<> void testMetaTypesHelper<QMetaType::MetaTypeName>(QSettings::Format) \
+{ \
+    QSKIP("This metatype is not supported by QSettings."); \
+}
+FOR_EACH_NONSUPPORTED_METATYPE(EXCLUDE_NON_SUPPORTED_METATYPES)
+#undef EXCLUDE_NON_SUPPORTED_METATYPES
+
+void tst_QSettings::testMetaTypes_data()
+{
+    QTest::addColumn<QSettings::Format>("format");
+    QTest::addColumn<int>("type");
+
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    { \
+        const char *formatName = QMetaEnum::fromType<QSettings::Format>().valueToKey(formats[i]); \
+        const char *typeName = QMetaType::typeName(QMetaType::MetaTypeName); \
+        QTest::newRow(QString("%1:%2").arg(formatName).arg(typeName).toLatin1().constData()) \
+            << QSettings::Format(formats[i]) << int(QMetaType::MetaTypeName); \
+    }
+    int formats[] = { QSettings::NativeFormat, QSettings::IniFormat };
+    for (int i = 0; i < int(sizeof(formats) / sizeof(int)); ++i) {
+        FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
+    }
+#undef ADD_METATYPE_TEST_ROW
+}
+
+typedef void (*TypeTestFunction)(QSettings::Format);
+
+void tst_QSettings::testMetaTypes()
+{
+    struct TypeTestFunctionGetter
+    {
+        static TypeTestFunction get(int type)
+        {
+            switch (type) {
+#define RETURN_CREATE_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
+            case QMetaType::MetaTypeName: \
+            return testMetaTypesHelper<QMetaType::MetaTypeName>;
+FOR_EACH_CORE_METATYPE(RETURN_CREATE_FUNCTION)
+#undef RETURN_CREATE_FUNCTION
+            }
+            return 0;
+        }
+    };
+
+    QFETCH(QSettings::Format, format);
+    QFETCH(int, type);
+
+    TypeTestFunctionGetter::get(type)(format);
+}
+
 void tst_QSettings::testVariantTypes_data()
 {
     populateWithFormats();
