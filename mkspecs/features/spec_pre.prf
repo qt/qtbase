@@ -51,5 +51,5 @@ equals(QMAKE_HOST.os, Windows) {
     QMAKE_SH            = sh
 }
 
-CONFIG = file_copies qt warn_on release link_prl
+CONFIG = file_copies qmake_use qt warn_on release link_prl
 QT = core gui
