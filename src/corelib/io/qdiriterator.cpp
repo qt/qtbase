@@ -254,6 +254,7 @@ void QDirIteratorPrivate::advance()
 
                 if (entryMatches(nextEntry.fileName(), info))
                     return;
+                nextMetaData = QFileSystemMetaData();
             }
 
             nativeIterators.pop();

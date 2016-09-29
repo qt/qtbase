@@ -69,6 +69,7 @@
             "label": "PostgreSQL",
             "test": "unix/psql",
             "sources": [
+                { "type": "pkgConfig", "args": "libpq" },
                 { "type": "psqlConfig" },
                 { "type": "psqlEnv", "libs": "-llibpq -lws2_32 -ladvapi32", "condition": "config.win32" },
                 { "type": "psqlEnv", "libs": "-lpq", "condition": "!config.win32" }

@@ -4997,7 +4997,8 @@ void tst_QWidget::moveChild()
 
     ColorWidget parent(0, Qt::Window | Qt::WindowStaysOnTopHint);
     // prevent custom styles
-    parent.setStyle(QStyleFactory::create(QLatin1String("Windows")));
+    const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
+    parent.setStyle(style.data());
     ColorWidget child(&parent, Qt::Widget, Qt::blue);
 
     parent.setGeometry(QRect(QPoint(QApplication::desktop()->availableGeometry(&parent).topLeft()) + QPoint(50, 50),
@@ -5042,7 +5043,8 @@ void tst_QWidget::showAndMoveChild()
         QSKIP("Wayland: This fails. Figure out why.");
     QWidget parent(0, Qt::Window | Qt::WindowStaysOnTopHint);
     // prevent custom styles
-    parent.setStyle(QStyleFactory::create(QLatin1String("Windows")));
+    const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
+    parent.setStyle(style.data());
 
     QDesktopWidget desktop;
     QRect desktopDimensions = desktop.availableGeometry(&parent);
@@ -6542,7 +6544,9 @@ void tst_QWidget::renderWithPainter()
 {
     QWidget widget(0, Qt::Tool);
     // prevent custom styles
-    widget.setStyle(QStyleFactory::create(QLatin1String("Windows")));
+
+    const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
+    widget.setStyle(style.data());
     widget.show();
     widget.resize(70, 50);
     widget.setAutoFillBackground(true);

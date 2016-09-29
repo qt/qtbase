@@ -140,6 +140,10 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMEROUTPUTEXTPROC) (EGLDisplay 
 #define EGL_DRM_PLANE_EXT                 0x3235
 #endif
 
+#ifndef EGL_PLATFORM_X11_KHR
+#define EGL_PLATFORM_X11_KHR              0x31D5
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QEGLStreamConvenience

@@ -301,8 +301,6 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     initResources();
     QMacAutoReleasePool pool;
 
-    qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
-
     NSApplication *cocoaApplication = [QNSApplication sharedApplication];
     qt_redirectNSApplicationSendEvent();
 

@@ -66,6 +66,33 @@ void QIOSPaintDevice::ensureActiveTarget()
     m_backingStore->makeCurrent();
 }
 
+/*!
+    \class QIOSBackingStore
+
+    \brief The QPlatformBackingStore on iOS.
+
+    QBackingStore enables the use of QPainter to paint on a QWindow, as opposed
+    to rendering to a QWindow through the use of OpenGL with QOpenGLContext.
+
+    Historically, the iOS port initially implemented the backing store by using
+    an QOpenGLPaintDevice as its paint device, triggering the use of the OpenGL
+    paint engine for QPainter based drawing. This was due to raster drawing
+    operations being too slow when not being NEON-optimized, and got the port
+    up and running quickly.
+
+    As of 3e892e4a97, released in Qt 5.7, the backing store now uses a QImage,
+    for its paint device, giving normal raster-based QPainter operations, and
+    enabling features such as antialiased drawing.
+
+    To account for regressions in performance, the old code path is still
+    available by setting the surface type of the QWindow to OpenGLSurface.
+    This surface type is normally used when rendering though QOpenGLContext,
+    but will in the case of QIOSBackingStore trigger the old OpenGL based
+    painter.
+
+    This fallback path is not too intrusive, as the QImage based path still
+    uses OpenGL to composite the image at flush() time using composeAndFlush.
+*/
 QIOSBackingStore::QIOSBackingStore(QWindow *window)
     : QRasterBackingStore(window)
     , m_context(new QOpenGLContext)

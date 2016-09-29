@@ -42,6 +42,7 @@
 #include "qxcbeglcontext.h"
 
 #include <QtGui/QOffscreenSurface>
+#include <QtPlatformSupport/private/qeglstreamconvenience_p.h>
 
 #include "qxcbeglnativeinterfacehandler.h"
 
@@ -63,7 +64,18 @@ QXcbEglIntegration::~QXcbEglIntegration()
 bool QXcbEglIntegration::initialize(QXcbConnection *connection)
 {
     m_connection = connection;
-    m_egl_display = eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(xlib_display()));
+
+    const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+
+    if (extensions && strstr(extensions, "EGL_EXT_platform_x11")) {
+        QEGLStreamConvenience streamFuncs;
+        m_egl_display = streamFuncs.get_platform_display(EGL_PLATFORM_X11_KHR,
+                                                         xlib_display(),
+                                                         nullptr);
+    }
+
+    if (!m_egl_display)
+        m_egl_display = eglGetDisplay(reinterpret_cast<EGLNativeDisplayType>(xlib_display()));
 
     EGLint major, minor;
     bool success = eglInitialize(m_egl_display, &major, &minor);

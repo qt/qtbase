@@ -112,6 +112,7 @@ public:
     virtual ~QPlatformBackingStore();
 
     QWindow *window() const;
+    QBackingStore *backingStore() const;
 
     virtual QPaintDevice *paintDevice() = 0;
 
@@ -145,6 +146,9 @@ public:
 
 private:
     QPlatformBackingStorePrivate *d_ptr;
+
+    void setBackingStore(QBackingStore *);
+    friend class QBackingStore;
 };
 
 #ifndef QT_NO_OPENGL

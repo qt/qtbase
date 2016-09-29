@@ -26,29 +26,26 @@
 **
 ****************************************************************************/
 
-#ifndef NAMESPACE_H
-#define NAMESPACE_H
+#ifndef NAMESPACE_NO_MERGE_H
+#define NAMESPACE_NO_MERGE_H
 
 #include <QObject>
 
-#include "namespace_no_merge.h"
-// moc should not merge namespace_no_merge.h content with this one !
-
 namespace FooNamespace {
     Q_NAMESPACE
-    enum class Enum1 {
+    enum class MEnum1 {
         Key1,
         Key2
     };
-    Q_ENUM_NS(Enum1)
+    Q_ENUM_NS(MEnum1)
 
     namespace FooNestedNamespace {
         Q_NAMESPACE
-        enum class Enum2 {
+        enum class MEnum2 {
             Key3,
             Key4
         };
-        Q_ENUM_NS(Enum2)
+        Q_ENUM_NS(MEnum2)
     }
 
     using namespace FooNamespace;
@@ -57,21 +54,21 @@ namespace FooNamespace {
     // Moc should merge this namespace with the previous one
     namespace FooNestedNamespace {
         Q_NAMESPACE
-        enum class Enum3 {
+        enum class MEnum3 {
             Key5,
             Key6
         };
-        Q_ENUM_NS(Enum3)
+        Q_ENUM_NS(MEnum3)
 
         namespace FooMoreNestedNamespace {
             Q_NAMESPACE
-            enum class Enum4 {
+            enum class MEnum4 {
                 Key7,
                 Key8
             };
-            Q_ENUM_NS(Enum4)
+            Q_ENUM_NS(MEnum4)
         }
     }
 }
 
-#endif // NAMESPACE_H
+#endif // NAMESPACE_NO_MERGE_H

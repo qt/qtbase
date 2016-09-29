@@ -77,6 +77,7 @@ class QPlatformBackingStorePrivate
 public:
     QPlatformBackingStorePrivate(QWindow *w)
         : window(w)
+        , backingStore(0)
 #ifndef QT_NO_OPENGL
         , textureId(0)
         , blitter(0)
@@ -100,6 +101,7 @@ public:
 #endif
     }
     QWindow *window;
+    QBackingStore *backingStore;
 #ifndef QT_NO_OPENGL
     mutable GLuint textureId;
     mutable QSize textureSize;
@@ -620,6 +622,23 @@ QPlatformBackingStore::~QPlatformBackingStore()
 QWindow* QPlatformBackingStore::window() const
 {
     return d_ptr->window;
+}
+
+/*!
+    Sets the backing store associated with this surface.
+*/
+void QPlatformBackingStore::setBackingStore(QBackingStore *backingStore)
+{
+    d_ptr->backingStore = backingStore;
+}
+
+/*!
+    Returns a pointer to the backing store associated with this
+    surface.
+*/
+QBackingStore *QPlatformBackingStore::backingStore() const
+{
+    return d_ptr->backingStore;
 }
 
 /*!

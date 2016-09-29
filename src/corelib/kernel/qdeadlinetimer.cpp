@@ -87,8 +87,8 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
     other Qt functions named \c{waitFor} or similar:
 
     \list
-      \o 0: no time left, expired
-      \o -1: infinite time left, timer never expires
+      \li 0: no time left, expired
+      \li -1: infinite time left, timer never expires
     \endlist
 
     \section1 Reference Clocks
@@ -169,20 +169,20 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
     cannot be used in calculation of how long it is overdue. If that
     functionality is required, use QDeadlineTimer::current().
 
-    \sa hasExpired(), remainingTime(), timerType(), current()
+    \sa hasExpired(), remainingTime(), Qt::TimerType, current()
 */
 
 /*!
     \fn QDeadlineTimer::QDeadlineTimer(ForeverConstant, Qt::TimerType timerType)
 
-    Constructs a QDeadlineTimer object that never expires. For this object,
-    remainingTime() will return -1, deadline() will return the maximum value,
-    and isForever() will return true.
+    QDeadlineTimer objects created with parameter \a ForeverConstant never expire.
+    For such objects, remainingTime() will return -1, deadline() will return the
+    maximum value, and isForever() will return true.
 
     The timer type \a timerType may be ignored, since the timer is already
     expired.
 
-    \sa hasExpired(), isForever(), remainingTime(), timerType()
+    \sa ForeverConstant, hasExpired(), isForever(), remainingTime(), timerType()
 */
 
 /*!
@@ -194,8 +194,7 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
     never expire, causing remainingTime() to return -1 and deadline() to return
     the maximum value.
 
-    The QDeadlineTimer object will be constructed with a timer type of \a
-    timerType.
+    The QDeadlineTimer object will be constructed with the specified timer \a type.
 
     For optimization purposes, if \a msecs is zero, this function may skip
     obtaining the current time and may instead use a value known to be in the
@@ -223,10 +222,9 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
     expired, whereas if \a deadline is equal to \c{Duration::max()}, then this
     object is set to never expire.
 
-    The QDeadlineTimer object will be constructed with a timer type of \a
-    timerType.
+    The QDeadlineTimer object will be constructed with the specified timer \a type.
 
-    \sa hasExpired(), isForever(), remainingTime<Duration>(), setDeadline()
+    \sa hasExpired(), isForever(), remainingTime(), setDeadline()
 */
 
 /*!
@@ -237,8 +235,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
     mark as expired, whereas if \a remaining is equal to \c{duration::max()},
     the object will be set to never expire.
 
-    The QDeadlineTimer object will be constructed with a timer type of \a
-    timerType.
+    The QDeadlineTimer object will be constructed with the specified timer \a type.
 
     This constructor can be used with C++14's user-defined literals for time, such as in:
 
@@ -254,7 +251,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
     it is overdue. If that functionality is required, use
     QDeadlineTimer::current() and add time to it.
 
-    \sa hasExpired(), isForever(), remainingTime<Duration>(), setRemainingTime()
+    \sa hasExpired(), isForever(), remainingTime(), setRemainingTime()
 */
 
 /*!
@@ -268,9 +265,9 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
     expired, whereas if \a deadline is equal to \c{Duration::max()}, then this
     object is set to never expire.
 
-    The timer type for this QDeadlineTimer object will be set to \a timerType type.
+    The timer type for this QDeadlineTimer object will be set to the specified \a type.
 
-    \sa hasExpired(), isForever(), remainingTime<Duration>(),
+    \sa hasExpired(), isForever(), remainingTime(),
 */
 
 /*!
@@ -279,7 +276,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
     zero, this QDeadlineTimer object will be marked as expired, whereas a value
     of -1 will set it to never expire.
 
-    The timer type for this QDeadlineTimer object will be set to \a timerType type.
+    The timer type for this QDeadlineTimer object will be set to the specified \a timerType.
 
     \sa setPreciseRemainingTime(), hasExpired(), isForever(), remainingTime()
 */
@@ -297,7 +294,8 @@ void QDeadlineTimer::setRemainingTime(qint64 msecs, Qt::TimerType timerType) Q_D
     secs is -1, this QDeadlineTimer will be set it to never expire. If both
     parameters are zero, this QDeadlineTimer will be marked as expired.
 
-    The timer type for this QDeadlineTimer object will be set to \a timerType type.
+    The timer type for this QDeadlineTimer object will be set to the specified
+    \a type.
 
     \sa setRemainingTime(), hasExpired(), isForever(), remainingTime()
 */
@@ -330,7 +328,7 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
     as expired, whereas if \a remaining is equal to \c{duration::max()}, the
     object will be set to never expire.
 
-    The timer type for this QDeadlineTimer object will be set to \a timerType type.
+    The timer type for this QDeadlineTimer object will be set to the specified \a type.
 
     This function can be used with C++14's user-defined literals for time, such as in:
 
@@ -339,7 +337,7 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
         deadline.setRemainingTime(250ms);
     \endcode
 
-    \sa setDeadline(), remainingTime<Duration>(), hasExpired(), isForever()
+    \sa setDeadline(), remainingTime(), hasExpired(), isForever()
 */
 
 /*!
@@ -353,7 +351,7 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
     If value of \a nsecs is more than 1 billion nanoseconds (1 second), this
     function will adjust \a secs accordingly.
 
-    The timer type for this QDeadlineTimer object will be set to \a timerType type.
+    The timer type for this QDeadlineTimer object will be set to the specified \a type.
 
     \sa setRemainingTime(), hasExpired(), isForever(), remainingTime()
 */
@@ -422,7 +420,7 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
     remains time left. For objects that have expired, remainingTime() will
     return zero and deadline() will return a time point in the past.
 
-    QDeadlineTimer objects created with the \ref{ForeverConstant} never expire
+    QDeadlineTimer objects created with the \l {ForeverConstant} never expire
     and this function always returns false for them.
 
     \sa isForever(), remainingTime()
@@ -435,7 +433,7 @@ bool QDeadlineTimer::hasExpired() const Q_DECL_NOTHROW
 }
 
 /*!
-    \fn Qt::TimerType QDeadlineTimer::timerType() const Q_DECL_NOTHROW
+    \fn Qt::TimerType QDeadlineTimer::timerType() const
 
     Returns the timer type is active for this object.
 
@@ -451,7 +449,7 @@ bool QDeadlineTimer::hasExpired() const Q_DECL_NOTHROW
     will try to use a more coarse timer for Qt::CoarseTimer and
     Qt::VeryCoarseTimer.
 
-    \sa timerType()
+    \sa Qt::TimerType
  */
 void QDeadlineTimer::setTimerType(Qt::TimerType timerType)
 {
@@ -466,13 +464,13 @@ void QDeadlineTimer::setTimerType(Qt::TimerType timerType)
     returns -1.
 
     This function is suitable for use in Qt APIs that take a millisecond
-    timeout, such as the many \ref QIODevice \c waitFor functions or the timed
-    lock functions in \ref QMutex, \ref QWaitCondition, \ref QSemaphore, or
-    \ref QReadWriteLock. For example:
+    timeout, such as the many \l QIODevice \c waitFor functions or the timed
+    lock functions in \l QMutex, \l QWaitCondition, \l QSemaphore, or
+    \l QReadWriteLock. For example:
 
     \code
         mutex.tryLock(deadline.remainingTime());
-    \code
+    \endcode
 
     \sa remainingTimeNSecs(), isForever(), hasExpired()
 */
@@ -658,24 +656,12 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
     current time. Objects created by this function can participate in the
     calculation of how long a timer is overdue, using the deadline() function.
 
-    The QDeadlineTimer object will be constructed with a timer type of \a
-    timerType.
-*/
-
-/*!
-    \fn qint64 QDeadlineTimer::resolution(Qt::TimerType timerType)
-
-    Returns the resolution in nanoseconds of the system clock that backs timers
-    of type \a timerType, or 0 if the resolution could not be determined.
-
-    The resolution is not a guarantee that applications will get time values
-    with an accuracy down to that level. It is only the minimum change value
-    that can be expected.
+    The QDeadlineTimer object will be constructed with the specified \a timerType.
 */
 
 /*!
     \fn bool operator==(QDeadlineTimer d1, QDeadlineTimer d2)
-    \related QDeadlineTimer
+    \relates QDeadlineTimer
 
     Returns true if the deadline on \a d1 and the deadline in \a d2 are the
     same, false otherwise. The timer type used to create the two deadlines is
@@ -691,7 +677,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
 /*!
     \fn bool operator!=(QDeadlineTimer d1, QDeadlineTimer d2)
-    \related QDeadlineTimer
+    \relates QDeadlineTimer
 
     Returns true if the deadline on \a d1 and the deadline in \a d2 are
     diferent, false otherwise. The timer type used to create the two deadlines
@@ -707,7 +693,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
 /*!
     \fn bool operator<(QDeadlineTimer d1, QDeadlineTimer d2)
-    \related QDeadlineTimer
+    \relates QDeadlineTimer
 
     Returns true if the deadline on \a d1 is earlier than the deadline in \a
     d2, false otherwise. The timer type used to create the two deadlines is
@@ -723,7 +709,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
 /*!
     \fn bool operator<=(QDeadlineTimer d1, QDeadlineTimer d2)
-    \related QDeadlineTimer
+    \relates QDeadlineTimer
 
     Returns true if the deadline on \a d1 is earlier than or the same as the
     deadline in \a d2, false otherwise. The timer type used to create the two
@@ -739,7 +725,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
 /*!
     \fn bool operator>(QDeadlineTimer d1, QDeadlineTimer d2)
-    \related QDeadlineTimer
+    \relates QDeadlineTimer
 
     Returns true if the deadline on \a d1 is later than the deadline in \a
     d2, false otherwise. The timer type used to create the two deadlines is
@@ -755,7 +741,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
 /*!
     \fn bool operator>=(QDeadlineTimer d1, QDeadlineTimer d2)
-    \related QDeadlineTimer
+    \relates QDeadlineTimer
 
     Returns true if the deadline on \a d1 is later than or the same as the
     deadline in \a d2, false otherwise. The timer type used to create the two
@@ -771,7 +757,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
 /*!
     \fn QDeadlineTimer operator+(QDeadlineTimer dt, qint64 msecs)
-    \related QDeadlineTimer
+    \relates QDeadlineTimer
 
     Returns a QDeadlineTimer object whose deadline is \a msecs later than the
     deadline stored in \a dt. If \a dt is set to never expire, this function
@@ -782,7 +768,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
 /*!
     \fn QDeadlineTimer operator+(qint64 msecs, QDeadlineTimer dt)
-    \related QDeadlineTimer
+    \relates QDeadlineTimer
 
     Returns a QDeadlineTimer object whose deadline is \a msecs later than the
     deadline stored in \a dt. If \a dt is set to never expire, this function
@@ -793,7 +779,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
 /*!
     \fn QDeadlineTimer operator-(QDeadlineTimer dt, qint64 msecs)
-    \related QDeadlineTimer
+    \relates QDeadlineTimer
 
     Returns a QDeadlineTimer object whose deadline is \a msecs before the
     deadline stored in \a dt. If \a dt is set to never expire, this function
