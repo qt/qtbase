@@ -53,7 +53,6 @@ class QWidget;
 class QXcbScreen;
 class QXcbConnection;
 class QXcbNativeInterfaceHandler;
-class QDBusMenuConnection;
 
 class Q_XCB_EXPORT QXcbNativeInterface : public QPlatformNativeInterface
 {

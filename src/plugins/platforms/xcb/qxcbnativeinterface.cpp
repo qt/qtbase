@@ -57,10 +57,6 @@
 #include <QtPlatformHeaders/qxcbintegrationfunctions.h>
 #include <QtPlatformHeaders/qxcbscreenfunctions.h>
 
-#ifndef QT_NO_DBUS
-#include "QtPlatformSupport/private/qdbusmenuconnection_p.h"
-#endif
-
 #ifdef XCB_USE_XLIB
 #  include <X11/Xlib.h>
 #else

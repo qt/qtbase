@@ -66,9 +66,6 @@ include(gl_integrations/gl_integrations.pri)
 
 CONFIG += qpa/genericunixfontdatabase
 
-qtConfig(dbus-linked): \
-    QT += dbus
-
 !qtConfig(system-xcb) {
     DEFINES += XCB_USE_RENDER
     XCB_DIR = ../../../3rdparty/xcb
