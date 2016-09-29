@@ -34,7 +34,8 @@ qtConfig(opengl) {
                opengl/qopengltexture_p.h \
                opengl/qopengltexturehelper_p.h \
                opengl/qopenglpixeltransferoptions.h \
-               opengl/qopenglextrafunctions.h
+               opengl/qopenglextrafunctions.h \
+               opengl/qopenglprogrambinarycache_p.h
 
     SOURCES += opengl/qopengl.cpp \
                opengl/qopenglfunctions.cpp \
@@ -56,7 +57,8 @@ qtConfig(opengl) {
                opengl/qopengltextureblitter.cpp \
                opengl/qopengltexture.cpp \
                opengl/qopengltexturehelper.cpp \
-               opengl/qopenglpixeltransferoptions.cpp
+               opengl/qopenglpixeltransferoptions.cpp \
+               opengl/qopenglprogrambinarycache.cpp
 
     !qtConfig(opengles2) {
         HEADERS += opengl/qopenglfunctions_1_0.h \

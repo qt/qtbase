@@ -330,8 +330,8 @@ bool QOpenGLTextureBlitterPrivate::buildProgram(ProgramIndex idx, const char *vs
 
     p->glProgram.reset(new QOpenGLShaderProgram);
 
-    p->glProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vs);
-    p->glProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fs);
+    p->glProgram->addCacheableShaderFromSourceCode(QOpenGLShader::Vertex, vs);
+    p->glProgram->addCacheableShaderFromSourceCode(QOpenGLShader::Fragment, fs);
     p->glProgram->link();
     if (!p->glProgram->isLinked()) {
         qWarning() << "Could not link shader program:\n" << p->glProgram->log();

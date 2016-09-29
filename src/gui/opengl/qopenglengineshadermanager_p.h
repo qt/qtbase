@@ -366,7 +366,6 @@ private:
     QOpenGLShaderProgram *blitShaderProg;
     QOpenGLShaderProgram *simpleShaderProg;
     QList<QOpenGLEngineShaderProg*> cachedPrograms;
-    QList<QOpenGLShader *> shaders;
 
     static const char* qShaderSnippets[TotalSnippetCount];
 };

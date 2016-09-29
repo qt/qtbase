@@ -342,22 +342,14 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
                 QString source;
                 source.append(QLatin1String(isCoreProfile ? qopenglslMainWithTexCoordsVertexShader_core : qopenglslMainWithTexCoordsVertexShader));
                 source.append(QLatin1String(isCoreProfile ? qopenglslUntransformedPositionVertexShader_core : qopenglslUntransformedPositionVertexShader));
-
-                QOpenGLShader *vertexShader = new QOpenGLShader(QOpenGLShader::Vertex, m_blitProgram);
-                vertexShader->compileSourceCode(source);
-
-                m_blitProgram->addShader(vertexShader);
+                m_blitProgram->addCacheableShaderFromSourceCode(QOpenGLShader::Vertex, source);
             }
 
             {
                 QString source;
                 source.append(QLatin1String(isCoreProfile ? qopenglslMainFragmentShader_core : qopenglslMainFragmentShader));
                 source.append(QLatin1String(isCoreProfile ? qopenglslImageSrcFragmentShader_core : qopenglslImageSrcFragmentShader));
-
-                QOpenGLShader *fragmentShader = new QOpenGLShader(QOpenGLShader::Fragment, m_blitProgram);
-                fragmentShader->compileSourceCode(source);
-
-                m_blitProgram->addShader(fragmentShader);
+                m_blitProgram->addCacheableShaderFromSourceCode(QOpenGLShader::Fragment, source);
             }
 
             m_blitProgram->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);

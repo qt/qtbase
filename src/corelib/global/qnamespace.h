@@ -505,6 +505,7 @@ public:
         AA_SynthesizeMouseForUnhandledTabletEvents = 24,
         AA_CompressHighFrequencyEvents = 25,
         AA_DontCheckOpenGLContextThreadAffinity = 26,
+        AA_DisableShaderDiskCache = 27,
 
         // Add new attributes before this line
         AA_AttributeCount

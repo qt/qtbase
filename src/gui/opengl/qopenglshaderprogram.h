@@ -119,6 +119,11 @@ public:
     bool addShaderFromSourceCode(QOpenGLShader::ShaderType type, const QString& source);
     bool addShaderFromSourceFile(QOpenGLShader::ShaderType type, const QString& fileName);
 
+    bool addCacheableShaderFromSourceCode(QOpenGLShader::ShaderType type, const char *source);
+    bool addCacheableShaderFromSourceCode(QOpenGLShader::ShaderType type, const QByteArray &source);
+    bool addCacheableShaderFromSourceCode(QOpenGLShader::ShaderType type, const QString &source);
+    bool addCacheableShaderFromSourceFile(QOpenGLShader::ShaderType type, const QString &fileName);
+
     void removeAllShaders();
 
     virtual bool link();

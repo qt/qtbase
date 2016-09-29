@@ -257,6 +257,15 @@
            \l{QOpenGLContext::makeCurrent}{makeCurrent()}. This value has been
            added in Qt 5.8.
 
+    \value AA_DisableShaderDiskCache Disables caching of shader program binaries
+           on disk. By default Qt Quick, QPainter's OpenGL backend, and any
+           application using QOpenGLShaderProgram with one of its
+           \e addCacheableShaderFromSource overloads will employ a disk-based
+           \l{Caching Program Binaries}{program binary cache} in either the shared
+           or per-process cache storage location, on systems that support
+           \e glProgramBinary(). In the unlikely event of this being problematic,
+           set this attribute to disable all disk-based caching of shaders.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

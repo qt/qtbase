@@ -146,8 +146,8 @@ void QEglFSCursor::createShaderPrograms()
 
     GraphicsContextData &gfx(m_gfx[QOpenGLContext::currentContext()]);
     gfx.program = new QOpenGLShaderProgram;
-    gfx.program->addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
-    gfx.program->addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
+    gfx.program->addCacheableShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
+    gfx.program->addCacheableShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
     gfx.program->bindAttributeLocation("vertexCoordEntry", 0);
     gfx.program->bindAttributeLocation("textureCoordEntry", 1);
     gfx.program->link();
