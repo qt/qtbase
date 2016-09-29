@@ -44,7 +44,7 @@
 #include "qdbusmenuconnection_p.h"
 #include "qstatusnotifieritemadaptor_p.h"
 #include "qdbusmenuadaptor_p.h"
-#include "dbusmenu/qdbusplatformmenu_p.h"
+#include "qdbusplatformmenu_p.h"
 #include "qxdgnotificationproxy_p.h"
 
 #include <qpa/qplatformmenu.h>
