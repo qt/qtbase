@@ -47,13 +47,13 @@
 #include "dbusmenu/qdbusplatformmenu_p.h"
 #include "qxdgnotificationproxy_p.h"
 
-#include <qplatformmenu.h>
+#include <qpa/qplatformmenu.h>
 #include <qstring.h>
 #include <qdebug.h>
 #include <qrect.h>
 #include <qloggingcategory.h>
-#include <qplatformintegration.h>
-#include <qplatformservices.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformservices.h>
 #include <qdbusconnectioninterface.h>
 #include <private/qlockfile_p.h>
 #include <private/qguiapplication_p.h>

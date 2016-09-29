@@ -49,7 +49,7 @@
 #include "bus_interface.h"
 
 #include <QtGui/qguiapplication.h>
-#include <qplatformnativeinterface.h>
+#include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
