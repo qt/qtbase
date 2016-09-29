@@ -89,6 +89,12 @@ bool QDBusMenuConnection::registerTrayIconMenu(QDBusTrayIcon *item)
     return success;
 }
 
+void QDBusMenuConnection::unregisterTrayIconMenu(QDBusTrayIcon *item)
+{
+    if (item->menu())
+        connection().unregisterObject(MenuBarPath);
+}
+
 bool QDBusMenuConnection::registerTrayIcon(QDBusTrayIcon *item)
 {
     bool success = connection().registerService(item->instanceId());
@@ -118,7 +124,7 @@ bool QDBusMenuConnection::registerTrayIcon(QDBusTrayIcon *item)
 
 bool QDBusMenuConnection::unregisterTrayIcon(QDBusTrayIcon *item)
 {
-    connection().unregisterObject(MenuBarPath);
+    unregisterTrayIconMenu(item);
     connection().unregisterObject(StatusNotifierItemPath);
     bool success = connection().unregisterService(item->instanceId());
     if (!success)

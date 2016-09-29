@@ -66,6 +66,7 @@ public:
     bool isStatusNotifierHostRegistered() const { return m_statusNotifierHostRegistered; }
 #ifndef QT_NO_SYSTEMTRAYICON
     bool registerTrayIconMenu(QDBusTrayIcon *item);
+    void unregisterTrayIconMenu(QDBusTrayIcon *item);
     bool registerTrayIcon(QDBusTrayIcon *item);
     bool unregisterTrayIcon(QDBusTrayIcon *item);
 #endif // QT_NO_SYSTEMTRAYICON
