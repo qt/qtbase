@@ -759,7 +759,10 @@ QT_WARNING_POP
 
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
-    bool isTabletEvent = [self handleTabletEvent: theEvent];
+    // Tablet events may come in via the mouse event handlers,
+    // check if this is a valid tablet event first.
+    if ([self handleTabletEvent: theEvent])
+        return;
 
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
@@ -788,8 +791,8 @@ QT_WARNING_POP
     nativeDrag->setLastMouseEvent(theEvent, self);
 
     Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
-    QWindowSystemInterface::handleMouseEvent(targetView->m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers,
-                                             isTabletEvent ? Qt::MouseEventSynthesizedByQt : Qt::MouseEventNotSynthesized);
+    QWindowSystemInterface::handleMouseEvent(targetView->m_window, timestamp, qtWindowPoint, qtScreenPoint,
+                                             m_buttons, keyboardModifiers, Qt::MouseEventNotSynthesized);
 }
 
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
