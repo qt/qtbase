@@ -93,7 +93,6 @@ private slots:
 #if !defined(Q_OS_DARWIN)
     void accel();
     void activatedCount();
-    void allowActiveAndDisabled();
 
     void check_accelKeys();
     void check_cursorKeys1();
@@ -101,6 +100,9 @@ private slots:
     void check_cursorKeys3();
 
     void check_escKey();
+#endif
+#ifndef Q_OS_WINCE
+    void allowActiveAndDisabled();
 #endif
 
     void check_endKey();
@@ -918,10 +920,10 @@ void tst_QMenuBar::check_escKey()
 //     QCOMPARE(m_complexActionTriggerCount['h'], (uint)itemH_count);
 // }
 
-#if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::allowActiveAndDisabled()
 {
     QMenuBar menuBar;
+    menuBar.setNativeMenuBar(false);
 
      // Task 241043 : check that second menu is activated if only
     // disabled menu items are added
@@ -957,7 +959,6 @@ void tst_QMenuBar::allowActiveAndDisabled()
     else
         QCOMPARE(menuBar.activeAction()->text(), fileMenu.title());
 }
-#endif
 
 void tst_QMenuBar::check_altPress()
 {
