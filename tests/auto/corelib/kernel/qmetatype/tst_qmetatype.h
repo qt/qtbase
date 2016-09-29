@@ -32,6 +32,7 @@
 #define TST_QMETATYPE_H
 
 #include <qmetatype.h>
+#include <float.h>
 
 #define FOR_EACH_PRIMITIVE_METATYPE(F) \
     QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F) \
@@ -97,16 +98,16 @@ template<> struct TestValueFactory<QMetaType::QString> {
     static QString *create() { return new QString(QString::fromLatin1("QString")); }
 };
 template<> struct TestValueFactory<QMetaType::Int> {
-    static int *create() { return new int(0x12345678); }
+    static int *create() { return new int(INT_MIN); }
 };
 template<> struct TestValueFactory<QMetaType::UInt> {
-    static uint *create() { return new uint(0x12345678); }
+    static uint *create() { return new uint(UINT_MAX); }
 };
 template<> struct TestValueFactory<QMetaType::Bool> {
     static bool *create() { return new bool(true); }
 };
 template<> struct TestValueFactory<QMetaType::Double> {
-    static double *create() { return new double(3.14); }
+    static double *create() { return new double(DBL_MIN); }
 };
 template<> struct TestValueFactory<QMetaType::QByteArray> {
     static QByteArray *create() { return new QByteArray(QByteArray("QByteArray")); }
@@ -127,28 +128,28 @@ template<> struct TestValueFactory<QMetaType::QChar> {
     static QChar *create() { return new QChar(QChar('q')); }
 };
 template<> struct TestValueFactory<QMetaType::Long> {
-    static long *create() { return new long(0x12345678); }
+    static long *create() { return new long(LONG_MIN); }
 };
 template<> struct TestValueFactory<QMetaType::Short> {
-    static short *create() { return new short(0x1234); }
+    static short *create() { return new short(SHRT_MIN); }
 };
 template<> struct TestValueFactory<QMetaType::Char> {
     static char *create() { return new char('c'); }
 };
 template<> struct TestValueFactory<QMetaType::ULong> {
-    static ulong *create() { return new ulong(0x12345678); }
+    static ulong *create() { return new ulong(ULONG_MAX); }
 };
 template<> struct TestValueFactory<QMetaType::UShort> {
-    static ushort *create() { return new ushort(0x1234); }
+    static ushort *create() { return new ushort(USHRT_MAX); }
 };
 template<> struct TestValueFactory<QMetaType::SChar> {
-    static signed char *create() { return new signed char(-12); }
+    static signed char *create() { return new signed char(CHAR_MIN); }
 };
 template<> struct TestValueFactory<QMetaType::UChar> {
-    static uchar *create() { return new uchar('u'); }
+    static uchar *create() { return new uchar(UCHAR_MAX); }
 };
 template<> struct TestValueFactory<QMetaType::Float> {
-    static float *create() { return new float(3.14f); }
+    static float *create() { return new float(FLT_MIN); }
 };
 template<> struct TestValueFactory<QMetaType::QObjectStar> {
     static QObject * *create() { return new QObject *(0); }
@@ -157,10 +158,10 @@ template<> struct TestValueFactory<QMetaType::VoidStar> {
     static void * *create() { return new void *(0); }
 };
 template<> struct TestValueFactory<QMetaType::LongLong> {
-    static qlonglong *create() { return new qlonglong(0x12345678); }
+    static qlonglong *create() { return new qlonglong(LLONG_MIN); }
 };
 template<> struct TestValueFactory<QMetaType::ULongLong> {
-    static qulonglong *create() { return new qulonglong(0x12345678); }
+    static qulonglong *create() { return new qulonglong(ULLONG_MAX); }
 };
 template<> struct TestValueFactory<QMetaType::QStringList> {
     static QStringList *create() { return new QStringList(QStringList() << "Q" << "t"); }
