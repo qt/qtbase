@@ -25,7 +25,6 @@
     "QtEglSupport" => "$basedir/src/platformsupport/eglconvenience",
     "QtFbSupport" => "$basedir/src/platformsupport/fbconvenience",
     "QtGlxSupport" => "$basedir/src/platformsupport/glxconvenience",
-    "QtPlatformSupport" => "$basedir/src/platformsupport",
     "QtPlatformHeaders" => "$basedir/src/platformheaders",
     "QtANGLE/KHR" => "!$basedir/src/3rdparty/angle/include/KHR",
     "QtANGLE/GLES2" => "!$basedir/src/3rdparty/angle/include/GLES2",

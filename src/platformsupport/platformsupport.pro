@@ -40,8 +40,3 @@ darwin {
     macos: \
         SUBDIRS += cglconvenience
 }
-
-# This aggregates all of them.
-legacy.file = legacy.pro
-legacy.depends = $$SUBDIRS
-SUBDIRS += legacy
