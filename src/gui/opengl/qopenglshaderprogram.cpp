@@ -296,7 +296,7 @@ bool QOpenGLShaderPrivate::create()
     QOpenGLContext *context = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
     if (!context)
         return false;
-    GLuint shader;
+    GLuint shader = 0;
     if (shaderType == QOpenGLShader::Vertex) {
         shader = glfuncs->glCreateShader(GL_VERTEX_SHADER);
     } else if (shaderType == QOpenGLShader::Geometry && supportsGeometryShaders) {
