@@ -2297,8 +2297,9 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
                 && d->rasterBuffer->compositionMode == QPainter::CompositionMode_Source)))
     {
         RotationType rotationType = qRotationType(s->matrix);
+        const QPixelLayout::BPP plBpp = qPixelLayouts[d->rasterBuffer->format].bpp;
 
-        if (rotationType != NoRotation && qMemRotateFunctions[d->rasterBuffer->format][rotationType] && img.rect().contains(sr.toAlignedRect())) {
+        if (rotationType != NoRotation && qMemRotateFunctions[plBpp][rotationType] && img.rect().contains(sr.toAlignedRect())) {
             QRectF transformedTargetRect = s->matrix.mapRect(r);
 
             if ((!(s->renderHints & QPainter::SmoothPixmapTransform) && !(s->renderHints & QPainter::Antialiasing))
@@ -2328,7 +2329,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
                 uint cw = clippedSourceRect.width();
                 uint ch = clippedSourceRect.height();
 
-                qMemRotateFunctions[d->rasterBuffer->format][rotationType](srcBase, cw, ch, sbpl, dstBase, dbpl);
+                qMemRotateFunctions[plBpp][rotationType](srcBase, cw, ch, sbpl, dstBase, dbpl);
 
                 return;
             }

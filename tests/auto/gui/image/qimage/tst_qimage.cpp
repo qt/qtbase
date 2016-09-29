@@ -1087,35 +1087,11 @@ void tst_QImage::rotate_data()
     degrees << 0 << 90 << 180 << 270;
 
     foreach (int d, degrees) {
-        const QByteArray dB = QByteArray::number(d);
-        QTest::newRow((dB + " Format_RGB32").constData())
-            << QImage::Format_RGB32 << d;
-        QTest::newRow((dB + " Format_ARGB32").constData())
-            << QImage::Format_ARGB32 << d;
-        QTest::newRow((dB + " Format_ARGB32_Premultiplied").constData())
-            << QImage::Format_ARGB32_Premultiplied << d;
-        QTest::newRow((dB + " Format_RGB16").constData())
-            << QImage::Format_RGB16 << d;
-        QTest::newRow((dB + " Format_ARGB8565_Premultiplied").constData())
-            << QImage::Format_ARGB8565_Premultiplied << d;
-        QTest::newRow((dB + " Format_RGB666").constData())
-            << QImage::Format_RGB666 << d;
-        QTest::newRow((dB + " Format_RGB555").constData())
-            << QImage::Format_RGB555 << d;
-        QTest::newRow((dB + " Format_ARGB8555_Premultiplied").constData())
-            << QImage::Format_ARGB8555_Premultiplied << d;
-        QTest::newRow((dB + " Format_RGB888").constData())
-            << QImage::Format_RGB888 << d;
-        QTest::newRow((dB + " Format_Indexed8").constData())
-            << QImage::Format_Indexed8 << d;
-        QTest::newRow((dB + " Format_RGBX8888").constData())
-            << QImage::Format_RGBX8888 << d;
-        QTest::newRow((dB + " Format_RGBA8888_Premultiplied").constData())
-            << QImage::Format_RGBA8888_Premultiplied << d;
-        QTest::newRow((dB + " Format_Alpha8").constData())
-            << QImage::Format_Alpha8 << d;
-        QTest::newRow((dB + " Format_Grayscale8").constData())
-            << QImage::Format_Grayscale8 << d;
+        const QString dB = QString::number(d);
+        for (int i = QImage::Format_Indexed8; i < QImage::NImageFormats; i++) {
+            QImage::Format format = static_cast<QImage::Format>(i);
+            QTest::newRow(qPrintable(dB + " " + formatToString(format))) << format << d;
+        }
     }
 }
 

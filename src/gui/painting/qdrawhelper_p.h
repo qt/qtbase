@@ -157,7 +157,6 @@ struct DrawHelper {
 extern SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats];
 extern SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats];
 extern SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFormats];
-extern MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3];
 
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
@@ -1226,6 +1225,7 @@ extern QPixelLayout qPixelLayouts[QImage::NImageFormats];
 extern const FetchPixelsFunc qFetchPixels[QPixelLayout::BPPCount];
 extern StorePixelsFunc qStorePixels[QPixelLayout::BPPCount];
 
+extern MemRotateFunc qMemRotateFunctions[QPixelLayout::BPPCount][3];
 
 
 QT_END_NAMESPACE

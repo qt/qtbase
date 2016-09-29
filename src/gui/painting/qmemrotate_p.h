@@ -56,19 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#define QT_ROTATION_CACHEDREAD 1
-#define QT_ROTATION_CACHEDWRITE 2
-#define QT_ROTATION_PACKING 3
-#define QT_ROTATION_TILED 4
-
-#ifndef QT_ROTATION_ALGORITHM
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-#define QT_ROTATION_ALGORITHM QT_ROTATION_TILED
-#else
-#define QT_ROTATION_ALGORITHM QT_ROTATION_CACHEDREAD
-#endif
-#endif
-
 #define QT_DECL_MEMROTATE(type)                            \
     void Q_GUI_EXPORT qt_memrotate90(const type*, int, int, int, type*, int); \
     void Q_GUI_EXPORT qt_memrotate180(const type*, int, int, int, type*, int); \
