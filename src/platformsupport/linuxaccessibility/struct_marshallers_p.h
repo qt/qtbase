@@ -52,13 +52,15 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qpair.h>
 #include <QtDBus/QDBusArgument>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusObjectPath>
 
-#ifndef QT_NO_ACCESSIBILITY
+QT_REQUIRE_CONFIG(accessibility);
+
 QT_BEGIN_NAMESPACE
 
 typedef QVector<int> QSpiIntList;
@@ -192,5 +194,4 @@ Q_DECLARE_METATYPE(QSpiAttributeSet)
 Q_DECLARE_METATYPE(QSpiAppUpdate)
 Q_DECLARE_METATYPE(QSpiDeviceEvent)
 
-#endif //QT_NO_ACCESSIBILITY
 #endif /* Q_SPI_STRUCT_MARSHALLERS_H */

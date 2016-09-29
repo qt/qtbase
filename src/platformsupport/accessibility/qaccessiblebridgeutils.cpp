@@ -39,8 +39,6 @@
 #include "qaccessiblebridgeutils_p.h"
 #include <QtCore/qmath.h>
 
-#ifndef QT_NO_ACCESSIBILITY
-
 QT_BEGIN_NAMESPACE
 
 namespace QAccessibleBridgeUtils {
@@ -113,5 +111,3 @@ bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionNa
 }   //namespace
 
 QT_END_NAMESPACE
-
-#endif

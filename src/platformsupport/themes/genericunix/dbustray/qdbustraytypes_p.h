@@ -52,7 +52,9 @@
 // We mean it.
 //
 
-#ifndef QT_NO_SYSTEMTRAYICON
+#include <QtGui/private/qtguiglobal_p.h>
+
+QT_REQUIRE_CONFIG(systemtrayicon);
 
 #include <QObject>
 #include <QString>
@@ -104,5 +106,4 @@ Q_DECLARE_METATYPE(QXdgDBusImageStruct)
 Q_DECLARE_METATYPE(QXdgDBusImageVector)
 Q_DECLARE_METATYPE(QXdgDBusToolTipStruct)
 
-#endif // QT_NO_SYSTEMTRAYICON
 #endif // QDBUSTRAYTYPES_P_H

@@ -52,12 +52,14 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtDBus/qdbusconnection.h>
 #include <qpa/qplatformaccessibility.h>
 
 class DeviceEventControllerAdaptor;
 
-#ifndef QT_NO_ACCESSIBILITY
+QT_REQUIRE_CONFIG(accessibility);
+
 QT_BEGIN_NAMESPACE
 
 class DBusConnection;
@@ -89,6 +91,5 @@ private:
 };
 
 QT_END_NAMESPACE
-#endif //QT_NO_ACCESSIBILITY
 
 #endif
