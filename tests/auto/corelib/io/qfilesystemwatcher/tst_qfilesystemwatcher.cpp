@@ -78,6 +78,8 @@ private slots:
 
     void signalsEmittedAfterFileMoved();
 
+    void watchUnicodeCharacters();
+
 private:
     QString m_tempDirPattern;
 #endif // QT_NO_FILESYSTEMWATCHER
@@ -762,6 +764,25 @@ void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
     QCoreApplication::processEvents();
     QVERIFY2(changedSpy.count() <= fileCount, changedSpy.receivedFilesMessage());
     QTRY_COMPARE(changedSpy.count(), fileCount);
+}
+
+void tst_QFileSystemWatcher::watchUnicodeCharacters()
+{
+    QTemporaryDir temporaryDirectory(m_tempDirPattern);
+    QVERIFY2(temporaryDirectory.isValid(), qPrintable(temporaryDirectory.errorString()));
+
+    QDir testDir(temporaryDirectory.path());
+    const QString subDir(QString::fromLatin1("caf\xe9"));
+    QVERIFY(testDir.mkdir(subDir));
+    testDir = QDir(temporaryDirectory.path() + QDir::separator() + subDir);
+
+    QFileSystemWatcher watcher;
+    QVERIFY(watcher.addPath(testDir.path()));
+
+    FileSystemWatcherSpy changedSpy(&watcher, FileSystemWatcherSpy::SpyOnDirectoryChanged);
+    QCOMPARE(changedSpy.count(), 0);
+    QVERIFY(testDir.mkdir("creme"));
+    QTRY_COMPARE(changedSpy.count(), 1);
 }
 #endif // QT_NO_FILESYSTEMWATCHER
 
