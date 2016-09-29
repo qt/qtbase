@@ -532,6 +532,8 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     A single-shot timer fires only once, non-single-shot timers fire
     every \l interval milliseconds.
 
+    The default value for this property is \c false.
+
     \sa interval, singleShot()
 */
 
