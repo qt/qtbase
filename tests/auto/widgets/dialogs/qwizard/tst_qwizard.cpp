@@ -1626,28 +1626,44 @@ class SetPage : public Operation
             wizard->next();
     }
     QString describe() const { return QString("set page %1").arg(page); }
-    const int page;
+    int page;
 public:
-    SetPage(int page) : page(page) {}
+    static QSharedPointer<SetPage> create(int page)
+    {
+        QSharedPointer<SetPage> o = QSharedPointer<SetPage>::create();
+        o->page = page;
+        return o;
+    }
 };
 
 class SetStyle : public Operation
 {
     void apply(QWizard *wizard) const { wizard->setWizardStyle(style); }
     QString describe() const { return QString("set style %1").arg(style); }
-    const QWizard::WizardStyle style;
+    QWizard::WizardStyle style;
 public:
-    SetStyle(QWizard::WizardStyle style) : style(style) {}
+    static QSharedPointer<SetStyle> create(QWizard::WizardStyle style)
+    {
+        QSharedPointer<SetStyle> o = QSharedPointer<SetStyle>::create();
+        o->style = style;
+        return o;
+    }
 };
 
 class SetOption : public Operation
 {
     void apply(QWizard *wizard) const { wizard->setOption(option, on); }
     QString describe() const;
-    const QWizard::WizardOption option;
-    const bool on;
+    QWizard::WizardOption option;
+    bool on;
 public:
-    SetOption(QWizard::WizardOption option, bool on) : option(option), on(on) {}
+    static QSharedPointer<SetOption> create(QWizard::WizardOption option, bool on)
+    {
+        QSharedPointer<SetOption> o = QSharedPointer<SetOption>::create();
+        o->option = option;
+        o->on = on;
+        return o;
+    }
 };
 
 class OptionInfo
@@ -1672,16 +1688,16 @@ class OptionInfo
         tags[QWizard::HaveCustomButton3]            = "15/CB3";
 
         for (int i = 0; i < 2; ++i) {
-            QMap<QWizard::WizardOption, Operation *> operations_;
+            QMap<QWizard::WizardOption, QSharedPointer<Operation> > operations_;
             foreach (QWizard::WizardOption option, tags.keys())
-                operations_[option] = new SetOption(option, i == 1);
+                operations_[option] = SetOption::create(option, i == 1);
             operations << operations_;
         }
     }
     OptionInfo(OptionInfo const&);
     OptionInfo& operator=(OptionInfo const&);
     QMap<QWizard::WizardOption, QString> tags;
-    QList<QMap<QWizard::WizardOption, Operation *> > operations;
+    QList<QMap<QWizard::WizardOption, QSharedPointer<Operation> > > operations;
 public:
     static OptionInfo &instance()
     {
@@ -1690,7 +1706,7 @@ public:
     }
 
     QString tag(QWizard::WizardOption option) const { return tags.value(option); }
-    Operation * operation(QWizard::WizardOption option, bool on) const
+    QSharedPointer<Operation> operation(QWizard::WizardOption option, bool on) const
     { return operations.at(on).value(option); }
     QList<QWizard::WizardOption> options() const { return tags.keys(); }
 };
@@ -1700,10 +1716,7 @@ QString SetOption::describe() const
     return QString("set opt %1 %2").arg(OptionInfo::instance().tag(option)).arg(on);
 }
 
-Q_DECLARE_METATYPE(Operation *)
-Q_DECLARE_METATYPE(SetPage *)
-Q_DECLARE_METATYPE(SetStyle *)
-Q_DECLARE_METATYPE(SetOption *)
+Q_DECLARE_METATYPE(QVector<QSharedPointer<Operation> >)
 
 class TestGroup
 {
@@ -1720,14 +1733,17 @@ public:
         combinations.clear();
     }
 
-    QList<Operation *> &add()
-    { combinations << new QList<Operation *>; return *(combinations.last()); }
+    QVector<QSharedPointer<Operation> > &add()
+    {
+        combinations.resize(combinations.size() + 1);
+        return combinations.last();
+    }
 
     void createTestRows()
     {
         for (int i = 0; i < combinations.count(); ++i) {
             QTest::newRow((name + QString(", row %1").arg(i)).toLatin1().data())
-                << (i == 0) << (type == Equality) << *(combinations.at(i));
+                << (i == 0) << (type == Equality) << combinations.at(i);
             ++nRows_;
         }
     }
@@ -1738,7 +1754,7 @@ private:
     QString name;
     Type type;
     int nRows_;
-    QList<QList<Operation *> *> combinations;
+    QVector<QVector<QSharedPointer<Operation> > > combinations;
 };
 
 class IntroPage : public QWizardPage
@@ -1822,9 +1838,9 @@ public:
         }
     }
 
-    void applyOperations(const QList<Operation *> &operations)
+    void applyOperations(const QVector<QSharedPointer<Operation> > &operations)
     {
-        foreach (Operation * op, operations) {
+        foreach (const QSharedPointer<Operation> &op, operations) {
             if (op) {
                 op->apply(this);
                 opsDescr += QString("(%1) ").arg(op->describe());
@@ -1844,31 +1860,29 @@ public:
 class CombinationsTestData
 {
     TestGroup testGroup;
-    QList<Operation *> pageOps;
-    QList<Operation *> styleOps;
-    QMap<bool, QList<Operation *> *> setAllOptions;
+    QVector<QSharedPointer<Operation> > pageOps;
+    QVector<QSharedPointer<Operation> > styleOps;
+    QMap<bool, QVector<QSharedPointer<Operation> > > setAllOptions;
 public:
     CombinationsTestData()
     {
         QTest::addColumn<bool>("ref");
         QTest::addColumn<bool>("testEquality");
-        QTest::addColumn<QList<Operation *> >("operations");
-        pageOps << new SetPage(0) << new SetPage(1) << new SetPage(2);
-        styleOps << new SetStyle(QWizard::ClassicStyle) << new SetStyle(QWizard::ModernStyle)
-                 << new SetStyle(QWizard::MacStyle);
+        QTest::addColumn<QVector<QSharedPointer<Operation> > >("operations");
+        pageOps << SetPage::create(0) << SetPage::create(1) << SetPage::create(2);
+        styleOps << SetStyle::create(QWizard::ClassicStyle) << SetStyle::create(QWizard::ModernStyle)
+                 << SetStyle::create(QWizard::MacStyle);
 #define SETPAGE(page) pageOps.at(page)
 #define SETSTYLE(style) styleOps.at(style)
 #define OPT(option, on) OptionInfo::instance().operation(option, on)
 #define CLROPT(option) OPT(option, false)
 #define SETOPT(option) OPT(option, true)
-        setAllOptions[false] = new QList<Operation *>;
-        setAllOptions[true]  = new QList<Operation *>;
         foreach (QWizard::WizardOption option, OptionInfo::instance().options()) {
-            *setAllOptions.value(false) << CLROPT(option);
-            *setAllOptions.value(true) << SETOPT(option);
+            setAllOptions[false] << CLROPT(option);
+            setAllOptions[true]  << SETOPT(option);
         }
-#define CLRALLOPTS *setAllOptions.value(false)
-#define SETALLOPTS *setAllOptions.value(true)
+#define CLRALLOPTS setAllOptions.value(false)
+#define SETALLOPTS setAllOptions.value(true)
     }
 
     int nRows() const { return testGroup.nRows(); }
@@ -1920,7 +1934,7 @@ public:
         testGroup.createTestRows();
 
         for (int i = 0; i < 2; ++i) {
-            QList<Operation *> setOptions = *setAllOptions.value(i == 1);
+            QVector<QSharedPointer<Operation> > setOptions = setAllOptions.value(i == 1);
 
             testGroup.reset("testAll 3.1");
             testGroup.add() << setOptions;
@@ -1937,21 +1951,21 @@ public:
             testGroup.createTestRows();
         }
 
-        foreach (Operation *pageOp, pageOps) {
+        foreach (const QSharedPointer<Operation> &pageOp, pageOps) {
             testGroup.reset("testAll 4.1");
             testGroup.add() << pageOp;
             testGroup.add() << pageOp << pageOp;
             testGroup.createTestRows();
 
             for (int i = 0; i < 2; ++i) {
-                QList<Operation *> optionOps = *setAllOptions.value(i == 1);
+                QVector<QSharedPointer<Operation> > optionOps = setAllOptions.value(i == 1);
                 testGroup.reset("testAll 4.2");
                 testGroup.add() << optionOps << pageOp;
                 testGroup.add() << pageOp << optionOps;
                 testGroup.createTestRows();
 
                 foreach (QWizard::WizardOption option, OptionInfo::instance().options()) {
-                    Operation *optionOp = OPT(option, i == 1);
+                    QSharedPointer<Operation> optionOp = OPT(option, i == 1);
                     testGroup.reset("testAll 4.3");
                     testGroup.add() << optionOp << pageOp;
                     testGroup.add() << pageOp << optionOp;
@@ -1960,21 +1974,21 @@ public:
             }
         }
 
-        foreach (Operation *styleOp, styleOps) {
+        foreach (const QSharedPointer<Operation> &styleOp, styleOps) {
             testGroup.reset("testAll 5.1");
             testGroup.add() << styleOp;
             testGroup.add() << styleOp << styleOp;
             testGroup.createTestRows();
 
             for (int i = 0; i < 2; ++i) {
-                QList<Operation *> optionOps = *setAllOptions.value(i == 1);
+                QVector<QSharedPointer<Operation> > optionOps = setAllOptions.value(i == 1);
                 testGroup.reset("testAll 5.2");
                 testGroup.add() << optionOps << styleOp;
                 testGroup.add() << styleOp << optionOps;
                 testGroup.createTestRows();
 
                 foreach (QWizard::WizardOption option, OptionInfo::instance().options()) {
-                    Operation *optionOp = OPT(option, i == 1);
+                    QSharedPointer<Operation> optionOp = OPT(option, i == 1);
                     testGroup.reset("testAll 5.3");
                     testGroup.add() << optionOp << styleOp;
                     testGroup.add() << styleOp << optionOp;
@@ -1983,8 +1997,8 @@ public:
             }
         }
 
-        foreach (Operation *pageOp, pageOps) {
-            foreach (Operation *styleOp, styleOps) {
+        foreach (const QSharedPointer<Operation> &pageOp, pageOps) {
+            foreach (const QSharedPointer<Operation> &styleOp, styleOps) {
 
                 testGroup.reset("testAll 6.1");
                 testGroup.add() << pageOp;
@@ -2002,7 +2016,7 @@ public:
                 testGroup.createTestRows();
 
                 for (int i = 0; i < 2; ++i) {
-                    QList<Operation *> optionOps = *setAllOptions.value(i == 1);
+                    QVector<QSharedPointer<Operation> > optionOps = setAllOptions.value(i == 1);
                     testGroup.reset("testAll 6.4");
                     testGroup.add() << optionOps << pageOp << styleOp;
                     testGroup.add() << pageOp << optionOps << styleOp;
@@ -2013,7 +2027,7 @@ public:
                     testGroup.createTestRows();
 
                     foreach (QWizard::WizardOption option, OptionInfo::instance().options()) {
-                        Operation *optionOp = OPT(option, i == 1);
+                        QSharedPointer<Operation> optionOp = OPT(option, i == 1);
                         testGroup.reset("testAll 6.5");
                         testGroup.add() << optionOp << pageOp << styleOp;
                         testGroup.add() << pageOp << optionOp << styleOp;
@@ -2079,7 +2093,7 @@ void tst_QWizard::combinations()
 
     QFETCH(bool, ref);
     QFETCH(bool, testEquality);
-    QFETCH(QList<Operation *>, operations);
+    QFETCH(QVector<QSharedPointer<Operation> >, operations);
 
     TestWizard wizard;
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
