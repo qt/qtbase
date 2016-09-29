@@ -3446,7 +3446,7 @@ void tst_QFile::autocloseHandle()
         //file is closed, read should fail
         char buf;
         QCOMPARE((int)QT_READ(fd, &buf, 1), -1);
-        QVERIFY(errno = EBADF);
+        QVERIFY(errno == EBADF);
     }
 
     {
