@@ -737,7 +737,7 @@
 
     \image spinboxdelegate-example.png
 
-    We subclass the delegate from \l QItemDelegate because we do not want
+    We subclass the delegate from \l QStyledItemDelegate because we do not want
     to write custom display functions. However, we must still provide
     functions to manage the editor widget:
 
