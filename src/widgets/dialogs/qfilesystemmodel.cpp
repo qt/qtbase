@@ -889,11 +889,10 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
         parentNode->visibleChildren.removeAt(visibleLocation);
         QFileSystemModelPrivate::QFileSystemNode * oldValue = parentNode->children.value(oldName);
         parentNode->children[newName] = oldValue;
-        QFileInfo info(parentPath, newName);
         oldValue->fileName = newName;
         oldValue->parent = parentNode;
 #ifndef QT_NO_FILESYSTEMWATCHER
-        oldValue->populate(d->fileInfoGatherer.getInfo(info));
+        oldValue->populate(d->fileInfoGatherer.getInfo(QFileInfo(parentPath, newName)));
 #endif
         oldValue->isVisible = true;
 
