@@ -267,7 +267,7 @@ void qt_blend_rgb32_on_rgb32_avx2(uchar *destPixels, int dbpl,
         // 2) interpolate pixels with AVX2
         for (; x < (w - 7); x += 8) {
             const __m256i srcVector = _mm256_lddqu_si256((const __m256i *)&src[x]);
-            if (!_mm256_testc_si256(srcVector, _mm256_setzero_si256())) {
+            if (!_mm256_testz_si256(srcVector, srcVector)) {
                 __m256i dstVector = _mm256_load_si256((__m256i *)&dst[x]);
                 INTERPOLATE_PIXEL_255_AVX2(srcVector, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half);
                 _mm256_store_si256((__m256i *)&dst[x], dstVector);
