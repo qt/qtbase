@@ -1724,17 +1724,6 @@
     \value Key_Zoom
     \value Key_Exit
     \value Key_Cancel
-    \value Key_MicVolumeUp
-    \value Key_Find
-    \value Key_Open
-    \value Key_MicVolumeDown
-    \value Key_New
-    \value Key_Settings
-    \value Key_Redo
-    \value Key_Exit
-    \value Key_Info
-    \value Key_Undo
-    \value Key_Guide
 
     \sa QKeyEvent::key()
 */
