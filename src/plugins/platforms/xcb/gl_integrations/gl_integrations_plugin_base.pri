@@ -22,10 +22,7 @@ CONFIG += qpa/genericunixfontdatabase
 
 !qtConfig(system-xcb) {
     DEFINES += XCB_USE_RENDER
-    XCB_DIR = $$clean_path($$PWD/../../../../3rdparty/xcb)
-    INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/include/xcb $$XCB_DIR/sysinclude
-    LIBS += -L$$MODULE_BASE_OUTDIR/lib -lxcb-static$$qtPlatformTargetSuffix()
-    QMAKE_USE += xcb
+    QMAKE_USE += xcb-static xcb
 } else {
     qtConfig(xkb): QMAKE_USE += xcb_xkb
     # to support custom cursors with depth > 1

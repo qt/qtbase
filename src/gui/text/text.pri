@@ -88,7 +88,7 @@ HEADERS += \
 qtConfig(harfbuzz)|qtConfig(system-harfbuzz) {
     DEFINES += QT_ENABLE_HARFBUZZ_NG
 
-    include($$PWD/../../3rdparty/harfbuzz_dependency.pri)
+    QMAKE_USE_PRIVATE += harfbuzz
 
     SOURCES += text/qharfbuzzng.cpp
     HEADERS += text/qharfbuzzng_p.h
