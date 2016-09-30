@@ -89,6 +89,32 @@ QCocoaMenuBar::~QCocoaMenuBar()
     }
 }
 
+bool QCocoaMenuBar::needsImmediateUpdate()
+{
+    if (m_window && m_window->window()->isActive()) {
+        return true;
+    } else if (!m_window) {
+        // Only update if the focus/active window has no
+        // menubar, which means it'll be using this menubar.
+        // This is to avoid a modification in a parentless
+        // menubar to affect a window-assigned menubar.
+        QWindow *fw = QGuiApplication::focusWindow();
+        if (!fw) {
+            // Same if there's no focus window, BTW.
+            return true;
+        } else {
+            QCocoaWindow *cw = static_cast<QCocoaWindow *>(fw->handle());
+            if (cw && !cw->menubar())
+                return true;
+        }
+    }
+
+    // Either the menubar is attached to a non-active window,
+    // or the application's focus window has its own menubar
+    // (which is different from this one)
+    return false;
+}
+
 void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *before)
 {
     QCocoaMenu *menu = static_cast<QCocoaMenu *>(platformMenu);
@@ -129,7 +155,7 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
 
     syncMenu(menu);
 
-    if (m_window && m_window->window()->isActive())
+    if (needsImmediateUpdate())
         updateMenuBarImmediately();
 }
 
