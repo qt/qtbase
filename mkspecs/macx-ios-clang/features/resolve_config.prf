@@ -26,7 +26,12 @@ macx-xcode {
 } else {
     iphonesimulator.name = Simulator
     iphoneos.name = Device
-    addExclusiveBuilds(iphonesimulator, iphoneos)
+
+    # Switch the order to make sure that the first Makefile target is the right one
+    !contains(QT_CONFIG, simulator_and_device):contains(QMAKE_MAC_SDK, ^iphonesimulator.*): \
+        addExclusiveBuilds(iphonesimulator, iphoneos)
+    else: \
+        addExclusiveBuilds(iphoneos, iphonesimulator)
 }
 
 equals(TEMPLATE, subdirs) {
