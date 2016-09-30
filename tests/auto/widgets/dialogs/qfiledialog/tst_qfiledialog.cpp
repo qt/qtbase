@@ -1026,17 +1026,17 @@ void tst_QFiledialog::viewMode()
 void tst_QFiledialog::proxymodel()
 {
     QFileDialog fd;
-    QCOMPARE(fd.proxyModel(), (QAbstractProxyModel*)0);
+    QCOMPARE(fd.proxyModel(), nullptr);
 
     fd.setProxyModel(0);
-    QCOMPARE(fd.proxyModel(), (QAbstractProxyModel*)0);
+    QCOMPARE(fd.proxyModel(), nullptr);
 
     QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(&fd);
     fd.setProxyModel(proxyModel);
     QCOMPARE(fd.proxyModel(), (QAbstractProxyModel *)proxyModel);
 
     fd.setProxyModel(0);
-    QCOMPARE(fd.proxyModel(), (QAbstractProxyModel*)0);
+    QCOMPARE(fd.proxyModel(), nullptr);
 }
 
 void tst_QFiledialog::setEmptyNameFilter()

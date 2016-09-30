@@ -482,7 +482,7 @@ void tst_QGraphicsProxyWidget::setWidget()
         QCOMPARE((qreal)bottom, rbottom);
     } else {
         // proxy shouldn't mess with the widget if it can't insert it.
-        QCOMPARE(proxy->widget(), (QWidget*)0);
+        QCOMPARE(proxy->widget(), nullptr);
         QCOMPARE(proxy->acceptHoverEvents(), false);
         if (subWidget) {
             QVERIFY(!subWidget->testAttribute(Qt::WA_DontShowOnScreen));
@@ -493,7 +493,7 @@ void tst_QGraphicsProxyWidget::setWidget()
     }
 
     if (widgetExists) {
-        QCOMPARE(existingSubWidget->parent(), static_cast<QObject*>(0));
+        QCOMPARE(existingSubWidget->parent(), nullptr);
         QVERIFY(!existingSubWidget->testAttribute(Qt::WA_DontShowOnScreen));
         QVERIFY(!existingSubWidget->testAttribute(Qt::WA_QuitOnClose));
     }

@@ -809,13 +809,13 @@ void tst_QTableWidget::itemOwnership()
     headerItem = new QObjectTableItem();
     testWidget->setVerticalHeaderItem(0, headerItem);
     delete headerItem;
-    QCOMPARE(testWidget->verticalHeaderItem(0), (QTableWidgetItem *)0);
+    QCOMPARE(testWidget->verticalHeaderItem(0), nullptr);
 
     //delete horizontal headeritem from outside
     headerItem = new QObjectTableItem();
     testWidget->setHorizontalHeaderItem(0, headerItem);
     delete headerItem;
-    QCOMPARE(testWidget->horizontalHeaderItem(0), (QTableWidgetItem *)0);
+    QCOMPARE(testWidget->horizontalHeaderItem(0), nullptr);
 
     //setItem
     item = new QObjectTableItem();

@@ -2188,8 +2188,8 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QTRY_COMPARE(qApp->focusWidget(), child);
 
         delete child;
-        QCOMPARE(window.focusWidget(), static_cast<QWidget*>(0));
-        QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
     }
 
     //testing reparenting the focus widget
@@ -2207,8 +2207,8 @@ void tst_QWidget::showMinimizedKeepsFocus()
 
         child->setParent(0);
         QScopedPointer<QWidget> childGuard(child);
-        QCOMPARE(window.focusWidget(), static_cast<QWidget*>(0));
-        QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
     }
 
     //testing setEnabled(false)
@@ -2225,8 +2225,8 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QTRY_COMPARE(qApp->focusWidget(), child);
 
         child->setEnabled(false);
-        QCOMPARE(window.focusWidget(), static_cast<QWidget*>(0));
-        QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
     }
 
     //testing clearFocus
@@ -2245,14 +2245,14 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QTRY_COMPARE(qApp->focusWidget(), child);
 
         child->clearFocus();
-        QCOMPARE(window.focusWidget(), static_cast<QWidget*>(0));
-        QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
 
         window.showMinimized();
         QTest::qWait(30);
         QTRY_VERIFY(window.isMinimized());
-        QCOMPARE(window.focusWidget(), static_cast<QWidget*>(0));
-        QTRY_COMPARE(qApp->focusWidget(), static_cast<QWidget*>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QTRY_COMPARE(QApplication::focusWidget(), nullptr);
 
         window.showNormal();
         qApp->setActiveWindow(&window);
@@ -5260,12 +5260,12 @@ void tst_QWidget::setFocus()
         child1.setFocus();
         QVERIFY(!child1.hasFocus());
         QCOMPARE(window.focusWidget(), &child1);
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(QApplication::focusWidget(), nullptr);
 
         child2.setFocus();
         QVERIFY(!child2.hasFocus());
         QCOMPARE(window.focusWidget(), &child2);
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(QApplication::focusWidget(), nullptr);
     }
 
     {
@@ -5294,12 +5294,12 @@ void tst_QWidget::setFocus()
         child1.setFocus();
         QVERIFY(!child1.hasFocus());
         QCOMPARE(window.focusWidget(), &child1);
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(QApplication::focusWidget(), nullptr);
 
         child2.setFocus();
         QVERIFY(!child2.hasFocus());
         QCOMPARE(window.focusWidget(), &child2);
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(QApplication::focusWidget(), nullptr);
     }
 
     {
@@ -5355,8 +5355,8 @@ void tst_QWidget::setFocus()
 
         child1.setFocus();
         QVERIFY(!child1.hasFocus());
-        QCOMPARE(window.focusWidget(), static_cast<QWidget *>(0));
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
 
         child1.show();
         QApplication::processEvents();
@@ -5396,33 +5396,33 @@ void tst_QWidget::setFocus()
 
         child1.setFocus();
         QVERIFY(!child1.hasFocus());
-        QCOMPARE(window.focusWidget(), static_cast<QWidget *>(0));
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
 
         child1.hide();
         QVERIFY(!child1.hasFocus());
-        QCOMPARE(window.focusWidget(), static_cast<QWidget *>(0));
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
 
         child1.show();
         QVERIFY(!child1.hasFocus());
-        QCOMPARE(window.focusWidget(), static_cast<QWidget *>(0));
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
 
         child2.setFocus();
         QVERIFY(!child2.hasFocus());
-        QCOMPARE(window.focusWidget(), static_cast<QWidget *>(0));
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
 
         child2.hide();
         QVERIFY(!child2.hasFocus());
-        QCOMPARE(window.focusWidget(), static_cast<QWidget *>(0));
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
 
         child2.show();
         QVERIFY(!child2.hasFocus());
-        QCOMPARE(window.focusWidget(), static_cast<QWidget *>(0));
-        QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(0));
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
     }
 }
 

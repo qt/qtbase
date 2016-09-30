@@ -161,7 +161,7 @@ void tst_QWindowContainer::testOwnership()
 
     delete container;
 
-    QCOMPARE(window.data(), (QWindow *) 0);
+    QCOMPARE(window.data(), nullptr);
 }
 
 

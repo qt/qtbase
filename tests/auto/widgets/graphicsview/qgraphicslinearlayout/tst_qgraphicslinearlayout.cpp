@@ -800,7 +800,7 @@ void tst_QGraphicsLinearLayout::removeAt()
         QCOMPARE(wParent, static_cast<QGraphicsLayoutItem *>(&layout));
         layout.removeAt(removeItemAt);
         wParent = w->parentLayoutItem();
-        QCOMPARE(wParent, static_cast<QGraphicsLayoutItem *>(0));
+        QCOMPARE(wParent, nullptr);
         delete w;
     }
     QCOMPARE(layout.count(), itemCount + layoutCount - (w ? 1 : 0));

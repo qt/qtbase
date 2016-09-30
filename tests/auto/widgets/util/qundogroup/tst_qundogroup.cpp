@@ -215,7 +215,7 @@ void tst_QUndoGroup::setActive()
     QUndoGroup group;
     QUndoStack stack1(&group), stack2(&group);
 
-    QCOMPARE(group.activeStack(), (QUndoStack*)0);
+    QCOMPARE(group.activeStack(), nullptr);
     QCOMPARE(stack1.isActive(), false);
     QCOMPARE(stack2.isActive(), false);
 
@@ -238,13 +238,13 @@ void tst_QUndoGroup::setActive()
     QCOMPARE(stack3.isActive(), false);
 
     group.removeStack(&stack2);
-    QCOMPARE(group.activeStack(), (QUndoStack*)0);
+    QCOMPARE(group.activeStack(), nullptr);
     QCOMPARE(stack1.isActive(), false);
     QCOMPARE(stack2.isActive(), true);
     QCOMPARE(stack3.isActive(), false);
 
     group.removeStack(&stack2);
-    QCOMPARE(group.activeStack(), (QUndoStack*)0);
+    QCOMPARE(group.activeStack(), nullptr);
     QCOMPARE(stack1.isActive(), false);
     QCOMPARE(stack2.isActive(), true);
     QCOMPARE(stack3.isActive(), false);
@@ -280,7 +280,7 @@ void tst_QUndoGroup::deleteStack()
 
     QUndoStack *stack1 = new QUndoStack(&group);
     QCOMPARE(group.stacks(), QList<QUndoStack*>() << stack1);
-    QCOMPARE(group.activeStack(), (QUndoStack*)0);
+    QCOMPARE(group.activeStack(), nullptr);
 
     stack1->setActive();
     QCOMPARE(group.activeStack(), stack1);
@@ -299,17 +299,17 @@ void tst_QUndoGroup::deleteStack()
 
     delete stack1;
     QCOMPARE(group.stacks(), QList<QUndoStack*>() << stack3);
-    QCOMPARE(group.activeStack(), (QUndoStack*)0);
+    QCOMPARE(group.activeStack(), nullptr);
 
     stack3->setActive(false);
-    QCOMPARE(group.activeStack(), (QUndoStack*)0);
+    QCOMPARE(group.activeStack(), nullptr);
 
     stack3->setActive(true);
     QCOMPARE(group.activeStack(), stack3);
 
     group.removeStack(stack3);
     QCOMPARE(group.stacks(), QList<QUndoStack*>());
-    QCOMPARE(group.activeStack(), (QUndoStack*)0);
+    QCOMPARE(group.activeStack(), nullptr);
 
     delete stack3;
 }

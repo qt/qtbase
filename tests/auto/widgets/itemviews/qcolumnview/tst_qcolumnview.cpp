@@ -770,15 +770,15 @@ void tst_QColumnView::gripMoved()
 void tst_QColumnView::preview()
 {
     QColumnView view;
-    QCOMPARE(view.previewWidget(), (QWidget*)0);
+    QCOMPARE(view.previewWidget(), nullptr);
     TreeModel model;
     view.setModel(&model);
-    QCOMPARE(view.previewWidget(), (QWidget*)0);
+    QCOMPARE(view.previewWidget(), nullptr);
     QModelIndex home = model.index(0, 0);
     QVERIFY(home.isValid());
     QVERIFY(model.hasChildren(home));
     view.setCurrentIndex(home);
-    QCOMPARE(view.previewWidget(), (QWidget*)0);
+    QCOMPARE(view.previewWidget(), nullptr);
 
     QModelIndex file;
     QVERIFY(model.rowCount(home) > 0);

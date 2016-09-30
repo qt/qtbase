@@ -305,17 +305,17 @@ void tst_QComboBox::getSetCheck()
     obj1.setValidator(var9);
     QCOMPARE(obj1.validator(), (const QValidator *)var9);
     obj1.setValidator((QValidator *)0);
-    QCOMPARE(obj1.validator(), (const QValidator *)0);
+    QCOMPARE(obj1.validator(), nullptr);
     delete var9;
 
     // QAbstractItemDelegate * QComboBox::itemDelegate()
     // void QComboBox::setItemDelegate(QAbstractItemDelegate *)
     MyAbstractItemDelegate *var10 = new MyAbstractItemDelegate;
     obj1.setItemDelegate(var10);
-    QCOMPARE(obj1.itemDelegate(), (QAbstractItemDelegate *)var10);
+    QCOMPARE(obj1.itemDelegate(), nullptr);
     QTest::ignoreMessage(QtWarningMsg, "QComboBox::setItemDelegate: cannot set a 0 delegate");
     obj1.setItemDelegate((QAbstractItemDelegate *)0);
-    QCOMPARE(obj1.itemDelegate(), (QAbstractItemDelegate *)var10);
+    QCOMPARE(obj1.itemDelegate(), nullptr);
     // delete var10; // No delete, since QComboBox takes ownership
 
     // QAbstractItemModel * QComboBox::model()

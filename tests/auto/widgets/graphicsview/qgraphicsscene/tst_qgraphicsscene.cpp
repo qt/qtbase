@@ -1539,22 +1539,22 @@ void tst_QGraphicsScene::mouseGrabberItem()
     QApplication::sendEvent(&scene, &moveEvent);
     QCOMPARE(scene.mouseGrabberItem(), item);
     item->setVisible(false);
-    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(scene.mouseGrabberItem(), nullptr);
     QApplication::sendEvent(&scene, &pressEvent);
     QCOMPARE(scene.mouseGrabberItem(), item2);
     item2->setVisible(false);
-    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(scene.mouseGrabberItem(), nullptr);
     QApplication::sendEvent(&scene, &moveEvent);
-    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(scene.mouseGrabberItem(), nullptr);
     item2->setVisible(true);
     QApplication::sendEvent(&scene, &moveEvent);
-    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(scene.mouseGrabberItem(), nullptr);
     QApplication::sendEvent(&scene, &pressEvent);
     QApplication::sendEvent(&scene, &moveEvent);
     QCOMPARE(scene.mouseGrabberItem(), item2);
     scene.removeItem(item2);
     delete item2;
-    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(scene.mouseGrabberItem(), nullptr);
 }
 
 void tst_QGraphicsScene::hoverEvents_siblings()
@@ -1757,7 +1757,7 @@ void tst_QGraphicsScene::createItemGroup()
 
     // These share no common parent
     group = scene.createItemGroup(children3);
-    QCOMPARE(group->parentItem(), (QGraphicsItem *)0);
+    QCOMPARE(group->parentItem(), nullptr);
     scene.destroyItemGroup(group);
 
     // Make children3 children of parent3
@@ -1886,7 +1886,7 @@ void tst_QGraphicsScene::mouseEventPropagation()
     QCOMPARE(c->eventTypes.size(), 0);
     QCOMPARE(b->eventTypes.size(), 0);
     QCOMPARE(a->eventTypes.size(), 0);
-    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(scene.mouseGrabberItem(), nullptr);
 
     d->setAcceptedMouseButtons(Qt::RightButton);
 
@@ -1927,7 +1927,7 @@ void tst_QGraphicsScene::mouseEventPropagation()
     QCOMPARE(c->eventTypes.at(5), QEvent::UngrabMouse);
     QCOMPARE(b->eventTypes.size(), 0);
     QCOMPARE(a->eventTypes.size(), 0);
-    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(scene.mouseGrabberItem(), nullptr);
 
     // Disabled items eat events. c should not get this.
     d->setEnabled(false);
@@ -1939,7 +1939,7 @@ void tst_QGraphicsScene::mouseEventPropagation()
     QCOMPARE(c->eventTypes.size(), 6);
     QCOMPARE(b->eventTypes.size(), 0);
     QCOMPARE(a->eventTypes.size(), 0);
-    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(scene.mouseGrabberItem(), nullptr);
 
     // Send a left press. This goes to c.
     pressEvent.setButton(Qt::LeftButton);
@@ -4609,7 +4609,7 @@ void tst_QGraphicsScene::focusItemChangedSignal()
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.size(), 3);
     QCOMPARE(qvariant_cast<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)topLevelItem2);
-    QCOMPARE(qvariant_cast<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)0);
+    QCOMPARE(qvariant_cast<QGraphicsItem *>(arguments.at(1)), nullptr);
     QCOMPARE(qvariant_cast<Qt::FocusReason>(arguments.at(2)), Qt::OtherFocusReason);
     QVERIFY(topLevelItem2->hasFocus());
 
@@ -4617,7 +4617,7 @@ void tst_QGraphicsScene::focusItemChangedSignal()
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QCOMPARE(arguments.size(), 3);
-    QCOMPARE(qvariant_cast<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)0);
+    QCOMPARE(qvariant_cast<QGraphicsItem *>(arguments.at(0)), nullptr);
     QCOMPARE(qvariant_cast<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)topLevelItem2);
     QCOMPARE(qvariant_cast<Qt::FocusReason>(arguments.at(2)), Qt::OtherFocusReason);
 
@@ -4626,7 +4626,7 @@ void tst_QGraphicsScene::focusItemChangedSignal()
     arguments = spy.takeFirst();
     QCOMPARE(arguments.size(), 3);
     QCOMPARE(qvariant_cast<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)topLevelItem2);
-    QCOMPARE(qvariant_cast<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)0);
+    QCOMPARE(qvariant_cast<QGraphicsItem *>(arguments.at(1)), nullptr);
     QCOMPARE(qvariant_cast<Qt::FocusReason>(arguments.at(2)), Qt::MenuBarFocusReason);
 
     for (int i = 0; i < 3; ++i) {

@@ -558,7 +558,7 @@ void tst_QAbstractItemView::noModel()
     view.setModel(0);
     // Due to the model is removed, this will generate a valueChanged signal on both scrollbars. (value to 0)
     QApplication::processEvents();
-    QCOMPARE(view.model(), (QAbstractItemModel*)0);
+    QCOMPARE(view.model(), nullptr);
 }
 
 void tst_QAbstractItemView::dragSelect()

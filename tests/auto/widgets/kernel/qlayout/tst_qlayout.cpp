@@ -297,7 +297,7 @@ void tst_QLayout::warnIfWrongParent()
     QHBoxLayout lay;
     lay.setParent(&root);
     QTest::ignoreMessage(QtWarningMsg, "QLayout::parentWidget: A layout can only have another layout as a parent.");
-    QCOMPARE(lay.parentWidget(), static_cast<QWidget*>(0));
+    QCOMPARE(lay.parentWidget(), nullptr);
 }
 
 void tst_QLayout::controlTypes()

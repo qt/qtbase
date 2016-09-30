@@ -151,7 +151,7 @@ void tst_QGraphicsItemAnimation::overwriteValueForStep()
 void tst_QGraphicsItemAnimation::setTimeLine()
 {
     QGraphicsItemAnimation animation;
-    QCOMPARE(animation.timeLine(), (QTimeLine *)0);
+    QCOMPARE(animation.timeLine(), nullptr);
 
     QPointer<QTimeLine> line1 = new QTimeLine;
     animation.setTimeLine(line1);
@@ -161,7 +161,7 @@ void tst_QGraphicsItemAnimation::setTimeLine()
     QCOMPARE(animation.timeLine(), (QTimeLine *)line1);
 
     animation.setTimeLine(0);
-    QCOMPARE(animation.timeLine(), (QTimeLine *)0);
+    QCOMPARE(animation.timeLine(), nullptr);
     QVERIFY(!line1);
 
     QTimeLine *line2 = new QTimeLine;
@@ -169,7 +169,7 @@ void tst_QGraphicsItemAnimation::setTimeLine()
     QCOMPARE(animation.timeLine(), (QTimeLine *)line2);
 
     delete line2;
-    QCOMPARE(animation.timeLine(), (QTimeLine *)0);
+    QCOMPARE(animation.timeLine(), nullptr);
 }
 
 QTEST_MAIN(tst_QGraphicsItemAnimation)

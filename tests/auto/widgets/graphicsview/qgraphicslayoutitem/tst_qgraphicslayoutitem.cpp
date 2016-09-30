@@ -94,7 +94,7 @@ void tst_QGraphicsLayoutItem::qgraphicslayoutitem()
     QCOMPARE(layoutItem.isLayout(), false);
     layoutItem.maximumSize();
     layoutItem.minimumSize();
-    QCOMPARE(layoutItem.parentLayoutItem(), (QGraphicsLayoutItem*)0);
+    QCOMPARE(layoutItem.parentLayoutItem(), nullptr);
     layoutItem.preferredSize();
     layoutItem.sizePolicy();
     layoutItem.sizeHint(Qt::MinimumSize);

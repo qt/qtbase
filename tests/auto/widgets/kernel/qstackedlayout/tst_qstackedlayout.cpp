@@ -122,7 +122,7 @@ void tst_QStackedLayout::testCase()
 
     // Nothing in layout
     QCOMPARE(testLayout->currentIndex(), -1);
-    QCOMPARE(testLayout->currentWidget(), static_cast<QWidget*>(0));
+    QCOMPARE(testLayout->currentWidget(), nullptr);
     QCOMPARE(testLayout->count(), 0);
 
     // One widget added to layout
@@ -163,7 +163,7 @@ void tst_QStackedLayout::testCase()
     QCOMPARE(spy.at(0).at(0).toInt(), -1);
     spy.clear();
     QCOMPARE(testLayout->currentIndex(), -1);
-    QCOMPARE(testLayout->currentWidget(), static_cast<QWidget*>(0));
+    QCOMPARE(testLayout->currentWidget(), nullptr);
     QCOMPARE(testLayout->count(), 0);
 
     // Another widget inserted at current index.
@@ -217,7 +217,7 @@ void tst_QStackedLayout::testCase()
     QVERIFY(w3->isVisible());
     testLayout->removeWidget(w3);
     QCOMPARE(testLayout->currentIndex(), -1);
-    QCOMPARE(testLayout->currentWidget(), static_cast<QWidget*>(0));
+    QCOMPARE(testLayout->currentWidget(), nullptr);
 }
 
 void tst_QStackedLayout::deleteCurrent()

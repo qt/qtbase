@@ -79,7 +79,7 @@ void tst_QDataWidgetMapper::setModel()
 {
     QDataWidgetMapper mapper;
 
-    QCOMPARE(mapper.model(), (QAbstractItemModel *)0);
+    QCOMPARE(mapper.model(), nullptr);
 
     { // let the model go out of scope firstma
         QStandardItemModel model;
@@ -87,7 +87,7 @@ void tst_QDataWidgetMapper::setModel()
         QCOMPARE(mapper.model(), static_cast<QAbstractItemModel *>(&model));
     }
 
-    QCOMPARE(mapper.model(), (QAbstractItemModel *)0);
+    QCOMPARE(mapper.model(), nullptr);
 
     { // let the mapper go out of scope first
         QStandardItemModel model2;
@@ -263,7 +263,7 @@ void tst_QDataWidgetMapper::addMapping()
         QCOMPARE(edit2.text(), QString("item 0 2"));
     } // let the edit go out of scope
 
-    QCOMPARE(mapper.mappedWidgetAt(2), (QWidget *)0);
+    QCOMPARE(mapper.mappedWidgetAt(2), nullptr);
     mapper.toLast();
 }
 
@@ -400,7 +400,7 @@ void tst_QDataWidgetMapper::mappedWidgetAt()
     QLineEdit lineEdit1;
     QLineEdit lineEdit2;
 
-    QCOMPARE(mapper.mappedWidgetAt(432312), (QWidget*)0);
+    QCOMPARE(mapper.mappedWidgetAt(432312), nullptr);
 
     mapper.addMapping(&lineEdit1, 1);
     mapper.addMapping(&lineEdit2, 2);
@@ -410,7 +410,7 @@ void tst_QDataWidgetMapper::mappedWidgetAt()
 
     mapper.addMapping(&lineEdit2, 4242);
 
-    QCOMPARE(mapper.mappedWidgetAt(2), (QWidget*)0);
+    QCOMPARE(mapper.mappedWidgetAt(2), nullptr);
     QCOMPARE(mapper.mappedWidgetAt(4242), static_cast<QWidget *>(&lineEdit2));
 }
 

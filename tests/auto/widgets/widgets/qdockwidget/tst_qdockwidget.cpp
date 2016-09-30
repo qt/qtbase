@@ -857,8 +857,8 @@ void tst_QDockWidget::task165177_deleteFocusWidget()
     qApp->processEvents();
     dw->setFloating(true);
     delete ledit;
-    QCOMPARE(mw.focusWidget(), (QWidget *)0);
-    QCOMPARE(dw->focusWidget(), (QWidget *)0);
+    QCOMPARE(mw.focusWidget(), nullptr);
+    QCOMPARE(dw->focusWidget(), nullptr);
 }
 
 void tst_QDockWidget::task169808_setFloating()
