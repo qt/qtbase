@@ -873,7 +873,7 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
 
     QString newName = value.toString();
     QString oldName = idx.data().toString();
-    if (newName == idx.data().toString())
+    if (newName == oldName)
         return true;
 
     const QString parentPath = filePath(parent(idx));
