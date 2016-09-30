@@ -375,8 +375,8 @@ QDateTime QDateTime::fromCFDate(CFDateRef date)
 {
     if (!date)
         return QDateTime();
-    return QDateTime::fromMSecsSinceEpoch(static_cast<qint64>((CFDateGetAbsoluteTime(date)
-                                                    + kCFAbsoluteTimeIntervalSince1970) * 1000));
+    CFAbsoluteTime sSinceEpoch = kCFAbsoluteTimeIntervalSince1970 + CFDateGetAbsoluteTime(date);
+    return QDateTime::fromMSecsSinceEpoch(qRound64(sSinceEpoch * 1000));
 }
 
 /*!
@@ -404,7 +404,7 @@ QDateTime QDateTime::fromNSDate(const NSDate *date)
 {
     if (!date)
         return QDateTime();
-    return QDateTime::fromMSecsSinceEpoch(static_cast<qint64>([date timeIntervalSince1970] * 1000));
+    return QDateTime::fromMSecsSinceEpoch(qRound64([date timeIntervalSince1970] * 1000));
 }
 
 /*!
