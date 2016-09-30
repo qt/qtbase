@@ -72,7 +72,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpa/qplatforminputcontextfactory_p.h>
 
-#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
+#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QVariant>

@@ -33,7 +33,7 @@
 #include <QtGui/QMatrix4x4>
 #include <qpa/qplatformnativeinterface.h>
 
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
 #include <QtPlatformHeaders/QEGLNativeContext>
 
 QOpenGLContextWindow::QOpenGLContextWindow()

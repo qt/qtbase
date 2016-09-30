@@ -38,19 +38,19 @@
 #include "qvncscreen.h"
 #include "qvnc_p.h"
 
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
-#include <QtPlatformSupport/private/qgenericunixservices_p.h>
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtServiceSupport/private/qgenericunixservices_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 
-#include <QtPlatformSupport/private/qfbbackingstore_p.h>
-#include <QtPlatformSupport/private/qfbwindow_p.h>
-#include <QtPlatformSupport/private/qfbcursor_p.h>
+#include <QtFbSupport/private/qfbbackingstore_p.h>
+#include <QtFbSupport/private/qfbwindow_p.h>
+#include <QtFbSupport/private/qfbcursor_p.h>
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <private/qinputdevicemanager_p_p.h>
 #if QT_CONFIG(libinput)
-#include <QtPlatformSupport/private/qlibinputhandler_p.h>
+#include <QtInputSupport/private/qlibinputhandler_p.h>
 #endif
 
 #include <QtCore/QRegularExpression>

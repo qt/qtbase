@@ -1,4 +1,4 @@
-QT += core-private gui-private platformsupport-private xcb_qpa_lib-private
+QT += core-private gui-private xcb_qpa_lib-private
 
 INCLUDEPATH += $$PWD
 INCLUDEPATH += $$PWD/../

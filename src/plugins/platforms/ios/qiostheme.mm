@@ -44,7 +44,7 @@
 
 #include <QtGui/QFont>
 
-#include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 

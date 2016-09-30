@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include <QtGui/qgenericplugin.h>
-#include <QtPlatformSupport/private/qlibinputhandler_p.h>
+#include <QtInputSupport/private/qlibinputhandler_p.h>
 
 QT_BEGIN_NAMESPACE
 

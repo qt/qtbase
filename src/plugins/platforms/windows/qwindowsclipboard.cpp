@@ -53,7 +53,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QUrl>
 
-#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
+#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
 QT_BEGIN_NAMESPACE
 

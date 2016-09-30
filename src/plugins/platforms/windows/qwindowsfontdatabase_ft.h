@@ -40,7 +40,7 @@
 #ifndef QWINDOWSFONTDATABASEFT_H
 #define QWINDOWSFONTDATABASEFT_H
 
-#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/qt_windows.h>
 

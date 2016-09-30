@@ -44,9 +44,9 @@
 #include "qdirectfbcursor.h"
 #include "qdirectfbwindow.h"
 
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
-#include <QtPlatformSupport/private/qgenericunixservices_p.h>
+#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtServiceSupport/private/qgenericunixservices_p.h>
 
 #include <QtGui/private/qpixmap_blitter_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>

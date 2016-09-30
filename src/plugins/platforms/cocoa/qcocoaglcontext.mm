@@ -42,7 +42,7 @@
 #include "qcocoahelpers.h"
 #include <qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
-#include <QtPlatformSupport/private/cglconvenience_p.h>
+#include <QtCglSupport/private/cglconvenience_p.h>
 #include <QtPlatformHeaders/qcocoanativecontext.h>
 #include <dlfcn.h>
 

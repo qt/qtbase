@@ -72,7 +72,7 @@
 #include <QtCore/QScopedArrayPointer>
 #include <QtCore/private/qsystemlibrary_p.h>
 
-#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
+#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
 #include <stdlib.h>
 #include <stdio.h>

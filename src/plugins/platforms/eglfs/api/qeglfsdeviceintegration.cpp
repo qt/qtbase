@@ -44,7 +44,7 @@
 #include "qeglfsscreen_p.h"
 #include "qeglfshooks_p.h"
 
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
 #include <QGuiApplication>
 #include <private/qguiapplication_p.h>
 #include <QScreen>

@@ -1,8 +1,8 @@
 TARGET = qdirect2d
 
-QT *= core-private
-QT *= gui-private
-QT *= platformsupport-private
+QT += \
+    core-private gui-private \
+    eventdispatcher_support-private
 
 LIBS += -ldwmapi -ld2d1 -ld3d11 -ldwrite -lVersion -lgdi32
 

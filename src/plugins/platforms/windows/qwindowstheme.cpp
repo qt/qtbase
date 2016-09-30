@@ -68,7 +68,7 @@
 #include <QtGui/QPainter>
 #include <QtGui/QPixmapCache>
 #include <qpa/qwindowsysteminterface.h>
-#include <QtPlatformSupport/private/qabstractfileiconengine_p.h>
+#include <QtThemeSupport/private/qabstractfileiconengine_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qsystemlibrary_p.h>
 

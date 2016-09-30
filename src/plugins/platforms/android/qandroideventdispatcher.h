@@ -42,7 +42,7 @@
 
 #include <QtCore/QMutex>
 #include <QtCore/QSemaphore>
-#include <QtPlatformSupport/private/qunixeventdispatcher_qpa_p.h>
+#include <QtEventDispatcherSupport/private/qunixeventdispatcher_qpa_p.h>
 
 class QAndroidEventDispatcher : public QUnixEventDispatcherQPA
 {

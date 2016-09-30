@@ -45,7 +45,7 @@
 #include "qeglfskmsgbmcursor.h"
 #include "private/qeglfscursor_p.h"
 
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>

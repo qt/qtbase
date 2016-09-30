@@ -1,6 +1,6 @@
 TARGET = qhaiku
 
-QT += platformsupport-private core-private gui-private
+QT += core-private gui-private eventdistpatcher_support-private
 
 SOURCES = \
     main.cpp \

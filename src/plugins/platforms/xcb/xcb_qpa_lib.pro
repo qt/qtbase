@@ -2,7 +2,13 @@ TARGET     = QtXcbQpa
 CONFIG += no_module_headers internal_module
 DEFINES += QT_NO_FOREACH
 
-QT += core-private gui-private platformsupport-private
+QT += \
+    core-private gui-private \
+    service_support-private theme_support-private \
+    eventdispatcher_support-private fontdatabase_support-private
+
+qtHaveModule(linuxaccessibility_support-private): \
+    QT += linuxaccessibility_support-private
 
 SOURCES = \
         qxcbclipboard.cpp \

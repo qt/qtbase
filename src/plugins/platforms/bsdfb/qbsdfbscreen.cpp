@@ -33,8 +33,8 @@
 ****************************************************************************/
 
 #include "qbsdfbscreen.h"
-#include <QtPlatformSupport/private/qfbcursor_p.h>
-#include <QtPlatformSupport/private/qfbwindow_p.h>
+#include <QtFbSupport/private/qfbcursor_p.h>
+#include <QtFbSupport/private/qfbwindow_p.h>
 #include <QtCore/QRegularExpression>
 #include <QtGui/QPainter>
 

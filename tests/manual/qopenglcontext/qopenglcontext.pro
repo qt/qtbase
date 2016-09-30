@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = qopenglcontext
 
-QT += gui-private platformsupport-private
+QT += gui-private egl_support-private
 
 HEADERS += $$PWD/qopenglcontextwindow.h
 

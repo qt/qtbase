@@ -42,7 +42,7 @@
 
 #include <qpa/qplatformbackingstore.h>
 
-#include <QtPlatformSupport/private/qrasterbackingstore_p.h>
+#include <QtGraphicsSupport/private/qrasterbackingstore_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -1,6 +1,9 @@
 TARGET = qmirclient
 
-QT += core-private gui-private platformsupport-private dbus
+QT += \
+    core-private gui-private dbus \
+    theme_support-private eventdispatcher_support-private \
+    fontdatabase_support-private egl_support-private
 
 CONFIG += qpa/genericunixfontdatabase
 

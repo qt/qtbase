@@ -41,8 +41,8 @@
 
 #include "qxcbeglintegration.h"
 
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qxlibeglintegration_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qxlibeglintegration_p.h>
 
 QT_BEGIN_NAMESPACE
 

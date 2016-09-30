@@ -1,6 +1,9 @@
 TARGET = integrityfb
 
-QT += core-private gui-private platformsupport-private
+QT += \
+    core-private gui-private \
+    eventdispatcher_support-private service_support-private \
+    fontdatabase_support-private fb_support-private
 
 SOURCES = \
     main.cpp \

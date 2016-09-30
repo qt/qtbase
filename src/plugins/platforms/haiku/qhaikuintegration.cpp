@@ -49,7 +49,7 @@
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <qpa/qplatformwindow.h>
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 
 #include <Application.h>
 

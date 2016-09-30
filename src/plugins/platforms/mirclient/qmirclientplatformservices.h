@@ -42,8 +42,8 @@
 #define QMIRCLIENTPLATFORMSERVICES_H
 
 #include <qpa/qplatformservices.h>
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 
 class QMirClientPlatformServices : public QPlatformServices {
 public:

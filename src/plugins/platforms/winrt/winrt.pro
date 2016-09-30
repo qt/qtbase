@@ -2,7 +2,9 @@ TARGET = qwinrt
 
 CONFIG -= precompile_header
 
-QT += core-private gui-private platformsupport-private
+QT += \
+    core-private gui-private \
+    fontdatabase_support-private egl_support-private
 
 DEFINES *= QT_NO_CAST_FROM_ASCII __WRL_NO_DEFAULT_LIB__
 

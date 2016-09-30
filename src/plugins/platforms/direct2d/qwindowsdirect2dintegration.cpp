@@ -50,7 +50,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/qpa/qwindowsysteminterface.h>
-#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
+#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
 QT_BEGIN_NAMESPACE
 

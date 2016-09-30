@@ -46,10 +46,10 @@
 #include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QScreen>
 
-#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglplatformcontext_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
 
-#include <QtPlatformSupport/private/qt_egl_p.h>
+#include <QtEglSupport/private/qt_egl_p.h>
 
 QT_BEGIN_NAMESPACE
 

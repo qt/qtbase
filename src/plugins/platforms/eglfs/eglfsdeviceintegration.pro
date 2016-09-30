@@ -8,7 +8,15 @@ TARGET = QtEglFSDeviceIntegration
 CONFIG += internal_module
 MODULE = eglfsdeviceintegration
 
-QT += core-private gui-private platformsupport-private
+QT += \
+    core-private gui-private \
+    devicediscovery_support-private eventdispatcher_support-private \
+    service_support-private theme_support-private fontdatabase_support-private \
+    fb_support-private egl_support-private platformcompositor_support-private
+
+qtHaveModule(input_support-private): \
+    QT += input_support-private
+
 LIBS += $$QMAKE_LIBS_DYNLOAD
 
 # Avoid X11 header collision, use generic EGL native types
@@ -32,6 +40,10 @@ QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 }
 
 CONFIG += egl qpa/genericunixfontdatabase
+
+# Prevent gold linker from crashing.
+# This started happening when QtPlatformSupport was modularized.
+use_gold_linker: CONFIG += no_linker_version_script
 
 !contains(DEFINES, QT_NO_CURSOR): RESOURCES += $$PWD/cursor.qrc
 

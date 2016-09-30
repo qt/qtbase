@@ -57,8 +57,8 @@
 #include <qoffscreensurface.h>
 #include <qpa/qplatformoffscreensurface.h>
 
-#include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
-#include <QtPlatformSupport/private/qmacmime_p.h>
+#include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
+#include <QtClipboardSupport/private/qmacmime_p.h>
 #include <QDir>
 
 #import <AudioToolbox/AudioServices.h>

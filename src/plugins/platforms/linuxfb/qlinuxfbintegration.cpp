@@ -40,30 +40,30 @@
 #include "qlinuxfbintegration.h"
 #include "qlinuxfbscreen.h"
 
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
-#include <QtPlatformSupport/private/qgenericunixservices_p.h>
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtServiceSupport/private/qgenericunixservices_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 
-#include <QtPlatformSupport/private/qfbvthandler_p.h>
-#include <QtPlatformSupport/private/qfbbackingstore_p.h>
-#include <QtPlatformSupport/private/qfbwindow_p.h>
-#include <QtPlatformSupport/private/qfbcursor_p.h>
+#include <QtFbSupport/private/qfbvthandler_p.h>
+#include <QtFbSupport/private/qfbbackingstore_p.h>
+#include <QtFbSupport/private/qfbwindow_p.h>
+#include <QtFbSupport/private/qfbcursor_p.h>
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 
 #if QT_CONFIG(libinput)
-#include <QtPlatformSupport/private/qlibinputhandler_p.h>
+#include <QtInputSupport/private/qlibinputhandler_p.h>
 #endif
 
 #if QT_CONFIG(evdev) && !defined(Q_OS_ANDROID)
-#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
-#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
-#include <QtPlatformSupport/private/qevdevtouchmanager_p.h>
+#include <QtInputSupport/private/qevdevmousemanager_p.h>
+#include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtInputSupport/private/qevdevtouchmanager_p.h>
 #endif
 
 #if QT_CONFIG(tslib) && !defined(Q_OS_ANDROID)
-#include <QtPlatformSupport/private/qtslib_p.h>
+#include <QtInputSupport/private/qtslib_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE

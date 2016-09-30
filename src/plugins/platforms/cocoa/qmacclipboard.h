@@ -41,7 +41,7 @@
 #define QMACCLIPBOARD_H
 
 #include <QtGui>
-#include <QtPlatformSupport/private/qmacmime_p.h>
+#include <QtClipboardSupport/private/qmacmime_p.h>
 
 #import <AppKit/AppKit.h>
 

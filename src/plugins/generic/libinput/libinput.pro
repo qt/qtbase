@@ -1,6 +1,6 @@
 TARGET = qlibinputplugin
 
-QT += core-private platformsupport-private gui-private
+QT += core-private gui-private input_support-private
 
 SOURCES = main.cpp
 

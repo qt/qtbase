@@ -40,7 +40,7 @@
 #ifndef QLINUXFBSCREEN_H
 #define QLINUXFBSCREEN_H
 
-#include <QtPlatformSupport/private/qfbscreen_p.h>
+#include <QtFbSupport/private/qfbscreen_p.h>
 
 QT_BEGIN_NAMESPACE
 

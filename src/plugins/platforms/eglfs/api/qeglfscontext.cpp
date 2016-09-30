@@ -39,8 +39,8 @@
 
 #include "qeglfsglobal_p.h"
 #include <QtGui/QSurface>
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglpbuffer_p.h>
 
 #include "qeglfscontext_p.h"
 #include "qeglfswindow_p.h"
