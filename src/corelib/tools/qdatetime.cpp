@@ -1642,10 +1642,14 @@ QString QTime::toString(Qt::DateFormat format) const
          \li the hour with a leading zero (00 to 23, even with AM/PM display)
     \row \li m \li the minute without a leading zero (0 to 59)
     \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the second without a leading zero (0 to 59)
-    \row \li ss \li the second with a leading zero (00 to 59)
-    \row \li z \li the milliseconds without leading zeroes (0 to 999)
-    \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
+    \row \li s \li the whole second, without any leading zero (0 to 59)
+    \row \li ss \li the whole second, with a leading zero where applicable (00 to 59)
+    \row \li z \li the fractional part of the second, to go after a decimal
+                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
+                reports the seconds to full available (millisecond) precision
+                without trailing zeroes.
+    \row \li zzz \li the fractional part of the second, to millisecond
+                precision, including trailing zeroes where applicable (000 to 999).
     \row \li AP or A
          \li use AM/PM display. \e A/AP will be replaced by either
              QLocale::amText() or QLocale::pmText().
@@ -1991,10 +1995,14 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
          \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
     \row \li m \li the minute without a leading zero (0 to 59)
     \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the second without a leading zero (0 to 59)
-    \row \li ss \li the second with a leading zero (00 to 59)
-    \row \li z \li the milliseconds without leading zeroes (0 to 999)
-    \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
+    \row \li s \li the whole second, without any leading zero (0 to 59)
+    \row \li ss \li the whole second, with a leading zero where applicable (00 to 59)
+    \row \li z \li the fractional part of the second, to go after a decimal
+                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
+                reports the seconds to full available (millisecond) precision
+                without trailing zeroes.
+    \row \li zzz \li the fractional part of the second, to millisecond
+                precision, including trailing zeroes where applicable (000 to 999).
     \row \li AP
          \li interpret as an AM/PM time. \e AP must be either "AM" or "PM".
     \row \li ap
@@ -3895,10 +3903,14 @@ QString QDateTime::toString(Qt::DateFormat format) const
          \li the hour with a leading zero (00 to 23, even with AM/PM display)
     \row \li m \li the minute without a leading zero (0 to 59)
     \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the second without a leading zero (0 to 59)
-    \row \li ss \li the second with a leading zero (00 to 59)
-    \row \li z \li the milliseconds without leading zeroes (0 to 999)
-    \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
+    \row \li s \li the whole second without a leading zero (0 to 59)
+    \row \li ss \li the whole second with a leading zero where applicable (00 to 59)
+    \row \li z \li the fractional part of the second, to go after a decimal
+                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
+                reports the seconds to full available (millisecond) precision
+                without trailing zeroes.
+    \row \li zzz \li the fractional part of the second, to millisecond
+                precision, including trailing zeroes where applicable (000 to 999).
     \row \li AP or A
          \li use AM/PM display. \e A/AP will be replaced by either "AM" or "PM".
     \row \li ap or a
@@ -3912,13 +3924,14 @@ QString QDateTime::toString(Qt::DateFormat format) const
     in the output. Formats without separators (e.g. "HHmm") are currently not supported.
 
     Example format strings (assumed that the QDateTime is 21 May 2001
-    14:13:09):
+    14:13:09.120):
 
     \table
     \header \li Format       \li Result
     \row \li dd.MM.yyyy      \li 21.05.2001
     \row \li ddd MMMM d yy   \li Tue May 21 01
-    \row \li hh:mm:ss.zzz    \li 14:13:09.042
+    \row \li hh:mm:ss.zzz    \li 14:13:09.120
+    \row \li hh:mm:ss.z      \li 14:13:09.12
     \row \li h:m:s ap        \li 2:13:9 pm
     \endtable
 
@@ -4918,10 +4931,14 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
             \li the hour with a leading zero (00 to 23, even with AM/PM display)
     \row \li m \li the minute without a leading zero (0 to 59)
     \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the second without a leading zero (0 to 59)
-    \row \li ss \li the second with a leading zero (00 to 59)
-    \row \li z \li the milliseconds without leading zeroes (0 to 999)
-    \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
+    \row \li s \li the whole second without a leading zero (0 to 59)
+    \row \li ss \li the whole second with a leading zero where applicable (00 to 59)
+    \row \li z \li the fractional part of the second, to go after a decimal
+                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
+                reports the seconds to full available (millisecond) precision
+                without trailing zeroes.
+    \row \li zzz \li the fractional part of the second, to millisecond
+                precision, including trailing zeroes where applicable (000 to 999).
     \row \li AP or A
          \li interpret as an AM/PM time. \e AP must be either "AM" or "PM".
     \row \li ap or a

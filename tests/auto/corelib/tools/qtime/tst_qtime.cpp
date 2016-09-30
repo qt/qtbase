@@ -560,6 +560,8 @@ void tst_QTime::fromStringFormat_data()
     QTest::newRow("data9") << QString("2221") << QString("hhhh") << invalidTime();
     QTest::newRow("data10") << QString("02:23PM") << QString("hh:mmAP") << QTime(14,23,0,0);
     QTest::newRow("data11") << QString("02:23pm") << QString("hh:mmap") << QTime(14,23,0,0);
+    QTest::newRow("short-msecs-lt100") << QString("10:12:34:045") << QString("hh:m:ss:z") << QTime(10,12,34,45);
+    QTest::newRow("short-msecs-gt100") << QString("10:12:34:45") << QString("hh:m:ss:z") << QTime(10,12,34,450);
 }
 
 void tst_QTime::fromStringFormat()
@@ -711,12 +713,13 @@ void tst_QTime::toStringFormat_data()
     QTest::addColumn<QString>("format");
     QTest::addColumn<QString>("str");
 
-    QTest::newRow( "data0" ) << QTime(0,0,0,0) << QString("h:m:s:z") << QString("0:0:0:0");
-    QTest::newRow( "data1" ) << QTime(10,12,34,53) << QString("hh:mm:ss:zzz") << QString("10:12:34:053");
-    QTest::newRow( "data2" ) << QTime(10,12,34,45) << QString("hh:m:ss:z") << QString("10:12:34:45");
-    QTest::newRow( "data3" ) << QTime(10,12,34,45) << QString("hh:ss ap") << QString("10:34 am");
-    QTest::newRow( "data4" ) << QTime(22,12,34,45) << QString("hh:zzz AP") << QString("10:045 PM");
-    QTest::newRow( "data5" ) << QTime(230,230,230,230) << QString("hh:mm:ss") << QString();
+    QTest::newRow( "midnight" ) << QTime(0,0,0,0) << QString("h:m:s:z") << QString("0:0:0:0");
+    QTest::newRow( "full" ) << QTime(10,12,34,53) << QString("hh:mm:ss:zzz") << QString("10:12:34:053");
+    QTest::newRow( "short-msecs-lt100" ) << QTime(10,12,34,45) << QString("hh:m:ss:z") << QString("10:12:34:045");
+    QTest::newRow( "short-msecs-gt100" ) << QTime(10,12,34,450) << QString("hh:m:ss:z") << QString("10:12:34:45");
+    QTest::newRow( "am-pm" ) << QTime(10,12,34,45) << QString("hh:ss ap") << QString("10:34 am");
+    QTest::newRow( "AM-PM" ) << QTime(22,12,34,45) << QString("hh:zzz AP") << QString("10:045 PM");
+    QTest::newRow( "invalid" ) << QTime(230,230,230,230) << QString("hh:mm:ss") << QString();
 }
 
 void tst_QTime::toStringFormat()

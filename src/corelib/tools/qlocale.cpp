@@ -2742,14 +2742,17 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDateTime 
                 } else {
                     repeat = 1;
                 }
-                switch (repeat) {
-                case 1:
-                    result.append(m_data->longLongToString(time.msec()));
-                    break;
-                case 3:
-                    result.append(m_data->longLongToString(time.msec(), -1, 10, 3, QLocaleData::ZeroPadded));
-                    break;
+
+                // note: the millisecond component is treated like the decimal part of the seconds
+                // so ms == 2 is always printed as "002", but ms == 200 can be either "2" or "200"
+                result.append(m_data->longLongToString(time.msec(), -1, 10, 3, QLocaleData::ZeroPadded));
+                if (repeat == 1) {
+                    if (result.endsWith(zero()))
+                        result.chop(1);
+                    if (result.endsWith(zero()))
+                        result.chop(1);
                 }
+
                 break;
 
             case 't':

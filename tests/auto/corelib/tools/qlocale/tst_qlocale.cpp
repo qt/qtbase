@@ -1302,10 +1302,11 @@ void tst_QLocale::formatTime_data()
     QTest::newRow("28") << QTime(1, 2, 3, 456) << "H:m:s.z" << "1:2:3.456";
     QTest::newRow("29") << QTime(1, 2, 3, 456) << "H:m:s.zz" << "1:2:3.456456";
     QTest::newRow("30") << QTime(1, 2, 3, 456) << "H:m:s.zzz" << "1:2:3.456";
-    QTest::newRow("31") << QTime(1, 2, 3, 4) << "H:m:s.z" << "1:2:3.4";
-    QTest::newRow("32") << QTime(1, 2, 3, 4) << "H:m:s.zzz" << "1:2:3.004";
-    QTest::newRow("33") << QTime() << "H:m:s.zzz" << "";
-    QTest::newRow("34") << QTime(1, 2, 3, 4) << "dd MM yyyy H:m:s.zzz" << "dd MM yyyy 1:2:3.004";
+    QTest::newRow("31") << QTime(1, 2, 3, 400) << "H:m:s.z" << "1:2:3.4";
+    QTest::newRow("32") << QTime(1, 2, 3, 4) << "H:m:s.z" << "1:2:3.004";
+    QTest::newRow("33") << QTime(1, 2, 3, 4) << "H:m:s.zzz" << "1:2:3.004";
+    QTest::newRow("34") << QTime() << "H:m:s.zzz" << "";
+    QTest::newRow("35") << QTime(1, 2, 3, 4) << "dd MM yyyy H:m:s.zzz" << "dd MM yyyy 1:2:3.004";
 }
 
 void tst_QLocale::formatTime()
@@ -1542,10 +1543,12 @@ void tst_QLocale::toDateTime_data()
                         << "d/M/yyyy hh:h:mm" << "1/12/1974 05:5:14";
     QTest::newRow("2C") << "C" << QDateTime(QDate(1974, 12, 1), QTime(15, 0, 0))
                         << "d/M/yyyyy h" << "1/12/1974y 15";
-    QTest::newRow("4C") << "C" << QDateTime(QDate(1974, 1, 1), QTime(0, 0, 0))
-                        << "d/M/yyyy zzz" << "1/1/1974 000";
-    QTest::newRow("5C") << "C" << QDateTime(QDate(1974, 1, 1), QTime(0, 0, 0))
-                        << "dd/MM/yyy z" << "01/01/74y 0";
+    QTest::newRow("4C") << "C" << QDateTime(QDate(1974, 1, 1), QTime(0, 0, 0, 1))
+                        << "d/M/yyyy zzz" << "1/1/1974 001";
+    QTest::newRow("5C") << "C" << QDateTime(QDate(1974, 1, 1), QTime(0, 0, 0, 1))
+                        << "dd/MM/yyy z" << "01/01/74y 001";
+    QTest::newRow("5Cbis") << "C" << QDateTime(QDate(1974, 1, 1), QTime(0, 0, 0, 100))
+                        << "dd/MM/yyy z" << "01/01/74y 1";
     QTest::newRow("8C") << "C" << QDateTime(QDate(1974, 12, 2), QTime(0, 0, 13))
                         << "ddddd/MMMMM/yy ss" << "Monday2/December12/74 13";
     QTest::newRow("9C") << "C" << QDateTime(QDate(1974, 12, 1), QTime(0, 0, 13))
