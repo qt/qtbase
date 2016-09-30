@@ -17,7 +17,7 @@ LINK          = link
 LFLAGS        = /NOLOGO /DYNAMICBASE /NXCOMPAT /INCREMENTAL:NO /SUBSYSTEM:CONSOLE "/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" /MANIFEST /MANIFESTFILE:"configure.intermediate.manifest"
 LIBS          = ole32.lib advapi32.lib shell32.lib
 
-TARGET        = ..\..\configure.exe
+TARGET        = ..\..\configureapp.exe
 
 OBJECTS = \
     main.obj \

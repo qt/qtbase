@@ -12,7 +12,7 @@ LINK          = g++
 LFLAGS        = -Wl,-subsystem,console -mthreads
 LIBS          = -lole32 -ladvapi32 -luuid
 
-TARGET        = ../../configure.exe
+TARGET        = ../../configureapp.exe
 
 OBJECTS = \
     main.o \

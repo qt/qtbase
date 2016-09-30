@@ -1,4 +1,4 @@
-TARGET    = configure
+TARGET    = configureapp
 DESTDIR   = $$PWD/../..  # build directly in source dir
 
 CONFIG   += console flat stl rtti_off
