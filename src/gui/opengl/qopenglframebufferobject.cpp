@@ -1490,6 +1490,7 @@ bool QOpenGLFramebufferObject::bindDefault()
     if (ctx) {
         ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
         QOpenGLContextPrivate::get(ctx)->qgl_current_fbo_invalid = true;
+        QOpenGLContextPrivate::get(ctx)->qgl_current_fbo = Q_NULLPTR;
     }
 #ifdef QT_DEBUG
     else

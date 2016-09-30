@@ -114,6 +114,7 @@ private slots:
     void vaoCreate();
     void bufferCreate();
     void bufferMapRange();
+    void defaultQGLCurrentBuffer();
 };
 
 struct SharedResourceTracker
@@ -1522,6 +1523,33 @@ void tst_QOpenGL::bufferMapRange()
     buf.unmap();
 
     buf.destroy();
+    ctx->doneCurrent();
+}
+
+void tst_QOpenGL::defaultQGLCurrentBuffer()
+{
+    QScopedPointer<QSurface> surface(createSurface(QSurface::Window));
+    QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
+    ctx->create();
+    ctx->makeCurrent(surface.data());
+
+    // Bind default FBO on the current context, and record what's the current QGL FBO. It should
+    // be Q_NULLPTR because the default platform OpenGL FBO is not backed by a
+    // QOpenGLFramebufferObject.
+    QOpenGLFramebufferObject::bindDefault();
+    QOpenGLFramebufferObject *defaultQFBO = QOpenGLContextPrivate::get(ctx.data())->qgl_current_fbo;
+
+    // Create new FBO, bind it, and see that the QGL FBO points to the newly created FBO.
+    QScopedPointer<QOpenGLFramebufferObject> obj(new QOpenGLFramebufferObject(128, 128));
+    obj->bind();
+    QOpenGLFramebufferObject *customQFBO = QOpenGLContextPrivate::get(ctx.data())->qgl_current_fbo;
+    QVERIFY(defaultQFBO != customQFBO);
+
+    // Bind the default FBO, and check that the QGL FBO points to the original FBO object.
+    QOpenGLFramebufferObject::bindDefault();
+    QOpenGLFramebufferObject *finalQFBO = QOpenGLContextPrivate::get(ctx.data())->qgl_current_fbo;
+    QCOMPARE(defaultQFBO, finalQFBO);
+
     ctx->doneCurrent();
 }
 
