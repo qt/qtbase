@@ -120,6 +120,14 @@ static void checkWarnMessage(const QIODevice *device, const char *function, cons
         } \
     } while (0)
 
+#define CHECK_MAXBYTEARRAYSIZE(function) \
+    do { \
+        if (maxSize >= MaxByteArraySize) { \
+            checkWarnMessage(this, #function, "maxSize argument exceeds QByteArray size limit"); \
+            maxSize = MaxByteArraySize - 1; \
+        } \
+    } while (0)
+
 #define CHECK_WRITABLE(function, returnType) \
    do { \
        if ((d->openMode & WriteOnly) == 0) { \
@@ -1149,16 +1157,12 @@ QByteArray QIODevice::read(qint64 maxSize)
     QByteArray result;
 
     CHECK_MAXLEN(read, result);
+    CHECK_MAXBYTEARRAYSIZE(read);
 
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::read(%lld), d->pos = %lld, d->buffer.size() = %lld\n",
            this, maxSize, d->pos, d->buffer.size());
 #endif
-
-    if (maxSize >= MaxByteArraySize) {
-        checkWarnMessage(this, "read", "maxSize argument exceeds QByteArray size limit");
-        maxSize = MaxByteArraySize - 1;
-    }
 
     qint64 readBytes = 0;
     if (maxSize) {
@@ -1393,16 +1397,12 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     QByteArray result;
 
     CHECK_MAXLEN(readLine, result);
+    CHECK_MAXBYTEARRAYSIZE(readLine);
 
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::readLine(%lld), d->pos = %lld, d->buffer.size() = %lld\n",
            this, maxSize, d->pos, d->buffer.size());
 #endif
-
-    if (maxSize >= MaxByteArraySize) {
-        qWarning("QIODevice::read: maxSize argument exceeds QByteArray size limit");
-        maxSize = MaxByteArraySize - 1;
-    }
 
     result.resize(int(maxSize));
     qint64 readBytes = 0;
