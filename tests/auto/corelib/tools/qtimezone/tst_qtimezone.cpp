@@ -63,13 +63,13 @@ private:
 #ifdef QT_BUILD_INTERNAL
     void testCetPrivate(const QTimeZonePrivate &tzp);
 #endif // QT_BUILD_INTERNAL
-    bool debug;
+    const bool debug;
 };
 
 tst_QTimeZone::tst_QTimeZone()
-{
     // Set to true to print debug output, test Display Names and run long stress tests
-    debug = false;
+    : debug(false)
+{
 }
 
 void tst_QTimeZone::printTimeZone(const QTimeZone tz)
@@ -756,9 +756,9 @@ void tst_QTimeZone::tzTest()
 
     // Test display names by type, either ICU or abbreviation only
     QLocale enUS("en_US");
-#ifdef QT_USE_ICU
     // Only test names in debug mode, names used can vary by ICU version installed
     if (debug) {
+#ifdef QT_USE_ICU
         QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, enUS),
                 QString("Central European Standard Time"));
         QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::ShortName, enUS),
@@ -778,9 +778,7 @@ void tst_QTimeZone::tzTest()
                 QString("GMT+01:00"));
         QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::OffsetName, enUS),
                 QString("UTC+01:00"));
-    }
 #else
-    if (debug) {
         QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, enUS),
                 QString("CET"));
         QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::ShortName, enUS),
@@ -799,10 +797,8 @@ void tst_QTimeZone::tzTest()
                 QString("CET"));
         QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::OffsetName, enUS),
                 QString("CET"));
-    }
 #endif // QT_USE_ICU
 
-    if (debug) {
         // Test Abbreviations
         QCOMPARE(tzp.abbreviation(std), QString("CET"));
         QCOMPARE(tzp.abbreviation(dst), QString("CEST"));
