@@ -1537,16 +1537,16 @@ void tst_QTableWidget::mimeData()
 
     QMimeData *data;
 
-    QVERIFY(data = table.mimeData(tableWidgetItemList));
+    QVERIFY((data = table.mimeData(tableWidgetItemList)));
     delete data;
 
-    QVERIFY(data = table.model()->mimeData(modelIndexList));
+    QVERIFY((data = table.model()->mimeData(modelIndexList)));
     delete data;
 
-    QVERIFY(data = table.model()->mimeData(modelIndexList));
+    QVERIFY((data = table.model()->mimeData(modelIndexList)));
     delete data;
 
-    QVERIFY(data = table.mimeData(tableWidgetItemList));
+    QVERIFY((data = table.mimeData(tableWidgetItemList)));
     delete data;
 
     // check the saved data is actually the same
