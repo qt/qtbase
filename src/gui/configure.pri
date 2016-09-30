@@ -65,9 +65,11 @@ defineTest(qtConfTest_qpaDefaultPlatform) {
     else: win32: name = windows
     else: android: name = android
     else: macos: name = cocoa
-    else: ios: name = ios
+    else: if(ios|tvos): name = ios
+    else: watchos: name = minimal
     else: qnx: name = qnx
     else: integrity: name = integrityfb
+    else: haiku: name = haiku
     else: name = xcb
 
     $${1}.value = $$name
