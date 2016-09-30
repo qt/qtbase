@@ -2539,51 +2539,85 @@ void QMenu::paintEvent(QPaintEvent *e)
     menuOpt.tabWidth = 0;
     style()->drawPrimitive(QStyle::PE_PanelMenu, &menuOpt, &p, this);
 
+    //calculate the scroll up / down rect
+    const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, this);
+    QRect scrollUpRect, scrollDownRect;
+    if (d->scroll) {
+        if (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
+            scrollUpRect.setRect(fw, fw, width() - (fw * 2), d->scrollerHeight());
+
+        if (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollDown)
+            scrollDownRect.setRect(fw, height() - d->scrollerHeight() - fw, width() - (fw * 2),
+                                     d->scrollerHeight());
+    }
+
+    //calculate the tear off rect
+    QRect tearOffRect;
+    if (d->tearoff) {
+        tearOffRect.setRect(fw, fw, width() - (fw * 2),
+                             style()->pixelMetric(QStyle::PM_MenuTearoffHeight, 0, this));
+        if (d->scroll && d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
+            tearOffRect.translate(0, d->scrollerHeight());
+    }
+
     //draw the items that need updating..
+    QRect scrollUpTearOffRect = scrollUpRect.united(tearOffRect);
     for (int i = 0; i < d->actions.count(); ++i) {
         QAction *action = d->actions.at(i);
-        QRect adjustedActionRect = d->actionRects.at(i);
-        if (!e->rect().intersects(adjustedActionRect)
+        QRect actionRect = d->actionRects.at(i);
+        if (!e->rect().intersects(actionRect)
             || d->widgetItems.value(action))
            continue;
         //set the clip region to be extra safe (and adjust for the scrollers)
+        emptyArea -= QRegion(actionRect);
+
+        QRect adjustedActionRect = actionRect;
+        if (adjustedActionRect.intersects(scrollUpTearOffRect)) {
+            if (adjustedActionRect.bottom() <= scrollUpTearOffRect.bottom())
+                continue;
+            else
+                adjustedActionRect.setTop(scrollUpTearOffRect.bottom()+1);
+        }
+
+        if (adjustedActionRect.intersects(scrollDownRect)) {
+            if (adjustedActionRect.top() >= scrollDownRect.top())
+                continue;
+            else
+                adjustedActionRect.setBottom(scrollDownRect.top()-1);
+        }
+
         QRegion adjustedActionReg(adjustedActionRect);
-        emptyArea -= adjustedActionReg;
         p.setClipRegion(adjustedActionReg);
 
         QStyleOptionMenuItem opt;
         initStyleOption(&opt, action);
-        opt.rect = adjustedActionRect;
+        opt.rect = actionRect;
         style()->drawControl(QStyle::CE_MenuItem, &opt, &p, this);
     }
 
-    const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, this);
-    //draw the scroller regions..
-    if (d->scroll) {
+    if (!scrollUpRect.isEmpty()) {
         menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
         menuOpt.state |= QStyle::State_Enabled;
-        if (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp) {
-            menuOpt.rect.setRect(fw, fw, width() - (fw * 2), d->scrollerHeight());
-            emptyArea -= QRegion(menuOpt.rect);
-            p.setClipRect(menuOpt.rect);
-            style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p, this);
-        }
-        if (d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollDown) {
-            menuOpt.rect.setRect(fw, height() - d->scrollerHeight() - fw, width() - (fw * 2),
-                                     d->scrollerHeight());
-            emptyArea -= QRegion(menuOpt.rect);
-            menuOpt.state |= QStyle::State_DownArrow;
-            p.setClipRect(menuOpt.rect);
-            style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p, this);
-        }
+        menuOpt.rect = scrollUpRect;
+        emptyArea -= QRegion(menuOpt.rect);
+        p.setClipRect(menuOpt.rect);
+        style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p, this);
     }
+
+    if (!scrollDownRect.isEmpty()) {
+        menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
+        menuOpt.state |= QStyle::State_Enabled;
+        menuOpt.state |= QStyle::State_DownArrow;
+        menuOpt.rect = scrollDownRect;
+        emptyArea -= QRegion(menuOpt.rect);
+        p.setClipRect(menuOpt.rect);
+        style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p, this);
+    }
+
     //paint the tear off..
-    if (d->tearoff) {
+    if (!tearOffRect.isEmpty()) {
         menuOpt.menuItemType = QStyleOptionMenuItem::TearOff;
-        menuOpt.rect.setRect(fw, fw, width() - (fw * 2),
-                             style()->pixelMetric(QStyle::PM_MenuTearoffHeight, 0, this));
-        if (d->scroll && d->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
-            menuOpt.rect.translate(0, d->scrollerHeight());
+        menuOpt.rect = tearOffRect;
         emptyArea -= QRegion(menuOpt.rect);
         p.setClipRect(menuOpt.rect);
         menuOpt.state = QStyle::State_None;
@@ -2591,6 +2625,7 @@ void QMenu::paintEvent(QPaintEvent *e)
             menuOpt.state |= QStyle::State_Selected;
         style()->drawControl(QStyle::CE_MenuTearoff, &menuOpt, &p, this);
     }
+
     //draw border
     if (fw) {
         QRegion borderReg;
@@ -2609,7 +2644,7 @@ void QMenu::paintEvent(QPaintEvent *e)
         style()->drawPrimitive(QStyle::PE_FrameMenu, &frame, &p, this);
     }
 
-    //finally the rest of the space
+    //finally the rest of the spaces
     p.setClipRegion(emptyArea);
     menuOpt.state = QStyle::State_None;
     menuOpt.menuItemType = QStyleOptionMenuItem::EmptyArea;
