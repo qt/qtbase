@@ -2069,6 +2069,9 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                     font = font.resolve(fnt);
                 }
                 engine = font.d->engineForScript(script);
+                if (engine)
+                    engine->ref.ref();
+
                 QTextCharFormat::VerticalAlignment valign = f.verticalAlignment();
                 if (valign == QTextCharFormat::AlignSuperScript || valign == QTextCharFormat::AlignSubScript) {
                     if (font.pointSize() != -1)
@@ -2076,16 +2079,14 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                     else
                         font.setPixelSize((font.pixelSize() * 2) / 3);
                     scaledEngine = font.d->engineForScript(script);
+                    if (scaledEngine)
+                        scaledEngine->ref.ref();
                 }
 
-                if (engine)
-                    engine->ref.ref();
                 if (feCache.prevFontEngine)
                     releaseCachedFontEngine(feCache.prevFontEngine);
                 feCache.prevFontEngine = engine;
 
-                if (scaledEngine)
-                    scaledEngine->ref.ref();
                 if (feCache.prevScaledFontEngine)
                     releaseCachedFontEngine(feCache.prevScaledFontEngine);
                 feCache.prevScaledFontEngine = scaledEngine;

@@ -519,6 +519,7 @@ bool QIOSMenu::eventFilter(QObject *obj, QEvent *event)
             QVariantMap imPlatformData = queryEvent->value(Qt::ImPlatformData).toMap();
             imPlatformData.insert(kImePlatformDataInputView, QVariant::fromValue(static_cast<void *>(m_pickerView)));
             imPlatformData.insert(kImePlatformDataInputAccessoryView, QVariant::fromValue(static_cast<void *>(m_pickerView.toolbar)));
+            imPlatformData.insert(kImePlatformDataHideShortcutsBar, true);
             queryEvent->setValue(Qt::ImPlatformData, imPlatformData);
             queryEvent->setValue(Qt::ImEnabled, true);
 

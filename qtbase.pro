@@ -4,7 +4,7 @@
 
 load(qt_parts)
 
-SUBDIRS += qmake/qmake-aux.pro
+SUBDIRS += qmake/qmake-aux.pro doc
 
 cross_compile: CONFIG += nostrip
 
@@ -172,10 +172,6 @@ mkspecs.files = \
     $$files($$PWD/mkspecs/*)
 mkspecs.files -= $$PWD/mkspecs/modules $$PWD/mkspecs/modules-inst
 INSTALLS += mkspecs
-
-global_docs.files = $$PWD/doc/global
-global_docs.path = $$[QT_INSTALL_DOCS]
-INSTALLS += global_docs
 
 OTHER_FILES += \
     configure \

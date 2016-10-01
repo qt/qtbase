@@ -30,7 +30,11 @@ macx-xcode {
     QMAKE_MAC_XCODE_SETTINGS += library_suffix_simulator
     CONFIG *= xcode_dynamic_library_suffix
 } else {
-    addExclusiveBuilds(simulator, device)
+    # Switch the order to make sure that the first Makefile target is the right one
+    !contains(QT_CONFIG, simulator_and_device):contains(QMAKE_MAC_SDK, ^$${simulator.sdk}.*): \
+        addExclusiveBuilds(simulator, device)
+    else: \
+        addExclusiveBuilds(device, simulator)
 }
 
 equals(TEMPLATE, subdirs) {
