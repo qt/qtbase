@@ -3303,9 +3303,9 @@ void tst_QSettings::rainersSyncBugOnMac()
 {
     QFETCH(QSettings::Format, format);
 
-#if defined(Q_OS_OSX) || defined(Q_OS_WINRT)
+#if defined(Q_OS_DARWIN) || defined(Q_OS_WINRT)
     if (format == QSettings::NativeFormat)
-        QSKIP("OSX does not support direct reads from and writes to .plist files, due to caching and background syncing. See QTBUG-34899.");
+        QSKIP("Apple OSes do not support direct reads from and writes to .plist files, due to caching and background syncing. See QTBUG-34899.");
 #endif
 
     QString fileName;
