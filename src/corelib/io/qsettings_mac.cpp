@@ -214,7 +214,11 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
     case QVariant::String:
     string_case:
     default:
-        result = QCFString::toCFStringRef(QSettingsPrivate::variantToString(value));
+        QString string = QSettingsPrivate::variantToString(value);
+        if (string.contains(QChar::Null))
+            result = string.toUtf8().toCFData();
+        else
+            result = string.toCFString();
     }
     return result;
 }
@@ -266,9 +270,16 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
     } else if (typeId == CFBooleanGetTypeID()) {
         return (bool)CFBooleanGetValue(static_cast<CFBooleanRef>(cfvalue));
     } else if (typeId == CFDataGetTypeID()) {
-        CFDataRef cfdata = static_cast<CFDataRef>(cfvalue);
-        return QByteArray(reinterpret_cast<const char *>(CFDataGetBytePtr(cfdata)),
-                          CFDataGetLength(cfdata));
+        QByteArray byteArray = QByteArray::fromRawCFData(static_cast<CFDataRef>(cfvalue));
+
+        // Fast-path for QByteArray, so that we don't have to go
+        // though the expensive and lossy conversion via UTF-8.
+        if (!byteArray.startsWith('@'))
+            return byteArray;
+
+        const QString str = QString::fromUtf8(byteArray.constData(), byteArray.size());
+        return QSettingsPrivate::stringToVariant(str);
+
     } else if (typeId == CFDictionaryGetTypeID()) {
         CFDictionaryRef cfdict = static_cast<CFDictionaryRef>(cfvalue);
         CFTypeID arrayTypeId = CFArrayGetTypeID();
