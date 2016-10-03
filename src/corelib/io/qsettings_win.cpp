@@ -649,15 +649,6 @@ void QWinSettingsPrivate::remove(const QString &uKey)
     }
 }
 
-static bool stringContainsNullChar(const QString &s)
-{
-    for (int i = 0; i < s.length(); ++i) {
-        if (s.at(i).unicode() == 0)
-            return true;
-    }
-    return false;
-}
-
 void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
 {
     if (writeHandle() == 0) {
@@ -686,7 +677,7 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
             QStringList l = variantListToStringList(value.toList());
             QStringList::const_iterator it = l.constBegin();
             for (; it != l.constEnd(); ++it) {
-                if ((*it).length() == 0 || stringContainsNullChar(*it)) {
+                if ((*it).length() == 0 || it->contains(QChar::Null)) {
                     type = REG_BINARY;
                     break;
                 }
@@ -730,7 +721,7 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
             // If the string does not contain '\0', we can use REG_SZ, the native registry
             // string type. Otherwise we use REG_BINARY.
             QString s = variantToString(value);
-            type = stringContainsNullChar(s) ? REG_BINARY : REG_SZ;
+            type = s.contains(QChar::Null) ? REG_BINARY : REG_SZ;
             if (type == REG_BINARY) {
                 regValueBuff = QByteArray((const char*)s.utf16(), s.length() * 2);
             } else {

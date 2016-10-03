@@ -162,6 +162,8 @@ private slots:
     void testByteArray();
     void iniCodec();
     void bom();
+    void embeddedZeroByte_data();
+    void embeddedZeroByte();
 
 private:
     void cleanupTestFiles();
@@ -655,7 +657,6 @@ void tst_QSettings::testByteArray_data()
 #ifndef QT_NO_COMPRESS
     QTest::newRow("compressed") << qCompress(bytes);
 #endif
-    QTest::newRow("with \\0") << bytes + '\0' + bytes;
 }
 
 void tst_QSettings::testByteArray()
@@ -704,6 +705,53 @@ void tst_QSettings::bom()
     QCOMPARE(allkeys.size(), 2);
     QVERIFY(allkeys.contains("section1/foo1"));
     QVERIFY(allkeys.contains("section2/foo2"));
+}
+
+void tst_QSettings::embeddedZeroByte_data()
+{
+    QTest::addColumn<QVariant>("value");
+
+    QByteArray bytes("hello\0world", 11);
+
+    QTest::newRow("bytearray\\0") << QVariant(bytes);
+    QTest::newRow("string\\0") << QVariant(QString::fromLatin1(bytes.data(), bytes.size()));
+
+    bytes = QByteArray("@String(");
+
+    QTest::newRow("@bytearray") << QVariant(bytes);
+    QTest::newRow("@string") << QVariant(QString(bytes));
+
+    bytes = QByteArray("@String(\0test", 13);
+
+    QTest::newRow("@bytearray\\0") << QVariant(bytes);
+    QTest::newRow("@string\\0") << QVariant(QString::fromLatin1(bytes.data(), bytes.size()));
+}
+
+void tst_QSettings::embeddedZeroByte()
+{
+    QFETCH(QVariant, value);
+    {
+        QSettings settings("QtProject", "tst_qsettings");
+        settings.setValue(QTest::currentDataTag(), value);
+    }
+    {
+        QSettings settings("QtProject", "tst_qsettings");
+        QVariant outValue = settings.value(QTest::currentDataTag());
+
+        switch (value.type()) {
+        case QVariant::ByteArray:
+            QCOMPARE(outValue.toByteArray(), value.toByteArray());
+            break;
+        case QVariant::String:
+            QCOMPARE(outValue.toString(), value.toString());
+            break;
+        default:
+            Q_UNREACHABLE();
+        }
+
+        if (value.toByteArray().contains(QChar::Null))
+            QVERIFY(outValue.toByteArray().contains(QChar::Null));
+    }
 }
 
 void tst_QSettings::testErrorHandling_data()

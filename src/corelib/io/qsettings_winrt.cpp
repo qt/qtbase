@@ -396,7 +396,7 @@ void QWinRTSettingsPrivate::set(const QString &uKey, const QVariant &value)
         QStringList::const_iterator it = l.constBegin();
         bool containsNull = false;
         for (; it != l.constEnd(); ++it) {
-            if ((*it).length() == 0 || it->indexOf(QChar::Null) != -1) {
+            if ((*it).length() == 0 || it->contains(QChar::Null)) {
                 // We can only store as binary
                 containsNull = true;
                 break;
@@ -439,7 +439,7 @@ void QWinRTSettingsPrivate::set(const QString &uKey, const QVariant &value)
         break;
     default: {
         const QString s = variantToString(value);
-        if (s.indexOf(QChar::Null) != -1) {
+        if (s.contains(QChar::Null)) {
             hr = valueStatics->CreateUInt8Array(s.length() * 2, (BYTE*) s.utf16(), &val);
         } else {
             HStringReference ref((const wchar_t*)s.utf16(), s.size());
