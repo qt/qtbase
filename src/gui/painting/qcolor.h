@@ -67,18 +67,18 @@ public:
     enum Spec { Invalid, Rgb, Hsv, Cmyk, Hsl };
     enum NameFormat { HexRgb, HexArgb };
 
-    QColor() Q_DECL_NOTHROW;
+    inline QColor() Q_DECL_NOTHROW;
     QColor(Qt::GlobalColor color) Q_DECL_NOTHROW;
-    QColor(int r, int g, int b, int a = 255);
+    inline QColor(int r, int g, int b, int a = 255);
     QColor(QRgb rgb) Q_DECL_NOTHROW;
     QColor(QRgba64 rgba64) Q_DECL_NOTHROW;
-    QColor(const QString& name);
+    inline QColor(const QString& name);
     QColor(const char *aname) : QColor(QLatin1String(aname)) {}
-    QColor(QLatin1String name);
+    inline QColor(QLatin1String name);
     QColor(Spec spec) Q_DECL_NOTHROW;
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QColor(const QColor &color) Q_DECL_NOTHROW; // ### Qt 6: remove all of these, the trivial ones are fine.
+    inline QColor(const QColor &color) Q_DECL_NOTHROW; // ### Qt 6: remove all of these, the trivial ones are fine.
 # ifdef Q_COMPILER_RVALUE_REFS
     QColor(QColor &&other) Q_DECL_NOTHROW : cspec(other.cspec), ct(other.ct) {}
     QColor &operator=(QColor &&other) Q_DECL_NOTHROW
