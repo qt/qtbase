@@ -43,37 +43,17 @@
 
 QT_BEGIN_NAMESPACE
 
-QString QCFString::toQString(CFStringRef str)
-{
-    if(!str)
-        return QString();
-    CFIndex length = CFStringGetLength(str);
-    const UniChar *chars = CFStringGetCharactersPtr(str);
-    if (chars)
-        return QString(reinterpret_cast<const QChar *>(chars), length);
-
-    QVarLengthArray<UniChar> buffer(length);
-    CFStringGetCharacters(str, CFRangeMake(0, length), buffer.data());
-    return QString(reinterpret_cast<const QChar *>(buffer.constData()), length);
-}
-
 QCFString::operator QString() const
 {
     if (string.isEmpty() && type)
-        const_cast<QCFString*>(this)->string = toQString(type);
+        const_cast<QCFString*>(this)->string = QString::fromCFString(type);
     return string;
-}
-
-CFStringRef QCFString::toCFStringRef(const QString &string)
-{
-    return CFStringCreateWithCharacters(0, reinterpret_cast<const UniChar *>(string.unicode()),
-                                        string.length());
 }
 
 QCFString::operator CFStringRef() const
 {
     if (!type)
-        const_cast<QCFString*>(this)->type = toCFStringRef(string);
+        const_cast<QCFString*>(this)->type = string.toCFString();
     return type;
 }
 

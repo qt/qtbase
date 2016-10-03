@@ -131,7 +131,7 @@ void QCocoaInputContext::updateLocale()
     CFArrayRef languages = (CFArrayRef) TISGetInputSourceProperty(source, kTISPropertyInputSourceLanguages);
     if (CFArrayGetCount(languages) > 0) {
         CFStringRef langRef = (CFStringRef)CFArrayGetValueAtIndex(languages, 0);
-        QString name = QCFString::toQString(langRef);
+        QString name = QString::fromCFString(langRef);
         QLocale locale(name);
         if (m_locale != locale) {
             m_locale = locale;

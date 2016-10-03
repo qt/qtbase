@@ -82,7 +82,7 @@ QStringList QCocoaPrinterSupport::availablePrintDeviceIds() const
         CFIndex count = CFArrayGetCount(printerList);
         for (CFIndex i = 0; i < count; ++i) {
             PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
-            list.append(QCFString::toQString(PMPrinterGetID(printer)));
+            list.append(QString::fromCFString(PMPrinterGetID(printer)));
         }
     }
     return list;
@@ -96,7 +96,7 @@ QString QCocoaPrinterSupport::defaultPrintDeviceId() const
         for (CFIndex i = 0; i < count; ++i) {
             PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
             if (PMPrinterIsDefault(printer))
-                return QCFString::toQString(PMPrinterGetID(printer));
+                return QString::fromCFString(PMPrinterGetID(printer));
         }
     }
     return QString();

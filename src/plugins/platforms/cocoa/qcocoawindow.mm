@@ -937,7 +937,7 @@ void QCocoaWindow::setWindowTitle(const QString &title)
     if (!m_nsWindow)
         return;
 
-    CFStringRef windowTitle = QCFString::toCFStringRef(title);
+    CFStringRef windowTitle = title.toCFString();
     [m_nsWindow setTitle: const_cast<NSString *>(reinterpret_cast<const NSString *>(windowTitle))];
     CFRelease(windowTitle);
 }
@@ -949,7 +949,7 @@ void QCocoaWindow::setWindowFilePath(const QString &filePath)
         return;
 
     QFileInfo fi(filePath);
-    [m_nsWindow setRepresentedFilename: fi.exists() ? QCFString::toNSString(filePath) : @""];
+    [m_nsWindow setRepresentedFilename:fi.exists() ? filePath.toNSString() : @""];
 }
 
 void QCocoaWindow::setWindowIcon(const QIcon &icon)
@@ -960,7 +960,7 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
     if (iconButton == nil) {
         if (icon.isNull())
             return;
-        NSString *title = QCFString::toNSString(window()->title());
+        NSString *title = window()->title().toNSString();
         [m_nsWindow setRepresentedURL:[NSURL fileURLWithPath:title]];
         iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
     }

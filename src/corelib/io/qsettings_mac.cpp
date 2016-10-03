@@ -83,12 +83,12 @@ static QString rotateSlashesDotsAndMiddots(const QString &key, int shift)
 
 static QCFType<CFStringRef> macKey(const QString &key)
 {
-    return QCFString::toCFStringRef(rotateSlashesDotsAndMiddots(key, Macify));
+    return rotateSlashesDotsAndMiddots(key, Macify).toCFString();
 }
 
 static QString qtKey(CFStringRef cfkey)
 {
-    return rotateSlashesDotsAndMiddots(QCFString::toQString(cfkey), Qtify);
+    return rotateSlashesDotsAndMiddots(QString::fromCFString(cfkey), Qtify);
 }
 
 static QCFType<CFPropertyListRef> macValue(const QVariant &value);
@@ -160,7 +160,7 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
                     }
                 }
 
-                cfkeys[numUniqueKeys] = QCFString::toCFStringRef(key);
+                cfkeys[numUniqueKeys] = key.toCFString();
                 cfvalues[numUniqueKeys] = singleton ? macValue(values.constFirst()) : macList(values);
                 ++numUniqueKeys;
             }
@@ -229,7 +229,7 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
         Sorted grossly from most to least frequent type.
     */
     if (typeId == CFStringGetTypeID()) {
-        return QSettingsPrivate::stringToVariant(QCFString::toQString(static_cast<CFStringRef>(cfvalue)));
+        return QSettingsPrivate::stringToVariant(QString::fromCFString(static_cast<CFStringRef>(cfvalue)));
     } else if (typeId == CFNumberGetTypeID()) {
         CFNumberRef cfnumber = static_cast<CFNumberRef>(cfvalue);
         if (CFNumberIsFloatType(cfnumber)) {
@@ -285,7 +285,7 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
 
         QMultiMap<QString, QVariant> map;
         for (int i = 0; i < size; ++i) {
-            QString key = QCFString::toQString(static_cast<CFStringRef>(keys[i]));
+            QString key = QString::fromCFString(static_cast<CFStringRef>(keys[i]));
 
             if (CFGetTypeID(values[i]) == arrayTypeId) {
                 CFArrayRef cfarray = static_cast<CFArrayRef>(values[i]);
@@ -580,7 +580,7 @@ QString QMacSettingsPrivate::fileName() const
     if ((spec & F_System) == 0)
         result = QDir::homePath();
     result += QLatin1String("/Library/Preferences/");
-    result += QCFString::toQString(domains[0].applicationOrSuiteId);
+    result += QString::fromCFString(domains[0].applicationOrSuiteId);
     result += QLatin1String(".plist");
     return result;
 }

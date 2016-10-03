@@ -401,7 +401,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)windowNotification : (NSNotification *) windowNotification
 {
-    //qDebug() << "windowNotification" << QCFString::toQString([windowNotification name]);
+    //qDebug() << "windowNotification" << QString::fromNSString([windowNotification name]);
 
     NSString *notificationName = [windowNotification name];
     if (notificationName == NSWindowDidBecomeKeyNotification) {
@@ -1582,7 +1582,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
     // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
     if (!(modifiers & (Qt::ControlModifier | Qt::MetaModifier)) && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
-        text = QCFString::toQString(characters);
+        text = QString::fromNSString(characters);
 
     QWindow *window = [self topLevelWindow];
 
@@ -1745,9 +1745,9 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     QString commitString;
     if ([aString length]) {
         if ([aString isKindOfClass:[NSAttributedString class]]) {
-            commitString = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
+            commitString = QString::fromCFString(reinterpret_cast<CFStringRef>([aString string]));
         } else {
-            commitString = QCFString::toQString(reinterpret_cast<CFStringRef>(aString));
+            commitString = QString::fromCFString(reinterpret_cast<CFStringRef>(aString));
         };
     }
     QObject *fo = QGuiApplication::focusObject();
@@ -1777,7 +1777,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     if ([aString isKindOfClass:[NSAttributedString class]]) {
         // Preedit string has attribution
-        preeditString = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
+        preeditString = QString::fromCFString(reinterpret_cast<CFStringRef>([aString string]));
         int composingLength = preeditString.length();
         int index = 0;
         // Create attributes for individual sections of preedit text
@@ -1806,7 +1806,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         }
     } else {
         // No attributes specified, take only the preedit text.
-        preeditString = QCFString::toQString(reinterpret_cast<CFStringRef>(aString));
+        preeditString = QString::fromCFString(reinterpret_cast<CFStringRef>(aString));
     }
 
     if (attrs.isEmpty()) {
@@ -1989,7 +1989,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                        NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
         // Add custom types supported by the application.
         for (int i = 0; i < customTypes.size(); i++) {
-           [supportedTypes addObject:QCFString::toNSString(customTypes[i])];
+           [supportedTypes addObject:customTypes[i].toNSString()];
         }
         [self registerForDraggedTypes:supportedTypes];
     }

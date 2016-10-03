@@ -90,7 +90,7 @@ QTimeZonePrivate *QMacTimeZonePrivate::clone()
 void QMacTimeZonePrivate::init(const QByteArray &ianaId)
 {
     if (availableTimeZoneIds().contains(ianaId)) {
-        m_nstz = [[NSTimeZone timeZoneWithName:QCFString::toNSString(QString::fromUtf8(ianaId))] retain];
+        m_nstz = [[NSTimeZone timeZoneWithName:QString::fromUtf8(ianaId).toNSString()] retain];
         if (m_nstz)
             m_id = ianaId;
     }
@@ -98,7 +98,7 @@ void QMacTimeZonePrivate::init(const QByteArray &ianaId)
 
 QString QMacTimeZonePrivate::comment() const
 {
-    return QCFString::toQString([m_nstz description]);
+    return QString::fromNSString([m_nstz description]);
 }
 
 QString QMacTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
@@ -140,9 +140,9 @@ QString QMacTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
         break;
     }
 
-    NSString *macLocaleCode = QCFString::toNSString(locale.name());
+    NSString *macLocaleCode = locale.name().toNSString();
     NSLocale *macLocale = [[NSLocale alloc] initWithLocaleIdentifier:macLocaleCode];
-    const QString result = QCFString::toQString([m_nstz localizedName:style locale:macLocale]);
+    const QString result = QString::fromNSString([m_nstz localizedName:style locale:macLocale]);
     [macLocale release];
     return result;
 }
@@ -150,7 +150,7 @@ QString QMacTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
 QString QMacTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
 {
     const NSTimeInterval seconds = atMSecsSinceEpoch / 1000.0;
-    return QCFString::toQString([m_nstz abbreviationForDate:[NSDate dateWithTimeIntervalSince1970:seconds]]);
+    return QString::fromNSString([m_nstz abbreviationForDate:[NSDate dateWithTimeIntervalSince1970:seconds]]);
 }
 
 int QMacTimeZonePrivate::offsetFromUtc(qint64 atMSecsSinceEpoch) const
@@ -191,7 +191,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
     data.offsetFromUtc = [m_nstz secondsFromGMTForDate:date];
     data.daylightTimeOffset = [m_nstz daylightSavingTimeOffsetForDate:date];
     data.standardTimeOffset = data.offsetFromUtc - data.daylightTimeOffset;
-    data.abbreviation = QCFString::toQString([m_nstz abbreviationForDate:date]);
+    data.abbreviation = QString::fromNSString([m_nstz abbreviationForDate:date]);
     return data;
 }
 
@@ -220,7 +220,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     tran.offsetFromUtc = [m_nstz secondsFromGMTForDate:nextDate];
     tran.daylightTimeOffset = [m_nstz daylightSavingTimeOffsetForDate:nextDate];
     tran.standardTimeOffset = tran.offsetFromUtc - tran.daylightTimeOffset;
-    tran.abbreviation = QCFString::toQString([m_nstz abbreviationForDate:nextDate]);
+    tran.abbreviation = QString::fromNSString([m_nstz abbreviationForDate:nextDate]);
     return tran;
 }
 
@@ -253,18 +253,18 @@ QByteArray QMacTimeZonePrivate::systemTimeZoneId() const
 {
     // Reset the cached system tz then return the name
     [NSTimeZone resetSystemTimeZone];
-    return QCFString::toQString([[NSTimeZone systemTimeZone] name]).toUtf8();
+    return QString::fromNSString([[NSTimeZone systemTimeZone] name]).toUtf8();
 }
 
 QList<QByteArray> QMacTimeZonePrivate::availableTimeZoneIds() const
 {
     NSEnumerator *enumerator = [[NSTimeZone knownTimeZoneNames] objectEnumerator];
-    QByteArray tzid = QCFString::toQString([enumerator nextObject]).toUtf8();
+    QByteArray tzid = QString::fromNSString([enumerator nextObject]).toUtf8();
 
     QList<QByteArray> list;
     while (!tzid.isEmpty()) {
         list << tzid;
-        tzid = QCFString::toQString([enumerator nextObject]).toUtf8();
+        tzid = QString::fromNSString([enumerator nextObject]).toUtf8();
     }
 
     std::sort(list.begin(), list.end());

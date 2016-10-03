@@ -150,7 +150,7 @@ QString QCoreApplicationPrivate::macMenuBarName()
     QString bundleName;
     CFTypeRef string = CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(), CFSTR("CFBundleName"));
     if (string)
-        bundleName = QCFString::toQString(static_cast<CFStringRef>(string));
+        bundleName = QString::fromCFString(static_cast<CFStringRef>(string));
     return bundleName;
 }
 #endif

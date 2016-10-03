@@ -1863,7 +1863,7 @@ ProjectBuilderMakefileGenerator::pbuilderVersion() const
                     CFStringRef str = CFStringRef(CFBundleGetValueForInfoDictionaryKey(bundle,
                                                               CFSTR("CFBundleShortVersionString")));
                     if (str) {
-                        QStringList versions = QCFString::toQString(str).split(QLatin1Char('.'));
+                        QStringList versions = QString::fromCFString(str).split(QLatin1Char('.'));
                         int versionMajor = versions.at(0).toInt();
                         int versionMinor = versions.at(1).toInt();
                         if (versionMajor >= 3) {

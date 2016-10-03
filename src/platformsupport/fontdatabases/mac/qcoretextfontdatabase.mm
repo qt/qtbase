@@ -206,7 +206,7 @@ void QCoreTextFontDatabase::populateFontDatabase()
     const int numberOfFamilies = CFArrayGetCount(familyNames);
     for (int i = 0; i < numberOfFamilies; ++i) {
         CFStringRef familyNameRef = (CFStringRef) CFArrayGetValueAtIndex(familyNames, i);
-        QString familyName = QCFString::toQString(familyNameRef);
+        QString familyName = QString::fromCFString(familyNameRef);
 
         // Don't populate internal fonts
         if (familyName.startsWith(QLatin1Char('.')) || familyName == QLatin1String("LastResort"))
@@ -505,9 +505,9 @@ static QString familyNameFromPostScriptName(NSString *psName)
 {
     QCFType<CTFontDescriptorRef> fontDescriptor = (CTFontDescriptorRef) CTFontDescriptorCreateWithNameAndSize((CFStringRef)psName, 12.0);
     QCFString familyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute);
-    QString name = QCFString::toQString(familyName);
+    QString name = QString::fromCFString(familyName);
     if (name.isEmpty())
-        qWarning() << "QCoreTextFontDatabase: Failed to resolve family name for PostScript name " << QCFString::toQString((CFStringRef)psName);
+        qWarning() << "QCoreTextFontDatabase: Failed to resolve family name for PostScript name " << QString::fromCFString((CFStringRef)psName);
 
     return name;
 }
@@ -537,7 +537,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                     for (int i = 0; i < numCascades; ++i) {
                         CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
                         QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute);
-                        fallbackList.append(QCFString::toQString(fallbackFamilyName));
+                        fallbackList.append(QString::fromCFString(fallbackFamilyName));
                     }
 
 #if defined(Q_OS_OSX)

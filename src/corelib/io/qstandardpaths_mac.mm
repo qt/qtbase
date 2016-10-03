@@ -205,13 +205,13 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         if (mainBundle) {
             CFURLRef bundleUrl = CFBundleCopyBundleURL(mainBundle);
             CFStringRef cfBundlePath = CFURLCopyPath(bundleUrl);
-            QString bundlePath = QCFString::toQString(cfBundlePath);
+            QString bundlePath = QString::fromCFString(cfBundlePath);
             CFRelease(cfBundlePath);
             CFRelease(bundleUrl);
 
             CFURLRef resourcesUrl = CFBundleCopyResourcesDirectoryURL(mainBundle);
             CFStringRef cfResourcesPath = CFURLCopyPath(resourcesUrl);
-            QString resourcesPath = QCFString::toQString(cfResourcesPath);
+            QString resourcesPath = QString::fromCFString(cfResourcesPath);
             CFRelease(cfResourcesPath);
             CFRelease(resourcesUrl);
 

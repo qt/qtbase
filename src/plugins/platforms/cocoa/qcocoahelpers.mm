@@ -70,7 +70,7 @@ QStringList qt_mac_NSArrayToQStringList(void *nsarray)
     QStringList result;
     NSArray *array = static_cast<NSArray *>(nsarray);
     for (NSUInteger i=0; i<[array count]; ++i)
-        result << QCFString::toQString([array objectAtIndex:i]);
+        result << QString::fromNSString([array objectAtIndex:i]);
     return result;
 }
 
@@ -161,7 +161,7 @@ void qt_mac_transformProccessToForegroundApplication()
         // Officially it's supposed to be a string, a boolean makes sense, so we'll check.
         // A number less so, but OK.
         if (valueType == CFStringGetTypeID())
-            forceTransform = !(QCFString::toQString(static_cast<CFStringRef>(value)).toInt());
+            forceTransform = !(QString::fromCFString(static_cast<CFStringRef>(value)).toInt());
         else if (valueType == CFBooleanGetTypeID())
             forceTransform = !CFBooleanGetValue(static_cast<CFBooleanRef>(value));
         else if (valueType == CFNumberGetTypeID()) {
@@ -179,7 +179,7 @@ void qt_mac_transformProccessToForegroundApplication()
             if (valueType == CFBooleanGetTypeID())
                 forceTransform = !CFBooleanGetValue(static_cast<CFBooleanRef>(value));
             else if (valueType == CFStringGetTypeID())
-                forceTransform = !(QCFString::toQString(static_cast<CFStringRef>(value)).toInt());
+                forceTransform = !(QString::fromCFString(static_cast<CFStringRef>(value)).toInt());
             else if (valueType == CFNumberGetTypeID()) {
                 int valueAsInt;
                 CFNumberGetValue(static_cast<CFNumberRef>(value), kCFNumberIntType, &valueAsInt);
@@ -198,7 +198,7 @@ QString qt_mac_applicationName()
     QString appName;
     CFTypeRef string = CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(), CFSTR("CFBundleName"));
     if (string)
-        appName = QCFString::toQString(static_cast<CFStringRef>(string));
+        appName = QString::fromCFString(static_cast<CFStringRef>(string));
 
     if (appName.isEmpty()) {
         QString arg0 = QGuiApplicationPrivate::instance()->appName();

@@ -76,7 +76,7 @@ static QByteArray getMacLocaleName()
         || (result != "C" && !qt_splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry))) {
         QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
         CFStringRef locale = CFLocaleGetIdentifier(l);
-        result = QCFString::toQString(locale).toUtf8();
+        result = QString::fromCFString(locale).toUtf8();
     }
     return result;
 }
@@ -96,7 +96,7 @@ static QString macMonthName(int month, bool short_format)
                                                : kCFDateFormatterMonthSymbols));
     if (values != 0) {
         CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, month));
-        return QCFString::toQString(cfstring);
+        return QString::fromCFString(cfstring);
     }
     return QString();
 }
@@ -114,7 +114,7 @@ static QString macDayName(int day, bool short_format)
                                                          : kCFDateFormatterWeekdaySymbols));
     if (values != 0) {
         CFStringRef cfstring = static_cast<CFStringRef>(CFArrayGetValueAtIndex(values, day % 7));
-        return QCFString::toQString(cfstring);
+        return QString::fromCFString(cfstring);
     }
     return QString();
 }
@@ -293,7 +293,7 @@ QString getMacDateFormat(CFDateFormatterStyle style)
     QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
     QCFType<CFDateFormatterRef> formatter = CFDateFormatterCreate(kCFAllocatorDefault,
                                                                   l, style, kCFDateFormatterNoStyle);
-    return macToQtFormat(QCFString::toQString(CFDateFormatterGetFormat(formatter)));
+    return macToQtFormat(QString::fromCFString(CFDateFormatterGetFormat(formatter)));
 }
 
 static QString getMacTimeFormat(CFDateFormatterStyle style)
@@ -301,21 +301,21 @@ static QString getMacTimeFormat(CFDateFormatterStyle style)
     QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
     QCFType<CFDateFormatterRef> formatter = CFDateFormatterCreate(kCFAllocatorDefault,
                                                                   l, kCFDateFormatterNoStyle, style);
-    return macToQtFormat(QCFString::toQString(CFDateFormatterGetFormat(formatter)));
+    return macToQtFormat(QString::fromCFString(CFDateFormatterGetFormat(formatter)));
 }
 
 static QString getCFLocaleValue(CFStringRef key)
 {
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     CFTypeRef value = CFLocaleGetValue(locale, key);
-    return QCFString::toQString(CFStringRef(static_cast<CFTypeRef>(value)));
+    return QString::fromCFString(CFStringRef(static_cast<CFTypeRef>(value)));
 }
 
 static QLocale::MeasurementSystem macMeasurementSystem()
 {
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     CFStringRef system = static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleMeasurementSystem));
-    if (QCFString::toQString(system) == QLatin1String("Metric")) {
+    if (QString::fromCFString(system) == QLatin1String("Metric")) {
         return QLocale::MetricSystem;
     } else {
         return QLocale::ImperialSystem;
@@ -337,13 +337,13 @@ static QString macCurrencySymbol(QLocale::CurrencySymbolFormat format)
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     switch (format) {
     case QLocale::CurrencyIsoCode:
-        return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleCurrencyCode)));
+        return QString::fromCFString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleCurrencyCode)));
     case QLocale::CurrencySymbol:
-        return QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleCurrencySymbol)));
+        return QString::fromCFString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleCurrencySymbol)));
     case QLocale::CurrencyDisplayName: {
         CFStringRef code = static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleCurrencyCode));
         QCFType<CFStringRef> value = CFLocaleCopyDisplayNameForPropertyValue(locale, kCFLocaleCurrencyCode, code);
-        return QCFString::toQString(value);
+        return QString::fromCFString(value);
     }
     default:
         break;
@@ -382,10 +382,10 @@ static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &
             CFNumberFormatterCreate(NULL, locale, kCFNumberFormatterCurrencyStyle);
     if (!arg.symbol.isEmpty()) {
         CFNumberFormatterSetProperty(currencyFormatter, kCFNumberFormatterCurrencySymbol,
-                                     QCFString::toCFStringRef(arg.symbol));
+                                     arg.symbol.toCFString());
     }
     QCFType<CFStringRef> result = CFNumberFormatterCreateStringWithNumber(NULL, currencyFormatter, value);
-    return QCFString::toQString(result);
+    return QString::fromCFString(result);
 }
 
 static QVariant macQuoteString(QSystemLocale::QueryType type, const QStringRef &str)
@@ -394,12 +394,12 @@ static QVariant macQuoteString(QSystemLocale::QueryType type, const QStringRef &
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     switch (type) {
     case QSystemLocale::StringToStandardQuotation:
-        begin = QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationBeginDelimiterKey)));
-        end = QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationEndDelimiterKey)));
+        begin = QString::fromCFString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationBeginDelimiterKey)));
+        end = QString::fromCFString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleQuotationEndDelimiterKey)));
         return QString(begin % str % end);
     case QSystemLocale::StringToAlternateQuotation:
-        begin = QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationBeginDelimiterKey)));
-        end = QCFString::toQString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationEndDelimiterKey)));
+        begin = QString::fromCFString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationBeginDelimiterKey)));
+        end = QString::fromCFString(static_cast<CFStringRef>(CFLocaleGetValue(locale, kCFLocaleAlternateQuotationEndDelimiterKey)));
         return QString(begin % str % end);
      default:
         break;
@@ -468,7 +468,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         QCFType<CFDateFormatterRef> formatter = CFDateFormatterCreate(NULL, locale, kCFDateFormatterLongStyle, kCFDateFormatterLongStyle);
         QCFType<CFStringRef> value = static_cast<CFStringRef>(CFDateFormatterCopyProperty(formatter,
             (type == AMText ? kCFDateFormatterAMSymbol : kCFDateFormatterPMSymbol)));
-        return QCFString::toQString(value);
+        return QString::fromCFString(value);
     }
     case FirstDayOfWeek:
         return QVariant(macFirstDayOfWeek());
@@ -491,15 +491,15 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
             const int cnt = CFArrayGetCount(languages.as<CFArrayRef>());
             result.reserve(cnt);
             for (int i = 0; i < cnt; ++i) {
-                const QString lang = QCFString::toQString(
+                const QString lang = QString::fromCFString(
                             static_cast<CFStringRef>(CFArrayGetValueAtIndex(languages.as<CFArrayRef>(), i)));
                 result.append(lang);
             }
         } else if (typeId == CFStringGetTypeID()) {
-            result = QStringList(QCFString::toQString(languages.as<CFStringRef>()));
+            result = QStringList(QString::fromCFString(languages.as<CFStringRef>()));
         } else {
             qWarning("QLocale::uiLanguages(): CFPreferencesCopyValue returned unhandled type \"%s\"; please report to http://bugreports.qt.io",
-                     qPrintable(QCFString::toQString(CFCopyTypeIDDescription(typeId))));
+                     qPrintable(QString::fromCFString(CFCopyTypeIDDescription(typeId))));
         }
         return QVariant(result);
     }

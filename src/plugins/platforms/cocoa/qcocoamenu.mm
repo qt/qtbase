@@ -285,7 +285,7 @@ void QCocoaMenu::setText(const QString &text)
 {
     QMacAutoReleasePool pool;
     QString stripped = qt_mac_removeAmpersandEscapes(text);
-    [m_nativeMenu setTitle:QCFString::toNSString(stripped)];
+    [m_nativeMenu setTitle:stripped.toNSString()];
 }
 
 void QCocoaMenu::setMinimumWidth(int width)
@@ -296,7 +296,7 @@ void QCocoaMenu::setMinimumWidth(int width)
 void QCocoaMenu::setFont(const QFont &font)
 {
     if (font.resolve()) {
-        NSFont *customMenuFont = [NSFont fontWithName:QCFString::toNSString(font.family())
+        NSFont *customMenuFont = [NSFont fontWithName:font.family().toNSString()
                                   size:font.pointSize()];
         m_nativeMenu.font = customMenuFont;
     }

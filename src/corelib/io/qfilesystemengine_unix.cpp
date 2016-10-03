@@ -101,13 +101,13 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
 
     if (suffix.length() > 0) {
         // First step: is the extension known ?
-        QCFType<CFStringRef> extensionRef = QCFString::toCFStringRef(suffix);
+        QCFType<CFStringRef> extensionRef = suffix.toCFString();
         QCFType<CFStringRef> uniformTypeIdentifier = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, extensionRef, NULL);
         if (UTTypeConformsTo(uniformTypeIdentifier, kUTTypeBundle))
             return true;
 
         // Second step: check if an application knows the package type
-        QCFType<CFStringRef> path = QCFString::toCFStringRef(entry.filePath());
+        QCFType<CFStringRef> path = entry.filePath().toCFString();
         QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle, true);
 
         UInt32 type, creator;
@@ -126,7 +126,7 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
         if (application) {
             QCFType<CFBundleRef> bundle = CFBundleCreate(kCFAllocatorDefault, application);
             CFStringRef identifier = CFBundleGetIdentifier(bundle);
-            QString applicationId = QCFString::toQString(identifier);
+            QString applicationId = QString::fromCFString(identifier);
             if (applicationId != QLatin1String("com.apple.finder"))
                 return true;
         }
@@ -222,7 +222,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
         if (!cfstr)
             return QFileSystemEntry();
 
-        return QFileSystemEntry(QCFString::toQString(cfstr));
+        return QFileSystemEntry(QString::fromCFString(cfstr));
     }
 #endif
     return QFileSystemEntry();
@@ -412,7 +412,7 @@ QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
     if (QCFType<CFDictionaryRef> dict = CFBundleCopyInfoDictionaryForURL(url)) {
         if (CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
             if (CFGetTypeID(name) == CFStringGetTypeID())
-                return QCFString::toQString((CFStringRef)name);
+                return QString::fromCFString((CFStringRef)name);
         }
     }
     return QString();
