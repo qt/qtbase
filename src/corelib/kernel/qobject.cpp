@@ -3941,7 +3941,7 @@ QList<QByteArray> QObject::dynamicPropertyNames() const
   QObject debugging output routines.
  *****************************************************************************/
 
-static void dumpRecursive(int level, QObject *object)
+static void dumpRecursive(int level, const QObject *object)
 {
     if (object) {
         QByteArray buf;
@@ -3974,6 +3974,9 @@ static void dumpRecursive(int level, QObject *object)
 }
 
 /*!
+    \overload
+    \obsolete
+
     Dumps a tree of children to the debug output.
 
     \sa dumpObjectInfo()
@@ -3981,10 +3984,26 @@ static void dumpRecursive(int level, QObject *object)
 
 void QObject::dumpObjectTree()
 {
+    const_cast<const QObject *>(this)->dumpObjectTree();
+}
+
+/*!
+    Dumps a tree of children to the debug output.
+
+    \note before Qt 5.9, this function was not const.
+
+    \sa dumpObjectInfo()
+*/
+
+void QObject::dumpObjectTree() const
+{
     dumpRecursive(0, this);
 }
 
 /*!
+    \overload
+    \obsolete
+
     Dumps information about signal connections, etc. for this object
     to the debug output.
 
@@ -3993,10 +4012,24 @@ void QObject::dumpObjectTree()
 
 void QObject::dumpObjectInfo()
 {
+    const_cast<const QObject *>(this)->dumpObjectInfo();
+}
+
+/*!
+    Dumps information about signal connections, etc. for this object
+    to the debug output.
+
+    \note before Qt 5.9, this function was not const.
+
+    \sa dumpObjectTree()
+*/
+
+void QObject::dumpObjectInfo() const
+{
     qDebug("OBJECT %s::%s", metaObject()->className(),
            objectName().isEmpty() ? "unnamed" : objectName().toLocal8Bit().data());
 
-    Q_D(QObject);
+    Q_D(const QObject);
     QMutexLocker locker(signalSlotLock(this));
 
     // first, look for connections where this object is the sender

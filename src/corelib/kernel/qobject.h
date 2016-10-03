@@ -375,8 +375,12 @@ public:
 #endif //Q_QDOC
 
 
-    void dumpObjectTree();
-    void dumpObjectInfo();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    void dumpObjectTree(); // ### Qt 6: remove
+    void dumpObjectInfo(); // ### Qt 6: remove
+#endif
+    void dumpObjectTree() const;
+    void dumpObjectInfo() const;
 
 #ifndef QT_NO_PROPERTIES
     bool setProperty(const char *name, const QVariant &value);
