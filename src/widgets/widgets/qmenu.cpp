@@ -816,6 +816,93 @@ void QMenuPrivate::updateLayoutDirection()
     }
 }
 
+void QMenuPrivate::drawScroller(QPainter *painter, QMenuPrivate::ScrollerTearOffItem::Type type, const QRect &rect)
+{
+    if (!painter || rect.isEmpty())
+        return;
+
+    if (!scroll || !(scroll->scrollFlags & (QMenuPrivate::QMenuScroller::ScrollUp
+                                         | QMenuPrivate::QMenuScroller::ScrollDown)))
+        return;
+
+    Q_Q(QMenu);
+    QStyleOptionMenuItem menuOpt;
+    menuOpt.initFrom(q);
+    menuOpt.state = QStyle::State_None;
+    menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
+    menuOpt.maxIconWidth = 0;
+    menuOpt.tabWidth = 0;
+    menuOpt.rect = rect;
+    menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
+    menuOpt.state |= QStyle::State_Enabled;
+    if (type == QMenuPrivate::ScrollerTearOffItem::ScrollDown)
+        menuOpt.state |= QStyle::State_DownArrow;
+
+    painter->setClipRect(menuOpt.rect);
+    q->style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, painter, q);
+}
+
+void QMenuPrivate::drawTearOff(QPainter *painter, const QRect &rect)
+{
+    if (!painter || rect.isEmpty())
+        return;
+
+    if (!tearoff)
+        return;
+
+    Q_Q(QMenu);
+    QStyleOptionMenuItem menuOpt;
+    menuOpt.initFrom(q);
+    menuOpt.state = QStyle::State_None;
+    menuOpt.checkType = QStyleOptionMenuItem::NotCheckable;
+    menuOpt.maxIconWidth = 0;
+    menuOpt.tabWidth = 0;
+    menuOpt.rect = rect;
+    menuOpt.menuItemType = QStyleOptionMenuItem::TearOff;
+    if (tearoffHighlighted)
+        menuOpt.state |= QStyle::State_Selected;
+
+    painter->setClipRect(menuOpt.rect);
+    q->style()->drawControl(QStyle::CE_MenuTearoff, &menuOpt, painter, q);
+}
+
+QMenuPrivate::ScrollerTearOffItem::ScrollerTearOffItem(QMenuPrivate::ScrollerTearOffItem::Type type, QMenuPrivate *mPrivate, QWidget *parent, Qt::WindowFlags f)
+    : QWidget(parent, f), menuPrivate(mPrivate), scrollType(type)
+{
+    if (parent)
+        setMouseTracking(parent->style()->styleHint(QStyle::SH_Menu_MouseTracking, 0, parent));
+}
+
+void QMenuPrivate::ScrollerTearOffItem::paintEvent(QPaintEvent *e)
+{
+    if (!e->rect().intersects(rect()))
+        return;
+
+    QPainter p(this);
+    QWidget *parent = parentWidget();
+
+    //paint scroll up / down arrows
+    menuPrivate->drawScroller(&p, scrollType, QRect(0, 0, width(), menuPrivate->scrollerHeight()));
+    //paint the tear off
+    if (scrollType == QMenuPrivate::ScrollerTearOffItem::ScrollUp) {
+        QRect rect(0, 0, width(), parent->style()->pixelMetric(QStyle::PM_MenuTearoffHeight, 0, parent));
+        if (menuPrivate->scroll && menuPrivate->scroll->scrollFlags & QMenuPrivate::QMenuScroller::ScrollUp)
+            rect.translate(0, menuPrivate->scrollerHeight());
+        menuPrivate->drawTearOff(&p, rect);
+    }
+}
+
+void QMenuPrivate::ScrollerTearOffItem::updateScrollerRects(const QRect &rect)
+{
+    if (rect.isEmpty())
+        setVisible(false);
+    else {
+        setGeometry(rect);
+        raise();
+        setVisible(true);
+    }
+}
+
 
 /*!
     Returns the action associated with this menu.
@@ -2595,35 +2682,20 @@ void QMenu::paintEvent(QPaintEvent *e)
         style()->drawControl(QStyle::CE_MenuItem, &opt, &p, this);
     }
 
-    if (!scrollUpRect.isEmpty()) {
-        menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
-        menuOpt.state |= QStyle::State_Enabled;
-        menuOpt.rect = scrollUpRect;
-        emptyArea -= QRegion(menuOpt.rect);
-        p.setClipRect(menuOpt.rect);
-        style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p, this);
-    }
+    emptyArea -= QRegion(scrollUpTearOffRect);
+    emptyArea -= QRegion(scrollDownRect);
 
-    if (!scrollDownRect.isEmpty()) {
-        menuOpt.menuItemType = QStyleOptionMenuItem::Scroller;
-        menuOpt.state |= QStyle::State_Enabled;
-        menuOpt.state |= QStyle::State_DownArrow;
-        menuOpt.rect = scrollDownRect;
-        emptyArea -= QRegion(menuOpt.rect);
-        p.setClipRect(menuOpt.rect);
-        style()->drawControl(QStyle::CE_MenuScroller, &menuOpt, &p, this);
-    }
-
-    //paint the tear off..
-    if (!tearOffRect.isEmpty()) {
-        menuOpt.menuItemType = QStyleOptionMenuItem::TearOff;
-        menuOpt.rect = tearOffRect;
-        emptyArea -= QRegion(menuOpt.rect);
-        p.setClipRect(menuOpt.rect);
-        menuOpt.state = QStyle::State_None;
-        if (d->tearoffHighlighted)
-            menuOpt.state |= QStyle::State_Selected;
-        style()->drawControl(QStyle::CE_MenuTearoff, &menuOpt, &p, this);
+    if (d->scrollUpTearOffItem || d->scrollDownItem) {
+        if (d->scrollUpTearOffItem)
+            d->scrollUpTearOffItem->updateScrollerRects(scrollUpTearOffRect);
+        if (d->scrollDownItem)
+            d->scrollDownItem->updateScrollerRects(scrollDownRect);
+    } else {
+        //paint scroll up /down
+        d->drawScroller(&p, QMenuPrivate::ScrollerTearOffItem::ScrollUp, scrollUpRect);
+        d->drawScroller(&p, QMenuPrivate::ScrollerTearOffItem::ScrollDown, scrollDownRect);
+        //paint the tear off..
+        d->drawTearOff(&p, tearOffRect);
     }
 
     //draw border
@@ -3356,8 +3428,17 @@ void QMenu::actionEvent(QActionEvent *e)
         }
         if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
             QWidget *widget = wa->requestWidget(this);
-            if (widget)
+            if (widget) {
                 d->widgetItems.insert(wa, widget);
+                if (d->scroll) {
+                    if (!d->scrollUpTearOffItem)
+                        d->scrollUpTearOffItem =
+                                new QMenuPrivate::ScrollerTearOffItem(QMenuPrivate::ScrollerTearOffItem::ScrollUp, d, this);
+                    if (!d->scrollDownItem)
+                        d->scrollDownItem =
+                                new QMenuPrivate::ScrollerTearOffItem(QMenuPrivate::ScrollerTearOffItem::ScrollDown, d, this);
+                }
+            }
         }
     } else if (e->type() == QEvent::ActionRemoved) {
         e->action()->disconnect(this);
