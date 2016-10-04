@@ -72,7 +72,7 @@ HEADERS += $$PWD/qandroidplatformintegration.h \
            $$PWD/qandroidplatformforeignwindow.h \
            $$PWD/qandroideventdispatcher.h
 
-android-style-assets: SOURCES += $$PWD/extract.cpp
+qtConfig(android-style-assets): SOURCES += $$PWD/extract.cpp
 else: SOURCES += $$PWD/extract-dummy.cpp
 
 PLUGIN_TYPE = platforms

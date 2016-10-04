@@ -7,6 +7,7 @@
 
     "commandline": {
         "options": {
+            "android-style-assets": "boolean",
             "angle": "boolean",
             "directfb": "boolean",
             "directwrite": "boolean",
@@ -413,6 +414,11 @@
             "label": "ATSPI Bridge",
             "condition": "features.accessibility && features.xcb && features.dbus",
             "output": [ "privateFeature", "feature" ]
+        },
+        "android-style-assets": {
+            "label": "Android Style Assets",
+            "condition": "config.android",
+            "output": [ "privateFeature" ]
         },
         "angle": {
             "label": "ANGLE",

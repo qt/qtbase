@@ -8,7 +8,6 @@
 
     "commandline": {
         "options": {
-            "android-style-assets": "boolean",
             "gtk": { "type": "boolean", "name": "gtk3" },
             "style-windows": "boolean",
             "style-windowsxp": "boolean",
@@ -77,11 +76,6 @@
             "section": "Styles",
             "condition": "features.style-windows && features.properties && features.cssparser",
             "output": [ "publicFeature", "feature" ]
-        },
-        "android-style-assets": {
-            "label": "Android Style Assets",
-            "condition": "features.style-android",
-            "output": [ "privateConfig" ]
         },
         "effects": {
             "label": "Effects",
