@@ -3014,7 +3014,7 @@ void tst_QSettings::isWritable()
         QSettings s2(format, QSettings::SystemScope, "software.org", "Something Different");
         QSettings s3(format, QSettings::SystemScope, "foo.org", "Something Different");
 
-        if (s1.contains("foo")) {
+        if (s1.status() == QSettings::NoError && s1.contains("foo")) {
 #if defined(Q_OS_MACX)
             QVERIFY(s1.isWritable());
             if (format == QSettings::NativeFormat) {
