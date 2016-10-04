@@ -54,6 +54,10 @@
 #include <unistd.h>
 #endif
 
+#if defined(Q_OS_DARWIN)
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 Q_DECLARE_METATYPE(QSettings::Format)
 
 #ifndef QSETTINGS_P_H_VERSION
@@ -72,7 +76,19 @@ static inline bool canWriteNativeSystemSettings()
     else
         qErrnoWarning(result, "RegOpenKeyEx failed");
     return result == ERROR_SUCCESS;
-#else // Q_OS_WIN && !Q_OS_WINRT
+#elif defined(Q_OS_DARWIN)
+    CFStringRef key = CFSTR("canWriteNativeSystemSettings");
+    #define ANY_APP_USER_AND_HOST kCFPreferencesAnyApplication, kCFPreferencesAnyUser, kCFPreferencesAnyHost
+    CFPreferencesSetValue(key, CFSTR("true"), ANY_APP_USER_AND_HOST);
+    if (CFPreferencesSynchronize(ANY_APP_USER_AND_HOST)) {
+        // Cleanup
+        CFPreferencesSetValue(key, 0, ANY_APP_USER_AND_HOST);
+        CFPreferencesSynchronize(ANY_APP_USER_AND_HOST);
+        return true;
+    } else {
+        return false;
+    }
+#else
     return true;
 #endif
 }
