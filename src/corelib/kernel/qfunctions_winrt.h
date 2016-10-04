@@ -174,7 +174,7 @@ static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, Awai
         t.start();
     switch (awaitStyle) {
     case ProcessMainThreadEvents:
-        while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == Started) {
+        while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == AsyncStatus::Started) {
             QCoreApplication::processEvents();
             if (timeout && t.hasExpired(timeout))
                 return ERROR_TIMEOUT;
@@ -182,7 +182,7 @@ static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, Awai
         break;
     case ProcessThreadEvents:
         if (QAbstractEventDispatcher *dispatcher = QThread::currentThread()->eventDispatcher()) {
-            while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == Started) {
+            while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == AsyncStatus::Started) {
                 dispatcher->processEvents(QEventLoop::AllEvents);
                 if (timeout && t.hasExpired(timeout))
                     return ERROR_TIMEOUT;
@@ -192,7 +192,7 @@ static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, Awai
         // fall through
     default:
     case YieldThread:
-        while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == Started) {
+        while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == AsyncStatus::Started) {
             QThread::yieldCurrentThread();
             if (timeout && t.hasExpired(timeout))
                 return ERROR_TIMEOUT;
@@ -200,7 +200,7 @@ static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, Awai
         break;
     }
 
-    if (FAILED(hr) || status != Completed) {
+    if (FAILED(hr) || status != AsyncStatus::Completed) {
         HRESULT ec;
         hr = asyncInfo->get_ErrorCode(&ec);
         if (FAILED(hr))
