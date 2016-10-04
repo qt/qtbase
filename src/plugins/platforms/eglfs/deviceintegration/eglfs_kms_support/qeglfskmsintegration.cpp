@@ -40,13 +40,10 @@
 ****************************************************************************/
 
 #include "qeglfskmsintegration.h"
-#include "qeglfskmsdevice.h"
 #include "qeglfskmsscreen.h"
 
-#include <QtCore/QJsonDocument>
-#include <QtCore/QJsonObject>
-#include <QtCore/QJsonArray>
-#include <QtCore/QFile>
+#include <QtKmsSupport/private/qkmsdevice_p.h>
+
 #include <QtGui/qpa/qplatformwindow.h>
 #include <QtGui/QScreen>
 
@@ -58,28 +55,27 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(qLcEglfsKmsDebug, "qt.qpa.eglfs.kms")
 
 QEglFSKmsIntegration::QEglFSKmsIntegration()
-    : m_device(Q_NULLPTR)
-    , m_hwCursor(false)
-    , m_pbuffers(false)
-    , m_separateScreens(false)
-    , m_virtualDesktopLayout(VirtualDesktopLayoutHorizontal)
-{}
+    : m_device(Q_NULLPTR),
+      m_screenConfig(new QKmsScreenConfig)
+{
+}
+
+QEglFSKmsIntegration::~QEglFSKmsIntegration()
+{
+    delete m_screenConfig;
+}
 
 void QEglFSKmsIntegration::platformInit()
 {
-    loadConfig();
-
-    if (!m_devicePath.isEmpty()) {
-        qCDebug(qLcEglfsKmsDebug) << "Using DRM device" << m_devicePath << "specified in config file";
-    }
-
-    m_device = createDevice(m_devicePath);
+    qCDebug(qLcEglfsKmsDebug, "platformInit: Opening DRM device");
+    m_device = createDevice();
     if (Q_UNLIKELY(!m_device->open()))
-        qFatal("Could not open device %s - aborting!", qPrintable(m_devicePath));
+        qFatal("Could not open DRM device");
 }
 
 void QEglFSKmsIntegration::platformDestroy()
 {
+    qCDebug(qLcEglfsKmsDebug, "platformDestroy: Closing DRM device");
     m_device->close();
     delete m_device;
     m_device = Q_NULLPTR;
@@ -88,7 +84,7 @@ void QEglFSKmsIntegration::platformDestroy()
 EGLNativeDisplayType QEglFSKmsIntegration::platformDisplay() const
 {
     Q_ASSERT(m_device);
-    return m_device->nativeDisplay();
+    return (EGLNativeDisplayType) m_device->nativeDisplay();
 }
 
 bool QEglFSKmsIntegration::usesDefaultScreen()
@@ -134,94 +130,17 @@ void QEglFSKmsIntegration::waitForVSync(QPlatformSurface *surface) const
 
 bool QEglFSKmsIntegration::supportsPBuffers() const
 {
-    return m_pbuffers;
+    return m_screenConfig->supportsPBuffers();
 }
 
-bool QEglFSKmsIntegration::hwCursor() const
-{
-    return m_hwCursor;
-}
-
-bool QEglFSKmsIntegration::separateScreens() const
-{
-    return m_separateScreens;
-}
-
-QEglFSKmsIntegration::VirtualDesktopLayout QEglFSKmsIntegration::virtualDesktopLayout() const
-{
-    return m_virtualDesktopLayout;
-}
-
-QMap<QString, QVariantMap> QEglFSKmsIntegration::outputSettings() const
-{
-    return m_outputSettings;
-}
-
-QEglFSKmsDevice *QEglFSKmsIntegration::device() const
+QKmsDevice *QEglFSKmsIntegration::device() const
 {
     return m_device;
 }
 
-void QEglFSKmsIntegration::loadConfig()
+QKmsScreenConfig *QEglFSKmsIntegration::screenConfig() const
 {
-    static QByteArray json = qgetenv("QT_QPA_EGLFS_KMS_CONFIG");
-    if (json.isEmpty())
-        return;
-
-    qCDebug(qLcEglfsKmsDebug) << "Loading KMS setup from" << json;
-
-    QFile file(QString::fromUtf8(json));
-    if (!file.open(QFile::ReadOnly)) {
-        qCWarning(qLcEglfsKmsDebug) << "Could not open config file"
-                                    << json << "for reading";
-        return;
-    }
-
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    if (!doc.isObject()) {
-        qCWarning(qLcEglfsKmsDebug) << "Invalid config file" << json
-                                    << "- no top-level JSON object";
-        return;
-    }
-
-    const QJsonObject object = doc.object();
-
-    m_hwCursor = object.value(QLatin1String("hwcursor")).toBool(m_hwCursor);
-    m_pbuffers = object.value(QLatin1String("pbuffers")).toBool(m_pbuffers);
-    m_devicePath = object.value(QLatin1String("device")).toString();
-    m_separateScreens = object.value(QLatin1String("separateScreens")).toBool(m_separateScreens);
-
-    const QString vdOriString = object.value(QLatin1String("virtualDesktopLayout")).toString();
-    if (!vdOriString.isEmpty()) {
-        if (vdOriString == QLatin1String("horizontal"))
-            m_virtualDesktopLayout = VirtualDesktopLayoutHorizontal;
-        else if (vdOriString == QLatin1String("vertical"))
-            m_virtualDesktopLayout = VirtualDesktopLayoutVertical;
-        else
-            qCWarning(qLcEglfsKmsDebug) << "Unknown virtualDesktopOrientation value" << vdOriString;
-    }
-
-    const QJsonArray outputs = object.value(QLatin1String("outputs")).toArray();
-    for (int i = 0; i < outputs.size(); i++) {
-        const QVariantMap outputSettings = outputs.at(i).toObject().toVariantMap();
-
-        if (outputSettings.contains(QStringLiteral("name"))) {
-            const QString name = outputSettings.value(QStringLiteral("name")).toString();
-
-            if (m_outputSettings.contains(name)) {
-                qCDebug(qLcEglfsKmsDebug) << "Output" << name << "configured multiple times!";
-            }
-
-            m_outputSettings.insert(name, outputSettings);
-        }
-    }
-
-    qCDebug(qLcEglfsKmsDebug) << "Configuration:\n"
-                              << "\thwcursor:" << m_hwCursor << "\n"
-                              << "\tpbuffers:" << m_pbuffers << "\n"
-                              << "\tseparateScreens:" << m_separateScreens << "\n"
-                              << "\tvirtualDesktopLayout:" << m_virtualDesktopLayout << "\n"
-                              << "\toutputs:" << m_outputSettings;
+    return m_screenConfig;
 }
 
 QT_END_NAMESPACE

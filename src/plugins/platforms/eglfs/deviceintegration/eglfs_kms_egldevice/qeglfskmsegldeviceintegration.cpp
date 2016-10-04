@@ -50,8 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 QEglFSKmsEglDeviceIntegration::QEglFSKmsEglDeviceIntegration()
-    : QEglFSKmsIntegration()
-    , m_egl_device(EGL_NO_DEVICE_EXT)
+    : m_egl_device(EGL_NO_DEVICE_EXT)
     , m_funcs(Q_NULLPTR)
 {
     qCDebug(qLcEglfsKmsDebug, "New DRM/KMS on EGLDevice integration created");
@@ -101,10 +100,10 @@ bool QEglFSKmsEglDeviceIntegration::supportsPBuffers() const
     return true;
 }
 
-class QEglJetsonTK1Window : public QEglFSWindow
+class QEglFSKmsEglDeviceWindow : public QEglFSWindow
 {
 public:
-    QEglJetsonTK1Window(QWindow *w, const QEglFSKmsEglDeviceIntegration *integration)
+    QEglFSKmsEglDeviceWindow(QWindow *w, const QEglFSKmsEglDeviceIntegration *integration)
         : QEglFSWindow(w)
         , m_integration(integration)
         , m_egl_stream(EGL_NO_STREAM_KHR)
@@ -118,13 +117,13 @@ public:
     EGLint m_latency;
 };
 
-void QEglJetsonTK1Window::invalidateSurface()
+void QEglFSKmsEglDeviceWindow::invalidateSurface()
 {
     QEglFSWindow::invalidateSurface();
     m_integration->m_funcs->destroy_stream(screen()->display(), m_egl_stream);
 }
 
-void QEglJetsonTK1Window::resetSurface()
+void QEglFSKmsEglDeviceWindow::resetSurface()
 {
     qCDebug(qLcEglfsKmsDebug, "Creating stream");
 
@@ -213,7 +212,7 @@ void QEglJetsonTK1Window::resetSurface()
 
 QEglFSWindow *QEglFSKmsEglDeviceIntegration::createWindow(QWindow *window) const
 {
-    QEglJetsonTK1Window *eglWindow = new QEglJetsonTK1Window(window, this);
+    QEglFSKmsEglDeviceWindow *eglWindow = new QEglFSKmsEglDeviceWindow(window, this);
 
     m_funcs->initialize(eglWindow->screen()->display());
     if (Q_UNLIKELY(!(m_funcs->has_egl_output_base && m_funcs->has_egl_output_drm && m_funcs->has_egl_stream &&
@@ -223,10 +222,8 @@ QEglFSWindow *QEglFSKmsEglDeviceIntegration::createWindow(QWindow *window) const
     return eglWindow;
 }
 
-QEglFSKmsDevice *QEglFSKmsEglDeviceIntegration::createDevice(const QString &devicePath)
+QKmsDevice *QEglFSKmsEglDeviceIntegration::createDevice()
 {
-    Q_UNUSED(devicePath)
-
     if (Q_UNLIKELY(!query_egl_device()))
         qFatal("Could not set up EGL device!");
 
@@ -234,7 +231,7 @@ QEglFSKmsDevice *QEglFSKmsEglDeviceIntegration::createDevice(const QString &devi
     if (Q_UNLIKELY(!deviceName))
         qFatal("Failed to query device name from EGLDevice");
 
-    return new QEglFSKmsEglDevice(this, deviceName);
+    return new QEglFSKmsEglDevice(this, screenConfig(), deviceName);
 }
 
 bool QEglFSKmsEglDeviceIntegration::query_egl_device()
@@ -261,7 +258,7 @@ bool QEglFSKmsEglDeviceIntegration::query_egl_device()
 
 QPlatformCursor *QEglFSKmsEglDeviceIntegration::createCursor(QPlatformScreen *screen) const
 {
-    return separateScreens() ? new QEglFSCursor(screen) : nullptr;
+    return screenConfig()->separateScreens() ? new QEglFSCursor(screen) : nullptr;
 }
 
 QT_END_NAMESPACE

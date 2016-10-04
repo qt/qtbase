@@ -46,7 +46,6 @@
 
 #include <QtCore/QLoggingCategory>
 #include <QtCore/private/qcore_unix_p.h>
-#include <QtGui/private/qguiapplication_p.h>
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
@@ -65,8 +64,8 @@ void QEglFSKmsGbmDevice::pageFlipHandler(int fd, unsigned int sequence, unsigned
     screen->flipFinished();
 }
 
-QEglFSKmsGbmDevice::QEglFSKmsGbmDevice(QEglFSKmsIntegration *integration, const QString &path)
-    : QEglFSKmsDevice(integration, path)
+QEglFSKmsGbmDevice::QEglFSKmsGbmDevice(QKmsScreenConfig *screenConfig, const QString &path)
+    : QEglFSKmsDevice(screenConfig, path)
     , m_gbm_device(Q_NULLPTR)
     , m_globalCursor(Q_NULLPTR)
 {
@@ -77,7 +76,6 @@ bool QEglFSKmsGbmDevice::open()
     Q_ASSERT(fd() == -1);
     Q_ASSERT(m_gbm_device == Q_NULLPTR);
 
-    qCDebug(qLcEglfsKmsDebug) << "Opening device" << devicePath();
     int fd = qt_safe_open(devicePath().toLocal8Bit().constData(), O_RDWR | O_CLOEXEC);
     if (fd == -1) {
         qErrnoWarning("Could not open DRM device %s", qPrintable(devicePath()));
@@ -101,6 +99,8 @@ bool QEglFSKmsGbmDevice::open()
 
 void QEglFSKmsGbmDevice::close()
 {
+    // Note: screens are gone at this stage.
+
     if (m_gbm_device) {
         gbm_device_destroy(m_gbm_device);
         m_gbm_device = Q_NULLPTR;
@@ -110,15 +110,11 @@ void QEglFSKmsGbmDevice::close()
         qt_safe_close(fd());
         setFd(-1);
     }
-
-    if (m_globalCursor)
-        m_globalCursor->deleteLater();
-    m_globalCursor = Q_NULLPTR;
 }
 
-EGLNativeDisplayType QEglFSKmsGbmDevice::nativeDisplay() const
+void *QEglFSKmsGbmDevice::nativeDisplay() const
 {
-    return reinterpret_cast<EGLNativeDisplayType>(m_gbm_device);
+    return m_gbm_device;
 }
 
 gbm_device * QEglFSKmsGbmDevice::gbmDevice() const
@@ -129,6 +125,17 @@ gbm_device * QEglFSKmsGbmDevice::gbmDevice() const
 QPlatformCursor *QEglFSKmsGbmDevice::globalCursor() const
 {
     return m_globalCursor;
+}
+
+// Cannot do this from close(), it may be too late.
+// Call this from the last screen dtor instead.
+void QEglFSKmsGbmDevice::destroyGlobalCursor()
+{
+    if (m_globalCursor) {
+        qCDebug(qLcEglfsKmsDebug, "Destroying global GBM mouse cursor");
+        delete m_globalCursor;
+        m_globalCursor = Q_NULLPTR;
+    }
 }
 
 void QEglFSKmsGbmDevice::handleDrmEvent()
@@ -142,14 +149,13 @@ void QEglFSKmsGbmDevice::handleDrmEvent()
     drmHandleEvent(fd(), &drmEvent);
 }
 
-QEglFSKmsScreen *QEglFSKmsGbmDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output)
+QPlatformScreen *QEglFSKmsGbmDevice::createScreen(const QKmsOutput &output)
 {
-    static bool firstScreen = true;
-    QEglFSKmsGbmScreen *screen = new QEglFSKmsGbmScreen(integration, device, output);
+    QEglFSKmsGbmScreen *screen = new QEglFSKmsGbmScreen(this, output);
 
-    if (firstScreen && integration->hwCursor()) {
+    if (!m_globalCursor && screenConfig()->hwCursor()) {
+        qCDebug(qLcEglfsKmsDebug, "Creating new global GBM mouse cursor");
         m_globalCursor = new QEglFSKmsGbmCursor(screen);
-        firstScreen = false;
     }
 
     return screen;

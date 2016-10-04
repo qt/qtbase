@@ -40,11 +40,14 @@
 #include "qeglfskmsegldevicescreen.h"
 #include "qeglfskmsegldevice.h"
 #include <QGuiApplication>
+#include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
 
-QEglFSKmsEglDeviceScreen::QEglFSKmsEglDeviceScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device, QEglFSKmsOutput output)
-    : QEglFSKmsScreen(integration, device, output)
+Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
+
+QEglFSKmsEglDeviceScreen::QEglFSKmsEglDeviceScreen(QKmsDevice *device, const QKmsOutput &output)
+    : QEglFSKmsScreen(device, output)
 {
 }
 
@@ -52,7 +55,7 @@ QEglFSKmsEglDeviceScreen::~QEglFSKmsEglDeviceScreen()
 {
     const int remainingScreenCount = qGuiApp->screens().count();
     qCDebug(qLcEglfsKmsDebug, "Screen dtor. Remaining screens: %d", remainingScreenCount);
-    if (!remainingScreenCount && !m_integration->separateScreens())
+    if (!remainingScreenCount && !device()->screenConfig()->separateScreens())
         static_cast<QEglFSKmsEglDevice *>(device())->destroyGlobalCursor();
 }
 
@@ -62,7 +65,10 @@ QPlatformCursor *QEglFSKmsEglDeviceScreen::cursor() const
     // in its ctor. With separateScreens just use that. Otherwise
     // there's a virtual desktop and the device has a global cursor
     // and the base class has no dedicated cursor at all.
-    return m_integration->separateScreens() ? QEglFSScreen::cursor() : static_cast<QEglFSKmsEglDevice *>(device())->globalCursor();
+    // config->hwCursor() is ignored for now, just use the standard OpenGL cursor.
+    return device()->screenConfig()->separateScreens()
+        ? QEglFSScreen::cursor()
+        : static_cast<QEglFSKmsEglDevice *>(device())->globalCursor();
 }
 
 void QEglFSKmsEglDeviceScreen::waitForFlip()

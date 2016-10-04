@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qeglfskmsscreen.h"
-#include "qeglfskmsdevice.h"
 #include "qeglfsintegration_p.h"
 
 #include <QtCore/QLoggingCategory>
@@ -69,30 +68,19 @@ private:
     QEglFSKmsScreen *m_screen;
 };
 
-QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsIntegration *integration,
-                                 QEglFSKmsDevice *device,
-                                 QEglFSKmsOutput output)
-    : QEglFSScreen(eglGetDisplay(device->nativeDisplay()))
-    , m_integration(integration)
+QEglFSKmsScreen::QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output)
+    : QEglFSScreen(eglGetDisplay((EGLNativeDisplayType) device->nativeDisplay()))
     , m_device(device)
     , m_output(output)
     , m_powerState(PowerStateOn)
     , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
 {
-    m_siblings << this; // gets overridden by QEglFSKmsDevice later if !separateScreens
+    m_siblings << this; // gets overridden later
 }
 
 QEglFSKmsScreen::~QEglFSKmsScreen()
 {
-    if (m_output.dpms_prop) {
-        drmModeFreeProperty(m_output.dpms_prop);
-        m_output.dpms_prop = Q_NULLPTR;
-    }
-    restoreMode();
-    if (m_output.saved_crtc) {
-        drmModeFreeCrtc(m_output.saved_crtc);
-        m_output.saved_crtc = Q_NULLPTR;
-    }
+    m_output.cleanup(m_device);
     delete m_interruptHandler;
 }
 
@@ -171,16 +159,7 @@ void QEglFSKmsScreen::flipFinished()
 
 void QEglFSKmsScreen::restoreMode()
 {
-    if (m_output.mode_set && m_output.saved_crtc) {
-        drmModeSetCrtc(m_device->fd(),
-                       m_output.saved_crtc->crtc_id,
-                       m_output.saved_crtc->buffer_id,
-                       0, 0,
-                       &m_output.connector_id, 1,
-                       &m_output.saved_crtc->mode);
-
-        m_output.mode_set = false;
-    }
+    m_output.restoreMode(m_device);
 }
 
 qreal QEglFSKmsScreen::refreshRate() const
@@ -191,20 +170,7 @@ qreal QEglFSKmsScreen::refreshRate() const
 
 QPlatformScreen::SubpixelAntialiasingType QEglFSKmsScreen::subpixelAntialiasingTypeHint() const
 {
-    switch (m_output.subpixel) {
-    default:
-    case DRM_MODE_SUBPIXEL_UNKNOWN:
-    case DRM_MODE_SUBPIXEL_NONE:
-        return Subpixel_None;
-    case DRM_MODE_SUBPIXEL_HORIZONTAL_RGB:
-        return Subpixel_RGB;
-    case DRM_MODE_SUBPIXEL_HORIZONTAL_BGR:
-        return Subpixel_BGR;
-    case DRM_MODE_SUBPIXEL_VERTICAL_RGB:
-        return Subpixel_VRGB;
-    case DRM_MODE_SUBPIXEL_VERTICAL_BGR:
-        return Subpixel_VBGR;
-    }
+    return m_output.subpixelAntialiasingTypeHint();
 }
 
 QPlatformScreen::PowerState QEglFSKmsScreen::powerState() const
@@ -214,11 +180,7 @@ QPlatformScreen::PowerState QEglFSKmsScreen::powerState() const
 
 void QEglFSKmsScreen::setPowerState(QPlatformScreen::PowerState state)
 {
-    if (!m_output.dpms_prop)
-        return;
-
-    drmModeConnectorSetProperty(m_device->fd(), m_output.connector_id,
-                                m_output.dpms_prop->prop_id, (int)state);
+    m_output.setPowerState(m_device, state);
     m_powerState = state;
 }
 

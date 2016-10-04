@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
@@ -42,64 +41,21 @@
 #ifndef QEGLFSKMSDEVICE_H
 #define QEGLFSKMSDEVICE_H
 
-#include "qeglfskmsintegration.h"
-#include "qeglfskmsscreen.h"
-
-#include <xf86drm.h>
-#include <xf86drmMode.h>
+#include "private/qeglfsglobal_p.h"
+#include <QtKmsSupport/private/qkmsdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_EGLFS_EXPORT QEglFSKmsDevice
+class Q_EGLFS_EXPORT QEglFSKmsDevice : public QKmsDevice
 {
 public:
-    struct VirtualDesktopInfo {
-        VirtualDesktopInfo() : virtualIndex(0) { }
-        int virtualIndex;
-        QPoint virtualPos;
-    };
+    QEglFSKmsDevice(QKmsScreenConfig *screenConfig, const QString &path);
 
-    QEglFSKmsDevice(QEglFSKmsIntegration *integration, const QString &path);
-    virtual ~QEglFSKmsDevice();
-
-    virtual bool open() = 0;
-    virtual void close() = 0;
-
-    virtual void createScreens();
-
-    virtual EGLNativeDisplayType nativeDisplay() const = 0;
-    int fd() const;
-    QString devicePath() const;
-
-protected:
-    virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
-                                          QEglFSKmsDevice *device,
-                                          QEglFSKmsOutput output);
-    void setFd(int fd);
-
-    QEglFSKmsIntegration *m_integration;
-    QString m_path;
-    int m_dri_fd;
-
-    quint32 m_crtc_allocator;
-    quint32 m_connector_allocator;
-
-    int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
-    QEglFSKmsScreen *createScreenForConnector(drmModeResPtr resources,
-                                              drmModeConnectorPtr connector,
-                                              VirtualDesktopInfo *vinfo);
-    drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
-
-    static void pageFlipHandler(int fd,
-                                unsigned int sequence,
-                                unsigned int tv_sec,
-                                unsigned int tv_usec,
-                                void *user_data);
-
-private:
-    Q_DISABLE_COPY(QEglFSKmsDevice)
+    void registerScreen(QPlatformScreen *screen,
+                        const QPoint &virtualPos,
+                        const QList<QPlatformScreen *> &virtualSiblings) override;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QEGLFSKMSDEVICE_H

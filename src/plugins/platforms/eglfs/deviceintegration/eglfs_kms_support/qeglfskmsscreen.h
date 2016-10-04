@@ -42,39 +42,20 @@
 #ifndef QEGLFSKMSSCREEN_H
 #define QEGLFSKMSSCREEN_H
 
-#include "qeglfskmsintegration.h"
 #include "private/qeglfsscreen_p.h"
 #include <QtCore/QList>
 #include <QtCore/QMutex>
 
-#include <xf86drm.h>
-#include <xf86drmMode.h>
+#include <QtKmsSupport/private/qkmsdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsDevice;
 class QEglFSKmsInterruptHandler;
-
-struct QEglFSKmsOutput
-{
-    QString name;
-    uint32_t connector_id;
-    uint32_t crtc_id;
-    QSizeF physical_size;
-    int mode; // index of selected mode in list below
-    bool mode_set;
-    drmModeCrtcPtr saved_crtc;
-    QList<drmModeModeInfo> modes;
-    int subpixel;
-    drmModePropertyPtr dpms_prop;
-};
 
 class Q_EGLFS_EXPORT QEglFSKmsScreen : public QEglFSScreen
 {
 public:
-    QEglFSKmsScreen(QEglFSKmsIntegration *integration,
-                    QEglFSKmsDevice *device,
-                    QEglFSKmsOutput output);
+    QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output);
     ~QEglFSKmsScreen();
 
     void setVirtualPosition(const QPoint &pos);
@@ -96,8 +77,7 @@ public:
     QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_siblings; }
     void setVirtualSiblings(QList<QPlatformScreen *> sl) { m_siblings = sl; }
 
-    QEglFSKmsIntegration *integration() const { return m_integration; }
-    QEglFSKmsDevice *device() const { return m_device; }
+    QKmsDevice *device() const { return m_device; }
 
     void destroySurface();
 
@@ -105,7 +85,7 @@ public:
     virtual void flip();
     virtual void flipFinished();
 
-    QEglFSKmsOutput &output() { return m_output; }
+    QKmsOutput &output() { return m_output; }
     void restoreMode();
 
     SubpixelAntialiasingType subpixelAntialiasingTypeHint() const Q_DECL_OVERRIDE;
@@ -114,10 +94,9 @@ public:
     void setPowerState(QPlatformScreen::PowerState state) Q_DECL_OVERRIDE;
 
 protected:
-    QEglFSKmsIntegration *m_integration;
-    QEglFSKmsDevice *m_device;
+    QKmsDevice *m_device;
 
-    QEglFSKmsOutput m_output;
+    QKmsOutput m_output;
     QPoint m_pos;
 
     QList<QPlatformScreen *> m_siblings;

@@ -49,19 +49,16 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSKmsDevice;
+class QKmsDevice;
+class QKmsScreenConfig;
 
 Q_EGLFS_EXPORT Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
 class Q_EGLFS_EXPORT QEglFSKmsIntegration : public QEglFSDeviceIntegration
 {
 public:
-    enum VirtualDesktopLayout {
-        VirtualDesktopLayoutHorizontal,
-        VirtualDesktopLayoutVertical
-    };
-
     QEglFSKmsIntegration();
+    ~QEglFSKmsIntegration();
 
     void platformInit() Q_DECL_OVERRIDE;
     void platformDestroy() Q_DECL_OVERRIDE;
@@ -73,25 +70,14 @@ public:
     void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
     bool supportsPBuffers() const Q_DECL_OVERRIDE;
 
-    virtual bool hwCursor() const;
-    virtual bool separateScreens() const;
-    virtual VirtualDesktopLayout virtualDesktopLayout() const;
-    QMap<QString, QVariantMap> outputSettings() const;
-
-    QEglFSKmsDevice *device() const;
+    QKmsDevice *device() const;
+    QKmsScreenConfig *screenConfig() const;
 
 protected:
-    virtual QEglFSKmsDevice *createDevice(const QString &devicePath) = 0;
+    virtual QKmsDevice *createDevice() = 0;
 
-    void loadConfig();
-
-    QEglFSKmsDevice *m_device;
-    bool m_hwCursor;
-    bool m_pbuffers;
-    bool m_separateScreens;
-    VirtualDesktopLayout m_virtualDesktopLayout;
-    QString m_devicePath;
-    QMap<QString, QVariantMap> m_outputSettings;
+    QKmsDevice *m_device;
+    QKmsScreenConfig *m_screenConfig;
 };
 
 QT_END_NAMESPACE

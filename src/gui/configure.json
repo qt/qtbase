@@ -505,7 +505,7 @@
         "kms": {
             "label": "KMS",
             "condition": "libs.drm",
-            "output": [ "publicQtConfig" ]
+            "output": [ "publicQtConfig", "privateFeature" ]
         },
         "libinput": {
             "label": "libinput",

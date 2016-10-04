@@ -40,14 +40,16 @@
 #include "qeglfskmsegldevice.h"
 #include "qeglfskmsegldevicescreen.h"
 #include "qeglfskmsegldeviceintegration.h"
+#include "private/qeglfsintegration_p.h"
 #include "private/qeglfscursor_p.h"
 
 #include <QtCore/private/qcore_unix_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QEglFSKmsEglDevice::QEglFSKmsEglDevice(QEglFSKmsIntegration *integration, const QString &path)
-    : QEglFSKmsDevice(integration, path),
+QEglFSKmsEglDevice::QEglFSKmsEglDevice(QEglFSKmsEglDeviceIntegration *devInt, QKmsScreenConfig *screenConfig, const QString &path)
+    : QEglFSKmsDevice(screenConfig, path),
+      m_devInt(devInt),
       m_globalCursor(nullptr)
 {
 }
@@ -56,11 +58,9 @@ bool QEglFSKmsEglDevice::open()
 {
     Q_ASSERT(fd() == -1);
 
-    qCDebug(qLcEglfsKmsDebug, "Opening DRM device %s", qPrintable(devicePath()));
-
     int fd = drmOpen(devicePath().toLocal8Bit().constData(), Q_NULLPTR);
     if (Q_UNLIKELY(fd < 0))
-        qFatal("Could not open DRM device");
+        qFatal("Could not open DRM (NV) device");
 
     setFd(fd);
 
@@ -69,25 +69,24 @@ bool QEglFSKmsEglDevice::open()
 
 void QEglFSKmsEglDevice::close()
 {
-    qCDebug(qLcEglfsKmsDebug, "Closing DRM device");
+    // Note: screens are gone at this stage.
 
     if (qt_safe_close(fd()) == -1)
-        qErrnoWarning("Could not close DRM device");
+        qErrnoWarning("Could not close DRM (NV) device");
 
     setFd(-1);
 }
 
 EGLNativeDisplayType QEglFSKmsEglDevice::nativeDisplay() const
 {
-    return reinterpret_cast<EGLNativeDisplayType>(static_cast<QEglFSKmsEglDeviceIntegration *>(m_integration)->eglDevice());
+    return reinterpret_cast<EGLNativeDisplayType>(m_devInt->eglDevice());
 }
 
-QEglFSKmsScreen *QEglFSKmsEglDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device,
-                                                  QEglFSKmsOutput output)
+QPlatformScreen *QEglFSKmsEglDevice::createScreen(const QKmsOutput &output)
 {
-    QEglFSKmsScreen *screen = new QEglFSKmsEglDeviceScreen(integration, device, output);
+    QEglFSKmsScreen *screen = new QEglFSKmsEglDeviceScreen(this, output);
 
-    if (!m_globalCursor && !integration->separateScreens()) {
+    if (!m_globalCursor && !screenConfig()->separateScreens()) {
         qCDebug(qLcEglfsKmsDebug, "Creating new global mouse cursor");
         m_globalCursor = new QEglFSCursor(screen);
     }

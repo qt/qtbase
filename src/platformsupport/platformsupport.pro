@@ -24,6 +24,8 @@ qtConfig(egl): \
     SUBDIRS += eglconvenience
 qtConfig(xlib):qtConfig(opengl):!qtConfig(opengles2): \
     SUBDIRS += glxconvenience
+qtConfig(kms): \
+    SUBDIRS += kmsconvenience
 
 qtConfig(accessibility) {
     SUBDIRS += accessibility

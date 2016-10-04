@@ -65,7 +65,7 @@ public:
     void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
 
 protected:
-    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+    QKmsDevice *createDevice() Q_DECL_OVERRIDE;
 
 private:
 };

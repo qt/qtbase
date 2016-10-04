@@ -64,7 +64,7 @@ public:
     EGLDeviceEXT eglDevice() const { return m_egl_device; }
 
 protected:
-    QEglFSKmsDevice *createDevice(const QString &devicePath) Q_DECL_OVERRIDE;
+    QKmsDevice *createDevice() Q_DECL_OVERRIDE;
     QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
 
 private:
@@ -72,10 +72,9 @@ private:
     bool query_egl_device();
 
     EGLDeviceEXT m_egl_device;
-
-    friend class QEglJetsonTK1Window;
-    // EGLStream infrastructure
     QEGLStreamConvenience *m_funcs;
+
+    friend class QEglFSKmsEglDeviceWindow;
 };
 
 QT_END_NAMESPACE

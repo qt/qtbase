@@ -92,10 +92,8 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
     return fb.take();
 }
 
-QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QEglFSKmsIntegration *integration,
-                                       QEglFSKmsDevice *device,
-                                       QEglFSKmsOutput output)
-    : QEglFSKmsScreen(integration, device, output)
+QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QKmsDevice *device, const QKmsOutput &output)
+    : QEglFSKmsScreen(device, output)
     , m_gbm_surface(Q_NULLPTR)
     , m_gbm_bo_current(Q_NULLPTR)
     , m_gbm_bo_next(Q_NULLPTR)
@@ -105,12 +103,17 @@ QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QEglFSKmsIntegration *integration,
 
 QEglFSKmsGbmScreen::~QEglFSKmsGbmScreen()
 {
+    const int remainingScreenCount = qGuiApp->screens().count();
+    qCDebug(qLcEglfsKmsDebug, "Screen dtor. Remaining screens: %d", remainingScreenCount);
+    if (!remainingScreenCount && !device()->screenConfig()->separateScreens())
+        static_cast<QEglFSKmsGbmDevice *>(device())->destroyGlobalCursor();
 }
 
 QPlatformCursor *QEglFSKmsGbmScreen::cursor() const
 {
-    if (integration()->hwCursor()) {
-        if (!integration()->separateScreens())
+    QKmsScreenConfig *config = device()->screenConfig();
+    if (config->hwCursor()) {
+        if (!config->separateScreens())
             return static_cast<QEglFSKmsGbmDevice *>(device())->globalCursor();
 
         if (m_cursor.isNull()) {

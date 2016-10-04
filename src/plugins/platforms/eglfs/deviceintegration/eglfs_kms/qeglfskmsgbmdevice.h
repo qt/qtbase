@@ -43,7 +43,7 @@
 #define QEGLFSKMSGBMDEVICE_H
 
 #include "qeglfskmsgbmcursor.h"
-#include "qeglfskmsdevice.h"
+#include <qeglfskmsdevice.h>
 
 #include <gbm.h>
 
@@ -54,21 +54,20 @@ class QEglFSKmsScreen;
 class QEglFSKmsGbmDevice: public QEglFSKmsDevice
 {
 public:
-    QEglFSKmsGbmDevice(QEglFSKmsIntegration *integration, const QString &path);
+    QEglFSKmsGbmDevice(QKmsScreenConfig *screenConfig, const QString &path);
 
     bool open() Q_DECL_OVERRIDE;
     void close() Q_DECL_OVERRIDE;
 
-    EGLNativeDisplayType nativeDisplay() const Q_DECL_OVERRIDE;
+    void *nativeDisplay() const Q_DECL_OVERRIDE;
     gbm_device *gbmDevice() const;
 
     QPlatformCursor *globalCursor() const;
+    void destroyGlobalCursor();
 
     void handleDrmEvent();
 
-    virtual QEglFSKmsScreen *createScreen(QEglFSKmsIntegration *integration,
-                                          QEglFSKmsDevice *device,
-                                          QEglFSKmsOutput output) Q_DECL_OVERRIDE;
+    QPlatformScreen *createScreen(const QKmsOutput &output) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QEglFSKmsGbmDevice)
