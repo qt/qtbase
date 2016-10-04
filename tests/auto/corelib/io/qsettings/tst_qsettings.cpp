@@ -1896,10 +1896,10 @@ void tst_QSettings::testChildKeysAndGroups()
 
 void tst_QSettings::testUpdateRequestEvent()
 {
-#ifdef Q_OS_WINRT
     const QString oldCur = QDir::currentPath();
-    QDir::setCurrent(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
-#endif
+    QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QVERIFY(QDir::root().mkpath(dataLocation));
+    QDir::setCurrent(dataLocation);
 
     QFile::remove("foo");
     QVERIFY(!QFile::exists("foo"));
@@ -1927,9 +1927,7 @@ void tst_QSettings::testUpdateRequestEvent()
 
     QTRY_COMPARE(QFileInfo("foo").size(), qint64(0));
 
-#ifdef Q_OS_WINRT
     QDir::setCurrent(oldCur);
-#endif
 }
 
 const int NumIterations = 5;
@@ -2228,13 +2226,10 @@ void tst_QSettings::fromFile()
 {
     QFETCH(QSettings::Format, format);
 
-    // Sandboxed WinRT applications cannot write into the
-    // application directory. Hence reset the current
-    // directory
-#ifdef Q_OS_WINRT
     const QString oldCur = QDir::currentPath();
-    QDir::setCurrent(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
-#endif
+    QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QVERIFY(QDir::root().mkpath(dataLocation));
+    QDir::setCurrent(dataLocation);
 
     QFile::remove("foo");
     QVERIFY(!QFile::exists("foo"));
@@ -2283,9 +2278,8 @@ void tst_QSettings::fromFile()
         QCOMPARE(settings1.value("gamma/foo.bar").toInt(), 4);
         QCOMPARE(settings1.allKeys().size(), 3);
     }
-#ifdef Q_OS_WINRT
+
     QDir::setCurrent(oldCur);
-#endif
 }
 
 #ifdef QT_BUILD_INTERNAL
