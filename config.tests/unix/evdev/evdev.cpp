@@ -37,8 +37,12 @@
 **
 ****************************************************************************/
 
+#if defined(__FreeBSD__)
+#include <dev/evdev/input.h>
+#else
 #include <linux/input.h>
 #include <linux/kd.h>
+#endif
 
 enum {
     e1 = ABS_PRESSURE,

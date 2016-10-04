@@ -48,7 +48,11 @@
 #include <QtCore/private/qcore_unix_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#ifdef Q_OS_FREEBSD
+#include <dev/evdev/input.h>
+#else
 #include <linux/input.h>
+#endif
 
 #if QT_CONFIG(mtdev)
 extern "C" {

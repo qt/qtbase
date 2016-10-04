@@ -52,7 +52,11 @@
 //
 
 #include "qnamespace.h"
+#ifdef Q_OS_FREEBSD
+#include <dev/evdev/input.h>
+#else
 #include "linux/input.h"
+#endif
 
 // no QT_BEGIN_NAMESPACE, since we include it internally...
 
