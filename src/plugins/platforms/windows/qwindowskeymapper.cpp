@@ -501,7 +501,7 @@ static const uint CmdTbl[] = { // Multimedia keys mapping table
     Qt::Key_Open,           //  30   0x1e   APPCOMMAND_OPEN
     Qt::Key_Close,          //  31   0x1f   APPCOMMAND_CLOSE
     Qt::Key_Save,           //  32   0x20   APPCOMMAND_SAVE
-    Qt::Key_Print,          //  33   0x21   APPCOMMAND_PRINT
+    Qt::Key_Printer,        //  33   0x21   APPCOMMAND_PRINT
     Qt::Key_Undo,           //  34   0x22   APPCOMMAND_UNDO
     Qt::Key_Redo,           //  35   0x23   APPCOMMAND_REDO
     Qt::Key_Copy,           //  36   0x24   APPCOMMAND_COPY
