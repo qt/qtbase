@@ -2273,6 +2273,8 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
                     = QRectF(sr.x() + clippedTargetRect.x() - r.x(), sr.y() + clippedTargetRect.y() - r.y(),
                             clippedTargetRect.width(), clippedTargetRect.height()).toRect();
 
+                clippedSourceRect = clippedSourceRect.intersected(img.rect());
+
                 uint dbpl = d->rasterBuffer->bytesPerLine();
                 uint sbpl = img.bytesPerLine();
 
