@@ -166,6 +166,8 @@ public:
     bool isWordSelectionEnabled() const;
     void setWordSelectionEnabled(bool enabled);
 
+    bool isPreediting();
+
     void print(QPagedPaintDevice *printer) const;
 
     virtual int hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const;

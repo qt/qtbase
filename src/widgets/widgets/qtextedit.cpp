@@ -1506,7 +1506,7 @@ void QTextEditPrivate::paint(QPainter *p, QPaintEvent *e)
     if (layout)
         layout->setViewport(QRect());
 
-    if (!placeholderText.isEmpty() && doc->isEmpty()) {
+    if (!placeholderText.isEmpty() && doc->isEmpty() && !control->isPreediting()) {
         QColor col = control->palette().text().color();
         col.setAlpha(128);
         p->setPen(col);
