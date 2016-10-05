@@ -182,7 +182,7 @@ QString Environment::msvcVersion()
         cout << "Could not get cl version" << returnValue << qPrintable(version) << '\n';;
         version.clear();
     } else {
-        QRegExp versionRegexp(QStringLiteral("^.*Compiler Version ([0-9.]+) for.*$"));
+        QRegExp versionRegexp(QStringLiteral("^.*\\b(\\d{2,2}\\.\\d{2,2}\\.\\d{5,5})\\b.*$"));
         Q_ASSERT(versionRegexp.isValid());
         if (versionRegexp.exactMatch(version)) {
             version = versionRegexp.cap(1);
