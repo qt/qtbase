@@ -55,6 +55,8 @@
 #include <QtGui/qpalette.h>
 #include <QtGui/qscreen.h>
 
+Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSView));
+
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcQpaCocoaWindow)
@@ -73,6 +75,8 @@ NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
 NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
 Qt::DropAction qt_mac_mapNSDragOperation(NSDragOperation nsActions);
 Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions);
+
+QT_MANGLE_NAMESPACE(QNSView) *qnsview_cast(NSView *view);
 
 // Misc
 void qt_mac_transformProccessToForegroundApplication();

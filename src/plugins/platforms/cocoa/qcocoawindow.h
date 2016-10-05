@@ -183,7 +183,6 @@ public:
     void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
     NSView *view() const;
-    QNSView *qtView() const;
     NSWindow *nativeWindow() const;
 
     void setEmbeddedInForeignView(bool subwindow);
@@ -260,7 +259,6 @@ public: // for QNSView
     void removeMonitor();
 
     NSView *m_view;
-    QNSView *m_qtView;
     QCocoaNSWindow *m_nsWindow;
     QPointer<QCocoaWindow> m_forwardWindow;
 

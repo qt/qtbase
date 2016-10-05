@@ -40,7 +40,7 @@
 #include <qpa/qplatformtheme.h>
 
 #include "qcocoahelpers.h"
-
+#include "qnsview.h"
 
 #include <QtCore>
 #include <QtGui>
@@ -143,7 +143,30 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
     return actions;
 }
 
+/*!
+    Returns the view cast to a QNSview if possible.
 
+    If the view is not a QNSView, nil is returned, which is safe to
+    send messages to, effectivly making [qnsview_cast(view) message]
+    a no-op.
+
+    For extra verbosity and clearer code, please consider checking
+    that window()->type() != Qt::ForeignWindow before using this cast.
+
+    Do not use this method soley to check for foreign windows, as
+    that will make the code harder to read for people not working
+    primarily on macOS, who do not know the difference between the
+    NSView and QNSView cases.
+*/
+QNSView *qnsview_cast(NSView *view)
+{
+    if (![view isKindOfClass:[QNSView class]]) {
+        qCWarning(lcQpaCocoaWindow) << "NSView is not QNSView, consider checking for Qt::ForeignWindow";
+        return nil;
+    }
+
+    return static_cast<QNSView *>(view);
+}
 
 //
 // Misc

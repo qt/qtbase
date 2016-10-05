@@ -749,7 +749,7 @@ static bool _q_dontOverrideCtrlLMB = false;
     QNSView *targetView = self;
     if (m_platformWindow && m_platformWindow->m_forwardWindow) {
         if (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)
-            targetView = m_platformWindow->m_forwardWindow->m_qtView;
+            targetView = qnsview_cast(m_platformWindow->m_forwardWindow->view());
         else
             m_platformWindow->m_forwardWindow.clear();
     }
@@ -759,7 +759,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         // Tooltips must be transparent for mouse events
         // The bug reference is QTBUG-46379
         if (!popup->m_windowFlags.testFlag(Qt::ToolTip)) {
-            if (QNSView *popupView = popup->qtView())
+            if (QNSView *popupView = qnsview_cast(popup->view()))
                 targetView = popupView;
         }
     }

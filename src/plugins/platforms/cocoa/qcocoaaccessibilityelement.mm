@@ -237,7 +237,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
     if (QWindow *window = iface->window()) {
         QCocoaWindow *win = static_cast<QCocoaWindow*>(window->handle());
-        return win->qtView();
+        return qnsview_cast(win->view());
     }
 
     QAccessibleInterface *parent = iface->parent();

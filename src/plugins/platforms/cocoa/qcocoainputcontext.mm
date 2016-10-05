@@ -41,6 +41,7 @@
 #include "qcocoainputcontext.h"
 #include "qcocoanativeinterface.h"
 #include "qcocoawindow.h"
+#include "qcocoahelpers.h"
 
 #include <Carbon/Carbon.h>
 
@@ -102,7 +103,8 @@ void QCocoaInputContext::reset()
     if (!mWindow)
         return;
 
-    QNSView *view = static_cast<QCocoaWindow *>(mWindow->handle())->qtView();
+    QCocoaWindow *window = static_cast<QCocoaWindow *>(mWindow->handle());
+    QNSView *view = qnsview_cast(window->view());
     if (!view)
         return;
 
