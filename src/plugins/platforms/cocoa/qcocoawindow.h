@@ -182,8 +182,8 @@ public:
     WId winId() const Q_DECL_OVERRIDE;
     void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
-    NSView *contentView() const;
-    void setContentView(NSView *contentView);
+    NSView *view() const;
+    void setView(NSView *view);
     QNSView *qtView() const;
     NSWindow *nativeWindow() const;
 
@@ -260,14 +260,14 @@ public: // for QNSView
 
     void removeMonitor();
 
-    NSView *m_contentView;
+    NSView *m_view;
     QNSView *m_qtView;
     QCocoaNSWindow *m_nsWindow;
     QPointer<QCocoaWindow> m_forwardWindow;
 
     // TODO merge to one variable if possible
-    bool m_contentViewIsEmbedded; // true if the m_contentView is actually embedded in a "foreign" NSView hiearchy
-    bool m_contentViewIsToBeEmbedded; // true if the m_contentView is intended to be embedded in a "foreign" NSView hiearchy
+    bool m_viewIsEmbedded; // true if the m_view is actually embedded in a "foreign" NSView hiearchy
+    bool m_viewIsToBeEmbedded; // true if the m_view is intended to be embedded in a "foreign" NSView hiearchy
 
     QCocoaWindow *m_parentCocoaWindow;
     bool m_isNSWindowChild; // this window is a non-top level QWindow with a NSWindow.

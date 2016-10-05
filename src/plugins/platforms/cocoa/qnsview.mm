@@ -267,16 +267,16 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)viewDidMoveToSuperview
 {
-    if (!(m_platformWindow->m_contentViewIsToBeEmbedded))
+    if (!(m_platformWindow->m_viewIsToBeEmbedded))
         return;
 
     if ([self superview]) {
-        m_platformWindow->m_contentViewIsEmbedded = true;
+        m_platformWindow->m_viewIsEmbedded = true;
         QWindowSystemInterface::handleGeometryChange(m_window, m_platformWindow->geometry());
         m_platformWindow->updateExposedGeometry();
         QWindowSystemInterface::flushWindowSystemEvents();
     } else {
-        m_platformWindow->m_contentViewIsEmbedded = false;
+        m_platformWindow->m_viewIsEmbedded = false;
     }
 }
 
@@ -338,7 +338,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         NSRect rect = [self frame];
         NSRect windowRect = [[self window] frame];
         geometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
-    } else if (m_platformWindow->m_contentViewIsToBeEmbedded) {
+    } else if (m_platformWindow->m_viewIsToBeEmbedded) {
         // embedded child window, use the frame rect ### merge with case below
         geometry = QRectF::fromCGRect([self bounds]).toRect();
     } else {
@@ -368,7 +368,7 @@ static bool _q_dontOverrideCtrlLMB = false;
     // Don't send the geometry change if the QWindow is designated to be
     // embedded in a foreign view hiearchy but has not actually been
     // embedded yet - it's too early.
-    if (m_platformWindow->m_contentViewIsToBeEmbedded && !m_platformWindow->m_contentViewIsEmbedded)
+    if (m_platformWindow->m_viewIsToBeEmbedded && !m_platformWindow->m_viewIsEmbedded)
         return;
 
     // Send a geometry change event to Qt, if it's ready to handle events
