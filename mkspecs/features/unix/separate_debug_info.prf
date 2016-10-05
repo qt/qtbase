@@ -87,8 +87,9 @@ have_target:!static:if(darwin|!isEmpty(QMAKE_OBJCOPY)) {
         QMAKE_POST_LINK = $$mkdir_debug_info && $$copy_debug_info && $$strip_debug_info $$QMAKE_POST_LINK
     } else {
         link_debug_info = $$QMAKE_OBJCOPY --add-gnu-debuglink=$$shell_target_debug_info $$shell_target
-        chmod_debug_info = chmod -x $$shell_target_debug_info
-        QMAKE_POST_LINK = $$copy_debug_info && $$strip_debug_info && $$link_debug_info && $$chmod_debug_info $$QMAKE_POST_LINK
+        !contains(QMAKE_HOST.os, Windows): \
+            QMAKE_POST_LINK = && chmod -x $$shell_target_debug_info $$QMAKE_POST_LINK
+        QMAKE_POST_LINK = $$copy_debug_info && $$strip_debug_info && $$link_debug_info $$QMAKE_POST_LINK
     }
     silent:QMAKE_POST_LINK = @echo creating $@.$$debug_info_suffix && $$QMAKE_POST_LINK
 
