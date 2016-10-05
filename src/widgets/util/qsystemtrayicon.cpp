@@ -430,7 +430,10 @@ bool QBalloonTip::isBalloonVisible()
 
 QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title,
                          const QString& message, QSystemTrayIcon *ti)
-    : QWidget(0, Qt::ToolTip), trayIcon(ti), timerId(-1)
+    : QWidget(0, Qt::ToolTip),
+      trayIcon(ti),
+      timerId(-1),
+      showArrow(true)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     QObject::connect(ti, SIGNAL(destroyed()), this, SLOT(close()));
