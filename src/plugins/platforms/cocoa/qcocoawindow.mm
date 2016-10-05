@@ -391,8 +391,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     QMacAutoReleasePool pool;
 
     if (tlw->type() == Qt::ForeignWindow) {
-        NSView *foreignView = (NSView *)WId(tlw->property("_q_foreignWinId").value<WId>());
-        setView(foreignView);
+        m_view = (NSView *)WId(tlw->property("_q_foreignWinId").value<WId>());
     } else {
         m_qtView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
         m_view = m_qtView;
@@ -1183,24 +1182,6 @@ NSView *QCocoaWindow::view() const
     return m_view;
 }
 
-// FIXME: Remove and replace with create() and destroy() on a QWindow level
-void QCocoaWindow::setView(NSView *view)
-{
-    // Remove and release the previous view
-    if (m_nsWindow)
-        [m_nsWindow setContentView:nil];
-    else
-        [m_view removeFromSuperview];
-
-    [m_view release];
-
-    // Insert and retain the new view
-    [view retain];
-    m_view = view;
-    m_qtView = 0; // The new view is not a QNSView.
-    recreateWindow(QPlatformWindow::parent()); // Adds the view to parent NSView
-}
-
 QNSView *QCocoaWindow::qtView() const
 {
     return m_qtView;
@@ -1400,7 +1381,7 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
             rect.setSize(QSize(1, 1));
         NSRect frame = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
         [m_view setFrame:frame];
-        [m_view setHidden:YES];
+        [m_view setHidden:!window()->isVisible()];
     }
 
     m_nsWindow.ignoresMouseEvents =

@@ -92,21 +92,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace {
-// TODO use QtMacExtras copy of this function when available.
-inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePlatformFunction(const QByteArray &functionName)
-{
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
-        nativeInterface->nativeResourceFunctionForIntegration(functionName);
-    if (Q_UNLIKELY(!function))
-         qWarning("Qt could not resolve function %s from "
-                  "QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration()",
-                  functionName.constData());
-    return function;
-}
-} //namespsace
-
 class QMacCocoaViewContainerPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QMacCocoaViewContainer)
@@ -137,12 +122,8 @@ QMacCocoaViewContainerPrivate::~QMacCocoaViewContainerPrivate()
 QMacCocoaViewContainer::QMacCocoaViewContainer(NSView *view, QWidget *parent)
    : QWidget(*new QMacCocoaViewContainerPrivate, parent, 0)
 {
-
-    if (view)
-        setCocoaView(view);
-
-    // QMacCocoaViewContainer requires a native window handle.
     setAttribute(Qt::WA_NativeWindow);
+    setCocoaView(view);
 }
 
 /*!
@@ -173,13 +154,23 @@ void QMacCocoaViewContainer::setCocoaView(NSView *view)
     [view retain];
     d->nsview = view;
 
-    // Create window and platformwindow
-    winId();
-    QPlatformWindow *platformWindow = this->windowHandle()->handle();
+    QWindow *window = windowHandle();
 
-    // Set the new view as the content view for the window.
-    typedef void (*SetWindowContentViewFunction)(QPlatformWindow *window, NSView *nsview);
-    reinterpret_cast<SetWindowContentViewFunction>(resolvePlatformFunction("setwindowcontentview"))(platformWindow, view);
+    // Note that we only set the flag on the QWindow, and not the QWidget.
+    // These two are not in sync, so from a QWidget standpoint the widget
+    // is not a Window, and hence will be shown when the parent widget is
+    // shown, like all QWidget children.
+    window->setFlags(Qt::ForeignWindow);
+    window->setProperty("_q_foreignWinId", view ? WId(view) : QVariant());
+
+    // Destroying the platform window implies hiding the window, and we
+    // also lose the geometry information that the platform window kept,
+    // and fall back to the stale QWindow geometry, so we update the two
+    // based on the widget visibility and geometry, which is up to date.
+    window->destroy();
+    window->setVisible(isVisible());
+    window->setGeometry(geometry());
+    window->create();
 
     [oldView release];
 }

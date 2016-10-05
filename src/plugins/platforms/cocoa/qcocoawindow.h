@@ -183,7 +183,6 @@ public:
     void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
     NSView *view() const;
-    void setView(NSView *view);
     QNSView *qtView() const;
     NSWindow *nativeWindow() const;
 
