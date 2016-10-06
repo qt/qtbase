@@ -356,6 +356,12 @@
             "type": "compile",
             "test": "unix/evdev"
         },
+        "libinput_axis_api": {
+            "label": "axis API in libinput",
+            "type": "compile",
+            "test": "unix/libinput_axis_api",
+            "use": "libinput"
+        },
         "linuxfb": {
             "label": "LinuxFB",
             "type": "compile",
@@ -497,6 +503,11 @@
         "libinput": {
             "label": "libinput",
             "condition": "features.libudev && libs.libinput",
+            "output": [ "privateFeature" ]
+        },
+        "libinput-axis-api": {
+            "label": "axis API in libinput",
+            "condition": "tests.libinput_axis_api",
             "output": [ "privateFeature" ]
         },
         "lgmon": {
