@@ -755,18 +755,25 @@ QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &m
     switch (count) {
     case 8:
         argList.prepend(arg8);
+        // fall through
     case 7:
         argList.prepend(arg7);
+        // fall through
     case 6:
         argList.prepend(arg6);
+        // fall through
     case 5:
         argList.prepend(arg5);
+        // fall through
     case 4:
         argList.prepend(arg4);
+        // fall through
     case 3:
         argList.prepend(arg3);
+        // fall through
     case 2:
         argList.prepend(arg2);
+        // fall through
     case 1:
         argList.prepend(arg1);
     }
@@ -813,18 +820,25 @@ QDBusPendingCall QDBusAbstractInterface::asyncCall(const QString &method, const 
     switch (count) {
     case 8:
         argList.prepend(arg8);
+        // fall through
     case 7:
         argList.prepend(arg7);
+        // fall through
     case 6:
         argList.prepend(arg6);
+        // fall through
     case 5:
         argList.prepend(arg5);
+        // fall through
     case 4:
         argList.prepend(arg4);
+        // fall through
     case 3:
         argList.prepend(arg3);
+        // fall through
     case 2:
         argList.prepend(arg2);
+        // fall through
     case 1:
         argList.prepend(arg1);
     }
