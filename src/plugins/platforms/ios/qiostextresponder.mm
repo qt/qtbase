@@ -236,6 +236,17 @@
         self.inputView = [[[WrapperView alloc] initWithView:inputView] autorelease];
     if (UIView *accessoryView = static_cast<UIView *>(platformData.value(kImePlatformDataInputAccessoryView).value<void *>()))
         self.inputAccessoryView = [[[WrapperView alloc] initWithView:accessoryView] autorelease];
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_9_0) {
+        if (platformData.value(kImePlatformDataHideShortcutsBar).toBool()) {
+            // According to the docs, leadingBarButtonGroups/trailingBarButtonGroups should be set to nil to hide the shortcuts bar.
+            // However, starting with iOS 10, the API has been surrounded with NS_ASSUME_NONNULL, which contradicts this and causes
+            // compiler warnings. And assigning just an empty array causes layout asserts. Hence, we assign empty button groups instead.
+            UIBarButtonItemGroup *leading = [[[UIBarButtonItemGroup alloc] initWithBarButtonItems:@[] representativeItem:nil] autorelease];
+            UIBarButtonItemGroup *trailing = [[[UIBarButtonItemGroup alloc] initWithBarButtonItems:@[] representativeItem:nil] autorelease];
+            self.inputAssistantItem.leadingBarButtonGroups = @[leading];
+            self.inputAssistantItem.trailingBarButtonGroups = @[trailing];
+        }
+    }
 
     self.undoManager.groupsByEvent = NO;
     [self rebuildUndoStack];

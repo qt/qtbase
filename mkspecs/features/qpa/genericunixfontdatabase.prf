@@ -2,9 +2,5 @@ CONFIG += qpa/basicunixfontdatabase
 qtConfig(fontconfig) {
     DEFINES += Q_FONTCONFIGDATABASE
     QMAKE_USE_PRIVATE += fontconfig/linkonly
-} else:!android {
-    fonts.path = $$[QT_INSTALL_LIBS]/fonts
-    fonts.files = $$QT_SOURCE_TREE/lib/fonts/*
-    INSTALLS += fonts
 }
 

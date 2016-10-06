@@ -3441,7 +3441,7 @@ Q_GLOBAL_STATIC(AndroidRandomStorage, randomTLS)
     pseudo random integers to be returned by qrand().
 
     The sequence of random numbers generated is deterministic per thread. For example,
-    if two threads call qsrand(1) and subsequently calls qrand(), the threads will get
+    if two threads call qsrand(1) and subsequently call qrand(), the threads will get
     the same random number sequence.
 
     \sa qrand()

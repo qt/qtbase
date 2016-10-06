@@ -1,4 +1,4 @@
-CONFIG = sdk rez $$CONFIG
+CONFIG = asset_catalogs sdk rez $$CONFIG
 load(default_pre)
 
 isEmpty(QMAKE_XCODE_DEVELOPER_PATH) {
@@ -32,6 +32,8 @@ isEmpty(QMAKE_TARGET_BUNDLE_PREFIX) {
     !isEmpty(_QMAKE_CACHE_):!isEmpty(QMAKE_TARGET_BUNDLE_PREFIX): \
         cache(QMAKE_TARGET_BUNDLE_PREFIX)
 }
+
+QMAKE_ASSET_CATALOGS_APP_ICON = AppIcon
 
 # Make the default debug info format for static debug builds
 # DWARF instead of DWARF with dSYM. This cuts down build times
