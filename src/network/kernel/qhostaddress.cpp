@@ -291,21 +291,27 @@ bool QNetmaskAddress::setAddress(const QHostAddress &address)
             d->clear();
             return false;       // invalid IP-style netmask
 
-            // the rest always falls through
         case 254:
             ++netmask;
+            Q_FALLTHROUGH();
         case 252:
             ++netmask;
+            Q_FALLTHROUGH();
         case 248:
             ++netmask;
+            Q_FALLTHROUGH();
         case 240:
             ++netmask;
+            Q_FALLTHROUGH();
         case 224:
             ++netmask;
+            Q_FALLTHROUGH();
         case 192:
             ++netmask;
+            Q_FALLTHROUGH();
         case 128:
             ++netmask;
+            Q_FALLTHROUGH();
         case 0:
             break;
         }

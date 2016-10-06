@@ -1080,8 +1080,8 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
                                       "detected unknown Next Protocol Negotiation protocol");
                 break;
             }
-            Q_FALLTHROUGH();
         }
+            Q_FALLTHROUGH();
         case QSslConfiguration::NextProtocolNegotiationNone:
             protocolHandler.reset(new QHttpProtocolHandler(this));
             connection->setConnectionType(QHttpNetworkConnection::ConnectionTypeHTTP);
