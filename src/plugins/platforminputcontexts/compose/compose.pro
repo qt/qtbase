@@ -2,8 +2,6 @@ TARGET = composeplatforminputcontextplugin
 
 QT += core-private gui-private
 
-DEFINES += X11_PREFIX='\\"$$QMAKE_X11_PREFIX\\"'
-
 SOURCES += $$PWD/qcomposeplatforminputcontextmain.cpp \
            $$PWD/qcomposeplatforminputcontext.cpp \
            $$PWD/generator/qtablegenerator.cpp \
@@ -17,6 +15,10 @@ HEADERS += $$PWD/qcomposeplatforminputcontext.h \
 } else {
     QMAKE_USE += xkbcommon
 }
+
+include($$OUT_PWD/../../../gui/qtgui-config.pri)
+
+DEFINES += X11_PREFIX='\\"$$QMAKE_X11_PREFIX\\"'
 
 OTHER_FILES += $$PWD/compose.json
 
