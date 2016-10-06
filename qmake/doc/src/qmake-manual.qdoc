@@ -1324,6 +1324,30 @@
 
     \snippet code/doc_src_qmake-manual.pro 40
 
+    \target OBJECTIVE_HEADERS
+    \section1 OBJECTIVE_HEADERS
+
+    Defines the Objective-C++ header files for the project.
+
+    qmake automatically detects whether \l{moc} is required by the classes in the
+    headers, and adds the appropriate dependencies and files to the project for
+    generating and linking the moc files.
+
+    This is similar to the HEADERS variable, but will let the generated moc
+    files be compiled with the Objective-C++ compiler.
+
+    See also \l{#OBJECTIVE_SOURCES}{OBJECTIVE_SOURCES}.
+
+    \target OBJECTIVE_SOURCES
+    \section1 OBJECTIVE_SOURCES
+
+    Specifies the names of all Objective-C/C++ source files in the project.
+
+    This variable is now obsolete, Objective-C/C++ files (.m and .mm) can be
+    added to the \l{#SOURCES}{SOURCES} variable.
+
+    See also \l{#OBJECTIVE_HEADERS}{OBJECTIVE_HEADERS}.
+
     \target OBJECTS
     \section1 OBJECTS
 

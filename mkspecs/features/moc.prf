@@ -76,6 +76,19 @@ silent:moc_header.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_header.commands
 QMAKE_EXTRA_COMPILERS += moc_header
 INCREDIBUILD_XGE += moc_header
 
+#moc objc headers
+moc_objc_header.CONFIG = moc_verify
+moc_objc_header.dependency_type = TYPE_C
+moc_objc_header.commands = ${QMAKE_FUNC_mocCmdBase} ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+moc_objc_header.output = $$MOC_DIR/$${QMAKE_H_MOD_MOC}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJCXX)}
+moc_objc_header.input = OBJECTIVE_HEADERS
+moc_objc_header.variable_out = SOURCES
+moc_objc_header.name = MOC ${QMAKE_FILE_IN}
+moc_objc_header.depends += $$WIN_INCLUDETEMP $$moc_predefs.output
+silent:moc_objc_header.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_objc_header.commands
+QMAKE_EXTRA_COMPILERS += moc_objc_header
+INCREDIBUILD_XGE += moc_objc_header
+
 #moc sources
 moc_source.CONFIG = no_link moc_verify
 moc_source.dependency_type = TYPE_C
@@ -95,14 +108,15 @@ INCLUDEPATH += $$absolute_path($$MOC_DIR, $$OUT_PWD)
 !no_mocdepend {
      moc_source.depends += $$QMAKE_MOC_EXE
      moc_header.depends += $$QMAKE_MOC_EXE
+     moc_objc_header.depends += $$QMAKE_MOC_EXE
 }
 
 #generate a mocclean
-build_pass|isEmpty(BUILDS):mocclean.depends = compiler_moc_header_clean compiler_moc_source_clean
+build_pass|isEmpty(BUILDS):mocclean.depends = compiler_moc_header_clean compiler_moc_objc_header_clean compiler_moc_source_clean
 else:mocclean.CONFIG += recursive
 QMAKE_EXTRA_TARGETS += mocclean
 
 #generate a mocables
-build_pass|isEmpty(BUILDS):mocables.depends = compiler_moc_header_make_all compiler_moc_source_make_all
+build_pass|isEmpty(BUILDS):mocables.depends = compiler_moc_header_make_all compiler_moc_objc_header_make_all compiler_moc_source_make_all
 else:mocables.CONFIG += recursive
 QMAKE_EXTRA_TARGETS += mocables
