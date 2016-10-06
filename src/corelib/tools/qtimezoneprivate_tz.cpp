@@ -725,19 +725,61 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
         }
     }
 
-    // Now for each transition time calculate our rule and save them
-    m_tranTimes.reserve(tranList.count());
-    for (const QTzTransition &tz_tran : qAsConst(tranList)) {
+    // Now for each transition time calculate and store our rule:
+    const int tranCount = tranList.count();;
+    m_tranTimes.reserve(tranCount);
+    // The DST offset when in effect: usually stable, usually an hour:
+    int lastDstOff = 3600;
+    for (int i = 0; i < tranCount; i++) {
+        const QTzTransition &tz_tran = tranList.at(i);
         QTzTransitionTime tran;
         QTzTransitionRule rule;
         const QTzType tz_type = typeList.at(tz_tran.tz_typeind);
 
         // Calculate the associated Rule
-        if (!tz_type.tz_isdst)
+        if (!tz_type.tz_isdst) {
             utcOffset = tz_type.tz_gmtoff;
+        } else if (Q_UNLIKELY(tz_type.tz_gmtoff != utcOffset + lastDstOff)) {
+            /*
+              This might be a genuine change in DST offset, but could also be
+              DST starting at the same time as the standard offset changed.  See
+              if DST's end gives a more plausible utcOffset (i.e. one closer to
+              the last we saw, or a simple whole hour):
+            */
+            // Standard offset inferred from net offset and expected DST offset:
+            const int inferStd = tz_type.tz_gmtoff - lastDstOff; // != utcOffset
+            for (int j = i + 1; j < tranCount; j++) {
+                const QTzType new_type = typeList.at(tranList.at(j).tz_typeind);
+                if (!new_type.tz_isdst) {
+                    const int newUtc = new_type.tz_gmtoff;
+                    if (newUtc == utcOffset) {
+                        // DST-end can't help us, avoid lots of messy checks.
+                    // else: See if the end matches the familiar DST offset:
+                    } else if (newUtc == inferStd) {
+                        utcOffset = newUtc;
+                    // else: let either end shift us to one hour as DST offset:
+                    } else if (tz_type.tz_gmtoff - 3600 == utcOffset) {
+                        // Start does it
+                    } else if (tz_type.tz_gmtoff - 3600 == newUtc) {
+                        utcOffset = newUtc; // End does it
+                    // else: prefer whichever end gives DST offset closer to
+                    // last, but consider any offset > 0 "closer" than any <= 0:
+                    } else if (newUtc < tz_type.tz_gmtoff
+                               ? (utcOffset >= tz_type.tz_gmtoff
+                                  || qAbs(newUtc - inferStd) < qAbs(utcOffset - inferStd))
+                               : (utcOffset >= tz_type.tz_gmtoff
+                                  && qAbs(newUtc - inferStd) < qAbs(utcOffset - inferStd))) {
+                        utcOffset = newUtc;
+                    }
+                    break;
+                }
+            }
+            lastDstOff = tz_type.tz_gmtoff - utcOffset;
+        }
         rule.stdOffset = utcOffset;
         rule.dstOffset = tz_type.tz_gmtoff - utcOffset;
         rule.abbreviationIndex = tz_type.tz_abbrind;
+
         // If the rule already exist then use that, otherwise add it
         int ruleIndex = m_tranRules.indexOf(rule);
         if (ruleIndex == -1) {
