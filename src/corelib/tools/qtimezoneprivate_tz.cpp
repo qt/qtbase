@@ -199,7 +199,7 @@ static QVector<QTzTransition> parseTzTransitions(QDataStream &ds, int tzh_timecn
         }
     } else {
         // Parse tzh_timecnt x 4-byte transition times
-        int val;
+        qint32 val;
         for (int i = 0; i < tzh_timecnt && ds.status() == QDataStream::Ok; ++i) {
             ds >> val;
             transitions[i].tz_time = val;
