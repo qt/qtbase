@@ -261,7 +261,7 @@
 
     \snippet widgets/calculator/calculator.cpp 20
 
-    Like in \c additiveOperatorClicked(), we start by handing any
+    Like in \c additiveOperatorClicked(), we start by handling any
     pending multiplicative and additive operators. Then we display \c
     sumSoFar and reset the variable to zero. Resetting the variable
     to zero is necessary to avoid counting the value twice.
