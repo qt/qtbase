@@ -335,6 +335,10 @@ void QPlatformScreen::resizeMaximizedWindows()
     for (int i = 0; i < windows.size(); ++i) {
         QWindow *w = windows.at(i);
 
+        // Skip non-platform windows, e.g., offscreen windows.
+        if (!w->handle())
+            continue;
+
         if (platformScreenForWindow(w) != this)
             continue;
 
