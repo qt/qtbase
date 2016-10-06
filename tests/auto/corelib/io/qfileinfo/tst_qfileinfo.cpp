@@ -770,6 +770,19 @@ void tst_QFileInfo::canonicalFilePath()
         QDir::current().rmdir(linkTarget);
     }
 #endif
+
+#ifdef Q_OS_DARWIN
+    {
+        // Check if canonicalFilePath's result is in Composed normalization form.
+        QString path = QString::fromLatin1("caf\xe9");
+        QDir dir(QDir::tempPath());
+        dir.mkdir(path);
+        QString canonical = QFileInfo(dir.filePath(path)).canonicalFilePath();
+        QString roundtrip = QFile::decodeName(QFile::encodeName(canonical));
+        QCOMPARE(canonical, roundtrip);
+        dir.rmdir(path);
+    }
+#endif
 }
 
 void tst_QFileInfo::fileName_data()
