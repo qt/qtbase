@@ -103,7 +103,7 @@ public:
     bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;
     bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
 
-    void setCursor(xcb_cursor_t cursor);
+    void setCursor(xcb_cursor_t cursor, bool isBitmapCursor);
 
     QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
@@ -272,6 +272,7 @@ protected:
     SyncState m_syncState;
 
     QXcbSyncWindowRequest *m_pendingSyncRequest;
+    xcb_cursor_t m_currentBitmapCursor;
 };
 
 QT_END_NAMESPACE

@@ -326,6 +326,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_lastWindowStateEvent(-1)
     , m_syncState(NoSyncNeeded)
     , m_pendingSyncRequest(0)
+    , m_currentBitmapCursor(XCB_CURSOR_NONE)
 {
     setConnection(xcbScreen()->connection());
 }
@@ -600,6 +601,9 @@ void QXcbWindow::create()
 
 QXcbWindow::~QXcbWindow()
 {
+    if (m_currentBitmapCursor != XCB_CURSOR_NONE) {
+        xcb_free_cursor(xcb_connection(), m_currentBitmapCursor);
+    }
     if (window()->type() != Qt::ForeignWindow)
         destroy();
     else {
@@ -2679,10 +2683,22 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     return result;
 }
 
-void QXcbWindow::setCursor(xcb_cursor_t cursor)
+void QXcbWindow::setCursor(xcb_cursor_t cursor, bool isBitmapCursor)
 {
-    xcb_change_window_attributes(xcb_connection(), m_window, XCB_CW_CURSOR, &cursor);
-    xcb_flush(xcb_connection());
+    xcb_connection_t *conn = xcb_connection();
+
+    xcb_change_window_attributes(conn, m_window, XCB_CW_CURSOR, &cursor);
+    xcb_flush(conn);
+
+    if (m_currentBitmapCursor != XCB_CURSOR_NONE) {
+        xcb_free_cursor(conn, m_currentBitmapCursor);
+    }
+
+    if (isBitmapCursor) {
+        m_currentBitmapCursor = cursor;
+    } else {
+        m_currentBitmapCursor = XCB_CURSOR_NONE;
+    }
 }
 
 void QXcbWindow::windowEvent(QEvent *event)
