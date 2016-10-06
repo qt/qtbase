@@ -369,6 +369,17 @@ QVariant QWinRTTheme::styleHint(QPlatformIntegration::StyleHint hint)
     return QVariant();
 }
 
+QVariant QWinRTTheme::themeHint(ThemeHint hint) const
+{
+    qCDebug(lcQpaTheme) << __FUNCTION__ << hint;
+    switch (hint) {
+    case StyleNames:
+        return QStringList() << QStringLiteral("fusion") << QStringLiteral("windows");
+    default:
+        return QPlatformTheme::themeHint(hint);
+    }
+}
+
 const QPalette *QWinRTTheme::palette(Palette type) const
 {
     Q_D(const QWinRTTheme);
