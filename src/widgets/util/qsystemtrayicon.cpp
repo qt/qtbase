@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 static QIcon messageIcon2qIcon(QSystemTrayIcon::MessageIcon icon)
 {
-    QStyle::StandardPixmap stdIcon;
+    QStyle::StandardPixmap stdIcon = QStyle::SP_CustomBase; // silence gcc 4.9.0 about uninited variable
     switch (icon) {
     case QSystemTrayIcon::Information:
         stdIcon = QStyle::SP_MessageBoxInformation;
