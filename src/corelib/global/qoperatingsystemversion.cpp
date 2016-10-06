@@ -146,14 +146,14 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
     };
 
     // This will give us at least the first 2 version components
-    const int sdk = static_cast<int>(QJNIObjectPrivate::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT"));
-    if (sdk >= 1 && sdk <= sizeof(versions) / sizeof(versions[0])) {
-        version.m_major = versions[sdk - 1][0];
-        version.m_minor = versions[sdk - 1][1];
+    const size_t versionIdx = size_t(QJNIObjectPrivate::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT")) - 1;
+    if (versionIdx < sizeof(versions) / sizeof(versions[0])) {
+        version.m_major = versions[versionIdx][0];
+        version.m_minor = versions[versionIdx][1];
     }
 
     // API level 6 was exactly version 2.0.1
-    version.m_micro = sdk == 6 ? 1 : -1;
+    version.m_micro = versionIdx == 5 ? 1 : -1;
 #else
     version.m_major = -1;
     version.m_minor = -1;
