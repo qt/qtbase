@@ -1139,6 +1139,7 @@ end:
                             }
                             break; }
                         }
+                        Q_FALLTHROUGH();
                     case MonthSection:
                         if (sn.count >= 3) {
                             const int currentMonth = newCurrentValue.date().month();
