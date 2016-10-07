@@ -1592,7 +1592,7 @@ QResizeEvent::~QResizeEvent()
     The event handler QWidget::closeEvent() receives close events. The
     default implementation of this event handler accepts the close
     event. If you do not want your widget to be hidden, or want some
-    special handing, you should reimplement the event handler and
+    special handling, you should reimplement the event handler and
     ignore() the event.
 
     The \l{mainwindows/application#close event handler}{closeEvent() in the
