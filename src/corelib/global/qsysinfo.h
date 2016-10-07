@@ -49,6 +49,23 @@ QT_BEGIN_NAMESPACE
    System information
 */
 
+/*
+ * GCC (5-7) has a regression that causes it to emit wrong deprecated warnings:
+ * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77849
+ *
+ * Try to work around it by defining our own macro.
+ */
+
+#ifdef QT_SYSINFO_DEPRECATED_X
+#error "QT_SYSINFO_DEPRECATED_X already defined"
+#endif
+
+#ifdef Q_CC_GNU
+#define QT_SYSINFO_DEPRECATED_X(x)
+#else
+#define QT_SYSINFO_DEPRECATED_X(x) QT_DEPRECATED_X(x)
+#endif
+
 class QString;
 class Q_CORE_EXPORT QSysInfo {
 public:
@@ -124,11 +141,11 @@ QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
 QT_WARNING_DISABLE_INTEL(1478)
 QT_WARNING_DISABLE_MSVC(4996)
 #if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
-    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion;
-    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static WinVersion windowsVersion();
+    QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion;
+    QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static WinVersion windowsVersion();
 #else
-    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion = WV_None;
-    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static WinVersion windowsVersion() { return WV_None; }
+    QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion = WV_None;
+    QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static WinVersion windowsVersion() { return WV_None; }
 #endif
 QT_WARNING_POP
 
@@ -211,11 +228,11 @@ QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
 QT_WARNING_DISABLE_INTEL(1478)
 QT_WARNING_DISABLE_MSVC(4996)
 #if defined(Q_OS_MAC)
-    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const MacVersion MacintoshVersion;
-    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static MacVersion macVersion();
+    QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const MacVersion MacintoshVersion;
+    QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static MacVersion macVersion();
 #else
-    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const MacVersion MacintoshVersion = MV_None;
-    QT_DEPRECATED_X("Use QOperatingSystemVersion::current()") static MacVersion macVersion() { return MV_None; }
+    QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const MacVersion MacintoshVersion = MV_None;
+    QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static MacVersion macVersion() { return MV_None; }
 #endif
 QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(5, 9)
@@ -232,6 +249,8 @@ QT_WARNING_POP
 
     static QString machineHostName();
 };
+
+#undef QT_SYSINFO_DEPRECATED_X
 
 QT_END_NAMESPACE
 #endif // QSYSINFO_H
