@@ -15,7 +15,7 @@ SUBDIRS = \
     widgets \
     xml
 
-qtConfig(opengl): SUBDIRS += opengl
+qtHaveModule(gui):qtConfig(opengl): SUBDIRS += opengl
 
 aggregate.files = aggregate/examples.pro
 aggregate.path = $$[QT_INSTALL_EXAMPLES]
