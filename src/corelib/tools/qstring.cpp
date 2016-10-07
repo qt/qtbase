@@ -491,6 +491,30 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
     return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
 #  endif
 #endif
+#if defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
+    if (l >= 8) {
+        const QChar *end = a + l;
+        const uint16x8_t mask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+        while (a + 8 < end) {
+            uint16x8_t da = vld1q_u16(reinterpret_cast<const uint16_t *>(a));
+            uint16x8_t db = vld1q_u16(reinterpret_cast<const uint16_t *>(b));
+
+            uint8_t r = ~(uint8_t)vaddvq_u16(vandq_u16(vceqq_u16(da, db), mask));
+            if (r) {
+                // found a different QChar
+                uint idx = qCountTrailingZeroBits(r);
+                return (int)a[idx].unicode() - (int)b[idx].unicode();
+            }
+            a += 8;
+            b += 8;
+        }
+        l &= 7;
+    }
+    const auto &lambda = [=](int i) -> int {
+        return a[i].unicode() - b[i].unicode();
+    };
+    return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
+#endif // __ARM_NEON__
     if (!l)
         return 0;
 
