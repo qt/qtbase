@@ -3887,7 +3887,7 @@ QDebug operator<<(QDebug dbg, const QTouchEvent::TouchPoint &tp)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
-    dbg << "TouchPoint(" << tp.id() << " (";
+    dbg << "TouchPoint(" << hex << tp.id() << dec << " (";
     QtDebugUtils::formatQRect(dbg, tp.rect());
     dbg << ") ";
     QtDebugUtils::formatQEnum(dbg, tp.state());
