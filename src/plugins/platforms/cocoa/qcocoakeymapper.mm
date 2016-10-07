@@ -390,11 +390,6 @@ bool QCocoaKeyMapper::updateKeyboard()
         keyboardInputLocale = QLocale::c();
         keyboardInputDirection = Qt::LeftToRight;
     }
-
-    const auto newMode = keyboard_mode;
-    deleteLayouts();
-    keyboard_mode = newMode;
-
     return true;
 }
 
@@ -417,8 +412,10 @@ void QCocoaKeyMapper::clearMappings()
 
 void QCocoaKeyMapper::updateKeyMap(unsigned short macVirtualKey, QChar unicodeKey)
 {
-    updateKeyboard();
-
+    if (updateKeyboard()) {
+        // ### Qt 4 did this:
+        // QKeyMapper::changeKeyboard();
+    }
     if (keyLayout[macVirtualKey])
         return;
 
@@ -474,8 +471,9 @@ QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
     for (int i = 1; i < 8; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         int key = kbItem->qtKey[i];
-        if (key && key != baseKey && ((keyMods & neededMods) == neededMods))
-            ret << int(key + neededMods);
+        if (key && key != baseKey && ((keyMods & neededMods) == neededMods)) {
+            ret << int(key + (keyMods & ~neededMods));
+        }
     }
     return ret;
 }
