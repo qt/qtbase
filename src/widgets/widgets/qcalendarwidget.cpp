@@ -2994,6 +2994,7 @@ bool QCalendarWidget::event(QEvent *event)
     switch (event->type()) {
         case QEvent::LayoutDirectionChange:
             d->updateButtonIcons();
+            break;
         case QEvent::LocaleChange:
             d->m_model->setFirstColumnDay(locale().firstDayOfWeek());
             d->cachedSizeHint = QSize();
