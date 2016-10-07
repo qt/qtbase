@@ -217,8 +217,6 @@ sub classNames {
     $$requires = "";
 
     my $ihdrbase = basename($iheader);
-    my $classname = $classnames{$ihdrbase};
-    push @ret, split(/,/, $classname) if ($classname);
 
     my $parsable = "";
     if(open(F, "<$iheader")) {
@@ -1042,7 +1040,11 @@ foreach my $lib (@modules_to_sync) {
                                 && $header =~ /_p\.h$/ && $subdir !~ /3rdparty/;
                             check_header($lib, $header, $iheader, $public_header, $private_header);
                         }
-                        my @classes = $public_header && (!$minimal && $is_qt) ? classNames($iheader, \$clean_header, \$requires) : ();
+                        my @classes = ();
+                        push @classes, classNames($iheader, \$clean_header, \$requires)
+                            if (!$shadow && $public_header && !$minimal && $is_qt);
+                        my $classname = $classnames{$header};
+                        push @classes, split(/,/, $classname) if ($classname);
                         if($showonly) {
                             print "$header [$lib]\n";
                             foreach(@classes) {
