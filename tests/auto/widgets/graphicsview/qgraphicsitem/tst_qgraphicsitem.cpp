@@ -848,14 +848,14 @@ void tst_QGraphicsItem::parentItem()
 void tst_QGraphicsItem::setParentItem()
 {
     QGraphicsScene scene;
-    QGraphicsItem *item = scene.addRect(QRectF(0, 0, 10, 10));
+    const QScopedPointer<QGraphicsItem> item(scene.addRect(QRectF(0, 0, 10, 10)));
     QCOMPARE(item->scene(), &scene);
 
-    QGraphicsRectItem *child = new QGraphicsRectItem;
+    const QScopedPointer<QGraphicsRectItem> child(new QGraphicsRectItem);
     QCOMPARE(child->scene(), (QGraphicsScene *)0);
 
     // This implicitly adds the item to the parent's scene
-    child->setParentItem(item);
+    child->setParentItem(item.data());
     QCOMPARE(child->scene(), &scene);
 
     // This just makes it a toplevel
@@ -863,8 +863,8 @@ void tst_QGraphicsItem::setParentItem()
     QCOMPARE(child->scene(), &scene);
 
     // Add the child back to the parent, then remove the parent from the scene
-    child->setParentItem(item);
-    scene.removeItem(item);
+    child->setParentItem(item.data());
+    scene.removeItem(item.data());
     QCOMPARE(child->scene(), (QGraphicsScene *)0);
 }
 
@@ -962,19 +962,19 @@ void tst_QGraphicsItem::flags()
         QCOMPARE(item->pos(), QPointF(10, 10));
     }
     {
-        QGraphicsItem* clippingParent = new QGraphicsRectItem;
+        const QScopedPointer<QGraphicsItem> clippingParent(new QGraphicsRectItem);
         clippingParent->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
 
-        QGraphicsItem* nonClippingParent = new QGraphicsRectItem;
+        const QScopedPointer<QGraphicsItem> nonClippingParent(new QGraphicsRectItem);
         nonClippingParent->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
 
-        QGraphicsItem* child = new QGraphicsRectItem(nonClippingParent);
+        QGraphicsItem* child = new QGraphicsRectItem(nonClippingParent.data());
         QVERIFY(!child->isClipped());
 
-        child->setParentItem(clippingParent);
+        child->setParentItem(clippingParent.data());
         QVERIFY(child->isClipped());
 
-        child->setParentItem(nonClippingParent);
+        child->setParentItem(nonClippingParent.data());
         QVERIFY(!child->isClipped());
     }
 }
@@ -3133,7 +3133,8 @@ void tst_QGraphicsItem::isAncestorOf()
 
 void tst_QGraphicsItem::commonAncestorItem()
 {
-    QGraphicsItem *ancestor = new QGraphicsRectItem;
+    QGraphicsRectItem ancestorItem;
+    QGraphicsItem *ancestor = &ancestorItem;
     QGraphicsItem *grandMa = new QGraphicsRectItem;
     QGraphicsItem *grandPa = new QGraphicsRectItem;
     QGraphicsItem *brotherInLaw = new QGraphicsRectItem;
@@ -3633,7 +3634,7 @@ void tst_QGraphicsItem::setGroup()
     QGraphicsItemGroup group1;
     QGraphicsItemGroup group2;
 
-    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    const QScopedPointer<QGraphicsRectItem> rect(new QGraphicsRectItem);
     QCOMPARE(rect->group(), (QGraphicsItemGroup *)0);
     QCOMPARE(rect->parentItem(), (QGraphicsItem *)0);
     rect->setGroup(&group1);
@@ -6831,8 +6832,8 @@ void tst_QGraphicsItem::opacity()
     QFETCH(qreal, c2_effectiveOpacity);
     QFETCH(qreal, c3_effectiveOpacity);
 
-    QGraphicsRectItem *p = new QGraphicsRectItem;
-    QGraphicsRectItem *c1 = new QGraphicsRectItem(p);
+    const QScopedPointer<QGraphicsRectItem> p(new QGraphicsRectItem);
+    QGraphicsRectItem *c1 = new QGraphicsRectItem(p.data());
     QGraphicsRectItem *c2 = new QGraphicsRectItem(c1);
     QGraphicsRectItem *c3 = new QGraphicsRectItem(c2);
 
@@ -7219,11 +7220,12 @@ void tst_QGraphicsItem::sceneTransformCache()
     // Test that an item's scene transform is updated correctly when the
     // parent is transformed.
     QGraphicsScene scene;
-    QGraphicsRectItem *rect = scene.addRect(0, 0, 100, 100);
+
+    const QScopedPointer<QGraphicsRectItem> rect(scene.addRect(0, 0, 100, 100));
     rect->setPen(QPen(Qt::black, 0));
     QGraphicsRectItem *rect2 = scene.addRect(0, 0, 100, 100);
     rect2->setPen(QPen(Qt::black, 0));
-    rect2->setParentItem(rect);
+    rect2->setParentItem(rect.data());
     rect2->rotate(90);
     rect->translate(0, 50);
     QGraphicsView view(&scene);
@@ -7235,7 +7237,7 @@ void tst_QGraphicsItem::sceneTransformCache()
     x.rotate(90);
     QCOMPARE(rect2->sceneTransform(), x);
 
-    scene.removeItem(rect);
+    scene.removeItem(rect.data());
 
     //Crazy use case : rect4 child of rect3 so the transformation of rect4 will be cached.Good!
     //We remove rect4 from the scene, then the validTransform bit flag is set to 0 and the index of the cache
@@ -10688,7 +10690,7 @@ void tst_QGraphicsItem::scenePosChange()
 {
     ScenePosChangeTester* root = new ScenePosChangeTester;
     ScenePosChangeTester* child1 = new ScenePosChangeTester(root);
-    ScenePosChangeTester* grandChild1 = new ScenePosChangeTester(child1);
+    const QScopedPointer<ScenePosChangeTester> grandChild1(new ScenePosChangeTester(child1));
     ScenePosChangeTester* child2 = new ScenePosChangeTester(root);
     ScenePosChangeTester* grandChild2 = new ScenePosChangeTester(child2);
 
@@ -10740,7 +10742,7 @@ void tst_QGraphicsItem::scenePosChange()
     QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
 
     // remove
-    scene.removeItem(grandChild1);
+    scene.removeItem(grandChild1.data());
     delete grandChild2; grandChild2 = 0;
     QCoreApplication::processEvents(); // QGraphicsScenePrivate::_q_updateScenePosDescendants()
     root->moveBy(1.0, 1.0);
