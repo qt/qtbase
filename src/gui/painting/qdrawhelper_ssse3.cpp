@@ -215,7 +215,7 @@ static inline void store_uint24_ssse3(uchar *dst, const uint *src, int len)
     dst24 = reinterpret_cast<quint24*>(dstVectorPtr);
     src = reinterpret_cast<const uint*>(inVectorPtr);
 
-    for (; i < len; ++i)
+    SIMD_EPILOGUE(i, len, 15)
         *dst24++ = quint24(*src++);
 }
 

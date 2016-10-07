@@ -201,7 +201,7 @@ inline static void BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_AVX2(quint32 *dst, 
             _mm256_store_si256((__m256i *)&dst[x], dstVector);
         }
     }
-    for (; x < length; ++x)
+    SIMD_EPILOGUE(x, length, 7)
         blend_pixel(dst[x], src[x], const_alpha);
 }
 
@@ -275,7 +275,7 @@ void qt_blend_rgb32_on_rgb32_avx2(uchar *destPixels, int dbpl,
         }
 
         // 3) Epilogue
-        for (; x < w; ++x)
+        SIMD_EPILOGUE(x, w, 7)
             dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
 
         srcPixels += sbpl;
@@ -322,7 +322,7 @@ void QT_FASTCALL comp_func_Source_avx2(uint *dst, const uint *src, int length, u
         }
 
         // 3) Epilogue
-        for (; x < length; ++x)
+        SIMD_EPILOGUE(x, length, 7)
             dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], ialpha);
     }
 }
@@ -353,7 +353,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, u
             dstVector = _mm256_add_epi8(colorVector, dstVector);
             _mm256_store_si256((__m256i *)&dst[x], dstVector);
         }
-        for (; x < length; ++x)
+        SIMD_EPILOGUE(x, length, 7)
             destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
     }
 }

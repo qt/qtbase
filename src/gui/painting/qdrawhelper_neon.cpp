@@ -817,7 +817,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_neon(uint *destPixels, int length, u
             vst1q_u32(&dst[x], colorPlusBlendedPixels);
         }
 
-        for (;x < length; ++x)
+        SIMD_EPILOGUE(x, length, 3)
             destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
     }
 }
@@ -869,7 +869,7 @@ void QT_FASTCALL comp_func_Plus_neon(uint *dst, const uint *src, int length, uin
             vst1q_u32((uint32_t *)&dst[x], vcombine_u32(result32_low, result32_high));
         }
 
-        for (; x < length; ++x)
+        SIMD_EPILOGUE(x, length, 3)
             dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
     }
 }
