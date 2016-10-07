@@ -446,6 +446,16 @@ extern "C" int qt_ucstrncmp_mips_dsp_asm(const ushort *a,
 // Unicode case-sensitive compare two same-sized strings
 static int ucstrncmp(const QChar *a, const QChar *b, int l)
 {
+#ifdef __OPTIMIZE_SIZE__
+    const QChar *end = a + l;
+    while (a < end) {
+        if (int diff = (int)a->unicode() - (int)b->unicode())
+            return diff;
+        ++a;
+        ++b;
+    }
+    return 0;
+#else
 #if defined(__mips_dsp)
     if (l >= 8) {
         return qt_ucstrncmp_mips_dsp_asm(reinterpret_cast<const ushort*>(a),
@@ -473,7 +483,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
                     - reinterpret_cast<const QChar *>(ptr + distance + idx)->unicode();
         }
     }
-#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
+#  if defined(Q_COMPILER_LAMBDA)
     const auto &lambda = [=](int i) -> int {
         return reinterpret_cast<const QChar *>(ptr)[i].unicode()
                 - reinterpret_cast<const QChar *>(ptr + distance)[i].unicode();
@@ -529,6 +539,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
         }
     }
     return 0;
+#endif
 }
 
 static int ucstrncmp(const QChar *a, const uchar *c, int l)
