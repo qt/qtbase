@@ -1260,15 +1260,27 @@ int QCoreApplication::exec()
     self->d_func()->aboutToQuitEmitted = false;
     int returnCode = eventLoop.exec();
     threadData->quitNow = false;
-    if (self) {
-        self->d_func()->in_exec = false;
-        if (!self->d_func()->aboutToQuitEmitted)
-            emit self->aboutToQuit(QPrivateSignal());
-        self->d_func()->aboutToQuitEmitted = true;
-        sendPostedEvents(0, QEvent::DeferredDelete);
-    }
+
+    if (self)
+        self->d_func()->execCleanup();
 
     return returnCode;
+}
+
+
+// Cleanup after eventLoop is done executing in QCoreApplication::exec().
+// This is for use cases in which QCoreApplication is instantiated by a
+// library and not by an application executable, for example, Active X
+// servers.
+
+void QCoreApplicationPrivate::execCleanup()
+{
+    threadData->quitNow = false;
+    in_exec = false;
+    if (!aboutToQuitEmitted)
+        emit q_func()->aboutToQuit(QCoreApplication::QPrivateSignal());
+    aboutToQuitEmitted = true;
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 }
 
 
