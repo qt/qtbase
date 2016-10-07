@@ -29,9 +29,9 @@ macx-xcode {
 
     # Switch the order to make sure that the first Makefile target is the right one
     !contains(QT_CONFIG, simulator_and_device):contains(QMAKE_MAC_SDK, ^iphonesimulator.*): \
-        addExclusiveBuilds(iphonesimulator, iphoneos)
+        addExclusiveBuildsProper(iphonesimulator_and_iphoneos, iphonesimulator iphoneos)
     else: \
-        addExclusiveBuilds(iphoneos, iphonesimulator)
+        addExclusiveBuildsProper(iphonesimulator_and_iphoneos, iphoneos iphonesimulator)
 }
 
 equals(TEMPLATE, subdirs) {
