@@ -765,22 +765,22 @@ void tst_QXmlSimpleReader::dtdRecursionLimit()
     QVERIFY(file.open(QIODevice::ReadOnly));
     QXmlSimpleReader xmlReader;
     {
-        QXmlInputSource *source = new QXmlInputSource(&file);
+        QXmlInputSource source(&file);
         TestHandler handler;
         xmlReader.setDeclHandler(&handler);
         xmlReader.setErrorHandler(&handler);
-        QVERIFY(!xmlReader.parse(source));
+        QVERIFY(!xmlReader.parse(&source));
     }
 
     file.close();
     file.setFileName("xmldocs/1-levels-nested-dtd.xml");
     QVERIFY(file.open(QIODevice::ReadOnly));
     {
-        QXmlInputSource *source = new QXmlInputSource(&file);
+        QXmlInputSource source(&file);
         TestHandler handler;
         xmlReader.setDeclHandler(&handler);
         xmlReader.setErrorHandler(&handler);
-        QVERIFY(!xmlReader.parse(source));
+        QVERIFY(!xmlReader.parse(&source));
         // The error wasn't because of the recursion limit being reached,
         // it was because the document is not valid.
         QVERIFY(handler.recursionCount < 2);
@@ -790,11 +790,11 @@ void tst_QXmlSimpleReader::dtdRecursionLimit()
     file.setFileName("xmldocs/internal-entity-polynomial-attribute.xml");
     QVERIFY(file.open(QIODevice::ReadOnly));
     {
-        QXmlInputSource *source = new QXmlInputSource(&file);
+        QXmlInputSource source(&file);
         TestHandler handler;
         xmlReader.setDeclHandler(&handler);
         xmlReader.setErrorHandler(&handler);
-        QVERIFY(!xmlReader.parse(source));
+        QVERIFY(!xmlReader.parse(&source));
         QCOMPARE(handler.recursionCount, 2);
     }
 }
