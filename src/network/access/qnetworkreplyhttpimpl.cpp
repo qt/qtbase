@@ -238,7 +238,8 @@ QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manage
 
 QNetworkReplyHttpImpl::~QNetworkReplyHttpImpl()
 {
-    // Most work is done in private destructor
+    // This will do nothing if the request was already finished or aborted
+    emit abortHttpRequest();
 }
 
 void QNetworkReplyHttpImpl::close()
@@ -452,9 +453,6 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
 
 QNetworkReplyHttpImplPrivate::~QNetworkReplyHttpImplPrivate()
 {
-    Q_Q(QNetworkReplyHttpImpl);
-    // This will do nothing if the request was already finished or aborted
-    emit q->abortHttpRequest();
 }
 
 /*
