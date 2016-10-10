@@ -66,7 +66,13 @@ class QFbBackingStore;
 class QFbScreen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
+
 public:
+    enum Flag {
+        DontForceFirstWindowToFullScreen = 0x01
+    };
+    Q_DECLARE_FLAGS(Flags, Flag)
+
     QFbScreen();
     ~QFbScreen();
 
@@ -85,6 +91,8 @@ public:
     virtual void raise(QFbWindow *window);
     virtual void lower(QFbWindow *window);
     virtual void topWindowChanged(QWindow *) {}
+    virtual int windowCount() const;
+    virtual Flags flags() const;
 
     void addPendingBackingStore(QFbBackingStore *bs) { mPendingBackingStores << bs; }
 
@@ -125,6 +133,8 @@ private:
     friend class QFbWindow;
     bool mIsUpToDate;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFbScreen::Flags)
 
 QT_END_NAMESPACE
 

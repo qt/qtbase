@@ -183,5 +183,10 @@ bool QVNCScreen::swapBytes() const
 }
 #endif
 
+QFbScreen::Flags QVncScreen::flags() const
+{
+    return QFbScreen::DontForceFirstWindowToFullScreen;
+}
+
 QT_END_NAMESPACE
 

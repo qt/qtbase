@@ -70,6 +70,8 @@ public:
     void disableClientCursor(QVncClient *client);
     QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
 
+    Flags flags() const Q_DECL_OVERRIDE;
+
     void clearDirty() { dirtyRegion = QRegion(); }
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN

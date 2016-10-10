@@ -154,6 +154,11 @@ QWindow *QFbScreen::topLevelAt(const QPoint & p) const
     return 0;
 }
 
+int QFbScreen::windowCount() const
+{
+    return mWindowStack.count();
+}
+
 void QFbScreen::setDirty(const QRect &rect)
 {
     QRect intersection = rect.intersected(mGeometry);
@@ -310,6 +315,11 @@ QFbWindow *QFbScreen::windowForId(WId wid) const
         if (mWindowStack[i]->winId() == wid)
             return mWindowStack[i];
 
+    return 0;
+}
+
+QFbScreen::Flags QFbScreen::flags() const
+{
     return 0;
 }
 

@@ -74,8 +74,13 @@ void QFbWindow::setGeometry(const QRect &rect)
 
 void QFbWindow::setVisible(bool visible)
 {
+    QFbScreen *fbScreen = platformScreen();
     if (visible) {
-        if (mWindowState & Qt::WindowFullScreen)
+        bool convOk = false;
+        static bool envDisableForceFullScreen = qEnvironmentVariableIntValue("QT_QPA_FB_FORCE_FULLSCREEN", &convOk) == 0 && convOk;
+        const bool platformDisableForceFullScreen = fbScreen->flags().testFlag(QFbScreen::DontForceFirstWindowToFullScreen);
+        const bool forceFullScreen = !envDisableForceFullScreen && !platformDisableForceFullScreen && fbScreen->windowCount() == 0;
+        if (forceFullScreen || (mWindowState & Qt::WindowFullScreen))
             setGeometry(platformScreen()->geometry());
         else if (mWindowState & Qt::WindowMaximized)
             setGeometry(platformScreen()->availableGeometry());
@@ -83,9 +88,9 @@ void QFbWindow::setVisible(bool visible)
     QPlatformWindow::setVisible(visible);
 
     if (visible)
-        platformScreen()->addWindow(this);
+        fbScreen->addWindow(this);
     else
-        platformScreen()->removeWindow(this);
+        fbScreen->removeWindow(this);
 }
 
 
