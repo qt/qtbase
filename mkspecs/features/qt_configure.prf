@@ -615,7 +615,6 @@ defineTest(qtConfHandleLibrary) {
 
     result = false
     for (s, $${lpfx}.sources._KEYS_) {
-        qtLog("Trying source $$s of library $${1}.")
         spfx = $${lpfx}.sources.$${s}
 
         t = $$eval($${spfx}.type)
@@ -623,13 +622,15 @@ defineTest(qtConfHandleLibrary) {
         !defined($$call, test): \
             error("Library $${1} source $${s} has unknown type '$$t'")
 
+        qtLog("Trying source $$s (type $$t) of library $${1} ...")
+
         !$$qtConfEvaluate($$eval($${spfx}.condition)) {
-            qtLog("Source $$s of library $$1 failed condition.")
+            qtLog("  => source failed condition.")
             next()
         }
 
         !$${call}($$spfx) {
-            qtLog("Source $$s of library $$1 produced no result.")
+            qtLog("  => source produced no result.")
             next()
         }
 
@@ -638,10 +639,12 @@ defineTest(qtConfHandleLibrary) {
             $${lpfx}.literal_args = $$qtConfLibraryArgs($$spfx)
             $${lpfx}.host = $$eval($${spfx}.host)
             !qtConfTest_compile($$lpfx) {
-                qtLog("Source $$s of library $$1 failed verification.")
+                qtLog(" => source failed verification.")
                 next()
             }
         }
+
+        qtLog(" => source accepted.")
 
         $${lpfx}.cache += source
         for (v, $$list(libs includes cflags version export)): \
