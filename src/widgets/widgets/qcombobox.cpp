@@ -3125,6 +3125,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Up:
         if (e->modifiers() & Qt::ControlModifier)
             break; // pass to line edit for auto completion
+        // fall through
     case Qt::Key_PageUp:
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled())
@@ -3210,6 +3211,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         switch (move) {
         case MoveFirst:
             newIndex = -1;
+            // fall through
         case MoveDown:
             newIndex++;
             while ((newIndex < count()) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))
@@ -3217,6 +3219,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             break;
         case MoveLast:
             newIndex = count();
+            // fall through
         case MoveUp:
             newIndex--;
             while ((newIndex >= 0) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))
