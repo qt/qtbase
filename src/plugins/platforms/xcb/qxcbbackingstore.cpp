@@ -150,12 +150,13 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
         return;
 
     int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
-    if (id == -1)
+    if (id == -1) {
         qWarning("QXcbShmImage: shmget() failed (%d: %s) for size %d (%dx%d)",
                  errno, strerror(errno), segmentSize, size.width(), size.height());
-    else
-        m_shm_info.shmid = id;
-    m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat (m_shm_info.shmid, 0, 0);
+    } else {
+        m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat(id, 0, 0);
+    }
+    m_shm_info.shmid = id;
     m_shm_info.shmseg = xcb_generate_id(xcb_connection());
 
     const xcb_query_extension_reply_t *shm_reply = xcb_get_extension_data(xcb_connection(), &xcb_shm_id);
@@ -166,9 +167,10 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     if (!shm_present || error || id == -1) {
         free(error);
 
-        shmdt(m_shm_info.shmaddr);
-        shmctl(m_shm_info.shmid, IPC_RMID, 0);
-
+        if (id != -1) {
+            shmdt(m_shm_info.shmaddr);
+            shmctl(m_shm_info.shmid, IPC_RMID, 0);
+        }
         m_shm_info.shmaddr = 0;
 
         m_xcb_image->data = (uint8_t *)malloc(segmentSize);
