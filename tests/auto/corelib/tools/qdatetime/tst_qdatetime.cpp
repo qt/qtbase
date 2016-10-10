@@ -732,46 +732,56 @@ void tst_QDateTime::fromMSecsSinceEpoch()
 void tst_QDateTime::toString_isoDate_data()
 {
     QTest::addColumn<QDateTime>("datetime");
+    QTest::addColumn<Qt::DateFormat>("format");
     QTest::addColumn<QString>("expected");
 
     QTest::newRow("localtime")
             << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34))
-            << QString("1978-11-09T13:28:34");
+            << Qt::ISODate << QString("1978-11-09T13:28:34");
     QTest::newRow("UTC")
             << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34), Qt::UTC)
-            << QString("1978-11-09T13:28:34Z");
+            << Qt::ISODate << QString("1978-11-09T13:28:34Z");
     QDateTime dt(QDate(1978, 11, 9), QTime(13, 28, 34));
     dt.setOffsetFromUtc(19800);
     QTest::newRow("positive OffsetFromUTC")
-            << dt
+            << dt << Qt::ISODate
             << QString("1978-11-09T13:28:34+05:30");
     dt.setUtcOffset(-7200);
     QTest::newRow("negative OffsetFromUTC")
-            << dt
+            << dt << Qt::ISODate
             << QString("1978-11-09T13:28:34-02:00");
     dt.setUtcOffset(-900);
     QTest::newRow("negative non-integral OffsetFromUTC")
-            << dt
+            << dt << Qt::ISODate
             << QString("1978-11-09T13:28:34-00:15");
     QTest::newRow("invalid")
             << QDateTime(QDate(-1, 11, 9), QTime(13, 28, 34), Qt::UTC)
-            << QString();
+            << Qt::ISODate << QString();
+    QTest::newRow("without-ms")
+            << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34, 20))
+            << Qt::ISODate << QString("1978-11-09T13:28:34");
+    QTest::newRow("with-ms")
+            << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34, 20))
+            << Qt::ISODateWithMs << QString("1978-11-09T13:28:34.020");
 }
 
 void tst_QDateTime::toString_isoDate()
 {
     QFETCH(QDateTime, datetime);
+    QFETCH(Qt::DateFormat, format);
     QFETCH(QString, expected);
 
     QLocale oldLocale;
     QLocale::setDefault(QLocale("en_US"));
 
-    QString result = datetime.toString(Qt::ISODate);
+    QString result = datetime.toString(format);
     QCOMPARE(result, expected);
 
-    QDateTime resultDatetime = QDateTime::fromString(result, Qt::ISODate);
+    QDateTime resultDatetime = QDateTime::fromString(result, format);
     // If expecting invalid result the datetime may still be valid, i.e. year < 0 or > 9999
     if (!expected.isEmpty()) {
+        QEXPECT_FAIL("without-ms", "Qt::ISODate truncates milliseconds (QTBUG-56552)", Abort);
+
         QCOMPARE(resultDatetime, datetime);
         QCOMPARE(resultDatetime.date(), datetime.date());
         QCOMPARE(resultDatetime.time(), datetime.time());

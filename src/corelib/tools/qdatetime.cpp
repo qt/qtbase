@@ -873,6 +873,7 @@ QString QDate::toString(Qt::DateFormat format) const
         return toStringTextDate(*this);
 #endif
     case Qt::ISODate:
+    case Qt::ISODateWithMs:
         return toStringIsoDate(jd);
     }
 }
@@ -1568,7 +1569,9 @@ int QTime::msec() const
 
     If \a format is Qt::ISODate, the string format corresponds to the
     ISO 8601 extended specification for representations of dates,
-    which is also HH:mm:ss.
+    represented by HH:mm:ss. To include milliseconds in the ISO 8601
+    date, use the \a format Qt::ISODateWithMs, which corresponds to
+    HH:mm:ss.zzz.
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale
@@ -1610,6 +1613,8 @@ QString QTime::toString(Qt::DateFormat format) const
         return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
+    case Qt::ISODateWithMs:
+        return QString::asprintf("%02d:%02d:%02d.%03d", hour(), minute(), second(), msec());
     case Qt::RFC2822Date:
     case Qt::ISODate:
     case Qt::TextDate:
@@ -1916,7 +1921,8 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
         }
     }
 
-    if (format == Qt::ISODate && hour == 24 && minute == 0 && second == 0 && msec == 0) {
+    const bool isISODate = format == Qt::ISODate || format == Qt::ISODateWithMs;
+    if (isISODate && hour == 24 && minute == 0 && second == 0 && msec == 0) {
         if (isMidnight24)
             *isMidnight24 = true;
         hour = 0;
@@ -1958,6 +1964,7 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
     case Qt::RFC2822Date:
         return rfcDateImpl(string).time;
     case Qt::ISODate:
+    case Qt::ISODateWithMs:
     case Qt::TextDate:
     default:
         return fromIsoTimeString(&string, format, 0);
@@ -3713,7 +3720,9 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     depending on the timeSpec() of the QDateTime. If the timeSpec()
     is Qt::UTC, Z will be appended to the string; if the timeSpec() is
     Qt::OffsetFromUTC, the offset in hours and minutes from UTC will
-    be appended to the string.
+    be appended to the string. To include milliseconds in the ISO 8601
+    date, use the \a format Qt::ISODateWithMs, which corresponds to
+    YYYY-MM-DDTHH:mm:ss.zzz[Z|[+|-]HH:mm].
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale
@@ -3784,7 +3793,8 @@ QString QDateTime::toString(Qt::DateFormat format) const
         return buf;
     }
 #endif
-    case Qt::ISODate: {
+    case Qt::ISODate:
+    case Qt::ISODateWithMs: {
         const QPair<QDate, QTime> p = getDateTime(d);
         const QDate &dt = p.first;
         const QTime &tm = p.second;
@@ -3792,7 +3802,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
         if (buf.isEmpty())
             return QString();   // failed to convert
         buf += QLatin1Char('T');
-        buf += tm.toString(Qt::ISODate);
+        buf += tm.toString(format);
         switch (getSpec(d)) {
         case Qt::UTC:
             buf += QLatin1Char('Z');
@@ -4651,7 +4661,8 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         dateTime.setOffsetFromUtc(rfc.utcOffset);
         return dateTime;
     }
-    case Qt::ISODate: {
+    case Qt::ISODate:
+    case Qt::ISODateWithMs: {
         const int size = string.size();
         if (size < 10)
             return QDateTime();
@@ -4699,7 +4710,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         // Might be end of day (24:00, including variants), which QTime considers invalid.
         // ISO 8601 (section 4.2.3) says that 24:00 is equivalent to 00:00 the next day.
         bool isMidnight24 = false;
-        QTime time = fromIsoTimeString(isoString, Qt::ISODate, &isMidnight24);
+        QTime time = fromIsoTimeString(isoString, format, &isMidnight24);
         if (!time.isValid())
             return QDateTime();
         if (isMidnight24)
