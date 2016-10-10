@@ -4137,7 +4137,8 @@ void QRasterBuffer::flushToARGBImage(QImage *target) const
 
 class QGradientCache
 {
-    struct CacheInfo
+public:
+    struct CacheInfo : public QSharedData
     {
         inline CacheInfo(QGradientStops s, int op, QGradient::InterpolationMode mode) :
             stops(qMove(s)), opacity(op), interpolationMode(mode) {}
@@ -4148,12 +4149,9 @@ class QGradientCache
         QGradient::InterpolationMode interpolationMode;
     };
 
-    typedef QMultiHash<quint64, CacheInfo> QGradientColorTableHash;
+    typedef QMultiHash<quint64, QExplicitlySharedDataPointer<const CacheInfo> > QGradientColorTableHash;
 
-public:
-    typedef QPair<const QRgb *, const QRgba64 *> ColorBufferPair;
-
-    inline ColorBufferPair getBuffer(const QGradient &gradient, int opacity) {
+    inline QExplicitlySharedDataPointer<const CacheInfo> getBuffer(const QGradient &gradient, int opacity) {
         quint64 hash_val = 0;
 
         const QGradientStops stops = gradient.stops();
@@ -4167,10 +4165,9 @@ public:
             return addCacheElement(hash_val, gradient, opacity);
         else {
             do {
-                const CacheInfo &cache_info = it.value();
-                if (cache_info.stops == stops && cache_info.opacity == opacity && cache_info.interpolationMode == gradient.interpolationMode())
-                    return qMakePair(reinterpret_cast<const QRgb *>(cache_info.buffer32),
-                                     reinterpret_cast<const QRgba64 *>(cache_info.buffer64));
+                const QExplicitlySharedDataPointer<const CacheInfo> &cache_info = it.value();
+                if (cache_info->stops == stops && cache_info->opacity == opacity && cache_info->interpolationMode == gradient.interpolationMode())
+                    return cache_info;
                 ++it;
             } while (it != cache.constEnd() && it.key() == hash_val);
             // an exact match for these stops and opacity was not found, create new cache
@@ -4184,18 +4181,16 @@ protected:
     inline void generateGradientColorTable(const QGradient& g,
                                            QRgba64 *colorTable,
                                            int size, int opacity) const;
-    ColorBufferPair addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
+    QExplicitlySharedDataPointer<const CacheInfo> addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
         if (cache.size() == maxCacheSize()) {
             // may remove more than 1, but OK
             cache.erase(cache.begin() + (qrand() % maxCacheSize()));
         }
-        CacheInfo cache_entry(gradient.stops(), opacity, gradient.interpolationMode());
-        generateGradientColorTable(gradient, cache_entry.buffer64, paletteSize(), opacity);
+        QExplicitlySharedDataPointer<CacheInfo> cache_entry(new CacheInfo (gradient.stops(), opacity, gradient.interpolationMode()));
+        generateGradientColorTable(gradient, cache_entry->buffer64, paletteSize(), opacity);
         for (int i = 0; i < GRADIENT_STOPTABLE_SIZE; ++i)
-            cache_entry.buffer32[i] = cache_entry.buffer64[i].toArgb32();
-        CacheInfo &cache_value = cache.insert(hash_val, cache_entry).value();
-        return qMakePair(reinterpret_cast<const QRgb *>(cache_value.buffer32),
-                         reinterpret_cast<const QRgba64 *>(cache_value.buffer64));
+            cache_entry->buffer32[i] = cache_entry->buffer64[i].toArgb32();
+        return cache.insert(hash_val, cache_entry).value();
     }
 
     QGradientColorTableHash cache;
@@ -4414,6 +4409,7 @@ Q_GUI_EXPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
 void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode)
 {
     Qt::BrushStyle brushStyle = qbrush_style(brush);
+    cachedGradient.reset();
     switch (brushStyle) {
     case Qt::SolidPattern: {
         type = Solid;
@@ -4430,9 +4426,10 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             const QLinearGradient *g = static_cast<const QLinearGradient *>(brush.gradient());
             gradient.alphaColor = !brush.isOpaque() || alpha != 256;
 
-            QGradientCache::ColorBufferPair colorBuffers = qt_gradient_cache()->getBuffer(*g, alpha);
-            gradient.colorTable64 = colorBuffers.second;
-            gradient.colorTable32 = colorBuffers.first;
+            QExplicitlySharedDataPointer<const QGradientCache::CacheInfo> cacheInfo = qt_gradient_cache()->getBuffer(*g, alpha);
+            cachedGradient = cacheInfo;
+            gradient.colorTable32 = cacheInfo->buffer32;
+            gradient.colorTable64 = cacheInfo->buffer64;
 
             gradient.spread = g->spread();
 
@@ -4451,9 +4448,10 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             const QRadialGradient *g = static_cast<const QRadialGradient *>(brush.gradient());
             gradient.alphaColor = !brush.isOpaque() || alpha != 256;
 
-            QGradientCache::ColorBufferPair colorBuffers = qt_gradient_cache()->getBuffer(*g, alpha);
-            gradient.colorTable64 = colorBuffers.second;
-            gradient.colorTable32 = colorBuffers.first;
+            QExplicitlySharedDataPointer<const QGradientCache::CacheInfo> cacheInfo = qt_gradient_cache()->getBuffer(*g, alpha);
+            cachedGradient = cacheInfo;
+            gradient.colorTable32 = cacheInfo->buffer32;
+            gradient.colorTable64 = cacheInfo->buffer64;
 
             gradient.spread = g->spread();
 
@@ -4476,9 +4474,10 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             const QConicalGradient *g = static_cast<const QConicalGradient *>(brush.gradient());
             gradient.alphaColor = !brush.isOpaque() || alpha != 256;
 
-            QGradientCache::ColorBufferPair colorBuffers = qt_gradient_cache()->getBuffer(*g, alpha);
-            gradient.colorTable64 = colorBuffers.second;
-            gradient.colorTable32 = colorBuffers.first;
+            QExplicitlySharedDataPointer<const QGradientCache::CacheInfo> cacheInfo = qt_gradient_cache()->getBuffer(*g, alpha);
+            cachedGradient = cacheInfo;
+            gradient.colorTable32 = cacheInfo->buffer32;
+            gradient.colorTable64 = cacheInfo->buffer64;
 
             gradient.spread = QGradient::RepeatSpread;
 
