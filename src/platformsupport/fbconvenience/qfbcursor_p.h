@@ -87,11 +87,11 @@ public:
     virtual QRect drawCursor(QPainter &painter);
 
     // input methods
-    void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE;
-    QPoint pos() const Q_DECL_OVERRIDE;
-    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
+    void pointerEvent(const QMouseEvent &event) override;
+    QPoint pos() const override;
+    void setPos(const QPoint &pos) override;
 #ifndef QT_NO_CURSOR
-    void changeCursor(QCursor *widgetCursor, QWindow *window) Q_DECL_OVERRIDE;
+    void changeCursor(QCursor *widgetCursor, QWindow *window) override;
 #endif
 
     virtual void setDirty();
@@ -113,7 +113,7 @@ private:
     QRect mPrevRect;         // last place the cursor was drawn
     bool mDirty;
     bool mOnScreen;
-    QPlatformCursorImage *mGraphic;
+    QPlatformCursorImage *mCursorImage;
     QFbCursorDeviceListener *mDeviceListener;
     QPoint m_pos;
 };
@@ -121,4 +121,3 @@ private:
 QT_END_NAMESPACE
 
 #endif // QFBCURSOR_P_H
-

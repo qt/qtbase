@@ -60,8 +60,8 @@ QFbCursor::QFbCursor(QFbScreen *screen)
       mScreen(screen),
       mDirty(false),
       mOnScreen(false),
-      mGraphic(0),
-      mDeviceListener(0)
+      mCursorImage(nullptr),
+      mDeviceListener(nullptr)
 {
     QByteArray hideCursorVal = qgetenv("QT_QPA_FB_HIDECURSOR");
     if (!hideCursorVal.isEmpty())
@@ -69,7 +69,7 @@ QFbCursor::QFbCursor(QFbScreen *screen)
     if (!mVisible)
         return;
 
-    mGraphic = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
+    mCursorImage = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
     setCursor(Qt::ArrowCursor);
 
     mDeviceListener = new QFbCursorDeviceListener(this);
@@ -85,8 +85,8 @@ QFbCursor::~QFbCursor()
 
 QRect QFbCursor::getCurrentRect()
 {
-    QRect rect = mGraphic->image()->rect().translated(-mGraphic->hotspot().x(),
-                                                     -mGraphic->hotspot().y());
+    QRect rect = mCursorImage->image()->rect().translated(-mCursorImage->hotspot().x(),
+                                                          -mCursorImage->hotspot().y());
     rect.translate(m_pos);
     QPoint mScreenOffset = mScreen->geometry().topLeft();
     rect.translate(-mScreenOffset);  // global to local translation
@@ -133,7 +133,7 @@ QRect QFbCursor::drawCursor(QPainter & painter)
         return QRect();
 
     mPrevRect = mCurrentRect;
-    painter.drawImage(mPrevRect, *mGraphic->image());
+    painter.drawImage(mPrevRect, *mCursorImage->image());
     mOnScreen = true;
     return mPrevRect;
 }
@@ -149,17 +149,17 @@ QRect QFbCursor::dirtyRect()
 
 void QFbCursor::setCursor(Qt::CursorShape shape)
 {
-    mGraphic->set(shape);
+    mCursorImage->set(shape);
 }
 
 void QFbCursor::setCursor(const QImage &image, int hotx, int hoty)
 {
-    mGraphic->set(image, hotx, hoty);
+    mCursorImage->set(image, hotx, hoty);
 }
 
 void QFbCursor::setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
 {
-    mGraphic->set(data, mask, width, height, hotX, hotY);
+    mCursorImage->set(data, mask, width, height, hotX, hotY);
 }
 
 #ifndef QT_NO_CURSOR
