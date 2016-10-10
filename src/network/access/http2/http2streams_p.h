@@ -51,10 +51,16 @@
 // We mean it.
 //
 
+#include "http2frames_p.h"
+#include "hpack_p.h"
+
 #include <private/qhttpnetworkconnectionchannel_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qstring.h>
+
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,12 +76,16 @@ struct Q_AUTOTEST_EXPORT Stream
         open,
         halfClosedLocal,
         halfClosedRemote,
+        remoteReserved,
         closed
     };
 
     Stream();
+    // That's a ctor for a client-initiated stream:
     Stream(const HttpMessagePair &message, quint32 streamID, qint32 sendSize,
            qint32 recvSize);
+    // That's a reserved stream, created by PUSH_PROMISE from a server:
+    Stream(const QString &key, quint32 streamID, qint32 recvSize);
 
     QHttpNetworkReply *reply() const;
     const QHttpNetworkRequest &request() const;
@@ -92,9 +102,22 @@ struct Q_AUTOTEST_EXPORT Stream
     qint32 recvWindow = 65535;
 
     StreamState state = idle;
+    QString key; // for PUSH_PROMISE
 };
 
-}
+struct PushPromise
+{
+    quint32 reservedID = 0;
+    // PUSH_PROMISE has its own HEADERS,
+    // usually similar to what request has:
+    HPack::HttpHeader pushHeader;
+    // Response has its own (normal) HEADERS:
+    HPack::HttpHeader responseHeader;
+    // DATA frames on a promised stream:
+    std::vector<Frame> dataFrames;
+};
+
+} // namespace Http2
 
 QT_END_NAMESPACE
 

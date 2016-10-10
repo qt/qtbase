@@ -63,6 +63,16 @@ inline bool is_valid_client_stream(quint32 streamID)
     return (streamID & 0x1) && streamID <= std::numeric_limits<qint32>::max();
 }
 
+void fill_push_header(const HttpHeader &originalRequest, HttpHeader &promisedRequest)
+{
+    for (const auto &field : originalRequest) {
+        if (field.name == QByteArray(":authority") ||
+            field.name == QByteArray(":scheme")) {
+            promisedRequest.push_back(field);
+        }
+    }
+}
+
 }
 
 Http2Server::Http2Server(bool h2c, const Http2Settings &ss, const Http2Settings &cs)
@@ -96,6 +106,12 @@ Http2Server::~Http2Server()
 {
 }
 
+void Http2Server::enablePushPromise(bool pushEnabled, const QByteArray &path)
+{
+    pushPromiseEnabled = pushEnabled;
+    pushPath = path;
+}
+
 void Http2Server::setResponseBody(const QByteArray &body)
 {
     responseBody = body;
@@ -111,7 +127,6 @@ void Http2Server::startServer()
     if (listen())
         emit serverStarted(serverPort());
 }
-
 
 void Http2Server::sendServerSettings()
 {
@@ -206,7 +221,7 @@ void Http2Server::incomingConnection(qintptr socketDescriptor)
     if (clearTextHTTP2) {
         socket.reset(new QTcpSocket);
         const bool set = socket->setSocketDescriptor(socketDescriptor);
-        Q_UNUSED(set) Q_ASSERT(set);
+        Q_ASSERT(set);
         // Stop listening:
         close();
         QMetaObject::invokeMethod(this, "connectionEstablished",
@@ -531,6 +546,48 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
 {
     Q_ASSERT(activeRequests.find(streamID) != activeRequests.end());
 
+    const quint32 maxFrameSize(clientSetting(Settings::MAX_FRAME_SIZE_ID,
+                                             Http2::maxFrameSize));
+
+    if (pushPromiseEnabled) {
+        // A real server supporting PUSH_PROMISE will probably first send
+        // PUSH_PROMISE and then a normal response (to a real request),
+        // so that a client parsing this response and discovering another
+        // resource it needs, will _already_ have this additional resource
+        // in PUSH_PROMISE.
+        lastPromisedStream += 2;
+
+        writer.start(FrameType::PUSH_PROMISE, FrameFlag::END_HEADERS, streamID);
+        writer.append(lastPromisedStream);
+
+        HttpHeader pushHeader;
+        fill_push_header(activeRequests[streamID], pushHeader);
+        pushHeader.push_back(HeaderField(":method", "GET"));
+        pushHeader.push_back(HeaderField(":path", pushPath));
+
+        // Now interesting part, let's make it into 'stream':
+        activeRequests[lastPromisedStream] = pushHeader;
+
+        HPack::BitOStream ostream(writer.outboundFrame().buffer);
+        const bool result = encoder.encodeRequest(ostream, pushHeader);
+        Q_ASSERT(result);
+
+        // Well, it's not HEADERS, it's PUSH_PROMISE with ... HEADERS block.
+        // Should work.
+        writer.writeHEADERS(*socket, maxFrameSize);
+        qDebug() << "server sent a PUSH_PROMISE on" << lastPromisedStream;
+
+        if (responseBody.isEmpty())
+            responseBody = QByteArray("I PROMISE (AND PUSH) YOU ...");
+
+        // Now we send this promised data as a normal response on our reserved
+        // stream (disabling PUSH_PROMISE for the moment to avoid recursion):
+        pushPromiseEnabled = false;
+        sendResponse(lastPromisedStream, false);
+        pushPromiseEnabled = true;
+        // Now we'll continue with _normal_ response.
+    }
+
     writer.start(FrameType::HEADERS, FrameFlag::END_HEADERS, streamID);
     if (emptyBody)
         writer.addFlag(FrameFlag::END_STREAM);
@@ -544,9 +601,7 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
     HPack::BitOStream ostream(writer.outboundFrame().buffer);
     const bool result = encoder.encodeResponse(ostream, header);
     Q_ASSERT(result);
-    Q_UNUSED(result)
 
-    const quint32 maxFrameSize(clientSetting(Settings::MAX_FRAME_SIZE_ID, Http2::maxFrameSize));
     writer.writeHEADERS(*socket, maxFrameSize);
 
     if (!emptyBody) {

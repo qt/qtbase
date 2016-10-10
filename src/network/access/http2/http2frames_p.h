@@ -71,27 +71,29 @@ namespace Http2
 struct Q_AUTOTEST_EXPORT Frame
 {
     Frame();
-    // Reading these values without first forming a valid frame
-    // (either reading it from a socket or building it) will result
-    // in undefined behavior:
+    // Reading these values without first forming a valid frame (either reading
+    // it from a socket or building it) will result in undefined behavior:
     FrameType type() const;
     quint32 streamID() const;
     FrameFlags flags() const;
     quint32 payloadSize() const;
     uchar padding() const;
-    // In HTTP/2 a stream's priority is specified by its weight
-    // and a stream (id) it depends on:
+    // In HTTP/2 a stream's priority is specified by its weight and a stream
+    // (id) it depends on:
     bool priority(quint32 *streamID = nullptr,
                   uchar *weight = nullptr) const;
 
     FrameStatus validateHeader() const;
     FrameStatus validatePayload() const;
 
-    // Number of payload bytes without padding and/or priority
+    // Number of payload bytes without padding and/or priority.
     quint32 dataSize() const;
-    // Beginning of payload without priority/padding
-    // bytes.
+    // HEADERS data size for HEADERS, PUSH_PROMISE and CONTINUATION streams:
+    quint32 hpackBlockSize() const;
+    // Beginning of payload without priority/padding bytes.
     const uchar *dataBegin() const;
+    // HEADERS data beginning for HEADERS, PUSH_PROMISE and CONTINUATION streams:
+    const uchar *hpackBlockBegin() const;
 
     std::vector<uchar> buffer;
 };
@@ -134,8 +136,7 @@ public:
     void setFlags(FrameFlags flags);
     void addFlag(FrameFlag flag);
 
-    // All append functions also update frame's payload
-    // length.
+    // All append functions also update frame's payload length.
     template<typename ValueType>
     void append(ValueType val)
     {
@@ -161,16 +162,14 @@ public:
 
     // Write as a single frame:
     bool write(QAbstractSocket &socket) const;
-    // Two types of frames we are sending are affected by
-    // frame size limits: HEADERS and DATA. HEADERS' payload
-    // (hpacked HTTP headers, following a frame header)
-    // is always in our 'buffer', we send the initial HEADERS
+    // Two types of frames we are sending are affected by frame size limits:
+    // HEADERS and DATA. HEADERS' payload (hpacked HTTP headers, following a
+    // frame header) is always in our 'buffer', we send the initial HEADERS
     // frame first and then CONTINUTATION frame(s) if needed:
     bool writeHEADERS(QAbstractSocket &socket, quint32 sizeLimit);
-    // With DATA frames the actual payload is never in our 'buffer',
-    // it's a 'readPointer' from QNonContiguousData. We split
-    // this payload as needed into DATA frames with correct
-    // payload size fitting into frame size limit:
+    // With DATA frames the actual payload is never in our 'buffer', it's a
+    // 'readPointer' from QNonContiguousData. We split this payload as needed
+    // into DATA frames with correct payload size fitting into frame size limit:
     bool writeDATA(QAbstractSocket &socket, quint32 sizeLimit,
                    const uchar *src, quint32 size);
 private:
