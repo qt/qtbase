@@ -414,7 +414,7 @@ QRegion QLinuxFbScreen::doRedraw()
 
     mBlitter->setCompositionMode(QPainter::CompositionMode_Source);
     for (const QRect &rect : touched)
-        mBlitter->drawImage(rect, *mScreenImage, rect);
+        mBlitter->drawImage(rect, mScreenImage, rect);
 
     return touched;
 }

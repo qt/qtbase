@@ -64,7 +64,7 @@ public:
     QPixmap grabWindow(WId wid, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
 
     QRegion doRedraw() Q_DECL_OVERRIDE;
-    QImage *image() const { return mScreenImage; }
+    QImage *image() { return &mScreenImage; }
 
     void enableClientCursor(QVncClient *client);
     void disableClientCursor(QVncClient *client);

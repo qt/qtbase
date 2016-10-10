@@ -150,10 +150,10 @@ QPixmap QVncScreen::grabWindow(WId wid, int x, int y, int width, int height) con
 {
     if (!wid) {
         if (width < 0)
-            width = mScreenImage->width() - x;
+            width = mScreenImage.width() - x;
         if (height < 0)
-            height = mScreenImage->height() - y;
-        return QPixmap::fromImage(*mScreenImage).copy(x, y, width, height);
+            height = mScreenImage.height() - y;
+        return QPixmap::fromImage(mScreenImage).copy(x, y, width, height);
     }
 
     QFbWindow *window = windowForId(wid);
@@ -165,7 +165,7 @@ QPixmap QVncScreen::grabWindow(WId wid, int x, int y, int width, int height) con
             height = geom.height() - y;
         QRect rect(geom.topLeft() + QPoint(x, y), QSize(width, height));
         rect &= window->geometry();
-        return QPixmap::fromImage(*mScreenImage).copy(rect);
+        return QPixmap::fromImage(mScreenImage).copy(rect);
     }
 
     return QPixmap();

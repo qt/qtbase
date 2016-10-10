@@ -243,7 +243,7 @@ QRegion QBsdFbScreen::doRedraw()
 
     const auto rects = touched.rects();
     for (const QRect &rect : rects)
-        m_blitter->drawImage(rect, *mScreenImage, rect);
+        m_blitter->drawImage(rect, mScreenImage, rect);
     return touched;
 }
 
