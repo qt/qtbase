@@ -926,6 +926,7 @@ foreach my $lib (@modules_to_sync) {
     my $pri_install_classes = "";
     my $pri_install_files = "";
     my $pri_install_pfiles = "";
+    my $pri_install_ipfiles = "";
     my $pri_install_qpafiles = "";
     my $pri_injections = "";
     my $pri_clean_files = "";
@@ -1098,6 +1099,9 @@ foreach my $lib (@modules_to_sync) {
                             elsif ($qpa_header) {
                                 $pri_install_qpafiles.= "$pri_install_iheader ";;
                             }
+                            elsif ($shadow) {
+                                $pri_install_ipfiles .= "$pri_install_iheader ";
+                            }
                             else {
                                 $pri_install_pfiles.= "$pri_install_iheader ";;
                             }
@@ -1242,6 +1246,7 @@ foreach my $lib (@modules_to_sync) {
         $headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
         $headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
+        $headers_pri_contents .= "SYNCQT.INJECTED_PRIVATE_HEADER_FILES = $pri_install_ipfiles\n";
         $headers_pri_contents .= "SYNCQT.QPA_HEADER_FILES = $pri_install_qpafiles\n";
         $headers_pri_contents .= "SYNCQT.CLEAN_HEADER_FILES = $pri_clean_files\n";
         $headers_pri_contents .= "SYNCQT.INJECTIONS = $pri_injections\n";
