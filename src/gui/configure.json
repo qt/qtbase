@@ -54,6 +54,14 @@
                 "-lbcm_host"
             ]
         },
+        "direct2d": {
+            "label": "Direct 2D",
+            "export": "",
+            "test": "qpa/direct2d",
+            "sources": [
+                "-ld2d1 -ldwrite -ld3d11"
+            ]
+        },
         "directfb": {
             "label": "DirectFB",
             "test": "qpa/directfb",
@@ -294,12 +302,6 @@
     },
 
     "tests": {
-        "direct2d": {
-            "label": "Direct 2D",
-            "type": "compile",
-            "test": "qpa/direct2d",
-            "use": "direct2d"
-        },
         "directwrite2": {
             "label": "DirectWrite 2",
             "type": "compile",
@@ -442,7 +444,7 @@
         "direct2d": {
             "label": "Direct 2D",
             "autoDetect": false,
-            "condition": "tests.direct2d",
+            "condition": "config.win32 && libs.direct2d",
             "output": [ "privateFeature" ]
         },
         "evdev": {
