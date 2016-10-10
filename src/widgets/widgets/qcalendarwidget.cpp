@@ -205,10 +205,9 @@ QString QCalendarDayValidator::text(const QDate &date, int repeat) const
         return formatNumber(date.day(), 2);
     } else if (repeat == 3) {
         return m_locale.dayName(date.dayOfWeek(), QLocale::ShortFormat);
-    } else if (repeat >= 4) {
+    } else /* repeat >= 4 */ {
         return m_locale.dayName(date.dayOfWeek(), QLocale::LongFormat);
     }
-    return QString();
 }
 
 //////////////////////////////////
