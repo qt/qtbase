@@ -176,6 +176,7 @@ QString Environment::msvcVersion()
     const QString command = QFile::decodeName(qgetenv("ComSpec"))
         + QLatin1String(" /c ") + QLatin1String(compilerInfo(CC_MSVC2015)->executable)
         + QLatin1String(" /? 2>&1");
+    SetEnvironmentVariable(L"CL", NULL); // May contain /nologo, which suppresses the version.
     QString version = execute(command, &returnValue);
     if (returnValue != 0) {
         cout << "Could not get cl version" << returnValue << qPrintable(version) << '\n';;
