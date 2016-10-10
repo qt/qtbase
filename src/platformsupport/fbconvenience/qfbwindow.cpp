@@ -66,7 +66,6 @@ void QFbWindow::setGeometry(const QRect &rect)
     // store previous geometry for screen update
     mOldGeometry = geometry();
 
-    platformScreen()->invalidateRectCache();
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     QPlatformWindow::setGeometry(rect);
@@ -98,14 +97,11 @@ void QFbWindow::setWindowState(Qt::WindowState state)
 {
     QPlatformWindow::setWindowState(state);
     mWindowState = state;
-    platformScreen()->invalidateRectCache();
 }
-
 
 void QFbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     mWindowFlags = flags;
-    platformScreen()->invalidateRectCache();
 }
 
 Qt::WindowFlags QFbWindow::windowFlags() const
@@ -125,20 +121,15 @@ void QFbWindow::lower()
 
 void QFbWindow::repaint(const QRegion &region)
 {
-    QRect currentGeometry = geometry();
-
-    QRect dirtyClient = region.boundingRect();
-    QRect dirtyRegion(currentGeometry.left() + dirtyClient.left(),
-                      currentGeometry.top() + dirtyClient.top(),
-                      dirtyClient.width(),
-                      dirtyClient.height());
-    QRect mOldGeometryLocal = mOldGeometry;
+    const QRect currentGeometry = geometry();
+    const QRect dirtyClient = region.boundingRect();
+    const QRect dirtyRegion = dirtyClient.translated(currentGeometry.topLeft());
+    const QRect oldGeometryLocal = mOldGeometry;
     mOldGeometry = currentGeometry;
     // If this is a move, redraw the previous location
-    if (mOldGeometryLocal != currentGeometry)
-        platformScreen()->setDirty(mOldGeometryLocal);
+    if (oldGeometryLocal != currentGeometry)
+        platformScreen()->setDirty(oldGeometryLocal);
     platformScreen()->setDirty(dirtyRegion);
 }
 
 QT_END_NAMESPACE
-

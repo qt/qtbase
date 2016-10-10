@@ -120,18 +120,13 @@ protected:
     int mDepth;
     QImage::Format mFormat;
     QSizeF mPhysicalSize;
-    QImage *mScreenImage;
+    QImage mScreenImage;
 
 private:
-    void invalidateRectCache() { mIsUpToDate = false; }
-    void generateRects();
-
-    QPainter *mCompositePainter;
-    QVector<QPair<QRect, int> > mCachedRects;
+    QPainter *mPainter;
     QList<QFbBackingStore*> mPendingBackingStores;
 
     friend class QFbWindow;
-    bool mIsUpToDate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFbScreen::Flags)

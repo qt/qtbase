@@ -51,19 +51,23 @@
 
 QT_BEGIN_NAMESPACE
 
-QFbScreen::QFbScreen() : mUpdatePending(false), mCursor(0), mGeometry(), mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0), mCompositePainter(0), mIsUpToDate(false)
+QFbScreen::QFbScreen()
+    : mUpdatePending(false),
+      mCursor(0),
+      mDepth(16),
+      mFormat(QImage::Format_RGB16),
+      mPainter(nullptr)
 {
 }
 
 QFbScreen::~QFbScreen()
 {
-    delete mCompositePainter;
-    delete mScreenImage;
+    delete mPainter;
 }
 
 void QFbScreen::initializeCompositor()
 {
-    mScreenImage = new QImage(mGeometry.size(), mFormat);
+    mScreenImage = QImage(mGeometry.size(), mFormat);
     scheduleUpdate();
 }
 
@@ -93,7 +97,6 @@ void QFbScreen::addWindow(QFbWindow *window)
             }
         }
     }
-    invalidateRectCache();
     setDirty(window->geometry());
     QWindow *w = topWindow();
     QWindowSystemInterface::handleWindowActivated(w);
@@ -103,7 +106,6 @@ void QFbScreen::addWindow(QFbWindow *window)
 void QFbScreen::removeWindow(QFbWindow *window)
 {
     mWindowStack.removeOne(window);
-    invalidateRectCache();
     setDirty(window->geometry());
     QWindow *w = topWindow();
     QWindowSystemInterface::handleWindowActivated(w);
@@ -116,7 +118,6 @@ void QFbScreen::raise(QFbWindow *window)
     if (index <= 0)
         return;
     mWindowStack.move(index, 0);
-    invalidateRectCache();
     setDirty(window->geometry());
     QWindow *w = topWindow();
     QWindowSystemInterface::handleWindowActivated(w);
@@ -129,7 +130,6 @@ void QFbScreen::lower(QFbWindow *window)
     if (index == -1 || index == (mWindowStack.size() - 1))
         return;
     mWindowStack.move(index, mWindowStack.size() - 1);
-    invalidateRectCache();
     setDirty(window->geometry());
     QWindow *w = topWindow();
     QWindowSystemInterface::handleWindowActivated(w);
@@ -142,7 +142,7 @@ QWindow *QFbScreen::topWindow() const
         if (fbw->window()->type() == Qt::Window || fbw->window()->type() == Qt::Dialog)
             return fbw->window();
     }
-    return 0;
+    return nullptr;
 }
 
 QWindow *QFbScreen::topLevelAt(const QPoint & p) const
@@ -151,7 +151,7 @@ QWindow *QFbScreen::topLevelAt(const QPoint & p) const
         if (fbw->geometry().contains(p, false) && fbw->window()->isVisible())
             return fbw->window();
     }
-    return 0;
+    return nullptr;
 }
 
 int QFbScreen::windowCount() const
@@ -161,9 +161,9 @@ int QFbScreen::windowCount() const
 
 void QFbScreen::setDirty(const QRect &rect)
 {
-    QRect intersection = rect.intersected(mGeometry);
-    QPoint screenOffset = mGeometry.topLeft();
-    mRepaintRegion += intersection.translated(-screenOffset);    // global to local translation
+    const QRect intersection = rect.intersected(mGeometry);
+    const QPoint screenOffset = mGeometry.topLeft();
+    mRepaintRegion += intersection.translated(-screenOffset); // global to local translation
     scheduleUpdate();
 }
 
@@ -182,140 +182,71 @@ void QFbScreen::setPhysicalSize(const QSize &size)
 
 void QFbScreen::setGeometry(const QRect &rect)
 {
-    delete mCompositePainter;
-    mCompositePainter = 0;
-    delete mScreenImage;
+    delete mPainter;
+    mPainter = nullptr;
     mGeometry = rect;
-    mScreenImage = new QImage(mGeometry.size(), mFormat);
-    invalidateRectCache();
+    mScreenImage = QImage(mGeometry.size(), mFormat);
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
     resizeMaximizedWindows();
 }
 
-void QFbScreen::generateRects()
-{
-    mCachedRects.clear();
-    QPoint screenOffset = mGeometry.topLeft();
-    QRegion remainingScreen(mGeometry.translated(-screenOffset)); // global to local translation
-
-    for (int i = 0; i < mWindowStack.length(); i++) {
-        if (remainingScreen.isEmpty())
-            break;
-#if 0
-        if (!mWindowStack[i]->isVisible())
-            continue;
-        if (mWindowStack[i]->isMinimized())
-            continue;
-
-        if (!mWindowStack[i]->testAttribute(Qt::WA_TranslucentBackground)) {
-            QRect localGeometry = mWindowStack.at(i)->geometry().translated(-screenOffset); // global to local translation
-            remainingScreen -= localGeometry;
-            QRegion windowRegion(localGeometry);
-            windowRegion -= remainingScreen;
-            for (const QRect &rect : windowRegion)
-                mCachedRects += QPair<QRect, int>(rect, i);
-        }
-#endif
-    }
-    mCachedRects.reserve(mCachedRects.count() + remainingScreen.rectCount());
-    for (const QRect &rect : remainingScreen)
-        mCachedRects += QPair<QRect, int>(rect, -1);
-    mIsUpToDate = true;
-}
-
 QRegion QFbScreen::doRedraw()
 {
-    QPoint screenOffset = mGeometry.topLeft();
+    const QPoint screenOffset = mGeometry.topLeft();
 
     QRegion touchedRegion;
     if (mCursor && mCursor->isDirty() && mCursor->isOnScreen()) {
-        QRect lastCursor = mCursor->dirtyRect();
+        const QRect lastCursor = mCursor->dirtyRect();
         mRepaintRegion += lastCursor;
     }
-    if (mRepaintRegion.isEmpty() && (!mCursor || !mCursor->isDirty())) {
+    if (mRepaintRegion.isEmpty() && (!mCursor || !mCursor->isDirty()))
         return touchedRegion;
-    }
 
-    QVector<QRect> rects = mRepaintRegion.rects();
+    if (!mPainter)
+        mPainter = new QPainter(&mScreenImage);
 
-    if (!mIsUpToDate)
-        generateRects();
-
-    if (!mCompositePainter)
-        mCompositePainter = new QPainter(mScreenImage);
-
+    const QVector<QRect> rects = mRepaintRegion.rects();
+    const QRect screenRect = mGeometry.translated(-screenOffset);
     for (int rectIndex = 0; rectIndex < mRepaintRegion.rectCount(); rectIndex++) {
-        QRegion rectRegion = rects[rectIndex];
+        const QRect rect = rects[rectIndex].intersected(screenRect);
+        if (rect.isEmpty())
+            continue;
 
-        for (int i = 0; i < mCachedRects.length(); i++) {
-            QRect screenSubRect = mCachedRects[i].first;
-            int layer = mCachedRects[i].second;
-            QRegion intersect = rectRegion.intersected(screenSubRect);
+        mPainter->setCompositionMode(QPainter::CompositionMode_Source);
+        mPainter->fillRect(rect, mScreenImage.hasAlphaChannel() ? Qt::transparent : Qt::black);
 
-            if (intersect.isEmpty())
+        for (int layerIndex = mWindowStack.size() - 1; layerIndex != -1; layerIndex--) {
+            if (!mWindowStack[layerIndex]->window()->isVisible())
                 continue;
 
-            rectRegion -= intersect;
-
-            // we only expect one rectangle, but defensive coding...
-            for (const QRect &rect : intersect) {
-                bool firstLayer = true;
-                if (layer == -1) {
-                    mCompositePainter->setCompositionMode(QPainter::CompositionMode_Source);
-                    mCompositePainter->fillRect(rect, mScreenImage->hasAlphaChannel() ? Qt::transparent : Qt::black);
-                    firstLayer = false;
-                    layer = mWindowStack.size() - 1;
-                }
-
-                for (int layerIndex = layer; layerIndex != -1; layerIndex--) {
-                    if (!mWindowStack[layerIndex]->window()->isVisible())
-                        continue;
-                    // if (mWindowStack[layerIndex]->isMinimized())
-                    //     continue;
-
-                    QRect windowRect = mWindowStack[layerIndex]->geometry().translated(-screenOffset);
-                    QRect windowIntersect = rect.translated(-windowRect.left(),
-                                                            -windowRect.top());
-
-
-                    QFbBackingStore *backingStore = mWindowStack[layerIndex]->backingStore();
-
-                    if (backingStore) {
-                        backingStore->lock();
-                        mCompositePainter->drawImage(rect, backingStore->image(), windowIntersect);
-                        backingStore->unlock();
-                    }
-                    if (firstLayer) {
-                        firstLayer = false;
-                    }
-                }
+            const QRect windowRect = mWindowStack[layerIndex]->geometry().translated(-screenOffset);
+            const QRect windowIntersect = rect.translated(-windowRect.left(), -windowRect.top());
+            QFbBackingStore *backingStore = mWindowStack[layerIndex]->backingStore();
+            if (backingStore) {
+                backingStore->lock();
+                mPainter->drawImage(rect, backingStore->image(), windowIntersect);
+                backingStore->unlock();
             }
         }
     }
 
-    QRect cursorRect;
     if (mCursor && (mCursor->isDirty() || mRepaintRegion.intersects(mCursor->lastPainted()))) {
-        mCompositePainter->setCompositionMode(QPainter::CompositionMode_SourceOver);
-        cursorRect = mCursor->drawCursor(*mCompositePainter);
-        touchedRegion += cursorRect;
+        mPainter->setCompositionMode(QPainter::CompositionMode_SourceOver);
+        touchedRegion += mCursor->drawCursor(*mPainter);
     }
     touchedRegion += mRepaintRegion;
     mRepaintRegion = QRegion();
-
-
-
-//    qDebug() << "QFbScreen::doRedraw"  << mWindowStack.size() << mScreenImage->size() << touchedRegion;
 
     return touchedRegion;
 }
 
 QFbWindow *QFbScreen::windowForId(WId wid) const
 {
-    for (int i = 0; i < mWindowStack.count(); ++i)
+    for (int i = 0; i < mWindowStack.count(); ++i) {
         if (mWindowStack[i]->winId() == wid)
             return mWindowStack[i];
-
-    return 0;
+    }
+    return nullptr;
 }
 
 QFbScreen::Flags QFbScreen::flags() const
@@ -324,4 +255,3 @@ QFbScreen::Flags QFbScreen::flags() const
 }
 
 QT_END_NAMESPACE
-
