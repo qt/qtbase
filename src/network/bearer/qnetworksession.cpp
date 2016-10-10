@@ -42,6 +42,11 @@
 
 #include "qnetworkconfigmanager_p.h"
 
+// for QNetworkSession::interface
+#ifdef interface
+#  undef interface
+#endif
+
 #ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
