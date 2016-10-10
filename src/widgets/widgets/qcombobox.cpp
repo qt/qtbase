@@ -3160,6 +3160,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             showPopup();
             return;
         }
+        break;
     case Qt::Key_Enter:
     case Qt::Key_Return:
     case Qt::Key_Escape:
