@@ -57,7 +57,7 @@ defineReplace(qtExportLibsForModule) {
         NAME = $$upper($$lib)
         vars = \
             QMAKE_LIBS_$$NAME QMAKE_LIBS_$${NAME}_DEBUG QMAKE_LIBS_$${NAME}_RELEASE \
-            QMAKE_CFLAGS_$$NAME QMAKE_INCDIR_$$NAME QMAKE_$${NAME}_VERSION \
+            QMAKE_DEFINES_$$NAME QMAKE_INCDIR_$$NAME QMAKE_$${NAME}_VERSION \
             QMAKE_$${NAME}_VERSION_MAJOR QMAKE_$${NAME}_VERSION_MINOR QMAKE_$${NAME}_VERSION_PATCH
         for (var, vars) {
             !isEmpty($$var): \
