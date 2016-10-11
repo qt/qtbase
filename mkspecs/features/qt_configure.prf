@@ -1006,7 +1006,7 @@ defineReplace(qtConfEvaluateSingleExpression) {
             error("Unknown library object $${lib} in expression '$${1}'.")
         qtConfHandleLibrary($$lib)
         !defined($${currentConfig}.libraries.$${lib}.$${var}, var): \
-            var = sources.$$eval($${currentConfig}.libraries.$${lib}.$${source}).$$var
+            var = sources.$$eval($${currentConfig}.libraries.$${lib}.source).$$var
         result = $$eval($${currentConfig}.libraries.$${lib}.$${var})
     } else: contains(e, "^features\..*") {
         feature = $$section(e, ".", 1, 1)
