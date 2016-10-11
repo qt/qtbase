@@ -13,6 +13,11 @@ isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
 isEmpty(VERSION): VERSION = $$MODULE_VERSION
 isEmpty(VERSION): error("Module does not define version.")
 
+exists($$OUT_PWD/qt$${MODULE}-config.pri) {
+    include($$OUT_PWD/qt$${MODULE}-config.pri)
+    CONFIG += generated_privates
+}
+
 # Compile as shared/DLL or static according to the option given to configure
 # unless overridden. Host builds are always static
 host_build|staticlib: CONFIG += static

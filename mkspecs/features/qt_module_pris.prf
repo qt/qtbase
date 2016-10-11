@@ -35,9 +35,6 @@ else: \
 MODULE_PRI = $$mod_inst_pfx/qt_lib_$${MODULE_ID}.pri
 MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
 
-exists($$OUT_PWD/qt$${MODULE}-config.pri): \
-    include($$OUT_PWD/qt$${MODULE}-config.pri)
-
 defineReplace(qtGetFeaturesForModule) {
     enabled = $$unique(QT.$${1}.enabled_features)
     disabled = $$unique(QT.$${1}.disabled_features)
