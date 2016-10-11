@@ -424,11 +424,9 @@ static inline void fixTopLevelWindowFlags(Qt::WindowFlags &flags)
               |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
         break;
     case Qt::Dialog:
-        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
-        break;
     case Qt::Tool:
-         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
-         break;
+        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
+        break;
     default:
         break;
     }
