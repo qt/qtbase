@@ -165,11 +165,11 @@ void QWindowSystemInterface::handleEnterLeaveEvent(QWindow *enter, QWindow *leav
     handleEnterEvent(enter, local, global);
 }
 
-void QWindowSystemInterface::handleWindowActivated(QWindow *tlw, Qt::FocusReason r)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowActivated, QWindow *tlw, Qt::FocusReason r)
 {
     QWindowSystemInterfacePrivate::ActivatedWindowEvent *e =
         new QWindowSystemInterfacePrivate::ActivatedWindowEvent(tlw, r);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 void QWindowSystemInterface::handleWindowStateChanged(QWindow *tlw, Qt::WindowState newState)
@@ -197,10 +197,25 @@ void QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState 
 /*!
   If \a oldRect is null, Qt will use the previously reported geometry instead.
  */
-void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &newRect, const QRect &oldRect)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleGeometryChange, QWindow *tlw, const QRect &newRect, const QRect &oldRect)
 {
     QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw, QHighDpi::fromNativePixels(newRect, tlw), QHighDpi::fromNativePixels(oldRect, tlw));
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
+}
+
+QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *window, const QRegion &region)
+    : WindowSystemEvent(Expose)
+    , window(window)
+    , isExposed(window && window->handle() ? window->handle()->isExposed() : false)
+    , region(region)
+{
+}
+
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleExposeEvent, QWindow *tlw, const QRegion &region)
+{
+    QWindowSystemInterfacePrivate::ExposeEvent *e =
+        new QWindowSystemInterfacePrivate::ExposeEvent(tlw, QHighDpi::fromNativeLocalExposedRegion(region, tlw));
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 void QWindowSystemInterface::handleCloseEvent(QWindow *tlw, bool *accepted)
@@ -405,15 +420,6 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-
-QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *window, const QRegion &region)
-    : WindowSystemEvent(Expose)
-    , window(window)
-    , isExposed(window && window->handle() ? window->handle()->isExposed() : false)
-    , region(region)
-{
-}
-
 int QWindowSystemInterfacePrivate::windowSystemEventsQueued()
 {
     return windowSystemEventQueue.count();
@@ -596,20 +602,20 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *tlw, ulong timestam
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-void QWindowSystemInterface::handleTouchCancelEvent(QWindow *w, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchCancelEvent, QWindow *w, QTouchDevice *device,
                                                     Qt::KeyboardModifiers mods)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTouchCancelEvent(w, time, device, mods);
+    handleTouchCancelEvent<Delivery>(w, time, device, mods);
 }
 
-void QWindowSystemInterface::handleTouchCancelEvent(QWindow *w, ulong timestamp, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchCancelEvent, QWindow *w, ulong timestamp, QTouchDevice *device,
                                                     Qt::KeyboardModifiers mods)
 {
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(w, timestamp, QEvent::TouchCancel, device,
                                                          QList<QTouchEvent::TouchPoint>(), mods);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation orientation)
@@ -643,13 +649,6 @@ void QWindowSystemInterface::handleScreenRefreshRateChange(QScreen *screen, qrea
 void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
 {
     QWindowSystemInterfacePrivate::ThemeChangeEvent *e = new QWindowSystemInterfacePrivate::ThemeChangeEvent(tlw);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
-}
-
-void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &region)
-{
-    QWindowSystemInterfacePrivate::ExposeEvent *e =
-        new QWindowSystemInterfacePrivate::ExposeEvent(tlw, QHighDpi::fromNativeLocalExposedRegion(region, tlw));
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
