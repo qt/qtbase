@@ -84,7 +84,6 @@
 #include "private/qcursor_p.h"
 #include "private/qopenglcontext_p.h"
 #include "private/qinputdevicemanager_p.h"
-#include "private/qtouchdevice_p.h"
 
 #include "private/qdnd_p.h"
 #include <qpa/qplatformthemefactory_p.h>
@@ -1945,8 +1944,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         points << point;
 
         QEvent::Type type;
-        QList<QTouchEvent::TouchPoint> touchPoints =
-                QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, QTouchDevicePrivate::get(m_fakeTouchDevice)->id, &type);
+        QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, &type);
 
         QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
