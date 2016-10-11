@@ -360,7 +360,7 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
     if it is enabled or selected.
 
     After painting, you should ensure that the painter is returned to
-    its the state it was supplied in when this function was called.
+    the state it was supplied in when this function was called.
     For example, it may be useful to call QPainter::save() before
     painting and QPainter::restore() afterwards.
 
