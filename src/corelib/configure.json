@@ -570,6 +570,12 @@
             "purpose": "Provides support for timezone handling.",
             "section": "Utilities",
             "output": [ "publicFeature" ]
+        },
+        "commandlineparser": {
+            "label": "QCommandlineParser",
+            "purpose": "Provides support for command line parsing.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
         }
     },
 

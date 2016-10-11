@@ -45,6 +45,8 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qcommandlineoption.h>
 
+QT_REQUIRE_CONFIG(commandlineparser);
+
 QT_BEGIN_NAMESPACE
 
 class QCommandLineParserPrivate;

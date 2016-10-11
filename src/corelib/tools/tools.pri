@@ -15,8 +15,6 @@ HEADERS +=  \
         tools/qbytedata_p.h \
         tools/qcache.h \
         tools/qchar.h \
-        tools/qcommandlineoption.h \
-        tools/qcommandlineparser.h \
         tools/qcollator.h \
         tools/qcollator_p.h \
         tools/qcontainerfwd.h \
@@ -82,8 +80,6 @@ SOURCES += \
         tools/qbytearraylist.cpp \
         tools/qbytearraymatcher.cpp \
         tools/qcollator.cpp \
-        tools/qcommandlineoption.cpp \
-        tools/qcommandlineparser.cpp \
         tools/qcryptographichash.cpp \
         tools/qdatetime.cpp \
         tools/qdatetimeparser.cpp \
@@ -182,6 +178,15 @@ qtConfig(regularexpression) {
 
     HEADERS += tools/qregularexpression.h
     SOURCES += tools/qregularexpression.cpp
+}
+
+qtConfig(commandlineparser) {
+    HEADERS += \
+        tools/qcommandlineoption.h \
+        tools/qcommandlineparser.h
+    SOURCES += \
+        tools/qcommandlineoption.cpp \
+        tools/qcommandlineparser.cpp
 }
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src
