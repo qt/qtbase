@@ -2584,6 +2584,11 @@ bool QWidgetTextControl::isWordSelectionEnabled() const
     return d->wordSelectionEnabled;
 }
 
+bool QWidgetTextControl::isPreediting()
+{
+    return d_func()->isPreediting();
+}
+
 #ifndef QT_NO_PRINTER
 void QWidgetTextControl::print(QPagedPaintDevice *printer) const
 {
