@@ -454,6 +454,8 @@
         },
         "freetype": {
             "label": "FreeType",
+            "purpose": "Supports the FreeType 2 font engine (and its supported font formats).",
+            "section": "Fonts",
             "output": [ "privateFeature", "feature" ]
         },
         "system-freetype": {
@@ -933,12 +935,6 @@
             "purpose": "Provides a PDF backend for QPainter.",
             "section": "Painting",
             "condition": "features.temporaryfile",
-            "output": [ "publicFeature", "feature" ]
-        },
-        "freetype": {
-            "label": "Freetype Font Engine",
-            "purpose": "Supports the FreeType 2 font engine (and its supported font formats).",
-            "section": "Fonts",
             "output": [ "publicFeature", "feature" ]
         },
         "desktopservices": {
