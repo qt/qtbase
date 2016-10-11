@@ -214,20 +214,21 @@ QPlatformMenu *QDBusTrayIcon::createMenu() const
 void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
 {
     qCDebug(qLcTray) << menu;
-    bool needsRegistering = !m_menu;
-    if (!m_menu)
-        m_menu = qobject_cast<QDBusPlatformMenu *>(menu);
-    if (!m_menuAdaptor) {
+    QDBusPlatformMenu *newMenu = qobject_cast<QDBusPlatformMenu *>(menu);
+    if (m_menu != newMenu) {
+        if (m_menu) {
+            dBusConnection()->unregisterTrayIconMenu(this);
+            delete m_menuAdaptor;
+        }
+        m_menu = newMenu;
         m_menuAdaptor = new QDBusMenuAdaptor(m_menu);
         // TODO connect(m_menu, , m_menuAdaptor, SIGNAL(ItemActivationRequested(int,uint)));
         connect(m_menu, SIGNAL(propertiesUpdated(QDBusMenuItemList,QDBusMenuItemKeysList)),
                 m_menuAdaptor, SIGNAL(ItemsPropertiesUpdated(QDBusMenuItemList,QDBusMenuItemKeysList)));
         connect(m_menu, SIGNAL(updated(uint,int)),
                 m_menuAdaptor, SIGNAL(LayoutUpdated(uint,int)));
-    }
-    m_menu->emitUpdated();
-    if (needsRegistering)
         dBusConnection()->registerTrayIconMenu(this);
+    }
 }
 
 void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const QIcon &icon,
