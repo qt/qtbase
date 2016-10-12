@@ -1919,7 +1919,7 @@ int QPdfEnginePrivate::writeCompressed(const char *src, int len)
 }
 
 int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height, int depth,
-                                  int maskObject, int softMaskObject, bool dct)
+                                  int maskObject, int softMaskObject, bool dct, bool isMono)
 {
     int image = addXrefEntry(-1);
     xprintf("<<\n"
@@ -1929,8 +1929,13 @@ int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height,
             "/Height %d\n", width, height);
 
     if (depth == 1) {
-        xprintf("/ImageMask true\n"
-                "/Decode [1 0]\n");
+        if (!isMono) {
+            xprintf("/ImageMask true\n"
+                    "/Decode [1 0]\n");
+        } else {
+            xprintf("/BitsPerComponent 1\n"
+                    "/ColorSpace /DeviceGray\n");
+        }
     } else {
         xprintf("/BitsPerComponent 8\n"
                 "/ColorSpace %s\n", (depth == 32) ? "/DeviceRGB" : "/DeviceGray");
@@ -2445,7 +2450,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_n
             memcpy(rawdata, image.constScanLine(y), bytesPerLine);
             rawdata += bytesPerLine;
         }
-        object = writeImage(data, w, h, d, 0, 0);
+        object = writeImage(data, w, h, d, 0, 0, false, is_monochrome(img.colorTable()));
     } else {
         QByteArray softMaskData;
         bool dct = false;
