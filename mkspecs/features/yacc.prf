@@ -35,6 +35,7 @@
     yacc_impl.name = source for ${QMAKE_FILE_IN}
     yacc_impl.input = YACCSOURCES
     yacc_impl.variable_out = GENERATED_SOURCES
+    yacc_impl.dependency_type = TYPE_C
     yacc_impl.commands = $$escape_expand(\\n)        # We don't want any commands where, but if command is empty no rules are created
     yacc_impl.depends = $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_MOD_YACC}$${first(QMAKE_EXT_H)}    # Make sure we depend on the step above
     yacc_impl.output = $${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_MOD_YACC}$${first(QMAKE_EXT_CPP)}   # Faked output from this step, output really created in step above
