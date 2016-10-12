@@ -1,6 +1,5 @@
 CONFIG += qpa/basicunixfontdatabase
 qtConfig(fontconfig) {
-    DEFINES += Q_FONTCONFIGDATABASE
     QMAKE_USE_PRIVATE += fontconfig/linkonly
 }
 

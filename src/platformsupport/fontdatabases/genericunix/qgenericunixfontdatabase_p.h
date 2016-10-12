@@ -51,9 +51,9 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtGui/private/qtguiglobal_p.h>
 
-#ifdef Q_FONTCONFIGDATABASE
+#if QT_CONFIG(fontconfig)
 #include <QtPlatformSupport/private/qfontconfigdatabase_p.h>
 typedef QFontconfigDatabase QGenericUnixFontDatabase;
 #else
