@@ -847,6 +847,12 @@
             "condition": "features.library",
             "output": [ "publicFeature", "feature" ]
         },
+        "highdpiscaling": {
+            "label": "High DPI Scaling",
+            "purpose": "Provides automatic scaling of DPI-unaware applications on high-DPI displays.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
         "validator": {
             "label": "QValidator",
             "purpose": "Supports validation of input text.",
