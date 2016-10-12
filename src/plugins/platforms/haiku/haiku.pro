@@ -36,8 +36,6 @@ LIBS += -lbe
 
 OTHER_FILES += haiku.json
 
-include (../../../platformsupport/fontdatabases/fontdatabases.pri)
-
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QHaikuIntegrationPlugin
 load(qt_plugin)

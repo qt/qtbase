@@ -114,11 +114,6 @@ RESOURCES += $$PWD/openglblacklists.qrc
 qtConfig(freetype) {
     HEADERS += $$PWD/qwindowsfontdatabase_ft.h
     SOURCES += $$PWD/qwindowsfontdatabase_ft.cpp
-    qtConfig(system-freetype) {
-        include($$QT_SOURCE_TREE/src/platformsupport/fontdatabases/basic/basic.pri)
-    } else {
-        include($$QT_SOURCE_TREE/src/3rdparty/freetype_dependency.pri)
-    }
 }
 
 qtConfig(accessibility): include($$PWD/accessible/accessible.pri)

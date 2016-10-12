@@ -7,7 +7,6 @@ QT += core-private gui-private platformsupport-private
 DEFINES *= QT_NO_CAST_FROM_ASCII __WRL_NO_DEFAULT_LIB__
 
 LIBS += $$QMAKE_LIBS_CORE -ldwrite -ld3d11
-INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/freetype/include
 
 SOURCES = \
     main.cpp  \
