@@ -101,7 +101,7 @@ public class QtActivity extends Activity
     private final static int MINISTRO_INSTALL_REQUEST_CODE = 0xf3ee; // request code used to know when Ministro instalation is finished
     private static final int MINISTRO_API_LEVEL = 5; // Ministro api level (check IMinistro.aidl file)
     private static final int NECESSITAS_API_LEVEL = 2; // Necessitas api level used by platform plugin
-    private static final int QT_VERSION = 0x050100; // This app requires at least Qt version 5.1.0
+    private static final int QT_VERSION = 0x050600; // This app requires at least Qt version 5.6.0
 
     private static final String ERROR_CODE_KEY = "error.code";
     private static final String ERROR_MESSAGE_KEY = "error.message";
@@ -333,7 +333,7 @@ public class QtActivity extends Activity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 try {
-                    Uri uri = Uri.parse("market://search?q=pname:org.kde.necessitas.ministro");
+                    Uri uri = Uri.parse("market://details?id=org.kde.necessitas.ministro");
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     startActivityForResult(intent, MINISTRO_INSTALL_REQUEST_CODE);
                 } catch (Exception e) {
