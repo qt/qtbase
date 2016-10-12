@@ -1,27 +1,47 @@
-TARGET     = QtPlatformSupport
-QT         = core-private gui-private
+TEMPLATE = subdirs
+QT_FOR_CONFIG += gui-private
 
-CONFIG += static internal_module
-mac:LIBS_PRIVATE += -lz
+SUBDIRS = \
+    eventdispatchers \
+    devicediscovery \
+    fbconvenience \
+    themes
 
-DEFINES += QT_NO_CAST_FROM_ASCII
-PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
+qtConfig(freetype)|if(darwin:!if(watchos:CONFIG(simulator, simulator|device))): \
+    SUBDIRS += fontdatabases
 
-include(cglconvenience/cglconvenience.pri)
-include(eglconvenience/eglconvenience.pri)
-include(eventdispatchers/eventdispatchers.pri)
-include(fbconvenience/fbconvenience.pri)
-include(fontdatabases/fontdatabases.pri)
-include(glxconvenience/glxconvenience.pri)
-include(input/input.pri)
-include(devicediscovery/devicediscovery.pri)
-include(services/services.pri)
-include(themes/themes.pri)
-include(accessibility/accessibility.pri)
-include(linuxaccessibility/linuxaccessibility.pri)
-include(clipboard/clipboard.pri)
-include(platformcompositor/platformcompositor.pri)
+qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput) {
+    SUBDIRS += input
+    input.depends += devicediscovery
+}
 
-darwin: include(graphics/graphics.pri)
+unix:!darwin: \
+    SUBDIRS += services
 
-load(qt_module)
+qtConfig(opengl): \
+    SUBDIRS += platformcompositor
+qtConfig(egl): \
+    SUBDIRS += eglconvenience
+qtConfig(xlib):qtConfig(opengl):!qtConfig(opengles2): \
+    SUBDIRS += glxconvenience
+
+qtConfig(accessibility) {
+    SUBDIRS += accessibility
+    qtConfig(accessibility-atspi-bridge) {
+        SUBDIRS += linuxaccessibility
+        linuxaccessibility.depends += accessibility
+    }
+}
+
+darwin {
+    SUBDIRS += \
+        clipboard \
+        graphics
+    macos: \
+        SUBDIRS += cglconvenience
+}
+
+# This aggregates all of them.
+legacy.file = legacy.pro
+legacy.depends = $$SUBDIRS
+SUBDIRS += legacy

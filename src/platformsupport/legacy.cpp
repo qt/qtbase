@@ -37,28 +37,12 @@
 **
 ****************************************************************************/
 
-#ifndef QGENERICUNIXFONTDATABASE_H
-#define QGENERICUNIXFONTDATABASE_H
+#include <qglobal.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+QT_BEGIN_NAMESPACE
 
-#include <QtGui/private/qtguiglobal_p.h>
+void dummy()
+{
+}
 
-#if QT_CONFIG(fontconfig)
-#include <QtFontDatabaseSupport/private/qfontconfigdatabase_p.h>
-typedef QFontconfigDatabase QGenericUnixFontDatabase;
-#else
-#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
-typedef QBasicFontDatabase QGenericUnixFontDatabase;
-#endif //Q_FONTCONFIGDATABASE
-
-#endif // QGENERICUNIXFONTDATABASE_H
+QT_END_NAMESPACE

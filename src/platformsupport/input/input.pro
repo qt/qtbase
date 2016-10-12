@@ -1,3 +1,12 @@
+TARGET = QtInputSupport
+MODULE = input_support
+
+QT = core-private gui-private devicediscovery_support-private
+CONFIG += static internal_module
+
+DEFINES += QT_NO_CAST_FROM_ASCII
+PRECOMPILED_HEADER = ../../corelib/global/qt_pch.h
+
 qtConfig(evdev) {
     include($$PWD/evdevmouse/evdevmouse.pri)
     include($$PWD/evdevkeyboard/evdevkeyboard.pri)
@@ -16,3 +25,5 @@ qtConfig(libinput) {
 qtConfig(evdev)|qtConfig(libinput) {
     include($$PWD/shared/shared.pri)
 }
+
+load(qt_module)

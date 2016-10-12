@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qgenericunixthemes_p.h"
-#include "../../services/genericunix/qgenericunixservices_p.h"
 
 #include "qpa/qplatformtheme_p.h"
 
@@ -61,11 +60,11 @@
 #include <qpa/qplatformservices.h>
 #include <qpa/qplatformdialoghelper.h>
 #ifndef QT_NO_DBUS
-#include "QtPlatformSupport/private/qdbusplatformmenu_p.h"
-#include "QtPlatformSupport/private/qdbusmenubar_p.h"
+#include "qdbusplatformmenu_p.h"
+#include "qdbusmenubar_p.h"
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
-#include "QtPlatformSupport/private/qdbustrayicon_p.h"
+#include "qdbustrayicon_p.h"
 #endif
 
 #include <algorithm>

@@ -52,7 +52,7 @@
 //
 
 #include <qglobal.h>
-#include <QtPlatformSupport/private/qt_egl_p.h>
+#include <QtEglSupport/private/qt_egl_p.h>
 
 // This provides runtime EGLDevice/Output/Stream support even when eglext.h in
 // the sysroot is not up-to-date.
