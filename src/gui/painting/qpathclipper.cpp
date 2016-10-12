@@ -1458,25 +1458,6 @@ QPathClipper::QPathClipper(const QPainterPath &subject,
     bMask = clipPath.fillRule() == Qt::WindingFill ? ~0x0 : 0x1;
 }
 
-template <typename Iterator, typename Equality>
-Iterator qRemoveDuplicates(Iterator begin, Iterator end, Equality eq)
-{
-    if (begin == end)
-        return end;
-
-    Iterator last = begin;
-    ++begin;
-    Iterator insert = begin;
-    for (Iterator it = begin; it != end; ++it) {
-        if (!eq(*it, *last)) {
-            *insert++ = *it;
-            last = it;
-        }
-    }
-
-    return insert;
-}
-
 static void clear(QWingedEdge& list, int edge, QPathEdge::Traversal traversal)
 {
     QWingedEdge::TraversalStatus status;
@@ -1643,7 +1624,7 @@ bool QPathClipper::doClip(QWingedEdge &list, ClipperMode mode)
         y_coords << list.vertex(i)->y;
 
     std::sort(y_coords.begin(), y_coords.end());
-    y_coords.resize(qRemoveDuplicates(y_coords.begin(), y_coords.end(), fuzzyCompare) - y_coords.begin());
+    y_coords.erase(std::unique(y_coords.begin(), y_coords.end(), fuzzyCompare), y_coords.end());
 
 #ifdef QDEBUG_CLIPPER
     printf("sorted y coords:\n");
