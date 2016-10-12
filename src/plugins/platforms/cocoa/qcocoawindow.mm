@@ -388,7 +388,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     if (tlw->type() == Qt::ForeignWindow) {
         m_view = (NSView *)WId(tlw->property("_q_foreignWinId").value<WId>());
     } else {
-        m_view = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
+        m_view = [[QNSView alloc] initWithCocoaWindow:this];
         // Enable high-dpi OpenGL for retina displays. Enabling has the side
         // effect that Cocoa will start calling glViewport(0, 0, width, height),
         // overriding any glViewport calls in application code. This is usually not a
