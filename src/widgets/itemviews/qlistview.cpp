@@ -2335,13 +2335,7 @@ void QListModeViewBase::scrollContentsBy(int dx, int dy, bool scrollElasticBand)
 bool QListModeViewBase::doBatchedItemLayout(const QListViewLayoutInfo &info, int max)
 {
     doStaticLayout(info);
-    if (batchStartRow > max) { // stop items layout
-        flowPositions.resize(flowPositions.count());
-        segmentPositions.resize(segmentPositions.count());
-        segmentStartRows.resize(segmentStartRows.count());
-        return true; // done
-    }
-    return false; // not done
+    return batchStartRow > max; // returning true stops items layout
 }
 
 QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) const
