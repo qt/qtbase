@@ -16,8 +16,6 @@ HEADERS = \
     qintegrityfbscreen.h \
     qintegrityhidmanager.h
 
-CONFIG += qpa/genericunixfontdatabase
-
 OTHER_FILES += integrity.json
 
 PLUGIN_TYPE = platforms

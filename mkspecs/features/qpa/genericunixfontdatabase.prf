@@ -1,5 +1,0 @@
-CONFIG += qpa/basicunixfontdatabase
-qtConfig(fontconfig) {
-    QMAKE_USE += fontconfig/linkonly
-}
-

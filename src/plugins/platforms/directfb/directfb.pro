@@ -44,9 +44,6 @@ qtConfig(directfb_egl) {
     SOURCES += qdirectfbeglhooks_stub.cpp
 }
 
-
-CONFIG += qpa/genericunixfontdatabase
-
 OTHER_FILES += directfb.json
 
 PLUGIN_TYPE = platforms

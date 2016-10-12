@@ -5,8 +5,6 @@ QT += \
     theme_support-private eventdispatcher_support-private \
     fontdatabase_support-private egl_support-private
 
-CONFIG += qpa/genericunixfontdatabase
-
 DEFINES += MESA_EGL_NO_X11_HEADERS
 # CONFIG += c++11 # only enables C++0x
 QMAKE_CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Werror -Wall

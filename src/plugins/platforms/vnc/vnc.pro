@@ -28,6 +28,4 @@ HEADERS = \
     qvnc_p.h \
     qvncclient.h
 
-CONFIG += qpa/genericunixfontdatabase
-
 OTHER_FILES += vnc.json

@@ -39,7 +39,7 @@ QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
     DEFINES += EGLFS_PREFERRED_PLUGIN=$$EGLFS_DEVICE_INTEGRATION
 }
 
-CONFIG += egl qpa/genericunixfontdatabase
+CONFIG += egl
 
 # Prevent gold linker from crashing.
 # This started happening when QtPlatformSupport was modularized.

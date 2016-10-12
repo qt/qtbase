@@ -4,8 +4,6 @@ QT += \
     core-private gui-private \
     eventdispatcher_support-private fontdatabase_support-private
 
-CONFIG += qpa/genericunixfontdatabase
-
 HEADERS += \
     qopenwfddevice.h \
     qopenwfdintegration.h \

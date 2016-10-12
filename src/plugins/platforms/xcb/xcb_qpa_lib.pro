@@ -70,8 +70,6 @@ qtConfig(xcb-sm) {
 
 include(gl_integrations/gl_integrations.pri)
 
-CONFIG += qpa/genericunixfontdatabase
-
 !qtConfig(system-xcb) {
     DEFINES += XCB_USE_RENDER
     QMAKE_USE += xcb-static xcb

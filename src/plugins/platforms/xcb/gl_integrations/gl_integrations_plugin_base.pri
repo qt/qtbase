@@ -18,8 +18,6 @@ qtConfig(xcb-sm) {
     DEFINES += XCB_USE_SM
 }
 
-CONFIG += qpa/genericunixfontdatabase
-
 !qtConfig(system-xcb) {
     DEFINES += XCB_USE_RENDER
     QMAKE_USE += xcb-static xcb

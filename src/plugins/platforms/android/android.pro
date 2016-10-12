@@ -11,8 +11,6 @@ QT += \
     eventdispatcher_support-private accessibility_support-private \
     fontdatabase_support-private egl_support-private
 
-CONFIG += qpa/genericunixfontdatabase
-
 OTHER_FILES += $$PWD/android.json
 
 INCLUDEPATH += \

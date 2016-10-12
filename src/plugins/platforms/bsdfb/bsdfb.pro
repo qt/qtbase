@@ -11,8 +11,6 @@ qtHaveModule(input_support-private): \
 SOURCES = main.cpp qbsdfbintegration.cpp qbsdfbscreen.cpp
 HEADERS = qbsdfbintegration.h qbsdfbscreen.h
 
-CONFIG += qpa/genericunixfontdatabase
-
 OTHER_FILES += bsdfb.json
 
 PLUGIN_TYPE = platforms

@@ -22,7 +22,7 @@ HEADERS =   qminimaleglintegration.h \
             qminimaleglbackingstore.h \
             qminimaleglscreen.h
 
-CONFIG += egl qpa/genericunixfontdatabase
+CONFIG += egl
 
 OTHER_FILES += \
     minimalegl.json
