@@ -395,9 +395,6 @@ public:
                                 const QRegion &rgn, const QPoint &offset, int flags,
                                 QPainter *sharedPainter, QWidgetBackingStore *backingStore);
 
-
-    QPainter *beginSharedPainter();
-    bool endSharedPainter();
 #ifndef QT_NO_GRAPHICSVIEW
     static QGraphicsProxyWidget * nearestGraphicsProxyWidget(const QWidget *origin);
 #endif
