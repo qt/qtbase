@@ -131,6 +131,7 @@ defineReplace(qtExportLibsForModule) {
     MODULE_PRI_CONT += \
         "QT.$${MODULE_ID}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_rundep \
+        "QT.$${MODULE_ID}.uses =$$join(QMAKE_USE, " ", " ")" \
         "QT.$${MODULE_ID}.module_config =$$join(module_build_type, " ", " ")" \
         $$module_config \
         "QT.$${MODULE_ID}.DEFINES = $$val_escape(MODULE_DEFINES)" \
@@ -161,6 +162,7 @@ defineReplace(qtExportLibsForModule) {
             "QT.$${MODULE}_private.includes = $$MODULE_PRIVATE_INCLUDES" \
             "QT.$${MODULE}_private.frameworks =" \
             "QT.$${MODULE}_private.depends = $$private_deps" \
+            "QT.$${MODULE}_private.uses =$$join(QMAKE_USE_FOR_PRIVATE, " ", " ")" \
             "QT.$${MODULE}_private.module_config =$$join(module_build_type, " ", " ")" \
             $$qtGetFeaturesForModule($${MODULE}_private) \
             "" \
