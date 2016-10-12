@@ -5535,7 +5535,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             return;
         }
     }
-#endif //QT_NO_GRAFFICSEFFECT
+#endif //QT_NO_GRAPHICSEFFECT
 
     const bool alsoOnScreen = flags & DrawPaintOnScreen;
     const bool recursive = flags & DrawRecursive;
