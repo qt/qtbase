@@ -37,101 +37,60 @@
 **
 ****************************************************************************/
 
-#include <QtTest/private/qbenchmarktimemeasurers_p.h>
-#include <QtTest/private/qbenchmark_p.h>
-#include <QtTest/private/qbenchmarkmetric_p.h>
-#include <QtTest/qbenchmark.h>
-#include <qdebug.h>
+#ifndef QBENCHMARKTIMEMEASURERS_P_H
+#define QBENCHMARKTIMEMEASURERS_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtTest/private/qbenchmarkmeasurement_p.h>
+#include <QtCore/qelapsedtimer.h>
+#include <QtTest/private/cycle_p.h>
 
 QT_BEGIN_NAMESPACE
 
-// QBenchmarkTimeMeasurer implementation
-
-void QBenchmarkTimeMeasurer::start()
+class QBenchmarkTimeMeasurer : public QBenchmarkMeasurerBase
 {
-    time.start();
-}
-
-qint64 QBenchmarkTimeMeasurer::checkpoint()
-{
-    return time.elapsed();
-}
-
-qint64 QBenchmarkTimeMeasurer::stop()
-{
-    return time.elapsed();
-}
-
-bool QBenchmarkTimeMeasurer::isMeasurementAccepted(qint64 measurement)
-{
-    return (measurement > 50);
-}
-
-int QBenchmarkTimeMeasurer::adjustIterationCount(int suggestion)
-{
-    return suggestion;
-}
-
-bool QBenchmarkTimeMeasurer::needsWarmupIteration()
-{
-    return true;
-}
-
-int QBenchmarkTimeMeasurer::adjustMedianCount(int)
-{
-    return 1;
-}
-
-QTest::QBenchmarkMetric QBenchmarkTimeMeasurer::metricType()
-{
-    return QTest::WalltimeMilliseconds;
-}
+public:
+    void start();
+    qint64 checkpoint();
+    qint64 stop();
+    bool isMeasurementAccepted(qint64 measurement);
+    int adjustIterationCount(int sugestion);
+    int adjustMedianCount(int suggestion);
+    bool needsWarmupIteration();
+    QTest::QBenchmarkMetric metricType();
+private:
+    QElapsedTimer time;
+};
 
 #ifdef HAVE_TICK_COUNTER // defined in 3rdparty/cycle_p.h
 
-void QBenchmarkTickMeasurer::start()
+class QBenchmarkTickMeasurer : public QBenchmarkMeasurerBase
 {
-    startTicks = getticks();
-}
+public:
+    void start();
+    qint64 checkpoint();
+    qint64 stop();
+    bool isMeasurementAccepted(qint64 measurement);
+    int adjustIterationCount(int);
+    int adjustMedianCount(int suggestion);
+    bool needsWarmupIteration();
+    QTest::QBenchmarkMetric metricType();
+private:
+    CycleCounterTicks startTicks;
+};
 
-qint64 QBenchmarkTickMeasurer::checkpoint()
-{
-    CycleCounterTicks now = getticks();
-    return qRound64(elapsed(now, startTicks));
-}
-
-qint64 QBenchmarkTickMeasurer::stop()
-{
-    CycleCounterTicks now = getticks();
-    return qRound64(elapsed(now, startTicks));
-}
-
-bool QBenchmarkTickMeasurer::isMeasurementAccepted(qint64)
-{
-    return true;
-}
-
-int QBenchmarkTickMeasurer::adjustIterationCount(int)
-{
-    return 1;
-}
-
-int QBenchmarkTickMeasurer::adjustMedianCount(int)
-{
-    return 1;
-}
-
-bool QBenchmarkTickMeasurer::needsWarmupIteration()
-{
-    return true;
-}
-
-QTest::QBenchmarkMetric QBenchmarkTickMeasurer::metricType()
-{
-    return QTest::CPUTicks;
-}
-
-#endif
-
+#endif // HAVE_TICK_COUNTER
 
 QT_END_NAMESPACE
+
+#endif // QBENCHMARKTIMEMEASURERS_P_H

@@ -14,6 +14,7 @@ QMAKE_DOCS = $$PWD/doc/qttestlib.qdocconf
 HEADERS = qbenchmark.h \
     qbenchmark_p.h \
     qbenchmarkmeasurement_p.h \
+    qbenchmarktimemeasurers_p.h \
     qbenchmarkvalgrind_p.h \
     qbenchmarkevent_p.h \
     qbenchmarkperfevents_p.h \
