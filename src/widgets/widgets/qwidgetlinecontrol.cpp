@@ -72,7 +72,7 @@ int QWidgetLineControl::redoTextLayout() const
     QTextLine l = m_textLayout.createLine();
     m_textLayout.endLayout();
 
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     if (m_threadChecks)
         m_textLayoutThread = QThread::currentThread();
 #endif

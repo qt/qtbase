@@ -3698,7 +3698,7 @@ QStyleOptionViewItem QAbstractItemView::viewOptions() const
     option.state &= ~QStyle::State_MouseOver;
     option.font = font();
 
-#ifndef Q_DEAD_CODE_FROM_QT4_MAC
+#if 1 // Used to be excluded in Qt4 for Q_WS_MAC
     // On mac the focus appearance follows window activation
     // not widget activation
     if (!hasFocus())

@@ -565,7 +565,7 @@ void QBalloonTip::balloon(const QPoint& pos, int msecs, bool showArrow)
     }
 
     QPainterPath path;
-#if defined(QT_NO_XSHAPE) && defined(Q_DEAD_CODE_FROM_QT4_X11)
+#if defined(QT_NO_XSHAPE) && 0 /* Used to be included in Qt4 for Q_WS_X11 */
     // XShape is required for setting the mask, so we just
     // draw an ugly square when its not available
     path.moveTo(0, 0);

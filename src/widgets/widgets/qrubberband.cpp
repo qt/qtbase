@@ -47,7 +47,7 @@
 
 #include "qstyle.h"
 #include "qstyleoption.h"
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
 #  include <private/qt_mac_p.h>
 #  include <private/qt_cocoa_helpers_mac_p.h>
 #endif
@@ -142,12 +142,12 @@ QRubberBand::QRubberBand(Shape s, QWidget *p)
     Q_D(QRubberBand);
     d->shape = s;
     setAttribute(Qt::WA_TransparentForMouseEvents);
-#ifndef Q_DEAD_CODE_FROM_QT4_WIN
+#if 1 // Used to be excluded in Qt4 for Q_WS_WIN
     setAttribute(Qt::WA_NoSystemBackground);
-#endif //Q_DEAD_CODE_FROM_QT4_WIN
+#endif
     setAttribute(Qt::WA_WState_ExplicitShowHide);
     setVisible(false);
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     if (isWindow()) {
         createWinId();
         extern OSWindowRef qt_mac_window_for(const QWidget *); //qwidget_mac.cpp

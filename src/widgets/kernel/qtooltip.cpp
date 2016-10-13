@@ -36,7 +36,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
 # include <private/qcore_mac_p.h>
 #endif
 
@@ -56,7 +56,7 @@
 #include <private/qstylesheetstyle_p.h>
 #ifndef QT_NO_TOOLTIP
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
 # include <private/qcore_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
@@ -284,7 +284,7 @@ void QTipLabel::timerEvent(QTimerEvent *e)
         || e->timerId() == expireTimer.timerId()){
         hideTimer.stop();
         expireTimer.stop();
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC) && !defined(QT_NO_EFFECTS)
+#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && !defined(QT_NO_EFFECTS)
         if (QApplication::isEffectEnabled(Qt::UI_FadeTooltip)){
             // Fade out tip on mac (makes it invisible).
             // The tip will not be deleted until a new tip is shown.
@@ -304,7 +304,7 @@ void QTipLabel::timerEvent(QTimerEvent *e)
 bool QTipLabel::eventFilter(QObject *o, QEvent *e)
 {
     switch (e->type()) {
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     case QEvent::KeyPress:
     case QEvent::KeyRelease: {
         int key = static_cast<QKeyEvent *>(e)->key();
@@ -386,7 +386,7 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
 #endif //QT_NO_STYLE_STYLESHEET
 
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     // When in full screen mode, there is no Dock nor Menu so we can use
     // the whole screen for displaying the tooltip. However when not in
     // full screen mode we need to save space for the dock, so we use
@@ -403,7 +403,7 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
 
     QPoint p = pos;
     p += QPoint(2,
-#ifdef Q_DEAD_CODE_FROM_QT4_WIN
+#if 0 // Used to be included in Qt4 for Q_WS_WIN
                 21
 #else
                 16
@@ -492,7 +492,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
     }
 
     if (!text.isEmpty()){ // no tip can be reused, create new tip:
-#ifndef Q_DEAD_CODE_FROM_QT4_WIN
+#if 1 // Used to be excluded in Qt4 for Q_WS_WIN
         new QTipLabel(text, w, msecDisplayTime); // sets QTipLabel::instance to itself
 #else
         // On windows, we can't use the widget as parent otherwise the window will be
@@ -504,7 +504,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
         QTipLabel::instance->setObjectName(QLatin1String("qtooltip_label"));
 
 
-#if !defined(QT_NO_EFFECTS) && !defined(Q_DEAD_CODE_FROM_QT4_MAC)
+#if !defined(QT_NO_EFFECTS) && !0 /* Used to be included in Qt4 for Q_WS_MAC */
         if (QApplication::isEffectEnabled(Qt::UI_FadeTooltip))
             qFadeEffect(QTipLabel::instance);
         else if (QApplication::isEffectEnabled(Qt::UI_AnimateTooltip))

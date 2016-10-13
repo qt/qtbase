@@ -87,9 +87,9 @@ public Q_SLOTS:
 
 protected:
     bool event(QEvent *e) Q_DECL_OVERRIDE;
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     bool hitButton(const QPoint &pos) const;
-#endif // Q_DEAD_CODE_FROM_QT4_MAC
+#endif
     void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
     void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;
     void focusInEvent(QFocusEvent *) Q_DECL_OVERRIDE;

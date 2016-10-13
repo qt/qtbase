@@ -325,7 +325,7 @@ private:
 #ifndef QT_NO_TABBAR
     void updateTabBarShapes();
 #endif
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     static OSStatus qtmacToolbarDelegate(EventHandlerCallRef, EventRef , void *);
     static OSStatus qtoolbarInHIToolbarHandler(EventHandlerCallRef inCallRef, EventRef event,
                                                void *data);
@@ -358,7 +358,7 @@ public:
     QUnifiedToolbarSurface *unifiedSurface;
     void updateUnifiedToolbarOffset();
 
-#endif // Q_DEAD_CODE_FROM_QT4_MAC
+#endif
 };
 
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_DEBUG_STREAM)

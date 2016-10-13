@@ -52,7 +52,7 @@
 #include <QtWidgets/qstyleoption.h>
 #include <QtWidgets/QStyleOptionTitleBar>
 #include <QtWidgets/QGraphicsSceneMouseEvent>
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC) && !defined(QT_NO_STYLE_MAC)
+#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && !defined(QT_NO_STYLE_MAC)
 # include <private/qmacstyle_mac_p.h>
 #endif
 
@@ -704,7 +704,7 @@ void QGraphicsWidgetPrivate::windowFrameHoverMoveEvent(QGraphicsSceneHoverEvent 
         case Qt::TitleBarArea:
             windowData->buttonRect = q->style()->subControlRect(
                 QStyle::CC_TitleBar, &bar, QStyle::SC_TitleBarCloseButton, 0);
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
             // On mac we should hover if we are in the 'area' of the buttons
             windowData->buttonRect |= q->style()->subControlRect(
                 QStyle::CC_TitleBar, &bar, QStyle::SC_TitleBarMinButton, 0);

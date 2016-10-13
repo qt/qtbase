@@ -1579,7 +1579,7 @@ protected:
     {
         Q_UNUSED(e)
 
-#ifndef Q_DEAD_CODE_FROM_QT4_MAC
+#if 1 // Used to be excluded in Qt4 for Q_WS_MAC
         QStyleOptionToolButton opt;
         initStyleOption(&opt);
 
