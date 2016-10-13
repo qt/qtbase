@@ -314,13 +314,13 @@ QT_FORWARD_DECLARE_CLASS(QString)
 {
 
 #ifndef QT_NO_TRANSLATION
-    [servicesItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(0))];
-    [hideItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(1).arg(qt_mac_applicationName()))];
-    [hideAllOthersItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(2))];
-    [showAllItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(3))];
-    [preferencesItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(4))];
-    [quitItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(5).arg(qt_mac_applicationName()))];
-    [aboutItem setTitle: QCFString::toNSString(qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName()))];
+    [servicesItem setTitle:qt_mac_applicationmenu_string(0).toNSString()];
+    [hideItem setTitle:qt_mac_applicationmenu_string(1).arg(qt_mac_applicationName()).toNSString()];
+    [hideAllOthersItem setTitle:qt_mac_applicationmenu_string(2).toNSString()];
+    [showAllItem setTitle:qt_mac_applicationmenu_string(3).toNSString()];
+    [preferencesItem setTitle:qt_mac_applicationmenu_string(4).toNSString()];
+    [quitItem setTitle:qt_mac_applicationmenu_string(5).arg(qt_mac_applicationName()).toNSString()];
+    [aboutItem setTitle:qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName()).toNSString()];
 #endif
 }
 

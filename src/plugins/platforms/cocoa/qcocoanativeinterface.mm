@@ -96,7 +96,7 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
         return 0;
 
     if (resourceString == "nsview") {
-        return static_cast<QCocoaWindow *>(window->handle())->m_contentView;
+        return static_cast<QCocoaWindow *>(window->handle())->m_view;
 #ifndef QT_NO_OPENGL
     } else if (resourceString == "nsopenglcontext") {
         return static_cast<QCocoaWindow *>(window->handle())->currentContext()->nsOpenGLContext();
@@ -125,8 +125,6 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qImageToCGImage);
     if (resource.toLower() == "cgimagetoqimage")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::cgImageToQImage);
-    if (resource.toLower() == "setwindowcontentview")
-        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setWindowContentView);
     if (resource.toLower() == "registertouchwindow")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerTouchWindow);
     if (resource.toLower() == "setembeddedinforeignview")
@@ -276,12 +274,6 @@ CGImageRef QCocoaNativeInterface::qImageToCGImage(const QImage &image)
 QImage QCocoaNativeInterface::cgImageToQImage(CGImageRef image)
 {
     return qt_mac_toQImage(image);
-}
-
-void QCocoaNativeInterface::setWindowContentView(QPlatformWindow *window, void *contentView)
-{
-    QCocoaWindow *cocoaPlatformWindow = static_cast<QCocoaWindow *>(window);
-    cocoaPlatformWindow->setContentView(reinterpret_cast<NSView *>(contentView));
 }
 
 void QCocoaNativeInterface::setEmbeddedInForeignView(QPlatformWindow *window, bool embedded)

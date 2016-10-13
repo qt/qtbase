@@ -103,7 +103,7 @@ public:
     bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;
     bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
 
-    void setCursor(xcb_cursor_t cursor);
+    void setCursor(xcb_cursor_t cursor, bool isBitmapCursor);
 
     QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
@@ -139,6 +139,7 @@ public:
     void handleFocusOutEvent(const xcb_focus_out_event_t *event) Q_DECL_OVERRIDE;
     void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) Q_DECL_OVERRIDE;
 #ifdef XCB_USE_XINPUT22
+    void handleXIMouseButtonState(const xcb_ge_event_t *);
     void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized) Q_DECL_OVERRIDE;
     void handleXIEnterLeave(xcb_ge_event_t *) Q_DECL_OVERRIDE;
 #endif
@@ -271,6 +272,7 @@ protected:
     SyncState m_syncState;
 
     QXcbSyncWindowRequest *m_pendingSyncRequest;
+    xcb_cursor_t m_currentBitmapCursor;
 };
 
 QT_END_NAMESPACE

@@ -10,7 +10,6 @@ qtConfig(xcb-glx) {
     DEFINES += XCB_HAS_XCB_GLX
     QMAKE_USE += xcb_glx
 }
-QMAKE_USE += xcb
 
 LIBS += $$QMAKE_LIBS_DYNLOAD
 

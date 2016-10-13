@@ -1351,10 +1351,16 @@
 /* Clang can not parse namespaced attributes in C mode, but defines __has_cpp_attribute */
 #  if QT_HAS_CPP_ATTRIBUTE(clang::fallthrough)
 #    define Q_FALLTHROUGH() [[clang::fallthrough]]
+#  elif QT_HAS_CPP_ATTRIBUTE(gnu::fallthrough)
+#    define Q_FALLTHROUGH() [[gnu::fallthrough]]
 #  endif
 #endif
 #ifndef Q_FALLTHROUGH
-#  define Q_FALLTHROUGH() (void)0
+#  if defined(Q_CC_GNU) && Q_CC_GNU >= 700
+#    define Q_FALLTHROUGH() __attribute__((fallthrough))
+#  else
+#    define Q_FALLTHROUGH() (void)0
+#endif
 #endif
 
 

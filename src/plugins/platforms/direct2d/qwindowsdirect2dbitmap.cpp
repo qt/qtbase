@@ -80,7 +80,7 @@ public:
         bitmap.Reset();
 
         D2D1_SIZE_U size = {
-            width, height
+            UINT32(width), UINT32(height)
         };
 
         HRESULT hr = deviceContext->get()->CreateBitmap(size, data, pitch,

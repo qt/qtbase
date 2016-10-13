@@ -130,57 +130,57 @@ do {\
 #endif // !QT_NO_EXCEPTIONS
 
 
-#define QTRY_LOOP_IMPL(__expr, __timeoutValue, __step) \
-    if (!(__expr)) { \
+#define QTRY_LOOP_IMPL(expr, timeoutValue, step) \
+    if (!(expr)) { \
         QTest::qWait(0); \
     } \
-    int __i = 0; \
-    for (; __i < __timeoutValue && !(__expr); __i += __step) { \
-        QTest::qWait(__step); \
+    int qt_test_i = 0; \
+    for (; qt_test_i < timeoutValue && !(expr); qt_test_i += step) { \
+        QTest::qWait(step); \
     }
 
-#define QTRY_TIMEOUT_DEBUG_IMPL(__expr, __timeoutValue, __step)\
-    if (!(__expr)) { \
-        QTRY_LOOP_IMPL((__expr), (2 * __timeoutValue), __step);\
-        if (__expr) { \
+#define QTRY_TIMEOUT_DEBUG_IMPL(expr, timeoutValue, step)\
+    if (!(expr)) { \
+        QTRY_LOOP_IMPL((expr), (2 * timeoutValue), step);\
+        if (expr) { \
             QString msg = QString::fromUtf8("QTestLib: This test case check (\"%1\") failed because the requested timeout (%2 ms) was too short, %3 ms would have been sufficient this time."); \
-            msg = msg.arg(QString::fromUtf8(#__expr)).arg(__timeoutValue).arg(__timeoutValue + __i); \
+            msg = msg.arg(QString::fromUtf8(#expr)).arg(timeoutValue).arg(timeoutValue + qt_test_i); \
             QFAIL(qPrintable(msg)); \
         } \
     }
 
-#define QTRY_IMPL(__expr, __timeout)\
-    const int __step = 50; \
-    const int __timeoutValue = __timeout; \
-    QTRY_LOOP_IMPL((__expr), __timeoutValue, __step); \
-    QTRY_TIMEOUT_DEBUG_IMPL((__expr), __timeoutValue, __step)\
+#define QTRY_IMPL(expr, timeout)\
+    const int qt_test_step = 50; \
+    const int qt_test_timeoutValue = timeout; \
+    QTRY_LOOP_IMPL((expr), qt_test_timeoutValue, qt_test_step); \
+    QTRY_TIMEOUT_DEBUG_IMPL((expr), qt_test_timeoutValue, qt_test_step)\
 
 // Will try to wait for the expression to become true while allowing event processing
-#define QTRY_VERIFY_WITH_TIMEOUT(__expr, __timeout) \
+#define QTRY_VERIFY_WITH_TIMEOUT(expr, timeout) \
 do { \
-    QTRY_IMPL((__expr), __timeout);\
-    QVERIFY(__expr); \
+    QTRY_IMPL((expr), timeout);\
+    QVERIFY(expr); \
 } while (0)
 
-#define QTRY_VERIFY(__expr) QTRY_VERIFY_WITH_TIMEOUT((__expr), 5000)
+#define QTRY_VERIFY(expr) QTRY_VERIFY_WITH_TIMEOUT((expr), 5000)
 
 // Will try to wait for the expression to become true while allowing event processing
-#define QTRY_VERIFY2_WITH_TIMEOUT(__expr, __messageExpression, __timeout) \
+#define QTRY_VERIFY2_WITH_TIMEOUT(expr, messageExpression, timeout) \
 do { \
-    QTRY_IMPL((__expr), __timeout);\
-    QVERIFY2(__expr, __messageExpression); \
+    QTRY_IMPL((expr), timeout);\
+    QVERIFY2(expr, messageExpression); \
 } while (0)
 
-#define QTRY_VERIFY2(__expr, __messageExpression) QTRY_VERIFY2_WITH_TIMEOUT((__expr), (__messageExpression), 5000)
+#define QTRY_VERIFY2(expr, messageExpression) QTRY_VERIFY2_WITH_TIMEOUT((expr), (messageExpression), 5000)
 
 // Will try to wait for the comparison to become successful while allowing event processing
-#define QTRY_COMPARE_WITH_TIMEOUT(__expr, __expected, __timeout) \
+#define QTRY_COMPARE_WITH_TIMEOUT(expr, expected, timeout) \
 do { \
-    QTRY_IMPL(((__expr) == (__expected)), __timeout);\
-    QCOMPARE((__expr), __expected); \
+    QTRY_IMPL(((expr) == (expected)), timeout);\
+    QCOMPARE((expr), expected); \
 } while (0)
 
-#define QTRY_COMPARE(__expr, __expected) QTRY_COMPARE_WITH_TIMEOUT((__expr), __expected, 5000)
+#define QTRY_COMPARE(expr, expected) QTRY_COMPARE_WITH_TIMEOUT((expr), expected, 5000)
 
 #define QSKIP_INTERNAL(statement) \
 do {\

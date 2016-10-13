@@ -59,7 +59,7 @@
 #include <QtCore/qpointer.h>
 #include <QtCore/qvariant.h>
 
-#ifndef QT_NO_STATEMACHINE
+QT_REQUIRE_CONFIG(statemachine);
 
 QT_BEGIN_NAMESPACE
 
@@ -123,7 +123,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_STATEMACHINE
 
 #endif

@@ -57,6 +57,8 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qsharedpointer.h>
 
+QT_REQUIRE_CONFIG(statemachine);
+
 QT_BEGIN_NAMESPACE
 
 class QAbstractState;

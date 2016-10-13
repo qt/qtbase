@@ -1,3 +1,5 @@
+!qtConfig(statemachine): return()
+
 HEADERS += $$PWD/qstatemachine.h \
 	   $$PWD/qstatemachine_p.h \
 	   $$PWD/qsignaleventgenerator_p.h \

@@ -303,7 +303,7 @@ protected:
     {
         QMacAutoReleasePool pool;
 
-        NSImage *iconImage = [[NSWorkspace sharedWorkspace] iconForFile:QCFString::toNSString(fileInfo().canonicalFilePath())];
+        NSImage *iconImage = [[NSWorkspace sharedWorkspace] iconForFile:fileInfo().canonicalFilePath().toNSString()];
         if (!iconImage)
             return QPixmap();
         return qt_mac_toQPixmap(iconImage, size);

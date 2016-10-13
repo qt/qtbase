@@ -257,8 +257,8 @@ static QString glue(const QString &s1, const QString &s2)
 static void checkState(QSignalSpy &redoTextChangedSpy,
                        QSignalSpy &canRedoChangedSpy,
                        QSignalSpy &undoTextChangedSpy,
-                       QAction *const redoAction,
-                       QAction *const undoAction,
+                       const QScopedPointer<QAction> &redoAction,
+                       const QScopedPointer<QAction> &undoAction,
                        QSignalSpy &canUndoChangedSpy,
                        QSignalSpy &cleanChangedSpy,
                        QSignalSpy &indexChangedSpy,
@@ -327,8 +327,8 @@ static void checkState(QSignalSpy &redoTextChangedSpy,
 void tst_QUndoStack::undoRedo()
 {
     QUndoStack stack;
-    QAction *undoAction = stack.createUndoAction(0, QString("foo"));
-    QAction *redoAction = stack.createRedoAction(0, QString("bar"));
+    const QScopedPointer<QAction> undoAction(stack.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redoAction(stack.createRedoAction(0, QString("bar")));
     QSignalSpy indexChangedSpy(&stack, SIGNAL(indexChanged(int)));
     QSignalSpy cleanChangedSpy(&stack, SIGNAL(cleanChanged(bool)));
     QSignalSpy canUndoChangedSpy(&stack, SIGNAL(canUndoChanged(bool)));
@@ -688,8 +688,8 @@ void tst_QUndoStack::undoRedo()
 void tst_QUndoStack::setIndex()
 {
     QUndoStack stack;
-    QAction *undoAction = stack.createUndoAction(0, QString("foo"));
-    QAction *redoAction = stack.createRedoAction(0, QString("bar"));
+    const QScopedPointer<QAction> undoAction(stack.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redoAction(stack.createRedoAction(0, QString("bar")));
     QSignalSpy indexChangedSpy(&stack, SIGNAL(indexChanged(int)));
     QSignalSpy cleanChangedSpy(&stack, SIGNAL(cleanChanged(bool)));
     QSignalSpy canUndoChangedSpy(&stack, SIGNAL(canUndoChanged(bool)));
@@ -952,8 +952,8 @@ void tst_QUndoStack::setIndex()
 void tst_QUndoStack::setClean()
 {
     QUndoStack stack;
-    QAction *undoAction = stack.createUndoAction(0, QString("foo"));
-    QAction *redoAction = stack.createRedoAction(0, QString("bar"));
+    const QScopedPointer<QAction> undoAction(stack.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redoAction(stack.createRedoAction(0, QString("bar")));
     QSignalSpy indexChangedSpy(&stack, SIGNAL(indexChanged(int)));
     QSignalSpy cleanChangedSpy(&stack, SIGNAL(cleanChanged(bool)));
     QSignalSpy canUndoChangedSpy(&stack, SIGNAL(canUndoChanged(bool)));
@@ -1205,8 +1205,8 @@ void tst_QUndoStack::setClean()
 void tst_QUndoStack::clear()
 {
     QUndoStack stack;
-    QAction *undoAction = stack.createUndoAction(this, QString("foo"));
-    QAction *redoAction = stack.createRedoAction(this, QString("bar"));
+    const QScopedPointer<QAction> undoAction(stack.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redoAction(stack.createRedoAction(0, QString("bar")));
     QSignalSpy indexChangedSpy(&stack, SIGNAL(indexChanged(int)));
     QSignalSpy cleanChangedSpy(&stack, SIGNAL(cleanChanged(bool)));
     QSignalSpy canUndoChangedSpy(&stack, SIGNAL(canUndoChanged(bool)));
@@ -1403,8 +1403,8 @@ void tst_QUndoStack::clear()
 void tst_QUndoStack::childCommand()
 {
     QUndoStack stack;
-    QAction *undoAction = stack.createUndoAction(0, QString("foo"));
-    QAction *redoAction = stack.createRedoAction(0, QString("bar"));
+    const QScopedPointer<QAction> undoAction(stack.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redoAction(stack.createRedoAction(0, QString("bar")));
     QSignalSpy indexChangedSpy(&stack, SIGNAL(indexChanged(int)));
     QSignalSpy cleanChangedSpy(&stack, SIGNAL(cleanChanged(bool)));
     QSignalSpy canUndoChangedSpy(&stack, SIGNAL(canUndoChanged(bool)));
@@ -1508,16 +1508,13 @@ void tst_QUndoStack::childCommand()
                 true,       // indexChanged
                 true,       // undoChanged
                 true);      // redoChanged
-
-    delete undoAction;
-    delete redoAction;
 }
 
 void tst_QUndoStack::macroBeginEnd()
 {
     QUndoStack stack;
-    QAction *undoAction = stack.createUndoAction(0, QString("foo"));
-    QAction *redoAction = stack.createRedoAction(0, QString("bar"));
+    const QScopedPointer<QAction> undoAction(stack.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redoAction(stack.createRedoAction(0, QString("bar")));
     QSignalSpy indexChangedSpy(&stack, SIGNAL(indexChanged(int)));
     QSignalSpy cleanChangedSpy(&stack, SIGNAL(cleanChanged(bool)));
     QSignalSpy canUndoChangedSpy(&stack, SIGNAL(canUndoChanged(bool)));
@@ -1978,16 +1975,13 @@ void tst_QUndoStack::macroBeginEnd()
                 true,       // indexChanged
                 true,       // undoChanged
                 true);      // redoChanged
-
-    delete undoAction;
-    delete redoAction;
 }
 
 void tst_QUndoStack::compression()
 {
     QUndoStack stack;
-    QAction *undoAction = stack.createUndoAction(0, QString("foo"));
-    QAction *redoAction = stack.createRedoAction(0, QString("bar"));
+    const QScopedPointer<QAction> undoAction(stack.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redoAction(stack.createRedoAction(0, QString("bar")));
     QSignalSpy indexChangedSpy(&stack, SIGNAL(indexChanged(int)));
     QSignalSpy cleanChangedSpy(&stack, SIGNAL(cleanChanged(bool)));
     QSignalSpy canUndoChangedSpy(&stack, SIGNAL(canUndoChanged(bool)));
@@ -2423,16 +2417,13 @@ void tst_QUndoStack::compression()
                 true,       // indexChanged
                 true,       // undoChanged
                 true);      // redoChanged
-
-    delete undoAction;
-    delete redoAction;
 }
 
 void tst_QUndoStack::undoLimit()
 {
     QUndoStack stack;
-    QAction *undoAction = stack.createUndoAction(0, QString("foo"));
-    QAction *redoAction = stack.createRedoAction(0, QString("bar"));
+    const QScopedPointer<QAction> undoAction(stack.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redoAction(stack.createRedoAction(0, QString("bar")));
     QSignalSpy indexChangedSpy(&stack, SIGNAL(indexChanged(int)));
     QSignalSpy cleanChangedSpy(&stack, SIGNAL(cleanChanged(bool)));
     QSignalSpy canUndoChangedSpy(&stack, SIGNAL(canUndoChanged(bool)));
@@ -2972,8 +2963,8 @@ void tst_QUndoStack::commandTextFormat()
     qApp->installTranslator(&translator);
 
     QUndoStack stack;
-    QAction *undo_action = stack.createUndoAction(0);
-    QAction *redo_action = stack.createRedoAction(0);
+    const QScopedPointer<QAction> undo_action(stack.createUndoAction(0));
+    const QScopedPointer<QAction> redo_action(stack.createRedoAction(0));
 
     QCOMPARE(undo_action->text(), QString("Undo-default-text"));
     QCOMPARE(redo_action->text(), QString("Redo-default-text"));
@@ -3000,8 +2991,8 @@ void tst_QUndoStack::commandTextFormat()
 void tst_QUndoStack::separateUndoText()
 {
     QUndoStack stack;
-    QAction *undo_action = stack.createUndoAction(0);
-    QAction *redo_action = stack.createRedoAction(0);
+    const QScopedPointer<QAction> undo_action(stack.createUndoAction(0));
+    const QScopedPointer<QAction> redo_action(stack.createRedoAction(0));
 
     QUndoCommand *command1 = new IdleCommand();
     QUndoCommand *command2 = new IdleCommand();

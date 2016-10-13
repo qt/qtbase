@@ -253,9 +253,9 @@ public:
     QDateTime(const QDate &, const QTime &, Qt::TimeSpec spec = Qt::LocalTime);
     // ### Qt 6: Merge with above with default offsetSeconds = 0
     QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec, int offsetSeconds);
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(timezone)
     QDateTime(const QDate &date, const QTime &time, const QTimeZone &timeZone);
-#endif // QT_BOOTSTRAPPED
+#endif // timezone
     QDateTime(const QDateTime &other) Q_DECL_NOTHROW;
     QDateTime(QDateTime &&other) Q_DECL_NOTHROW;
     ~QDateTime();
@@ -274,9 +274,9 @@ public:
     QTime time() const;
     Qt::TimeSpec timeSpec() const;
     int offsetFromUtc() const;
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(timezone)
     QTimeZone timeZone() const;
-#endif // QT_BOOTSTRAPPED
+#endif // timezone
     QString timeZoneAbbreviation() const;
     bool isDaylightTime() const;
 
@@ -287,9 +287,9 @@ public:
     void setTime(const QTime &time);
     void setTimeSpec(Qt::TimeSpec spec);
     void setOffsetFromUtc(int offsetSeconds);
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(timezone)
     void setTimeZone(const QTimeZone &toZone);
-#endif // QT_BOOTSTRAPPED
+#endif // timezone
     void setMSecsSinceEpoch(qint64 msecs);
     void setSecsSinceEpoch(qint64 secs);
 
@@ -307,9 +307,9 @@ public:
     inline QDateTime toLocalTime() const { return toTimeSpec(Qt::LocalTime); }
     inline QDateTime toUTC() const { return toTimeSpec(Qt::UTC); }
     QDateTime toOffsetFromUtc(int offsetSeconds) const;
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(timezone)
     QDateTime toTimeZone(const QTimeZone &toZone) const;
-#endif // QT_BOOTSTRAPPED
+#endif // timezone
 
     qint64 daysTo(const QDateTime &) const;
     qint64 secsTo(const QDateTime &) const;
@@ -348,7 +348,7 @@ public:
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetFromUtc = 0);
     static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spe = Qt::LocalTime, int offsetFromUtc = 0);
 
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(timezone)
     static QDateTime fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone);
     static QDateTime fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone);
 #endif

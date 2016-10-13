@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include "qstate_p.h"
-
-#ifndef QT_NO_STATEMACHINE
-
 #include "qhistorystate.h"
 #include "qhistorystate_p.h"
 #include "qabstracttransition.h"
@@ -602,5 +599,3 @@ bool QState::event(QEvent *e)
 */
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_STATEMACHINE

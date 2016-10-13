@@ -168,36 +168,11 @@ static QString baseWritableLocation(QStandardPaths::StandardLocation type,
 
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
-    if (isTestModeEnabled()) {
-        const QString qttestDir = QDir::homePath() + QLatin1String("/.qttest");
-        QString path;
-        switch (type) {
-        case GenericDataLocation:
-        case AppDataLocation:
-        case AppLocalDataLocation:
-            path = qttestDir + QLatin1String("/Application Support");
-            if (type != GenericDataLocation)
-                appendOrganizationAndApp(path);
-            return path;
-        case GenericCacheLocation:
-        case CacheLocation:
-            path = qttestDir + QLatin1String("/Cache");
-            if (type == CacheLocation)
-                appendOrganizationAndApp(path);
-            return path;
-        case GenericConfigLocation:
-        case ConfigLocation:
-        case AppConfigLocation:
-            path = qttestDir + QLatin1String("/Preferences");
-            if (type == AppConfigLocation)
-                appendOrganizationAndApp(path);
-            return path;
-        default:
-            break;
-        }
-    }
+    QString location = baseWritableLocation(type, NSUserDomainMask, true);
+    if (isTestModeEnabled())
+        location = location.replace(QDir::homePath(), QDir::homePath() + QLatin1String("/.qttest"));
 
-    return baseWritableLocation(type, NSUserDomainMask, true);
+    return location;
 }
 
 QStringList QStandardPaths::standardLocations(StandardLocation type)
@@ -230,13 +205,13 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         if (mainBundle) {
             CFURLRef bundleUrl = CFBundleCopyBundleURL(mainBundle);
             CFStringRef cfBundlePath = CFURLCopyPath(bundleUrl);
-            QString bundlePath = QCFString::toQString(cfBundlePath);
+            QString bundlePath = QString::fromCFString(cfBundlePath);
             CFRelease(cfBundlePath);
             CFRelease(bundleUrl);
 
             CFURLRef resourcesUrl = CFBundleCopyResourcesDirectoryURL(mainBundle);
             CFStringRef cfResourcesPath = CFURLCopyPath(resourcesUrl);
-            QString resourcesPath = QCFString::toQString(cfResourcesPath);
+            QString resourcesPath = QString::fromCFString(cfResourcesPath);
             CFRelease(cfResourcesPath);
             CFRelease(resourcesUrl);
 

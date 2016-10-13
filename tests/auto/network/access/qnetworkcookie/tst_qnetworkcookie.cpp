@@ -46,33 +46,6 @@ private slots:
     void parseMultipleCookies();
 };
 
-QT_BEGIN_NAMESPACE
-
-namespace QTest {
-    template<>
-    char *toString(const QNetworkCookie &cookie)
-    {
-        return qstrdup(cookie.toRawForm());
-    }
-
-    template<>
-    char *toString(const QList<QNetworkCookie> &list)
-    {
-        QByteArray result = "QList(";
-        bool first = true;
-        foreach (QNetworkCookie cookie, list) {
-            if (!first)
-                result += ", ";
-            first = false;
-            result += "QNetworkCookie(" + cookie.toRawForm() + ')';
-        }
-        result.append(')');
-        return qstrdup(result.constData());
-    }
-}
-
-QT_END_NAMESPACE
-
 void tst_QNetworkCookie::getterSetter()
 {
     QNetworkCookie cookie;

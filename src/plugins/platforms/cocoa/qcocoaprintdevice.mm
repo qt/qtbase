@@ -71,13 +71,13 @@ QCocoaPrintDevice::QCocoaPrintDevice(const QString &id)
       m_ppd(0)
 {
     if (!id.isEmpty()) {
-        m_printer = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(id));
+        m_printer = PMPrinterCreateFromPrinterID(id.toCFString());
         if (m_printer) {
-            m_name = QCFString::toQString(PMPrinterGetName(m_printer));
-            m_location = QCFString::toQString(PMPrinterGetLocation(m_printer));
+            m_name = QString::fromCFString(PMPrinterGetName(m_printer));
+            m_location = QString::fromCFString(PMPrinterGetLocation(m_printer));
             CFStringRef cfMakeAndModel;
             if (PMPrinterGetMakeAndModelName(m_printer, &cfMakeAndModel) == noErr)
-                m_makeAndModel = QCFString::toQString(cfMakeAndModel);
+                m_makeAndModel = QString::fromCFString(cfMakeAndModel);
             Boolean isRemote;
             if (PMPrinterIsRemote(m_printer, &isRemote) == noErr)
                 m_isRemote = isRemote;
@@ -420,7 +420,7 @@ void QCocoaPrintDevice::loadMimeTypes() const
             int count = CFArrayGetCount(mimeTypes);
             for (int i = 0; i < count; ++i) {
                 CFStringRef mimeName = static_cast<CFStringRef>(const_cast<void *>(CFArrayGetValueAtIndex(mimeTypes, i)));
-                QMimeType mimeType = db.mimeTypeForName(QCFString::toQString(mimeName));
+                QMimeType mimeType = db.mimeTypeForName(QString::fromCFString(mimeName));
                 if (mimeType.isValid())
                     m_mimeTypes.append(mimeType);
             }

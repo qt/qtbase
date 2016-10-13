@@ -86,7 +86,7 @@ int QEglFSKmsDevice::crtcForConnector(drmModeResPtr resources, drmModeConnectorP
     return -1;
 }
 
-static const char * const connector_type_names[] = {
+static const char * const connector_type_names[] = { // must match DRM_MODE_CONNECTOR_*
     "None",
     "VGA",
     "DVI",
@@ -102,6 +102,8 @@ static const char * const connector_type_names[] = {
     "HDMI",
     "TV",
     "eDP",
+    "Virtual",
+    "DSI"
 };
 
 static QByteArray nameForConnector(const drmModeConnectorPtr connector)

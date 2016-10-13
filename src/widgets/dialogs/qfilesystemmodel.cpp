@@ -873,7 +873,7 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
 
     QString newName = value.toString();
     QString oldName = idx.data().toString();
-    if (newName == idx.data().toString())
+    if (newName == oldName)
         return true;
 
     const QString parentPath = filePath(parent(idx));
@@ -903,15 +903,13 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
         QFileSystemModelPrivate::QFileSystemNode *parentNode = indexNode->parent;
         int visibleLocation = parentNode->visibleLocation(parentNode->children.value(indexNode->fileName)->fileName);
 
-        d->addNode(parentNode, newName,indexNode->info->fileInfo());
         parentNode->visibleChildren.removeAt(visibleLocation);
         QFileSystemModelPrivate::QFileSystemNode * oldValue = parentNode->children.value(oldName);
         parentNode->children[newName] = oldValue;
-        QFileInfo info(parentPath, newName);
         oldValue->fileName = newName;
         oldValue->parent = parentNode;
 #ifndef QT_NO_FILESYSTEMWATCHER
-        oldValue->populate(d->fileInfoGatherer.getInfo(info));
+        oldValue->populate(d->fileInfoGatherer.getInfo(QFileInfo(parentPath, newName)));
 #endif
         oldValue->isVisible = true;
 
@@ -1698,6 +1696,7 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
             node->volumeName = QString::fromWCharArray(name);
     }
 #endif
+    Q_ASSERT(!parentNode->children.contains(fileName));
     parentNode->children.insert(fileName, node);
     return node;
 }

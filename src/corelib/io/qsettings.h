@@ -80,6 +80,9 @@ public:
         AccessError,
         FormatError
     };
+#ifndef QT_NO_QOBJECT
+    Q_ENUM(Status)
+#endif
 
     enum Format {
         NativeFormat,
@@ -108,11 +111,17 @@ public:
         CustomFormat15,
         CustomFormat16
     };
+#ifndef QT_NO_QOBJECT
+    Q_ENUM(Format)
+#endif
 
     enum Scope {
         UserScope,
         SystemScope
     };
+#ifndef QT_NO_QOBJECT
+    Q_ENUM(Scope)
+#endif
 
 #ifndef QT_NO_QOBJECT
     explicit QSettings(const QString &organization,

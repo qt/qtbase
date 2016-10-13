@@ -673,7 +673,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_DocumentName: {
         CFStringRef name;
         PMPrintSettingsGetJobName(d->settings(), &name);
-        ret = QCFString::toQString(name);
+        ret = QString::fromCFString(name);
         break;
     }
     case PPK_Duplex: {

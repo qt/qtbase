@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include "qkeyeventtransition.h"
-
-#ifndef QT_NO_STATEMACHINE
-
 #include "qbasickeyeventtransition_p.h"
 #include <QtCore/qstatemachine.h>
 #include <private/qeventtransition_p.h>
@@ -175,5 +172,3 @@ void QKeyEventTransition::onTransition(QEvent *event)
 QT_END_NAMESPACE
 
 #include "moc_qkeyeventtransition.cpp"
-
-#endif //QT_NO_STATEMACHINE

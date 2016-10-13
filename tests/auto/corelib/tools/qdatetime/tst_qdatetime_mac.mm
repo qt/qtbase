@@ -36,8 +36,11 @@
 void tst_QDateTime_macTypes()
 {
     // QDateTime <-> CFDate
-    {
-        QDateTime qtDateTime = QDateTime::fromMSecsSinceEpoch(0);
+
+    static const int kMsPerSecond = 1000;
+
+    for (int i = 0; i < kMsPerSecond; ++i) {
+        QDateTime qtDateTime = QDateTime::fromMSecsSinceEpoch(i);
         const CFDateRef cfDate = qtDateTime.toCFDate();
         QCOMPARE(QDateTime::fromCFDate(cfDate), qtDateTime);
         CFRelease(cfDate);
@@ -50,9 +53,9 @@ void tst_QDateTime_macTypes()
         QCOMPARE(QDateTime::fromCFDate(cfDate), qtDateTimeCopy);
     }
     // QDateTime <-> NSDate
-    {
+    for (int i = 0; i < kMsPerSecond; ++i) {
         QMacAutoReleasePool pool;
-        QDateTime qtDateTime = QDateTime::fromMSecsSinceEpoch(0);
+        QDateTime qtDateTime = QDateTime::fromMSecsSinceEpoch(i);
         const NSDate *nsDate = qtDateTime.toNSDate();
         QCOMPARE(QDateTime::fromNSDate(nsDate), qtDateTime);
     }

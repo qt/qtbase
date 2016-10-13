@@ -51,12 +51,10 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
-
-#ifndef QT_NO_STATEMACHINE
-
 #include <private/qobject_p.h>
 #include <QtCore/qabstractstate.h>
+
+QT_REQUIRE_CONFIG(statemachine);
 
 QT_BEGIN_NAMESPACE
 
@@ -97,7 +95,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_STATEMACHINE
 
 #endif // QABSTRACTSTATE_P_H

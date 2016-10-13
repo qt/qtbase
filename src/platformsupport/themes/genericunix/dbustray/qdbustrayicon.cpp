@@ -44,16 +44,16 @@
 #include "qdbusmenuconnection_p.h"
 #include "qstatusnotifieritemadaptor_p.h"
 #include "qdbusmenuadaptor_p.h"
-#include "dbusmenu/qdbusplatformmenu_p.h"
+#include "qdbusplatformmenu_p.h"
 #include "qxdgnotificationproxy_p.h"
 
-#include <qplatformmenu.h>
+#include <qpa/qplatformmenu.h>
 #include <qstring.h>
 #include <qdebug.h>
 #include <qrect.h>
 #include <qloggingcategory.h>
-#include <qplatformintegration.h>
-#include <qplatformservices.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformservices.h>
 #include <qdbusconnectioninterface.h>
 #include <private/qlockfile_p.h>
 #include <private/qguiapplication_p.h>
@@ -214,20 +214,21 @@ QPlatformMenu *QDBusTrayIcon::createMenu() const
 void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
 {
     qCDebug(qLcTray) << menu;
-    bool needsRegistering = !m_menu;
-    if (!m_menu)
-        m_menu = qobject_cast<QDBusPlatformMenu *>(menu);
-    if (!m_menuAdaptor) {
+    QDBusPlatformMenu *newMenu = qobject_cast<QDBusPlatformMenu *>(menu);
+    if (m_menu != newMenu) {
+        if (m_menu) {
+            dBusConnection()->unregisterTrayIconMenu(this);
+            delete m_menuAdaptor;
+        }
+        m_menu = newMenu;
         m_menuAdaptor = new QDBusMenuAdaptor(m_menu);
         // TODO connect(m_menu, , m_menuAdaptor, SIGNAL(ItemActivationRequested(int,uint)));
         connect(m_menu, SIGNAL(propertiesUpdated(QDBusMenuItemList,QDBusMenuItemKeysList)),
                 m_menuAdaptor, SIGNAL(ItemsPropertiesUpdated(QDBusMenuItemList,QDBusMenuItemKeysList)));
         connect(m_menu, SIGNAL(updated(uint,int)),
                 m_menuAdaptor, SIGNAL(LayoutUpdated(uint,int)));
-    }
-    m_menu->emitUpdated();
-    if (needsRegistering)
         dBusConnection()->registerTrayIconMenu(this);
+    }
 }
 
 void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const QIcon &icon,

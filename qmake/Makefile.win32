@@ -40,15 +40,12 @@ CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               $(CFLAGS_EXTRA) \
               -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac -I$(QMKSRC)\generators\integrity \
               -I$(INC_PATH) -I$(INC_PATH)\QtCore -I$(INC_PATH)\QtCore\$(QT_VERSION) -I$(INC_PATH)\QtCore\$(QT_VERSION)\QtCore \
-              -I$(BUILD_PATH)\src\corelib\global -DHAVE_QCONFIG_CPP \
+              -I$(BUILD_PATH)\src\corelib\global \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
               -I$(SOURCE_PATH)\tools\shared \
               -DQT_VERSION_STR=\"$(QT_VERSION)\" -DQT_VERSION_MAJOR=$(QT_MAJOR_VERSION) -DQT_VERSION_MINOR=$(QT_MINOR_VERSION) -DQT_VERSION_PATCH=$(QT_PATCH_VERSION) \
               -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
-              -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_COMPRESS \
-              -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
-              -DQT_NO_FOREACH \
-              -DUNICODE -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1 -DQT_JSON_READONLY -DQT_NO_STANDARDPATHS
+              -DQT_NO_FOREACH -DUNICODE
 CFLAGS   = $(CFLAGS_PCH) $(CFLAGS_BARE) $(CFLAGS)
 
 CXXFLAGS_BARE = $(CFLAGS_BARE)

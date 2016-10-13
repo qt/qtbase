@@ -48,10 +48,9 @@
 #include <QtCore/qset.h>
 #include <QtCore/qvariant.h>
 
+QT_REQUIRE_CONFIG(statemachine);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STATEMACHINE
 
 class QStateMachinePrivate;
 class QAbstractAnimation;
@@ -182,8 +181,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_startDelayedEventTimer(int, int))
     Q_PRIVATE_SLOT(d_func(), void _q_killDelayedEventTimer(int, int))
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

@@ -37,6 +37,10 @@
 **
 ****************************************************************************/
 
+#include <qglobal.h>
+
+#if QT_CONFIG(topleveldomain)
+
 #include "qplatformdefs.h"
 #include "qurl.h"
 #include "private/qurltlds_p.h"
@@ -125,3 +129,5 @@ Q_CORE_EXPORT bool qIsEffectiveTLD(const QStringRef &domain)
 }
 
 QT_END_NAMESPACE
+
+#endif

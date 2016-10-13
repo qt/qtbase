@@ -213,7 +213,7 @@ void QCoreTextFontEngine::init()
 
     face_id.index = 0;
     QCFString name = CTFontCopyName(ctfont, kCTFontUniqueNameKey);
-    face_id.filename = QCFString::toQString(name).toUtf8();
+    face_id.filename = QString::fromCFString(name).toUtf8();
 
     QCFString family = CTFontCopyFamilyName(ctfont);
     fontDef.family = family;
@@ -826,8 +826,8 @@ QFontEngine::Properties QCoreTextFontEngine::properties() const
     QCFString psName, copyright;
     psName = CTFontCopyPostScriptName(ctfont);
     copyright = CTFontCopyName(ctfont, kCTFontCopyrightNameKey);
-    result.postscriptName = QCFString::toQString(psName).toUtf8();
-    result.copyright = QCFString::toQString(copyright).toUtf8();
+    result.postscriptName = QString::fromCFString(psName).toUtf8();
+    result.copyright = QString::fromCFString(copyright).toUtf8();
 
     qreal emSquare = CTFontGetUnitsPerEm(ctfont);
     qreal scale = emSquare / CTFontGetSize(ctfont);

@@ -54,32 +54,6 @@
 
 QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
-QT_BEGIN_NAMESPACE
-
-class QCocoaWindowPointer
-{
-public:
-    void assign(QCocoaWindow *w);
-    void clear();
-
-    QCocoaWindow *data() const
-    { return watcher.isNull() ? Q_NULLPTR : window; }
-    bool isNull() const
-    { return watcher.isNull(); }
-    operator QCocoaWindow*() const
-    { return data(); }
-    QCocoaWindow *operator->() const
-    { return data(); }
-    QCocoaWindow &operator*() const
-    { return *data(); }
-
-private:
-    QPointer<QObject> watcher;
-    QCocoaWindow *window;
-};
-
-QT_END_NAMESPACE
-
 @class QT_MANGLE_NAMESPACE(QNSWindowHelper);
 
 @protocol QNSWindowProtocol
@@ -96,13 +70,13 @@ typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 @interface QT_MANGLE_NAMESPACE(QNSWindowHelper) : NSObject
 {
     QCocoaNSWindow *_window;
-    QCocoaWindowPointer _platformWindow;
+    QPointer<QCocoaWindow> _platformWindow;
     BOOL _grabbingMouse;
     BOOL _releaseOnMouseUp;
 }
 
 @property (nonatomic, readonly) QCocoaNSWindow *window;
-@property (nonatomic, readonly) QCocoaWindowPointer platformWindow;
+@property (nonatomic, readonly) QCocoaWindow *platformWindow;
 @property (nonatomic) BOOL grabbingMouse;
 @property (nonatomic) BOOL releaseOnMouseUp;
 
@@ -169,8 +143,9 @@ QT_BEGIN_NAMESPACE
 
 class QCocoaMenuBar;
 
-class QCocoaWindow : public QPlatformWindow
+class QCocoaWindow : public QObject, public QPlatformWindow
 {
+    Q_OBJECT
 public:
     QCocoaWindow(QWindow *tlw);
     ~QCocoaWindow();
@@ -207,9 +182,7 @@ public:
     WId winId() const Q_DECL_OVERRIDE;
     void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
-    NSView *contentView() const;
-    void setContentView(NSView *contentView);
-    QNSView *qtView() const;
+    NSView *view() const;
     NSWindow *nativeWindow() const;
 
     void setEmbeddedInForeignView(bool subwindow);
@@ -285,14 +258,13 @@ public: // for QNSView
 
     void removeMonitor();
 
-    NSView *m_contentView;
-    QNSView *m_qtView;
+    NSView *m_view;
     QCocoaNSWindow *m_nsWindow;
-    QCocoaWindowPointer m_forwardWindow;
+    QPointer<QCocoaWindow> m_forwardWindow;
 
     // TODO merge to one variable if possible
-    bool m_contentViewIsEmbedded; // true if the m_contentView is actually embedded in a "foreign" NSView hiearchy
-    bool m_contentViewIsToBeEmbedded; // true if the m_contentView is intended to be embedded in a "foreign" NSView hiearchy
+    bool m_viewIsEmbedded; // true if the m_view is actually embedded in a "foreign" NSView hiearchy
+    bool m_viewIsToBeEmbedded; // true if the m_view is intended to be embedded in a "foreign" NSView hiearchy
 
     QCocoaWindow *m_parentCocoaWindow;
     bool m_isNSWindowChild; // this window is a non-top level QWindow with a NSWindow.
@@ -350,10 +322,6 @@ public: // for QNSView
     };
     QHash<quintptr, BorderRange> m_contentBorderAreas; // identifer -> uppper/lower
     QHash<quintptr, bool> m_enabledContentBorderAreas; // identifer -> enabled state (true/false)
-
-    // This object is tracked by QCocoaWindowPointer,
-    // preventing the use of dangling pointers.
-    QObject sentinel;
 };
 
 QT_END_NAMESPACE

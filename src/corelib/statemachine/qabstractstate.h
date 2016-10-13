@@ -42,10 +42,9 @@
 
 #include <QtCore/qobject.h>
 
+QT_REQUIRE_CONFIG(statemachine);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STATEMACHINE
 
 class QState;
 class QStateMachine;
@@ -83,8 +82,6 @@ private:
     Q_DISABLE_COPY(QAbstractState)
     Q_DECLARE_PRIVATE(QAbstractState)
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

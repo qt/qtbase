@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,9 +37,6 @@
 **
 ****************************************************************************/
 
-#ifndef DBUSCONNECTION_H
-#define DBUSCONNECTION_H
-
 //
 //  W A R N I N G
 //  -------------
@@ -50,46 +47,53 @@
 //
 // We mean it.
 //
+// Despite its file name, this really is not a public header.
+// It is an implementation detail of the private bootstrap library.
+//
 
-#include <QtCore/QString>
-#include <QtDBus/QDBusConnection>
-#include <QtDBus/QDBusVariant>
+#if 0
+// silence syncqt warnings
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
+#endif
 
-QT_BEGIN_NAMESPACE
+#ifdef QT_BOOTSTRAPPED
 
-class QDBusServiceWatcher;
-#ifndef QT_NO_SYSTEMTRAYICON
-class QDBusTrayIcon;
-#endif // QT_NO_SYSTEMTRAYICON
+#ifndef QT_NO_EXCEPTIONS
+#define QT_NO_EXCEPTIONS
+#endif
 
-class QDBusMenuConnection : public QObject
-{
-    Q_OBJECT
+#define QT_NO_USING_NAMESPACE
+#define QT_NO_DEPRECATED
 
-public:
-    QDBusMenuConnection(QObject *parent = 0, const QString &serviceName = QString());
-    QDBusConnection connection() const { return m_connection; }
-    bool isStatusNotifierHostRegistered() const { return m_statusNotifierHostRegistered; }
-#ifndef QT_NO_SYSTEMTRAYICON
-    bool registerTrayIconMenu(QDBusTrayIcon *item);
-    bool registerTrayIcon(QDBusTrayIcon *item);
-    bool unregisterTrayIcon(QDBusTrayIcon *item);
-#endif // QT_NO_SYSTEMTRAYICON
+#define QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+#define QT_NO_DATASTREAM
+#define QT_NO_LIBRARY
+#define QT_FEATURE_library -1
+#define QT_NO_QOBJECT
+#define QT_NO_SYSTEMLOCALE
+#define QT_NO_THREAD
+#define QT_FEATURE_timezone -1
+#define QT_FEATURE_topleveldomain -1
+#define QT_NO_TRANSLATION
+#define QT_FEATURE_translation -1
+#define QT_NO_GEOM_VARIANT
 
-Q_SIGNALS:
-#ifndef QT_NO_SYSTEMTRAYICON
-    void trayIconRegistered();
-#endif // QT_NO_SYSTEMTRAYICON
+#if defined(QT_BUILD_QMAKE) || defined(QT_BUILD_CONFIGURE)
+#define QT_FEATURE_commandlineparser -1
+#define QT_NO_COMPRESS
+#define QT_JSON_READONLY
+#define QT_NO_TEXTCODEC
+#define QT_FEATURE_textcodec -1
+#else
+#define QT_NO_CODECS
+#define QT_FEATURE_codecs -1
+#define QT_FEATURE_commandlineparser 1
+#define QT_FEATURE_textcodec 1
+#endif
 
-private Q_SLOTS:
-    void dbusError(const QDBusError &error);
+#if defined(QT_BUILD_QMAKE)
+#define QT_NO_STANDARDPATHS
+#endif
 
-private:
-    QDBusConnection m_connection;
-    QDBusServiceWatcher *m_dbusWatcher;
-    bool m_statusNotifierHostRegistered;
-};
-
-QT_END_NAMESPACE
-
-#endif // DBUSCONNECTION_H
+#endif // QT_BOOTSTRAPPED

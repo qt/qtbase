@@ -238,6 +238,7 @@ static QList<QSize> availableXdgFileIconSizes()
     return QIcon::fromTheme(QStringLiteral("inode-directory")).availableSizes();
 }
 
+#if QT_CONFIG(mimetype)
 static QIcon xdgFileIcon(const QFileInfo &fileInfo)
 {
     QMimeDatabase mimeDatabase;
@@ -253,6 +254,7 @@ static QIcon xdgFileIcon(const QFileInfo &fileInfo)
     const QString &genericIconName = mimeType.genericIconName();
     return genericIconName.isEmpty() ? QIcon() : QIcon::fromTheme(genericIconName);
 }
+#endif
 
 #ifndef QT_NO_SETTINGS
 class QKdeThemePrivate : public QPlatformThemePrivate
@@ -547,7 +549,11 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 
 QIcon QKdeTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions) const
 {
+#if QT_CONFIG(mimetype)
     return xdgFileIcon(fileInfo);
+#else
+    return QIcon();
+#endif
 }
 
 const QPalette *QKdeTheme::palette(Palette type) const
@@ -708,7 +714,11 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 
 QIcon QGnomeTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions) const
 {
+#if QT_CONFIG(mimetype)
     return xdgFileIcon(fileInfo);
+#else
+    return QIcon();
+#endif
 }
 
 const QFont *QGnomeTheme::font(Font type) const

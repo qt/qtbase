@@ -49,17 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-NSString *QCFString::toNSString(const QString &string)
-{
-    // The const cast below is safe: CfStringRef is immutable and so is NSString.
-    return [const_cast<NSString *>(reinterpret_cast<const NSString *>(toCFStringRef(string))) autorelease];
-}
-
-QString QCFString::toQString(const NSString *nsstr)
-{
-    return toQString(reinterpret_cast<CFStringRef>(nsstr));
-}
-
 // -------------------------------------------------------------------------
 
 QDebug operator<<(QDebug dbg, const NSObject *nsObject)

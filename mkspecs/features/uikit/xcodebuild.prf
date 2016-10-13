@@ -18,10 +18,14 @@ QMAKE_EXTRA_COMPILERS =
     error("Failed to create $$OUT_PWD")
 
 args =
-for(arg, QMAKE_ARGS): \
-    args += $$system_quote($$arg)
+prev_arg =
+for(arg, QMAKE_ARGS) {
+    !equals(arg, "-spec"):!equals(prev_arg, "-spec"): \
+        args += $$system_quote($$arg)
+    prev_arg = $$arg
+}
 
-cmd = "$$QMAKE_QMAKE $$args $$system_quote($$_PRO_FILE_) -spec macx-xcode"
+cmd = "$$QMAKE_QMAKE $$system_quote($$_PRO_FILE_) -spec macx-xcode $$args"
 debug(1, "Generating Xcode project in $$OUT_PWD using '$$cmd'")
 system("cd $$system_quote($$OUT_PWD) && $$cmd")
 

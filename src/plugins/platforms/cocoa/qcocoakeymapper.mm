@@ -251,16 +251,20 @@ static qt_mac_enum_mapper qt_mac_private_unicode[] = {
     { 0xF72B, QT_MAC_MAP_ENUM(Qt::Key_End) },           //NSEndFunctionKey
     { 0xF72C, QT_MAC_MAP_ENUM(Qt::Key_PageUp) },        //NSPageUpFunctionKey
     { 0xF72D, QT_MAC_MAP_ENUM(Qt::Key_PageDown) },      //NSPageDownFunctionKey
+    { 0xF72E, QT_MAC_MAP_ENUM(Qt::Key_Print) },         //NSPrintScreenFunctionKey
     { 0xF72F, QT_MAC_MAP_ENUM(Qt::Key_ScrollLock) },    //NSScrollLockFunctionKey
     { 0xF730, QT_MAC_MAP_ENUM(Qt::Key_Pause) },         //NSPauseFunctionKey
     { 0xF731, QT_MAC_MAP_ENUM(Qt::Key_SysReq) },        //NSSysReqFunctionKey
     { 0xF735, QT_MAC_MAP_ENUM(Qt::Key_Menu) },          //NSMenuFunctionKey
-    { 0xF738, QT_MAC_MAP_ENUM(Qt::Key_Print) },         //NSPrintFunctionKey
+    { 0xF738, QT_MAC_MAP_ENUM(Qt::Key_Printer) },       //NSPrintFunctionKey
     { 0xF73A, QT_MAC_MAP_ENUM(Qt::Key_Clear) },         //NSClearDisplayFunctionKey
     { 0xF73D, QT_MAC_MAP_ENUM(Qt::Key_Insert) },        //NSInsertCharFunctionKey
     { 0xF73E, QT_MAC_MAP_ENUM(Qt::Key_Delete) },        //NSDeleteCharFunctionKey
     { 0xF741, QT_MAC_MAP_ENUM(Qt::Key_Select) },        //NSSelectFunctionKey
     { 0xF742, QT_MAC_MAP_ENUM(Qt::Key_Execute) },       //NSExecuteFunctionKey
+    { 0xF743, QT_MAC_MAP_ENUM(Qt::Key_Undo) },          //NSUndoFunctionKey
+    { 0xF744, QT_MAC_MAP_ENUM(Qt::Key_Redo) },          //NSRedoFunctionKey
+    { 0xF745, QT_MAC_MAP_ENUM(Qt::Key_Find) },          //NSFindFunctionKey
     { 0xF746, QT_MAC_MAP_ENUM(Qt::Key_Help) },          //NSHelpFunctionKey
     { 0xF747, QT_MAC_MAP_ENUM(Qt::Key_Mode_switch) },   //NSModeSwitchFunctionKey
     {   0,    QT_MAC_MAP_ENUM(0) }
@@ -384,17 +388,12 @@ bool QCocoaKeyMapper::updateKeyboard()
     iso639Code = static_cast<CFStringRef>(CFArrayGetValueAtIndex(array, 0)); // Actually a RFC3066bis, but it's close enough
 
     if (iso639Code) {
-        keyboardInputLocale = QLocale(QCFString::toQString(iso639Code));
+        keyboardInputLocale = QLocale(QString::fromCFString(iso639Code));
         keyboardInputDirection = keyboardInputLocale.textDirection();
     } else {
         keyboardInputLocale = QLocale::c();
         keyboardInputDirection = Qt::LeftToRight;
     }
-
-    const auto newMode = keyboard_mode;
-    deleteLayouts();
-    keyboard_mode = newMode;
-
     return true;
 }
 
@@ -417,8 +416,10 @@ void QCocoaKeyMapper::clearMappings()
 
 void QCocoaKeyMapper::updateKeyMap(unsigned short macVirtualKey, QChar unicodeKey)
 {
-    updateKeyboard();
-
+    if (updateKeyboard()) {
+        // ### Qt 4 did this:
+        // QKeyMapper::changeKeyboard();
+    }
     if (keyLayout[macVirtualKey])
         return;
 
@@ -474,8 +475,9 @@ QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
     for (int i = 1; i < 8; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         int key = kbItem->qtKey[i];
-        if (key && key != baseKey && ((keyMods & neededMods) == neededMods))
-            ret << int(key + neededMods);
+        if (key && key != baseKey && ((keyMods & neededMods) == neededMods)) {
+            ret << int(key + (keyMods & ~neededMods));
+        }
     }
     return ret;
 }

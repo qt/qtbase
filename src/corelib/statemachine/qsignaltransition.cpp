@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include "qsignaltransition.h"
-
-#ifndef QT_NO_STATEMACHINE
-
 #include "qsignaltransition_p.h"
 #include "qstate.h"
 #include "qstate_p.h"
@@ -287,5 +284,3 @@ void QSignalTransitionPrivate::callOnTransition(QEvent *e)
 
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_STATEMACHINE

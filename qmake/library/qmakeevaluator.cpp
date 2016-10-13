@@ -1024,21 +1024,8 @@ void QMakeEvaluator::loadDefaults()
     if (GetComputerName(name, &name_length))
         vars[ProKey("QMAKE_HOST.name")] << ProString(QString::fromWCharArray(name));
 
-    QSysInfo::WinVersion ver = QSysInfo::WindowsVersion;
-    vars[ProKey("QMAKE_HOST.version")] << ProString(QString::number(ver));
-    ProString verStr;
-    switch (ver) {
-    case QSysInfo::WV_Me: verStr = ProString("WinMe"); break;
-    case QSysInfo::WV_95: verStr = ProString("Win95"); break;
-    case QSysInfo::WV_98: verStr = ProString("Win98"); break;
-    case QSysInfo::WV_NT: verStr = ProString("WinNT"); break;
-    case QSysInfo::WV_2000: verStr = ProString("Win2000"); break;
-    case QSysInfo::WV_2003: verStr = ProString("Win2003"); break;
-    case QSysInfo::WV_XP: verStr = ProString("WinXP"); break;
-    case QSysInfo::WV_VISTA: verStr = ProString("WinVista"); break;
-    default: verStr = ProString("Unknown"); break;
-    }
-    vars[ProKey("QMAKE_HOST.version_string")] << verStr;
+    vars[ProKey("QMAKE_HOST.version")] << ProString(QSysInfo::kernelVersion());
+    vars[ProKey("QMAKE_HOST.version_string")] << ProString(QSysInfo::productVersion());
 
     SYSTEM_INFO info;
     GetSystemInfo(&info);
@@ -2037,7 +2024,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateFileInto(
 void QMakeEvaluator::message(int type, const QString &msg) const
 {
     if (!m_skipLevel)
-        m_handler->message(type, msg,
+        m_handler->message(type | (m_cumulative ? QMakeHandler::CumulativeEvalMessage : 0), msg,
                 m_current.line ? m_current.pro->fileName() : QString(),
                 m_current.line != 0xffff ? m_current.line : -1);
 }

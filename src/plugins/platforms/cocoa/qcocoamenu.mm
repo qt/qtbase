@@ -285,7 +285,7 @@ void QCocoaMenu::setText(const QString &text)
 {
     QMacAutoReleasePool pool;
     QString stripped = qt_mac_removeAmpersandEscapes(text);
-    [m_nativeMenu setTitle:QCFString::toNSString(stripped)];
+    [m_nativeMenu setTitle:stripped.toNSString()];
 }
 
 void QCocoaMenu::setMinimumWidth(int width)
@@ -296,7 +296,7 @@ void QCocoaMenu::setMinimumWidth(int width)
 void QCocoaMenu::setFont(const QFont &font)
 {
     if (font.resolve()) {
-        NSFont *customMenuFont = [NSFont fontWithName:QCFString::toNSString(font.family())
+        NSFont *customMenuFont = [NSFont fontWithName:font.family().toNSString()
                                   size:font.pointSize()];
         m_nativeMenu.font = customMenuFont;
     }
@@ -495,7 +495,7 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
 
     QPoint pos =  QPoint(targetRect.left(), targetRect.top() + targetRect.height());
     QCocoaWindow *cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : 0;
-    NSView *view = cocoaWindow ? cocoaWindow->contentView() : nil;
+    NSView *view = cocoaWindow ? cocoaWindow->view() : nil;
     NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
 
     QScreen *screen = 0;

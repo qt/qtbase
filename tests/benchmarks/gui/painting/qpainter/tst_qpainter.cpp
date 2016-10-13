@@ -228,6 +228,7 @@ private:
     void createPrimitives();
 
     void drawPrimitives_data_helper(bool fancypens);
+    void drawPixmapImage_data_helper(bool);
     void fillPrimitives_helper(QPainter *painter, PrimitiveType type, PrimitiveSet *s);
 
     QTransform transformForAngle(qreal angle);
@@ -608,7 +609,7 @@ void tst_QPainter::drawLine_antialiased_clipped()
     p.end();
 }
 
-void tst_QPainter::drawPixmap_data()
+void tst_QPainter::drawPixmapImage_data_helper(bool pixmaps)
 {
     QTest::addColumn<QImage::Format>("sourceFormat");
     QTest::addColumn<QImage::Format>("targetFormat");
@@ -644,32 +645,71 @@ void tst_QPainter::drawPixmap_data()
         "ARGB8555_pm",
         "RGB888",
         "RGB444",
-        "ARGB4444_pm"
+        "ARGB4444_pm",
+        "RGBx8888",
+        "RGBA8888",
+        "RGBA8888_pm",
+        "BGR30",
+        "A2BGR30_pm",
+        "RGB30",
+        "A2RGB30_pm",
+        "Alpha8",
+        "Grayscale8",
     };
 
-    for (int tar=4; tar<QImage::NImageFormats; ++tar) {
-        for (int src=4; src<QImage::NImageFormats; ++src) {
+    const QImage::Format pixmapFormats[] = {
+        QImage::Format_RGB32,
+        QImage::Format_ARGB32_Premultiplied,
+        QImage::Format_RGB16,
+        QImage::Format_ARGB8565_Premultiplied,
+        QImage::Format_BGR30,
+        QImage::Format_Invalid
+    };
 
-            // skip the low-priority formats to keep resultset manageable...
-            if (tar == QImage::Format_RGB444 || src == QImage::Format_RGB444
-                || tar == QImage::Format_RGB555 || src == QImage::Format_RGB555
-                || tar == QImage::Format_RGB666 || src == QImage::Format_RGB666
-                || tar == QImage::Format_RGB888 || src == QImage::Format_RGB888
-                || tar == QImage::Format_ARGB4444_Premultiplied
-                || src == QImage::Format_ARGB4444_Premultiplied
-                || tar == QImage::Format_ARGB6666_Premultiplied
-                || src == QImage::Format_ARGB6666_Premultiplied)
-                continue;
+    const QImage::Format targetImageFormats[] = {
+        QImage::Format_RGB32,
+        QImage::Format_ARGB32,
+        QImage::Format_ARGB32_Premultiplied,
+        QImage::Format_RGB16,
+        QImage::Format_ARGB8565_Premultiplied,
+        QImage::Format_RGBX8888,
+        QImage::Format_RGBA8888_Premultiplied,
+        QImage::Format_BGR30,
+        QImage::Format_A2RGB30_Premultiplied,
+        QImage::Format_Grayscale8,
+        QImage::Format_Invalid
+    };
 
-            foreach (const QSize &s, sizes) {
+    const QImage::Format sourceImageFormats[] = {
+        QImage::Format_Indexed8,
+        QImage::Format_RGB32,
+        QImage::Format_ARGB32,
+        QImage::Format_ARGB32_Premultiplied,
+        QImage::Format_RGB16,
+        QImage::Format_ARGB8565_Premultiplied,
+        QImage::Format_RGB888,
+        QImage::Format_RGBX8888,
+        QImage::Format_RGBA8888,
+        QImage::Format_RGBA8888_Premultiplied,
+        QImage::Format_A2BGR30_Premultiplied,
+        QImage::Format_RGB30,
+        QImage::Format_Grayscale8,
+        QImage::Format_Invalid
+    };
+
+    const QImage::Format *targetFormats = pixmaps ? pixmapFormats : targetImageFormats;
+    for (; *targetFormats != QImage::Format_Invalid; ++targetFormats) {
+        const QImage::Format *sourceFormats = pixmaps ? pixmapFormats : sourceImageFormats;
+        for (; *sourceFormats != QImage::Format_Invalid; ++sourceFormats) {
+            for (const QSize &s : qAsConst(sizes)) {
                 for (int type=0; type<=3; ++type) {
                     QString name = QString::fromLatin1("%1 on %2, (%3x%4), %5")
-                                   .arg(formatNames[src])
-                                   .arg(formatNames[tar])
+                                   .arg(formatNames[*sourceFormats])
+                                   .arg(formatNames[*targetFormats])
                                    .arg(s.width()).arg(s.height())
                                    .arg(typeNames[type]);
-                    QTest::newRow(name.toLatin1()) << (QImage::Format) src
-                                                   << (QImage::Format) tar
+                    QTest::newRow(name.toLatin1()) << *sourceFormats
+                                                   << *targetFormats
                                                    << s
                                                    << type;
                 }
@@ -703,6 +743,11 @@ static QImage createImage(int type, const QSize &size) {
 }
 
 
+void tst_QPainter::drawPixmap_data()
+{
+    drawPixmapImage_data_helper(true);
+}
+
 void tst_QPainter::drawPixmap()
 {
     QFETCH(QImage::Format, sourceFormat);
@@ -725,7 +770,7 @@ void tst_QPainter::drawPixmap()
 
 void tst_QPainter::drawImage_data()
 {
-    drawPixmap_data();
+    drawPixmapImage_data_helper(false);
 }
 
 

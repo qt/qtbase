@@ -131,6 +131,7 @@ static bool get_hex_rgb(const QChar *str, int len, QRgb *rgb)
     char tmp[16];
     for (int i = 0; i < len; ++i)
         tmp[i] = str[i].toLatin1();
+    tmp[len] = 0;
     return get_hex_rgb(tmp, len, rgb);
 }
 

@@ -253,7 +253,7 @@
     \snippet shareddirmodel/main.cpp 0
 
     The model is set up to use data from a certain file system. The call to
-    \l{QFileSystemModel::}{setRootPath()} tell the model which drive on the
+    \l{QFileSystemModel::}{setRootPath()} tells the model which drive on the
     file system to expose to the views.
 
     We create two views so that we can examine the items held in the model in two
@@ -304,7 +304,7 @@
     signals and slots mechanism.
 
     This section describes some basic concepts that are central to the way
-    item of data are accessed by other components via a model class. More
+    items of data are accessed by other components via a model class. More
     advanced concepts are discussed in later sections.
 
     \section3 Model indexes
@@ -737,7 +737,7 @@
 
     \image spinboxdelegate-example.png
 
-    We subclass the delegate from \l QItemDelegate because we do not want
+    We subclass the delegate from \l QStyledItemDelegate because we do not want
     to write custom display functions. However, we must still provide
     functions to manage the editor widget:
 
@@ -1869,7 +1869,7 @@
     \codeline
     \snippet qsortfilterproxymodel/main.cpp 1
 
-    Since proxy models are inherit from QAbstractItemModel, they can be connected to
+    Since proxy models inherit from QAbstractItemModel, they can be connected to
     any kind of view, and can be shared between views. They can also be used to
     process the information obtained from other proxy models in a pipeline arrangement.
 

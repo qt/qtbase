@@ -491,45 +491,6 @@ private:
 
 bool tst_QNetworkReply::seedCreated = false;
 
-QT_BEGIN_NAMESPACE
-
-namespace QTest {
-    template<>
-    char *toString(const QNetworkReply::NetworkError& code)
-    {
-        const QMetaObject *mo = &QNetworkReply::staticMetaObject;
-        int index = mo->indexOfEnumerator("NetworkError");
-        if (index == -1)
-            return qstrdup("");
-
-        QMetaEnum qme = mo->enumerator(index);
-        return qstrdup(qme.valueToKey(code));
-    }
-
-    template<>
-    char *toString(const QNetworkCookie &cookie)
-    {
-        return qstrdup(cookie.toRawForm());
-    }
-
-    template<>
-    char *toString(const QList<QNetworkCookie> &list)
-    {
-        QByteArray result = "QList(";
-        bool first = true;
-        foreach (QNetworkCookie cookie, list) {
-            if (!first)
-                result += ", ";
-            first = false;
-            result += "QNetworkCookie(" + cookie.toRawForm() + ')';
-        }
-        result.append(')');
-        return qstrdup(result.constData());
-    }
-}
-
-QT_END_NAMESPACE
-
 #define RUN_REQUEST(call)                       \
     do {                                        \
         QString errorMsg = call;                \
@@ -4963,7 +4924,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
         const int maxRate = rate * 1024 * (100+allowedDeviation) / 100;
         qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << '?';
         // The test takes too long to run if sending enough data to overwhelm the
-        // reciever's kernel buffers.
+        // receiver's kernel buffers.
         //QEXPECT_FAIL("http+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
         //QEXPECT_FAIL("https+limited", "Limiting is broken right now, check QTBUG-15065", Continue);
         //QVERIFY(server.transferRate >= minRate && server.transferRate <= maxRate);

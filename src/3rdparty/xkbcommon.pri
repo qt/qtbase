@@ -4,6 +4,8 @@ INCLUDEPATH += $$PWD/xkbcommon \
                $$PWD/xkbcommon/src \
                $$PWD/xkbcommon/src/xkbcomp
 
+include($$shadowed($$PWD/../gui/qtgui-config.pri))
+
 DEFINES += DFLT_XKB_CONFIG_ROOT='\\"$$QMAKE_XKB_CONFIG_ROOT\\"'
 
 ### RMLVO names can be overwritten with environmental variables (see libxkbcommon documentation)

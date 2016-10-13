@@ -491,9 +491,14 @@ public:
     static WindowSystemEvent *getNonUserInputWindowSystemEvent();
     static WindowSystemEvent *peekWindowSystemEvent(EventType t);
     static void removeWindowSystemEvent(WindowSystemEvent *event);
-    static void postWindowSystemEvent(WindowSystemEvent *ev);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static bool handleWindowSystemEvent(WindowSystemEvent *ev);
 
+private:
+    static void postWindowSystemEvent(WindowSystemEvent *ev);
+    static bool processWindowSystemEvent(WindowSystemEvent *ev);
+
+public:
     static QElapsedTimer eventTime;
     static bool synchronousWindowSystemEvents;
 

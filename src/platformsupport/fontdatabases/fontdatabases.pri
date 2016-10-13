@@ -1,14 +1,14 @@
 darwin {
     include($$PWD/mac/coretext.pri)
 } else {
-    !win32|qtConfig(freetype) {
+    qtConfig(freetype) {
         include($$PWD/basic/basic.pri)
     }
 
     unix {
         CONFIG += qpa/genericunixfontdatabase
         include($$PWD/genericunix/genericunix.pri)
-        contains(QT_CONFIG,fontconfig) {
+        qtConfig(fontconfig) {
             include($$PWD/fontconfig/fontconfig.pri)
         }
     }

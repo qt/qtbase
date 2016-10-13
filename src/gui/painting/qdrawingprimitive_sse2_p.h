@@ -178,7 +178,7 @@ QT_BEGIN_NAMESPACE
         const __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]); \
         BLEND_SOURCE_OVER_ARGB32_SSE2_helper(dst, srcVector, nullVector, half, one, colorMask, alphaMask) \
     } \
-    for (; x < length; ++x) { \
+    SIMD_EPILOGUE(x, length, 3) { \
         blend_pixel(dst[x], src[x]); \
     } \
 }
@@ -219,7 +219,7 @@ QT_BEGIN_NAMESPACE
             _mm_store_si128((__m128i *)&dst[x], result); \
         } \
     } \
-    for (; x < length; ++x) { \
+    SIMD_EPILOGUE(x, length, 3) { \
         blend_pixel(dst[x], src[x], const_alpha); \
     } \
 }

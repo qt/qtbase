@@ -56,7 +56,9 @@
 */
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
-#ifndef QT_BOOTSTRAPPED
+#ifdef QT_BOOTSTRAPPED
+#include <QtCore/qconfig-bootstrapped.h>
+#else
 #include <QtCore/qconfig.h>
 #include <QtCore/qtcore-config.h>
 #endif

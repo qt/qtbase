@@ -61,12 +61,7 @@
 
 #include <stdio.h>
 
-//this has to be included before egl, since egl pulls in X headers
 #include <QtGui/private/qguiapplication_p.h>
-
-#ifdef XCB_USE_EGL
-# include <QtPlatformSupport/private/qt_egl_p.h>
-#endif
 
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>

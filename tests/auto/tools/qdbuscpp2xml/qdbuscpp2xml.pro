@@ -2,8 +2,6 @@ CONFIG += testcase
 QT = core testlib dbus
 TARGET = tst_qdbuscpp2xml
 
-QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_DBUS
-
 SOURCES += tst_qdbuscpp2xml.cpp \
 
 RESOURCES += qdbuscpp2xml.qrc

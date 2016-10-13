@@ -104,7 +104,7 @@ static bool isHostExcluded(CFDictionaryRef dict, const QString &host)
     CFIndex size = CFArrayGetCount(exclusionList);
     for (CFIndex i = 0; i < size; ++i) {
         CFStringRef cfentry = (CFStringRef)CFArrayGetValueAtIndex(exclusionList, i);
-        QString entry = QCFString::toQString(cfentry);
+        QString entry = QString::fromCFString(cfentry);
 
         if (isIpAddress && ipAddress.isInSubnet(QHostAddress::parseSubnet(entry))) {
             return true;        // excluded
@@ -133,7 +133,7 @@ static QNetworkProxy proxyFromDictionary(CFDictionaryRef dict, QNetworkProxy::Pr
         && (protoPort = (CFNumberRef)CFDictionaryGetValue(dict, portKey))) {
         int enabled;
         if (CFNumberGetValue(protoEnabled, kCFNumberIntType, &enabled) && enabled) {
-            QString host = QCFString::toQString(protoHost);
+            QString host = QString::fromCFString(protoHost);
 
             int port;
             CFNumberGetValue(protoPort, kCFNumberIntType, &port);
@@ -168,9 +168,9 @@ static QNetworkProxy proxyFromDictionary(CFDictionaryRef dict)
         proxyType = QNetworkProxy::Socks5Proxy;
     }
 
-    hostName = QCFString::toQString((CFStringRef)CFDictionaryGetValue(dict, kCFProxyHostNameKey));
-    user     = QCFString::toQString((CFStringRef)CFDictionaryGetValue(dict, kCFProxyUsernameKey));
-    password = QCFString::toQString((CFStringRef)CFDictionaryGetValue(dict, kCFProxyPasswordKey));
+    hostName = QString::fromCFString((CFStringRef)CFDictionaryGetValue(dict, kCFProxyHostNameKey));
+    user     = QString::fromCFString((CFStringRef)CFDictionaryGetValue(dict, kCFProxyUsernameKey));
+    password = QString::fromCFString((CFStringRef)CFDictionaryGetValue(dict, kCFProxyPasswordKey));
 
     CFNumberRef portNumber = (CFNumberRef)CFDictionaryGetValue(dict, kCFProxyPortNumberKey);
     if (portNumber) {
@@ -229,7 +229,7 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
             QCFType<CFDataRef> pacData;
             QCFType<CFURLRef> pacUrl = CFURLCreateWithString(kCFAllocatorDefault, cfPacLocation, NULL);
             if (!pacUrl) {
-                qWarning("Invalid PAC URL \"%s\"", qPrintable(QCFString::toQString(cfPacLocation)));
+                qWarning("Invalid PAC URL \"%s\"", qPrintable(QString::fromCFString(cfPacLocation)));
                 return result;
             }
 
@@ -259,9 +259,9 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
                 CFRunLoopRunInMode(pacRunLoopMode, 1000, /*returnAfterSourceHandled*/ true);
 
             if (!pacInfo.proxies) {
-                QString pacLocation = QCFString::toQString(cfPacLocation);
+                QString pacLocation = QString::fromCFString(cfPacLocation);
                 QCFType<CFStringRef> pacErrorDescription = CFErrorCopyDescription(pacInfo.error);
-                qWarning("Execution of PAC script at \"%s\" failed: %s", qPrintable(pacLocation), qPrintable(QCFString::toQString(pacErrorDescription)));
+                qWarning("Execution of PAC script at \"%s\" failed: %s", qPrintable(pacLocation), qPrintable(QString::fromCFString(pacErrorDescription)));
                 return result;
             }
 

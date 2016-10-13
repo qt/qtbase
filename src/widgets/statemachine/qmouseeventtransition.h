@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qeventtransition.h>
 
+QT_REQUIRE_CONFIG(qeventtransition);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STATEMACHINE
 
 class QMouseEventTransitionPrivate;
 class QPainterPath;
@@ -78,8 +77,6 @@ private:
     Q_DISABLE_COPY(QMouseEventTransition)
     Q_DECLARE_PRIVATE(QMouseEventTransition)
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

@@ -468,7 +468,9 @@ QByteArray QMakeEvaluator::getCommandOutput(const QString &args, int *exitCode) 
     if (!errout.isEmpty()) {
         if (errout.endsWith('\n'))
             errout.chop(1);
-        m_handler->message(QMakeHandler::EvalError, QString::fromLocal8Bit(errout));
+        m_handler->message(
+            QMakeHandler::EvalError | (m_cumulative ? QMakeHandler::CumulativeEvalMessage : 0),
+            QString::fromLocal8Bit(errout));
     }
 # endif
     out = proc.readAllStandardOutput();

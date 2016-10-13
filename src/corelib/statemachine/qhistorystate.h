@@ -42,10 +42,9 @@
 
 #include <QtCore/qabstractstate.h>
 
+QT_REQUIRE_CONFIG(statemachine);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STATEMACHINE
 
 class QAbstractTransition;
 class QHistoryStatePrivate;
@@ -90,8 +89,6 @@ private:
     Q_DISABLE_COPY(QHistoryState)
     Q_DECLARE_PRIVATE(QHistoryState)
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

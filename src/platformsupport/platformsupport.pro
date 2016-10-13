@@ -22,13 +22,6 @@ include(linuxaccessibility/linuxaccessibility.pri)
 include(clipboard/clipboard.pri)
 include(platformcompositor/platformcompositor.pri)
 
-# dbus convenience for unix except darwin: the platform
-# plugins for these platforms do not use dbus and we
-# don't want to create a false dependency.
-unix:!darwin:qtConfig(dbus) {
-    include(dbusmenu/dbusmenu.pri)
-    include(dbustray/dbustray.pri)
-}
 darwin: include(graphics/graphics.pri)
 
 load(qt_module)

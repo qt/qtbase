@@ -270,7 +270,7 @@ void QCocoaSystemTrayIcon::updateToolTip(const QString &toolTip)
 {
     if (!m_sys)
         return;
-    [[[m_sys->item item] view] setToolTip:QCFString::toNSString(toolTip)];
+    [[[m_sys->item item] view] setToolTip:toolTip.toNSString()];
 }
 
 bool QCocoaSystemTrayIcon::isSystemTrayAvailable() const

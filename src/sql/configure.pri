@@ -22,11 +22,8 @@ defineTest(qtConfLibrary_psqlConfig) {
         $${1}.libs = "$$val_escape(libs)"
         includedir -= $$QMAKE_DEFAULT_INCDIRS
         $${1}.includedir = "$$val_escape(includedir)"
-        !isEmpty(includedir): \
-            $${1}.cflags = "-I$$val_escape(includedir)"
         export($${1}.libs)
         export($${1}.includedir)
-        export($${1}.cflags)
         return(true)
     }
     return(false)
@@ -65,11 +62,8 @@ defineTest(qtConfLibrary_mysqlConfig) {
         includedir ~= s/^-I//g
         includedir -= $$QMAKE_DEFAULT_INCDIRS
         $${1}.includedir = "$$val_escape(includedir)"
-        !isEmpty(includedir): \
-            $${1}.cflags = "-I$$val_escape(includedir)"
         export($${1}.libs)
         export($${1}.includedir)
-        export($${1}.cflags)
         return(true)
     }
     return(false)

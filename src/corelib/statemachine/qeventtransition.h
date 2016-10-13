@@ -43,10 +43,9 @@
 #include <QtCore/qabstracttransition.h>
 #include <QtCore/qcoreevent.h>
 
+QT_REQUIRE_CONFIG(qeventtransition);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STATEMACHINE
 
 class QEventTransitionPrivate;
 class Q_CORE_EXPORT QEventTransition : public QAbstractTransition
@@ -80,8 +79,6 @@ private:
     Q_DISABLE_COPY(QEventTransition)
     Q_DECLARE_PRIVATE(QEventTransition)
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 
