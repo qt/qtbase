@@ -55,6 +55,7 @@
 #include <QtCore/QEventLoop>
 #include <QtCore/QBuffer>
 #include <QtCore/QMutex>
+#include <QtCore/QAtomicInteger>
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
 #include <wrl.h>
@@ -63,6 +64,7 @@
 QT_BEGIN_NAMESPACE
 
 class QNativeSocketEnginePrivate;
+class SocketEngineWorker;
 
 struct WinRtDatagram {
     QByteArray data;
@@ -137,11 +139,15 @@ signals:
     void connectionReady();
     void readReady();
     void writeReady();
+    void newDatagramReceived(const WinRtDatagram &datagram);
 
 private slots:
     void establishRead();
+    void handleNewDatagrams(const QList<WinRtDatagram> &datagram);
 
 private:
+    Q_INVOKABLE void putIntoPendingDatagramsList(const QList<WinRtDatagram> &datagrams);
+
     Q_DECLARE_PRIVATE(QNativeSocketEngine)
     Q_DISABLE_COPY(QNativeSocketEngine)
 };
@@ -154,6 +160,7 @@ public:
     ~QNativeSocketEnginePrivate();
 
     qintptr socketDescriptor;
+    SocketEngineWorker *worker;
 
     bool notifyOnRead, notifyOnWrite, notifyOnException;
     QAtomicInt closingDown;
@@ -210,6 +217,8 @@ private:
     Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32>> readOp;
     QBuffer readBytes;
     QMutex readMutex;
+    bool emitOnNewDatagram;
+    QAtomicInteger<int> bytesAvailable;
 
     QList<WinRtDatagram> pendingDatagrams;
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> pendingConnections;
@@ -227,5 +236,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(WinRtDatagram)
 
 #endif // QNATIVESOCKETENGINE_WINRT_P_H

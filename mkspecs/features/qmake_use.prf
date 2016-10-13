@@ -1,0 +1,28 @@
+suffix =
+for(ever) {
+    QMAKE_USE$${suffix} = $$unique(QMAKE_USE$${suffix})
+    for (use, QMAKE_USE$${suffix}) {
+        use = $$split(use, /)
+        name = $$take_first(use)
+        nu = $$upper($$name)
+        debug: \
+            libs = $$eval(QMAKE_LIBS_$${nu}_DEBUG)
+        else: \
+            libs = $$eval(QMAKE_LIBS_$${nu}_RELEASE)
+        libs += $$eval(QMAKE_LIBS_$$nu)
+        defines = $$eval(QMAKE_DEFINES_$${nu})
+        includes = $$eval(QMAKE_INCDIR_$${nu})
+
+        isEmpty(libs):isEmpty(defines):isEmpty(includes): \
+            error("Library '$$name' is not defined.")
+
+        !contains(use, nolink): \
+            LIBS$${suffix} += $$libs
+        !contains(use, linkonly) {
+            DEFINES += $$defines
+            INCLUDEPATH += $$includes
+        }
+    }
+    !isEmpty(suffix): break()
+    suffix = "_PRIVATE"
+}

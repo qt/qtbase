@@ -50,11 +50,14 @@ public class QtService extends Service
     /////////////////////////// Super class calls ////////////////////////////////////
     /////////////// PLEASE DO NOT CHANGE THE FOLLOWING CODE //////////////////////////
     //////////////////////////////////////////////////////////////////////////////////
+    protected void onCreateHook() {
+        m_loader.onCreate();
+    }
     @Override
     public void onCreate()
     {
         super.onCreate();
-        m_loader.onCreate();
+        onCreateHook();
     }
     //---------------------------------------------------------------------------
 

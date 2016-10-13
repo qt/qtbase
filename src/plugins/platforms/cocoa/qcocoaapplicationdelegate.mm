@@ -296,7 +296,7 @@ QT_END_NAMESPACE
     Q_UNUSED(sender);
 
     for (NSString *fileName in filenames) {
-        QString qtFileName = QCFString::toQString(fileName);
+        QString qtFileName = QString::fromNSString(fileName);
         if (inLaunch) {
             // We need to be careful because Cocoa will be nice enough to take
             // command line arguments and send them to us as events. Given the history
@@ -424,7 +424,7 @@ QT_END_NAMESPACE
 {
     Q_UNUSED(replyEvent);
     NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-    QWindowSystemInterface::handleFileOpenEvent(QUrl(QCFString::toQString(urlString)));
+    QWindowSystemInterface::handleFileOpenEvent(QUrl(QString::fromNSString(urlString)));
 }
 
 - (void)appleEventQuit:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent

@@ -50,15 +50,11 @@ QT_BEGIN_NAMESPACE
 // dst must be at least len * 4 bytes
 Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len)
 {
-    quint32 *const end = dst + len;
+    int i = 0;
 
-    // Prologue, align dst to 16 bytes. The alignment is done on dst because it has 4 store()
-    // for each 3 load() of src.
-    const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
-    const int prologLength = qMin(len, offsetToAlignOn16Bytes);
-
-    for (int i = 0; i < prologLength; ++i) {
-        *dst++ = qRgb(src[0], src[1], src[2]);
+    // Prologue, align dst to 16 bytes.
+    ALIGNMENT_PROLOGUE_16BYTES(dst, i, len) {
+        dst[i] = qRgb(src[0], src[1], src[2]);
         src += 3;
     }
 
@@ -72,10 +68,9 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, con
     const __m128i alphaMask = _mm_set1_epi32(0xff000000);
 
     const __m128i *inVectorPtr = (const __m128i *)src;
-    __m128i *dstVectorPtr = (__m128i *)dst;
+    __m128i *dstVectorPtr = (__m128i *)(dst + i);
 
-    const int simdRoundCount = (len - prologLength) / 16; // one iteration in the loop converts 16 pixels
-    for (int i = 0; i < simdRoundCount; ++i) {
+    for (; i < (len - 15); i += 16) { // one iteration in the loop converts 16 pixels
         /*
          RGB888 has 5 pixels per vector, + 1 byte from the next pixel. The idea here is
          to load vectors of RGB888 and use palignr to select a vector out of two vectors.
@@ -117,10 +112,9 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, con
         ++dstVectorPtr;
     }
     src = (const uchar *)inVectorPtr;
-    dst = (quint32 *)dstVectorPtr;
 
-    while (dst != end) {
-        *dst++ = qRgb(src[0], src[1], src[2]);
+    SIMD_EPILOGUE(i, len, 15) {
+        dst[i] = qRgb(src[0], src[1], src[2]);
         src += 3;
     }
 }

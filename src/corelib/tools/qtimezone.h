@@ -45,6 +45,8 @@
 #include <QtCore/qlocale.h>
 #include <QtCore/qdatetime.h>
 
+QT_REQUIRE_CONFIG(timezone);
+
 QT_BEGIN_NAMESPACE
 
 class QTimeZonePrivate;

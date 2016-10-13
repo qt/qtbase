@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include "qeventtransition.h"
-
-#ifndef QT_NO_STATEMACHINE
-
 #include "qeventtransition_p.h"
 #include "qstate.h"
 #include "qstate_p.h"
@@ -255,5 +252,3 @@ bool QEventTransition::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_STATEMACHINE

@@ -697,26 +697,7 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         if (m_xiGrab) {
             // XIAllowTouchEvents deadlocks with libXi < 1.7.4 (this has nothing to do with the XI2 versions like 2.2)
             // http://lists.x.org/archives/xorg-devel/2014-July/043059.html
-#ifndef XCB_USE_XINPUT2
-            static bool allowTouchWarningShown = false;
-            if (!allowTouchWarningShown) {
-                allowTouchWarningShown = true;
-                qWarning("Skipping XIAllowTouchEvents() because it was not possible to detect libXi version at build time."
-                         " Minimum libXi version required is 1.7.4."
-                         " Expect issues with touch behavior.");
-            }
-#elif QT_LIBRARY_VERSION(xinput2) < QT_VERSION_CHECK(1, 7, 4)
-            static bool allowTouchWarningShown = false;
-            if (!allowTouchWarningShown) {
-                allowTouchWarningShown = true;
-                qWarning("Skipping XIAllowTouchEvents() due to not having libXi >= 1.7.4."
-                         " libXi version at build time was %d.%d.%d."
-                         " Expect issues with touch behavior.",
-                         QT_LIBRARY_VERSION_MAJOR(xinput2),
-                         QT_LIBRARY_VERSION_MINOR(xinput2),
-                         QT_LIBRARY_VERSION_PATCH(xinput2));
-            }
-#else
+#ifdef XCB_USE_XINPUT2
             XIAllowTouchEvents(static_cast<Display *>(m_xlib_display), xiDeviceEvent->deviceid,
                                xiDeviceEvent->detail, xiDeviceEvent->event, XIAcceptTouch);
 #endif

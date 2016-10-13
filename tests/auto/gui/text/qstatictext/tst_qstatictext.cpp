@@ -96,6 +96,8 @@ private slots:
     void textDocumentColor();
 #endif
 
+    void multiLine();
+
 private:
     bool supportsTransformations() const;
 
@@ -853,6 +855,59 @@ void tst_QStaticText::textDocumentColor()
     QCOMPARE(d->items[1].color, QColor(Qt::red));
 }
 #endif
+
+class TestPaintEngine: public QPaintEngine
+{
+public:
+    void drawTextItem(const QPointF &p, const QTextItem &textItem) Q_DECL_OVERRIDE
+    {
+        differentVerticalPositions.insert(qRound(p.y()));
+    }
+
+    void updateState(const QPaintEngineState &) Q_DECL_OVERRIDE {}
+
+    void drawPolygon(const QPointF *, int , PolygonDrawMode ) Q_DECL_OVERRIDE {}
+
+    bool begin(QPaintDevice *) Q_DECL_OVERRIDE  { return true; }
+    bool end() Q_DECL_OVERRIDE { return true; }
+    void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) Q_DECL_OVERRIDE {}
+    Type type() const Q_DECL_OVERRIDE
+    {
+        return User;
+    }
+
+    QSet<int> differentVerticalPositions;
+};
+
+class TestPixmap: public QPixmap
+{
+public:
+    TestPixmap(int w, int h) : QPixmap(w, h), testPaintEngine(new TestPaintEngine) {}
+    ~TestPixmap() { delete testPaintEngine; }
+
+    QPaintEngine *paintEngine() const
+    {
+        return testPaintEngine;
+    }
+
+    TestPaintEngine *testPaintEngine;
+};
+
+void tst_QStaticText::multiLine()
+{
+    TestPixmap pixmap(100, 100);
+
+    TestPaintEngine *paintEngine = pixmap.testPaintEngine;
+
+    {
+        QPainter p(&pixmap);
+        QStaticText text;
+        text.setText(QLatin1String("line 1") + QChar(QChar::LineSeparator) + QLatin1String("line 2"));
+        p.drawStaticText(0, 0, text);
+    }
+
+    QCOMPARE(paintEngine->differentVerticalPositions.size(), 2);
+}
 
 QTEST_MAIN(tst_QStaticText)
 #include "tst_qstatictext.moc"

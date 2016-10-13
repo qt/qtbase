@@ -44,10 +44,9 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qmetaobject.h>
 
+QT_REQUIRE_CONFIG(statemachine);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STATEMACHINE
 
 class QAbstractTransition;
 class QSignalTransition;
@@ -129,8 +128,6 @@ private:
     Q_DISABLE_COPY(QState)
     Q_DECLARE_PRIVATE(QState)
 };
-
-#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

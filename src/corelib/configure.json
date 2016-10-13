@@ -353,6 +353,7 @@
         },
         "qeventtransition": {
             "label": "QEventTransition class",
+            "condition": "features.statemachine",
             "output": [ "publicFeature" ]
         },
         "sharedmemory": {
@@ -557,6 +558,30 @@
             "purpose": "Provides a framework for gestures.",
             "section": "Utilities",
             "output": [ "publicFeature", "feature" ]
+        },
+        "sha3-fast": {
+            "label": "Speed optimized SHA3",
+            "purpose": "Optimizes SHA3 for speed instead of size.",
+            "section": "Utilities",
+            "output": [ "privateFeature" ]
+        },
+        "timezone": {
+            "label": "QTimeZone",
+            "purpose": "Provides support for timezone handling.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
+        },
+        "commandlineparser": {
+            "label": "QCommandlineParser",
+            "purpose": "Provides support for command line parsing.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
+        },
+        "topleveldomain": {
+            "label": "QUrl::topLevelDomain()",
+            "description": "Provides support for extracting the top level domain from URLs.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
         }
     },
 

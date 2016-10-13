@@ -117,7 +117,7 @@ static CFStringRef runLoopMode(NSDictionary *dictionary)
         if (CFStringCompare(mode, [self currentMode], 0) == kCFCompareEqualTo)
             m_runLoopModes.pop();
         else
-            qWarning("Tried to pop run loop mode '%s' that was never pushed!", qPrintable(QCFString::toQString(mode)));
+            qWarning("Tried to pop run loop mode '%s' that was never pushed!", qPrintable(QString::fromCFString(mode)));
 
         Q_ASSERT(m_runLoopModes.size() >= 1);
      }
@@ -285,7 +285,7 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
         CFTimeInterval duration = (m_processEvents.flags & QEventLoop::WaitForMoreEvents) ?
             kCFTimeIntervalDistantFuture : kCFTimeIntervalMinimum;
 
-        qEventDispatcherDebug() << "Calling CFRunLoopRunInMode = " << qPrintable(QCFString::toQString(mode))
+        qEventDispatcherDebug() << "Calling CFRunLoopRunInMode = " << qPrintable(QString::fromCFString(mode))
             << " for " << duration << " ms, processing single source = " << returnAfterSingleSourceHandled; qIndent();
 
         SInt32 result = CFRunLoopRunInMode(mode, duration, returnAfterSingleSourceHandled);

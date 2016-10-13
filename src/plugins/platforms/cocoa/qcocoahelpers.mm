@@ -40,7 +40,7 @@
 #include <qpa/qplatformtheme.h>
 
 #include "qcocoahelpers.h"
-
+#include "qnsview.h"
 
 #include <QtCore>
 #include <QtGui>
@@ -70,7 +70,7 @@ QStringList qt_mac_NSArrayToQStringList(void *nsarray)
     QStringList result;
     NSArray *array = static_cast<NSArray *>(nsarray);
     for (NSUInteger i=0; i<[array count]; ++i)
-        result << QCFString::toQString([array objectAtIndex:i]);
+        result << QString::fromNSString([array objectAtIndex:i]);
     return result;
 }
 
@@ -143,7 +143,30 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
     return actions;
 }
 
+/*!
+    Returns the view cast to a QNSview if possible.
 
+    If the view is not a QNSView, nil is returned, which is safe to
+    send messages to, effectivly making [qnsview_cast(view) message]
+    a no-op.
+
+    For extra verbosity and clearer code, please consider checking
+    that window()->type() != Qt::ForeignWindow before using this cast.
+
+    Do not use this method soley to check for foreign windows, as
+    that will make the code harder to read for people not working
+    primarily on macOS, who do not know the difference between the
+    NSView and QNSView cases.
+*/
+QNSView *qnsview_cast(NSView *view)
+{
+    if (![view isKindOfClass:[QNSView class]]) {
+        qCWarning(lcQpaCocoaWindow) << "NSView is not QNSView, consider checking for Qt::ForeignWindow";
+        return nil;
+    }
+
+    return static_cast<QNSView *>(view);
+}
 
 //
 // Misc
@@ -161,7 +184,7 @@ void qt_mac_transformProccessToForegroundApplication()
         // Officially it's supposed to be a string, a boolean makes sense, so we'll check.
         // A number less so, but OK.
         if (valueType == CFStringGetTypeID())
-            forceTransform = !(QCFString::toQString(static_cast<CFStringRef>(value)).toInt());
+            forceTransform = !(QString::fromCFString(static_cast<CFStringRef>(value)).toInt());
         else if (valueType == CFBooleanGetTypeID())
             forceTransform = !CFBooleanGetValue(static_cast<CFBooleanRef>(value));
         else if (valueType == CFNumberGetTypeID()) {
@@ -179,7 +202,7 @@ void qt_mac_transformProccessToForegroundApplication()
             if (valueType == CFBooleanGetTypeID())
                 forceTransform = !CFBooleanGetValue(static_cast<CFBooleanRef>(value));
             else if (valueType == CFStringGetTypeID())
-                forceTransform = !(QCFString::toQString(static_cast<CFStringRef>(value)).toInt());
+                forceTransform = !(QString::fromCFString(static_cast<CFStringRef>(value)).toInt());
             else if (valueType == CFNumberGetTypeID()) {
                 int valueAsInt;
                 CFNumberGetValue(static_cast<CFNumberRef>(value), kCFNumberIntType, &valueAsInt);
@@ -198,7 +221,7 @@ QString qt_mac_applicationName()
     QString appName;
     CFTypeRef string = CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(), CFSTR("CFBundleName"));
     if (string)
-        appName = QCFString::toQString(static_cast<CFStringRef>(string));
+        appName = QString::fromCFString(static_cast<CFStringRef>(string));
 
     if (appName.isEmpty()) {
         QString arg0 = QGuiApplicationPrivate::instance()->appName();

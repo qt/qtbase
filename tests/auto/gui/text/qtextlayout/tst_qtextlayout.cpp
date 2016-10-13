@@ -135,6 +135,7 @@ private slots:
     void cursorInNonStopChars();
     void nbsp();
     void noModificationOfInputString();
+    void superscriptCrash_qtbug53911();
 
 private:
     QFont testFont;
@@ -2195,6 +2196,62 @@ void tst_QTextLayout::noModificationOfInputString()
         QCOMPARE(s.size(), 1);
         QCOMPARE(s.at(0), QChar(QChar::LineSeparator));
     }
+}
+
+void tst_QTextLayout::superscriptCrash_qtbug53911()
+{
+    static int fontSizes = 64;
+    static QString layoutText = "THIS IS SOME EXAMPLE TEXT THIS IS SOME EXAMPLE TEXT";
+
+    QList<QTextLayout*> textLayouts;
+    for (int i = 0; i < fontSizes; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            QTextLayout* newTextLayout = new QTextLayout();
+            newTextLayout->setText(layoutText);
+            QList<QTextLayout::FormatRange> formatRanges;
+            QTextLayout::FormatRange formatRange;
+
+            formatRange.format.setFont(QFont());
+            formatRange.format.setFontPointSize(i + 5);
+
+            switch (j) {
+            case 0:
+                formatRange.format.setFontWeight(QFont::Normal);
+                formatRange.format.setFontItalic(false);
+                break;
+            case 1:
+                formatRange.format.setFontWeight(QFont::Bold);
+                formatRange.format.setFontItalic(false);
+                break;
+            case 2:
+                formatRange.format.setFontWeight(QFont::Bold);
+                formatRange.format.setFontItalic(true);
+                break;
+            case 3:
+                formatRange.format.setFontWeight(QFont::Normal);
+                formatRange.format.setFontItalic(true);
+                break;
+            }
+
+            formatRange.format.setVerticalAlignment( QTextCharFormat::AlignSuperScript);
+
+            formatRange.start = 0;
+            formatRange.length = layoutText.size();
+            formatRanges << formatRange;
+            newTextLayout->setAdditionalFormats(formatRanges);
+
+            textLayouts.push_front(newTextLayout);
+        }
+    }
+
+    // This loop would crash before fix for QTBUG-53911
+    foreach (QTextLayout *textLayout, textLayouts) {
+        textLayout->beginLayout();
+        while (textLayout->createLine().isValid());
+        textLayout->endLayout();
+    }
+
+    qDeleteAll(textLayouts);
 }
 
 QTEST_MAIN(tst_QTextLayout)

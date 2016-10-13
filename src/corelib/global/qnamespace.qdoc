@@ -1761,17 +1761,6 @@
     \value Key_Zoom
     \value Key_Exit
     \value Key_Cancel
-    \value Key_MicVolumeUp
-    \value Key_Find
-    \value Key_Open
-    \value Key_MicVolumeDown
-    \value Key_New
-    \value Key_Settings
-    \value Key_Redo
-    \value Key_Exit
-    \value Key_Info
-    \value Key_Undo
-    \value Key_Guide
 
     \sa QKeyEvent::key()
 */
@@ -2300,7 +2289,7 @@
     \enum Qt::ItemSelectionMode
 
     This enum is used in QGraphicsItem, QGraphicsScene and QGraphicsView to
-    specify how items are selected, or how to determine if a shapes and items
+    specify how items are selected, or how to determine if shapes and items
     collide.
 
     \value ContainsItemShape The output list contains only items whose

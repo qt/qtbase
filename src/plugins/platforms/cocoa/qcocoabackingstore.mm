@@ -40,6 +40,7 @@
 #include "qcocoabackingstore.h"
 
 #include "qcocoawindow.h"
+#include "qcocoahelpers.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -51,7 +52,7 @@ QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
 QCocoaBackingStore::~QCocoaBackingStore()
 {
     if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle()))
-        [cocoaWindow->m_qtView clearBackingStore:this];
+        [qnsview_cast(cocoaWindow->view()) clearBackingStore:this];
 }
 
 QImage::Format QCocoaBackingStore::format() const
@@ -68,7 +69,7 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
         return;
 
     if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle()))
-        [cocoaWindow->m_qtView flushBackingStore:this region:region offset:offset];
+        [qnsview_cast(cocoaWindow->view()) flushBackingStore:this region:region offset:offset];
 }
 
 QT_END_NAMESPACE

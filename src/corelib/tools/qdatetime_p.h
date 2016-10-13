@@ -58,7 +58,9 @@
 #include "QtCore/qdatetime.h"
 #include "QtCore/qpair.h"
 
+#if QT_CONFIG(timezone)
 #include "qtimezone.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -118,22 +120,22 @@ public:
     static QDateTime::Data create(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
                                   int offsetSeconds);
 
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(timezone)
     static QDateTime::Data create(const QDate &toDate, const QTime &toTime, const QTimeZone & timeZone);
-#endif // QT_BOOTSTRAPPED
+#endif // timezone
 
     qint64 m_msecs;
     StatusFlags m_status;
     int m_offsetFromUtc;
     mutable QAtomicInt ref;
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(timezone)
     QTimeZone m_timeZone;
-#endif // QT_BOOTSTRAPPED
+#endif // timezone
 
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(timezone)
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
                                         QDate *localDate = 0, QTime *localTime = 0);
-#endif // QT_BOOTSTRAPPED
+#endif // timezone
 
     static inline qint64 minJd() { return QDate::minJd(); }
     static inline qint64 maxJd() { return QDate::maxJd(); }

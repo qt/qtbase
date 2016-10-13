@@ -8,7 +8,7 @@ SUBDIRS=\
    qsslerror \
    qsslkey \
 
-qtConfig(ssl)|qtConfig(openssl)|qtConfig(openssl-linked) {
+qtConfig(ssl) {
     qtConfig(private_tests) {
         SUBDIRS += \
             qsslsocket \
@@ -21,7 +21,7 @@ winrt: SUBDIRS -= \
    qsslsocket_onDemandCertificates_member \
    qsslsocket_onDemandCertificates_static \
 
-qtConfig(ssl)|qtConfig(openssl)|qtConfig(openssl-linked) {
+qtConfig(ssl) {
     qtConfig(private_tests) {
         SUBDIRS += qasn1element \
                    qssldiffiehellmanparameters

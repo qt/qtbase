@@ -39,8 +39,6 @@
 
 #include "qfinalstate_p.h"
 
-#ifndef QT_NO_STATEMACHINE
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -139,5 +137,3 @@ bool QFinalState::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_STATEMACHINE

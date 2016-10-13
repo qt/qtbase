@@ -1,6 +1,6 @@
 QT_FOR_PRIVATE += dbus
 
-INCLUDEPATH += $$PWD $$PWD/../../gui/kernel
+INCLUDEPATH += $$PWD
 
 HEADERS += \
     $$PWD/qdbusmenuadaptor_p.h \

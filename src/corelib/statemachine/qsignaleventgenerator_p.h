@@ -54,6 +54,8 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qobject.h>
 
+QT_REQUIRE_CONFIG(statemachine);
+
 QT_BEGIN_NAMESPACE
 
 class QStateMachine;

@@ -85,11 +85,7 @@ public:
         explicit QFileSystemNode(const QString &filename = QString(), QFileSystemNode *p = 0)
             : fileName(filename), populatedChildren(false), isVisible(false), dirtyChildrenIndex(-1), parent(p), info(0) {}
         ~QFileSystemNode() {
-            QHash<QString, QFileSystemNode*>::const_iterator i = children.constBegin();
-            while (i != children.constEnd()) {
-                    delete i.value();
-                    ++i;
-            }
+            qDeleteAll(children);
             delete info;
             info = 0;
             parent = 0;
@@ -164,32 +160,30 @@ public:
         void updateIcon(QFileIconProvider *iconProvider, const QString &path) {
             if (info)
                 info->icon = iconProvider->icon(QFileInfo(path));
-            QHash<QString, QFileSystemNode *>::const_iterator iterator;
-            for(iterator = children.constBegin() ; iterator != children.constEnd() ; ++iterator) {
+            for (QFileSystemNode *child : qAsConst(children)) {
                 //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
                 if (!path.isEmpty()) {
                     if (path.endsWith(QLatin1Char('/')))
-                        iterator.value()->updateIcon(iconProvider, path + iterator.value()->fileName);
+                        child->updateIcon(iconProvider, path + child->fileName);
                     else
-                        iterator.value()->updateIcon(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                        child->updateIcon(iconProvider, path + QLatin1Char('/') + child->fileName);
                 } else
-                    iterator.value()->updateIcon(iconProvider, iterator.value()->fileName);
+                    child->updateIcon(iconProvider, child->fileName);
             }
         }
 
         void retranslateStrings(QFileIconProvider *iconProvider, const QString &path) {
             if (info)
                 info->displayType = iconProvider->type(QFileInfo(path));
-            QHash<QString, QFileSystemNode *>::const_iterator iterator;
-            for(iterator = children.constBegin() ; iterator != children.constEnd() ; ++iterator) {
+            for (QFileSystemNode *child : qAsConst(children)) {
                 //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
                 if (!path.isEmpty()) {
                     if (path.endsWith(QLatin1Char('/')))
-                        iterator.value()->retranslateStrings(iconProvider, path + iterator.value()->fileName);
+                        child->retranslateStrings(iconProvider, path + child->fileName);
                     else
-                        iterator.value()->retranslateStrings(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                        child->retranslateStrings(iconProvider, path + QLatin1Char('/') + child->fileName);
                 } else
-                    iterator.value()->retranslateStrings(iconProvider, iterator.value()->fileName);
+                    child->retranslateStrings(iconProvider, child->fileName);
             }
         }
 

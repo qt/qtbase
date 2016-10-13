@@ -622,6 +622,8 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
 
             if (textWidth >= 0.0)
                 line.setLineWidth(textWidth);
+            else
+                line.setLineWidth(QFIXED_MAX);
             height += leading;
             line.setPosition(QPointF(0.0, height));
             height += line.height();

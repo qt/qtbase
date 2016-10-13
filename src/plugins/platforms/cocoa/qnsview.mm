@@ -267,16 +267,16 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)viewDidMoveToSuperview
 {
-    if (!(m_platformWindow->m_contentViewIsToBeEmbedded))
+    if (!(m_platformWindow->m_viewIsToBeEmbedded))
         return;
 
     if ([self superview]) {
-        m_platformWindow->m_contentViewIsEmbedded = true;
+        m_platformWindow->m_viewIsEmbedded = true;
         QWindowSystemInterface::handleGeometryChange(m_window, m_platformWindow->geometry());
         m_platformWindow->updateExposedGeometry();
         QWindowSystemInterface::flushWindowSystemEvents();
     } else {
-        m_platformWindow->m_contentViewIsEmbedded = false;
+        m_platformWindow->m_viewIsEmbedded = false;
     }
 }
 
@@ -338,7 +338,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         NSRect rect = [self frame];
         NSRect windowRect = [[self window] frame];
         geometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
-    } else if (m_platformWindow->m_contentViewIsToBeEmbedded) {
+    } else if (m_platformWindow->m_viewIsToBeEmbedded) {
         // embedded child window, use the frame rect ### merge with case below
         geometry = QRectF::fromCGRect(NSRectToCGRect([self bounds])).toRect();
     } else {
@@ -368,7 +368,7 @@ static bool _q_dontOverrideCtrlLMB = false;
     // Don't send the geometry change if the QWindow is designated to be
     // embedded in a foreign view hiearchy but has not actually been
     // embedded yet - it's too early.
-    if (m_platformWindow->m_contentViewIsToBeEmbedded && !m_platformWindow->m_contentViewIsEmbedded)
+    if (m_platformWindow->m_viewIsToBeEmbedded && !m_platformWindow->m_viewIsEmbedded)
         return;
 
     // Send a geometry change event to Qt, if it's ready to handle events
@@ -401,7 +401,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)windowNotification : (NSNotification *) windowNotification
 {
-    //qDebug() << "windowNotification" << QCFString::toQString([windowNotification name]);
+    //qDebug() << "windowNotification" << QString::fromNSString([windowNotification name]);
 
     NSString *notificationName = [windowNotification name];
     if (notificationName == NSWindowDidBecomeKeyNotification) {
@@ -739,14 +739,17 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
-    bool isTabletEvent = [self handleTabletEvent: theEvent];
+    // Tablet events may come in via the mouse event handlers,
+    // check if this is a valid tablet event first.
+    if ([self handleTabletEvent: theEvent])
+        return;
 
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
     QNSView *targetView = self;
     if (m_platformWindow && m_platformWindow->m_forwardWindow) {
         if (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)
-            targetView = m_platformWindow->m_forwardWindow->m_qtView;
+            targetView = qnsview_cast(m_platformWindow->m_forwardWindow->view());
         else
             m_platformWindow->m_forwardWindow.clear();
     }
@@ -756,7 +759,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         // Tooltips must be transparent for mouse events
         // The bug reference is QTBUG-46379
         if (!popup->m_windowFlags.testFlag(Qt::ToolTip)) {
-            if (QNSView *popupView = popup->qtView())
+            if (QNSView *popupView = qnsview_cast(popup->view()))
                 targetView = popupView;
         }
     }
@@ -768,8 +771,8 @@ static bool _q_dontOverrideCtrlLMB = false;
     nativeDrag->setLastMouseEvent(theEvent, self);
 
     Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
-    QWindowSystemInterface::handleMouseEvent(targetView->m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers,
-                                             isTabletEvent ? Qt::MouseEventSynthesizedByQt : Qt::MouseEventNotSynthesized);
+    QWindowSystemInterface::handleMouseEvent(targetView->m_window, timestamp, qtWindowPoint, qtScreenPoint,
+                                             m_buttons, keyboardModifiers, Qt::MouseEventNotSynthesized);
 }
 
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
@@ -1582,7 +1585,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
     // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
     if (!(modifiers & (Qt::ControlModifier | Qt::MetaModifier)) && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
-        text = QCFString::toQString(characters);
+        text = QString::fromNSString(characters);
 
     QWindow *window = [self topLevelWindow];
 
@@ -1745,9 +1748,9 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     QString commitString;
     if ([aString length]) {
         if ([aString isKindOfClass:[NSAttributedString class]]) {
-            commitString = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
+            commitString = QString::fromCFString(reinterpret_cast<CFStringRef>([aString string]));
         } else {
-            commitString = QCFString::toQString(reinterpret_cast<CFStringRef>(aString));
+            commitString = QString::fromCFString(reinterpret_cast<CFStringRef>(aString));
         };
     }
     QObject *fo = QGuiApplication::focusObject();
@@ -1777,7 +1780,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     if ([aString isKindOfClass:[NSAttributedString class]]) {
         // Preedit string has attribution
-        preeditString = QCFString::toQString(reinterpret_cast<CFStringRef>([aString string]));
+        preeditString = QString::fromCFString(reinterpret_cast<CFStringRef>([aString string]));
         int composingLength = preeditString.length();
         int index = 0;
         // Create attributes for individual sections of preedit text
@@ -1806,7 +1809,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         }
     } else {
         // No attributes specified, take only the preedit text.
-        preeditString = QCFString::toQString(reinterpret_cast<CFStringRef>(aString));
+        preeditString = QString::fromCFString(reinterpret_cast<CFStringRef>(aString));
     }
 
     if (attrs.isEmpty()) {
@@ -1989,7 +1992,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                        NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
         // Add custom types supported by the application.
         for (int i = 0; i < customTypes.size(); i++) {
-           [supportedTypes addObject:QCFString::toNSString(customTypes[i])];
+           [supportedTypes addObject:customTypes[i].toNSString()];
         }
         [self registerForDraggedTypes:supportedTypes];
     }

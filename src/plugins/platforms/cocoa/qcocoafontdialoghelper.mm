@@ -162,7 +162,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 {
     mHelper = helper;
 
-    [mFontPanel setTitle:QCFString::toNSString(helper->options()->windowTitle())];
+    [mFontPanel setTitle:helper->options()->windowTitle().toNSString()];
 
     if (mHelper->options()->testOption(QFontDialogOptions::NoButtons)) {
         [self restoreOriginalContentView];
@@ -442,7 +442,7 @@ public:
         }
 
         QFontInfo fontInfo(font);
-        nsFont = [mgr fontWithFamily:QCFString::toNSString(fontInfo.family())
+        nsFont = [mgr fontWithFamily:fontInfo.family().toNSString()
             traits:mask
             weight:weight
             size:fontInfo.pointSize()];

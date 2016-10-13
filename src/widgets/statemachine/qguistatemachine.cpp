@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include <QtCore/qstatemachine.h>
-
-#ifndef QT_NO_STATEMACHINE
-
 #include <private/qstatemachine_p.h>
 #include <QtGui/qevent.h>
 #include <QtWidgets/qgraphicssceneevent.h>
@@ -471,5 +468,3 @@ void qUnregisterGuiStateMachine()
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiStateMachine)
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_STATEMACHINE

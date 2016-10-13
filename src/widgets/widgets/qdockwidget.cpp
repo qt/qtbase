@@ -1315,7 +1315,9 @@ QDockWidget::DockWidgetFeatures QDockWidget::features() const
 
     By default, this property is \c true.
 
-    \sa isWindow()
+    When this property changes, the \c {topLevelChanged()} signal is emitted.
+
+    \sa isWindow(), topLevelChanged()
 */
 void QDockWidget::setFloating(bool floating)
 {

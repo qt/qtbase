@@ -40,8 +40,6 @@
 #ifndef QPLATFORMDEFS_H
 #define QPLATFORMDEFS_H
 
-#define QT_QPA_DEFAULT_PLATFORM_NAME "android"
-
 // Get Qt defines/settings
 
 #include "qglobal.h"

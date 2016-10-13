@@ -255,7 +255,7 @@ void QCocoaGLContext::setActiveWindow(QWindow *window)
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     cocoaWindow->setCurrentContext(this);
 
-    [(QNSView *) cocoaWindow->contentView() setQCocoaGLContext:this];
+    [(QNSView *) cocoaWindow->view() setQCocoaGLContext:this];
 }
 
 void QCocoaGLContext::updateSurfaceFormat()

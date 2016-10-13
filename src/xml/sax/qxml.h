@@ -127,6 +127,12 @@ public:
 #endif
     ~QXmlAttributes();
 
+    void swap(QXmlAttributes &other) Q_DECL_NOTHROW
+    {
+        qSwap(attList, other.attList);
+        qSwap(d, other.d);
+    }
+
     int index(const QString& qName) const;
     int index(QLatin1String qName) const;
     int index(const QString& uri, const QString& localPart) const;
@@ -155,6 +161,7 @@ private:
 
     QXmlAttributesPrivate *d;
 };
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QXmlAttributes)
 
 //
 // SAX Input Source

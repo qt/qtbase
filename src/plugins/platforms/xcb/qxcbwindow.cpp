@@ -258,7 +258,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         free_prop = true;
     }
 
-#ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     static const QTextCodec* mapper = QTextCodec::codecForLocale();
     int errCode = 0;
     if (mapper) {
@@ -274,6 +274,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         mapper = QTextCodec::codecForName("latin1");
         if (!mapper || !mapper->canEncode(s))
             return Q_NULLPTR;
+#endif
         static QByteArray qcs;
         qcs = s.toLatin1();
         tp.value = (uchar*)qcs.data();
@@ -281,6 +282,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         tp.format = 8;
         tp.nitems = qcs.length();
         free_prop = false;
+#if QT_CONFIG(textcodec)
     }
 #endif
     return &tp;
@@ -326,6 +328,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_lastWindowStateEvent(-1)
     , m_syncState(NoSyncNeeded)
     , m_pendingSyncRequest(0)
+    , m_currentBitmapCursor(XCB_CURSOR_NONE)
 {
     setConnection(xcbScreen()->connection());
 }
@@ -600,6 +603,9 @@ void QXcbWindow::create()
 
 QXcbWindow::~QXcbWindow()
 {
+    if (m_currentBitmapCursor != XCB_CURSOR_NONE) {
+        xcb_free_cursor(xcb_connection(), m_currentBitmapCursor);
+    }
     if (window()->type() != Qt::ForeignWindow)
         destroy();
     else {
@@ -2416,6 +2422,17 @@ static inline int fixed1616ToInt(FP1616 val)
     return int((qreal(val >> 16)) + (val & 0xFFFF) / (qreal)0xFFFF);
 }
 
+void QXcbWindow::handleXIMouseButtonState(const xcb_ge_event_t *event)
+{
+    QXcbConnection *conn = connection();
+    const xXIDeviceEvent *ev = reinterpret_cast<const xXIDeviceEvent *>(event);
+    if (ev->buttons_len > 0) {
+        unsigned char *buttonMask = (unsigned char *) &ev[1];
+        for (int i = 1; i <= 15; ++i)
+            conn->setButton(conn->translateMouseButton(i), XIMaskIsSet(buttonMask, i));
+    }
+}
+
 // With XI 2.2+ press/release/motion comes here instead of the above handlers.
 void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource source)
 {
@@ -2431,12 +2448,6 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
 
     const Qt::MouseButton button = conn->xiToQtMouseButton(ev->detail);
 
-    if (ev->buttons_len > 0) {
-        unsigned char *buttonMask = (unsigned char *) &ev[1];
-        for (int i = 1; i <= 15; ++i)
-            conn->setButton(conn->translateMouseButton(i), XIMaskIsSet(buttonMask, i));
-    }
-
     const char *sourceName = 0;
     if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled())) {
         const QMetaObject *metaObject = qt_getEnumMetaObject(source);
@@ -2446,18 +2457,23 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
 
     switch (ev->evtype) {
     case XI_ButtonPress:
+        handleXIMouseButtonState(event);
         if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
             qCDebug(lcQpaXInputEvents, "XI2 mouse press, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButton(button, true);
         handleButtonPressEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, source);
         break;
     case XI_ButtonRelease:
+        handleXIMouseButtonState(event);
         if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
             qCDebug(lcQpaXInputEvents, "XI2 mouse release, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButton(button, false);
         handleButtonReleaseEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, source);
         break;
     case XI_Motion:
+        // Here we do NOT call handleXIMouseButtonState because we don't expect button state change to be bundled with motion.
+        // When a touchscreen is pressed, an XI_Motion event occurs in which XIMaskIsSet says the left button is pressed,
+        // but we don't want QGuiApplicationPrivate::processMouseEvent() to react by generating a mouse press event.
         if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
             qCDebug(lcQpaXInputEvents, "XI2 mouse motion %d,%d, time %d, source %s", event_x, event_y, ev->time, sourceName);
         handleMotionNotifyEvent(event_x, event_y, root_x, root_y, modifiers, ev->time, source);
@@ -2669,10 +2685,22 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     return result;
 }
 
-void QXcbWindow::setCursor(xcb_cursor_t cursor)
+void QXcbWindow::setCursor(xcb_cursor_t cursor, bool isBitmapCursor)
 {
-    xcb_change_window_attributes(xcb_connection(), m_window, XCB_CW_CURSOR, &cursor);
-    xcb_flush(xcb_connection());
+    xcb_connection_t *conn = xcb_connection();
+
+    xcb_change_window_attributes(conn, m_window, XCB_CW_CURSOR, &cursor);
+    xcb_flush(conn);
+
+    if (m_currentBitmapCursor != XCB_CURSOR_NONE) {
+        xcb_free_cursor(conn, m_currentBitmapCursor);
+    }
+
+    if (isBitmapCursor) {
+        m_currentBitmapCursor = cursor;
+    } else {
+        m_currentBitmapCursor = XCB_CURSOR_NONE;
+    }
 }
 
 void QXcbWindow::windowEvent(QEvent *event)

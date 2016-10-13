@@ -60,7 +60,7 @@ public:
     const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
 
     static QVariant styleHint(QPlatformIntegration::StyleHint hint);
-
+    QVariant themeHint(ThemeHint hint) const override;
 private:
     QScopedPointer<QWinRTThemePrivate> d_ptr;
     Q_DECLARE_PRIVATE(QWinRTTheme)

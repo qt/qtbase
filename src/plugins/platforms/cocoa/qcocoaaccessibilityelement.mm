@@ -237,7 +237,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
     if (QWindow *window = iface->window()) {
         QCocoaWindow *win = static_cast<QCocoaWindow*>(window->handle());
-        return win->qtView();
+        return qnsview_cast(win->view());
     }
 
     QAccessibleInterface *parent = iface->parent();
@@ -300,9 +300,9 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     } else if ([attribute isEqualToString:NSAccessibilityTitleAttribute]) {
         if (iface->role() == QAccessible::StaticText)
             return nil;
-        return QCFString::toNSString(iface->text(QAccessible::Name));
+        return iface->text(QAccessible::Name).toNSString();
     } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
-        return QCFString::toNSString(iface->text(QAccessible::Description));
+        return iface->text(QAccessible::Description).toNSString();
     } else if ([attribute isEqualToString:NSAccessibilityEnabledAttribute]) {
         return [NSNumber numberWithBool:!iface->state().disabled];
     } else if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
@@ -439,7 +439,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     if ([attribute isEqualToString: NSAccessibilityAttributedStringForRangeParameterizedAttribute]) {
         NSRange range = [parameter rangeValue];
         QString text = iface->textInterface()->text(range.location, range.location + range.length);
-        return [[NSAttributedString alloc] initWithString: text.toNSString()];
+        return [[NSAttributedString alloc] initWithString:text.toNSString()];
     } else if ([attribute isEqualToString: NSAccessibilityRangeForPositionParameterizedAttribute]) {
         NSPoint nsPoint = [parameter pointValue];
         QPoint point(static_cast<int>(nsPoint.x), static_cast<int>(qt_mac_flipYCoordinate(nsPoint.y)));
@@ -532,7 +532,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     } else {
         description = qAccessibleLocalizedActionDescription(qtAction);
     }
-    return QCFString::toNSString(description);
+    return description.toNSString();
 }
 
 - (void)accessibilityPerformAction:(NSString *)action {

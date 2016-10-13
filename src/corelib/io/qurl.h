@@ -235,7 +235,9 @@ public:
 
     void setHost(const QString &host, ParsingMode mode = DecodedMode);
     QString host(ComponentFormattingOptions = FullyDecoded) const;
+#if QT_CONFIG(topleveldomain)
     QString topLevelDomain(ComponentFormattingOptions options = FullyDecoded) const;
+#endif
 
     void setPort(int port);
     int port(int defaultPort = -1) const;

@@ -126,9 +126,8 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                         _mm_store_si128((__m128i *)&dst[x], result);
                     }
                 }
-                for (; x<w; ++x) {
+                SIMD_EPILOGUE(x, w, 3)
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
-                }
                 dst = (quint32 *)(((uchar *) dst) + dbpl);
                 src = (const quint32 *)(((const uchar *) src) + sbpl);
             }
@@ -177,7 +176,7 @@ void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uin
         }
 
         // 3) Epilogue:
-        for (; x < length; ++x)
+        SIMD_EPILOGUE(x, length, 3)
             dst[x] = comp_func_Plus_one_pixel(dst[x], src[x]);
     } else {
         const int one_minus_const_alpha = 255 - const_alpha;
@@ -201,7 +200,7 @@ void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uin
         }
 
         // 3) Epilogue:
-        for (; x < length; ++x)
+        SIMD_EPILOGUE(x, length, 3)
             dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
     }
 }
@@ -232,7 +231,7 @@ void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, u
         }
 
         // 3) Epilogue
-        for (; x < length; ++x)
+        SIMD_EPILOGUE(x, length, 3)
             dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], ialpha);
     }
 }
@@ -313,7 +312,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
             dstVector = _mm_add_epi8(colorVector, dstVector);
             _mm_store_si128((__m128i *)&dst[x], dstVector);
         }
-        for (;x < length; ++x)
+        SIMD_EPILOGUE(x, length, 3)
             destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
     }
 }
@@ -592,7 +591,7 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
             BLEND_SOURCE_OVER_ARGB32_SSE2_helper(dst, srcVector, nullVector, half, one, colorMask, alphaMask);
         }
 
-        for (; x<w; x++) {
+        SIMD_EPILOGUE(x, w, 3) {
             uint s = src[(basex + x*ix) >> 16];
             dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
         }

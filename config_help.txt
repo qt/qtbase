@@ -46,7 +46,7 @@ Conventions for the remaining options: When an option's description is
 followed by a list of values in brackets, the interpretation is as follows:
 'yes' represents the bare option; all other values are possible prefixes to
 the option, e.g., -no-gui. Alternatively, the value can be assigned, e.g.,
--gui=yes. Values are listed in the order they are tried if not specified;
+--gui=yes. Values are listed in the order they are tried if not specified;
 'auto' is a shorthand for 'yes/no'. Solitary 'yes' and 'no' represent binary
 options without auto-detection.
 

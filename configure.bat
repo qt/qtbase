@@ -130,7 +130,7 @@ if errorlevel 1 (cd ..\.. & exit /b 1)
 cd ..\..
 
 :conf
-configure.exe -srcdir %QTSRC% %ARGS%
+configureapp.exe -srcdir %QTSRC% %ARGS%
 goto exit
 
 :help

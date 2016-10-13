@@ -309,7 +309,7 @@ NSMenuItem *QCocoaMenuItem::sync()
     }
 
     if (!m_native) {
-        m_native = [[NSMenuItem alloc] initWithTitle:QCFString::toNSString(m_text)
+        m_native = [[NSMenuItem alloc] initWithTitle:m_text.toNSString()
                                        action:nil
                                        keyEquivalent:@""];
         [m_native setTag:reinterpret_cast<NSInteger>(this)];
@@ -331,20 +331,20 @@ NSMenuItem *QCocoaMenuItem::sync()
     bool useAttributedTitle = false;
     // Cocoa Font and title
     if (m_font.resolve()) {
-        NSFont *customMenuFont = [NSFont fontWithName:QCFString::toNSString(m_font.family())
+        NSFont *customMenuFont = [NSFont fontWithName:m_font.family().toNSString()
                                   size:m_font.pointSize()];
         if (customMenuFont) {
             NSArray *keys = [NSArray arrayWithObjects:NSFontAttributeName, nil];
             NSArray *objects = [NSArray arrayWithObjects:customMenuFont, nil];
             NSDictionary *attributes = [NSDictionary dictionaryWithObjects:objects forKeys:keys];
-            NSAttributedString *str = [[[NSAttributedString alloc] initWithString:QCFString::toNSString(finalString)
+            NSAttributedString *str = [[[NSAttributedString alloc] initWithString:finalString.toNSString()
                                      attributes:attributes] autorelease];
             [m_native setAttributedTitle: str];
             useAttributedTitle = true;
         }
     }
     if (!useAttributedTitle) {
-       [m_native setTitle: QCFString::toNSString(finalString)];
+       [m_native setTitle:finalString.toNSString()];
     }
 
 #ifndef QT_NO_SHORTCUT

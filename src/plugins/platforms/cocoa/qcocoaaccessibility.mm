@@ -359,7 +359,7 @@ id getValueAttribute(QAccessibleInterface *interface)
 {
     const QAccessible::Role qtrole = interface->role();
     if (qtrole == QAccessible::StaticText) {
-        return QCFString::toNSString(interface->text(QAccessible::Name));
+        return interface->text(QAccessible::Name).toNSString();
     }
     if (qtrole == QAccessible::EditableText) {
         if (QAccessibleTextInterface *textInterface = interface->textInterface()) {
@@ -380,12 +380,12 @@ id getValueAttribute(QAccessibleInterface *interface)
                 //    textInterface->textAfterOffset(0, QAccessible2::SentenceBoundary, &begin, &end);
                 text = textInterface->text(begin, end);
             }
-            return QCFString::toNSString(text);
+            return text.toNSString();
         }
     }
 
     if (QAccessibleValueInterface *valueInterface = interface->valueInterface()) {
-        return QCFString::toNSString(valueInterface->currentValue().toString());
+        return valueInterface->currentValue().toString().toNSString();
     }
 
     if (interface->state().checkable) {

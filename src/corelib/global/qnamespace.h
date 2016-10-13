@@ -558,7 +558,7 @@ public:
         Key_Insert = 0x01000006,
         Key_Delete = 0x01000007,
         Key_Pause = 0x01000008,
-        Key_Print = 0x01000009,
+        Key_Print = 0x01000009,               // print screen
         Key_SysReq = 0x0100000a,
         Key_Clear = 0x0100000b,
         Key_Home = 0x01000010,                // cursor movement

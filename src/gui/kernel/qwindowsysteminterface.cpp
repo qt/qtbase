@@ -70,6 +70,63 @@ QWindowSystemInterfacePrivate::WindowSystemEventList QWindowSystemInterfacePriva
 extern QPointer<QWindow> qt_last_mouse_receiver;
 
 /*!
+    Handles a window system event asynchronously by posting the event to Qt Gui.
+
+    \sa postWindowSystemEvent()
+*/
+template<>
+bool QWindowSystemInterfacePrivate::handleWindowSystemEvent<QWindowSystemInterface::AsynchronousDelivery>(WindowSystemEvent *ev)
+{
+    QWindowSystemInterfacePrivate::postWindowSystemEvent(ev);
+    return true;
+}
+
+/*!
+    Handles a window system event synchronously.
+
+    If the event is delivered from another thread than the Qt main thread the
+    window system event queue is flushed, which may deliver other events as
+    well.
+
+    \sa processWindowSystemEvent()
+*/
+template<>
+bool QWindowSystemInterfacePrivate::handleWindowSystemEvent<QWindowSystemInterface::SynchronousDelivery>(WindowSystemEvent *ev)
+{
+    return QWindowSystemInterfacePrivate::processWindowSystemEvent(ev);
+}
+
+/*!
+    Handles a window system event.
+
+    By default this function posts the event on the window system event queue and
+    wakes the Gui event dispatcher. Qt Gui will then handle the event asynchonously
+    at a later point. The return value is not used in asynchronous mode and will
+    always be true.
+
+    In synchronous mode Qt Gui will process the event immediately. The return value
+    indicates if Qt accepted the event. If the event is delivered from another thread
+    than the Qt main thread the window system event queue is flushed, which may deliver
+    other events as well.
+
+    \sa flushWindowSystemEvents(), processWindowSystemEvent(), setSynchronousWindowSystemEvents()
+*/
+template<>
+bool QWindowSystemInterfacePrivate::handleWindowSystemEvent<QWindowSystemInterface::DefaultDelivery>(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
+{
+    if (synchronousWindowSystemEvents)
+        return handleWindowSystemEvent<QWindowSystemInterface::SynchronousDelivery>(ev);
+    else
+        return handleWindowSystemEvent<QWindowSystemInterface::AsynchronousDelivery>(ev);
+}
+
+#define QT_DEFINE_QPA_EVENT_HANDLER(ReturnType, HandlerName, ...) \
+    template Q_GUI_EXPORT ReturnType QWindowSystemInterface::HandlerName<QWindowSystemInterface::DefaultDelivery>(__VA_ARGS__); \
+    template Q_GUI_EXPORT ReturnType QWindowSystemInterface::HandlerName<QWindowSystemInterface::SynchronousDelivery>(__VA_ARGS__); \
+    template Q_GUI_EXPORT ReturnType QWindowSystemInterface::HandlerName<QWindowSystemInterface::AsynchronousDelivery>(__VA_ARGS__); \
+    template<typename Delivery> ReturnType QWindowSystemInterface::HandlerName(__VA_ARGS__)
+
+/*!
     \class QWindowSystemInterface
     \since 5.0
     \internal
@@ -81,18 +138,18 @@ extern QPointer<QWindow> qt_last_mouse_receiver;
     until sendWindowSystemEvents() is called by the event dispatcher.
 */
 
-void QWindowSystemInterface::handleEnterEvent(QWindow *tlw, const QPointF &local, const QPointF &global)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleEnterEvent, QWindow *tlw, const QPointF &local, const QPointF &global)
 {
     if (tlw) {
         QWindowSystemInterfacePrivate::EnterEvent *e = new QWindowSystemInterfacePrivate::EnterEvent(tlw, local, global);
-        QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+        QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
     }
 }
 
-void QWindowSystemInterface::handleLeaveEvent(QWindow *tlw)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleLeaveEvent, QWindow *tlw)
 {
     QWindowSystemInterfacePrivate::LeaveEvent *e = new QWindowSystemInterfacePrivate::LeaveEvent(tlw);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 /*!
@@ -104,15 +161,8 @@ void QWindowSystemInterface::handleLeaveEvent(QWindow *tlw)
 */
 void QWindowSystemInterface::handleEnterLeaveEvent(QWindow *enter, QWindow *leave, const QPointF &local, const QPointF& global)
 {
-    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
-    if (wasSynchronous)
-        setSynchronousWindowSystemEvents(false);
-    handleLeaveEvent(leave);
+    handleLeaveEvent<AsynchronousDelivery>(leave);
     handleEnterEvent(enter, local, global);
-    if (wasSynchronous) {
-        flushWindowSystemEvents();
-        setSynchronousWindowSystemEvents(true);
-    }
 }
 
 void QWindowSystemInterface::handleWindowActivated(QWindow *tlw, Qt::FocusReason r)
@@ -167,19 +217,19 @@ void QWindowSystemInterface::handleCloseEvent(QWindow *tlw, bool *accepted)
 \a w == 0 means that the event is in global coords only, \a local will be ignored in this case
 
 */
-void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
                                               Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleMouseEvent(w, time, local, global, b, mods, source);
+    handleMouseEvent<Delivery>(w, time, local, global, b, mods, source);
 }
 
-void QWindowSystemInterface::handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
                                               Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
         new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp, QHighDpi::fromNativeLocalPosition(local, w), QHighDpi::fromNativePixels(global, w), b, mods, source);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
@@ -217,11 +267,7 @@ bool QWindowSystemInterface::handleShortcutEvent(QWindow *window, ulong timestam
             QEvent::ShortcutOverride, keyCode, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorepeat, count);
 
         {
-            // FIXME: Template handleWindowSystemEvent to support both sync and async delivery
-            QScopedValueRollback<bool> syncRollback(QWindowSystemInterfacePrivate::synchronousWindowSystemEvents);
-            QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = true;
-
-            if (QWindowSystemInterfacePrivate::handleWindowSystemEvent(shortcutOverrideEvent))
+            if (QWindowSystemInterfacePrivate::handleWindowSystemEvent<SynchronousDelivery>(shortcutOverrideEvent))
                 return false;
         }
     }
@@ -248,13 +294,12 @@ bool QWindowSystemInterface::handleShortcutEvent(QWindow *window, ulong timestam
 #endif
 }
 
-
-bool QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count) {
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    return handleKeyEvent(w, time, t, k, mods, text, autorep, count);
+    return handleKeyEvent<Delivery>(w, time, t, k, mods, text, autorep, count);
 }
 
-bool QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
 #if defined(Q_OS_OSX)
     if (t == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(tlw, timestamp, k, mods, 0, 0, 0, text, autorep, count))
@@ -263,7 +308,7 @@ bool QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEven
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
-    return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    return QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
@@ -394,6 +439,15 @@ void QWindowSystemInterfacePrivate::removeWindowSystemEvent(WindowSystemEvent *e
     windowSystemEventQueue.remove(event);
 }
 
+/*!
+    Posts a window system event to be handled asynchronously by Qt Gui.
+
+    This function posts the event on the window system event queue and wakes the
+    Gui event dispatcher. Qt Gui will then handle the event asynchonously at a
+    later point.
+
+    \sa flushWindowSystemEvents(), processWindowSystemEvent(), handleWindowSystemEvent()
+*/
 void QWindowSystemInterfacePrivate::postWindowSystemEvent(WindowSystemEvent *ev)
 {
     windowSystemEventQueue.append(ev);
@@ -403,37 +457,32 @@ void QWindowSystemInterfacePrivate::postWindowSystemEvent(WindowSystemEvent *ev)
 }
 
 /*!
-    Handles a window system event.
+    Processes a window system event synchronously.
 
-    By default this function posts the event on the window system event queue and
-    wakes the Gui event dispatcher. Qt Gui will then handle the event asynchonously
-    at a later point. The return value is not used in asynchronous mode and will
-    always be true.
+    Qt Gui will process the event immediately. The return value indicates if Qt
+    accepted the event.
 
-    In synchronous mode Qt Gui will process the event immediately. The return value
-    indicates if Qt accepted the event.
+    If the event is delivered from another thread than the Qt main thread the
+    window system event queue is flushed, which may deliver other events as
+    well.
 
-    \sa flushWindowSystemEvents(), setSynchronousWindowSystemEvents()
+    \sa flushWindowSystemEvents(), postWindowSystemEvent(), handleWindowSystemEvent()
 */
-bool QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
+bool QWindowSystemInterfacePrivate::processWindowSystemEvent(WindowSystemEvent *ev)
 {
     bool accepted = true;
-    if (synchronousWindowSystemEvents) {
-        if (QThread::currentThread() == QGuiApplication::instance()->thread()) {
-            // Process the event immediately on the current thread and return the accepted state.
-            QGuiApplicationPrivate::processWindowSystemEvent(ev);
-            accepted = ev->eventAccepted;
-            delete ev;
-        } else {
-            // Post the event on the Qt main thread queue and flush the queue.
-            // This will wake up the Gui thread which will process the event.
-            // Return the accepted state for the last event on the queue,
-            // which is the event posted by this function.
-            postWindowSystemEvent(ev);
-            accepted = QWindowSystemInterface::flushWindowSystemEvents();
-        }
+    if (QThread::currentThread() == QGuiApplication::instance()->thread()) {
+        // Process the event immediately on the current thread and return the accepted state.
+        QGuiApplicationPrivate::processWindowSystemEvent(ev);
+        accepted = ev->eventAccepted;
+        delete ev;
     } else {
+        // Post the event on the Qt main thread queue and flush the queue.
+        // This will wake up the Gui thread which will process the event.
+        // Return the accepted state for the last event on the queue,
+        // which is the event posted by this function.
         postWindowSystemEvent(ev);
+        accepted = QWindowSystemInterface::flushWindowSystemEvents();
     }
     return accepted;
 }
@@ -451,13 +500,6 @@ void QWindowSystemInterface::unregisterTouchDevice(const QTouchDevice *device)
 bool QWindowSystemInterface::isTouchDeviceRegistered(const QTouchDevice *device)
 {
     return QTouchDevicePrivate::isRegistered(device);
-}
-
-void QWindowSystemInterface::handleTouchEvent(QWindow *w, QTouchDevice *device,
-                                              const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
-{
-    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTouchEvent(w, time, device, points, mods);
 }
 
 QList<QTouchEvent::TouchPoint>
@@ -530,7 +572,14 @@ QList<QWindowSystemInterface::TouchPoint>
     return newList;
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *w, QTouchDevice *device,
+                                              const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
+{
+    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleTouchEvent<Delivery>(w, time, device, points, mods);
+}
+
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *tlw, ulong timestamp, QTouchDevice *device,
                                               const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     if (!points.size()) // Touch events must have at least one point
@@ -544,7 +593,7 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTo
 
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, device, touchPoints, mods);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 void QWindowSystemInterface::handleTouchCancelEvent(QWindow *w, QTouchDevice *device,
@@ -634,7 +683,7 @@ bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
         // deferredFlushWindowSystemEvents from the Gui thread.
         QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
         QWindowSystemInterfacePrivate::FlushEventsEvent *e = new QWindowSystemInterfacePrivate::FlushEventsEvent(flags);
-        QWindowSystemInterfacePrivate::postWindowSystemEvent(e);
+        QWindowSystemInterfacePrivate::handleWindowSystemEvent<SynchronousDelivery>(e);
         QWindowSystemInterfacePrivate::eventsFlushed.wait(&QWindowSystemInterfacePrivate::flushEventMutex);
     } else {
         sendWindowSystemEvents(flags);
@@ -872,20 +921,13 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPo
 
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp)
 {
-    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
-    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
     const qreal factor = QHighDpiScaling::factor(w);
-    QWindowSystemInterface::handleMouseEvent(w, timestamp, local * factor,
-                                             global * factor, b, mods);
-    QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
+    QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(w, timestamp, local * factor, global * factor, b, mods);
 }
 
 Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
 {
-    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
-    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
-    QWindowSystemInterface::handleKeyEvent(w, t, k, mods, text, autorep, count);
-    QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
+    QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(w, t, k, mods, text, autorep, count);
 }
 
 Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
@@ -940,11 +982,8 @@ Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
-    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowSystemEvents;
-    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
-    QWindowSystemInterface::handleTouchEvent(w, device,
-                                             QWindowSystemInterfacePrivate::toNativeTouchPoints(points, w), mods);
-    QWindowSystemInterface::setSynchronousWindowSystemEvents(wasSynchronous);
+    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(w, device,
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(points, w), mods);
 }
 
 QWindowSystemEventHandler::~QWindowSystemEventHandler()

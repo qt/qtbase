@@ -15,8 +15,6 @@ HEADERS +=  \
         tools/qbytedata_p.h \
         tools/qcache.h \
         tools/qchar.h \
-        tools/qcommandlineoption.h \
-        tools/qcommandlineparser.h \
         tools/qcollator.h \
         tools/qcollator_p.h \
         tools/qcontainerfwd.h \
@@ -67,9 +65,6 @@ HEADERS +=  \
         tools/qstringmatcher.h \
         tools/qtextboundaryfinder.h \
         tools/qtimeline.h \
-        tools/qtimezone.h \
-        tools/qtimezoneprivate_p.h \
-        tools/qtimezoneprivate_data_p.h \
         tools/qtools_p.h \
         tools/qunicodetables_p.h \
         tools/qunicodetools_p.h \
@@ -85,8 +80,6 @@ SOURCES += \
         tools/qbytearraylist.cpp \
         tools/qbytearraymatcher.cpp \
         tools/qcollator.cpp \
-        tools/qcommandlineoption.cpp \
-        tools/qcommandlineparser.cpp \
         tools/qcryptographichash.cpp \
         tools/qdatetime.cpp \
         tools/qdatetimeparser.cpp \
@@ -116,8 +109,6 @@ SOURCES += \
         tools/qstringlist.cpp \
         tools/qtextboundaryfinder.cpp \
         tools/qtimeline.cpp \
-        tools/qtimezone.cpp \
-        tools/qtimezoneprivate.cpp \
         tools/qunicodetools.cpp \
         tools/qvector.cpp \
         tools/qvsnprintf.cpp \
@@ -128,18 +119,13 @@ msvc: NO_PCH_SOURCES += tools/qvector_msvc.cpp
 false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
 
 !nacl:mac: {
-    OBJECTIVE_SOURCES += tools/qlocale_mac.mm \
-                         tools/qtimezoneprivate_mac.mm \
-}
-else:android {
-    SOURCES += tools/qlocale_unix.cpp tools/qtimezoneprivate_android.cpp
+    SOURCES += tools/qlocale_mac.mm
 }
 else:unix {
-    SOURCES += tools/qlocale_unix.cpp tools/qtimezoneprivate_tz.cpp
+    SOURCES += tools/qlocale_unix.cpp
 }
 else:win32 {
-    SOURCES += tools/qlocale_win.cpp \
-               tools/qtimezoneprivate_win.cpp
+    SOURCES += tools/qlocale_win.cpp
     winphone: LIBS_PRIVATE += -lWindowsPhoneGlobalizationUtil
     winrt-*-msvc2013: LIBS += advapi32.lib
 } else:integrity {
@@ -157,8 +143,7 @@ qtConfig(icu) {
     include($$PWD/../../3rdparty/icu_dependency.pri)
 
     SOURCES += tools/qlocale_icu.cpp \
-               tools/qcollator_icu.cpp \
-               tools/qtimezoneprivate_icu.cpp
+               tools/qcollator_icu.cpp
     DEFINES += QT_USE_ICU
 } else: win32 {
     SOURCES += tools/qcollator_win.cpp
@@ -168,11 +153,40 @@ qtConfig(icu) {
     SOURCES += tools/qcollator_posix.cpp
 }
 
+qtConfig(timezone) {
+    HEADERS += \
+        tools/qtimezone.h \
+        tools/qtimezoneprivate_p.h \
+        tools/qtimezoneprivate_data_p.h
+    SOURCES += \
+        tools/qtimezone.cpp \
+        tools/qtimezoneprivate.cpp
+    !nacl:darwin: \
+        SOURCES += tools/qtimezoneprivate_mac.mm
+    else: android: \
+        SOURCES += tools/qtimezoneprivate_android.cpp
+    else: unix: \
+        SOURCES += tools/qtimezoneprivate_tz.cpp
+    else: win32: \
+        SOURCES += tools/qtimezoneprivate_win.cpp
+    qtConfig(icu): \
+        SOURCES += tools/qtimezoneprivate_icu.cpp
+}
+
 qtConfig(regularexpression) {
     include($$PWD/../../3rdparty/pcre_dependency.pri)
 
     HEADERS += tools/qregularexpression.h
     SOURCES += tools/qregularexpression.cpp
+}
+
+qtConfig(commandlineparser) {
+    HEADERS += \
+        tools/qcommandlineoption.h \
+        tools/qcommandlineparser.h
+    SOURCES += \
+        tools/qcommandlineoption.cpp \
+        tools/qcommandlineparser.cpp
 }
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src

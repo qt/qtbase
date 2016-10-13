@@ -43,6 +43,8 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qshareddata.h>
 
+QT_REQUIRE_CONFIG(commandlineparser);
+
 QT_BEGIN_NAMESPACE
 
 class QCommandLineOptionPrivate;

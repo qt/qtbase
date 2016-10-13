@@ -73,7 +73,7 @@ public:
     QColor(QRgb rgb) Q_DECL_NOTHROW;
     QColor(QRgba64 rgba64) Q_DECL_NOTHROW;
     inline QColor(const QString& name);
-    QColor(const char *aname) : QColor(QLatin1String(aname)) {}
+    inline QColor(const char *aname) : QColor(QLatin1String(aname)) {}
     inline QColor(QLatin1String name);
     QColor(Spec spec) Q_DECL_NOTHROW;
 

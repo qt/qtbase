@@ -80,6 +80,7 @@ int main(int argc, char **argv)
     QPoint pos(100,100);
     QWidget w;
     w.move(pos);
+    w.resize(300, 300);
     w.setWindowTitle("QMacCocoaViewContainer");
     NSRect r = NSMakeRect(0, 0, 100, 100);
     NSView *view = [[TestMouseMovedNSView alloc] initWithFrame: r];

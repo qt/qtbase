@@ -14,7 +14,11 @@ http://creativecommons.org/publicdomain/zero/1.0/
 #ifndef _KeccakPermutationInterface_h_
 #define _KeccakPermutationInterface_h_
 
+#include <private/qglobal_p.h>
+
+#if QT_CONFIG(sha3_fast)
 #include "KeccakF-1600-int-set.h"
+#endif
 
 static void KeccakInitialize( void );
 static void KeccakInitializeState(unsigned char *state);

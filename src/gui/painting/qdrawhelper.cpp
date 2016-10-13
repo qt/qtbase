@@ -603,7 +603,7 @@ static inline void qConvertARGB32PMToARGB64PM_sse2(QRgba64 *buffer, const uint *
         buffer += 2;
     }
 
-    for (; i < count; ++i) {
+    SIMD_EPILOGUE(i, count, 3) {
         uint s = *src++;
         if (RGBA)
             s = RGBA2ARGB(s);
@@ -766,7 +766,7 @@ static inline void qConvertA2RGB30PMToARGB64PM_sse2(QRgba64 *buffer, const uint 
         buffer += 2;
     }
 
-    for (; i < count; ++i)
+    SIMD_EPILOGUE(i, count, 3)
         *buffer++ = qConvertA2rgb30ToRgb64<PixelOrder>(*src++);
 }
 #endif
@@ -1397,7 +1397,7 @@ static inline void qConvertARGB64PMToA2RGB30PM_sse2(uint *dest, const QRgba64 *b
         }
     }
 
-    for (; i < count; ++i)
+    SIMD_EPILOGUE(i, count, 15)
         *dest++ = qConvertRgb64ToRgb30<PixelOrder>(*buffer++);
 }
 #endif
