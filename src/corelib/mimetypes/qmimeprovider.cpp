@@ -706,6 +706,10 @@ QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db)
     initResources();
 }
 
+QMimeXMLProvider::~QMimeXMLProvider()
+{
+}
+
 bool QMimeXMLProvider::isValid()
 {
     return true;

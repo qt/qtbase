@@ -132,6 +132,7 @@ class QMimeXMLProvider : public QMimeProviderBase
 {
 public:
     QMimeXMLProvider(QMimeDatabasePrivate *db);
+    ~QMimeXMLProvider();
 
     virtual bool isValid() Q_DECL_OVERRIDE;
     virtual QMimeType mimeTypeForName(const QString &name) Q_DECL_OVERRIDE;
