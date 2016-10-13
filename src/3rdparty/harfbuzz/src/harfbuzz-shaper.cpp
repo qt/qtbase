@@ -156,12 +156,14 @@ static inline void positionCluster(HB_ShaperItem *item, int gfrom,  int glast)
                 // ### wrong in rtl context!
         case HB_Combining_BelowLeft:
             p.y += offset;
+            // fall through
         case HB_Combining_BelowLeftAttached:
             p.x += attachmentRect.x - markMetrics.x;
             p.y += (attachmentRect.y + attachmentRect.height) - markMetrics.y;
             break;
         case HB_Combining_Below:
             p.y += offset;
+            // fall through
         case HB_Combining_BelowAttached:
             p.x += attachmentRect.x - markMetrics.x;
             p.y += (attachmentRect.y + attachmentRect.height) - markMetrics.y;
@@ -170,28 +172,33 @@ static inline void positionCluster(HB_ShaperItem *item, int gfrom,  int glast)
             break;
         case HB_Combining_BelowRight:
             p.y += offset;
+            // fall through
         case HB_Combining_BelowRightAttached:
             p.x += attachmentRect.x + attachmentRect.width - markMetrics.width - markMetrics.x;
             p.y += attachmentRect.y + attachmentRect.height - markMetrics.y;
             break;
         case HB_Combining_Left:
             p.x -= offset;
+            // fall through
         case HB_Combining_LeftAttached:
             break;
         case HB_Combining_Right:
             p.x += offset;
+            // fall through
         case HB_Combining_RightAttached:
             break;
         case HB_Combining_DoubleAbove:
             // ### wrong in RTL context!
         case HB_Combining_AboveLeft:
             p.y -= offset;
+            // fall through
         case HB_Combining_AboveLeftAttached:
             p.x += attachmentRect.x - markMetrics.x;
             p.y += attachmentRect.y - markMetrics.y - markMetrics.height;
             break;
         case HB_Combining_Above:
             p.y -= offset;
+            // fall through
         case HB_Combining_AboveAttached:
             p.x += attachmentRect.x - markMetrics.x;
             p.y += attachmentRect.y - markMetrics.y - markMetrics.height;
@@ -200,6 +207,7 @@ static inline void positionCluster(HB_ShaperItem *item, int gfrom,  int glast)
             break;
         case HB_Combining_AboveRight:
             p.y -= offset;
+            // fall through
         case HB_Combining_AboveRightAttached:
             p.x += attachmentRect.x + attachmentRect.width - markMetrics.x - markMetrics.width;
             p.y += attachmentRect.y - markMetrics.y - markMetrics.height;

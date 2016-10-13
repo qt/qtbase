@@ -213,10 +213,9 @@ QString QCalendarDayValidator::text(const QDate &date, int repeat) const
         return formatNumber(date.day(), 2);
     } else if (repeat == 3) {
         return m_locale.dayName(date.dayOfWeek(), QLocale::ShortFormat);
-    } else if (repeat >= 4) {
+    } else /* repeat >= 4 */ {
         return m_locale.dayName(date.dayOfWeek(), QLocale::LongFormat);
     }
-    return QString();
 }
 
 //////////////////////////////////
@@ -3030,6 +3029,7 @@ bool QCalendarWidget::event(QEvent *event)
     switch (event->type()) {
         case QEvent::LayoutDirectionChange:
             d->updateButtonIcons();
+            break;
         case QEvent::LocaleChange:
             d->m_model->setFirstColumnDay(locale().firstDayOfWeek());
             d->cachedSizeHint = QSize();

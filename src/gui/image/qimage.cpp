@@ -5026,7 +5026,7 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                      /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
                      /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
                      /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
-                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedByte,
                      /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
         //QImage::Format_RGB444:
          QPixelFormat(QPixelFormat::RGB,

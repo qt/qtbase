@@ -1080,8 +1080,8 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             painter->setPen(innerLine);
             painter->drawRoundedRect(option->rect.adjusted(1, 1, -2, -2), 1, 1);
             painter->restore();
-            return;
         }
+        break;
     case CE_SizeGrip:
         painter->save();
     {
