@@ -49,15 +49,10 @@
     QCocoaWindow *m_cocoaWindow;
 }
 
-- (id)initWithQCocoaWindow: (QCocoaWindow *) cocoaWindow;
+- (id)initWithQCocoaWindow:(QCocoaWindow *)cocoaWindow;
 
-- (void)windowDidBecomeKey:(NSNotification *)notification;
-- (void)windowDidResize:(NSNotification *)notification;
-- (void)windowDidMove:(NSNotification *)notification;
-- (void)windowWillMove:(NSNotification *)notification;
 - (BOOL)windowShouldClose:(NSNotification *)notification;
 - (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame;
-- (void)windowWillClose:(NSNotification *)notification;
 
 @end
 

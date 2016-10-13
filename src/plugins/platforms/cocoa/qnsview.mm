@@ -281,22 +281,6 @@ static bool _q_dontOverrideCtrlLMB = false;
     m_backingStore = Q_NULLPTR;
 }
 
-- (void)viewWillMoveToWindow:(NSWindow *)newWindow
-{
-    // ### Merge "normal" window code path with this one for 5.1.
-    if (!(m_platformWindow->window()->type() & Qt::SubWindow))
-        return;
-
-    if (newWindow) {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                              selector:@selector(windowNotification:)
-                                              name:nil // Get all notifications
-                                              object:newWindow];
-    }
-    if ([self window])
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:[self window]];
-}
-
 - (QWindow *)topLevelWindow
 {
     QWindow *focusWindow = m_platformWindow->window();
@@ -393,64 +377,6 @@ static bool _q_dontOverrideCtrlLMB = false;
     // but the event we just sent may be asynchronous.
     QWindowSystemInterface::flushWindowSystemEvents();
     m_platformWindow->setSynchedWindowStateFromWindow();
-}
-
-- (void)windowNotification : (NSNotification *) windowNotification
-{
-    //qDebug() << "windowNotification" << QString::fromNSString([windowNotification name]);
-
-    NSString *notificationName = [windowNotification name];
-    if (notificationName == NSWindowDidBecomeKeyNotification) {
-        if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
-            QWindowSystemInterface::handleWindowActivated(m_platformWindow->window());
-    } else if (notificationName == NSWindowDidResignKeyNotification) {
-        // key window will be non-nil if another window became key... do not
-        // set the active window to zero here, the new key window's
-        // NSWindowDidBecomeKeyNotification hander will change the active window
-        NSWindow *keyWindow = [NSApp keyWindow];
-        if (!keyWindow || keyWindow == windowNotification.object) {
-            // no new key window, go ahead and set the active window to zero
-            if (!m_platformWindow->windowIsPopupType() && !m_isMenuView)
-                QWindowSystemInterface::handleWindowActivated(0);
-        }
-    } else if (notificationName == NSWindowDidMiniaturizeNotification
-               || notificationName == NSWindowDidDeminiaturizeNotification) {
-        Qt::WindowState newState = notificationName == NSWindowDidMiniaturizeNotification ?
-                    Qt::WindowMinimized : Qt::WindowNoState;
-        [self notifyWindowStateChanged:newState];
-    } else if ([notificationName isEqualToString: @"NSWindowDidOrderOffScreenNotification"]) {
-        m_platformWindow->obscureWindow();
-    } else if ([notificationName isEqualToString: @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification"]) {
-        m_platformWindow->exposeWindow();
-    } else if ([notificationName isEqualToString:NSWindowDidChangeOcclusionStateNotification]) {
-        // Several unit tests expect paint and/or expose events for windows that are
-        // sometimes (unpredictably) occluded and some unit tests depend on QWindow::isExposed -
-        // don't send Expose/Obscure events when running under QTestLib.
-        static const bool onTestLib = qt_mac_resolveOption(false, "QT_QTESTLIB_RUNNING");
-        if (!onTestLib) {
-            if ((NSUInteger)[self.window occlusionState] & NSWindowOcclusionStateVisible) {
-                m_platformWindow->exposeWindow();
-            } else {
-                // Send Obscure events on window occlusion to stop animations.
-                m_platformWindow->obscureWindow();
-            }
-        }
-    } else if (notificationName == NSWindowDidChangeScreenNotification) {
-        if (m_platformWindow->window()) {
-            NSUInteger screenIndex = [[NSScreen screens] indexOfObject:self.window.screen];
-            if (screenIndex != NSNotFound) {
-                QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenAtIndex(screenIndex);
-                if (cocoaScreen)
-                    QWindowSystemInterface::handleWindowScreenChanged(m_platformWindow->window(), cocoaScreen->screen());
-                m_platformWindow->updateExposedGeometry();
-            }
-        }
-    } else if (notificationName == NSWindowDidEnterFullScreenNotification
-               || notificationName == NSWindowDidExitFullScreenNotification) {
-        Qt::WindowState newState = notificationName == NSWindowDidEnterFullScreenNotification ?
-                                   Qt::WindowFullScreen : Qt::WindowNoState;
-        [self notifyWindowStateChanged:newState];
-    }
 }
 
 - (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification
@@ -2216,6 +2142,20 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
     QWindowSystemInterface::handleMouseEvent(target, mapWindowCoordinates(m_platformWindow->window(), target, qtWindowPoint), qtScreenPoint, m_buttons);
+}
+
+@end
+
+@implementation QT_MANGLE_NAMESPACE(QNSView) (QtExtras)
+
+- (QCocoaWindow*)platformWindow
+{
+    return m_platformWindow.data();;
+}
+
+- (BOOL)isMenuView
+{
+    return m_isMenuView;
 }
 
 @end

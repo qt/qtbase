@@ -343,6 +343,49 @@ static void qt_closePopups()
 
 @end
 
+static void qRegisterNotificationCallbacks()
+{
+    static const QLatin1String notificationHandlerPrefix(Q_NOTIFICATION_PREFIX);
+
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+    const QMetaObject *metaObject = QMetaType::metaObjectForType(qRegisterMetaType<QCocoaWindow*>());
+    Q_ASSERT(metaObject);
+
+    for (int i = 0; i < metaObject->methodCount(); ++i) {
+        QMetaMethod method = metaObject->method(i);
+        const QString methodTag = QString::fromLatin1(method.tag());
+        if (!methodTag.startsWith(notificationHandlerPrefix))
+            continue;
+
+        const QString notificationName = methodTag.mid(notificationHandlerPrefix.size());
+        [center addObserverForName:notificationName.toNSString() object:nil queue:nil
+            usingBlock:^(NSNotification *notification) {
+
+            NSWindow *window = notification.object;
+
+            // Only top level NSWindows should notify their QNSViews
+            if (window.parentWindow)
+                return;
+
+            QCocoaWindow *cocoaWindow = nullptr;
+            if (QNSView *view = qnsview_cast(window.contentView))
+                cocoaWindow = view.platformWindow;
+
+            // FIXME: Could be a foreign window, look up by iterating top level QWindows
+
+            if (!cocoaWindow)
+                return;
+
+            if (!method.invoke(cocoaWindow, Qt::DirectConnection)) {
+                qCWarning(lcQpaCocoaWindow) << "Failed to invoke NSNotification callback for"
+                    << notification.name << "on" << cocoaWindow;
+            }
+        }];
+    }
+}
+Q_CONSTRUCTOR_FUNCTION(qRegisterNotificationCallbacks)
+
 const int QCocoaWindow::NoAlertRequest = -1;
 
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
@@ -1180,6 +1223,8 @@ void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
     m_nsWindow = 0;
 }
 
+// ----------------------- NSWindow notifications -----------------------
+
 void QCocoaWindow::windowWillMove()
 {
     // Close any open popups on window move
@@ -1214,6 +1259,108 @@ void QCocoaWindow::windowDidEndLiveResize()
     }
 }
 
+void QCocoaWindow::windowDidBecomeKey()
+{
+    if (window()->type() == Qt::ForeignWindow)
+        return;
+
+    if (m_windowUnderMouse) {
+        QPointF windowPoint;
+        QPointF screenPoint;
+        [qnsview_cast(m_view) convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+        QWindowSystemInterface::handleEnterEvent(m_enterLeaveTargetWindow, windowPoint, screenPoint);
+    }
+
+    if (!windowIsPopupType() && !qnsview_cast(m_view).isMenuView)
+        QWindowSystemInterface::handleWindowActivated(window());
+}
+
+void QCocoaWindow::windowDidResignKey()
+{
+    if (window()->type() == Qt::ForeignWindow)
+        return;
+
+    // Key window will be non-nil if another window became key, so do not
+    // set the active window to zero here -- the new key window's
+    // NSWindowDidBecomeKeyNotification hander will change the active window.
+    NSWindow *keyWindow = [NSApp keyWindow];
+    if (!keyWindow || keyWindow == m_view.window) {
+        // No new key window, go ahead and set the active window to zero
+        if (!windowIsPopupType() && !qnsview_cast(m_view).isMenuView)
+            QWindowSystemInterface::handleWindowActivated(0);
+    }
+}
+
+void QCocoaWindow::windowDidMiniaturize()
+{
+    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowMinimized];
+}
+
+void QCocoaWindow::windowDidDeminiaturize()
+{
+    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowNoState];
+}
+
+void QCocoaWindow::windowDidEnterFullScreen()
+{
+    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowFullScreen];
+}
+
+void QCocoaWindow::windowDidExitFullScreen()
+{
+    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowNoState];
+}
+
+void QCocoaWindow::windowDidOrderOffScreen()
+{
+    obscureWindow();
+}
+
+void QCocoaWindow::windowDidOrderOnScreen()
+{
+    exposeWindow();
+}
+
+void QCocoaWindow::windowDidChangeOcclusionState()
+{
+    // Several unit tests expect paint and/or expose events for windows that are
+    // sometimes (unpredictably) occluded and some unit tests depend on QWindow::isExposed.
+    // Don't send Expose/Obscure events when running under QTestLib.
+    static const bool onTestLib = qt_mac_resolveOption(false, "QT_QTESTLIB_RUNNING");
+    if (!onTestLib) {
+        if ((NSUInteger)[m_view.window occlusionState] & NSWindowOcclusionStateVisible) {
+            exposeWindow();
+        } else {
+            // Send Obscure events on window occlusion to stop animations.
+            obscureWindow();
+        }
+    }
+}
+
+void QCocoaWindow::windowDidChangeScreen()
+{
+    if (!window())
+        return;
+
+    NSUInteger screenIndex = [[NSScreen screens] indexOfObject:m_view.window.screen];
+    if (screenIndex == NSNotFound)
+        return;
+
+    if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenAtIndex(screenIndex))
+        QWindowSystemInterface::handleWindowScreenChanged(window(), cocoaScreen->screen());
+
+    updateExposedGeometry();
+}
+
+void QCocoaWindow::windowWillClose()
+{
+    // Close any open popups on window closing.
+    if (window() && !windowIsPopupType(window()->type()))
+        qt_closePopups();
+}
+
+// ----------------------- NSWindowDelegate callbacks -----------------------
+
 bool QCocoaWindow::windowShouldClose()
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::windowShouldClose" << window();
@@ -1227,12 +1374,7 @@ bool QCocoaWindow::windowShouldClose()
     return accepted;
 }
 
-void QCocoaWindow::windowWillClose()
-{
-    // Close any open popups on window closing.
-    if (window() && !windowIsPopupType(window()->type()))
-        qt_closePopups();
-}
+// --------------------------------------------------------------------------
 
 void QCocoaWindow::setSynchedWindowStateFromWindow()
 {
@@ -1287,11 +1429,6 @@ void QCocoaWindow::recreateWindow()
 
     bool usesNSPanel = [m_nsWindow isKindOfClass:[QNSPanel class]];
 
-    // No child QNSWindow should notify its QNSView
-    if (m_nsWindow && (window()->type() != Qt::ForeignWindow) && m_parentCocoaWindow && !oldParentCocoaWindow)
-        [[NSNotificationCenter defaultCenter] removeObserver:m_view
-                                              name:nil object:m_nsWindow];
-
     // Remove current window (if any)
     if ((m_nsWindow && !needsNSWindow) || (usesNSPanel != shouldUseNSPanel())) {
         [m_nsWindow closeAndRelease];
@@ -1304,14 +1441,6 @@ void QCocoaWindow::recreateWindow()
         bool noPreviousWindow = m_nsWindow == 0;
         if (noPreviousWindow)
             m_nsWindow = createNSWindow();
-
-        // Only non-child QNSWindows should notify their QNSViews
-        // (but don't register more than once).
-        if ((window()->type() != Qt::ForeignWindow) && (noPreviousWindow || (wasNSWindowChild && !m_isNSWindowChild)))
-            [[NSNotificationCenter defaultCenter] addObserver:m_view
-                                                  selector:@selector(windowNotification:)
-                                                  name:nil // Get all notifications
-                                                  object:m_nsWindow];
 
         if (oldParentCocoaWindow) {
             if (!m_isNSWindowChild || oldParentCocoaWindow != m_parentCocoaWindow)

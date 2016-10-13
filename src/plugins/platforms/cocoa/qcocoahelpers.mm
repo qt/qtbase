@@ -160,10 +160,8 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
 */
 QNSView *qnsview_cast(NSView *view)
 {
-    if (![view isKindOfClass:[QNSView class]]) {
-        qCWarning(lcQpaCocoaWindow) << "NSView is not QNSView, consider checking for Qt::ForeignWindow";
+    if (![view isKindOfClass:[QNSView class]])
         return nil;
-    }
 
     return static_cast<QNSView *>(view);
 }

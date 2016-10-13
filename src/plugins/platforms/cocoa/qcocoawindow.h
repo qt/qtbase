@@ -141,6 +141,13 @@ QT_BEGIN_NAMESPACE
 // See the qt_on_cocoa manual tests for a working example, located
 // in tests/manual/cocoa at the time of writing.
 
+#ifdef Q_MOC_RUN
+#define Q_NOTIFICATION_HANDLER(notification) Q_INVOKABLE Q_COCOA_NOTIFICATION_##notification
+#else
+#define Q_NOTIFICATION_HANDLER(notification)
+#define Q_NOTIFICATION_PREFIX QT_STRINGIFY2(Q_COCOA_NOTIFICATION_)
+#endif
+
 class QCocoaMenuBar;
 
 class QCocoaWindow : public QObject, public QPlatformWindow
@@ -187,12 +194,23 @@ public:
 
     void setEmbeddedInForeignView(bool subwindow);
 
-    void windowWillMove();
-    void windowDidMove();
-    void windowDidResize();
-    void windowDidEndLiveResize();
+    Q_NOTIFICATION_HANDLER(NSWindowWillMoveNotification) void windowWillMove();
+    Q_NOTIFICATION_HANDLER(NSWindowDidMoveNotification) void windowDidMove();
+    Q_NOTIFICATION_HANDLER(NSWindowDidResizeNotification) void windowDidResize();
+    Q_NOTIFICATION_HANDLER(NSWindowDidEndLiveResizeNotification) void windowDidEndLiveResize();
+    Q_NOTIFICATION_HANDLER(NSWindowDidBecomeKeyNotification) void windowDidBecomeKey();
+    Q_NOTIFICATION_HANDLER(NSWindowDidResignKeyNotification) void windowDidResignKey();
+    Q_NOTIFICATION_HANDLER(NSWindowDidMiniaturizeNotification) void windowDidMiniaturize();
+    Q_NOTIFICATION_HANDLER(NSWindowDidDeminiaturizeNotification) void windowDidDeminiaturize();
+    Q_NOTIFICATION_HANDLER(NSWindowDidEnterFullScreenNotification) void windowDidEnterFullScreen();
+    Q_NOTIFICATION_HANDLER(NSWindowDidExitFullScreenNotification) void windowDidExitFullScreen();
+    Q_NOTIFICATION_HANDLER(NSWindowDidOrderOffScreenNotification) void windowDidOrderOffScreen();
+    Q_NOTIFICATION_HANDLER(NSWindowDidOrderOnScreenAndFinishAnimatingNotification) void windowDidOrderOnScreen();
+    Q_NOTIFICATION_HANDLER(NSWindowDidChangeOcclusionStateNotification) void windowDidChangeOcclusionState();
+    Q_NOTIFICATION_HANDLER(NSWindowDidChangeScreenNotification) void windowDidChangeScreen();
+    Q_NOTIFICATION_HANDLER(NSWindowWillCloseNotification) void windowWillClose();
+
     bool windowShouldClose();
-    void windowWillClose();
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
 
     void setSynchedWindowStateFromWindow();

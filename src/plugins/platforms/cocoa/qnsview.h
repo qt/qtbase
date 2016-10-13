@@ -102,7 +102,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)drawBackingStoreUsingCoreGraphics:(NSRect)dirtyRect;
 - (void)updateGeometry;
 - (void)notifyWindowStateChanged:(Qt::WindowState)newState;
-- (void)windowNotification : (NSNotification *) windowNotification;
 - (void)notifyWindowWillZoom:(BOOL)willZoom;
 - (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification;
 - (void)viewDidHide;
@@ -151,6 +150,11 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)registerDragTypes;
 - (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender;
 
+@end
+
+@interface QT_MANGLE_NAMESPACE(QNSView) (QtExtras)
+@property (nonatomic, readonly) QCocoaWindow *platformWindow;
+@property (nonatomic, readonly) BOOL isMenuView;
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSView);
