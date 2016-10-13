@@ -2596,6 +2596,10 @@
         \li Specifies device capabilities to add to the capability list
             (location, webcam, and so on).
     \row
+        \li CONFIG
+        \li Specifies additional flags for processing the input manifest file.
+            Currently, \c{verbatim} is the only available option.
+    \row
         \li default_language
         \li The default language code of the application. Defaults to "en".
     \row
@@ -2725,6 +2729,14 @@
 
     \code
     WINRT_MANIFEST = someManifest.xml.in
+    \endcode
+
+    In case the input manifest file should not be processed and only copied to
+    the target directory, the verbatim configuration needs to be set.
+
+    \code
+    WINRT_MANIFEST = someManifest.xml.in
+    WINRT_MANIFEST.CONFIG += verbatim
     \endcode
 
     \note The required image sizes of \e logo_small, \e logo_medium, and \e logo_large
