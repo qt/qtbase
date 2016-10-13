@@ -1062,6 +1062,7 @@ void tst_QVariant::toByteArray_data()
 
     QTest::newRow( "longlong" ) << QVariant( (qlonglong)34 ) << QByteArray( "34" );
     QTest::newRow( "ulonglong" ) << QVariant( (qulonglong)34 ) << QByteArray( "34" );
+    QTest::newRow( "nullptr" ) << QVariant::fromValue(nullptr) << QByteArray();
 }
 
 void tst_QVariant::toByteArray()
@@ -1071,7 +1072,13 @@ void tst_QVariant::toByteArray()
     QVERIFY( value.isValid() );
     QVERIFY( value.canConvert( QVariant::ByteArray ) );
     QByteArray ba = value.toByteArray();
+    QCOMPARE( ba.isNull(), result.isNull() );
     QCOMPARE( ba, result );
+
+    QVERIFY( value.convert( QVariant::ByteArray ) );
+    QCOMPARE( value.isNull(), result.isNull() );
+    QCOMPARE( value.toByteArray().isNull(), result.isNull() );
+    QCOMPARE( value.toByteArray(), result );
 }
 
 void tst_QVariant::toString_data()
@@ -1098,6 +1105,7 @@ void tst_QVariant::toString_data()
         QString( "123456789012" );
     QTest::newRow("QJsonValue") << QVariant(QJsonValue(QString("hello"))) << QString("hello");
     QTest::newRow("QJsonValue(Null)") << QVariant(QJsonValue(QJsonValue::Null)) << QString();
+    QTest::newRow("nullptr") << QVariant::fromValue(nullptr) << QString();
 }
 
 void tst_QVariant::toString()
@@ -1107,7 +1115,13 @@ void tst_QVariant::toString()
     QVERIFY( value.isValid() );
     QVERIFY( value.canConvert( QVariant::String ) );
     QString str = value.toString();
+    QCOMPARE( str.isNull(), result.isNull() );
     QCOMPARE( str, result );
+
+    QVERIFY( value.convert( QVariant::String ) );
+    QCOMPARE( value.isNull(), result.isNull() );
+    QCOMPARE( value.toString().isNull(), result.isNull() );
+    QCOMPARE( value.toString(), result );
 }
 
 void tst_QVariant::toDate_data()

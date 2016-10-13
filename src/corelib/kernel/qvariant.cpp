@@ -470,6 +470,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::Uuid:
             *str = v_cast<QUuid>(d)->toString();
             break;
+        case QMetaType::Nullptr:
+            *str = QString();
+            break;
         default:
 #ifndef QT_NO_QOBJECT
             {
@@ -651,6 +654,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             break;
         case QVariant::Uuid:
             *ba = v_cast<QUuid>(d)->toByteArray();
+            break;
+        case QMetaType::Nullptr:
+            *ba = QByteArray();
             break;
         default:
 #ifndef QT_NO_QOBJECT
@@ -3278,11 +3284,11 @@ bool QVariant::canConvert(int targetTypeId) const
         case QVariant::Bitmap:
             return currentType == QVariant::Pixmap || currentType == QVariant::Image;
         case QVariant::ByteArray:
-            return currentType == QVariant::Color
+            return currentType == QVariant::Color || currentType == QMetaType::Nullptr
                               || ((QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration) && QMetaType::metaObjectForType(currentType));
         case QVariant::String:
             return currentType == QVariant::KeySequence || currentType == QVariant::Font
-                              || currentType == QVariant::Color
+                              || currentType == QVariant::Color || currentType == QMetaType::Nullptr
                               || ((QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration) && QMetaType::metaObjectForType(currentType));
         case QVariant::KeySequence:
             return currentType == QVariant::String || currentType == QVariant::Int;
