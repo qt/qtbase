@@ -93,42 +93,31 @@ typedef signed int OSStatus;
 typedef signed long OSStatus;
 #endif
 
+typedef struct OpaqueEventHandlerCallRef * EventHandlerCallRef;
+typedef struct OpaqueEventRef * EventRef;
+typedef struct OpaqueMenuRef * MenuRef;
+typedef struct OpaquePasteboardRef* PasteboardRef;
+typedef struct OpaqueRgnHandle * RgnHandle;
+typedef const struct __HIShape *HIShapeRef;
+typedef struct __HIShape *HIMutableShapeRef;
+typedef struct CGRect CGRect;
+typedef struct CGImage *CGImageRef;
+typedef struct CGContext *CGContextRef;
+typedef struct GDevice * GDPtr;
+typedef GDPtr * GDHandle;
+typedef struct OpaqueIconRef * IconRef;
+
 #ifdef __OBJC__
-#    ifdef slots
-#      define old_slots slots
-#      undef slots
-#    endif
-#include <AppKit/AppKit.h>
-#    ifdef old_slots
-#      undef slots
-#      define slots
-#      undef old_slots
-#    endif
+typedef NSWindow* OSWindowRef;
+typedef NSView *OSViewRef;
+typedef NSMenu *OSMenuRef;
+typedef NSEvent *OSEventRef;
+#else
+typedef void *OSWindowRef;
+typedef void *OSViewRef;
+typedef void *OSMenuRef;
+typedef void *OSEventRef;
 #endif
-    typedef struct OpaqueEventHandlerCallRef * EventHandlerCallRef;
-    typedef struct OpaqueEventRef * EventRef;
-    typedef struct OpaqueMenuRef * MenuRef;
-    typedef struct OpaquePasteboardRef* PasteboardRef;
-    typedef struct OpaqueRgnHandle * RgnHandle;
-    typedef const struct __HIShape *HIShapeRef;
-    typedef struct __HIShape *HIMutableShapeRef;
-    typedef struct CGRect CGRect;
-    typedef struct CGImage *CGImageRef;
-    typedef struct CGContext *CGContextRef;
-    typedef struct GDevice * GDPtr;
-    typedef GDPtr * GDHandle;
-    typedef struct OpaqueIconRef * IconRef;
-#   ifdef __OBJC__
-        typedef NSWindow* OSWindowRef;
-        typedef NSView *OSViewRef;
-        typedef NSMenu *OSMenuRef;
-        typedef NSEvent *OSEventRef;
-#   else
-        typedef void *OSWindowRef;
-        typedef void *OSViewRef;
-        typedef void *OSMenuRef;
-        typedef void *OSEventRef;
-#   endif
 
 typedef PasteboardRef OSPasteboardRef;
 typedef struct AEDesc AEDescList;

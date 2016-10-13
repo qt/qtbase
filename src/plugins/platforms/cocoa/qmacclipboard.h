@@ -43,8 +43,6 @@
 #include <QtGui>
 #include <QtPlatformSupport/private/qmacmime_p.h>
 
-#undef slots
-
 #import <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE

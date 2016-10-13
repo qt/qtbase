@@ -51,12 +51,12 @@
 // We mean it.
 //
 
-#include "qmacdefines_mac.h"
-
 #ifdef __OBJC__
 #include <AppKit/AppKit.h>
 #include <objc/runtime.h>
 #endif
+
+#include "qmacdefines_mac.h"
 
 #include <CoreServices/CoreServices.h>
 
