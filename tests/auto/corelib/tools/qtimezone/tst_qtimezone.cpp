@@ -740,7 +740,7 @@ void tst_QTimeZone::icuTest()
 
 void tst_QTimeZone::tzTest()
 {
-#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX && !defined Q_OS_MAC
+#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX && !defined Q_OS_DARWIN
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
@@ -903,12 +903,12 @@ void tst_QTimeZone::tzTest()
         QDateTime dt(QDate(2016, 3, 28), QTime(0, 0, 0), Qt::UTC);
         QCOMPARE(tzBarnaul.data(dt.toMSecsSinceEpoch()).abbreviation, QString("+07"));
     }
-#endif // Q_OS_UNIX
+#endif // QT_BUILD_INTERNAL && Q_OS_UNIX && !Q_OS_DARWIN
 }
 
 void tst_QTimeZone::macTest()
 {
-#if defined(QT_BUILD_INTERNAL) && defined (Q_OS_MAC)
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_DARWIN)
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
@@ -955,7 +955,7 @@ void tst_QTimeZone::macTest()
     }
 
     testCetPrivate(tzp);
-#endif // Q_OS_MAC
+#endif // QT_BUILD_INTERNAL && Q_OS_DARWIN
 }
 
 void tst_QTimeZone::darwinTypes()
