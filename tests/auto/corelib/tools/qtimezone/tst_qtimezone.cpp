@@ -59,7 +59,7 @@ private slots:
     void winTest();
 
 private:
-    void printTimeZone(const QTimeZone tz);
+    void printTimeZone(const QTimeZone &tz);
 #ifdef QT_BUILD_INTERNAL
     void testCetPrivate(const QTimeZonePrivate &tzp);
 #endif // QT_BUILD_INTERNAL
@@ -72,7 +72,7 @@ tst_QTimeZone::tst_QTimeZone()
 {
 }
 
-void tst_QTimeZone::printTimeZone(const QTimeZone tz)
+void tst_QTimeZone::printTimeZone(const QTimeZone &tz)
 {
     QDateTime now = QDateTime::currentDateTime();
     QDateTime jan = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC);
