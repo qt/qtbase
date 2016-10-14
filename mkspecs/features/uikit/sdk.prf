@@ -1,12 +1,4 @@
 
-# In case the user sets the SDK manually
-contains(QMAKE_MAC_SDK, ^$${simulator.sdk}.*) {
-    !isEmpty(QT_VERSION):qtConfig(simulator_and_device): \
-        error("Simulator is handled automatically for simulator_and_device")
-
-    CONFIG += simulator $${simulator.sdk}
-}
-
 build_pass:simulator: \
     QMAKE_MAC_SDK ~= s,^$${device.sdk},$${simulator.sdk},
 
