@@ -135,6 +135,7 @@ private slots:
 
     void setPlainText();
     void toPlainText();
+    void toRawText();
 
     void deleteTextObjectsOnClear();
 
@@ -2395,6 +2396,16 @@ void tst_QTextDocument::toPlainText()
     doc->setHtml("Hello&nbsp;World");
     QCOMPARE(doc->toPlainText(), QLatin1String("Hello World"));
 }
+
+void tst_QTextDocument::toRawText()
+{
+    doc->setHtml("&nbsp;");
+
+    QString rawText = doc->toRawText();
+    QCOMPARE(rawText.size(), 1);
+    QCOMPARE(rawText.at(0).unicode(), ushort(QChar::Nbsp));
+}
+
 
 void tst_QTextDocument::deleteTextObjectsOnClear()
 {

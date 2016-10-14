@@ -151,6 +151,7 @@ public:
     void setHtml(const QString &html);
 #endif
 
+    QString toRawText() const;
     QString toPlainText() const;
     void setPlainText(const QString &text);
 
