@@ -201,8 +201,8 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
         else
             m_depth = 24;
 
-        if (deviceIdentifier.contains(QRegularExpression("^iPhone(7,1|8,2)$"))) {
-            // iPhone 6 Plus or iPhone 6S Plus
+        if (deviceIdentifier.contains(QRegularExpression("^iPhone(7,1|8,2|9,2|9,4)$"))) {
+            // iPhone Plus models
             m_physicalDpi = 401;
         } else if (deviceIdentifier.contains(QRegularExpression("^iPad(1,1|2,[1-4]|3,[1-6]|4,[1-3]|5,[3-4]|6,[7-8])$"))) {
             // All iPads except the iPad Mini series
