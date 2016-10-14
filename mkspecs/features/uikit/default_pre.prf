@@ -1,6 +1,4 @@
 
-load(default_pre)
-
 !isEmpty(QT_VERSION) {
     qtConfig(simulator_and_device)|contains(QMAKE_MAC_SDK, ^$${device.sdk}.*): \
         CONFIG += device $${device.sdk}
@@ -16,6 +14,8 @@ load(default_pre)
         DEFINES += QT_COMPILER_SUPPORTS_SSE2
     }
 }
+
+load(default_pre)
 
 # Check for supported Xcode versions
 lessThan(QMAKE_XCODE_VERSION, "4.3"): \
