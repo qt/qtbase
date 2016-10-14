@@ -80,11 +80,12 @@ inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePla
 */
 NSMenu *QMenu::toNSMenu()
 {
+    Q_D(QMenu);
     // Call into the cocoa platform plugin: qMenuToNSMenu(platformMenu())
     QPlatformNativeInterface::NativeResourceForIntegrationFunction function = resolvePlatformFunction("qmenutonsmenu");
     if (function) {
         typedef void* (*QMenuToNSMenuFunction)(QPlatformMenu *platformMenu);
-        return reinterpret_cast<NSMenu *>(reinterpret_cast<QMenuToNSMenuFunction>(function)(platformMenu()));
+        return reinterpret_cast<NSMenu *>(reinterpret_cast<QMenuToNSMenuFunction>(function)(d->createPlatformMenu()));
     }
     return nil;
 }
@@ -98,11 +99,12 @@ NSMenu *QMenu::toNSMenu()
 */
 void QMenu::setAsDockMenu()
 {
+    Q_D(QMenu);
     // Call into the cocoa platform plugin: setDockMenu(platformMenu())
     QPlatformNativeInterface::NativeResourceForIntegrationFunction function = resolvePlatformFunction("setdockmenu");
     if (function) {
         typedef void (*SetDockMenuFunction)(QPlatformMenu *platformMenu);
-        reinterpret_cast<SetDockMenuFunction>(function)(platformMenu());
+        reinterpret_cast<SetDockMenuFunction>(function)(d->createPlatformMenu());
     }
 }
 

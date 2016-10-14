@@ -131,6 +131,8 @@ private slots:
     void cornerWidgets();
     void taskQTBUG53205_crashReparentNested();
 
+    void platformMenu();
+
 protected slots:
     void onSimpleActivated( QAction*);
     void onComplexActionTriggered();
@@ -1485,6 +1487,25 @@ void tst_QMenuBar::taskQTBUG53205_crashReparentNested()
     windowedParent.reset(); //make the old window invalid
     // trigger the aciton,  reset the menu bar's window, this used to crash here.
     testMenus.actions[0]->trigger();
+}
+
+// QTBUG-56526
+void tst_QMenuBar::platformMenu()
+{
+    QMenuBar menuBar;
+    QPlatformMenuBar *platformMenuBar = menuBar.platformMenuBar();
+    if (!platformMenuBar)
+        QSKIP("No platform menubar implementation available on this platform.");
+
+    // QMenu must not create a platform menu instance at creation time, because
+    // on Unity the type of the platform menu instance must be different (QGtk3Menu
+    // vs. QDbusPlatformMenu) depending on whether the menu is in the global menubar
+    // or a standalone context menu.
+    QMenu *menu = new QMenu(&menuBar);
+    QVERIFY(!menu->platformMenu());
+
+    menuBar.addMenu(menu);
+    QVERIFY(menu->platformMenu());
 }
 
 void tst_QMenuBar::slotForTaskQTBUG53205()

@@ -286,6 +286,7 @@ public:
             delete platformMenu.data();
     }
     void init();
+    QPlatformMenu *createPlatformMenu();
     void setPlatformMenu(QPlatformMenu *menu);
     void syncPlatformMenu();
 #ifdef Q_OS_OSX

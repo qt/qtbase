@@ -153,10 +153,17 @@ void QMenuPrivate::init()
         scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
 
-    setPlatformMenu(QGuiApplicationPrivate::platformTheme()->createPlatformMenu());
     sloppyState.initialize(q);
     delayState.initialize(q);
     mousePopupDelay = q->style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, q);
+}
+
+QPlatformMenu *QMenuPrivate::createPlatformMenu()
+{
+    Q_Q(QMenu);
+    if (platformMenu.isNull())
+        q->setPlatformMenu(QGuiApplicationPrivate::platformTheme()->createPlatformMenu());
+    return platformMenu.data();
 }
 
 void QMenuPrivate::setPlatformMenu(QPlatformMenu *menu)
