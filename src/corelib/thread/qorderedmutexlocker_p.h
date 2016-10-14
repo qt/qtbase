@@ -82,8 +82,8 @@ public:
     void unlock()
     {
         if (locked) {
-            if (mtx1) mtx1->unlock();
             if (mtx2) mtx2->unlock();
+            if (mtx1) mtx1->unlock();
             locked = false;
         }
     }
