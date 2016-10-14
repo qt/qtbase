@@ -106,6 +106,7 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
     if (widget != tlw)
         offset += widget->mapTo(tlw, QPoint());
 
+    QRegion effectiveRegion = region;
 #ifndef QT_NO_OPENGL
     const bool compositionWasActive = widget->d_func()->renderToTextureComposeActive;
     if (!widgetTextures) {
@@ -119,6 +120,11 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
     } else {
         widget->d_func()->renderToTextureComposeActive = true;
     }
+    // When changing the composition status, make sure the dirty region covers
+    // the entire widget.  Just having e.g. the shown/hidden render-to-texture
+    // widget's area marked as dirty is incorrect when changing flush paths.
+    if (compositionWasActive != widget->d_func()->renderToTextureComposeActive)
+        effectiveRegion = widget->rect();
 
     // re-test since we may have been forced to this path via the dummy texture list above
     if (widgetTextures) {
@@ -130,12 +136,12 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
         const bool translucentBackground = widget->testAttribute(Qt::WA_TranslucentBackground);
         // Use the tlw's context, not widget's. The difference is important with native child
         // widgets where tlw != widget.
-        backingStore->handle()->composeAndFlush(widget->windowHandle(), region, offset, widgetTextures,
+        backingStore->handle()->composeAndFlush(widget->windowHandle(), effectiveRegion, offset, widgetTextures,
                                                 tlw->d_func()->shareContext(), translucentBackground);
         widget->window()->d_func()->sendComposeStatus(widget->window(), true);
     } else
 #endif
-        backingStore->flush(region, widget->windowHandle(), offset);
+        backingStore->flush(effectiveRegion, widget->windowHandle(), offset);
 }
 
 #ifndef QT_NO_PAINT_DEBUG
