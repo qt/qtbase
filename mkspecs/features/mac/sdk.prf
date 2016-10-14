@@ -54,9 +54,12 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
         tvos: deployment_target = $$QMAKE_TVOS_DEPLOYMENT_TARGET
         watchos: deployment_target = $$QMAKE_WATCHOS_DEPLOYMENT_TARGET
 
-        !simulator|simulator_and_device: device_archs = $$QMAKE_APPLE_DEVICE_ARCHS
+        device|!simulator: device_archs = $$QMAKE_APPLE_DEVICE_ARCHS
         simulator: simulator_archs = $$QMAKE_APPLE_SIMULATOR_ARCHS
         archs = $$device_archs $$simulator_archs
+
+        isEmpty(archs): \
+            error("QMAKE_APPLE_DEVICE_ARCHS or QMAKE_APPLE_SIMULATOR_ARCHS must contain at least one architecture")
 
         QMAKE_XARCH_CFLAGS =
         QMAKE_XARCH_LFLAGS =

@@ -1,7 +1,4 @@
 
-build_pass:simulator: \
-    QMAKE_MAC_SDK ~= s,^$${device.sdk},$${simulator.sdk},
-
 load(sdk)
 
 macx-xcode {

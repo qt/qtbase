@@ -69,8 +69,11 @@ macx-xcode {
     QMAKE_MAC_XCODE_SETTINGS += only_active_arch
 } else {
     VALID_ARCHS =
-    !simulator|simulator_and_device: VALID_ARCHS += $$QMAKE_APPLE_DEVICE_ARCHS
+    device|!simulator: VALID_ARCHS += $$QMAKE_APPLE_DEVICE_ARCHS
     simulator: VALID_ARCHS += $$QMAKE_APPLE_SIMULATOR_ARCHS
+
+    isEmpty(VALID_ARCHS): \
+        error("QMAKE_APPLE_DEVICE_ARCHS or QMAKE_APPLE_SIMULATOR_ARCHS must contain at least one architecture")
 
     single_arch: VALID_ARCHS = $$first(VALID_ARCHS)
 

@@ -21,7 +21,6 @@ DEFINES += $$MODULE_DEFINES
 CONFIG -= warning_clean  # Don't presume 3rd party code to be clean
 load(qt_common)
 
-qtConfig(simulator_and_device): CONFIG += simulator_and_device
 qtConfig(debug_and_release): CONFIG += debug_and_release
 qtConfig(build_all): CONFIG += build_all
 

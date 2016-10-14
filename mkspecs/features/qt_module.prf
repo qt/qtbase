@@ -84,7 +84,6 @@ INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.inclu
 # If Qt was configured with -debug-and-release then build the module the same way
 # - unless this is a host library
 !host_build:if(win32|mac):!macx-xcode {
-    qtConfig(simulator_and_device): CONFIG += simulator_and_device
     qtConfig(debug_and_release): CONFIG += debug_and_release
     qtConfig(build_all): CONFIG += build_all
 }

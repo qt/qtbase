@@ -15,7 +15,6 @@ TEMPLATE = lib
 CONFIG += plugin
 
 if(win32|mac):!macx-xcode {
-    qtConfig(simulator_and_device): CONFIG += simulator_and_device
     qtConfig(debug_and_release): CONFIG += debug_and_release
     qtConfig(build_all): CONFIG += build_all
 }
