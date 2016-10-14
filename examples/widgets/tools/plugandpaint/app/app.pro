@@ -15,7 +15,7 @@ SOURCES        = main.cpp \
 
 LIBS           = -L../plugins
 
-macx-xcode:qtConfig(simulator_and_device) {
+macx-xcode {
     LIBS += -lpnp_basictools$($${QMAKE_XCODE_LIBRARY_SUFFIX_SETTING})
 } else {
     LIBS += -lpnp_basictools
