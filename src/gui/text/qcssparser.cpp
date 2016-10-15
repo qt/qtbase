@@ -2175,6 +2175,7 @@ void Parser::init(const QString &css, bool isFile)
 bool Parser::parse(StyleSheet *styleSheet, Qt::CaseSensitivity nameCaseSensitivity)
 {
     if (testTokenAndEndsWith(ATKEYWORD_SYM, QLatin1String("charset"))) {
+        while (test(S) || test(CDO) || test(CDC)) {}
         if (!next(STRING)) return false;
         if (!next(SEMICOLON)) return false;
     }
