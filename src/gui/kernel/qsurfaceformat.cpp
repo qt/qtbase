@@ -759,11 +759,13 @@ Q_GLOBAL_STATIC(QSurfaceFormat, qt_default_surface_format)
  */
 void QSurfaceFormat::setDefaultFormat(const QSurfaceFormat &format)
 {
+#ifndef QT_NO_OPENGL
     QOpenGLContext *globalContext = QOpenGLContext::globalShareContext();
     if (globalContext && globalContext->isValid()) {
         qWarning("Warning: Setting a new default format with a different version or profile after "
                  "the global shared context is created may cause issues with context sharing.");
     }
+#endif
     *qt_default_surface_format() = format;
 }
 
