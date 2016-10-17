@@ -18,8 +18,12 @@ img {
     height: auto;
 }
 
-.content {
+.content .border img {
+    box-shadow:3px 3px 8px 3px rgba(200,200,200,0.5)
+}
 
+.content .border .player {
+    box-shadow:3px 3px 8px 3px rgba(200,200,200,0.5)
 }
 
 .content .indexboxcont li {
