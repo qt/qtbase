@@ -1684,6 +1684,9 @@ void QComboBox::setIconSize(const QSize &size)
     By default, this property is \c false. The effect of editing depends
     on the insert policy.
 
+    \note When disabling the \a editable state, the validator and
+    completer are removed.
+
     \sa InsertPolicy
 */
 bool QComboBox::isEditable() const
@@ -1837,6 +1840,8 @@ QLineEdit *QComboBox::lineEdit() const
     \fn void QComboBox::setValidator(const QValidator *validator)
 
     Sets the \a validator to use instead of the current validator.
+
+    \note The validator is removed when the editable property becomes \c false.
 */
 
 void QComboBox::setValidator(const QValidator *v)
@@ -1870,6 +1875,8 @@ const QValidator *QComboBox::validator() const
 
     By default, for an editable combo box, a QCompleter that
     performs case insensitive inline completion is automatically created.
+
+    \note The completer is removed when the \a editable property becomes \c false.
 */
 void QComboBox::setCompleter(QCompleter *c)
 {
