@@ -1200,6 +1200,150 @@ void tst_QUndoStack::setClean()
                 true,       // undoChanged
                 true);      // redoChanged
     QCOMPARE(stack.cleanIndex(), -1);
+
+    stack.setClean();
+    QCOMPARE(str, QString());
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                true,       // clean
+                1,          // count
+                0,          // index
+                false,      // canUndo
+                "",         // undoText
+                true,       // canRedo
+                "insert",   // redoText
+                true,       // cleanChanged
+                false,      // indexChanged
+                false,      // undoChanged
+                false);     // redoChanged
+    QCOMPARE(stack.cleanIndex(), 0);
+
+    stack.resetClean();
+    QCOMPARE(str, QString());
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,      // clean
+                1,          // count
+                0,          // index
+                false,      // canUndo
+                "",         // undoText
+                true,       // canRedo
+                "insert",   // redoText
+                true,       // cleanChanged
+                false,      // indexChanged
+                false,      // undoChanged
+                false);     // redoChanged
+    QCOMPARE(stack.cleanIndex(), -1);
+
+    stack.redo();
+    QCOMPARE(str, QString("foo"));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,      // clean
+                1,          // count
+                1,          // index
+                true,       // canUndo
+                "insert",   // undoText
+                false,      // canRedo
+                "",         // redoText
+                false,      // cleanChanged
+                true,       // indexChanged
+                true,       // undoChanged
+                true);      // redoChanged
+    QCOMPARE(stack.cleanIndex(), -1);
+
+    stack.setClean();
+    QCOMPARE(str, QString("foo"));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                true,       // clean
+                1,          // count
+                1,          // index
+                true,       // canUndo
+                "insert",   // undoText
+                false,      // canRedo
+                "",         // redoText
+                true,       // cleanChanged
+                false,      // indexChanged
+                false,      // undoChanged
+                false);     // redoChanged
+    QCOMPARE(stack.cleanIndex(), 1);
+
+    stack.undo();
+    QCOMPARE(str, QString());
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,      // clean
+                1,          // count
+                0,          // index
+                false,      // canUndo
+                "",         // undoText
+                true,       // canRedo
+                "insert",   // redoText
+                true,       // cleanChanged
+                true,       // indexChanged
+                true,       // undoChanged
+                true);      // redoChanged
+    QCOMPARE(stack.cleanIndex(), 1);
+
+    stack.resetClean();
+    QCOMPARE(str, QString());
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,      // clean
+                1,          // count
+                0,          // index
+                false,      // canUndo
+                "",         // undoText
+                true,       // canRedo
+                "insert",   // redoText
+                false,      // cleanChanged
+                false,       // indexChanged
+                false,       // undoChanged
+                false);      // redoChanged
+    QCOMPARE(stack.cleanIndex(), -1);
 }
 
 void tst_QUndoStack::clear()

@@ -128,6 +128,7 @@ public:
 
 public Q_SLOTS:
     void setClean();
+    void resetClean();
     void setIndex(int idx);
     void undo();
     void redo();
