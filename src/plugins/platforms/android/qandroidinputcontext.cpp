@@ -866,7 +866,7 @@ const QAndroidInputContext::ExtractedText &QAndroidInputContext::getExtractedTex
     if (composeLength > 0) {
         //Qt doesn't give us the preedit text, so we have to insert it at the correct position
         int localComposePos = m_composingTextStart - blockPos;
-        blockText = blockText.left(localComposePos) + m_composingText + blockText.mid(localComposePos);
+        blockText = blockText.leftRef(localComposePos) + m_composingText + blockText.midRef(localComposePos);
     }
 
     int cpos = localPos + composeLength; //actual cursor pos relative to the current block
@@ -930,9 +930,8 @@ QString QAndroidInputContext::getTextAfterCursor(jint length, jint /*flags*/)
 QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
 {
     QVariant textBefore = queryFocusObjectThreadSafe(Qt::ImTextBeforeCursor, QVariant(length));
-    if (textBefore.isValid()) {
-        return textBefore.toString().right(length) + m_composingText;
-    }
+    if (textBefore.isValid())
+        return textBefore.toString().rightRef(length) + m_composingText;
 
     //compatibility code for old controls that do not implement the new API
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQueryThreadSafe();
@@ -946,9 +945,9 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
 
     //### the preedit text does not need to be immediately before the cursor
     if (cursorPos <= length)
-        return text.left(cursorPos) + m_composingText;
+        return text.leftRef(cursorPos) + m_composingText;
     else
-        return text.mid(cursorPos - length, length) + m_composingText;
+        return text.midRef(cursorPos - length, length) + m_composingText;
 }
 
 /*

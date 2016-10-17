@@ -137,10 +137,10 @@ static FontKeys &fontKeys()
             QString realKey = registryFontKey;
             realKey.remove(trueType);
             realKey.remove(sizeListMatch);
-            const QStringList fontNames = realKey.trimmed().split(QLatin1Char('&'));
+            const auto fontNames = QStringRef(&realKey).trimmed().split(QLatin1Char('&'));
             fontKey.fontNames.reserve(fontNames.size());
-            foreach (const QString &fontName, fontNames)
-                fontKey.fontNames.append(fontName.trimmed());
+            for (const QStringRef &fontName : fontNames)
+                fontKey.fontNames.append(fontName.trimmed().toString());
             result.append(fontKey);
         }
     }
