@@ -165,38 +165,40 @@ Q_SIGNALS:
 
 public:
 #if QT_HAS_INCLUDE(<chrono>) || defined(Q_QDOC)
-    template <class Rep, class Period>
-    void setInterval(std::chrono::duration<Rep, Period> value)
+    Q_ALWAYS_INLINE
+    void setInterval(std::chrono::milliseconds value)
     {
-        setInterval(std::chrono::duration_cast<std::chrono::milliseconds>(value).count());
+        setInterval(value.count());
     }
 
+    Q_ALWAYS_INLINE
     std::chrono::milliseconds intervalAsDuration() const
     {
         return std::chrono::milliseconds(interval());
     }
 
+    Q_ALWAYS_INLINE
     std::chrono::milliseconds remainingTimeAsDuration() const
     {
         return std::chrono::milliseconds(remainingTime());
     }
 
-    template <class Rep, class Period>
-    static void singleShot(std::chrono::duration<Rep, Period> value, const QObject *receiver, const char *member)
+    Q_ALWAYS_INLINE
+    static void singleShot(std::chrono::milliseconds value, const QObject *receiver, const char *member)
     {
-        singleShot(int(std::chrono::duration_cast<std::chrono::milliseconds>(value).count()), receiver, member);
+        singleShot(int(value.count()), receiver, member);
     }
 
-    template <class Rep, class Period>
-    static void singleShot(std::chrono::duration<Rep, Period> value, Qt::TimerType timerType, const QObject *receiver, const char *member)
+    Q_ALWAYS_INLINE
+    static void singleShot(std::chrono::milliseconds value, Qt::TimerType timerType, const QObject *receiver, const char *member)
     {
-        singleShot(int(std::chrono::duration_cast<std::chrono::milliseconds>(value).count()), timerType, receiver, member);
+        singleShot(int(value.count()), timerType, receiver, member);
     }
 
-    template <class Rep, class Period>
-    void start(std::chrono::duration<Rep, Period> value)
+    Q_ALWAYS_INLINE
+    void start(std::chrono::milliseconds value)
     {
-        start(int(std::chrono::duration_cast<std::chrono::milliseconds>(value).count()));
+        start(int(value.count()));
     }
 #endif
 
@@ -215,15 +217,13 @@ private:
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
 
 #if QT_HAS_INCLUDE(<chrono>)
-    template <class Rep, class Period>
-    static Qt::TimerType defaultTypeFor(std::chrono::duration<Rep, Period> interval)
-    { return defaultTypeFor(int(std::chrono::duration_cast<std::chrono::milliseconds>(interval).count())); }
+    static Qt::TimerType defaultTypeFor(std::chrono::milliseconds interval)
+    { return defaultTypeFor(int(interval.count())); }
 
-    template <class Rep, class Period>
-    static void singleShotImpl(std::chrono::duration<Rep, Period> interval, Qt::TimerType timerType,
+    static void singleShotImpl(std::chrono::milliseconds interval, Qt::TimerType timerType,
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj)
     {
-        singleShotImpl(int(std::chrono::duration_cast<std::chrono::milliseconds>(interval).count()),
+        singleShotImpl(int(interval.count()),
                        timerType, receiver, slotObj);
     }
 #endif
