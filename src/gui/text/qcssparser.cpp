@@ -739,8 +739,9 @@ static ColorData parseColorValue(QCss::Value v)
     QVector<QCss::Value> colorDigits;
     if (!p.parseExpr(&colorDigits))
         return ColorData();
+    const int tokenCount = colorDigits.count();
 
-    for (int i = 0; i < qMin(colorDigits.count(), 7); i += 2) {
+    for (int i = 0; i < qMin(tokenCount, 7); i += 2) {
         if (colorDigits.at(i).type == Value::Percentage) {
             colorDigits[i].variant = colorDigits.at(i).variant.toReal() * (255. / 100.);
             colorDigits[i].type = Value::Number;
@@ -749,11 +750,15 @@ static ColorData parseColorValue(QCss::Value v)
         }
     }
 
+
+    if (tokenCount < 5)
+        return ColorData();
+
     int v1 = colorDigits.at(0).variant.toInt();
     int v2 = colorDigits.at(2).variant.toInt();
     int v3 = colorDigits.at(4).variant.toInt();
     int alpha = 255;
-    if (colorDigits.count() >= 7) {
+    if (tokenCount >= 7) {
         int alphaValue = colorDigits.at(6).variant.toInt();
         if (rgba && alphaValue <= 1)
             alpha = colorDigits.at(6).variant.toReal() * 255.;

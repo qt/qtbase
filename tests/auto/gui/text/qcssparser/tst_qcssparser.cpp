@@ -847,6 +847,7 @@ void tst_QCssParser::colorValue_data()
     QTest::newRow("hsla") << "color: hsva(10, 20, 30, 40)" << QColor::fromHsv(10, 20, 30, 40);
     QTest::newRow("invalid1") << "color: rgb(why, does, it, always, rain, on, me)" << QColor();
     QTest::newRow("invalid2") << "color: rgba(i, meant, norway)" << QColor();
+    QTest::newRow("invalid3") << "color: rgb(21)" << QColor();
     QTest::newRow("role") << "color: palette(base)" << qApp->palette().color(QPalette::Base);
     QTest::newRow("role2") << "color: palette( window-text ) " << qApp->palette().color(QPalette::WindowText);
     QTest::newRow("transparent") << "color: transparent" << QColor(Qt::transparent);
