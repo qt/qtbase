@@ -1,4 +1,14 @@
 
+defineReplace(qtMakeExpand) {
+    out = "$$1"
+    for(ever) {
+        m = $$replace(out, .*\\$\\(EXPORT_([^)]+)\\).*, \\1)
+        equals(m, $$out): \
+            return($$out)
+        out = $$replace(out, \\$\\(EXPORT_$$m\\), $$eval($$m))
+    }
+}
+
 isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
     #
     # Get default include and library paths from compiler
@@ -11,7 +21,7 @@ isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
             cmd_prefix = "set LC_ALL=C&"
             cmd_suffix = "<NUL >NUL"
         }
-        output = $$system("$$cmd_prefix $$QMAKE_CXX $$QMAKE_CXXFLAGS -xc++ -E -v - 2>&1 $$cmd_suffix", lines)
+        output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$QMAKE_CXXFLAGS) -xc++ -E -v - 2>&1 $$cmd_suffix", lines)
         add_includes = false
         for (line, output) {
             line ~= s/^ *//  # remove leading spaces
