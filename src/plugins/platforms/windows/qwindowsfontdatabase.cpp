@@ -110,13 +110,21 @@ static void createDirectWriteFactory(IDWriteFactory **factory)
     *factory = static_cast<IDWriteFactory *>(result);
 }
 
-static inline bool useDirectWrite(QFont::HintingPreference hintingPreference, bool isColorFont = false)
+static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
+                                  const QString &familyName = QString(),
+                                  bool isColorFont = false)
 {
     const unsigned options = QWindowsIntegration::instance()->options();
     if (Q_UNLIKELY(options & QWindowsIntegration::DontUseDirectWriteFonts))
         return false;
     if (isColorFont)
         return (options & QWindowsIntegration::DontUseColorFonts) == 0;
+
+    // At some scales, GDI will misrender the MingLiU font, so we force use of
+    // DirectWrite to work around the issue.
+    if (Q_UNLIKELY(familyName.startsWith(QLatin1String("MingLiU"))))
+        return true;
+
     return hintingPreference == QFont::PreferNoHinting
         || hintingPreference == QFont::PreferVerticalHinting
         || (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting);
@@ -1875,7 +1883,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
 #endif
                 const QFont::HintingPreference hintingPreference =
                     static_cast<QFont::HintingPreference>(request.hintingPreference);
-                const bool useDw = useDirectWrite(hintingPreference, isColorFont);
+                const bool useDw = useDirectWrite(hintingPreference, fam, isColorFont);
                 qCDebug(lcQpaFonts) << __FUNCTION__ << request.family << request.pointSize
                     << "pt" << "hintingPreference=" << hintingPreference << "color=" << isColorFont
                     << dpi << "dpi" << "useDirectWrite=" << useDw;

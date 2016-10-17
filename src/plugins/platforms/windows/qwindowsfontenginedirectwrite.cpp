@@ -185,6 +185,18 @@ namespace {
 
 }
 
+static DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(QFont::HintingPreference hintingPreference)
+{
+    switch (hintingPreference) {
+    case QFont::PreferNoHinting:
+        return DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC;
+    case QFont::PreferVerticalHinting:
+        return DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL;
+    default:
+        return DWRITE_RENDERING_MODE_CLEARTYPE_GDI_CLASSIC;
+    }
+}
+
 /*!
     \class QWindowsFontEngineDirectWrite
     \brief Windows font engine using Direct Write.
@@ -661,9 +673,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
     transform.m22 = xform.m22();
 
     DWRITE_RENDERING_MODE renderMode =
-             fontDef.hintingPreference == QFont::PreferNoHinting
-                ? DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC
-                : DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL;
+            hintingPreferenceToRenderingMode(QFont::HintingPreference(fontDef.hintingPreference));
 
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
     HRESULT hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
@@ -950,9 +960,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     transform.m22 = matrix.m22();
 
     DWRITE_RENDERING_MODE renderMode =
-             fontDef.hintingPreference == QFont::PreferNoHinting
-                ? DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC
-                : DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL;
+            hintingPreferenceToRenderingMode(QFont::HintingPreference(fontDef.hintingPreference));
 
     IDWriteGlyphRunAnalysis *glyphAnalysis = NULL;
     HRESULT hr = m_fontEngineData->directWriteFactory->CreateGlyphRunAnalysis(
