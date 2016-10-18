@@ -1400,7 +1400,8 @@ public:
     QStringRef(QStringRef &&other) Q_DECL_NOTHROW : m_string(other.m_string), m_position(other.m_position), m_size(other.m_size) {}
     QStringRef &operator=(QStringRef &&other) Q_DECL_NOTHROW { return *this = other; }
 #endif
-    QStringRef &operator=(const QStringRef &other) Q_DECL_NOTHROW {
+    QStringRef &operator=(const QStringRef &other) Q_DECL_NOTHROW
+    {
         m_string = other.m_string; m_position = other.m_position;
         m_size = other.m_size; return *this;
     }
@@ -1461,7 +1462,8 @@ public:
 
     inline QStringRef &operator=(const QString *string);
 
-    inline const QChar *unicode() const {
+    inline const QChar *unicode() const
+    {
         if (!m_string)
             return reinterpret_cast<const QChar *>(QString::Data::sharedNull()->data());
         return m_string->unicode() + m_position;
