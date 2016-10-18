@@ -149,7 +149,6 @@ static bool _q_dontOverrideCtrlLMB = false;
         m_acceptedMouseDowns = Qt::NoButton;
         m_frameStrutButtons = Qt::NoButton;
         m_sendKeyEvent = false;
-        m_subscribesForGlobalFrameNotifications = false;
 #ifndef QT_NO_OPENGL
         m_glContext = 0;
         m_shouldSetGLContextinDrawRect = false;
@@ -181,7 +180,6 @@ static bool _q_dontOverrideCtrlLMB = false;
     CGImageRelease(m_maskImage);
     [m_trackingArea release];
     m_maskImage = 0;
-    m_subscribesForGlobalFrameNotifications = false;
     [m_inputSource release];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [m_mouseMoveHelper release];
@@ -235,26 +233,8 @@ static bool _q_dontOverrideCtrlLMB = false;
         //was unable to set view
         m_shouldSetGLContextinDrawRect = true;
     }
-
-    if (!m_subscribesForGlobalFrameNotifications) {
-        // NSOpenGLContext expects us to repaint (or update) the view when
-        // it changes position on screen. Since this happens unnoticed for
-        // the view when the parent view moves, we need to register a special
-        // notification that lets us handle this case:
-        m_subscribesForGlobalFrameNotifications = true;
-        [[NSNotificationCenter defaultCenter] addObserver:self
-            selector:@selector(globalFrameChanged:)
-            name:NSViewGlobalFrameDidChangeNotification
-            object:self];
-    }
 }
 #endif
-
-- (void) globalFrameChanged:(NSNotification*)notification
-{
-    Q_UNUSED(notification);
-    m_platformWindow->updateExposedGeometry();
-}
 
 - (void)viewDidMoveToSuperview
 {

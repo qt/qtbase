@@ -74,7 +74,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     QStringList *currentCustomDragTypes;
     bool m_sendUpAsRightButton;
     Qt::KeyboardModifiers currentWheelModifiers;
-    bool m_subscribesForGlobalFrameNotifications;
 #ifndef QT_NO_OPENGL
     QCocoaGLContext *m_glContext;
     bool m_shouldSetGLContextinDrawRect;

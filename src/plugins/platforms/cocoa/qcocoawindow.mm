@@ -1270,6 +1270,18 @@ void QCocoaWindow::viewDidChangeFrame()
     [qnsview_cast(m_view) updateGeometry];
 }
 
+/*!
+    Callback for NSViewGlobalFrameDidChangeNotification.
+
+    Posted whenever an NSView object that has attached surfaces (that is,
+    NSOpenGLContext objects) moves to a different screen, or other cases
+    where the NSOpenGLContext object needs to be updated.
+*/
+void QCocoaWindow::viewDidChangeGlobalFrame()
+{
+    updateExposedGeometry();
+}
+
 void QCocoaWindow::windowDidEndLiveResize()
 {
     if (m_synchedWindowState == Qt::WindowMaximized && ![m_nsWindow isZoomed]) {
