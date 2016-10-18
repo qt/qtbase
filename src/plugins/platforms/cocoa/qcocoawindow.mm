@@ -362,15 +362,29 @@ static void qRegisterNotificationCallbacks()
         [center addObserverForName:notificationName.toNSString() object:nil queue:nil
             usingBlock:^(NSNotification *notification) {
 
-            NSWindow *window = notification.object;
+            NSView *view = nullptr;
+            if ([notification.object isKindOfClass:[NSWindow class]]) {
+                NSWindow *window = notification.object;
+                // Only top level NSWindows should notify their QNSViews
+                if (window.parentWindow)
+                    return;
 
-            // Only top level NSWindows should notify their QNSViews
-            if (window.parentWindow)
+                if (!window.contentView)
+                    return;
+
+                view = window.contentView;
+            } else if ([notification.object isKindOfClass:[NSView class]]) {
+                view = notification.object;
+            } else {
+                qCWarning(lcQpaCocoaWindow) << "Unhandled notifcation"
+                    << notification.name << "for" << notification.object;
                 return;
+            }
+            Q_ASSERT(view);
 
             QCocoaWindow *cocoaWindow = nullptr;
-            if (QNSView *view = qnsview_cast(window.contentView))
-                cocoaWindow = view.platformWindow;
+            if (QNSView *qnsView = qnsview_cast(view))
+                cocoaWindow = qnsView.platformWindow;
 
             // FIXME: Could be a foreign window, look up by iterating top level QWindows
 
@@ -1248,6 +1262,11 @@ void QCocoaWindow::windowDidResize()
         return;
 
     clipChildWindows();
+    [qnsview_cast(m_view) updateGeometry];
+}
+
+void QCocoaWindow::viewDidChangeFrame()
+{
     [qnsview_cast(m_view) updateGeometry];
 }
 

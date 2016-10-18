@@ -217,11 +217,6 @@ static bool _q_dontOverrideCtrlLMB = false;
 #endif
 
     [self registerDragTypes];
-    [self setPostsFrameChangedNotifications : YES];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                          selector:@selector(updateGeometry)
-                                          name:NSViewFrameDidChangeNotification
-                                          object:self];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                           selector:@selector(textInputContextKeyboardSelectionDidChangeNotification:)

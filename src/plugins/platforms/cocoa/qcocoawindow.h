@@ -197,6 +197,7 @@ public:
     Q_NOTIFICATION_HANDLER(NSWindowWillMoveNotification) void windowWillMove();
     Q_NOTIFICATION_HANDLER(NSWindowDidMoveNotification) void windowDidMove();
     Q_NOTIFICATION_HANDLER(NSWindowDidResizeNotification) void windowDidResize();
+    Q_NOTIFICATION_HANDLER(NSViewFrameDidChangeNotification) void viewDidChangeFrame();
     Q_NOTIFICATION_HANDLER(NSWindowDidEndLiveResizeNotification) void windowDidEndLiveResize();
     Q_NOTIFICATION_HANDLER(NSWindowDidBecomeKeyNotification) void windowDidBecomeKey();
     Q_NOTIFICATION_HANDLER(NSWindowDidResignKeyNotification) void windowDidResignKey();
