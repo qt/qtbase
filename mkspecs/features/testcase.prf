@@ -1,4 +1,4 @@
-have_target {
+!have_target: return()
 
 # qt_build_config.prf disables execptions for all Qt modules which don't
 # explicitly turn it on again, while the qmake default is to build with
@@ -203,6 +203,4 @@ macx-xcode:bundle:isEmpty(QMAKE_BUNDLE_EXTENSION) {
     QMAKE_PBX_BUNDLE_TYPE = wrapper.cfbundle
     QMAKE_BUNDLE_EXTENSION = .xctest
 }
-
-} # have_target
 
