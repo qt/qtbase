@@ -45,7 +45,6 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
 
-#undef slots
 #include <AppKit/AppKit.h>
 
 QT_BEGIN_NAMESPACE

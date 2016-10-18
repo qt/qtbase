@@ -388,7 +388,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     if (tlw->type() == Qt::ForeignWindow) {
         m_view = (NSView *)WId(tlw->property("_q_foreignWinId").value<WId>());
     } else {
-        m_view = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
+        m_view = [[QNSView alloc] initWithCocoaWindow:this];
         // Enable high-dpi OpenGL for retina displays. Enabling has the side
         // effect that Cocoa will start calling glViewport(0, 0, width, height),
         // overriding any glViewport calls in application code. This is usually not a
@@ -432,13 +432,6 @@ QCocoaWindow::~QCocoaWindow()
     // to avoid notifications received when deleting when using Qt::AA_NativeWindows attribute
     if (window()->type() != Qt::ForeignWindow)
         [[NSNotificationCenter defaultCenter] removeObserver:m_view];
-
-    // The QNSView object may outlive the corresponding QCocoaWindow object,
-    // for example during app shutdown when the QNSView is embedded in a
-    // foregin NSView hiearchy. Clear the pointers to the QWindow/QCocoaWindow
-    // here to make sure QNSView does not dereference stale pointers.
-    if (window()->type() != Qt::ForeignWindow)
-        [qnsview_cast(m_view) clearQWindowPointers];
 
     // While it is unlikely that this window will be in the popup stack
     // during deletetion we clear any pointers here to make sure.

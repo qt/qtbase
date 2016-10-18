@@ -53,10 +53,10 @@
 @implementation QNSView (QNSViewAccessibility)
 
 - (id)childAccessibleElement {
-    if (!m_window->accessibleRoot())
+    if (!m_platformWindow->window()->accessibleRoot())
         return nil;
 
-    QAccessible::Id childId = QAccessible::uniqueId(m_window->accessibleRoot());
+    QAccessible::Id childId = QAccessible::uniqueId(m_platformWindow->window()->accessibleRoot());
     return [QMacAccessibilityElement elementWithId: childId];
 }
 

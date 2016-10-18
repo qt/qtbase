@@ -85,7 +85,6 @@
 #include "private/qguiapplication_p.h"
 #include <qdebug.h>
 
-#undef slots
 #include <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>
 
