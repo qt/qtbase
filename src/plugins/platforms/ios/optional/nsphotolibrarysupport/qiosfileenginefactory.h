@@ -38,6 +38,8 @@
 #include <QtCore/private/qabstractfileengine_p.h>
 #include "qiosfileengineassetslibrary.h"
 
+QT_BEGIN_NAMESPACE
+
 class QIOSFileEngineFactory : public QAbstractFileEngineHandler
 {
 public:
@@ -51,5 +53,7 @@ public:
         return 0;
     }
 };
+
+QT_END_NAMESPACE
 
 #endif // QIOSFILEENGINEFACTORY_H
