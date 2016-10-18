@@ -8940,7 +8940,7 @@ ownership of it, no memory is freed when instances are destroyed.
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character in
     the string.
 
-    \sa cbegin(), end(), rbegin(), rend()
+    \sa cbegin(), constBegin(), end(), constEnd(), rbegin(), rend()
 */
 
 /*!
@@ -8949,7 +8949,16 @@ ownership of it, no memory is freed when instances are destroyed.
 
     Same as begin().
 
-    \sa begin(), cend(), rbegin(), rend()
+    \sa begin(), constBegin(), cend(), constEnd(), rbegin(), rend()
+*/
+
+/*!
+    \fn QStringRef::const_iterator QStringRef::constBegin() const
+    \since 5.9
+
+    Same as begin().
+
+    \sa begin(), cend(), constEnd(), rbegin(), rend()
 */
 
 /*!
@@ -8959,7 +8968,7 @@ ownership of it, no memory is freed when instances are destroyed.
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     character after the last character in the list.
 
-    \sa cbegin(), end(), rbegin(), rend()
+    \sa cbegin(), constBegin(), end(), constEnd(), rbegin(), rend()
 */
 
 /*! \fn QStringRef::const_iterator QStringRef::cend() const
@@ -8967,7 +8976,15 @@ ownership of it, no memory is freed when instances are destroyed.
 
     Same as end().
 
-    \sa end(), cbegin(), rbegin(), rend()
+    \sa end(), constEnd(), cbegin(), constBegin(), rbegin(), rend()
+*/
+
+/*! \fn QStringRef::const_iterator QStringRef::constEnd() const
+    \since 5.9
+
+    Same as end().
+
+    \sa end(), cend(), cbegin(), constBegin(), rbegin(), rend()
 */
 
 /*!

@@ -1473,8 +1473,10 @@ public:
 
     inline const_iterator begin() const { return unicode(); }
     inline const_iterator cbegin() const { return unicode(); }
+    inline const_iterator constBegin() const { return unicode(); }
     inline const_iterator end() const { return unicode() + size(); }
     inline const_iterator cend() const { return unicode() + size(); }
+    inline const_iterator constEnd() const { return unicode() + size(); }
     inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
     inline const_reverse_iterator crbegin() const { return rbegin(); }
     inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
