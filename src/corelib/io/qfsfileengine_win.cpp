@@ -427,11 +427,11 @@ qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
 
     // Writing on Windows fails with ERROR_NO_SYSTEM_RESOURCES when
     // the chunks are too large, so we limit the block size to 32MB.
-    const DWORD blockSize = DWORD(qMin(bytesToWrite, qint64(32 * 1024 * 1024)));
     qint64 totalWritten = 0;
     do {
+        const DWORD currentBlockSize = DWORD(qMin(bytesToWrite, qint64(32 * 1024 * 1024)));
         DWORD bytesWritten;
-        if (!WriteFile(fileHandle, data + totalWritten, blockSize, &bytesWritten, NULL)) {
+        if (!WriteFile(fileHandle, data + totalWritten, currentBlockSize, &bytesWritten, NULL)) {
             if (totalWritten == 0) {
                 // Note: Only return error if the first WriteFile failed.
                 q->setError(QFile::WriteError, qt_error_string());
