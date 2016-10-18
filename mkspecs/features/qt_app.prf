@@ -36,3 +36,27 @@ INSTALLS += target
 
 load(qt_targets)
 load(qt_common)
+
+no_launch_target: return()
+
+load(resolve_target)
+launch.commands = $$shell_quote($$shell_path($$QMAKE_RESOLVED_TARGET))
+QMAKE_EXTRA_TARGETS += launch
+
+# Add environment for non-installed builds.
+QT_TOOL_NAME = target
+qtAddTargetEnv(launch.commands, QT)
+
+isEmpty(BUILDS)|build_pass {
+    launch.depends = first
+} else {
+    # For exclusive builds, run the app only once.
+    launch.CONFIG = recursive
+    launch.target = launch_all
+    launch.recurse_target = launch
+    launch.commands =
+
+    launch_first.depends = $$eval($$first(BUILDS).target)-launch
+    launch_first.target = launch
+    QMAKE_EXTRA_TARGETS += launch_first
+}
