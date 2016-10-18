@@ -319,7 +319,7 @@ template<typename TInput, typename LiteralWrapper>
 inline bool qt_convertToBool(const QVariant::Private *const d)
 {
     TInput str = v_cast<TInput>(d)->toLower();
-    return !(str == LiteralWrapper("0") || str == LiteralWrapper("false") || str.isEmpty());
+    return !(str.isEmpty() || str == LiteralWrapper("0") || str == LiteralWrapper("false"));
 }
 
 /*!
@@ -700,7 +700,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         bool *b = static_cast<bool *>(result);
         switch(d->type) {
         case QVariant::ByteArray:
-            *b = qt_convertToBool<QByteArray, QByteArray>(d);
+            *b = qt_convertToBool<QByteArray, const char*>(d);
             break;
         case QVariant::String:
             *b = qt_convertToBool<QString, QLatin1String>(d);
