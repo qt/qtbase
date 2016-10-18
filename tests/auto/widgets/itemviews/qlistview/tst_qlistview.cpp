@@ -149,6 +149,7 @@ private slots:
     void taskQTBUG_7232_AllowUserToControlSingleStep();
     void taskQTBUG_51086_skippingIndexesInSelectedIndexes();
     void taskQTBUG_47694_indexOutOfBoundBatchLayout();
+    void itemAlignment();
 };
 
 // Testing get/set functions
@@ -2542,6 +2543,29 @@ void tst_QListView::taskQTBUG_47694_indexOutOfBoundBatchLayout()
     view.setModel(&model);
 
     view.scrollTo(model.index(batchSize - 1, 0));
+}
+
+void tst_QListView::itemAlignment()
+{
+    auto item1 = new QStandardItem("111");
+    auto item2 = new QStandardItem("111111");
+    QStandardItemModel model;
+    model.appendRow(item1);
+    model.appendRow(item2);
+
+    QListView w;
+    w.setModel(&model);
+    w.setWrapping(true);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    QVERIFY(w.visualRect(item1->index()).width() > 0);
+    QVERIFY(w.visualRect(item1->index()).width() == w.visualRect(item2->index()).width());
+
+    w.setItemAlignment(Qt::AlignLeft);
+    QApplication::processEvents();
+
+    QVERIFY(w.visualRect(item1->index()).width() < w.visualRect(item2->index()).width());
 }
 
 QTEST_MAIN(tst_QListView)

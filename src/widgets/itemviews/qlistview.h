@@ -65,6 +65,7 @@ class Q_WIDGETS_EXPORT QListView : public QAbstractItemView
     Q_PROPERTY(int batchSize READ batchSize WRITE setBatchSize)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
     Q_PROPERTY(bool selectionRectVisible READ isSelectionRectVisible WRITE setSelectionRectVisible)
+    Q_PROPERTY(Qt::Alignment itemAlignment READ itemAlignment WRITE setItemAlignment)
 
 public:
     enum Movement { Static, Free, Snap };
@@ -124,6 +125,9 @@ public:
 
     void setSelectionRectVisible(bool show);
     bool isSelectionRectVisible() const;
+
+    void setItemAlignment(Qt::Alignment alignment);
+    Qt::Alignment itemAlignment() const;
 
     QRect visualRect(const QModelIndex &index) const override;
     void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) override;

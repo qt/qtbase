@@ -1631,6 +1631,32 @@ bool QListView::isSelectionRectVisible() const
 }
 
 /*!
+    \property QListView::itemAlignment
+    \brief the alignment of each item in its cell
+    \since 5.12
+
+    This is only supported in ListMode with TopToBottom flow
+    and with wrapping enabled.
+    The default alignment is 0, which means that an item fills
+    its cell entirely.
+*/
+void QListView::setItemAlignment(Qt::Alignment alignment)
+{
+    Q_D(QListView);
+    if (d->itemAlignment == alignment)
+        return;
+    d->itemAlignment = alignment;
+    if (viewMode() == ListMode && flow() == QListView::TopToBottom && isWrapping())
+        d->doDelayedItemsLayout();
+}
+
+Qt::Alignment QListView::itemAlignment() const
+{
+    Q_D(const QListView);
+    return d->itemAlignment;
+}
+
+/*!
     \reimp
 */
 bool QListView::event(QEvent *e)
@@ -1656,7 +1682,8 @@ QListViewPrivate::QListViewPrivate()
       column(0),
       uniformItemSizes(false),
       batchSize(100),
-      showElasticBand(false)
+      showElasticBand(false),
+      itemAlignment(Qt::Alignment())
 {
 }
 
@@ -2366,6 +2393,7 @@ QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) c
     options.rect.setSize(contentsSize);
     QSize size = (uniformItemSizes() && cachedItemSize().isValid())
                  ? cachedItemSize() : itemSize(options, index);
+    QSize cellSize = size;
 
     QPoint pos;
     if (flow() == QListView::LeftToRight) {
@@ -2378,10 +2406,20 @@ QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) c
             int right = (segment + 1 >= segmentPositions.count()
                      ? contentsSize.width()
                      : segmentPositions.at(segment + 1));
-            size.setWidth(right - pos.x());
+            cellSize.setWidth(right - pos.x());
         } else { // make the items as wide as the viewport
-            size.setWidth(qMax(size.width(), viewport()->width() - 2 * spacing()));
+            cellSize.setWidth(qMax(size.width(), viewport()->width() - 2 * spacing()));
         }
+    }
+
+    if (dd->itemAlignment & Qt::AlignHorizontal_Mask) {
+        size.setWidth(qMin(size.width(), cellSize.width()));
+        if (dd->itemAlignment & Qt::AlignRight)
+            pos.setX(pos.x() + cellSize.width() - size.width());
+        if (dd->itemAlignment & Qt::AlignHCenter)
+            pos.setX(pos.x() + (cellSize.width() - size.width()) / 2);
+    } else {
+        size.setWidth(cellSize.width());
     }
 
     return QListViewItem(QRect(pos, size), index.row());
@@ -2562,8 +2600,18 @@ QVector<QModelIndex> QListModeViewBase::intersectingSet(const QRect &area) const
             if (isHidden(row))
                 continue;
             QModelIndex index = modelIndex(row);
-            if (index.isValid())
-                ret += index;
+            if (index.isValid()) {
+                if (flow() == QListView::LeftToRight || dd->itemAlignment == Qt::Alignment()) {
+                    ret += index;
+                } else {
+                    const auto viewItem = indexToListViewItem(index);
+                    const int iw = viewItem.width();
+                    const int startPos = qMax(segStartPosition, segmentPositions.at(seg));
+                    const int endPos = qMin(segmentPositions.at(seg + 1), segEndPosition);
+                    if (endPos >= viewItem.x && startPos < viewItem.x + iw)
+                        ret += index;
+                }
+            }
 #if 0 // for debugging
             else
                 qWarning("intersectingSet: row %d was invalid", row);

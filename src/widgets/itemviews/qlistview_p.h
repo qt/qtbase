@@ -431,6 +431,8 @@ public:
 
     QRect elasticBand;
     bool showElasticBand;
+
+    Qt::Alignment itemAlignment;
 };
 
 // inline implementations
