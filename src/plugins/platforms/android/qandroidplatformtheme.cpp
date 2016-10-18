@@ -458,9 +458,9 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
     case StyleNames:
         if (qEnvironmentVariableIntValue("QT_USE_ANDROID_NATIVE_STYLE")
                 && m_androidStyleData) {
-            return QStringList("android");
+            return QStringList(QLatin1String("android"));
         }
-        return QStringList("fusion");
+        return QStringList(QLatin1String("fusion"));
 
     case MouseDoubleClickDistance:
     {
