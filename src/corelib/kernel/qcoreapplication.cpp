@@ -1031,7 +1031,7 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
   approaches are listed below:
   \list 1
   \li Reimplementing \l {QWidget::}{paintEvent()}, \l {QWidget::}{mousePressEvent()} and so
-  on. This is the commonest, easiest, and least powerful way.
+  on. This is the most common, easiest, and least powerful way.
 
   \li Reimplementing this function. This is very powerful, providing
   complete control; but only one subclass can be active at a time.

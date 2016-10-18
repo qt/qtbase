@@ -542,7 +542,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtCore
     \reentrant
 
-    \brief The QRegularExpressionMatch class provides the results of a matching
+    \brief The QRegularExpressionMatch class provides the results of matching
     a QRegularExpression against a string.
 
     \since 5.0
