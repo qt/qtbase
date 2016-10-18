@@ -7958,33 +7958,12 @@ bool QString::isSimpleText() const
 /*! \fn bool QString::isRightToLeft() const
 
     Returns \c true if the string is read right to left.
+
+    \sa QStringRef::isRightToLeft()
 */
 bool QString::isRightToLeft() const
 {
-    const ushort *p = d->data();
-    const ushort * const end = p + d->size;
-    while (p < end) {
-        uint ucs4 = *p;
-        if (QChar::isHighSurrogate(ucs4) && p < end - 1) {
-            ushort low = p[1];
-            if (QChar::isLowSurrogate(low)) {
-                ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                ++p;
-            }
-        }
-        switch (QChar::direction(ucs4))
-        {
-        case QChar::DirL:
-            return false;
-        case QChar::DirR:
-        case QChar::DirAL:
-            return true;
-        default:
-            break;
-        }
-        ++p;
-    }
-    return false;
+    return QStringRef(this).isRightToLeft();
 }
 
 /*! \fn QChar *QString::data()
@@ -9905,6 +9884,41 @@ int QStringRef::count(QChar ch, Qt::CaseSensitivity cs) const
 int QStringRef::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 {
     return qt_string_count(unicode(), size(), str.unicode(), str.size(), cs);
+}
+
+/*!
+    \since 5.9
+
+    Returns \c true if the string is read right to left.
+
+    \sa QString::isRightToLeft()
+*/
+bool QStringRef::isRightToLeft() const
+{
+    const ushort *p = reinterpret_cast<const ushort*>(unicode());
+    const ushort * const end = p + size();
+    while (p < end) {
+        uint ucs4 = *p;
+        if (QChar::isHighSurrogate(ucs4) && p < end - 1) {
+            ushort low = p[1];
+            if (QChar::isLowSurrogate(low)) {
+                ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                ++p;
+            }
+        }
+        switch (QChar::direction(ucs4))
+        {
+        case QChar::DirL:
+            return false;
+        case QChar::DirR:
+        case QChar::DirAL:
+            return true;
+        default:
+            break;
+        }
+        ++p;
+    }
+    return false;
 }
 
 /*!
