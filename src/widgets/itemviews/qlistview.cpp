@@ -1625,6 +1625,33 @@ bool QListView::isSelectionRectVisible() const
 }
 
 /*!
+    \property QListView::expandingListItems
+    \brief if items occupy the entire width of the column
+    \since 5.9
+
+    If this property is \c true then all items in the column
+    will have the width of the column; otherwise the width of
+    each item will be determined by it's size hint.
+
+    By default, this property is \c true.
+*/
+void QListView::setExpandingListItems(bool enable)
+{
+    Q_D(QListView);
+    if (d->expandingListItems == enable)
+        return;
+    d->expandingListItems = enable;
+    if (viewMode() == ListMode && flow() == QListView::TopToBottom && isWrapping())
+        d->doDelayedItemsLayout();
+}
+
+bool QListView::isExpandingListItems() const
+{
+    Q_D(const QListView);
+    return d->expandingListItems;
+}
+
+/*!
     \reimp
 */
 bool QListView::event(QEvent *e)
@@ -1650,7 +1677,8 @@ QListViewPrivate::QListViewPrivate()
       column(0),
       uniformItemSizes(false),
       batchSize(100),
-      showElasticBand(false)
+      showElasticBand(false),
+      expandingListItems(true)
 {
 }
 
@@ -2365,7 +2393,8 @@ QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) c
             int right = (segment + 1 >= segmentPositions.count()
                      ? contentsSize.width()
                      : segmentPositions.at(segment + 1));
-            size.setWidth(right - pos.x());
+            size.setWidth(dd->expandingListItems ? right - pos.x()
+                                                 : qMin(size.width(), right - pos.x()));
         } else { // make the items as wide as the viewport
             size.setWidth(qMax(size.width(), viewport()->width() - 2 * spacing()));
         }
@@ -2551,8 +2580,15 @@ QVector<QModelIndex> QListModeViewBase::intersectingSet(const QRect &area) const
             if (isHidden(row))
                 continue;
             QModelIndex index = modelIndex(row);
-            if (index.isValid())
-                ret += index;
+            if (index.isValid()) {
+                if (flow() == QListView::LeftToRight || dd->expandingListItems) {
+                    ret += index;
+                } else {
+                    const int iw = indexToListViewItem(index).width(); // item width
+                    if (iw > 0 && segStartPosition - segmentPositions.at(seg) < iw)
+                        ret += index;
+                }
+            }
 #if 0 // for debugging
             else
                 qWarning("intersectingSet: row %d was invalid", row);
