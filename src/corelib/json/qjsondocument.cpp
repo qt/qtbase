@@ -268,14 +268,21 @@ QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidati
 QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
 {
     QJsonDocument doc;
-    if (variant.type() == QVariant::Map) {
+    switch (variant.type()) {
+    case QVariant::Map:
         doc.setObject(QJsonObject::fromVariantMap(variant.toMap()));
-    } else if (variant.type() == QVariant::Hash) {
+        break;
+    case QVariant::Hash:
         doc.setObject(QJsonObject::fromVariantHash(variant.toHash()));
-    } else if (variant.type() == QVariant::List) {
+        break;
+    case QVariant::List:
         doc.setArray(QJsonArray::fromVariantList(variant.toList()));
-    } else if (variant.type() == QVariant::StringList) {
+        break;
+    case QVariant::StringList:
         doc.setArray(QJsonArray::fromStringList(variant.toStringList()));
+        break;
+    default:
+        break;
     }
     return doc;
 }
