@@ -351,10 +351,9 @@ QByteArray QJsonDocument::toJson() const
 #ifndef QT_JSON_READONLY
 QByteArray QJsonDocument::toJson(JsonFormat format) const
 {
-    if (!d)
-        return QByteArray();
-
     QByteArray json;
+    if (!d)
+        return json;
 
     if (d->header->root()->isArray())
         QJsonPrivate::Writer::arrayToJson(static_cast<QJsonPrivate::Array *>(d->header->root()), json, 0, (format == Compact));
