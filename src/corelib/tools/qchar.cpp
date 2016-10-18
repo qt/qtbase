@@ -424,7 +424,7 @@ QT_BEGIN_NAMESPACE
     \enum QChar::Direction
 
     This enum type defines the Unicode direction attributes. See the
-    \l{http://www.unicode.org/}{Unicode Standard} for a description
+    \l{http://www.unicode.org/reports/tr9/tr9-35.html#Table_Bidirectional_Character_Types}{Unicode Standard} for a description
     of the values.
 
     In order to conform to C/C++ naming conventions "Dir" is prepended
