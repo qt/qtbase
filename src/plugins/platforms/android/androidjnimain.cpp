@@ -514,7 +514,7 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
     if (m_applicationParams.length()) {
         // Obtain a handle to the main library (the library that contains the main() function).
         // This library should already be loaded, and calling dlopen() will just return a reference to it.
-        m_mainLibraryHnd = dlopen(m_applicationParams.first().data(), 0);
+        m_mainLibraryHnd = dlopen(m_applicationParams.constFirst().data(), 0);
         if (Q_UNLIKELY(!m_mainLibraryHnd)) {
             qCritical() << "dlopen failed:" << dlerror();
             return false;

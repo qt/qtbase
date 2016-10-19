@@ -220,7 +220,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                     // The atomName variable is not used because mimeAtomToString()
                     // converts "text/x-moz-url" to "text/uri-list".
                     if (!list.isEmpty() && connection->atomName(a) == "text/x-moz-url")
-                        return list.first();
+                        return list.constFirst();
                     return list;
                 } else {
                     return str;

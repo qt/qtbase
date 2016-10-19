@@ -126,7 +126,7 @@ QEglFSKmsDevice *QEglFSKmsGbmIntegration::createDevice(const QString &devicePath
     } else {
 
         QDeviceDiscovery *d = QDeviceDiscovery::create(QDeviceDiscovery::Device_VideoMask);
-        QStringList devices = d->scanConnectedDevices();
+        const QStringList devices = d->scanConnectedDevices();
         qCDebug(qLcEglfsKmsDebug) << "Found the following video devices:" << devices;
         d->deleteLater();
 

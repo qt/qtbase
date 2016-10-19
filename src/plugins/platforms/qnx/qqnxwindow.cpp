@@ -569,7 +569,7 @@ void QQnxWindow::requestActivateWindow()
         for (int i = 1; i < windowList.size(); ++i)
             windowList.at(i-1)->setFocus(windowList.at(i)->nativeHandle());
 
-        windowList.last()->setFocus(windowList.last()->nativeHandle());
+        windowList.last()->setFocus(windowList.constLast()->nativeHandle());
     }
 
     screen_flush_context(m_screenContext, 0);
