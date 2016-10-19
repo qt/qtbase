@@ -1996,8 +1996,7 @@ void QXcbConnection::initializeAllAtoms() {
 
     Q_ASSERT(i == QXcbAtom::NPredefinedAtoms);
 
-    QByteArray settings_atom_name("_QT_SETTINGS_TIMESTAMP_");
-    settings_atom_name += m_displayName;
+    const QByteArray settings_atom_name = "_QT_SETTINGS_TIMESTAMP_" + m_displayName;
     names[i++] = settings_atom_name;
 
     xcb_intern_atom_cookie_t cookies[QXcbAtom::NAtoms];

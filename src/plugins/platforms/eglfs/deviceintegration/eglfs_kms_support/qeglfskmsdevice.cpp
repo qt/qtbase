@@ -108,14 +108,10 @@ static const char * const connector_type_names[] = { // must match DRM_MODE_CONN
 
 static QByteArray nameForConnector(const drmModeConnectorPtr connector)
 {
-    QByteArray connectorName("UNKNOWN");
-
+    const QByteArray id = QByteArray::number(connector->connector_type_id);
     if (connector->connector_type < ARRAY_LENGTH(connector_type_names))
-        connectorName = connector_type_names[connector->connector_type];
-
-    connectorName += QByteArray::number(connector->connector_type_id);
-
-    return connectorName;
+        return connector_type_names[connector->connector_type] + id;
+    return "UNKNOWN" + id;
 }
 
 static bool parseModeline(const QByteArray &text, drmModeModeInfoPtr mode)
