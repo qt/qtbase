@@ -52,6 +52,8 @@
 #include <QtGui/qpa/qwindowsysteminterface.h>
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
+#include <QVarLengthArray>
+
 QT_BEGIN_NAMESPACE
 
 class QWindowsDirect2DEventDispatcher : public QWindowsGuiEventDispatcher
@@ -106,7 +108,7 @@ public:
             if (_tcscat_s(filename, bufSize, __TEXT("\\d2d1.dll")) == 0) {
                 DWORD versionInfoSize = GetFileVersionInfoSize(filename, NULL);
                 if (versionInfoSize) {
-                    QVector<BYTE> info(versionInfoSize);
+                    QVarLengthArray<BYTE> info(versionInfoSize);
                     if (GetFileVersionInfo(filename, NULL, versionInfoSize, info.data())) {
                         UINT size;
                         DWORD *fi;
