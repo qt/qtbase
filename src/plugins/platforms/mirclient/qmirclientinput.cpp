@@ -347,6 +347,7 @@ void QMirClientInput::dispatchTouchEvent(QMirClientWindow *window, const MirInpu
     // TODO: Is it worth setting the Qt::TouchPointStationary ones? Currently they are left
     //       as Qt::TouchPointMoved
     const unsigned int kPointerCount = mir_touch_event_point_count(tev);
+    touchPoints.reserve(int(kPointerCount));
     for (unsigned int i = 0; i < kPointerCount; ++i) {
         QWindowSystemInterface::TouchPoint touchPoint;
 

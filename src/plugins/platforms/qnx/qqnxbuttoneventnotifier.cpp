@@ -67,6 +67,7 @@ QQnxButtonEventNotifier::QQnxButtonEventNotifier(QObject *parent)
     // fetch the new button ids
     int enumeratorIndex = QQnxButtonEventNotifier::staticMetaObject.indexOfEnumerator(QByteArrayLiteral("ButtonId"));
     QMetaEnum enumerator = QQnxButtonEventNotifier::staticMetaObject.enumerator(enumeratorIndex);
+    m_buttonKeys.reserve(ButtonCount - bid_minus);
     for (int buttonId = bid_minus; buttonId < ButtonCount; ++buttonId) {
         m_buttonKeys.append(enumerator.valueToKey(buttonId));
         m_state[buttonId] = ButtonUp;

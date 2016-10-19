@@ -210,6 +210,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                 if (format == QLatin1String("text/uri-list")) {
                     const auto urls = str.splitRef(QLatin1Char('\n'));
                     QList<QVariant> list;
+                    list.reserve(urls.size());
                     for (const QStringRef &s : urls) {
                         const QUrl url(s.trimmed().toString());
                         if (url.isValid())
