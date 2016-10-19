@@ -183,12 +183,14 @@ void tst_qstandardpaths::testDefaultLocations()
 #endif
 }
 
+#ifdef Q_XDG_PLATFORM
 static void createTestFile(const QString &fileName)
 {
     QFile file(fileName);
     QVERIFY(file.open(QIODevice::WriteOnly));
     QVERIFY(file.write("Hello"));
 }
+#endif
 
 void tst_qstandardpaths::testCustomLocations()
 {
