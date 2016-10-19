@@ -78,19 +78,11 @@ glMapBuffer
 glUnmapBuffer
 */
 
-#ifndef Q_OS_MAC
-# ifndef APIENTRYP
-#   ifdef APIENTRY
-#     undef APIENTRYP
-#     define APIENTRYP APIENTRY *
-#   else
-#     define APIENTRY
-#     define APIENTRYP *
-#   endif
-# endif
-#else
+#ifndef APIENTRY
 # define APIENTRY
-# define APIENTRYP *
+#endif
+#ifndef APIENTRYP
+# define APIENTRYP APIENTRY *
 #endif
 
 #ifndef GL_VERSION_1_2
