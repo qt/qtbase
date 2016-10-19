@@ -401,8 +401,10 @@ void tst_QSqlThread::readWriteThreading()
     QTRY_VERIFY_WITH_TIMEOUT(threadFinishedCount >= 2, 10000);
 }
 
+#ifdef QOCI_THREADED
 // run with n threads in parallel. Change this constant to hammer the poor DB server even more
 static const int maxThreadCount = 4;
+#endif
 
 void tst_QSqlThread::readFromSingleConnection()
 {
