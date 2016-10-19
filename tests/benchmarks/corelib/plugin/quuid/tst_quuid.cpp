@@ -138,13 +138,12 @@ void tst_bench_QUuid::createUuidV5()
 
 void tst_bench_QUuid::toDataStream()
 {
-    QUuid uuid1, uuid2;
-    uuid1 = QUuid::createUuid();
+    QUuid uuid = QUuid::createUuid();
     QByteArray ar;
     {
         QDataStream out(&ar,QIODevice::WriteOnly);
         QBENCHMARK {
-            out << uuid1;
+            out << uuid;
         }
     }
 }
