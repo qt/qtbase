@@ -4229,13 +4229,10 @@ void QApplication::beep()
     \relates QApplication
 
     A global pointer referring to the unique application object. It is
-    equivalent to the pointer returned by the QCoreApplication::instance()
-    function except that, in GUI applications, it is a pointer to a
-    QApplication instance.
+    equivalent to QCoreApplication::instance(), but cast as a QApplication pointer,
+    so only valid when the unique application object is a QApplication.
 
-    Only one application object can be created.
-
-    \sa QCoreApplication::instance()
+    \sa QCoreApplication::instance(), qGuiApp
 */
 
 /*!
