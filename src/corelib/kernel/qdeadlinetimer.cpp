@@ -173,9 +173,9 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
 */
 
 /*!
-    \fn QDeadlineTimer::QDeadlineTimer(ForeverConstant, Qt::TimerType timerType)
+    \fn QDeadlineTimer::QDeadlineTimer(ForeverConstant foreverConstant, Qt::TimerType timerType)
 
-    QDeadlineTimer objects created with parameter \a ForeverConstant never expire.
+    QDeadlineTimer objects created with parameter \a foreverConstant never expire.
     For such objects, remainingTime() will return -1, deadline() will return the
     maximum value, and isForever() will return true.
 
@@ -295,7 +295,7 @@ void QDeadlineTimer::setRemainingTime(qint64 msecs, Qt::TimerType timerType) Q_D
     parameters are zero, this QDeadlineTimer will be marked as expired.
 
     The timer type for this QDeadlineTimer object will be set to the specified
-    \a type.
+    \a timerType.
 
     \sa setRemainingTime(), hasExpired(), isForever(), remainingTime()
 */
@@ -341,24 +341,7 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
 */
 
 /*!
-    \fn void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, unsigned nsecs, Qt::TimerType type)
-
-    Sets the remaining time for this QDeadlineTimer object to \a secs seconds
-    and \a nsecs nanoseconds from now, if \a secs is a positive value. If both
-    values are zero, this QDeadlineTimer object will be marked as expired,
-    whereas if \a secs is -1, it will set it to never expire.
-
-    If value of \a nsecs is more than 1 billion nanoseconds (1 second), this
-    function will adjust \a secs accordingly.
-
-    The timer type for this QDeadlineTimer object will be set to the specified \a type.
-
-    \sa setRemainingTime(), hasExpired(), isForever(), remainingTime()
-*/
-
-/*!
-    \overload
-    \fn Duration QDeadlineTimer::remainingTime() const
+    \fn std::chrono::nanoseconds remainingTimeAsDuration() const
 
     Returns a \c{std::chrono::duration} object of type \c{Duration} containing
     the remaining time in this QDeadlineTimer, if it still has time left. If
