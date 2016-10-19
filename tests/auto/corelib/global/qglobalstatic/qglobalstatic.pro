@@ -5,7 +5,6 @@ QT       -= gui
 
 TARGET = tst_qglobalstatic
 CONFIG   += console
-CONFIG   -= app_bundle
 CONFIG   += exceptions
 
 SOURCES += tst_qglobalstatic.cpp

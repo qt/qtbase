@@ -1,6 +1,5 @@
 TARGET = tst_json
 QT = core-private testlib
-CONFIG -= app_bundle
 CONFIG += testcase
 
 !android:TESTDATA += bom.json test.json test.bjson test3.json test2.json

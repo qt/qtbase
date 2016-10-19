@@ -6,6 +6,9 @@ have_target {
 # qt_build_config tells us to re-enable exceptions here.
 testcase_exceptions: CONFIG += exceptions
 
+# Set in qt_build_config.prf
+testcase_no_bundle: CONFIG -= app_bundle
+
 benchmark: type = benchmark
 else: type = check
 

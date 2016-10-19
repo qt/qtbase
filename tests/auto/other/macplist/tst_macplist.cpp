@@ -155,9 +155,12 @@ void tst_MacPlist::test_plist()
 
     QString infoPlist = QLatin1String("Info.plist");
     QDir dir(QCoreApplication::applicationDirPath());
+#ifndef Q_OS_MACOS
+    // macOS builds tests as single executables, iOS/tvOS/watchOS does not
     QVERIFY(dir.cdUp());
     QVERIFY(dir.cdUp());
     QVERIFY(dir.cdUp());
+#endif
     QVERIFY(dir.cd(QLatin1String("app")));
     QVERIFY(dir.cd(QLatin1String("app.app")));
     QVERIFY(dir.cd(QLatin1String("Contents")));

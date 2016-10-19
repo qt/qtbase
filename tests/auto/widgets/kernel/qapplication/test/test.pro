@@ -1,5 +1,5 @@
 CONFIG += testcase
-CONFIG -= app_bundle debug_and_release_target
+CONFIG -= debug_and_release_target
 
 QT += widgets widgets-private testlib
 QT += core-private gui-private

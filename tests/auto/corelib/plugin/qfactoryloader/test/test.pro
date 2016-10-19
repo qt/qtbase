@@ -17,8 +17,6 @@ win32 {
     }
 }
 
-mac: CONFIG -= app_bundle
-
 !qtConfig(library) {
     LIBS += -L ../bin/ -lplugin1 -lplugin2
 }

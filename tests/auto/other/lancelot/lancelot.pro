@@ -1,5 +1,4 @@
 CONFIG += testcase
-CONFIG -= app_bundle
 TARGET = tst_lancelot
 QT += xml testlib
 

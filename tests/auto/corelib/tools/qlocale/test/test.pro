@@ -1,5 +1,4 @@
 CONFIG += console testcase
-CONFIG -= app_bundle
 QT = core testlib core-private
 embedded: QT += gui
 SOURCES = ../tst_qlocale.cpp
