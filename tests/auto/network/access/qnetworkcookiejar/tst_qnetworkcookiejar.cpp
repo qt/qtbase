@@ -192,16 +192,16 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
     result += cookie;
     QTest::newRow("effective-tld1-accepted") << preset << cookie << "http://something.co.uk" << result << true;
 
-    // 2. anything .mz is an effective TLD ('*.mz'), but 'teledata.mz' is an exception
+    // 2. anything .ck is an effective TLD ('*.ck'), but 'www.ck' is an exception
     result.clear();
     preset.clear();
-    cookie.setDomain(".farmacia.mz");
-    QTest::newRow("effective-tld2-denied") << preset << cookie << "http://farmacia.mz" << result << false;
-    QTest::newRow("effective-tld2-denied2") << preset << cookie << "http://www.farmacia.mz" << result << false;
-    QTest::newRow("effective-tld2-denied3") << preset << cookie << "http://www.anything.farmacia.mz" << result << false;
-    cookie.setDomain(".teledata.mz");
+    cookie.setDomain(".foo.ck");
+    QTest::newRow("effective-tld2-denied") << preset << cookie << "http://foo.ck" << result << false;
+    QTest::newRow("effective-tld2-denied2") << preset << cookie << "http://www.foo.ck" << result << false;
+    QTest::newRow("effective-tld2-denied3") << preset << cookie << "http://www.anything.foo.ck" << result << false;
+    cookie.setDomain(".www.ck");
     result += cookie;
-    QTest::newRow("effective-tld2-accepted") << preset << cookie << "http://www.teledata.mz" << result << true;
+    QTest::newRow("effective-tld2-accepted") << preset << cookie << "http://www.www.ck" << result << true;
 
     result.clear();
     preset.clear();
