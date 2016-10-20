@@ -235,13 +235,13 @@ QString qt_mac_applicationName()
     return appName;
 }
 
-int qt_mac_mainScreenHeight()
+int qt_mac_primaryScreenHeight()
 {
     QMacAutoReleasePool pool;
     NSArray *screens = [NSScreen screens];
     if ([screens count] > 0) {
-        // The first screen in the screens array is documented
-        // to have the (0,0) origin.
+        // The first screen in the screens array is documented to
+        // have the (0,0) origin and is designated the primary screen.
         NSRect screenFrame = [[screens objectAtIndex: 0] frame];
         return screenFrame.size.height;
     }
@@ -250,12 +250,12 @@ int qt_mac_mainScreenHeight()
 
 int qt_mac_flipYCoordinate(int y)
 {
-    return qt_mac_mainScreenHeight() - y;
+    return qt_mac_primaryScreenHeight() - y;
 }
 
 qreal qt_mac_flipYCoordinate(qreal y)
 {
-    return qt_mac_mainScreenHeight() - y;
+    return qt_mac_primaryScreenHeight() - y;
 }
 
 QPointF qt_mac_flipPoint(const NSPoint &p)
