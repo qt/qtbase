@@ -157,6 +157,7 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
         } else {                                // read another line
             if ((readBytes = device->readLine(buf,buflen)) <= 0)        // EOF ==> truncated image
                 break;
+            buf[readBytes] = '\0';
             p = buf + QByteArray::fromRawData(buf, readBytes).indexOf("0x");
         }
     }
