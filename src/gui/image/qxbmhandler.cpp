@@ -118,17 +118,18 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
 
     qint64 readBytes = 0;
 
+    char *p;
+
     // scan for database
-    for (;;) {
+    do {
         if ((readBytes = device->readLine(buf, buflen)) <= 0) {
             // end of file
             return false;
         }
 
         buf[readBytes] = '\0';
-        if (QByteArray::fromRawData(buf, readBytes).contains("0x"))
-            break;
-    }
+        p = strstr(buf, "0x");
+    } while (!p);
 
     if (outImage->size() != QSize(w, h) || outImage->format() != QImage::Format_MonoLSB) {
         *outImage = QImage(w, h, QImage::Format_MonoLSB);
@@ -142,7 +143,6 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
 
     int           x = 0, y = 0;
     uchar *b = outImage->scanLine(0);
-    char  *p = buf + QByteArray::fromRawData(buf, readBytes).indexOf("0x");
     w = (w+7)/8;                                // byte width
 
     while (y < h) {                                // for all encoded bytes...
@@ -158,7 +158,7 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
             if ((readBytes = device->readLine(buf,buflen)) <= 0)        // EOF ==> truncated image
                 break;
             buf[readBytes] = '\0';
-            p = buf + QByteArray::fromRawData(buf, readBytes).indexOf("0x");
+            p = strstr(buf, "0x");
         }
     }
 
