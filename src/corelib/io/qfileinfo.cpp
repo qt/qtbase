@@ -287,8 +287,7 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     \note To speed up performance, QFileInfo caches information about
     the file.
 
-    To speed up performance, QFileInfo caches information about the
-    file. Because files can be changed by other users or programs, or
+    Because files can be changed by other users or programs, or
     even by other parts of the same program, there is a function that
     refreshes the file information: refresh(). If you want to switch
     off a QFileInfo's caching and force it to access the file system
