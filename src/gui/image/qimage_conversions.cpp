@@ -905,12 +905,12 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
     const int dest_pad = (dst_bytes_per_line >> 1) - width;
 
     quint16 colorTableRGB16[256];
-    if (data->colortable.isEmpty()) {
+    const int tableSize = data->colortable.size();
+    if (tableSize == 0) {
         for (int i = 0; i < 256; ++i)
             colorTableRGB16[i] = qConvertRgb32To16(qRgb(i, i, i));
     } else {
         // 1) convert the existing colors to RGB16
-        const int tableSize = data->colortable.size();
         for (int i = 0; i < tableSize; ++i)
             colorTableRGB16[i] = qConvertRgb32To16(data->colortable.at(i));
         data->colortable = QVector<QRgb>();
