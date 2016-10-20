@@ -238,7 +238,7 @@ public:
     static QPoint bottomLeftClippedByNSWindowOffsetStatic(QWindow *window);
     QPoint bottomLeftClippedByNSWindowOffset() const;
 protected:
-    void recreateWindow(const QPlatformWindow *parentWindow);
+    void recreateWindow();
     QCocoaNSWindow *createNSWindow();
     void setNSWindow(QCocoaNSWindow *window);
 

@@ -404,7 +404,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
         [m_view setWantsLayer:enable];
     }
     setGeometry(tlw->geometry());
-    recreateWindow(QPlatformWindow::parent());
+    recreateWindow();
     tlw->setGeometry(geometry());
     if (tlw->isTopLevel())
         setWindowIcon(tlw->icon());
@@ -638,7 +638,7 @@ void QCocoaWindow::setVisible(bool visible)
     if (visible) {
         // We need to recreate if the modality has changed as the style mask will need updating
         if (m_windowModality != window()->modality() || isNativeWindowTypeInconsistent())
-            recreateWindow(QPlatformWindow::parent());
+            recreateWindow();
 
         // Register popup windows. The Cocoa platform plugin will forward mouse events
         // to them and close them when needed.
@@ -1156,7 +1156,7 @@ void QCocoaWindow::setParent(const QPlatformWindow *parentWindow)
 
     // recreate the window for compatibility
     bool unhideAfterRecreate = parentWindow && !m_viewIsToBeEmbedded && ![m_view isHidden];
-    recreateWindow(parentWindow);
+    recreateWindow();
     if (unhideAfterRecreate)
         [m_view setHidden:NO];
     setCocoaGeometry(geometry());
@@ -1262,8 +1262,10 @@ QCocoaGLContext *QCocoaWindow::currentContext() const
 }
 #endif
 
-void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
+void QCocoaWindow::recreateWindow()
 {
+    const QPlatformWindow *parentWindow = QPlatformWindow::parent();
+
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::recreateWindow" << window()
                               << "parent" << (parentWindow ? parentWindow->window() : 0);
 
@@ -1279,7 +1281,7 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         QWindow *parentQWindow = m_parentCocoaWindow->window();
         if (!parentQWindow->property("_q_platform_MacUseNSWindow").toBool()) {
             parentQWindow->setProperty("_q_platform_MacUseNSWindow", QVariant(true));
-            m_parentCocoaWindow->recreateWindow(m_parentCocoaWindow->m_parentCocoaWindow);
+            m_parentCocoaWindow->recreateWindow();
         }
     }
 
