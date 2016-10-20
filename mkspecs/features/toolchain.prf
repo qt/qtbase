@@ -2,10 +2,10 @@
 defineReplace(qtMakeExpand) {
     out = "$$1"
     for(ever) {
-        m = $$replace(out, .*\\$\\(EXPORT_([^)]+)\\).*, \\1)
+        m = $$replace(out, ".*\\$\\(EXPORT_([^)]+)\\).*", \\1)
         equals(m, $$out): \
             return($$out)
-        out = $$replace(out, \\$\\(EXPORT_$$m\\), $$eval($$m))
+        out = $$replace(out, "\\$\\(EXPORT_$$m\\)", $$eval($$m))
     }
 }
 
