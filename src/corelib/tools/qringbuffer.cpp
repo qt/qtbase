@@ -132,7 +132,6 @@ char *QRingBuffer::reserve(qint64 bytes)
 
     char *writePtr = buffers.last().data() + tail;
     bufferSize += bytes;
-    Q_ASSERT(bytes < MaxByteArraySize);
     tail += int(bytes);
     return writePtr;
 }
