@@ -332,7 +332,7 @@ QVariant QJsonDocument::toVariant() const
 
  \sa fromJson()
  */
-#ifndef QT_JSON_READONLY
+#if !defined(QT_JSON_READONLY) || defined(Q_CLANG_QDOC)
 QByteArray QJsonDocument::toJson() const
 {
     return toJson(Indented);
@@ -369,7 +369,7 @@ QByteArray QJsonDocument::toJson() const
 
     \sa fromJson(), JsonFormat
  */
-#ifndef QT_JSON_READONLY
+#if !defined(QT_JSON_READONLY) || defined(Q_CLANG_QDOC)
 QByteArray QJsonDocument::toJson(JsonFormat format) const
 {
     QByteArray json;
