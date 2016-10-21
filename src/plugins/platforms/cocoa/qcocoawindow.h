@@ -260,7 +260,6 @@ public:
 protected:
     void recreateWindow();
     QCocoaNSWindow *createNSWindow();
-    void setNSWindow(QCocoaNSWindow *window);
 
     bool shouldUseNSPanel();
 

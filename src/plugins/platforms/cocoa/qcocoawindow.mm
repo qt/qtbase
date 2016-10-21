@@ -1479,7 +1479,16 @@ void QCocoaWindow::recreateWindow()
             m_forwardWindow = oldParentCocoaWindow;
         }
 
-        setNSWindow(m_nsWindow);
+        // Move view to new NSWindow if needed
+        if (m_nsWindow.contentView != m_view) {
+            [m_view setPostsFrameChangedNotifications:NO];
+            [m_view retain];
+            if (m_view.superview) // m_view comes from another NSWindow
+                [m_view removeFromSuperview];
+            [m_nsWindow setContentView:m_view];
+            [m_view release];
+            [m_view setPostsFrameChangedNotifications:YES];
+        }
     }
 
     if (m_viewIsToBeEmbedded) {
@@ -1637,19 +1646,6 @@ QCocoaNSWindow * QCocoaWindow::createNSWindow()
     applyContentBorderThickness(createdWindow);
 
     return createdWindow;
-}
-
-void QCocoaWindow::setNSWindow(QCocoaNSWindow *window)
-{
-    if (window.contentView != m_view) {
-        [m_view setPostsFrameChangedNotifications:NO];
-        [m_view retain];
-        if (m_view.superview) // m_view comes from another NSWindow
-            [m_view removeFromSuperview];
-        [window setContentView:m_view];
-        [m_view release];
-        [m_view setPostsFrameChangedNotifications:YES];
-    }
 }
 
 void QCocoaWindow::removeChildWindow(QCocoaWindow *child)
