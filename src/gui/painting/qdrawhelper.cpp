@@ -4509,8 +4509,10 @@ static void blend_tiled_argb(int count, const QSpan *spans, void *userData)
             uint *dest = ((uint *)data->rasterBuffer->scanLine(spans->y)) + x;
             op.func(dest, src, l, coverage);
             x += l;
+            sx += l;
             length -= l;
-            sx = 0;
+            if (sx >= image_width)
+                sx = 0;
         }
         ++spans;
     }
@@ -4568,7 +4570,9 @@ static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
                 memcpy(dest, src, l * sizeof(quint16));
                 length -= l;
                 tx += l;
-                sx = 0;
+                sx += l;
+                if (sx >= image_width)
+                    sx = 0;
             }
 
             // Now use the rasterBuffer as the source of the texture,
@@ -4601,8 +4605,10 @@ static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
                     const quint16 *src = (const quint16 *)data->texture.scanLine(sy) + sx;
                     blend_sourceOver_rgb16_rgb16(dest, src, l, alpha, ialpha);
                     x += l;
+                    sx += l;
                     length -= l;
-                    sx = 0;
+                    if (sx >= image_width)
+                        sx = 0;
                 }
             }
         }
