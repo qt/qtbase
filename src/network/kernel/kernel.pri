@@ -18,7 +18,6 @@ HEADERS += kernel/qtnetworkglobal.h \
            kernel/qnetworkinterface.h \
            kernel/qnetworkinterface_p.h \
            kernel/qnetworkproxy.h \
-           kernel/qnetworkproxy_p.h \
            kernel/qurlinfo_p.h
 
 SOURCES += kernel/qauthenticator.cpp \
