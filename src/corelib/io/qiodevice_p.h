@@ -171,6 +171,7 @@ public:
     void setReadChannelCount(int count);
     void setWriteChannelCount(int count);
 
+    qint64 read(char *data, qint64 maxSize);
     virtual qint64 peek(char *data, qint64 maxSize);
     virtual QByteArray peek(qint64 maxSize);
 
