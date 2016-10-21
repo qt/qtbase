@@ -2903,7 +2903,10 @@ void tst_QAccessibility::listTest()
     QAccessibleInterface *cellMunich3 = table2->cellAt(2,0);
     QCOMPARE(cell4, cellMunich3);
     QCOMPARE(axidMunich, QAccessible::uniqueId(cellMunich3));
-
+    delete listView->takeItem(2);
+    // list: Oslo, Helsinki
+    // verify that it doesn't return an invalid item from the cache
+    QVERIFY(table2->cellAt(2,0) == 0);
 
     delete listView;
     }

@@ -550,20 +550,8 @@ void QAccessibleTable::modelChange(QAccessibleTableModelChangeEvent *event)
             QAccessible::Id id = iter.value();
             QAccessibleInterface *iface = QAccessible::accessibleInterface(id);
             Q_ASSERT(iface);
-            if (iface->role() == QAccessible::Cell || iface->role() == QAccessible::ListItem) {
-                Q_ASSERT(iface->tableCellInterface());
-                QAccessibleTableCell *cell = static_cast<QAccessibleTableCell*>(iface->tableCellInterface());
-                if (event->modelChangeType() == QAccessibleTableModelChangeEvent::RowsInserted
-                        && cell->m_index.row() >= event->firstRow()) {
-                    int newRow = cell->m_index.row() + newRows;
-                    cell->m_index = cell->m_index.sibling(newRow, cell->m_index.column());
-                } else if (event->modelChangeType() == QAccessibleTableModelChangeEvent::ColumnsInserted
-                        && cell->m_index.column() >= event->firstColumn()) {
-                    int newColumn = cell->m_index.column() + newColumns;
-                    cell->m_index = cell->m_index.sibling(cell->m_index.row(), newColumn);
-                }
-            } else if (event->modelChangeType() == QAccessibleTableModelChangeEvent::RowsInserted
-                       && iface->role() == QAccessible::RowHeader) {
+            if (event->modelChangeType() == QAccessibleTableModelChangeEvent::RowsInserted
+                && iface->role() == QAccessible::RowHeader) {
                 QAccessibleTableHeaderCell *cell = static_cast<QAccessibleTableHeaderCell*>(iface);
                 if (cell->index >= event->firstRow()) {
                     cell->index += newRows;
@@ -602,27 +590,11 @@ void QAccessibleTable::modelChange(QAccessibleTableModelChangeEvent *event)
             if (iface->role() == QAccessible::Cell || iface->role() == QAccessible::ListItem) {
                 Q_ASSERT(iface->tableCellInterface());
                 QAccessibleTableCell *cell = static_cast<QAccessibleTableCell*>(iface->tableCellInterface());
-                if (event->modelChangeType() == QAccessibleTableModelChangeEvent::RowsRemoved) {
-                    if (cell->m_index.row() < event->firstRow()) {
-                        newCache.insert(indexOfChild(cell), id);
-                    } else if (cell->m_index.row() > event->lastRow()) {
-                        int newRow = cell->m_index.row() - deletedRows;
-                        cell->m_index = cell->m_index.sibling(newRow, cell->m_index.column());
-                        newCache.insert(indexOfChild(cell), id);
-                    } else {
-                        QAccessible::deleteAccessibleInterface(id);
-                    }
-                } else if (event->modelChangeType() == QAccessibleTableModelChangeEvent::ColumnsRemoved) {
-                    if (cell->m_index.column() < event->firstColumn()) {
-                        newCache.insert(indexOfChild(cell), id);
-                    } else if (cell->m_index.column() > event->lastColumn()) {
-                        int newColumn = cell->m_index.column() - deletedColumns;
-                        cell->m_index = cell->m_index.sibling(cell->m_index.row(), newColumn);
-                        newCache.insert(indexOfChild(cell), id);
-                    } else {
-                        QAccessible::deleteAccessibleInterface(id);
-                    }
-                }
+                // Since it is a QPersistentModelIndex, we only need to check if it is valid
+                if (cell->m_index.isValid())
+                    newCache.insert(indexOfChild(cell), id);
+                else
+                    QAccessible::deleteAccessibleInterface(id);
             } else if (event->modelChangeType() == QAccessibleTableModelChangeEvent::RowsRemoved
                        && iface->role() == QAccessible::RowHeader) {
                 QAccessibleTableHeaderCell *cell = static_cast<QAccessibleTableHeaderCell*>(iface);
