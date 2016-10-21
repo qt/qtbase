@@ -579,7 +579,10 @@
         },
         "topleveldomain": {
             "label": "QUrl::topLevelDomain()",
-            "description": "Provides support for extracting the top level domain from URLs.",
+            "purpose": "Provides support for extracting the top level domain from URLs.
+
+If enabled, a binary dump of the Public Suffix List (http://www.publicsuffix.org,
+Mozilla License) is included. The data is then also used in QNetworkCookieJar::validateCookie.",
             "section": "Utilities",
             "output": [ "publicFeature" ]
         }
