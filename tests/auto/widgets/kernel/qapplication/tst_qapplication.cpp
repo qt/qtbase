@@ -2197,8 +2197,8 @@ void tst_QApplication::noQuitOnHide()
 {
     int argc = 0;
     QApplication app(argc, 0);
-    QWidget *window1 = new NoQuitOnHideWidget;
-    window1->show();
+    NoQuitOnHideWidget window1;
+    window1.show();
     QCOMPARE(app.exec(), 1);
 }
 
@@ -2232,12 +2232,12 @@ void tst_QApplication::abortQuitOnShow()
 {
     int argc = 0;
     QApplication app(argc, 0);
-    QWidget *window1 = new ShowCloseShowWidget(false);
-    window1->show();
+    ShowCloseShowWidget window1(false);
+    window1.show();
     QCOMPARE(app.exec(), 0);
 
-    QWidget *window2 = new ShowCloseShowWidget(true);
-    window2->show();
+    ShowCloseShowWidget window2(true);
+    window2.show();
     QCOMPARE(app.exec(), 1);
 }
 

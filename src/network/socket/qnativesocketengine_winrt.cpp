@@ -498,10 +498,12 @@ void QNativeSocketEngine::close()
             ComPtr<IAsyncAction> action;
             hr = socket3->CancelIOAsync(&action);
             Q_ASSERT_SUCCEEDED(hr);
-            hr = QWinRTFunctions::await(action);
+            hr = QWinRTFunctions::await(action, QWinRTFunctions::YieldThread, 5000);
             // If there is no pending IO (no read established before) the function will fail with
             // "function was called at an unexpected time" which is fine.
-            if (hr != E_ILLEGAL_METHOD_CALL)
+            // Timeout is fine as well. The result will be the socket being hard reset instead of
+            // being closed gracefully
+            if (hr != E_ILLEGAL_METHOD_CALL && hr != ERROR_TIMEOUT)
                 Q_ASSERT_SUCCEEDED(hr);
             return S_OK;
         });

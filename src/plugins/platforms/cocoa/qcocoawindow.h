@@ -352,6 +352,7 @@ public: // for QNSView
     // This object is tracked by QCocoaWindowPointer,
     // preventing the use of dangling pointers.
     QObject sentinel;
+    bool m_hasWindowFilePath;
 };
 
 QT_END_NAMESPACE

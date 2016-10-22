@@ -66,7 +66,8 @@ private:
 
 Q_GLOBAL_STATIC(DeviceIntegration, deviceIntegration)
 
-DeviceIntegration::DeviceIntegration() : m_integration(0)
+DeviceIntegration::DeviceIntegration()
+    : m_integration(nullptr)
 {
     QStringList pluginKeys = QEGLDeviceIntegrationFactory::keys();
     if (!pluginKeys.isEmpty()) {

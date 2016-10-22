@@ -80,7 +80,7 @@
 
     \section1 Event Types
 
-    Most events types have special classes, notably QResizeEvent,
+    Most event types have special classes, notably QResizeEvent,
     QPaintEvent, QMouseEvent, QKeyEvent, and QCloseEvent. Each class
     subclasses QEvent and adds event-specific functions. For example,
     QResizeEvent adds \l{QResizeEvent::}{size()} and

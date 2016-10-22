@@ -290,7 +290,8 @@ contains(TEMPLATE, .*app) {
     autoplugs =
     for (qtmod, qt_module_deps) {
         for (ptype, QT.$${qtmod}.plugin_types) {
-            isEmpty(QTPLUGIN.$$ptype) {
+            nptype = $$replace(ptype, [-/], _)
+            isEmpty(QTPLUGIN.$$nptype) {
                 for (plug, QT_PLUGINS) {
                     equals(QT_PLUGIN.$${plug}.TYPE, $$ptype) {
                         for (dep, QT_PLUGIN.$${plug}.EXTENDS) {
@@ -303,7 +304,7 @@ contains(TEMPLATE, .*app) {
                     }
                 }
             } else {
-                plug = $$eval(QTPLUGIN.$$ptype)
+                plug = $$eval(QTPLUGIN.$$nptype)
                 !equals(plug, -): \
                     autoplugs += $$plug
             }

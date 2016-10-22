@@ -295,7 +295,7 @@ private:
     int streampos;
 
     int writeImage(const QByteArray &data, int width, int height, int depth,
-                   int maskObject, int softMaskObject, bool dct = false);
+                   int maskObject, int softMaskObject, bool dct = false, bool isMono = false);
     void writePage();
 
     int addXrefEntry(int object, bool printostr = true);

@@ -282,7 +282,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     if (ret) {
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
         data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
-        QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
+        QString canonicalPath = QDir::cleanPath(QFile::decodeName(ret));
         free(ret);
         return QFileSystemEntry(canonicalPath);
     } else if (errno == ENOENT) { // file doesn't exist

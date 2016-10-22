@@ -1685,9 +1685,11 @@ void QXcbWindow::requestActivateWindow()
     m_deferredActivation = false;
 
     updateNetWmUserTime(connection()->time());
+    QWindow *focusWindow = QGuiApplication::focusWindow();
 
     if (window()->isTopLevel()
         && !(window()->flags() & Qt::X11BypassWindowManagerHint)
+        && (!focusWindow || !window()->isAncestorOf(focusWindow))
         && connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_ACTIVE_WINDOW))) {
         xcb_client_message_event_t event;
 
@@ -1698,7 +1700,6 @@ void QXcbWindow::requestActivateWindow()
         event.type = atom(QXcbAtom::_NET_ACTIVE_WINDOW);
         event.data.data32[0] = 1;
         event.data.data32[1] = connection()->time();
-        QWindow *focusWindow = QGuiApplication::focusWindow();
         event.data.data32[2] = focusWindow ? focusWindow->winId() : XCB_NONE;
         event.data.data32[3] = 0;
         event.data.data32[4] = 0;
