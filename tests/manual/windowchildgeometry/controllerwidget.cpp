@@ -284,7 +284,7 @@ public:
     {
         setObjectName(QStringLiteral("window"));
         setTitle(tr("TestWindow"));
-        setFlags(flags() | Qt::MacUseNSWindow);
+        setProperty("_q_platform_MacUseNSWindow", QVariant(true));
     }
 
 protected:
@@ -317,7 +317,7 @@ void Window::mousePressEvent(QMouseEvent * ev)
     m_mouseDownPosition = ev->pos();
 }
 
-void Window::mouseReleaseEvent(QMouseEvent * e)
+void Window::mouseReleaseEvent(QMouseEvent *)
 {
     m_mouseDownPosition = QPoint();
 }
@@ -408,7 +408,6 @@ WindowControl::WindowControl(QWindow *w )
 
 void WindowControl::refresh()
 {
-    const QWindow *w = static_cast<const QWindow *>(m_object);
     BaseWindowControl::refresh();
 }
 
