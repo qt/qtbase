@@ -144,7 +144,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 
 - (void)dealloc
 {
-    [self restoreOriginalContentView];
+    [mStolenContentView release];
     [mFontPanel setDelegate:nil];
     [[NSFontManager sharedFontManager] setDelegate:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
