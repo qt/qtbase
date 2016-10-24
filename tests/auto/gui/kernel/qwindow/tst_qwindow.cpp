@@ -65,6 +65,7 @@ private slots:
     void positioningDuringMinimized();
     void childWindowPositioning_data();
     void childWindowPositioning();
+    void childWindowLevel();
     void platformSurface();
     void isExposed();
     void isActive();
@@ -594,6 +595,29 @@ void tst_QWindow::childWindowPositioning()
     // Creation order shouldn't affect the child ending up at 0,0
     QCOMPARE(childWindowFirst.framePosition(), topLeftOrigin);
     QCOMPARE(childWindowAfter.framePosition(), topLeftOrigin);
+}
+
+void tst_QWindow::childWindowLevel()
+{
+    ColoredWindow topLevel(Qt::green);
+    topLevel.setObjectName("topLevel");
+    ColoredWindow yellowChild(Qt::yellow, &topLevel);
+    yellowChild.setObjectName("yellowChild");
+    ColoredWindow redChild(Qt::red, &topLevel);
+    redChild.setObjectName("redChild");
+    ColoredWindow blueChild(Qt::blue, &topLevel);
+    blueChild.setObjectName("blueChild");
+
+    const QObjectList &siblings = topLevel.children();
+
+    QCOMPARE(siblings.constFirst(), &yellowChild);
+    QCOMPARE(siblings.constLast(), &blueChild);
+
+    yellowChild.raise();
+    QCOMPARE(siblings.constLast(), &yellowChild);
+
+    blueChild.lower();
+    QCOMPARE(siblings.constFirst(), &blueChild);
 }
 
 // QTBUG-49709: Verify that the normal geometry is correctly restored

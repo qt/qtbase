@@ -343,6 +343,30 @@ void QWindowPrivate::updateVisibility()
         emit q->visibilityChanged(visibility);
 }
 
+void QWindowPrivate::updateSiblingPosition(SiblingPosition position)
+{
+    Q_Q(QWindow);
+
+    if (!q->parent())
+        return;
+
+    QObjectList &siblings = q->parent()->d_ptr->children;
+
+    const int siblingCount = siblings.size() - 1;
+    if (siblingCount == 0)
+        return;
+
+    const int currentPosition = siblings.indexOf(q);
+    Q_ASSERT(currentPosition >= 0);
+
+    const int targetPosition = position == PositionTop ? siblingCount : 0;
+
+    if (currentPosition == targetPosition)
+        return;
+
+    siblings.move(currentPosition, targetPosition);
+}
+
 inline bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
 {
     Q_Q(const QWindow);
@@ -920,6 +944,9 @@ QIcon QWindow::icon() const
 void QWindow::raise()
 {
     Q_D(QWindow);
+
+    d->updateSiblingPosition(QWindowPrivate::PositionTop);
+
     if (d->platformWindow)
         d->platformWindow->raise();
 }
@@ -932,6 +959,9 @@ void QWindow::raise()
 void QWindow::lower()
 {
     Q_D(QWindow);
+
+    d->updateSiblingPosition(QWindowPrivate::PositionBottom);
+
     if (d->platformWindow)
         d->platformWindow->lower();
 }

@@ -144,6 +144,9 @@ public:
     void updateVisibility();
     void _q_clearAlert();
 
+    enum SiblingPosition { PositionTop, PositionBottom };
+    void updateSiblingPosition(SiblingPosition);
+
     bool windowRecreationRequired(QScreen *newScreen) const;
     void create(bool recursive);
     void setTopLevelScreen(QScreen *newScreen, bool recreate);
