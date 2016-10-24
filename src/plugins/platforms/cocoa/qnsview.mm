@@ -275,7 +275,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 {
     QRect geometry;
 
-    if (m_platformWindow->m_isNSWindowChild) {
+    if (self.window.parentWindow) {
          return;
 #if 0
         //geometry = QRectF::fromCGRect([self frame]).toRect();

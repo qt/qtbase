@@ -257,18 +257,31 @@ public:
 
     static QPoint bottomLeftClippedByNSWindowOffsetStatic(QWindow *window);
     QPoint bottomLeftClippedByNSWindowOffset() const;
-protected:
-    void recreateWindow();
-    QCocoaNSWindow *createNSWindow();
 
-    bool shouldUseNSPanel();
+    enum RecreationReason {
+        RecreationNotNeeded = 0,
+        ParentChanged = 0x1,
+        MissingWindow = 0x2,
+        WindowModalityChanged = 0x4,
+        ChildNSWindowChanged = 0x8,
+        ContentViewChanged = 0x10,
+        PanelChanged = 0x20,
+    };
+    Q_DECLARE_FLAGS(RecreationReasons, RecreationReason)
+    Q_FLAG(RecreationReasons)
+
+protected:
+    bool isChildNSWindow() const;
+    bool isContentView() const;
+
+    void recreateWindowIfNeeded();
+    QCocoaNSWindow *createNSWindow(bool shouldBeChildNSWindow, bool shouldBePanel);
 
     QRect nativeWindowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
     void syncWindowState(Qt::WindowState newState);
     void reinsertChildWindow(QCocoaWindow *child);
     void removeChildWindow(QCocoaWindow *child);
-    bool isNativeWindowTypeInconsistent();
 
 // private:
 public: // for QNSView
@@ -286,7 +299,6 @@ public: // for QNSView
     bool m_viewIsToBeEmbedded; // true if the m_view is intended to be embedded in a "foreign" NSView hiearchy
 
     QCocoaWindow *m_parentCocoaWindow;
-    bool m_isNSWindowChild; // this window is a non-top level QWindow with a NSWindow.
     QList<QCocoaWindow *> m_childWindows;
 
     Qt::WindowFlags m_windowFlags;
