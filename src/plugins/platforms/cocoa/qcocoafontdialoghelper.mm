@@ -58,33 +58,6 @@ typedef float CGFloat;  // Should only not be defined on 32-bit platforms
 
 QT_USE_NAMESPACE
 
-// should a priori be kept in sync with qcolordialog_mac.mm
-const CGFloat ButtonMinWidth = 78.0;
-const CGFloat ButtonMinHeight = 32.0;
-const CGFloat ButtonSpacing = 0.0;
-const CGFloat ButtonTopMargin = 0.0;
-const CGFloat ButtonBottomMargin = 7.0;
-const CGFloat ButtonSideMargin = 9.0;
-
-// looks better with some margins
-const CGFloat DialogTopMargin = 7.0;
-const CGFloat DialogSideMargin = 9.0;
-
-static NSButton *macCreateButton(const char *text, NSView *superview)
-{
-    static const NSRect buttonFrameRect = { { 0.0, 0.0 }, { 0.0, 0.0 } };
-
-    NSButton *button = [[NSButton alloc] initWithFrame:buttonFrameRect];
-    [button setButtonType:NSMomentaryLightButton];
-    [button setBezelStyle:NSRoundedBezelStyle];
-    [button setTitle:(NSString*)(CFStringRef)QCFString(
-            QPlatformTheme::removeMnemonics(QCoreApplication::translate("QDialogButtonBox", text)))];
-    [[button cell] setFont:[NSFont systemFontOfSize:
-            [NSFont systemFontSizeForControlSize:NSRegularControlSize]]];
-    [superview addSubview:button];
-    return button;
-}
-
 static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 {
     QFont newFont;
@@ -103,22 +76,19 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
 @class QT_MANGLE_NAMESPACE(QNSFontPanelDelegate);
 
-@interface QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) : NSObject<NSWindowDelegate>
+@interface QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) : NSObject<NSWindowDelegate, QT_MANGLE_NAMESPACE(QNSPanelDelegate)>
 {
     @public
     NSFontPanel *mFontPanel;
     QCocoaFontDialogHelper *mHelper;
     NSView *mStolenContentView;
-    NSButton *mOkButton;
-    NSButton *mCancelButton;
+    QNSPanelContentsWrapper *mPanelButtons;
     QFont mQtFont;
     NSInteger mResultCode;
     BOOL mDialogIsExecuting;
     BOOL mResultSet;
 };
 - (void)restoreOriginalContentView;
-- (void)relayout;
-- (void)relayoutToContentSize:(NSSize)frameSize;
 - (void)updateQtFont;
 - (void)changeFont:(id)sender;
 - (void)finishOffWithCode:(NSInteger)code;
@@ -134,8 +104,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
     mFontPanel = [NSFontPanel sharedFontPanel];
     mHelper = 0;
     mStolenContentView = 0;
-    mOkButton = 0;
-    mCancelButton = 0;
+    mPanelButtons = 0;
     mResultCode = NSCancelButton;
     mDialogIsExecuting = false;
     mResultSet = false;
@@ -173,23 +142,11 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
         [mFontPanel setContentView:0];
 
         // create a new content view and add the stolen one as a subview
-        NSRect frameRect = { { 0.0, 0.0 }, { 0.0, 0.0 } };
-        NSView *ourContentView = [[NSView alloc] initWithFrame:frameRect];
-        [ourContentView addSubview:mStolenContentView];
-
-        // create OK and Cancel buttons and add these as subviews
-        mOkButton = macCreateButton("&OK", ourContentView);
-        mCancelButton = macCreateButton("Cancel", ourContentView);
-
-        [mFontPanel setContentView:ourContentView];
-        [mFontPanel setDefaultButtonCell:[mOkButton cell]];
-        [self relayoutToContentSize:[[mStolenContentView superview] frame].size];
-
-        [mOkButton setAction:@selector(onOkClicked)];
-        [mOkButton setTarget:self];
-
-        [mCancelButton setAction:@selector(onCancelClicked)];
-        [mCancelButton setTarget:self];
+        mPanelButtons = [[QNSPanelContentsWrapper alloc] initWithPanelDelegate:self];
+        [mPanelButtons addSubview:mStolenContentView];
+        mPanelButtons.panelContentsMargins = NSEdgeInsetsMake(0, 0, 7, 0);
+        mFontPanel.contentView = mPanelButtons;
+        mFontPanel.defaultButtonCell = mPanelButtons.okButton.cell;
     }
 }
 
@@ -198,76 +155,17 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
     [mFontPanel close];
 }
 
-- (void)windowDidResize:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-    [self relayout];
-}
-
 - (void)restoreOriginalContentView
 {
     if (mStolenContentView) {
-        NSView *ourContentView = [mFontPanel contentView];
-
         // return stolen stuff to its rightful owner
         [mStolenContentView removeFromSuperview];
         [mFontPanel setContentView:mStolenContentView];
-        [mOkButton release];
-        [mCancelButton release];
-        [ourContentView release];
-        mOkButton = 0;
-        mCancelButton = 0;
         mStolenContentView = 0;
+        [mPanelButtons release];
+        mPanelButtons = nil;
     }
 }
-
-- (void)relayout
-{
-    if (!mOkButton)
-        return;
-
-    [self relayoutToContentSize:[[mStolenContentView superview] frame].size];
-}
-
-- (void)relayoutToContentSize:(NSSize)frameSize
-{
-    Q_ASSERT(mOkButton);
-
-    [mOkButton sizeToFit];
-    NSSize okSizeHint = [mOkButton frame].size;
-
-    [mCancelButton sizeToFit];
-    NSSize cancelSizeHint = [mCancelButton frame].size;
-
-    const CGFloat ButtonWidth = qMin(qMax(ButtonMinWidth,
-                qMax(okSizeHint.width, cancelSizeHint.width)),
-            CGFloat((frameSize.width - 2.0 * ButtonSideMargin - ButtonSpacing) * 0.5));
-    const CGFloat ButtonHeight = qMax(ButtonMinHeight,
-                                     qMax(okSizeHint.height, cancelSizeHint.height));
-
-    const CGFloat X = DialogSideMargin;
-    const CGFloat Y = ButtonBottomMargin + ButtonHeight + ButtonTopMargin;
-
-    NSRect okRect = { { frameSize.width - ButtonSideMargin - ButtonWidth,
-                        ButtonBottomMargin },
-                      { ButtonWidth, ButtonHeight } };
-    [mOkButton setFrame:okRect];
-    [mOkButton setNeedsDisplay:YES];
-
-    NSRect cancelRect = { { okRect.origin.x - ButtonSpacing - ButtonWidth,
-                            ButtonBottomMargin },
-                            { ButtonWidth, ButtonHeight } };
-    [mCancelButton setFrame:cancelRect];
-    [mCancelButton setNeedsDisplay:YES];
-
-    NSRect stolenCVRect = { { X, Y },
-                            { frameSize.width - X - X, frameSize.height - Y - DialogTopMargin } };
-    [mStolenContentView setFrame:stolenCVRect];
-    [mStolenContentView setNeedsDisplay:YES];
-
-    [[mStolenContentView superview] setNeedsDisplay:YES];
-}
-
 
 - (void)onOkClicked
 {
@@ -277,7 +175,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 
 - (void)onCancelClicked
 {
-    if (mOkButton) {
+    if (mPanelButtons) {
         [mFontPanel close];
         mQtFont = QFont();
         [self finishOffWithCode:NSCancelButton];
@@ -332,7 +230,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 - (BOOL)windowShouldClose:(id)window
 {
     Q_UNUSED(window);
-    if (!mOkButton)
+    if (!mPanelButtons)
         [self updateQtFont];
     if (mDialogIsExecuting) {
         [self finishOffWithCode:NSCancelButton];
