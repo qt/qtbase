@@ -494,10 +494,10 @@ QCocoaWindow::~QCocoaWindow()
         QCocoaIntegration::instance()->popupWindowStack()->removeAll(this);
     }
 
-    foreach (QCocoaWindow *child, m_childWindows) {
-       [m_nsWindow removeChildWindow:child->m_nsWindow];
-        child->m_parentCocoaWindow = 0;
-    }
+    foreachChildNSWindow(^(QCocoaWindow *childWindow) {
+        [m_nsWindow removeChildWindow:childWindow->m_nsWindow];
+        childWindow->m_parentCocoaWindow = 0;
+    });
 
     [m_view release];
     [m_nsWindow release];
@@ -590,9 +590,9 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 
 void QCocoaWindow::clipChildWindows()
 {
-    foreach (QCocoaWindow *childWindow, m_childWindows) {
+    foreachChildNSWindow(^(QCocoaWindow *childWindow) {
         childWindow->clipWindow(m_nsWindow.frame);
-    }
+    });
 }
 
 void QCocoaWindow::clipWindow(const NSRect &clipRect)
@@ -628,9 +628,9 @@ void QCocoaWindow::clipWindow(const NSRect &clipRect)
     }
 
     // recurse
-    foreach (QCocoaWindow *childWindow, m_childWindows) {
+    foreachChildNSWindow(^(QCocoaWindow *childWindow) {
         childWindow->clipWindow(clippedWindowRect);
-    }
+    });
 }
 
 void QCocoaWindow::hide(bool becauseOfAncestor)
@@ -647,8 +647,9 @@ void QCocoaWindow::hide(bool becauseOfAncestor)
     if (!visible) // Could have been clipped before
         return;
 
-    foreach (QCocoaWindow *childWindow, m_childWindows)
+    foreachChildNSWindow(^(QCocoaWindow *childWindow) {
         childWindow->hide(true);
+    });
 
     [m_nsWindow orderOut:nil];
 }
@@ -670,8 +671,9 @@ void QCocoaWindow::show(bool becauseOfAncestor)
             [m_nsWindow orderFront:nil];
             if (isChildNSWindow())
                 m_parentCocoaWindow->reinsertChildWindow(this);
-            foreach (QCocoaWindow *childWindow, m_childWindows)
+            foreachChildNSWindow(^(QCocoaWindow *childWindow) {
                 childWindow->show(true);
+            });
         }
     }
 }
@@ -753,8 +755,9 @@ void QCocoaWindow::setVisible(bool visible)
                     else
                         [m_nsWindow orderFront:nil];
 
-                    foreach (QCocoaWindow *childWindow, m_childWindows)
+                    foreachChildNSWindow(^(QCocoaWindow *childWindow) {
                         childWindow->show(true);
+                    });
                 } else {
                     show();
                 }
@@ -1036,9 +1039,6 @@ void QCocoaWindow::raise()
     if (!m_nsWindow)
         return;
     if (isChildNSWindow()) {
-        QList<QCocoaWindow *> &siblings = m_parentCocoaWindow->m_childWindows;
-        siblings.removeOne(this);
-        siblings.append(this);
         if (m_hiddenByClipping)
             return;
     }
@@ -1074,9 +1074,6 @@ void QCocoaWindow::lower()
     if (!m_nsWindow)
         return;
     if (isChildNSWindow()) {
-        QList<QCocoaWindow *> &siblings = m_parentCocoaWindow->m_childWindows;
-        siblings.removeOne(this);
-        siblings.prepend(this);
         if (m_hiddenByClipping)
             return;
     }
@@ -1460,6 +1457,20 @@ bool QCocoaWindow::isContentView() const
 }
 
 /*!
+    Iterates child NSWindows that have a corresponding QCocoaWindow.
+*/
+void QCocoaWindow::foreachChildNSWindow(void (^block)(QCocoaWindow *))
+{
+    NSArray *windows = m_view.window.childWindows;
+    [windows enumerateObjectsUsingBlock:^(NSWindow *window, NSUInteger index, BOOL *stop) {
+        Q_UNUSED(index);
+        Q_UNUSED(stop);
+        if (QNSView *view = qnsview_cast(window.contentView))
+            block(view.platformWindow);
+    }];
+}
+
+/*!
     Recreates (or removes) the NSWindow for this QWindow, if needed.
 
     A QWindow may need a corresponding NSWindow, depending on whether
@@ -1565,14 +1576,9 @@ void QCocoaWindow::recreateWindowIfNeeded()
         setWindowTitle(window()->title());
         setWindowState(window()->windowState());
     } else if (shouldBeChildNSWindow) {
-        QList<QCocoaWindow *> &siblings = m_parentCocoaWindow->m_childWindows;
-        if (siblings.contains(this)) {
-            if (!m_hiddenByClipping)
-                m_parentCocoaWindow->reinsertChildWindow(this);
-        } else {
-            if (!m_hiddenByClipping)
-                [m_parentCocoaWindow->m_nsWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
-            siblings.append(this);
+        if (!m_hiddenByClipping) {
+            [m_parentCocoaWindow->m_nsWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
+            m_parentCocoaWindow->reinsertChildWindow(this);
         }
 
         // Set properties after the window has been made a child NSWindow
@@ -1616,11 +1622,17 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
 void QCocoaWindow::reinsertChildWindow(QCocoaWindow *child)
 {
-    int childIndex = m_childWindows.indexOf(child);
+    const QObjectList &childWindows = window()->children();
+    int childIndex = childWindows.indexOf(child->window());
     Q_ASSERT(childIndex != -1);
 
-    for (int i = childIndex; i < m_childWindows.size(); i++) {
-        NSWindow *nsChild = m_childWindows[i]->m_nsWindow;
+    for (int i = childIndex; i < childWindows.size(); ++i) {
+        QWindow *window = static_cast<QWindow *>(childWindows.at(i));
+        QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+        if (!cocoaWindow)
+            continue;
+
+        NSWindow *nsChild = cocoaWindow->m_nsWindow;
         if (i != childIndex)
             [m_nsWindow removeChildWindow:nsChild];
         [m_nsWindow addChildWindow:nsChild ordered:NSWindowAbove];
@@ -1708,7 +1720,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
 
 void QCocoaWindow::removeChildWindow(QCocoaWindow *child)
 {
-    m_childWindows.removeOne(child);
     [m_nsWindow removeChildWindow:child->m_nsWindow];
 }
 

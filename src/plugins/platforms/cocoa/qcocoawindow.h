@@ -274,6 +274,8 @@ protected:
     bool isChildNSWindow() const;
     bool isContentView() const;
 
+    void foreachChildNSWindow(void (^block)(QCocoaWindow *));
+
     void recreateWindowIfNeeded();
     QCocoaNSWindow *createNSWindow(bool shouldBeChildNSWindow, bool shouldBePanel);
 
@@ -299,7 +301,6 @@ public: // for QNSView
     bool m_viewIsToBeEmbedded; // true if the m_view is intended to be embedded in a "foreign" NSView hiearchy
 
     QCocoaWindow *m_parentCocoaWindow;
-    QList<QCocoaWindow *> m_childWindows;
 
     Qt::WindowFlags m_windowFlags;
     bool m_effectivelyMaximized;
