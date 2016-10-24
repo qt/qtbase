@@ -1104,6 +1104,7 @@ void QMakeEvaluator::loadDefaults()
 
 bool QMakeEvaluator::prepareProject(const QString &inDir)
 {
+    QMakeVfs::VfsFlags flags = (m_cumulative ? QMakeVfs::VfsCumulative : QMakeVfs::VfsExact);
     QString superdir;
     if (m_option->do_cache) {
         QString conffile;
@@ -1114,7 +1115,7 @@ bool QMakeEvaluator::prepareProject(const QString &inDir)
             superdir = m_outputDir;
             forever {
                 QString superfile = superdir + QLatin1String("/.qmake.super");
-                if (m_vfs->exists(superfile)) {
+                if (m_vfs->exists(superfile, flags)) {
                     m_superfile = QDir::cleanPath(superfile);
                     break;
                 }
@@ -1129,10 +1130,10 @@ bool QMakeEvaluator::prepareProject(const QString &inDir)
             QString dir = m_outputDir;
             forever {
                 conffile = sdir + QLatin1String("/.qmake.conf");
-                if (!m_vfs->exists(conffile))
+                if (!m_vfs->exists(conffile, flags))
                     conffile.clear();
                 cachefile = dir + QLatin1String("/.qmake.cache");
-                if (!m_vfs->exists(cachefile))
+                if (!m_vfs->exists(cachefile, flags))
                     cachefile.clear();
                 if (!conffile.isEmpty() || !cachefile.isEmpty()) {
                     if (dir != sdir)
@@ -1160,7 +1161,7 @@ bool QMakeEvaluator::prepareProject(const QString &inDir)
     QString dir = m_outputDir;
     forever {
         QString stashfile = dir + QLatin1String("/.qmake.stash");
-        if (dir == (!superdir.isEmpty() ? superdir : m_buildRoot) || m_vfs->exists(stashfile)) {
+        if (dir == (!superdir.isEmpty() ? superdir : m_buildRoot) || m_vfs->exists(stashfile, flags)) {
             m_stashfile = QDir::cleanPath(stashfile);
             break;
         }
@@ -1285,7 +1286,8 @@ bool QMakeEvaluator::loadSpec()
                 m_cachefile, QMakeHandler::EvalConfigFile, LoadProOnly) != ReturnTrue)
             return false;
     }
-    if (!m_stashfile.isEmpty() && m_vfs->exists(m_stashfile)) {
+    QMakeVfs::VfsFlags flags = (m_cumulative ? QMakeVfs::VfsCumulative : QMakeVfs::VfsExact);
+    if (!m_stashfile.isEmpty() && m_vfs->exists(m_stashfile, flags)) {
         valuesRef(ProKey("_QMAKE_STASH_")) << ProString(m_stashfile);
         if (evaluateFile(
                 m_stashfile, QMakeHandler::EvalConfigFile, LoadProOnly) != ReturnTrue)
@@ -1308,7 +1310,7 @@ void QMakeEvaluator::setupProject()
 void QMakeEvaluator::evaluateCommand(const QString &cmds, const QString &where)
 {
     if (!cmds.isEmpty()) {
-        ProFile *pro = m_parser->parsedProBlock(QStringRef(&cmds), where, -1);
+        ProFile *pro = m_parser->parsedProBlock(QStringRef(&cmds), 0, where, -1);
         if (pro->isOk()) {
             m_locationStack.push(m_current);
             visitProBlock(pro, pro->tokPtr());
@@ -1812,7 +1814,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateConditional(
         const QStringRef &cond, const QString &where, int line)
 {
     VisitReturn ret = ReturnFalse;
-    ProFile *pro = m_parser->parsedProBlock(cond, where, line, QMakeParser::TestGrammar);
+    ProFile *pro = m_parser->parsedProBlock(cond, 0, where, line, QMakeParser::TestGrammar);
     if (pro->isOk()) {
         m_locationStack.push(m_current);
         ret = visitProBlock(pro, pro->tokPtr());

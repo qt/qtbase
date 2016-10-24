@@ -123,7 +123,7 @@ QStringList QMakeProject::expand(const ProKey &func, const QList<ProStringList> 
 ProString QMakeProject::expand(const QString &expr, const QString &where, int line)
 {
     ProString ret;
-    ProFile *pro = m_parser->parsedProBlock(QStringRef(&expr), where, line,
+    ProFile *pro = m_parser->parsedProBlock(QStringRef(&expr), 0, where, line,
                                             QMakeParser::ValueGrammar);
     if (pro->isOk()) {
         m_current.pro = pro;
