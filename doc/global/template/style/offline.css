@@ -424,7 +424,7 @@ table styles
 
 /* table with border alternative colours*/
 
-table, pre {
+table, pre, .LegaleseLeft {
     -moz-border-radius: 7px 7px 7px 7px;
     -webkit-border-radius: 7px 7px 7px 7px;
     border-radius: 7px 7px 7px 7px;
@@ -481,6 +481,10 @@ table, pre {
      margin: 0px
  }
 
+.LegaleseLeft {
+    font-family: monospace;
+    white-space: pre-wrap;
+}
 /* table bodless & white*/
 
 .borderless {
@@ -543,7 +547,7 @@ ol.a > li{
     text-align: left
 }
 
-.cpp {
+.cpp, .LegaleseLeft {
     display: block;
     margin: 10px;
     overflow: auto;
