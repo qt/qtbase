@@ -54,6 +54,7 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qcoreapplication.h"
 #include "private/qcoreapplication_p.h"
+#include "private/qmetaobject_p.h"
 #include "QtNetwork/qhostinfo.h"
 #include "QtCore/qmutex.h"
 #include "QtCore/qwaitcondition.h"
@@ -77,10 +78,47 @@ QT_BEGIN_NAMESPACE
 class QHostInfoResult : public QObject
 {
     Q_OBJECT
+
+    QPointer<const QObject> receiver = nullptr;
+    QtPrivate::QSlotObjectBase *slotObj = nullptr;
+
+public:
+    QHostInfoResult() = default;
+    QHostInfoResult(const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj) :
+        receiver(receiver),
+        slotObj(slotObj)
+    {
+        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
+                &QObject::deleteLater);
+        if (slotObj && receiver)
+            moveToThread(receiver->thread());
+    }
+
 public Q_SLOTS:
     inline void emitResultsReady(const QHostInfo &info)
     {
-        emit resultsReady(info);
+        if (slotObj) {
+            QHostInfo copy = info;
+            void *args[2] = { 0, reinterpret_cast<void *>(&copy) };
+            slotObj->call(const_cast<QObject*>(receiver.data()), args);
+            slotObj->destroyIfLastRef();
+        } else {
+            emit resultsReady(info);
+        }
+    }
+
+protected:
+    bool event(QEvent *event)
+    {
+        if (event->type() == QEvent::MetaCall) {
+            auto metaCallEvent = static_cast<QMetaCallEvent *>(event);
+            auto args = metaCallEvent->args();
+            auto hostInfo = reinterpret_cast<QHostInfo *>(args[1]);
+            emitResultsReady(*hostInfo);
+            deleteLater();
+            return true;
+        }
+        return QObject::event(event);
     }
 
 Q_SIGNALS:
@@ -154,6 +192,8 @@ class QHostInfoRunnable : public QRunnable
 {
 public:
     QHostInfoRunnable(const QString &hn, int i);
+    QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
+                      QtPrivate::QSlotObjectBase *slotObj);
     void run() Q_DECL_OVERRIDE;
 
     QString toBeLookedUp;

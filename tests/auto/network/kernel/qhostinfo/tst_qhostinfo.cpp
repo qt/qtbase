@@ -93,6 +93,10 @@ private slots:
     void lookupIPv4();
     void lookupIPv6_data();
     void lookupIPv6();
+    void lookupConnectToFunctionPointer_data();
+    void lookupConnectToFunctionPointer();
+    void lookupConnectToLambda_data();
+    void lookupConnectToLambda();
     void reverseLookup_data();
     void reverseLookup();
 
@@ -305,6 +309,74 @@ void tst_QHostInfo::lookupIPv6()
     expected.sort();
 
     QCOMPARE(tmp.join(' ').toLower(), expected.join(' ').toLower());
+}
+
+void tst_QHostInfo::lookupConnectToFunctionPointer_data()
+{
+    lookupIPv4_data();
+}
+
+void tst_QHostInfo::lookupConnectToFunctionPointer()
+{
+    QFETCH(QString, hostname);
+    QFETCH(int, err);
+    QFETCH(QString, addresses);
+
+    lookupDone = false;
+    QHostInfo::lookupHost(hostname, this, &tst_QHostInfo::resultsReady);
+
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(lookupDone);
+
+    if (int(lookupResults.error()) != int(err))
+        qWarning() << hostname << "=>" << lookupResults.errorString();
+    QCOMPARE(int(lookupResults.error()), int(err));
+
+    QStringList tmp;
+    for (const auto &result : lookupResults.addresses())
+        tmp.append(result.toString());
+    tmp.sort();
+
+    QStringList expected = addresses.split(' ');
+    expected.sort();
+
+    QCOMPARE(tmp.join(' '), expected.join(' '));
+}
+
+void tst_QHostInfo::lookupConnectToLambda_data()
+{
+    lookupIPv4_data();
+}
+
+void tst_QHostInfo::lookupConnectToLambda()
+{
+    QFETCH(QString, hostname);
+    QFETCH(int, err);
+    QFETCH(QString, addresses);
+
+    lookupDone = false;
+    QHostInfo::lookupHost(hostname, [=](const QHostInfo &hostInfo) {
+        resultsReady(hostInfo);
+    });
+
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(lookupDone);
+
+    if (int(lookupResults.error()) != int(err))
+        qWarning() << hostname << "=>" << lookupResults.errorString();
+    QCOMPARE(int(lookupResults.error()), int(err));
+
+    QStringList tmp;
+    for (int i = 0; i < lookupResults.addresses().count(); ++i)
+        tmp.append(lookupResults.addresses().at(i).toString());
+    tmp.sort();
+
+    QStringList expected = addresses.split(' ');
+    expected.sort();
+
+    QCOMPARE(tmp.join(' '), expected.join(' '));
 }
 
 void tst_QHostInfo::reverseLookup_data()

@@ -95,6 +95,38 @@ std::pair<OutputIt1, OutputIt2> separate_if(InputIt first, InputIt last, OutputI
     }
     return std::make_pair(dest1, dest2);
 }
+
+int get_signal_index()
+{
+    static auto senderMetaObject = &QHostInfoResult::staticMetaObject;
+    static auto signal = &QHostInfoResult::resultsReady;
+    int signal_index = -1;
+    void *args[] = { &signal_index, &signal };
+    senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
+    return signal_index + QMetaObjectPrivate::signalOffset(senderMetaObject);
+}
+
+void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
+                        QtPrivate::QSlotObjectBase *slotObj)
+{
+    static const int signal_index = get_signal_index();
+    auto result = new QHostInfoResult(receiver, slotObj);
+    Q_CHECK_PTR(result);
+    const int nargs = 2;
+    auto types = reinterpret_cast<int *>(malloc(nargs * sizeof(int)));
+    Q_CHECK_PTR(types);
+    types[0] = QMetaType::type("void");
+    types[1] = QMetaType::type("QHostInfo");
+    auto args = reinterpret_cast<void **>(malloc(nargs * sizeof(void *)));
+    Q_CHECK_PTR(args);
+    args[0] = 0;
+    args[1] = QMetaType::create(types[1], &hostInfo);
+    Q_CHECK_PTR(args[1]);
+    auto metaCallEvent = new QMetaCallEvent(slotObj, nullptr, signal_index, nargs, types, args);
+    Q_CHECK_PTR(metaCallEvent);
+    qApp->postEvent(result, metaCallEvent);
+}
+
 }
 
 /*!
@@ -241,6 +273,67 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     }
     return id;
 }
+
+/*!
+    \fn int QHostInfo::lookupHost(const QString &name, const QObject *receiver, PointerToMemberFunction function)
+
+    \since 5.9
+
+    \overload
+
+    Looks up the IP address(es) associated with host name \a name, and
+    returns an ID for the lookup. When the result of the lookup is
+    ready, the slot or signal \a function in \a receiver is called with
+    a QHostInfo argument. The QHostInfo object can then be inspected
+    to get the results of the lookup.
+
+    \note There is no guarantee on the order the signals will be emitted
+    if you start multiple requests with lookupHost().
+
+    \sa abortHostLookup(), addresses(), error(), fromName()
+*/
+
+/*!
+    \fn int QHostInfo::lookupHost(const QString &name, Functor functor)
+
+    \since 5.9
+
+    \overload
+
+    Looks up the IP address(es) associated with host name \a name, and
+    returns an ID for the lookup. When the result of the lookup is
+    ready, the \a functor is called with a QHostInfo argument. The
+    QHostInfo object can then be inspected to get the results of the
+    lookup.
+    \note There is no guarantee on the order the signals will be emitted
+    if you start multiple requests with lookupHost().
+
+    \sa abortHostLookup(), addresses(), error(), fromName()
+*/
+
+/*!
+    \fn int QHostInfo::lookupHost(const QString &name, const QObject *context, Functor functor)
+
+    \since 5.9
+
+    \overload
+
+    Looks up the IP address(es) associated with host name \a name, and
+    returns an ID for the lookup. When the result of the lookup is
+    ready, the \a functor is called with a QHostInfo argument. The
+    QHostInfo object can then be inspected to get the results of the
+    lookup.
+
+    If \a context is destroyed before the lookup completes, the
+    \a functor will not be called. The \a functor will be run in the
+    thread of \a context. The context's thread must have a running Qt
+    event loop.
+
+    \note There is no guarantee on the order the signals will be emitted
+    if you start multiple requests with lookupHost().
+
+    \sa abortHostLookup(), addresses(), error(), fromName()
+*/
 
 /*!
     Aborts the host lookup with the ID \a id, as returned by lookupHost().
@@ -487,7 +580,62 @@ QString QHostInfo::localHostName()
     \sa hostName()
 */
 
+int QHostInfo::lookupHostImpl(const QString &name,
+                              const QObject *receiver,
+                              QtPrivate::QSlotObjectBase *slotObj)
+{
+#if defined QHOSTINFO_DEBUG
+    qDebug("QHostInfo::lookupHost(\"%s\", %p, %p)",
+           name.toLatin1().constData(), receiver, slotObj);
+#endif
+
+    if (!QAbstractEventDispatcher::instance(QThread::currentThread())) {
+        qWarning("QHostInfo::lookupHost() called with no event dispatcher");
+        return -1;
+    }
+
+    qRegisterMetaType<QHostInfo>();
+
+    int id = theIdCounter.fetchAndAddRelaxed(1); // generate unique ID
+
+    if (Q_UNLIKELY(name.isEmpty())) {
+        QHostInfo hostInfo(id);
+        hostInfo.setError(QHostInfo::HostNotFound);
+        hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
+        emit_results_ready(hostInfo, receiver, slotObj);
+        return id;
+    }
+
+    QHostInfoLookupManager *manager = theHostInfoLookupManager();
+
+    if (Q_LIKELY(manager)) {
+        // the application is still alive
+        if (manager->cache.isEnabled()) {
+            // check cache first
+            bool valid = false;
+            QHostInfo info = manager->cache.get(name, &valid);
+            if (valid) {
+                info.setLookupId(id);
+                emit_results_ready(info, receiver, slotObj);
+                return id;
+            }
+        }
+
+        // cache is not enabled or it was not in the cache, do normal lookup
+        QHostInfoRunnable* runnable = new QHostInfoRunnable(name, id, receiver, slotObj);
+        manager->scheduleLookup(runnable);
+    }
+    return id;
+}
+
 QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i) : toBeLookedUp(hn), id(i)
+{
+    setAutoDelete(true);
+}
+
+QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
+                                     QtPrivate::QSlotObjectBase *slotObj) :
+    toBeLookedUp(hn), id(i), resultEmitter(receiver, slotObj)
 {
     setAutoDelete(true);
 }
