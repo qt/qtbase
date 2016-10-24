@@ -846,6 +846,10 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 size, const Q
 /*!
     Writes a block of \a size bytes from \a data to the socket.
     Returns the number of bytes written, or -1 if an error occurred.
+
+    Passing zero as the \a size parameter on a connected UDP socket
+    will send an empty datagram. For other socket types results are
+    unspecified.
 */
 qint64 QNativeSocketEngine::write(const char *data, qint64 size)
 {

@@ -881,7 +881,7 @@ bool QAbstractSocketPrivate::flush()
     const char *ptr = writeBuffer.readPointer();
 
     // Attempt to write it all in one chunk.
-    qint64 written = socketEngine->write(ptr, nextSize);
+    qint64 written = nextSize ? socketEngine->write(ptr, nextSize) : Q_INT64_C(0);
     if (written < 0) {
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug() << "QAbstractSocketPrivate::flush() write error, aborting." << socketEngine->errorString();
@@ -2477,7 +2477,7 @@ qint64 QAbstractSocket::writeData(const char *data, qint64 size)
     if (!d->isBuffered && d->socketType == TcpSocket
         && d->socketEngine && d->writeBuffer.isEmpty()) {
         // This code is for the new Unbuffered QTcpSocket use case
-        qint64 written = d->socketEngine->write(data, size);
+        qint64 written = size ? d->socketEngine->write(data, size) : Q_INT64_C(0);
         if (written < 0) {
             d->setError(d->socketEngine->error(), d->socketEngine->errorString());
             return written;
