@@ -1583,7 +1583,7 @@ QString QWindowsFontDatabase::fontDir() const
 
 bool QWindowsFontDatabase::fontsAlwaysScalable() const
 {
-    return true;
+    return false;
 }
 
 void QWindowsFontDatabase::derefUniqueFont(const QString &uniqueFont)
