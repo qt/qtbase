@@ -6439,7 +6439,8 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
         updateState(state);
 
     if (!ti.glyphs.numGlyphs) {
-        // nothing to do
+        drawTextItemDecoration(q, p, ti.fontEngine, textEngine, ti.underlineStyle,
+            ti.flags, ti.width.toReal(), ti.charFormat);
     } else if (ti.fontEngine->type() == QFontEngine::Multi) {
         QFontEngineMulti *multi = static_cast<QFontEngineMulti *>(ti.fontEngine);
 
