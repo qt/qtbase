@@ -407,7 +407,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_nsWindow(0)
     , m_viewIsEmbedded(false)
     , m_viewIsToBeEmbedded(false)
-    , m_parentCocoaWindow(0)
     , m_effectivelyMaximized(false)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
@@ -474,12 +473,10 @@ QCocoaWindow::~QCocoaWindow()
     [m_nsWindow makeFirstResponder:nil];
     [m_nsWindow setContentView:nil];
     [m_nsWindow.helper detachFromPlatformWindow];
-    if (m_view.window.parentWindow) {
-        if (m_parentCocoaWindow)
-            m_parentCocoaWindow->removeChildWindow(this);
-    } else if ([m_view superview]) {
+    if (m_view.window.parentWindow)
+        [m_view.window.parentWindow removeChildWindow:m_view.window];
+    else if ([m_view superview])
         [m_view removeFromSuperview];
-    }
 
     removeMonitor();
 
@@ -496,7 +493,6 @@ QCocoaWindow::~QCocoaWindow()
 
     foreachChildNSWindow(^(QCocoaWindow *childWindow) {
         [m_nsWindow removeChildWindow:childWindow->m_nsWindow];
-        childWindow->m_parentCocoaWindow = 0;
     });
 
     [m_view release];
@@ -568,7 +564,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 
     if (isChildNSWindow()) {
         QPlatformWindow::setGeometry(rect);
-        NSWindow *parentNSWindow = m_parentCocoaWindow->m_nsWindow;
+        NSWindow *parentNSWindow = m_view.window.parentWindow;
         NSRect parentWindowFrame = [parentNSWindow contentRectForFrameRect:parentNSWindow.frame];
         clipWindow(parentWindowFrame);
 
@@ -622,7 +618,7 @@ void QCocoaWindow::clipWindow(const NSRect &clipRect)
             m_hiddenByClipping = false;
             if (!m_hiddenByAncestor) {
                 [m_nsWindow orderFront:nil];
-                m_parentCocoaWindow->reinsertChildWindow(this);
+                static_cast<QCocoaWindow *>(QPlatformWindow::parent())->reinsertChildWindow(this);
             }
         }
     }
@@ -659,7 +655,7 @@ void QCocoaWindow::show(bool becauseOfAncestor)
     if ([m_nsWindow isVisible])
         return;
 
-    if (m_parentCocoaWindow && ![m_parentCocoaWindow->m_nsWindow isVisible]) {
+    if (m_view.window.parentWindow && !m_view.window.parentWindow.visible) {
         m_hiddenByAncestor = true; // Parent still hidden, don't show now
     } else if ((becauseOfAncestor == m_hiddenByAncestor) // Was NEITHER explicitly hidden
                && !m_hiddenByClipping) { // ... NOR clipped
@@ -670,7 +666,7 @@ void QCocoaWindow::show(bool becauseOfAncestor)
         if (!m_hiddenByClipping) { // setCocoaGeometry() can change the clipping status
             [m_nsWindow orderFront:nil];
             if (isChildNSWindow())
-                m_parentCocoaWindow->reinsertChildWindow(this);
+                static_cast<QCocoaWindow *>(QPlatformWindow::parent())->reinsertChildWindow(this);
             foreachChildNSWindow(^(QCocoaWindow *childWindow) {
                 childWindow->show(true);
             });
@@ -1047,7 +1043,7 @@ void QCocoaWindow::raise()
             // -[NSWindow orderFront:] doesn't work with attached windows.
             // The only solution is to remove and add the child window.
             // This will place it on top of all the other NSWindows.
-            NSWindow *parentNSWindow = m_parentCocoaWindow->m_nsWindow;
+            NSWindow *parentNSWindow = m_view.window.parentWindow;
             [parentNSWindow removeChildWindow:m_nsWindow];
             [parentNSWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
         } else {
@@ -1083,7 +1079,7 @@ void QCocoaWindow::lower()
             // The only solution is to remove and add all the child windows except this one.
             // This will keep the current window at the bottom while adding the others on top of it,
             // hopefully in the same order (this is not documented anywhere in the Cocoa documentation).
-            NSWindow *parentNSWindow = m_parentCocoaWindow->m_nsWindow;
+            NSWindow *parentNSWindow = m_view.window.parentWindow;
             NSArray *children = [parentNSWindow.childWindows copy];
             for (NSWindow *child in children)
                 if (m_nsWindow != child) {
@@ -1524,23 +1520,22 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
     qCDebug(lcQpaCocoaWindow) << "Recreating NSWindow due to" << recreateReason;
 
-    // FIXME: Replace member with direct parentWindow usage (possibly cast)
-    m_parentCocoaWindow = static_cast<QCocoaWindow *>(parentWindow);
+    QCocoaWindow *parentCocoaWindow = static_cast<QCocoaWindow *>(parentWindow);
 
     if (shouldBeChildNSWindow) {
         QWindow *parentQWindow = parentWindow->window();
         // Ensure that all parents in the hierarchy are also child NSWindows
         if (!parentQWindow->property("_q_platform_MacUseNSWindow").toBool()) {
             parentQWindow->setProperty("_q_platform_MacUseNSWindow", QVariant(true));
-            m_parentCocoaWindow->recreateWindowIfNeeded();
+            parentCocoaWindow->recreateWindowIfNeeded();
         }
     }
 
     // Remove current window (if any)
     if ((isContentView() && !shouldBeContentView) || (recreateReason & PanelChanged)) {
         [m_nsWindow closeAndRelease];
-        if (isChildNSWindow() && oldParentCocoaWindow)
-            oldParentCocoaWindow->removeChildWindow(this);
+        if (isChildNSWindow())
+            [m_view.window.parentWindow removeChildWindow:m_view.window];
         m_nsWindow = 0;
     }
 
@@ -1549,9 +1544,9 @@ void QCocoaWindow::recreateWindowIfNeeded()
         if (noPreviousWindow)
             m_nsWindow = createNSWindow(shouldBeChildNSWindow, shouldBePanel);
 
-        if (oldParentCocoaWindow) {
-            if (!shouldBeChildNSWindow || oldParentCocoaWindow != m_parentCocoaWindow)
-                oldParentCocoaWindow->removeChildWindow(this);
+        if (m_view.window.parentWindow) {
+            if (!shouldBeChildNSWindow || (recreateReason & ParentChanged))
+                [m_view.window.parentWindow removeChildWindow:m_view.window];
             m_forwardWindow = oldParentCocoaWindow;
         }
 
@@ -1577,8 +1572,8 @@ void QCocoaWindow::recreateWindowIfNeeded()
         setWindowState(window()->windowState());
     } else if (shouldBeChildNSWindow) {
         if (!m_hiddenByClipping) {
-            [m_parentCocoaWindow->m_nsWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
-            m_parentCocoaWindow->reinsertChildWindow(this);
+            [parentCocoaWindow->m_nsWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
+            parentCocoaWindow->reinsertChildWindow(this);
         }
 
         // Set properties after the window has been made a child NSWindow
@@ -1596,7 +1591,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
         if ([m_view superview])
             [m_view removeFromSuperview];
 
-        [m_parentCocoaWindow->m_view addSubview:m_view];
+        [parentCocoaWindow->m_view addSubview:m_view];
         QRect rect = windowGeometry();
         // Prevent setting a (0,0) window size; causes opengl context
         // "Invalid Drawable" warnings.
@@ -1716,11 +1711,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
     applyContentBorderThickness(createdWindow);
 
     return createdWindow;
-}
-
-void QCocoaWindow::removeChildWindow(QCocoaWindow *child)
-{
-    [m_nsWindow removeChildWindow:child->m_nsWindow];
 }
 
 void QCocoaWindow::removeMonitor()
