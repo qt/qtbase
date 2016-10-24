@@ -245,7 +245,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
 
     case FontsLocation:
-        path = QDir::homePath() + QLatin1String("/.fonts");
+        path = writableLocation(GenericDataLocation) + QLatin1String("/fonts");
         break;
 
     case MusicLocation:
@@ -339,6 +339,9 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         dirs = xdgDataDirs();
         for (int i = 0; i < dirs.count(); ++i)
             appendOrganizationAndApp(dirs[i]);
+        break;
+    case FontsLocation:
+        dirs += QDir::homePath() + QLatin1String("/.fonts");
         break;
     default:
         break;
