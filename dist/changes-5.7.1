@@ -1,0 +1,221 @@
+Qt 5.7.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.7.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.7 series is binary compatible with the 5.6.x series.
+Applications compiled for 5.6 will continue to run with 5.7.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+This release contains all fixes included in the Qt 5.6.2 release.
+
+****************************************************************************
+*                   Important Behavior Changes                             *
+****************************************************************************
+
+ - [QTBUG-45031] The NSURLConnection backend of QNetworkAccessManager has
+   been removed, since SecureTransport is the default SSL backend on iOS
+   and is enabled by default. This means that building with -no-openssl
+   -no-securetransport will no longer provide SSL capabilities on iOS.
+
+ - QtCore / QDataStream:
+   * [QTBUG-54022] Incomplete reads of Qt containers are now handled same
+     way as for primitive types, meaning that previous errors are latched.
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtCore
+------
+
+ - QLockFile:
+   * Fixed permissions on lock files on Unix to allow for adjustments via
+     umask.
+
+ - QMimeType:
+   * [QTBUG-50776] QMimeType::comment() now uses the default locale rather
+     than system locale, so that applications can control which language is
+     being used.
+
+ - QUrl:
+   * QUrl::resolved() no longer treats a URL with a scheme as a relative URL
+     if it matches this URL's scheme. For now it still treats "file:name.txt"
+     as relative for compatibility, but be warned that in Qt 5.8 it will no
+     longer consider those to be relative. Both isRelative() and RFC 3986 say
+     that such URLs are not relative, so starting from Qt 5.8, resolved() will
+     return them as is.
+
+ - QXmlStreamReader:
+   * Fixed a bug in the XML parser that prevented to load XML that
+     contained invalid characters for XML 1.0.
+
+ - QXmlStreamWriter:
+   * Fixed a bug that prevented the generation of valid XML files when
+     using encoding with 8 bit per character but not ASCII compatible.
+     QXMLStreamWriter generated XML markup using always ASCII in this case.
+
+QtGui
+-----
+
+ - QGuiApplication:
+   * [QTBUG-51703] Fixed a bug that would cause QGuiApplication::sync() to
+     be left undefined for Qt builds without session management support.
+
+ - QIconLoaderEngine:
+   * Fixed theme lookup for scalable entries
+
+ - QTextDocument:
+   * [QTBUG-48182] Fixed a bug that would return a wrong position when
+     searching backward from the end of the document.
+
+ - Text:
+   * [QTBUG-49452] Fixed a performance regression in Freetype engine that
+     was introduced in Qt 5.5.
+   * [QTBUG-53911] Fixed a crash that could happen if you were doing many
+     different text layouts with different fonts and superscript or
+     subscript alignment.
+   * [QTBUG-42033] Fixed bug where a QTextLayout with
+     ShowLineAndParagraphSeparators would modify the layout's input string.
+   * [QTBUG-54180] Fixed performance regression when rapidly switching
+     between a large set of fonts.
+
+QtNetwork
+---------
+
+- QSslSocket:
+   * [QTBUG-55170] Fixed a bug in SecureTransport backend that would cause
+     a memory usage growth in case 'readBufferMaxSize' is set.
+   * [QTBUG-52975] Fixed a bug in SecureTransport backend where transmit
+     was using invalid SSL context and reporting (incorrectly) some irrelevant
+     errors as a result.
+
+QtSql
+-----
+
+ - [QTBUG-53969][QTBUG-53237] Fixed QSqlQuery::prepare value truncation
+   error when using UNSIGNED values in a MySQL database.
+
+QtWidgets
+---------
+
+ - QAbstractItemDelegate:
+   * [QTBUG-16469] Show localized detailed tooltips and "What's this?"
+     texts.
+
+ - QTreeView:
+   * [QTBUG-52793] Fixed a key navigation bug when the columns were
+     reordered.
+
+****************************************************************************
+*                      Platform-specific Changes                           *
+****************************************************************************
+
+Android
+-------
+
+ - [QTBUG-50724] Added support for clang compiler
+ - [QTBUG-53511] Fixed CJK font resolution on Android 7.
+
+FreeBSD
+-------
+
+ - The freebsd-g++ mkspec was moved back and no longer requires the
+   "unsupported/" prefix, matching the FreeBSD ports tree, as FreeBSD 9.3
+   still defaults to using GCC. Users of GCC that did not previously use
+   the ports patch will need to adapt their build scripts and drop the
+   "unsupported/" prefix.
+
+Linux
+-----
+
+- [QTBUG-54733] It is now possible to opt out from installing signal
+  handlers when running with eglfs and linuxfb by setting the
+  QT_QPA_NO_SIGNAL_HANDLER environment variable to a non-zero value.
+- [QTBUG-55140] xcb with EGL and OpenGL ES, as well as eglfs with the
+  eglfs_x11 backend, are now supported on DRIVE CX boards when using the
+  linux-drive-cx-g++ device spec.
+
+
+Windows
+-------
+
+ - [QTBUG-41186] QWindow::fromWinId() may return 0 when passing invalid
+   window handles.
+ - [QTBUG-55595] Fixed crash when loading color fonts from data.
+ - [QTBUG-55097] Fixed rendering Adobe/Mozilla format color fonts with
+   other colors than black after Windows 10 Anniversary update.
+ - [QTBUG-54494] Fixed stretch when combined with either no or vertical
+   hinting preference or a device pixel ratio different from 1.
+ - [QTBUG-51024] Fixed height of text bounding box when using no or
+   vertical hinting preference, or when the device pixel ratio is
+   different from 1.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-35886][QTBUG-51417] Fixed Fontconfig vs. system FreeType
+   configuration.
+ - [QTBUG-43784][X11] Fixed detection of GLX with -qt-xcb.
+ - [QTBUG-51534][Windows] The configure.exe bootstrapping now prefers
+   cl over clang-cl, to avoid header incompatibility problems.
+ - [QTBUG-52940] Fixed missing plugins.qmltypes files in static builds.
+ - [QTBUG-52951] Fixed dynamic library support detection for platforms
+   without libdl.
+ - [QTBUG-53038] Fixed running of configure tests outside qtbase when
+   cross compiling on Windows (for example for Android).
+ - [QTBUG-53312] The flags supplied by the configure -D/-I/-L/-l options
+   are now applied after Qt's own flags. This helps in some cases when
+   the provided paths contain files which conflict with the Qt build.
+ - [QTBUG-53926] Fixed linkage of QML plugins in static prefix builds.
+ - [QTBUG-55011][Unix] Fixed -no-pkg-config being ignored by some
+   configure tests, which led to build failures later on.
+ - Fixed configure tests outside qtbase when $MAKEFLAGS contains the
+   -i flag.
+ - [Android] Some unused plugins are not built anymore.
+ - [MinGW] Added support for -separate-debug-info.
+ - [Unix] Added configure -no-opengles3 option.
+ - [Unix] Fixed MySQL detection/use on RHEL 6.6.
+
+qmake
+-----
+
+ - [QTBUG-41830] Fixed nested custom functions inheriting their callers'
+   arguments.
+ - [QTBUG-53895][MSVC] Started using separate PDB files for compiling
+   and linking.
+ - [QTBUG-54036][Darwin] Fixed installation of debug symbols.
+ - [QTBUG-54299] Various QMAKE_EXTRA_COMPILERS' .depends entries are now
+   appended to rather than overwritten.
+ - [QTBUG-54346][MSys/Apple] Fixed detection of QMAKE_DEFAULT_{INC,LIB}DIRS.
+ - [QTBUG-54550] Fixed access to freed memory in $$absolute_path().
+ - [QTBUG-54674] The obsolete -target xp is now properly rejected.
+ - [QTBUG-55183][nmake] _WINDLL is now automatically defined when building
+   a DLL, consistently with Visual Studio.
+ - [QTBUG-55505] Fixed build of projects with spaces in the source or build
+   path against static builds of Qt.
+ - [QTBUG-55649][QTBUG-55915][Xcode] Fixed support for Xcode 8.
+ - [QTBUG-56162][MinGW] Fixed -release -force-debug-info missing both
+   optimization and debug info.
+ - Fixed several cases where the error() function would not abort qmake.
+ - Interrupting a command run via system() will now abort qmake as well.
+ - The packagesExist() function will now warn when used when Qt was
+   configured with -no-pkg-config.
+ - [Android] The default compiler flags were adjusted to match newer
+   NDK versions.
+ - [Darwin] Fixed detection of QMAKE_DEFAULT_INCDIRS.
+ - [Darwin][make] Added support for building Xcode asset catalogs.
