@@ -57,7 +57,8 @@ QCocoaBackingStore::~QCocoaBackingStore()
 
 QImage::Format QCocoaBackingStore::format() const
 {
-    if (static_cast<QCocoaWindow *>(window()->handle())->m_drawContentBorderGradient)
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
+    if (cocoaWindow && cocoaWindow->m_drawContentBorderGradient)
         return QImage::Format_ARGB32_Premultiplied;
 
     return QRasterBackingStore::format();
