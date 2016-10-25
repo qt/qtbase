@@ -120,7 +120,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)cursorUpdate:(NSEvent *)theEvent
 {
-    [view cursorUpdateImpl:theEvent];
+    [self cursorUpdate:theEvent];
 }
 
 @end
@@ -924,21 +924,10 @@ QT_WARNING_POP
     [self addTrackingArea:m_trackingArea];
 }
 
--(void)cursorUpdateImpl:(NSEvent *)theEvent
+- (void)cursorUpdate:(NSEvent *)theEvent
 {
-    Q_UNUSED(theEvent)
-    // Set the cursor manually if there is no NSWindow.
-    if (!m_platformWindow->m_nsWindow && m_platformWindow->m_windowCursor)
-        [m_platformWindow->m_windowCursor set];
-    else
-        [super cursorUpdate:theEvent];
-}
-
--(void)resetCursorRects
-{
-    // Use the cursor rect API if there is a NSWindow
-    if (m_platformWindow->m_nsWindow && m_platformWindow->m_windowCursor)
-        [self addCursorRect:[self visibleRect] cursor:m_platformWindow->m_windowCursor];
+    Q_UNUSED(theEvent);
+    m_platformWindow->applyEffectiveWindowCursor();
 }
 
 - (void)mouseMovedImpl:(NSEvent *)theEvent

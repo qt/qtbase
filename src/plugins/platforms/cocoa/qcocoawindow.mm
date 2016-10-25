@@ -1645,29 +1645,51 @@ QCocoaMenuBar *QCocoaWindow::menubar() const
     return m_menubar;
 }
 
+// Finds the effective cursor for this window by walking up the
+// ancestor chain (including this window) until a set cursor is
+// found. Returns nil if there is not set cursor.
+NSCursor *QCocoaWindow::effectiveWindowCursor() const
+{
+
+    if (m_windowCursor)
+        return m_windowCursor;
+    if (!parent())
+        return nil;
+    return static_cast<QCocoaWindow *>(parent())->effectiveWindowCursor();
+}
+
+// Applies the cursor as returned by effectiveWindowCursor(), handles
+// the special no-cursor-set case by setting the arrow cursor.
+void QCocoaWindow::applyEffectiveWindowCursor()
+{
+    NSCursor *effectiveCursor = effectiveWindowCursor();
+    if (effectiveCursor) {
+        [effectiveCursor set];
+    } else {
+        // We wold like to _unset_ the cursor here; but there is no such
+        // API. Fall back to setting the default arrow cursor.
+        [[NSCursor arrowCursor] set];
+    }
+}
+
 void QCocoaWindow::setWindowCursor(NSCursor *cursor)
 {
-    // This function is called (via QCocoaCursor) by Qt to set
-    // the cursor for this window. It can be called for a window
-    // that is not currenly under the mouse pointer (for example
-    // for a popup window.) Qt expects the set cursor to "stick":
-    // it should be accociated with the window until a different
-    // cursor is set.
-    if (m_windowCursor != cursor) {
-        [m_windowCursor release];
-        m_windowCursor = [cursor retain];
-    }
+    if (m_windowCursor == cursor)
+        return;
 
-    // Use the built in cursor rect API if the QCocoaWindow has a NSWindow.
-    // Othervise, set the cursor if this window is under the mouse. In
-    // this case QNSView::cursorUpdate will set the cursor as the pointer
-    // moves.
-    if (m_nsWindow && m_qtView) {
-        [m_nsWindow invalidateCursorRectsForView : m_qtView];
-    } else {
-        if (m_windowUnderMouse)
-            [cursor set];
-    }
+    // Setting a cursor in a foregin view is not supported.
+    if (!m_qtView)
+        return;
+
+    [m_windowCursor release];
+    m_windowCursor = cursor;
+    [m_windowCursor retain];
+
+    // The installed view tracking area (see QNSView updateTrackingAreas) will
+    // handle cursor updates on mouse enter/leave. Handle the case where the
+    // mouse is on the this window by changing the cursor immediately.
+    if (m_windowUnderMouse)
+        applyEffectiveWindowCursor();
 }
 
 void QCocoaWindow::registerTouch(bool enable)

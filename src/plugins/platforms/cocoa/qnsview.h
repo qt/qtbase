@@ -118,7 +118,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)mouseMovedImpl:(NSEvent *)theEvent;
 - (void)mouseEnteredImpl:(NSEvent *)theEvent;
 - (void)mouseExitedImpl:(NSEvent *)theEvent;
-- (void)cursorUpdateImpl:(NSEvent *)theEvent;
 - (void)rightMouseDown:(NSEvent *)theEvent;
 - (void)rightMouseDragged:(NSEvent *)theEvent;
 - (void)rightMouseUp:(NSEvent *)theEvent;
