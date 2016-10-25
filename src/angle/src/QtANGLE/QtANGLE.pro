@@ -1,9 +1,58 @@
 CONFIG += simd no_batch
 include(../common/common.pri)
+TARGET=$$qtLibraryTarget($${LIBQTANGLE_NAME})
 DEF_FILE_TARGET=$${TARGET}
-TARGET=$$qtLibraryTarget($${LIBGLESV2_NAME})
 
 INCLUDEPATH += $$OUT_PWD/.. $$ANGLE_DIR/src/libANGLE
+
+!build_pass {
+    # Merge libGLESv2 and libEGL .def files located under $$ANGLE_DIR into QtANGLE$${SUFFIX}.def
+    DEF_FILES = \
+        libGLESv2/libGLESv2 \
+        libEGL/libEGL
+
+    SUFFIX =
+    for (DEBUG_RELEASE, $$list(0 1)) {
+        DEF_MERGED = \
+            "LIBRARY $${LIBQTANGLE_NAME}$$SUFFIX" \
+            EXPORTS
+        mingw: SUFFIX = $${SUFFIX}_mingw32
+        PASS = 0
+        MAX_ORDINAL = 0
+
+        for (DEF_FILE, DEF_FILES) {
+            DEF_FILE_PATH = $$ANGLE_DIR/src/$$DEF_FILE$${SUFFIX}.def
+            DEF_SRC = $$cat($$DEF_FILE_PATH, lines)
+            DEF_MERGED += \
+                ";" \
+                ";   Generated from:" \
+                ";   $$DEF_FILE_PATH"
+
+            for (line, DEF_SRC) {
+                !contains(line, "(LIBRARY.*|EXPORTS)") {
+                    LINESPLIT = $$split(line, @)
+                    !count(LINESPLIT, 1) {
+                        equals(PASS, 1) {
+                            # In the second .def file we must allocate new ordinals in order
+                            # to not clash with the ordinals from the first file. We then start off
+                            # from MAX_ORDINAL + 1 and increase sequentially
+                            MAX_ORDINAL = $$num_add($$MAX_ORDINAL, 1)
+                            line = $$section(line, @, 0, -2)@$$MAX_ORDINAL
+                        } else {
+                            ORDINAL = $$last(LINESPLIT)
+                            greaterThan(ORDINAL, $$MAX_ORDINAL): \
+                                MAX_ORDINAL = $$ORDINAL
+                        }
+                    }
+                    DEF_MERGED += $$line
+                }
+            }
+            PASS = 1
+        }
+        write_file($${LIBQTANGLE_NAME}$${SUFFIX}.def, DEF_MERGED)|error()
+        SUFFIX = "d"
+    }
+}
 
 # Remember to adapt tools/configure/configureapp.cpp if the Direct X version changes.
 !winrt: \
@@ -234,7 +283,8 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/entry_points_gles_3_0.cpp \
     $$ANGLE_DIR/src/libGLESv2/entry_points_gles_3_0_ext.cpp \
     $$ANGLE_DIR/src/libGLESv2/global_state.cpp \
-    $$ANGLE_DIR/src/libGLESv2/libGLESv2.cpp
+    $$ANGLE_DIR/src/libGLESv2/libGLESv2.cpp \
+    $$ANGLE_DIR/src/libEGL/libEGL.cpp
 
 SSE2_SOURCES += $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimageSSE2.cpp
 
@@ -361,8 +411,8 @@ angle_d3d11 {
 }
 
 !static {
-    DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${DEF_FILE_TARGET}.def
-    mingw:equals(QT_ARCH, i386): DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${DEF_FILE_TARGET}_mingw32.def
+    DEF_FILE = $$PWD/$${DEF_FILE_TARGET}.def
+    mingw: equals(QT_ARCH, i386): DEF_FILE = $$PWD/$${DEF_FILE_TARGET}_mingw32.def
 } else {
     DEFINES += DllMain=DllMain_ANGLE # prevent symbol from conflicting with the user's DllMain
 }
@@ -610,5 +660,10 @@ gles3_headers.files = \
     $$ANGLE_DIR/include/GLES3/gl3ext.h \
     $$ANGLE_DIR/include/GLES3/gl3platform.h
 gles3_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/GLES3
-INSTALLS += khr_headers gles2_headers
+egl_headers.files = \
+    $$ANGLE_DIR/include/EGL/egl.h \
+    $$ANGLE_DIR/include/EGL/eglext.h \
+    $$ANGLE_DIR/include/EGL/eglplatform.h
+egl_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/EGL
+INSTALLS += khr_headers gles2_headers egl_headers
 angle_d3d11: INSTALLS += gles3_headers

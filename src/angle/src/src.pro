@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS += compiler libGLESv2 libEGL
+SUBDIRS += compiler QtANGLE
 CONFIG += ordered

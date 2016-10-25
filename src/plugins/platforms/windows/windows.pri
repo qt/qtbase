@@ -123,5 +123,5 @@ qtConfig(freetype) {
 
 qtConfig(accessibility): include($$PWD/accessible/accessible.pri)
 
-DEFINES *= LIBEGL_NAME=$${LIBEGL_NAME}
-DEFINES *= LIBGLESV2_NAME=$${LIBGLESV2_NAME}
+DEFINES *= LIBEGL_NAME=$${LIBQTANGLE_NAME}
+DEFINES *= LIBGLESV2_NAME=$${LIBQTANGLE_NAME}
