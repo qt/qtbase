@@ -281,6 +281,10 @@ namespace QTest
     Q_TESTLIB_EXPORT char *toString(const char *);
     Q_TESTLIB_EXPORT char *toString(const void *);
 
+    Q_TESTLIB_EXPORT void qInit(QObject *testObject, int argc = 0, char **argv = Q_NULLPTR);
+    Q_TESTLIB_EXPORT int qRun();
+    Q_TESTLIB_EXPORT void qCleanup();
+
     Q_TESTLIB_EXPORT int qExec(QObject *testObject, int argc = 0, char **argv = Q_NULLPTR);
     Q_TESTLIB_EXPORT int qExec(QObject *testObject, const QStringList &arguments);
 
