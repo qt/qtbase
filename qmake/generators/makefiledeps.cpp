@@ -50,6 +50,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <limits.h>
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #include <share.h>
 #endif
@@ -983,9 +984,11 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
                         continue;
 
                     int matchlen = 0, extralines = 0;
+                    size_t needle_len = strlen(interesting[interest]);
+                    Q_ASSERT(needle_len <= INT_MAX);
                     if (matchWhileUnsplitting(buffer, buffer_len, y,
                                               interesting[interest],
-                                              strlen(interesting[interest]),
+                                              static_cast<int>(needle_len),
                                               &matchlen, &extralines)
                         && y + matchlen < buffer_len
                         && !isCWordChar(buffer[y + matchlen])) {
