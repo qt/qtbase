@@ -1,0 +1,103 @@
+[
+    {
+        "Id": "qbig5codecs",
+        "Name": "Text Codecs: Big5, Big5-HKSCS",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
+        "Path": "qbig5codec.cpp",
+
+        "Description": "The Big5 codecs (QBig5Codec, QBig5hkscsCodec)
+provide conversion to and from the Big5 encodings.",
+        "License": "BSD 2-clause \"Simplified\" License",
+        "LicenseId": "BSD-2-Clause",
+        "LicenseFile": "QBIG5CODEC_LICENSE.txt",
+        "Copyright": "Copyright (C) 2000  Ming-Che Chuang
+Copyright (C) 2001, 2002  James Su, Turbolinux Inc.
+Copyright (C) 2002  WU Yi, HancomLinux Inc.
+Copyright (C) 2001, 2002  Anthony Fok, ThizLinux Laboratory Ltd."
+},
+    {
+        "Id": "qeucjpcodec",
+        "Name": "Text Codec: EUC-JP",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
+        "Path": "qeucjpcodec.cpp",
+
+        "Description": "The EUC-JP text codec provides conversion to and from EUC-JP,
+the main legacy encoding for Unix machines in Japan.",
+        "License": "BSD 2-clause \"Simplified\" License",
+        "LicenseId": "BSD-2-Clause",
+        "LicenseFile": "QEUCJPCODEC_LICENSE.txt",
+        "Copyright": "Copyright (C) 1999 Serika Kurusugawa."
+    },
+    {
+        "Id": "qeuckrcodec",
+        "Name": "Text Codec: EUC-KR",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
+        "Path": "qeuckrcodec.cpp",
+
+        "Description": "The EUC-KR text codec provides conversion to and from EUC-KR, KR,
+the main legacy encoding for Unix machines in Korea.",
+        "License": "BSD 2-clause \"Simplified\" License",
+        "LicenseId": "BSD-2-Clause",
+        "LicenseFile": "QEUCKRCODEC_LICENSE.txt",
+        "Copyright": "Copyright (C) 1999-2000 Mizi Research Inc."
+    },
+    {
+        "Id": "qjiscodec",
+        "Name": "Text Codec: ISO 2022-JP (JIS)",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
+        "Path": "qjiscodec.cpp",
+
+        "Description": "The ISO 2022-JP (JIS) text codec provides conversion to and from ISO 2022-JP.",
+        "License": "BSD 2-clause \"Simplified\" License",
+        "LicenseId": "BSD-2-Clause",
+        "LicenseFile": "QJISCODEC_LICENSE.txt",
+        "Copyright": "Copyright (C) 1999 Serika Kurusugawa."
+    },
+    {
+        "Id": "qsjiscodec",
+        "Name": "Text Codec: Shift-JIS",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
+        "Path": "qsjiscodec.cpp",
+
+        "Description": "The Shift-JIS text codec provides conversion to and from Shift-JIS.",
+        "License": "BSD 2-clause \"Simplified\" License",
+        "LicenseId": "BSD-2-Clause",
+        "LicenseFile": "QSJISCODEC_LICENSE.txt",
+        "Copyright": "Copyright (C) 1999 Serika Kurusugawa."
+    },
+    {
+        "Id": "qtsciicodec",
+        "Name": "Text Codec: TSCII",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core.",
+        "Path": "qtsciicodec.cpp",
+
+        "Description": "The TSCII text codec provides conversion to and from the Tamil TSCII
+encoding.",
+        "License": "BSD 2-clause \"Simplified\" License",
+        "LicenseId": "BSD-2-Clause",
+        "LicenseFile": "QTSCIICODEC_LICENSE.txt",
+        "Copyright": "Copyright (C) 2000 Hans Petter Bieker."
+    },
+    {
+        "Id": "qbkcodec",
+        "Name": "Text Codec: GBK",
+        "QDocModule": "qtcore",
+        "QtUsage": "Used in Qt Core if ICU is not used. Configure with -icu to avoid.",
+        "Path": "qgb18030codec.cpp",
+
+        "Description": "The GBK codec provides conversion to and from the Chinese
+GB18030/GBK/GB2312 encoding.",
+        "License": "BSD 2-clause \"Simplified\" License",
+        "LicenseId": "BSD-2-Clause",
+        "LicenseFile": "QBKCODEC_LICENSE.txt",
+        "Copyright": "Copyright (C) 2000 TurboLinux, Inc.  Written by Justin Yu and Sean Chen.
+Copyright (C) 2001, 2002 Turbolinux, Inc.  Written by James Su.
+Copyright (C) 2001, 2002 ThizLinux Laboratory Ltd.  Written by Anthony Fok."
+    }
+]
