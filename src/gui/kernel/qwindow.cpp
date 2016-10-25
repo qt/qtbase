@@ -1485,6 +1485,8 @@ void QWindow::setSizeIncrement(const QSize &size)
     Sets the geometry of the window, excluding its window frame, to a
     rectangle constructed from \a posx, \a posy, \a w and \a h.
 
+    The geometry is in relation to the virtualGeometry() of its screen.
+
     \sa geometry()
 */
 void QWindow::setGeometry(int posx, int posy, int w, int h)
@@ -1494,6 +1496,8 @@ void QWindow::setGeometry(int posx, int posy, int w, int h)
 
 /*!
     \brief Sets the geometry of the window, excluding its window frame, to \a rect.
+
+    The geometry is in relation to the virtualGeometry() of its screen.
 
     \sa geometry()
 */
@@ -1556,6 +1560,8 @@ QScreen *QWindowPrivate::screenForGeometry(const QRect &newGeometry)
 /*!
     Returns the geometry of the window, excluding its window frame.
 
+    The geometry is in relation to the virtualGeometry() of its screen.
+
     \sa frameMargins(), frameGeometry()
 */
 QRect QWindow::geometry() const
@@ -1581,6 +1587,8 @@ QMargins QWindow::frameMargins() const
 
 /*!
     Returns the geometry of the window, including its window frame.
+
+    The geometry is in relation to the virtualGeometry() of its screen.
 
     \sa geometry(), frameMargins()
 */
@@ -1614,6 +1622,8 @@ QPoint QWindow::framePosition() const
 /*!
     Sets the upper left position of the window (\a point) including its window frame.
 
+    The position is in relation to the virtualGeometry() of its screen.
+
     \sa setGeometry(), frameGeometry()
 */
 void QWindow::setFramePosition(const QPoint &point)
@@ -1631,6 +1641,8 @@ void QWindow::setFramePosition(const QPoint &point)
 /*!
     \brief set the position of the window on the desktop to \a pt
 
+    The position is in relation to the virtualGeometry() of its screen.
+
     \sa position()
 */
 void QWindow::setPosition(const QPoint &pt)
@@ -1640,6 +1652,8 @@ void QWindow::setPosition(const QPoint &pt)
 
 /*!
     \brief set the position of the window on the desktop to \a posx, \a posy
+
+    The position is in relation to the virtualGeometry() of its screen.
 
     \sa position()
 */
@@ -1817,8 +1831,9 @@ QScreen *QWindow::screen() const
 
     If the window has been created, it will be recreated on the \a newScreen.
 
-    Note that if the screen is part of a virtual desktop of multiple screens,
-    the window can appear on any of the screens returned by QScreen::virtualSiblings().
+    \note If the screen is part of a virtual desktop of multiple screens,
+    the window will not move automatically to \a newScreen. To place the
+    window relative to the screen, use the screen's topLeft() position.
 
     This function only works for top level windows.
 
