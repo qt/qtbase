@@ -664,8 +664,10 @@ QWidget *QMainWindow::takeCentralWidget()
 {
     Q_D(QMainWindow);
     QWidget *oldcentralwidget = d->layout->centralWidget();
-    oldcentralwidget->setParent(0);
-    d->layout->setCentralWidget(0);
+    if (oldcentralwidget) {
+        oldcentralwidget->setParent(0);
+        d->layout->setCentralWidget(0);
+    }
     return oldcentralwidget;
 }
 

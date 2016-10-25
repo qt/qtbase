@@ -864,6 +864,10 @@ void tst_QMainWindow::takeCentralWidget() {
 
     QVERIFY(!mw.centralWidget());
 
+    // verify that we don't crash when trying to take a non-set
+    // central widget but just return a null pointer instead
+    QVERIFY(!mw.takeCentralWidget());
+
     mw.setCentralWidget(w1);
 
     QWidget *oldCentralWidget = mw.takeCentralWidget();
