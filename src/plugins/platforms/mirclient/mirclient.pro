@@ -10,8 +10,7 @@ DEFINES += MESA_EGL_NO_X11_HEADERS
 QMAKE_CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Werror -Wall
 QMAKE_LFLAGS += -std=c++11 -Wl,-no-undefined
 
-CONFIG += link_pkgconfig
-PKGCONFIG += egl mirclient ubuntu-platform-api
+QMAKE_USE_PRIVATE += mirclient
 
 SOURCES = \
     qmirclientbackingstore.cpp \

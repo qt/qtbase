@@ -61,7 +61,6 @@
         "journald": {
             "label": "journald",
             "test": "unix/journald",
-            "export": "",
             "sources": [
                 { "type": "pkgConfig", "args": "libsystemd" },
                 { "type": "pkgConfig", "args": "libsystemd-journal" }
