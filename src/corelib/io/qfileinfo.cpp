@@ -186,17 +186,22 @@ uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) cons
 QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) const
 {
     Q_ASSERT(fileEngine); // should never be called when using the native FS
-    if (fileTimes.size() != 3)
-        fileTimes.resize(3);
     if (!cache_enabled)
         clearFlags();
-    uint cf;
-    if (request == QAbstractFileEngine::CreationTime)
-        cf = CachedCTime;
-    else if (request == QAbstractFileEngine::ModificationTime)
-        cf = CachedMTime;
-    else
+
+    uint cf = 0;
+    switch (request) {
+    case QAbstractFileEngine::AccessTime:
         cf = CachedATime;
+        break;
+    case QAbstractFileEngine::CreationTime:
+        cf = CachedCTime;
+        break;
+    case QAbstractFileEngine::ModificationTime:
+        cf = CachedMTime;
+        break;
+    }
+
     if (!getCachedFlag(cf)) {
         fileTimes[request] = fileEngine->fileTime(request);
         setCachedFlag(cf);

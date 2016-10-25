@@ -56,7 +56,6 @@
 #include "qatomic.h"
 #include "qshareddata.h"
 #include "qfilesystemengine_p.h"
-#include "qvector.h"
 
 #include <QtCore/private/qabstractfileengine_p.h>
 #include <QtCore/private/qfilesystementry_p.h>
@@ -158,19 +157,14 @@ public:
     QScopedPointer<QAbstractFileEngine> const fileEngine;
 
     mutable QString fileNames[QAbstractFileEngine::NFileNames];
-    mutable QString fileOwners[2];
+    mutable QString fileOwners[2];  // QAbstractFileEngine::FileOwner: OwnerUser and OwnerGroup
+    mutable QDateTime fileTimes[4]; // QAbstractFileEngine::FileTime: BirthTime, MetadataChangeTime, ModificationTime, AccessTime
 
     mutable uint cachedFlags : 30;
     bool const isDefaultConstructed : 1; // QFileInfo is a default constructed instance
     bool cache_enabled : 1;
     mutable uint fileFlags;
     mutable qint64 fileSize;
-    // ### Qt6: FIXME: This vector is essentially a plain array
-    // mutable QDateTime fileTimes[3], but the array is slower
-    // to initialize than the QVector as QDateTime has a pimpl.
-    // In Qt 6, QDateTime should inline its data members,
-    // and this here can be an array again.
-    mutable QVector<QDateTime> fileTimes;
     inline bool getCachedFlag(uint c) const
     { return cache_enabled ? (cachedFlags & c) : 0; }
     inline void setCachedFlag(uint c) const
