@@ -24,6 +24,10 @@ darwin:!if(watchos:CONFIG(simulator, simulator|device)) {
     win32:!winrt {
         include($$PWD/windows/windows.pri)
     }
+
+    winrt {
+        include($$PWD/winrt/winrt.pri)
+    }
 }
 
 load(qt_module)

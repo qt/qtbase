@@ -8,7 +8,7 @@ QT += \
 
 DEFINES *= QT_NO_CAST_FROM_ASCII __WRL_NO_DEFAULT_LIB__
 
-LIBS += $$QMAKE_LIBS_CORE -ldwrite -ld3d11
+LIBS += $$QMAKE_LIBS_CORE -ld3d11
 
 SOURCES = \
     main.cpp  \
@@ -20,7 +20,6 @@ SOURCES = \
     qwinrteventdispatcher.cpp \
     qwinrtfiledialoghelper.cpp \
     qwinrtfileengine.cpp \
-    qwinrtfontdatabase.cpp \
     qwinrtinputcontext.cpp \
     qwinrtintegration.cpp \
     qwinrtmessagedialoghelper.cpp \
@@ -39,7 +38,6 @@ HEADERS = \
     qwinrteventdispatcher.h \
     qwinrtfiledialoghelper.h \
     qwinrtfileengine.h \
-    qwinrtfontdatabase.h \
     qwinrtinputcontext.h \
     qwinrtintegration.h \
     qwinrtmessagedialoghelper.h \
