@@ -57,15 +57,12 @@ public:
         : owns_bitmap(true)
         , bitmap(new QWindowsDirect2DBitmap)
         , device(new QWindowsDirect2DPaintDevice(bitmap, QInternal::Pixmap))
-        , devicePixelRatio(1.0)
     {}
 
     QWindowsDirect2DPlatformPixmapPrivate(QWindowsDirect2DBitmap *bitmap,
                                           QWindowsDirect2DPaintEngine::Flags flags)
-        : owns_bitmap(false)
-        , bitmap(bitmap)
+        : bitmap(bitmap)
         , device(new QWindowsDirect2DPaintDevice(bitmap, QInternal::Pixmap, flags))
-        , devicePixelRatio(1.0)
     {}
 
     ~QWindowsDirect2DPlatformPixmapPrivate()
@@ -74,10 +71,10 @@ public:
             delete bitmap;
     }
 
-    bool owns_bitmap;
+    bool owns_bitmap = false;
     QWindowsDirect2DBitmap *bitmap;
     QScopedPointer<QWindowsDirect2DPaintDevice> device;
-    qreal devicePixelRatio;
+    qreal devicePixelRatio = 1.0;
 };
 
 static int qt_d2dpixmap_serno = 0;

@@ -54,7 +54,6 @@ QT_BEGIN_NAMESPACE
 
 QWindowsDirect2DWindow::QWindowsDirect2DWindow(QWindow *window, const QWindowsWindowData &data)
     : QWindowsWindow(window, data)
-    , m_needsFullFlush(true)
     , m_directRendering(!(data.flags & Qt::FramelessWindowHint && window->format().hasAlpha()))
 {
     if (window->type() == Qt::Desktop)

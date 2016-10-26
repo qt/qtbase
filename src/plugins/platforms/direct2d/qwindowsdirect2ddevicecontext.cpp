@@ -51,7 +51,6 @@ class QWindowsDirect2DDeviceContextPrivate {
 public:
     QWindowsDirect2DDeviceContextPrivate(ID2D1DeviceContext *dc)
         : deviceContext(dc)
-        , refCount(0)
     {
         if (!dc) {
             HRESULT hr = QWindowsDirect2DContext::instance()->d2dDevice()->CreateDeviceContext(
@@ -98,7 +97,7 @@ public:
     }
 
     ComPtr<ID2D1DeviceContext> deviceContext;
-    int refCount;
+    int refCount = 0;
 };
 
 QWindowsDirect2DDeviceContext::QWindowsDirect2DDeviceContext(ID2D1DeviceContext *dc)

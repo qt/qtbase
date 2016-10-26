@@ -74,12 +74,7 @@ public:
 class Direct2DVersion
 {
 private:
-    Direct2DVersion()
-        : partOne(0)
-        , partTwo(0)
-        , partThree(0)
-        , partFour(0)
-    {}
+    Direct2DVersion() = default;
 
     Direct2DVersion(int one, int two, int three, int four)
         : partOne(one)
@@ -170,7 +165,10 @@ public:
         return a - b;
     }
 
-    int partOne, partTwo, partThree, partFour;
+    int partOne = 0;
+    int partTwo = 0;
+    int partThree = 0;
+    int partFour = 0;
 };
 
 QWindowsDirect2DIntegration *QWindowsDirect2DIntegration::create(const QStringList &paramList)

@@ -138,14 +138,6 @@ static QVector<D2D1_GRADIENT_STOP> qGradientStopsToD2DStops(const QGradientStops
 class Direct2DPathGeometryWriter
 {
 public:
-    Direct2DPathGeometryWriter()
-        : m_inFigure(false)
-        , m_roundCoordinates(false)
-        , m_adjustPositivelySlopedLines(false)
-    {
-
-    }
-
     bool begin()
     {
         HRESULT hr = factory()->CreatePathGeometry(&m_geometry);
@@ -249,9 +241,9 @@ private:
     ComPtr<ID2D1PathGeometry1> m_geometry;
     ComPtr<ID2D1GeometrySink> m_sink;
 
-    bool m_inFigure;
-    bool m_roundCoordinates;
-    bool m_adjustPositivelySlopedLines;
+    bool m_inFigure = false;
+    bool m_roundCoordinates = false;
+    bool m_adjustPositivelySlopedLines = false;
     QPointF m_previousPoint;
 };
 
@@ -272,7 +264,6 @@ class QWindowsDirect2DPaintEnginePrivate : public QPaintEngineExPrivate
 public:
     QWindowsDirect2DPaintEnginePrivate(QWindowsDirect2DBitmap *bm, QWindowsDirect2DPaintEngine::Flags flags)
         : bitmap(bm)
-        , clipFlags(0)
         , flags(flags)
     {
         pen.reset();
@@ -284,7 +275,7 @@ public:
     QWindowsDirect2DBitmap *bitmap;
     QImage fallbackImage;
 
-    unsigned int clipFlags;
+    unsigned int clipFlags = 0;
     QStack<ClipType> pushedClips;
     QWindowsDirect2DPaintEngine::Flags flags;
 

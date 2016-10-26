@@ -74,8 +74,8 @@ private:
     Microsoft::WRL::ComPtr<ID2D1DeviceContext> m_deviceContext;
     QScopedPointer<QWindowsDirect2DBitmap> m_bitmap;
     QScopedPointer<QPixmap> m_pixmap;
-    bool m_needsFullFlush;
-    bool m_directRendering;
+    bool m_needsFullFlush = true;
+    bool m_directRendering = false;
 };
 
 QT_END_NAMESPACE
