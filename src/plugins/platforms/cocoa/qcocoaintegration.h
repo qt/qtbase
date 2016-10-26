@@ -87,6 +87,15 @@ public:
     NSScreen *nsScreen() const;
     void updateGeometry();
 
+    QPointF mapToNative(const QPointF &pos) const { return flipCoordinate(pos); }
+    QRectF mapToNative(const QRectF &rect) const { return flipCoordinate(rect); }
+    QPointF mapFromNative(const QPointF &pos) const { return flipCoordinate(pos); }
+    QRectF mapFromNative(const QRectF &rect) const { return flipCoordinate(rect); }
+
+private:
+    QPointF flipCoordinate(const QPointF &pos) const;
+    QRectF flipCoordinate(const QRectF &rect) const;
+
 public:
     NSScreen *m_nsScreen;
     QRect m_geometry;

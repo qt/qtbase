@@ -86,34 +86,53 @@ NSScreen *QCocoaScreen::nsScreen() const
     return m_nsScreen;
 }
 
+/*!
+    Flips the Y coordinate of the point between quadrant I and IV.
+
+    The native coordinate system on macOS uses quadrant I, with origin
+    in bottom left, and Qt uses quadrant IV, with origin in top left.
+
+    By flippig the Y coordinate, we can map the position between the
+    two coordinate systems.
+*/
+QPointF QCocoaScreen::flipCoordinate(const QPointF &pos) const
+{
+    return QPointF(pos.x(), m_geometry.height() - pos.y());
+}
+
+/*!
+    Flips the Y coordinate of the rectangle between quadrant I and IV.
+
+    The native coordinate system on macOS uses quadrant I, with origin
+    in bottom left, and Qt uses quadrant IV, with origin in top left.
+
+    By flippig the Y coordinate, we can map the rectangle between the
+    two coordinate systems.
+*/
+QRectF QCocoaScreen::flipCoordinate(const QRectF &rect) const
+{
+    return QRectF(flipCoordinate(rect.topLeft() + QPoint(0, rect.height())), rect.size());
+}
+
 void QCocoaScreen::updateGeometry()
 {
     if (!m_nsScreen)
         return;
 
-    NSRect frameRect = [m_nsScreen frame];
+    // At this point the geometry is in native coordinates, but the size
+    // is correct, which we take advantage of next when we map the native
+    // coordinates to the Qt coordinate system.
+    m_geometry = QRectF::fromCGRect(m_nsScreen.frame).toRect();
+    m_availableGeometry = QRectF::fromCGRect(m_nsScreen.visibleFrame).toRect();
 
-    if (m_nsScreen == [[NSScreen screens] firstObject]) {
-        m_geometry = QRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width, frameRect.size.height);
-        // This is the primary screen, the one that contains the menubar. Its origin should be
-        // (0, 0), and it's the only one whose available geometry differs from its full geometry.
-        NSRect visibleRect = [m_nsScreen visibleFrame];
-        m_availableGeometry = QRect(visibleRect.origin.x,
-                                    frameRect.size.height - (visibleRect.origin.y + visibleRect.size.height), // invert y
-                                    visibleRect.size.width, visibleRect.size.height);
-    } else {
-        // NSScreen origin is at the bottom-left corner, QScreen is at the top-left corner.
-        // When we get the NSScreen frame rect, we need to re-align its origin y coordinate
-        // w.r.t. the primary screen, whose origin is (0, 0).
-        NSRect r = [[[NSScreen screens] objectAtIndex:0] frame];
-        QRect referenceScreenGeometry = QRect(r.origin.x, r.origin.y, r.size.width, r.size.height);
-        m_geometry = QRect(frameRect.origin.x,
-                           referenceScreenGeometry.height() - (frameRect.origin.y + frameRect.size.height),
-                           frameRect.size.width, frameRect.size.height);
+    // The reference screen for the geometry is always the primary screen, but since
+    // we may be in the process of creating and registering the primary screen, we
+    // must special-case that and assign it direcly.
+    QCocoaScreen *primaryScreen = (m_nsScreen == [[NSScreen screens] firstObject]) ?
+        this : static_cast<QCocoaScreen*>(QGuiApplication::primaryScreen()->handle());
 
-        // Not primary screen. See above.
-        m_availableGeometry = m_geometry;
-    }
+    m_geometry = primaryScreen->mapFromNative(m_geometry).toRect();
+    m_availableGeometry = primaryScreen->mapFromNative(m_availableGeometry).toRect();
 
     m_format = QImage::Format_RGB32;
     m_depth = NSBitsPerPixelFromDepth([m_nsScreen depth]);
