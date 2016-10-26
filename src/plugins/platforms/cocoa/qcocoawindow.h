@@ -96,6 +96,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowHelper);
 @property (nonatomic, readonly) QNSWindowHelper *helper;
 
 - (id)initWithContentRect:(NSRect)contentRect
+      screen:(NSScreen*)screen
       styleMask:(NSUInteger)windowStyle
       qPlatformWindow:(QCocoaWindow *)qpw;
 
@@ -111,6 +112,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindow);
 @property (nonatomic, readonly) QNSWindowHelper *helper;
 
 - (id)initWithContentRect:(NSRect)contentRect
+      screen:(NSScreen*)screen
       styleMask:(NSUInteger)windowStyle
       qPlatformWindow:(QCocoaWindow *)qpw;
 

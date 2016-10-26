@@ -201,13 +201,14 @@ static void qt_closePopups()
 @synthesize helper = _helper;
 
 - (id)initWithContentRect:(NSRect)contentRect
+      screen:(NSScreen*)screen
       styleMask:(NSUInteger)windowStyle
       qPlatformWindow:(QCocoaWindow *)qpw
 {
     self = [super initWithContentRect:contentRect
             styleMask:windowStyle
             backing:NSBackingStoreBuffered
-            defer:NO]; // Deferring window creation breaks OpenGL (the GL context is
+            defer:NO screen:screen]; // Deferring window creation breaks OpenGL (the GL context is
                        // set up before the window is shown and needs a proper window)
 
     if (self) {
@@ -283,13 +284,14 @@ static void qt_closePopups()
 @synthesize helper = _helper;
 
 - (id)initWithContentRect:(NSRect)contentRect
+      screen:(NSScreen*)screen
       styleMask:(NSUInteger)windowStyle
       qPlatformWindow:(QCocoaWindow *)qpw
 {
     self = [super initWithContentRect:contentRect
             styleMask:windowStyle
             backing:NSBackingStoreBuffered
-            defer:NO]; // Deferring window creation breaks OpenGL (the GL context is
+            defer:NO screen:screen]; // Deferring window creation breaks OpenGL (the GL context is
                        // set up before the window is shown and needs a proper window)
 
     if (self) {
@@ -1642,7 +1644,28 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
     QMacAutoReleasePool pool;
 
     QRect rect = initialGeometry(window(), windowGeometry(), defaultWindowWidth, defaultWindowHeight);
-    NSRect frame = qt_mac_flipRect(rect);
+
+    QScreen *targetScreen = nullptr;
+    for (QScreen *screen : QGuiApplication::screens()) {
+        if (screen->geometry().contains(rect.topLeft())) {
+            targetScreen = screen;
+            break;
+        }
+    }
+
+    if (!targetScreen) {
+        qCWarning(lcQpaCocoaWindow) << "Window position outside any known screen, using primary screen";
+        targetScreen = QGuiApplication::primaryScreen();
+    }
+
+    rect.translate(-targetScreen->geometry().topLeft());
+    QCocoaScreen *cocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
+    NSRect frame = cocoaScreen->mapToNative(rect).toCGRect();
+
+    // Note: The macOS window manager has a bug, where if a screen is rotated, it will not allow
+    // a window to be created within the area of the screen that has a Y coordinate (I quadrant)
+    // higher than the height of the screen  in its non-rotated state, unless the window is
+    // created with the NSWindowStyleMaskBorderless style mask.
 
     Qt::WindowType type = window()->type();
     Qt::WindowFlags flags = window()->flags();
@@ -1658,31 +1681,27 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
     // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
     // and dialogs
     if (shouldBePanel) {
-        QNSPanel *window;
-        window  = [[QNSPanel alloc] initWithContentRect:frame
-                                    styleMask: styleMask
-                                    qPlatformWindow:this];
+        QNSPanel *panel = [[QNSPanel alloc] initWithContentRect:frame screen:cocoaScreen->nsScreen()
+                                    styleMask: styleMask qPlatformWindow:this];
+
         if ((type & Qt::Popup) == Qt::Popup)
-            [window setHasShadow:YES];
+            [panel setHasShadow:YES];
 
         // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set.
         QVariant showWithoutActivating = QPlatformWindow::window()->property("_q_macAlwaysShowToolWindow");
         bool shouldHideOnDeactivate = ((type & Qt::Tool) == Qt::Tool) &&
                                       !(showWithoutActivating.isValid() && showWithoutActivating.toBool());
-        [window setHidesOnDeactivate: shouldHideOnDeactivate];
+        [panel setHidesOnDeactivate: shouldHideOnDeactivate];
 
         // Make popup windows show on the same desktop as the parent full-screen window.
-        [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+        [panel setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
         if ((type & Qt::Popup) == Qt::Popup)
-            [window setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
+            [panel setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
 
-        createdWindow = window;
+        createdWindow = panel;
     } else {
-        QNSWindow *window;
-        window  = [[QNSWindow alloc] initWithContentRect:frame
-                                     styleMask: styleMask
-                                     qPlatformWindow:this];
-        createdWindow = window;
+        createdWindow = [[QNSWindow alloc] initWithContentRect:frame screen:cocoaScreen->nsScreen()
+                                     styleMask: styleMask qPlatformWindow:this];
     }
 
     if ([createdWindow respondsToSelector:@selector(setRestorable:)])
