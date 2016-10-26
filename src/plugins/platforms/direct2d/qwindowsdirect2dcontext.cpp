@@ -161,7 +161,7 @@ QWindowsDirect2DContext::QWindowsDirect2DContext()
 {
 }
 
-QWindowsDirect2DContext::~QWindowsDirect2DContext() {}
+QWindowsDirect2DContext::~QWindowsDirect2DContext() = default;
 
 bool QWindowsDirect2DContext::init()
 {

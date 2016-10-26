@@ -59,7 +59,7 @@ class QWindowsDirect2DContext
 
 public:
     QWindowsDirect2DContext();
-    virtual ~QWindowsDirect2DContext();
+    ~QWindowsDirect2DContext();
 
     bool init();
 
