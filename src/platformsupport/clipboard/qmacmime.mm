@@ -405,8 +405,7 @@ QVariant QMacPasteboardMimeUnicodeText::convertToMime(const QString &mimetype, Q
     if (flavor == QLatin1String("public.utf8-plain-text")) {
         ret = QString::fromUtf8(firstData);
     } else if (flavor == QLatin1String("public.utf16-plain-text")) {
-        ret = QString(reinterpret_cast<const QChar *>(firstData.constData()),
-                      firstData.size() / sizeof(QChar));
+        ret = QTextCodec::codecForName("UTF-16")->toUnicode(firstData);
     } else {
         qWarning("QMime::convertToMime: unhandled mimetype: %s", qPrintable(mimetype));
     }
@@ -420,7 +419,7 @@ QList<QByteArray> QMacPasteboardMimeUnicodeText::convertFromMime(const QString &
     if (flavor == QLatin1String("public.utf8-plain-text"))
         ret.append(string.toUtf8());
     else if (flavor == QLatin1String("public.utf16-plain-text"))
-        ret.append(QByteArray((char*)string.utf16(), string.length()*2));
+        ret.append(QTextCodec::codecForName("UTF-16")->fromUnicode(string));
     return ret;
 }
 
