@@ -225,6 +225,7 @@ defineTest(qtConfTest_buildParts) {
 defineTest(qtConfTest_checkCompiler) {
     contains(QMAKE_CXX, ".*clang.*") {
         qtRunLoggedCommand("$$QMAKE_CXX -v 2>&1", versionstr)|return(false)
+        versionstr = "$$versionstr"
         contains(versionstr, "^Apple (clang|LLVM) version .*") {
             $${1}.compilerDescription = "Apple Clang"
             $${1}.compilerId = "apple_clang"
