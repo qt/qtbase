@@ -376,7 +376,7 @@ defineReplace(qtConfPkgConfig) {
     $$host {
         pkg_config = $$qtConfFindInPath("pkg-config")
     } else {
-        pkg_config = "$$qtConfPkgConfigEnv()$$PKG_CONFIG"
+        pkg_config = "$$qtConfPkgConfigEnv()$$PKG_CONFIG_EXECUTABLE"
     }
 
     return($$pkg_config)
