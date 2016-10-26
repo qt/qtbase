@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaScreen : public QPlatformScreen
 {
 public:
-    QCocoaScreen(int screenIndex);
+    QCocoaScreen(NSScreen *screen);
     ~QCocoaScreen();
 
     // ----------------------------------------------------
@@ -84,11 +84,11 @@ public:
     // ----------------------------------------------------
     // Additional methods
     void setVirtualSiblings(const QList<QPlatformScreen *> &siblings) { m_siblings = siblings; }
-    NSScreen *osScreen() const;
+    NSScreen *nsScreen() const;
     void updateGeometry();
 
 public:
-    int m_screenIndex;
+    NSScreen *m_nsScreen;
     QRect m_geometry;
     QRect m_availableGeometry;
     QDpi m_logicalDpi;
@@ -144,7 +144,7 @@ public:
     QList<int> possibleKeys(const QKeyEvent *event) const Q_DECL_OVERRIDE;
 
     void updateScreens();
-    QCocoaScreen *screenAtIndex(int index);
+    QCocoaScreen *screenForNSScreen(NSScreen *nsScreen);
 
     void setToolbar(QWindow *window, NSToolbar *toolbar);
     NSToolbar *toolbar(QWindow *window) const;

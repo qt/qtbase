@@ -1363,11 +1363,7 @@ void QCocoaWindow::windowDidChangeScreen()
     if (!window())
         return;
 
-    NSUInteger screenIndex = [[NSScreen screens] indexOfObject:m_view.window.screen];
-    if (screenIndex == NSNotFound)
-        return;
-
-    if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenAtIndex(screenIndex))
+    if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen))
         QWindowSystemInterface::handleWindowScreenChanged(window(), cocoaScreen->screen());
 
     updateExposedGeometry();
@@ -2001,12 +1997,8 @@ void QCocoaWindow::exposeWindow()
     // time, and we won't get a NSWindowDidChangeScreenNotification
     // on show. The case where the window is initially displayed
     // on a non-primary screen needs special handling here.
-    NSUInteger screenIndex = [[NSScreen screens] indexOfObject:m_nsWindow.screen];
-    if (screenIndex != NSNotFound) {
-        QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenAtIndex(screenIndex);
-        if (cocoaScreen)
-            window()->setScreen(cocoaScreen->screen());
-    }
+    if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_nsWindow.screen))
+        window()->setScreen(cocoaScreen->screen());
 
     if (!m_isExposed) {
         m_isExposed = true;

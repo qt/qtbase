@@ -69,8 +69,8 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
-QCocoaScreen::QCocoaScreen(int screenIndex) :
-    QPlatformScreen(), m_screenIndex(screenIndex), m_refreshRate(60.0)
+QCocoaScreen::QCocoaScreen(NSScreen *screen)
+    : QPlatformScreen(), m_nsScreen(screen), m_refreshRate(60.0)
 {
     updateGeometry();
     m_cursor = new QCocoaCursor;
@@ -81,25 +81,23 @@ QCocoaScreen::~QCocoaScreen()
     delete m_cursor;
 }
 
-NSScreen *QCocoaScreen::osScreen() const
+NSScreen *QCocoaScreen::nsScreen() const
 {
-    NSArray *screens = [NSScreen screens];
-    return ((NSUInteger)m_screenIndex < [screens count]) ? [screens objectAtIndex:m_screenIndex] : nil;
+    return m_nsScreen;
 }
 
 void QCocoaScreen::updateGeometry()
 {
-    NSScreen *nsScreen = osScreen();
-    if (!nsScreen)
+    if (!m_nsScreen)
         return;
 
-    NSRect frameRect = [nsScreen frame];
+    NSRect frameRect = [m_nsScreen frame];
 
-    if (m_screenIndex == 0) {
+    if (m_nsScreen == [[NSScreen screens] firstObject]) {
         m_geometry = QRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width, frameRect.size.height);
         // This is the primary screen, the one that contains the menubar. Its origin should be
         // (0, 0), and it's the only one whose available geometry differs from its full geometry.
-        NSRect visibleRect = [nsScreen visibleFrame];
+        NSRect visibleRect = [m_nsScreen visibleFrame];
         m_availableGeometry = QRect(visibleRect.origin.x,
                                     frameRect.size.height - (visibleRect.origin.y + visibleRect.size.height), // invert y
                                     visibleRect.size.width, visibleRect.size.height);
@@ -118,9 +116,9 @@ void QCocoaScreen::updateGeometry()
     }
 
     m_format = QImage::Format_RGB32;
-    m_depth = NSBitsPerPixelFromDepth([nsScreen depth]);
+    m_depth = NSBitsPerPixelFromDepth([m_nsScreen depth]);
 
-    NSDictionary *devDesc = [nsScreen deviceDescription];
+    NSDictionary *devDesc = [m_nsScreen deviceDescription];
     CGDirectDisplayID dpy = [[devDesc objectForKey:@"NSScreenNumber"] unsignedIntValue];
     CGSize size = CGDisplayScreenSize(dpy);
     m_physicalSize = QSizeF(size.width, size.height);
@@ -147,8 +145,7 @@ void QCocoaScreen::updateGeometry()
 qreal QCocoaScreen::devicePixelRatio() const
 {
     QMacAutoReleasePool pool;
-    NSScreen * screen = osScreen();
-    return qreal(screen ? [screen backingScaleFactor] : 1.0);
+    return qreal(m_nsScreen ? [m_nsScreen backingScaleFactor] : 1.0);
 }
 
 QPlatformScreen::SubpixelAntialiasingType QCocoaScreen::subpixelAntialiasingTypeHint() const
@@ -423,7 +420,7 @@ void QCocoaIntegration::updateScreens()
             // NSScreen documentation says do not cache the array returned from [NSScreen screens].
             // However in practice, we can identify a screen by its pointer: if resolution changes,
             // the NSScreen object will be the same instance, just with different values.
-            if (existingScr->osScreen() == scr) {
+            if (existingScr->nsScreen() == scr) {
                 screen = existingScr;
                 break;
             }
@@ -431,7 +428,7 @@ void QCocoaIntegration::updateScreens()
             remainingScreens.remove(screen);
             screen->updateGeometry();
         } else {
-            screen = new QCocoaScreen(i);
+            screen = new QCocoaScreen(scr);
             mScreens.append(screen);
             screenAdded(screen);
         }
@@ -451,16 +448,21 @@ void QCocoaIntegration::updateScreens()
     }
 }
 
-QCocoaScreen *QCocoaIntegration::screenAtIndex(int index)
+QCocoaScreen *QCocoaIntegration::screenForNSScreen(NSScreen *nsScreen)
 {
-    if (index >= mScreens.count())
+    NSUInteger index = [[NSScreen screens] indexOfObject:nsScreen];
+    if (index == NSNotFound)
+        return 0;
+
+    if (index >= unsigned(mScreens.count()))
         updateScreens();
 
-    // It is possible that the screen got removed while updateScreens was called
-    // so we do a sanity check to be certain
-    if (index >= mScreens.count())
-        return 0;
-    return mScreens.at(index);
+    for (QCocoaScreen *screen : mScreens) {
+        if (screen->nsScreen() == nsScreen)
+            return screen;
+    }
+
+    return 0;
 }
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
