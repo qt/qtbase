@@ -2633,21 +2633,28 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
 */
 QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
 {
-    ushort a = after.unicode();
-    ushort b = before.unicode();
     if (d->size) {
-        detach();
-        ushort *i = d->data();
-        const ushort *e = i + d->size;
-        if (cs == Qt::CaseSensitive) {
-            for (; i != e; ++i)
-                if (*i == b)
-                    *i = a;
-        } else {
-            b = foldCase(b);
-            for (; i != e; ++i)
-                if (foldCase(*i) == b)
-                    *i = a;
+        const int idx = indexOf(before, 0, cs);
+        if (idx != -1) {
+            detach();
+            const ushort a = after.unicode();
+            ushort *i = d->data();
+            const ushort *e = i + d->size;
+            i += idx;
+            *i = a;
+            if (cs == Qt::CaseSensitive) {
+                const ushort b = before.unicode();
+                while (++i != e) {
+                    if (*i == b)
+                        *i = a;
+                }
+            } else {
+                const ushort b = foldCase(before.unicode());
+                while (++i != e) {
+                    if (foldCase(*i) == b)
+                        *i = a;
+                }
+            }
         }
     }
     return *this;
