@@ -535,7 +535,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                     // activate window of the widget under mouse pointer
                     if (!w->isActiveWindow()) {
                         w->activateWindow();
-                        w->raise();
+                        w->window()->raise();
                     }
 
                     QWindow *win = w->windowHandle();
