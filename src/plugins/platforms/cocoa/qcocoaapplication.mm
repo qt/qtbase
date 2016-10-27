@@ -76,6 +76,7 @@
 #include "qcocoaintrospection.h"
 #include "qcocoaapplicationdelegate.h"
 #include "qcocoahelpers.h"
+#include "qcocoawindow.h"
 #include <qguiapplication.h>
 #include <qdebug.h>
 
@@ -148,6 +149,21 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
 
 @end
 
+static void qt_maybeSendKeyEquivalentUpEvent(NSEvent *event)
+{
+    // Cocoa is known for not sending key up events for key
+    // equivalents, regardless of whether it's an actual
+    // recognized key equivalent. We decide to force fate
+    // and forward the key event to the key (focus) window.
+    // However, non-Qt windows will not (and should not) get
+    // any special treatment, only QWindow-owned NSWindows.
+    if (event.type == NSKeyUp && (event.modifierFlags & NSCommandKeyMask)) {
+        NSWindow *targetWindow = event.window;
+        if ([targetWindow.class conformsToProtocol:@protocol(QNSWindowProtocol)])
+            [targetWindow sendEvent:event];
+    }
+}
+
 @implementation QT_MANGLE_NAMESPACE(QNSApplication)
 
 - (void)QT_MANGLE_NAMESPACE(qt_sendEvent_original):(NSEvent *)event
@@ -164,16 +180,20 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
     // be called instead of sendEvent if redirection occurs.
     // 'self' will then be an instance of NSApplication
     // (and not QNSApplication)
-    if (![NSApp QT_MANGLE_NAMESPACE(qt_filterEvent):event])
+    if (![NSApp QT_MANGLE_NAMESPACE(qt_filterEvent):event]) {
         [self QT_MANGLE_NAMESPACE(qt_sendEvent_original):event];
+        qt_maybeSendKeyEquivalentUpEvent(event);
+    }
 }
 
 - (void)sendEvent:(NSEvent *)event
 {
     // This method will be called if
     // no redirection occurs
-    if (![NSApp QT_MANGLE_NAMESPACE(qt_filterEvent):event])
+    if (![NSApp QT_MANGLE_NAMESPACE(qt_filterEvent):event]) {
         [super sendEvent:event];
+        qt_maybeSendKeyEquivalentUpEvent(event);
+    }
 }
 
 @end
