@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     In Qt, Unicode characters are 16-bit entities without any markup
     or structure. This class represents such an entity. It is
     lightweight, so it can be used everywhere. Most compilers treat
-    it like a \c{unsigned short}.
+    it like an \c{unsigned short}.
 
     QChar provides a full complement of testing/classification
     functions, converting to and from other formats, converting from
