@@ -955,6 +955,12 @@ QOpenGLFramebufferObject::~QOpenGLFramebufferObject()
         d->stencil_buffer_guard->free();
     if (d->fbo_guard)
         d->fbo_guard->free();
+
+    QOpenGLContextPrivate *contextPrv = QOpenGLContextPrivate::get(QOpenGLContext::currentContext());
+    if (contextPrv && contextPrv->qgl_current_fbo == this) {
+        contextPrv->qgl_current_fbo_invalid = true;
+        contextPrv->qgl_current_fbo = Q_NULLPTR;
+    }
 }
 
 /*!
