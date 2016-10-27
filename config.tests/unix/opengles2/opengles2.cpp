@@ -34,6 +34,7 @@
 #ifdef BUILD_ON_MAC
   #include <OpenGLES/ES2/gl.h>
 #else
+  #define GL_GLEXT_PROTOTYPES
   #include <GLES2/gl2.h>
 #endif
 

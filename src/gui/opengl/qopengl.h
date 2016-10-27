@@ -89,6 +89,13 @@ typedef void* GLeglImageOES;
 // applications cannot target ES 3. Therefore QOpenGLFunctions and
 // friends do everything dynamically and never rely on these macros.
 
+// Some Khronos headers use the ext proto guard in the standard headers as well,
+// which is bad. Work it around, but avoid spilling over to the ext header.
+#  ifndef GL_GLEXT_PROTOTYPES
+#   define GL_GLEXT_PROTOTYPES
+#   define QGL_TEMP_GLEXT_PROTO
+#  endif
+
 #  if defined(QT_OPENGL_ES_3_1)
 #   include <GLES3/gl31.h>
 #  elif defined(QT_OPENGL_ES_3)
@@ -96,6 +103,11 @@ typedef void* GLeglImageOES;
 #  else
 #   include <GLES2/gl2.h>
 #endif
+
+#  ifdef QGL_TEMP_GLEXT_PROTO
+#   undef GL_GLEXT_PROTOTYPES
+#   undef QGL_TEMP_GLEXT_PROTO
+# endif
 
 /*
    Some GLES2 implementations (like the one on Harmattan) are missing the
@@ -117,7 +129,15 @@ typedef char GLchar;
 #  include <OpenGL/glext.h>
 # else
 #  define GL_GLEXT_LEGACY // Prevents GL/gl.h from #including system glext.h
-#  include <GL/gl.h>
+// Some Khronos headers use the ext proto guard in the standard headers as well,
+// which is bad. Work it around, but avoid spilling over to the ext header.
+#  ifndef GL_GLEXT_PROTOTYPES
+#   define GL_GLEXT_PROTOTYPES
+#   include <GL/gl.h>
+#   undef GL_GLEXT_PROTOTYPES
+#  else
+#   include <GL/gl.h>
+#  endif
 #  include <QtGui/qopenglext.h>
 # endif // Q_OS_MAC
 #endif // QT_OPENGL_ES_2
