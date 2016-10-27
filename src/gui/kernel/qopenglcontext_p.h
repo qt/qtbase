@@ -258,7 +258,7 @@ public:
 
     static QOpenGLContextPrivate *get(QOpenGLContext *context)
     {
-        return context->d_func();
+        return context ? context->d_func() : Q_NULLPTR;
     }
 
 #if !defined(QT_NO_DEBUG)
