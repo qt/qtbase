@@ -358,37 +358,58 @@ const QOperatingSystemVersion QOperatingSystemVersion::MacOSSierra = QOperatingS
 
 /*!
     \variable QOperatingSystemVersion::AndroidJellyBean
-    \brief a version corresponding to Android Jelly Bean (versions 4.1 - 4.3).
+    \brief a version corresponding to Android Jelly Bean (version 4.1, API level 16).
     \since 5.9
  */
 const QOperatingSystemVersion QOperatingSystemVersion::AndroidJellyBean = QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 1);
 
 /*!
+    \variable QOperatingSystemVersion::AndroidJellyBean_MR1
+    \brief a version corresponding to Android Jelly Bean, maintenance release 1 (version 4.2, API level 17).
+    \since 5.9
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidJellyBean_MR1 = QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 2);
+
+/*!
+    \variable QOperatingSystemVersion::AndroidJellyBean_MR2
+    \brief a version corresponding to Android Jelly Bean, maintenance release 2 (version 4.3, API level 18).
+    \since 5.9
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidJellyBean_MR2 = QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 3);
+
+/*!
     \variable QOperatingSystemVersion::AndroidKitKat
-    \brief a version corresponding to Android KitKat (version 4.4).
+    \brief a version corresponding to Android KitKat (versions 4.4 & 4.4W, API levels 19 & 20).
     \since 5.9
  */
 const QOperatingSystemVersion QOperatingSystemVersion::AndroidKitKat = QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 4);
 
 /*!
     \variable QOperatingSystemVersion::AndroidLollipop
-    \brief a version corresponding to Android Lollipop (versions 5.0 - 5.1).
+    \brief a version corresponding to Android Lollipop (version 5.0, API level 21).
     \since 5.9
  */
 const QOperatingSystemVersion QOperatingSystemVersion::AndroidLollipop = QOperatingSystemVersion(QOperatingSystemVersion::Android, 5, 0);
 
 /*!
-    \variable QOperatingSystemVersion::AndroidMarshmallow
-    \brief a version corresponding to Android Marshmallow (version 6.0).
+    \variable QOperatingSystemVersion::AndroidLollipop_MR1
+    \brief a version corresponding to Android Lollipop, maintenance release 1 (version 5.1, API level 22).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidMarshmallow = QOperatingSystemVersion(QOperatingSystemVersion::Android, 6);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidLollipop_MR1 = QOperatingSystemVersion(QOperatingSystemVersion::Android, 5, 1);
+
+/*!
+    \variable QOperatingSystemVersion::AndroidMarshmallow
+    \brief a version corresponding to Android Marshmallow (version 6.0, API level 23).
+    \since 5.9
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidMarshmallow = QOperatingSystemVersion(QOperatingSystemVersion::Android, 6, 0);
 
 /*!
     \variable QOperatingSystemVersion::AndroidNougat
-    \brief a version corresponding to Android Nougat (version 7.0).
+    \brief a version corresponding to Android Nougat (version 7.0, API level 24).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat = QOperatingSystemVersion(QOperatingSystemVersion::Android, 7);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat = QOperatingSystemVersion(QOperatingSystemVersion::Android, 7, 0);
 
 QT_END_NAMESPACE

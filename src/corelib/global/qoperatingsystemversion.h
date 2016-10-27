@@ -71,8 +71,11 @@ public:
     static const QOperatingSystemVersion MacOSSierra;
 
     static const QOperatingSystemVersion AndroidJellyBean;
+    static const QOperatingSystemVersion AndroidJellyBean_MR1;
+    static const QOperatingSystemVersion AndroidJellyBean_MR2;
     static const QOperatingSystemVersion AndroidKitKat;
     static const QOperatingSystemVersion AndroidLollipop;
+    static const QOperatingSystemVersion AndroidLollipop_MR1;
     static const QOperatingSystemVersion AndroidMarshmallow;
     static const QOperatingSystemVersion AndroidNougat;
 
