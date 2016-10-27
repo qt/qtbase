@@ -65,7 +65,6 @@ SOURCES += \
         painting/qcolor.cpp \
         painting/qcompositionfunctions.cpp \
         painting/qcosmeticstroker.cpp \
-        painting/qcssutil.cpp \
         painting/qdrawhelper.cpp \
         painting/qemulationpaintengine.cpp \
         painting/qgammatables.cpp \
@@ -102,6 +101,11 @@ SOURCES += \
 darwin {
     HEADERS += painting/qcoregraphics_p.h
     SOURCES += painting/qcoregraphics.mm
+}
+
+qtConfig(cssparser) {
+    SOURCES += \
+        painting/qcssutil.cpp
 }
 
 SSE2_SOURCES += painting/qdrawhelper_sse2.cpp

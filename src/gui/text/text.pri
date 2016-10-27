@@ -32,11 +32,7 @@ HEADERS += \
     text/qtextlist.h \
     text/qsyntaxhighlighter.h \
     text/qtextdocumentwriter.h \
-    text/qcssparser_p.h \
     text/qtexttable_p.h \
-    text/qzipreader_p.h \
-    text/qzipwriter_p.h \
-    text/qtextodfwriter_p.h \
     text/qstatictext_p.h \
     text/qstatictext.h \
     text/qrawfont.h \
@@ -70,9 +66,6 @@ SOURCES += \
     text/qtextlist.cpp \
     text/qtextdocumentwriter.cpp \
     text/qsyntaxhighlighter.cpp \
-    text/qcssparser.cpp \
-    text/qzip.cpp \
-    text/qtextodfwriter.cpp \
     text/qstatictext.cpp \
     text/qrawfont.cpp \
     text/qglyphrun.cpp \
@@ -92,4 +85,21 @@ qtConfig(harfbuzz)|qtConfig(system-harfbuzz) {
 
     SOURCES += text/qharfbuzzng.cpp
     HEADERS += text/qharfbuzzng_p.h
+}
+
+qtConfig(textodfwriter) {
+    HEADERS += \
+        text/qtextodfwriter_p.h \
+        text/qzipreader_p.h \
+        text/qzipwriter_p.h
+    SOURCES += \
+        text/qtextodfwriter.cpp \
+        text/qzip.cpp
+}
+
+qtConfig(cssparser) {
+    HEADERS += \
+        text/qcssparser_p.h
+    SOURCES += \
+        text/qcssparser.cpp
 }
