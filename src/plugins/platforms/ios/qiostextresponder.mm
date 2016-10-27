@@ -236,6 +236,8 @@
         self.inputView = [[[WrapperView alloc] initWithView:inputView] autorelease];
     if (UIView *accessoryView = static_cast<UIView *>(platformData.value(kImePlatformDataInputAccessoryView).value<void *>()))
         self.inputAccessoryView = [[[WrapperView alloc] initWithView:accessoryView] autorelease];
+
+#ifndef Q_OS_TVOS
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_9_0) {
         if (platformData.value(kImePlatformDataHideShortcutsBar).toBool()) {
             // According to the docs, leadingBarButtonGroups/trailingBarButtonGroups should be set to nil to hide the shortcuts bar.
@@ -247,6 +249,7 @@
             self.inputAssistantItem.trailingBarButtonGroups = @[trailing];
         }
     }
+#endif
 
     self.undoManager.groupsByEvent = NO;
     [self rebuildUndoStack];
