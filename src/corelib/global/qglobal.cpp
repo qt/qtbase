@@ -2293,6 +2293,7 @@ Lollipop
 Lollipop
 Marshmallow
 Nougat
+Nougat
  */
     static const char versions_string[] =
         "\0"
@@ -2314,7 +2315,7 @@ Nougat
            0,    0,    0,    1,    9,   15,   15,   15,
           22,   28,   28,   40,   40,   40,   50,   50,
           69,   69,   69,   80,   80,   87,   87,   96,
-         108,   -1
+         108,  108,   -1
     };
 
     static const int versions_count = (sizeof versions_indices) / (sizeof versions_indices[0]);

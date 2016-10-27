@@ -143,6 +143,7 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
         { 5, 1 }, // API level 22
         { 6, 0 }, // API level 23
         { 7, 0 }, // API level 24
+        { 7, 1 }, // API level 25
     };
 
     // This will give us at least the first 2 version components
@@ -411,5 +412,12 @@ const QOperatingSystemVersion QOperatingSystemVersion::AndroidMarshmallow = QOpe
     \since 5.9
  */
 const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat = QOperatingSystemVersion(QOperatingSystemVersion::Android, 7, 0);
+
+/*!
+    \variable QOperatingSystemVersion::AndroidNougat_MR1
+    \brief a version corresponding to Android Nougat, maintenance release 1 (version 7.0, API level 25).
+    \since 5.9
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat_MR1 = QOperatingSystemVersion(QOperatingSystemVersion::Android, 7, 1);
 
 QT_END_NAMESPACE
