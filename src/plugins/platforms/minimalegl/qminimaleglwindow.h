@@ -35,7 +35,6 @@
 #define QMINIMALEGLWINDOW_H
 
 #include "qminimaleglintegration.h"
-#include "qminimaleglscreen.h"
 
 #include <qpa/qplatformwindow.h>
 

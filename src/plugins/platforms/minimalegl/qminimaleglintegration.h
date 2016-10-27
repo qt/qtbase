@@ -34,8 +34,6 @@
 #ifndef QMINIMALEGLINTEGRATION_H
 #define QMINIMALEGLINTEGRATION_H
 
-#include "qminimaleglscreen.h"
-
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 
