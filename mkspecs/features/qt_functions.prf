@@ -235,17 +235,58 @@ defineTest(qtAddTargetEnv) {
 
 defineReplace(pkgConfigExecutable) {
     isEmpty(PKG_CONFIG) {
-        !isEmpty(QMAKE_PKG_CONFIG): \
+        !isEmpty(QMAKE_PKG_CONFIG) {
+            # Assumed to be properly sysrootified.
             PKG_CONFIG = $$QMAKE_PKG_CONFIG
-        else: \
+            export(PKG_CONFIG)
+        } else {
             PKG_CONFIG = pkg-config
+            !cross_compile {
+                export(PKG_CONFIG)
+            } else {
+                # Cross compiling, ensure that pkg-config is set up sanely.
+                sysroot = $$[QT_SYSROOT]
 
-        sysroot.name = PKG_CONFIG_SYSROOT_DIR
-        sysroot.value = $$PKG_CONFIG_SYSROOT_DIR
-        libdir.name = PKG_CONFIG_LIBDIR
-        libdir.value = $$PKG_CONFIG_LIBDIR
-        QT_TOOL_NAME = pkg-config
-        qtAddToolEnv(PKG_CONFIG, sysroot libdir, SYS)
+                pkgConfigLibdir = $$(PKG_CONFIG_LIBDIR)
+                isEmpty(pkgConfigLibdir) {
+                    isEmpty(sysroot) {
+                        warning("Cross compiling without sysroot. Disabling pkg-config.")
+                        return()
+                    }
+                    !exists("$$sysroot/usr/lib/pkgconfig") {
+                        warning("Disabling pkg-config since PKG_CONFIG_LIBDIR is not set and the")
+                        warning("host's .pc files would be used (even if you set PKG_CONFIG_PATH).")
+                        warning("Set this variable to the directory that contains target .pc files")
+                        warning("for pkg-config to function correctly when cross-compiling.")
+                        return()
+                    }
+
+                    pkgConfigLibdir = $$system_path($$sysroot/usr/lib/pkgconfig)$$QMAKE_DIRLIST_SEP$$system_path($$sysroot/usr/share/pkgconfig)
+                    !isEmpty(GCC_MACHINE_DUMP): \
+                        pkgConfigLibdir = "$$pkgConfigLibdir$$QMAKE_DIRLIST_SEP$$system_path($$sysroot/usr/lib/$$GCC_MACHINE_DUMP/pkgconfig)"
+                    message("PKG_CONFIG_LIBDIR automatically set to $$pkgConfigLibdir")
+                }
+                pkgConfigSysrootDir = $$(PKG_CONFIG_SYSROOT_DIR)
+                isEmpty(pkgConfigSysrootDir) {
+                    isEmpty(sysroot) {
+                        warning("Disabling pkg-config since PKG_CONFIG_SYSROOT_DIR is not set.")
+                        warning("Set this variable to your sysroot for pkg-config to function")
+                        warning("correctly when cross-compiling.")
+                        return()
+                    }
+
+                    pkgConfigSysrootDir = $$sysroot
+                    message("PKG_CONFIG_SYSROOT_DIR automatically set to $$pkgConfigSysrootDir")
+                }
+
+                sysroot.name = PKG_CONFIG_SYSROOT_DIR
+                sysroot.value = $$pkgConfigSysrootDir
+                libdir.name = PKG_CONFIG_LIBDIR
+                libdir.value = $$pkgConfigLibdir
+                QT_TOOL_NAME = pkg-config
+                qtAddToolEnv(PKG_CONFIG, sysroot libdir, SYS)
+            }
+        }
     }
 
     equals(QMAKE_HOST.os, Windows): \
@@ -257,11 +298,6 @@ defineReplace(pkgConfigExecutable) {
 }
 
 defineTest(packagesExist) {
-    !qtConfig(pkg-config) {
-        warning("pkg-config disabled, can't check package existence")
-        return(false)
-    }
-
     # this can't be done in global scope here because qt_functions is loaded
     # before the .pro is parsed, so if the .pro set PKG_CONFIG, we wouldn't know it
     # yet. oops.
