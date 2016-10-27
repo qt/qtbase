@@ -40,6 +40,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qstandardpaths.h>
+#include <qtemporaryfile.h>
 
 #include <process.h>
 #include <errno.h>
@@ -172,25 +173,23 @@ QString Environment::gccVersion()
 QString Environment::msvcVersion()
 {
     int returnValue = 0;
-    // Extract version from standard error output of "cl /?"
-    const QString command = QFile::decodeName(qgetenv("ComSpec"))
-        + QLatin1String(" /c ") + QLatin1String(compilerInfo(CC_MSVC2015)->executable)
-        + QLatin1String(" /? 2>&1");
-    SetEnvironmentVariable(L"CL", NULL); // May contain /nologo, which suppresses the version.
-    QString version = execute(command, &returnValue);
-    if (returnValue != 0) {
-        cout << "Could not get cl version" << returnValue << qPrintable(version) << '\n';;
-        version.clear();
-    } else {
-        QRegExp versionRegexp(QStringLiteral("^.*\\b(\\d{2,2}\\.\\d{2,2}\\.\\d{5,5})\\b.*$"));
-        Q_ASSERT(versionRegexp.isValid());
-        if (versionRegexp.exactMatch(version)) {
-            version = versionRegexp.cap(1);
-        } else {
-            cout << "Unable to determine cl version from the output of \""
-                << qPrintable(command) << "\"\n";
-        }
+    QString tempSourceName;
+    {   // QTemporaryFile needs to go out of scope, otherwise cl.exe refuses to open it.
+        QTemporaryFile tempSource(QDir::tempPath() + QLatin1String("/XXXXXX.cpp"));
+        tempSource.setAutoRemove(false);
+        if (!tempSource.open())
+            return QString();
+        tempSource.write("_MSC_FULL_VER\n");
+        tempSourceName = tempSource.fileName();
     }
+    QString version = execute(QLatin1String("cl /nologo /EP \"")
+                              + QDir::toNativeSeparators(tempSourceName) + QLatin1Char('"'),
+                              &returnValue).trimmed();
+    QFile::remove(tempSourceName);
+    if (returnValue || version.size() < 9 || !version.at(0).isDigit())
+        return QString();
+    version.insert(4, QLatin1Char('.'));
+    version.insert(2, QLatin1Char('.'));
     return version;
 }
 
