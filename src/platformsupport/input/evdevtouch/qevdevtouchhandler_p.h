@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2016 Jolla Ltd, author: <gunnar.sletta@jollamobile.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins module of the Qt Toolkit.
@@ -58,6 +59,7 @@
 #include <QThread>
 #include <QtCore/private/qthread_p.h>
 #include <qpa/qwindowsysteminterface.h>
+#include "qevdevtouchfilter_p.h"
 
 #if QT_CONFIG(mtdev)
 struct mtdev;
@@ -78,10 +80,18 @@ public:
 
     QTouchDevice *touchDevice() const;
 
+    bool isFiltered() const;
+
 private slots:
     void readData();
 
+signals:
+    void touchPointsUpdated();
+
 private:
+    friend class QEvdevTouchScreenData;
+    friend class QEvdevTouchScreenHandlerThread;
+
     void registerTouchDevice();
     void unregisterTouchDevice();
 
@@ -104,16 +114,36 @@ public:
 
     bool isTouchDeviceRegistered() const;
 
+    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
+
+public slots:
+    void scheduleTouchPointUpdate();
+
 signals:
     void touchDeviceRegistered();
 
 private:
     Q_INVOKABLE void notifyTouchDeviceRegistered();
 
+    void filterAndSendTouchPoints();
+    QRect targetScreenGeometry() const;
+
     QString m_device;
     QString m_spec;
     QEvdevTouchScreenHandler *m_handler;
     bool m_touchDeviceRegistered;
+
+    bool m_touchUpdatePending;
+    QWindow *m_filterWindow;
+
+    struct FilteredTouchPoint {
+        QEvdevTouchFilter x;
+        QEvdevTouchFilter y;
+        QWindowSystemInterface::TouchPoint touchPoint;
+    };
+    QHash<int, FilteredTouchPoint> m_filteredPoints;
+
+    float m_touchRate;
 };
 
 QT_END_NAMESPACE
