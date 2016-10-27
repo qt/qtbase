@@ -1790,7 +1790,7 @@ void QFontEngineFT::unlockAlphaMapForGlyph()
 static inline bool is2dRotation(const QTransform &t)
 {
     return qFuzzyCompare(t.m11(), t.m22()) && qFuzzyCompare(t.m12(), -t.m21())
-        && qFuzzyCompare(t.m11()*t.m22() - t.m12()*t.m21(), 1.0);
+        && qFuzzyCompare(t.m11()*t.m22() - t.m12()*t.m21(), qreal(1.0));
 }
 
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
