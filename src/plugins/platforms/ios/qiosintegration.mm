@@ -227,7 +227,7 @@ QPlatformClipboard *QIOSIntegration::clipboard() const
 #ifndef Q_OS_TVOS
     return m_clipboard;
 #else
-    return 0;
+    return QPlatformIntegration::clipboard();
 #endif
 }
 #endif
