@@ -124,7 +124,7 @@ defineTest(qtConfTest_detectPkgConfig) {
     !isEmpty(pkgConfig): {
         qtLog("Found pkg-config from environment variable: $$pkgConfig")
     } else {
-        pkgConfig = $$PKG_CONFIG
+        pkgConfig = $$QMAKE_PKG_CONFIG
 
         !isEmpty(pkgConfig) {
             qtLog("Found pkg-config from mkspec: $$pkgConfig")
