@@ -48,9 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(QQNX_SCREENEVENTTHREAD)
 class QQnxScreenEventThread;
-#endif
 class QQnxFileDialogHelper;
 class QQnxNativeInterface;
 class QQnxWindow;
@@ -142,9 +140,7 @@ private:
     static void removeWindow(screen_window_t qnxWindow);
 
     static screen_context_t ms_screenContext;
-#if defined(QQNX_SCREENEVENTTHREAD)
     QQnxScreenEventThread *m_screenEventThread;
-#endif
     QQnxNavigatorEventHandler *m_navigatorEventHandler;
     QQnxAbstractVirtualKeyboard *m_virtualKeyboard;
 #if defined(QQNX_PPS)

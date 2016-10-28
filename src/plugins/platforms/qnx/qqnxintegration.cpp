@@ -40,9 +40,7 @@
 #include "qqnxglobal.h"
 
 #include "qqnxintegration.h"
-#if defined(QQNX_SCREENEVENTTHREAD)
 #include "qqnxscreeneventthread.h"
-#endif
 #include "qqnxnativeinterface.h"
 #include "qqnxrasterbackingstore.h"
 #include "qqnxscreen.h"
@@ -125,9 +123,7 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
 
 QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     : QPlatformIntegration()
-#if defined(QQNX_SCREENEVENTTHREAD)
     , m_screenEventThread(0)
-#endif
     , m_navigatorEventHandler(new QQnxNavigatorEventHandler())
     , m_virtualKeyboard(0)
 #if defined(QQNX_PPS)
@@ -169,10 +165,8 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #endif
 
     // Create/start event thread
-#if defined(QQNX_SCREENEVENTTHREAD)
     m_screenEventThread = new QQnxScreenEventThread(ms_screenContext, m_screenEventHandler);
     m_screenEventThread->start();
-#endif
 
 #if defined(QQNX_PPS)
     // Create/start the keyboard class.
@@ -235,10 +229,8 @@ QQnxIntegration::~QQnxIntegration()
 #endif
     delete m_navigatorEventHandler;
 
-#if defined(QQNX_SCREENEVENTTHREAD)
     // Stop/destroy screen event thread
     delete m_screenEventThread;
-#endif
 
     // In case the event-dispatcher was never transferred to QCoreApplication
     delete m_eventDispatcher;

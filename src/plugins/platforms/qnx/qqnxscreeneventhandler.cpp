@@ -40,9 +40,7 @@
 #include "qqnxglobal.h"
 
 #include "qqnxscreeneventhandler.h"
-#if defined(QQNX_SCREENEVENTTHREAD)
 #include "qqnxscreeneventthread.h"
-#endif
 #include "qqnxintegration.h"
 #include "qqnxkeytranslator.h"
 #include "qqnxscreen.h"
@@ -67,9 +65,7 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
     , m_lastButtonState(Qt::NoButton)
     , m_lastMouseWindow(0)
     , m_touchDevice(0)
-#if defined(QQNX_SCREENEVENTTHREAD)
     , m_eventThread(0)
-#endif
     , m_focusLostTimer(-1)
 {
     // Create a touch device
@@ -198,7 +194,6 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
     }
 }
 
-#if defined(QQNX_SCREENEVENTTHREAD)
 void QQnxScreenEventHandler::setScreenEventThread(QQnxScreenEventThread *eventThread)
 {
     m_eventThread = eventThread;
@@ -233,7 +228,6 @@ void QQnxScreenEventHandler::processEventsFromScreenThread()
 
     m_eventThread->unlock();
 }
-#endif
 
 void QQnxScreenEventHandler::handleKeyboardEvent(screen_event_t event)
 {

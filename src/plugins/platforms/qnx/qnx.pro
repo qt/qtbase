@@ -5,8 +5,6 @@ QT += platformsupport-private core-private gui-private
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
 
-CONFIG += qqnx_screeneventthread
-
 # Uncomment these to enable debugging output for various aspects of the plugin
 #DEFINES += QQNXBUFFER_DEBUG
 #DEFINES += QQNXBUTTON_DEBUG
@@ -45,7 +43,8 @@ SOURCES =   main.cpp \
             qqnxservices.cpp \
             qqnxcursor.cpp \
             qqnxrasterwindow.cpp \
-            qqnxglobal.cpp
+            qqnxglobal.cpp \
+            qqnxscreeneventthread.cpp
 
 HEADERS =   main.h \
             qqnxbuffer.h \
@@ -65,13 +64,8 @@ HEADERS =   main.h \
             qqnxrasterwindow.h \
             qqnxscreeneventfilter.h \
             qqnxglobal.h \
-            qqnxlgmon.h
-
-CONFIG(qqnx_screeneventthread) {
-    DEFINES += QQNX_SCREENEVENTTHREAD
-    SOURCES += qqnxscreeneventthread.cpp
-    HEADERS += qqnxscreeneventthread.h
-}
+            qqnxlgmon.h \
+            qqnxscreeneventthread.h
 
 LIBS += -lscreen
 
