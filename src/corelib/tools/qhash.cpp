@@ -45,6 +45,7 @@
 #define _CRT_RAND_S
 #endif
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "qhash.h"
 
@@ -70,11 +71,17 @@
 
 QT_BEGIN_NAMESPACE
 
+// We assume that pointers and size_t have the same size. If that assumption should fail
+// on a platform the code selecting the different methods below needs to be fixed.
+static_assert(sizeof(size_t) == QT_POINTER_SIZE, "size_t and pointers have different size.");
+
 /*
  * Hashing for memory segments is based on the public domain MurmurHash2 by
  * Austin Appleby. See http://murmurhash.googlepages.com/
  */
-static inline uint hash(const void *key, uint len, uint seed) noexcept
+#if QT_POINTER_SIZE == 4
+
+static inline uint murmurhash(const void *key, uint len, uint seed) noexcept
 {
     // 'm' and 'r' are mixing constants generated offline.
     // They're not really 'magic', they just happen to work well.
@@ -130,7 +137,9 @@ static inline uint hash(const void *key, uint len, uint seed) noexcept
     return h;
 }
 
-static inline uint64_t hash(const void *key, uint64_t len, uint64_t seed) noexcept
+#else
+
+static inline uint64_t murmurhash(const void *key, uint64_t len, uint64_t seed) noexcept
 {
     const uint64_t m = 0xc6a4a7935bd1e995ULL;
     const int r = 47;
@@ -176,14 +185,214 @@ static inline uint64_t hash(const void *key, uint64_t len, uint64_t seed) noexce
     return h;
 }
 
+#endif
+
+#if QT_POINTER_SIZE == 8
+// This is an inlined version of the SipHash implementation that is
+// trying to avoid some memcpy's from uint64 to uint8[] and back.
+//
+// The original algorithm uses a 128bit seed. Our public API only allows
+// for a 64bit seed, so we mix in the length of the string to get some more
+// bits for the seed.
+//
+// Use SipHash-1-2, which has similar performance characteristics as
+// stablehash() above, instead of the SipHash-2-4 default
+#define cROUNDS 1
+#define dROUNDS 2
+
+#define ROTL(x, b) (uint64_t)(((x) << (b)) | ((x) >> (64 - (b))))
+
+#define SIPROUND                                                               \
+  do {                                                                         \
+    v0 += v1;                                                                  \
+    v1 = ROTL(v1, 13);                                                         \
+    v1 ^= v0;                                                                  \
+    v0 = ROTL(v0, 32);                                                         \
+    v2 += v3;                                                                  \
+    v3 = ROTL(v3, 16);                                                         \
+    v3 ^= v2;                                                                  \
+    v0 += v3;                                                                  \
+    v3 = ROTL(v3, 21);                                                         \
+    v3 ^= v0;                                                                  \
+    v2 += v1;                                                                  \
+    v1 = ROTL(v1, 17);                                                         \
+    v1 ^= v2;                                                                  \
+    v2 = ROTL(v2, 32);                                                         \
+  } while (0)
+
+
+static uint64_t siphash(const uint8_t *in, uint64_t inlen, const uint64_t seed)
+{
+    /* "somepseudorandomlygeneratedbytes" */
+    uint64_t v0 = 0x736f6d6570736575ULL;
+    uint64_t v1 = 0x646f72616e646f6dULL;
+    uint64_t v2 = 0x6c7967656e657261ULL;
+    uint64_t v3 = 0x7465646279746573ULL;
+    uint64_t b;
+    uint64_t k0 = seed;
+    uint64_t k1 = seed ^ inlen;
+    int i;
+    const uint8_t *end = in + (inlen & ~7ULL);
+    const int left = inlen & 7;
+    b = inlen << 56;
+    v3 ^= k1;
+    v2 ^= k0;
+    v1 ^= k1;
+    v0 ^= k0;
+
+    for (; in != end; in += 8) {
+        uint64_t m = qFromUnaligned<uint64_t>(in);
+        v3 ^= m;
+
+        for (i = 0; i < cROUNDS; ++i)
+            SIPROUND;
+
+        v0 ^= m;
+    }
+
+
+#if defined(Q_CC_GNU) && Q_CC_GNU >= 700
+    QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
+#endif
+    switch (left) {
+    case 7:
+        b |= ((uint64_t)in[6]) << 48;
+    case 6:
+        b |= ((uint64_t)in[5]) << 40;
+    case 5:
+        b |= ((uint64_t)in[4]) << 32;
+    case 4:
+        b |= ((uint64_t)in[3]) << 24;
+    case 3:
+        b |= ((uint64_t)in[2]) << 16;
+    case 2:
+        b |= ((uint64_t)in[1]) << 8;
+    case 1:
+        b |= ((uint64_t)in[0]);
+        break;
+    case 0:
+        break;
+    }
+
+    v3 ^= b;
+
+    for (i = 0; i < cROUNDS; ++i)
+        SIPROUND;
+
+    v0 ^= b;
+
+    v2 ^= 0xff;
+
+    for (i = 0; i < dROUNDS; ++i)
+        SIPROUND;
+
+    b = v0 ^ v1 ^ v2 ^ v3;
+    return b;
+}
+#else
+// This is a "SipHash" implementation adopted for 32bit platforms. It performs
+// basically the same operations as the 64bit version using 4 byte at a time
+// instead of 8.
+//
+// To make this work, we also need to change the constants for the mixing
+// rotations in ROTL. We're simply using half of the 64bit constants, rounded up
+// for odd numbers.
+//
+// For the v0-v4 constants, simply use the first four bytes of the 64 bit versions.
+//
+// Use SipHash-1-2, which has similar performance characteristics as
+// stablehash() above, instead of the SipHash-2-4 default
+#define cROUNDS 1
+#define dROUNDS 2
+
+#define ROTL(x, b) (uint32_t)(((x) << (b)) | ((x) >> (32 - (b))))
+
+#define SIPROUND                                                               \
+  do {                                                                         \
+    v0 += v1;                                                                  \
+    v1 = ROTL(v1, 7);                                                          \
+    v1 ^= v0;                                                                  \
+    v0 = ROTL(v0, 16);                                                         \
+    v2 += v3;                                                                  \
+    v3 = ROTL(v3, 8);                                                          \
+    v3 ^= v2;                                                                  \
+    v0 += v3;                                                                  \
+    v3 = ROTL(v3, 11);                                                         \
+    v3 ^= v0;                                                                  \
+    v2 += v1;                                                                  \
+    v1 = ROTL(v1, 9);                                                          \
+    v1 ^= v2;                                                                  \
+    v2 = ROTL(v2, 16);                                                         \
+  } while (0)
+
+
+static uint siphash(const uint8_t *in, uint inlen, const uint seed)
+{
+    /* "somepseudorandomlygeneratedbytes" */
+    uint v0 = 0x736f6d65U;
+    uint v1 = 0x646f7261U;
+    uint v2 = 0x6c796765U;
+    uint v3 = 0x74656462U;
+    uint b;
+    uint k0 = seed;
+    uint k1 = seed ^ inlen;
+    int i;
+    const uint8_t *end = in + (inlen & ~3ULL);
+    const int left = inlen & 3;
+    b = inlen << 24;
+    v3 ^= k1;
+    v2 ^= k0;
+    v1 ^= k1;
+    v0 ^= k0;
+
+    for (; in != end; in += 4) {
+        uint m = qFromUnaligned<uint>(in);
+        v3 ^= m;
+
+        for (i = 0; i < cROUNDS; ++i)
+            SIPROUND;
+
+        v0 ^= m;
+    }
+
+#if defined(Q_CC_GNU) && Q_CC_GNU >= 700
+    QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
+#endif
+    switch (left) {
+    case 3:
+        b |= ((uint)in[2]) << 16;
+    case 2:
+        b |= ((uint)in[1]) << 8;
+    case 1:
+        b |= ((uint)in[0]);
+        break;
+    case 0:
+        break;
+    }
+
+    v3 ^= b;
+
+    for (i = 0; i < cROUNDS; ++i)
+        SIPROUND;
+
+    v0 ^= b;
+
+    v2 ^= 0xff;
+
+    for (i = 0; i < dROUNDS; ++i)
+        SIPROUND;
+
+    b = v0 ^ v1 ^ v2 ^ v3;
+    return b;
+}
+#endif
+
 size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
 {
-    size_t result;
-    if constexpr (sizeof(size_t) == 8)
-        result = hash(p, uint64_t(size), uint64_t(seed));
-    else
-        result = hash(p, uint(size), uint(seed));
-    return result;
+    if (size <= QT_POINTER_SIZE)
+        return murmurhash(p, size, seed);
+
+    return siphash(reinterpret_cast<const uchar *>(p), size, seed);
 }
 
 size_t qHash(const QByteArray &key, size_t seed) noexcept
@@ -569,7 +778,7 @@ size_t qHash(float key, size_t seed) noexcept
 {
     // ensure -0 gets mapped to 0
     key += 0.0f;
-    return qHashBits(&key, sizeof(key), seed);
+    return murmurhash(&key, sizeof(key), seed);
 }
 
 /*! \relates QHash
@@ -581,7 +790,7 @@ size_t qHash(double key, size_t seed) noexcept
 {
     // ensure -0 gets mapped to 0
     key += 0.0;
-    return qHashBits(&key, sizeof(key), seed);
+    return murmurhash(&key, sizeof(key), seed);
 }
 
 #if !defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
@@ -594,7 +803,7 @@ size_t qHash(long double key, size_t seed) noexcept
 {
     // ensure -0 gets mapped to 0
     key += static_cast<long double>(0.0);
-    return qHashBits(&key, sizeof(key), seed);
+    return murmurhash(&key, sizeof(key), seed);
 }
 #endif
 
