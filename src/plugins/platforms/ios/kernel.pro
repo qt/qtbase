@@ -1,7 +1,7 @@
 TARGET = qios
 
 QT += core-private gui-private platformsupport-private
-LIBS += -framework Foundation -framework UIKit -framework QuartzCore
+LIBS += -framework Foundation -framework UIKit -framework QuartzCore -framework AudioToolbox
 
 OBJECTIVE_SOURCES = \
     plugin.mm \
