@@ -47,13 +47,13 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qpointer.h>
-#include <QtCore/qsettings.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformintegration.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qguiapplication.h>
+#include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h> // registry helper
 
 #include "qwindowsaccessibility.h"
 #ifdef Q_CC_MINGW
@@ -114,6 +114,14 @@ static inline QString messageBoxAlertSound(const QObject *messageBox)
     return QString();
 }
 
+static QString soundFileName(const QString &soundName)
+{
+    const QString key = QStringLiteral("AppEvents\\Schemes\\Apps\\.Default\\")
+        + soundName + QStringLiteral("\\.Current");
+    return QWindowsFontDatabase::readRegistryString(HKEY_CURRENT_USER,
+                                                    reinterpret_cast<const wchar_t *>(key.utf16()), L"");
+}
+
 void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
     QString soundName;
@@ -134,17 +142,9 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         break;
     }
 
-    if (!soundName.isEmpty()) {
-#ifndef QT_NO_SETTINGS
-        QSettings settings(QLatin1String("HKEY_CURRENT_USER\\AppEvents\\Schemes\\Apps\\.Default\\") + soundName,
-                           QSettings::NativeFormat);
-        QString file = settings.value(QLatin1String(".Current/.")).toString();
-#else
-        QString file;
-#endif
-        if (!file.isEmpty()) {
-            PlaySound(reinterpret_cast<const wchar_t *>(soundName.utf16()), 0, SND_ALIAS | SND_ASYNC | SND_NODEFAULT | SND_NOWAIT);
-        }
+    if (!soundName.isEmpty() && !soundFileName(soundName).isEmpty()) {
+        PlaySound(reinterpret_cast<const wchar_t *>(soundName.utf16()), 0,
+                  SND_ALIAS | SND_ASYNC | SND_NODEFAULT | SND_NOWAIT);
     }
 
     // An event has to be associated with a window,

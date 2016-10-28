@@ -1981,4 +1981,26 @@ int QWindowsFontDatabase::defaultVerticalDPI()
     return vDPI;
 }
 
+QString QWindowsFontDatabase::readRegistryString(HKEY parentHandle, const wchar_t *keyPath, const wchar_t *keyName)
+{
+    QString result;
+    HKEY handle = 0;
+    if (RegOpenKeyEx(parentHandle, keyPath, 0, KEY_READ, &handle) == ERROR_SUCCESS) {
+        // get the size and type of the value
+        DWORD dataType;
+        DWORD dataSize;
+        if (RegQueryValueEx(handle, keyName, 0, &dataType, 0, &dataSize) == ERROR_SUCCESS) {
+            if (dataType == REG_SZ || dataType == REG_EXPAND_SZ) {
+                dataSize += 2; // '\0' missing?
+                QVarLengthArray<unsigned char> data(dataSize);
+                data[dataSize - 2] = data[dataSize - 1] = '\0';
+                if (RegQueryValueEx(handle, keyName, 0, 0, data.data(), &dataSize) == ERROR_SUCCESS)
+                    result = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(data.data()));
+            }
+        }
+        RegCloseKey(handle);
+    }
+    return result;
+}
+
 QT_END_NAMESPACE

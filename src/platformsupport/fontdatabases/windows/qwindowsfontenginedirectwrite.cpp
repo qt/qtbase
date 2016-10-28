@@ -42,7 +42,6 @@
 #include "qwindowsfontenginedirectwrite_p.h"
 #include "qwindowsfontdatabase_p.h"
 
-#include <QtCore/QSettings>
 #include <QtCore/QtEndian>
 #include <QtCore/QVarLengthArray>
 #include <QtCore/QFile>
@@ -915,9 +914,11 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
 
 QString QWindowsFontEngineDirectWrite::fontNameSubstitute(const QString &familyName)
 {
-    static const char keyC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\"
-                               "FontSubstitutes";
-    return QSettings(QLatin1String(keyC), QSettings::NativeFormat).value(familyName, familyName).toString();
+    const wchar_t key[] = L"Software\\Microsoft\\Windows NT\\CurrentVersion\\FontSubstitutes";
+    const QString substitute =
+        QWindowsFontDatabase::readRegistryString(HKEY_LOCAL_MACHINE, key,
+                                                 reinterpret_cast<const wchar_t *>(familyName.utf16()));
+    return substitute.isEmpty() ? familyName : substitute;
 }
 
 glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph,
