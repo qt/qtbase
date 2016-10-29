@@ -387,8 +387,145 @@ static uint siphash(const uint8_t *in, uint inlen, const uint seed)
 }
 #endif
 
+
+#if QT_COMPILER_SUPPORTS_HERE(AES) && QT_COMPILER_SUPPORTS_HERE(SSE4_2) && \
+    !(defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__))
+#  define AESHASH
+
+QT_FUNCTION_TARGET(AES)
+static size_t aeshash(const uchar *p, size_t len, size_t seed) Q_DECL_NOTHROW
+{
+    __m128i key;
+    if (sizeof(size_t) == 8) {
+#ifdef Q_PROCESSOR_X86_64
+        quint64 seededlen = seed ^ len;
+        __m128i mseed = _mm_cvtsi64_si128(seed);
+        key = _mm_insert_epi64(mseed, seededlen, 1);
+#endif
+    } else {
+        quint32 replicated_len = quint16(len) | (quint32(quint16(len)) << 16);
+        __m128i mseed = _mm_cvtsi32_si128(seed);
+        key = _mm_insert_epi32(mseed, replicated_len, 1);
+        key = _mm_unpacklo_epi64(key, key);
+    }
+
+    // This is inspired by the algorithm in the Go language. See:
+    // https://github.com/golang/go/blob/894abb5f680c040777f17f9f8ee5a5ab3a03cb94/src/runtime/asm_386.s#L902
+    // https://github.com/golang/go/blob/894abb5f680c040777f17f9f8ee5a5ab3a03cb94/src/runtime/asm_amd64.s#L903
+    //
+    // Even though we're using the AESENC instruction from the CPU, this code
+    // is not encryption and this routine makes no claim to be
+    // cryptographically secure. We're simply using the instruction that performs
+    // the scrambling round (step 3 in [1]) because it's just very good at
+    // spreading the bits around.
+    //
+    // [1] https://en.wikipedia.org/wiki/Advanced_Encryption_Standard#High-level_description_of_the_algorithm
+
+    // hash 16 bytes, running 3 scramble rounds of AES on itself (like label "final1")
+    const auto hash16bytes = [](__m128i &state0, __m128i data) QT_FUNCTION_TARGET(AES) {
+        state0 = _mm_xor_si128(state0, data);
+        state0 = _mm_aesenc_si128(state0, state0);
+        state0 = _mm_aesenc_si128(state0, state0);
+        state0 = _mm_aesenc_si128(state0, state0);
+    };
+
+    __m128i state0 = key;
+    auto src = reinterpret_cast<const __m128i *>(p);
+
+    if (len < 16)
+        goto lt16;
+    if (len < 32)
+        goto lt32;
+
+    // rounds of 32 bytes
+    {
+        // Make state1 = ~state0:
+        __m128i one = _mm_cmpeq_epi64(key, key);
+        __m128i state1 = _mm_xor_si128(state0, one);
+
+        // do simplified rounds of 32 bytes: unlike the Go code, we only
+        // scramble twice and we keep 256 bits of state
+        const auto srcend = src + (len / 32);
+        while (src < srcend) {
+            __m128i data0 = _mm_loadu_si128(src);
+            __m128i data1 = _mm_loadu_si128(src + 1);
+            data0 = _mm_xor_si128(data0, state0);
+            data1 = _mm_xor_si128(data1, state1);
+            state0 = _mm_aesenc_si128(state0, state0);
+            state1 = _mm_aesenc_si128(state1, state1);
+            state0 = _mm_aesenc_si128(state0, state0);
+            state1 = _mm_aesenc_si128(state1, state1);
+            src += 2;
+        }
+        state0 = _mm_xor_si128(state0, state1);
+    }
+    len &= 0x1f;
+
+    // do we still have 16 or more bytes?
+    if (len & 0x10) {
+lt32:
+        __m128i data = _mm_loadu_si128(src);
+        hash16bytes(state0, data);
+        ++src;
+    }
+    len &= 0xf;
+
+lt16:
+    if (len) {
+        // load the last chunk of data
+        // We're going to load 16 bytes and mask zero the part we don't care
+        // (the hash of a short string is different from the hash of a longer
+        // including NULLs at the end because the length is in the key)
+        // WARNING: this may produce valgrind warnings, but it's safe
+
+        __m128i data;
+
+        if (Q_LIKELY(quintptr(src + 1) & 0xff0)) {
+            // same page, we definitely can't fault:
+            // load all 16 bytes and mask off the bytes past the end of the source
+            static const qint8 maskarray[] = {
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+                };
+            __m128i mask = _mm_loadu_si128(reinterpret_cast<const __m128i *>(maskarray + 15 - len));
+            data = _mm_loadu_si128(src);
+            data = _mm_and_si128(data, mask);
+        } else {
+            // too close to the end of the page, it could fault:
+            // load 16 bytes ending at the data end, then shuffle them to the beginning
+            static const qint8 shufflecontrol[] = {
+                1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+            };
+            __m128i control = _mm_loadu_si128(reinterpret_cast<const __m128i *>(shufflecontrol + 15 - len));
+            p = reinterpret_cast<const uchar *>(src - 1);
+            data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(p + len));
+            data = _mm_shuffle_epi8(data, control);
+        }
+
+        hash16bytes(state0, data);
+    }
+
+    // extract state0
+#  if QT_POINTER_SIZE == 8
+    return _mm_cvtsi128_si64(state0);
+#  else
+    return _mm_cvtsi128_si32(state0);
+#  endif
+}
+#endif
+
 size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
 {
+#ifdef QT_BOOTSTRAPPED
+    // the seed is always 0 in bootstrapped mode (no seed generation code),
+    // so help the compiler do dead code elimination
+    seed = 0;
+#endif
+#ifdef AESHASH
+    if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
+        return aeshash(reinterpret_cast<const uchar *>(p), size, seed);
+#endif
     if (size <= QT_POINTER_SIZE)
         return murmurhash(p, size, seed);
 
