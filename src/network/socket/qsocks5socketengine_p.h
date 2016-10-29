@@ -248,7 +248,6 @@ public:
     void _q_controlSocketReadNotification();
     void _q_controlSocketError(QAbstractSocket::SocketError);
 #ifndef QT_NO_UDPSOCKET
-    void checkForDatagrams() const;
     void _q_udpSocketReadNotification();
 #endif
     void _q_controlSocketBytesWritten();
