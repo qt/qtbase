@@ -274,7 +274,6 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
 
         const QString str = QString::fromUtf8(byteArray.constData(), byteArray.size());
         return QSettingsPrivate::stringToVariant(str);
-
     } else if (typeId == CFDictionaryGetTypeID()) {
         CFDictionaryRef cfdict = static_cast<CFDictionaryRef>(cfvalue);
         CFTypeID arrayTypeId = CFArrayGetTypeID();

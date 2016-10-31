@@ -809,6 +809,10 @@ void QWidget::setAutoFillBackground(bool enabled)
         parentWidget(), window(), setParent(), winId(),
         find(), metric().
 
+    \row \li Context menu \li
+       contextMenuPolicy, contextMenuEvent(),
+       customContextMenuRequested(), actions()
+
     \row \li Interactive help \li
         setToolTip(), setWhatsThis()
 

@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
  * There will only be one copy of the section in the output library or application.
  */
 
-#if defined(QT_BUILD_CORE_LIB) || defined(QT_BOOTSTRAPPED) || defined(QT_NO_VERSION_TAGGING)
+#if defined(QT_BUILD_CORE_LIB) || defined(QT_BOOTSTRAPPED) || defined(QT_NO_VERSION_TAGGING) || defined(QT_STATIC)
 // don't make tags in QtCore, bootstrapped systems or if the user asked not to
 #elif defined(Q_CC_GNU) && !defined(Q_OS_ANDROID)
 #  if defined(Q_PROCESSOR_X86) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD_KERNEL))

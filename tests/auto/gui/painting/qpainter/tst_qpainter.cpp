@@ -298,6 +298,8 @@ private slots:
     void rotateImage_data();
     void rotateImage();
 
+    void QTBUG56252();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -5118,6 +5120,23 @@ void tst_QPainter::rotateImage()
         lastRow = row;
     }
 
+}
+
+void tst_QPainter::QTBUG56252()
+{
+    QImage sourceImage(1770, 1477, QImage::Format_RGB32);
+    QImage rotatedImage(1478, 1771, QImage::Format_RGB32);
+    QTransform transformCenter;
+    transformCenter.translate(739.0, 885.5);
+    transformCenter.rotate(270.0);
+    transformCenter.translate(-885.0, -738.5);
+    QPainter painter;
+    painter.begin(&rotatedImage);
+    painter.setTransform(transformCenter);
+    painter.drawImage(QPoint(0, 0),sourceImage);
+    painter.end();
+
+    // If no crash or illegal memory read, all is fine
 }
 
 QTEST_MAIN(tst_QPainter)

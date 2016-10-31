@@ -101,7 +101,7 @@ defineReplace(qtExportLibsForModule) {
     else: \
         module_config =
     !isEmpty(MODULE_PLUGIN_TYPES): \
-        module_plugtypes = "QT.$${MODULE_ID}.plugin_types = $$replace(MODULE_PLUGIN_TYPES, /.*$, )"
+        module_plugtypes = "QT.$${MODULE_ID}.plugin_types = $$replace(MODULE_PLUGIN_TYPES, /[^.]+\\.[^.]+$, )"
     else: \
         module_plugtypes =
     !isEmpty(MODULE_MASTER_HEADER): \

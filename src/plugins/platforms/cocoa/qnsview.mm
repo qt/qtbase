@@ -874,11 +874,6 @@ static bool _q_dontOverrideCtrlLMB = false;
     if (!(m_acceptedMouseDowns & button) == button)
         return false;
 
-    if (!(m_buttons & (m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton))) {
-        qCWarning(lcQpaCocoaWindow) << "QNSView mouseDragged: Internal mouse button tracking"
-                                    << "invalid (missing Qt::LeftButton)";
-    }
-
     [self handleMouseEvent:theEvent];
     return true;
 }

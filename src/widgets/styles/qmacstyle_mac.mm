@@ -949,6 +949,8 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
 #if defined(QMAC_QAQUASTYLE_SIZE_CONSTRAIN) || defined(DEBUG_SIZE_CONSTRAINT)
 static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSize small, QSize mini)
 {
+    Q_UNUSED(widg);
+
     if (large == QSize(-1, -1)) {
         if (small != QSize(-1, -1))
             return QAquaSizeSmall;
@@ -964,7 +966,7 @@ static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSiz
     }
 
 #ifndef QT_NO_MAINWINDOW
-    if (qobject_cast<QDockWidget *>(widg->window()) || qEnvironmentVariableIsSet("QWIDGET_ALL_SMALL")) {
+    if (qEnvironmentVariableIsSet("QWIDGET_ALL_SMALL")) {
         //if (small.width() != -1 || small.height() != -1)
         return QAquaSizeSmall;
     } else if (qEnvironmentVariableIsSet("QWIDGET_ALL_MINI")) {
@@ -4211,10 +4213,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             ThemeTabDirection ttd = getTabDirection(myTab.shape);
             bool verticalTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
             bool selected = (myTab.state & QStyle::State_Selected);
-
-            if (selected && !myTab.documentMode
-                && (!usingYosemiteOrLater || myTab.state & State_Active))
-                myTab.palette.setColor(QPalette::WindowText, Qt::white);
 
             // Check to see if we use have the same as the system font
             // (QComboMenuItem is internal and should never be seen by the

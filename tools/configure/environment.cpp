@@ -36,6 +36,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qstandardpaths.h>
+#include <qtemporaryfile.h>
 
 #include <process.h>
 #include <errno.h>

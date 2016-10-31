@@ -335,6 +335,8 @@ struct QSpanData
         QGradientData gradient;
         QTextureData texture;
     };
+    QExplicitlySharedDataPointer<const QSharedData> cachedGradient;
+
 
     void init(QRasterBuffer *rb, const QRasterPaintEngine *pe);
     void setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode);

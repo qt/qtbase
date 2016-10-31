@@ -2900,6 +2900,9 @@ void tst_QGraphicsView::scrollBarRanges()
 
     if (useStyledPanel && style == QStringLiteral("Macintosh") && platformName == QStringLiteral("cocoa"))
         QSKIP("Insignificant on OSX");
+
+    QScopedPointer<QStyle> stylePtr;
+
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setRenderHint(QPainter::Antialiasing);
@@ -2907,9 +2910,10 @@ void tst_QGraphicsView::scrollBarRanges()
     view.setFrameStyle(useStyledPanel ? QFrame::StyledPanel : QFrame::NoFrame);
 
     if (style == QString("motif"))
-        view.setStyle(new FauxMotifStyle);
+        stylePtr.reset(new FauxMotifStyle);
     else
-        view.setStyle(QStyleFactory::create(style));
+        stylePtr.reset(QStyleFactory::create(style));
+    view.setStyle(stylePtr.data());
     view.setStyleSheet(" "); // enables style propagation ;-)
 
     int adjust = 0;
@@ -3476,7 +3480,7 @@ void tst_QGraphicsView::task245469_itemsAtPointWithClip()
 static QGraphicsView *createSimpleViewAndScene()
 {
     QGraphicsView *view = new QGraphicsView;
-    QGraphicsScene *scene = new QGraphicsScene;
+    QGraphicsScene *scene = new QGraphicsScene(view);
     view->setScene(scene);
 
     view->setBackgroundBrush(Qt::blue);
@@ -3604,7 +3608,7 @@ void tst_QGraphicsView::moveItemWhileScrolling()
         MoveItemScrollView()
         {
             setWindowFlags(Qt::X11BypassWindowManagerHint);
-            setScene(new QGraphicsScene(0, 0, 1000, 1000));
+            setScene(new QGraphicsScene(0, 0, 1000, 1000, this));
             rect = scene()->addRect(0, 0, 10, 10);
             rect->setPos(50, 50);
             rect->setPen(QPen(Qt::black, 0));
@@ -3670,7 +3674,7 @@ void tst_QGraphicsView::centerOnDirtyItem()
     toplevel.setWindowFlags(view.windowFlags() | Qt::WindowStaysOnTopHint);
     view.resize(200, 200);
 
-    QGraphicsScene *scene = new QGraphicsScene;
+    QGraphicsScene *scene = new QGraphicsScene(&view);
     view.setScene(scene);
     view.setSceneRect(-1000, -1000, 2000, 2000);
 

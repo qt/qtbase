@@ -343,7 +343,7 @@ QStringList QFseventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
     QStringList p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
-        QString origPath = it.next();
+        QString origPath = it.next().normalized(QString::NormalizationForm_C);
         QString realPath = origPath;
         if (realPath.endsWith(QDir::separator()))
             realPath = realPath.mid(0, realPath.size() - 1);

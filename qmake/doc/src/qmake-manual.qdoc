@@ -1813,6 +1813,12 @@
     which qmake will replace with the actual executable name. Other variables
     include @ICON@, @TYPEINFO@, @LIBRARY@, and @SHORT_VERSION@.
 
+    If building for iOS, and the \c{.plist} file contains the key
+    \c NSPhotoLibraryUsageDescription, qmake will include an additional plugin
+    to the build that adds photo access support (to, e.g.,
+    \l{QFileDialog::setDirectory()}{QFile/QFileDialog}). See Info.plist
+    documentation from Apple for more information regarding this key.
+
     \note Most of the time, the default \c{Info.plist} is good enough.
 
     \section1 QMAKE_LFLAGS

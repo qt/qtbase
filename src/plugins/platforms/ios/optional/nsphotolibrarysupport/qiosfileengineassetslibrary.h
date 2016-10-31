@@ -43,6 +43,9 @@
 #include <QtCore/private/qabstractfileengine_p.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(ALAsset);
+
+QT_BEGIN_NAMESPACE
+
 class QIOSAssetData;
 
 class QIOSFileEngineAssetsLibrary : public QAbstractFileEngine
@@ -51,20 +54,20 @@ public:
     QIOSFileEngineAssetsLibrary(const QString &fileName);
     ~QIOSFileEngineAssetsLibrary();
 
-    bool open(QIODevice::OpenMode openMode) Q_DECL_OVERRIDE;
-    bool close() Q_DECL_OVERRIDE;
-    FileFlags fileFlags(FileFlags type) const Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
-    qint64 read(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
-    qint64 pos() const Q_DECL_OVERRIDE;
-    bool seek(qint64 pos) Q_DECL_OVERRIDE;
-    QString fileName(FileName file) const Q_DECL_OVERRIDE;
-    void setFileName(const QString &file) Q_DECL_OVERRIDE;
-    QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const Q_DECL_OVERRIDE;
+    bool open(QIODevice::OpenMode openMode) override;
+    bool close() override;
+    FileFlags fileFlags(FileFlags type) const override;
+    qint64 size() const override;
+    qint64 read(char *data, qint64 maxlen) override;
+    qint64 pos() const override;
+    bool seek(qint64 pos) override;
+    QString fileName(FileName file) const override;
+    void setFileName(const QString &file) override;
+    QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const override;
 
 #ifndef QT_NO_FILESYSTEMITERATOR
-    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) Q_DECL_OVERRIDE;
-    Iterator *endEntryList() Q_DECL_OVERRIDE;
+    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override;
+    Iterator *endEntryList() override;
 #endif
 
     void setError(QFile::FileError error, const QString &str) { QAbstractFileEngine::setError(error, str); }
@@ -77,6 +80,8 @@ private:
 
     ALAsset *loadAsset() const;
 };
+
+QT_END_NAMESPACE
 
 #endif // QIOSFILEENGINEASSETSLIBRARY_H
 

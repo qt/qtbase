@@ -130,6 +130,9 @@ private slots:
     void cornerWidgets_data();
     void cornerWidgets();
     void taskQTBUG53205_crashReparentNested();
+#ifdef Q_OS_MACOS
+    void taskQTBUG56275_reinsertMenuInParentlessQMenuBar();
+#endif
 
     void platformMenu();
 
@@ -1515,7 +1518,28 @@ void tst_QMenuBar::slotForTaskQTBUG53205()
     taskQTBUG53205MenuBar->setParent(parent);
 }
 
+#ifdef Q_OS_MACOS
+extern bool tst_qmenubar_taskQTBUG56275(QMenuBar *);
 
+void tst_QMenuBar::taskQTBUG56275_reinsertMenuInParentlessQMenuBar()
+{
+    QMenuBar menubar;
+
+    QMenu *menu = new QMenu("menu", &menubar);
+    QMenu* submenu = menu->addMenu("submenu");
+    submenu->addAction("action1");
+    submenu->addAction("action2");
+    menu->addAction("action3");
+    menubar.addMenu(menu);
+
+    QTest::qWait(100);
+    menubar.clear();
+    menubar.addMenu(menu);
+    QTest::qWait(100);
+
+    QVERIFY(tst_qmenubar_taskQTBUG56275(&menubar));
+}
+#endif // Q_OS_MACOS
 
 QTEST_MAIN(tst_QMenuBar)
 #include "tst_qmenubar.moc"

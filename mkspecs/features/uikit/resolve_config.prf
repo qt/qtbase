@@ -11,7 +11,7 @@ load(resolve_config)
 !macx-xcode:xcodebuild {
     # Switch the order to make sure that the first Makefile target is the right one
     !qtConfig(simulator_and_device):contains(QMAKE_MAC_SDK, ^$${simulator.sdk}.*): \
-        addExclusiveBuilds(simulator, device)
+        addExclusiveBuildsProper(simulator_and_device, simulator device)
     else: \
-        addExclusiveBuilds(device, simulator)
+        addExclusiveBuildsProper(simulator_and_device, device simulator)
 }

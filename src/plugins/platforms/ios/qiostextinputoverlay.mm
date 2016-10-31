@@ -994,7 +994,8 @@ QIOSTextInputOverlay::QIOSTextInputOverlay()
 
 QIOSTextInputOverlay::~QIOSTextInputOverlay()
 {
-    disconnect(qApp, 0, this, 0);
+    if (qApp)
+        disconnect(qApp, 0, this, 0);
 }
 
 void QIOSTextInputOverlay::updateFocusObject()

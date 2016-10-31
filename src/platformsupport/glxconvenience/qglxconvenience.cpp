@@ -386,5 +386,10 @@ bool qglx_reduceFormat(QSurfaceFormat *format)
         return true;
     }
 
+    if (format->stereo()) {
+        format->setStereo(false);
+        return true;
+    }
+
     return false;
 }

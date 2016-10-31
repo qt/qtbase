@@ -155,7 +155,7 @@
     dealing with URLs and strings:
 
     \list
-    \li When creating an QString to contain a URL from a QByteArray or a
+    \li When creating a QString to contain a URL from a QByteArray or a
        char*, always use QString::fromUtf8().
     \endlist
 */

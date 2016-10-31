@@ -494,48 +494,46 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
     if (!l)
         return 0;
 
-    union {
-        const QChar *w;
-        const quint32 *d;
-        quintptr value;
-    } sa, sb;
-    sa.w = a;
-    sb.w = b;
-
     // check alignment
-    if ((sa.value & 2) == (sb.value & 2)) {
+    if ((reinterpret_cast<quintptr>(a) & 2) == (reinterpret_cast<quintptr>(b) & 2)) {
         // both addresses have the same alignment
-        if (sa.value & 2) {
+        if (reinterpret_cast<quintptr>(a) & 2) {
             // both addresses are not aligned to 4-bytes boundaries
             // compare the first character
-            if (*sa.w != *sb.w)
-                return sa.w->unicode() - sb.w->unicode();
+            if (*a != *b)
+                return a->unicode() - b->unicode();
             --l;
-            ++sa.w;
-            ++sb.w;
+            ++a;
+            ++b;
 
             // now both addresses are 4-bytes aligned
         }
 
         // both addresses are 4-bytes aligned
         // do a fast 32-bit comparison
-        const quint32 *e = sa.d + (l >> 1);
-        for ( ; sa.d != e; ++sa.d, ++sb.d) {
-            if (*sa.d != *sb.d) {
-                if (*sa.w != *sb.w)
-                    return sa.w->unicode() - sb.w->unicode();
-                return sa.w[1].unicode() - sb.w[1].unicode();
+        const quint32 *da = reinterpret_cast<const quint32 *>(a);
+        const quint32 *db = reinterpret_cast<const quint32 *>(b);
+        const quint32 *e = da + (l >> 1);
+        for ( ; da != e; ++da, ++db) {
+            if (*da != *db) {
+                a = reinterpret_cast<const QChar *>(da);
+                b = reinterpret_cast<const QChar *>(db);
+                if (*a != *b)
+                    return a->unicode() - b->unicode();
+                return a[1].unicode() - b[1].unicode();
             }
         }
 
         // do we have a tail?
-        return (l & 1) ? sa.w->unicode() - sb.w->unicode() : 0;
+        a = reinterpret_cast<const QChar *>(da);
+        b = reinterpret_cast<const QChar *>(db);
+        return (l & 1) ? a->unicode() - b->unicode() : 0;
     } else {
         // one of the addresses isn't 4-byte aligned but the other is
-        const QChar *e = sa.w + l;
-        for ( ; sa.w != e; ++sa.w, ++sb.w) {
-            if (*sa.w != *sb.w)
-                return sa.w->unicode() - sb.w->unicode();
+        const QChar *e = a + l;
+        for ( ; a != e; ++a, ++b) {
+            if (*a != *b)
+                return a->unicode() - b->unicode();
         }
     }
     return 0;

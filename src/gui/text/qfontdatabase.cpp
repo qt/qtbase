@@ -804,7 +804,8 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
     Q_UNUSED(family);
     Q_UNUSED(styleHint);
 
-    QStringList retList;
+    QStringList preferredFallbacks;
+    QStringList otherFallbacks;
 
     size_t writingSystem = std::find(scriptForWritingSystem,
                                      scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
@@ -825,18 +826,18 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFo
             QtFontFoundry *foundry = f->foundries[j];
 
             for (int k = 0; k < foundry->count; ++k) {
-                if (style == foundry->styles[k]->key.style) {
-                    if (foundry->name.isEmpty())
-                        retList.append(f->name);
-                    else
-                        retList.append(f->name + QLatin1String(" [") + foundry->name + QLatin1Char(']'));
-                    break;
-                }
+                QString name = foundry->name.isEmpty()
+                        ? f->name
+                        : f->name + QLatin1String(" [") + foundry->name + QLatin1Char(']');
+                if (style == foundry->styles[k]->key.style)
+                    preferredFallbacks.append(name);
+                else
+                    otherFallbacks.append(name);
             }
         }
     }
 
-    return retList;
+    return preferredFallbacks + otherFallbacks;
 }
 
 static void initializeDb();
@@ -1659,9 +1660,6 @@ bool QFontDatabase::isFixedPitch(const QString &family,
 bool QFontDatabase::isBitmapScalable(const QString &family,
                                       const QString &style) const
 {
-    if (QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fontsAlwaysScalable())
-        return true;
-
     bool bitmapScalable = false;
     QString familyName, foundryName;
     parseFontName(family, foundryName, familyName);
@@ -1702,9 +1700,6 @@ bool QFontDatabase::isBitmapScalable(const QString &family,
 */
 bool QFontDatabase::isSmoothlyScalable(const QString &family, const QString &style) const
 {
-    if (QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fontsAlwaysScalable())
-        return true;
-
     bool smoothScalable = false;
     QString familyName, foundryName;
     parseFontName(family, foundryName, familyName);
