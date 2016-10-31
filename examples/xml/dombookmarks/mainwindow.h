@@ -68,18 +68,9 @@ public slots:
     void about();
 
 private:
-    void createActions();
     void createMenus();
 
     XbelTree *xbelTree;
-
-    QMenu *fileMenu;
-    QMenu *helpMenu;
-    QAction *openAct;
-    QAction *saveAsAct;
-    QAction *exitAct;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
 };
 
 #endif

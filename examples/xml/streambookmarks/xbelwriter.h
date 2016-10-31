@@ -62,13 +62,13 @@ QT_END_NAMESPACE
 class XbelWriter
 {
 public:
-    XbelWriter(QTreeWidget *treeWidget);
+    explicit XbelWriter(const QTreeWidget *treeWidget);
     bool writeFile(QIODevice *device);
 
 private:
-    void writeItem(QTreeWidgetItem *item);
+    void writeItem(const QTreeWidgetItem *item);
     QXmlStreamWriter xml;
-    QTreeWidget *treeWidget;
+    const QTreeWidget *treeWidget;
 };
 //! [0]
 

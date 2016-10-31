@@ -71,6 +71,10 @@ public:
 
     QString errorString() const;
 
+    static inline QString versionAttribute() { return QStringLiteral("version"); }
+    static inline QString hrefAttribute() { return QStringLiteral("href"); }
+    static inline QString foldedAttribute() { return QStringLiteral("folded"); }
+
 private:
 //! [2]
     void readXBEL();

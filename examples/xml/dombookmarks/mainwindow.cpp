@@ -58,13 +58,13 @@ MainWindow::MainWindow()
     xbelTree = new XbelTree;
     setCentralWidget(xbelTree);
 
-    createActions();
     createMenus();
 
     statusBar()->showMessage(tr("Ready"));
 
     setWindowTitle(tr("DOM Bookmarks"));
-    resize(480, 320);
+    const QSize availableSize = QApplication::desktop()->availableGeometry(this).size();
+    resize(availableSize.width() / 2, availableSize.height() / 3);
 }
 
 void MainWindow::open()
@@ -80,8 +80,8 @@ void MainWindow::open()
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("SAX Bookmarks"),
                              tr("Cannot read file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
+                             .arg(QDir::toNativeSeparators(fileName),
+                                  file.errorString()));
         return;
     }
 
@@ -102,8 +102,8 @@ void MainWindow::saveAs()
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("SAX Bookmarks"),
                              tr("Cannot write file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
+                             .arg(QDir::toNativeSeparators(fileName),
+                                  file.errorString()));
         return;
     }
 
@@ -119,37 +119,21 @@ void MainWindow::about()
                          "documents."));
 }
 
-void MainWindow::createActions()
-{
-    openAct = new QAction(tr("&Open..."), this);
-    openAct->setShortcuts(QKeySequence::Open);
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
-
-    saveAsAct = new QAction(tr("&Save As..."), this);
-    saveAsAct->setShortcuts(QKeySequence::SaveAs);
-    connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
-
-    exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcuts(QKeySequence::Quit);
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
-
-    aboutAct = new QAction(tr("&About"), this);
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-
-    aboutQtAct = new QAction(tr("About &Qt"), this);
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-}
-
 void MainWindow::createMenus()
 {
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(openAct);
-    fileMenu->addAction(saveAsAct);
-    fileMenu->addAction(exitAct);
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    QAction *openAct = fileMenu->addAction(tr("&Open..."), this, &MainWindow::open);
+    openAct->setShortcuts(QKeySequence::Open);
+
+    QAction *saveAsAct = fileMenu->addAction(tr("&Save As..."), this, &MainWindow::saveAs);
+    saveAsAct->setShortcuts(QKeySequence::SaveAs);
+
+    QAction *exitAct = fileMenu->addAction(tr("E&xit"), this, &QWidget::close);
+    exitAct->setShortcuts(QKeySequence::Quit);
 
     menuBar()->addSeparator();
 
-    helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAct);
-    helpMenu->addAction(aboutQtAct);
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(tr("&About"), this, &MainWindow::about);
+    helpMenu->addAction(tr("About &Qt"), qApp, &QCoreApplication::quit);
 }

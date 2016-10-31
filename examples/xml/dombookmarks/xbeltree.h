@@ -52,7 +52,6 @@
 #define XBELTREE_H
 
 #include <QDomDocument>
-#include <QHash>
 #include <QIcon>
 #include <QTreeWidget>
 
@@ -64,10 +63,15 @@ public:
     XbelTree(QWidget *parent = 0);
 
     bool read(QIODevice *device);
-    bool write(QIODevice *device);
+    bool write(QIODevice *device) const;
+
+protected:
+#if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_CLIPBOARD)
+    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+#endif
 
 private slots:
-    void updateDomElement(QTreeWidgetItem *item, int column);
+    void updateDomElement(const QTreeWidgetItem *item, int column);
 
 private:
     void parseFolderElement(const QDomElement &element,
@@ -76,7 +80,6 @@ private:
                                 QTreeWidgetItem *parentItem = 0);
 
     QDomDocument domDocument;
-    QHash<QTreeWidgetItem *, QDomElement> domElementForItem;
     QIcon folderIcon;
     QIcon bookmarkIcon;
 };

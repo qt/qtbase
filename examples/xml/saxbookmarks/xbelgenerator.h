@@ -61,7 +61,7 @@ QT_END_NAMESPACE
 class XbelGenerator
 {
 public:
-    XbelGenerator(QTreeWidget *treeWidget);
+    explicit XbelGenerator(const QTreeWidget *treeWidget);
 
     bool write(QIODevice *device);
 
@@ -69,9 +69,9 @@ private:
     static QString indent(int indentLevel);
     static QString escapedText(const QString &str);
     static QString escapedAttribute(const QString &str);
-    void generateItem(QTreeWidgetItem *item, int depth);
+    void generateItem(const QTreeWidgetItem *item, int depth);
 
-    QTreeWidget *treeWidget;
+    const QTreeWidget *treeWidget;
     QTextStream out;
 };
 

@@ -52,7 +52,7 @@
 
 #include "xbelgenerator.h"
 
-XbelGenerator::XbelGenerator(QTreeWidget *treeWidget)
+XbelGenerator::XbelGenerator(const QTreeWidget *treeWidget)
     : treeWidget(treeWidget)
 {
 }
@@ -81,25 +81,25 @@ QString XbelGenerator::indent(int depth)
 QString XbelGenerator::escapedText(const QString &str)
 {
     QString result = str;
-    result.replace("&", "&amp;");
-    result.replace("<", "&lt;");
-    result.replace(">", "&gt;");
+    result.replace('&', "&amp;");
+    result.replace('<', "&lt;");
+    result.replace('>', "&gt;");
     return result;
 }
 
 QString XbelGenerator::escapedAttribute(const QString &str)
 {
     QString result = escapedText(str);
-    result.replace("\"", "&quot;");
+    result.replace(QLatin1Char('"'), "&quot;");
     result.prepend(QLatin1Char('"'));
     result.append(QLatin1Char('"'));
     return result;
 }
 
-void XbelGenerator::generateItem(QTreeWidgetItem *item, int depth)
+void XbelGenerator::generateItem(const QTreeWidgetItem *item, int depth)
 {
     QString tagName = item->data(0, Qt::UserRole).toString();
-    if (tagName == "folder") {
+    if (tagName == QLatin1String("folder")) {
         bool folded = !treeWidget->isItemExpanded(item);
         out << indent(depth) << "<folder folded=\"" << (folded ? "yes" : "no")
                              << "\">\n"
@@ -110,7 +110,7 @@ void XbelGenerator::generateItem(QTreeWidgetItem *item, int depth)
             generateItem(item->child(i), depth + 1);
 
         out << indent(depth) << "</folder>\n";
-    } else if (tagName == "bookmark") {
+    } else if (tagName == QLatin1String("bookmark")) {
         out << indent(depth) << "<bookmark";
         if (!item->text(1).isEmpty())
             out << " href=" << escapedAttribute(item->text(1));
@@ -118,7 +118,7 @@ void XbelGenerator::generateItem(QTreeWidgetItem *item, int depth)
             << indent(depth + 1) << "<title>" << escapedText(item->text(0))
                                  << "</title>\n"
             << indent(depth) << "</bookmark>\n";
-    } else if (tagName == "separator") {
+    } else if (tagName == QLatin1String("separator")) {
         out << indent(depth) << "<separator/>\n";
     }
 }

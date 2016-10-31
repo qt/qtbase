@@ -72,10 +72,12 @@ bool XbelReader::read(QIODevice *device)
     xml.setDevice(device);
 
     if (xml.readNextStartElement()) {
-        if (xml.name() == "xbel" && xml.attributes().value("version") == "1.0")
+        if (xml.name() == QLatin1String("xbel")
+            && xml.attributes().value(versionAttribute()) == QLatin1String("1.0")) {
             readXBEL();
-        else
+        } else {
             xml.raiseError(QObject::tr("The file is not an XBEL version 1.0 file."));
+        }
     }
 
     return !xml.error();
@@ -95,14 +97,14 @@ QString XbelReader::errorString() const
 //! [3]
 void XbelReader::readXBEL()
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "xbel");
+    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("xbel"));
 
     while (xml.readNextStartElement()) {
-        if (xml.name() == "folder")
+        if (xml.name() == QLatin1String("folder"))
             readFolder(0);
-        else if (xml.name() == "bookmark")
+        else if (xml.name() == QLatin1String("bookmark"))
             readBookmark(0);
-        else if (xml.name() == "separator")
+        else if (xml.name() == QLatin1String("separator"))
             readSeparator(0);
         else
             xml.skipCurrentElement();
@@ -113,7 +115,7 @@ void XbelReader::readXBEL()
 //! [4]
 void XbelReader::readTitle(QTreeWidgetItem *item)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "title");
+    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("title"));
 
     QString title = xml.readElementText();
     item->setText(0, title);
@@ -123,7 +125,7 @@ void XbelReader::readTitle(QTreeWidgetItem *item)
 //! [5]
 void XbelReader::readSeparator(QTreeWidgetItem *item)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "separator");
+    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("separator"));
 
     QTreeWidgetItem *separator = createChildItem(item);
     separator->setFlags(item->flags() & ~Qt::ItemIsSelectable);
@@ -134,20 +136,20 @@ void XbelReader::readSeparator(QTreeWidgetItem *item)
 
 void XbelReader::readFolder(QTreeWidgetItem *item)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "folder");
+    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("folder"));
 
     QTreeWidgetItem *folder = createChildItem(item);
-    bool folded = (xml.attributes().value("folded") != "no");
+    bool folded = (xml.attributes().value(foldedAttribute()) != QLatin1String("no"));
     treeWidget->setItemExpanded(folder, !folded);
 
     while (xml.readNextStartElement()) {
-        if (xml.name() == "title")
+        if (xml.name() == QLatin1String("title"))
             readTitle(folder);
-        else if (xml.name() == "folder")
+        else if (xml.name() == QLatin1String("folder"))
             readFolder(folder);
-        else if (xml.name() == "bookmark")
+        else if (xml.name() == QLatin1String("bookmark"))
             readBookmark(folder);
-        else if (xml.name() == "separator")
+        else if (xml.name() == QLatin1String("separator"))
             readSeparator(folder);
         else
             xml.skipCurrentElement();
@@ -156,16 +158,16 @@ void XbelReader::readFolder(QTreeWidgetItem *item)
 
 void XbelReader::readBookmark(QTreeWidgetItem *item)
 {
-    Q_ASSERT(xml.isStartElement() && xml.name() == "bookmark");
+    Q_ASSERT(xml.isStartElement() && xml.name() == QLatin1String("bookmark"));
 
     QTreeWidgetItem *bookmark = createChildItem(item);
     bookmark->setFlags(bookmark->flags() | Qt::ItemIsEditable);
     bookmark->setIcon(0, bookmarkIcon);
     bookmark->setText(0, QObject::tr("Unknown title"));
-    bookmark->setText(1, xml.attributes().value("href").toString());
+    bookmark->setText(1, xml.attributes().value(hrefAttribute()).toString());
 
     while (xml.readNextStartElement()) {
-        if (xml.name() == "title")
+        if (xml.name() == QLatin1String("title"))
             readTitle(bookmark);
         else
             xml.skipCurrentElement();

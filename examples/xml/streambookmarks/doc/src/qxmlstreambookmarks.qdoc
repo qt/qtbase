@@ -167,7 +167,7 @@
     add them to the \c fileMenu and \c helpMenu. The connections are as shown
     below:
 
-    \snippet streambookmarks/mainwindow.cpp 4
+    \snippet streambookmarks/mainwindow.cpp 5
 
     The \c createMenus() function creates the \c fileMenu and \c helpMenu
     and adds the QAction objects to them in order to create the menu shown
