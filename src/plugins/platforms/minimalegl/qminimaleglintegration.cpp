@@ -58,7 +58,8 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
-#include <QtPlatformSupport/private/qt_egl_p.h>
+// this is where EGL headers are pulled in, make sure it is last
+#include "qminimaleglscreen.h"
 
 QT_BEGIN_NAMESPACE
 

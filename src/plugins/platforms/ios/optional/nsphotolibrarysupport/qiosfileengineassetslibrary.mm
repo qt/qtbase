@@ -48,6 +48,8 @@
 #include <QtCore/qset.h>
 #include <QtCore/qthreadstorage.h>
 
+QT_BEGIN_NAMESPACE
+
 static QThreadStorage<QString> g_iteratorCurrentUrl;
 static QThreadStorage<QPointer<QIOSAssetData> > g_assetDataCache;
 
@@ -471,5 +473,7 @@ QAbstractFileEngine::Iterator *QIOSFileEngineAssetsLibrary::endEntryList()
 {
     return 0;
 }
+
+QT_END_NAMESPACE
 
 #endif

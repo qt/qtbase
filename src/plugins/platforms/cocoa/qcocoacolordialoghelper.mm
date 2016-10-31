@@ -122,7 +122,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 
 - (void)dealloc
 {
-    [self restoreOriginalContentView];
+    [mStolenContentView release];
     [mColorPanel setDelegate:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 

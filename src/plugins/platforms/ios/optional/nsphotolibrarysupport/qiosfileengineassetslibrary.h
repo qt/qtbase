@@ -43,6 +43,9 @@
 #include <QtCore/private/qabstractfileengine_p.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(ALAsset);
+
+QT_BEGIN_NAMESPACE
+
 class QIOSAssetData;
 
 class QIOSFileEngineAssetsLibrary : public QAbstractFileEngine
@@ -77,6 +80,8 @@ private:
 
     ALAsset *loadAsset() const;
 };
+
+QT_END_NAMESPACE
 
 #endif // QIOSFILEENGINEASSETSLIBRARY_H
 

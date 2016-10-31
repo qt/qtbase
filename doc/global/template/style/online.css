@@ -1370,7 +1370,7 @@ div.qt_commercial {
   border-top:5px solid #5caa15;
   margin-bottom:50px
 }
-pre {
+pre, .LegaleseLeft {
   background-color:#404244;
   color:#fff;
   display:block;
@@ -1380,6 +1380,10 @@ pre {
   margin-bottom:25px;
   padding:25px;
   margin-top:0.75em
+}
+.mainContent .LegaleseLeft p {
+  color:#fff;
+  white-space: pre-wrap
 }
 .copy_text {
   background-color:#46a2da;
