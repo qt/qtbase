@@ -229,8 +229,6 @@ private:
     // As pendingReadOps is changed inside handleReadyRead(native callback) it has to be protected
     QMutex readOperationsMutex;
 
-    bool emitOnNewDatagram;
-
     // Protected by readMutex. Written in handleReadyRead (native callback)
     QAtomicInteger<int> bytesAvailable;
 
