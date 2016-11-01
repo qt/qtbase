@@ -215,12 +215,23 @@ private:
     Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocketListener> tcpListener;
     Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncAction> connectOp;
     QVector<Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32>>> pendingReadOps;
+
+    // Protected by readMutex. Written in handleReadyRead (native callback)
     QBuffer readBytes;
-    QMutex readMutex;
+
+    // In case of TCP readMutex protects readBytes and bytesAvailable. In case of UDP it is
+    // pendingDatagrams. They are written inside native callbacks (handleReadyRead and
+    // handleNewDatagrams/putIntoPendingDatagramsList)
+    mutable QMutex readMutex;
+
     bool emitOnNewDatagram;
+
+    // Protected by readMutex. Written in handleReadyRead (native callback)
     QAtomicInteger<int> bytesAvailable;
 
+    // Protected by readMutex. Written in handleNewDatagrams/putIntoPendingDatagramsList
     QList<WinRtDatagram> pendingDatagrams;
+
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> pendingConnections;
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> currentConnections;
     QEventLoop eventLoop;
