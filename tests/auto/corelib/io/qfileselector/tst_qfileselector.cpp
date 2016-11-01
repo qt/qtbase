@@ -138,7 +138,7 @@ void tst_QFileSelector::basicTest_data()
         << QString(":/extras/test2");
 
     QTest::newRow("custom1-withselector-nobasefile") << QString(":/extras/test3") << (QStringList() << custom1)
-        << QString(":/extras/test3");
+        << QString(":/extras/+custom1/test3");
 
     QString custom2("custom2");
     QString custom3("custom3");

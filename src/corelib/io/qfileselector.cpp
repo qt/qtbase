@@ -133,9 +133,9 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     With those files available, you would select a different file on the android platform,
     but only if the locale was en_GB.
 
-    QFileSelector will not attempt to select if the base file does not exist. For error handling in
-    the case no valid selectors are present, it is recommended to have a default or error-handling
-    file in the base file location even if you expect selectors to be present for all deployments.
+    For error handling in the case no valid selectors are present, it is recommended to have a default or
+    error-handling file in the base file location even if you expect selectors to be present for all
+    deployments.
 
     In a future version, some may be marked as deploy-time static and be moved during the
     deployment step as an optimization. As selectors come with a performance cost, it is
@@ -298,9 +298,6 @@ QString QFileSelectorPrivate::select(const QString &filePath) const
 {
     Q_Q(const QFileSelector);
     QFileInfo fi(filePath);
-    // If file doesn't exist, don't select
-    if (!fi.exists())
-        return filePath;
 
     QString ret = selectionHelper(fi.path().isEmpty() ? QString() : fi.path() + QLatin1Char('/'),
             fi.fileName(), q->allSelectors());
