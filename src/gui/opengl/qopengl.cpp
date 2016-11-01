@@ -129,9 +129,6 @@ QDebug operator<<(QDebug d, const QOpenGLConfig::Gpu &g)
     return d;
 }
 
-enum Operator { NotEqual, LessThan, LessEqualThan, Equals, GreaterThan, GreaterEqualThan };
-static const char operators[][3] = {"!=", "<", "<=", "=", ">", ">="};
-
 static inline QString valueKey()         { return QStringLiteral("value"); }
 static inline QString opKey()            { return QStringLiteral("op"); }
 static inline QString versionKey()       { return QStringLiteral("version"); }
@@ -169,6 +166,9 @@ static inline bool contains(const QJsonArray &haystack, const QString &needle)
 }
 
 namespace {
+enum Operator { NotEqual, LessThan, LessEqualThan, Equals, GreaterThan, GreaterEqualThan };
+static const char operators[][3] = {"!=", "<", "<=", "=", ">", ">="};
+
 // VersionTerm describing a version term consisting of number and operator
 // found in os.version and driver_version.
 struct VersionTerm {
