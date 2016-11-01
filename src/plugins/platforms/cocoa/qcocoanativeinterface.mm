@@ -44,6 +44,7 @@
 #include "qcocoahelpers.h"
 #include "qcocoaapplication.h"
 #include "qcocoaintegration.h"
+#include "qcocoaeventdispatcher.h"
 
 #include <qbytearray.h>
 #include <qwindow.h>
@@ -192,6 +193,11 @@ QPixmap QCocoaNativeInterface::defaultBackgroundPixmapForQWizard()
         }
     }
     return QPixmap();
+}
+
+void QCocoaNativeInterface::clearCurrentThreadCocoaEventDispatcherInterruptFlag()
+{
+    QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
 }
 
 void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
