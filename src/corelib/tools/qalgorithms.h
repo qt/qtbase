@@ -36,6 +36,10 @@
 
 #include <QtCore/qglobal.h>
 
+#if defined(Q_CC_MSVC) && _MSC_VER > 1500
+#include <intrin.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
