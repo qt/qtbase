@@ -1434,8 +1434,6 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     }
     locker.unlock();
 
-    static QMutex mutex;
-    mutex.lock();
     // A read in UnconnectedState will close the socket and return -1 and thus tell the caller,
     // that the connection was closed. The socket cannot be closed here, as the subsequent read
     // might fail then.
@@ -1488,7 +1486,6 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
 
     if (notifyOnRead)
         emit q->readReady();
-    mutex.unlock();
 
     hr = QEventDispatcherWinRT::runOnXamlThread([buffer, q, this]() {
         UINT32 readBufferLength;
