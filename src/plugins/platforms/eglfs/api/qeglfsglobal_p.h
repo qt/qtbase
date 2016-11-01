@@ -53,7 +53,7 @@
 
 #include <QtCore/qglobal.h>
 
-#include <QtPlatformSupport/private/qt_egl_p.h>
+#include <QtEglSupport/private/qt_egl_p.h>
 
 QT_BEGIN_NAMESPACE
 

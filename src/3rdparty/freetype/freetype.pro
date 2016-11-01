@@ -6,6 +6,8 @@ CONFIG += \
     exceptions_off rtti_off warn_off \
     installed
 
+MODULE_INCLUDEPATH += $$PWD/include
+
 load(qt_helper_lib)
 
 SOURCES += \
@@ -61,16 +63,12 @@ win32 {
     INCLUDEPATH += $$PWD/builds/unix
 }
 
-INCLUDEPATH += $$PWD/include
-
 DEFINES += FT2_BUILD_LIBRARY
 
 DEFINES += FT_CONFIG_OPTION_SYSTEM_ZLIB
 include(../zlib_dependency.pri)
 
-QT_FOR_CONFIG += gui-private
-include($$OUT_PWD/../../gui/qtgui-config.pri)
 DEFINES += FT_CONFIG_OPTION_USE_PNG
-include($$PWD/../png_dependency.pri)
+QMAKE_USE_PRIVATE += libpng
 
 DEFINES += TT_CONFIG_OPTION_SUBPIXEL_HINTING

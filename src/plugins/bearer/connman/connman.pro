@@ -1,7 +1,6 @@
 TARGET = qconnmanbearer
 
 QT = core network-private dbus
-CONFIG += link_pkgconfig
 
 HEADERS += qconnmanservice_linux_p.h \
            ../linux_common/qofonoservice_linux_p.h \

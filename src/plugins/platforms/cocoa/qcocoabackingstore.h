@@ -40,7 +40,7 @@
 #ifndef QBACKINGSTORE_COCOA_H
 #define QBACKINGSTORE_COCOA_H
 
-#include <QtPlatformSupport/private/qrasterbackingstore_p.h>
+#include <QtGraphicsSupport/private/qrasterbackingstore_p.h>
 
 QT_BEGIN_NAMESPACE
 

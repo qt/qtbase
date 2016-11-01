@@ -1,16 +1,16 @@
 TARGET = qmirclient
 
-QT += core-private gui-private platformsupport-private dbus
-
-CONFIG += qpa/genericunixfontdatabase
+QT += \
+    core-private gui-private dbus \
+    theme_support-private eventdispatcher_support-private \
+    fontdatabase_support-private egl_support-private
 
 DEFINES += MESA_EGL_NO_X11_HEADERS
 # CONFIG += c++11 # only enables C++0x
 QMAKE_CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Werror -Wall
 QMAKE_LFLAGS += -std=c++11 -Wl,-no-undefined
 
-CONFIG += link_pkgconfig
-PKGCONFIG += egl mirclient ubuntu-platform-api
+QMAKE_USE_PRIVATE += mirclient
 
 SOURCES = \
     qmirclientbackingstore.cpp \

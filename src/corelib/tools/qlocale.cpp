@@ -1072,20 +1072,14 @@ QLocale::Country QLocale::country() const
 QString QLocale::name() const
 {
     Language l = language();
-
-    QString result = d->languageCode();
-
     if (l == C)
-        return result;
+        return d->languageCode();
 
     Country c = country();
     if (c == AnyCountry)
-        return result;
+        return d->languageCode();
 
-    result.append(QLatin1Char('_'));
-    result.append(d->countryCode());
-
-    return result;
+    return d->languageCode() + QLatin1Char('_') + d->countryCode();
 }
 
 static qlonglong toIntegral_helper(const QLocaleData *d, const QChar *data, int len, bool *ok,
@@ -2987,12 +2981,14 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
         }
     }
 
-    for (int i = num_str.length()/* - cnt_thousand_sep*/; i < precision; ++i)
-        num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
+    const QChar resultZero = base == 10 ? zero : QChar(QLatin1Char('0'));
+    const int zeroPadding = precision - num_str.length()/* + cnt_thousand_sep*/;
+    if (zeroPadding > 0)
+        num_str.prepend(QString(zeroPadding, resultZero));
 
     if ((flags & ShowBase)
             && base == 8
-            && (num_str.isEmpty() || num_str[0].unicode() != QLatin1Char('0')))
+            && (num_str.isEmpty() || num_str.at(0).unicode() != QLatin1Char('0')))
         num_str.prepend(QLatin1Char('0'));
 
     // LeftAdjusted overrides this flag ZeroPadded. sprintf only padds
@@ -3011,8 +3007,8 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
         else if (base == 2 && flags & ShowBase)
             num_pad_chars -= 2;
 
-        for (int i = 0; i < num_pad_chars; ++i)
-            num_str.prepend(base == 10 ? zero : QChar::fromLatin1('0'));
+        if (num_pad_chars > 0)
+            num_str.prepend(QString(num_pad_chars, resultZero));
     }
 
     if (flags & CapitalEorX)

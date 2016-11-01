@@ -55,7 +55,7 @@ while (<STDIN>) {
     my $comment = "    /* $1 */";
     while (my $line = <HDR>) {
         # Match a struct or class declaration, but not a forward declaration
-        $line =~ /^(?:struct|class) (?:Q_.*_EXPORT)? (\w+)(?!;)/ or next;
+        $line =~ /^(?:struct|class|namespace) (?:Q_.*_EXPORT)? (\w+)(?!;)/ or next;
         print $comment if $comment;
         printf "    *%d%s*;\n", length $1, $1;
         $comment = 0;

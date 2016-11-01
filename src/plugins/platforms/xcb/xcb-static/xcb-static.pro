@@ -5,11 +5,11 @@
 # libxcb-xinerama
 #
 CONFIG += static
-load(qt_helper_lib)
 
 XCB_DIR = ../../../../3rdparty/xcb
 
-INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/include/xcb $$XCB_DIR/sysinclude
+MODULE_INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
+INCLUDEPATH += $$XCB_DIR/include/xcb
 
 QMAKE_USE += xcb/nolink
 
@@ -75,3 +75,5 @@ SOURCES += \
 OTHER_FILES = $$XCB_DIR/README
 
 TR_EXCLUDE += $$XCB_DIR/*
+
+load(qt_helper_lib)

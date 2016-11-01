@@ -102,6 +102,18 @@
            "features": [
                "disable_desktopgl", "disable_d3d11", "disable_d3d9"
            ]
+        },
+        {
+           "id": 9,
+           "description": "Intel 945 crash (QTBUG-40991)",
+           "vendor_id": "0x8086",
+           "device_id": [ "0x27A2" ],
+           "os": {
+               "type": "win"
+           },
+           "features": [
+               "disable_desktopgl"
+           ]
         }
     ]
 }

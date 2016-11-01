@@ -63,6 +63,7 @@
 #include "http2/hpacktable_p.h"
 #include "http2/hpack_p.h"
 
+#include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
@@ -123,9 +124,11 @@ private:
 
     bool acceptSetting(Http2::Settings identifier, quint32 newValue);
 
-    void updateStream(Stream &stream, const HPack::HttpHeader &headers);
-    void updateStream(Stream &stream, const Http2::Frame &dataFrame);
-    void finishStream(Stream &stream);
+    void updateStream(Stream &stream, const HPack::HttpHeader &headers,
+                      Qt::ConnectionType connectionType = Qt::DirectConnection);
+    void updateStream(Stream &stream, const Http2::Frame &dataFrame,
+                      Qt::ConnectionType connectionType = Qt::DirectConnection);
+    void finishStream(Stream &stream, Qt::ConnectionType connectionType = Qt::DirectConnection);
     // Error code send by a peer (GOAWAY/RST_STREAM):
     void finishStreamWithError(Stream &stream, quint32 errorCode);
     // Locally encountered error:
@@ -194,7 +197,15 @@ private:
     quint32 allocateStreamID();
     bool validPeerStreamID() const;
     bool goingAway = false;
-
+    bool pushPromiseEnabled = false;
+    quint32 lastPromisedID = Http2::connectionStreamID;
+    QHash<QString, Http2::PushPromise> promisedData;
+    bool tryReserveStream(const Http2::Frame &pushPromiseFrame,
+                          const HPack::HttpHeader &requestHeader);
+    void resetPromisedStream(const Http2::Frame &pushPromiseFrame,
+                             Http2::Http2Error reason);
+    void initReplyFromPushPromise(const HttpMessagePair &message,
+                                  const QString &cacheKey);
     // Errors:
     void connectionError(Http2::Http2Error errorCode,
                          const char *message);

@@ -127,6 +127,10 @@ enum Http2PredefinedParameters
     maxConcurrentStreams = 100 // HTTP/2, 6.5.2
 };
 
+// It's int, it has internal linkage, it's ok to have it in headers -
+// no ODR violation is possible.
+const quint32 lastValidStreamID((quint32(1) << 31) - 1); // HTTP/2, 5.1.1
+
 extern const Q_AUTOTEST_EXPORT char Http2clientPreface[clientPrefaceLength];
 
 enum class FrameStatus

@@ -12,6 +12,5 @@ qtConfig(libudev): \
     QMAKE_USE_PRIVATE += libudev
 
 qtConfig(mtdev) {
-    CONFIG += link_pkgconfig
-    PKGCONFIG_PRIVATE += mtdev
+    QMAKE_USE_PRIVATE += mtdev
 }

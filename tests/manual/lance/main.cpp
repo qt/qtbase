@@ -327,7 +327,7 @@ int main(int argc, char **argv)
                 checkers_background = false;
             }
         } else {
-#if defined (Q_DEAD_CODE_FROM_QT4_WIN)
+#if 0 // Used to be included in Qt4 for Q_WS_WIN
             QString input = QString::fromLocal8Bit(argv[i]);
             if (input.indexOf('*') >= 0) {
                 QFileInfo info(input);

@@ -44,7 +44,7 @@
 #include <QScreen>
 #include <QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qinputdevicemanager_p_p.h>
 #include <private/qhighdpiscaling_p.h>

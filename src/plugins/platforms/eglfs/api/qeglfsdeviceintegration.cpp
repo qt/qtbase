@@ -44,7 +44,7 @@
 #include "qeglfsscreen_p.h"
 #include "qeglfshooks_p.h"
 
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
 #include <QGuiApplication>
 #include <private/qguiapplication_p.h>
 #include <QScreen>
@@ -199,7 +199,7 @@ void QEglFSDeviceIntegration::screenDestroy()
     QEglFSIntegration *platformIntegration = static_cast<QEglFSIntegration *>(
         QGuiApplicationPrivate::platformIntegration());
     while (!app->screens().isEmpty())
-        platformIntegration->removeScreen(app->screens().last()->handle());
+        platformIntegration->removeScreen(app->screens().constLast()->handle());
 }
 
 QSizeF QEglFSDeviceIntegration::physicalScreenSize() const

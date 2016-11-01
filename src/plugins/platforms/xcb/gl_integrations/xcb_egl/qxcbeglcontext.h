@@ -41,8 +41,8 @@
 #define QXCBEGLCONTEXT_H
 
 #include "qxcbeglwindow.h"
-#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtEglSupport/private/qeglplatformcontext_p.h>
+#include <QtEglSupport/private/qeglpbuffer_p.h>
 #include <QtPlatformHeaders/QEGLNativeContext>
 
 QT_BEGIN_NAMESPACE

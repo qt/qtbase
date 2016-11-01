@@ -317,26 +317,31 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
     // Start processing incoming data
     if (d->socketType == QAbstractSocket::TcpSocket) {
         HRESULT hr;
-        QEventDispatcherWinRT::runOnXamlThread([d, &hr, socket, this]() {
+        QEventDispatcherWinRT::runOnXamlThread([&hr, socket, socketState, this]() {
+            Q_D(QNativeSocketEngine);
             ComPtr<IBuffer> buffer;
             HRESULT hr = g->bufferFactory->Create(READ_BUFFER_SIZE, &buffer);
             RETURN_OK_IF_FAILED("initialize(): Could not create buffer");
             ComPtr<IInputStream> stream;
             hr = socket->get_InputStream(&stream);
             RETURN_OK_IF_FAILED("initialize(): Could not obtain input stream");
-            hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, d->readOp.GetAddressOf());
+            ComPtr<IAsyncBufferOperation> readOp;
+            hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, readOp.GetAddressOf());
             RETURN_OK_IF_FAILED_WITH_ARGS("initialize(): Failed to read from the socket buffer (%s).",
                               socketDescription(this).constData());
-            hr = d->readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
+            d->pendingReadOps.append(readOp);
+            d->socketState = socketState;
+            hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
             RETURN_OK_IF_FAILED_WITH_ARGS("initialize(): Failed to set socket read callback (%s).",
                               socketDescription(this).constData());
             return S_OK;
         });
         if (FAILED(hr))
             return false;
+    } else {
+        d->socketState = socketState;
     }
 
-    d->socketState = socketState;
     return true;
 }
 
@@ -556,10 +561,12 @@ void QNativeSocketEngine::close()
             ComPtr<IAsyncAction> action;
             hr = socket3->CancelIOAsync(&action);
             Q_ASSERT_SUCCEEDED(hr);
-            hr = QWinRTFunctions::await(action);
+            hr = QWinRTFunctions::await(action, QWinRTFunctions::YieldThread, 5000);
             // If there is no pending IO (no read established before) the function will fail with
             // "function was called at an unexpected time" which is fine.
-            if (hr != E_ILLEGAL_METHOD_CALL)
+            // Timeout is fine as well. The result will be the socket being hard reset instead of
+            // being closed gracefully
+            if (hr != E_ILLEGAL_METHOD_CALL && hr != ERROR_TIMEOUT)
                 Q_ASSERT_SUCCEEDED(hr);
             return S_OK;
         });
@@ -567,9 +574,9 @@ void QNativeSocketEngine::close()
     }
 #endif // _MSC_VER >= 1900
 
-    if (d->readOp) {
+    for (ComPtr<IAsyncBufferOperation> readOp : d->pendingReadOps) {
         ComPtr<IAsyncInfo> info;
-        hr = d->readOp.As(&info);
+        hr = readOp.As(&info);
         Q_ASSERT_SUCCEEDED(hr);
         if (info) {
             hr = info->Cancel();
@@ -933,9 +940,11 @@ void QNativeSocketEngine::establishRead()
         hr = g->bufferFactory->Create(READ_BUFFER_SIZE, &buffer);
         RETURN_HR_IF_FAILED("establishRead(): Failed to create buffer");
 
-        hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, &d->readOp);
+        ComPtr<IAsyncBufferOperation> readOp;
+        hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, readOp.GetAddressOf());
         RETURN_HR_IF_FAILED("establishRead(): Failed to initiate socket read");
-        hr = d->readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
+        d->pendingReadOps.append(readOp);
+        hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
         RETURN_HR_IF_FAILED("establishRead(): Failed to register read callback");
         return S_OK;
     });
@@ -1410,7 +1419,15 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     }
 
     Q_Q(QNativeSocketEngine);
+    for (int i = 0; i < pendingReadOps.count(); ++i) {
+        if (pendingReadOps.at(i).Get() == asyncInfo) {
+            pendingReadOps.takeAt(i);
+            break;
+        }
+    }
 
+    static QMutex mutex;
+    mutex.lock();
     // A read in UnconnectedState will close the socket and return -1 and thus tell the caller,
     // that the connection was closed. The socket cannot be closed here, as the subsequent read
     // might fail then.
@@ -1463,6 +1480,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
 
     if (notifyOnRead)
         emit q->readReady();
+    mutex.unlock();
 
     hr = QEventDispatcherWinRT::runOnXamlThread([buffer, q, this]() {
         UINT32 readBufferLength;
@@ -1476,12 +1494,14 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
         hr = buffer->put_Length(0);
         RETURN_HR_IF_FAILED("handleReadyRead(): Could not set buffer length");
 
+        ComPtr<IAsyncBufferOperation> readOp;
         hr = stream->ReadAsync(buffer.Get(), readBufferLength, InputStreamOptions_Partial, &readOp);
         if (FAILED(hr)) {
             qErrnoWarning(hr, "handleReadyRead(): Could not read into socket stream buffer (%s).",
                           socketDescription(q).constData());
             return S_OK;
         }
+        pendingReadOps.append(readOp);
         hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(this, &QNativeSocketEnginePrivate::handleReadyRead).Get());
         if (FAILED(hr)) {
             qErrnoWarning(hr, "handleReadyRead(): Failed to set socket read callback (%s).",

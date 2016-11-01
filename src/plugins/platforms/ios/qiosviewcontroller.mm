@@ -229,9 +229,11 @@
 
 @implementation QIOSViewController
 
+#ifndef Q_OS_TVOS
 @synthesize prefersStatusBarHidden;
 @synthesize preferredStatusBarUpdateAnimation;
 @synthesize preferredStatusBarStyle;
+#endif
 
 - (id)initWithQIOSScreen:(QT_PREPEND_NAMESPACE(QIOSScreen) *)screen
 {

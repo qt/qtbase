@@ -61,6 +61,15 @@ Stream::Stream(const HttpMessagePair &message, quint32 id, qint32 sendSize, qint
 {
 }
 
+Stream::Stream(const QString &cacheKey, quint32 id, qint32 recvSize)
+    : streamID(id),
+      // sendWindow is 0, this stream only receives data
+      recvWindow(recvSize),
+      state(remoteReserved),
+      key(cacheKey)
+{
+}
+
 QHttpNetworkReply *Stream::reply() const
 {
     return httpPair.second;
@@ -99,6 +108,6 @@ QNonContiguousByteDevice *Stream::data() const
     return httpPair.first.uploadByteDevice();
 }
 
-}
+} // namespace Http2
 
 QT_END_NAMESPACE

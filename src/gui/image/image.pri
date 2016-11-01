@@ -74,7 +74,7 @@ SOURCES += \
 qtConfig(png) {
     HEADERS += image/qpnghandler_p.h
     SOURCES += image/qpnghandler.cpp
-    include($$PWD/../../3rdparty/png_dependency.pri)
+    QMAKE_USE_PRIVATE += libpng
 }
 
 # SIMD

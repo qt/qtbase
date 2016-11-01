@@ -52,7 +52,7 @@
 #ifdef Q_OS_OSX
 #include "qmacgesturerecognizer_p.h"
 #endif
-#if defined(Q_DEAD_CODE_FROM_QT4_WIN) && !defined(QT_NO_NATIVE_GESTURES)
+#if 0 /* Used to be included in Qt4 for Q_WS_WIN */ && !defined(QT_NO_NATIVE_GESTURES)
 #include "qwinnativepangesturerecognizer_win_p.h"
 #endif
 
@@ -100,7 +100,7 @@ QGestureManager::QGestureManager(QObject *parent)
     registerGestureRecognizer(new QSwipeGestureRecognizer);
     registerGestureRecognizer(new QTapGestureRecognizer);
 #endif
-#if defined(Q_DEAD_CODE_FROM_QT4_WIN)
+#if 0 // Used to be included in Qt4 for Q_WS_WIN
   #if !defined(QT_NO_NATIVE_GESTURES)
     if (QApplicationPrivate::HasTouchSupport)
         registerGestureRecognizer(new QWinNativePanGestureRecognizer);

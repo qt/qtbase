@@ -1,6 +1,6 @@
 TARGET = qeglfs-brcm-integration
 
-QT += core-private gui-private platformsupport-private eglfsdeviceintegration-private
+QT += core-private gui-private eglfsdeviceintegration-private
 
 INCLUDEPATH += $$PWD/../../api
 CONFIG += egl

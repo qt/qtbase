@@ -13,6 +13,11 @@ isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
 isEmpty(VERSION): VERSION = $$MODULE_VERSION
 isEmpty(VERSION): error("Module does not define version.")
 
+exists($$OUT_PWD/qt$${MODULE}-config.pri) {
+    include($$OUT_PWD/qt$${MODULE}-config.pri)
+    CONFIG += generated_privates
+}
+
 # Compile as shared/DLL or static according to the option given to configure
 # unless overridden. Host builds are always static
 host_build|staticlib: CONFIG += static
@@ -79,15 +84,16 @@ INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.inclu
 # If Qt was configured with -debug-and-release then build the module the same way
 # - unless this is a host library
 !host_build:if(win32|mac):!macx-xcode {
-    qtConfig(simulator_and_device): CONFIG += simulator_and_device
     qtConfig(debug_and_release): CONFIG += debug_and_release
     qtConfig(build_all): CONFIG += build_all
 }
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
-QT += $$QT_FOR_PRIVATE
+QT_PRIVATE += $$QT_FOR_PRIVATE
 unset(QT_FOR_PRIVATE)
+QMAKE_USE_PRIVATE += $$QMAKE_USE_FOR_PRIVATE
+unset(QMAKE_USE_FOR_PRIVATE)
 
 !internal_module:CONFIG += create_cmake
 
@@ -114,7 +120,7 @@ lib_bundle {
         FRAMEWORK_HEADERS.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
         FRAMEWORK_HEADERS.path = Headers
         FRAMEWORK_PRIVATE_HEADERS.version = Versions
-        FRAMEWORK_PRIVATE_HEADERS.files = $$SYNCQT.PRIVATE_HEADER_FILES
+        FRAMEWORK_PRIVATE_HEADERS.files = $$SYNCQT.PRIVATE_HEADER_FILES $$SYNCQT.INJECTED_PRIVATE_HEADER_FILES
         FRAMEWORK_PRIVATE_HEADERS.path = Headers/$$VERSION/$$MODULE_INCNAME/private
         FRAMEWORK_QPA_HEADERS.version = Versions
         FRAMEWORK_QPA_HEADERS.files = $$SYNCQT.QPA_HEADER_FILES

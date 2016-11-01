@@ -1,0 +1,32 @@
+[
+    {
+        "Id": "opengl-headers",
+        "Name": "OpenGL Headers",
+        "QDocModule": "qtgui",
+        "Description": "OpenGL header generated from the Khronos OpenGL / OpenGL ES XML API Registry.",
+        "QtUsage": "Used on Windows and Linux in the OpenGL related headers of Qt GUI.",
+        "Path": "qopenglext.h",
+
+        "Homepage": "https://www.khronos.org/",
+        "Version": "Revision 27684",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "KHRONOS_LICENSE.txt",
+        "Copyright": "Copyright (c) 2013-2014 The Khronos Group Inc."
+    },
+    {
+        "Id": "opengl-es2-headers",
+        "Name": "OpenGL ES 2 Headers",
+        "QDocModule": "qtgui",
+        "Description": "OpenGL ES 2 header generated from the Khronos OpenGL / OpenGL ES XML API Registry.",
+        "QtUsage": "Used on Windows and Linux in the OpenGL related headers of Qt GUI.",
+        "Path": "qopengles2ext.h",
+
+        "Homepage": "https://www.khronos.org/",
+        "Version": "Revision 27673",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "KHRONOS_LICENSE.txt",
+        "Copyright": "Copyright (c) 2013-2014 The Khronos Group Inc."
+    }
+]

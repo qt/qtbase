@@ -39,11 +39,11 @@
 
 #include "qwindowsbackingstore.h"
 #include "qwindowswindow.h"
-#include "qwindowsnativeimage.h"
 #include "qwindowscontext.h"
 
 #include <QtGui/QWindow>
 #include <QtGui/QPainter>
+#include <QtFontDatabaseSupport/private/qwindowsnativeimage_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qimage_p.h>
 

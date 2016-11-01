@@ -1,0 +1,13 @@
+{
+    "Id": "cldr-data",
+    "Name": "Unicode CLDR (Unicode Common Locale Data Repository)",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used in Qt Core (QTimeZone). Disable the timezone feature to avoid.",
+    "Files": "qlocale_data_p.h",
+
+    "Description": "QTimeZone includes data obtained from the CLDR data files.",
+    "License": "Unicode Data Files and Software License",
+    "LicenseId": "Unicode-TOU",
+    "LicenseFile": "CLDR_LICENSE.txt",
+    "Copyright": "Copyright (C) 1991-2016 Unicode, Inc."
+}

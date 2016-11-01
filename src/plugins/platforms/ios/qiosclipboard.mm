@@ -41,7 +41,7 @@
 
 #ifndef QT_NO_CLIPBOARD
 
-#include <QtPlatformSupport/private/qmacmime_p.h>
+#include <QtClipboardSupport/private/qmacmime_p.h>
 #include <QtCore/QMimeData>
 #include <QtGui/QGuiApplication>
 

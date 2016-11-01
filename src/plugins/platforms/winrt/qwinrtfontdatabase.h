@@ -40,7 +40,7 @@
 #ifndef QWINRTFONTDATABASE_H
 #define QWINRTFONTDATABASE_H
 
-#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
 #include <QtCore/QLoggingCategory>
 
 struct IDWriteFontFile;

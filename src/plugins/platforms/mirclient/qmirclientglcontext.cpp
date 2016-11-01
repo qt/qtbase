@@ -41,7 +41,7 @@
 #include "qmirclientglcontext.h"
 #include "qmirclientwindow.h"
 #include "qmirclientlogging.h"
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <dlfcn.h>
 

@@ -1,0 +1,1 @@
+_MSC_FULL_VER

@@ -570,12 +570,12 @@ public:
     inline QWidget *childAt(int x, int y) const;
     QWidget *childAt(const QPoint &p) const;
 
-#if defined(Q_DEAD_CODE_FROM_QT4_X11)
+#if 0 // Used to be included in Qt4 for Q_WS_X11
     const QX11Info &x11Info() const;
     Qt::HANDLE x11PictureHandle() const;
 #endif
 
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     Qt::HANDLE macQDHandle() const;
     Qt::HANDLE macCGHandle() const;
 #endif

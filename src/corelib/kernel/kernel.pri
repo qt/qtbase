@@ -140,14 +140,12 @@ nacl {
 unix|integrity {
     SOURCES += \
             kernel/qcore_unix.cpp \
-            kernel/qcrashhandler.cpp \
             kernel/qeventdispatcher_unix.cpp \
             kernel/qtimerinfo_unix.cpp
     !darwin|nacl: SOURCES += kernel/qelapsedtimer_unix.cpp
 
     HEADERS += \
             kernel/qcore_unix_p.h \
-            kernel/qcrashhandler_p.h \
             kernel/qeventdispatcher_unix_p.h \
             kernel/qpoll_p.h \
             kernel/qtimerinfo_unix_p.h

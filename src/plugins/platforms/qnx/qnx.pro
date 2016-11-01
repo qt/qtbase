@@ -1,6 +1,8 @@
 TARGET = qqnx
 
-QT += platformsupport-private core-private gui-private
+QT += \
+    core-private gui-private \
+    fontdatabase_support-private eventdispatcher_support-private egl_support-private
 
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
@@ -114,11 +116,6 @@ lgmon {
 }
 
 OTHER_FILES += qnx.json
-
-QMAKE_CXXFLAGS += -I./private
-
-include (../../../platformsupport/eglconvenience/eglconvenience.pri)
-include (../../../platformsupport/fontdatabases/fontdatabases.pri)
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QQnxIntegrationPlugin

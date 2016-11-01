@@ -1145,6 +1145,7 @@ void tst_QDate::toStringDateFormat_data()
     QTest::newRow("year < 0") << QDate(-1,1,1) << Qt::ISODate << QString();
     QTest::newRow("year > 9999") << QDate(-1,1,1) << Qt::ISODate << QString();
     QTest::newRow("RFC2822Date") << QDate(1974,12,1) << Qt::RFC2822Date << QString("01 Dec 1974");
+    QTest::newRow("ISODateWithMs") << QDate(1974,12,1) << Qt::ISODateWithMs << QString("1974-12-01");
 }
 
 void tst_QDate::toStringDateFormat()

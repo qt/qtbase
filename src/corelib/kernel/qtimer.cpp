@@ -533,7 +533,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
 */
 
 /*!
-    \fn void QTimer::singleShot(std::chrono::duration<Rep, Period> value, const QObject *receiver, const char *member)
+    \fn void QTimer::singleShot(std::chrono::milliseconds msec, const QObject *receiver, const char *member)
     \since 5.8
     \overload
     \reentrant
@@ -545,13 +545,13 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     create a local QTimer object.
 
     The \a receiver is the receiving object and the \a member is the slot. The
-    time interval is given in the duration object \a value.
+    time interval is given in the duration object \a msec.
 
     \sa start()
 */
 
 /*!
-    \fn void QTimer::singleShot(std::chrono::duration<Rep, Period> value, Qt::TimerType timerType, const QObject *receiver, const char *member)
+    \fn void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType, const QObject *receiver, const char *member)
     \since 5.8
     \overload
     \reentrant
@@ -563,18 +563,18 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     create a local QTimer object.
 
     The \a receiver is the receiving object and the \a member is the slot. The
-    time interval is given in the duration object \a value. The \a timerType affects the
+    time interval is given in the duration object \a msec. The \a timerType affects the
     accuracy of the timer.
 
     \sa start()
 */
 
 /*!
-    \fn void QTimer::start(std::chrono::duration<Rep, Period> value)
+    \fn void QTimer::start(std::chrono::milliseconds msec)
     \since 5.8
     \overload
 
-    Starts or restarts the timer with a timeout of duration \a value.
+    Starts or restarts the timer with a timeout of duration \a msec milliseconds.
 
     If the timer is already running, it will be
     \l{QTimer::stop()}{stopped} and restarted.

@@ -208,10 +208,11 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                   reinterpret_cast<const ushort *>(data.constData()), data.size() / 2);
             if (!str.isNull()) {
                 if (format == QLatin1String("text/uri-list")) {
-                    const QStringList urls = str.split(QLatin1Char('\n'));
+                    const auto urls = str.splitRef(QLatin1Char('\n'));
                     QList<QVariant> list;
-                    for (const QString &s : urls) {
-                        const QUrl url(s.trimmed());
+                    list.reserve(urls.size());
+                    for (const QStringRef &s : urls) {
+                        const QUrl url(s.trimmed().toString());
                         if (url.isValid())
                             list.append(url);
                     }
@@ -219,7 +220,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                     // The atomName variable is not used because mimeAtomToString()
                     // converts "text/x-moz-url" to "text/uri-list".
                     if (!list.isEmpty() && connection->atomName(a) == "text/x-moz-url")
-                        return list.first();
+                        return list.constFirst();
                     return list;
                 } else {
                     return str;

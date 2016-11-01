@@ -2,7 +2,7 @@ HEADERS += $$PWD/qcoretextfontdatabase_p.h $$PWD/qfontengine_coretext_p.h
 OBJECTIVE_SOURCES += $$PWD/qfontengine_coretext.mm $$PWD/qcoretextfontdatabase.mm
 
 qtConfig(freetype) {
-    include($$QT_SOURCE_TREE/src/3rdparty/freetype_dependency.pri)
+    QMAKE_USE += freetype
     HEADERS += $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft_p.h
     SOURCES += $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft.cpp
 }

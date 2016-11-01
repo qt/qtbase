@@ -1,6 +1,9 @@
 TARGET = qdirectfb
 
-QT += core-private gui-private platformsupport-private
+QT += \
+    core-private gui-private \
+    eventdispatcher_support-private service_support-private \
+    fontdatabase_support-private egl_support-private
 
 QMAKE_USE += directfb
 
@@ -40,9 +43,6 @@ qtConfig(directfb_egl) {
 } else {
     SOURCES += qdirectfbeglhooks_stub.cpp
 }
-
-
-CONFIG += qpa/genericunixfontdatabase
 
 OTHER_FILES += directfb.json
 

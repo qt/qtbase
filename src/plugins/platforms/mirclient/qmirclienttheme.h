@@ -41,7 +41,7 @@
 #ifndef QMIRCLIENTTHEME_H
 #define QMIRCLIENTTHEME_H
 
-#include <QtPlatformSupport/private/qgenericunixthemes_p.h>
+#include <QtThemeSupport/private/qgenericunixthemes_p.h>
 
 class QMirClientTheme : public QGenericUnixTheme
 {

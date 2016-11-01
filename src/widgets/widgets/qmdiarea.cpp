@@ -160,7 +160,7 @@
 
 #include <QApplication>
 #include <QStyle>
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC) && !defined(QT_NO_STYLE_MAC)
+#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && !defined(QT_NO_STYLE_MAC)
 #include <private/qmacstyle_mac_p.h>
 #endif
 #include <QChildEvent>
@@ -2493,7 +2493,7 @@ bool QMdiArea::event(QEvent *event)
 {
     Q_D(QMdiArea);
     switch (event->type()) {
-#ifdef Q_DEAD_CODE_FROM_QT4_WIN
+#if 0 // Used to be included in Qt4 for Q_WS_WIN
     // QWidgetPrivate::hide_helper activates another sub-window when closing a
     // modal dialog on Windows (see activateWindow() inside the ifdef).
     case QEvent::WindowUnblocked:
@@ -2557,7 +2557,7 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
 
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         // Ingore key events without a Ctrl modifier (except for press/release on the modifier itself).
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
         if (!(keyEvent->modifiers() & Qt::MetaModifier) && keyEvent->key() != Qt::Key_Meta)
 #else
         if (!(keyEvent->modifiers() & Qt::ControlModifier) && keyEvent->key() != Qt::Key_Control)
@@ -2576,7 +2576,7 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
         // 3) Ctrl-Shift-Tab (Tab, Tab, ...) -> iterate through all windows in the opposite
         //    direction (activatePreviousSubWindow())
         switch (keyEvent->key()) {
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
         case Qt::Key_Meta:
 #else
         case Qt::Key_Control:

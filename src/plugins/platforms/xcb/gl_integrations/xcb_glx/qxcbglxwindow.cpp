@@ -40,7 +40,7 @@
 #include "qxcbglxwindow.h"
 
 #include "qxcbscreen.h"
-#include <QtPlatformSupport/private/qglxconvenience_p.h>
+#include <QtGlxSupport/private/qglxconvenience_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -59,6 +59,10 @@ const xcb_visualtype_t *QXcbGlxWindow::createVisual()
     if (!scr)
         return Q_NULLPTR;
     XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(scr), scr->screenNumber(), &m_format);
+    if (!visualInfo) {
+        qWarning() << "No XVisualInfo for format" << m_format;
+        return Q_NULLPTR;
+    }
     const xcb_visualtype_t *xcb_visualtype = scr->visualForId(visualInfo->visualid);
     XFree(visualInfo);
     return xcb_visualtype;

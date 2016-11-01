@@ -70,7 +70,7 @@
 #include <private/qapplication_p.h>
 #include <private/qlayoutengine_p.h>
 #include <private/qwidgetresizehandler_p.h>
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
 #   include <private/qcore_mac_p.h>
 #   include <private/qt_cocoa_helpers_mac_p.h>
 #endif
@@ -1129,11 +1129,11 @@ void QMainWindowLayout::removeToolBar(QToolBar *toolbar)
         QObject::disconnect(parentWidget(), SIGNAL(toolButtonStyleChanged(Qt::ToolButtonStyle)),
                    toolbar, SLOT(_q_updateToolButtonStyle(Qt::ToolButtonStyle)));
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
         if (usesHIToolBar(toolbar)) {
             removeFromMacToolbar(toolbar);
         } else
-#endif // Q_DEAD_CODE_FROM_QT4_MAC
+#endif
         {
             removeWidget(toolbar);
         }
@@ -1148,7 +1148,7 @@ void QMainWindowLayout::addToolBar(Qt::ToolBarArea area,
                                    bool)
 {
     validateToolBarArea(area);
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     if ((area == Qt::TopToolBarArea)
             && layoutState.mainWindow->unifiedTitleAndToolBarOnMac()) {
         insertIntoMacToolbar(0, toolbar);
@@ -1174,11 +1174,11 @@ void QMainWindowLayout::addToolBar(Qt::ToolBarArea area,
 */
 void QMainWindowLayout::insertToolBar(QToolBar *before, QToolBar *toolbar)
 {
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     if (usesHIToolBar(before)) {
         insertIntoMacToolbar(before, toolbar);
     } else
-#endif // Q_DEAD_CODE_FROM_QT4_MAC
+#endif
     {
         addChildWidget(toolbar);
         QLayoutItem * item = layoutState.toolBarAreaLayout.insertToolBar(before, toolbar);
@@ -1207,7 +1207,7 @@ Qt::ToolBarArea QMainWindowLayout::toolBarArea(QToolBar *toolbar) const
         case QInternal::BottomDock: return Qt::BottomToolBarArea;
         default: break;
     }
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     if (pos == QInternal::DockCount) {
         if (qtoolbarsInUnifiedToolbarList.contains(toolbar))
             return Qt::TopToolBarArea;
@@ -1230,7 +1230,7 @@ void QMainWindowLayout::getStyleOptionInfo(QStyleOptionToolBar *option, QToolBar
 void QMainWindowLayout::toggleToolBarsVisible()
 {
     bool updateNonUnifiedParts = true;
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     if (layoutState.mainWindow->unifiedTitleAndToolBarOnMac()) {
         // If we hit this case, someone has pressed the "toolbar button" which will
         // toggle the unified toolbar visibility, because that's what the user wants.
@@ -1876,7 +1876,7 @@ QSize QMainWindowLayout::minimumSize() const
         const QSize sbMin = statusbar ? statusbar->minimumSize() : QSize(0, 0);
         minSize = QSize(qMax(sbMin.width(), minSize.width()),
                         sbMin.height() + minSize.height());
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
         const QSize storedSize = minSize;
         int minWidth = 0;
         foreach (QToolBar *toolbar, qtoolbarsInUnifiedToolbarList) {
@@ -2186,7 +2186,7 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLay
 #endif // QT_NO_DOCKWIDGET
     , widgetAnimator(this)
     , pluggingWidget(0)
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     , blockVisiblityCheck(false)
 #endif
 {
@@ -2213,7 +2213,7 @@ QMainWindowLayout::~QMainWindowLayout()
     layoutState.deleteAllLayoutItems();
     layoutState.deleteCentralWidgetItem();
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     cleanUpMacToolbarItems();
 #endif
 
@@ -2581,7 +2581,7 @@ bool QMainWindowLayout::restoreState(QDataStream &stream)
 // HIToolbar.
 bool QMainWindowLayout::usesHIToolBar(QToolBar *toolbar) const
 {
-#ifndef Q_DEAD_CODE_FROM_QT4_MAC
+#if 1 // Used to be excluded in Qt4 for Q_WS_MAC
     Q_UNUSED(toolbar);
     return false;
 #else

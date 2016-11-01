@@ -55,7 +55,7 @@
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <QtCore/QVariant>
-#include <QtPlatformSupport/private/qt_egl_p.h>
+#include <QtEglSupport/private/qt_egl_p.h>
 
 QT_BEGIN_NAMESPACE
 

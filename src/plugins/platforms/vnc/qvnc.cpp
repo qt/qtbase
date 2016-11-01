@@ -41,6 +41,7 @@
 #include "qvncclient.h"
 #include "QtNetwork/qtcpserver.h"
 #include "QtNetwork/qtcpsocket.h"
+#include <qendian.h>
 #include <qthread.h>
 
 #include <QtGui/qguiapplication.h>
@@ -554,7 +555,7 @@ void QVncClientCursor::write(QVncClient *client) const
                                  htons(cursor.height()) };
         socket->write((char*)tmp, sizeof(tmp));
 
-        const quint32 encoding = htonl(-239);
+        const qint32 encoding = qToBigEndian(-239);
         socket->write((char*)(&encoding), sizeof(encoding));
     }
 

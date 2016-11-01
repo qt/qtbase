@@ -107,7 +107,7 @@ private slots:
     void qrgba64Premultiply();
     void qrgba64Equivalence();
 
-#ifdef Q_DEAD_CODE_FROM_QT4_X11
+#if 0 // Used to be included in Qt4 for Q_WS_X11
     void setallowX11ColorNames();
 #endif
 };
@@ -1403,7 +1403,7 @@ void tst_QColor::achromaticHslHue()
     QCOMPARE(hsl.hslHue(), -1);
 }
 
-#ifdef Q_DEAD_CODE_FROM_QT4_X11
+#if 0 // Used to be included in Qt4 for Q_WS_X11
 void tst_QColor::setallowX11ColorNames()
 {
 #if defined(Q_OS_IRIX)

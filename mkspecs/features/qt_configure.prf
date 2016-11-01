@@ -376,7 +376,7 @@ defineReplace(qtConfPkgConfig) {
     $$host {
         pkg_config = $$qtConfFindInPath("pkg-config")
     } else {
-        pkg_config = "$$qtConfPkgConfigEnv()$$PKG_CONFIG"
+        pkg_config = "$$qtConfPkgConfigEnv()$$PKG_CONFIG_EXECUTABLE"
     }
 
     return($$pkg_config)
@@ -557,18 +557,6 @@ defineReplace(qtConfLibraryArgs) {
     return($$qmake_args)
 }
 
-defineReplace(qtConfGetHexVersion) {
-    version = $$split(1, '.')
-    number =
-    for(i, 0..2) {
-        n = $$member(version, $$i)
-        isEmpty(n): n = 0
-        number += $$format_number($$n, obase=16 zeropad width=2)
-    }
-    number = "0x$$join(number)"
-    return($$number)
-}
-
 defineTest(qtConfExportLibrary) {
     isEmpty(2): return()
     !$$qtConfEvaluate($$eval($${1}.export)): return()
@@ -578,7 +566,6 @@ defineTest(qtConfExportLibrary) {
     eval(libs = $$eval($${1}.libs))
     eval(cflags = $$eval($${1}.cflags))
     eval(includes = $$eval($${1}.includedir))
-    version = $$eval($${1}.version)
 
     # Split $$cflags into stuff that goes into DEFINES, INCLUDEPATH, and other stuff.
     defines =
@@ -606,14 +593,6 @@ defineTest(qtConfExportLibrary) {
                                           $$eval($${1}.builds.$${b}))
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
     !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
-    !isEmpty(version) {
-        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION, $$version)
-        qtConfOutputSetDefine("privateHeader", "QT_LIBRARY_VERSION_$${2}", $$qtConfGetHexVersion($$version))
-        version = $$split(version, '.')
-        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_MAJOR, $$member(version, 0))
-        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_MINOR, $$member(version, 1))
-        qtConfOutputVar(assign, $$output, QMAKE_$${NAME}_VERSION_PATCH, $$member(version, 2))
-    }
     !isEmpty($${currentConfig}.module): \
         qtConfExtendVar($$output, "QT.$${currentModule}_private.libraries", $$2)
 }
@@ -623,6 +602,8 @@ defineTest(qtConfHandleLibrary) {
     defined($${lpfx}.result, var): return()
 
     qtConfEnsureTestTypeDeps("library")
+    qtConfTestPrepare_compile($$lpfx)
+    use_args = $$eval($${lpfx}.literal_args)
 
     qtConfLoadResult($${lpfx}, $$1) {
         $$eval($${lpfx}.result): \
@@ -636,7 +617,6 @@ defineTest(qtConfHandleLibrary) {
 
     result = false
     for (s, $${lpfx}.sources._KEYS_) {
-        qtLog("Trying source $$s of library $${1}.")
         spfx = $${lpfx}.sources.$${s}
 
         t = $$eval($${spfx}.type)
@@ -644,25 +624,29 @@ defineTest(qtConfHandleLibrary) {
         !defined($$call, test): \
             error("Library $${1} source $${s} has unknown type '$$t'")
 
+        qtLog("Trying source $$s (type $$t) of library $${1} ...")
+
         !$$qtConfEvaluate($$eval($${spfx}.condition)) {
-            qtLog("Source $$s of library $$1 failed condition.")
+            qtLog("  => source failed condition.")
             next()
         }
 
         !$${call}($$spfx) {
-            qtLog("Source $$s of library $$1 produced no result.")
+            qtLog("  => source produced no result.")
             next()
         }
 
         # if the library defines a test, use it to verify the source.
         !isEmpty($${lpfx}.test) {
-            $${lpfx}.literal_args = $$qtConfLibraryArgs($$spfx)
+            $${lpfx}.literal_args = $$use_args $$qtConfLibraryArgs($$spfx)
             $${lpfx}.host = $$eval($${spfx}.host)
             !qtConfTest_compile($$lpfx) {
-                qtLog("Source $$s of library $$1 failed verification.")
+                qtLog(" => source failed verification.")
                 next()
             }
         }
+
+        qtLog(" => source accepted.")
 
         $${lpfx}.cache += source
         for (v, $$list(libs includes cflags version export)): \

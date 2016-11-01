@@ -66,7 +66,7 @@ public class QtActivityLoader extends QtLoader {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 try {
-                    Uri uri = Uri.parse("market://search?q=pname:org.kde.necessitas.ministro");
+                    Uri uri = Uri.parse("market://details?id=org.kde.necessitas.ministro");
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     m_activity.startActivityForResult(intent, MINISTRO_INSTALL_REQUEST_CODE);
                 } catch (Exception e) {

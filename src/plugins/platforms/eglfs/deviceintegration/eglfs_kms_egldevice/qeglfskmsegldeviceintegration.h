@@ -46,7 +46,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include <QtPlatformSupport/private/qeglstreamconvenience_p.h>
+#include <QtEglSupport/private/qeglstreamconvenience_p.h>
 
 QT_BEGIN_NAMESPACE
 

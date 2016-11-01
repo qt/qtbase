@@ -60,7 +60,37 @@
     \list
     \li \l{Qt Network C++ Classes}{C++ Classes}
     \endlist
+
+    \section1 Licenses and Attributions
+
+    Qt Network is available under commercial licenses from \l{The Qt Company}.
+    In addition, it is available under the
+    \l{GNU Lesser General Public License, version 3}, or
+    the \l{GNU General Public License, version 2}.
+    See \l{Qt Licensing} for further details.
+
+    Qt Network can use the \l{OpenSSL Toolkit} as a backend. The library is then
+    linked against OpenSSL in a way that requires compliance with the \l{OpenSSL
+    License}. To allow linking OpenSSL with Qt Network under the GPL, following
+    exceptions to the GPL do apply:
+
+    \badcode
+    In addition, as a special exception, the copyright holders listed above give
+    permission to link the code of its release of Qt with the OpenSSL project's
+    "OpenSSL" library (or modified versions of the "OpenSSL" library that use the
+    same license as the original version), and distribute the linked executables.
+
+    You must comply with the GNU General Public License version 2 in all
+    respects for all of the code used other than the "OpenSSL" code.  If you
+    modify this file, you may extend this exception to your version of the file,
+    but you are not obligated to do so.  If you do not wish to do so, delete
+    this exception statement from your version of this file.
+    \endcode
+
+    Also note shipping OpenSSL might cause \l{Import and Export Restrictions}
+    to apply.
 */
+
 /*!
     \module QtNetwork
     \title Qt Network C++ Classes

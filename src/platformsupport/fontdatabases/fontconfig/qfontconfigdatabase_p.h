@@ -52,7 +52,7 @@
 //
 
 #include <qpa/qplatformfontdatabase.h>
-#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 

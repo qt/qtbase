@@ -51,8 +51,8 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 
 #include <stdio.h>
 
@@ -68,6 +68,7 @@ QOpenWFDIntegration::QOpenWFDIntegration()
     int actualNumberOfDevices = wfdEnumerateDevices(devices,numberOfDevices,0);
     Q_ASSERT(actualNumberOfDevices == numberOfDevices);
 
+    mDevices.reserve(actualNumberOfDevices);
     for (int i = 0; i < actualNumberOfDevices; i++) {
         mDevices.append(new QOpenWFDDevice(this,devices[i]));
     }

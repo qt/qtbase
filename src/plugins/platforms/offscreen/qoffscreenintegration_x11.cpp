@@ -45,7 +45,7 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-#include <QtPlatformSupport/private/qglxconvenience_p.h>
+#include <QtGlxSupport/private/qglxconvenience_p.h>
 
 #include <qpa/qplatformsurface.h>
 #include <qsurface.h>

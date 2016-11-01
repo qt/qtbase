@@ -45,15 +45,15 @@
 #include <qpa/qplatformwindow.h>
 
 #if defined(Q_OS_WIN)
-#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
 #elif QT_CONFIG(fontconfig)
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #else
 #include <qpa/qplatformfontdatabase.h>
 #endif
 
 #if !defined(Q_OS_WIN)
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 #elif defined(Q_OS_WINRT)
 #include <QtCore/private/qeventdispatcher_winrt_p.h>
 #else

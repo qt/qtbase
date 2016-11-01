@@ -39,8 +39,8 @@
 
 #include "qvncscreen.h"
 #include "qvnc_p.h"
-#include <QtPlatformSupport/private/qfbwindow_p.h>
-#include <QtPlatformSupport/private/qfbcursor_p.h>
+#include <QtFbSupport/private/qfbwindow_p.h>
+#include <QtFbSupport/private/qfbcursor_p.h>
 
 #include <QtGui/QPainter>
 #include <QtCore/QRegularExpression>

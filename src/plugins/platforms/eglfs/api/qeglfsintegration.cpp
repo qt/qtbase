@@ -49,7 +49,6 @@
 #include <QtCore/QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
-#include <private/qgenericunixthemes_p.h>
 
 #include "qeglfsintegration_p.h"
 #include "qeglfswindow_p.h"
@@ -58,30 +57,31 @@
 #include "qeglfsoffscreenwindow_p.h"
 #include "qeglfscursor_p.h"
 
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglplatformcontext_p.h>
+#include <QtEglSupport/private/qeglpbuffer_p.h>
 
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
-#include <QtPlatformSupport/private/qgenericunixservices_p.h>
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
-#include <QtPlatformSupport/private/qfbvthandler_p.h>
-#include <QtPlatformSupport/private/qopenglcompositorbackingstore_p.h>
+#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtServiceSupport/private/qgenericunixservices_p.h>
+#include <QtThemeSupport/private/qgenericunixthemes_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtFbSupport/private/qfbvthandler_p.h>
+#include <QtPlatformCompositorSupport/private/qopenglcompositorbackingstore_p.h>
 
 #include <QtPlatformHeaders/QEGLNativeContext>
 
 #if QT_CONFIG(libinput)
-#include <QtPlatformSupport/private/qlibinputhandler_p.h>
+#include <QtInputSupport/private/qlibinputhandler_p.h>
 #endif
 
 #if QT_CONFIG(evdev)
-#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
-#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
-#include <QtPlatformSupport/private/qevdevtouchmanager_p.h>
+#include <QtInputSupport/private/qevdevmousemanager_p.h>
+#include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtInputSupport/private/qevdevtouchmanager_p.h>
 #endif
 
 #if QT_CONFIG(tslib)
-#include <QtPlatformSupport/private/qtslib_p.h>
+#include <QtInputSupport/private/qtslib_p.h>
 #endif
 
 #include <QtPlatformHeaders/qeglfsfunctions.h>

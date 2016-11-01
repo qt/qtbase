@@ -4,6 +4,9 @@ QT_FOR_CONFIG += gui-private
 include($$OUT_PWD/corelib/qtcore-config.pri)
 include($$OUT_PWD/gui/qtgui-config.pri)
 
+force_bootstrap|!qtConfig(commandlineparser): \
+    CONFIG += force_dbus_bootstrap
+
 src_qtzlib.file = $$PWD/corelib/qtzlib.pro
 src_qtzlib.target = sub-zlib
 
@@ -34,7 +37,7 @@ src_tools_bootstrap_dbus.depends = src_tools_bootstrap
 
 src_tools_qdbusxml2cpp.subdir = tools/qdbusxml2cpp
 src_tools_qdbusxml2cpp.target = sub-qdbusxml2cpp
-force_bootstrap: src_tools_qdbusxml2cpp.depends = src_tools_bootstrap_dbus
+force_dbus_bootstrap: src_tools_qdbusxml2cpp.depends = src_tools_bootstrap_dbus
 else: src_tools_qdbusxml2cpp.depends = src_dbus
 
 src_tools_qdbuscpp2xml.subdir = tools/qdbuscpp2xml
@@ -57,7 +60,7 @@ src_xml.depends = src_corelib
 src_dbus.subdir = $$PWD/dbus
 src_dbus.target = sub-dbus
 src_dbus.depends = src_corelib
-force_bootstrap: src_dbus.depends += src_tools_bootstrap_dbus  # avoid syncqt race
+force_dbus_bootstrap: src_dbus.depends += src_tools_bootstrap_dbus  # avoid syncqt race
 
 src_concurrent.subdir = $$PWD/concurrent
 src_concurrent.target = sub-concurrent
@@ -143,7 +146,7 @@ TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 qtConfig(dbus) {
-    force_bootstrap|qtConfig(private_tests): \
+    force_dbus_bootstrap|qtConfig(private_tests): \
         SUBDIRS += src_tools_bootstrap_dbus
     SUBDIRS += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     TOOLS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml

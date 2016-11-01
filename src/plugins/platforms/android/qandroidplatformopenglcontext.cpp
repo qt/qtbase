@@ -42,7 +42,7 @@
 #include "qandroidplatformopenglwindow.h"
 #include "qandroidplatformintegration.h"
 
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtEglSupport/private/qeglpbuffer_p.h>
 
 #include <QSurface>
 #include <QtGui/private/qopenglcontext_p.h>

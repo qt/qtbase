@@ -81,7 +81,10 @@ RESOURCES += qcocoaresources.qrc
 
 LIBS += -framework AppKit -framework Carbon -framework IOKit -lcups
 
-QT += core-private gui-private platformsupport-private
+QT += \
+    core-private gui-private \
+    accessibility_support-private clipboard_support-private theme_support-private \
+    fontdatabase_support-private graphics_support-private cgl_support-private
 
 qtHaveModule(widgets) {
     OBJECTIVE_SOURCES += \

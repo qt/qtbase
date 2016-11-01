@@ -44,8 +44,9 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QtCore/private/qfactoryloader_p.h>
+
 #include "qiosapplicationstate.h"
-#include "qiosfileenginefactory.h"
 #ifndef Q_OS_TVOS
 #include "qiostextinputoverlay.h"
 #endif
@@ -106,6 +107,8 @@ public:
     void setDebugWindowManagement(bool);
     bool debugWindowManagement() const;
 
+    QFactoryLoader *optionalPlugins() { return m_optionalPlugins; }
+
 private:
     QPlatformFontDatabase *m_fontDatabase;
 #ifndef Q_OS_TVOS
@@ -116,7 +119,7 @@ private:
     QIOSApplicationState m_applicationState;
     QIOSServices *m_platformServices;
     mutable QPlatformAccessibility *m_accessibility;
-    QIOSFileEngineFactory m_fileEngineFactory;
+    QFactoryLoader *m_optionalPlugins;
 #ifndef Q_OS_TVOS
     QIOSTextInputOverlay m_textInputOverlay;
 #endif

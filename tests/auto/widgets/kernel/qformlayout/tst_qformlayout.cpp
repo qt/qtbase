@@ -51,6 +51,44 @@ static inline void setFrameless(QWidget *w)
     w->setWindowFlags(flags);
 }
 
+struct QFormLayoutTakeRowResultHolder {
+    QFormLayoutTakeRowResultHolder(QFormLayout::TakeRowResult result) Q_DECL_NOTHROW
+        : labelItem(result.labelItem),
+          fieldItem(result.fieldItem)
+    {
+    }
+    ~QFormLayoutTakeRowResultHolder()
+    {
+        // re-use a QFormLayout to recursively reap the QLayoutItems:
+        QFormLayout disposer;
+        if (labelItem)
+            disposer.setItem(0, QFormLayout::LabelRole, labelItem);
+        if (fieldItem)
+            disposer.setItem(0, QFormLayout::FieldRole, fieldItem);
+    }
+    QFormLayoutTakeRowResultHolder(QFormLayoutTakeRowResultHolder &&other) Q_DECL_NOTHROW
+        : labelItem(other.labelItem),
+          fieldItem(other.fieldItem)
+    {
+        other.labelItem = nullptr;
+        other.fieldItem = nullptr;
+    }
+    QFormLayoutTakeRowResultHolder &operator=(QFormLayoutTakeRowResultHolder &&other) Q_DECL_NOTHROW
+    {
+        swap(other);
+        return *this;
+    }
+
+    void swap(QFormLayoutTakeRowResultHolder &other) Q_DECL_NOTHROW
+    {
+        qSwap(labelItem, other.labelItem);
+        qSwap(fieldItem, other.fieldItem);
+    }
+
+    QLayoutItem *labelItem;
+    QLayoutItem *fieldItem;
+};
+
 class tst_QFormLayout : public QObject
 {
     Q_OBJECT
@@ -396,7 +434,8 @@ void tst_QFormLayout::setFormStyle()
     QCOMPARE(layout.rowWrapPolicy(), QFormLayout::DontWrapRows);
 #endif
 
-    widget.setStyle(QStyleFactory::create("windows"));
+    const QScopedPointer<QStyle> windowsStyle(QStyleFactory::create("windows"));
+    widget.setStyle(windowsStyle.data());
 
     QCOMPARE(layout.labelAlignment(), Qt::AlignLeft);
     QVERIFY(layout.formAlignment() == (Qt::AlignLeft | Qt::AlignTop));
@@ -407,14 +446,16 @@ void tst_QFormLayout::setFormStyle()
        this test is cross platform.. so create dummy styles that
        return all the right stylehints.
      */
-    widget.setStyle(new DummyMacStyle());
+    DummyMacStyle macStyle;
+    widget.setStyle(&macStyle);
 
     QCOMPARE(layout.labelAlignment(), Qt::AlignRight);
     QVERIFY(layout.formAlignment() == (Qt::AlignHCenter | Qt::AlignTop));
     QCOMPARE(layout.fieldGrowthPolicy(), QFormLayout::FieldsStayAtSizeHint);
     QCOMPARE(layout.rowWrapPolicy(), QFormLayout::DontWrapRows);
 
-    widget.setStyle(new DummyQtopiaStyle());
+    DummyQtopiaStyle qtopiaStyle;
+    widget.setStyle(&qtopiaStyle);
 
     QCOMPARE(layout.labelAlignment(), Qt::AlignRight);
     QVERIFY(layout.formAlignment() == (Qt::AlignLeft | Qt::AlignTop));
@@ -814,7 +855,7 @@ void tst_QFormLayout::takeRow()
     QCOMPARE(layout->count(), 3);
     QCOMPARE(layout->rowCount(), 2);
 
-    QFormLayout::TakeRowResult result = layout->takeRow(1);
+    QFormLayoutTakeRowResultHolder result = layout->takeRow(1);
 
     QVERIFY(w2);
     QVERIFY(result.fieldItem);
@@ -853,7 +894,7 @@ void tst_QFormLayout::takeRow_QWidget()
     QCOMPARE(layout->count(), 3);
     QCOMPARE(layout->rowCount(), 2);
 
-    QFormLayout::TakeRowResult result = layout->takeRow(w1);
+    QFormLayoutTakeRowResultHolder result = layout->takeRow(w1);
 
     QVERIFY(w1);
     QVERIFY(result.fieldItem);
@@ -898,7 +939,7 @@ void tst_QFormLayout::takeRow_QLayout()
     QCOMPARE(layout->count(), 3);
     QCOMPARE(layout->rowCount(), 2);
 
-    QFormLayout::TakeRowResult result = layout->takeRow(l1);
+    QFormLayoutTakeRowResultHolder result = layout->takeRow(l1);
 
     QVERIFY(l1);
     QVERIFY(w1);
@@ -1123,7 +1164,7 @@ void tst_QFormLayout::takeAt()
     QCOMPARE(layout->count(), 7);
 
     for (int i = 6; i >= 0; --i) {
-        layout->takeAt(0);
+        delete layout->takeAt(0);
         QCOMPARE(layout->count(), i);
     }
 }
@@ -1215,7 +1256,7 @@ void tst_QFormLayout::replaceWidget()
     QFormLayout::ItemRole role;
 
     // replace editor
-    layout->replaceWidget(edit1, edit3);
+    delete layout->replaceWidget(edit1, edit3);
     edit1->hide(); // Not strictly needed for the test, but for normal usage it is.
     QCOMPARE(layout->indexOf(edit1), -1);
     QCOMPARE(layout->indexOf(edit3), editIndex);
@@ -1226,7 +1267,7 @@ void tst_QFormLayout::replaceWidget()
     QCOMPARE(rownum, 0);
     QCOMPARE(role, QFormLayout::FieldRole);
 
-    layout->replaceWidget(label1, label2);
+    delete layout->replaceWidget(label1, label2);
     label1->hide();
     QCOMPARE(layout->indexOf(label1), -1);
     QCOMPARE(layout->indexOf(label2), labelIndex);

@@ -52,9 +52,9 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtGui/private/qtguiglobal_p.h>
 
-#ifndef QT_NO_SYSTEMTRAYICON
+QT_REQUIRE_CONFIG(systemtrayicon);
 
 #include <QIcon>
 #include <QTemporaryFile>
@@ -165,5 +165,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SYSTEMTRAYICON
 #endif // QDBUSTRAYICON_H

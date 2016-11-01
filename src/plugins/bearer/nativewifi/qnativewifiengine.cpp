@@ -459,7 +459,7 @@ void QNativeWifiEngine::disconnectFromId(const QString &id)
         return;
     }
 
-    QStringList split = interface.mid(1, interface.length() - 2).split('-');
+    const QVector<QStringRef> split = interface.midRef(1, interface.length() - 2).split(QLatin1Char('-'));
 
     GUID guid;
     guid.Data1 = split.at(0).toUInt(0, 16);

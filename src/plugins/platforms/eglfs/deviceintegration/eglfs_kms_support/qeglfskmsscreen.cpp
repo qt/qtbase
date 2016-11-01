@@ -46,7 +46,7 @@
 #include <QtCore/QLoggingCategory>
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtPlatformSupport/private/qfbvthandler_p.h>
+#include <QtFbSupport/private/qfbvthandler_p.h>
 
 QT_BEGIN_NAMESPACE
 

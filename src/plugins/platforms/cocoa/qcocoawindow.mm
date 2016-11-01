@@ -436,6 +436,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_topContentBorderThickness(0)
     , m_bottomContentBorderThickness(0)
     , m_normalGeometry(QRect(0,0,-1,-1))
+    , m_hasWindowFilePath(false)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::QCocoaWindow" << window();
 
@@ -990,6 +991,7 @@ void QCocoaWindow::setWindowFilePath(const QString &filePath)
 
     QFileInfo fi(filePath);
     [m_nsWindow setRepresentedFilename:fi.exists() ? filePath.toNSString() : @""];
+    m_hasWindowFilePath = fi.exists();
 }
 
 void QCocoaWindow::setWindowIcon(const QIcon &icon)

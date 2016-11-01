@@ -49,7 +49,7 @@
 #include <QSizeGrip>
 
 QT_BEGIN_NAMESPACE
-#if !defined(Q_DEAD_CODE_FROM_QT4_WIN)
+#if 1 // Used to be excluded in Qt4 for Q_WS_WIN
 extern bool qt_tab_all_widgets();
 #endif
 QT_END_NAMESPACE

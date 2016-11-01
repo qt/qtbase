@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include "qeglfskmsegldeviceintegration.h"
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
 #include "private/qeglfswindow_p.h"
 #include "private/qeglfscursor_p.h"
 #include "qeglfskmsegldevice.h"

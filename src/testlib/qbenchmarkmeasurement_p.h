@@ -51,8 +51,6 @@
 // We mean it.
 //
 
-#include <QtCore/qelapsedtimer.h>
-#include <QtTest/private/cycle_p.h>
 #include <QtTest/qbenchmark.h>
 
 QT_BEGIN_NAMESPACE
@@ -72,40 +70,6 @@ public:
     virtual bool needsWarmupIteration() { return false; }
     virtual QTest::QBenchmarkMetric metricType() = 0;
 };
-
-class QBenchmarkTimeMeasurer : public QBenchmarkMeasurerBase
-{
-public:
-    void start();
-    qint64 checkpoint();
-    qint64 stop();
-    bool isMeasurementAccepted(qint64 measurement);
-    int adjustIterationCount(int sugestion);
-    int adjustMedianCount(int suggestion);
-    bool needsWarmupIteration();
-    QTest::QBenchmarkMetric metricType();
-private:
-    QElapsedTimer time;
-};
-
-#ifdef HAVE_TICK_COUNTER // defined in 3rdparty/cycle_p.h
-
-class QBenchmarkTickMeasurer : public QBenchmarkMeasurerBase
-{
-public:
-    void start();
-    qint64 checkpoint();
-    qint64 stop();
-    bool isMeasurementAccepted(qint64 measurement);
-    int adjustIterationCount(int);
-    int adjustMedianCount(int suggestion);
-    bool needsWarmupIteration();
-    QTest::QBenchmarkMetric metricType();
-private:
-    CycleCounterTicks startTicks;
-};
-
-#endif
 
 QT_END_NAMESPACE
 

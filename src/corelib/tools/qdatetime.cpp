@@ -873,6 +873,7 @@ QString QDate::toString(Qt::DateFormat format) const
         return toStringTextDate(*this);
 #endif
     case Qt::ISODate:
+    case Qt::ISODateWithMs:
         return toStringIsoDate(jd);
     }
 }
@@ -1569,7 +1570,9 @@ int QTime::msec() const
 
     If \a format is Qt::ISODate, the string format corresponds to the
     ISO 8601 extended specification for representations of dates,
-    which is also HH:mm:ss.
+    represented by HH:mm:ss. To include milliseconds in the ISO 8601
+    date, use the \a format Qt::ISODateWithMs, which corresponds to
+    HH:mm:ss.zzz.
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale
@@ -1611,6 +1614,8 @@ QString QTime::toString(Qt::DateFormat format) const
         return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
+    case Qt::ISODateWithMs:
+        return QString::asprintf("%02d:%02d:%02d.%03d", hour(), minute(), second(), msec());
     case Qt::RFC2822Date:
     case Qt::ISODate:
     case Qt::TextDate:
@@ -1642,9 +1647,11 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li z \li the milliseconds without leading zeroes (0 to 999)
     \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
     \row \li AP or A
-         \li use AM/PM display. \e A/AP will be replaced by either "AM" or "PM".
+         \li use AM/PM display. \e A/AP will be replaced by either
+             QLocale::amText() or QLocale::pmText().
     \row \li ap or a
-         \li use am/pm display. \e a/ap will be replaced by either "am" or "pm".
+         \li use am/pm display. \e a/ap will be replaced by a lower-case version of
+             QLocale::amText() or QLocale::pmText().
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
@@ -1653,7 +1660,8 @@ QString QTime::toString(Qt::DateFormat format) const
     expression. Two consecutive single quotes ("''") are replaced by a singlequote
     in the output. Formats without separators (e.g. "HHmm") are currently not supported.
 
-    Example format strings (assuming that the QTime is 14:13:09.042)
+    Example format strings (assuming that the QTime is 14:13:09.042 and the system
+    locale is \c{en_US})
 
     \table
     \header \li Format \li Result
@@ -1917,7 +1925,8 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
         }
     }
 
-    if (format == Qt::ISODate && hour == 24 && minute == 0 && second == 0 && msec == 0) {
+    const bool isISODate = format == Qt::ISODate || format == Qt::ISODateWithMs;
+    if (isISODate && hour == 24 && minute == 0 && second == 0 && msec == 0) {
         if (isMidnight24)
             *isMidnight24 = true;
         hour = 0;
@@ -1959,6 +1968,7 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
     case Qt::RFC2822Date:
         return rfcDateImpl(string).time;
     case Qt::ISODate:
+    case Qt::ISODateWithMs:
     case Qt::TextDate:
     default:
         return fromIsoTimeString(&string, format, 0);
@@ -3715,7 +3725,9 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     depending on the timeSpec() of the QDateTime. If the timeSpec()
     is Qt::UTC, Z will be appended to the string; if the timeSpec() is
     Qt::OffsetFromUTC, the offset in hours and minutes from UTC will
-    be appended to the string.
+    be appended to the string. To include milliseconds in the ISO 8601
+    date, use the \a format Qt::ISODateWithMs, which corresponds to
+    YYYY-MM-DDTHH:mm:ss.zzz[Z|[+|-]HH:mm].
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale
@@ -3786,7 +3798,8 @@ QString QDateTime::toString(Qt::DateFormat format) const
         return buf;
     }
 #endif
-    case Qt::ISODate: {
+    case Qt::ISODate:
+    case Qt::ISODateWithMs: {
         const QPair<QDate, QTime> p = getDateTime(d);
         const QDate &dt = p.first;
         const QTime &tm = p.second;
@@ -3794,7 +3807,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
         if (buf.isEmpty())
             return QString();   // failed to convert
         buf += QLatin1Char('T');
-        buf += tm.toString(Qt::ISODate);
+        buf += tm.toString(format);
         switch (getSpec(d)) {
         case Qt::UTC:
             buf += QLatin1Char('Z');
@@ -4653,7 +4666,8 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         dateTime.setOffsetFromUtc(rfc.utcOffset);
         return dateTime;
     }
-    case Qt::ISODate: {
+    case Qt::ISODate:
+    case Qt::ISODateWithMs: {
         const int size = string.size();
         if (size < 10)
             return QDateTime();
@@ -4701,7 +4715,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         // Might be end of day (24:00, including variants), which QTime considers invalid.
         // ISO 8601 (section 4.2.3) says that 24:00 is equivalent to 00:00 the next day.
         bool isMidnight24 = false;
-        QTime time = fromIsoTimeString(isoString, Qt::ISODate, &isMidnight24);
+        QTime time = fromIsoTimeString(isoString, format, &isMidnight24);
         if (!time.isValid())
             return QDateTime();
         if (isMidnight24)

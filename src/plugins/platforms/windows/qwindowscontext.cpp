@@ -73,7 +73,7 @@
 #include <QtCore/QScopedArrayPointer>
 #include <QtCore/private/qsystemlibrary_p.h>
 
-#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
+#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -85,7 +85,6 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcQpaWindows, "qt.qpa.windows")
 Q_LOGGING_CATEGORY(lcQpaBackingStore, "qt.qpa.backingstore")
 Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
-Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
 Q_LOGGING_CATEGORY(lcQpaGl, "qt.qpa.gl")
 Q_LOGGING_CATEGORY(lcQpaMime, "qt.qpa.mime")
 Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods")

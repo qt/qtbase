@@ -1,0 +1,57 @@
+
+defineReplace(qtMakeExpand) {
+    out = "$$1"
+    for(ever) {
+        m = $$replace(out, ".*\\$\\(EXPORT_([^)]+)\\).*", \\1)
+        equals(m, $$out): \
+            return($$out)
+        out = $$replace(out, "\\$\\(EXPORT_$$m\\)", $$eval($$m))
+    }
+}
+
+isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
+    #
+    # Get default include and library paths from compiler
+    #
+    gcc {
+        !equals(QMAKE_HOST.os, Windows) {
+            cmd_prefix = "LC_ALL=C"
+            cmd_suffix = "</dev/null >/dev/null"
+        } else {
+            cmd_prefix = "set LC_ALL=C&"
+            cmd_suffix = "<NUL >NUL"
+        }
+        output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$QMAKE_CXXFLAGS) -xc++ -E -v - 2>&1 $$cmd_suffix", lines)
+        add_includes = false
+        for (line, output) {
+            line ~= s/^ *//  # remove leading spaces
+            contains(line, "LIBRARY_PATH=.*") {
+                line ~= s/^LIBRARY_PATH=//  # remove leading LIBRARY_PATH=
+                paths = $$split(line, $$QMAKE_DIRLIST_SEP)
+                for (path, paths): \
+                    QMAKE_DEFAULT_LIBDIRS += $$clean_path($$path)
+            } else: contains(line, "$${LITERAL_HASH}include <.*") {  # #include <...> search starts here:
+                add_includes = true
+            } else: contains(line, "End of search.*") {
+                add_includes = false
+            } else: $$add_includes {
+                !contains(line, ".* \\(framework directory\\)"): \
+                    QMAKE_DEFAULT_INCDIRS += $$clean_path($$line)
+            }
+        }
+        QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
+    } else: msvc {
+        LIB = $$getenv("LIB")
+        QMAKE_DEFAULT_LIBDIRS = $$split(LIB, $$QMAKE_DIRLIST_SEP)
+        INCLUDE = $$getenv("INCLUDE")
+        QMAKE_DEFAULT_INCDIRS = $$split(INCLUDE, $$QMAKE_DIRLIST_SEP)
+    }
+
+    unix {
+        isEmpty(QMAKE_DEFAULT_INCDIRS): QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include
+        isEmpty(QMAKE_DEFAULT_LIBDIRS): QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib
+    }
+
+    !isEmpty(QMAKE_DEFAULT_INCDIRS): cache(QMAKE_DEFAULT_INCDIRS, set stash)
+    !isEmpty(QMAKE_DEFAULT_LIBDIRS): cache(QMAKE_DEFAULT_LIBDIRS, set stash)
+}

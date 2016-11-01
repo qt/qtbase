@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include <QtGui/qgenericplugin.h>
-#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -34,7 +34,7 @@
 #ifndef QINTEGRITYFBSCREEN_H
 #define QINTEGRITYFBSCREEN_H
 
-#include <QtPlatformSupport/private/qfbscreen_p.h>
+#include <QtFbSupport/private/qfbscreen_p.h>
 #include <device/fbdriver.h>
 
 QT_BEGIN_NAMESPACE

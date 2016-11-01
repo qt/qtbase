@@ -35,9 +35,6 @@ else: \
 MODULE_PRI = $$mod_inst_pfx/qt_lib_$${MODULE_ID}.pri
 MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
 
-exists($$OUT_PWD/qt$${MODULE}-config.pri): \
-    include($$OUT_PWD/qt$${MODULE}-config.pri)
-
 defineReplace(qtGetFeaturesForModule) {
     enabled = $$unique(QT.$${1}.enabled_features)
     disabled = $$unique(QT.$${1}.disabled_features)
@@ -60,8 +57,7 @@ defineReplace(qtExportLibsForModule) {
         NAME = $$upper($$lib)
         vars = \
             QMAKE_LIBS_$$NAME QMAKE_LIBS_$${NAME}_DEBUG QMAKE_LIBS_$${NAME}_RELEASE \
-            QMAKE_CFLAGS_$$NAME QMAKE_INCDIR_$$NAME QMAKE_$${NAME}_VERSION \
-            QMAKE_$${NAME}_VERSION_MAJOR QMAKE_$${NAME}_VERSION_MINOR QMAKE_$${NAME}_VERSION_PATCH
+            QMAKE_DEFINES_$$NAME QMAKE_INCDIR_$$NAME
         for (var, vars) {
             !isEmpty($$var): \
                 result += "$$var = $$val_escape($$var)"
@@ -105,7 +101,7 @@ defineReplace(qtExportLibsForModule) {
     else: \
         module_config =
     !isEmpty(MODULE_PLUGIN_TYPES): \
-        module_plugtypes = "QT.$${MODULE_ID}.plugin_types = $$replace(MODULE_PLUGIN_TYPES, /.*$, )"
+        module_plugtypes = "QT.$${MODULE_ID}.plugin_types = $$replace(MODULE_PLUGIN_TYPES, /[^.]+\\.[^.]+$, )"
     else: \
         module_plugtypes =
     !isEmpty(MODULE_MASTER_HEADER): \
@@ -134,6 +130,7 @@ defineReplace(qtExportLibsForModule) {
     MODULE_PRI_CONT += \
         "QT.$${MODULE_ID}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_rundep \
+        "QT.$${MODULE_ID}.uses =$$join(QMAKE_USE, " ", " ")" \
         "QT.$${MODULE_ID}.module_config =$$join(module_build_type, " ", " ")" \
         $$module_config \
         "QT.$${MODULE_ID}.DEFINES = $$val_escape(MODULE_DEFINES)" \
@@ -164,6 +161,7 @@ defineReplace(qtExportLibsForModule) {
             "QT.$${MODULE}_private.includes = $$MODULE_PRIVATE_INCLUDES" \
             "QT.$${MODULE}_private.frameworks =" \
             "QT.$${MODULE}_private.depends = $$private_deps" \
+            "QT.$${MODULE}_private.uses =$$join(QMAKE_USE_FOR_PRIVATE, " ", " ")" \
             "QT.$${MODULE}_private.module_config =$$join(module_build_type, " ", " ")" \
             $$qtGetFeaturesForModule($${MODULE}_private) \
             "" \

@@ -165,8 +165,7 @@
             requestedGeometry : qt_window_private(m_qioswindow->window())->geometry;
 
     QWindow *window = m_qioswindow->window();
-    QWindowSystemInterface::handleGeometryChange(window, actualGeometry, previousGeometry);
-    QWindowSystemInterface::flushWindowSystemEvents(window->inherits("QWidgetWindow") ? QEventLoop::ExcludeUserInputEvents : QEventLoop::AllEvents);
+    QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(window, actualGeometry, previousGeometry);
 
     if (actualGeometry.size() != previousGeometry.size()) {
         // Trigger expose event on resize
@@ -198,8 +197,7 @@
         region = QRect(QPoint(), bounds);
     }
 
-    QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), region);
 }
 
 // -------------------------------------------------------------------------
@@ -224,13 +222,10 @@
 
     qImDebug() << m_qioswindow->window() << "became first responder";
 
-    if (qGuiApp->focusWindow() != m_qioswindow->window()) {
-        QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
-        QWindowSystemInterface::flushWindowSystemEvents();
-    } else {
-        qImDebug() << m_qioswindow->window()
-            << "already active, not sending window activation";
-    }
+    if (qGuiApp->focusWindow() != m_qioswindow->window())
+        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window());
+    else
+        qImDebug() << m_qioswindow->window() << "already active, not sending window activation";
 
     return YES;
 }
@@ -265,10 +260,8 @@
     qImDebug() << m_qioswindow->window() << "resigned first responder";
 
     UIResponder *newResponder = FirstResponderCandidate::currentCandidate();
-    if ([self responderShouldTriggerWindowDeactivation:newResponder]) {
-        QWindowSystemInterface::handleWindowActivated(0);
-        QWindowSystemInterface::flushWindowSystemEvents();
-    }
+    if ([self responderShouldTriggerWindowDeactivation:newResponder])
+        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(0);
 
     return YES;
 }
@@ -358,10 +351,8 @@
 
 - (void)sendTouchEventWithTimestamp:(ulong)timeStamp
 {
-    // Send touch event synchronously
     QIOSIntegration *iosIntegration = QIOSIntegration::instance();
-    QWindowSystemInterface::handleTouchEvent(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -439,10 +430,8 @@
 
     NSTimeInterval timestamp = event ? event.timestamp : [[NSProcessInfo processInfo] systemUptime];
 
-    // Send cancel touch event synchronously
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    QWindowSystemInterface::handleTouchCancelEvent(m_qioswindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindowSystemInterface::handleTouchCancelEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
 }
 
 - (int)mapPressTypeToKey:(UIPress*)press
@@ -465,14 +454,12 @@
     // When handling the event (for example, as a back button), both press and
     // release events must be handled accordingly.
 
-    QScopedValueRollback<bool> syncRollback(QWindowSystemInterfacePrivate::synchronousWindowSystemEvents, true);
-
     bool handled = false;
     for (UIPress* press in presses) {
         int key = [self mapPressTypeToKey:press];
         if (key == Qt::Key_unknown)
             continue;
-        if (QWindowSystemInterface::handleKeyEvent(m_qioswindow->window(), type, key, Qt::NoModifier))
+        if (QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), type, key, Qt::NoModifier))
             handled = true;
     }
 

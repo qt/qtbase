@@ -60,7 +60,14 @@
                     },
                     "condition": "config.win32 && !features.shared"
                 },
-                { "libs": "-lssleay32 -llibeay32", "condition": "config.win32 && features.shared" },
+                {
+                    "libs": "-lssleay32 -llibeay32",
+                    "builds": {
+                        "debug": "",
+                        "release": ""
+                    },
+                    "condition": "config.win32 && features.shared"
+                },
                 { "libs": "-lssl -lcrypto", "condition": "!config.win32" }
             ]
         }

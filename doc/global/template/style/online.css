@@ -1280,6 +1280,12 @@ li a.active {
   margin-top:0.75em;
   max-width:100%
 }
+.context .border img {
+   box-shadow:3px 3px 8px 3px rgba(200,200,200,0.5)
+ }
+.context .border .player {
+   box-shadow:3px 3px 8px 3px rgba(200,200,200,0.5)
+ }
 .context table {
   vertical-align:initial
 }
@@ -1364,7 +1370,7 @@ div.qt_commercial {
   border-top:5px solid #5caa15;
   margin-bottom:50px
 }
-pre {
+pre, .LegaleseLeft {
   background-color:#404244;
   color:#fff;
   display:block;
@@ -1374,6 +1380,10 @@ pre {
   margin-bottom:25px;
   padding:25px;
   margin-top:0.75em
+}
+.mainContent .LegaleseLeft p {
+  color:#fff;
+  white-space: pre-wrap
 }
 .copy_text {
   background-color:#46a2da;

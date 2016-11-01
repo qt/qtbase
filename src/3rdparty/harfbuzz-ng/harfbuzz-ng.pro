@@ -1,9 +1,11 @@
-TARGET = qtharfbuzzng
+TARGET = qtharfbuzz
 
 CONFIG += \
     static \
     hide_symbols \
     exceptions_off rtti_off warn_off
+
+MODULE_INCLUDEPATH += $$PWD/include
 
 load(qt_helper_lib)
 
@@ -23,8 +25,6 @@ win32: DEFINES += HB_NO_WIN1256
 
 #Workaround https://code.google.com/p/android/issues/detail?id=194631
 android: DEFINES += _POSIX_C_SOURCE=200112L
-
-INCLUDEPATH += $$PWD/include
 
 # Harfbuzz-NG inside Qt uses the Qt atomics (inline code only)
 INCLUDEPATH += $$QT.core.includes
