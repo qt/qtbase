@@ -4,8 +4,9 @@
         "Name": "Callgrind",
         "QDocModule": "qttestlib",
         "QtUsage": "Used on Linux ond MacOS in the Qt Test module.",
+        "Files": "valgrind_p.h callgrind_p.h",
 
-        "Description": "callgrind_p.h is part of Valgrind: an instrumentation framework for building dynamic analysis tools.",
+        "Description": "Part of Valgrind: an instrumentation framework for building dynamic analysis tools.",
         "Homepage": "http://valgrind.org/",
         "License": "BSD 4-clause \"Original\" or \"Old\" License",
         "LicenseId": "BSD-4-Clause",
@@ -17,8 +18,9 @@
         "Name": "Cycle",
         "QDocModule": "qttestlib",
         "QtUsage": "Used in the Qt Test module.",
+        "Files": "cycle_p.h",
 
-        "Description": "cycle_p.h allows to access the CPU's cycle counters.",
+        "Description": "Allows to access the CPU's cycle counters.",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "CYCLE_LICENSE.txt",
@@ -30,8 +32,9 @@ Copyright (c) 2003, 2006 Massachusetts Institute of Technology"
         "Name": "Linux Performance Events",
         "QDocModule": "qttestlib",
         "QtUsage": "Used on Linux and Android in the Qt Test module.",
+        "Files": "linux_perf_event_p.h",
 
-        "Description": "linux_perf_event_p.h allows access to the LInux kernel's performance events.",
+        "Description": "Allows access to the Linux kernel's performance events.",
         "License": "GNU General Public License v2.0 only",
         "LicenseId": "GPL-2.0",
         "LicenseFile": "LINUX_LICENSE.txt",
