@@ -721,7 +721,7 @@ defineTest(qtConfTest_compile) {
         qmake_args += -qtconf $$system_quote($$QMAKE_QTCONF)
 
     # Disable qmake features which are typically counterproductive for tests
-    qmake_args += "\"CONFIG -= qt debug_and_release simulator app_bundle lib_bundle\""
+    qmake_args += "\"CONFIG -= qt debug_and_release app_bundle lib_bundle\""
 
     # allow tests to behave differently depending on the type of library
     # being built (shared/static). e.g. see config.tests/unix/icu
