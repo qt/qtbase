@@ -641,7 +641,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     QByteArray readOrigin;
     // Do not read the whole datagram. Put the rest of it back into the "queue"
     if (maxlen < datagram.data.length()) {
-        QByteArray readOrigin = datagram.data.left(maxlen);
+        readOrigin = datagram.data.left(maxlen);
         datagram.data = datagram.data.remove(0, maxlen);
         d->pendingDatagrams.prepend(datagram);
     } else {
