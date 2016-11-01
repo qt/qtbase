@@ -1274,11 +1274,11 @@ bool QAbstractSocketPrivate::readFromSocket()
     }
 
     if (!socketEngine->isValid()) {
-        setErrorAndEmit(socketEngine->error(), socketEngine->errorString());
 #if defined(QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocketPrivate::readFromSocket() read failed: %s",
-               q->errorString().toLatin1().constData());
+               socketEngine->errorString().toLatin1().constData());
 #endif
+        setErrorAndEmit(socketEngine->error(), socketEngine->errorString());
         resetSocketLayer();
         return false;
     }
