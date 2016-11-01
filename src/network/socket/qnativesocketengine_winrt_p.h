@@ -214,6 +214,8 @@ private:
         { return reinterpret_cast<ABI::Windows::Networking::Sockets::IDatagramSocket *>(socketDescriptor); }
     Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocketListener> tcpListener;
     Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncAction> connectOp;
+
+    // Protected by readOperationsMutex. Written in handleReadyRead (native callback)
     QVector<Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32>>> pendingReadOps;
 
     // Protected by readMutex. Written in handleReadyRead (native callback)
@@ -223,6 +225,9 @@ private:
     // pendingDatagrams. They are written inside native callbacks (handleReadyRead and
     // handleNewDatagrams/putIntoPendingDatagramsList)
     mutable QMutex readMutex;
+
+    // As pendingReadOps is changed inside handleReadyRead(native callback) it has to be protected
+    QMutex readOperationsMutex;
 
     bool emitOnNewDatagram;
 

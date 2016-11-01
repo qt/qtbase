@@ -329,6 +329,7 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
             hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, readOp.GetAddressOf());
             RETURN_OK_IF_FAILED_WITH_ARGS("initialize(): Failed to read from the socket buffer (%s).",
                               socketDescription(this).constData());
+            QMutexLocker locker(&d->readOperationsMutex);
             d->pendingReadOps.append(readOp);
             d->socketState = socketState;
             hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
@@ -574,6 +575,7 @@ void QNativeSocketEngine::close()
     }
 #endif // _MSC_VER >= 1900
 
+    QMutexLocker locker(&d->readOperationsMutex);
     for (ComPtr<IAsyncBufferOperation> readOp : d->pendingReadOps) {
         ComPtr<IAsyncInfo> info;
         hr = readOp.As(&info);
@@ -585,6 +587,7 @@ void QNativeSocketEngine::close()
             Q_ASSERT_SUCCEEDED(hr);
         }
     }
+    locker.unlock();
 
     if (d->socketDescriptor != -1) {
         ComPtr<IClosable> socket;
@@ -945,6 +948,7 @@ void QNativeSocketEngine::establishRead()
         ComPtr<IAsyncBufferOperation> readOp;
         hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, readOp.GetAddressOf());
         RETURN_HR_IF_FAILED("establishRead(): Failed to initiate socket read");
+        QMutexLocker locker(&d->readOperationsMutex);
         d->pendingReadOps.append(readOp);
         hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
         RETURN_HR_IF_FAILED("establishRead(): Failed to register read callback");
@@ -1421,12 +1425,14 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     }
 
     Q_Q(QNativeSocketEngine);
+    QMutexLocker locker(&readOperationsMutex);
     for (int i = 0; i < pendingReadOps.count(); ++i) {
         if (pendingReadOps.at(i).Get() == asyncInfo) {
             pendingReadOps.takeAt(i);
             break;
         }
     }
+    locker.unlock();
 
     static QMutex mutex;
     mutex.lock();
@@ -1503,6 +1509,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
                           socketDescription(q).constData());
             return S_OK;
         }
+        QMutexLocker locker(&readOperationsMutex);
         pendingReadOps.append(readOp);
         hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(this, &QNativeSocketEnginePrivate::handleReadyRead).Get());
         if (FAILED(hr)) {
