@@ -127,6 +127,11 @@ void QMacPageSetupDialogPrivate::openCocoaPageLayout(Qt::WindowModality modality
     QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) alloc] initWithNSPrintInfo:printInfo];
 
     if (modality == Qt::ApplicationModal) {
+
+        // Make sure we don't interrupt the runModalWithPrintInfo call.
+        (void) QMetaObject::invokeMethod(qApp->platformNativeInterface(),
+                                         "clearCurrentThreadCocoaEventDispatcherInterruptFlag");
+
         int rval = [pageLayout runModalWithPrintInfo:printInfo];
         [delegate pageLayoutDidEnd:pageLayout returnCode:rval contextInfo:q];
     } else {

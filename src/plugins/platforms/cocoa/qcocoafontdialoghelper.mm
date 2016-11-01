@@ -43,6 +43,7 @@
 #include <private/qfontengine_coretext_p.h>
 
 #include "qcocoahelpers.h"
+#include "qcocoaeventdispatcher.h"
 
 #import <AppKit/AppKit.h>
 
@@ -313,6 +314,10 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
     // cleanup of modal sessions. Do this before showing the native dialog, otherwise it will
     // close down during the cleanup.
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
+
+    // Make sure we don't interrupt the runModalForWindow call.
+    QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
+
     [NSApp runModalForWindow:mFontPanel];
     mDialogIsExecuting = false;
     return (mResultCode == NSOKButton);
