@@ -125,6 +125,8 @@ public:
     void interrupt();
     void flush();
 
+    static void clearCurrentThreadCocoaEventDispatcherInterruptFlag();
+
     friend void qt_mac_maybeCancelWaitForMoreEventsForwarder(QAbstractEventDispatcher *eventDispatcher);
 };
 

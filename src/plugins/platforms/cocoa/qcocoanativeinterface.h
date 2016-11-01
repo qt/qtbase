@@ -96,6 +96,8 @@ private:
     */
     Q_INVOKABLE QPixmap defaultBackgroundPixmapForQWizard();
 
+    Q_INVOKABLE void clearCurrentThreadCocoaEventDispatcherInterruptFlag();
+
     // QMacPastebardMime support. The mac pasteboard void pointers are
     // QMacPastebardMime instances from the cocoa plugin or qtmacextras
     // These two classes are kept in sync and can be casted between.
