@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014-2015 Canonical, Ltd.
+** Copyright (C) 2014-2016 Canonical, Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -43,7 +43,6 @@
 
 // Qt
 #include <qpa/qwindowsysteminterface.h>
-#include <QAtomicInt>
 
 #include <mir_toolkit/mir_client_library.h>
 
@@ -63,7 +62,7 @@ public:
 
     void postEvent(QMirClientWindow* window, const MirEvent *event);
     QMirClientClientIntegration* integration() const { return mIntegration; }
-    QMirClientWindow *lastFocusedWindow() const {return mLastFocusedWindow; }
+    QMirClientWindow *lastInputWindow() const {return mLastInputWindow; }
 
 protected:
     void dispatchKeyEvent(QMirClientWindow *window, const MirInputEvent *event);
@@ -72,6 +71,8 @@ protected:
     void dispatchInputEvent(QMirClientWindow *window, const MirInputEvent *event);
 
     void dispatchOrientationEvent(QWindow* window, const MirOrientationEvent *event);
+    void handleSurfaceEvent(const QPointer<QMirClientWindow> &window, const MirSurfaceEvent *event);
+    void handleSurfaceOutputEvent(const QPointer<QMirClientWindow> &window, const MirSurfaceOutputEvent *event);
 
 private:
     QMirClientClientIntegration* mIntegration;
@@ -79,8 +80,7 @@ private:
     const QByteArray mEventFilterType;
     const QEvent::Type mEventType;
 
-    QMirClientWindow *mLastFocusedWindow;
-    QAtomicInt mPendingFocusGainedEvents;
+    QMirClientWindow *mLastInputWindow;
 };
 
 #endif // QMIRCLIENTINPUT_H

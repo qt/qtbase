@@ -168,7 +168,7 @@
             "label": "Mir client libraries",
             "test": "qpa/mirclient",
             "sources": [
-                { "type": "pkgConfig", "args": "egl mirclient ubuntu-platform-api" }
+                { "type": "pkgConfig", "args": "egl mirclient ubuntu-platform-api libcontent-hub" }
             ]
         },
         "mtdev": {

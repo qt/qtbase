@@ -40,19 +40,16 @@
 
 #include "qmirclientplugin.h"
 #include "qmirclientintegration.h"
+#include "qmirclientlogging.h"
 
-QStringList QMirClientIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << QStringLiteral("mirclient");
-    return list;
-}
+Q_LOGGING_CATEGORY(mirclient, "qt.qpa.mirclient", QtWarningMsg)
 
-QPlatformIntegration* QMirClientIntegrationPlugin::create(const QString &system,
-                                                               const QStringList &)
+QPlatformIntegration *QMirClientIntegrationPlugin::create(const QString &system,
+                                                          const QStringList &/*paramList*/,
+                                                          int &argc, char **argv)
 {
     if (system.toLower() == QLatin1String("mirclient")) {
-        return new QMirClientClientIntegration;
+        return new QMirClientClientIntegration(argc, argv);
     } else {
         return 0;
     }

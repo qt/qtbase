@@ -49,8 +49,8 @@ class QMirClientIntegrationPlugin : public QPlatformIntegrationPlugin
     Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "mirclient.json")
 
 public:
-    QStringList keys() const;
-    QPlatformIntegration* create(const QString&, const QStringList&);
+    QPlatformIntegration *create(const QString &system, const QStringList &paramList,
+                                 int &argc, char **argv) override;
 };
 
 #endif // QMIRCLIENTPLUGIN_H

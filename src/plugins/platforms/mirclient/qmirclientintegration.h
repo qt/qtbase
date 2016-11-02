@@ -44,20 +44,28 @@
 #include <qpa/qplatformintegration.h>
 #include <QSharedPointer>
 
+#include "qmirclientappstatecontroller.h"
 #include "qmirclientplatformservices.h"
+#include "qmirclientscreenobserver.h"
 
 // platform-api
 #include <ubuntu/application/description.h>
 #include <ubuntu/application/instance.h>
 
-class QMirClientClipboard;
+#include <EGL/egl.h>
+
+class QMirClientDebugExtension;
 class QMirClientInput;
 class QMirClientNativeInterface;
 class QMirClientScreen;
+class MirConnection;
 
-class QMirClientClientIntegration : public QPlatformIntegration {
+class QMirClientClientIntegration : public QObject, public QPlatformIntegration
+{
+    Q_OBJECT
+
 public:
-    QMirClientClientIntegration();
+    QMirClientClientIntegration(int argc, char **argv);
     virtual ~QMirClientClientIntegration();
 
     // QPlatformIntegration methods.
@@ -74,14 +82,26 @@ public:
     QPlatformWindow* createPlatformWindow(QWindow* window) const override;
     QPlatformInputContext* inputContext() const override { return mInputContext; }
     QPlatformClipboard* clipboard() const override;
+    void initialize() override;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
+    QPlatformAccessibility *accessibility() const override;
 
-    QPlatformOpenGLContext* createPlatformOpenGLContext(QOpenGLContext* context);
-    QPlatformWindow* createPlatformWindow(QWindow* window);
-    QMirClientScreen* screen() const;
+    // New methods.
+    MirConnection *mirConnection() const { return mMirConnection; }
+    EGLDisplay eglDisplay() const { return mEglDisplay; }
+    EGLNativeDisplayType eglNativeDisplay() const { return mEglNativeDisplay; }
+    QMirClientAppStateController *appStateController() const { return mAppStateController.data(); }
+    QMirClientScreenObserver *screenObserver() const { return mScreenObserver.data(); }
+    QMirClientDebugExtension *debugExtension() const { return mDebugExtension.data(); }
+
+private Q_SLOTS:
+    void destroyScreen(QMirClientScreen *screen);
 
 private:
-    void setupOptions();
-    void setupDescription();
+    void setupOptions(QStringList &args);
+    void setupDescription(QByteArray &sessionName);
+    static QByteArray generateSessionName(QStringList &args);
+    static QByteArray generateSessionNameFromQmlFile(QStringList &args);
 
     QMirClientNativeInterface* mNativeInterface;
     QPlatformFontDatabase* mFontDb;
@@ -90,13 +110,22 @@ private:
 
     QMirClientInput* mInput;
     QPlatformInputContext* mInputContext;
-    QSharedPointer<QMirClientClipboard> mClipboard;
+    mutable QScopedPointer<QPlatformAccessibility> mAccessibility;
+    QScopedPointer<QMirClientDebugExtension> mDebugExtension;
+    QScopedPointer<QMirClientScreenObserver> mScreenObserver;
+    QScopedPointer<QMirClientAppStateController> mAppStateController;
     qreal mScaleFactor;
+
+    MirConnection *mMirConnection;
 
     // Platform API stuff
     UApplicationOptions* mOptions;
     UApplicationDescription* mDesc;
     UApplicationInstance* mInstance;
+
+    // EGL related
+    EGLDisplay mEglDisplay{EGL_NO_DISPLAY};
+    EGLNativeDisplayType mEglNativeDisplay;
 };
 
 #endif // QMIRCLIENTINTEGRATION_H

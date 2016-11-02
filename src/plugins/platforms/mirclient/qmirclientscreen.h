@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014-2015 Canonical, Ltd.
+** Copyright (C) 2014-2016 Canonical, Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -43,17 +43,19 @@
 
 #include <qpa/qplatformscreen.h>
 #include <QSurfaceFormat>
-#include <EGL/egl.h>
+
+#include <mir_toolkit/common.h> // just for MirFormFactor enum
 
 #include "qmirclientcursor.h"
 
 struct MirConnection;
+struct MirOutput;
 
 class QMirClientScreen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
-    QMirClientScreen(MirConnection *connection);
+    QMirClientScreen(const MirOutput *output, MirConnection *connection);
     virtual ~QMirClientScreen();
 
     // QPlatformScreen methods.
@@ -62,34 +64,43 @@ public:
     QRect geometry() const override { return mGeometry; }
     QRect availableGeometry() const override { return mGeometry; }
     QSizeF physicalSize() const override { return mPhysicalSize; }
+    qreal devicePixelRatio() const override { return mDevicePixelRatio; }
+    QDpi logicalDpi() const override;
     Qt::ScreenOrientation nativeOrientation() const override { return mNativeOrientation; }
     Qt::ScreenOrientation orientation() const override { return mNativeOrientation; }
     QPlatformCursor *cursor() const override { return const_cast<QMirClientCursor*>(&mCursor); }
 
-    // New methods.
-    QSurfaceFormat surfaceFormat() const { return mSurfaceFormat; }
-    EGLDisplay eglDisplay() const { return mEglDisplay; }
-    EGLConfig eglConfig() const { return mEglConfig; }
-    EGLNativeDisplayType eglNativeDisplay() const { return mEglNativeDisplay; }
+    // Additional Screen properties from Mir
+    int mirOutputId() const { return mOutputId; }
+    MirFormFactor formFactor() const { return mFormFactor; }
+    float scale() const { return mScale; }
+
+    // Internally used methods
+    void updateMirOutput(const MirOutput *output);
+    void setAdditionalMirDisplayProperties(float scale, MirFormFactor formFactor, int dpi);
     void handleWindowSurfaceResize(int width, int height);
-    uint32_t mirOutputId() const { return mOutputId; }
 
     // QObject methods.
     void customEvent(QEvent* event) override;
 
 private:
-    QRect mGeometry;
+    void setMirOutput(const MirOutput *output);
+
+    QRect mGeometry, mNativeGeometry;
     QSizeF mPhysicalSize;
+    qreal mDevicePixelRatio;
     Qt::ScreenOrientation mNativeOrientation;
     Qt::ScreenOrientation mCurrentOrientation;
     QImage::Format mFormat;
     int mDepth;
-    uint32_t mOutputId;
-    QSurfaceFormat mSurfaceFormat;
-    EGLDisplay mEglDisplay;
-    EGLConfig mEglConfig;
-    EGLNativeDisplayType mEglNativeDisplay;
+    int mDpi;
+    qreal mRefreshRate;
+    MirFormFactor mFormFactor;
+    float mScale;
+    int mOutputId;
     QMirClientCursor mCursor;
+
+    friend class QMirClientNativeInterface;
 };
 
 #endif // QMIRCLIENTSCREEN_H

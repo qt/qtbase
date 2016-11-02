@@ -39,123 +39,94 @@
 
 
 #include "qmirclientglcontext.h"
-#include "qmirclientwindow.h"
 #include "qmirclientlogging.h"
+#include "qmirclientwindow.h"
+
+#include <QOpenGLFramebufferObject>
 #include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglpbuffer_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
-#include <dlfcn.h>
 
-#if !defined(QT_NO_DEBUG)
-static void printOpenGLESConfig() {
-  static bool once = true;
-  if (once) {
-    const char* string = (const char*) glGetString(GL_VENDOR);
-    LOG("OpenGL ES vendor: %s", string);
-    string = (const char*) glGetString(GL_RENDERER);
-    LOG("OpenGL ES renderer: %s", string);
-    string = (const char*) glGetString(GL_VERSION);
-    LOG("OpenGL ES version: %s", string);
-    string = (const char*) glGetString(GL_SHADING_LANGUAGE_VERSION);
-    LOG("OpenGL ES Shading Language version: %s", string);
-    string = (const char*) glGetString(GL_EXTENSIONS);
-    LOG("OpenGL ES extensions: %s", string);
-    once = false;
-  }
-}
-#endif
+Q_LOGGING_CATEGORY(mirclientGraphics, "qt.qpa.mirclient.graphics", QtWarningMsg)
 
-static EGLenum api_in_use()
+namespace {
+
+void printEglConfig(EGLDisplay display, EGLConfig config)
 {
-#ifdef QTUBUNTU_USE_OPENGL
-    return EGL_OPENGL_API;
-#else
-    return EGL_OPENGL_ES_API;
-#endif
+    Q_ASSERT(display != EGL_NO_DISPLAY);
+    Q_ASSERT(config != nullptr);
+
+    const char *string = eglQueryString(display, EGL_VENDOR);
+    qCDebug(mirclientGraphics, "EGL vendor: %s", string);
+
+    string = eglQueryString(display, EGL_VERSION);
+    qCDebug(mirclientGraphics, "EGL version: %s", string);
+
+    string = eglQueryString(display, EGL_EXTENSIONS);
+    qCDebug(mirclientGraphics, "EGL extensions: %s", string);
+
+    qCDebug(mirclientGraphics, "EGL configuration attributes:");
+    q_printEglConfig(display, config);
 }
 
-QMirClientOpenGLContext::QMirClientOpenGLContext(QMirClientScreen* screen, QMirClientOpenGLContext* share)
+} // anonymous namespace
+
+QMirClientOpenGLContext::QMirClientOpenGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
+                                         EGLDisplay display)
+    : QEGLPlatformContext(format, share, display, 0)
 {
-    ASSERT(screen != NULL);
-    mEglDisplay = screen->eglDisplay();
-    mScreen = screen;
-
-    // Create an OpenGL ES 2 context.
-    QVector<EGLint> attribs;
-    attribs.append(EGL_CONTEXT_CLIENT_VERSION);
-    attribs.append(2);
-    attribs.append(EGL_NONE);
-    ASSERT(eglBindAPI(api_in_use()) == EGL_TRUE);
-
-    mEglContext = eglCreateContext(mEglDisplay, screen->eglConfig(), share ? share->eglContext() : EGL_NO_CONTEXT,
-                                   attribs.constData());
-    DASSERT(mEglContext != EGL_NO_CONTEXT);
+    if (mirclientGraphics().isDebugEnabled()) {
+        printEglConfig(display, eglConfig());
+    }
 }
 
-QMirClientOpenGLContext::~QMirClientOpenGLContext()
+static bool needsFBOReadBackWorkaround()
 {
-    ASSERT(eglDestroyContext(mEglDisplay, mEglContext) == EGL_TRUE);
+    static bool set = false;
+    static bool needsWorkaround = false;
+
+    if (Q_UNLIKELY(!set)) {
+        const char *rendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+        needsWorkaround = qstrncmp(rendererString, "Mali-400", 8) == 0
+                          || qstrncmp(rendererString, "Mali-T7", 7) == 0
+                          || qstrncmp(rendererString, "PowerVR Rogue G6200", 19) == 0;
+        set = true;
+    }
+
+    return needsWorkaround;
 }
 
 bool QMirClientOpenGLContext::makeCurrent(QPlatformSurface* surface)
 {
-    DASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
-    EGLSurface eglSurface = static_cast<QMirClientWindow*>(surface)->eglSurface();
-#if defined(QT_NO_DEBUG)
-    eglBindAPI(api_in_use());
-    eglMakeCurrent(mEglDisplay, eglSurface, eglSurface, mEglContext);
-#else
-    ASSERT(eglBindAPI(api_in_use()) == EGL_TRUE);
-    ASSERT(eglMakeCurrent(mEglDisplay, eglSurface, eglSurface, mEglContext) == EGL_TRUE);
-    printOpenGLESConfig();
-#endif
+    const bool ret = QEGLPlatformContext::makeCurrent(surface);
 
-    // When running on the emulator, shaders will be compiled using a thin wrapper around the desktop drivers.
-    // These wrappers might not support the precision qualifiers, so set the workaround flag to true.
-    const char *rendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
-    if (rendererString != 0 && qstrncmp(rendererString, "Android Emulator", 16) == 0) {
+    if (Q_LIKELY(ret)) {
         QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(context());
-        ctx_d->workaround_missingPrecisionQualifiers = true;
+        if (!ctx_d->workaround_brokenFBOReadBack && needsFBOReadBackWorkaround()) {
+            ctx_d->workaround_brokenFBOReadBack = true;
+        }
     }
-
-    return true;
+    return ret;
 }
 
-void QMirClientOpenGLContext::doneCurrent()
+// Following method used internally in the base class QEGLPlatformContext to access
+// the egl surface of a QPlatformSurface/QMirClientWindow
+EGLSurface QMirClientOpenGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
 {
-#if defined(QT_NO_DEBUG)
-    eglBindAPI(api_in_use());
-    eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-#else
-    ASSERT(eglBindAPI(api_in_use()) == EGL_TRUE);
-    ASSERT(eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_TRUE);
-#endif
+    if (surface->surface()->surfaceClass() == QSurface::Window) {
+        return static_cast<QMirClientWindow *>(surface)->eglSurface();
+    } else {
+        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
+    }
 }
 
 void QMirClientOpenGLContext::swapBuffers(QPlatformSurface* surface)
 {
-    QMirClientWindow *ubuntuWindow = static_cast<QMirClientWindow*>(surface);
+    QEGLPlatformContext::swapBuffers(surface);
 
-    EGLSurface eglSurface = ubuntuWindow->eglSurface();
-#if defined(QT_NO_DEBUG)
-    eglBindAPI(api_in_use());
-    eglSwapBuffers(mEglDisplay, eglSurface);
-#else
-    ASSERT(eglBindAPI(api_in_use()) == EGL_TRUE);
-    ASSERT(eglSwapBuffers(mEglDisplay, eglSurface) == EGL_TRUE);
-#endif
-
-    ubuntuWindow->onSwapBuffersDone();
-}
-
-QFunctionPointer QMirClientOpenGLContext::getProcAddress(const char *procName)
-{
-#if defined(QT_NO_DEBUG)
-    eglBindAPI(api_in_use());
-#else
-    ASSERT(eglBindAPI(api_in_use()) == EGL_TRUE);
-#endif
-    QFunctionPointer proc = (QFunctionPointer) eglGetProcAddress(procName);
-    if (!proc)
-        proc = (QFunctionPointer) dlsym(RTLD_DEFAULT, procName);
-    return proc;
+    if (surface->surface()->surfaceClass() == QSurface::Window) {
+        // notify window on swap completion
+        auto platformWindow = static_cast<QMirClientWindow *>(surface);
+        platformWindow->onSwapBuffersDone();
+    }
 }

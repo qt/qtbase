@@ -38,55 +38,65 @@
 ****************************************************************************/
 
 
-#ifndef QMIRCLIENTCLIPBOARD_H
-#define QMIRCLIENTCLIPBOARD_H
+#include "qmirclientappstatecontroller.h"
 
-#include <qpa/qplatformclipboard.h>
+#include <qpa/qwindowsysteminterface.h>
 
-#include <QMimeData>
-#include <QPointer>
+/*
+ * QMirClientAppStateController - updates Qt's QApplication::applicationState property.
+ *
+ * Tries to avoid active-inactive-active invocations using a timer. The rapid state
+ * change can confuse some applications.
+ */
 
-namespace com {
-    namespace ubuntu {
-        namespace content {
-            class Hub;
+QMirClientAppStateController::QMirClientAppStateController()
+    : m_suspended(false)
+    , m_lastActive(true)
+{
+    m_inactiveTimer.setSingleShot(true);
+    m_inactiveTimer.setInterval(10);
+    QObject::connect(&m_inactiveTimer, &QTimer::timeout, []()
+    {
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationInactive);
+    });
+}
+
+void QMirClientAppStateController::setSuspended()
+{
+    m_inactiveTimer.stop();
+    if (!m_suspended) {
+        m_suspended = true;
+
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationSuspended);
+    }
+}
+
+void QMirClientAppStateController::setResumed()
+{
+    m_inactiveTimer.stop();
+    if (m_suspended) {
+        m_suspended = false;
+
+        if (m_lastActive) {
+            QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
+        } else {
+            QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationInactive);
         }
     }
 }
 
-class QDBusPendingCallWatcher;
-
-class QMirClientClipboard : public QObject, public QPlatformClipboard
+void QMirClientAppStateController::setWindowFocused(bool focused)
 {
-    Q_OBJECT
-public:
-    QMirClientClipboard();
-    virtual ~QMirClientClipboard();
+    if (m_suspended) {
+        return;
+    }
 
-    // QPlatformClipboard methods.
-    QMimeData* mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
-    void setMimeData(QMimeData* data, QClipboard::Mode mode = QClipboard::Clipboard) override;
-    bool supportsMode(QClipboard::Mode mode) const override;
-    bool ownsMode(QClipboard::Mode mode) const override;
+    if (focused) {
+        m_inactiveTimer.stop();
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
+    } else {
+        m_inactiveTimer.start();
+    }
 
-private Q_SLOTS:
-    void onApplicationStateChanged(Qt::ApplicationState state);
-
-private:
-    void updateMimeData();
-    void requestMimeData();
-
-    QMimeData *mMimeData;
-
-    enum {
-        OutdatedClipboard, // Our mimeData is outdated, need to fetch latest from ContentHub
-        SyncingClipboard, // Our mimeData is outdated and we are waiting for ContentHub to reply with the latest paste
-        SyncedClipboard // Our mimeData is in sync with what ContentHub has
-    } mClipboardState{OutdatedClipboard};
-
-    com::ubuntu::content::Hub *mContentHub;
-
-    QDBusPendingCallWatcher *mPasteReply{nullptr};
-};
-
-#endif // QMIRCLIENTCLIPBOARD_H
+    m_lastActive = focused;
+}

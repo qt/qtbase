@@ -58,6 +58,7 @@ public:
     void flush(QWindow* window, const QRegion& region, const QPoint& offset) override;
     void resize(const QSize& size, const QRegion& staticContents) override;
     QPaintDevice* paintDevice() override;
+    QImage toImage() const override;
 
 protected:
     void updateTexture();

@@ -43,11 +43,16 @@
 
 #include <qpa/qplatformnativeinterface.h>
 
-class QMirClientNativeInterface : public QPlatformNativeInterface {
-public:
-    enum ResourceType { EglDisplay, EglContext, NativeOrientation, Display, MirConnection };
+#include "qmirclientintegration.h"
 
-    QMirClientNativeInterface();
+class QPlatformScreen;
+
+class QMirClientNativeInterface : public QPlatformNativeInterface {
+    Q_OBJECT
+public:
+    enum ResourceType { EglDisplay, EglContext, NativeOrientation, Display, MirConnection, MirSurface, Scale, FormFactor };
+
+    QMirClientNativeInterface(const QMirClientClientIntegration *integration);
     ~QMirClientNativeInterface();
 
     // QPlatformNativeInterface methods.
@@ -59,14 +64,20 @@ public:
     void* nativeResourceForScreen(const QByteArray& resourceString,
                                   QScreen* screen) override;
 
+    QVariantMap windowProperties(QPlatformWindow *window) const override;
+    QVariant windowProperty(QPlatformWindow *window, const QString &name) const override;
+    QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const override;
+
     // New methods.
     const QByteArray& genericEventFilterType() const { return mGenericEventFilterType; }
-    void setMirConnection(void *mirConnection) { mMirConnection = mirConnection; }
+
+Q_SIGNALS: // New signals
+    void screenPropertyChanged(QPlatformScreen *screen, const QString &propertyName);
 
 private:
+    const QMirClientClientIntegration *mIntegration;
     const QByteArray mGenericEventFilterType;
     Qt::ScreenOrientation* mNativeOrientation;
-    void *mMirConnection;
 };
 
 #endif // QMIRCLIENTNATIVEINTERFACE_H

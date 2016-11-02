@@ -38,55 +38,42 @@
 ****************************************************************************/
 
 
-#ifndef QMIRCLIENTCLIPBOARD_H
-#define QMIRCLIENTCLIPBOARD_H
+#include "qmirclientdebugextension.h"
 
-#include <qpa/qplatformclipboard.h>
+#include "qmirclientlogging.h"
 
-#include <QMimeData>
-#include <QPointer>
+// mir client debug
+#include <mir_toolkit/debug/surface.h>
 
-namespace com {
-    namespace ubuntu {
-        namespace content {
-            class Hub;
-        }
+Q_LOGGING_CATEGORY(mirclientDebug, "qt.qpa.mirclient.debug")
+
+QMirClientDebugExtension::QMirClientDebugExtension()
+    : m_mirclientDebug(QStringLiteral("mirclient-debug-extension"), 1)
+    , m_mapper(nullptr)
+{
+    qCDebug(mirclientDebug) << "NOTICE: Loading mirclient-debug-extension";
+    m_mapper = (MapperPrototype) m_mirclientDebug.resolve("mir_debug_surface_coords_to_screen");
+
+    if (!m_mirclientDebug.isLoaded()) {
+        qCWarning(mirclientDebug) << "ERROR: mirclient-debug-extension failed to load:"
+                                  << m_mirclientDebug.errorString();
+    } else if (!m_mapper) {
+        qCWarning(mirclientDebug) << "ERROR: unable to find required symbols in mirclient-debug-extension:"
+                                  << m_mirclientDebug.errorString();
     }
 }
 
-class QDBusPendingCallWatcher;
-
-class QMirClientClipboard : public QObject, public QPlatformClipboard
+QPoint QMirClientDebugExtension::mapSurfacePointToScreen(MirSurface *surface, const QPoint &point)
 {
-    Q_OBJECT
-public:
-    QMirClientClipboard();
-    virtual ~QMirClientClipboard();
+    if (!m_mapper) {
+        return point;
+    }
 
-    // QPlatformClipboard methods.
-    QMimeData* mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
-    void setMimeData(QMimeData* data, QClipboard::Mode mode = QClipboard::Clipboard) override;
-    bool supportsMode(QClipboard::Mode mode) const override;
-    bool ownsMode(QClipboard::Mode mode) const override;
-
-private Q_SLOTS:
-    void onApplicationStateChanged(Qt::ApplicationState state);
-
-private:
-    void updateMimeData();
-    void requestMimeData();
-
-    QMimeData *mMimeData;
-
-    enum {
-        OutdatedClipboard, // Our mimeData is outdated, need to fetch latest from ContentHub
-        SyncingClipboard, // Our mimeData is outdated and we are waiting for ContentHub to reply with the latest paste
-        SyncedClipboard // Our mimeData is in sync with what ContentHub has
-    } mClipboardState{OutdatedClipboard};
-
-    com::ubuntu::content::Hub *mContentHub;
-
-    QDBusPendingCallWatcher *mPasteReply{nullptr};
-};
-
-#endif // QMIRCLIENTCLIPBOARD_H
+    QPoint mappedPoint;
+    bool status = m_mapper(surface, point.x(), point.y(), &mappedPoint.rx(), &mappedPoint.ry());
+    if (status) {
+        return mappedPoint;
+    } else {
+        return point;
+    }
+}

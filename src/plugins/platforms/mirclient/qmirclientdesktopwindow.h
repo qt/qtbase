@@ -38,55 +38,16 @@
 ****************************************************************************/
 
 
-#ifndef QMIRCLIENTCLIPBOARD_H
-#define QMIRCLIENTCLIPBOARD_H
+#ifndef QMIRCLIENTDESKTOPWINDOW_H
+#define QMIRCLIENTDESKTOPWINDOW_H
 
-#include <qpa/qplatformclipboard.h>
+#include <qpa/qplatformwindow.h>
 
-#include <QMimeData>
-#include <QPointer>
-
-namespace com {
-    namespace ubuntu {
-        namespace content {
-            class Hub;
-        }
-    }
-}
-
-class QDBusPendingCallWatcher;
-
-class QMirClientClipboard : public QObject, public QPlatformClipboard
+// TODO Implement it. For now it's just an empty, dummy class.
+class QMirClientDesktopWindow : public QPlatformWindow
 {
-    Q_OBJECT
 public:
-    QMirClientClipboard();
-    virtual ~QMirClientClipboard();
-
-    // QPlatformClipboard methods.
-    QMimeData* mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
-    void setMimeData(QMimeData* data, QClipboard::Mode mode = QClipboard::Clipboard) override;
-    bool supportsMode(QClipboard::Mode mode) const override;
-    bool ownsMode(QClipboard::Mode mode) const override;
-
-private Q_SLOTS:
-    void onApplicationStateChanged(Qt::ApplicationState state);
-
-private:
-    void updateMimeData();
-    void requestMimeData();
-
-    QMimeData *mMimeData;
-
-    enum {
-        OutdatedClipboard, // Our mimeData is outdated, need to fetch latest from ContentHub
-        SyncingClipboard, // Our mimeData is outdated and we are waiting for ContentHub to reply with the latest paste
-        SyncedClipboard // Our mimeData is in sync with what ContentHub has
-    } mClipboardState{OutdatedClipboard};
-
-    com::ubuntu::content::Hub *mContentHub;
-
-    QDBusPendingCallWatcher *mPasteReply{nullptr};
+    QMirClientDesktopWindow(QWindow*);
 };
 
-#endif // QMIRCLIENTCLIPBOARD_H
+#endif // QMIRCLIENTDESKTOPWINDOW_H

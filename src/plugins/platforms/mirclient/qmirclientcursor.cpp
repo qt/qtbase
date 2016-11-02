@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Canonical, Ltd.
+** Copyright (C) 2015-2016 Canonical, Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -45,35 +45,41 @@
 
 #include <mir_toolkit/mir_client_library.h>
 
+Q_LOGGING_CATEGORY(mirclientCursor, "qt.qpa.mirclient.cursor", QtWarningMsg)
+
 QMirClientCursor::QMirClientCursor(MirConnection *connection)
     : mConnection(connection)
 {
-    mShapeToCursorName[Qt::ArrowCursor] = "left_ptr";
+    /*
+     * TODO: Add the missing cursors to Mir (LP: #1388987)
+     *       Those are the ones without a mir_ prefix, which are X11 cursors
+     *       and won't be understood by any shell other than Unity8.
+     */
+    mShapeToCursorName[Qt::ArrowCursor] = mir_arrow_cursor_name;
     mShapeToCursorName[Qt::UpArrowCursor] = "up_arrow";
-    mShapeToCursorName[Qt::CrossCursor] = "cross";
-    mShapeToCursorName[Qt::WaitCursor] = "watch";
-    mShapeToCursorName[Qt::IBeamCursor] = "xterm";
-    mShapeToCursorName[Qt::SizeVerCursor] = "size_ver";
-    mShapeToCursorName[Qt::SizeHorCursor] = "size_hor";
-    mShapeToCursorName[Qt::SizeBDiagCursor] = "size_bdiag";
-    mShapeToCursorName[Qt::SizeFDiagCursor] = "size_fdiag";
-    mShapeToCursorName[Qt::SizeAllCursor] = "size_all";
-    mShapeToCursorName[Qt::BlankCursor] = "blank";
-    mShapeToCursorName[Qt::SplitVCursor] = "split_v";
-    mShapeToCursorName[Qt::SplitHCursor] = "split_h";
-    mShapeToCursorName[Qt::PointingHandCursor] = "hand";
+    mShapeToCursorName[Qt::CrossCursor] = mir_crosshair_cursor_name;
+    mShapeToCursorName[Qt::WaitCursor] = mir_busy_cursor_name;
+    mShapeToCursorName[Qt::IBeamCursor] = mir_caret_cursor_name;
+    mShapeToCursorName[Qt::SizeVerCursor] = mir_vertical_resize_cursor_name;
+    mShapeToCursorName[Qt::SizeHorCursor] = mir_horizontal_resize_cursor_name;
+    mShapeToCursorName[Qt::SizeBDiagCursor] = mir_diagonal_resize_bottom_to_top_cursor_name;
+    mShapeToCursorName[Qt::SizeFDiagCursor] = mir_diagonal_resize_top_to_bottom_cursor_name;
+    mShapeToCursorName[Qt::SizeAllCursor] = mir_omnidirectional_resize_cursor_name;
+    mShapeToCursorName[Qt::BlankCursor] = mir_disabled_cursor_name;
+    mShapeToCursorName[Qt::SplitVCursor] = mir_vsplit_resize_cursor_name;
+    mShapeToCursorName[Qt::SplitHCursor] = mir_hsplit_resize_cursor_name;
+    mShapeToCursorName[Qt::PointingHandCursor] = mir_pointing_hand_cursor_name;
     mShapeToCursorName[Qt::ForbiddenCursor] = "forbidden";
     mShapeToCursorName[Qt::WhatsThisCursor] = "whats_this";
     mShapeToCursorName[Qt::BusyCursor] = "left_ptr_watch";
-    mShapeToCursorName[Qt::OpenHandCursor] = "openhand";
-    mShapeToCursorName[Qt::ClosedHandCursor] = "closedhand";
+    mShapeToCursorName[Qt::OpenHandCursor] = mir_open_hand_cursor_name;
+    mShapeToCursorName[Qt::ClosedHandCursor] = mir_closed_hand_cursor_name;
     mShapeToCursorName[Qt::DragCopyCursor] = "dnd-copy";
     mShapeToCursorName[Qt::DragMoveCursor] = "dnd-move";
     mShapeToCursorName[Qt::DragLinkCursor] = "dnd-link";
 }
 
 namespace {
-#if !defined(QT_NO_DEBUG)
 const char *qtCursorShapeToStr(Qt::CursorShape shape)
 {
     switch (shape) {
@@ -127,7 +133,6 @@ const char *qtCursorShapeToStr(Qt::CursorShape shape)
         return "???";
     }
 }
-#endif // !defined(QT_NO_DEBUG)
 } // anonymous namespace
 
 void QMirClientCursor::changeCursor(QCursor *windowCursor, QWindow *window)
@@ -144,7 +149,7 @@ void QMirClientCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 
 
     if (windowCursor) {
-        DLOG("[ubuntumirclient QPA] changeCursor shape=%s, window=%p\n", qtCursorShapeToStr(windowCursor->shape()), window);
+        qCDebug(mirclientCursor, "changeCursor shape=%s, window=%p", qtCursorShapeToStr(windowCursor->shape()), window);
         if (!windowCursor->pixmap().isNull()) {
             configureMirCursorWithPixmapQCursor(surface, *windowCursor);
         } else if (windowCursor->shape() == Qt::BitmapCursor) {

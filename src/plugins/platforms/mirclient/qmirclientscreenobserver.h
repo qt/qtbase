@@ -38,55 +38,41 @@
 ****************************************************************************/
 
 
-#ifndef QMIRCLIENTCLIPBOARD_H
-#define QMIRCLIENTCLIPBOARD_H
+#ifndef QMIRCLIENTSCREENOBSERVER_H
+#define QMIRCLIENTSCREENOBSERVER_H
 
-#include <qpa/qplatformclipboard.h>
+#include <QObject>
 
-#include <QMimeData>
-#include <QPointer>
+#include <mir_toolkit/mir_connection.h>
 
-namespace com {
-    namespace ubuntu {
-        namespace content {
-            class Hub;
-        }
-    }
-}
+class QMirClientScreen;
 
-class QDBusPendingCallWatcher;
-
-class QMirClientClipboard : public QObject, public QPlatformClipboard
+class QMirClientScreenObserver : public QObject
 {
     Q_OBJECT
-public:
-    QMirClientClipboard();
-    virtual ~QMirClientClipboard();
 
-    // QPlatformClipboard methods.
-    QMimeData* mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
-    void setMimeData(QMimeData* data, QClipboard::Mode mode = QClipboard::Clipboard) override;
-    bool supportsMode(QClipboard::Mode mode) const override;
-    bool ownsMode(QClipboard::Mode mode) const override;
+public:
+    QMirClientScreenObserver(MirConnection *connection);
+
+    QList<QMirClientScreen*> screens() const { return mScreenList; }
+    QMirClientScreen *findScreenWithId(int id);
+
+    void handleScreenPropertiesChange(QMirClientScreen *screen, int dpi,
+                                      MirFormFactor formFactor, float scale);
+
+Q_SIGNALS:
+    void screenAdded(QMirClientScreen *screen);
+    void screenRemoved(QMirClientScreen *screen);
 
 private Q_SLOTS:
-    void onApplicationStateChanged(Qt::ApplicationState state);
+    void update();
 
 private:
-    void updateMimeData();
-    void requestMimeData();
+    QMirClientScreen *findScreenWithId(const QList<QMirClientScreen *> &list, int id);
+    void removeScreen(QMirClientScreen *screen);
 
-    QMimeData *mMimeData;
-
-    enum {
-        OutdatedClipboard, // Our mimeData is outdated, need to fetch latest from ContentHub
-        SyncingClipboard, // Our mimeData is outdated and we are waiting for ContentHub to reply with the latest paste
-        SyncedClipboard // Our mimeData is in sync with what ContentHub has
-    } mClipboardState{OutdatedClipboard};
-
-    com::ubuntu::content::Hub *mContentHub;
-
-    QDBusPendingCallWatcher *mPasteReply{nullptr};
+    MirConnection *mMirConnection;
+    QList<QMirClientScreen*> mScreenList;
 };
 
-#endif // QMIRCLIENTCLIPBOARD_H
+#endif // QMIRCLIENTSCREENOBSERVER_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014-2015 Canonical, Ltd.
+** Copyright (C) 2014-2016 Canonical, Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -48,21 +48,23 @@
 #include "qmirclientorientationchangeevent_p.h"
 
 // Qt
-#if !defined(QT_NO_DEBUG)
 #include <QtCore/QThread>
-#endif
 #include <QtCore/qglobal.h>
 #include <QtCore/QCoreApplication>
-#include <private/qguiapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <QTextCodec>
 
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
 
 #include <mir_toolkit/mir_client_library.h>
 
-#define LOG_EVENTS 0
+Q_LOGGING_CATEGORY(mirclientInput, "qt.qpa.mirclient.input", QtWarningMsg)
+
+namespace
+{
 
 // XKB Keysyms which do not map directly to Qt types (i.e. Unicode points)
 static const uint32_t KeyTable[] = {
@@ -134,6 +136,27 @@ static const uint32_t KeyTable[] = {
     XKB_KEY_MultipleCandidate,       Qt::Key_MultipleCandidate,
     XKB_KEY_PreviousCandidate,       Qt::Key_PreviousCandidate,
 
+    // dead keys
+    XKB_KEY_dead_grave,              Qt::Key_Dead_Grave,
+    XKB_KEY_dead_acute,              Qt::Key_Dead_Acute,
+    XKB_KEY_dead_circumflex,         Qt::Key_Dead_Circumflex,
+    XKB_KEY_dead_tilde,              Qt::Key_Dead_Tilde,
+    XKB_KEY_dead_macron,             Qt::Key_Dead_Macron,
+    XKB_KEY_dead_breve,              Qt::Key_Dead_Breve,
+    XKB_KEY_dead_abovedot,           Qt::Key_Dead_Abovedot,
+    XKB_KEY_dead_diaeresis,          Qt::Key_Dead_Diaeresis,
+    XKB_KEY_dead_abovering,          Qt::Key_Dead_Abovering,
+    XKB_KEY_dead_doubleacute,        Qt::Key_Dead_Doubleacute,
+    XKB_KEY_dead_caron,              Qt::Key_Dead_Caron,
+    XKB_KEY_dead_cedilla,            Qt::Key_Dead_Cedilla,
+    XKB_KEY_dead_ogonek,             Qt::Key_Dead_Ogonek,
+    XKB_KEY_dead_iota,               Qt::Key_Dead_Iota,
+    XKB_KEY_dead_voiced_sound,       Qt::Key_Dead_Voiced_Sound,
+    XKB_KEY_dead_semivoiced_sound,   Qt::Key_Dead_Semivoiced_Sound,
+    XKB_KEY_dead_belowdot,           Qt::Key_Dead_Belowdot,
+    XKB_KEY_dead_hook,               Qt::Key_Dead_Hook,
+    XKB_KEY_dead_horn,               Qt::Key_Dead_Horn,
+
     XKB_KEY_Mode_switch,             Qt::Key_Mode_switch,
     XKB_KEY_script_switch,           Qt::Key_Mode_switch,
     XKB_KEY_XF86AudioRaiseVolume,    Qt::Key_VolumeUp,
@@ -144,14 +167,37 @@ static const uint32_t KeyTable[] = {
     0,                          0
 };
 
-class QMirClientEvent : public QEvent
+Qt::WindowState mirSurfaceStateToWindowState(MirSurfaceState state)
+{
+    switch (state) {
+    case mir_surface_state_fullscreen:
+        return Qt::WindowFullScreen;
+    case mir_surface_state_maximized:
+    case mir_surface_state_vertmaximized:
+    case mir_surface_state_horizmaximized:
+        return Qt::WindowMaximized;
+    case mir_surface_state_minimized:
+        return Qt::WindowMinimized;
+    case mir_surface_state_hidden:
+        // We should be handling this state separately.
+        Q_ASSERT(false);
+    case mir_surface_state_restored:
+    case mir_surface_state_unknown:
+    default:
+        return Qt::WindowNoState;
+    }
+}
+
+} // namespace
+
+class UbuntuEvent : public QEvent
 {
 public:
-    QMirClientEvent(QMirClientWindow* window, const MirEvent *event, QEvent::Type type)
+    UbuntuEvent(QMirClientWindow* window, const MirEvent *event, QEvent::Type type)
         : QEvent(type), window(window) {
         nativeEvent = mir_event_ref(event);
     }
-    ~QMirClientEvent()
+    ~UbuntuEvent()
     {
         mir_event_unref(nativeEvent);
     }
@@ -166,7 +212,7 @@ QMirClientInput::QMirClientInput(QMirClientClientIntegration* integration)
     , mEventFilterType(static_cast<QMirClientNativeInterface*>(
         integration->nativeInterface())->genericEventFilterType())
     , mEventType(static_cast<QEvent::Type>(QEvent::registerEventType()))
-    , mLastFocusedWindow(nullptr)
+    , mLastInputWindow(nullptr)
 {
     // Initialize touch device.
     mTouchDevice = new QTouchDevice;
@@ -182,42 +228,47 @@ QMirClientInput::~QMirClientInput()
   // Qt will take care of deleting mTouchDevice.
 }
 
-#if (LOG_EVENTS != 0)
 static const char* nativeEventTypeToStr(MirEventType t)
 {
     switch (t)
     {
     case mir_event_type_key:
-        return "mir_event_type_key";
+        return "key";
     case mir_event_type_motion:
-        return "mir_event_type_motion";
+        return "motion";
     case mir_event_type_surface:
-        return "mir_event_type_surface";
+        return "surface";
     case mir_event_type_resize:
-        return "mir_event_type_resize";
+        return "resize";
     case mir_event_type_prompt_session_state_change:
-        return "mir_event_type_prompt_session_state_change";
+        return "prompt_session_state_change";
     case mir_event_type_orientation:
-        return "mir_event_type_orientation";
+        return "orientation";
     case mir_event_type_close_surface:
-        return "mir_event_type_close_surface";
+        return "close_surface";
     case mir_event_type_input:
-        return "mir_event_type_input";
+        return "input";
+    case mir_event_type_keymap:
+        return "keymap";
+    case mir_event_type_input_configuration:
+        return "input_configuration";
+    case mir_event_type_surface_output:
+        return "surface_output";
+    case mir_event_type_input_device_state:
+        return "input_device_state";
     default:
-        DLOG("Invalid event type %d", t);
-        return "invalid";
+        return "unknown";
     }
 }
-#endif // LOG_EVENTS != 0
 
 void QMirClientInput::customEvent(QEvent* event)
 {
-    DASSERT(QThread::currentThread() == thread());
-    QMirClientEvent* ubuntuEvent = static_cast<QMirClientEvent*>(event);
+    Q_ASSERT(QThread::currentThread() == thread());
+    UbuntuEvent* ubuntuEvent = static_cast<UbuntuEvent*>(event);
     const MirEvent *nativeEvent = ubuntuEvent->nativeEvent;
 
     if ((ubuntuEvent->window == nullptr) || (ubuntuEvent->window->window() == nullptr)) {
-        qWarning("Attempted to deliver an event to a non-existent window, ignoring.");
+        qCWarning(mirclient) << "Attempted to deliver an event to a non-existent window, ignoring.";
         return;
     }
 
@@ -226,13 +277,11 @@ void QMirClientInput::customEvent(QEvent* event)
     if (QWindowSystemInterface::handleNativeEvent(
             ubuntuEvent->window->window(), mEventFilterType,
             const_cast<void *>(static_cast<const void *>(nativeEvent)), &result) == true) {
-        DLOG("event filtered out by native interface");
+        qCDebug(mirclient, "event filtered out by native interface");
         return;
     }
 
-    #if (LOG_EVENTS != 0)
-    LOG("QMirClientInput::customEvent(type=%s)", nativeEventTypeToStr(mir_event_get_type(nativeEvent)));
-    #endif
+    qCDebug(mirclientInput, "customEvent(type=%s)", nativeEventTypeToStr(mir_event_get_type(nativeEvent)));
 
     // Event dispatching.
     switch (mir_event_get_type(nativeEvent))
@@ -242,43 +291,30 @@ void QMirClientInput::customEvent(QEvent* event)
         break;
     case mir_event_type_resize:
     {
-        Q_ASSERT(ubuntuEvent->window->screen() == mIntegration->screen());
-
         auto resizeEvent = mir_event_get_resize_event(nativeEvent);
 
-        mIntegration->screen()->handleWindowSurfaceResize(
-                mir_resize_event_get_width(resizeEvent),
-                mir_resize_event_get_height(resizeEvent));
-
-        ubuntuEvent->window->handleSurfaceResized(mir_resize_event_get_width(resizeEvent),
-            mir_resize_event_get_height(resizeEvent));
-        break;
-    }
-    case mir_event_type_surface:
-    {
-        auto surfaceEvent = mir_event_get_surface_event(nativeEvent);
-        if (mir_surface_event_get_attribute(surfaceEvent) == mir_surface_attrib_focus) {
-            const bool focused = mir_surface_event_get_attribute_value(surfaceEvent) == mir_surface_focused;
-            // Mir may have sent a pair of focus lost/gained events, so we need to "peek" into the queue
-            // so that we don't deactivate windows prematurely.
-            if (focused) {
-                mPendingFocusGainedEvents--;
-                ubuntuEvent->window->handleSurfaceFocused();
-                QWindowSystemInterface::handleWindowActivated(ubuntuEvent->window->window(), Qt::ActiveWindowFocusReason);
-
-                // NB: Since processing of system events is queued, never check qGuiApp->applicationState()
-                //     as it might be outdated. Always call handleApplicationStateChanged() with the latest
-                //     state regardless.
-                QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
-
-            } else if (!mPendingFocusGainedEvents) {
-                DLOG("[ubuntumirclient QPA] No windows have focus");
-                QWindowSystemInterface::handleWindowActivated(nullptr, Qt::ActiveWindowFocusReason);
-                QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationInactive);
+        // Enable workaround for Screen rotation
+        auto const targetWindow = ubuntuEvent->window;
+        if (targetWindow) {
+            auto const screen = static_cast<QMirClientScreen*>(targetWindow->screen());
+            if (screen) {
+                screen->handleWindowSurfaceResize(
+                        mir_resize_event_get_width(resizeEvent),
+                        mir_resize_event_get_height(resizeEvent));
             }
+
+            targetWindow->handleSurfaceResized(
+                        mir_resize_event_get_width(resizeEvent),
+                        mir_resize_event_get_height(resizeEvent));
         }
         break;
     }
+    case mir_event_type_surface:
+        handleSurfaceEvent(ubuntuEvent->window, mir_event_get_surface_event(nativeEvent));
+        break;
+    case mir_event_type_surface_output:
+        handleSurfaceOutputEvent(ubuntuEvent->window, mir_event_get_surface_output_event(nativeEvent));
+        break;
     case mir_event_type_orientation:
         dispatchOrientationEvent(ubuntuEvent->window->window(), mir_event_get_orientation_event(nativeEvent));
         break;
@@ -286,7 +322,7 @@ void QMirClientInput::customEvent(QEvent* event)
         QWindowSystemInterface::handleCloseEvent(ubuntuEvent->window->window());
         break;
     default:
-        DLOG("unhandled event type: %d", static_cast<int>(mir_event_get_type(nativeEvent)));
+        qCDebug(mirclient, "unhandled event type: %d", static_cast<int>(mir_event_get_type(nativeEvent)));
     }
 }
 
@@ -294,22 +330,11 @@ void QMirClientInput::postEvent(QMirClientWindow *platformWindow, const MirEvent
 {
     QWindow *window = platformWindow->window();
 
-    const auto eventType = mir_event_get_type(event);
-    if (mir_event_type_surface == eventType) {
-        auto surfaceEvent = mir_event_get_surface_event(event);
-        if (mir_surface_attrib_focus == mir_surface_event_get_attribute(surfaceEvent)) {
-            const bool focused = mir_surface_event_get_attribute_value(surfaceEvent) == mir_surface_focused;
-            if (focused) {
-                mPendingFocusGainedEvents++;
-            }
-        }
-    }
-
-    QCoreApplication::postEvent(this, new QMirClientEvent(
+    QCoreApplication::postEvent(this, new UbuntuEvent(
             platformWindow, event, mEventType));
 
     if ((window->flags().testFlag(Qt::WindowTransparentForInput)) && window->parent()) {
-        QCoreApplication::postEvent(this, new QMirClientEvent(
+        QCoreApplication::postEvent(this, new UbuntuEvent(
                     static_cast<QMirClientWindow*>(platformWindow->QPlatformWindow::parent()),
                     event, mEventType));
     }
@@ -365,15 +390,17 @@ void QMirClientInput::dispatchTouchEvent(QMirClientWindow *window, const MirInpu
         switch (touch_action)
         {
         case mir_touch_action_down:
-            mLastFocusedWindow = window;
+            mLastInputWindow = window;
             touchPoint.state = Qt::TouchPointPressed;
             break;
         case mir_touch_action_up:
             touchPoint.state = Qt::TouchPointReleased;
             break;
         case mir_touch_action_change:
-        default:
             touchPoint.state = Qt::TouchPointMoved;
+            break;
+        default:
+            Q_UNREACHABLE();
         }
 
         touchPoints.append(touchPoint);
@@ -384,22 +411,26 @@ void QMirClientInput::dispatchTouchEvent(QMirClientWindow *window, const MirInpu
             mTouchDevice, touchPoints);
 }
 
-static uint32_t translateKeysym(uint32_t sym, char *string, size_t size)
-{
-    Q_UNUSED(size);
-    string[0] = '\0';
+static uint32_t translateKeysym(uint32_t sym, const QString &text) {
+    int code = 0;
 
-    if (sym >= XKB_KEY_F1 && sym <= XKB_KEY_F35)
+    QTextCodec *systemCodec = QTextCodec::codecForLocale();
+    if (sym < 128 || (sym < 256 && systemCodec->mibEnum() == 4)) {
+        // upper-case key, if known
+        code = isprint((int)sym) ? toupper((int)sym) : 0;
+    } else if (sym >= XKB_KEY_F1 && sym <= XKB_KEY_F35) {
         return Qt::Key_F1 + (int(sym) - XKB_KEY_F1);
-
-    for (int i = 0; KeyTable[i]; i += 2) {
-        if (sym == KeyTable[i])
-            return KeyTable[i + 1];
+    } else if (text.length() == 1 && text.unicode()->unicode() > 0x1f
+               && text.unicode()->unicode() != 0x7f
+               && !(sym >= XKB_KEY_dead_grave && sym <= XKB_KEY_dead_currency)) {
+        code = text.unicode()->toUpper().unicode();
+    } else {
+        for (int i = 0; KeyTable[i]; i += 2)
+            if (sym == KeyTable[i])
+                code = KeyTable[i + 1];
     }
 
-    string[0] = sym;
-    string[1] = '\0';
-    return toupper(sym);
+    return code;
 }
 
 namespace
@@ -413,11 +444,14 @@ Qt::KeyboardModifiers qt_modifiers_from_mir(MirInputEventModifiers modifiers)
     if (modifiers & mir_input_event_modifier_ctrl) {
         q_modifiers |= Qt::ControlModifier;
     }
-    if (modifiers & mir_input_event_modifier_alt) {
+    if (modifiers & mir_input_event_modifier_alt_left) {
         q_modifiers |= Qt::AltModifier;
     }
     if (modifiers & mir_input_event_modifier_meta) {
         q_modifiers |= Qt::MetaModifier;
+    }
+    if (modifiers & mir_input_event_modifier_alt_right) {
+        q_modifiers |= Qt::GroupSwitchModifier;
     }
     return q_modifiers;
 }
@@ -429,34 +463,43 @@ void QMirClientInput::dispatchKeyEvent(QMirClientWindow *window, const MirInputE
 
     ulong timestamp = mir_input_event_get_event_time(event) / 1000000;
     xkb_keysym_t xk_sym = mir_keyboard_event_key_code(key_event);
+    quint32 scan_code = mir_keyboard_event_scan_code(key_event);
+    quint32 native_modifiers = mir_keyboard_event_modifiers(key_event);
 
     // Key modifier and unicode index mapping.
-    auto modifiers = qt_modifiers_from_mir(mir_keyboard_event_modifiers(key_event));
+    auto modifiers = qt_modifiers_from_mir(native_modifiers);
 
     MirKeyboardAction action = mir_keyboard_event_action(key_event);
     QEvent::Type keyType = action == mir_keyboard_action_up
         ? QEvent::KeyRelease : QEvent::KeyPress;
 
     if (action == mir_keyboard_action_down)
-        mLastFocusedWindow = window;
+        mLastInputWindow = window;
 
-    char s[2];
-    int sym = translateKeysym(xk_sym, s, sizeof(s));
-    QString text = QString::fromLatin1(s);
+    QString text;
+    QVarLengthArray<char, 32> chars(32);
+    {
+        int result = xkb_keysym_to_utf8(xk_sym, chars.data(), chars.size());
+
+        if (result > 0) {
+            text = QString::fromUtf8(chars.constData());
+        }
+    }
+    int sym = translateKeysym(xk_sym, text);
 
     bool is_auto_rep = action == mir_keyboard_action_repeat;
 
     QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
     if (context) {
-        QKeyEvent qKeyEvent(keyType, sym, modifiers, text, is_auto_rep);
+        QKeyEvent qKeyEvent(keyType, sym, modifiers, scan_code, xk_sym, native_modifiers, text, is_auto_rep);
         qKeyEvent.setTimestamp(timestamp);
         if (context->filterEvent(&qKeyEvent)) {
-            DLOG("key event filtered out by input context");
+            qCDebug(mirclient, "key event filtered out by input context");
             return;
         }
     }
 
-    QWindowSystemInterface::handleKeyEvent(window->window(), timestamp, keyType, sym, modifiers, text, is_auto_rep);
+    QWindowSystemInterface::handleExtendedKeyEvent(window->window(), timestamp, keyType, sym, modifiers, scan_code, xk_sym, native_modifiers, text, is_auto_rep);
 }
 
 namespace
@@ -481,14 +524,17 @@ Qt::MouseButtons extract_buttons(const MirPointerEvent *pev)
 
 void QMirClientInput::dispatchPointerEvent(QMirClientWindow *platformWindow, const MirInputEvent *ev)
 {
-    auto window = platformWindow->window();
-    auto timestamp = mir_input_event_get_event_time(ev) / 1000000;
+    const auto window = platformWindow->window();
+    const auto timestamp = mir_input_event_get_event_time(ev) / 1000000;
 
-    auto pev = mir_input_event_get_pointer_event(ev);
-    auto action = mir_pointer_event_action(pev);
-    auto localPoint = QPointF(mir_pointer_event_axis_value(pev, mir_pointer_axis_x),
-                              mir_pointer_event_axis_value(pev, mir_pointer_axis_y));
-    auto modifiers = qt_modifiers_from_mir(mir_pointer_event_modifiers(pev));
+    const auto pev = mir_input_event_get_pointer_event(ev);
+    const auto action = mir_pointer_event_action(pev);
+
+    const auto modifiers = qt_modifiers_from_mir(mir_pointer_event_modifiers(pev));
+    const auto localPoint = QPointF(mir_pointer_event_axis_value(pev, mir_pointer_axis_x),
+                                    mir_pointer_event_axis_value(pev, mir_pointer_axis_y));
+
+    mLastInputWindow = platformWindow;
 
     switch (action) {
     case mir_pointer_action_button_up:
@@ -499,7 +545,8 @@ void QMirClientInput::dispatchPointerEvent(QMirClientWindow *platformWindow, con
         const float vDelta = mir_pointer_event_axis_value(pev, mir_pointer_axis_vscroll);
 
         if (hDelta != 0 || vDelta != 0) {
-            const QPoint angleDelta = QPoint(hDelta * 15, vDelta * 15);
+            // QWheelEvent::DefaultDeltasPerStep = 120 but doesn't exist on vivid
+            const QPoint angleDelta(120 * hDelta, 120 * vDelta);
             QWindowSystemInterface::handleWheelEvent(window, timestamp, localPoint, window->position() + localPoint,
                                                      QPoint(), angleDelta, modifiers, Qt::ScrollUpdate);
         }
@@ -515,42 +562,32 @@ void QMirClientInput::dispatchPointerEvent(QMirClientWindow *platformWindow, con
         QWindowSystemInterface::handleLeaveEvent(window);
         break;
     default:
-        DLOG("Unrecognized pointer event");
+        Q_UNREACHABLE();
     }
 }
 
-#if (LOG_EVENTS != 0)
 static const char* nativeOrientationDirectionToStr(MirOrientation orientation)
 {
     switch (orientation) {
     case mir_orientation_normal:
         return "Normal";
-        break;
     case mir_orientation_left:
         return "Left";
-        break;
     case mir_orientation_inverted:
         return "Inverted";
-        break;
     case mir_orientation_right:
         return "Right";
-        break;
-    default:
-        return "INVALID!";
     }
+    Q_UNREACHABLE();
 }
-#endif
 
 void QMirClientInput::dispatchOrientationEvent(QWindow *window, const MirOrientationEvent *event)
 {
     MirOrientation mir_orientation = mir_orientation_event_get_direction(event);
-    #if (LOG_EVENTS != 0)
-    // Orientation event logging.
-    LOG("ORIENTATION direction: %s", nativeOrientationDirectionToStr(mir_orientation));
-    #endif
+    qCDebug(mirclientInput, "orientation direction: %s", nativeOrientationDirectionToStr(mir_orientation));
 
     if (!window->screen()) {
-        DLOG("Window has no associated screen, dropping orientation event");
+        qCDebug(mirclient, "Window has no associated screen, dropping orientation event");
         return;
     }
 
@@ -569,7 +606,7 @@ void QMirClientInput::dispatchOrientationEvent(QWindow *window, const MirOrienta
         orientation = OrientationChangeEvent::RightUp;
         break;
     default:
-        DLOG("No such orientation %d", mir_orientation);
+        qCDebug(mirclient, "No such orientation %d", mir_orientation);
         return;
     }
 
@@ -581,3 +618,61 @@ void QMirClientInput::dispatchOrientationEvent(QWindow *window, const MirOrienta
                                 new OrientationChangeEvent(OrientationChangeEvent::mType, orientation));
 }
 
+void QMirClientInput::handleSurfaceEvent(const QPointer<QMirClientWindow> &window, const MirSurfaceEvent *event)
+{
+    auto surfaceEventAttribute = mir_surface_event_get_attribute(event);
+
+    switch (surfaceEventAttribute) {
+    case mir_surface_attrib_focus: {
+        window->handleSurfaceFocusChanged(
+                    mir_surface_event_get_attribute_value(event) == mir_surface_focused);
+        break;
+    }
+    case mir_surface_attrib_visibility: {
+        window->handleSurfaceExposeChange(
+                    mir_surface_event_get_attribute_value(event) == mir_surface_visibility_exposed);
+        break;
+    }
+    // Remaining attributes are ones client sets for server, and server should not override them
+    case mir_surface_attrib_state: {
+        MirSurfaceState state = static_cast<MirSurfaceState>(mir_surface_event_get_attribute_value(event));
+
+        if (state == mir_surface_state_hidden) {
+            window->handleSurfaceVisibilityChanged(false);
+        } else {
+            // it's visible!
+            window->handleSurfaceVisibilityChanged(true);
+            window->handleSurfaceStateChanged(mirSurfaceStateToWindowState(state));
+        }
+        break;
+    }
+    case mir_surface_attrib_type:
+    case mir_surface_attrib_swapinterval:
+    case mir_surface_attrib_dpi:
+    case mir_surface_attrib_preferred_orientation:
+    case mir_surface_attribs:
+        break;
+    }
+}
+
+void QMirClientInput::handleSurfaceOutputEvent(const QPointer<QMirClientWindow> &window, const MirSurfaceOutputEvent *event)
+{
+    const uint32_t outputId = mir_surface_output_event_get_output_id(event);
+    const int dpi = mir_surface_output_event_get_dpi(event);
+    const MirFormFactor formFactor = mir_surface_output_event_get_form_factor(event);
+    const float scale = mir_surface_output_event_get_scale(event);
+
+    const auto screenObserver = mIntegration->screenObserver();
+    QMirClientScreen *screen = screenObserver->findScreenWithId(outputId);
+    if (!screen) {
+        qCWarning(mirclient) << "Mir notified window" << window->window() << "on an unknown screen with id" << outputId;
+        return;
+    }
+
+    screenObserver->handleScreenPropertiesChange(screen, dpi, formFactor, scale);
+    window->handleScreenPropertiesChange(formFactor, scale);
+
+    if (window->screen() != screen) {
+        QWindowSystemInterface::handleWindowScreenChanged(window->window(), screen->screen());
+    }
+}

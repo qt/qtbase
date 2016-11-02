@@ -42,28 +42,22 @@
 #define QMIRCLIENTGLCONTEXT_H
 
 #include <qpa/qplatformopenglcontext.h>
-#include "qmirclientscreen.h"
+#include <QtEglSupport/private/qeglplatformcontext_p.h>
 
-class QMirClientOpenGLContext : public QPlatformOpenGLContext
+#include <EGL/egl.h>
+
+class QMirClientOpenGLContext : public QEGLPlatformContext
 {
 public:
-    QMirClientOpenGLContext(QMirClientScreen* screen, QMirClientOpenGLContext* share);
-    virtual ~QMirClientOpenGLContext();
+    QMirClientOpenGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
+                        EGLDisplay display);
 
-    // QPlatformOpenGLContext methods.
-    QSurfaceFormat format() const override { return mScreen->surfaceFormat(); }
-    void swapBuffers(QPlatformSurface* surface) override;
-    bool makeCurrent(QPlatformSurface* surface) override;
-    void doneCurrent() override;
-    bool isValid() const override { return mEglContext != EGL_NO_CONTEXT; }
-    QFunctionPointer getProcAddress(const char *procName) override;
+    // QEGLPlatformContext methods.
+    void swapBuffers(QPlatformSurface *surface) final;
+    bool makeCurrent(QPlatformSurface *surface) final;
 
-    EGLContext eglContext() const { return mEglContext; }
-
-private:
-    QMirClientScreen* mScreen;
-    EGLContext mEglContext;
-    EGLDisplay mEglDisplay;
+protected:
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) final;
 };
 
 #endif // QMIRCLIENTGLCONTEXT_H

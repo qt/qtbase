@@ -38,55 +38,26 @@
 ****************************************************************************/
 
 
-#ifndef QMIRCLIENTCLIPBOARD_H
-#define QMIRCLIENTCLIPBOARD_H
+#ifndef QMIRCLIENTDEBUGEXTENSION_H
+#define QMIRCLIENTDEBUGEXTENSION_H
 
-#include <qpa/qplatformclipboard.h>
+#include <QPoint>
+#include <QLibrary>
+struct MirSurface;
 
-#include <QMimeData>
-#include <QPointer>
+typedef bool (*MapperPrototype)(MirSurface* surface, int x, int y, int* screenX, int* screenY);
 
-namespace com {
-    namespace ubuntu {
-        namespace content {
-            class Hub;
-        }
-    }
-}
 
-class QDBusPendingCallWatcher;
-
-class QMirClientClipboard : public QObject, public QPlatformClipboard
+class QMirClientDebugExtension
 {
-    Q_OBJECT
 public:
-    QMirClientClipboard();
-    virtual ~QMirClientClipboard();
+    QMirClientDebugExtension();
 
-    // QPlatformClipboard methods.
-    QMimeData* mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
-    void setMimeData(QMimeData* data, QClipboard::Mode mode = QClipboard::Clipboard) override;
-    bool supportsMode(QClipboard::Mode mode) const override;
-    bool ownsMode(QClipboard::Mode mode) const override;
-
-private Q_SLOTS:
-    void onApplicationStateChanged(Qt::ApplicationState state);
+    QPoint mapSurfacePointToScreen(MirSurface *, const QPoint &point);
 
 private:
-    void updateMimeData();
-    void requestMimeData();
-
-    QMimeData *mMimeData;
-
-    enum {
-        OutdatedClipboard, // Our mimeData is outdated, need to fetch latest from ContentHub
-        SyncingClipboard, // Our mimeData is outdated and we are waiting for ContentHub to reply with the latest paste
-        SyncedClipboard // Our mimeData is in sync with what ContentHub has
-    } mClipboardState{OutdatedClipboard};
-
-    com::ubuntu::content::Hub *mContentHub;
-
-    QDBusPendingCallWatcher *mPasteReply{nullptr};
+    QLibrary m_mirclientDebug;
+    MapperPrototype m_mapper;
 };
 
-#endif // QMIRCLIENTCLIPBOARD_H
+#endif // QMIRCLIENTDEBUGEXTENSION_H

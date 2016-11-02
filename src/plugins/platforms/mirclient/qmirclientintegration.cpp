@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014-2015 Canonical, Ltd.
+** Copyright (C) 2014-2016 Canonical, Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -42,6 +42,8 @@
 #include "qmirclientintegration.h"
 #include "qmirclientbackingstore.h"
 #include "qmirclientclipboard.h"
+#include "qmirclientdebugextension.h"
+#include "qmirclientdesktopwindow.h"
 #include "qmirclientglcontext.h"
 #include "qmirclientinput.h"
 #include "qmirclientlogging.h"
@@ -51,56 +53,62 @@
 #include "qmirclientwindow.h"
 
 // Qt
+#include <QFileInfo>
 #include <QGuiApplication>
-#include <private/qguiapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatforminputcontext.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglpbuffer_p.h>
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#ifndef QT_NO_ACCESSIBILITY
+#include <qpa/qplatformaccessibility.h>
+#ifndef QT_NO_ACCESSIBILITY_ATSPI_BRIDGE
+#include <QtLinuxAccessibilitySupport/private/bridge_p.h>
+#endif
+#endif
+
 #include <QOpenGLContext>
+#include <QOffscreenSurface>
 
 // platform-api
 #include <ubuntu/application/lifecycle_delegate.h>
 #include <ubuntu/application/id.h>
 #include <ubuntu/application/options.h>
 
-static void resumedCallback(const UApplicationOptions *options, void* context)
+static void resumedCallback(const UApplicationOptions */*options*/, void* context)
 {
-    Q_UNUSED(options)
-    Q_UNUSED(context)
-    DASSERT(context != NULL);
-    if (qGuiApp->focusWindow()) {
-        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
-    } else {
-        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationInactive);
-    }
+    auto integration = static_cast<QMirClientClientIntegration*>(context);
+    integration->appStateController()->setResumed();
 }
 
-static void aboutToStopCallback(UApplicationArchive *archive, void* context)
+static void aboutToStopCallback(UApplicationArchive */*archive*/, void* context)
 {
-    Q_UNUSED(archive)
-    DASSERT(context != NULL);
-    QMirClientClientIntegration* integration = static_cast<QMirClientClientIntegration*>(context);
-    QPlatformInputContext *inputContext = integration->inputContext();
+    auto integration = static_cast<QMirClientClientIntegration*>(context);
+    auto inputContext = integration->inputContext();
     if (inputContext) {
         inputContext->hideInputPanel();
     } else {
-        qWarning("QMirClientClientIntegration aboutToStopCallback(): no input context");
+        qCWarning(mirclient) << "aboutToStopCallback(): no input context";
     }
-    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationSuspended);
+    integration->appStateController()->setSuspended();
 }
 
-QMirClientClientIntegration::QMirClientClientIntegration()
+QMirClientClientIntegration::QMirClientClientIntegration(int argc, char **argv)
     : QPlatformIntegration()
-    , mNativeInterface(new QMirClientNativeInterface)
+    , mNativeInterface(new QMirClientNativeInterface(this))
     , mFontDb(new QGenericUnixFontDatabase)
     , mServices(new QMirClientPlatformServices)
-    , mClipboard(new QMirClientClipboard)
+    , mAppStateController(new QMirClientAppStateController)
     , mScaleFactor(1.0)
 {
-    setupOptions();
-    setupDescription();
+    {
+        QStringList args = QCoreApplication::arguments();
+        setupOptions(args);
+        QByteArray sessionName = generateSessionName(args);
+        setupDescription(sessionName);
+    }
 
     // Create new application instance
     mInstance = u_application_instance_new_from_description_with_options(mDesc, mOptions);
@@ -110,19 +118,48 @@ QMirClientClientIntegration::QMirClientClientIntegration()
                "running, and the correct socket is being used and is accessible. The shell may have\n"
                "rejected the incoming connection, so check its log file");
 
-    mNativeInterface->setMirConnection(u_application_instance_get_mir_connection(mInstance));
+    mMirConnection = u_application_instance_get_mir_connection(mInstance);
 
-    // Create default screen.
-    screenAdded(new QMirClientScreen(u_application_instance_get_mir_connection(mInstance)));
+    // Choose the default surface format suited to the Mir platform
+    QSurfaceFormat defaultFormat;
+    defaultFormat.setRedBufferSize(8);
+    defaultFormat.setGreenBufferSize(8);
+    defaultFormat.setBlueBufferSize(8);
+    QSurfaceFormat::setDefaultFormat(defaultFormat);
+
+    // Initialize EGL.
+    mEglNativeDisplay = mir_connection_get_egl_native_display(mMirConnection);
+    ASSERT((mEglDisplay = eglGetDisplay(mEglNativeDisplay)) != EGL_NO_DISPLAY);
+    ASSERT(eglInitialize(mEglDisplay, nullptr, nullptr) == EGL_TRUE);
+
+    // Has debug mode been requsted, either with "-testability" switch or QT_LOAD_TESTABILITY env var
+    bool testability = qEnvironmentVariableIsSet("QT_LOAD_TESTABILITY");
+    for (int i=1; !testability && i<argc; i++) {
+        if (strcmp(argv[i], "-testability") == 0) {
+            testability = true;
+        }
+    }
+    if (testability) {
+        mDebugExtension.reset(new QMirClientDebugExtension);
+    }
+}
+
+void QMirClientClientIntegration::initialize()
+{
+    // Init the ScreenObserver
+    mScreenObserver.reset(new QMirClientScreenObserver(mMirConnection));
+    connect(mScreenObserver.data(), &QMirClientScreenObserver::screenAdded,
+            [this](QMirClientScreen *screen) { this->screenAdded(screen); });
+    connect(mScreenObserver.data(), &QMirClientScreenObserver::screenRemoved,
+                     this, &QMirClientClientIntegration::destroyScreen);
+
+    Q_FOREACH (auto screen, mScreenObserver->screens()) {
+        screenAdded(screen);
+    }
 
     // Initialize input.
-    if (qEnvironmentVariableIsEmpty("QTUBUNTU_NO_INPUT")) {
-        mInput = new QMirClientInput(this);
-        mInputContext = QPlatformInputContextFactory::create();
-    } else {
-        mInput = nullptr;
-        mInputContext = nullptr;
-    }
+    mInput = new QMirClientInput(this);
+    mInputContext = QPlatformInputContextFactory::create();
 
     // compute the scale factor
     const int defaultGridUnit = 8;
@@ -140,10 +177,9 @@ QMirClientClientIntegration::QMirClientClientIntegration()
 
 QMirClientClientIntegration::~QMirClientClientIntegration()
 {
+    eglTerminate(mEglDisplay);
     delete mInput;
     delete mInputContext;
-    for (QScreen *screen : QGuiApplication::screens())
-        QPlatformIntegration::destroyScreen(screen->handle());
     delete mServices;
 }
 
@@ -152,9 +188,8 @@ QPlatformServices *QMirClientClientIntegration::services() const
     return mServices;
 }
 
-void QMirClientClientIntegration::setupOptions()
+void QMirClientClientIntegration::setupOptions(QStringList &args)
 {
-    QStringList args = QCoreApplication::arguments();
     int argc = args.size() + 1;
     char **argv = new char*[argc];
     for (int i = 0; i < argc - 1; i++)
@@ -168,10 +203,11 @@ void QMirClientClientIntegration::setupOptions()
     delete [] argv;
 }
 
-void QMirClientClientIntegration::setupDescription()
+void QMirClientClientIntegration::setupDescription(QByteArray &sessionName)
 {
     mDesc = u_application_description_new();
-    UApplicationId* id = u_application_id_new_from_stringn("QtUbuntu", 8);
+
+    UApplicationId* id = u_application_id_new_from_stringn(sessionName.data(), sessionName.count());
     u_application_description_set_application_id(mDesc, id);
 
     UApplicationLifecycleDelegate* delegate = u_application_lifecycle_delegate_new();
@@ -181,43 +217,66 @@ void QMirClientClientIntegration::setupDescription()
     u_application_description_set_application_lifecycle_delegate(mDesc, delegate);
 }
 
+QByteArray QMirClientClientIntegration::generateSessionName(QStringList &args)
+{
+    // Try to come up with some meaningful session name to uniquely identify this session,
+    // helping with shell debugging
+
+    if (args.count() == 0) {
+        return QByteArray("QtUbuntu");
+    } if (args[0].contains("qmlscene")) {
+        return generateSessionNameFromQmlFile(args);
+    } else {
+        // use the executable name
+        QFileInfo fileInfo(args[0]);
+        return fileInfo.fileName().toLocal8Bit();
+    }
+}
+
+QByteArray QMirClientClientIntegration::generateSessionNameFromQmlFile(QStringList &args)
+{
+    Q_FOREACH (QString arg, args) {
+        if (arg.endsWith(".qml")) {
+            QFileInfo fileInfo(arg);
+            return fileInfo.fileName().toLocal8Bit();
+        }
+    }
+
+    // give up
+    return "qmlscene";
+}
+
 QPlatformWindow* QMirClientClientIntegration::createPlatformWindow(QWindow* window) const
 {
-    return const_cast<QMirClientClientIntegration*>(this)->createPlatformWindow(window);
-}
-
-QPlatformWindow* QMirClientClientIntegration::createPlatformWindow(QWindow* window)
-{
-    return new QMirClientWindow(window, mClipboard, screen(),
-                                mInput, u_application_instance_get_mir_connection(mInstance));
-}
-
-QMirClientScreen *QMirClientClientIntegration::screen() const
-{
-    return static_cast<QMirClientScreen *>(QGuiApplication::primaryScreen()->handle());
+    if (window->type() == Qt::Desktop) {
+        // Desktop windows should not be backed up by a mir surface as they don't draw anything (nor should).
+        return new QMirClientDesktopWindow(window);
+    } else {
+        return new QMirClientWindow(window, mInput, mNativeInterface, mAppStateController.data(),
+                                    mEglDisplay, mMirConnection, mDebugExtension.data());
+    }
 }
 
 bool QMirClientClientIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
-    case ThreadedPixmaps:
-        return true;
-
-    case OpenGL:
-        return true;
-
-    case ApplicationState:
-        return true;
-
     case ThreadedOpenGL:
         if (qEnvironmentVariableIsEmpty("QTUBUNTU_NO_THREADED_OPENGL")) {
             return true;
         } else {
-            DLOG("ubuntumirclient: disabled threaded OpenGL");
+            qCDebug(mirclient, "disabled threaded OpenGL");
             return false;
         }
+
+    case ThreadedPixmaps:
+    case OpenGL:
+    case ApplicationState:
     case MultipleWindows:
     case NonFullScreenWindows:
+#if QT_VERSION > QT_VERSION_CHECK(5, 5, 0)
+    case SwitchableWidgetComposition:
+#endif
+    case RasterGLSurface: // needed for QQuickWidget
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
@@ -237,14 +296,25 @@ QPlatformBackingStore* QMirClientClientIntegration::createPlatformBackingStore(Q
 QPlatformOpenGLContext* QMirClientClientIntegration::createPlatformOpenGLContext(
         QOpenGLContext* context) const
 {
-    return const_cast<QMirClientClientIntegration*>(this)->createPlatformOpenGLContext(context);
-}
+    QSurfaceFormat format(context->format());
 
-QPlatformOpenGLContext* QMirClientClientIntegration::createPlatformOpenGLContext(
-        QOpenGLContext* context)
-{
-    return new QMirClientOpenGLContext(static_cast<QMirClientScreen*>(context->screen()->handle()),
-                                   static_cast<QMirClientOpenGLContext*>(context->shareHandle()));
+    auto platformContext = new QMirClientOpenGLContext(format, context->shareHandle(), mEglDisplay);
+    if (!platformContext->isValid()) {
+        // Older Intel Atom-based devices only support OpenGL 1.4 compatibility profile but by default
+        // QML asks for at least OpenGL 2.0. The XCB GLX backend ignores this request and returns a
+        // 1.4 context, but the XCB EGL backend tries to honor it, and fails. The 1.4 context appears to
+        // have sufficient capabilities on MESA (i915) to render correctly however. So reduce the default
+        // requested OpenGL version to 1.0 to ensure EGL will give us a working context (lp:1549455).
+        static const bool isMesa = QString(eglQueryString(mEglDisplay, EGL_VENDOR)).contains(QStringLiteral("Mesa"));
+        if (isMesa) {
+            qCDebug(mirclientGraphics, "Attempting to choose OpenGL 1.4 context which may suit Mesa");
+            format.setMajorVersion(1);
+            format.setMinorVersion(4);
+            delete platformContext;
+            platformContext = new QMirClientOpenGLContext(format, context->shareHandle(), mEglDisplay);
+        }
+    }
+    return platformContext;
 }
 
 QStringList QMirClientClientIntegration::themeNames() const
@@ -277,10 +347,65 @@ QVariant QMirClientClientIntegration::styleHint(StyleHint hint) const
 
 QPlatformClipboard* QMirClientClientIntegration::clipboard() const
 {
-    return mClipboard.data();
+    static QPlatformClipboard *clipboard = nullptr;
+    if (!clipboard) {
+        clipboard = new QMirClientClipboard;
+    }
+    return clipboard;
 }
 
 QPlatformNativeInterface* QMirClientClientIntegration::nativeInterface() const
 {
     return mNativeInterface;
 }
+
+QPlatformOffscreenSurface *QMirClientClientIntegration::createPlatformOffscreenSurface(
+        QOffscreenSurface *surface) const
+{
+    return new QEGLPbuffer(mEglDisplay, surface->requestedFormat(), surface);
+}
+
+void QMirClientClientIntegration::destroyScreen(QMirClientScreen *screen)
+{
+    // FIXME: on deleting a screen while a Window is on it, Qt will automatically
+    // move the window to the primaryScreen(). This will trigger a screenChanged
+    // signal, causing things like QQuickScreenAttached to re-fetch screen properties
+    // like DPI and physical size. However this is crashing, as Qt is calling virtual
+    // functions on QPlatformScreen, for reasons unclear. As workaround, move window
+    // to primaryScreen() before deleting the screen. Might be QTBUG-38650
+
+    QScreen *primaryScreen = QGuiApplication::primaryScreen();
+    if (screen != primaryScreen->handle()) {
+        uint32_t movedWindowCount = 0;
+        Q_FOREACH (QWindow *w, QGuiApplication::topLevelWindows()) {
+            if (w->screen()->handle() == screen) {
+                QWindowSystemInterface::handleWindowScreenChanged(w, primaryScreen);
+                ++movedWindowCount;
+            }
+        }
+        if (movedWindowCount > 0) {
+            QWindowSystemInterface::flushWindowSystemEvents();
+        }
+    }
+
+    qCDebug(mirclient) << "Removing Screen with id" << screen->mirOutputId() << "and geometry" << screen->geometry();
+#if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
+    delete screen;
+#else
+    QPlatformIntegration::destroyScreen(screen);
+#endif
+}
+
+#ifndef QT_NO_ACCESSIBILITY
+QPlatformAccessibility *QMirClientClientIntegration::accessibility() const
+{
+#if !defined(QT_NO_ACCESSIBILITY_ATSPI_BRIDGE)
+    if (!mAccessibility) {
+        Q_ASSERT_X(QCoreApplication::eventDispatcher(), "QMirClientIntegration",
+            "Initializing accessibility without event-dispatcher!");
+        mAccessibility.reset(new QSpiAccessibleBridge());
+    }
+#endif
+    return mAccessibility.data();
+}
+#endif
