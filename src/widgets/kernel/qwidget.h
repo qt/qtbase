@@ -562,6 +562,7 @@ public:
 
     void setWindowFlags(Qt::WindowFlags type);
     inline Qt::WindowFlags windowFlags() const;
+    void setWindowFlag(Qt::WindowType, bool on = true);
     void overrideWindowFlags(Qt::WindowFlags type);
 
     inline Qt::WindowType windowType() const;

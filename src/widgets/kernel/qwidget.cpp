@@ -10357,12 +10357,29 @@ void QWidget::updateGeometry()
     a window, causing the widget to be hidden. You must call show() to make
     the widget visible again..
 
-    \sa windowType(), {Window Flags Example}
+    \sa windowType(), setWindowFlag(), {Window Flags Example}
 */
 void QWidget::setWindowFlags(Qt::WindowFlags flags)
 {
     Q_D(QWidget);
     d->setWindowFlags(flags);
+}
+
+/*!
+    \since 5.9
+
+    Sets the window flag \a flag on this widget if \a on is true;
+    otherwise clears the flag.
+
+    \sa setWindowFlags(), windowFlags(), windowType()
+*/
+void QWidget::setWindowFlag(Qt::WindowType flag, bool on)
+{
+    Q_D(QWidget);
+    if (on)
+        d->setWindowFlags(data->window_flags | flag);
+    else
+        d->setWindowFlags(data->window_flags & ~flag);
 }
 
 /*! \internal

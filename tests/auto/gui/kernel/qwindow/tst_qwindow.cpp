@@ -102,6 +102,7 @@ private slots:
     void initTestCase();
     void stateChange_data();
     void stateChange();
+    void flags();
     void cleanup();
 
 private:
@@ -2192,6 +2193,18 @@ void tst_QWindow::requestUpdate()
 
     window.requestUpdate();
     QTRY_COMPARE(window.received(QEvent::UpdateRequest), 2);
+}
+
+void tst_QWindow::flags()
+{
+    Window window;
+    const auto baseFlags = window.flags();
+    window.setFlags(window.flags() | Qt::FramelessWindowHint);
+    QCOMPARE(window.flags(), baseFlags | Qt::FramelessWindowHint);
+    window.setFlag(Qt::WindowStaysOnTopHint, true);
+    QCOMPARE(window.flags(), baseFlags | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    window.setFlag(Qt::FramelessWindowHint, false);
+    QCOMPARE(window.flags(), baseFlags | Qt::WindowStaysOnTopHint);
 }
 
 #include <tst_qwindow.moc>

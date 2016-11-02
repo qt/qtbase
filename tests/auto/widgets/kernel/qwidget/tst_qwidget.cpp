@@ -8957,8 +8957,13 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 void tst_QWidget::windowFlags()
 {
     QWidget w;
+    const auto baseFlags = w.windowFlags();
     w.setWindowFlags(w.windowFlags() | Qt::FramelessWindowHint);
     QVERIFY(w.windowFlags() & Qt::FramelessWindowHint);
+    w.setWindowFlag(Qt::WindowStaysOnTopHint, true);
+    QCOMPARE(w.windowFlags(), baseFlags | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    w.setWindowFlag(Qt::FramelessWindowHint, false);
+    QCOMPARE(w.windowFlags(), baseFlags | Qt::WindowStaysOnTopHint);
 }
 
 void tst_QWidget::initialPosForDontShowOnScreenWidgets()

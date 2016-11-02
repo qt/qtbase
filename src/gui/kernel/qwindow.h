@@ -163,6 +163,7 @@ public:
 
     void setFlags(Qt::WindowFlags flags);
     Qt::WindowFlags flags() const;
+    void setFlag(Qt::WindowType, bool on = true);
     Qt::WindowType type() const;
 
     QString title() const;

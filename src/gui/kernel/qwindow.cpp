@@ -821,6 +821,8 @@ QSurfaceFormat QWindow::format() const
 
     The actual window flags might differ from the flags set with setFlags()
     if the requested flags could not be fulfilled.
+
+    \sa setFlag()
 */
 void QWindow::setFlags(Qt::WindowFlags flags)
 {
@@ -837,6 +839,23 @@ Qt::WindowFlags QWindow::flags() const
 {
     Q_D(const QWindow);
     return d->windowFlags;
+}
+
+/*!
+    \since 5.9
+
+    Sets the window flag \a flag on this window if \a on is true;
+    otherwise clears the flag.
+
+    \sa setFlags(), flags(), type()
+*/
+void QWindow::setFlag(Qt::WindowType flag, bool on)
+{
+    Q_D(QWindow);
+    if (on)
+        setFlags(d->windowFlags | flag);
+    else
+        setFlags(d->windowFlags & ~flag);
 }
 
 /*!
