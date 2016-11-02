@@ -6,4 +6,4 @@ SOURCES += \
         $$PWD/qbasicfontdatabase.cpp \
         $$PWD/qfontengine_ft.cpp
 
-QMAKE_USE += freetype
+QMAKE_USE_PRIVATE += freetype
