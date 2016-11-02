@@ -103,6 +103,7 @@ private Q_SLOTS:
     void fromBinary();
     void toAndFromBinary_data();
     void toAndFromBinary();
+    void invalidBinaryData();
     void parseNumbers();
     void parseStrings();
     void parseDuplicateKeys();
@@ -1777,6 +1778,21 @@ void tst_QtJson::toAndFromBinary()
     QJsonDocument outdoc = QJsonDocument::fromBinaryData(doc.toBinaryData());
     QVERIFY(!outdoc.isNull());
     QVERIFY(doc == outdoc);
+}
+
+void tst_QtJson::invalidBinaryData()
+{
+    QDir dir(testDataDir + "/invalidBinaryData");
+    QFileInfoList files = dir.entryInfoList();
+    for (int i = 0; i < files.size(); ++i) {
+        if (!files.at(i).isFile())
+            continue;
+        QFile file(files.at(i).filePath());
+        file.open(QIODevice::ReadOnly);
+        QByteArray bytes = file.readAll();
+        QJsonDocument document = QJsonDocument::fromRawData(bytes.constData(), bytes.size());
+        QVERIFY(document.isNull());
+    }
 }
 
 void tst_QtJson::parseNumbers()

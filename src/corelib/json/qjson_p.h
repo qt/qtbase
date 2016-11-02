@@ -302,11 +302,18 @@ public:
     String(const char *data) { d = (Data *)data; }
 
     struct Data {
-        qle_int length;
+        qle_uint length;
         qle_ushort utf16[1];
     };
 
     Data *d;
+
+    int byteSize() const { return sizeof(uint) + sizeof(ushort) * d->length; }
+    bool isValid(int maxSize) const {
+        // Check byteSize() <= maxSize, avoiding integer overflow
+        maxSize -= sizeof(uint);
+        return maxSize >= 0 && uint(d->length) <= maxSize / sizeof(ushort);
+    }
 
     inline String &operator=(const QString &str)
     {
@@ -376,10 +383,15 @@ public:
     Latin1String(const char *data) { d = (Data *)data; }
 
     struct Data {
-        qle_short length;
+        qle_ushort length;
         char latin1[1];
     };
     Data *d;
+
+    int byteSize() const { return sizeof(ushort) + sizeof(char)*(d->length); }
+    bool isValid(int maxSize) const {
+        return byteSize() <= maxSize;
+    }
 
     inline Latin1String &operator=(const QString &str)
     {
@@ -567,7 +579,7 @@ public:
     }
     int indexOf(const QString &key, bool *exists);
 
-    bool isValid() const;
+    bool isValid(int maxSize) const;
 };
 
 
@@ -577,7 +589,7 @@ public:
     inline Value at(int i) const;
     inline Value &operator [](int i);
 
-    bool isValid() const;
+    bool isValid(int maxSize) const;
 };
 
 
@@ -631,12 +643,12 @@ public:
     // key
     // value data follows key
 
-    int size() const {
+    uint size() const {
         int s = sizeof(Entry);
         if (value.latinKey)
-            s += sizeof(ushort) + qFromLittleEndian(*(ushort *) ((const char *)this + sizeof(Entry)));
+            s += shallowLatin1Key().byteSize();
         else
-            s += sizeof(uint) + sizeof(ushort)*qFromLittleEndian(*(int *) ((const char *)this + sizeof(Entry)));
+            s += shallowKey().byteSize();
         return alignedSize(s);
     }
 
@@ -660,6 +672,15 @@ public:
             return shallowLatin1Key().toString();
         }
         return shallowKey().toString();
+    }
+
+    bool isValid(int maxSize) const {
+        if (maxSize < (int)sizeof(Entry))
+            return false;
+        maxSize -= sizeof(Entry);
+        if (value.latinKey)
+            return shallowLatin1Key().isValid(maxSize);
+        return shallowKey().isValid(maxSize);
     }
 
     bool operator ==(const QString &key) const;

@@ -129,10 +129,12 @@ bool Data::valid() const
         return false;
 
     bool res = false;
-    if (header->root()->is_object)
-        res = static_cast<Object *>(header->root())->isValid();
+    Base *root = header->root();
+    int maxSize = alloc - sizeof(Header);
+    if (root->is_object)
+        res = static_cast<Object *>(root)->isValid(maxSize);
     else
-        res = static_cast<Array *>(header->root())->isValid();
+        res = static_cast<Array *>(root)->isValid(maxSize);
 
     return res;
 }
@@ -195,9 +197,9 @@ int Object::indexOf(const QString &key, bool *exists)
     return min;
 }
 
-bool Object::isValid() const
+bool Object::isValid(int maxSize) const
 {
-    if (tableOffset + length*sizeof(offset) > size)
+    if (size > (uint)maxSize || tableOffset + length*sizeof(offset) > size)
         return false;
 
     QString lastKey;
@@ -206,8 +208,7 @@ bool Object::isValid() const
         if (entryOffset + sizeof(Entry) >= tableOffset)
             return false;
         Entry *e = entryAt(i);
-        int s = e->size();
-        if (table()[i] + s > tableOffset)
+        if (!e->isValid(tableOffset - table()[i]))
             return false;
         QString key = e->key();
         if (key < lastKey)
@@ -221,9 +222,9 @@ bool Object::isValid() const
 
 
 
-bool Array::isValid() const
+bool Array::isValid(int maxSize) const
 {
-    if (tableOffset + length*sizeof(offset) > size)
+    if (size > (uint)maxSize || tableOffset + length*sizeof(offset) > size)
         return false;
 
     for (uint i = 0; i < length; ++i) {
@@ -323,12 +324,12 @@ bool Value::isValid(const Base *b) const
     int s = usedStorage(b);
     if (!s)
         return true;
-    if (s < 0 || offset + s > (int)b->tableOffset)
+    if (s < 0 || s > (int)b->tableOffset - offset)
         return false;
     if (type == QJsonValue::Array)
-        return static_cast<Array *>(base(b))->isValid();
+        return static_cast<Array *>(base(b))->isValid(s);
     if (type == QJsonValue::Object)
-        return static_cast<Object *>(base(b))->isValid();
+        return static_cast<Object *>(base(b))->isValid(s);
     return true;
 }
 
