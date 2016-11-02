@@ -134,7 +134,10 @@ macx {
     include(../../3rdparty/zlib_dependency.pri)
 }
 
-win32:LIBS += -luser32 -lole32 -ladvapi32 -lshell32
+win32 {
+    LIBS += -luser32 -lole32 -ladvapi32 -lshell32
+    mingw: LIBS += -luuid
+}
 
 load(qt_module)
 
