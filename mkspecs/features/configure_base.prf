@@ -43,9 +43,5 @@ defineTest(qtRunLoggedCommand) {
     return(true)
 }
 
-# Ensure that a cache is present. If none was found on startup, this will create
-# one in the build directory of the project which loads this feature.
-cache()
-
 QMAKE_CONFIG_LOG = $$dirname(_QMAKE_CACHE_)/config.log
 write_file($$QMAKE_CONFIG_LOG, "")

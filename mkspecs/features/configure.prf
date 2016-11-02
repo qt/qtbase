@@ -1,3 +1,7 @@
+# Ensure that a cache is present. If none was found on startup, this will create
+# one in the build directory of the project which loads this feature.
+cache()
+
 load(configure_base)
 
 isEmpty(QMAKE_CONFIG_TESTS_DIR): QMAKE_CONFIG_TESTS_DIR = $$_PRO_FILE_PWD_/config.tests
