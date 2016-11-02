@@ -558,6 +558,7 @@
         },
         "release_tools": {
             "label": "Compile tools in release mode",
+            "autoDetect": "!features.debug",
             "output": [ "privateFeature", "publicQtConfig" ]
         },
         "simulator_and_device": {
@@ -1073,7 +1074,7 @@ or compile needed modules into the library."
         },
         {
             "type": "note",
-            "condition": "features.release_tools && (!features.debug || features.debug_and_release)",
+            "condition": "features.release_tools && !features.debug",
             "message": "-optimized-tools is not useful in -release mode."
         },
         {
