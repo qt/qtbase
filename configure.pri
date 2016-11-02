@@ -527,13 +527,16 @@ defineTest(qtConfReport_buildMode) {
     else: \
         release = "release"
 
-    $$qtConfEvaluate("features.debug"): \
+    $$qtConfEvaluate("features.debug") {
         build_mode = "debug"
-    else: \
+        raw_build_mode = "debug"
+    } else {
         build_mode = $$release
+        raw_build_mode = "release"
+    }
 
     $$qtConfEvaluate("features.debug_and_release"): \
-        build_mode = "debug and $$release; default link: $$build_mode"
+        build_mode = "debug and $$release; default link: $$raw_build_mode"
 
     $$qtConfEvaluate("features.release_tools"): \
         build_mode = "$$build_mode; optimized tools"
