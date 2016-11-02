@@ -1182,8 +1182,8 @@ defineTest(qtConfCheckFeature) {
     $${fpfx}.available = $$result
     export($${fpfx}.available)
 
-    for (i, $${currentConfig}.features.$${feature}.output._KEYS_): \
-        qtConfProcessOneOutput($$feature, $$i)
+    for (i, $${fpfx}.output._KEYS_): \
+        qtConfProcessOneOutput($${1}, $$i)
 
     return(true)
 }
