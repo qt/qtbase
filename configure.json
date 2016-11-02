@@ -281,8 +281,8 @@
             "type": "compile",
             "test": "common/c++1z"
         },
-        "cxx98default": {
-            "label": "compiler defaulting to C++98",
+        "cxx11default": {
+            "label": "compiler defaulting to C++11 or higher",
             "type": "compile",
             "test": "common/c++98default"
         },
@@ -483,9 +483,9 @@
             "condition": "call.crossCompile",
             "output": [ "publicConfig", "privateConfig" ]
         },
-        "cxx98default": {
-            "label": "Compiler defaults to C++98",
-            "condition": "tests.cxx98default",
+        "cxx11default": {
+            "label": "Compiler defaults to C++11 or higher",
+            "condition": "!tests.cxx11default",
             "output": [ { "type": "publicConfig", "name": "c++11" } ]
         },
         "compiler-flags": {
