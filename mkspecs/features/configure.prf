@@ -4,6 +4,8 @@ cache()
 
 load(configure_base)
 
+recheck: write_file($$QMAKE_CONFIG_LOG, "")
+
 isEmpty(QMAKE_CONFIG_TESTS_DIR): QMAKE_CONFIG_TESTS_DIR = $$_PRO_FILE_PWD_/config.tests
 
 # Try to build the test project in $$QMAKE_CONFIG_TESTS_DIR/$$1
