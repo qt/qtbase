@@ -611,9 +611,7 @@ defineTest(qtConfHandleLibrary) {
         return()
     }
 
-    qtLogTestIntro($${lpfx})
-    msg = "looking for library $${1}"
-    write_file($$QMAKE_CONFIG_LOG, msg, append)
+    qtLogTestIntro($${lpfx}, "looking for library $${1}")
 
     result = false
     for (s, $${lpfx}.sources._KEYS_) {
@@ -796,6 +794,7 @@ defineTest(qtLogTestIntro) {
 
     log("Checking for $${label}... ")
     $$QMAKE_CONFIG_VERBOSE: log("$$escape_expand(\\n)")
+    write_file($$QMAKE_CONFIG_LOG, 2, append)
 }
 
 defineTest(qtLogTestResult) {
@@ -921,9 +920,7 @@ defineTest(qtRunSingleTest) {
     qtConfLoadResult($${tpfx}, $$1): \
         return()
 
-    qtLogTestIntro($${tpfx})
-    msg = "executing config test $${1}"
-    write_file($$QMAKE_CONFIG_LOG, msg, append)
+    qtLogTestIntro($${tpfx}, "executing config test $${1}")
 
     result = false
     $${call}($${tpfx}): result = true
