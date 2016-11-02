@@ -12,7 +12,7 @@ defineTest(qtConfLibrary_freetype) {
             return(true)
         }
     }
-    return(false)
+    return(true)
 }
 
 # Check for Direct X SDK (include, lib, and direct shader compiler 'fxc').
