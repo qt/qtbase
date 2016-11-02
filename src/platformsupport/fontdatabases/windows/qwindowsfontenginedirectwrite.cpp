@@ -49,6 +49,7 @@
 #include <QtCore/private/qsystemlibrary_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #if defined(QT_USE_DIRECTWRITE2)
 #  include <dwrite_2.h>
@@ -185,6 +186,9 @@ namespace {
 
 static DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(QFont::HintingPreference hintingPreference)
 {
+    if (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting)
+        hintingPreference = QFont::PreferVerticalHinting;
+
     switch (hintingPreference) {
     case QFont::PreferNoHinting:
         return DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC;
