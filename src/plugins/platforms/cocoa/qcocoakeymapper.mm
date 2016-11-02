@@ -378,6 +378,10 @@ bool QCocoaKeyMapper::updateKeyboard()
     currentInputSource = source;
     keyboard_dead = 0;
 
+    const auto newMode = keyboard_mode;
+    deleteLayouts();
+    keyboard_mode = newMode;
+
     return true;
 }
 
@@ -400,10 +404,8 @@ void QCocoaKeyMapper::clearMappings()
 
 void QCocoaKeyMapper::updateKeyMap(unsigned short macVirtualKey, QChar unicodeKey)
 {
-    if (updateKeyboard()) {
-        // ### Qt 4 did this:
-        // QKeyMapper::changeKeyboard();
-    }
+    updateKeyboard();
+
     if (keyLayout[macVirtualKey])
         return;
 
