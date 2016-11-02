@@ -242,11 +242,11 @@ defineTest(qtConfTest_checkCompiler) {
         $${1}.compilerDescription = "GCC"
         $${1}.compilerId = "gcc"
         $${1}.compilerVersion = $$version
-    } else: contains(QMAKE_CXX, ".*icpc"  ) {
-        qtRunLoggedCommand("$$QMAKE_CXX -v", version)|return(false)
+    } else: contains(QMAKE_CXX, ".*icpc") {
+        qtRunLoggedCommand("$$QMAKE_CXX -dumpversion", version)|return(false)
         $${1}.compilerDescription = "ICC"
         $${1}.compilerId = "icc"
-        $${1}.compilerVersion = $$replace(version, "icpc version ([0-9.]+).*", "\\1")
+        $${1}.compilerVersion = $$version
     } else: msvc {
         command = $$QMAKE_CXX /EP /nologo $$source $$system_quote($$QMAKE_CONFIG_TESTS_DIR/win/msvc_version.cpp)
         qtRunLoggedCommand("$$command", version)|return(false)
