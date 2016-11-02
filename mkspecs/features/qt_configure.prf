@@ -1552,9 +1552,6 @@ defineTest(qtConfOutput_publicFeature) {
     }
 }
 
-# currently this is somewhat inconsistent, as the feature is output to the public pro file,
-# whereas the define is being added to the private pro file.
-# This should get cleaned up to add to the private pro and header instead.
 defineTest(qtConfOutput_privateFeature) {
     name = "$$eval($${1}.name)"
     isEmpty(name): \
