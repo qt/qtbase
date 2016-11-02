@@ -794,10 +794,8 @@ defineTest(qtLogTestIntro) {
     label = $$eval($${1}.label)
     isEmpty(label): return()
 
-    msg = "Checking for $${label}... "
-    log($$msg)
+    log("Checking for $${label}... ")
     $$QMAKE_CONFIG_VERBOSE: log("$$escape_expand(\\n)")
-    write_file($$QMAKE_CONFIG_LOG, msg, append)
 }
 
 defineTest(qtLogTestResult) {
