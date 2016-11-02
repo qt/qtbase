@@ -102,6 +102,10 @@ private:
         if (current + space >= dataLength) {
             dataLength = 2*dataLength + space;
             data = (char *)realloc(data, dataLength);
+            if (!data) {
+                lastError = QJsonParseError::DocumentTooLarge;
+                return -1;
+            }
         }
         int pos = current;
         current += space;
