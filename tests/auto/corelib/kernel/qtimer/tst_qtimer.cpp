@@ -216,6 +216,16 @@ void tst_QTimer::remainingTimeDuringActivation()
     }
 }
 
+namespace {
+
+#if QT_HAS_INCLUDE(<chrono>)
+    template <typename T>
+    std::chrono::milliseconds to_ms(T t)
+    { return std::chrono::duration_cast<std::chrono::milliseconds>(t); }
+#endif
+
+} // unnamed namespace
+
 void tst_QTimer::basic_chrono()
 {
 #if !QT_HAS_INCLUDE(<chrono>)
@@ -225,7 +235,7 @@ void tst_QTimer::basic_chrono()
     using namespace std::chrono;
     TimerHelper helper;
     QTimer timer;
-    timer.setInterval(nanoseconds(0));
+    timer.setInterval(to_ms(nanoseconds(0)));
     timer.start();
     QCOMPARE(timer.intervalAsDuration().count(), milliseconds::rep(0));
     QCOMPARE(timer.remainingTimeAsDuration().count(), milliseconds::rep(0));
@@ -248,7 +258,7 @@ void tst_QTimer::basic_chrono()
     QVERIFY(helper.count > oldCount);
 
     helper.count = 0;
-    timer.start(microseconds(200000));
+    timer.start(to_ms(microseconds(200000)));
     QCOMPARE(timer.intervalAsDuration().count(), milliseconds::rep(200));
     QTest::qWait(50);
     QCOMPARE(helper.count, 0);
@@ -864,7 +874,7 @@ void tst_QTimer::singleShot_chrono()
     QCOMPARE(nhelper.count, 1);
 
     int count = 0;
-    QTimer::singleShot(microseconds(0), CountedStruct(&count));
+    QTimer::singleShot(to_ms(microseconds(0)), CountedStruct(&count));
     QCoreApplication::processEvents();
     QCOMPARE(count, 1);
 

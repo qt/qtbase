@@ -26,7 +26,6 @@ win32:CONFIG(shared, static|shared) {
 tool_plugin {
     !build_pass:qtConfig(debug_and_release): CONFIG += release
 } else:if(win32|mac):!macx-xcode {
-    qtConfig(simulator_and_device): CONFIG += simulator_and_device
     qtConfig(debug_and_release): CONFIG += debug_and_release
     qtConfig(build_all): CONFIG += build_all
 }

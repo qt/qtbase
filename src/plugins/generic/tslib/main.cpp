@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include <QtGui/qgenericplugin.h>
-#include <QtPlatformSupport/private/qtslib_p.h>
+#include <QtInputSupport/private/qtslib_p.h>
 
 QT_BEGIN_NAMESPACE
 

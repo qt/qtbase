@@ -1,0 +1,13 @@
+{
+    "Id": "qeventdispatcher_cf",
+    "Name": "QEventDispatcher on macOS",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used in Qt Core on macOS.",
+    "Path": "qeventdispatcher_cf_p.h",
+
+    "Description": "Implementation of QAbstractEventDispatcher for macOS.",
+    "License": "BSD 3-clause \"New\" or \"Revised\" License",
+    "LicenseId": "BSD-3-Clause",
+    "LicenseFile": "QEVENTDISPATCHER_CF_LICENSE.txt",
+    "Copyright": "Copyright (c) 2007-2008, Apple, Inc."
+}

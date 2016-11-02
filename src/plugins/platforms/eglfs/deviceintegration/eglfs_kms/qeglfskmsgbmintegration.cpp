@@ -45,7 +45,7 @@
 #include "qeglfskmsgbmcursor.h"
 #include "private/qeglfscursor_p.h"
 
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -126,7 +126,7 @@ QEglFSKmsDevice *QEglFSKmsGbmIntegration::createDevice(const QString &devicePath
     } else {
 
         QDeviceDiscovery *d = QDeviceDiscovery::create(QDeviceDiscovery::Device_VideoMask);
-        QStringList devices = d->scanConnectedDevices();
+        const QStringList devices = d->scanConnectedDevices();
         qCDebug(qLcEglfsKmsDebug) << "Found the following video devices:" << devices;
         d->deleteLater();
 

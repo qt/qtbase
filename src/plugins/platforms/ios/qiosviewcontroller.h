@@ -53,11 +53,9 @@ QT_END_NAMESPACE
 
 #ifndef Q_OS_TVOS
 @property (nonatomic, assign) UIInterfaceOrientation lockedOrientation;
-#endif
 
 // UIViewController
 @property (nonatomic, assign) BOOL prefersStatusBarHidden;
-#ifndef Q_OS_TVOS
 @property (nonatomic, assign) UIStatusBarAnimation preferredStatusBarUpdateAnimation;
 @property (nonatomic, assign) UIStatusBarStyle preferredStatusBarStyle;
 #endif

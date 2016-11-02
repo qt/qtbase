@@ -658,6 +658,8 @@
     \c{YYYY-MM-DDTHH:mm:ss}, \c{YYYY-MM-DDTHH:mm:ssTZD} (e.g., 1997-07-16T19:20:30+01:00)
     for combined dates and times.
 
+    \value ISODateWithMs \l{ISO 8601} extended format, including milliseconds if applicable.
+
     \value SystemLocaleShortDate The \l{QLocale::ShortFormat}{short format} used
     by the \l{QLocale::system()}{operating system}.
 

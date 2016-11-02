@@ -124,7 +124,7 @@
    \relates QTest
 
    The QTRY_VERIFY_WITH_TIMEOUT() macro is similar to QVERIFY(), but checks the \a condition
-   repeatedly, until either the condition becomes true or the \a timeout is
+   repeatedly, until either the condition becomes true or the \a timeout (in milliseconds) is
    reached.  Between each evaluation, events will be processed.  If the timeout
    is reached, a failure is recorded in the test log and the test won't be
    executed further.
@@ -156,7 +156,7 @@
 
    The QTRY_VERIFY2_WITH_TIMEOUT macro is similar to QTRY_VERIFY_WITH_TIMEOUT()
    except that it outputs a verbose \a message when \a condition is still false
-   after the specified \a timeout. The \a message is a plain C string.
+   after the specified \a timeout (in milliseconds). The \a message is a plain C string.
 
    Example:
    \code
@@ -196,7 +196,7 @@
 
    The QTRY_COMPARE_WITH_TIMEOUT() macro is similar to QCOMPARE(), but performs the comparison
    of the \a actual and \a expected values repeatedly, until either the two values
-   are equal or the \a timeout is reached.  Between each comparison, events
+   are equal or the \a timeout (in milliseconds) is reached.  Between each comparison, events
    will be processed.  If the timeout is reached, a failure is recorded in the
    test log and the test won't be executed further.
 

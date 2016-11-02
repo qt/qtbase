@@ -150,11 +150,19 @@ public:
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleTouchEvent(QWindow *w, ulong timestamp, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleTouchCancelEvent(QWindow *w, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleTouchCancelEvent(QWindow *w, ulong timestamp, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     // rect is relative to parent
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleGeometryChange(QWindow *w, const QRect &newRect, const QRect &oldRect = QRect());
+
+    // region is in local coordinates, do not confuse with geometry which is parent-relative
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
+    static void handleExposeEvent(QWindow *tlw, const QRegion &region);
+
     static void handleCloseEvent(QWindow *w, bool *accepted = Q_NULLPTR);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
@@ -162,15 +170,13 @@ public:
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleLeaveEvent(QWindow *w);
     static void handleEnterLeaveEvent(QWindow *enter, QWindow *leave, const QPointF &local = QPointF(), const QPointF& global = QPointF());
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleWindowActivated(QWindow *w, Qt::FocusReason r = Qt::OtherFocusReason);
 
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
     static void handleWindowScreenChanged(QWindow *w, QScreen *newScreen);
 
     static void handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate = false);
-
-    // region is in local coordinates, do not confuse with geometry which is parent-relative
-    static void handleExposeEvent(QWindow *tlw, const QRegion &region);
 
 #ifndef QT_NO_DRAGANDDROP
     // Drag and drop. These events are sent immediately.

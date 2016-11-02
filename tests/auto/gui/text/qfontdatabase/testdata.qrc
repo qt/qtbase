@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>LED_REAL.TTF</file>
+        <file alias="testfont.ttf">../../../shared/resources/testfont.ttf</file>
+        <file alias="testfont_condensed.ttf">../../../shared/resources/testfont_condensed.ttf</file>
     </qresource>
 </RCC>

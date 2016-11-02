@@ -113,7 +113,7 @@ exists($$OUT_PWD/qt$${MODULE}-config.h) {
         $$fwd_rel/qt$${MODULE}-config_p.h:$$MODULE_VERSION/$$MODULE_INCNAME/private/qt$${MODULE}-config_p.h
     inst_rel = $$relative_path($$OUT_PWD, $$_PRO_FILE_PWD_)
     SYNCQT.HEADER_FILES += $$inst_rel/qt$${MODULE}-config.h
-    SYNCQT.PRIVATE_HEADER_FILES += $$inst_rel/qt$${MODULE}-config_p.h
+    SYNCQT.INJECTED_PRIVATE_HEADER_FILES += $$inst_rel/qt$${MODULE}-config_p.h
 }
 
 for (injection, SYNCQT.INJECTIONS) {

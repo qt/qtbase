@@ -76,6 +76,7 @@ private:
     static QCocoaWindow *findWindowForMenubar();
     static QCocoaMenuBar *findGlobalMenubar();
 
+    bool needsImmediateUpdate();
     bool shouldDisable(QCocoaWindow *active) const;
 
     NSMenuItem *nativeItemForMenu(QCocoaMenu *menu) const;

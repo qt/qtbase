@@ -2,8 +2,7 @@
 [testDragWindow]
 osx
 [testMouseEnter]
-osx-10.9
-osx-10.8
+osx
 [testChildDialogInFrontOfModalParent]
 osx
 [testChildWindowInFrontOfStaysOnTopParentWindow]

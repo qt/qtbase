@@ -50,7 +50,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "socket_interface.h"
 #include "constant_mappings_p.h"
-#include "../accessibility/qaccessiblebridgeutils_p.h"
+#include <QtAccessibilitySupport/private/qaccessiblebridgeutils_p.h>
 
 #include "application_p.h"
 /*!

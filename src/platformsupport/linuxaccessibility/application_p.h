@@ -51,12 +51,13 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/QPointer>
 #include <QtCore/QQueue>
 #include <QtDBus/QDBusConnection>
 #include <QtGui/QAccessibleInterface>
 
-#ifndef QT_NO_ACCESSIBILITY
+QT_REQUIRE_CONFIG(accessibility);
 
 QT_BEGIN_NAMESPACE
 
@@ -93,7 +94,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_ACCESSIBILITY
 
 #endif

@@ -43,6 +43,7 @@
 
 #include <qpa/qplatformintegration.h>
 #include <QtCore/QScopedPointer>
+#include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,8 +62,9 @@ public:
         NoNativeDialogs = 0x8,
         XpNativeDialogs = 0x10,
         DontPassOsMouseEventsSynthesizedFromTouch = 0x20, // Do not pass OS-generated mouse events from touch.
-        DontUseDirectWriteFonts = 0x40,
-        DontUseColorFonts = 0x80
+        // Keep in sync with QWindowsFontDatabase::FontOptions
+        DontUseDirectWriteFonts = QWindowsFontDatabase::DontUseDirectWriteFonts,
+        DontUseColorFonts = QWindowsFontDatabase::DontUseColorFonts
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);

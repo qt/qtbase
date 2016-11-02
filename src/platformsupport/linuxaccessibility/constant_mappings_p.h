@@ -58,10 +58,11 @@
 
 #include "struct_marshallers_p.h"
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/QAccessible>
 #include <atspi/atspi-constants.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+QT_REQUIRE_CONFIG(accessibility);
 
 // interface names from at-spi2-core/atspi/atspi-misc-private.h
 #define ATSPI_DBUS_NAME_REGISTRY "org.a11y.atspi.Registry"
@@ -141,6 +142,5 @@ QSpiUIntList spiStateSetFromSpiStates(quint64 states);
 AtspiRelationType qAccessibleRelationToAtSpiRelation(QAccessible::Relation relation);
 
 QT_END_NAMESPACE
-#endif //QT_NO_ACCESSIBILITY
 
 #endif /* Q_SPI_CONSTANT_MAPPINGS_H */

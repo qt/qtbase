@@ -53,10 +53,5 @@
 #include <QtCore/private/qtcore-config_p.h>
 #endif
 
-#define QT_LIBRARY_VERSION(lib) QT_LIBRARY_VERSION_##lib
-#define QT_LIBRARY_VERSION_MAJOR(lib) (QT_LIBRARY_VERSION_##lib >> 16)
-#define QT_LIBRARY_VERSION_MINOR(lib) ((QT_LIBRARY_VERSION_##lib >> 8) & 0xff)
-#define QT_LIBRARY_VERSION_PATCH(lib) (QT_LIBRARY_VERSION_##lib & 0xff)
-
 #endif // QGLOBAL_P_H
 

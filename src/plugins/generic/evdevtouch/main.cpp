@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include <QtGui/qgenericplugin.h>
-#include <QtPlatformSupport/private/qevdevtouchmanager_p.h>
+#include <QtInputSupport/private/qevdevtouchmanager_p.h>
 
 QT_BEGIN_NAMESPACE
 

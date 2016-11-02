@@ -116,7 +116,7 @@ void QPageSetupDialogPrivate::setPrinter(QPrinter *newPrinter)
         printer = new QPrinter;
         ownsPrinter = true;
     }
-#ifndef Q_DEAD_CODE_FROM_QT4_X11
+#if 1 // Used to be excluded in Qt4 for Q_WS_X11
     if (printer->outputFormat() != QPrinter::NativeFormat)
         qWarning("QPageSetupDialog: Cannot be used on non-native printers");
 #endif

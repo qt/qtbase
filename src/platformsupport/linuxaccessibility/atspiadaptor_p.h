@@ -54,6 +54,7 @@
 
 #include <atspi/atspi-constants.h>
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtDBus/qdbusvirtualobject.h>
 #include <QtGui/qaccessible.h>
@@ -61,7 +62,8 @@
 #include "dbusconnection_p.h"
 #include "struct_marshallers_p.h"
 
-#ifndef QT_NO_ACCESSIBILITY
+QT_REQUIRE_CONFIG(accessibility);
+
 QT_BEGIN_NAMESPACE
 
 class QAccessibleInterface;
@@ -222,6 +224,5 @@ private:
 };
 
 QT_END_NAMESPACE
-#endif //QT_NO_ACCESSIBILITY
 
 #endif

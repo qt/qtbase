@@ -904,16 +904,14 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
         int visibleLocation = parentNode->visibleLocation(parentNode->children.value(indexNode->fileName)->fileName);
 
         parentNode->visibleChildren.removeAt(visibleLocation);
-        QFileSystemModelPrivate::QFileSystemNode * oldValue = parentNode->children.value(oldName);
-        parentNode->children[newName] = oldValue;
-        oldValue->fileName = newName;
-        oldValue->parent = parentNode;
+        QScopedPointer<QFileSystemModelPrivate::QFileSystemNode> nodeToRename(parentNode->children.take(oldName));
+        nodeToRename->fileName = newName;
+        nodeToRename->parent = parentNode;
 #ifndef QT_NO_FILESYSTEMWATCHER
-        oldValue->populate(d->fileInfoGatherer.getInfo(QFileInfo(parentPath, newName)));
+        nodeToRename->populate(d->fileInfoGatherer.getInfo(QFileInfo(parentPath, newName)));
 #endif
-        oldValue->isVisible = true;
-
-        parentNode->children.remove(oldName);
+        nodeToRename->isVisible = true;
+        parentNode->children[newName] = nodeToRename.take();
         parentNode->visibleChildren.insert(visibleLocation, newName);
 
         d->delayedSort();

@@ -341,14 +341,16 @@ void QEglFSCursor::paintOnScreen()
     if (!m_visible)
         return;
 
-    QRect cr = cursorRect(); // hotspot included
+    // cr must be a QRectF, otherwise cr.right() and bottom() would be off by
+    // one in the calculations below.
+    QRectF cr = cursorRect(); // hotspot included
 
     // Support virtual desktop too. Backends with multi-screen support (e.g. all
     // variants of KMS/DRM) will enable this by default. In this case all
     // screens are siblings of each other. When not enabled, the sibling list
     // only contains m_screen itself.
     for (QPlatformScreen *screen : m_screen->virtualSiblings()) {
-        if (screen->geometry().contains(cr.topLeft() + m_cursor.hotSpot)
+        if (screen->geometry().contains(cr.topLeft().toPoint() + m_cursor.hotSpot)
             && QOpenGLContext::currentContext()->screen() == screen->screen())
         {
             cr.translate(-screen->geometry().topLeft());

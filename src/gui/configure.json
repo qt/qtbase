@@ -7,6 +7,7 @@
 
     "commandline": {
         "options": {
+            "android-style-assets": "boolean",
             "angle": "boolean",
             "directfb": "boolean",
             "directwrite": "boolean",
@@ -164,7 +165,6 @@
         },
         "mirclient": {
             "label": "Mir client libraries",
-            "export": "",
             "test": "qpa/mirclient",
             "sources": [
                 { "type": "pkgConfig", "args": "egl mirclient ubuntu-platform-api" }
@@ -172,7 +172,6 @@
         },
         "mtdev": {
             "label": "mtdev",
-            "export": "",
             "test": "unix/mtdev",
             "sources": [
                 { "type": "pkgConfig", "args": "mtdev" }
@@ -203,7 +202,6 @@
         },
         "wayland_server": {
             "label": "Wayland Server",
-            "export": "",
             "test": "qpa/wayland-server",
             "sources": [
                 { "type": "pkgConfig", "args": "wayland-server" }
@@ -413,6 +411,11 @@
             "label": "ATSPI Bridge",
             "condition": "features.accessibility && features.xcb && features.dbus",
             "output": [ "privateFeature", "feature" ]
+        },
+        "android-style-assets": {
+            "label": "Android Style Assets",
+            "condition": "config.android",
+            "output": [ "privateFeature" ]
         },
         "angle": {
             "label": "ANGLE",

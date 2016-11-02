@@ -33,7 +33,7 @@
     \keyword SSL
 
     The classes below provide support for secure network communication using
-    the Secure Sockets Layer (SSL) protocol, using the OpenSSL Toolkit (\l{http://www.openssl.org/})
+    the Secure Sockets Layer (SSL) protocol, using the \l{OpenSSL Toolkit}
     to perform encryption and protocol handling.
 
     From Qt version 5.2 onwards, the officially supported version for OpenSSL
@@ -67,16 +67,13 @@
     To disable SSL support in a Qt build, configure Qt with the \c{-no-openssl}
     option.
 
-    \section1 Licensing Information
+    \section1 Import and Export Restrictions
 
-    \note Due to import and export restrictions in some parts of the world, we
+    Due to import and export restrictions in some parts of the world, we
     are unable to supply the OpenSSL Toolkit with Qt packages. Developers wishing
     to use SSL communication in their deployed applications should either ensure
     that their users have the appropriate libraries installed, or they should
     consult a suitably qualified legal professional to ensure that applications
     using code from the OpenSSL project are correctly certified for import
     and export in relevant regions of the world.
-
-    When the Qt Network module is built with SSL support, the library is linked
-    against OpenSSL in a way that requires OpenSSL license compliance.
 */

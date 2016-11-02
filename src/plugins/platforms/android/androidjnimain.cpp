@@ -514,7 +514,7 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
     if (m_applicationParams.length()) {
         // Obtain a handle to the main library (the library that contains the main() function).
         // This library should already be loaded, and calling dlopen() will just return a reference to it.
-        m_mainLibraryHnd = dlopen(m_applicationParams.first().data(), 0);
+        m_mainLibraryHnd = dlopen(m_applicationParams.constFirst().data(), 0);
         if (Q_UNLIKELY(!m_mainLibraryHnd)) {
             qCritical() << "dlopen failed:" << dlerror();
             return false;
@@ -635,6 +635,11 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
     if (QGuiApplication::instance() != nullptr) {
         const auto tlw = QGuiApplication::topLevelWindows();
         for (QWindow *w : tlw) {
+
+            // Skip non-platform windows, e.g., offscreen windows.
+            if (!w->handle())
+                continue;
+
             QRect availableGeometry = w->screen()->availableGeometry();
             if (w->geometry().width() > 0 && w->geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
                 QWindowSystemInterface::handleExposeEvent(w, QRegion(QRect(QPoint(), w->geometry().size())));

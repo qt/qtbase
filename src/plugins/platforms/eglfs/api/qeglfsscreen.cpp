@@ -41,7 +41,7 @@
 #include <QtGui/qwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformcursor.h>
-#include <QtPlatformSupport/private/qopenglcompositor_p.h>
+#include <QtPlatformCompositorSupport/private/qopenglcompositor_p.h>
 
 #include "qeglfsscreen_p.h"
 #include "qeglfswindow_p.h"

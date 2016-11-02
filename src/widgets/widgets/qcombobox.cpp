@@ -66,7 +66,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC) && !defined(QT_NO_EFFECTS) && !defined(QT_NO_STYLE_MAC)
+#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && !defined(QT_NO_EFFECTS) && !defined(QT_NO_STYLE_MAC)
 #include <private/qcore_mac_p.h>
 #include <private/qmacstyle_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -415,7 +415,7 @@ void QComboBoxPrivateContainer::leaveEvent(QEvent *)
 {
 // On Mac using the Mac style we want to clear the selection
 // when the mouse moves outside the popup.
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     QStyleOptionComboBox opt = comboStyleOption();
     if (combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo))
           view->clearSelection();
@@ -1684,6 +1684,9 @@ void QComboBox::setIconSize(const QSize &size)
     By default, this property is \c false. The effect of editing depends
     on the insert policy.
 
+    \note When disabling the \a editable state, the validator and
+    completer are removed.
+
     \sa InsertPolicy
 */
 bool QComboBox::isEditable() const
@@ -1837,6 +1840,8 @@ QLineEdit *QComboBox::lineEdit() const
     \fn void QComboBox::setValidator(const QValidator *validator)
 
     Sets the \a validator to use instead of the current validator.
+
+    \note The validator is removed when the editable property becomes \c false.
 */
 
 void QComboBox::setValidator(const QValidator *v)
@@ -1870,6 +1875,8 @@ const QValidator *QComboBox::validator() const
 
     By default, for an editable combo box, a QCompleter that
     performs case insensitive inline completion is automatically created.
+
+    \note The completer is removed when the \a editable property becomes \c false.
 */
 void QComboBox::setCompleter(QCompleter *c)
 {
@@ -3126,6 +3133,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Up:
         if (e->modifiers() & Qt::ControlModifier)
             break; // pass to line edit for auto completion
+        // fall through
     case Qt::Key_PageUp:
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled())
@@ -3168,6 +3176,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             showPopup();
             return;
         }
+        break;
     case Qt::Key_Enter:
     case Qt::Key_Return:
     case Qt::Key_Escape:
@@ -3212,6 +3221,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         switch (move) {
         case MoveFirst:
             newIndex = -1;
+            // fall through
         case MoveDown:
             newIndex++;
             while (newIndex < rowCount && !(d->model->index(newIndex, d->modelColumn, d->root).flags() & Qt::ItemIsEnabled))
@@ -3219,6 +3229,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
             break;
         case MoveLast:
             newIndex = rowCount;
+            // fall through
         case MoveUp:
             newIndex--;
             while ((newIndex >= 0) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))

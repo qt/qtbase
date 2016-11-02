@@ -51,10 +51,12 @@
 // We mean it.
 //
 
+#include <QtGui/private/qtguiglobal_p.h>
+
 #include <QtCore/qstringlist.h>
 #include <QtGui/qaccessible.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+QT_REQUIRE_CONFIG(accessibility);
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +66,5 @@ namespace QAccessibleBridgeUtils {
 }
 
 QT_END_NAMESPACE
-
-#endif
 
 #endif //QACCESSIBLEBRIDGEUTILS_H

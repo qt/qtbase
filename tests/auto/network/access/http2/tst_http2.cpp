@@ -44,8 +44,8 @@
 #endif // NO_OPENSSL
 #endif // NO_SSL
 
-
 #include <cstdlib>
+#include <string>
 
 // At the moment our HTTP/2 imlpementation requires ALPN and this means OpenSSL.
 #if !defined(QT_NO_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)
@@ -68,6 +68,7 @@ private slots:
     void multipleRequests();
     void flowControlClientSide();
     void flowControlServerSide();
+    void pushPromise();
 
 protected slots:
     // Slots to listen to our in-process server:
@@ -90,8 +91,8 @@ private:
     // small payload.
     void runEventLoop(int ms = 5000);
     void stopEventLoop();
-    // TODO: different parameters like client/server settings ...
-    Http2Server *newServer(const Http2Settings &serverSettings);
+    Http2Server *newServer(const Http2Settings &serverSettings,
+                           const Http2Settings &clientSettings = defaultClientSettings);
     // Send a get or post request, depending on a payload (empty or not).
     void sendRequest(int streamNumber,
                      QNetworkRequest::Priority priority = QNetworkRequest::NormalPriority,
@@ -105,15 +106,57 @@ private:
     QTimer timer;
 
     int nRequests = 0;
+    int nSentRequests = 0;
 
     int windowUpdates = 0;
     bool prefaceOK = false;
     bool serverGotSettingsACK = false;
 
     static const Http2Settings defaultServerSettings;
+    static const Http2Settings defaultClientSettings;
 };
 
 const Http2Settings tst_Http2::defaultServerSettings{{Http2::Settings::MAX_CONCURRENT_STREAMS_ID, 100}};
+const Http2Settings tst_Http2::defaultClientSettings{{Http2::Settings::MAX_FRAME_SIZE_ID, quint32(Http2::maxFrameSize)},
+                                                     {Http2::Settings::ENABLE_PUSH_ID, quint32(0)}};
+
+namespace {
+
+// Our server lives/works on a different thread so we invoke its 'deleteLater'
+// instead of simple 'delete'.
+struct ServerDeleter
+{
+    static void cleanup(Http2Server *srv)
+    {
+        if (srv)
+            QMetaObject::invokeMethod(srv, "deleteLater", Qt::QueuedConnection);
+    }
+};
+
+using ServerPtr = QScopedPointer<Http2Server, ServerDeleter>;
+
+struct EnvVarGuard
+{
+    EnvVarGuard(const char *name, const QByteArray &value)
+        : varName(name),
+          prevValue(qgetenv(name))
+    {
+        Q_ASSERT(name);
+        qputenv(name, value);
+    }
+    ~EnvVarGuard()
+    {
+        if (prevValue.size())
+            qputenv(varName.c_str(), prevValue);
+        else
+            qunsetenv(varName.c_str());
+    }
+
+    const std::string varName;
+    const QByteArray prevValue;
+};
+
+} // unnamed namespace
 
 tst_Http2::tst_Http2()
     : workerThread(new QThread)
@@ -146,9 +189,9 @@ void tst_Http2::singleRequest()
     serverPort = 0;
     nRequests = 1;
 
-    auto srv = newServer(defaultServerSettings);
+    ServerPtr srv(newServer(defaultServerSettings));
 
-    QMetaObject::invokeMethod(srv, "startServer", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
     runEventLoop();
 
     QVERIFY(serverPort != 0);
@@ -174,8 +217,6 @@ void tst_Http2::singleRequest()
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->isFinished());
-
-    QMetaObject::invokeMethod(srv, "deleteLater", Qt::QueuedConnection);
 }
 
 void tst_Http2::multipleRequests()
@@ -185,9 +226,9 @@ void tst_Http2::multipleRequests()
     serverPort = 0;
     nRequests = 10;
 
-    auto srv = newServer(defaultServerSettings);
+    ServerPtr srv(newServer(defaultServerSettings));
 
-    QMetaObject::invokeMethod(srv, "startServer", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
 
     runEventLoop();
     QVERIFY(serverPort != 0);
@@ -198,8 +239,6 @@ void tst_Http2::multipleRequests()
                                               QNetworkRequest::NormalPriority,
                                               QNetworkRequest::LowPriority};
 
-
-
     for (int i = 0; i < nRequests; ++i)
         sendRequest(i, priorities[std::rand() % 3]);
 
@@ -208,8 +247,6 @@ void tst_Http2::multipleRequests()
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
-
-    QMetaObject::invokeMethod(srv, "deleteLater", Qt::QueuedConnection);
 }
 
 void tst_Http2::flowControlClientSide()
@@ -230,12 +267,12 @@ void tst_Http2::flowControlClientSide()
 
     const Http2Settings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, 3}};
 
-    auto srv = newServer(serverSettings);
+    ServerPtr srv(newServer(serverSettings));
 
     const QByteArray respond(int(Http2::defaultSessionWindowSize * 50), 'x');
     srv->setResponseBody(respond);
 
-    QMetaObject::invokeMethod(srv, "startServer", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
 
     runEventLoop();
     QVERIFY(serverPort != 0);
@@ -249,8 +286,6 @@ void tst_Http2::flowControlClientSide()
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
     QVERIFY(windowUpdates > 0);
-
-    QMetaObject::invokeMethod(srv, "deleteLater", Qt::QueuedConnection);
 }
 
 void tst_Http2::flowControlServerSide()
@@ -270,11 +305,11 @@ void tst_Http2::flowControlServerSide()
 
     const Http2Settings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, 7}};
 
-    auto srv = newServer(serverSettings);
+    ServerPtr srv(newServer(serverSettings));
 
     const QByteArray payload(int(Http2::defaultSessionWindowSize * 500), 'x');
 
-    QMetaObject::invokeMethod(srv, "startServer", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
 
     runEventLoop();
     QVERIFY(serverPort != 0);
@@ -287,9 +322,73 @@ void tst_Http2::flowControlServerSide()
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
+}
 
-    QMetaObject::invokeMethod(srv, "deleteLater", Qt::QueuedConnection);
-    srv = nullptr;
+void tst_Http2::pushPromise()
+{
+    // We will first send some request, the server should reply and also emulate
+    // PUSH_PROMISE sending us another response as promised.
+    using namespace Http2;
+
+    clearHTTP2State();
+
+    serverPort = 0;
+    nRequests = 1;
+
+    const EnvVarGuard env("QT_HTTP2_ENABLE_PUSH_PROMISE", "1");
+    const Http2Settings clientSettings{{Settings::MAX_FRAME_SIZE_ID, quint32(Http2::maxFrameSize)},
+                                       {Settings::ENABLE_PUSH_ID, quint32(1)}};
+
+    ServerPtr srv(newServer(defaultServerSettings, clientSettings));
+    srv->enablePushPromise(true, QByteArray("/script.js"));
+
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    const QString urlAsString((clearTextHTTP2 ? QString("http://127.0.0.1:%1/")
+                                              : QString("https://127.0.0.1:%1/")).arg(serverPort));
+    const QUrl requestUrl(urlAsString + "index.html");
+
+    QNetworkRequest request(requestUrl);
+    request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+
+    auto reply = manager.get(request);
+    connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    // Since we're using self-signed certificates, ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+
+    QVERIFY(nRequests == 0);
+    QVERIFY(prefaceOK);
+    QVERIFY(serverGotSettingsACK);
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(reply->isFinished());
+
+    // Now, the most interesting part!
+    nSentRequests = 0;
+    nRequests = 1;
+    // Create an additional request (let's say, we parsed reply and realized we
+    // need another resource):
+
+    const QUrl promisedUrl(urlAsString + "script.js");
+    QNetworkRequest promisedRequest(promisedUrl);
+    promisedRequest.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+    reply = manager.get(promisedRequest);
+    connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+
+    // Let's check that NO request was actually made:
+    QCOMPARE(nSentRequests, 0);
+    // Decreased by replyFinished():
+    QCOMPARE(nRequests, 0);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(reply->isFinished());
 }
 
 void tst_Http2::serverStarted(quint16 port)
@@ -318,12 +417,10 @@ void tst_Http2::stopEventLoop()
     eventLoop.quit();
 }
 
-Http2Server *tst_Http2::newServer(const Http2Settings &serverSettings)
+Http2Server *tst_Http2::newServer(const Http2Settings &serverSettings,
+                                  const Http2Settings &clientSettings)
 {
     using namespace Http2;
-    // Client's settings are fixed by qhttp2protocolhandler.
-    const Http2Settings clientSettings = {{Settings::MAX_FRAME_SIZE_ID, quint32(Http2::maxFrameSize)},
-                                          {Settings::ENABLE_PUSH_ID, quint32(0)}};
     auto srv = new Http2Server(clearTextHTTP2, serverSettings, clientSettings);
 
     using Srv = Http2Server;
@@ -397,6 +494,7 @@ void tst_Http2::decompressionFailed(quint32 streamID)
 
 void tst_Http2::receivedRequest(quint32 streamID)
 {
+    ++nSentRequests;
     qDebug() << "   server got a request on stream" << streamID;
     Http2Server *srv = qobject_cast<Http2Server *>(sender());
     Q_ASSERT(srv);

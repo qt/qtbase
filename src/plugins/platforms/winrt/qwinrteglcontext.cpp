@@ -51,8 +51,8 @@
 
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtEglSupport/private/qeglpbuffer_p.h>
 
 QT_BEGIN_NAMESPACE
 

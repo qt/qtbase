@@ -51,7 +51,7 @@
 #include <QtGui/QOffscreenSurface>
 
 #include "qglxintegration.h"
-#include <QtPlatformSupport/private/qglxconvenience_p.h>
+#include <QtGlxSupport/private/qglxconvenience_p.h>
 #include <QtPlatformHeaders/QGLXNativeContext>
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)

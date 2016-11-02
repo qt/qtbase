@@ -48,7 +48,6 @@
 #include "qwindowscontext.h"
 #include "qwindowsintegration.h"
 #include "qt_windows.h"
-#include "qwindowsfontdatabase.h"
 #include <commctrl.h>
 #include <objbase.h>
 #ifndef Q_CC_MINGW
@@ -68,7 +67,8 @@
 #include <QtGui/QPainter>
 #include <QtGui/QPixmapCache>
 #include <qpa/qwindowsysteminterface.h>
-#include <QtPlatformSupport/private/qabstractfileiconengine_p.h>
+#include <QtThemeSupport/private/qabstractfileiconengine_p.h>
+#include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qsystemlibrary_p.h>
 

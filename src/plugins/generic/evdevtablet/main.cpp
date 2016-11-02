@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include <QtGui/qgenericplugin.h>
-#include <QtPlatformSupport/private/qevdevtabletmanager_p.h>
+#include <QtInputSupport/private/qevdevtabletmanager_p.h>
 
 QT_BEGIN_NAMESPACE
 

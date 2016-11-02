@@ -47,9 +47,8 @@
 #include "qwindowstheme.h"
 #include "qwindowsservices.h"
 #ifndef QT_NO_FREETYPE
-#  include "qwindowsfontdatabase_ft.h"
+#  include <QtFontDatabaseSupport/private/qwindowsfontdatabase_ft_p.h>
 #endif
-#include "qwindowsfontdatabase.h"
 #ifndef QT_NO_CLIPBOARD
 #  include "qwindowsclipboard.h"
 #  ifndef QT_NO_DRAGANDDROP
@@ -72,7 +71,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpa/qplatforminputcontextfactory_p.h>
 
-#include <QtPlatformSupport/private/qwindowsguieventdispatcher_p.h>
+#include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QVariant>
@@ -220,6 +219,7 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     // are connected to Windows 8.1
     QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorDpiAware;
     m_options = parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness);
+    QWindowsFontDatabase::setFontOptions(m_options);
     if (tabletAbsoluteRange >= 0)
         m_context.setTabletAbsoluteRange(tabletAbsoluteRange);
     if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.

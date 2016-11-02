@@ -56,7 +56,7 @@
 #include "qeglfsscreen_p.h"
 
 #include <qpa/qplatformwindow.h>
-#include <QtPlatformSupport/private/qopenglcompositor_p.h>
+#include <QtPlatformCompositorSupport/private/qopenglcompositor_p.h>
 
 QT_BEGIN_NAMESPACE
 

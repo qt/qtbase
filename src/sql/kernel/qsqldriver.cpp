@@ -671,6 +671,7 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 break;
             }
         }
+            // fall through
         default:
             r = field.value().toString();
             break;

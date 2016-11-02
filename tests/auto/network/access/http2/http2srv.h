@@ -68,6 +68,7 @@ public:
     ~Http2Server();
 
     // To be called before server started:
+    void enablePushPromise(bool enabled, const QByteArray &path = QByteArray());
     void setResponseBody(const QByteArray &body);
 
     // Invokables, since we can call them from the main thread,
@@ -157,6 +158,9 @@ private:
 
     QByteArray responseBody;
     bool clearTextHTTP2 = false;
+    bool pushPromiseEnabled = false;
+    quint32 lastPromisedStream = 0;
+    QByteArray pushPath;
 
 protected slots:
     void ignoreErrorSlot();

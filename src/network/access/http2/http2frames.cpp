@@ -244,6 +244,24 @@ quint32 Frame::dataSize() const
     return size;
 }
 
+quint32 Frame::hpackBlockSize() const
+{
+    Q_ASSERT(validatePayload() == FrameStatus::goodFrame);
+
+    const auto frameType = type();
+    Q_ASSERT(frameType == FrameType::HEADERS ||
+             frameType == FrameType::PUSH_PROMISE ||
+             frameType == FrameType::CONTINUATION);
+
+    quint32 size = dataSize();
+    if (frameType == FrameType::PUSH_PROMISE) {
+        Q_ASSERT(size >= 4);
+        size -= 4;
+    }
+
+    return size;
+}
+
 const uchar *Frame::dataBegin() const
 {
     Q_ASSERT(validatePayload() == FrameStatus::goodFrame);
@@ -258,6 +276,21 @@ const uchar *Frame::dataBegin() const
         src += 5;
 
     return src;
+}
+
+const uchar *Frame::hpackBlockBegin() const
+{
+    Q_ASSERT(validatePayload() == FrameStatus::goodFrame);
+
+    const auto frameType = type();
+    Q_ASSERT(frameType == FrameType::HEADERS ||
+             frameType == FrameType::PUSH_PROMISE ||
+             frameType == FrameType::CONTINUATION);
+
+    const uchar *begin = dataBegin();
+    if (frameType == FrameType::PUSH_PROMISE)
+        begin += 4; // That's a promised stream, skip it.
+    return begin;
 }
 
 FrameStatus FrameReader::read(QAbstractSocket &socket)

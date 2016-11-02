@@ -54,9 +54,12 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
     tvos: deployment_target = $$QMAKE_TVOS_DEPLOYMENT_TARGET
     watchos: deployment_target = $$QMAKE_WATCHOS_DEPLOYMENT_TARGET
 
-    !simulator|simulator_and_device: device_archs = $$QMAKE_APPLE_DEVICE_ARCHS
+    device|!simulator: device_archs = $$QMAKE_APPLE_DEVICE_ARCHS
     simulator: simulator_archs = $$QMAKE_APPLE_SIMULATOR_ARCHS
     archs = $$device_archs $$simulator_archs
+
+    isEmpty(archs): \
+        error("QMAKE_APPLE_DEVICE_ARCHS or QMAKE_APPLE_SIMULATOR_ARCHS must contain at least one architecture")
 
     single_arch {
         device_archs = $$first(device_archs)
@@ -64,14 +67,14 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
         archs = $$first(archs)
     }
 
-    # If we're doing a simulator_and_device build, device and simulator architectures
+    # If we're doing a simulator and device build, device and simulator architectures
     # use different paths and flags for the sysroot and deployment target switch, so we
     # must multiplex them across multiple architectures using -Xarch. Otherwise we fall
     # back to the simple path. This is not strictly necessary but results in cleaner
     # command lines and makes it easier for people to override EXPORT_VALID_ARCHS to
     # limit individual rules to a different set of architecture(s) from the overall
     # build (such as machtest in QtCore).
-    simulator_and_device {
+    simulator:device {
         QMAKE_XARCH_CFLAGS =
         QMAKE_XARCH_LFLAGS =
         QMAKE_EXTRA_VARIABLES += QMAKE_XARCH_CFLAGS QMAKE_XARCH_LFLAGS

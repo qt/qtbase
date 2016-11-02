@@ -6,9 +6,10 @@ DEFINES += QT_STATICPLUGIN
 
 LIBS += -ljnigraphics -landroid
 
-QT += core-private gui-private platformsupport-private
-
-CONFIG += qpa/genericunixfontdatabase
+QT += \
+    core-private gui-private \
+    eventdispatcher_support-private accessibility_support-private \
+    fontdatabase_support-private egl_support-private
 
 OTHER_FILES += $$PWD/android.json
 
@@ -72,7 +73,7 @@ HEADERS += $$PWD/qandroidplatformintegration.h \
            $$PWD/qandroidplatformforeignwindow.h \
            $$PWD/qandroideventdispatcher.h
 
-android-style-assets: SOURCES += $$PWD/extract.cpp
+qtConfig(android-style-assets): SOURCES += $$PWD/extract.cpp
 else: SOURCES += $$PWD/extract-dummy.cpp
 
 PLUGIN_TYPE = platforms

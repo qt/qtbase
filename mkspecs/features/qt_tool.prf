@@ -9,6 +9,7 @@
 # We mean it.
 #
 
+CONFIG += no_launch_target
 load(qt_app)
 
 CONFIG += console

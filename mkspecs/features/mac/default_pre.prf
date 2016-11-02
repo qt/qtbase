@@ -1,4 +1,4 @@
-CONFIG = asset_catalogs sdk rez $$CONFIG
+CONFIG = asset_catalogs rez $$CONFIG
 load(default_pre)
 
 isEmpty(QMAKE_XCODE_DEVELOPER_PATH) {

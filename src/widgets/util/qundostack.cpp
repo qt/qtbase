@@ -633,7 +633,7 @@ void QUndoStack::push(QUndoCommand *cmd)
     commands, it emits the signal cleanChanged(). This signal is also
     emitted when the stack leaves the clean state.
 
-    \sa isClean(), cleanIndex()
+    \sa isClean(), resetClean(), cleanIndex()
 */
 
 void QUndoStack::setClean()
@@ -645,6 +645,30 @@ void QUndoStack::setClean()
     }
 
     d->setIndex(d->index, true);
+}
+
+/*!
+    \since 5.8
+
+    Leaves the clean state and emits cleanChanged() if the stack was clean.
+    This method resets the clean index to -1.
+
+    This is typically called in the following cases, when a document has been:
+    \li created basing on some template and has not been saved,
+        so no filename has been associated with the document yet.
+    \li restored from a backup file.
+    \li changed outside of the editor and the user did not reload it.
+
+    \sa isClean(), setClean(), cleanIndex()
+*/
+
+void QUndoStack::resetClean()
+{
+    Q_D(QUndoStack);
+    const bool was_clean = isClean();
+    d->clean_index = -1;
+    if (was_clean)
+        emit cleanChanged(false);
 }
 
 /*!
@@ -668,6 +692,7 @@ bool QUndoStack::isClean() const
     some commands are undone, then a new command is pushed. Since
     push() deletes all the undone commands before pushing the new command, the stack
     can't return to the clean state again. In this case, this function returns -1.
+    The -1 may also be returned after an explicit call to resetClean().
 
     \sa isClean(), setClean()
 */

@@ -9,24 +9,12 @@ LIBS += -lshlwapi -lshell32 -ladvapi32
 
 DEFINES *= QT_NO_CAST_FROM_ASCII
 
-qtConfig(directwrite) {
-    qtConfig(directwrite2): \
-        DEFINES *= QT_USE_DIRECTWRITE2
-
-    SOURCES += $$PWD/qwindowsfontenginedirectwrite.cpp
-    HEADERS += $$PWD/qwindowsfontenginedirectwrite.h
-} else {
-    DEFINES *= QT_NO_DIRECTWRITE
-}
-
 SOURCES += \
     $$PWD/qwindowswindow.cpp \
     $$PWD/qwindowsintegration.cpp \
     $$PWD/qwindowscontext.cpp \
     $$PWD/qwindowsscreen.cpp \
     $$PWD/qwindowskeymapper.cpp \
-    $$PWD/qwindowsfontengine.cpp \
-    $$PWD/qwindowsfontdatabase.cpp \
     $$PWD/qwindowsmousehandler.cpp \
     $$PWD/qwindowsole.cpp \
     $$PWD/qwindowsmime.cpp \
@@ -36,7 +24,6 @@ SOURCES += \
     $$PWD/qwindowstheme.cpp \
     $$PWD/qwindowsdialoghelpers.cpp \
     $$PWD/qwindowsservices.cpp \
-    $$PWD/qwindowsnativeimage.cpp \
     $$PWD/qwindowsnativeinterface.cpp \
     $$PWD/qwindowsopengltester.cpp
 
@@ -46,8 +33,6 @@ HEADERS += \
     $$PWD/qwindowscontext.h \
     $$PWD/qwindowsscreen.h \
     $$PWD/qwindowskeymapper.h \
-    $$PWD/qwindowsfontengine.h \
-    $$PWD/qwindowsfontdatabase.h \
     $$PWD/qwindowsmousehandler.h \
     $$PWD/qtwindowsglobal.h \
     $$PWD/qwindowsole.h \
@@ -58,7 +43,6 @@ HEADERS += \
     $$PWD/qwindowstheme.h \
     $$PWD/qwindowsdialoghelpers.h \
     $$PWD/qwindowsservices.h \
-    $$PWD/qwindowsnativeimage.h \
     $$PWD/qwindowsnativeinterface.h \
     $$PWD/qwindowsopengltester.h \
     $$PWD/qwindowsthreadpoolrunner.h
@@ -110,16 +94,6 @@ qtConfig(dynamicgl) {
 !contains( DEFINES, QT_NO_IMAGEFORMAT_PNG ):RESOURCES += $$PWD/cursors.qrc
 
 RESOURCES += $$PWD/openglblacklists.qrc
-
-qtConfig(freetype) {
-    HEADERS += $$PWD/qwindowsfontdatabase_ft.h
-    SOURCES += $$PWD/qwindowsfontdatabase_ft.cpp
-    qtConfig(system-freetype) {
-        include($$QT_SOURCE_TREE/src/platformsupport/fontdatabases/basic/basic.pri)
-    } else {
-        include($$QT_SOURCE_TREE/src/3rdparty/freetype_dependency.pri)
-    }
-}
 
 qtConfig(accessibility): include($$PWD/accessible/accessible.pri)
 

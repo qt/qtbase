@@ -58,8 +58,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/qpainter.h>
-#include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
-#include <QtPlatformSupport/private/qabstractfileiconengine_p.h>
+#include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
+#include <QtThemeSupport/private/qabstractfileiconengine_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
 

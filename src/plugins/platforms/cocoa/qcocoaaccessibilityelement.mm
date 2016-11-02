@@ -41,7 +41,7 @@
 #include "qcocoahelpers.h"
 #include "qcocoawindow.h"
 #include "private/qaccessiblecache_p.h"
-#include <QtPlatformSupport/private/qaccessiblebridgeutils_p.h>
+#include <QtAccessibilitySupport/private/qaccessiblebridgeutils_p.h>
 #include <QtGui/qaccessible.h>
 
 #import <AppKit/NSAccessibility.h>

@@ -255,6 +255,7 @@ void TableGenerator::initPossibleLocations()
     // never meant for external software to parse compose tables directly. Best we
     // can do is to hardcode search paths. To add an extra system path use
     // the QTCOMPOSE environment variable
+    m_possibleLocations.reserve(7);
     if (qEnvironmentVariableIsSet("QTCOMPOSE"))
         m_possibleLocations.append(QString::fromLocal8Bit(qgetenv("QTCOMPOSE")));
     m_possibleLocations.append(QStringLiteral("/usr/share/X11/locale"));

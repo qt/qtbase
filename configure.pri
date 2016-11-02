@@ -247,11 +247,12 @@ defineTest(qtConfTest_checkCompiler) {
         $${1}.compilerId = "icc"
         $${1}.compilerVersion = $$replace(version, "icpc version ([0-9.]+).*", "\\1")
     } else: msvc {
-        qtRunLoggedCommand("$$QMAKE_CXX /? 2>&1", version)|return(false)
+        command = $$QMAKE_CXX /EP /nologo $$source $$system_quote($$QMAKE_CONFIG_TESTS_DIR/win/msvc_version.cpp)
+        qtRunLoggedCommand("$$command", version)|return(false)
         version = "$$version"
         $${1}.compilerDescription = "MSVC"
         $${1}.compilerId = "cl"
-        $${1}.compilerVersion = $$replace(version, "^.*Compiler Version ([0-9.]+) for.*$", "\\1")
+        $${1}.compilerVersion = $$replace(version, "^.*([0-9]{2})([0-9]{2})([0-9]{5}).*$", "\\1.\\2.\\3")
     } else {
         return(false)
     }
@@ -325,8 +326,9 @@ defineTest(qtConfOutput_qreal) {
 defineTest(qtConfOutput_pkgConfig) {
     !$${2}: return()
 
-    PKG_CONFIG = $$eval($${currentConfig}.tests.pkg-config.pkgConfig)
-    export(PKG_CONFIG)
+    PKG_CONFIG_EXECUTABLE = $$eval($${currentConfig}.tests.pkg-config.pkgConfig)
+    qtConfOutputVar(assign, "privatePro", "PKG_CONFIG_EXECUTABLE", $$PKG_CONFIG_EXECUTABLE)
+    export(PKG_CONFIG_EXECUTABLE)
     # this method also exports PKG_CONFIG_(LIB|SYSROOT)DIR, so that tests using pkgConfig will work correctly
     PKG_CONFIG_SYSROOT_DIR = $$eval($${currentConfig}.tests.pkg-config.pkgConfigSysrootDir)
     !isEmpty(PKG_CONFIG_SYSROOT_DIR) {

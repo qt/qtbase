@@ -55,9 +55,9 @@
 
 #include <xcb/xcb.h>
 
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
-#include <QtPlatformSupport/private/qgenericunixservices_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtServiceSupport/private/qgenericunixservices_p.h>
 
 #include <stdio.h>
 
@@ -77,7 +77,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qpa/qplatformaccessibility.h>
 #ifndef QT_NO_ACCESSIBILITY_ATSPI_BRIDGE
-#include "../../../platformsupport/linuxaccessibility/bridge_p.h"
+#include <QtLinuxAccessibilitySupport/private/bridge_p.h>
 #endif
 #endif
 

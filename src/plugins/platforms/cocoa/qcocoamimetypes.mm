@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qcocoamimetypes.h"
-#include <QtPlatformSupport/private/qmacmime_p.h>
+#include <QtClipboardSupport/private/qmacmime_p.h>
 #include "qcocoahelpers.h"
 #include <QtGui/private/qcoregraphics_p.h>
 

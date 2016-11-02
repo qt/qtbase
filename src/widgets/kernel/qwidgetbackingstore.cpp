@@ -112,6 +112,7 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
     if (widget != tlw)
         offset += widget->mapTo(tlw, QPoint());
 
+    QRegion effectiveRegion = region;
 #ifndef QT_NO_OPENGL
     const bool compositionWasActive = widget->d_func()->renderToTextureComposeActive;
     if (!widgetTextures) {
@@ -125,6 +126,11 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
     } else {
         widget->d_func()->renderToTextureComposeActive = true;
     }
+    // When changing the composition status, make sure the dirty region covers
+    // the entire widget.  Just having e.g. the shown/hidden render-to-texture
+    // widget's area marked as dirty is incorrect when changing flush paths.
+    if (compositionWasActive != widget->d_func()->renderToTextureComposeActive)
+        effectiveRegion = widget->rect();
 
     // re-test since we may have been forced to this path via the dummy texture list above
     if (widgetTextures) {
@@ -136,12 +142,12 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
         const bool translucentBackground = widget->testAttribute(Qt::WA_TranslucentBackground);
         // Use the tlw's context, not widget's. The difference is important with native child
         // widgets where tlw != widget.
-        backingStore->handle()->composeAndFlush(widget->windowHandle(), region, offset, widgetTextures,
+        backingStore->handle()->composeAndFlush(widget->windowHandle(), effectiveRegion, offset, widgetTextures,
                                                 tlw->d_func()->shareContext(), translucentBackground);
         widget->window()->d_func()->sendComposeStatus(widget->window(), true);
     } else
 #endif
-        backingStore->flush(region, widget->windowHandle(), offset);
+        backingStore->flush(effectiveRegion, widget->windowHandle(), offset);
 }
 
 #ifndef QT_NO_PAINT_DEBUG
@@ -699,7 +705,7 @@ void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widg
     if (!widget || widget->d_func()->paintOnScreen() || region.isEmpty())
         return;
 
-#if defined(Q_DEAD_CODE_FROM_QT4_MAC)
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
         dirtyOnScreen += region.translated(topLevelOffset);
     return;
@@ -1624,7 +1630,7 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
                                         && (usesDoubleBufferedGLContext || q->autoFillBackground());
     QRegion toBePainted(noPartialUpdateSupport ? q->rect() : rgn);
 
-#ifdef Q_DEAD_CODE_FROM_QT4_MAC
+#if 0 // Used to be included in Qt4 for Q_WS_MAC
     // No difference between update() and repaint() on the Mac.
     update_sys(toBePainted);
     return;

@@ -54,6 +54,8 @@
 - (BOOL)windowShouldClose:(NSNotification *)notification;
 - (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame;
 
+- (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu;
+- (BOOL)window:(NSWindow *)window shouldDragDocumentWithEvent:(NSEvent *)event from:(NSPoint)dragImageLocation withPasteboard:(NSPasteboard *)pasteboard;
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowDelegate);

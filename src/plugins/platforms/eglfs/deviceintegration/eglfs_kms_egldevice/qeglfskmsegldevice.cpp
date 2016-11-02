@@ -79,7 +79,7 @@ void QEglFSKmsEglDevice::close()
 
 EGLNativeDisplayType QEglFSKmsEglDevice::nativeDisplay() const
 {
-    return static_cast<QEglFSKmsEglDeviceIntegration *>(m_integration)->eglDevice();
+    return reinterpret_cast<EGLNativeDisplayType>(static_cast<QEglFSKmsEglDeviceIntegration *>(m_integration)->eglDevice());
 }
 
 QEglFSKmsScreen *QEglFSKmsEglDevice::createScreen(QEglFSKmsIntegration *integration, QEglFSKmsDevice *device,

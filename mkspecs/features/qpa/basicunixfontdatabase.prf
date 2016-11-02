@@ -1,3 +1,0 @@
-qtConfig(system-freetype) {
-    QMAKE_USE_PRIVATE += freetype/linkonly
-}

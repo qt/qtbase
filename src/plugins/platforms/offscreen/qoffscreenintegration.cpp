@@ -42,14 +42,14 @@
 #include "qoffscreencommon.h"
 
 #if defined(Q_OS_UNIX)
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 #if defined(Q_OS_MAC)
 #include <qpa/qplatformfontdatabase.h>
 #else
-#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #endif
 #elif defined(Q_OS_WIN)
-#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
 #ifndef Q_OS_WINRT
 #include <QtCore/private/qeventdispatcher_win_p.h>
 #else

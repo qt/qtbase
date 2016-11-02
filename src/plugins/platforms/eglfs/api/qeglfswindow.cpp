@@ -43,8 +43,8 @@
 #include <private/qguiapplication_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLContext>
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qopenglcompositorbackingstore_p.h>
+#include <QtEglSupport/private/qeglconvenience_p.h>
+#include <QtPlatformCompositorSupport/private/qopenglcompositorbackingstore_p.h>
 
 #include "qeglfswindow_p.h"
 #include "qeglfscursor_p.h"

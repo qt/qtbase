@@ -53,7 +53,7 @@
 
 #include "qevdevkeyboardhandler_p.h"
 
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
 
 #include <QObject>
 #include <QHash>

@@ -158,11 +158,8 @@
     \endtable
 
     Containers can be nested. For example, it is perfectly possible
-    to use a QMap<QString, QList<int> >, where the key type is
-    QString and the value type QList<int>. The only pitfall is that
-    you must insert a space between the closing angle brackets (>);
-    otherwise the C++ compiler will misinterpret the two >'s as a
-    right-shift operator (>>) and report a syntax error.
+    to use a QMap<QString, QList<int>>, where the key type is
+    QString and the value type QList<int>.
 
     The containers are defined in individual header files with the
     same name as the container (e.g., \c <QLinkedList>). For

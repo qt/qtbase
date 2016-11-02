@@ -2,7 +2,7 @@ TARGET = QtEglFsKmsSupport
 CONFIG += no_module_headers internal_module
 load(qt_module)
 
-QT += core-private gui-private platformsupport-private eglfsdeviceintegration-private
+QT += core-private gui-private eglfsdeviceintegration-private
 
 INCLUDEPATH += $$PWD/../../api
 

@@ -892,6 +892,9 @@ void QFileDialogPrivate::_q_goToUrl(const QUrl &url)
         {QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).last()},
         a native image picker dialog will be used for accessing the user's photo album.
         The filename returned can be loaded using QFile and related APIs.
+        For this to be enabled, the Info.plist assigned to QMAKE_INFO_PLIST in the
+        project file must contain the key \c NSPhotoLibraryUsageDescription. See
+        Info.plist documentation from Apple for more information regarding this key.
         This feature was added in Qt 5.5.
 */
 void QFileDialog::setDirectory(const QString &directory)
@@ -2034,10 +2037,12 @@ QString QFileDialog::labelText(DialogLabel label) const
             button = d->qFileDialogUi->buttonBox->button(QDialogButtonBox::Save);
         if (button)
             return button->text();
+        break;
     case Reject:
         button = d->qFileDialogUi->buttonBox->button(QDialogButtonBox::Cancel);
         if (button)
             return button->text();
+        break;
     }
     return QString();
 }
