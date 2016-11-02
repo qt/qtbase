@@ -580,6 +580,7 @@ qint64 QNativeSocketEngine::bytesAvailable() const
     if (d->socketType != QAbstractSocket::TcpSocket)
         return -1;
 
+    QMutexLocker locker(&d->readMutex);
     return d->readBytes.size() - d->readBytes.pos();
 }
 
@@ -592,12 +593,12 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
     // There will be a read notification when the socket was closed by the remote host. If that
     // happens and there isn't anything left in the buffer, we have to return -1 in order to signal
     // the closing of the socket.
+    QMutexLocker mutexLocker(&d->readMutex);
     if (d->readBytes.pos() == d->readBytes.size() && d->socketState != QAbstractSocket::ConnectedState) {
         close();
         return -1;
     }
 
-    QMutexLocker mutexLocker(&d->readMutex);
     return d->readBytes.read(data, maxlen);
 }
 
@@ -628,6 +629,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
                                          PacketHeaderOptions)
 {
     Q_D(QNativeSocketEngine);
+    QMutexLocker locker(&d->readMutex);
     if (d->socketType != QAbstractSocket::UdpSocket || d->pendingDatagrams.isEmpty()) {
         if (header)
             header->clear();
@@ -647,6 +649,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     } else {
         readOrigin = datagram.data;
     }
+    locker.unlock();
     memcpy(data, readOrigin, qMin(maxlen, qint64(datagram.data.length())));
     return readOrigin.length();
 }
@@ -684,12 +687,14 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QI
 bool QNativeSocketEngine::hasPendingDatagrams() const
 {
     Q_D(const QNativeSocketEngine);
+    QMutexLocker locker(&d->readMutex);
     return d->pendingDatagrams.length() > 0;
 }
 
 qint64 QNativeSocketEngine::pendingDatagramSize() const
 {
     Q_D(const QNativeSocketEngine);
+    QMutexLocker locker(&d->readMutex);
     if (d->pendingDatagrams.isEmpty())
         return -1;
 
@@ -1336,7 +1341,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     hr = byteArrayAccess->Buffer(&data);
     Q_ASSERT_SUCCEEDED(hr);
 
-    readMutex.lock();
+    QMutexLocker locker(&readMutex);
     if (readBytes.atEnd()) // Everything has been read; the buffer is safe to reset
         readBytes.close();
     if (!readBytes.isOpen())
@@ -1346,7 +1351,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     Q_ASSERT(readBytes.atEnd());
     readBytes.write(reinterpret_cast<const char*>(data), qint64(bufferLength));
     readBytes.seek(readPos);
-    readMutex.unlock();
+    locker.unlock();
 
     if (notifyOnRead)
         emit q->readReady();
@@ -1410,7 +1415,9 @@ HRESULT QNativeSocketEnginePrivate::handleNewDatagram(IDatagramSocket *socket, I
     datagram.data.resize(length);
     hr = reader->ReadBytes(length, reinterpret_cast<BYTE *>(datagram.data.data()));
     RETURN_OK_IF_FAILED("Could not read datagram");
+    QMutexLocker locker(&readMutex);
     pendingDatagrams.append(datagram);
+    locker.unlock();
     if (notifyOnRead)
         emit q->readReady();
 
