@@ -252,6 +252,7 @@ Gui, printing, widget options:
   -xcb-xlib............. Enable Xcb-Xlib support [auto]
 
   Platform backends:
+    -direct2d .......... Enable Direct2D support [auto] (Windows only)
     -directfb .......... Enable DirectFB support [no] (Unix only)
     -eglfs ............. Enable EGLFS support [auto; no on Android and Windows]
     -gbm ............... Enable backends for GBM [auto] (Linux only)
