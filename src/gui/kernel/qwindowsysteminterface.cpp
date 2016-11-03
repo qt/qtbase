@@ -59,15 +59,12 @@ QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
 QMutex QWindowSystemInterfacePrivate::flushEventMutex;
 QAtomicInt QWindowSystemInterfacePrivate::eventAccepted;
 QWindowSystemEventHandler *QWindowSystemInterfacePrivate::eventHandler;
-
-//------------------------------------------------------------
-//
-// Callback functions for plugins:
-//
-
 QWindowSystemInterfacePrivate::WindowSystemEventList QWindowSystemInterfacePrivate::windowSystemEventQueue;
 
 extern QPointer<QWindow> qt_last_mouse_receiver;
+
+
+// ------------------- QWindowSystemInterfacePrivate -------------------
 
 /*!
     Handles a window system event asynchronously by posting the event to Qt Gui.
@@ -119,6 +116,107 @@ bool QWindowSystemInterfacePrivate::handleWindowSystemEvent<QWindowSystemInterfa
     else
         return handleWindowSystemEvent<QWindowSystemInterface::AsynchronousDelivery>(ev);
 }
+
+int QWindowSystemInterfacePrivate::windowSystemEventsQueued()
+{
+    return windowSystemEventQueue.count();
+}
+
+QWindowSystemInterfacePrivate::WindowSystemEvent * QWindowSystemInterfacePrivate::getWindowSystemEvent()
+{
+    return windowSystemEventQueue.takeFirstOrReturnNull();
+}
+
+QWindowSystemInterfacePrivate::WindowSystemEvent *QWindowSystemInterfacePrivate::getNonUserInputWindowSystemEvent()
+{
+    return windowSystemEventQueue.takeFirstNonUserInputOrReturnNull();
+}
+
+QWindowSystemInterfacePrivate::WindowSystemEvent *QWindowSystemInterfacePrivate::peekWindowSystemEvent(EventType t)
+{
+    return windowSystemEventQueue.peekAtFirstOfType(t);
+}
+
+void QWindowSystemInterfacePrivate::removeWindowSystemEvent(WindowSystemEvent *event)
+{
+    windowSystemEventQueue.remove(event);
+}
+
+/*!
+    Posts a window system event to be handled asynchronously by Qt Gui.
+
+    This function posts the event on the window system event queue and wakes the
+    Gui event dispatcher. Qt Gui will then handle the event asynchonously at a
+    later point.
+
+    \sa flushWindowSystemEvents(), processWindowSystemEvent(), handleWindowSystemEvent()
+*/
+void QWindowSystemInterfacePrivate::postWindowSystemEvent(WindowSystemEvent *ev)
+{
+    windowSystemEventQueue.append(ev);
+    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
+    if (dispatcher)
+        dispatcher->wakeUp();
+}
+
+/*!
+    Processes a window system event synchronously.
+
+    Qt Gui will process the event immediately. The return value indicates if Qt
+    accepted the event.
+
+    If the event is delivered from another thread than the Qt main thread the
+    window system event queue is flushed, which may deliver other events as
+    well.
+
+    \sa flushWindowSystemEvents(), postWindowSystemEvent(), handleWindowSystemEvent()
+*/
+bool QWindowSystemInterfacePrivate::processWindowSystemEvent(WindowSystemEvent *ev)
+{
+    bool accepted = true;
+    if (QThread::currentThread() == QGuiApplication::instance()->thread()) {
+        // Process the event immediately on the current thread and return the accepted state.
+        QGuiApplicationPrivate::processWindowSystemEvent(ev);
+        accepted = ev->eventAccepted;
+        delete ev;
+    } else {
+        // Post the event on the Qt main thread queue and flush the queue.
+        // This will wake up the Gui thread which will process the event.
+        // Return the accepted state for the last event on the queue,
+        // which is the event posted by this function.
+        postWindowSystemEvent(ev);
+        accepted = QWindowSystemInterface::flushWindowSystemEvents();
+    }
+    return accepted;
+}
+
+void QWindowSystemInterfacePrivate::installWindowSystemEventHandler(QWindowSystemEventHandler *handler)
+{
+    if (!eventHandler)
+        eventHandler = handler;
+}
+
+void QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(QWindowSystemEventHandler *handler)
+{
+    if (eventHandler == handler)
+        eventHandler = 0;
+}
+
+QWindowSystemEventHandler::~QWindowSystemEventHandler()
+{
+    QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(this);
+}
+
+bool QWindowSystemEventHandler::sendEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
+{
+    QGuiApplicationPrivate::processWindowSystemEvent(e);
+    return true;
+}
+
+//------------------------------------------------------------
+//
+// Callback functions for plugins:
+//
 
 #define QT_DEFINE_QPA_EVENT_HANDLER(ReturnType, HandlerName, ...) \
     template Q_GUI_EXPORT ReturnType QWindowSystemInterface::HandlerName<QWindowSystemInterface::DefaultDelivery>(__VA_ARGS__); \
@@ -359,6 +457,13 @@ bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
+QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global, QPoint pixelD,
+        QPoint angleD, int qt4D, Qt::Orientation qt4O, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource src, bool inverted)
+    : InputEvent(w, time, Wheel, mods), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D),
+      qt4Orientation(qt4O), localPos(local), globalPos(global), phase(phase), source(src), inverted(inverted)
+{
+}
+
 void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleWheelEvent(w, time, local, global, d, o, mods);
@@ -418,79 +523,6 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
     // Qt 4 compatibility horizontal angle delta.
     e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, QHighDpi::fromNativeLocalPosition(local, tlw), QHighDpi::fromNativePixels(global, tlw), QPoint(), QPoint(), angleDelta.x(), Qt::Horizontal, mods, phase, source, invertedScrolling);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
-}
-
-int QWindowSystemInterfacePrivate::windowSystemEventsQueued()
-{
-    return windowSystemEventQueue.count();
-}
-
-QWindowSystemInterfacePrivate::WindowSystemEvent * QWindowSystemInterfacePrivate::getWindowSystemEvent()
-{
-    return windowSystemEventQueue.takeFirstOrReturnNull();
-}
-
-QWindowSystemInterfacePrivate::WindowSystemEvent *QWindowSystemInterfacePrivate::getNonUserInputWindowSystemEvent()
-{
-    return windowSystemEventQueue.takeFirstNonUserInputOrReturnNull();
-}
-
-QWindowSystemInterfacePrivate::WindowSystemEvent *QWindowSystemInterfacePrivate::peekWindowSystemEvent(EventType t)
-{
-    return windowSystemEventQueue.peekAtFirstOfType(t);
-}
-
-void QWindowSystemInterfacePrivate::removeWindowSystemEvent(WindowSystemEvent *event)
-{
-    windowSystemEventQueue.remove(event);
-}
-
-/*!
-    Posts a window system event to be handled asynchronously by Qt Gui.
-
-    This function posts the event on the window system event queue and wakes the
-    Gui event dispatcher. Qt Gui will then handle the event asynchonously at a
-    later point.
-
-    \sa flushWindowSystemEvents(), processWindowSystemEvent(), handleWindowSystemEvent()
-*/
-void QWindowSystemInterfacePrivate::postWindowSystemEvent(WindowSystemEvent *ev)
-{
-    windowSystemEventQueue.append(ev);
-    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
-    if (dispatcher)
-        dispatcher->wakeUp();
-}
-
-/*!
-    Processes a window system event synchronously.
-
-    Qt Gui will process the event immediately. The return value indicates if Qt
-    accepted the event.
-
-    If the event is delivered from another thread than the Qt main thread the
-    window system event queue is flushed, which may deliver other events as
-    well.
-
-    \sa flushWindowSystemEvents(), postWindowSystemEvent(), handleWindowSystemEvent()
-*/
-bool QWindowSystemInterfacePrivate::processWindowSystemEvent(WindowSystemEvent *ev)
-{
-    bool accepted = true;
-    if (QThread::currentThread() == QGuiApplication::instance()->thread()) {
-        // Process the event immediately on the current thread and return the accepted state.
-        QGuiApplicationPrivate::processWindowSystemEvent(ev);
-        accepted = ev->eventAccepted;
-        delete ev;
-    } else {
-        // Post the event on the Qt main thread queue and flush the queue.
-        // This will wake up the Gui thread which will process the event.
-        // Return the accepted state for the last event on the queue,
-        // which is the event posted by this function.
-        postWindowSystemEvent(ev);
-        accepted = QWindowSystemInterface::flushWindowSystemEvents();
-    }
-    return accepted;
 }
 
 void QWindowSystemInterface::registerTouchDevice(const QTouchDevice *device)
@@ -690,98 +722,6 @@ void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::deferredFlushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
-{
-    Q_ASSERT(QThread::currentThread() == QGuiApplication::instance()->thread());
-
-    QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
-    sendWindowSystemEvents(flags);
-    QWindowSystemInterfacePrivate::eventsFlushed.wakeOne();
-}
-
-/*!
-    Make Qt Gui process all events on the event queue immediately. Return the
-    accepted state for the last event on the queue.
-*/
-bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
-{
-    const int count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
-    if (!count)
-        return false;
-    if (!QGuiApplication::instance()) {
-        qWarning().nospace()
-            << "QWindowSystemInterface::flushWindowSystemEvents() invoked after "
-               "QGuiApplication destruction, discarding " << count << " events.";
-        QWindowSystemInterfacePrivate::windowSystemEventQueue.clear();
-        return false;
-    }
-    if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
-        // Post a FlushEvents event which will trigger a call back to
-        // deferredFlushWindowSystemEvents from the Gui thread.
-        QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
-        QWindowSystemInterfacePrivate::FlushEventsEvent *e = new QWindowSystemInterfacePrivate::FlushEventsEvent(flags);
-        QWindowSystemInterfacePrivate::handleWindowSystemEvent<AsynchronousDelivery>(e);
-        QWindowSystemInterfacePrivate::eventsFlushed.wait(&QWindowSystemInterfacePrivate::flushEventMutex);
-    } else {
-        sendWindowSystemEvents(flags);
-    }
-    return QWindowSystemInterfacePrivate::eventAccepted.load() > 0;
-}
-
-bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
-{
-    int nevents = 0;
-
-    while (QWindowSystemInterfacePrivate::windowSystemEventsQueued()) {
-        QWindowSystemInterfacePrivate::WindowSystemEvent *event =
-            (flags & QEventLoop::ExcludeUserInputEvents) ?
-                QWindowSystemInterfacePrivate::getNonUserInputWindowSystemEvent() :
-                QWindowSystemInterfacePrivate::getWindowSystemEvent();
-        if (!event)
-            break;
-
-        if (QWindowSystemInterfacePrivate::eventHandler) {
-            if (QWindowSystemInterfacePrivate::eventHandler->sendEvent(event))
-                nevents++;
-        } else {
-            nevents++;
-            QGuiApplicationPrivate::processWindowSystemEvent(event);
-        }
-
-        // Record the accepted state for the processed event
-        // (excluding flush events). This state can then be
-        // returned by flushWindowSystemEvents().
-        if (event->type != QWindowSystemInterfacePrivate::FlushEvents)
-            QWindowSystemInterfacePrivate::eventAccepted.store(event->eventAccepted);
-
-        delete event;
-    }
-
-    return (nevents > 0);
-}
-
-void QWindowSystemInterfacePrivate::installWindowSystemEventHandler(QWindowSystemEventHandler *handler)
-{
-    if (!eventHandler)
-        eventHandler = handler;
-}
-
-void QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(QWindowSystemEventHandler *handler)
-{
-    if (eventHandler == handler)
-        eventHandler = 0;
-}
-
-void QWindowSystemInterface::setSynchronousWindowSystemEvents(bool enable)
-{
-    QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = enable;
-}
-
-int QWindowSystemInterface::windowSystemEventsQueued()
-{
-    return QWindowSystemInterfacePrivate::windowSystemEventsQueued();
-}
-
 #ifndef QT_NO_DRAGANDDROP
 QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
@@ -816,6 +756,11 @@ void QWindowSystemInterface::handleFileOpenEvent(const QUrl &url)
 {
     QWindowSystemInterfacePrivate::FileOpenEvent e(url);
     QGuiApplicationPrivate::processWindowSystemEvent(&e);
+}
+
+void QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(bool v)
+{
+    platformSynthesizesMouse = v;
 }
 
 void QWindowSystemInterface::handleTabletEvent(QWindow *w, ulong timestamp, const QPointF &local, const QPointF &global,
@@ -953,6 +898,90 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPo
 }
 #endif
 
+// ------------------ Event dispatcher functionality ------------------
+
+/*!
+    Make Qt Gui process all events on the event queue immediately. Return the
+    accepted state for the last event on the queue.
+*/
+bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
+{
+    const int count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
+    if (!count)
+        return false;
+    if (!QGuiApplication::instance()) {
+        qWarning().nospace()
+            << "QWindowSystemInterface::flushWindowSystemEvents() invoked after "
+               "QGuiApplication destruction, discarding " << count << " events.";
+        QWindowSystemInterfacePrivate::windowSystemEventQueue.clear();
+        return false;
+    }
+    if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
+        // Post a FlushEvents event which will trigger a call back to
+        // deferredFlushWindowSystemEvents from the Gui thread.
+        QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
+        QWindowSystemInterfacePrivate::FlushEventsEvent *e = new QWindowSystemInterfacePrivate::FlushEventsEvent(flags);
+        QWindowSystemInterfacePrivate::handleWindowSystemEvent<AsynchronousDelivery>(e);
+        QWindowSystemInterfacePrivate::eventsFlushed.wait(&QWindowSystemInterfacePrivate::flushEventMutex);
+    } else {
+        sendWindowSystemEvents(flags);
+    }
+    return QWindowSystemInterfacePrivate::eventAccepted.load() > 0;
+}
+
+void QWindowSystemInterface::deferredFlushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
+{
+    Q_ASSERT(QThread::currentThread() == QGuiApplication::instance()->thread());
+
+    QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
+    sendWindowSystemEvents(flags);
+    QWindowSystemInterfacePrivate::eventsFlushed.wakeOne();
+}
+
+bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
+{
+    int nevents = 0;
+
+    while (QWindowSystemInterfacePrivate::windowSystemEventsQueued()) {
+        QWindowSystemInterfacePrivate::WindowSystemEvent *event =
+            (flags & QEventLoop::ExcludeUserInputEvents) ?
+                QWindowSystemInterfacePrivate::getNonUserInputWindowSystemEvent() :
+                QWindowSystemInterfacePrivate::getWindowSystemEvent();
+        if (!event)
+            break;
+
+        if (QWindowSystemInterfacePrivate::eventHandler) {
+            if (QWindowSystemInterfacePrivate::eventHandler->sendEvent(event))
+                nevents++;
+        } else {
+            nevents++;
+            QGuiApplicationPrivate::processWindowSystemEvent(event);
+        }
+
+        // Record the accepted state for the processed event
+        // (excluding flush events). This state can then be
+        // returned by flushWindowSystemEvents().
+        if (event->type != QWindowSystemInterfacePrivate::FlushEvents)
+            QWindowSystemInterfacePrivate::eventAccepted.store(event->eventAccepted);
+
+        delete event;
+    }
+
+    return (nevents > 0);
+}
+
+void QWindowSystemInterface::setSynchronousWindowSystemEvents(bool enable)
+{
+    QWindowSystemInterfacePrivate::synchronousWindowSystemEvents = enable;
+}
+
+int QWindowSystemInterface::windowSystemEventsQueued()
+{
+    return QWindowSystemInterfacePrivate::windowSystemEventsQueued();
+}
+
+// --------------------- QtTestLib support ---------------------
+
 // The following functions are used by testlib, and need to be synchronous to avoid
 // race conditions with plugins delivering native events from secondary threads.
 
@@ -1023,27 +1052,5 @@ Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
         QWindowSystemInterfacePrivate::toNativeTouchPoints(points, w), mods);
 }
 
-QWindowSystemEventHandler::~QWindowSystemEventHandler()
-{
-    QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(this);
-}
-
-bool QWindowSystemEventHandler::sendEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
-{
-    QGuiApplicationPrivate::processWindowSystemEvent(e);
-    return true;
-}
-
-QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global, QPoint pixelD,
-        QPoint angleD, int qt4D, Qt::Orientation qt4O, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource src, bool inverted)
-    : InputEvent(w, time, Wheel, mods), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D),
-      qt4Orientation(qt4O), localPos(local), globalPos(global), phase(phase), source(src), inverted(inverted)
-{
-}
-
-void QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(bool v)
-{
-    platformSynthesizesMouse = v;
-}
 
 QT_END_NAMESPACE
