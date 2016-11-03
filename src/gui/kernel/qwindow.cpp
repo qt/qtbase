@@ -825,6 +825,9 @@ QSurfaceFormat QWindow::format() const
 void QWindow::setFlags(Qt::WindowFlags flags)
 {
     Q_D(QWindow);
+    if (d->windowFlags == flags)
+        return;
+
     if (d->platformWindow)
         d->platformWindow->setWindowFlags(flags);
     d->windowFlags = flags;
