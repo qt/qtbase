@@ -195,6 +195,9 @@ static QString description(const QString &appName)
         "tests embedding foreign windows into Qt.\n\nUse cases:\n\n"
         << appName << " -a          Dump a list of all native window ids.\n"
         << appName << " <winid>     Dump information on the window.\n"
+        << appName << " -m <winid>  Move window to top left corner\n"
+        << QByteArray(appName.size(), ' ')
+        <<            "             (recover lost windows after changing monitor setups).\n"
         << appName << " -c <winid>  Dump information on the window continuously.\n"
         << appName << " -e <winid>  Embed window into a Qt widget.\n"
         << "\nOn Windows, class names of well known controls (EDIT, BUTTON...) can be\n"
@@ -245,6 +248,10 @@ int main(int argc, char *argv[])
     parser.addOption(outputAllOption);
     QCommandLineOption continuousOption(QStringList() << QStringLiteral("c") << QStringLiteral("continuous"),
                                         QStringLiteral("Output continuously."));
+    parser.addOption(outputAllOption);
+    QCommandLineOption moveOption(QStringList() << QStringLiteral("m") << QStringLiteral("move"),
+                                  QStringLiteral("Move window to top left corner."));
+    parser.addOption(moveOption);
     parser.addOption(continuousOption);
     QCommandLineOption embedOption(QStringList() << QStringLiteral("e") << QStringLiteral("embed"),
                                    QStringLiteral("Embed a foreign window into a Qt widget."));
@@ -274,8 +281,12 @@ int main(int argc, char *argv[])
             return -1;
         }
         QWindow *foreignWindow = QWindow::fromWinId(wid);
+        if (!foreignWindow)
+            return -1;
         foreignWindow->setObjectName("ForeignWindow" + QString::number(wid, 16));
         windows.append(foreignWindow);
+        if (parser.isSet(moveOption))
+            foreignWindow->setFramePosition(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     }
 
     if (windows.isEmpty())
