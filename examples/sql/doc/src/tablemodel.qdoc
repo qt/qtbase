@@ -33,5 +33,5 @@
     \brief The Table Model example shows how to use a specialized SQL table model with table
     views to edit information in a database.
 
-    \image tablemodel-example.png
+    \borderedimage tablemodel-example.png
 */

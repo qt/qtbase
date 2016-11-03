@@ -34,7 +34,7 @@
     well as submit changes, using the QSqlRelationalTableModel and
     QDataWidgetMapper classes.
 
-    \image drilldown-example.png Screenshot of the Drill Down Example
+    \borderedimage drilldown-example.png Screenshot of the Drill Down Example
 
     When running the example application, a user can retrieve
     information about each item by clicking the corresponding image.

@@ -33,7 +33,7 @@
     \brief The SQL Widget Mapper example shows how to use a map information from a
     database to widgets on a form.
 
-    \image sql-widget-mapper.png
+    \borderedimage sql-widget-mapper.png
 
     In the \l{Combo Widget Mapper Example}, we showed how to use a named
     mapping between a widget mapper and a QComboBox widget with a special
@@ -74,7 +74,7 @@
     including values for the address types that correspond to the address
     types are stored in a separate table.
 
-    \image widgetmapper-sql-mapping-table.png
+    \borderedimage widgetmapper-sql-mapping-table.png
 
     We create an "addresstype" table containing the identifiers used in the
     "person" table and the corresponding strings:
@@ -93,7 +93,7 @@
     used wherever the "typeid" is presented to the user. (See the
     QSqlRelationalTableModel::setRelation() documentation for details.)
 
-    \image widgetmapper-sql-mapping.png
+    \borderedimage widgetmapper-sql-mapping.png
 
     The constructor of the \c Window class can be explained in three parts.
     In the first part, we set up the model used to hold the data, then we set
