@@ -138,7 +138,7 @@ static QString sHGetKnownFolderPath(const GUID &clsid, QStandardPaths::StandardL
         reinterpret_cast<GetKnownFolderPath>(QSystemLibrary::resolve(QLatin1String("shell32"), "SHGetKnownFolderPath"));
 
     LPWSTR path;
-    if (Q_LIKELY(sHGetKnownFolderPath && SUCCEEDED(sHGetKnownFolderPath(clsid, 0, 0, &path)))) {
+    if (Q_LIKELY(sHGetKnownFolderPath && SUCCEEDED(sHGetKnownFolderPath(clsid, KF_FLAG_DONT_VERIFY, 0, &path)))) {
         result = convertCharArray(path);
         CoTaskMemFree(path);
     } else {
