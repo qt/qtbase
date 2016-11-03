@@ -69,13 +69,19 @@ void MenuramaApplication::populateMenu(QMenu *menu, bool clear)
 
 void MenuramaApplication::addDynMenu(QLatin1String title, QMenu *parentMenu)
 {
-    foreach (QAction *a, parentMenu->actions())
-        if (a->text() == title) {
-            parentMenu->removeAction(a);
-            break;
-        }
+    if (QAction *a = findAction(title, parentMenu))
+        parentMenu->removeAction(a);
 
     QMenu *subMenu = new QMenu(title, parentMenu);
     populateMenu(subMenu, false /*clear*/);
     parentMenu->addMenu(subMenu);
+}
+
+QAction *MenuramaApplication::findAction(QLatin1String title, QMenu *parentMenu)
+{
+    foreach (QAction *a, parentMenu->actions())
+        if (a->text() == title)
+            return a;
+
+    return Q_NULLPTR;
 }
