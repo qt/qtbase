@@ -1060,13 +1060,6 @@
 #   undef Q_COMPILER_VARIADIC_TEMPLATES
 #  endif
 # endif
-# if defined(_LIBCPP_VERSION)
-// libc++ uses __has_feature(cxx_atomic), so disable the feature if the compiler
-// doesn't support it. That's required for the Intel compiler 14.x or earlier on OS X, for example.
-#  if !__has_feature(cxx_atomic)
-#   undef Q_COMPILER_ATOMICS
-#  endif
-# endif
 # if defined(Q_COMPILER_THREADSAFE_STATICS) && defined(Q_OS_MAC)
 // Apple's low-level implementation of the C++ support library
 // (libc++abi.dylib, shared between libstdc++ and libc++) has deadlocks. The
