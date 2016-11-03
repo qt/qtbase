@@ -494,10 +494,6 @@ public:
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static bool handleWindowSystemEvent(WindowSystemEvent *ev);
 
-private:
-    static void postWindowSystemEvent(WindowSystemEvent *ev);
-    static bool processWindowSystemEvent(WindowSystemEvent *ev);
-
 public:
     static QElapsedTimer eventTime;
     static bool synchronousWindowSystemEvents;
