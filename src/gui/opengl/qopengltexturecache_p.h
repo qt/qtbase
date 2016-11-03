@@ -60,19 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLCachedTexture
-{
-public:
-    QOpenGLCachedTexture(GLuint id, int options, QOpenGLContext *context);
-    ~QOpenGLCachedTexture() { m_resource->free(); }
-
-    GLuint id() const { return m_resource->id(); }
-    int options() const { return m_options; }
-
-private:
-    QOpenGLSharedResourceGuard *m_resource;
-    int m_options;
-};
+class QOpenGLCachedTexture;
 
 class Q_GUI_EXPORT QOpenGLTextureCache : public QOpenGLSharedResource
 {
@@ -105,6 +93,20 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLTextureCache::BindOptions)
+
+class QOpenGLCachedTexture
+{
+public:
+    QOpenGLCachedTexture(GLuint id, QOpenGLTextureCache::BindOptions options, QOpenGLContext *context);
+    ~QOpenGLCachedTexture() { m_resource->free(); }
+
+    GLuint id() const { return m_resource->id(); }
+    QOpenGLTextureCache::BindOptions options() const { return m_options; }
+
+private:
+    QOpenGLSharedResourceGuard *m_resource;
+    QOpenGLTextureCache::BindOptions m_options;
+};
 
 QT_END_NAMESPACE
 

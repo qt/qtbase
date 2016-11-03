@@ -37,6 +37,12 @@
 **
 ****************************************************************************/
 
+// ### Qt 6: remove this header
+//
+// This header is deliberately empty. Although it did not contain any public API,
+// it was accidentally made public in Qt 5. So: do not remove it for the moment
+// being, to prevent #include breaks in downstreams.
+
 #include "QtCore/qglobal.h"
 
 #ifndef QTYPETRAITS_H
@@ -44,53 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtPrivate {
-
-//
-// Define QIsUnsignedEnum, QIsSignedEnum -
-// std::is_signed, std::is_unsigned does not work for enum's
-//
-
-// a metafunction to invert an integral_constant:
-template <typename T>
-struct not_
-    : std::integral_constant<bool, !T::value> {};
-
-// Checks whether a type is unsigned (T must be convertible to unsigned int):
-template <typename T>
-struct QIsUnsignedEnum
-    : std::integral_constant<bool, (T(0) < T(-1))> {};
-
-// Checks whether a type is signed (T must be convertible to int):
-template <typename T>
-struct QIsSignedEnum
-    : not_< QIsUnsignedEnum<T> > {};
-
-Q_STATIC_ASSERT(( QIsUnsignedEnum<quint8>::value));
-Q_STATIC_ASSERT((!QIsUnsignedEnum<qint8>::value));
-
-Q_STATIC_ASSERT((!QIsSignedEnum<quint8>::value));
-Q_STATIC_ASSERT(( QIsSignedEnum<qint8>::value));
-
-Q_STATIC_ASSERT(( QIsUnsignedEnum<quint16>::value));
-Q_STATIC_ASSERT((!QIsUnsignedEnum<qint16>::value));
-
-Q_STATIC_ASSERT((!QIsSignedEnum<quint16>::value));
-Q_STATIC_ASSERT(( QIsSignedEnum<qint16>::value));
-
-Q_STATIC_ASSERT(( QIsUnsignedEnum<quint32>::value));
-Q_STATIC_ASSERT((!QIsUnsignedEnum<qint32>::value));
-
-Q_STATIC_ASSERT((!QIsSignedEnum<quint32>::value));
-Q_STATIC_ASSERT(( QIsSignedEnum<qint32>::value));
-
-Q_STATIC_ASSERT(( QIsUnsignedEnum<quint64>::value));
-Q_STATIC_ASSERT((!QIsUnsignedEnum<qint64>::value));
-
-Q_STATIC_ASSERT((!QIsSignedEnum<quint64>::value));
-Q_STATIC_ASSERT(( QIsSignedEnum<qint64>::value));
-
-} // namespace QtPrivate
-
 QT_END_NAMESPACE
+
 #endif  // QTYPETRAITS_H

@@ -5284,7 +5284,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     int oldMin = styleObject->property("_q_stylemin").toInt();
                     int oldMax = styleObject->property("_q_stylemax").toInt();
                     QRect oldRect = styleObject->property("_q_stylerect").toRect();
-                    int oldState = styleObject->property("_q_stylestate").toInt();
+                    QStyle::State oldState = static_cast<QStyle::State>(styleObject->property("_q_stylestate").value<QStyle::State::Int>());
                     uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
 
                     // a scrollbar is transient when the scrollbar itself and
@@ -5307,7 +5307,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         styleObject->setProperty("_q_stylemin", slider->minimum);
                         styleObject->setProperty("_q_stylemax", slider->maximum);
                         styleObject->setProperty("_q_stylerect", slider->rect);
-                        styleObject->setProperty("_q_stylestate", static_cast<int>(slider->state));
+                        styleObject->setProperty("_q_stylestate", static_cast<QStyle::State::Int>(slider->state));
                         styleObject->setProperty("_q_stylecontrols", static_cast<uint>(slider->activeSubControls));
 
                         QScrollbarStyleAnimation *anim  = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));

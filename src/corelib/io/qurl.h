@@ -69,8 +69,8 @@ public:
     Q_DECL_CONSTEXPR inline QUrlTwoFlags(E1 f) : i(f) {}
     Q_DECL_CONSTEXPR inline QUrlTwoFlags(E2 f) : i(f) {}
     Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlag f) : i(f) {}
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E1> f) : i(f.operator int()) {}
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E2> f) : i(f.operator int()) {}
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E1> f) : i(f.operator typename QFlags<E1>::Int()) {}
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E2> f) : i(f.operator typename QFlags<E2>::Int()) {}
     Q_DECL_CONSTEXPR inline QUrlTwoFlags(Zero = 0) : i(0) {}
 
     inline QUrlTwoFlags &operator&=(int mask) { i &= mask; return *this; }

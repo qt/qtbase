@@ -1027,7 +1027,7 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName,
                                   normalizedTypeName.size());
 
     int previousSize = 0;
-    int previousFlags = 0;
+    QMetaType::TypeFlags::Int previousFlags = 0;
     if (idx == UnknownType) {
         QWriteLocker locker(customTypesLock());
         int posInVector = -1;

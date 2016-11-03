@@ -957,8 +957,8 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
 
     // Sent event if the state changed (that is, it is not triggered by
     // QWidget::setWindowState(), which also sends an event to the widget).
-    if (widgetState != int(m_widget->data->window_state)) {
-        m_widget->data->window_state = widgetState;
+    if (widgetState != Qt::WindowStates::Int(m_widget->data->window_state)) {
+        m_widget->data->window_state = uint(widgetState);
         QWindowStateChangeEvent widgetEvent(eventState);
         QGuiApplication::sendSpontaneousEvent(m_widget, &widgetEvent);
     }

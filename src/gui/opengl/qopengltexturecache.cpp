@@ -371,7 +371,7 @@ static void freeTexture(QOpenGLFunctions *funcs, GLuint id)
     funcs->glDeleteTextures(1, &id);
 }
 
-QOpenGLCachedTexture::QOpenGLCachedTexture(GLuint id, int options, QOpenGLContext *context) : m_options(options)
+QOpenGLCachedTexture::QOpenGLCachedTexture(GLuint id, QOpenGLTextureCache::BindOptions options, QOpenGLContext *context) : m_options(options)
 {
     m_resource = new QOpenGLSharedResourceGuard(context, id, freeTexture);
 }
