@@ -1896,11 +1896,15 @@ void QTextLine::layout_helper(int maxGlyphs)
             ++lbh.glyphCount;
             if (lbh.checkFullOtherwiseExtend(line))
                 goto found;
-        } else if (attributes[lbh.currentPosition].whiteSpace) {
+        } else if (attributes[lbh.currentPosition].whiteSpace
+                   && eng->layoutData->string.at(lbh.currentPosition).decompositionTag() != QChar::NoBreak) {
             lbh.whiteSpaceOrObject = true;
-            while (lbh.currentPosition < end && attributes[lbh.currentPosition].whiteSpace)
+            while (lbh.currentPosition < end
+                   && attributes[lbh.currentPosition].whiteSpace
+                   && eng->layoutData->string.at(lbh.currentPosition).decompositionTag() != QChar::NoBreak) {
                 addNextCluster(lbh.currentPosition, end, lbh.spaceData, lbh.glyphCount,
                                current, lbh.logClusters, lbh.glyphs);
+            }
 
             if (!lbh.manualWrap && lbh.spaceData.textWidth > line.width) {
                 lbh.spaceData.textWidth = line.width; // ignore spaces that fall out of the line.
