@@ -1,7 +1,7 @@
 TARGET = qiosnsphotolibrarysupport
 
 QT += core gui gui-private
-LIBS += -framework UIKit -framework AssetsLibrary
+LIBS += -framework Foundation -framework UIKit -framework AssetsLibrary
 
 HEADERS = \
         qiosfileengineassetslibrary.h \
