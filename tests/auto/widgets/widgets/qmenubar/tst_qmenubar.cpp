@@ -118,6 +118,7 @@ private slots:
 #if !defined(Q_OS_DARWIN)
     void check_shortcutPress();
     void check_menuPosition();
+    void taskQTBUG46812_doNotLeaveMenubarHighlighted();
 #endif
     void task223138_triggered();
     void task256322_highlight();
@@ -130,7 +131,6 @@ private slots:
     void cornerWidgets_data();
     void cornerWidgets();
     void taskQTBUG53205_crashReparentNested();
-    void taskQTBUG46812_doNotLeaveMenubarHighlighted();
 #ifdef Q_OS_MACOS
     void taskQTBUG56275_reinsertMenuInParentlessQMenuBar();
 #endif
@@ -321,7 +321,7 @@ inline TestMenu tst_QMenuBar::initWindowWithComplexMenuBar(QMainWindow &w)
     return initComplexMenuBar(w.menuBar());
 }
 
-// On Mac/WinCE, native key events are needed to test menu action activation
+// On Mac native key events are needed to test menu action activation
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::accel()
 {
@@ -339,7 +339,7 @@ void tst_QMenuBar::accel()
 }
 #endif
 
-// On Mac/WinCE, native key events are needed to test menu action activation
+// On Mac native key events are needed to test menu action activation
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::activatedCount()
 {
@@ -530,7 +530,7 @@ void tst_QMenuBar::insertItem_QString_QObject()
     QVERIFY(actions.size() < 4); // there is no menu 4!
 }
 
-// On Mac/WinCE, native key events are needed to test menu action activation
+// On Mac native key events are needed to test menu action activation
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_accelKeys()
 {
@@ -603,7 +603,7 @@ void tst_QMenuBar::check_accelKeys()
 }
 #endif
 
-// On Mac/WinCE, native key events are needed to test menu action activation
+// On Mac native key events are needed to test menu action activation
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_cursorKeys1()
 {
@@ -637,7 +637,7 @@ void tst_QMenuBar::check_cursorKeys1()
 }
 #endif
 
-// Qt/Mac,WinCE does not use the native popups/menubar
+// Qt/Mac does not use the native popups/menubar
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_cursorKeys2()
 {
@@ -670,7 +670,7 @@ void tst_QMenuBar::check_cursorKeys2()
 /*!
     If a popupmenu is active you can use Left to move to the menu to the left of it.
 */
-// Qt/Mac,WinCE does not use the native popups/menubar
+// Qt/Mac does not use the native popups/menubar
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_cursorKeys3()
 {
@@ -785,7 +785,7 @@ void tst_QMenuBar::check_endKey()
     If Down is pressed next the popup is activated again.
 */
 
-// Qt/Mac,WinCE does not use the native popups/menubar
+// Qt/Mac does not use the native popups/menubar
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_escKey()
 {
@@ -1019,7 +1019,7 @@ void tst_QMenuBar::check_altClosePress()
     QTRY_VERIFY(!w.menuBar()->activeAction());
 }
 
-// Qt/Mac,WinCE does not use the native popups/menubar
+// Qt/Mac does not use the native popups/menubar
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_shortcutPress()
 {
@@ -1062,7 +1062,7 @@ private:
     const Qt::LayoutDirection m_oldDirection;
 };
 
-// Qt/Mac,WinCE does not use the native popups/menubar
+// Qt/Mac does not use the native popups/menubar
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_menuPosition()
 {
@@ -1524,6 +1524,8 @@ void tst_QMenuBar::slotForTaskQTBUG53205()
     taskQTBUG53205MenuBar->setParent(parent);
 }
 
+// Qt/Mac does not use the native popups/menubar
+#if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::taskQTBUG46812_doNotLeaveMenubarHighlighted()
 {
     QMainWindow mainWindow;
@@ -1555,6 +1557,7 @@ void tst_QMenuBar::taskQTBUG46812_doNotLeaveMenubarHighlighted()
     QVERIFY(!mainWindow.menuBar()->hasFocus());
     QCOMPARE(m_simpleActivatedCount, 2);
 }
+#endif
 
 #ifdef Q_OS_MACOS
 extern bool tst_qmenubar_taskQTBUG56275(QMenuBar *);
