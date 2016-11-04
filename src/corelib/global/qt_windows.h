@@ -53,6 +53,9 @@
 #  ifndef _WIN32_WINNT
 #    define _WIN32_WINNT 0x600
 #  endif
+#  ifndef NTDDI_VERSION
+#    define NTDDI_VERSION 0x06000000
+#  endif
 #endif
 
 #ifndef NOMINMAX
