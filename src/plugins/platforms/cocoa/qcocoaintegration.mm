@@ -122,8 +122,8 @@ void QCocoaScreen::updateGeometry()
     // At this point the geometry is in native coordinates, but the size
     // is correct, which we take advantage of next when we map the native
     // coordinates to the Qt coordinate system.
-    m_geometry = QRectF::fromCGRect(m_nsScreen.frame).toRect();
-    m_availableGeometry = QRectF::fromCGRect(m_nsScreen.visibleFrame).toRect();
+    m_geometry = QRectF::fromCGRect(NSRectToCGRect(m_nsScreen.frame)).toRect();
+    m_availableGeometry = QRectF::fromCGRect(NSRectToCGRect(m_nsScreen.visibleFrame)).toRect();
 
     // The reference screen for the geometry is always the primary screen, but since
     // we may be in the process of creating and registering the primary screen, we

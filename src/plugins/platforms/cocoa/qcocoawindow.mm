@@ -1662,7 +1662,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
 
     rect.translate(-targetScreen->geometry().topLeft());
     QCocoaScreen *cocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
-    NSRect frame = cocoaScreen->mapToNative(rect).toCGRect();
+    NSRect frame = NSRectFromCGRect(cocoaScreen->mapToNative(rect).toCGRect());
 
     // Note: The macOS window manager has a bug, where if a screen is rotated, it will not allow
     // a window to be created within the area of the screen that has a Y coordinate (I quadrant)
