@@ -142,13 +142,13 @@ public:
     {
         HRESULT hr = factory()->CreatePathGeometry(&m_geometry);
         if (FAILED(hr)) {
-            qWarning("%s: Could not create path geometry: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create path geometry: %#lx", __FUNCTION__, hr);
             return false;
         }
 
         hr = m_geometry->Open(&m_sink);
         if (FAILED(hr)) {
-            qWarning("%s: Could not create geometry sink: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create geometry sink: %#lx", __FUNCTION__, hr);
             return false;
         }
 
@@ -606,7 +606,7 @@ public:
         }
 
         if (FAILED(hr))
-            qWarning("%s: Could not create stroke style: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create stroke style: %#lx", __FUNCTION__, hr);
     }
 
     ComPtr<ID2D1Brush> to_d2d_brush(const QBrush &newBrush, bool *needsEmulation)
@@ -628,13 +628,13 @@ public:
 
             hr = dc()->CreateSolidColorBrush(to_d2d_color_f(newBrush.color()), &solid);
             if (FAILED(hr)) {
-                qWarning("%s: Could not create solid color brush: %#x", __FUNCTION__, hr);
+                qWarning("%s: Could not create solid color brush: %#lx", __FUNCTION__, hr);
                 break;
             }
 
             hr = solid.As(&result);
             if (FAILED(hr))
-                qWarning("%s: Could not convert solid color brush: %#x", __FUNCTION__, hr);
+                qWarning("%s: Could not convert solid color brush: %#lx", __FUNCTION__, hr);
         }
             break;
 
@@ -674,13 +674,13 @@ public:
                                          bitmapBrushProperties,
                                          &bitmapBrush);
             if (FAILED(hr)) {
-                qWarning("%s: Could not create Direct2D bitmap brush for Qt pattern brush: %#x", __FUNCTION__, hr);
+                qWarning("%s: Could not create Direct2D bitmap brush for Qt pattern brush: %#lx", __FUNCTION__, hr);
                 break;
             }
 
             hr = bitmapBrush.As(&result);
             if (FAILED(hr))
-                qWarning("%s: Could not convert Direct2D bitmap brush for Qt pattern brush: %#x", __FUNCTION__, hr);
+                qWarning("%s: Could not convert Direct2D bitmap brush for Qt pattern brush: %#lx", __FUNCTION__, hr);
         }
             break;
 
@@ -703,20 +703,20 @@ public:
                                                         UINT32(stops.size()),
                                                         &gradientStopCollection);
                 if (FAILED(hr)) {
-                    qWarning("%s: Could not create gradient stop collection for linear gradient: %#x", __FUNCTION__, hr);
+                    qWarning("%s: Could not create gradient stop collection for linear gradient: %#lx", __FUNCTION__, hr);
                     break;
                 }
 
                 hr = dc()->CreateLinearGradientBrush(linearGradientBrushProperties, gradientStopCollection.Get(),
                                                      &linear);
                 if (FAILED(hr)) {
-                    qWarning("%s: Could not create Direct2D linear gradient brush: %#x", __FUNCTION__, hr);
+                    qWarning("%s: Could not create Direct2D linear gradient brush: %#lx", __FUNCTION__, hr);
                     break;
                 }
 
                 hr = linear.As(&result);
                 if (FAILED(hr)) {
-                    qWarning("%s: Could not convert Direct2D linear gradient brush: %#x", __FUNCTION__, hr);
+                    qWarning("%s: Could not convert Direct2D linear gradient brush: %#lx", __FUNCTION__, hr);
                     break;
                 }
             }
@@ -741,20 +741,20 @@ public:
 
                 hr = dc()->CreateGradientStopCollection(stops.constData(), stops.size(), &gradientStopCollection);
                 if (FAILED(hr)) {
-                    qWarning("%s: Could not create gradient stop collection for radial gradient: %#x", __FUNCTION__, hr);
+                    qWarning("%s: Could not create gradient stop collection for radial gradient: %#lx", __FUNCTION__, hr);
                     break;
                 }
 
                 hr = dc()->CreateRadialGradientBrush(radialGradientBrushProperties, gradientStopCollection.Get(),
                                                      &radial);
                 if (FAILED(hr)) {
-                    qWarning("%s: Could not create Direct2D radial gradient brush: %#x", __FUNCTION__, hr);
+                    qWarning("%s: Could not create Direct2D radial gradient brush: %#lx", __FUNCTION__, hr);
                     break;
                 }
 
                 radial.As(&result);
                 if (FAILED(hr)) {
-                    qWarning("%s: Could not convert Direct2D radial gradient brush: %#x", __FUNCTION__, hr);
+                    qWarning("%s: Could not convert Direct2D radial gradient brush: %#lx", __FUNCTION__, hr);
                     break;
                 }
             }
@@ -780,13 +780,13 @@ public:
                                          &bitmapBrush);
 
             if (FAILED(hr)) {
-                qWarning("%s: Could not create texture brush: %#x", __FUNCTION__, hr);
+                qWarning("%s: Could not create texture brush: %#lx", __FUNCTION__, hr);
                 break;
             }
 
             hr = bitmapBrush.As(&result);
             if (FAILED(hr))
-                qWarning("%s: Could not convert texture brush: %#x", __FUNCTION__, hr);
+                qWarning("%s: Could not convert texture brush: %#lx", __FUNCTION__, hr);
         }
             break;
         }
@@ -1046,13 +1046,13 @@ public:
         ComPtr<IDWriteFont> dwriteFont;
         HRESULT hr = QWindowsDirect2DContext::instance()->dwriteGdiInterop()->CreateFontFromLOGFONT(&lf, &dwriteFont);
         if (FAILED(hr)) {
-            qDebug("%s: CreateFontFromLOGFONT failed: %#x", __FUNCTION__, hr);
+            qDebug("%s: CreateFontFromLOGFONT failed: %#lx", __FUNCTION__, hr);
             return fontFace;
         }
 
         hr = dwriteFont->CreateFontFace(&fontFace);
         if (FAILED(hr)) {
-            qDebug("%s: CreateFontFace failed: %#x", __FUNCTION__, hr);
+            qDebug("%s: CreateFontFace failed: %#lx", __FUNCTION__, hr);
             return fontFace;
         }
 
@@ -1515,7 +1515,7 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
                                                                bitmap->bitmap(),
                                                                &d2d_sr);
             if (FAILED(hr)) {
-                qWarning("%s: Could not copy source rect area from source bitmap to intermediate bitmap: %#x", __FUNCTION__, hr);
+                qWarning("%s: Could not copy source rect area from source bitmap to intermediate bitmap: %#lx", __FUNCTION__, hr);
                 return;
             }
         } else {
@@ -1530,7 +1530,7 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
                                                                bitmap->bitmap(),
                                                                NULL);
             if (FAILED(hr)) {
-                qWarning("%s: Could not copy source bitmap to intermediate bitmap: %#x", __FUNCTION__, hr);
+                qWarning("%s: Could not copy source bitmap to intermediate bitmap: %#lx", __FUNCTION__, hr);
                 return;
             }
         }

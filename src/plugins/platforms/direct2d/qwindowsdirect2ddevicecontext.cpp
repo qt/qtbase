@@ -57,7 +57,7 @@ public:
                         D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
                         &deviceContext);
             if (Q_UNLIKELY(FAILED(hr)))
-                qFatal("%s: Couldn't create Direct2D Device Context: %#x", __FUNCTION__, hr);
+                qFatal("%s: Couldn't create Direct2D Device Context: %#lx", __FUNCTION__, hr);
         }
 
         Q_ASSERT(deviceContext);

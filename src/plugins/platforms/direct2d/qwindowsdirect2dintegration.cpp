@@ -104,7 +104,7 @@ public:
                 DWORD versionInfoSize = GetFileVersionInfoSize(filename, NULL);
                 if (versionInfoSize) {
                     QVarLengthArray<BYTE> info(static_cast<int>(versionInfoSize));
-                    if (GetFileVersionInfo(filename, NULL, versionInfoSize, info.data())) {
+                    if (GetFileVersionInfo(filename, 0, versionInfoSize, info.data())) {
                         UINT size;
                         DWORD *fi;
 

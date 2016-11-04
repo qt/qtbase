@@ -84,7 +84,7 @@ public:
         }
 
         if (FAILED(hr)) {
-            qWarning("%s: Could not create Direct3D Device: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create Direct3D Device: %#lx", __FUNCTION__, hr);
             return false;
         }
 
@@ -93,7 +93,7 @@ public:
 
         hr = d3dDevice.As(&dxgiDevice);
         if (FAILED(hr)) {
-            qWarning("%s: DXGI Device interface query failed on D3D Device: %#x", __FUNCTION__, hr);
+            qWarning("%s: DXGI Device interface query failed on D3D Device: %#lx", __FUNCTION__, hr);
             return false;
         }
 
@@ -102,13 +102,13 @@ public:
 
         hr = dxgiDevice->GetAdapter(&dxgiAdapter);
         if (FAILED(hr)) {
-            qWarning("%s: Failed to probe DXGI Device for parent DXGI Adapter: %#x", __FUNCTION__, hr);
+            qWarning("%s: Failed to probe DXGI Device for parent DXGI Adapter: %#lx", __FUNCTION__, hr);
             return false;
         }
 
         hr = dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory));
         if (FAILED(hr)) {
-            qWarning("%s: Failed to probe DXGI Adapter for parent DXGI Factory: %#x", __FUNCTION__, hr);
+            qWarning("%s: Failed to probe DXGI Adapter for parent DXGI Factory: %#lx", __FUNCTION__, hr);
             return false;
         }
 
@@ -121,26 +121,26 @@ public:
 
         hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, d2dFactory.GetAddressOf());
         if (FAILED(hr)) {
-            qWarning("%s: Could not create Direct2D Factory: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create Direct2D Factory: %#lx", __FUNCTION__, hr);
             return false;
         }
 
         hr = d2dFactory->CreateDevice(dxgiDevice.Get(), &d2dDevice);
         if (FAILED(hr)) {
-            qWarning("%s: Could not create D2D Device: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create D2D Device: %#lx", __FUNCTION__, hr);
             return false;
         }
 
         hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
                                  static_cast<IUnknown **>(&directWriteFactory));
         if (FAILED(hr)) {
-            qWarning("%s: Could not create DirectWrite factory: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create DirectWrite factory: %#lx", __FUNCTION__, hr);
             return false;
         }
 
         hr = directWriteFactory->GetGdiInterop(&directWriteGdiInterop);
         if (FAILED(hr)) {
-            qWarning("%s: Could not create DirectWrite GDI Interop: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create DirectWrite GDI Interop: %#lx", __FUNCTION__, hr);
             return false;
         }
 

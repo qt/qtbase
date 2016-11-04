@@ -90,7 +90,7 @@ public:
         if (SUCCEEDED(hr))
             deviceContext->get()->SetTarget(bitmap.Get());
         else
-            qWarning("%s: Could not create bitmap: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create bitmap: %#lx", __FUNCTION__, hr);
 
         return SUCCEEDED(hr);
     }
@@ -108,23 +108,23 @@ public:
         D2D1_BITMAP_PROPERTIES1 properties = bitmapProperties();
         properties.bitmapOptions = D2D1_BITMAP_OPTIONS_CANNOT_DRAW | D2D1_BITMAP_OPTIONS_CPU_READ;
 
-        hr = deviceContext->get()->CreateBitmap(size, NULL, NULL,
+        hr = deviceContext->get()->CreateBitmap(size, NULL, 0,
                                                 properties, &mappingCopy);
         if (FAILED(hr)) {
-            qWarning("%s: Could not create bitmap: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not create bitmap: %#lx", __FUNCTION__, hr);
             return QImage();
         }
 
         hr = mappingCopy->CopyFromBitmap(NULL, bitmap.Get(), NULL);
         if (FAILED(hr)) {
-            qWarning("%s: Could not copy from bitmap: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not copy from bitmap: %#lx", __FUNCTION__, hr);
             return QImage();
         }
 
         D2D1_MAPPED_RECT mappedRect;
         hr = mappingCopy->Map(D2D1_MAP_OPTIONS_READ, &mappedRect);
         if (FAILED(hr)) {
-            qWarning("%s: Could not map: %#x", __FUNCTION__, hr);
+            qWarning("%s: Could not map: %#lx", __FUNCTION__, hr);
             return QImage();
         }
 
