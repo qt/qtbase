@@ -43,8 +43,7 @@ HEADERS = \
     quiview.h \
     quiaccessibilityelement.h \
     qiosplatformaccessibility.h \
-    qiostextresponder.h \
-    qiosfileenginefactory.h
+    qiostextresponder.h
 
 !tvos {
     LIBS += -framework AssetsLibrary
