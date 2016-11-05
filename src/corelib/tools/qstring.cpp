@@ -4442,11 +4442,11 @@ bool QString::startsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 
     \sa startsWith()
 */
-bool QString::endsWith(const QString& s, Qt::CaseSensitivity cs) const
+bool QString::endsWith(const QString &s, Qt::CaseSensitivity cs) const
 {
     return qt_ends_with(isNull() ? 0 : unicode(), size(),
                         s.isNull() ? 0 : s.unicode(), s.size(), cs);
-    }
+}
 
 /*!
     \since 4.8
