@@ -329,6 +329,7 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
             hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, readOp.GetAddressOf());
             RETURN_OK_IF_FAILED_WITH_ARGS("initialize(): Failed to read from the socket buffer (%s).",
                               socketDescription(this).constData());
+            QMutexLocker locker(&d->readOperationsMutex);
             d->pendingReadOps.append(readOp);
             d->socketState = socketState;
             hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
@@ -574,6 +575,7 @@ void QNativeSocketEngine::close()
     }
 #endif // _MSC_VER >= 1900
 
+    QMutexLocker locker(&d->readOperationsMutex);
     for (ComPtr<IAsyncBufferOperation> readOp : d->pendingReadOps) {
         ComPtr<IAsyncInfo> info;
         hr = readOp.As(&info);
@@ -585,6 +587,7 @@ void QNativeSocketEngine::close()
             Q_ASSERT_SUCCEEDED(hr);
         }
     }
+    locker.unlock();
 
     if (d->socketDescriptor != -1) {
         ComPtr<IClosable> socket;
@@ -659,6 +662,7 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
     if (d->socketType != QAbstractSocket::TcpSocket)
         return -1;
 
+    QMutexLocker mutexLocker(&d->readMutex);
     // There will be a read notification when the socket was closed by the remote host. If that
     // happens and there isn't anything left in the buffer, we have to return -1 in order to signal
     // the closing of the socket.
@@ -667,7 +671,6 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
         return -1;
     }
 
-    QMutexLocker mutexLocker(&d->readMutex);
     qint64 b = d->readBytes.read(data, maxlen);
     d->bytesAvailable = d->readBytes.size() - d->readBytes.pos();
     return b;
@@ -701,7 +704,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
 {
 #ifndef QT_NO_UDPSOCKET
     Q_D(QNativeSocketEngine);
-    d->readMutex.lock();
+    QMutexLocker locker(&d->readMutex);
     if (d->socketType != QAbstractSocket::UdpSocket || d->pendingDatagrams.isEmpty()) {
         if (header)
             header->clear();
@@ -721,7 +724,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     } else {
         readOrigin = datagram.data;
     }
-    d->readMutex.unlock();
+    locker.unlock();
     memcpy(data, readOrigin, qMin(maxlen, qint64(datagram.data.length())));
     return readOrigin.length();
 #else
@@ -772,12 +775,14 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QI
 bool QNativeSocketEngine::hasPendingDatagrams() const
 {
     Q_D(const QNativeSocketEngine);
+    QMutexLocker locker(&d->readMutex);
     return d->pendingDatagrams.length() > 0;
 }
 
 qint64 QNativeSocketEngine::pendingDatagramSize() const
 {
     Q_D(const QNativeSocketEngine);
+    QMutexLocker locker(&d->readMutex);
     if (d->pendingDatagrams.isEmpty())
         return -1;
 
@@ -943,6 +948,7 @@ void QNativeSocketEngine::establishRead()
         ComPtr<IAsyncBufferOperation> readOp;
         hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, readOp.GetAddressOf());
         RETURN_HR_IF_FAILED("establishRead(): Failed to initiate socket read");
+        QMutexLocker locker(&d->readOperationsMutex);
         d->pendingReadOps.append(readOp);
         hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
         RETURN_HR_IF_FAILED("establishRead(): Failed to register read callback");
@@ -1419,15 +1425,15 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     }
 
     Q_Q(QNativeSocketEngine);
+    QMutexLocker locker(&readOperationsMutex);
     for (int i = 0; i < pendingReadOps.count(); ++i) {
         if (pendingReadOps.at(i).Get() == asyncInfo) {
             pendingReadOps.takeAt(i);
             break;
         }
     }
+    locker.unlock();
 
-    static QMutex mutex;
-    mutex.lock();
     // A read in UnconnectedState will close the socket and return -1 and thus tell the caller,
     // that the connection was closed. The socket cannot be closed here, as the subsequent read
     // might fail then.
@@ -1465,7 +1471,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     hr = byteArrayAccess->Buffer(&data);
     Q_ASSERT_SUCCEEDED(hr);
 
-    readMutex.lock();
+    QMutexLocker readLocker(&readMutex);
     if (readBytes.atEnd()) // Everything has been read; the buffer is safe to reset
         readBytes.close();
     if (!readBytes.isOpen())
@@ -1476,11 +1482,10 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
     readBytes.write(reinterpret_cast<const char*>(data), qint64(bufferLength));
     readBytes.seek(readPos);
     bytesAvailable = readBytes.size() - readBytes.pos();
-    readMutex.unlock();
+    readLocker.unlock();
 
     if (notifyOnRead)
         emit q->readReady();
-    mutex.unlock();
 
     hr = QEventDispatcherWinRT::runOnXamlThread([buffer, q, this]() {
         UINT32 readBufferLength;
@@ -1501,6 +1506,7 @@ HRESULT QNativeSocketEnginePrivate::handleReadyRead(IAsyncBufferOperation *async
                           socketDescription(q).constData());
             return S_OK;
         }
+        QMutexLocker locker(&readOperationsMutex);
         pendingReadOps.append(readOp);
         hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(this, &QNativeSocketEnginePrivate::handleReadyRead).Get());
         if (FAILED(hr)) {

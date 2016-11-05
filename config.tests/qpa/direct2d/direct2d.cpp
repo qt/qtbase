@@ -50,6 +50,8 @@ int main(int, char**)
 {
     ComPtr<ID2D1Factory1> d2dFactory;
     D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, d2dFactory.ReleaseAndGetAddressOf());
+    ComPtr<IDXGISurface1> surface;
+    (void)surface; // Q_UNUSED
 
     return 0;
 }

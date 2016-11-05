@@ -13,11 +13,6 @@ HEADERS += \
 qtConfig(freetype) {
     SOURCES += $$PWD/qwindowsfontdatabase_ft.cpp
     HEADERS += $$PWD/qwindowsfontdatabase_ft_p.h
-    qtConfig(system-freetype) {
-        include($$QT_SOURCE_TREE/src/platformsupport/fontdatabases/basic/basic.pri)
-    } else {
-        include($$QT_SOURCE_TREE/src/3rdparty/freetype_dependency.pri)
-    }
 }
 
 qtConfig(directwrite) {
