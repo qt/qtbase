@@ -119,13 +119,16 @@ bool QDBusMenuConnection::registerTrayIcon(QDBusTrayIcon *item)
     if (item->menu())
         registerTrayIconMenu(item);
 
+    return registerTrayIconWithWatcher(item);
+}
+
+bool QDBusMenuConnection::registerTrayIconWithWatcher(QDBusTrayIcon *item)
+{
     QDBusMessage registerMethod = QDBusMessage::createMethodCall(
                 StatusNotifierWatcherService, StatusNotifierWatcherPath, StatusNotifierWatcherService,
                 QLatin1String("RegisterStatusNotifierItem"));
     registerMethod.setArguments(QVariantList() << item->instanceId());
-    success = m_connection.callWithCallback(registerMethod, this, SIGNAL(trayIconRegistered()), SLOT(dbusError(QDBusError)));
-
-    return success;
+    return m_connection.callWithCallback(registerMethod, this, SIGNAL(trayIconRegistered()), SLOT(dbusError(QDBusError)));
 }
 
 bool QDBusMenuConnection::unregisterTrayIcon(QDBusTrayIcon *item)

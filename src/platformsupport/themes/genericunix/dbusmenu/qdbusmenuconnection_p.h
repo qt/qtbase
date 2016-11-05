@@ -69,11 +69,13 @@ class QDBusMenuConnection : public QObject
 public:
     QDBusMenuConnection(QObject *parent = 0, const QString &serviceName = QString());
     QDBusConnection connection() const { return m_connection; }
+    QDBusServiceWatcher *dbusWatcher() const { return m_dbusWatcher; }
     bool isStatusNotifierHostRegistered() const { return m_statusNotifierHostRegistered; }
 #ifndef QT_NO_SYSTEMTRAYICON
     bool registerTrayIconMenu(QDBusTrayIcon *item);
     void unregisterTrayIconMenu(QDBusTrayIcon *item);
     bool registerTrayIcon(QDBusTrayIcon *item);
+    bool registerTrayIconWithWatcher(QDBusTrayIcon *item);
     bool unregisterTrayIcon(QDBusTrayIcon *item);
 #endif // QT_NO_SYSTEMTRAYICON
 

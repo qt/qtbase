@@ -116,6 +116,8 @@ void QDBusTrayIcon::init()
 {
     qCDebug(qLcTray) << "registering" << m_instanceId;
     m_registered = dBusConnection()->registerTrayIcon(this);
+    QObject::connect(dBusConnection()->dbusWatcher(), &QDBusServiceWatcher::serviceRegistered,
+                     this, &QDBusTrayIcon::watcherServiceRegistered);
 }
 
 void QDBusTrayIcon::cleanup()
@@ -128,6 +130,15 @@ void QDBusTrayIcon::cleanup()
     delete m_notifier;
     m_notifier = Q_NULLPTR;
     m_registered = false;
+}
+
+void QDBusTrayIcon::watcherServiceRegistered(const QString &serviceName)
+{
+    Q_UNUSED(serviceName);
+    // We have the icon registered, but the watcher has restarted or
+    // changed, so we need to tell it about our icon again
+    if (m_registered)
+        dBusConnection()->registerTrayIconWithWatcher(this);
 }
 
 void QDBusTrayIcon::attentionTimerExpired()
