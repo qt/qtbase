@@ -128,6 +128,28 @@ static inline QWindowsSessionManager *platformSessionManager() {
 }
 #endif
 
+static inline int windowDpiAwareness(HWND hwnd)
+{
+    return QWindowsContext::user32dll.getWindowDpiAwarenessContext && QWindowsContext::user32dll.getWindowDpiAwarenessContext
+        ? QWindowsContext::user32dll.getAwarenessFromDpiAwarenessContext(QWindowsContext::user32dll.getWindowDpiAwarenessContext(hwnd))
+        : -1;
+}
+
+// Note: This only works within WM_NCCREATE
+static bool enableNonClientDpiScaling(HWND hwnd)
+{
+    bool result = false;
+    if (QWindowsContext::user32dll.enableNonClientDpiScaling && windowDpiAwareness(hwnd) == 2) {
+        result = QWindowsContext::user32dll.enableNonClientDpiScaling(hwnd) != FALSE;
+        if (!result) {
+            const DWORD errorCode = GetLastError();
+            qErrnoWarning(int(errorCode), "EnableNonClientDpiScaling() failed for HWND %p (%lu)",
+                          hwnd, errorCode);
+        }
+    }
+    return result;
+}
+
 /*!
     \class QWindowsUser32DLL
     \brief Struct that contains dynamically resolved symbols of User32.dll.
@@ -148,7 +170,8 @@ QWindowsUser32DLL::QWindowsUser32DLL() :
     registerTouchWindow(0), unregisterTouchWindow(0),
     getTouchInputInfo(0), closeTouchInputHandle(0), setProcessDPIAware(0),
     addClipboardFormatListener(0), removeClipboardFormatListener(0),
-    getDisplayAutoRotationPreferences(0), setDisplayAutoRotationPreferences(0)
+    getDisplayAutoRotationPreferences(0), setDisplayAutoRotationPreferences(0),
+    enableNonClientDpiScaling(0), getWindowDpiAwarenessContext(0), getAwarenessFromDpiAwarenessContext(0)
 {
 }
 
@@ -162,6 +185,12 @@ void QWindowsUser32DLL::init()
 
     getDisplayAutoRotationPreferences = (GetDisplayAutoRotationPreferences)library.resolve("GetDisplayAutoRotationPreferences");
     setDisplayAutoRotationPreferences = (SetDisplayAutoRotationPreferences)library.resolve("SetDisplayAutoRotationPreferences");
+
+    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS10) { // Appears in 10.0.14393, October 2016
+        enableNonClientDpiScaling = (EnableNonClientDpiScaling)library.resolve("EnableNonClientDpiScaling");
+        getWindowDpiAwarenessContext = (GetWindowDpiAwarenessContext)library.resolve("GetWindowDpiAwarenessContext");
+        getAwarenessFromDpiAwarenessContext = (GetAwarenessFromDpiAwarenessContext)library.resolve("GetAwarenessFromDpiAwarenessContext");
+    }
 }
 
 bool QWindowsUser32DLL::initTouch()
@@ -928,6 +957,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         case QtWindows::MoveEvent:
             d->m_creationContext->obtainedGeometry.moveTo(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
+        case QtWindows::NonClientCreate:
+            if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS10 && d->m_creationContext->window->isTopLevel())
+                enableNonClientDpiScaling(msg.hwnd);
+            return false;
         case QtWindows::CalculateSize:
             return QWindowsGeometryHint::handleCalculateSize(d->m_creationContext->customMargins, msg, result);
         case QtWindows::GeometryChangingEvent:

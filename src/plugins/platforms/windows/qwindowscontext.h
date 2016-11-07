@@ -94,6 +94,9 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *RemoveClipboardFormatListener)(HWND);
     typedef BOOL (WINAPI *GetDisplayAutoRotationPreferences)(DWORD *);
     typedef BOOL (WINAPI *SetDisplayAutoRotationPreferences)(DWORD);
+    typedef BOOL (WINAPI *EnableNonClientDpiScaling)(HWND);
+    typedef int  (WINAPI *GetWindowDpiAwarenessContext)(HWND);
+    typedef int  (WINAPI *GetAwarenessFromDpiAwarenessContext)(int);
 
     // Touch functions from Windows 7 onwards (also for use with Q_CC_MSVC).
     IsTouchWindow isTouchWindow;
@@ -113,6 +116,10 @@ struct QWindowsUser32DLL
     // Rotation API
     GetDisplayAutoRotationPreferences getDisplayAutoRotationPreferences;
     SetDisplayAutoRotationPreferences setDisplayAutoRotationPreferences;
+
+    EnableNonClientDpiScaling enableNonClientDpiScaling;
+    GetWindowDpiAwarenessContext getWindowDpiAwarenessContext;
+    GetAwarenessFromDpiAwarenessContext getAwarenessFromDpiAwarenessContext;
 };
 
 // Shell scaling library (Windows 8.1 onwards)
