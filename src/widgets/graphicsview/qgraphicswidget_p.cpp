@@ -722,6 +722,9 @@ void QGraphicsWidgetPrivate::windowFrameHoverMoveEvent(QGraphicsSceneHoverEvent 
 #ifndef QT_NO_CURSOR
     if (needsSetCursorCall)
         q->setCursor(cursorShape);
+#else
+    Q_UNUSED(needsSetCursorCall);
+    Q_UNUSED(cursorShape);
 #endif
     // update buttons if we hover over them
     windowData->hoveredSubControl = q->style()->hitTestComplexControl(QStyle::CC_TitleBar, &bar, pos.toPoint(), 0);

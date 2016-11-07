@@ -74,6 +74,8 @@ static PtrXcursorLibraryGetDefaultSize ptrXcursorLibraryGetDefaultSize = 0;
 static xcb_font_t cursorFont = 0;
 static int cursorCount = 0;
 
+#ifndef QT_NO_CURSOR
+
 static uint8_t cur_blank_bits[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -275,8 +277,6 @@ static const char * const cursorNames[] = {
     "move",
     "link"
 };
-
-#ifndef QT_NO_CURSOR
 
 QXcbCursorCacheKey::QXcbCursorCacheKey(const QCursor &c)
     : shape(c.shape()), bitmapCacheKey(0), maskCacheKey(0)
