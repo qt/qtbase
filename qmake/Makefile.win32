@@ -53,7 +53,6 @@ CXXFLAGS = $(CFLAGS)
 
 LFLAGS	    =
 LIBS	    = ole32.lib advapi32.lib shell32.lib
-LINKQMAKE   = $(LINKER) $(LFLAGS) -OUT:qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
 ADDCLEAN    = qmake.pdb qmake.ilk
 
 #qmake code
@@ -130,11 +129,10 @@ QTOBJS= \
 	qjsonobject.obj \
 	qjsonvalue.obj
 
-first all: qmake.exe
+first all: $(BUILD_PATH)\bin\qmake.exe
 
-qmake.exe: $(OBJS) $(QTOBJS)
-	$(LINKQMAKE) $(PCH_OBJECT)
-	-copy qmake.exe $(BUILD_PATH)\bin\qmake.exe
+$(BUILD_PATH)\bin\qmake.exe: $(OBJS) $(QTOBJS)
+	$(LINKER) $(LFLAGS) /OUT:$(BUILD_PATH)\bin\qmake.exe $(OBJS) $(QTOBJS) $(PCH_OBJECT) $(LIBS)
 
 clean::
 	-del $(QTOBJS)
@@ -146,7 +144,6 @@ clean::
 	-del qmake.tds
 
 distclean:: clean
-	-del qmake.exe
 	-del $(BUILD_PATH)\bin\qmake.exe
 	-del Makefile
 
