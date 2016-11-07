@@ -880,7 +880,7 @@ inline void QXmlStreamReaderPrivate::reallocateStack()
     sym_stack = reinterpret_cast<Value*> (realloc(sym_stack, stack_size * sizeof(Value)));
     Q_CHECK_PTR(sym_stack);
     state_stack = reinterpret_cast<int*> (realloc(state_stack, stack_size * sizeof(int)));
-    Q_CHECK_PTR(sym_stack);
+    Q_CHECK_PTR(state_stack);
 }
 
 
