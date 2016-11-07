@@ -1803,15 +1803,9 @@ fi # Build qmake
 # create a qt.conf for the Qt build tree itself
 #-------------------------------------------------------------------------------
 
-QTCONFFILE="$outpath/bin/qt.conf"
-cat > "$QTCONFFILE" <<EOF
-[EffectivePaths]
-Prefix=..
-EOF
-if [ -n "$CFG_HOST_QT_TOOLS_PATH" ]; then
-    cat >> "$QTCONFFILE" <<EOF
-[Paths]
-Prefix=$QT_EXT_PREFIX
+printInstallPaths()
+{
+    cat <<EOF
 Documentation=$QT_REL_INSTALL_DOCS
 Headers=$QT_REL_INSTALL_HEADERS
 Libraries=$QT_REL_INSTALL_LIBS
@@ -1825,6 +1819,22 @@ Data=$QT_REL_INSTALL_DATA
 Translations=$QT_REL_INSTALL_TRANSLATIONS
 Examples=$QT_REL_INSTALL_EXAMPLES
 Tests=$QT_REL_INSTALL_TESTS
+EOF
+}
+
+QTCONFFILE="$outpath/bin/qt.conf"
+cat > "$QTCONFFILE" <<EOF
+[EffectivePaths]
+Prefix=..
+EOF
+if [ -n "$CFG_HOST_QT_TOOLS_PATH" ]; then
+    cat >> "$QTCONFFILE" <<EOF
+[DevicePaths]
+Prefix=$QT_INSTALL_PREFIX
+`printInstallPaths`
+[Paths]
+Prefix=$QT_EXT_PREFIX
+`printInstallPaths`
 HostPrefix=$QT_HOST_PREFIX
 HostBinaries=$QT_REL_HOST_BINS
 HostLibraries=$QT_REL_HOST_LIBS
