@@ -579,6 +579,7 @@ QSize QLabelPrivate::sizeForWidth(int w) const
 #ifndef QT_NO_MOVIE
     } else if (movie && !movie->currentPixmap().isNull()) {
         br = movie->currentPixmap().rect();
+        br.setSize(br.size() / movie->currentPixmap().devicePixelRatio());
 #endif
     } else if (isTextLabel) {
         int align = QStyle::visualAlignment(textDirection(), QFlag(this->align));

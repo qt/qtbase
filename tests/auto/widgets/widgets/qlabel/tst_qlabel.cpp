@@ -101,6 +101,9 @@ private Q_SLOTS:
     void taskQTBUG_7902_contextMenuCrash();
 #endif
 
+    void taskQTBUG_48157_dprPixmap();
+    void taskQTBUG_48157_dprMovie();
+
 private:
     QLabel *testWidget;
     QPointer<Widget> test_box;
@@ -545,6 +548,27 @@ void tst_QLabel::taskQTBUG_7902_contextMenuCrash()
     // No crash, it's allright.
 }
 #endif
+
+void tst_QLabel::taskQTBUG_48157_dprPixmap()
+{
+    QLabel label;
+    QPixmap pixmap;
+    pixmap.load(QFINDTESTDATA(QStringLiteral("red@2x.png")));
+    QCOMPARE(pixmap.devicePixelRatio(), 2.0);
+    label.setPixmap(pixmap);
+    QCOMPARE(label.sizeHint(), pixmap.rect().size() / pixmap.devicePixelRatio());
+}
+
+void tst_QLabel::taskQTBUG_48157_dprMovie()
+{
+    QLabel label;
+    QMovie movie;
+    movie.setFileName(QFINDTESTDATA(QStringLiteral("red@2x.png")));
+    movie.start();
+    QCOMPARE(movie.currentPixmap().devicePixelRatio(), 2.0);
+    label.setMovie(&movie);
+    QCOMPARE(label.sizeHint(), movie.currentPixmap().size() / movie.currentPixmap().devicePixelRatio());
+}
 
 QTEST_MAIN(tst_QLabel)
 #include "tst_qlabel.moc"
