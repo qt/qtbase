@@ -754,30 +754,6 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     \sa {Object Trees & Ownership}
 */
 
-/*!
-    \relates QObject
-
-    Returns a pointer to the object named \a name that inherits \a
-    type and with a given \a parent.
-
-    Returns 0 if there is no such child.
-
-    \snippet code/src_corelib_kernel_qobject.cpp 0
-*/
-
-void *qt_find_obj_child(QObject *parent, const char *type, const QString &name)
-{
-    QObjectList list = parent->children();
-    if (list.size() == 0) return 0;
-    for (int i = 0; i < list.size(); ++i) {
-        QObject *obj = list.at(i);
-        if (name == obj->objectName() && obj->inherits(type))
-            return obj;
-    }
-    return 0;
-}
-
-
 /*****************************************************************************
   QObject member functions
  *****************************************************************************/

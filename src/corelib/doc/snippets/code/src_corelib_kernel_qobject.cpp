@@ -48,14 +48,6 @@
 **
 ****************************************************************************/
 
-//! [0]
-QLineEdit *lineEdit = static_cast<QLineEdit *>(
-        qt_find_obj_child(myWidget, "QLineEdit", "my line edit"));
-if (lineEdit)
-    lineEdit->setText("Default");
-//! [0]
-
-
 //! [1]
 QObject *obj = new QPushButton;
 obj->metaObject()->className();             // returns "QPushButton"
