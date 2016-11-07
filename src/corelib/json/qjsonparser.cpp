@@ -491,9 +491,10 @@ namespace {
                 memcpy(newValues, data, size*sizeof(QJsonPrivate::Value));
                 data = newValues;
             } else {
-                data = static_cast<QJsonPrivate::Value *>(realloc(data, alloc*sizeof(QJsonPrivate::Value)));
-                if (!data)
+                void *newValues = realloc(data, alloc * sizeof(QJsonPrivate::Value));
+                if (!newValues)
                     return false;
+                data = static_cast<QJsonPrivate::Value *>(newValues);
             }
             return true;
         }
