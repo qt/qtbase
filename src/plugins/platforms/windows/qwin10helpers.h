@@ -37,60 +37,16 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSCLIPBOARD_H
-#define QWINDOWSCLIPBOARD_H
+#ifndef QWIN10HELPERS_H
+#define QWIN10HELPERS_H
 
-#include "qwindowsinternalmimedata.h"
-
-#include <qpa/qplatformclipboard.h>
+#include <QtCore/QtGlobal>
+#include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsOleDataObject;
-
-class QWindowsClipboardRetrievalMimeData : public QWindowsInternalMimeData {
-public:
-
-protected:
-    IDataObject *retrieveDataObject() const Q_DECL_OVERRIDE;
-    void releaseDataObject(IDataObject *) const Q_DECL_OVERRIDE;
-};
-
-class QWindowsClipboard : public QPlatformClipboard
-{
-public:
-    QWindowsClipboard();
-    ~QWindowsClipboard();
-    void registerViewer(); // Call in initialization, when context is up.
-    void cleanup();
-
-    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
-    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
-    bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
-    bool ownsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
-
-    inline bool clipboardViewerWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *result);
-
-    static QWindowsClipboard *instance() { return m_instance; }
-
-    HWND clipboardViewer() const { return m_clipboardViewer; }
-
-private:
-    void clear();
-    void releaseIData();
-    inline void propagateClipboardMessage(UINT message, WPARAM wParam, LPARAM lParam) const;
-    inline void unregisterViewer();
-    inline bool ownsClipboard() const;
-
-    static QWindowsClipboard *m_instance;
-
-    QWindowsClipboardRetrievalMimeData m_retrievalData;
-    QWindowsOleDataObject *m_data;
-    HWND m_clipboardViewer;
-    HWND m_nextClipboardViewer;
-    bool m_formatListenerRegistered;
-};
+bool qt_windowsIsTabletMode(HWND hwnd);
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSCLIPBOARD_H
+#endif // QWIN10HELPERS_H
