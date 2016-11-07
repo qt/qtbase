@@ -672,8 +672,11 @@ void QGLXContext::queryDummyContext()
     }
 
     QOpenGLContext context;
-    context.create();
-    context.makeCurrent(surface.data());
+    if (!context.create() || !context.makeCurrent(surface.data())) {
+        qWarning("QGLXContext: Failed to create dummy context");
+        m_supportsThreading = false;
+        return;
+    }
 
     m_supportsThreading = true;
 
