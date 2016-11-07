@@ -723,8 +723,10 @@ void QXcbClipboard::handleXFixesSelectionRequest(xcb_xfixes_selection_notify_eve
     if (mode > QClipboard::Selection)
         return;
 
-    // here we care only about the xfixes events that come from non Qt processes
-    if (event->owner != XCB_NONE && event->owner != owner()) {
+    // Note1: Here we care only about the xfixes events that come from other processes.
+    // Note2: If the QClipboard::clear() is issued, event->owner is XCB_NONE,
+    // so we check selection_timestamp to not handle our own QClipboard::clear().
+    if (event->owner != owner() && event->selection_timestamp > m_timestamp[mode]) {
         if (!m_xClipboard[mode]) {
             m_xClipboard[mode].reset(new QXcbClipboardMime(mode, this));
         } else {
