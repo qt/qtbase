@@ -163,14 +163,14 @@ void QLibrarySettings::load()
 
 QSettings *QLibraryInfoPrivate::findConfiguration()
 {
-    QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
-    if (QFile::exists(qtconfig))
-        return new QSettings(qtconfig, QSettings::IniFormat);
 #ifdef QT_BUILD_QMAKE
-    qtconfig = qmake_libraryInfoFile();
+    QString qtconfig = qmake_libraryInfoFile();
     if (QFile::exists(qtconfig))
         return new QSettings(qtconfig, QSettings::IniFormat);
 #else
+    QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
+    if (QFile::exists(qtconfig))
+        return new QSettings(qtconfig, QSettings::IniFormat);
 #ifdef Q_OS_DARWIN
     CFBundleRef bundleRef = CFBundleGetMainBundle();
     if (bundleRef) {
