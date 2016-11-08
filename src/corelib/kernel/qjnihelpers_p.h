@@ -100,6 +100,13 @@ namespace QtAndroidPrivate
         virtual bool handleKeyEvent(jobject event) = 0;
     };
 
+    class Q_CORE_EXPORT OnBindListener
+    {
+    public:
+        virtual ~OnBindListener() {}
+        virtual jobject onBind(jobject intent) = 0;
+    };
+
     enum class PermissionsResult {
         Granted,
         Denied
@@ -143,6 +150,13 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT void unregisterKeyEventListener(KeyEventListener *listener);
 
     Q_CORE_EXPORT void hideSplashScreen(JNIEnv *env, int duration = 0);
+
+
+    Q_CORE_EXPORT void waitForServiceSetup();
+    Q_CORE_EXPORT int acuqireServiceSetup(int flags);
+    Q_CORE_EXPORT void setOnBindListener(OnBindListener *listener);
+    Q_CORE_EXPORT jobject callOnBindListener(jobject intent);
+
 }
 
 QT_END_NAMESPACE

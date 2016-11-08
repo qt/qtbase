@@ -51,11 +51,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.content.ClipboardManager;
 import android.content.ClipboardManager.OnPrimaryClipChangedListener;
-import android.os.Build;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -908,4 +909,9 @@ public class QtNative
 
     private static native void setNativeActivity(Activity activity);
     private static native void setNativeService(Service service);
+    // activity methods
+
+    // service methods
+    public static native IBinder onBind(Intent intent);
+    // service methods
 }

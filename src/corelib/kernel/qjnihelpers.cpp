@@ -75,6 +75,11 @@ static jmethodID g_hideSplashScreenMethodID = Q_NULLPTR;
 Q_GLOBAL_STATIC(std::deque<QtAndroidPrivate::Runnable>, g_pendingRunnables);
 static QBasicMutex g_pendingRunnablesMutex;
 
+Q_GLOBAL_STATIC_WITH_ARGS(QtAndroidPrivate::OnBindListener*, g_onBindListener, (nullptr));
+Q_GLOBAL_STATIC(QMutex, g_onBindListenerMutex);
+Q_GLOBAL_STATIC(QSemaphore, g_waitForServiceSetupSemaphore);
+Q_GLOBAL_STATIC(QAtomicInt, g_serviceSetupLockers);
+
 class PermissionsResultClass : public QObject
 {
     Q_OBJECT
@@ -511,7 +516,7 @@ void QtAndroidPrivate::requestPermissions(JNIEnv *env, const QStringList &permis
     }, env);
 }
 
-QHash<QString, QtAndroidPrivate::PermissionsResult> QtAndroidPrivate::requestPermissionsSync(JNIEnv *env, const QStringList &permissions, int timeoutMs)
+QtAndroidPrivate::PermissionsHash QtAndroidPrivate::requestPermissionsSync(JNIEnv *env, const QStringList &permissions, int timeoutMs)
 {
     QSharedPointer<QHash<QString, QtAndroidPrivate::PermissionsResult>> res(new QHash<QString, QtAndroidPrivate::PermissionsResult>());
     QSharedPointer<QSemaphore> sem(new QSemaphore);
@@ -570,6 +575,33 @@ void QtAndroidPrivate::unregisterKeyEventListener(QtAndroidPrivate::KeyEventList
 void QtAndroidPrivate::hideSplashScreen(JNIEnv *env, int duration)
 {
     env->CallStaticVoidMethod(g_jNativeClass, g_hideSplashScreenMethodID, duration);
+}
+
+void QtAndroidPrivate::waitForServiceSetup()
+{
+    g_waitForServiceSetupSemaphore->acquire();
+}
+
+int QtAndroidPrivate::acuqireServiceSetup(int flags)
+{
+    g_serviceSetupLockers->ref();
+    return flags;
+}
+
+void QtAndroidPrivate::setOnBindListener(QtAndroidPrivate::OnBindListener *listener)
+{
+    QMutexLocker lock(g_onBindListenerMutex);
+    *g_onBindListener = listener;
+    if (!(*g_serviceSetupLockers)--)
+        g_waitForServiceSetupSemaphore->release();
+}
+
+jobject QtAndroidPrivate::callOnBindListener(jobject intent)
+{
+    QMutexLocker lock(g_onBindListenerMutex);
+    if (g_onBindListener)
+        return (*g_onBindListener)->onBind(intent);
+    return nullptr;
 }
 
 QT_END_NAMESPACE
