@@ -457,9 +457,10 @@ defineTest(qtConfOutput_qmakeArgs) {
     export($${currentConfig}.output.privatePro)
 }
 
-defineTest(qtConfOutputPostProcess_publicPro) {
+defineReplace(qtConfOutputPostProcess_publicPro) {
     qt_version = $$[QT_VERSION]
     output = \
+        $$1 \
         "QT_VERSION = $$qt_version" \
         "QT_MAJOR_VERSION = $$section(qt_version, '.', 0, 0)" \
         "QT_MINOR_VERSION = $$section(qt_version, '.', 1, 1)" \
@@ -476,13 +477,13 @@ defineTest(qtConfOutputPostProcess_publicPro) {
             "QT_RELEASE_DATE = $$config.input.qt_release_date"
     }
 
-    $${currentConfig}.output.publicPro += $$output
-    export($${currentConfig}.output.publicPro)
+    return($$output)
 }
 
-defineTest(qtConfOutputPostProcess_publicHeader) {
+defineReplace(qtConfOutputPostProcess_publicHeader) {
     qt_version = $$[QT_VERSION]
     output = \
+        $$1 \
         "$${LITERAL_HASH}define QT_VERSION_STR \"$$qt_version\"" \
         "$${LITERAL_HASH}define QT_VERSION_MAJOR $$section(qt_version, '.', 0, 0)" \
         "$${LITERAL_HASH}define QT_VERSION_MINOR $$section(qt_version, '.', 1, 1)" \
@@ -499,8 +500,7 @@ defineTest(qtConfOutputPostProcess_publicHeader) {
     !isEmpty(config.input.qt_libinfix): \
         output += "$${LITERAL_HASH}define QT_LIBINFIX \"$$eval(config.input.qt_libinfix)\""
 
-    $${currentConfig}.output.publicHeader += $$output
-    export($${currentConfig}.output.publicHeader)
+    return($$output)
 }
 
 

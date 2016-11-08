@@ -1672,13 +1672,17 @@ defineTest(qtConfProcessOutput) {
             }
         }
 
-        ppScope =
-        !isEmpty(module): ppScope = $${module}_
-        defined(qtConfOutputPostProcess_$${ppScope}$${type}, test): \
-            qtConfOutputPostProcess_$${ppScope}$${type}()
+        content = $$eval($${currentConfig}.output.$${type})
+
+        !isEmpty(module): \
+            call = qtConfOutputPostProcess_$${module}_$${type}
+        else: \
+            call = qtConfOutputPostProcess_$${type}
+        defined($$call, replace): \
+            eval(content = \$\$"$$call"(\$\$content))
 
         file = $$eval($${currentConfig}.files.$${type})
-        fileCont.$$file += $$eval($${currentConfig}.output.$${type})
+        fileCont.$$file += $$content
         fileCont._KEYS_ *= $$file
     }
 
