@@ -127,11 +127,3 @@ setUpdatesEnabled(false);
 bigVisualChanges();
 setUpdatesEnabled(true);
 //! [13]
-
-
-//! [14]
-...
-extern void qt_x11_set_global_double_buffer(bool);
-qt_x11_set_global_double_buffer(false);
-...
-//! [14]
