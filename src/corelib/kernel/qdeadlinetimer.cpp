@@ -173,9 +173,9 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
 */
 
 /*!
-    \fn QDeadlineTimer::QDeadlineTimer(ForeverConstant, Qt::TimerType timerType)
+    \fn QDeadlineTimer::QDeadlineTimer(ForeverConstant forever, Qt::TimerType timerType)
 
-    QDeadlineTimer objects created with parameter \a ForeverConstant never expire.
+    QDeadlineTimer objects created with parameter \a forever never expire.
     For such objects, remainingTime() will return -1, deadline() will return the
     maximum value, and isForever() will return true.
 
@@ -295,7 +295,7 @@ void QDeadlineTimer::setRemainingTime(qint64 msecs, Qt::TimerType timerType) Q_D
     parameters are zero, this QDeadlineTimer will be marked as expired.
 
     The timer type for this QDeadlineTimer object will be set to the specified
-    \a type.
+    \a timerType.
 
     \sa setRemainingTime(), hasExpired(), isForever(), remainingTime()
 */
@@ -338,71 +338,6 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
     \endcode
 
     \sa setDeadline(), remainingTime(), hasExpired(), isForever()
-*/
-
-/*!
-    \fn void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, unsigned nsecs, Qt::TimerType type)
-
-    Sets the remaining time for this QDeadlineTimer object to \a secs seconds
-    and \a nsecs nanoseconds from now, if \a secs is a positive value. If both
-    values are zero, this QDeadlineTimer object will be marked as expired,
-    whereas if \a secs is -1, it will set it to never expire.
-
-    If value of \a nsecs is more than 1 billion nanoseconds (1 second), this
-    function will adjust \a secs accordingly.
-
-    The timer type for this QDeadlineTimer object will be set to the specified \a type.
-
-    \sa setRemainingTime(), hasExpired(), isForever(), remainingTime()
-*/
-
-/*!
-    \overload
-    \fn Duration QDeadlineTimer::remainingTime() const
-
-    Returns a \c{std::chrono::duration} object of type \c{Duration} containing
-    the remaining time in this QDeadlineTimer, if it still has time left. If
-    the deadline has passed, this returns \c{Duration::zero()}, whereas if the
-    object is set to never expire, it returns \c{Duration::max()} (instead of
-    -1).
-
-    It is not possible to obtain the overdue time for expired timers with this
-    function. To do that, see deadline().
-
-    \note The overload of this function without template parameter always
-    returns milliseconds.
-
-    \sa setRemainingTime(), deadline<Clock, Duration>()
-*/
-
-/*!
-    \overload
-    \fn std::chrono::time_point<Clock, Duration> QDeadlineTimer::deadline() const
-
-    Returns the absolute time point for the deadline stored in QDeadlineTimer
-    object as a \c{std::chrono::time_point} object. The template parameter
-    \c{Clock} is mandatory and indicates which of the C++ timekeeping clocks to
-    use as a reference. The value will be in the past if this QDeadlineTimer
-    has expired.
-
-    If this QDeadlineTimer never expires, this function returns
-    \c{std::chrono::time_point<Clock, Duration>::max()}.
-
-    This function can be used to calculate the amount of time a timer is
-    overdue, by subtracting the current time point of the reference clock, as
-    in the following example:
-
-    \code
-        auto realTimeLeft = std::chrono::nanoseconds::max();
-        auto tp = deadline.deadline<std::chrono::steady_clock>();
-        if (tp != std::chrono::steady_clock::max())
-            realTimeLeft = tp - std::chrono::steady_clock::now();
-    \endcode
-
-    \note Timers that were created as expired have an indetermine time point in
-    the past as their deadline, so the above calculation may not work.
-
-    \sa remainingTime(), deadlineNSecs(), setDeadline()
 */
 
 /*!
@@ -805,6 +740,30 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) Q_DECL_
 
     To subtract times of precision greater than 1 millisecond, use addNSecs().
 */
+
+/*!
+  \fn void QDeadlineTimer::swap(QDeadlineTimer &other)
+
+  Swaps this deadline timer with the \a other deadline timer.
+ */
+
+/*!
+  \fn QDeadlineTimer & QDeadlineTimer::operator=(std::chrono::time_point<Clock, Duration> deadline_)
+
+  Assigns \a deadline_ to this deadline timer.
+ */
+
+/*!
+  \fn QDeadlineTimer & QDeadlineTimer::operator=(std::chrono::duration<Rep, Period> remaining)
+
+  Sets this deadline timer to the \a remaining time.
+ */
+
+/*!
+  \fn std::chrono::nanoseconds QDeadlineTimer::remainingTimeAsDuration() const
+
+  Returns the time remaining before the deadline.
+ */
 
 // the rest of the functions are in qelapsedtimer_xxx.cpp
 
