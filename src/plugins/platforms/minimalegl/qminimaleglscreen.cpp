@@ -41,7 +41,9 @@
 #include "qminimaleglwindow.h"
 
 #include <QtEglSupport/private/qeglconvenience_p.h>
-#include <QtEglSupport/private/qeglplatformcontext_p.h>
+#ifndef QT_NO_OPENGL
+# include <QtEglSupport/private/qeglplatformcontext_p.h>
+#endif
 
 #ifdef Q_OPENKODE
 #include <KD/kd.h>
@@ -51,6 +53,8 @@
 QT_BEGIN_NAMESPACE
 
 // #define QEGL_EXTRA_DEBUG
+
+#ifndef QT_NO_OPENGL
 
 class QMinimalEglContext : public QEGLPlatformContext
 {
@@ -67,6 +71,8 @@ public:
         return screen->surface();
     }
 };
+
+#endif
 
 QMinimalEglScreen::QMinimalEglScreen(EGLNativeDisplayType display)
     : m_depth(32)
@@ -161,9 +167,10 @@ void QMinimalEglScreen::createAndSetPlatformContext()
     }
     //    qWarning("Created surface %dx%d\n", w, h);
 
+#ifndef QT_NO_OPENGL
     QEGLPlatformContext *platformContext = new QMinimalEglContext(platformFormat, 0, m_dpy);
     m_platformContext = platformContext;
-
+#endif
     EGLint w,h;                    // screen size detection
     eglQuerySurface(m_dpy, m_surface, EGL_WIDTH, &w);
     eglQuerySurface(m_dpy, m_surface, EGL_HEIGHT, &h);
@@ -191,6 +198,7 @@ QImage::Format QMinimalEglScreen::format() const
         createAndSetPlatformContext();
     return m_format;
 }
+#ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QMinimalEglScreen::platformContext() const
 {
     if (!m_platformContext) {
@@ -199,5 +207,5 @@ QPlatformOpenGLContext *QMinimalEglScreen::platformContext() const
     }
     return m_platformContext;
 }
-
+#endif
 QT_END_NAMESPACE

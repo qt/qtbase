@@ -41,7 +41,9 @@
 #include <QtGui/qwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformcursor.h>
-#include <QtPlatformCompositorSupport/private/qopenglcompositor_p.h>
+#ifndef QT_NO_OPENGL
+# include <QtPlatformCompositorSupport/private/qopenglcompositor_p.h>
+#endif
 
 #include "qeglfsscreen_p.h"
 #include "qeglfswindow_p.h"
@@ -60,7 +62,9 @@ QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
 QEglFSScreen::~QEglFSScreen()
 {
     delete m_cursor;
+#ifndef QT_NO_OPENGL
     QOpenGLCompositor::destroy();
+#endif
 }
 
 QRect QEglFSScreen::geometry() const
@@ -145,6 +149,7 @@ void QEglFSScreen::setPrimarySurface(EGLSurface surface)
 
 void QEglFSScreen::handleCursorMove(const QPoint &pos)
 {
+#ifndef QT_NO_OPENGL
     const QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     const QList<QOpenGLCompositorWindow *> windows = compositor->windows();
 
@@ -178,10 +183,12 @@ void QEglFSScreen::handleCursorMove(const QPoint &pos)
 
     if (enter && leave)
         QWindowSystemInterface::handleEnterLeaveEvent(enter, leave, enter->mapFromGlobal(pos), pos);
+#endif
 }
 
 QPixmap QEglFSScreen::grabWindow(WId wid, int x, int y, int width, int height) const
 {
+#ifndef QT_NO_OPENGL
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     const QList<QOpenGLCompositorWindow *> windows = compositor->windows();
     Q_ASSERT(!windows.isEmpty());
@@ -224,7 +231,7 @@ QPixmap QEglFSScreen::grabWindow(WId wid, int x, int y, int width, int height) c
             return QPixmap::fromImage(img).copy(rect);
         }
     }
-
+#endif // QT_NO_OPENGL
     return QPixmap();
 }
 

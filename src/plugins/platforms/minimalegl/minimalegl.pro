@@ -14,13 +14,16 @@ DEFINES += QT_EGL_NO_X11
 SOURCES =   main.cpp \
             qminimaleglintegration.cpp \
             qminimaleglwindow.cpp \
-            qminimaleglbackingstore.cpp \
             qminimaleglscreen.cpp
 
 HEADERS =   qminimaleglintegration.h \
             qminimaleglwindow.h \
-            qminimaleglbackingstore.h \
             qminimaleglscreen.h
+
+qtConfig(opengl) {
+    SOURCES += qminimaleglbackingstore.cpp
+    HEADERS += qminimaleglbackingstore.h
+}
 
 CONFIG += egl
 

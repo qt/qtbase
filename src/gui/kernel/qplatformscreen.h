@@ -66,7 +66,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QPlatformBackingStore;
-class QPlatformOpenGLContext;
 class QPlatformScreenPrivate;
 class QPlatformWindow;
 class QPlatformCursor;

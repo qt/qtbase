@@ -40,8 +40,9 @@
 #include "qminimaleglintegration.h"
 
 #include "qminimaleglwindow.h"
-#include "qminimaleglbackingstore.h"
-
+#ifndef QT_NO_OPENGL
+# include "qminimaleglbackingstore.h"
+#endif
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 
 #if defined(Q_OS_UNIX)
@@ -127,13 +128,18 @@ QPlatformBackingStore *QMinimalEglIntegration::createPlatformBackingStore(QWindo
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QMinimalEglIntegration::createWindowSurface %p\n", window);
 #endif
+#ifndef QT_NO_OPENGL
     return new QMinimalEglBackingStore(window);
+#else
+    return nullptr;
+#endif
 }
-
+#ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QMinimalEglIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     return static_cast<QMinimalEglScreen *>(context->screen()->handle())->platformContext();
 }
+#endif
 
 QPlatformFontDatabase *QMinimalEglIntegration::fontDatabase() const
 {

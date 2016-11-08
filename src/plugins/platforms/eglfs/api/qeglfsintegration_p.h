@@ -82,9 +82,10 @@ public:
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+#ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
-
+#endif
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
 
     QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
@@ -93,7 +94,9 @@ public:
     void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
     void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) Q_DECL_OVERRIDE;
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
+#ifndef QT_NO_OPENGL
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) Q_DECL_OVERRIDE;
+#endif
     NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
 
     QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;

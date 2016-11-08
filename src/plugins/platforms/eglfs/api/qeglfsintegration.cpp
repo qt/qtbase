@@ -42,9 +42,11 @@
 
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
-#include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
-#include <QtGui/QOffscreenSurface>
+#ifndef QT_NO_OPENGL
+# include <QtGui/QOpenGLContext>
+# include <QtGui/QOffscreenSurface>
+#endif
 #include <QtGui/QWindow>
 #include <QtCore/QLoggingCategory>
 #include <qpa/qwindowsysteminterface.h>
@@ -53,20 +55,26 @@
 #include "qeglfsintegration_p.h"
 #include "qeglfswindow_p.h"
 #include "qeglfshooks_p.h"
-#include "qeglfscontext_p.h"
+#ifndef QT_NO_OPENGL
+# include "qeglfscontext_p.h"
+# include "qeglfscursor_p.h"
+#endif
 #include "qeglfsoffscreenwindow_p.h"
-#include "qeglfscursor_p.h"
 
 #include <QtEglSupport/private/qeglconvenience_p.h>
-#include <QtEglSupport/private/qeglplatformcontext_p.h>
-#include <QtEglSupport/private/qeglpbuffer_p.h>
+#ifndef QT_NO_OPENGL
+# include <QtEglSupport/private/qeglplatformcontext_p.h>
+# include <QtEglSupport/private/qeglpbuffer_p.h>
+#endif
 
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtServiceSupport/private/qgenericunixservices_p.h>
 #include <QtThemeSupport/private/qgenericunixthemes_p.h>
 #include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtFbSupport/private/qfbvthandler_p.h>
-#include <QtPlatformCompositorSupport/private/qopenglcompositorbackingstore_p.h>
+#ifndef QT_NO_OPENGL
+# include <QtPlatformCompositorSupport/private/qopenglcompositorbackingstore_p.h>
+#endif
 
 #include <QtPlatformHeaders/QEGLNativeContext>
 
@@ -179,11 +187,15 @@ QPlatformTheme *QEglFSIntegration::createPlatformTheme(const QString &name) cons
 
 QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *window) const
 {
+#ifndef QT_NO_OPENGL
     QOpenGLCompositorBackingStore *bs = new QOpenGLCompositorBackingStore(window);
     if (!window->handle())
         window->create();
     static_cast<QEglFSWindow *>(window->handle())->setBackingStore(bs);
     return bs;
+#else
+    return nullptr;
+#endif
 }
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
@@ -196,6 +208,7 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
     return w;
 }
 
+#ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     EGLDisplay dpy = context->screen() ? static_cast<QEglFSScreen *>(context->screen()->handle())->display() : display();
@@ -230,6 +243,7 @@ QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOf
     }
     // Never return null. Multiple QWindows are not supported by this plugin.
 }
+#endif // QT_NO_OPENGL
 
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
@@ -239,10 +253,16 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 
     switch (cap) {
     case ThreadedPixmaps: return true;
+#ifndef QT_NO_OPENGL
     case OpenGL: return true;
     case ThreadedOpenGL: return true;
-    case WindowManagement: return false;
     case RasterGLSurface: return true;
+#else
+    case OpenGL: return false;
+    case ThreadedOpenGL: return false;
+    case RasterGLSurface: return false;
+#endif
+    case WindowManagement: return false;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
@@ -340,6 +360,7 @@ void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWi
     return result;
 }
 
+#ifndef QT_NO_OPENGL
 void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
     void *result = 0;
@@ -374,13 +395,17 @@ static void *eglContextForContext(QOpenGLContext *context)
 
     return handle->eglContext();
 }
+#endif
 
 QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::nativeResourceFunctionForContext(const QByteArray &resource)
 {
+#ifndef QT_NO_OPENGL
     QByteArray lowerCaseResource = resource.toLower();
     if (lowerCaseResource == "get_egl_context")
         return NativeResourceForContextFunction(eglContextForContext);
-
+#else
+    Q_UNUSED(resource);
+#endif
     return 0;
 }
 

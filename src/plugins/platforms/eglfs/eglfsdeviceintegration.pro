@@ -12,10 +12,13 @@ QT += \
     core-private gui-private \
     devicediscovery_support-private eventdispatcher_support-private \
     service_support-private theme_support-private fontdatabase_support-private \
-    fb_support-private egl_support-private platformcompositor_support-private
+    fb_support-private egl_support-private
 
 qtHaveModule(input_support-private): \
     QT += input_support-private
+
+qtHaveModule(platformcompositor_support-private): \
+    QT += platformcompositor_support-private
 
 LIBS += $$QMAKE_LIBS_DYNLOAD
 

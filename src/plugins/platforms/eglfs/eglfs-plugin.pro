@@ -2,6 +2,8 @@ TARGET = qeglfs
 
 QT += eglfsdeviceintegration-private
 
+CONFIG += egl
+
 SOURCES += $$PWD/qeglfsmain.cpp
 
 OTHER_FILES += $$PWD/eglfs.json
