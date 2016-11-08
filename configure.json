@@ -25,7 +25,7 @@
         "custom": "qmakeArgs",
         "options": {
             "prefix": "string",
-            "hostprefix": "string",
+            "hostprefix": "optionalString",
             "extprefix": "string",
 
             "archdatadir": "string",
