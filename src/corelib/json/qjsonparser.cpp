@@ -391,6 +391,8 @@ bool Parser::parseObject()
     }
 
     int objectOffset = reserveSpace(sizeof(QJsonPrivate::Object));
+    if (objectOffset < 0)
+        return false;
     BEGIN << "parseObject pos=" << objectOffset << current << json;
 
     ParsedObject parsedObject(this, objectOffset);
@@ -423,6 +425,9 @@ bool Parser::parseObject()
     if (parsedObject.offsets.size()) {
         int tableSize = parsedObject.offsets.size()*sizeof(uint);
         table = reserveSpace(tableSize);
+        if (table < 0)
+            return false;
+
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         memcpy(data + table, parsedObject.offsets.constData(), tableSize);
 #else
@@ -452,6 +457,8 @@ bool Parser::parseObject()
 bool Parser::parseMember(int baseOffset)
 {
     int entryOffset = reserveSpace(sizeof(QJsonPrivate::Entry));
+    if (entryOffset < 0)
+        return false;
     BEGIN << "parseMember pos=" << entryOffset;
 
     bool latin1;
@@ -475,6 +482,42 @@ bool Parser::parseMember(int baseOffset)
     return true;
 }
 
+namespace {
+    struct ValueArray {
+        static const int prealloc = 128;
+        ValueArray() : data(stackValues), alloc(prealloc), size(0) {}
+        ~ValueArray() { if (data != stackValues) free(data); }
+
+        inline bool grow() {
+            alloc *= 2;
+            if (data == stackValues) {
+                QJsonPrivate::Value *newValues = static_cast<QJsonPrivate::Value *>(malloc(alloc*sizeof(QJsonPrivate::Value)));
+                if (!newValues)
+                    return false;
+                memcpy(newValues, data, size*sizeof(QJsonPrivate::Value));
+                data = newValues;
+            } else {
+                data = static_cast<QJsonPrivate::Value *>(realloc(data, alloc*sizeof(QJsonPrivate::Value)));
+                if (!data)
+                    return false;
+            }
+            return true;
+        }
+        bool append(const QJsonPrivate::Value &v) {
+            if (alloc == size && !grow())
+                return false;
+            data[size] = v;
+            ++size;
+            return true;
+        }
+
+        QJsonPrivate::Value stackValues[prealloc];
+        QJsonPrivate::Value *data;
+        int alloc;
+        int size;
+    };
+}
+
 /*
     array = begin-array [ value *( value-separator value ) ] end-array
 */
@@ -488,8 +531,10 @@ bool Parser::parseArray()
     }
 
     int arrayOffset = reserveSpace(sizeof(QJsonPrivate::Array));
+    if (arrayOffset < 0)
+        return false;
 
-    QVarLengthArray<QJsonPrivate::Value, 64> values;
+    ValueArray values;
 
     if (!eatSpace()) {
         lastError = QJsonParseError::UnterminatedArray;
@@ -502,7 +547,10 @@ bool Parser::parseArray()
             QJsonPrivate::Value val;
             if (!parseValue(&val, arrayOffset))
                 return false;
-            values.append(val);
+            if (!values.append(val)) {
+                lastError = QJsonParseError::DocumentTooLarge;
+                return false;
+            }
             char token = nextToken();
             if (token == EndArray)
                 break;
@@ -516,20 +564,22 @@ bool Parser::parseArray()
         }
     }
 
-    DEBUG << "size =" << values.size();
+    DEBUG << "size =" << values.size;
     int table = arrayOffset;
     // finalize the object
-    if (values.size()) {
-        int tableSize = values.size()*sizeof(QJsonPrivate::Value);
+    if (values.size) {
+        int tableSize = values.size*sizeof(QJsonPrivate::Value);
         table = reserveSpace(tableSize);
-        memcpy(data + table, values.constData(), tableSize);
+        if (table < 0)
+            return false;
+        memcpy(data + table, values.data, tableSize);
     }
 
     QJsonPrivate::Array *a = (QJsonPrivate::Array *)(data + arrayOffset);
     a->tableOffset = table - arrayOffset;
     a->size = current - arrayOffset;
     a->is_object = false;
-    a->length = values.size();
+    a->length = values.size;
 
     DEBUG << "current=" << current;
     END;
@@ -738,6 +788,8 @@ bool Parser::parseNumber(QJsonPrivate::Value *val, int baseOffset)
     }
 
     int pos = reserveSpace(sizeof(double));
+    if (pos < 0)
+        return false;
     qToLittleEndian(ui, data + pos);
     if (current - baseOffset >= Value::MaxSize) {
         lastError = QJsonParseError::DocumentTooLarge;
@@ -856,6 +908,9 @@ bool Parser::parseString(bool *latin1)
     // try to write out a latin1 string
 
     int stringPos = reserveSpace(2);
+    if (stringPos < 0)
+        return false;
+
     BEGIN << "parse string stringPos=" << stringPos << json;
     while (json < end) {
         uint ch = 0;
@@ -878,6 +933,8 @@ bool Parser::parseString(bool *latin1)
             break;
         }
         int pos = reserveSpace(1);
+        if (pos < 0)
+            return false;
         DEBUG << "  " << ch << (char)ch;
         data[pos] = (uchar)ch;
     }
@@ -893,6 +950,8 @@ bool Parser::parseString(bool *latin1)
         // write string length
         *(QJsonPrivate::qle_ushort *)(data + stringPos) = ushort(current - outStart - sizeof(ushort));
         int pos = reserveSpace((4 - current) & 3);
+        if (pos < 0)
+            return false;
         while (pos & 3)
             data[pos++] = 0;
         END;
@@ -922,10 +981,14 @@ bool Parser::parseString(bool *latin1)
         }
         if (QChar::requiresSurrogates(ch)) {
             int pos = reserveSpace(4);
+            if (pos < 0)
+                return false;
             *(QJsonPrivate::qle_ushort *)(data + pos) = QChar::highSurrogate(ch);
             *(QJsonPrivate::qle_ushort *)(data + pos + 2) = QChar::lowSurrogate(ch);
         } else {
             int pos = reserveSpace(2);
+            if (pos < 0)
+                return false;
             *(QJsonPrivate::qle_ushort *)(data + pos) = (ushort)ch;
         }
     }
@@ -939,6 +1002,8 @@ bool Parser::parseString(bool *latin1)
     // write string length
     *(QJsonPrivate::qle_int *)(data + stringPos) = (current - outStart - sizeof(int))/2;
     int pos = reserveSpace((4 - current) & 3);
+    if (pos < 0)
+        return false;
     while (pos & 3)
         data[pos++] = 0;
     END;

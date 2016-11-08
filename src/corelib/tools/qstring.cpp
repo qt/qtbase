@@ -4814,6 +4814,39 @@ QString QString::fromUtf16(const ushort *unicode, int size)
     return QUtf16::convertToUnicode((const char *)unicode, size*2, 0);
 }
 
+/*!
+   \fn QString QString::fromUtf16(const char16_t *str, int size)
+   \since 5.3
+
+    Returns a QString initialized with the first \a size characters
+    of the Unicode string \a str (ISO-10646-UTF-16 encoded).
+
+    If \a size is -1 (default), \a str must be terminated
+    with a 0.
+
+    This function checks for a Byte Order Mark (BOM). If it is missing,
+    host byte order is assumed.
+
+    This function is slow compared to the other Unicode conversions.
+    Use QString(const QChar *, int) or QString(const QChar *) if possible.
+
+    QString makes a deep copy of the Unicode data.
+
+    \sa utf16(), setUtf16(), fromStdU16String()
+*/
+
+/*!
+    \fn QString QString::fromUcs4(const char32_t *str, int size)
+    \since 5.3
+
+    Returns a QString initialized with the first \a size characters
+    of the Unicode string \a str (ISO-10646-UCS-4 encoded).
+
+    If \a size is -1 (default), \a str must be terminated
+    with a 0.
+
+    \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray(), fromStdU32String()
+*/
 
 /*!
     \since 4.2
