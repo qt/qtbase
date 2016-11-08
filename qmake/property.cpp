@@ -46,38 +46,41 @@ static const struct {
     const char *name;
     QLibraryInfo::LibraryLocation loc;
     bool raw;
+    bool singular;
 } propList[] = {
-    { "QT_SYSROOT", QLibraryInfo::SysrootPath, true },
-    { "QT_INSTALL_PREFIX", QLibraryInfo::PrefixPath, false },
-    { "QT_INSTALL_ARCHDATA", QLibraryInfo::ArchDataPath, false },
-    { "QT_INSTALL_DATA", QLibraryInfo::DataPath, false },
-    { "QT_INSTALL_DOCS", QLibraryInfo::DocumentationPath, false },
-    { "QT_INSTALL_HEADERS", QLibraryInfo::HeadersPath, false },
-    { "QT_INSTALL_LIBS", QLibraryInfo::LibrariesPath, false },
-    { "QT_INSTALL_LIBEXECS", QLibraryInfo::LibraryExecutablesPath, false },
-    { "QT_INSTALL_BINS", QLibraryInfo::BinariesPath, false },
-    { "QT_INSTALL_TESTS", QLibraryInfo::TestsPath, false },
-    { "QT_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, false },
-    { "QT_INSTALL_IMPORTS", QLibraryInfo::ImportsPath, false },
-    { "QT_INSTALL_QML", QLibraryInfo::Qml2ImportsPath, false },
-    { "QT_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath, false },
-    { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, false },
-    { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, false },
-    { "QT_INSTALL_DEMOS", QLibraryInfo::ExamplesPath, false }, // Just backwards compat
-    { "QT_HOST_PREFIX", QLibraryInfo::HostPrefixPath, true },
-    { "QT_HOST_DATA", QLibraryInfo::HostDataPath, true },
-    { "QT_HOST_BINS", QLibraryInfo::HostBinariesPath, true },
-    { "QT_HOST_LIBS", QLibraryInfo::HostLibrariesPath, true },
-    { "QMAKE_SPEC", QLibraryInfo::HostSpecPath, true },
-    { "QMAKE_XSPEC", QLibraryInfo::TargetSpecPath, true },
+    { "QT_SYSROOT", QLibraryInfo::SysrootPath, true, true },
+    { "QT_INSTALL_PREFIX", QLibraryInfo::PrefixPath, false, false },
+    { "QT_INSTALL_ARCHDATA", QLibraryInfo::ArchDataPath, false, false },
+    { "QT_INSTALL_DATA", QLibraryInfo::DataPath, false, false },
+    { "QT_INSTALL_DOCS", QLibraryInfo::DocumentationPath, false, false },
+    { "QT_INSTALL_HEADERS", QLibraryInfo::HeadersPath, false, false },
+    { "QT_INSTALL_LIBS", QLibraryInfo::LibrariesPath, false, false },
+    { "QT_INSTALL_LIBEXECS", QLibraryInfo::LibraryExecutablesPath, false, false },
+    { "QT_INSTALL_BINS", QLibraryInfo::BinariesPath, false, false },
+    { "QT_INSTALL_TESTS", QLibraryInfo::TestsPath, false, false },
+    { "QT_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, false, false },
+    { "QT_INSTALL_IMPORTS", QLibraryInfo::ImportsPath, false, false },
+    { "QT_INSTALL_QML", QLibraryInfo::Qml2ImportsPath, false, false },
+    { "QT_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath, false, false },
+    { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, false, false },
+    { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, false, false },
+    { "QT_INSTALL_DEMOS", QLibraryInfo::ExamplesPath, false, false }, // Just backwards compat
+    { "QT_HOST_PREFIX", QLibraryInfo::HostPrefixPath, true, false },
+    { "QT_HOST_DATA", QLibraryInfo::HostDataPath, true, false },
+    { "QT_HOST_BINS", QLibraryInfo::HostBinariesPath, true, false },
+    { "QT_HOST_LIBS", QLibraryInfo::HostLibrariesPath, true, false },
+    { "QMAKE_SPEC", QLibraryInfo::HostSpecPath, true, true },
+    { "QMAKE_XSPEC", QLibraryInfo::TargetSpecPath, true, true },
 };
 
 QMakeProperty::QMakeProperty() : settings(0)
 {
     for (unsigned i = 0; i < sizeof(propList)/sizeof(propList[0]); i++) {
         QString name = QString::fromLatin1(propList[i].name);
-        m_values[ProKey(name + "/src")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectiveSourcePaths);
-        m_values[ProKey(name + "/get")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectivePaths);
+        if (!propList[i].singular) {
+            m_values[ProKey(name + "/src")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectiveSourcePaths);
+            m_values[ProKey(name + "/get")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectivePaths);
+        }
         QString val = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::FinalPaths);
         if (!propList[i].raw) {
             m_values[ProKey(name + "/dev")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::DevicePaths);
