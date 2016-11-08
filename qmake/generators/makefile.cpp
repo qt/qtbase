@@ -2623,8 +2623,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         for (ProStringList::ConstIterator dep_it = deplist.begin(); dep_it != deplist.end(); ++dep_it) {
             QString dep = var(ProKey(*dep_it + ".target"));
             if(dep.isEmpty())
-                dep = Option::fixPathToTargetOS((*dep_it).toQString(), false);
-            deps += ' ' + escapeDependencyPath(dep);
+                dep = (*dep_it).toQString();
+            deps += ' ' + escapeDependencyPath(Option::fixPathToTargetOS(dep, false));
         }
         if (config.indexOf("recursive") != -1) {
             QSet<QString> recurse;
@@ -2690,7 +2690,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         }
         if (config.indexOf("phony") != -1)
             deps += " FORCE";
-        t << targ << ":" << deps << "\n";
+        t << escapeDependencyPath(Option::fixPathToTargetOS(targ, false)) << ":" << deps << "\n";
         if(!cmd.isEmpty())
             t << "\t" << cmd << endl;
     }
