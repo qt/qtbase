@@ -5,6 +5,7 @@
 {
     lex.name = Lex ${QMAKE_FILE_IN}
     lex.input = LEXSOURCES
+    lex.dependency_type = TYPE_C
     lex_included {
         lex.CONFIG += no_link
     } else {

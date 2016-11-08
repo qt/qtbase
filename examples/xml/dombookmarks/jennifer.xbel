@@ -3,31 +3,31 @@
 <xbel version="1.0">
     <folder folded="no">
         <title>Qt Resources</title>
-        <folder folded="yes">
+        <bookmark href="http://qt.io/">
+            <title>Qt home page</title>
+        </bookmark>
+        <bookmark href="https://www.qt.io/partners/">
             <title>Qt Partners</title>
-            <bookmark href="http://partners.trolltech.com/partners/training.html">
-                <title>Training Partners</title>
-            </bookmark>
-            <bookmark href="http://partners.trolltech.com/partners/service.html">
-                <title>Consultants and System Integrators</title>
-            </bookmark>
-            <bookmark href="http://partners.trolltech.com/partners/tech.html">
-                <title>Technology Partners</title>
-            </bookmark>
-            <bookmark href="http://partners.trolltech.com/partners/resellers.html">
-                <title>Value Added Resellers (VARs)</title>
-            </bookmark>
-        </folder>
+        </bookmark>
+        <bookmark href="https://www.qt.io/qt-training/">
+            <title>Training</title>
+        </bookmark>
+        <bookmark href="http://doc.qt.io/">
+            <title>Qt 5 documentation</title>
+        </bookmark>
+        <bookmark href="http://qt-project.org/faq/">
+            <title>Frequently Asked Questions</title>
+        </bookmark>
         <folder folded="yes">
             <title>Community Resources</title>
+            <bookmark href="http://www.qtcentre.org/content/">
+                <title>Qt Centre</title>
+            </bookmark>
             <bookmark href="http://www.qtforum.org/">
                 <title>QtForum.org</title>
             </bookmark>
-            <bookmark href="http://www.digitalfanatics.org/projects/qt_tutorial/">
+            <bookmark href="http://digitalfanatics.org/projects/qt_tutorial/">
                 <title>The Independent Qt Tutorial</title>
-            </bookmark>
-            <bookmark href="http://prog.qt.free.fr/">
-                <title>French PROG.Qt</title>
             </bookmark>
             <bookmark href="http://www.qtforum.de/">
                 <title>German Qt Forum</title>
@@ -35,28 +35,10 @@
             <bookmark href="http://www.korone.net/">
                 <title>Korean Qt Community Site</title>
             </bookmark>
-            <bookmark href="http://prog.org.ru/forum/forum_14.html">
+            <bookmark href="http://prog.org.ru/">
                 <title>Russian Qt Forum</title>
             </bookmark>
-            <bookmark href="http://qt4.digitalfanatics.org/">
-                <title>Digitalfanatics: The QT 4 Resource Center</title>
-            </bookmark>
-            <bookmark href="http://www.qtquestions.org/">
-                <title>QtQuestions</title>
-            </bookmark>
         </folder>
-        <bookmark href="http://doc.qt.digia.com/qq/">
-            <title>Qt Quarterly</title>
-        </bookmark>
-        <bookmark href="http://qt-project.org/">
-            <title>Qt home page</title>
-        </bookmark>
-        <bookmark href="http://doc.qt.digia.com/4.0/">
-            <title>Qt 4.0 documentation</title>
-        </bookmark>
-        <bookmark href="http://qt-project.org/faq/">
-            <title>Frequently Asked Questions</title>
-        </bookmark>
     </folder>
     <folder folded="no">
         <title>Online Dictionaries</title>
@@ -73,9 +55,6 @@
             <title>OneLook Dictionary Search</title>
         </bookmark>
         <separator/>
-        <bookmark href="www.iee.et.tu-dresden.de/">
-            <title>The New English-German Dictionary</title>
-        </bookmark>
         <bookmark href="http://dict.tu-chemnitz.de/">
             <title>TU Chemnitz German-English Dictionary</title>
         </bookmark>
@@ -85,9 +64,6 @@
         </bookmark>
         <bookmark href="http://dictionnaires.atilf.fr/dictionnaires/ACADEMIE/">
             <title>Dictionnaire de l'Académie Française</title>
-        </bookmark>
-        <bookmark href="http://elsap1.unicaen.fr/cgi-bin/cherches.cgi">
-            <title>Dictionnaire des synonymes</title>
         </bookmark>
     </folder>
 </xbel>
