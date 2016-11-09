@@ -532,7 +532,6 @@ bool QEventDispatcherWinRT::event(QEvent *e)
         if (id >= d->timerInfos.size())
             break;
 
-        info = d->timerInfos[id];
         if (info.timerId == INVALID_TIMER_ID)
             break;
 
