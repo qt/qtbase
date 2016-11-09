@@ -344,6 +344,12 @@ QString QCocoaTheme::standardButtonText(int button) const
     return button == QPlatformDialogHelper::Discard ? msgDialogButtonDiscard() : QPlatformTheme::standardButtonText(button);
 }
 
+QKeySequence QCocoaTheme::standardButtonShortcut(int button) const
+{
+    return button == QPlatformDialogHelper::Discard ? QKeySequence(Qt::CTRL | Qt::Key_Delete)
+                                                    : QPlatformTheme::standardButtonShortcut(button);
+}
+
 QPlatformMenuItem *QCocoaTheme::createPlatformMenuItem() const
 {
     return new QCocoaMenuItem();

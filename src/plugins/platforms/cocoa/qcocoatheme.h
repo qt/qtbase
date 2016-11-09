@@ -74,6 +74,7 @@ public:
 
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
     QString standardButtonText(int button) const Q_DECL_OVERRIDE;
+    QKeySequence standardButtonShortcut(int button) const Q_DECL_OVERRIDE;
 
     static const char *name;
 

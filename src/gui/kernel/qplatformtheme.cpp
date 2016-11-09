@@ -671,6 +671,19 @@ QString QPlatformTheme::standardButtonText(int button) const
     return QPlatformTheme::defaultStandardButtonText(button);
 }
 
+/*!
+   Returns the mnemonic that should be used for a standard \a button.
+
+  \since 5.9
+  \sa QPlatformDialogHelper::StandardButton
+ */
+
+QKeySequence QPlatformTheme::standardButtonShortcut(int button) const
+{
+    Q_UNUSED(button)
+    return QKeySequence();
+}
+
 QString QPlatformTheme::defaultStandardButtonText(int button)
 {
     switch (button) {

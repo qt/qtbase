@@ -312,6 +312,7 @@ public:
 #endif
 
     virtual QString standardButtonText(int button) const;
+    virtual QKeySequence standardButtonShortcut(int button) const;
 
     static QVariant defaultThemeHint(ThemeHint hint);
     static QString defaultStandardButtonText(int button);
