@@ -917,25 +917,46 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
+namespace QtPrivate {
+template <typename T> struct QAddConst { typedef const T Type; };
+}
+
+// this adds const to non-const objects (like std::as_const)
+template <typename T>
+Q_DECL_CONSTEXPR typename QtPrivate::QAddConst<T>::Type &qAsConst(T &t) Q_DECL_NOTHROW { return t; }
+// prevent rvalue arguments:
+template <typename T>
+void qAsConst(const T &&) Q_DECL_EQ_DELETE;
+
 #ifndef QT_NO_FOREACH
 
 namespace QtPrivate {
 
 template <typename T>
 class QForeachContainer {
-    QForeachContainer &operator=(const QForeachContainer &) Q_DECL_EQ_DELETE;
+    Q_DISABLE_COPY(QForeachContainer)
 public:
-    QForeachContainer(const T &t) : c(t), i(c.begin()), e(c.end()) {}
-    QForeachContainer(T &&t) : c(std::move(t)), i(c.begin()), e(c.end())  {}
-    QForeachContainer(const QForeachContainer &other)
-        : c(other.c),
-          i(c.begin()),
-          e(c.end()),
-          control(other.control)
+    QForeachContainer(const T &t) : c(t), i(qAsConst(c).begin()), e(qAsConst(c).end()) {}
+    QForeachContainer(T &&t) : c(std::move(t)), i(qAsConst(c).begin()), e(qAsConst(c).end())  {}
+
+    QForeachContainer(QForeachContainer &&other)
+        : c(std::move(other.c)),
+          i(qAsConst(c).begin()),
+          e(qAsConst(c).end()),
+          control(std::move(other.control))
     {
     }
 
-    const T c;
+    QForeachContainer &operator=(QForeachContainer &&other)
+    {
+        c = std::move(other.c);
+        i = qAsConst(c).begin();
+        e = qAsConst(c).end();
+        control = std::move(other.control);
+        return *this;
+    }
+
+    T c;
     typename T::const_iterator i, e;
     int control = 1;
 };
@@ -1124,16 +1145,7 @@ template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 
 template <bool B, typename T, typename F> struct QConditional { typedef T Type; };
 template <typename T, typename F> struct QConditional<false, T, F> { typedef F Type; };
-
-template <typename T> struct QAddConst { typedef const T Type; };
 }
-
-// this adds const to non-const objects (like std::as_const)
-template <typename T>
-Q_DECL_CONSTEXPR typename QtPrivate::QAddConst<T>::Type &qAsConst(T &t) Q_DECL_NOTHROW { return t; }
-// prevent rvalue arguments:
-template <typename T>
-void qAsConst(const T &&) Q_DECL_EQ_DELETE;
 
 QT_END_NAMESPACE
 
