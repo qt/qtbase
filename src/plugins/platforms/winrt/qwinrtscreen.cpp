@@ -625,7 +625,7 @@ int QWinRTScreen::depth() const
 
 QImage::Format QWinRTScreen::format() const
 {
-    return QImage::Format_ARGB32_Premultiplied;
+    return QImage::Format_RGB32;
 }
 
 QSizeF QWinRTScreen::physicalSize() const
