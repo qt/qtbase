@@ -962,12 +962,16 @@ void QAbstractSocketPrivate::startConnectingByName(const QString &host)
     emit q->stateChanged(state);
 
     if (cachedSocketDescriptor != -1 || initSocketLayer(QAbstractSocket::UnknownNetworkLayerProtocol)) {
-        if (socketEngine->connectToHostByName(host, port) ||
-            socketEngine->state() == QAbstractSocket::ConnectingState) {
-            cachedSocketDescriptor = socketEngine->socketDescriptor();
-
+        // Try to connect to the host. If it succeeds immediately
+        // (e.g. QSocks5SocketEngine in UDPASSOCIATE mode), emit
+        // connected() and return.
+        if (socketEngine->connectToHostByName(host, port)) {
+            fetchConnectionParameters();
             return;
         }
+
+        if (socketEngine->state() == QAbstractSocket::ConnectingState)
+            return;
 
         // failed to connect
         setError(socketEngine->error(), socketEngine->errorString());
