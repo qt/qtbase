@@ -532,9 +532,6 @@ bool QEventDispatcherWinRT::event(QEvent *e)
         if (id >= d->timerInfos.size())
             break;
 
-        if (info.timerId == INVALID_TIMER_ID)
-            break;
-
         if (info.interval == 0 && info.inEvent) {
             // post the next zero timer event as long as the timer was not restarted
             QCoreApplication::postEvent(this, new QTimerEvent(id));
