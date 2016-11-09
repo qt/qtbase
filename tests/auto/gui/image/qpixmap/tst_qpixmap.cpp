@@ -171,6 +171,7 @@ private:
     const QString m_prefix;
     const QString m_convertFromImage;
     const QString m_loadFromData;
+    const QTemporaryDir m_tempDir;
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -230,11 +231,11 @@ void tst_QPixmap::initTestCase()
     QVERIFY(!m_prefix.isEmpty());
     QVERIFY(!m_convertFromImage.isEmpty());
     QVERIFY(!m_loadFromData.isEmpty());
+    QVERIFY2(m_tempDir.isValid(), qPrintable(m_tempDir.errorString()));
 }
 
 void tst_QPixmap::cleanupTestCase()
 {
-    QFile::remove(QLatin1String("temp_image.png"));
 }
 
 void tst_QPixmap::swap()
@@ -1471,18 +1472,18 @@ void tst_QPixmap::preserveDepth()
 void tst_QPixmap::loadAsBitmapOrPixmap()
 {
     QImage tmp(10, 10, QImage::Format_RGB32);
-    tmp.save("temp_image.png");
+    tmp.save(m_tempDir.path() + "/temp_image.png");
 
     bool ok;
 
     // Check that we can load the pixmap as a pixmap and that it then turns into a pixmap
-    QPixmap pixmap("temp_image.png");
+    QPixmap pixmap(m_tempDir.path() + "/temp_image.png");
     QVERIFY(!pixmap.isNull());
     QVERIFY(pixmap.depth() > 1);
     QVERIFY(!pixmap.isQBitmap());
 
     pixmap = QPixmap();
-    ok = pixmap.load("temp_image.png");
+    ok = pixmap.load(m_tempDir.path() + "/temp_image.png");
     QVERIFY(ok);
     QVERIFY(!pixmap.isNull());
     QVERIFY(pixmap.depth() > 1);
@@ -1490,20 +1491,20 @@ void tst_QPixmap::loadAsBitmapOrPixmap()
 
     //now we can try to load it without an extension
     pixmap = QPixmap();
-    ok = pixmap.load("temp_image");
+    ok = pixmap.load(m_tempDir.path() + "/temp_image");
     QVERIFY(ok);
     QVERIFY(!pixmap.isNull());
     QVERIFY(pixmap.depth() > 1);
     QVERIFY(!pixmap.isQBitmap());
 
     // The do the same check for bitmaps..
-    QBitmap bitmap("temp_image.png");
+    QBitmap bitmap(m_tempDir.path() + "/temp_image.png");
     QVERIFY(!bitmap.isNull());
     QCOMPARE(bitmap.depth(), 1);
     QVERIFY(bitmap.isQBitmap());
 
     bitmap = QBitmap();
-    ok = bitmap.load("temp_image.png");
+    ok = bitmap.load(m_tempDir.path() + "/temp_image.png");
     QVERIFY(ok);
     QVERIFY(!bitmap.isNull());
     QCOMPARE(bitmap.depth(), 1);
