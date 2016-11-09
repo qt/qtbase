@@ -44,6 +44,8 @@
 #ifdef __cplusplus
 #  include <type_traits>
 #  include <cstddef>
+#  include <type_traits>
+#  include <utility>
 #endif
 
 #include <stddef.h>
@@ -943,17 +945,34 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 
 #ifndef QT_NO_FOREACH
 
+namespace QtPrivate {
+
 template <typename T>
 class QForeachContainer {
     QForeachContainer &operator=(const QForeachContainer &) Q_DECL_EQ_DELETE;
 public:
     QForeachContainer(const T &t) : c(t) {}
     QForeachContainer(T &&t) : c(std::move(t)) {}
+    QForeachContainer(const QForeachContainer &other)
+        : c(other.c),
+          i(c.begin()),
+          e(c.end()),
+          control(other.control)
+    {
+    }
+
     const T c;
     typename T::const_iterator i = c.begin(), e = c.end();
     int control = 1;
 };
 
+template<typename T>
+QForeachContainer<typename std::decay<T>::type> qMakeForeachContainer(T &&t)
+{
+    return QForeachContainer<typename std::decay<T>::type>(std::forward<T>(t));
+}
+
+}
 // Explanation of the control word:
 //  - it's initialized to 1
 //  - that means both the inner and outer loops start
@@ -964,7 +983,7 @@ public:
 //  - if there was a break inside the inner loop, it will exit with control still
 //    set to 1; in that case, the outer loop will invert it to 0 and will exit too
 #define Q_FOREACH(variable, container)                                \
-for (QForeachContainer<typename std::remove_reference<decltype(container)>::type> _container_((container)); \
+for (auto _container_ = QtPrivate::qMakeForeachContainer(container); \
      _container_.control && _container_.i != _container_.e;         \
      ++_container_.i, _container_.control ^= 1)                     \
     for (variable = *_container_.i; _container_.control; _container_.control = 0)

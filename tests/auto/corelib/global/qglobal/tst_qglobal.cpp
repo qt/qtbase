@@ -102,6 +102,13 @@ void tst_QGlobal::for_each()
         QCOMPARE(i, counter++);
     }
     QCOMPARE(counter, list.count());
+
+    // check whether we can use a lambda
+    counter = 0;
+    foreach (int i, [&](){ return list; }()) {
+        QCOMPARE(i, counter++);
+    }
+    QCOMPARE(counter, list.count());
 }
 
 void tst_QGlobal::qassert()
