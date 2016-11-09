@@ -1125,8 +1125,8 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
     QTest::newRow("$$section(): bad number of arguments")
             << "VAR = $$section(1, 2) \\\n$$section(1, 2, 3, 4, 5)"
             << "VAR ="
-            << "##:1: section(var) section(var, sep, begin, end) requires three or four arguments.\n"
-               "##:2: section(var) section(var, sep, begin, end) requires three or four arguments."
+            << "##:1: section(var, sep, begin, end) requires three or four arguments.\n"
+               "##:2: section(var, sep, begin, end) requires three or four arguments."
             << true;
 
     QTest::newRow("$$find()")
