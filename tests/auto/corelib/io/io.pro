@@ -63,8 +63,10 @@ win32:!qtConfig(private_tests): SUBDIRS -= \
 !qtConfig(processenvironment): SUBDIRS -= \
     qprocessenvironment
 
-winrt: SUBDIRS -= \
+!qtConfig(process): SUBDIRS -= \
     qprocess \
-    qprocess-noapplication \
+    qprocess-noapplication
+
+winrt: SUBDIRS -= \
     qstorageinfo \
     qwinoverlappedionotifier
