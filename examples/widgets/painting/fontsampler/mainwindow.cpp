@@ -214,9 +214,9 @@ QMap<QString, StyleItems> MainWindow::currentPageMap()
     return pageMap;
 }
 
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
 void MainWindow::on_printAction_triggered()
 {
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     pageMap = currentPageMap();
 
     if (pageMap.count() == 0)
@@ -233,10 +233,12 @@ void MainWindow::on_printAction_triggered()
         printer.setFromTo(1, pageMap.keys().count());
 
     printDocument(&printer);
+#endif // QT_NO_PRINTER
 }
 
 void MainWindow::printDocument(QPrinter *printer)
 {
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     printer->setFromTo(1, pageMap.count());
 
     QProgressDialog progress(tr("Preparing font samples..."), tr("&Cancel"),
@@ -265,10 +267,12 @@ void MainWindow::printDocument(QPrinter *printer)
     }
 
     painter.end();
+#endif // QT_NO_PRINTER
 }
 
 void MainWindow::on_printPreviewAction_triggered()
 {
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     pageMap = currentPageMap();
 
     if (pageMap.count() == 0)
@@ -279,10 +283,12 @@ void MainWindow::on_printPreviewAction_triggered()
     connect(&preview, SIGNAL(paintRequested(QPrinter*)),
             this, SLOT(printDocument(QPrinter*)));
     preview.exec();
+#endif // QT_NO_PRINTER
 }
 
 void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
 {
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     QString family = pageMap.keys()[index];
     StyleItems items = pageMap[family];
 
@@ -345,5 +351,5 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
     }
 
     painter->restore();
-}
 #endif // QT_NO_PRINTER
+}
