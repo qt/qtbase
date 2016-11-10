@@ -39,6 +39,9 @@
 
 #include "qlinuxfbintegration.h"
 #include "qlinuxfbscreen.h"
+#if QT_CONFIG(kms)
+#include "qlinuxfbdrmscreen.h"
+#endif
 
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtServiceSupport/private/qgenericunixservices_p.h>
@@ -69,10 +72,16 @@
 QT_BEGIN_NAMESPACE
 
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
-    : m_fontDb(new QGenericUnixFontDatabase),
+    : m_primaryScreen(nullptr),
+      m_fontDb(new QGenericUnixFontDatabase),
       m_services(new QGenericUnixServices)
 {
-    m_primaryScreen = new QLinuxFbScreen(paramList);
+#if QT_CONFIG(kms)
+    if (qEnvironmentVariableIntValue("QT_QPA_FB_DRM") != 0)
+        m_primaryScreen = new QLinuxFbDrmScreen(paramList);
+#endif
+    if (!m_primaryScreen)
+        m_primaryScreen = new QLinuxFbScreen(paramList);
 }
 
 QLinuxFbIntegration::~QLinuxFbIntegration()

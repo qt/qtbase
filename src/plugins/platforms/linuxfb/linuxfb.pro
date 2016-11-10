@@ -10,8 +10,18 @@ QT += \
 qtHaveModule(input_support-private): \
     QT += input_support-private
 
-SOURCES = main.cpp qlinuxfbintegration.cpp qlinuxfbscreen.cpp
-HEADERS = qlinuxfbintegration.h qlinuxfbscreen.h
+SOURCES = main.cpp \
+          qlinuxfbintegration.cpp \
+          qlinuxfbscreen.cpp
+
+HEADERS = qlinuxfbintegration.h \
+          qlinuxfbscreen.h
+
+qtHaveModule(kms_support-private) {
+    QT += kms_support-private
+    SOURCES += qlinuxfbdrmscreen.cpp
+    HEADERS += qlinuxfbdrmscreen.h
+}
 
 OTHER_FILES += linuxfb.json
 

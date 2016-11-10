@@ -37,51 +37,32 @@
 **
 ****************************************************************************/
 
-#ifndef QLINUXFBINTEGRATION_H
-#define QLINUXFBINTEGRATION_H
+#ifndef QLINUXFBDRMSCREEN_H
+#define QLINUXFBDRMSCREEN_H
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
+#include <QtFbSupport/private/qfbscreen_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractEventDispatcher;
-class QFbScreen;
-class QFbVtHandler;
+class QKmsScreenConfig;
+class QLinuxFbDevice;
 
-class QLinuxFbIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+class QLinuxFbDrmScreen : public QFbScreen
 {
+    Q_OBJECT
 public:
-    QLinuxFbIntegration(const QStringList &paramList);
-    ~QLinuxFbIntegration();
+    QLinuxFbDrmScreen(const QStringList &args);
+    ~QLinuxFbDrmScreen();
 
-    void initialize() Q_DECL_OVERRIDE;
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-
-    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
-
-    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
-
-    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
-    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE { return m_inputContext; }
-
-    QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
-
-    QList<QPlatformScreen *> screens() const;
+    bool initialize() override;
+    QRegion doRedraw() override;
+    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const override;
 
 private:
-    void createInputHandlers();
-
-    QFbScreen *m_primaryScreen;
-    QPlatformInputContext *m_inputContext;
-    QScopedPointer<QPlatformFontDatabase> m_fontDb;
-    QScopedPointer<QPlatformServices> m_services;
-    QScopedPointer<QFbVtHandler> m_vtHandler;
-    QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
+    QKmsScreenConfig *m_screenConfig;
+    QLinuxFbDevice *m_device;
 };
 
 QT_END_NAMESPACE
 
-#endif // QLINUXFBINTEGRATION_H
+#endif // QLINUXFBDRMSCREEN_H

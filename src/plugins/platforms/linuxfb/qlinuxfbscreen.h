@@ -54,11 +54,11 @@ public:
     QLinuxFbScreen(const QStringList &args);
     ~QLinuxFbScreen();
 
-    bool initialize();
+    bool initialize() override;
 
-    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const override;
 
-    QRegion doRedraw() Q_DECL_OVERRIDE;
+    QRegion doRedraw() override;
 
 private:
     QStringList mArgs;

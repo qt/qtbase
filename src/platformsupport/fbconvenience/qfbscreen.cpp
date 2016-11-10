@@ -190,6 +190,11 @@ void QFbScreen::setGeometry(const QRect &rect)
     resizeMaximizedWindows();
 }
 
+bool QFbScreen::initialize()
+{
+    return true;
+}
+
 QRegion QFbScreen::doRedraw()
 {
     const QPoint screenOffset = mGeometry.topLeft();

@@ -76,6 +76,8 @@ public:
     QFbScreen();
     ~QFbScreen();
 
+    virtual bool initialize();
+
     QRect geometry() const Q_DECL_OVERRIDE { return mGeometry; }
     int depth() const Q_DECL_OVERRIDE { return mDepth; }
     QImage::Format format() const Q_DECL_OVERRIDE { return mFormat; }
