@@ -462,7 +462,8 @@
     "features": {
         "shared": {
             "label": "Building shared libraries",
-            "condition": "!config.uikit && !config.integrity",
+            "autoDetect": "!config.uikit",
+            "condition": "!config.integrity",
             "output": [
                 "shared",
                 "publicFeature",
