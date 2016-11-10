@@ -34,6 +34,36 @@
 
 QT_BEGIN_NAMESPACE
 
+static DotNET vsVersionFromString(const char *versionString)
+{
+    struct VSVersionMapping
+    {
+        const char *str;
+        DotNET version;
+    };
+    static VSVersionMapping mapping[] = {
+        "7.0", NET2002,
+        "7.1", NET2003,
+        "8.0", NET2005,
+        "9.0", NET2008,
+        "10.0", NET2010,
+        "11.0", NET2012,
+        "12.0", NET2013,
+        "14.0", NET2015
+    };
+    DotNET result = NETUnknown;
+    for (const auto entry : mapping) {
+        if (strcmp(entry.str, versionString) == 0)
+            return entry.version;
+    }
+    return result;
+}
+
+DotNET vsVersionFromString(const ProString &versionString)
+{
+    return vsVersionFromString(versionString.toLatin1().constData());
+}
+
 // XML Tags ---------------------------------------------------------
 const char _Configuration[]                     = "Configuration";
 const char _Configurations[]                    = "Configurations";

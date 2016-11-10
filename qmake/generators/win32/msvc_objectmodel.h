@@ -54,6 +54,8 @@ enum DotNET {
     NET2015 = 0xd0
 };
 
+DotNET vsVersionFromString(const ProString &versionString);
+
 /*
     This Object model is of course VERY simplyfied,
     and does not actually follow the original MSVC

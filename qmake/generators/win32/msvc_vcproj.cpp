@@ -50,97 +50,6 @@ const char _GUIDFormFiles[]            = "{99349809-55BA-4b9d-BF79-8FDBB0286EB3}
 const char _GUIDExtraCompilerFiles[]   = "{E0D8C965-CC5F-43d7-AD63-FAEF0BBC0F85}";
 const char _GUIDDeploymentFiles[]      = "{D9D6E243-F8AF-46E4-B9FD-80ECBC20BA3E}";
 const char _GUIDDistributionFiles[]    = "{B83CAF91-C7BF-462F-B76C-EA11631F866C}";
-QT_END_NAMESPACE
-
-#ifdef Q_OS_WIN32
-#include <qt_windows.h>
-#include <windows/registry_p.h>
-
-QT_BEGIN_NAMESPACE
-
-struct DotNetCombo {
-    DotNET version;
-    const char *versionStr;
-    const char *regKey;
-} dotNetCombo[] = {
-    {NET2015, "MSVC.NET 2015 (14.0)", "Software\\Microsoft\\VisualStudio\\14.0\\Setup\\VC\\ProductDir"},
-    {NET2013, "MSVC.NET 2013 (12.0)", "Software\\Microsoft\\VisualStudio\\12.0\\Setup\\VC\\ProductDir"},
-    {NET2013, "MSVC.NET 2013 Express Edition (12.0)", "Software\\Microsoft\\VCExpress\\12.0\\Setup\\VC\\ProductDir"},
-    {NET2012, "MSVC.NET 2012 (11.0)", "Software\\Microsoft\\VisualStudio\\11.0\\Setup\\VC\\ProductDir"},
-    {NET2012, "MSVC.NET 2012 Express Edition (11.0)", "Software\\Microsoft\\VCExpress\\11.0\\Setup\\VC\\ProductDir"},
-    {NET2010, "MSVC.NET 2010 (10.0)", "Software\\Microsoft\\VisualStudio\\10.0\\Setup\\VC\\ProductDir"},
-    {NET2010, "MSVC.NET 2010 Express Edition (10.0)", "Software\\Microsoft\\VCExpress\\10.0\\Setup\\VC\\ProductDir"},
-    {NET2008, "MSVC.NET 2008 (9.0)", "Software\\Microsoft\\VisualStudio\\9.0\\Setup\\VC\\ProductDir"},
-    {NET2008, "MSVC.NET 2008 Express Edition (9.0)", "Software\\Microsoft\\VCExpress\\9.0\\Setup\\VC\\ProductDir"},
-    {NET2005, "MSVC.NET 2005 (8.0)", "Software\\Microsoft\\VisualStudio\\8.0\\Setup\\VC\\ProductDir"},
-    {NET2005, "MSVC.NET 2005 Express Edition (8.0)", "Software\\Microsoft\\VCExpress\\8.0\\Setup\\VC\\ProductDir"},
-    {NET2003, "MSVC.NET 2003 (7.1)", "Software\\Microsoft\\VisualStudio\\7.1\\Setup\\VC\\ProductDir"},
-    {NET2002, "MSVC.NET 2002 (7.0)", "Software\\Microsoft\\VisualStudio\\7.0\\Setup\\VC\\ProductDir"},
-    {NETUnknown, "", ""},
-};
-
-QT_END_NAMESPACE
-#endif
-
-QT_BEGIN_NAMESPACE
-DotNET which_dotnet_version(const QByteArray &preferredVersion = QByteArray())
-{
-#ifndef Q_OS_WIN32
-    Q_UNUSED(preferredVersion);
-    return NET2002; // Always generate 7.0 versions on other platforms
-#else
-    // Only search for the version once
-    static DotNET current_version = NETUnknown;
-    if(current_version != NETUnknown)
-        return current_version;
-
-    // Fallback to .NET 2002
-    current_version = NET2002;
-
-    const DotNetCombo *lowestInstalledVersion = 0;
-    QHash<DotNET, QString> installPaths;
-    int installed = 0;
-    int i = 0;
-    for(; dotNetCombo[i].version; ++i) {
-        QString path = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey,
-                                          KEY_WOW64_32KEY);
-        if (!path.isEmpty() && installPaths.value(dotNetCombo[i].version) != path) {
-            lowestInstalledVersion = &dotNetCombo[i];
-            installPaths.insert(lowestInstalledVersion->version, path);
-            ++installed;
-            current_version = lowestInstalledVersion->version;
-            if (QByteArray(lowestInstalledVersion->versionStr).contains(preferredVersion)) {
-                installed = 1;
-                break;
-            }
-        }
-    }
-
-    if (installed < 2)
-        return current_version;
-
-    // More than one version installed, search directory path
-    QString paths = qgetenv("PATH");
-    const QStringList pathlist = paths.split(QLatin1Char(';'));
-    for (const QString &path : pathlist) {
-        for (i = 0; dotNetCombo[i].version; ++i) {
-            const QString productPath = installPaths.value(dotNetCombo[i].version);
-            if (productPath.isEmpty())
-                continue;
-            if (path.startsWith(productPath, Qt::CaseInsensitive)) {
-                current_version = dotNetCombo[i].version;
-                return current_version;
-            }
-        }
-    }
-
-    warn_msg(WarnLogic, "Generator: MSVC.NET: Found more than one version of Visual Studio, but"
-                        " none in your PATH. Falling back to lowest version (%s)",
-                        qPrintable(lowestInstalledVersion->versionStr));
-
-    return current_version;
-#endif
-};
 
 // Flatfile Tags ----------------------------------------------------
 const char _slnHeader70[]       = "Microsoft Visual Studio Solution File, Format Version 7.00";
@@ -986,7 +895,7 @@ void VcprojGenerator::initConfiguration()
     // - to know of certain compiler/linker options
     VCConfiguration &conf = vcProject.Configuration;
     conf.suppressUnknownOptionWarnings = project->isActiveConfig("suppress_vcproj_warnings");
-    conf.CompilerVersion = which_dotnet_version(project->first("MSVC_VER").toLatin1());
+    conf.CompilerVersion = vsVersionFromString(project->first("MSVC_VER"));
 
     if (conf.CompilerVersion >= NET2012) {
         conf.WinRT = project->isActiveConfig("winrt");
