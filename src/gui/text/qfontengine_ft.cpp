@@ -889,6 +889,42 @@ static inline bool areMetricsTooLarge(const QFontEngineFT::GlyphInfo &info)
             || (uchar)(info.height) != info.height;
 }
 
+static inline void transformBoundingBox(int *left, int *top, int *right, int *bottom, FT_Matrix *matrix)
+{
+    int l, r, t, b;
+    FT_Vector vector;
+    vector.x = *left;
+    vector.y = *top;
+    FT_Vector_Transform(&vector, matrix);
+    l = r = vector.x;
+    t = b = vector.y;
+    vector.x = *right;
+    vector.y = *top;
+    FT_Vector_Transform(&vector, matrix);
+    if (l > vector.x) l = vector.x;
+    if (r < vector.x) r = vector.x;
+    if (t < vector.y) t = vector.y;
+    if (b > vector.y) b = vector.y;
+    vector.x = *right;
+    vector.y = *bottom;
+    FT_Vector_Transform(&vector, matrix);
+    if (l > vector.x) l = vector.x;
+    if (r < vector.x) r = vector.x;
+    if (t < vector.y) t = vector.y;
+    if (b > vector.y) b = vector.y;
+    vector.x = *left;
+    vector.y = *bottom;
+    FT_Vector_Transform(&vector, matrix);
+    if (l > vector.x) l = vector.x;
+    if (r < vector.x) r = vector.x;
+    if (t < vector.y) t = vector.y;
+    if (b > vector.y) b = vector.y;
+    *left = l;
+    *right = r;
+    *top = t;
+    *bottom = b;
+}
+
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                                                QFixed subPixelPosition,
                                                GlyphFormat format,
@@ -978,10 +1014,19 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     info.yOff = 0;
 
     if ((set && set->outline_drawing) || fetchMetricsOnly) {
-        int left  = FLOOR(slot->metrics.horiBearingX);
-        int right = CEIL(slot->metrics.horiBearingX + slot->metrics.width);
-        int top    = CEIL(slot->metrics.horiBearingY);
-        int bottom = FLOOR(slot->metrics.horiBearingY - slot->metrics.height);
+        int left  = slot->metrics.horiBearingX;
+        int right = slot->metrics.horiBearingX + slot->metrics.width;
+        int top    = slot->metrics.horiBearingY;
+        int bottom = slot->metrics.horiBearingY - slot->metrics.height;
+
+        if (transform && slot->format != FT_GLYPH_FORMAT_BITMAP)
+            transformBoundingBox(&left, &top, &right, &bottom, &matrix);
+
+        left = FLOOR(left);
+        right = CEIL(right);
+        bottom = FLOOR(bottom);
+        top = CEIL(top);
+
         info.x = TRUNC(left);
         info.y = TRUNC(top);
         info.width = TRUNC(right - left);
@@ -1044,40 +1089,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     int right = slot->metrics.horiBearingX + slot->metrics.width;
     int top    = slot->metrics.horiBearingY;
     int bottom = slot->metrics.horiBearingY - slot->metrics.height;
-    if(transform && slot->format != FT_GLYPH_FORMAT_BITMAP) {
-        int l, r, t, b;
-        FT_Vector vector;
-        vector.x = left;
-        vector.y = top;
-        FT_Vector_Transform(&vector, &matrix);
-        l = r = vector.x;
-        t = b = vector.y;
-        vector.x = right;
-        vector.y = top;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        vector.x = right;
-        vector.y = bottom;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        vector.x = left;
-        vector.y = bottom;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        left = l;
-        right = r;
-        top = t;
-        bottom = b;
-    }
+    if (transform && slot->format != FT_GLYPH_FORMAT_BITMAP)
+        transformBoundingBox(&left, &top, &right, &bottom, &matrix);
     left = FLOOR(left);
     right = CEIL(right);
     bottom = FLOOR(bottom);
@@ -1962,7 +1975,7 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const
     if (!img.isNull())
         return img;
 
-    return QFontEngine::alphaMapForGlyph(g);
+    return QFontEngine::alphaMapForGlyph(g, subPixelPosition, t);
 }
 
 QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
