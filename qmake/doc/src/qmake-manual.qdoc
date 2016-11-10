@@ -3018,9 +3018,12 @@
     sum = $$num_add($$first, $$second_neg)
     \endcode
 
-    \section2 prompt(question)
+    \section2 prompt(question [, decorate])
 
     Displays the specified \c question, and returns a value read from stdin.
+
+    If \c decorate is \e true (the default), the question gets a generic
+    prefix and suffix identifying it as a prompt.
 
     \section2 quote(string)
 
