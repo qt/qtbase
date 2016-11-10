@@ -56,8 +56,10 @@ Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
 
 #ifndef QT_NO_HIGHDPISCALING
 static const char legacyDevicePixelEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
+static const char legacyAutoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
+
+static const char enableHighDpiScalingEnvVar[] = "QT_ENABLE_HIGHDPI_SCALING";
 static const char scaleFactorEnvVar[] = "QT_SCALE_FACTOR";
-static const char autoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
 static const char screenFactorsEnvVar[] = "QT_SCREEN_SCALE_FACTORS";
 static const char scaleFactorRoundingPolicyEnvVar[] = "QT_SCALE_FACTOR_ROUNDING_POLICY";
 static const char dpiAdjustmentPolicyEnvVar[] = "QT_DPI_ADJUSTMENT_POLICY";
@@ -90,16 +92,23 @@ static inline qreal initialGlobalScaleFactor()
             result = f;
         }
     } else {
+        // Check for deprecated environment variables.
         if (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar)) {
             qWarning("Warning: %s is deprecated. Instead use:\n"
                      "   %s to enable platform plugin controlled per-screen factors.\n"
-                     "   %s to set per-screen factors.\n"
+                     "   %s to set per-screen DPI.\n"
                      "   %s to set the application global scale factor.",
-                     legacyDevicePixelEnvVar, autoScreenEnvVar, screenFactorsEnvVar, scaleFactorEnvVar);
+                     legacyDevicePixelEnvVar, legacyAutoScreenEnvVar, screenFactorsEnvVar, scaleFactorEnvVar);
 
             int dpr = qEnvironmentVariableIntValue(legacyDevicePixelEnvVar);
             if (dpr > 0)
                 result = dpr;
+        }
+
+        if (qEnvironmentVariableIsSet(legacyAutoScreenEnvVar)) {
+            qWarning("Warning: %s is deprecated. Instead use:\n"
+                     "   %s to enable platform plugin controlled per-screen factors.",
+                     legacyAutoScreenEnvVar, enableHighDpiScalingEnvVar);
         }
     }
     return result;
@@ -258,16 +267,24 @@ static inline bool usePixelDensity()
     // Determine if we should set a scale factor based on the pixel density
     // reported by the platform plugin. There are several enablers and several
     // disablers. A single disable may veto all other enablers.
+
+    // First, check of there is an explicit disable.
     if (QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling))
         return false;
     bool screenEnvValueOk;
-    const int screenEnvValue = qEnvironmentVariableIntValue(autoScreenEnvVar, &screenEnvValueOk);
+    const int screenEnvValue = qEnvironmentVariableIntValue(legacyAutoScreenEnvVar, &screenEnvValueOk);
     if (screenEnvValueOk && screenEnvValue < 1)
         return false;
+    bool enableEnvValueOk;
+    const int enableEnvValue = qEnvironmentVariableIntValue(enableHighDpiScalingEnvVar, &enableEnvValueOk);
+    if (enableEnvValueOk && enableEnvValue < 1)
+        return false;
+
+    // Then return if there was an enable.
     return QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling)
         || (screenEnvValueOk && screenEnvValue > 0)
-        || (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar) &&
-            qgetenv(legacyDevicePixelEnvVar).compare("auto", Qt::CaseInsensitive) == 0);
+        || (enableEnvValueOk && enableEnvValue > 0)
+        || (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar) && qgetenv(legacyDevicePixelEnvVar).toLower() == "auto");
 }
 
 qreal QHighDpiScaling::rawScaleFactor(const QPlatformScreen *screen)
