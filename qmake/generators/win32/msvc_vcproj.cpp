@@ -611,7 +611,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
         return;
     }
 
-    switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
+    switch (vcProject.Configuration.CompilerVersion) {
     case NET2015:
         t << _slnHeader140;
         break;
@@ -638,7 +638,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
         break;
     default:
         t << _slnHeader70;
-        warn_msg(WarnLogic, "Generator: MSVC.NET: Unknown version (%d) of MSVC detected for .sln", which_dotnet_version());
+        warn_msg(WarnLogic, "Generator: MSVC.NET: Unknown version (%d) of MSVC detected for .sln",
+                 vcProject.Configuration.CompilerVersion);
         break;
     }
 
@@ -932,7 +933,7 @@ void VcprojGenerator::initProject()
 
     // Own elements -----------------------------
     vcProject.Name = project->first("QMAKE_ORIG_TARGET").toQString();
-    switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
+    switch (vcProject.Configuration.CompilerVersion) {
     case NET2015:
         vcProject.Version = "14.00";
         break;
@@ -961,7 +962,7 @@ void VcprojGenerator::initProject()
         break;
     default:
         vcProject.Version = "7.00";
-        warn_msg(WarnLogic, "Generator: MSVC.NET: Unknown version (%d) of MSVC detected for .vcproj", which_dotnet_version());
+        warn_msg(WarnLogic, "Generator: MSVC.NET: Unknown version (%d) of MSVC detected for .vcproj", vcProject.Configuration.CompilerVersion);
         break;
     }
 
