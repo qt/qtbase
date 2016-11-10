@@ -30,7 +30,6 @@
 #include "msvc_vcproj.h"
 #include "msvc_vcxproj.h"
 #include <qscopedpointer.h>
-#include <qstringlist.h>
 #include <qfileinfo.h>
 
 QT_BEGIN_NAMESPACE

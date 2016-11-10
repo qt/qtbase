@@ -34,7 +34,6 @@
 
 #include <proitems.h>
 
-#include <qatomic.h>
 #include <qlist.h>
 #include <qstring.h>
 #include <qstringlist.h>

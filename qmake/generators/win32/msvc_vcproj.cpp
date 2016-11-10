@@ -32,7 +32,6 @@
 #include <qdir.h>
 #include <qdiriterator.h>
 #include <qcryptographichash.h>
-#include <qregexp.h>
 #include <qhash.h>
 #include <quuid.h>
 #include <stdlib.h>

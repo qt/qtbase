@@ -32,12 +32,9 @@
 #include "project.h"
 #include "xmloutput.h"
 #include "msvc_objectmodel.h"
-#include <qatomic.h>
 #include <qlist.h>
 #include <qstring.h>
-#include <qstringlist.h>
 #include <qmap.h>
-#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
