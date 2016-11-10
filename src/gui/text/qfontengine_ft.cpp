@@ -320,8 +320,9 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
 
             cleanup();
 
-            if (freetypeData->faces.contains(face_id))
-                freetypeData->faces.take(face_id);
+            auto it = freetypeData->faces.constFind(face_id);
+            if (it != freetypeData->faces.constEnd())
+                freetypeData->faces.erase(it);
 
             if (freetypeData->faces.isEmpty()) {
                 FT_Done_FreeType(freetypeData->library);

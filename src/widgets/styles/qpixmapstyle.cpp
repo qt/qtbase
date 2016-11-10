@@ -628,10 +628,10 @@ void QPixmapStyle::drawCachedPixmap(QPixmapStyle::ControlDescriptor control, con
                                     QPainter *p) const
 {
     Q_D(const QPixmapStyle);
-    if (!d->descriptors.contains(control))
+    auto descriptor = d->descriptors.constFind(control);
+    if (descriptor == d->descriptors.constEnd())
         return;
-    const QPixmapStyleDescriptor &desc = d->descriptors.value(control);
-    const QPixmap pix = d->getCachedPixmap(control, desc, rect.size());
+    const QPixmap pix = d->getCachedPixmap(control, descriptor.value(), rect.size());
     Q_ASSERT(!pix.isNull());
     p->drawPixmap(rect, pix);
 }
