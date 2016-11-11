@@ -33,7 +33,10 @@ defineTest(qtRunLoggedCommand) {
     qtLog("+ $$1")
 
     output = $$system("( $$1 ) 2>&1", lines, result)
-    qtLog($$output)
+    lg =
+    for (l, output): \
+        lg += "> $$l"
+    qtLog($$lg)
     !isEmpty(2) {
         $$2 = $$output
         export($$2)
