@@ -51,7 +51,6 @@
 #include <QImageReader>
 #include <QGuiApplication>
 #include <QScreen>
-#include <private/qimage_p.h>
 #include <private/qsimd_p.h>
 #include <private/qdrawhelper_p.h>
 #include <qpa/qplatformscreen.h>
@@ -135,7 +134,7 @@ bool QRasterPlatformPixmap::fromData(const uchar *buffer, uint len, const char *
     if (image.isNull())
         return false;
 
-    createPixmapForImage(image, flags, /* inplace = */true);
+    createPixmapForImage(std::move(image), flags);
     return !isNull();
 }
 
@@ -143,13 +142,13 @@ void QRasterPlatformPixmap::fromImage(const QImage &sourceImage,
                                   Qt::ImageConversionFlags flags)
 {
     QImage image = sourceImage;
-    createPixmapForImage(image, flags, /* inplace = */false);
+    createPixmapForImage(std::move(image), flags);
 }
 
 void QRasterPlatformPixmap::fromImageInPlace(QImage &sourceImage,
                                              Qt::ImageConversionFlags flags)
 {
-    createPixmapForImage(sourceImage, flags, /* inplace = */true);
+    createPixmapForImage(std::move(sourceImage), flags);
 }
 
 void QRasterPlatformPixmap::fromImageReader(QImageReader *imageReader,
@@ -160,7 +159,7 @@ void QRasterPlatformPixmap::fromImageReader(QImageReader *imageReader,
     if (image.isNull())
         return;
 
-    createPixmapForImage(image, flags, /* inplace = */true);
+    createPixmapForImage(std::move(image), flags);
 }
 
 // from qbackingstore.cpp
@@ -301,7 +300,7 @@ int QRasterPlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) const
     return 0;
 }
 
-void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageConversionFlags flags, bool inPlace)
+void QRasterPlatformPixmap::createPixmapForImage(QImage sourceImage, Qt::ImageConversionFlags flags)
 {
     QImage::Format format;
     if (flags & Qt::NoFormatConversion)
@@ -335,16 +334,10 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
     if (format == QImage::Format_RGB32 && (sourceImage.format() == QImage::Format_ARGB32
         || sourceImage.format() == QImage::Format_ARGB32_Premultiplied))
     {
-        inPlace = inPlace && sourceImage.isDetached();
-        image = sourceImage;
-        if (!inPlace)
-            image.detach();
-        if (image.d)
-            image.d->format = QImage::Format_RGB32;
-    } else if (inPlace && sourceImage.d->convertInPlace(format, flags)) {
-        image = sourceImage;
+        image = std::move(sourceImage);
+        image.reinterpretAsFormat(QImage::Format_RGB32);
     } else {
-        image = sourceImage.convertToFormat(format, flags);
+        image = std::move(sourceImage).convertToFormat(format, flags);
     }
 
     if (image.d) {
