@@ -1378,6 +1378,10 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 ++fit;
         }
         pro->deref();
+        ProStringList &iif = m_valuemapStack.first()[ProKey("QMAKE_INTERNAL_INCLUDED_FILES")];
+        int idx = iif.indexOf(ProString(fn));
+        if (idx >= 0)
+            iif.removeAt(idx);
         return ReturnTrue;
     }
     case T_INFILE:

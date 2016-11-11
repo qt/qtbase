@@ -2329,10 +2329,12 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << "HERE = 1\nPLUS = one\n"
                "defineTest(tfunc) {}\ndefineReplace(rfunc) {}\n"
                "include(include/inc.pri)\n"
+               "contains(QMAKE_INTERNAL_INCLUDED_FILES, .*/include/inc\\\\.pri): PRE = 1\n"
                "discard_from(include/inc.pri): OK = 1\n"
+               "!contains(QMAKE_INTERNAL_INCLUDED_FILES, .*/include/inc\\\\.pri): POST = 1\n"
                "defined(tfunc, test): TDEF = 1\ndefined(rfunc, replace): RDEF = 1\n"
                "defined(func, test): DTDEF = 1\ndefined(func, replace): DRDEF = 1\n"
-            << "OK = 1\nHERE = 1\nPLUS = one\nVAR = UNDEF\n"
+            << "PRE = 1\nPOST = 1\nOK = 1\nHERE = 1\nPLUS = one\nVAR = UNDEF\n"
                "TDEF = 1\nRDEF = 1\nDTDEF = UNDEF\nDRDEF = UNDEF"
             << ""
             << true;
