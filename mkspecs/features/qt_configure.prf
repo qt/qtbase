@@ -647,7 +647,7 @@ defineTest(qtConfHandleLibrary) {
         qtLog(" => source accepted.")
 
         $${lpfx}.cache += source
-        for (v, $$list(libs includes cflags version export)): \
+        for (v, $$list(libs includedir cflags version export)): \
             $${lpfx}.cache += sources.$${s}.$${v}
         for (b, $${spfx}.builds._KEYS_): \
             $${lpfx}.cache += sources.$${s}.builds.$${b}
