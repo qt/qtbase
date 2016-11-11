@@ -42,5 +42,3 @@ defineTest(qtRunLoggedCommand) {
     !equals(result, 0): return(false)
     return(true)
 }
-
-QMAKE_CONFIG_LOG = $$dirname(_QMAKE_CACHE_)/config.log

@@ -1768,6 +1768,8 @@ equals(QMAKE_CONFIG_CACHE_USE, none) {
         "cache.xplatform = $$[QMAKE_XSPEC]"
     write_file($$QMAKE_CONFIG_CACHE, cont)
 }
+
+QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
 !equals(QMAKE_CONFIG_CACHE_USE, all): \
     write_file($$QMAKE_CONFIG_LOG, "")
 
