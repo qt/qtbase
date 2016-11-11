@@ -341,7 +341,7 @@ void qt_bitmapblit32_sse2_base(QRasterBuffer *rasterBuffer, int x, int y,
                           const uchar *src, int width, int height, int stride)
 {
     quint32 *dest = reinterpret_cast<quint32*>(rasterBuffer->scanLine(y)) + x;
-    const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint32);
+    const int destStride = rasterBuffer->stride<quint32>();
 
     const __m128i c128 = _mm_set1_epi32(color);
     const __m128i maskmask1 = _mm_set_epi32(0x10101010, 0x20202020,
@@ -407,7 +407,7 @@ void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
 {
     const quint16 c = qConvertRgb32To16(color.toArgb32());
     quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
-    const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
+    const int destStride = rasterBuffer->stride<quint32>();
 
     const __m128i c128 = _mm_set1_epi16(c);
 QT_WARNING_DISABLE_MSVC(4309) // truncation of constant value

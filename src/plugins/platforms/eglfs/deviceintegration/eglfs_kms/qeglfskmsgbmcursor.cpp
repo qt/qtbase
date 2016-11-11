@@ -204,7 +204,7 @@ void QEglFSKmsGbmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     painter.drawImage(0, 0, *m_cursorImage.image());
     painter.end();
 
-    gbm_bo_write(m_bo, cursorImage.constBits(), cursorImage.byteCount());
+    gbm_bo_write(m_bo, cursorImage.constBits(), cursorImage.sizeInBytes());
 
     uint32_t handle = gbm_bo_get_handle(m_bo).u32;
 

@@ -457,6 +457,8 @@ public:
     int height() const { return m_height; }
     int bytesPerLine() const { return bytes_per_line; }
     int bytesPerPixel() const { return bytes_per_pixel; }
+    template<typename T>
+    int stride() { return bytes_per_line / sizeof(T); }
 
     uchar *buffer() const { return m_buffer; }
 

@@ -354,7 +354,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                     (*image) = QImage(swidth, sheight, format);
                     bpl = image->bytesPerLine();
                     bits = image->bits();
-                    memset(bits, 0, image->byteCount());
+                    memset(bits, 0, image->sizeInBytes());
                 }
 
                 // Check if the previous attempt to create the image failed. If it
@@ -415,7 +415,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                         backingstore = QImage(qMax(backingstore.width(), w),
                                               qMax(backingstore.height(), h),
                                               QImage::Format_RGB32);
-                        memset(backingstore.bits(), 0, backingstore.byteCount());
+                        memset(backingstore.bits(), 0, backingstore.sizeInBytes());
                     }
                     const int dest_bpl = backingstore.bytesPerLine();
                     unsigned char *dest_data = backingstore.bits();

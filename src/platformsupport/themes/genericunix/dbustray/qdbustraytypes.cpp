@@ -104,7 +104,7 @@ QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
         }
         // copy and endian-convert
         QXdgDBusImageStruct kim(im.width(), im.height());
-        const uchar *end = im.constBits() + im.byteCount();
+        const uchar *end = im.constBits() + im.sizeInBytes();
         uchar *dest = reinterpret_cast<uchar *>(kim.data.data());
         for (const uchar *src = im.constBits(); src < end; src += 4, dest += 4)
             qToUnaligned(qToBigEndian<quint32>(qFromUnaligned<quint32>(src)), dest);

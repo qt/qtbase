@@ -2377,7 +2377,7 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint
         __m128i v_fy = _mm_setr_epi32(fy, fy + fdy, fy + fdy + fdy, fy + fdy + fdy + fdy);
 
         const uchar *textureData = image.imageData;
-        const int bytesPerLine = image.bytesPerLine;
+        const qssize_t bytesPerLine = image.bytesPerLine;
         const __m128i vbpl = _mm_shufflelo_epi16(_mm_cvtsi32_si128(bytesPerLine/4), _MM_SHUFFLE(0, 0, 0, 0));
 
         while (b < boundedEnd - 3) {
@@ -4947,7 +4947,7 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
-    const int scanline_offset = data->texture.bytesPerLine / 4;
+    const qssize_t scanline_offset = data->texture.bytesPerLine / 4;
 
     if (data->fast_matrix) {
         // The increment pr x in the scanline
@@ -5287,7 +5287,7 @@ inline void qt_bitmapblit_template(QRasterBuffer *rasterBuffer,
                                    int mapWidth, int mapHeight, int mapStride)
 {
     DST *dest = reinterpret_cast<DST *>(rasterBuffer->scanLine(y)) + x;
-    const int destStride = rasterBuffer->bytesPerLine() / sizeof(DST);
+    const int destStride = rasterBuffer->stride<DST>();
 
     if (mapWidth > 8) {
         while (mapHeight--) {
@@ -5601,7 +5601,7 @@ void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
 
     if (!clip) {
         quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
-        const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
+        const int destStride = rasterBuffer->stride<quint16>();
         while (mapHeight--) {
             for (int i = 0; i < mapWidth; ++i)
                 alphamapblend_quint16(map[i], dest, i, c);
@@ -5676,7 +5676,7 @@ static void qt_alphamapblit_argb32(QRasterBuffer *rasterBuffer,
                                    const QClipData *clip, bool useGammaCorrection)
 {
     const quint32 c = color.toArgb32();
-    const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint32);
+    const int destStride = rasterBuffer->stride<quint32>();
 
     if (color.isTransparent())
         return;
@@ -5872,7 +5872,7 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
 
     if (!clip) {
         quint32 *dst = reinterpret_cast<quint32*>(rasterBuffer->scanLine(y)) + x;
-        const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint32);
+        const int destStride = rasterBuffer->stride<quint32>();
         while (mapHeight--) {
             for (int i = 0; i < mapWidth; ++i) {
                 const uint coverage = src[i];

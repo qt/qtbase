@@ -225,7 +225,7 @@ xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
         xcb_image_destroy(xi);
         return XCB_NONE;
     }
-    memcpy(xi->data, img.constBits(), img.byteCount());
+    memcpy(xi->data, img.constBits(), img.sizeInBytes());
 
     xcb_pixmap_t pix = xcb_generate_id(conn);
     xcb_create_pixmap(conn, 32, pix, screen->root(), w, h);

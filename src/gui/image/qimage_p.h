@@ -71,12 +71,12 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     int width;
     int height;
     int depth;
-    int nbytes;               // number of bytes data
+    qssize_t nbytes;               // number of bytes data
     qreal devicePixelRatio;
     QVector<QRgb> colortable;
     uchar *data;
     QImage::Format format;
-    int bytes_per_line;
+    qssize_t bytes_per_line;
     int ser_no;               // serial number
     int detach_no;
 

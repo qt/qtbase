@@ -218,6 +218,8 @@ private slots:
     void toCGImage();
 #endif
 
+    void hugeQImage();
+
 private:
     const QString m_prefix;
 };
@@ -314,8 +316,7 @@ void tst_QImage::create()
 {
     bool cr = true;
     QT_TRY {
-        //QImage image(7000000, 7000000, 8, 256, QImage::IgnoreEndian);
-        QImage image(7000000, 7000000, QImage::Format_Indexed8);
+        QImage image(700000000, 70000000, QImage::Format_Indexed8);
         image.setColorCount(256);
         cr = !image.isNull();
     } QT_CATCH (...) {
@@ -2366,7 +2367,7 @@ void tst_QImage::rgbSwapped()
 
     QCOMPARE(image, imageSwappedTwice);
 
-    QCOMPARE(memcmp(image.constBits(), imageSwappedTwice.constBits(), image.byteCount()), 0);
+    QCOMPARE(memcmp(image.constBits(), imageSwappedTwice.constBits(), image.sizeInBytes()), 0);
 }
 
 void tst_QImage::mirrored_data()
@@ -2478,7 +2479,7 @@ void tst_QImage::mirrored()
     QCOMPARE(image, imageMirroredTwice);
 
     if (format != QImage::Format_Mono && format != QImage::Format_MonoLSB)
-        QCOMPARE(memcmp(image.constBits(), imageMirroredTwice.constBits(), image.byteCount()), 0);
+        QCOMPARE(memcmp(image.constBits(), imageMirroredTwice.constBits(), image.sizeInBytes()), 0);
     else {
         for (int i = 0; i < image.height(); ++i)
             for (int j = 0; j < image.width(); ++j)
@@ -3416,6 +3417,32 @@ void tst_QImage::toCGImage()
 
 #endif
 
+void tst_QImage::hugeQImage()
+{
+#if Q_PROCESSOR_WORDSIZE < 8
+    QSKIP("Test only makes sense on 64-bit machines");
+#else
+    QImage image(25000, 25000, QImage::Format_RGB32);
+
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.height(), 25000);
+    QCOMPARE(image.width(), 25000);
+    QCOMPARE(image.sizeInBytes(), qssize_t(25000)*25000*4);
+    QCOMPARE(image.bytesPerLine(), 25000 * 4);
+
+    QCOMPARE(image.constScanLine(24990), image.constBits() + qssize_t(25000)*24990*4);
+
+    image.setPixel(20000, 24990, 0xffaabbcc);
+    QCOMPARE(image.pixel(20000, 24990), 0xffaabbcc);
+    QCOMPARE((reinterpret_cast<const unsigned int *>(image.constScanLine(24990)))[20000], 0xffaabbcc);
+
+    QImage canvas(100, 100, QImage::Format_RGB32);
+    QPainter painter(&canvas);
+    painter.drawImage(0,0, image, 19950, 24900, 100, 100);
+    painter.end();
+    QCOMPARE(reinterpret_cast<const unsigned int *>(canvas.constScanLine(90))[50], 0xffaabbcc);
+#endif
+}
 
 QTEST_GUILESS_MAIN(tst_QImage)
 #include "tst_qimage.moc"

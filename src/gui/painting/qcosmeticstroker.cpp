@@ -292,7 +292,7 @@ void QCosmeticStroker::setup()
         color = multiplyAlpha256(state->penData.solid.color, opacity).toArgb32();
         QRasterBuffer *buffer = state->penData.rasterBuffer;
         pixels = (uint *)buffer->buffer();
-        ppl = buffer->bytesPerLine()>>2;
+        ppl = buffer->stride<quint32>();
     }
 
     // line drawing produces different results with different clips, so

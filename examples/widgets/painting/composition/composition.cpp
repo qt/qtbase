@@ -464,7 +464,7 @@ void CompositionRenderer::paint(QPainter *painter)
             drawBase(p);
         }
 
-        memcpy(m_buffer.bits(), m_base_buffer.bits(), m_buffer.byteCount());
+        memcpy(m_buffer.bits(), m_base_buffer.bits(), m_buffer.sizeInBytes());
 
         {
             QPainter p(&m_buffer);

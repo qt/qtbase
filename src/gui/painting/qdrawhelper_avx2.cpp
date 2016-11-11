@@ -682,7 +682,7 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2(uint *
     v_fy = _mm256_add_epi32(v_fy, _mm256_mullo_epi32(_mm256_set1_epi32(fdy), v_index));
 
     const uchar *textureData = image.imageData;
-    const int bytesPerLine = image.bytesPerLine;
+    const qssize_t bytesPerLine = image.bytesPerLine;
     const __m256i vbpl = _mm256_set1_epi16(bytesPerLine/4);
 
     while (b < boundedEnd - 7) {

@@ -66,7 +66,7 @@ CGImageRef qt_mac_toCGImageMask(const QImage &image)
     static const auto deleter = [](void *image, const void *, size_t) { delete static_cast<QImage *>(image); };
     QCFType<CGDataProviderRef> dataProvider =
             CGDataProviderCreateWithData(new QImage(image), image.bits(),
-                                                    image.byteCount(), deleter);
+                                                    image.sizeInBytes(), deleter);
 
     return CGImageMaskCreate(image.width(), image.height(), 8, image.depth(),
                               image.bytesPerLine(), dataProvider, NULL, false);

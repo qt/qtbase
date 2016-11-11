@@ -214,7 +214,10 @@ public:
     const uchar *bits() const;
     const uchar *constBits() const;
 
-    int byteCount() const;
+#if QT_DEPRECATED_SINCE(5, 10)
+    QT_DEPRECATED int byteCount() const;
+#endif
+    qssize_t sizeInBytes() const;
 
     uchar *scanLine(int);
     const uchar *scanLine(int) const;

@@ -466,7 +466,7 @@ void tst_QImageWriter::saveWithNoFormat()
     SKIP_IF_UNSUPPORTED(format);
 
     QImage niceImage(64, 64, QImage::Format_ARGB32);
-    memset(niceImage.bits(), 0, niceImage.byteCount());
+    memset(niceImage.bits(), 0, niceImage.sizeInBytes());
 
     QImageWriter writer(fileName /* , 0 - no format! */);
     if (error != 0) {
