@@ -49,7 +49,7 @@ unix {
 $${type}.commands += $(TESTARGS)
 
 !isEmpty(TESTRUN_CWD):!contains(TESTRUN_CWD, ^\\./?): \
-    $${type}.commands = cd $$shell_path($$TESTRUN_CWD) && $$eval($${type}.commands)
+    $${type}.commands = $$QMAKE_CD $$shell_path($$TESTRUN_CWD) && $$eval($${type}.commands)
 
 # If the test is marked as insignificant, discard the exit code
 insignificant_test: $${type}.commands = -$$eval($${type}.commands)
