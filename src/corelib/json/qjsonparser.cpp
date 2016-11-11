@@ -283,7 +283,6 @@ char Parser::nextToken()
     case ValueSeparator:
     case EndArray:
     case EndObject:
-        eatSpace();
     case Quote:
         break;
     default:
@@ -469,6 +468,10 @@ bool Parser::parseMember(int baseOffset)
         lastError = QJsonParseError::MissingNameSeparator;
         return false;
     }
+    if (!eatSpace()) {
+        lastError = QJsonParseError::UnterminatedObject;
+        return false;
+    }
     QJsonPrivate::Value val;
     if (!parseValue(&val, baseOffset))
         return false;
@@ -544,6 +547,10 @@ bool Parser::parseArray()
         nextToken();
     } else {
         while (1) {
+            if (!eatSpace()) {
+                lastError = QJsonParseError::UnterminatedArray;
+                return false;
+            }
             QJsonPrivate::Value val;
             if (!parseValue(&val, arrayOffset))
                 return false;
@@ -686,6 +693,12 @@ bool Parser::parseValue(QJsonPrivate::Value *val, int baseOffset)
         DEBUG << "value: object";
         END;
         return true;
+    case ValueSeparator:
+        // Essentially missing value, but after a colon, not after a comma
+        // like the other MissingObject errors.
+        lastError = QJsonParseError::IllegalValue;
+        return false;
+    case EndObject:
     case EndArray:
         lastError = QJsonParseError::MissingObject;
         return false;

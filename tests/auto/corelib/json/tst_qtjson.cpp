@@ -139,6 +139,9 @@ private Q_SLOTS:
     void removeNonLatinKey();
     void documentFromVariant();
 
+    void parseErrorOffset_data();
+    void parseErrorOffset();
+
 private:
     QString testDataDir;
 };
@@ -2828,6 +2831,36 @@ void tst_QtJson::documentFromVariant()
 
     // As JSON objects they should be equal.
     QCOMPARE(do1.object(), do2.object());
+}
+
+void tst_QtJson::parseErrorOffset_data()
+{
+    QTest::addColumn<QByteArray>("json");
+    QTest::addColumn<int>("errorOffset");
+
+    QTest::newRow("Trailing comma in object") << QByteArray("{ \"value\": false, }") << 19;
+    QTest::newRow("Trailing comma in object plus whitespace") << QByteArray("{ \"value\": false, }    ") << 19;
+    QTest::newRow("Trailing comma in array") << QByteArray("[ false, ]") << 10;
+    QTest::newRow("Trailing comma in array plus whitespace") << QByteArray("[ false, ]    ") << 10;
+    QTest::newRow("Missing value in object") << QByteArray("{ \"value\": , } ") << 12;
+    QTest::newRow("Missing value in array") << QByteArray("[ \"value\" , , ] ") << 13;
+    QTest::newRow("Leading comma in object") << QByteArray("{ ,  \"value\": false}") << 3;
+    QTest::newRow("Leading comma in array") << QByteArray("[ ,  false]") << 3;
+    QTest::newRow("Stray ,") << QByteArray("  ,  ") << 3;
+    QTest::newRow("Stray [") << QByteArray("  [  ") << 5;
+    QTest::newRow("Stray }") << QByteArray("  }  ") << 3;
+}
+
+void tst_QtJson::parseErrorOffset()
+{
+    QFETCH(QByteArray, json);
+    QFETCH(int, errorOffset);
+
+    QJsonParseError error;
+    QJsonDocument::fromJson(json, &error);
+
+    QVERIFY(error.error != QJsonParseError::NoError);
+    QCOMPARE(error.offset, errorOffset);
 }
 
 QTEST_MAIN(tst_QtJson)
