@@ -932,6 +932,15 @@ defineTest(qtRunSingleTest) {
     qtConfSaveResult($${tpfx}, $$1)
 }
 
+defineTest(qtConfHaveModule) {
+    module = $$replace(1, -, _)
+    !isEmpty(QT.$${module}.skip):$$eval(QT.$${module}.skip): \
+        return(false)
+    !isEmpty(QT.$${module}.name): \
+        return(true)
+    return(false)
+}
+
 defineReplace(qtConfEvaluate) {
     isEmpty(1): return(true)
 
@@ -1015,6 +1024,10 @@ defineReplace(qtConfEvaluateSingleExpression) {
         var = $$replace(e, "^config\.", "")
         result = false
         contains(CONFIG, $$var): result = true
+    } else: contains(e, "^module\..*") {
+        var = $$replace(e, "^module\.", "")
+        result = false
+        qtConfHaveModule($$var): result = true
     } else: contains(e, "^arch\..*") {
         var = $$replace(e, "^arch\.", "")
         result = false
@@ -1181,6 +1194,17 @@ defineTest(qtConfCheckFeature) {
         qtConfProcessOneOutput($${1}, $$i)
 
     return(true)
+}
+
+defineTest(qtConfCheckModuleCondition) {
+    QT.$${currentModule}.skip = false
+    !$$qtConfEvaluate($$eval($${currentConfig}.condition)): \
+        QT.$${currentModule}.skip = true
+    export(QT.$${currentModule}.skip)
+
+    # ensure qtConfHaveModule() works
+    QT.$${currentModule}.name = -
+    export(QT.$${currentModule}.name)
 }
 
 
@@ -1758,14 +1782,27 @@ for (currentConfig, allConfigs) {
         }
     }
 
-    # process all features
-    qtConfProcessFeatures()
+    qtConfCheckModuleCondition()
+
+    qtConfHaveModule($$currentModule) {
+        # process all features
+        qtConfProcessFeatures()
+    } else {
+        qtConfOutputVar(assign, "privatePro", "QT.$${currentModule}.skip", "true")
+    }
 
     # generate files and reports
     qtConfProcessOutput()
-    qtConfCreateReport()
-    qtConfCreateSummary()
+    qtConfHaveModule($$currentModule) {
+        qtConfCreateReport()
+        qtConfCreateSummary()
+    } else {
+        QT_CONFIGURE_SKIPPED_MODULES += "    $$currentModule"
+    }
 }
+
+!isEmpty(QT_CONFIGURE_SKIPPED_MODULES): \
+    qtConfAddNote("The following modules are not being compiled in this configuration:" $$QT_CONFIGURE_SKIPPED_MODULES)
 
 # these come from the pri files loaded above.
 for (p, QMAKE_POST_CONFIGURE): \
