@@ -2326,8 +2326,14 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << true;
 
     QTest::newRow("discard_from()")
-            << "HERE = 1\nPLUS = one\ninclude(include/inc.pri)\ndiscard_from(include/inc.pri): OK = 1"
-            << "OK = 1\nHERE = 1\nPLUS = one\nVAR = UNDEF"
+            << "HERE = 1\nPLUS = one\n"
+               "defineTest(tfunc) {}\ndefineReplace(rfunc) {}\n"
+               "include(include/inc.pri)\n"
+               "discard_from(include/inc.pri): OK = 1\n"
+               "defined(tfunc, test): TDEF = 1\ndefined(rfunc, replace): RDEF = 1\n"
+               "defined(func, test): DTDEF = 1\ndefined(func, replace): DRDEF = 1\n"
+            << "OK = 1\nHERE = 1\nPLUS = one\nVAR = UNDEF\n"
+               "TDEF = 1\nRDEF = 1\nDTDEF = UNDEF\nDRDEF = UNDEF"
             << ""
             << true;
 
