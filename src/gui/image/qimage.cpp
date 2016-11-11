@@ -2121,6 +2121,44 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
 }
 
 /*!
+    \since 5.9
+
+    Changes the format of the image without changing the data. Only
+    works between formats of the same depth.
+
+    Returns \c true if successful.
+
+    This function can be used to change images with alpha-channels to
+    their corresponding opaque formats if the data is known to be opaque-only,
+    or to change the format of a given image buffer before overwriting
+    it with new data.
+
+    \warning The function does not check if the image data is valid in the
+    new format and will still return \c true if the depths are compatible.
+    Operations on an image with invalid data are undefined.
+
+    \warning If the image is not detached, this will cause the data to be
+    copied.
+
+    \sa isDetached(), hasAlphaChannel(), convertToFormat()
+*/
+
+bool QImage::reinterpretAsFormat(Format format)
+{
+    if (!d)
+        return false;
+    if (d->format == format)
+        return true;
+    if (qt_depthForFormat(format) != qt_depthForFormat(d->format))
+        return false;
+    if (!isDetached()) // Detach only if shared, not for read-only data.
+        detach();
+
+    d->format = format;
+    return true;
+}
+
+/*!
     \fn bool QImage::valid(const QPoint &pos) const
 
     Returns \c true if \a pos is a valid coordinate pair within the
