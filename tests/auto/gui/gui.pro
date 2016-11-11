@@ -13,4 +13,4 @@ SUBDIRS = \
     util \
     itemmodels \
 
-!qtConfig(opengl(es2)?): SUBDIRS -= qopengl qopenglconfig
+!qtConfig(opengl): SUBDIRS -= qopengl qopenglconfig
