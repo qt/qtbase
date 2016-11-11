@@ -251,6 +251,7 @@ QFontEngine::QFontEngine(Type type)
     cache_cost = 0;
     fsType = 0;
     symbol = false;
+    isSmoothlyScalable = false;
 
     glyphFormat = Format_None;
     m_subPixelPositionCount = 0;

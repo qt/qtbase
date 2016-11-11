@@ -283,6 +283,7 @@ public:
     uint cache_cost; // amount of mem used in bytes by the font
     uint fsType : 16;
     bool symbol;
+    bool isSmoothlyScalable;
     struct KernPair {
         uint left_right;
         QFixed adjust;
