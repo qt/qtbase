@@ -691,8 +691,6 @@ public:
     bool operator >=(const Entry &other) const;
 };
 
-inline bool operator!=(const Entry &lhs, const Entry &rhs) { return !(lhs == rhs); }
-
 inline bool Entry::operator >=(const QString &key) const
 {
     if (value.latinKey)
