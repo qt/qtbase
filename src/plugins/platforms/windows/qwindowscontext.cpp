@@ -380,6 +380,11 @@ void QWindowsContext::setWindowCreationContext(const QSharedPointer<QWindowCreat
     d->m_creationContext = ctx;
 }
 
+QSharedPointer<QWindowCreationContext> QWindowsContext::windowCreationContext() const
+{
+    return d->m_creationContext;
+}
+
 int QWindowsContext::defaultDPI() const
 {
     return d->m_defaultDPI;
@@ -808,7 +813,9 @@ static inline QWindowsInputContext *windowsInputContext()
 
 bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                                   QtWindows::WindowsEventType et,
-                                  WPARAM wParam, LPARAM lParam, LRESULT *result)
+                                  WPARAM wParam, LPARAM lParam,
+                                  LRESULT *result,
+                                  QWindowsWindow **platformWindowPtr)
 {
     *result = 0;
 
@@ -839,6 +846,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     }
 
     QWindowsWindow *platformWindow = findPlatformWindow(hwnd);
+    *platformWindowPtr = platformWindow;
     if (platformWindow) {
         filterResult = 0;
         if (QWindowSystemInterface::handleNativeEvent(platformWindow->window(), d->m_eventType, &msg, &filterResult)) {
@@ -1020,9 +1028,6 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
     case QtWindows::ThemeChanged: {
         // Switch from Aero to Classic changes margins.
-        const Qt::WindowFlags flags = platformWindow->window()->flags();
-        if ((flags & Qt::WindowType_Mask) != Qt::Desktop && !(flags & Qt::FramelessWindowHint))
-            platformWindow->setFlag(QWindowsWindow::FrameDirty);
         if (QWindowsTheme *theme = QWindowsTheme::instance())
             theme->windowsThemeChanged(platformWindow->window());
         return true;
@@ -1195,6 +1200,37 @@ QTouchDevice *QWindowsContext::touchDevice() const
     return d->m_mouseHandler.touchDevice();
 }
 
+static inline bool isEmptyRect(const RECT &rect)
+{
+    return rect.right - rect.left == 0 && rect.bottom - rect.top == 0;
+}
+
+static inline QMargins marginsFromRects(const RECT &frame, const RECT &client)
+{
+    return QMargins(client.left - frame.left, client.top - frame.top,
+                    frame.right - client.right, frame.bottom - client.bottom);
+}
+
+static RECT rectFromNcCalcSize(UINT message, WPARAM wParam, LPARAM lParam, int n)
+{
+    RECT result = {0, 0, 0, 0};
+    if (message == WM_NCCALCSIZE && wParam)
+        result = reinterpret_cast<const NCCALCSIZE_PARAMS *>(lParam)->rgrc[n];
+    return result;
+}
+
+static inline bool isMinimized(HWND hwnd)
+{
+    WINDOWPLACEMENT windowPlacement;
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
+    return GetWindowPlacement(hwnd, &windowPlacement) && windowPlacement.showCmd == SW_SHOWMINIMIZED;
+}
+
+static inline bool isTopLevel(HWND hwnd)
+{
+    return (GetWindowLongPtr(hwnd, GWL_STYLE) & WS_CHILD) == 0;
+}
+
 /*!
     \brief Windows functions for actual windows.
 
@@ -1208,7 +1244,9 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
 {
     LRESULT result;
     const QtWindows::WindowsEventType et = windowsEventType(message, wParam, lParam);
-    const bool handled = QWindowsContext::instance()->windowsProc(hwnd, message, et, wParam, lParam, &result);
+    QWindowsWindow *platformWindow = nullptr;
+    const RECT ncCalcSizeFrame = rectFromNcCalcSize(message, wParam, lParam, 0);
+    const bool handled = QWindowsContext::instance()->windowsProc(hwnd, message, et, wParam, lParam, &result, &platformWindow);
     if (QWindowsContext::verbose > 1 && lcQpaEvents().isDebugEnabled()) {
         if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message)) {
             qCDebug(lcQpaEvents) << "EVENT: hwd=" << hwnd << eventName << hex << "msg=0x"  << message
@@ -1218,6 +1256,24 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
     }
     if (!handled)
         result = DefWindowProc(hwnd, message, wParam, lParam);
+
+    // Capture WM_NCCALCSIZE on top level windows and obtain the window margins by
+    // subtracting the rectangles before and after processing. This will correctly
+    // capture client code overriding the message and allow for per-monitor margins
+    // for High DPI (QTBUG-53255, QTBUG-40578).
+    if (message == WM_NCCALCSIZE && !isEmptyRect(ncCalcSizeFrame) && isTopLevel(hwnd) && !isMinimized(hwnd)) {
+        const QMargins margins =
+            marginsFromRects(ncCalcSizeFrame, rectFromNcCalcSize(message, wParam, lParam, 0));
+        if (margins.left() >= 0) {
+            if (platformWindow) {
+                platformWindow->setFrameMargins(margins);
+            } else {
+                const QSharedPointer<QWindowCreationContext> ctx = QWindowsContext::instance()->windowCreationContext();
+                if (!ctx.isNull())
+                    ctx->margins = margins;
+            }
+        }
+    }
     return result;
 }
 

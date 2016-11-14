@@ -1681,7 +1681,6 @@ QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
     QWindowsWindowData result = m_data;
     result.flags = creationData.flags;
     result.embedded = creationData.embedded;
-    setFlag(FrameDirty);
     return result;
 }
 
@@ -1689,7 +1688,6 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window()
                  << "\n    from " << m_windowState << " to " << state;
-    setFlag(FrameDirty);
     m_windowState = state;
     QWindowSystemInterface::handleWindowStateChanged(window(), state);
     switch (state) {
@@ -1765,8 +1763,6 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
         << " from " << oldState << " to " << newState;
 
     const bool visible = isVisible();
-
-    setFlag(FrameDirty);
 
     if ((oldState == Qt::WindowFullScreen) != (newState == Qt::WindowFullScreen)) {
         if (newState == Qt::WindowFullScreen) {
@@ -1861,7 +1857,6 @@ void QWindowsWindow::setStyle(unsigned s) const
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window() << debugWinStyle(s);
     setFlag(WithinSetStyle);
-    setFlag(FrameDirty);
     SetWindowLongPtr(m_data.hwnd, GWL_STYLE, s);
     clearFlag(WithinSetStyle);
 }
@@ -1870,7 +1865,6 @@ void QWindowsWindow::setExStyle(unsigned s) const
 {
     qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << ' ' << this << ' ' << window()
         << " 0x" << QByteArray::number(s, 16);
-    setFlag(FrameDirty);
     SetWindowLongPtr(m_data.hwnd, GWL_EXSTYLE, s);
 }
 
@@ -1926,22 +1920,17 @@ bool QWindowsWindow::handleGeometryChanging(MSG *message) const
     return QWindowsWindow::handleGeometryChangingMessage(message, window(), margins);
 }
 
+void QWindowsWindow::setFrameMargins(const QMargins &newMargins)
+{
+    if (m_data.frame != newMargins) {
+        qCDebug(lcQpaWindows) << __FUNCTION__ << window() <<  m_data.frame  << "->" << newMargins;
+        m_data.frame = newMargins;
+    }
+}
+
 QMargins QWindowsWindow::frameMargins() const
 {
-    // Frames are invalidated by style changes (window state, flags).
-    // As they are also required for geometry calculations in resize
-    // event sequences, introduce a dirty flag mechanism to be able
-    // to cache results.
-    if (testFlag(FrameDirty)) {
-        // Always skip calculating style-dependent margins for windows claimed to be frameless.
-        // This allows users to remove the margins by handling WM_NCCALCSIZE with WS_THICKFRAME set
-        // to ensure Areo snap still works (QTBUG-40578).
-        m_data.frame = m_data.flags & Qt::FramelessWindowHint
-            ? QMargins(0, 0, 0, 0)
-            : QWindowsGeometryHint::frame(style(), exStyle());
-        clearFlag(FrameDirty);
-    }
-    return m_data.frame + m_data.customMargins;
+    return m_data.frame;
 }
 
 void QWindowsWindow::setOpacity(qreal level)
@@ -2357,7 +2346,6 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
         const QPoint topLeft = currentFrameGeometry.topLeft();
         QRect newFrame = currentFrameGeometry.marginsRemoved(oldCustomMargins) + m_data.customMargins;
         newFrame.moveTo(topLeft);
-        setFlag(FrameDirty);
         qCDebug(lcQpaWindows) << __FUNCTION__ << oldCustomMargins << "->" << newCustomMargins
             << currentFrameGeometry << "->" << newFrame;
         SetWindowPos(m_data.hwnd, 0, newFrame.x(), newFrame.y(), newFrame.width(), newFrame.height(), SWP_NOZORDER | SWP_FRAMECHANGED);

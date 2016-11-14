@@ -189,7 +189,6 @@ public:
     {
         AutoMouseCapture = 0x1, //! Automatic mouse capture on button press.
         WithinSetParent = 0x2,
-        FrameDirty = 0x4,            //! Frame outdated by setStyle, recalculate in next query.
         OpenGLSurface = 0x10,
         OpenGL_ES2 = 0x20,
         OpenGLDoubleBuffered = 0x40,
@@ -244,6 +243,7 @@ public:
     static bool handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &marginsDp);
     bool handleGeometryChanging(MSG *message) const;
     QMargins frameMargins() const Q_DECL_OVERRIDE;
+    void setFrameMargins(const QMargins &newMargins);
 
     void setOpacity(qreal level) Q_DECL_OVERRIDE;
     void setMask(const QRegion &region) Q_DECL_OVERRIDE;

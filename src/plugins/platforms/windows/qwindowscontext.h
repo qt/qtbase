@@ -181,12 +181,14 @@ public:
 
     inline bool windowsProc(HWND hwnd, UINT message,
                             QtWindows::WindowsEventType et,
-                            WPARAM wParam, LPARAM lParam, LRESULT *result);
+                            WPARAM wParam, LPARAM lParam, LRESULT *result,
+                            QWindowsWindow **platformWindowPtr);
 
     QWindow *keyGrabber() const;
     void setKeyGrabber(QWindow *hwnd);
 
     void setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx);
+    QSharedPointer<QWindowCreationContext> windowCreationContext() const;
 
     void setTabletAbsoluteRange(int a);
     void setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness);
