@@ -836,7 +836,10 @@ static const uint *QT_FASTCALL convertGrayscale8FromARGB32PM(uint *buffer, const
 }
 
 template <QPixelLayout::BPP bpp> static
-uint QT_FASTCALL fetchPixel(const uchar *src, int index);
+uint QT_FASTCALL fetchPixel(const uchar *, int)
+{
+    Q_UNREACHABLE();
+}
 
 template <>
 inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP1LSB>(const uchar *src, int index)
@@ -1554,92 +1557,11 @@ static const QRgba64 *QT_FASTCALL fetchUntransformed64(QRgba64 *buffer, const Op
     }
 }
 
-// blendType is either BlendTransformed or BlendTransformedTiled
-template<TextureBlendType blendType>
-static const uint *QT_FASTCALL fetchTransformedARGB32PM(uint *buffer, const Operator *, const QSpanData *data,
-                                                        int y, int x, int length)
-{
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
-
-    const qreal cx = x + qreal(0.5);
-    const qreal cy = y + qreal(0.5);
-
-    const uint *end = buffer + length;
-    uint *b = buffer;
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        int fdx = (int)(data->m11 * fixed_scale);
-        int fdy = (int)(data->m12 * fixed_scale);
-
-        int fx = int((data->m21 * cy
-                      + data->m11 * cx + data->dx) * fixed_scale);
-        int fy = int((data->m22 * cy
-                      + data->m12 * cx + data->dy) * fixed_scale);
-
-        while (b < end) {
-            int px = fx >> 16;
-            int py = fy >> 16;
-
-            if (blendType == BlendTransformedTiled) {
-                px %= image_width;
-                py %= image_height;
-                if (px < 0) px += image_width;
-                if (py < 0) py += image_height;
-            } else {
-                px = qBound(0, px, image_width - 1);
-                py = qBound(0, py, image_height - 1);
-            }
-            *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px];
-
-            fx += fdx;
-            fy += fdy;
-            ++b;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        qreal fx = data->m21 * cy + data->m11 * cx + data->dx;
-        qreal fy = data->m22 * cy + data->m12 * cx + data->dy;
-        qreal fw = data->m23 * cy + data->m13 * cx + data->m33;
-
-        while (b < end) {
-            const qreal iw = fw == 0 ? 1 : 1 / fw;
-            const qreal tx = fx * iw;
-            const qreal ty = fy * iw;
-            int px = int(tx) - (tx < 0);
-            int py = int(ty) - (ty < 0);
-
-            if (blendType == BlendTransformedTiled) {
-                px %= image_width;
-                py %= image_height;
-                if (px < 0) px += image_width;
-                if (py < 0) py += image_height;
-            } else {
-                px = qBound(0, px, image_width - 1);
-                py = qBound(0, py, image_height - 1);
-            }
-            *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px];
-
-            fx += fdx;
-            fy += fdy;
-            fw += fdw;
-            //force increment to avoid /0
-            if (!fw) {
-                fw += fdw;
-            }
-            ++b;
-        }
-    }
-    return buffer;
-}
-
-template<TextureBlendType blendType>  /* either BlendTransformed or BlendTransformedTiled */
+template<TextureBlendType blendType, QPixelLayout::BPP bpp>
 static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
                                          int y, int x, int length)
 {
+    Q_STATIC_ASSERT(blendType == BlendTransformed || blendType == BlendTransformedTiled);
     int image_width = data->texture.width;
     int image_height = data->texture.height;
 
@@ -1647,9 +1569,12 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
     const qreal cy = y + qreal(0.5);
 
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
-    FetchPixelFunc fetch = qFetchPixel[layout->bpp];
+    if (bpp != QPixelLayout::BPPNone) // Like this to not ICE on GCC 5.3.1
+        Q_ASSERT(layout->bpp == bpp);
+    // When templated 'fetch' should be inlined at compile time:
+    const FetchPixelFunc fetch = (bpp == QPixelLayout::BPPNone) ? qFetchPixel[layout->bpp] : fetchPixel<bpp>;
 
-    const uint *end = buffer + length;
+    uint *const end = buffer + length;
     uint *b = buffer;
     if (data->fast_matrix) {
         // The increment pr x in the scanline
@@ -2585,12 +2510,17 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 }
 
 // blendType = BlendTransformedBilinear or BlendTransformedBilinearTiled
-template<TextureBlendType blendType>
+template<TextureBlendType blendType, QPixelLayout::BPP bpp>
 static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *,
                                                         const QSpanData *data, int y, int x, int length)
 {
     const QPixelLayout *layout = &qPixelLayouts[data->texture.format];
     const QVector<QRgb> *clut = data->texture.colorTable;
+    if (bpp != QPixelLayout::BPPNone) // Like this to not ICE on GCC 5.3.1
+        Q_ASSERT(layout->bpp == bpp);
+    // When templated 'fetch' should be inlined at compile time:
+    const FetchPixelsFunc fetch = (bpp == QPixelLayout::BPPNone) ? qFetchPixels[layout->bpp] : fetchPixels<bpp>;
+    const FetchPixelFunc fetch1 = (bpp == QPixelLayout::BPPNone) ? qFetchPixel[layout->bpp] : fetchPixel<bpp>;
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
@@ -2628,7 +2558,6 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
 
                 // The idea is first to do the interpolation between the row s1 and the row s2
                 // into an intermediate buffer, then we interpolate between two pixel of this buffer.
-                FetchPixelsFunc fetch = qFetchPixels[layout->bpp];
                 // +1 for the last pixel to interpolate with, and +1 for rounding errors.
                 uint buf1[buffer_size + 2];
                 uint buf2[buffer_size + 2];
@@ -2717,7 +2646,6 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     fx += fdx;
                 }
             } else {
-                FetchPixelFunc fetch = qFetchPixel[layout->bpp];
                 uint buf1[buffer_size];
                 uint buf2[buffer_size];
                 uint *b = buffer;
@@ -2728,19 +2656,10 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                         int x1 = (fx >> 16);
                         int x2;
                         fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
-
-                        if (layout->bpp == QPixelLayout::BPP32) {
-                            buf1[i * 2 + 0] = ((const uint*)s1)[x1];
-                            buf1[i * 2 + 1] = ((const uint*)s1)[x2];
-                            buf2[i * 2 + 0] = ((const uint*)s2)[x1];
-                            buf2[i * 2 + 1] = ((const uint*)s2)[x2];
-                        } else {
-                            buf1[i * 2 + 0] = fetch(s1, x1);
-                            buf1[i * 2 + 1] = fetch(s1, x2);
-                            buf2[i * 2 + 0] = fetch(s2, x1);
-                            buf2[i * 2 + 1] = fetch(s2, x2);
-                        }
-
+                        buf1[i * 2 + 0] = fetch1(s1, x1);
+                        buf1[i * 2 + 1] = fetch1(s1, x2);
+                        buf2[i * 2 + 0] = fetch1(s2, x1);
+                        buf2[i * 2 + 1] = fetch1(s2, x2);
                         fx += fdx;
                     }
                     layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
@@ -2770,7 +2689,6 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 }
             }
         } else { //rotation
-            FetchPixelFunc fetch = qFetchPixel[layout->bpp];
             uint buf1[buffer_size];
             uint buf2[buffer_size];
             uint *b = buffer;
@@ -2789,19 +2707,10 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
 
                     const uchar *s1 = data->texture.scanLine(y1);
                     const uchar *s2 = data->texture.scanLine(y2);
-
-                    if (layout->bpp == QPixelLayout::BPP32) {
-                        buf1[i * 2 + 0] = ((const uint*)s1)[x1];
-                        buf1[i * 2 + 1] = ((const uint*)s1)[x2];
-                        buf2[i * 2 + 0] = ((const uint*)s2)[x1];
-                        buf2[i * 2 + 1] = ((const uint*)s2)[x2];
-                    } else {
-                        buf1[i * 2 + 0] = fetch(s1, x1);
-                        buf1[i * 2 + 1] = fetch(s1, x2);
-                        buf2[i * 2 + 0] = fetch(s2, x1);
-                        buf2[i * 2 + 1] = fetch(s2, x2);
-                    }
-
+                    buf1[i * 2 + 0] = fetch1(s1, x1);
+                    buf1[i * 2 + 1] = fetch1(s1, x2);
+                    buf2[i * 2 + 0] = fetch1(s2, x1);
+                    buf2[i * 2 + 1] = fetch1(s2, x2);
                     fx += fdx;
                     fy += fdy;
                 }
@@ -2848,7 +2757,6 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
         qreal fy = data->m22 * cy + data->m12 * cx + data->dy;
         qreal fw = data->m23 * cy + data->m13 * cx + data->m33;
 
-        FetchPixelFunc fetch = qFetchPixel[layout->bpp];
         uint buf1[buffer_size];
         uint buf2[buffer_size];
         uint *b = buffer;
@@ -2876,18 +2784,10 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
 
                 const uchar *s1 = data->texture.scanLine(y1);
                 const uchar *s2 = data->texture.scanLine(y2);
-
-                if (layout->bpp == QPixelLayout::BPP32) {
-                    buf1[i * 2 + 0] = ((const uint*)s1)[x1];
-                    buf1[i * 2 + 1] = ((const uint*)s1)[x2];
-                    buf2[i * 2 + 0] = ((const uint*)s2)[x1];
-                    buf2[i * 2 + 1] = ((const uint*)s2)[x2];
-                } else {
-                    buf1[i * 2 + 0] = fetch(s1, x1);
-                    buf1[i * 2 + 1] = fetch(s1, x2);
-                    buf2[i * 2 + 0] = fetch(s2, x1);
-                    buf2[i * 2 + 1] = fetch(s2, x2);
-                }
+                buf1[i * 2 + 0] = fetch1(s1, x1);
+                buf1[i * 2 + 1] = fetch1(s1, x2);
+                buf2[i * 2 + 0] = fetch1(s2, x1);
+                buf2[i * 2 + 1] = fetch1(s2, x2);
 
                 fx += fdx;
                 fy += fdy;
@@ -3293,21 +3193,30 @@ static SourceFetchProc sourceFetchUntransformed[QImage::NImageFormats] = {
 };
 
 static const SourceFetchProc sourceFetchGeneric[NBlendTypes] = {
-    fetchUntransformed,                                     // Untransformed
-    fetchUntransformed,                                     // Tiled
-    fetchTransformed<BlendTransformed>,                     // Transformed
-    fetchTransformed<BlendTransformedTiled>,                // TransformedTiled
-    fetchTransformedBilinear<BlendTransformedBilinear>,     // Bilinear
-    fetchTransformedBilinear<BlendTransformedBilinearTiled> // BilinearTiled
+    fetchUntransformed,                                                             // Untransformed
+    fetchUntransformed,                                                             // Tiled
+    fetchTransformed<BlendTransformed, QPixelLayout::BPPNone>,                      // Transformed
+    fetchTransformed<BlendTransformedTiled, QPixelLayout::BPPNone>,                 // TransformedTiled
+    fetchTransformedBilinear<BlendTransformedBilinear, QPixelLayout::BPPNone>,      // TransformedBilinear
+    fetchTransformedBilinear<BlendTransformedBilinearTiled, QPixelLayout::BPPNone>  // TransformedBilinearTiled
 };
 
 static SourceFetchProc sourceFetchARGB32PM[NBlendTypes] = {
     fetchUntransformedARGB32PM,                                     // Untransformed
     fetchUntransformedARGB32PM,                                     // Tiled
-    fetchTransformedARGB32PM<BlendTransformed>,                     // Transformed
-    fetchTransformedARGB32PM<BlendTransformedTiled>,                // TransformedTiled
+    fetchTransformed<BlendTransformed, QPixelLayout::BPP32>,        // Transformed
+    fetchTransformed<BlendTransformedTiled, QPixelLayout::BPP32>,   // TransformedTiled
     fetchTransformedBilinearARGB32PM<BlendTransformedBilinear>,     // Bilinear
     fetchTransformedBilinearARGB32PM<BlendTransformedBilinearTiled> // BilinearTiled
+};
+
+static SourceFetchProc sourceFetchAny32[NBlendTypes] = {
+    fetchUntransformed,                                                             // Untransformed
+    fetchUntransformed,                                                             // Tiled
+    fetchTransformed<BlendTransformed, QPixelLayout::BPP32>,                        // Transformed
+    fetchTransformed<BlendTransformedTiled, QPixelLayout::BPP32>,                   // TransformedTiled
+    fetchTransformedBilinear<BlendTransformedBilinear, QPixelLayout::BPP32>,        // TransformedBilinear
+    fetchTransformedBilinear<BlendTransformedBilinearTiled, QPixelLayout::BPP32>    // TransformedBilinearTiled
 };
 
 static const SourceFetchProc64 sourceFetchGeneric64[NBlendTypes] = {
@@ -3325,6 +3234,8 @@ static inline SourceFetchProc getSourceFetch(TextureBlendType blendType, QImage:
         return sourceFetchARGB32PM[blendType];
     if (blendType == BlendUntransformed || blendType == BlendTiled)
         return sourceFetchUntransformed[format];
+    if (qPixelLayouts[format].bpp == QPixelLayout::BPP32)
+        return sourceFetchAny32[blendType];
     return sourceFetchGeneric[blendType];
 }
 
