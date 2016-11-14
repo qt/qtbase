@@ -150,6 +150,7 @@ private slots:
     void horizontalScrollingByVerticalWheelEvents();
     void taskQTBUG_7232_AllowUserToControlSingleStep();
     void taskQTBUG_51086_skippingIndexesInSelectedIndexes();
+    void taskQTBUG_47694_indexOutOfBoundBatchLayout();
 };
 
 // Testing get/set functions
@@ -2484,6 +2485,19 @@ void tst_QListView::taskQTBUG_51086_skippingIndexesInSelectedIndexes()
 
     QVERIFY(!indexes.contains(data.index(7, 0)));
     QVERIFY(!indexes.contains(data.index(8, 0)));
+}
+
+void tst_QListView::taskQTBUG_47694_indexOutOfBoundBatchLayout()
+{
+    QListView view;
+    view.setLayoutMode(QListView::Batched);
+    int batchSize = view.batchSize();
+
+    QStandardItemModel model(batchSize + 1, 1);
+
+    view.setModel(&model);
+
+    view.scrollTo(model.index(batchSize - 1, 0));
 }
 
 QTEST_MAIN(tst_QListView)
