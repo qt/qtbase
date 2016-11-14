@@ -142,7 +142,7 @@ public:
 
 #ifndef QT_NO_TRANSLATION
     QTranslatorList translators;
-
+    QReadWriteLock translateMutex;
     static bool isTranslatorInstalled(QTranslator *translator);
 #endif
 

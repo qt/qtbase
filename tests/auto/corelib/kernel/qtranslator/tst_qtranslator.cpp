@@ -50,6 +50,7 @@ private slots:
     void loadFromResource();
     void loadDirectory();
     void dependencies();
+    void translationInThreadWhileInstallingTranslator();
 
 private:
     int languageChangeEventCounter;
@@ -287,6 +288,52 @@ void tst_QTranslator::dependencies()
     }
 }
 
+struct TranslateThread : public QThread
+{
+    bool ok = false;
+    QAtomicInt terminate;
+    QMutex startupLock;
+    QWaitCondition runningCondition;
+
+    void run() {
+        bool startSignalled = false;
+
+        while (terminate.load() == 0) {
+            const QString result =  QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 0);
+
+            if (!startSignalled) {
+                QMutexLocker startupLocker(&startupLock);
+                runningCondition.wakeAll();
+                startSignalled = true;
+            }
+
+            ok = (result == QLatin1String("Hallo 0 Welten!"))
+                  || (result == QLatin1String("Hello 0 world(s)!"));
+            if (!ok)
+                break;
+        }
+    }
+};
+
+void tst_QTranslator::translationInThreadWhileInstallingTranslator()
+{
+    TranslateThread thread;
+
+    QMutexLocker startupLocker(&thread.startupLock);
+
+    thread.start();
+
+    thread.runningCondition.wait(&thread.startupLock);
+
+    QTranslator *tor = new QTranslator;
+    tor->load("hellotr_la");
+    QCoreApplication::installTranslator(tor);
+
+    ++thread.terminate;
+
+    QVERIFY(thread.wait());
+    QVERIFY(thread.ok);
+}
 
 QTEST_MAIN(tst_QTranslator)
 #include "tst_qtranslator.moc"

@@ -1931,7 +1931,10 @@ bool QCoreApplication::installTranslator(QTranslator *translationFile)
     if (!QCoreApplicationPrivate::checkInstance("installTranslator"))
         return false;
     QCoreApplicationPrivate *d = self->d_func();
-    d->translators.prepend(translationFile);
+    {
+        QWriteLocker locker(&d->translateMutex);
+        d->translators.prepend(translationFile);
+    }
 
 #ifndef QT_NO_TRANSLATION_BUILDER
     if (translationFile->isEmpty())
@@ -1963,8 +1966,10 @@ bool QCoreApplication::removeTranslator(QTranslator *translationFile)
     if (!QCoreApplicationPrivate::checkInstance("removeTranslator"))
         return false;
     QCoreApplicationPrivate *d = self->d_func();
+    QWriteLocker locker(&d->translateMutex);
     if (d->translators.removeAll(translationFile)) {
 #ifndef QT_NO_QOBJECT
+        locker.unlock();
         if (!self->closingDown()) {
             QEvent ev(QEvent::LanguageChange);
             QCoreApplication::sendEvent(self, &ev);
@@ -2000,7 +2005,7 @@ static void replacePercentN(QString *result, int n)
 }
 
 /*!
-    \reentrant
+    \threadsafe
 
     Returns the translation text for \a sourceText, by querying the
     installed translation files. The translation files are searched
@@ -2029,13 +2034,7 @@ static void replacePercentN(QString *result, int n)
     This function is not virtual. You can use alternative translation
     techniques by subclassing \l QTranslator.
 
-    \warning This method is reentrant only if all translators are
-    installed \e before calling this method. Installing or removing
-    translators while performing translations is not supported. Doing
-    so will most likely result in crashes or other undesirable
-    behavior.
-
-    \sa QObject::tr(), installTranslator()
+    \sa QObject::tr(), installTranslator(), removeTranslator(), translate(), isTranslatorInstalled()
 */
 QString QCoreApplication::translate(const char *context, const char *sourceText,
                                     const char *disambiguation, int n)
@@ -2045,14 +2044,18 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
     if (!sourceText)
         return result;
 
-    if (self && !self->d_func()->translators.isEmpty()) {
-        QList<QTranslator*>::ConstIterator it;
-        QTranslator *translationFile;
-        for (it = self->d_func()->translators.constBegin(); it != self->d_func()->translators.constEnd(); ++it) {
-            translationFile = *it;
-            result = translationFile->translate(context, sourceText, disambiguation, n);
-            if (!result.isNull())
-                break;
+    if (self) {
+        QCoreApplicationPrivate *d = self->d_func();
+        QReadLocker locker(&d->translateMutex);
+        if (!d->translators.isEmpty()) {
+            QList<QTranslator*>::ConstIterator it;
+            QTranslator *translationFile;
+            for (it = d->translators.constBegin(); it != d->translators.constEnd(); ++it) {
+                translationFile = *it;
+                result = translationFile->translate(context, sourceText, disambiguation, n);
+                if (!result.isNull())
+                    break;
+            }
         }
     }
 
@@ -2076,8 +2079,11 @@ QString qtTrId(const char *id, int n)
 
 bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 {
-    return QCoreApplication::self
-           && QCoreApplication::self->d_func()->translators.contains(translator);
+    if (!QCoreApplication::self)
+        return false;
+    QCoreApplicationPrivate *d = QCoreApplication::self->d_func();
+    QReadLocker locker(&d->translateMutex);
+    return d->translators.contains(translator);
 }
 
 #else
