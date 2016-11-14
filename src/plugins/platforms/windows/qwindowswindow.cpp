@@ -114,6 +114,35 @@ static QByteArray debugWinExStyle(DWORD exStyle)
     return rc;
 }
 
+static QByteArray debugWinSwpPos(UINT flags)
+{
+    QByteArray rc = "0x";
+    rc += QByteArray::number(flags, 16);
+    if (flags & SWP_FRAMECHANGED)
+        rc += " SWP_FRAMECHANGED";
+    if (flags & SWP_HIDEWINDOW)
+        rc += " SWP_HIDEWINDOW";
+    if (flags & SWP_NOACTIVATE)
+        rc += " SWP_NOACTIVATE";
+    if (flags & SWP_NOCOPYBITS)
+        rc += " SWP_NOCOPYBITS";
+    if (flags & SWP_NOMOVE)
+        rc += " SWP_NOMOVE";
+    if (flags & SWP_NOOWNERZORDER)
+        rc += " SWP_NOOWNERZORDER";
+    if (flags & SWP_NOREDRAW)
+        rc += " SWP_NOREDRAW";
+    if (flags & SWP_NOSENDCHANGING)
+        rc += " SWP_NOSENDCHANGING";
+    if (flags & SWP_NOSIZE)
+        rc += " SWP_NOSIZE";
+    if (flags & SWP_NOZORDER)
+        rc += " SWP_NOZORDER";
+    if (flags & SWP_SHOWWINDOW)
+        rc += " SWP_SHOWWINDOW";
+    return rc;
+}
+
 static inline QSize qSizeOfRect(const RECT &rect)
 {
     return QSize(rect.right -rect.left, rect.bottom - rect.top);
@@ -137,8 +166,9 @@ QDebug operator<<(QDebug d, const RECT &r)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << "RECT: left/top=" << r.left << ',' << r.top
-        << " right/bottom=" << r.right << ',' << r.bottom;
+    d << "RECT(left=" << r.left << ", top=" << r.top
+        << ", right=" << r.right << ", bottom=" << r.bottom
+        << " (" << r.right - r.left << 'x' << r.bottom - r.top << "))";
     return d;
 }
 
@@ -148,12 +178,23 @@ QDebug operator<<(QDebug d, const POINT &p)
     return d;
 }
 
+QDebug operator<<(QDebug d, const WINDOWPOS &wp)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d.noquote();
+    d <<  "WINDOWPOS(flags=" << debugWinSwpPos(wp.flags) << ", hwnd="
+       << wp.hwnd << ", hwndInsertAfter=" << wp.hwndInsertAfter << ", x=" << wp.x
+       <<  ", y=" << wp.y << ", cx=" << wp.cx <<  ", cy=" << wp.cy << ')';
+    return d;
+}
+
 QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << "NCCALCSIZE_PARAMS " << qrectFromRECT(p.rgrc[0])
-        << ' ' << qrectFromRECT(p.rgrc[1]) << ' ' << qrectFromRECT(p.rgrc[2]);
+    d << "NCCALCSIZE_PARAMS(rgrc=[" << p.rgrc[0] << ' ' << p.rgrc[1] << ' '
+        << p.rgrc[2] << "], lppos=" << *p.lppos << ')';
     return d;
 }
 
@@ -173,6 +214,7 @@ QDebug operator<<(QDebug d, const WINDOWPLACEMENT &wp)
 {
     QDebugStateSaver saver(d);
     d.nospace();
+    d.noquote();
     d <<  "WINDOWPLACEMENT(flags=0x" << hex << wp.flags << dec << ", showCmd="
         << wp.showCmd << ", ptMinPosition=" << wp.ptMinPosition << ", ptMaxPosition=" << wp.ptMaxPosition
         << ", rcNormalPosition=" << wp.rcNormalPosition;

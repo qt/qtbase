@@ -357,6 +357,7 @@ QDebug operator<<(QDebug d, const POINT &);
 QDebug operator<<(QDebug d, const MINMAXINFO &i);
 QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p);
 QDebug operator<<(QDebug d, const WINDOWPLACEMENT &);
+QDebug operator<<(QDebug d, const WINDOWPOS &);
 #endif // !QT_NO_DEBUG_STREAM
 
 // ---------- QWindowsGeometryHint inline functions.
