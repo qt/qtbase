@@ -83,7 +83,7 @@
 
     Model/View is a technology used to separate data from views in widgets that
     handle data sets. Standard widgets are not designed for separating data
-    from views and this is why Qt 4 has two different types of widgets. Both
+    from views and this is why Qt has two different types of widgets. Both
     types of widgets look the same, but they interact with data differently.
 
     \table
