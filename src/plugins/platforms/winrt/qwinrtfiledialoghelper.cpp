@@ -195,8 +195,8 @@ static bool initializeOpenPickerOptions(T *picker, const QSharedPointer<QFileDia
     ComPtr<IVector<HSTRING>> filters;
     hr = picker->get_FileTypeFilter(&filters);
     RETURN_FALSE_IF_FAILED("Failed to get file type filters list");
-    foreach (const QString &namedFilter, options->nameFilters()) {
-        foreach (const QString &filter, QPlatformFileDialogHelper::cleanFilterList(namedFilter)) {
+    for (const QString &namedFilter : options->nameFilters()) {
+        for (const QString &filter : QPlatformFileDialogHelper::cleanFilterList(namedFilter)) {
             // Remove leading star
             const int offset = (filter.length() > 1 && filter.startsWith(QLatin1Char('*'))) ? 1 : 0;
             HStringReference filterRef(reinterpret_cast<const wchar_t *>(filter.utf16() + offset),
@@ -419,13 +419,15 @@ bool QWinRTFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
             ComPtr<IMap<HSTRING, IVector<HSTRING> *>> choices;
             hr = picker->get_FileTypeChoices(&choices);
             RETURN_FALSE_IF_FAILED("Failed to get file extension choices");
-            foreach (const QString &namedFilter, dialogOptions->nameFilters()) {
+            const QStringList nameFilters = dialogOptions->nameFilters();
+            for (const QString &namedFilter : nameFilters) {
                 ComPtr<IVector<HSTRING>> entry = Make<WindowsStringVector>();
-                foreach (const QString &filter, QPlatformFileDialogHelper::cleanFilterList(namedFilter)) {
+                const QStringList cleanFilter = QPlatformFileDialogHelper::cleanFilterList(namedFilter);
+                for (const QString &filter : cleanFilter) {
                     // Remove leading star
-                    const int offset = (filter.length() > 1 && filter.startsWith(QLatin1Char('*'))) ? 1 : 0;
-                    HStringReference filterRef(reinterpret_cast<const wchar_t *>(filter.utf16() + offset),
-                                               filter.length() - offset);
+                    const int starOffset = (filter.length() > 1 && filter.startsWith(QLatin1Char('*'))) ? 1 : 0;
+                    HStringReference filterRef(reinterpret_cast<const wchar_t *>(filter.utf16() + starOffset),
+                                               filter.length() - starOffset);
                     hr = entry->Append(filterRef.Get());
                     if (FAILED(hr)) {
                         qWarning("Failed to add named file filter \"%s\": %s",
