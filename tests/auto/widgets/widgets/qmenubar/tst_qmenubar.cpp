@@ -133,6 +133,7 @@ private slots:
 #ifdef Q_OS_MACOS
     void taskQTBUG56275_reinsertMenuInParentlessQMenuBar();
 #endif
+    void taskQTBUG55966_subMenuRemoved();
 
     void platformMenu();
 
@@ -1540,6 +1541,23 @@ void tst_QMenuBar::taskQTBUG56275_reinsertMenuInParentlessQMenuBar()
     QVERIFY(tst_qmenubar_taskQTBUG56275(&menubar));
 }
 #endif // Q_OS_MACOS
+
+void tst_QMenuBar::taskQTBUG55966_subMenuRemoved()
+{
+    QMainWindow window;
+    QMenuBar *menubar = window.menuBar();
+    QMenu *parentMenu = menubar->addMenu("Parent menu");
+
+    QAction *action = parentMenu->addAction("Action in parent menu");
+    QMenu *subMenu = new QMenu("Submenu");
+    action->setMenu(subMenu);
+    delete subMenu;
+
+    window.show();
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QTest::qWait(500);
+}
 
 QTEST_MAIN(tst_QMenuBar)
 #include "tst_qmenubar.moc"
