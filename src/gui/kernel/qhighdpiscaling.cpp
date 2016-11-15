@@ -342,8 +342,10 @@ static const char scaleFactorProperty[] = "_q_scaleFactor";
 */
 void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal factor)
 {
-    m_screenFactorSet = true;
-    m_active = true;
+    if (!qFuzzyCompare(factor, qreal(1))) {
+        m_screenFactorSet = true;
+        m_active = true;
+    }
     screen->setProperty(scaleFactorProperty, QVariant(factor));
 
     // hack to force re-evaluation of screen geometry

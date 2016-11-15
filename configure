@@ -3125,14 +3125,14 @@ if [ "$Edition" = "OpenSource" ]; then
     while true; do
         if [ "$CFG_ANDROID_STYLE_ASSETS" = "no" ] || [ "$XPLATFORM_ANDROID" = "no" ]; then
             echo "You are licensed to use this software under the terms of"
-            echo "the GNU Lesser General Public License (LGPL) versions 3."
+            echo "the GNU Lesser General Public License (LGPL) version 3."
             echo "You are also licensed to use this software under the terms of"
-            echo "the GNU General Public License (GPL) versions 2."
+            echo "the GNU General Public License (GPL) version 2."
             affix="either"
             showGPL2="yes"
         else
             echo "You are licensed to use this software under the terms of"
-            echo "the GNU Lesser General Public License (LGPL) versions 3."
+            echo "the GNU Lesser General Public License (LGPL) version 3."
             showGPL2="no"
             affix="the"
         fi

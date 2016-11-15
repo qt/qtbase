@@ -966,6 +966,19 @@ void QCocoaEventDispatcher::interrupt()
 void QCocoaEventDispatcher::flush()
 { }
 
+// QTBUG-56746: The behavior of processEvents() has been changed to not clear
+// the interrupt flag. Use this function to clear it.
+ void QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag()
+{
+    QCocoaEventDispatcher *cocoaEventDispatcher =
+            qobject_cast<QCocoaEventDispatcher *>(QThread::currentThread()->eventDispatcher());
+    if (!cocoaEventDispatcher)
+        return;
+    QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate =
+            static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
+    cocoaEventDispatcherPrivate->interrupt = false;
+}
+
 QCocoaEventDispatcher::~QCocoaEventDispatcher()
 {
     Q_D(QCocoaEventDispatcher);

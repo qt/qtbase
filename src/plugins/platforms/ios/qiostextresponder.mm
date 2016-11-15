@@ -625,7 +625,7 @@
 
 - (id<UITextInputTokenizer>)tokenizer
 {
-    return [[[UITextInputStringTokenizer alloc] initWithTextInput:id<UITextInput>(self)] autorelease];
+    return [[[UITextInputStringTokenizer alloc] initWithTextInput:self] autorelease];
 }
 
 - (UITextPosition *)beginningOfDocument

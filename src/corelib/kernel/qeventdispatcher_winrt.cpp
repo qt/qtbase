@@ -42,6 +42,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
 #include <QtCore/QHash>
+#include <QtCore/QMutex>
 #include <QtCore/qfunctions_winrt.h>
 #include <private/qabstracteventdispatcher_p.h>
 #include <private/qcoreapplication_p.h>
@@ -106,6 +107,7 @@ public:
 private:
     QHash<int, QObject *> timerIdToObject;
     QVector<WinRTTimerInfo> timerInfos;
+    mutable QMutex timerInfoLock;
     QHash<HANDLE, int> timerHandleToId;
     QHash<int, HANDLE> timerIdToHandle;
     QHash<int, HANDLE> timerIdToCancelHandle;
@@ -122,6 +124,7 @@ private:
         timerIdToObject.insert(id, obj);
         const quint64 targetTime = qt_msectime() + interval;
         const WinRTTimerInfo info(id, interval, type, obj, targetTime);
+        QMutexLocker locker(&timerInfoLock);
         if (id >= timerInfos.size())
             timerInfos.resize(id + 1);
         timerInfos[id] = info;
@@ -130,6 +133,7 @@ private:
 
     bool removeTimer(int id)
     {
+        QMutexLocker locker(&timerInfoLock);
         if (id >= timerInfos.size())
             return false;
 
@@ -253,14 +257,18 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
             if (timerId == INTERRUPT_HANDLE)
                 break;
 
-            WinRTTimerInfo &info = d->timerInfos[timerId];
-            Q_ASSERT(info.timerId != INVALID_TIMER_ID);
+            {
+                QMutexLocker locker(&d->timerInfoLock);
 
-            QCoreApplication::postEvent(this, new QTimerEvent(timerId));
+                WinRTTimerInfo &info = d->timerInfos[timerId];
+                Q_ASSERT(info.timerId != INVALID_TIMER_ID);
 
-            // Update timer's targetTime
-            const quint64 targetTime = qt_msectime() + info.interval;
-            info.targetTime = targetTime;
+                QCoreApplication::postEvent(this, new QTimerEvent(timerId));
+
+                // Update timer's targetTime
+                const quint64 targetTime = qt_msectime() + info.interval;
+                info.targetTime = targetTime;
+            }
             waitResult = WaitForMultipleObjectsEx(timerHandles.count(), timerHandles.constData(), FALSE, 0, TRUE);
         }
         emit awake();
@@ -428,6 +436,7 @@ QList<QAbstractEventDispatcher::TimerInfo> QEventDispatcherWinRT::registeredTime
     }
 
     Q_D(const QEventDispatcherWinRT);
+    QMutexLocker locker(&d->timerInfoLock);
     QList<TimerInfo> timerInfos;
     for (const WinRTTimerInfo &info : d->timerInfos) {
         if (info.object == object && info.timerId != INVALID_TIMER_ID)
@@ -459,6 +468,7 @@ int QEventDispatcherWinRT::remainingTime(int timerId)
     }
 
     Q_D(QEventDispatcherWinRT);
+    QMutexLocker locker(&d->timerInfoLock);
     const WinRTTimerInfo timerInfo = d->timerInfos.at(timerId);
     if (timerInfo.timerId == INVALID_TIMER_ID) {
 #ifndef QT_NO_DEBUG
@@ -507,6 +517,9 @@ bool QEventDispatcherWinRT::event(QEvent *e)
     case QEvent::Timer: {
         QTimerEvent *timerEvent = static_cast<QTimerEvent *>(e);
         const int id = timerEvent->timerId();
+
+        QMutexLocker locker(&d->timerInfoLock);
+
         Q_ASSERT(id < d->timerInfos.size());
         WinRTTimerInfo &info = d->timerInfos[id];
         Q_ASSERT(info.timerId != INVALID_TIMER_ID);
@@ -515,15 +528,15 @@ bool QEventDispatcherWinRT::event(QEvent *e)
             break;
         info.inEvent = true;
 
+        locker.unlock();
+
         QTimerEvent te(id);
         QCoreApplication::sendEvent(d->timerIdToObject.value(id), &te);
 
+        locker.relock();
+
         // The timer might have been removed in the meanwhile
         if (id >= d->timerInfos.size())
-            break;
-
-        info = d->timerInfos[id];
-        if (info.timerId == INVALID_TIMER_ID)
             break;
 
         if (info.interval == 0 && info.inEvent) {
