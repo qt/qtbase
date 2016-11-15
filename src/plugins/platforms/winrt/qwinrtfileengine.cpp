@@ -92,7 +92,7 @@ public:
         }
 
         firstDot = fileName.size();
-        for (int i = lastSeparator; i > fileName.size(); ++i) {
+        for (int i = lastSeparator; i < fileName.size(); ++i) {
             if (fileName.at(i).unicode() == '.') {
                 firstDot = i;
                 break;
