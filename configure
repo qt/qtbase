@@ -84,9 +84,8 @@ if [ x"$1" = x"-top-level" ]; then
     shift
 fi
 
-CFG_REDO=no
-OPT_CMDLINE=  # excluding -verbose (for config.opt)
-QMAKE_CMDLINE=  # including -verbose (for actual parsing)
+OPT_CMDLINE=  # expanded version for the script
+QMAKE_CMDLINE=  # verbatim version for qmake call
 set -f  # suppress globbing in for loop
 SAVED_IFS=$IFS
 IFS='
@@ -105,13 +104,7 @@ for i in "$@"; do
             for a in `cat $optfile`; do
                 OPT_CMDLINE="$OPT_CMDLINE
 $a"
-                QMAKE_CMDLINE="$QMAKE_CMDLINE
-$a"
             done
-            CFG_REDO=yes  # suppress repeated config.opt writeout
-            continue
-            ;;
-        -v|-verbose|--verbose|-no-v|-no-verbose|--no-verbose)
             ;;
         *)
             OPT_CMDLINE="$OPT_CMDLINE
@@ -122,7 +115,7 @@ $i"
 $i"
 done
 set --
-for i in $QMAKE_CMDLINE; do
+for i in $OPT_CMDLINE; do
     set -- "$@" "$i"
 done
 set +f
@@ -466,13 +459,11 @@ XPLATFORM_WATCHOS=no    # Whether target platform is watchOS
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 PLATFORM=
-OPT_CONFIRM_LICENSE=no
 OPT_SHADOW=maybe
 OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
 OPT_MAC_SDK=
-COMMERCIAL_USER=ask
 CFG_DEV=no
 
 # initalize variables used for installation
@@ -725,19 +716,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     developer-build)
         CFG_DEV="yes"
-        ;;
-    commercial)
-        COMMERCIAL_USER="yes"
-        ;;
-    opensource)
-        COMMERCIAL_USER="no"
-        ;;
-    confirm-license)
-        if [ "$VAL" = "yes" ]; then
-            OPT_CONFIRM_LICENSE="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
         ;;
     h|help)
         if [ "$VAL" = "yes" ]; then
@@ -1644,33 +1622,6 @@ if [ -n "$CFG_TOPLEVEL" ]; then
 fi
 
 "$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled" -- "$@" || exit
-
-#-------------------------------------------------------------------------------
-# finally save the executed command to another script
-#-------------------------------------------------------------------------------
-if [ $CFG_REDO = no ]; then
-    if [ "$COMMERCIAL_USER" = "ask" ]; then
-        if grep '^QT_EDITION = OpenSource$' "$outpath/mkspecs/qconfig.pri" >/dev/null 2>&1; then
-            OPT_CMDLINE="$OPT_CMDLINE
--opensource"
-        else
-            OPT_CMDLINE="$OPT_CMDLINE
--commercial"
-        fi
-    fi
-    if [ "$OPT_CONFIRM_LICENSE" = "no" ]; then
-        OPT_CMDLINE="$OPT_CMDLINE
--confirm-license"
-    fi
-
-    # skip first line, as it's always empty due to unconditional field separation
-    echo "$OPT_CMDLINE" | tail -n +2 > config.opt
-
-    [ -f "config.status" ] && rm -f config.status
-    echo "#!/bin/sh" > config.status
-    echo "$relpathMangled/$relconf -redo \"\$@\"" >> config.status
-    chmod +x config.status
-fi
 
 #-------------------------------------------------------------------------------
 # final notes for the user

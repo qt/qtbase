@@ -91,11 +91,14 @@ defineReplace(qtConfFunc_licenseCheck) {
                     val = $$lower($$prompt("Which edition of Qt do you want to use? ", false))
                     equals(val, c) {
                         commercial = yes
+                        QMAKE_SAVED_ARGS += -commercial
                     } else: equals(val, o) {
                         commercial = no
+                        QMAKE_SAVED_ARGS += -opensource
                     } else {
                         next()
                     }
+                    export(QMAKE_SAVED_ARGS)
                     break()
                 }
             } else {
@@ -206,6 +209,8 @@ defineReplace(qtConfFunc_licenseCheck) {
             val = $$lower($$prompt("Do you accept the terms of $$affix license? ", false))
             equals(val, y)|equals(val, yes) {
                 logn()
+                QMAKE_SAVED_ARGS += -confirm-license
+                export(QMAKE_SAVED_ARGS)
                 return(true)
             } else: equals(val, n)|equals(val, no) {
                 return(false)
@@ -722,3 +727,22 @@ discard_from($$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)
 QMAKE_POST_CONFIGURE += \
     "include(\$\$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)" \
     "include(\$\$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)"
+
+defineTest(createConfigStatus) {
+    $$QMAKE_REDO_CONFIG: return()
+    cfg = $$relative_path($$_PRO_FILE_PWD_/configure, $$OUT_PWD)
+    ext =
+    equals(QMAKE_HOST.os, Windows) {
+        ext = .bat
+        cont = \
+            "$$system_quote($$system_path($$cfg)$$ext) -redo %*"
+    } else {
+        cont = \
+            "$${LITERAL_HASH}!/bin/sh" \
+            "exec $$system_quote($$cfg) -redo \"$@\""
+    }
+    write_file($$OUT_PWD/config.status$$ext, cont, exe)|error()
+}
+
+QMAKE_POST_CONFIGURE += \
+    "createConfigStatus()"

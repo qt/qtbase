@@ -9,6 +9,8 @@
 
             "recheck": { "type": "void", "name": "cache_use", "value": "positive" },
             "recheck-all": { "type": "void", "name": "cache_use", "value": "none" },
+
+            "redo": { "type": "redo" }
         }
 
     },

@@ -63,7 +63,7 @@ private:
 
     // Our variable dictionaries
     QMap<QString,QString> dictionary;
-    QStringList configCmdLine;
+    QStringList configCmdLine, qmakeCmdLine;
 
     QString outputLine;
 
@@ -80,7 +80,6 @@ private:
     QString formatPath(const QString &path);
 
     bool reloadCmdLine(int idx);
-    void saveCmdLine();
 };
 
 class FileWriter : public QTextStream

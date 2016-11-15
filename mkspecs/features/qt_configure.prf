@@ -177,6 +177,17 @@ defineTest(qtConfCommandline_addString) {
     export(config.input.$$opt)
 }
 
+defineTest(qtConfCommandline_redo) {
+    !exists($$OUT_PWD/config.opt) {
+        qtConfAddError("No config.opt present - cannot redo configuration.")
+        return()
+    }
+    QMAKE_EXTRA_ARGS = $$cat($$OUT_PWD/config.opt, lines) $$QMAKE_EXTRA_ARGS
+    export(QMAKE_EXTRA_ARGS)
+    QMAKE_REDO_CONFIG = true
+    export(QMAKE_REDO_CONFIG)
+}
+
 defineTest(qtConfParseCommandLine) {
     customCalls =
     for (cc, allConfigs) {
@@ -1752,6 +1763,8 @@ for(ever) {
 for (currentConfig, allConfigs): \
     qtConfSetupLibraries()
 
+QMAKE_SAVED_ARGS = $$QMAKE_EXTRA_ARGS
+QMAKE_REDO_CONFIG = false
 qtConfParseCommandLine()
 
 !isEmpty(_QMAKE_SUPER_CACHE_): \
@@ -1829,12 +1842,16 @@ for (currentConfig, allConfigs) {
 !isEmpty(QT_CONFIGURE_SKIPPED_MODULES): \
     qtConfAddNote("The following modules are not being compiled in this configuration:" $$QT_CONFIGURE_SKIPPED_MODULES)
 
+logn("Done running configuration tests.")
+logn()
+
+!$$QMAKE_REDO_CONFIG {
+    write_file($$OUT_PWD/config.opt, QMAKE_SAVED_ARGS)|error()
+}
+
 # these come from the pri files loaded above.
 for (p, QMAKE_POST_CONFIGURE): \
     eval($$p)
-
-logn("Done running configuration tests.")
-logn()
 
 logn("Configure summary:")
 logn()

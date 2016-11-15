@@ -107,10 +107,6 @@ Configure::Configure(int& argc, char** argv)
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
 
-    dictionary[ "REDO" ]            = "no";
-
-    dictionary[ "BUILDTYPE" ]      = "none";
-
     QString tmp = dictionary[ "QMAKESPEC" ];
     if (tmp.contains("\\")) {
         tmp = tmp.mid(tmp.lastIndexOf("\\") + 1);
@@ -145,6 +141,7 @@ void Configure::parseCmdLine()
         sourcePathMangled = QFileInfo(sourcePath).path();
         buildPathMangled = QFileInfo(buildPath).path();
     }
+    qmakeCmdLine = configCmdLine;
 
     int argCount = configCmdLine.size();
     int i = 0;
@@ -152,7 +149,6 @@ void Configure::parseCmdLine()
     // Look first for -redo
     for (int k = 0 ; k < argCount; ++k) {
         if (configCmdLine.at(k) == "-redo") {
-            dictionary["REDO"] = "yes";
             configCmdLine.removeAt(k);
             if (!reloadCmdLine(k)) {
                 dictionary["DONE"] = "error";
@@ -178,13 +174,7 @@ void Configure::parseCmdLine()
     }
 
     for (; i<configCmdLine.size(); ++i) {
-        if (configCmdLine.at(i) == "-opensource") {
-            dictionary[ "BUILDTYPE" ] = "opensource";
-        }
-        else if (configCmdLine.at(i) == "-commercial") {
-            dictionary[ "BUILDTYPE" ] = "commercial";
-        }
-        else if (configCmdLine.at(i) == "-platform") {
+        if (configCmdLine.at(i) == "-platform") {
             ++i;
             if (i == argCount)
                 break;
@@ -206,10 +196,6 @@ void Configure::parseCmdLine()
 
         else if (configCmdLine.at(i) == "-no-syncqt")
             dictionary[ "SYNCQT" ] = "no";
-
-        else if (configCmdLine.at(i) == "-confirm-license") {
-            dictionary["LICENSE_CONFIRMED"] = "yes";
-        }
 
         // Directories ----------------------------------------------
         else if (configCmdLine.at(i) == "-prefix") {
@@ -871,7 +857,7 @@ void Configure::configure()
     QStringList args;
     args << buildPath + "/bin/qmake"
          << sourcePathMangled
-         << "--" << configCmdLine;
+         << "--" << qmakeCmdLine;
 
     QString pwd = QDir::currentPath();
     QDir::setCurrent(buildPathMangled);
@@ -880,9 +866,6 @@ void Configure::configure()
         dictionary[ "DONE" ] = "error";
     }
     QDir::setCurrent(pwd);
-
-    if ((dictionary["REDO"] != "yes") && (dictionary["DONE"] != "error"))
-        saveCmdLine();
 }
 
 bool Configure::reloadCmdLine(int idx)
@@ -902,35 +885,6 @@ bool Configure::reloadCmdLine(int idx)
         while (!inStream.atEnd())
             configCmdLine.insert(idx++, inStream.readLine().trimmed());
         return true;
-}
-
-void Configure::saveCmdLine()
-{
-    if (dictionary[ "REDO" ] != "yes") {
-        if (dictionary["BUILDTYPE"] == "none") {
-            bool openSource = false;
-            QFile inFile(buildPath + "/mkspecs/qconfig.pri");
-            if (inFile.open(QFile::ReadOnly | QFile::Text)) {
-                QTextStream inStream(&inFile);
-                while (!inStream.atEnd()) {
-                    if (inStream.readLine() == "QT_EDITION = OpenSource")
-                        openSource = true;
-                }
-            }
-            configCmdLine.append(openSource ? "-opensource" : "-commercial");
-        }
-        if (dictionary["LICENSE_CONFIRMED"] != "yes")
-            configCmdLine.append("-confirm-license");
-        QFile outFile(buildPathMangled + "/config.opt");
-        if (outFile.open(QFile::WriteOnly | QFile::Text)) {
-            QTextStream outStream(&outFile);
-            for (QStringList::Iterator it = configCmdLine.begin(); it != configCmdLine.end(); ++it) {
-                outStream << (*it) << endl;
-            }
-            outStream.flush();
-            outFile.close();
-        }
-    }
 }
 
 bool Configure::isDone()
