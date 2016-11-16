@@ -305,9 +305,13 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     }
 
     // physical size from connector < config values < env vars
-    static const int width = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_WIDTH");
-    static const int height = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_HEIGHT");
-    QSizeF physSize(width, height);
+    int pwidth = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_WIDTH");
+    if (!pwidth)
+        pwidth = qEnvironmentVariableIntValue("QT_QPA_PHYSICAL_WIDTH");
+    int pheight = qEnvironmentVariableIntValue("QT_QPA_EGLFS_PHYSICAL_HEIGHT");
+    if (!pheight)
+        pheight = qEnvironmentVariableIntValue("QT_QPA_PHYSICAL_HEIGHT");
+    QSizeF physSize(pwidth, pheight);
     if (physSize.isEmpty()) {
         physSize = QSize(userConnectorConfig.value(QStringLiteral("physicalWidth")).toInt(),
                          userConnectorConfig.value(QStringLiteral("physicalHeight")).toInt());
@@ -492,9 +496,12 @@ QKmsScreenConfig::QKmsScreenConfig()
 
 void QKmsScreenConfig::loadConfig()
 {
-    static QByteArray json = qgetenv("QT_QPA_EGLFS_KMS_CONFIG");
-    if (json.isEmpty())
-        return;
+    QByteArray json = qgetenv("QT_QPA_EGLFS_KMS_CONFIG");
+    if (json.isEmpty()) {
+        json = qgetenv("QT_QPA_KMS_CONFIG");
+        if (json.isEmpty())
+            return;
+    }
 
     qCDebug(qLcKmsDebug) << "Loading KMS setup from" << json;
 
