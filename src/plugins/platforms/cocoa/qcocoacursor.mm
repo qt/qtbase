@@ -62,7 +62,7 @@ QCocoaCursor::~QCocoaCursor()
 
 void QCocoaCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
-    NSCursor * cocoaCursor = convertCursor(cursor);
+    NSCursor *cocoaCursor = convertCursor(cursor);
 
     if (QPlatformWindow * platformWindow = window->handle())
         static_cast<QCocoaWindow *>(platformWindow)->setWindowCursor(cocoaCursor);
@@ -84,9 +84,12 @@ void QCocoaCursor::setPos(const QPoint &position)
     CFRelease(e);
 }
 
-NSCursor *QCocoaCursor::convertCursor(QCursor * cursor)
+NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
 {
-    const Qt::CursorShape newShape = cursor ? cursor->shape() : Qt::ArrowCursor;
+    if (cursor == Q_NULLPTR)
+        return 0;
+
+    const Qt::CursorShape newShape = cursor->shape();
     NSCursor *cocoaCursor;
 
     // Check for a suitable built-in NSCursor first:

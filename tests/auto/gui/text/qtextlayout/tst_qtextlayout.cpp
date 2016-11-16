@@ -134,6 +134,7 @@ private slots:
     void xToCursorForLigatures();
     void cursorInNonStopChars();
     void nbsp();
+    void nbspWithFormat();
     void noModificationOfInputString();
     void superscriptCrash_qtbug53911();
 
@@ -2252,6 +2253,42 @@ void tst_QTextLayout::superscriptCrash_qtbug53911()
     }
 
     qDeleteAll(textLayouts);
+}
+
+void tst_QTextLayout::nbspWithFormat()
+{
+    QString s1 = QLatin1String("ABCDEF ");
+    QString s2 = QLatin1String("GHI");
+    QChar nbsp(QChar::Nbsp);
+    QString s3 = QLatin1String("JKLMNOPQRSTUVWXYZ");
+
+    QTextLayout layout;
+    layout.setText(s1 + s2 + nbsp + s3);
+
+    QTextLayout::FormatRange formatRange;
+    formatRange.start = s1.length() + s2.length();
+    formatRange.length = 1;
+    formatRange.format.setFontUnderline(true);
+
+    QList<QTextLayout::FormatRange> overrides;
+    overrides.append(formatRange);
+
+    layout.setAdditionalFormats(overrides);
+
+    layout.beginLayout();
+    forever {
+        QTextLine line = layout.createLine();
+        if (!line.isValid())
+            break;
+        line.setLineWidth(1);
+    }
+    layout.endLayout();
+
+    QCOMPARE(layout.lineCount(), 2);
+    QCOMPARE(layout.lineAt(0).textStart(), 0);
+    QCOMPARE(layout.lineAt(0).textLength(), s1.length());
+    QCOMPARE(layout.lineAt(1).textStart(), s1.length());
+    QCOMPARE(layout.lineAt(1).textLength(), s2.length() + 1 + s3.length());
 }
 
 QTEST_MAIN(tst_QTextLayout)

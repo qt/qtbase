@@ -662,10 +662,10 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
     if (d->socketType != QAbstractSocket::TcpSocket)
         return -1;
 
-    QMutexLocker mutexLocker(&d->readMutex);
     // There will be a read notification when the socket was closed by the remote host. If that
     // happens and there isn't anything left in the buffer, we have to return -1 in order to signal
     // the closing of the socket.
+    QMutexLocker mutexLocker(&d->readMutex);
     if (d->readBytes.pos() == d->readBytes.size() && d->socketState != QAbstractSocket::ConnectedState) {
         close();
         return -1;

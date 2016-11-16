@@ -53,6 +53,7 @@
 #include "qt_mac_p.h"
 #include "qcocoahelpers.h"
 #include "qcocoamenubar.h"
+#include "qcocoaeventdispatcher.h"
 #include <qregexp.h>
 #include <qbuffer.h>
 #include <qdebug.h>
@@ -250,6 +251,10 @@ static QString strippedText(QString s)
     // cleanup of modal sessions. Do this before showing the native dialog, otherwise it will
     // close down during the cleanup.
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
+
+    // Make sure we don't interrupt the runModal call below.
+    QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
+
     QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder();
     mReturnCode = [mSavePanel runModal];
     QCocoaMenuBar::resetKnownMenuItemsToQt();

@@ -65,7 +65,7 @@
         actool_output_files = $$system(\
                 mkdir -p $$system_quote($$QMAKE_ASSET_CATALOGS_BUILD_PATH) && \
                 /usr/libexec/PlistBuddy -c \'Print :com.apple.actool.compilation-results:output-files\' \
-                    /dev/stdin <<< $($${asset_catalog_compiler.commands} 2>/dev/null) | grep \'^    .*$\', lines)
+                    /dev/stdin <<< $($${asset_catalog_compiler.commands} 2>/dev/null) | sed -Ene \'s/^ +//p\', lines)
 
         for (output_file, actool_output_files) {
             !equals(output_file, $$asset_catalog_compiler.target): \
