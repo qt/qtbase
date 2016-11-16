@@ -83,7 +83,7 @@ struct QtEglConverter<uint32_t, uintptr_t>
     { return v; }
 };
 
-#if Q_PROCESSOR_WORDSIZE > 4
+#if QT_POINTER_SIZE > 4
 template <>
 struct QtEglConverter<uintptr_t, uint32_t>
 {

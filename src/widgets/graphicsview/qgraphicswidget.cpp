@@ -1456,6 +1456,7 @@ bool QGraphicsWidget::event(QEvent *event)
     case QEvent::GraphicsSceneMousePress:
         if (d->hasDecoration() && windowFrameEvent(event))
             return true;
+        break;
     case QEvent::GraphicsSceneMouseMove:
     case QEvent::GraphicsSceneMouseRelease:
     case QEvent::GraphicsSceneMouseDoubleClick:
