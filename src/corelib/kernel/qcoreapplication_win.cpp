@@ -67,43 +67,33 @@ int appCmdShow = 0;
 
 Q_CORE_EXPORT QString qAppFileName()                // get application file name
 {
-    // We do MAX_PATH + 2 here, and request with MAX_PATH + 1, so we can handle all paths
-    // up to, and including MAX_PATH size perfectly fine with string termination, as well
-    // as easily detect if the file path is indeed larger than MAX_PATH, in which case we
-    // need to use the heap instead. This is a work-around, since contrary to what the
-    // MSDN documentation states, GetModuleFileName sometimes doesn't set the
-    // ERROR_INSUFFICIENT_BUFFER error number, and we thus cannot rely on this value if
-    // GetModuleFileName(0, buffer, MAX_PATH) == MAX_PATH.
-    // GetModuleFileName(0, buffer, MAX_PATH + 1) == MAX_PATH just means we hit the normal
-    // file path limit, and we handle it normally, if the result is MAX_PATH + 1, we use
-    // heap (even if the result _might_ be exactly MAX_PATH + 1, but that's ok).
-    wchar_t buffer[MAX_PATH + 2];
-    DWORD v = GetModuleFileName(0, buffer, MAX_PATH + 1);
-    buffer[MAX_PATH + 1] = 0;
-
-    if (v == 0)
-        return QString();
-    else if (v <= MAX_PATH)
-        return QString::fromWCharArray(buffer);
-
-    // MAX_PATH sized buffer wasn't large enough to contain the full path, use heap
-    wchar_t *b = 0;
-    int i = 1;
-    size_t size;
+    /*
+      GetModuleFileName() returns the length of the module name, when it has
+      space to store it and 0-terminate; this return is necessarily smaller than
+      the buffer size, as it doesn't include the terminator. When it lacks
+      space, the function returns the full size of the buffer and fills the
+      buffer, truncating the full path to make it fit. We have reports that
+      GetModuleFileName sometimes doesn't set the error number to
+      ERROR_INSUFFICIENT_BUFFER, as claimed by the MSDN documentation; so we
+      only trust the answer when the return is actually less than the buffer
+      size we pass in. (When truncating, except on XP, it does so by enough to
+      still have space to 0-terminate; in either case, it fills the claimed
+      space and returns the size of the space. While XP might thus give us the
+      full name, without a 0 terminator, and return its actual length, we can
+      never be sure that's what's happened until a later call with bigger buffer
+      confirms it by returning less than its buffer size.)
+    */
+    // Full path may be longer than MAX_PATH - expand until we have enough space:
+    QVarLengthArray<wchar_t, MAX_PATH + 1> space;
+    DWORD v;
+    size_t size = 1;
     do {
-        ++i;
-        size = MAX_PATH * i;
-        b = reinterpret_cast<wchar_t *>(realloc(b, (size + 1) * sizeof(wchar_t)));
-        if (b)
-            v = GetModuleFileName(NULL, b, DWORD(size));
-    } while (b && v == size);
+        size += MAX_PATH;
+        space.resize(int(size));
+        v = GetModuleFileName(NULL, space.data(), DWORD(space.size()));
+    } while (Q_UNLIKELY(v >= size));
 
-    if (b)
-        *(b + size) = 0;
-    QString res = QString::fromWCharArray(b);
-    free(b);
-
-    return res;
+    return QString::fromWCharArray(space.data(), v);
 }
 
 QString QCoreApplicationPrivate::appName() const
