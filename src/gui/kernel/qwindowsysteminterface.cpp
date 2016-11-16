@@ -207,17 +207,17 @@ bool QWindowSystemEventHandler::sendEvent(QWindowSystemInterfacePrivate::WindowS
     until sendWindowSystemEvents() is called by the event dispatcher.
 */
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleEnterEvent, QWindow *tlw, const QPointF &local, const QPointF &global)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleEnterEvent, QWindow *window, const QPointF &local, const QPointF &global)
 {
-    if (tlw) {
-        QWindowSystemInterfacePrivate::EnterEvent *e = new QWindowSystemInterfacePrivate::EnterEvent(tlw, local, global);
+    if (window) {
+        QWindowSystemInterfacePrivate::EnterEvent *e = new QWindowSystemInterfacePrivate::EnterEvent(window, local, global);
         QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
     }
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleLeaveEvent, QWindow *tlw)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleLeaveEvent, QWindow *window)
 {
-    QWindowSystemInterfacePrivate::LeaveEvent *e = new QWindowSystemInterfacePrivate::LeaveEvent(tlw);
+    QWindowSystemInterfacePrivate::LeaveEvent *e = new QWindowSystemInterfacePrivate::LeaveEvent(window);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
@@ -234,24 +234,24 @@ void QWindowSystemInterface::handleEnterLeaveEvent(QWindow *enter, QWindow *leav
     handleEnterEvent(enter, local, global);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowActivated, QWindow *tlw, Qt::FocusReason r)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowActivated, QWindow *window, Qt::FocusReason r)
 {
     QWindowSystemInterfacePrivate::ActivatedWindowEvent *e =
-        new QWindowSystemInterfacePrivate::ActivatedWindowEvent(tlw, r);
+        new QWindowSystemInterfacePrivate::ActivatedWindowEvent(window, r);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-void QWindowSystemInterface::handleWindowStateChanged(QWindow *tlw, Qt::WindowState newState)
+void QWindowSystemInterface::handleWindowStateChanged(QWindow *window, Qt::WindowState newState)
 {
     QWindowSystemInterfacePrivate::WindowStateChangedEvent *e =
-        new QWindowSystemInterfacePrivate::WindowStateChangedEvent(tlw, newState);
+        new QWindowSystemInterfacePrivate::WindowStateChangedEvent(window, newState);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleWindowScreenChanged(QWindow *tlw, QScreen *screen)
+void QWindowSystemInterface::handleWindowScreenChanged(QWindow *window, QScreen *screen)
 {
     QWindowSystemInterfacePrivate::WindowScreenChangedEvent *e =
-        new QWindowSystemInterfacePrivate::WindowScreenChangedEvent(tlw, screen);
+        new QWindowSystemInterfacePrivate::WindowScreenChangedEvent(window, screen);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -266,9 +266,9 @@ void QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState 
 /*!
   If \a oldRect is null, Qt will use the previously reported geometry instead.
  */
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleGeometryChange, QWindow *tlw, const QRect &newRect, const QRect &oldRect)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleGeometryChange, QWindow *window, const QRect &newRect, const QRect &oldRect)
 {
-    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw, QHighDpi::fromNativePixels(newRect, tlw), QHighDpi::fromNativePixels(oldRect, tlw));
+    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(window, QHighDpi::fromNativePixels(newRect, window), QHighDpi::fromNativePixels(oldRect, window));
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
@@ -280,18 +280,18 @@ QWindowSystemInterfacePrivate::ExposeEvent::ExposeEvent(QWindow *window, const Q
 {
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleExposeEvent, QWindow *tlw, const QRegion &region)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleExposeEvent, QWindow *window, const QRegion &region)
 {
     QWindowSystemInterfacePrivate::ExposeEvent *e =
-        new QWindowSystemInterfacePrivate::ExposeEvent(tlw, QHighDpi::fromNativeLocalExposedRegion(region, tlw));
+        new QWindowSystemInterfacePrivate::ExposeEvent(window, QHighDpi::fromNativeLocalExposedRegion(region, window));
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-void QWindowSystemInterface::handleCloseEvent(QWindow *tlw, bool *accepted)
+void QWindowSystemInterface::handleCloseEvent(QWindow *window, bool *accepted)
 {
-    if (tlw) {
+    if (window) {
         QWindowSystemInterfacePrivate::CloseEvent *e =
-                new QWindowSystemInterfacePrivate::CloseEvent(tlw, accepted);
+                new QWindowSystemInterfacePrivate::CloseEvent(window, accepted);
         QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
     }
 }
@@ -383,15 +383,15 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *w, QEvent::Type t, in
     return handleKeyEvent<Delivery>(w, time, t, k, mods, text, autorep, count);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *window, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
 #if defined(Q_OS_OSX)
-    if (t == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(tlw, timestamp, k, mods, 0, 0, 0, text, autorep, count))
+    if (t == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(window, timestamp, k, mods, 0, 0, 0, text, autorep, count))
         return true;
 #endif
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
-            new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
+            new QWindowSystemInterfacePrivate::KeyEvent(window, timestamp, t, k, mods, text, autorep, count);
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
@@ -406,7 +406,7 @@ bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *w, QEvent::Type typ
                            text, autorep, count, tryShortcutOverride);
 }
 
-bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type type, int key,
+bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *window, ulong timestamp, QEvent::Type type, int key,
                                                     Qt::KeyboardModifiers modifiers,
                                                     quint32 nativeScanCode, quint32 nativeVirtualKey,
                                                     quint32 nativeModifiers,
@@ -414,7 +414,7 @@ bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
                                                     ushort count, bool tryShortcutOverride)
 {
 #if defined(Q_OS_OSX)
-    if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(tlw,
+    if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::handleShortcutEvent(window,
             timestamp, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count)) {
         return true;
     }
@@ -423,7 +423,7 @@ bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
 #endif
 
     QWindowSystemInterfacePrivate::KeyEvent * e =
-            new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, type, key, modifiers,
+            new QWindowSystemInterfacePrivate::KeyEvent(window, timestamp, type, key, modifiers,
                 nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
@@ -440,10 +440,10 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local,
     handleWheelEvent(w, time, local, global, d, o, mods);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
 {
     QPoint point = (o == Qt::Vertical) ? QPoint(0, d) : QPoint(d, 0);
-    handleWheelEvent(tlw, timestamp, local, global, QPoint(), point, mods);
+    handleWheelEvent(window, timestamp, local, global, QPoint(), point, mods);
 }
 
 void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource source)
@@ -452,7 +452,7 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local,
     handleWheelEvent(w, time, local, global, pixelDelta, angleDelta, mods, phase, source);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase,
+void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase,
                                               Qt::MouseEventSource source, bool invertedScrolling)
 {
     // Qt 4 sends two separate wheel events for horizontal and vertical
@@ -471,7 +471,7 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
 
     // Simple case: vertical deltas only:
     if (angleDelta.y() != 0 && angleDelta.x() == 0) {
-        e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, QHighDpi::fromNativeLocalPosition(local, tlw), QHighDpi::fromNativePixels(global, tlw), pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical,
+        e = new QWindowSystemInterfacePrivate::WheelEvent(window, timestamp, QHighDpi::fromNativeLocalPosition(local, window), QHighDpi::fromNativePixels(global, window), pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical,
                                                           mods, phase, source, invertedScrolling);
         QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
         return;
@@ -479,7 +479,7 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
 
     // Simple case: horizontal deltas only:
     if (angleDelta.y() == 0 && angleDelta.x() != 0) {
-        e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, QHighDpi::fromNativeLocalPosition(local, tlw), QHighDpi::fromNativePixels(global, tlw), pixelDelta, angleDelta, angleDelta.x(), Qt::Horizontal, mods, phase, source, invertedScrolling);
+        e = new QWindowSystemInterfacePrivate::WheelEvent(window, timestamp, QHighDpi::fromNativeLocalPosition(local, window), QHighDpi::fromNativePixels(global, window), pixelDelta, angleDelta, angleDelta.x(), Qt::Horizontal, mods, phase, source, invertedScrolling);
         QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
         return;
     }
@@ -487,12 +487,12 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
     // Both horizontal and vertical deltas: Send two wheel events.
     // The first event contains the Qt 5 pixel and angle delta as points,
     // and in addition the Qt 4 compatibility vertical angle delta.
-    e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, QHighDpi::fromNativeLocalPosition(local, tlw), QHighDpi::fromNativePixels(global, tlw), pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical, mods, phase, source, invertedScrolling);
+    e = new QWindowSystemInterfacePrivate::WheelEvent(window, timestamp, QHighDpi::fromNativeLocalPosition(local, window), QHighDpi::fromNativePixels(global, window), pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical, mods, phase, source, invertedScrolling);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 
     // The second event contains null pixel and angle points and the
     // Qt 4 compatibility horizontal angle delta.
-    e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, QHighDpi::fromNativeLocalPosition(local, tlw), QHighDpi::fromNativePixels(global, tlw), QPoint(), QPoint(), angleDelta.x(), Qt::Horizontal, mods, phase, source, invertedScrolling);
+    e = new QWindowSystemInterfacePrivate::WheelEvent(window, timestamp, QHighDpi::fromNativeLocalPosition(local, window), QHighDpi::fromNativePixels(global, window), QPoint(), QPoint(), angleDelta.x(), Qt::Horizontal, mods, phase, source, invertedScrolling);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -625,7 +625,7 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *w, QTouchDevice *de
     handleTouchEvent<Delivery>(w, time, device, points, mods);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *tlw, ulong timestamp, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *window, ulong timestamp, QTouchDevice *device,
                                               const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     if (!points.size()) // Touch events must have at least one point
@@ -636,10 +636,10 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *tlw, ulong timestam
 
     QEvent::Type type;
     QList<QTouchEvent::TouchPoint> touchPoints =
-            QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, tlw, QTouchDevicePrivate::get(device)->id, &type);
+            QWindowSystemInterfacePrivate::fromNativeTouchPoints(points, window, QTouchDevicePrivate::get(device)->id, &type);
 
     QWindowSystemInterfacePrivate::TouchEvent *e =
-            new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, device, touchPoints, mods);
+            new QWindowSystemInterfacePrivate::TouchEvent(window, timestamp, type, device, touchPoints, mods);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
@@ -687,9 +687,9 @@ void QWindowSystemInterface::handleScreenRefreshRateChange(QScreen *screen, qrea
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleThemeChange(QWindow *tlw)
+void QWindowSystemInterface::handleThemeChange(QWindow *window)
 {
-    QWindowSystemInterfacePrivate::ThemeChangeEvent *e = new QWindowSystemInterfacePrivate::ThemeChangeEvent(tlw);
+    QWindowSystemInterfacePrivate::ThemeChangeEvent *e = new QWindowSystemInterfacePrivate::ThemeChangeEvent(window);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 

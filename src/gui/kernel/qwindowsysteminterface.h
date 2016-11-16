@@ -161,7 +161,7 @@ public:
 
     // region is in local coordinates, do not confuse with geometry which is parent-relative
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static void handleExposeEvent(QWindow *tlw, const QRegion &region);
+    static void handleExposeEvent(QWindow *window, const QRegion &region);
 
     static void handleCloseEvent(QWindow *w, bool *accepted = Q_NULLPTR);
 
@@ -192,7 +192,7 @@ public:
     static void handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal newDpiX, qreal newDpiY);
     static void handleScreenRefreshRateChange(QScreen *screen, qreal newRefreshRate);
 
-    static void handleThemeChange(QWindow *tlw);
+    static void handleThemeChange(QWindow *window);
 
     static void handleFileOpenEvent(const QString& fileName);
     static void handleFileOpenEvent(const QUrl &url);

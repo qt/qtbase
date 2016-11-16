@@ -2196,10 +2196,10 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
 
 void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)
 {
-    if (e->tlw.isNull())
+    if (e->window.isNull())
        return;
 
-    QWindow *window = e->tlw.data();
+    QWindow *window = e->window.data();
     if (!window)
         return;
 
