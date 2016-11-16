@@ -1273,6 +1273,12 @@ void QWindowsWindow::updateTransientParent() const
         if (const QWindowsWindow *tw = QWindowsWindow::windowsWindowOf(tp))
             if (!tw->testFlag(WithinDestroy)) // Prevent destruction by parent window (QTBUG-35499, QTBUG-36666)
                 newTransientParent = tw->handle();
+
+    // QTSOLBUG-71: When using the MFC/winmigrate solution, it is possible that a child
+    // window is found, which can cause issues with modality. Loop up to top level.
+    while (newTransientParent && (GetWindowLongPtr(newTransientParent, GWL_STYLE) & WS_CHILD) != 0)
+        newTransientParent = GetParent(newTransientParent);
+
     if (newTransientParent != oldTransientParent)
         SetWindowLongPtr(m_data.hwnd, GWL_HWNDPARENT, LONG_PTR(newTransientParent));
 }
