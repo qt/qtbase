@@ -117,34 +117,6 @@ Configure::Configure(int& argc, char** argv)
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
 
-    QString version;
-    QFile qmake_conf(sourcePath + "/.qmake.conf");
-    if (qmake_conf.open(QFile::ReadOnly)) {
-        while (!qmake_conf.atEnd()) {
-            static const char beginning[] = "MODULE_VERSION = ";
-            QByteArray line = qmake_conf.readLine();
-            if (!line.startsWith(beginning))
-                continue;
-
-            version = qMove(line).mid(int(strlen(beginning))).trimmed();
-            break;
-        }
-        qmake_conf.close();
-    }
-
-    if (version.isEmpty())
-        version = QString("%1.%2.%3").arg(QT_VERSION>>16).arg(((QT_VERSION>>8)&0xff)).arg(QT_VERSION&0xff);
-
-    dictionary[ "VERSION" ]         = version;
-    {
-        QRegExp version_re("([0-9]*)\\.([0-9]*)\\.([0-9]*)(|-.*)");
-        if (version_re.exactMatch(version)) {
-            dictionary[ "VERSION_MAJOR" ] = version_re.cap(1);
-            dictionary[ "VERSION_MINOR" ] = version_re.cap(2);
-            dictionary[ "VERSION_PATCH" ] = version_re.cap(3);
-        }
-    }
-
     dictionary[ "REDO" ]            = "no";
 
     dictionary[ "BUILDTYPE" ]      = "none";
@@ -604,7 +576,7 @@ void Configure::generateHeaders()
             QStringList args;
             args << "perl" << "-w";
             args += sourcePath + "/bin/syncqt.pl";
-            args << "-version" << dictionary["VERSION"] << "-minimal" << "-module" << "QtCore";
+            args << "-version" << QT_VERSION_STR << "-minimal" << "-module" << "QtCore";
             args += sourcePath;
             int retc = Environment::execute(args, QStringList(), QStringList());
             if (retc) {
@@ -860,10 +832,10 @@ void Configure::buildQmake()
                     << "INC_PATH = " << QDir::toNativeSeparators(
                            (QFile::exists(sourcePath + "/.git") ? ".." : sourcePath)
                            + "/include") << endl;
-                stream << "QT_VERSION = " << dictionary["VERSION"] << endl
-                       << "QT_MAJOR_VERSION = " << dictionary["VERSION_MAJOR"] << endl
-                       << "QT_MINOR_VERSION = " << dictionary["VERSION_MINOR"] << endl
-                       << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
+                stream << "QT_VERSION = " QT_VERSION_STR << endl
+                       << "QT_MAJOR_VERSION = " QT_STRINGIFY(QT_VERSION_MAJOR) << endl
+                       << "QT_MINOR_VERSION = " QT_STRINGIFY(QT_VERSION_MINOR) << endl
+                       << "QT_PATCH_VERSION = " QT_STRINGIFY(QT_VERSION_PATCH) << endl;
                 if (dictionary[ "QMAKESPEC" ].startsWith("win32-g++")) {
                     stream << "QMAKESPEC = $(SOURCE_PATH)\\mkspecs\\" << dictionary[ "QMAKESPEC" ] << endl
                            << "CONFIG_CXXFLAGS = -std=c++11 -ffunction-sections" << endl
