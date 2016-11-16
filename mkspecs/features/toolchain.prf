@@ -80,7 +80,23 @@ else: \
 
 isEmpty($${target_prefix}.COMPILER_MACROS) {
     msvc {
-        vars = $$qtVariablesFromMSVC($$QMAKE_CXX $$QMAKE_CXXFLAGS)
+        clang_cl {
+            # We need to obtain the cl.exe version first
+            vars = $$qtVariablesFromMSVC(cl)
+            for (v, vars) {
+                isEmpty(v)|contains(v, $${LITERAL_HASH}.*): next()
+                eval($$v)
+            }
+            isEmpty(QMAKE_MSC_FULL_VER): error("Could not determine the Visual Studio version")
+
+            QMAKE_CFLAGS_MSVC_COMPAT = $$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", \
+                                                 "-fms-compatibility-version=\\1.\\2.\\3")
+            cache($${target_prefix}.QMAKE_CFLAGS_MSVC_COMPAT, set stash, QMAKE_CFLAGS_MSVC_COMPAT)
+            $${target_prefix}.COMPILER_MACROS += QMAKE_CFLAGS_MSVC_COMPAT
+            vars = $$qtVariablesFromMSVC($$QMAKE_CXX, $$QMAKE_CFLAGS_MSVC_COMPAT)
+        } else {
+            vars = $$qtVariablesFromMSVC($$QMAKE_CXX)
+        }
     } else: gcc {
         vars = $$qtVariablesFromGCC($$QMAKE_CXX)
     }
@@ -134,3 +150,6 @@ unset(target_prefix)
         __GNUC__=$$QT_GCC_MAJOR_VERSION \
         __GNUC_MINOR__=$$QT_GCC_MINOR_VERSION \
         __GNUC_PATCHLEVEL__=$$QT_GCC_PATCH_VERSION
+
+QMAKE_CFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
+QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
