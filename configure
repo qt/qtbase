@@ -283,23 +283,6 @@ getQMakeConf()
     getSingleQMakeVariable "$1" "$specvals"
 }
 
-resolveDeviceMkspec()
-{
-    result=$(find "$relpath/mkspecs/devices/" -type d -name "*$1*" | sed "s,^$relpath/mkspecs/,,")
-    match_count=$(echo "$result" | wc -w)
-    if [ "$match_count" -gt 1 ]; then
-        echo >&2 "Error: Multiple matches for device '$1'. Candidates are:"
-        tabbed_result=$(echo "$result" | sed 's,^,    ,')
-        echo >&2 "$tabbed_result"
-        echo "undefined"
-    elif [ "$match_count" -eq 0 ]; then
-        echo >&2 "Error: No device matching '$1'"
-        echo "undefined"
-    else
-        echo "$result"
-    fi
-}
-
 #-------------------------------------------------------------------------------
 # operating system detection
 #-------------------------------------------------------------------------------
@@ -366,14 +349,6 @@ unset QTDIR
 
 # initalize internal variables
 CFG_RELEASE_TOOLS=no
-
-XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
-XPLATFORM_MAC=no        # Whether target platform is macOS, iOS, tvOS, or watchOS
-XPLATFORM_IOS=no        # Whether target platform is iOS
-XPLATFORM_TVOS=no       # Whether target platform is tvOS
-XPLATFORM_WATCHOS=no    # Whether target platform is watchOS
-XPLATFORM_ANDROID=no
-XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 PLATFORM=
 OPT_SHADOW=maybe
 OPT_VERBOSE=no
@@ -502,13 +477,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     platform)
         PLATFORM="$VAL"
-        ;;
-    xplatform)
-        XPLATFORM="$VAL"
-        ;;
-    device)
-        XPLATFORM=`resolveDeviceMkspec $VAL`
-        [ "$XPLATFORM" = "undefined" ] && exit 101
         ;;
     optimized-qmake|optimized-tools)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -711,44 +679,6 @@ if [ -z "$PLATFORM" ]; then
     esac
 fi
 
-[ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
-
-case "$XPLATFORM" in
-    *win32-g++*)
-        XPLATFORM_MINGW=yes
-        ;;
-    *qnx-*)
-        ;;
-    *haiku-*)
-        ;;
-    *ios*)
-        XPLATFORM_MAC=yes
-        XPLATFORM_IOS=yes
-        ;;
-    *tvos*)
-        XPLATFORM_MAC=yes
-        XPLATFORM_TVOS=yes
-        ;;
-    *watchos*)
-        XPLATFORM_MAC=yes
-        XPLATFORM_WATCHOS=yes
-        ;;
-    *macx*)
-        XPLATFORM_MAC=yes
-        ;;
-    *integrity*)
-        ;;
-    # XPLATFORM_ANDROID should not be set for unsupported/android-g++
-    *unsupported*)
-        ;;
-    *android-g++*)
-        XPLATFORM_ANDROID=g++
-        ;;
-    *android-clang*)
-        XPLATFORM_ANDROID=clang
-        ;;
-esac
-
 #-------------------------------------------------------------------------------
 # command line and environment validation
 #-------------------------------------------------------------------------------
@@ -758,14 +688,9 @@ if [ -d "$PLATFORM" ]; then
 else
   QMAKESPEC="$relpath/mkspecs/${PLATFORM}"
 fi
-if [ -d "$XPLATFORM" ]; then
-  XQMAKESPEC="$XPLATFORM"
-else
-  XQMAKESPEC="$relpath/mkspecs/${XPLATFORM}"
-fi
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
-   if [ `basename $QMAKESPEC` = "macx-xcode" ] || [ `basename $XQMAKESPEC` = "macx-xcode" ]; then
+   if [ `basename $QMAKESPEC` = "macx-xcode" ]; then
       echo >&2
       echo "   Platform 'macx-xcode' should not be used when building Qt/Mac." >&2
       echo "   Please build Qt/Mac with 'macx-clang' or 'macx-g++', then use" >&2
@@ -784,26 +709,6 @@ if [ '!' -d "$QMAKESPEC" ]; then
     echo "      $QMAKESPEC"
     echo
     echo "   Please see the README file for a complete list."
-    echo
-    exit 2
-fi
-if [ '!' -d "$XQMAKESPEC" ]; then
-    echo
-    echo "   The specified system/compiler is not supported:"
-    echo
-    echo "      $XQMAKESPEC"
-    echo
-    echo "   Please see the README file for a complete list."
-    echo
-    exit 2
-fi
-if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
-    echo
-    echo "   The specified system/compiler port is not complete:"
-    echo
-    echo "      $XQMAKESPEC/qplatformdefs.h"
-    echo
-    echo "   Please information use the contact form at http://www.qt.io/contact-us"
     echo
     exit 2
 fi
@@ -980,7 +885,7 @@ cat > "$QTCONFFILE" <<EOF
 [EffectivePaths]
 Prefix=..
 [Paths]
-TargetSpec=$XPLATFORM
+TargetSpec=dummy
 HostSpec=$PLATFORM
 EOF
 if [ x"$relpath" != x"$outpath" ]; then

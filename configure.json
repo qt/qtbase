@@ -423,7 +423,7 @@
 
     "features": {
         "prepare": {
-            "output": [ "prepareOptions", "preparePaths" ]
+            "output": [ "prepareSpec", "prepareOptions", "preparePaths" ]
         },
         "machineTuple": {
             "condition": "!config.linux || config.android || tests.machineTuple",
@@ -983,6 +983,11 @@
     },
 
     "earlyReport": [
+        {
+            "type": "fatal",
+            "condition": "input.xplatform != '' && input.device != ''",
+            "message": "Cannot specify both -xplatform and -device."
+        },
         {
             "condition": "!features.prepare",
             "comment": "This is not an actual report - instead, it activates the early setup."

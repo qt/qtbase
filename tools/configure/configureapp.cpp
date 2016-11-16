@@ -130,20 +130,6 @@ void Configure::parseCmdLine()
         }
     }
 
-    // Then look for XQMAKESPEC
-    bool isDeviceMkspec = false;
-    for (int j = 0 ; j < argCount; ++j)
-    {
-        if ((configCmdLine.at(j) == "-xplatform") || (configCmdLine.at(j) == "-device")) {
-            isDeviceMkspec = (configCmdLine.at(j) == "-device");
-            ++j;
-            if (j == argCount)
-                break;
-            dictionary["XQMAKESPEC"] = configCmdLine.at(j);
-            break;
-        }
-    }
-
     for (; i<configCmdLine.size(); ++i) {
         if (configCmdLine.at(i) == "-platform") {
             ++i;
@@ -151,10 +137,6 @@ void Configure::parseCmdLine()
                 break;
             dictionary[ "QMAKESPEC" ] = configCmdLine.at(i);
         dictionary[ "QMAKESPEC_FROM" ] = "commandline";
-        } else if (configCmdLine.at(i) == "-xplatform"
-                || configCmdLine.at(i) == "-device") {
-            ++i;
-            // do nothing
         }
 
         else if (configCmdLine.at(i) == "-no-syncqt")
@@ -205,34 +187,6 @@ void Configure::parseCmdLine()
         } else {
             if (dictionary[ "MAKE" ].isEmpty()) dictionary[ "MAKE" ] = "make";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
-        }
-    }
-
-    if (isDeviceMkspec) {
-        const QStringList devices = mkspecs.filter("devices/", Qt::CaseInsensitive);
-        const QStringList family = devices.filter(dictionary["XQMAKESPEC"], Qt::CaseInsensitive);
-
-        if (family.isEmpty()) {
-            dictionary[ "DONE" ] = "error";
-            cout << "Error: No device matching '" << dictionary["XQMAKESPEC"] << "'." << endl;
-        } else if (family.size() > 1) {
-            dictionary[ "DONE" ] = "error";
-
-            cout << "Error: Multiple matches for device '" << dictionary["XQMAKESPEC"] << "'. Candidates are:" << endl;
-
-            foreach (const QString &device, family)
-                cout << "\t* " << device << endl;
-        } else {
-            Q_ASSERT(family.size() == 1);
-            dictionary["XQMAKESPEC"] = family.at(0);
-        }
-
-    } else {
-        // Ensure that -spec (XQMAKESPEC) exists in the mkspecs folder as well
-        if (dictionary.contains("XQMAKESPEC") &&
-                !mkspecs.contains(dictionary["XQMAKESPEC"], Qt::CaseInsensitive)) {
-            dictionary[ "DONE" ] = "error";
-            cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
         }
     }
 }
@@ -361,8 +315,7 @@ void Configure::buildQmake()
         confStream << "[EffectivePaths]" << endl
                    << "Prefix=.." << endl
                    << "[Paths]" << endl
-                   << "TargetSpec=" << (dictionary.contains("XQMAKESPEC")
-                                        ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"]) << endl
+                   << "TargetSpec=dummy" << endl
                    << "HostSpec=" << dictionary["QMAKESPEC"] << endl;
         if (sourcePath != buildPath)
             confStream << "[EffectiveSourcePaths]" << endl

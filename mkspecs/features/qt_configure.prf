@@ -1768,6 +1768,14 @@ QMAKE_SAVED_ARGS = $$QMAKE_EXTRA_ARGS
 QMAKE_REDO_CONFIG = false
 qtConfParseCommandLine()
 
+for (currentConfig, allConfigs) {
+    qtConfSetModuleName()
+    qtConfSetupModuleOutputs()
+    # do early checks, mainly to validate the command line
+    qtConfProcessEarlyChecks()
+}
+qtConfCheckErrors()
+
 !isEmpty(_QMAKE_SUPER_CACHE_): \
     QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_SUPER_CACHE_)/config.cache
 else: \
@@ -1789,14 +1797,6 @@ equals(QMAKE_CONFIG_CACHE_USE, none) {
 QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
 !equals(QMAKE_CONFIG_CACHE_USE, all): \
     write_file($$QMAKE_CONFIG_LOG, "")
-
-for (currentConfig, allConfigs) {
-    qtConfSetModuleName()
-    qtConfSetupModuleOutputs()
-    # do early checks, mainly to validate the command line
-    qtConfProcessEarlyChecks()
-}
-qtConfCheckErrors()
 
 CONFIG += qt_conf_tests_allowed
 logn()

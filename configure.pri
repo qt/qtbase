@@ -476,6 +476,37 @@ defineTest(reloadSpec) {
     }
 }
 
+defineTest(qtConfOutput_prepareSpec) {
+    device = $$eval(config.input.device)
+    !isEmpty(device) {
+        devices = $$files($$[QT_HOST_DATA/src]/mkspecs/devices/*$$device*)
+        isEmpty(devices): \
+            qtConfFatalError("No device matching '$$device'.")
+        !count(devices, 1) {
+            err = "Multiple matches for device '$$device'. Candidates are:"
+            for (d, devices): \
+                err += "    $$basename(d)"
+            qtConfFatalError($$err)
+        }
+        XSPEC = $$relative_path($$devices, $$[QT_HOST_DATA/src]/mkspecs)
+    }
+    xspec = $$eval(config.input.xplatform)
+    !isEmpty(xspec) {
+        !exists($$[QT_HOST_DATA/src]/mkspecs/$$xspec/qmake.conf): \
+            qtConfFatalError("Invalid target platform '$$xspec'.")
+        XSPEC = $$xspec
+    }
+    isEmpty(XSPEC): \
+        XSPEC = $$[QMAKE_SPEC]
+    export(XSPEC)
+    QMAKESPEC = $$[QT_HOST_DATA/src]/mkspecs/$$XSPEC
+    export(QMAKESPEC)
+
+    # deviceOptions() below contains conditionals coming form the spec,
+    # so this cannot be delayed for a batch reload.
+    reloadSpec()
+}
+
 defineTest(qtConfOutput_prepareOptions) {
     $${currentConfig}.output.devicePro += \
         $$replace(config.input.device-option, "^([^=]+) *= *(.*)$", "\\1 = \\2")
@@ -649,7 +680,7 @@ defineReplace(printHostPaths) {
         $$printInstallPath(HostLibraries, hostlibdir, lib) \
         $$printInstallPath(HostData, hostdatadir, .) \
         "Sysroot=$$config.input.sysroot" \
-        "TargetSpec=$$[QMAKE_XSPEC]" \
+        "TargetSpec=$$XSPEC" \
         "HostSpec=$$[QMAKE_SPEC]"
     return($$ret)
 }
