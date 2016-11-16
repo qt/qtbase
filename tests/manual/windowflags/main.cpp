@@ -27,13 +27,21 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QStringList>
 
 #include "controllerwindow.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    QStringList arguments = QCoreApplication::arguments();
+    arguments.pop_front();
+
     ControllerWindow controller;
+    if (!arguments.contains(QLatin1String("-l")))
+        LogWidget::install();
+    if (!arguments.contains(QLatin1String("-e")))
+        controller.registerEventFilter();
     controller.show();
     return app.exec();
 }
