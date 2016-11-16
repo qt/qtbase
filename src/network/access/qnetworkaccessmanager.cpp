@@ -1599,7 +1599,7 @@ void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
         QObject::disconnect(networkSession.data(), SIGNAL(closed()), q, SLOT(_q_networkSessionClosed()));
         QObject::disconnect(networkSession.data(), SIGNAL(stateChanged(QNetworkSession::State)),
             q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)));
-        QObject::disconnect(networkSessionStrongRef.data(), SIGNAL(error(QNetworkSession::SessionError)),
+        QObject::disconnect(networkSession.data(), SIGNAL(error(QNetworkSession::SessionError)),
                             q, SLOT(_q_networkSessionFailed(QNetworkSession::SessionError)));
 
         networkSessionStrongRef.clear();
