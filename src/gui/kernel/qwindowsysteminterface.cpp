@@ -301,35 +301,35 @@ void QWindowSystemInterface::handleCloseEvent(QWindow *window, bool *accepted)
 \a w == 0 means that the event is in global coords only, \a local will be ignored in this case
 
 */
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
                                               Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleMouseEvent<Delivery>(w, time, local, global, b, mods, source);
+    handleMouseEvent<Delivery>(window, time, local, global, b, mods, source);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
                                               Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
-        new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp, QHighDpi::fromNativeLocalPosition(local, w), QHighDpi::fromNativePixels(global, w), b, mods, source);
+        new QWindowSystemInterfacePrivate::MouseEvent(window, timestamp, QHighDpi::fromNativeLocalPosition(local, window), QHighDpi::fromNativePixels(global, window), b, mods, source);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
                                                         Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleFrameStrutMouseEvent(w, time, local, global, b, mods, source);
+    handleFrameStrutMouseEvent(window, time, local, global, b, mods, source);
 }
 
-void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
                                                         Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
-            new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp,
+            new QWindowSystemInterfacePrivate::MouseEvent(window, timestamp,
                                                           QWindowSystemInterfacePrivate::FrameStrutMouse,
-                                                          QHighDpi::fromNativeLocalPosition(local, w), QHighDpi::fromNativePixels(global, w), b, mods, source);
+                                                          QHighDpi::fromNativeLocalPosition(local, window), QHighDpi::fromNativePixels(global, window), b, mods, source);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -378,9 +378,9 @@ bool QWindowSystemInterface::handleShortcutEvent(QWindow *window, ulong timestam
 #endif
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count) {
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *window, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    return handleKeyEvent<Delivery>(w, time, t, k, mods, text, autorep, count);
+    return handleKeyEvent<Delivery>(window, time, t, k, mods, text, autorep, count);
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *window, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
@@ -395,14 +395,14 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleKeyEvent, QWindow *window, ulong timesta
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *window, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                                     quint32 nativeScanCode, quint32 nativeVirtualKey,
                                                     quint32 nativeModifiers,
                                                     const QString& text, bool autorep,
                                                     ushort count, bool tryShortcutOverride)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    return handleExtendedKeyEvent(w, time, type, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers,
+    return handleExtendedKeyEvent(window, time, type, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers,
                            text, autorep, count, tryShortcutOverride);
 }
 
@@ -428,16 +428,16 @@ bool QWindowSystemInterface::handleExtendedKeyEvent(QWindow *window, ulong times
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global, QPoint pixelD,
+QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *window, ulong time, const QPointF &local, const QPointF &global, QPoint pixelD,
         QPoint angleD, int qt4D, Qt::Orientation qt4O, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource src, bool inverted)
-    : InputEvent(w, time, Wheel, mods), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D),
+    : InputEvent(window, time, Wheel, mods), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D),
       qt4Orientation(qt4O), localPos(local), globalPos(global), phase(phase), source(src), inverted(inverted)
 {
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods) {
+void QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleWheelEvent(w, time, local, global, d, o, mods);
+    handleWheelEvent(window, time, local, global, d, o, mods);
 }
 
 void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
@@ -446,10 +446,10 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, 
     handleWheelEvent(window, timestamp, local, global, QPoint(), point, mods);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource source)
+void QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource source)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleWheelEvent(w, time, local, global, pixelDelta, angleDelta, mods, phase, source);
+    handleWheelEvent(window, time, local, global, pixelDelta, angleDelta, mods, phase, source);
 }
 
 void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase,
@@ -618,11 +618,11 @@ QList<QWindowSystemInterface::TouchPoint>
     return newList;
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *w, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *window, QTouchDevice *device,
                                               const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTouchEvent<Delivery>(w, time, device, points, mods);
+    handleTouchEvent<Delivery>(window, time, device, points, mods);
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *window, ulong timestamp, QTouchDevice *device,
@@ -643,18 +643,18 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchEvent, QWindow *window, ulong times
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchCancelEvent, QWindow *w, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchCancelEvent, QWindow *window, QTouchDevice *device,
                                                     Qt::KeyboardModifiers mods)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTouchCancelEvent<Delivery>(w, time, device, mods);
+    handleTouchCancelEvent<Delivery>(window, time, device, mods);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchCancelEvent, QWindow *w, ulong timestamp, QTouchDevice *device,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleTouchCancelEvent, QWindow *window, ulong timestamp, QTouchDevice *device,
                                                     Qt::KeyboardModifiers mods)
 {
     QWindowSystemInterfacePrivate::TouchEvent *e =
-            new QWindowSystemInterfacePrivate::TouchEvent(w, timestamp, QEvent::TouchCancel, device,
+            new QWindowSystemInterfacePrivate::TouchEvent(window, timestamp, QEvent::TouchCancel, device,
                                                          QList<QTouchEvent::TouchPoint>(), mods);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
@@ -694,14 +694,14 @@ void QWindowSystemInterface::handleThemeChange(QWindow *window)
 }
 
 #ifndef QT_NO_DRAGANDDROP
-QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
+QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *window, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrag(w, dropData, QHighDpi::fromNativeLocalPosition(p, w) ,supportedActions);
+    return QGuiApplicationPrivate::processDrag(window, dropData, QHighDpi::fromNativeLocalPosition(p, window) ,supportedActions);
 }
 
-QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
+QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *window, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrop(w, dropData, QHighDpi::fromNativeLocalPosition(p, w),supportedActions);
+    return QGuiApplicationPrivate::processDrop(window, dropData, QHighDpi::fromNativeLocalPosition(p, window),supportedActions);
 }
 #endif // QT_NO_DRAGANDDROP
 
@@ -734,45 +734,45 @@ void QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(boo
     platformSynthesizesMouse = v;
 }
 
-void QWindowSystemInterface::handleTabletEvent(QWindow *w, ulong timestamp, const QPointF &local, const QPointF &global,
+void QWindowSystemInterface::handleTabletEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global,
                                                int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                                Qt::KeyboardModifiers modifiers)
 {
     QWindowSystemInterfacePrivate::TabletEvent *e =
-        new QWindowSystemInterfacePrivate::TabletEvent(w,timestamp,
-                                                       QHighDpi::fromNativeLocalPosition(local, w),
-                                                       QHighDpi::fromNativePixels(global, w),
+        new QWindowSystemInterfacePrivate::TabletEvent(window, timestamp,
+                                                       QHighDpi::fromNativeLocalPosition(local, window),
+                                                       QHighDpi::fromNativePixels(global, window),
                                                        device, pointerType, buttons, pressure,
                                                        xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleTabletEvent(QWindow *w, const QPointF &local, const QPointF &global,
+void QWindowSystemInterface::handleTabletEvent(QWindow *window, const QPointF &local, const QPointF &global,
                                                int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                                Qt::KeyboardModifiers modifiers)
 {
     ulong time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTabletEvent(w, time, local, global, device, pointerType, buttons, pressure,
+    handleTabletEvent(window, time, local, global, device, pointerType, buttons, pressure,
                       xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
 }
 
-void QWindowSystemInterface::handleTabletEvent(QWindow *w, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
+void QWindowSystemInterface::handleTabletEvent(QWindow *window, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
                                                int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                                Qt::KeyboardModifiers modifiers)
 {
-    handleTabletEvent(w, timestamp, local, global, device, pointerType, (down ? Qt::LeftButton : Qt::NoButton), pressure,
+    handleTabletEvent(window, timestamp, local, global, device, pointerType, (down ? Qt::LeftButton : Qt::NoButton), pressure,
                       xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
 }
 
-void QWindowSystemInterface::handleTabletEvent(QWindow *w, bool down, const QPointF &local, const QPointF &global,
+void QWindowSystemInterface::handleTabletEvent(QWindow *window, bool down, const QPointF &local, const QPointF &global,
                                                int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                                Qt::KeyboardModifiers modifiers)
 {
-    handleTabletEvent(w, local, global, device, pointerType, (down ? Qt::LeftButton : Qt::NoButton), pressure,
+    handleTabletEvent(window, local, global, device, pointerType, (down ? Qt::LeftButton : Qt::NoButton), pressure,
                       xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
 }
 
@@ -839,12 +839,12 @@ void QWindowSystemInterface::handlePlatformPanelEvent(QWindow *w)
 }
 
 #ifndef QT_NO_CONTEXTMENU
-void QWindowSystemInterface::handleContextMenuEvent(QWindow *w, bool mouseTriggered,
+void QWindowSystemInterface::handleContextMenuEvent(QWindow *window, bool mouseTriggered,
                                                     const QPoint &pos, const QPoint &globalPos,
                                                     Qt::KeyboardModifiers modifiers)
 {
     QWindowSystemInterfacePrivate::ContextMenuEvent *e =
-            new QWindowSystemInterfacePrivate::ContextMenuEvent(w, mouseTriggered, pos,
+            new QWindowSystemInterfacePrivate::ContextMenuEvent(window, mouseTriggered, pos,
                                                                 globalPos, modifiers);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
@@ -956,15 +956,15 @@ int QWindowSystemInterface::windowSystemEventsQueued()
 // The following functions are used by testlib, and need to be synchronous to avoid
 // race conditions with plugins delivering native events from secondary threads.
 
-Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp)
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp)
 {
-    const qreal factor = QHighDpiScaling::factor(w);
-    QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(w, timestamp, local * factor, global * factor, b, mods);
+    const qreal factor = QHighDpiScaling::factor(window);
+    QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(window, timestamp, local * factor, global * factor, b, mods);
 }
 
-Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
+Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *window, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
 {
-    QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(w, t, k, mods, text, autorep, count);
+    QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(window, t, k, mods, text, autorep, count);
 }
 
 Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
@@ -1015,12 +1015,12 @@ namespace QTest
     }
 }
 
-Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
+Q_GUI_EXPORT void qt_handleTouchEvent(QWindow *window, QTouchDevice *device,
                                 const QList<QTouchEvent::TouchPoint> &points,
                                 Qt::KeyboardModifiers mods = Qt::NoModifier)
 {
-    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(w, device,
-        QWindowSystemInterfacePrivate::toNativeTouchPoints(points, w), mods);
+    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(window, device,
+        QWindowSystemInterfacePrivate::toNativeTouchPoints(points, window), mods);
 }
 
 
