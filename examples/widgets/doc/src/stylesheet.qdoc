@@ -31,6 +31,7 @@
     \ingroup examples-widgets
     \brief The Style Sheet Example shows how to use style sheets.
 
-    \image stylesheet-pagefold.png Screen Shot of the Pagefold style sheet
+    \borderedimage stylesheet-pagefold.png
+    \caption Screen Shot of the Pagefold style sheet
 */
 

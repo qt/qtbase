@@ -43,7 +43,8 @@
     The example also demonstrates how signals and slots can be used to
     synchronize the behavior of two or more widgets.
 
-    \image sliders-example.png Screenshot of the Sliders example
+    \borderedimage sliders-example.png
+    \caption Screenshot of the Sliders example
 
     The Sliders example consists of two classes:
 

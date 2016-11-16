@@ -31,7 +31,7 @@
     \ingroup examples-widgets
     \brief The Calendar Widget example shows use of QCalendarWidget.
 
-    \image calendarwidgetexample.png
+    \borderedimage calendarwidgetexample.png
 
     QCalendarWidget displays one calendar month
     at a time and lets the user select a date.

@@ -31,7 +31,7 @@
     \ingroup examples-widgets
     \brief The Tetrix example is a Qt version of the classic Tetrix game.
 
-    \image tetrix-example.png
+    \borderedimage tetrix-example.png
 
     The object of the game is to stack pieces dropped from the top of the
     playing area so that they fill entire rows at the bottom of the playing area.

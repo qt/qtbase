@@ -32,7 +32,8 @@
     \brief The System Tray Icon example shows how to add an icon with a menu
     and popup messages to a desktop environment's system tray.
 
-    \image systemtray-example.png Screenshot of the System Tray Icon.
+    \borderedimage systemtray-example.png
+    \caption Screenshot of the System Tray Icon
 
     Modern operating systems usually provide a special area on the
     desktop, called the system tray or notification area, where
@@ -42,7 +43,7 @@
     the main application window (i.e., an editor for the system tray
     icon) and the associated icon.
 
-    \image systemtray-editor.png
+    \borderedimage systemtray-editor.png
 
     The editor allows the user to choose the preferred icon as well as
     set the balloon message's type and duration. The user can also

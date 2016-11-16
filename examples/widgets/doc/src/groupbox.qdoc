@@ -40,7 +40,7 @@
     Group boxes are usually used to organize check boxes and radio
     buttons into exclusive groups.
 
-    \image groupbox-example.png
+    \borderedimage groupbox-example.png
 
     The Group Boxes example consists of a single \c Window class that
     is used to show four group boxes: an exclusive radio button group,

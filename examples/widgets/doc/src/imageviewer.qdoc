@@ -44,7 +44,8 @@
     can be used to implement zooming and scaling features. In
     addition the example shows how to use QPainter to print an image.
 
-    \image imageviewer-example.png Screenshot of the Image Viewer example
+    \borderedimage imageviewer-example.png
+    \caption Screenshot of the Image Viewer example
 
     With the Image Viewer application, the users can view an image of
     their choice. The \uicontrol File menu gives the user the possibility

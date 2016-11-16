@@ -32,7 +32,7 @@
     \brief The Shaped Clock example shows how to apply a widget mask to a top-level
     widget to produce a shaped window.
 
-    \image shapedclock-example.png
+    \borderedimage shapedclock-example.png
 
     Widget masks are used to customize the shapes of top-level widgets by restricting
     the available area for painting. On some window systems, setting certain window flags

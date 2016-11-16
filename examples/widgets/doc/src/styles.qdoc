@@ -32,7 +32,8 @@
     \brief The Styles example illustrates how to create custom widget
     drawing styles using Qt, and demonstrates Qt's predefined styles.
 
-    \image styles-enabledwood.png Screenshot of the Styles example
+    \borderedimage styles-enabledwood.png
+    \caption Screenshot of the Styles example
 
     A style in Qt is a subclass of QStyle or of one of its
     subclasses. Styles perform drawing on behalf of widgets. Qt
