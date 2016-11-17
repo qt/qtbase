@@ -186,7 +186,7 @@ qtConfig(gui) {
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl
         }
-        !wince:!winrt {
+        !wince {
             SUBDIRS += src_printsupport
             src_plugins.depends += src_printsupport
         }
