@@ -107,12 +107,9 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "QT_INSTALL_PREFIX" ] = installPath;
 
-    dictionary[ "QMAKESPEC" ] = getenv("QMAKESPEC");
     if (dictionary[ "QMAKESPEC" ].size() == 0) {
         dictionary[ "QMAKESPEC" ] = Environment::detectQMakeSpec();
         dictionary[ "QMAKESPEC_FROM" ] = "detected";
-    } else {
-        dictionary[ "QMAKESPEC_FROM" ] = "env";
     }
 
     dictionary[ "SYNCQT" ]          = "auto";
@@ -481,12 +478,9 @@ void Configure::parseCmdLine()
         dictionary[ "DONE" ] = "error";
         if (dictionary ["QMAKESPEC_FROM"] == "commandline") {
             cout << "Invalid option \"" << dictionary["QMAKESPEC"] << "\" for -platform." << endl;
-        } else if (dictionary ["QMAKESPEC_FROM"] == "env") {
-            cout << "QMAKESPEC environment variable is set to \"" << dictionary["QMAKESPEC"]
-                 << "\" which is not a supported platform" << endl;
         } else { // was autodetected from environment
             cout << "Unable to detect the platform from environment. Use -platform command line" << endl
-                 << "argument or set the QMAKESPEC environment variable and run configure again." << endl;
+                 << "argument and run configure again." << endl;
         }
         cout << "See the README file for a list of supported operating systems and compilers." << endl;
     } else {
