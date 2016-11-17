@@ -50,10 +50,8 @@
 
 #include "view.h"
 
-#ifndef QT_NO_PRINTER
 #include <QPrinter>
 #include <QPrintDialog>
-#endif
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
 #else
