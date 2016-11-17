@@ -84,18 +84,38 @@ class QTornOffMenu : public QMenu
     Q_OBJECT
     class QTornOffMenuPrivate : public QMenuPrivate
     {
-        Q_DECLARE_PUBLIC(QMenu)
+        Q_DECLARE_PUBLIC(QTornOffMenu)
     public:
-        QTornOffMenuPrivate(QMenu *p) : causedMenu(p) {
+        QTornOffMenuPrivate(QMenu *p) : causedMenu(p), initialized(false) {
             tornoff = 1;
             causedPopup.widget = 0;
-            causedPopup.action = ((QTornOffMenu*)p)->d_func()->causedPopup.action;
-            causedStack = ((QTornOffMenu*)p)->d_func()->calcCausedStack();
+            causedPopup.action = p->d_func()->causedPopup.action;
+            causedStack = p->d_func()->calcCausedStack();
         }
+
+        void setMenuSize(const QSize &menuSize) {
+            Q_Q(QTornOffMenu);
+            QSize size = menuSize;
+            const QPoint p = (!initialized) ? causedMenu->pos() : q->pos();
+            QRect screen = popupGeometry(QApplication::desktop()->screenNumber(p));
+            const int desktopFrame = q->style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, q);
+            const int titleBarHeight = q->style()->pixelMetric(QStyle::PM_TitleBarHeight, 0, q);
+            if (scroll && (size.height() > screen.height() - titleBarHeight || size.width() > screen.width())) {
+                const int fw = q->style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
+                const int hmargin = q->style()->pixelMetric(QStyle::PM_MenuHMargin, 0, q);
+                scroll->scrollFlags |= uint(QMenuPrivate::QMenuScroller::ScrollDown);
+                size.setWidth(qMin(actionRects.at(getLastVisibleAction()).right() + fw + hmargin + rightmargin + 1, screen.width()));
+                size.setHeight(screen.height() - desktopFrame * 2 - titleBarHeight);
+            }
+            q->setFixedSize(size);
+        }
+
         QVector<QPointer<QWidget> > calcCausedStack() const Q_DECL_OVERRIDE { return causedStack; }
         QPointer<QMenu> causedMenu;
         QVector<QPointer<QWidget> > causedStack;
+        bool initialized;
     };
+
 public:
     QTornOffMenu(QMenu *p) : QMenu(*(new QTornOffMenuPrivate(p)))
     {
@@ -109,11 +129,20 @@ public:
         setAttribute(Qt::WA_X11NetWmWindowTypeMenu, true);
         setWindowTitle(p->windowTitle());
         setEnabled(p->isEnabled());
+        setStyleSheet(p->styleSheet());
+        if (style() != p->style())
+            setStyle(p->style());
+        int leftMargin, topMargin, rightMargin, bottomMargin;
+        p->getContentsMargins(&leftMargin, &topMargin, &rightMargin, &bottomMargin);
+        setContentsMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+        setLayoutDirection(p->layoutDirection());
         //QObject::connect(this, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
         //QObject::connect(this, SIGNAL(hovered(QAction*)), this, SLOT(onHovered(QAction*)));
         QList<QAction*> items = p->actions();
         for(int i = 0; i < items.count(); i++)
             addAction(items.at(i));
+        d->setMenuSize(sizeHint());
+        d->initialized = true;
     }
     void syncWithMenu(QMenu *menu, QActionEvent *act)
     {
@@ -127,12 +156,17 @@ public:
     }
     void actionEvent(QActionEvent *e) Q_DECL_OVERRIDE
     {
+        Q_D(QTornOffMenu);
         QMenu::actionEvent(e);
-        setFixedSize(sizeHint());
+        if (d->initialized) {
+            d->setMenuSize(sizeHint());
+        }
     }
+
 public slots:
     void onTrigger(QAction *action) { d_func()->activateAction(action, QAction::Trigger, false); }
     void onHovered(QAction *action) { d_func()->activateAction(action, QAction::Hover, false); }
+
 private:
     Q_DECLARE_PRIVATE(QTornOffMenu)
     friend class QMenuPrivate;
@@ -369,9 +403,11 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
     }
 
     max_column_width += tabWidth; //finally add in the tab width
-    const int sfcMargin = style->sizeFromContents(QStyle::CT_Menu, &opt, QApplication::globalStrut(), q).width() - QApplication::globalStrut().width();
-    const int min_column_width = q->minimumWidth() - (sfcMargin + leftmargin + rightmargin + 2 * (fw + hmargin));
-    max_column_width = qMax(min_column_width, max_column_width);
+    if (!tornoff || (tornoff && scroll)) { // exclude non-scrollable tear-off menu since the tear-off menu has a fixed size
+        const int sfcMargin = style->sizeFromContents(QStyle::CT_Menu, &opt, QApplication::globalStrut(), q).width() - QApplication::globalStrut().width();
+        const int min_column_width = q->minimumWidth() - (sfcMargin + leftmargin + rightmargin + 2 * (fw + hmargin));
+        max_column_width = qMax(min_column_width, max_column_width);
+    }
 
     //calculate position
     int x = hmargin + fw + leftmargin;
@@ -3512,7 +3548,6 @@ void QMenu::actionEvent(QActionEvent *e)
     }
 
     if (isVisible()) {
-        d->updateActionRects();
         resize(sizeHint());
         update();
     }

@@ -130,6 +130,8 @@ private slots:
     void QTBUG_56917_wideSubmenuScreenNumber();
     void menuSize_Scrolling_data();
     void menuSize_Scrolling();
+    void tearOffMenuNotDisplayed();
+
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -1554,6 +1556,41 @@ void tst_QMenu::menuSize_Scrolling()
                  menu.width() - mm.fw - mm.hmargin - leftMargin - 1);
     QCOMPARE(menu.actionGeometry(actions.last()).bottom(),
              menu.height() - mm.fw - mm.vmargin - bottomMargin - 1);
+}
+
+void tst_QMenu::tearOffMenuNotDisplayed()
+{
+    QWidget widget;
+    QScopedPointer<QMenu> menu(new QMenu(&widget));
+    menu->setTearOffEnabled(true);
+    QVERIFY(menu->isTearOffEnabled());
+
+    menu->setStyleSheet("QMenu { menu-scrollable: 1 }");
+    for (int i = 0; i < 80; i++)
+        menu->addAction(QString::number(i));
+
+    widget.resize(300, 200);
+    centerOnScreen(&widget);
+    widget.show();
+    widget.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+    menu->popup(widget.geometry().topRight() + QPoint(50, 0));
+    QVERIFY(QTest::qWaitForWindowActive(menu.data()));
+    QVERIFY(!menu->isTearOffMenuVisible());
+
+    MenuMetrics mm(menu.data());
+    const int tearOffOffset = mm.fw + mm.vmargin + mm.tearOffHeight / 2;
+
+    QTest::mouseClick(menu.data(), Qt::LeftButton, 0, QPoint(10, tearOffOffset), 10);
+    QTRY_VERIFY(menu->isTearOffMenuVisible());
+    QPointer<QMenu> torn = getTornOffMenu();
+    QVERIFY(torn);
+    QVERIFY(torn->isVisible());
+    QVERIFY(torn->minimumWidth() >=0 && torn->minimumWidth() < QWIDGETSIZE_MAX);
+
+    menu->hideTearOffMenu();
+    QVERIFY(!menu->isTearOffMenuVisible());
+    QVERIFY(!torn->isVisible());
 }
 
 QTEST_MAIN(tst_QMenu)
