@@ -52,7 +52,6 @@ public:
 
     void generateHeaders();
     void generateQDevicePri();
-    void prepareConfigTests();
 
     bool isDone();
     bool isOk();

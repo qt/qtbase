@@ -452,11 +452,6 @@ fi
 # initalize variables
 #-------------------------------------------------------------------------------
 
-# Use CC/CXX to run config.tests
-mkdir -p "$outpath/config.tests"
-rm -f "$outpath/config.tests/.qmake.cache"
-: > "$outpath/config.tests/.qmake.cache"
-
 # QTDIR may be set and point to an old or system-wide Qt installation
 unset QTDIR
 

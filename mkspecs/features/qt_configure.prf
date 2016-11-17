@@ -770,6 +770,7 @@ defineTest(qtConfTest_compile) {
         QMAKE_MAKE = "$$QMAKE_MAKE clean && $$QMAKE_MAKE"
 
     mkpath($$test_out_dir)|error()
+    write_file($$test_out_dir/.qmake.cache)|error()
 
     # add possible command line args
     qmake_args += $$qtConfPrepareArgs($$eval($${1}.args)) $$eval($${1}.literal_args)

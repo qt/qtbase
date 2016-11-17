@@ -93,7 +93,6 @@ Configure::Configure(int& argc, char** argv)
         QDir(buildPath).mkpath("bin");
 
         buildDir.mkpath("mkspecs");
-        buildDir.mkpath("config.tests");
     }
 
     dictionary[ "QT_INSTALL_PREFIX" ] = installPath;
@@ -476,25 +475,6 @@ void Configure::parseCmdLine()
             dictionary[ "DONE" ] = "error";
             cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
         }
-    }
-}
-
-void Configure::prepareConfigTests()
-{
-    // Generate an empty .qmake.cache file for config.tests
-    QDir buildDir(buildPath);
-    bool success = true;
-    if (!buildDir.exists("config.tests"))
-        success = buildDir.mkdir("config.tests");
-
-    QString fileName(buildPath + "/config.tests/.qmake.cache");
-    QFile cacheFile(fileName);
-    success &= cacheFile.open(QIODevice::WriteOnly);
-    cacheFile.close();
-
-    if (!success) {
-        cout << "Failed to create file " << qPrintable(QDir::toNativeSeparators(fileName)) << endl;
-        dictionary[ "DONE" ] = "error";
     }
 }
 
