@@ -396,13 +396,17 @@
             "label": "QSharedMemory",
             "purpose": "Provides access to a shared memory segment.",
             "section": "Kernel",
+            "condition": "!config.vxworks",
             "output": [ "publicFeature", "feature" ]
         },
         "systemsemaphore": {
             "label": "QSystemSemaphore",
             "purpose": "Provides a general counting system semaphore.",
             "section": "Kernel",
-            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
+            "condition": [
+                "!config.integrity && !config.vxworks",
+                "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "xmlstream": {
@@ -442,6 +446,7 @@
             "label": "QProcess",
             "purpose": "Supports external process invocation.",
             "section": "File I/O",
+            "condition": "!config.winrt && !config.uikit && !config.integrity && !config.vxworks",
             "output": [ "publicFeature", "feature" ]
         },
         "temporaryfile": {
@@ -466,6 +471,7 @@
             "label": "QFileSystemWatcher",
             "purpose": "Provides an interface for monitoring files and directories for modifications.",
             "section": "File I/O",
+            "condition": "!config.winrt",
             "output": [ "publicFeature", "feature" ]
         },
         "filesystemiterator": {
