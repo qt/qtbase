@@ -3305,7 +3305,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
                                wheel->modifiers(), phase, wheel->source(), wheel->inverted());
                 bool eventAccepted;
-                while (w) {
+                do {
                     we.spont = spontaneous && w == receiver;
                     we.ignore();
                     res = d->notify_helper(w, &we);
@@ -3323,7 +3323,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
                     we.p += w->pos();
                     w = w->parentWidget();
-                }
+                } while (w);
                 wheel->setAccepted(eventAccepted);
             } else if (!spontaneous) {
                 // wheel_widget may forward the wheel event to a delegate widget,
