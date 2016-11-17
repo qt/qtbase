@@ -1273,7 +1273,7 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
         if (!qSafeFromBigEndian(maps + 8 * n, endPtr, &platformId))
             return 0;
 
-        quint16 platformSpecificId;
+        quint16 platformSpecificId = 0;
         if (!qSafeFromBigEndian(maps + 8 * n + 2, endPtr, &platformSpecificId))
             return 0;
 

@@ -93,6 +93,7 @@
             "mp": { "type": "boolean", "name": "msvc_mp" },
             "nomake": { "type": "addString", "values": [ "examples", "tests", "tools" ] },
             "opensource": { "type": "void", "name": "commercial", "value": "no" },
+            "optimize-debug": { "type": "boolean", "name": "optimize_debug" },
             "optimized-qmake": { "type": "boolean", "name": "release_tools" },
             "optimized-tools":  { "type": "boolean", "name": "release_tools" },
             "pch": { "type": "boolean", "name": "precompile_header" },
@@ -262,6 +263,11 @@
             "label": "gold linker",
             "type": "compilerSupportsFlag",
             "flag": "-fuse-ld=gold"
+        },
+        "optimize_debug": {
+            "label": "-Og support",
+            "type": "compilerSupportsFlag",
+            "flag": "-Og"
         },
         "enable_new_dtags": {
             "label": "new dtags support",
@@ -478,6 +484,11 @@
             "label": "Using gold linker",
             "condition": "!config.msvc && !config.integrity && tests.use_gold_linker",
             "output": [ "privateConfig", "useGoldLinker" ]
+        },
+        "optimize_debug": {
+            "label": "Optimize debug build",
+            "condition": "!config.msvc && (features.debug || features.debug_and_release) && tests.optimize_debug",
+            "output": [ "privateConfig" ]
         },
         "architecture": {
             "label": "Architecture",
@@ -1077,6 +1088,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 {
                     "message": "Mode",
                     "type": "buildMode"
+                },
+                {
+                    "type": "feature",
+                    "args": "optimize_debug",
+                    "condition": "!config.msvc && (features.debug || features.debug_and_release)"
                 },
                 "shared",
                 {
