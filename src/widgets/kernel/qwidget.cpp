@@ -9993,8 +9993,8 @@ bool QWidget::nativeEvent(const QByteArray &eventType, void *message, long *resu
 }
 
 /*!
-    Ensures that the widget has been polished by QStyle (i.e., has a
-    proper font and palette).
+    Ensures that the widget and its children have been polished by
+    QStyle (i.e., have a proper font and palette).
 
     QWidget calls this function after it has been fully constructed
     but before it is shown the very first time. You can call this
