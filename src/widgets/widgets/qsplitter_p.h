@@ -125,6 +125,7 @@ public:
     int findWidgetJustBeforeOrJustAfter(int index, int delta, int &collapsibleSize) const;
     void updateHandles();
     void setSizes_helper(const QList<int> &sizes, bool clampNegativeSize = false);
+    bool shouldShowWidget(const QWidget *w) const;
 
 };
 
