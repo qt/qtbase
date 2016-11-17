@@ -29,7 +29,6 @@
 #include <QtTest/QtTest>
 
 #include <qhash.h>
-#include <qtypetraits.h>
 
 #include <iterator>
 #include <sstream>
@@ -197,7 +196,7 @@ void tst_QHashFunctions::range()
     {
         // verify that the input iterator category suffices:
         std::stringstream sstream;
-        Q_STATIC_ASSERT((QtPrivate::is_same<std::input_iterator_tag, std::istream_iterator<int>::iterator_category>::value));
+        Q_STATIC_ASSERT((std::is_same<std::input_iterator_tag, std::istream_iterator<int>::iterator_category>::value));
         std::copy(ints, ints + numInts, std::ostream_iterator<int>(sstream, " "));
         sstream.seekg(0);
         std::istream_iterator<int> it(sstream), end;

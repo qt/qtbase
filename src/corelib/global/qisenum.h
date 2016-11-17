@@ -42,22 +42,8 @@
 #ifndef QISENUM_H
 #define QISENUM_H
 
-#ifndef Q_IS_ENUM
-#  if defined(Q_CC_GNU) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
-#    define Q_IS_ENUM(x) __is_enum(x)
-#  elif defined(Q_CC_MSVC) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER >=140050215)
-#    define Q_IS_ENUM(x) __is_enum(x)
-#  elif defined(Q_CC_CLANG)
-#    if __has_extension(is_enum)
-#      define Q_IS_ENUM(x) __is_enum(x)
-#    endif
-#  endif
-#endif
-
-#ifndef Q_IS_ENUM
-#  include <QtCore/qtypetraits.h>
-#  define Q_IS_ENUM(x) QtPrivate::is_enum<x>::value
-#endif
+// Use of Q_IS_ENUM is deprecated since 5.8
+#define Q_IS_ENUM(x) std::is_enum<x>::value
 
 // shut up syncqt
 QT_BEGIN_NAMESPACE

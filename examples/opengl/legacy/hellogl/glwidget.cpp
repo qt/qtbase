@@ -177,11 +177,7 @@ void GLWidget::resizeGL(int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-#ifdef QT_OPENGL_ES_1
-    glOrthof(-0.5, +0.5, -0.5, +0.5, 4.0, 15.0);
-#else
     glOrtho(-0.5, +0.5, -0.5, +0.5, 4.0, 15.0);
-#endif
     glMatrixMode(GL_MODELVIEW);
 }
 //! [8]

@@ -27,6 +27,8 @@ qtConfig(build_all): CONFIG += build_all
 DESTDIR = $$MODULE_BASE_OUTDIR/lib
 DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
 
+THE_TARGET = $$qt5LibraryTarget($$TARGET)
+
 !build_pass {
     MODULE = $$replace(TARGET, ^qt, )
     MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_ext_$${MODULE}.pri
@@ -35,22 +37,23 @@ DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
     MODULE_PRI_CONT = \
         "QMAKE_INCDIR_$${ucmodule} = $$val_escape(MODULE_INCLUDEPATH)" \
         "QMAKE_DEFINES_$${ucmodule} = $$val_escape(MODULE_DEFINES)"
-    MODULE_LIBS = -L$$DESTDIR -l$$TARGET
     debug_and_release {
         win32: MODULE_DEBUG_LIBS = -L$$DESTDIR -l$${TARGET}d
         darwin: MODULE_DEBUG_LIBS = -L$$DESTDIR -l$${TARGET}_debug
+        MODULE_RELEASE_LIBS = -L$$DESTDIR -l$$TARGET
         MODULE_PRI_CONT += \
             "QMAKE_LIBS_$${ucmodule}_DEBUG = $$val_escape(MODULE_DEBUG_LIBS)" \
-            "QMAKE_LIBS_$${ucmodule}_RELEASE = $$val_escape(MODULE_LIBS)"
+            "QMAKE_LIBS_$${ucmodule}_RELEASE = $$val_escape(MODULE_RELEASE_LIBS)"
     } else {
+        MODULE_LIBS = -L$$DESTDIR -l$$THE_TARGET
         MODULE_PRI_CONT += \
             "QMAKE_LIBS_$${ucmodule} = $$val_escape(MODULE_LIBS)"
     }
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error()
 }
 
+TARGET = $$THE_TARGET
+
 # In static builds of Qt, convenience libraries must be installed,
 # as in this case they are not linked to the final library/plugin.
 installed|if(!not_installed:qtConfig(static)): load(qt_installs)
-
-TARGET = $$qt5LibraryTarget($$TARGET)

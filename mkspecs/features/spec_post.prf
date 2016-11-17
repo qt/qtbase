@@ -67,6 +67,7 @@ equals(MAKEFILE_GENERATOR, MSBUILD) \
 |isEmpty(QMAKE_SH) {
     QMAKE_ZIP               = zip -r -9
 
+    QMAKE_CD                = cd /d
     QMAKE_COPY              = copy /y
     QMAKE_COPY_FILE         = $$QMAKE_COPY
     QMAKE_COPY_DIR          = xcopy /s /q /y /i
@@ -87,6 +88,7 @@ equals(MAKEFILE_GENERATOR, MSBUILD) \
     QMAKE_TAR               = tar -cf
     QMAKE_GZIP              = gzip -9f
 
+    QMAKE_CD                = cd
     QMAKE_COPY              = cp -f
     QMAKE_COPY_FILE         = $$QMAKE_COPY
     QMAKE_COPY_DIR          = $$QMAKE_COPY -R

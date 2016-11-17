@@ -33,5 +33,5 @@
     \brief The SQL Browser example shows how a data browser can be used to visualize
     the results of SQL statements on a live database.
 
-    \image sqlbrowser-demo.png
+    \borderedimage sqlbrowser-demo.png
 */

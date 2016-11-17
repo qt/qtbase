@@ -1024,14 +1024,14 @@ private:
 
 template <class T> inline T qgraphicsitem_cast(QGraphicsItem *item)
 {
-    typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type Item;
+    typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type Item;
     return int(Item::Type) == int(QGraphicsItem::Type)
         || (item && int(Item::Type) == item->type()) ? static_cast<T>(item) : 0;
 }
 
 template <class T> inline T qgraphicsitem_cast(const QGraphicsItem *item)
 {
-    typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type Item;
+    typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type Item;
     return int(Item::Type) == int(QGraphicsItem::Type)
         || (item && int(Item::Type) == item->type()) ? static_cast<T>(item) : 0;
 }

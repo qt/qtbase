@@ -162,7 +162,7 @@ static ProcessInfo *tryAllocateInSection(Header *header, ProcessInfo entries[], 
     }
 
     /* there isn't an available entry, undo our increment */
-    ffd_atomic_add_fetch(&header->busyCount, -1, FFD_ATOMIC_RELAXED);
+    (void)ffd_atomic_add_fetch(&header->busyCount, -1, FFD_ATOMIC_RELAXED);
     return NULL;
 }
 
@@ -267,7 +267,7 @@ static void freeInfo(Header *header, ProcessInfo *entry)
     entry->deathPipe = -1;
     entry->pid = 0;
 
-    ffd_atomic_add_fetch(&header->busyCount, -1, FFD_ATOMIC_RELEASE);
+    (void)ffd_atomic_add_fetch(&header->busyCount, -1, FFD_ATOMIC_RELEASE);
     assert(header->busyCount >= 0);
 }
 

@@ -134,11 +134,11 @@ void tst_QFlags::signedness()
     // underlying type is implementation-defined, we need to allow for
     // a different signedness, so we only check that the relative
     // signedness of the types matches:
-    Q_STATIC_ASSERT((QtPrivate::is_unsigned<Qt::MouseButton>::value ==
-                     QtPrivate::is_unsigned<Qt::MouseButtons::Int>::value));
+    Q_STATIC_ASSERT((QtPrivate::QIsUnsignedEnum<Qt::MouseButton>::value ==
+                     QtPrivate::QIsUnsignedEnum<Qt::MouseButtons::Int>::value));
 
-    Q_STATIC_ASSERT((QtPrivate::is_signed<Qt::AlignmentFlag>::value ==
-                     QtPrivate::is_signed<Qt::Alignment::Int>::value));
+    Q_STATIC_ASSERT((QtPrivate::QIsSignedEnum<Qt::AlignmentFlag>::value ==
+                     QtPrivate::QIsSignedEnum<Qt::Alignment::Int>::value));
 }
 
 #if defined(Q_COMPILER_CLASS_ENUM)

@@ -48,7 +48,6 @@
 #include "qelapsedtimer.h"
 #include "qthread.h"
 #include "qmutex_p.h"
-#include "qtypetraits.h"
 
 #ifndef QT_LINUX_FUTEX
 #include "private/qfreelist_p.h"
@@ -77,7 +76,7 @@ public:
 
     // written to by the thread that first owns 'mutex';
     // read during attempts to acquire ownership of 'mutex' from any other thread:
-    QAtomicPointer<QtPrivate::remove_pointer<Qt::HANDLE>::type> owner;
+    QAtomicPointer<std::remove_pointer<Qt::HANDLE>::type> owner;
 
     // only ever accessed from the thread that owns 'mutex':
     uint count;

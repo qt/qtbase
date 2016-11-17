@@ -25,7 +25,7 @@
         "custom": "qmakeArgs",
         "options": {
             "prefix": "string",
-            "hostprefix": "string",
+            "hostprefix": "optionalString",
             "extprefix": "string",
 
             "archdatadir": "string",
@@ -56,8 +56,6 @@
             "android-toolchain-version": "string",
 
             "accessibility": "boolean",
-            "alsa": "boolean",
-            "audio-backend": "boolean",
             "avx": "boolean",
             "avx2": "boolean",
             "avx512": { "type": "boolean", "name": "avx512f" },
@@ -81,7 +79,6 @@
             "gcc-sysroot": "boolean",
             "gcov": "boolean",
             "gnumake": { "type": "boolean", "name": "GNUmake" },
-            "gstreamer": { "type": "optionalString", "values": [ "no", "yes", "0.10", "1.0" ] },
             "gui": "boolean",
             "headersclean": "boolean",
             "host-option": "string",
@@ -102,7 +99,6 @@
             "platform": "string",
             "plugin-manifests": "boolean",
             "profile": "boolean",
-            "pulseaudio": "boolean",
             "qml-debug": "boolean",
             "qreal": "string",
             "qtlibinfix": { "type": "string", "name": "qt_libinfix" },
@@ -133,7 +129,6 @@
             "warnings-are-errors": { "type": "boolean", "name": "warnings_are_errors" },
             "Werror": { "type": "boolean", "name": "warnings_are_errors" },
             "widgets": "boolean",
-            "wmf-backend": "boolean",
             "xplatform": "string",
             "zlib": { "type": "enum", "name": "system-zlib", "values": { "system": "yes", "qt": "no" } }
         },
@@ -155,39 +150,6 @@
             "sources": [
                 { "libs": "-lzdll", "condition": "config.msvc" },
                 { "libs": "-lz", "condition": "!config.msvc" }
-            ]
-        },
-        "alsa": {
-            "label": "ALSA",
-            "export": "",
-            "test": "unix/alsa",
-            "sources": [
-                "-lasound"
-            ]
-        },
-        "pulseaudio": {
-            "label": "PulseAudio >= 0.9.10",
-            "test": "unix/pulseaudio",
-            "sources": [
-                { "type": "pkgConfig", "args": "libpulse >= 0.9.10 libpulse-mainloop-glib" }
-            ]
-        },
-        "gstreamer_1_0": {
-            "label": "GStreamer 1.0",
-            "export": "",
-            "test": "unix/gstreamer",
-            "sources": [
-                { "type": "pkgConfig",
-                  "args": "gstreamer-1.0 gstreamer-base-1.0 gstreamer-audio-1.0 gstreamer-video-1.0 gstreamer-pbutils-1.0" }
-            ]
-        },
-        "gstreamer_0_10": {
-            "label": "GStreamer 0.10",
-            "export": "",
-            "test": "unix/gstreamer",
-            "sources": [
-                { "type": "pkgConfig",
-                  "args": "gstreamer-0.10 gstreamer-base-0.10 gstreamer-audio-0.10 gstreamer-video-0.10 gstreamer-pbutils-0.10" }
             ]
         },
         "dbus": {
@@ -281,8 +243,8 @@
             "type": "compile",
             "test": "common/c++1z"
         },
-        "cxx98default": {
-            "label": "compiler defaulting to C++98",
+        "cxx11default": {
+            "label": "compiler defaulting to C++11 or higher",
             "type": "compile",
             "test": "common/c++98default"
         },
@@ -451,11 +413,6 @@
             "label": "IncrediBuild",
             "type": "files",
             "files": [ "BuildConsole.exe", "xgConsole.exe" ]
-        },
-        "wmf": {
-            "label": "WMF",
-            "type": "files",
-            "files": [ "mfapi.h", "mf.lib" ]
         }
     },
 
@@ -484,9 +441,9 @@
             "condition": "call.crossCompile",
             "output": [ "publicConfig", "privateConfig" ]
         },
-        "cxx98default": {
-            "label": "Compiler defaults to C++98",
-            "condition": "tests.cxx98default",
+        "cxx11default": {
+            "label": "Compiler defaults to C++11 or higher",
+            "condition": "!tests.cxx11default",
             "output": [ { "type": "publicConfig", "name": "c++11" } ]
         },
         "compiler-flags": {
@@ -559,6 +516,7 @@
         },
         "release_tools": {
             "label": "Compile tools in release mode",
+            "autoDetect": "!features.debug",
             "output": [ "privateFeature", "publicQtConfig" ]
         },
         "simulator_and_device": {
@@ -899,11 +857,6 @@
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_NEON", "value": 1 }
             ]
         },
-        "alsa": {
-            "label": "ALSA",
-            "condition": "libs.alsa",
-            "output": [ "feature" ]
-        },
         "mremap": {
             "label": "mremap()",
             "condition": "tests.mremap",
@@ -922,11 +875,6 @@
         "accessibility": {
             "label": "Accessibility",
             "output": [ "publicFeature", "feature" ]
-        },
-        "pulseaudio": {
-            "label": "PulseAudio",
-            "condition": "libs.pulseaudio",
-            "output": [ "feature" ]
         },
         "system-zlib": {
             "label": "Using system zlib",
@@ -986,24 +934,6 @@
             "condition": "libs.libudev",
             "output": [ "privateFeature" ]
         },
-        "gstreamer-1_0": {
-            "label": "GStreamer 1.0",
-            "disable": "input.gstreamer == '0.10' || input.gstreamer == 'no'",
-            "enable": "input.gstreamer == '1.0'",
-            "condition": "libs.gstreamer_1_0",
-            "output": [ { "type": "publicQtConfig", "name": "gstreamer-1.0" } ]
-        },
-        "gstreamer-0_10": {
-            "label": "GStreamer 0.10",
-            "disable": "input.gstreamer == 'no'",
-            "enable": "input.gstreamer == '0.10'",
-            "condition": "!features.gstreamer-1_0 && libs.gstreamer_0_10",
-            "output": [ { "type": "publicQtConfig", "name": "gstreamer-0.10" } ]
-        },
-        "audio-backend": {
-            "label": "Audio backend",
-            "output": [ "publicQtConfig" ]
-        },
         "qml-debug": {
             "label": "QML debugging",
             "output": [ { "type": "publicQtConfig", "negative": true } ]
@@ -1030,13 +960,6 @@
             "autoDetect": false,
             "condition": "!features.shared",
             "output": [ "publicConfig", "publicQtConfig" ]
-        },
-        "wmf-backend": {
-            "label": "Windows Media Foundation backend for Qt Multimedia",
-            "emitIf": "config.win32",
-            "autoDetect": false,
-            "condition": "tests.wmf",
-            "output": [ "publicQtConfig" ]
         }
     },
 
@@ -1075,7 +998,7 @@ or compile needed modules into the library."
         },
         {
             "type": "note",
-            "condition": "features.release_tools && (!features.debug || features.debug_and_release)",
+            "condition": "features.release_tools && !features.debug",
             "message": "-optimized-tools is not useful in -release mode."
         },
         {
@@ -1182,11 +1105,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
             "section": "Support enabled for",
             "entries": [
                 "accessibility",
-                "alsa",
-                "gstreamer-0_10",
-                "gstreamer-1_0",
                 "pkg-config",
-                "pulseaudio",
                 "qml-debug",
                 "libudev",
                 "system-zlib"

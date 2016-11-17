@@ -42,6 +42,7 @@
 #define QGLOBAL_H
 
 #ifdef __cplusplus
+#  include <type_traits>
 #  include <cstddef>
 #endif
 
@@ -963,7 +964,7 @@ public:
 //  - if there was a break inside the inner loop, it will exit with control still
 //    set to 1; in that case, the outer loop will invert it to 0 and will exit too
 #define Q_FOREACH(variable, container)                                \
-for (QForeachContainer<typename QtPrivate::remove_reference<decltype(container)>::type> _container_((container)); \
+for (QForeachContainer<typename std::remove_reference<decltype(container)>::type> _container_((container)); \
      _container_.control && _container_.i != _container_.e;         \
      ++_container_.i, _container_.control ^= 1)                     \
     for (variable = *_container_.i; _container_.control; _container_.control = 0)

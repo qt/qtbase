@@ -322,9 +322,9 @@ QVariant QWinRTInternalMimeData::retrieveData_sys(const QString &mimetype, QVari
             hr = res.As(&propertyValue);
             if (SUCCEEDED(hr)) {
                 // We need to check which type of custom data we are receiving
-                PropertyType type;
-                propertyValue->get_Type(&type);
-                switch (type) {
+                PropertyType propertyType;
+                propertyValue->get_Type(&propertyType);
+                switch (propertyType) {
                 case PropertyType_UInt8: {
                     quint8 v;
                     hr = propertyValue->GetUInt8(&v);
@@ -410,7 +410,7 @@ QVariant QWinRTInternalMimeData::retrieveData_sys(const QString &mimetype, QVari
                     return S_OK;
                 }
                 default:
-                    qCDebug(lcQpaMime) << "Unknown property type dropped:" << type;
+                    qCDebug(lcQpaMime) << "Unknown property type dropped:" << propertyType;
                 }
                 return S_OK;
             }

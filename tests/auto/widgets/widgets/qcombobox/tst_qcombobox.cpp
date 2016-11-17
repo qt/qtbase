@@ -62,6 +62,7 @@
 #include <qstyleditemdelegate.h>
 #include <qstandarditemmodel.h>
 #include <qproxystyle.h>
+#include <qfont.h>
 
 static inline void setFrameless(QWidget *w)
 {
@@ -160,6 +161,7 @@ private slots:
     void respectChangedOwnershipOfItemView();
     void task_QTBUG_39088_inputMethodHints();
     void task_QTBUG_49831_scrollerNotActivated();
+    void task_QTBUG_56693_itemFontFromModel();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -3248,6 +3250,78 @@ void tst_QComboBox::task_QTBUG_49831_scrollerNotActivated()
             }
         }
     }
+}
+
+class QTBUG_56693_Model : public QStandardItemModel
+{
+public:
+    QTBUG_56693_Model(QObject *parent = Q_NULLPTR)
+        : QStandardItemModel(parent)
+    { }
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+    {
+        if (role == Qt::FontRole) {
+            if (index.row() < 5) {
+                QFont font = QApplication::font();
+                font.setItalic(true);
+                return font;
+            } else {
+                return QApplication::font();
+            }
+        }
+        return QStandardItemModel::data(index, role);
+    }
+};
+
+class QTBUG_56693_ProxyStyle : public QProxyStyle
+{
+public:
+    QTBUG_56693_ProxyStyle(QStyle *style)
+        : QProxyStyle(style), italicItemsNo(0)
+    {
+
+    }
+
+    void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p, const QWidget *w = Q_NULLPTR) const override
+    {
+        if (element == CE_MenuItem)
+            if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt))
+                if (menuItem->font.italic())
+                    italicItemsNo++;
+
+        baseStyle()->drawControl(element, opt, p, w);
+    }
+
+    mutable int italicItemsNo;
+};
+
+void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
+{
+    QComboBox box;
+    if (!qobject_cast<QComboMenuDelegate *>(box.itemDelegate()))
+        QSKIP("Only for combo boxes using QComboMenuDelegate");
+
+    QTBUG_56693_Model model;
+    box.setModel(&model);
+
+    QTBUG_56693_ProxyStyle *proxyStyle = new QTBUG_56693_ProxyStyle(box.style());
+    box.setStyle(proxyStyle);
+    box.setFont(QApplication::font());
+
+    for (int i = 0; i < 10; i++)
+        box.addItem(QLatin1String("Item ") + QString::number(i));
+
+    box.show();
+    QTest::qWaitForWindowExposed(&box);
+    box.showPopup();
+    QFrame *container = box.findChild<QComboBoxPrivateContainer *>();
+    QVERIFY(container);
+    QTest::qWaitForWindowExposed(container);
+
+    QCOMPARE(proxyStyle->italicItemsNo, 5);
+
+    box.hidePopup();
 }
 
 QTEST_MAIN(tst_QComboBox)

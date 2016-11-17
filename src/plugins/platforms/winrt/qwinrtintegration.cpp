@@ -45,7 +45,6 @@
 #include "qwinrtinputcontext.h"
 #include "qwinrtservices.h"
 #include "qwinrteglcontext.h"
-#include "qwinrtfontdatabase.h"
 #include "qwinrttheme.h"
 #include "qwinrtclipboard.h"
 #ifndef QT_NO_DRAGANDDROP
@@ -56,6 +55,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QSurface>
 
+#include <QtFontDatabaseSupport/private/qwinrtfontdatabase_p.h>
 #include <QtEglSupport/private/qeglpbuffer_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformwindow.h>

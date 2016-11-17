@@ -34,7 +34,7 @@
     caching any changes to the data until the user explicitly submits them using a
     push button.
 
-    \image cachedtable-example.png
+    \borderedimage cachedtable-example.png
 
     The example consists of a single class, \c TableEditor, which is a
     custom dialog widget that allows the user to modify data stored in

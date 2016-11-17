@@ -34,5 +34,5 @@
     data obtained from a SQL query, using a model that encapsulates
     the query and table views to display the results.
 
-    \image querymodel-example.png
+    \borderedimage querymodel-example.png
 */

@@ -313,6 +313,10 @@ Option::init(int argc, char **argv)
 
     if(argc && argv) {
         QString argv0 = argv[0];
+#ifdef Q_OS_WIN
+        if (!argv0.endsWith(QLatin1String(".exe"), Qt::CaseInsensitive))
+            argv0 += QLatin1String(".exe");
+#endif
         if(Option::qmake_mode == Option::QMAKE_GENERATE_NOTHING)
             Option::qmake_mode = default_mode(argv0);
         if(!argv0.isEmpty() && !QFileInfo(argv0).isRelative()) {
@@ -336,10 +340,6 @@ Option::init(int argc, char **argv)
                 if ((*p).isEmpty())
                     continue;
                 QString candidate = currentDir.absoluteFilePath(*p + QLatin1Char('/') + argv0);
-#ifdef Q_OS_WIN
-                if (!candidate.endsWith(QLatin1String(".exe")))
-                    candidate += QLatin1String(".exe");
-#endif
                 if (QFile::exists(candidate)) {
                     globals->qmake_abslocation = candidate;
                     break;

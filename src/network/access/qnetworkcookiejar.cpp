@@ -43,7 +43,9 @@
 #include "QtNetwork/qnetworkcookie.h"
 #include "QtCore/qurl.h"
 #include "QtCore/qdatetime.h"
+#if QT_CONFIG(topleveldomain)
 #include "private/qtldurl_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

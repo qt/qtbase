@@ -86,6 +86,35 @@
 */
 
 /*!
+    \typedef QXcbWindowFunctions::SetWmWindowRole
+    \since 5.6.2
+
+    This is the typedef for the function returned by
+    QGuiApplication::platformFunction when passed the
+    value returned by setWmWindowRoleIdentifier().
+*/
+
+/*!
+    \fn QByteArray QXcbWindowFunctions::setWmWindowRoleIdentifier()
+    \since 5.6.2
+
+    This function returns the byte array that can be used to query
+    QGuiApplication::platformFunction to retrieve the SetWmWindowRole function.
+*/
+
+/*!
+    \fn void QXcbWindowFunctions::setWmWindowRole(QWindow *window, const QByteArray &role)
+    \since 5.6.2
+
+    Sets the WM_WINDOW_ROLE property from \role on the corresponding
+    X11 window.
+
+    This is a convenience function that can be used directly instead
+    of resolving the function pointer. \a window and \a role will be
+    relayed to the function retrieved by QGuiApplication.
+*/
+
+/*!
     \typedef QXcbWindowFunctions::SetWmWindowIconText
 
     This is the typedef for the function returned by

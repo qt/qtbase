@@ -110,7 +110,12 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
     if (!event)
         event = CreateEventEx(NULL, L"qdebug-event", 0, EVENT_ALL_ACCESS);
 
+    Q_ASSERT_X(shmem, Q_FUNC_INFO, "Could not create file mapping");
+    Q_ASSERT_X(event, Q_FUNC_INFO, "Could not create debug event");
+
     void *data = MapViewOfFileFromApp(shmem, FILE_MAP_WRITE, 0, 4096);
+    Q_ASSERT_X(data, Q_FUNC_INFO, "Could not map file");
+
     memset(data, quint32(type), sizeof(quint32));
     memcpy_s(static_cast<quint32 *>(data) + 1, 4096 - sizeof(quint32),
              message.data(), (message.length() + 1) * sizeof(wchar_t));
@@ -179,6 +184,7 @@ public:
             app->core->Exit();
             return res;
         }, this, CREATE_SUSPENDED, nullptr);
+        Q_ASSERT_X(mainThread, Q_FUNC_INFO, "Could not create Qt main thread");
 
         HRESULT hr;
         ComPtr<Xaml::IApplicationStatics> appStatics;

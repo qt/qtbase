@@ -42,7 +42,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(Q_CC_MSVC)
+#if defined(Q_CC_MSVC) && _MSC_VER > 1500
 #include <intrin.h>
 #endif
 

@@ -65,8 +65,8 @@ template<typename T>
 struct QVariantIntegrator
 {
     static const bool CanUseInternalSpace = sizeof(T) <= sizeof(QVariant::Private::Data)
-                                            && ((QTypeInfoQuery<T>::isRelocatable) || Q_IS_ENUM(T));
-    typedef QtPrivate::integral_constant<bool, CanUseInternalSpace> CanUseInternalSpace_t;
+            && ((QTypeInfoQuery<T>::isRelocatable) || std::is_enum<T>::value);
+    typedef std::integral_constant<bool, CanUseInternalSpace> CanUseInternalSpace_t;
 };
 Q_STATIC_ASSERT(QVariantIntegrator<double>::CanUseInternalSpace);
 Q_STATIC_ASSERT(QVariantIntegrator<long int>::CanUseInternalSpace);
@@ -118,28 +118,28 @@ private:
 };
 
 template <class T>
-inline void v_construct_helper(QVariant::Private *x, const T &t, QtPrivate::true_type)
+inline void v_construct_helper(QVariant::Private *x, const T &t, std::true_type)
 {
     new (&x->data) T(t);
     x->is_shared = false;
 }
 
 template <class T>
-inline void v_construct_helper(QVariant::Private *x, const T &t, QtPrivate::false_type)
+inline void v_construct_helper(QVariant::Private *x, const T &t, std::false_type)
 {
     x->data.shared = new QVariantPrivateSharedEx<T>(t);
     x->is_shared = true;
 }
 
 template <class T>
-inline void v_construct_helper(QVariant::Private *x, QtPrivate::true_type)
+inline void v_construct_helper(QVariant::Private *x, std::true_type)
 {
     new (&x->data) T();
     x->is_shared = false;
 }
 
 template <class T>
-inline void v_construct_helper(QVariant::Private *x, QtPrivate::false_type)
+inline void v_construct_helper(QVariant::Private *x, std::false_type)
 {
     x->data.shared = new QVariantPrivateSharedEx<T>;
     x->is_shared = true;

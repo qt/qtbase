@@ -3085,6 +3085,7 @@ bool QVariant::canConvert(int targetTypeId) const
 
     if (currentType == QMetaType::QJsonValue) {
         switch (targetTypeId) {
+        case QMetaType::Nullptr:
         case QMetaType::QString:
         case QMetaType::Bool:
         case QMetaType::Int:

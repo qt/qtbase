@@ -320,8 +320,9 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
 
             cleanup();
 
-            if (freetypeData->faces.contains(face_id))
-                freetypeData->faces.take(face_id);
+            auto it = freetypeData->faces.constFind(face_id);
+            if (it != freetypeData->faces.constEnd())
+                freetypeData->faces.erase(it);
 
             if (freetypeData->faces.isEmpty()) {
                 FT_Done_FreeType(freetypeData->library);
@@ -888,10 +889,47 @@ static inline bool areMetricsTooLarge(const QFontEngineFT::GlyphInfo &info)
             || (uchar)(info.height) != info.height;
 }
 
+static inline void transformBoundingBox(int *left, int *top, int *right, int *bottom, FT_Matrix *matrix)
+{
+    int l, r, t, b;
+    FT_Vector vector;
+    vector.x = *left;
+    vector.y = *top;
+    FT_Vector_Transform(&vector, matrix);
+    l = r = vector.x;
+    t = b = vector.y;
+    vector.x = *right;
+    vector.y = *top;
+    FT_Vector_Transform(&vector, matrix);
+    if (l > vector.x) l = vector.x;
+    if (r < vector.x) r = vector.x;
+    if (t < vector.y) t = vector.y;
+    if (b > vector.y) b = vector.y;
+    vector.x = *right;
+    vector.y = *bottom;
+    FT_Vector_Transform(&vector, matrix);
+    if (l > vector.x) l = vector.x;
+    if (r < vector.x) r = vector.x;
+    if (t < vector.y) t = vector.y;
+    if (b > vector.y) b = vector.y;
+    vector.x = *left;
+    vector.y = *bottom;
+    FT_Vector_Transform(&vector, matrix);
+    if (l > vector.x) l = vector.x;
+    if (r < vector.x) r = vector.x;
+    if (t < vector.y) t = vector.y;
+    if (b > vector.y) b = vector.y;
+    *left = l;
+    *right = r;
+    *top = t;
+    *bottom = b;
+}
+
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                                                QFixed subPixelPosition,
                                                GlyphFormat format,
-                                               bool fetchMetricsOnly) const
+                                               bool fetchMetricsOnly,
+                                               bool disableOutlineDrawing) const
 {
 //     Q_ASSERT(freetype->lock == 1);
 
@@ -976,11 +1014,20 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     info.xOff = TRUNC(ROUND(slot->advance.x));
     info.yOff = 0;
 
-    if ((set && set->outline_drawing) || fetchMetricsOnly) {
-        int left  = FLOOR(slot->metrics.horiBearingX);
-        int right = CEIL(slot->metrics.horiBearingX + slot->metrics.width);
-        int top    = CEIL(slot->metrics.horiBearingY);
-        int bottom = FLOOR(slot->metrics.horiBearingY - slot->metrics.height);
+    if ((set && set->outline_drawing && !disableOutlineDrawing) || fetchMetricsOnly) {
+        int left  = slot->metrics.horiBearingX;
+        int right = slot->metrics.horiBearingX + slot->metrics.width;
+        int top    = slot->metrics.horiBearingY;
+        int bottom = slot->metrics.horiBearingY - slot->metrics.height;
+
+        if (transform && slot->format != FT_GLYPH_FORMAT_BITMAP)
+            transformBoundingBox(&left, &top, &right, &bottom, &matrix);
+
+        left = FLOOR(left);
+        right = CEIL(right);
+        bottom = FLOOR(bottom);
+        top = CEIL(top);
+
         info.x = TRUNC(left);
         info.y = TRUNC(top);
         info.width = TRUNC(right - left);
@@ -1043,40 +1090,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     int right = slot->metrics.horiBearingX + slot->metrics.width;
     int top    = slot->metrics.horiBearingY;
     int bottom = slot->metrics.horiBearingY - slot->metrics.height;
-    if(transform && slot->format != FT_GLYPH_FORMAT_BITMAP) {
-        int l, r, t, b;
-        FT_Vector vector;
-        vector.x = left;
-        vector.y = top;
-        FT_Vector_Transform(&vector, &matrix);
-        l = r = vector.x;
-        t = b = vector.y;
-        vector.x = right;
-        vector.y = top;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        vector.x = right;
-        vector.y = bottom;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        vector.x = left;
-        vector.y = bottom;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        left = l;
-        right = r;
-        top = t;
-        bottom = b;
-    }
+    if (transform && slot->format != FT_GLYPH_FORMAT_BITMAP)
+        transformBoundingBox(&left, &top, &right, &bottom, &matrix);
     left = FLOOR(left);
     right = CEIL(right);
     bottom = FLOOR(bottom);
@@ -1917,10 +1932,11 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
                                                   QFixed subPixelPosition,
                                                   GlyphFormat format,
                                                   const QTransform &t,
-                                                  bool fetchBoundingBox)
+                                                  bool fetchBoundingBox,
+                                                  bool disableOutlineDrawing)
 {
     QGlyphSet *glyphSet = loadGlyphSet(t);
-    if (glyphSet != 0 && glyphSet->outline_drawing && !fetchBoundingBox)
+    if (glyphSet != 0 && glyphSet->outline_drawing && !disableOutlineDrawing && !fetchBoundingBox)
         return 0;
 
     Glyph *glyph = glyphSet != 0 ? glyphSet->getGlyph(g, subPixelPosition) : 0;
@@ -1934,7 +1950,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
         FT_Matrix ftMatrix = glyphSet != 0 ? glyphSet->transformationMatrix : QTransformToFTMatrix(t);
         FT_Matrix_Multiply(&ftMatrix, &m);
         freetype->matrix = m;
-        glyph = loadGlyph(glyphSet, g, subPixelPosition, format, false);
+        glyph = loadGlyph(glyphSet, g, subPixelPosition, format, false, disableOutlineDrawing);
         unlockFace();
     }
 
@@ -1950,7 +1966,7 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const
 {
     const GlyphFormat neededFormat = antialias ? Format_A8 : Format_Mono;
 
-    Glyph *glyph = loadGlyphFor(g, subPixelPosition, neededFormat, t);
+    Glyph *glyph = loadGlyphFor(g, subPixelPosition, neededFormat, t, false, true);
 
     QImage img = alphaMapFromGlyphData(glyph, neededFormat);
     img = img.copy();
@@ -1961,7 +1977,7 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const
     if (!img.isNull())
         return img;
 
-    return QFontEngine::alphaMapForGlyph(g);
+    return QFontEngine::alphaMapForGlyph(g, subPixelPosition, t);
 }
 
 QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
@@ -1971,7 +1987,7 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
 
     const GlyphFormat neededFormat = Format_A32;
 
-    Glyph *glyph = loadGlyphFor(g, subPixelPosition, neededFormat, t);
+    Glyph *glyph = loadGlyphFor(g, subPixelPosition, neededFormat, t, false, true);
 
     QImage img = alphaMapFromGlyphData(glyph, neededFormat);
     img = img.copy();

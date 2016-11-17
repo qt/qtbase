@@ -848,14 +848,15 @@ QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionP
 
     // Create object if suitable one not cached
     QAbstractOpenGLFunctions* funcs = 0;
-    if (!d->versionFunctions.contains(vp)) {
+    auto it = d->versionFunctions.constFind(vp);
+    if (it == d->versionFunctions.constEnd()) {
         funcs = QOpenGLVersionFunctionsFactory::create(vp);
         if (funcs) {
             funcs->setOwningContext(this);
             d->versionFunctions.insert(vp, funcs);
         }
     } else {
-        funcs = d->versionFunctions.value(vp);
+        funcs = it.value();
     }
 
     if (funcs && QOpenGLContext::currentContext() == this)

@@ -117,7 +117,7 @@ static inline int stretchFromFcWidth(int fcwidth)
     return qtstretch;
 }
 
-static const char *specialLanguages[] = {
+static const char specialLanguages[][6] = {
     "", // Unknown
     "", // Inherited
     "", // Common
@@ -251,12 +251,12 @@ static const char *specialLanguages[] = {
     "", // OldHungarian
     ""  // SignWriting
 };
-Q_STATIC_ASSERT(sizeof(specialLanguages) / sizeof(const char *) == QChar::ScriptCount);
+Q_STATIC_ASSERT(sizeof specialLanguages / sizeof *specialLanguages == QChar::ScriptCount);
 
 // this could become a list of all languages used for each writing
 // system, instead of using the single most common language.
-static const char *languageForWritingSystem[] = {
-    0,     // Any
+static const char languageForWritingSystem[][6] = {
+    "",     // Any
     "en",  // Latin
     "el",  // Greek
     "ru",  // Cyrillic
@@ -286,25 +286,25 @@ static const char *languageForWritingSystem[] = {
     "ja",  // Japanese
     "ko",  // Korean
     "vi",  // Vietnamese
-    0, // Symbol
+    "", // Symbol
     "sga", // Ogham
     "non", // Runic
     "man" // N'Ko
 };
-Q_STATIC_ASSERT(sizeof(languageForWritingSystem) / sizeof(const char *) == QFontDatabase::WritingSystemsCount);
+Q_STATIC_ASSERT(sizeof languageForWritingSystem / sizeof *languageForWritingSystem == QFontDatabase::WritingSystemsCount);
 
 #if FC_VERSION >= 20297
 // Newer FontConfig let's us sort out fonts that report certain scripts support,
 // but no open type tables for handling them correctly.
 // Check the reported script presence in the FC_CAPABILITY's "otlayout:" section.
-static const char *capabilityForWritingSystem[] = {
-    0,     // Any
-    0,  // Latin
-    0,  // Greek
-    0,  // Cyrillic
-    0,  // Armenian
-    0,  // Hebrew
-    0,  // Arabic
+static const char capabilityForWritingSystem[][5] = {
+    "",     // Any
+    "",  // Latin
+    "",  // Greek
+    "",  // Cyrillic
+    "",  // Armenian
+    "",  // Hebrew
+    "",  // Arabic
     "syrc",  // Syriac
     "thaa",  // Thaana
     "deva",  // Devanagari
@@ -317,20 +317,20 @@ static const char *capabilityForWritingSystem[] = {
     "knda",  // Kannada
     "mlym",  // Malayalam
     "sinh",  // Sinhala
-    0,  // Thai
-    0,  // Lao
+    "",  // Thai
+    "",  // Lao
     "tibt",  // Tibetan
     "mymr",  // Myanmar
-    0,  // Georgian
+    "",  // Georgian
     "khmr",  // Khmer
-    0, // SimplifiedChinese
-    0, // TraditionalChinese
-    0,  // Japanese
-    0,  // Korean
-    0,  // Vietnamese
-    0, // Symbol
-    0, // Ogham
-    0, // Runic
+    "", // SimplifiedChinese
+    "", // TraditionalChinese
+    "",  // Japanese
+    "",  // Korean
+    "",  // Vietnamese
+    "", // Symbol
+    "", // Ogham
+    "", // Runic
     "nko " // N'Ko
 };
 Q_STATIC_ASSERT(sizeof(capabilityForWritingSystem) / sizeof(*capabilityForWritingSystem) == QFontDatabase::WritingSystemsCount);
@@ -436,7 +436,7 @@ static void populateFromPattern(FcPattern *pattern)
                 FcLangResult langRes = FcLangSetHasLang(langset, lang);
                 if (langRes != FcLangDifferentLang) {
 #if FC_VERSION >= 20297
-                    if (capabilityForWritingSystem[j] != Q_NULLPTR && requiresOpenType(j)) {
+                    if (*capabilityForWritingSystem[j] && requiresOpenType(j)) {
                         if (cap == Q_NULLPTR)
                             capRes = FcPatternGetString(pattern, FC_CAPABILITY, 0, &cap);
                         if (capRes == FcResultMatch && strstr(reinterpret_cast<const char *>(cap), capabilityForWritingSystem[j]) == 0)

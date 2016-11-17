@@ -396,14 +396,47 @@ static void addJsonValue(const QJsonValue &value, const QString &keyPrefix, ProV
     }
 }
 
+struct ErrorPosition {
+    int line;
+    int column;
+};
+
+static ErrorPosition calculateErrorPosition(const QByteArray &json, int offset)
+{
+    ErrorPosition pos = { 0, 0 };
+    offset--; // offset is 1-based, switching to 0-based
+    for (int i = 0; i < offset; ++i) {
+        switch (json.at(i)) {
+        case '\n':
+            pos.line++;
+            pos.column = 0;
+            break;
+        case '\r':
+            break;
+        case '\t':
+            pos.column = (pos.column + 8) & ~7;
+            break;
+        default:
+            pos.column++;
+            break;
+        }
+    }
+    // Lines and columns in text editors are 1-based:
+    pos.line++;
+    pos.column++;
+    return pos;
+}
+
 QMakeEvaluator::VisitReturn QMakeEvaluator::parseJsonInto(const QByteArray &json, const QString &into, ProValueMap *value)
 {
     QJsonParseError error;
     QJsonDocument document = QJsonDocument::fromJson(json, &error);
     if (document.isNull()) {
-        if (error.error != QJsonParseError::NoError)
-            evalError(fL1S("Error parsing json at offset %1: %2")
-                      .arg(error.offset).arg(error.errorString()));
+        if (error.error != QJsonParseError::NoError) {
+            ErrorPosition errorPos = calculateErrorPosition(json, error.offset);
+            evalError(fL1S("Error parsing JSON at %1:%2: %3")
+                      .arg(errorPos.line).arg(errorPos.column).arg(error.errorString()));
+        }
         return QMakeEvaluator::ReturnFalse;
     }
 
@@ -545,8 +578,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
         int end = -1;
         if (func_t == E_SECTION) {
             if (args.count() != 3 && args.count() != 4) {
-                evalError(fL1S("%1(var) section(var, sep, begin, end) requires"
-                               " three or four arguments.").arg(func.toQString(m_tmp1)));
+                evalError(fL1S("section(var, sep, begin, end) requires three or four arguments."));
             } else {
                 var = args[0];
                 sep = args.at(1).toQString();
@@ -1058,16 +1090,22 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
         break;
 #ifdef PROEVALUATOR_FULL
     case E_PROMPT: {
-        if (args.count() != 1) {
-            evalError(fL1S("prompt(question) requires one argument."));
+        if (args.count() != 1 && args.count() != 2) {
+            evalError(fL1S("prompt(question, [decorate=true]) requires one or two arguments."));
 //        } else if (currentFileName() == QLatin1String("-")) {
 //            evalError(fL1S("prompt(question) cannot be used when '-o -' is used"));
         } else {
             QString msg = m_option->expandEnvVars(args.at(0).toQString(m_tmp1));
-            if (!msg.endsWith(QLatin1Char('?')))
-                msg += QLatin1Char('?');
-            fprintf(stderr, "Project PROMPT: %s ", qPrintable(msg));
-
+            bool decorate = true;
+            if (args.count() == 2)
+                decorate = isTrue(args.at(1));
+            if (decorate) {
+                if (!msg.endsWith(QLatin1Char('?')))
+                    msg += QLatin1Char('?');
+                fprintf(stderr, "Project PROMPT: %s ", qPrintable(msg));
+            } else {
+                fputs(qPrintable(msg), stderr);
+            }
             QFile qfile;
             if (qfile.open(stdin, QIODevice::ReadOnly)) {
                 QTextStream t(&qfile);
@@ -1326,7 +1364,23 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             }
             ++vit;
         }
+        for (auto fit = m_functionDefs.testFunctions.begin(); fit != m_functionDefs.testFunctions.end(); ) {
+            if (fit->pro() == pro)
+                fit = m_functionDefs.testFunctions.erase(fit);
+            else
+                ++fit;
+        }
+        for (auto fit = m_functionDefs.replaceFunctions.begin(); fit != m_functionDefs.replaceFunctions.end(); ) {
+            if (fit->pro() == pro)
+                fit = m_functionDefs.replaceFunctions.erase(fit);
+            else
+                ++fit;
+        }
         pro->deref();
+        ProStringList &iif = m_valuemapStack.first()[ProKey("QMAKE_INTERNAL_INCLUDED_FILES")];
+        int idx = iif.indexOf(ProString(fn));
+        if (idx >= 0)
+            iif.removeAt(idx);
         return ReturnTrue;
     }
     case T_INFILE:

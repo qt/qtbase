@@ -33,7 +33,10 @@ defineTest(qtRunLoggedCommand) {
     qtLog("+ $$1")
 
     output = $$system("( $$1 ) 2>&1", lines, result)
-    qtLog($$output)
+    lg =
+    for (l, output): \
+        lg += "> $$l"
+    qtLog($$lg)
     !isEmpty(2) {
         $$2 = $$output
         export($$2)
@@ -42,10 +45,3 @@ defineTest(qtRunLoggedCommand) {
     !equals(result, 0): return(false)
     return(true)
 }
-
-# Ensure that a cache is present. If none was found on startup, this will create
-# one in the build directory of the project which loads this feature.
-cache()
-
-QMAKE_CONFIG_LOG = $$dirname(_QMAKE_CACHE_)/config.log
-write_file($$QMAKE_CONFIG_LOG, "")

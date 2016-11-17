@@ -40,5 +40,5 @@
     the database and the associated XML file using the API provided by
     the Qt SQL and Qt XML modules, respectively.
 
-    \image masterdetail-example.png
+    \borderedimage masterdetail-example.png
 */

@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = nsphotolibrarysupport
+ios: SUBDIRS = nsphotolibrarysupport

@@ -5535,7 +5535,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             return;
         }
     }
-#endif //QT_NO_GRAFFICSEFFECT
+#endif //QT_NO_GRAPHICSEFFECT
 
     const bool alsoOnScreen = flags & DrawPaintOnScreen;
     const bool recursive = flags & DrawRecursive;
@@ -9624,11 +9624,6 @@ void QWidget::leaveEvent(QEvent *)
 
     Since Qt 4.0, QWidget automatically double-buffers its painting, so there
     is no need to write double-buffering code in paintEvent() to avoid flicker.
-
-    \b{Note for the X11 platform}: It is possible to toggle global double
-    buffering by calling \c qt_x11_set_global_double_buffer(). For example,
-
-    \snippet code/src_gui_kernel_qwidget.cpp 14
 
     \note Generally, you should refrain from calling update() or repaint()
     \b{inside} a paintEvent(). For example, calling update() or repaint() on

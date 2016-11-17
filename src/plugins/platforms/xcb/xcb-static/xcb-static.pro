@@ -6,7 +6,7 @@
 #
 CONFIG += static
 
-XCB_DIR = ../../../../3rdparty/xcb
+XCB_DIR = $$QT_SOURCE_TREE/src/3rdparty/xcb
 
 MODULE_INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
 INCLUDEPATH += $$XCB_DIR/include/xcb

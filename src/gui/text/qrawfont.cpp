@@ -316,6 +316,19 @@ bool QRawFont::operator==(const QRawFont &other) const
 }
 
 /*!
+    Returns the hash value for \a font. If specified, \a seed is used
+    to initialize the hash.
+
+    \relates QRawFont
+    \since 5.8
+*/
+uint qHash(const QRawFont &font, uint seed) Q_DECL_NOTHROW
+{
+    return qHash(QRawFontPrivate::get(font)->fontEngine, seed);
+}
+
+
+/*!
     \fn bool QRawFont::operator!=(const QRawFont &other) const
 
     Returns \c true if this QRawFont is not equal to \a other. Otherwise, returns \c false.

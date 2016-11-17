@@ -2048,7 +2048,7 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
     return ret;
 }
 
-#endif //QT_NO_TRANSLATE
+#endif //QT_NO_TRANSLATION
 
 // Makes it possible to point QCoreApplication to a custom location to ensure
 // the directory is added to the patch, and qt.conf and deployed plugins are

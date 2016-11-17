@@ -52,14 +52,13 @@
 //
 
 #include <QtCore/qbytearray.h>
-#include <QtCore/qtypetraits.h>
 #include "qtools_p.h"
 
 QT_BEGIN_NAMESPACE
 
 enum {
     // Define as enum to force inlining. Don't expose MaxAllocSize in a public header.
-    MaxByteArraySize = MaxAllocSize - sizeof(QtPrivate::remove_pointer<QByteArray::DataPtr>::type)
+    MaxByteArraySize = MaxAllocSize - sizeof(std::remove_pointer<QByteArray::DataPtr>::type)
 };
 
 QT_END_NAMESPACE

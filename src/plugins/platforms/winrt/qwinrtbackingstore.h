@@ -40,6 +40,7 @@
 #ifndef QWINRTBACKINGSTORE_H
 #define QWINRTBACKINGSTORE_H
 
+#define GL_GLEXT_PROTOTYPES
 #include <qpa/qplatformbackingstore.h>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QLoggingCategory>

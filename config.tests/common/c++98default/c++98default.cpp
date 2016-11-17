@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#if __cplusplus >= 201103L
-#error "compiler uses c++11 or higher by default"
+#if __cplusplus < 201103L
+#error "compiler does not use c++11 or higher by default"
 #endif
 
 int main(int, char **) {}

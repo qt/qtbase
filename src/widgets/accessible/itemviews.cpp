@@ -486,10 +486,9 @@ QAccessibleInterface *QAccessibleTable::child(int logicalIndex) const
     if (!view()->model())
         return 0;
 
-    if (childToId.contains(logicalIndex)) {
-        QAccessible::Id id = childToId.value(logicalIndex);
-        return QAccessible::accessibleInterface(id);
-    }
+    auto id = childToId.constFind(logicalIndex);
+    if (id != childToId.constEnd())
+        return QAccessible::accessibleInterface(id.value());
 
     int vHeader = verticalHeader() ? 1 : 0;
     int hHeader = horizontalHeader() ? 1 : 0;

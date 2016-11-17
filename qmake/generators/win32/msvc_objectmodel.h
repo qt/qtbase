@@ -278,6 +278,10 @@ enum inlineExpansionOption {
     expandAnySuitable,
     expandDefault // Not useful number, but stops the output
 };
+enum linkerDebugOption {
+    linkerDebugOptionNone,
+    linkerDebugOptionFastLink
+};
 enum linkIncrementalType {
     linkIncrementalDefault,
     linkIncrementalNo,
@@ -591,6 +595,7 @@ public:
     QStringList             ForceSymbolReferences;
     QString                 FunctionOrder;
     triState                GenerateDebugInformation;
+    linkerDebugOption       DebugInfoOption;
     triState                GenerateMapFile;
     qlonglong               HeapCommitSize;
     qlonglong               HeapReserveSize;

@@ -46,6 +46,13 @@
 #include <QtGui/QColor>
 #include <QtGui/QTransform>
 
+#ifdef Q_CC_MINGW
+#  include <qt_windows.h>
+#  include <d2d1.h>
+#  include <d2d1helper.h>
+#  include <d2dbasetypes.h>
+#  include <d2d1_1.h>
+#endif // Q_CC_MINGW
 #include <d2d1_1helper.h>
 
 QT_BEGIN_NAMESPACE

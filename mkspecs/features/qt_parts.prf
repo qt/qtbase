@@ -88,7 +88,7 @@ for (t, tests): \
 testdirs = $$unique(testdirs)
 for (td, testdirs) {
     t = $$basename(td)-distclean
-    $${t}.commands = -cd $$shell_path($$td) && $(MAKE) distclean
+    $${t}.commands = -$$QMAKE_CD $$shell_path($$td) && $(MAKE) distclean
     QMAKE_EXTRA_TARGETS += $$t
     DISTCLEAN_DEPS += $$t
 }
