@@ -66,6 +66,7 @@
 #include <QtCore/QMutexLocker>
 #include <QtCore/QUuid>
 #include <QtCore/QRegularExpression>
+#include <QtCore/QTemporaryFile>
 #include <QtCore/private/qsystemlibrary_p.h>
 
 #include <algorithm>
@@ -591,6 +592,8 @@ public:
     // Supports IStream
     bool canStream() const     { return (m_attributes & SFGAO_STREAM) != 0; }
 
+    bool copyData(QIODevice *out);
+
     static IShellItems itemsFromItemArray(IShellItemArray *items);
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -679,6 +682,29 @@ QWindowsShellItem::IShellItems QWindowsShellItem::itemsFromItemArray(IShellItemA
             result.push_back(item);
     }
     return result;
+}
+
+bool QWindowsShellItem::copyData(QIODevice *out)
+{
+    if (!canCopy() || !canStream())
+        return false;
+    IStream *istream = nullptr;
+    HRESULT hr = m_item->BindToHandler(NULL, BHID_Stream, IID_PPV_ARGS(&istream));
+    if (FAILED(hr))
+        return false;
+    enum : ULONG { bufSize = 102400 };
+    char buffer[bufSize];
+    ULONG bytesRead;
+    forever {
+        bytesRead = 0;
+        hr = istream->Read(buffer, bufSize, &bytesRead); // S_FALSE: EOF reached
+        if ((hr == S_OK || hr == S_FALSE) && bytesRead)
+            out->write(buffer, bytesRead);
+        else
+            break;
+    }
+    istream->Release();
+    return hr == S_OK || hr == S_FALSE;
 }
 
 // Helper for "Libraries": collections of folders appearing from Windows 7
@@ -1345,18 +1371,59 @@ private:
         { return static_cast<IFileOpenDialog *>(fileDialog()); }
 };
 
+// Helpers for managing a list of temporary copies of items with no
+// file system representation (SFGAO_FILESYSTEM unset, for example devices
+// using MTP) returned by IFileOpenDialog. This emulates the behavior
+// of the Win32 API GetOpenFileName() used in Qt 4 (QTBUG-57070).
+
+Q_GLOBAL_STATIC(QStringList, temporaryItemCopies)
+
+static void cleanupTemporaryItemCopies()
+{
+    for (const QString &file : qAsConst(*temporaryItemCopies()))
+        QFile::remove(file);
+}
+
+static QString createTemporaryItemCopy(QWindowsShellItem &qItem)
+{
+    if (!qItem.canCopy() || !qItem.canStream())
+        return QString();
+    QString pattern = qItem.normalDisplay();
+    const int lastDot = pattern.lastIndexOf(QLatin1Char('.'));
+    const QString placeHolder = QStringLiteral("_XXXXXX");
+    if (lastDot >= 0)
+        pattern.insert(lastDot, placeHolder);
+    else
+        pattern.append(placeHolder);
+
+    QTemporaryFile targetFile(QDir::tempPath() + QLatin1Char('/') + pattern);
+    targetFile.setAutoRemove(false);
+    if (!targetFile.open() || !qItem.copyData(&targetFile))
+        return QString();
+    const QString result = targetFile.fileName();
+    if (temporaryItemCopies()->isEmpty())
+        qAddPostRoutine(cleanupTemporaryItemCopies);
+    temporaryItemCopies()->append(result);
+    return result;
+}
+
 QList<QUrl> QWindowsNativeOpenFileDialog::dialogResult() const
 {
     QList<QUrl> result;
     IShellItemArray *items = 0;
     if (SUCCEEDED(openFileDialog()->GetResults(&items)) && items) {
         for (IShellItem *item : QWindowsShellItem::itemsFromItemArray(items)) {
-            const QWindowsShellItem qItem(item);
-            const QUrl url = qItem.url();
-            if (url.isValid())
-                result.append(url);
-            else
-                qWarning().nospace() << __FUNCTION__<< ": Unable to obtain URL of " << qItem;
+            QWindowsShellItem qItem(item);
+            const QString path = qItem.path();
+            if (path.isEmpty()) {
+                const QString temporaryCopy = createTemporaryItemCopy(qItem);
+                if (temporaryCopy.isEmpty())
+                    qWarning() << "Unable to create a local copy of" << qItem;
+                else
+                    result.append(QUrl::fromLocalFile(temporaryCopy));
+            } else {
+                result.append(qItem.url());
+            }
         }
     }
     return result;
