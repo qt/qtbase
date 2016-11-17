@@ -78,6 +78,9 @@
 #  error "Qt has not been ported to this platform"
 #endif
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4522)
+
 QT_BEGIN_NAMESPACE
 
 #if 0
@@ -339,5 +342,7 @@ public:
 #endif
 
 QT_END_NAMESPACE
+
+QT_WARNING_POP
 
 #endif // QBASICATOMIC_H
