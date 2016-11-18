@@ -385,19 +385,25 @@ void qt_blend_rgb32_on_rgb32(uchar *destPixels, int dbpl,
             destPixels, dbpl, srcPixels, sbpl, w, h, const_alpha);
     fflush(stdout);
 #endif
-
-    if (const_alpha != 256) {
-        qt_blend_argb32_on_argb32(destPixels, dbpl, srcPixels, sbpl, w, h, const_alpha);
-        return;
-    }
-
     const uint *src = (const uint *) srcPixels;
     uint *dst = (uint *) destPixels;
-    int len = w * 4;
-    for (int y=0; y<h; ++y) {
-        memcpy(dst, src, len);
-        dst = (quint32 *)(((uchar *) dst) + dbpl);
-        src = (const quint32 *)(((const uchar *) src) + sbpl);
+    if (const_alpha == 256) {
+        const int len = w * 4;
+        for (int y = 0; y < h; ++y) {
+            memcpy(dst, src, len);
+            dst = (quint32 *)(((uchar *) dst) + dbpl);
+            src = (const quint32 *)(((const uchar *) src) + sbpl);
+        }
+        return;
+    } else if (const_alpha != 0) {
+        const_alpha = (const_alpha * 255) >> 8;
+        int ialpha = 255 - const_alpha;
+        for (int y=0; y<h; ++y) {
+            for (int x=0; x<w; ++x)
+                dst[x] = INTERPOLATE_PIXEL_255(dst[x], ialpha, src[x], const_alpha);
+            dst = (quint32 *)(((uchar *) dst) + dbpl);
+            src = (const quint32 *)(((const uchar *) src) + sbpl);
+        }
     }
 }
 
@@ -414,7 +420,7 @@ struct Blend_RGB32_on_RGB32_ConstAlpha {
     }
 
     inline void write(quint32 *dst, quint32 src) {
-        *dst = BYTE_MUL(src, m_alpha) + BYTE_MUL(*dst, m_ialpha);
+        *dst = INTERPOLATE_PIXEL_255(src, m_alpha, *dst, m_ialpha);
     }
 
     inline void flush(void *) {}

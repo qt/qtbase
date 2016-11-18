@@ -101,7 +101,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
     quint32 *dst = (quint32 *) destPixels;
     if (const_alpha != 256) {
         if (const_alpha != 0) {
-            const __m128i nullVector = _mm_set1_epi32(0);
             const __m128i half = _mm_set1_epi16(0x80);
             const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
 
@@ -119,12 +118,10 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
 
                 for (; x < w-3; x += 4) {
                     __m128i srcVector = _mm_loadu_si128((const __m128i *)&src[x]);
-                    if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) {
-                        const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
-                        __m128i result;
-                        INTERPOLATE_PIXEL_255_SSE2(result, srcVector, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half);
-                        _mm_store_si128((__m128i *)&dst[x], result);
-                    }
+                    const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+                    __m128i result;
+                    INTERPOLATE_PIXEL_255_SSE2(result, srcVector, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half);
+                    _mm_store_si128((__m128i *)&dst[x], result);
                 }
                 SIMD_EPILOGUE(x, w, 3)
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);

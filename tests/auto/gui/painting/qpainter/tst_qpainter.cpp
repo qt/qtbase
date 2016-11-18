@@ -300,6 +300,8 @@ private slots:
 
     void QTBUG56252();
 
+    void blendNullRGB32();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -5137,6 +5139,24 @@ void tst_QPainter::QTBUG56252()
     painter.end();
 
     // If no crash or illegal memory read, all is fine
+}
+
+void tst_QPainter::blendNullRGB32()
+{
+    quint32 data[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    QImage nullImage((const uchar*)data, 16, 1,  QImage::Format_RGB32);
+    QImage image(16, 1, QImage::Format_RGB32);
+    image.fill(Qt::white);
+
+    QPainter paint(&image);
+    paint.setCompositionMode(QPainter::CompositionMode_Source);
+    paint.setOpacity(0.5);
+    paint.drawImage(0, 0, nullImage);
+    paint.end();
+
+    for (int i=0; i < image.width(); ++i)
+        QVERIFY(image.pixel(i,0) != 0xffffffff);
 }
 
 QTEST_MAIN(tst_QPainter)
