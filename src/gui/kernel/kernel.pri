@@ -139,7 +139,7 @@ SOURCES += \
         kernel/qhighdpiscaling.cpp
 
 
-qtConfig(opengl(es2)?) {
+qtConfig(opengl) {
     HEADERS += \
             kernel/qplatformopenglcontext.h \
             kernel/qopenglcontext.h \

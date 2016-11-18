@@ -67,6 +67,9 @@ private slots:
     void condensedFontWidth();
     void condensedFontMatching();
 
+    void rasterFonts();
+    void smoothFonts();
+
 private:
     QString m_ledFont;
     QString m_testFont;
@@ -332,6 +335,31 @@ void tst_QFontDatabase::condensedFontMatching()
     QFont tfcBySubfamilyName("QtBidiTestFontCondensed");
     QCOMPARE(QFontMetrics(tfcByStyleName).width(testString()),
              QFontMetrics(tfcBySubfamilyName).width(testString()));
+}
+
+void tst_QFontDatabase::rasterFonts()
+{
+    QFont font(QLatin1String("Fixedsys"), 1000);
+    QFontInfo fontInfo(font);
+
+    if (fontInfo.family() != font.family())
+        QSKIP("Fixedsys font not available.");
+
+    QVERIFY(!QFontDatabase().isSmoothlyScalable(font.family()));
+    QVERIFY(fontInfo.pointSize() != font.pointSize());
+}
+
+void tst_QFontDatabase::smoothFonts()
+{
+    QFont font(QLatin1String("Arial"), 1000);
+    QFontInfo fontInfo(font);
+
+    if (fontInfo.family() != font.family())
+        QSKIP("Arial font not available.");
+
+    // Smooth and bitmap scaling are mutually exclusive
+    QVERIFY(QFontDatabase().isSmoothlyScalable(font.family()));
+    QVERIFY(!QFontDatabase().isBitmapScalable(font.family()));
 }
 
 QTEST_MAIN(tst_QFontDatabase)

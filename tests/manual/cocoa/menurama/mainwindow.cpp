@@ -56,7 +56,13 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(ui->menuDynamic_Stuff, &QMenu::aboutToShow, [=] {
-        menuApp->addDynMenu(QLatin1String("Added After aboutToShow()"), ui->menuDynamic_Stuff);
+        menuApp->addDynMenu(QLatin1String("Menu Added After aboutToShow()"), ui->menuDynamic_Stuff);
+
+        const QLatin1String itemTitle = QLatin1String("Disabled Item Added After aboutToShow()");
+        if (QAction *a = menuApp->findAction(itemTitle, ui->menuDynamic_Stuff))
+            ui->menuDynamic_Stuff->removeAction(a);
+        QAction *a = ui->menuDynamic_Stuff->addAction(itemTitle);
+        a->setEnabled(false);
     });
 
     connect(ui->pushButton, &QPushButton::clicked, [=] {

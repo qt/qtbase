@@ -524,10 +524,11 @@ namespace {
 
         const void *key = *reinterpret_cast<void * const *>(fontFileReferenceKey);
         *fontFileStream = NULL;
-        if (!m_fontDatas.contains(key))
+        auto it = m_fontDatas.constFind(key);
+        if (it == m_fontDatas.constEnd())
             return E_FAIL;
 
-        QByteArray fontData = m_fontDatas.value(key);
+        QByteArray fontData = it.value();
         DirectWriteFontFileStream *stream = new DirectWriteFontFileStream(fontData);
         stream->AddRef();
         *fontFileStream = stream;
@@ -1583,7 +1584,7 @@ QString QWindowsFontDatabase::fontDir() const
 
 bool QWindowsFontDatabase::fontsAlwaysScalable() const
 {
-    return true;
+    return false;
 }
 
 void QWindowsFontDatabase::derefUniqueFont(const QString &uniqueFont)

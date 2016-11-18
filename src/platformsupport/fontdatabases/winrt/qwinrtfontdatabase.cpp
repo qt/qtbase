@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qwinrtfontdatabase.h"
+#include "qwinrtfontdatabase_p.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFile>

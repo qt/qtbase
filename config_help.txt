@@ -252,6 +252,7 @@ Gui, printing, widget options:
   -xcb-xlib............. Enable Xcb-Xlib support [auto]
 
   Platform backends:
+    -direct2d .......... Enable Direct2D support [auto] (Windows only)
     -directfb .......... Enable DirectFB support [no] (Unix only)
     -eglfs ............. Enable EGLFS support [auto; no on Android and Windows]
     -gbm ............... Enable backends for GBM [auto] (Linux only)
@@ -288,12 +289,3 @@ Database options:
                          [all auto]
                          MYSQL_PATH= PSQL_LIBS= SYBASE= SYBASE_LIBS=
   -sqlite .............. Select used sqlite3 [system/qt]
-
-Multimedia options:
-
-  -pulseaudio .......... Enable PulseAudio support [auto]
-  -alsa ................ Enable ALSA support [auto]
-  -no-gstreamer ........ Disable support for GStreamer
-  -gstreamer [version] . Enable GStreamer support [auto]
-                         With no parameter, 1.0 is tried first, then 0.10.
-  -wmf-backend ......... Enable WMF support [no] (Windows only)

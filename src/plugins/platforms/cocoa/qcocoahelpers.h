@@ -158,7 +158,30 @@ T qt_mac_resolveOption(const T &fallback, QWindow *window, const QByteArray &pro
     // return default value.
     return fallback;
 }
+
 QT_END_NAMESPACE
+
+@protocol QT_MANGLE_NAMESPACE(QNSPanelDelegate)
+@required
+- (void)onOkClicked;
+- (void)onCancelClicked;
+@end
+
+@interface QT_MANGLE_NAMESPACE(QNSPanelContentsWrapper) : NSView
+
+@property (nonatomic, readonly) NSButton *okButton;
+@property (nonatomic, readonly) NSButton *cancelButton;
+@property (nonatomic, readonly) NSView *panelContents; // ARC: unretained, make it weak
+@property (nonatomic, assign) NSEdgeInsets panelContentsMargins;
+
+- (instancetype)initWithPanelDelegate:(id<QT_MANGLE_NAMESPACE(QNSPanelDelegate)>)panelDelegate;
+- (void)dealloc;
+
+- (NSButton *)createButtonWithTitle:(const char *)title;
+- (void)layout;
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanelContentsWrapper);
 
 #endif //QCOCOAHELPERS_H
 

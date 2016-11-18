@@ -378,18 +378,14 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
     QThemeIconInfo info;
     Q_ASSERT(!themeName.isEmpty());
 
-    QPixmap pixmap;
-
     // Used to protect against potential recursions
     visited << themeName;
 
-    QIconTheme theme = themeList.value(themeName);
+    QIconTheme &theme = themeList[themeName];
     if (!theme.isValid()) {
         theme = QIconTheme(themeName);
         if (!theme.isValid())
             theme = QIconTheme(fallbackTheme());
-
-        themeList.insert(themeName, theme);
     }
 
     const QStringList contentDirs = theme.contentDirs();

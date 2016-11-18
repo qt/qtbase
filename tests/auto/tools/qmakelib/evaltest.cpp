@@ -1265,8 +1265,8 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
     QTest::newRow("$$section(): bad number of arguments")
             << "VAR = $$section(1, 2) \\\n$$section(1, 2, 3, 4, 5)"
             << "VAR ="
-            << "##:1: section(var) section(var, sep, begin, end) requires three or four arguments.\n"
-               "##:2: section(var) section(var, sep, begin, end) requires three or four arguments."
+            << "##:1: section(var, sep, begin, end) requires three or four arguments.\n"
+               "##:2: section(var, sep, begin, end) requires three or four arguments."
             << true;
 
     QTest::newRow("$$find()")
@@ -2259,7 +2259,7 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << "jsontext = not good\n"
                "parseJson(jsontext, json): OK = 1"
             << "OK = UNDEF"
-            << "##:2: Error parsing json at offset 1: illegal value"
+            << "##:2: Error parsing JSON at 1:1: illegal value"
             << true;
 
     QTest::newRow("parseJson(): bad number of arguments")
@@ -2326,8 +2326,16 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
             << true;
 
     QTest::newRow("discard_from()")
-            << "HERE = 1\nPLUS = one\ninclude(include/inc.pri)\ndiscard_from(include/inc.pri): OK = 1"
-            << "OK = 1\nHERE = 1\nPLUS = one\nVAR = UNDEF"
+            << "HERE = 1\nPLUS = one\n"
+               "defineTest(tfunc) {}\ndefineReplace(rfunc) {}\n"
+               "include(include/inc.pri)\n"
+               "contains(QMAKE_INTERNAL_INCLUDED_FILES, .*/include/inc\\\\.pri): PRE = 1\n"
+               "discard_from(include/inc.pri): OK = 1\n"
+               "!contains(QMAKE_INTERNAL_INCLUDED_FILES, .*/include/inc\\\\.pri): POST = 1\n"
+               "defined(tfunc, test): TDEF = 1\ndefined(rfunc, replace): RDEF = 1\n"
+               "defined(func, test): DTDEF = 1\ndefined(func, replace): DRDEF = 1\n"
+            << "PRE = 1\nPOST = 1\nOK = 1\nHERE = 1\nPLUS = one\nVAR = UNDEF\n"
+               "TDEF = 1\nRDEF = 1\nDTDEF = UNDEF\nDRDEF = UNDEF"
             << ""
             << true;
 

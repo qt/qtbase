@@ -238,6 +238,8 @@ public:
     void setMenubar(QCocoaMenuBar *mb);
     QCocoaMenuBar *menubar() const;
 
+    NSCursor *effectiveWindowCursor() const;
+    void applyEffectiveWindowCursor();
     void setWindowCursor(NSCursor *cursor);
 
     void registerTouch(bool enable);

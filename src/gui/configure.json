@@ -9,6 +9,7 @@
         "options": {
             "android-style-assets": "boolean",
             "angle": "boolean",
+            "direct2d": "boolean",
             "directfb": "boolean",
             "directwrite": "boolean",
             "egl": "boolean",
@@ -455,8 +456,7 @@
         },
         "direct2d": {
             "label": "Direct 2D",
-            "autoDetect": false,
-            "condition": "config.win32 && libs.direct2d",
+            "condition": "config.win32 && !config.winrt && libs.direct2d",
             "output": [ "privateFeature" ]
         },
         "evdev": {
@@ -859,6 +859,12 @@
             "purpose": "Provides complex input methods.",
             "section": "Kernel",
             "condition": "features.library",
+            "output": [ "publicFeature", "feature" ]
+        },
+        "highdpiscaling": {
+            "label": "High DPI Scaling",
+            "purpose": "Provides automatic scaling of DPI-unaware applications on high-DPI displays.",
+            "section": "Kernel",
             "output": [ "publicFeature", "feature" ]
         },
         "validator": {

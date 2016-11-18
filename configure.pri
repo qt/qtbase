@@ -57,6 +57,7 @@ defineTest(qtConfCommandline_sanitize) {
 # callbacks
 
 defineReplace(qtConfFunc_crossCompile) {
+    !isEmpty(config.input.sysroot): return(true)
     spec = $$[QMAKE_SPEC]
     !equals(spec, $$[QMAKE_XSPEC]): return(true)
     return(false)
@@ -225,6 +226,7 @@ defineTest(qtConfTest_buildParts) {
 defineTest(qtConfTest_checkCompiler) {
     contains(QMAKE_CXX, ".*clang.*") {
         qtRunLoggedCommand("$$QMAKE_CXX -v 2>&1", versionstr)|return(false)
+        versionstr = "$$versionstr"
         contains(versionstr, "^Apple (clang|LLVM) version .*") {
             $${1}.compilerDescription = "Apple Clang"
             $${1}.compilerId = "apple_clang"
@@ -241,11 +243,11 @@ defineTest(qtConfTest_checkCompiler) {
         $${1}.compilerDescription = "GCC"
         $${1}.compilerId = "gcc"
         $${1}.compilerVersion = $$version
-    } else: contains(QMAKE_CXX, ".*icpc"  ) {
-        qtRunLoggedCommand("$$QMAKE_CXX -v", version)|return(false)
+    } else: contains(QMAKE_CXX, ".*icpc") {
+        qtRunLoggedCommand("$$QMAKE_CXX -dumpversion", version)|return(false)
         $${1}.compilerDescription = "ICC"
         $${1}.compilerId = "icc"
-        $${1}.compilerVersion = $$replace(version, "icpc version ([0-9.]+).*", "\\1")
+        $${1}.compilerVersion = $$version
     } else: msvc {
         command = $$QMAKE_CXX /EP /nologo $$source $$system_quote($$QMAKE_CONFIG_TESTS_DIR/win/msvc_version.cpp)
         qtRunLoggedCommand("$$command", version)|return(false)
@@ -455,9 +457,10 @@ defineTest(qtConfOutput_qmakeArgs) {
     export($${currentConfig}.output.privatePro)
 }
 
-defineTest(qtConfOutputPostProcess_publicPro) {
+defineReplace(qtConfOutputPostProcess_publicPro) {
     qt_version = $$[QT_VERSION]
     output = \
+        $$1 \
         "QT_VERSION = $$qt_version" \
         "QT_MAJOR_VERSION = $$section(qt_version, '.', 0, 0)" \
         "QT_MINOR_VERSION = $$section(qt_version, '.', 1, 1)" \
@@ -474,13 +477,13 @@ defineTest(qtConfOutputPostProcess_publicPro) {
             "QT_RELEASE_DATE = $$config.input.qt_release_date"
     }
 
-    $${currentConfig}.output.publicPro += $$output
-    export($${currentConfig}.output.publicPro)
+    return($$output)
 }
 
-defineTest(qtConfOutputPostProcess_publicHeader) {
+defineReplace(qtConfOutputPostProcess_publicHeader) {
     qt_version = $$[QT_VERSION]
     output = \
+        $$1 \
         "$${LITERAL_HASH}define QT_VERSION_STR \"$$qt_version\"" \
         "$${LITERAL_HASH}define QT_VERSION_MAJOR $$section(qt_version, '.', 0, 0)" \
         "$${LITERAL_HASH}define QT_VERSION_MINOR $$section(qt_version, '.', 1, 1)" \
@@ -497,8 +500,7 @@ defineTest(qtConfOutputPostProcess_publicHeader) {
     !isEmpty(config.input.qt_libinfix): \
         output += "$${LITERAL_HASH}define QT_LIBINFIX \"$$eval(config.input.qt_libinfix)\""
 
-    $${currentConfig}.output.publicHeader += $$output
-    export($${currentConfig}.output.publicHeader)
+    return($$output)
 }
 
 
@@ -526,13 +528,16 @@ defineTest(qtConfReport_buildMode) {
     else: \
         release = "release"
 
-    $$qtConfEvaluate("features.debug"): \
+    $$qtConfEvaluate("features.debug") {
         build_mode = "debug"
-    else: \
+        raw_build_mode = "debug"
+    } else {
         build_mode = $$release
+        raw_build_mode = "release"
+    }
 
     $$qtConfEvaluate("features.debug_and_release"): \
-        build_mode = "debug and $$release; default link: $$build_mode"
+        build_mode = "debug and $$release; default link: $$raw_build_mode"
 
     $$qtConfEvaluate("features.release_tools"): \
         build_mode = "$$build_mode; optimized tools"

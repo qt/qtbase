@@ -211,7 +211,7 @@ public:
     Qt::FocusReason focusInReason;
     OperationInfoMap operationMap;
     QPointer<QMenu> systemMenu;
-#ifndef QT_NO_ACTIONS
+#ifndef QT_NO_ACTION
     QPointer<QAction> actions[NumWindowStateActions];
 #endif
     QMdiSubWindow::SubWindowOptions options;

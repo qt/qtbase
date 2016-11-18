@@ -1679,6 +1679,7 @@ public:
     QT_Q_ENUM(Orientation)
     QT_Q_ENUM(DropAction)
     QT_Q_FLAG(Alignment)
+    QT_Q_ENUM(TextFlag)
     QT_Q_FLAG(Orientations)
     QT_Q_FLAG(DropActions)
     QT_Q_FLAG(Edges)

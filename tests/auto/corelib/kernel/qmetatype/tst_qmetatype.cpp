@@ -712,7 +712,7 @@ void tst_QMetaType::flags_data()
         << bool(!QTypeInfo<RealType>::isStatic) \
         << bool(QTypeInfo<RealType>::isComplex) \
         << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<RealType>::Value) \
-        << bool(Q_IS_ENUM(RealType));
+        << bool(std::is_enum<RealType>::value);
 QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)

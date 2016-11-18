@@ -34,7 +34,7 @@
     The Books example shows how Qt's SQL classes can be used with the model/view
     framework to create rich user interfaces for information stored in a database.
 
-    \image books-demo.png
+    \borderedimage books-demo.png
 
     Information about a collection of books is held in a database. The books are
     catalogued by author, title, genre, and year of publication. Although each of

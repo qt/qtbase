@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qgtk3dialoghelpers.h"
+#include "qgtk3theme.h"
 
 #include <qeventloop.h>
 #include <qwindow.h>
@@ -55,6 +56,11 @@
 #include <pango/pango.h>
 
 QT_BEGIN_NAMESPACE
+
+static const char *standardButtonText(int button)
+{
+    return QGtk3Theme::defaultStandardButtonText(button).toUtf8();
+}
 
 class QGtk3Dialog : public QWindow
 {
@@ -237,8 +243,10 @@ QGtk3FileDialogHelper::QGtk3FileDialogHelper()
 {
     d.reset(new QGtk3Dialog(gtk_file_chooser_dialog_new("", 0,
                                                         GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                                        GTK_STOCK_OK, GTK_RESPONSE_OK, NULL)));
+                                                        standardButtonText(QPlatformDialogHelper::Cancel), GTK_RESPONSE_CANCEL,
+                                                        standardButtonText(QPlatformDialogHelper::Ok), GTK_RESPONSE_OK,
+                                                        NULL)));
+
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
     connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
 
@@ -438,9 +446,9 @@ void QGtk3FileDialogHelper::applyOptions()
         if (opts->isLabelExplicitlySet(QFileDialogOptions::Accept))
             gtk_button_set_label(GTK_BUTTON(acceptButton), opts->labelText(QFileDialogOptions::Accept).toUtf8());
         else if (opts->acceptMode() == QFileDialogOptions::AcceptOpen)
-            gtk_button_set_label(GTK_BUTTON(acceptButton), GTK_STOCK_OPEN);
+            gtk_button_set_label(GTK_BUTTON(acceptButton), standardButtonText(QPlatformDialogHelper::Open));
         else
-            gtk_button_set_label(GTK_BUTTON(acceptButton), GTK_STOCK_SAVE);
+            gtk_button_set_label(GTK_BUTTON(acceptButton), standardButtonText(QPlatformDialogHelper::Save));
     }
 
     GtkWidget *rejectButton = gtk_dialog_get_widget_for_response(gtkDialog, GTK_RESPONSE_CANCEL);
@@ -448,7 +456,7 @@ void QGtk3FileDialogHelper::applyOptions()
         if (opts->isLabelExplicitlySet(QFileDialogOptions::Reject))
             gtk_button_set_label(GTK_BUTTON(rejectButton), opts->labelText(QFileDialogOptions::Reject).toUtf8());
         else
-            gtk_button_set_label(GTK_BUTTON(rejectButton), GTK_STOCK_CANCEL);
+            gtk_button_set_label(GTK_BUTTON(rejectButton), standardButtonText(QPlatformDialogHelper::Cancel));
     }
 }
 

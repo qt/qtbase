@@ -44,7 +44,6 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qpair.h>
-#include <QtCore/qtypetraits.h>
 
 #ifdef Q_MAP_DEBUG
 #include <QtCore/qdebug.h>
@@ -130,15 +129,15 @@ struct QMapNode : public QMapNodeBase
     {
         callDestructorIfNecessary(key);
         callDestructorIfNecessary(value);
-        doDestroySubTree(QtPrivate::integral_constant<bool, QTypeInfo<T>::isComplex || QTypeInfo<Key>::isComplex>());
+        doDestroySubTree(std::integral_constant<bool, QTypeInfo<T>::isComplex || QTypeInfo<Key>::isComplex>());
     }
 
     QMapNode<Key, T> *lowerBound(const Key &key);
     QMapNode<Key, T> *upperBound(const Key &key);
 
 private:
-    void doDestroySubTree(QtPrivate::false_type) {}
-    void doDestroySubTree(QtPrivate::true_type)
+    void doDestroySubTree(std::false_type) {}
+    void doDestroySubTree(std::true_type)
     {
         if (left)
             leftNode()->destroySubTree();

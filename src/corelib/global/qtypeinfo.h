@@ -38,8 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qtypetraits.h>
-#include <QtCore/qisenum.h>
+#include <QtCore/qglobal.h>
 
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H
@@ -60,10 +59,10 @@ class QTypeInfo
 public:
     enum {
         isPointer = false,
-        isIntegral = QtPrivate::is_integral<T>::value,
+        isIntegral = std::is_integral<T>::value,
         isComplex = true,
         isStatic = true,
-        isRelocatable = Q_IS_ENUM(T),
+        isRelocatable = std::is_enum<T>::value,
         isLarge = (sizeof(T)>sizeof(void*)),
         isDummy = false, //### Qt6: remove
         sizeOf = sizeof(T)
@@ -247,7 +246,7 @@ public: \
         isRelocatable = !isStatic || ((FLAGS) & Q_RELOCATABLE_TYPE), \
         isLarge = (sizeof(TYPE)>sizeof(void*)), \
         isPointer = false, \
-        isIntegral = QtPrivate::is_integral< TYPE >::value, \
+        isIntegral = std::is_integral< TYPE >::value, \
         isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0), \
         sizeOf = sizeof(TYPE) \
     }; \

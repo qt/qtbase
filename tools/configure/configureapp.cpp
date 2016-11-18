@@ -1087,7 +1087,7 @@ bool Configure::showLicense(QString orgLicenseFile)
             return false;
         } else {
             if (dictionary["EDITION"] == "OpenSource") {
-                if (accept == 'L')
+                if (accept == 'l')
                     licenseFile = orgLicenseFile + "/LICENSE.LGPL3";
                 else
                     licenseFile = orgLicenseFile + "/LICENSE.GPL2";

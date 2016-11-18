@@ -2553,6 +2553,9 @@ void QWindowPrivate::_q_clearAlert()
     See the \l{Qt::CursorShape}{list of predefined cursor objects} for a
     range of useful shapes.
 
+    If no cursor has been set, or after a call to unsetCursor(), the
+    parent window's cursor is used.
+
     By default, the cursor has the Qt::ArrowCursor shape.
 
     Some underlying window implementations will reset the cursor if it

@@ -493,73 +493,84 @@ static QVersionDirectivePosition findVersionDirectivePosition(const char *source
 {
     Q_ASSERT(source);
 
-    QString working = QString::fromUtf8(source);
-
     // According to the GLSL spec the #version directive must not be
     // preceded by anything but whitespace and comments.
     // In order to not get confused by #version directives within a
-    // multiline comment, we need to run a minimal preprocessor first.
+    // multiline comment, we need to do some minimal comment parsing
+    // while searching for the directive.
     enum {
         Normal,
+        StartOfLine,
+        PreprocessorDirective,
         CommentStarting,
         MultiLineComment,
         SingleLineComment,
         CommentEnding
-    } state = Normal;
+    } state = StartOfLine;
 
-    for (QChar *c = working.begin(); c != working.end(); ++c) {
+    const char *c = source;
+    while (*c) {
         switch (state) {
-        case Normal:
-            if (*c == QLatin1Char('/'))
+        case PreprocessorDirective:
+            if (*c == ' ' || *c == '\t')
+                break;
+            if (!strncmp(c, "version", strlen("version"))) {
+                // Found version directive
+                c += strlen("version");
+                while (*c && *c != '\n')
+                    ++c;
+                int splitPosition = c - source + 1;
+                int linePosition = int(std::count(source, c, '\n')) + 1;
+                return QVersionDirectivePosition(splitPosition, linePosition);
+            } else if (*c == '/')
                 state = CommentStarting;
+            else if (*c == '\n')
+                state = StartOfLine;
+            else
+                state = Normal;
+            break;
+        case StartOfLine:
+            if (*c == ' ' || *c == '\t')
+                break;
+            else if (*c == '#') {
+                state = PreprocessorDirective;
+                break;
+            }
+            state = Normal;
+            // fall through
+        case Normal:
+            if (*c == '/')
+                state = CommentStarting;
+            else if (*c == '\n')
+                state = StartOfLine;
             break;
         case CommentStarting:
-            if (*c == QLatin1Char('*'))
+            if (*c == '*')
                 state = MultiLineComment;
-            else if (*c == QLatin1Char('/'))
+            else if (*c == '/')
                 state = SingleLineComment;
             else
                 state = Normal;
             break;
         case MultiLineComment:
-            if (*c == QLatin1Char('*'))
+            if (*c == '*')
                 state = CommentEnding;
-            else if (*c == QLatin1Char('#'))
-                *c = QLatin1Char('_');
             break;
         case SingleLineComment:
-            if (*c == QLatin1Char('\n'))
+            if (*c == '\n')
                 state = Normal;
-            else if (*c == QLatin1Char('#'))
-                *c = QLatin1Char('_');
             break;
         case CommentEnding:
-            if (*c == QLatin1Char('/')) {
+            if (*c == '/')
                 state = Normal;
-            } else {
-                if (*c == QLatin1Char('#'))
-                    *c = QLatin1Char('_');
-                if (*c != QLatin1Char('*'))
-                    state = MultiLineComment;
-            }
+            else if (*c != QLatin1Char('*'))
+                state = MultiLineComment;
             break;
         }
+        ++c;
     }
 
-    // Search for #version directive
-    int splitPosition = 0;
-    int linePosition = 1;
-
-    static const QRegularExpression pattern(QStringLiteral("^\\s*#\\s*version.*(\\n)?"),
-                                            QRegularExpression::MultilineOption
-                                            | QRegularExpression::OptimizeOnFirstUsageOption);
-    QRegularExpressionMatch match = pattern.match(working);
-    if (match.hasMatch()) {
-        splitPosition = match.capturedEnd();
-        linePosition += int(std::count(working.begin(), working.begin() + splitPosition, QLatin1Char('\n')));
-    }
-
-    return QVersionDirectivePosition(splitPosition, linePosition);
+    return QVersionDirectivePosition(0, 1);
 }
 
 /*!

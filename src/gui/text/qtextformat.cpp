@@ -3409,8 +3409,7 @@ int QTextFormatCollection::indexForFormat(const QTextFormat &format)
             f.d = new QTextFormatPrivate;
         f.d->resolveFont(defaultFnt);
 
-        if (!hashes.contains(hash, idx))
-            hashes.insert(hash, idx);
+        hashes.insert(hash, idx);
 
     } QT_CATCH(...) {
         formats.pop_back();

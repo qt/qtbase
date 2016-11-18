@@ -410,7 +410,9 @@
 #include "qhash.h"
 #include "qdir.h"         // for QDir::fromNativeSeparators
 #include "qdatastream.h"
+#if QT_CONFIG(topleveldomain)
 #include "qtldurl_p.h"
+#endif
 #include "private/qipaddress_p.h"
 #include "qurlquery.h"
 

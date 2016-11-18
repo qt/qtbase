@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,12 +37,54 @@
 **
 ****************************************************************************/
 
-#include <alsa/asoundlib.h>
-#if SND_LIB_VERSION < 0x1000a  // 1.0.10
-#error "Alsa version found too old, require >= 1.0.10"
-#endif
+#ifndef QWINRTFONTDATABASE_H
+#define QWINRTFONTDATABASE_H
 
-int main(int argc,char **argv)
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
+#include <QtCore/QLoggingCategory>
+
+struct IDWriteFontFile;
+struct IDWriteFontFamily;
+
+QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
+
+struct FontDescription
 {
-}
+    quint32 index;
+    QByteArray uuid;
+};
 
+class QWinRTFontDatabase : public QBasicFontDatabase
+{
+public:
+    QString fontDir() const;
+    ~QWinRTFontDatabase();
+    QFont defaultFont() const Q_DECL_OVERRIDE;
+    bool fontsAlwaysScalable() const Q_DECL_OVERRIDE;
+    void populateFontDatabase() Q_DECL_OVERRIDE;
+    void populateFamily(const QString &familyName) Q_DECL_OVERRIDE;
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) Q_DECL_OVERRIDE;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style,
+                                   QFont::StyleHint styleHint, QChar::Script script) const Q_DECL_OVERRIDE;
+    void releaseHandle(void *handle) Q_DECL_OVERRIDE;
+private:
+    QHash<IDWriteFontFile *, FontDescription> m_fonts;
+    QHash<QString, IDWriteFontFamily *> m_fontFamilies;
+};
+
+QT_END_NAMESPACE
+
+#endif // QWINRTFONTDATABASE_H

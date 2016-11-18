@@ -60,8 +60,8 @@ template <typename StringType> struct QStringAlgorithms
 {
     typedef typename StringType::value_type Char;
     typedef typename StringType::size_type size_type;
-    typedef typename QtPrivate::remove_cv<StringType>::type NakedStringType;
-    static const bool isConst = QtPrivate::is_const<StringType>::value;
+    typedef typename std::remove_cv<StringType>::type NakedStringType;
+    static const bool isConst = std::is_const<StringType>::value;
 
     static inline bool isSpace(char ch) { return ascii_isspace(ch); }
     static inline bool isSpace(QChar ch) { return ch.isSpace(); }

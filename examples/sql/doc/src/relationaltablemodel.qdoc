@@ -33,5 +33,5 @@
     \brief The Relational Table Model example shows how to use table views with a relational
     model to visualize the relations between items in a database.
 
-    \image relationaltablemodel-example.png
+    \borderedimage relationaltablemodel-example.png
 */

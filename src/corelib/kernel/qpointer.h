@@ -52,7 +52,7 @@ class QVariant;
 template <class T>
 class QPointer
 {
-    Q_STATIC_ASSERT_X(!QtPrivate::is_pointer<T>::value, "QPointer's template type must not be a pointer type");
+    Q_STATIC_ASSERT_X(!std::is_pointer<T>::value, "QPointer's template type must not be a pointer type");
 
     template<typename U>
     struct TypeSelector

@@ -324,7 +324,7 @@ defineTest(qtConfParseCommandLine) {
 
 defineReplace(qtConfToolchainSupportsFlag) {
     test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR)
-    test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
+    test_cmd_base = "$$QMAKE_CD $$system_quote($$system_path($$test_out_dir)) &&"
 
     conftest = "int main() { return 0; }"
     write_file("$$test_out_dir/conftest.cpp", conftest)|error()
@@ -611,9 +611,7 @@ defineTest(qtConfHandleLibrary) {
         return()
     }
 
-    qtLogTestIntro($${lpfx})
-    msg = "looking for library $${1}"
-    write_file($$QMAKE_CONFIG_LOG, msg, append)
+    qtLogTestIntro($${lpfx}, "looking for library $${1}")
 
     result = false
     for (s, $${lpfx}.sources._KEYS_) {
@@ -649,7 +647,7 @@ defineTest(qtConfHandleLibrary) {
         qtLog(" => source accepted.")
 
         $${lpfx}.cache += source
-        for (v, $$list(libs includes cflags version export)): \
+        for (v, $$list(libs includedir cflags version export)): \
             $${lpfx}.cache += sources.$${s}.$${v}
         for (b, $${spfx}.builds._KEYS_): \
             $${lpfx}.cache += sources.$${s}.builds.$${b}
@@ -677,13 +675,33 @@ defineTest(qtConfTest_library) {
 
 defineTest(qtConfTestPrepare_compile) {
     for (u, $$list($$eval($${1}.use))) {
-        !contains($${currentConfig}.libraries._KEYS_, $$u): \
-            error("Test $$1 tries to use undeclared library '$$u'")
-        qtConfHandleLibrary($$u)
-        lpfx = $${currentConfig}.libraries.$${u}
-        isEmpty($${lpfx}.source): \
-            return(false)
-        $${1}.literal_args += $$qtConfLibraryArgs($${lpfx}.sources.$$eval($${lpfx}.source))
+        libConfig =
+        contains($${currentConfig}.libraries._KEYS_, $$u) {
+            libConfig = $${currentConfig}
+            qtConfHandleLibrary($$u)
+        } else {
+            for (d, QMAKE_CONFIG_DEPS) {
+                contains($${d}.libraries._KEYS_, $$u) {
+                    libConfig = $$d
+                    break()
+                }
+            }
+        }
+        isEmpty(libConfig) {
+            nu = $$upper($$u)
+            libs = $$eval(QMAKE_LIBS_$$nu) $$eval(QMAKE_LIBS_$${nu}_DEBUG) $$eval(QMAKE_LIBS_$${nu}_RELEASE)
+            defines = $$eval(QMAKE_DEFINES_$${nu})
+            includes = $$eval(QMAKE_INCDIR_$${nu})
+
+            isEmpty(libs):isEmpty(defines):isEmpty(includes): \
+                error("Test $$1 tries to use undeclared library '$$u'")
+            $${1}.literal_args += $$system_quote(QMAKE_USE += $$u)
+        } else {
+            lpfx = $${libConfig}.libraries.$${u}
+            isEmpty($${lpfx}.source): \
+                return(false)
+            $${1}.literal_args += $$qtConfLibraryArgs($${lpfx}.sources.$$eval($${lpfx}.source))
+        }
     }
     export($${1}.literal_args)
     return(true)
@@ -698,7 +716,7 @@ defineTest(qtConfTest_compile) {
     test_out_dir = $$shadowed($$test_dir)
     !isEmpty($${1}.pro): \
         test_dir = $$test_dir/$$eval($${1}.pro)
-    test_cmd_base = "cd $$system_quote($$system_path($$test_out_dir)) &&"
+    test_cmd_base = "$$QMAKE_CD $$system_quote($$system_path($$test_out_dir)) &&"
 
     qmake_args = $$qtConfPkgConfigEnv()$$system_quote($$system_path($$QMAKE_QMAKE))
     !isEmpty(QMAKE_QTCONF): \
@@ -798,10 +816,9 @@ defineTest(qtLogTestIntro) {
     label = $$eval($${1}.label)
     isEmpty(label): return()
 
-    msg = "Checking for $${label}... "
-    log($$msg)
+    log("Checking for $${label}... ")
     $$QMAKE_CONFIG_VERBOSE: log("$$escape_expand(\\n)")
-    write_file($$QMAKE_CONFIG_LOG, msg, append)
+    write_file($$QMAKE_CONFIG_LOG, 2, append)
 }
 
 defineTest(qtLogTestResult) {
@@ -927,9 +944,7 @@ defineTest(qtRunSingleTest) {
     qtConfLoadResult($${tpfx}, $$1): \
         return()
 
-    qtLogTestIntro($${tpfx})
-    msg = "executing config test $${1}"
-    write_file($$QMAKE_CONFIG_LOG, msg, append)
+    qtLogTestIntro($${tpfx}, "executing config test $${1}")
 
     result = false
     $${call}($${tpfx}): result = true
@@ -939,6 +954,15 @@ defineTest(qtRunSingleTest) {
     $${tpfx}.result = $$result
     export($${tpfx}.result)
     qtConfSaveResult($${tpfx}, $$1)
+}
+
+defineTest(qtConfHaveModule) {
+    module = $$replace(1, -, _)
+    !isEmpty(QT.$${module}.skip):$$eval(QT.$${module}.skip): \
+        return(false)
+    !isEmpty(QT.$${module}.name): \
+        return(true)
+    return(false)
 }
 
 defineReplace(qtConfEvaluate) {
@@ -1024,6 +1048,10 @@ defineReplace(qtConfEvaluateSingleExpression) {
         var = $$replace(e, "^config\.", "")
         result = false
         contains(CONFIG, $$var): result = true
+    } else: contains(e, "^module\..*") {
+        var = $$replace(e, "^module\.", "")
+        result = false
+        qtConfHaveModule($$var): result = true
     } else: contains(e, "^arch\..*") {
         var = $$replace(e, "^arch\.", "")
         result = false
@@ -1186,10 +1214,21 @@ defineTest(qtConfCheckFeature) {
     $${fpfx}.available = $$result
     export($${fpfx}.available)
 
-    for (i, $${currentConfig}.features.$${feature}.output._KEYS_): \
-        qtConfProcessOneOutput($$feature, $$i)
+    for (i, $${fpfx}.output._KEYS_): \
+        qtConfProcessOneOutput($${1}, $$i)
 
     return(true)
+}
+
+defineTest(qtConfCheckModuleCondition) {
+    QT.$${currentModule}.skip = false
+    !$$qtConfEvaluate($$eval($${currentConfig}.condition)): \
+        QT.$${currentModule}.skip = true
+    export(QT.$${currentModule}.skip)
+
+    # ensure qtConfHaveModule() works
+    QT.$${currentModule}.name = -
+    export(QT.$${currentModule}.name)
 }
 
 
@@ -1556,9 +1595,6 @@ defineTest(qtConfOutput_publicFeature) {
     }
 }
 
-# currently this is somewhat inconsistent, as the feature is output to the public pro file,
-# whereas the define is being added to the private pro file.
-# This should get cleaned up to add to the private pro and header instead.
 defineTest(qtConfOutput_privateFeature) {
     name = "$$eval($${1}.name)"
     isEmpty(name): \
@@ -1640,13 +1676,17 @@ defineTest(qtConfProcessOutput) {
             }
         }
 
-        ppScope =
-        !isEmpty(module): ppScope = $${module}_
-        defined(qtConfOutputPostProcess_$${ppScope}$${type}, test): \
-            qtConfOutputPostProcess_$${ppScope}$${type}()
+        content = $$eval($${currentConfig}.output.$${type})
+
+        !isEmpty(module): \
+            call = qtConfOutputPostProcess_$${module}_$${type}
+        else: \
+            call = qtConfOutputPostProcess_$${type}
+        defined($$call, replace): \
+            eval(content = \$\$"$$call"(\$\$content))
 
         file = $$eval($${currentConfig}.files.$${type})
-        fileCont.$$file += $$eval($${currentConfig}.output.$${type})
+        fileCont.$$file += $$content
         fileCont._KEYS_ *= $$file
     }
 
@@ -1737,6 +1777,10 @@ equals(QMAKE_CONFIG_CACHE_USE, none) {
     write_file($$QMAKE_CONFIG_CACHE, cont)
 }
 
+QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
+!equals(QMAKE_CONFIG_CACHE_USE, all): \
+    write_file($$QMAKE_CONFIG_LOG, "")
+
 for (currentConfig, allConfigs) {
     qtConfSetModuleName()
     qtConfSetupModuleOutputs()
@@ -1768,14 +1812,27 @@ for (currentConfig, allConfigs) {
         }
     }
 
-    # process all features
-    qtConfProcessFeatures()
+    qtConfCheckModuleCondition()
+
+    qtConfHaveModule($$currentModule) {
+        # process all features
+        qtConfProcessFeatures()
+    } else {
+        qtConfOutputVar(assign, "privatePro", "QT.$${currentModule}.skip", "true")
+    }
 
     # generate files and reports
     qtConfProcessOutput()
-    qtConfCreateReport()
-    qtConfCreateSummary()
+    qtConfHaveModule($$currentModule) {
+        qtConfCreateReport()
+        qtConfCreateSummary()
+    } else {
+        QT_CONFIGURE_SKIPPED_MODULES += "    $$currentModule"
+    }
 }
+
+!isEmpty(QT_CONFIGURE_SKIPPED_MODULES): \
+    qtConfAddNote("The following modules are not being compiled in this configuration:" $$QT_CONFIGURE_SKIPPED_MODULES)
 
 # these come from the pri files loaded above.
 for (p, QMAKE_POST_CONFIGURE): \

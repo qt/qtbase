@@ -167,7 +167,7 @@ void QMirClientCursor::configureMirCursorWithPixmapQCursor(MirSurface *surface, 
     QImage image = cursor.pixmap().toImage();
 
     if (image.format() != QImage::Format_ARGB32) {
-        image.convertToFormat(QImage::Format_ARGB32);
+        image = image.convertToFormat(QImage::Format_ARGB32);
     }
 
     MirBufferStream *bufferStream = mir_connection_create_buffer_stream_sync(mConnection,

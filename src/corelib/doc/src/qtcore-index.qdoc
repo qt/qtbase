@@ -109,6 +109,11 @@
     the \l{GNU General Public License, version 2}.
     See \l{Qt Licensing} for further details.
 
+    Executables on Windows potentially link
+    against \l{The qtmain Library}. This library is available
+    under commercial licenses, and in addition under the
+    \l{BSD 3-clause "New" or "Revised" License}.
+
     Furthermore Qt Core potentially contains third party
     modules under following permissive licenses:
 

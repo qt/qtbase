@@ -662,10 +662,10 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
     if (d->socketType != QAbstractSocket::TcpSocket)
         return -1;
 
-    QMutexLocker mutexLocker(&d->readMutex);
     // There will be a read notification when the socket was closed by the remote host. If that
     // happens and there isn't anything left in the buffer, we have to return -1 in order to signal
     // the closing of the socket.
+    QMutexLocker mutexLocker(&d->readMutex);
     if (d->readBytes.pos() == d->readBytes.size() && d->socketState != QAbstractSocket::ConnectedState) {
         close();
         return -1;
@@ -718,7 +718,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     QByteArray readOrigin;
     // Do not read the whole datagram. Put the rest of it back into the "queue"
     if (maxlen < datagram.data.length()) {
-        QByteArray readOrigin = datagram.data.left(maxlen);
+        readOrigin = datagram.data.left(maxlen);
         datagram.data = datagram.data.remove(0, maxlen);
         d->pendingDatagrams.prepend(datagram);
     } else {

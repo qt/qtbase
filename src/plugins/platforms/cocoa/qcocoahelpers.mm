@@ -298,3 +298,117 @@ QString qt_mac_removeAmpersandEscapes(QString s)
 }
 
 QT_END_NAMESPACE
+
+/*! \internal
+
+    This NSView derived class is used to add OK/Cancel
+    buttons to NSColorPanel and NSFontPanel. It replaces
+    the panel's content view, while reparenting the former
+    content view into itself. It also takes care of setting
+    the target-action for the OK/Cancel buttons and making
+    sure the layout is consistent.
+ */
+@implementation QNSPanelContentsWrapper
+
+- (instancetype)initWithPanelDelegate:(id<QT_MANGLE_NAMESPACE(QNSPanelDelegate)>)panelDelegate
+{
+    if ((self = [super initWithFrame:NSZeroRect])) {
+        // create OK and Cancel buttons and add these as subviews
+        _okButton = [self createButtonWithTitle:"&OK"];
+        _okButton.action = @selector(onOkClicked);
+        _okButton.target = panelDelegate;
+
+        _cancelButton = [self createButtonWithTitle:"Cancel"];
+        _cancelButton.action = @selector(onCancelClicked);
+        _cancelButton.target = panelDelegate;
+
+        _panelContents = nil;
+
+        _panelContentsMargins = NSEdgeInsetsMake(0, 0, 0, 0);
+    }
+
+    return self;
+}
+
+- (void)dealloc
+{
+    [_okButton release];
+    _okButton = nil;
+    [_cancelButton release];
+    _cancelButton = nil;
+
+    _panelContents = nil;
+
+    [super dealloc];
+}
+
+- (NSButton *)createButtonWithTitle:(const char *)title
+{
+    NSButton *button = [[NSButton alloc] initWithFrame:NSZeroRect];
+    button.buttonType = NSMomentaryLightButton;
+    button.bezelStyle = NSRoundedBezelStyle;
+    const QString &cleanTitle = QPlatformTheme::removeMnemonics(QCoreApplication::translate("QDialogButtonBox", title));
+    // FIXME: Not obvious, from Cocoa's documentation, that QString::toNSString() makes a deep copy
+    button.title = (NSString *)cleanTitle.toCFString();
+    ((NSButtonCell *)button.cell).font =
+            [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSRegularControlSize]];
+    [self addSubview:button];
+    return button;
+}
+
+- (void)layout
+{
+    static const CGFloat ButtonMinWidth = 78.0; // 84.0 for Carbon
+    static const CGFloat ButtonMinHeight = 32.0;
+    static const CGFloat ButtonSpacing = 0.0;
+    static const CGFloat ButtonTopMargin = 0.0;
+    static const CGFloat ButtonBottomMargin = 7.0;
+    static const CGFloat ButtonSideMargin = 9.0;
+
+    NSSize frameSize = self.frame.size;
+
+    [self.okButton sizeToFit];
+    NSSize okSizeHint = self.okButton.frame.size;
+
+    [self.cancelButton sizeToFit];
+    NSSize cancelSizeHint = self.cancelButton.frame.size;
+
+    const CGFloat buttonWidth = qMin(qMax(ButtonMinWidth,
+                                          qMax(okSizeHint.width, cancelSizeHint.width)),
+                                     CGFloat((frameSize.width - 2.0 * ButtonSideMargin - ButtonSpacing) * 0.5));
+    const CGFloat buttonHeight = qMax(ButtonMinHeight,
+                                     qMax(okSizeHint.height, cancelSizeHint.height));
+
+    NSRect okRect = { { frameSize.width - ButtonSideMargin - buttonWidth,
+                        ButtonBottomMargin },
+                      { buttonWidth, buttonHeight } };
+    self.okButton.frame = okRect;
+    self.okButton.needsDisplay = YES;
+
+    NSRect cancelRect = { { okRect.origin.x - ButtonSpacing - buttonWidth,
+                            ButtonBottomMargin },
+                            { buttonWidth, buttonHeight } };
+    self.cancelButton.frame = cancelRect;
+    self.cancelButton.needsDisplay = YES;
+
+    // The third view should be the original panel contents. Cache it.
+    if (!self.panelContents)
+        for (NSView *view in self.subviews)
+            if (view != self.okButton && view != self.cancelButton) {
+                _panelContents = view;
+                break;
+            }
+
+    const CGFloat buttonBoxHeight = ButtonBottomMargin + buttonHeight + ButtonTopMargin;
+    const NSRect panelContentsFrame = NSMakeRect(
+                self.panelContentsMargins.left,
+                buttonBoxHeight + self.panelContentsMargins.bottom,
+                frameSize.width - (self.panelContentsMargins.left + self.panelContentsMargins.right),
+                frameSize.height - buttonBoxHeight - (self.panelContentsMargins.top + self.panelContentsMargins.bottom));
+    self.panelContents.frame = panelContentsFrame;
+    self.panelContents.needsDisplay = YES;
+
+    self.needsDisplay = YES;
+}
+
+@end

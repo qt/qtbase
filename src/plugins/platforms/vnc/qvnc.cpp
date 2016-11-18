@@ -533,9 +533,11 @@ void QRfbRawEncoder::write()
 
 QVncClientCursor::QVncClientCursor()
 {
+#ifndef QT_NO_CURSOR
     QWindow *w = QGuiApplication::focusWindow();
     QCursor c = w ? w->cursor() : QCursor(Qt::ArrowCursor);
     changeCursor(&c, 0);
+#endif
 }
 
 QVncClientCursor::~QVncClientCursor()
@@ -582,10 +584,10 @@ void QVncClientCursor::write(QVncClient *client) const
         socket->write((const char*)bitmap.scanLine(i), width);
 }
 
-#ifndef QT_NO_CURSOR
 void QVncClientCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
 {
     Q_UNUSED(window);
+#ifndef QT_NO_CURSOR
     const Qt::CursorShape shape = widgetCursor ? widgetCursor->shape() : Qt::ArrowCursor;
 
     if (shape == Qt::BitmapCursor) {
@@ -599,6 +601,9 @@ void QVncClientCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
         cursor = *platformImage.image();
         hotspot = platformImage.hotspot();
     }
+#else // !QT_NO_CURSOR
+    Q_UNUSED(widgetCursor);
+#endif
     for (auto client : clients)
         client->setDirtyCursor();
 }
@@ -614,7 +619,6 @@ uint QVncClientCursor::removeClient(QVncClient *client)
     clients.removeOne(client);
     return clients.count();
 }
-#endif
 
 QVncServer::QVncServer(QVncScreen *screen, quint16 port)
     : qvnc_screen(screen)
