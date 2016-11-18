@@ -575,16 +575,18 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     t << "####### Build rules\n\n";
     writeBuildRulesPart(t);
 
-    if(project->isActiveConfig("shared") && !project->values("DLLDESTDIR").isEmpty()) {
-        const ProStringList &dlldirs = project->values("DLLDESTDIR");
-        for (ProStringList::ConstIterator dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
-            t << "\t-$(COPY_FILE) $(DESTDIR_TARGET) "
-              << escapeFilePath(Option::fixPathToTargetOS((*dlldir).toQString(), false)) << endl;
+    if (project->first("TEMPLATE") != "aux") {
+        if (project->isActiveConfig("shared") && !project->values("DLLDESTDIR").isEmpty()) {
+            const ProStringList &dlldirs = project->values("DLLDESTDIR");
+            for (ProStringList::ConstIterator dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
+                t << "\t-$(COPY_FILE) $(DESTDIR_TARGET) "
+                  << escapeFilePath(Option::fixPathToTargetOS((*dlldir).toQString(), false)) << endl;
+            }
         }
-    }
-    t << endl;
+        t << endl;
 
-    writeRcFilePart(t);
+        writeRcFilePart(t);
+    }
 
     writeMakeQmake(t);
 
