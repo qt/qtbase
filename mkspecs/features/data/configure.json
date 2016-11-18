@@ -7,6 +7,8 @@
             "v": { "type": "enum", "name": "verbose", "values": { "yes": "true", "no": "false" } },
             "verbose": { "type": "enum", "values": { "yes": "true", "no": "false" } },
 
+            "continue": "void",
+
             "recheck": { "type": "void", "name": "cache_use", "value": "positive" },
             "recheck-all": { "type": "void", "name": "cache_use", "value": "none" },
 
