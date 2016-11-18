@@ -1,0 +1,17 @@
+COCOA_LFLAGS = -framework Foundation -framework CoreServices
+CARBON_LFLAGS = -framework ApplicationServices
+CARBON_CFLAGS = -fconstant-cfstrings
+
+EXTRA_CXXFLAGS = $(CARBON_CFLAGS)
+EXTRA_LFLAGS = $(COCOA_LFLAGS) $(CARBON_LFLAGS)
+
+QTOBJS2 = \
+    qsettings_mac.o \
+    qcore_mac.o \
+    qcore_mac_objc.o \
+    qcore_foundation.o
+QTSRCS2 = \
+    $(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp \
+    $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp \
+    $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm \
+    $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm

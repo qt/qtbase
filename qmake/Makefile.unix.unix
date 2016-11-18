@@ -1,0 +1,11 @@
+EXEEXT =
+QTOBJS = \
+    qfilesystemengine_unix.o \
+    qfilesystemiterator_unix.o \
+    qfsfileengine_unix.o \
+    qlocale_unix.o
+QTSRCS = \
+    $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp \
+    $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp \
+    $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp \
+    $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp

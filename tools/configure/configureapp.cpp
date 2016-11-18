@@ -866,54 +866,15 @@ void Configure::buildQmake()
                        << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
                 if (dictionary[ "QMAKESPEC" ].startsWith("win32-g++")) {
                     stream << "QMAKESPEC = $(SOURCE_PATH)\\mkspecs\\" << dictionary[ "QMAKESPEC" ] << endl
-                           << "EXTRA_CXXFLAGS = -std=c++11 -DUNICODE -ffunction-sections" << endl
-                           << "EXTRA_LFLAGS = -Wl,--gc-sections" << endl
-                           << "QTOBJS = qfilesystemengine_win.o \\" << endl
-                           << "         qfilesystemiterator_win.o \\" << endl
-                           << "         qfsfileengine_win.o \\" << endl
-                           << "         qlocale_win.o \\" << endl
-                           << "         qsettings_win.o \\" << endl
-                           << "         qsystemlibrary.o \\" << endl
-                           << "         registry.o" << endl
-                           << "QTSRCS=\"$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp\" \\" << endl\
-                           << "       \"$(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/tools/shared/windows/registry.cpp\"" << endl
-                           << "EXEEXT=.exe" << endl
-                           << "LFLAGS=-static -s -lole32 -luuid -ladvapi32 -lkernel32" << endl;
-                    /*
-                    ** SHELL is the full path of sh.exe, unless
-                    ** 1) it is found in the current directory
-                    ** 2) it is not found at all
-                    ** 3) it is overridden on the command line with an existing file
-                    ** ... otherwise it is always sh.exe. Specifically, SHELL from the
-                    ** environment has no effect.
-                    **
-                    ** This check will fail if SHELL is explicitly set to a not
-                    ** sh-compatible shell. This is not a problem, because configure.bat
-                    ** will not do that.
-                    */
-                    stream << "ifeq ($(SHELL), sh.exe)" << endl
-                           << "    ifeq ($(wildcard $(CURDIR)/sh.exe), )" << endl
-                           << "        SH = 0" << endl
-                           << "    else" << endl
-                           << "        SH = 1" << endl
-                           << "    endif" << endl
-                           << "else" << endl
-                           << "    SH = 1" << endl
-                           << "endif" << endl
-                           << "\n"
-                           << "ifeq ($(SH), 1)" << endl
-                           << "    RM_F = rm -f" << endl
-                           << "    RM_RF = rm -rf" << endl
-                           << "else" << endl
-                           << "    RM_F = del /f" << endl
-                           << "    RM_RF = rmdir /s /q" << endl
-                           << "endif" << endl;
-                    stream << "\n\n";
+                           << "CONFIG_CXXFLAGS = -std=c++11 -ffunction-sections" << endl
+                           << "CONFIG_LFLAGS = -Wl,--gc-sections" << endl;
+
+                    QFile in(sourcePath + "/qmake/Makefile.unix.win32");
+                    if (in.open(QFile::ReadOnly | QFile::Text))
+                        stream << in.readAll();
+                    QFile in2(sourcePath + "/qmake/Makefile.unix.mingw");
+                    if (in2.open(QFile::ReadOnly | QFile::Text))
+                        stream << in2.readAll();
                 } else {
                     stream << "QMAKESPEC = " << dictionary["QMAKESPEC"] << endl;
                 }

@@ -1,0 +1,19 @@
+EXEEXT = .exe
+EXTRA_CXXFLAGS = -DUNICODE
+EXTRA_LFLAGS = -static -s -lole32 -luuid -ladvapi32 -lkernel32
+QTOBJS = \
+    qfilesystemengine_win.o \
+    qfilesystemiterator_win.o \
+    qfsfileengine_win.o \
+    qlocale_win.o \
+    qsettings_win.o \
+    qsystemlibrary.o \
+    registry.o
+QTSRCS = \
+    $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp \
+    $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp \
+    $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp \
+    $(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp \
+    $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp \
+    $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp \
+    $(SOURCE_PATH)/tools/shared/windows/registry.cpp
