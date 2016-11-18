@@ -52,7 +52,6 @@ public:
     static QString detectQMakeSpec();
 
     static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
-    static QString execute(const QString &command, int *returnCode = 0);
 
 private:
     static Compiler detectedCompiler;

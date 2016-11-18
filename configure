@@ -400,13 +400,6 @@ UNAME_MACHINE=`(uname -m) 2>/dev/null` || UNAME_MACHINE=unknown
 UNAME_RELEASE=`(uname -r) 2>/dev/null` || UNAME_RELEASE=unknown
 UNAME_SYSTEM=`(uname -s) 2>/dev/null`  || UNAME_SYSTEM=unknown
 
-# detect the "echo without newline" style. usage: echo $ECHO_N "<string>$ECHO_C"
-if echo '\c' | grep '\c' >/dev/null; then
-    ECHO_N=-n
-else
-    ECHO_C='\c'
-fi
-
 BUILD_ON_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
@@ -469,7 +462,6 @@ unset QTDIR
 
 # initalize internal variables
 CFG_RELEASE_TOOLS=no
-CFG_ANDROID_STYLE_ASSETS=yes
 
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
 XPLATFORM_MAC=no        # Whether target platform is macOS, iOS, tvOS, or watchOS
@@ -790,12 +782,6 @@ while [ "$#" -gt 0 ]; do
     android-toolchain-version)
         CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
         ;;
-    android-style-assets)
-        # Required to be able to show the correct license text
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_ANDROID_STYLE_ASSETS="$VAL"
-        fi
-        ;;
     *)
         ;;
     esac
@@ -1006,168 +992,6 @@ case "$XPLATFORM" in
         XPLATFORM_ANDROID=clang
         ;;
 esac
-
-#-------------------------------------------------------------------------------
-# check the license
-#-------------------------------------------------------------------------------
-
-if [ "$COMMERCIAL_USER" = "ask" ]; then
-    while true; do
-        echo "Which edition of Qt do you want to use ?"
-        echo
-        echo "Type 'c' if you want to use the Commercial Edition."
-        echo "Type 'o' if you want to use the Open Source Edition."
-        echo
-        read commercial
-        echo
-        if [ "$commercial" = "c" ]; then
-            COMMERCIAL_USER="yes"
-            OPT_CMDLINE="$OPT_CMDLINE
--commercial"
-            break
-        elif [ "$commercial" = "o" ]; then
-            COMMERCIAL_USER="no"
-            OPT_CMDLINE="$OPT_CMDLINE
--opensource"
-            break
-        fi
-    done
-fi
-
-if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ]; then
-    # Commercial preview release
-    Licensee="Preview"
-    Edition="Preview"
-    EditionString="Technology Preview"
-elif [ $COMMERCIAL_USER = "yes" ]; then
-    if [ $UNAME_SYSTEM = "Linux" ]; then
-        case "$PLATFORM" in
-        *-32)
-            Licheck=licheck32
-            ;;
-        *-64)
-            Licheck=licheck64
-            ;;
-        *)
-            if file -L /bin/sh | grep -q "64-bit" ; then
-                Licheck=licheck64
-            else
-                Licheck=licheck32
-            fi
-            ;;
-        esac
-    elif [ $UNAME_SYSTEM = "Darwin" ]; then
-        Licheck=licheck_mac
-    else
-        echo >&2 "Host operating system not supported by this edition of Qt."
-        exit 1
-    fi
-    if [ -x "$relpath/bin/$Licheck" ]; then
-        LicheckOutput=`$relpath/bin/$Licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
-                       $PLATFORM $XPLATFORM`
-        if [ $? -ne 0 ]; then
-            exit 1
-        else
-            eval "$LicheckOutput"
-        fi
-    else
-        echo
-        echo "Error: This is the Open Source version of Qt."
-        echo "If you want to use Enterprise features of Qt,"
-        echo "use the contact form at http://www.qt.io/contact-us"
-        echo "to purchase a license."
-        echo
-        exit 1
-    fi
-elif [ $COMMERCIAL_USER = "no" ]; then
-    # Open Source edition - may only be used under the terms of the LGPLv3 or GPLv2.
-    Licensee="Open Source"
-    Edition="OpenSource"
-    EditionString="Open Source"
-fi
-
-if [ "$Edition" = "OpenSource" ] || [ "$Edition" = "Preview" ]; then
-    echo
-    echo "This is the Qt ${EditionString} Edition."
-    echo
-fi
-
-if [ "$Edition" = "OpenSource" ]; then
-    while true; do
-        if [ "$CFG_ANDROID_STYLE_ASSETS" = "no" ] || [ "$XPLATFORM_ANDROID" = "no" ]; then
-            echo "You are licensed to use this software under the terms of"
-            echo "the GNU Lesser General Public License (LGPL) version 3."
-            echo "You are also licensed to use this software under the terms of"
-            echo "the GNU General Public License (GPL) version 2."
-            affix="either"
-            showGPL2="yes"
-        else
-            echo "You are licensed to use this software under the terms of"
-            echo "the GNU Lesser General Public License (LGPL) version 3."
-            showGPL2="no"
-            affix="the"
-        fi
-
-        echo
-        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
-            echo "You have already accepted the terms of the $EditionString license."
-            acceptance=yes
-        else
-            if [ -f "$relpath/LICENSE.LGPL3" ]; then
-                echo "Type 'L' to view the GNU Lesser General Public License version 3."
-            fi
-            if [ "$showGPL2" = "yes" ]; then
-                echo "Type 'G' to view the GNU General Public License version 2."
-            fi
-            echo "Type 'yes' to accept this license offer."
-            echo "Type 'no' to decline this license offer."
-            echo
-            echo $ECHO_N "Do you accept the terms of $affix license? $ECHO_C"
-            read acceptance
-        fi
-        echo
-        if [ "$acceptance" = "yes" ] || [ "$acceptance" = "y" ]; then
-            break
-        elif [ "$acceptance" = "no" ]; then
-            echo "You are not licensed to use this software."
-            echo
-            exit 1
-        elif [ "$acceptance" = "L" ]; then
-            more "$relpath/LICENSE.LGPL3"
-        elif [ "$acceptance" = "G" ] && [ "$showGPL2" = "yes" ]; then
-            more "$relpath/LICENSE.GPL2"
-        fi
-    done
-elif [ "$Edition" = "Preview" ]; then
-    TheLicense=`head -n 1 "$relpath/LICENSE.PREVIEW.COMMERCIAL"`
-    while true; do
-
-        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
-            echo "You have already accepted the terms of the $EditionString license."
-            acceptance=yes
-        else
-            echo "You are licensed to use this software under the terms of"
-            echo "the $TheLicense"
-            echo
-            echo "Type '?' to read the Preview License."
-            echo "Type 'yes' to accept this license offer."
-            echo "Type 'no' to decline this license offer."
-            echo
-            echo $ECHO_N "Do you accept the terms of the license? $ECHO_C"
-            read acceptance
-        fi
-        echo
-        if [ "$acceptance" = "yes" ]; then
-            break
-        elif [ "$acceptance" = "no" ] ;then
-            echo "You are not licensed to use this software."
-            echo
-            exit 0
-        elif [ "$acceptance" = "?" ]; then
-            more "$relpath/LICENSE.PREVIEW.COMMERCIAL"
-        fi
-    done
-fi
 
 #-------------------------------------------------------------------------------
 # command line and environment validation
@@ -1805,16 +1629,6 @@ fi
 # run configure tests
 #-------------------------------------------------------------------------------
 
-# copy some variables that are still being computed in the shell script into an input file for configure
-# This should go away in the future
-
-cat > "$outpath/config.tests/configure.cfg" <<EOF
-# Feature defaults set by configure command line
-config.input.qt_edition = $Edition
-config.input.qt_licheck = $Licheck
-config.input.qt_release_date = $ReleaseDate
-EOF
-
 # recreate command line for qmake
 set -f
 SAVED_IFS=$IFS
@@ -1840,6 +1654,15 @@ fi
 # finally save the executed command to another script
 #-------------------------------------------------------------------------------
 if [ $CFG_REDO = no ]; then
+    if [ "$COMMERCIAL_USER" = "ask" ]; then
+        if grep '^QT_EDITION = OpenSource$' "$outpath/mkspecs/qconfig.pri" >/dev/null 2>&1; then
+            OPT_CMDLINE="$OPT_CMDLINE
+-opensource"
+        else
+            OPT_CMDLINE="$OPT_CMDLINE
+-commercial"
+        fi
+    fi
     if [ "$OPT_CONFIRM_LICENSE" = "no" ]; then
         OPT_CMDLINE="$OPT_CMDLINE
 -confirm-license"

@@ -378,29 +378,4 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
     return exitCode;
 }
 
-/*!
-    Executes \a command with _popen() and returns the stdout of the command.
-
-    Taken from qmake's system() command.
-*/
-QString Environment::execute(const QString &command, int *returnCode)
-{
-    QString output;
-    FILE *proc = _popen(command.toLatin1().constData(), "r");
-    char buff[256];
-    while (proc && !feof(proc)) {
-        int read_in = int(fread(buff, 1, 255, proc));
-        if (!read_in)
-            break;
-        buff[read_in] = '\0';
-        output += buff;
-    }
-    if (proc) {
-        int r = _pclose(proc);
-        if (returnCode)
-            *returnCode = r;
-    }
-    return output;
-}
-
 QT_END_NAMESPACE

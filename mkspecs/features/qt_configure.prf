@@ -28,6 +28,12 @@ defineTest(qtConfAddError) {
     }
 }
 
+defineTest(qtConfFatalError) {
+    qtConfAddError($$1, $$2)
+    qtConfPrintReport()
+    error()
+}
+
 defineTest(qtConfCommandlineSetInput) {
     arg = $${1}
     val = $${2}
@@ -778,9 +784,7 @@ defineTest(qtConfTest_compile) {
 
 defineTest(qtConfTest_verifySpec) {
     qtConfTest_compile($$1): return(true)
-    qtConfAddError("Cannot compile a minimal program. The toolchain or QMakeSpec is broken.", log)
-    qtConfPrintReport()
-    error()
+    qtConfFatalError("Cannot compile a minimal program. The toolchain or QMakeSpec is broken.", log)
 }
 
 defineTest(qtConfTest_files) {
@@ -1308,6 +1312,10 @@ defineTest(qtConfReport_warning) {
 
 defineTest(qtConfReport_error) {
     qtConfAddError($${1}, log)
+}
+
+defineTest(qtConfReport_fatal) {
+    qtConfFatalError($${1})
 }
 
 defineTest(qtConfCreateReportRecurse) {

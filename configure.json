@@ -56,6 +56,7 @@
             "android-toolchain-version": "string",
 
             "accessibility": "boolean",
+            "android-style-assets": "boolean",
             "avx": "boolean",
             "avx2": "boolean",
             "avx512": { "type": "boolean", "name": "avx512f" },
@@ -417,6 +418,12 @@
     },
 
     "features": {
+        "android-style-assets": {
+            "label": "Android Style Assets",
+            "condition": "config.android",
+            "output": [ "privateFeature" ],
+            "comment": "This belongs into gui, but the license check needs it here already."
+        },
         "shared": {
             "label": "Building shared libraries",
             "condition": "!config.uikit && !config.integrity",
@@ -962,6 +969,11 @@
     },
 
     "earlyReport": [
+        {
+            "type": "fatal",
+            "condition": "!call.licenseCheck",
+            "message": "You are not licensed to use this software."
+        },
         {
             "type": "warning",
             "condition": "input.debug_and_release == 'yes' && !config.darwin && !config.win32",

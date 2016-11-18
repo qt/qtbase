@@ -18,7 +18,6 @@ OBJECTS = \
     main.o \
     configureapp.o \
     environment.o \
-    tools.o \
     qarraydata.o \
     qbytearray.o \
     qbytearraymatcher.o \
@@ -116,9 +115,8 @@ $(PCH): $(CONFSRC)/configure_pch.h
 VPATH = $(CONFSRC):$(TOOLSRC)/shared/windows:$(CORESRC)/global:$(CORESRC)/kernel:$(CORESRC)/tools:$(CORESRC)/codecs:$(CORESRC)/io:$(CORESRC)/xml:$(CORESRC)/plugin
 
 main.o: $(CONFSRC)/configureapp.h
-configureapp.o: $(CONFSRC)/configureapp.h $(CONFSRC)/environment.h $(CONFSRC)/tools.h
+configureapp.o: $(CONFSRC)/configureapp.h $(CONFSRC)/environment.h
 environment.o: $(CONFSRC)/environment.h
-tools.o: $(CONFSRC)/tools.h
 
 # Make sure qstring_compat.obj isn't compiled with PCH enabled
 qstring_compat.o: $(CORESRC)/tools/qstring_compat.cpp

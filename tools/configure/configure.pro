@@ -31,7 +31,7 @@ INCLUDEPATH += \
            $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION/QtCore \
            $$QT_SOURCE_TREE/tools/shared
 
-HEADERS  = configureapp.h environment.h tools.h\
+HEADERS  = configureapp.h environment.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qarraydata.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearray.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qarraydatapointer.h \
@@ -80,7 +80,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/tools/shared/windows/registry_p.h
 
 
-SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
+SOURCES  = main.cpp configureapp.cpp environment.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearray.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qarraydata.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearraymatcher.cpp \

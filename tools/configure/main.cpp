@@ -45,13 +45,6 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
-    // Read license now, and exit if it doesn't pass.
-    // This lets the user see the command-line options of configure
-    // without having to load and parse the license file.
-    app.readLicense();
-    if (!app.isOk())
-        return 3;
-
     // Source file with path settings. Needed by qmake.
     app.generateQConfigCpp();
 

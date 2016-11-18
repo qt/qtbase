@@ -29,7 +29,6 @@
 
 #include "configureapp.h"
 #include "environment.h"
-#include "tools.h"
 
 #include <qdir.h>
 #include <qdiriterator.h>
@@ -46,7 +45,6 @@
 #include <string>
 #include <fstream>
 #include <windows.h>
-#include <conio.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,13 +63,6 @@ std::ostream &operator<<(std::ostream &s, const QString &val) {
 
 
 using namespace std;
-
-static inline void promptKeyPress()
-{
-    cout << "(Press any key to continue...)";
-    if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
-        exit(0);      // Exit cleanly for Ctrl+C
-}
 
 Configure::Configure(int& argc, char** argv)
 {
@@ -183,7 +174,6 @@ void Configure::parseCmdLine()
             if (j == argCount)
                 break;
             dictionary["XQMAKESPEC"] = configCmdLine.at(j);
-            applySpecSpecifics();
             break;
         }
     }
@@ -419,12 +409,6 @@ void Configure::parseCmdLine()
                 break;
             dictionary[ "ANDROID_NDK_TOOLCHAIN_VERSION" ] = configCmdLine.at(i);
         }
-
-        else if (configCmdLine.at(i) == "-no-android-style-assets") {
-            dictionary[ "ANDROID_STYLE_ASSETS" ] = "no";
-        } else if (configCmdLine.at(i) == "-android-style-assets") {
-            dictionary[ "ANDROID_STYLE_ASSETS" ] = "yes";
-        }
     }
 
     // Ensure that QMAKESPEC exists in the mkspecs folder
@@ -493,16 +477,6 @@ void Configure::parseCmdLine()
             cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
         }
     }
-}
-
-/*!
-    Modifies the default configuration based on given -platform option.
-    Eg. switches to different default styles for Windows CE.
-*/
-void Configure::applySpecSpecifics()
-{
-    if (platform() == ANDROID)
-        dictionary["ANDROID_STYLE_ASSETS"]  = "yes";
 }
 
 void Configure::prepareConfigTests()
@@ -914,16 +888,6 @@ void Configure::buildQmake()
 
 void Configure::configure()
 {
-    FileWriter ci(buildPath + "/config.tests/configure.cfg");
-    ci << "# Feature defaults set by configure command line\n"
-       << "config.input.qt_edition = " << dictionary["EDITION"] << "\n"
-       << "config.input.qt_licheck = " << dictionary["LICHECK"] << "\n"
-       << "config.input.qt_release_date = " << dictionary["RELEASEDATE"];
-    if (!ci.flush()) {
-        dictionary[ "DONE" ] = "error";
-        return;
-    }
-
     QStringList args;
     args << buildPath + "/bin/qmake"
          << sourcePathMangled
@@ -939,155 +903,6 @@ void Configure::configure()
 
     if ((dictionary["REDO"] != "yes") && (dictionary["DONE"] != "error"))
         saveCmdLine();
-}
-
-bool Configure::showLicense(QString orgLicenseFile)
-{
-    bool showGpl2 = true;
-    QString licenseFile = orgLicenseFile;
-    QString theLicense;
-    if (dictionary["EDITION"] == "OpenSource") {
-        if (platform() != WINDOWS_RT
-                && (platform() != ANDROID || dictionary["ANDROID_STYLE_ASSETS"] == "no")) {
-            theLicense = "GNU Lesser General Public License (LGPL) version 3\n"
-                         "or the GNU General Public License (GPL) version 2";
-        } else {
-            theLicense = "GNU Lesser General Public License (LGPL) version 3";
-            showGpl2 = false;
-        }
-    } else {
-        // the first line of the license file tells us which license it is
-        QFile file(licenseFile);
-        if (!file.open(QFile::ReadOnly)) {
-            cout << "Failed to load LICENSE file" << endl;
-            return false;
-        }
-        theLicense = file.readLine().trimmed();
-    }
-
-    forever {
-        char accept = '?';
-        cout << "You are licensed to use this software under the terms of" << endl
-             << "the " << theLicense << "." << endl
-             << endl;
-        if (dictionary["EDITION"] == "OpenSource") {
-            cout << "Type 'L' to view the GNU Lesser General Public License version 3 (LGPLv3)." << endl;
-            if (showGpl2)
-                cout << "Type 'G' to view the GNU General Public License version 2 (GPLv2)." << endl;
-        } else {
-            cout << "Type '?' to view the " << theLicense << "." << endl;
-        }
-        cout << "Type 'y' to accept this license offer." << endl
-             << "Type 'n' to decline this license offer." << endl
-             << endl
-             << "Do you accept the terms of the license?" << endl;
-        cin >> accept;
-        accept = tolower(accept);
-
-        if (accept == 'y') {
-            configCmdLine << "-confirm-license";
-            return true;
-        } else if (accept == 'n') {
-            return false;
-        } else {
-            if (dictionary["EDITION"] == "OpenSource") {
-                if (accept == 'l')
-                    licenseFile = orgLicenseFile + "/LICENSE.LGPL3";
-                else
-                    licenseFile = orgLicenseFile + "/LICENSE.GPL2";
-            }
-            // Get console line height, to fill the screen properly
-            int i = 0, screenHeight = 25; // default
-            CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-            HANDLE stdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-            if (GetConsoleScreenBufferInfo(stdOut, &consoleInfo))
-                screenHeight = consoleInfo.srWindow.Bottom
-                             - consoleInfo.srWindow.Top
-                             - 1; // Some overlap for context
-
-            // Prompt the license content to the user
-            QFile file(licenseFile);
-            if (!file.open(QFile::ReadOnly)) {
-                cout << "Failed to load LICENSE file" << licenseFile << endl;
-                return false;
-            }
-            QStringList licenseContent = QString(file.readAll()).split('\n');
-            while (i < licenseContent.size()) {
-                cout << licenseContent.at(i) << endl;
-                if (++i % screenHeight == 0) {
-                    promptKeyPress();
-                    cout << "\r";     // Overwrite text above
-                }
-            }
-        }
-    }
-}
-
-void Configure::readLicense()
-{
-    dictionary["PLATFORM NAME"] = platformName();
-    dictionary["LICENSE FILE"] = sourcePath;
-
-    bool openSource = false;
-    bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL2");
-    if (dictionary["BUILDTYPE"] == "commercial") {
-        openSource = false;
-    } else if (dictionary["BUILDTYPE"] == "opensource") {
-        openSource = true;
-    } else if (hasOpenSource) { // No Open Source? Just display the commercial license right away
-        forever {
-            char accept = '?';
-            cout << "Which edition of Qt do you want to use ?" << endl;
-            cout << "Type 'c' if you want to use the Commercial Edition." << endl;
-            cout << "Type 'o' if you want to use the Open Source Edition." << endl;
-            cin >> accept;
-            accept = tolower(accept);
-
-            if (accept == 'c') {
-                openSource = false;
-                break;
-            } else if (accept == 'o') {
-                openSource = true;
-                break;
-            }
-        }
-    }
-    if (hasOpenSource && openSource) {
-        cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl << endl;
-        dictionary["LICENSEE"] = "Open Source";
-        dictionary["EDITION"] = "OpenSource";
-    } else if (openSource) {
-        cout << endl << "Cannot find the GPL license files! Please download the Open Source version of the library." << endl;
-        dictionary["DONE"] = "error";
-        return;
-    } else {
-        QString tpLicense = sourcePath + "/LICENSE.PREVIEW.COMMERCIAL";
-        if (QFile::exists(tpLicense)) {
-            cout << endl << "This is the Qt Preview Edition." << endl << endl;
-
-            dictionary["EDITION"] = "Preview";
-            dictionary["LICENSE FILE"] = tpLicense;
-        } else {
-            Tools::checkLicense(dictionary, sourcePath, buildPath);
-        }
-    }
-
-    if (dictionary["LICENSE_CONFIRMED"] != "yes") {
-        if (!showLicense(dictionary["LICENSE FILE"])) {
-            cout << "Configuration aborted since license was not accepted" << endl;
-            dictionary["DONE"] = "error";
-            return;
-        }
-    } else if (dictionary["LICHECK"].isEmpty()) { // licheck executable shows license
-        cout << "You have already accepted the terms of the license." << endl << endl;
-    }
-
-    if (dictionary["BUILDTYPE"] == "none") {
-        if (openSource)
-            configCmdLine << "-opensource";
-        else
-            configCmdLine << "-commercial";
-    }
 }
 
 bool Configure::reloadCmdLine(int idx)
@@ -1112,6 +927,20 @@ bool Configure::reloadCmdLine(int idx)
 void Configure::saveCmdLine()
 {
     if (dictionary[ "REDO" ] != "yes") {
+        if (dictionary["BUILDTYPE"] == "none") {
+            bool openSource = false;
+            QFile inFile(buildPath + "/mkspecs/qconfig.pri");
+            if (inFile.open(QFile::ReadOnly | QFile::Text)) {
+                QTextStream inStream(&inFile);
+                while (!inStream.atEnd()) {
+                    if (inStream.readLine() == "QT_EDITION = OpenSource")
+                        openSource = true;
+                }
+            }
+            configCmdLine.append(openSource ? "-opensource" : "-commercial");
+        }
+        if (dictionary["LICENSE_CONFIRMED"] != "yes")
+            configCmdLine.append("-confirm-license");
         QFile outFile(buildPathMangled + "/config.opt");
         if (outFile.open(QFile::WriteOnly | QFile::Text)) {
             QTextStream outStream(&outFile);
@@ -1132,23 +961,6 @@ bool Configure::isDone()
 bool Configure::isOk()
 {
     return (dictionary[ "DONE" ] != "error");
-}
-
-QString Configure::platformName() const
-{
-    switch (platform()) {
-    default:
-    case WINDOWS:
-        return QStringLiteral("Qt for Windows");
-    case WINDOWS_RT:
-        return QStringLiteral("Qt for Windows Runtime");
-    case QNX:
-        return QStringLiteral("Qt for QNX");
-    case ANDROID:
-        return QStringLiteral("Qt for Android");
-    case OTHER:
-        return QStringLiteral("Qt for ???");
-    }
 }
 
 int Configure::platform() const
