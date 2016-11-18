@@ -149,6 +149,11 @@ QT_BEGIN_NAMESPACE
 
     \value ContextMenuOnMouseRelease (bool) Whether the context menu should be shown on mouse release.
 
+    \value TouchDoubleTapDistance (int) The maximum distance in logical pixels which a touchpoint can travel
+                        between taps in order for the tap sequence to be handled as a double tap.
+                        The default value is double the MouseDoubleClickDistance, or 10 logical pixels
+                        if that is not specified.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -533,6 +538,14 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         }
     case WheelScrollLines:
         return QVariant(3);
+    case TouchDoubleTapDistance:
+        {
+            bool ok = false;
+            int dist = qEnvironmentVariableIntValue("QT_DBL_TAP_DIST", &ok);
+            if (!ok)
+                dist = defaultThemeHint(MouseDoubleClickDistance).toInt(&ok) * 2;
+            return QVariant(ok ? dist : 10);
+        }
     }
     return QVariant();
 }
