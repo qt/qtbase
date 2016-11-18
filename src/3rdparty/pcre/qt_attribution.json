@@ -6,10 +6,11 @@
 
     "Description": "The PCRE library is a set of functions that implement regular expression pattern matching using the same syntax and semantics as Perl 5.",
     "Homepage": "http://www.pcre.org/",
+    "Version": "8.39",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseId": "BSD-3-Clause",
     "LicenseFile": "LICENCE",
-    "Copyright": "Copyright (c) 1997-2015 University of Cambridge
-Copyright (c) 2010-2015 Zoltan Herczeg
+    "Copyright": "Copyright (c) 1997-2016 University of Cambridge
+Copyright (c) 2009-2016 Zoltan Herczeg
 Copyright (c) 2007-2012, Google Inc."
 }
