@@ -28,13 +28,35 @@
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 @echo off
-setlocal ENABLEEXTENSIONS
+setlocal ENABLEDELAYEDEXPANSION ENABLEEXTENSIONS
 set ARGS=%*
 set QTSRC=%~dp0
+set QTSRC=%QTSRC:~0,-1%
 set QTDIR=%CD%
 
+rem Parse command line
+
+set TOPLEVEL=false
+set TOPQTSRC=%QTSRC%
+set TOPQTDIR=%QTDIR%
+if /i not "%~1" == "-top-level" goto notoplevel
+set ARGS=%ARGS:~10%
+set TOPLEVEL=true
+for %%P in ("%TOPQTSRC%") do set TOPQTSRC=%%~dpP
+set TOPQTSRC=%TOPQTSRC:~0,-1%
+for %%P in ("%QTDIR%") do set TOPQTDIR=%%~dpP
+set TOPQTDIR=%TOPQTDIR:~0,-1%
+:notoplevel
+
+set SYNCQT=
+set PLATFORM=
+set MAKE=
+call :doargs %ARGS%
+if errorlevel 1 exit /b
+goto doneargs
+
 :doargs
-    if "%~1" == "" goto doneargs
+    if "%~1" == "" exit /b
 
     if "%~1" == "/?" goto help
     if "%~1" == "-?" goto help
@@ -44,25 +66,118 @@ set QTDIR=%CD%
     if /i "%~1" == "-help" goto help
     if /i "%~1" == "--help" goto help
 
+    if /i "%~1" == "-redo" goto redo
+    if /i "%~1" == "--redo" goto redo
+
+    if /i "%~1" == "-platform" goto platform
+    if /i "%~1" == "--platform" goto platform
+
+    if /i "%~1" == "-no-syncqt" goto nosyncqt
+    if /i "%~1" == "--no-syncqt" goto nosyncqt
+
+    if /i "%~1" == "-make-tool" goto maketool
+    if /i "%~1" == "--make-tool" goto maketool
+
+:nextarg
     shift
     goto doargs
+
+:help
+    type %QTSRC%\config_help.txt
+    exit /b 1
+
+:redo
+    if not exist "%TOPQTDIR%\config.opt" goto redoerr
+    set rargs=
+    for /f "usebackq delims=" %%i in ("%TOPQTDIR%\config.opt") do set rargs=!rargs! "%%i"
+    call :doargs %rargs%
+    goto nextarg
+:redoerr
+    echo No config.opt present - cannot redo configuration. >&2
+    exit /b 1
+
+:platform
+    shift
+    if "%~1" == "win32-msvc2012" goto msvc
+    if "%~1" == "win32-msvc2013" goto msvc
+    if "%~1" == "win32-msvc2015" goto msvc
+    if "%~1" == "win32-msvc2017" goto msvc
+    set PLATFORM=%~1
+    goto nextarg
+:msvc
+    echo. >&2
+    echo Notice: re-mapping requested qmake spec to unified 'win32-msvc'. >&2
+    echo. >&2
+    set PLATFORM=win32-msvc
+    goto nextarg
+
+:nosyncqt
+    set SYNCQT=false
+    goto nextarg
+
+:maketool
+    shift
+    set MAKE=%~1
+    goto nextarg
+
 :doneargs
 
-echo Please wait while bootstrapping configure ...
-
+rem Find various executables
 for %%C in (clang-cl.exe cl.exe icl.exe g++.exe perl.exe jom.exe) do set %%C=%%~$PATH:C
 
-if "%perl.exe%" == "" (
-    echo Perl not found in PATH. Aborting. >&2
+rem Determine host spec
+
+if "%PLATFORM%" == "" (
+    if not "%icl.exe%" == "" (
+        set PLATFORM=win32-icc
+    ) else if not "%clang-cl.exe%" == "" (
+        set PLATFORM=win32-clang-msvc
+    ) else if not "%cl.exe%" == "" (
+        set PLATFORM=win32-msvc
+    ) else if not "%g++.exe%" == "" (
+        set PLATFORM=win32-g++
+    ) else (
+        echo Cannot detect host toolchain. Please use -platform. Aborting. >&2
+        exit /b 1
+    )
+)
+if not exist "%QTSRC%\mkspecs\%PLATFORM%\qmake.conf" (
+    echo Host platform '%PLATFORM%' is invalid. Aborting. >&2
     exit /b 1
 )
+if "%PLATFORM:win32-g++=%" == "%PLATFORM%" (
+    if "%MAKE%" == "" (
+        if not "%jom.exe%" == "" (
+            set MAKE=jom
+        ) else (
+            set MAKE=nmake
+        )
+    )
+    set tmpl=win32
+) else (
+    if "%MAKE%" == "" (
+        set MAKE=mingw32-make
+    )
+    set tmpl=unix
+)
+
+rem Prepare build dir
+
 if not exist mkspecs (
     md mkspecs
-    if errorlevel 1 goto exit
+    if errorlevel 1 exit /b
+)
+if not exist bin (
+    md bin
+    if errorlevel 1 exit /b
+)
+if not exist qmake (
+    md qmake
+    if errorlevel 1 exit /b
 )
 
 rem Extract Qt's version from .qmake.conf
-for /f "eol=# tokens=1,2,3,4 delims=.= " %%i in (%QTSRC%.qmake.conf) do (
+for /f "eol=# tokens=1,2,3,4 delims=.= " %%i in (%QTSRC%\.qmake.conf) do (
     if %%i == MODULE_VERSION (
         set QTVERMAJ=%%j
         set QTVERMIN=%%k
@@ -71,69 +186,85 @@ for /f "eol=# tokens=1,2,3,4 delims=.= " %%i in (%QTSRC%.qmake.conf) do (
 )
 set QTVERSION=%QTVERMAJ%.%QTVERMIN%.%QTVERPAT%
 
-perl %QTSRC%bin\syncqt.pl -minimal -version %QTVERSION% -module QtCore -outdir "%QTDIR%" %QTSRC%
-if errorlevel 1 goto exit
+rem Create forwarding headers
 
-if not exist tools\configure (
-    md tools\configure
-    if errorlevel 1 goto exit
+if "%SYNCQT%" == "" (
+    if exist "%QTSRC%\.git" (
+        set SYNCQT=true
+    ) else (
+        set SYNCQT=false
+    )
 )
-cd tools\configure
-if errorlevel 1 goto exit
+if "%SYNCQT%" == "true" (
+    if not "%perl.exe%" == "" (
+        echo Running syncqt ...
+        "%perl.exe%" -w "%QTSRC%\bin\syncqt.pl" -minimal -version %QTVERSION% -module QtCore -outdir "%QTDIR%" %QTSRC%
+        if errorlevel 1 exit /b
+    ) else (
+        echo Perl not found in PATH. Aborting. >&2
+        exit /b 1
+    )
+)
 
-set make=nmake
-if not "%jom.exe%" == "" set make=jom
+rem Build qmake
+
+echo Bootstrapping qmake ...
+
+cd qmake
+if errorlevel 1 exit /b
 
 echo #### Generated by configure.bat - DO NOT EDIT! ####> Makefile
 echo/>> Makefile
-echo QTVERSION = %QTVERSION%>> Makefile
-rem These must have trailing spaces to avoid misinterpretation as 5>>, etc.
-echo QT_VERSION_MAJOR = %QTVERMAJ% >> Makefile
-echo QT_VERSION_MINOR = %QTVERMIN% >> Makefile
-echo QT_VERSION_PATCH = %QTVERPAT% >> Makefile
-if not "%icl.exe%" == "" (
-    echo CXX = icl>>Makefile
-    echo EXTRA_CXXFLAGS = /Qstd=c++11 /Zc:forScope>>Makefile
-    rem This must have a trailing space.
-    echo QTSRC = %QTSRC% >> Makefile
-    set tmpl=win32
-) else if not "%cl.exe%" == "" (
-    echo CXX = cl>>Makefile
-    echo EXTRA_CXXFLAGS =>>Makefile
-    rem This must have a trailing space.
-    echo QTSRC = %QTSRC% >> Makefile
-    set tmpl=win32
-) else if not "%clang-cl.exe%" == "" (
-    echo CXX = clang-cl>>Makefile
-    echo EXTRA_CXXFLAGS = -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value>>Makefile
-    rem This must have a trailing space.
-    echo QTSRC = %QTSRC% >> Makefile
-    set tmpl=win32
-) else if not "%g++.exe%" == "" (
-    echo CXX = g++>>Makefile
-    echo EXTRA_CXXFLAGS =>>Makefile
-    rem This must NOT have a trailing space.
-    echo QTSRC = %QTSRC:\=/%>> Makefile
-    set tmpl=mingw
-    set make=mingw32-make
+echo BUILD_PATH = ..>> Makefile
+if "%tmpl%" == "win32" (
+    echo SOURCE_PATH = %QTSRC%>> Makefile
 ) else (
-    echo No suitable compiler found in PATH. Aborting. >&2
-    cd ..\..
-    exit /b 1
+    echo SOURCE_PATH = %QTSRC:\=/%>> Makefile
+)
+if exist "%QTSRC%\.git" (
+    echo INC_PATH = ../include>> Makefile
+) else (
+    echo INC_PATH = $^(SOURCE_PATH^)/include>> Makefile
+)
+echo QT_VERSION = %QTVERSION%>> Makefile
+rem These must have trailing spaces to avoid misinterpretation as 5>>, etc.
+echo QT_MAJOR_VERSION = %QTVERMAJ% >> Makefile
+echo QT_MINOR_VERSION = %QTVERMIN% >> Makefile
+echo QT_PATCH_VERSION = %QTVERPAT% >> Makefile
+if "%tmpl%" == "win32" (
+    echo QMAKESPEC = %PLATFORM%>> Makefile
+) else (
+    echo QMAKESPEC = $^(SOURCE_PATH^)/mkspecs/%PLATFORM%>> Makefile
+    echo CONFIG_CXXFLAGS = -std=c++11 -ffunction-sections>> Makefile
+    echo CONFIG_LFLAGS = -Wl,--gc-sections>> Makefile
+    type "%QTSRC%\qmake\Makefile.unix.win32" >> Makefile
+    type "%QTSRC%\qmake\Makefile.unix.mingw" >> Makefile
 )
 echo/>> Makefile
-type %QTSRC%tools\configure\Makefile.%tmpl% >> Makefile
+type "%QTSRC%\qmake\Makefile.%tmpl%" >> Makefile
 
-%make%
-if errorlevel 1 (cd ..\.. & exit /b 1)
+%MAKE%
+if errorlevel 1 (cd .. & exit /b 1)
 
-cd ..\..
+cd ..
 
-:conf
-configureapp.exe -srcdir %QTSRC% %ARGS%
-goto exit
+rem Generate qt.conf
 
-:help
-type %QTSRC%config_help.txt
+> "%QTDIR%\bin\qt.conf" (
+    @echo [EffectivePaths]
+    @echo Prefix=..
+    @echo [Paths]
+    @echo TargetSpec=dummy
+    @echo HostSpec=%PLATFORM%
+)
+if not "%QTDIR%" == "%QTSRC%" (
+    >> "%QTDIR%\bin\qt.conf" (
+        @echo [EffectiveSourcePaths]
+        @echo Prefix=%QTSRC:\=/%
+    )
+)
 
-:exit
+rem Launch qmake-based configure
+
+cd "%TOPQTDIR%"
+"%QTDIR%\bin\qmake.exe" "%TOPQTSRC%" -- %ARGS%
