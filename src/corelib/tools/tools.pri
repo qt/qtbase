@@ -144,7 +144,6 @@ qtConfig(icu) {
 
     SOURCES += tools/qlocale_icu.cpp \
                tools/qcollator_icu.cpp
-    DEFINES += QT_USE_ICU
 } else: win32 {
     SOURCES += tools/qcollator_win.cpp
 } else: macx {

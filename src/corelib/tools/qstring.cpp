@@ -5575,7 +5575,7 @@ int QString::localeAwareCompare(const QString &other) const
     return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
 }
 
-#if defined(QT_USE_ICU) && !defined(Q_OS_WIN32) && !defined(Q_OS_DARWIN)
+#if QT_CONFIG(icu) && !defined(Q_OS_WIN32) && !defined(Q_OS_DARWIN)
 Q_GLOBAL_STATIC(QThreadStorage<QCollator>, defaultCollator)
 #endif
 
@@ -5621,7 +5621,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     CFRelease(thisString);
     CFRelease(otherString);
     return result;
-#elif defined(QT_USE_ICU)
+#elif QT_CONFIG(icu)
     if (!defaultCollator()->hasLocalData())
         defaultCollator()->setLocalData(QCollator());
     return defaultCollator()->localData().compare(data1, length1, data2, length2);

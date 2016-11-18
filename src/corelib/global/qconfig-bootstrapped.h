@@ -69,6 +69,7 @@
 #define QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 #define QT_NO_DATASTREAM
 #define QT_FEATURE_iconv -1
+#define QT_FEATURE_icu -1
 #define QT_FEATURE_journald -1
 #define QT_NO_LIBRARY
 #define QT_FEATURE_library -1

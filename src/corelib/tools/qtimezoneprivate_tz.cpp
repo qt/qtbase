@@ -598,18 +598,18 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
 
 // Create the system default time zone
 QTzTimeZonePrivate::QTzTimeZonePrivate()
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     : m_icu(0)
-#endif // QT_USE_ICU
+#endif
 {
     init(systemTimeZoneId());
 }
 
 // Create a named time zone
 QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     : m_icu(0)
-#endif // QT_USE_ICU
+#endif
 {
     init(ianaId);
 }
@@ -617,9 +617,9 @@ QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
 QTzTimeZonePrivate::QTzTimeZonePrivate(const QTzTimeZonePrivate &other)
                   : QTimeZonePrivate(other), m_tranTimes(other.m_tranTimes),
                     m_tranRules(other.m_tranRules), m_abbreviations(other.m_abbreviations),
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
                     m_icu(other.m_icu),
-#endif // QT_USE_ICU
+#endif
                     m_posixRule(other.m_posixRule)
 {
 }
@@ -778,7 +778,7 @@ QString QTzTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
                                         QTimeZone::NameType nameType,
                                         const QLocale &locale) const
 {
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     if (!m_icu)
         m_icu = new QIcuTimeZonePrivate(m_id);
     // TODO small risk may not match if tran times differ due to outdated files
@@ -788,7 +788,7 @@ QString QTzTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
 #else
     Q_UNUSED(nameType)
     Q_UNUSED(locale)
-#endif // QT_USE_ICU
+#endif
     return abbreviation(atMSecsSinceEpoch);
 }
 
@@ -796,7 +796,7 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
                                         QTimeZone::NameType nameType,
                                         const QLocale &locale) const
 {
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     if (!m_icu)
         m_icu = new QIcuTimeZonePrivate(m_id);
     // TODO small risk may not match if tran times differ due to outdated files
@@ -807,7 +807,7 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     Q_UNUSED(timeType)
     Q_UNUSED(nameType)
     Q_UNUSED(locale)
-#endif // QT_USE_ICU
+#endif
     // If no ICU available then have to use abbreviations instead
     // Abbreviations don't have GenericTime
     if (timeType == QTimeZone::GenericTime)
