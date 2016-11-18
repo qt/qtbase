@@ -39,7 +39,7 @@
 #include "qwindowsxpstyle_p.h"
 #include "qwindowsxpstyle_p_p.h"
 
-#if !defined(QT_NO_STYLE_WINDOWSXP) || defined(QT_PLUGIN)
+#if QT_CONFIG(style_windowsxp) || defined(QT_PLUGIN)
 
 #include <private/qobject_p.h>
 #include <private/qpaintengine_raster_p.h>

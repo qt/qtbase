@@ -94,7 +94,7 @@ QT_BEGIN_NAMESPACE
 // Uncomment define below to build debug assisting code, and output
 // #define DEBUG_XP_STYLE
 
-#if !defined(QT_NO_STYLE_WINDOWSXP)
+#if QT_CONFIG(style_windowsxp)
 
 // Declarations -----------------------------------------------------------------------------------
 class XPThemeData
@@ -338,7 +338,7 @@ inline QMarginsF XPThemeData::themeMargins(const QWidget *w, QPainter *p, int th
     return theme.margins(propId);
 }
 
-#endif // QT_NO_STYLE_WINDOWS
+#endif // style_windows
 
 QT_END_NAMESPACE
 

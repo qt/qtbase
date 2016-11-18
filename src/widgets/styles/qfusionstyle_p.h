@@ -57,7 +57,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#if !defined(QT_NO_STYLE_FUSION)
+#if QT_CONFIG(style_fusion)
 
 class QFusionStylePrivate;
 class QFusionStyle : public QCommonStyle
@@ -110,7 +110,7 @@ protected:
 
 };
 
-#endif // QT_NO_STYLE_FUSION
+#endif // style_fusion
 
 QT_END_NAMESPACE
 

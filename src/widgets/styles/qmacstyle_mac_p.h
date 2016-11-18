@@ -57,7 +57,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
+#if QT_CONFIG(style_mac)
 
 class QPalette;
 
