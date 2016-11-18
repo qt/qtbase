@@ -608,8 +608,10 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
         const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
         for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
             const ProStringList &inputs = project->values(ProKey(*it + ".input"));
-            for (ProStringList::ConstIterator input = inputs.begin(); input != inputs.end(); ++input)
-                t << escapeFilePath(*input) << ' ';
+            for (ProStringList::ConstIterator input = inputs.begin(); input != inputs.end(); ++input) {
+                const ProStringList &val = project->values((*input).toKey());
+                t << escapeFilePaths(val).join(' ') << ' ';
+            }
         }
     }
     t << endl << endl;
