@@ -101,35 +101,38 @@ class QResourceRoot
         Directory = 0x02
     };
     const uchar *tree, *names, *payloads;
-    inline int findOffset(int node) const { return node * 14; } //sizeof each tree element
+    int version;
+    inline int findOffset(int node) const { return node * (14 + (version >= 0x02 ? 8 : 0)); } //sizeof each tree element
     uint hash(int node) const;
     QString name(int node) const;
     short flags(int node) const;
 public:
     mutable QAtomicInt ref;
 
-    inline QResourceRoot(): tree(0), names(0), payloads(0) {}
-    inline QResourceRoot(const uchar *t, const uchar *n, const uchar *d) { setSource(t, n, d); }
+    inline QResourceRoot(): tree(0), names(0), payloads(0), version(0) {}
+    inline QResourceRoot(int version, const uchar *t, const uchar *n, const uchar *d) { setSource(version, t, n, d); }
     virtual ~QResourceRoot() { }
     int findNode(const QString &path, const QLocale &locale=QLocale()) const;
     inline bool isContainer(int node) const { return flags(node) & Directory; }
     inline bool isCompressed(int node) const { return flags(node) & Compressed; }
     const uchar *data(int node, qint64 *size) const;
+    QDateTime lastModified(int node) const;
     QStringList children(int node) const;
     virtual QString mappingRoot() const { return QString(); }
     bool mappingRootSubdir(const QString &path, QString *match=0) const;
     inline bool operator==(const QResourceRoot &other) const
-    { return tree == other.tree && names == other.names && payloads == other.payloads; }
+    { return tree == other.tree && names == other.names && payloads == other.payloads && version == other.version; }
     inline bool operator!=(const QResourceRoot &other) const
     { return !operator==(other); }
     enum ResourceRootType { Resource_Builtin, Resource_File, Resource_Buffer };
     virtual ResourceRootType type() const { return Resource_Builtin; }
 
 protected:
-    inline void setSource(const uchar *t, const uchar *n, const uchar *d) {
+    inline void setSource(int v, const uchar *t, const uchar *n, const uchar *d) {
         tree = t;
         names = n;
         payloads = d;
+        version = v;
     }
 };
 
@@ -231,6 +234,7 @@ public:
     mutable qint64 size;
     mutable const uchar *data;
     mutable QStringList children;
+    mutable QDateTime lastModified;
 
     QResource *q_ptr;
     Q_DECLARE_PUBLIC(QResource)
@@ -244,6 +248,7 @@ QResourcePrivate::clear()
     data = 0;
     size = 0;
     children.clear();
+    lastModified = QDateTime();
     container = 0;
     for(int i = 0; i < related.size(); ++i) {
         QResourceRoot *root = related.at(i);
@@ -274,6 +279,7 @@ QResourcePrivate::load(const QString &file)
                     size = 0;
                     compressed = 0;
                 }
+                lastModified = res->lastModified(node);
             } else if(res->isContainer(node) != container) {
                 qWarning("QResourceInfo: Resource [%s] has both data and children!", file.toLatin1().constData());
             }
@@ -284,6 +290,7 @@ QResourcePrivate::load(const QString &file)
             data = 0;
             size = 0;
             compressed = 0;
+            lastModified = QDateTime();
             res->ref.ref();
             related.append(res);
         }
@@ -511,6 +518,17 @@ const uchar *QResource::data() const
     Q_D(const QResource);
     d->ensureInitialized();
     return d->data;
+}
+
+/*!
+    Returns the date and time when the file was last modified before
+    packaging into a resource.
+*/
+QDateTime QResource::lastModified() const
+{
+    Q_D(const QResource);
+    d->ensureInitialized();
+    return d->lastModified;
 }
 
 /*!
@@ -780,6 +798,24 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
     *size = 0;
     return 0;
 }
+
+QDateTime QResourceRoot::lastModified(int node) const
+{
+    if (node == -1 || version < 0x02)
+        return QDateTime();
+
+    const int offset = findOffset(node) + 14;
+
+    const quint64 timeStamp = (quint64(tree[offset+0]) << 56) + (quint64(tree[offset+1]) << 48) +
+                              (quint64(tree[offset+2]) << 40) + (quint64(tree[offset+3]) << 32) +
+                              (quint64(tree[offset+4]) << 24) + (quint64(tree[offset+5]) << 16) +
+                              (quint64(tree[offset+6]) << 8) + (quint64(tree[offset+7]));
+    if (timeStamp == 0)
+        return QDateTime();
+
+    return QDateTime::fromMSecsSinceEpoch(timeStamp);
+}
+
 QStringList QResourceRoot::children(int node) const
 {
     if(node == -1)
@@ -829,9 +865,9 @@ Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
                                          const unsigned char *name, const unsigned char *data)
 {
     QMutexLocker lock(resourceMutex());
-    if(version == 0x01 && resourceList()) {
+    if ((version == 0x01 || version == 0x2) && resourceList()) {
         bool found = false;
-        QResourceRoot res(tree, name, data);
+        QResourceRoot res(version, tree, name, data);
         for(int i = 0; i < resourceList()->size(); ++i) {
             if(*resourceList()->at(i) == res) {
                 found = true;
@@ -839,7 +875,7 @@ Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
             }
         }
         if(!found) {
-            QResourceRoot *root = new QResourceRoot(tree, name, data);
+            QResourceRoot *root = new QResourceRoot(version, tree, name, data);
             root->ref.ref();
             resourceList()->append(root);
         }
@@ -852,8 +888,8 @@ Q_CORE_EXPORT bool qUnregisterResourceData(int version, const unsigned char *tre
                                            const unsigned char *name, const unsigned char *data)
 {
     QMutexLocker lock(resourceMutex());
-    if(version == 0x01 && resourceList()) {
-        QResourceRoot res(tree, name, data);
+    if ((version == 0x01 || version == 0x02) && resourceList()) {
+        QResourceRoot res(version, tree, name, data);
         for(int i = 0; i < resourceList()->size(); ) {
             if(*resourceList()->at(i) == res) {
                 QResourceRoot *root = resourceList()->takeAt(i);
@@ -919,9 +955,9 @@ public:
         if (size >= 0 && (tree_offset >= size || data_offset >= size || name_offset >= size))
             return false;
 
-        if(version == 0x01) {
+        if (version == 0x01 || version == 0x02) {
             buffer = b;
-            setSource(b+tree_offset, b+name_offset, b+data_offset);
+            setSource(version, b+tree_offset, b+name_offset, b+data_offset);
             return true;
         }
         return false;
@@ -1430,8 +1466,11 @@ QString QResourceFileEngine::owner(FileOwner) const
     return QString();
 }
 
-QDateTime QResourceFileEngine::fileTime(FileTime) const
+QDateTime QResourceFileEngine::fileTime(FileTime time) const
 {
+    Q_D(const QResourceFileEngine);
+    if (time == ModificationTime)
+        return d->resource.lastModified();
     return QDateTime();
 }
 

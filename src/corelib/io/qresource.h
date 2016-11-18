@@ -69,6 +69,7 @@ public:
     bool isCompressed() const;
     qint64 size() const;
     const uchar *data() const;
+    QDateTime lastModified() const;
 
     static void addSearchPath(const QString &path);
     static QStringList searchPaths();

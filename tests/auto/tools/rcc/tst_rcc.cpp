@@ -92,12 +92,23 @@ static QString doCompare(const QStringList &actual, const QStringList &expected)
 
     QByteArray ba;
     for (int i = 0, n = expected.size(); i != n; ++i) {
-        if (expected.at(i).startsWith("IGNORE:"))
+        QString expectedLine = expected.at(i);
+        if (expectedLine.startsWith("IGNORE:"))
             continue;
-        if (expected.at(i) != actual.at(i)) {
+        if (expectedLine.startsWith("TIMESTAMP:")) {
+            const QString relativePath = expectedLine.mid(strlen("TIMESTAMP:"));
+            const quint64 timeStamp = QFileInfo(relativePath).lastModified().toMSecsSinceEpoch();
+            expectedLine.clear();
+            for (int shift = 56; shift >= 0; shift -= 8) {
+                expectedLine.append(QLatin1String("0x"));
+                expectedLine.append(QString::number(quint8(timeStamp >> shift), 16));
+                expectedLine.append(QLatin1Char(','));
+            }
+        }
+        if (expectedLine != actual.at(i)) {
             qDebug() << "LINES" << i << "DIFFER";
             ba.append(
-             "\n<<<<<< actual\n" + actual.at(i) + "\n======\n" + expected.at(i)
+             "\n<<<<<< actual\n" + actual.at(i) + "\n======\n" + expectedLine
                 + "\n>>>>>> expected\n"
             );
         }

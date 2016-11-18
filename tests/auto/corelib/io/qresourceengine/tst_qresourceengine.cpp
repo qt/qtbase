@@ -55,6 +55,7 @@ private slots:
     void searchPath();
     void doubleSlashInRoot();
     void setLocale();
+    void lastModified();
 
 private:
     const QString m_runtimeResourceRcc;
@@ -487,6 +488,20 @@ void tst_QResourceEngine::setLocale()
 
     // the reset the default locale back
     QLocale::setDefault(QLocale::system());
+}
+
+void tst_QResourceEngine::lastModified()
+{
+    {
+        QFileInfo fi(":/");
+        QVERIFY(fi.exists());
+        QVERIFY2(!fi.lastModified().isValid(), qPrintable(fi.lastModified().toString()));
+    }
+    {
+        QFileInfo fi(":/search_file.txt");
+        QVERIFY(fi.exists());
+        QVERIFY(fi.lastModified().isValid());
+    }
 }
 
 QTEST_MAIN(tst_QResourceEngine)
