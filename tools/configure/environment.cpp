@@ -62,7 +62,6 @@ struct CompilerInfo{
     const char *executable;
 } compiler_info[] = {
     // The compilers here are sorted in a reversed-preferred order
-    {CC_BORLAND, "Borland C++",                                                    0, "bcc32.exe"},
     {CC_MINGW,   "MinGW (Minimalist GNU for Windows)",                             0, "g++.exe"},
     {CC_INTEL,   "Intel(R) C++ Compiler for 32-bit applications",                  0, "icl.exe"}, // xilink.exe, xilink5.exe, xilink6.exe, xilib.exe
     {CC_MSVC2012, "Microsoft (R) Visual Studio 2012 C/C++ Compiler (11.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
@@ -108,9 +107,6 @@ QString Environment::detectQMakeSpec()
         break;
     case CC_MINGW:
         spec = "win32-g++";
-        break;
-    case CC_BORLAND:
-        spec = "win32-borland";
         break;
     default:
         break;

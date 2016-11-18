@@ -173,12 +173,6 @@ QString Configure::formatPath(const QString &path)
     return ret;
 }
 
-// #### somehow I get a compiler error about vc++ reaching the nesting limit without
-// undefining the ansi for scoping.
-#ifdef for
-#undef for
-#endif
-
 void Configure::parseCmdLine()
 {
     sourcePathMangled = sourcePath;
@@ -599,16 +593,6 @@ void Configure::generateQDevicePri()
         dictionary[ "DONE" ] = "error";
 }
 
-QString Configure::formatConfigPath(const char *var)
-{
-    QString val = dictionary[var];
-    if (QFileInfo(val).isRelative()) {
-        QString pfx = dictionary["QT_INSTALL_PREFIX"];
-        val = (val == ".") ? pfx : QDir(pfx).absoluteFilePath(val);
-    }
-    return QDir::toNativeSeparators(val);
-}
-
 void Configure::generateHeaders()
 {
     if (dictionary["SYNCQT"] == "auto")
@@ -882,7 +866,6 @@ void Configure::buildQmake()
                        << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
                 if (dictionary[ "QMAKESPEC" ].startsWith("win32-g++")) {
                     stream << "QMAKESPEC = $(SOURCE_PATH)\\mkspecs\\" << dictionary[ "QMAKESPEC" ] << endl
-                           << "EXTRA_CFLAGS = -DUNICODE -ffunction-sections" << endl
                            << "EXTRA_CXXFLAGS = -std=c++11 -DUNICODE -ffunction-sections" << endl
                            << "EXTRA_LFLAGS = -Wl,--gc-sections" << endl
                            << "QTOBJS = qfilesystemengine_win.o \\" << endl
