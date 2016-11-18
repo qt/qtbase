@@ -649,7 +649,7 @@ private:
     void setBoundary(int strPos) const;
     void addRequiredBoundaries() const;
     void shapeText(int item) const;
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
     int shapeTextWithHarfbuzzNG(const QScriptItem &si,
                                 const ushort *string,
                                 int itemLength,

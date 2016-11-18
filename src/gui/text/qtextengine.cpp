@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qdebug.h"
 #include "qtextformat.h"
 #include "qtextformat_p.h"
@@ -837,7 +838,7 @@ enum JustificationClass {
     Justification_Arabic_Kashida  = 13   // User-inserted Kashida(U+0640)
 };
 
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
 
 /*
     Adds an inter character justification opportunity after the number or letter
@@ -916,7 +917,7 @@ static inline void qt_getJustificationOpportunities(const ushort *string, int le
     qt_getDefaultJustificationOpportunities(string, length, g, log_clusters, spaceAs);
 }
 
-#endif // QT_ENABLE_HARFBUZZ_NG
+#endif // harfbuzz
 
 
 // shape all the items that intersect with the line, taking tab widths into account to find out what text actually fits in the line.
@@ -950,7 +951,7 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     }
 }
 
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
 extern bool qt_useHarfbuzzNG(); // defined in qfontengine.cpp
 #endif
 
@@ -1063,7 +1064,7 @@ void QTextEngine::shapeText(int item) const
             letterSpacing *= font.d->dpi / qt_defaultDpiY();
     }
 
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
     if (Q_LIKELY(qt_useHarfbuzzNG()))
         si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled, letterSpacing != 0);
     else
@@ -1079,7 +1080,7 @@ void QTextEngine::shapeText(int item) const
 
     QGlyphLayout glyphs = shapedGlyphs(&si);
 
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
     if (Q_LIKELY(qt_useHarfbuzzNG()))
         qt_getJustificationOpportunities(string, itemLength, si, glyphs, logClusters(&si));
 #endif
@@ -1119,7 +1120,7 @@ void QTextEngine::shapeText(int item) const
         si.width += glyphs.advances[i] * !glyphs.attributes[i].dontPrint;
 }
 
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 
@@ -1313,7 +1314,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
     return glyphs_shaped;
 }
 
-#endif // QT_ENABLE_HARFBUZZ_NG
+#endif // harfbuzz
 
 
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -1669,7 +1670,7 @@ void QTextEngine::itemize() const
             analysis->flags = QScriptAnalysis::None;
             break;
         }
-#ifndef QT_ENABLE_HARFBUZZ_NG
+#if !QT_CONFIG(harfbuzz)
         analysis->script = hbscript_to_script(script_to_hbscript(analysis->script));
 #endif
         ++uc;
@@ -1678,7 +1679,7 @@ void QTextEngine::itemize() const
     if (option.flags() & QTextOption::ShowLineAndParagraphSeparators) {
         (analysis-1)->flags = QScriptAnalysis::LineOrParagraphSeparator; // to exclude it from width
     }
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
     analysis = scriptAnalysis.data();
     if (qt_useHarfbuzzNG()) {
         // ### pretend HB-old behavior for now

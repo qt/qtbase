@@ -53,7 +53,7 @@
 #include <qendian.h>
 #include <private/qstringiterator_p.h>
 
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
 #  include "qharfbuzzng_p.h"
 #  include <harfbuzz/hb-ot.h>
 #endif
@@ -93,7 +93,7 @@ static inline bool qSafeFromBigEndian(const uchar *source, const uchar *end, T *
 
 // Harfbuzz helper functions
 
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
 Q_GLOBAL_STATIC_WITH_ARGS(bool, useHarfbuzzNG,(qgetenv("QT_HARFBUZZ") != "old"))
 
 bool qt_useHarfbuzzNG()
@@ -296,7 +296,7 @@ QFixed QFontEngine::underlinePosition() const
 void *QFontEngine::harfbuzzFont() const
 {
     Q_ASSERT(type() != QFontEngine::Multi);
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
     if (qt_useHarfbuzzNG())
         return hb_qt_font_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
@@ -331,7 +331,7 @@ void *QFontEngine::harfbuzzFont() const
 void *QFontEngine::harfbuzzFace() const
 {
     Q_ASSERT(type() != QFontEngine::Multi);
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
     if (qt_useHarfbuzzNG())
         return hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
@@ -363,7 +363,7 @@ bool QFontEngine::supportsScript(QChar::Script script) const
         return true;
     }
 
-#ifdef QT_ENABLE_HARFBUZZ_NG
+#if QT_CONFIG(harfbuzz)
     if (qt_useHarfbuzzNG()) {
 #if defined(Q_OS_DARWIN)
         // in AAT fonts, 'gsub' table is effectively replaced by 'mort'/'morx' table

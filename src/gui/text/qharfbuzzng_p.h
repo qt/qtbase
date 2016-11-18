@@ -53,6 +53,9 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
+
+QT_REQUIRE_CONFIG(harfbuzz);
+
 #include <QtCore/qchar.h>
 
 #include <harfbuzz/hb.h>
