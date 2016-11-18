@@ -1517,7 +1517,9 @@ bool QKeySequence::isDetached() const
     If the key sequence has no keys, an empty string is returned.
 
     On \macos, the string returned resembles the sequence that is
-    shown in the menu bar.
+    shown in the menu bar if \a format is
+    QKeySequence::NativeText; otherwise, the string uses the
+    "portable" format, suitable for writing to a file.
 
     \sa fromString()
 */
