@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qglobal_p.h"
 #include "qlogging.h"
 #include "qlist.h"
 #include "qbytearray.h"
@@ -59,7 +60,7 @@
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #endif
-#ifdef QT_USE_SLOG2
+#if QT_CONFIG(slog2)
 #include <slog2.h>
 #endif
 
@@ -67,12 +68,12 @@
 #include <android/log.h>
 #endif
 
-#if defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
+#if QT_CONFIG(journald)
 # define SD_JOURNAL_SUPPRESS_LOCATION
 # include <systemd/sd-journal.h>
 # include <syslog.h>
 #endif
-#if defined(QT_USE_SYSLOG) && !defined(QT_BOOTSTRAPPED)
+#if QT_CONFIG(syslog)
 # include <syslog.h>
 #endif
 #ifdef Q_OS_UNIX
@@ -93,7 +94,7 @@
 #  endif
 #endif
 
-#if defined(QT_USE_SLOG2)
+#if QT_CONFIG(slog2)
 extern char *__progname;
 #endif
 
@@ -1281,7 +1282,7 @@ static QString formatBacktraceForLogMessage(const QMessagePattern::BacktracePara
 }
 #endif // QLOGGING_HAVE_BACKTRACE && !QT_BOOTSTRAPPED
 
-#if defined(QT_USE_SLOG2)
+#if QT_CONFIG(slog2)
 #ifndef QT_LOG_CODE
 #define QT_LOG_CODE 9000
 #endif
@@ -1330,7 +1331,7 @@ static void slog2_default_handler(QtMsgType msgType, const char *message)
     //writes to the slog2 buffer
     slog2c(NULL, QT_LOG_CODE, severity, message);
 }
-#endif // QT_USE_SLOG2
+#endif // slog2
 
 Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
 
@@ -1479,7 +1480,7 @@ static QBasicAtomicPointer<void (QtMsgType, const char*)> msgHandler = Q_BASIC_A
 // pointer to QtMessageHandler debug handler (with context)
 static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(qDefaultMessageHandler);
 
-#if defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
+#if QT_CONFIG(journald)
 static void systemd_default_message_handler(QtMsgType type,
                                             const QMessageLogContext &context,
                                             const QString &message)
@@ -1513,7 +1514,7 @@ static void systemd_default_message_handler(QtMsgType type,
 }
 #endif
 
-#ifdef QT_USE_SYSLOG
+#if QT_CONFIG(syslog)
 static void syslog_default_message_handler(QtMsgType type, const char *message)
 {
     int priority = LOG_INFO; // Informational
@@ -1577,14 +1578,14 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         logMessage.append(QLatin1Char('\n'));
         OutputDebugString(reinterpret_cast<const wchar_t *>(logMessage.utf16()));
         return;
-#elif defined(QT_USE_SLOG2)
+#elif QT_CONFIG(slog2)
         logMessage.append(QLatin1Char('\n'));
         slog2_default_handler(type, logMessage.toLocal8Bit().constData());
         return;
-#elif defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
+#elif QT_CONFIG(journald)
         systemd_default_message_handler(type, context, logMessage);
         return;
-#elif defined(QT_USE_SYSLOG) && !defined(QT_BOOTSTRAPPED)
+#elif QT_CONFIG(syslog)
         syslog_default_message_handler(type, logMessage.toUtf8().constData());
         return;
 #elif defined(Q_OS_ANDROID)

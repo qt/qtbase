@@ -47,19 +47,11 @@ if(linux*|hurd*):!cross_compile:!static:!*-armcc* {
    DEFINES += ELF_INTERPRETER=\\\"$$system(LC_ALL=C readelf -l /bin/ls | perl -n -e \'$$prog\')\\\"
 }
 
-slog2 {
+qtConfig(slog2): \
     LIBS_PRIVATE += -lslog2
-    DEFINES += QT_USE_SLOG2
-}
 
-journald {
+qtConfig(journald): \
     QMAKE_USE_PRIVATE += journald
-    DEFINES += QT_USE_JOURNALD
-}
-
-syslog {
-    DEFINES += QT_USE_SYSLOG
-}
 
 gcc:ltcg {
     versiontagging_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS) $(INCPATH)

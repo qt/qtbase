@@ -289,7 +289,7 @@
             "label": "journald",
             "autoDetect": false,
             "condition": "libs.journald",
-            "output": [ "privateConfig" ]
+            "output": [ "privateFeature" ]
         },
         "std-atomic64": {
             "label": "64 bit atomic operations",
@@ -363,14 +363,13 @@
         "slog2": {
             "label": "slog2",
             "condition": "libs.slog2",
-            "emitIf": "config.qnx",
-            "output": [ "privateConfig" ]
+            "output": [ "privateFeature" ]
         },
         "syslog": {
             "label": "syslog",
             "autoDetect": false,
             "condition": "tests.syslog",
-            "output": [ "privateConfig" ]
+            "output": [ "privateFeature" ]
         },
         "threadsafe-cloexec": {
             "label": "Threadsafe pipe creation",
