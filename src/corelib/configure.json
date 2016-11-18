@@ -372,11 +372,6 @@
             "condition": "tests.syslog",
             "output": [ "privateConfig" ]
         },
-        "systemsemaphore": {
-            "label": "Enable QSystemSemaphore",
-            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
-            "output": [ { "type": "define", "negative": true, "name": "QT_NO_SYSTEMSEMAPHORE" } ]
-        },
         "threadsafe-cloexec": {
             "label": "Threadsafe pipe creation",
             "condition": "tests.cloexec",
@@ -407,6 +402,7 @@
             "label": "QSystemSemaphore",
             "purpose": "Provides a general counting system semaphore.",
             "section": "Kernel",
+            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
             "output": [ "publicFeature", "feature" ]
         },
         "xmlstream": {
