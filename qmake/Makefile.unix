@@ -33,6 +33,7 @@ DEPEND_SRC = \
 	   $(QMKGENSRC)/projectgenerator.cpp $(QMKGENSRC)/makefile.cpp \
 	   $(QMKGENSRC)/unix/unixmake.cpp $(QMKGENSRC)/unix/unixmake2.cpp \
 	   $(QMKGENSRC)/mac/pbuilder_pbx.cpp \
+	   $(QMKGENSRC)/win32/registry.cpp \
 	   $(QMKGENSRC)/win32/winmakefile.cpp \
 	   $(QMKGENSRC)/win32/mingw_make.cpp $(QMKGENSRC)/win32/msvc_nmake.cpp \
 	   $(QMKGENSRC)/mac/xmloutput.cpp \
@@ -84,7 +85,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlogging.cpp \
 	   $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp \
-	   $(SOURCE_PATH)/tools/shared/windows/registry.cpp \
 	   $(SOURCE_PATH)/src/corelib/json/qjson.cpp \
 	   $(SOURCE_PATH)/src/corelib/json/qjsondocument.cpp \
 	   $(SOURCE_PATH)/src/corelib/json/qjsonparser.cpp \
@@ -100,7 +100,6 @@ CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
 	   -I$(INC_PATH)/QtCore/$(QT_VERSION) -I$(INC_PATH)/QtCore/$(QT_VERSION)/QtCore \
 	   -I$(BUILD_PATH)/src/corelib/global \
 	   -I$(QMAKESPEC) \
-	   -I$(SOURCE_PATH)/tools/shared \
 	   -DQT_VERSION_STR=\"$(QT_VERSION)\" -DQT_VERSION_MAJOR=$(QT_MAJOR_VERSION) -DQT_VERSION_MINOR=$(QT_MINOR_VERSION) -DQT_VERSION_PATCH=$(QT_PATCH_VERSION) \
            -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
            -DQT_NO_FOREACH
@@ -182,6 +181,9 @@ unixmake.o: $(QMKSRC)/generators/unix/unixmake.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 unixmake2.o: $(QMKSRC)/generators/unix/unixmake2.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+registry.o: $(QMKSRC)/generators/win32/registry.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 winmakefile.o: $(QMKSRC)/generators/win32/winmakefile.cpp
@@ -403,9 +405,6 @@ qlogging.o: $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
 
 qsystemlibrary.o: $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
-
-registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 
 qjson.o: $(SOURCE_PATH)/src/corelib/json/qjson.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjson.cpp

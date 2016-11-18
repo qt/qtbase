@@ -61,7 +61,7 @@ QT_END_NAMESPACE
 
 #ifdef Q_OS_WIN32
 #include <qt_windows.h>
-#include <windows/registry_p.h>
+#include <registry_p.h>
 
 QT_BEGIN_NAMESPACE
 

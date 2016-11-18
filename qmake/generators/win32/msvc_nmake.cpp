@@ -34,7 +34,7 @@
 #include <qdiriterator.h>
 #include <qset.h>
 
-#include <windows/registry_p.h>
+#include <registry_p.h>
 
 #include <time.h>
 
