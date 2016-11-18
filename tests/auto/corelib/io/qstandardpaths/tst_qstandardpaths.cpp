@@ -38,6 +38,9 @@
 #include <qfileinfo.h>
 #include <qsysinfo.h>
 #include <qregexp.h>
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && !defined(Q_OS_WINCE)
+#  include <qt_windows.h>
+#endif
 
 #ifdef Q_OS_UNIX
 #include <unistd.h>
@@ -131,6 +134,16 @@ static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths
 
 void tst_qstandardpaths::initTestCase()
 {
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) && !defined(Q_OS_WINCE)
+    // Disable WOW64 redirection, see testFindExecutable()
+    if (QSysInfo::buildCpuArchitecture() != QSysInfo::currentCpuArchitecture()) {
+        void *oldMode;
+        const bool disabledDisableWow64FsRedirection = Wow64DisableWow64FsRedirection(&oldMode) == TRUE;
+        if (!disabledDisableWow64FsRedirection)
+            qErrnoWarning("Wow64DisableWow64FsRedirection() failed");
+        QVERIFY(disabledDisableWow64FsRedirection);
+    }
+#endif // Q_OS_WIN && !Q_OS_WINRT && !Q_OS_WINCE
     QVERIFY2(m_localConfigTempDir.isValid(), qPrintable(m_localConfigTempDir.errorString()));
     QVERIFY2(m_globalConfigTempDir.isValid(), qPrintable(m_globalConfigTempDir.errorString()));
     QVERIFY2(m_localAppTempDir.isValid(), qPrintable(m_localAppTempDir.errorString()));
@@ -380,6 +393,7 @@ void tst_qstandardpaths::testFindExecutable_data()
     if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS8) {
         // The logo executable on Windows 8 is perfectly suited for testing that the
         // suffix mechanism is not thrown off by dots in the name.
+        // Note: Requires disabling WOW64 redirection, see initTestCase()
         const QString logo = QLatin1String("microsoft.windows.softwarelogo.showdesktop");
         const QString logoPath = cmdFi.absolutePath() + QLatin1Char('/') + logo + QLatin1String(".exe");
         QTest::newRow("win8-logo")
