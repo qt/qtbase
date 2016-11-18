@@ -42,7 +42,7 @@
 
 #include "QtCore/qobject.h"
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 
 QT_BEGIN_NAMESPACE
 

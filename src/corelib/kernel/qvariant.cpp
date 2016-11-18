@@ -2914,7 +2914,7 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 static const size_t qCanConvertMatrixMaximumTargetType = 8 * sizeof(*qCanConvertMatrix);
 
 #ifndef QT_BOOTSTRAPPED
-/*!
+/*
     Returns \c true if from inherits to.
 */
 static bool canConvertMetaObject(const QMetaObject *from, const QMetaObject *to)
