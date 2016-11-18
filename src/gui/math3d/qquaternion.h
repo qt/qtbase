@@ -202,7 +202,8 @@ inline QQuaternion QQuaternion::inverted() const
                  double(yp) * double(yp) +
                  double(zp) * double(zp);
     if (!qFuzzyIsNull(len))
-        return QQuaternion(wp / len, -xp / len, -yp / len, -zp / len);
+        return QQuaternion(double(wp) / len, double(-xp) / len,
+                           double(-yp) / len, double(-zp) / len);
     return QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
@@ -251,7 +252,7 @@ inline const QQuaternion operator*(const QQuaternion &q1, const QQuaternion& q2)
     float zz = (q1.wp + q1.yp) * (q2.wp - q2.zp);
     float ww = (q1.zp + q1.xp) * (q2.xp + q2.yp);
     float xx = ww + yy + zz;
-    float qq = 0.5 * (xx + (q1.zp - q1.xp) * (q2.xp - q2.yp));
+    float qq = 0.5f * (xx + (q1.zp - q1.xp) * (q2.xp - q2.yp));
 
     float w = qq - ww + (q1.zp - q1.yp) * (q2.yp - q2.zp);
     float x = qq - xx + (q1.xp + q1.wp) * (q2.xp + q2.wp);
