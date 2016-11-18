@@ -178,17 +178,13 @@ qtConfig(gui) {
     src_plugins.depends += src_gui src_platformsupport src_platformheaders
     src_testlib.depends += src_gui      # if QtGui is enabled, QtTest requires QtGui's headers
     qtConfig(widgets) {
-        SUBDIRS += src_tools_uic src_widgets
+        SUBDIRS += src_tools_uic src_widgets src_printsupport
         TOOLS += src_tools_uic
-        src_plugins.depends += src_widgets
+        src_plugins.depends += src_widgets src_printsupport
         src_testlib.depends += src_widgets        # if QtWidgets is enabled, QtTest requires QtWidgets's headers
         qtConfig(opengl) {
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl
-        }
-        !wince {
-            SUBDIRS += src_printsupport
-            src_plugins.depends += src_printsupport
         }
     }
 }
