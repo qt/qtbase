@@ -1175,6 +1175,7 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \li QSQLITE_OPEN_READONLY
     \li QSQLITE_OPEN_URI
     \li QSQLITE_ENABLE_SHARED_CACHE
+    \li QSQLITE_ENABLE_REGEXP
     \endlist
 
     \li

@@ -90,3 +90,8 @@ qDebug() << q.value(0); // outputs the first RETURN/OUT value
 QSqlDatabase: QMYSQL driver not loaded
 QSqlDatabase: available drivers: QMYSQL
 //! [31]
+
+
+//! [34]
+column.contains(QRegularExpression("pattern"));
+//! [34]

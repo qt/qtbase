@@ -51,6 +51,10 @@
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qdebug.h>
+#ifndef QT_NO_REGULAREXPRESSION
+#include <qcache.h>
+#include <qregularexpression.h>
+#endif
 
 #if defined Q_OS_WIN
 # include <qt_windows.h>
@@ -556,6 +560,37 @@ QVariant QSQLiteResult::handle() const
 
 /////////////////////////////////////////////////////////
 
+#ifndef QT_NO_REGULAREXPRESSION
+static void _q_regexp(sqlite3_context* context, int argc, sqlite3_value** argv)
+{
+    if (Q_UNLIKELY(argc != 2)) {
+        sqlite3_result_int(context, 0);
+        return;
+    }
+
+    const QString pattern = QString::fromUtf8(
+        reinterpret_cast<const char*>(sqlite3_value_text(argv[0])));
+    const QString subject = QString::fromUtf8(
+        reinterpret_cast<const char*>(sqlite3_value_text(argv[1])));
+
+    auto cache = static_cast<QCache<QString, QRegularExpression>*>(sqlite3_user_data(context));
+    QRegularExpression *regexp = cache->object(pattern);
+    if (!regexp) {
+        regexp = new QRegularExpression(pattern, QRegularExpression::DontCaptureOption
+                                        | QRegularExpression::OptimizeOnFirstUsageOption);
+        cache->insert(pattern, regexp);
+    }
+    const bool found = subject.contains(*regexp);
+
+    sqlite3_result_int(context, int(found));
+}
+
+static void _q_regexp_cleanup(void *cache)
+{
+    delete static_cast<QCache<QString, QRegularExpression>*>(cache);
+}
+#endif
+
 QSQLiteDriver::QSQLiteDriver(QObject * parent)
     : QSqlDriver(*new QSQLiteDriverPrivate, parent)
 {
@@ -615,6 +650,11 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     bool sharedCache = false;
     bool openReadOnlyOption = false;
     bool openUriOption = false;
+#ifndef QT_NO_REGULAREXPRESSION
+    static const QLatin1String regexpConnectOption = QLatin1String("QSQLITE_ENABLE_REGEXP");
+    bool defineRegexp = false;
+    int regexpCacheSize = 25;
+#endif
 
     const auto opts = conOpts.splitRef(QLatin1Char(';'));
     for (auto option : opts) {
@@ -634,6 +674,22 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
         } else if (option == QLatin1String("QSQLITE_ENABLE_SHARED_CACHE")) {
             sharedCache = true;
         }
+#ifndef QT_NO_REGULAREXPRESSION
+        else if (option.startsWith(regexpConnectOption)) {
+            option = option.mid(regexpConnectOption.size()).trimmed();
+            if (option.isEmpty()) {
+                defineRegexp = true;
+            } else if (option.startsWith(QLatin1Char('='))) {
+                bool ok = false;
+                const int cacheSize = option.mid(1).trimmed().toInt(&ok);
+                if (ok) {
+                    defineRegexp = true;
+                    if (cacheSize > 0)
+                        regexpCacheSize = cacheSize;
+                }
+            }
+        }
+#endif
     }
 
     int openMode = (openReadOnlyOption ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
@@ -646,6 +702,13 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
         sqlite3_busy_timeout(d->access, timeOut);
         setOpen(true);
         setOpenError(false);
+#ifndef QT_NO_REGULAREXPRESSION
+        if (defineRegexp) {
+            auto cache = new QCache<QString, QRegularExpression>(regexpCacheSize);
+            sqlite3_create_function_v2(d->access, "regexp", 2, SQLITE_UTF8, cache, &_q_regexp, NULL,
+                                       NULL, &_q_regexp_cleanup);
+        }
+#endif
         return true;
     } else {
         if (d->access) {

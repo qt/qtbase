@@ -188,6 +188,9 @@ private slots:
     void sqlite_enable_cache_mode_data() { generic_data("QSQLITE"); }
     void sqlite_enable_cache_mode();
 
+    void sqlite_enableRegexp_data() { generic_data("QSQLITE"); }
+    void sqlite_enableRegexp();
+
 private:
     void createTestTables(QSqlDatabase db);
     void dropTestTables(QSqlDatabase db);
@@ -2257,6 +2260,34 @@ void tst_QSqlDatabase::sqlite_enable_cache_mode()
     QVERIFY_SQL(q, exec("select * from " + qTableName("qtest", __FILE__, db)));
     QVERIFY_SQL(q2, exec("select * from " + qTableName("qtest", __FILE__, db)));
     db2.close();
+}
+
+void tst_QSqlDatabase::sqlite_enableRegexp()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    if (db.driverName().startsWith("QSQLITE2"))
+        QSKIP("SQLite3 specific test");
+
+    db.close();
+    db.setConnectOptions("QSQLITE_ENABLE_REGEXP");
+    QVERIFY_SQL(db, open());
+
+    QSqlQuery q(db);
+    const QString tableName(qTableName("uint_test", __FILE__, db));
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(text TEXT)").arg(tableName)));
+    QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES(?)").arg(tableName)));
+    q.addBindValue("a0");
+    QVERIFY_SQL(q, exec());
+    q.addBindValue("a1");
+    QVERIFY_SQL(q, exec());
+
+    QVERIFY_SQL(q, exec(QString("SELECT text FROM %1 WHERE text REGEXP 'a[^0]' "
+                                "ORDER BY text").arg(tableName)));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toString(), QString("a1"));
+    QFAIL_SQL(q, next());
 }
 
 QTEST_MAIN(tst_QSqlDatabase)
