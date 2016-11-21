@@ -3800,14 +3800,10 @@ QString QDateTime::toString(Qt::DateFormat format) const
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate: {
         const QPair<QDate, QTime> p = getDateTime(d);
-        const QDate &dt = p.first;
-        const QTime &tm = p.second;
-        //We cant use date.toString(Qt::TextDate) as we need to insert the time before the year
-        buf = QString::fromLatin1("%1 %2 %3 %4 %5").arg(dt.shortDayName(dt.dayOfWeek()))
-                                                   .arg(dt.shortMonthName(dt.month()))
-                                                   .arg(dt.day())
-                                                   .arg(tm.toString(Qt::TextDate))
-                                                   .arg(dt.year());
+        buf = p.first.toString(Qt::TextDate);
+        // Insert time between date's day and year:
+        buf.insert(buf.lastIndexOf(QLatin1Char(' ')),
+                   QLatin1Char(' ') + p.second.toString(Qt::TextDate));
         // Append zone/offset indicator, as appropriate:
         switch (timeSpec()) {
         case Qt::LocalTime:
