@@ -33,6 +33,7 @@
 
 #include <qcolor.h>
 #include <qdebug.h>
+#include <private/qcolorprofile_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <qrgba64.h>
 
@@ -106,6 +107,9 @@ private slots:
     void qrgba64MemoryLayout();
     void qrgba64Premultiply();
     void qrgba64Equivalence();
+
+    void qcolorprofile_data();
+    void qcolorprofile();
 
 #if 0 // Used to be included in Qt4 for Q_WS_X11
     void setallowX11ColorNames();
@@ -1585,6 +1589,37 @@ void tst_QColor::qrgba64Equivalence()
             QCOMPARE(pu64.toArgb32(), pu);
         }
     }
+}
+
+void tst_QColor::qcolorprofile_data()
+{
+    QTest::addColumn<qreal>("gammaC");
+    QTest::addColumn<int>("tolerance");
+
+    QTest::newRow("gamma=1.0") << qreal(1.0) << 0;
+    QTest::newRow("gamma=1.5") << qreal(1.5) << 1;
+    QTest::newRow("gamma=1.7") << qreal(1.7) << 2;
+    QTest::newRow("gamma=2.0") << qreal(2.0) << 8;
+    QTest::newRow("gamma=2.31") << qreal(2.31) << 33;
+    QTest::newRow("SRgb") << qreal(0.0) << 7;
+}
+
+void tst_QColor::qcolorprofile()
+{
+    QFETCH(qreal, gammaC);
+    QFETCH(int, tolerance);
+    QColorProfile *cp = (gammaC == 0) ? QColorProfile::fromSRgb(): QColorProfile::fromGamma(gammaC);
+
+    // Test we are accurate for most values after converting through gamma-correction.
+    int error = 0;
+    for (uint i = 0; i < 256; i++) {
+        QRgb cin = qRgb(i, i, i);
+        QRgba64 tmp = cp->toLinear64(cin);
+        QRgb cout = cp->fromLinear64(tmp);
+        error += qAbs(qRed(cin) - qRed(cout));
+    }
+    QVERIFY(error <= tolerance);
+    delete cp;
 }
 
 QTEST_MAIN(tst_QColor)

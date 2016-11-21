@@ -37,28 +37,51 @@
 **
 ****************************************************************************/
 
-#include <private/qdrawhelper_p.h>
+#include "qcolorprofile_p.h"
+#include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 
-
-QDrawHelperGammaTables::QDrawHelperGammaTables(qreal smoothing)
+QColorProfile *QColorProfile::fromGamma(qreal gamma)
 {
-    const qreal gray_gamma = 2.31;
-    for (int i=0; i<256; ++i)
-        qt_pow_gamma[i] = uint(qRound(qPow(i / qreal(255.), gray_gamma) * 2047));
-    for (int i=0; i<2048; ++i)
-        qt_pow_invgamma[i] = uchar(qRound(qPow(i / qreal(2047.0), 1 / gray_gamma) * 255));
+    QColorProfile *cp = new QColorProfile;
 
-    refresh(smoothing);
+    for (int i = 0; i <= (255 * 16); ++i) {
+        cp->m_toLinear[i] = ushort(qRound(qPow(i / qreal(255 * 16), gamma) * (255 * 256)));
+        cp->m_fromLinear[i] = ushort(qRound(qPow(i / qreal(255 * 16), qreal(1) / gamma) * (255 * 256)));
+    }
+
+    return cp;
 }
 
-void QDrawHelperGammaTables::refresh(qreal smoothing)
+static qreal srgbToLinear(qreal v)
 {
-    for (int i=0; i<256; ++i) {
-        qt_pow_rgb_gamma[i] = uchar(qRound(qPow(i / qreal(255.0), smoothing) * 255));
-        qt_pow_rgb_invgamma[i] = uchar(qRound(qPow(i / qreal(255.), 1 / smoothing) * 255));
+    const qreal a = 0.055;
+    if (v <= qreal(0.04045))
+        return v / qreal(12.92);
+    else
+        return qPow((v + a) / (qreal(1) + a), qreal(2.4));
+}
+
+static qreal linearToSrgb(qreal v)
+{
+    const qreal a = 0.055;
+    if (v <= qreal(0.0031308))
+        return v * qreal(12.92);
+    else
+        return (qreal(1) + a) * qPow(v, qreal(1.0 / 2.4)) - a;
+}
+
+QColorProfile *QColorProfile::fromSRgb()
+{
+    QColorProfile *cp = new QColorProfile;
+
+    for (int i = 0; i <= (255 * 16); ++i) {
+        cp->m_toLinear[i] = ushort(qRound(srgbToLinear(i / qreal(255 * 16)) * (255 * 256)));
+        cp->m_fromLinear[i] = ushort(qRound(linearToSrgb(i / qreal(255 * 16)) * (255 * 256)));
     }
+
+    return cp;
 }
 
 QT_END_NAMESPACE

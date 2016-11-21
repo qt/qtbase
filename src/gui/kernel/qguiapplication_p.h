@@ -66,10 +66,10 @@
 
 QT_BEGIN_NAMESPACE
 
+class QColorProfile;
 class QPlatformIntegration;
 class QPlatformTheme;
 class QPlatformDragQtResponse;
-struct QDrawHelperGammaTables;
 #ifndef QT_NO_DRAGANDDROP
 class QDrag;
 #endif // QT_NO_DRAGANDDROP
@@ -292,7 +292,8 @@ public:
 
     static QInputDeviceManager *inputDeviceManager();
 
-    const QDrawHelperGammaTables *gammaTables();
+    const QColorProfile *colorProfileForA8Text();
+    const QColorProfile *colorProfileForA32Text();
 
     // hook reimplemented in QApplication to apply the QStyle function on the QIcon
     virtual QPixmap applyQIconStyleHelper(QIcon::Mode, const QPixmap &basePixmap) const { return basePixmap; }
@@ -316,7 +317,8 @@ private:
     static QGuiApplicationPrivate *self;
     static QTouchDevice *m_fakeTouchDevice;
     static int m_fakeMouseSourcePointId;
-    QAtomicPointer<QDrawHelperGammaTables> m_gammaTables;
+    QAtomicPointer<QColorProfile> m_a8ColorProfile;
+    QAtomicPointer<QColorProfile> m_a32ColorProfile;
 
     bool ownGlobalShareContext;
 

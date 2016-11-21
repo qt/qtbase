@@ -8,6 +8,7 @@ HEADERS += \
         painting/qbrush.h \
         painting/qcolor.h \
         painting/qcolor_p.h \
+        painting/qcolorprofile_p.h \
         painting/qcosmeticstroker_p.h \
         painting/qdatabuffer_p.h \
         painting/qdrawhelper_p.h \
@@ -63,11 +64,11 @@ SOURCES += \
         painting/qblittable.cpp \
         painting/qbrush.cpp \
         painting/qcolor.cpp \
+        painting/qcolorprofile.cpp \
         painting/qcompositionfunctions.cpp \
         painting/qcosmeticstroker.cpp \
         painting/qdrawhelper.cpp \
         painting/qemulationpaintengine.cpp \
-        painting/qgammatables.cpp \
         painting/qgrayraster.c \
         painting/qimagescale.cpp \
         painting/qmatrix.cpp \

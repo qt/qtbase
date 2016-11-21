@@ -43,6 +43,7 @@
 #include <qstylehints.h>
 #include <qguiapplication.h>
 #include <qatomic.h>
+#include <private/qcolorprofile_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpainter_p.h>
@@ -5508,80 +5509,35 @@ static void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
     }
 }
 
-static inline void rgbBlendPixel(quint32 *dst, int coverage, int sr, int sg, int sb, const uchar *gamma, const uchar *invgamma)
+static inline void rgbBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, const QColorProfile *colorProfile)
 {
-    // Do a gray alphablend...
-    int da = qAlpha(*dst);
-    int dr = qRed(*dst);
-    int dg = qGreen(*dst);
-    int db = qBlue(*dst);
+    // Do a gammacorrected RGB alphablend...
+    const int mr = qRed(coverage);
+    const int mg = qGreen(coverage);
+    const int mb = qBlue(coverage);
 
-    if (da != 255
-        ) {
+    const QRgba64 dlinear = colorProfile->toLinear64(*dst);
 
-        int a = qGray(coverage);
-        sr = qt_div_255(invgamma[sr] * a);
-        sg = qt_div_255(invgamma[sg] * a);
-        sb = qt_div_255(invgamma[sb] * a);
+    QRgba64 blend;
+    blend.setAlpha(65535);
+    blend.setRed  (qt_div_255(slinear.red()   * mr + dlinear.red()   * (255 - mr)));
+    blend.setGreen(qt_div_255(slinear.green() * mg + dlinear.green() * (255 - mg)));
+    blend.setBlue (qt_div_255(slinear.blue()  * mb + dlinear.blue()  * (255 - mb)));
 
-        int ia = 255 - a;
-        dr = qt_div_255(dr * ia);
-        dg = qt_div_255(dg * ia);
-        db = qt_div_255(db * ia);
-
-        *dst = ((a + qt_div_255((255 - a) * da)) << 24)
-            |  ((sr + dr) << 16)
-            |  ((sg + dg) << 8)
-            |  ((sb + db));
-        return;
-    }
-
-    int mr = qRed(coverage);
-    int mg = qGreen(coverage);
-    int mb = qBlue(coverage);
-
-    dr = gamma[dr];
-    dg = gamma[dg];
-    db = gamma[db];
-
-    int nr = qt_div_255(sr * mr + dr * (255 - mr));
-    int ng = qt_div_255(sg * mg + dg * (255 - mg));
-    int nb = qt_div_255(sb * mb + db * (255 - mb));
-
-    nr = invgamma[nr];
-    ng = invgamma[ng];
-    nb = invgamma[nb];
-
-    *dst = qRgb(nr, ng, nb);
+    *dst = colorProfile->fromLinear64(blend);
 }
 
-#if defined(Q_OS_WIN)
 Q_GUI_EXPORT bool qt_needs_a8_gamma_correction = false;
 
-static inline void grayBlendPixel(quint32 *dst, int coverage, int sr, int sg, int sb, const uint *gamma, const uchar *invgamma)
+static inline void grayBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, const QColorProfile *colorProfile)
 {
     // Do a gammacorrected gray alphablend...
-    int dr = qRed(*dst);
-    int dg = qGreen(*dst);
-    int db = qBlue(*dst);
+    const QRgba64 dlinear = colorProfile->toLinear64(*dst);
 
-    dr = gamma[dr];
-    dg = gamma[dg];
-    db = gamma[db];
+    QRgba64 blend = interpolate255(slinear, coverage, dlinear, 255 - coverage);
 
-    int alpha = coverage;
-    int ialpha = 255 - alpha;
-    int nr = qt_div_255(sr * alpha + dr * ialpha);
-    int ng = qt_div_255(sg * alpha + dg * ialpha);
-    int nb = qt_div_255(sb * alpha + db * ialpha);
-
-    nr = invgamma[nr];
-    ng = invgamma[ng];
-    nb = invgamma[nb];
-
-    *dst = qRgb(nr, ng, nb);
+    *dst = colorProfile->fromLinear64(blend);
 }
-#endif
 
 static void qt_alphamapblit_uint32(QRasterBuffer *rasterBuffer,
                                    int x, int y, quint32 color,
@@ -5592,21 +5548,14 @@ static void qt_alphamapblit_uint32(QRasterBuffer *rasterBuffer,
     const quint32 c = color;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint32);
 
-#if defined(Q_OS_WIN)
-    const QDrawHelperGammaTables *tables = QGuiApplicationPrivate::instance()->gammaTables();
-    if (!tables)
+    const QColorProfile *colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA8Text();
+    if (!colorProfile)
         return;
 
-    const uint *gamma = tables->qt_pow_gamma;
-    const uchar *invgamma = tables->qt_pow_invgamma;
-
-    int sr = gamma[qRed(color)];
-    int sg = gamma[qGreen(color)];
-    int sb = gamma[qBlue(color)];
+    const QRgba64 slinear = colorProfile->toLinear64(c);
 
     bool opaque_src = (qAlpha(color) == 255);
     bool doGrayBlendPixel = opaque_src && qt_needs_a8_gamma_correction;
-#endif
 
     if (!clip) {
         quint32 *dest = reinterpret_cast<quint32*>(rasterBuffer->scanLine(y)) + x;
@@ -5619,13 +5568,9 @@ static void qt_alphamapblit_uint32(QRasterBuffer *rasterBuffer,
                 } else if (coverage == 255) {
                     dest[i] = c;
                 } else {
-#if defined(Q_OS_WIN)
-                    if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && doGrayBlendPixel
-                        && qAlpha(dest[i]) == 255) {
-                        grayBlendPixel(dest+i, coverage, sr, sg, sb, gamma, invgamma);
-                    } else
-#endif
-                    {
+                    if (doGrayBlendPixel && qAlpha(dest[i]) == 255) {
+                        grayBlendPixel(dest+i, coverage, slinear, colorProfile);
+                    } else {
                         int ialpha = 255 - coverage;
                         dest[i] = INTERPOLATE_PIXEL_255(c, coverage, dest[i], ialpha);
                     }
@@ -5660,13 +5605,9 @@ static void qt_alphamapblit_uint32(QRasterBuffer *rasterBuffer,
                     } else if (coverage == 255) {
                         dest[xp] = c;
                     } else {
-#if defined(Q_OS_WIN)
-                        if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && doGrayBlendPixel
-                            && qAlpha(dest[xp]) == 255) {
-                            grayBlendPixel(dest+xp, coverage, sr, sg, sb, gamma, invgamma);
-                        } else
-#endif
-                        {
+                        if (doGrayBlendPixel && qAlpha(dest[xp]) == 255) {
+                            grayBlendPixel(dest+xp, coverage, slinear, colorProfile);
+                        } else {
                             int ialpha = 255 - coverage;
                             dest[xp] = INTERPOLATE_PIXEL_255(c, coverage, dest[xp], ialpha);
                         }
@@ -5700,6 +5641,11 @@ static void qt_alphamapblit_rgba8888(QRasterBuffer *rasterBuffer,
 }
 #endif
 
+inline static int qRgbAvg(QRgb rgb)
+{
+    return (qRed(rgb) * 5 + qGreen(rgb) * 6 + qBlue(rgb) * 5) / 16;
+}
+
 static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                                    int x, int y, const QRgba64 &color,
                                    const uint *src, int mapWidth, int mapHeight, int srcStride,
@@ -5707,21 +5653,13 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
 {
     const quint32 c = color.toArgb32();
 
-    int sr = qRed(c);
-    int sg = qGreen(c);
-    int sb = qBlue(c);
     int sa = qAlpha(c);
 
-    const QDrawHelperGammaTables *tables = QGuiApplicationPrivate::instance()->gammaTables();
-    if (!tables)
+    const QColorProfile *colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA32Text();
+    if (!colorProfile)
         return;
 
-    const uchar *gamma = tables->qt_pow_rgb_gamma;
-    const uchar *invgamma = tables->qt_pow_rgb_invgamma;
-
-    sr = gamma[sr];
-    sg = gamma[sg];
-    sb = gamma[sb];
+    const QRgba64 slinear = colorProfile->toLinear64(c);
 
     if (sa == 0)
         return;
@@ -5735,7 +5673,13 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                 if (coverage == 0xffffffff) {
                     dst[i] = c;
                 } else if (coverage != 0xff000000) {
-                    rgbBlendPixel(dst+i, coverage, sr, sg, sb, gamma, invgamma);
+                    if (dst[i] >= 0xff000000) {
+                        rgbBlendPixel(dst+i, coverage, slinear, colorProfile);
+                    } else {
+                        // Give up and do a naive blend.
+                        const int a = qRgbAvg(coverage);
+                        dst[i] = INTERPOLATE_PIXEL_255(c, a, dst[i], 255 - a);
+                    }
                 }
             }
 
@@ -5765,7 +5709,13 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                     if (coverage == 0xffffffff) {
                         dst[xp] = c;
                     } else if (coverage != 0xff000000) {
-                        rgbBlendPixel(dst+xp, coverage, sr, sg, sb, gamma, invgamma);
+                        if (dst[xp] >= 0xff000000) {
+                            rgbBlendPixel(dst+xp, coverage, slinear, colorProfile);
+                        } else {
+                            // Give up and do a naive blend.
+                            const int a = qRgbAvg(coverage);
+                            dst[xp] = INTERPOLATE_PIXEL_255(c, a, dst[xp], 255 - coverage);
+                        }
                     }
                 }
             } // for (i -> line.count)

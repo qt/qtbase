@@ -68,8 +68,8 @@
 #include <qpalette.h>
 #include <qscreen.h>
 #include "qsessionmanager.h"
+#include <private/qcolorprofile_p.h>
 #include <private/qscreen_p.h>
-#include <private/qdrawhelper_p.h>
 
 #include <QtGui/qgenericpluginfactory.h>
 #include <QtGui/qstylehints.h>
@@ -1530,7 +1530,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     platform_theme = 0;
     delete platform_integration;
     platform_integration = 0;
-    delete m_gammaTables.load();
+    delete m_a8ColorProfile.load();
+    delete m_a32ColorProfile.load();
 
     window_list.clear();
 }
@@ -3683,14 +3684,30 @@ void QGuiApplicationPrivate::notifyDragStarted(const QDrag *drag)
 }
 #endif
 
-const QDrawHelperGammaTables *QGuiApplicationPrivate::gammaTables()
+const QColorProfile *QGuiApplicationPrivate::colorProfileForA8Text()
 {
-    QDrawHelperGammaTables *result = m_gammaTables.load();
+#ifdef Q_OS_WIN
+    QColorProfile *result = m_a8ColorProfile.load();
     if (!result){
-        QDrawHelperGammaTables *tables = new QDrawHelperGammaTables(fontSmoothingGamma);
-        if (!m_gammaTables.testAndSetRelease(0, tables))
-            delete tables;
-        result = m_gammaTables.load();
+        QColorProfile *cs = QColorProfile::fromGamma(2.31); // This is a hard-coded thing for Windows text rendering
+        if (!m_a8ColorProfile.testAndSetRelease(0, cs))
+            delete cs;
+        result = m_a8ColorProfile.load();
+    }
+    return result;
+#else
+    return colorProfileForA32Text();
+#endif
+}
+
+const QColorProfile *QGuiApplicationPrivate::colorProfileForA32Text()
+{
+    QColorProfile *result = m_a32ColorProfile.load();
+    if (!result){
+        QColorProfile *cs = QColorProfile::fromGamma(fontSmoothingGamma);
+        if (!m_a32ColorProfile.testAndSetRelease(0, cs))
+            delete cs;
+        result = m_a32ColorProfile.load();
     }
     return result;
 }
