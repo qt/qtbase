@@ -99,6 +99,9 @@ public:
     virtual int metric(QPaintDevice::PaintDeviceMetric metric) const = 0;
     virtual void fill(const QColor &color) = 0;
 
+    virtual QBitmap mask() const;
+    virtual void setMask(const QBitmap &mask);
+
     virtual bool hasAlphaChannel() const = 0;
     virtual QPixmap transformed(const QTransform &matrix,
                                 Qt::TransformationMode mode) const;

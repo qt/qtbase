@@ -596,44 +596,7 @@ void QPixmap::setMask(const QBitmap &mask)
        return;
 
     detach();
-
-    QImage image = data->toImage();
-    if (mask.size().isEmpty()) {
-        if (image.depth() != 1) { // hw: ????
-            image = image.convertToFormat(QImage::Format_RGB32);
-        }
-    } else {
-        const int w = image.width();
-        const int h = image.height();
-
-        switch (image.depth()) {
-        case 1: {
-            const QImage imageMask = mask.toImage().convertToFormat(image.format());
-            for (int y = 0; y < h; ++y) {
-                const uchar *mscan = imageMask.scanLine(y);
-                uchar *tscan = image.scanLine(y);
-                int bytesPerLine = image.bytesPerLine();
-                for (int i = 0; i < bytesPerLine; ++i)
-                    tscan[i] &= mscan[i];
-            }
-            break;
-        }
-        default: {
-            const QImage imageMask = mask.toImage().convertToFormat(QImage::Format_MonoLSB);
-            image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-            for (int y = 0; y < h; ++y) {
-                const uchar *mscan = imageMask.scanLine(y);
-                QRgb *tscan = (QRgb *)image.scanLine(y);
-                for (int x = 0; x < w; ++x) {
-                    if (!(mscan[x>>3] & (1 << (x&7))))
-                        tscan[x] = 0;
-                }
-            }
-            break;
-        }
-        }
-    }
-    data->fromImage(image, Qt::AutoColor);
+    data->setMask(mask);
 }
 
 /*!
@@ -1496,37 +1459,7 @@ QPaintEngine *QPixmap::paintEngine() const
 */
 QBitmap QPixmap::mask() const
 {
-    if (!data || !hasAlphaChannel())
-        return QBitmap();
-
-    const QImage img = toImage();
-    bool shouldConvert = (img.format() != QImage::Format_ARGB32 && img.format() != QImage::Format_ARGB32_Premultiplied);
-    const QImage image = (shouldConvert ? img.convertToFormat(QImage::Format_ARGB32_Premultiplied) : img);
-    const int w = image.width();
-    const int h = image.height();
-
-    QImage mask(w, h, QImage::Format_MonoLSB);
-    if (mask.isNull()) // allocation failed
-        return QBitmap();
-
-    mask.setColorCount(2);
-    mask.setColor(0, QColor(Qt::color0).rgba());
-    mask.setColor(1, QColor(Qt::color1).rgba());
-
-    const int bpl = mask.bytesPerLine();
-
-    for (int y = 0; y < h; ++y) {
-        const QRgb *src = reinterpret_cast<const QRgb*>(image.scanLine(y));
-        uchar *dest = mask.scanLine(y);
-        memset(dest, 0, bpl);
-        for (int x = 0; x < w; ++x) {
-            if (qAlpha(*src) > 0)
-                dest[x >> 3] |= (1 << (x & 7));
-            ++src;
-        }
-    }
-
-    return QBitmap::fromImage(mask);
+    return data ? data->mask() : QBitmap();
 }
 
 /*!
