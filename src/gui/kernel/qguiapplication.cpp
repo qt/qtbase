@@ -937,15 +937,25 @@ QWindowList QGuiApplication::topLevelWindows()
 {
     const QWindowList &list = QGuiApplicationPrivate::window_list;
     QWindowList topLevelWindows;
-    for (int i = 0; i < list.size(); i++) {
-        if (!list.at(i)->parent() && list.at(i)->type() != Qt::Desktop) {
-            // Top windows of embedded QAxServers do not have QWindow parents,
-            // but they are not true top level windows, so do not include them.
-            const bool embedded = list.at(i)->handle() && list.at(i)->handle()->isEmbedded();
-            if (!embedded)
-                topLevelWindows.prepend(list.at(i));
-        }
+    for (int i = 0; i < list.size(); ++i) {
+        QWindow *window = list.at(i);
+        if (!window->isTopLevel())
+            continue;
+
+        // Desktop windows are special, as each individual desktop window
+        // will report that it's a top level window, but we don't want to
+        // include them in the application wide list of top level windows.
+        if (window->type() == Qt::Desktop)
+            continue;
+
+        // Windows embedded in native windows do not have QWindow parents,
+        // but they are not true top level windows, so do not include them.
+        if (window->handle() && window->handle()->isEmbedded())
+            continue;
+
+        topLevelWindows.prepend(window);
     }
+
     return topLevelWindows;
 }
 
