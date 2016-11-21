@@ -284,7 +284,6 @@ protected:
     QCocoaNSWindow *createNSWindow(bool shouldBeChildNSWindow, bool shouldBePanel);
 
     QRect nativeWindowGeometry() const;
-    QCocoaWindow *parentCocoaWindow() const;
     void syncWindowState(Qt::WindowState newState);
     void reinsertChildWindow(QCocoaWindow *child);
     void removeChildWindow(QCocoaWindow *child);

@@ -1751,15 +1751,6 @@ QRect QCocoaWindow::nativeWindowGeometry() const
     return qRect;
 }
 
-// Returns a pointer to the parent QCocoaWindow for this window, or 0 if there is none.
-QCocoaWindow *QCocoaWindow::parentCocoaWindow() const
-{
-    if (window() && window()->transientParent()) {
-        return static_cast<QCocoaWindow*>(window()->transientParent()->handle());
-    }
-    return 0;
-}
-
 // Syncs the NSWindow minimize/maximize/fullscreen state with the current QWindow state
 void QCocoaWindow::syncWindowState(Qt::WindowState newState)
 {
