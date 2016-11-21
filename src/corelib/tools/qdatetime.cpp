@@ -3808,7 +3808,16 @@ QString QDateTime::toString(Qt::DateFormat format) const
                                                    .arg(dt.day())
                                                    .arg(tm.toString(Qt::TextDate))
                                                    .arg(dt.year());
-        if (timeSpec() != Qt::LocalTime) {
+        // Append zone/offset indicator, as appropriate:
+        switch (timeSpec()) {
+        case Qt::LocalTime:
+            break;
+# if QT_CONFIG(timezone)
+        case Qt::TimeZone:
+            buf += QLatin1Char(' ') + d->m_timeZone.abbreviation(*this);
+            break;
+# endif
+        default:
             buf += QLatin1String(" GMT");
             if (getSpec(d) == Qt::OffsetFromUTC)
                 buf += toOffsetString(Qt::TextDate, offsetFromUtc());

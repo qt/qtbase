@@ -80,6 +80,7 @@ private slots:
     void toString_isoDate_extra();
     void toString_textDate_data();
     void toString_textDate();
+    void toString_textDate_extra();
     void toString_rfcDate_data();
     void toString_rfcDate();
     void toString_enumformat();
@@ -852,6 +853,49 @@ void tst_QDateTime::toString_textDate()
     QCOMPARE(resultDatetime.time(), datetime.time());
     QCOMPARE(resultDatetime.timeSpec(), datetime.timeSpec());
     QCOMPARE(resultDatetime.utcOffset(), datetime.utcOffset());
+}
+
+void tst_QDateTime::toString_textDate_extra()
+{
+    QLatin1String GMT("GMT");
+    QDateTime dt = QDateTime::fromMSecsSinceEpoch(0, Qt::LocalTime);
+    QVERIFY(!dt.toString().endsWith(GMT));
+    dt = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC).toLocalTime();
+    QVERIFY(!dt.toString().endsWith(GMT));
+    if (QTimeZone::systemTimeZone().offsetFromUtc(dt))
+        QVERIFY(dt.toString() != QLatin1String("Thu Jan 1 00:00:00 1970"));
+    else
+        QCOMPARE(dt.toString(), QLatin1String("Thu Jan 1 00:00:00 1970"));
+#if QT_CONFIG(timezone)
+    QTimeZone PST("America/Vancouver");
+    if (PST.isValid()) {
+        dt = QDateTime::fromMSecsSinceEpoch(0, PST);
+# if defined Q_OS_UNIX && !defined Q_OS_DARWIN
+        QCOMPARE(dt.toString(), QLatin1String("Wed Dec 31 16:00:00 1969 PST"));
+# else // QTBUG-57320, QTBUG-57298
+        QVERIFY(dt.toString().startsWith(QLatin1String("Wed Dec 31 16:00:00 1969 ")));
+# endif
+        dt = dt.toLocalTime();
+        QVERIFY(!dt.toString().endsWith(GMT));
+    } else {
+        qDebug("Missed zone test: no America/Vancouver zone available");
+    }
+    QTimeZone CET("Europe/Berlin");
+    if (CET.isValid()) {
+        dt = QDateTime::fromMSecsSinceEpoch(0, CET);
+# if defined Q_OS_UNIX && !defined Q_OS_DARWIN
+        QCOMPARE(dt.toString(), QLatin1String("Thu Jan 1 01:00:00 1970 CET"));
+# else // QTBUG-57320, QTBUG-57298
+        QVERIFY(dt.toString().startsWith(QLatin1String("Thu Jan 1 01:00:00 1970 ")));
+# endif
+        dt = dt.toLocalTime();
+        QVERIFY(!dt.toString().endsWith(GMT));
+    } else {
+        qDebug("Missed zone test: no Europe/Berlin zone available");
+    }
+#endif // timezone
+    dt = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC);
+    QVERIFY(dt.toString().endsWith(GMT));
 }
 
 void tst_QDateTime::toString_rfcDate_data()
