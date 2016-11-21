@@ -208,7 +208,7 @@ void QEglFSWindow::setVisible(bool visible)
     QWindowSystemInterface::handleExposeEvent(wnd, QRect(QPoint(0, 0), wnd->geometry().size()));
 
     if (visible)
-        QWindowSystemInterface::flushWindowSystemEvents();
+        QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
 void QEglFSWindow::setGeometry(const QRect &r)
