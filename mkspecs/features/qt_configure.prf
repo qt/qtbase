@@ -1874,6 +1874,7 @@ pfx = $$[QT_INSTALL_PREFIX]
 equals(pfx, $$[QT_INSTALL_PREFIX/get]) {
     logn("Once everything is built, Qt is installed.")
     logn("You should NOT run '$$QMAKE_MAKE_NAME install'.")
+    logn("Note that this build cannot be deployed to other machines or devices.")
 } else {
     logn("Once everything is built, you must run '$$QMAKE_MAKE_NAME install'.")
     logn("Qt will be installed into '$$system_path($$pfx)'.")
