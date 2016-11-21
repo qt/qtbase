@@ -77,6 +77,7 @@ private slots:
     void fromMSecsSinceEpoch();
     void toString_isoDate_data();
     void toString_isoDate();
+    void toString_isoDate_extra();
     void toString_textDate_data();
     void toString_textDate();
     void toString_rfcDate_data();
@@ -792,6 +793,28 @@ void tst_QDateTime::toString_isoDate()
     }
 
     QLocale::setDefault(oldLocale);
+}
+
+void tst_QDateTime::toString_isoDate_extra()
+{
+    QDateTime dt = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC);
+    QCOMPARE(dt.toString(Qt::ISODate), QLatin1String("1970-01-01T00:00:00Z"));
+#if QT_CONFIG(timezone)
+    QTimeZone PST("America/Vancouver");
+    if (PST.isValid()) {
+        dt = QDateTime::fromMSecsSinceEpoch(0, PST);
+        QCOMPARE(dt.toString(Qt::ISODate), QLatin1String("1969-12-31T16:00:00-08:00"));
+    } else {
+        qDebug("Missed zone test: no America/Vancouver zone available");
+    }
+    QTimeZone CET("Europe/Berlin");
+    if (CET.isValid()) {
+        dt = QDateTime::fromMSecsSinceEpoch(0, CET);
+        QCOMPARE(dt.toString(Qt::ISODate), QLatin1String("1970-01-01T01:00:00+01:00"));
+    } else {
+        qDebug("Missed zone test: no Europe/Berlin zone available");
+    }
+#endif // timezone
 }
 
 void tst_QDateTime::toString_textDate_data()

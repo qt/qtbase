@@ -136,6 +136,9 @@ public:
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
                                         DaylightStatus hint = UnknownDaylightTime,
                                         QDate *localDate = 0, QTime *localTime = 0);
+
+    // Inlined for its one caller in qdatetime.cpp
+    inline void setUtcOffsetByTZ(qint64 atMSecsSinceEpoch);
 #endif // timezone
 
     static inline qint64 minJd() { return QDate::minJd(); }

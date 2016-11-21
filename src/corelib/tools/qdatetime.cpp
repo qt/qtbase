@@ -2576,6 +2576,13 @@ static inline Qt::TimeSpec getSpec(const QDateTimeData &d)
     return extractSpec(getStatus(d));
 }
 
+#if QT_CONFIG(timezone)
+void QDateTimePrivate::setUtcOffsetByTZ(qint64 atMSecsSinceEpoch)
+{
+    m_offsetFromUtc = m_timeZone.d->offsetFromUtc(atMSecsSinceEpoch);
+}
+#endif
+
 // Refresh the LocalTime validity and offset
 static void refreshDateTime(QDateTimeData &d)
 {
@@ -2591,10 +2598,12 @@ static void refreshDateTime(QDateTimeData &d)
 #if QT_CONFIG(timezone)
     // If not valid time zone then is invalid
     if (spec == Qt::TimeZone) {
-        if (!d->m_timeZone.isValid())
+        if (!d->m_timeZone.isValid()) {
             status &= ~QDateTimePrivate::ValidDateTime;
-        else
+        } else {
             epochMSecs = QDateTimePrivate::zoneMSecsToEpochMSecs(msecs, d->m_timeZone, extractDaylightStatus(status), &testDate, &testTime);
+            d->setUtcOffsetByTZ(epochMSecs);
+        }
     }
 #endif // timezone
 
@@ -3822,6 +3831,9 @@ QString QDateTime::toString(Qt::DateFormat format) const
             buf += QLatin1Char('Z');
             break;
         case Qt::OffsetFromUTC:
+#if QT_CONFIG(timezone)
+        case Qt::TimeZone:
+#endif
             buf += toOffsetString(Qt::ISODate, offsetFromUtc());
             break;
         default:
