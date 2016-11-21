@@ -5716,6 +5716,8 @@ void tst_QWidget::setToolTip()
             QTest::qWait(2200);     // delay is 2000
         QTest::mouseMove(popupWindow);
     }
+
+    QTRY_COMPARE(QApplication::topLevelWidgets().size(), 1);
 }
 
 void tst_QWidget::testWindowIconChangeEventPropagation()
