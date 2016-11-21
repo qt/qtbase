@@ -463,6 +463,8 @@ void QCocoaIntegration::updateScreens()
     // Now the leftovers in remainingScreens are no longer current, so we can delete them.
     foreach (QCocoaScreen* screen, remainingScreens) {
         mScreens.removeOne(screen);
+        // Prevent stale references to NSScreen during destroy
+        screen->m_nsScreen = nil;
         destroyScreen(screen);
     }
 }
