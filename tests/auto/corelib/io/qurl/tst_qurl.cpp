@@ -182,6 +182,8 @@ private slots:
     void streaming();
     void detach();
     void testThreading();
+    void matches_data();
+    void matches();
 
 private:
     void testThreadingHelper();
@@ -4021,6 +4023,54 @@ void tst_QUrl::testThreading()
         sync.addFuture(QtConcurrent::run(this, &tst_QUrl::testThreadingHelper));
     sync.waitForFinished();
     delete s_urlStorage;
+}
+
+void tst_QUrl::matches_data()
+{
+    QTest::addColumn<QString>("urlStrOne");
+    QTest::addColumn<QString>("urlStrTwo");
+    QTest::addColumn<uint>("options");
+    QTest::addColumn<bool>("matches");
+
+    QTest::newRow("matchingString-none") << "http://www.website.com/directory/?#ref"
+                                         << "http://www.website.com/directory/?#ref"
+                                         << uint(QUrl::None) << true;
+    QTest::newRow("nonMatchingString-none") << "http://www.website.com/directory/?#ref"
+                                            << "http://www.nomatch.com/directory/?#ref"
+                                            << uint(QUrl::None) << false;
+    QTest::newRow("matchingHost-removePath") << "http://www.website.com/directory"
+                                             << "http://www.website.com/differentdir"
+                                             << uint(QUrl::RemovePath) << true;
+    QTest::newRow("nonMatchingHost-removePath") << "http://www.website.com/directory"
+                                                << "http://www.different.com/differentdir"
+                                                << uint(QUrl::RemovePath) << false;
+    QTest::newRow("matchingHost-removePathAuthority") << "http://user:pass@www.website.com/directory"
+                                                      << "http://www.website.com/differentdir"
+                                                      << uint(QUrl::RemovePath | QUrl::RemoveAuthority)
+                                                      << true;
+    QTest::newRow("nonMatchingHost-removePathAuthority") << "http://user:pass@www.website.com/directory"
+                                                         << "http://user:pass@www.different.com/differentdir"
+                                                         << uint(QUrl::RemovePath | QUrl::RemoveAuthority)
+                                                         << true;
+    QTest::newRow("matchingHostAuthority-removePathAuthority")
+        << "http://user:pass@www.website.com/directory" << "http://www.website.com/differentdir"
+        << uint(QUrl::RemovePath | QUrl::RemoveAuthority) << true;
+    QTest::newRow("nonMatchingAuthority-removePathAuthority")
+        << "http://user:pass@www.website.com/directory"
+        << "http://otheruser:otherpass@www.website.com/directory"
+        << uint(QUrl::RemovePath | QUrl::RemoveAuthority) << true;
+}
+
+void tst_QUrl::matches()
+{
+    QFETCH(QString, urlStrOne);
+    QFETCH(QString, urlStrTwo);
+    QFETCH(uint, options);
+    QFETCH(bool, matches);
+
+    QUrl urlOne(urlStrOne);
+    QUrl urlTwo(urlStrTwo);
+    QCOMPARE(urlOne.matches(urlTwo, QUrl::FormattingOptions(options)), matches);
 }
 
 QTEST_MAIN(tst_QUrl)
