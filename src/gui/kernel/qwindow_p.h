@@ -123,19 +123,7 @@ public:
 
     void deliverUpdateRequest();
 
-    QPoint globalPosition() const {
-        Q_Q(const QWindow);
-        QPoint offset = q->position();
-        for (const QWindow *p = q->parent(); p; p = p->parent()) {
-            if (p->type() != Qt::ForeignWindow) {
-                offset += p->position();
-            } else { // QTBUG-43252, mapToGlobal() for foreign children.
-                offset += p->mapToGlobal(QPoint(0, 0));
-                break;
-            }
-        }
-        return offset;
-    }
+    QPoint globalPosition() const;
 
     QWindow *topLevelWindow() const;
 

@@ -2444,6 +2444,20 @@ QPoint QWindow::mapFromGlobal(const QPoint &pos) const
     return pos - d->globalPosition();
 }
 
+QPoint QWindowPrivate::globalPosition() const
+{
+    Q_Q(const QWindow);
+    QPoint offset = q->position();
+    for (const QWindow *p = q->parent(); p; p = p->parent()) {
+        if (p->type() != Qt::ForeignWindow) {
+            offset += p->position();
+        } else { // Use mapToGlobal() for foreign windows
+            offset += p->mapToGlobal(QPoint(0, 0));
+            break;
+        }
+    }
+    return offset;
+}
 
 Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window)
 {
