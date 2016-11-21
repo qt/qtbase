@@ -930,6 +930,10 @@
                 { "type": "publicQtConfig", "negative": true }
             ]
         },
+        "network": {
+            "label": "Qt Network",
+            "output": [ "privateFeature" ]
+        },
         "widgets": {
             "label": "Qt Widgets",
             "condition": "features.gui",
@@ -1123,6 +1127,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 "dbus",
                 "dbus-linked",
                 "gui",
+                "network",
                 "widgets"
             ]
         }, {
