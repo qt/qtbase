@@ -112,7 +112,7 @@ void tst_QSctpSocket::constructing()
     QVERIFY(!socket.isOpen());
     QVERIFY(!socket.isValid());
     QCOMPARE(socket.socketType(), QAbstractSocket::SctpSocket);
-    QCOMPARE(socket.maxChannelCount(), 0);
+    QCOMPARE(socket.maximumChannelCount(), 0);
     QCOMPARE(socket.readChannelCount(), 0);
     QCOMPARE(socket.writeChannelCount(), 0);
 
@@ -202,7 +202,7 @@ void tst_QSctpSocket::setSocketDescriptor()
 {
     QSctpServer server;
 
-    server.setMaxChannelCount(16);
+    server.setMaximumChannelCount(16);
     QVERIFY(server.listen());
 
     SOCKET sock = ::socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP);
@@ -218,8 +218,8 @@ void tst_QSctpSocket::setSocketDescriptor()
     QVERIFY(socket.waitForConnected(3000));
     QVERIFY(server.waitForNewConnection(3000));
 
-    QCOMPARE(socket.readChannelCount(), server.maxChannelCount());
-    QVERIFY(socket.writeChannelCount() <= server.maxChannelCount());
+    QCOMPARE(socket.readChannelCount(), server.maximumChannelCount());
+    QVERIFY(socket.writeChannelCount() <= server.maximumChannelCount());
 
     QSctpSocket *acceptedSocket = server.nextPendingDatagramConnection();
     QVERIFY(acceptedSocket);
@@ -338,11 +338,11 @@ void tst_QSctpSocket::loop()
 
     QSctpServer server;
 
-    server.setMaxChannelCount(10);
+    server.setMaximumChannelCount(10);
     QVERIFY(server.listen());
 
     QSctpSocket peter;
-    peter.setMaxChannelCount(10);
+    peter.setMaximumChannelCount(10);
     peter.connectToHost(QHostAddress::LocalHost, server.serverPort());
     QVERIFY(peter.waitForConnected(3000));
 
@@ -389,11 +389,11 @@ void tst_QSctpSocket::loopInTCPMode()
 
     QSctpServer server;
 
-    server.setMaxChannelCount(-1);
+    server.setMaximumChannelCount(-1);
     QVERIFY(server.listen());
 
     QSctpSocket peter;
-    peter.setMaxChannelCount(-1);
+    peter.setMaximumChannelCount(-1);
     peter.connectToHost(QHostAddress::LocalHost, server.serverPort());
     QVERIFY(peter.waitForConnected(3000));
     QVERIFY(server.waitForNewConnection(3000));

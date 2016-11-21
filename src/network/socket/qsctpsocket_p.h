@@ -74,7 +74,7 @@ public:
     bool writeToSocket() Q_DECL_OVERRIDE;
 
     QByteArray incomingDatagram;
-    int maxChannelCount;
+    int maximumChannelCount;
 
     typedef std::deque<QIpPacketHeader> IpHeaderList;
     QVector<IpHeaderList> readHeaders;

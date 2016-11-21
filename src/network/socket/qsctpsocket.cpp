@@ -83,14 +83,14 @@
     \endlist
 
     To set a continuous byte stream mode, instantiate QSctpSocket and
-    call setMaxChannelCount() with a negative value. This gives the
+    call setMaximumChannelCount() with a negative value. This gives the
     ability to use QSctpSocket as a regular buffered QTcpSocket. You
     can call connectToHost() to initiate connection with endpoint,
     write() to transmit and read() to receive data from the peer, but
     you cannot distinguish message boundaries.
 
     By default, QSctpSocket operates in datagram mode. Before
-    connecting, call setMaxChannelCount() to set the maximum number of
+    connecting, call setMaximumChannelCount() to set the maximum number of
     channels that the application is prepared to support. This number
     is a parameter negotiated with the remote endpoint and its value
     can be bounded by the operating system. The default value of 0
@@ -130,7 +130,7 @@ QT_BEGIN_NAMESPACE
 /*! \internal
 */
 QSctpSocketPrivate::QSctpSocketPrivate()
-    : maxChannelCount(0)
+    : maximumChannelCount(0)
 {
 }
 
@@ -150,7 +150,7 @@ bool QSctpSocketPrivate::canReadNotification()
 #endif
 
     // Handle TCP emulation mode in the base implementation.
-    if (!q->inDatagramMode())
+    if (!q->isInDatagramMode())
         return QTcpSocketPrivate::canReadNotification();
 
     const int savedCurrentChannel = currentReadChannel;
@@ -248,7 +248,7 @@ bool QSctpSocketPrivate::writeToSocket()
 #endif
 
     // Handle TCP emulation mode in the base implementation.
-    if (!q->inDatagramMode())
+    if (!q->isInDatagramMode())
         return QTcpSocketPrivate::writeToSocket();
 
     if (!socketEngine)
@@ -331,7 +331,7 @@ void QSctpSocketPrivate::configureCreatedSocket()
 {
     if (socketEngine)
         socketEngine->setOption(QAbstractSocketEngine::MaxStreamsSocketOption,
-                                maxChannelCount < 0 ? 1 : maxChannelCount);
+                                maximumChannelCount < 0 ? 1 : maximumChannelCount);
 }
 
 /*!
@@ -340,7 +340,7 @@ void QSctpSocketPrivate::configureCreatedSocket()
     Sets the datagram operation mode. The \a parent argument is passed
     to QObject's constructor.
 
-    \sa socketType(), setMaxChannelCount()
+    \sa socketType(), setMaximumChannelCount()
 */
 QSctpSocket::QSctpSocket(QObject *parent)
     : QTcpSocket(SctpSocket, *new QSctpSocketPrivate, parent)
@@ -418,19 +418,19 @@ void QSctpSocket::disconnectFromHost()
 
     Call this method only when QSctpSocket is in UnconnectedState.
 
-    \sa maxChannelCount(), readChannelCount(), writeChannelCount()
+    \sa maximumChannelCount(), readChannelCount(), writeChannelCount()
 */
-void QSctpSocket::setMaxChannelCount(int count)
+void QSctpSocket::setMaximumChannelCount(int count)
 {
     Q_D(QSctpSocket);
     if (d->state != QAbstractSocket::UnconnectedState) {
-        qWarning("QSctpSocket::setMaxChannelCount() is only allowed in UnconnectedState");
+        qWarning("QSctpSocket::setMaximumChannelCount() is only allowed in UnconnectedState");
         return;
     }
 #if defined(QSCTPSOCKET_DEBUG)
-    qDebug("QSctpSocket::setMaxChannelCount(%i)", count);
+    qDebug("QSctpSocket::setMaximumChannelCount(%i)", count);
 #endif
-    d->maxChannelCount = qMax(count, -1);
+    d->maximumChannelCount = qMax(count, -1);
 }
 
 /*!
@@ -443,22 +443,22 @@ void QSctpSocket::setMaxChannelCount(int count)
     Returns -1 if QSctpSocket is running in continuous byte stream
     mode.
 
-    \sa setMaxChannelCount(), readChannelCount(), writeChannelCount()
+    \sa setMaximumChannelCount(), readChannelCount(), writeChannelCount()
 */
-int QSctpSocket::maxChannelCount() const
+int QSctpSocket::maximumChannelCount() const
 {
-    return d_func()->maxChannelCount;
+    return d_func()->maximumChannelCount;
 }
 
 /*!
     Returns \c true if the socket is running in datagram mode.
 
-    \sa setMaxChannelCount()
+    \sa setMaximumChannelCount()
 */
-bool QSctpSocket::inDatagramMode() const
+bool QSctpSocket::isInDatagramMode() const
 {
     Q_D(const QSctpSocket);
-    return d->maxChannelCount != -1 && d->isBuffered;
+    return d->maximumChannelCount != -1 && d->isBuffered;
 }
 
 /*!
@@ -471,13 +471,13 @@ bool QSctpSocket::inDatagramMode() const
     On failure, returns a QNetworkDatagram that reports \l
     {QNetworkDatagram::isValid()}{not valid}.
 
-    \sa writeDatagram(), inDatagramMode(), currentReadChannel()
+    \sa writeDatagram(), isInDatagramMode(), currentReadChannel()
 */
 QNetworkDatagram QSctpSocket::readDatagram()
 {
     Q_D(QSctpSocket);
 
-    if (!isReadable() || !inDatagramMode()) {
+    if (!isReadable() || !isInDatagramMode()) {
         qWarning("QSctpSocket::readDatagram(): operation is not permitted");
         return QNetworkDatagram();
     }
@@ -507,14 +507,14 @@ QNetworkDatagram QSctpSocket::readDatagram()
     Writes a \a datagram to the buffer of the current write channel.
     Returns true on success; otherwise returns false.
 
-    \sa readDatagram(), inDatagramMode(), currentWriteChannel()
+    \sa readDatagram(), isInDatagramMode(), currentWriteChannel()
 */
 bool QSctpSocket::writeDatagram(const QNetworkDatagram &datagram)
 {
     Q_D(QSctpSocket);
 
     if (!isWritable() || d->state != QAbstractSocket::ConnectedState || !d->socketEngine
-        || !d->socketEngine->isValid() || !inDatagramMode()) {
+        || !d->socketEngine->isValid() || !isInDatagramMode()) {
         qWarning("QSctpSocket::writeDatagram(): operation is not permitted");
         return false;
     }

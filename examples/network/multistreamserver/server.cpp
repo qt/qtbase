@@ -66,7 +66,7 @@ Server::Server(QWidget *parent)
     setWindowTitle(tr("Multi-stream Server"));
 
     sctpServer = new QSctpServer(this);
-    sctpServer->setMaxChannelCount(NumberOfChannels);
+    sctpServer->setMaximumChannelCount(NumberOfChannels);
 
     statusLabel = new QLabel;
     QPushButton *quitButton = new QPushButton(tr("Quit"));
