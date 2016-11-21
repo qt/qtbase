@@ -780,6 +780,10 @@ static bool readExifHeader(QDataStream &stream)
  */
 static int getExifOrientation(QByteArray &exifData)
 {
+    // Current EXIF version (2.3) says there can be at most 5 IFDs,
+    // byte we allow for 10 so we're able to deal with future extensions.
+    const int maxIfdCount = 10;
+
     QDataStream stream(&exifData, QIODevice::ReadOnly);
 
     if (!readExifHeader(stream))
@@ -787,7 +791,8 @@ static int getExifOrientation(QByteArray &exifData)
 
     quint16 val;
     quint32 offset;
-    const qint64 headerStart = stream.device()->pos();
+    const qint64 headerStart = 6;   // the EXIF header has a constant size
+    Q_ASSERT(headerStart == stream.device()->pos());
 
     // read byte order marker
     stream >> val;
@@ -798,7 +803,7 @@ static int getExifOrientation(QByteArray &exifData)
     else
         return -1; // unknown byte order
 
-    // read size
+    // confirm byte order
     stream >> val;
     if (val != 0x2a)
         return -1;
@@ -806,18 +811,22 @@ static int getExifOrientation(QByteArray &exifData)
     stream >> offset;
 
     // read IFD
-    while (!stream.atEnd()) {
+    for (int n = 0; n < maxIfdCount; ++n) {
         quint16 numEntries;
 
-        // skip offset bytes to get the next IFD
         const qint64 bytesToSkip = offset - (stream.device()->pos() - headerStart);
-
-        if (stream.skipRawData(bytesToSkip) != bytesToSkip)
+        if (bytesToSkip < 0 || (offset + headerStart >= exifData.size())) {
+            // disallow going backwards, though it's permitted in the spec
             return -1;
+        } else if (bytesToSkip != 0) {
+            // seek to the IFD
+            if (!stream.device()->seek(offset + headerStart))
+                return -1;
+        }
 
         stream >> numEntries;
 
-        for (; numEntries > 0; --numEntries) {
+        for (; numEntries > 0 && stream.status() == QDataStream::Ok; --numEntries) {
             quint16 tag;
             quint16 type;
             quint32 components;
@@ -841,12 +850,14 @@ static int getExifOrientation(QByteArray &exifData)
 
         // read offset to next IFD
         stream >> offset;
+        if (stream.status() != QDataStream::Ok)
+            return -1;
         if (offset == 0) // this is the last IFD
-            break;
+            return 0;   // No Exif orientation was found
     }
 
-    // No Exif orientation was found
-    return 0;
+    // too many IFDs
+    return -1;
 }
 
 static QImageIOHandler::Transformations exif2Qt(int exifOrientation)

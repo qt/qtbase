@@ -187,7 +187,8 @@ private slots:
     void exifOrientation();
 
     void exif_QTBUG45865();
-    void exif_invalid_data_QTBUG46870();
+    void exifInvalidData_data();
+    void exifInvalidData();
 
     void cleanupFunctions();
 
@@ -2981,10 +2982,20 @@ void tst_QImage::exif_QTBUG45865()
     QCOMPARE(image.size(), QSize(5, 8));
 }
 
-void tst_QImage::exif_invalid_data_QTBUG46870()
+void tst_QImage::exifInvalidData_data()
+{
+    QTest::addColumn<bool>("$never used");
+    QTest::newRow("QTBUG-46870");
+    QTest::newRow("back_pointers");
+    QTest::newRow("past_end");
+    QTest::newRow("too_many_ifds");
+    QTest::newRow("too_many_tags");
+}
+
+void tst_QImage::exifInvalidData()
 {
     QImage image;
-    QVERIFY(image.load(m_prefix + "jpeg_exif_invalid_data_QTBUG-46870.jpg"));
+    QVERIFY(image.load(m_prefix + "jpeg_exif_invalid_data_" + QTest::currentDataTag() + ".jpg"));
     QVERIFY(!image.isNull());
 }
 
