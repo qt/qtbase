@@ -49,6 +49,7 @@
 #include "qdatetime.h"
 #include "qbytearray.h"
 #include "qstringlist.h"
+#include "qendian.h"
 #include <qshareddata.h>
 #include <qplatformdefs.h>
 #include "private/qabstractfileengine_p.h"
@@ -606,11 +607,9 @@ inline uint QResourceRoot::hash(int node) const
     if(!node) //root
         return 0;
     const int offset = findOffset(node);
-    int name_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                      (tree[offset+2] << 8) + (tree[offset+3] << 0);
+    qint32 name_offset = qFromBigEndian<qint32>(tree + offset);
     name_offset += 2; //jump past name length
-    return (names[name_offset+0] << 24) + (names[name_offset+1] << 16) +
-           (names[name_offset+2] << 8) + (names[name_offset+3] << 0);
+    return qFromBigEndian<quint32>(names + name_offset);
 }
 inline QString QResourceRoot::name(int node) const
 {
@@ -619,10 +618,8 @@ inline QString QResourceRoot::name(int node) const
     const int offset = findOffset(node);
 
     QString ret;
-    int name_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                      (tree[offset+2] << 8) + (tree[offset+3] << 0);
-    const short name_length = (names[name_offset+0] << 8) +
-                              (names[name_offset+1] << 0);
+    qint32 name_offset = qFromBigEndian<qint32>(tree + offset);
+    const qint16 name_length = qFromBigEndian<qint16>(names + name_offset);
     name_offset += 2;
     name_offset += 4; //jump past hash
 
@@ -662,10 +659,8 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
         return 0;
 
     //the root node is always first
-    int child_count = (tree[6] << 24) + (tree[7] << 16) +
-                      (tree[8] << 8) + (tree[9] << 0);
-    int child       = (tree[10] << 24) + (tree[11] << 16) +
-                      (tree[12] << 8) + (tree[13] << 0);
+    qint32 child_count = qFromBigEndian<qint32>(tree + 6);
+    qint32 child       = qFromBigEndian<qint32>(tree + 10);
 
     //now iterate up the tree
     int node = -1;
@@ -711,18 +706,15 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 #endif
                     offset += 4;  //jump past name
 
-                    const short flags = (tree[offset+0] << 8) +
-                                        (tree[offset+1] << 0);
+                    const qint16 flags = qFromBigEndian<qint16>(tree + offset);
                     offset += 2;
 
                     if(!splitter.hasNext()) {
                         if(!(flags & Directory)) {
-                            const short country = (tree[offset+0] << 8) +
-                                                  (tree[offset+1] << 0);
+                            const qint16 country = qFromBigEndian<qint16>(tree + offset);
                             offset += 2;
 
-                            const short language = (tree[offset+0] << 8) +
-                                                   (tree[offset+1] << 0);
+                            const qint16 language = qFromBigEndian<qint16>(tree + offset);
                             offset += 2;
 #ifdef DEBUG_RESOURCE_MATCH
                             qDebug() << "    " << "LOCALE" << country << language;
@@ -749,11 +741,9 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
                     if(!(flags & Directory))
                         return -1;
 
-                    child_count = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                                  (tree[offset+2] << 8) + (tree[offset+3] << 0);
+                    child_count = qFromBigEndian<qint32>(tree + offset);
                     offset += 4;
-                    child = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                            (tree[offset+2] << 8) + (tree[offset+3] << 0);
+                    child = qFromBigEndian<qint32>(tree + offset);
                     break;
                 }
             }
@@ -771,7 +761,7 @@ short QResourceRoot::flags(int node) const
     if(node == -1)
         return 0;
     const int offset = findOffset(node) + 4; //jump past name
-    return (tree[offset+0] << 8) + (tree[offset+1] << 0);
+    return qFromBigEndian<qint16>(tree + offset);
 }
 const uchar *QResourceRoot::data(int node, qint64 *size) const
 {
@@ -781,16 +771,14 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
     }
     int offset = findOffset(node) + 4; //jump past name
 
-    const short flags = (tree[offset+0] << 8) + (tree[offset+1] << 0);
+    const qint16 flags = qFromBigEndian<qint16>(tree + offset);
     offset += 2;
 
     offset += 4; //jump past locale
 
     if(!(flags & Directory)) {
-        const int data_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                                (tree[offset+2] << 8) + (tree[offset+3] << 0);
-        const uint data_length = (payloads[data_offset+0] << 24) + (payloads[data_offset+1] << 16) +
-                                 (payloads[data_offset+2] << 8) + (payloads[data_offset+3] << 0);
+        const qint32 data_offset = qFromBigEndian<qint32>(tree + offset);
+        const quint32 data_length = qFromBigEndian<quint32>(payloads + data_offset);
         const uchar *ret = payloads+data_offset+4;
         *size = data_length;
         return ret;
@@ -806,10 +794,7 @@ QDateTime QResourceRoot::lastModified(int node) const
 
     const int offset = findOffset(node) + 14;
 
-    const quint64 timeStamp = (quint64(tree[offset+0]) << 56) + (quint64(tree[offset+1]) << 48) +
-                              (quint64(tree[offset+2]) << 40) + (quint64(tree[offset+3]) << 32) +
-                              (quint64(tree[offset+4]) << 24) + (quint64(tree[offset+5]) << 16) +
-                              (quint64(tree[offset+6]) << 8) + (quint64(tree[offset+7]));
+    const quint64 timeStamp = qFromBigEndian<quint64>(tree + offset);
     if (timeStamp == 0)
         return QDateTime();
 
@@ -822,16 +807,14 @@ QStringList QResourceRoot::children(int node) const
         return QStringList();
     int offset = findOffset(node) + 4; //jump past name
 
-    const short flags = (tree[offset+0] << 8) + (tree[offset+1] << 0);
+    const qint16 flags = qFromBigEndian<qint16>(tree + offset);
     offset += 2;
 
     QStringList ret;
     if(flags & Directory) {
-        const int child_count = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                                (tree[offset+2] << 8) + (tree[offset+3] << 0);
+        const qint32 child_count = qFromBigEndian<qint32>(tree + offset);
         offset += 4;
-        const int child_off = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                              (tree[offset+2] << 8) + (tree[offset+3] << 0);
+        const qint32 child_off = qFromBigEndian<qint32>(tree + offset);
         ret.reserve(child_count);
         for(int i = child_off; i < child_off+child_count; ++i)
             ret << name(i);
@@ -935,20 +918,16 @@ public:
         }
         offset += 4;
 
-        const int version = (b[offset+0] << 24) + (b[offset+1] << 16) +
-                         (b[offset+2] << 8) + (b[offset+3] << 0);
+        const int version = qFromBigEndian<qint32>(b + offset);
         offset += 4;
 
-        const int tree_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
-                                (b[offset+2] << 8) + (b[offset+3] << 0);
+        const int tree_offset = qFromBigEndian<qint32>(b + offset);
         offset += 4;
 
-        const int data_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
-                                (b[offset+2] << 8) + (b[offset+3] << 0);
+        const int data_offset = qFromBigEndian<qint32>(b + offset);
         offset += 4;
 
-        const int name_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
-                                (b[offset+2] << 8) + (b[offset+3] << 0);
+        const int name_offset = qFromBigEndian<qint32>(b + offset);
         offset += 4;
 
         // Some sanity checking for sizes. This is _not_ a security measure.
