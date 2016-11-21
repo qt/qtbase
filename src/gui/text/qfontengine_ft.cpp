@@ -61,17 +61,19 @@
 #include FT_TRUETYPE_TABLES_H
 #include FT_TYPE1_TABLES_H
 #include FT_GLYPH_H
+#include FT_MODULE_H
 
 #if defined(FT_LCD_FILTER_H)
 #include FT_LCD_FILTER_H
+#define QT_USE_FREETYPE_LCDFILTER
 #endif
 
 #if defined(FT_CONFIG_OPTIONS_H)
 #include FT_CONFIG_OPTIONS_H
 #endif
 
-#if defined(FT_LCD_FILTER_H)
-#define QT_USE_FREETYPE_LCDFILTER
+#if defined(FT_FONT_FORMATS_H)
+#include FT_FONT_FORMATS_H
 #endif
 
 #ifdef QT_LINUXBASE
@@ -151,6 +153,14 @@ QtFreetypeData *qt_getFreetypeData()
     QtFreetypeData *&freetypeData = theFreetypeData()->localData();
     if (!freetypeData)
         freetypeData = new QtFreetypeData;
+    if (!freetypeData->library) {
+        FT_Init_FreeType(&freetypeData->library);
+#if defined(FT_FONT_FORMATS_H)
+        // Freetype defaults to disabling stem-darkening on CFF, we re-enable it.
+        FT_Bool no_darkening = false;
+        FT_Property_Set(freetypeData->library, "cff", "no-stem-darkening", &no_darkening);
+#endif
+    }
     return freetypeData;
 }
 #endif
@@ -158,8 +168,7 @@ QtFreetypeData *qt_getFreetypeData()
 FT_Library qt_getFreetype()
 {
     QtFreetypeData *freetypeData = qt_getFreetypeData();
-    if (!freetypeData->library)
-        FT_Init_FreeType(&freetypeData->library);
+    Q_ASSERT(freetypeData->library);
     return freetypeData->library;
 }
 
@@ -218,8 +227,6 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         return 0;
 
     QtFreetypeData *freetypeData = qt_getFreetypeData();
-    if (!freetypeData->library)
-        FT_Init_FreeType(&freetypeData->library);
 
     QFreetypeFace *freetype = freetypeData->faces.value(face_id, 0);
     if (freetype) {
@@ -687,6 +694,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     cacheEnabled = env.isEmpty() || env.toInt() == 0;
     m_subPixelPositionCount = 4;
     forceAutoHint = false;
+    stemDarkeningDriver = false;
 }
 
 QFontEngineFT::~QFontEngineFT()
@@ -798,6 +806,17 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
             }
         }
     }
+#if defined(FT_FONT_FORMATS_H)
+    const char *fmt = FT_Get_Font_Format(face);
+    if (fmt && qstrncmp(fmt, "CFF", 4) == 0) {
+        FT_Bool no_stem_darkening = true;
+        FT_Error err = FT_Property_Get(qt_getFreetype(), "cff", "no-stem-darkening", &no_stem_darkening);
+        if (err == FT_Err_Ok)
+            stemDarkeningDriver = !no_stem_darkening;
+        else
+            stemDarkeningDriver = false;
+    }
+#endif
 
     fontDef.styleName = QString::fromUtf8(face->style_name);
 
@@ -839,6 +858,11 @@ void QFontEngineFT::setQtDefaultHintStyle(QFont::HintingPreference hintingPrefer
 void QFontEngineFT::setDefaultHintStyle(HintStyle style)
 {
     default_hint_style = style;
+}
+
+bool QFontEngineFT::expectsGammaCorrectedBlending() const
+{
+    return stemDarkeningDriver;
 }
 
 int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,

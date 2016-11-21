@@ -602,6 +602,11 @@ glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed s
     return br;
 }
 
+bool QCoreTextFontEngine::expectsGammaCorrectedBlending() const
+{
+    // Only works well when font-smoothing is enabled
+    return (glyphFormat == Format_A32) && !(fontDef.styleStrategy & (QFont::NoAntialias | QFont::NoSubpixelAntialias));
+}
 
 QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &matrix)
 {

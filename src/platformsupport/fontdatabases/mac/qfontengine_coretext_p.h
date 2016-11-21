@@ -110,6 +110,7 @@ public:
     void doKerning(QGlyphLayout *g, ShaperFlags flags) const Q_DECL_OVERRIDE;
 
     bool supportsTransformation(const QTransform &transform) const Q_DECL_OVERRIDE;
+    bool expectsGammaCorrectedBlending() const Q_DECL_OVERRIDE;
 
     QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
     Qt::HANDLE handle() const Q_DECL_OVERRIDE;

@@ -2555,7 +2555,7 @@ QRasterBuffer *QRasterPaintEngine::rasterBuffer()
 /*!
     \internal
 */
-void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx,int ry,int w,int h)
+void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx,int ry,int w,int h, bool useGammaCorrection)
 {
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
@@ -2610,14 +2610,14 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
             } else if (depth == 8) {
                 if (s->penData.alphamapBlit) {
                     s->penData.alphamapBlit(rb, rx, ry, s->penData.solid.color,
-                                            scanline, w, h, bpl, 0);
+                                            scanline, w, h, bpl, 0, useGammaCorrection);
                     return;
                 }
             } else if (depth == 32) {
                 // (A)RGB Alpha mask where the alpha component is not used.
                 if (s->penData.alphaRGBBlit) {
                     s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solid.color,
-                                            (const uint *) scanline, w, h, bpl / 4, 0);
+                                            (const uint *) scanline, w, h, bpl / 4, 0, useGammaCorrection);
                     return;
                 }
             }
@@ -2646,10 +2646,10 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
             }
             if (depth == 8)
                 s->penData.alphamapBlit(rb, rx, ry, s->penData.solid.color,
-                                        scanline, w, h, bpl, clip);
+                                        scanline, w, h, bpl, clip, useGammaCorrection);
             else if (depth == 32)
                 s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solid.color,
-                                        (const uint *) scanline, w, h, bpl / 4, clip);
+                                        (const uint *) scanline, w, h, bpl / 4, clip, useGammaCorrection);
             return;
         }
     }
@@ -2807,7 +2807,8 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             alphaPenBlt(alphaMap->constBits(), alphaMap->bytesPerLine(), alphaMap->depth(),
                         qFloor(positions[i].x) + offset.x(),
                         qRound(positions[i].y) + offset.y(),
-                        alphaMap->width(), alphaMap->height());
+                        alphaMap->width(), alphaMap->height(),
+                        fontEngine->expectsGammaCorrectedBlending());
 
             fontEngine->unlockAlphaMapForGlyph();
         }
@@ -2868,7 +2869,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
                 drawImage(QPoint(x, y), QImage(glyphBits, c.w, c.h, bpl, image.format()));
                 s->matrix = originalTransform;
             } else {
-                alphaPenBlt(glyphBits, bpl, depth, x, y, c.w, c.h);
+                alphaPenBlt(glyphBits, bpl, depth, x, y, c.w, c.h, fontEngine->expectsGammaCorrectedBlending());
             }
         }
     }

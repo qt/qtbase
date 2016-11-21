@@ -539,7 +539,7 @@ void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
                                   int x, int y, const QRgba64 &color,
                                   const uchar *bitmap,
                                   int mapWidth, int mapHeight, int mapStride,
-                                  const QClipData *)
+                                  const QClipData *, bool /*useGammaCorrection*/)
 {
     quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);

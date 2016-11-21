@@ -91,7 +91,7 @@ void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
                                   int x, int y, const QRgba64 &color,
                                   const uchar *bitmap,
                                   int mapWidth, int mapHeight, int mapStride,
-                                  const QClipData *clip);
+                                  const QClipData *clip, bool /*useGammaCorrection*/);
 
 void qt_scale_image_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
                                          const uchar *srcPixels, int sbpl, int srch,

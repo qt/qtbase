@@ -24,6 +24,7 @@ SOURCES += \
     $$PWD/src/base/ftbbox.c \
     $$PWD/src/base/ftdebug.c \
     $$PWD/src/base/ftglyph.c \
+    $$PWD/src/base/ftfntfmt.c \
     $$PWD/src/base/ftinit.c \
     $$PWD/src/base/ftlcdfil.c \
     $$PWD/src/base/ftmm.c \

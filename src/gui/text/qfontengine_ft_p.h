@@ -252,6 +252,7 @@ private:
                                    QPoint *offset) Q_DECL_OVERRIDE;
     bool hasInternalCaching() const Q_DECL_OVERRIDE { return cacheEnabled; }
     void unlockAlphaMapForGlyph() Q_DECL_OVERRIDE;
+    bool expectsGammaCorrectedBlending() const Q_DECL_OVERRIDE;
 
     void removeGlyphFromCache(glyph_t glyph) Q_DECL_OVERRIDE;
     int glyphMargin(QFontEngine::GlyphFormat /* format */) Q_DECL_OVERRIDE { return 0; }
@@ -311,6 +312,7 @@ protected:
     bool embeddedbitmap;
     bool cacheEnabled;
     bool forceAutoHint;
+    bool stemDarkeningDriver;
 
 private:
     friend class QFontEngineFTRawFont;

@@ -5547,7 +5547,7 @@ static void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
                                     int x, int y, const QRgba64 &color,
                                     const uchar *map,
                                     int mapWidth, int mapHeight, int mapStride,
-                                    const QClipData *)
+                                    const QClipData *, bool /*useGammaCorrection*/)
 {
     const quint16 c = color.toRgb16();
     quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
@@ -5572,17 +5572,15 @@ static void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
     }
 }
 
-static inline void rgbBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, const QColorProfile *colorProfile)
+static inline void rgbBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, const QColorProfile *colorProfile, bool useGammaCorrection)
 {
     // Do a gammacorrected RGB alphablend...
-    const QRgba64 dlinear = colorProfile->toLinear64(*dst);
+    const QRgba64 dlinear = useGammaCorrection ? colorProfile->toLinear64(*dst) : QRgba64::fromArgb32(*dst);
 
     QRgba64 blend = rgbBlend(dlinear, slinear, coverage);
 
-    *dst = colorProfile->fromLinear64(blend);
+    *dst = useGammaCorrection ? colorProfile->fromLinear64(blend) : toArgb32(blend);
 }
-
-Q_GUI_EXPORT bool qt_needs_a8_gamma_correction = false;
 
 static inline void grayBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, const QColorProfile *colorProfile)
 {
@@ -5598,7 +5596,7 @@ static void qt_alphamapblit_uint32(QRasterBuffer *rasterBuffer,
                                    int x, int y, quint32 color,
                                    const uchar *map,
                                    int mapWidth, int mapHeight, int mapStride,
-                                   const QClipData *clip)
+                                   const QClipData *clip, bool useGammaCorrection)
 {
     const quint32 c = color;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint32);
@@ -5610,7 +5608,7 @@ static void qt_alphamapblit_uint32(QRasterBuffer *rasterBuffer,
     const QRgba64 slinear = colorProfile->toLinear64(c);
 
     bool opaque_src = (qAlpha(color) == 255);
-    bool doGrayBlendPixel = opaque_src && qt_needs_a8_gamma_correction;
+    bool doGrayBlendPixel = opaque_src && useGammaCorrection;
 
     if (!clip) {
         quint32 *dest = reinterpret_cast<quint32*>(rasterBuffer->scanLine(y)) + x;
@@ -5680,9 +5678,9 @@ static void qt_alphamapblit_argb32(QRasterBuffer *rasterBuffer,
                                    int x, int y, const QRgba64 &color,
                                    const uchar *map,
                                    int mapWidth, int mapHeight, int mapStride,
-                                   const QClipData *clip)
+                                   const QClipData *clip, bool useGammaCorrection)
 {
-    qt_alphamapblit_uint32(rasterBuffer, x, y, color.toArgb32(), map, mapWidth, mapHeight, mapStride, clip);
+    qt_alphamapblit_uint32(rasterBuffer, x, y, color.toArgb32(), map, mapWidth, mapHeight, mapStride, clip, useGammaCorrection);
 }
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
@@ -5690,9 +5688,9 @@ static void qt_alphamapblit_rgba8888(QRasterBuffer *rasterBuffer,
                                      int x, int y, const QRgba64 &color,
                                      const uchar *map,
                                      int mapWidth, int mapHeight, int mapStride,
-                                     const QClipData *clip)
+                                     const QClipData *clip, bool useGammaCorrection)
 {
-    qt_alphamapblit_uint32(rasterBuffer, x, y, ARGB2RGBA(color.toArgb32()), map, mapWidth, mapHeight, mapStride, clip);
+    qt_alphamapblit_uint32(rasterBuffer, x, y, ARGB2RGBA(color.toArgb32()), map, mapWidth, mapHeight, mapStride, clip, useGammaCorrection);
 }
 #endif
 
@@ -5704,7 +5702,7 @@ inline static int qRgbAvg(QRgb rgb)
 static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                                    int x, int y, const QRgba64 &color,
                                    const uint *src, int mapWidth, int mapHeight, int srcStride,
-                                   const QClipData *clip)
+                                   const QClipData *clip, bool useGammaCorrection)
 {
     const quint32 c = color.toArgb32();
 
@@ -5714,7 +5712,7 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
     if (!colorProfile)
         return;
 
-    const QRgba64 slinear = colorProfile->toLinear64(c);
+    const QRgba64 slinear = useGammaCorrection ? colorProfile->toLinear64(c) : color;
 
     if (sa == 0)
         return;
@@ -5729,7 +5727,7 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                     dst[i] = c;
                 } else if (coverage != 0xff000000) {
                     if (dst[i] >= 0xff000000) {
-                        rgbBlendPixel(dst+i, coverage, slinear, colorProfile);
+                        rgbBlendPixel(dst+i, coverage, slinear, colorProfile, useGammaCorrection);
                     } else {
                         // Give up and do a naive blend.
                         const int a = qRgbAvg(coverage);
@@ -5765,7 +5763,7 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                         dst[xp] = c;
                     } else if (coverage != 0xff000000) {
                         if (dst[xp] >= 0xff000000) {
-                            rgbBlendPixel(dst+xp, coverage, slinear, colorProfile);
+                            rgbBlendPixel(dst+xp, coverage, slinear, colorProfile, useGammaCorrection);
                         } else {
                             // Give up and do a naive blend.
                             const int a = qRgbAvg(coverage);

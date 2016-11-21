@@ -225,7 +225,7 @@ public:
 #endif
 
     QRasterBuffer *rasterBuffer();
-    void alphaPenBlt(const void* src, int bpl, int depth, int rx,int ry,int w,int h);
+    void alphaPenBlt(const void* src, int bpl, int depth, int rx,int ry,int w,int h, bool useGammaCorrection);
 
     Type type() const Q_DECL_OVERRIDE { return Raster; }
 

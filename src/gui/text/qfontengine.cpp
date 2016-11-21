@@ -445,6 +445,11 @@ bool QFontEngine::supportsTransformation(const QTransform &transform) const
     return transform.type() < QTransform::TxProject;
 }
 
+bool QFontEngine::expectsGammaCorrectedBlending() const
+{
+    return true;
+}
+
 void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform &matrix, QTextItem::RenderFlags flags,
                                     QVarLengthArray<glyph_t> &glyphs_out, QVarLengthArray<QFixedPoint> &positions)
 {

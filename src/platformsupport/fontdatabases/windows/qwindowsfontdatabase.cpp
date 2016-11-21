@@ -1207,8 +1207,6 @@ QWindowsFontEngineDataPtr sharedFontData()
 }
 #endif // QT_NO_THREAD
 
-extern Q_GUI_EXPORT bool qt_needs_a8_gamma_correction;
-
 QWindowsFontDatabase::QWindowsFontDatabase()
 {
     // Properties accessed by QWin32PrintEngine (Qt Print Support)
@@ -1222,7 +1220,6 @@ QWindowsFontDatabase::QWindowsFontDatabase()
         qCDebug(lcQpaFonts) << __FUNCTION__ << "Clear type: "
             << data->clearTypeEnabled << "gamma: " << data->fontSmoothingGamma;
     }
-    qt_needs_a8_gamma_correction = true;
 }
 
 QWindowsFontDatabase::~QWindowsFontDatabase()

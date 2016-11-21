@@ -111,13 +111,13 @@ typedef void (*AlphamapBlitFunc)(QRasterBuffer *rasterBuffer,
                                  int x, int y, const QRgba64 &color,
                                  const uchar *bitmap,
                                  int mapWidth, int mapHeight, int mapStride,
-                                 const QClipData *clip);
+                                 const QClipData *clip, bool useGammaCorrection);
 
 typedef void (*AlphaRGBBlitFunc)(QRasterBuffer *rasterBuffer,
                                  int x, int y, const QRgba64 &color,
                                  const uint *rgbmask,
                                  int mapWidth, int mapHeight, int mapStride,
-                                 const QClipData *clip);
+                                 const QClipData *clip, bool useGammaCorrection);
 
 typedef void (*RectFillFunc)(QRasterBuffer *rasterBuffer,
                              int x, int y, int width, int height,
