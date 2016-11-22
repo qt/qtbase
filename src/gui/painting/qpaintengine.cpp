@@ -929,11 +929,11 @@ QPoint QPaintEngine::coordinateOffset() const
 void QPaintEngine::setSystemClip(const QRegion &region)
 {
     Q_D(QPaintEngine);
-    d->systemClip = region;
+    d->baseSystemClip = region;
     // Be backward compatible and only call d->systemStateChanged()
     // if we currently have a system transform/viewport set.
+    d->updateSystemClip();
     if (d->hasSystemTransform || d->hasSystemViewport) {
-        d->transformSystemClip();
         d->systemStateChanged();
     }
 }

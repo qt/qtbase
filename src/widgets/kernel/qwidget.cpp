@@ -2102,14 +2102,15 @@ QRegion QWidgetPrivate::clipRegion() const
     return r;
 }
 
-void QWidgetPrivate::setSystemClip(QPaintDevice *paintDevice, const QRegion &region)
+void QWidgetPrivate::setSystemClip(QPaintEngine *paintEngine, qreal devicePixelRatio, const QRegion &region)
 {
 // Transform the system clip region from device-independent pixels to device pixels
-    QPaintEngine *paintEngine = paintDevice->paintEngine();
     QTransform scaleTransform;
-    const qreal devicePixelRatio = paintDevice->devicePixelRatioF();
     scaleTransform.scale(devicePixelRatio, devicePixelRatio);
-    paintEngine->d_func()->systemClip = scaleTransform.map(region);
+
+    paintEngine->d_func()->baseSystemClip = region;
+    paintEngine->d_func()->setSystemTransform(scaleTransform);
+
 }
 
 #ifndef QT_NO_GRAPHICSEFFECT
@@ -5189,6 +5190,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     // Save current system clip, viewport and transform,
     const QTransform oldTransform = enginePriv->systemTransform;
     const QRegion oldSystemClip = enginePriv->systemClip;
+    const QRegion oldBaseClip = enginePriv->baseSystemClip;
     const QRegion oldSystemViewport = enginePriv->systemViewport;
 
     // This ensures that all painting triggered by render() is clipped to the current engine clip.
@@ -5202,9 +5204,8 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->render(target, targetOffset, toBePainted, renderFlags);
 
     // Restore system clip, viewport and transform.
-    enginePriv->setSystemViewport(oldSystemViewport);
-    enginePriv->setSystemTransform(oldTransform);
-    enginePriv->systemClip = oldSystemClip;
+    enginePriv->baseSystemClip = oldBaseClip;
+    enginePriv->setSystemTransformAndViewport(oldTransform, oldSystemViewport);
 
     // Restore shared painter.
     d->setSharedPainter(oldPainter);
@@ -5495,12 +5496,12 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             QWidgetPaintContext context(pdev, rgn, offset, flags, sharedPainter, backingStore);
             sourced->context = &context;
             if (!sharedPainter) {
-                setSystemClip(pdev, rgn.translated(offset));
+                setSystemClip(pdev->paintEngine(), pdev->devicePixelRatioF(), rgn.translated(offset));
                 QPainter p(pdev);
                 p.translate(offset);
                 context.painter = &p;
                 graphicsEffect->draw(&p);
-                setSystemClip(pdev, QRegion());
+                setSystemClip(pdev->paintEngine(), 1, QRegion());
             } else {
                 context.painter = sharedPainter;
                 if (sharedPainter->worldTransform() != sourced->lastEffectTransform) {
@@ -5509,7 +5510,9 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 }
                 sharedPainter->save();
                 sharedPainter->translate(offset);
+                setSystemClip(sharedPainter->paintEngine(), sharedPainter->device()->devicePixelRatioF(), rgn.translated(offset));
                 graphicsEffect->draw(sharedPainter);
+                setSystemClip(sharedPainter->paintEngine(), 1, QRegion());
                 sharedPainter->restore();
             }
             sourced->context = 0;
@@ -5561,7 +5564,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 
 #endif
                 if (sharedPainter)
-                    setSystemClip(pdev, toBePainted);
+                    setSystemClip(pdev->paintEngine(), pdev->devicePixelRatioF(), toBePainted);
                 else
                     paintEngine->d_func()->systemRect = q->data->crect;
 
@@ -5579,7 +5582,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 }
 
                 if (!sharedPainter)
-                    setSystemClip(pdev, toBePainted.translated(offset));
+                    setSystemClip(pdev->paintEngine(), pdev->devicePixelRatioF(), toBePainted.translated(offset));
 
                 if (!onScreen && !asRoot && !isOpaque && q->testAttribute(Qt::WA_TintedBackground)) {
 #ifndef QT_NO_OPENGL
@@ -5647,7 +5650,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 else
                     paintEngine->d_func()->currentClipDevice = 0;
 
-                setSystemClip(pdev, QRegion());
+                setSystemClip(pdev->paintEngine(), 1, QRegion());
             }
             q->setAttribute(Qt::WA_WState_InPaintEvent, false);
             if (Q_UNLIKELY(q->paintingActive()))
