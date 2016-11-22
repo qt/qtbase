@@ -75,7 +75,7 @@ public:
         : QState(parent) {}
 
 protected:
-    virtual void onEntry(QEvent *) override
+    void onEntry(QEvent *) override
     {
         machine()->postEvent(new PingEvent());
         fprintf(stdout, "ping?\n");
@@ -93,7 +93,7 @@ protected:
     virtual bool eventTest(QEvent *e) override {
         return (e->type() == QEvent::User+3);
     }
-    virtual void onTransition(QEvent *) override
+    void onTransition(QEvent *) override
     {
         machine()->postDelayedEvent(new PingEvent(), 500);
         fprintf(stdout, "ping?\n");
@@ -111,7 +111,7 @@ protected:
     virtual bool eventTest(QEvent *e) override {
         return (e->type() == QEvent::User+2);
     }
-    virtual void onTransition(QEvent *) override
+    void onTransition(QEvent *) override
     {
         machine()->postDelayedEvent(new PongEvent(), 500);
         fprintf(stdout, "pong!\n");

@@ -63,18 +63,18 @@ public:
 
     ItemBase(int size, int x, int y);
     virtual ~ItemBase();
-    virtual QRectF boundingRect() const override;
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 protected:
     virtual ItemBase *createNew(int size, int x, int y) = 0;
-    virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-    virtual void keyPressEvent(QKeyEvent *event) override;
-    virtual void wheelEvent(QGraphicsSceneWheelEvent *event) override;
-    virtual int type() const override;
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void wheelEvent(QGraphicsSceneWheelEvent *event) override;
+    int type() const override;
     bool isInResizeArea(const QPointF &pos);
 
     static void duplicateSelectedItems(QGraphicsScene *scene);
@@ -92,9 +92,9 @@ class QtBox : public ItemBase
 public:
     QtBox(int size, int x, int y);
     virtual ~QtBox();
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 protected:
-    virtual ItemBase *createNew(int size, int x, int y) override;
+    ItemBase *createNew(int size, int x, int y) override;
 private:
     QVector3D m_vertices[8];
     QVector3D m_texCoords[4];
@@ -106,9 +106,9 @@ class CircleItem : public ItemBase
 {
 public:
     CircleItem(int size, int x, int y);
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 protected:
-    virtual ItemBase *createNew(int size, int x, int y) override;
+    ItemBase *createNew(int size, int x, int y) override;
 
     QColor m_color;
 };
@@ -117,9 +117,9 @@ class SquareItem : public ItemBase
 {
 public:
     SquareItem(int size, int x, int y);
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 protected:
-    virtual ItemBase *createNew(int size, int x, int y) override;
+    ItemBase *createNew(int size, int x, int y) override;
 
     QPixmap m_image;
 };

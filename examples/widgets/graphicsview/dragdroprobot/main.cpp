@@ -63,7 +63,7 @@ public:
     }
 
 protected:
-    virtual void resizeEvent(QResizeEvent *) override
+    void resizeEvent(QResizeEvent *) override
     {
     }
 };

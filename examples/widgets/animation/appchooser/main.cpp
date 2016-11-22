@@ -67,12 +67,12 @@ public:
         painter->drawPixmap(QPointF(), p);
     }
 
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *) override
+    void mousePressEvent(QGraphicsSceneMouseEvent *) override
     {
         emit clicked();
     }
 
-    virtual void setGeometry(const QRectF &rect) override
+    void setGeometry(const QRectF &rect) override
     {
         QGraphicsWidget::setGeometry(rect);
 
@@ -98,7 +98,7 @@ public:
     {
     }
 
-    virtual void resizeEvent(QResizeEvent *) override
+    void resizeEvent(QResizeEvent *) override
     {
         fitInView(sceneRect(), Qt::KeepAspectRatio);
     }
