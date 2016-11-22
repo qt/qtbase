@@ -75,25 +75,44 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                 QString arch = project->first("VCPROJ_ARCH").toQString().toLower();
                 QString compiler;
                 QString compilerArch;
-                if (arch == QLatin1String("arm")) {
-                    compiler = QStringLiteral("x86_arm");
-                    compilerArch = QStringLiteral("arm");
-                } else if (arch == QLatin1String("x64")) {
-                    const ProStringList hostArch = project->values("QMAKE_TARGET.arch");
-                    if (hostArch.contains("x86_64"))
-                        compiler = QStringLiteral("amd64");
-                    else
-                        compiler = QStringLiteral("x86_amd64");
-                    compilerArch = QStringLiteral("amd64");
-                } else {
-                    arch = QStringLiteral("x86");
-                }
-
                 const QString msvcVer = project->first("MSVC_VER").toQString();
                 if (msvcVer.isEmpty()) {
                     fprintf(stderr, "Mkspec does not specify MSVC_VER. Cannot continue.\n");
                     return false;
                 }
+
+                if (msvcVer == QStringLiteral("15.0")) {
+                    const ProStringList hostArch = project->values("QMAKE_TARGET.arch");
+                    if (hostArch.contains("x86_64"))
+                        compiler = QStringLiteral("HostX64/");
+                    else
+                        compiler = QStringLiteral("HostX86/");
+                    if (arch == QLatin1String("arm")) {
+                        compiler += QStringLiteral("arm");
+                        compilerArch = QStringLiteral("arm");
+                    } else if (arch == QLatin1String("x64")) {
+                        compiler += QStringLiteral("x64");
+                        compilerArch = QStringLiteral("amd64");
+                    } else {
+                        compiler += QStringLiteral("x86");
+                        compilerArch = QStringLiteral("amd64");
+                    }
+                } else {
+                    if (arch == QLatin1String("arm")) {
+                        compiler = QStringLiteral("x86_arm");
+                        compilerArch = QStringLiteral("arm");
+                    } else if (arch == QLatin1String("x64")) {
+                        const ProStringList hostArch = project->values("QMAKE_TARGET.arch");
+                        if (hostArch.contains("x86_64"))
+                            compiler = QStringLiteral("amd64");
+                        else
+                            compiler = QStringLiteral("x86_amd64");
+                        compilerArch = QStringLiteral("amd64");
+                    } else {
+                        arch = QStringLiteral("x86");
+                    }
+                }
+
                 const QString winsdkVer = project->first("WINSDK_VER").toQString();
                 if (winsdkVer.isEmpty()) {
                     fprintf(stderr, "Mkspec does not specify WINSDK_VER. Cannot continue.\n");
@@ -107,7 +126,11 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 
                 const bool isPhone = project->isActiveConfig(QStringLiteral("winphone"));
 #ifdef Q_OS_WIN
-                QString regKey = QStringLiteral("Software\\Microsoft\\VisualStudio\\") + msvcVer + ("\\Setup\\VC\\ProductDir");
+                QString regKey;
+                if (msvcVer == QStringLiteral("15.0"))
+                    regKey = QStringLiteral("Software\\Microsoft\\VisualStudio\\SxS\\VS7\\") + msvcVer;
+                else
+                    regKey = QStringLiteral("Software\\Microsoft\\VisualStudio\\") + msvcVer + ("\\Setup\\VC\\ProductDir");
                 const QString vcInstallDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey, KEY_WOW64_32KEY);
                 if (vcInstallDir.isEmpty()) {
                     fprintf(stderr, "Failed to find the Visual Studio installation directory.\n");
@@ -134,7 +157,46 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                 QStringList incDirs;
                 QStringList libDirs;
                 QStringList binDirs;
-                if (msvcVer == QStringLiteral("14.0")) {
+                if (msvcVer == QStringLiteral("15.0")) {
+                    const QString toolsInstallDir = qgetenv("VCToolsInstallDir");
+                    if (toolsInstallDir.isEmpty()) {
+                        fprintf(stderr, "Failed to access tools installation dir.\n");
+                        return false;
+                    }
+
+                    binDirs << toolsInstallDir + QStringLiteral("bin/") + compiler;
+                    if (arch == QStringLiteral("x64"))
+                        binDirs << toolsInstallDir + QStringLiteral("bin/HostX86/X86");
+                    binDirs << kitDir + QStringLiteral("bin/x86");
+                    binDirs << vcInstallDir + QStringLiteral("Common7/Tools");
+                    binDirs << vcInstallDir + QStringLiteral("Common7/ide");
+                    binDirs << vcInstallDir + QStringLiteral("MSBuild/15.0/bin");
+
+                    incDirs << toolsInstallDir + QStringLiteral("include");
+                    incDirs << vcInstallDir + QStringLiteral("VC/Auxiliary/VS/include");
+
+                    const QString crtVersion = qgetenv("UCRTVersion");
+                    if (crtVersion.isEmpty()) {
+                        fprintf(stderr, "Failed to access CRT version.\n");
+                        return false;
+                    }
+                    const QString crtInclude = kitDir + QStringLiteral("Include/") + crtVersion;
+                    const QString crtLib = kitDir + QStringLiteral("Lib/") + crtVersion;
+                    incDirs << crtInclude + QStringLiteral("/ucrt");
+                    incDirs << crtInclude + QStringLiteral("/um");
+                    incDirs << crtInclude + QStringLiteral("/shared");
+                    incDirs << crtInclude + QStringLiteral("/winrt");
+
+                    incDirs << kitDir + QStringLiteral("Extension SDKs/WindowsMobile/")
+                                      + crtVersion + QStringLiteral("/Include/WinRT");
+
+                    libDirs << toolsInstallDir + QStringLiteral("lib/") + arch + QStringLiteral("/store");
+
+                    libDirs << vcInstallDir + QStringLiteral("VC/Auxiliary/VS/lib/") + arch;
+
+                    libDirs << crtLib + QStringLiteral("/ucrt/") + arch;
+                    libDirs << crtLib + QStringLiteral("/um/") + arch;
+                } else if (msvcVer == QStringLiteral("14.0")) {
                     binDirs << vcInstallDir + QStringLiteral("bin/") + compiler;
                     binDirs << vcInstallDir + QStringLiteral("bin/"); // Maybe remove for x86 again?
                     binDirs << kitDir + QStringLiteral("bin/") + (arch == QStringLiteral("arm") ? QStringLiteral("x86") : arch);

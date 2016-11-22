@@ -1,4 +1,4 @@
-*msvc2015 {
+*msvc2015|*msvc2017 {
     # Note that the order is important - ucrt(d) has to be first.
     # Otherwise, the linker might use malloc from a different library,
     # but free_dbg() from the runtime, causing an assertion failure
