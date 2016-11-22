@@ -76,7 +76,8 @@ public:
     QVarLengthArray(std::initializer_list<T> args)
         : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array))
     {
-        append(args.begin(), args.size());
+        if (args.size())
+            append(args.begin(), args.size());
     }
 #endif
 
