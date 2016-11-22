@@ -2455,27 +2455,19 @@ bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWin
     for (int i = 0; i < modalWindowList.count(); ++i) {
         QWindow *modalWindow = modalWindowList.at(i);
 
-        {
-            // check if the modal window is our window or a (transient) parent of our window
-            QWindow *w = window;
-            while (w) {
-                if (w == modalWindow) {
-                    *blockingWindow = 0;
-                    return false;
-                }
-                QWindow *p = w->parent();
-                if (!p)
-                    p = w->transientParent();
-                w = p;
-            }
-
-            // Embedded in-process windows are not visible in normal parent-child chain,
-            // so check the native parent chain, too.
-            const QPlatformWindow *platWin = window->handle();
-            const QPlatformWindow *modalPlatWin = modalWindow->handle();
-            if (platWin && modalPlatWin && platWin->isEmbedded(modalPlatWin))
-                return false;
+        // A window is not blocked by another modal window if the two are
+        // the same, or if the window is a child of the modal window.
+        if (window == modalWindow || modalWindow->isAncestorOf(window, QWindow::IncludeTransients)) {
+            *blockingWindow = 0;
+            return false;
         }
+
+        // Embedded windows are not visible in normal parent-child chain,
+        // so check the native parent chain, too.
+        const QPlatformWindow *platWin = window->handle();
+        const QPlatformWindow *modalPlatWin = modalWindow->handle();
+        if (platWin && modalPlatWin && platWin->isEmbedded(modalPlatWin))
+            return false;
 
         Qt::WindowModality windowModality = modalWindow->modality();
         QWidgetWindow *modalWidgetWindow = qobject_cast<QWidgetWindow *>(modalWindow);
