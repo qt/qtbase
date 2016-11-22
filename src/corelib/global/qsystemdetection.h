@@ -134,7 +134,6 @@
 #      define WINAPI_FAMILY_PC_APP WINAPI_FAMILY_APP
 #    endif
 #    if defined(WINAPI_FAMILY_PHONE_APP) && WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-#      define Q_OS_WINPHONE
 #      define Q_OS_WINRT
 #    elif WINAPI_FAMILY==WINAPI_FAMILY_PC_APP
 #      define Q_OS_WINRT

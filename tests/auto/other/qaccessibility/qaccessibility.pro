@@ -12,6 +12,5 @@ win32 {
         include(../../../../src/3rdparty/iaccessible2/iaccessible2.pri)
         DEFINES += QT_SUPPORTS_IACCESSIBLE2
     }
-    LIBS += -luuid
-    !winphone: LIBS += -loleacc -loleaut32 -lole32
+    LIBS += -luuid -loleacc -loleaut32 -lole32
 }

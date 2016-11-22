@@ -615,7 +615,6 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << attrTag("Label", "ProjectConfigurations");
 
     bool isWinRT = false;
-    bool isWinPhone = false;
     for (int i = 0; i < tool.SingleProjects.count(); ++i) {
         xml << tag("ProjectConfiguration")
             << attrTag("Include" , tool.SingleProjects.at(i).Configuration.Name)
@@ -623,7 +622,6 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             << tagValue("Platform", tool.SingleProjects.at(i).PlatformName)
             << closetag();
         isWinRT = isWinRT || tool.SingleProjects.at(i).Configuration.WinRT;
-        isWinPhone = isWinPhone || tool.SingleProjects.at(i).Configuration.WinPhone;
     }
 
     xml << closetag()
@@ -637,7 +635,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         xml << tagValue("MinimumVisualStudioVersion", tool.Version)
             << tagValue("DefaultLanguage", "en")
             << tagValue("AppContainerApplication", "true")
-            << tagValue("ApplicationType", isWinPhone ? "Windows Phone" : "Windows Store")
+            << tagValue("ApplicationType", "Windows Store")
             << tagValue("ApplicationTypeRevision", tool.SdkVersion);
         if (tool.SdkVersion == "10.0") {
             const QString ucrtVersion = qgetenv("UCRTVERSION");

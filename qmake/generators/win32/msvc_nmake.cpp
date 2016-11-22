@@ -105,7 +105,6 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     return false;
                 }
 
-                const bool isPhone = project->isActiveConfig(QStringLiteral("winphone"));
 #ifdef Q_OS_WIN
                 QString regKey = QStringLiteral("Software\\Microsoft\\VisualStudio\\") + msvcVer + ("\\Setup\\VC\\ProductDir");
                 const QString vcInstallDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey, KEY_WOW64_32KEY);
@@ -114,12 +113,7 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     return false;
                 }
 
-                QString windowsPath;
-                if (isPhone) {
-                    windowsPath = "Software\\Microsoft\\Microsoft SDKs\\WindowsPhoneApp\\v";
-                } else {
-                    windowsPath = "Software\\Microsoft\\Microsoft SDKs\\Windows\\v";
-                }
+                const QString windowsPath = "Software\\Microsoft\\Microsoft SDKs\\Windows\\v";
 
                 regKey = windowsPath + winsdkVer + QStringLiteral("\\InstallationFolder");
                 const QString kitDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey, KEY_WOW64_32KEY);
@@ -166,23 +160,6 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 
                     libDirs << crtLib + QStringLiteral("/ucrt/") + arch;
                     libDirs << crtLib + QStringLiteral("/um/") + arch;
-                } else if (isPhone) {
-                    QString sdkDir = vcInstallDir;
-                    if (!QDir(sdkDir).exists()) {
-                        fprintf(stderr, "Failed to find the Windows Phone SDK in %s.\n"
-                                        "Check that it is properly installed.\n",
-                                qPrintable(QDir::toNativeSeparators(sdkDir)));
-                        return false;
-                    }
-                    incDirs << sdkDir + QStringLiteral("/include");
-                    libDirs << sdkDir + QStringLiteral("/lib/store/") + compilerArch
-                            << sdkDir + QStringLiteral("/lib/") + compilerArch;
-                    binDirs << sdkDir + QStringLiteral("/bin/") + compiler;
-                    libDirs << kitDir + QStringLiteral("/lib/") + arch;
-                    incDirs << kitDir + QStringLiteral("/include")
-                            << kitDir + QStringLiteral("/include/abi")
-                            << kitDir + QStringLiteral("/include/mincore")
-                            << kitDir + QStringLiteral("/include/minwin");
                 } else {
                     incDirs << vcInstallDir + QStringLiteral("/include");
                     libDirs << vcInstallDir + QStringLiteral("/lib/store/") + compilerArch

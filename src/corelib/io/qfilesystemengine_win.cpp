@@ -81,11 +81,6 @@ using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Storage;
 using namespace ABI::Windows::ApplicationModel;
-
-#if _MSC_VER < 1900
-#define Q_OS_WINRT_WIN81
-#endif
-
 #endif // Q_OS_WINRT
 
 #ifndef SPI_GETPLATFORMTYPE
@@ -157,7 +152,6 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 
 #if defined(Q_OS_WINRT)
-static QString qfsPrivateCurrentDir = QLatin1String("");
 // As none of the functions we try to resolve do exist on WinRT
 // we use QT_NO_LIBRARY to shorten everything up a little bit.
 #  ifndef QT_NO_LIBRARY
@@ -503,7 +497,6 @@ QString QFileSystemEngine::nativeAbsoluteFilePath(const QString &path)
 {
     // can be //server or //server/share
     QString absPath;
-#if !defined(Q_OS_WINRT_WIN81)
     QVarLengthArray<wchar_t, MAX_PATH> buf(qMax(MAX_PATH, path.size() + 1));
     wchar_t *fileName = 0;
     DWORD retLen = GetFullPathName((wchar_t*)path.utf16(), buf.size(), buf.data(), &fileName);
@@ -523,12 +516,7 @@ QString QFileSystemEngine::nativeAbsoluteFilePath(const QString &path)
     if (absPath.size() < rootPath.size() && rootPath.startsWith(absPath))
         absPath = rootPath;
 #  endif // Q_OS_WINRT
-#else // !Q_OS_WINRT_WIN81
-    if (QDir::isRelativePath(path))
-        absPath = QDir::toNativeSeparators(QDir::cleanPath(QDir::currentPath() + QLatin1Char('/') + path));
-    else
-        absPath = QDir::toNativeSeparators(QDir::cleanPath(path));
-#endif // Q_OS_WINRT_WIN81
+
     // This is really ugly, but GetFullPathName strips off whitespace at the end.
     // If you for instance write ". " in the lineedit of QFileDialog,
     // (which is an invalid filename) this function will strip the space off and viola,
@@ -550,14 +538,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         else
             ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(entry.filePath()));
     } else {
-#ifndef Q_OS_WINRT_WIN81
         ret = QDir::cleanPath(QDir::currentPath() + QLatin1Char('/') + entry.filePath());
-#else
-        // Some WinRT APIs do not support absolute paths (due to sandboxing).
-        // Thus the port uses the executable's directory as its root directory
-        // and treats paths relative to that as absolute paths.
-        ret = QDir::cleanPath(QDir::current().relativeFilePath(entry.filePath()));
-#endif
     }
 
 #ifndef Q_OS_WINRT
@@ -1218,9 +1199,6 @@ QString QFileSystemEngine::tempPath()
         ret = QDir::fromNativeSeparators(ret);
     }
 #else // !Q_OS_WINRT
-    // According to http://msdn.microsoft.com/en-us/library/windows/apps/windows.storage.applicationdata.temporaryfolder.aspx
-    // the API is not available on winphone which should cause one of the functions
-    // below to fail
     ComPtr<IApplicationDataStatics> applicationDataStatics;
     if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_ApplicationData).Get(), &applicationDataStatics)))
         return ret;
@@ -1252,20 +1230,14 @@ bool QFileSystemEngine::setCurrentPath(const QFileSystemEntry &entry)
     if(!(meta.exists() && meta.isDirectory()))
         return false;
 
-#if !defined(Q_OS_WINRT_WIN81)
     //TODO: this should really be using nativeFilePath(), but that returns a path in long format \\?\c:\foo
     //which causes many problems later on when it's returned through currentPath()
     return ::SetCurrentDirectory(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(entry.filePath()).utf16())) != 0;
-#else
-    qfsPrivateCurrentDir = entry.filePath();
-    return true;
-#endif
 }
 
 QFileSystemEntry QFileSystemEngine::currentPath()
 {
     QString ret;
-#if !defined(Q_OS_WINRT_WIN81)
     DWORD size = 0;
     wchar_t currentName[PATH_MAX];
     size = ::GetCurrentDirectory(PATH_MAX, currentName);
@@ -1281,13 +1253,6 @@ QFileSystemEntry QFileSystemEngine::currentPath()
     }
     if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
-#else // !Q_OS_WINRT_WIN81
-    //TODO - a race condition exists when using currentPath / setCurrentPath from multiple threads
-    if (qfsPrivateCurrentDir.isEmpty())
-        qfsPrivateCurrentDir = QDir::rootPath();
-
-    ret = qfsPrivateCurrentDir;
-#endif // Q_OS_WINRT_WIN81
     return QFileSystemEntry(ret, QFileSystemEntry::FromNativePath());
 }
 

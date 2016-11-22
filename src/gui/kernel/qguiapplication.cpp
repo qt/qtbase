@@ -108,9 +108,6 @@
 #elif defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
 #  include <QtCore/QLibraryInfo>
-# if defined(Q_OS_WINPHONE)
-#   include <Objbase.h>
-# endif
 #endif // Q_OS_WIN
 
 #include <ctype.h>

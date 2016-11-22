@@ -1371,9 +1371,7 @@ void tst_QFile::copyFallback()
 
 #ifdef Q_OS_WIN
 #include <objbase.h>
-#ifndef Q_OS_WINPHONE
 #include <shlobj.h>
-#endif
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)

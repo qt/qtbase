@@ -61,11 +61,9 @@ using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::Storage;
 using namespace ABI::Windows::Storage::Pickers;
 
-#ifndef Q_OS_WINPHONE
 typedef IAsyncOperationCompletedHandler<StorageFile *> SingleFileHandler;
 typedef IAsyncOperationCompletedHandler<IVectorView<StorageFile *> *> MultipleFileHandler;
 typedef IAsyncOperationCompletedHandler<StorageFolder *> SingleFolderHandler;
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -152,16 +150,6 @@ private:
     QVector<HSTRING> impl;
 };
 
-#ifdef Q_OS_WINPHONE
-class QActivationEvent : public QEvent
-{
-public:
-    IInspectable *args() const {
-        return reinterpret_cast<IInspectable *>(d);
-    }
-};
-#endif
-
 template<typename T>
 static bool initializePicker(HSTRING runtimeId, T **picker, const QSharedPointer<QFileDialogOptions> &options)
 {
@@ -225,23 +213,6 @@ static bool pickFiles(IFileOpenPicker *picker, QWinRTFileDialogHelper *helper, b
     Q_ASSERT(picker);
     Q_ASSERT(helper);
     HRESULT hr;
-#ifdef Q_OS_WINPHONE
-        hr = QEventDispatcherWinRT::runOnXamlThread([picker, singleFile]() {
-            HRESULT hr;
-            ComPtr<IFileOpenPicker2> picker2;
-            hr = picker->QueryInterface(IID_PPV_ARGS(picker2.GetAddressOf()));
-            RETURN_HR_IF_FAILED("Failed to cast file picker");
-            if (singleFile)
-                return picker2->PickSingleFileAndContinue();
-            else
-                return picker2->PickMultipleFilesAndContinue();
-        });
-        RETURN_FALSE_IF_FAILED("Failed to open file picker");
-        QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
-        Q_ASSERT(eventDispatcher);
-        eventDispatcher->installEventFilter(helper);
-    return true;
-#else
     hr = QEventDispatcherWinRT::runOnXamlThread([picker, helper, singleFile]() {
         HRESULT hr;
         if (singleFile) {
@@ -260,7 +231,6 @@ static bool pickFiles(IFileOpenPicker *picker, QWinRTFileDialogHelper *helper, b
         return S_OK;
     });
     return SUCCEEDED(hr);
-#endif
 }
 
 static bool pickFolder(IFolderPicker *picker, QWinRTFileDialogHelper *helper)
@@ -268,19 +238,6 @@ static bool pickFolder(IFolderPicker *picker, QWinRTFileDialogHelper *helper)
     Q_ASSERT(picker);
     Q_ASSERT(helper);
     HRESULT hr;
-#ifdef Q_OS_WINPHONE
-    hr = QEventDispatcherWinRT::runOnXamlThread([picker]() {
-        HRESULT hr;
-        ComPtr<IFolderPicker2> picker2;
-        hr = picker->QueryInterface(IID_PPV_ARGS(picker2.GetAddressOf()));
-        RETURN_HR_IF_FAILED("Failed to cast folder picker");
-        return picker2->PickFolderAndContinue();
-    });
-    RETURN_FALSE_IF_FAILED("Failed to open folder picker");
-    QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
-    Q_ASSERT(eventDispatcher);
-    eventDispatcher->installEventFilter(helper);
-#else
     hr = QEventDispatcherWinRT::runOnXamlThread([picker, helper]() {
         HRESULT hr;
         ComPtr<IAsyncOperation<StorageFolder *>> op;
@@ -290,7 +247,6 @@ static bool pickFolder(IFolderPicker *picker, QWinRTFileDialogHelper *helper)
         RETURN_HR_IF_FAILED("Failed to attach folder picker callback");
         return S_OK;
     });
-#endif
     return SUCCEEDED(hr);
 }
 
@@ -299,19 +255,6 @@ static bool pickSaveFile(IFileSavePicker *picker, QWinRTFileDialogHelper *helper
     Q_ASSERT(picker);
     Q_ASSERT(helper);
     HRESULT hr;
-#ifdef Q_OS_WINPHONE
-    hr = QEventDispatcherWinRT::runOnXamlThread([picker]() {
-        HRESULT hr;
-        ComPtr<IFileSavePicker2> picker2;
-        hr = picker->QueryInterface(IID_PPV_ARGS(picker2.GetAddressOf()));
-        RETURN_HR_IF_FAILED("Failed to cast save file picker");
-        return picker2->PickSaveFileAndContinue();
-    });
-    RETURN_FALSE_IF_FAILED("Failed to open single file picker");
-    QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
-    Q_ASSERT(eventDispatcher);
-    eventDispatcher->installEventFilter(helper);
-#else
     hr = QEventDispatcherWinRT::runOnXamlThread([picker, helper]() {
         HRESULT hr;
         ComPtr<IAsyncOperation<StorageFile *>> op;
@@ -321,7 +264,6 @@ static bool pickSaveFile(IFileSavePicker *picker, QWinRTFileDialogHelper *helper
         RETURN_HR_IF_FAILED("Failed to attach save file picker callback");
         return S_OK;
     });
-#endif
     return SUCCEEDED(hr);
 }
 
@@ -488,68 +430,6 @@ void QWinRTFileDialogHelper::hide()
     d->shown = false;
 }
 
-#ifdef Q_OS_WINPHONE
-bool QWinRTFileDialogHelper::eventFilter(QObject *, QEvent *e)
-{
-    if (e->type() != QEvent::WinEventAct)
-        return false;
-
-    HRESULT hr;
-    QActivationEvent *event = static_cast<QActivationEvent *>(e);
-    ComPtr<IInspectable> inspectable = event->args();
-    ComPtr<IActivatedEventArgs> arguments;
-    hr = inspectable.As(&arguments);
-    Q_ASSERT_SUCCEEDED(hr);
-
-    ActivationKind activationKind;
-    hr = arguments->get_Kind(&activationKind);
-    Q_ASSERT_SUCCEEDED(hr);
-
-    // Handle only File, Folder and Save file pick continuation here.
-    if (activationKind != ActivationKind_PickFileContinuation
-        && activationKind != ActivationKind_PickFolderContinuation
-        && activationKind != ActivationKind_PickSaveFileContinuation) {
-        return false;
-    }
-
-    QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
-    Q_ASSERT(eventDispatcher);
-    eventDispatcher->removeEventFilter(this);
-    e->accept();
-
-    if (activationKind == ActivationKind_PickFileContinuation) {
-        ComPtr<IFileOpenPickerContinuationEventArgs> fileContinuationArgs;
-        hr = arguments.As(&fileContinuationArgs);
-        Q_ASSERT_SUCCEEDED(hr);
-        ComPtr<IVectorView<StorageFile *>> files;
-        hr = fileContinuationArgs->get_Files(&files);
-        Q_ASSERT_SUCCEEDED(hr);
-        hr = onFilesPicked(files.Get());
-        Q_ASSERT_SUCCEEDED(hr);
-    } else if (activationKind == ActivationKind_PickFolderContinuation) {
-        ComPtr<IFolderPickerContinuationEventArgs> folderContinuationArgs;
-        hr = arguments.As(&folderContinuationArgs);
-        Q_ASSERT_SUCCEEDED(hr);
-        ComPtr<IStorageFolder> folder;
-        hr = folderContinuationArgs->get_Folder(&folder);
-        Q_ASSERT_SUCCEEDED(hr);
-        hr = onFolderPicked(folder.Get());
-        Q_ASSERT_SUCCEEDED(hr);
-    } else {
-        ComPtr<IFileSavePickerContinuationEventArgs> saveFileContinuationArgs;
-        hr = arguments.As(&saveFileContinuationArgs);
-        Q_ASSERT_SUCCEEDED(hr);
-        ComPtr<IStorageFile> file;
-        hr = saveFileContinuationArgs->get_File(&file);
-        Q_ASSERT_SUCCEEDED(hr);
-        hr = onFilePicked(file.Get());
-        Q_ASSERT_SUCCEEDED(hr);
-    }
-
-    return true;
-}
-#endif
-
 void QWinRTFileDialogHelper::setDirectory(const QUrl &directory)
 {
     Q_D(QWinRTFileDialogHelper);
@@ -586,7 +466,6 @@ QString QWinRTFileDialogHelper::selectedNameFilter() const
     return d->selectedNameFilter;
 }
 
-#ifndef Q_OS_WINPHONE
 HRESULT QWinRTFileDialogHelper::onSingleFilePicked(IAsyncOperation<StorageFile *> *args, AsyncStatus status)
 {
     Q_D(QWinRTFileDialogHelper);
@@ -643,17 +522,9 @@ HRESULT QWinRTFileDialogHelper::onSingleFolderPicked(IAsyncOperation<StorageFold
     Q_ASSERT_SUCCEEDED(hr);
     return onFolderPicked(folder.Get());
 }
-#endif //Q_OS_WINPHONE
 
 HRESULT QWinRTFileDialogHelper::onFilesPicked(IVectorView<StorageFile *> *files)
 {
-#ifdef Q_OS_WINPHONE
-    Q_D(QWinRTFileDialogHelper);
-    QEventLoopLocker locker(&d->loop);
-    d->shown = false;
-    d->selectedFiles.clear();
-#endif
-
     HRESULT hr;
     quint32 size;
     hr = files->get_Size(&size);
@@ -676,13 +547,6 @@ HRESULT QWinRTFileDialogHelper::onFilesPicked(IVectorView<StorageFile *> *files)
 
 HRESULT QWinRTFileDialogHelper::onFolderPicked(IStorageFolder *folder)
 {
-#ifdef Q_OS_WINPHONE
-    Q_D(QWinRTFileDialogHelper);
-    QEventLoopLocker locker(&d->loop);
-    d->shown = false;
-    d->selectedFiles.clear();
-#endif
-
     if (!folder) {
         emit reject();
         return S_OK;
@@ -695,13 +559,6 @@ HRESULT QWinRTFileDialogHelper::onFolderPicked(IStorageFolder *folder)
 
 HRESULT QWinRTFileDialogHelper::onFilePicked(IStorageFile *file)
 {
-#ifdef Q_OS_WINPHONE
-    Q_D(QWinRTFileDialogHelper);
-    QEventLoopLocker locker(&d->loop);
-    d->shown = false;
-    d->selectedFiles.clear();
-#endif
-
     if (!file) {
         emit reject();
         return S_OK;

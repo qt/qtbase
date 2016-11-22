@@ -562,7 +562,7 @@ QWinRTScreen::QWinRTScreen()
     ComPtr<Xaml::IUIElement> uiElement;
     hr = canvas.As(&uiElement);
     Q_ASSERT_SUCCEEDED(hr);
-#if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
+#ifndef QT_NO_DRAGANDDROP
     QWinRTDrag::instance()->setUiElement(uiElement);
 #endif
     hr = window->put_Content(uiElement.Get());
@@ -833,7 +833,7 @@ void QWinRTScreen::addWindow(QWindow *window)
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
-#if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
+#ifndef QT_NO_DRAGANDDROP
     QWinRTDrag::instance()->setDropTarget(window);
 #endif
 }
@@ -852,7 +852,7 @@ void QWinRTScreen::removeWindow(QWindow *window)
         QWindowSystemInterface::handleWindowActivated(Q_NULLPTR, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
-#if _MSC_VER >= 1900 && !defined(QT_NO_DRAGANDDROP)
+#ifndef QT_NO_DRAGANDDROP
     if (wasTopWindow)
         QWinRTDrag::instance()->setDropTarget(topWindow());
 #endif
@@ -1221,11 +1221,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         properties->get_Pressure(&pressure);
 
         boolean isPressed;
-#ifndef Q_OS_WINPHONE
         pointerPoint->get_IsInContact(&isPressed);
-#else
-        properties->get_IsLeftButtonPressed(&isPressed); // IsInContact not reliable on phone
-#endif
 
         // Devices like the Hololens set a static pressure of 0.5 independent
         // of the pressed state. In those cases we need to synthesize the
@@ -1356,16 +1352,10 @@ HRESULT QWinRTScreen::onDpiChanged(IDisplayInformation *, IInspectable *)
     Q_D(QWinRTScreen);
 
     HRESULT hr;
-#ifdef Q_OS_WINPHONE
-    ComPtr<IDisplayInformation2> displayInformation;
-    hr = d->displayInformation.As(&displayInformation);
-    RETURN_OK_IF_FAILED("Failed to cast display information.");
-    hr = displayInformation->get_RawPixelsPerViewPixel(&d->scaleFactor);
-#else
     ResolutionScale resolutionScale;
     hr = d->displayInformation->get_ResolutionScale(&resolutionScale);
     d->scaleFactor = qreal(resolutionScale) / 100;
-#endif
+
     qCDebug(lcQpaWindows) << __FUNCTION__ << "Scale Factor:" << d->scaleFactor;
 
     RETURN_OK_IF_FAILED("Failed to get scale factor");

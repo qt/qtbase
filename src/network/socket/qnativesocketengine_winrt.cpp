@@ -779,7 +779,6 @@ void QNativeSocketEngine::close()
         }
     }
 
-#if _MSC_VER >= 1900
     if (d->socketType == QAbstractSocket::TcpSocket) {
         hr = QEventDispatcherWinRT::runOnXamlThread([d]() {
             HRESULT hr;
@@ -803,7 +802,6 @@ void QNativeSocketEngine::close()
         });
         Q_ASSERT_SUCCEEDED(hr);
     }
-#endif // _MSC_VER >= 1900
 
     if (d->socketDescriptor != -1) {
         ComPtr<IClosable> socket;

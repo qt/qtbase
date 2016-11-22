@@ -59,7 +59,6 @@
         # Provide the C-runtime dependency
         equals(TEMPLATE, "app") {
             VCLIBS = Microsoft.VCLibs.$$replace(MSVC_VER, \\., ).00
-            winphone: VCLIBS = $${VCLIBS}.Phone
             CONFIG(debug, debug|release): \
                 VCLIBS = $${VCLIBS}.Debug
             else: \
@@ -103,7 +102,6 @@
         INDENT = "$$escape_expand(\\r\\n)        "
 
         VS_XML_NAMESPACE = "m2"
-        winphone: VS_XML_NAMESPACE = "m3"
         WINRT_MANIFEST.rotation_preference = $$unique(WINRT_MANIFEST.rotation_preference)
         !isEmpty(WINRT_MANIFEST.rotation_preference) {
             MANIFEST_ROTATION += "<$${VS_XML_NAMESPACE}:InitialRotationPreference>"
@@ -150,10 +148,8 @@
         # is already inside the MSVC2015 manifest.
         WINRT_MANIFEST.dependencies = $$unique(WINRT_MANIFEST.dependencies)
         !isEmpty(WINRT_MANIFEST.dependencies) {
-            *-msvc2013: MANIFEST_DEPENDENCIES += "<Dependencies>"
             for(DEPENDENCY, WINRT_MANIFEST.dependencies): \
                 MANIFEST_DEPENDENCIES += "  <PackageDependency Name=\"$$DEPENDENCY\" />"
-            *-msvc2013: MANIFEST_DEPENDENCIES += "</Dependencies>"
 
             WINRT_MANIFEST.dependencies = $$join(MANIFEST_DEPENDENCIES, $$INDENT, $$INDENT)
         }

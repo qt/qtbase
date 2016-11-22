@@ -368,14 +368,10 @@ QStringList QFileSelectorPrivate::platformSelectors()
     // similar, but not identical to QSysInfo::osType
     QStringList ret;
 #if defined(Q_OS_WIN)
-    // can't fall back to QSysInfo because we need both "winphone" and "winrt" for the Windows Phone case
     ret << QStringLiteral("windows");
     ret << QSysInfo::kernelType();  // "winnt"
 #  if defined(Q_OS_WINRT)
     ret << QStringLiteral("winrt");
-#    if defined(Q_OS_WINPHONE)
-    ret << QStringLiteral("winphone");
-#    endif
 #  endif
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("unix");

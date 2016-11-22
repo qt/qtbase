@@ -65,23 +65,6 @@ QT_BEGIN_NAMESPACE
 
 int appCmdShow = 0;
 
-// GetModuleFileName only exists for MSVC2015 and upwards for WinRT, meaning
-// Windows 10 (Mobile). Hence take the first argument passed to the
-// QCoreApplication contructor for older versions as a fallback on older platforms.
-#if defined(Q_OS_WINRT) && _MSC_VER < 1900
-
-Q_CORE_EXPORT QString qAppFileName()
-{
-    return QFileInfo(QCoreApplication::arguments().constFirst()).filePath();
-}
-
-QString QCoreApplicationPrivate::appName() const
-{
-    return QFileInfo(QCoreApplication::arguments().constFirst()).baseName();
-}
-
-#else // !(defined(Q_OS_WINRT) && _MSC_VER < 1900)
-
 Q_CORE_EXPORT QString qAppFileName()                // get application file name
 {
     // We do MAX_PATH + 2 here, and request with MAX_PATH + 1, so we can handle all paths
@@ -185,8 +168,6 @@ QString QCoreApplicationPrivate::appVersion() const
 #endif
     return applicationVersion;
 }
-
-#endif // !(defined(Q_OS_WINRT) && _MSC_VER < 1900)
 
 #ifndef Q_OS_WINRT
 

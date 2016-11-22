@@ -850,7 +850,6 @@ QDateTime QFSFileEngine::fileTime(FileTime time) const
 uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
                                  QFile::MemoryMapFlags flags)
 {
-#ifndef Q_OS_WINPHONE
     Q_Q(QFSFileEngine);
     Q_UNUSED(flags);
     if (openMode == QFile::NotOpen) {
@@ -960,18 +959,11 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
 
     ::CloseHandle(mapHandle);
     mapHandle = NULL;
-#else // !Q_OS_WINPHONE
-    Q_UNUSED(offset);
-    Q_UNUSED(size);
-    Q_UNUSED(flags);
-    Q_UNIMPLEMENTED();
-#endif // Q_OS_WINPHONE
     return 0;
 }
 
 bool QFSFileEnginePrivate::unmap(uchar *ptr)
 {
-#ifndef Q_OS_WINPHONE
     Q_Q(QFSFileEngine);
     if (!maps.contains(ptr)) {
         q->setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
@@ -990,11 +982,6 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
     }
 
     return true;
-#else // !Q_OS_WINPHONE
-    Q_UNUSED(ptr);
-    Q_UNIMPLEMENTED();
-    return false;
-#endif // Q_OS_WINPHONE
 }
 
 QT_END_NAMESPACE

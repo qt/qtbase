@@ -52,7 +52,7 @@ WINRT_SDK_VERSION_STRING = $$(UCRTVersion)
 WINRT_SDK_VERSION = $$member($$list($$split(WINRT_SDK_VERSION_STRING, .)), 2)
 lessThan(WINRT_SDK_VERSION, 14322): DEFINES += QT_WINRT_LIMITED_DRAGANDDROP
 
-*-msvc2013|contains(DEFINES, QT_NO_DRAGANDDROP) {
+contains(DEFINES, QT_NO_DRAGANDDROP) {
     SOURCES -= qwinrtdrag.cpp
     HEADERS -= qwinrtdrag.h
 }

@@ -75,9 +75,6 @@ public:
     void exec() override;
     bool show(Qt::WindowFlags, Qt::WindowModality, QWindow *) override;
     void hide() override;
-#ifdef Q_OS_WINPHONE
-    bool eventFilter(QObject *o, QEvent *e) override;
-#endif
 
     bool defaultNameFilterDisables() const override { return false; }
     void setDirectory(const QUrl &directory) override;
@@ -88,14 +85,12 @@ public:
     void selectNameFilter(const QString &selectedNameFilter) override;
     QString selectedNameFilter() const override;
 
-#ifndef Q_OS_WINPHONE
     HRESULT onSingleFilePicked(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Storage::StorageFile *> *,
                                ABI::Windows::Foundation::AsyncStatus);
     HRESULT onMultipleFilesPicked(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Storage::StorageFile *> *> *,
                                   ABI::Windows::Foundation::AsyncStatus);
     HRESULT onSingleFolderPicked(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Storage::StorageFolder *> *,
                                  ABI::Windows::Foundation::AsyncStatus);
-#endif
 
 private:
     HRESULT onFilesPicked(ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Storage::StorageFile *> *files);

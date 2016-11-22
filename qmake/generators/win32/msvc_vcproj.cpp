@@ -291,20 +291,16 @@ QString VcprojGenerator::retrievePlatformToolSet() const
     if (!envVar.isEmpty())
         return envVar;
 
-    QString suffix;
-    if (project->isActiveConfig("winphone"))
-        suffix = '_' + project->first("WINTARGET_VER").toQString().toLower();
-
     switch (vcProject.Configuration.CompilerVersion)
     {
     case NET2012:
-        return QStringLiteral("v110") + suffix;
+        return QStringLiteral("v110");
     case NET2013:
-        return QStringLiteral("v120") + suffix;
+        return QStringLiteral("v120");
     case NET2015:
-        return QStringLiteral("v140") + suffix;
+        return QStringLiteral("v140");
     case NET2017:
-        return QStringLiteral("v141") + suffix;
+        return QStringLiteral("v141");
     default:
         return QString();
     }
@@ -921,7 +917,6 @@ void VcprojGenerator::initConfiguration()
     if (conf.CompilerVersion >= NET2012) {
         conf.WinRT = project->isActiveConfig("winrt");
         if (conf.WinRT) {
-            conf.WinPhone = project->isActiveConfig("winphone");
             // Saner defaults
             conf.compiler.UsePrecompiledHeader = pchNone;
             conf.compiler.CompileAsWinRT = _False;
@@ -1322,18 +1317,9 @@ void VcprojGenerator::initWinDeployQtTool()
         //  structure (for instance for plugins). However, the MDILXapCompile call
         //  itself contains the original subdirectories as parameters and hence the
         //  call fails.
-        //  Neither there is a way to disable this behavior for Windows Phone, nor
-        //  to influence the parameters. Hence the only way to get a build
-        //  done is to recreate the directory structure manually by invoking
-        //  windeployqt a second time, so that the MDILXapCompile call succeeds and
-        //  deployment continues.
-        if (conf.WinPhone) {
-            conf.windeployqt.CommandLine = commandLine
-                    + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\\")
-                    + var("OBJECTS_DIR")
-                    + QStringLiteral("MSIL\" \"$(OutDir)\\$(TargetName).exe\" ")
-                    + QLatin1String(" && ");
-        }
+        //  Hence the only way to get a build done is to recreate the directory
+        //  structure manually by invoking windeployqt a second time, so that
+        //  the MDILXapCompile call succeeds and deployment continues.
         conf.windeployqt.CommandLine += commandLine
                 + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\" \"$(OutDir)\\$(TargetName).exe\" > ")
                 + MakefileGenerator::shellQuote(conf.windeployqt.Record);

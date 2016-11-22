@@ -61,7 +61,6 @@ QT_BEGIN_NAMESPACE
 QWinRTClipboard::QWinRTClipboard()
     : m_mimeData(Q_NULLPTR)
 {
-#ifndef Q_OS_WINPHONE
     QEventDispatcherWinRT::runOnXamlThread([this]() {
         HRESULT hr;
         hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_ApplicationModel_DataTransfer_Clipboard).Get(),
@@ -74,7 +73,6 @@ QWinRTClipboard::QWinRTClipboard()
 
         return hr;
     });
-#endif // !Q_OS_WINPHONE
 }
 
 QMimeData *QWinRTClipboard::mimeData(QClipboard::Mode mode)
@@ -82,7 +80,6 @@ QMimeData *QWinRTClipboard::mimeData(QClipboard::Mode mode)
     if (!supportsMode(mode))
         return nullptr;
 
-#ifndef Q_OS_WINPHONE
     ComPtr<IDataPackageView> view;
     HRESULT hr;
     hr = m_nativeClipBoard->GetContent(&view);
@@ -114,9 +111,6 @@ QMimeData *QWinRTClipboard::mimeData(QClipboard::Mode mode)
     m_mimeData->setText(text);
 
     return m_mimeData;
-#else // Q_OS_WINPHONE
-    return QPlatformClipboard::mimeData(mode);
-#endif // Q_OS_WINPHONE
 }
 
 // Inspired by QWindowsMimeText::convertFromMime
@@ -153,7 +147,6 @@ void QWinRTClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     if (!supportsMode(mode))
         return;
 
-#ifndef Q_OS_WINPHONE
     const bool newData = !m_mimeData || m_mimeData != data;
     if (newData) {
         if (m_mimeData)
@@ -178,18 +171,11 @@ void QWinRTClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         return S_OK;
     });
     RETURN_VOID_IF_FAILED("Could not set clipboard text.");
-#else // Q_OS_WINPHONE
-    QPlatformClipboard::setMimeData(data, mode);
-#endif // Q_OS_WINPHONE
 }
 
 bool QWinRTClipboard::supportsMode(QClipboard::Mode mode) const
 {
-#ifndef Q_OS_WINPHONE
     return mode == QClipboard::Clipboard;
-#else
-    return QPlatformClipboard::supportsMode(mode);
-#endif
 }
 
 HRESULT QWinRTClipboard::onContentChanged(IInspectable *, IInspectable *)

@@ -331,7 +331,6 @@ void QWinRTWindow::setWindowState(Qt::WindowState state)
     if (d->state == state)
         return;
 
-#if _MSC_VER >= 1900
     if (state == Qt::WindowFullScreen) {
         HRESULT hr;
         boolean success;
@@ -378,7 +377,6 @@ void QWinRTWindow::setWindowState(Qt::WindowState state)
             return;
         }
     }
-#endif // _MSC_VER >= 1900
 
     if (state == Qt::WindowMinimized)
         setUIElementVisibility(d->uiElement.Get(), false);

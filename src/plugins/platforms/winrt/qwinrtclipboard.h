@@ -45,7 +45,6 @@
 
 #include <wrl.h>
 
-#ifndef Q_OS_WINPHONE
 namespace ABI {
     namespace Windows {
         namespace ApplicationModel {
@@ -55,7 +54,6 @@ namespace ABI {
         }
     }
 }
-#endif // !Q_OS_WINPHONE
 
 QT_BEGIN_NAMESPACE
 
@@ -70,9 +68,7 @@ public:
 
     HRESULT onContentChanged(IInspectable *, IInspectable *);
 private:
-#ifndef Q_OS_WINPHONE
     Microsoft::WRL::ComPtr<ABI::Windows::ApplicationModel::DataTransfer::IClipboardStatics> m_nativeClipBoard;
-#endif
     QMimeData *m_mimeData;
 };
 

@@ -175,9 +175,7 @@ void QFileSystemEntry::resolveNativeFilePath() const
         // WinRT/MSVC2015 allows a maximum of 256 characters for a filepath
         // unless //?/ is prepended which extends the rule to have a maximum
         // of 256 characters in the filename plus the preprending path
-#if _MSC_VER >= 1900
         m_nativeFilePath.prepend("\\\\?\\");
-#endif
 #endif
     }
 }

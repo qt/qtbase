@@ -1339,13 +1339,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
-    \macro Q_OS_WINPHONE
-    \relates <QtGlobal>
-
-    Defined on Windows Phone 8.
-*/
-
-/*!
     \macro Q_OS_CYGWIN
     \relates <QtGlobal>
 
@@ -2622,8 +2615,8 @@ QString QSysInfo::kernelVersion()
     \b{FreeBSD note}: this function returns "debian" for Debian/kFreeBSD and
     "unknown" otherwise.
 
-    \b{Windows note}: this function returns "winphone" for builds for Windows
-    Phone, "winrt" for WinRT builds, and "windows" for normal desktop builds.
+    \b{Windows note}: this function "winrt" for WinRT builds, and "windows"
+    for normal desktop builds.
 
     For other Unix-type systems, this function usually returns "unknown".
 
@@ -2632,9 +2625,7 @@ QString QSysInfo::kernelVersion()
 QString QSysInfo::productType()
 {
     // similar, but not identical to QFileSelectorPrivate::platformSelectors
-#if defined(Q_OS_WINPHONE)
-    return QStringLiteral("winphone");
-#elif defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
     return QStringLiteral("winrt");
 #elif defined(Q_OS_WIN)
     return QStringLiteral("windows");
@@ -2746,9 +2737,7 @@ QString QSysInfo::productVersion()
 */
 QString QSysInfo::prettyProductName()
 {
-#if defined(Q_OS_WINPHONE)
-    return QLatin1String("Windows Phone ") + QLatin1String(osVer_helper());
-#elif defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
     const auto version = QOperatingSystemVersion::current();
     const char *name = osVer_helper(version);
     if (name)

@@ -64,11 +64,6 @@ void QSharedMemoryPrivate::setErrorString(QLatin1String function)
         errorString = QSharedMemory::tr("%1: already exists").arg(function);
     break;
     case ERROR_FILE_NOT_FOUND:
-#if defined(Q_OS_WINRT) && _MSC_VER < 1900
-        // This happens on WinRT only if no file is present as CreateFileMappingW
-        // bails out with this error code
-    case ERROR_INVALID_PARAMETER:
-#endif
         error = QSharedMemory::NotFound;
         errorString = QSharedMemory::tr("%1: doesn't exist").arg(function);
         break;
@@ -103,15 +98,8 @@ HANDLE QSharedMemoryPrivate::handle()
             errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
             return 0;
         }
-#if defined(Q_OS_WINPHONE)
-        Q_UNIMPLEMENTED();
-        hand = 0;
-#elif defined(Q_OS_WINRT)
-#if _MSC_VER >= 1900
+#if defined(Q_OS_WINRT)
         hand = OpenFileMappingFromApp(FILE_MAP_ALL_ACCESS, FALSE, reinterpret_cast<PCWSTR>(nativeKey.utf16()));
-#else
-        hand = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, (PCWSTR)nativeKey.utf16());
-#endif
 #else
         hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false, (wchar_t*)nativeKey.utf16());
 #endif
@@ -144,11 +132,7 @@ bool QSharedMemoryPrivate::create(int size)
     }
 
     // Create the file mapping.
-#if defined(Q_OS_WINPHONE)
-    Q_UNIMPLEMENTED();
-    Q_UNUSED(size)
-    hand = 0;
-#elif defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
     hand = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, size, (PCWSTR)nativeKey.utf16());
 #else
     hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size, (wchar_t*)nativeKey.utf16());
@@ -166,12 +150,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 {
     // Grab a pointer to the memory block
     int permissions = (mode == QSharedMemory::ReadOnly ? FILE_MAP_READ : FILE_MAP_ALL_ACCESS);
-#if defined(Q_OS_WINPHONE)
-    Q_UNIMPLEMENTED();
-    Q_UNUSED(mode)
-    Q_UNUSED(permissions)
-    memory = 0;
-#elif defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
     memory = (void *)MapViewOfFileFromApp(handle(), permissions, 0, 0);
 #else
     memory = (void *)MapViewOfFile(handle(), permissions, 0, 0, 0);
@@ -199,15 +178,10 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 bool QSharedMemoryPrivate::detach()
 {
     // umap memory
-#if defined(Q_OS_WINPHONE)
-    Q_UNIMPLEMENTED();
-    return false;
-#else
     if (!UnmapViewOfFile(memory)) {
         setErrorString(QLatin1String("QSharedMemory::detach"));
         return false;
     }
-#endif
     memory = 0;
     size = 0;
 

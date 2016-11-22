@@ -74,10 +74,8 @@
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 #  include <windows.phone.ui.input.h>
-#  if _MSC_VER >= 1900
-#    include <windows.foundation.metadata.h>
-     using namespace ABI::Windows::Foundation::Metadata;
-#  endif
+#  include <windows.foundation.metadata.h>
+   using namespace ABI::Windows::Foundation::Metadata;
 #endif
 
 
@@ -153,7 +151,6 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
     Q_ASSERT_SUCCEEDED(hr);
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
-#if _MSC_VER >= 1900
     d->hasHardwareButtons = false;
     ComPtr<IApiInformationStatics> apiInformationStatics;
     hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Foundation_Metadata_ApiInformation).Get(),
@@ -163,9 +160,6 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
         const HStringReference valueRef(L"Windows.Phone.UI.Input.HardwareButtons");
         hr = apiInformationStatics->IsTypePresent(valueRef.Get(), &d->hasHardwareButtons);
     }
-#else
-    d->hasHardwareButtons = true;
-#endif // _MSC_VER >= 1900
 
     if (d->hasHardwareButtons) {
         hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Phone_UI_Input_HardwareButtons).Get(),
@@ -226,12 +220,11 @@ QWinRTIntegration::~QWinRTIntegration()
     // Do not execute this on Windows Phone as the application is already
     // shutting down and trying to unregister suspending/resume handler will
     // cause exceptions and assert in debug mode
-#ifndef Q_OS_WINPHONE
     for (QHash<CoreApplicationCallbackRemover, EventRegistrationToken>::const_iterator i = d->applicationTokens.begin(); i != d->applicationTokens.end(); ++i) {
         hr = (d->application.Get()->*i.key())(i.value());
         Q_ASSERT_SUCCEEDED(hr);
     }
-#endif
+
     destroyScreen(d->mainScreen);
     Windows::Foundation::Uninitialize();
 }
@@ -318,11 +311,7 @@ QPlatformClipboard *QWinRTIntegration::clipboard() const
 #ifndef QT_NO_DRAGANDDROP
 QPlatformDrag *QWinRTIntegration::drag() const
 {
-#if _MSC_VER >= 1900
     return QWinRTDrag::instance();
-#else
-    return QPlatformIntegration::drag();
-#endif
 }
 #endif // QT_NO_DRAGANDDROP
 

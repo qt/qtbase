@@ -59,19 +59,7 @@
   entry point within the newly created GUI thread.
 */
 
-#if _MSC_VER < 1900
-#include <new.h>
-
-typedef struct
-{
-    int newmode;
-} _startupinfo;
-#endif // _MSC_VER < 1900
-
 extern "C" {
-#if _MSC_VER < 1900
-    int __getmainargs(int *argc, char ***argv, char ***env, int expandWildcards, _startupinfo *info);
-#endif
     int main(int, char **);
 }
 
@@ -102,7 +90,6 @@ typedef ITypedEventHandler<CoreApplicationView *, Activation::IActivatedEventArg
 static QtMessageHandler defaultMessageHandler;
 static void devMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-#ifndef Q_OS_WINPHONE
     static HANDLE shmem = 0;
     static HANDLE event = 0;
     if (!shmem)
@@ -121,7 +108,6 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
              message.data(), (message.length() + 1) * sizeof(wchar_t));
     UnmapViewOfFile(data);
     SetEvent(event);
-#endif // !Q_OS_WINPHONE
     defaultMessageHandler(type, context, message);
 }
 
@@ -216,7 +202,6 @@ private:
 
         // Check whether the app already runs
         if (!app) {
-#if _MSC_VER >= 1900
             // I*EventArgs have no launch arguments, hence we
             // need to prepend the application binary manually
             wchar_t fn[513];
@@ -224,7 +209,6 @@ private:
 
             if (SUCCEEDED(res))
                 args.prepend(QString::fromWCharArray(fn, res).toUtf8().data());
-#endif _MSC_VER >= 1900
 
             ResumeThread(mainThread);
 
@@ -252,7 +236,6 @@ private:
 
     HRESULT __stdcall OnLaunched(ILaunchActivatedEventArgs *launchArgs) Q_DECL_OVERRIDE
     {
-#if _MSC_VER >= 1900
         ComPtr<IPrelaunchActivatedEventArgs> preArgs;
         HRESULT hr = launchArgs->QueryInterface(preArgs.GetAddressOf());
         if (SUCCEEDED(hr)) {
@@ -263,7 +246,7 @@ private:
         }
 
         commandLine = QString::fromWCharArray(GetCommandLine()).toUtf8();
-#endif
+
         HString launchCommandLine;
         launchArgs->get_Arguments(launchCommandLine.GetAddressOf());
         if (launchCommandLine.IsValid()) {
@@ -329,9 +312,7 @@ private:
             pidFile = CreateFile2(reinterpret_cast<LPCWSTR>(pidFileName.utf16()),
                         GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, CREATE_ALWAYS, &params);
             // Install the develMode message handler
-#ifndef Q_OS_WINPHONE
             defaultMessageHandler = qInstallMessageHandler(devMessageHandler);
-#endif
         }
         // Wait for debugger before continuing
         if (debugWait) {
@@ -396,11 +377,6 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     int argc = 0;
     char **argv = 0, **env = 0;
-#if _MSC_VER < 1900
-    _startupinfo info = { _query_new_mode() };
-    if (int init = __getmainargs(&argc, &argv, &env, false, &info))
-        return init;
-#endif // _MSC_VER >= 1900
     for (int i = 0; env && env[i]; ++i) {
         QByteArray var(env[i]);
         int split = var.indexOf('=');

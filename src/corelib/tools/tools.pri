@@ -126,7 +126,6 @@ else:unix {
 }
 else:win32 {
     SOURCES += tools/qlocale_win.cpp
-    winphone: LIBS_PRIVATE += -lWindowsPhoneGlobalizationUtil
     winrt-*-msvc2013: LIBS += advapi32.lib
 } else:integrity {
     SOURCES += tools/qlocale_unix.cpp

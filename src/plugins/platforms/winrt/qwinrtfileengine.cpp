@@ -153,7 +153,6 @@ static HRESULT getDestinationFolder(const QString &fileName, const QString &newF
     HRESULT hr;
     ComPtr<IAsyncOperation<StorageFolder *>> op;
     QFileInfo newFileInfo(newFileName);
-#ifndef Q_OS_WINPHONE
     QFileInfo fileInfo(fileName);
     if (fileInfo.dir() == newFileInfo.dir()) {
         ComPtr<IStorageItem2> item;
@@ -161,12 +160,7 @@ static HRESULT getDestinationFolder(const QString &fileName, const QString &newF
         Q_ASSERT_SUCCEEDED(hr);
 
         hr = item->GetParentAsync(&op);
-    } else
-#else
-    Q_UNUSED(fileName);
-    Q_UNUSED(file)
-#endif
-    {
+    } else {
         ComPtr<IStorageFolderStatics> folderFactory;
         hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_StorageFolder).Get(),
                                     IID_PPV_ARGS(&folderFactory));
