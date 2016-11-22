@@ -245,21 +245,21 @@
             "label": "iconv",
             "purpose": "Provides internationalization on Unix.",
             "section": "Internationalization",
-            "condition": "features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv",
+            "condition": "!features.icu && (features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv)",
             "output": [ "privateFeature", "feature" ]
         },
         "posix-libiconv": {
             "label": "POSIX iconv",
             "enable": "input.iconv == 'posix'",
             "disable": "input.iconv == 'sun' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && tests.posix-iconv"
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && tests.posix-iconv",
+            "output": [ "privateFeature" ]
         },
         "sun-libiconv": {
             "label": "SUN iconv",
             "enable": "input.iconv == 'sun'",
             "disable": "input.iconv == 'posix' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && tests.sun-iconv",
-            "output": [ "privateFeature", "publicQtConfig" ]
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && tests.sun-iconv"
         },
         "gnu-libiconv": {
             "label": "GNU iconv",

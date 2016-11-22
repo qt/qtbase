@@ -37,7 +37,9 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_ICONV
+#include <QtCore/private/qglobal_p.h>
+
+QT_REQUIRE_CONFIG(iconv);
 
 #include "qiconvcodec_p.h"
 #include "qtextcodec_p.h"
@@ -221,7 +223,7 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
     IconvState *state = *pstate;
     size_t inBytesLeft = len;
     // best case assumption, each byte is converted into one UTF-16 character, plus 2 bytes for the BOM
-#ifdef GNU_LIBICONV
+#if !QT_CONFIG(posix_libiconv)
     // GNU doesn't disagree with POSIX :/
     const char *inBytes = chars;
 #else
@@ -320,7 +322,7 @@ static bool setByteOrder(iconv_t cd)
     size_t outBytesLeft = sizeof buf;
     size_t inBytesLeft = sizeof bom;
 
-#if defined(GNU_LIBICONV)
+#if !QT_CONFIG(posix_libiconv)
     const char **inBytesPtr = const_cast<const char **>(&inBytes);
 #else
     char **inBytesPtr = &inBytes;
@@ -342,7 +344,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     char *outBytes;
     size_t inBytesLeft;
 
-#if defined(GNU_LIBICONV)
+#if !QT_CONFIG(posix_libiconv)
     const char **inBytesPtr = const_cast<const char **>(&inBytes);
 #else
     char **inBytesPtr = &inBytes;
@@ -472,7 +474,7 @@ iconv_t QIconvCodec::createIconv_t(const char *to, const char *from) const
         init();
 
     iconv_t cd = (iconv_t) -1;
-#if defined(__GLIBC__) || defined(GNU_LIBICONV) || defined(Q_OS_QNX)
+#if defined(__GLIBC__) || !QT_CONFIG(posix_libiconv) || defined(Q_OS_QNX)
 #if defined(Q_OS_QNX)
     // on QNX the default locale is UTF-8, and an empty string will cause iconv_open to fail
     static const char empty_codeset[] = "UTF-8";
@@ -562,5 +564,3 @@ iconv_t QIconvCodec::createIconv_t(const char *to, const char *from) const
 }
 
 QT_END_NAMESPACE
-
-#endif /* #ifndef QT_NO_ICONV */
