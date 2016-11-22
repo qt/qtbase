@@ -55,6 +55,9 @@
 #include <QPrinter>
 #include <QPrintDialog>
 
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#endif
 QT_BEGIN_NAMESPACE
 class QPrinter;
 class QTextEdit;
@@ -74,12 +77,11 @@ public:
 public slots:
     void on_clearAction_triggered();
     void on_markAction_triggered();
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+    void on_unmarkAction_triggered();
+
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
     void on_printAction_triggered();
     void on_printPreviewAction_triggered();
-#endif
-    void on_unmarkAction_triggered();
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     void printDocument(QPrinter *printer);
     void printPage(int index, QPainter *painter, QPrinter *printer);
 #endif
