@@ -5512,17 +5512,9 @@ static void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
 static inline void rgbBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, const QColorProfile *colorProfile)
 {
     // Do a gammacorrected RGB alphablend...
-    const int mr = qRed(coverage);
-    const int mg = qGreen(coverage);
-    const int mb = qBlue(coverage);
-
     const QRgba64 dlinear = colorProfile->toLinear64(*dst);
 
-    QRgba64 blend;
-    blend.setAlpha(65535);
-    blend.setRed  (qt_div_255(slinear.red()   * mr + dlinear.red()   * (255 - mr)));
-    blend.setGreen(qt_div_255(slinear.green() * mg + dlinear.green() * (255 - mg)));
-    blend.setBlue (qt_div_255(slinear.blue()  * mb + dlinear.blue()  * (255 - mb)));
+    QRgba64 blend = rgbBlend(dlinear, slinear, coverage);
 
     *dst = colorProfile->fromLinear64(blend);
 }

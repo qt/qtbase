@@ -248,6 +248,52 @@ Q_ALWAYS_INLINE uint16x4_t addWithSaturation(uint16x4_t a, uint16x4_t b)
 }
 #endif
 
+inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
+{
+    QRgba64 blend;
+#ifdef __SSE2__
+    __m128i vd = _mm_loadl_epi64((const __m128i *)&d);
+    __m128i vs = _mm_loadl_epi64((const __m128i *)&s);
+    __m128i va =  _mm_cvtsi32_si128(rgbAlpha);
+    va = _mm_unpacklo_epi8(va, va);
+    __m128i vb = _mm_xor_si128(_mm_set1_epi16(-1), va);
+
+    vs = _mm_unpacklo_epi16(_mm_mullo_epi16(vs, va), _mm_mulhi_epu16(vs, va));
+    vd = _mm_unpacklo_epi16(_mm_mullo_epi16(vd, vb), _mm_mulhi_epu16(vd, vb));
+    vd = _mm_add_epi32(vd, vs);
+    vd = _mm_add_epi32(vd, _mm_srli_epi32(vd, 16));
+    vd = _mm_add_epi32(vd, _mm_set1_epi32(0x8000));
+    vd = _mm_srai_epi32(vd, 16);
+    vd = _mm_packs_epi32(vd, _mm_setzero_si128());
+
+    _mm_storel_epi64((__m128i *)&blend, vd);
+#elif defined(__ARM_NEON__)
+    uint16x4_t vd = vreinterpret_u16_u64(vmov_n_u64(d));
+    uint16x4_t vs = vreinterpret_u16_u64(vmov_n_u64(s));
+    uint8x8_t va8 = vreinterpret_u8_u32(vmov_n_u32(rgbAlpha));
+    uint16x4_t va = vreinterpret_u16_u8(vzip_u8(va8, va8).val[0]);
+    uint16x4_t vb = vdup_n_u16(0xffff);
+    vb = vsub_u16(vb, va);
+
+    uint32x4_t vs32 = vmull_u16(vs, va);
+    uint32x4_t vd32 = vmull_u16(vd, vb);
+    vd32 = vaddq_u32(vd32, vs32);
+    vd32 = vsraq_n_u32(vd32, vd32, 16);
+    vd = vrshrn_n_u32(vd32, 16);
+    vst1_u64(reinterpret_cast<uint64_t *>(&blend), vreinterpret_u64_u16(vd));
+#else
+    const int mr = qRed(rgbAlpha);
+    const int mg = qGreen(rgbAlpha);
+    const int mb = qBlue(rgbAlpha);
+    blend.setRed  (qt_div_255(s.red()   * mr + d.red()   * (255 - mr)));
+    blend.setGreen(qt_div_255(s.green() * mg + d.green() * (255 - mg)));
+    blend.setBlue (qt_div_255(s.blue()  * mb + d.blue()  * (255 - mb)));
+    blend.setAlpha(s.alpha());
+#endif
+    return blend;
+}
+
+
 QT_END_NAMESPACE
 
 #endif // QRGBA64_P_H
