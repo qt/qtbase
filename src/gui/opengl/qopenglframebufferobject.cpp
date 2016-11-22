@@ -816,7 +816,7 @@ static inline GLenum effectiveInternalFormat(GLenum internalFormat)
     return internalFormat;
 }
 
-/*! \fn QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, GLenum target)
+/*!
 
     Constructs an OpenGL framebuffer object and binds a 2D OpenGL texture
     to the buffer of the size \a size. The texture is bound to the
@@ -847,7 +847,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, GLenum tar
     d->init(this, size, NoAttachment, target, effectiveInternalFormat(0));
 }
 
-/*! \overload
+/*!
 
     Constructs an OpenGL framebuffer object and binds a 2D OpenGL texture
     to the buffer of the given \a width and \a height.
@@ -859,7 +859,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, GLenum
 {
 }
 
-/*! \overload
+/*!
 
     Constructs an OpenGL framebuffer object of the given \a size based on the
     supplied \a format.
@@ -873,7 +873,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, const QOpe
             format.samples(), format.mipmap());
 }
 
-/*! \overload
+/*!
 
     Constructs an OpenGL framebuffer object of the given \a width and \a height
     based on the supplied \a format.
@@ -884,7 +884,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, const 
 {
 }
 
-/*! \overload
+/*!
 
     Constructs an OpenGL framebuffer object and binds a texture to the
     buffer of the given \a width and \a height.
@@ -905,7 +905,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, Attach
     d->init(this, QSize(width, height), attachment, target, effectiveInternalFormat(internalFormat));
 }
 
-/*! \overload
+/*!
 
     Constructs an OpenGL framebuffer object and binds a texture to the
     buffer of the given \a size.
@@ -927,7 +927,6 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, Attachment
 }
 
 /*!
-    \fn QOpenGLFramebufferObject::~QOpenGLFramebufferObject()
 
     Destroys the framebuffer object and frees any allocated resources.
 */
