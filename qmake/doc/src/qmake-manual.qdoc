@@ -2057,6 +2057,12 @@
     value of this variable is typically handled by qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
+    \section1 QMAKE_OBJECTIVE_CFLAGS
+
+    Specifies the Objective C/C++ compiler flags for building
+    a project. These flags are used in addition to QMAKE_CFLAGS and
+    QMAKE_CXXFLAGS.
+
     \section1 QMAKE_POST_LINK
 
     Specifies the command to execute after linking the \l{TARGET}
