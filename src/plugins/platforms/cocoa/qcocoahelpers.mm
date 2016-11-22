@@ -152,13 +152,16 @@ NSImage *qt_mac_create_nsimage(const QPixmap &pm)
     return nsImage;
 }
 
-NSImage *qt_mac_create_nsimage(const QIcon &icon)
+NSImage *qt_mac_create_nsimage(const QIcon &icon, int defaultSize)
 {
     if (icon.isNull())
         return nil;
 
     NSImage *nsImage = [[NSImage alloc] init];
-    foreach (QSize size, icon.availableSizes()) {
+    QList<QSize> availableSizes = icon.availableSizes();
+    if (availableSizes.isEmpty() && defaultSize > 0)
+        availableSizes << QSize(defaultSize, defaultSize);
+    foreach (QSize size, availableSizes) {
         QPixmap pm = icon.pixmap(size);
         QImage image = pm.toImage();
         CGImageRef cgImage = qt_mac_toCGImage(image);
