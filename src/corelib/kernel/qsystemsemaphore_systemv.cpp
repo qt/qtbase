@@ -72,7 +72,13 @@ QT_BEGIN_NAMESPACE
 key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 {
     if (key.isEmpty()){
-        errorString = QCoreApplication::tr("%1: key is empty", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle:"));
+        errorString =
+#if QT_CONFIG(translation)
+            QCoreApplication::tr("%1: key is empty", "QSystemSemaphore")
+#else
+            QString::fromLatin1("%1: key is empty")
+#endif
+                .arg(QLatin1String("QSystemSemaphore::handle:"));
         error = QSystemSemaphore::KeyError;
         return -1;
     }
@@ -84,16 +90,30 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
     // Create the file needed for ftok
     int built = QSharedMemoryPrivate::createUnixKeyFile(fileName);
     if (-1 == built) {
-        errorString = QCoreApplication::tr("%1: unable to make key", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle:"));
+        errorString =
+#if QT_CONFIG(translation)
+            QCoreApplication::tr("%1: unable to make key", "QSystemSemaphore")
+#else
+            QString::fromLatin1("%1: unable to make key")
+#endif
+                .arg(QLatin1String("QSystemSemaphore::handle:"));
         error = QSystemSemaphore::KeyError;
         return -1;
     }
     createdFile = (1 == built);
 
+#if !defined(QT_NO_SHAREDMEMORY) && !defined(QT_POSIX_IPC) && !defined(Q_OS_ANDROID)
     // Get the unix key for the created file
     unix_key = qt_safe_ftok(QFile::encodeName(fileName), 'Q');
+#endif
     if (-1 == unix_key) {
-        errorString = QCoreApplication::tr("%1: ftok failed", "QSystemSemaphore").arg(QLatin1String("QSystemSemaphore::handle:"));
+        errorString =
+#if QT_CONFIG(translation)
+            QCoreApplication::tr("%1: ftok failed", "QSystemSemaphore")
+#else
+            QString::fromLatin1("%1: ftok failed")
+#endif
+                .arg(QLatin1String("QSystemSemaphore::handle:"));
         error = QSystemSemaphore::KeyError;
         return -1;
     }

@@ -144,7 +144,7 @@ static inline bool setCloseOnExec(int fd)
 static inline QString msgOpenDirectory()
 {
     const char message[] = QT_TRANSLATE_NOOP("QIODevice", "file to open is a directory");
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(translation)
     return QIODevice::tr(message);
 #else
     return QLatin1String(message);

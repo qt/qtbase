@@ -84,6 +84,9 @@ protected:
 
 private:
     void close() Q_DECL_OVERRIDE;
+#if !QT_CONFIG(translation)
+    static QString tr(const char *string) { return QString::fromLatin1(string); }
+#endif
 
 private:
     Q_DISABLE_COPY(QSaveFile)
