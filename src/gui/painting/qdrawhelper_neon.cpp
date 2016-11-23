@@ -535,12 +535,23 @@ void qt_blend_rgb32_on_rgb32_neon(uchar *destPixels, int dbpl,
 }
 
 #if defined(ENABLE_PIXMAN_DRAWHELPERS)
+extern void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
+                                    int x, int y, const QRgba64 &color,
+                                    const uchar *map,
+                                    int mapWidth, int mapHeight, int mapStride,
+                                    const QClipData *clip, bool useGammaCorrection);
+
 void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
                                   int x, int y, const QRgba64 &color,
                                   const uchar *bitmap,
                                   int mapWidth, int mapHeight, int mapStride,
-                                  const QClipData *, bool /*useGammaCorrection*/)
+                                  const QClipData *clip, bool useGammaCorrection)
 {
+    if (clip || useGammaCorrection) {
+        qt_alphamapblit_quint16(rasterBuffer, x, y, color, bitmap, mapWidth, mapHeight, mapStride, clip, useGammaCorrection);
+        return;
+    }
+
     quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
 

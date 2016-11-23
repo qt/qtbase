@@ -5543,32 +5543,57 @@ inline static void qt_bitmapblit_quint16(QRasterBuffer *rasterBuffer,
                                     map, mapWidth, mapHeight, mapStride);
 }
 
-static void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
-                                    int x, int y, const QRgba64 &color,
-                                    const uchar *map,
-                                    int mapWidth, int mapHeight, int mapStride,
-                                    const QClipData *, bool /*useGammaCorrection*/)
+static inline void alphamapblend_quint16(int coverage, quint16 *dest, int x, const quint16 srcColor)
+{
+    if (coverage == 0) {
+        // nothing
+    } else if (coverage == 255) {
+        dest[x] = srcColor;
+    } else {
+        dest[x] = BYTE_MUL_RGB16(srcColor, coverage)
+                + BYTE_MUL_RGB16(dest[x], 255 - coverage);
+    }
+}
+
+void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
+                             int x, int y, const QRgba64 &color,
+                             const uchar *map,
+                             int mapWidth, int mapHeight, int mapStride,
+                             const QClipData *clip, bool /*useGammaCorrection*/)
 {
     const quint16 c = color.toRgb16();
-    quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
-    const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
 
-    while (mapHeight--) {
-        for (int i = 0; i < mapWidth; ++i) {
-            const int coverage = map[i];
-
-            if (coverage == 0) {
-                // nothing
-            } else if (coverage == 255) {
-                dest[i] = c;
-            } else {
-                int ialpha = 255 - coverage;
-                dest[i] = BYTE_MUL_RGB16(c, coverage)
-                          + BYTE_MUL_RGB16(dest[i], ialpha);
-            }
+    if (!clip) {
+        quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
+        const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
+        while (mapHeight--) {
+            for (int i = 0; i < mapWidth; ++i)
+                alphamapblend_quint16(map[i], dest, i, c);
+            dest += destStride;
+            map += mapStride;
         }
-        dest += destStride;
-        map += mapStride;
+    } else {
+        int top = qMax(y, 0);
+        int bottom = qMin(y + mapHeight, rasterBuffer->height());
+        map += (top - y) * mapStride;
+
+        const_cast<QClipData *>(clip)->initialize();
+        for (int yp = top; yp<bottom; ++yp) {
+            const QClipData::ClipLine &line = clip->m_clipLines[yp];
+
+            quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(yp));
+
+            for (int i=0; i<line.count; ++i) {
+                const QSpan &clip = line.spans[i];
+
+                int start = qMax<int>(x, clip.x);
+                int end = qMin<int>(x + mapWidth, clip.x + clip.len);
+
+                for (int xp=start; xp<end; ++xp)
+                    alphamapblend_quint16(map[xp - x], dest, xp, c);
+            } // for (i -> line.count)
+            map += mapStride;
+        } // for (yp -> bottom)
     }
 }
 
