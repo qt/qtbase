@@ -667,7 +667,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     external-hostbindir)
         CFG_HOST_QT_TOOLS_PATH="$VAL"
-        HostVar set HOST_QT_TOOLS "$VAL"
         ;;
     bindir)
         QT_INSTALL_BINS="$VAL"

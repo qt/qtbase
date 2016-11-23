@@ -648,6 +648,15 @@ defineReplace(qtConfOutputPostProcess_publicPro) {
     return($$output)
 }
 
+defineReplace(qtConfOutputPostProcess_privatePro) {
+    output = $$1
+
+    !isEmpty(config.input.external-hostbindir): \
+        output += "HOST_QT_TOOLS = $$val_escape(config.input.external-hostbindir)"
+
+    return($$output)
+}
+
 defineReplace(qtConfOutputPostProcess_publicHeader) {
     qt_version = $$[QT_VERSION]
     output = \

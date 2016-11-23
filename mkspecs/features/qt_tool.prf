@@ -27,7 +27,7 @@ DEFINES *= QT_USE_QSTRINGBUILDER
 
     vars = binary depends
 
-    isEmpty(HOST_QT_TOOLS) {
+    !host_build|isEmpty(HOST_QT_TOOLS) {
         load(resolve_target)
 
         !host_build|!force_bootstrap: MODULE_DEPENDS = $$replace(QT, -private$, _private)
