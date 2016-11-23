@@ -194,29 +194,6 @@ defineTest(qtConfParseCommandLine) {
         c = $$qtConfGetNextCommandlineArg()
         isEmpty(c): break()
 
-        # handle options to turn on verbose logging
-        contains(c, "^-v")|contains(c, "^--?verbose") {
-            QMAKE_CONFIG_VERBOSE = true
-            export(QMAKE_CONFIG_VERBOSE)
-            next()
-        }
-        contains(c, "^-no-v")|contains(c, "^--?no-verbose") {
-            QMAKE_CONFIG_VERBOSE = false
-            export(QMAKE_CONFIG_VERBOSE)
-            next()
-        }
-
-        contains(c, "^--?recheck") {
-            QMAKE_CONFIG_CACHE_USE = positive
-            export(QMAKE_CONFIG_CACHE_USE)
-            next()
-        }
-        contains(c, "^--?recheck-all") {
-            QMAKE_CONFIG_CACHE_USE = none
-            export(QMAKE_CONFIG_CACHE_USE)
-            next()
-        }
-
         didCustomCall = false
         for (customCall, customCalls) {
             $${customCall}($$c) {
@@ -1619,6 +1596,19 @@ defineTest(qtConfOutput_privateFeature) {
     }
 }
 
+# command line built-ins post-processing
+defineTest(qtConfOutput_builtins) {
+    QMAKE_CONFIG_VERBOSE = $$eval(config.input.verbose)
+    isEmpty(QMAKE_CONFIG_VERBOSE): \
+        QMAKE_CONFIG_VERBOSE = false
+    export(QMAKE_CONFIG_VERBOSE)
+
+    QMAKE_CONFIG_CACHE_USE = $$eval(config.input.cache_use)
+    isEmpty(QMAKE_CONFIG_CACHE_USE): \
+        QMAKE_CONFIG_CACHE_USE = all
+    export(QMAKE_CONFIG_CACHE_USE)
+}
+
 defineTest(qtConfProcessOneOutput) {
     feature = $${1}
     fpfx = $${currentConfig}.features.$${feature}
@@ -1654,7 +1644,7 @@ defineTest(qtConfProcessOutput) {
     module = $$eval($${currentConfig}.module)
 
     # write it to the output files
-    isEmpty($${currentConfig}.files._KEYS_) {
+    !defined($${currentConfig}.files._KEYS_, var) {
         # set defaults that should work for most Qt modules
         isEmpty(module): \
             error("Neither module nor files section specified in configuration file.")
@@ -1727,6 +1717,8 @@ isEmpty(configsToProcess): \
 load(configure_base)
 
 QMAKE_POST_CONFIGURE =
+config.builtins.dir = $$PWD/data
+configsToProcess = builtins $$configsToProcess
 allConfigs =
 for(ever) {
     isEmpty(configsToProcess): \
@@ -1760,14 +1752,12 @@ for(ever) {
 for (currentConfig, allConfigs): \
     qtConfSetupLibraries()
 
+qtConfParseCommandLine()
+
 !isEmpty(_QMAKE_SUPER_CACHE_): \
     QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_SUPER_CACHE_)/config.cache
 else: \
     QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_CACHE_)/config.cache
-QMAKE_CONFIG_CACHE_USE = all
-
-qtConfParseCommandLine()
-
 !equals(QMAKE_CONFIG_CACHE_USE, none) {
     include($$QMAKE_CONFIG_CACHE, , true)
     # this crudely determines when to discard the cache. this also catches the case

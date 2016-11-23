@@ -22,8 +22,6 @@ QMAKE_MAKE = $$(MAKE)
 # Make sure we don't inherit MAKEFLAGS - -i in particular is fatal.
 QMAKE_MAKE = "$${SETENV_PFX}MAKEFLAGS=$$SETENV_SFX $$QMAKE_MAKE"
 
-isEmpty(QMAKE_CONFIG_VERBOSE): QMAKE_CONFIG_VERBOSE = false
-
 defineTest(qtLog) {
     write_file($$QMAKE_CONFIG_LOG, 1, append)
     $$QMAKE_CONFIG_VERBOSE: for (l, 1): log("$$l$$escape_expand(\\n)")
