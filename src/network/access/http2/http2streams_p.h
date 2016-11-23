@@ -62,6 +62,8 @@
 
 #include <vector>
 
+QT_REQUIRE_CONFIG(http);
+
 QT_BEGIN_NAMESPACE
 
 class QNonContiguousByteDevice;

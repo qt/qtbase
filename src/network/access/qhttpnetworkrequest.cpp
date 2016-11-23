@@ -40,8 +40,6 @@
 #include "qhttpnetworkrequest_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 
-#ifndef QT_NO_HTTP
-
 QT_BEGIN_NAMESPACE
 
 QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Operation op,
@@ -382,6 +380,4 @@ int QHttpNetworkRequest::minorVersion() const
 
 
 QT_END_NAMESPACE
-
-#endif
 
