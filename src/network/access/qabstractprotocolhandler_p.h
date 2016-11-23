@@ -53,7 +53,7 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#ifndef QT_NO_HTTP
+QT_REQUIRE_CONFIG(http);
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +80,5 @@ protected:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_HTTP
 
 #endif // QABSTRACTPROTOCOLHANDLER_H

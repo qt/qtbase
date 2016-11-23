@@ -66,10 +66,12 @@
 #include "QtNetwork/private/qauthenticator_p.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
-#include "QtNetwork/qhttpmultipart.h"
-#include "qhttpmultipart_p.h"
 
+#if QT_CONFIG(http)
+#include "qhttpmultipart.h"
+#include "qhttpmultipart_p.h"
 #include "qnetworkreplyhttpimpl_p.h"
+#endif
 
 #include "qthread.h"
 
@@ -469,7 +471,7 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     qRegisterMetaType<QSslPreSharedKeyAuthenticator *>();
 #endif
     qRegisterMetaType<QList<QPair<QByteArray,QByteArray> > >();
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
     qRegisterMetaType<QHttpNetworkRequest>();
 #endif
     qRegisterMetaType<QNetworkReply::NetworkError>();
@@ -877,6 +879,7 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
     return reply;
 }
 
+#if QT_CONFIG(http)
 /*!
     \since 4.8
 
@@ -916,6 +919,7 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QHttpM
     QNetworkReply *reply = put(newRequest, device);
     return reply;
 }
+#endif // QT_CONFIG(http)
 
 /*!
     Uploads the contents of \a data to the destination \a request and
@@ -1285,6 +1289,7 @@ QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &r
     return reply;
 }
 
+#if QT_CONFIG(http)
 /*!
     \since 5.8
 
@@ -1306,6 +1311,7 @@ QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &r
     QNetworkReply *reply = sendCustomRequest(newRequest, verb, device);
     return reply;
 }
+#endif // QT_CONFIG(http)
 
 /*!
     Returns a new QNetworkReply object to handle the operation \a op
@@ -1419,7 +1425,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         }
     }
 
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
     // Since Qt 5 we use the new QNetworkReplyHttpImpl
     if (scheme == QLatin1String("http") || scheme == QLatin1String("preconnect-http")
 #ifndef QT_NO_SSL
@@ -1451,7 +1457,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #endif
         return reply;
     }
-#endif // QT_NO_HTTP
+#endif // QT_CONFIG(http)
 
     // first step: create the reply
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
@@ -1527,7 +1533,7 @@ QStringList QNetworkAccessManager::supportedSchemesImplementation() const
 
     QStringList schemes = d->backendSupportedSchemes();
     // Those ones don't exist in backends
-#ifndef QT_NO_HTTP
+#if QT_CONFIG(http)
     schemes << QStringLiteral("http");
 #ifndef QT_NO_SSL
     if (QSslSocket::supportsSsl())
@@ -1992,6 +1998,7 @@ void QNetworkAccessManagerPrivate::_q_networkSessionFailed(QNetworkSession::Sess
 
 #endif // QT_NO_BEARERMANAGEMENT
 
+#if QT_CONFIG(http)
 QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart)
 {
     // copy the request, we probably need to add some headers
@@ -2039,6 +2046,7 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
 
     return newRequest;
 }
+#endif // QT_CONFIG(http)
 
 QT_END_NAMESPACE
 

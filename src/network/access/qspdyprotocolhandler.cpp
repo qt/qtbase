@@ -43,7 +43,7 @@
 #include <private/qhttpnetworkconnectionchannel_p.h>
 #include <QtCore/QtEndian>
 
-#if !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#if !defined(QT_NO_SSL)
 
 QT_BEGIN_NAMESPACE
 
@@ -1294,4 +1294,4 @@ qint32 QSpdyProtocolHandler::generateNextStreamID()
 
 QT_END_NAMESPACE
 
-#endif // !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#endif // !defined(QT_NO_SSL)

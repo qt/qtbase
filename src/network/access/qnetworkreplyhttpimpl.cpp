@@ -60,8 +60,6 @@
 
 #include "qnetworkcookiejar.h"
 
-#ifndef QT_NO_HTTP
-
 #include <string.h>             // for strchr
 
 QT_BEGIN_NAMESPACE
@@ -2381,5 +2379,3 @@ void QNetworkReplyHttpImplPrivate::completeCacheSave()
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_HTTP

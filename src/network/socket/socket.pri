@@ -1,7 +1,6 @@
 # Qt network socket
 
 HEADERS += socket/qabstractsocketengine_p.h \
-           socket/qhttpsocketengine_p.h \
            socket/qabstractsocket.h \
            socket/qabstractsocket_p.h \
            socket/qtcpsocket.h \
@@ -11,7 +10,6 @@ HEADERS += socket/qabstractsocketengine_p.h \
            socket/qtcpserver_p.h
 
 SOURCES += socket/qabstractsocketengine.cpp \
-           socket/qhttpsocketengine.cpp \
            socket/qabstractsocket.cpp \
            socket/qtcpsocket.cpp \
            socket/qudpsocket.cpp \
@@ -24,6 +22,13 @@ qtConfig(socks5) {
         socket/qsocks5socketengine_p.h
     SOURCES += \
         socket/qsocks5socketengine.cpp
+}
+
+qtConfig(http) {
+    HEADERS += \
+        socket/qhttpsocketengine_p.h
+    SOURCES += \
+        socket/qhttpsocketengine.cpp
 }
 
 # SCTP support.

@@ -45,8 +45,6 @@
 #include <qpair.h>
 #include <qdebug.h>
 
-#ifndef QT_NO_HTTP
-
 #include <private/qhttp2protocolhandler_p.h>
 #include <private/qhttpprotocolhandler_p.h>
 #include <private/qspdyprotocolhandler_p.h>
@@ -1319,5 +1317,3 @@ void QHttpNetworkConnectionChannel::setConnection(QHttpNetworkConnection *c)
 QT_END_NAMESPACE
 
 #include "moc_qhttpnetworkconnectionchannel_p.cpp"
-
-#endif // QT_NO_HTTP

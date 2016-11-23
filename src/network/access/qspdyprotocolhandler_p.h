@@ -58,7 +58,9 @@
 
 #include <zlib.h>
 
-#if !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+QT_REQUIRE_CONFIG(http);
+
+#if !defined(QT_NO_SSL)
 
 QT_BEGIN_NAMESPACE
 
@@ -223,6 +225,6 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QSpdyProtocolHandler::SETTINGS_ID_Flags)
 
 QT_END_NAMESPACE
 
-#endif // !defined(QT_NO_HTTP) && !defined(QT_NO_SSL)
+#endif // !defined(QT_NO_SSL)
 
 #endif // QSPDYPROTOCOLHANDLER_H

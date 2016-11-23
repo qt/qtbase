@@ -40,8 +40,6 @@
 #include <private/qabstractprotocolhandler_p.h>
 #include <private/qhttpnetworkconnectionchannel_p.h>
 
-#ifndef QT_NO_HTTP
-
 QT_BEGIN_NAMESPACE
 
 QAbstractProtocolHandler::QAbstractProtocolHandler(QHttpNetworkConnectionChannel *channel)
@@ -62,5 +60,3 @@ void QAbstractProtocolHandler::setReply(QHttpNetworkReply *reply)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_HTTP
