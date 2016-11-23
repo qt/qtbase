@@ -1313,7 +1313,7 @@ static void QT_FASTCALL destStore(QRasterBuffer *rasterBuffer, int x, int y, con
 static void QT_FASTCALL convertFromRgb64(uint *dest, const QRgba64 *src, int length)
 {
     for (int i = 0; i < length; ++i) {
-        dest[i] = src[i].toArgb32();
+        dest[i] = toArgb32(src[i]);
     }
 }
 
@@ -1404,7 +1404,7 @@ static void QT_FASTCALL destStore64ARGB32(QRasterBuffer *rasterBuffer, int x, in
 {
     uint *dest = (uint*)rasterBuffer->scanLine(y) + x;
     for (int i = 0; i < length; ++i) {
-        dest[i] = buffer[i].unpremultiplied().toArgb32();
+        dest[i] = toArgb32(buffer[i].unpremultiplied());
     }
 }
 
@@ -1412,7 +1412,7 @@ static void QT_FASTCALL destStore64RGBA8888(QRasterBuffer *rasterBuffer, int x, 
 {
     uint *dest = (uint*)rasterBuffer->scanLine(y) + x;
     for (int i = 0; i < length; ++i) {
-        dest[i] = ARGB2RGBA(buffer[i].unpremultiplied().toArgb32());
+        dest[i] = toRgba8888(buffer[i].unpremultiplied());
     }
 }
 

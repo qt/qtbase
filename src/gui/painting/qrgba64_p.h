@@ -185,6 +185,55 @@ inline QRgba64 addWithSaturation(QRgba64 a, QRgba64 b)
                                qMin(a.alpha() + b.alpha(), 65535));
 }
 
+#if defined __SSE2__
+Q_ALWAYS_INLINE uint toArgb32(__m128i v)
+{
+    v = _mm_unpacklo_epi16(v, _mm_setzero_si128());
+    v = _mm_add_epi32(v, _mm_set1_epi32(128));
+    v = _mm_sub_epi32(v, _mm_srli_epi32(v, 8));
+    v = _mm_srli_epi32(v, 8);
+    v = _mm_packs_epi32(v, v);
+    v = _mm_packus_epi16(v, v);
+    return _mm_cvtsi128_si32(v);
+}
+#elif defined __ARM_NEON__
+Q_ALWAYS_INLINE uint toArgb32(uint16x4_t v)
+{
+    v = vsub_u16(v, vrshr_n_u16(v, 8));
+    v = vrshr_n_u16(v, 8);
+    uint8x8_t v8 = vmovn_u16(vcombine_u16(v, v));
+    return vget_lane_u32(vreinterpret_u32_u8(v8), 0);
+}
+#endif
+
+inline uint toArgb32(QRgba64 rgba64)
+{
+#if defined __SSE2__
+    __m128i v = _mm_loadl_epi64((const __m128i *)&rgba64);
+    v = _mm_shufflelo_epi16(v, _MM_SHUFFLE(3, 0, 1, 2));
+    return toArgb32(v);
+#elif defined __ARM_NEON__
+    uint16x4_t v = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&rgba64)));
+    v = vext_u16(v, v, 1);
+    return toArgb32(v);
+#else
+    return rgba64.toArgb32();
+#endif
+}
+
+inline uint toRgba8888(QRgba64 rgba64)
+{
+#if defined __SSE2__
+    __m128i v = _mm_loadl_epi64((const __m128i *)&rgba64);
+    return toArgb32(v);
+#elif defined __ARM_NEON__
+    uint16x4_t v = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&rgba64)));
+    return toArgb32(v);
+#else
+    return ARGB2RGBA(toArgb32(rgba64));
+#endif
+}
+
 #if defined(__SSE2__)
 Q_ALWAYS_INLINE __m128i addWithSaturation(__m128i a, __m128i b)
 {
