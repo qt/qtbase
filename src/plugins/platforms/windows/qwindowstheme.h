@@ -40,7 +40,6 @@
 #ifndef QWINDOWSTHEME_H
 #define QWINDOWSTHEME_H
 
-#include "qwindowsthreadpoolrunner.h"
 #include <qpa/qplatformtheme.h>
 
 #include <QtCore/QSharedPointer>
@@ -88,7 +87,6 @@ private:
     static QWindowsTheme *m_instance;
     QPalette *m_palettes[NPalettes];
     QFont *m_fonts[NFonts];
-    const QSharedPointer<QWindowsThreadPoolRunner> m_threadPoolRunner;
     QList<QSize> m_fileIconSizes;
 };
 

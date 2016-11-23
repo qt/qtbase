@@ -61,6 +61,9 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QSysInfo>
 #include <QtCore/QCache>
+#include <QtCore/QThread>
+#include <QtCore/QMutex>
+#include <QtCore/QWaitCondition>
 #include <QtGui/QColor>
 #include <QtGui/QPalette>
 #include <QtGui/QGuiApplication>
@@ -127,40 +130,114 @@ static inline QColor getSysColor(int index)
 // QTBUG-48823/Windows 10: SHGetFileInfo() (as called by item views on file system
 // models has been observed to trigger a WM_PAINT on the mainwindow. Suppress the
 // behavior by running it in a thread.
-class ShGetFileInfoFunction
+
+struct QShGetFileInfoParams
+{
+    QShGetFileInfoParams(const QString &fn, DWORD a, SHFILEINFO *i, UINT f, bool *r)
+        : fileName(fn), attributes(a), flags(f), info(i), result(r)
+    { }
+
+    const QString &fileName;
+    const DWORD attributes;
+    const UINT flags;
+    SHFILEINFO *const info;
+    bool *const result;
+};
+
+class QShGetFileInfoThread : public QThread
 {
 public:
-    explicit ShGetFileInfoFunction(const wchar_t *fn, DWORD a, SHFILEINFO *i, UINT f, bool *r) :
-        m_fileName(fn), m_attributes(a), m_flags(f), m_info(i), m_result(r) {}
-
-    void operator()() const
+    explicit QShGetFileInfoThread()
+        : QThread(), m_params(nullptr)
     {
+        connect(this, &QThread::finished, this, &QObject::deleteLater);
+    }
+
+    void run() override
+    {
+        m_init = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+
+        QMutexLocker readyLocker(&m_readyMutex);
+        while (!m_cancelled.load()) {
+            if (!m_params && !m_cancelled.load()
+                && !m_readyCondition.wait(&m_readyMutex, 1000))
+                continue;
+
+            if (m_params) {
+                const QString fileName = m_params->fileName;
+                SHFILEINFO info;
 #ifndef Q_OS_WINCE
-        const UINT oldErrorMode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
+                const UINT oldErrorMode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 #endif
-        *m_result = SHGetFileInfo(m_fileName, m_attributes, m_info, sizeof(SHFILEINFO), m_flags);
+                const bool result = SHGetFileInfo(reinterpret_cast<const wchar_t *>(fileName.utf16()),
+                                                  m_params->attributes, &info, sizeof(SHFILEINFO),
+                                                  m_params->flags);
 #ifndef Q_OS_WINCE
-        SetErrorMode(oldErrorMode);
+                SetErrorMode(oldErrorMode);
 #endif
+                m_doneMutex.lock();
+                if (!m_cancelled.load()) {
+                    *m_params->result = result;
+                    memcpy(m_params->info, &info, sizeof(SHFILEINFO));
+                }
+                m_params = nullptr;
+
+                m_doneCondition.wakeAll();
+                m_doneMutex.unlock();
+            }
+        }
+
+        if (m_init != S_FALSE)
+            CoUninitialize();
+    }
+
+    bool runWithParams(QShGetFileInfoParams *params, unsigned long timeOutMSecs)
+    {
+        QMutexLocker doneLocker(&m_doneMutex);
+
+        m_readyMutex.lock();
+        m_params = params;
+        m_readyCondition.wakeAll();
+        m_readyMutex.unlock();
+
+        return m_doneCondition.wait(&m_doneMutex, timeOutMSecs);
+    }
+
+    void cancel()
+    {
+        QMutexLocker doneLocker(&m_doneMutex);
+        m_cancelled.store(1);
+        m_readyCondition.wakeAll();
     }
 
 private:
-    const wchar_t *m_fileName;
-    const DWORD m_attributes;
-    const UINT m_flags;
-    SHFILEINFO *const m_info;
-    bool *m_result;
+    HRESULT m_init;
+    QShGetFileInfoParams *m_params;
+    QAtomicInt m_cancelled;
+    QWaitCondition m_readyCondition;
+    QWaitCondition m_doneCondition;
+    QMutex m_readyMutex;
+    QMutex m_doneMutex;
 };
 
-static bool shGetFileInfoBackground(QWindowsThreadPoolRunner &r,
-                                    const wchar_t *fileName, DWORD attributes,
+static bool shGetFileInfoBackground(const QString &fileName, DWORD attributes,
                                     SHFILEINFO *info, UINT flags,
                                     unsigned long  timeOutMSecs = 5000)
 {
+    static QShGetFileInfoThread *getFileInfoThread = nullptr;
+    if (!getFileInfoThread) {
+        getFileInfoThread = new QShGetFileInfoThread;
+        getFileInfoThread->start();
+    }
+
     bool result = false;
-    if (!r.run(ShGetFileInfoFunction(fileName, attributes, info, flags, &result), timeOutMSecs)) {
-        qWarning().noquote() << "ShGetFileInfoBackground() timed out for "
-            << QString::fromWCharArray(fileName);
+    QShGetFileInfoParams params(fileName, attributes, info, flags, &result);
+    if (!getFileInfoThread->runWithParams(&params, timeOutMSecs)) {
+        // Cancel and reset getFileInfoThread. It'll
+        // be reinitialized the next time we get called.
+        getFileInfoThread->cancel();
+        getFileInfoThread = nullptr;
+        qWarning().noquote() << "SHGetFileInfo() timed out for " << fileName;
         return false;
     }
     return result;
@@ -315,7 +392,6 @@ const char *QWindowsTheme::name = "windows";
 QWindowsTheme *QWindowsTheme::m_instance = 0;
 
 QWindowsTheme::QWindowsTheme()
-    : m_threadPoolRunner(new QWindowsThreadPoolRunner)
 {
     m_instance = this;
     std::fill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
@@ -718,10 +794,8 @@ static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
 class QWindowsFileIconEngine : public QAbstractFileIconEngine
 {
 public:
-    explicit QWindowsFileIconEngine(const QFileInfo &info,
-                                    QPlatformTheme::IconOptions opts,
-                                    const QSharedPointer<QWindowsThreadPoolRunner> &runner) :
-        QAbstractFileIconEngine(info, opts), m_threadPoolRunner(runner) {}
+    explicit QWindowsFileIconEngine(const QFileInfo &info, QPlatformTheme::IconOptions opts) :
+        QAbstractFileIconEngine(info, opts) {}
 
     QList<QSize> availableSizes(QIcon::Mode = QIcon::Normal, QIcon::State = QIcon::Off) const override
     { return QWindowsTheme::instance()->availableFileIconSizes(); }
@@ -729,9 +803,6 @@ public:
 protected:
     QString cacheKey() const override;
     QPixmap filePixmap(const QSize &size, QIcon::Mode mode, QIcon::State) override;
-
-private:
-    const QSharedPointer<QWindowsThreadPoolRunner> m_threadPoolRunner;
 };
 
 QString QWindowsFileIconEngine::cacheKey() const
@@ -797,10 +868,8 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
         SHGFI_ICON|iconSize|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS|SHGFI_OVERLAYINDEX;
 
     const bool val = cacheableDirIcon && useDefaultFolderIcon
-        ? shGetFileInfoBackground(*m_threadPoolRunner.data(), L"dummy", FILE_ATTRIBUTE_DIRECTORY,
-                                  &info, flags | SHGFI_USEFILEATTRIBUTES)
-        : shGetFileInfoBackground(*m_threadPoolRunner.data(), reinterpret_cast<const wchar_t *>(filePath.utf16()), 0,
-                                  &info, flags);
+        ? shGetFileInfoBackground(QString::fromWCharArray(L"dummy"), FILE_ATTRIBUTE_DIRECTORY, &info, flags | SHGFI_USEFILEATTRIBUTES)
+        : shGetFileInfoBackground(filePath, 0, &info, flags);
 
     // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases
     if (val && info.hIcon) {
@@ -844,7 +913,7 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
 
 QIcon QWindowsTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const
 {
-    return QIcon(new QWindowsFileIconEngine(fileInfo, iconOptions, m_threadPoolRunner));
+    return QIcon(new QWindowsFileIconEngine(fileInfo, iconOptions));
 }
 
 QT_END_NAMESPACE
