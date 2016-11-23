@@ -3734,7 +3734,7 @@ void tst_QDateTimeEdit::dateEditCorrectSectionSize()
         QTest::keyClick(&edit, keyPair.first, keyPair.second);
 
     QDateTimeEditPrivate* edit_d_ptr(static_cast<QDateTimeEditPrivate*>(qt_widget_private(&edit)));
-    QCOMPARE(edit_d_ptr->text, expectedDisplayString);
+    QCOMPARE(edit_d_ptr->QDateTimeParser::displayText(), expectedDisplayString);
 }
 #endif
 

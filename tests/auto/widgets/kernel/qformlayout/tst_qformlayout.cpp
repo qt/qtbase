@@ -43,6 +43,10 @@
 
 #include <qformlayout.h>
 
+// ItemRole has enumerators for numerical values 0..2, thus the only
+// valid numerical values for storing into an ItemRole variable are 0..3:
+Q_CONSTEXPR QFormLayout::ItemRole invalidRole = QFormLayout::ItemRole(3);
+
 static inline void setFrameless(QWidget *w)
 {
     Qt::WindowFlags flags = w->windowFlags();
@@ -523,7 +527,7 @@ void tst_QFormLayout::insertRow_QWidget_QWidget()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout->getWidgetPosition(lbl1, &row, &role);
         QCOMPARE(row, 0);
         QCOMPARE(int(role), int(QFormLayout::LabelRole));
@@ -531,7 +535,7 @@ void tst_QFormLayout::insertRow_QWidget_QWidget()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout->getWidgetPosition(fld1, &row, &role);
         QCOMPARE(row, 0);
         QCOMPARE(int(role), int(QFormLayout::FieldRole));
@@ -592,7 +596,7 @@ void tst_QFormLayout::insertRow_QWidget_QLayout()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout->getWidgetPosition(lbl1, &row, &role);
         QCOMPARE(row, 0);
         QCOMPARE(int(role), int(QFormLayout::LabelRole));
@@ -600,7 +604,7 @@ void tst_QFormLayout::insertRow_QWidget_QLayout()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout->getLayoutPosition(fld1, &row, &role);
         QCOMPARE(row, 0);
         QCOMPARE(int(role), int(QFormLayout::FieldRole));
@@ -717,7 +721,7 @@ void tst_QFormLayout::setWidget()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getWidgetPosition(&w1, &row, &role);
         QCOMPARE(row, 5);
         QCOMPARE(int(role), int(QFormLayout::LabelRole));
@@ -725,7 +729,7 @@ void tst_QFormLayout::setWidget()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getWidgetPosition(&w2, &row, &role);
         QCOMPARE(row, 3);
         QCOMPARE(int(role), int(QFormLayout::FieldRole));
@@ -733,7 +737,7 @@ void tst_QFormLayout::setWidget()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getWidgetPosition(&w3, &row, &role);
         QCOMPARE(row, 3);
         QCOMPARE(int(role), int(QFormLayout::LabelRole));
@@ -741,18 +745,20 @@ void tst_QFormLayout::setWidget()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getWidgetPosition(&w4, &row, &role);
+        // not found
         QCOMPARE(row, -1);
-        QCOMPARE(int(role), -123);
+        QCOMPARE(int(role), int(invalidRole));
     }
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getWidgetPosition(0, &row, &role);
+        // not found
         QCOMPARE(row, -1);
-        QCOMPARE(int(role), -123);
+        QCOMPARE(int(role), int(invalidRole));
     }
 }
 
@@ -785,7 +791,7 @@ void tst_QFormLayout::setLayout()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getLayoutPosition(&l1, &row, &role);
         QCOMPARE(row, 5);
         QCOMPARE(int(role), int(QFormLayout::LabelRole));
@@ -793,7 +799,7 @@ void tst_QFormLayout::setLayout()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getLayoutPosition(&l2, &row, &role);
         QCOMPARE(row, 3);
         QCOMPARE(int(role), int(QFormLayout::FieldRole));
@@ -801,7 +807,7 @@ void tst_QFormLayout::setLayout()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getLayoutPosition(&l3, &row, &role);
         QCOMPARE(row, 3);
         QCOMPARE(int(role), int(QFormLayout::LabelRole));
@@ -809,18 +815,18 @@ void tst_QFormLayout::setLayout()
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getLayoutPosition(&l4, &row, &role);
         QCOMPARE(row, -1);
-        QCOMPARE(int(role), -123);
+        QCOMPARE(int(role), int(invalidRole));
     }
 
     {
         int row = -1;
-        QFormLayout::ItemRole role = QFormLayout::ItemRole(-123);
+        QFormLayout::ItemRole role = invalidRole;
         layout.getLayoutPosition(0, &row, &role);
         QCOMPARE(row, -1);
-        QCOMPARE(int(role), -123);
+        QCOMPARE(int(role), int(invalidRole));
     }
 }
 

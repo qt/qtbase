@@ -65,6 +65,13 @@
 #include <MobileCoreServices/MobileCoreServices.h>
 #endif
 
+#if defined(Q_OS_DARWIN)
+// We cannot include <Foundation/Foundation.h> (it's an Objective-C header), but
+// we need these declarations:
+Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
+extern "C" NSString *NSTemporaryDirectory();
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_DARWIN)
@@ -702,8 +709,17 @@ QString QFileSystemEngine::tempPath()
     return QLatin1String(QT_UNIX_TEMP_PATH_OVERRIDE);
 #else
     QString temp = QFile::decodeName(qgetenv("TMPDIR"));
-    if (temp.isEmpty())
-        temp = QLatin1String("/tmp");
+    if (temp.isEmpty()) {
+#if defined(Q_OS_DARWIN) && !defined(QT_BOOTSTRAPPED)
+        if (NSString *nsPath = NSTemporaryDirectory()) {
+            temp = QString::fromCFString((CFStringRef)nsPath);
+        } else {
+#else
+        {
+#endif
+            temp = QLatin1String("/tmp");
+        }
+    }
     return QDir::cleanPath(temp);
 #endif
 }

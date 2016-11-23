@@ -213,7 +213,7 @@ private:
     QHeaderView *verticalHeader() const;
     QHeaderView *horizontalHeader() const;
     QPointer<QAbstractItemView > view;
-    QModelIndex m_index;
+    QPersistentModelIndex m_index;
     QAccessible::Role m_role;
 
     void selectCell();
