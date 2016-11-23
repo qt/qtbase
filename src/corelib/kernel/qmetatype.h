@@ -462,7 +462,8 @@ public:
         WeakPointerToQObject = 0x40,
         TrackingPointerToQObject = 0x80,
         WasDeclaredAsMetaType = 0x100,
-        IsGadget = 0x200
+        IsGadget = 0x200,
+        PointerToGadget = 0x400
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -1388,6 +1389,19 @@ namespace QtPrivate
         enum { Value =  sizeof(checkType(&T::qt_check_for_QGADGET_macro)) == sizeof(void *) };
     };
 
+    template<typename T, typename Enable = void>
+    struct IsPointerToGadgetHelper { enum { Value = false }; };
+
+    template<typename T>
+    struct IsPointerToGadgetHelper<T*, typename T::QtGadgetHelper>
+    {
+        using BaseType = T;
+        template <typename X>
+        static char checkType(void (X::*)());
+        static void *checkType(void (T::*)());
+        enum { Value =  sizeof(checkType(&T::qt_check_for_QGADGET_macro)) == sizeof(void *) };
+    };
+
 
     template<typename T> char qt_getEnumMetaObject(const T&);
 
@@ -1421,6 +1435,11 @@ namespace QtPrivate
     struct MetaObjectForType<T, typename std::enable_if<IsGadgetHelper<T>::Value>::type>
     {
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
+    };
+    template<typename T>
+    struct MetaObjectForType<T, typename QEnableIf<IsPointerToGadgetHelper<T>::Value>::Type>
+    {
+        static inline const QMetaObject *value() { return &IsPointerToGadgetHelper<T>::BaseType::staticMetaObject; }
     };
     template<typename T>
     struct MetaObjectForType<T, typename std::enable_if<IsQEnumHelper<T>::Value>::type >
@@ -1578,6 +1597,7 @@ namespace QtPrivate
 template <typename T, int =
     QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject :
     QtPrivate::IsGadgetHelper<T>::Value                    ? QMetaType::IsGadget :
+    QtPrivate::IsPointerToGadgetHelper<T>::Value           ? QMetaType::PointerToGadget :
     QtPrivate::IsQEnumHelper<T>::Value                     ? QMetaType::IsEnumeration : 0>
 struct QMetaTypeIdQObject
 {
@@ -1631,6 +1651,7 @@ namespace QtPrivate {
                      | (IsTrackingPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::TrackingPointerToQObject : 0)
                      | (std::is_enum<T>::value ? QMetaType::IsEnumeration : 0)
                      | (IsGadgetHelper<T>::Value ? QMetaType::IsGadget : 0)
+                     | (IsPointerToGadgetHelper<T>::Value ? QMetaType::PointerToGadget : 0)
              };
     };
 
@@ -1792,6 +1813,30 @@ struct QMetaTypeIdQObject<T, QMetaType::IsGadget>
         const int newId = qRegisterNormalizedMetaType<T>(
             cName,
             reinterpret_cast<T*>(quintptr(-1)));
+        metatype_id.storeRelease(newId);
+        return newId;
+    }
+};
+
+template <typename T>
+struct QMetaTypeIdQObject<T*, QMetaType::PointerToGadget>
+{
+    enum {
+        Defined = 1
+    };
+
+    static int qt_metatype_id()
+    {
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        if (const int id = metatype_id.loadAcquire())
+            return id;
+        const char * const cName = T::staticMetaObject.className();
+        QByteArray typeName;
+        typeName.reserve(int(strlen(cName)) + 1);
+        typeName.append(cName).append('*');
+        const int newId = qRegisterNormalizedMetaType<T*>(
+            typeName,
+            reinterpret_cast<T**>(quintptr(-1)));
         metatype_id.storeRelease(newId);
         return newId;
     }

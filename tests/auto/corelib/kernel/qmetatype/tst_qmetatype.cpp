@@ -155,7 +155,9 @@ void tst_QMetaType::defined()
     QCOMPARE(int(QMetaTypeId2<int*>::Defined), 0);
     QCOMPARE(int(QMetaTypeId2<CustomQObject::CustomQEnum>::Defined), 1);
     QCOMPARE(int(QMetaTypeId2<CustomGadget>::Defined), 1);
+    QCOMPARE(int(QMetaTypeId2<CustomGadget*>::Defined), 1);
     QVERIFY(!QMetaTypeId2<GadgetDerived>::Defined);
+    QVERIFY(!QMetaTypeId2<GadgetDerived*>::Defined);
     QVERIFY(int(QMetaTypeId2<CustomQObject*>::Defined));
     QVERIFY(!QMetaTypeId2<CustomQObject>::Defined);
     QVERIFY(!QMetaTypeId2<CustomNonQObject>::Defined);
@@ -395,6 +397,7 @@ void tst_QMetaType::typeName_data()
 
     QTest::newRow("CustomQObject*") << ::qMetaTypeId<CustomQObject*>() << QString::fromLatin1("CustomQObject*");
     QTest::newRow("CustomGadget") << ::qMetaTypeId<CustomGadget>() << QString::fromLatin1("CustomGadget");
+    QTest::newRow("CustomGadget*") << ::qMetaTypeId<CustomGadget*>() << QString::fromLatin1("CustomGadget*");
     QTest::newRow("CustomQObject::CustomQEnum") << ::qMetaTypeId<CustomQObject::CustomQEnum>() << QString::fromLatin1("CustomQObject::CustomQEnum");
     QTest::newRow("Qt::ArrowType") << ::qMetaTypeId<Qt::ArrowType>() << QString::fromLatin1("Qt::ArrowType");
 }
@@ -1675,6 +1678,7 @@ public:
 };
 
 Q_DECLARE_METATYPE(MyGadget);
+Q_DECLARE_METATYPE(MyGadget*);
 Q_DECLARE_METATYPE(const QMetaObject *);
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy);
 Q_DECLARE_METATYPE(MyGadget::MyEnum);
@@ -1684,16 +1688,18 @@ void tst_QMetaType::metaObject_data()
     QTest::addColumn<int>("type");
     QTest::addColumn<const QMetaObject*>("result");
     QTest::addColumn<bool>("isGadget");
+    QTest::addColumn<bool>("isGadgetPtr");
     QTest::addColumn<bool>("isQObjectPtr");
 
-    QTest::newRow("QObject") << int(QMetaType::QObjectStar) << &QObject::staticMetaObject << false << true;
-    QTest::newRow("QFile*") << ::qMetaTypeId<QFile*>() << &QFile::staticMetaObject << false << true;
-    QTest::newRow("MyObject*") << ::qMetaTypeId<MyObject*>() << &MyObject::staticMetaObject << false << true;
-    QTest::newRow("int") << int(QMetaType::Int) << static_cast<const QMetaObject *>(0) << false << false;
-    QTest::newRow("QEasingCurve") << ::qMetaTypeId<QEasingCurve>() <<  &QEasingCurve::staticMetaObject << true << false;
-    QTest::newRow("MyGadget") << ::qMetaTypeId<MyGadget>() <<  &MyGadget::staticMetaObject << true << false;
-    QTest::newRow("MyEnum") << ::qMetaTypeId<MyGadget::MyEnum>() <<  &MyGadget::staticMetaObject << false << false;
-    QTest::newRow("Qt::ScrollBarPolicy") << ::qMetaTypeId<Qt::ScrollBarPolicy>() <<  &QObject::staticQtMetaObject << false << false;
+    QTest::newRow("QObject") << int(QMetaType::QObjectStar) << &QObject::staticMetaObject << false << false << true;
+    QTest::newRow("QFile*") << ::qMetaTypeId<QFile*>() << &QFile::staticMetaObject << false << false << true;
+    QTest::newRow("MyObject*") << ::qMetaTypeId<MyObject*>() << &MyObject::staticMetaObject << false << false << true;
+    QTest::newRow("int") << int(QMetaType::Int) << static_cast<const QMetaObject *>(0) << false << false << false;
+    QTest::newRow("QEasingCurve") << ::qMetaTypeId<QEasingCurve>() <<  &QEasingCurve::staticMetaObject << true << false << false;
+    QTest::newRow("MyGadget") << ::qMetaTypeId<MyGadget>() <<  &MyGadget::staticMetaObject << true << false << false;
+    QTest::newRow("MyGadget*") << ::qMetaTypeId<MyGadget*>() << &MyGadget::staticMetaObject << false << true << false;
+    QTest::newRow("MyEnum") << ::qMetaTypeId<MyGadget::MyEnum>() <<  &MyGadget::staticMetaObject << false << false << false;
+    QTest::newRow("Qt::ScrollBarPolicy") << ::qMetaTypeId<Qt::ScrollBarPolicy>() <<  &QObject::staticQtMetaObject << false << false << false;
 }
 
 
@@ -1702,12 +1708,14 @@ void tst_QMetaType::metaObject()
     QFETCH(int, type);
     QFETCH(const QMetaObject *, result);
     QFETCH(bool, isGadget);
+    QFETCH(bool, isGadgetPtr);
     QFETCH(bool, isQObjectPtr);
 
     QCOMPARE(QMetaType::metaObjectForType(type), result);
     QMetaType mt(type);
     QCOMPARE(mt.metaObject(), result);
     QCOMPARE(!!(mt.flags() & QMetaType::IsGadget), isGadget);
+    QCOMPARE(!!(mt.flags() & QMetaType::PointerToGadget), isGadgetPtr);
     QCOMPARE(!!(mt.flags() & QMetaType::PointerToQObject), isQObjectPtr);
 }
 
