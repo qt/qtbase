@@ -61,8 +61,8 @@ public:
     QOpenGLPaintDevice(int width, int height);
     virtual ~QOpenGLPaintDevice();
 
-    int devType() const { return QInternal::OpenGL; }
-    QPaintEngine *paintEngine() const;
+    int devType() const override { return QInternal::OpenGL; }
+    QPaintEngine *paintEngine() const override;
 
     QOpenGLContext *context() const;
     QSize size() const;
@@ -82,7 +82,7 @@ public:
 
 protected:
     QOpenGLPaintDevice(QOpenGLPaintDevicePrivate &dd);
-    int metric(QPaintDevice::PaintDeviceMetric metric) const;
+    int metric(QPaintDevice::PaintDeviceMetric metric) const override;
 
     Q_DISABLE_COPY(QOpenGLPaintDevice)
     QScopedPointer<QOpenGLPaintDevicePrivate> d_ptr;
