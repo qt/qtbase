@@ -934,6 +934,10 @@
             "label": "Qt Network",
             "output": [ "privateFeature" ]
         },
+        "sql": {
+            "label": "Qt Sql",
+            "output": [ "privateFeature" ]
+        },
         "widgets": {
             "label": "Qt Widgets",
             "condition": "features.gui",
@@ -1128,6 +1132,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 "dbus-linked",
                 "gui",
                 "network",
+                "sql",
                 "widgets"
             ]
         }, {
