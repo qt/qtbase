@@ -171,6 +171,7 @@ private slots:
 
     void statusTip_data();
     void statusTip();
+    void fetchMoreOnScroll();
 
     // task-specific tests:
     void task174627_moveLeftToRoot();
@@ -4470,5 +4471,49 @@ void tst_QTreeView::statusTip()
     QTest::mouseMove(mw.windowHandle(), centerPoint);
     QTRY_COMPARE(mw.statusBar()->currentMessage(), QLatin1String("Header 0 -- Status"));
 }
+
+class FetchMoreModel : public QStandardItemModel
+{
+public:
+    FetchMoreModel() : QStandardItemModel(), canFetchReady(false)
+    {
+        for (int i = 0; i < 20; ++i) {
+            QStandardItem *item = new QStandardItem("Row");
+            item->appendRow(new QStandardItem("Child"));
+            appendRow(item);
+        }
+    }
+    bool canFetchMore(const QModelIndex &parent) const override
+    {
+        if (!canFetchReady || !parent.isValid())
+            return false;
+        if (!parent.parent().isValid())
+            return rowCount(parent) < 20;
+        return false;
+    }
+    void fetchMore(const QModelIndex &parent) override
+    {
+        QStandardItem *item = itemFromIndex(parent);
+        for (int i = 0; i < 19; ++i)
+            item->appendRow(new QStandardItem(QString("New Child %1").arg(i)));
+    }
+    bool canFetchReady;
+};
+
+void tst_QTreeView::fetchMoreOnScroll()
+{
+    QTreeView tw;
+    FetchMoreModel im;
+    tw.setModel(&im);
+    tw.show();
+    tw.expandAll();
+    QTest::qWaitForWindowActive(&tw);
+    // Now we can allow the fetch to happen
+    im.canFetchReady = true;
+    tw.verticalScrollBar()->setValue(tw.verticalScrollBar()->maximum());
+    // The item should have now fetched the other children, thus bringing the count to 20
+    QCOMPARE(im.item(19)->rowCount(), 20);
+}
+
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"

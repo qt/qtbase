@@ -169,6 +169,7 @@ protected Q_SLOTS:
     void columnMoved();
     void reexpand();
     void rowsRemoved(const QModelIndex &parent, int first, int last);
+    void verticalScrollbarValueChanged(int value) Q_DECL_OVERRIDE;
 
 protected:
     QTreeView(QTreeViewPrivate &dd, QWidget *parent = Q_NULLPTR);

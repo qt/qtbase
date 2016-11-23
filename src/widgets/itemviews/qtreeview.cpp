@@ -3992,6 +3992,27 @@ int QTreeView::visualIndex(const QModelIndex &index) const
     return d->viewIndex(index);
 }
 
+/*!
+   \reimp
+*/
+
+void QTreeView::verticalScrollbarValueChanged(int value)
+{
+    Q_D(QTreeView);
+    if (!d->viewItems.isEmpty() && value == verticalScrollBar()->maximum()) {
+        QModelIndex ret = d->viewItems.last().index;
+        // Root index will be handled by base class implementation
+        while (ret.isValid()) {
+            if (isExpanded(ret) && d->model->canFetchMore(ret)) {
+                d->model->fetchMore(ret);
+                break;
+            }
+            ret = ret.parent();
+        }
+    }
+    QAbstractItemView::verticalScrollbarValueChanged(value);
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qtreeview.cpp"
