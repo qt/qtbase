@@ -99,8 +99,6 @@ QT_END_NAMESPACE
 #include <private/qcore_unix_p.h>
 #endif
 
-#ifndef QT_NO_PROCESS
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -2604,6 +2602,3 @@ QString QProcess::nullDevice()
 QT_END_NAMESPACE
 
 #include "moc_qprocess.cpp"
-
-#endif // QT_NO_PROCESS
-

@@ -31,7 +31,9 @@
 #include <QBuffer>
 #include <QHostInfo>
 #include <QSysInfo>
-#include <QProcess>
+#if QT_CONFIG(process)
+# include <QProcess>
+#endif
 #include <QFileInfo>
 #include <QDir>
 #include <QTime>
@@ -88,7 +90,7 @@ PlatformInfo PlatformInfo::localHostInfo()
 #if QT_VERSION >= 0x050000
     pi.insert(PI_QtBuildMode, QLibraryInfo::isDebugBuild() ? QLS("QtDebug") : QLS("QtRelease"));
 #endif
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) && QT_CONFIG(process)
     pi.insert(PI_OSName, QLS("Linux"));
     QProcess uname;
     uname.start(QLS("uname"), QStringList() << QLS("-r"));
@@ -104,7 +106,7 @@ PlatformInfo PlatformInfo::localHostInfo()
     pi.insert(PI_OSName, QLS("Other"));
 #endif
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     QProcess git;
     QString cmd;
     QStringList args;
@@ -140,7 +142,7 @@ PlatformInfo PlatformInfo::localHostInfo()
             pi.insert(PI_PulseGitBranch, QString::fromLatin1(gb));
         }
     }
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
     return pi;
 }

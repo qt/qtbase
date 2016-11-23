@@ -35,7 +35,9 @@
 #include <QScopedArrayPointer>
 #include <qtextcodec.h>
 #include <qdatetime.h>
-#include <qprocess.h>
+#if QT_CONFIG(process)
+# include <qprocess.h>
+#endif
 #include <float.h>
 #include <locale.h>
 
@@ -152,7 +154,7 @@ tst_QLocale::tst_QLocale()
 
 void tst_QLocale::initTestCase()
 {
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     const QString syslocaleapp_dir = QFINDTESTDATA("syslocaleapp");
     QVERIFY2(!syslocaleapp_dir.isEmpty(),
             qPrintable(QStringLiteral("Cannot find 'syslocaleapp' starting from ")
@@ -165,7 +167,7 @@ void tst_QLocale::initTestCase()
     QVERIFY2(fi.exists() && fi.isExecutable(),
              qPrintable(QDir::toNativeSeparators(m_sysapp)
                         + QStringLiteral(" does not exist or is not executable.")));
-#endif // QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 void tst_QLocale::cleanupTestCase()
@@ -420,7 +422,7 @@ void tst_QLocale::ctor()
 #undef TEST_CTOR
 }
 
-#if !defined(QT_NO_PROCESS)
+#if QT_CONFIG(process)
 static inline bool runSysApp(const QString &binary,
                              const QStringList &env,
                              QString *output,
@@ -472,7 +474,7 @@ static inline bool runSysAppTest(const QString &binary,
 
 void tst_QLocale::emptyCtor()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
 #define TEST_CTOR(req_lc, exp_str) \

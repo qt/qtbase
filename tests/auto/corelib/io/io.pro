@@ -56,12 +56,14 @@ SUBDIRS=\
     qurlinternal \
     qloggingregistry
 
+!qtConfig(process): SUBDIRS -= \
+    qprocess \
+    qprocess-noapplication \
+    qprocessenvironment
+
 win32:!qtConfig(private_tests): SUBDIRS -= \
     qfilesystementry
 
 winrt: SUBDIRS -= \
-    qprocess \
-    qprocess-noapplication \
-    qprocessenvironment \
     qstorageinfo \
     qwinoverlappedionotifier

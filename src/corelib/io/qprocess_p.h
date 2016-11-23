@@ -57,6 +57,9 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qshareddata.h"
 #include "private/qiodevice_p.h"
+
+QT_REQUIRE_CONFIG(process);
+
 #ifdef Q_OS_UNIX
 #include <QtCore/private/qorderedmutexlocker_p.h>
 #endif
@@ -69,8 +72,6 @@ typedef HANDLE Q_PIPE;
 typedef int Q_PIPE;
 #define INVALID_Q_PIPE -1
 #endif
-
-#ifndef QT_NO_PROCESS
 
 QT_BEGIN_NAMESPACE
 
@@ -387,7 +388,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PROCESS
 
 #endif // QPROCESS_P_H

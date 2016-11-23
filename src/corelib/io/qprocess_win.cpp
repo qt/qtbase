@@ -59,8 +59,6 @@
 #define PIPE_REJECT_REMOTE_CLIENTS 0x08
 #endif
 
-#ifndef QT_NO_PROCESS
-
 QT_BEGIN_NAMESPACE
 
 //#define QPROCESS_DEBUG
@@ -893,5 +891,3 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PROCESS

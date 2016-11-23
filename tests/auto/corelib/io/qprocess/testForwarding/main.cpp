@@ -38,7 +38,6 @@ int main(int argc, char **argv)
     if (argc < 3)
         return 13;
 
-#ifndef QT_NO_PROCESS
     QProcess process;
 
     QProcess::ProcessChannelMode mode = (QProcess::ProcessChannelMode)atoi(argv[1]);
@@ -69,6 +68,5 @@ int main(int argc, char **argv)
     if ((mode == QProcess::ForwardedErrorChannel || mode == QProcess::ForwardedChannels)
             && !process.readAllStandardError().isEmpty())
         return 6;
-#endif
     return 0;
 }

@@ -51,7 +51,6 @@
 #include <qmainwindow.h>
 #include <qfont.h>
 #include <qgroupbox.h>
-#include <qprocess.h>
 #include <qpixmapcache.h>
 #include <qdialogbuttonbox.h>
 #include <qscrollbar.h>

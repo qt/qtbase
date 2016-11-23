@@ -46,10 +46,9 @@
 
 #include <functional>
 
+QT_REQUIRE_CONFIG(process);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_PROCESS
 
 #if !defined(Q_OS_WIN) || defined(Q_QDOC)
 typedef qint64 Q_PID;
@@ -297,8 +296,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), bool _q_processDied())
     friend class QProcessManager;
 };
-
-#endif // QT_NO_PROCESS
 
 QT_END_NAMESPACE
 

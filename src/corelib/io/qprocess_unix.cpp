@@ -41,8 +41,6 @@
 //#define QPROCESS_DEBUG
 #include "qdebug.h"
 
-#ifndef QT_NO_PROCESS
-
 #if defined QPROCESS_DEBUG
 #include "private/qtools_p.h"
 #include <ctype.h>
@@ -1045,5 +1043,3 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PROCESS

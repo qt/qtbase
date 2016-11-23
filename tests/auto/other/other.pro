@@ -57,6 +57,8 @@ cross_compile: SUBDIRS -= \
 
 !qtConfig(accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
 
+!qtConfig(process): SUBDIRS -= qprocess_and_guieventloop
+
 !mac: SUBDIRS -= \
            macgui \
            macnativeevents \
@@ -65,9 +67,6 @@ cross_compile: SUBDIRS -= \
 
 !embedded: SUBDIRS -= \
            qdirectpainter
-
-winrt: SUBDIRS -= \
-   qprocess_and_guieventloop
 
 android: SUBDIRS += \
     android

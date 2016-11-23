@@ -91,7 +91,7 @@ void tst_QUuid::initTestCase()
     //"{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}";
     uuidB = QUuid(0x1ab6e93a, 0xb1cb, 0x4a87, 0xba, 0x47, 0xec, 0x7e, 0x99, 0x03, 0x9a, 0x7b);
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     // chdir to the directory containing our testdata, then refer to it with relative paths
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessUniqueness")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
@@ -338,7 +338,7 @@ void tst_QUuid::threadUniqueness()
 
 void tst_QUuid::processUniqueness()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess process;
