@@ -1002,12 +1002,17 @@ void Moc::generate(FILE *out)
     fprintf(out, "#endif\n\n");
 
     fprintf(out, "QT_BEGIN_MOC_NAMESPACE\n");
+    fprintf(out, "QT_WARNING_PUSH\n");
+    fprintf(out, "QT_WARNING_DISABLE_DEPRECATED\n");
 
+    fputs("", out);
     for (i = 0; i < classList.size(); ++i) {
         Generator generator(&classList[i], metaTypes, knownQObjectClasses, knownGadgets, out);
         generator.generateCode();
     }
+    fputs("", out);
 
+    fprintf(out, "QT_WARNING_POP\n");
     fprintf(out, "QT_END_MOC_NAMESPACE\n");
 }
 
