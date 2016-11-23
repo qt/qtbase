@@ -159,12 +159,12 @@ public:
     Qt::TimeSpec timeSpec() const;
     void setTimeSpec(Qt::TimeSpec spec);
 
-    QSize sizeHint() const;
+    QSize sizeHint() const override;
 
-    virtual void clear();
-    virtual void stepBy(int steps);
+    void clear() override;
+    void stepBy(int steps) override;
 
-    bool event(QEvent *event);
+    bool event(QEvent *event) override;
 Q_SIGNALS:
     void dateTimeChanged(const QDateTime &dateTime);
     void timeChanged(const QTime &time);
@@ -176,20 +176,20 @@ public Q_SLOTS:
     void setTime(const QTime &time);
 
 protected:
-    virtual void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) override;
 #ifndef QT_NO_WHEELEVENT
-    virtual void wheelEvent(QWheelEvent *event);
+    void wheelEvent(QWheelEvent *event) override;
 #endif
-    virtual void focusInEvent(QFocusEvent *event);
-    virtual bool focusNextPrevChild(bool next);
-    virtual QValidator::State validate(QString &input, int &pos) const;
-    virtual void fixup(QString &input) const;
+    void focusInEvent(QFocusEvent *event) override;
+    bool focusNextPrevChild(bool next) override;
+    QValidator::State validate(QString &input, int &pos) const override;
+    void fixup(QString &input) const override;
 
     virtual QDateTime dateTimeFromText(const QString &text) const;
     virtual QString textFromDateTime(const QDateTime &dt) const;
-    virtual StepEnabled stepEnabled() const;
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void paintEvent(QPaintEvent *event);
+    StepEnabled stepEnabled() const override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
     void initStyleOption(QStyleOptionSpinBox *option) const;
 
     QDateTimeEdit(const QVariant &val, QVariant::Type parserType, QWidget *parent = Q_NULLPTR);

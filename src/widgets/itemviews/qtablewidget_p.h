@@ -99,11 +99,11 @@ public:
     QTableModel(int rows, int columns, QTableWidget *parent);
     ~QTableModel();
 
-    bool insertRows(int row, int count = 1, const QModelIndex &parent = QModelIndex());
-    bool insertColumns(int column, int count = 1, const QModelIndex &parent = QModelIndex());
+    bool insertRows(int row, int count = 1, const QModelIndex &parent = QModelIndex()) override;
+    bool insertColumns(int column, int count = 1, const QModelIndex &parent = QModelIndex()) override;
 
-    bool removeRows(int row, int count = 1, const QModelIndex &parent = QModelIndex());
-    bool removeColumns(int column, int count = 1, const QModelIndex &parent = QModelIndex());
+    bool removeRows(int row, int count = 1, const QModelIndex &parent = QModelIndex()) override;
+    bool removeColumns(int column, int count = 1, const QModelIndex &parent = QModelIndex()) override;
 
     void setItem(int row, int column, QTableWidgetItem *item);
     QTableWidgetItem *takeItem(int row, int column);
@@ -118,7 +118,7 @@ public:
     QTableWidgetItem *horizontalHeaderItem(int section);
     QTableWidgetItem *verticalHeaderItem(int section);
 
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override
         { return QAbstractTableModel::index(row, column, parent); }
 
     QModelIndex index(const QTableWidgetItem *item) const;
@@ -126,21 +126,21 @@ public:
     void setRowCount(int rows);
     void setColumnCount(int columns);
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role);
-    bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles);
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+    bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles) override;
 
-    QMap<int, QVariant> itemData(const QModelIndex &index) const;
+    QMap<int, QVariant> itemData(const QModelIndex &index) const override;
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-    bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role);
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role) override;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    void sort(int column, Qt::SortOrder order);
+    void sort(int column, Qt::SortOrder order) override;
     static bool itemLessThan(const QPair<QTableWidgetItem*,int> &left,
                              const QPair<QTableWidgetItem*,int> &right);
     static bool itemGreaterThan(const QPair<QTableWidgetItem*,int> &left,
@@ -167,11 +167,11 @@ public:
     void setItemPrototype(const QTableWidgetItem *item);
 
     // dnd
-    QStringList mimeTypes() const;
-    QMimeData *mimeData(const QModelIndexList &indexes) const;
+    QStringList mimeTypes() const override;
+    QMimeData *mimeData(const QModelIndexList &indexes) const override;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
-            int row, int column, const QModelIndex &parent);
-    Qt::DropActions supportedDropActions() const;
+            int row, int column, const QModelIndex &parent) override;
+    Qt::DropActions supportedDropActions() const override;
 
     QMimeData *internalMimeData()  const;
 

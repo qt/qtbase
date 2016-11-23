@@ -80,7 +80,7 @@ public:
     void embedSubWindow(QWidget *);
     void unembedSubWindow(QWidget *);
 
-    bool isProxyWidget() const;
+    bool isProxyWidget() const override;
 
     QPointer<QWidget> widget;
     QPointer<QWidget> lastWidgetUnderMouse;

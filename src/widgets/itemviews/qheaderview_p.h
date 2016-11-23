@@ -117,7 +117,7 @@ public:
     void resizeSections(QHeaderView::ResizeMode globalMode, bool useGlobalMode = false);
     void _q_sectionsRemoved(const QModelIndex &,int,int);
     void _q_layoutAboutToBeChanged();
-    void _q_layoutChanged();
+    void _q_layoutChanged() override;
 
     bool isSectionSelected(int section) const;
     bool isFirstVisibleSection(int section) const;

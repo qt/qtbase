@@ -167,10 +167,10 @@ private Q_SLOTS:
     void dateSelectionChanged();
 
 protected:
-    void hideEvent(QHideEvent *);
-    void mousePressEvent(QMouseEvent *e);
-    void mouseReleaseEvent(QMouseEvent *);
-    bool event(QEvent *e);
+    void hideEvent(QHideEvent *) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+    bool event(QEvent *e) override;
 
 private:
     QCalendarWidget *verifyCalendarInstance();

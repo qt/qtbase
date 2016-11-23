@@ -93,22 +93,22 @@ public:
     QListWidgetItem *take(int row);
     void move(int srcRow, int dstRow);
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
     QModelIndex index(QListWidgetItem *item) const;
-    QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const override;
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role);
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 
-    QMap<int, QVariant> itemData(const QModelIndex &index) const;
+    QMap<int, QVariant> itemData(const QModelIndex &index) const override;
 
-    bool insertRows(int row, int count = 1, const QModelIndex &parent = QModelIndex());
-    bool removeRows(int row, int count = 1, const QModelIndex &parent = QModelIndex());
+    bool insertRows(int row, int count = 1, const QModelIndex &parent = QModelIndex()) override;
+    bool removeRows(int row, int count = 1, const QModelIndex &parent = QModelIndex()) override;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    void sort(int column, Qt::SortOrder order);
+    void sort(int column, Qt::SortOrder order) override;
     void ensureSorted(int column, Qt::SortOrder order, int start, int end);
     static bool itemLessThan(const QPair<QListWidgetItem*,int> &left,
                              const QPair<QListWidgetItem*,int> &right);
@@ -122,12 +122,12 @@ public:
     void itemChanged(QListWidgetItem *item);
 
     // dnd
-    QStringList mimeTypes() const;
-    QMimeData *mimeData(const QModelIndexList &indexes) const;
+    QStringList mimeTypes() const override;
+    QMimeData *mimeData(const QModelIndexList &indexes) const override;
 #ifndef QT_NO_DRAGANDDROP
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
-                      int row, int column, const QModelIndex &parent);
-    Qt::DropActions supportedDropActions() const;
+                      int row, int column, const QModelIndex &parent) override;
+    Qt::DropActions supportedDropActions() const override;
 #endif
 
     QMimeData *internalMimeData()  const;

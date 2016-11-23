@@ -86,9 +86,9 @@ public:
     void setDefaultUp(bool);
     bool isDefaultUp() const;
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
-    int heightForWidth(int) const;
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
+    int heightForWidth(int) const override;
 
     QRect actionGeometry(QAction *) const;
     QAction *actionAt(const QPoint &) const;
@@ -104,27 +104,27 @@ public:
     void setNativeMenuBar(bool nativeMenuBar);
     QPlatformMenuBar *platformMenuBar();
 public Q_SLOTS:
-    virtual void setVisible(bool visible);
+    void setVisible(bool visible) override;
 
 Q_SIGNALS:
     void triggered(QAction *action);
     void hovered(QAction *action);
 
 protected:
-    void changeEvent(QEvent *);
-    void keyPressEvent(QKeyEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
-    void mousePressEvent(QMouseEvent *);
-    void mouseMoveEvent(QMouseEvent *);
-    void leaveEvent(QEvent *);
-    void paintEvent(QPaintEvent *);
-    void resizeEvent(QResizeEvent *);
-    void actionEvent(QActionEvent *);
-    void focusOutEvent(QFocusEvent *);
-    void focusInEvent(QFocusEvent *);
-    void timerEvent(QTimerEvent *);
-    bool eventFilter(QObject *, QEvent *);
-    bool event(QEvent *);
+    void changeEvent(QEvent *) override;
+    void keyPressEvent(QKeyEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+    void leaveEvent(QEvent *) override;
+    void paintEvent(QPaintEvent *) override;
+    void resizeEvent(QResizeEvent *) override;
+    void actionEvent(QActionEvent *) override;
+    void focusOutEvent(QFocusEvent *) override;
+    void focusInEvent(QFocusEvent *) override;
+    void timerEvent(QTimerEvent *) override;
+    bool eventFilter(QObject *, QEvent *) override;
+    bool event(QEvent *) override;
     void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
 
 private:

@@ -54,11 +54,11 @@ public:
     QMacNativeWidget(NSView *parentView = Q_NULLPTR);
     ~QMacNativeWidget();
 
-    QSize sizeHint() const;
+    QSize sizeHint() const override;
     NSView *nativeView() const;
 
 protected:
-    bool event(QEvent *ev);
+    bool event(QEvent *ev) override;
 };
 
 QT_END_NAMESPACE

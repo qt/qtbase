@@ -81,8 +81,8 @@ public:
     inline QStandardItemEditorCreator()
         : propertyName(T::staticMetaObject.userProperty().name())
     {}
-    inline QWidget *createWidget(QWidget *parent) const { return new T(parent); }
-    inline QByteArray valuePropertyName() const { return propertyName; }
+    inline QWidget *createWidget(QWidget *parent) const override { return new T(parent); }
+    inline QByteArray valuePropertyName() const override { return propertyName; }
 
 private:
     QByteArray propertyName;
