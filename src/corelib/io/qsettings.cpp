@@ -2705,6 +2705,7 @@ void QSettings::sync()
 {
     Q_D(QSettings);
     d->sync();
+    d->pendingChanges = false;
 }
 
 /*!
