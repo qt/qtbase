@@ -7,8 +7,6 @@ HEADERS += kernel/qtnetworkglobal.h \
            kernel/qtnetworkglobal_p.h \
            kernel/qauthenticator.h \
 	   kernel/qauthenticator_p.h \
-           kernel/qdnslookup.h \
-           kernel/qdnslookup_p.h \
            kernel/qhostaddress.h \
            kernel/qhostaddress_p.h \
            kernel/qhostinfo.h \
@@ -21,7 +19,6 @@ HEADERS += kernel/qtnetworkglobal.h \
            kernel/qnetworkproxy.h
 
 SOURCES += kernel/qauthenticator.cpp \
-           kernel/qdnslookup.cpp \
            kernel/qhostaddress.cpp \
            kernel/qhostinfo.cpp \
            kernel/qnetworkdatagram.cpp \
@@ -33,15 +30,22 @@ qtConfig(ftp) {
     SOURCES += kernel/qurlinfo.cpp
 }
 
+qtConfig(dnslookup) {
+    HEADERS += kernel/qdnslookup.h \
+               kernel/qdnslookup_p.h
+
+    SOURCES += kernel/qdnslookup.cpp
+}
+
 unix {
-    !integrity: SOURCES += kernel/qdnslookup_unix.cpp
+    !integrity:qtConfig(dnslookup): SOURCES += kernel/qdnslookup_unix.cpp
     SOURCES += kernel/qhostinfo_unix.cpp
 
     qtConfig(linux-netlink): SOURCES += kernel/qnetworkinterface_linux.cpp
     else: SOURCES += kernel/qnetworkinterface_unix.cpp
 }
 
-android {
+android:qtConfig(dnslookup) {
     SOURCES -= kernel/qdnslookup_unix.cpp
     SOURCES += kernel/qdnslookup_android.cpp
 }
@@ -50,12 +54,12 @@ win32: {
     SOURCES += kernel/qhostinfo_win.cpp
 
     !winrt {
-        SOURCES += kernel/qdnslookup_win.cpp \
-                   kernel/qnetworkinterface_win.cpp
+        SOURCES += kernel/qnetworkinterface_win.cpp
+        qtConfig(dnslookup): SOURCES += kernel/qdnslookup_win.cpp
         LIBS_PRIVATE += -ldnsapi -liphlpapi
     } else {
-        SOURCES += kernel/qdnslookup_winrt.cpp \
-                   kernel/qnetworkinterface_winrt.cpp
+        SOURCES += kernel/qnetworkinterface_winrt.cpp
+        qtConfig(dnslookup): SOURCES += kernel/qdnslookup_winrt.cpp
     }
 }
 

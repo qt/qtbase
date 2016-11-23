@@ -47,6 +47,8 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
 
+QT_REQUIRE_CONFIG(dnslookup);
+
 QT_BEGIN_NAMESPACE
 
 class QHostAddress;

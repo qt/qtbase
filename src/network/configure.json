@@ -293,6 +293,12 @@
             "section": "Networking",
             "condition": "features.temporaryfile",
             "output": [ "publicFeature", "feature" ]
+        },
+        "dnslookup": {
+            "label": "QDnsLookup",
+            "purpose": "Provides API for DNS lookups.",
+            "section": "Networking",
+            "output": [ "publicFeature" ]
         }
     },
 
