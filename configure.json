@@ -951,6 +951,10 @@
                 { "type": "publicQtConfig", "negative": true }
             ]
         },
+        "xml": {
+            "label": "Qt Xml",
+            "output": [ "privateFeature" ]
+        },
         "libudev": {
             "label": "udev",
             "condition": "libs.libudev",
@@ -1138,7 +1142,8 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 "network",
                 "sql",
                 "testlib",
-                "widgets"
+                "widgets",
+                "xml"
             ]
         }, {
             "section": "Support enabled for",
