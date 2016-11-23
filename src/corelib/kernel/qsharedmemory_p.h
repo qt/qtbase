@@ -53,6 +53,8 @@
 
 #include "qsharedmemory.h"
 
+#include <QtCore/qstring.h>
+
 #ifdef QT_NO_SHAREDMEMORY
 # ifndef QT_NO_SYSTEMSEMAPHORE
 namespace QSharedMemoryPrivate
