@@ -188,12 +188,6 @@ BEGIN {
     values["LITERAL_WHITESPACE"] = " "
     values["LITERAL_DOLLAR"] = "$"
 }
-/^!?host_build:/ {
-    scopeStart = index($0, ":") + 1
-    condition = substr($0, 0, scopeStart - 2)
-    if (condition != "'"$1"'") { next }
-    $0 = substr($0, scopeStart)
-}
 /^[_A-Z0-9.]+[ \t]*\+?=/ {
     valStart = index($0, "=") + 1
 
@@ -318,7 +312,7 @@ macSDKify()
 getQMakeConf()
 {
     if [ -z "$specvals" ]; then
-        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" "$HOST_VARS_FILE" | extractQMakeVariables "host_build"`
+        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" "$HOST_VARS_FILE" | extractQMakeVariables`
         if [ "$BUILD_ON_MAC" = "yes" ]; then specvals=$(macSDKify "$specvals"); fi
     fi
     getSingleQMakeVariable "$1" "$specvals"
@@ -327,7 +321,7 @@ getQMakeConf()
 getXQMakeConf()
 {
     if [ -z "$xspecvals" ]; then
-        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" "$DEVICE_VARS_FILE" | extractQMakeVariables "!host_build"`
+        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" "$DEVICE_VARS_FILE" | extractQMakeVariables`
         if [ "$XPLATFORM_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
     fi
     getSingleQMakeVariable "$1" "$xspecvals"
@@ -683,7 +677,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            DeviceVar set !host_build:QMAKE_MAC_SDK "$VAL"
+            DeviceVar set QMAKE_MAC_SDK "$VAL"
             OPT_MAC_SDK="$VAL"
         else
             UNKNOWN_OPT=yes
