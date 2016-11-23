@@ -40,7 +40,6 @@
 #include "qexception.h"
 #include "QtCore/qshareddata.h"
 
-#if !defined(QT_NO_QFUTURE) || defined(Q_CLANG_QDOC)
 #if !defined(QT_NO_EXCEPTIONS) || defined(Q_CLANG_QDOC)
 
 QT_BEGIN_NAMESPACE
@@ -225,4 +224,3 @@ bool ExceptionStore::hasThrown() const { return exceptionHolder.base->hasThrown;
 QT_END_NAMESPACE
 
 #endif // QT_NO_EXCEPTIONS
-#endif // QT_NO_QFUTURE

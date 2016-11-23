@@ -54,9 +54,9 @@
 #include "qfutureinterface_p.h"
 #include <qlist.h>
 
-#ifndef QT_NO_QFUTURE
-
 #include <private/qobject_p.h>
+
+QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
@@ -84,5 +84,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_QFUTURE
 #endif

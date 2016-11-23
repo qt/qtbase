@@ -42,10 +42,10 @@
 
 #include <QtCore/qglobal.h>
 
-#if !defined(QT_NO_QFUTURE) || defined(Q_CLANG_QDOC)
-
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qstring.h>
+
+QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
@@ -246,7 +246,5 @@ QFuture<void> qToVoidFuture(const QFuture<T> &future)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QFUTURE
 
 #endif // QFUTURE_H

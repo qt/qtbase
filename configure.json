@@ -1055,10 +1055,17 @@
             "condition": "libs.zlib",
             "output": [ "privateFeature" ]
         },
+        "future": {
+            "label": "QFuture",
+            "purpose": "Provides QFuture and related classes.",
+            "section": "Kernel",
+            "output": [ "publicFeature" ]
+        },
         "concurrent": {
             "label": "Qt Concurrent",
             "purpose": "Provides a high-level multi-threading API.",
             "section": "Kernel",
+            "condition": "features.future",
             "output": [ "publicFeature", "feature" ]
         },
         "dbus": {

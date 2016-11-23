@@ -42,7 +42,7 @@
 
 #include <QtCore/qfuture.h>
 
-#ifndef QT_NO_QFUTURE
+QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
@@ -110,6 +110,5 @@ protected:
 };
 
 QT_END_NAMESPACE
-#endif // QT_NO_QFUTURE
 
 #endif // QFUTURESYNCHRONIZER_H

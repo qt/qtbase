@@ -41,10 +41,9 @@
 #define QFUTUREWATCHER_H
 
 #include <QtCore/qfuture.h>
-
-#ifndef QT_NO_QFUTURE
-
 #include <QtCore/qobject.h>
+
+QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
@@ -212,6 +211,5 @@ Q_INLINE_TEMPLATE void QFutureWatcher<void>::setFuture(const QFuture<void> &_fut
 }
 
 QT_END_NAMESPACE
-#endif // QT_NO_QFUTURE
 
 #endif // QFUTUREWATCHER_H

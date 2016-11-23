@@ -40,16 +40,14 @@
 #ifndef QTCORE_QEXCEPTION_H
 #define QTCORE_QEXCEPTION_H
 
-#include <QtCore/qglobal.h>
-
-#ifndef QT_NO_QFUTURE
-
 #include <QtCore/qatomic.h>
 #include <QtCore/qshareddata.h>
 
 #ifndef QT_NO_EXCEPTIONS
 #  include <exception>
 #endif
+
+QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
@@ -127,7 +125,5 @@ public:
 #endif // QT_NO_EXCEPTIONS
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QFUTURE
 
 #endif

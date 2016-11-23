@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include "qfuturewatcher.h"
-
-#ifndef QT_NO_QFUTURE
-
 #include "qfuturewatcher_p.h"
 
 #include <QtCore/qcoreevent.h>
@@ -593,5 +590,3 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
 QT_END_NAMESPACE
 
 #include "moc_qfuturewatcher.cpp"
-
-#endif // QT_NO_QFUTURE

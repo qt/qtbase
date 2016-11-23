@@ -39,9 +39,6 @@
 
 // qfutureinterface.h included from qfuture.h
 #include "qfuture.h"
-
-#ifndef QT_NO_QFUTURE
-
 #include "qfutureinterface_p.h"
 
 #include <QtCore/qatomic.h>
@@ -604,5 +601,3 @@ void QFutureInterfaceBasePrivate::setState(QFutureInterfaceBase::State newState)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QFUTURE
