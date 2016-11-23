@@ -102,6 +102,8 @@ public Q_SLOTS:
     void cursorRectChanged();
     void deleteSurroundingText(int offset, uint n_chars);
     void surroundingTextRequired();
+    void hidePreeditText();
+    void showPreeditText();
     void filterEventFinished(QDBusPendingCallWatcher *call);
     void socketChanged(const QString &str);
     void connectToBus();

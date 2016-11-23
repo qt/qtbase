@@ -90,6 +90,7 @@ public:
     bool valid;
     bool busConnected;
     QString predit;
+    QList<QInputMethodEvent::Attribute> attributes;
     bool needsSurroundingText;
     QLocale locale;
 };
@@ -154,6 +155,7 @@ void QIBusPlatformInputContext::reset()
 
     d->context->Reset();
     d->predit = QString();
+    d->attributes.clear();
 }
 
 void QIBusPlatformInputContext::commit()
@@ -166,6 +168,7 @@ void QIBusPlatformInputContext::commit()
     QObject *input = qApp->focusObject();
     if (!input) {
         d->predit = QString();
+        d->attributes.clear();
         return;
     }
 
@@ -177,6 +180,7 @@ void QIBusPlatformInputContext::commit()
 
     d->context->Reset();
     d->predit = QString();
+    d->attributes.clear();
 }
 
 
@@ -263,6 +267,7 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
     QCoreApplication::sendEvent(input, &event);
 
     d->predit = QString();
+    d->attributes.clear();
 }
 
 void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint cursorPos, bool visible)
@@ -281,11 +286,11 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
     if (debug)
         qDebug() << "preedit text:" << t.text;
 
-    QList<QInputMethodEvent::Attribute> attributes = t.attributes.imAttributes();
+    d->attributes = t.attributes.imAttributes();
     if (!t.text.isEmpty())
-        attributes += QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursorPos, visible ? 1 : 0);
+        d->attributes += QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursorPos, visible ? 1 : 0, QVariant());
 
-    QInputMethodEvent event(t.text, attributes);
+    QInputMethodEvent event(t.text, d->attributes);
     QCoreApplication::sendEvent(input, &event);
 
     d->predit = t.text;
@@ -310,6 +315,27 @@ void QIBusPlatformInputContext::deleteSurroundingText(int offset, uint n_chars)
 
     QInputMethodEvent event;
     event.setCommitString("", offset, n_chars);
+    QCoreApplication::sendEvent(input, &event);
+}
+
+void QIBusPlatformInputContext::hidePreeditText()
+{
+    QObject *input = QGuiApplication::focusObject();
+    if (!input)
+        return;
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    QInputMethodEvent event(QString(), attributes);
+    QCoreApplication::sendEvent(input, &event);
+}
+
+void QIBusPlatformInputContext::showPreeditText()
+{
+    QObject *input = QGuiApplication::focusObject();
+    if (!input)
+        return;
+
+    QInputMethodEvent event(d->predit, d->attributes);
     QCoreApplication::sendEvent(input, &event);
 }
 
@@ -487,6 +513,8 @@ void QIBusPlatformInputContext::connectToContextSignals()
         connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
         connect(d->context, SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
         connect(d->context, SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
+        connect(d->context, SIGNAL(HidePreeditText()), this, SLOT(hidePreeditText()));
+        connect(d->context, SIGNAL(ShowPreeditText()), this, SLOT(showPreeditText()));
     }
 }
 
