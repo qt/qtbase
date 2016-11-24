@@ -437,6 +437,237 @@ defineTest(qtConfTest_checkCompiler) {
 
 # custom outputs
 
+# type (empty or 'host'), option name, default value
+defineTest(processQtPath) {
+    out_var = config.rel_input.$${2}
+    path = $$eval(config.input.$${2})
+    isEmpty(path) {
+        $$out_var = $$3
+    } else {
+        path = $$absolute_path($$path, $$OUT_PWD)
+        rel = $$relative_path($$path, $$eval(config.input.$${1}prefix))
+        isEmpty(rel) {
+            $$out_var = .
+        } else: contains(rel, \.\..*) {
+            !equals(2, sysconfdir) {
+                PREFIX_COMPLAINTS += "-$$2 is not a subdirectory of -$${1}prefix."
+                export(PREFIX_COMPLAINTS)
+                !$$eval(have_$${1}prefix) {
+                    PREFIX_REMINDER = true
+                    export(PREFIX_REMINDER)
+                }
+            }
+            $$out_var = $$path
+        } else {
+            $$out_var = $$rel
+        }
+    }
+    export($$out_var)
+}
+
+defineTest(addConfStr) {
+    QT_CONFIGURE_STR_OFFSETS += "    $$QT_CONFIGURE_STR_OFF,"
+    QT_CONFIGURE_STRS += "    \"$$1\\0\""
+    QT_CONFIGURE_STR_OFF = $$num_add($$QT_CONFIGURE_STR_OFF, $$str_size($$1), 1)
+    export(QT_CONFIGURE_STR_OFFSETS)
+    export(QT_CONFIGURE_STRS)
+    export(QT_CONFIGURE_STR_OFF)
+}
+
+defineReplace(printInstallPath) {
+    val = $$eval(config.rel_input.$$2)
+    equals(val, $$3): return()
+    return("$$1=$$val")
+}
+
+defineReplace(printInstallPaths) {
+    ret = \
+        $$printInstallPath(Documentation, docdir, doc) \
+        $$printInstallPath(Headers, headerdir, include) \
+        $$printInstallPath(Libraries, libdir, lib) \
+        $$printInstallPath(LibraryExecutables, libexecdir, $$DEFAULT_LIBEXEC) \
+        $$printInstallPath(Binaries, bindir, bin) \
+        $$printInstallPath(Plugins, plugindir, plugins) \
+        $$printInstallPath(Imports, importdir, imports) \
+        $$printInstallPath(Qml2Imports, qmldir, qml) \
+        $$printInstallPath(ArchData, archdatadir, .) \
+        $$printInstallPath(Data, datadir, .) \
+        $$printInstallPath(Translations, translationdir, translations) \
+        $$printInstallPath(Examples, examplesdir, examples) \
+        $$printInstallPath(Tests, testsdir, tests)
+    return($$ret)
+}
+
+defineReplace(printHostPaths) {
+    ret = \
+        "HostPrefix=$$config.input.hostprefix" \
+        $$printInstallPath(HostBinaries, hostbindir, bin) \
+        $$printInstallPath(HostLibraries, hostlibdir, lib) \
+        $$printInstallPath(HostData, hostdatadir, .) \
+        "Sysroot=$$config.input.sysroot" \
+        "TargetSpec=$$[QMAKE_XSPEC]" \
+        "HostSpec=$$[QMAKE_SPEC]"
+    return($$ret)
+}
+
+defineTest(qtConfOutput_preparePaths) {
+    isEmpty(config.input.prefix) {
+        $$qtConfEvaluate("features.developer-build"): \
+            config.input.prefix = $$QT_BUILD_TREE  # In Development, we use sandboxed builds by default
+        else: \
+            config.input.prefix = /usr/local/Qt-$$[QT_VERSION]
+        have_prefix = false
+    } else {
+        config.input.prefix = $$absolute_path($$config.input.prefix, $$OUT_PWD)
+        have_prefix = true
+    }
+
+    isEmpty(config.input.extprefix) {
+        config.input.extprefix = $$config.input.prefix
+        !isEmpty(config.input.sysroot): \
+            qmake_sysrootify = true
+        else: \
+            qmake_sysrootify = false
+    } else {
+        config.input.extprefix = $$absolute_path($$config.input.extprefix, $$OUT_PWD)
+        qmake_sysrootify = false
+    }
+
+    isEmpty(config.input.hostprefix) {
+        $$qmake_sysrootify: \
+            config.input.hostprefix = $$config.input.sysroot$$config.input.extprefix
+        else: \
+            config.input.hostprefix = $$config.input.extprefix
+        have_hostprefix = false
+    } else {
+        isEqual(config.input.hostprefix, yes): \
+            config.input.hostprefix = $$QT_BUILD_TREE
+        else: \
+            config.input.hostprefix = $$absolute_path($$config.input.hostprefix, $$OUT_PWD)
+        have_hostprefix = true
+    }
+
+    PREFIX_COMPLAINTS =
+    PREFIX_REMINDER = false
+    win32: \
+        DEFAULT_LIBEXEC = bin
+    else: \
+        DEFAULT_LIBEXEC = libexec
+    darwin: \
+        DEFAULT_SYSCONFDIR = /Library/Preferences/Qt
+    else: \
+        DEFAULT_SYSCONFDIR = etc/xdg
+
+    processQtPath("", headerdir, include)
+    processQtPath("", libdir, lib)
+    processQtPath("", bindir, bin)
+    processQtPath("", datadir, .)
+    !equals(config.rel_input.datadir, .): \
+        data_pfx = $$config.rel_input.datadir/
+    processQtPath("", docdir, $${data_pfx}doc)
+    processQtPath("", translationdir, $${data_pfx}translations)
+    processQtPath("", examplesdir, $${data_pfx}examples)
+    processQtPath("", testsdir, tests)
+    processQtPath("", archdatadir, .)
+    !equals(config.rel_input.archdatadir, .): \
+        archdata_pfx = $$config.rel_input.archdatadir/
+    processQtPath("", libexecdir, $${archdata_pfx}$$DEFAULT_LIBEXEC)
+    processQtPath("", plugindir, $${archdata_pfx}plugins)
+    processQtPath("", importdir, $${archdata_pfx}imports)
+    processQtPath("", qmldir, $${archdata_pfx}qml)
+    processQtPath("", sysconfdir, $$DEFAULT_SYSCONFDIR)
+    $$have_hostprefix {
+        processQtPath(host, hostbindir, bin)
+        processQtPath(host, hostlibdir, lib)
+        processQtPath(host, hostdatadir, .)
+    } else {
+        processQtPath(host, hostbindir, $$config.rel_input.bindir)
+        processQtPath(host, hostlibdir, $$config.rel_input.libdir)
+        processQtPath(host, hostdatadir, $$config.rel_input.archdatadir)
+    }
+
+    !isEmpty(PREFIX_COMPLAINTS) {
+        PREFIX_COMPLAINTS = "$$join(PREFIX_COMPLAINTS, "$$escape_expand(\\n)Note: ")"
+        $$PREFIX_REMINDER: \
+            PREFIX_COMPLAINTS += "Maybe you forgot to specify -prefix/-hostprefix?"
+        qtConfAddNote($$PREFIX_COMPLAINTS)
+    }
+
+    # populate qconfig.cpp (for qtcore)
+
+    QT_CONFIGURE_STR_OFF = 0
+    QT_CONFIGURE_STR_OFFSETS =
+    QT_CONFIGURE_STRS =
+
+    addConfStr($$config.rel_input.docdir)
+    addConfStr($$config.rel_input.headerdir)
+    addConfStr($$config.rel_input.libdir)
+    addConfStr($$config.rel_input.libexecdir)
+    addConfStr($$config.rel_input.bindir)
+    addConfStr($$config.rel_input.plugindir)
+    addConfStr($$config.rel_input.importdir)
+    addConfStr($$config.rel_input.qmldir)
+    addConfStr($$config.rel_input.archdatadir)
+    addConfStr($$config.rel_input.datadir)
+    addConfStr($$config.rel_input.translationdir)
+    addConfStr($$config.rel_input.examplesdir)
+    addConfStr($$config.rel_input.testsdir)
+
+    $${currentConfig}.output.qconfigSource = \
+        "/* Installation date */" \
+        "static const char qt_configure_installation     [12+11]  = \"qt_instdate=2012-12-20\";" \
+        "" \
+        "/* Installation Info */" \
+        "static const char qt_configure_prefix_path_str  [12+256] = \"qt_prfxpath=$$config.input.prefix\";" \
+        "" \
+        "static const short qt_configure_str_offsets[] = {" \
+        $$QT_CONFIGURE_STR_OFFSETS \
+        "};" \
+        "static const char qt_configure_strs[] =" \
+        $$QT_CONFIGURE_STRS \
+        ";" \
+        "" \
+        "$${LITERAL_HASH}define QT_CONFIGURE_SETTINGS_PATH \"$$config.rel_input.sysconfdir\"" \
+        "" \
+        "$${LITERAL_HASH}define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12"
+    export($${currentConfig}.output.qconfigSource)
+
+    # populate qmake/builtin-qt.conf
+
+    $${currentConfig}.output.builtinQtConf = \
+        " " \
+        "===========================================================" \
+        "==================== qt.conf beginning ====================" \
+        "===========================================================" \
+        "[Paths]" \
+        "ExtPrefix=$$config.input.extprefix" \
+        "Prefix=$$config.input.prefix" \
+        $$printInstallPaths() \
+        "Settings=$$config.rel_input.sysconfdir" \
+        $$printHostPaths()
+    export($${currentConfig}.output.builtinQtConf)
+
+    # create bin/qt.conf. this doesn't use the regular file output
+    # mechanism, as the file is relied upon by configure tests.
+
+    cont = \
+        "[EffectivePaths]" \
+        "Prefix=.." \
+        "[DevicePaths]" \
+        "Prefix=$$config.input.prefix" \
+        $$printInstallPaths() \
+        "[Paths]" \
+        "Prefix=$$config.input.extprefix" \
+        $$printInstallPaths() \
+        $$printHostPaths()
+    !equals(QT_SOURCE_TREE, $$QT_BUILD_TREE): \
+        cont += \
+            "[EffectiveSourcePaths]" \
+            "Prefix=$$QT_SOURCE_TREE"
+    write_file($$QT_BUILD_TREE/bin/qt.conf, cont)|error()
+    reload_properties()
+}
+
 defineTest(qtConfOutput_shared) {
     !$${2}: return()
 

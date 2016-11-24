@@ -1,5 +1,7 @@
 {
     "files": {
+        "builtinQtConf": "qmake/builtin-qt.conf",
+        "qconfigSource": "src/corelib/global/qconfig.cpp",
         "publicHeader": "src/corelib/global/qconfig.h",
         "privateHeader": "src/corelib/global/qconfig_p.h",
         "publicPro": "mkspecs/qconfig.pri",
@@ -43,7 +45,7 @@
             "libexecdir": "string",
             "plugindir": "string",
             "qmldir": "string",
-            "settingsdir": "string",
+            "settingsdir": { "type": "string", "name": "sysconfdir" },
             "sysconfdir": "string",
             "testsdir": "string",
             "translationdir": "string",
@@ -416,6 +418,9 @@
     },
 
     "features": {
+        "prepare": {
+            "output": [ "preparePaths" ]
+        },
         "android-style-assets": {
             "label": "Android Style Assets",
             "condition": "config.android",
@@ -967,6 +972,10 @@
     },
 
     "earlyReport": [
+        {
+            "condition": "!features.prepare",
+            "comment": "This is not an actual report - instead, it activates the early setup."
+        },
         {
             "type": "fatal",
             "condition": "!call.licenseCheck",

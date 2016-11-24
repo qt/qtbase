@@ -45,9 +45,6 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
-    // Source file with path settings. Needed by qmake.
-    app.generateQConfigCpp();
-
     // Bootstrapped includes. Needed by qmake.
     app.generateHeaders();
     if (!app.isOk())

@@ -1675,7 +1675,7 @@ defineTest(qtConfProcessOutput) {
                 $${currentConfig}.output.$$type += "$$k -= $$eval($${currentConfig}.output.$${type}.remove.$$k)"
             for (k, $${currentConfig}.output.$${type}.append._KEYS_): \
                 $${currentConfig}.output.$$type += "$$k += $$eval($${currentConfig}.output.$${type}.append.$$k)"
-        } else {
+        } else: contains(type, ".*Header") {
             for (define, $${currentConfig}.output.$${type}._KEYS_) {
                 value = $$eval($${currentConfig}.output.$${type}.$${define})
                 $${currentConfig}.output.$$type += "$${LITERAL_HASH}define $$define $$value"

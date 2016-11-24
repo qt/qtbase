@@ -66,7 +66,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/io/qdir.cpp $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp $(SOURCE_PATH)/src/corelib/tools/qmap.cpp \
-	   $(SOURCE_PATH)/src/corelib/global/qconfig.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstringbuilder.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp \
@@ -225,7 +224,7 @@ qsettings.o: $(SOURCE_PATH)/src/corelib/io/qsettings.cpp
 qsystemerror.o: $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 
-qlibraryinfo.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(BUILD_PATH)/src/corelib/global/qconfig.cpp
+qlibraryinfo.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
 
 qnumeric.o: $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp

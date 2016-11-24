@@ -44,7 +44,6 @@ public:
 
     void parseCmdLine();
 
-    void generateQConfigCpp();
     void buildQmake();
 
     void prepareConfigureInput();
@@ -55,8 +54,6 @@ public:
 
     bool isDone();
     bool isOk();
-
-    int platform() const;
 
 private:
     int verbose;
@@ -72,11 +69,6 @@ private:
     QString sourcePathMangled, buildPathMangled;
     QDir sourceDir, buildDir;
 
-    QString confStrOffsets[2];
-    QString confStrings[2];
-    int confStringOff;
-
-    void addConfStr(int group, const QString &val);
     QString formatPath(const QString &path);
 
     bool reloadCmdLine(int idx);
