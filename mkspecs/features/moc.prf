@@ -28,6 +28,7 @@ win32:count(MOC_INCLUDEPATH, 40, >) {
 # UIKit builds are always multi-arch due to simulator_and_device (unless
 # -sdk is used) so this feature cannot possibly work.
 if(gcc|intel_icl|msvc):!rim_qcc:!uikit {
+    moc_predefs.name = "Generate moc_predefs.h"
     moc_predefs.CONFIG = no_link
     gcc:            moc_predefs.commands = $$QMAKE_CXX $$QMAKE_CXXFLAGS -dM -E -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
     else:intel_icl: moc_predefs.commands = $$QMAKE_CXX $$QMAKE_CXXFLAGS -QdM -P -Fi${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
