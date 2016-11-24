@@ -888,12 +888,12 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
     State state = Acceptable;
 
     QDateTime newCurrentValue;
-    int pos = 0;
     bool conflicts = false;
     const int sectionNodesCount = sectionNodes.size();
 
     QDTPDEBUG << "parse" << input;
     {
+        int pos = 0;
         int year, month, day;
         const QDate currentDate = currentValue.date();
         const QTime currentTime = currentValue.time();
