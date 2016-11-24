@@ -108,19 +108,19 @@ public:
     explicit QMimeTypeParser(QMimeXMLProvider &provider) : m_provider(provider) {}
 
 protected:
-    inline bool process(const QMimeType &t, QString *)
+    inline bool process(const QMimeType &t, QString *) override
     { m_provider.addMimeType(t); return true; }
 
-    inline bool process(const QMimeGlobPattern &glob, QString *)
+    inline bool process(const QMimeGlobPattern &glob, QString *) override
     { m_provider.addGlobPattern(glob); return true; }
 
-    inline void processParent(const QString &child, const QString &parent)
+    inline void processParent(const QString &child, const QString &parent) override
     { m_provider.addParent(child, parent); }
 
-    inline void processAlias(const QString &alias, const QString &name)
+    inline void processAlias(const QString &alias, const QString &name) override
     { m_provider.addAlias(alias, name); }
 
-    inline void processMagicMatcher(const QMimeMagicRuleMatcher &matcher)
+    inline void processMagicMatcher(const QMimeMagicRuleMatcher &matcher) override
     { m_provider.addMagicMatcher(matcher); }
 
 private:

@@ -3690,6 +3690,9 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
     if ((d->sectionIsPresent & mask) != (url.d->sectionIsPresent & mask))
         return false;
 
+    if (options & QUrl::RemovePath)
+        return true;
+
     // Compare paths, after applying path-related options
     QString path1;
     d->appendPath(path1, options, QUrlPrivate::Path);

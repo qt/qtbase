@@ -952,8 +952,8 @@ QFontEngine *loadSingleEngine(int script,
                     return 0;
                 }
 
+                engine->isSmoothlyScalable = style->smoothScalable;
                 fontCache->insertEngine(key, engine);
-
                 return engine;
             }
         }
@@ -978,6 +978,7 @@ QFontEngine *loadSingleEngine(int script,
                 return 0;
             }
 
+            engine->isSmoothlyScalable = style->smoothScalable;
             fontCache->insertEngine(key, engine);
 
             if (Q_LIKELY(cacheForCommonScript && !engine->symbol)) {
