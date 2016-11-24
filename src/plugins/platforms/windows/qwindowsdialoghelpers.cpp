@@ -212,15 +212,6 @@ private:
 */
 
 template <class BaseClass>
-QWindowsDialogHelperBase<BaseClass>::QWindowsDialogHelperBase() :
-    m_nativeDialog(0),
-    m_ownerWindow(0),
-    m_timerId(0),
-    m_thread(0)
-{
-}
-
-template <class BaseClass>
 void QWindowsDialogHelperBase<BaseClass>::cleanupThread()
 {
     if (m_thread) { // Thread may be running if the dialog failed to close.
@@ -549,11 +540,11 @@ public:
     IFACEMETHODIMP OnOverwrite(IFileDialog *, IShellItem *, FDE_OVERWRITE_RESPONSE *) { return S_OK; }
 
     QWindowsNativeFileDialogEventHandler(QWindowsNativeFileDialogBase *nativeFileDialog) :
-        m_ref(1), m_nativeFileDialog(nativeFileDialog) {}
+        m_nativeFileDialog(nativeFileDialog) {}
     virtual ~QWindowsNativeFileDialogEventHandler() {}
 
 private:
-    long m_ref;
+    long m_ref = 1;
     QWindowsNativeFileDialogBase *m_nativeFileDialog;
 };
 
@@ -641,19 +632,18 @@ protected:
     QWindowsFileDialogSharedData &data() { return m_data; }
 
 private:
-    IFileDialog *m_fileDialog;
-    IFileDialogEvents *m_dialogEvents;
-    DWORD m_cookie;
+    IFileDialog *m_fileDialog = nullptr;
+    IFileDialogEvents *m_dialogEvents = nullptr;
+    DWORD m_cookie = 0;
     QStringList m_nameFilters;
-    bool m_hideFiltersDetails;
-    bool m_hasDefaultSuffix;
+    bool m_hideFiltersDetails = false;
+    bool m_hasDefaultSuffix = false;
     QWindowsFileDialogSharedData m_data;
     QString m_title;
 };
 
 QWindowsNativeFileDialogBase::QWindowsNativeFileDialogBase(const QWindowsFileDialogSharedData &data) :
-    m_fileDialog(0), m_dialogEvents(0), m_cookie(0), m_hideFiltersDetails(false),
-    m_hasDefaultSuffix(false), m_data(data)
+    m_data(data)
 {
 }
 

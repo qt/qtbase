@@ -57,9 +57,6 @@ class QRect;
 
 struct QWindowsWinTab32DLL
 {
-    QWindowsWinTab32DLL() : wTOpen(0), wTClose(0), wTInfo(0), wTEnable(0), wTOverlap(0), wTPacketsGet(0), wTGet(0),
-        wTQueueSizeGet(0), wTQueueSizeSet(0) {}
-
     bool init();
 
     typedef HCTX (API *PtrWTOpen)(HWND, LPLOGCONTEXT, BOOL);
@@ -72,15 +69,15 @@ struct QWindowsWinTab32DLL
     typedef int  (API *PtrWTQueueSizeGet)(HCTX);
     typedef BOOL (API *PtrWTQueueSizeSet)(HCTX, int);
 
-    PtrWTOpen wTOpen;
-    PtrWTClose wTClose;
-    PtrWTInfo wTInfo;
-    PtrWTEnable wTEnable;
-    PtrWTOverlap wTOverlap;
-    PtrWTPacketsGet wTPacketsGet;
-    PtrWTGet wTGet;
-    PtrWTQueueSizeGet wTQueueSizeGet;
-    PtrWTQueueSizeSet wTQueueSizeSet;
+    PtrWTOpen wTOpen = nullptr;
+    PtrWTClose wTClose = nullptr;
+    PtrWTInfo wTInfo = nullptr;
+    PtrWTEnable wTEnable = nullptr;
+    PtrWTOverlap wTOverlap = nullptr;
+    PtrWTPacketsGet wTPacketsGet = nullptr;
+    PtrWTGet wTGet = nullptr;
+    PtrWTQueueSizeGet wTQueueSizeGet = nullptr;
+    PtrWTQueueSizeSet wTQueueSizeSet = nullptr;
 };
 
 struct QWindowsTabletDeviceData

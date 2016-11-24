@@ -185,14 +185,7 @@ static inline QTouchDevice *createTouchDevice()
     \ingroup qt-lighthouse-win
 */
 
-QWindowsMouseHandler::QWindowsMouseHandler() :
-    m_windowUnderMouse(0),
-    m_trackedWindow(0),
-    m_touchDevice(Q_NULLPTR),
-    m_leftButtonDown(false),
-    m_previousCaptureWindow(0)
-{
-}
+QWindowsMouseHandler::QWindowsMouseHandler() = default;
 
 QTouchDevice *QWindowsMouseHandler::ensureTouchDevice()
 {

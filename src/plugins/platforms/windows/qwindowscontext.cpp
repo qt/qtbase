@@ -165,15 +165,6 @@ static bool enableNonClientDpiScaling(HWND hwnd)
     \internal
     \ingroup qt-lighthouse-win
 */
-QWindowsUser32DLL::QWindowsUser32DLL() :
-    isTouchWindow(0),
-    registerTouchWindow(0), unregisterTouchWindow(0),
-    getTouchInputInfo(0), closeTouchInputHandle(0), setProcessDPIAware(0),
-    addClipboardFormatListener(0), removeClipboardFormatListener(0),
-    getDisplayAutoRotationPreferences(0), setDisplayAutoRotationPreferences(0),
-    enableNonClientDpiScaling(0), getWindowDpiAwarenessContext(0), getAwarenessFromDpiAwarenessContext(0)
-{
-}
 
 void QWindowsUser32DLL::init()
 {
@@ -206,13 +197,6 @@ bool QWindowsUser32DLL::initTouch()
     return isTouchWindow && registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && closeTouchInputHandle;
 }
 
-QWindowsShcoreDLL::QWindowsShcoreDLL()
-    : getProcessDpiAwareness(0)
-    , setProcessDpiAwareness(0)
-    , getDpiForMonitor(0)
-{
-}
-
 void QWindowsShcoreDLL::init()
 {
     if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8_1)
@@ -241,14 +225,13 @@ QWindowsContext *QWindowsContext::m_instance = 0;
 typedef QHash<HWND, QWindowsWindow *> HandleBaseWindowHash;
 
 struct QWindowsContextPrivate {
-
     QWindowsContextPrivate();
 
-    unsigned m_systemInfo;
+    unsigned m_systemInfo = 0;
     QSet<QString> m_registeredWindowClassNames;
     HandleBaseWindowHash m_windows;
-    HDC m_displayContext;
-    int m_defaultDPI;
+    HDC m_displayContext = 0;
+    int m_defaultDPI = 96;
     QWindowsKeyMapper m_keyMapper;
     QWindowsMouseHandler m_mouseHandler;
     QWindowsMimeConverter m_mimeConverter;
@@ -259,15 +242,13 @@ struct QWindowsContextPrivate {
 #endif
     const HRESULT m_oleInitializeResult;
     const QByteArray m_eventType;
-    QWindow *m_lastActiveWindow;
-    bool m_asyncExpose;
+    QWindow *m_lastActiveWindow = nullptr;
+    bool m_asyncExpose = false;
 };
 
 QWindowsContextPrivate::QWindowsContextPrivate()
-    : m_systemInfo(0)
-    , m_oleInitializeResult(OleInitialize(NULL))
+    : m_oleInitializeResult(OleInitialize(NULL))
     , m_eventType(QByteArrayLiteral("windows_generic_MSG"))
-    , m_lastActiveWindow(0), m_asyncExpose(0)
 {
     QWindowsContext::user32dll.init();
     QWindowsContext::shcoredll.init();

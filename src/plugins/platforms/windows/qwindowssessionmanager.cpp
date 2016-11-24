@@ -44,9 +44,6 @@ QT_BEGIN_NAMESPACE
 
 QWindowsSessionManager::QWindowsSessionManager(const QString &id, const QString &key)
     : QPlatformSessionManager(id, key)
-    , m_isActive(false)
-    , m_blockUserInput(false)
-    , m_canceled(false)
 {
 }
 

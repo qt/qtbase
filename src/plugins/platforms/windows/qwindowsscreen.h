@@ -59,18 +59,16 @@ struct QWindowsScreenData
         LockScreen = 0x4 // Temporary screen existing during user change, etc.
     };
 
-    QWindowsScreenData();
-
     QRect geometry;
     QRect availableGeometry;
-    QDpi dpi;
+    QDpi dpi{96, 96};
     QSizeF physicalSizeMM;
-    int depth;
-    QImage::Format format;
-    unsigned flags;
+    int depth = 32;
+    QImage::Format format = QImage::Format_ARGB32_Premultiplied;
+    unsigned flags = VirtualDesktop;
     QString name;
-    Qt::ScreenOrientation orientation;
-    qreal refreshRateHz;
+    Qt::ScreenOrientation orientation = Qt::LandscapeOrientation;
+    qreal refreshRateHz = 60;
 };
 
 class QWindowsScreen : public QPlatformScreen
@@ -140,9 +138,9 @@ private:
     void removeScreen(int index);
 
     WindowsScreenList m_screens;
-    int m_lastDepth;
-    WORD m_lastHorizontalResolution;
-    WORD m_lastVerticalResolution;
+    int m_lastDepth = -1;
+    WORD m_lastHorizontalResolution = 0;
+    WORD m_lastVerticalResolution = 0;
 };
 
 QT_END_NAMESPACE

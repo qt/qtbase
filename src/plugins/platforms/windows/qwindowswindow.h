@@ -89,22 +89,20 @@ struct QWindowCreationContext
     QRect obtainedGeometry;
     QMargins margins;
     QMargins customMargins;  // User-defined, additional frame for WM_NCCALCSIZE
-    int frameX; // Passed on to CreateWindowEx(), including frame.
-    int frameY;
-    int frameWidth;
-    int frameHeight;
+    int frameX = CW_USEDEFAULT; // Passed on to CreateWindowEx(), including frame.
+    int frameY = CW_USEDEFAULT;
+    int frameWidth = CW_USEDEFAULT;
+    int frameHeight = CW_USEDEFAULT;
 };
 
 struct QWindowsWindowData
 {
-    QWindowsWindowData() : hwnd(0), embedded(false) {}
-
     Qt::WindowFlags flags;
     QRect geometry;
     QMargins frame; // Do not use directly for windows, see FrameDirty.
     QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
-    HWND hwnd;
-    bool embedded;
+    HWND hwnd = 0;
+    bool embedded = false;
 
     static QWindowsWindowData create(const QWindow *w,
                                      const QWindowsWindowData &parameters,
@@ -335,20 +333,20 @@ private:
     void fireExpose(const QRegion &region, bool force=false);
 
     mutable QWindowsWindowData m_data;
-    mutable unsigned m_flags;
-    HDC m_hdc;
-    Qt::WindowState m_windowState;
-    qreal m_opacity;
+    mutable unsigned m_flags = WithinCreate;
+    HDC m_hdc = 0;
+    Qt::WindowState m_windowState = Qt::WindowNoState;
+    qreal m_opacity = 1;
 #ifndef QT_NO_CURSOR
     CursorHandlePtr m_cursor;
 #endif
-    QWindowsOleDropTarget *m_dropTarget;
-    unsigned m_savedStyle;
+    QWindowsOleDropTarget *m_dropTarget = nullptr;
+    unsigned m_savedStyle = 0;
     QRect m_savedFrameGeometry;
     const QSurfaceFormat m_format;
-    HICON m_iconSmall;
-    HICON m_iconBig;
-    void *m_surface;
+    HICON m_iconSmall = 0;
+    HICON m_iconBig = 0;
+    void *m_surface = nullptr;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

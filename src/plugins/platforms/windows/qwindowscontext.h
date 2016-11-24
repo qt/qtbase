@@ -80,7 +80,6 @@ class QTouchDevice;
 
 struct QWindowsUser32DLL
 {
-    QWindowsUser32DLL();
     inline void init();
     inline bool initTouch();
 
@@ -99,32 +98,31 @@ struct QWindowsUser32DLL
     typedef int  (WINAPI *GetAwarenessFromDpiAwarenessContext)(int);
 
     // Touch functions from Windows 7 onwards (also for use with Q_CC_MSVC).
-    IsTouchWindow isTouchWindow;
-    RegisterTouchWindow registerTouchWindow;
-    UnregisterTouchWindow unregisterTouchWindow;
-    GetTouchInputInfo getTouchInputInfo;
-    CloseTouchInputHandle closeTouchInputHandle;
+    IsTouchWindow isTouchWindow = nullptr;
+    RegisterTouchWindow registerTouchWindow = nullptr;
+    UnregisterTouchWindow unregisterTouchWindow = nullptr;
+    GetTouchInputInfo getTouchInputInfo = nullptr;
+    CloseTouchInputHandle closeTouchInputHandle = nullptr;
 
     // Windows Vista onwards
-    SetProcessDPIAware setProcessDPIAware;
+    SetProcessDPIAware setProcessDPIAware = nullptr;
 
     // Clipboard listeners are present on Windows Vista onwards
     // but missing in MinGW 4.9 stub libs. Can be removed in MinGW 5.
-    AddClipboardFormatListener addClipboardFormatListener;
-    RemoveClipboardFormatListener removeClipboardFormatListener;
+    AddClipboardFormatListener addClipboardFormatListener = nullptr;
+    RemoveClipboardFormatListener removeClipboardFormatListener = nullptr;
 
     // Rotation API
-    GetDisplayAutoRotationPreferences getDisplayAutoRotationPreferences;
-    SetDisplayAutoRotationPreferences setDisplayAutoRotationPreferences;
+    GetDisplayAutoRotationPreferences getDisplayAutoRotationPreferences = nullptr;
+    SetDisplayAutoRotationPreferences setDisplayAutoRotationPreferences = nullptr;
 
-    EnableNonClientDpiScaling enableNonClientDpiScaling;
-    GetWindowDpiAwarenessContext getWindowDpiAwarenessContext;
-    GetAwarenessFromDpiAwarenessContext getAwarenessFromDpiAwarenessContext;
+    EnableNonClientDpiScaling enableNonClientDpiScaling = nullptr;
+    GetWindowDpiAwarenessContext getWindowDpiAwarenessContext = nullptr;
+    GetAwarenessFromDpiAwarenessContext getAwarenessFromDpiAwarenessContext = nullptr;
 };
 
 // Shell scaling library (Windows 8.1 onwards)
 struct QWindowsShcoreDLL {
-    QWindowsShcoreDLL();
     void init();
     inline bool isValid() const { return getProcessDpiAwareness && setProcessDpiAwareness && getDpiForMonitor; }
 
@@ -132,9 +130,9 @@ struct QWindowsShcoreDLL {
     typedef HRESULT (WINAPI *SetProcessDpiAwareness)(int);
     typedef HRESULT (WINAPI *GetDpiForMonitor)(HMONITOR,int,UINT *,UINT *);
 
-    GetProcessDpiAwareness getProcessDpiAwareness;
-    SetProcessDpiAwareness setProcessDpiAwareness;
-    GetDpiForMonitor getDpiForMonitor;
+    GetProcessDpiAwareness getProcessDpiAwareness = nullptr;
+    SetProcessDpiAwareness setProcessDpiAwareness = nullptr;
+    GetDpiForMonitor getDpiForMonitor = nullptr;
 };
 
 class QWindowsContext

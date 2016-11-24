@@ -82,10 +82,10 @@ public:
     STDMETHOD(EnumDAdvise)(LPENUMSTATDATA FAR* ppenumAdvise);
 
 private:
-    ULONG m_refs;
+    ULONG m_refs = 1;
     QPointer<QMimeData> data;
-    int CF_PERFORMEDDROPEFFECT;
-    DWORD performedEffect;
+    const int CF_PERFORMEDDROPEFFECT;
+    DWORD performedEffect = DROPEFFECT_NONE;
 };
 
 class QWindowsOleEnumFmtEtc : public IEnumFORMATETC
@@ -111,10 +111,10 @@ public:
 private:
     bool copyFormatEtc(LPFORMATETC dest, const FORMATETC *src) const;
 
-    ULONG m_dwRefs;
-    ULONG m_nIndex;
+    ULONG m_dwRefs = 1;
+    ULONG m_nIndex = 0;
     QVector<LPFORMATETC> m_lpfmtetcs;
-    bool m_isNull;
+    bool m_isNull = false;
 };
 
 QT_END_NAMESPACE

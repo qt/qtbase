@@ -83,10 +83,10 @@ private:
     static QWindowsClipboard *m_instance;
 
     QWindowsClipboardRetrievalMimeData m_retrievalData;
-    QWindowsOleDataObject *m_data;
-    HWND m_clipboardViewer;
-    HWND m_nextClipboardViewer;
-    bool m_formatListenerRegistered;
+    QWindowsOleDataObject *m_data = nullptr;
+    HWND m_clipboardViewer = 0;
+    HWND m_nextClipboardViewer = 0;
+    bool m_formatListenerRegistered = false;
 };
 
 QT_END_NAMESPACE

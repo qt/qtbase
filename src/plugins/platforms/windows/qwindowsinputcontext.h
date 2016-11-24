@@ -57,15 +57,13 @@ class QWindowsInputContext : public QPlatformInputContext
 
     struct CompositionContext
     {
-        CompositionContext();
-
-        HWND hwnd;
-        bool haveCaret;
+        HWND hwnd = 0;
+        bool haveCaret = false;
         QString composition;
-        int position;
-        bool isComposing;
+        int position = 0;
+        bool isComposing = false;
         QPointer<QObject> focusObject;
-        qreal factor;
+        qreal factor = 1;
     };
 public:
     explicit QWindowsInputContext();
@@ -104,7 +102,7 @@ private:
     const DWORD m_WM_MSIME_MOUSE;
     static HIMC m_defaultContext;
     CompositionContext m_compositionContext;
-    bool m_endCompositionRecursionGuard;
+    bool m_endCompositionRecursionGuard = false;
     LCID m_languageId;
     QLocale m_locale;
 };

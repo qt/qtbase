@@ -72,24 +72,23 @@ struct QWindowsOpenGLAdditionalFormat
 struct QOpenGLContextData
 {
     QOpenGLContextData(HGLRC r, HWND h, HDC d) : renderingContext(r), hwnd(h), hdc(d) {}
-    QOpenGLContextData() : renderingContext(0), hwnd(0), hdc(0) {}
+    QOpenGLContextData() {}
 
-    HGLRC renderingContext;
-    HWND hwnd;
-    HDC hdc;
+    HGLRC renderingContext = 0;
+    HWND hwnd = 0;
+    HDC hdc = 0;
 };
 
 class QOpenGLStaticContext;
 
 struct QWindowsOpenGLContextFormat
 {
-    QWindowsOpenGLContextFormat();
     static QWindowsOpenGLContextFormat current();
     void apply(QSurfaceFormat *format) const;
 
-    QSurfaceFormat::OpenGLContextProfile profile;
-    int version; //! majorVersion<<8 + minorVersion
-    QSurfaceFormat::FormatOptions options;
+    QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile;
+    int version = 0; //! majorVersion<<8 + minorVersion
+    QSurfaceFormat::FormatOptions options = 0;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

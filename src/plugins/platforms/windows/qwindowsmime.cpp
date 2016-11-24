@@ -1496,9 +1496,7 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
     \sa QWindowsMime
 */
 
-QWindowsMimeConverter::QWindowsMimeConverter() : m_internalMimeCount(0)
-{
-}
+QWindowsMimeConverter::QWindowsMimeConverter() = default;
 
 QWindowsMimeConverter::~QWindowsMimeConverter()
 {

@@ -128,9 +128,9 @@ struct QWindowsIntegrationPrivate
     explicit QWindowsIntegrationPrivate(const QStringList &paramList);
     ~QWindowsIntegrationPrivate();
 
-    unsigned m_options;
+    unsigned m_options = 0;
     QWindowsContext m_context;
-    QPlatformFontDatabase *m_fontDatabase;
+    QPlatformFontDatabase *m_fontDatabase = nullptr;
 #ifndef QT_NO_CLIPBOARD
     QWindowsClipboard m_clipboard;
 #  ifndef QT_NO_DRAGANDDROP
@@ -208,8 +208,6 @@ static inline unsigned parseOptions(const QStringList &paramList,
 }
 
 QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramList)
-    : m_options(0)
-    , m_fontDatabase(0)
 {
     Q_INIT_RESOURCE(openglblacklists);
 

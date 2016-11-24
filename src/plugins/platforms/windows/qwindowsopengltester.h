@@ -51,16 +51,14 @@ class QVariant;
 
 struct GpuDescription
 {
-    GpuDescription() :  vendorId(0), deviceId(0), revision(0), subSysId(0) {}
-
     static GpuDescription detect();
     QString toString() const;
     QVariant toVariant() const;
 
-    uint vendorId;
-    uint deviceId;
-    uint revision;
-    uint subSysId;
+    uint vendorId = 0;
+    uint deviceId = 0;
+    uint revision = 0;
+    uint subSysId = 0;
     QVersionNumber driverVersion;
     QByteArray driverName;
     QByteArray description;

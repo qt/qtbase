@@ -149,8 +149,7 @@ static void cleanClipboardPostRoutine()
 
 QWindowsClipboard *QWindowsClipboard::m_instance = 0;
 
-QWindowsClipboard::QWindowsClipboard() :
-    m_data(0), m_clipboardViewer(0), m_nextClipboardViewer(0), m_formatListenerRegistered(false)
+QWindowsClipboard::QWindowsClipboard()
 {
     QWindowsClipboard::m_instance = this;
     qAddPostRoutine(cleanClipboardPostRoutine);

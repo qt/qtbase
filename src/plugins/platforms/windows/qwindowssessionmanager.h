@@ -75,9 +75,9 @@ public:
     bool isActive() const { return m_isActive;}
 
 private:
-    bool m_isActive;
-    bool m_blockUserInput;
-    bool m_canceled;
+    bool m_isActive = false;
+    bool m_blockUserInput = false;
+    bool m_canceled = false;
 
     Q_DISABLE_COPY(QWindowsSessionManager)
 };

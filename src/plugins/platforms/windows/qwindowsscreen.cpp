@@ -56,13 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QWindowsScreenData::QWindowsScreenData() :
-    dpi(96, 96), depth(32), format(QImage::Format_ARGB32_Premultiplied),
-    flags(VirtualDesktop), orientation(Qt::LandscapeOrientation),
-    refreshRateHz(60)
-{
-}
-
 static inline QDpi deviceDPI(HDC hdc)
 {
     return QDpi(GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY));
@@ -407,10 +400,7 @@ QPlatformScreen::SubpixelAntialiasingType QWindowsScreen::subpixelAntialiasingTy
     \ingroup qt-lighthouse-win
 */
 
-QWindowsScreenManager::QWindowsScreenManager() :
-    m_lastDepth(-1), m_lastHorizontalResolution(0), m_lastVerticalResolution(0)
-{
-}
+QWindowsScreenManager::QWindowsScreenManager() = default;
 
 /*!
     \brief Triggers synchronization of screens (WM_DISPLAYCHANGE).

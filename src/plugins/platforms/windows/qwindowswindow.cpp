@@ -977,9 +977,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
                                                DWORD style_, DWORD exStyle_) :
     geometryHint(w, cm), window(w), style(style_), exStyle(exStyle_),
     requestedGeometry(geometry), obtainedGeometry(geometry),
-    margins(QWindowsGeometryHint::frame(style, exStyle)), customMargins(cm),
-    frameX(CW_USEDEFAULT), frameY(CW_USEDEFAULT),
-    frameWidth(CW_USEDEFAULT), frameHeight(CW_USEDEFAULT)
+    margins(QWindowsGeometryHint::frame(style, exStyle)), customMargins(cm)
 {
     // Geometry of toplevels does not consider window frames.
     // TODO: No concept of WA_wasMoved yet that would indicate a
@@ -1032,17 +1030,8 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
 QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data) :
     QWindowsBaseWindow(aWindow),
     m_data(data),
-    m_flags(WithinCreate),
-    m_hdc(0),
-    m_windowState(Qt::WindowNoState),
-    m_opacity(1.0),
     m_cursor(new CursorHandle),
-    m_dropTarget(0),
-    m_savedStyle(0),
-    m_format(aWindow->requestedFormat()),
-    m_iconSmall(0),
-    m_iconBig(0),
-    m_surface(0)
+    m_format(aWindow->requestedFormat())
 {
     // Clear the creation context as the window can be found in QWindowsContext's map.
     QWindowsContext::instance()->setWindowCreationContext(QSharedPointer<QWindowCreationContext>());

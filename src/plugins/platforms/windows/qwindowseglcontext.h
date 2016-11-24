@@ -167,8 +167,8 @@ private:
     EGLDisplay m_eglDisplay;
     EGLConfig m_eglConfig;
     QSurfaceFormat m_format;
-    EGLenum m_api;
-    int m_swapInterval;
+    EGLenum m_api = EGL_OPENGL_ES_API;
+    int m_swapInterval = -1;
 };
 
 QT_END_NAMESPACE

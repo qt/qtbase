@@ -494,8 +494,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
     \ingroup qt-lighthouse-win
 */
 
-QWindowsOleDropTarget::QWindowsOleDropTarget(QWindow *w) :
-    m_refs(1), m_window(w), m_chosenEffect(0), m_lastKeyState(0)
+QWindowsOleDropTarget::QWindowsOleDropTarget(QWindow *w) : m_window(w)
 {
     qCDebug(lcQpaMime) << __FUNCTION__ << this << w;
 }
@@ -687,10 +686,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
 
 bool QWindowsDrag::m_canceled = false;
 
-QWindowsDrag::QWindowsDrag() :
-    m_dropDataObject(0), m_cachedDropTargetHelper(0)
-{
-}
+QWindowsDrag::QWindowsDrag() = default;
 
 QWindowsDrag::~QWindowsDrag()
 {

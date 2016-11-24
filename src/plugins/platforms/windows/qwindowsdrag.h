@@ -77,12 +77,12 @@ public:
 private:
     void handleDrag(QWindow *window, DWORD grfKeyState, const QPoint &, LPDWORD pdwEffect);
 
-    ULONG m_refs;
+    ULONG m_refs = 1;
     QWindow *const m_window;
     QRect m_answerRect;
     QPoint m_lastPoint;
-    DWORD m_chosenEffect;
-    DWORD m_lastKeyState;
+    DWORD m_chosenEffect = 0;
+    DWORD m_lastKeyState = 0;
 };
 
 class QWindowsDrag : public QPlatformDrag
@@ -110,9 +110,9 @@ private:
     static bool m_canceled;
 
     QWindowsDropMimeData m_dropData;
-    IDataObject *m_dropDataObject;
+    IDataObject *m_dropDataObject = nullptr;
 
-    IDropTargetHelper* m_cachedDropTargetHelper;
+    IDropTargetHelper* m_cachedDropTargetHelper = nullptr;
 };
 
 QT_END_NAMESPACE

@@ -384,8 +384,6 @@ QWindowsEGLContext::QWindowsEGLContext(QWindowsEGLStaticContext *staticContext,
                                        QPlatformOpenGLContext *share)
     : m_staticContext(staticContext)
     , m_eglDisplay(staticContext->display())
-    , m_api(EGL_OPENGL_ES_API)
-    , m_swapInterval(-1)
 {
     if (!m_staticContext)
         return;

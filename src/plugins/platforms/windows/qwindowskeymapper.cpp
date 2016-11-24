@@ -144,13 +144,11 @@ struct KeyRecord {
 static const int QT_MAX_KEY_RECORDINGS = 64; // User has LOTS of fingers...
 struct KeyRecorder
 {
-    KeyRecorder() : nrecs(0) {}
-
     inline KeyRecord *findKey(int code, bool remove);
     inline void storeKey(int code, int ascii, int state, const QString& text);
     inline void clearKeys();
 
-    int nrecs;
+    int nrecs = 0;
     KeyRecord deleted_record; // A copy of last entry removed from records[]
     KeyRecord records[QT_MAX_KEY_RECORDINGS];
 };

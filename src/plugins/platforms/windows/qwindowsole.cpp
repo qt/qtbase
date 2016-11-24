@@ -74,9 +74,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QWindowsOleDataObject::QWindowsOleDataObject(QMimeData *mimeData) :
-    m_refs(1), data(mimeData),
-    CF_PERFORMEDDROPEFFECT(RegisterClipboardFormat(CFSTR_PERFORMEDDROPEFFECT)),
-    performedEffect(DROPEFFECT_NONE)
+    data(mimeData),
+    CF_PERFORMEDDROPEFFECT(RegisterClipboardFormat(CFSTR_PERFORMEDDROPEFFECT))
 {
     qCDebug(lcQpaMime) << __FUNCTION__ << mimeData->formats();
 }
@@ -267,8 +266,7 @@ QWindowsOleDataObject::EnumDAdvise(LPENUMSTATDATA FAR*)
     \ingroup qt-lighthouse-win
 */
 
-QWindowsOleEnumFmtEtc::QWindowsOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs) :
-    m_dwRefs(1), m_nIndex(0), m_isNull(false)
+QWindowsOleEnumFmtEtc::QWindowsOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs)
 {
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaMime) << __FUNCTION__ << fmtetcs;
@@ -285,8 +283,7 @@ QWindowsOleEnumFmtEtc::QWindowsOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs) 
     }
 }
 
-QWindowsOleEnumFmtEtc::QWindowsOleEnumFmtEtc(const QVector<LPFORMATETC> &lpfmtetcs) :
-    m_dwRefs(1), m_nIndex(0), m_isNull(false)
+QWindowsOleEnumFmtEtc::QWindowsOleEnumFmtEtc(const QVector<LPFORMATETC> &lpfmtetcs)
 {
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaMime) << __FUNCTION__;
