@@ -9,6 +9,9 @@
 # We mean it.
 #
 
+contains(TEMPLATE, .*app): \
+    qtSetQmlPath()
+
 contains(TEMPLATE, "vc.*"): return()
 
 defineTest(addInstallFiles) {
