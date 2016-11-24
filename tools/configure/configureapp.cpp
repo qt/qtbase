@@ -102,17 +102,6 @@ Configure::~Configure()
 {
 }
 
-QString Configure::formatPath(const QString &path)
-{
-    QString ret = QDir::cleanPath(path);
-    // This amount of quoting is deemed sufficient.
-    if (ret.contains(QLatin1Char(' '))) {
-        ret.prepend(QLatin1Char('"'));
-        ret.append(QLatin1Char('"'));
-    }
-    return ret;
-}
-
 void Configure::parseCmdLine()
 {
     sourcePathMangled = sourcePath;
@@ -166,14 +155,6 @@ void Configure::parseCmdLine()
                 || configCmdLine.at(i) == "-device") {
             ++i;
             // do nothing
-        } else if (configCmdLine.at(i) == "-device-option") {
-            ++i;
-            const QString option = configCmdLine.at(i);
-            QString &devOpt = dictionary["DEVICE_OPTION"];
-            if (!devOpt.isEmpty())
-                devOpt.append("\n").append(option);
-            else
-                devOpt = option;
         }
 
         else if (configCmdLine.at(i) == "-no-syncqt")
@@ -186,47 +167,6 @@ void Configure::parseCmdLine()
             dictionary[ "MAKE" ] = configCmdLine.at(i);
         }
 
-        else if (configCmdLine.at(i) == "-android-ndk") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "ANDROID_NDK_ROOT" ] = configCmdLine.at(i);
-        }
-
-        else if (configCmdLine.at(i) == "-android-sdk") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "ANDROID_SDK_ROOT" ] = configCmdLine.at(i);
-        }
-
-        else if (configCmdLine.at(i) == "-android-ndk-platform") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "ANDROID_PLATFORM" ] = configCmdLine.at(i);
-        }
-
-        else if (configCmdLine.at(i) == "-android-ndk-host") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "ANDROID_HOST" ] = configCmdLine.at(i);
-        }
-
-        else if (configCmdLine.at(i) == "-android-arch") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "ANDROID_TARGET_ARCH" ] = configCmdLine.at(i);
-        }
-
-        else if (configCmdLine.at(i) == "-android-toolchain-version") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "ANDROID_NDK_TOOLCHAIN_VERSION" ] = configCmdLine.at(i);
-        }
     }
 
     // Ensure that QMAKESPEC exists in the mkspecs folder
@@ -295,48 +235,6 @@ void Configure::parseCmdLine()
             cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
         }
     }
-}
-
-void Configure::generateQDevicePri()
-{
-    FileWriter deviceStream(buildPath + "/mkspecs/qdevice.pri");
-    if (dictionary.contains("DEVICE_OPTION")) {
-        const QString devoptionlist = dictionary["DEVICE_OPTION"];
-        const QStringList optionlist = devoptionlist.split(QStringLiteral("\n"));
-        foreach (const QString &entry, optionlist)
-            deviceStream << entry << "\n";
-    }
-    if (dictionary.contains("ANDROID_SDK_ROOT") && dictionary.contains("ANDROID_NDK_ROOT")) {
-        deviceStream << "android_install {" << endl;
-        deviceStream << "    DEFAULT_ANDROID_SDK_ROOT = " << formatPath(dictionary["ANDROID_SDK_ROOT"]) << endl;
-        deviceStream << "    DEFAULT_ANDROID_NDK_ROOT = " << formatPath(dictionary["ANDROID_NDK_ROOT"]) << endl;
-        if (dictionary.contains("ANDROID_HOST"))
-            deviceStream << "    DEFAULT_ANDROID_NDK_HOST = " << dictionary["ANDROID_HOST"] << endl;
-        else if (QSysInfo::WordSize == 64)
-            deviceStream << "    DEFAULT_ANDROID_NDK_HOST = windows-x86_64" << endl;
-        else
-            deviceStream << "    DEFAULT_ANDROID_NDK_HOST = windows" << endl;
-        QString android_arch(dictionary.contains("ANDROID_TARGET_ARCH")
-                  ? dictionary["ANDROID_TARGET_ARCH"]
-                  : QString("armeabi-v7a"));
-        QString android_tc_vers(dictionary.contains("ANDROID_NDK_TOOLCHAIN_VERSION")
-                  ? dictionary["ANDROID_NDK_TOOLCHAIN_VERSION"]
-                  : QString("4.9"));
-
-        bool targetIs64Bit = android_arch == QString("arm64-v8a")
-                             || android_arch == QString("x86_64")
-                             || android_arch == QString("mips64");
-        QString android_platform(dictionary.contains("ANDROID_PLATFORM")
-                                 ? dictionary["ANDROID_PLATFORM"]
-                                 : (targetIs64Bit ? QString("android-21") : QString("android-9")));
-
-        deviceStream << "    DEFAULT_ANDROID_PLATFORM = " << android_platform << endl;
-        deviceStream << "    DEFAULT_ANDROID_TARGET_ARCH = " << android_arch << endl;
-        deviceStream << "    DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = " << android_tc_vers << endl;
-        deviceStream << "}" << endl;
-    }
-    if (!deviceStream.flush())
-        dictionary[ "DONE" ] = "error";
 }
 
 void Configure::generateHeaders()
@@ -519,49 +417,6 @@ bool Configure::isDone()
 bool Configure::isOk()
 {
     return (dictionary[ "DONE" ] != "error");
-}
-
-FileWriter::FileWriter(const QString &name)
-    : QTextStream()
-    , m_name(name)
-{
-    m_buffer.open(QIODevice::WriteOnly);
-    setDevice(&m_buffer);
-}
-
-bool FileWriter::flush()
-{
-    QTextStream::flush();
-    QFile oldFile(m_name);
-    if (oldFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (oldFile.readAll() == m_buffer.data())
-            return true;
-        oldFile.close();
-    }
-    QString dir = QFileInfo(m_name).absolutePath();
-    if (!QDir().mkpath(dir)) {
-        cout << "Cannot create directory " << qPrintable(QDir::toNativeSeparators(dir)) << ".\n";
-        return false;
-    }
-    QFile file(m_name + ".new");
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        if (file.write(m_buffer.data()) == m_buffer.data().size()) {
-            file.close();
-            if (file.error() == QFile::NoError) {
-                ::SetFileAttributes((wchar_t*)m_name.utf16(), FILE_ATTRIBUTE_NORMAL);
-                QFile::remove(m_name);
-                if (!file.rename(m_name)) {
-                    cout << "Cannot replace file " << qPrintable(QDir::toNativeSeparators(m_name)) << ".\n";
-                    return false;
-                }
-                return true;
-            }
-        }
-    }
-    cout << "Cannot create file " << qPrintable(QDir::toNativeSeparators(file.fileName()))
-         << ": " << qPrintable(file.errorString()) << ".\n";
-    file.remove();
-    return false;
 }
 
 QT_END_NAMESPACE

@@ -233,6 +233,14 @@ defineReplace(qtConfFunc_licenseCheck) {
 
 # custom tests
 
+# this is meant for linux device specs only
+defineTest(qtConfTest_machineTuple) {
+    qtRunLoggedCommand("$$QMAKE_CXX -dumpmachine", $${1}.tuple)|return(false)
+    $${1}.cache += tuple
+    export($${1}.cache)
+    return(true)
+}
+
 defineTest(qtConfTest_architecture) {
     !qtConfTest_compile($${1}): \
         error("Could not determine $$eval($${1}.label). See config.log for details.")
@@ -328,11 +336,9 @@ defineTest(qtConfTest_detectPkgConfig) {
             }
 
             pkgConfigLibdir = $$sysroot/usr/lib/pkgconfig:$$sysroot/usr/share/pkgconfig
-            gcc {
-                qtRunLoggedCommand("$$QMAKE_CXX -dumpmachine", gccMachineDump): \
-                        !isEmpty(gccMachineDump): \
-                    pkgConfigLibdir = "$$pkgConfigLibdir:$$sysroot/usr/lib/$$gccMachineDump/pkgconfig"
-            }
+            machineTuple = $$eval($${currentConfig}.tests.machineTuple.tuple)
+            !isEmpty(machineTuple): \
+                pkgConfigLibdir = "$$pkgConfigLibdir:$$sysroot/usr/lib/$$machineTuple/pkgconfig"
 
             qtConfAddNote("PKG_CONFIG_LIBDIR automatically set to $$pkgConfigLibdir")
         }
@@ -436,6 +442,144 @@ defineTest(qtConfTest_checkCompiler) {
 }
 
 # custom outputs
+
+# this reloads the qmakespec as completely as reasonably possible.
+defineTest(reloadSpec) {
+    bypassNesting() {
+        for (f, QMAKE_INTERNAL_INCLUDED_FILES) {
+            contains(f, .*/mkspecs/.*):\
+                    !contains(f, .*/(qt_build_config|qt_parts|qt_configure|configure_base)\\.prf): \
+                discard_from($$f)
+        }
+        # nobody's going to try to re-load the features above,
+        # so don't bother with being selective.
+        QMAKE_INTERNAL_INCLUDED_FEATURES =
+
+        _SAVED_CONFIG = $$CONFIG
+        load(spec_pre)
+        load(device_config)  # avoid that the spec loads it later.
+        # discard possible settings from an earlier configure run.
+        discard_from($$[QT_HOST_DATA/get]/mkspecs/qdevice.pri)
+        # qdevice.pri gets written too late (and we can't write it early
+        # enough, as it's populated in stages, with later ones depending
+        # on earlier ones). so inject its variables manually.
+        for (l, $${currentConfig}.output.devicePro): \
+            eval($$l)
+        include($$QMAKESPEC/qmake.conf)
+        load(spec_post)
+        load(default_pre)
+        CONFIG += $$_SAVED_CONFIG
+
+        # ensure pristine environment for configuration. again.
+        discard_from($$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)
+        discard_from($$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)
+    }
+}
+
+defineTest(qtConfOutput_prepareOptions) {
+    $${currentConfig}.output.devicePro += \
+        $$replace(config.input.device-option, "^([^=]+) *= *(.*)$", "\\1 = \\2")
+    darwin:!isEmpty(config.input.sdk) {
+        $${currentConfig}.output.devicePro += \
+            "QMAKE_MAC_SDK = $$val_escape(config.input.sdk)"
+    }
+    android {
+        ndk_root = $$eval(config.input.android-ndk)
+        isEmpty(ndk_root): \
+            ndk_root = $$getenv(ANDROID_NDK_ROOT)
+        isEmpty(ndk_root): \
+            qtConfFatalError("Cannot find Android NDK." \
+                             "Please use -android-ndk option to specify one.")
+
+        ndk_tc_ver = $$eval(config.input.android-toolchain-version)
+        isEmpty(ndk_tc_ver): \
+            ndk_tc_ver = 4.9
+        !exists($$ndk_root/toolchains/arm-linux-androideabi-$$ndk_tc_ver/prebuilt/*): \
+            qtConfFatalError("Cannot detect Android NDK toolchain." \
+                             "Please use -android-toolchain-version to specify it.")
+
+        ndk_tc_pfx = $$ndk_root/toolchains/arm-linux-androideabi-$$ndk_tc_ver/prebuilt
+        ndk_host = $$eval(config.input.android-ndk-host)
+        isEmpty(ndk_host): \
+            ndk_host = $$getenv(ANDROID_NDK_HOST)
+        isEmpty(ndk_host) {
+            equals(QMAKE_HOST.os, Linux) {
+                ndk_host_64 = linux-x86_64
+                ndk_host_32 = linux-x86
+            } else: equals(QMAKE_HOST.os, Darwin) {
+                ndk_host_64 = darwin-x86_64
+                ndk_host_32 = darwin-x86
+            } else: equals(QMAKE_HOST.os, Windows) {
+                ndk_host_64 = windows-x86_64
+                ndk_host_32 = windows
+            } else {
+                qtConfFatalError("Host operating system not supported by Android.")
+            }
+            !exists($$ndk_tc_pfx/$$ndk_host_64/*): ndk_host_64 =
+            !exists($$ndk_tc_pfx/$$ndk_host_32/*): ndk_host_32 =
+            equals(QMAKE_HOST.arch, x86_64):!isEmpty(ndk_host_64) {
+                ndk_host = $$ndk_host_64
+            } else: equals(QMAKE_HOST.arch, x86):!isEmpty(ndk_host_32) {
+                ndk_host = $$ndk_host_32
+            } else {
+                !isEmpty(ndk_host_64): \
+                    ndk_host = $$ndk_host_64
+                else: !isEmpty(ndk_host_32): \
+                    ndk_host = $$ndk_host_32
+                else: \
+                    qtConfFatalError("Cannot detect the Android host." \
+                                     "Please use -android-ndk-host option to specify one.")
+                qtConfAddNotice("Available Android host does not match host architecture.")
+            }
+        } else {
+            !exists($$ndk_tc_pfx/$$ndk_host/*): \
+                qtConfFatalError("Specified Android NDK host is invalid.")
+        }
+
+        sdk_root = $$eval(config.input.android-sdk)
+        isEmpty(sdk_root): \
+            sdk_root = $$getenv(ANDROID_SDK_ROOT)
+        isEmpty(sdk_root): \
+            qtConfFatalError("Cannot find Android SDK." \
+                             "Please use -android-sdk option to specify one.")
+
+        target_arch = $$eval(config.input.android-arch)
+        isEmpty(target_arch): \
+            target_arch = armeabi-v7a
+
+        platform = $$eval(config.input.android-ndk-platform)
+        isEmpty(platform): \
+            platform = android-16  ### the windows configure disagrees ...
+
+        $${currentConfig}.output.devicePro += \
+            "DEFAULT_ANDROID_SDK_ROOT = $$val_escape(sdk_root)" \
+            "DEFAULT_ANDROID_NDK_ROOT = $$val_escape(ndk_root)" \
+            "DEFAULT_ANDROID_PLATFORM = $$platform" \
+            "DEFAULT_ANDROID_NDK_HOST = $$ndk_host" \
+            "DEFAULT_ANDROID_TARGET_ARCH = $$target_arch" \
+            "DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = $$ndk_tc_ver"
+    }
+
+    export($${currentConfig}.output.devicePro)
+
+    # reload the spec to make the settings actually take effect.
+    !isEmpty($${currentConfig}.output.devicePro): \
+        reloadSpec()
+}
+
+defineTest(qtConfOutput_machineTuple) {
+    $${currentConfig}.output.devicePro += \
+        "GCC_MACHINE_DUMP = $$eval($${currentConfig}.tests.machineTuple.tuple)"
+    export($${currentConfig}.output.devicePro)
+
+    # for completeness, one could reload the spec here,
+    # but no downstream users actually need that.
+}
+
+defineTest(qtConfOutput_commitOptions) {
+    # qdevice.pri needs to be written early, because the compile tests require it.
+    write_file($$QT_BUILD_TREE/mkspecs/qdevice.pri, $${currentConfig}.output.devicePro)|error()
+}
 
 # type (empty or 'host'), option name, default value
 defineTest(processQtPath) {

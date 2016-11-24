@@ -121,10 +121,6 @@ done
 set +f
 IFS=$SAVED_IFS
 
-# initialize global variables
-DEVICE_VARS_FILE=.device.vars
-:> "$DEVICE_VARS_FILE"
-
 #-------------------------------------------------------------------------------
 # utility functions
 #-------------------------------------------------------------------------------
@@ -142,18 +138,7 @@ expandQMakeConf()
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
-            expandQMakeConf "$conf_file" "$2"
-        ;;
-        *load\(device_config\)*)
-            conf_file="$2"
-            if [ -z "$conf_file" ]; then
-                continue
-            fi
-            if [ ! -f  "$conf_file" ]; then
-                echo "WARNING: Unable to find file $conf_file" >&2
-                continue
-            fi
-            expandQMakeConf "$conf_file" "$2"
+            expandQMakeConf "$conf_file"
         ;;
         *)
             echo "$line"
@@ -298,32 +283,6 @@ getQMakeConf()
     getSingleQMakeVariable "$1" "$specvals"
 }
 
-getXQMakeConf()
-{
-    if [ -z "$xspecvals" ]; then
-        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" "$DEVICE_VARS_FILE" | extractQMakeVariables`
-        if [ "$XPLATFORM_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
-    fi
-    getSingleQMakeVariable "$1" "$xspecvals"
-}
-
-#-------------------------------------------------------------------------------
-# device options
-#-------------------------------------------------------------------------------
-DeviceVar()
-{
-    case "$1" in
-        set)
-            eq="="
-            ;;
-        *)
-            echo >&2 "BUG: wrong command to DeviceVar: $1"
-            ;;
-    esac
-
-    echo "$2" "$eq" "$3" >> "$DEVICE_VARS_FILE"
-}
-
 resolveDeviceMkspec()
 {
     result=$(find "$relpath/mkspecs/devices/" -type d -name "*$1*" | sed "s,^$relpath/mkspecs/,,")
@@ -420,16 +379,7 @@ OPT_SHADOW=maybe
 OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
-OPT_MAC_SDK=
 CFG_DEV=no
-
-# Android vars
-CFG_DEFAULT_ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
-CFG_DEFAULT_ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
-CFG_DEFAULT_ANDROID_PLATFORM=android-16
-CFG_DEFAULT_ANDROID_TARGET_ARCH=armeabi-v7a
-CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION=4.9
-CFG_DEFAULT_ANDROID_NDK_HOST=$ANDROID_NDK_HOST
 
 #-------------------------------------------------------------------------------
 # parse command line arguments
@@ -550,14 +500,6 @@ while [ "$#" -gt 0 ]; do
     external-hostbindir)
         CFG_HOST_QT_TOOLS_PATH="$VAL"
         ;;
-    sdk)
-        if [ "$BUILD_ON_MAC" = "yes" ]; then
-            DeviceVar set QMAKE_MAC_SDK "$VAL"
-            OPT_MAC_SDK="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-	;;
     platform)
         PLATFORM="$VAL"
         ;;
@@ -567,11 +509,6 @@ while [ "$#" -gt 0 ]; do
     device)
         XPLATFORM=`resolveDeviceMkspec $VAL`
         [ "$XPLATFORM" = "undefined" ] && exit 101
-        ;;
-    device-option)
-        DEV_VAR=`echo $VAL | cut -d '=' -f 1`
-        DEV_VAL=`echo $VAL | cut -d '=' -f 2-`
-        DeviceVar set $DEV_VAR "$DEV_VAL"
         ;;
     optimized-qmake|optimized-tools)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -600,24 +537,6 @@ while [ "$#" -gt 0 ]; do
     silent)
         # need to keep this here, to ensure qmake is built silently
         CFG_SILENT="$VAL"
-        ;;
-    android-sdk)
-        CFG_DEFAULT_ANDROID_SDK_ROOT="$VAL"
-        ;;
-    android-ndk)
-        CFG_DEFAULT_ANDROID_NDK_ROOT="$VAL"
-        ;;
-    android-ndk-platform)
-        CFG_DEFAULT_ANDROID_PLATFORM="$VAL"
-        ;;
-    android-ndk-host)
-        CFG_DEFAULT_ANDROID_NDK_HOST="$VAL"
-        ;;
-    android-arch)
-        CFG_DEFAULT_ANDROID_TARGET_ARCH="$VAL"
-        ;;
-    android-toolchain-version)
-        CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
         ;;
     *)
         ;;
@@ -834,60 +753,6 @@ esac
 # command line and environment validation
 #-------------------------------------------------------------------------------
 
-if [ "$XPLATFORM_ANDROID" != "no" ]; then
-    if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
-        case $PLATFORM in
-        linux-*)
-            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
-            elif [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86_64" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86_64
-            fi
-            ;;
-        macx-*)
-            CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86
-            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/darwin-x86_64" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86_64
-            fi
-            ;;
-        win32-*)
-            CFG_DEFAULT_ANDROID_NDK_HOST=windows
-            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/windows-x86_64" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=windows-x86_64
-            fi
-            ;;
-        esac
-    fi
-
-        if [ -z "$CFG_DEFAULT_ANDROID_NDK_ROOT" ]; then
-            echo
-            echo "Can not find Android NDK. Please use -android-ndk option to specify one"
-            exit 1
-        fi
-        if [ -z "$CFG_DEFAULT_ANDROID_SDK_ROOT" ]; then
-            echo
-            echo "Can not find Android SDK. Please use -android-sdk option to specify one"
-            exit 1
-        fi
-        if [ -z "CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION" ] || [ ! -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt" ]; then
-            echo
-            echo "Can not detect Android NDK toolchain. Please use -android-toolchain-version to specify"
-            exit 1
-        fi
-        if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ] || [ ! -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
-            echo
-            echo "Can not detect the android host. Please use -android-ndk-host option to specify one"
-            exit 1
-        fi
-
-        DeviceVar set DEFAULT_ANDROID_SDK_ROOT "$CFG_DEFAULT_ANDROID_SDK_ROOT"
-        DeviceVar set DEFAULT_ANDROID_NDK_ROOT "$CFG_DEFAULT_ANDROID_NDK_ROOT"
-        DeviceVar set DEFAULT_ANDROID_PLATFORM "$CFG_DEFAULT_ANDROID_PLATFORM"
-        DeviceVar set DEFAULT_ANDROID_NDK_HOST "$CFG_DEFAULT_ANDROID_NDK_HOST"
-        DeviceVar set DEFAULT_ANDROID_TARGET_ARCH "$CFG_DEFAULT_ANDROID_TARGET_ARCH"
-        DeviceVar set DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION "$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION"
-fi
-
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
 else
@@ -973,15 +838,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
 
     mkdir -p "$outpath/mkspecs"
-fi
-
-if [ "$XPLATFORM_ANDROID" = "no" ]; then
-    TEST_COMPILER=`getXQMakeConf QMAKE_CXX`
-    GCC_MACHINE_DUMP=
-    case "$TEST_COMPILER" in *g++) GCC_MACHINE_DUMP=$($TEST_COMPILER -dumpmachine);; esac
-    if [ -n "$GCC_MACHINE_DUMP" ]; then
-        DeviceVar set GCC_MACHINE_DUMP $($TEST_COMPILER -dumpmachine)
-    fi
 fi
 
 # -----------------------------------------------------------------------------
@@ -1136,17 +992,6 @@ fi
 
 [ -z "$CFG_HOST_QT_TOOLS_PATH" ] && CFG_HOST_QT_TOOLS_PATH="$outpath/bin"
 CFG_QMAKE_PATH="$CFG_HOST_QT_TOOLS_PATH/qmake"
-
-#-------------------------------------------------------------------------------
-# write out device config before we run the test.
-#-------------------------------------------------------------------------------
-DEVICE_VARS_OUTFILE="$outpath/mkspecs/qdevice.pri"
-if cmp -s "$DEVICE_VARS_FILE" "$DEVICE_VARS_OUTFILE"; then
-    rm -f "$DEVICE_VARS_FILE"
-else
-    mv -f $DEVICE_VARS_FILE "$DEVICE_VARS_OUTFILE"
-    DEVICE_VARS_FILE="$DEVICE_VARS_OUTFILE"
-fi
 
 #-------------------------------------------------------------------------------
 # run configure tests

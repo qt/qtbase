@@ -162,7 +162,8 @@ defineTest(qtConfCommandline_addString) {
     val = $${2}
     isEmpty(val): val = $$qtConfGetNextCommandlineArg()
 
-    contains(val, "^-.*|[A-Z_]+=.*")|isEmpty(val) {
+    # Note: Arguments which are variable assignments are legit here.
+    contains(val, "^-.*")|isEmpty(val) {
         qtConfAddError("No value supplied to command line option '$$opt'.")
         return()
     }

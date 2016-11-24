@@ -50,7 +50,6 @@ public:
     void configure();
 
     void generateHeaders();
-    void generateQDevicePri();
 
     bool isDone();
     bool isOk();
@@ -69,19 +68,7 @@ private:
     QString sourcePathMangled, buildPathMangled;
     QDir sourceDir, buildDir;
 
-    QString formatPath(const QString &path);
-
     bool reloadCmdLine(int idx);
-};
-
-class FileWriter : public QTextStream
-{
-public:
-    FileWriter(const QString &name);
-    bool flush();
-private:
-    QString m_name;
-    QBuffer m_buffer;
 };
 
 QT_END_NAMESPACE

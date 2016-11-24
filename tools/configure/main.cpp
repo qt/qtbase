@@ -55,11 +55,6 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
-    // Generate qdevice.pri
-    app.generateQDevicePri();
-    if (!app.isOk())
-        return 3;
-
     // run qmake based configure
     app.configure();
     if (!app.isOk())
