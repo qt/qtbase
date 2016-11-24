@@ -73,6 +73,10 @@ QT_BEGIN_NAMESPACE
     \value MouseDoubleClickInterval (int) Mouse double click interval in ms,
                                     overriding QPlatformIntegration::styleHint.
 
+    \value MouseDoubleClickDistance (int) The maximum distance in logical pixels which the mouse can travel
+                        between clicks in order for the click sequence to be handled as a double click.
+                        The default value is 5 logical pixels.
+
     \value MousePressAndHoldInterval (int) Mouse press and hold interval in ms,
                                     overriding QPlatformIntegration::styleHint.
 
@@ -81,6 +85,9 @@ QT_BEGIN_NAMESPACE
 
     \value StartDragTime (int) Start drag time in ms,
                                overriding QPlatformIntegration::styleHint.
+
+    \value WheelScrollLines (int) The number of lines to scroll a widget, when the mouse wheel is rotated.
+                        The default value is 3.  \sa QApplication::wheelScrollLines()
 
     \value KeyboardAutoRepeatRate (int) Keyboard auto repeat rate,
                                   overriding QPlatformIntegration::styleHint.
