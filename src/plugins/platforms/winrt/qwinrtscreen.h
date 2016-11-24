@@ -83,6 +83,7 @@ class QTouchDevice;
 class QWinRTCursor;
 class QWinRTInputContext;
 class QWinRTScreenPrivate;
+class QWinRTWindow;
 class QWinRTScreen : public QPlatformScreen
 {
 public:
@@ -109,6 +110,12 @@ public:
     void removeWindow(QWindow *window);
     void raise(QWindow *window);
     void lower(QWindow *window);
+
+    bool setMouseGrabWindow(QWinRTWindow *window, bool grab);
+    QWinRTWindow* mouseGrabWindow() const;
+
+    bool setKeyboardGrabWindow(QWinRTWindow *window, bool grab);
+    QWinRTWindow* keyboardGrabWindow() const;
 
     void updateWindowTitle(const QString &title);
 

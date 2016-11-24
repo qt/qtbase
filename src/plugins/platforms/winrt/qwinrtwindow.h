@@ -70,6 +70,9 @@ public:
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
     void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
 
+    bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
+    bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;
+
     EGLSurface eglSurface() const;
     void createEglSurface(EGLDisplay display, EGLConfig config);
 
