@@ -248,6 +248,8 @@ void tst_QFtp::init()
     } else {
         networkSessionExplicit.clear();
     }
+#else
+    Q_UNUSED(setSession);
 #endif
 
     delete ftp;
