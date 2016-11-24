@@ -166,7 +166,7 @@ private:
             timerIdToHandle.insert(id, handle);
             timerIdToCancelHandle.insert(id, cancelHandle);
         }
-        timerIdToObject.insert(id, obj);
+
         const quint64 targetTime = qt_msectime() + interval;
         const WinRTTimerInfo info(id, interval, type, obj, targetTime);
         QMutexLocker locker(&timerInfoLock);
@@ -587,15 +587,18 @@ bool QEventDispatcherWinRT::event(QEvent *e)
             break;
         info.inEvent = true;
 
+        QObject *timerObj = d->timerIdToObject.value(id);
         locker.unlock();
 
         QTimerEvent te(id);
-        QCoreApplication::sendEvent(d->timerIdToObject.value(id), &te);
+        QCoreApplication::sendEvent(timerObj, &te);
 
         locker.relock();
 
-        // The timer might have been removed in the meanwhile
-        if (id >= d->timerInfos.size())
+        // The timer might have been removed in the meanwhile. If the timer was
+        // the last one in the list, id is bigger than the list's size.
+        // Otherwise, the id will just be set to INVALID_TIMER_ID.
+        if (id >= d->timerInfos.size() || info.timerId == INVALID_TIMER_ID)
             break;
 
         if (info.interval == 0 && info.inEvent) {
