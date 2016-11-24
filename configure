@@ -123,10 +123,7 @@ IFS=$SAVED_IFS
 
 # initialize global variables
 DEVICE_VARS_FILE=.device.vars
-HOST_VARS_FILE=.host.vars
-
 :> "$DEVICE_VARS_FILE"
-:> "$HOST_VARS_FILE"
 
 #-------------------------------------------------------------------------------
 # utility functions
@@ -169,6 +166,9 @@ expandQMakeConf()
         ;;
         *load\(device_config\)*)
             conf_file="$2"
+            if [ -z "$conf_file" ]; then
+                continue
+            fi
             if [ ! -f  "$conf_file" ]; then
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
@@ -312,7 +312,7 @@ macSDKify()
 getQMakeConf()
 {
     if [ -z "$specvals" ]; then
-        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" "$HOST_VARS_FILE" | extractQMakeVariables`
+        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" | extractQMakeVariables`
         if [ "$BUILD_ON_MAC" = "yes" ]; then specvals=$(macSDKify "$specvals"); fi
     fi
     getSingleQMakeVariable "$1" "$specvals"
@@ -359,23 +359,6 @@ resolveDeviceMkspec()
     else
         echo "$result"
     fi
-}
-
-#-------------------------------------------------------------------------------
-# Host options
-#-------------------------------------------------------------------------------
-HostVar()
-{
-    case "$1" in
-        set)
-            eq="="
-            ;;
-        *)
-            echo >&2 "BUG: wrong command to HostVar: $1"
-            ;;
-    esac
-
-    echo "$2" "$eq" "$3" >> "$HOST_VARS_FILE"
 }
 
 #-------------------------------------------------------------------------------
@@ -559,7 +542,6 @@ while [ "$#" -gt 0 ]; do
     -xplatform| \
     -device| \
     -device-option| \
-    -host-option| \
     -sdk| \
     -android-sdk| \
     -android-ndk| \
@@ -696,11 +678,6 @@ while [ "$#" -gt 0 ]; do
         DEV_VAR=`echo $VAL | cut -d '=' -f 1`
         DEV_VAL=`echo $VAL | cut -d '=' -f 2-`
         DeviceVar set $DEV_VAR "$DEV_VAL"
-        ;;
-    host-option)
-        HOST_VAR=`echo $VAL | cut -d '=' -f 1`
-        HOST_VAL=`echo $VAL | cut -d '=' -f 2-`
-        HostVar set $HOST_VAR "$HOST_VAL"
         ;;
     optimized-qmake|optimized-tools)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -1578,17 +1555,6 @@ if cmp -s "$DEVICE_VARS_FILE" "$DEVICE_VARS_OUTFILE"; then
 else
     mv -f $DEVICE_VARS_FILE "$DEVICE_VARS_OUTFILE"
     DEVICE_VARS_FILE="$DEVICE_VARS_OUTFILE"
-fi
-
-#-------------------------------------------------------------------------------
-# write out host config.
-#-------------------------------------------------------------------------------
-HOST_VARS_OUTFILE="$outpath/mkspecs/qhost.pri"
-if cmp -s "$HOST_VARS_FILE" "$HOST_VARS_OUTFILE"; then
-    rm -f "$HOST_VARS_FILE"
-else
-    mv -f $HOST_VARS_FILE "$HOST_VARS_OUTFILE"
-    HOST_VARS_FILE="$HOST_VARS_OUTFILE"
 fi
 
 #-------------------------------------------------------------------------------

@@ -81,7 +81,6 @@
             "gnumake": { "type": "boolean", "name": "GNUmake" },
             "gui": "boolean",
             "headersclean": "boolean",
-            "host-option": "string",
             "incredibuild-xge": { "type": "boolean", "name": "incredibuild_xge" },
             "libudev": "boolean",
             "ltcg": "boolean",
