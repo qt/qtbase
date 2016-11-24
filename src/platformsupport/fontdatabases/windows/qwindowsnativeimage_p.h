@@ -80,8 +80,8 @@ private:
     const HDC m_hdc;
     QImage m_image;
 
-    HBITMAP m_bitmap;
-    HBITMAP m_null_bitmap;
+    HBITMAP m_bitmap = 0;
+    HBITMAP m_null_bitmap = 0;
 };
 
 QT_END_NAMESPACE

@@ -248,21 +248,9 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     : QFontEngine(Win),
     m_fontEngineData(fontEngineData),
     _name(name),
-    hfont(0),
     m_logfont(lf),
     ttf(0),
-    hasOutline(0),
-    cmap(0),
-    cmapSize(0),
-    lbearing(SHRT_MIN),
-    rbearing(SHRT_MIN),
-    x_height(-1),
-    synthesized_flags(-1),
-    lineWidth(-1),
-    widthCache(0),
-    widthCacheSize(0),
-    designAdvances(0),
-    designAdvancesSize(0)
+    hasOutline(0)
 {
     qCDebug(lcQpaFonts) << __FUNCTION__ << name << lf.lfHeight;
     hfont = CreateFontIndirect(&m_logfont);

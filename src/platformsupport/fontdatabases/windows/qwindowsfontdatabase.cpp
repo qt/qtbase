@@ -591,12 +591,7 @@ namespace {
 */
 
 QWindowsFontEngineData::QWindowsFontEngineData()
-    : clearTypeEnabled(false)
-    , fontSmoothingGamma(QWindowsFontDatabase::fontSmoothingGamma())
-#if !defined(QT_NO_DIRECTWRITE)
-    , directWriteFactory(0)
-    , directWriteGdiInterop(0)
-#endif
+    : fontSmoothingGamma(QWindowsFontDatabase::fontSmoothingGamma())
 {
     // from qapplication_win.cpp
     UINT result = 0;

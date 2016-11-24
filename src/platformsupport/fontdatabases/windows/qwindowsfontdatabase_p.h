@@ -74,12 +74,12 @@ public:
 
     uint pow_gamma[256];
 
-    bool clearTypeEnabled;
+    bool clearTypeEnabled = false;
     qreal fontSmoothingGamma;
-    HDC hdc;
+    HDC hdc = 0;
 #if !defined(QT_NO_DIRECTWRITE)
-    IDWriteFactory *directWriteFactory;
-    IDWriteGdiInterop *directWriteGdiInterop;
+    IDWriteFactory *directWriteFactory = nullptr;
+    IDWriteGdiInterop *directWriteGdiInterop = nullptr;
 #endif
 };
 

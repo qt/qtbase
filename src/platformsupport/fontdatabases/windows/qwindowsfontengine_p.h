@@ -145,29 +145,29 @@ private:
 
     const QString     _name;
     QString     uniqueFamilyName;
-    HFONT       hfont;
+    HFONT       hfont = 0;
     const LOGFONT     m_logfont;
     uint        ttf        : 1;
     uint        hasOutline : 1;
     uint        hasUnreliableOutline : 1;
     uint        cffTable   : 1;
     TEXTMETRIC  tm;
-    const unsigned char *cmap;
-    int cmapSize;
+    const unsigned char *cmap = nullptr;
+    int cmapSize = 0;
     QByteArray cmapTable;
-    mutable qreal lbearing;
-    mutable qreal rbearing;
+    mutable qreal lbearing = SHRT_MIN;
+    mutable qreal rbearing = SHRT_MIN;
     QFixed designToDevice;
-    int unitsPerEm;
-    QFixed x_height;
+    int unitsPerEm = 0;
+    QFixed x_height = -1;
     FaceId _faceId;
 
-    mutable int synthesized_flags;
-    mutable QFixed lineWidth;
-    mutable unsigned char *widthCache;
-    mutable uint widthCacheSize;
-    mutable QFixed *designAdvances;
-    mutable int designAdvancesSize;
+    mutable int synthesized_flags = -1;
+    mutable QFixed lineWidth = -1;
+    mutable unsigned char *widthCache = nullptr;
+    mutable uint widthCacheSize = 0;
+    mutable QFixed *designAdvances = nullptr;
+    mutable int designAdvancesSize = 0;
 };
 
 class QWindowsMultiFontEngine : public QFontEngineMulti

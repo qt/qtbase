@@ -110,9 +110,7 @@ static inline HBITMAP createDIB(HDC hdc, int width, int height,
 
 QWindowsNativeImage::QWindowsNativeImage(int width, int height,
                                          QImage::Format format) :
-    m_hdc(createDC()),
-    m_bitmap(0),
-    m_null_bitmap(0)
+    m_hdc(createDC())
 {
     if (width != 0 && height != 0) {
         uchar *bits;
