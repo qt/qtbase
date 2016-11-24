@@ -629,6 +629,22 @@ WId QWindow::winId() const
     return d->platformWindow->winId();
 }
 
+ /*!
+    Returns the parent window, if any.
+
+    If \a mode is IncludeTransients, then the transient parent is returned
+    if there is no parent.
+
+    A window without a parent is known as a top level window.
+
+    \since 5.9
+*/
+QWindow *QWindow::parent(AncestorMode mode) const
+{
+    Q_D(const QWindow);
+    return d->parentWindow ? d->parentWindow : (mode == IncludeTransients ? transientParent() : nullptr);
+}
+
 /*!
     Returns the parent window, if any.
 
@@ -1117,11 +1133,10 @@ bool QWindow::isActive() const
     if (focus == this)
         return true;
 
-    if (!parent() && !transientParent()) {
+    if (QWindow *p = parent(IncludeTransients))
+        return p->isActive();
+    else
         return isAncestorOf(focus);
-    } else {
-        return (parent() && parent()->isActive()) || (transientParent() && transientParent()->isActive());
-    }
 }
 
 /*!
@@ -1285,8 +1300,10 @@ bool QWindow::isAncestorOf(const QWindow *child, AncestorMode mode) const
     if (child->parent() == this || (mode == IncludeTransients && child->transientParent() == this))
         return true;
 
-    return (child->parent() && isAncestorOf(child->parent(), mode))
-        || (mode == IncludeTransients && child->transientParent() && isAncestorOf(child->transientParent(), mode));
+    if (child->parent(mode) && isAncestorOf(child->parent(mode), mode))
+        return true;
+
+    return false;
 }
 
 /*!
@@ -2497,10 +2514,7 @@ QWindow *QWindowPrivate::topLevelWindow() const
     QWindow *window = const_cast<QWindow *>(q);
 
     while (window) {
-        QWindow *parent = window->parent();
-        if (!parent)
-            parent = window->transientParent();
-
+        QWindow *parent = window->parent(QWindow::IncludeTransients);
         if (!parent)
             break;
 

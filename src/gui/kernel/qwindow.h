@@ -132,6 +132,12 @@ public:
     };
     Q_ENUM(Visibility)
 
+    enum AncestorMode {
+        ExcludeTransients,
+        IncludeTransients
+    };
+    Q_ENUM(AncestorMode)
+
     explicit QWindow(QScreen *screen = Q_NULLPTR);
     explicit QWindow(QWindow *parent);
     virtual ~QWindow();
@@ -148,7 +154,8 @@ public:
 
     WId winId() const;
 
-    QWindow *parent() const;
+    QWindow *parent(AncestorMode mode) const;
+    QWindow *parent() const; // ### Qt6: Merge with above
     void setParent(QWindow *parent);
 
     bool isTopLevel() const;
@@ -186,11 +193,6 @@ public:
 
     void setTransientParent(QWindow *parent);
     QWindow *transientParent() const;
-
-    enum AncestorMode {
-        ExcludeTransients,
-        IncludeTransients
-    };
 
     bool isAncestorOf(const QWindow *child, AncestorMode mode = IncludeTransients) const;
 
