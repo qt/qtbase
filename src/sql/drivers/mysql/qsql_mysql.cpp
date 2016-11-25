@@ -1619,7 +1619,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
     Q_D(const QMYSQLDriver);
     QString r;
     if (field.isNull()) {
-        r = QLatin1String("NULL");
+        r = QStringLiteral("NULL");
     } else {
         switch(field.type()) {
         case QVariant::Double:

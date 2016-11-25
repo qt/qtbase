@@ -3633,7 +3633,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
             \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li dddd
-            \li the long localized day name (e.g. 'Monday' to 'Qt::Sunday').
+            \li the long localized day name (e.g. 'Monday' to 'Sunday').
             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li M \li the month as number without a leading zero (1-12)
     \row \li MM \li the month as number with a leading zero (01-12)
