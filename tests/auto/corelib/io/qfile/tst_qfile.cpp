@@ -2658,7 +2658,8 @@ void tst_QFile::handle()
     QVERIFY(fd > 2);
     QCOMPARE(int(file.handle()), fd);
     char c = '\0';
-    QT_READ(int(file.handle()), &c, 1);
+    const auto readResult = QT_READ(int(file.handle()), &c, 1);
+    QCOMPARE(readResult, static_cast<decltype(readResult)>(1));
     QCOMPARE(c, '/');
 
     // test if the QFile and the handle remain in sync

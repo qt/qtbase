@@ -698,7 +698,7 @@ void tst_QLocalSocket::simpleCommandProtocol2()
 
     QObject::connect(localSocketRead, &QLocalSocket::readyRead, [&] {
         forever {
-            if (localSocketRead->bytesAvailable() < sizeof(qint64))
+            if (localSocketRead->bytesAvailable() < qint64(sizeof(qint64)))
                 return;
 
             if (blockSize == 0) {

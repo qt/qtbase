@@ -2251,7 +2251,8 @@ void tst_QTcpSocket::abortiveClose()
     enterLoop(10);
     QVERIFY(server.hasPendingConnections());
 
-    QVERIFY(tmpSocket = server.nextPendingConnection());
+    tmpSocket = server.nextPendingConnection();
+    QVERIFY(tmpSocket != nullptr);
 
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     QSignalSpy readyReadSpy(clientSocket, SIGNAL(readyRead()));
