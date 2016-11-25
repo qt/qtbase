@@ -51,6 +51,8 @@
 #include <qdebug.h>
 #include <qdatetime.h>
 #include <qnetworkinterface.h>
+#include <qoperatingsystemversion.h>
+#include <qversionnumber.h>
 
 //#define QNATIVESOCKETENGINE_DEBUG
 #if defined(QNATIVESOCKETENGINE_DEBUG)
@@ -334,11 +336,12 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         return false;
     }
 
-    QSysInfo::WinVersion osver = QSysInfo::windowsVersion();
+    const QVersionNumber osVersion = QOperatingSystemVersion::current().toVersionNumber();
+    const QVersionNumber windows7Version = QVersionNumber(6, 1);
 
     //Windows XP and 2003 support IPv6 but not dual stack sockets
     int protocol = (socketProtocol == QAbstractSocket::IPv6Protocol
-        || (socketProtocol == QAbstractSocket::AnyIPProtocol && osver >= QSysInfo::WV_6_0)) ? AF_INET6 : AF_INET;
+        || (socketProtocol == QAbstractSocket::AnyIPProtocol)) ? AF_INET6 : AF_INET;
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
 
     // MSDN KB179942 states that on winnt 4 WSA_FLAG_OVERLAPPED is needed if socket is to be non blocking
@@ -352,12 +355,12 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 
     SOCKET socket = INVALID_SOCKET;
     // Windows 7 or later, try the new API
-    if ((osver & QSysInfo::WV_NT_based) >= QSysInfo::WV_6_1)
+    if (osVersion >= windows7Version)
         socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_NO_HANDLE_INHERIT | WSA_FLAG_OVERLAPPED);
     // previous call fails if the windows 7 service pack 1 or hot fix isn't installed.
 
     // Try the old API if the new one failed on Windows 7, or always on earlier versions
-    if (socket == INVALID_SOCKET && ((osver & QSysInfo::WV_NT_based) <= QSysInfo::WV_6_1)) {
+    if (socket == INVALID_SOCKET && osVersion <= windows7Version) {
         socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 #ifdef HANDLE_FLAG_INHERIT
         if (socket != INVALID_SOCKET) {
