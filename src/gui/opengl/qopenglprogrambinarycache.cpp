@@ -42,6 +42,7 @@
 #include <QOpenGLExtraFunctions>
 #include <QStandardPaths>
 #include <QDir>
+#include <QSaveFile>
 #include <QLoggingCategory>
 
 #ifdef Q_OS_UNIX
@@ -322,11 +323,14 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
         return;
     }
 
-    QFile f(cacheFileName(cacheKey));
-    if (f.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    QSaveFile f(cacheFileName(cacheKey));
+    if (f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         f.write(blob);
-    else
-        qCDebug(DBG_SHADER_CACHE, "Failed to write %s to shader cache", qPrintable(f.fileName()));
+        if (!f.commit())
+            qCDebug(DBG_SHADER_CACHE, "Failed to write %s to shader cache", qPrintable(f.fileName()));
+    } else {
+        qCDebug(DBG_SHADER_CACHE, "Failed to create %s in shader cache", qPrintable(f.fileName()));
+    }
 }
 
 QT_END_NAMESPACE
