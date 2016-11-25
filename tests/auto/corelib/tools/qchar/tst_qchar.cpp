@@ -72,6 +72,9 @@ private slots:
     void unicodeVersion();
 };
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 void tst_QChar::operator_eqeq_int()
 {
     {
@@ -95,6 +98,8 @@ void tst_QChar::operator_eqeq_int()
         QVERIFY(!(0x20 == ch));
     }
 }
+
+QT_WARNING_POP
 
 void tst_QChar::operators_data()
 {
