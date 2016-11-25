@@ -60,14 +60,14 @@ QT_BEGIN_NAMESPACE
 class QBenchmarkTimeMeasurer : public QBenchmarkMeasurerBase
 {
 public:
-    void start();
-    qint64 checkpoint();
-    qint64 stop();
-    bool isMeasurementAccepted(qint64 measurement);
-    int adjustIterationCount(int sugestion);
-    int adjustMedianCount(int suggestion);
-    bool needsWarmupIteration();
-    QTest::QBenchmarkMetric metricType();
+    void start() override;
+    qint64 checkpoint() override;
+    qint64 stop() override;
+    bool isMeasurementAccepted(qint64 measurement) override;
+    int adjustIterationCount(int sugestion) override;
+    int adjustMedianCount(int suggestion) override;
+    bool needsWarmupIteration() override;
+    QTest::QBenchmarkMetric metricType() override;
 private:
     QElapsedTimer time;
 };
@@ -77,14 +77,14 @@ private:
 class QBenchmarkTickMeasurer : public QBenchmarkMeasurerBase
 {
 public:
-    void start();
-    qint64 checkpoint();
-    qint64 stop();
-    bool isMeasurementAccepted(qint64 measurement);
-    int adjustIterationCount(int);
-    int adjustMedianCount(int suggestion);
-    bool needsWarmupIteration();
-    QTest::QBenchmarkMetric metricType();
+    void start() override;
+    qint64 checkpoint() override;
+    qint64 stop() override;
+    bool isMeasurementAccepted(qint64 measurement) override;
+    int adjustIterationCount(int) override;
+    int adjustMedianCount(int suggestion) override;
+    bool needsWarmupIteration() override;
+    QTest::QBenchmarkMetric metricType() override;
 private:
     CycleCounterTicks startTicks;
 };

@@ -925,7 +925,7 @@ public:
         waitCondition.wakeAll();
     }
 
-    void run() {
+    void run() override {
         QMutexLocker locker(&mutex);
         waitCondition.wakeAll();
         while (1) {
