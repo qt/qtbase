@@ -192,15 +192,30 @@ bool QPlatformWindow::isActive() const
 }
 
 /*!
-    Returns \c true if the window is a descendant of an embedded non-Qt window.
-    Example of an embedded non-Qt window is the parent window of an in-process QAxServer.
+    Returns \c true if the window is an ancestor of the given \a child.
 
-    If \a parentWindow is nonzero, only check if the window is embedded in the
-    specified \a parentWindow.
+    Platform overrides should iterate the native window hierarchy of the child,
+    to ensure that ancestary is reflected even with native windows in the window
+    hierarchy.
 */
-bool QPlatformWindow::isEmbedded(const QPlatformWindow *parentWindow) const
+bool QPlatformWindow::isAncestorOf(const QPlatformWindow *child) const
 {
-    Q_UNUSED(parentWindow);
+    for (const QPlatformWindow *parent = child->parent(); parent; parent = child->parent()) {
+        if (parent == this)
+            return true;
+    }
+
+    return false;
+}
+
+/*!
+    Returns \c true if the window is a child of a non-Qt window.
+
+    A embedded window has no parent platform window as reflected
+    though parent(), but will have a native parent window.
+*/
+bool QPlatformWindow::isEmbedded() const
+{
     return false;
 }
 

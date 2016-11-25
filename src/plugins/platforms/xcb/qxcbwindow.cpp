@@ -2154,12 +2154,9 @@ bool QXcbWindow::isExposed() const
     return m_mapped;
 }
 
-bool QXcbWindow::isEmbedded(const QPlatformWindow *parentWindow) const
+bool QXcbWindow::isEmbedded() const
 {
-    if (!m_embedded)
-        return false;
-
-    return parentWindow ? (parentWindow == parent()) : true;
+    return m_embedded;
 }
 
 QPoint QXcbWindow::mapToGlobal(const QPoint &pos) const

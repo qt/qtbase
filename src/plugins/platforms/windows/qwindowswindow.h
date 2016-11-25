@@ -222,7 +222,8 @@ public:
     bool isVisible() const;
     bool isExposed() const override { return testFlag(Exposed); }
     bool isActive() const override;
-    bool isEmbedded(const QPlatformWindow *parentWindow = 0) const override;
+    bool isAncestorOf(const QPlatformWindow *child) const override;
+    bool isEmbedded() const override;
     QPoint mapToGlobal(const QPoint &pos) const override;
     QPoint mapFromGlobal(const QPoint &pos) const override;
 

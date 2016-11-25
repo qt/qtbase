@@ -87,7 +87,7 @@ public:
     void setParent(const QPlatformWindow *window) override;
 
     bool isExposed() const override;
-    bool isEmbedded(const QPlatformWindow *parentWindow = 0) const override;
+    bool isEmbedded() const override;
     QPoint mapToGlobal(const QPoint &pos) const override;
     QPoint mapFromGlobal(const QPoint &pos) const override;
 

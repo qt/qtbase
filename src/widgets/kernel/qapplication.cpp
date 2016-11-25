@@ -2462,13 +2462,6 @@ bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWin
             return false;
         }
 
-        // Embedded windows are not visible in normal parent-child chain,
-        // so check the native parent chain, too.
-        const QPlatformWindow *platWin = window->handle();
-        const QPlatformWindow *modalPlatWin = modalWindow->handle();
-        if (platWin && modalPlatWin && platWin->isEmbedded(modalPlatWin))
-            return false;
-
         Qt::WindowModality windowModality = modalWindow->modality();
         QWidgetWindow *modalWidgetWindow = qobject_cast<QWidgetWindow *>(modalWindow);
         if (windowModality == Qt::NonModal) {

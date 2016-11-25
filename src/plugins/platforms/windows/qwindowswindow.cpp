@@ -1243,18 +1243,14 @@ bool QWindowsWindow::isActive() const
     return false;
 }
 
-bool QWindowsWindow::isEmbedded(const QPlatformWindow *parentWindow) const
+bool QWindowsWindow::isAncestorOf(const QPlatformWindow *child) const
 {
-    if (parentWindow) {
-        const QWindowsWindow *ww = static_cast<const QWindowsWindow *>(parentWindow);
-        const HWND hwnd = ww->handle();
-        if (!IsChild(hwnd, m_data.hwnd))
-            return false;
-    }
+    const QWindowsWindow *childWindow = static_cast<const QWindowsWindow *>(child);
+    return IsChild(m_data.hwnd, childWindow->handle());
+}
 
-    if (!m_data.embedded && parent())
-        return parent()->isEmbedded();
-
+bool QWindowsWindow::isEmbedded() const
+{
     return m_data.embedded;
 }
 

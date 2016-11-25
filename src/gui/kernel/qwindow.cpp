@@ -1300,8 +1300,13 @@ bool QWindow::isAncestorOf(const QWindow *child, AncestorMode mode) const
     if (child->parent() == this || (mode == IncludeTransients && child->transientParent() == this))
         return true;
 
-    if (child->parent(mode) && isAncestorOf(child->parent(mode), mode))
-        return true;
+    if (QWindow *parent = child->parent(mode)) {
+        if (isAncestorOf(parent, mode))
+            return true;
+    } else if (handle() && child->handle()) {
+        if (handle()->isAncestorOf(child->handle()))
+            return true;
+    }
 
     return false;
 }
