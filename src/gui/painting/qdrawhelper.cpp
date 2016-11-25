@@ -2231,7 +2231,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                 }
             }
         } else { //rotation
-            if (std::abs(data->m11) > 8 || std::abs(data->m22) > 8) {
+            if (std::abs(data->m11) < (1./8.) || std::abs(data->m22) < (1./8.)) {
                 //if we are zooming more than 8 times, we use 8bit precision for the position.
                 while (b < end) {
                     int x1 = (fx >> 16);
@@ -2717,7 +2717,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
                 layout->convertToARGB32PM(buf2, buf2, len * 2, clut, 0);
 
-                if (std::abs(data->m11) > 8 || std::abs(data->m22) > 8) {
+                if (std::abs(data->m11) < (1./8.) || std::abs(data->m22) < (1./8.)) {
                     //if we are zooming more than 8 times, we use 8bit precision for the position.
                     for (int i = 0; i < len; ++i) {
                         int distx = (fracX & 0x0000ffff) >> 8;

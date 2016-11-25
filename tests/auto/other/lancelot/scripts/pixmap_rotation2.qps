@@ -1,0 +1,8 @@
+# Version: 1
+# CheckVsReference: 1%
+
+setRenderHint SmoothPixmapTransformation
+translate 400 -120
+rotate 45
+scale 400 400
+drawImage solid2x2.png 0 0
