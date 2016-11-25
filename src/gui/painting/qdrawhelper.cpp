@@ -1919,21 +1919,656 @@ inline void fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(int, 
     Q_ASSERT(v2 >= l1 && v2 <= l2);
 }
 
+enum FastTransformTypes {
+    SimpleUpscaleTransform,
+    UpscaleTransform,
+    DownscaleTransform,
+    RotateTransform,
+    FastRotateTransform,
+    NFastTransformTypes
+};
+
+typedef void (QT_FASTCALL *BilinearFastTransformHelper)(uint *b, uint *end, const QTextureData &image, int &fx, int &fy, int fdx, int fdy);
+
+template<TextureBlendType blendType>
+static void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper(uint *b, uint *end, const QTextureData &image,
+                                                                               int &fx, int &fy, int fdx, int /*fdy*/)
+{
+    int y1 = (fy >> 16);
+    int y2;
+    fetchTransformedBilinear_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1, y2);
+    const uint *s1 = (const uint *)image.scanLine(y1);
+    const uint *s2 = (const uint *)image.scanLine(y2);
+
+    int disty = (fy & 0x0000ffff) >> 8;
+    int idisty = 256 - disty;
+    int x = fx >> 16;
+    int length = end - b;
+
+    // The idea is first to do the interpolation between the row s1 and the row s2
+    // into an intermediate buffer, then we interpolate between two pixel of this buffer.
+
+    // intermediate_buffer[0] is a buffer of red-blue component of the pixel, in the form 0x00RR00BB
+    // intermediate_buffer[1] is the alpha-green component of the pixel, in the form 0x00AA00GG
+    // +1 for the last pixel to interpolate with, and +1 for rounding errors.
+    quint32 intermediate_buffer[2][buffer_size + 2];
+    // count is the size used in the intermediate_buffer.
+    int count = (qint64(length) * fdx + fixed_scale - 1) / fixed_scale + 2;
+    Q_ASSERT(count <= buffer_size + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
+    int f = 0;
+    int lim = count;
+    if (blendType == BlendTransformedBilinearTiled) {
+        x %= image.width;
+        if (x < 0) x += image.width;
+    } else {
+        lim = qMin(count, image.x2 - x);
+        if (x < image.x1) {
+            Q_ASSERT(x < image.x2);
+            uint t = s1[image.x1];
+            uint b = s2[image.x1];
+            quint32 rb = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
+            quint32 ag = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
+            do {
+                intermediate_buffer[0][f] = rb;
+                intermediate_buffer[1][f] = ag;
+                f++;
+                x++;
+            } while (x < image.x1 && f < lim);
+        }
+    }
+
+    if (blendType != BlendTransformedBilinearTiled) {
+#if defined(__SSE2__)
+        const __m128i disty_ = _mm_set1_epi16(disty);
+        const __m128i idisty_ = _mm_set1_epi16(idisty);
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+
+        lim -= 3;
+        for (; f < lim; x += 4, f += 4) {
+            // Load 4 pixels from s1, and split the alpha-green and red-blue component
+            __m128i top = _mm_loadu_si128((const __m128i*)((const uint *)(s1)+x));
+            __m128i topAG = _mm_srli_epi16(top, 8);
+            __m128i topRB = _mm_and_si128(top, colorMask);
+            // Multiplies each color component by idisty
+            topAG = _mm_mullo_epi16 (topAG, idisty_);
+            topRB = _mm_mullo_epi16 (topRB, idisty_);
+
+            // Same for the s2 vector
+            __m128i bottom = _mm_loadu_si128((const __m128i*)((const uint *)(s2)+x));
+            __m128i bottomAG = _mm_srli_epi16(bottom, 8);
+            __m128i bottomRB = _mm_and_si128(bottom, colorMask);
+            bottomAG = _mm_mullo_epi16 (bottomAG, disty_);
+            bottomRB = _mm_mullo_epi16 (bottomRB, disty_);
+
+            // Add the values, and shift to only keep 8 significant bits per colors
+            __m128i rAG =_mm_add_epi16(topAG, bottomAG);
+            rAG = _mm_srli_epi16(rAG, 8);
+            _mm_storeu_si128((__m128i*)(&intermediate_buffer[1][f]), rAG);
+            __m128i rRB =_mm_add_epi16(topRB, bottomRB);
+            rRB = _mm_srli_epi16(rRB, 8);
+            _mm_storeu_si128((__m128i*)(&intermediate_buffer[0][f]), rRB);
+        }
+#elif defined(__ARM_NEON__)
+        const int16x8_t disty_ = vdupq_n_s16(disty);
+        const int16x8_t idisty_ = vdupq_n_s16(idisty);
+        const int16x8_t colorMask = vdupq_n_s16(0x00ff);
+
+        lim -= 3;
+        for (; f < lim; x += 4, f += 4) {
+            // Load 4 pixels from s1, and split the alpha-green and red-blue component
+            int16x8_t top = vld1q_s16((int16_t*)((const uint *)(s1)+x));
+            int16x8_t topAG = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(top), 8));
+            int16x8_t topRB = vandq_s16(top, colorMask);
+            // Multiplies each color component by idisty
+            topAG = vmulq_s16(topAG, idisty_);
+            topRB = vmulq_s16(topRB, idisty_);
+
+            // Same for the s2 vector
+            int16x8_t bottom = vld1q_s16((int16_t*)((const uint *)(s2)+x));
+            int16x8_t bottomAG = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(bottom), 8));
+            int16x8_t bottomRB = vandq_s16(bottom, colorMask);
+            bottomAG = vmulq_s16(bottomAG, disty_);
+            bottomRB = vmulq_s16(bottomRB, disty_);
+
+            // Add the values, and shift to only keep 8 significant bits per colors
+            int16x8_t rAG = vaddq_s16(topAG, bottomAG);
+            rAG = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(rAG), 8));
+            vst1q_s16((int16_t*)(&intermediate_buffer[1][f]), rAG);
+            int16x8_t rRB = vaddq_s16(topRB, bottomRB);
+            rRB = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(rRB), 8));
+            vst1q_s16((int16_t*)(&intermediate_buffer[0][f]), rRB);
+        }
+#endif
+    }
+    for (; f < count; f++) { // Same as above but without simd
+        if (blendType == BlendTransformedBilinearTiled) {
+            if (x >= image.width) x -= image.width;
+        } else {
+            x = qMin(x, image.x2 - 1);
+        }
+
+        uint t = s1[x];
+        uint b = s2[x];
+
+        intermediate_buffer[0][f] = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
+        intermediate_buffer[1][f] = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
+        x++;
+    }
+    // Now interpolate the values from the intermediate_buffer to get the final result.
+    fx &= fixed_scale - 1;
+    Q_ASSERT((fx >> 16) == 0);
+    while (b < end) {
+        int x1 = (fx >> 16);
+        int x2 = x1 + 1;
+        Q_ASSERT(x1 >= 0);
+        Q_ASSERT(x2 < count);
+
+        int distx = (fx & 0x0000ffff) >> 8;
+        int idistx = 256 - distx;
+        int rb = ((intermediate_buffer[0][x1] * idistx + intermediate_buffer[0][x2] * distx) >> 8) & 0xff00ff;
+        int ag = (intermediate_buffer[1][x1] * idistx + intermediate_buffer[1][x2] * distx) & 0xff00ff00;
+        *b = rb | ag;
+        b++;
+        fx += fdx;
+    }
+}
+
+template<TextureBlendType blendType>
+static void QT_FASTCALL fetchTransformedBilinearARGB32PM_upscale_helper(uint *b, uint *end, const QTextureData &image,
+                                                                        int &fx, int &fy, int fdx, int /*fdy*/)
+{
+    int y1 = (fy >> 16);
+    int y2;
+    fetchTransformedBilinear_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1, y2);
+    const uint *s1 = (const uint *)image.scanLine(y1);
+    const uint *s2 = (const uint *)image.scanLine(y2);
+    const int disty = (fy & 0x0000ffff) >> 8;
+
+    if (blendType != BlendTransformedBilinearTiled) {
+        const qint64 min_fx = qint64(image.x1) * fixed_scale;
+        const qint64 max_fx = qint64(image.x2 - 1) * fixed_scale;
+        while (b < end) {
+            int x1 = (fx >> 16);
+            int x2;
+            fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1, x2);
+            if (x1 != x2)
+                break;
+            uint top = s1[x1];
+            uint bot = s2[x1];
+            *b = INTERPOLATE_PIXEL_256(top, 256 - disty, bot, disty);
+            fx += fdx;
+            ++b;
+        }
+        uint *boundedEnd = end;
+        if (fdx > 0)
+            boundedEnd = qMin(boundedEnd, b + (max_fx - fx) / fdx);
+        else if (fdx < 0)
+            boundedEnd = qMin(boundedEnd, b + (min_fx - fx) / fdx);
+
+        // A fast middle part without boundary checks
+        while (b < boundedEnd) {
+            int x = (fx >> 16);
+            int distx = (fx & 0x0000ffff) >> 8;
+            *b = interpolate_4_pixels(s1 + x, s2 + x, distx, disty);
+            fx += fdx;
+            ++b;
+        }
+    }
+
+    while (b < end) {
+        int x1 = (fx >> 16);
+        int x2;
+        fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1 , x1, x2);
+        uint tl = s1[x1];
+        uint tr = s1[x2];
+        uint bl = s2[x1];
+        uint br = s2[x2];
+        int distx = (fx & 0x0000ffff) >> 8;
+        *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+
+        fx += fdx;
+        ++b;
+    }
+}
+
+template<TextureBlendType blendType>
+static void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper(uint *b, uint *end, const QTextureData &image,
+                                                                          int &fx, int &fy, int fdx, int /*fdy*/)
+{
+    int y1 = (fy >> 16);
+    int y2;
+    fetchTransformedBilinear_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1, y2);
+    const uint *s1 = (const uint *)image.scanLine(y1);
+    const uint *s2 = (const uint *)image.scanLine(y2);
+    const int disty8 = (fy & 0x0000ffff) >> 8;
+    const int disty4 = (disty8 + 0x08) >> 4;
+
+    if (blendType != BlendTransformedBilinearTiled) {
+        const qint64 min_fx = qint64(image.x1) * fixed_scale;
+        const qint64 max_fx = qint64(image.x2 - 1) * fixed_scale;
+        while (b < end) {
+            int x1 = (fx >> 16);
+            int x2;
+            fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1, x2);
+            if (x1 != x2)
+                break;
+            uint top = s1[x1];
+            uint bot = s2[x1];
+            *b = INTERPOLATE_PIXEL_256(top, 256 - disty8, bot, disty8);
+            fx += fdx;
+            ++b;
+        }
+        uint *boundedEnd = end;
+        if (fdx > 0)
+            boundedEnd = qMin(boundedEnd, b + (max_fx - fx) / fdx);
+        else if (fdx < 0)
+            boundedEnd = qMin(boundedEnd, b + (min_fx - fx) / fdx);
+        // A fast middle part without boundary checks
+#if defined(__SSE2__)
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        const __m128i v_256 = _mm_set1_epi16(256);
+        const __m128i v_disty = _mm_set1_epi16(disty4);
+        const __m128i v_fdx = _mm_set1_epi32(fdx*4);
+        const __m128i v_fx_r = _mm_set1_epi32(0x8);
+        __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
+
+        while (b < boundedEnd - 3) {
+            __m128i offset = _mm_srli_epi32(v_fx, 16);
+            const int offset0 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+            const int offset1 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+            const int offset2 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+            const int offset3 = _mm_cvtsi128_si32(offset);
+            const __m128i tl = _mm_setr_epi32(s1[offset0], s1[offset1], s1[offset2], s1[offset3]);
+            const __m128i tr = _mm_setr_epi32(s1[offset0 + 1], s1[offset1 + 1], s1[offset2 + 1], s1[offset3 + 1]);
+            const __m128i bl = _mm_setr_epi32(s2[offset0], s2[offset1], s2[offset2], s2[offset3]);
+            const __m128i br = _mm_setr_epi32(s2[offset0 + 1], s2[offset1 + 1], s2[offset2 + 1], s2[offset3 + 1]);
+
+            __m128i v_distx = _mm_srli_epi16(v_fx, 8);
+            v_distx = _mm_srli_epi16(_mm_add_epi32(v_distx, v_fx_r), 4);
+            v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+            v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+
+            interpolate_4_pixels_16_sse2(tl, tr, bl, br, v_distx, v_disty, colorMask, v_256, b);
+            b += 4;
+            v_fx = _mm_add_epi32(v_fx, v_fdx);
+        }
+        fx = _mm_cvtsi128_si32(v_fx);
+#elif defined(__ARM_NEON__)
+        const int16x8_t colorMask = vdupq_n_s16(0x00ff);
+        const int16x8_t invColorMask = vmvnq_s16(colorMask);
+        const int16x8_t v_256 = vdupq_n_s16(256);
+        const int16x8_t v_disty = vdupq_n_s16(disty4);
+        const int16x8_t v_disty_ = vshlq_n_s16(v_disty, 4);
+        int32x4_t v_fdx = vdupq_n_s32(fdx*4);
+
+        int32x4_t v_fx = vmovq_n_s32(fx);
+        v_fx = vsetq_lane_s32(fx + fdx, v_fx, 1);
+        v_fx = vsetq_lane_s32(fx + fdx * 2, v_fx, 2);
+        v_fx = vsetq_lane_s32(fx + fdx * 3, v_fx, 3);
+
+        const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
+        const int32x4_t v_fx_r = vdupq_n_s32(0x0800);
+
+        while (b < boundedEnd - 3) {
+            uint32x4x2_t v_top, v_bot;
+
+            int x1 = (fx >> 16);
+            fx += fdx;
+            v_top = vld2q_lane_u32(s1 + x1, v_top, 0);
+            v_bot = vld2q_lane_u32(s2 + x1, v_bot, 0);
+            x1 = (fx >> 16);
+            fx += fdx;
+            v_top = vld2q_lane_u32(s1 + x1, v_top, 1);
+            v_bot = vld2q_lane_u32(s2 + x1, v_bot, 1);
+            x1 = (fx >> 16);
+            fx += fdx;
+            v_top = vld2q_lane_u32(s1 + x1, v_top, 2);
+            v_bot = vld2q_lane_u32(s2 + x1, v_bot, 2);
+            x1 = (fx >> 16);
+            fx += fdx;
+            v_top = vld2q_lane_u32(s1 + x1, v_top, 3);
+            v_bot = vld2q_lane_u32(s2 + x1, v_bot, 3);
+
+            int32x4_t v_distx = vshrq_n_s32(vaddq_s32(vandq_s32(v_fx, v_ffff_mask), v_fx_r), 12);
+            v_distx = vorrq_s32(v_distx, vshlq_n_s32(v_distx, 16));
+
+            interpolate_4_pixels_16_neon(
+                        vreinterpretq_s16_u32(v_top.val[0]), vreinterpretq_s16_u32(v_top.val[1]),
+                    vreinterpretq_s16_u32(v_bot.val[0]), vreinterpretq_s16_u32(v_bot.val[1]),
+                    vreinterpretq_s16_s32(v_distx), v_disty, v_disty_,
+                    colorMask, invColorMask, v_256, b);
+            b+=4;
+            v_fx = vaddq_s32(v_fx, v_fdx);
+        }
+#endif
+        while (b < boundedEnd) {
+            int x = (fx >> 16);
+#if defined(__SSE2__) || defined(__ARM_NEON__)
+            int distx8 = (fx & 0x0000ffff) >> 8;
+            *b = interpolate_4_pixels(s1 + x, s2 + x, distx8, disty8);
+#else
+            uint tl = s1[x];
+            uint tr = s1[x + 1];
+            uint bl = s2[x];
+            uint br = s2[x + 1];
+            int distx4 = ((fx & 0x0000ffff) + 0x0800) >> 12;
+            *b = interpolate_4_pixels_16(tl, tr, bl, br, distx4, disty4);
+#endif
+            fx += fdx;
+            ++b;
+        }
+    }
+
+    while (b < end) {
+        int x1 = (fx >> 16);
+        int x2;
+        fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1, x2);
+        uint tl = s1[x1];
+        uint tr = s1[x2];
+        uint bl = s2[x1];
+        uint br = s2[x2];
+#if defined(__SSE2__) || defined(__ARM_NEON__)
+        // The optimized interpolate_4_pixels are faster than interpolate_4_pixels_16.
+        int distx8 = (fx & 0x0000ffff) >> 8;
+        *b = interpolate_4_pixels(tl, tr, bl, br, distx8, disty8);
+#else
+        int distx4 = ((fx & 0x0000ffff) + 0x0800) >> 12;
+        *b = interpolate_4_pixels_16(tl, tr, bl, br, distx4, disty4);
+#endif
+        fx += fdx;
+        ++b;
+    }
+}
+
+template<TextureBlendType blendType>
+static void QT_FASTCALL fetchTransformedBilinearARGB32PM_rotate_helper(uint *b, uint *end, const QTextureData &image,
+                                                                       int &fx, int &fy, int fdx, int fdy)
+{
+    // if we are zooming more than 8 times, we use 8bit precision for the position.
+    while (b < end) {
+        int x1 = (fx >> 16);
+        int x2;
+        int y1 = (fy >> 16);
+        int y2;
+
+        fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1, x2);
+        fetchTransformedBilinear_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1, y2);
+
+        const uint *s1 = (const uint *)image.scanLine(y1);
+        const uint *s2 = (const uint *)image.scanLine(y2);
+
+        uint tl = s1[x1];
+        uint tr = s1[x2];
+        uint bl = s2[x1];
+        uint br = s2[x2];
+
+        int distx = (fx & 0x0000ffff) >> 8;
+        int disty = (fy & 0x0000ffff) >> 8;
+
+        *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+
+        fx += fdx;
+        fy += fdy;
+        ++b;
+    }
+}
+
+template<TextureBlendType blendType>
+static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint *b, uint *end, const QTextureData &image,
+                                                                            int &fx, int &fy, int fdx, int fdy)
+{
+    //we are zooming less than 8x, use 4bit precision
+    if (blendType != BlendTransformedBilinearTiled) {
+        const qint64 min_fx = qint64(image.x1) * fixed_scale;
+        const qint64 max_fx = qint64(image.x2 - 1) * fixed_scale;
+        const qint64 min_fy = qint64(image.y1) * fixed_scale;
+        const qint64 max_fy = qint64(image.y2 - 1) * fixed_scale;
+        // first handle the possibly bounded part in the beginning
+        while (b < end) {
+            int x1 = (fx >> 16);
+            int x2;
+            int y1 = (fy >> 16);
+            int y2;
+            fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1, x2);
+            fetchTransformedBilinear_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1, y2);
+            if (x1 != x2 && y1 != y2)
+                break;
+            const uint *s1 = (const uint *)image.scanLine(y1);
+            const uint *s2 = (const uint *)image.scanLine(y2);
+            uint tl = s1[x1];
+            uint tr = s1[x2];
+            uint bl = s2[x1];
+            uint br = s2[x2];
+#if defined(__SSE2__) || defined(__ARM_NEON__)
+            int distx = (fx & 0x0000ffff) >> 8;
+            int disty = (fy & 0x0000ffff) >> 8;
+            *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+#else
+            int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
+            int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
+            *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
+#endif
+            fx += fdx;
+            fy += fdy;
+            ++b;
+        }
+        uint *boundedEnd = end; \
+        if (fdx > 0) \
+            boundedEnd = qMin(boundedEnd, b + (max_fx - fx) / fdx); \
+        else if (fdx < 0) \
+            boundedEnd = qMin(boundedEnd, b + (min_fx - fx) / fdx); \
+        if (fdy > 0) \
+            boundedEnd = qMin(boundedEnd, b + (max_fy - fy) / fdy); \
+        else if (fdy < 0) \
+            boundedEnd = qMin(boundedEnd, b + (min_fy - fy) / fdy); \
+
+        // until boundedEnd we can now have a fast middle part without boundary checks
+#if defined(__SSE2__)
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        const __m128i v_256 = _mm_set1_epi16(256);
+        const __m128i v_fdx = _mm_set1_epi32(fdx*4);
+        const __m128i v_fdy = _mm_set1_epi32(fdy*4);
+        const __m128i v_fxy_r = _mm_set1_epi32(0x8);
+        __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
+        __m128i v_fy = _mm_setr_epi32(fy, fy + fdy, fy + fdy + fdy, fy + fdy + fdy + fdy);
+
+        const uchar *textureData = image.imageData;
+        const int bytesPerLine = image.bytesPerLine;
+        const __m128i vbpl = _mm_shufflelo_epi16(_mm_cvtsi32_si128(bytesPerLine/4), _MM_SHUFFLE(0, 0, 0, 0));
+
+        while (b < boundedEnd - 3) {
+            const __m128i vy = _mm_packs_epi32(_mm_srli_epi32(v_fy, 16), _mm_setzero_si128());
+            // 4x16bit * 4x16bit -> 4x32bit
+            __m128i offset = _mm_unpacklo_epi16(_mm_mullo_epi16(vy, vbpl), _mm_mulhi_epi16(vy, vbpl));
+            offset = _mm_add_epi32(offset, _mm_srli_epi32(v_fx, 16));
+            const int offset0 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+            const int offset1 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+            const int offset2 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
+            const int offset3 = _mm_cvtsi128_si32(offset);
+            const uint *topData = (const uint *)(textureData);
+            const __m128i tl = _mm_setr_epi32(topData[offset0], topData[offset1], topData[offset2], topData[offset3]);
+            const __m128i tr = _mm_setr_epi32(topData[offset0 + 1], topData[offset1 + 1], topData[offset2 + 1], topData[offset3 + 1]);
+            const uint *bottomData = (const uint *)(textureData + bytesPerLine);
+            const __m128i bl = _mm_setr_epi32(bottomData[offset0], bottomData[offset1], bottomData[offset2], bottomData[offset3]);
+            const __m128i br = _mm_setr_epi32(bottomData[offset0 + 1], bottomData[offset1 + 1], bottomData[offset2 + 1], bottomData[offset3 + 1]);
+
+            __m128i v_distx = _mm_srli_epi16(v_fx, 8);
+            __m128i v_disty = _mm_srli_epi16(v_fy, 8);
+            v_distx = _mm_srli_epi16(_mm_add_epi32(v_distx, v_fxy_r), 4);
+            v_disty = _mm_srli_epi16(_mm_add_epi32(v_disty, v_fxy_r), 4);
+            v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+            v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+            v_disty = _mm_shufflehi_epi16(v_disty, _MM_SHUFFLE(2,2,0,0));
+            v_disty = _mm_shufflelo_epi16(v_disty, _MM_SHUFFLE(2,2,0,0));
+
+            interpolate_4_pixels_16_sse2(tl, tr, bl, br, v_distx, v_disty, colorMask, v_256, b);
+            b += 4;
+            v_fx = _mm_add_epi32(v_fx, v_fdx);
+            v_fy = _mm_add_epi32(v_fy, v_fdy);
+        }
+        fx = _mm_cvtsi128_si32(v_fx);
+        fy = _mm_cvtsi128_si32(v_fy);
+#elif defined(__ARM_NEON__)
+        const int16x8_t colorMask = vdupq_n_s16(0x00ff);
+        const int16x8_t invColorMask = vmvnq_s16(colorMask);
+        const int16x8_t v_256 = vdupq_n_s16(256);
+        int32x4_t v_fdx = vdupq_n_s32(fdx * 4);
+        int32x4_t v_fdy = vdupq_n_s32(fdy * 4);
+
+        const uchar *textureData = image.imageData;
+        const int bytesPerLine = image.bytesPerLine;
+
+        int32x4_t v_fx = vmovq_n_s32(fx);
+        int32x4_t v_fy = vmovq_n_s32(fy);
+        v_fx = vsetq_lane_s32(fx + fdx, v_fx, 1);
+        v_fy = vsetq_lane_s32(fy + fdy, v_fy, 1);
+        v_fx = vsetq_lane_s32(fx + fdx * 2, v_fx, 2);
+        v_fy = vsetq_lane_s32(fy + fdy * 2, v_fy, 2);
+        v_fx = vsetq_lane_s32(fx + fdx * 3, v_fx, 3);
+        v_fy = vsetq_lane_s32(fy + fdy * 3, v_fy, 3);
+
+        const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
+        const int32x4_t v_round = vdupq_n_s32(0x0800);
+
+        while (b < boundedEnd - 3) {
+            uint32x4x2_t v_top, v_bot;
+
+            int x1 = (fx >> 16);
+            int y1 = (fy >> 16);
+            fx += fdx; fy += fdy;
+            const uchar *sl = textureData + bytesPerLine * y1;
+            const uint *s1 = reinterpret_cast<const uint *>(sl);
+            const uint *s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
+            v_top = vld2q_lane_u32(s1 + x1, v_top, 0);
+            v_bot = vld2q_lane_u32(s2 + x1, v_bot, 0);
+            x1 = (fx >> 16);
+            y1 = (fy >> 16);
+            fx += fdx; fy += fdy;
+            sl = textureData + bytesPerLine * y1;
+            s1 = reinterpret_cast<const uint *>(sl);
+            s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
+            v_top = vld2q_lane_u32(s1 + x1, v_top, 1);
+            v_bot = vld2q_lane_u32(s2 + x1, v_bot, 1);
+            x1 = (fx >> 16);
+            y1 = (fy >> 16);
+            fx += fdx; fy += fdy;
+            sl = textureData + bytesPerLine * y1;
+            s1 = reinterpret_cast<const uint *>(sl);
+            s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
+            v_top = vld2q_lane_u32(s1 + x1, v_top, 2);
+            v_bot = vld2q_lane_u32(s2 + x1, v_bot, 2);
+            x1 = (fx >> 16);
+            y1 = (fy >> 16);
+            fx += fdx; fy += fdy;
+            sl = textureData + bytesPerLine * y1;
+            s1 = reinterpret_cast<const uint *>(sl);
+            s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
+            v_top = vld2q_lane_u32(s1 + x1, v_top, 3);
+            v_bot = vld2q_lane_u32(s2 + x1, v_bot, 3);
+
+            int32x4_t v_distx = vshrq_n_s32(vaddq_s32(vandq_s32(v_fx, v_ffff_mask), v_round), 12);
+            int32x4_t v_disty = vshrq_n_s32(vaddq_s32(vandq_s32(v_fy, v_ffff_mask), v_round), 12);
+            v_distx = vorrq_s32(v_distx, vshlq_n_s32(v_distx, 16));
+            v_disty = vorrq_s32(v_disty, vshlq_n_s32(v_disty, 16));
+            int16x8_t v_disty_ = vshlq_n_s16(vreinterpretq_s16_s32(v_disty), 4);
+
+            interpolate_4_pixels_16_neon(
+                        vreinterpretq_s16_u32(v_top.val[0]), vreinterpretq_s16_u32(v_top.val[1]),
+                        vreinterpretq_s16_u32(v_bot.val[0]), vreinterpretq_s16_u32(v_bot.val[1]),
+                        vreinterpretq_s16_s32(v_distx), vreinterpretq_s16_s32(v_disty),
+                        v_disty_, colorMask, invColorMask, v_256, b);
+            b += 4;
+            v_fx = vaddq_s32(v_fx, v_fdx);
+            v_fy = vaddq_s32(v_fy, v_fdy);
+        }
+#endif
+        while (b < boundedEnd) {
+            int x = (fx >> 16);
+            int y = (fy >> 16);
+
+            const uint *s1 = (const uint *)image.scanLine(y);
+            const uint *s2 = (const uint *)image.scanLine(y + 1);
+
+#if defined(__SSE2__) || defined(__ARM_NEON__)
+            int distx = (fx & 0x0000ffff) >> 8;
+            int disty = (fy & 0x0000ffff) >> 8;
+            *b = interpolate_4_pixels(s1 + x, s2 + x, distx, disty);
+#else
+            uint tl = s1[x];
+            uint tr = s1[x + 1];
+            uint bl = s2[x];
+            uint br = s2[x + 1];
+            int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
+            int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
+            *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
+#endif
+
+            fx += fdx;
+            fy += fdy;
+            ++b;
+        }
+    }
+
+    while (b < end) {
+        int x1 = (fx >> 16);
+        int x2;
+        int y1 = (fy >> 16);
+        int y2;
+
+        fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1, x2);
+        fetchTransformedBilinear_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1, y2);
+
+        const uint *s1 = (const uint *)image.scanLine(y1);
+        const uint *s2 = (const uint *)image.scanLine(y2);
+
+        uint tl = s1[x1];
+        uint tr = s1[x2];
+        uint bl = s2[x1];
+        uint br = s2[x2];
+
+#if defined(__SSE2__) || defined(__ARM_NEON__)
+        // The optimized interpolate_4_pixels are faster than interpolate_4_pixels_16.
+        int distx = (fx & 0x0000ffff) >> 8;
+        int disty = (fy & 0x0000ffff) >> 8;
+        *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+#else
+        int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
+        int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
+        *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
+#endif
+
+        fx += fdx;
+        fy += fdy;
+        ++b;
+    }
+}
+
+
+static BilinearFastTransformHelper bilinearFastTransformHelperARGB32PM[2][NFastTransformTypes] = {
+    {
+        fetchTransformedBilinearARGB32PM_simple_upscale_helper<BlendTransformedBilinear>,
+        fetchTransformedBilinearARGB32PM_upscale_helper<BlendTransformedBilinear>,
+        fetchTransformedBilinearARGB32PM_downscale_helper<BlendTransformedBilinear>,
+        fetchTransformedBilinearARGB32PM_rotate_helper<BlendTransformedBilinear>,
+        fetchTransformedBilinearARGB32PM_fast_rotate_helper<BlendTransformedBilinear>
+    },
+    {
+        fetchTransformedBilinearARGB32PM_simple_upscale_helper<BlendTransformedBilinearTiled>,
+        fetchTransformedBilinearARGB32PM_upscale_helper<BlendTransformedBilinearTiled>,
+        fetchTransformedBilinearARGB32PM_downscale_helper<BlendTransformedBilinearTiled>,
+        fetchTransformedBilinearARGB32PM_rotate_helper<BlendTransformedBilinearTiled>,
+        fetchTransformedBilinearARGB32PM_fast_rotate_helper<BlendTransformedBilinearTiled>
+    }
+};
+
 template<TextureBlendType blendType> /* blendType = BlendTransformedBilinear or BlendTransformedBilinearTiled */
 static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, const Operator *,
                                                                  const QSpanData *data, int y, int x,
                                                                  int length)
 {
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
-
-    int image_x1 = data->texture.x1;
-    int image_y1 = data->texture.y1;
-    int image_x2 = data->texture.x2 - 1;
-    int image_y2 = data->texture.y2 - 1;
-
     const qreal cx = x + qreal(0.5);
     const qreal cy = y + qreal(0.5);
+    Q_CONSTEXPR int tiled = (blendType == BlendTransformedBilinearTiled) ? 1 : 0;
 
     uint *end = buffer + length;
     uint *b = buffer;
@@ -1950,531 +2585,29 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
         fx -= half_point;
         fy -= half_point;
 
-        if (fdy == 0) { //simple scale, no rotation
-            int y1 = (fy >> 16);
-            int y2;
-            fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
-            const uint *s1 = (const uint *)data->texture.scanLine(y1);
-            const uint *s2 = (const uint *)data->texture.scanLine(y2);
-
-            if (fdx <= fixed_scale && fdx > 0) { // scale up on X
-                int disty = (fy & 0x0000ffff) >> 8;
-                int idisty = 256 - disty;
-                int x = fx >> 16;
-
-                // The idea is first to do the interpolation between the row s1 and the row s2
-                // into an intermediate buffer, then we interpolate between two pixel of this buffer.
-
-                // intermediate_buffer[0] is a buffer of red-blue component of the pixel, in the form 0x00RR00BB
-                // intermediate_buffer[1] is the alpha-green component of the pixel, in the form 0x00AA00GG
-                // +1 for the last pixel to interpolate with, and +1 for rounding errors.
-                quint32 intermediate_buffer[2][buffer_size + 2];
-                // count is the size used in the intermediate_buffer.
-                int count = (qint64(length) * fdx + fixed_scale - 1) / fixed_scale + 2;
-                Q_ASSERT(count <= buffer_size + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
-                int f = 0;
-                int lim = count;
-                if (blendType == BlendTransformedBilinearTiled) {
-                    x %= image_width;
-                    if (x < 0) x += image_width;
-                } else {
-                    lim = qMin(count, image_x2-x+1);
-                    if (x < image_x1) {
-                        Q_ASSERT(x <= image_x2);
-                        uint t = s1[image_x1];
-                        uint b = s2[image_x1];
-                        quint32 rb = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
-                        quint32 ag = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
-                        do {
-                            intermediate_buffer[0][f] = rb;
-                            intermediate_buffer[1][f] = ag;
-                            f++;
-                            x++;
-                        } while (x < image_x1 && f < lim);
-                    }
-                }
-
-                if (blendType != BlendTransformedBilinearTiled) {
-#if defined(__SSE2__)
-                    const __m128i disty_ = _mm_set1_epi16(disty);
-                    const __m128i idisty_ = _mm_set1_epi16(idisty);
-                    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-
-                    lim -= 3;
-                    for (; f < lim; x += 4, f += 4) {
-                        // Load 4 pixels from s1, and split the alpha-green and red-blue component
-                        __m128i top = _mm_loadu_si128((const __m128i*)((const uint *)(s1)+x));
-                        __m128i topAG = _mm_srli_epi16(top, 8);
-                        __m128i topRB = _mm_and_si128(top, colorMask);
-                        // Multiplies each colour component by idisty
-                        topAG = _mm_mullo_epi16 (topAG, idisty_);
-                        topRB = _mm_mullo_epi16 (topRB, idisty_);
-
-                        // Same for the s2 vector
-                        __m128i bottom = _mm_loadu_si128((const __m128i*)((const uint *)(s2)+x));
-                        __m128i bottomAG = _mm_srli_epi16(bottom, 8);
-                        __m128i bottomRB = _mm_and_si128(bottom, colorMask);
-                        bottomAG = _mm_mullo_epi16 (bottomAG, disty_);
-                        bottomRB = _mm_mullo_epi16 (bottomRB, disty_);
-
-                        // Add the values, and shift to only keep 8 significant bits per colors
-                        __m128i rAG =_mm_add_epi16(topAG, bottomAG);
-                        rAG = _mm_srli_epi16(rAG, 8);
-                        _mm_storeu_si128((__m128i*)(&intermediate_buffer[1][f]), rAG);
-                        __m128i rRB =_mm_add_epi16(topRB, bottomRB);
-                        rRB = _mm_srli_epi16(rRB, 8);
-                        _mm_storeu_si128((__m128i*)(&intermediate_buffer[0][f]), rRB);
-                    }
-#elif defined(__ARM_NEON__)
-                    const int16x8_t disty_ = vdupq_n_s16(disty);
-                    const int16x8_t idisty_ = vdupq_n_s16(idisty);
-                    const int16x8_t colorMask = vdupq_n_s16(0x00ff);
-
-                    lim -= 3;
-                    for (; f < lim; x += 4, f += 4) {
-                        // Load 4 pixels from s1, and split the alpha-green and red-blue component
-                        int16x8_t top = vld1q_s16((int16_t*)((const uint *)(s1)+x));
-                        int16x8_t topAG = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(top), 8));
-                        int16x8_t topRB = vandq_s16(top, colorMask);
-                        // Multiplies each colour component by idisty
-                        topAG = vmulq_s16(topAG, idisty_);
-                        topRB = vmulq_s16(topRB, idisty_);
-
-                        // Same for the s2 vector
-                        int16x8_t bottom = vld1q_s16((int16_t*)((const uint *)(s2)+x));
-                        int16x8_t bottomAG = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(bottom), 8));
-                        int16x8_t bottomRB = vandq_s16(bottom, colorMask);
-                        bottomAG = vmulq_s16(bottomAG, disty_);
-                        bottomRB = vmulq_s16(bottomRB, disty_);
-
-                        // Add the values, and shift to only keep 8 significant bits per colors
-                        int16x8_t rAG = vaddq_s16(topAG, bottomAG);
-                        rAG = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(rAG), 8));
-                        vst1q_s16((int16_t*)(&intermediate_buffer[1][f]), rAG);
-                        int16x8_t rRB = vaddq_s16(topRB, bottomRB);
-                        rRB = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(rRB), 8));
-                        vst1q_s16((int16_t*)(&intermediate_buffer[0][f]), rRB);
-                    }
-#endif
-                }
-                for (; f < count; f++) { // Same as above but without sse2
-                    if (blendType == BlendTransformedBilinearTiled) {
-                        if (x >= image_width) x -= image_width;
-                    } else {
-                        x = qMin(x, image_x2);
-                    }
-
-                    uint t = s1[x];
-                    uint b = s2[x];
-
-                    intermediate_buffer[0][f] = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
-                    intermediate_buffer[1][f] = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
-                    x++;
-                }
-                // Now interpolate the values from the intermediate_buffer to get the final result.
-                fx &= fixed_scale - 1;
-                Q_ASSERT((fx >> 16) == 0);
-                while (b < end) {
-                    int x1 = (fx >> 16);
-                    int x2 = x1 + 1;
-                    Q_ASSERT(x1 >= 0);
-                    Q_ASSERT(x2 < count);
-
-                    int distx = (fx & 0x0000ffff) >> 8;
-                    int idistx = 256 - distx;
-                    int rb = ((intermediate_buffer[0][x1] * idistx + intermediate_buffer[0][x2] * distx) >> 8) & 0xff00ff;
-                    int ag = (intermediate_buffer[1][x1] * idistx + intermediate_buffer[1][x2] * distx) & 0xff00ff00;
-                    *b = rb | ag;
-                    b++;
-                    fx += fdx;
-                }
-            } else if ((fdx < 0 && fdx > -(fixed_scale / 8)) || std::abs(data->m22) < (1./8.)) { // scale up more than 8x
-                int y1 = (fy >> 16);
-                int y2;
-                fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
-                const uint *s1 = (const uint *)data->texture.scanLine(y1);
-                const uint *s2 = (const uint *)data->texture.scanLine(y2);
-                int disty = (fy & 0x0000ffff) >> 8;
-                while (b < end) {
-                    int x1 = (fx >> 16);
-                    int x2;
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
-                    uint tl = s1[x1];
-                    uint tr = s1[x2];
-                    uint bl = s2[x1];
-                    uint br = s2[x2];
-                    int distx = (fx & 0x0000ffff) >> 8;
-                    *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
-
-                    fx += fdx;
-                    ++b;
-                }
-            } else { //scale down
-                int y1 = (fy >> 16);
-                int y2;
-                fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
-                const uint *s1 = (const uint *)data->texture.scanLine(y1);
-                const uint *s2 = (const uint *)data->texture.scanLine(y2);
-                const int disty8 = (fy & 0x0000ffff) >> 8;
-                const int disty4 = (disty8 + 0x08) >> 4;
-
-                if (blendType != BlendTransformedBilinearTiled) {
-#define BILINEAR_DOWNSCALE_BOUNDS_PROLOG \
-                    const qint64 min_fx = qint64(image_x1) * fixed_scale; \
-                    const qint64 max_fx = qint64(image_x2) * fixed_scale; \
-                    while (b < end) { \
-                        int x1 = (fx >> 16); \
-                        int x2; \
-                        fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2); \
-                        if (x1 != x2) \
-                            break; \
-                        uint top = s1[x1]; \
-                        uint bot = s2[x1]; \
-                        *b = INTERPOLATE_PIXEL_256(top, 256 - disty8, bot, disty8); \
-                        fx += fdx; \
-                        ++b; \
-                    } \
-                    uint *boundedEnd = end; \
-                    if (fdx > 0) \
-                        boundedEnd = qMin(boundedEnd, b + (max_fx - fx) / fdx); \
-                    else if (fdx < 0) \
-                        boundedEnd = qMin(boundedEnd, b + (min_fx - fx) / fdx); \
-                    boundedEnd -= 3;
-
-#if defined(__SSE2__)
-                    BILINEAR_DOWNSCALE_BOUNDS_PROLOG
-
-                    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-                    const __m128i v_256 = _mm_set1_epi16(256);
-                    const __m128i v_disty = _mm_set1_epi16(disty4);
-                    const __m128i v_fdx = _mm_set1_epi32(fdx*4);
-                    const __m128i v_fx_r = _mm_set1_epi32(0x8);
-                    __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
-
-                    while (b < boundedEnd) {
-                        __m128i offset = _mm_srli_epi32(v_fx, 16);
-                        const int offset0 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
-                        const int offset1 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
-                        const int offset2 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
-                        const int offset3 = _mm_cvtsi128_si32(offset);
-                        const __m128i tl = _mm_setr_epi32(s1[offset0], s1[offset1], s1[offset2], s1[offset3]);
-                        const __m128i tr = _mm_setr_epi32(s1[offset0 + 1], s1[offset1 + 1], s1[offset2 + 1], s1[offset3 + 1]);
-                        const __m128i bl = _mm_setr_epi32(s2[offset0], s2[offset1], s2[offset2], s2[offset3]);
-                        const __m128i br = _mm_setr_epi32(s2[offset0 + 1], s2[offset1 + 1], s2[offset2 + 1], s2[offset3 + 1]);
-
-                        __m128i v_distx = _mm_srli_epi16(v_fx, 8);
-                        v_distx = _mm_srli_epi16(_mm_add_epi32(v_distx, v_fx_r), 4);
-                        v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
-                        v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
-
-                        interpolate_4_pixels_16_sse2(tl, tr, bl, br, v_distx, v_disty, colorMask, v_256, b);
-                        b += 4;
-                        v_fx = _mm_add_epi32(v_fx, v_fdx);
-                    }
-                    fx = _mm_cvtsi128_si32(v_fx);
-#elif defined(__ARM_NEON__)
-                    BILINEAR_DOWNSCALE_BOUNDS_PROLOG
-
-                    const int16x8_t colorMask = vdupq_n_s16(0x00ff);
-                    const int16x8_t invColorMask = vmvnq_s16(colorMask);
-                    const int16x8_t v_256 = vdupq_n_s16(256);
-                    const int16x8_t v_disty = vdupq_n_s16(disty4);
-                    const int16x8_t v_disty_ = vshlq_n_s16(v_disty, 4);
-                    int32x4_t v_fdx = vdupq_n_s32(fdx*4);
-
-                    int32x4_t v_fx = vmovq_n_s32(fx);
-                    v_fx = vsetq_lane_s32(fx + fdx, v_fx, 1);
-                    v_fx = vsetq_lane_s32(fx + fdx * 2, v_fx, 2);
-                    v_fx = vsetq_lane_s32(fx + fdx * 3, v_fx, 3);
-
-                    const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
-                    const int32x4_t v_fx_r = vdupq_n_s32(0x0800);
-
-                    while (b < boundedEnd) {
-                        uint32x4x2_t v_top, v_bot;
-
-                        int x1 = (fx >> 16);
-                        fx += fdx;
-                        v_top = vld2q_lane_u32(s1 + x1, v_top, 0);
-                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 0);
-                        x1 = (fx >> 16);
-                        fx += fdx;
-                        v_top = vld2q_lane_u32(s1 + x1, v_top, 1);
-                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 1);
-                        x1 = (fx >> 16);
-                        fx += fdx;
-                        v_top = vld2q_lane_u32(s1 + x1, v_top, 2);
-                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 2);
-                        x1 = (fx >> 16);
-                        fx += fdx;
-                        v_top = vld2q_lane_u32(s1 + x1, v_top, 3);
-                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 3);
-
-                        int32x4_t v_distx = vshrq_n_s32(vaddq_s32(vandq_s32(v_fx, v_ffff_mask), v_fx_r), 12);
-                        v_distx = vorrq_s32(v_distx, vshlq_n_s32(v_distx, 16));
-
-                        interpolate_4_pixels_16_neon(
-                                    vreinterpretq_s16_u32(v_top.val[0]), vreinterpretq_s16_u32(v_top.val[1]),
-                                    vreinterpretq_s16_u32(v_bot.val[0]), vreinterpretq_s16_u32(v_bot.val[1]),
-                                    vreinterpretq_s16_s32(v_distx), v_disty, v_disty_,
-                                    colorMask, invColorMask, v_256, b);
-                        b+=4;
-                        v_fx = vaddq_s32(v_fx, v_fdx);
-                    }
-#endif
-                }
-
-                while (b < end) {
-                    int x1 = (fx >> 16);
-                    int x2;
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
-                    uint tl = s1[x1];
-                    uint tr = s1[x2];
-                    uint bl = s2[x1];
-                    uint br = s2[x2];
-#if defined(__SSE2__) || defined(__ARM_NEON__)
-                    // The optimized interpolate_4_pixels are faster than interpolate_4_pixels_16.
-                    int distx8 = (fx & 0x0000ffff) >> 8;
-                    *b = interpolate_4_pixels(tl, tr, bl, br, distx8, disty8);
-#else
-                    int distx4 = ((fx & 0x0000ffff) + 0x0800) >> 12;
-                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx4, disty4);
-#endif
-                    fx += fdx;
-                    ++b;
-                }
-            }
-        } else { //rotation
-            if (std::abs(data->m11) < (1./8.) || std::abs(data->m22) < (1./8.)) {
-                //if we are zooming more than 8 times, we use 8bit precision for the position.
-                while (b < end) {
-                    int x1 = (fx >> 16);
-                    int x2;
-                    int y1 = (fy >> 16);
-                    int y2;
-
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
-
-                    const uint *s1 = (const uint *)data->texture.scanLine(y1);
-                    const uint *s2 = (const uint *)data->texture.scanLine(y2);
-
-                    uint tl = s1[x1];
-                    uint tr = s1[x2];
-                    uint bl = s2[x1];
-                    uint br = s2[x2];
-
-                    int distx = (fx & 0x0000ffff) >> 8;
-                    int disty = (fy & 0x0000ffff) >> 8;
-
-                    *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
-
-                    fx += fdx;
-                    fy += fdy;
-                    ++b;
-                }
+        if (fdy == 0) { // simple scale, no rotation or shear
+            if (fdx <= fixed_scale && fdx > 0) {
+                // simple scale up on X without mirroring
+                bilinearFastTransformHelperARGB32PM[tiled][SimpleUpscaleTransform](b, end, data->texture, fx, fy, fdx, fdy);
+            } else if ((fdx < 0 && fdx > -(fixed_scale / 8)) || qAbs(data->m22) < qreal(1./8.)) {
+                // scale up more than 8x (on either Y or on X mirrored)
+                bilinearFastTransformHelperARGB32PM[tiled][UpscaleTransform](b, end, data->texture, fx, fy, fdx, fdy);
             } else {
-                //we are zooming less than 8x, use 4bit precision
-
-                if (blendType != BlendTransformedBilinearTiled) {
-#define BILINEAR_ROTATE_BOUNDS_PROLOG \
-                    const qint64 min_fx = qint64(image_x1) * fixed_scale; \
-                    const qint64 max_fx = qint64(image_x2) * fixed_scale; \
-                    const qint64 min_fy = qint64(image_y1) * fixed_scale; \
-                    const qint64 max_fy = qint64(image_y2) * fixed_scale; \
-                    while (b < end) { \
-                        int x1 = (fx >> 16); \
-                        int x2; \
-                        int y1 = (fy >> 16); \
-                        int y2; \
-                        fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2); \
-                        fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2); \
-                        if (x1 != x2 && y1 != y2) \
-                            break; \
-                        const uint *s1 = (const uint *)data->texture.scanLine(y1); \
-                        const uint *s2 = (const uint *)data->texture.scanLine(y2); \
-                        uint tl = s1[x1]; \
-                        uint tr = s1[x2]; \
-                        uint bl = s2[x1]; \
-                        uint br = s2[x2]; \
-                        int distx = (fx & 0x0000ffff) >> 8; \
-                        int disty = (fy & 0x0000ffff) >> 8; \
-                        *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty); \
-                        fx += fdx; \
-                        fy += fdy; \
-                        ++b; \
-                    } \
-                    uint *boundedEnd = end; \
-                    if (fdx > 0) \
-                        boundedEnd = qMin(boundedEnd, b + (max_fx - fx) / fdx); \
-                    else if (fdx < 0) \
-                        boundedEnd = qMin(boundedEnd, b + (min_fx - fx) / fdx); \
-                    if (fdy > 0) \
-                        boundedEnd = qMin(boundedEnd, b + (max_fy - fy) / fdy); \
-                    else if (fdy < 0) \
-                        boundedEnd = qMin(boundedEnd, b + (min_fy - fy) / fdy); \
-                    boundedEnd -= 3;
-
-#if defined(__SSE2__)
-                    BILINEAR_ROTATE_BOUNDS_PROLOG
-
-                    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-                    const __m128i v_256 = _mm_set1_epi16(256);
-                    const __m128i v_fdx = _mm_set1_epi32(fdx*4);
-                    const __m128i v_fdy = _mm_set1_epi32(fdy*4);
-                    const __m128i v_fxy_r = _mm_set1_epi32(0x8);
-                    __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
-                    __m128i v_fy = _mm_setr_epi32(fy, fy + fdy, fy + fdy + fdy, fy + fdy + fdy + fdy);
-
-                    const uchar *textureData = data->texture.imageData;
-                    const int bytesPerLine = data->texture.bytesPerLine;
-                    const __m128i vbpl = _mm_shufflelo_epi16(_mm_cvtsi32_si128(bytesPerLine/4), _MM_SHUFFLE(0, 0, 0, 0));
-
-                    while (b < boundedEnd) {
-                        const __m128i vy = _mm_packs_epi32(_mm_srli_epi32(v_fy, 16), _mm_setzero_si128());
-                        // 4x16bit * 4x16bit -> 4x32bit
-                        __m128i offset = _mm_unpacklo_epi16(_mm_mullo_epi16(vy, vbpl), _mm_mulhi_epi16(vy, vbpl));
-                        offset = _mm_add_epi32(offset, _mm_srli_epi32(v_fx, 16));
-                        const int offset0 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
-                        const int offset1 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
-                        const int offset2 = _mm_cvtsi128_si32(offset); offset = _mm_srli_si128(offset, 4);
-                        const int offset3 = _mm_cvtsi128_si32(offset);
-                        const uint *topData = (const uint *)(textureData);
-                        const __m128i tl = _mm_setr_epi32(topData[offset0], topData[offset1], topData[offset2], topData[offset3]);
-                        const __m128i tr = _mm_setr_epi32(topData[offset0 + 1], topData[offset1 + 1], topData[offset2 + 1], topData[offset3 + 1]);
-                        const uint *bottomData = (const uint *)(textureData + bytesPerLine);
-                        const __m128i bl = _mm_setr_epi32(bottomData[offset0], bottomData[offset1], bottomData[offset2], bottomData[offset3]);
-                        const __m128i br = _mm_setr_epi32(bottomData[offset0 + 1], bottomData[offset1 + 1], bottomData[offset2 + 1], bottomData[offset3 + 1]);
-
-                        __m128i v_distx = _mm_srli_epi16(v_fx, 8);
-                        __m128i v_disty = _mm_srli_epi16(v_fy, 8);
-                        v_distx = _mm_srli_epi16(_mm_add_epi32(v_distx, v_fxy_r), 4);
-                        v_disty = _mm_srli_epi16(_mm_add_epi32(v_disty, v_fxy_r), 4);
-                        v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
-                        v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
-                        v_disty = _mm_shufflehi_epi16(v_disty, _MM_SHUFFLE(2,2,0,0));
-                        v_disty = _mm_shufflelo_epi16(v_disty, _MM_SHUFFLE(2,2,0,0));
-
-                        interpolate_4_pixels_16_sse2(tl, tr, bl, br, v_distx, v_disty, colorMask, v_256, b);
-                        b += 4;
-                        v_fx = _mm_add_epi32(v_fx, v_fdx);
-                        v_fy = _mm_add_epi32(v_fy, v_fdy);
-                    }
-                    fx = _mm_cvtsi128_si32(v_fx);
-                    fy = _mm_cvtsi128_si32(v_fy);
-#elif defined(__ARM_NEON__)
-                    BILINEAR_ROTATE_BOUNDS_PROLOG
-
-                    const int16x8_t colorMask = vdupq_n_s16(0x00ff);
-                    const int16x8_t invColorMask = vmvnq_s16(colorMask);
-                    const int16x8_t v_256 = vdupq_n_s16(256);
-                    int32x4_t v_fdx = vdupq_n_s32(fdx * 4);
-                    int32x4_t v_fdy = vdupq_n_s32(fdy * 4);
-
-                    const uchar *textureData = data->texture.imageData;
-                    const int bytesPerLine = data->texture.bytesPerLine;
-
-                    int32x4_t v_fx = vmovq_n_s32(fx);
-                    int32x4_t v_fy = vmovq_n_s32(fy);
-                    v_fx = vsetq_lane_s32(fx + fdx, v_fx, 1);
-                    v_fy = vsetq_lane_s32(fy + fdy, v_fy, 1);
-                    v_fx = vsetq_lane_s32(fx + fdx * 2, v_fx, 2);
-                    v_fy = vsetq_lane_s32(fy + fdy * 2, v_fy, 2);
-                    v_fx = vsetq_lane_s32(fx + fdx * 3, v_fx, 3);
-                    v_fy = vsetq_lane_s32(fy + fdy * 3, v_fy, 3);
-
-                    const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
-                    const int32x4_t v_round = vdupq_n_s32(0x0800);
-
-                    while (b < boundedEnd) {
-                        uint32x4x2_t v_top, v_bot;
-
-                        int x1 = (fx >> 16);
-                        int y1 = (fy >> 16);
-                        fx += fdx; fy += fdy;
-                        const uchar *sl = textureData + bytesPerLine * y1;
-                        const uint *s1 = reinterpret_cast<const uint *>(sl);
-                        const uint *s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
-                        v_top = vld2q_lane_u32(s1 + x1, v_top, 0);
-                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 0);
-                        x1 = (fx >> 16);
-                        y1 = (fy >> 16);
-                        fx += fdx; fy += fdy;
-                        sl = textureData + bytesPerLine * y1;
-                        s1 = reinterpret_cast<const uint *>(sl);
-                        s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
-                        v_top = vld2q_lane_u32(s1 + x1, v_top, 1);
-                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 1);
-                        x1 = (fx >> 16);
-                        y1 = (fy >> 16);
-                        fx += fdx; fy += fdy;
-                        sl = textureData + bytesPerLine * y1;
-                        s1 = reinterpret_cast<const uint *>(sl);
-                        s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
-                        v_top = vld2q_lane_u32(s1 + x1, v_top, 2);
-                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 2);
-                        x1 = (fx >> 16);
-                        y1 = (fy >> 16);
-                        fx += fdx; fy += fdy;
-                        sl = textureData + bytesPerLine * y1;
-                        s1 = reinterpret_cast<const uint *>(sl);
-                        s2 = reinterpret_cast<const uint *>(sl + bytesPerLine);
-                        v_top = vld2q_lane_u32(s1 + x1, v_top, 3);
-                        v_bot = vld2q_lane_u32(s2 + x1, v_bot, 3);
-
-                        int32x4_t v_distx = vshrq_n_s32(vaddq_s32(vandq_s32(v_fx, v_ffff_mask), v_round), 12);
-                        int32x4_t v_disty = vshrq_n_s32(vaddq_s32(vandq_s32(v_fy, v_ffff_mask), v_round), 12);
-                        v_distx = vorrq_s32(v_distx, vshlq_n_s32(v_distx, 16));
-                        v_disty = vorrq_s32(v_disty, vshlq_n_s32(v_disty, 16));
-                        int16x8_t v_disty_ = vshlq_n_s16(vreinterpretq_s16_s32(v_disty), 4);
-
-                        interpolate_4_pixels_16_neon(
-                                    vreinterpretq_s16_u32(v_top.val[0]), vreinterpretq_s16_u32(v_top.val[1]),
-                                    vreinterpretq_s16_u32(v_bot.val[0]), vreinterpretq_s16_u32(v_bot.val[1]),
-                                    vreinterpretq_s16_s32(v_distx), vreinterpretq_s16_s32(v_disty),
-                                    v_disty_, colorMask, invColorMask, v_256, b);
-                        b += 4;
-                        v_fx = vaddq_s32(v_fx, v_fdx);
-                        v_fy = vaddq_s32(v_fy, v_fdy);
-                    }
-#endif
-                }
-
-                while (b < end) {
-                    int x1 = (fx >> 16);
-                    int x2;
-                    int y1 = (fy >> 16);
-                    int y2;
-
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
-
-                    const uint *s1 = (const uint *)data->texture.scanLine(y1);
-                    const uint *s2 = (const uint *)data->texture.scanLine(y2);
-
-                    uint tl = s1[x1];
-                    uint tr = s1[x2];
-                    uint bl = s2[x1];
-                    uint br = s2[x2];
-
-#if defined(__SSE2__) || defined(__ARM_NEON__)
-                    // The optimized interpolate_4_pixels are faster than interpolate_4_pixels_16.
-                    int distx = (fx & 0x0000ffff) >> 8;
-                    int disty = (fy & 0x0000ffff) >> 8;
-                    *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
-#else
-                    int distx = ((fx & 0x0000ffff) + 0x0800) >> 12;
-                    int disty = ((fy & 0x0000ffff) + 0x0800) >> 12;
-                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
-#endif
-
-                    fx += fdx;
-                    fy += fdy;
-                    ++b;
-                }
+                // scale down on X (or up on X mirrored less than 8x)
+                bilinearFastTransformHelperARGB32PM[tiled][DownscaleTransform](b, end, data->texture, fx, fy, fdx, fdy);
+            }
+        } else { // rotation or shear
+            if (qAbs(data->m11) < qreal(1./8.) || qAbs(data->m22) < qreal(1./8.) ) {
+                // if we are zooming more than 8 times, we use 8bit precision for the position.
+                bilinearFastTransformHelperARGB32PM[tiled][RotateTransform](b, end, data->texture, fx, fy, fdx, fdy);
+            } else {
+                // we are zooming less than 8x, use 4bit precision
+                bilinearFastTransformHelperARGB32PM[tiled][FastRotateTransform](b, end, data->texture, fx, fy, fdx, fdy);
             }
         }
     } else {
+        const QTextureData &image = data->texture;
+
         const qreal fdx = data->m11;
         const qreal fdy = data->m12;
         const qreal fdw = data->m13;
@@ -2496,8 +2629,8 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
             int distx = int((px - x1) * 256);
             int disty = int((py - y1) * 256);
 
-            fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
-            fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
+            fetchTransformedBilinear_pixelBounds<blendType>(image.width, image.x1, image.x2 - 1, x1, x2);
+            fetchTransformedBilinear_pixelBounds<blendType>(image.height, image.y1, image.y2 - 1, y1, y2);
 
             const uint *s1 = (const uint *)data->texture.scanLine(y1);
             const uint *s2 = (const uint *)data->texture.scanLine(y2);
@@ -2679,7 +2812,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
                     layout->convertToARGB32PM(buf2, buf2, len * 2, clut, 0);
 
-                    if ((fdx < 0 && fdx > -(fixed_scale / 8)) || std::abs(data->m22) < (1./8.)) { // scale up more than 8x
+                    if ((fdx < 0 && fdx > -(fixed_scale / 8)) || qAbs(data->m22) < qreal(1./8.)) { // scale up more than 8x
                         int disty = (fy & 0x0000ffff) >> 8;
                         for (int i = 0; i < len; ++i) {
                             int distx = (fracX & 0x0000ffff) >> 8;
@@ -2731,7 +2864,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
                 layout->convertToARGB32PM(buf2, buf2, len * 2, clut, 0);
 
-                if (std::abs(data->m11) < (1./8.) || std::abs(data->m22) < (1./8.)) {
+                if (qAbs(data->m11) < qreal(1./8.) || qAbs(data->m22) < qreal(1./8.) ) {
                     //if we are zooming more than 8 times, we use 8bit precision for the position.
                     for (int i = 0; i < len; ++i) {
                         int distx = (fracX & 0x0000ffff) >> 8;
