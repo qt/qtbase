@@ -108,6 +108,7 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
         }
         break;
     case QWindow::OpenGLSurface:
+    case QWindow::OpenVGSurface:
         break;
     }
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
