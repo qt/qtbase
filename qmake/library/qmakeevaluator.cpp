@@ -1774,8 +1774,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateExpandFunction(
         ProStringList args;
         if (expandVariableReferences(tokPtr, 5, &args, true) == ReturnError)
             return ReturnError;
-        *ret = evaluateBuiltinExpand(func_t, func, args);
-        return ReturnTrue;
+        return evaluateBuiltinExpand(func_t, func, args, *ret);
     }
 
     QHash<ProKey, ProFunctionDef>::ConstIterator it =
