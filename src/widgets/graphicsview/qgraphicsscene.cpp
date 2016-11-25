@@ -4331,7 +4331,8 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
         pix->fill(Qt::transparent);
         pixmapPainter.begin(pix);
     } else {
-        subPix = QPixmap(br.size());
+        subPix = QPixmap(br.size() * pix->devicePixelRatio());
+        subPix.setDevicePixelRatio(pix->devicePixelRatio());
         subPix.fill(Qt::transparent);
         pixmapPainter.begin(&subPix);
         pixmapPainter.translate(-br.topLeft());
@@ -4409,6 +4410,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         return;
     }
 
+    const qreal devicePixelRatio = painter->device()->devicePixelRatio();
     const qreal oldPainterOpacity = painter->opacity();
     qreal newPainterOpacity = oldPainterOpacity;
     QGraphicsProxyWidget *proxy = item->isWidget() ? qobject_cast<QGraphicsProxyWidget *>(static_cast<QGraphicsWidget *>(item)) : 0;
@@ -4428,6 +4430,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     // Fetch the off-screen transparent buffer and exposed area info.
     QPixmapCache::Key pixmapKey;
     QPixmap pix;
+
     bool pixmapFound;
     QGraphicsItemCache *itemCache = itemd->extraItemCache();
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
@@ -4442,18 +4445,20 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     // Render using item coordinate cache mode.
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
         QSize pixmapSize;
-        bool fixedCacheSize = false;
+        bool fixedCacheSize = itemCache->fixedSize.isValid();
         QRect br = brect.toAlignedRect();
-        if ((fixedCacheSize = itemCache->fixedSize.isValid())) {
+        if (fixedCacheSize) {
             pixmapSize = itemCache->fixedSize;
         } else {
             pixmapSize = br.size();
         }
 
+        pixmapSize *= devicePixelRatio;
+
         // Create or recreate the pixmap.
         int adjust = itemCache->fixedSize.isValid() ? 0 : 2;
         QSize adjustSize(adjust*2, adjust*2);
-        br.adjust(-adjust, -adjust, adjust, adjust);
+        br.adjust(-adjust / devicePixelRatio, -adjust / devicePixelRatio, adjust / devicePixelRatio, adjust / devicePixelRatio);
         if (pix.isNull() || (!fixedCacheSize && (pixmapSize + adjustSize) != pix.size())) {
             pix = QPixmap(pixmapSize + adjustSize);
             itemCache->boundingRect = br;
@@ -4476,7 +4481,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             // Fit the item's bounding rect into the pixmap's coordinates.
             QTransform itemToPixmap;
             if (fixedCacheSize) {
-                const QPointF scale(pixmapSize.width() / brect.width(), pixmapSize.height() / brect.height());
+                const QPointF scale((pixmapSize.width() / devicePixelRatio) / brect.width(),
+                                    (pixmapSize.height() / devicePixelRatio) / brect.height());
                 itemToPixmap.scale(scale.x(), scale.y());
             }
             itemToPixmap.translate(-br.x(), -br.y());
@@ -4498,6 +4504,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             styleOptionTmp.exposedRect = exposedRect;
 
             // Render.
+            pix.setDevicePixelRatio(devicePixelRatio);
             _q_paintIntoCache(&pix, item, pixmapExposed, itemToPixmap, painter->renderHints(),
                               &styleOptionTmp, painterStateProtection);
 
@@ -4595,21 +4602,22 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
             // Copy / "scroll" the old pixmap onto the new ole and calculate
             // scrolled exposure.
-            if (newCacheIndent != deviceData->cacheIndent || deviceRect.size() != pix.size()) {
+            if (newCacheIndent != deviceData->cacheIndent || deviceRect.size() != pix.size() / devicePixelRatio) {
                 QPoint diff = newCacheIndent - deviceData->cacheIndent;
-                QPixmap newPix(deviceRect.size());
+                QPixmap newPix(deviceRect.size() * devicePixelRatio);
                 // ### Investigate removing this fill (test with Plasma and
                 // graphicssystem raster).
                 newPix.fill(Qt::transparent);
                 if (!pix.isNull()) {
+                    newPix.setDevicePixelRatio(devicePixelRatio);
                     QPainter newPixPainter(&newPix);
                     newPixPainter.drawPixmap(-diff, pix);
                     newPixPainter.end();
                 }
                 QRegion exposed;
-                exposed += newPix.rect();
+                exposed += QRect(QPoint(0,0), newPix.size() / devicePixelRatio);
                 if (!pix.isNull())
-                    exposed -= QRect(-diff, pix.size());
+                    exposed -= QRect(-diff, pix.size() / devicePixelRatio);
                 scrollExposure = exposed;
 
                 pix = newPix;
@@ -4621,9 +4629,9 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             deviceData->cacheIndent = QPoint();
 
             // Auto-adjust the pixmap size.
-            if (deviceRect.size() != pix.size()) {
+            if (deviceRect.size() != pix.size() / devicePixelRatio) {
                 // exposed needs to cover the whole pixmap
-                pix = QPixmap(deviceRect.size());
+                pix = QPixmap(deviceRect.size() * devicePixelRatio);
                 pixModified = true;
                 itemCache->allExposed = true;
                 itemCache->exposed.clear();
@@ -4667,6 +4675,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             styleOptionTmp.exposedRect = br.adjusted(-1, -1, 1, 1);
 
             // Render the exposed areas.
+            pix.setDevicePixelRatio(devicePixelRatio);
             _q_paintIntoCache(&pix, item, pixmapExposed, itemToPixmap, painter->renderHints(),
                               &styleOptionTmp, painterStateProtection);
 

@@ -45,6 +45,8 @@
 #include <QPainter>
 #include <QWindow>
 #include <QScreen>
+#include <QGraphicsView>
+#include <QGraphicsTextItem>
 #include <QFile>
 #include <QMouseEvent>
 #include <QTemporaryDir>
@@ -1151,6 +1153,30 @@ void PhysicalSizeTest::paintEvent(QPaintEvent *)
 
 }
 
+class GraphicsViewCaching : public QGraphicsView
+{
+public:
+    GraphicsViewCaching() {
+        QGraphicsScene *scene = new QGraphicsScene(0, 0, 400, 400);
+
+        QGraphicsTextItem *item = 0;
+
+        item = scene->addText("NoCache");
+        item->setCacheMode(QGraphicsItem::NoCache);
+        item->setPos(10, 10);
+
+        item = scene->addText("ItemCoordinateCache");
+        item->setCacheMode(QGraphicsItem::ItemCoordinateCache);
+        item->setPos(10, 30);
+
+        item = scene->addText("DeviceCoordinateCache");
+        item->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+        item->setPos(10, 50);
+
+        setScene(scene);
+    }
+};
+
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
@@ -1186,7 +1212,7 @@ int main(int argc, char **argv)
     demoList << new DemoContainer<CursorTester>("cursorpos", "Test cursor and window positioning");
     demoList << new DemoContainer<ScreenDisplayer>("screens", "Test screen and window positioning");
     demoList << new DemoContainer<PhysicalSizeTest>("physicalsize", "Test manual highdpi support using physicalDotsPerInch");
-
+    demoList << new DemoContainer<GraphicsViewCaching>("graphicsview", "Test QGraphicsView caching");
 
     foreach (DemoContainerBase *demo, demoList)
         parser.addOption(demo->option());
