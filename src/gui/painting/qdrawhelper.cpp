@@ -1562,8 +1562,12 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
                                          int y, int x, int length)
 {
     Q_STATIC_ASSERT(blendType == BlendTransformed || blendType == BlendTransformedTiled);
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
+    const int image_width = data->texture.width;
+    const int image_height = data->texture.height;
+    const int image_x1 = data->texture.x1;
+    const int image_y1 = data->texture.y1;
+    const int image_x2 = data->texture.x2 - 1;
+    const int image_y2 = data->texture.y2 - 1;
 
     const qreal cx = x + qreal(0.5);
     const qreal cy = y + qreal(0.5);
@@ -1596,8 +1600,8 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
                 if (px < 0) px += image_width;
                 if (py < 0) py += image_height;
             } else {
-                px = qBound(0, px, image_width - 1);
-                py = qBound(0, py, image_height - 1);
+                px = qBound(image_x1, px, image_x2);
+                py = qBound(image_y1, py, image_y2);
             }
             *b = fetch(data->texture.scanLine(py), px);
 
@@ -1627,8 +1631,8 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
                 if (px < 0) px += image_width;
                 if (py < 0) py += image_height;
             } else {
-                px = qBound(0, px, image_width - 1);
-                py = qBound(0, py, image_height - 1);
+                px = qBound(image_x1, px, image_x2);
+                py = qBound(image_y1, py, image_y2);
             }
             *b = fetch(data->texture.scanLine(py), px);
 
@@ -1649,8 +1653,12 @@ template<TextureBlendType blendType>  /* either BlendTransformed or BlendTransfo
 static const QRgba64 *QT_FASTCALL fetchTransformed64(QRgba64 *buffer, const Operator *, const QSpanData *data,
                                                      int y, int x, int length)
 {
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
+    const int image_width = data->texture.width;
+    const int image_height = data->texture.height;
+    const int image_x1 = data->texture.x1;
+    const int image_y1 = data->texture.y1;
+    const int image_x2 = data->texture.x2 - 1;
+    const int image_y2 = data->texture.y2 - 1;
 
     const qreal cx = x + qreal(0.5);
     const qreal cy = y + qreal(0.5);
@@ -1687,8 +1695,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformed64(QRgba64 *buffer, const Oper
                 if (px < 0) px += image_width;
                 if (py < 0) py += image_height;
             } else {
-                px = qBound(0, px, image_width - 1);
-                py = qBound(0, py, image_height - 1);
+                px = qBound(image_x1, px, image_x2);
+                py = qBound(image_y1, py, image_y2);
             }
             buffer32[j] = fetch(data->texture.scanLine(py), px);
 
@@ -1728,8 +1736,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformed64(QRgba64 *buffer, const Oper
                 if (px < 0) px += image_width;
                 if (py < 0) py += image_height;
             } else {
-                px = qBound(0, px, image_width - 1);
-                py = qBound(0, py, image_height - 1);
+                px = qBound(image_x1, px, image_x2);
+                py = qBound(image_y1, py, image_y2);
             }
             buffer32[j] = fetch(data->texture.scanLine(py), px);
 
@@ -4628,8 +4636,10 @@ static void blend_transformed_argb(int count, const QSpan *spans, void *userData
     CompositionFunction func = functionForMode[data->rasterBuffer->compositionMode];
     uint buffer[buffer_size];
 
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
+    const int image_x1 = data->texture.x1;
+    const int image_y1 = data->texture.y1;
+    const int image_x2 = data->texture.x2 - 1;
+    const int image_y2 = data->texture.y2 - 1;
 
     if (data->fast_matrix) {
         // The increment pr x in the scanline
@@ -4656,8 +4666,8 @@ static void blend_transformed_argb(int count, const QSpan *spans, void *userData
                 const uint *end = buffer + l;
                 uint *b = buffer;
                 while (b < end) {
-                    int px = qBound(0, x >> 16, image_width - 1);
-                    int py = qBound(0, y >> 16, image_height - 1);
+                    int px = qBound(image_x1, x >> 16, image_x2);
+                    int py = qBound(image_y1, y >> 16, image_y2);
                     *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px];
 
                     x += fdx;
@@ -4696,8 +4706,8 @@ static void blend_transformed_argb(int count, const QSpan *spans, void *userData
                     const qreal iw = w == 0 ? 1 : 1 / w;
                     const qreal tx = x * iw;
                     const qreal ty = y * iw;
-                    const int px = qBound(0, int(tx) - (tx < 0), image_width - 1);
-                    const int py = qBound(0, int(ty) - (ty < 0), image_height - 1);
+                    const int px = qBound(image_x1, int(tx) - (tx < 0), image_x2);
+                    const int py = qBound(image_y1, int(ty) - (ty < 0), image_y2);
 
                     *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px];
                     x += fdx;
@@ -4729,8 +4739,10 @@ static void blend_transformed_rgb565(int count, const QSpan *spans, void *userDa
     }
 
     quint16 buffer[buffer_size];
-    const int image_width = data->texture.width;
-    const int image_height = data->texture.height;
+    const int image_x1 = data->texture.x1;
+    const int image_y1 = data->texture.y1;
+    const int image_x2 = data->texture.x2 - 1;
+    const int image_y2 = data->texture.y2 - 1;
 
     if (data->fast_matrix) {
         // The increment pr x in the scanline
@@ -4768,8 +4780,8 @@ static void blend_transformed_rgb565(int count, const QSpan *spans, void *userDa
                 const quint16 *end = b + l;
 
                 while (b < end) {
-                    const int px = qBound(0, x >> 16, image_width - 1);
-                    const int py = qBound(0, y >> 16, image_height - 1);
+                    const int px = qBound(image_x1, x >> 16, image_x2);
+                    const int py = qBound(image_y1, y >> 16, image_y2);
 
                     *b = ((const quint16 *)data->texture.scanLine(py))[px];
                     ++b;
@@ -4827,8 +4839,8 @@ static void blend_transformed_rgb565(int count, const QSpan *spans, void *userDa
                     const qreal tx = x * iw;
                     const qreal ty = y * iw;
 
-                    const int px = qBound(0, int(tx) - (tx < 0), image_width - 1);
-                    const int py = qBound(0, int(ty) - (ty < 0), image_height - 1);
+                    const int px = qBound(image_x1, int(tx) - (tx < 0), image_x2);
+                    const int py = qBound(image_y1, int(ty) - (ty < 0), image_y2);
 
                     *b = ((const quint16 *)data->texture.scanLine(py))[px];
                     ++b;
