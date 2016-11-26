@@ -72,13 +72,13 @@ public:
     virtual ~QAbstractSocketPrivate();
 
     // from QAbstractSocketEngineReceiver
-    inline void readNotification() { canReadNotification(); }
-    inline void writeNotification() { canWriteNotification(); }
-    inline void exceptionNotification() {}
-    inline void closeNotification() { canCloseNotification(); }
-    void connectionNotification();
+    inline void readNotification() override { canReadNotification(); }
+    inline void writeNotification() override { canWriteNotification(); }
+    inline void exceptionNotification() override {}
+    inline void closeNotification() override { canCloseNotification(); }
+    void connectionNotification() override;
 #ifndef QT_NO_NETWORKPROXY
-    inline void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator) {
+    inline void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator) override {
         Q_Q(QAbstractSocket);
         q->proxyAuthenticationRequired(proxy, authenticator);
     }

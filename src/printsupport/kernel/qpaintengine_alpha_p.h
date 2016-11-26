@@ -67,18 +67,18 @@ class Q_PRINTSUPPORT_EXPORT QAlphaPaintEngine : public QPaintEngine
 public:
     ~QAlphaPaintEngine();
 
-    virtual bool begin(QPaintDevice *pdev);
-    virtual bool end();
+    bool begin(QPaintDevice *pdev) override;
+    bool end() override;
 
-    virtual void updateState(const QPaintEngineState &state);
+    void updateState(const QPaintEngineState &state)  override;
 
-    virtual void drawPath(const QPainterPath &path);
+    void drawPath(const QPainterPath &path)  override;
 
-    virtual void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode);
+    void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode) override;
 
-    virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-    virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
-    virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
+    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) override;
+    void drawTextItem(const QPointF &p, const QTextItem &textItem) override;
+    void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s) override;
 
 protected:
     QAlphaPaintEngine(QAlphaPaintEnginePrivate &data, PaintEngineFeatures devcaps = 0);

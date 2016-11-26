@@ -65,7 +65,7 @@ explicit QSqlRelationalDelegate(QObject *aParent = 0)
 
 QWidget *createEditor(QWidget *aParent,
                       const QStyleOptionViewItem &option,
-                      const QModelIndex &index) const
+                      const QModelIndex &index) const override
 {
     const QSqlRelationalTableModel *sqlModel = qobject_cast<const QSqlRelationalTableModel *>(index.model());
     QSqlTableModel *childModel = sqlModel ? sqlModel->relationModel(index.column()) : 0;
@@ -80,7 +80,7 @@ QWidget *createEditor(QWidget *aParent,
     return combo;
 }
 
-void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override
 {
     if (!index.isValid())
         return;

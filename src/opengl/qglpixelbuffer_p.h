@@ -63,11 +63,11 @@ class QOpenGLFramebufferObject;
 class QGLPBufferGLPaintDevice : public QGLPaintDevice
 {
 public:
-    virtual QPaintEngine* paintEngine() const {return pbuf->paintEngine();}
-    virtual QSize size() const {return pbuf->size();}
-    virtual QGLContext* context() const;
-    virtual void beginPaint();
-    virtual void endPaint();
+    QPaintEngine* paintEngine() const override {return pbuf->paintEngine();}
+    QSize size() const override {return pbuf->size();}
+    QGLContext* context() const override;
+    void beginPaint() override;
+    void endPaint() override;
     void setPBuffer(QGLPixelBuffer* pb);
     void setFbo(GLuint fbo);
 private:
