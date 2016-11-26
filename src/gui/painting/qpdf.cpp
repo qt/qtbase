@@ -1504,16 +1504,25 @@ void QPdfEnginePrivate::writeInfo()
     printString(creator);
     xprintf("\n/Producer ");
     printString(QString::fromLatin1("Qt " QT_VERSION_STR));
-    QDateTime now = QDateTime::currentDateTimeUtc();
+    QDateTime now = QDateTime::currentDateTime();
     QTime t = now.time();
     QDate d = now.date();
-    xprintf("\n/CreationDate (D:%d%02d%02d%02d%02d%02d)\n",
+    xprintf("\n/CreationDate (D:%d%02d%02d%02d%02d%02d",
             d.year(),
             d.month(),
             d.day(),
             t.hour(),
             t.minute(),
             t.second());
+    int offset = now.offsetFromUtc();
+    int hours  = (offset / 60) / 60;
+    int mins   = (offset / 60) % 60;
+    if (offset < 0)
+        xprintf("-%02d'%02d')\n", -hours, -mins);
+    else if (offset > 0)
+        xprintf("+%02d'%02d')\n", hours , mins);
+    else
+        xprintf("Z)\n");
     xprintf(">>\n"
             "endobj\n");
 }
