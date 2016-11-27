@@ -44,10 +44,10 @@ class QAndroidPlatformBackingStore : public QPlatformBackingStore
 {
 public:
     explicit QAndroidPlatformBackingStore(QWindow *window);
-    virtual QPaintDevice *paintDevice();
-    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    virtual void resize(const QSize &size, const QRegion &staticContents);
-    QImage toImage() const { return m_image; }
+    QPaintDevice *paintDevice() override;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
+    void resize(const QSize &size, const QRegion &staticContents) override;
+    QImage toImage() const override { return m_image; }
     void setBackingStore(QWindow *window);
 protected:
     QImage m_image;

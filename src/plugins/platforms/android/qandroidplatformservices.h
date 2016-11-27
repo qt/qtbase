@@ -43,9 +43,9 @@ class QAndroidPlatformServices: public QPlatformServices
 {
 public:
     QAndroidPlatformServices();
-    bool openUrl(const QUrl &url);
-    bool openDocument(const QUrl &url);
-    QByteArray desktopEnvironment() const;
+    bool openUrl(const QUrl &url) override;
+    bool openDocument(const QUrl &url) override;
+    QByteArray desktopEnvironment() const override;
 };
 
 QT_END_NAMESPACE

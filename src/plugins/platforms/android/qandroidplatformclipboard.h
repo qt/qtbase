@@ -45,9 +45,9 @@ class QAndroidPlatformClipboard: public QPlatformClipboard
 public:
     QAndroidPlatformClipboard();
 
-    virtual QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
-    virtual void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
-    virtual bool supportsMode(QClipboard::Mode mode) const;
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) override;
+    bool supportsMode(QClipboard::Mode mode) const override;
 
 private:
     QMimeData m_mimeData;

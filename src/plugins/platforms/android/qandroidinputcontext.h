@@ -73,21 +73,21 @@ public:
     QAndroidInputContext();
     ~QAndroidInputContext();
     static QAndroidInputContext * androidInputContext();
-    bool isValid() const { return true; }
+    bool isValid() const override { return true; }
 
-    void reset();
-    void commit();
-    void update(Qt::InputMethodQueries queries);
-    void invokeAction(QInputMethod::Action action, int cursorPosition);
-    QRectF keyboardRect() const;
-    bool isAnimating() const;
-    void showInputPanel();
-    void hideInputPanel();
-    bool isInputPanelVisible() const;
+    void reset() override;
+    void commit() override;
+    void update(Qt::InputMethodQueries queries) override;
+    void invokeAction(QInputMethod::Action action, int cursorPosition) override;
+    QRectF keyboardRect() const override;
+    bool isAnimating() const override;
+    void showInputPanel() override;
+    void hideInputPanel() override;
+    bool isInputPanelVisible() const override;
 
     bool isComposing() const;
     void clear();
-    void setFocusObject(QObject *object);
+    void setFocusObject(QObject *object) override;
 
     //---------------//
     jboolean beginBatchEdit();

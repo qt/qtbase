@@ -48,21 +48,21 @@ class QAndroidPlatformWindow: public QPlatformWindow
 public:
     explicit QAndroidPlatformWindow(QWindow *window);
 
-    void lower();
-    void raise();
+    void lower() override;
+    void raise() override;
 
-    void setVisible(bool visible);
+    void setVisible(bool visible) override;
 
-    void setWindowState(Qt::WindowState state);
-    void setWindowFlags(Qt::WindowFlags flags);
+    void setWindowState(Qt::WindowState state) override;
+    void setWindowFlags(Qt::WindowFlags flags) override;
     Qt::WindowFlags windowFlags() const;
-    void setParent(const QPlatformWindow *window);
-    WId winId() const { return m_windowId; }
+    void setParent(const QPlatformWindow *window) override;
+    WId winId() const override { return m_windowId; }
 
     QAndroidPlatformScreen *platformScreen() const;
 
-    void propagateSizeHints();
-    void requestActivateWindow();
+    void propagateSizeHints() override;
+    void requestActivateWindow() override;
     void updateStatusBarVisibility();
     inline bool isRaster() const {
         if ((window()->flags() & Qt::ForeignWindow) == Qt::ForeignWindow)
@@ -71,7 +71,7 @@ public:
         return window()->surfaceType() == QSurface::RasterSurface
             || window()->surfaceType() == QSurface::RasterGLSurface;
     }
-    bool isExposed() const;
+    bool isExposed() const override;
 
     virtual void applicationStateChanged(Qt::ApplicationState);
 
@@ -81,7 +81,7 @@ public:
     virtual void repaint(const QRegion &) { }
 
 protected:
-    void setGeometry(const QRect &rect);
+    void setGeometry(const QRect &rect) override;
 
 protected:
     Qt::WindowFlags m_windowFlags;

@@ -43,41 +43,41 @@ class QAndroidPlatformMenuItem: public QPlatformMenuItem
 {
 public:
     QAndroidPlatformMenuItem();
-    void setTag(quintptr tag);
-    quintptr tag() const;
+    void setTag(quintptr tag) override;
+    quintptr tag() const override;
 
-    void setText(const QString &text);
+    void setText(const QString &text) override;
     QString text() const;
 
-    void setIcon(const QIcon &icon);
+    void setIcon(const QIcon &icon) override;
     QIcon icon() const;
 
-    void setMenu(QPlatformMenu *menu);
+    void setMenu(QPlatformMenu *menu) override;
     QAndroidPlatformMenu *menu() const;
 
-    void setVisible(bool isVisible);
+    void setVisible(bool isVisible) override;
     bool isVisible() const;
 
-    void setIsSeparator(bool isSeparator);
+    void setIsSeparator(bool isSeparator) override;
     bool isSeparator() const;
 
-    void setFont(const QFont &font);
+    void setFont(const QFont &font) override;
 
-    void setRole(MenuRole role);
+    void setRole(MenuRole role) override;
     MenuRole role() const;
 
-    void setCheckable(bool checkable);
+    void setCheckable(bool checkable) override;
     bool isCheckable() const;
 
-    void setChecked(bool isChecked);
+    void setChecked(bool isChecked) override;
     bool isChecked() const;
 
-    void setShortcut(const QKeySequence &shortcut);
+    void setShortcut(const QKeySequence &shortcut) override;
 
-    void setEnabled(bool enabled);
+    void setEnabled(bool enabled) override;
     bool isEnabled() const;
 
-    void setIconSize(int size);
+    void setIconSize(int size) override;
 
 private:
     quintptr m_tag;

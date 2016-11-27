@@ -41,7 +41,7 @@ class QAndroidPlatformIntegrationPlugin: public QPlatformIntegrationPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "android.json")
 public:
-    QPlatformIntegration *create(const QString &key, const QStringList &paramList);
+    QPlatformIntegration *create(const QString &key, const QStringList &paramList) override;
 };
 
 

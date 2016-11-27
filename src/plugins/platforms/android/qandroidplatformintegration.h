@@ -57,7 +57,7 @@ struct AndroidStyle;
 class QAndroidPlatformNativeInterface: public QPlatformNativeInterface
 {
 public:
-    void *nativeResourceForIntegration(const QByteArray &resource);
+    void *nativeResourceForIntegration(const QByteArray &resource) override;
     std::shared_ptr<AndroidStyle> m_androidStyle;
 };
 
@@ -69,39 +69,39 @@ public:
     QAndroidPlatformIntegration(const QStringList &paramList);
     ~QAndroidPlatformIntegration();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
     QAndroidPlatformScreen *screen() { return m_primaryScreen; }
-    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 
     virtual void setDesktopSize(int width, int height);
     virtual void setDisplayMetrics(int width, int height);
     void setScreenSize(int width, int height);
     bool isVirtualDesktop() { return true; }
 
-    QPlatformFontDatabase *fontDatabase() const;
+    QPlatformFontDatabase *fontDatabase() const override;
 
 #ifndef QT_NO_CLIPBOARD
-    QPlatformClipboard *clipboard() const;
+    QPlatformClipboard *clipboard() const override;
 #endif
 
-    QPlatformInputContext *inputContext() const;
-    QPlatformNativeInterface *nativeInterface() const;
-    QPlatformServices *services() const;
+    QPlatformInputContext *inputContext() const override;
+    QPlatformNativeInterface *nativeInterface() const override;
+    QPlatformServices *services() const override;
 
 #ifndef QT_NO_ACCESSIBILITY
-    virtual QPlatformAccessibility *accessibility() const;
+    virtual QPlatformAccessibility *accessibility() const override;
 #endif
 
-    QVariant styleHint(StyleHint hint) const;
-    Qt::WindowState defaultWindowState(Qt::WindowFlags flags) const;
+    QVariant styleHint(StyleHint hint) const override;
+    Qt::WindowState defaultWindowState(Qt::WindowFlags flags) const override;
 
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
+    QStringList themeNames() const override;
+    QPlatformTheme *createPlatformTheme(const QString &name) const override;
 
     static void setDefaultDisplayMetrics(int gw, int gh, int sw, int sh, int width, int height);
     static void setDefaultDesktopSize(int gw, int gh);

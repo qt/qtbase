@@ -50,25 +50,25 @@ public:
     QAndroidPlatformMenu();
     ~QAndroidPlatformMenu();
 
-    void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before);
-    void removeMenuItem(QPlatformMenuItem *menuItem);
-    void syncMenuItem(QPlatformMenuItem *menuItem);
-    void syncSeparatorsCollapsible(bool enable);
+    void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) override;
+    void removeMenuItem(QPlatformMenuItem *menuItem) override;
+    void syncMenuItem(QPlatformMenuItem *menuItem) override;
+    void syncSeparatorsCollapsible(bool enable) override;
 
-    void setTag(quintptr tag);
-    quintptr tag() const;
-    void setText(const QString &text);
+    void setTag(quintptr tag) override;
+    quintptr tag() const override;
+    void setText(const QString &text) override;
     QString text() const;
-    void setIcon(const QIcon &icon);
+    void setIcon(const QIcon &icon) override;
     QIcon icon() const;
-    void setEnabled(bool enabled);
-    bool isEnabled() const;
-    void setVisible(bool visible);
+    void setEnabled(bool enabled) override;
+    bool isEnabled() const override;
+    void setVisible(bool visible) override;
     bool isVisible() const;
-    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item);
+    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) override;
 
-    QPlatformMenuItem *menuItemAt(int position) const;
-    QPlatformMenuItem *menuItemForTag(quintptr tag) const;
+    QPlatformMenuItem *menuItemAt(int position) const override;
+    QPlatformMenuItem *menuItemForTag(quintptr tag) const override;
 
     PlatformMenuItemsType menuItems() const;
     QMutex *menuItemsMutex();

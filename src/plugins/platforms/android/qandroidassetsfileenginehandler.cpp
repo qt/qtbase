@@ -69,12 +69,12 @@ public:
         m_path = path;
     }
 
-    virtual QFileInfo currentFileInfo() const
+    QFileInfo currentFileInfo() const override
     {
         return QFileInfo(currentFilePath());
     }
 
-    virtual QString currentFileName() const
+    QString currentFileName() const override
     {
         if (m_index < 0 || m_index >= m_items.size())
             return QString();
@@ -89,12 +89,12 @@ public:
         return m_path + currentFileName();
     }
 
-    virtual bool hasNext() const
+    bool hasNext() const override
     {
         return m_items.size() && (m_index < m_items.size() - 1);
     }
 
-    virtual QString next()
+    QString next() override
     {
         if (!hasNext())
             return QString();
@@ -131,12 +131,12 @@ public:
         close();
     }
 
-    virtual bool open(QIODevice::OpenMode openMode)
+    bool open(QIODevice::OpenMode openMode) override
     {
         return m_assetFile != 0 && (openMode & QIODevice::WriteOnly) == 0;
     }
 
-    virtual bool close()
+    bool close() override
     {
         if (m_assetFile) {
             AAsset_close(m_assetFile);
@@ -146,50 +146,50 @@ public:
         return false;
     }
 
-    virtual qint64 size() const
+    qint64 size() const override
     {
         if (m_assetFile)
             return AAsset_getLength(m_assetFile);
         return -1;
     }
 
-    virtual qint64 pos() const
+    qint64 pos() const override
     {
         if (m_assetFile)
             return AAsset_seek(m_assetFile, 0, SEEK_CUR);
         return -1;
     }
 
-    virtual bool seek(qint64 pos)
+    bool seek(qint64 pos) override
     {
         if (m_assetFile)
             return pos == AAsset_seek(m_assetFile, pos, SEEK_SET);
         return false;
     }
 
-    virtual qint64 read(char *data, qint64 maxlen)
+    qint64 read(char *data, qint64 maxlen) override
     {
         if (m_assetFile)
             return AAsset_read(m_assetFile, data, maxlen);
         return -1;
     }
 
-    virtual bool isSequential() const
+    bool isSequential() const override
     {
         return false;
     }
 
-    virtual bool caseSensitive() const
+    bool caseSensitive() const override
     {
         return true;
     }
 
-    virtual bool isRelativePath() const
+    bool isRelativePath() const override
     {
         return false;
     }
 
-    virtual FileFlags fileFlags(FileFlags type = FileInfoAll) const
+    FileFlags fileFlags(FileFlags type = FileInfoAll) const override
     {
         FileFlags flags(ReadOwnerPerm|ReadUserPerm|ReadGroupPerm|ReadOtherPerm|ExistsFlag);
         if (m_assetFile)
@@ -200,7 +200,7 @@ public:
         return type & flags;
     }
 
-    virtual QString fileName(FileName file = DefaultName) const
+    QString fileName(FileName file = DefaultName) const override
     {
         int pos;
         switch (file) {
@@ -225,7 +225,7 @@ public:
         }
     }
 
-    virtual void setFileName(const QString &file)
+    void setFileName(const QString &file) override
     {
         if (file == m_fileName)
             return;
@@ -237,7 +237,7 @@ public:
         close();
     }
 
-    virtual Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
     {
         if (!m_assetDir.isNull())
             return new AndroidAbstractFileEngineIterator(filters, filterNames, m_assetDir, m_fileName);

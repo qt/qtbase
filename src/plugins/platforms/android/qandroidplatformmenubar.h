@@ -49,11 +49,11 @@ public:
     QAndroidPlatformMenuBar();
     ~QAndroidPlatformMenuBar();
 
-    void insertMenu(QPlatformMenu *menu, QPlatformMenu *before);
-    void removeMenu(QPlatformMenu *menu);
-    void syncMenu(QPlatformMenu *menu);
-    void handleReparent(QWindow *newParentWindow);
-    QPlatformMenu *menuForTag(quintptr tag) const;
+    void insertMenu(QPlatformMenu *menu, QPlatformMenu *before) override;
+    void removeMenu(QPlatformMenu *menu) override;
+    void syncMenu(QPlatformMenu *menu) override;
+    void handleReparent(QWindow *newParentWindow) override;
+    QPlatformMenu *menuForTag(quintptr tag) const override;
 
     QWindow *parentWindow() const;
     PlatformMenusType menus() const;

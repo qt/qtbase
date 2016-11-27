@@ -57,14 +57,14 @@ public:
     QAndroidPlatformScreen();
     ~QAndroidPlatformScreen();
 
-    QRect geometry() const { return QRect(QPoint(), m_size); }
-    QRect availableGeometry() const { return m_availableGeometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSizeF physicalSize() const { return m_physicalSize; }
+    QRect geometry() const override { return QRect(QPoint(), m_size); }
+    QRect availableGeometry() const override { return m_availableGeometry; }
+    int depth() const override { return m_depth; }
+    QImage::Format format() const override { return m_format; }
+    QSizeF physicalSize() const override { return m_physicalSize; }
 
     inline QWindow *topWindow() const;
-    QWindow *topLevelAt(const QPoint & p) const;
+    QWindow *topLevelAt(const QPoint & p) const override;
 
     // compositor api
     void addWindow(QAndroidPlatformWindow *window);
@@ -94,11 +94,11 @@ protected:
     QSizeF m_physicalSize;
 
 private:
-    QDpi logicalDpi() const;
-    qreal pixelDensity()  const;
-    Qt::ScreenOrientation orientation() const;
-    Qt::ScreenOrientation nativeOrientation() const;
-    void surfaceChanged(JNIEnv *env, jobject surface, int w, int h);
+    QDpi logicalDpi() const override;
+    qreal pixelDensity()  const override;
+    Qt::ScreenOrientation orientation() const override;
+    Qt::ScreenOrientation nativeOrientation() const override;
+    void surfaceChanged(JNIEnv *env, jobject surface, int w, int h) override;
     void releaseSurface();
     void applicationStateChanged(Qt::ApplicationState);
 

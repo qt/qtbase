@@ -41,12 +41,12 @@ QT_BEGIN_NAMESPACE
 class QAndroidPlatformFontDatabase: public QBasicFontDatabase
 {
 public:
-    QString fontDir() const;
-    void populateFontDatabase();
+    QString fontDir() const override;
+    void populateFontDatabase() override;
     QStringList fallbacksForFamily(const QString &family,
-                                           QFont::Style style,
-                                           QFont::StyleHint styleHint,
-                                           QChar::Script script) const;
+                                   QFont::Style style,
+                                   QFont::StyleHint styleHint,
+                                   QChar::Script script) const override;
 };
 
 QT_END_NAMESPACE

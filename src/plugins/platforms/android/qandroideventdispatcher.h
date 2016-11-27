@@ -51,9 +51,9 @@ public:
 
 protected:
     int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-               timespec *timeout);
+               timespec *timeout) override;
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
 
 private:
     QAtomicInt m_stopRequest;
