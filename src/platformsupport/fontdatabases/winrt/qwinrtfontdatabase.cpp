@@ -129,6 +129,17 @@ static QFontDatabase::WritingSystem writingSystemFromUnicodeRange(const DWRITE_U
     return QFontDatabase::Other;
 }
 
+QWinRTFontDatabase::~QWinRTFontDatabase()
+{
+    qCDebug(lcQpaFonts) << __FUNCTION__;
+
+    foreach (IDWriteFontFile *fontFile, m_fonts.keys())
+        fontFile->Release();
+
+    foreach (IDWriteFontFamily *fontFamily, m_fontFamilies)
+        fontFamily->Release();
+}
+
 QString QWinRTFontDatabase::fontDir() const
 {
     qCDebug(lcQpaFonts) << __FUNCTION__;
@@ -144,17 +155,6 @@ QString QWinRTFontDatabase::fontDir() const
         }
     }
     return fontDirectory;
-}
-
-QWinRTFontDatabase::~QWinRTFontDatabase()
-{
-    qCDebug(lcQpaFonts) << __FUNCTION__;
-
-    foreach (IDWriteFontFile *fontFile, m_fonts.keys())
-        fontFile->Release();
-
-    foreach (IDWriteFontFamily *fontFamily, m_fontFamilies)
-        fontFamily->Release();
 }
 
 QFont QWinRTFontDatabase::defaultFont() const

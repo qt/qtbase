@@ -82,11 +82,11 @@ public:
     bool defaultNameFilterDisables() const override { return false; }
     void setDirectory(const QUrl &directory) override;
     QUrl directory() const override;
-    void selectFile(const QUrl &saveFileName);
+    void selectFile(const QUrl &saveFileName) override;
     QList<QUrl> selectedFiles() const override;
     void setFilter() override { }
     void selectNameFilter(const QString &selectedNameFilter) override;
-    QString selectedNameFilter() const;
+    QString selectedNameFilter() const override;
 
 #ifndef Q_OS_WINPHONE
     HRESULT onSingleFilePicked(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Storage::StorageFile *> *,

@@ -70,8 +70,8 @@ struct FontDescription
 class QWinRTFontDatabase : public QBasicFontDatabase
 {
 public:
-    QString fontDir() const;
     ~QWinRTFontDatabase();
+    QString fontDir() const override;
     QFont defaultFont() const override;
     bool fontsAlwaysScalable() const override;
     void populateFontDatabase() override;

@@ -50,7 +50,7 @@ class QWinRTIntegrationPlugin : public QPlatformIntegrationPlugin
 
 public:
     QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
+    QPlatformIntegration *create(const QString&, const QStringList&) override;
 };
 
 QStringList QWinRTIntegrationPlugin::keys() const

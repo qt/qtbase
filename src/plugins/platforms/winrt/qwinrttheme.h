@@ -54,8 +54,8 @@ class QWinRTTheme : public QPlatformTheme
 public:
     QWinRTTheme();
 
-    bool usePlatformNativeDialog(DialogType type) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
+    bool usePlatformNativeDialog(DialogType type) const override;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
     const QPalette *palette(Palette type = SystemPalette) const override;
 

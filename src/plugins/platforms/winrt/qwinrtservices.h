@@ -52,8 +52,8 @@ public:
     explicit QWinRTServices();
     ~QWinRTServices();
 
-    bool openUrl(const QUrl &url);
-    bool openDocument(const QUrl &url);
+    bool openUrl(const QUrl &url) override;
+    bool openDocument(const QUrl &url) override;
 
 private:
     QScopedPointer<QWinRTServicesPrivate> d_ptr;
