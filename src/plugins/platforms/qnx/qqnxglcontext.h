@@ -64,13 +64,13 @@ public:
 
     void requestSurfaceChange();
 
-    bool makeCurrent(QPlatformSurface *surface);
-    void doneCurrent();
-    void swapBuffers(QPlatformSurface *surface);
-    QFunctionPointer getProcAddress(const char *procName);
+    bool makeCurrent(QPlatformSurface *surface) override;
+    void doneCurrent() override;
+    void swapBuffers(QPlatformSurface *surface) override;
+    QFunctionPointer getProcAddress(const char *procName) override;
 
-    virtual QSurfaceFormat format() const { return m_windowFormat; }
-    bool isSharing() const;
+    virtual QSurfaceFormat format() const override { return m_windowFormat; }
+    bool isSharing() const override;
 
     static EGLDisplay getEglDisplay();
     EGLConfig getEglConfig() const { return m_eglConfig;}

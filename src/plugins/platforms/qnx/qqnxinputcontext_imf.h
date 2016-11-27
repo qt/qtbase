@@ -71,22 +71,22 @@ public:
         Reverted,
     };
 
-    bool isValid() const;
+    bool isValid() const override;
 
-    bool filterEvent(const QEvent *event);
-    QRectF keyboardRect() const;
-    void reset();
-    void commit();
-    void update(Qt::InputMethodQueries);
-    bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap, int sequenceId);
+    bool filterEvent(const QEvent *event) override;
+    QRectF keyboardRect() const override;
+    void reset() override;
+    void commit() override;
+    void update(Qt::InputMethodQueries) override;
+    bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap, int sequenceId) override;
 
 
-    void showInputPanel();
-    void hideInputPanel();
-    bool isInputPanelVisible() const;
+    void showInputPanel() override;
+    void hideInputPanel() override;
+    bool isInputPanelVisible() const override;
 
-    QLocale locale() const;
-    void setFocusObject(QObject *object);
+    QLocale locale() const override;
+    void setFocusObject(QObject *object) override;
 
     static void setHighlightColor(int index, const QColor &color);
 

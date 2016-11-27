@@ -52,8 +52,8 @@ class QQnxClipboard : public QPlatformClipboard
 public:
     QQnxClipboard();
     ~QQnxClipboard();
-    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
-    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) override;
 
 private:
     class MimeData;

@@ -52,8 +52,8 @@ public:
     explicit QQnxServices(QQnxAbstractNavigator *navigator);
     ~QQnxServices();
 
-    bool openUrl(const QUrl &url);
-    bool openDocument(const QUrl &url);
+    bool openUrl(const QUrl &url) override;
+    bool openDocument(const QUrl &url) override;
 
 private:
     bool navigatorInvoke(const QUrl &url);

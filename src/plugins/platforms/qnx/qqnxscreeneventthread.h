@@ -65,7 +65,7 @@ public:
     void unlock();
 
 protected:
-    void run();
+    void run() override;
 
 Q_SIGNALS:
     void eventPending();

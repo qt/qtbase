@@ -56,14 +56,14 @@ public:
     QQnxVirtualKeyboardPps();
     ~QQnxVirtualKeyboardPps();
 
-    bool showKeyboard();
-    bool hideKeyboard();
+    bool showKeyboard() override;
+    bool hideKeyboard() override;
 
 public Q_SLOTS:
     void start();
 
 protected:
-    void applyKeyboardOptions();
+    void applyKeyboardOptions() override;
 
 private Q_SLOTS:
     void ppsDataReady();
