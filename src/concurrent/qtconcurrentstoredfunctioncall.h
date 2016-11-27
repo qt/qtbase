@@ -57,7 +57,7 @@ struct StoredFunctorCall0: public RunFunctionTask<T>
 {
     inline StoredFunctorCall0(FunctionPointer _function)
       : function(_function) {}
-    void runFunctor() { this->result = function(); }
+    void runFunctor() override { this->result = function(); }
     FunctionPointer function;
 
 };
@@ -67,7 +67,7 @@ struct StoredFunctorCall0<void, FunctionPointer>: public RunFunctionTask<void>
 {
     inline StoredFunctorCall0(FunctionPointer _function)
       : function(_function) {}
-    void runFunctor() { function(); }
+    void runFunctor() override { function(); }
     FunctionPointer function;
 
 };
@@ -77,7 +77,7 @@ struct StoredFunctorPointerCall0: public RunFunctionTask<T>
 {
     inline StoredFunctorPointerCall0(FunctionPointer * _function)
       : function(_function) {}
-    void runFunctor() { this->result =(*function)(); }
+    void runFunctor() override { this->result =(*function)(); }
     FunctionPointer * function;
 
 };
@@ -87,7 +87,7 @@ struct VoidStoredFunctorPointerCall0: public RunFunctionTask<T>
 {
     inline VoidStoredFunctorPointerCall0(FunctionPointer * _function)
       : function(_function) {}
-    void runFunctor() {(*function)(); }
+    void runFunctor() override { (*function)(); }
     FunctionPointer * function;
 
 };
@@ -106,7 +106,7 @@ public:
     StoredMemberFunctionCall0(T (Class::*_fn)() , const Class &_object)
     : fn(_fn), object(_object){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)();
     }
@@ -122,7 +122,7 @@ public:
     VoidStoredMemberFunctionCall0(T (Class::*_fn)() , const Class &_object)
     : fn(_fn), object(_object){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)();
     }
@@ -145,7 +145,7 @@ public:
     StoredConstMemberFunctionCall0(T (Class::*_fn)() const, const Class &_object)
     : fn(_fn), object(_object){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)();
     }
@@ -161,7 +161,7 @@ public:
     VoidStoredConstMemberFunctionCall0(T (Class::*_fn)() const, const Class &_object)
     : fn(_fn), object(_object){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)();
     }
@@ -184,7 +184,7 @@ public:
     StoredMemberFunctionPointerCall0(T (Class::*_fn)() , Class *_object)
     : fn(_fn), object(_object){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)();
     }
@@ -200,7 +200,7 @@ public:
     VoidStoredMemberFunctionPointerCall0(T (Class::*_fn)() , Class *_object)
     : fn(_fn), object(_object){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)();
     }
@@ -223,7 +223,7 @@ public:
     StoredConstMemberFunctionPointerCall0(T (Class::*_fn)() const, Class const *_object)
     : fn(_fn), object(_object){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)();
     }
@@ -239,7 +239,7 @@ public:
     VoidStoredConstMemberFunctionPointerCall0(T (Class::*_fn)() const, Class const *_object)
     : fn(_fn), object(_object){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)();
     }
@@ -260,7 +260,7 @@ struct StoredFunctorCall1: public RunFunctionTask<T>
 {
     inline StoredFunctorCall1(FunctionPointer _function, const Arg1 &_arg1)
       : function(_function), arg1(_arg1) {}
-    void runFunctor() { this->result = function(arg1); }
+    void runFunctor() override { this->result = function(arg1); }
     FunctionPointer function;
     Arg1 arg1;
 };
@@ -270,7 +270,7 @@ struct StoredFunctorCall1<void, FunctionPointer, Arg1>: public RunFunctionTask<v
 {
     inline StoredFunctorCall1(FunctionPointer _function, const Arg1 &_arg1)
       : function(_function), arg1(_arg1) {}
-    void runFunctor() { function(arg1); }
+    void runFunctor() override { function(arg1); }
     FunctionPointer function;
     Arg1 arg1;
 };
@@ -280,7 +280,7 @@ struct StoredFunctorPointerCall1: public RunFunctionTask<T>
 {
     inline StoredFunctorPointerCall1(FunctionPointer * _function, const Arg1 &_arg1)
       : function(_function), arg1(_arg1) {}
-    void runFunctor() { this->result =(*function)(arg1); }
+    void runFunctor() override { this->result =(*function)(arg1); }
     FunctionPointer * function;
     Arg1 arg1;
 };
@@ -290,7 +290,7 @@ struct VoidStoredFunctorPointerCall1: public RunFunctionTask<T>
 {
     inline VoidStoredFunctorPointerCall1(FunctionPointer * _function, const Arg1 &_arg1)
       : function(_function), arg1(_arg1) {}
-    void runFunctor() {(*function)(arg1); }
+    void runFunctor() override { (*function)(arg1); }
     FunctionPointer * function;
     Arg1 arg1;
 };
@@ -309,7 +309,7 @@ public:
     StoredMemberFunctionCall1(T (Class::*_fn)(Param1) , const Class &_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1);
     }
@@ -325,7 +325,7 @@ public:
     VoidStoredMemberFunctionCall1(T (Class::*_fn)(Param1) , const Class &_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1);
     }
@@ -348,7 +348,7 @@ public:
     StoredConstMemberFunctionCall1(T (Class::*_fn)(Param1) const, const Class &_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1);
     }
@@ -364,7 +364,7 @@ public:
     VoidStoredConstMemberFunctionCall1(T (Class::*_fn)(Param1) const, const Class &_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1);
     }
@@ -387,7 +387,7 @@ public:
     StoredMemberFunctionPointerCall1(T (Class::*_fn)(Param1) , Class *_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1);
     }
@@ -403,7 +403,7 @@ public:
     VoidStoredMemberFunctionPointerCall1(T (Class::*_fn)(Param1) , Class *_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1);
     }
@@ -426,7 +426,7 @@ public:
     StoredConstMemberFunctionPointerCall1(T (Class::*_fn)(Param1) const, Class const *_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1);
     }
@@ -442,7 +442,7 @@ public:
     VoidStoredConstMemberFunctionPointerCall1(T (Class::*_fn)(Param1) const, Class const *_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1);
     }
@@ -463,7 +463,7 @@ struct StoredFunctorCall2: public RunFunctionTask<T>
 {
     inline StoredFunctorCall2(FunctionPointer _function, const Arg1 &_arg1, const Arg2 &_arg2)
       : function(_function), arg1(_arg1), arg2(_arg2) {}
-    void runFunctor() { this->result = function(arg1, arg2); }
+    void runFunctor() override { this->result = function(arg1, arg2); }
     FunctionPointer function;
     Arg1 arg1; Arg2 arg2;
 };
@@ -473,7 +473,7 @@ struct StoredFunctorCall2<void, FunctionPointer, Arg1, Arg2>: public RunFunction
 {
     inline StoredFunctorCall2(FunctionPointer _function, const Arg1 &_arg1, const Arg2 &_arg2)
       : function(_function), arg1(_arg1), arg2(_arg2) {}
-    void runFunctor() { function(arg1, arg2); }
+    void runFunctor() override { function(arg1, arg2); }
     FunctionPointer function;
     Arg1 arg1; Arg2 arg2;
 };
@@ -483,7 +483,7 @@ struct StoredFunctorPointerCall2: public RunFunctionTask<T>
 {
     inline StoredFunctorPointerCall2(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2)
       : function(_function), arg1(_arg1), arg2(_arg2) {}
-    void runFunctor() { this->result =(*function)(arg1, arg2); }
+    void runFunctor() override { this->result =(*function)(arg1, arg2); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2;
 };
@@ -493,7 +493,7 @@ struct VoidStoredFunctorPointerCall2: public RunFunctionTask<T>
 {
     inline VoidStoredFunctorPointerCall2(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2)
     : function(_function), arg1(_arg1), arg2(_arg2) {}
-    void runFunctor() {(*function)(arg1, arg2); }
+    void runFunctor() override { (*function)(arg1, arg2); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2;
 };
@@ -512,7 +512,7 @@ public:
     StoredMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1, arg2);
     }
@@ -528,7 +528,7 @@ public:
     VoidStoredMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1, arg2);
     }
@@ -551,7 +551,7 @@ public:
     StoredConstMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) const, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1, arg2);
     }
@@ -567,7 +567,7 @@ public:
     VoidStoredConstMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) const, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1, arg2);
     }
@@ -590,7 +590,7 @@ public:
     StoredMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1, arg2);
     }
@@ -606,7 +606,7 @@ public:
     VoidStoredMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1, arg2);
     }
@@ -629,7 +629,7 @@ public:
     StoredConstMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) const, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1, arg2);
     }
@@ -645,7 +645,7 @@ public:
     VoidStoredConstMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) const, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1, arg2);
     }
@@ -666,7 +666,7 @@ struct StoredFunctorCall3: public RunFunctionTask<T>
 {
     inline StoredFunctorCall3(FunctionPointer _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3) {}
-    void runFunctor() { this->result = function(arg1, arg2, arg3); }
+    void runFunctor() override { this->result = function(arg1, arg2, arg3); }
     FunctionPointer function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3;
 };
@@ -676,7 +676,7 @@ struct StoredFunctorCall3<void, FunctionPointer, Arg1, Arg2, Arg3>: public RunFu
 {
     inline StoredFunctorCall3(FunctionPointer _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3) {}
-    void runFunctor() { function(arg1, arg2, arg3); }
+    void runFunctor() override { function(arg1, arg2, arg3); }
     FunctionPointer function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3;
 };
@@ -686,7 +686,7 @@ struct StoredFunctorPointerCall3: public RunFunctionTask<T>
 {
     inline StoredFunctorPointerCall3(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3) {}
-    void runFunctor() { this->result =(*function)(arg1, arg2, arg3); }
+    void runFunctor() override { this->result =(*function)(arg1, arg2, arg3); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3;
 };
@@ -696,7 +696,7 @@ struct VoidStoredFunctorPointerCall3: public RunFunctionTask<T>
 {
     inline VoidStoredFunctorPointerCall3(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3) {}
-    void runFunctor() {(*function)(arg1, arg2, arg3); }
+    void runFunctor() override { (*function)(arg1, arg2, arg3); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3;
 };
@@ -715,7 +715,7 @@ public:
     StoredMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1, arg2, arg3);
     }
@@ -731,7 +731,7 @@ public:
     VoidStoredMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1, arg2, arg3);
     }
@@ -754,7 +754,7 @@ public:
     StoredConstMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) const, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1, arg2, arg3);
     }
@@ -770,7 +770,7 @@ public:
     VoidStoredConstMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) const, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1, arg2, arg3);
     }
@@ -793,7 +793,7 @@ public:
     StoredMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1, arg2, arg3);
     }
@@ -809,7 +809,7 @@ public:
     VoidStoredMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1, arg2, arg3);
     }
@@ -832,7 +832,7 @@ public:
     StoredConstMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) const, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1, arg2, arg3);
     }
@@ -848,7 +848,7 @@ public:
     VoidStoredConstMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) const, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1, arg2, arg3);
     }
@@ -869,7 +869,7 @@ struct StoredFunctorCall4: public RunFunctionTask<T>
 {
     inline StoredFunctorCall4(FunctionPointer _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4) {}
-    void runFunctor() { this->result = function(arg1, arg2, arg3, arg4); }
+    void runFunctor() override { this->result = function(arg1, arg2, arg3, arg4); }
     FunctionPointer function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
 };
@@ -879,7 +879,7 @@ struct StoredFunctorCall4<void, FunctionPointer, Arg1, Arg2, Arg3, Arg4>: public
 {
     inline StoredFunctorCall4(FunctionPointer _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4) {}
-    void runFunctor() { function(arg1, arg2, arg3, arg4); }
+    void runFunctor() override { function(arg1, arg2, arg3, arg4); }
     FunctionPointer function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
 };
@@ -889,7 +889,7 @@ struct StoredFunctorPointerCall4: public RunFunctionTask<T>
 {
     inline StoredFunctorPointerCall4(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4) {}
-    void runFunctor() { this->result =(*function)(arg1, arg2, arg3, arg4); }
+    void runFunctor() override { this->result =(*function)(arg1, arg2, arg3, arg4); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
 };
@@ -899,7 +899,7 @@ struct VoidStoredFunctorPointerCall4: public RunFunctionTask<T>
 {
     inline VoidStoredFunctorPointerCall4(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4) {}
-    void runFunctor() {(*function)(arg1, arg2, arg3, arg4); }
+    void runFunctor() override { (*function)(arg1, arg2, arg3, arg4); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
 };
@@ -918,7 +918,7 @@ public:
     StoredMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1, arg2, arg3, arg4);
     }
@@ -934,7 +934,7 @@ public:
     VoidStoredMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1, arg2, arg3, arg4);
     }
@@ -957,7 +957,7 @@ public:
     StoredConstMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) const, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1, arg2, arg3, arg4);
     }
@@ -973,7 +973,7 @@ public:
     VoidStoredConstMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) const, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1, arg2, arg3, arg4);
     }
@@ -996,7 +996,7 @@ public:
     StoredMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1, arg2, arg3, arg4);
     }
@@ -1012,7 +1012,7 @@ public:
     VoidStoredMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1, arg2, arg3, arg4);
     }
@@ -1035,7 +1035,7 @@ public:
     StoredConstMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) const, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1, arg2, arg3, arg4);
     }
@@ -1051,7 +1051,7 @@ public:
     VoidStoredConstMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) const, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1, arg2, arg3, arg4);
     }
@@ -1072,7 +1072,7 @@ struct StoredFunctorCall5: public RunFunctionTask<T>
 {
     inline StoredFunctorCall5(FunctionPointer _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5) {}
-    void runFunctor() { this->result = function(arg1, arg2, arg3, arg4, arg5); }
+    void runFunctor() override { this->result = function(arg1, arg2, arg3, arg4, arg5); }
     FunctionPointer function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
 };
@@ -1082,7 +1082,7 @@ struct StoredFunctorCall5<void, FunctionPointer, Arg1, Arg2, Arg3, Arg4, Arg5>: 
 {
     inline StoredFunctorCall5(FunctionPointer _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5) {}
-    void runFunctor() { function(arg1, arg2, arg3, arg4, arg5); }
+    void runFunctor() override { function(arg1, arg2, arg3, arg4, arg5); }
     FunctionPointer function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
 };
@@ -1092,7 +1092,7 @@ struct StoredFunctorPointerCall5: public RunFunctionTask<T>
 {
     inline StoredFunctorPointerCall5(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5) {}
-    void runFunctor() { this->result =(*function)(arg1, arg2, arg3, arg4, arg5); }
+    void runFunctor() override { this->result =(*function)(arg1, arg2, arg3, arg4, arg5); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
 };
@@ -1102,7 +1102,7 @@ struct VoidStoredFunctorPointerCall5: public RunFunctionTask<T>
 {
     inline VoidStoredFunctorPointerCall5(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5) {}
-    void runFunctor() {(*function)(arg1, arg2, arg3, arg4, arg5); }
+    void runFunctor() override {(*function)(arg1, arg2, arg3, arg4, arg5); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
 };
@@ -1121,7 +1121,7 @@ public:
     StoredMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1, arg2, arg3, arg4, arg5);
     }
@@ -1137,7 +1137,7 @@ public:
     VoidStoredMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1, arg2, arg3, arg4, arg5);
     }
@@ -1160,7 +1160,7 @@ public:
     StoredConstMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) const, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object.*fn)(arg1, arg2, arg3, arg4, arg5);
     }
@@ -1176,7 +1176,7 @@ public:
     VoidStoredConstMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) const, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object.*fn)(arg1, arg2, arg3, arg4, arg5);
     }
@@ -1199,7 +1199,7 @@ public:
     StoredMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1, arg2, arg3, arg4, arg5);
     }
@@ -1215,7 +1215,7 @@ public:
     VoidStoredMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1, arg2, arg3, arg4, arg5);
     }
@@ -1238,7 +1238,7 @@ public:
     StoredConstMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) const, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = (object->*fn)(arg1, arg2, arg3, arg4, arg5);
     }
@@ -1254,7 +1254,7 @@ public:
     VoidStoredConstMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) const, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
-    void runFunctor()
+    void runFunctor() override
     {
         (object->*fn)(arg1, arg2, arg3, arg4, arg5);
     }
@@ -1276,7 +1276,7 @@ class StoredFunctorCall : public RunFunctionTask<T>
 {
 public:
     StoredFunctorCall(const Functor &f) : functor(f) { }
-    void runFunctor()
+    void runFunctor() override
     {
         this->result = functor();
     }
@@ -1288,7 +1288,7 @@ class StoredFunctorCall<void, Functor> : public RunFunctionTask<void>
 {
 public:
     StoredFunctorCall(const Functor &f) : functor(f) { }
-    void runFunctor()
+    void runFunctor() override
     {
         functor();
     }

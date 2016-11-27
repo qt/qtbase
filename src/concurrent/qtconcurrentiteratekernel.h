@@ -197,14 +197,14 @@ public:
     virtual bool runIterations(Iterator _begin, int beginIndex, int endIndex, T *results)
         { Q_UNUSED(_begin); Q_UNUSED(beginIndex); Q_UNUSED(endIndex); Q_UNUSED(results); return false; }
 
-    void start()
+    void start() override
     {
         progressReportingEnabled = this->isProgressReportingEnabled();
         if (progressReportingEnabled && iterationCount > 0)
             this->setProgressRange(0, iterationCount);
     }
 
-    bool shouldStartThread()
+    bool shouldStartThread() override
     {
         if (forIteration)
             return (currentIndex.load() < iterationCount) && !this->shouldThrottleThread();
@@ -212,7 +212,7 @@ public:
             return (iteratorThreads.load() == 0);
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         if (forIteration)
             return this->forThreadFunction();

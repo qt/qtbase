@@ -64,13 +64,13 @@ public:
         : IterateKernel<Iterator, void>(begin, end), map(_map)
     { }
 
-    bool runIteration(Iterator it, int, void *)
+    bool runIteration(Iterator it, int, void *) override
     {
         map(*it);
         return false;
     }
 
-    bool runIterations(Iterator sequenceBeginIterator, int beginIndex, int endIndex, void *)
+    bool runIterations(Iterator sequenceBeginIterator, int beginIndex, int endIndex, void *) override
     {
         Iterator it = sequenceBeginIterator;
         std::advance(it, beginIndex);
@@ -108,7 +108,7 @@ public:
         : reducedResult(initialValue), map(_map), reduce(_reduce)
     { }
 
-    bool runIteration(Iterator it, int index, ReducedResultType *)
+    bool runIteration(Iterator it, int index, ReducedResultType *) override
     {
         IntermediateResults<typename MapFunctor::result_type> results;
         results.begin = index;
@@ -119,7 +119,7 @@ public:
         return false;
     }
 
-    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, ReducedResultType *)
+    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, ReducedResultType *) override
     {
         IntermediateResults<typename MapFunctor::result_type> results;
         results.begin = begin;
@@ -137,23 +137,23 @@ public:
         return false;
     }
 
-    void finish()
+    void finish() override
     {
         reducer.finish(reduce, reducedResult);
     }
 
-    bool shouldThrottleThread()
+    bool shouldThrottleThread() override
     {
         return IterateKernel<Iterator, ReducedResultType>::shouldThrottleThread() || reducer.shouldThrottle();
     }
 
-    bool shouldStartThread()
+    bool shouldStartThread() override
     {
         return IterateKernel<Iterator, ReducedResultType>::shouldStartThread() && reducer.shouldStartThread();
     }
 
     typedef ReducedResultType ResultType;
-    ReducedResultType *result()
+    ReducedResultType *result() override
     {
         return &reducedResult;
     }
@@ -171,13 +171,13 @@ public:
     MappedEachKernel(Iterator begin, Iterator end, MapFunctor _map)
         : IterateKernel<Iterator, T>(begin, end), map(_map) { }
 
-    bool runIteration(Iterator it, int,  T *result)
+    bool runIteration(Iterator it, int,  T *result) override
     {
         *result = map(*it);
         return true;
     }
 
-    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, T *results)
+    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, T *results) override
     {
 
         Iterator it = sequenceBeginIterator;
@@ -216,7 +216,7 @@ struct SequenceHolder1 : public Base
 
     Sequence sequence;
 
-    void finish()
+    void finish() override
     {
         Base::finish();
         // Clear the sequence to make sure all temporaries are destroyed
