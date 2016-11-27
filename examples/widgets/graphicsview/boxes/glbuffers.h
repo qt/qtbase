@@ -146,7 +146,7 @@ public:
     void begin(int face);
     // end rendering
     void end();
-    virtual bool failed() const override {return m_failed || m_fbo.failed();}
+    bool failed() const override { return m_failed || m_fbo.failed(); }
 
     static void getViewMatrix(QMatrix4x4& mat, int face);
     static void getProjectionMatrix(QMatrix4x4& mat, float nearZ, float farZ);

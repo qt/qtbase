@@ -81,7 +81,7 @@ class ColorEdit : public ParameterEdit
 public:
     ColorEdit(QRgb initialColor, int id);
     QRgb color() const {return m_color;}
-    virtual void emitChange() override { emit colorChanged(m_color, m_id); }
+    void emitChange() override { emit colorChanged(m_color, m_id); }
 public slots:
     void editDone();
 signals:
@@ -103,7 +103,7 @@ class FloatEdit : public ParameterEdit
 public:
     FloatEdit(float initialValue, int id);
     float value() const {return m_value;}
-    virtual void emitChange() override { emit valueChanged(m_value, m_id); }
+    void emitChange() override { emit valueChanged(m_value, m_id); }
 public slots:
     void editDone();
 signals:
