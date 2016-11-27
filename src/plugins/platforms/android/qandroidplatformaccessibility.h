@@ -51,7 +51,7 @@ public:
     QAndroidPlatformAccessibility();
     ~QAndroidPlatformAccessibility();
 
-    virtual void notifyAccessibilityUpdate(QAccessibleEvent *event);
+    void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
 };
 
 QT_END_NAMESPACE
