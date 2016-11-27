@@ -55,7 +55,7 @@ class AndroidAssetsFileEngineHandler: public QAbstractFileEngineHandler
 public:
     AndroidAssetsFileEngineHandler();
     virtual ~AndroidAssetsFileEngineHandler();
-    QAbstractFileEngine *create(const QString &fileName) const;
+    QAbstractFileEngine *create(const QString &fileName) const override;
 
 private:
     void prepopulateCache() const;

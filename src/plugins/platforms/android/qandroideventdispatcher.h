@@ -56,7 +56,7 @@ public:
     void goingToStop(bool stop);
 
 protected:
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
 
 private:
     QAtomicInt m_stopRequest;
