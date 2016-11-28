@@ -913,11 +913,6 @@ struct VCFilterFile
     VCFilterFile(const QString &filename, bool exclude = false )
     { file = filename; excludeFromBuild = exclude; }
 
-    bool operator==(const VCFilterFile &other){
-        return file == other.file
-               && excludeFromBuild == other.excludeFromBuild;
-    }
-
     bool                    excludeFromBuild;
     QString                 file;
 };
