@@ -64,6 +64,7 @@ public:
 
     QHash<QString, QStringList> extraCompilerSources;
     QHash<QString, QString> extraCompilerOutputs;
+    const QString customBuildToolFilterFileSuffix;
     bool usePCH;
     VCProjectWriter *projectWriter;
 

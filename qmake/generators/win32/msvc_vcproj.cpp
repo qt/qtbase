@@ -198,7 +198,8 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
 VcprojGenerator::VcprojGenerator()
     : Win32MakefileGenerator(),
       is64Bit(false),
-      projectWriter(0)
+      projectWriter(0),
+      customBuildToolFilterFileSuffix(QStringLiteral(".cbt"))
 {
 }
 
@@ -886,8 +887,12 @@ void VcprojGenerator::init()
                         if (!hasBuiltinCompiler(file)) {
                             extraCompilerSources[file] += quc.toQString();
                         } else {
+                            // Use a fake file name foo.moc.cbt for the project view.
+                            // This prevents VS from complaining about a circular
+                            // dependency from foo.moc -> foo.moc.
                             QString out = Option::fixPathToTargetOS(replaceExtraCompilerVariables(
                                             compiler_out, file, QString(), NoShell), false);
+                            out += customBuildToolFilterFileSuffix;
                             extraCompilerSources[out] += quc.toQString();
                             extraCompilerOutputs[out] = file;
                         }

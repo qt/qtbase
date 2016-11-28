@@ -2264,6 +2264,10 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
     bool hasBuiltIn = false;
     if (!objectMappedFile.isEmpty()) {
         hasBuiltIn = Project->hasBuiltinCompiler(objectMappedFile);
+
+        // Remove the fake file suffix we've added initially to generate correct command lines.
+        inFile.chop(Project->customBuildToolFilterFileSuffix.length());
+
 //        qDebug("*** Extra compiler file has object mapped file '%s' => '%s'", qPrintable(inFile), qPrintable(objectMappedFile.join(' ')));
     }
 
