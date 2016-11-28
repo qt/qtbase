@@ -896,7 +896,6 @@ public:
     VCLinkerTool            linker;
     VCLibrarianTool         librarian;
     VCManifestTool          manifestTool;
-    VCCustomBuildTool       custom;
     VCMIDLTool              idl;
     VCPostBuildEventTool    postBuild;
     VCPreBuildEventTool     preBuild;

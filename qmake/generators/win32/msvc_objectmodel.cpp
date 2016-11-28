@@ -2149,7 +2149,6 @@ VCConfiguration::VCConfiguration()
     compiler.config = this;
     linker.config = this;
     idl.config = this;
-    custom.config = this;
 }
 
 // VCFilter ---------------------------------------------------------
@@ -2872,7 +2871,6 @@ void VCProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)
             << attrE(_UseOfMfc, tool.UseOfMfc)
             << attrT(_WholeProgramOptimization, tool.WholeProgramOptimization);
     write(xml, tool.compiler);
-    write(xml, tool.custom);
     if (tool.ConfigurationType == typeStaticLibrary)
         write(xml, tool.librarian);
     else
