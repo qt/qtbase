@@ -889,7 +889,7 @@ void VcprojGenerator::init()
                             QString out = Option::fixPathToTargetOS(replaceExtraCompilerVariables(
                                             compiler_out, file, QString(), NoShell), false);
                             extraCompilerSources[out] += quc.toQString();
-                            extraCompilerOutputs[out] = QStringList(file); // Can only have one
+                            extraCompilerOutputs[out] = file;
                         }
                     }
                 }
