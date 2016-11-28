@@ -1634,6 +1634,45 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
 }
 
 /*!
+    \since 5.9
+    \overload
+    \fn int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)
+
+    Starts a timer and returns a timer identifier, or returns zero if
+    it could not start a timer.
+
+    A timer event will occur every \a time interval until killTimer()
+    is called. If \a interval is equal to \c{std::chrono::duration::zero()},
+    then the timer event occurs once every time there are no more window
+    system events to process.
+
+    The virtual timerEvent() function is called with the QTimerEvent
+    event parameter class when a timer event occurs. Reimplement this
+    function to get timer events.
+
+    If multiple timers are running, the QTimerEvent::timerId() can be
+    used to find out which timer was activated.
+
+    Example:
+
+    \snippet code/src_corelib_kernel_qobject.cpp 8
+
+    Note that QTimer's accuracy depends on the underlying operating system and
+    hardware. The \a timerType argument allows you to customize the accuracy of
+    the timer. See Qt::TimerType for information on the different timer types.
+    Most platforms support an accuracy of 20 milliseconds; some provide more.
+    If Qt is unable to deliver the requested number of timer events, it will
+    silently discard some.
+
+    The QTimer class provides a high-level programming interface with
+    single-shot timers and timer signals instead of events. There is
+    also a QBasicTimer class that is more lightweight than QTimer and
+    less clumsy than using timer IDs directly.
+
+    \sa timerEvent(), killTimer(), QTimer::singleShot()
+*/
+
+/*!
     Kills the timer with timer identifier, \a id.
 
     The timer identifier is returned by startTimer() when a timer

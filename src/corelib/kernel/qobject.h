@@ -55,6 +55,10 @@
 
 #include <QtCore/qobject_impl.h>
 
+#if QT_HAS_INCLUDE(<chrono>)
+#  include <chrono>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -150,6 +154,13 @@ public:
     void moveToThread(QThread *thread);
 
     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
+#if QT_HAS_INCLUDE(<chrono>) || defined(Q_QDOC)
+    Q_ALWAYS_INLINE
+    int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer)
+    {
+        return startTimer(int(time.count()), timerType);
+    }
+#endif
     void killTimer(int id);
 
     template<typename T>
