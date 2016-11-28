@@ -41,13 +41,6 @@
 #include "qmirclientplugin.h"
 #include "qmirclientintegration.h"
 
-QStringList QMirClientIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << QStringLiteral("mirclient");
-    return list;
-}
-
 QPlatformIntegration* QMirClientIntegrationPlugin::create(const QString &system,
                                                                const QStringList &)
 {
