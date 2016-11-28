@@ -912,24 +912,20 @@ struct VCFilterFile
     { excludeFromBuild = false; }
     VCFilterFile(const QString &filename, bool exclude = false )
     { file = filename; excludeFromBuild = exclude; }
-    VCFilterFile(const QString &filename, const QString &additional, bool exclude = false )
-    { file = filename; excludeFromBuild = exclude; additionalFile = additional; }
+
     bool operator==(const VCFilterFile &other){
         return file == other.file
-               && additionalFile == other.additionalFile
                && excludeFromBuild == other.excludeFromBuild;
     }
 
     bool                    excludeFromBuild;
     QString                 file;
-    QString                 additionalFile; // For tools like MOC
 };
 
 #ifndef QT_NO_DEBUG_OUTPUT
 inline QDebug operator<<(QDebug dbg, const VCFilterFile &p)
 {
     dbg.nospace() << "VCFilterFile(file(" << p.file
-                  << ") additionalFile(" << p.additionalFile
                   << ") excludeFromBuild(" << p.excludeFromBuild << "))" << endl;
     return dbg.space();
 }
