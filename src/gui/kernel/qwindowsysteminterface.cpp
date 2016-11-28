@@ -301,14 +301,14 @@ void QWindowSystemInterface::handleCloseEvent(QWindow *window, bool *accepted)
 \a w == 0 means that the event is in global coords only, \a local will be ignored in this case
 
 */
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                               Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleMouseEvent<Delivery>(window, time, local, global, b, mods, source);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                               Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
@@ -316,14 +316,14 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, ulong times
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                                         Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleFrameStrutMouseEvent(window, time, local, global, b, mods, source);
 }
 
-void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                                         Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
@@ -435,24 +435,24 @@ QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *window, ulong tim
 {
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods) {
+void QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleWheelEvent(window, time, local, global, d, o, mods);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
 {
     QPoint point = (o == Qt::Vertical) ? QPoint(0, d) : QPoint(d, 0);
     handleWheelEvent(window, timestamp, local, global, QPoint(), point, mods);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource source)
+void QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource source)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleWheelEvent(window, time, local, global, pixelDelta, angleDelta, mods, phase, source);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase,
+void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase,
                                               Qt::MouseEventSource source, bool invertedScrolling)
 {
     // Qt 4 sends two separate wheel events for horizontal and vertical

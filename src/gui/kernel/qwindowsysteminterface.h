@@ -77,17 +77,17 @@ public:
     struct DefaultDelivery {};
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static void handleMouseEvent(QWindow *window, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+    static void handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static void handleMouseEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+    static void handleMouseEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
-    static void handleFrameStrutMouseEvent(QWindow *window, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+    static void handleFrameStrutMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                            Qt::KeyboardModifiers mods = Qt::NoModifier,
                                            Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
-    static void handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+    static void handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                            Qt::KeyboardModifiers mods = Qt::NoModifier,
                                            Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
@@ -109,12 +109,12 @@ public:
                                        quint32 nativeModifiers,
                                        const QString& text = QString(), bool autorep = false,
                                        ushort count = 1, bool tryShortcutOverride = true);
-    static void handleWheelEvent(QWindow *window, const QPointF & local, const QPointF & global,
+    static void handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global,
                                  QPoint pixelDelta, QPoint angleDelta,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::ScrollPhase phase = Qt::NoScrollPhase,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
-    static void handleWheelEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global,
+    static void handleWheelEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global,
                                  QPoint pixelDelta, QPoint angleDelta,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::ScrollPhase phase = Qt::NoScrollPhase,
@@ -122,8 +122,8 @@ public:
                                  bool inverted = false);
 
     // Wheel event compatibility functions. Will be removed: do not use.
-    static void handleWheelEvent(QWindow *window, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
-    static void handleWheelEvent(QWindow *window, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    static void handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    static void handleWheelEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     struct TouchPoint {
         TouchPoint() : id(0), uniqueId(-1), pressure(0), rotation(0), state(Qt::TouchPointStationary) { }

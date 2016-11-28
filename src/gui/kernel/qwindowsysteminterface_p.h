@@ -226,11 +226,11 @@ public:
 
     class MouseEvent : public InputEvent {
     public:
-        MouseEvent(QWindow * w, ulong time, const QPointF & local, const QPointF & global,
+        MouseEvent(QWindow * w, ulong time, const QPointF &local, const QPointF &global,
                    Qt::MouseButtons b, Qt::KeyboardModifiers mods,
                    Qt::MouseEventSource src = Qt::MouseEventNotSynthesized)
             : InputEvent(w, time, Mouse, mods), localPos(local), globalPos(global), buttons(b), source(src) { }
-        MouseEvent(QWindow * w, ulong time, EventType t, const QPointF & local, const QPointF & global,
+        MouseEvent(QWindow * w, ulong time, EventType t, const QPointF &local, const QPointF &global,
                    Qt::MouseButtons b, Qt::KeyboardModifiers mods,
                    Qt::MouseEventSource src = Qt::MouseEventNotSynthesized)
             : InputEvent(w, time, t, mods), localPos(local), globalPos(global), buttons(b), source(src) { }
@@ -242,7 +242,7 @@ public:
 
     class WheelEvent : public InputEvent {
     public:
-        WheelEvent(QWindow *w, ulong time, const QPointF & local, const QPointF & global, QPoint pixelD, QPoint angleD, int qt4D, Qt::Orientation qt4O,
+        WheelEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global, QPoint pixelD, QPoint angleD, int qt4D, Qt::Orientation qt4O,
                    Qt::KeyboardModifiers mods, Qt::ScrollPhase phase = Qt::NoScrollPhase, Qt::MouseEventSource src = Qt::MouseEventNotSynthesized, bool inverted = false);
         QPoint pixelDelta;
         QPoint angleDelta;
