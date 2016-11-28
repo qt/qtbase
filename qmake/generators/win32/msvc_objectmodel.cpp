@@ -29,9 +29,14 @@
 #include "msvc_objectmodel.h"
 #include "msvc_vcproj.h"
 #include "msvc_vcxproj.h"
+
+#include <ioutils.h>
+
 #include <qscopedpointer.h>
 #include <qstringlist.h>
 #include <qfileinfo.h>
+
+using namespace QMakeInternal;
 
 QT_BEGIN_NAMESPACE
 
@@ -2318,7 +2323,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                         tmp_dep_cmd, inFile, out, MakefileGenerator::LocalShell);
             if(Project->canExecute(dep_cmd)) {
                 dep_cmd.prepend(QLatin1String("cd ")
-                                + Project->escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
+                                + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
                                 + QLatin1String(" && "));
                 if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
                     QString indeps;

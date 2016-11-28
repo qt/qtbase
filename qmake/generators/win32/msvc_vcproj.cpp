@@ -29,15 +29,21 @@
 #include "msvc_vcproj.h"
 #include "option.h"
 #include "xmloutput.h"
+
+#include <ioutils.h>
+
 #include <qdir.h>
 #include <qdiriterator.h>
 #include <qcryptographichash.h>
 #include <qregexp.h>
 #include <qhash.h>
 #include <quuid.h>
+
 #include <stdlib.h>
 
 //#define DEBUG_SOLUTION_GEN
+
+using namespace QMakeInternal;
 
 QT_BEGIN_NAMESPACE
 // Filter GUIDs (Do NOT change these!) ------------------------------
@@ -1550,7 +1556,7 @@ void VcprojGenerator::initResourceFiles()
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(canExecute(dep_cmd)) {
                     dep_cmd.prepend(QLatin1String("cd ")
-                                    + escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
+                                    + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
                                     + QLatin1String(" && "));
                     if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
                         QString indeps;
