@@ -2618,9 +2618,10 @@ void tst_QFile::appendAndRead()
 
     // Write blocks and read them back
     for (int j = 0; j < 18; ++j) {
-        writeFile.write(QByteArray(1 << j, '@'));
+        const int size = 1 << j;
+        writeFile.write(QByteArray(size, '@'));
         writeFile.flush();
-        QCOMPARE(readFile.read(1 << j).size(), 1 << j);
+        QCOMPARE(readFile.read(size).size(), size);
     }
 
     readFile.close();
