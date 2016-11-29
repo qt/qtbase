@@ -51,6 +51,15 @@
 
 #include <QtGui/QSurfaceFormat>
 
+#if defined(Q_CLANG_QDOC)
+#undef GLint
+typedef int GLint;
+#undef GLuint
+typedef unsigned int GLuint;
+#undef GLenum
+typedef unsigned int GLenum;
+#endif
+
 
 QT_BEGIN_NAMESPACE
 
