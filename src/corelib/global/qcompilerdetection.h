@@ -986,6 +986,9 @@
 #      define Q_COMPILER_THREADSAFE_STATICS
 #      define Q_COMPILER_UNIFORM_INIT
 #    endif
+#    if _MSC_VER >= 1910
+#      define Q_COMPILER_CONSTEXPR
+#    endif
 #  endif /* __cplusplus */
 #endif /* Q_CC_MSVC */
 
@@ -1270,6 +1273,7 @@
 #  define QT_WARNING_DISABLE_INTEL(number)      __pragma(warning(disable: number))
 #  define QT_WARNING_DISABLE_CLANG(text)
 #  define QT_WARNING_DISABLE_GCC(text)
+#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_INTEL(1786)
 #elif defined(Q_CC_INTEL)
 /* icc: Intel compiler on Linux or OS X */
 #  define QT_WARNING_PUSH                       QT_DO_PRAGMA(warning(push))
@@ -1278,6 +1282,7 @@
 #  define QT_WARNING_DISABLE_MSVC(number)
 #  define QT_WARNING_DISABLE_CLANG(text)
 #  define QT_WARNING_DISABLE_GCC(text)
+#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_INTEL(1786)
 #elif defined(Q_CC_MSVC) && _MSC_VER >= 1500 && !defined(Q_CC_CLANG)
 #  undef QT_DO_PRAGMA                           /* not needed */
 #  define QT_WARNING_PUSH                       __pragma(warning(push))
@@ -1286,6 +1291,7 @@
 #  define QT_WARNING_DISABLE_INTEL(number)
 #  define QT_WARNING_DISABLE_CLANG(text)
 #  define QT_WARNING_DISABLE_GCC(text)
+#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_MSVC(4996)
 #elif defined(Q_CC_CLANG)
 #  define QT_WARNING_PUSH                       QT_DO_PRAGMA(clang diagnostic push)
 #  define QT_WARNING_POP                        QT_DO_PRAGMA(clang diagnostic pop)
@@ -1293,6 +1299,7 @@
 #  define QT_WARNING_DISABLE_GCC(text)
 #  define QT_WARNING_DISABLE_INTEL(number)
 #  define QT_WARNING_DISABLE_MSVC(number)
+#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
 #elif defined(Q_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
 #  define QT_WARNING_PUSH                       QT_DO_PRAGMA(GCC diagnostic push)
 #  define QT_WARNING_POP                        QT_DO_PRAGMA(GCC diagnostic pop)
@@ -1300,6 +1307,7 @@
 #  define QT_WARNING_DISABLE_CLANG(text)
 #  define QT_WARNING_DISABLE_INTEL(number)
 #  define QT_WARNING_DISABLE_MSVC(number)
+#  define QT_WARNING_DISABLE_DEPRECATED         QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
 #else       // All other compilers, GCC < 4.6 and MSVC < 2008
 #  define QT_WARNING_DISABLE_GCC(text)
 #  define QT_WARNING_PUSH
@@ -1308,6 +1316,7 @@
 #  define QT_WARNING_DISABLE_MSVC(number)
 #  define QT_WARNING_DISABLE_CLANG(text)
 #  define QT_WARNING_DISABLE_GCC(text)
+#  define QT_WARNING_DISABLE_DEPRECATED
 #endif
 
 /*

@@ -23,7 +23,7 @@ CXX               = cl
 LINKER            = link
 !  if "$(QMAKESPEC)" == "win32-msvc2013"
 CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS $(CFLAGS_CRT)
-!  elseif "$(QMAKESPEC)" == "win32-msvc2015" || "$(QMAKESPEC)" == "win32-clang-msvc2015"
+!  elseif "$(QMAKESPEC)" == "win32-msvc2015" || "$(QMAKESPEC)" == "win32-msvc2017" || "$(QMAKESPEC)" == "win32-clang-msvc2015"
 CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS /Zc:strictStrings /w44456 /w44457 /w44458 /wd4577 $(CFLAGS_CRT)
 !  else
 !    error Unsupported compiler for this Makefile
@@ -38,7 +38,7 @@ PCH_OBJECT        = qmake_pch.obj
 CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               -W3 -nologo -O1 \
               $(CFLAGS_EXTRA) \
-              -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac -I$(QMKSRC)\generators\integrity \
+              -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac \
               -I$(INC_PATH) -I$(INC_PATH)\QtCore -I$(INC_PATH)\QtCore\$(QT_VERSION) -I$(INC_PATH)\QtCore\$(QT_VERSION)\QtCore \
               -I$(BUILD_PATH)\src\corelib\global \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
@@ -147,16 +147,7 @@ distclean:: clean
 	-del $(BUILD_PATH)\bin\qmake.exe
 	-del Makefile
 
-.c.obj:
-	$(CXX) $(CFLAGS) $<
-
 .cpp.obj:
-	$(CXX) $(CXXFLAGS) $<
-
-.cc.obj:
-	$(CXX) $(CXXFLAGS) $<
-
-.cxx.obj:
 	$(CXX) $(CXXFLAGS) $<
 
 $(OBJS): $(PCH_OBJECT)
@@ -172,9 +163,6 @@ qmake_pch.obj:
 	$(CXX) $(CXXFLAGS) $<
 
 {$(SOURCE_PATH)\qmake\generators\mac}.cpp{}.obj::
-	$(CXX) $(CXXFLAGS) $<
-
-{$(SOURCE_PATH)\qmake\generators\integrity}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
 {$(SOURCE_PATH)\qmake\generators\unix}.cpp{}.obj::

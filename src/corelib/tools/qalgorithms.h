@@ -48,8 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 QT_WARNING_PUSH
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
 
 /*
     Warning: The contents of QAlgorithmsPrivate is not a part of the public Qt API

@@ -88,8 +88,8 @@ protected:
     // state, it will handle this transition as a special case. The history state itself is never
     // entered either: either the stored configuration will be used, or the target(s) of this
     // transition are used.
-    virtual bool eventTest(QEvent *event) { Q_UNUSED(event); return false; }
-    virtual void onTransition(QEvent *event) { Q_UNUSED(event); }
+    bool eventTest(QEvent *event)  override { Q_UNUSED(event); return false; }
+    void onTransition(QEvent *event) override { Q_UNUSED(event); }
 };
 
 QT_END_NAMESPACE

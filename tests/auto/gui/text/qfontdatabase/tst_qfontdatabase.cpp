@@ -326,6 +326,10 @@ void tst_QFontDatabase::condensedFontMatching()
     QFont tfcByStyleName("QtBidiTestFont");
     tfcByStyleName.setStyleName("Condensed");
 
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("","No matching of sub-family by stretch on Windows", Continue);
+#endif
+
     QCOMPARE(QFontMetrics(tfcByStretch).width(testString()),
              QFontMetrics(tfcByStyleName).width(testString()));
 

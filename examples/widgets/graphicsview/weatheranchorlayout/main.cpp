@@ -69,7 +69,7 @@ public:
     {
     }
 
-    virtual void resizeEvent(QResizeEvent *event) override
+    void resizeEvent(QResizeEvent *event) override
     {
         w->setGeometry(0, 0, event->size().width(), event->size().height());
     }

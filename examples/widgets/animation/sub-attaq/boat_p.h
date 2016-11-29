@@ -81,7 +81,7 @@ public:
     {
     }
 protected:
-    virtual bool eventTest(QEvent *event) override
+    bool eventTest(QEvent *event) override
     {
         if (!QKeyEventTransition::eventTest(event))
             return false;
@@ -100,7 +100,7 @@ public:
     {
     }
 protected:
-    virtual bool eventTest(QEvent *event) override
+    bool eventTest(QEvent *event) override
     {
         if (!QKeyEventTransition::eventTest(event))
             return false;
@@ -131,7 +131,7 @@ public:
     {
     }
 protected:
-    virtual bool eventTest(QEvent *event) override
+    bool eventTest(QEvent *event) override
     {
         if (!QKeyEventTransition::eventTest(event))
             return false;

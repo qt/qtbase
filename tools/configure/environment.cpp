@@ -62,13 +62,13 @@ struct CompilerInfo{
     const char *executable;
 } compiler_info[] = {
     // The compilers here are sorted in a reversed-preferred order
-    {CC_BORLAND, "Borland C++",                                                    0, "bcc32.exe"},
     {CC_MINGW,   "MinGW (Minimalist GNU for Windows)",                             0, "g++.exe"},
     {CC_INTEL,   "Intel(R) C++ Compiler for 32-bit applications",                  0, "icl.exe"}, // xilink.exe, xilink5.exe, xilink6.exe, xilib.exe
     {CC_MSVC2012, "Microsoft (R) Visual Studio 2012 C/C++ Compiler (11.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\11.0", "cl.exe"}, // link.exe, lib.exe
     {CC_MSVC2013, "Microsoft (R) Visual Studio 2013 C/C++ Compiler (12.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VC7\\12.0", "cl.exe"}, // link.exe, lib.exe
     // Microsoft skipped version 13
     {CC_MSVC2015, "Microsoft (R) Visual Studio 2015 C/C++ Compiler (14.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VS7\\14.0", "cl.exe"}, // link.exe, lib.exe
+    {CC_MSVC2017, "Microsoft (R) Visual Studio 2017 C/C++ Compiler (15.0)",        "Software\\Microsoft\\VisualStudio\\SxS\\VS7\\15.0", "cl.exe"}, // link.exe, lib.exe
     {CC_UNKNOWN, "Unknown", 0, 0},
 };
 
@@ -94,6 +94,9 @@ QString Environment::detectQMakeSpec()
 {
     QString spec;
     switch (detectCompiler()) {
+    case CC_MSVC2017:
+        spec = "win32-msvc2017";
+        break;
     case CC_MSVC2015:
         spec = "win32-msvc2015";
         break;
@@ -108,9 +111,6 @@ QString Environment::detectQMakeSpec()
         break;
     case CC_MINGW:
         spec = "win32-g++";
-        break;
-    case CC_BORLAND:
-        spec = "win32-borland";
         break;
     default:
         break;

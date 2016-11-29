@@ -381,8 +381,7 @@ inline void QImage::setPixelColor(const QPoint &pt, const QColor &c) { setPixelC
 #if QT_DEPRECATED_SINCE(5, 0)
 
 QT_WARNING_PUSH
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_MSVC(4996)
+QT_WARNING_DISABLE_DEPRECATED
 
 inline QString QImage::text(const char* key, const char* lang) const
 {

@@ -63,8 +63,8 @@ public:
 
 
 protected:
-      virtual void resizeEvent(QResizeEvent *event) override;
-      virtual QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
+      void resizeEvent(QResizeEvent *event) override;
+      QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
       void scrollTo (const QModelIndex & index, ScrollHint hint = EnsureVisible) override;
 
 private:

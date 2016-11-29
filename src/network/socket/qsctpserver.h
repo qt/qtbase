@@ -57,8 +57,8 @@ public:
     explicit QSctpServer(QObject *parent = nullptr);
     virtual ~QSctpServer();
 
-    void setMaxChannelCount(int count);
-    int maxChannelCount() const;
+    void setMaximumChannelCount(int count);
+    int maximumChannelCount() const;
 
     QSctpSocket *nextPendingDatagramConnection();
 

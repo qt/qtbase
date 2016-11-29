@@ -73,6 +73,8 @@ public:
 
     static QWindowsClipboard *instance() { return m_instance; }
 
+    HWND clipboardViewer() const { return m_clipboardViewer; }
+
 private:
     void clear();
     void releaseIData();

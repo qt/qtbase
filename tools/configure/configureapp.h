@@ -88,8 +88,6 @@ private:
     void saveCmdLine();
 
     void applySpecSpecifics();
-
-    QString formatConfigPath(const char *var);
 };
 
 class FileWriter : public QTextStream

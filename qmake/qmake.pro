@@ -27,7 +27,6 @@ INCLUDEPATH += . \
            generators/unix \
            generators/win32 \
            generators/mac \
-           generators/integrity \
            ../tools/shared
 
 include(qmake.pri)

@@ -110,8 +110,8 @@ public:
     GLTexture2D(int width, int height);
     explicit GLTexture2D(const QString& fileName, int width = 0, int height = 0);
     void load(int width, int height, QRgb *data);
-    virtual void bind() override;
-    virtual void unbind() override;
+    void bind() override;
+    void unbind() override;
 };
 
 class GLTexture3D : public GLTexture
@@ -121,8 +121,8 @@ public:
     // TODO: Implement function below
     //GLTexture3D(const QString& fileName, int width = 0, int height = 0);
     void load(int width, int height, int depth, QRgb *data);
-    virtual void bind() override;
-    virtual void unbind() override;
+    void bind() override;
+    void unbind() override;
 };
 
 class GLTextureCube : public GLTexture
@@ -131,8 +131,8 @@ public:
     GLTextureCube(int size);
     explicit GLTextureCube(const QStringList& fileNames, int size = 0);
     void load(int size, int face, QRgb *data);
-    virtual void bind() override;
-    virtual void unbind() override;
+    void bind() override;
+    void unbind() override;
 };
 
 // TODO: Define and implement class below

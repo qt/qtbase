@@ -22,7 +22,7 @@ defineTest(qtConfAddWarning) {
 defineTest(qtConfAddError) {
     QT_CONFIGURE_ERRORS += "ERROR: $$join(1, $$escape_expand(\\n))"
     export(QT_CONFIGURE_ERRORS)
-    equals(2, log) {
+    equals(2, log):qt_conf_tests_allowed {
         CONFIG += mention_config_log
         export(CONFIG)
     }

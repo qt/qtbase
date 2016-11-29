@@ -2300,21 +2300,20 @@ QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
 */
 QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
 {
-    int i = 0;
-    ushort c = ch.unicode();
-    if (cs == Qt::CaseSensitive) {
-        while (i < d->size)
-            if (d->data()[i] == ch)
-                remove(i, 1);
-            else
-                i++;
-    } else {
-        c = foldCase(c);
-        while (i < d->size)
-            if (foldCase(d->data()[i]) == c)
-                remove(i, 1);
-            else
-                i++;
+    const int idx = indexOf(ch, 0, cs);
+    if (idx != -1) {
+        const auto first = begin(); // implicit detach()
+        auto last = end();
+        if (cs == Qt::CaseSensitive) {
+            last = std::remove(first + idx, last, ch);
+        } else {
+            const QChar c = ch.toCaseFolded();
+            auto caseInsensEqual = [c](QChar x) {
+                return c == x.toCaseFolded();
+            };
+            last = std::remove_if(first + idx, last, caseInsensEqual);
+        }
+        resize(last - first);
     }
     return *this;
 }
@@ -3259,6 +3258,23 @@ static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *nee
         }
     }
     return -1;
+}
+
+static inline int lastIndexOfHelper(
+        const QStringRef &haystack, int from, const QStringRef &needle, Qt::CaseSensitivity cs)
+{
+    return lastIndexOfHelper(reinterpret_cast<const ushort*>(haystack.unicode()), from,
+                             reinterpret_cast<const ushort*>(needle.unicode()), needle.size(), cs);
+}
+
+static inline int lastIndexOfHelper(
+        const QStringRef &haystack, int from, QLatin1String needle, Qt::CaseSensitivity cs)
+{
+    const int size = needle.size();
+    QVarLengthArray<ushort> s(size);
+    qt_from_latin1(s.data(), needle.latin1(), size);
+    return lastIndexOfHelper(reinterpret_cast<const ushort*>(haystack.unicode()), from,
+                             s.data(), size, cs);
 }
 
 /*!
@@ -9817,6 +9833,27 @@ int QStringRef::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
     return qt_last_index_of(unicode(), size(), ch, from, cs);
 }
 
+template<typename T>
+static int last_index_of_impl(const QStringRef &haystack, int from, const T &needle, Qt::CaseSensitivity cs)
+{
+    const int sl = needle.size();
+    if (sl == 1)
+        return haystack.lastIndexOf(needle.at(0), from, cs);
+
+    const int l = haystack.size();
+    if (from < 0)
+        from += l;
+    int delta = l - sl;
+    if (from == l && sl == 0)
+        return from;
+    if (uint(from) >= uint(l) || delta < 0)
+        return -1;
+    if (from > delta)
+        from = delta;
+
+    return lastIndexOfHelper(haystack, from, needle, cs);
+}
+
 /*!
   \since 4.8
   \overload lastIndexOf()
@@ -9834,25 +9871,7 @@ int QStringRef::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 */
 int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) const
 {
-    const int sl = str.size();
-    if (sl == 1)
-        return lastIndexOf(str.at(0), from, cs);
-
-    const int l = size();
-    if (from < 0)
-        from += l;
-    int delta = l - sl;
-    if (from == l && sl == 0)
-        return from;
-    if (uint(from) >= uint(l) || delta < 0)
-        return -1;
-    if (from > delta)
-        from = delta;
-
-    QVarLengthArray<ushort> s(sl);
-    qt_from_latin1(s.data(), str.latin1(), sl);
-
-    return lastIndexOfHelper(reinterpret_cast<const ushort*>(unicode()), from, s.data(), sl, cs);
+    return last_index_of_impl(*this, from, str, cs);
 }
 
 /*!
@@ -9872,24 +9891,7 @@ int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs)
 */
 int QStringRef::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) const
 {
-    const int sl = str.size();
-    if (sl == 1)
-        return lastIndexOf(str.at(0), from, cs);
-
-    const int l = size();
-    if (from < 0)
-        from += l;
-    int delta = l - sl;
-    if (from == l && sl == 0)
-        return from;
-    if (uint(from) >= uint(l) || delta < 0)
-        return -1;
-    if (from > delta)
-        from = delta;
-
-    return lastIndexOfHelper(reinterpret_cast<const ushort*>(unicode()), from,
-                             reinterpret_cast<const ushort*>(str.unicode()),
-                             str.size(), cs);
+    return last_index_of_impl(*this, from, str, cs);
 }
 
 /*!

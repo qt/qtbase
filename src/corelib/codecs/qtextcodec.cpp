@@ -61,7 +61,7 @@
 #if defined(QT_USE_ICU)
 #include "qicucodec_p.h"
 #else
-#if !defined(QT_NO_ICONV)
+#if QT_CONFIG(iconv)
 #  include "qiconvcodec_p.h"
 #endif
 #ifdef Q_OS_WIN
@@ -184,7 +184,7 @@ static QTextCodec *setupLocaleMapper()
     if (charset)
         locale = QTextCodec::codecForName(charset);
 #endif
-#if !defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
+#if QT_CONFIG(iconv)
     if (!locale) {
         // no builtin codec for the locale found, let's try using iconv
         (void) new QIconvCodec();
@@ -286,7 +286,7 @@ static void setup()
     (void)new QBig5Codec;
     (void)new QBig5hkscsCodec;
 #  endif // !QT_NO_BIG_CODECS && !Q_OS_INTEGRITY
-#if !defined(QT_NO_ICONV)
+#if QT_CONFIG(iconv)
     (void) new QIconvCodec;
 #endif
 #if defined(Q_OS_WIN32)

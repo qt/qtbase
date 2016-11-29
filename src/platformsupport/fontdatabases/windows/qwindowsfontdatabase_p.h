@@ -112,7 +112,7 @@ public:
 
     static QFont systemDefaultFont();
 
-    static QFontEngine *createEngine(const QFontDef &request,
+    static QFontEngine *createEngine(const QFontDef &request, const QString &faceName,
                                      int dpi,
                                      const QSharedPointer<QWindowsFontEngineData> &data);
 
@@ -120,7 +120,7 @@ public:
     static QFont LOGFONT_to_QFont(const LOGFONT& lf, int verticalDPI = 0);
 
     static qreal fontSmoothingGamma();
-    static LOGFONT fontDefToLOGFONT(const QFontDef &fontDef);
+    static LOGFONT fontDefToLOGFONT(const QFontDef &fontDef, const QString &faceName);
 
     static QStringList extraTryFontsForFamily(const QString &family);
     static QString familyForStyleHint(QFont::StyleHint styleHint);
@@ -133,7 +133,6 @@ public:
     static QString readRegistryString(HKEY parentHandle, const wchar_t *keyPath, const wchar_t *keyName);
 
 private:
-    void populateFamily(const QString &familyName, bool registerAlias);
     void removeApplicationFonts();
 
     struct WinApplicationFont {
@@ -156,6 +155,26 @@ private:
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug, const QFontDef &def);
 #endif
+
+inline quint16 qt_getUShort(const unsigned char *p)
+{
+    quint16 val;
+    val = *p++ << 8;
+    val |= *p;
+
+    return val;
+}
+
+struct FontNames {
+    QString name;   // e.g. "DejaVu Sans Condensed"
+    QString style;  // e.g. "Italic"
+    QString preferredName;  // e.g. "DejaVu Sans"
+    QString preferredStyle; // e.g. "Condensed Italic"
+};
+
+bool qt_localizedName(const QString &name);
+QString qt_getEnglishName(const QString &familyName, bool includeStyle = false);
+FontNames qt_getCanonicalFontNames(const LOGFONT &lf);
 
 QT_END_NAMESPACE
 

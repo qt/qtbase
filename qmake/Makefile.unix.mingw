@@ -1,0 +1,27 @@
+# SHELL is the full path of sh.exe, unless
+# 1) it is found in the current directory
+# 2) it is not found at all
+# 3) it is overridden on the command line with an existing file
+# ... otherwise it is always sh.exe. Specifically, SHELL from the
+# environment has no effect.
+#
+# This check will fail if SHELL is explicitly set to a not
+# sh-compatible shell. This is not a problem, because configure.bat
+# will not do that.
+ifeq ($(SHELL), sh.exe)
+    ifeq ($(wildcard $(CURDIR)/sh.exe), )
+        SH = 0
+    else
+        SH = 1
+    endif
+else
+    SH = 1
+endif
+
+ifeq ($(SH), 1)
+    RM_F = rm -f
+    RM_RF = rm -rf
+else
+    RM_F = del /f
+    RM_RF = rmdir /s /q
+endif

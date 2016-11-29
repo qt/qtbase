@@ -24,7 +24,6 @@ qtConfig(opengl) {
                opengl/qopenglcustomshaderstage_p.h \
                opengl/qopengltextureglyphcache_p.h \
                opengl/qopenglshadercache_p.h \
-               opengl/qopenglshadercache_meego_p.h \
                opengl/qopenglversionfunctions.h \
                opengl/qopenglversionfunctionsfactory_p.h \
                opengl/qopenglvertexarrayobject.h \

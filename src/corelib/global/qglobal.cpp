@@ -1244,6 +1244,12 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_TVOS_9_2      tvOS 9.2
     \value MV_TVOS_10_0     tvOS 10.0
 
+    \value MV_WATCHOS       watchOS (any)
+    \value MV_WATCHOS_2_0   watchOS 2.0
+    \value MV_WATCHOS_2_1   watchOS 2.1
+    \value MV_WATCHOS_2_2   watchOS 2.2
+    \value MV_WATCHOS_3_0   watchOS 3.0
+
     \value MV_None     Not a Darwin operating system
 
     \sa WinVersion

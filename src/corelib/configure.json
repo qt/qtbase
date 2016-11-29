@@ -245,21 +245,21 @@
             "label": "iconv",
             "purpose": "Provides internationalization on Unix.",
             "section": "Internationalization",
-            "condition": "features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv",
+            "condition": "!features.icu && (features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv)",
             "output": [ "privateFeature", "feature" ]
         },
         "posix-libiconv": {
             "label": "POSIX iconv",
             "enable": "input.iconv == 'posix'",
             "disable": "input.iconv == 'sun' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && tests.posix-iconv"
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && tests.posix-iconv",
+            "output": [ "privateFeature" ]
         },
         "sun-libiconv": {
             "label": "SUN iconv",
             "enable": "input.iconv == 'sun'",
             "disable": "input.iconv == 'posix' || input.iconv == 'gnu' || input.iconv == 'no'",
-            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && tests.sun-iconv",
-            "output": [ "privateFeature", "publicQtConfig" ]
+            "condition": "!config.win32 && !config.qnx && !config.android && !config.darwin && !features.posix-libiconv && tests.sun-iconv"
         },
         "gnu-libiconv": {
             "label": "GNU iconv",
@@ -372,11 +372,6 @@
             "condition": "tests.syslog",
             "output": [ "privateConfig" ]
         },
-        "systemsemaphore": {
-            "label": "Enable QSystemSemaphore",
-            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
-            "output": [ { "type": "define", "negative": true, "name": "QT_NO_SYSTEMSEMAPHORE" } ]
-        },
         "threadsafe-cloexec": {
             "label": "Threadsafe pipe creation",
             "condition": "tests.cloexec",
@@ -401,12 +396,17 @@
             "label": "QSharedMemory",
             "purpose": "Provides access to a shared memory segment.",
             "section": "Kernel",
+            "condition": "!config.vxworks",
             "output": [ "publicFeature", "feature" ]
         },
         "systemsemaphore": {
             "label": "QSystemSemaphore",
             "purpose": "Provides a general counting system semaphore.",
             "section": "Kernel",
+            "condition": [
+                "!config.integrity && !config.vxworks",
+                "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "xmlstream": {
@@ -446,6 +446,7 @@
             "label": "QProcess",
             "purpose": "Supports external process invocation.",
             "section": "File I/O",
+            "condition": "!config.winrt && !config.uikit && !config.integrity && !config.vxworks",
             "output": [ "publicFeature", "feature" ]
         },
         "temporaryfile": {
@@ -470,6 +471,7 @@
             "label": "QFileSystemWatcher",
             "purpose": "Provides an interface for monitoring files and directories for modifications.",
             "section": "File I/O",
+            "condition": "!config.winrt",
             "output": [ "publicFeature", "feature" ]
         },
         "filesystemiterator": {

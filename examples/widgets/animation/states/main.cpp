@@ -79,7 +79,7 @@ public:
     {
     }
 
-    virtual void resizeEvent(QResizeEvent *) override
+    void resizeEvent(QResizeEvent *) override
     {
         fitInView(sceneRect(), Qt::KeepAspectRatio);
     }

@@ -59,9 +59,9 @@ public:
     void close() Q_DECL_OVERRIDE;
     void disconnectFromHost() Q_DECL_OVERRIDE;
 
-    void setMaxChannelCount(int count);
-    int maxChannelCount() const;
-    bool inDatagramMode() const;
+    void setMaximumChannelCount(int count);
+    int maximumChannelCount() const;
+    bool isInDatagramMode() const;
 
     QNetworkDatagram readDatagram();
     bool writeDatagram(const QNetworkDatagram &datagram);

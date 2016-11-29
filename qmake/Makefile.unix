@@ -20,7 +20,7 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qstring_compat.o qstringbuilder.o qtext
       qvariant.o qvsnprintf.o qlocale.o qlocale_tools.o qlinkedlist.o qnumeric.o \
       qcryptographichash.o qxmlstream.o qxmlutils.o qlogging.o \
       qjson.o qjsondocument.o qjsonparser.o qjsonarray.o qjsonobject.o qjsonvalue.o \
-      $(QTOBJS)
+      $(QTOBJS) $(QTOBJS2)
 
 
 #all sources, used for the depend target
@@ -92,11 +92,11 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/json/qjsonarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/json/qjsonobject.cpp \
 	   $(SOURCE_PATH)/src/corelib/json/qjsonvalue.cpp \
-	   $(QTSRCS)
+	   $(QTSRCS) $(QTSRCS2)
 
 CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
 	   -I$(QMKSRC) -I$(QMKLIBSRC) -I$(QMKSRC)/generators -I$(QMKSRC)/generators/unix -I$(QMKSRC)/generators/win32 \
-	   -I$(QMKSRC)/generators/mac -I$(QMKSRC)/generators/integrity \
+	   -I$(QMKSRC)/generators/mac \
 	   -I$(INC_PATH) -I$(INC_PATH)/QtCore \
 	   -I$(INC_PATH)/QtCore/$(QT_VERSION) -I$(INC_PATH)/QtCore/$(QT_VERSION)/QtCore \
 	   -I$(BUILD_PATH)/src/corelib/global \
@@ -106,7 +106,8 @@ CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
            -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
            -DQT_NO_FOREACH
 
-CXXFLAGS = $(EXTRA_CXXFLAGS) $(CPPFLAGS)
+CXXFLAGS = $(EXTRA_CXXFLAGS) $(CONFIG_CXXFLAGS) $(CPPFLAGS)
+LFLAGS = $(EXTRA_LFLAGS) $(CONFIG_LFLAGS)
 
 first all: $(BUILD_PATH)/bin/qmake$(EXEEXT)
 qmake: $(BUILD_PATH)/bin/qmake$(EXEEXT)

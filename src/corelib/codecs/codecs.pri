@@ -43,12 +43,8 @@ qtConfig(icu) {
     qtConfig(iconv) {
         HEADERS += codecs/qiconvcodec_p.h
         SOURCES += codecs/qiconvcodec.cpp
-        qtConfig(gnu-libiconv) {
-            DEFINES += GNU_LIBICONV
+        qtConfig(gnu-libiconv): \
             QMAKE_USE_PRIVATE += iconv
-        } else: qtConfig(sun-libiconv) {
-            DEFINES += GNU_LIBICONV
-        }
     }
 
     win32 {

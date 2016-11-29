@@ -107,46 +107,15 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "QT_INSTALL_PREFIX" ] = installPath;
 
-    dictionary[ "QMAKESPEC" ] = getenv("QMAKESPEC");
     if (dictionary[ "QMAKESPEC" ].size() == 0) {
         dictionary[ "QMAKESPEC" ] = Environment::detectQMakeSpec();
         dictionary[ "QMAKESPEC_FROM" ] = "detected";
-    } else {
-        dictionary[ "QMAKESPEC_FROM" ] = "env";
     }
 
     dictionary[ "SYNCQT" ]          = "auto";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
-
-    QString version;
-    QFile qmake_conf(sourcePath + "/.qmake.conf");
-    if (qmake_conf.open(QFile::ReadOnly)) {
-        while (!qmake_conf.atEnd()) {
-            static const char beginning[] = "MODULE_VERSION = ";
-            QByteArray line = qmake_conf.readLine();
-            if (!line.startsWith(beginning))
-                continue;
-
-            version = qMove(line).mid(int(strlen(beginning))).trimmed();
-            break;
-        }
-        qmake_conf.close();
-    }
-
-    if (version.isEmpty())
-        version = QString("%1.%2.%3").arg(QT_VERSION>>16).arg(((QT_VERSION>>8)&0xff)).arg(QT_VERSION&0xff);
-
-    dictionary[ "VERSION" ]         = version;
-    {
-        QRegExp version_re("([0-9]*)\\.([0-9]*)\\.([0-9]*)(|-.*)");
-        if (version_re.exactMatch(version)) {
-            dictionary[ "VERSION_MAJOR" ] = version_re.cap(1);
-            dictionary[ "VERSION_MINOR" ] = version_re.cap(2);
-            dictionary[ "VERSION_PATCH" ] = version_re.cap(3);
-        }
-    }
 
     dictionary[ "REDO" ]            = "no";
 
@@ -175,12 +144,6 @@ QString Configure::formatPath(const QString &path)
     }
     return ret;
 }
-
-// #### somehow I get a compiler error about vc++ reaching the nesting limit without
-// undefining the ansi for scoping.
-#ifdef for
-#undef for
-#endif
 
 void Configure::parseCmdLine()
 {
@@ -481,19 +444,17 @@ void Configure::parseCmdLine()
         dictionary[ "DONE" ] = "error";
         if (dictionary ["QMAKESPEC_FROM"] == "commandline") {
             cout << "Invalid option \"" << dictionary["QMAKESPEC"] << "\" for -platform." << endl;
-        } else if (dictionary ["QMAKESPEC_FROM"] == "env") {
-            cout << "QMAKESPEC environment variable is set to \"" << dictionary["QMAKESPEC"]
-                 << "\" which is not a supported platform" << endl;
         } else { // was autodetected from environment
             cout << "Unable to detect the platform from environment. Use -platform command line" << endl
-                 << "argument or set the QMAKESPEC environment variable and run configure again." << endl;
+                 << "argument and run configure again." << endl;
         }
         cout << "See the README file for a list of supported operating systems and compilers." << endl;
     } else {
         if (dictionary[ "QMAKESPEC" ].endsWith("-icc") ||
             dictionary[ "QMAKESPEC" ].endsWith("-msvc2012") ||
             dictionary[ "QMAKESPEC" ].endsWith("-msvc2013") ||
-            dictionary[ "QMAKESPEC" ].endsWith("-msvc2015")) {
+            dictionary[ "QMAKESPEC" ].endsWith("-msvc2015") ||
+            dictionary[ "QMAKESPEC" ].endsWith("-msvc2017")) {
             if (dictionary[ "MAKE" ].isEmpty()) dictionary[ "MAKE" ] = "nmake";
             dictionary[ "QMAKEMAKEFILE" ] = "Makefile.win32";
         } else if (dictionary[ "QMAKESPEC" ].startsWith(QLatin1String("win32-g++"))) {
@@ -605,16 +566,6 @@ void Configure::generateQDevicePri()
         dictionary[ "DONE" ] = "error";
 }
 
-QString Configure::formatConfigPath(const char *var)
-{
-    QString val = dictionary[var];
-    if (QFileInfo(val).isRelative()) {
-        QString pfx = dictionary["QT_INSTALL_PREFIX"];
-        val = (val == ".") ? pfx : QDir(pfx).absoluteFilePath(val);
-    }
-    return QDir::toNativeSeparators(val);
-}
-
 void Configure::generateHeaders()
 {
     if (dictionary["SYNCQT"] == "auto")
@@ -626,7 +577,7 @@ void Configure::generateHeaders()
             QStringList args;
             args << "perl" << "-w";
             args += sourcePath + "/bin/syncqt.pl";
-            args << "-version" << dictionary["VERSION"] << "-minimal" << "-module" << "QtCore";
+            args << "-version" << QT_VERSION_STR << "-minimal" << "-module" << "QtCore";
             args += sourcePath;
             int retc = Environment::execute(args, QStringList(), QStringList());
             if (retc) {
@@ -882,61 +833,21 @@ void Configure::buildQmake()
                     << "INC_PATH = " << QDir::toNativeSeparators(
                            (QFile::exists(sourcePath + "/.git") ? ".." : sourcePath)
                            + "/include") << endl;
-                stream << "QT_VERSION = " << dictionary["VERSION"] << endl
-                       << "QT_MAJOR_VERSION = " << dictionary["VERSION_MAJOR"] << endl
-                       << "QT_MINOR_VERSION = " << dictionary["VERSION_MINOR"] << endl
-                       << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
+                stream << "QT_VERSION = " QT_VERSION_STR << endl
+                       << "QT_MAJOR_VERSION = " QT_STRINGIFY(QT_VERSION_MAJOR) << endl
+                       << "QT_MINOR_VERSION = " QT_STRINGIFY(QT_VERSION_MINOR) << endl
+                       << "QT_PATCH_VERSION = " QT_STRINGIFY(QT_VERSION_PATCH) << endl;
                 if (dictionary[ "QMAKESPEC" ].startsWith("win32-g++")) {
                     stream << "QMAKESPEC = $(SOURCE_PATH)\\mkspecs\\" << dictionary[ "QMAKESPEC" ] << endl
-                           << "EXTRA_CFLAGS = -DUNICODE -ffunction-sections" << endl
-                           << "EXTRA_CXXFLAGS = -std=c++11 -DUNICODE -ffunction-sections" << endl
-                           << "EXTRA_LFLAGS = -Wl,--gc-sections" << endl
-                           << "QTOBJS = qfilesystemengine_win.o \\" << endl
-                           << "         qfilesystemiterator_win.o \\" << endl
-                           << "         qfsfileengine_win.o \\" << endl
-                           << "         qlocale_win.o \\" << endl
-                           << "         qsettings_win.o \\" << endl
-                           << "         qsystemlibrary.o \\" << endl
-                           << "         registry.o" << endl
-                           << "QTSRCS=\"$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp\" \\" << endl\
-                           << "       \"$(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp\" \\" << endl
-                           << "       \"$(SOURCE_PATH)/tools/shared/windows/registry.cpp\"" << endl
-                           << "EXEEXT=.exe" << endl
-                           << "LFLAGS=-static -s -lole32 -luuid -ladvapi32 -lkernel32" << endl;
-                    /*
-                    ** SHELL is the full path of sh.exe, unless
-                    ** 1) it is found in the current directory
-                    ** 2) it is not found at all
-                    ** 3) it is overridden on the command line with an existing file
-                    ** ... otherwise it is always sh.exe. Specifically, SHELL from the
-                    ** environment has no effect.
-                    **
-                    ** This check will fail if SHELL is explicitly set to a not
-                    ** sh-compatible shell. This is not a problem, because configure.bat
-                    ** will not do that.
-                    */
-                    stream << "ifeq ($(SHELL), sh.exe)" << endl
-                           << "    ifeq ($(wildcard $(CURDIR)/sh.exe), )" << endl
-                           << "        SH = 0" << endl
-                           << "    else" << endl
-                           << "        SH = 1" << endl
-                           << "    endif" << endl
-                           << "else" << endl
-                           << "    SH = 1" << endl
-                           << "endif" << endl
-                           << "\n"
-                           << "ifeq ($(SH), 1)" << endl
-                           << "    RM_F = rm -f" << endl
-                           << "    RM_RF = rm -rf" << endl
-                           << "else" << endl
-                           << "    RM_F = del /f" << endl
-                           << "    RM_RF = rmdir /s /q" << endl
-                           << "endif" << endl;
-                    stream << "\n\n";
+                           << "CONFIG_CXXFLAGS = -std=c++11 -ffunction-sections" << endl
+                           << "CONFIG_LFLAGS = -Wl,--gc-sections" << endl;
+
+                    QFile in(sourcePath + "/qmake/Makefile.unix.win32");
+                    if (in.open(QFile::ReadOnly | QFile::Text))
+                        stream << in.readAll();
+                    QFile in2(sourcePath + "/qmake/Makefile.unix.mingw");
+                    if (in2.open(QFile::ReadOnly | QFile::Text))
+                        stream << in2.readAll();
                 } else {
                     stream << "QMAKESPEC = " << dictionary["QMAKESPEC"] << endl;
                 }
@@ -1032,11 +943,6 @@ void Configure::configure()
 
 bool Configure::showLicense(QString orgLicenseFile)
 {
-    if (dictionary["LICENSE_CONFIRMED"] == "yes") {
-        cout << "You have already accepted the terms of the license." << endl << endl;
-        return true;
-    }
-
     bool showGpl2 = true;
     QString licenseFile = orgLicenseFile;
     QString theLicense;
@@ -1147,23 +1053,35 @@ void Configure::readLicense()
         }
     }
     if (hasOpenSource && openSource) {
-        cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl;
+        cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl << endl;
         dictionary["LICENSEE"] = "Open Source";
         dictionary["EDITION"] = "OpenSource";
-        cout << endl;
-        if (!showLicense(dictionary["LICENSE FILE"])) {
-            cout << "Configuration aborted since license was not accepted";
-            dictionary["DONE"] = "error";
-            return;
-        }
     } else if (openSource) {
         cout << endl << "Cannot find the GPL license files! Please download the Open Source version of the library." << endl;
         dictionary["DONE"] = "error";
         return;
+    } else {
+        QString tpLicense = sourcePath + "/LICENSE.PREVIEW.COMMERCIAL";
+        if (QFile::exists(tpLicense)) {
+            cout << endl << "This is the Qt Preview Edition." << endl << endl;
+
+            dictionary["EDITION"] = "Preview";
+            dictionary["LICENSE FILE"] = tpLicense;
+        } else {
+            Tools::checkLicense(dictionary, sourcePath, buildPath);
+        }
     }
-    else {
-        Tools::checkLicense(dictionary, sourcePath, buildPath);
+
+    if (dictionary["LICENSE_CONFIRMED"] != "yes") {
+        if (!showLicense(dictionary["LICENSE FILE"])) {
+            cout << "Configuration aborted since license was not accepted" << endl;
+            dictionary["DONE"] = "error";
+            return;
+        }
+    } else if (dictionary["LICHECK"].isEmpty()) { // licheck executable shows license
+        cout << "You have already accepted the terms of the license." << endl << endl;
     }
+
     if (dictionary["BUILDTYPE"] == "none") {
         if (openSource)
             configCmdLine << "-opensource";

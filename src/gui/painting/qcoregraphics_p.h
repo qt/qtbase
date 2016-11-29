@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
 #ifdef Q_OS_MACOS
 Q_GUI_EXPORT NSImage *qt_mac_create_nsimage(const QPixmap &pm);
-Q_GUI_EXPORT NSImage *qt_mac_create_nsimage(const QIcon &icon);
+Q_GUI_EXPORT NSImage *qt_mac_create_nsimage(const QIcon &icon, int defaultSize = 0);
 Q_GUI_EXPORT QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
 #endif
 Q_GUI_EXPORT CGImageRef qt_mac_toCGImage(const QImage &qImage);

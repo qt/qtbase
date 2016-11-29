@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qgenericunixservices_p.h"
+#include <QtGui/private/qtguiglobal_p.h>
 
 #include <QtCore/QStandardPaths>
 #include <QtCore/QProcess>
@@ -48,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_MULTIPROCESS
+#if QT_CONFIG(multiprocess)
 
 enum { debug = 0 };
 

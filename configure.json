@@ -515,7 +515,7 @@
         },
         "release_tools": {
             "label": "Compile tools in release mode",
-            "autoDetect": "!features.debug",
+            "autoDetect": "features.debug",
             "output": [ "privateFeature", "publicQtConfig" ]
         },
         "simulator_and_device": {

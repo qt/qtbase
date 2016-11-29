@@ -78,9 +78,7 @@ SOURCES += \
 HEADERS += \
     text/qplatformfontdatabase.h
 
-qtConfig(harfbuzz)|qtConfig(system-harfbuzz) {
-    DEFINES += QT_ENABLE_HARFBUZZ_NG
-
+qtConfig(harfbuzz) {
     QMAKE_USE_PRIVATE += harfbuzz
 
     SOURCES += text/qharfbuzzng.cpp

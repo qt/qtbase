@@ -795,12 +795,20 @@ QColor::QColor(Spec spec) Q_DECL_NOTHROW
 
 /*!
     \fn QColor::QColor(const char *name)
+
+    Constructs a named color in the same way as setNamedColor() using
+    the given \a name.
+
     \overload
     \sa setNamedColor(), name(), isValid()
 */
 
 /*!
     \fn QColor::QColor(QLatin1String name)
+
+    Constructs a named color in the same way as setNamedColor() using
+    the given \a name.
+
     \overload
     \since 5.8
     \sa setNamedColor(), name(), isValid()

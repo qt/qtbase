@@ -60,7 +60,7 @@
 
     The most common way to use QSctpServer is to construct an object
     and set the maximum number of channels that the server is
-    prepared to support, by calling setMaxChannelCount(). You can set
+    prepared to support, by calling setMaximumChannelCount(). You can set
     the TCP emulation mode by passing a negative argument in this
     call. Also, a special value of 0 (the default) indicates to use
     the peer's value as the actual number of channels. The new incoming
@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
 /*! \internal
 */
 QSctpServerPrivate::QSctpServerPrivate()
-    : maxChannelCount(0)
+    : maximumChannelCount(0)
 {
 }
 
@@ -119,7 +119,7 @@ void QSctpServerPrivate::configureCreatedSocket()
     QTcpServerPrivate::configureCreatedSocket();
     if (socketEngine)
         socketEngine->setOption(QAbstractSocketEngine::MaxStreamsSocketOption,
-                                maxChannelCount == -1 ? 1 : maxChannelCount);
+                                maximumChannelCount == -1 ? 1 : maximumChannelCount);
 }
 
 /*!
@@ -128,7 +128,7 @@ void QSctpServerPrivate::configureCreatedSocket()
     Sets the datagram operation mode. The \a parent argument is passed
     to QObject's constructor.
 
-    \sa setMaxChannelCount(), listen(), setSocketDescriptor()
+    \sa setMaximumChannelCount(), listen(), setSocketDescriptor()
 */
 QSctpServer::QSctpServer(QObject *parent)
     : QTcpServer(QAbstractSocket::SctpSocket, *new QSctpServerPrivate, parent)
@@ -159,19 +159,19 @@ QSctpServer::~QSctpServer()
 
     Call this method only when QSctpServer is in UnconnectedState.
 
-    \sa maxChannelCount(), QSctpSocket
+    \sa maximumChannelCount(), QSctpSocket
 */
-void QSctpServer::setMaxChannelCount(int count)
+void QSctpServer::setMaximumChannelCount(int count)
 {
     Q_D(QSctpServer);
     if (d->state != QAbstractSocket::UnconnectedState) {
-        qWarning("QSctpServer::setMaxChannelCount() is only allowed in UnconnectedState");
+        qWarning("QSctpServer::setMaximumChannelCount() is only allowed in UnconnectedState");
         return;
     }
 #if defined(QSCTPSERVER_DEBUG)
-    qDebug("QSctpServer::setMaxChannelCount(%i)", count);
+    qDebug("QSctpServer::setMaximumChannelCount(%i)", count);
 #endif
-    d->maxChannelCount = count;
+    d->maximumChannelCount = count;
 }
 
 /*!
@@ -183,11 +183,11 @@ void QSctpServer::setMaxChannelCount(int count)
 
     Returns -1, if QSctpServer running in TCP emulation mode.
 
-    \sa setMaxChannelCount()
+    \sa setMaximumChannelCount()
 */
-int QSctpServer::maxChannelCount() const
+int QSctpServer::maximumChannelCount() const
 {
-    return d_func()->maxChannelCount;
+    return d_func()->maximumChannelCount;
 }
 
 /*! \reimp
@@ -199,7 +199,7 @@ void QSctpServer::incomingConnection(qintptr socketDescriptor)
 #endif
 
     QSctpSocket *socket = new QSctpSocket(this);
-    socket->setMaxChannelCount(d_func()->maxChannelCount);
+    socket->setMaximumChannelCount(d_func()->maximumChannelCount);
     socket->setSocketDescriptor(socketDescriptor);
     addPendingConnection(socket);
 }
@@ -234,7 +234,7 @@ QSctpSocket *QSctpServer::nextPendingDatagramConnection()
         QSctpSocket *socket = qobject_cast<QSctpSocket *>(i.next());
         Q_ASSERT(socket);
 
-        if (socket->inDatagramMode()) {
+        if (socket->isInDatagramMode()) {
             i.remove();
             Q_ASSERT(d->socketEngine);
             d->socketEngine->setReadNotificationEnabled(true);

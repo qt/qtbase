@@ -46,7 +46,10 @@
 
 #if QT_HAS_INCLUDE(<chrono>)
 #  include <chrono>
+#  include <limits>
 #endif
+
+class tst_QMutex;
 
 QT_BEGIN_NAMESPACE
 
@@ -135,14 +138,7 @@ public:
     template <class Rep, class Period>
     bool try_lock_for(std::chrono::duration<Rep, Period> duration)
     {
-        // N4606 § 30.4.1.3 [thread.timedmutex.requirements]/5 specifies that
-        // a duration less than or equal to duration.zero() shall result in a
-        // try_lock, unlike QMutex's tryLock with a negative duration which
-        // results in a lock.
-
-        if (duration <= duration.zero())
-            return tryLock(0);
-        return tryLock(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+        return tryLock(convertToMilliseconds(duration));
     }
 
     // TimedLockable concept
@@ -162,6 +158,32 @@ public:
 private:
     Q_DISABLE_COPY(QMutex)
     friend class QMutexLocker;
+    friend class ::tst_QMutex;
+
+#if QT_HAS_INCLUDE(<chrono>)
+    template<class Rep, class Period>
+    static int convertToMilliseconds(std::chrono::duration<Rep, Period> duration)
+    {
+        // N4606 § 30.4.1.3.5 [thread.timedmutex.requirements] specifies that a
+        // duration less than or equal to duration.zero() shall result in a
+        // try_lock, unlike QMutex's tryLock with a negative duration which
+        // results in a lock.
+
+        if (duration <= duration.zero())
+            return 0;
+
+        // when converting from 'duration' to milliseconds, make sure that
+        // the result is not shorter than 'duration':
+        std::chrono::milliseconds wait = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+        if (wait < duration)
+            wait += std::chrono::milliseconds(1);
+        Q_ASSERT(wait >= duration);
+        const auto ms = wait.count();
+        const auto maxInt = (std::numeric_limits<int>::max)();
+
+        return ms < maxInt ? int(ms) : maxInt;
+    }
+#endif
 };
 
 class Q_CORE_EXPORT QMutexLocker

@@ -207,12 +207,14 @@
             "label": "QNetworkProxy",
             "purpose": "Provides network proxy support.",
             "section": "Networking",
+            "condition": "!config.winrt",
             "output": [ "publicFeature", "feature" ]
         },
         "socks5": {
             "label": "SOCKS5",
             "purpose": "Provides SOCKS5 support in QNetworkProxy.",
             "section": "Networking",
+            "condition": "!config.winrt",
             "output": [ "publicFeature", "feature" ]
         },
         "networkinterface": {
