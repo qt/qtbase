@@ -163,6 +163,7 @@ public:
 #endif
 
     static bool inPopupMode();
+    bool popupActive() Q_DECL_OVERRIDE { return inPopupMode(); }
     void closePopup(QWidget *popup);
     void openPopup(QWidget *popup);
     static void setFocusWidget(QWidget *focus, Qt::FocusReason reason);
