@@ -183,7 +183,7 @@ class QDockWidgetGroupLayout : public QLayout {
     QDockAreaLayoutInfo info;
     QWidgetResizeHandler *resizer;
 public:
-    QDockWidgetGroupLayout(QWidget* parent) : QLayout(parent) {
+    QDockWidgetGroupLayout(QDockWidgetGroupWindow* parent) : QLayout(parent) {
         setSizeConstraint(QLayout::SetMinAndMaxSize);
         resizer = new QWidgetResizeHandler(parent);
         resizer->setMovingEnabled(false);
@@ -221,7 +221,7 @@ public:
     }
     void setGeometry(const QRect&r) Q_DECL_OVERRIDE
     {
-        static_cast<QDockWidgetGroupWindow *>(parent())->destroyOrHideIfEmpty();
+        groupWindow()->destroyOrHideIfEmpty();
         QDockAreaLayoutInfo *li = layoutInfo();
         if (li->isEmpty())
             return;
@@ -239,13 +239,18 @@ public:
 
     bool nativeWindowDeco() const
     {
-        return QDockWidgetLayout::wmSupportsNativeWindowDeco();
+        return groupWindow()->hasNativeDecos();
     }
 
     int frameWidth() const
     {
         return nativeWindowDeco() ? 0 :
             parentWidget()->style()->pixelMetric(QStyle::PM_DockWidgetFrameWidth, 0, parentWidget());
+    }
+
+    QDockWidgetGroupWindow *groupWindow() const
+    {
+        return static_cast<QDockWidgetGroupWindow *>(parent());
     }
 };
 
@@ -390,16 +395,49 @@ void QDockWidgetGroupWindow::adjustFlags()
         flags.setFlag(Qt::WindowCloseButtonHint, top->features() & QDockWidget::DockWidgetClosable);
         flags &= ~Qt::FramelessWindowHint;
     } else {
+        flags &= ~(Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
         flags |= Qt::FramelessWindowHint;
     }
+
     if (oldFlags != flags) {
         setWindowFlags(flags);
+        const bool gainedNativeDecos = (oldFlags & Qt::FramelessWindowHint) && !(flags & Qt::FramelessWindowHint);
+        const bool lostNativeDecos = !(oldFlags & Qt::FramelessWindowHint) && (flags & Qt::FramelessWindowHint);
+
+        // Adjust the geometry after gaining/losing decos, so that the client area appears always
+        // at the same place when tabbing
+        if (lostNativeDecos) {
+            QRect newGeometry = geometry();
+            newGeometry.setTop(frameGeometry().top());
+            const int bottomFrame = geometry().top() - frameGeometry().top();
+            m_removedFrameSize = QSize((frameSize() - size()).width(), bottomFrame);
+            setGeometry(newGeometry);
+        } else if (gainedNativeDecos && m_removedFrameSize.isValid()) {
+            QRect r = geometry();
+            r.adjust(-m_removedFrameSize.width() / 2, 0,
+                     -m_removedFrameSize.width() / 2, -m_removedFrameSize.height());
+            setGeometry(r);
+            m_removedFrameSize = QSize();
+        }
+
         show(); // setWindowFlags hides the window
     }
 
     setWindowTitle(top->windowTitle());
     setWindowIcon(top->windowIcon());
 }
+
+bool QDockWidgetGroupWindow::hasNativeDecos() const
+{
+    if (!QDockWidgetLayout::wmSupportsNativeWindowDeco())
+        return false;
+
+    if (QDockWidget *dw = topDockWidget())
+        return dw->titleBarWidget() == nullptr;
+
+    return true;
+}
+
 #endif
 
 /******************************************************************************
@@ -1703,6 +1741,9 @@ void QMainWindowLayout::tabChanged()
 
     if (activated)
         emit static_cast<QMainWindow *>(parentWidget())->tabifiedDockWidgetActivated(activated);
+
+    if (auto dwgw = qobject_cast<QDockWidgetGroupWindow*>(tb->parentWidget()))
+        dwgw->adjustFlags();
 
     if (QWidget *w = centralWidget())
         w->raise();

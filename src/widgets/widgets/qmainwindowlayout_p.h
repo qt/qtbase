@@ -83,9 +83,14 @@ public:
     QDockWidget *topDockWidget() const;
     void destroyOrHideIfEmpty();
     void adjustFlags();
+    bool hasNativeDecos() const;
+
 protected:
     bool event(QEvent *) Q_DECL_OVERRIDE;
     void paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
+
+private:
+    QSize m_removedFrameSize;
 };
 
 // This item will be used in the layout for the gap item. We cannot use QWidgetItem directly
