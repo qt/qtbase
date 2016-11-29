@@ -213,6 +213,48 @@ static unsigned int q_ssl_psk_server_callback(SSL *ssl,
 #endif
 } // extern "C"
 
+static void q_OpenSSL_add_all_algorithms_safe()
+{
+#ifdef Q_OS_WIN
+    // Prior to version 1.0.1m an attempt to call OpenSSL_add_all_algorithms on
+    // Windows could result in 'exit' call from OPENSSL_config (QTBUG-43843).
+    // We can predict this and avoid OPENSSL_add_all_algorithms call.
+    // From OpenSSL docs:
+    // "An application does not need to add algorithms to use them explicitly,
+    // for example by EVP_sha1(). It just needs to add them if it (or any of
+    // the functions it calls) needs to lookup algorithms.
+    // The cipher and digest lookup functions are used in many parts of the
+    // library. If the table is not initialized several functions will
+    // misbehave and complain they cannot find algorithms. This includes the
+    // PEM, PKCS#12, SSL and S/MIME libraries. This is a common query in
+    // the OpenSSL mailing lists."
+    //
+    // Anyway, as a result, we chose not to call this function if it would exit.
+
+    if (q_SSLeay() < 0x100010DFL)
+    {
+        // Now, before we try to call it, check if an attempt to open config file
+        // will result in exit:
+        if (char *confFileName = q_CONF_get1_default_config_file()) {
+            BIO *confFile = q_BIO_new_file(confFileName, "r");
+            const auto lastError = q_ERR_peek_last_error();
+            q_OPENSSL_free(confFileName);
+            if (confFile) {
+                q_BIO_free(confFile);
+            } else {
+                q_ERR_clear_error();
+                if (ERR_GET_REASON(lastError) == ERR_R_SYS_LIB) {
+                    qCWarning(lcSsl, "failed to open openssl.conf file");
+                    return;
+                }
+            }
+        }
+    }
+#endif // Q_OS_WIN
+
+    q_OpenSSL_add_all_algorithms();
+}
+
 QSslSocketBackendPrivate::QSslSocketBackendPrivate()
     : ssl(0),
       readBio(0),
@@ -504,7 +546,7 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
         if (q_SSL_library_init() != 1)
             return false;
         q_SSL_load_error_strings();
-        q_OpenSSL_add_all_algorithms();
+        q_OpenSSL_add_all_algorithms_safe();
 
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
         if (q_SSLeay() >= 0x10001000L)

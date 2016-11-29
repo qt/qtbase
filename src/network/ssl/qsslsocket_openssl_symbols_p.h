@@ -221,6 +221,9 @@ unsigned char * q_ASN1_STRING_data(ASN1_STRING *a);
 int q_ASN1_STRING_length(ASN1_STRING *a);
 int q_ASN1_STRING_to_UTF8(unsigned char **a, ASN1_STRING *b);
 long q_BIO_ctrl(BIO *a, int b, long c, void *d);
+BIO *q_BIO_new_file(const char *filename, const char *mode);
+void q_ERR_clear_error();
+void q_OPENSSL_free(void *ptr);
 Q_AUTOTEST_EXPORT int q_BIO_free(BIO *a);
 Q_AUTOTEST_EXPORT BIO *q_BIO_new(BIO_METHOD *a);
 BIO *q_BIO_new_mem_buf(void *a, int b);
@@ -256,6 +259,7 @@ void q_DSA_free(DSA *a);
 X509 *q_d2i_X509(X509 **a, const unsigned char **b, long c);
 char *q_ERR_error_string(unsigned long a, char *b);
 unsigned long q_ERR_get_error();
+unsigned long q_ERR_peek_last_error();
 void q_ERR_free_strings();
 void q_EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *a);
 void q_EVP_CIPHER_CTX_init(EVP_CIPHER_CTX *a);
@@ -565,6 +569,7 @@ DSA *q_d2i_DSAPrivateKey(DSA **a, unsigned char **pp, long length);
 #define q_EVP_PKEY_assign_DSA(pkey,dsa) q_EVP_PKEY_assign((pkey),EVP_PKEY_DSA,\
                                         (char *)(dsa))
 #define q_OpenSSL_add_all_algorithms() q_OPENSSL_add_all_algorithms_conf()
+char *q_CONF_get1_default_config_file();
 void q_OPENSSL_add_all_algorithms_noconf();
 void q_OPENSSL_add_all_algorithms_conf();
 int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char *CApath);
