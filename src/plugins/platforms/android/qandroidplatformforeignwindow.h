@@ -45,12 +45,12 @@ class QAndroidPlatformForeignWindow : public QAndroidPlatformWindow
 public:
     explicit QAndroidPlatformForeignWindow(QWindow *window);
     ~QAndroidPlatformForeignWindow();
-    void lower() Q_DECL_OVERRIDE;
-    void raise() Q_DECL_OVERRIDE;
-    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
-    void applicationStateChanged(Qt::ApplicationState state) Q_DECL_OVERRIDE;
-    void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
+    void lower() override;
+    void raise() override;
+    void setGeometry(const QRect &rect) override;
+    void setVisible(bool visible) override;
+    void applicationStateChanged(Qt::ApplicationState state) override;
+    void setParent(const QPlatformWindow *window) override;
 
 private:
     int m_surfaceId;

@@ -58,7 +58,7 @@ public:
 
     void applicationStateChanged(Qt::ApplicationState) override;
 
-    void repaint(const QRegion &region) Q_DECL_OVERRIDE;
+    void repaint(const QRegion &region) override;
 
 protected:
     void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h) override;
