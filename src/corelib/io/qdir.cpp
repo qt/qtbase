@@ -80,6 +80,40 @@ static QString driveSpec(const QString &path)
 }
 #endif
 
+enum {
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    OSSupportsUncPaths = true
+#else
+    OSSupportsUncPaths = false
+#endif
+};
+
+// Return the length of the root part of an absolute path, for use by cleanPath(), cd().
+static int rootLength(const QString &name, bool allowUncPaths)
+{
+    const int len = name.length();
+    // starts with double slash
+    if (allowUncPaths && name.startsWith(QLatin1String("//"))) {
+        // Server name '//server/path' is part of the prefix.
+        const int nextSlash = name.indexOf(QLatin1Char('/'), 2);
+        return nextSlash >= 0 ? nextSlash + 1 : len;
+    }
+#if defined(Q_OS_WINRT)
+    const QString rootPath = QDir::rootPath(); // rootPath contains the trailing slash
+    if (name.startsWith(rootPath, Qt::CaseInsensitive))
+        return rootPath.size();
+#endif // Q_OS_WINRT
+#if defined(Q_OS_WIN)
+    if (len >= 2 && name.at(1) == QLatin1Char(':')) {
+        // Handle a possible drive letter
+        return len > 2 && name.at(2) == QLatin1Char('/') ? 3 : 2;
+    }
+#endif
+    if (name.at(0) == QLatin1Char('/'))
+        return 1;
+    return 0;
+}
+
 //************* QDirPrivate
 QDirPrivate::QDirPrivate(const QString &path, const QStringList &nameFilters_, QDir::SortFlags sort_, QDir::Filters filters_)
     : QSharedData()
@@ -2066,19 +2100,7 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
     const QChar *prefix = p;
     int up = 0;
 
-    int prefixLength = 0;
-
-    if (allowUncPaths && len >= 2 && p[1].unicode() == '/' && p[0].unicode() == '/') {
-        // starts with double slash
-        prefixLength = 2;
-#ifdef Q_OS_WIN
-    } else if (len >= 2 && p[1].unicode() == ':') {
-        // remember the drive letter
-        prefixLength = (len > 2 && p[2].unicode() == '/') ? 3 : 2;
-#endif
-    } else if (p[0].unicode() == '/') {
-        prefixLength = 1;
-    }
+    const int prefixLength = rootLength(name, allowUncPaths);
     p += prefixLength;
     i -= prefixLength;
 
@@ -2188,12 +2210,7 @@ QString QDir::cleanPath(const QString &path)
     if (dir_separator != QLatin1Char('/'))
        name.replace(dir_separator, QLatin1Char('/'));
 
-    bool allowUncPaths = false;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) //allow unc paths
-    allowUncPaths = true;
-#endif
-
-    QString ret = qt_normalizePathSegments(name, allowUncPaths);
+    QString ret = qt_normalizePathSegments(name, OSSupportsUncPaths);
 
     // Strip away last slash except for root directories
     if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {

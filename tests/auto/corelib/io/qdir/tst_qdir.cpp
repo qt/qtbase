@@ -1149,6 +1149,8 @@ tst_QDir::cleanPath_data()
     QTest::newRow("data0") << "/Users/sam/troll/qt4.0//.." << "/Users/sam/troll";
     QTest::newRow("data1") << "/Users/sam////troll/qt4.0//.." << "/Users/sam/troll";
     QTest::newRow("data2") << "/" << "/";
+    QTest::newRow("data2-up") << "/path/.." << "/";
+    QTest::newRow("data2-above-root") << "/.." << "/..";
     QTest::newRow("data3") << QDir::cleanPath("../.") << "..";
     QTest::newRow("data4") << QDir::cleanPath("../..") << "../..";
 #if defined(Q_OS_WIN)
@@ -1178,13 +1180,19 @@ tst_QDir::cleanPath_data()
 
     QTest::newRow("data14") << "c://foo" << "c:/foo";
     // Drive letters and unc path in one string
-#ifndef Q_OS_WINRT
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WINRT)
+    const QString root = QDir::rootPath(); // has trailing slash
+    QTest::newRow("root-up") << (root + "path/..") << root;
+    QTest::newRow("above-root") << (root + "..") << (root + "..");
+#elif defined(Q_OS_WIN)
     QTest::newRow("data15") << "//c:/foo" << "//c:/foo";
+    QTest::newRow("drive-up") << "A:/path/.." << "A:/";
+    QTest::newRow("drive-above-root") << "A:/.." << "A:/..";
+    QTest::newRow("unc-server-up") << "//server/path/.." << "//server";
+    QTest::newRow("unc-server-above-root") << "//server/.." << "//server/..";
 #else
     QTest::newRow("data15") << "//c:/foo" << "/c:/foo";
-#endif
-#endif // !Q_OS_WINRT
+#endif // non-windows
 
     QTest::newRow("QTBUG-23892_0") << "foo/.." << ".";
     QTest::newRow("QTBUG-23892_1") << "foo/../" << ".";
