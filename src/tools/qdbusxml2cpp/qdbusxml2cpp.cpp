@@ -98,7 +98,8 @@ static QDBusIntrospection::Interfaces readInput()
         // already XML
         return QDBusIntrospection::parseInterfaces(QString::fromUtf8(data));
 
-    fprintf(stderr, "Cannot process input: '%s'. Stop.\n", qPrintable(inputFile));
+    fprintf(stderr, "%s: Cannot process input: '%s'. Stop.\n",
+            PROGRAMNAME, qPrintable(inputFile));
     exit(1);
 }
 
@@ -225,7 +226,8 @@ static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection:
 
         if (qttype.isEmpty()) {
             if (!isSignal || qstrcmp(direction, "Out") == 0) {
-                fprintf(stderr, "Got unknown type `%s'\n", qPrintable(signature));
+                fprintf(stderr, "%s: Got unknown type `%s' processing '%s'\n",
+                        PROGRAMNAME, qPrintable(signature), qPrintable(inputFile));
                 fprintf(stderr, "You should add <annotation name=\"%s\" value=\"<type>\"/> to the XML description\n",
                         qPrintable(annotationName));
             }
@@ -236,8 +238,10 @@ static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection:
             exit(1);
         }
 
-        fprintf(stderr, "Warning: deprecated annotation '%s' found; suggest updating to '%s'\n",
-                qPrintable(oldAnnotationName), qPrintable(annotationName));
+        fprintf(stderr, "%s: Warning: deprecated annotation '%s' found while processing '%s'; "
+                        "suggest updating to '%s'\n",
+                PROGRAMNAME, qPrintable(oldAnnotationName), qPrintable(inputFile),
+                qPrintable(annotationName));
         return qttype.toLatin1();
     }
 
@@ -357,8 +361,10 @@ static QString propertyGetter(const QDBusIntrospection::Property &property)
 
     getter = property.annotations.value(QLatin1String("com.trolltech.QtDBus.propertyGetter"));
     if (!getter.isEmpty()) {
-        fprintf(stderr, "Warning: deprecated annotation 'com.trolltech.QtDBus.propertyGetter' found;"
-                " suggest updating to 'org.qtproject.QtDBus.PropertyGetter'\n");
+        fprintf(stderr, "%s: Warning: deprecated annotation 'com.trolltech.QtDBus.propertyGetter' found"
+                " while processing '%s';"
+                " suggest updating to 'org.qtproject.QtDBus.PropertyGetter'\n",
+                PROGRAMNAME, qPrintable(inputFile));
         return getter;
     }
 
@@ -375,8 +381,10 @@ static QString propertySetter(const QDBusIntrospection::Property &property)
 
     setter = property.annotations.value(QLatin1String("com.trolltech.QtDBus.propertySetter"));
     if (!setter.isEmpty()) {
-        fprintf(stderr, "Warning: deprecated annotation 'com.trolltech.QtDBus.propertySetter' found;"
-                " suggest updating to 'org.qtproject.QtDBus.PropertySetter'\n");
+        fprintf(stderr, "%s: Warning: deprecated annotation 'com.trolltech.QtDBus.propertySetter' found"
+                " while processing '%s';"
+                " suggest updating to 'org.qtproject.QtDBus.PropertySetter'\n",
+                PROGRAMNAME, qPrintable(inputFile));
         return setter;
     }
 
@@ -426,8 +434,8 @@ static bool openFile(const QString &fileName, QFile &file)
     }
 
     if (!isOk)
-        fprintf(stderr, "Unable to open '%s': %s\n", qPrintable(fileName),
-                qPrintable(file.errorString()));
+        fprintf(stderr, "%s: Unable to open '%s': %s\n",
+                PROGRAMNAME, qPrintable(fileName), qPrintable(file.errorString()));
     return isOk;
 }
 
@@ -566,8 +574,9 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
             bool isNoReply =
                 method.annotations.value(QLatin1String(ANNOTATION_NO_WAIT)) == QLatin1String("true");
             if (isNoReply && !method.outputArgs.isEmpty()) {
-                fprintf(stderr, "warning: method %s in interface %s is marked 'no-reply' but has output arguments.\n",
-                        qPrintable(method.name), qPrintable(interface->name));
+                fprintf(stderr, "%s: warning while processing '%s': method %s in interface %s is marked 'no-reply' but has output arguments.\n",
+                        PROGRAMNAME, qPrintable(inputFile), qPrintable(method.name),
+                        qPrintable(interface->name));
                 continue;
             }
 
@@ -893,8 +902,8 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
             bool isNoReply =
                 method.annotations.value(QLatin1String(ANNOTATION_NO_WAIT)) == QLatin1String("true");
             if (isNoReply && !method.outputArgs.isEmpty()) {
-                fprintf(stderr, "warning: method %s in interface %s is marked 'no-reply' but has output arguments.\n",
-                        qPrintable(method.name), qPrintable(interface->name));
+                fprintf(stderr, "%s: warning while processing '%s': method %s in interface %s is marked 'no-reply' but has output arguments.\n",
+                        PROGRAMNAME, qPrintable(inputFile), qPrintable(method.name), qPrintable(interface->name));
                 continue;
             }
 
