@@ -94,7 +94,7 @@ public:
     void setFlags(Flags aflags);
 
 #if QT_DEPRECATED_SINCE(5, 8)
-    QT_DEPRECATED_X("Use setFlags() with HiddenFromHelp)")
+    QT_DEPRECATED_X("Use setFlags() with HiddenFromHelp")
     void setHidden(bool hidden);
     QT_DEPRECATED_X("Use flags() and HiddenFromHelp")
     bool isHidden() const;
