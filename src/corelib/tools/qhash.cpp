@@ -1722,6 +1722,60 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     \sa keyBegin()
 */
 
+/*! \fn QHash::key_value_iterator QHash::keyValueBegin()
+    \since 5.10
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the hash.
+
+    \sa keyValueEnd()
+*/
+
+/*! \fn QHash::key_value_iterator QHash::keyValueEnd()
+    \since 5.10
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the hash.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QHash::const_key_value_iterator QHash::keyValueBegin() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the hash.
+
+    \sa keyValueEnd()
+*/
+
+/*! \fn QHash::const_key_value_iterator QHash::constKeyValueBegin() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the hash.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QHash::const_key_value_iterator QHash::keyValueEnd() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the hash.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QHash::const_key_value_iterator QHash::constKeyValueEnd() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the hash.
+
+    \sa constKeyValueBegin()
+*/
+
 /*! \fn QHash::iterator QHash::erase(const_iterator pos)
     \since 5.7
 
@@ -2455,6 +2509,18 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
 
 /*! \fn const_iterator QHash::key_iterator::base() const
     Returns the underlying const_iterator this key_iterator is based on.
+*/
+
+/*! \typedef QHash::key_value_iterator
+    \inmodule QtCore
+    \since 5.10
+    \brief The QMap::key_value_iterator typedef provides an STL-style iterator for QHash and QMultiHash.
+
+    QHash::key_value_iterator is essentially the same as QHash::iterator
+    with the difference that operator*() returns a key/value pair instead of a
+    value.
+
+    \sa QKeyValueIterator
 */
 
 /*! \fn QDataStream &operator<<(QDataStream &out, const QHash<Key, T>& hash)

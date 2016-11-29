@@ -61,6 +61,7 @@ private slots:
 
     void iterators();
     void keyIterator();
+    void keyValueIterator();
     void keys_values_uniqueKeys();
     void qmultimap_specific();
 
@@ -861,6 +862,59 @@ void tst_QMap::keyIterator()
     // DefaultConstructible test
     typedef QMap<int, int>::key_iterator keyIterator;
     Q_STATIC_ASSERT(std::is_default_constructible<keyIterator>::value);
+}
+
+void tst_QMap::keyValueIterator()
+{
+    QMap<int, int> map;
+    typedef QMap<int, int>::const_key_value_iterator::value_type entry_type;
+
+    for (int i = 0; i < 100; ++i)
+        map.insert(i, i * 100);
+
+    auto key_value_it = map.constKeyValueBegin();
+    auto it = map.cbegin();
+
+    for (int i = 0; i < map.size(); ++i) {
+        QVERIFY(key_value_it != map.constKeyValueEnd());
+        QVERIFY(it != map.cend());
+
+        entry_type pair(it.key(), it.value());
+        QCOMPARE(*key_value_it, pair);
+        ++key_value_it;
+        ++it;
+    }
+
+    QVERIFY(key_value_it == map.constKeyValueEnd());
+    QVERIFY(it == map.cend());
+
+    int key = 50;
+    int value = 50 * 100;
+    entry_type pair(key, value);
+    key_value_it = std::find(map.constKeyValueBegin(), map.constKeyValueEnd(), pair);
+    it = std::find(map.cbegin(), map.cend(), value);
+
+    QVERIFY(key_value_it != map.constKeyValueEnd());
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+
+    ++it;
+    ++key_value_it;
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+
+    --it;
+    --key_value_it;
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+
+    ++it;
+    ++key_value_it;
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+
+    --it;
+    --key_value_it;
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+    key = 99;
+    value = 99 * 100;
+    QCOMPARE(std::count(map.constKeyValueBegin(), map.constKeyValueEnd(), entry_type(key, value)), 1);
 }
 
 void tst_QMap::keys_values_uniqueKeys()

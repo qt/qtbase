@@ -60,6 +60,7 @@ private slots:
     void compare2();
     void iterators(); // sligthly modified from tst_QMap
     void keyIterator();
+    void keyValueIterator();
     void keys_values_uniqueKeys(); // slightly modified from tst_QMap
     void noNeedlessRehashes();
 
@@ -1057,6 +1058,60 @@ void tst_QHash::keyIterator()
     // DefaultConstructible test
     typedef QHash<int, int>::key_iterator keyIterator;
     Q_STATIC_ASSERT(std::is_default_constructible<keyIterator>::value);
+}
+
+void tst_QHash::keyValueIterator()
+{
+    QHash<int, int> hash;
+    typedef QHash<int, int>::const_key_value_iterator::value_type entry_type;
+
+    for (int i = 0; i < 100; ++i)
+        hash.insert(i, i * 100);
+
+    auto key_value_it = hash.constKeyValueBegin();
+    auto it = hash.cbegin();
+
+
+    for (int i = 0; i < hash.size(); ++i) {
+        QVERIFY(key_value_it != hash.constKeyValueEnd());
+        QVERIFY(it != hash.cend());
+
+        entry_type pair(it.key(), it.value());
+        QCOMPARE(*key_value_it, pair);
+        ++key_value_it;
+        ++it;
+    }
+
+    QVERIFY(key_value_it == hash.constKeyValueEnd());
+    QVERIFY(it == hash.cend());
+
+    int key = 50;
+    int value = 50 * 100;
+    entry_type pair(key, value);
+    key_value_it = std::find(hash.constKeyValueBegin(), hash.constKeyValueEnd(), pair);
+    it = std::find(hash.cbegin(), hash.cend(), value);
+
+    QVERIFY(key_value_it != hash.constKeyValueEnd());
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+
+    ++it;
+    ++key_value_it;
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+
+    --it;
+    --key_value_it;
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+
+    ++it;
+    ++key_value_it;
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+
+    --it;
+    --key_value_it;
+    QCOMPARE(*key_value_it, entry_type(it.key(), it.value()));
+    key = 99;
+    value = 99 * 100;
+    QCOMPARE(std::count(hash.constKeyValueBegin(), hash.constKeyValueEnd(), entry_type(key, value)), 1);
 }
 
 void tst_QHash::rehash_isnt_quadratic()

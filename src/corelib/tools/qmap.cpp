@@ -908,6 +908,61 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa keyBegin(), lastKey()
 */
 
+
+/*! \fn QMap::key_value_iterator QMap::keyValueBegin()
+    \since 5.10
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the map.
+
+    \sa keyValueEnd()
+*/
+
+/*! \fn QMap::key_value_iterator QMap::keyValueEnd()
+    \since 5.10
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the map.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QMap::const_key_value_iterator QMap::keyValueBegin() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the map.
+
+    \sa keyValueEnd()
+*/
+
+/*! \fn QMap::const_key_value_iterator QMap::constKeyValueBegin() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
+    in the map.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QMap::const_key_value_iterator QMap::keyValueEnd() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the map.
+
+    \sa keyValueBegin()
+*/
+
+/*! \fn QMap::const_key_value_iterator QMap::constKeyValueEnd() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    entry after the last entry in the map.
+
+    \sa constKeyValueBegin()
+*/
+
 /*! \fn const Key &QMap::firstKey() const
     \since 5.2
 
@@ -1780,6 +1835,18 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn const_iterator QMap::key_iterator::base() const
     Returns the underlying const_iterator this key_iterator is based on.
+*/
+
+/*! \typedef QMap::key_value_iterator
+    \inmodule QtCore
+    \since 5.10
+    \brief The QMap::key_value_iterator typedef provides an STL-style iterator for QMap and QMultiMap.
+
+    QMap::key_value_iterator is essentially the same as QMap::iterator
+    with the difference that operator*() returns a key/value pair instead of a
+    value.
+
+    \sa QKeyValueIterator
 */
 
 /*! \fn QDataStream &operator<<(QDataStream &out, const QMap<Key, T> &map)
