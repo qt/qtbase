@@ -266,6 +266,9 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 /*! \fn bool QMutex::try_lock()
     \since 5.8
 
+    Attempts to lock the mutex. This function returns \c true if the lock
+    was obtained; otherwise it returns \c false.
+
     This function is provided for compatibility with the Standard Library
     concept \c Lockable. It is equivalent to tryLock().
 */
@@ -336,16 +339,23 @@ void QMutex::unlock() Q_DECL_NOTHROW
         unlockInternal();
 }
 
+
+/*!
+    \fn bool QMutex::isRecursive() const
+    \since 5.7
+
+    Returns \c true if the mutex is recursive.
+*/
+
 bool QBasicMutex::isRecursive() Q_DECL_NOTHROW
 {
     return QT_PREPEND_NAMESPACE(isRecursive)(d_ptr.loadAcquire());
 }
 
 /*!
-    \overload
     \since 5.7
 
-    Returns \c true if the mutex is recursive
+    Returns \c true if the mutex is recursive.
 */
 bool QBasicMutex::isRecursive() const Q_DECL_NOTHROW
 {

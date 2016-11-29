@@ -54,7 +54,7 @@ class tst_QMutex;
 QT_BEGIN_NAMESPACE
 
 
-#if !defined(QT_NO_THREAD) && !defined(Q_QDOC)
+#if !defined(QT_NO_THREAD) || defined(Q_CLANG_QDOC)
 
 #ifdef Q_OS_LINUX
 # define QT_MUTEX_LOCK_NOEXCEPT Q_DECL_NOTHROW
@@ -189,6 +189,7 @@ private:
 class Q_CORE_EXPORT QMutexLocker
 {
 public:
+#ifndef Q_CLANG_QDOC
     inline explicit QMutexLocker(QBasicMutex *m) QT_MUTEX_LOCK_NOEXCEPT
     {
         Q_ASSERT_X((reinterpret_cast<quintptr>(m) & quintptr(1u)) == quintptr(0),
@@ -200,6 +201,9 @@ public:
             val |= 1;
         }
     }
+#else
+    QMutexLocker(QMutex *) { }
+#endif
     inline ~QMutexLocker() { unlock(); }
 
     inline void unlock() Q_DECL_NOTHROW
@@ -240,7 +244,7 @@ private:
     quintptr val;
 };
 
-#else // QT_NO_THREAD or Q_QDOC
+#else // QT_NO_THREAD && !Q_CLANG_QDOC
 
 class Q_CORE_EXPORT QMutex
 {
@@ -255,7 +259,7 @@ public:
     inline void unlock() Q_DECL_NOTHROW {}
     inline bool isRecursive() const Q_DECL_NOTHROW { return true; }
 
-#if QT_HAS_INCLUDE(<chrono>) || defined(Q_QDOC)
+#if QT_HAS_INCLUDE(<chrono>)
     template <class Rep, class Period>
     inline bool try_lock_for(std::chrono::duration<Rep, Period> duration) Q_DECL_NOTHROW
     {
@@ -291,7 +295,7 @@ private:
 
 typedef QMutex QBasicMutex;
 
-#endif // QT_NO_THREAD or Q_QDOC
+#endif // QT_NO_THREAD && !Q_CLANG_QDOC
 
 QT_END_NAMESPACE
 
