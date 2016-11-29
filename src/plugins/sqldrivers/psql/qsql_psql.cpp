@@ -1420,6 +1420,7 @@ bool QPSQLDriver::subscribeToNotification(const QString &name)
         QString query = QLatin1String("LISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
         PGresult *result = d->exec(query);
         if (PQresultStatus(result) != PGRES_COMMAND_OK) {
+            d->seid.removeLast();
             setLastError(qMakeError(tr("Unable to subscribe"), QSqlError::StatementError, d, result));
             PQclear(result);
             return false;
