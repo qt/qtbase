@@ -72,7 +72,7 @@ public:
     const QPalette *palette(Palette type = SystemPalette) const override;
     const QFont *font(Font type = SystemFont) const override;
     QVariant themeHint(ThemeHint hint) const override;
-    QString standardButtonText(int button) const Q_DECL_OVERRIDE;
+    QString standardButtonText(int button) const override;
     bool usePlatformNativeDialog(DialogType type) const override;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
