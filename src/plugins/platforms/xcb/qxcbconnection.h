@@ -315,7 +315,7 @@ class QXcbEventReader : public QThread
 public:
     QXcbEventReader(QXcbConnection *connection);
 
-    void run() Q_DECL_OVERRIDE;
+    void run() override;
 
     QXcbEventArray *lock();
     void unlock();
@@ -519,7 +519,7 @@ public:
 #endif
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
 
 public slots:
     void flush() { xcb_flush(m_connection); }

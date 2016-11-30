@@ -47,7 +47,7 @@ class QXcbIntegrationPlugin : public QPlatformIntegrationPlugin
    Q_OBJECT
    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "xcb.json")
 public:
-    QPlatformIntegration *create(const QString&, const QStringList&, int &, char **) Q_DECL_OVERRIDE;
+    QPlatformIntegration *create(const QString&, const QStringList&, int &, char **) override;
 };
 
 QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const QStringList& parameters, int &argc, char **argv)

@@ -90,7 +90,7 @@ public:
     }
 
 protected:
-    QStringList formats_sys() const Q_DECL_OVERRIDE
+    QStringList formats_sys() const override
     {
         if (isEmpty())
             return QStringList();
@@ -120,13 +120,13 @@ protected:
         return formatList;
     }
 
-    bool hasFormat_sys(const QString &format) const Q_DECL_OVERRIDE
+    bool hasFormat_sys(const QString &format) const override
     {
         QStringList list = formats();
         return list.contains(format);
     }
 
-    QVariant retrieveData_sys(const QString &fmt, QVariant::Type requestedType) const Q_DECL_OVERRIDE
+    QVariant retrieveData_sys(const QString &fmt, QVariant::Type requestedType) const override
     {
         if (fmt.isEmpty() || isEmpty())
             return QByteArray();
@@ -238,7 +238,7 @@ public:
     }
 
 protected:
-    void timerEvent(QTimerEvent *ev) Q_DECL_OVERRIDE
+    void timerEvent(QTimerEvent *ev) override
     {
         if (ev->timerId() == abort_timer) {
             // this can happen when the X client we are sending data

@@ -53,7 +53,7 @@ public:
     };
 
     QXcbGlxNativeInterfaceHandler(QXcbNativeInterface *nativeInterface);
-    QPlatformNativeInterface::NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) const Q_DECL_OVERRIDE;
+    QPlatformNativeInterface::NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) const override;
 
 private:
     static void *glxContextForContext(QOpenGLContext *context);

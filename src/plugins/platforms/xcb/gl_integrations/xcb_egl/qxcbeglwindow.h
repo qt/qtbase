@@ -59,11 +59,11 @@ public:
     QXcbEglIntegration *glIntegration() const { return m_glIntegration; }
 
 protected:
-    void create() Q_DECL_OVERRIDE;
-    void resolveFormat(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
+    void create() override;
+    void resolveFormat(const QSurfaceFormat &format) override;
 
 #ifdef XCB_USE_XLIB
-    const xcb_visualtype_t *createVisual() Q_DECL_OVERRIDE;
+    const xcb_visualtype_t *createVisual() override;
 #endif
 
 private:

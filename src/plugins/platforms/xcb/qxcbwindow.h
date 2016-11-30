@@ -76,75 +76,75 @@ public:
     QXcbWindow(QWindow *window);
     ~QXcbWindow();
 
-    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &rect) override;
 
-    QMargins frameMargins() const Q_DECL_OVERRIDE;
+    QMargins frameMargins() const override;
 
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
-    void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
-    WId winId() const Q_DECL_OVERRIDE;
-    void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) override;
+    void setWindowFlags(Qt::WindowFlags flags) override;
+    void setWindowState(Qt::WindowState state) override;
+    WId winId() const override;
+    void setParent(const QPlatformWindow *window) override;
 
-    bool isExposed() const Q_DECL_OVERRIDE;
-    bool isEmbedded(const QPlatformWindow *parentWindow = 0) const Q_DECL_OVERRIDE;
-    QPoint mapToGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
-    QPoint mapFromGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
+    bool isExposed() const override;
+    bool isEmbedded(const QPlatformWindow *parentWindow = 0) const override;
+    QPoint mapToGlobal(const QPoint &pos) const override;
+    QPoint mapFromGlobal(const QPoint &pos) const override;
 
-    void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
+    void setWindowTitle(const QString &title) override;
     void setWindowIconText(const QString &title);
-    void setWindowIcon(const QIcon &icon) Q_DECL_OVERRIDE;
-    void raise() Q_DECL_OVERRIDE;
-    void lower() Q_DECL_OVERRIDE;
-    void propagateSizeHints() Q_DECL_OVERRIDE;
+    void setWindowIcon(const QIcon &icon) override;
+    void raise() override;
+    void lower() override;
+    void propagateSizeHints() override;
 
-    void requestActivateWindow() Q_DECL_OVERRIDE;
+    void requestActivateWindow() override;
 
-    bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;
-    bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
+    bool setKeyboardGrabEnabled(bool grab) override;
+    bool setMouseGrabEnabled(bool grab) override;
 
     void setCursor(xcb_cursor_t cursor, bool isBitmapCursor);
 
-    QSurfaceFormat format() const Q_DECL_OVERRIDE;
+    QSurfaceFormat format() const override;
 
-    void windowEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void windowEvent(QEvent *event) override;
 
-    bool startSystemResize(const QPoint &pos, Qt::Corner corner) Q_DECL_OVERRIDE;
+    bool startSystemResize(const QPoint &pos, Qt::Corner corner) override;
 
-    void setOpacity(qreal level) Q_DECL_OVERRIDE;
-    void setMask(const QRegion &region) Q_DECL_OVERRIDE;
+    void setOpacity(qreal level) override;
+    void setMask(const QRegion &region) override;
 
-    void setAlertState(bool enabled) Q_DECL_OVERRIDE;
-    bool isAlertState() const Q_DECL_OVERRIDE { return m_alertState; }
+    void setAlertState(bool enabled) override;
+    bool isAlertState() const override { return m_alertState; }
 
     xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
     QImage::Format imageFormat() const { return m_imageFormat; }
     bool imageNeedsRgbSwap() const { return m_imageRgbSwap; }
 
-    bool handleGenericEvent(xcb_generic_event_t *event, long *result)  Q_DECL_OVERRIDE;
+    bool handleGenericEvent(xcb_generic_event_t *event, long *result)  override;
 
-    void handleExposeEvent(const xcb_expose_event_t *event) Q_DECL_OVERRIDE;
-    void handleClientMessageEvent(const xcb_client_message_event_t *event) Q_DECL_OVERRIDE;
-    void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event) Q_DECL_OVERRIDE;
-    void handleMapNotifyEvent(const xcb_map_notify_event_t *event) Q_DECL_OVERRIDE;
-    void handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event) Q_DECL_OVERRIDE;
-    void handleButtonPressEvent(const xcb_button_press_event_t *event) Q_DECL_OVERRIDE;
-    void handleButtonReleaseEvent(const xcb_button_release_event_t *event) Q_DECL_OVERRIDE;
-    void handleMotionNotifyEvent(const xcb_motion_notify_event_t *event) Q_DECL_OVERRIDE;
+    void handleExposeEvent(const xcb_expose_event_t *event) override;
+    void handleClientMessageEvent(const xcb_client_message_event_t *event) override;
+    void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event) override;
+    void handleMapNotifyEvent(const xcb_map_notify_event_t *event) override;
+    void handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event) override;
+    void handleButtonPressEvent(const xcb_button_press_event_t *event) override;
+    void handleButtonReleaseEvent(const xcb_button_release_event_t *event) override;
+    void handleMotionNotifyEvent(const xcb_motion_notify_event_t *event) override;
 
-    void handleEnterNotifyEvent(const xcb_enter_notify_event_t *event) Q_DECL_OVERRIDE;
-    void handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event) Q_DECL_OVERRIDE;
-    void handleFocusInEvent(const xcb_focus_in_event_t *event) Q_DECL_OVERRIDE;
-    void handleFocusOutEvent(const xcb_focus_out_event_t *event) Q_DECL_OVERRIDE;
-    void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) Q_DECL_OVERRIDE;
+    void handleEnterNotifyEvent(const xcb_enter_notify_event_t *event) override;
+    void handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event) override;
+    void handleFocusInEvent(const xcb_focus_in_event_t *event) override;
+    void handleFocusOutEvent(const xcb_focus_out_event_t *event) override;
+    void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) override;
 #ifdef XCB_USE_XINPUT22
     void handleXIMouseButtonState(const xcb_ge_event_t *);
-    void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized) Q_DECL_OVERRIDE;
-    void handleXIEnterLeave(xcb_ge_event_t *) Q_DECL_OVERRIDE;
+    void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized) override;
+    void handleXIEnterLeave(xcb_ge_event_t *) override;
 #endif
 
-    QXcbWindow *toWindow() Q_DECL_OVERRIDE;
+    QXcbWindow *toWindow() override;
 
     void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global,
                           Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);

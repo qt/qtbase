@@ -57,22 +57,22 @@ public:
     QXcbBackingStore(QWindow *widget);
     ~QXcbBackingStore();
 
-    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    QPaintDevice *paintDevice() override;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
 #ifndef QT_NO_OPENGL
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                          QPlatformTextureList *textures, QOpenGLContext *context,
-                         bool translucentBackground) Q_DECL_OVERRIDE;
+                         bool translucentBackground) override;
 #endif
-    QImage toImage() const Q_DECL_OVERRIDE;
+    QImage toImage() const override;
 
-    QPlatformGraphicsBuffer *graphicsBuffer() const Q_DECL_OVERRIDE;
+    QPlatformGraphicsBuffer *graphicsBuffer() const override;
 
-    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
-    bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) override;
+    bool scroll(const QRegion &area, int dx, int dy) override;
 
-    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
-    void endPaint() Q_DECL_OVERRIDE;
+    void beginPaint(const QRegion &) override;
+    void endPaint() override;
 
 private:
     QXcbShmImage *m_image;
