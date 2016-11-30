@@ -89,19 +89,19 @@ public:
     explicit QWinRTScreen();
     ~QWinRTScreen();
 
-    QRect geometry() const Q_DECL_OVERRIDE;
-    QRect availableGeometry() const Q_DECL_OVERRIDE;
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
-    QSizeF physicalSize() const Q_DECL_OVERRIDE;
-    QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    qreal pixelDensity() const Q_DECL_OVERRIDE;
+    QRect geometry() const override;
+    QRect availableGeometry() const override;
+    int depth() const override;
+    QImage::Format format() const override;
+    QSizeF physicalSize() const override;
+    QDpi logicalDpi() const override;
+    qreal pixelDensity() const override;
     qreal scaleFactor() const;
-    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
+    QPlatformCursor *cursor() const override;
     Qt::KeyboardModifiers keyboardModifiers() const;
 
-    Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
+    Qt::ScreenOrientation nativeOrientation() const override;
+    Qt::ScreenOrientation orientation() const override;
 
     QWindow *topWindow() const;
     QWindow *windowAt(const QPoint &pos);

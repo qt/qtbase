@@ -75,9 +75,9 @@ public:
     QWinRTInternalMimeData();
     virtual ~QWinRTInternalMimeData();
 
-    bool hasFormat_sys(const QString &mimetype) const Q_DECL_OVERRIDE;
-    QStringList formats_sys() const Q_DECL_OVERRIDE;
-    QVariant retrieveData_sys(const QString &mimetype, QVariant::Type preferredType) const Q_DECL_OVERRIDE;
+    bool hasFormat_sys(const QString &mimetype) const override;
+    QStringList formats_sys() const override;
+    QVariant retrieveData_sys(const QString &mimetype, QVariant::Type preferredType) const override;
 
     void setDataView(const Microsoft::WRL::ComPtr<ABI::Windows::ApplicationModel::DataTransfer::IDataPackageView> &d);
 private:
@@ -91,8 +91,8 @@ public:
     virtual ~QWinRTDrag();
     static QWinRTDrag *instance();
 
-    QMimeData *platformDropData(void) Q_DECL_OVERRIDE;
-    Qt::DropAction drag(QDrag *) Q_DECL_OVERRIDE;
+    QMimeData *platformDropData(void) override;
+    Qt::DropAction drag(QDrag *) override;
 
     void setDropTarget(QWindow *target);
 

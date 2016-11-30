@@ -65,10 +65,10 @@ public:
     void raise();
     void lower();
 
-    WId winId() const Q_DECL_OVERRIDE;
+    WId winId() const override;
 
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    qreal devicePixelRatio() const override;
+    void setWindowState(Qt::WindowState state) override;
 
     EGLSurface eglSurface() const;
     void createEglSurface(EGLDisplay display, EGLConfig config);

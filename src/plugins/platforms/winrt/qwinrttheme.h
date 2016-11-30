@@ -57,7 +57,7 @@ public:
     bool usePlatformNativeDialog(DialogType type) const;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
+    const QPalette *palette(Palette type = SystemPalette) const override;
 
     static QVariant styleHint(QPlatformIntegration::StyleHint hint);
     QVariant themeHint(ThemeHint hint) const override;

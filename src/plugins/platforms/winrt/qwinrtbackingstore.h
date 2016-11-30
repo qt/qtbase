@@ -63,7 +63,7 @@ public:
     void endPaint();
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size, const QRegion &staticContents);
-    QImage toImage() const Q_DECL_OVERRIDE;
+    QImage toImage() const override;
 
 private:
     bool initialize();

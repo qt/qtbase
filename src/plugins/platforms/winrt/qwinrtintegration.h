@@ -85,28 +85,28 @@ public:
 
     bool succeeded() const;
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
+    QVariant styleHint(StyleHint hint) const override;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
-    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
-    void initialize() Q_DECL_OVERRIDE;
-    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
-    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
-    QPlatformClipboard *clipboard() const Q_DECL_OVERRIDE;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
+    void initialize() override;
+    QPlatformFontDatabase *fontDatabase() const override;
+    QPlatformInputContext *inputContext() const override;
+    QPlatformServices *services() const override;
+    QPlatformClipboard *clipboard() const override;
 #ifndef QT_NO_DRAGANDDROP
-    QPlatformDrag *drag() const Q_DECL_OVERRIDE;
+    QPlatformDrag *drag() const override;
 #endif
 
-    Qt::KeyboardModifiers queryKeyboardModifiers() const Q_DECL_OVERRIDE;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const override;
 
-    QStringList themeNames() const Q_DECL_OVERRIDE;
-    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
+    QStringList themeNames() const override;
+    QPlatformTheme *createPlatformTheme(const QString &name) const override;
 
-    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 private:
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     HRESULT onBackButtonPressed(IInspectable *, ABI::Windows::Phone::UI::Input::IBackPressedEventArgs *args);

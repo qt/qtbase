@@ -58,7 +58,7 @@ class QWinRTFileEngineHandler : public QAbstractFileEngineHandler
 public:
     QWinRTFileEngineHandler();
     ~QWinRTFileEngineHandler();
-    QAbstractFileEngine *create(const QString &fileName) const Q_DECL_OVERRIDE;
+    QAbstractFileEngine *create(const QString &fileName) const override;
 
     static void registerFile(const QString &fileName, ABI::Windows::Storage::IStorageItem *file);
     static ABI::Windows::Storage::IStorageItem *registeredFile(const QString &fileName);
@@ -75,23 +75,23 @@ public:
     QWinRTFileEngine(const QString &fileName, ABI::Windows::Storage::IStorageItem *file);
     ~QWinRTFileEngine();
 
-    bool open(QIODevice::OpenMode openMode) Q_DECL_OVERRIDE;
-    bool close() Q_DECL_OVERRIDE;
-    bool flush() Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
-    qint64 pos() const Q_DECL_OVERRIDE;
-    bool seek(qint64 pos) Q_DECL_OVERRIDE;
-    bool remove() Q_DECL_OVERRIDE;
-    bool copy(const QString &newName) Q_DECL_OVERRIDE;
-    bool rename(const QString &newName) Q_DECL_OVERRIDE;
-    bool renameOverwrite(const QString &newName) Q_DECL_OVERRIDE;
-    FileFlags fileFlags(FileFlags type=FileInfoAll) const Q_DECL_OVERRIDE;
-    bool setPermissions(uint perms) Q_DECL_OVERRIDE;
-    QString fileName(FileName type=DefaultName) const Q_DECL_OVERRIDE;
-    QDateTime fileTime(FileTime type) const Q_DECL_OVERRIDE;
+    bool open(QIODevice::OpenMode openMode) override;
+    bool close() override;
+    bool flush() override;
+    qint64 size() const override;
+    qint64 pos() const override;
+    bool seek(qint64 pos) override;
+    bool remove() override;
+    bool copy(const QString &newName) override;
+    bool rename(const QString &newName) override;
+    bool renameOverwrite(const QString &newName) override;
+    FileFlags fileFlags(FileFlags type=FileInfoAll) const override;
+    bool setPermissions(uint perms) override;
+    QString fileName(FileName type=DefaultName) const override;
+    QDateTime fileTime(FileTime type) const override;
 
-    qint64 read(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
-    qint64 write(const char *data, qint64 len) Q_DECL_OVERRIDE;
+    qint64 read(char *data, qint64 maxlen) override;
+    qint64 write(const char *data, qint64 len) override;
 
 private:
     QScopedPointer<QWinRTFileEnginePrivate> d_ptr;
