@@ -83,6 +83,8 @@
 #define QT_NO_TRANSLATION
 #define QT_FEATURE_translation -1
 #define QT_NO_GEOM_VARIANT
+#define QT_FEATURE_sharedmemory -1
+#define QT_FEATURE_systemsemaphore -1
 
 #ifdef QT_BUILD_QMAKE
 #define QT_FEATURE_commandlineparser -1
