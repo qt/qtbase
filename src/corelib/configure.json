@@ -355,11 +355,6 @@
             "condition": "features.statemachine",
             "output": [ "publicFeature" ]
         },
-        "sharedmemory": {
-            "label": "Enable QSharedMemory",
-            "condition": "config.android || config.win32 || tests.ipc_sysv || tests.ipc_posix",
-            "output": [ { "type": "define", "negative": true, "name": "QT_NO_SHAREDMEMORY" } ]
-        },
         "slog2": {
             "label": "slog2",
             "condition": "libs.slog2",
@@ -395,7 +390,9 @@
             "label": "QSharedMemory",
             "purpose": "Provides access to a shared memory segment.",
             "section": "Kernel",
-            "condition": "!config.vxworks",
+            "condition": [
+                "config.android || config.win32 || (!config.vxworks && (tests.ipc_sysv || tests.ipc_posix))"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "systemsemaphore": {
