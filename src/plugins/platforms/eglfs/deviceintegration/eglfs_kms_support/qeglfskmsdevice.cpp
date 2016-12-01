@@ -399,7 +399,20 @@ void QEglFSKmsDevice::createScreens()
 
     QVector<OrderedScreen> screens;
 
+    int wantedConnectorIndex = -1;
+    bool ok;
+    int idx = qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_CONNECTOR_INDEX", &ok);
+    if (ok) {
+        if (idx >= 0 && idx < resources->count_connectors)
+            wantedConnectorIndex = idx;
+        else
+            qWarning("Invalid connector index %d", idx);
+    }
+
     for (int i = 0; i < resources->count_connectors; i++) {
+        if (wantedConnectorIndex >= 0 && i != wantedConnectorIndex)
+            continue;
+
         drmModeConnectorPtr connector = drmModeGetConnector(m_dri_fd, resources->connectors[i]);
         if (!connector)
             continue;
