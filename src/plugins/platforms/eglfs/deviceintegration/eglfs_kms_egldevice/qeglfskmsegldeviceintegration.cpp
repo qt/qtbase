@@ -193,8 +193,10 @@ void QEglJetsonTK1Window::resetSurface()
     QByteArray reqLayerIndex = qgetenv("QT_QPA_EGLFS_LAYER_INDEX");
     if (!reqLayerIndex.isEmpty()) {
         int idx = reqLayerIndex.toInt();
-        if (idx >= 0 && idx < layers.count())
+        if (idx >= 0 && idx < layers.count()) {
+            qCDebug(qLcEglfsKmsDebug, "EGLOutput layer index override = %d", idx);
             layer = layers[idx];
+        }
     }
 
     if (layer == EGL_NO_OUTPUT_LAYER_EXT) {
