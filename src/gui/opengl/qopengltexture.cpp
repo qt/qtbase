@@ -410,6 +410,34 @@ static bool isSizedTextureFormat(QOpenGLTexture::TextureFormat internalFormat)
     case QOpenGLTexture::SRGB8_PunchThrough_Alpha1_ETC2:
     case QOpenGLTexture::RGBA8_ETC2_EAC:
     case QOpenGLTexture::SRGB8_Alpha8_ETC2_EAC:
+    case QOpenGLTexture::RGBA_ASTC_4x4:
+    case QOpenGLTexture::RGBA_ASTC_5x4:
+    case QOpenGLTexture::RGBA_ASTC_5x5:
+    case QOpenGLTexture::RGBA_ASTC_6x5:
+    case QOpenGLTexture::RGBA_ASTC_6x6:
+    case QOpenGLTexture::RGBA_ASTC_8x5:
+    case QOpenGLTexture::RGBA_ASTC_8x6:
+    case QOpenGLTexture::RGBA_ASTC_8x8:
+    case QOpenGLTexture::RGBA_ASTC_10x5:
+    case QOpenGLTexture::RGBA_ASTC_10x6:
+    case QOpenGLTexture::RGBA_ASTC_10x8:
+    case QOpenGLTexture::RGBA_ASTC_10x10:
+    case QOpenGLTexture::RGBA_ASTC_12x10:
+    case QOpenGLTexture::RGBA_ASTC_12x12:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_4x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x12:
         return true;
 
     case QOpenGLTexture::RGB8_ETC1:
@@ -703,6 +731,36 @@ static QOpenGLTexture::PixelFormat pixelFormatCompatibleWithInternalFormat(QOpen
     case QOpenGLTexture::SRGB8_Alpha8_ETC2_EAC:
         return QOpenGLTexture::RGBA;
 
+    case QOpenGLTexture::RGBA_ASTC_4x4:
+    case QOpenGLTexture::RGBA_ASTC_5x4:
+    case QOpenGLTexture::RGBA_ASTC_5x5:
+    case QOpenGLTexture::RGBA_ASTC_6x5:
+    case QOpenGLTexture::RGBA_ASTC_6x6:
+    case QOpenGLTexture::RGBA_ASTC_8x5:
+    case QOpenGLTexture::RGBA_ASTC_8x6:
+    case QOpenGLTexture::RGBA_ASTC_8x8:
+    case QOpenGLTexture::RGBA_ASTC_10x5:
+    case QOpenGLTexture::RGBA_ASTC_10x6:
+    case QOpenGLTexture::RGBA_ASTC_10x8:
+    case QOpenGLTexture::RGBA_ASTC_10x10:
+    case QOpenGLTexture::RGBA_ASTC_12x10:
+    case QOpenGLTexture::RGBA_ASTC_12x12:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_4x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x12:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::DepthFormat:
         return QOpenGLTexture::Depth;
 
@@ -859,6 +917,34 @@ static QOpenGLTexture::PixelType pixelTypeCompatibleWithInternalFormat(QOpenGLTe
     case QOpenGLTexture::RGBA8_ETC2_EAC:
     case QOpenGLTexture::SRGB8_Alpha8_ETC2_EAC:
     case QOpenGLTexture::RGB8_ETC1:
+    case QOpenGLTexture::RGBA_ASTC_4x4:
+    case QOpenGLTexture::RGBA_ASTC_5x4:
+    case QOpenGLTexture::RGBA_ASTC_5x5:
+    case QOpenGLTexture::RGBA_ASTC_6x5:
+    case QOpenGLTexture::RGBA_ASTC_6x6:
+    case QOpenGLTexture::RGBA_ASTC_8x5:
+    case QOpenGLTexture::RGBA_ASTC_8x6:
+    case QOpenGLTexture::RGBA_ASTC_8x8:
+    case QOpenGLTexture::RGBA_ASTC_10x5:
+    case QOpenGLTexture::RGBA_ASTC_10x6:
+    case QOpenGLTexture::RGBA_ASTC_10x8:
+    case QOpenGLTexture::RGBA_ASTC_10x10:
+    case QOpenGLTexture::RGBA_ASTC_12x10:
+    case QOpenGLTexture::RGBA_ASTC_12x12:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_4x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x12:
         return QOpenGLTexture::UInt8;
 
     case QOpenGLTexture::DepthFormat:
@@ -977,6 +1063,34 @@ static bool isCompressedFormat(QOpenGLTexture::TextureFormat internalFormat)
     case QOpenGLTexture::RGBA8_ETC2_EAC:
     case QOpenGLTexture::SRGB8_Alpha8_ETC2_EAC:
     case QOpenGLTexture::RGB8_ETC1:
+    case QOpenGLTexture::RGBA_ASTC_4x4:
+    case QOpenGLTexture::RGBA_ASTC_5x4:
+    case QOpenGLTexture::RGBA_ASTC_5x5:
+    case QOpenGLTexture::RGBA_ASTC_6x5:
+    case QOpenGLTexture::RGBA_ASTC_6x6:
+    case QOpenGLTexture::RGBA_ASTC_8x5:
+    case QOpenGLTexture::RGBA_ASTC_8x6:
+    case QOpenGLTexture::RGBA_ASTC_8x8:
+    case QOpenGLTexture::RGBA_ASTC_10x5:
+    case QOpenGLTexture::RGBA_ASTC_10x6:
+    case QOpenGLTexture::RGBA_ASTC_10x8:
+    case QOpenGLTexture::RGBA_ASTC_10x10:
+    case QOpenGLTexture::RGBA_ASTC_12x10:
+    case QOpenGLTexture::RGBA_ASTC_12x12:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_4x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x12:
         return true;
 
     case QOpenGLTexture::DepthFormat:
@@ -2037,6 +2151,34 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
     \value RGBA8_ETC2_EAC Equivalent to GL_COMPRESSED_RGBA8_ETC2_EAC
     \value SRGB8_Alpha8_ETC2_EAC Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
     \value RGB8_ETC1 Equivalent to GL_ETC1_RGB8_OES
+    \value RGBA_ASTC_4x4 Equivalent to GL_COMPRESSED_RGBA_ASTC_4x4_KHR
+    \value RGBA_ASTC_5x4 Equivalent to GL_COMPRESSED_RGBA_ASTC_5x4_KHR
+    \value RGBA_ASTC_5x5 Equivalent to GL_COMPRESSED_RGBA_ASTC_5x5_KHR
+    \value RGBA_ASTC_6x5 Equivalent to GL_COMPRESSED_RGBA_ASTC_6x5_KHR
+    \value RGBA_ASTC_6x6 Equivalent to GL_COMPRESSED_RGBA_ASTC_6x6_KHR
+    \value RGBA_ASTC_8x5 Equivalent to GL_COMPRESSED_RGBA_ASTC_8x5_KHR
+    \value RGBA_ASTC_8x6 Equivalent to GL_COMPRESSED_RGBA_ASTC_8x6_KHR
+    \value RGBA_ASTC_8x8 Equivalent to GL_COMPRESSED_RGBA_ASTC_8x8_KHR
+    \value RGBA_ASTC_10x5 Equivalent to GL_COMPRESSED_RGBA_ASTC_10x5_KHR
+    \value RGBA_ASTC_10x6 Equivalent to GL_COMPRESSED_RGBA_ASTC_10x6_KHR
+    \value RGBA_ASTC_10x8 Equivalent to GL_COMPRESSED_RGBA_ASTC_10x8_KHR
+    \value RGBA_ASTC_10x10 Equivalent to GL_COMPRESSED_RGBA_ASTC_10x10_KHR
+    \value RGBA_ASTC_12x10 Equivalent to GL_COMPRESSED_RGBA_ASTC_12x10_KHR
+    \value RGBA_ASTC_12x12 Equivalent to GL_COMPRESSED_RGBA_ASTC_12x12_KHR
+    \value SRGB8_Alpha8_ASTC_4x4 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR
+    \value SRGB8_Alpha8_ASTC_5x4 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR
+    \value SRGB8_Alpha8_ASTC_5x5 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR
+    \value SRGB8_Alpha8_ASTC_6x5 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR
+    \value SRGB8_Alpha8_ASTC_6x6 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR
+    \value SRGB8_Alpha8_ASTC_8x5 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR
+    \value SRGB8_Alpha8_ASTC_8x6 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR
+    \value SRGB8_Alpha8_ASTC_8x8 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR
+    \value SRGB8_Alpha8_ASTC_10x5 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR
+    \value SRGB8_Alpha8_ASTC_10x6 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR
+    \value SRGB8_Alpha8_ASTC_10x8 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR
+    \value SRGB8_Alpha8_ASTC_10x10 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR
+    \value SRGB8_Alpha8_ASTC_12x10 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR
+    \value SRGB8_Alpha8_ASTC_12x12 Equivalent to GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR
 
     \value SRGB8 Equivalent to GL_SRGB8
     \value SRGB8_Alpha8 Equivalent to GL_SRGB8_ALPHA8
@@ -2592,6 +2734,34 @@ void QOpenGLTexture::setFormat(TextureFormat format)
     case RGBAFormat:
     case LuminanceFormat:
     case LuminanceAlphaFormat:
+    case QOpenGLTexture::RGBA_ASTC_4x4:
+    case QOpenGLTexture::RGBA_ASTC_5x4:
+    case QOpenGLTexture::RGBA_ASTC_5x5:
+    case QOpenGLTexture::RGBA_ASTC_6x5:
+    case QOpenGLTexture::RGBA_ASTC_6x6:
+    case QOpenGLTexture::RGBA_ASTC_8x5:
+    case QOpenGLTexture::RGBA_ASTC_8x6:
+    case QOpenGLTexture::RGBA_ASTC_8x8:
+    case QOpenGLTexture::RGBA_ASTC_10x5:
+    case QOpenGLTexture::RGBA_ASTC_10x6:
+    case QOpenGLTexture::RGBA_ASTC_10x8:
+    case QOpenGLTexture::RGBA_ASTC_10x10:
+    case QOpenGLTexture::RGBA_ASTC_12x10:
+    case QOpenGLTexture::RGBA_ASTC_12x12:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_4x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x4:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_5x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_6x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_8x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x5:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x6:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x8:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_10x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x10:
+    case QOpenGLTexture::SRGB8_Alpha8_ASTC_12x12:
         d->formatClass = FormatClass_Unique;
         break;
     }
