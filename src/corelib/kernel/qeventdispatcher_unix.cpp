@@ -130,7 +130,7 @@ static void initThreadPipeFD(int fd)
 
 bool QThreadPipe::init()
 {
-#if defined(Q_OS_NACL)
+#if defined(Q_OS_NACL) || defined(Q_OS_HTML5)
    // do nothing.
 #elif defined(Q_OS_VXWORKS)
     qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
@@ -515,6 +515,15 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     // return true if we handled events, false otherwise
     return (nevents > 0);
+}
+
+void QEventDispatcherUNIX::processEvents()
+{
+    Q_D(QEventDispatcherUNIX);
+    // we are awake, broadcast it
+    emit awake();
+    QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+    d->activateTimers();
 }
 
 bool QEventDispatcherUNIX::hasPendingEvents()

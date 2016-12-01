@@ -144,7 +144,12 @@ Q_GLOBAL_STATIC(QtFreetypeData, theFreetypeData)
 
 QtFreetypeData *qt_getFreetypeData()
 {
-    return theFreetypeData();
+    QtFreetypeData *freetypeData = theFreetypeData();
+    if (!freetypeData->library) {
+        FT_Init_FreeType(&freetypeData->library);
+    }
+
+    return freetypeData;
 }
 #else
 Q_GLOBAL_STATIC(QThreadStorage<QtFreetypeData *>, theFreetypeData)

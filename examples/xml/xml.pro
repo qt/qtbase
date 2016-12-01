@@ -1,10 +1,14 @@
 TEMPLATE      = subdirs
-SUBDIRS       = htmlinfo \
+
+!emscripten: SUBDIRS += \
+                htmlinfo \
                 xmlstreamlint
 
 qtHaveModule(widgets) {
     SUBDIRS +=  dombookmarks \
-                saxbookmarks \
+                saxbookmarks
+
+!emscripten: SUBDIRS +=  \
                 streambookmarks
 
     qtHaveModule(network): SUBDIRS += \

@@ -63,12 +63,17 @@ isEmpty($${target_prefix}.INCDIRS) {
         else: darwin:clang: \
             # Need to link to pick up library paths
             cxx_flags += $$QMAKE_LFLAGS_SHLIB -o /dev/null -v -Wl,-v
-        else: \
+        else:!emscripten: \
             # Just preprocess, might not pick up library paths
             cxx_flags += -E -v
 
-        output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$cxx_flags) -xc++ - 2>&1 $$cmd_suffix", lines, ec)
-        !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX)
+        emscripten: {
+            # pass args directly to clang
+            output = $$system("$$cmd_prefix clang -v $$cxx_flags -xc++ - 2>&1 $$cmd_suffix", lines, ec)
+        } else {
+            output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$cxx_flags) -xc++ - 2>&1 $$cmd_suffix", lines, ec)
+            !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX)
+        }
 
         rim_qcc {
             for (line, output) {
@@ -127,8 +132,11 @@ isEmpty($${target_prefix}.INCDIRS) {
             # paths, so it can't just be used in place of the above code).
             # What's more, -print-search-dirs can't be used on clang on Apple because it
             # won't print all the library paths (only the clang-internal ones).
-            output = $$system("$$cmd_prefix $$QMAKE_CXX -print-search-dirs", lines, ec)
-            !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX)
+            emscripten: {
+                output = $$system("$$cmd_prefix clang -print-search-dirs", lines, ec)
+            } else {
+                output = $$system("$$cmd_prefix $$QMAKE_CXX -print-search-dirs", lines, ec)
+            }
 
             for (line, output) {
                 contains(line, "^libraries: .*") {
@@ -140,7 +148,7 @@ isEmpty($${target_prefix}.INCDIRS) {
             }
         }
         isEmpty(QMAKE_DEFAULT_LIBDIRS)|isEmpty(QMAKE_DEFAULT_INCDIRS): \
-            !integrity: \
+            !integrity:!emscripten: \
                 error("failed to parse default search paths from compiler output")
         QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
     } else: msvc {

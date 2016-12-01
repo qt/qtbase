@@ -42,6 +42,7 @@
 #define QTHREAD_H
 
 #include <QtCore/qobject.h>
+#include <QDebug>
 
 // For QThread::create. The configure-time test just checks for the availability
 // of std::future and std::async; for the C++17 codepath we perform some extra
@@ -243,15 +244,46 @@ QThread *QThread::create(Function &&f)
 
 class Q_CORE_EXPORT QThread : public QObject
 {
+    Q_OBJECT
 public:
+    enum Priority {
+        IdlePriority,
+
+        LowestPriority,
+        LowPriority,
+        NormalPriority,
+        HighPriority,
+        HighestPriority,
+
+        TimeCriticalPriority,
+
+        InheritPriority
+    };
+    explicit QThread(QObject *parent = nullptr);
+    ~QThread();
     static Qt::HANDLE currentThreadId() { return Qt::HANDLE(currentThread()); }
     static QThread* currentThread();
+    static void msleep(unsigned long) {}
+    QAbstractEventDispatcher *eventDispatcher() const;
+    void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
+    bool wait(unsigned long time = ULONG_MAX);
 
+    bool isFinished() const { return true; }
+    bool isRunning() const{ return true; }
+
+public Q_SLOTS:
+    void start(Priority = InheritPriority){}
+    void terminate(){}
+    void quit() {}
+
+Q_SIGNALS:
+    void started(QPrivateSignal);
+    void finished(QPrivateSignal);
 protected:
     QThread(QThreadPrivate &dd, QObject *parent = nullptr);
 
 private:
-    explicit QThread(QObject *parent = nullptr);
+    virtual void run();
     static QThread *instance;
 
     friend class QCoreApplication;

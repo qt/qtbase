@@ -76,6 +76,7 @@ public:
     static QAbstractEventDispatcher *instance(QThread *thread = nullptr);
 
     virtual bool processEvents(QEventLoop::ProcessEventsFlags flags) = 0;
+    virtual void processEvents() {}
     virtual bool hasPendingEvents() = 0; // ### Qt6: remove, mark final or make protected
 
     virtual void registerSocketNotifier(QSocketNotifier *notifier) = 0;

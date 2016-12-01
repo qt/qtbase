@@ -159,7 +159,8 @@
             },
             "sources": [
                 { "type": "pkgConfig", "args": "freetype2" },
-                { "type": "freetype", "libs": "-lfreetype" }
+                { "type": "freetype", "libs": "-lfreetype", "condition": "!config.emscripten" },
+                { "type": "freetype", "libs": "-s USE_FREETYPE=1", "condition": "config.emscripten" }
             ]
         },
         "fontconfig": {
@@ -296,7 +297,8 @@
             "sources": [
                 { "type": "pkgConfig", "args": "libpng" },
                 { "libs": "-llibpng", "condition": "config.msvc" },
-                { "libs": "-lpng", "condition": "!config.msvc" }
+                { "libs": "-lpng", "condition": "!config.msvc && !config.emscripten" },
+                { "libs": "-s USE_LIBPNG=1", "condition": "config.emscripten" }
             ],
             "use": [
                 { "lib": "zlib", "condition": "features.system-zlib" }
@@ -1025,6 +1027,7 @@
         "opengles3": {
             "label": "OpenGL ES 3.0",
             "condition": "features.opengles2 && !features.angle && tests.opengles3",
+            "disable": "config.html5",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_3" }
@@ -1033,6 +1036,7 @@
         "opengles31": {
             "label": "OpenGL ES 3.1",
             "condition": "features.opengles3 && tests.opengles31",
+            "disable": "config.html5",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_3_1" }
@@ -1051,7 +1055,7 @@
             "enable": "input.opengl == 'desktop'",
             "disable": "input.opengl == 'es2' || input.opengl == 'dynamic' || input.opengl == 'no'",
             "condition": "(config.win32 && !config.winrt && !features.opengles2 && (config.msvc || libs.opengl))
-                          || (!config.watchos && !config.win32 && libs.opengl)"
+                          || (!config.watchos && !config.win32 && !config.html5 && libs.opengl)"
         },
         "opengl-dynamic": {
             "label": "Dynamic OpenGL",

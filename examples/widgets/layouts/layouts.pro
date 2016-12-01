@@ -1,5 +1,7 @@
 TEMPLATE      = subdirs
 SUBDIRS       = basiclayouts \
                 borderlayout \
-                dynamiclayouts \
+                dynamiclayouts
+
+!emscripten: SUBDIRS += \
                 flowlayout

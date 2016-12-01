@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/fonts">
+        <file>Vera.ttf</file>
+        <file>DejaVuSans.ttf</file>
+    </qresource>
+</RCC>

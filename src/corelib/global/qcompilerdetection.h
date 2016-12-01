@@ -213,6 +213,9 @@
 #        define Q_DECL_NS_RETURNS_AUTORELEASED __attribute__((ns_returns_autoreleased))
 #      endif
 #    endif
+#    ifdef __EMSCRIPTEN__
+#      define Q_CC_EMSCRIPTEN
+#    endif
 #  else
 /* Plain GCC */
 #    if Q_CC_GNU >= 405

@@ -936,6 +936,7 @@ defineTest(qtConfTest_compile) {
     # for platforms with multiple architectures (macOS, iOS, tvOS, watchOS),
     # make sure tests are only built for a single architecture
     qmake_configs += "single_arch"
+    emscripten: qmake_configs += "config_test"
 
     qmake_args += "\"CONFIG += $$qmake_configs\""
 

@@ -963,7 +963,9 @@ public:
     {
         QMutexLocker locker(&mutex);
         timeout.store(-1);
+#ifndef QT_NO_THREAD
         start();
+#endif
         waitCondition.wait(&mutex);
     }
     ~WatchDog() {

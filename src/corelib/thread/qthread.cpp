@@ -548,6 +548,7 @@ void QThread::exit(int returnCode)
     d->exited = true;
     d->returnCode = returnCode;
     d->data->quitNow = true;
+    std::cout << "qthread exit quit now: " << data->quitNow << std::endl;
     for (int i = 0; i < d->data->eventLoops.size(); ++i) {
         QEventLoop *eventLoop = d->data->eventLoops.at(i);
         eventLoop->exit(returnCode);
@@ -739,10 +740,24 @@ int QThread::loopLevel() const
 
 #else // QT_NO_THREAD
 
+QThreadPrivate::QThreadPrivate(QThreadData *d) : data(d ? d : new QThreadData)
+{
+}
+
+QThreadPrivate::~QThreadPrivate()
+{
+    delete data;
+}
+
 QThread::QThread(QObject *parent)
     : QObject(*(new QThreadPrivate), (QObject*)0){
     Q_D(QThread);
+    Q_UNUSED(parent)
     d->data->thread = this;
+}
+
+QThread::~QThread()
+{
 }
 
 QThread *QThread::currentThread()
@@ -750,16 +765,31 @@ QThread *QThread::currentThread()
     return QThreadData::current()->thread;
 }
 
-QThreadData* QThreadData::current()
+static QThreadData *data = 0;
+QThreadData* QThreadData::current(bool createIfNecessary)
 {
-    static QThreadData *data = 0; // reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
+    Q_UNUSED(createIfNecessary)
     if (!data) {
-        QScopedPointer<QThreadData> newdata(new QThreadData);
-        newdata->thread = new QAdoptedThread(newdata.data());
-        data = newdata.take();
-        data->deref();
+        data = new QThreadData;
+        data->thread = new QAdoptedThread(data);
+        if (!QCoreApplicationPrivate::theMainThread)
+            QCoreApplicationPrivate::theMainThread = data->thread.load();
     }
     return data;
+}
+
+void QThreadData::clearCurrentThreadData()
+{
+    if (!data)
+        return;
+    delete data;
+    data = 0;
+}
+
+bool QThread::wait(unsigned long time)
+{
+    Q_UNUSED(time)
+    return true;
 }
 
 /*!
@@ -771,6 +801,11 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
     Q_D(QThread);
     // fprintf(stderr, "QThreadData %p taken from private data for thread %p\n", d->data, this);
     d->data->thread = this;
+}
+
+void QThread::run()
+{
+    //(void) exec();
 }
 
 #endif // QT_NO_THREAD
@@ -809,7 +844,7 @@ void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
             qWarning("QThread::setEventDispatcher: Could not move event dispatcher to target thread");
     }
 }
-
+#ifndef QT_NO_THREAD
 /*!
     \reimp
 */
@@ -822,7 +857,7 @@ bool QThread::event(QEvent *event)
         return QObject::event(event);
     }
 }
-
+#ifndef QT_NO_THREAD
 /*!
     \since 5.2
 
@@ -968,6 +1003,10 @@ QDaemonThread::QDaemonThread(QObject *parent)
 QDaemonThread::~QDaemonThread()
 {
 }
+
+#endif // QT_NO_THREAD
+
+#endif // QT_NO_THREAD
 
 QT_END_NAMESPACE
 

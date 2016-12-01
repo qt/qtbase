@@ -1,6 +1,5 @@
 TEMPLATE      = subdirs
 SUBDIRS       = analogclock \
-                calculator \
                 calendarwidget \
                 charactermap \
                 codeeditor \
@@ -24,3 +23,6 @@ SUBDIRS       = analogclock \
                 validators \
                 wiggly \
                 windowflags
+
+!emscripten: SUBDIRS +=  \
+               calculator \

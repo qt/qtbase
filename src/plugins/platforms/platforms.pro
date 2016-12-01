@@ -26,7 +26,7 @@ qnx {
 }
 
 qtConfig(eglfs) {
-    SUBDIRS += eglfs
+    qtConfig(thread): SUBDIRS += eglfs
     SUBDIRS += minimalegl
 }
 
@@ -34,7 +34,7 @@ qtConfig(directfb) {
     SUBDIRS += directfb
 }
 
-qtConfig(linuxfb): SUBDIRS += linuxfb
+qtConfig(thread): qtConfig(linuxfb): SUBDIRS += linuxfb
 
 qtConfig(vnc): SUBDIRS += vnc
 
@@ -45,6 +45,8 @@ freebsd {
 haiku {
     SUBDIRS += haiku
 }
+
+emscripten: SUBDIRS = html5
 
 qtConfig(mirclient): SUBDIRS += mirclient
 

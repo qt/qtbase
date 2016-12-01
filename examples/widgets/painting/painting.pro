@@ -3,7 +3,6 @@ SUBDIRS       = basicdrawing \
                 concentriccircles \
                 affine \
                 composition \
-                deform \
                 gradients \
                 pathstroke \
                 imagecomposition \
@@ -13,3 +12,5 @@ SUBDIRS       = basicdrawing \
 
 EXAMPLE_FILES = \
     shared
+!emscripten: SUBDIRS += \
+                deform

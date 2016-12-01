@@ -259,12 +259,14 @@ defineTest(qtConfTest_architecture) {
         content = $$cat($$test_out_dir/arch.exe, blob)
     else: android:exists($$test_out_dir/libarch.so): \
         content = $$cat($$test_out_dir/libarch.so, blob)
+    else: html5:exists($$test_out_dir/arch.js): \
+        content = $$system(node $$test_out_dir/arch.js, blob)
     else: \
         error("$$eval($${1}.label) detection binary not found.")
 
-    arch_magic = ".*==Qt=magic=Qt== Architecture:([^\\0]*).*"
-    subarch_magic = ".*==Qt=magic=Qt== Sub-architecture:([^\\0]*).*"
-    buildabi_magic = ".*==Qt=magic=Qt== Build-ABI:([^\\0]*).*"
+    arch_magic = ".*==Qt=magic=Qt== Architecture:([^\\0\\n]*).*"
+    subarch_magic = ".*==Qt=magic=Qt== Sub-architecture:([^\\0\\n]*).*"
+    buildabi_magic = ".*==Qt=magic=Qt== Build-ABI:([^\\0\\n]*).*"
 
     !contains(content, $$arch_magic)|!contains(content, $$subarch_magic)|!contains(content, $$buildabi_magic): \
         error("$$eval($${1}.label) detection binary does not contain expected data.")

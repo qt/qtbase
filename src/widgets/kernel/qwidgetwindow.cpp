@@ -1071,10 +1071,10 @@ void QWidgetWindow::handleContextMenuEvent(QContextMenuEvent *e)
 
 void QWidgetWindow::updateObjectName()
 {
-    QString name = m_widget->objectName();
-    if (name.isEmpty())
-        name = QString::fromUtf8(m_widget->metaObject()->className()) + QLatin1String("Class");
-    name += QLatin1String("Window");
+//    QString name = m_widget->objectName();
+//    if (name.isEmpty())
+//        name = QString::fromUtf8(m_widget->metaObject()->className()) + QLatin1String("Class");
+    QString name = QLatin1String("Window");
     setObjectName(name);
 }
 

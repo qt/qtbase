@@ -8,3 +8,5 @@ OTHER_FILES += gif.json
 PLUGIN_TYPE = imageformats
 PLUGIN_CLASS_NAME = QGifPlugin
 load(qt_plugin)
+
+emscripten: CONFIG += static plugin

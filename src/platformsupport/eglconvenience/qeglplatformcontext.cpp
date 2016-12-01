@@ -277,6 +277,8 @@ EGLSurface QEGLPlatformContext::createTemporaryOffscreenSurface()
         EGL_LARGEST_PBUFFER, EGL_FALSE,
         EGL_NONE
     };
+#ifndef __EMSCRIPTEN__
+    // eglCreateWindowSurface is not supported by emscripten
 
     // Cannot just pass m_eglConfig because it may not be suitable for pbuffers. Instead,
     // do what QEGLPbuffer would do: request a config with the same attributes but with
@@ -284,6 +286,10 @@ EGLSurface QEGLPlatformContext::createTemporaryOffscreenSurface()
     EGLConfig config = q_configFromGLFormat(m_eglDisplay, m_format, false, EGL_PBUFFER_BIT);
 
     return eglCreatePbufferSurface(m_eglDisplay, config, pbufferAttributes);
+#else
+    Q_UNUSED(pbufferAttributes)
+    return EGL_NO_SURFACE;
+#endif
 }
 
 void QEGLPlatformContext::destroyTemporaryOffscreenSurface(EGLSurface surface)

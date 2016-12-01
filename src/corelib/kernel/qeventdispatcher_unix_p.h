@@ -107,6 +107,8 @@ public:
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
     bool hasPendingEvents() override;
+    void processEvents() override;
+
 
     void registerSocketNotifier(QSocketNotifier *notifier) final;
     void unregisterSocketNotifier(QSocketNotifier *notifier) final;

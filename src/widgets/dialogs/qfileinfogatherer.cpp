@@ -103,7 +103,9 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
     }
 #  endif // Q_OS_WIN && !Q_OS_WINRT
 #endif
+#ifndef QT_NO_THREAD
     start(LowPriority);
+#endif
 }
 
 /*!

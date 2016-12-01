@@ -40,6 +40,7 @@
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
 #include <QtNetwork/qsslconfiguration.h>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -444,6 +445,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
 QNetworkReply::QNetworkReply(QObject *parent)
     : QIODevice(*new QNetworkReplyPrivate, parent)
 {
+    qDebug() << Q_FUNC_INFO << this;
 }
 
 /*!
@@ -452,6 +454,7 @@ QNetworkReply::QNetworkReply(QObject *parent)
 QNetworkReply::QNetworkReply(QNetworkReplyPrivate &dd, QObject *parent)
     : QIODevice(dd, parent)
 {
+    qDebug() << Q_FUNC_INFO << this;
 }
 
 /*!
@@ -463,6 +466,7 @@ QNetworkReply::QNetworkReply(QNetworkReplyPrivate &dd, QObject *parent)
 */
 QNetworkReply::~QNetworkReply()
 {
+    qDebug() << Q_FUNC_INFO << this;
 }
 
 /*!

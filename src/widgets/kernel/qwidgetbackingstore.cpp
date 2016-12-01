@@ -67,6 +67,8 @@
 #  include <qpa/qplatformnativeinterface.h>
 #endif
 
+#include <iostream>
+
 QT_BEGIN_NAMESPACE
 
 extern QRegion qt_dirtyRegion(QWidget *);
@@ -1105,9 +1107,12 @@ bool QWidgetBackingStore::syncAllowed()
 */
 void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedRegion)
 {
+
     QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
     if (!tlw->isVisible() || !tlwExtra || tlwExtra->inTopLevelResize)
+    {
         return;
+    }
 
     if (!exposedWidget || !exposedWidget->internalWinId() || !exposedWidget->isVisible() || !exposedWidget->testAttribute(Qt::WA_Mapped)
         || !exposedWidget->updatesEnabled() || exposedRegion.isEmpty()) {
@@ -1128,6 +1133,7 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
 
     if (syncAllowed())
         doSync();
+
 }
 
 /*!
@@ -1154,6 +1160,7 @@ void QWidgetBackingStore::sync()
 
     if (syncAllowed())
         doSync();
+
 }
 
 void QWidgetBackingStore::doSync()
@@ -1638,8 +1645,11 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         QWidgetBackingStore::unflushPaint(q, toBePainted);
 #endif
 
+    abort();
+
     if (Q_UNLIKELY(q->paintingActive()))
         qWarning("QWidget::repaint: It is dangerous to leave painters active on a widget outside of the PaintEvent");
+
 }
 
 

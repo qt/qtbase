@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 QT_FOR_CONFIG += gui-private
 
-qtHaveModule(dbus) {
+!emscripten:qtHaveModule(dbus) {
 !mac:!win32:SUBDIRS += ibus
 }
 

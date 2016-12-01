@@ -47,6 +47,12 @@
 #include "qobject_p.h"
 #include "qeventloop_p.h"
 #include <private/qthread_p.h>
+#include <QDebug>
+
+
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -160,8 +166,6 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
 int QEventLoop::exec(ProcessEventsFlags flags)
 {
     Q_D(QEventLoop);
-    //we need to protect from race condition with QThread::exit
-    QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(d->threadData->thread))->mutex);
     if (d->threadData->quitNow)
         return -1;
 
@@ -170,10 +174,16 @@ int QEventLoop::exec(ProcessEventsFlags flags)
         return -1;
     }
 
+#ifndef __EMSCRIPTEN__
+    //we need to protect from race condition with QThread::exit
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(&static_cast<QThreadPrivate *>(QObjectPrivate::get(d->threadData->thread))->mutex);
+#else
+    QMutexLocker locker(0);
+#endif
     struct LoopReference {
         QEventLoopPrivate *d;
         QMutexLocker &locker;
-
         bool exceptionCaught;
         LoopReference(QEventLoopPrivate *d, QMutexLocker &locker) : d(d), locker(locker), exceptionCaught(true)
         {
@@ -212,8 +222,56 @@ int QEventLoop::exec(ProcessEventsFlags flags)
         processEvents(flags | WaitForMoreEvents | EventLoopExec);
 
     ref.exceptionCaught = false;
+
+#else // __EMSCRIPTEN__
+    Q_UNUSED(flags)
+    d->inExec = true;
+    d->exit.storeRelease(false);
+    int oldLoopLevel = d->threadData->loopLevel;
+    ++d->threadData->loopLevel;
+    d->threadData->eventLoops.push(d->q_func());
+
+    // remove posted quit events when entering a new event loop
+    QCoreApplication *app = QCoreApplication::instance();
+    if (app && app->thread() == thread())
+        QCoreApplication::removePostedEvents(app, QEvent::Quit);
+
+    if (oldLoopLevel == 0 && d->threadData->loopLevel == 1) {
+        // main loop. can be only one
+        emscripten_set_main_loop_arg(QEventLoop::processEvents, (void*)this, 0, 1);
+    } else {
+        // child loops
+        while (!d->exit.loadAcquire()) {
+            emscripten_sleep(10);
+            processEvents((void *)this);
+        }
+    }
+
+    QEventLoop *eventLoop = d->threadData->eventLoops.pop();
+    Q_ASSERT_X(eventLoop == d->q_func(), "QEventLoop::exec()", "internal error");
+    Q_UNUSED(eventLoop); // --release warning
+    d->inExec = false;
+    --d->threadData->loopLevel;
+#endif // __EMSCRIPTEN__
+
     return d->returnCode.load();
 }
+
+#ifdef __EMSCRIPTEN__
+void QEventLoop::processEvents(void *eventloop)
+{
+    QEventLoop *currentEventloop = (QEventLoop*)eventloop;
+    currentEventloop->processEvents_emscripten();
+}
+
+void QEventLoop::processEvents_emscripten()
+{
+    Q_D(QEventLoop);
+    if (!d->threadData->eventDispatcher.load())
+        return;
+    d->threadData->eventDispatcher.load()->processEvents();
+}
+#endif
 
 /*!
     Process pending events that match \a flags for a maximum of \a
@@ -269,7 +327,42 @@ void QEventLoop::exit(int returnCode)
     d->returnCode.store(returnCode);
     d->exit.storeRelease(true);
     d->threadData->eventDispatcher.load()->interrupt();
+
+#ifdef __EMSCRIPTEN__
+
+    if (d->threadData->loopLevel == 1) {
+        emscripten_cancel_main_loop();
+        emscripten_force_exit(returnCode);
+    } else {
+        cleanup();
+        d->threadData->eventLoops.at(0)->switchLoop_emscripten( d->threadData->eventLoops.at(0));
+    }
+#endif
+
 }
+
+
+#ifdef __EMSCRIPTEN__
+void QEventLoop::switchLoop_emscripten(void *userData)
+{
+   emscripten_cancel_main_loop();
+   emscripten_set_main_loop_arg(QEventLoop::processEvents, userData, 0, 1);
+}
+
+void QEventLoop::cleanup()
+{
+    Q_D(QEventLoop);
+    if (!d->threadData->eventDispatcher.load())
+        return;
+
+    QEventLoop *eventLoop = d->threadData->eventLoops.pop();
+    Q_ASSERT_X(eventLoop == d->q_func(), "QEventLoop::exec()", "internal error");
+    Q_UNUSED(eventLoop); // --release warning
+    d->inExec = false;
+    --d->threadData->loopLevel;
+}
+#endif
+
 
 /*!
     Returns \c true if the event loop is running; otherwise returns

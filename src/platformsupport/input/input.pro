@@ -7,7 +7,7 @@ CONFIG += static internal_module
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../../corelib/global/qt_pch.h
 
-qtConfig(evdev) {
+qtConfig(thread): qtConfig(evdev) {
     include($$PWD/evdevmouse/evdevmouse.pri)
     include($$PWD/evdevkeyboard/evdevkeyboard.pri)
     include($$PWD/evdevtouch/evdevtouch.pri)

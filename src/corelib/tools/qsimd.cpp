@@ -153,7 +153,9 @@ static inline quint64 detectProcessorFeatures()
 
 static int maxBasicCpuidSupported()
 {
-#if defined(Q_CC_GNU)
+#if defined(Q_CC_EMSCRIPTEN)
+    return 6; // All features supported by Emscripten
+#elif defined(Q_CC_GNU)
     qregisterint tmp1;
 
 # if Q_PROCESSOR_X86 < 5
@@ -198,7 +200,7 @@ static int maxBasicCpuidSupported()
 
 static void cpuidFeatures01(uint &ecx, uint &edx)
 {
-#if defined(Q_CC_GNU)
+#if defined(Q_CC_GNU) && !defined(Q_CC_EMSCRIPTEN)
     qregisterint tmp1;
     asm ("xchg " PICreg", %2\n"
          "cpuid\n"
@@ -215,6 +217,9 @@ static void cpuidFeatures01(uint &ecx, uint &edx)
     __CPUID(1, info);
     ecx = info[2];
     edx = info[3];
+#else
+    Q_UNUSED(ecx);
+    Q_UNUSED(edx);
 #endif
 }
 
@@ -224,7 +229,7 @@ inline void __cpuidex(int info[4], int, __int64) { memset(info, 0, 4*sizeof(int)
 
 static void cpuidFeatures07_00(uint &ebx, uint &ecx)
 {
-#if defined(Q_CC_GNU)
+#if defined(Q_CC_GNU) && !defined(Q_CC_EMSCRIPTEN)
     qregisteruint rbx; // in case it's 64-bit
     qregisteruint rcx = 0;
     asm ("xchg " PICreg", %0\n"
@@ -245,6 +250,9 @@ static void cpuidFeatures07_00(uint &ebx, uint &ecx)
     __CPUIDEX(7, 0, info);
     ebx = info[1];
     ecx = info[2];
+#else
+    Q_UNUSED(ebx);
+    Q_UNUSED(ecx);
 #endif
 }
 
@@ -254,7 +262,7 @@ inline quint64 _xgetbv(__int64) { return 0; }
 #endif
 static void xgetbv(uint in, uint &eax, uint &edx)
 {
-#if defined(Q_CC_GNU) || defined(Q_CC_GHS)
+#if (defined(Q_CC_GNU) && !defined(Q_CC_EMSCRIPTEN)) || defined(Q_CC_GHS)
     asm (".byte 0x0F, 0x01, 0xD0" // xgetbv instruction
         : "=a" (eax), "=d" (edx)
         : "c" (in));
@@ -262,6 +270,10 @@ static void xgetbv(uint in, uint &eax, uint &edx)
     quint64 result = _xgetbv(in);
     eax = result;
     edx = result >> 32;
+#else
+    Q_UNUSED(in);
+    Q_UNUSED(eax);
+    Q_UNUSED(edx);
 #endif
 }
 

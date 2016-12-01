@@ -210,15 +210,15 @@ public:
 };
 
 #else // QT_NO_THREAD
-
+class QThreadData;
 class QThreadPrivate : public QObjectPrivate
 {
 public:
-    QThreadPrivate(QThreadData *d = 0) : data(d ? d : new QThreadData) {}
-    ~QThreadPrivate() { delete data; }
+    QThreadPrivate(QThreadData *d = 0);
+    ~QThreadPrivate();
 
     QThreadData *data;
-
+    static void clearCurrentThreadData();
     static void setCurrentThread(QThread*) {}
     static QThread *threadForId(int) { return QThread::currentThread(); }
     static void createEventDispatcher(QThreadData *data);
@@ -317,7 +317,11 @@ public:
     void init();
 
 private:
+#ifndef QT_NO_THREAD
     void run() override;
+#else
+    void run();
+#endif
 };
 
 QT_END_NAMESPACE

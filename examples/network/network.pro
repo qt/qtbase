@@ -19,7 +19,7 @@ qtHaveModule(widgets) {
                 multicastreceiver \
                 multicastsender
 
-    qtConfig(bearermanagement) {
+    !emscripten:qtConfig(bearermanagement) {
         qtConfig(processenvironment): SUBDIRS += network-chat
 
         SUBDIRS += \
@@ -29,8 +29,9 @@ qtHaveModule(widgets) {
 
     }
 
-    qtConfig(openssl): SUBDIRS += securesocketclient
-    qtConfig(sctp): SUBDIRS += multistreamserver multistreamclient
+    !emscripten:qtConfig(openssl): SUBDIRS += securesocketclient
+    !emscripten:qtConfig(openssl-linked): SUBDIRS += securesocketclient
+    !emscripten:qtConfig(sctp): SUBDIRS += multistreamserver multistreamclient
 }
 
 EXAMPLE_FILES = shared

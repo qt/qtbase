@@ -54,6 +54,7 @@ enum {
     MaxProgressEmitsPerSecond = 25
 };
 
+#ifndef QT_NO_THREAD
 namespace {
 class ThreadPoolThreadReleaser {
     QThreadPool *m_pool;
@@ -65,7 +66,7 @@ public:
     { if (m_pool) m_pool->reserveThread(); }
 };
 } // unnamed namespace
-
+#endif
 
 QFutureInterfaceBase::QFutureInterfaceBase(State initialState)
     : d(new QFutureInterfaceBasePrivate(initialState))
@@ -211,8 +212,9 @@ void QFutureInterfaceBase::waitForResume()
         return;
 
     // decrease active thread count since this thread will wait.
+#ifndef QT_NO_THREAD
     const ThreadPoolThreadReleaser releaser(d->pool());
-
+#endif
     d->pausedWaitCondition.wait(&d->m_mutex);
 }
 
@@ -320,8 +322,9 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 
     // To avoid deadlocks and reduce the number of threads used, try to
     // run the runnable in the current thread.
+#ifndef QT_NO_THREAD
     d->pool()->d_func()->stealAndRunRunnable(d->runnable);
-
+#endif
     lock.relock();
 
     const int waitIndex = (resultIndex == -1) ? INT_MAX : resultIndex;
@@ -338,8 +341,9 @@ void QFutureInterfaceBase::waitForFinished()
     lock.unlock();
 
     if (!alreadyFinished) {
+#ifndef QT_NO_THREAD
         d->pool()->d_func()->stealAndRunRunnable(d->runnable);
-
+#endif
         lock.relock();
 
         while (isRunning())
@@ -380,10 +384,12 @@ void QFutureInterfaceBase::setRunnable(QRunnable *runnable)
     d->runnable = runnable;
 }
 
+#ifndef QT_NO_THREAD
 void QFutureInterfaceBase::setThreadPool(QThreadPool *pool)
 {
     d->m_pool = pool;
 }
+#endif
 
 void QFutureInterfaceBase::setFilterMode(bool enable)
 {
@@ -465,7 +471,10 @@ bool QFutureInterfaceBase::derefT() const
 QFutureInterfaceBasePrivate::QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState)
     : refCount(1), m_progressValue(0), m_progressMinimum(0), m_progressMaximum(0),
       state(initialState),
-      manualProgress(false), m_expectedResultCount(0), runnable(0), m_pool(0)
+      manualProgress(false), m_expectedResultCount(0), runnable(0)
+#ifndef QT_NO_THREAD
+, m_pool(0)
+#endif
 {
     progressTime.invalidate();
 }

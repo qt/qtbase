@@ -69,12 +69,14 @@ QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
 void QNetworkConfigurationManagerPrivate::initialize()
 {
     //Two stage construction, because we only want to do this heavyweight work for the winner of the Q_GLOBAL_STATIC race.
+#ifndef QT_NO_THREAD
     bearerThread = new QDaemonThread();
     bearerThread->setObjectName(QStringLiteral("Qt bearer thread"));
 
     bearerThread->moveToThread(QCoreApplicationPrivate::mainThread()); // because cleanup() is called in main thread context.
     moveToThread(bearerThread);
     bearerThread->start();
+#endif
     updateConfigurations();
 }
 
@@ -84,15 +86,19 @@ QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
 
     qDeleteAll(sessionEngines);
     sessionEngines.clear();
+#ifndef QT_NO_THREAD
     if (bearerThread)
         bearerThread->quit();
+#endif
 }
 
 void QNetworkConfigurationManagerPrivate::cleanup()
 {
     QThread* thread = bearerThread;
     deleteLater();
+#ifndef QT_NO_THREAD
     if (thread->wait(5000))
+#endif
         delete thread;
 }
 

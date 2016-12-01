@@ -243,15 +243,17 @@ protected:
     QQueue<QHostInfoRunnable*> scheduledLookups; // not yet started
     QList<QHostInfoRunnable*> finishedLookups; // recently finished
     QList<int> abortedLookups; // ids of aborted lookups
-
+#ifndef QT_NO_THREAD
     QThreadPool threadPool;
-
+#endif
     QMutex mutex;
 
     bool wasDeleted;
 
 private slots:
+#ifndef QT_NO_THREAD
     void waitForThreadPoolDone() { threadPool.waitForDone(); }
+#endif
 };
 
 QT_END_NAMESPACE

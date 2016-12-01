@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 QT_FOR_CONFIG += gui-private network-private
 
-qtConfig(evdev) {
+qtConfig(thread): qtConfig(evdev) {
     SUBDIRS += evdevmouse evdevtouch evdevkeyboard
     qtConfig(tabletevent): \
         SUBDIRS += evdevtablet
@@ -11,7 +11,7 @@ qtConfig(tslib) {
     SUBDIRS += tslib
 }
 
-qtConfig(udpsocket) {
+!emscripten:qtConfig(udpsocket) {
     SUBDIRS += tuiotouch
 }
 

@@ -2,5 +2,7 @@ TEMPLATE    = subdirs
 SUBDIRS     = draggableicons \
               draggabletext \
               dropsite \
-              fridgemagnets \
+              fridgemagnets
+
+!emscripten: SUBDIRS += \
               puzzle

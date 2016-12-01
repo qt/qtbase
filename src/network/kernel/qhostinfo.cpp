@@ -727,9 +727,11 @@ void QHostInfoRunnable::run()
 
 QHostInfoLookupManager::QHostInfoLookupManager() : mutex(QMutex::Recursive), wasDeleted(false)
 {
+#ifndef QT_NO_THREAD
     moveToThread(QCoreApplicationPrivate::mainThread());
     connect(QCoreApplication::instance(), SIGNAL(destroyed()), SLOT(waitForThreadPoolDone()), Qt::DirectConnection);
     threadPool.setMaxThreadCount(20); // do up to 20 DNS lookups in parallel
+#endif
 }
 
 QHostInfoLookupManager::~QHostInfoLookupManager()
@@ -752,7 +754,9 @@ void QHostInfoLookupManager::clear()
         finishedLookups.clear();
     }
 
+#ifndef QT_NO_THREAD
     threadPool.waitForDone();
+#endif
     cache.clear();
 }
 
@@ -795,7 +799,7 @@ void QHostInfoLookupManager::work()
                                        scheduledLookups.begin(),
                                        isAlreadyRunning).second,
                            scheduledLookups.end());
-
+#ifndef QT_NO_THREAD
     const int availableThreads = threadPool.maxThreadCount() - currentLookups.size();
     if (availableThreads > 0) {
         int readyToStartCount = qMin(availableThreads, scheduledLookups.size());
@@ -808,6 +812,22 @@ void QHostInfoLookupManager::work()
         }
         scheduledLookups.erase(scheduledLookups.begin(), it);
     }
+#else //QT_NO_THREAD
+    qDebug() << Q_FUNC_INFO << scheduledLookups.size()
+             << postponedLookups.size();
+
+    //    int readyToStartCount = 1;// scheduledLookups.size();
+    auto it = scheduledLookups.begin();
+    //    while (readyToStartCount--) {
+    qDebug() << Q_FUNC_INFO << "runnable now running in new thread, track this in currentLookups";
+    //   threadPool.start(*it);
+    (*it)->run();
+#warning FIX ME
+    //      currentLookups.push_back(std::move(*it));
+    //    ++it;
+    //  }
+    scheduledLookups.erase(scheduledLookups.begin(), it);
+#endif
 }
 
 // called by QHostInfo

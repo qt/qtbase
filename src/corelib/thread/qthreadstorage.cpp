@@ -39,7 +39,7 @@
 
 #include "qthreadstorage.h"
 
-#ifndef QT_NO_THREAD
+//#ifndef QT_NO_THREAD
 #include "qthread.h"
 #include "qthread_p.h"
 #include "qmutex.h"
@@ -323,6 +323,6 @@ void QThreadStorageData::finish(void **p)
     \sa localData(), hasLocalData()
 */
 
-#endif // QT_NO_THREAD
+//#endif // QT_NO_THREAD
 
 QT_END_NAMESPACE

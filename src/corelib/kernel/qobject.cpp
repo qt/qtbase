@@ -487,6 +487,8 @@ QMetaCallEvent::~QMetaCallEvent()
 #ifndef QT_NO_THREAD
     if (semaphore_)
         semaphore_->release();
+#else
+    Q_UNUSED(semaphore_)
 #endif
     if (slotObj_)
         slotObj_->destroyIfLastRef();
@@ -1452,7 +1454,10 @@ QThread *QObject::thread() const
 void QObject::moveToThread(QThread *targetThread)
 {
     Q_D(QObject);
-
+#ifdef QT_NO_THREAD
+    Q_UNUSED(targetThread)
+    return;
+#endif
     if (d->threadData->thread == targetThread) {
         // object is already in this thread
         return;

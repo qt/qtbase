@@ -383,7 +383,11 @@ void QFutureWatcherBase::disconnectNotify(const QMetaMethod &signal)
     \internal
 */
 QFutureWatcherBasePrivate::QFutureWatcherBasePrivate()
+#ifndef QT_NO_THREAD
     : maximumPendingResultsReady(QThread::idealThreadCount() * 2),
+#else
+    : maximumPendingResultsReady(2),
+#endif
       resultAtConnected(0),
       finished(true) /* the initial m_future is a canceledResult(), with Finished set */
 { }

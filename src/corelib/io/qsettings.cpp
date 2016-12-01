@@ -77,6 +77,10 @@
 #  include <ioLib.h>
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #include <algorithm>
 #include <stdlib.h>
 
@@ -1544,6 +1548,17 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
                     perms |= QFile::ReadGroup | QFile::ReadOther;
                 QFile(confFile->name).setPermissions(perms);
             }
+#ifdef __EMSCRIPTEN__
+    EM_ASM(
+          Module.print("Start QSettings Emscripten current data to persistent Indexed Db");
+          FS.syncfs(false, function(err) {
+// FIXME returns ENOENT, although still works
+//                   if (err)
+//                       Module.print(err);
+                   Module.print("End QSettings persistent sync..");
+              });
+    );
+#endif
         } else {
             setStatus(QSettings::AccessError);
         }

@@ -92,6 +92,7 @@
             "mips_dspr2": "boolean",
             "mp": { "type": "boolean", "name": "msvc_mp" },
             "nomake": { "type": "addString", "values": [ "examples", "tests", "tools" ] },
+            "thread": "boolean",
             "opensource": { "type": "void", "name": "commercial", "value": "no" },
             "optimize-debug": { "type": "boolean", "name": "optimize_debug" },
             "optimize-size": { "type": "boolean", "name": "optimize_size" },
@@ -158,7 +159,8 @@
             },
             "sources": [
                 { "libs": "-lzdll", "condition": "config.msvc" },
-                { "libs": "-lz", "condition": "!config.msvc" }
+                { "libs": "-lz", "condition": "!config.msvc && !config.emscripten" },
+                { "libs": "-s USE_ZLIB=1", "condition": "config.emscripten" }
             ]
         },
         "dbus": {
@@ -699,7 +701,7 @@
         },
         "use_gold_linker": {
             "label": "Using gold linker",
-            "condition": "!config.win32 && !config.integrity && tests.use_gold_linker",
+            "condition": "!config.msvc && !config.integrity && !config.emscripten && tests.use_gold_linker",
             "output": [ "privateConfig", "useGoldLinker" ]
         },
         "optimize_debug": {
@@ -738,6 +740,15 @@
                 { "type": "define", "name": "QT_BUILD_INTERNAL" },
                 { "type": "privateFeature", "name": "private_tests" },
                 { "type": "publicQtConfig", "name": "private_tests" }
+            ]
+        },
+        "thread": {
+            "label": "Using threads",
+            "condition": "!config.emscripten",
+            "output": [
+                { "type": "define", "name": "QT_NO_THREAD", "negative": true },
+                { "type": "publicFeature", "name": "thread", "negative": true },
+                { "type": "publicQtConfig", "name": "thread", "negative": true }
             ]
         },
         "debug": {
@@ -808,7 +819,7 @@
         },
         "headersclean": {
             "label": "Check for clean headers",
-            "autoDetect": "features.developer-build",
+            "autoDetect": "features.developer-build && !config.emscripten",
             "output": [ "privateConfig" ]
         },
         "framework": {
@@ -1163,18 +1174,19 @@
         },
         "system-zlib": {
             "label": "Using system zlib",
-            "condition": "libs.zlib",
+            "condition": "libs.zlib && config.emscripten",
             "output": [ "privateFeature" ]
         },
         "concurrent": {
             "label": "Qt Concurrent",
             "purpose": "Provides a high-level multi-threading API.",
             "section": "Kernel",
+            "condition": "features.thread",
             "output": [ "publicFeature", "feature" ]
         },
         "dbus": {
             "label": "Qt D-Bus",
-            "autoDetect": "!config.uikit && !config.android && !config.winrt",
+            "autoDetect": "!config.uikit && !config.android && !config.winrt && !config.emscripten",
             "output": [ "privateFeature", "feature" ]
         },
         "dbus-linked": {
@@ -1456,7 +1468,8 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 "pkg-config",
                 "qml-debug",
                 "libudev",
-                "system-zlib"
+                "system-zlib",
+                "thread"
             ]
         }
     ]

@@ -1,5 +1,7 @@
 TEMPLATE      = subdirs
 SUBDIRS       = \
+
+!emscripten: SUBDIRS += \
                 factorial \
                 pingpong
 

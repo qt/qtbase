@@ -171,11 +171,12 @@ public:
     QtPrivate::ExceptionStore m_exceptionStore;
     QString m_progressText;
     QRunnable *runnable;
+#ifndef QT_NO_THREAD
     QThreadPool *m_pool;
 
     inline QThreadPool *pool() const
     { return m_pool ? m_pool : QThreadPool::globalInstance(); }
-
+#endif
     // Internal functions that does not change the mutex state.
     // The mutex must be locked when calling these.
     int internal_resultCount() const;

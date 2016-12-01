@@ -42,8 +42,9 @@
 
 #include <QtCore/qobject.h>
 
+#ifndef __EMSCRIPTEN__
 QT_REQUIRE_CONFIG(library);
-
+#endif
 QT_BEGIN_NAMESPACE
 
 class QLibraryPrivate;
