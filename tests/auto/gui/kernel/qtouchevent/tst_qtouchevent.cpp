@@ -227,7 +227,7 @@ void tst_QTouchEvent::cleanup()
 
 void tst_QTouchEvent::qPointerUniqueId()
 {
-    QPointerUniqueId id1, id2;
+    QPointingDeviceUniqueId id1, id2;
 
     QCOMPARE(id1.numericId(), Q_INT64_C(-1));
     QVERIFY(!id1.isValid());
@@ -235,13 +235,13 @@ void tst_QTouchEvent::qPointerUniqueId()
     QVERIFY(  id1 == id2);
     QVERIFY(!(id1 != id2));
 
-    QSet<QPointerUniqueId> set; // compile test
+    QSet<QPointingDeviceUniqueId> set; // compile test
     set.insert(id1);
     set.insert(id2);
     QCOMPARE(set.size(), 1);
 
 
-    const auto id3 = QPointerUniqueId::fromNumericId(-1);
+    const auto id3 = QPointingDeviceUniqueId::fromNumericId(-1);
     QCOMPARE(id3.numericId(), Q_INT64_C(-1));
     QVERIFY(!id3.isValid());
 
@@ -252,7 +252,7 @@ void tst_QTouchEvent::qPointerUniqueId()
     QCOMPARE(set.size(), 1);
 
 
-    const auto id4 = QPointerUniqueId::fromNumericId(4);
+    const auto id4 = QPointingDeviceUniqueId::fromNumericId(4);
     QCOMPARE(id4.numericId(), Q_INT64_C(4));
     QVERIFY(id4.isValid());
 

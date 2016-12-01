@@ -4475,14 +4475,14 @@ int QTouchEvent::TouchPoint::id() const
     \since 5.8
     Returns the unique ID of this touch point or token, if any.
 
-    It is normally invalid (see \l {QPointerUniqueId::isValid()} {isValid()}),
+    It is normally invalid (see \l {QPointingDeviceUniqueId::isValid()} {isValid()}),
     because touchscreens cannot uniquely identify fingers. But when the
     \l {TouchPoint::InfoFlag} {Token} flag is set, it is expected to uniquely
     identify a specific token (fiducial object).
 
     \sa flags
 */
-QPointerUniqueId QTouchEvent::TouchPoint::uniqueId() const
+QPointingDeviceUniqueId QTouchEvent::TouchPoint::uniqueId() const
 {
     return d->uniqueId;
 }
@@ -4758,7 +4758,7 @@ void QTouchEvent::TouchPoint::setUniqueId(qint64 uid)
 {
     if (d->ref.load() != 1)
         d = d->detach();
-    d->uniqueId = QPointerUniqueId::fromNumericId(uid);
+    d->uniqueId = QPointingDeviceUniqueId::fromNumericId(uid);
 }
 
 /*! \internal */
@@ -5177,15 +5177,15 @@ Qt::ApplicationState QApplicationStateChangeEvent::applicationState() const
 }
 
 /*!
-    \class QPointerUniqueId
+    \class QPointingDeviceUniqueId
     \since 5.8
     \ingroup events
     \inmodule QtGui
 
-    \brief QPointerUniqueId identifies a unique object, such as a tagged token
+    \brief QPointingDeviceUniqueId identifies a unique object, such as a tagged token
     or stylus, which is used with a pointing device.
 
-    QPointerUniqueIds can be compared for equality, and can be used as keys in a QHash.
+    QPointingDeviceUniqueIds can be compared for equality, and can be used as keys in a QHash.
     You get access to the numerical ID via numericId(), if the device supports such IDs.
     For future extensions, though, you should not use that function, but compare objects
     of this type using the equality operator.
@@ -5201,29 +5201,29 @@ Qt::ApplicationState QApplicationStateChangeEvent::applicationState() const
 */
 
 /*!
-    \fn QPointerUniqueId::QPointerUniqueId()
+    \fn QPointingDeviceUniqueId::QPointingDeviceUniqueId()
     Constructs an invalid unique pointer ID.
 */
 
 /*!
     Constructs a unique pointer ID from numeric ID \a id.
 */
-QPointerUniqueId QPointerUniqueId::fromNumericId(qint64 id)
+QPointingDeviceUniqueId QPointingDeviceUniqueId::fromNumericId(qint64 id)
 {
-    QPointerUniqueId result;
+    QPointingDeviceUniqueId result;
     result.m_numericId = id;
     return result;
 }
 
 /*!
-    \fn bool QPointerUniqueId::isValid()
+    \fn bool QPointingDeviceUniqueId::isValid()
 
     Returns whether this unique pointer ID is valid, that is, it represents an actual
     pointer.
 */
 
 /*!
-    \property QPointerUniqueId::numericId
+    \property QPointingDeviceUniqueId::numericId
     \brief the numeric unique ID of the token represented by a touchpoint
 
     If the device provides a numeric ID, isValid() returns true, and this
@@ -5235,26 +5235,26 @@ QPointerUniqueId QPointerUniqueId::fromNumericId(qint64 id)
 
     \sa isValid()
 */
-qint64 QPointerUniqueId::numericId() const Q_DECL_NOTHROW
+qint64 QPointingDeviceUniqueId::numericId() const Q_DECL_NOTHROW
 {
     return m_numericId;
 }
 
 /*!
-    \relates QPointerUniqueId
+    \relates QPointingDeviceUniqueId
     \since 5.8
 
     Returns whether the two unique pointer IDs \a lhs and \a rhs identify the same pointer
     (\c true) or not (\c false).
 */
-bool operator==(QPointerUniqueId lhs, QPointerUniqueId rhs) Q_DECL_NOTHROW
+bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) Q_DECL_NOTHROW
 {
     return lhs.numericId() == rhs.numericId();
 }
 
 /*!
-    \fn bool operator!=(QPointerUniqueId lhs, QPointerUniqueId rhs)
-    \relates QPointerUniqueId
+    \fn bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs)
+    \relates QPointingDeviceUniqueId
     \since 5.8
 
     Returns whether the two unique pointer IDs \a lhs and \a rhs identify different pointers
@@ -5262,12 +5262,12 @@ bool operator==(QPointerUniqueId lhs, QPointerUniqueId rhs) Q_DECL_NOTHROW
 */
 
 /*!
-    \relates QPointerUniqueId
+    \relates QPointingDeviceUniqueId
     \since 5.8
 
     Returns the hash value for \a key, using \a seed to seed the calculation.
 */
-uint qHash(QPointerUniqueId key, uint seed) Q_DECL_NOTHROW
+uint qHash(QPointingDeviceUniqueId key, uint seed) Q_DECL_NOTHROW
 {
     return qHash(key.numericId(), seed);
 }
