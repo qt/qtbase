@@ -66,7 +66,7 @@
 #include <float.h>
 #endif
 
-#if !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || defined(Q_CC_INTEL) || !defined(__cplusplus))
+#if !defined(Q_CC_MSVC) && (defined(Q_OS_QNX) || defined(Q_CC_INTEL))
 #  include <math.h>
 #  ifdef isnan
 #    define QT_MATH_H_DEFINES_MACROS
@@ -92,14 +92,7 @@ QT_END_NAMESPACE
 QT_BEGIN_NAMESPACE
 
 namespace qnumeric_std_wrapper {
-#if defined(Q_CC_MSVC) && _MSC_VER < 1800
-static inline bool isnan(double d) { return !!_isnan(d); }
-static inline bool isinf(double d) { return !_finite(d) && !_isnan(d); }
-static inline bool isfinite(double d) { return !!_finite(d); }
-static inline bool isnan(float f) { return !!_isnan(f); }
-static inline bool isinf(float f) { return !_finite(f) && !_isnan(f); }
-static inline bool isfinite(float f) { return !!_finite(f); }
-#elif defined(QT_MATH_H_DEFINES_MACROS)
+#if defined(QT_MATH_H_DEFINES_MACROS)
 #  undef QT_MATH_H_DEFINES_MACROS
 static inline bool isnan(double d) { return math_h_isnan(d); }
 static inline bool isinf(double d) { return math_h_isinf(d); }
