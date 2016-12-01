@@ -4840,6 +4840,18 @@ void tst_QPainter::blendARGBonRGB_data()
                                              << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 127;
     QTest::newRow("ARGB_PM source-in RGBx8888") << QImage::Format_RGBX8888 << QImage::Format_ARGB32_Premultiplied
                                                 << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB over RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32
+                                        << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM over RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32_Premultiplied
+                                           << QPainter::CompositionMode_SourceOver << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB source RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32
+                                          << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 255;
+    QTest::newRow("ARGB_PM source RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32_Premultiplied
+                                             << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 255;
+    QTest::newRow("ARGB source-in RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32
+                                             << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 255;
+    QTest::newRow("ARGB_PM source-in RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32_Premultiplied
+                                                << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 255;
     QTest::newRow("ARGB over RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32
                                      << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 123;
     QTest::newRow("ARGB_PM over RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32_Premultiplied
@@ -4902,7 +4914,7 @@ void tst_QPainter::blendARGBonRGB()
     painter.drawImage(0, 0, imageArgb);
     painter.end();
 
-    QCOMPARE(qRed(imageRgb.pixel(0,0)), expected_red);
+    QCOMPARE(imageRgb.pixelColor(0,0).red(), expected_red);
 }
 
 enum CosmeticStrokerPaint

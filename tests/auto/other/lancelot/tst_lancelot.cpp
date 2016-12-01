@@ -69,6 +69,8 @@ private slots:
     void testRasterARGB32PM();
     void testRasterRGB32_data();
     void testRasterRGB32();
+    void testRasterARGB32_data();
+    void testRasterARGB32();
     void testRasterRGB16_data();
     void testRasterRGB16();
     void testRasterA2RGB30PM_data();
@@ -131,6 +133,17 @@ void tst_Lancelot::testRasterARGB32PM_data()
 void tst_Lancelot::testRasterARGB32PM()
 {
     runTestSuite(Raster, QImage::Format_ARGB32_Premultiplied);
+}
+
+
+void tst_Lancelot::testRasterARGB32_data()
+{
+    setupTestSuite();
+}
+
+void tst_Lancelot::testRasterARGB32()
+{
+    runTestSuite(Raster, QImage::Format_ARGB32);
 }
 
 
