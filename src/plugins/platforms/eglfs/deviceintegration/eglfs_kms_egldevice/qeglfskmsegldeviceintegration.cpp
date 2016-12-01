@@ -129,16 +129,32 @@ void QEglJetsonTK1Window::resetSurface()
     qCDebug(qLcEglfsKmsDebug, "Creating stream");
 
     EGLDisplay display = screen()->display();
-    EGLOutputLayerEXT layer = EGL_NO_OUTPUT_LAYER_EXT;
-    EGLint count;
+    EGLint streamAttribs[3];
+    int streamAttribCount = 0;
+    int fifoLength = qEnvironmentVariableIntValue("QT_QPA_EGLFS_STREAM_FIFO_LENGTH");
+    if (fifoLength > 0) {
+        streamAttribs[streamAttribCount++] = EGL_STREAM_FIFO_LENGTH_KHR;
+        streamAttribs[streamAttribCount++] = fifoLength;
+    }
+    streamAttribs[streamAttribCount++] = EGL_NONE;
 
-    m_egl_stream = m_integration->m_funcs->create_stream(display, Q_NULLPTR);
+    m_egl_stream = m_integration->m_funcs->create_stream(display, streamAttribs);
     if (m_egl_stream == EGL_NO_STREAM_KHR) {
         qWarning("resetSurface: Couldn't create EGLStream for native window");
         return;
     }
 
     qCDebug(qLcEglfsKmsDebug, "Created stream %p on display %p", m_egl_stream, display);
+
+    EGLint count;
+    if (m_integration->m_funcs->query_stream(display, m_egl_stream, EGL_STREAM_FIFO_LENGTH_KHR, &count)) {
+        if (count > 0)
+            qCDebug(qLcEglfsKmsDebug, "Using EGLStream FIFO mode with %d frames", count);
+        else
+            qCDebug(qLcEglfsKmsDebug, "Using EGLStream mailbox mode");
+    } else {
+        qCDebug(qLcEglfsKmsDebug, "Could not query number of EGLStream FIFO frames");
+    }
 
     if (!m_integration->m_funcs->get_output_layers(display, Q_NULLPTR, Q_NULLPTR, 0, &count) || count == 0) {
         qWarning("No output layers found");
@@ -159,6 +175,7 @@ void QEglJetsonTK1Window::resetSurface()
     Q_ASSERT(cur_screen);
     qCDebug(qLcEglfsKmsDebug, "Searching for id: %d", cur_screen->output().crtc_id);
 
+    EGLOutputLayerEXT layer = EGL_NO_OUTPUT_LAYER_EXT;
     for (int i = 0; i < actualCount; ++i) {
         EGLAttrib id;
         if (m_integration->m_funcs->query_output_layer_attrib(display, layers[i], EGL_DRM_CRTC_EXT, &id)) {
