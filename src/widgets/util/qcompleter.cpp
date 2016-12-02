@@ -999,7 +999,7 @@ QCompleter::QCompleter(QAbstractItemModel *model, QObject *parent)
     d->init(model);
 }
 
-#ifndef QT_NO_STRINGLISTMODEL
+#if QT_CONFIG(stringlistmodel)
 /*!
     Constructs a QCompleter object with the given \a parent that uses the specified
     \a list as a source of possible completions.
@@ -1010,7 +1010,7 @@ QCompleter::QCompleter(const QStringList& list, QObject *parent)
     Q_D(QCompleter);
     d->init(new QStringListModel(list, this));
 }
-#endif // QT_NO_STRINGLISTMODEL
+#endif // QT_CONFIG(stringlistmodel)
 
 /*!
     Destroys the completer object.
