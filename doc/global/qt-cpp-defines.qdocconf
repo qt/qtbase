@@ -20,6 +20,7 @@ defines                 += Q_QDOC \
 Cpp.ignoretokens        += \
                           ENGINIOCLIENT_EXPORT \
                           PHONON_EXPORT \
+                          Q_ALWAYS_INLINE \
                           Q_AUTOTEST_EXPORT \
                           Q_BLUETOOTH_EXPORT \
                           Q_COMPAT_EXPORT \
@@ -150,6 +151,7 @@ Cpp.ignoredirectives    += \
                           Q_ENUMS \
                           Q_FLAG \
                           Q_FLAGS \
+                          QT_HAS_INCLUDE \
                           Q_INTERFACES \
                           Q_PRIVATE_PROPERTY \
                           QT_FORWARD_DECLARE_CLASS \
