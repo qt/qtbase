@@ -92,7 +92,7 @@ public:
     const QHash<QPlatformTheme::Font, QFont *> &themeFonts() const;
 
 private:
-    void populateFromDescriptor(CTFontDescriptorRef font);
+    void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString());
 
 #ifndef QT_NO_FREETYPE
     bool m_useFreeType;

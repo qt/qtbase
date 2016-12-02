@@ -130,7 +130,6 @@ void tst_QFont::italicOblique()
 
         QString family = *f_it;
         QStringList styles = fdb.styles(family);
-        QVERIFY(!styles.isEmpty());
         QStringList::ConstIterator s_it, s_end = styles.end();
         for (s_it = styles.begin(); s_it != s_end; ++s_it) {
             QString style = *s_it;
