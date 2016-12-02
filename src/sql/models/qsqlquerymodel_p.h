@@ -60,6 +60,8 @@
 #include "QtCore/qvarlengtharray.h"
 #include "QtCore/qvector.h"
 
+QT_REQUIRE_CONFIG(sqlmodel);
+
 QT_BEGIN_NAMESPACE
 
 class QSqlQueryModelPrivate: public QAbstractItemModelPrivate

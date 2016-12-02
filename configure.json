@@ -11,6 +11,7 @@
         "src/corelib",
         "src/network",
         "src/gui",
+        "src/sql",
         "src/xml",
         "src/widgets",
         "src/printsupport",

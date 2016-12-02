@@ -53,5 +53,6 @@
 
 #include <QtSql/qtsqlglobal.h>
 #include <QtCore/private/qglobal_p.h>
+#include <QtSql/private/qtsql-config_p.h>
 
 #endif // QTSQLGLOBAL_P_H

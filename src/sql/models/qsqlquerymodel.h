@@ -44,8 +44,9 @@
 #include <QtCore/qabstractitemmodel.h>
 #include <QtSql/qsqldatabase.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(sqlmodel);
 
+QT_BEGIN_NAMESPACE
 
 class QSqlQueryModelPrivate;
 class QSqlError;

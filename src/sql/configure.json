@@ -1,0 +1,22 @@
+{
+    "module": "sql",
+    "depends": [
+        "core"
+    ],
+
+    "features": {
+        "sqlmodel": {
+            "label": "SQL item models",
+            "purpose": "Provides item model classes backed by SQL databases.",
+            "condition": "features.itemmodel",
+            "output": [ "publicFeature" ]
+        }
+    },
+
+    "summary": [
+        {
+            "section": "Qt Sql",
+            "entries": [ "sqlmodel" ]
+        }
+    ]
+}

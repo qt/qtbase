@@ -42,6 +42,8 @@
 
 #include <QtSql/qtsqlglobal.h>
 
+QT_REQUIRE_CONFIG(sqlmodel);
+
 #ifdef QT_WIDGETS_LIB
 
 #include <QtWidgets/qitemdelegate.h>

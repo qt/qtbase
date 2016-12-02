@@ -41,6 +41,7 @@
 #define QTSQLGLOBAL_H
 
 #include <QtCore/qglobal.h>
+#include <QtSql/qtsql-config.h>
 
 QT_BEGIN_NAMESPACE
 

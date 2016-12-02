@@ -229,7 +229,7 @@ Oracle driver, as the current build will most likely fail."
 
     "summary": [
         {
-            "section": "Qt Sql",
+            "section": "Qt Sql Drivers",
             "entries": [
                 "sql-db2", "sql-ibase", "sql-mysql", "sql-oci", "sql-odbc", "sql-psql",
                 "sql-sqlite2", "sql-sqlite", "system-sqlite", "sql-tds"
