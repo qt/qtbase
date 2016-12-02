@@ -66,11 +66,12 @@ class QUndoGroup;
 class QUndoCommandPrivate
 {
 public:
-    QUndoCommandPrivate() : id(-1) {}
+    QUndoCommandPrivate() : id(-1), obsolete(false) {}
     QList<QUndoCommand*> child_list;
     QString text;
     QString actionText;
     int id;
+    bool obsolete;
 };
 
 #ifndef QT_NO_UNDOSTACK

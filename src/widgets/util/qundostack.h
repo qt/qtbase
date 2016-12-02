@@ -69,6 +69,9 @@ public:
     QString actionText() const;
     void setText(const QString &text);
 
+    bool isObsolete() const;
+    void setObsolete(bool obsolete);
+
     virtual int id() const;
     virtual bool mergeWith(const QUndoCommand *other);
 

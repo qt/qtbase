@@ -95,6 +95,23 @@ public:
     virtual void redo();
 };
 
+class MoveMouseCommand : public QUndoCommand
+{
+public:
+    MoveMouseCommand(QPoint *mouse, QPoint oldPoint, QPoint newPoint, QUndoCommand *parent = 0);
+    ~MoveMouseCommand();
+
+    virtual void undo();
+    virtual void redo();
+    virtual int id() const;
+    virtual bool mergeWith(const QUndoCommand *other);
+
+private:
+    QPoint *m_mouse;
+    QPoint m_oldPoint;
+    QPoint m_newPoint;
+};
+
 InsertCommand::InsertCommand(QString *str, int idx, const QString &text,
                             QUndoCommand *parent)
     : QUndoCommand(parent)
@@ -215,6 +232,48 @@ void IdleCommand::undo()
 {
 }
 
+MoveMouseCommand::MoveMouseCommand(QPoint *mouse, QPoint oldPoint, QPoint newPoint, QUndoCommand *parent)
+    : QUndoCommand(parent)
+{
+    setText("move mouse");
+
+    m_mouse = mouse;
+    m_oldPoint = oldPoint;
+    m_newPoint = newPoint;
+
+    if (m_oldPoint == m_newPoint)
+        setObsolete(true);
+}
+
+MoveMouseCommand::~MoveMouseCommand()
+{
+}
+
+void MoveMouseCommand::redo()
+{
+    *m_mouse = m_newPoint;
+}
+
+void MoveMouseCommand::undo()
+{
+    *m_mouse = m_oldPoint;
+}
+
+int MoveMouseCommand::id() const
+{
+    return 2;
+}
+
+bool MoveMouseCommand::mergeWith(const QUndoCommand *other)
+{
+    m_newPoint = static_cast<const MoveMouseCommand*>(other)->m_newPoint;
+
+    if (m_newPoint == m_oldPoint)
+        setObsolete(true);
+
+    return true;
+}
+
 /******************************************************************************
 ** tst_QUndoStack
 */
@@ -233,6 +292,7 @@ private slots:
     void childCommand();
     void macroBeginEnd();
     void compression();
+    void obsolete();
     void undoLimit();
     void commandTextFormat();
     void separateUndoText();
@@ -2561,6 +2621,711 @@ void tst_QUndoStack::compression()
                 true,       // indexChanged
                 true,       // undoChanged
                 true);      // redoChanged
+}
+
+void tst_QUndoStack::obsolete()
+{
+    QUndoStack stack;
+    const QScopedPointer<QAction> undoAction(stack.createUndoAction(0, QString("foo")));
+    const QScopedPointer<QAction> redoAction(stack.createRedoAction(0, QString("bar")));
+    QSignalSpy indexChangedSpy(&stack, &QUndoStack::indexChanged);
+    QSignalSpy cleanChangedSpy(&stack, &QUndoStack::cleanChanged);
+    QSignalSpy canUndoChangedSpy(&stack, &QUndoStack::canUndoChanged);
+    QSignalSpy undoTextChangedSpy(&stack, &QUndoStack::undoTextChanged);
+    QSignalSpy canRedoChangedSpy(&stack, &QUndoStack::canRedoChanged);
+    QSignalSpy redoTextChangedSpy(&stack, &QUndoStack::redoTextChanged);
+    QPoint mouse(0, 0);
+    QString str;
+    MoveMouseCommand *cmd1 = 0;
+    MoveMouseCommand *cmd2 = 0;
+
+    stack.resetClean();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                0,            // count
+                0,            // index
+                false,        // canUndo
+                "",           // undoText
+                false,        // canRedo
+                "",           // redoText
+                true,        // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+
+    stack.push(new MoveMouseCommand(&mouse, mouse, QPoint(0, 0))); // #1 should not merge but will be deleted (b/c oldPoint == newPoint)
+    QCOMPARE(mouse, QPoint(0, 0));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                0,            // count
+                0,            // index
+                false,        // canUndo
+                "",           // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+
+    stack.push(new MoveMouseCommand(&mouse, mouse, QPoint(12, 0))); // #2 should not merge or be deleted (b/c oldPoint != newPoint)
+    QCOMPARE(mouse, QPoint(12, 0));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                1,            // count
+                1,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    stack.push(new MoveMouseCommand(&mouse, mouse, QPoint(8, 2))); // #3 should merge and not be deleted (b/c oldPoint != newPoint)
+    QCOMPARE(mouse, QPoint(8, 2));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                1,            // count
+                1,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    stack.push(new MoveMouseCommand(&mouse, mouse, QPoint(0, 0))); // #4 should merge and be deleted (b/c oldPoint == newPoint)
+    QCOMPARE(mouse, QPoint(0, 0));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                0,            // count
+                0,            // index
+                false,        // canUndo
+                "",           // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+
+
+
+    stack.push(new InsertCommand(&str, 0, "ene")); // #5 should not merge or be deleted
+    QCOMPARE(str, QString("ene"));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,      // clean
+                1,          // count
+                1,          // index
+                true,       // canUndo
+                "insert",   // undoText
+                false,      // canRedo
+                "",         // redoText
+                false,      // cleanChanged
+                true,       // indexChanged
+                true,       // undoChanged
+                true);      // redoChanged
+
+    cmd1 = new MoveMouseCommand(&mouse, mouse, QPoint(6, 5));
+    stack.push(cmd1); // #6 should not merge or be deleted (b/c oldPoint != newPoint)
+    QCOMPARE(mouse, QPoint(6, 5));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                2,            // count
+                2,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    stack.push(new InsertCommand(&str, 3, "ma")); // #7 should not merge or be deleted
+    QCOMPARE(str, QString("enema"));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,      // clean
+                3,          // count
+                3,          // index
+                true,       // canUndo
+                "insert",   // undoText
+                false,      // canRedo
+                "",         // redoText
+                false,      // cleanChanged
+                true,       // indexChanged
+                true,       // undoChanged
+                true);      // redoChanged
+
+    cmd2 = new MoveMouseCommand(&mouse, mouse, QPoint(12, 4));
+    stack.push(cmd2); // #8 should not merge or be deleted (b/c oldPoint != newPoint)
+    QCOMPARE(mouse, QPoint(12, 4));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                4,            // count
+                4,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    stack.setClean();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                true,         // clean
+                4,            // count
+                4,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                true,         // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+    QCOMPARE(stack.cleanIndex(), 4);
+
+    cmd2->setObsolete(true);
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                true,         // clean
+                4,            // count
+                4,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+
+    stack.undo();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                3,            // count
+                3,            // index
+                true,         // canUndo
+                "insert",     // undoText
+                false,        // canRedo
+                "",           // redoText
+                true,         // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+    QCOMPARE(stack.cleanIndex(), -1);
+
+    stack.undo();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                3,            // count
+                2,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                true,         // canRedo
+                "insert",     // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    stack.setClean();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                true,         // clean
+                3,            // count
+                2,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                true,         // canRedo
+                "insert",     // redoText
+                true,         // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+    QCOMPARE(stack.cleanIndex(), 2);
+
+    stack.undo();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                3,            // count
+                1,            // index
+                true,         // canUndo
+                "insert",     // undoText
+                true,         // canRedo
+                "move mouse", // redoText
+                true,         // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    cmd1->setObsolete(true);
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                3,            // count
+                1,            // index
+                true,         // canUndo
+                "insert",     // undoText
+                true,         // canRedo
+                "move mouse", // redoText
+                false,        // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+
+    stack.redo();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                2,            // count
+                1,            // index
+                true,         // canUndo
+                "insert",     // undoText
+                true,         // canRedo
+                "insert",     // redoText
+                false,        // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+    QCOMPARE(stack.cleanIndex(), -1);
+
+    stack.redo();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                2,            // count
+                2,            // index
+                true,         // canUndo
+                "insert",     // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+    QCOMPARE(stack.cleanIndex(), -1);
+
+    cmd1 = new MoveMouseCommand(&mouse, mouse, QPoint(13, 2));
+    stack.push(cmd1); // #9 should not merge or be deleted (b/c oldPoint != newPoint)
+    QCOMPARE(mouse, QPoint(13, 2));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                3,            // count
+                3,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    stack.push(new InsertCommand(&str, 3, "ma")); // #10 should not merge or be deleted
+    QCOMPARE(str, QString("enemama"));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,      // clean
+                4,          // count
+                4,          // index
+                true,       // canUndo
+                "insert",   // undoText
+                false,      // canRedo
+                "",         // redoText
+                false,      // cleanChanged
+                true,       // indexChanged
+                true,       // undoChanged
+                true);      // redoChanged
+
+    cmd2 = new MoveMouseCommand(&mouse, mouse, QPoint(6, 20));
+    stack.push(cmd2); // #11 should not merge or be deleted (b/c oldPoint != newPoint)
+    QCOMPARE(mouse, QPoint(6, 20));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                5,            // count
+                5,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    cmd1->setObsolete(true);
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                5,            // count
+                5,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+
+    stack.setClean();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                true,         // clean
+                5,            // count
+                5,            // index
+                true,         // canUndo
+                "move mouse", // undoText
+                false,        // canRedo
+                "",           // redoText
+                true,         // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+    QCOMPARE(stack.cleanIndex(), 5);
+
+    stack.setIndex(0);
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                4,            // count
+                0,            // index
+                false,        // canUndo
+                "",           // undoText
+                true,         // canRedo
+                "insert",     // redoText
+                true,         // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+    QCOMPARE(stack.cleanIndex(), -1);
+
+    cmd2->setObsolete(true);
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                4,            // count
+                0,            // index
+                false,        // canUndo
+                "",           // undoText
+                true,         // canRedo
+                "insert",     // redoText
+                false,        // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+
+    stack.setIndex(stack.count());
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                3,            // count
+                3,            // index
+                true,         // canUndo
+                "insert",     // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    mouse = QPoint(0, 0); // Reset mouse position
+    stack.beginMacro("ding");
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                4,            // count
+                3,            // index
+                false,        // canUndo
+                "",           // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                false,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
+
+    stack.push(new MoveMouseCommand(&mouse, mouse, QPoint(7, 7))); // #12 should not merge or be deleted (b/c oldPoint != newPoint & in macro)
+    QCOMPARE(mouse, QPoint(7, 7));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                4,            // count
+                3,            // index
+                false,        // canUndo
+                "",           // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+
+    stack.push(new MoveMouseCommand(&mouse, mouse, QPoint(0, 0))); // #13 should merge and be deleted (b/c oldPoint = newPoint)
+    QCOMPARE(mouse, QPoint(0, 0));
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                4,            // count
+                3,            // index
+                false,        // canUndo
+                "",           // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                false,        // indexChanged
+                false,        // undoChanged
+                false);       // redoChanged
+
+    stack.endMacro();
+    checkState(redoTextChangedSpy,
+                canRedoChangedSpy,
+                undoTextChangedSpy,
+                redoAction,
+                undoAction,
+                canUndoChangedSpy,
+                cleanChangedSpy,
+                indexChangedSpy,
+                stack,
+                false,        // clean
+                4,            // count
+                4,            // index
+                true,         // canUndo
+                "ding",       // undoText
+                false,        // canRedo
+                "",           // redoText
+                false,        // cleanChanged
+                true,         // indexChanged
+                true,         // undoChanged
+                true);        // redoChanged
 }
 
 void tst_QUndoStack::undoLimit()
