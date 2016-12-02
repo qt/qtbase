@@ -49,11 +49,21 @@ QT_BEGIN_NAMESPACE
     \brief Maintains a cache of accessible interfaces.
 */
 
-Q_GLOBAL_STATIC(QAccessibleCache, qAccessibleCache)
+static QAccessibleCache *accessibleCache = nullptr;
+
+static void cleanupAccessibleCache()
+{
+    delete accessibleCache;
+    accessibleCache = Q_NULLPTR;
+}
 
 QAccessibleCache *QAccessibleCache::instance()
 {
-    return qAccessibleCache;
+    if (!accessibleCache) {
+        accessibleCache = new QAccessibleCache;
+        qAddPostRoutine(cleanupAccessibleCache);
+    }
+    return accessibleCache;
 }
 
 /*
