@@ -517,7 +517,7 @@ void QFileDialog::changeEvent(QEvent *e)
 
 QFileDialogPrivate::QFileDialogPrivate()
     :
-#ifndef QT_NO_PROXYMODEL
+#if QT_CONFIG(proxymodel)
         proxyModel(0),
 #endif
         model(0),
@@ -663,7 +663,7 @@ void QFileDialogPrivate::retranslateStrings()
 
     QList<QAction*> actions = qFileDialogUi->treeView->header()->actions();
     QAbstractItemModel *abstractModel = model;
-#ifndef QT_NO_PROXYMODEL
+#if QT_CONFIG(proxymodel)
     if (proxyModel)
         abstractModel = proxyModel;
 #endif
@@ -2796,7 +2796,7 @@ bool QFileDialogPrivate::restoreWidgetState(QStringList &history, int splitterPo
 
     QList<QAction*> actions = headerView->actions();
     QAbstractItemModel *abstractModel = model;
-#ifndef QT_NO_PROXYMODEL
+#if QT_CONFIG(proxymodel)
     if (proxyModel)
         abstractModel = proxyModel;
 #endif
@@ -2965,7 +2965,7 @@ void QFileDialogPrivate::createWidgets()
                      q, SLOT(_q_showHeader(QAction*)));;
 
     QAbstractItemModel *abstractModel = model;
-#ifndef QT_NO_PROXYMODEL
+#if QT_CONFIG(proxymodel)
     if (proxyModel)
         abstractModel = proxyModel;
 #endif
@@ -3046,7 +3046,7 @@ void QFileDialogPrivate::_q_showHeader(QAction *action)
     qFileDialogUi->treeView->header()->setSectionHidden(actionGroup->actions().indexOf(action) + 1, !action->isChecked());
 }
 
-#ifndef QT_NO_PROXYMODEL
+#if QT_CONFIG(proxymodel)
 /*!
     \since 4.3
 
@@ -3124,7 +3124,7 @@ QAbstractProxyModel *QFileDialog::proxyModel() const
     Q_D(const QFileDialog);
     return d->proxyModel;
 }
-#endif // QT_NO_PROXYMODEL
+#endif // QT_CONFIG(proxymodel)
 
 /*!
     \internal

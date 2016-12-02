@@ -227,7 +227,7 @@ public:
     void _q_fileRenamed(const QString &path, const QString &oldName, const QString &newName);
 
     // layout
-#ifndef QT_NO_PROXYMODEL
+#if QT_CONFIG(proxymodel)
     QAbstractProxyModel *proxyModel;
 #endif
 
@@ -346,17 +346,17 @@ private:
 };
 
 QModelIndex QFileDialogPrivate::mapToSource(const QModelIndex &index) const {
-#ifdef QT_NO_PROXYMODEL
-    return index;
-#else
+#if QT_CONFIG(proxymodel)
     return proxyModel ? proxyModel->mapToSource(index) : index;
+#else
+    return index;
 #endif
 }
 QModelIndex QFileDialogPrivate::mapFromSource(const QModelIndex &index) const {
-#ifdef QT_NO_PROXYMODEL
-    return index;
-#else
+#if QT_CONFIG(proxymodel)
     return proxyModel ? proxyModel->mapFromSource(index) : index;
+#else
+    return index;
 #endif
 }
 

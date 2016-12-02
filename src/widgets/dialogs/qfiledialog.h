@@ -178,7 +178,7 @@ public:
     void setSupportedSchemes(const QStringList &schemes);
     QStringList supportedSchemes() const;
 
-#ifndef QT_NO_PROXYMODEL
+#if QT_CONFIG(proxymodel)
     void setProxyModel(QAbstractProxyModel *model);
     QAbstractProxyModel *proxyModel() const;
 #endif
