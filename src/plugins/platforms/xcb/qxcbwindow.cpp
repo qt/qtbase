@@ -315,6 +315,7 @@ static const char *wm_window_role_property_id = "_q_xcb_wm_window_role";
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_window(0)
+    , m_cmap(0)
     , m_syncCounter(0)
     , m_gravity(XCB_GRAVITY_STATIC)
     , m_mapped(false)
@@ -443,7 +444,6 @@ void QXcbWindow::create()
     m_visualId = visual->visual_id;
     m_depth = platformScreen->depthOfVisual(m_visualId);
     m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask, &m_imageRgbSwap);
-    xcb_colormap_t colormap = 0;
 
     quint32 mask = XCB_CW_BACK_PIXMAP
                  | XCB_CW_BORDER_PIXEL
@@ -455,10 +455,10 @@ void QXcbWindow::create()
     static const bool haveOpenGL = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL);
 
     if ((window()->supportsOpenGL() && haveOpenGL) || m_format.hasAlpha()) {
-        colormap = xcb_generate_id(xcb_connection());
+        m_cmap = xcb_generate_id(xcb_connection());
         Q_XCB_CALL(xcb_create_colormap(xcb_connection(),
                                        XCB_COLORMAP_ALLOC_NONE,
-                                       colormap,
+                                       m_cmap,
                                        xcb_parent_id,
                                        m_visualId));
 
@@ -472,7 +472,7 @@ void QXcbWindow::create()
         type == Qt::Popup || type == Qt::ToolTip || (window()->flags() & Qt::BypassWindowManagerHint),
         type == Qt::Popup || type == Qt::Tool || type == Qt::SplashScreen || type == Qt::ToolTip || type == Qt::Drawer,
         defaultEventMask,
-        colormap
+        m_cmap
     };
 
     m_window = xcb_generate_id(xcb_connection());
@@ -637,6 +637,9 @@ void QXcbWindow::destroy()
         connection()->removeWindowEventListener(m_window);
         Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
         m_window = 0;
+    }
+    if (m_cmap) {
+        xcb_free_colormap(xcb_connection(), m_cmap);
     }
     m_mapped = false;
 

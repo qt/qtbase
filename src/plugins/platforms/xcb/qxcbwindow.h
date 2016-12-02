@@ -234,6 +234,7 @@ protected:
                                 quint8 mode, quint8 detail, xcb_timestamp_t timestamp);
 
     xcb_window_t m_window;
+    xcb_colormap_t m_cmap;
 
     uint m_depth;
     QImage::Format m_imageFormat;
