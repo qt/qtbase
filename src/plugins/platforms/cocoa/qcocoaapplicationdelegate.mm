@@ -289,13 +289,17 @@ QT_END_NAMESPACE
 {
     Q_UNUSED(aNotification);
     inLaunch = false;
-    // qt_release_apple_event_handler();
 
-
-    // Insert code here to initialize your application
+    if (qEnvironmentVariableIsEmpty("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM")) {
+        if (QSysInfo::macVersion() >= QSysInfo::MV_10_12) {
+            // Move the application window to front to avoid launching behind the terminal.
+            // Ignoring other apps is necessary (we must ignore the terminal), but makes
+            // Qt apps play slightly less nice with other apps when lanching from Finder
+            // (See the activateIgnoringOtherApps docs.)
+            [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        }
+    }
 }
-
-
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames
 {
