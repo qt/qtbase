@@ -329,8 +329,31 @@ QEglFSKmsScreen *QEglFSKmsDevice::createScreenForConnector(drmModeResPtr resourc
         drmModeGetCrtc(m_dri_fd, crtc_id),
         modes,
         connector->subpixel,
-        connectorProperty(connector, QByteArrayLiteral("DPMS"))
+        connectorProperty(connector, QByteArrayLiteral("DPMS")),
+        false,
+        0,
+        false
     };
+
+    bool ok;
+    int idx = qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_PLANE_INDEX", &ok);
+    if (ok) {
+        drmModePlaneRes *planeResources = drmModeGetPlaneResources(m_dri_fd);
+        if (planeResources) {
+            if (idx >= 0 && idx < int(planeResources->count_planes)) {
+                drmModePlane *plane = drmModeGetPlane(m_dri_fd, planeResources->planes[idx]);
+                if (plane) {
+                    output.wants_plane = true;
+                    output.plane_id = plane->plane_id;
+                    qCDebug(qLcEglfsKmsDebug, "Forcing plane index %d, plane id %u (belongs to crtc id %u)",
+                            idx, plane->plane_id, plane->crtc_id);
+                    drmModeFreePlane(plane);
+                }
+            } else {
+                qWarning("Invalid plane index %d, must be between 0 and %u", idx, planeResources->count_planes - 1);
+            }
+        }
+    }
 
     m_crtc_allocator |= (1 << output.crtc_id);
     m_connector_allocator |= (1 << output.connector_id);
@@ -406,7 +429,7 @@ void QEglFSKmsDevice::createScreens()
         if (idx >= 0 && idx < resources->count_connectors)
             wantedConnectorIndex = idx;
         else
-            qWarning("Invalid connector index %d", idx);
+            qWarning("Invalid connector index %d, must be between 0 and %u", idx, resources->count_connectors - 1);
     }
 
     for (int i = 0; i < resources->count_connectors; i++) {

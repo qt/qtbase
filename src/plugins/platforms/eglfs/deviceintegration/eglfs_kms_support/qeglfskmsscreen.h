@@ -67,6 +67,9 @@ struct QEglFSKmsOutput
     QList<drmModeModeInfo> modes;
     int subpixel;
     drmModePropertyPtr dpms_prop;
+    bool wants_plane;
+    uint32_t plane_id;
+    bool plane_set;
 };
 
 class Q_EGLFS_EXPORT QEglFSKmsScreen : public QEglFSScreen
