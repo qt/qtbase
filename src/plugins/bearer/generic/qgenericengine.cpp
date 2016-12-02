@@ -37,6 +37,9 @@
 **
 ****************************************************************************/
 
+// see comment in ../platformdefs_win.h.
+#define WIN32_LEAN_AND_MEAN 1
+
 #include "qgenericengine.h"
 #include "../qnetworksession_impl.h"
 
