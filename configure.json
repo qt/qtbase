@@ -57,6 +57,7 @@
 
             "accessibility": "boolean",
             "android-style-assets": "boolean",
+            "appstore-compliant": "boolean",
             "avx": "boolean",
             "avx2": "boolean",
             "avx512": { "type": "boolean", "name": "avx512f" },
@@ -525,6 +526,12 @@
             "label": "Compile tools in release mode",
             "autoDetect": "features.debug",
             "output": [ "privateFeature", "publicQtConfig" ]
+        },
+        "appstore-compliant": {
+            "label": "App store compliance",
+            "purpose": "Disables code that is not allowed in platform app stores",
+            "autoDetect": "config.uikit || config.android || config.winrt",
+            "output": [ "publicFeature" ]
         },
         "simulator_and_device": {
             "label": "Build for both simulator and device",
@@ -1102,6 +1109,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 {
                     "message": "Build parts",
                     "type": "buildParts"
+                },
+                {
+                    "type": "feature",
+                    "args": "appstore-compliant",
+                    "condition": "config.darwin || config.android || config.winrt || config.win32"
                 }
             ]
         }, {
