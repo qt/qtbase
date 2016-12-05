@@ -331,11 +331,12 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
 
 void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
 {
-    item->nsItem().target = m_nativeMenu.delegate;
-    item->nsItem().action = @selector(itemFired:);
+    NSMenuItem *nativeItem = item->nsItem();
+    nativeItem.target = m_nativeMenu.delegate;
+    nativeItem.action = @selector(itemFired:);
     // Someone's adding new items after aboutToShow() was emitted
-    if (isOpen() && item->menu() && item->nsItem())
-        item->menu()->setAttachedItem(item->nsItem());
+    if (isOpen() && nativeItem)
+        item->menu()->setAttachedItem(nativeItem);
 
     item->setParentEnabled(isEnabled());
 
@@ -348,15 +349,20 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
         beforeItem = itemOrNull(m_menuItems.indexOf(beforeItem) + 1);
     }
 
+    if (nativeItem.menu) {
+        qWarning() << "Menu item" << item->text() << "already in menu" << QString::fromNSString(nativeItem.menu.title);
+        return;
+    }
+
     if (beforeItem) {
         if (beforeItem->isMerged()) {
             qWarning("No non-merged before menu item found");
             return;
         }
-        NSUInteger nativeIndex = [m_nativeMenu indexOfItem:beforeItem->nsItem()];
-        [m_nativeMenu insertItem: item->nsItem() atIndex: nativeIndex];
+        const NSInteger nativeIndex = [m_nativeMenu indexOfItem:beforeItem->nsItem()];
+        [m_nativeMenu insertItem:nativeItem atIndex:nativeIndex];
     } else {
-        [m_nativeMenu addItem: item->nsItem()];
+        [m_nativeMenu addItem:nativeItem];
     }
     item->setMenuParent(this);
 }
