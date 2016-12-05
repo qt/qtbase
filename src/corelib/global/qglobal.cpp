@@ -1066,10 +1066,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
        on which the application is compiled.
     \li \l ByteOrder specifies whether the platform is big-endian or
        little-endian.
-    \li \l WindowsVersion specifies the version of the Windows operating
-       system on which the application is run.
-    \li \l MacintoshVersion specifies the version of the Macintosh
-       operating system on which the application is run.
     \endlist
 
     Some constants are defined only on certain platforms. You can use
@@ -2667,8 +2663,23 @@ QString QSysInfo::productType()
     version could not be determined, this function returns "unknown".
 
     It will return the Android, iOS, \macos, Windows full-product
-    versions on those systems. In particular, on OS X, iOS and Windows, the
-    returned string is similar to the macVersion() or windowsVersion() enums.
+    versions on those systems.
+
+    Typical returned values are (note: list not exhaustive):
+    \list
+        \li "2016.09" (Amazon Linux AMI 2016.09)
+        \li "7.1" (Android Nougat)
+        \li "25" (Fedora 25)
+        \li "10.1" (iOS 10.1)
+        \li "10.12" (macOS Sierra)
+        \li "10.0" (tvOS 10)
+        \li "16.10" (Ubuntu 16.10)
+        \li "3.1" (watchOS 3.1)
+        \li "7 SP 1" (Windows 7 Service Pack 1)
+        \li "8.1" (Windows 8.1)
+        \li "10" (Windows 10)
+        \li "Server 2016" (Windows Server 2016)
+    \endlist
 
     On Linux systems, it will try to determine the distribution version and will
     return that. This is also done on Debian/kFreeBSD, so this function will
