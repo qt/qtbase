@@ -309,7 +309,7 @@ namespace QTest
     Q_TESTLIB_EXPORT void addColumnInternal(int id, const char *name);
 
     template <typename T>
-    inline void addColumn(const char *name, T * = 0)
+    inline void addColumn(const char *name, T * = nullptr)
     {
         typedef std::is_same<T, const char*> QIsSameTConstChar;
         Q_STATIC_ASSERT_X(!QIsSameTConstChar::value, "const char* is not allowed as a test data format.");
