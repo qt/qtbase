@@ -1560,11 +1560,10 @@ void tst_QMenuBar::QTBUG_57404_existingMenuItemException()
 
     QVERIFY(QTest::qWaitForWindowExposed(&mw2));
     QTest::qWait(100);
-    QTest::ignoreMessage(QtWarningMsg, "Menu item \"&Copy\" already in menu \"Edit\"");
     mw2.close();
     mw1.activateWindow();
     QTest::qWait(100);
-    // No crash, all fine.
+    // No crash, all fine. Ideally, there should be only one warning.
 }
 #endif // Q_OS_MACOS
 

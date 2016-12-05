@@ -419,9 +419,8 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
         return;
     }
 
-    bool wasMerged = cocoaItem->isMerged();
-    NSMenu *oldMenu = wasMerged ? [[QCocoaMenuLoader sharedMenuLoader] applicationMenu] : m_nativeMenu;
-    NSMenuItem *oldItem = [oldMenu itemWithTag:(NSInteger) cocoaItem];
+    const bool wasMerged = cocoaItem->isMerged();
+    NSMenuItem *oldItem = cocoaItem->nsItem();
 
     if (cocoaItem->sync() != oldItem) {
         // native item was changed for some reason
