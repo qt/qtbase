@@ -510,12 +510,19 @@ defineTest(qtConfReport_buildParts) {
     qtConfReportPadded($${1}, $$qtConfEvaluate("tests.build_parts.value"))
 }
 
+defineReplace(qtConfReportArch) {
+    arch = $$qtConfEvaluate('tests.$${1}.arch')
+    subarch = $$qtConfEvaluate('tests.$${1}.subarch')
+    isEmpty(subarch): subarch = <none>
+    return("$$arch, CPU features: $$subarch")
+}
+
 defineTest(qtConfReport_buildTypeAndConfig) {
     !$$qtConfEvaluate("features.cross_compile") {
-        qtConfAddReport("Build type: $$qtConfEvaluate('tests.architecture.arch')")
+        qtConfAddReport("Build type: $$[QMAKE_SPEC] ($$qtConfReportArch(architecture))")
     } else {
-        qtConfAddReport("Building on:  $$qtConfEvaluate('tests.host_architecture.arch')")
-        qtConfAddReport("Building for: $$qtConfEvaluate('tests.architecture.arch')")
+        qtConfAddReport("Building on: $$[QMAKE_SPEC] ($$qtConfReportArch(host_architecture))")
+        qtConfAddReport("Building for: $$[QMAKE_XSPEC] ($$qtConfReportArch(architecture))")
     }
     qtConfAddReport()
     qtConfAddReport("Configuration: $$eval($${currentConfig}.output.privatePro.append.CONFIG) $$eval($${currentConfig}.output.publicPro.append.QT_CONFIG)")
