@@ -165,7 +165,8 @@ bool QMimeTypeParserBase::parseNumber(const QStringRef &n, int *target, QString 
     bool ok;
     *target = n.toInt(&ok);
     if (Q_UNLIKELY(!ok)) {
-        *errorMessage = QLatin1String("Not a number '") + n + QLatin1String("'.");
+        if (errorMessage)
+            *errorMessage = QLatin1String("Not a number '") + n + QLatin1String("'.");
         return false;
     }
     return true;
