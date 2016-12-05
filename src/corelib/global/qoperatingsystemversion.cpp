@@ -72,18 +72,34 @@ QT_BEGIN_NAMESPACE
     \table
     \header \li Platforms       \li Value
     \row    \li Android         \li result of parsing
-                                    \l{https://developer.android.com/reference/android/os/Build.VERSION.html#RELEASE}{"android.os.Build.VERSION.RELEASE"}
+                                    \l{https://developer.android.com/reference/android/os/Build.VERSION.html#RELEASE}{android.os.Build.VERSION.RELEASE}
                                     using QVersionNumber, with a fallback to
-                                    \l{https://developer.android.com/reference/android/os/Build.VERSION.html#SDK_INT}{"android.os.Build.VERSION.SDK_INT"}
+                                    \l{https://developer.android.com/reference/android/os/Build.VERSION.html#SDK_INT}{android.os.Build.VERSION.SDK_INT}
                                     to determine the major and minor version component if the former fails
     \row    \li Apple Platforms \li majorVersion, minorVersion, and patchVersion from
-                                    \l{https://developer.apple.com/reference/foundation/nsprocessinfo/1410906-operatingsystemversion?language=objc}{"NSProcessInfo.operatingSystemVersion"}
+                                    \l{https://developer.apple.com/reference/foundation/nsprocessinfo/1410906-operatingsystemversion?language=objc}{NSProcessInfo.operatingSystemVersion}
     \row    \li Windows         \li dwMajorVersion, dwMinorVersion, and dwBuildNumber from
-                                    \l{https://msdn.microsoft.com/en-us/library/mt723418.aspx}{"RtlGetVersion"} -
+                                    \l{https://msdn.microsoft.com/en-us/library/mt723418.aspx}{RtlGetVersion} -
                                     note that this function ALWAYS return the version number of the underlying operating system,
                                     as opposed to the shim underneath GetVersionEx that hides the real version number
                                     if the application is not manifested for that version of the OS
     \endtable
+*/
+
+/*!
+    \enum QOperatingSystemVersion::OSType
+
+    This enum provides symbolic names for the various operating
+    system families supported by QOperatingSystemVersion.
+
+    \value Android      The Google Android operating system.
+    \value IOS          The Apple iOS operating system.
+    \value MacOS        The Apple macOS operating system.
+    \value TvOS         The Apple tvOS operating system.
+    \value WatchOS      The Apple watchOS operating system.
+    \value Windows      The Microsoft Windows operating system (in both Win32 and WinRT environments).
+
+    \value Unknown      An unknown or unsupported operating system.
 */
 
 /*!
