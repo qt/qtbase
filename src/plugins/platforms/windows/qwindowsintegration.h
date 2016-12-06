@@ -70,34 +70,34 @@ public:
     explicit QWindowsIntegration(const QStringList &paramList);
     virtual ~QWindowsIntegration();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
 #ifndef QT_NO_OPENGL
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
-    QOpenGLContext::OpenGLModuleType openGLModuleType() Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QOpenGLContext::OpenGLModuleType openGLModuleType() override;
     static QWindowsStaticOpenGLContext *staticOpenGLContext();
 #endif
-    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
-    void initialize() Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
+    void initialize() override;
 #ifndef QT_NO_CLIPBOARD
-    QPlatformClipboard *clipboard() const Q_DECL_OVERRIDE;
+    QPlatformClipboard *clipboard() const override;
 #  ifndef QT_NO_DRAGANDDROP
-    QPlatformDrag *drag() const Q_DECL_OVERRIDE;
+    QPlatformDrag *drag() const override;
 #  endif
 #endif // !QT_NO_CLIPBOARD
-    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
+    QPlatformInputContext *inputContext() const override;
 #ifndef QT_NO_ACCESSIBILITY
-    QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
+    QPlatformAccessibility *accessibility() const override;
 #endif
-    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
-    QStringList themeNames() const Q_DECL_OVERRIDE;
-    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
-    QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const override;
+    QStringList themeNames() const override;
+    QPlatformTheme *createPlatformTheme(const QString &name) const override;
+    QPlatformServices *services() const override;
+    QVariant styleHint(StyleHint hint) const override;
 
-    Qt::KeyboardModifiers queryKeyboardModifiers() const Q_DECL_OVERRIDE;
-    QList<int> possibleKeys(const QKeyEvent *e) const Q_DECL_OVERRIDE;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const override;
+    QList<int> possibleKeys(const QKeyEvent *e) const override;
 
     static QWindowsIntegration *instance() { return m_instance; }
 
@@ -106,10 +106,10 @@ public:
 
     unsigned options() const;
 
-    void beep() const Q_DECL_OVERRIDE;
+    void beep() const override;
 
 #if !defined(QT_NO_SESSIONMANAGER)
-    QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const Q_DECL_OVERRIDE;
+    QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const override;
 #endif
 
 protected:

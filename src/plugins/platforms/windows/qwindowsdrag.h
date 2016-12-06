@@ -54,7 +54,7 @@ class QPlatformScreen;
 class QWindowsDropMimeData : public QWindowsInternalMimeData {
 public:
     QWindowsDropMimeData() {}
-    IDataObject *retrieveDataObject() const Q_DECL_OVERRIDE;
+    IDataObject *retrieveDataObject() const override;
 };
 
 class QWindowsOleDropTarget : public IDropTarget
@@ -91,12 +91,12 @@ public:
     QWindowsDrag();
     virtual ~QWindowsDrag();
 
-    QMimeData *platformDropData() Q_DECL_OVERRIDE { return &m_dropData; }
+    QMimeData *platformDropData() override { return &m_dropData; }
 
-    Qt::DropAction drag(QDrag *drag) Q_DECL_OVERRIDE;
+    Qt::DropAction drag(QDrag *drag) override;
 
     static QWindowsDrag *instance();
-    void cancelDrag() Q_DECL_OVERRIDE { QWindowsDrag::m_canceled = true; }
+    void cancelDrag() override { QWindowsDrag::m_canceled = true; }
     static bool isCanceled() { return QWindowsDrag::m_canceled; }
 
     IDataObject *dropDataObject() const             { return m_dropDataObject; }

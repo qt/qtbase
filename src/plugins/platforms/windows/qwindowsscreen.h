@@ -80,23 +80,23 @@ public:
 
     explicit QWindowsScreen(const QWindowsScreenData &data);
 
-    QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }
-    QRect availableGeometry() const Q_DECL_OVERRIDE { return m_data.availableGeometry; }
-    int depth() const Q_DECL_OVERRIDE { return m_data.depth; }
-    QImage::Format format() const Q_DECL_OVERRIDE { return m_data.format; }
-    QSizeF physicalSize() const Q_DECL_OVERRIDE { return m_data.physicalSizeMM; }
-    QDpi logicalDpi() const Q_DECL_OVERRIDE { return m_data.dpi; }
-    qreal pixelDensity() const Q_DECL_OVERRIDE;
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE { return 1.0; }
-    qreal refreshRate() const Q_DECL_OVERRIDE { return m_data.refreshRateHz; }
-    QString name() const Q_DECL_OVERRIDE { return m_data.name; }
-    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_data.orientation; }
-    QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE;
-    QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE;
+    QRect geometry() const override { return m_data.geometry; }
+    QRect availableGeometry() const override { return m_data.availableGeometry; }
+    int depth() const override { return m_data.depth; }
+    QImage::Format format() const override { return m_data.format; }
+    QSizeF physicalSize() const override { return m_data.physicalSizeMM; }
+    QDpi logicalDpi() const override { return m_data.dpi; }
+    qreal pixelDensity() const override;
+    qreal devicePixelRatio() const override { return 1.0; }
+    qreal refreshRate() const override { return m_data.refreshRateHz; }
+    QString name() const override { return m_data.name; }
+    Qt::ScreenOrientation orientation() const override { return m_data.orientation; }
+    QList<QPlatformScreen *> virtualSiblings() const override;
+    QWindow *topLevelAt(const QPoint &point) const override;
     static QWindow *windowAt(const QPoint &point, unsigned flags);
 
-    QPixmap grabWindow(WId window, int qX, int qY, int qWidth, int qHeight) const Q_DECL_OVERRIDE;
-    QPlatformScreen::SubpixelAntialiasingType subpixelAntialiasingTypeHint() const Q_DECL_OVERRIDE;
+    QPixmap grabWindow(WId window, int qX, int qY, int qWidth, int qHeight) const override;
+    QPlatformScreen::SubpixelAntialiasingType subpixelAntialiasingTypeHint() const override;
 
     static Qt::ScreenOrientation orientationPreference();
     static bool setOrientationPreference(Qt::ScreenOrientation o);
@@ -104,7 +104,7 @@ public:
     inline void handleChanges(const QWindowsScreenData &newData);
 
 #ifndef QT_NO_CURSOR
-    QPlatformCursor *cursor() const Q_DECL_OVERRIDE { return m_cursor.data(); }
+    QPlatformCursor *cursor() const override { return m_cursor.data(); }
     const CursorPtr &cursorPtr() const { return m_cursor; }
 #else
     QPlatformCursor *cursor() const               { return 0; }

@@ -51,9 +51,9 @@ public:
     explicit QWindowsGdiIntegration(const QStringList &paramList);
     virtual ~QWindowsGdiIntegration();
 
-    QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const Q_DECL_OVERRIDE;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformNativeInterface *nativeInterface() const override;
+    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const override;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
 
 private:
     QScopedPointer<QWindowsGdiIntegrationPrivate> d;

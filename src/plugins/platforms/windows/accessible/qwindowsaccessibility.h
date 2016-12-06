@@ -53,7 +53,7 @@ class QWindowsAccessibility : public QPlatformAccessibility
 public:
     QWindowsAccessibility();
     static bool handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult);
-    void notifyAccessibilityUpdate(QAccessibleEvent *event) Q_DECL_OVERRIDE;
+    void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
     static IAccessible *wrap(QAccessibleInterface *acc);
     static QWindow *windowHelper(const QAccessibleInterface *iface);
 };

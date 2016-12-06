@@ -68,13 +68,13 @@ class QWindowsNativeInterface : public QPlatformNativeInterface
     Q_PROPERTY(QVariant gpu READ gpu STORED false)
 
 public:
-    void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
+    void *nativeResourceForIntegration(const QByteArray &resource) override;
 #ifndef QT_NO_OPENGL
-    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) Q_DECL_OVERRIDE;
+    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) override;
 #endif
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
+    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
 #ifndef QT_NO_CURSOR
-    void *nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor) Q_DECL_OVERRIDE;
+    void *nativeResourceForCursor(const QByteArray &resource, const QCursor &cursor) override;
 #endif
     Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
                                           const QString &windowName,
@@ -92,17 +92,17 @@ public:
 
     QVariant gpu() const;
 
-    QVariantMap windowProperties(QPlatformWindow *window) const Q_DECL_OVERRIDE;
-    QVariant windowProperty(QPlatformWindow *window, const QString &name) const Q_DECL_OVERRIDE;
-    QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const Q_DECL_OVERRIDE;
-    void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value) Q_DECL_OVERRIDE;
+    QVariantMap windowProperties(QPlatformWindow *window) const override;
+    QVariant windowProperty(QPlatformWindow *window, const QString &name) const override;
+    QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const override;
+    void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value) override;
 
     static QWindowsWindowFunctions::WindowActivationBehavior windowActivationBehavior()
         { return QWindowsNativeInterface::m_windowActivationBehavior; }
     static void setWindowActivationBehavior(QWindowsWindowFunctions::WindowActivationBehavior b)
         { QWindowsNativeInterface::m_windowActivationBehavior = b; }
 
-    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+    QFunctionPointer platformFunction(const QByteArray &function) const override;
 
 private:
     static QWindowsWindowFunctions::WindowActivationBehavior m_windowActivationBehavior;

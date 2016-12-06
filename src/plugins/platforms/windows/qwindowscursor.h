@@ -104,9 +104,9 @@ public:
 
     explicit QWindowsCursor(const QPlatformScreen *screen);
 
-    void changeCursor(QCursor * widgetCursor, QWindow * widget) Q_DECL_OVERRIDE;
-    QPoint pos() const Q_DECL_OVERRIDE;
-    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
+    void changeCursor(QCursor * widgetCursor, QWindow * widget) override;
+    QPoint pos() const override;
+    void setPos(const QPoint &pos) override;
 
     static HCURSOR createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor = 1);
     static HCURSOR createPixmapCursor(const PixmapCursor &pc, qreal scaleFactor = 1) { return createPixmapCursor(pc.pixmap, pc.hotSpot, scaleFactor); }

@@ -71,13 +71,13 @@ public:
 
     static void setWindowsImeEnabled(QWindowsWindow *platformWindow, bool enabled);
 
-    bool hasCapability(Capability capability) const Q_DECL_OVERRIDE;
-    QLocale locale() const Q_DECL_OVERRIDE { return m_locale; }
+    bool hasCapability(Capability capability) const override;
+    QLocale locale() const override { return m_locale; }
 
-    void reset() Q_DECL_OVERRIDE;
-    void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
-    void invokeAction(QInputMethod::Action, int cursorPosition) Q_DECL_OVERRIDE;
-    void setFocusObject(QObject *object) Q_DECL_OVERRIDE;
+    void reset() override;
+    void update(Qt::InputMethodQueries) override;
+    void invokeAction(QInputMethod::Action, int cursorPosition) override;
+    void setFocusObject(QObject *object) override;
 
     bool startComposition(HWND hwnd);
     bool composition(HWND hwnd, LPARAM lParam);

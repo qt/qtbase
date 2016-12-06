@@ -117,12 +117,12 @@ public:
 
     EGLDisplay display() const { return m_display; }
 
-    QWindowsOpenGLContext *createContext(QOpenGLContext *context) Q_DECL_OVERRIDE;
-    void *moduleHandle() const Q_DECL_OVERRIDE { return libGLESv2.moduleHandle(); }
-    QOpenGLContext::OpenGLModuleType moduleType() const Q_DECL_OVERRIDE { return QOpenGLContext::LibGLES; }
+    QWindowsOpenGLContext *createContext(QOpenGLContext *context) override;
+    void *moduleHandle() const override { return libGLESv2.moduleHandle(); }
+    QOpenGLContext::OpenGLModuleType moduleType() const override { return QOpenGLContext::LibGLES; }
 
-    void *createWindowSurface(void *nativeWindow, void *nativeConfig, int *err) Q_DECL_OVERRIDE;
-    void destroyWindowSurface(void *nativeSurface) Q_DECL_OVERRIDE;
+    void *createWindowSurface(void *nativeWindow, void *nativeConfig, int *err) override;
+    void destroyWindowSurface(void *nativeSurface) override;
 
     QSurfaceFormat formatFromConfig(EGLDisplay display, EGLConfig config, const QSurfaceFormat &referenceFormat);
 
@@ -145,18 +145,18 @@ public:
                        QPlatformOpenGLContext *share);
     ~QWindowsEGLContext();
 
-    bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    void doneCurrent() Q_DECL_OVERRIDE;
-    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    QFunctionPointer getProcAddress(const char *procName) Q_DECL_OVERRIDE;
+    bool makeCurrent(QPlatformSurface *surface) override;
+    void doneCurrent() override;
+    void swapBuffers(QPlatformSurface *surface) override;
+    QFunctionPointer getProcAddress(const char *procName) override;
 
-    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
-    bool isSharing() const Q_DECL_OVERRIDE { return m_shareContext != EGL_NO_CONTEXT; }
-    bool isValid() const Q_DECL_OVERRIDE { return m_eglContext != EGL_NO_CONTEXT; }
+    QSurfaceFormat format() const override { return m_format; }
+    bool isSharing() const override { return m_shareContext != EGL_NO_CONTEXT; }
+    bool isValid() const override { return m_eglContext != EGL_NO_CONTEXT; }
 
-    void *nativeContext() const Q_DECL_OVERRIDE { return m_eglContext; }
-    void *nativeDisplay() const Q_DECL_OVERRIDE { return m_eglDisplay; }
-    void *nativeConfig() const Q_DECL_OVERRIDE { return m_eglConfig; }
+    void *nativeContext() const override { return m_eglContext; }
+    void *nativeDisplay() const override { return m_eglDisplay; }
+    void *nativeConfig() const override { return m_eglConfig; }
 
 private:
     EGLConfig chooseConfig(const QSurfaceFormat &format);

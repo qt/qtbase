@@ -63,7 +63,7 @@ class QWindowsThreadPoolRunner
         explicit Runnable(QMutex *m, QWaitCondition *c, RunnableFunction f)
             : m_mutex(m), m_condition(c), m_function(f) {}
 
-        void run() Q_DECL_OVERRIDE
+        void run() override
         {
             m_function();
             m_mutex->lock();
