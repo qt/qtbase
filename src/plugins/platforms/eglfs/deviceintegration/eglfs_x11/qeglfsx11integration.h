@@ -69,15 +69,15 @@ class QEglFSX11Integration : public QEglFSDeviceIntegration
 public:
     QEglFSX11Integration() : m_connection(0), m_window(0), m_eventReader(0) {}
 
-    void platformInit() Q_DECL_OVERRIDE;
-    void platformDestroy() Q_DECL_OVERRIDE;
-    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
-    QSize screenSize() const Q_DECL_OVERRIDE;
+    void platformInit() override;
+    void platformDestroy() override;
+    EGLNativeDisplayType platformDisplay() const override;
+    QSize screenSize() const override;
     EGLNativeWindowType createNativeWindow(QPlatformWindow *window,
                                            const QSize &size,
-                                           const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+                                           const QSurfaceFormat &format) override;
+    void destroyNativeWindow(EGLNativeWindowType window) override;
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
     xcb_connection_t *connection() { return m_connection; }
     const xcb_atom_t *atoms() const { return m_atoms; }

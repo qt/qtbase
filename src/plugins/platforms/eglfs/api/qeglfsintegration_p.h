@@ -69,37 +69,37 @@ class Q_EGLFS_EXPORT QEglFSIntegration : public QPlatformIntegration, public QPl
 public:
     QEglFSIntegration();
 
-    void initialize() Q_DECL_OVERRIDE;
-    void destroy() Q_DECL_OVERRIDE;
+    void initialize() override;
+    void destroy() override;
 
     EGLDisplay display() const { return m_display; }
 
-    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
-    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
-    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE { return m_inputContext; }
-    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
+    QPlatformFontDatabase *fontDatabase() const override;
+    QPlatformServices *services() const override;
+    QPlatformInputContext *inputContext() const override { return m_inputContext; }
+    QPlatformTheme *createPlatformTheme(const QString &name) const override;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
 #ifndef QT_NO_OPENGL
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
-    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 #endif
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
-    QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
+    QPlatformNativeInterface *nativeInterface() const override;
 
     // QPlatformNativeInterface
-    void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
-    void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) Q_DECL_OVERRIDE;
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
+    void *nativeResourceForIntegration(const QByteArray &resource) override;
+    void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) override;
+    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
 #ifndef QT_NO_OPENGL
-    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) Q_DECL_OVERRIDE;
+    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) override;
 #endif
-    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
+    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) override;
 
-    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+    QFunctionPointer platformFunction(const QByteArray &function) const override;
 
     QFbVtHandler *vtHandler() { return m_vtHandler.data(); }
 

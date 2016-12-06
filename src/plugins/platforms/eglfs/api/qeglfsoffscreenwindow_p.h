@@ -62,8 +62,8 @@ public:
     QEglFSOffscreenWindow(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface);
     ~QEglFSOffscreenWindow();
 
-    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
-    bool isValid() const Q_DECL_OVERRIDE { return m_surface != EGL_NO_SURFACE; }
+    QSurfaceFormat format() const override { return m_format; }
+    bool isValid() const override { return m_surface != EGL_NO_SURFACE; }
 
 private:
     QSurfaceFormat m_format;

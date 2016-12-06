@@ -362,7 +362,7 @@ EGLConfig QEglFSDeviceIntegration::chooseConfig(EGLDisplay display, const QSurfa
     public:
         Chooser(EGLDisplay display)
             : QEglConfigChooser(display) { }
-        bool filterConfig(EGLConfig config) const Q_DECL_OVERRIDE {
+        bool filterConfig(EGLConfig config) const override {
             return qt_egl_device_integration()->filterConfig(display(), config)
                     && QEglConfigChooser::filterConfig(config);
         }

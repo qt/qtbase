@@ -67,22 +67,22 @@ public:
     QEglFSScreen(EGLDisplay display);
     ~QEglFSScreen();
 
-    QRect geometry() const Q_DECL_OVERRIDE;
+    QRect geometry() const override;
     virtual QRect rawGeometry() const;
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
+    int depth() const override;
+    QImage::Format format() const override;
 
-    QSizeF physicalSize() const Q_DECL_OVERRIDE;
-    QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    qreal pixelDensity() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
+    QSizeF physicalSize() const override;
+    QDpi logicalDpi() const override;
+    qreal pixelDensity() const override;
+    Qt::ScreenOrientation nativeOrientation() const override;
+    Qt::ScreenOrientation orientation() const override;
 
-    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
+    QPlatformCursor *cursor() const override;
 
-    qreal refreshRate() const Q_DECL_OVERRIDE;
+    qreal refreshRate() const override;
 
-    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const override;
 
     EGLSurface primarySurface() const { return m_surface; }
 

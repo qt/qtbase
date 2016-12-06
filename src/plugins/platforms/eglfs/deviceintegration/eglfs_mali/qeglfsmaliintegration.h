@@ -47,9 +47,9 @@ QT_BEGIN_NAMESPACE
 class QEglFSMaliIntegration : public QEglFSDeviceIntegration
 {
 public:
-    void platformInit() Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
+    void platformInit() override;
+    EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) override;
+    void destroyNativeWindow(EGLNativeWindowType window) override;
 };
 
 QT_END_NAMESPACE

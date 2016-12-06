@@ -60,15 +60,15 @@ public:
     QEglFSKmsIntegration();
     ~QEglFSKmsIntegration();
 
-    void platformInit() Q_DECL_OVERRIDE;
-    void platformDestroy() Q_DECL_OVERRIDE;
-    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
-    bool usesDefaultScreen() Q_DECL_OVERRIDE;
-    void screenInit() Q_DECL_OVERRIDE;
-    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const Q_DECL_OVERRIDE;
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    void waitForVSync(QPlatformSurface *surface) const Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
+    void platformInit() override;
+    void platformDestroy() override;
+    EGLNativeDisplayType platformDisplay() const override;
+    bool usesDefaultScreen() override;
+    void screenInit() override;
+    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const override;
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
+    void waitForVSync(QPlatformSurface *surface) const override;
+    bool supportsPBuffers() const override;
 
     QKmsDevice *device() const;
     QKmsScreenConfig *screenConfig() const;

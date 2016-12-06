@@ -62,11 +62,11 @@ class Q_EGLFS_EXPORT QEglFSContext : public QEGLPlatformContext
 public:
     QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                   EGLConfig *config, const QVariant &nativeHandle);
-    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    EGLSurface createTemporaryOffscreenSurface() Q_DECL_OVERRIDE;
-    void destroyTemporaryOffscreenSurface(EGLSurface surface) Q_DECL_OVERRIDE;
-    void runGLChecks() Q_DECL_OVERRIDE;
-    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override;
+    EGLSurface createTemporaryOffscreenSurface() override;
+    void destroyTemporaryOffscreenSurface(EGLSurface surface) override;
+    void runGLChecks() override;
+    void swapBuffers(QPlatformSurface *surface) override;
 
 private:
     EGLNativeWindowType m_tempWindow;

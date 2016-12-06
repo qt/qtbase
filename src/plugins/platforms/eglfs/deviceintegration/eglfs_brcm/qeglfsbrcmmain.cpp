@@ -48,7 +48,7 @@ class QEglFSBrcmIntegrationPlugin : public QEglFSDeviceIntegrationPlugin
     Q_PLUGIN_METADATA(IID QEglFSDeviceIntegrationFactoryInterface_iid FILE "eglfs_brcm.json")
 
 public:
-    QEglFSDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSBrcmIntegration; }
+    QEglFSDeviceIntegration *create() override { return new QEglFSBrcmIntegration; }
 };
 
 QT_END_NAMESPACE

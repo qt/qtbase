@@ -55,17 +55,17 @@ class QEglFSKmsEglDeviceIntegration : public QEglFSKmsIntegration
 public:
     QEglFSKmsEglDeviceIntegration();
 
-    EGLint surfaceType() const Q_DECL_OVERRIDE;
-    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) Q_DECL_OVERRIDE;
-    bool supportsSurfacelessContexts() const Q_DECL_OVERRIDE;
-    bool supportsPBuffers() const Q_DECL_OVERRIDE;
-    QEglFSWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    EGLint surfaceType() const override;
+    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) override;
+    bool supportsSurfacelessContexts() const override;
+    bool supportsPBuffers() const override;
+    QEglFSWindow *createWindow(QWindow *window) const override;
 
     EGLDeviceEXT eglDevice() const { return m_egl_device; }
 
 protected:
-    QKmsDevice *createDevice() Q_DECL_OVERRIDE;
-    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
+    QKmsDevice *createDevice() override;
+    QPlatformCursor *createCursor(QPlatformScreen *screen) const override;
 
 private:
     bool setup_kms();

@@ -57,15 +57,15 @@ public:
 
     EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
                                            const QSize &size,
-                                           const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
+                                           const QSurfaceFormat &format) override;
+    EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) override;
+    void destroyNativeWindow(EGLNativeWindowType window) override;
 
-    QPlatformCursor *createCursor(QPlatformScreen *screen) const Q_DECL_OVERRIDE;
-    void presentBuffer(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    QPlatformCursor *createCursor(QPlatformScreen *screen) const override;
+    void presentBuffer(QPlatformSurface *surface) override;
 
 protected:
-    QKmsDevice *createDevice() Q_DECL_OVERRIDE;
+    QKmsDevice *createDevice() override;
 
 private:
 };

@@ -57,15 +57,15 @@ public:
     QEglFSKmsGbmScreen(QKmsDevice *device, const QKmsOutput &output);
     ~QEglFSKmsGbmScreen();
 
-    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
+    QPlatformCursor *cursor() const override;
 
     gbm_surface *surface() const { return m_gbm_surface; }
     gbm_surface *createSurface();
     void destroySurface();
 
-    void waitForFlip() Q_DECL_OVERRIDE;
-    void flip() Q_DECL_OVERRIDE;
-    void flipFinished() Q_DECL_OVERRIDE;
+    void waitForFlip() override;
+    void flip() override;
+    void flipFinished() override;
 
 private:
     gbm_surface *m_gbm_surface;

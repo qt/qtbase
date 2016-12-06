@@ -48,7 +48,7 @@ class QEglFSVivWaylandIntegrationPlugin : public QEglFSDeviceIntegrationPlugin
     Q_PLUGIN_METADATA(IID QEglFSDeviceIntegrationFactoryInterface_iid FILE "eglfs_viv_wl.json")
 
 public:
-    QEglFSDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSVivWaylandIntegration; }
+    QEglFSDeviceIntegration *create() override { return new QEglFSVivWaylandIntegration; }
 };
 
 QT_END_NAMESPACE

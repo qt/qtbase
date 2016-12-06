@@ -48,7 +48,7 @@ class QEglFSMaliIntegrationPlugin : public QEglFSDeviceIntegrationPlugin
     Q_PLUGIN_METADATA(IID QEglFSDeviceIntegrationFactoryInterface_iid FILE "eglfs_mali.json")
 
 public:
-    QEglFSDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSMaliIntegration; }
+    QEglFSDeviceIntegration *create() override { return new QEglFSMaliIntegration; }
 };
 
 QT_END_NAMESPACE

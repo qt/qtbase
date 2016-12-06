@@ -109,8 +109,8 @@ public:
         , m_egl_stream(EGL_NO_STREAM_KHR)
     { }
 
-    void invalidateSurface() Q_DECL_OVERRIDE;
-    void resetSurface() Q_DECL_OVERRIDE;
+    void invalidateSurface() override;
+    void resetSurface() override;
 
     const QEglFSKmsEglDeviceIntegration *m_integration;
     EGLStreamKHR m_egl_stream;

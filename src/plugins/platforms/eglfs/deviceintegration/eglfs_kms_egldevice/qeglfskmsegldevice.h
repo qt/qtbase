@@ -52,12 +52,12 @@ class QEglFSKmsEglDevice: public QEglFSKmsDevice
 public:
     QEglFSKmsEglDevice(QEglFSKmsEglDeviceIntegration *devInt, QKmsScreenConfig *screenConfig, const QString &path);
 
-    bool open() Q_DECL_OVERRIDE;
-    void close() Q_DECL_OVERRIDE;
+    bool open() override;
+    void close() override;
 
-    void *nativeDisplay() const Q_DECL_OVERRIDE;
+    void *nativeDisplay() const override;
 
-    QPlatformScreen *createScreen(const QKmsOutput &output) Q_DECL_OVERRIDE;
+    QPlatformScreen *createScreen(const QKmsOutput &output) override;
 
     QPlatformCursor *globalCursor() { return m_globalCursor; }
     void destroyGlobalCursor();

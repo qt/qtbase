@@ -60,21 +60,21 @@ public:
 
     void setVirtualPosition(const QPoint &pos);
 
-    QRect rawGeometry() const Q_DECL_OVERRIDE;
+    QRect rawGeometry() const override;
 
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
+    int depth() const override;
+    QImage::Format format() const override;
 
-    QSizeF physicalSize() const Q_DECL_OVERRIDE;
-    QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
+    QSizeF physicalSize() const override;
+    QDpi logicalDpi() const override;
+    Qt::ScreenOrientation nativeOrientation() const override;
+    Qt::ScreenOrientation orientation() const override;
 
-    QString name() const Q_DECL_OVERRIDE;
+    QString name() const override;
 
-    qreal refreshRate() const Q_DECL_OVERRIDE;
+    qreal refreshRate() const override;
 
-    QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_siblings; }
+    QList<QPlatformScreen *> virtualSiblings() const override { return m_siblings; }
     void setVirtualSiblings(QList<QPlatformScreen *> sl) { m_siblings = sl; }
 
     QKmsDevice *device() const { return m_device; }
@@ -88,10 +88,10 @@ public:
     QKmsOutput &output() { return m_output; }
     void restoreMode();
 
-    SubpixelAntialiasingType subpixelAntialiasingTypeHint() const Q_DECL_OVERRIDE;
+    SubpixelAntialiasingType subpixelAntialiasingTypeHint() const override;
 
-    QPlatformScreen::PowerState powerState() const Q_DECL_OVERRIDE;
-    void setPowerState(QPlatformScreen::PowerState state) Q_DECL_OVERRIDE;
+    QPlatformScreen::PowerState powerState() const override;
+    void setPowerState(QPlatformScreen::PowerState state) override;
 
 protected:
     QKmsDevice *m_device;

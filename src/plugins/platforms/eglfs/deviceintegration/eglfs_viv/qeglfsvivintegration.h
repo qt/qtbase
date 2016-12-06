@@ -47,11 +47,11 @@ QT_BEGIN_NAMESPACE
 class QEglFSVivIntegration : public QEglFSDeviceIntegration
 {
 public:
-    void platformInit() Q_DECL_OVERRIDE;
-    QSize screenSize() const Q_DECL_OVERRIDE;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) Q_DECL_OVERRIDE;
-    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
-    EGLNativeDisplayType platformDisplay() const Q_DECL_OVERRIDE;
+    void platformInit() override;
+    QSize screenSize() const override;
+    EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) override;
+    void destroyNativeWindow(EGLNativeWindowType window) override;
+    EGLNativeDisplayType platformDisplay() const override;
 
 private:
     QSize mScreenSize;

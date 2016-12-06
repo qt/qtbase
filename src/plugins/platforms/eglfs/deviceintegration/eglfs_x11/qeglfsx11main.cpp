@@ -48,7 +48,7 @@ class QEglFSX11IntegrationPlugin : public QEglFSDeviceIntegrationPlugin
     Q_PLUGIN_METADATA(IID QEglFSDeviceIntegrationFactoryInterface_iid FILE "eglfs_x11.json")
 
 public:
-    QEglFSDeviceIntegration *create() Q_DECL_OVERRIDE { return new QEglFSX11Integration; }
+    QEglFSDeviceIntegration *create() override { return new QEglFSX11Integration; }
 };
 
 QT_END_NAMESPACE
