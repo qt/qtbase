@@ -2564,6 +2564,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         Q_ASSERT(w.data() != 0);
 
         // make the *scene* functions return the same as the *screen* functions
+        // Note: touchPoint is a reference to the one from activeTouchPoints,
+        // so we can modify it as long as we're careful NOT to call setters and
+        // otherwise NOT to cause the d-pointer to be detached.
         touchPoint.d->scenePos = touchPoint.screenPos();
         touchPoint.d->verticalDiameter = touchPoint.screenRect().height();
         touchPoint.d->horizontalDiameter = touchPoint.screenRect().width();
@@ -2622,8 +2625,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         QTouchEvent touchEvent(eventType,
                                e->device,
                                e->modifiers,
-                               it.value().first,
-                               it.value().second);
+                               it.value().first,    // state flags
+                               it.value().second);  // list of touchpoints
         touchEvent.setTimestamp(e->timestamp);
         touchEvent.setWindow(w);
 
@@ -2640,6 +2643,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             touchPoint.d->verticalDiameter = rect.height();
             touchPoint.d->horizontalDiameter = rect.width();
             if (touchPoint.state() == Qt::TouchPointPressed) {
+                // touchPoint is actually a reference to one that is stored in activeTouchPoints,
+                // and we are now going to store the startPos and lastPos there, for the benefit
+                // of future moves and releases.  It's important that the d-pointer is NOT detached.
                 touchPoint.d->startPos = w->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta;
                 touchPoint.d->lastPos = w->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta;
             }
