@@ -55,7 +55,7 @@ public:
     EventReader(QEglFSX11Integration *integration)
         : m_integration(integration) { }
 
-    void run();
+    void run() override;
 
 private:
     QEglFSX11Integration *m_integration;
