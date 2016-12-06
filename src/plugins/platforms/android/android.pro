@@ -43,7 +43,8 @@ SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/qandroidplatformbackingstore.cpp \
            $$PWD/qandroidplatformopenglcontext.cpp \
            $$PWD/qandroidplatformforeignwindow.cpp \
-           $$PWD/qandroideventdispatcher.cpp
+           $$PWD/qandroideventdispatcher.cpp \
+           $$PWD/qandroidplatformoffscreensurface.cpp
 
 HEADERS += $$PWD/qandroidplatformintegration.h \
            $$PWD/androiddeadlockprotector.h \
@@ -71,7 +72,8 @@ HEADERS += $$PWD/qandroidplatformintegration.h \
            $$PWD/qandroidplatformbackingstore.h \
            $$PWD/qandroidplatformopenglcontext.h \
            $$PWD/qandroidplatformforeignwindow.h \
-           $$PWD/qandroideventdispatcher.h
+           $$PWD/qandroideventdispatcher.h \
+           $$PWD/qandroidplatformoffscreensurface.h
 
 qtConfig(android-style-assets): SOURCES += $$PWD/extract.cpp
 else: SOURCES += $$PWD/extract-dummy.cpp

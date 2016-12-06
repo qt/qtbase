@@ -65,6 +65,7 @@
 #include "qandroidplatformservices.h"
 #include "qandroidplatformtheme.h"
 #include "qandroidsystemlocale.h"
+#include "qandroidplatformoffscreensurface.h"
 
 #include <QtPlatformHeaders/QEGLNativeContext>
 
@@ -262,11 +263,19 @@ QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenS
 {
     if (!QtAndroid::activity())
         return nullptr;
+
     QSurfaceFormat format(surface->requestedFormat());
     format.setAlphaBufferSize(8);
     format.setRedBufferSize(8);
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);
+
+    if (surface->nativeHandle()) {
+        // Adopt existing offscreen Surface
+        // The expectation is that nativeHandle is an ANativeWindow* representing
+        // an android.view.Surface
+        return new QAndroidPlatformOffscreenSurface(m_eglDisplay, format, surface);
+    }
 
     return new QEGLPbuffer(m_eglDisplay, format, surface);
 }

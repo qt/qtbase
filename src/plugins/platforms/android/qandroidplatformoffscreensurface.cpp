@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,64 +37,37 @@
 **
 ****************************************************************************/
 
-#ifndef QOFFSCREENSURFACE_H
-#define QOFFSCREENSURFACE_H
+#include "qandroidplatformoffscreensurface.h"
 
-#include <QtGui/qtguiglobal.h>
-#include <QtCore/QObject>
-#include <QtGui/qsurface.h>
+#include <QtGui/QOffscreenSurface>
+#include <QtEglSupport/private/qeglconvenience_p.h>
+
+#include <android/native_window.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOffscreenSurfacePrivate;
-
-class QScreen;
-class QPlatformOffscreenSurface;
-
-class Q_GUI_EXPORT QOffscreenSurface : public QObject, public QSurface
+QAndroidPlatformOffscreenSurface::QAndroidPlatformOffscreenSurface(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface)
+    : QPlatformOffscreenSurface(offscreenSurface)
+    , m_format(format)
+    , m_display(display)
+    , m_surface(EGL_NO_SURFACE)
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QOffscreenSurface)
+    // Get native handle
+    ANativeWindow *surfaceTexture = (ANativeWindow*)offscreenSurface->nativeHandle();
 
-public:
+    EGLConfig config = q_configFromGLFormat(m_display, m_format, false);
+    if (config) {
+        const EGLint attributes[] = {
+            EGL_NONE
+        };
+        m_surface = eglCreateWindowSurface(m_display, config, surfaceTexture, attributes);
+    }
+}
 
-    explicit QOffscreenSurface(QScreen *screen = Q_NULLPTR);
-    virtual ~QOffscreenSurface();
-
-    SurfaceType surfaceType() const Q_DECL_OVERRIDE;
-
-    void create();
-    void destroy();
-
-    bool isValid() const;
-
-    void setFormat(const QSurfaceFormat &format);
-    QSurfaceFormat format() const Q_DECL_OVERRIDE;
-    QSurfaceFormat requestedFormat() const;
-
-    QSize size() const Q_DECL_OVERRIDE;
-
-    QScreen *screen() const;
-    void setScreen(QScreen *screen);
-
-    QPlatformOffscreenSurface *handle() const;
-
-    void *nativeHandle() const;
-    void setNativeHandle(void *handle);
-
-Q_SIGNALS:
-    void screenChanged(QScreen *screen);
-
-private Q_SLOTS:
-    void screenDestroyed(QObject *screen);
-
-private:
-
-    QPlatformSurface *surfaceHandle() const Q_DECL_OVERRIDE;
-
-    Q_DISABLE_COPY(QOffscreenSurface)
-};
+QAndroidPlatformOffscreenSurface::~QAndroidPlatformOffscreenSurface()
+{
+    eglDestroySurface(m_display, m_surface);
+}
 
 QT_END_NAMESPACE
 
-#endif // QOFFSCREENSURFACE_H

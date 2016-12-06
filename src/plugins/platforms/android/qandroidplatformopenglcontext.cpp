@@ -41,11 +41,13 @@
 #include "qandroidplatformopenglcontext.h"
 #include "qandroidplatformopenglwindow.h"
 #include "qandroidplatformintegration.h"
+#include "qandroidplatformoffscreensurface.h"
 
 #include <QtEglSupport/private/qeglpbuffer_p.h>
 
 #include <QSurface>
 #include <QtGui/private/qopenglcontext_p.h>
+#include <QtGui/QOffscreenSurface>
 
 QT_BEGIN_NAMESPACE
 
@@ -110,10 +112,15 @@ bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
 
 EGLSurface QAndroidPlatformOpenGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
 {
-    if (surface->surface()->surfaceClass() == QSurface::Window)
+    if (surface->surface()->surfaceClass() == QSurface::Window) {
         return static_cast<QAndroidPlatformOpenGLWindow *>(surface)->eglSurface(eglConfig());
-    else
-        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
+    } else {
+        auto platformOffscreenSurface = static_cast<QPlatformOffscreenSurface*>(surface);
+        if (platformOffscreenSurface->offscreenSurface()->nativeHandle())
+            return static_cast<QAndroidPlatformOffscreenSurface *>(surface)->surface();
+        else
+            return static_cast<QEGLPbuffer *>(surface)->pbuffer();
+    }
 }
 
 QT_END_NAMESPACE
