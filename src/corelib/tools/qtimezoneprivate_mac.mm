@@ -226,27 +226,79 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
 
 QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
-    // No direct Mac API, so get all transitions since epoch and return the last one
-    QList<int> secsList;
-    if (beforeMSecsSinceEpoch > 0) {
-        const int endSecs = beforeMSecsSinceEpoch / 1000.0;
-        NSTimeInterval prevSecs = 0;
-        NSTimeInterval nextSecs = 0;
-        NSDate *nextDate = [NSDate dateWithTimeIntervalSince1970:nextSecs];
-        // If invalid may return a nil date or an Epoch date
+    // The native API only lets us search forward, so we need to find an early-enough start:
+    const NSTimeInterval lowerBound = std::numeric_limits<NSTimeInterval>::min();
+    const qint64 endSecs = beforeMSecsSinceEpoch / 1000;
+    const int year = 366 * 24 * 3600; // a (long) year, in seconds
+    NSTimeInterval prevSecs = endSecs; // sentinel for later check
+    NSTimeInterval nextSecs = prevSecs - year;
+    NSTimeInterval tranSecs = lowerBound; // time at a transition; may be > endSecs
+
+    NSDate *nextDate = [NSDate dateWithTimeIntervalSince1970:nextSecs];
+    nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
+    if (nextDate != nil
+        && (tranSecs = [nextDate timeIntervalSince1970]) < endSecs) {
+        // There's a transition within the last year before endSecs:
+        nextSecs = tranSecs;
+    } else {
+        // Need to start our search earlier:
+        nextDate = [NSDate dateWithTimeIntervalSince1970:lowerBound];
+        nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
+        if (nextDate != nil) {
+            NSTimeInterval lateSecs = nextSecs;
+            nextSecs = [nextDate timeIntervalSince1970];
+            Q_ASSERT(nextSecs <= endSecs - year || nextSecs == tranSecs);
+            /*
+              We're looking at the first ever transition for our zone, at
+              nextSecs (and our zone *does* have at least one transition).  If
+              it's later than endSecs - year, then we must have found it on the
+              initial check and therefore set tranSecs to the same transition
+              time (which, we can infer here, is >= endSecs).  In this case, we
+              won't enter the binary-chop loop, below.
+
+              In the loop, nextSecs < lateSecs < endSecs: we have a transition
+              at nextSecs and there is no transition between lateSecs and
+              endSecs.  The loop narrows the interval between nextSecs and
+              lateSecs by looking for a transition after their mid-point; if it
+              finds one < endSecs, nextSecs moves to this transition; otherwise,
+              lateSecs moves to the mid-point.  This soon enough narrows the gap
+              to within a year, after which walking forward one transition at a
+              time (the "Wind through" loop, below) is good enough.
+            */
+
+            // Binary chop to within a year of last transition before endSecs:
+            while (nextSecs + year < lateSecs) {
+                // Careful about overflow, not fussy about rounding errors:
+                NSTimeInterval middle = nextSecs / 2 + lateSecs / 2;
+                NSDate *split = [NSDate dateWithTimeIntervalSince1970:middle];
+                split = [m_nstz nextDaylightSavingTimeTransitionAfterDate:split];
+                if (split != nil
+                    && (tranSecs = [split timeIntervalSince1970]) < endSecs) {
+                    nextDate = split;
+                    nextSecs = tranSecs;
+                } else {
+                    lateSecs = middle;
+                }
+            }
+            Q_ASSERT(nextDate != nil);
+            // ... and nextSecs < endSecs unless first transition ever was >= endSecs.
+        } // else: we have no data - prevSecs is still endSecs, nextDate is still nil
+    }
+    // Either nextDate is nil or nextSecs is at its transition.
+
+    // Wind through remaining transitions (spanning at most a year), one at a time:
+    while (nextDate != nil && nextSecs < endSecs) {
+        prevSecs = nextSecs;
         nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
         nextSecs = [nextDate timeIntervalSince1970];
-        while (nextDate != nil && nextSecs > prevSecs && nextSecs < endSecs) {
-            secsList.append(nextSecs);
-            prevSecs = nextSecs;
-            nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
-            nextSecs = [nextDate timeIntervalSince1970];
-        }
+        if (nextSecs <= prevSecs) // presumably no later data available
+            break;
     }
-    if (secsList.size() >= 1)
-        return data(qint64(secsList.constLast()) * 1000);
-    else
-        return invalidData();
+    if (prevSecs < endSecs) // i.e. we did make it into that while loop
+        return data(qint64(prevSecs * 1e3));
+
+    // No transition data; or first transition later than requested time.
+    return invalidData();
 }
 
 QByteArray QMacTimeZonePrivate::systemTimeZoneId() const
