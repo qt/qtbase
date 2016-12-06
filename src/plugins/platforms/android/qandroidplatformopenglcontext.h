@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 class QAndroidPlatformOpenGLContext : public QEGLPlatformContext
 {
 public:
-    QAndroidPlatformOpenGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display);
+    QAndroidPlatformOpenGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display, const QVariant &nativeHandle);
     void swapBuffers(QPlatformSurface *surface) override;
     bool makeCurrent(QPlatformSurface *surface) override;
 

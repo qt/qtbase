@@ -66,6 +66,8 @@
 #include "qandroidplatformtheme.h"
 #include "qandroidsystemlocale.h"
 
+#include <QtPlatformHeaders/QEGLNativeContext>
+
 QT_BEGIN_NAMESPACE
 
 int QAndroidPlatformIntegration::m_defaultGeometryWidth = 320;
@@ -251,7 +253,9 @@ QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext
     format.setRedBufferSize(8);
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);
-    return new QAndroidPlatformOpenGLContext(format, context->shareHandle(), m_eglDisplay);
+    auto ctx = new QAndroidPlatformOpenGLContext(format, context->shareHandle(), m_eglDisplay, context->nativeHandle());
+    context->setNativeHandle(QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(ctx->eglContext(), m_eglDisplay)));
+    return ctx;
 }
 
 QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
