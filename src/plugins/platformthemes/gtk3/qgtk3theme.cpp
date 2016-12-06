@@ -51,11 +51,18 @@ QT_BEGIN_NAMESPACE
 
 const char *QGtk3Theme::name = "gtk3";
 
-static QString gtkSetting(const gchar *propertyName)
+template <typename T>
+static T gtkSetting(const gchar *propertyName)
 {
     GtkSettings *settings = gtk_settings_get_default();
-    gchararray value;
+    T value;
     g_object_get(settings, propertyName, &value, NULL);
+    return value;
+}
+
+static QString gtkSetting(const gchar *propertyName)
+{
+    gchararray value = gtkSetting<gchararray>(propertyName);
     QString str = QString::fromUtf8(value);
     g_free(value);
     return str;
@@ -98,6 +105,18 @@ QGtk3Theme::QGtk3Theme()
 QVariant QGtk3Theme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
+    case QPlatformTheme::CursorFlashTime:
+        return QVariant(gtkSetting<gint>("gtk-cursor-blink-time"));
+    case QPlatformTheme::MouseDoubleClickDistance:
+        return QVariant(gtkSetting<gint>("gtk-double-click-distance"));
+    case QPlatformTheme::MouseDoubleClickInterval:
+        return QVariant(gtkSetting<gint>("gtk-double-click-time"));
+    case QPlatformTheme::MousePressAndHoldInterval:
+        return QVariant(gtkSetting<guint>("gtk-long-press-time"));
+    case QPlatformTheme::PasswordMaskDelay:
+        return QVariant(gtkSetting<guint>("gtk-entry-password-hint-timeout"));
+    case QPlatformTheme::StartDragDistance:
+        return QVariant(gtkSetting<gint>("gtk-dnd-drag-threshold"));
     case QPlatformTheme::SystemIconThemeName:
         return QVariant(gtkSetting("gtk-icon-theme-name"));
     case QPlatformTheme::SystemIconFallbackThemeName:
