@@ -147,12 +147,13 @@ static inline QMutex *signalSlotLock(const QObject *o)
         uint(quintptr(o)) % sizeof(_q_ObjectMutexPool)/sizeof(QBasicMutex)]);
 }
 
-// ### Qt >= 5.6, remove qt_add/removeObject
+#if QT_VERSION < 0x60000
 extern "C" Q_CORE_EXPORT void qt_addObject(QObject *)
 {}
 
 extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 {}
+#endif
 
 struct QConnectionSenderSwitcher {
     QObject *receiver;
@@ -811,7 +812,9 @@ QObject::QObject(QObject *parent)
             QT_RETHROW;
         }
     }
+#if QT_VERSION < 0x60000
     qt_addObject(this);
+#endif
     if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
         reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
 }
@@ -844,7 +847,9 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
             QT_RETHROW;
         }
     }
+#if QT_VERSION < 0x60000
     qt_addObject(this);
+#endif
     if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
         reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
 }
@@ -1016,7 +1021,9 @@ QObject::~QObject()
     if (!d->children.isEmpty())
         d->deleteChildren();
 
+#if QT_VERSION < 0x60000
     qt_removeObject(this);
+#endif
     if (Q_UNLIKELY(qtHookData[QHooks::RemoveQObject]))
         reinterpret_cast<QHooks::RemoveQObjectCallback>(qtHookData[QHooks::RemoveQObject])(this);
 
