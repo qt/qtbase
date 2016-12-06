@@ -4655,14 +4655,14 @@ QPointF QTouchEvent::TouchPoint::lastNormalizedPos() const
 
     \obsolete This function is deprecated in 5.9 because it returns the outer bounds
     of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
-    modeled as an ellipse at position pos() with horizontalDiameter() and
-    verticalDiameter() which are independent of rotation().
+    modeled as an ellipse at position pos() with ellipseDiameters()
+    which are independent of rotation().
 
-    \sa scenePos(), horizontalDiameter(), verticalDiameter()
+    \sa scenePos(), ellipseDiameters()
 */
 QRectF QTouchEvent::TouchPoint::rect() const
 {
-    QRectF ret(0, 0, d->horizontalDiameter, d->verticalDiameter);
+    QRectF ret(QPointF(), d->ellipseDiameters);
     ret.moveCenter(d->pos);
     return ret;
 }
@@ -4674,14 +4674,14 @@ QRectF QTouchEvent::TouchPoint::rect() const
 
     \obsolete This function is deprecated in 5.9 because it returns the outer bounds
     of the touchpoint regardless of rotation, whereas a touchpoint is more correctly
-    modeled as an ellipse at position scenePos() with horizontalDiameter() and
-    verticalDiameter() which are independent of rotation().
+    modeled as an ellipse at position scenePos() with ellipseDiameters()
+    which are independent of rotation().
 
-    \sa scenePos(), horizontalDiameter(), verticalDiameter()
+    \sa scenePos(), ellipseDiameters()
 */
 QRectF QTouchEvent::TouchPoint::sceneRect() const
 {
-    QRectF ret(0, 0, d->horizontalDiameter, d->verticalDiameter);
+    QRectF ret(QPointF(), d->ellipseDiameters);
     ret.moveCenter(d->scenePos);
     return ret;
 }
@@ -4693,14 +4693,14 @@ QRectF QTouchEvent::TouchPoint::sceneRect() const
 
     \obsolete This function is deprecated because it returns the outer bounds of the
     touchpoint regardless of rotation, whereas a touchpoint is more correctly
-    modeled as an ellipse at position screenPos() with horizontalDiameter() and
-    verticalDiameter() which are independent of rotation().
+    modeled as an ellipse at position screenPos() with ellipseDiameters()
+    which are independent of rotation().
 
-    \sa screenPos(), horizontalDiameter(), verticalDiameter()
+    \sa screenPos(), ellipseDiameters()
 */
 QRectF QTouchEvent::TouchPoint::screenRect() const
 {
-    QRectF ret(0, 0, d->horizontalDiameter, d->verticalDiameter);
+    QRectF ret(QPointF(), d->ellipseDiameters);
     ret.moveCenter(d->screenPos);
     return ret;
 }
@@ -4729,26 +4729,15 @@ qreal QTouchEvent::TouchPoint::rotation() const
 
 /*!
     \since 5.9
-    Returns the width of the bounding ellipse of this touch point.
-    The return value is in logical pixels, along the horizontal axis
-    when rotation() is zero. Most touchscreens do not detect the shape of the
-    contact point, so zero is the most common value.
+    Returns the width and height of the bounding ellipse of this touch point.
+    The return value is in logical pixels. Most touchscreens do not detect the
+    shape of the contact point, so a null size is the most common value.
+    In other cases the diameters may be nonzero and equal (the ellipse is
+    approximated as a circle).
 */
-qreal QTouchEvent::TouchPoint::horizontalDiameter() const
+QSizeF QTouchEvent::TouchPoint::ellipseDiameters() const
 {
-    return d->horizontalDiameter;
-}
-
-/*!
-    \since 5.9
-    Returns the height of the bounding ellipse of this touch point.
-    The return value is in logical pixels, along the vertical axis
-    when rotation() is zero. Most touchscreens do not detect the shape
-    of the contact point, so zero is the most common value.
-*/
-qreal QTouchEvent::TouchPoint::verticalDiameter() const
-{
-    return d->verticalDiameter;
+    return d->ellipseDiameters;
 }
 
 /*!
@@ -4920,8 +4909,7 @@ void QTouchEvent::TouchPoint::setRect(const QRectF &rect)
     if (d->ref.load() != 1)
         d = d->detach();
     d->pos = rect.center();
-    d->verticalDiameter = rect.height();
-    d->horizontalDiameter = rect.width();
+    d->ellipseDiameters = rect.size();
 }
 
 /*! \internal \obsolete */
@@ -4930,8 +4918,7 @@ void QTouchEvent::TouchPoint::setSceneRect(const QRectF &sceneRect)
     if (d->ref.load() != 1)
         d = d->detach();
     d->scenePos = sceneRect.center();
-    d->verticalDiameter = sceneRect.height();
-    d->horizontalDiameter = sceneRect.width();
+    d->ellipseDiameters = sceneRect.size();
 }
 
 /*! \internal \obsolete */
@@ -4940,8 +4927,7 @@ void QTouchEvent::TouchPoint::setScreenRect(const QRectF &screenRect)
     if (d->ref.load() != 1)
         d = d->detach();
     d->screenPos = screenRect.center();
-    d->verticalDiameter = screenRect.height();
-    d->horizontalDiameter = screenRect.width();
+    d->ellipseDiameters = screenRect.size();
 }
 
 /*! \internal */
@@ -4961,19 +4947,11 @@ void QTouchEvent::TouchPoint::setRotation(qreal angle)
 }
 
 /*! \internal */
-void QTouchEvent::TouchPoint::setVerticalDiameter(qreal dia)
+void QTouchEvent::TouchPoint::setEllipseDiameters(const QSizeF &dia)
 {
     if (d->ref.load() != 1)
         d = d->detach();
-    d->verticalDiameter = dia;
-}
-
-/*! \internal */
-void QTouchEvent::TouchPoint::setHorizontalDiameter(qreal dia)
-{
-    if (d->ref.load() != 1)
-        d = d->detach();
-    d->horizontalDiameter = dia;
+    d->ellipseDiameters = dia;
 }
 
 /*! \internal */

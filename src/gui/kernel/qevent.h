@@ -870,8 +870,7 @@ public:
 
         qreal pressure() const;
         qreal rotation() const;
-        qreal horizontalDiameter() const;
-        qreal verticalDiameter() const;
+        QSizeF ellipseDiameters() const;
 
         QVector2D velocity() const;
         InfoFlags flags() const;
@@ -898,8 +897,7 @@ public:
         void setScreenRect(const QRectF &screenRect); // deprecated
         void setPressure(qreal pressure);
         void setRotation(qreal angle);
-        void setVerticalDiameter(qreal dia);
-        void setHorizontalDiameter(qreal dia);
+        void setEllipseDiameters(const QSizeF &dia);
         void setVelocity(const QVector2D &v);
         void setFlags(InfoFlags flags);
         void setRawScreenPositions(const QVector<QPointF> &positions);

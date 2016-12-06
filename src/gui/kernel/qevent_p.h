@@ -65,10 +65,9 @@ public:
         : ref(1),
           id(id),
           state(Qt::TouchPointReleased),
-          pressure(qreal(-1.)),
-          rotation(qreal(0.)),
-          verticalDiameter(0),
-          horizontalDiameter(0)
+          pressure(-1),
+          rotation(0),
+          ellipseDiameters(0, 0)
     { }
 
     inline QTouchEventTouchPointPrivate *detach()
@@ -89,8 +88,7 @@ public:
             lastPos, lastScenePos, lastScreenPos, lastNormalizedPos;
     qreal pressure;
     qreal rotation;
-    qreal verticalDiameter;
-    qreal horizontalDiameter;
+    QSizeF ellipseDiameters;
     QVector2D velocity;
     QTouchEvent::TouchPoint::InfoFlags flags;
     QVector<QPointF> rawScreenPositions;
