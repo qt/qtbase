@@ -98,12 +98,13 @@ public:
     void allocateStorage(QOpenGLTexture::PixelFormat pixelFormat, QOpenGLTexture::PixelType pixelType);
     void allocateMutableStorage(QOpenGLTexture::PixelFormat pixelFormat, QOpenGLTexture::PixelType pixelType);
     void allocateImmutableStorage();
-    void setData(int mipLevel, int layer, QOpenGLTexture::CubeMapFace cubeFace,
+    void setData(int mipLevel, int layer, int layerCount, QOpenGLTexture::CubeMapFace cubeFace,
                  QOpenGLTexture::PixelFormat sourceFormat, QOpenGLTexture::PixelType sourceType,
                  const void *data, const QOpenGLPixelTransferOptions * const options);
-    void setCompressedData(int mipLevel, int layer, QOpenGLTexture::CubeMapFace cubeFace,
+    void setCompressedData(int mipLevel, int layer, int layerCount, QOpenGLTexture::CubeMapFace cubeFace,
                            int dataSize, const void *data,
                            const QOpenGLPixelTransferOptions * const options);
+
 
     void setWrapMode(QOpenGLTexture::WrapMode mode);
     void setWrapMode(QOpenGLTexture::CoordinateDirection direction, QOpenGLTexture::WrapMode mode);
