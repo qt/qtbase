@@ -211,7 +211,8 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size) Q_DECL_NOTHROW
 {
     /* SIMD:
      * Unpacking with SSE has been shown to improve performance on recent CPUs
-     * The same method gives no improvement with NEON.
+     * The same method gives no improvement with NEON. On Aarch64, clang will do the vectorization
+     * itself in exactly the same way as one would do it with intrinsics.
      */
 #if defined(__SSE2__)
     const char *e = str + size;
@@ -727,6 +728,18 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
                                            [=](int i) { return n - s + i; });
 #  endif
 #endif
+#if defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
+            const uint16x8_t vmask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
+            const uint16x8_t ch_vec = vdupq_n_u16(c);
+            for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
+                uint16x8_t data = vld1q_u16(n);
+                uint mask = vaddvq_u16(vandq_u16(vceqq_u16(data, ch_vec), vmask));
+                if (ushort(mask)) {
+                    // found a match
+                    return n - s + qCountTrailingZeroBits(mask);
+                }
+            }
+#endif // aarch64
             --n;
             while (++n != e)
                 if (*n == c)
