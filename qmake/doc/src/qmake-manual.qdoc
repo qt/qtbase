@@ -1119,24 +1119,6 @@
     Specifies a list of all directories to look in to resolve dependencies. This
     variable is used when crawling through \c included files.
 
-    \target DEPLOYMENT_PLUGIN
-    \section1 DEPLOYMENT_PLUGIN
-
-    \note This variable is used only on the Windows CE platform.
-
-    Specifies the Qt plugins that will be deployed. All plugins
-    available in Qt can be explicitly deployed to the device. See
-    \l{Static Plugins}{Static Plugins} for a complete list.
-
-    \note No plugins will be deployed automatically to Windows CE devices.
-    If the application depends on plugins, these plugins have to be specified
-    manually.
-
-    For example, the following definition uploads the jpeg imageformat plugin to
-    the plugins directory on the Windows CE device:
-
-    \snippet code/doc_src_qmake-manual.pro 142
-
     \target DESTDIR
     \section1 DESTDIR
 

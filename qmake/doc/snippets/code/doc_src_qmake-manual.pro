@@ -784,10 +784,6 @@ CONFIG(debug, debug|release) {
 }
 #! [127]
 
-#! [142]
-DEPLOYMENT_PLUGIN += qjpeg
-#! [142]
-
 #! [149]
 SUBDIRS += my_executable my_library
 my_executable.subdir = app

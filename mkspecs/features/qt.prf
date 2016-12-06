@@ -315,9 +315,7 @@ contains(TEMPLATE, .*app) {
     QTPLUGIN = $$manualplugs $$autoplugs
 }
 
-QT_PLUGIN_VERIFY = DEPLOYMENT_PLUGIN
 qtConfig(static) {
-    QT_PLUGIN_VERIFY += QTPLUGIN
     force_import_plugins|contains(TEMPLATE, .*app) {
         import_plugins:!isEmpty(QTPLUGIN) {
             IMPORT_FILE_CONT = \
@@ -337,10 +335,8 @@ qtConfig(static) {
             QMAKE_DISTCLEAN += $$IMPORT_CPP
         }
     }
-}
 
-for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
-    for(QTPLUG, $$list($$lower($$unique($$QT_CURRENT_VERIFY)))) {
+    for (QTPLUG, $$list($$lower($$unique(QTPLUGIN)))) {
        # Check if the plugin is known to Qt. We can use this to determine
        # the plugin path. Unknown plugins must rely on the default link path.
        QT_PLUGINPATH = $$eval(QT_PLUGIN.$${QTPLUG}.TYPE)
@@ -349,7 +345,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
         QT_LINKAGE = -l$${QTPLUG}$$qtPlatformTargetSuffix()
 
         # Only link against plugin in static builds
-        isEqual(QT_CURRENT_VERIFY, QTPLUGIN) {
+        {
             !isEmpty(QT_PLUGINPATH) {
                 plugpath = $$eval(QT_PLUGIN.$${QTPLUG}.PATH)
                 isEmpty(plugpath): \
@@ -357,21 +353,6 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
                 LIBS *= -L$$plugpath/$$QT_PLUGINPATH
             }
                 LIBS += $$QT_LINKAGE
-            # if the plugin is linked statically there is no need to deploy it
-            DEPLOYMENT_PLUGIN -= $$QT_CURRENT_VERIFY
-        }
-
-        # The following block is currently broken, because qt_plugin_XXX.prf files
-        # are not generated for dynamic builds.
-        false:isEqual(QT_CURRENT_VERIFY, DEPLOYMENT_PLUGIN):shared:winrt {
-            QT_ITEM =
-            debug: QT_ITEM = $${QTPLUG}d4.dll
-            else: QT_ITEM = $${QTPLUG}4.dll
-
-            qt_additional_plugin_$${QTPLUG}.files = $$[QT_INSTALL_PLUGINS/get]/$${QT_PLUGINPATH}/$${QT_ITEM}
-            qt_additional_plugin_$${QTPLUG}.path = $${QT_PLUGINPATH}
-
-            INSTALLS *= qt_additional_plugin_$${QTPLUG}
         }
     }
 }
