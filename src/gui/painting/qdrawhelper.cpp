@@ -217,8 +217,8 @@ static const QRgba64 *QT_FASTCALL convertToRGB64(QRgba64 *buffer, const uint *sr
         uint green = (src[i] >> greenShift<Format>()) & greenMask;
         uint blue = (src[i] >> blueShift<Format>()) & blueMask;
 
-        red = ((red << redLeftShift) | (red >> redRightShift)) << 16;
-        green = ((green << greenLeftShift) | (green >> greenRightShift)) << 8;
+        red = ((red << redLeftShift) | (red >> redRightShift));
+        green = ((green << greenLeftShift) | (green >> greenRightShift));
         blue = (blue << blueLeftShift) | (blue >> blueRightShift);
         buffer[i] = QRgba64::fromRgba(red, green, blue, 255);
     }

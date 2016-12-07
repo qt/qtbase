@@ -301,6 +301,7 @@ private slots:
     void QTBUG56252();
 
     void blendNullRGB32();
+    void toRGB64();
 
 private:
     void fillData();
@@ -5157,6 +5158,21 @@ void tst_QPainter::blendNullRGB32()
 
     for (int i=0; i < image.width(); ++i)
         QVERIFY(image.pixel(i,0) != 0xffffffff);
+}
+
+void tst_QPainter::toRGB64()
+{
+    QImage dst(10, 1, QImage::Format_BGR30);
+    QImage src(10, 1, QImage::Format_RGB16);
+    src.fill(Qt::white);
+
+    QPainter paint(&dst);
+    paint.drawImage(0, 0, src);
+    paint.end();
+
+    for (int i=0; i < dst.width(); ++i) {
+        QVERIFY(dst.pixelColor(i,0) == QColor(Qt::white));
+    }
 }
 
 QTEST_MAIN(tst_QPainter)
