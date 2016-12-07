@@ -239,6 +239,12 @@ inline void qt_memrotate90_template<quint32>(const quint32 *src, int w, int h, i
     qt_memrotate90_tiled_unpacked(src, w, h, sstride, dest, dstride);
 }
 
+template <>
+inline void qt_memrotate90_template<quint64>(const quint64 *src, int w, int h, int sstride, quint64 *dest, int dstride)
+{
+    qt_memrotate90_tiled_unpacked(src, w, h, sstride, dest, dstride);
+}
+
 template <class T>
 Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_memrotate180_template(const T *src, int w, int h, int sstride, T *dest, int dstride)
@@ -272,6 +278,12 @@ template <>
 inline void qt_memrotate270_template<quint32>(const quint32 *src, int w, int h, int sstride, quint32 *dest, int dstride)
 {
     // packed algorithm doesn't have any benefit for quint32
+    qt_memrotate270_tiled_unpacked(src, w, h, sstride, dest, dstride);
+}
+
+template <>
+inline void qt_memrotate270_template<quint64>(const quint64 *src, int w, int h, int sstride, quint64 *dest, int dstride)
+{
     qt_memrotate270_tiled_unpacked(src, w, h, sstride, dest, dstride);
 }
 
@@ -309,9 +321,7 @@ Q_GUI_EXPORT void qt_memrotate270(const type *src, int w, int h, int sstride, \
     qt_memrotate270_tiled_unpacked(src, w, h, sstride, dest, dstride); \
 }
 
-
-
-
+QT_IMPL_MEMROTATE(quint64)
 QT_IMPL_MEMROTATE(quint32)
 QT_IMPL_MEMROTATE(quint16)
 QT_IMPL_MEMROTATE(quint24)
@@ -377,6 +387,22 @@ void qt_memrotate270_32(const uchar *srcPixels, int w, int h, int sbpl, uchar *d
     qt_memrotate270((const uint *)srcPixels, w, h, sbpl, (uint *)destPixels, dbpl);
 }
 
+
+void qt_memrotate90_64(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
+{
+    qt_memrotate90((const quint64 *)srcPixels, w, h, sbpl, (quint64 *)destPixels, dbpl);
+}
+
+void qt_memrotate180_64(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
+{
+    qt_memrotate180((const quint64 *)srcPixels, w, h, sbpl, (quint64 *)destPixels, dbpl);
+}
+
+void qt_memrotate270_64(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
+{
+    qt_memrotate270((const quint64 *)srcPixels, w, h, sbpl, (quint64 *)destPixels, dbpl);
+}
+
 MemRotateFunc qMemRotateFunctions[QPixelLayout::BPPCount][3] =
 // 90, 180, 270
 {
@@ -387,6 +413,7 @@ MemRotateFunc qMemRotateFunctions[QPixelLayout::BPPCount][3] =
     { qt_memrotate90_16, qt_memrotate180_16, qt_memrotate270_16 },      // BPP16,
     { qt_memrotate90_24, qt_memrotate180_24, qt_memrotate270_24 },      // BPP24
     { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 },      // BPP32
+    { qt_memrotate90_64, qt_memrotate180_64, qt_memrotate270_64 },      // BPP64
 };
 
 QT_END_NAMESPACE

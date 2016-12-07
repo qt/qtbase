@@ -291,6 +291,12 @@ static QLatin1String formatToString(QImage::Format format)
         return QLatin1String("Alpha8");
     case QImage::Format_Grayscale8:
         return QLatin1String("Grayscale8");
+    case QImage::Format_RGBX64:
+        return QLatin1String("RGBx64");
+    case QImage::Format_RGBA64:
+        return QLatin1String("RGBA64");
+    case QImage::Format_RGBA64_Premultiplied:
+        return QLatin1String("RGBA64pm");
     default:
         break;
     };
@@ -2347,7 +2353,9 @@ void tst_QImage::rgbSwapped_data()
 {
     QTest::addColumn<QImage::Format>("format");
 
-    for (int i = QImage::Format_Indexed8; i < QImage::Format_Alpha8; ++i) {
+    for (int i = QImage::Format_Indexed8; i < QImage::NImageFormats; ++i) {
+        if (i == QImage::Format_Alpha8 || i == QImage::Format_Grayscale8)
+            continue;
         QTest::addRow("%s", formatToString(QImage::Format(i)).data()) << QImage::Format(i);
     }
 }
@@ -2515,14 +2523,7 @@ void tst_QImage::mirrored()
 
 void tst_QImage::inplaceRgbSwapped_data()
 {
-    QTest::addColumn<QImage::Format>("format");
-
-    QTest::newRow("Format_ARGB32_Premultiplied") << QImage::Format_ARGB32_Premultiplied;
-    QTest::newRow("Format_RGBA8888") << QImage::Format_RGBA8888;
-    QTest::newRow("Format_A2RGB30_Premultiplied") << QImage::Format_A2RGB30_Premultiplied;
-    QTest::newRow("Format_RGB888") << QImage::Format_RGB888;
-    QTest::newRow("Format_RGB16") << QImage::Format_RGB16;
-    QTest::newRow("Format_Indexed8") << QImage::Format_Indexed8;
+    rgbSwapped_data();
 }
 
 void tst_QImage::inplaceRgbSwapped()
@@ -2553,9 +2554,9 @@ void tst_QImage::inplaceRgbSwapped()
     for (int i = 0; i < imageSwapped.width(); ++i) {
         QRgb referenceColor = testColor[i];
         QRgb swappedColor = imageSwapped.pixel(i, 0);
-        QCOMPARE(qRed(swappedColor) & 0xf8, qBlue(referenceColor) & 0xf8);
-        QCOMPARE(qGreen(swappedColor) & 0xf8, qGreen(referenceColor) & 0xf8);
-        QCOMPARE(qBlue(swappedColor) & 0xf8, qRed(referenceColor) & 0xf8);
+        QCOMPARE(qRed(swappedColor) & 0xf0, qBlue(referenceColor) & 0xf0);
+        QCOMPARE(qGreen(swappedColor) & 0xf0, qGreen(referenceColor) & 0xf0);
+        QCOMPARE(qBlue(swappedColor) & 0xf0, qRed(referenceColor) & 0xf0);
     }
 
     QCOMPARE(imageSwapped.constScanLine(0), orginalPtr);
@@ -2771,9 +2772,13 @@ void tst_QImage::genericRgbConversion_data()
     QTest::addColumn<QImage::Format>("format");
     QTest::addColumn<QImage::Format>("dest_format");
 
-    for (int i = QImage::Format_RGB32; i < QImage::Format_Alpha8; ++i) {
+    for (int i = QImage::Format_RGB32; i < QImage::NImageFormats; ++i) {
+        if (i == QImage::Format_Alpha8 || i == QImage::Format_Grayscale8)
+            continue;
         const QLatin1String formatI = formatToString(QImage::Format(i));
-        for (int j = QImage::Format_RGB32; j < QImage::Format_Alpha8; ++j) {
+        for (int j = QImage::Format_RGB32; j < QImage::NImageFormats; ++j) {
+            if (j == QImage::Format_Alpha8 || j == QImage::Format_Grayscale8)
+                continue;
             if (i == j)
                 continue;
             QTest::addRow("%s -> %s", formatI.data(), formatToString(QImage::Format(j)).data())
@@ -2810,8 +2815,12 @@ void tst_QImage::inplaceRgbConversion_data()
     QTest::addColumn<QImage::Format>("format");
     QTest::addColumn<QImage::Format>("dest_format");
 
-    for (int i = QImage::Format_RGB32; i < QImage::Format_Alpha8; ++i) {
-        for (int j = QImage::Format_RGB32; j < QImage::Format_Alpha8; ++j) {
+    for (int i = QImage::Format_RGB32; i < QImage::NImageFormats; ++i) {
+        if (i == QImage::Format_Alpha8 || i == QImage::Format_Grayscale8)
+            continue;
+        for (int j = QImage::Format_RGB32; j < QImage::NImageFormats; ++j) {
+            if (j == QImage::Format_Alpha8 || j == QImage::Format_Grayscale8)
+                continue;
             if (i == j)
                 continue;
             QTest::addRow("%s -> %s", formatToString(QImage::Format(i)).data(), formatToString(QImage::Format(j)).data())
@@ -2844,10 +2853,10 @@ void tst_QImage::inplaceRgbConversion()
             QCOMPARE(qGreen(convertedColor) & 0xF0, i * 16);
         }
     }
-    if (image.depth() == imageConverted.depth())
+    if (qt_depthForFormat(format) == qt_depthForFormat(dest_format))
         QCOMPARE(imageConverted.constScanLine(0), originalPtr);
 
-    {
+    if (qt_depthForFormat(format) <= 32) {
         // Test attempted inplace conversion of images created on existing buffer
         static const quint32 readOnlyData[] = { 0xff0102ffU, 0xff0506ffU, 0xff0910ffU, 0xff1314ffU };
         quint32 readWriteData[] = { 0xff0102ffU, 0xff0506ffU, 0xff0910ffU, 0xff1314ffU };
@@ -2980,7 +2989,9 @@ void tst_QImage::invertPixelsRGB_data()
 {
     QTest::addColumn<QImage::Format>("image_format");
 
-    for (int i = QImage::Format_RGB32; i < QImage::Format_Alpha8; ++i) {
+    for (int i = QImage::Format_RGB32; i < QImage::NImageFormats; ++i) {
+        if (i == QImage::Format_Alpha8 || i == QImage::Format_Grayscale8)
+            continue;
         QTest::addRow("%s", formatToString(QImage::Format(i)).data()) << QImage::Format(i);
     }
 }

@@ -1091,6 +1091,7 @@ void tst_QPainter::fillRect_data()
 
     QTest::newRow("argb32pm") << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("rgba8888pm") << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("rgba64pm") << QImage::Format_RGBA64_Premultiplied;
 }
 
 void tst_QPainter::fillRect()
@@ -2442,6 +2443,24 @@ void tst_QPainter::setOpacity_data()
 
     QTest::newRow("A2RGB30P on RGB30") << QImage::Format_RGB30
                                        << QImage::Format_A2RGB30_Premultiplied;
+
+    QTest::newRow("RGBA64P on RGBA64P") << QImage::Format_RGBA64_Premultiplied
+                                        << QImage::Format_RGBA64_Premultiplied;
+
+    QTest::newRow("RGBA64 on RGBA64") << QImage::Format_RGBA64
+                                      << QImage::Format_RGBA64;
+
+    QTest::newRow("RGBx64 on RGBx64") << QImage::Format_RGBX64
+                                      << QImage::Format_RGBX64;
+
+    QTest::newRow("RGBA64P on ARGB32P") << QImage::Format_ARGB32_Premultiplied
+                                        << QImage::Format_RGBA64_Premultiplied;
+
+    QTest::newRow("RGBx64 on ARGB32P") << QImage::Format_ARGB32_Premultiplied
+                                       << QImage::Format_RGBX64;
+
+    QTest::newRow("ARGB32P on RGBA64P") << QImage::Format_RGBA64_Premultiplied
+                                        << QImage::Format_ARGB32_Premultiplied;
 
 }
 
@@ -3847,6 +3866,8 @@ void tst_QPainter::gradientPixelFormat_data()
     QTest::newRow("rgbx8888") << QImage::Format_RGBX8888;
     QTest::newRow("rgba8888") << QImage::Format_RGBA8888;
     QTest::newRow("rgba8888_pm") << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("rgbx64") << QImage::Format_RGBX64;
+    QTest::newRow("rgba64_pm") << QImage::Format_RGBA64_Premultiplied;
 }
 
 void tst_QPainter::gradientPixelFormat()
@@ -4784,7 +4805,19 @@ void tst_QPainter::blendARGBonRGB_data()
                                            << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 255 ;
     QTest::newRow("ARGB_PM source-in ARGB32") << QImage::Format_ARGB32 << QImage::Format_ARGB32_Premultiplied
                                               << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 255;
-    // Only ARGB does inverse premultiply, on the rest over and source gives similar results:
+    QTest::newRow("ARGB over RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32
+                                        << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM over RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32_Premultiplied
+                                           << QPainter::CompositionMode_SourceOver << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB source RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32
+                                          << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 255;
+    QTest::newRow("ARGB_PM source RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32_Premultiplied
+                                             << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 255;
+    QTest::newRow("ARGB source-in RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32
+                                             << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 255;
+    QTest::newRow("ARGB_PM source-in RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32_Premultiplied
+                                                << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 255;
+    // Only ARGB32 and RGBA8888 does inverse premultiply, on the rest over and source gives similar results:
     QTest::newRow("ARGB over RGB32") << QImage::Format_RGB32 << QImage::Format_ARGB32
                                      << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 127;
     QTest::newRow("ARGB_PM over RGB32") << QImage::Format_RGB32 << QImage::Format_ARGB32_Premultiplied
@@ -4821,18 +4854,6 @@ void tst_QPainter::blendARGBonRGB_data()
                                              << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 127;
     QTest::newRow("ARGB_PM source-in RGBx8888") << QImage::Format_RGBX8888 << QImage::Format_ARGB32_Premultiplied
                                                 << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 127;
-    QTest::newRow("ARGB over RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32
-                                        << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 127;
-    QTest::newRow("ARGB_PM over RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32_Premultiplied
-                                           << QPainter::CompositionMode_SourceOver << qRgba(127, 0, 0, 127) << 127;
-    QTest::newRow("ARGB source RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32
-                                          << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 255;
-    QTest::newRow("ARGB_PM source RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32_Premultiplied
-                                             << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 255;
-    QTest::newRow("ARGB source-in RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32
-                                             << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 255;
-    QTest::newRow("ARGB_PM source-in RGBA8888") << QImage::Format_RGBA8888 << QImage::Format_ARGB32_Premultiplied
-                                                << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 255;
     QTest::newRow("ARGB over RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32
                                      << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 123;
     QTest::newRow("ARGB_PM over RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32_Premultiplied

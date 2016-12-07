@@ -106,12 +106,20 @@ QT_BEGIN_NAMESPACE
 #define GL_RGB10                          0x8052
 #endif
 
+#ifndef GL_RGB16
+#define GL_RGB16                          0x8054
+#endif
+
 #ifndef GL_RGBA8
 #define GL_RGBA8                          0x8058
 #endif
 
 #ifndef GL_RGB10_A2
 #define GL_RGB10_A2                       0x8059
+#endif
+
+#ifndef GL_RGBA16
+#define GL_RGBA16                         0x805B
 #endif
 
 #ifndef GL_BGRA
@@ -125,6 +133,7 @@ QT_BEGIN_NAMESPACE
 #ifndef GL_UNSIGNED_INT_2_10_10_10_REV
 #define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
 #endif
+
 
 
 /*!
@@ -522,6 +531,8 @@ void QOpenGLFramebufferObjectPrivate::initTexture(int idx)
     GLuint pixelType = GL_UNSIGNED_BYTE;
     if (color.internalFormat == GL_RGB10_A2 || color.internalFormat == GL_RGB10)
         pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
+    else if (color.internalFormat == GL_RGB16  || color.internalFormat == GL_RGBA16)
+        pixelType = GL_UNSIGNED_SHORT;
 
     funcs.glTexImage2D(target, 0, color.internalFormat, color.size.width(), color.size.height(), 0,
                        GL_RGBA, pixelType, NULL);
@@ -1304,6 +1315,14 @@ static inline QImage qt_gl_read_framebuffer_rgb10a2(const QSize &size, bool incl
     return img;
 }
 
+static inline QImage qt_gl_read_framebuffer_rgba16(const QSize &size, bool include_alpha, QOpenGLContext *context)
+{
+    // We assume OpenGL 1.2+ or ES 3.0+ here.
+    QImage img(size, include_alpha ? QImage::Format_RGBA64_Premultiplied : QImage::Format_RGBX64);
+    context->functions()->glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_SHORT, img.bits());
+    return img;
+}
+
 static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, bool include_alpha, bool flip)
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
@@ -1318,6 +1337,10 @@ static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, 
         return qt_gl_read_framebuffer_rgb10a2(size, false, ctx).mirrored(false, flip);
     case GL_RGB10_A2:
         return qt_gl_read_framebuffer_rgb10a2(size, include_alpha, ctx).mirrored(false, flip);
+    case GL_RGB16:
+        return qt_gl_read_framebuffer_rgba16(size, false, ctx).mirrored(false, flip);
+    case GL_RGBA16:
+        return qt_gl_read_framebuffer_rgba16(size, include_alpha, ctx).mirrored(false, flip);
     case GL_RGBA:
     case GL_RGBA8:
     default:
@@ -1346,7 +1369,8 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
     is used only when internalTextureFormat() is set to \c GL_RGB. Since Qt 5.2
     the function will fall back to premultiplied RGBA8888 or RGBx8888 when
     reading to (A)RGB32 is not supported, and this includes OpenGL ES. Since Qt
-    5.4 an A2BGR30 image is returned if the internal format is RGB10_A2.
+    5.4 an A2BGR30 image is returned if the internal format is RGB10_A2, and since
+    Qt 5.12 a RGBA64 image is return if the internal format is RGBA16.
 
     If the rendering in the framebuffer was not done with premultiplied alpha in mind,
     create a wrapper QImage with a non-premultiplied format. This is necessary before

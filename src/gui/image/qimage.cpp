@@ -277,6 +277,16 @@ bool QImageData::checkForAlphaPixels() const
             bits += bytes_per_line;
         }
     } break;
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied: {
+        uchar *bits = data;
+        for (int y=0; y<height && !has_alpha_pixels; ++y) {
+            for (int x=0; x<width; ++x) {
+                has_alpha_pixels |= !(((QRgba64 *)bits)[x].isOpaque());
+            }
+            bits += bytes_per_line;
+        }
+    } break;
 
     case QImage::Format_RGB32:
     case QImage::Format_RGB16:
@@ -288,6 +298,7 @@ bool QImageData::checkForAlphaPixels() const
     case QImage::Format_BGR30:
     case QImage::Format_RGB30:
     case QImage::Format_Grayscale8:
+    case QImage::Format_RGBX64:
         break;
     case QImage::Format_Invalid:
     case QImage::NImageFormats:
@@ -651,11 +662,7 @@ bool QImageData::checkForAlphaPixels() const
 /*!
     \enum QImage::Format
 
-    The following image formats are available in Qt. Values from Format_ARGB8565_Premultiplied
-    to Format_ARGB4444_Premultiplied were added in Qt 4.4. Values Format_RGBX8888, Format_RGBA8888
-    and Format_RGBA8888_Premultiplied were added in Qt 5.2. Values Format_BGR30, Format_A2BGR30_Premultiplied,
-    Format_RGB30, Format_A2RGB30_Premultiplied were added in Qt 5.4. Format_Alpha8 and Format_Grayscale8
-    were added in Qt 5.5.
+    The following image formats are available in Qt.
     See the notes after the table.
 
     \value Format_Invalid   The image is invalid.
@@ -699,29 +706,32 @@ bool QImageData::checkForAlphaPixels() const
     \value Format_ARGB4444_Premultiplied  The image is stored using a
                             premultiplied 16-bit ARGB format (4-4-4-4).
     \value Format_RGBX8888   The image is stored using a 32-bit byte-ordered RGB(x) format (8-8-8-8).
-                             This is the same as the Format_RGBA8888 except alpha must always be 255.
+                             This is the same as the Format_RGBA8888 except alpha must always be 255. (added in Qt 5.2)
     \value Format_RGBA8888   The image is stored using a 32-bit byte-ordered RGBA format (8-8-8-8).
                              Unlike ARGB32 this is a byte-ordered format, which means the 32bit
                              encoding differs between big endian and little endian architectures,
                              being respectively (0xRRGGBBAA) and (0xAABBGGRR). The order of the colors
-                             is the same on any architecture if read as bytes 0xRR,0xGG,0xBB,0xAA.
+                             is the same on any architecture if read as bytes 0xRR,0xGG,0xBB,0xAA. (added in Qt 5.2)
     \value Format_RGBA8888_Premultiplied    The image is stored using a
-                            premultiplied 32-bit byte-ordered RGBA format (8-8-8-8).
-    \value Format_BGR30      The image is stored using a 32-bit BGR format (x-10-10-10).
-    \value Format_A2BGR30_Premultiplied    The image is stored using a 32-bit premultiplied ABGR format (2-10-10-10).
-    \value Format_RGB30      The image is stored using a 32-bit RGB format (x-10-10-10).
-    \value Format_A2RGB30_Premultiplied    The image is stored using a 32-bit premultiplied ARGB format (2-10-10-10).
-    \value Format_Alpha8     The image is stored using an 8-bit alpha only format.
-    \value Format_Grayscale8 The image is stored using an 8-bit grayscale format.
+                            premultiplied 32-bit byte-ordered RGBA format (8-8-8-8). (added in Qt 5.2)
+    \value Format_BGR30      The image is stored using a 32-bit BGR format (x-10-10-10). (added in Qt 5.4)
+    \value Format_A2BGR30_Premultiplied    The image is stored using a 32-bit premultiplied ABGR format (2-10-10-10). (added in Qt 5.4)
+    \value Format_RGB30      The image is stored using a 32-bit RGB format (x-10-10-10). (added in Qt 5.4)
+    \value Format_A2RGB30_Premultiplied    The image is stored using a 32-bit premultiplied ARGB format (2-10-10-10). (added in Qt 5.4)
+    \value Format_Alpha8     The image is stored using an 8-bit alpha only format. (added in Qt 5.5)
+    \value Format_Grayscale8 The image is stored using an 8-bit grayscale format. (added in Qt 5.5)
+    \value Format_RGBX64     The image is stored using a 64-bit halfword-ordered RGB(x) format (16-16-16-16).
+                             This is the same as the Format_RGBX64 except alpha must always be 65535. (added in Qt 5.12)
+    \value Format_RGBA64     The image is stored using a 64-bit halfword-ordered RGBA format (16-16-16-16). (added in Qt 5.12)
+    \value Format_RGBA64_Premultiplied    The image is stored using a premultiplied 64-bit halfword-ordered
+                             RGBA format (16-16-16-16). (added in Qt 5.12)
 
     \note Drawing into a QImage with QImage::Format_Indexed8 is not
     supported.
 
-    \note Do not render into ARGB32 images using QPainter.  Using
-    QImage::Format_ARGB32_Premultiplied is significantly faster.
-
-    \note Formats with more than 8 bit per color channel will only be processed by the raster engine using 8 bit
-    per color.
+    \note Avoid most rendering directly to most of these formats using QPainter. Rendering
+    is best optimized to the \c Format_RGB32 and \c Format_ARGB32_Premultiplied formats, and secondarily for rendering to the
+    \c Format_RGB16, \c Format_RGBX8888, \c Format_RGBA8888_Premultiplied, \c Format_RGBX64 and \c Format_RGBA64_Premultiplied formats
 
     \sa format(), convertToFormat()
 */
@@ -1708,6 +1718,10 @@ void QImage::fill(uint pixel)
         qt_rectfill<quint24>(reinterpret_cast<quint24*>(d->data), pixel,
                              0, 0, d->width, d->height, d->bytes_per_line);
         return;
+    } else if (d->depth == 64) {
+        qt_rectfill<quint64>(reinterpret_cast<quint64*>(d->data), QRgba64::fromArgb32(pixel),
+                             0, 0, d->width, d->height, d->bytes_per_line);
+        return;
     }
 
     if (d->format == Format_RGB32)
@@ -1815,6 +1829,12 @@ void QImage::fill(const QColor &color)
         else
             fill((uint) 0);
         break;
+    case QImage::Format_RGBX64:
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied:
+        qt_rectfill<quint64>(reinterpret_cast<quint64*>(d->data), color.rgba64(),
+                             0, 0, d->width, d->height, d->bytes_per_line);
+        break;
     default: {
         QPainter p(this);
         p.setCompositionMode(QPainter::CompositionMode_Source);
@@ -1838,7 +1858,8 @@ void QImage::fill(const QColor &color)
     changed.
 
     If the image has a premultiplied alpha channel, the image is first
-    converted to ARGB32 to be inverted and then converted back.
+    converted to an unpremultiplied image format to be inverted and
+    then converted back.
 
     \sa {QImage#Image Transformations}{Image Transformations}
 */
@@ -1857,8 +1878,13 @@ void QImage::invertPixels(InvertMode mode)
     QImage::Format originalFormat = d->format;
     // Inverting premultiplied pixels would produce invalid image data.
     if (hasAlphaChannel() && qPixelLayouts[d->format].premultiplied) {
-        if (!d->convertInPlace(QImage::Format_ARGB32, 0))
-            *this = convertToFormat(QImage::Format_ARGB32);
+        if (depth() > 32) {
+            if (!d->convertInPlace(QImage::Format_RGBA64, 0))
+                *this = convertToFormat(QImage::Format_RGBA64);
+        } else {
+            if (!d->convertInPlace(QImage::Format_ARGB32, 0))
+                *this = convertToFormat(QImage::Format_ARGB32);
+        }
     }
 
     if (depth() < 32) {
@@ -1870,6 +1896,20 @@ void QImage::invertPixels(InvertMode mode)
             for (int x=0; x<bpl; ++x)
                 *sl++ ^= 0xff;
             sl += pad;
+        }
+    }
+    else if (depth() == 64) {
+        quint16 *p = (quint16*)d->data;
+        quint16 *end = (quint16*)(d->data + d->nbytes);
+        quint16 xorbits = 0xffff;
+        while (p < end) {
+            *p++ ^= xorbits;
+            *p++ ^= xorbits;
+            *p++ ^= xorbits;
+            if (mode == InvertRgba)
+                *p++ ^= xorbits;
+            else
+                p++;
         }
     } else {
         quint32 *p = (quint32*)d->data;
@@ -1987,6 +2027,26 @@ QImage::Format QImage::format() const
     \sa {Image Formats}
 */
 
+static bool highColorPrecision(QImage::Format format)
+{
+    // Formats with higher color precision than ARGB32_Premultiplied.
+    switch (format) {
+    case QImage::Format_ARGB32:
+    case QImage::Format_RGBA8888:
+    case QImage::Format_BGR30:
+    case QImage::Format_RGB30:
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_A2RGB30_Premultiplied:
+    case QImage::Format_RGBX64:
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
 /*!
     \internal
 */
@@ -1999,8 +2059,18 @@ QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags fl
         return QImage();
 
     Image_Converter converter = qimage_converter_map[d->format][format];
-    if (!converter && format > QImage::Format_Indexed8 && d->format > QImage::Format_Indexed8)
-        converter = convert_generic;
+    if (!converter && format > QImage::Format_Indexed8 && d->format > QImage::Format_Indexed8) {
+        if (highColorPrecision(format) && highColorPrecision(d->format)) {
+            // Convert over RGBA64_Premultiplied
+            if (format == QImage::Format_RGBA64_Premultiplied)
+                converter = convert_generic_to_rgb64;
+            else {
+                Q_ASSERT(d->format != QImage::Format_RGBA64_Premultiplied);
+                return convertToFormat(Format_RGBA64_Premultiplied, flags).convertToFormat(format, flags);
+            }
+        } else
+            converter = convert_generic;
+    }
     if (converter) {
         QImage image(d->width, d->height, format);
 
@@ -2298,6 +2368,10 @@ QRgb QImage::pixel(int x, int y) const
         return qConvertA2rgb30ToArgb32<PixelOrderRGB>(reinterpret_cast<const quint32 *>(s)[x]);
     case Format_RGB16:
         return qConvertRgb16To32(reinterpret_cast<const quint16 *>(s)[x]);
+    case Format_RGBX64:
+    case Format_RGBA64: // Match ARGB32 behavior.
+    case Format_RGBA64_Premultiplied:
+        return reinterpret_cast<const QRgba64 *>(s)[x].toArgb32();
     default:
         break;
     }
@@ -2447,6 +2521,11 @@ QColor QImage::pixelColor(int x, int y) const
     case Format_A2RGB30_Premultiplied:
         c = qConvertA2rgb30ToRgb64<PixelOrderRGB>(reinterpret_cast<const quint32 *>(s)[x]);
         break;
+    case Format_RGBX64:
+    case Format_RGBA64:
+    case Format_RGBA64_Premultiplied:
+        c = reinterpret_cast<const QRgba64 *>(s)[x];
+        break;
     default:
         c = QRgba64::fromArgb32(pixel(x, y));
         break;
@@ -2516,6 +2595,14 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         return;
     case Format_A2RGB30_Premultiplied:
         ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(c);
+        return;
+    case Format_RGBX64:
+        ((QRgba64 *)s)[x] = color.rgba64();
+        ((QRgba64 *)s)[x].setAlpha(65535);
+        return;
+    case Format_RGBA64:
+    case Format_RGBA64_Premultiplied:
+        ((QRgba64 *)s)[x] = color.rgba64();
         return;
     default:
         setPixel(x, y, c.toArgb32());
@@ -3100,6 +3187,9 @@ inline void do_mirror(QImageData *dst, QImageData *src, bool horizontal, bool ve
     }
 
     switch (depth) {
+    case 64:
+        do_mirror_data<quint64>(dst, src, dstX0, dstY0, dstXIncr, dstYIncr, w, h);
+        break;
     case 32:
         do_mirror_data<quint32>(dst, src, dstX0, dstY0, dstXIncr, dstYIncr, w, h);
         break;
@@ -3308,6 +3398,23 @@ QImage QImage::rgbSwapped_helper() const
             }
         }
         break;
+    case Format_RGBX64:
+    case Format_RGBA64:
+    case Format_RGBA64_Premultiplied:
+        res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
+        for (int i = 0; i < d->height; i++) {
+            QRgba64 *q = reinterpret_cast<QRgba64 *>(res.scanLine(i));
+            const QRgba64 *p = reinterpret_cast<const QRgba64 *>(constScanLine(i));
+            const QRgba64 *end = p + d->width;
+            while (p < end) {
+                QRgba64 c = *p;
+                *q = QRgba64::fromRgba64(c.blue(), c.green(), c.red(), c.alpha());
+                p++;
+                q++;
+            }
+        }
+        break;
     default:
         res = QImage(d->width, d->height, d->format);
         rgbSwapped_generic(d->width, d->height, this, &res, &qPixelLayouts[d->format]);
@@ -3396,6 +3503,19 @@ void QImage::rgbSwapped_inplace()
             uint *end = p + d->width;
             while (p < end) {
                 *p = qRgbSwapRgb30(*p);
+                p++;
+            }
+        }
+        break;
+    case Format_RGBX64:
+    case Format_RGBA64:
+    case Format_RGBA64_Premultiplied:
+        for (int i = 0; i < d->height; i++) {
+            QRgba64 *p = reinterpret_cast<QRgba64 *>(scanLine(i));
+            QRgba64 *end = p + d->width;
+            while (p < end) {
+                QRgba64 c = *p;
+                *p = QRgba64::fromRgba64(c.blue(), c.green(), c.red(), c.alpha());
                 p++;
             }
         }
@@ -4473,6 +4593,9 @@ int QImage::bitPlaneCount() const
     case QImage::Format_RGB444:
         bpc = 12;
         break;
+    case QImage::Format_RGBX64:
+        bpc = 48;
+        break;
     default:
         bpc = qt_depthForFormat(d->format);
         break;
@@ -5171,6 +5294,45 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
                     /*INTERPRETATION*/    QPixelFormat::UnsignedByte,
                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGBX64:
+        QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                16,
+                     /*GREEN*/              16,
+                     /*BLUE*/               16,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              16,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGBA64:
+        QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                16,
+                     /*GREEN*/              16,
+                     /*BLUE*/               16,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              16,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+         //QImage::Format_RGBA64_Premultiplied:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                16,
+                     /*GREEN*/              16,
+                     /*BLUE*/               16,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              16,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
+                     /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
 };
 Q_STATIC_ASSERT(sizeof(pixelformats) / sizeof(*pixelformats) == QImage::NImageFormats);
 

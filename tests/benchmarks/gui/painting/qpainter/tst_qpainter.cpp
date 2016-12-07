@@ -649,6 +649,9 @@ void tst_QPainter::drawPixmapImage_data_helper(bool pixmaps)
         "A2RGB30_pm",
         "Alpha8",
         "Grayscale8",
+        "RGBx64",
+        "RGBA64",
+        "RGBA64_pm",
     };
 
     const QImage::Format pixmapFormats[] = {

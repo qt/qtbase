@@ -82,6 +82,8 @@ private slots:
     void fboRendering();
     void fboRenderingRGB30_data();
     void fboRenderingRGB30();
+    void fboRenderingRGB64_data();
+    void fboRenderingRGB64();
     void fboHandleNulledAfterContextDestroyed();
     void fboMRT();
     void fboMRT_differentFormats();
@@ -614,6 +616,10 @@ void tst_QOpenGL::fboRenderingRGB30_data()
 #define GL_RGB10_A2                       0x8059
 #endif
 
+#ifndef GL_RGBA16
+#define GL_RGBA16                         0x805B
+#endif
+
 #ifndef GL_FRAMEBUFFER_RENDERABLE
 #define GL_FRAMEBUFFER_RENDERABLE         0x8289
 #endif
@@ -622,7 +628,7 @@ void tst_QOpenGL::fboRenderingRGB30_data()
 #define GL_FULL_SUPPORT                   0x82B7
 #endif
 
-static bool hasRGB10A2(QOpenGLContext *ctx)
+static bool supportsInternalFboFormat(QOpenGLContext *ctx, int glFormat)
 {
     if (ctx->format().majorVersion() < 3)
         return false;
@@ -631,7 +637,7 @@ static bool hasRGB10A2(QOpenGLContext *ctx)
         GLint value = -1;
         QOpenGLFunctions_4_2_Core* vFuncs = ctx->versionFunctions<QOpenGLFunctions_4_2_Core>();
         if (vFuncs && vFuncs->initializeOpenGLFunctions()) {
-            vFuncs->glGetInternalformativ(GL_TEXTURE_2D, GL_RGB10_A2, GL_FRAMEBUFFER_RENDERABLE, 1, &value);
+            vFuncs->glGetInternalformativ(GL_TEXTURE_2D, glFormat, GL_FRAMEBUFFER_RENDERABLE, 1, &value);
             if (value != GL_FULL_SUPPORT)
                 return false;
         }
@@ -657,7 +663,7 @@ void tst_QOpenGL::fboRenderingRGB30()
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QOpenGLFramebufferObject not supported on this platform");
 
-    if (!hasRGB10A2(&ctx))
+    if (!supportsInternalFboFormat(&ctx, GL_RGB10_A2))
         QSKIP("An internal RGB30_A2 format is not guaranteed on this platform");
 
     // No multisample with combined depth/stencil attachment:
@@ -711,6 +717,71 @@ void tst_QOpenGL::fboRenderingRGB30()
     QVERIFY((pixel & 0x3f) > 0);
     QVERIFY(((pixel >> 10) & 0x3f) > 0);
     QVERIFY(((pixel >> 20) & 0x3f) > 0);
+}
+
+void tst_QOpenGL::fboRenderingRGB64_data()
+{
+    common_data();
+}
+
+void tst_QOpenGL::fboRenderingRGB64()
+{
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
+    QSKIP("QTBUG-22617");
+#endif
+
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
+
+    QOpenGLContext ctx;
+    QVERIFY(ctx.create());
+
+    QVERIFY(ctx.makeCurrent(surface.data()));
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    if (!supportsInternalFboFormat(&ctx, GL_RGBA16))
+        QSKIP("An internal RGBA16 format is not guaranteed on this platform");
+
+    // No multisample with combined depth/stencil attachment:
+    QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+    fboFormat.setInternalTextureFormat(GL_RGBA16);
+
+    // Uncomplicate things by using POT:
+    const QSize size(256, 128);
+    QOpenGLFramebufferObject fbo(size, fboFormat);
+
+    if (fbo.attachment() != QOpenGLFramebufferObject::CombinedDepthStencil)
+        QSKIP("FBOs missing combined depth~stencil support");
+
+    QVERIFY(fbo.bind());
+
+    QPainter fboPainter;
+    QOpenGLPaintDevice device(fbo.width(), fbo.height());
+    bool painterBegun = fboPainter.begin(&device);
+    QVERIFY(painterBegun);
+
+    qt_opengl_draw_test_pattern(&fboPainter, fbo.width(), fbo.height());
+
+    fboPainter.end();
+
+    QImage fb = fbo.toImage();
+    QCOMPARE(fb.format(), QImage::Format_RGBA64_Premultiplied);
+    QCOMPARE(fb.size(), size);
+
+    qt_opengl_check_test_pattern(fb);
+
+    // Check rendering can handle precise 16 bit color values.
+    fboPainter.begin(&device);
+    fboPainter.fillRect(QRect(0, 0, 256, 128), QColor::fromRgba64(5, 1002, 8001, 65535));
+    fboPainter.end();
+    fb = fbo.toImage();
+    QRgba64 pixel = ((QRgba64*)fb.bits())[0];
+    QCOMPARE(pixel.red(), 5);
+    QCOMPARE(pixel.green(), 1002);
+    QCOMPARE(pixel.blue(), 8001);
 }
 
 void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
@@ -844,7 +915,7 @@ void tst_QOpenGL::fboMRT_differentFormats()
     if (!f->hasOpenGLFeature(QOpenGLFunctions::MultipleRenderTargets))
         QSKIP("Multiple render targets not supported on this platform");
 
-    if (!hasRGB10A2(&ctx))
+    if (!supportsInternalFboFormat(&ctx, GL_RGB10_A2))
         QSKIP("RGB10_A2 not supported on this platform");
 
     // 3 color attachments, same size, different internal format, depth/stencil.

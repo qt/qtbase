@@ -1567,6 +1567,7 @@ void QOpenGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, c
     switch (image.format()) {
     case QImage::Format_RGBA8888:
     case QImage::Format_ARGB32:
+    case QImage::Format_RGBA64:
         d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::NonPremultipliedImageSrc);
         bindOption = 0;
         break;

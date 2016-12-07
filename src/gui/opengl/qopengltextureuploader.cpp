@@ -61,6 +61,10 @@
 #define GL_RGB10_A2                       0x8059
 #endif
 
+#ifndef GL_RGBA16
+#define GL_RGBA16                         0x805B
+#endif
+
 #ifndef GL_BGRA
 #define GL_BGRA 0x80E1
 #endif
@@ -193,6 +197,15 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
         pixelType = GL_UNSIGNED_BYTE;
         targetFormat = image.format();
         break;
+    case QImage::Format_RGBX64:
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied:
+        externalFormat = internalFormat = GL_RGBA;
+        if (isOpenGL12orBetter || (context->isOpenGLES() && context->format().majorVersion() >= 3))
+            internalFormat = GL_RGBA16;
+        pixelType = GL_UNSIGNED_SHORT;
+        targetFormat =  image.format();
+        break;
     case QImage::Format_Indexed8:
         if (sRgbBinding) {
             // Always needs conversion
@@ -262,11 +275,15 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             targetFormat = QImage::Format_ARGB32_Premultiplied;
         else if (targetFormat == QImage::Format_RGBA8888)
             targetFormat = QImage::Format_RGBA8888_Premultiplied;
+        else if (targetFormat == QImage::Format_RGBA64)
+            targetFormat = QImage::Format_RGBA64_Premultiplied;
     } else {
         if (targetFormat == QImage::Format_ARGB32_Premultiplied)
             targetFormat = QImage::Format_ARGB32;
         else if (targetFormat == QImage::Format_RGBA8888_Premultiplied)
             targetFormat = QImage::Format_RGBA8888;
+        else if (targetFormat == QImage::Format_RGBA64_Premultiplied)
+            targetFormat = QImage::Format_RGBA64;
     }
 
     if (sRgbBinding) {

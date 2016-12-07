@@ -125,6 +125,9 @@ public:
         Format_A2RGB30_Premultiplied,
         Format_Alpha8,
         Format_Grayscale8,
+        Format_RGBX64,
+        Format_RGBA64,
+        Format_RGBA64_Premultiplied,
 #if 0
         // reserved for future use
         Format_Grayscale16,

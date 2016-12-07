@@ -332,6 +332,20 @@ void QT_FASTCALL destStore64RGBA8888_sse4(QRasterBuffer *rasterBuffer, int x, in
     convertARGBFromRGBA64PM_sse4<true>(dest, buffer, length);
 }
 
+void QT_FASTCALL storeARGB32FromRGBA64PM_sse4(uchar *dest, const QRgba64 *src, int index, int count,
+                                              const QVector<QRgb> *, QDitherInfo *)
+{
+    uint *d = (uint*)dest + index;
+    convertARGBFromRGBA64PM_sse4<false>(d, src, count);
+}
+
+void QT_FASTCALL storeRGBA8888FromRGBA64PM_sse4(uchar *dest, const QRgba64 *src, int index, int count,
+                                                const QVector<QRgb> *, QDitherInfo *)
+{
+    uint *d = (uint*)dest + index;
+    convertARGBFromRGBA64PM_sse4<true>(d, src, count);
+}
+
 template
 void QT_FASTCALL storeA2RGB30PMFromARGB32PM_sse4<PixelOrderBGR>(uchar *dest, const uint *src, int index, int count,
                                                                 const QVector<QRgb> *, QDitherInfo *);

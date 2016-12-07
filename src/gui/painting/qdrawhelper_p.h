@@ -1143,6 +1143,8 @@ static Q_ALWAYS_INLINE const uint *qt_convertRGBA8888ToARGB32PM(uint *buffer, co
     return buffer;
 }
 
+template<bool RGBA> void qt_convertRGBA64ToARGB32(uint *dst, const QRgba64 *src, int count);
+
 const uint qt_bayer_matrix[16][16] = {
     { 0x1, 0xc0, 0x30, 0xf0, 0xc, 0xcc, 0x3c, 0xfc,
       0x3, 0xc3, 0x33, 0xf3, 0xf, 0xcf, 0x3f, 0xff},
@@ -1232,9 +1234,15 @@ typedef const uint *(QT_FASTCALL *FetchAndConvertPixelsFunc)(uint *buffer, const
 typedef void (QT_FASTCALL *ConvertAndStorePixelsFunc)(uchar *dest, const uint *src, int index, int count,
                                                       const QVector<QRgb> *clut, QDitherInfo *dither);
 
+typedef const QRgba64 *(QT_FASTCALL *FetchAndConvertPixelsFunc64)(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                                 const QVector<QRgb> *clut, QDitherInfo *dither);
+typedef void (QT_FASTCALL *ConvertAndStorePixelsFunc64)(uchar *dest, const QRgba64 *src, int index, int count,
+                                                        const QVector<QRgb> *clut, QDitherInfo *dither);
+
 typedef void (QT_FASTCALL *ConvertFunc)(uint *buffer, int count, const QVector<QRgb> *clut);
-typedef const QRgba64 *(QT_FASTCALL *ConvertFunc64)(QRgba64 *buffer, const uint *src, int count,
-                                                    const QVector<QRgb> *clut, QDitherInfo *dither);
+typedef void (QT_FASTCALL *Convert64Func)(quint64 *buffer, int count, const QVector<QRgb> *clut);
+typedef const QRgba64 *(QT_FASTCALL *ConvertTo64Func)(QRgba64 *buffer, const uint *src, int count,
+                                                      const QVector<QRgb> *clut, QDitherInfo *dither);
 typedef void (QT_FASTCALL *RbSwapFunc)(uchar *dst, const uchar *src, int count);
 
 
@@ -1249,6 +1257,7 @@ struct QPixelLayout
         BPP16,
         BPP24,
         BPP32,
+        BPP64,
         BPPCount
     };
 
@@ -1257,16 +1266,18 @@ struct QPixelLayout
     BPP bpp;
     RbSwapFunc rbSwap;
     ConvertFunc convertToARGB32PM;
-    ConvertFunc64 convertToARGB64PM;
+    ConvertTo64Func convertToRGBA64PM;
     FetchAndConvertPixelsFunc fetchToARGB32PM;
+    FetchAndConvertPixelsFunc64 fetchToRGBA64PM;
     ConvertAndStorePixelsFunc storeFromARGB32PM;
     ConvertAndStorePixelsFunc storeFromRGB32;
 };
 
+extern ConvertAndStorePixelsFunc64 qStoreFromRGBA64PM[QImage::NImageFormats];
+
 extern QPixelLayout qPixelLayouts[QImage::NImageFormats];
 
 extern MemRotateFunc qMemRotateFunctions[QPixelLayout::BPPCount][3];
-
 
 QT_END_NAMESPACE
 

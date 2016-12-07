@@ -234,6 +234,7 @@ void tst_QImageReader::readImage_data()
     QTest::newRow("BMP: high mask bit set") << QString("rgb32bf.bmp") << true << QByteArray("bmp");
     QTest::newRow("XPM: marble") << QString("marble.xpm") << true << QByteArray("xpm");
     QTest::newRow("PNG: kollada") << QString("kollada.png") << true << QByteArray("png");
+    QTest::newRow("PNG: kollada 16bpc") << QString("kollada-16bpc.png") << true << QByteArray("png");
     QTest::newRow("PPM: teapot") << QString("teapot.ppm") << true << QByteArray("ppm");
     QTest::newRow("PPM: runners") << QString("runners.ppm") << true << QByteArray("ppm");
     QTest::newRow("PPM: test") << QString("test.ppm") << true << QByteArray("ppm");
@@ -523,6 +524,7 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp") << QImage::Format_RGB32;
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png") << QImage::Format_ARGB32;
     QTest::newRow("png-2") << QString("YCbCr_cmyk.png") << QByteArray("png") << QImage::Format_RGB32;
+    QTest::newRow("png-3") << QString("kollada-16bpc.png") << QByteArray("png") << QImage::Format_RGBA64;
     QTest::newRow("svg") << QString("rect.svg") << QByteArray("svg") << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("svgz") << QString("rect.svgz") << QByteArray("svgz") << QImage::Format_ARGB32_Premultiplied;
 }
@@ -1850,6 +1852,8 @@ void tst_QImageReader::saveFormat_data()
     QTest::newRow("Format_RGB888") << QImage::Format_RGB888;
     QTest::newRow("Format_RGB444") << QImage::Format_RGB444;
     QTest::newRow("Format_ARGB4444_Premultiplied") << QImage::Format_ARGB4444_Premultiplied;
+    QTest::newRow("Format_RGBA64") << QImage::Format_RGBA64;
+    QTest::newRow("Format_RGBA64_Premultiplied") << QImage::Format_RGBA64_Premultiplied;
 }
 
 void tst_QImageReader::saveFormat()

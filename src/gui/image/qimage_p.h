@@ -113,6 +113,7 @@ extern Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImag
 extern InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QImage::NImageFormats];
 
 void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+void convert_generic_to_rgb64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
 bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags);
 
 void dither_to_Mono(QImageData *dst, const QImageData *src, Qt::ImageConversionFlags flags, bool fromalpha);
@@ -164,6 +165,11 @@ inline int qt_depthForFormat(QImage::Format format)
     case QImage::Format_RGB888:
         depth = 24;
         break;
+    case QImage::Format_RGBX64:
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied:
+        depth = 64;
+        break;
     }
     return depth;
 }
@@ -190,6 +196,9 @@ inline QImage::Format qt_opaqueVersion(QImage::Format format)
         return QImage::Format_BGR30;
     case QImage::Format_A2RGB30_Premultiplied:
         return QImage::Format_RGB30;
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied:
+        return QImage::Format_RGBX64;
     case QImage::Format_ARGB32_Premultiplied:
     case QImage::Format_ARGB32:
     default:
@@ -214,6 +223,8 @@ inline QImage::Format qt_alphaVersion(QImage::Format format)
         return QImage::Format_A2BGR30_Premultiplied;
     case QImage::Format_RGB30:
         return QImage::Format_A2RGB30_Premultiplied;
+    case QImage::Format_RGBX64:
+        return QImage::Format_RGBA64_Premultiplied;
     default:
         break;
     }

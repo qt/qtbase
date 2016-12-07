@@ -352,6 +352,24 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
            );
             i++;
         }
+        // Qt==ARGB==Big(ARGB)==Little(BGRA)
+        if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
+            png_set_bgr(png_ptr);
+        }
+    } else if (bit_depth == 16 && (color_type & PNG_COLOR_MASK_COLOR)) {
+        QImage::Format format = QImage::Format_RGBA64;
+        if (!(color_type & PNG_COLOR_MASK_ALPHA) && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+            png_set_filler(png_ptr, 0xffff, PNG_FILLER_AFTER);
+            format = QImage::Format_RGBX64;
+        }
+        if (image.size() != QSize(width, height) || image.format() != format) {
+            image = QImage(width, height, format);
+            if (image.isNull())
+                return;
+        }
+        png_read_update_info(png_ptr, info_ptr);
+        if (QSysInfo::ByteOrder == QSysInfo::LittleEndian)
+            png_set_swap(png_ptr);
     } else {
         // 32-bit
         if (bit_depth == 16)
@@ -388,12 +406,12 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
         if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
             png_set_swap_alpha(png_ptr);
 
-        png_read_update_info(png_ptr, info_ptr);
-    }
+        // Qt==ARGB==Big(ARGB)==Little(BGRA)
+        if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
+            png_set_bgr(png_ptr);
+        }
 
-    // Qt==ARGB==Big(ARGB)==Little(BGRA)
-    if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
-        png_set_bgr(png_ptr);
+        png_read_update_info(png_ptr, info_ptr);
     }
 }
 
@@ -678,6 +696,10 @@ QImage::Format QPngHandlerPrivate::readImageFormat()
         {
             // 1-bit and 8-bit color
             format = bit_depth == 1 ? QImage::Format_Mono : QImage::Format_Indexed8;
+        } else if (bit_depth == 16 && (color_type & PNG_COLOR_MASK_COLOR)) {
+            format = QImage::Format_RGBA64;
+            if (!(color_type & PNG_COLOR_MASK_ALPHA) && !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+                format = QImage::Format_RGBX64;
         } else {
             // 32-bit
             format = QImage::Format_ARGB32;
@@ -843,8 +865,24 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
     else
         color_type = PNG_COLOR_TYPE_RGB;
 
+    int bpc = 0;
+    switch (image.format()) {
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
+        bpc = 1;
+        break;
+    case QImage::Format_RGBX64:
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied:
+        bpc = 16;
+        break;
+    default:
+        bpc = 8;
+        break;
+    }
+
     png_set_IHDR(png_ptr, info_ptr, image.width(), image.height(),
-                 image.depth() == 1 ? 1 : 8, // per channel
+                 bpc, // per channel
                  color_type, 0, 0, 0);       // sets #channels
 
     if (gamma != 0.0) {
@@ -880,13 +918,31 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
     // Swap ARGB to RGBA (normal PNG format) before saving on
     // BigEndian machines
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-        png_set_swap_alpha(png_ptr);
+        switch (image.format()) {
+        case QImage::Format_RGBX8888:
+        case QImage::Format_RGBA8888:
+        case QImage::Format_RGBX64:
+        case QImage::Format_RGBA64:
+        case QImage::Format_RGBA64_Premultiplied:
+            break;
+        default:
+            png_set_swap_alpha(png_ptr);
+        }
     }
 
     // Qt==ARGB==Big(ARGB)==Little(BGRA). But RGB888 is RGB regardless
-    if (QSysInfo::ByteOrder == QSysInfo::LittleEndian
-        && image.format() != QImage::Format_RGB888) {
-        png_set_bgr(png_ptr);
+    if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
+        switch (image.format()) {
+        case QImage::Format_RGB888:
+        case QImage::Format_RGBX8888:
+        case QImage::Format_RGBA8888:
+        case QImage::Format_RGBX64:
+        case QImage::Format_RGBA64:
+        case QImage::Format_RGBA64_Premultiplied:
+            break;
+        default:
+            png_set_bgr(png_ptr);
+        }
     }
 
     if (off_x || off_y) {
@@ -909,10 +965,32 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
     if (image.depth() != 1)
         png_set_packing(png_ptr);
 
-    if (color_type == PNG_COLOR_TYPE_RGB && image.format() != QImage::Format_RGB888)
-        png_set_filler(png_ptr, 0,
-            QSysInfo::ByteOrder == QSysInfo::BigEndian ?
-                PNG_FILLER_BEFORE : PNG_FILLER_AFTER);
+    if (color_type == PNG_COLOR_TYPE_RGB) {
+        switch (image.format()) {
+        case QImage::Format_RGB888:
+            break;
+        case QImage::Format_RGBX8888:
+        case QImage::Format_RGBX64:
+            png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
+            break;
+        default:
+            png_set_filler(png_ptr, 0,
+                QSysInfo::ByteOrder == QSysInfo::BigEndian ?
+                    PNG_FILLER_BEFORE : PNG_FILLER_AFTER);
+        }
+    }
+
+    if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
+        switch (image.format()) {
+        case QImage::Format_RGBX64:
+        case QImage::Format_RGBA64:
+        case QImage::Format_RGBA64_Premultiplied:
+            png_set_swap(png_ptr);
+            break;
+        default:
+            break;
+        }
+    }
 
     if (looping >= 0 && frames_written == 0) {
         uchar data[13] = "NETSCAPE2.0";
@@ -940,12 +1018,27 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
     case QImage::Format_RGB888:
+    case QImage::Format_RGBX8888:
+    case QImage::Format_RGBA8888:
+    case QImage::Format_RGBX64:
+    case QImage::Format_RGBA64:
         {
             png_bytep* row_pointers = new png_bytep[height];
             for (int y=0; y<height; y++)
                 row_pointers[y] = const_cast<png_bytep>(image.constScanLine(y));
             png_write_image(png_ptr, row_pointers);
             delete [] row_pointers;
+        }
+        break;
+    case QImage::Format_RGBA64_Premultiplied:
+        {
+            QImage row;
+            png_bytep row_pointers[1];
+            for (int y=0; y<height; y++) {
+                row = image.copy(0, y, width, 1).convertToFormat(QImage::Format_RGBA64);
+                row_pointers[0] = const_cast<png_bytep>(row.constScanLine(0));
+                png_write_rows(png_ptr, row_pointers, 1);
+            }
         }
         break;
     default:
