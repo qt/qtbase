@@ -56,6 +56,7 @@
 #include <QtGui/qtextdocumentfragment.h>
 #include <QtGui/qclipboard.h>
 #include <QtCore/qmimedata.h>
+#include <QtGui/private/qinputcontrol_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -68,7 +69,7 @@ class QAbstractScrollArea;
 class QEvent;
 class QTimerEvent;
 
-class Q_WIDGETS_EXPORT QWidgetTextControl : public QObject
+class Q_WIDGETS_EXPORT QWidgetTextControl : public QInputControl
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QWidgetTextControl)

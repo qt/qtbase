@@ -829,21 +829,21 @@ void QWidgetTextControl::redo()
 }
 
 QWidgetTextControl::QWidgetTextControl(QObject *parent)
-    : QObject(*new QWidgetTextControlPrivate, parent)
+    : QInputControl(QInputControl::TextEdit, *new QWidgetTextControlPrivate, parent)
 {
     Q_D(QWidgetTextControl);
     d->init();
 }
 
 QWidgetTextControl::QWidgetTextControl(const QString &text, QObject *parent)
-    : QObject(*new QWidgetTextControlPrivate, parent)
+    : QInputControl(QInputControl::TextEdit, *new QWidgetTextControlPrivate, parent)
 {
     Q_D(QWidgetTextControl);
     d->init(Qt::RichText, text);
 }
 
 QWidgetTextControl::QWidgetTextControl(QTextDocument *doc, QObject *parent)
-    : QObject(*new QWidgetTextControlPrivate, parent)
+    : QInputControl(QInputControl::TextEdit, *new QWidgetTextControlPrivate, parent)
 {
     Q_D(QWidgetTextControl);
     d->init(Qt::RichText, QString(), doc);
@@ -1342,14 +1342,7 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
 
 process:
     {
-        // QTBUG-35734: ignore Ctrl/Ctrl+Shift; accept only AltGr (Alt+Ctrl) on German keyboards
-        if (e->modifiers() == Qt::ControlModifier
-            || e->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
-            e->ignore();
-            return;
-        }
-        QString text = e->text();
-        if (!text.isEmpty() && (text.at(0).isPrint() || text.at(0) == QLatin1Char('\t'))) {
+        if (q->isAcceptableInput(e)) {
             if (overwriteMode
                 // no need to call deleteChar() if we have a selection, insertText
                 // does it already
@@ -1357,7 +1350,7 @@ process:
                 && !cursor.atBlockEnd())
                 cursor.deleteChar();
 
-            cursor.insertText(text);
+            cursor.insertText(e->text());
             selectionChanged();
         } else {
             e->ignore();

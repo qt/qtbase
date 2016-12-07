@@ -43,7 +43,8 @@ HEADERS += \
     text/qrawfont_p.h \
     text/qglyphrun.h \
     text/qglyphrun_p.h \
-    text/qdistancefield_p.h
+    text/qdistancefield_p.h \
+    text/qinputcontrol_p.h
 
 SOURCES += \
     text/qfont.cpp \
@@ -76,7 +77,8 @@ SOURCES += \
     text/qstatictext.cpp \
     text/qrawfont.cpp \
     text/qglyphrun.cpp \
-    text/qdistancefield.cpp
+    text/qdistancefield.cpp \
+    text/qinputcontrol.cpp
 
 SOURCES += \
     text/qfontengine_qpf2.cpp \

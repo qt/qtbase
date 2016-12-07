@@ -58,6 +58,7 @@
 #include "QtCore/qpoint.h"
 #include "QtWidgets/qcompleter.h"
 #include "QtCore/qthread.h"
+#include "QtGui/private/qinputcontrol_p.h"
 
 #include "qplatformdefs.h"
 
@@ -70,13 +71,14 @@
 QT_BEGIN_NAMESPACE
 
 
-class Q_WIDGETS_EXPORT QWidgetLineControl : public QObject
+class Q_WIDGETS_EXPORT QWidgetLineControl : public QInputControl
 {
     Q_OBJECT
 
 public:
     QWidgetLineControl(const QString &txt = QString())
-        : m_cursor(0), m_preeditCursor(0), m_cursorWidth(0), m_layoutDirection(Qt::LayoutDirectionAuto),
+        : QInputControl(LineEdit)
+        , m_cursor(0), m_preeditCursor(0), m_cursorWidth(0), m_layoutDirection(Qt::LayoutDirectionAuto),
         m_hideCursor(false), m_separator(0), m_readOnly(0),
         m_dragEnabled(0), m_echoMode(0), m_textDirty(0), m_selDirty(0),
         m_validInput(1), m_blinkStatus(0), m_blinkPeriod(0), m_blinkTimer(0), m_deleteAllTimer(0),

@@ -22,6 +22,7 @@ SUBDIRS=\
    qtextpiecetable \
    qtextscriptengine \
    qtexttable \
+   qinputcontrol
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 
