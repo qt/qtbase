@@ -55,7 +55,7 @@ class MyObject;
 class WorkerThread : public QThread
 {
     Q_OBJECT
-    void run() Q_DECL_OVERRIDE {
+    void run() override {
         QString result;
         /* ... here is the expensive or blocking operation ... */
         emit resultReady(result);

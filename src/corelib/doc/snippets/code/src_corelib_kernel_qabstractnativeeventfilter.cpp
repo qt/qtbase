@@ -52,7 +52,7 @@
 class MyXcbEventFilter : public QAbstractNativeEventFilter
 {
 public:
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *) Q_DECL_OVERRIDE
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *) override
     {
         if (eventType == "xcb_generic_event_t") {
             xcb_generic_event_t* ev = static_cast<xcb_generic_event_t *>(message);
