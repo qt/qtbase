@@ -266,6 +266,16 @@ bool QDockAreaLayoutInfo::isEmpty() const
     return next(-1) == -1;
 }
 
+bool QDockAreaLayoutInfo::onlyHasPlaceholders() const
+{
+    for (const QDockAreaLayoutItem &item : item_list) {
+        if (!item.placeHolderItem)
+            return false;
+    }
+
+    return true;
+}
+
 QSize QDockAreaLayoutInfo::minimumSize() const
 {
     if (isEmpty())
