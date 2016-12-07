@@ -944,7 +944,7 @@
 // Older versions (QNX 650) do not support C++11 features
 // _HAS_* macros are set to 1 by toolchains that actually include
 // Dinkum C++11 libcpp.
-#  if !defined(__GLIBCXX__)
+#  if !defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
 #   if !defined(_HAS_CPP0X) || !_HAS_CPP0X
 // Disable C++11 features that depend on library support
 #    undef Q_COMPILER_INITIALIZER_LISTS
