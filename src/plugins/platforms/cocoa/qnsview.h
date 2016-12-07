@@ -116,9 +116,9 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)resetMouseButtons;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent;
-- (bool)handleMouseDownEvent:(NSEvent *)theEvent;
-- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent;
-- (bool)handleMouseUpEvent:(NSEvent *)theEvent;
+- (bool)handleMouseDownEvent:(NSEvent *)theEvent withButton:(int)buttonNumber;
+- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent withButton:(int)buttonNumber;
+- (bool)handleMouseUpEvent:(NSEvent *)theEvent withButton:(int)buttonNumber;
 - (void)mouseDown:(NSEvent *)theEvent;
 - (void)mouseDragged:(NSEvent *)theEvent;
 - (void)mouseUp:(NSEvent *)theEvent;
