@@ -61,7 +61,7 @@ public:
     Window(QWidget *parent = 0);
 
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     QFont font;

@@ -53,7 +53,7 @@
 
 class SimpleTransformation : public QWidget
 {
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) override;
 };
 
 //! [0]
@@ -73,7 +73,7 @@ void SimpleTransformation::paintEvent(QPaintEvent *)
 
 class CombinedTransformation : public QWidget
 {
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) override;
 };
 
 //! [1]
@@ -97,7 +97,7 @@ void CombinedTransformation::paintEvent(QPaintEvent *)
 
 class BasicOperations : public QWidget
 {
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) override;
 };
 
 //! [2]

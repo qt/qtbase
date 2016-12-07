@@ -94,7 +94,7 @@ class SandboxProcess : public QProcess
 {
     ...
  protected:
-     void setupChildProcess();
+     void setupChildProcess() override;
     ...
 };
 

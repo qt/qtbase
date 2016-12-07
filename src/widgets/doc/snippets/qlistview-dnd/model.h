@@ -61,15 +61,15 @@ class DragDropListModel : public QStringListModel
 public:
     DragDropListModel(const QStringList &strings, QObject *parent = 0);
 
-    Qt::ItemFlags flags(const QModelIndex &index) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     bool canDropMimeData(const QMimeData *data, Qt::DropAction action,
-                         int row, int column, const QModelIndex &parent);
+                         int row, int column, const QModelIndex &parent) override;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
-                      int row, int column, const QModelIndex &parent);
-    QMimeData *mimeData(const QModelIndexList &indexes) const;
-    QStringList mimeTypes() const;
-    Qt::DropActions supportedDropActions() const;
+                      int row, int column, const QModelIndex &parent) override;
+    QMimeData *mimeData(const QModelIndexList &indexes) const override;
+    QStringList mimeTypes() const override;
+    Qt::DropActions supportedDropActions() const override;
 };
 
 #endif

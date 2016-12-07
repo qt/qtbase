@@ -273,7 +273,7 @@ void QSqlQueryModel_snippets()
 class MyModel : public QSqlQueryModel
 {
 public:
-    QVariant data(const QModelIndex &item, int role) const;
+    QVariant data(const QModelIndex &item, int role) const override;
 
     int m_specialColumnNo;
 };
@@ -526,15 +526,15 @@ public:
     ~XyzResult() {}
 
 protected:
-    QVariant data(int /* index */) { return QVariant(); }
-    bool isNull(int /* index */) { return false; }
-    bool reset(const QString & /* query */) { return false; }
-    bool fetch(int /* index */) { return false; }
-    bool fetchFirst() { return false; }
-    bool fetchLast() { return false; }
-    int size() { return 0; }
-    int numRowsAffected() { return 0; }
-    QSqlRecord record() const { return QSqlRecord(); }
+    QVariant data(int /* index */) override { return QVariant(); }
+    bool isNull(int /* index */) override { return false; }
+    bool reset(const QString & /* query */) override { return false; }
+    bool fetch(int /* index */) override { return false; }
+    bool fetchFirst() override { return false; }
+    bool fetchLast() override { return false; }
+    int size() override { return 0; }
+    int numRowsAffected() override { return 0; }
+    QSqlRecord record() const override { return QSqlRecord(); }
 };
 //! [47]
 
@@ -545,13 +545,13 @@ public:
     XyzDriver() {}
     ~XyzDriver() {}
 
-    bool hasFeature(DriverFeature /* feature */) const { return false; }
+    bool hasFeature(DriverFeature /* feature */) const override { return false; }
     bool open(const QString & /* db */, const QString & /* user */,
               const QString & /* password */, const QString & /* host */,
-              int /* port */, const QString & /* options */)
+              int /* port */, const QString & /* options */) override
         { return false; }
     void close() {}
-    QSqlResult *createResult() const { return new XyzResult(this); }
+    QSqlResult *createResult() const override { return new XyzResult(this); }
 };
 //! [48]
 

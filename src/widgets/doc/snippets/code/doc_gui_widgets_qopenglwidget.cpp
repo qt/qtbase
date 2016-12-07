@@ -55,7 +55,7 @@ public:
     MyGLWidget(QWidget *parent) : QOpenGLWidget(parent) { }
 
 protected:
-    void initializeGL()
+    void initializeGL() override
     {
         // Set up the rendering context, load shaders and other resources, etc.:
         QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
@@ -63,7 +63,7 @@ protected:
         ...
     }
 
-    void resizeGL(int w, int h)
+    void resizeGL(int w, int h) override
     {
         // Update projection matrix and other size related settings:
         m_projection.setToIdentity();
@@ -71,7 +71,7 @@ protected:
         ...
     }
 
-    void paintGL()
+    void paintGL() override
     {
         // Draw the scene:
         QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
@@ -86,7 +86,7 @@ protected:
 class MyGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     ...
-    void initializeGL()
+    void initializeGL() override
     {
         initializeOpenGLFunctions();
         glClearColor(...);
@@ -108,7 +108,7 @@ widget->setFormat(format); // must be called before the widget or its parent win
 
 //! [3]
     ...
-    void paintGL()
+    void paintGL() override
     {
         QOpenGLFunctions_3_2_Core *f = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_2_Core>();
         ...

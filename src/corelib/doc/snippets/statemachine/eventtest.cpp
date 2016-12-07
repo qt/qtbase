@@ -58,7 +58,7 @@ public:
 
 protected:
 //![0]
-    bool eventTest(QEvent *event)
+    bool eventTest(QEvent *event) override
     {
         if (event->type() == QEvent::Wrapped) {
             QEvent *wrappedEvent = static_cast<QStateMachine::WrappedEvent *>(event)->event();
@@ -71,7 +71,7 @@ protected:
     }
 //![0]
 
-    void onTransition(QEvent *event)
+    void onTransition(QEvent *event) override
     {
 
     }

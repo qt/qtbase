@@ -55,7 +55,7 @@
 class MyWidget : public QWidget
 {
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
     void paintEvent2(QPaintEvent *event);
 
 };

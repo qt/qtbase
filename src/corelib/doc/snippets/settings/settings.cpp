@@ -143,7 +143,7 @@ public:
     void readSettings();
 
 protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 };
 
 //! [16]

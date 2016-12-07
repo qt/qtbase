@@ -54,7 +54,7 @@
 class MyCheckBox : public QCheckBox
 {
 public:
-    void mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event) override;
 };
 
 //! [0]
@@ -72,7 +72,7 @@ void MyCheckBox::mousePressEvent(QMouseEvent *event)
 class MyWidget : public QWidget
 {
 public:
-    bool event(QEvent *event);
+    bool event(QEvent *event) override;
 };
 
 static const int MyCustomEventType = 1099;

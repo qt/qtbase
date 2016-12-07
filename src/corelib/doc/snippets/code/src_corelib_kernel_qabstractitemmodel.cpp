@@ -120,7 +120,7 @@ public:
 
     ...
 
-    QVariant data(const QModelIndex &index, int role)
+    QVariant data(const QModelIndex &index, int role) override
     {
         if (role != Qt::BackgroundRole)
             return QSortFilterProxyModel::data(index, role);

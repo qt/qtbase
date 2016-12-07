@@ -63,13 +63,13 @@ public:
     CardLayout(int dist): QLayout(dist) {}
     ~CardLayout();
 
-    void addItem(QLayoutItem *item);
-    QSize sizeHint() const;
-    QSize minimumSize() const;
-    int count() const;
-    QLayoutItem *itemAt(int) const;
-    QLayoutItem *takeAt(int);
-    void setGeometry(const QRect &rect);
+    void addItem(QLayoutItem *item) override;
+    QSize sizeHint() const override;
+    QSize minimumSize() const override;
+    int count() const override;
+    QLayoutItem *itemAt(int) const override;
+    QLayoutItem *takeAt(int) override;
+    void setGeometry(const QRect &rect) override;
 
 private:
     QList<QLayoutItem*> list;
