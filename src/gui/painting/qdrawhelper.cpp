@@ -580,6 +580,8 @@ static inline void qConvertARGB32PMToARGB64PM_sse2(QRgba64 *buffer, const uint *
     int i = 0;
     for (; ((uintptr_t)buffer & 0xf) && i < count; ++i) {
         uint s = *src++;
+        if (maskAlpha)
+            s = s | 0xff000000;
         if (RGBA)
             s = RGBA2ARGB(s);
         *buffer++ = QRgba64::fromArgb32(s);
@@ -605,6 +607,8 @@ static inline void qConvertARGB32PMToARGB64PM_sse2(QRgba64 *buffer, const uint *
 
     SIMD_EPILOGUE(i, count, 3) {
         uint s = *src++;
+        if (maskAlpha)
+            s = s | 0xff000000;
         if (RGBA)
             s = RGBA2ARGB(s);
         *buffer++ = QRgba64::fromArgb32(s);
