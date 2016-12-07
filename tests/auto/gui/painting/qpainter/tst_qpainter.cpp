@@ -309,6 +309,8 @@ private slots:
 
     void QTBUG56252();
 
+    void toRGB64();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -5095,6 +5097,21 @@ void tst_QPainter::QTBUG56252()
     painter.end();
 
     // If no crash or illegal memory read, all is fine
+}
+
+void tst_QPainter::toRGB64()
+{
+    QImage dst(10, 1, QImage::Format_BGR30);
+    QImage src(10, 1, QImage::Format_RGB16);
+    src.fill(Qt::white);
+
+    QPainter paint(&dst);
+    paint.drawImage(0, 0, src);
+    paint.end();
+
+    for (int i=0; i < dst.width(); ++i) {
+        QVERIFY(dst.pixelColor(i,0) == QColor(Qt::white));
+    }
 }
 
 QTEST_MAIN(tst_QPainter)
