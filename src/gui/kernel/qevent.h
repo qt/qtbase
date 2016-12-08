@@ -796,10 +796,6 @@ inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? 
 class Q_GUI_EXPORT QPointingDeviceUniqueId
 {
     Q_GADGET
-    // ### kept these to keep other modules compiling. Remove before 5.8.0 final!
-#if QT_DEPRECATED_SINCE(5, 8)
-    Q_PROPERTY(qint64 numeric READ numericId CONSTANT)
-#endif
     Q_PROPERTY(qint64 numericId READ numericId CONSTANT)
 public:
     Q_ALWAYS_INLINE
@@ -812,11 +808,6 @@ public:
     Q_ALWAYS_INLINE Q_DECL_CONSTEXPR bool isValid() const Q_DECL_NOTHROW { return m_numericId != -1; }
     qint64 numericId() const Q_DECL_NOTHROW;
 
-    // ### kept these to keep other modules compiling. Remove before 5.8.0 final!
-#if QT_DEPRECATED_SINCE(5, 8)
-    Q_ALWAYS_INLINE Q_DECL_DEPRECATED qint64 numeric() const { return numericId(); }
-    Q_ALWAYS_INLINE Q_DECL_DEPRECATED explicit QPointingDeviceUniqueId(qint64 id) : m_numericId(id) {}
-#endif
 private:
     // TODO: for TUIO 2, or any other type of complex token ID, an internal
     // array (or hash) can be added to hold additional properties.
