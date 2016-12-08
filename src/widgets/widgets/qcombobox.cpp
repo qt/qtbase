@@ -1841,7 +1841,7 @@ QLineEdit *QComboBox::lineEdit() const
 
     Sets the \a validator to use instead of the current validator.
 
-    \note The validator is removed when the editable property becomes \c false.
+    \note The validator is removed when the \l editable property becomes \c false.
 */
 
 void QComboBox::setValidator(const QValidator *v)
@@ -1876,7 +1876,7 @@ const QValidator *QComboBox::validator() const
     By default, for an editable combo box, a QCompleter that
     performs case insensitive inline completion is automatically created.
 
-    \note The completer is removed when the \a editable property becomes \c false.
+    \note The completer is removed when the \l editable property becomes \c false.
 */
 void QComboBox::setCompleter(QCompleter *c)
 {

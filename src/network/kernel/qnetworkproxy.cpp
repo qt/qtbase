@@ -1517,8 +1517,8 @@ bool QNetworkProxyFactory::usesSystemConfiguration()
     Enables the use of the platform-specific proxy settings, and only those.
     See systemProxyForQuery() for more information.
 
-    Calling setUseSystemConfiguration(\c{true}) will reset any proxy or
-    QNetworkProxyFactory already set.
+    Calling this function with \a enable set to \c true resets any proxy
+    or QNetworkProxyFactory that is already set.
 
     \note See the systemProxyForQuery() documentation for a list of
     limitations related to the use of system proxies.
