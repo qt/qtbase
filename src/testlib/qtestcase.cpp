@@ -99,6 +99,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <time.h>
+#include <sys/resource.h>
 #endif
 
 #if defined(Q_OS_MACX)
@@ -142,6 +143,22 @@ static bool debuggerPresent()
     return false;
 #endif
 }
+
+static void disableCoreDump()
+{
+    bool ok = false;
+    const int disableCoreDump = qEnvironmentVariableIntValue("QTEST_DISABLE_CORE_DUMP", &ok);
+    if (ok && disableCoreDump == 1) {
+#if defined(Q_OS_UNIX)
+        struct rlimit limit;
+        limit.rlim_cur = 0;
+        limit.rlim_max = 0;
+        if (setrlimit(RLIMIT_CORE, &limit) != 0)
+            qWarning("Failed to disable core dumps: %d", errno);
+#endif
+    }
+}
+Q_CONSTRUCTOR_FUNCTION(disableCoreDump);
 
 static void stackTrace()
 {
