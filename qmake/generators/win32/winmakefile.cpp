@@ -165,6 +165,9 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
 
 void Win32MakefileGenerator::processVars()
 {
+    if (project->first("TEMPLATE").endsWith("aux"))
+        return;
+
     project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
     if (project->isEmpty("QMAKE_PROJECT_NAME"))
         project->values("QMAKE_PROJECT_NAME") = project->values("QMAKE_ORIG_TARGET");

@@ -118,6 +118,7 @@ QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
 {
     for (int i = 0; i < channelCount; ++i) {
         if (channels[i].socket) {
+            QObject::disconnect(channels[i].socket, Q_NULLPTR, &channels[i], Q_NULLPTR);
             channels[i].socket->close();
             delete channels[i].socket;
         }
