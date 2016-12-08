@@ -5477,9 +5477,9 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                     } else {
                         sliderlen = maxlen;
                     }
-
+                    const int sliderPosition = sb->orientation == Qt::Horizontal && sb->direction == Qt::RightToLeft ? sb->maximum - sb->sliderPosition + sb->minimum : sb->sliderPosition;
                     int sliderstart = (styleOptionSlider.orientation == Qt::Horizontal ? contentRect.left() : contentRect.top())
-                        + sliderPositionFromValue(sb->minimum, sb->maximum, sb->sliderPosition,
+                        + sliderPositionFromValue(sb->minimum, sb->maximum, sliderPosition,
                                                   maxlen - sliderlen, sb->upsideDown);
 
                     QRect sr = (sb->orientation == Qt::Horizontal)
