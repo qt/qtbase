@@ -218,6 +218,24 @@ void QDBusSignature::doCheck()
     \sa signature()
 */
 
+/*!
+    \fn void QDBusObjectPath::swap(QDBusObjectPath &other)
+
+    Swaps this QDBusObjectPath instance with \a other.
+*/
+
+/*!
+    \fn void QDBusSignature::swap(QDBusSignature &other)
+
+    Swaps this QDBusSignature instance with \a other.
+*/
+
+/*!
+    \fn void QDBusVariant::swap(QDBusVariant &other)
+
+    Swaps this QDBusVariant instance with \a other.
+*/
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS

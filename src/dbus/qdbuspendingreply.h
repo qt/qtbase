@@ -111,7 +111,7 @@ namespace QDBusPendingReplyTypes {
 template<typename T1 = void, typename T2 = void, typename T3 = void, typename T4 = void,
          typename T5 = void, typename T6 = void, typename T7 = void, typename T8 = void>
 class QDBusPendingReply:
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     public QDBusPendingCall
 #else
     public QDBusPendingReplyData
@@ -144,25 +144,12 @@ public:
 
     inline int count() const { return Count; }
 
-#if defined(Q_QDOC)
+#if defined(Q_CLANG_QDOC)
     QVariant argumentAt(int index) const;
 #else
     using QDBusPendingReplyData::argumentAt;
 #endif
 
-#if defined(Q_QDOC)
-    bool isFinished() const;
-    void waitForFinished();
-
-    bool isValid() const;
-    bool isError() const;
-    QDBusError error() const;
-    QDBusMessage reply() const;
-
-    template<int Index> inline Type argumentAt() const;
-    inline T1 value() const;
-    inline operator T1() const;
-#else
     template<int Index> inline
     const typename Select<Index>::Type argumentAt() const
     {
@@ -171,6 +158,18 @@ public:
         return qdbus_cast<ResultType>(argumentAt(Index), 0);
     }
 
+#if defined(Q_CLANG_QDOC)
+    bool isFinished() const;
+    void waitForFinished();
+
+    bool isValid() const;
+    bool isError() const;
+    QDBusError error() const;
+    QDBusMessage reply() const;
+
+    inline T1 value() const;
+    inline operator T1() const;
+#else
     inline typename Select<0>::Type value() const
     {
         return argumentAt<0>();

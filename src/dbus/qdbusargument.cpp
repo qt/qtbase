@@ -1374,6 +1374,12 @@ QDBusArgument &operator<<(QDBusArgument &a, const QLineF &line)
 }
 #endif
 
+/*!
+    \fn void QDBusArgument::swap(QDBusArgument &other)
+
+    Swaps this QDBusArgument instance with \a other.
+*/
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS

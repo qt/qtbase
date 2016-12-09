@@ -1272,6 +1272,12 @@ QByteArray QDBusConnection::localMachineId()
     When using BlockWithGui, applications must be prepared for reentrancy in any function.
 */
 
+/*!
+    \fn void QDBusConnection::swap(QDBusConnection &other)
+
+    Swaps this QDBusConnection instance with \a other.
+*/
+
 QT_END_NAMESPACE
 
 #ifdef Q_OS_WIN

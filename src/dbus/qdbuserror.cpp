@@ -409,6 +409,12 @@ QDebug operator<<(QDebug dbg, const QDBusError &msg)
 }
 #endif
 
+/*!
+    \fn void QDBusError::swap(QDBusError &other)
+
+    Swaps this QDBusError instance with \a other.
+*/
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS
