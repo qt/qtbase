@@ -5216,7 +5216,7 @@ QPointingDeviceUniqueId QPointingDeviceUniqueId::fromNumericId(qint64 id)
 }
 
 /*!
-    \fn bool QPointingDeviceUniqueId::isValid()
+    \fn bool QPointingDeviceUniqueId::isValid() const
 
     Returns whether this unique pointer ID is valid, that is, it represents an actual
     pointer.
