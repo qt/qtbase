@@ -202,8 +202,8 @@ void tst_QSemaphore::tryAcquireWithTimeout_data()
 {
     QTest::addColumn<int>("timeout");
 
-    QTest::newRow("1s") << 1000;
-    QTest::newRow("10s") << 10000;
+    QTest::newRow("0.2s") << 200;
+    QTest::newRow("2s") << 2000;
 }
 
 void tst_QSemaphore::tryAcquireWithTimeout()
@@ -212,7 +212,7 @@ void tst_QSemaphore::tryAcquireWithTimeout()
 
     // timers are not guaranteed to be accurate down to the last millisecond,
     // so we permit the elapsed times to be up to this far from the expected value.
-    int fuzz = 50;
+    int fuzz = 50 + (timeout / 20);
 
     QSemaphore semaphore;
     QElapsedTimer time;
