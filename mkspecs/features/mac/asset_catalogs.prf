@@ -10,6 +10,9 @@
 # Name of the icon resource in the asset catalogs that will be used as the app icon.
 # Defaults to AppIcon.
 #
+# QMAKE_ASSET_CATALOGS_LAUNCH_IMAGE
+# Name of the launch image resource in the asset catalogs that will be used as the launch image.
+#
 # QMAKE_ASSET_CATALOGS_INSTALL_PATH
 # Base path to install files to. Falls back to a path relative to the target install path,
 # based on QMAKE_ASSET_CATALOGS_BUILD_PATH.
@@ -40,6 +43,12 @@
             QMAKE_MAC_XCODE_SETTINGS += asset_catalog_appicon
         }
 
+        !isEmpty(QMAKE_ASSET_CATALOGS_LAUNCH_IMAGE) {
+            asset_catalog_launchimage.name = "ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME"
+            asset_catalog_launchimage.value = $$QMAKE_ASSET_CATALOGS_LAUNCH_IMAGE
+            QMAKE_MAC_XCODE_SETTINGS += asset_catalog_launchimage
+        }
+
         asset_catalog_compiler.files = $$QMAKE_ASSET_CATALOGS
         macos: asset_catalog_compiler.path = Contents/Resources
         QMAKE_BUNDLE_DATA += asset_catalog_compiler
@@ -49,9 +58,15 @@
                 --app-icon $$shell_quote($$QMAKE_ASSET_CATALOGS_APP_ICON)
         }
 
+        !isEmpty(QMAKE_ASSET_CATALOGS_LAUNCH_IMAGE) {
+            asset_catalog_launch_image_arg = \
+                --launch-image $$shell_quote($$QMAKE_ASSET_CATALOGS_LAUNCH_IMAGE)
+        }
+
         asset_catalog_compiler.target = $$OUT_PWD/asset_catalog_compiler.Info.plist
         asset_catalog_compiler.commands = $$shell_quote($$QMAKE_ACTOOL) \
             $$asset_catalog_app_icon_arg \
+            $$asset_catalog_launch_image_arg \
             --output-partial-info-plist $$shell_quote($$asset_catalog_compiler.target) \
             --platform $${version_identifier} \
             --minimum-deployment-target $${deployment_target} \
