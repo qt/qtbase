@@ -52,7 +52,6 @@
 #include <qdatetime.h>
 #include <qnetworkinterface.h>
 #include <qoperatingsystemversion.h>
-#include <qversionnumber.h>
 
 //#define QNATIVESOCKETENGINE_DEBUG
 #if defined(QNATIVESOCKETENGINE_DEBUG)
@@ -336,9 +335,6 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         return false;
     }
 
-    const QVersionNumber osVersion = QOperatingSystemVersion::current().toVersionNumber();
-    const QVersionNumber windows7Version = QVersionNumber(6, 1);
-
     //Windows XP and 2003 support IPv6 but not dual stack sockets
     int protocol = (socketProtocol == QAbstractSocket::IPv6Protocol
         || (socketProtocol == QAbstractSocket::AnyIPProtocol)) ? AF_INET6 : AF_INET;
@@ -353,14 +349,11 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 #define WSA_FLAG_NO_HANDLE_INHERIT 0x80
 #endif
 
-    SOCKET socket = INVALID_SOCKET;
-    // Windows 7 or later, try the new API
-    if (osVersion >= windows7Version)
-        socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_NO_HANDLE_INHERIT | WSA_FLAG_OVERLAPPED);
+    SOCKET socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_NO_HANDLE_INHERIT | WSA_FLAG_OVERLAPPED);
     // previous call fails if the windows 7 service pack 1 or hot fix isn't installed.
 
-    // Try the old API if the new one failed on Windows 7, or always on earlier versions
-    if (socket == INVALID_SOCKET && osVersion <= windows7Version) {
+    // Try the old API if the new one failed on Windows 7
+    if (socket == INVALID_SOCKET && QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8) {
         socket = ::WSASocket(protocol, type, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 #ifdef HANDLE_FLAG_INHERIT
         if (socket != INVALID_SOCKET) {
