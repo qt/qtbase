@@ -240,6 +240,11 @@ private: \
 #define Q_SLOT Q_SLOT
 #endif //Q_MOC_RUN
 
+#ifdef Q_CLANG_QDOC
+#undef Q_GADGET
+#define Q_GADGET
+#endif
+
 #ifndef QT_NO_META_MACROS
 // macro for onaming members
 #ifdef METHOD
