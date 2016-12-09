@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qplatformnativeinterface.h"
+#include <QtGui/qcursor.h>
 
 QT_BEGIN_NAMESPACE
 
