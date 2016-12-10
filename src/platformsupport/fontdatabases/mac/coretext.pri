@@ -11,9 +11,8 @@ uikit: \
     # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
     LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
 else: \
-    # On Mac OS they are part of the ApplicationServices umbrella framework,
-    # even in 10.8 where they were also made available stand-alone.
-    LIBS_PRIVATE += -framework ApplicationServices
+    # On macOS they are re-exported by the AppKit framework
+    LIBS_PRIVATE += -framework AppKit
 
 # CoreText is documented to be available on watchOS, but the headers aren't present
 # in the watchOS Simulator SDK like they are supposed to be. Work around the problem
