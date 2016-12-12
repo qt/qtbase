@@ -2870,8 +2870,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
             FetchPixelFunc fetch = qFetchPixel[layout->bpp];
             uint sbuf1[buffer_size];
             uint sbuf2[buffer_size];
-            QRgba64 buf1[buffer_size];
-            QRgba64 buf2[buffer_size];
+            quint64 buf1[buffer_size];
+            quint64 buf2[buffer_size];
             QRgba64 *b = buffer;
             while (length) {
                 int len = qMin(length, buffer_size / 2);
@@ -2947,9 +2947,9 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
 
                     fx += fdx;
                 }
-                layout->convertToARGB64PM(buf1, sbuf1, len * 2, clut, 0);
+                layout->convertToARGB64PM((QRgba64 *)buf1, sbuf1, len * 2, clut, 0);
                 if (disty)
-                    layout->convertToARGB64PM(buf2, sbuf2, len * 2, clut, 0);
+                    layout->convertToARGB64PM((QRgba64 *)buf2, sbuf2, len * 2, clut, 0);
 
                 for (int i = 0; i < len; ++i) {
                     int distx = (fracX & 0x0000ffff);
@@ -2967,7 +2967,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                     vt = _mm_add_epi16(vt, _mm_srli_si128(vt, 8));
                     _mm_storel_epi64((__m128i*)(b+i), vt);
 #else
-                    b[i] = interpolate_4_pixels_rgb64(buf1 + i*2, buf2 + i*2, distx, disty);
+                    b[i] = interpolate_4_pixels_rgb64((QRgba64 *)buf1 + i*2, (QRgba64 *)buf2 + i*2, distx, disty);
 #endif
                     fracX += fdx;
                 }
@@ -2978,8 +2978,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
             FetchPixelFunc fetch = qFetchPixel[layout->bpp];
             uint sbuf1[buffer_size];
             uint sbuf2[buffer_size];
-            QRgba64 buf1[buffer_size];
-            QRgba64 buf2[buffer_size];
+            quint64 buf1[buffer_size];
+            quint64 buf2[buffer_size];
             QRgba64 *end = buffer + length;
             QRgba64 *b = buffer;
 
@@ -3087,13 +3087,13 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                     fx += fdx;
                     fy += fdy;
                 }
-                layout->convertToARGB64PM(buf1, sbuf1, len * 2, clut, 0);
-                layout->convertToARGB64PM(buf2, sbuf2, len * 2, clut, 0);
+                layout->convertToARGB64PM((QRgba64 *)buf1, sbuf1, len * 2, clut, 0);
+                layout->convertToARGB64PM((QRgba64 *)buf2, sbuf2, len * 2, clut, 0);
 
                 for (int i = 0; i < len; ++i) {
                     int distx = (fracX & 0x0000ffff);
                     int disty = (fracY & 0x0000ffff);
-                    b[i] = interpolate_4_pixels_rgb64(buf1 + i*2, buf2 + i*2, distx, disty);
+                    b[i] = interpolate_4_pixels_rgb64((QRgba64 *)buf1 + i*2, (QRgba64 *)buf2 + i*2, distx, disty);
                     fracX += fdx;
                     fracY += fdy;
                 }
@@ -3110,8 +3110,8 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
         FetchPixelFunc fetch = qFetchPixel[layout->bpp];
         uint sbuf1[buffer_size];
         uint sbuf2[buffer_size];
-        QRgba64 buf1[buffer_size];
-        QRgba64 buf2[buffer_size];
+        quint64 buf1[buffer_size];
+        quint64 buf2[buffer_size];
         QRgba64 *b = buffer;
 
         int distxs[buffer_size / 2];
@@ -3159,13 +3159,13 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                     fw += fdw;
             }
 
-            layout->convertToARGB64PM(buf1, sbuf1, len * 2, clut, 0);
-            layout->convertToARGB64PM(buf2, sbuf2, len * 2, clut, 0);
+            layout->convertToARGB64PM((QRgba64 *)buf1, sbuf1, len * 2, clut, 0);
+            layout->convertToARGB64PM((QRgba64 *)buf2, sbuf2, len * 2, clut, 0);
 
             for (int i = 0; i < len; ++i) {
                 int distx = distxs[i];
                 int disty = distys[i];
-                b[i] = interpolate_4_pixels_rgb64(buf1 + i*2, buf2 + i*2, distx, disty);
+                b[i] = interpolate_4_pixels_rgb64((QRgba64 *)buf1 + i*2, (QRgba64 *)buf2 + i*2, distx, disty);
             }
 
             length -= len;
@@ -3712,7 +3712,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
         return blend_color_generic(count, spans, userData);
     }
 
-    QRgba64 buffer[buffer_size];
+    quint64 buffer[buffer_size];
     const QRgba64 color = data->solid.color;
 
     while (count--) {
@@ -3720,7 +3720,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
         int length = spans->len;
         while (length) {
             int l = qMin(buffer_size, length);
-            QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
+            QRgba64 *dest = op.destFetch64((QRgba64 *)buffer, data->rasterBuffer, x, spans->y, l);
             op.funcSolid64(dest, l, color, spans->coverage);
             op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
             length -= l;
@@ -3901,11 +3901,11 @@ public:
     }
 };
 
-class BlendSrcGenericRGB64 : public QBlendBase<QRgba64>
+class BlendSrcGenericRGB64 : public QBlendBase<quint64>
 {
 public:
     BlendSrcGenericRGB64(QSpanData *d, const Operator &o)
-        : QBlendBase<QRgba64>(d, o)
+        : QBlendBase<quint64>(d, o)
     {
     }
 
@@ -3914,20 +3914,20 @@ public:
         return op.func64 && op.destFetch64 && op.destStore64;
     }
 
-    const QRgba64 *fetch(int x, int y, int len)
+    const quint64 *fetch(int x, int y, int len)
     {
-        dest = op.destFetch64(buffer, data->rasterBuffer, x, y, len);
-        return op.srcFetch64(src_buffer, &op, data, y, x, len);
+        dest = (quint64 *)op.destFetch64((QRgba64 *)buffer, data->rasterBuffer, x, y, len);
+        return (const quint64 *)op.srcFetch64((QRgba64 *)src_buffer, &op, data, y, x, len);
     }
 
-    void process(int, int, int len, int coverage, const QRgba64 *src, int offset)
+    void process(int, int, int len, int coverage, const quint64 *src, int offset)
     {
-        op.func64(dest + offset, src + offset, len, coverage);
+        op.func64((QRgba64 *)dest + offset, (const QRgba64 *)src + offset, len, coverage);
     }
 
     void store(int x, int y, int len)
     {
-        op.destStore64(data->rasterBuffer, x, y, dest, len);
+        op.destStore64(data->rasterBuffer, x, y, (QRgba64 *)dest, len);
     }
 };
 
@@ -4006,8 +4006,8 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
         qWarning("Unsupported blend");
         return blend_untransformed_generic(count, spans, userData);
     }
-    QRgba64 buffer[buffer_size];
-    QRgba64 src_buffer[buffer_size];
+    quint64 buffer[buffer_size];
+    quint64 src_buffer[buffer_size];
 
     const int image_width = data->texture.width;
     const int image_height = data->texture.height;
@@ -4031,8 +4031,8 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
                 const int coverage = (spans->coverage * data->texture.const_alpha) >> 8;
                 while (length) {
                     int l = qMin(buffer_size, length);
-                    const QRgba64 *src = op.srcFetch64(src_buffer, &op, data, sy, sx, l);
-                    QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
+                    const QRgba64 *src = op.srcFetch64((QRgba64 *)src_buffer, &op, data, sy, sx, l);
+                    QRgba64 *dest = op.destFetch64((QRgba64 *)buffer, data->rasterBuffer, x, spans->y, l);
                     op.func64(dest, src, l, coverage);
                     op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
                     x += l;
@@ -4247,8 +4247,8 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
         qDebug("unsupported rgb64 blend");
         return blend_tiled_generic(count, spans, userData);
     }
-    QRgba64 buffer[buffer_size];
-    QRgba64 src_buffer[buffer_size];
+    quint64 buffer[buffer_size];
+    quint64 src_buffer[buffer_size];
 
     const int image_width = data->texture.width;
     const int image_height = data->texture.height;
@@ -4275,8 +4275,8 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
             int l = qMin(image_width - sx, length);
             if (buffer_size < l)
                 l = buffer_size;
-            const QRgba64 *src = op.srcFetch64(src_buffer, &op, data, sy, sx, l);
-            QRgba64 *dest = op.destFetch64(buffer, data->rasterBuffer, x, spans->y, l);
+            const QRgba64 *src = op.srcFetch64((QRgba64 *)src_buffer, &op, data, sy, sx, l);
+            QRgba64 *dest = op.destFetch64((QRgba64 *)buffer, data->rasterBuffer, x, spans->y, l);
             op.func64(dest, src, l, coverage);
             op.destStore64(data->rasterBuffer, x, spans->y, dest, l);
             x += l;
