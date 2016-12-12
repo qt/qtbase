@@ -2026,13 +2026,15 @@ void QCocoaWindow::exposeWindow()
     if (!isWindowExposable())
         return;
 
-    // Update the QWindow's screen property. This property is set
-    // to QGuiApplication::primaryScreen() at QWindow construciton
-    // time, and we won't get a NSWindowDidChangeScreenNotification
-    // on show. The case where the window is initially displayed
-    // on a non-primary screen needs special handling here.
-    if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_nsWindow.screen))
-        window()->setScreen(cocoaScreen->screen());
+    if (window()->isTopLevel()) {
+        // Update the QWindow's screen property. This property is set
+        // to QGuiApplication::primaryScreen() at QWindow construciton
+        // time, and we won't get a NSWindowDidChangeScreenNotification
+        // on show. The case where the window is initially displayed
+        // on a non-primary screen needs special handling here.
+        if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_nsWindow.screen))
+            window()->setScreen(cocoaScreen->screen());
+    }
 
     if (!m_isExposed) {
         m_isExposed = true;
