@@ -1148,6 +1148,11 @@ void QTextDocument::setMetaInformation(MetaInformation info, const QString &stri
     Returns the plain text contained in the document. If you want
     formatting information use a QTextCursor instead.
 
+    Some formatting characters are replaced by ASCII equivalents.
+    In particular, no-break space (U+00A0) is replaced by a regular
+    space (U+0020), and both paragraph (U+2029) and line (U+2028)
+    separators are replaced by line feed (U+000A).
+
     \note Embedded objects, such as images, are represented by a
     Unicode value U+FFFC (OBJECT REPLACEMENT CHARACTER).
 
