@@ -150,7 +150,7 @@ ProjectGenerator::init()
                 QString newdir = pd;
                 QFileInfo fi(fileInfo(newdir));
                 if(fi.isDir()) {
-                    newdir = fileFixify(newdir);
+                    newdir = fileFixify(newdir, FileFixifyFromOutdir);
                     ProStringList &subdirs = v["SUBDIRS"];
                     if(exists(fi.filePath() + QDir::separator() + fi.fileName() + Option::pro_ext) &&
                        !subdirs.contains(newdir, Qt::CaseInsensitive)) {
