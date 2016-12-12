@@ -994,6 +994,9 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         setWindowZoomButton(flags);
     }
 
+    if (m_nsWindow)
+        m_nsWindow.ignoresMouseEvents = flags & Qt::WindowTransparentForInput;
+
     m_windowFlags = flags;
 }
 
@@ -1620,15 +1623,8 @@ void QCocoaWindow::recreateWindowIfNeeded()
         }
 
         // Set properties after the window has been made a child NSWindow
-        m_nsWindow.styleMask = NSBorderlessWindowMask;
-        m_nsWindow.hasShadow = NO;
-        m_nsWindow.level = NSNormalWindowLevel;
-        NSWindowCollectionBehavior collectionBehavior =
-                NSWindowCollectionBehaviorManaged | NSWindowCollectionBehaviorIgnoresCycle
-                | NSWindowCollectionBehaviorFullScreenAuxiliary;
-        m_nsWindow.animationBehavior = NSWindowAnimationBehaviorNone;
-        m_nsWindow.collectionBehavior = collectionBehavior;
         setCocoaGeometry(windowGeometry());
+        setWindowFlags(window()->flags());
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
         if ([m_view superview])
@@ -1644,9 +1640,6 @@ void QCocoaWindow::recreateWindowIfNeeded()
         [m_view setFrame:frame];
         [m_view setHidden:!window()->isVisible()];
     }
-
-    m_nsWindow.ignoresMouseEvents =
-        (window()->flags() & Qt::WindowTransparentForInput) == Qt::WindowTransparentForInput;
 
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
@@ -1715,62 +1708,49 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
     Qt::WindowType type = window()->type();
     Qt::WindowFlags flags = window()->flags();
 
-    NSUInteger styleMask;
-    if (shouldBeChildNSWindow) {
-        styleMask = NSBorderlessWindowMask;
-    } else {
-        styleMask = windowStyleMask(flags);
-    }
-    QCocoaNSWindow *createdWindow = 0;
+    // Create NSWindow
+    Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
+    NSUInteger styleMask = shouldBeChildNSWindow ? NSBorderlessWindowMask : windowStyleMask(flags);
+    QCocoaNSWindow *window = [[windowClass alloc] initWithContentRect:frame
+        screen:cocoaScreen->nativeScreen() styleMask:styleMask qPlatformWindow:this];
 
-    // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
-    // and dialogs
+    window.restorable = NO;
+    window.level = shouldBeChildNSWindow ? NSNormalWindowLevel : windowLevel(flags);
+
+    if (!isOpaque()) {
+        window.backgroundColor = [NSColor clearColor];
+        window.opaque = NO;
+    }
+
+    Q_ASSERT(!(shouldBePanel && shouldBeChildNSWindow));
+
     if (shouldBePanel) {
-        QNSPanel *panel = [[QNSPanel alloc] initWithContentRect:frame screen:cocoaScreen->nativeScreen()
-                                    styleMask: styleMask qPlatformWindow:this];
+        // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set
+        window.hidesOnDeactivate = ((type & Qt::Tool) == Qt::Tool) &&
+            !qt_mac_resolveOption(false, QPlatformWindow::window(), "_q_macAlwaysShowToolWindow", "");
 
-        if ((type & Qt::Popup) == Qt::Popup)
-            [panel setHasShadow:YES];
+        // Make popup windows show on the same desktop as the parent full-screen window
+        window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
 
-        // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set.
-        QVariant showWithoutActivating = QPlatformWindow::window()->property("_q_macAlwaysShowToolWindow");
-        bool shouldHideOnDeactivate = ((type & Qt::Tool) == Qt::Tool) &&
-                                      !(showWithoutActivating.isValid() && showWithoutActivating.toBool());
-        [panel setHidesOnDeactivate: shouldHideOnDeactivate];
-
-        // Make popup windows show on the same desktop as the parent full-screen window.
-        [panel setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-        if ((type & Qt::Popup) == Qt::Popup)
-            [panel setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
-
-        createdWindow = panel;
-    } else {
-        createdWindow = [[QNSWindow alloc] initWithContentRect:frame screen:cocoaScreen->nativeScreen()
-                                     styleMask: styleMask qPlatformWindow:this];
+        if ((type & Qt::Popup) == Qt::Popup) {
+            window.hasShadow = YES;
+            window.animationBehavior = NSWindowAnimationBehaviorUtilityWindow;
+        }
+    } else if (shouldBeChildNSWindow) {
+        window.collectionBehavior =
+              NSWindowCollectionBehaviorManaged
+            | NSWindowCollectionBehaviorIgnoresCycle
+            | NSWindowCollectionBehaviorFullScreenAuxiliary;
+        window.hasShadow = NO;
+        window.animationBehavior = NSWindowAnimationBehaviorNone;
     }
 
-    if ([createdWindow respondsToSelector:@selector(setRestorable:)])
-        [createdWindow setRestorable: NO];
+    // Persist modality so we can detect changes later on
+    m_windowModality = QPlatformWindow::window()->modality();
 
-    NSInteger level = windowLevel(flags);
-    [createdWindow setLevel:level];
+    applyContentBorderThickness(window);
 
-    // OpenGL surfaces can be ordered either above(default) or below the NSWindow.
-    // When ordering below the window must be tranclucent and have a clear background color.
-    static GLint openglSourfaceOrder = qt_mac_resolveOption(1, "QT_MAC_OPENGL_SURFACE_ORDER");
-
-    bool isTranslucent = window()->format().alphaBufferSize() > 0
-                         || (surface()->supportsOpenGL() && openglSourfaceOrder == -1);
-    if (isTranslucent) {
-        [createdWindow setBackgroundColor:[NSColor clearColor]];
-        [createdWindow setOpaque:NO];
-    }
-
-    m_windowModality = window()->modality();
-
-    applyContentBorderThickness(createdWindow);
-
-    return createdWindow;
+    return window;
 }
 
 void QCocoaWindow::removeMonitor()
