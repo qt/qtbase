@@ -41,6 +41,7 @@
 
 #include <QtNetwork/qtcpsocket.h>
 
+#include <QtCore/qtimer.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qfile.h>
@@ -115,6 +116,13 @@ void Http2Server::enablePushPromise(bool pushEnabled, const QByteArray &path)
 void Http2Server::setResponseBody(const QByteArray &body)
 {
     responseBody = body;
+}
+
+void Http2Server::emulateGOAWAY(int timeout)
+{
+    Q_ASSERT(timeout >= 0);
+    testingGOAWAY = true;
+    goawayTimeout = timeout;
 }
 
 void Http2Server::startServer()
@@ -270,6 +278,16 @@ quint32 Http2Server::clientSetting(Http2::Settings identifier, quint32 defaultVa
 void Http2Server::connectionEstablished()
 {
     using namespace Http2;
+
+    if (testingGOAWAY) {
+        auto timer = new QTimer(this);
+        timer->setSingleShot(true);
+        connect(timer, &QTimer::timeout, [this]() {
+            sendGOAWAY(quint32(connectionStreamID), quint32(INTERNAL_ERROR), 0);
+        });
+        timer->start(goawayTimeout);
+        return;
+    }
 
     connect(socket.data(), SIGNAL(readyRead()),
             this, SLOT(readReady()));

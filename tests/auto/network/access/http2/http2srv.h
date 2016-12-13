@@ -70,6 +70,7 @@ public:
     // To be called before server started:
     void enablePushPromise(bool enabled, const QByteArray &path = QByteArray());
     void setResponseBody(const QByteArray &body);
+    void emulateGOAWAY(int timeout);
 
     // Invokables, since we can call them from the main thread,
     // but server (can) work on its own thread.
@@ -161,6 +162,9 @@ private:
     bool pushPromiseEnabled = false;
     quint32 lastPromisedStream = 0;
     QByteArray pushPath;
+
+    bool testingGOAWAY = false;
+    int goawayTimeout = 0;
 
 protected slots:
     void ignoreErrorSlot();

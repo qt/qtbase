@@ -180,9 +180,7 @@ void QHttpNetworkConnectionChannel::init()
            sslSocket->setSslConfiguration(sslConfiguration);
     } else {
 #endif // !QT_NO_SSL
-        if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2)
-            protocolHandler.reset(new QHttp2ProtocolHandler(this));
-        else
+        if (connection->connectionType() != QHttpNetworkConnection::ConnectionTypeHTTP2)
             protocolHandler.reset(new QHttpProtocolHandler(this));
 #ifndef QT_NO_SSL
     }
@@ -839,6 +837,9 @@ void QHttpNetworkConnectionChannel::_q_connected()
     } else {
         state = QHttpNetworkConnectionChannel::IdleState;
         if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+            // We have to reset QHttp2ProtocolHandler's state machine, it's a new
+            // connection and the handler's state is unique per connection.
+            protocolHandler.reset(new QHttp2ProtocolHandler(this));
             if (spdyRequestsToSend.count() > 0) {
                 // wait for data from the server first (e.g. initial window, max concurrent requests)
                 QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
@@ -1092,6 +1093,10 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             emitFinishedWithError(QNetworkReply::SslHandshakeFailedError,
                                   "detected unknown Next Protocol Negotiation protocol");
         }
+    } else if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+        // We have to reset QHttp2ProtocolHandler's state machine, it's a new
+        // connection and the handler's state is unique per connection.
+        protocolHandler.reset(new QHttp2ProtocolHandler(this));
     }
 
     if (!socket)

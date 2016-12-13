@@ -69,6 +69,8 @@ private slots:
     void flowControlClientSide();
     void flowControlServerSide();
     void pushPromise();
+    void goaway_data();
+    void goaway();
 
 protected slots:
     // Slots to listen to our in-process server:
@@ -83,6 +85,7 @@ protected slots:
     void receivedData(quint32 streamID);
     void windowUpdated(quint32 streamID);
     void replyFinished();
+    void replyFinishedWithError();
 
 private:
     void clearHTTP2State();
@@ -97,6 +100,7 @@ private:
     void sendRequest(int streamNumber,
                      QNetworkRequest::Priority priority = QNetworkRequest::NormalPriority,
                      const QByteArray &payload = QByteArray());
+    QUrl requestUrl() const;
 
     quint16 serverPort = 0;
     QThread *workerThread = nullptr;
@@ -196,9 +200,8 @@ void tst_Http2::singleRequest()
 
     QVERIFY(serverPort != 0);
 
-    const QString urlAsString(clearTextHTTP2 ? QString("http://127.0.0.1:%1/index.html")
-                                             : QString("https://127.0.0.1:%1/index.html"));
-    const QUrl url(urlAsString.arg(serverPort));
+    auto url = requestUrl();
+    url.setPath("/index.html");
 
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
@@ -347,11 +350,10 @@ void tst_Http2::pushPromise()
 
     QVERIFY(serverPort != 0);
 
-    const QString urlAsString((clearTextHTTP2 ? QString("http://127.0.0.1:%1/")
-                                              : QString("https://127.0.0.1:%1/")).arg(serverPort));
-    const QUrl requestUrl(urlAsString + "index.html");
+    auto url = requestUrl();
+    url.setPath("/index.html");
 
-    QNetworkRequest request(requestUrl);
+    QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
 
     auto reply = manager.get(request);
@@ -374,8 +376,8 @@ void tst_Http2::pushPromise()
     // Create an additional request (let's say, we parsed reply and realized we
     // need another resource):
 
-    const QUrl promisedUrl(urlAsString + "script.js");
-    QNetworkRequest promisedRequest(promisedUrl);
+    url.setPath("/script.js");
+    QNetworkRequest promisedRequest(url);
     promisedRequest.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
     reply = manager.get(promisedRequest);
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
@@ -389,6 +391,61 @@ void tst_Http2::pushPromise()
     QCOMPARE(nRequests, 0);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->isFinished());
+}
+
+void tst_Http2::goaway_data()
+{
+    // For now we test only basic things in two very simple scenarios:
+    // - server sends GOAWAY immediately or
+    // - server waits for some time (enough for ur to init several streams on a
+    // client side); then suddenly it replies with GOAWAY, never processing any
+    // request.
+    QTest::addColumn<int>("responseTimeoutMS");
+    QTest::newRow("ImmediateGOAWAY") << 0;
+    QTest::newRow("DelayedGOAWAY") << 1000;
+}
+
+void tst_Http2::goaway()
+{
+    using namespace Http2;
+
+    QFETCH(const int, responseTimeoutMS);
+
+    clearHTTP2State();
+
+    serverPort = 0;
+    nRequests = 3;
+
+    ServerPtr srv(newServer(defaultServerSettings, defaultClientSettings));
+    srv->emulateGOAWAY(responseTimeoutMS);
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    auto url = requestUrl();
+    // We have to store these replies, so that we can check errors later.
+    std::vector<QNetworkReply *> replies(nRequests);
+    for (int i = 0; i < nRequests; ++i) {
+        url.setPath(QString("/%1").arg(i));
+        QNetworkRequest request(url);
+        request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+        replies[i] = manager.get(request);
+        QCOMPARE(replies[i]->error(), QNetworkReply::NoError);
+        void (QNetworkReply::*errorSignal)(QNetworkReply::NetworkError) =
+            &QNetworkReply::error;
+        connect(replies[i], errorSignal, this, &tst_Http2::replyFinishedWithError);
+        // Since we're using self-signed certificates, ignore SSL errors:
+        replies[i]->ignoreSslErrors();
+    }
+
+    runEventLoop(5000 + responseTimeoutMS);
+
+    // No request processed, no 'replyFinished' slot calls:
+    QCOMPARE(nRequests, 0);
+    // Our server did not bother to send anything except a single GOAWAY frame:
+    QVERIFY(!prefaceOK);
+    QVERIFY(!serverGotSettingsACK);
 }
 
 void tst_Http2::serverStarted(quint16 port)
@@ -445,10 +502,9 @@ void tst_Http2::sendRequest(int streamNumber,
                             QNetworkRequest::Priority priority,
                             const QByteArray &payload)
 {
-    static const QString urlAsString(clearTextHTTP2 ? "http://127.0.0.1:%1/stream%2.html"
-                                                    : "https://127.0.0.1:%1/stream%2.html");
+    auto url = requestUrl();
+    url.setPath(QString("/stream%1.html").arg(streamNumber));
 
-    const QUrl url(urlAsString.arg(serverPort).arg(streamNumber));
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
     request.setPriority(priority);
@@ -461,6 +517,14 @@ void tst_Http2::sendRequest(int streamNumber,
 
     reply->ignoreSslErrors();
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+}
+
+QUrl tst_Http2::requestUrl() const
+{
+    static auto url = QUrl(QLatin1String(clearTextHTTP2 ? "http://127.0.0.1" : "https://127.0.0.1"));
+    url.setPort(serverPort);
+
+    return url;
 }
 
 void tst_Http2::clientPrefaceOK()
@@ -526,6 +590,21 @@ void tst_Http2::replyFinished()
 
     if (const auto reply = qobject_cast<QNetworkReply *>(sender()))
         QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    --nRequests;
+    if (!nRequests)
+        stopEventLoop();
+}
+
+void tst_Http2::replyFinishedWithError()
+{
+    QVERIFY(nRequests);
+
+    if (const auto reply = qobject_cast<QNetworkReply *>(sender())) {
+        // For now this is a 'generic' code, it just verifies some error was
+        // reported without testing its type.
+        QVERIFY(reply->error() != QNetworkReply::NoError);
+    }
 
     --nRequests;
     if (!nRequests)

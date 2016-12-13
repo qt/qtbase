@@ -208,7 +208,7 @@ void QHttp2ProtocolHandler::_q_receiveReply()
     Q_ASSERT(m_socket);
     Q_ASSERT(m_channel);
 
-    do {
+    while (!goingAway || activeStreams.size()) {
         const auto result = frameReader.read(*m_socket);
         switch (result) {
         case FrameStatus::incompleteFrame:
@@ -264,13 +264,19 @@ void QHttp2ProtocolHandler::_q_receiveReply()
             // 5.1 - ignore unknown frames.
             break;
         }
-    } while (!goingAway || activeStreams.size());
+    }
 }
 
 bool QHttp2ProtocolHandler::sendRequest()
 {
-    if (goingAway)
+    if (goingAway) {
+        // Stop further calls to this method: we have received GOAWAY
+        // so we cannot create new streams.
+        m_channel->emitFinishedWithError(QNetworkReply::ProtocolUnknownError,
+                                         "GOAWAY received, cannot start a request");
+        m_channel->spdyRequestsToSend.clear();
         return false;
+    }
 
     if (!prefaceSent && !sendClientPreface())
         return false;
@@ -756,14 +762,10 @@ void QHttp2ProtocolHandler::handleGOAWAY()
         // "The last stream identifier can be set to 0 if no
         // streams were processed."
         lastStreamID = 1;
-    }
-
-    if (!(lastStreamID & 0x1)) {
+    } else if (!(lastStreamID & 0x1)) {
         // 5.1.1 - we (client) use only odd numbers as stream identifiers.
         return connectionError(PROTOCOL_ERROR, "GOAWAY with invalid last stream ID");
-    }
-
-    if (lastStreamID >= nextID) {
+    } else if (lastStreamID >= nextID) {
         // "A server that is attempting to gracefully shut down a connection SHOULD
         // send an initial GOAWAY frame with the last stream identifier set to 2^31-1
         // and a NO_ERROR code."
@@ -775,6 +777,13 @@ void QHttp2ProtocolHandler::handleGOAWAY()
     }
 
     goingAway = true;
+
+    // For the requests (and streams) we did not start yet, we have to report an
+    // error.
+    m_channel->emitFinishedWithError(QNetworkReply::ProtocolUnknownError,
+                                     "GOAWAY received, cannot start a request");
+    // Also, prevent further calls to sendRequest:
+    m_channel->spdyRequestsToSend.clear();
 
     QNetworkReply::NetworkError error = QNetworkReply::NoError;
     QString message;
