@@ -528,7 +528,9 @@ QImage QOpenGLWindow::grabFramebuffer()
         return QImage();
 
     makeCurrent();
-    return qt_gl_read_framebuffer(size() * devicePixelRatio(), false, false);
+    QImage img = qt_gl_read_framebuffer(size() * devicePixelRatio(), false, false);
+    img.setDevicePixelRatio(devicePixelRatio());
+    return img;
 }
 
 /*!
