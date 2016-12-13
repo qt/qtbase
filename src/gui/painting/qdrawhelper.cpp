@@ -843,6 +843,7 @@ template <QPixelLayout::BPP bpp> static
 uint QT_FASTCALL fetchPixel(const uchar *, int)
 {
     Q_UNREACHABLE();
+    return 0;
 }
 
 template <>
