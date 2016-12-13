@@ -57,6 +57,14 @@ defineTest(qtConfLibrary_mysqlConfig) {
         libs = $$filterLibraryPath($$libs)
         # -rdynamic should not be returned by mysql_config, but is on RHEL 6.6
         libs -= -rdynamic
+        equals($${1}.cleanlibs, true) {
+            for(l, libs) {
+                # Drop all options besides the -L one and the -lmysqlclient one
+                # so we don't unnecessarily link to libs like OpenSSL
+                contains(l, "^(-L|-lmysqlclient).*"): cleanlibs += $$l
+            }
+            libs = $$cleanlibs
+        }
         $${1}.libs = "$$val_escape(libs)"
         eval(includedir = $$includedir)
         includedir ~= s/^-I//g
