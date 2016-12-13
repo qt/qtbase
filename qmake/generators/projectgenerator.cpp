@@ -344,8 +344,8 @@ ProjectGenerator::writeMakefile(QTextStream &t)
           << getWritableVar("CONFIG_REMOVE", false)
           << getWritableVar("INCLUDEPATH") << endl;
 
-        t << "# The following define makes your compiler emit warnings if you use\n"
-             "# any feature of Qt which as been marked as deprecated (the exact warnings\n"
+        t << "# The following define makes your compiler warn you if you use any\n"
+             "# feature of Qt which has been marked as deprecated (the exact warnings\n"
              "# depend on your compiler). Please consult the documentation of the\n"
              "# deprecated API in order to know how to port your code away from it.\n"
              "DEFINES += QT_DEPRECATED_WARNINGS\n"
