@@ -1121,6 +1121,9 @@ void QXcbDrag::cancel()
     QBasicDrag::cancel();
     if (current_target)
         send_leave();
+
+    // remove canceled object
+    currentDrag()->deleteLater();
 }
 
 // find an ancestor with XdndAware on it
