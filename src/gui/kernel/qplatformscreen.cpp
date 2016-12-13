@@ -280,6 +280,45 @@ QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window
 }
 
 /*!
+    Reimplement this function in subclass to return the manufacturer
+    of this screen.
+
+    The default implementation returns an empty string.
+
+    \since 5.9
+*/
+QString QPlatformScreen::manufacturer() const
+{
+    return QString();
+}
+
+/*!
+    Reimplement this function in subclass to return the model
+    of this screen.
+
+    The default implementation returns an empty string.
+
+    \since 5.9
+*/
+QString QPlatformScreen::model() const
+{
+    return QString();
+}
+
+/*!
+    Reimplement this function in subclass to return the serial number
+    of this screen.
+
+    The default implementation returns an empty string.
+
+    \since 5.9
+*/
+QString QPlatformScreen::serialNumber() const
+{
+    return QString();
+}
+
+/*!
     \class QPlatformScreen
     \since 4.8
     \internal

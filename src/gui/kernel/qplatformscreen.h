@@ -129,6 +129,10 @@ public:
 
     virtual QString name() const { return QString(); }
 
+    virtual QString manufacturer() const;
+    virtual QString model() const;
+    virtual QString serialNumber() const;
+
     virtual QPlatformCursor *cursor() const;
     virtual SubpixelAntialiasingType subpixelAntialiasingTypeHint() const;
 

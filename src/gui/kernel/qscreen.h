@@ -69,6 +69,9 @@ class Q_GUI_EXPORT QScreen : public QObject
     Q_DECLARE_PRIVATE(QScreen)
 
     Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(QString manufacturer READ manufacturer CONSTANT)
+    Q_PROPERTY(QString model READ model CONSTANT)
+    Q_PROPERTY(QString serialNumber READ serialNumber CONSTANT)
     Q_PROPERTY(int depth READ depth CONSTANT)
     Q_PROPERTY(QSize size READ size NOTIFY geometryChanged)
     Q_PROPERTY(QSize availableSize READ availableSize NOTIFY availableGeometryChanged)
@@ -96,6 +99,10 @@ public:
     QPlatformScreen *handle() const;
 
     QString name() const;
+
+    QString manufacturer() const;
+    QString model() const;
+    QString serialNumber() const;
 
     int depth() const;
 

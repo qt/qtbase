@@ -161,6 +161,42 @@ QString QScreen::name() const
 }
 
 /*!
+  \property QScreen::manufacturer
+  \brief the manufacturer of the screen
+
+  \since 5.9
+*/
+QString QScreen::manufacturer() const
+{
+    Q_D(const QScreen);
+    return d->platformScreen->manufacturer();
+}
+
+/*!
+  \property QScreen::model
+  \brief the model of the screen
+
+  \since 5.9
+*/
+QString QScreen::model() const
+{
+    Q_D(const QScreen);
+    return d->platformScreen->model();
+}
+
+/*!
+  \property QScreen::serialNumber
+  \brief the serial number of the screen
+
+  \since 5.9
+*/
+QString QScreen::serialNumber() const
+{
+    Q_D(const QScreen);
+    return d->platformScreen->serialNumber();
+}
+
+/*!
   \property QScreen::depth
   \brief the color depth of the screen
 */
