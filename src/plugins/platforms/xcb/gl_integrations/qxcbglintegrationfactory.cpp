@@ -55,29 +55,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QXcbGlIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 #endif // !QT_NO_LIBRARY
 
-QStringList QXcbGlIntegrationFactory::keys(const QString &pluginPath)
-{
-    QStringList list;
-#ifndef QT_NO_LIBRARY
-    if (!pluginPath.isEmpty()) {
-        QCoreApplication::addLibraryPath(pluginPath);
-        list = directLoader()->keyMap().values();
-        if (!list.isEmpty()) {
-            const QString postFix = QStringLiteral(" (from ")
-                                    + QDir::toNativeSeparators(pluginPath)
-                                    + QLatin1Char(')');
-            const QStringList::iterator end = list.end();
-            for (QStringList::iterator it = list.begin(); it != end; ++it)
-                (*it).append(postFix);
-        }
-    }
-#else
-    Q_UNUSED(pluginPath);
-#endif
-    list.append(loader()->keyMap().values());
-    return list;
-}
-
 QXcbGlIntegration *QXcbGlIntegrationFactory::create(const QString &platform, const QString &pluginPath)
 {
 #ifndef QT_NO_LIBRARY

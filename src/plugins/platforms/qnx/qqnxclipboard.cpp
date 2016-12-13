@@ -103,14 +103,14 @@ public:
         qClipboardDebug() << "formats=" << m_formatsToCheck;
     }
 
-    bool hasFormat(const QString &mimetype) const
+    bool hasFormat(const QString &mimetype) const override
     {
         const bool result = is_clipboard_format_present(mimetype.toUtf8().constData()) == 0;
         qClipboardDebug() << "mimetype=" << mimetype << "result=" << result;
         return result;
     }
 
-    QStringList formats() const
+    QStringList formats() const override
     {
         QStringList result;
 
@@ -141,7 +141,7 @@ public:
     }
 
 protected:
-    QVariant retrieveData(const QString &mimetype, QVariant::Type preferredType) const
+    QVariant retrieveData(const QString &mimetype, QVariant::Type preferredType) const override
     {
         qClipboardDebug() << "mimetype=" << mimetype << "preferredType=" << preferredType;
         if (is_clipboard_format_present(mimetype.toUtf8().constData()) != 0)

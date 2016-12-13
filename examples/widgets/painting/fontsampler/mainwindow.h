@@ -52,6 +52,8 @@
 #define MAINWINDOW_H
 
 #include "ui_mainwindowbase.h"
+#include <QPrinter>
+#include <QPrintDialog>
 
 QT_BEGIN_NAMESPACE
 class QPrinter;

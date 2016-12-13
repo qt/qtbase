@@ -399,14 +399,6 @@ HostVar()
 UNAME_MACHINE=`(uname -m) 2>/dev/null` || UNAME_MACHINE=unknown
 UNAME_RELEASE=`(uname -r) 2>/dev/null` || UNAME_RELEASE=unknown
 UNAME_SYSTEM=`(uname -s) 2>/dev/null`  || UNAME_SYSTEM=unknown
-UNAME_VERSION=`(uname -v) 2>/dev/null` || UNAME_VERSION=unknown
-
-# detect the "echo without newline" style. usage: echo $ECHO_N "<string>$ECHO_C"
-if echo '\c' | grep '\c' >/dev/null; then
-    ECHO_N=-n
-else
-    ECHO_C='\c'
-fi
 
 BUILD_ON_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
@@ -470,7 +462,6 @@ unset QTDIR
 
 # initalize internal variables
 CFG_RELEASE_TOOLS=no
-CFG_ANDROID_STYLE_ASSETS=yes
 
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
 XPLATFORM_MAC=no        # Whether target platform is macOS, iOS, tvOS, or watchOS
@@ -479,7 +470,7 @@ XPLATFORM_TVOS=no       # Whether target platform is tvOS
 XPLATFORM_WATCHOS=no    # Whether target platform is watchOS
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
-PLATFORM=$QMAKESPEC
+PLATFORM=
 OPT_CONFIRM_LICENSE=no
 OPT_SHADOW=maybe
 OPT_VERBOSE=no
@@ -511,8 +502,6 @@ QT_HOST_BINS=
 QT_HOST_LIBS=
 QT_HOST_DATA=
 QT_EXT_PREFIX=
-
-# default qpa platform
 
 # Android vars
 if [ -z "$ANDROID_SDK_ROOT" ]; then
@@ -547,7 +536,6 @@ CFG_DEFAULT_ANDROID_NDK_HOST=$ANDROID_NDK_HOST
 # parse the arguments, setting things to "yes" or "no"
 while [ "$#" -gt 0 ]; do
     CURRENT_OPT="$1"
-    UNKNOWN_ARG=no
     case "$1" in
     #Autoconf style options
     --enable-*)
@@ -675,10 +663,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     extprefix)
         QT_EXT_PREFIX="$VAL"
-        ;;
-    pkg-config)
-        ;;
-    force-pkg-config)
         ;;
     docdir)
         QT_INSTALL_DOCS="$VAL"
@@ -815,12 +799,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     android-toolchain-version)
         CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
-        ;;
-    android-style-assets)
-        # Required to be able to show the correct license text
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_ANDROID_STYLE_ASSETS="$VAL"
-        fi
         ;;
     *)
         ;;
@@ -1034,168 +1012,6 @@ case "$XPLATFORM" in
 esac
 
 #-------------------------------------------------------------------------------
-# check the license
-#-------------------------------------------------------------------------------
-
-if [ "$COMMERCIAL_USER" = "ask" ]; then
-    while true; do
-        echo "Which edition of Qt do you want to use ?"
-        echo
-        echo "Type 'c' if you want to use the Commercial Edition."
-        echo "Type 'o' if you want to use the Open Source Edition."
-        echo
-        read commercial
-        echo
-        if [ "$commercial" = "c" ]; then
-            COMMERCIAL_USER="yes"
-            OPT_CMDLINE="$OPT_CMDLINE
--commercial"
-            break
-        elif [ "$commercial" = "o" ]; then
-            COMMERCIAL_USER="no"
-            OPT_CMDLINE="$OPT_CMDLINE
--opensource"
-            break
-        fi
-    done
-fi
-
-if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ]; then
-    # Commercial preview release
-    Licensee="Preview"
-    Edition="Preview"
-    EditionString="Technology Preview"
-elif [ $COMMERCIAL_USER = "yes" ]; then
-    if [ $UNAME_SYSTEM = "Linux" ]; then
-        case "$PLATFORM" in
-        *-32)
-            Licheck=licheck32
-            ;;
-        *-64)
-            Licheck=licheck64
-            ;;
-        *)
-            if file -L /bin/sh | grep -q "64-bit" ; then
-                Licheck=licheck64
-            else
-                Licheck=licheck32
-            fi
-            ;;
-        esac
-    elif [ $UNAME_SYSTEM = "Darwin" ]; then
-        Licheck=licheck_mac
-    else
-        echo >&2 "Host operating system not supported by this edition of Qt."
-        exit 1
-    fi
-    if [ -x "$relpath/bin/$Licheck" ]; then
-        LicheckOutput=`$relpath/bin/$Licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
-                       $PLATFORM $XPLATFORM`
-        if [ $? -ne 0 ]; then
-            exit 1
-        else
-            eval "$LicheckOutput"
-        fi
-    else
-        echo
-        echo "Error: This is the Open Source version of Qt."
-        echo "If you want to use Enterprise features of Qt,"
-        echo "use the contact form at http://www.qt.io/contact-us"
-        echo "to purchase a license."
-        echo
-        exit 1
-    fi
-elif [ $COMMERCIAL_USER = "no" ]; then
-    # Open Source edition - may only be used under the terms of the LGPLv3 or GPLv2.
-    Licensee="Open Source"
-    Edition="OpenSource"
-    EditionString="Open Source"
-fi
-
-if [ "$Edition" = "OpenSource" ] || [ "$Edition" = "Preview" ]; then
-    echo
-    echo "This is the Qt ${EditionString} Edition."
-    echo
-fi
-
-if [ "$Edition" = "OpenSource" ]; then
-    while true; do
-        if [ "$CFG_ANDROID_STYLE_ASSETS" = "no" ] || [ "$XPLATFORM_ANDROID" = "no" ]; then
-            echo "You are licensed to use this software under the terms of"
-            echo "the GNU Lesser General Public License (LGPL) version 3."
-            echo "You are also licensed to use this software under the terms of"
-            echo "the GNU General Public License (GPL) version 2."
-            affix="either"
-            showGPL2="yes"
-        else
-            echo "You are licensed to use this software under the terms of"
-            echo "the GNU Lesser General Public License (LGPL) version 3."
-            showGPL2="no"
-            affix="the"
-        fi
-
-        echo
-        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
-            echo "You have already accepted the terms of the $EditionString license."
-            acceptance=yes
-        else
-            if [ -f "$relpath/LICENSE.LGPL3" ]; then
-                echo "Type 'L' to view the GNU Lesser General Public License version 3."
-            fi
-            if [ "$showGPL2" = "yes" ]; then
-                echo "Type 'G' to view the GNU General Public License version 2."
-            fi
-            echo "Type 'yes' to accept this license offer."
-            echo "Type 'no' to decline this license offer."
-            echo
-            echo $ECHO_N "Do you accept the terms of $affix license? $ECHO_C"
-            read acceptance
-        fi
-        echo
-        if [ "$acceptance" = "yes" ] || [ "$acceptance" = "y" ]; then
-            break
-        elif [ "$acceptance" = "no" ]; then
-            echo "You are not licensed to use this software."
-            echo
-            exit 1
-        elif [ "$acceptance" = "L" ]; then
-            more "$relpath/LICENSE.LGPL3"
-        elif [ "$acceptance" = "G" ] && [ "$showGPL2" = "yes" ]; then
-            more "$relpath/LICENSE.GPL2"
-        fi
-    done
-elif [ "$Edition" = "Preview" ]; then
-    TheLicense=`head -n 1 "$relpath/LICENSE.PREVIEW.COMMERCIAL"`
-    while true; do
-
-        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
-            echo "You have already accepted the terms of the $EditionString license."
-            acceptance=yes
-        else
-            echo "You are licensed to use this software under the terms of"
-            echo "the $TheLicense"
-            echo
-            echo "Type '?' to read the Preview License."
-            echo "Type 'yes' to accept this license offer."
-            echo "Type 'no' to decline this license offer."
-            echo
-            echo $ECHO_N "Do you accept the terms of the license? $ECHO_C"
-            read acceptance
-        fi
-        echo
-        if [ "$acceptance" = "yes" ]; then
-            break
-        elif [ "$acceptance" = "no" ] ;then
-            echo "You are not licensed to use this software."
-            echo
-            exit 0
-        elif [ "$acceptance" = "?" ]; then
-            more "$relpath/LICENSE.PREVIEW.COMMERCIAL"
-        fi
-    done
-fi
-
-#-------------------------------------------------------------------------------
 # command line and environment validation
 #-------------------------------------------------------------------------------
 
@@ -1332,8 +1148,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     [ "$OPT_VERBOSE" = "yes" ] && echo "Performing shadow build..."
 fi
 
-# if the source tree is different from the build tree,
-# symlink or copy part of the sources
 if [ "$OPT_SHADOW" = "yes" ]; then
     echo "Preparing build tree..."
 
@@ -1646,35 +1460,19 @@ setBootstrapVariable()
 }
 
 # build qmake
-if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     echo "Creating qmake..."
-
     mkdir -p "$outpath/qmake" || exit
-    # fix makefiles
-    for mkfile in GNUmakefile Makefile; do
-        EXTRA_LFLAGS=
-        EXTRA_CFLAGS=
-        in_mkfile="${mkfile}.in"
-        if [ "$mkfile" = "Makefile" ]; then
-#           if which qmake >/dev/null 2>&1 && [ -f qmake/qmake.pro ]; then
-#               (cd qmake && qmake) >/dev/null 2>&1 && continue
-#           fi
-            in_mkfile="${mkfile}.unix"
-        fi
-        in_mkfile="$relpath/qmake/$in_mkfile"
-        mkfile="$outpath/qmake/$mkfile"
+
+        in_mkfile=$relpath/qmake/Makefile.unix
+        mkfile=$outpath/qmake/Makefile
         if [ -f "$mkfile" ]; then
             [ "$CFG_DEV" = "yes" ] && "$WHICH" chflags >/dev/null 2>&1 && chflags nouchg "$mkfile"
             rm -f "$mkfile"
         fi
-        [ -f "$in_mkfile" ] || continue
 
         echo "########################################################################" > "$mkfile"
         echo "## This file was autogenerated by configure, all changes will be lost ##" >> "$mkfile"
         echo "########################################################################" >> "$mkfile"
-        EXTRA_OBJS=
-        EXTRA_SRCS=
-        EXTRA_CFLAGS="\$(QMAKE_CFLAGS) \$(QMAKE_CFLAGS_SPLIT_SECTIONS)"
         EXTRA_CXXFLAGS="\$(QMAKE_CXXFLAGS) \$(QMAKE_CXXFLAGS_CXX11) \$(QMAKE_CXXFLAGS_SPLIT_SECTIONS)"
         EXTRA_LFLAGS="\$(QMAKE_LFLAGS) \$(QMAKE_LFLAGS_GCSECTIONS)"
 
@@ -1685,8 +1483,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         [ "$CFG_SILENT" = "yes" ] && CC_TRANSFORM='s,^,\@,' || CC_TRANSFORM=
         setBootstrapVariable QMAKE_CC CC "$CC_TRANSFORM"
         setBootstrapVariable QMAKE_CXX CXX "$CC_TRANSFORM"
-        setBootstrapVariable QMAKE_CFLAGS
-        setBootstrapVariable QMAKE_CFLAGS_SPLIT_SECTIONS
         setBootstrapVariable QMAKE_CXXFLAGS
         setBootstrapVariable QMAKE_CXXFLAGS_CXX11
         setBootstrapVariable QMAKE_CXXFLAGS_SPLIT_SECTIONS
@@ -1694,73 +1490,13 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         setBootstrapVariable QMAKE_LFLAGS_GCSECTIONS
 
         if [ "$CFG_DEBUG" = "no" ] || [ "$CFG_RELEASE_TOOLS" = "yes" ]; then
-            setBootstrapVariable QMAKE_CFLAGS_RELEASE
             setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
-            EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_RELEASE)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_RELEASE)"
         else
-            setBootstrapVariable QMAKE_CFLAGS_DEBUG
             setBootstrapVariable QMAKE_CXXFLAGS_DEBUG
-            EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_DEBUG)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_DEBUG)"
         fi
 
-        case `basename "$PLATFORM"` in
-        win32-g++*)
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -DUNICODE"
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DUNICODE"
-            EXTRA_OBJS="qfilesystemengine_win.o \
-                        qfilesystemiterator_win.o \
-                        qfsfileengine_win.o \
-                        qlocale_win.o \
-                        qsettings_win.o \
-                        qoperatingsystemversion_win.o \
-                        qsystemlibrary.o \
-                        registry.o"
-            EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/corelib/io/qfilesystemengine_win.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_win.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp\" \
-                        \"\$(SOURCE_PATH)/tools/shared/windows/registry.cpp\""
-            EXTRA_LFLAGS="$EXTRA_LFLAGS -static -s -lole32 -luuid -ladvapi32 -lkernel32"
-            EXEEXT=".exe"
-            ;;
-        *)
-            EXTRA_OBJS="qfilesystemengine_unix.o \
-                        qfilesystemiterator_unix.o \
-                        qfsfileengine_unix.o \
-                        qlocale_unix.o"
-            EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp\""
-            EXEEXT=
-            ;;
-        esac
-        if [ "$BUILD_ON_MAC" = "yes" ]; then
-            echo "COCOA_LFLAGS =-framework Foundation -framework CoreServices" >>"$mkfile"
-            echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
-            echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
-            EXTRA_LFLAGS="$EXTRA_LFLAGS \$(COCOA_LFLAGS)"
-            EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS \$(CARBON_CFLAGS)"
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
-            EXTRA_OBJS="$EXTRA_OBJS \
-                        qsettings_mac.o \
-                        qcore_mac.o \
-                        qoperatingsystemversion_darwin.o \
-                        qcore_foundation.o"
-            EXTRA_SRCS="$EXTRA_SRCS \
-                        \"\$(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_darwin.mm\" \
-                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm\""
-        fi
-
-        echo >>"$mkfile"
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
 	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
 	adjqmakespec=`echo "$QMAKESPEC" | sed 's/ /\\\\\\\\ /g'`
@@ -1777,14 +1513,23 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         echo "QT_MAJOR_VERSION = $QT_MAJOR_VERSION" >> "$mkfile"
         echo "QT_MINOR_VERSION = $QT_MINOR_VERSION" >> "$mkfile"
         echo "QT_PATCH_VERSION = $QT_PATCH_VERSION" >> "$mkfile"
-        echo "EXTRA_CFLAGS = $EXTRA_CFLAGS" >> "$mkfile"
-        echo "EXTRA_CXXFLAGS = $EXTRA_CXXFLAGS" >> "$mkfile"
-        echo "QTOBJS =" $EXTRA_OBJS >> "$mkfile"
-        echo "QTSRCS =" $EXTRA_SRCS >> "$mkfile"
-        echo "LFLAGS = $EXTRA_LFLAGS" >> "$mkfile"
-        echo "EXEEXT = $EXEEXT" >> "$mkfile"
+        echo "CONFIG_CXXFLAGS = $EXTRA_CXXFLAGS" >> "$mkfile"
+        echo "CONFIG_LFLAGS = $EXTRA_LFLAGS" >> "$mkfile"
         echo "RM_F = rm -f" >> "$mkfile"
         echo "RM_RF = rm -rf" >> "$mkfile"
+
+        case `basename "$PLATFORM"` in
+        win32-g++*)
+            cat "$in_mkfile.win32" >> "$mkfile"
+            ;;
+        *)
+            cat "$in_mkfile.unix" >> "$mkfile"
+            if [ "$BUILD_ON_MAC" = "yes" ]; then
+                cat "$in_mkfile.macos" >> "$mkfile"
+            fi
+            ;;
+        esac
+        echo >>"$mkfile"
 
         if [ "$BUILD_ON_MAC" = "yes" ]; then
             echo "EXTRA_CXXFLAGS += -MMD" >> "$mkfile"
@@ -1799,7 +1544,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                 rm "$mkfile.tmp"
             fi
         fi
-    done
 
     if [ "$OPT_VERBOSE" = yes ]; then
         # Show the output of make
@@ -1817,7 +1561,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         echo "Done."
     fi
-fi # Build qmake
 
 #-------------------------------------------------------------------------------
 # create a qt.conf for the Qt build tree itself
@@ -1904,16 +1647,6 @@ fi
 # run configure tests
 #-------------------------------------------------------------------------------
 
-# copy some variables that are still being computed in the shell script into an input file for configure
-# This should go away in the future
-
-cat > "$outpath/config.tests/configure.cfg" <<EOF
-# Feature defaults set by configure command line
-config.input.qt_edition = $Edition
-config.input.qt_licheck = $Licheck
-config.input.qt_release_date = $ReleaseDate
-EOF
-
 # recreate command line for qmake
 set -f
 SAVED_IFS=$IFS
@@ -1939,6 +1672,15 @@ fi
 # finally save the executed command to another script
 #-------------------------------------------------------------------------------
 if [ $CFG_REDO = no ]; then
+    if [ "$COMMERCIAL_USER" = "ask" ]; then
+        if grep '^QT_EDITION = OpenSource$' "$outpath/mkspecs/qconfig.pri" >/dev/null 2>&1; then
+            OPT_CMDLINE="$OPT_CMDLINE
+-opensource"
+        else
+            OPT_CMDLINE="$OPT_CMDLINE
+-commercial"
+        fi
+    fi
     if [ "$OPT_CONFIRM_LICENSE" = "no" ]; then
         OPT_CMDLINE="$OPT_CMDLINE
 -confirm-license"

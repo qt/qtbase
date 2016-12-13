@@ -447,12 +447,8 @@ QByteArray QXcbIntegration::wmClass() const
                 className[0] = className.at(0).toUpper();
         }
 
-        if (!name.isEmpty() && !className.isEmpty()) {
-            m_wmClass = name.toLocal8Bit();
-            m_wmClass.append('\0');
-            m_wmClass.append(className.toLocal8Bit());
-            m_wmClass.append('\0');
-        }
+        if (!name.isEmpty() && !className.isEmpty())
+            m_wmClass = name.toLocal8Bit() + '\0' + className.toLocal8Bit() + '\0';
     }
     return m_wmClass;
 }

@@ -64,7 +64,7 @@ public:
     QSctpServerPrivate();
     virtual ~QSctpServerPrivate();
 
-    int maxChannelCount;
+    int maximumChannelCount;
 
     void configureCreatedSocket() Q_DECL_OVERRIDE;
 };

@@ -70,7 +70,7 @@ protected:
     explicit QTemporaryFilePrivate(const QString &templateNameIn);
     ~QTemporaryFilePrivate();
 
-    QAbstractFileEngine *engine() const;
+    QAbstractFileEngine *engine() const override;
     void resetFileEngine() const;
 
     bool autoRemove = true;
@@ -99,14 +99,14 @@ public:
     ~QTemporaryFileEngine();
 
     bool isReallyOpen() const;
-    void setFileName(const QString &file);
+    void setFileName(const QString &file) override;
     void setFileTemplate(const QString &fileTemplate);
 
-    bool open(QIODevice::OpenMode flags);
-    bool remove();
-    bool rename(const QString &newName);
-    bool renameOverwrite(const QString &newName);
-    bool close();
+    bool open(QIODevice::OpenMode flags) override;
+    bool remove() override;
+    bool rename(const QString &newName) override;
+    bool renameOverwrite(const QString &newName) override;
+    bool close() override;
 
     quint32 fileMode;
     bool filePathIsTemplate;

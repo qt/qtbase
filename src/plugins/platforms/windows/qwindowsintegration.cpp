@@ -41,6 +41,7 @@
 #include "qwindowsintegration.h"
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
+#include "qwin10helpers.h"
 #include "qwindowsopenglcontext.h"
 
 #include "qwindowsscreen.h"
@@ -507,6 +508,12 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
 #ifdef SPI_GETKEYBOARDSPEED
     case KeyboardAutoRepeatRate:
         return QVariant(keyBoardAutoRepeatRateMS());
+#endif
+    case QPlatformIntegration::ShowIsMaximized:
+#ifndef QT_NO_CLIPBOARD
+        return qt_windowsIsTabletMode(d->m_clipboard.clipboardViewer());
+#else
+        break;
 #endif
     case QPlatformIntegration::StartDragTime:
     case QPlatformIntegration::StartDragDistance:

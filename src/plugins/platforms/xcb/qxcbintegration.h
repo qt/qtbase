@@ -60,57 +60,57 @@ public:
     QXcbIntegration(const QStringList &parameters, int &argc, char **argv);
     ~QXcbIntegration();
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
 #ifndef QT_NO_OPENGL
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
 #endif
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
 
-    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 
-    bool hasCapability(Capability cap) const Q_DECL_OVERRIDE;
-    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
-    void initialize() Q_DECL_OVERRIDE;
+    bool hasCapability(Capability cap) const override;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
+    void initialize() override;
 
     void moveToScreen(QWindow *window, int screen);
 
-    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const override;
 
-    QPlatformNativeInterface *nativeInterface()const Q_DECL_OVERRIDE;
+    QPlatformNativeInterface *nativeInterface()const override;
 
 #ifndef QT_NO_CLIPBOARD
-    QPlatformClipboard *clipboard() const Q_DECL_OVERRIDE;
+    QPlatformClipboard *clipboard() const override;
 #endif
 #ifndef QT_NO_DRAGANDDROP
-    QPlatformDrag *drag() const Q_DECL_OVERRIDE;
+    QPlatformDrag *drag() const override;
 #endif
 
-    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
+    QPlatformInputContext *inputContext() const override;
 
 #ifndef QT_NO_ACCESSIBILITY
-    QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
+    QPlatformAccessibility *accessibility() const override;
 #endif
 
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
+    QPlatformServices *services() const override;
 
-    Qt::KeyboardModifiers queryKeyboardModifiers() const Q_DECL_OVERRIDE;
-    QList<int> possibleKeys(const QKeyEvent *e) const Q_DECL_OVERRIDE;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const override;
+    QList<int> possibleKeys(const QKeyEvent *e) const override;
 
-    QStringList themeNames() const Q_DECL_OVERRIDE;
-    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
-    QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
+    QStringList themeNames() const override;
+    QPlatformTheme *createPlatformTheme(const QString &name) const override;
+    QVariant styleHint(StyleHint hint) const override;
 
     QXcbConnection *defaultConnection() const { return m_connections.first(); }
 
     QByteArray wmClass() const;
 
 #if !defined(QT_NO_SESSIONMANAGER) && defined(XCB_USE_SM)
-    QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const Q_DECL_OVERRIDE;
+    QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const override;
 #endif
 
-    void sync() Q_DECL_OVERRIDE;
+    void sync() override;
 
-    void beep() const Q_DECL_OVERRIDE;
+    void beep() const override;
 
     static QXcbIntegration *instance() { return m_instance; }
 

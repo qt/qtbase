@@ -75,6 +75,9 @@ using namespace ABI::Windows::Storage::Streams;
 using namespace ABI::Windows::Networking;
 using namespace ABI::Windows::Networking::Connectivity;
 using namespace ABI::Windows::Networking::Sockets;
+#if _MSC_VER >= 1900
+using namespace ABI::Windows::Security::EnterpriseData;
+#endif
 
 typedef ITypedEventHandler<StreamSocketListener *, StreamSocketListenerConnectionReceivedEventArgs *> ClientConnectedHandler;
 typedef ITypedEventHandler<DatagramSocket *, DatagramSocketMessageReceivedEventArgs *> DatagramReceivedHandler;
@@ -83,6 +86,45 @@ typedef IAsyncOperationWithProgressCompletedHandler<UINT32, UINT32> SocketWriteC
 typedef IAsyncOperationWithProgress<IBuffer *, UINT32> IAsyncBufferOperation;
 
 QT_BEGIN_NAMESPACE
+
+#if _MSC_VER >= 1900
+static HRESULT qt_winrt_try_create_thread_network_context(QString host, ComPtr<IThreadNetworkContext> &context)
+{
+    HRESULT hr;
+    ComPtr<IProtectionPolicyManagerStatics> protectionPolicyManager;
+
+    hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Security_EnterpriseData_ProtectionPolicyManager).Get(),
+                              &protectionPolicyManager);
+    RETURN_HR_IF_FAILED("Could not access ProtectionPolicyManager statics.");
+
+    ComPtr<IHostNameFactory> hostNameFactory;
+    hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
+                              &hostNameFactory);
+    RETURN_HR_IF_FAILED("Could not access HostName factory.");
+
+    ComPtr<IHostName> hostName;
+    HStringReference hostRef(reinterpret_cast<LPCWSTR>(host.utf16()), host.length());
+    hr = hostNameFactory->CreateHostName(hostRef.Get(), &hostName);
+    RETURN_HR_IF_FAILED("Could not create hostname.");
+
+    ComPtr<IAsyncOperation<HSTRING>> op;
+    hr = protectionPolicyManager->GetPrimaryManagedIdentityForNetworkEndpointAsync(hostName.Get(), &op);
+    RETURN_HR_IF_FAILED("Could not get identity operation.");
+
+    HSTRING hIdentity;
+    hr = QWinRTFunctions::await(op, &hIdentity);
+    RETURN_HR_IF_FAILED("Could not wait for identity operation.");
+
+    // Implies there is no need for a network context for this address
+    if (hIdentity == nullptr)
+        return S_OK;
+
+    hr = protectionPolicyManager->CreateCurrentThreadNetworkContext(hIdentity, &context);
+    RETURN_HR_IF_FAILED("Could not create thread network context");
+
+    return S_OK;
+}
+#endif // _MSC_VER >= 1900
 
 static inline QString qt_QStringFromHString(const HString &string)
 {
@@ -316,25 +358,23 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
 
     // Start processing incoming data
     if (d->socketType == QAbstractSocket::TcpSocket) {
-        HRESULT hr;
-        QEventDispatcherWinRT::runOnXamlThread([&hr, socket, socketState, this]() {
-            Q_D(QNativeSocketEngine);
+        HRESULT hr = QEventDispatcherWinRT::runOnXamlThread([d, socket, socketState, this]() {
             ComPtr<IBuffer> buffer;
             HRESULT hr = g->bufferFactory->Create(READ_BUFFER_SIZE, &buffer);
-            RETURN_OK_IF_FAILED("initialize(): Could not create buffer");
+            RETURN_HR_IF_FAILED("initialize(): Could not create buffer");
             ComPtr<IInputStream> stream;
             hr = socket->get_InputStream(&stream);
-            RETURN_OK_IF_FAILED("initialize(): Could not obtain input stream");
+            RETURN_HR_IF_FAILED("initialize(): Could not obtain input stream");
             ComPtr<IAsyncBufferOperation> readOp;
             hr = stream->ReadAsync(buffer.Get(), READ_BUFFER_SIZE, InputStreamOptions_Partial, readOp.GetAddressOf());
-            RETURN_OK_IF_FAILED_WITH_ARGS("initialize(): Failed to read from the socket buffer (%s).",
-                              socketDescription(this).constData());
+            RETURN_HR_IF_FAILED_WITH_ARGS("initialize(): Failed to read from the socket buffer (%s).",
+                                          socketDescription(this).constData());
             QMutexLocker locker(&d->readOperationsMutex);
             d->pendingReadOps.append(readOp);
             d->socketState = socketState;
             hr = readOp->put_Completed(Callback<SocketReadCompletedHandler>(d, &QNativeSocketEnginePrivate::handleReadyRead).Get());
-            RETURN_OK_IF_FAILED_WITH_ARGS("initialize(): Failed to set socket read callback (%s).",
-                              socketDescription(this).constData());
+            RETURN_HR_IF_FAILED_WITH_ARGS("initialize(): Failed to set socket read callback (%s).",
+                                          socketDescription(this).constData());
             return S_OK;
         });
         if (FAILED(hr))
@@ -367,9 +407,23 @@ bool QNativeSocketEngine::connectToHost(const QHostAddress &address, quint16 por
 bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
 {
     Q_D(QNativeSocketEngine);
+    HRESULT hr;
+
+#if _MSC_VER >= 1900
+    ComPtr<IThreadNetworkContext> networkContext;
+    if (!qEnvironmentVariableIsEmpty("QT_WINRT_USE_THREAD_NETWORK_CONTEXT")) {
+        hr = qt_winrt_try_create_thread_network_context(name, networkContext);
+        if (FAILED(hr)) {
+            setError(QAbstractSocket::ConnectionRefusedError, QLatin1String("Could not create thread network context."));
+            d->socketState = QAbstractSocket::ConnectedState;
+            return true;
+        }
+    }
+#endif // _MSC_VER >= 1900
+
     HStringReference hostNameRef(reinterpret_cast<LPCWSTR>(name.utf16()));
     ComPtr<IHostNameFactory> hostNameFactory;
-    HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
+    hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
                                       &hostNameFactory);
     Q_ASSERT_SUCCEEDED(hr);
     ComPtr<IHostName> remoteHost;
@@ -389,6 +443,16 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
         return false;
     }
     Q_ASSERT_SUCCEEDED(hr);
+
+#if _MSC_VER >= 1900
+    if (networkContext != nullptr) {
+        ComPtr<IClosable> networkContextCloser;
+        hr = networkContext.As(&networkContextCloser);
+        Q_ASSERT_SUCCEEDED(hr);
+        hr = networkContextCloser->Close();
+        Q_ASSERT_SUCCEEDED(hr);
+    }
+#endif // _MSC_VER >= 1900
 
     d->socketState = QAbstractSocket::ConnectingState;
     QEventDispatcherWinRT::runOnXamlThread([d, &hr]() {

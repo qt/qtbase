@@ -23,7 +23,8 @@ SUBDIRS=\
    qtextscriptengine \
    qtexttable \
    qzip \
-   qtextodfwriter
+   qtextodfwriter \
+   qinputcontrol
 
 win32:SUBDIRS -= qtextpiecetable
 

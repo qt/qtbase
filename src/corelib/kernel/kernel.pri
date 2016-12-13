@@ -151,9 +151,6 @@ unix|integrity {
             kernel/qtimerinfo_unix_p.h
 
     qtConfig(poll_select): SOURCES += kernel/qpoll.cpp
-    qtConfig(poll_poll): DEFINES += QT_HAVE_POLL
-    qtConfig(poll_ppoll): DEFINES += QT_HAVE_POLL QT_HAVE_PPOLL
-    qtConfig(poll_pollts): DEFINES += QT_HAVE_POLL QT_HAVE_POLLTS
 
     qtConfig(glib) {
         SOURCES += \

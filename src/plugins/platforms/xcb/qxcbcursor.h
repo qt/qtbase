@@ -76,10 +76,10 @@ public:
     QXcbCursor(QXcbConnection *conn, QXcbScreen *screen);
     ~QXcbCursor();
 #ifndef QT_NO_CURSOR
-    void changeCursor(QCursor *cursor, QWindow *widget) Q_DECL_OVERRIDE;
+    void changeCursor(QCursor *cursor, QWindow *widget) override;
 #endif
-    QPoint pos() const Q_DECL_OVERRIDE;
-    void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
+    QPoint pos() const override;
+    void setPos(const QPoint &pos) override;
 
     static void queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask = 0);
 

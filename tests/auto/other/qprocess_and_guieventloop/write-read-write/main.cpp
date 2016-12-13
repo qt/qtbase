@@ -37,7 +37,9 @@ int main(int, char **argv)
     fflush(stdout);
 
     // wait for a newline
-    fgets(buf, sizeof buf, stdin);
+    const char *result = fgets(buf, sizeof buf, stdin);
+    if (result != buf)
+        return -1;
 
     puts(msg);
     fflush(stdout);

@@ -49,6 +49,7 @@
 #include "qdatetime.h"
 #include "qbytearray.h"
 #include "qstringlist.h"
+#include "qendian.h"
 #include <qshareddata.h>
 #include <qplatformdefs.h>
 #include "private/qabstractfileengine_p.h"
@@ -101,35 +102,38 @@ class QResourceRoot
         Directory = 0x02
     };
     const uchar *tree, *names, *payloads;
-    inline int findOffset(int node) const { return node * 14; } //sizeof each tree element
+    int version;
+    inline int findOffset(int node) const { return node * (14 + (version >= 0x02 ? 8 : 0)); } //sizeof each tree element
     uint hash(int node) const;
     QString name(int node) const;
     short flags(int node) const;
 public:
     mutable QAtomicInt ref;
 
-    inline QResourceRoot(): tree(0), names(0), payloads(0) {}
-    inline QResourceRoot(const uchar *t, const uchar *n, const uchar *d) { setSource(t, n, d); }
+    inline QResourceRoot(): tree(0), names(0), payloads(0), version(0) {}
+    inline QResourceRoot(int version, const uchar *t, const uchar *n, const uchar *d) { setSource(version, t, n, d); }
     virtual ~QResourceRoot() { }
     int findNode(const QString &path, const QLocale &locale=QLocale()) const;
     inline bool isContainer(int node) const { return flags(node) & Directory; }
     inline bool isCompressed(int node) const { return flags(node) & Compressed; }
     const uchar *data(int node, qint64 *size) const;
+    QDateTime lastModified(int node) const;
     QStringList children(int node) const;
     virtual QString mappingRoot() const { return QString(); }
     bool mappingRootSubdir(const QString &path, QString *match=0) const;
     inline bool operator==(const QResourceRoot &other) const
-    { return tree == other.tree && names == other.names && payloads == other.payloads; }
+    { return tree == other.tree && names == other.names && payloads == other.payloads && version == other.version; }
     inline bool operator!=(const QResourceRoot &other) const
     { return !operator==(other); }
     enum ResourceRootType { Resource_Builtin, Resource_File, Resource_Buffer };
     virtual ResourceRootType type() const { return Resource_Builtin; }
 
 protected:
-    inline void setSource(const uchar *t, const uchar *n, const uchar *d) {
+    inline void setSource(int v, const uchar *t, const uchar *n, const uchar *d) {
         tree = t;
         names = n;
         payloads = d;
+        version = v;
     }
 };
 
@@ -231,6 +235,7 @@ public:
     mutable qint64 size;
     mutable const uchar *data;
     mutable QStringList children;
+    mutable QDateTime lastModified;
 
     QResource *q_ptr;
     Q_DECLARE_PUBLIC(QResource)
@@ -244,6 +249,7 @@ QResourcePrivate::clear()
     data = 0;
     size = 0;
     children.clear();
+    lastModified = QDateTime();
     container = 0;
     for(int i = 0; i < related.size(); ++i) {
         QResourceRoot *root = related.at(i);
@@ -274,6 +280,7 @@ QResourcePrivate::load(const QString &file)
                     size = 0;
                     compressed = 0;
                 }
+                lastModified = res->lastModified(node);
             } else if(res->isContainer(node) != container) {
                 qWarning("QResourceInfo: Resource [%s] has both data and children!", file.toLatin1().constData());
             }
@@ -284,6 +291,7 @@ QResourcePrivate::load(const QString &file)
             data = 0;
             size = 0;
             compressed = 0;
+            lastModified = QDateTime();
             res->ref.ref();
             related.append(res);
         }
@@ -514,6 +522,17 @@ const uchar *QResource::data() const
 }
 
 /*!
+    Returns the date and time when the file was last modified before
+    packaging into a resource.
+*/
+QDateTime QResource::lastModified() const
+{
+    Q_D(const QResource);
+    d->ensureInitialized();
+    return d->lastModified;
+}
+
+/*!
     Returns \c true if the resource represents a directory and thus may have
     children() in it, false if it represents a file.
 
@@ -588,11 +607,9 @@ inline uint QResourceRoot::hash(int node) const
     if(!node) //root
         return 0;
     const int offset = findOffset(node);
-    int name_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                      (tree[offset+2] << 8) + (tree[offset+3] << 0);
+    qint32 name_offset = qFromBigEndian<qint32>(tree + offset);
     name_offset += 2; //jump past name length
-    return (names[name_offset+0] << 24) + (names[name_offset+1] << 16) +
-           (names[name_offset+2] << 8) + (names[name_offset+3] << 0);
+    return qFromBigEndian<quint32>(names + name_offset);
 }
 inline QString QResourceRoot::name(int node) const
 {
@@ -601,10 +618,8 @@ inline QString QResourceRoot::name(int node) const
     const int offset = findOffset(node);
 
     QString ret;
-    int name_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                      (tree[offset+2] << 8) + (tree[offset+3] << 0);
-    const short name_length = (names[name_offset+0] << 8) +
-                              (names[name_offset+1] << 0);
+    qint32 name_offset = qFromBigEndian<qint32>(tree + offset);
+    const qint16 name_length = qFromBigEndian<qint16>(names + name_offset);
     name_offset += 2;
     name_offset += 4; //jump past hash
 
@@ -644,10 +659,8 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
         return 0;
 
     //the root node is always first
-    int child_count = (tree[6] << 24) + (tree[7] << 16) +
-                      (tree[8] << 8) + (tree[9] << 0);
-    int child       = (tree[10] << 24) + (tree[11] << 16) +
-                      (tree[12] << 8) + (tree[13] << 0);
+    qint32 child_count = qFromBigEndian<qint32>(tree + 6);
+    qint32 child       = qFromBigEndian<qint32>(tree + 10);
 
     //now iterate up the tree
     int node = -1;
@@ -693,18 +706,15 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 #endif
                     offset += 4;  //jump past name
 
-                    const short flags = (tree[offset+0] << 8) +
-                                        (tree[offset+1] << 0);
+                    const qint16 flags = qFromBigEndian<qint16>(tree + offset);
                     offset += 2;
 
                     if(!splitter.hasNext()) {
                         if(!(flags & Directory)) {
-                            const short country = (tree[offset+0] << 8) +
-                                                  (tree[offset+1] << 0);
+                            const qint16 country = qFromBigEndian<qint16>(tree + offset);
                             offset += 2;
 
-                            const short language = (tree[offset+0] << 8) +
-                                                   (tree[offset+1] << 0);
+                            const qint16 language = qFromBigEndian<qint16>(tree + offset);
                             offset += 2;
 #ifdef DEBUG_RESOURCE_MATCH
                             qDebug() << "    " << "LOCALE" << country << language;
@@ -731,11 +741,9 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
                     if(!(flags & Directory))
                         return -1;
 
-                    child_count = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                                  (tree[offset+2] << 8) + (tree[offset+3] << 0);
+                    child_count = qFromBigEndian<qint32>(tree + offset);
                     offset += 4;
-                    child = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                            (tree[offset+2] << 8) + (tree[offset+3] << 0);
+                    child = qFromBigEndian<qint32>(tree + offset);
                     break;
                 }
             }
@@ -753,7 +761,7 @@ short QResourceRoot::flags(int node) const
     if(node == -1)
         return 0;
     const int offset = findOffset(node) + 4; //jump past name
-    return (tree[offset+0] << 8) + (tree[offset+1] << 0);
+    return qFromBigEndian<qint16>(tree + offset);
 }
 const uchar *QResourceRoot::data(int node, qint64 *size) const
 {
@@ -763,16 +771,14 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
     }
     int offset = findOffset(node) + 4; //jump past name
 
-    const short flags = (tree[offset+0] << 8) + (tree[offset+1] << 0);
+    const qint16 flags = qFromBigEndian<qint16>(tree + offset);
     offset += 2;
 
     offset += 4; //jump past locale
 
     if(!(flags & Directory)) {
-        const int data_offset = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                                (tree[offset+2] << 8) + (tree[offset+3] << 0);
-        const uint data_length = (payloads[data_offset+0] << 24) + (payloads[data_offset+1] << 16) +
-                                 (payloads[data_offset+2] << 8) + (payloads[data_offset+3] << 0);
+        const qint32 data_offset = qFromBigEndian<qint32>(tree + offset);
+        const quint32 data_length = qFromBigEndian<quint32>(payloads + data_offset);
         const uchar *ret = payloads+data_offset+4;
         *size = data_length;
         return ret;
@@ -780,22 +786,35 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
     *size = 0;
     return 0;
 }
+
+QDateTime QResourceRoot::lastModified(int node) const
+{
+    if (node == -1 || version < 0x02)
+        return QDateTime();
+
+    const int offset = findOffset(node) + 14;
+
+    const quint64 timeStamp = qFromBigEndian<quint64>(tree + offset);
+    if (timeStamp == 0)
+        return QDateTime();
+
+    return QDateTime::fromMSecsSinceEpoch(timeStamp);
+}
+
 QStringList QResourceRoot::children(int node) const
 {
     if(node == -1)
         return QStringList();
     int offset = findOffset(node) + 4; //jump past name
 
-    const short flags = (tree[offset+0] << 8) + (tree[offset+1] << 0);
+    const qint16 flags = qFromBigEndian<qint16>(tree + offset);
     offset += 2;
 
     QStringList ret;
     if(flags & Directory) {
-        const int child_count = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                                (tree[offset+2] << 8) + (tree[offset+3] << 0);
+        const qint32 child_count = qFromBigEndian<qint32>(tree + offset);
         offset += 4;
-        const int child_off = (tree[offset+0] << 24) + (tree[offset+1] << 16) +
-                              (tree[offset+2] << 8) + (tree[offset+3] << 0);
+        const qint32 child_off = qFromBigEndian<qint32>(tree + offset);
         ret.reserve(child_count);
         for(int i = child_off; i < child_off+child_count; ++i)
             ret << name(i);
@@ -829,9 +848,9 @@ Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
                                          const unsigned char *name, const unsigned char *data)
 {
     QMutexLocker lock(resourceMutex());
-    if(version == 0x01 && resourceList()) {
+    if ((version == 0x01 || version == 0x2) && resourceList()) {
         bool found = false;
-        QResourceRoot res(tree, name, data);
+        QResourceRoot res(version, tree, name, data);
         for(int i = 0; i < resourceList()->size(); ++i) {
             if(*resourceList()->at(i) == res) {
                 found = true;
@@ -839,7 +858,7 @@ Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
             }
         }
         if(!found) {
-            QResourceRoot *root = new QResourceRoot(tree, name, data);
+            QResourceRoot *root = new QResourceRoot(version, tree, name, data);
             root->ref.ref();
             resourceList()->append(root);
         }
@@ -852,8 +871,8 @@ Q_CORE_EXPORT bool qUnregisterResourceData(int version, const unsigned char *tre
                                            const unsigned char *name, const unsigned char *data)
 {
     QMutexLocker lock(resourceMutex());
-    if(version == 0x01 && resourceList()) {
-        QResourceRoot res(tree, name, data);
+    if ((version == 0x01 || version == 0x02) && resourceList()) {
+        QResourceRoot res(version, tree, name, data);
         for(int i = 0; i < resourceList()->size(); ) {
             if(*resourceList()->at(i) == res) {
                 QResourceRoot *root = resourceList()->takeAt(i);
@@ -899,29 +918,25 @@ public:
         }
         offset += 4;
 
-        const int version = (b[offset+0] << 24) + (b[offset+1] << 16) +
-                         (b[offset+2] << 8) + (b[offset+3] << 0);
+        const int version = qFromBigEndian<qint32>(b + offset);
         offset += 4;
 
-        const int tree_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
-                                (b[offset+2] << 8) + (b[offset+3] << 0);
+        const int tree_offset = qFromBigEndian<qint32>(b + offset);
         offset += 4;
 
-        const int data_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
-                                (b[offset+2] << 8) + (b[offset+3] << 0);
+        const int data_offset = qFromBigEndian<qint32>(b + offset);
         offset += 4;
 
-        const int name_offset = (b[offset+0] << 24) + (b[offset+1] << 16) +
-                                (b[offset+2] << 8) + (b[offset+3] << 0);
+        const int name_offset = qFromBigEndian<qint32>(b + offset);
         offset += 4;
 
         // Some sanity checking for sizes. This is _not_ a security measure.
         if (size >= 0 && (tree_offset >= size || data_offset >= size || name_offset >= size))
             return false;
 
-        if(version == 0x01) {
+        if (version == 0x01 || version == 0x02) {
             buffer = b;
-            setSource(b+tree_offset, b+name_offset, b+data_offset);
+            setSource(version, b+tree_offset, b+name_offset, b+data_offset);
             return true;
         }
         return false;
@@ -1430,8 +1445,11 @@ QString QResourceFileEngine::owner(FileOwner) const
     return QString();
 }
 
-QDateTime QResourceFileEngine::fileTime(FileTime) const
+QDateTime QResourceFileEngine::fileTime(FileTime time) const
 {
+    Q_D(const QResourceFileEngine);
+    if (time == ModificationTime)
+        return d->resource.lastModified();
     return QDateTime();
 }
 

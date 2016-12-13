@@ -41,7 +41,8 @@
     A widget's flags are stored in a Qt::WindowFlags type which stores
     an OR combination of the flags.
 
-    \image windowflags-example.png Screenshot of the Window Flags example
+    \borderedimage windowflags-example.png
+    \caption Screenshot of the Window Flags example
 
     The example consists of two classes:
 

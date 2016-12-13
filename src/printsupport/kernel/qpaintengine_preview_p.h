@@ -69,33 +69,33 @@ public:
     QPreviewPaintEngine();
     ~QPreviewPaintEngine();
 
-    bool begin(QPaintDevice *dev);
-    bool end();
+    bool begin(QPaintDevice *dev) override;
+    bool end() override;
 
-    void updateState(const QPaintEngineState &state);
+    void updateState(const QPaintEngineState &state) override;
 
-    void drawPath(const QPainterPath &path);
-    void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode);
-    void drawTextItem(const QPointF &p, const QTextItem &textItem);
+    void drawPath(const QPainterPath &path) override;
+    void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode) override;
+    void drawTextItem(const QPointF &p, const QTextItem &textItem) override;
 
-    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-    void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &p);
+    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) override;
+    void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &p) override;
 
     QList<const QPicture *> pages();
 
-    QPaintEngine::Type type() const { return Picture; }
+    QPaintEngine::Type type() const override { return Picture; }
 
     void setProxyEngines(QPrintEngine *printEngine, QPaintEngine *paintEngine);
 
-    void setProperty(PrintEnginePropertyKey key, const QVariant &value);
-    QVariant property(PrintEnginePropertyKey key) const;
+    void setProperty(PrintEnginePropertyKey key, const QVariant &value) override;
+    QVariant property(PrintEnginePropertyKey key) const override;
 
-    bool newPage();
-    bool abort();
+    bool newPage() override;
+    bool abort() override;
 
-    int metric(QPaintDevice::PaintDeviceMetric) const;
+    int metric(QPaintDevice::PaintDeviceMetric) const override;
 
-    QPrinter::PrinterState printerState() const;
+    QPrinter::PrinterState printerState() const override;
 };
 
 QT_END_NAMESPACE

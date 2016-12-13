@@ -121,7 +121,7 @@ void tst_QStyleOption::qstyleoptioncast()
 
     // Cast a null pointer
     castOption = qstyleoption_cast<QStyleOption*>((QStyleOption*)0);
-    QCOMPARE(castOption,(QStyleOption*)0);
+    QCOMPARE(castOption, nullptr);
 
     // Deallocate
     delete testOption;

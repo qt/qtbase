@@ -62,13 +62,13 @@ public:
     QXcbEglIntegration();
     ~QXcbEglIntegration();
 
-    bool initialize(QXcbConnection *connection) Q_DECL_OVERRIDE;
+    bool initialize(QXcbConnection *connection) override;
 
-    QXcbWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
-    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
+    QXcbWindow *createWindow(QWindow *window) const override;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 
-    bool supportsThreadedOpenGL() const Q_DECL_OVERRIDE { return true; }
+    bool supportsThreadedOpenGL() const override { return true; }
 
     EGLDisplay eglDisplay() const { return m_egl_display; }
     void *xlib_display() const;

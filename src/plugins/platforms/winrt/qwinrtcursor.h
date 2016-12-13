@@ -51,9 +51,9 @@ public:
     explicit QWinRTCursor();
     ~QWinRTCursor();
 #ifndef QT_NO_CURSOR
-    void changeCursor(QCursor * windowCursor, QWindow *window);
+    void changeCursor(QCursor * windowCursor, QWindow *window) override;
 #endif
-    QPoint pos() const;
+    QPoint pos() const override;
 
 private:
     QScopedPointer<QWinRTCursorPrivate> d_ptr;

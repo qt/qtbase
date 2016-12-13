@@ -1031,7 +1031,7 @@ public:
         if (fontFace)
             return fontFace;
 
-        LOGFONT lf = QWindowsFontDatabase::fontDefToLOGFONT(fontDef);
+        LOGFONT lf = QWindowsFontDatabase::fontDefToLOGFONT(fontDef, QString());
 
         // Get substitute name
         static const char keyC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\FontSubstitutes";

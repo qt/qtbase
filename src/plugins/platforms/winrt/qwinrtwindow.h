@@ -56,19 +56,19 @@ public:
     QWinRTWindow(QWindow *window);
     ~QWinRTWindow();
 
-    QSurfaceFormat format() const;
-    bool isActive() const;
-    bool isExposed() const;
-    void setGeometry(const QRect &rect);
-    void setVisible(bool visible);
-    void setWindowTitle(const QString &title);
-    void raise();
-    void lower();
+    QSurfaceFormat format() const override;
+    bool isActive() const override;
+    bool isExposed() const override;
+    void setGeometry(const QRect &rect) override;
+    void setVisible(bool visible) override;
+    void setWindowTitle(const QString &title) override;
+    void raise() override;
+    void lower() override;
 
-    WId winId() const Q_DECL_OVERRIDE;
+    WId winId() const override;
 
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    qreal devicePixelRatio() const override;
+    void setWindowState(Qt::WindowState state) override;
 
     EGLSurface eglSurface() const;
     void createEglSurface(EGLDisplay display, EGLConfig config);

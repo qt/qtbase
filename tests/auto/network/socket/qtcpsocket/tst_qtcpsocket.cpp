@@ -603,7 +603,7 @@ void tst_QTcpSocket::bind()
         if (port)
             QCOMPARE(int(boundPort), port);
         fd = socket->socketDescriptor();
-        QVERIFY(fd != INVALID_SOCKET);
+        QVERIFY(fd != qintptr(INVALID_SOCKET));
     } else {
         QVERIFY(!socket->bind(addr, port));
         QCOMPARE(socket->localPort(), quint16(0));
@@ -667,7 +667,7 @@ void tst_QTcpSocket::bindThenResolveHost()
     QCOMPARE(socket->state(), QAbstractSocket::BoundState);
     quint16 boundPort = socket->localPort();
     qintptr fd = socket->socketDescriptor();
-    QVERIFY(fd != INVALID_SOCKET);
+    QVERIFY(fd != quint16(INVALID_SOCKET));
 
     dummySocket.close();
 
@@ -2251,7 +2251,8 @@ void tst_QTcpSocket::abortiveClose()
     enterLoop(10);
     QVERIFY(server.hasPendingConnections());
 
-    QVERIFY(tmpSocket = server.nextPendingConnection());
+    tmpSocket = server.nextPendingConnection();
+    QVERIFY(tmpSocket != nullptr);
 
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     QSignalSpy readyReadSpy(clientSocket, SIGNAL(readyRead()));

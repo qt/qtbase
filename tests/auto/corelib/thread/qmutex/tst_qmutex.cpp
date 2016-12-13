@@ -44,8 +44,19 @@
 class tst_QMutex : public QObject
 {
     Q_OBJECT
+public:
+    enum class TimeUnit {
+        Nanoseconds,
+        Microseconds,
+        Milliseconds,
+        Seconds,
+    };
+    Q_ENUM(TimeUnit);
+
 private slots:
     void initTestCase();
+    void convertToMilliseconds_data();
+    void convertToMilliseconds();
     void tryLock_non_recursive();
     void try_lock_for_non_recursive();
     void try_lock_until_non_recursive();
@@ -120,6 +131,109 @@ void tst_QMutex::initializeSystemTimersResolution()
 void tst_QMutex::initTestCase()
 {
     initializeSystemTimersResolution();
+}
+
+void tst_QMutex::convertToMilliseconds_data()
+{
+    QTest::addColumn<TimeUnit>("unit");
+    QTest::addColumn<double>("doubleValue");
+    QTest::addColumn<qint64>("intValue");
+    QTest::addColumn<qint64>("expected");
+
+
+    auto add = [](TimeUnit unit, double d, long long i, qint64 expected) {
+        const QScopedArrayPointer<char> enumName(QTest::toString(unit));
+        QTest::newRow(qPrintable(QString::asprintf("%s:%f:%lld", enumName.data(), d, i)))
+            << unit << d << qint64(i) << expected;
+    };
+
+    auto forAllUnitsAdd = [=](double d, long long i, qint64 expected) {
+        for (auto unit : {TimeUnit::Nanoseconds, TimeUnit::Microseconds, TimeUnit::Milliseconds, TimeUnit::Seconds})
+            add(unit, d, i, expected);
+    };
+
+    forAllUnitsAdd(-0.5, -1, 0);     // all negative values result in 0
+
+    forAllUnitsAdd(0, 0, 0);
+
+    add(TimeUnit::Nanoseconds,                 1,               1, 1);
+    add(TimeUnit::Nanoseconds, 1000 * 1000,       1000 * 1000,     1);
+    add(TimeUnit::Nanoseconds, 1000 * 1000 + 0.5, 1000 * 1000 + 1, 2);
+
+    add(TimeUnit::Microseconds,          1,        1, 1);
+    add(TimeUnit::Microseconds, 1000,       1000,     1);
+    add(TimeUnit::Microseconds, 1000 + 0.5, 1000 + 1, 2);
+
+    add(TimeUnit::Milliseconds, 1,   1, 1);
+    add(TimeUnit::Milliseconds, 1.5, 2, 2);
+
+    add(TimeUnit::Seconds, 0.9991, 1, 1000);
+
+    //
+    // overflowing int results in INT_MAX (equivalent to a spurious wakeup after ~24 days); check it:
+    //
+
+    // spot on:
+    add(TimeUnit::Nanoseconds,  INT_MAX * 1000. * 1000, INT_MAX * Q_INT64_C(1000) * 1000, INT_MAX);
+    add(TimeUnit::Microseconds, INT_MAX * 1000.,        INT_MAX * Q_INT64_C(1000),        INT_MAX);
+    add(TimeUnit::Milliseconds, INT_MAX,                INT_MAX,                          INT_MAX);
+
+    // minimally above:
+    add(TimeUnit::Nanoseconds,  INT_MAX * 1000. * 1000 + 1, INT_MAX * Q_INT64_C(1000) * 1000 + 1, INT_MAX);
+    add(TimeUnit::Microseconds, INT_MAX * 1000.        + 1, INT_MAX * Q_INT64_C(1000)        + 1, INT_MAX);
+    add(TimeUnit::Milliseconds, INT_MAX               + 1., INT_MAX               + Q_INT64_C(1), INT_MAX);
+    add(TimeUnit::Seconds,      INT_MAX / 1000.        + 1, INT_MAX / 1000                   + 1, INT_MAX);
+
+    // minimally below:
+    add(TimeUnit::Nanoseconds,  INT_MAX * 1000. * 1000 - 1, INT_MAX * Q_INT64_C(1000) * 1000 - 1, INT_MAX);
+    add(TimeUnit::Microseconds, INT_MAX * 1000.        - 1, INT_MAX * Q_INT64_C(1000)        - 1, INT_MAX);
+    add(TimeUnit::Milliseconds, INT_MAX              - 0.1, INT_MAX                             , INT_MAX);
+
+}
+
+void tst_QMutex::convertToMilliseconds()
+{
+#if !QT_HAS_INCLUDE(<chrono>)
+    QSKIP("This test requires <chrono>");
+#else
+    QFETCH(TimeUnit, unit);
+    QFETCH(double, doubleValue);
+    QFETCH(qint64, intValue);
+    QFETCH(qint64, expected);
+
+    Q_CONSTEXPR qint64 maxShort = std::numeric_limits<short>::max();
+    Q_CONSTEXPR qint64 maxInt = std::numeric_limits<int>::max();
+    Q_CONSTEXPR qint64 maxUInt = std::numeric_limits<uint>::max();
+
+    switch (unit) {
+#define CASE(Unit, Period) \
+    case TimeUnit::Unit: \
+        DO(double,  Period, doubleValue); \
+        if (intValue < maxShort) \
+            DO(short,   Period, short(intValue)); \
+        if (intValue < maxInt) \
+            DO(int,     Period, int(intValue)); \
+        DO(qint64,  Period, intValue); \
+        if (intValue >= 0) { \
+            if (intValue < maxUInt) \
+                DO(uint,    Period, uint(intValue)); \
+            DO(quint64, Period, quint64(intValue)); \
+        } \
+        break
+#define DO(Rep, Period, val) \
+    do { \
+        const std::chrono::duration<Rep, Period> wait((val)); \
+        QCOMPARE(QMutex::convertToMilliseconds(wait), expected); \
+    } while (0)
+
+    CASE(Nanoseconds,  std::nano);
+    CASE(Microseconds, std::micro);
+    CASE(Milliseconds, std::milli);
+    CASE(Seconds,      std::ratio<1>);
+#undef DO
+#undef CASE
+    }
+#endif
 }
 
 void tst_QMutex::tryLock_non_recursive()

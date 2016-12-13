@@ -57,7 +57,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#if !defined(QT_NO_STYLE_WINDOWSXP)
+#if QT_CONFIG(style_windowsxp)
 
 class QWindowsXPStylePrivate;
 class QWindowsXPStyle : public QWindowsStyle
@@ -102,7 +102,7 @@ private:
     friend class QStyleFactory;
 };
 
-#endif // QT_NO_STYLE_WINDOWSXP
+#endif // style_windowsxp
 
 QT_END_NAMESPACE
 

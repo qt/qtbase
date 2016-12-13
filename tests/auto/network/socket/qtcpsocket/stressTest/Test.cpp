@@ -47,7 +47,8 @@ void My4Socket::read(void)
 {
     QDataStream in(this);
 
-    quint32 num, reply;
+    quint32 num = 0;
+    quint32 reply = 0;
 
     while (bytesAvailable()) {
         in >> num;

@@ -523,8 +523,6 @@ void qt_blend_rgb32_on_rgb32_neon(uchar *destPixels, int dbpl,
                     vst1q_u32((uint32_t *)&dst[x], vcombine_u32(result32_low, result32_high));
                 }
                 for (; x<w; ++x) {
-                    uint s = src[x];
-                    s = BYTE_MUL(s, const_alpha);
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
                 }
                 dst = (quint32 *)(((uchar *) dst) + dbpl);

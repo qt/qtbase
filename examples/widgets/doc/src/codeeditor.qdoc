@@ -32,7 +32,7 @@
     \brief The Code Editor example shows how to create a simple editor that
     has line numbers and that highlights the current line.
 
-    \image codeeditor-example.png
+    \borderedimage codeeditor-example.png
 
     As can be seen from the image, the editor displays the line
     numbers in an area to the left of the area for editing. The editor

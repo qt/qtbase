@@ -34,7 +34,8 @@
     addition, the example demonstrates how to use QFontMetrics to
     determine the size of text on screen.
 
-    \image wiggly-example.png Screenshot of the Wiggly example
+    \borderedimage wiggly-example.png
+    \caption Screenshot of the Wiggly example
 
     QBasicTimer is a low-level class for timers. Unlike QTimer,
     QBasicTimer doesn't inherit from QObject; instead of emitting a

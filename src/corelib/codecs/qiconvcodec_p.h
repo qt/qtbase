@@ -54,13 +54,9 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qtextcodec.h"
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
+QT_REQUIRE_CONFIG(iconv);
 
-#ifdef Q_OS_MAC
-typedef void * iconv_t;
-#else
 #include <iconv.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -99,7 +95,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // Q_OS_UNIX && !QT_NO_ICONV && !QT_BOOTSTRAPPED
 
 #endif // QICONVCODEC_P_H

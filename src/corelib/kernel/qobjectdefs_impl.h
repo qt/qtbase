@@ -229,8 +229,14 @@ namespace QtPrivate {
               (std::is_floating_point<From>::value && std::is_integral<To>::value) ||
               (std::is_floating_point<From>::value && std::is_floating_point<To>::value && sizeof(From) > sizeof(To)) ||
               ((std::is_integral<From>::value || std::is_enum<From>::value) && std::is_floating_point<To>::value) ||
-              (std::is_integral<From>::value && std::is_integral<To>::value && (sizeof(From) > sizeof(To) || std::is_signed<From>::value != std::is_signed<To>::value)) ||
-              (std::is_enum<From>::value && std::is_integral<To>::value && (sizeof(From) > sizeof(To) || IsEnumUnderlyingTypeSigned<From>::value != std::is_signed<To>::value))
+              (std::is_integral<From>::value && std::is_integral<To>::value
+               && (sizeof(From) > sizeof(To)
+                   || (std::is_signed<From>::value ? !std::is_signed<To>::value
+                       : (std::is_signed<To>::value && sizeof(From) == sizeof(To))))) ||
+              (std::is_enum<From>::value && std::is_integral<To>::value
+               && (sizeof(From) > sizeof(To)
+                   || (IsEnumUnderlyingTypeSigned<From>::value ? !std::is_signed<To>::value
+                       : (std::is_signed<To>::value && sizeof(From) == sizeof(To)))))
               >
     {
     };

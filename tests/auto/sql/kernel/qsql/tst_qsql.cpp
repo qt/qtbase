@@ -33,7 +33,6 @@
 #include <qsqlerror.h>
 #include <qsqlquery.h>
 #include <qsqlrecord.h>
-#include <qsql.h>
 #include <qsqlresult.h>
 #include <qsqldriver.h>
 #include <qdebug.h>

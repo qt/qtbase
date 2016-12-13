@@ -152,7 +152,7 @@ class UpdateScoreTransition : public QSignalTransition
 public:
     UpdateScoreTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target);
 protected:
-    virtual bool eventTest(QEvent *event) override;
+    bool eventTest(QEvent *event) override;
 private:
     PlayState * game;
     GraphicsScene *scene;
@@ -164,7 +164,7 @@ class WinTransition : public QSignalTransition
 public:
     WinTransition(GraphicsScene *scene, PlayState *game, QAbstractState *target);
 protected:
-    virtual bool eventTest(QEvent *event) override;
+    bool eventTest(QEvent *event) override;
 private:
     PlayState * game;
     GraphicsScene *scene;
@@ -176,7 +176,7 @@ private:
 public:
     CustomSpaceTransition(QWidget *widget, PlayState *game, QEvent::Type type, int key);
 protected:
-    virtual bool eventTest(QEvent *event) override;
+    bool eventTest(QEvent *event) override;
 private:
     PlayState *game;
 };

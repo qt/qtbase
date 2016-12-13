@@ -1230,7 +1230,7 @@ public:
     { engine = parent; }
 
 protected:
-    bool event(QEvent *);
+    bool event(QEvent *) override;
 
     QNativeSocketEngine *engine;
 };
@@ -1262,7 +1262,7 @@ public:
         : QSocketNotifier(fd, QSocketNotifier::Write, parent) { engine = parent; }
 
 protected:
-    bool event(QEvent *);
+    bool event(QEvent *) override;
 
     QNativeSocketEngine *engine;
 };
@@ -1286,7 +1286,7 @@ public:
         : QSocketNotifier(fd, QSocketNotifier::Exception, parent) { engine = parent; }
 
 protected:
-    bool event(QEvent *);
+    bool event(QEvent *) override;
 
     QNativeSocketEngine *engine;
 };

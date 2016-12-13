@@ -1160,7 +1160,7 @@ void tst_QTreeWidgetItemIterator::updateIteratorAfterDeletedItem_and_ContinueIte
     delete item;
     it+=iterator_advance_after_removal;
     if (iterator_new_value.isNull()) {
-        QCOMPARE((*it), (QTreeWidgetItem*)0);
+        QCOMPARE((*it), nullptr);
     } else {
         QCOMPARE((*it)->text(0), iterator_new_value);
     }
@@ -1202,7 +1202,7 @@ void tst_QTreeWidgetItemIterator::initializeIterator()
     QTreeWidget tw;
     QTreeWidgetItemIterator it(&tw);
 
-    QCOMPARE((*it), static_cast<QTreeWidgetItem*>(0));
+    QCOMPARE((*it), nullptr);
 }
 
 void tst_QTreeWidgetItemIterator::sortingEnabled()

@@ -26,136 +26,235 @@
 **
 ****************************************************************************/
 
-#include <QTextEdit>
+#include <QPlainTextEdit>
 #include <QPushButton>
+#include <QGridLayout>
 #include <QVBoxLayout>
+#include <QTextStream>
+#include <QTimer>
 
 #include "previewwindow.h"
 
-static QString windowFlagsToString(Qt::WindowFlags flags)
+static void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
 {
-    QString text;
-
-    Qt::WindowFlags type = (flags & Qt::WindowType_Mask);
-    if (type == Qt::Window) {
-        text = "Qt::Window";
-    } else if (type == Qt::Dialog) {
-        text = "Qt::Dialog";
-    } else if (type == Qt::Sheet) {
-        text = "Qt::Sheet";
-    } else if (type == Qt::Drawer) {
-        text = "Qt::Drawer";
-    } else if (type == Qt::Popup) {
-        text = "Qt::Popup";
-    } else if (type == Qt::Tool) {
-        text = "Qt::Tool";
-    } else if (type == Qt::ToolTip) {
-        text = "Qt::ToolTip";
-    } else if (type == Qt::SplashScreen) {
-        text = "Qt::SplashScreen";
+    str << "Window flags: " << hex << showbase << unsigned(flags) << noshowbase << dec << ' ';
+    switch (flags & Qt::WindowType_Mask) {
+    case Qt::Window:
+        str << "Qt::Window";
+        break;
+    case Qt::Dialog:
+        str << "Qt::Dialog";
+        break;
+    case Qt::Sheet:
+        str << "Qt::Sheet";
+        break;
+    case Qt::Drawer:
+        str << "Qt::Drawer";
+        break;
+    case Qt::Popup:
+        str << "Qt::Popup";
+        break;
+    case Qt::Tool:
+        str << "Qt::Tool";
+        break;
+    case Qt::ToolTip:
+        str << "Qt::ToolTip";
+        break;
+    case Qt::SplashScreen:
+        str << "Qt::SplashScreen";
+        break;
     }
 
     if (flags & Qt::MSWindowsFixedSizeDialogHint)
-        text += "\n| Qt::MSWindowsFixedSizeDialogHint";
+        str << "\n| Qt::MSWindowsFixedSizeDialogHint";
+#if QT_VERSION >= 0x050000
+    if (flags & Qt::BypassWindowManagerHint)
+        str << "\n| Qt::BypassWindowManagerHint";
+#else
     if (flags & Qt::X11BypassWindowManagerHint)
-        text += "\n| Qt::X11BypassWindowManagerHint";
+        str << "\n| Qt::X11BypassWindowManagerHint";
+#endif
     if (flags & Qt::FramelessWindowHint)
-        text += "\n| Qt::FramelessWindowHint";
+        str << "\n| Qt::FramelessWindowHint";
     if (flags & Qt::WindowTitleHint)
-        text += "\n| Qt::WindowTitleHint";
+        str << "\n| Qt::WindowTitleHint";
     if (flags & Qt::WindowSystemMenuHint)
-        text += "\n| Qt::WindowSystemMenuHint";
+        str << "\n| Qt::WindowSystemMenuHint";
     if (flags & Qt::WindowMinimizeButtonHint)
-        text += "\n| Qt::WindowMinimizeButtonHint";
+        str << "\n| Qt::WindowMinimizeButtonHint";
     if (flags & Qt::WindowMaximizeButtonHint)
-        text += "\n| Qt::WindowMaximizeButtonHint";
+        str << "\n| Qt::WindowMaximizeButtonHint";
     if (flags & Qt::WindowCloseButtonHint)
-        text += "\n| Qt::WindowCloseButtonHint";
+        str << "\n| Qt::WindowCloseButtonHint";
     if (flags & Qt::WindowContextHelpButtonHint)
-        text += "\n| Qt::WindowContextHelpButtonHint";
+        str << "\n| Qt::WindowContextHelpButtonHint";
     if (flags & Qt::WindowShadeButtonHint)
-        text += "\n| Qt::WindowShadeButtonHint";
+        str << "\n| Qt::WindowShadeButtonHint";
     if (flags & Qt::WindowStaysOnTopHint)
-        text += "\n| Qt::WindowStaysOnTopHint";
+        str << "\n| Qt::WindowStaysOnTopHint";
     if (flags & Qt::CustomizeWindowHint)
-        text += "\n| Qt::CustomizeWindowHint";
-    return text;
+        str << "\n| Qt::CustomizeWindowHint";
+    if (flags & Qt::WindowStaysOnBottomHint)
+        str << "\n| Qt::WindowStaysOnBottomHint";
+#if QT_VERSION >= 0x050000
+    if (flags & Qt::WindowFullscreenButtonHint)
+        str << "\n| Qt::WindowFullscreenButtonHint";
+    if (flags & Qt::WindowTransparentForInput)
+        str << "\n| Qt::WindowTransparentForInput";
+    if (flags & Qt::WindowOverridesSystemGestures)
+        str << "\n| Qt::WindowOverridesSystemGestures";
+    if (flags & Qt::WindowDoesNotAcceptFocus)
+        str << "\n| Qt::WindowDoesNotAcceptFocus";
+    if (flags & Qt::MaximizeUsingFullscreenGeometryHint)
+        str << "\n| Qt::MaximizeUsingFullscreenGeometryHint";
+    if (flags & Qt::NoDropShadowWindowHint)
+        str << "\n| Qt::NoDropShadowWindowHint";
+#endif // Qt 5
+}
+
+static void formatWindowStates(QTextStream &str, Qt::WindowStates states)
+{
+    str << "Window states: " << hex << showbase << unsigned(states) << noshowbase << dec << ' ';
+    if (states & Qt::WindowActive) {
+        str << "Qt::WindowActive ";
+        states &= ~Qt::WindowActive;
+    }
+    switch (states) {
+    case Qt::WindowNoState:
+        str << "Qt::WindowNoState";
+        break;
+    case Qt::WindowMinimized:
+        str << "Qt::WindowMinimized";
+        break;
+    case Qt::WindowMaximized:
+        str << "Qt::WindowMaximized";
+        break;
+    case Qt::WindowFullScreen:
+        str << "Qt::WindowFullScreen";
+        break;
+    default:
+        break;
+    }
+}
+
+QTextStream &operator<<(QTextStream &str, const QRect &r)
+{
+    str << r.width() << 'x' << r.height() << forcesign << r.x() << r.y() << noforcesign;
+    return str;
+}
+
+static QString formatWidgetInfo(const QWidget *w)
+{
+    QString result;
+    QTextStream str(&result);
+    formatWindowFlags(str, w->windowFlags());
+    str << '\n';
+    formatWindowStates(str, w->windowState());
+    const QRect frame = w->frameGeometry();
+    const QRect geometry = w->geometry();
+    str << "\n\nFrame: " << frame << "\nGeometry: " << geometry << "\nMargins: "
+        << (geometry.x() - frame.x()) << ", " << (geometry.top() - frame.top())
+        << ", " << (frame.right() - geometry.right()) << ", "
+        << (frame.bottom() - geometry.bottom());
+    return result;
+}
+
+static QPlainTextEdit *createControlPanel(QWidget *widget)
+{
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+    QPlainTextEdit *textEdit = new QPlainTextEdit;
+    textEdit->setReadOnly(true);
+    textEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
+    layout->addWidget(textEdit);
+
+    QHBoxLayout *bottomLayout = new QHBoxLayout;
+    layout ->addLayout(bottomLayout);
+    QGridLayout *buttonLayout = new QGridLayout;
+    bottomLayout->addStretch();
+    bottomLayout->addLayout(buttonLayout);
+    QPushButton *showNormalButton = new QPushButton(PreviewWindow::tr("Show normal"));
+    QObject::connect(showNormalButton, SIGNAL(clicked()), widget, SLOT(showNormal()));
+    buttonLayout->addWidget(showNormalButton, 0, 0);
+    QPushButton *showMinimizedButton = new QPushButton(PreviewWindow::tr("Show minimized"));
+    QObject::connect(showMinimizedButton, SIGNAL(clicked()), widget, SLOT(showMinimized()));
+    buttonLayout->addWidget(showMinimizedButton, 0, 1);
+    QPushButton *showMaximizedButton = new QPushButton(PreviewWindow::tr("Show maximized"));
+    QObject::connect(showMaximizedButton, SIGNAL(clicked()), widget, SLOT(showMaximized()));
+    buttonLayout->addWidget(showMaximizedButton, 0, 2);
+    QPushButton *showFullScreenButton = new QPushButton(PreviewWindow::tr("Show fullscreen"));
+    QObject::connect(showFullScreenButton, SIGNAL(clicked()), widget, SLOT(showFullScreen()));
+    buttonLayout->addWidget(showFullScreenButton, 0, 3);
+
+    QPushButton *updateInfoButton = new QPushButton(PreviewWindow::tr("&Update Info"));
+    QObject::connect(updateInfoButton, SIGNAL(clicked()), widget, SLOT(updateInfo()));
+    buttonLayout->addWidget(updateInfoButton, 1, 0);
+    QPushButton *closeButton = new QPushButton(PreviewWindow::tr("&Close"));
+    QObject::connect(closeButton, SIGNAL(clicked()), widget, SLOT(close()));
+    buttonLayout->addWidget(closeButton, 1, 3);
+
+    return textEdit;
 }
 
 PreviewWindow::PreviewWindow(QWidget *parent)
     : QWidget(parent)
 {
-    textEdit = new QTextEdit;
-    textEdit->setReadOnly(true);
-    textEdit->setLineWrapMode(QTextEdit::NoWrap);
+    textEdit = createControlPanel(this);
+    setWindowTitle(tr("Preview <QWidget> Qt %1").arg(QLatin1String(QT_VERSION_STR)));
+}
 
-    closeButton = new QPushButton(tr("&Close"));
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+void PreviewWindow::resizeEvent(QResizeEvent *e)
+{
+    QWidget::resizeEvent(e);
+    updateInfo();
+}
 
-    showNormalButton = new QPushButton(tr("Show normal"));
-    connect(showNormalButton, SIGNAL(clicked()), this, SLOT(showNormal()));
-    showMinimizedButton = new QPushButton(tr("Show minimized"));
-    connect(showMinimizedButton, SIGNAL(clicked()), this, SLOT(showMinimized()));
-    showMaximizedButton = new QPushButton(tr("Show maximized"));
-    connect(showMaximizedButton, SIGNAL(clicked()), this, SLOT(showMaximized()));
-    showFullScreenButton = new QPushButton(tr("Show fullscreen"));
-    connect(showFullScreenButton, SIGNAL(clicked()), this, SLOT(showFullScreen()));
-
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(textEdit);
-    layout->addWidget(showNormalButton);
-    layout->addWidget(showMinimizedButton);
-    layout->addWidget(showMaximizedButton);
-    layout->addWidget(showFullScreenButton);
-    layout->addWidget(closeButton);
-    setLayout(layout);
-
-    setWindowTitle(tr("Preview <QWidget>"));
+void PreviewWindow::moveEvent(QMoveEvent *e)
+{
+    QWidget::moveEvent(e);
+    updateInfo();
 }
 
 void PreviewWindow::setWindowFlags(Qt::WindowFlags flags)
 {
+    if (flags == windowFlags())
+        return;
     QWidget::setWindowFlags(flags);
+    QTimer::singleShot(0, this, SLOT(updateInfo()));
+}
 
-    QString text = windowFlagsToString(flags);
-    textEdit->setPlainText(text);
+void PreviewWindow::updateInfo()
+{
+      textEdit->setPlainText(formatWidgetInfo(this));
 }
 
 PreviewDialog::PreviewDialog(QWidget *parent)
     : QDialog(parent)
 {
-    textEdit = new QTextEdit;
-    textEdit->setReadOnly(true);
-    textEdit->setLineWrapMode(QTextEdit::NoWrap);
+    textEdit = createControlPanel(this);
+    setWindowTitle(tr("Preview <QDialog> Qt %1").arg(QLatin1String(QT_VERSION_STR)));
+}
 
-    closeButton = new QPushButton(tr("&Close"));
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+void PreviewDialog::resizeEvent(QResizeEvent *e)
+{
+    QDialog::resizeEvent(e);
+    updateInfo();
+}
 
-    showNormalButton = new QPushButton(tr("Show normal"));
-    connect(showNormalButton, SIGNAL(clicked()), this, SLOT(showNormal()));
-    showMinimizedButton = new QPushButton(tr("Show minimized"));
-    connect(showMinimizedButton, SIGNAL(clicked()), this, SLOT(showMinimized()));
-    showMaximizedButton = new QPushButton(tr("Show maximized"));
-    connect(showMaximizedButton, SIGNAL(clicked()), this, SLOT(showMaximized()));
-    showFullScreenButton = new QPushButton(tr("Show fullscreen"));
-    connect(showFullScreenButton, SIGNAL(clicked()), this, SLOT(showFullScreen()));
-
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(textEdit);
-    layout->addWidget(showNormalButton);
-    layout->addWidget(showMinimizedButton);
-    layout->addWidget(showMaximizedButton);
-    layout->addWidget(showFullScreenButton);
-    layout->addWidget(closeButton);
-    setLayout(layout);
-
-    setWindowTitle(tr("Preview <QDialog>"));
+void PreviewDialog::moveEvent(QMoveEvent *e)
+{
+    QDialog::moveEvent(e);
+    updateInfo();
 }
 
 void PreviewDialog::setWindowFlags(Qt::WindowFlags flags)
 {
+    if (flags == windowFlags())
+        return;
     QWidget::setWindowFlags(flags);
+    QTimer::singleShot(0, this, SLOT(updateInfo()));
+}
 
-    QString text = windowFlagsToString(flags);
-    textEdit->setPlainText(text);
+void PreviewDialog::updateInfo()
+{
+    textEdit->setPlainText(formatWidgetInfo(this));
 }

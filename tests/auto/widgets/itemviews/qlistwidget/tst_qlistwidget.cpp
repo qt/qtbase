@@ -193,7 +193,7 @@ void tst_QListWidget::init()
 
 void tst_QListWidget::checkDefaultValues()
 {
-    QCOMPARE(testWidget->currentItem(), (QListWidgetItem *)0);
+    QCOMPARE(testWidget->currentItem(), nullptr);
     QCOMPARE(testWidget->currentRow(), -1);
     QCOMPARE(testWidget->count(), 0);
 }
@@ -413,7 +413,7 @@ void tst_QListWidget::currentItem()
     if (currentIndex.isValid())
         QCOMPARE(testWidget->currentItem(), testWidget->item(currentIndex.row()));
     else
-        QCOMPARE(testWidget->currentItem(), (QListWidgetItem*)0);
+        QCOMPARE(testWidget->currentItem(), nullptr);
 }
 
 void tst_QListWidget::currentRow()
@@ -631,7 +631,7 @@ void tst_QListWidget::item()
 
     QListWidgetItem *item = testWidget->item(row);
     if (outOfBounds) {
-        QCOMPARE(item, static_cast<QListWidgetItem*>(0));
+        QCOMPARE(item, nullptr);
         QCOMPARE(testWidget->count(), 3);
     } else {
         QCOMPARE(item->text(), QStringLiteral("item") + QString::number(row));
@@ -664,7 +664,7 @@ void tst_QListWidget::takeItem()
 
     QListWidgetItem *item = testWidget->takeItem(row);
     if (outOfBounds) {
-        QCOMPARE(item, static_cast<QListWidgetItem*>(0));
+        QCOMPARE(item, nullptr);
         QCOMPARE(testWidget->count(), 3);
     } else {
         QCOMPARE(item->text(), QStringLiteral("item") + QString::number(row));
@@ -1445,11 +1445,11 @@ void tst_QListWidget::itemWidget()
     QListWidgetItem *item = new QListWidgetItem(&list);
 
 
-    QCOMPARE(list.itemWidget(item), static_cast<QWidget*>(0));
+    QCOMPARE(list.itemWidget(item), nullptr);
     list.setItemWidget(item, &widget);
     QCOMPARE(list.itemWidget(item), &widget);
     list.removeItemWidget(item);
-    QCOMPARE(list.itemWidget(item), static_cast<QWidget*>(0));
+    QCOMPARE(list.itemWidget(item), nullptr);
 }
 
 #ifndef Q_OS_MAC
@@ -1672,16 +1672,16 @@ void tst_QListWidget::mimeData()
 
     QMimeData *data;
 
-    QVERIFY(data = list.mimeData(tableWidgetItemList));
+    QVERIFY((data = list.mimeData(tableWidgetItemList)));
     delete data;
 
-    QVERIFY(data = list.model()->mimeData(modelIndexList));
+    QVERIFY((data = list.model()->mimeData(modelIndexList)));
     delete data;
 
-    QVERIFY(data = list.model()->mimeData(modelIndexList));
+    QVERIFY((data = list.model()->mimeData(modelIndexList)));
     delete data;
 
-    QVERIFY(data = list.mimeData(tableWidgetItemList));
+    QVERIFY((data = list.mimeData(tableWidgetItemList)));
     delete data;
 
     // check the saved data is actually the same

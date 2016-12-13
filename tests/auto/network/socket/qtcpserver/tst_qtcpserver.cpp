@@ -929,15 +929,16 @@ void tst_QTcpServer::linkLocal()
 
     //each server should have two connections
     foreach (QTcpServer* server, servers) {
-        QTcpSocket* remote;
         //qDebug() << "checking for connections" << server->serverAddress() << ":" << server->serverPort();
         QVERIFY(server->waitForNewConnection(5000));
-        QVERIFY(remote = server->nextPendingConnection());
+        QTcpSocket* remote = server->nextPendingConnection();
+        QVERIFY(remote != nullptr);
         remote->close();
         delete remote;
         if (!server->hasPendingConnections())
             QVERIFY(server->waitForNewConnection(5000));
-        QVERIFY(remote = server->nextPendingConnection());
+        remote = server->nextPendingConnection();
+        QVERIFY(remote != nullptr);
         remote->close();
         delete remote;
         QVERIFY(!server->hasPendingConnections());

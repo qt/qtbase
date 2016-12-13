@@ -66,7 +66,7 @@
 
 QT_WARNING_PUSH
 // Ignore XCTestProbe deprecation
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
 
 // ---------------------------------------------------------
 

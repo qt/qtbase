@@ -56,18 +56,18 @@ public:
     explicit QAndroidPlatformOpenGLWindow(QWindow *window, EGLDisplay display);
     ~QAndroidPlatformOpenGLWindow();
 
-    void setGeometry(const QRect &rect);
+    void setGeometry(const QRect &rect) override;
     EGLSurface eglSurface(EGLConfig config);
-    QSurfaceFormat format() const;
+    QSurfaceFormat format() const override;
 
     bool checkNativeSurface(EGLConfig config);
 
-    void applicationStateChanged(Qt::ApplicationState);
+    void applicationStateChanged(Qt::ApplicationState) override;
 
-    void repaint(const QRegion &region) Q_DECL_OVERRIDE;
+    void repaint(const QRegion &region) override;
 
 protected:
-    virtual void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h);
+    void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h) override;
     void createEgl(EGLConfig config);
     void clearEgl();
 

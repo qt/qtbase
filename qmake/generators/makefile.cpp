@@ -1839,7 +1839,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
         QString dep_cd_cmd;
         if (!tmp_dep_cmd.isEmpty()) {
             dep_cd_cmd = QLatin1String("cd ")
-                 + escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
+                 + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
                  + QLatin1String(" && ");
         }
         const ProStringList &vars = project->values(ProKey(*it + ".variables"));

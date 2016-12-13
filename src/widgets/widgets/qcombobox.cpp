@@ -66,7 +66,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
-#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && !defined(QT_NO_EFFECTS) && !defined(QT_NO_STYLE_MAC)
+#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && !defined(QT_NO_EFFECTS) && QT_CONFIG(style_mac)
 #include <private/qcore_mac_p.h>
 #include <private/qmacstyle_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -1841,7 +1841,7 @@ QLineEdit *QComboBox::lineEdit() const
 
     Sets the \a validator to use instead of the current validator.
 
-    \note The validator is removed when the editable property becomes \c false.
+    \note The validator is removed when the \l editable property becomes \c false.
 */
 
 void QComboBox::setValidator(const QValidator *v)
@@ -1876,7 +1876,7 @@ const QValidator *QComboBox::validator() const
     By default, for an editable combo box, a QCompleter that
     performs case insensitive inline completion is automatically created.
 
-    \note The completer is removed when the \a editable property becomes \c false.
+    \note The completer is removed when the \l editable property becomes \c false.
 */
 void QComboBox::setCompleter(QCompleter *c)
 {

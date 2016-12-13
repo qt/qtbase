@@ -50,11 +50,11 @@ public:
     QQnxCursor();
 
 #if !defined(QT_NO_CURSOR)
-    void changeCursor(QCursor *windowCursor, QWindow *window);
+    void changeCursor(QCursor *windowCursor, QWindow *window) override;
 #endif
-    void setPos(const QPoint &pos);
+    void setPos(const QPoint &pos) override;
 
-    QPoint pos() const;
+    QPoint pos() const override;
 
 private:
     QPoint m_pos;

@@ -3995,35 +3995,29 @@ void tst_QSqlQuery::aggregateFunctionTypes()
 }
 
 template<typename T>
-void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName, const QString &type, const bool withPreparedStatement,
-                               const T min = std::numeric_limits<T>::min(), const T max = std::numeric_limits<T>::max())
+void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName,
+                               const QString &type, bool withPreparedStatement,
+                               const QVector<T> &values)
 {
+    QVector<QVariant> variantValues;
+    variantValues.reserve(values.size());
+
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("DROP TABLE IF EXISTS " + tableName));
     QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id " + type + ')'));
 
-    const int steps = (max == min + 1) ? 2 : 20;
-    const T increment = (max == min + 1) ? 1 : (max / steps - min / steps);
-
-    // insert some values
-    QVector<T> values;
-    QVector<QVariant> variantValues;
-    values.resize(steps);
-    variantValues.resize(steps);
-    T v = min;
     if (withPreparedStatement) {
         QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (id) VALUES (?)"));
     }
     for (int i = 0; i < values.size(); ++i) {
+        const T v = values.at(i);
         if (withPreparedStatement) {
             q.bindValue(0, v);
             QVERIFY_SQL(q, exec());
         } else {
             QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (" + QString::number(v) + QLatin1Char(')')));
         }
-        values[i] = v;
-        variantValues[i] = QVariant::fromValue(v);
-        v += increment;
+        variantValues.append(QVariant::fromValue(v));
     }
 
     // ensure we can read them back properly
@@ -4048,16 +4042,34 @@ void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName, const
     QCOMPARE(actualVariantValues, variantValues);
 }
 
+template<typename T>
+void runIntegralTypesMysqlTest(QSqlDatabase &db, const QString &tableName,
+                               const QString &type, const bool withPreparedStatement,
+                               const T min = std::numeric_limits<T>::min(),
+                               const T max = std::numeric_limits<T>::max())
+{
+    // insert some values
+    const int steps = 20;
+    const T increment = (max / steps - min / steps);
+    QVector<T> values;
+    values.reserve(steps);
+    T v = min;
+    for (int i = 0; i < steps; ++i, v += increment)
+        values.append(v);
+    runIntegralTypesMysqlTest(db, tableName, type, withPreparedStatement, values);
+}
+
 void tst_QSqlQuery::integralTypesMysql()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
+    const QVector<bool> boolValues = QVector<bool>() << false << true;
     for (int i = 0; i < 2; ++i) {
         const bool withPreparedStatement = (i == 1);
-        runIntegralTypesMysqlTest<bool>(db, "tinyInt1Test", "TINYINT(1)", withPreparedStatement);
-        runIntegralTypesMysqlTest<bool>(db, "unsignedTinyInt1Test", "TINYINT(1) UNSIGNED", withPreparedStatement);
+        runIntegralTypesMysqlTest<bool>(db, "tinyInt1Test", "TINYINT(1)", withPreparedStatement, boolValues);
+        runIntegralTypesMysqlTest<bool>(db, "unsignedTinyInt1Test", "TINYINT(1) UNSIGNED", withPreparedStatement, boolValues);
         runIntegralTypesMysqlTest<qint8>(db, "tinyIntTest", "TINYINT", withPreparedStatement);
         runIntegralTypesMysqlTest<quint8>(db, "unsignedTinyIntTest", "TINYINT UNSIGNED", withPreparedStatement);
         runIntegralTypesMysqlTest<qint16>(db, "smallIntTest", "SMALLINT", withPreparedStatement);

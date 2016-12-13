@@ -2618,9 +2618,10 @@ void tst_QFile::appendAndRead()
 
     // Write blocks and read them back
     for (int j = 0; j < 18; ++j) {
-        writeFile.write(QByteArray(1 << j, '@'));
+        const int size = 1 << j;
+        writeFile.write(QByteArray(size, '@'));
         writeFile.flush();
-        QCOMPARE(readFile.read(1 << j).size(), 1 << j);
+        QCOMPARE(readFile.read(size).size(), size);
     }
 
     readFile.close();
@@ -2658,7 +2659,8 @@ void tst_QFile::handle()
     QVERIFY(fd > 2);
     QCOMPARE(int(file.handle()), fd);
     char c = '\0';
-    QT_READ(int(file.handle()), &c, 1);
+    const auto readResult = QT_READ(int(file.handle()), &c, 1);
+    QCOMPARE(readResult, static_cast<decltype(readResult)>(1));
     QCOMPARE(c, '/');
 
     // test if the QFile and the handle remain in sync

@@ -54,11 +54,11 @@ QT_BEGIN_NAMESPACE
 static QTimeZonePrivate *newBackendTimeZone()
 {
 #ifdef QT_NO_SYSTEMLOCALE
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     return new QIcuTimeZonePrivate();
 #else
     return new QUtcTimeZonePrivate();
-#endif // QT_USE_ICU
+#endif
 #else
 #if defined Q_OS_MAC
     return new QMacTimeZonePrivate();
@@ -69,7 +69,7 @@ static QTimeZonePrivate *newBackendTimeZone()
     // Registry based timezone backend not available on WinRT
 #elif defined Q_OS_WIN
     return new QWinTimeZonePrivate();
-#elif defined QT_USE_ICU
+#elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate();
 #else
     return new QUtcTimeZonePrivate();
@@ -81,11 +81,11 @@ static QTimeZonePrivate *newBackendTimeZone()
 static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
 {
 #ifdef QT_NO_SYSTEMLOCALE
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     return new QIcuTimeZonePrivate(ianaId);
 #else
     return new QUtcTimeZonePrivate(ianaId);
-#endif // QT_USE_ICU
+#endif
 #else
 #if defined Q_OS_MAC
     return new QMacTimeZonePrivate(ianaId);
@@ -96,7 +96,7 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
     // Registry based timezone backend not available on WinRT
 #elif defined Q_OS_WIN
     return new QWinTimeZonePrivate(ianaId);
-#elif defined QT_USE_ICU
+#elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate(ianaId);
 #else
     return new QUtcTimeZonePrivate(ianaId);

@@ -61,7 +61,7 @@ public:
     void removeCallbackForHandle(const QByteArray &property, void *handle);
     void removeCallbackForHandle(void *handle);
 
-    void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) Q_DECL_OVERRIDE;
+    void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) override;
 private:
     QXcbXSettingsPrivate *d_ptr;
 };

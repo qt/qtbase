@@ -88,7 +88,7 @@ public:
         return theFuture;
     }
 
-    void run() {}
+    void run() override {}
     virtual void runFunctor() = 0;
 };
 
@@ -96,7 +96,7 @@ template <typename T>
 class RunFunctionTask : public RunFunctionTaskBase<T>
 {
 public:
-    void run()
+    void run() override
     {
         if (this->isCanceled()) {
             this->reportFinished();
@@ -124,7 +124,7 @@ template <>
 class RunFunctionTask<void> : public RunFunctionTaskBase<void>
 {
 public:
-    void run()
+    void run() override
     {
         if (this->isCanceled()) {
             this->reportFinished();

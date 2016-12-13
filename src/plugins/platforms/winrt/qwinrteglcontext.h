@@ -52,14 +52,14 @@ public:
     explicit QWinRTEGLContext(QOpenGLContext *context);
     ~QWinRTEGLContext();
 
-    void initialize() Q_DECL_OVERRIDE;
+    void initialize() override;
 
-    bool makeCurrent(QPlatformSurface *windowSurface) Q_DECL_OVERRIDE;
-    void doneCurrent() Q_DECL_OVERRIDE;
-    void swapBuffers(QPlatformSurface *windowSurface) Q_DECL_OVERRIDE;
+    bool makeCurrent(QPlatformSurface *windowSurface) override;
+    void doneCurrent() override;
+    void swapBuffers(QPlatformSurface *windowSurface) override;
 
-    QSurfaceFormat format() const Q_DECL_OVERRIDE;
-    QFunctionPointer getProcAddress(const char *procName) Q_DECL_OVERRIDE;
+    QSurfaceFormat format() const override;
+    QFunctionPointer getProcAddress(const char *procName) override;
 
     static EGLDisplay display();
 private:

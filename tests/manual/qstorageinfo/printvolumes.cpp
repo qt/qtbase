@@ -42,7 +42,7 @@ void printVolumes(const QList<QStorageInfo> &volumes, int (*printer)(const char 
     //                          214958080   39088272  4096                   /
     //  /dev/disk1s2 (hfs)  RW  488050672  419909696  4096  Macintosh HD2    /Volumes/Macintosh HD2
 
-    printf("Filesystem (Type)            Size  Available BSize  Label            Mounted on\n");
+    printer("Filesystem (Type)            Size  Available BSize  Label            Mounted on\n");
     foreach (const QStorageInfo &info, volumes) {
         QByteArray fsAndType = info.device();
         if (info.fileSystemType() != fsAndType)

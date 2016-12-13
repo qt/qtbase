@@ -65,16 +65,16 @@ class QAndroidPlatformTheme: public QPlatformTheme
 {
 public:
     QAndroidPlatformTheme(QAndroidPlatformNativeInterface * androidPlatformNativeInterface);
-    virtual QPlatformMenuBar *createPlatformMenuBar() const;
-    virtual QPlatformMenu *createPlatformMenu() const;
-    virtual QPlatformMenuItem *createPlatformMenuItem() const;
-    virtual void showPlatformMenuBar();
-    virtual const QPalette *palette(Palette type = SystemPalette) const;
-    virtual const QFont *font(Font type = SystemFont) const;
-    virtual QVariant themeHint(ThemeHint hint) const;
-    QString standardButtonText(int button) const Q_DECL_OVERRIDE;
-    virtual bool usePlatformNativeDialog(DialogType type) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
+    QPlatformMenuBar *createPlatformMenuBar() const override;
+    QPlatformMenu *createPlatformMenu() const override;
+    QPlatformMenuItem *createPlatformMenuItem() const override;
+    void showPlatformMenuBar() override;
+    const QPalette *palette(Palette type = SystemPalette) const override;
+    const QFont *font(Font type = SystemFont) const override;
+    QVariant themeHint(ThemeHint hint) const override;
+    QString standardButtonText(int button) const override;
+    bool usePlatformNativeDialog(DialogType type) const override;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
 
 private:

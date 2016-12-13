@@ -835,6 +835,9 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
 bool QWindowsKeyMapper::translateMultimediaKeyEventInternal(QWindow *window, const MSG &msg)
 {
 #if defined(WM_APPCOMMAND)
+    // QTBUG-57198, do not send mouse-synthesized commands as key events in addition
+    if (GET_DEVICE_LPARAM(msg.lParam) == FAPPCOMMAND_MOUSE)
+        return false;
     const int cmd = GET_APPCOMMAND_LPARAM(msg.lParam);
     const int dwKeys = GET_KEYSTATE_LPARAM(msg.lParam);
     int state = 0;

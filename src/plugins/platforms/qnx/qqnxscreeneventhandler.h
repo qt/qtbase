@@ -71,7 +71,7 @@ Q_SIGNALS:
     void windowClosed(void *window);
 
 protected:
-    void timerEvent(QTimerEvent *event);
+    void timerEvent(QTimerEvent *event) override;
 
 private Q_SLOTS:
     void processEventsFromScreenThread();

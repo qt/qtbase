@@ -97,14 +97,6 @@ using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Storage;
 #endif
 
-#ifndef CSIDL_COMMON_APPDATA
-#define CSIDL_COMMON_APPDATA    0x0023  // All Users\Application Data
-#endif
-
-#ifndef CSIDL_APPDATA
-#define CSIDL_APPDATA           0x001a  // <username>\Application Data
-#endif
-
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_ANDROID)
 #define Q_XDG_PLATFORM
 #endif
@@ -970,31 +962,34 @@ void QConfFileSettingsPrivate::initAccess()
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-static QString windowsConfigPath(int type)
+static QString windowsConfigPath(const KNOWNFOLDERID &type)
 {
     QString result;
 
-    wchar_t path[MAX_PATH];
-    if (SHGetSpecialFolderPath(0, path, type, false))
+    PWSTR path = nullptr;
+    if (SHGetKnownFolderPath(type, KF_FLAG_DONT_VERIFY, NULL, &path) == S_OK) {
         result = QString::fromWCharArray(path);
+        CoTaskMemFree(path);
+    }
 
     if (result.isEmpty()) {
-        switch (type) {
-        case CSIDL_COMMON_APPDATA:
+        if (type == FOLDERID_ProgramData) {
             result = QLatin1String("C:\\temp\\qt-common");
-            break;
-        case CSIDL_APPDATA:
+        } else if (type == FOLDERID_RoamingAppData) {
             result = QLatin1String("C:\\temp\\qt-user");
-            break;
-        default:
-            ;
         }
     }
 
     return result;
 }
 #elif defined(Q_OS_WINRT) // Q_OS_WIN && !Q_OS_WINRT
-static QString windowsConfigPath(int type)
+
+enum ConfigPathType {
+    ConfigPath_CommonAppData,
+    ConfigPath_UserAppData
+};
+
+static QString windowsConfigPath(ConfigPathType type)
 {
     static QString result;
     while (result.isEmpty()) {
@@ -1017,12 +1012,10 @@ static QString windowsConfigPath(int type)
     }
 
     switch (type) {
-    case CSIDL_COMMON_APPDATA:
+    case ConfigPath_CommonAppData:
         return result + QLatin1String("\\qt-common");
-    case CSIDL_APPDATA:
+    case ConfigPath_UserAppData:
         return result + QLatin1String("\\qt-user");
-    default:
-        break;
     }
     return result;
 }
@@ -1079,10 +1072,18 @@ static void initDefaultPaths(QMutexLocker *locker)
            Windows registry and the Mac CFPreferences.)
        */
 #ifdef Q_OS_WIN
+
+#  ifdef Q_OS_WINRT
+        const QString roamingAppDataFolder = windowsConfigPath(ConfigPath_UserAppData);
+        const QString programDataFolder = windowsConfigPath(ConfigPath_CommonAppData);
+#  else
+        const QString roamingAppDataFolder = windowsConfigPath(FOLDERID_RoamingAppData);
+        const QString programDataFolder = windowsConfigPath(FOLDERID_ProgramData);
+#  endif
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::UserScope),
-                         Path(windowsConfigPath(CSIDL_APPDATA) + QDir::separator(), false));
+                         Path(roamingAppDataFolder + QDir::separator(), false));
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::SystemScope),
-                         Path(windowsConfigPath(CSIDL_COMMON_APPDATA) + QDir::separator(), false));
+                         Path(programDataFolder + QDir::separator(), false));
 #else
         const QString userPath = make_user_path();
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::UserScope), Path(userPath, false));
@@ -2267,20 +2268,20 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     On Windows, the following files are used:
 
     \list 1
-    \li \c{CSIDL_APPDATA\MySoft\Star Runner.ini}
-    \li \c{CSIDL_APPDATA\MySoft.ini}
-    \li \c{CSIDL_COMMON_APPDATA\MySoft\Star Runner.ini}
-    \li \c{CSIDL_COMMON_APPDATA\MySoft.ini}
+    \li \c{FOLDERID_RoamingAppData\MySoft\Star Runner.ini}
+    \li \c{FOLDERID_RoamingAppData\MySoft.ini}
+    \li \c{FOLDERID_ProgramData\MySoft\Star Runner.ini}
+    \li \c{FOLDERID_ProgramData\MySoft.ini}
     \endlist
 
-    The identifiers prefixed by \c{CSIDL_} are special item ID lists to be passed
-    to the Win32 API function \c{SHGetSpecialFolderPath()} to obtain the
+    The identifiers prefixed by \c{FOLDERID_} are special item ID lists to be passed
+    to the Win32 API function \c{SHGetKnownFolderPath()} to obtain the
     corresponding path.
 
-    \c{CSIDL_APPDATA} usually points to \tt{C:\\Users\\\e{User Name}\\AppData\\Roaming},
+    \c{FOLDERID_RoamingAppData} usually points to \tt{C:\\Users\\\e{User Name}\\AppData\\Roaming},
     also shown by the environment variable \c{%APPDATA%}.
 
-    \c{CSIDL_COMMON_APPDATA} usually points to \tt{C:\\ProgramData}.
+    \c{FOLDERID_ProgramData} usually points to \tt{C:\\ProgramData}.
 
     If the file format is IniFormat, this is "Settings/MySoft/Star Runner.ini"
     in the application's home directory.
@@ -2740,6 +2741,7 @@ void QSettings::sync()
 {
     Q_D(QSettings);
     d->sync();
+    d->pendingChanges = false;
 }
 
 /*!
@@ -3384,8 +3386,8 @@ void QSettings::setUserIniPath(const QString &dir)
 
     \table
     \header \li Platform         \li Format                       \li Scope       \li Path
-    \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c CSIDL_APPDATA
-    \row                                                        \li SystemScope \li \c CSIDL_COMMON_APPDATA
+    \row    \li{1,2} Windows     \li{1,2} IniFormat               \li UserScope   \li \c FOLDERID_RoamingAppData
+    \row                                                        \li SystemScope \li \c FOLDERID_ProgramData
     \row    \li{1,2} Unix        \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/.config
     \row                                                        \li SystemScope \li \c /etc/xdg
     \row    \li{1,2} Qt for Embedded Linux \li{1,2} NativeFormat, IniFormat \li UserScope   \li \c $HOME/Settings

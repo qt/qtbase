@@ -93,12 +93,12 @@ class QEmptyModel : public QAbstractItemModel
 {
 public:
     explicit QEmptyModel(QObject *parent = 0) : QAbstractItemModel(parent) {}
-    QModelIndex index(int, int, const QModelIndex &) const { return QModelIndex(); }
-    QModelIndex parent(const QModelIndex &) const { return QModelIndex(); }
-    int rowCount(const QModelIndex &) const { return 0; }
-    int columnCount(const QModelIndex &) const { return 0; }
-    bool hasChildren(const QModelIndex &) const { return false; }
-    QVariant data(const QModelIndex &, int) const { return QVariant(); }
+    QModelIndex index(int, int, const QModelIndex &) const override { return QModelIndex(); }
+    QModelIndex parent(const QModelIndex &) const override { return QModelIndex(); }
+    int rowCount(const QModelIndex &) const override { return 0; }
+    int columnCount(const QModelIndex &) const override { return 0; }
+    bool hasChildren(const QModelIndex &) const override { return false; }
+    QVariant data(const QModelIndex &, int) const override { return QVariant(); }
 };
 
 class Q_AUTOTEST_EXPORT QAbstractItemViewPrivate : public QAbstractScrollAreaPrivate
@@ -323,7 +323,7 @@ public:
     }
 
     // reimplemented from QAbstractScrollAreaPrivate
-    virtual QPoint contentsOffset() const {
+    QPoint contentsOffset() const override {
         Q_Q(const QAbstractItemView);
         return QPoint(q->horizontalOffset(), q->verticalOffset());
     }

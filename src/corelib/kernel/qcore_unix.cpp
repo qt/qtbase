@@ -38,6 +38,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/private/qglobal_p.h>
 #include "qcore_unix_p.h"
 #include "qelapsedtimer.h"
 
@@ -49,9 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_HAVE_PPOLL) && defined(QT_HAVE_POLLTS)
-# define ppoll pollts
-# define QT_HAVE_PPOLL
+#if QT_CONFIG(poll_pollts)
+#  define ppoll pollts
 #endif
 
 static inline bool time_update(struct timespec *tv, const struct timespec &start,
@@ -64,7 +64,7 @@ static inline bool time_update(struct timespec *tv, const struct timespec &start
     return tv->tv_sec >= 0;
 }
 
-#if !defined(QT_HAVE_PPOLL) && defined(QT_HAVE_POLL)
+#if QT_CONFIG(poll_poll)
 static inline int timespecToMillisecs(const struct timespec *ts)
 {
     return (ts == NULL) ? -1 :
@@ -77,9 +77,9 @@ int qt_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts);
 
 static inline int qt_ppoll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts)
 {
-#if defined(QT_HAVE_PPOLL)
-    return ::ppoll(fds, nfds, timeout_ts, Q_NULLPTR);
-#elif defined(QT_HAVE_POLL)
+#if QT_CONFIG(poll_ppoll) || QT_CONFIG(poll_pollts)
+    return ::ppoll(fds, nfds, timeout_ts, nullptr);
+#elif QT_CONFIG(poll_poll)
     return ::poll(fds, nfds, timespecToMillisecs(timeout_ts));
 #else
     return qt_poll(fds, nfds, timeout_ts);

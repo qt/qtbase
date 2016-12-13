@@ -56,19 +56,19 @@ public:
     explicit QQnxInputContext(QQnxIntegration *integration, QQnxAbstractVirtualKeyboard &keyboard);
     ~QQnxInputContext();
 
-    bool isValid() const;
+    bool isValid() const override;
 
-    void reset();
-    bool filterEvent( const QEvent *event );
-    QRectF keyboardRect() const;
+    void reset() override;
+    bool filterEvent(const QEvent *event) override;
+    QRectF keyboardRect() const override;
     bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
-    void showInputPanel();
-    void hideInputPanel();
-    bool isInputPanelVisible() const;
+    void showInputPanel() override;
+    void hideInputPanel() override;
+    bool isInputPanelVisible() const override;
 
-    QLocale locale() const;
-    void setFocusObject(QObject *object);
+    QLocale locale() const override;
+    void setFocusObject(QObject *object) override;
 
 private Q_SLOTS:
     void keyboardHeightChanged();

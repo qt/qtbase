@@ -571,16 +571,6 @@ public:
     inline QWidget *childAt(int x, int y) const;
     QWidget *childAt(const QPoint &p) const;
 
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    const QX11Info &x11Info() const;
-    Qt::HANDLE x11PictureHandle() const;
-#endif
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    Qt::HANDLE macQDHandle() const;
-    Qt::HANDLE macCGHandle() const;
-#endif
-
     void setAttribute(Qt::WidgetAttribute, bool on = true);
     inline bool testAttribute(Qt::WidgetAttribute) const;
 

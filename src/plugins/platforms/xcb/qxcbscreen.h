@@ -115,24 +115,24 @@ public:
 
     QString getOutputName(xcb_randr_get_output_info_reply_t *outputInfo);
 
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const override;
 
-    QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE;
+    QWindow *topLevelAt(const QPoint &point) const override;
 
-    QRect geometry() const Q_DECL_OVERRIDE { return m_geometry; }
-    QRect availableGeometry() const Q_DECL_OVERRIDE {return m_availableGeometry;}
-    int depth() const Q_DECL_OVERRIDE { return screen()->root_depth; }
-    QImage::Format format() const Q_DECL_OVERRIDE;
-    QSizeF physicalSize() const Q_DECL_OVERRIDE { return m_sizeMillimeters; }
+    QRect geometry() const override { return m_geometry; }
+    QRect availableGeometry() const override {return m_availableGeometry;}
+    int depth() const override { return screen()->root_depth; }
+    QImage::Format format() const override;
+    QSizeF physicalSize() const override { return m_sizeMillimeters; }
     QSize virtualSize() const { return m_virtualSize; }
     QSizeF physicalVirtualSize() const { return m_virtualSizeMillimeters; }
     QDpi virtualDpi() const;
-    QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    qreal pixelDensity() const Q_DECL_OVERRIDE;
-    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
-    qreal refreshRate() const Q_DECL_OVERRIDE { return m_refreshRate; }
-    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_orientation; }
-    QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE { return m_virtualDesktop->screens(); }
+    QDpi logicalDpi() const override;
+    qreal pixelDensity() const override;
+    QPlatformCursor *cursor() const override;
+    qreal refreshRate() const override { return m_refreshRate; }
+    Qt::ScreenOrientation orientation() const override { return m_orientation; }
+    QList<QPlatformScreen *> virtualSiblings() const override { return m_virtualDesktop->screens(); }
     QXcbVirtualDesktop *virtualDesktop() const { return m_virtualDesktop; }
 
     void setPrimary(bool primary) { m_primary = primary; }
@@ -161,7 +161,7 @@ public:
     const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
     quint8 depthOfVisual(xcb_visualid_t) const;
 
-    QString name() const Q_DECL_OVERRIDE { return m_outputName; }
+    QString name() const override { return m_outputName; }
 
     void handleScreenChange(xcb_randr_screen_change_notify_event_t *change_event);
     void updateGeometry(const QRect &geom, uint8_t rotation);

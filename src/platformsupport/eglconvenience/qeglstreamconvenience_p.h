@@ -105,6 +105,10 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYSTREAMKHRPROC) (EGLDisplay dpy, EGLS
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYSTREAMU64KHRPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLuint64KHR *value);
 #endif
 
+#ifndef EGL_KHR_stream_fifo
+#define EGL_STREAM_FIFO_LENGTH_KHR        0x31FC
+#endif
+
 #ifndef EGL_KHR_stream_producer_eglsurface
 #define EGL_STREAM_BIT_KHR                0x0800
 typedef EGLSurface (EGLAPIENTRYP PFNEGLCREATESTREAMPRODUCERSURFACEKHRPROC) (EGLDisplay dpy, EGLConfig config, EGLStreamKHR stream, const EGLint *attrib_list);

@@ -194,7 +194,7 @@ void tst_QTreeWidget::getSetCheck()
     QCOMPARE(obj1.headerItem(), var2);
 
     obj1.setHeaderItem((QTreeWidgetItem *)0);
-//    QCOMPARE(obj1.headerItem(), (QTreeWidgetItem *)0);
+//    QCOMPARE(obj1.headerItem(), nullptr);
 
     // QTreeWidgetItem * QTreeWidget::currentItem()
     // void QTreeWidget::setCurrentItem(QTreeWidgetItem *)
@@ -203,7 +203,7 @@ void tst_QTreeWidget::getSetCheck()
     QCOMPARE(obj1.currentItem(), var3);
 
     obj1.setCurrentItem((QTreeWidgetItem *)0);
-    QCOMPARE(obj1.currentItem(), (QTreeWidgetItem *)0);
+    QCOMPARE(obj1.currentItem(), nullptr);
 }
 
 typedef QList<int> IntList;
@@ -285,9 +285,9 @@ void tst_QTreeWidget::addTopLevelItem()
         tree.addTopLevelItem(ti);
         QCOMPARE(tree.topLevelItemCount(), i+1);
         QCOMPARE(tree.topLevelItem(i), ti);
-        QCOMPARE(tree.topLevelItem(-1), static_cast<TreeItem*>(0));
+        QCOMPARE(tree.topLevelItem(-1), nullptr);
         QCOMPARE(tree.indexOfTopLevelItem(ti), i);
-        QCOMPARE(ti->parent(), static_cast<TreeItem*>(0));
+        QCOMPARE(ti->parent(), nullptr);
         tree.addTopLevelItem(ti);
         QCOMPARE(tree.topLevelItemCount(), i+1);
         tops.append(ti);
@@ -419,7 +419,7 @@ void tst_QTreeWidget::currentItem()
 
     // can't set the headerItem to be the current item
     tree.setCurrentItem(tree.headerItem());
-    QCOMPARE(tree.currentItem(), static_cast<TreeItem*>(0));
+    QCOMPARE(tree.currentItem(), nullptr);
 }
 
 void tst_QTreeWidget::editItem_data()
@@ -520,7 +520,7 @@ void tst_QTreeWidget::takeItem()
         int count = testWidget->topLevelItemCount();
         QTreeWidgetItem *item = testWidget->takeTopLevelItem(index);
         if (outOfBounds) {
-            QCOMPARE(item, (QTreeWidgetItem *)0);
+            QCOMPARE(item, nullptr);
             QCOMPARE(count, testWidget->topLevelItemCount());
         } else {
             QCOMPARE(item->text(0), QStringLiteral("top") + QString::number(index));
@@ -531,7 +531,7 @@ void tst_QTreeWidget::takeItem()
         int count = testWidget->topLevelItem(0)->childCount();
         QTreeWidgetItem *item = testWidget->topLevelItem(0)->takeChild(index);
         if (outOfBounds) {
-            QCOMPARE(item, (QTreeWidgetItem *)0);
+            QCOMPARE(item, nullptr);
             QCOMPARE(count, testWidget->topLevelItem(0)->childCount());
         } else {
             QCOMPARE(item->text(0), QStringLiteral("child") + QString::number(index));
@@ -1664,8 +1664,8 @@ void tst_QTreeWidget::addChild()
         QCOMPARE(taken, children);
         QCOMPARE(item->childCount(), 0);
         for (int i = 0; i < taken.count(); ++i) {
-            QCOMPARE(taken.at(i)->parent(), static_cast<QTreeWidgetItem*>(0));
-            QCOMPARE(taken.at(i)->treeWidget(), static_cast<QTreeWidget*>(0));
+            QCOMPARE(taken.at(i)->parent(), nullptr);
+            QCOMPARE(taken.at(i)->treeWidget(), nullptr);
             item->addChild(taken.at(i)); // re-add
         }
 

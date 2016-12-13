@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet qelapsedtimer/main.cpp 2
 
-    It is often more convenient to use \ref{QDeadlineTimer} in this case, which
+    It is often more convenient to use \l{QDeadlineTimer} in this case, which
     counts towards a timeout in the future instead of tracking elapsed time.
 
     \section1 Reference Clocks

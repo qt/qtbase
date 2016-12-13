@@ -1107,10 +1107,10 @@ void tst_QTreeView::setModel()
 {
     QTreeView view;
     view.show();
-    QCOMPARE(view.model(), (QAbstractItemModel*)0);
-    QCOMPARE(view.selectionModel(), (QItemSelectionModel*)0);
-    QCOMPARE(view.header()->model(), (QAbstractItemModel*)0);
-    QCOMPARE(view.header()->selectionModel(), (QItemSelectionModel*)0);
+    QCOMPARE(view.model(), nullptr);
+    QCOMPARE(view.selectionModel(), nullptr);
+    QCOMPARE(view.header()->model(), nullptr);
+    QCOMPARE(view.header()->selectionModel(), nullptr);
 
     for (int x = 0; x < 2; ++x) {
         QtTestModel *model = new QtTestModel(10, 8);
@@ -1131,9 +1131,9 @@ void tst_QTreeView::setModel()
         QTRY_COMPARE(modelDestroyedSpy.count(), 0);
 
         view.setModel(0);
-        QCOMPARE(view.model(), (QAbstractItemModel*)0);
+        QCOMPARE(view.model(), nullptr);
         // ### shouldn't selectionModel also be 0 now?
-//        QCOMPARE(view.selectionModel(), (QItemSelectionModel*)0);
+//        QCOMPARE(view.selectionModel(), nullptr);
         delete model;
     }
 }
@@ -1283,7 +1283,7 @@ void tst_QTreeView::noDelegate()
     QTreeView view;
     view.setModel(&model);
     view.setItemDelegate(0);
-    QCOMPARE(view.itemDelegate(), (QAbstractItemDelegate *)0);
+    QCOMPARE(view.itemDelegate(), nullptr);
 }
 
 void tst_QTreeView::noModel()

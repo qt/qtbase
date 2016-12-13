@@ -29,14 +29,20 @@
 #include "msvc_vcproj.h"
 #include "option.h"
 #include "xmloutput.h"
+
+#include <ioutils.h>
+
 #include <qdir.h>
 #include <qdiriterator.h>
 #include <qcryptographichash.h>
 #include <qhash.h>
 #include <quuid.h>
+
 #include <stdlib.h>
 
 //#define DEBUG_SOLUTION_GEN
+
+using namespace QMakeInternal;
 
 QT_BEGIN_NAMESPACE
 // Filter GUIDs (Do NOT change these!) ------------------------------
@@ -66,6 +72,8 @@ const char _slnHeader120[]      = "Microsoft Visual Studio Solution File, Format
                                   "\n# Visual Studio 2013";
 const char _slnHeader140[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
                                   "\n# Visual Studio 2015";
+const char _slnHeader141[]      = "Microsoft Visual Studio Solution File, Format Version 12.00"
+                                  "\n# Visual Studio 2017";
                                   // The following UUID _may_ change for later servicepacks...
                                   // If so we need to search through the registry at
                                   // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\7.0\Projects
@@ -294,6 +302,8 @@ QString VcprojGenerator::retrievePlatformToolSet() const
         return QStringLiteral("v120") + suffix;
     case NET2015:
         return QStringLiteral("v140") + suffix;
+    case NET2017:
+        return QStringLiteral("v141") + suffix;
     default:
         return QString();
     }
@@ -521,6 +531,9 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     }
 
     switch (vcProject.Configuration.CompilerVersion) {
+    case NET2017:
+        t << _slnHeader141;
+        break;
     case NET2015:
         t << _slnHeader140;
         break;
@@ -843,6 +856,9 @@ void VcprojGenerator::initProject()
     // Own elements -----------------------------
     vcProject.Name = project->first("QMAKE_ORIG_TARGET").toQString();
     switch (vcProject.Configuration.CompilerVersion) {
+    case NET2017:
+        vcProject.Version = "15.00";
+        break;
     case NET2015:
         vcProject.Version = "14.00";
         break;
@@ -1448,7 +1464,7 @@ void VcprojGenerator::initResourceFiles()
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(canExecute(dep_cmd)) {
                     dep_cmd.prepend(QLatin1String("cd ")
-                                    + escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
+                                    + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
                                     + QLatin1String(" && "));
                     if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
                         QString indeps;

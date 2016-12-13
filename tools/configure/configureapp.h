@@ -54,14 +54,10 @@ public:
     void generateQDevicePri();
     void prepareConfigTests();
 
-    bool showLicense(QString licenseFile);
-    void readLicense();
-
     bool isDone();
     bool isOk();
 
     int platform() const;
-    QString platformName() const;
 
 private:
     int verbose;
@@ -86,10 +82,6 @@ private:
 
     bool reloadCmdLine(int idx);
     void saveCmdLine();
-
-    void applySpecSpecifics();
-
-    QString formatConfigPath(const char *var);
 };
 
 class FileWriter : public QTextStream

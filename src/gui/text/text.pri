@@ -39,7 +39,8 @@ HEADERS += \
     text/qrawfont_p.h \
     text/qglyphrun.h \
     text/qglyphrun_p.h \
-    text/qdistancefield_p.h
+    text/qdistancefield_p.h \
+    text/qinputcontrol_p.h
 
 SOURCES += \
     text/qfont.cpp \
@@ -69,7 +70,8 @@ SOURCES += \
     text/qstatictext.cpp \
     text/qrawfont.cpp \
     text/qglyphrun.cpp \
-    text/qdistancefield.cpp
+    text/qdistancefield.cpp \
+    text/qinputcontrol.cpp
 
 SOURCES += \
     text/qfontengine_qpf2.cpp \
@@ -78,9 +80,7 @@ SOURCES += \
 HEADERS += \
     text/qplatformfontdatabase.h
 
-qtConfig(harfbuzz)|qtConfig(system-harfbuzz) {
-    DEFINES += QT_ENABLE_HARFBUZZ_NG
-
+qtConfig(harfbuzz) {
     QMAKE_USE_PRIVATE += harfbuzz
 
     SOURCES += text/qharfbuzzng.cpp

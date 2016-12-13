@@ -61,9 +61,9 @@ struct XInput2TouchDeviceData {
     XIDeviceInfo *xiDeviceInfo;
     QTouchDevice *qtTouchDevice;
     QHash<int, QWindowSystemInterface::TouchPoint> touchPoints;
+    QHash<int, QPointF> pointPressedPosition; // in screen coordinates where each point was pressed
 
     // Stuff that is relevant only for touchpads
-    QHash<int, QPointF> pointPressedPosition; // in screen coordinates where each point was pressed
     QPointF firstPressedPosition;        // in screen coordinates where the first point was pressed
     QPointF firstPressedNormalPosition;  // device coordinates (0 to 1, 0 to 1) where the first point was pressed
     QSizeF size;                         // device size in mm
@@ -93,6 +93,7 @@ void QXcbConnection::initializeXInput2()
         if (m_xi2Enabled) {
 #ifdef XCB_USE_XINPUT22
             qCDebug(lcQpaXInputDevices, "XInput version %d.%d is available and Qt supports 2.2 or greater", xiMajor, m_xi2Minor);
+            m_startSystemResizeInfo.window = XCB_NONE;
 #else
             qCDebug(lcQpaXInputDevices, "XInput version %d.%d is available and Qt supports 2.0", xiMajor, m_xi2Minor);
 #endif
@@ -714,7 +715,21 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
             touchPoint.state = Qt::TouchPointMoved;
         } else if (touchPoint.area.center() != QPoint(x, y)) {
             touchPoint.state = Qt::TouchPointMoved;
-            dev->pointPressedPosition[touchPoint.id] = QPointF(x, y);
+            if (dev->qtTouchDevice->type() == QTouchDevice::TouchPad)
+                dev->pointPressedPosition[touchPoint.id] = QPointF(x, y);
+        }
+
+        if (dev->qtTouchDevice->type() == QTouchDevice::TouchScreen &&
+            xiDeviceEvent->event == m_startSystemResizeInfo.window &&
+            xiDeviceEvent->sourceid == m_startSystemResizeInfo.deviceid &&
+            xiDeviceEvent->detail == m_startSystemResizeInfo.pointid) {
+            QXcbWindow *window = platformWindowFromId(m_startSystemResizeInfo.window);
+            if (window) {
+                XIAllowTouchEvents(static_cast<Display *>(m_xlib_display), xiDeviceEvent->deviceid,
+                                   xiDeviceEvent->detail, xiDeviceEvent->event, XIRejectTouch);
+                window->doStartSystemResize(QPoint(x, y), m_startSystemResizeInfo.corner);
+                m_startSystemResizeInfo.window = XCB_NONE;
+            }
         }
         break;
     case XI_TouchEnd:
@@ -743,6 +758,27 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         // Make sure that we don't send TouchPointPressed/Moved in more than one QTouchEvent
         // with this touch point if the next XI2 event is about a different touch point.
         touchPoint.state = Qt::TouchPointStationary;
+}
+
+bool QXcbConnection::startSystemResizeForTouchBegin(xcb_window_t window, const QPoint &point, Qt::Corner corner)
+{
+    QHash<int, XInput2TouchDeviceData*>::const_iterator devIt = m_touchDevices.constBegin();
+    for (; devIt != m_touchDevices.constEnd(); ++devIt) {
+        XInput2TouchDeviceData *deviceData = devIt.value();
+        if (deviceData->qtTouchDevice->type() == QTouchDevice::TouchScreen) {
+            QHash<int, QPointF>::const_iterator pointIt = deviceData->pointPressedPosition.constBegin();
+            for (; pointIt != deviceData->pointPressedPosition.constEnd(); ++pointIt) {
+                if (pointIt.value().toPoint() == point) {
+                    m_startSystemResizeInfo.window = window;
+                    m_startSystemResizeInfo.deviceid = devIt.key();
+                    m_startSystemResizeInfo.pointid = pointIt.key();
+                    m_startSystemResizeInfo.corner = corner;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)

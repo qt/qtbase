@@ -22,10 +22,16 @@ defineTest(qtConfAddWarning) {
 defineTest(qtConfAddError) {
     QT_CONFIGURE_ERRORS += "ERROR: $$join(1, $$escape_expand(\\n))"
     export(QT_CONFIGURE_ERRORS)
-    equals(2, log) {
+    equals(2, log):qt_conf_tests_allowed {
         CONFIG += mention_config_log
         export(CONFIG)
     }
+}
+
+defineTest(qtConfFatalError) {
+    qtConfAddError($$1, $$2)
+    qtConfPrintReport()
+    error()
 }
 
 defineTest(qtConfCommandlineSetInput) {
@@ -782,9 +788,7 @@ defineTest(qtConfTest_compile) {
 
 defineTest(qtConfTest_verifySpec) {
     qtConfTest_compile($$1): return(true)
-    qtConfAddError("Cannot compile a minimal program. The toolchain or QMakeSpec is broken.", log)
-    qtConfPrintReport()
-    error()
+    qtConfFatalError("Cannot compile a minimal program. The toolchain or QMakeSpec is broken.", log)
 }
 
 defineTest(qtConfTest_files) {
@@ -1312,6 +1316,10 @@ defineTest(qtConfReport_warning) {
 
 defineTest(qtConfReport_error) {
     qtConfAddError($${1}, log)
+}
+
+defineTest(qtConfReport_fatal) {
+    qtConfFatalError($${1})
 }
 
 defineTest(qtConfCreateReportRecurse) {

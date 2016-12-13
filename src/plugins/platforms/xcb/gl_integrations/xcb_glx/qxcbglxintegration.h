@@ -52,15 +52,15 @@ public:
     QXcbGlxIntegration();
     ~QXcbGlxIntegration();
 
-    bool initialize(QXcbConnection *connection) Q_DECL_OVERRIDE;
-    bool handleXcbEvent(xcb_generic_event_t *event, uint responseType) Q_DECL_OVERRIDE;
+    bool initialize(QXcbConnection *connection) override;
+    bool handleXcbEvent(xcb_generic_event_t *event, uint responseType) override;
 
-    QXcbWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
-    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
+    QXcbWindow *createWindow(QWindow *window) const override;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 
-    virtual bool supportsThreadedOpenGL() const Q_DECL_OVERRIDE;
-    virtual bool supportsSwitchableWidgetComposition() const Q_DECL_OVERRIDE;
+    bool supportsThreadedOpenGL() const override;
+    bool supportsSwitchableWidgetComposition() const override;
 
 private:
     QXcbConnection *m_connection;

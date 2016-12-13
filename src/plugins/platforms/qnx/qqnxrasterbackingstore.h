@@ -54,12 +54,12 @@ public:
     QQnxRasterBackingStore(QWindow *window);
     ~QQnxRasterBackingStore();
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
-    bool scroll(const QRegion &area, int dx, int dy);
-    void beginPaint(const QRegion &region);
-    void endPaint();
+    QPaintDevice *paintDevice() override;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
+    void resize(const QSize &size, const QRegion &staticContents) override;
+    bool scroll(const QRegion &area, int dx, int dy) override;
+    void beginPaint(const QRegion &region) override;
+    void endPaint() override;
 
 private:
     QQnxRasterWindow *platformWindow() const;

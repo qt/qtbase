@@ -51,8 +51,8 @@ public:
     explicit QWinRTEventDispatcher(QObject *parent = 0);
 
 protected:
-    bool hasPendingEvents();
-    bool sendPostedEvents(QEventLoop::ProcessEventsFlags flags);
+    bool hasPendingEvents() override;
+    bool sendPostedEvents(QEventLoop::ProcessEventsFlags flags) override;
 };
 
 QT_END_NAMESPACE

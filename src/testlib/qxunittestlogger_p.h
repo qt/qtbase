@@ -64,19 +64,19 @@ class QXunitTestLogger : public QAbstractTestLogger
         QXunitTestLogger(const char *filename);
         ~QXunitTestLogger();
 
-        void startLogging();
-        void stopLogging();
+        void startLogging() override;
+        void stopLogging() override;
 
-        void enterTestFunction(const char *function);
-        void leaveTestFunction();
+        void enterTestFunction(const char *function) override;
+        void leaveTestFunction() override;
 
         void addIncident(IncidentTypes type, const char *description,
-                     const char *file = 0, int line = 0);
-        void addBenchmarkResult(const QBenchmarkResult &result);
+                     const char *file = 0, int line = 0) override;
+        void addBenchmarkResult(const QBenchmarkResult &result) override;
         void addTag(QTestElement* element);
 
         void addMessage(MessageTypes type, const QString &message,
-                    const char *file = 0, int line = 0);
+                    const char *file = 0, int line = 0) override;
 
     private:
         QTestElement *listOfTestcases;

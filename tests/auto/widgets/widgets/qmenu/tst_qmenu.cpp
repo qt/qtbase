@@ -388,7 +388,7 @@ void tst_QMenu::keyboardNavigation()
 #ifndef Q_OS_MAC
         QEXPECT_FAIL("shortcut0", "QTBUG-22449: QMenu doesn't remove highlight if a menu item is activated by a shortcut", Abort);
 #endif
-        QCOMPARE(menus[expected_menu]->activeAction(), (QAction *)0);
+        QCOMPARE(menus[expected_menu]->activeAction(), nullptr);
     } else {
         QCOMPARE(menus[expected_menu]->activeAction(), builtins[expected_action]);
     }
@@ -396,7 +396,7 @@ void tst_QMenu::keyboardNavigation()
     if (expected_highlighted)
         QCOMPARE(menus[expected_menu]->activeAction(), highlighted);
     else
-        QCOMPARE(highlighted, (QAction *)0);
+        QCOMPARE(highlighted, nullptr);
 }
 
 #ifdef Q_OS_MAC

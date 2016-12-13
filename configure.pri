@@ -1,3 +1,7 @@
+# this must be done outside any function
+QT_SOURCE_TREE = $$PWD
+QT_BUILD_TREE = $$shadowed($$PWD)
+
 # custom command line handling
 
 defineTest(qtConfCommandline_qmakeArgs) {
@@ -61,6 +65,165 @@ defineReplace(qtConfFunc_crossCompile) {
     spec = $$[QMAKE_SPEC]
     !equals(spec, $$[QMAKE_XSPEC]): return(true)
     return(false)
+}
+
+defineReplace(qtConfFunc_licenseCheck) {
+    exists($$QT_SOURCE_TREE/LICENSE.LGPL3)|exists($$QT_SOURCE_TREE/LICENSE.GPL2): \
+        hasOpenSource = true
+    else: \
+        hasOpenSource = false
+    exists($$QT_SOURCE_TREE/LICENSE.PREVIEW.COMMERCIAL)|exists($$QT_SOURCE_TREE/bin/licheck*): \
+        hasCommercial = true
+    else: \
+        hasCommercial = false
+
+    commercial = $$config.input.commercial
+    isEmpty(commercial) {
+        $$hasOpenSource {
+            $$hasCommercial {
+                logn()
+                logn("Selecting Qt Edition.")
+                logn()
+                logn("Type 'c' if you want to use the Commercial Edition.")
+                logn("Type 'o' if you want to use the Open Source Edition.")
+                logn()
+                for(ever) {
+                    val = $$lower($$prompt("Which edition of Qt do you want to use? ", false))
+                    equals(val, c) {
+                        commercial = yes
+                    } else: equals(val, o) {
+                        commercial = no
+                    } else {
+                        next()
+                    }
+                    break()
+                }
+            } else {
+                commercial = no
+            }
+        } else {
+            !$$hasCommercial: \
+                qtConfFatalError("No license files and no licheck executables found." \
+                                 "Cannot proceed. Try re-installing Qt.")
+            commercial = yes
+        }
+    }
+
+    equals(commercial, no) {
+        !$$hasOpenSource: \
+            qtConfFatalError("This is the Qt Commercial Edition." \
+                             "Cannot proceed with -opensource.")
+
+        logn()
+        logn("This is the Qt Open Source Edition.")
+
+        EditionString = "Open Source"
+        config.input.qt_edition = OpenSource
+        export(config.input.qt_edition)
+    } else {
+        !$$hasCommercial: \
+            qtConfFatalError("This is the Qt Open Source Edition." \
+                             "Cannot proceed with -commercial.")
+
+        exists($$QT_SOURCE_TREE/LICENSE.PREVIEW.COMMERCIAL) {
+            logn()
+            logn("This is the Qt Technology Preview Edition.")
+
+            EditionString = "Technology Preview"
+            config.input.qt_edition = Preview
+            export(config.input.qt_edition)
+        } else {
+            equals(QMAKE_HOST.os, Linux) {
+                equals(QMAKE_HOST.arch, x86): \
+                    Licheck = licheck32
+                else: \
+                    Licheck = licheck64
+            } else: equals(QMAKE_HOST.os, Darwin) {
+                Licheck = licheck_mac
+            } else: equals(QMAKE_HOST.os, Windows) {
+                Licheck = licheck.exe
+            } else {
+                qtConfFatalError("Host operating system not supported by this edition of Qt.")
+            }
+
+            !qtRunLoggedCommand("$$system_quote($$QT_SOURCE_TREE/bin/$$Licheck) \
+                                    $$eval(config.input.confirm-license) \
+                                    $$system_quote($$QT_SOURCE_TREE) $$system_quote($$QT_BUILD_TREE) \
+                                    $$[QMAKE_SPEC] $$[QMAKE_XSPEC]", \
+                                LicheckOutput): \
+                return(false)
+            eval($$LicheckOutput)
+            config.input.qt_edition = $$Edition
+            config.input.qt_licheck = $$Licheck
+            config.input.qt_release_date = $$ReleaseDate
+            export(config.input.qt_edition)
+            export(config.input.qt_licheck)
+            export(config.input.qt_release_date)
+            return(true)
+        }
+    }
+
+    !isEmpty(config.input.confirm-license) {
+        logn()
+        logn("You have already accepted the terms of the $$EditionString license.")
+        return(true)
+    }
+
+    affix = the
+    equals(commercial, no) {
+        theLicense = "GNU Lesser General Public License (LGPL) version 3"
+        showWhat = "Type 'L' to view the GNU Lesser General Public License version 3 (LGPLv3)."
+        gpl2Ok = false
+        winrt {
+            notTheLicense = "Note: GPL version 2 is not available on WinRT."
+        } else: $$qtConfEvaluate("features.android-style-assets") {
+            notTheLicense = "Note: GPL version 2 is not available due to using Android style assets."
+        } else {
+            theLicense += "or the GNU General Public License (GPL) version 2"
+            showWhat += "Type 'G' to view the GNU General Public License version 2 (GPLv2)."
+            gpl2Ok = true
+            affix = either
+        }
+    } else {
+        theLicense = $$cat($$QT_SOURCE_TREE/LICENSE.PREVIEW.COMMERCIAL, lines)
+        theLicense = $$first(theLicense)
+        showWhat = "Type '?' to view the $${theLicense}."
+    }
+    msg = \
+        " " \
+        "You are licensed to use this software under the terms of" \
+        "the "$$theLicense"." \
+        $$notTheLicense \
+        " " \
+        $$showWhat \
+        "Type 'y' to accept this license offer." \
+        "Type 'n' to decline this license offer." \
+        " "
+
+    for(ever) {
+        logn($$join(msg, $$escape_expand(\\n)))
+        for(ever) {
+            val = $$lower($$prompt("Do you accept the terms of $$affix license? ", false))
+            equals(val, y)|equals(val, yes) {
+                logn()
+                return(true)
+            } else: equals(val, n)|equals(val, no) {
+                return(false)
+            } else: equals(commercial, yes):equals(val, ?) {
+                licenseFile = $$QT_SOURCE_TREE/LICENSE.PREVIEW.COMMERCIAL
+            } else: equals(commercial, no):equals(val, l) {
+                licenseFile = $$QT_SOURCE_TREE/LICENSE.LGPL3
+            } else: equals(commercial, no):equals(val, g):$$gpl2Ok {
+                licenseFile = $$QT_SOURCE_TREE/LICENSE.GPL2
+            } else {
+                next()
+            }
+            break()
+        }
+        system("more $$system_quote($$system_path($$licenseFile))")
+        logn()
+        logn()
+    }
 }
 
 # custom tests
@@ -510,12 +673,19 @@ defineTest(qtConfReport_buildParts) {
     qtConfReportPadded($${1}, $$qtConfEvaluate("tests.build_parts.value"))
 }
 
+defineReplace(qtConfReportArch) {
+    arch = $$qtConfEvaluate('tests.$${1}.arch')
+    subarch = $$qtConfEvaluate('tests.$${1}.subarch')
+    isEmpty(subarch): subarch = <none>
+    return("$$arch, CPU features: $$subarch")
+}
+
 defineTest(qtConfReport_buildTypeAndConfig) {
     !$$qtConfEvaluate("features.cross_compile") {
-        qtConfAddReport("Build type: $$qtConfEvaluate('tests.architecture.arch')")
+        qtConfAddReport("Build type: $$[QMAKE_SPEC] ($$qtConfReportArch(architecture))")
     } else {
-        qtConfAddReport("Building on:  $$qtConfEvaluate('tests.host_architecture.arch')")
-        qtConfAddReport("Building for: $$qtConfEvaluate('tests.architecture.arch')")
+        qtConfAddReport("Building on: $$[QMAKE_SPEC] ($$qtConfReportArch(host_architecture))")
+        qtConfAddReport("Building for: $$[QMAKE_XSPEC] ($$qtConfReportArch(architecture))")
     }
     qtConfAddReport()
     qtConfAddReport("Configuration: $$eval($${currentConfig}.output.privatePro.append.CONFIG) $$eval($${currentConfig}.output.publicPro.append.QT_CONFIG)")
@@ -552,6 +722,3 @@ discard_from($$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)
 QMAKE_POST_CONFIGURE += \
     "include(\$\$[QT_HOST_DATA/get]/mkspecs/qconfig.pri)" \
     "include(\$\$[QT_HOST_DATA/get]/mkspecs/qmodule.pri)"
-
-# load and process input from configure.sh/.exe
-include($$shadowed($$PWD)/config.tests/configure.cfg)

@@ -55,7 +55,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qcollator.h"
 #include <QVector>
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
 #include <unicode/ucol.h>
 #elif defined(Q_OS_OSX)
 #include <CoreServices/CoreServices.h>
@@ -65,7 +65,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
 typedef UCollator *CollatorType;
 typedef QByteArray CollatorKeyType;
 
@@ -90,7 +90,7 @@ class Q_CORE_EXPORT QCollatorPrivate
 public:
     QAtomicInt ref;
     QLocale locale;
-#if defined(Q_OS_WIN) && !defined(QT_USE_ICU)
+#if defined(Q_OS_WIN) && !QT_CONFIG(icu)
 #ifdef USE_COMPARESTRINGEX
     QString localeName;
 #else

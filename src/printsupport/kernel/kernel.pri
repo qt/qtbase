@@ -30,7 +30,7 @@ win32 {
                 $$PWD/qprintengine_win_p.h
         SOURCES += \
                 $$PWD/qprintengine_win.cpp
-        LIBS_PRIVATE += -lwinspool -lcomdlg32 -lgdi32 -luser32
+        !winrt: LIBS_PRIVATE += -lwinspool -lcomdlg32 -lgdi32 -luser32
 }
 
 unix:!darwin:qtConfig(cups) {

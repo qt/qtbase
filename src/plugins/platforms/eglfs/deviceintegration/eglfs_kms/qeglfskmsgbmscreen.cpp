@@ -184,24 +184,41 @@ void QEglFSKmsGbmScreen::flip()
 
     FrameBuffer *fb = framebufferForBufferObject(m_gbm_bo_next);
 
-    if (!output().mode_set) {
-        int ret = drmModeSetCrtc(device()->fd(),
-                                 output().crtc_id,
+    QKmsOutput &op(output());
+    const int fd = device()->fd();
+    const uint32_t w = op.modes[op.mode].hdisplay;
+    const uint32_t h = op.modes[op.mode].vdisplay;
+
+    if (!op.mode_set) {
+        int ret = drmModeSetCrtc(fd,
+                                 op.crtc_id,
                                  fb->fb,
                                  0, 0,
-                                 &output().connector_id, 1,
-                                 &output().modes[output().mode]);
+                                 &op.connector_id, 1,
+                                 &op.modes[op.mode]);
 
-        if (ret) {
-            qErrnoWarning("Could not set DRM mode!");
+        if (ret == -1) {
+            qErrnoWarning(errno, "Could not set DRM mode!");
         } else {
-            output().mode_set = true;
+            op.mode_set = true;
             setPowerState(PowerStateOn);
+
+            if (!op.plane_set) {
+                op.plane_set = true;
+                if (op.wants_plane) {
+                    int ret = drmModeSetPlane(fd, op.plane_id, op.crtc_id,
+                                              uint32_t(-1), 0,
+                                              0, 0, w, h,
+                                              0 << 16, 0 << 16, w << 16, h << 16);
+                    if (ret == -1)
+                        qErrnoWarning(errno, "drmModeSetPlane failed");
+                }
+            }
         }
     }
 
-    int ret = drmModePageFlip(device()->fd(),
-                              output().crtc_id,
+    int ret = drmModePageFlip(fd,
+                              op.crtc_id,
                               fb->fb,
                               DRM_MODE_PAGE_FLIP_EVENT,
                               this);

@@ -98,14 +98,14 @@ public:
 
 protected:
 //![14]
-    virtual bool eventTest(QEvent *event) override
+    bool eventTest(QEvent *event) override
     {
         return (event->type() == QEvent::Type(StateSwitchEvent::StateSwitchType))
             && (static_cast<StateSwitchEvent *>(event)->rand() == m_rand);
     }
 //![14]
 
-    virtual void onTransition(QEvent *) override {}
+    void onTransition(QEvent *) override {}
 
 private:
     int m_rand;
@@ -122,7 +122,7 @@ public:
 //![10]
 
 //![11]
-    virtual void onEntry(QEvent *) override
+    void onEntry(QEvent *) override
     {
         int n;
         while ((n = (qrand() % m_stateCount + 1)) == m_lastIndex)
@@ -130,7 +130,7 @@ public:
         m_lastIndex = n;
         machine()->postEvent(new StateSwitchEvent(n));
     }
-    virtual void onExit(QEvent *) override {}
+    void onExit(QEvent *) override {}
 //![11]
 
 //![12]
@@ -174,7 +174,7 @@ public:
     }
 
 protected:
-    virtual void resizeEvent(QResizeEvent *event) override
+    void resizeEvent(QResizeEvent *event) override
     {
         fitInView(scene()->sceneRect());
         QGraphicsView::resizeEvent(event);

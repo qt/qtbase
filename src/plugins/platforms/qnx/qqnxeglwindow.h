@@ -61,11 +61,11 @@ public:
     void setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext);
     QQnxGLContext *platformOpenGLContext() const { return m_platformOpenGLContext; }
 
-    void setGeometry(const QRect &rect);
+    void setGeometry(const QRect &rect) override;
 
 protected:
-    int pixelFormat() const;
-    void resetBuffers();
+    int pixelFormat() const override;
+    void resetBuffers() override;
 
 private:
     QSize m_requestedBufferSize;

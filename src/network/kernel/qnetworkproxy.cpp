@@ -82,7 +82,9 @@
 
     \section1 SOCKS5
 
-    The SOCKS5 support in Qt 4 is based on \l{http://www.rfc-editor.org/rfc/rfc1928.txt}{RFC 1928} and \l{http://www.rfc-editor.org/rfc/rfc1929.txt}{RFC 1929}.
+    The SOCKS5 support since Qt 4 is based on
+    \l{http://www.rfc-editor.org/rfc/rfc1928.txt}{RFC 1928} and
+    \l{http://www.rfc-editor.org/rfc/rfc1929.txt}{RFC 1929}.
     The supported authentication methods are no authentication and
     username/password authentication.  Both IPv4 and IPv6 are
     supported. Domain names are resolved through the SOCKS5 server if
@@ -1515,8 +1517,8 @@ bool QNetworkProxyFactory::usesSystemConfiguration()
     Enables the use of the platform-specific proxy settings, and only those.
     See systemProxyForQuery() for more information.
 
-    Calling setUseSystemConfiguration(\c{true}) will reset any proxy or
-    QNetworkProxyFactory already set.
+    Calling this function with \a enable set to \c true resets any proxy
+    or QNetworkProxyFactory that is already set.
 
     \note See the systemProxyForQuery() documentation for a list of
     limitations related to the use of system proxies.

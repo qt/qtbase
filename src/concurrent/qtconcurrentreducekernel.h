@@ -230,7 +230,7 @@ struct SequenceHolder2 : public Base
 
     Sequence sequence;
 
-    void finish()
+    void finish() override
     {
         Base::finish();
         // Clear the sequence to make sure all temporaries are destroyed

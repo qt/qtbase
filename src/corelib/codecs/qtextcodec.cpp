@@ -58,10 +58,10 @@
 #if !defined(QT_BOOTSTRAPPED)
 #  include "qtsciicodec_p.h"
 #  include "qisciicodec_p.h"
-#if defined(QT_USE_ICU)
+#if QT_CONFIG(icu)
 #include "qicucodec_p.h"
 #else
-#if !defined(QT_NO_ICONV)
+#if QT_CONFIG(iconv)
 #  include "qiconvcodec_p.h"
 #endif
 #ifdef Q_OS_WIN
@@ -79,7 +79,7 @@
 #  endif // !Q_OS_INTEGRITY
 #endif // !QT_NO_BIG_CODECS
 
-#endif // QT_USE_ICU
+#endif // icu
 #endif // QT_BOOTSTRAPPED
 
 #include "qmutex.h"
@@ -99,7 +99,7 @@ typedef QList<QByteArray>::ConstIterator ByteArrayListConstIt;
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
 QMutex *qTextCodecsMutex() { return textCodecsMutex(); }
 
-#if !defined(QT_USE_ICU)
+#if !QT_CONFIG(icu)
 static char qtolower(char c)
 { if (c >= 'A' && c <= 'Z') return c + 0x20; return c; }
 static bool qisalnum(char c)
@@ -184,7 +184,7 @@ static QTextCodec *setupLocaleMapper()
     if (charset)
         locale = QTextCodec::codecForName(charset);
 #endif
-#if !defined(QT_NO_ICONV) && !defined(QT_BOOTSTRAPPED)
+#if QT_CONFIG(iconv)
     if (!locale) {
         // no builtin codec for the locale found, let's try using iconv
         (void) new QIconvCodec();
@@ -286,7 +286,7 @@ static void setup()
     (void)new QBig5Codec;
     (void)new QBig5hkscsCodec;
 #  endif // !QT_NO_BIG_CODECS && !Q_OS_INTEGRITY
-#if !defined(QT_NO_ICONV)
+#if QT_CONFIG(iconv)
     (void) new QIconvCodec;
 #endif
 #if defined(Q_OS_WIN32)
@@ -306,7 +306,7 @@ static void setup()
 }
 #else
 static void setup() {}
-#endif // QT_USE_ICU
+#endif // icu
 
 /*!
     \enum QTextCodec::ConversionFlag
@@ -519,7 +519,7 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
         return 0;
     setup();
 
-#ifndef QT_USE_ICU
+#if !QT_CONFIG(icu)
     QTextCodecCache *cache = &globalData->codecCache;
     QTextCodec *codec;
     if (cache) {
@@ -586,7 +586,7 @@ QTextCodec* QTextCodec::codecForMib(int mib)
         }
     }
 
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     return QIcuCodec::codecForMibUnlocked(mib);
 #else
     return 0;
@@ -618,7 +618,7 @@ QList<QByteArray> QTextCodec::availableCodecs()
         codecs += (*it)->aliases();
     }
 
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     codecs += QIcuCodec::availableCodecs();
 #endif
 
@@ -634,7 +634,7 @@ QList<QByteArray> QTextCodec::availableCodecs()
 */
 QList<int> QTextCodec::availableMibs()
 {
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     return QIcuCodec::availableMibs();
 #else
     QMutexLocker locker(textCodecsMutex());
@@ -688,7 +688,7 @@ QTextCodec* QTextCodec::codecForLocale()
 
     QTextCodec *codec = globalData->codecForLocale.loadAcquire();
     if (!codec) {
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
         textCodecsMutex()->lock();
         codec = QIcuCodec::defaultCodecUnlocked();
         textCodecsMutex()->unlock();

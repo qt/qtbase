@@ -96,7 +96,7 @@ public:
           reducer(OrderedReduce)
     { }
 
-    bool runIteration(typename Sequence::const_iterator it, int index, T *)
+    bool runIteration(typename Sequence::const_iterator it, int index, T *) override
     {
         IntermediateResults<typename Sequence::value_type> results;
         results.begin = index;
@@ -109,7 +109,7 @@ public:
             return false;
     }
 
-    bool runIterations(typename Sequence::const_iterator sequenceBeginIterator, int begin, int end, T *)
+    bool runIterations(typename Sequence::const_iterator sequenceBeginIterator, int begin, int end, T *) override
     {
         IntermediateResults<typename Sequence::value_type> results;
         results.begin = begin;
@@ -129,18 +129,18 @@ public:
         return false;
     }
 
-    void finish()
+    void finish() override
     {
         reducer.finish(reduce, reducedResult);
         sequence = reducedResult;
     }
 
-    inline bool shouldThrottleThread()
+    inline bool shouldThrottleThread() override
     {
         return IterateKernelType::shouldThrottleThread() || reducer.shouldThrottle();
     }
 
-    inline bool shouldStartThread()
+    inline bool shouldStartThread() override
     {
         return IterateKernelType::shouldStartThread() && reducer.shouldStartThread();
     }
@@ -183,7 +183,7 @@ public:
     { }
 #endif
 
-    bool runIteration(Iterator it, int index, ReducedResultType *)
+    bool runIteration(Iterator it, int index, ReducedResultType *) override
     {
         IntermediateResults<typename qValueType<Iterator>::value_type> results;
         results.begin = index;
@@ -196,7 +196,7 @@ public:
         return false;
     }
 
-    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, ReducedResultType *)
+    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, ReducedResultType *) override
     {
         IntermediateResults<typename qValueType<Iterator>::value_type> results;
         results.begin = begin;
@@ -215,24 +215,24 @@ public:
         return false;
     }
 
-    void finish()
+    void finish() override
     {
         reducer.finish(reduce, reducedResult);
     }
 
-    inline bool shouldThrottleThread()
+    inline bool shouldThrottleThread() override
     {
         return IterateKernelType::shouldThrottleThread() || reducer.shouldThrottle();
     }
 
-    inline bool shouldStartThread()
+    inline bool shouldStartThread() override
     {
         return IterateKernelType::shouldStartThread() && reducer.shouldStartThread();
     }
 
     typedef ReducedResultType ReturnType;
     typedef ReducedResultType ResultType;
-    ReducedResultType *result()
+    ReducedResultType *result() override
     {
         return &reducedResult;
     }
@@ -255,14 +255,14 @@ public:
         : IterateKernelType(begin, end), keep(_keep)
     { }
 
-    void start()
+    void start() override
     {
         if (this->futureInterface)
             this->futureInterface->setFilterMode(true);
         IterateKernelType::start();
     }
 
-    bool runIteration(Iterator it, int index, T *)
+    bool runIteration(Iterator it, int index, T *) override
     {
         if (keep(*it))
             this->reportResult(&(*it), index);
@@ -271,7 +271,7 @@ public:
         return false;
     }
 
-    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, T *)
+    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, T *) override
     {
         const int count = end - begin;
         IntermediateResults<typename qValueType<Iterator>::value_type> results;

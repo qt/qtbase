@@ -72,21 +72,21 @@ public:
     explicit QWinRTFileDialogHelper();
     ~QWinRTFileDialogHelper();
 
-    void exec() Q_DECL_OVERRIDE;
-    bool show(Qt::WindowFlags, Qt::WindowModality, QWindow *) Q_DECL_OVERRIDE;
-    void hide() Q_DECL_OVERRIDE;
+    void exec() override;
+    bool show(Qt::WindowFlags, Qt::WindowModality, QWindow *) override;
+    void hide() override;
 #ifdef Q_OS_WINPHONE
-    bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *o, QEvent *e) override;
 #endif
 
-    bool defaultNameFilterDisables() const Q_DECL_OVERRIDE { return false; }
-    void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
-    QUrl directory() const Q_DECL_OVERRIDE;
-    void selectFile(const QUrl &saveFileName);
-    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
-    void setFilter() Q_DECL_OVERRIDE { }
-    void selectNameFilter(const QString &selectedNameFilter) Q_DECL_OVERRIDE;
-    QString selectedNameFilter() const;
+    bool defaultNameFilterDisables() const override { return false; }
+    void setDirectory(const QUrl &directory) override;
+    QUrl directory() const override;
+    void selectFile(const QUrl &saveFileName) override;
+    QList<QUrl> selectedFiles() const override;
+    void setFilter() override { }
+    void selectNameFilter(const QString &selectedNameFilter) override;
+    QString selectedNameFilter() const override;
 
 #ifndef Q_OS_WINPHONE
     HRESULT onSingleFilePicked(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Storage::StorageFile *> *,

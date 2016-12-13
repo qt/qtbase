@@ -55,7 +55,7 @@
 #include "qwindowsstyle_p.h"
 #include "qcommonstyle_p.h"
 
-#ifndef QT_NO_STYLE_WINDOWS
+#if QT_CONFIG(style_windows)
 #include <qlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -103,7 +103,7 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_STYLE_WINDOWS
+#endif // style_windows
 
 #endif //QWINDOWSSTYLE_P_P_H
 ;

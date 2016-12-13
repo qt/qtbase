@@ -2433,7 +2433,7 @@ Qt::LayoutDirection QLocale::textDirection() const
 */
 QString QLocale::toUpper(const QString &str) const
 {
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     bool ok = true;
     QString result = QIcu::toUpper(d->bcp47Name('_'), str, &ok);
     if (ok)
@@ -2457,7 +2457,7 @@ QString QLocale::toUpper(const QString &str) const
 */
 QString QLocale::toLower(const QString &str) const
 {
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     bool ok = true;
     const QString result = QIcu::toLower(d->bcp47Name('_'), str, &ok);
     if (ok)

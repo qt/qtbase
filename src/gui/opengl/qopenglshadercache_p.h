@@ -53,10 +53,6 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 
-#if defined(QT_MEEGO_EXPERIMENTAL_SHADERCACHE) && defined(QT_OPENGL_ES_2)
-#  include "qopenglshadercache_meego_p.h"
-#else
-
 QT_BEGIN_NAMESPACE
 
 
@@ -87,5 +83,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif
 #endif

@@ -54,7 +54,7 @@ public:
     ~QQnxNavigatorPps();
 
 protected:
-    bool requestInvokeUrl(const QByteArray &encodedUrl);
+    bool requestInvokeUrl(const QByteArray &encodedUrl) override;
 
 private:
     bool openPpsConnection();

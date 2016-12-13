@@ -93,6 +93,12 @@ ctest_macros_file.CONFIG = verbatim
 cmake_umbrella_config_file.input = $$PWD/Qt5Config.cmake.in
 cmake_umbrella_config_file.output = $$DESTDIR/cmake/Qt5/Qt5Config.cmake
 
+cmake_umbrella_config_module_location.input = $$PWD/Qt5ModuleLocation.cmake.in
+cmake_umbrella_config_module_location.output = $$DESTDIR/cmake/Qt5/Qt5ModuleLocation.cmake
+
+cmake_umbrella_config_module_location_for_install.input = $$PWD/Qt5ModuleLocationForInstall.cmake.in
+cmake_umbrella_config_module_location_for_install.output = $$DESTDIR/cmake/install/Qt5/Qt5ModuleLocation.cmake
+
 cmake_umbrella_config_version_file.input = $$PWD/../../mkspecs/features/data/cmake/Qt5ConfigVersion.cmake.in
 cmake_umbrella_config_version_file.output = $$DESTDIR/cmake/Qt5/Qt5ConfigVersion.cmake
 
@@ -119,10 +125,21 @@ contains(CMAKE_INSTALL_DATA_DIR, "^\\.\\./.*"):!isEmpty(CMAKE_INSTALL_DATA_DIR) 
 cmake_extras_mkspec_dir_for_install.input = $$PWD/Qt5CoreConfigExtrasMkspecDirForInstall.cmake.in
 cmake_extras_mkspec_dir_for_install.output = $$DESTDIR/cmake/install/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake
 
-cmake_qt5_umbrella_module_files.files = $$cmake_umbrella_config_file.output $$cmake_umbrella_config_version_file.output
+cmake_qt5_umbrella_module_files.files = \
+    $$cmake_umbrella_config_file.output \
+    $$cmake_umbrella_config_version_file.output \
+    $$cmake_umbrella_config_module_location_for_install.output
+
 cmake_qt5_umbrella_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5
 
-QMAKE_SUBSTITUTES += ctest_macros_file cmake_umbrella_config_file cmake_umbrella_config_version_file cmake_extras_mkspec_dir cmake_extras_mkspec_dir_for_install
+QMAKE_SUBSTITUTES += \
+    ctest_macros_file \
+    cmake_umbrella_config_file \
+    cmake_umbrella_config_module_location \
+    cmake_umbrella_config_module_location_for_install \
+    cmake_umbrella_config_version_file \
+    cmake_extras_mkspec_dir \
+    cmake_extras_mkspec_dir_for_install
 
 ctest_qt5_module_files.files += $$ctest_macros_file.output $$cmake_extras_mkspec_dir_for_install.output
 

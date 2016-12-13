@@ -39,7 +39,7 @@
 
 #include "qandroidstyle_p.h"
 
-#if !defined(QT_NO_STYLE_ANDROID) || defined(QT_PLUGIN)
+#if QT_CONFIG(style_android) || defined(QT_PLUGIN)
 
 #include <QFile>
 #include <QFont>
@@ -1807,4 +1807,4 @@ QRect QAndroidStyle::AndroidSpinnerControl::subControlRect(const QStyleOptionCom
 
 QT_END_NAMESPACE
 
-#endif // !defined(QT_NO_STYLE_ANDROID) || defined(QT_PLUGIN)
+#endif // QT_CONFIG(style_android) || defined(QT_PLUGIN)

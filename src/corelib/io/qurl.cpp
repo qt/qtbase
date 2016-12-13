@@ -417,7 +417,8 @@
 #include "qurlquery.h"
 
 QT_BEGIN_NAMESPACE
-extern QString qt_normalizePathSegments(const QString &name, bool allowUncPaths); // qdir.cpp
+extern QString qt_normalizePathSegments(const QString &name, bool allowUncPaths,
+                                        bool *ok = nullptr); // qdir.cpp
 
 inline static bool isHex(char c)
 {
@@ -3689,6 +3690,9 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
 
     if ((d->sectionIsPresent & mask) != (url.d->sectionIsPresent & mask))
         return false;
+
+    if (options & QUrl::RemovePath)
+        return true;
 
     // Compare paths, after applying path-related options
     QString path1;

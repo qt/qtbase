@@ -809,13 +809,13 @@ void tst_QTableWidget::itemOwnership()
     headerItem = new QObjectTableItem();
     testWidget->setVerticalHeaderItem(0, headerItem);
     delete headerItem;
-    QCOMPARE(testWidget->verticalHeaderItem(0), (QTableWidgetItem *)0);
+    QCOMPARE(testWidget->verticalHeaderItem(0), nullptr);
 
     //delete horizontal headeritem from outside
     headerItem = new QObjectTableItem();
     testWidget->setHorizontalHeaderItem(0, headerItem);
     delete headerItem;
-    QCOMPARE(testWidget->horizontalHeaderItem(0), (QTableWidgetItem *)0);
+    QCOMPARE(testWidget->horizontalHeaderItem(0), nullptr);
 
     //setItem
     item = new QObjectTableItem();
@@ -1520,16 +1520,16 @@ void tst_QTableWidget::mimeData()
 
     QMimeData *data;
 
-    QVERIFY(data = table.mimeData(tableWidgetItemList));
+    QVERIFY((data = table.mimeData(tableWidgetItemList)));
     delete data;
 
-    QVERIFY(data = table.model()->mimeData(modelIndexList));
+    QVERIFY((data = table.model()->mimeData(modelIndexList)));
     delete data;
 
-    QVERIFY(data = table.model()->mimeData(modelIndexList));
+    QVERIFY((data = table.model()->mimeData(modelIndexList)));
     delete data;
 
-    QVERIFY(data = table.mimeData(tableWidgetItemList));
+    QVERIFY((data = table.mimeData(tableWidgetItemList)));
     delete data;
 
     // check the saved data is actually the same

@@ -135,7 +135,7 @@ tst_QFileSystemModel::tst_QFileSystemModel() : model(0)
 void tst_QFileSystemModel::init()
 {
     cleanup();
-    QCOMPARE(model, (QFileSystemModel*)0);
+    QCOMPARE(model, nullptr);
     model = new QFileSystemModel;
 }
 

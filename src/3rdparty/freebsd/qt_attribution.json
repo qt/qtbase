@@ -4,14 +4,10 @@
     "QDocModule": "qtcore",
     "QtUsage": "Used in Qt Core.",
 
+    "Description": "strtoll() and strtoull() are functions for converting a string to (unsigned) long long integer.",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseId": "BSD-3-Clause",
     "LicenseFile": "LICENSE",
-    "Copyright": "Copyright (c) 1992, 1993
-    The Regents of the University of California. All rights reserved.
-
-Copyright (c) 2011 The FreeBSD Foundation
-All rights reserved.
-Portions of this software were developed by David Chisnall
-under sponsorship from the FreeBSD Foundation."
+    "Copyright": "Copyright (c) 1992, 1993 The Regents of the University of California.
+Copyright (c) 2011 The FreeBSD Foundation"
 }

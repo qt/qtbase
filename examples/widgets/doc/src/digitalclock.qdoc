@@ -32,7 +32,8 @@
     \brief The Digital Clock example shows how to use QLCDNumber to display a
     number with LCD-like digits.
 
-    \image digitalclock-example.png Screenshot of the Digital Clock example
+    \borderedimage digitalclock-example.png
+    \caption Screenshot of the Digital Clock example
 
     This example also demonstrates how QTimer can be used to update a widget
     at regular intervals.

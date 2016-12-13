@@ -69,7 +69,7 @@ myCustomObject->doSomething(); // trigger emission of the signal
 
 QList<QVariant> arguments = spy.takeFirst();
 QVERIFY(arguments.at(0).type() == QVariant::Int);
-QVERIFY(arguments.at(1).type() == QVariant::QString);
+QVERIFY(arguments.at(1).type() == QVariant::String);
 QVERIFY(arguments.at(2).type() == QVariant::double);
 //! [1]
 

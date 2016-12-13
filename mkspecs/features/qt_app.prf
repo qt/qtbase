@@ -37,6 +37,8 @@ INSTALLS += target
 load(qt_targets)
 load(qt_common)
 
+qtSetQmlPath()
+
 no_launch_target: return()
 
 load(resolve_target)

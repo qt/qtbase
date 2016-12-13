@@ -44,31 +44,31 @@
         },
         "style-fusion": {
             "label": "Fusion",
-            "output": [ "styles" ]
+            "output": [ "privateFeature", "styles" ]
         },
         "style-mac": {
             "label": "macOS",
             "condition": "config.osx",
-            "output": [ "styles" ]
+            "output": [ "privateFeature", "styles" ]
         },
         "style-windows": {
             "label": "Windows",
-            "output": [ "styles" ]
+            "output": [ "privateFeature", "styles" ]
         },
         "style-windowsxp": {
             "label": "WindowsXP",
             "condition": "features.style-windows && config.win32 && !config.winrt && tests.uxtheme",
-            "output": [ "styles" ]
+            "output": [ "privateFeature", "styles" ]
         },
         "style-windowsvista": {
             "label": "WindowsVista",
             "condition": "features.style-windowsxp",
-            "output": [ "styles" ]
+            "output": [ "privateFeature", "styles" ]
         },
         "style-android": {
             "label": "Android",
             "autoDetect": "config.android",
-            "output": [ "styles" ]
+            "output": [ "privateFeature", "styles" ]
         },
         "style-stylesheet": {
             "label": "QStyleSheetStyle",

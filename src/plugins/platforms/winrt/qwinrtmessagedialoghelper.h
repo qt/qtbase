@@ -69,11 +69,11 @@ public:
     explicit QWinRTMessageDialogHelper(const QWinRTTheme *theme);
     ~QWinRTMessageDialogHelper();
 
-    void exec();
+    void exec() override;
     bool show(Qt::WindowFlags windowFlags,
               Qt::WindowModality windowModality,
-              QWindow *parent);
-    void hide();
+              QWindow *parent) override;
+    void hide() override;
 
 private:
     HRESULT onCompleted(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::UI::Popups::IUICommand *> *asyncInfo,

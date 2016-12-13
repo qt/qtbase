@@ -51,6 +51,7 @@
 
 #include <map>
 #include <new>
+#include <functional>
 
 #ifdef Q_COMPILER_INITIALIZER_LISTS
 #include <initializer_list>
@@ -61,11 +62,8 @@ QT_BEGIN_NAMESPACE
 /*
     QMap uses qMapLessThanKey() to compare keys. The default
     implementation uses operator<(). For pointer types,
-    qMapLessThanKey() casts the pointers to integers before it
-    compares them, because operator<() is undefined on pointers
-    that come from different memory blocks. (In practice, this
-    is only a problem when running a program such as
-    BoundsChecker.)
+    qMapLessThanKey() uses std::less (because operator<() on
+    pointers can be used only between pointers in the same array).
 */
 
 template <class Key> inline bool qMapLessThanKey(const Key &key1, const Key &key2)
@@ -75,8 +73,7 @@ template <class Key> inline bool qMapLessThanKey(const Key &key1, const Key &key
 
 template <class Ptr> inline bool qMapLessThanKey(const Ptr *key1, const Ptr *key2)
 {
-    Q_STATIC_ASSERT(sizeof(quintptr) == sizeof(const Ptr *));
-    return quintptr(key1) < quintptr(key2);
+    return std::less<const Ptr *>()(key1, key2);
 }
 
 struct QMapDataBase;

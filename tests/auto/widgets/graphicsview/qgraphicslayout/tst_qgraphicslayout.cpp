@@ -186,10 +186,10 @@ void tst_QGraphicsLayout::automaticReparenting()
     l1->addItem(w1);
     QGraphicsWidget *w2 = new QGraphicsWidget();
     l1->addItem(w2);
-    QCOMPARE(w1->parentItem(), static_cast<QGraphicsItem*>(0));
-    QCOMPARE(w2->parentItem(), static_cast<QGraphicsItem*>(0));
+    QCOMPARE(w1->parentItem(), nullptr);
+    QCOMPARE(w2->parentItem(), nullptr);
     scene.addItem(w1);
-    QCOMPARE(w1->parentItem(), static_cast<QGraphicsItem*>(0));
+    QCOMPARE(w1->parentItem(), nullptr);
     window->setLayout(l1);
     QCOMPARE(w1->parentItem(), static_cast<QGraphicsItem*>(window));
     QCOMPARE(w2->parentItem(), static_cast<QGraphicsItem*>(window));

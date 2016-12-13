@@ -80,7 +80,7 @@ public Q_SLOTS:
     inline void exitLoop();
 
 protected:
-    inline void timerEvent(QTimerEvent *e);
+    inline void timerEvent(QTimerEvent *e) override;
 
 private:
     bool inLoop;

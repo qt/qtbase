@@ -1112,10 +1112,15 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
         // Tries to connect to the address. If it succeeds immediately
         // (localhost address on BSD or any UDP connect), emit
         // connected() and return.
-        if (socketEngine->connectToHost(host, port)) {
-            //_q_testConnection();
-            fetchConnectionParameters();
-            return;
+        if (
+#if defined(Q_OS_WINRT) && _MSC_VER >= 1900
+            !qEnvironmentVariableIsEmpty("QT_WINRT_USE_THREAD_NETWORK_CONTEXT") ?
+                socketEngine->connectToHostByName(hostName, port) :
+#endif
+            socketEngine->connectToHost(host, port)) {
+                //_q_testConnection();
+                fetchConnectionParameters();
+                return;
         }
 
         // Check that we're in delayed connection state. If not, try

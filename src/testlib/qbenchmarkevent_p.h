@@ -63,15 +63,15 @@ class QBenchmarkEvent : public QBenchmarkMeasurerBase, public QAbstractNativeEve
 public:
     QBenchmarkEvent();
     ~QBenchmarkEvent();
-    void start();
-    qint64 checkpoint();
-    qint64 stop();
-    bool isMeasurementAccepted(qint64 measurement);
-    int adjustIterationCount(int suggestion);
-    int adjustMedianCount(int suggestion);
-    bool repeatCount() { return 1; }
-    QTest::QBenchmarkMetric metricType();
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *result);
+    void start() override;
+    qint64 checkpoint() override;
+    qint64 stop() override;
+    bool isMeasurementAccepted(qint64 measurement) override;
+    int adjustIterationCount(int suggestion) override;
+    int adjustMedianCount(int suggestion) override;
+    bool repeatCount() override { return 1; }
+    QTest::QBenchmarkMetric metricType() override;
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) override;
     qint64 eventCounter;
 };
 

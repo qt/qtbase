@@ -194,13 +194,8 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 # static builds: link qml import plugins into the app.
 contains(qt_module_deps, qml): \
         qtConfig(static):contains(TEMPLATE, .*app):!host_build:!no_import_scan {
-    !isEmpty(QTREPOS) {
-        for (qrep, QTREPOS): \
-            exists($$qrep/qml): \
-                QMLPATHS += $$qrep/qml
-    } else {
-        QMLPATHS += $$[QT_INSTALL_QML/get]
-    }
+    exists($$[QT_INSTALL_QML/get]): \
+        QMLPATHS *= $$[QT_INSTALL_QML/get]
 
     # run qmlimportscanner
     qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner, , system)

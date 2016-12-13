@@ -40,7 +40,7 @@
 #include "qwindowsstyle_p.h"
 #include "qwindowsstyle_p_p.h"
 
-#if !defined(QT_NO_STYLE_WINDOWS) || defined(QT_PLUGIN)
+#if QT_CONFIG(style_windows) || defined(QT_PLUGIN)
 
 #include "qapplication.h"
 #include "qbitmap.h"
@@ -2407,4 +2407,4 @@ QT_END_NAMESPACE
 
 #include "moc_qwindowsstyle_p.cpp"
 
-#endif // QT_NO_STYLE_WINDOWS
+#endif // style_windows

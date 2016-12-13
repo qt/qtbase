@@ -340,8 +340,7 @@ void tst_QFileDialog2::task143519_deleteAndRenameActionBehavior()
     // test based on task233037_selectingDirectory
 
     struct TestContext {
-        TestContext()
-            : current(QDir::current()) {}
+        explicit TestContext(const QString &path) : current(path) {}
         ~TestContext() {
             file.remove();
             current.rmdir(test.dirName());
@@ -349,7 +348,9 @@ void tst_QFileDialog2::task143519_deleteAndRenameActionBehavior()
         QDir current;
         QDir test;
         QFile file;
-    } ctx;
+    };
+
+    TestContext ctx(tempDir.path());
 
     // setup testbed
     QVERIFY(ctx.current.mkdir("task143519_deleteAndRenameActionBehavior_test")); // ensure at least one item
@@ -363,6 +364,7 @@ void tst_QFileDialog2::task143519_deleteAndRenameActionBehavior()
     QFileDialog fd;
     fd.setViewMode(QFileDialog::List);
     fd.setDirectory(ctx.test.absolutePath());
+    fd.selectFile(ctx.file.fileName());
     fd.show();
 
     QTest::qWaitForWindowActive(&fd);
@@ -377,7 +379,7 @@ void tst_QFileDialog2::task143519_deleteAndRenameActionBehavior()
 
     // defaults
     QVERIFY(openContextMenu(fd));
-    QCOMPARE(fd.selectedFiles().size(), 1);
+    QCOMPARE(fd.selectedFiles(), QStringList(ctx.file.fileName()));
     QCOMPARE(rm->isEnabled(), !fd.isReadOnly());
     QCOMPARE(mv->isEnabled(), !fd.isReadOnly());
 

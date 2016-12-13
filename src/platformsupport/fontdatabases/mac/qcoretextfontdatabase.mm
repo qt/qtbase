@@ -189,11 +189,16 @@ QCoreTextFontDatabase::~QCoreTextFontDatabase()
 
 static CFArrayRef availableFamilyNames()
 {
-#if defined(Q_OS_OSX)
-    return CTFontManagerCopyAvailableFontFamilyNames();
-#elif defined(QT_PLATFORM_UIKIT)
-    return (CFArrayRef) [[UIFont familyNames] retain];
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(1060, 100000, 100000, 30000)
+    if (&CTFontManagerCopyAvailableFontFamilyNames)
+        return CTFontManagerCopyAvailableFontFamilyNames();
 #endif
+#if defined(QT_PLATFORM_UIKIT)
+    CFMutableArrayRef familyNames = CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, (CFArrayRef)[UIFont familyNames]);
+    CFArrayAppendValue(familyNames, CFSTR(".PhoneFallback"));
+    return familyNames;
+#endif
+    Q_UNREACHABLE();
 }
 
 void QCoreTextFontDatabase::populateFontDatabase()
@@ -207,17 +212,6 @@ void QCoreTextFontDatabase::populateFontDatabase()
     for (int i = 0; i < numberOfFamilies; ++i) {
         CFStringRef familyNameRef = (CFStringRef) CFArrayGetValueAtIndex(familyNames, i);
         QString familyName = QString::fromCFString(familyNameRef);
-
-        // Don't populate internal fonts
-        if (familyName.startsWith(QLatin1Char('.')) || familyName == QLatin1String("LastResort"))
-            continue;
-
-#if defined(Q_OS_IOS) || defined(Q_OS_TVOS)
-        // Skip font families with no corresponding fonts
-        if (![UIFont fontNamesForFamilyName:(NSString*)familyNameRef].count)
-            continue;
-#endif
-
         QPlatformFontDatabase::registerFontFamily(familyName);
 
 #if defined(Q_OS_OSX)
@@ -250,7 +244,7 @@ void QCoreTextFontDatabase::populateFamily(const QString &familyName)
 
     const int numFonts = CFArrayGetCount(matchingFonts);
     for (int i = 0; i < numFonts; ++i)
-        populateFromDescriptor(CTFontDescriptorRef(CFArrayGetValueAtIndex(matchingFonts, i)));
+        populateFromDescriptor(CTFontDescriptorRef(CFArrayGetValueAtIndex(matchingFonts, i)), familyName);
 }
 
 struct FontDescription {
@@ -352,13 +346,18 @@ static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
     }
 }
 
-void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font)
+void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName)
 {
     FontDescription fd;
     getFontDescription(font, &fd);
 
+    // Note: The familyName we are registering, and the family name of the font descriptor, may not
+    // match, as CTFontDescriptorCreateMatchingFontDescriptors will return descriptors for replacement
+    // fonts if a font family does not have any fonts available on the system.
+    QString family = !familyName.isNull() ? familyName : static_cast<QString>(fd.familyName);
+
     CFRetain(font);
-    QPlatformFontDatabase::registerFont(fd.familyName, fd.styleName, fd.foundryName, fd.weight, fd.style, fd.stretch,
+    QPlatformFontDatabase::registerFont(family, fd.styleName, fd.foundryName, fd.weight, fd.style, fd.stretch,
             true /* antialiased */, true /* scalable */,
             fd.pixelSize, fd.fixedPitch, fd.writingSystems, (void *) font);
 }
@@ -699,7 +698,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
 
 bool QCoreTextFontDatabase::isPrivateFontFamily(const QString &family) const
 {
-    if (family.startsWith(QLatin1Char('.')))
+    if (family.startsWith(QLatin1Char('.')) || family == QLatin1String("LastResort"))
         return true;
 
     return QPlatformFontDatabase::isPrivateFontFamily(family);

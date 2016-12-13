@@ -44,20 +44,20 @@
 
 #include "qapplication.h"
 #include "qwindowsstyle_p.h"
-#ifndef QT_NO_STYLE_FUSION
+#if QT_CONFIG(style_fusion)
 #include "qfusionstyle_p.h"
-#ifndef QT_NO_STYLE_ANDROID
+#if QT_CONFIG(style_android)
 #include "qandroidstyle_p.h"
 #endif
 #endif
-#ifndef QT_NO_STYLE_WINDOWSXP
+#if QT_CONFIG(style_windowsxp)
 #include "qwindowsxpstyle_p.h"
 #endif
-#ifndef QT_NO_STYLE_WINDOWSVISTA
+#if QT_CONFIG(style_windowsvista)
 #include "qwindowsvistastyle_p.h"
 #endif
 
-#if !defined(QT_NO_STYLE_MAC) && defined(Q_OS_MAC)
+#if QT_CONFIG(style_mac)
 #  include "qmacstyle_mac_p.h"
 #endif
 
@@ -103,32 +103,32 @@ QStyle *QStyleFactory::create(const QString& key)
 {
     QStyle *ret = 0;
     QString style = key.toLower();
-#ifndef QT_NO_STYLE_WINDOWS
+#if QT_CONFIG(style_windows)
     if (style == QLatin1String("windows"))
         ret = new QWindowsStyle;
     else
 #endif
-#ifndef QT_NO_STYLE_WINDOWSXP
+#if QT_CONFIG(style_windowsxp)
     if (style == QLatin1String("windowsxp"))
         ret = new QWindowsXPStyle;
     else
 #endif
-#ifndef QT_NO_STYLE_WINDOWSVISTA
+#if QT_CONFIG(style_windowsvista)
     if (style == QLatin1String("windowsvista"))
         ret = new QWindowsVistaStyle;
     else
 #endif
-#ifndef QT_NO_STYLE_FUSION
+#if QT_CONFIG(style_fusion)
     if (style == QLatin1String("fusion"))
         ret = new QFusionStyle;
     else
 #endif
-#ifndef QT_NO_STYLE_ANDROID
+#if QT_CONFIG(style_android)
     if (style == QLatin1String("android"))
         ret = new QAndroidStyle;
     else
 #endif
-#ifndef QT_NO_STYLE_MAC
+#if QT_CONFIG(style_mac)
     if (style.startsWith(QLatin1String("macintosh"))) {
         ret = new QMacStyle;
 #  if 0 // Used to be included in Qt4 for Q_WS_MAC
@@ -160,29 +160,29 @@ QStringList QStyleFactory::keys()
     const PluginKeyMap::const_iterator cend = keyMap.constEnd();
     for (PluginKeyMap::const_iterator it = keyMap.constBegin(); it != cend; ++it)
         list.append(it.value());
-#ifndef QT_NO_STYLE_WINDOWS
+#if QT_CONFIG(style_windows)
     if (!list.contains(QLatin1String("Windows")))
         list << QLatin1String("Windows");
 #endif
-#ifndef QT_NO_STYLE_WINDOWSXP
+#if QT_CONFIG(style_windowsxp)
     if (!list.contains(QLatin1String("WindowsXP")) &&
         (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         list << QLatin1String("WindowsXP");
 #endif
-#ifndef QT_NO_STYLE_WINDOWSVISTA
+#if QT_CONFIG(style_windowsvista)
     if (!list.contains(QLatin1String("WindowsVista")) &&
         (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         list << QLatin1String("WindowsVista");
 #endif
-#ifndef QT_NO_STYLE_ANDROID
+#if QT_CONFIG(style_android)
     if (!list.contains(QLatin1String("Android")))
         list << QLatin1String("Android");
 #endif
-#ifndef QT_NO_STYLE_FUSION
+#if QT_CONFIG(style_fusion)
     if (!list.contains(QLatin1String("Fusion")))
         list << QLatin1String("Fusion");
 #endif
-#ifndef QT_NO_STYLE_MAC
+#if QT_CONFIG(style_mac)
     QString mstyle = QLatin1String("Macintosh");
 # if 0 // Used to be included in Qt4 for Q_WS_MAC
     mstyle += QLatin1String(" (aqua)");

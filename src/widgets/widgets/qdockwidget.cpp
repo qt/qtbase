@@ -797,8 +797,10 @@ void QDockWidgetPrivate::endDrag(bool abort)
         if (abort || !mwLayout->plug(state->widgetItem)) {
             if (hasFeature(this, QDockWidget::DockWidgetFloatable)) {
                 // This QDockWidget will now stay in the floating state.
-                if (state->ownWidgetItem)
+                if (state->ownWidgetItem) {
                     delete state->widgetItem;
+                    state->widgetItem = nullptr;
+                }
                 mwLayout->restore();
                 QDockWidgetLayout *dwLayout = qobject_cast<QDockWidgetLayout*>(layout);
                 if (!dwLayout->nativeWindowDeco()) {

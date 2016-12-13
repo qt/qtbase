@@ -73,13 +73,16 @@ QPlatformCursor *QEglFSKmsEglDeviceScreen::cursor() const
 
 void QEglFSKmsEglDeviceScreen::waitForFlip()
 {
-    if (!output().mode_set) {
-        output().mode_set = true;
+    QKmsOutput &op(output());
+    const int fd = device()->fd();
+    const uint32_t w = op.modes[op.mode].hdisplay;
+    const uint32_t h = op.modes[op.mode].vdisplay;
 
-        drmModeCrtcPtr currentMode = drmModeGetCrtc(device()->fd(), output().crtc_id);
-        const bool alreadySet = currentMode
-            && currentMode->width == output().modes[output().mode].hdisplay
-            && currentMode->height == output().modes[output().mode].vdisplay;
+    if (!op.mode_set) {
+        op.mode_set = true;
+
+        drmModeCrtcPtr currentMode = drmModeGetCrtc(fd, op.crtc_id);
+        const bool alreadySet = currentMode && currentMode->width == w && currentMode->height == h;
         if (currentMode)
             drmModeFreeCrtc(currentMode);
         if (alreadySet) {
@@ -93,14 +96,26 @@ void QEglFSKmsEglDeviceScreen::waitForFlip()
         }
 
         qCDebug(qLcEglfsKmsDebug, "Setting mode");
-        int ret = drmModeSetCrtc(device()->fd(), output().crtc_id,
+        int ret = drmModeSetCrtc(fd, op.crtc_id,
                                  uint32_t(-1), 0, 0,
-                                 &output().connector_id, 1,
-                                 &output().modes[output().mode]);
+                                 &op.connector_id, 1,
+                                 &op.modes[op.mode]);
         if (ret)
-            qFatal("drmModeSetCrtc failed");
+            qErrnoWarning(errno, "drmModeSetCrtc failed");
     }
 
+    if (!op.plane_set) {
+        op.plane_set = true;
+
+        if (op.wants_plane) {
+            qCDebug(qLcEglfsKmsDebug, "Setting plane %u", op.plane_id);
+            int ret = drmModeSetPlane(fd, op.plane_id, op.crtc_id, uint32_t(-1), 0,
+                                      0, 0, w, h,
+                                      0 << 16, 0 << 16, w << 16, h << 16);
+            if (ret == -1)
+                qErrnoWarning(errno, "drmModeSetPlane failed");
+        }
+    }
 }
 
 QT_END_NAMESPACE

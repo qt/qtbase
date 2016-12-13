@@ -37,7 +37,9 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_ICONV
+#include <QtCore/private/qglobal_p.h>
+
+QT_REQUIRE_CONFIG(iconv);
 
 #include "qiconvcodec_p.h"
 #include "qtextcodec_p.h"
@@ -62,7 +64,7 @@
 #elif defined(Q_OS_AIX)
 #  define NO_BOM
 #  define UTF16 "UCS-2"
-#elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
+#elif defined(Q_OS_FREEBSD)
 #  define NO_BOM
 #  if Q_BYTE_ORDER == Q_BIG_ENDIAN
 #    define UTF16 "UTF-16BE"
@@ -71,19 +73,6 @@
 #  endif
 #else
 #  define UTF16 "UTF-16"
-#endif
-
-#if defined(Q_OS_MAC)
-#ifndef GNU_LIBICONV
-#define GNU_LIBICONV
-#endif
-typedef iconv_t (*Ptr_iconv_open) (const char*, const char*);
-typedef size_t (*Ptr_iconv) (iconv_t, const char **, size_t *, char **, size_t *);
-typedef int (*Ptr_iconv_close) (iconv_t);
-
-static Ptr_iconv_open ptr_iconv_open = 0;
-static Ptr_iconv ptr_iconv = 0;
-static Ptr_iconv_close ptr_iconv_close = 0;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -103,33 +92,6 @@ void QIconvCodec::init() const
         fprintf(stderr, "QIconvCodec::convertToUnicode: internal error, UTF-16 codec not found\n");
         utf16Codec = reinterpret_cast<QTextCodec *>(~0);
     }
-#if defined(Q_OS_MAC)
-    if (ptr_iconv_open == 0) {
-        QLibrary libiconv(QLatin1String("/usr/lib/libiconv"));
-        libiconv.setLoadHints(QLibrary::ExportExternalSymbolsHint);
-
-        ptr_iconv_open = reinterpret_cast<Ptr_iconv_open>(libiconv.resolve("libiconv_open"));
-        if (!ptr_iconv_open)
-            ptr_iconv_open = reinterpret_cast<Ptr_iconv_open>(libiconv.resolve("iconv_open"));
-        ptr_iconv = reinterpret_cast<Ptr_iconv>(libiconv.resolve("libiconv"));
-        if (!ptr_iconv)
-            ptr_iconv = reinterpret_cast<Ptr_iconv>(libiconv.resolve("iconv"));
-        ptr_iconv_close = reinterpret_cast<Ptr_iconv_close>(libiconv.resolve("libiconv_close"));
-        if (!ptr_iconv_close)
-            ptr_iconv_close = reinterpret_cast<Ptr_iconv_close>(libiconv.resolve("iconv_close"));
-
-        Q_ASSERT_X(ptr_iconv_open && ptr_iconv && ptr_iconv_close,
-        "QIconvCodec::QIconvCodec()",
-        "internal error, could not resolve the iconv functions");
-
-#       undef iconv_open
-#       define iconv_open ptr_iconv_open
-#       undef iconv
-#       define iconv ptr_iconv
-#       undef iconv_close
-#       define iconv_close ptr_iconv_close
-    }
-#endif
 }
 
 QIconvCodec::~QIconvCodec()
@@ -221,7 +183,7 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
     IconvState *state = *pstate;
     size_t inBytesLeft = len;
     // best case assumption, each byte is converted into one UTF-16 character, plus 2 bytes for the BOM
-#ifdef GNU_LIBICONV
+#if !QT_CONFIG(posix_libiconv)
     // GNU doesn't disagree with POSIX :/
     const char *inBytes = chars;
 #else
@@ -320,7 +282,7 @@ static bool setByteOrder(iconv_t cd)
     size_t outBytesLeft = sizeof buf;
     size_t inBytesLeft = sizeof bom;
 
-#if defined(GNU_LIBICONV)
+#if !QT_CONFIG(posix_libiconv)
     const char **inBytesPtr = const_cast<const char **>(&inBytes);
 #else
     char **inBytesPtr = &inBytes;
@@ -342,7 +304,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     char *outBytes;
     size_t inBytesLeft;
 
-#if defined(GNU_LIBICONV)
+#if !QT_CONFIG(posix_libiconv)
     const char **inBytesPtr = const_cast<const char **>(&inBytes);
 #else
     char **inBytesPtr = &inBytes;
@@ -472,7 +434,7 @@ iconv_t QIconvCodec::createIconv_t(const char *to, const char *from) const
         init();
 
     iconv_t cd = (iconv_t) -1;
-#if defined(__GLIBC__) || defined(GNU_LIBICONV) || defined(Q_OS_QNX)
+#if defined(__GLIBC__) || !QT_CONFIG(posix_libiconv) || defined(Q_OS_QNX)
 #if defined(Q_OS_QNX)
     // on QNX the default locale is UTF-8, and an empty string will cause iconv_open to fail
     static const char empty_codeset[] = "UTF-8";
@@ -562,5 +524,3 @@ iconv_t QIconvCodec::createIconv_t(const char *to, const char *from) const
 }
 
 QT_END_NAMESPACE
-
-#endif /* #ifndef QT_NO_ICONV */

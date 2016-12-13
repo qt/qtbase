@@ -34,7 +34,7 @@
     on the input and output supplied by the user.
 
 
-    \image lineedits-example.png
+    \borderedimage lineedits-example.png
 
     The example consists of a single \c Window class, containing a selection of
     line edits with different input constraints and display properties that can be

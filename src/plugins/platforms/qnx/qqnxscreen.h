@@ -71,26 +71,26 @@ public:
     QQnxScreen(screen_context_t context, screen_display_t display, bool primaryScreen);
     ~QQnxScreen();
 
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const override;
 
-    QRect geometry() const { return m_currentGeometry; }
-    QRect availableGeometry() const;
-    int depth() const;
-    QImage::Format format() const { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
-    QSizeF physicalSize() const { return m_currentPhysicalSize; }
+    QRect geometry() const override { return m_currentGeometry; }
+    QRect availableGeometry() const override;
+    int depth() const override;
+    QImage::Format format() const override { return (depth() == 32) ? QImage::Format_RGB32 : QImage::Format_RGB16; }
+    QSizeF physicalSize() const override { return m_currentPhysicalSize; }
 
-    qreal refreshRate() const;
+    qreal refreshRate() const override;
 
-    Qt::ScreenOrientation nativeOrientation() const;
-    Qt::ScreenOrientation orientation() const;
+    Qt::ScreenOrientation nativeOrientation() const override;
+    Qt::ScreenOrientation orientation() const override;
 
-    QWindow *topLevelAt(const QPoint &point) const;
+    QWindow *topLevelAt(const QPoint &point) const override;
 
     bool isPrimaryScreen() const { return m_primaryScreen; }
 
     int rotation() const { return m_currentRotation; }
 
-    QString name() const { return m_name; }
+    QString name() const override { return m_name; }
 
     int nativeFormat() const { return (depth() == 32) ? SCREEN_FORMAT_RGBA8888 : SCREEN_FORMAT_RGB565; }
     screen_display_t nativeDisplay() const { return m_display; }
@@ -111,7 +111,7 @@ public:
     QQnxWindow *rootWindow() const;
     void setRootWindow(QQnxWindow*);
 
-    QPlatformCursor *cursor() const;
+    QPlatformCursor *cursor() const override;
 
 Q_SIGNALS:
     void foreignWindowCreated(void *window);

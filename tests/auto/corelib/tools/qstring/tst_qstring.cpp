@@ -1255,6 +1255,11 @@ void tst_QString::fill()
     QCOMPARE(f, QLatin1String("FFF"));
 }
 
+static inline const void *ptrValue(quintptr v)
+{
+    return reinterpret_cast<const void *>(v);
+}
+
 void tst_QString::sprintf()
 {
     QString a;
@@ -1266,21 +1271,21 @@ void tst_QString::sprintf()
     QCOMPARE(a.sprintf("X%9iY", 50000 ), QLatin1String("X    50000Y"));
     QCOMPARE(a.sprintf("X%-9sY","hello"), QLatin1String("Xhello    Y"));
     QCOMPARE(a.sprintf("X%-9iY", 50000 ), QLatin1String("X50000    Y"));
-    QCOMPARE(a.sprintf("%lf", 1.23), QString("1.230000"));
-    QCOMPARE(a.sprintf("%lf", 1.23456789), QString("1.234568"));
-    QCOMPARE(a.sprintf("%p", (void *)0xbfffd350), QString("0xbfffd350"));
-    QCOMPARE(a.sprintf("%p", (void *)0), QString("0x0"));
+    QCOMPARE(a.sprintf("%lf", 1.23), QLatin1String("1.230000"));
+    QCOMPARE(a.sprintf("%lf", 1.23456789), QLatin1String("1.234568"));
+    QCOMPARE(a.sprintf("%p", ptrValue(0xbfffd350)), QLatin1String("0xbfffd350"));
+    QCOMPARE(a.sprintf("%p", ptrValue(0)), QLatin1String("0x0"));
 
     int i = 6;
     long l = -2;
     float f = 4.023f;
     QString S1;
     S1.sprintf("%d %ld %f",i,l,f);
-    QCOMPARE(S1,QString("6 -2 4.023000"));
+    QCOMPARE(S1, QLatin1String("6 -2 4.023000"));
 
     double d = -514.25683;
     S1.sprintf("%f",d);
-    QCOMPARE(S1, QString("-514.256830"));
+    QCOMPARE(S1, QLatin1String("-514.256830"));
 }
 
 void tst_QString::sprintfS()

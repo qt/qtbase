@@ -97,15 +97,6 @@ static void resolveGetCharWidthI()
     ptrGetCharWidthI = (PtrGetCharWidthI)QSystemLibrary::resolve(QStringLiteral("gdi32"), "GetCharWidthI");
 }
 
-static inline quint16 getUShort(unsigned char *p)
-{
-    quint16 val;
-    val = *p++ << 8;
-    val |= *p;
-
-    return val;
-}
-
 // general font engine
 
 QFixed QWindowsFontEngine::lineThickness() const
@@ -900,7 +891,7 @@ int QWindowsFontEngine::synthesized() const
             SelectObject(hdc, hfont);
             uchar data[4];
             GetFontData(hdc, HEAD, 44, &data, 4);
-            USHORT macStyle = getUShort(data);
+            USHORT macStyle = qt_getUShort(data);
             if (tm.tmItalic && !(macStyle & 2))
                 synthesized_flags = SynthesizedItalic;
             if (fontDef.stretch != 100 && ttf)
@@ -1180,9 +1171,10 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
     if (!uniqueFamilyName.isEmpty())
         request.family = uniqueFamilyName;
     request.pixelSize = pixelSize;
+    const QString faceName = QString::fromWCharArray(m_logfont.lfFaceName);
 
     QFontEngine *fontEngine =
-        QWindowsFontDatabase::createEngine(request,
+        QWindowsFontDatabase::createEngine(request, faceName,
                                            QWindowsFontDatabase::defaultVerticalDPI(),
                                            m_fontEngineData);
     if (fontEngine) {
@@ -1245,7 +1237,7 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
 #ifndef QT_NO_DIRECTWRITE
     if (fontEngine->type() == QFontEngine::DirectWrite) {
         QWindowsFontEngineDirectWrite *fe = static_cast<QWindowsFontEngineDirectWrite *>(fontEngine);
-        lf = QWindowsFontDatabase::fontDefToLOGFONT(fe->fontDef);
+        lf = QWindowsFontDatabase::fontDefToLOGFONT(fe->fontDef, QString());
 
         data = fe->fontEngineData();
     } else

@@ -32,7 +32,8 @@
     \brief The Analog Clock example shows how to draw the contents of a
     custom widget.
 
-    \image analogclock-example.png Screenshot of the Analog Clock example
+    \borderedimage analogclock-example.png
+    \caption Screenshot of the Analog Clock example
 
     This example also demonstrates how the transformation and scaling
     features of QPainter can be used to make drawing custom widgets

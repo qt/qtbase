@@ -40,7 +40,7 @@
 #include "qfusionstyle_p.h"
 #include "qfusionstyle_p_p.h"
 
-#if !defined(QT_NO_STYLE_FUSION) || defined(QT_PLUGIN)
+#if QT_CONFIG(style_fusion) || defined(QT_PLUGIN)
 #include "qcommonstyle_p.h"
 #include <qcombobox.h>
 #include <qpushbutton.h>
@@ -3746,4 +3746,4 @@ QT_END_NAMESPACE
 
 #include "moc_qfusionstyle_p.cpp"
 
-#endif // QT_NO_STYLE_FUSION || QT_PLUGIN
+#endif // style_fusion|| QT_PLUGIN

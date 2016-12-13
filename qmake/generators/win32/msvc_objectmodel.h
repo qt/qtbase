@@ -51,7 +51,8 @@ enum DotNET {
     NET2010 = 0xa0,
     NET2012 = 0xb0,
     NET2013 = 0xc0,
-    NET2015 = 0xd0
+    NET2015 = 0xd0,
+    NET2017 = 0xe0
 };
 
 DotNET vsVersionFromString(const ProString &versionString);
@@ -896,7 +897,6 @@ public:
     VCLinkerTool            linker;
     VCLibrarianTool         librarian;
     VCManifestTool          manifestTool;
-    VCCustomBuildTool       custom;
     VCMIDLTool              idl;
     VCPostBuildEventTool    postBuild;
     VCPreBuildEventTool     preBuild;
@@ -912,24 +912,15 @@ struct VCFilterFile
     { excludeFromBuild = false; }
     VCFilterFile(const QString &filename, bool exclude = false )
     { file = filename; excludeFromBuild = exclude; }
-    VCFilterFile(const QString &filename, const QString &additional, bool exclude = false )
-    { file = filename; excludeFromBuild = exclude; additionalFile = additional; }
-    bool operator==(const VCFilterFile &other){
-        return file == other.file
-               && additionalFile == other.additionalFile
-               && excludeFromBuild == other.excludeFromBuild;
-    }
 
     bool                    excludeFromBuild;
     QString                 file;
-    QString                 additionalFile; // For tools like MOC
 };
 
 #ifndef QT_NO_DEBUG_OUTPUT
 inline QDebug operator<<(QDebug dbg, const VCFilterFile &p)
 {
     dbg.nospace() << "VCFilterFile(file(" << p.file
-                  << ") additionalFile(" << p.additionalFile
                   << ") excludeFromBuild(" << p.excludeFromBuild << "))" << endl;
     return dbg.space();
 }

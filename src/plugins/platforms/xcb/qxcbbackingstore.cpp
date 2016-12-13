@@ -122,7 +122,7 @@ public:
         , m_image(image)
     { }
 
-    bool doLock(AccessTypes access, const QRect &rect) Q_DECL_OVERRIDE
+    bool doLock(AccessTypes access, const QRect &rect) override
     {
         Q_UNUSED(rect);
         if (access & ~(QPlatformGraphicsBuffer::SWReadAccess | QPlatformGraphicsBuffer::SWWriteAccess))
@@ -131,13 +131,13 @@ public:
         m_access_lock |= access;
         return true;
     }
-    void doUnlock() Q_DECL_OVERRIDE { m_access_lock = None; }
+    void doUnlock() override { m_access_lock = None; }
 
-    const uchar *data() const Q_DECL_OVERRIDE { return m_image->bits(); }
-    uchar *data() Q_DECL_OVERRIDE { return m_image->bits(); }
-    int bytesPerLine() const Q_DECL_OVERRIDE { return m_image->bytesPerLine(); }
+    const uchar *data() const override { return m_image->bits(); }
+    uchar *data() override { return m_image->bits(); }
+    int bytesPerLine() const override { return m_image->bytesPerLine(); }
 
-    Origin origin() const Q_DECL_OVERRIDE { return QPlatformGraphicsBuffer::OriginTopLeft; }
+    Origin origin() const override { return QPlatformGraphicsBuffer::OriginTopLeft; }
 private:
     AccessTypes m_access_lock;
     QImage *m_image;

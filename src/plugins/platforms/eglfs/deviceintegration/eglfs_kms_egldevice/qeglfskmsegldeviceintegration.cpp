@@ -39,11 +39,11 @@
 ****************************************************************************/
 
 #include "qeglfskmsegldeviceintegration.h"
+#include "qeglfskmsegldevice.h"
+#include "qeglfskmsegldevicescreen.h"
 #include <QtEglSupport/private/qeglconvenience_p.h>
 #include "private/qeglfswindow_p.h"
 #include "private/qeglfscursor_p.h"
-#include "qeglfskmsegldevice.h"
-#include "qeglfskmsscreen.h"
 #include <QLoggingCategory>
 #include <private/qmath_p.h>
 
@@ -128,16 +128,32 @@ void QEglFSKmsEglDeviceWindow::resetSurface()
     qCDebug(qLcEglfsKmsDebug, "Creating stream");
 
     EGLDisplay display = screen()->display();
-    EGLOutputLayerEXT layer = EGL_NO_OUTPUT_LAYER_EXT;
-    EGLint count;
+    EGLint streamAttribs[3];
+    int streamAttribCount = 0;
+    int fifoLength = qEnvironmentVariableIntValue("QT_QPA_EGLFS_STREAM_FIFO_LENGTH");
+    if (fifoLength > 0) {
+        streamAttribs[streamAttribCount++] = EGL_STREAM_FIFO_LENGTH_KHR;
+        streamAttribs[streamAttribCount++] = fifoLength;
+    }
+    streamAttribs[streamAttribCount++] = EGL_NONE;
 
-    m_egl_stream = m_integration->m_funcs->create_stream(display, Q_NULLPTR);
+    m_egl_stream = m_integration->m_funcs->create_stream(display, streamAttribs);
     if (m_egl_stream == EGL_NO_STREAM_KHR) {
         qWarning("resetSurface: Couldn't create EGLStream for native window");
         return;
     }
 
     qCDebug(qLcEglfsKmsDebug, "Created stream %p on display %p", m_egl_stream, display);
+
+    EGLint count;
+    if (m_integration->m_funcs->query_stream(display, m_egl_stream, EGL_STREAM_FIFO_LENGTH_KHR, &count)) {
+        if (count > 0)
+            qCDebug(qLcEglfsKmsDebug, "Using EGLStream FIFO mode with %d frames", count);
+        else
+            qCDebug(qLcEglfsKmsDebug, "Using EGLStream mailbox mode");
+    } else {
+        qCDebug(qLcEglfsKmsDebug, "Could not query number of EGLStream FIFO frames");
+    }
 
     if (!m_integration->m_funcs->get_output_layers(display, Q_NULLPTR, Q_NULLPTR, 0, &count) || count == 0) {
         qWarning("No output layers found");
@@ -154,19 +170,23 @@ void QEglFSKmsEglDeviceWindow::resetSurface()
         return;
     }
 
-    QEglFSKmsScreen *cur_screen = static_cast<QEglFSKmsScreen*>(screen());
+    QEglFSKmsEglDeviceScreen *cur_screen = static_cast<QEglFSKmsEglDeviceScreen *>(screen());
     Q_ASSERT(cur_screen);
-    qCDebug(qLcEglfsKmsDebug, "Searching for id: %d", cur_screen->output().crtc_id);
+    QKmsOutput &output(cur_screen->output());
+    const uint32_t wantedId = !output.wants_plane ? output.crtc_id : output.plane_id;
+    qCDebug(qLcEglfsKmsDebug, "Searching for id: %d", wantedId);
 
+    EGLOutputLayerEXT layer = EGL_NO_OUTPUT_LAYER_EXT;
     for (int i = 0; i < actualCount; ++i) {
         EGLAttrib id;
         if (m_integration->m_funcs->query_output_layer_attrib(display, layers[i], EGL_DRM_CRTC_EXT, &id)) {
             qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - crtc %d", i, layers[i], (int) id);
-            if (id == EGLAttrib(cur_screen->output().crtc_id))
+            if (id == EGLAttrib(wantedId))
                 layer = layers[i];
         } else if (m_integration->m_funcs->query_output_layer_attrib(display, layers[i], EGL_DRM_PLANE_EXT, &id)) {
-            // Not used yet, just for debugging.
             qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - plane %d", i, layers[i], (int) id);
+            if (id == EGLAttrib(wantedId))
+                layer = layers[i];
         } else {
             qCDebug(qLcEglfsKmsDebug, "  [%d] layer %p - unknown", i, layers[i]);
         }
@@ -175,8 +195,10 @@ void QEglFSKmsEglDeviceWindow::resetSurface()
     QByteArray reqLayerIndex = qgetenv("QT_QPA_EGLFS_LAYER_INDEX");
     if (!reqLayerIndex.isEmpty()) {
         int idx = reqLayerIndex.toInt();
-        if (idx >= 0 && idx < layers.count())
+        if (idx >= 0 && idx < layers.count()) {
+            qCDebug(qLcEglfsKmsDebug, "EGLOutput layer index override = %d", idx);
             layer = layers[idx];
+        }
     }
 
     if (layer == EGL_NO_OUTPUT_LAYER_EXT) {

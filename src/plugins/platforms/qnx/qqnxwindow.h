@@ -67,13 +67,13 @@ public:
     QQnxWindow(QWindow *window, screen_context_t context, bool needRootWindow);
     virtual ~QQnxWindow();
 
-    void setGeometry(const QRect &rect);
-    void setVisible(bool visible);
-    void setOpacity(qreal level);
+    void setGeometry(const QRect &rect) override;
+    void setVisible(bool visible) override;
+    void setOpacity(qreal level) override;
 
-    bool isExposed() const;
+    bool isExposed() const override;
 
-    WId winId() const { return window()->type() == Qt::Desktop ? -1 : (WId)m_window; }
+    WId winId() const override { return window()->type() == Qt::Desktop ? -1 : (WId)m_window; }
     screen_window_t nativeHandle() const { return m_window; }
 
     void setBufferSize(const QSize &size);
@@ -81,14 +81,14 @@ public:
 
     void setScreen(QQnxScreen *platformScreen);
 
-    void setParent(const QPlatformWindow *window);
-    void raise();
-    void lower();
-    void requestActivateWindow();
-    void setWindowState(Qt::WindowState state);
+    void setParent(const QPlatformWindow *window) override;
+    void raise() override;
+    void lower() override;
+    void requestActivateWindow() override;
+    void setWindowState(Qt::WindowState state) override;
     void setExposed(bool exposed);
 
-    void propagateSizeHints();
+    void propagateSizeHints() override;
 
     void setMMRendererWindowName(const QString &name);
     void setMMRendererWindow(screen_window_t handle);

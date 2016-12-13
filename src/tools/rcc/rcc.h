@@ -118,6 +118,7 @@ private:
     void writeHex(quint8 number);
     void writeNumber2(quint16 number);
     void writeNumber4(quint32 number);
+    void writeNumber8(quint64 number);
     void writeChar(char c) { m_out.append(c); }
     void writeByteArray(const QByteArray &);
     void write(const char *, int len);

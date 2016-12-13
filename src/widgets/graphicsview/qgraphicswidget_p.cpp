@@ -52,7 +52,7 @@
 #include <QtWidgets/qstyleoption.h>
 #include <QtWidgets/QStyleOptionTitleBar>
 #include <QtWidgets/QGraphicsSceneMouseEvent>
-#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && !defined(QT_NO_STYLE_MAC)
+#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && QT_CONFIG(style_mac)
 # include <private/qmacstyle_mac_p.h>
 #endif
 

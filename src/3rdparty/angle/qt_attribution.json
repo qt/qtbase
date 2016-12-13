@@ -12,7 +12,7 @@
     },
     {
         "Id": "angle-arrayboundsclamper",
-        "Name": "ANGLE Array Bounds Clamper for WebKit",
+        "Name": "ANGLE: Array Bounds Clamper for WebKit",
         "QDocModule": "qtgui",
         "QtUsage": "Used on Windows to implement OpenGL ES on top of DirectX. Configure with -no-opengl, or -opengl desktop to exclude.",
 
@@ -25,7 +25,7 @@
     },
     {
         "Id": "angle-murmurhash",
-        "Name": "Murmurhash (as part of ANGLE)",
+        "Name": "ANGLE: Murmurhash",
         "QDocModule": "qtgui",
         "QtUsage": "Used on Windows to implement OpenGL ES on top of DirectX. Configure with -no-opengl, or -opengl desktop to exclude.",
 
@@ -36,7 +36,7 @@
     },
     {
         "Id": "angle-systeminfo",
-        "Name": "Systeminfo (as part of ANGLE)",
+        "Name": "ANGLE: Systeminfo",
         "QDocModule": "qtgui",
         "QtUsage": "Used on Windows to implement OpenGL ES on top of DirectX. Configure with -no-opengl, or -opengl desktop to exclude.",
 
@@ -48,7 +48,7 @@
     },
     {
         "Id": "angle-trace_event",
-        "Name": "trace_event (as part of ANGLE)",
+        "Name": "ANGLE: trace_event",
         "QDocModule": "qtgui",
         "QtUsage": "Used on Windows to implement OpenGL ES on top of DirectX. Configure with -no-opengl, or -opengl desktop to exclude.",
 

@@ -52,6 +52,22 @@ QMAKE_DIR_REPLACE_SANE = PRECOMPILED_DIR OBJECTS_DIR MOC_DIR RCC_DIR UI_DIR
     unset(modpath)
 }
 
+defineTest(qtSetQmlPath) {
+    !qtConfig(static)|host_build|no_import_scan: \
+        return()
+    deps = $$replace(QT, -private$, _private)
+    deps = $$resolve_depends(deps, "QT.")
+    !contains(deps, qml): \
+        return()
+
+    isEmpty(QTREPOS): \
+        QTREPOS = $$shadowed($$dirname(_QMAKE_CONF_))
+    for (qrep, QTREPOS): \
+        exists($$qrep/qml): \
+            QMLPATHS += $$qrep/qml
+    export(QMLPATHS)
+}
+
 # Apply extra compiler flags passed via configure last.
 CONFIG = qt_build_extra $$CONFIG
 

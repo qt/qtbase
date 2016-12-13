@@ -80,7 +80,7 @@ public:
         mdiChild = child;
     }
 
-    void *qt_metacast(const char *classname)
+    void *qt_metacast(const char *classname) override
     {
         if (classname && strcmp(classname, "ControlElement") == 0)
             return this;

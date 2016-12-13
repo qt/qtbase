@@ -74,14 +74,14 @@ public:
     QXcbDrag(QXcbConnection *c);
     ~QXcbDrag();
 
-    virtual QMimeData *platformDropData() Q_DECL_OVERRIDE;
-    bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE;
+    QMimeData *platformDropData() override;
+    bool eventFilter(QObject *o, QEvent *e) override;
 
-    void startDrag() Q_DECL_OVERRIDE;
-    void cancel() Q_DECL_OVERRIDE;
-    void move(const QPoint &globalPos) Q_DECL_OVERRIDE;
-    void drop(const QPoint &globalPos) Q_DECL_OVERRIDE;
-    void endDrag() Q_DECL_OVERRIDE;
+    void startDrag() override;
+    void cancel() override;
+    void move(const QPoint &globalPos) override;
+    void drop(const QPoint &globalPos) override;
+    void endDrag() override;
 
     void handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event, xcb_window_t proxy = 0);
     void handlePosition(QPlatformWindow *w, const xcb_client_message_event_t *event);
@@ -93,13 +93,13 @@ public:
     void handleFinished(const xcb_client_message_event_t *event);
 
     bool dndEnable(QXcbWindow *win, bool on);
-    bool ownsDragObject() const Q_DECL_OVERRIDE;
+    bool ownsDragObject() const override;
 
     void updatePixmap();
     xcb_timestamp_t targetTime() { return target_time; }
 
 protected:
-    void timerEvent(QTimerEvent* e) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent* e) override;
 
 private:
     friend class QXcbDropData;

@@ -49,7 +49,6 @@ class QXcbGlIntegration;
 class QXcbGlIntegrationFactory
 {
 public:
-    static QStringList keys(const QString &pluginPath = QString());
     static QXcbGlIntegration *create(const QString &name, const QString &platformPluginPath = QString());
 };
 

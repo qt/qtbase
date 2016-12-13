@@ -859,7 +859,7 @@ void tst_QStaticText::textDocumentColor()
 class TestPaintEngine: public QPaintEngine
 {
 public:
-    void drawTextItem(const QPointF &p, const QTextItem &textItem) Q_DECL_OVERRIDE
+    void drawTextItem(const QPointF &p, const QTextItem &) Q_DECL_OVERRIDE
     {
         differentVerticalPositions.insert(qRound(p.y()));
     }

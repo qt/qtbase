@@ -56,9 +56,9 @@
 #include "qlocale_p.h"
 #include "qvector.h"
 
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
 #include <unicode/ucal.h>
-#endif // QT_USE_ICU
+#endif
 
 #ifdef Q_OS_MAC
 #ifdef __OBJC__
@@ -227,7 +227,7 @@ private:
     int m_offsetFromUtc;
 };
 
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
 class Q_AUTOTEST_EXPORT QIcuTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
 {
 public:
@@ -268,7 +268,7 @@ private:
 
     UCalendar *m_ucal;
 };
-#endif // QT_USE_ICU
+#endif
 
 #if defined Q_OS_UNIX && !defined Q_OS_MAC && !defined Q_OS_ANDROID
 struct QTzTransitionTime
@@ -337,9 +337,9 @@ private:
     QVector<QTzTransitionTime> m_tranTimes;
     QVector<QTzTransitionRule> m_tranRules;
     QList<QByteArray> m_abbreviations;
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     mutable QSharedDataPointer<QTimeZonePrivate> m_icu;
-#endif // QT_USE_ICU
+#endif
     QByteArray m_posixRule;
 };
 #endif // Q_OS_UNIX

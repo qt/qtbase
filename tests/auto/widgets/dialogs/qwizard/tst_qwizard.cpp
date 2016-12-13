@@ -2400,7 +2400,7 @@ void tst_QWizard::removePage()
     QCOMPARE(arguments.at(0).toInt(), 3);
     QVERIFY(wizard.visitedPages().empty());
     QVERIFY(wizard.pageIds().empty());
-    QCOMPARE(wizard.currentPage(), static_cast<QWizardPage *>(0));
+    QCOMPARE(wizard.currentPage(), nullptr);
 }
 
 void tst_QWizard::sideWidget()

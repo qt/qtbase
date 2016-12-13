@@ -106,6 +106,9 @@ struct QKmsOutput
     QList<drmModeModeInfo> modes;
     int subpixel;
     drmModePropertyPtr dpms_prop;
+    bool wants_plane;
+    uint32_t plane_id;
+    bool plane_set;
 
     void restoreMode(QKmsDevice *device);
     void cleanup(QKmsDevice *device);

@@ -801,8 +801,8 @@ void tst_QArrayData::alignment_data()
 {
     QTest::addColumn<size_t>("alignment");
 
-    for (int i = 1; i < 10; ++i) {
-        size_t alignment = 1u << i;
+    for (size_t i = 1; i < 10; ++i) {
+        size_t alignment = size_t(1u) << i;
         QTest::newRow(qPrintable(QString::number(alignment))) << alignment;
     }
 }

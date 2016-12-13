@@ -275,7 +275,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
     Attempts to lock the mutex. This function returns \c true if the lock
     was obtained; otherwise it returns \c false. If another thread has
-    locked the mutex, this function will wait for at most \a duration
+    locked the mutex, this function will wait for at least \a duration
     for the mutex to become available.
 
     Note: Passing a negative duration as the \a duration is equivalent to
@@ -299,7 +299,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 
     Attempts to lock the mutex. This function returns \c true if the lock
     was obtained; otherwise it returns \c false. If another thread has
-    locked the mutex, this function will wait at most until \a timePoint
+    locked the mutex, this function will wait at least until \a timePoint
     for the mutex to become available.
 
     Note: Passing a \a timePoint which has already passed is equivalent

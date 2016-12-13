@@ -58,13 +58,13 @@ public:
 
     bool hasBuffers() const { return !bufferSize().isEmpty(); }
 
-    void setParent(const QPlatformWindow *window);
+    void setParent(const QPlatformWindow *window) override;
 
     void adjustBufferSize();
 
 protected:
-    int pixelFormat() const;
-    void resetBuffers();
+    int pixelFormat() const override;
+    void resetBuffers() override;
 
     // Copies content from the previous buffer (back buffer) to the current buffer (front buffer)
     void blitPreviousToCurrent(const QRegion &region, int dx, int dy, bool flush=false);

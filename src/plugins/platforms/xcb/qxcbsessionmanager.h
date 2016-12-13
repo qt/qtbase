@@ -69,17 +69,17 @@ public:
     void setSessionId(const QString &id) { m_sessionId = id; }
     void setSessionKey(const QString &key) { m_sessionKey = key; }
 
-    bool allowsInteraction() Q_DECL_OVERRIDE;
-    bool allowsErrorInteraction() Q_DECL_OVERRIDE;
-    void release() Q_DECL_OVERRIDE;
+    bool allowsInteraction() override;
+    bool allowsErrorInteraction() override;
+    void release() override;
 
-    void cancel() Q_DECL_OVERRIDE;
+    void cancel() override;
 
-    void setManagerProperty(const QString &name, const QString &value) Q_DECL_OVERRIDE;
-    void setManagerProperty(const QString &name, const QStringList &value) Q_DECL_OVERRIDE;
+    void setManagerProperty(const QString &name, const QString &value) override;
+    void setManagerProperty(const QString &name, const QStringList &value) override;
 
-    bool isPhase2() const Q_DECL_OVERRIDE;
-    void requestPhase2() Q_DECL_OVERRIDE;
+    bool isPhase2() const override;
+    void requestPhase2() override;
 
     void exitEventLoop();
 

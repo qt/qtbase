@@ -47,7 +47,7 @@
 #include <private/qapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
 
-#if !defined(QT_NO_STYLE_WINDOWSVISTA) || defined(QT_PLUGIN)
+#if QT_CONFIG(style_windowsvista) || defined(QT_PLUGIN)
 
 QT_BEGIN_NAMESPACE
 
