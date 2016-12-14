@@ -148,8 +148,10 @@ Cpp.ignoredirectives    += \
                           Q_DUMMY_COMPARISON_OPERATOR \
                           Q_ENUM \
                           Q_ENUMS \
+                          Q_ENUM_NS \
                           Q_FLAG \
                           Q_FLAGS \
+                          Q_FLAG_NS \
                           Q_INTERFACES \
                           Q_PRIVATE_PROPERTY \
                           QT_FORWARD_DECLARE_CLASS \
