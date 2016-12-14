@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 
 class QFileSystemEngine;
 
-class QFileSystemMetaData
+class Q_AUTOTEST_EXPORT QFileSystemMetaData
 {
 public:
     QFileSystemMetaData()

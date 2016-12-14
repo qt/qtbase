@@ -1368,15 +1368,11 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 
 static inline QDateTime fileTimeToQDateTime(const FILETIME *time)
 {
-    QDateTime ret;
-
-    SYSTEMTIME sTime, lTime;
+    SYSTEMTIME sTime;
     FileTimeToSystemTime(time, &sTime);
-    SystemTimeToTzSpecificLocalTime(0, &sTime, &lTime);
-    ret.setDate(QDate(lTime.wYear, lTime.wMonth, lTime.wDay));
-    ret.setTime(QTime(lTime.wHour, lTime.wMinute, lTime.wSecond, lTime.wMilliseconds));
-
-    return ret;
+    return QDateTime(QDate(sTime.wYear, sTime.wMonth, sTime.wDay),
+                     QTime(sTime.wHour, sTime.wMinute, sTime.wSecond, sTime.wMilliseconds),
+                     Qt::UTC);
 }
 
 QDateTime QFileSystemMetaData::creationTime() const
