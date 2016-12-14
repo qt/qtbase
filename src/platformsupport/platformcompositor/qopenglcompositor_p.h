@@ -65,6 +65,7 @@ class QPlatformTextureList;
 class QOpenGLCompositorWindow
 {
 public:
+    virtual ~QOpenGLCompositorWindow() { }
     virtual QWindow *sourceWindow() const = 0;
     virtual const QPlatformTextureList *textures() const = 0;
     virtual void beginCompositing() { }
