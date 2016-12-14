@@ -322,7 +322,7 @@
             "use": "egl xcb_xlib"
         },
         "egl-brcm": {
-            "label": "Broadcom EGL (Rasberry Pi)",
+            "label": "Broadcom EGL (Raspberry Pi)",
             "type": "compile",
             "test": "qpa/eglfs-brcm",
             "use": "egl bcm_host"
@@ -599,7 +599,7 @@
             "output": [ "privateFeature" ]
         },
         "eglfs_brcm": {
-            "label": "EGLFS Rasberry Pi",
+            "label": "EGLFS Raspberry Pi",
             "condition": "features.eglfs && tests.egl-brcm",
             "output": [ "privateFeature" ]
         },
