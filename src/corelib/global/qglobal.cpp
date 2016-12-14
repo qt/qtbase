@@ -2033,6 +2033,8 @@ Q_GLOBAL_STATIC(QWindowsSockInit, winsockInit)
 #  endif // QT_BOOTSTRAPPED
 
 #if QT_DEPRECATED_SINCE(5, 9)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QSysInfo::WinVersion QSysInfo::windowsVersion()
 {
     const auto version = QOperatingSystemVersion::current();
@@ -2047,6 +2049,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     return QSysInfo::WV_NT_based;
 }
 const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion();
+QT_WARNING_POP
 #endif
 
 static QString winSp_helper()
