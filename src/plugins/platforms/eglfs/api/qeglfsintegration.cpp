@@ -203,8 +203,11 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
     QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
     QEglFSWindow *w = qt_egl_device_integration()->createWindow(window);
     w->create();
-    if (window->type() != Qt::ToolTip)
+
+    // Activate only the window for the primary screen to make input work
+    if (window->type() != Qt::ToolTip && window->screen() == QGuiApplication::primaryScreen())
         w->requestActivateWindow();
+
     return w;
 }
 
