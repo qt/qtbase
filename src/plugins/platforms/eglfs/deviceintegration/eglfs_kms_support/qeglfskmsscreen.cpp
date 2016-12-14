@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
+** Copyright (C) 2017 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
@@ -76,6 +76,22 @@ QEglFSKmsScreen::QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output)
     , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
 {
     m_siblings << this; // gets overridden later
+
+    if (m_output.edid_blob) {
+        QByteArray edid(reinterpret_cast<const char *>(m_output.edid_blob->data), m_output.edid_blob->length);
+        if (m_edid.parse(edid))
+            qCDebug(qLcEglfsKmsDebug, "EDID data for output \"%s\": identifier '%s', manufacturer '%s', model '%s', serial '%s', physical size: %.2fx%.2f",
+                    name().toLatin1().constData(),
+                    m_edid.identifier.toLatin1().constData(),
+                    m_edid.manufacturer.toLatin1().constData(),
+                    m_edid.model.toLatin1().constData(),
+                    m_edid.serialNumber.toLatin1().constData(),
+                    m_edid.physicalSize.width(), m_edid.physicalSize.height());
+        else
+            qCWarning(qLcEglfsKmsDebug) << "Failed to parse EDID data for output" << name();
+    } else {
+        qCWarning(qLcEglfsKmsDebug) << "No EDID data for output" << name();
+    }
 }
 
 QEglFSKmsScreen::~QEglFSKmsScreen()
@@ -144,6 +160,21 @@ Qt::ScreenOrientation QEglFSKmsScreen::orientation() const
 QString QEglFSKmsScreen::name() const
 {
     return m_output.name;
+}
+
+QString QEglFSKmsScreen::manufacturer() const
+{
+    return m_edid.manufacturer;
+}
+
+QString QEglFSKmsScreen::model() const
+{
+    return m_edid.model.isEmpty() ? m_edid.identifier : m_edid.model;
+}
+
+QString QEglFSKmsScreen::serialNumber() const
+{
+    return m_edid.serialNumber;
 }
 
 void QEglFSKmsScreen::destroySurface()

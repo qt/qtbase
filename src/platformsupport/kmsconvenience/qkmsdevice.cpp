@@ -336,6 +336,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         modes,
         connector->subpixel,
         connectorProperty(connector, QByteArrayLiteral("DPMS")),
+        connectorPropertyBlob(connector, QByteArrayLiteral("EDID")),
         false,
         0,
         false
@@ -381,6 +382,23 @@ drmModePropertyPtr QKmsDevice::connectorProperty(drmModeConnectorPtr connector, 
     }
 
     return Q_NULLPTR;
+}
+
+drmModePropertyBlobPtr QKmsDevice::connectorPropertyBlob(drmModeConnectorPtr connector, const QByteArray &name)
+{
+    drmModePropertyPtr prop;
+    drmModePropertyBlobPtr blob = nullptr;
+
+    for (int i = 0; i < connector->count_props && !blob; i++) {
+        prop = drmModeGetProperty(m_dri_fd, connector->props[i]);
+        if (!prop)
+            continue;
+        if ((prop->flags & DRM_MODE_PROP_BLOB) && (strcmp(prop->name, name.constData()) == 0))
+            blob = drmModeGetPropertyBlob(m_dri_fd, connector->prop_values[i]);
+        drmModeFreeProperty(prop);
+    }
+
+    return blob;
 }
 
 QKmsDevice::QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path)
@@ -625,6 +643,11 @@ void QKmsOutput::cleanup(QKmsDevice *device)
     if (dpms_prop) {
         drmModeFreeProperty(dpms_prop);
         dpms_prop = nullptr;
+    }
+
+    if (edid_blob) {
+        drmModeFreePropertyBlob(edid_blob);
+        edid_blob = nullptr;
     }
 
     restoreMode(device);

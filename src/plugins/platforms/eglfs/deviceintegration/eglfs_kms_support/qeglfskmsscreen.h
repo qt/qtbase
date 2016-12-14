@@ -47,6 +47,7 @@
 #include <QtCore/QMutex>
 
 #include <QtKmsSupport/private/qkmsdevice_p.h>
+#include <QtEdidSupport/private/qedidparser_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,6 +72,10 @@ public:
     Qt::ScreenOrientation orientation() const override;
 
     QString name() const override;
+
+    QString manufacturer() const override;
+    QString model() const override;
+    QString serialNumber() const override;
 
     qreal refreshRate() const override;
 
@@ -102,6 +107,7 @@ protected:
     QKmsDevice *m_device;
 
     QKmsOutput m_output;
+    QEdidParser m_edid;
     QPoint m_pos;
 
     QList<QPlatformScreen *> m_siblings;

@@ -107,6 +107,7 @@ struct QKmsOutput
     QList<drmModeModeInfo> modes;
     int subpixel;
     drmModePropertyPtr dpms_prop;
+    drmModePropertyBlobPtr edid_blob;
     bool wants_plane;
     uint32_t plane_id;
     bool plane_set;
@@ -154,6 +155,7 @@ protected:
                                               drmModeConnectorPtr connector,
                                               VirtualDesktopInfo *vinfo);
     drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
+    drmModePropertyBlobPtr connectorPropertyBlob(drmModeConnectorPtr connector, const QByteArray &name);
 
     QKmsScreenConfig *m_screenConfig;
     QString m_path;
