@@ -146,6 +146,8 @@ win32 {
         }
         mac {
             SOURCES += io/qstorageinfo_mac.cpp
+            qtConfig(processenvironment): \
+                OBJECTIVE_SOURCES += io/qprocess_darwin.mm
             OBJECTIVE_SOURCES += io/qstandardpaths_mac.mm
             osx {
                 OBJECTIVE_SOURCES += io/qfilesystemwatcher_fsevents.mm

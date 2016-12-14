@@ -449,7 +449,7 @@
             "label": "QProcessEnvironment",
             "purpose": "Provides a higher-level abstraction of environment variables.",
             "section": "File I/O",
-            "condition": "!config.winrt && !config.uikit && !config.integrity && !config.vxworks",
+            "condition": "!config.winrt && !config.integrity",
             "output": [ "publicFeature" ]
         },
         "temporaryfile": {

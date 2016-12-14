@@ -119,21 +119,11 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-#if QT_CONFIG(processenvironment)
-
-QT_BEGIN_INCLUDE_NAMESPACE
-#if defined(Q_OS_MACOS)
-# include <crt_externs.h>
-# define environ (*_NSGetEnviron())
-#else
-extern char **environ;
-#endif
-QT_END_INCLUDE_NAMESPACE
+#if QT_CONFIG(processenvironment) && !defined(Q_OS_DARWIN)
 
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
     QProcessEnvironment env;
-#if !defined(QT_PLATFORM_UIKIT)
     const char *entry;
     for (int count = 0; (entry = environ[count]); ++count) {
         const char *equal = strchr(entry, '=');
@@ -145,11 +135,10 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
         env.d->hash.insert(QProcessEnvironmentPrivate::Key(name),
                            QProcessEnvironmentPrivate::Value(value));
     }
-#endif
     return env;
 }
 
-#endif // QT_CONFIG(processenvironment)
+#endif // QT_CONFIG(processenvironment) && !defined(Q_OS_DARWIN)
 
 #if QT_CONFIG(process)
 
