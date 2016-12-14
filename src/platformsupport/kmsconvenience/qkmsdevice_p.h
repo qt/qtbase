@@ -100,6 +100,7 @@ struct QKmsOutput
     uint32_t connector_id;
     uint32_t crtc_id;
     QSizeF physical_size;
+    int preferred_mode; // index of preferred mode in list below
     int mode; // index of selected mode in list below
     bool mode_set;
     drmModeCrtcPtr saved_crtc;

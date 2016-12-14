@@ -77,6 +77,11 @@ public:
     QList<QPlatformScreen *> virtualSiblings() const override { return m_siblings; }
     void setVirtualSiblings(QList<QPlatformScreen *> sl) { m_siblings = sl; }
 
+    QVector<QPlatformScreen::Mode> modes() const override;
+
+    int currentMode() const override;
+    int preferredMode() const override;
+
     QKmsDevice *device() const { return m_device; }
 
     void destroySurface();

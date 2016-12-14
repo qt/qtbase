@@ -173,6 +173,28 @@ qreal QEglFSKmsScreen::refreshRate() const
     return refresh > 0 ? refresh : 60;
 }
 
+QVector<QPlatformScreen::Mode> QEglFSKmsScreen::modes() const
+{
+    QVector<QPlatformScreen::Mode> list;
+    list.reserve(m_output.modes.size());
+
+    for (const drmModeModeInfo &info : qAsConst(m_output.modes))
+        list.append({QSize(info.hdisplay, info.vdisplay),
+                     qreal(info.vrefresh > 0 ? info.vrefresh : 60)});
+
+    return list;
+}
+
+int QEglFSKmsScreen::currentMode() const
+{
+    return m_output.mode;
+}
+
+int QEglFSKmsScreen::preferredMode() const
+{
+    return m_output.preferred_mode;
+}
+
 QPlatformScreen::SubpixelAntialiasingType QEglFSKmsScreen::subpixelAntialiasingTypeHint() const
 {
     return m_output.subpixelAntialiasingTypeHint();
