@@ -231,6 +231,7 @@ public:
 
 public Q_SLOTS:
     void scrollItemView(int action);
+    void hideScrollers();
     void updateScrollers();
     void viewDestroyed();
 

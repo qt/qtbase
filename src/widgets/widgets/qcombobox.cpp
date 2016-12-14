@@ -490,6 +490,14 @@ void QComboBoxPrivateContainer::scrollItemView(int action)
 #endif
 }
 
+void QComboBoxPrivateContainer::hideScrollers()
+{
+    if (top)
+        top->hide();
+    if (bottom)
+        bottom->hide();
+}
+
 /*
     Hides or shows the scrollers when we emulate a popupmenu
 */
@@ -2731,6 +2739,11 @@ void QComboBox::showPopup()
     if (needHorizontalScrollBar) {
         listRect.adjust(0, 0, 0, sb->height());
     }
+
+    // Hide the scrollers here, so that the listrect gets the full height of the container
+    // If the scrollers are truly needed, the later call to container->updateScrollers()
+    // will make them visible again.
+    container->hideScrollers();
     container->setGeometry(listRect);
 
 #ifndef Q_OS_MAC
