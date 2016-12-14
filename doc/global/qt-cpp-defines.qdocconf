@@ -14,6 +14,7 @@ defines                 += Q_QDOC \
                           Q_NO_USING_KEYWORD \
                           __cplusplus \
                           Q_COMPILER_INITIALIZER_LISTS \
+                          Q_COMPILER_UNICODE_STRINGS \
                           Q_COMPILER_UNIFORM_INIT \
                           Q_COMPILER_RVALUE_REFS
 
