@@ -1193,7 +1193,7 @@ void tst_QCompleter::disabledItems()
     model->appendRow(suggestions);
     model->appendRow(new QStandardItem("suggestions Enabled"));
     QCompleter *completer = new QCompleter(model, &lineEdit);
-    QSignalSpy spy(completer, SIGNAL(activated(QString)));
+    QSignalSpy spy(completer, QOverload<const QString &>::of(&QCompleter::activated));
     lineEdit.setCompleter(completer);
     lineEdit.move(200, 200);
     lineEdit.show();
@@ -1219,7 +1219,7 @@ void tst_QCompleter::task178797_activatedOnReturn()
     setFrameless(&ledit);
     QCompleter *completer = new QCompleter(words, &ledit);
     ledit.setCompleter(completer);
-    QSignalSpy spy(completer, SIGNAL(activated(QString)));
+    QSignalSpy spy(completer, QOverload<const QString &>::of(&QCompleter::activated));
     QCOMPARE(spy.count(), 0);
     ledit.move(200, 200);
     ledit.show();
@@ -1287,7 +1287,7 @@ public:
         if (completer()) {
             completer()->setCompletionMode(QCompleter::PopupCompletion);
             completer()->setCompletionRole(Qt::DisplayRole);
-            connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+            connect(lineEdit(), &QLineEdit::editingFinished, this, &task246056_ComboBox::setCompletionPrefix);
         }
     }
 private slots:
@@ -1306,7 +1306,7 @@ void tst_QCompleter::task246056_setCompletionPrefix()
     comboBox.show();
     QApplication::setActiveWindow(&comboBox);
     QVERIFY(QTest::qWaitForWindowActive(&comboBox));
-    QSignalSpy spy(comboBox.completer(), SIGNAL(activated(QModelIndex)));
+    QSignalSpy spy(comboBox.completer(), QOverload<const QModelIndex &>::of(&QCompleter::activated));
     QTest::keyPress(&comboBox, 'a');
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);

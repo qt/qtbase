@@ -118,7 +118,7 @@ void tst_QSystemTrayIcon::supportsMessages()
 
 void tst_QSystemTrayIcon::lastWindowClosed()
 {
-    QSignalSpy spy(qApp, SIGNAL(lastWindowClosed()));
+    QSignalSpy spy(qApp, &QApplication::lastWindowClosed);
     QWidget window;
     QSystemTrayIcon icon;
     icon.setIcon(QIcon("whatever.png"));

@@ -379,12 +379,12 @@ void tst_QUndoGroup::checkSignals()
     QUndoGroup group;
     const QScopedPointer<QAction> undo_action(group.createUndoAction(0, QString("foo")));
     const QScopedPointer<QAction> redo_action(group.createRedoAction(0, QString("bar")));
-    QSignalSpy indexChangedSpy(&group, SIGNAL(indexChanged(int)));
-    QSignalSpy cleanChangedSpy(&group, SIGNAL(cleanChanged(bool)));
-    QSignalSpy canUndoChangedSpy(&group, SIGNAL(canUndoChanged(bool)));
-    QSignalSpy undoTextChangedSpy(&group, SIGNAL(undoTextChanged(QString)));
-    QSignalSpy canRedoChangedSpy(&group, SIGNAL(canRedoChanged(bool)));
-    QSignalSpy redoTextChangedSpy(&group, SIGNAL(redoTextChanged(QString)));
+    QSignalSpy indexChangedSpy(&group, &QUndoGroup::indexChanged);
+    QSignalSpy cleanChangedSpy(&group, &QUndoGroup::cleanChanged);
+    QSignalSpy canUndoChangedSpy(&group, &QUndoGroup::canUndoChanged);
+    QSignalSpy undoTextChangedSpy(&group, &QUndoGroup::undoTextChanged);
+    QSignalSpy canRedoChangedSpy(&group, &QUndoGroup::canRedoChanged);
+    QSignalSpy redoTextChangedSpy(&group, &QUndoGroup::redoTextChanged);
 
     QString str;
 
