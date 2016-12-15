@@ -397,50 +397,6 @@ defineTest(qtConfTest_buildParts) {
     return(true)
 }
 
-defineTest(qtConfTest_checkCompiler) {
-    contains(QMAKE_CXX, ".*clang.*") {
-        qtRunLoggedCommand("$$QMAKE_CXX -v 2>&1", versionstr)|return(false)
-        versionstr = "$$versionstr"
-        contains(versionstr, "^Apple (clang|LLVM) version .*") {
-            $${1}.compilerDescription = "Apple Clang"
-            $${1}.compilerId = "apple_clang"
-            $${1}.compilerVersion = $$replace(versionstr, "^Apple (clang|LLVM) version ([0-9.]+).*$", "\\2")
-        } else: contains(versionstr, ".*clang version.*") {
-            $${1}.compilerDescription = "Clang"
-            $${1}.compilerId = "clang"
-            $${1}.compilerVersion = $$replace(versionstr, "^.*clang version ([0-9.]+).*", "\\1")
-        } else {
-            return(false)
-        }
-    } else: contains(QMAKE_CXX, ".*g\\+\\+.*") {
-        qtRunLoggedCommand("$$QMAKE_CXX -dumpversion", version)|return(false)
-        $${1}.compilerDescription = "GCC"
-        $${1}.compilerId = "gcc"
-        $${1}.compilerVersion = $$version
-    } else: contains(QMAKE_CXX, ".*icpc") {
-        qtRunLoggedCommand("$$QMAKE_CXX -dumpversion", version)|return(false)
-        $${1}.compilerDescription = "ICC"
-        $${1}.compilerId = "icc"
-        $${1}.compilerVersion = $$version
-    } else: msvc {
-        command = $$QMAKE_CXX /EP /nologo $$source $$system_quote($$QMAKE_CONFIG_TESTS_DIR/win/msvc_version.cpp)
-        qtRunLoggedCommand("$$command", version)|return(false)
-        version = "$$version"
-        $${1}.compilerDescription = "MSVC"
-        $${1}.compilerId = "cl"
-        $${1}.compilerVersion = $$replace(version, "^.*([0-9]{2})([0-9]{2})([0-9]{5}).*$", "\\1.\\2.\\3")
-    } else {
-        return(false)
-    }
-    $${1}.compilerDescription += $$eval($${1}.compilerVersion)
-    export($${1}.compilerDescription)
-    export($${1}.compilerId)
-    export($${1}.compilerVersion)
-    $${1}.cache += compilerDescription compilerId compilerVersion
-    export($${1}.cache)
-    return(true)
-}
-
 # custom outputs
 
 # this reloads the qmakespec as completely as reasonably possible.
@@ -945,25 +901,6 @@ defineTest(qtConfOutput_debugAndRelease) {
         $${2}: qtConfOutputVar(append, "publicPro", "QT_CONFIG", "debug")
         qtConfOutputVar(append, "publicPro", "QT_CONFIG", "release")
     }
-}
-
-defineTest(qtConfOutput_compilerVersion) {
-    !$${2}: return()
-
-    name = $$upper($$eval($${currentConfig}.tests.compiler.compilerId))
-    version = $$eval($${currentConfig}.tests.compiler.compilerVersion)
-    major = $$section(version, '.', 0, 0)
-    minor = $$section(version, '.', 1, 1)
-    patch = $$section(version, '.', 2, 2)
-    isEmpty(minor): minor = 0
-    isEmpty(patch): patch = 0
-
-    $${currentConfig}.output.publicPro += \
-        "QT_$${name}_MAJOR_VERSION = $$major" \
-        "QT_$${name}_MINOR_VERSION = $$minor" \
-        "QT_$${name}_PATCH_VERSION = $$patch"
-
-    export($${currentConfig}.output.publicPro)
 }
 
 defineTest(qtConfOutput_compilerFlags) {

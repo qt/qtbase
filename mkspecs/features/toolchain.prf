@@ -58,3 +58,79 @@ isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
     !isEmpty(QMAKE_DEFAULT_INCDIRS): cache(QMAKE_DEFAULT_INCDIRS, set stash)
     !isEmpty(QMAKE_DEFAULT_LIBDIRS): cache(QMAKE_DEFAULT_LIBDIRS, set stash)
 }
+
+#
+# Determine and cache the compiler version
+#
+
+defineReplace(qtVariablesFromMSVC) {
+    return($$system("$$1 -nologo -E $$2 $$system_quote($$PWD/data/macros.cpp) <NUL 2>NUL", lines))
+}
+
+defineReplace(qtVariablesFromGCC) {
+    null_device = /dev/null
+    equals(QMAKE_HOST.os, Windows): null_device = NUL
+    return($$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) <$$null_device 2>$$null_device", lines))
+}
+
+host_build: \
+    target_prefix = QMAKE_HOST_CXX
+else: \
+    target_prefix = QMAKE_CXX
+
+isEmpty($${target_prefix}.COMPILER_MACROS) {
+    msvc {
+        vars = $$qtVariablesFromMSVC($$QMAKE_CXX $$QMAKE_CXXFLAGS)
+    } else: gcc {
+        vars = $$qtVariablesFromGCC($$QMAKE_CXX)
+    }
+    for (v, vars) {
+        isEmpty(v)|contains(v, $${LITERAL_HASH}.*): next()
+        # Set both <varname> for the outer scope ...
+        eval($$v)
+        v ~= s/ .*//
+        isEmpty($$v): error("Compiler produced empty value for $${v}.")
+        # ... and save QMAKE_(HOST_)?CXX.<varname> in the cache.
+        cache($${target_prefix}.$$v, set stash, $$v)
+        $${target_prefix}.COMPILER_MACROS += $$v
+    }
+    cache($${target_prefix}.COMPILER_MACROS, set stash)
+} else {
+    # load from the cache
+    for (i, $${target_prefix}.COMPILER_MACROS): \
+        $$i = $$eval($${target_prefix}.$$i)
+}
+
+unset(target_prefix)
+
+# Populate QMAKE_COMPILER_DEFINES and some compatibility variables.
+# The $$format_number() calls strip leading zeros to avoid misinterpretation as octal.
+!isEmpty(QMAKE_MSC_VER) {
+    QMAKE_COMPILER_DEFINES += _MSC_VER=$$QMAKE_MSC_VER _MSC_FULL_VER=$$QMAKE_MSC_FULL_VER
+    QT_MSVC_MAJOR_VERSION = $$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", "\\1")
+    QT_MSVC_MINOR_VERSION = $$format_number($$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", "\\2"))
+    QT_MSVC_PATCH_VERSION = $$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", "\\3"))
+}
+!isEmpty(QMAKE_ICC_VER) {
+    QMAKE_COMPILER_DEFINES += __INTEL_COMPILER=$$QMAKE_ICC_VER __INTEL_COMPILER_UPDATE=$$QMAKE_ICC_UPDATE_VER
+    QT_ICC_MAJOR_VERSION = $$replace(QMAKE_ICC_VER, "(..)(..)", "\\1")
+    QT_ICC_MINOR_VERSION = $$format_number($$replace(QMAKE_ICC_VER, "(..)(..)", "\\2"))
+    QT_ICC_PATCH_VERSION = $$QMAKE_ICC_UPDATE_VER
+}
+!isEmpty(QMAKE_APPLE_CC): \
+    QMAKE_COMPILER_DEFINES += __APPLE_CC__=$$QMAKE_APPLE_CC
+!isEmpty(QT_APPLE_CLANG_MAJOR_VERSION): \
+    QMAKE_COMPILER_DEFINES += __clang__ \
+        __clang_major__=$$QT_APPLE_CLANG_MAJOR_VERSION \
+        __clang_minor__=$$QT_APPLE_CLANG_MINOR_VERSION \
+        __clang_patchlevel__=$$QT_APPLE_CLANG_PATCH_VERSION
+!isEmpty(QT_CLANG_MAJOR_VERSION): \
+    QMAKE_COMPILER_DEFINES += __clang__ \
+        __clang_major__=$$QT_CLANG_MAJOR_VERSION \
+        __clang_minor__=$$QT_CLANG_MINOR_VERSION \
+        __clang_patchlevel__=$$QT_CLANG_PATCH_VERSION
+!isEmpty(QT_GCC_MAJOR_VERSION): \
+    QMAKE_COMPILER_DEFINES += \
+        __GNUC__=$$QT_GCC_MAJOR_VERSION \
+        __GNUC_MINOR__=$$QT_GCC_MINOR_VERSION \
+        __GNUC_PATCHLEVEL__=$$QT_GCC_PATCH_VERSION
