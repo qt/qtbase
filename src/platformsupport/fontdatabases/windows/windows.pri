@@ -26,3 +26,4 @@ qtConfig(directwrite) {
 }
 
 LIBS += -lole32 -lgdi32 -luser32 -ladvapi32
+mingw: LIBS += -luuid
