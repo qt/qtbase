@@ -113,9 +113,10 @@ public:
         MinuteSection = 0x00008,
         Hour12Section   = 0x00010,
         Hour24Section   = 0x00020,
+        TimeZoneSection = 0x00040,
         HourSectionMask = (Hour12Section | Hour24Section),
         TimeSectionMask = (MSecSection | SecondSection | MinuteSection |
-                           HourSectionMask | AmPmSection),
+                           HourSectionMask | AmPmSection | TimeZoneSection),
 
         DaySection         = 0x00100,
         MonthSection       = 0x00200,
@@ -218,6 +219,8 @@ private:
         PossibleBoth = 4
     };
     AmPmFinder findAmPm(QString &str, int index, int *used = 0) const;
+    int findTimeZone(QStringRef str, const QDateTime&when, int *used) const;
+    static int startsWithLocalTimeZone(const QStringRef name); // implemented in qdatetime.cpp
     bool potentialValue(const QStringRef &str, int min, int max, int index,
                         const QDateTime &currentValue, int insert) const;
     bool potentialValue(const QString &str, int min, int max, int index,

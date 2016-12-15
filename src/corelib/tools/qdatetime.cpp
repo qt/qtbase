@@ -2221,6 +2221,26 @@ static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 #endif // Q_OS_WIN
 }
 
+#ifndef QT_BOOTSTRAPPED
+/*
+  \internal
+  Implemented here to share qt_tzname()
+*/
+int QDateTimeParser::startsWithLocalTimeZone(const QStringRef name)
+{
+    QDateTimePrivate::DaylightStatus zones[2] = {
+        QDateTimePrivate::StandardTime,
+        QDateTimePrivate::DaylightTime
+    };
+    for (const auto z : zones) {
+        QString zone(qt_tzname(z));
+        if (name.startsWith(zone))
+            return zone.size();
+    }
+    return 0;
+}
+#endif // QT_BOOTSTRAPPED
+
 // Calls the platform variant of mktime for the given date, time and daylightStatus,
 // and updates the date, time, daylightStatus and abbreviation with the returned values
 // If the date falls outside the 1970 to 2037 range supported by mktime / time_t
