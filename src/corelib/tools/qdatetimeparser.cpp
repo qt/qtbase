@@ -1461,15 +1461,13 @@ QDateTimeParser::FieldInfo QDateTimeParser::fieldInfo(int index) const
     case MinuteSection:
     case Hour24Section:
     case Hour12Section:
-    case YearSection:
     case YearSection2Digits:
+        ret |= AllowPartial;
+        Q_FALLTHROUGH();
+    case YearSection:
         ret |= Numeric;
-        if (sn.type != YearSection) {
-            ret |= AllowPartial;
-        }
-        if (sn.count != 1) {
+        if (sn.count != 1)
             ret |= FixedWidth;
-        }
         break;
     case MonthSection:
     case DaySection:
