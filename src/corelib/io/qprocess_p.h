@@ -70,8 +70,6 @@ typedef int Q_PIPE;
 #define INVALID_Q_PIPE -1
 #endif
 
-#ifndef QT_NO_PROCESS
-
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
@@ -79,6 +77,8 @@ class QWindowsPipeReader;
 class QWindowsPipeWriter;
 class QWinEventNotifier;
 class QTimer;
+
+#if QT_CONFIG(processenvironment)
 
 #ifdef Q_OS_WIN
 class QProcEnvKey : public QString
@@ -233,6 +233,10 @@ template<> Q_INLINE_TEMPLATE void QSharedDataPointer<QProcessEnvironmentPrivate>
     d = x;
 }
 
+#endif // QT_CONFIG(processenvironment)
+
+#if QT_CONFIG(process)
+
 class QProcessPrivate : public QIODevicePrivate
 {
 public:
@@ -386,8 +390,8 @@ public:
     void setErrorAndEmit(QProcess::ProcessError error, const QString &description = QString());
 };
 
-QT_END_NAMESPACE
-
 #endif // QT_NO_PROCESS
+
+QT_END_NAMESPACE
 
 #endif // QPROCESS_P_H

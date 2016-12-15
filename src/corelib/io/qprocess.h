@@ -48,8 +48,9 @@
 
 QT_BEGIN_NAMESPACE
 
+class QProcessPrivate;
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(processenvironment)
 
 #if !defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 typedef qint64 Q_PID;
@@ -61,7 +62,6 @@ typedef struct _STARTUPINFOW Q_STARTUPINFO;
 QT_BEGIN_NAMESPACE
 #endif
 
-class QProcessPrivate;
 class QProcessEnvironmentPrivate;
 
 class Q_CORE_EXPORT QProcessEnvironment
@@ -104,6 +104,10 @@ private:
 };
 
 Q_DECLARE_SHARED(QProcessEnvironment)
+
+#endif // QT_CONFIG(processenvironment)
+
+#if QT_CONFIG(process)
 
 class Q_CORE_EXPORT QProcess : public QIODevice
 {

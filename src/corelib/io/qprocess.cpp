@@ -99,7 +99,7 @@ QT_END_NAMESPACE
 #include <private/qcore_unix_p.h>
 #endif
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(processenvironment)
 
 QT_BEGIN_NAMESPACE
 
@@ -429,6 +429,10 @@ void QProcessEnvironment::insert(const QProcessEnvironment &e)
     QProcessEnvironmentPrivate::MutexLocker locker(e.d);
     d->insert(*e.d);
 }
+
+#endif // QT_CONFIG(processenvironment)
+
+#if QT_CONFIG(process)
 
 void QProcessPrivate::Channel::clear()
 {

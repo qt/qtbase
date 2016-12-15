@@ -445,6 +445,13 @@
             "condition": "!config.winrt && !config.uikit && !config.integrity && !config.vxworks",
             "output": [ "publicFeature", "feature" ]
         },
+        "processenvironment": {
+            "label": "QProcessEnvironment",
+            "purpose": "Provides a higher-level abstraction of environment variables.",
+            "section": "File I/O",
+            "condition": "!config.winrt && !config.uikit && !config.integrity && !config.vxworks",
+            "output": [ "publicFeature" ]
+        },
         "temporaryfile": {
             "label": "QTemporaryFile",
             "purpose": "Provides an I/O device that operates on temporary files.",

@@ -41,9 +41,7 @@
 //#define QPROCESS_DEBUG
 #include "qdebug.h"
 
-#ifndef QT_NO_PROCESS
-
-#if defined QPROCESS_DEBUG
+#if QT_CONFIG(process) && defined(QPROCESS_DEBUG)
 #include "private/qtools_p.h"
 #include <ctype.h>
 
@@ -114,9 +112,46 @@ QT_END_NAMESPACE
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if QT_CONFIG(process)
 #include <forkfd.h>
+#endif
 
 QT_BEGIN_NAMESPACE
+
+#if QT_CONFIG(processenvironment)
+
+QT_BEGIN_INCLUDE_NAMESPACE
+#if defined(Q_OS_MACOS)
+# include <crt_externs.h>
+# define environ (*_NSGetEnviron())
+#else
+extern char **environ;
+#endif
+QT_END_INCLUDE_NAMESPACE
+
+QProcessEnvironment QProcessEnvironment::systemEnvironment()
+{
+    QProcessEnvironment env;
+#if !defined(QT_PLATFORM_UIKIT)
+    const char *entry;
+    for (int count = 0; (entry = environ[count]); ++count) {
+        const char *equal = strchr(entry, '=');
+        if (!equal)
+            continue;
+
+        QByteArray name(entry, equal - entry);
+        QByteArray value(equal + 1);
+        env.d->hash.insert(QProcessEnvironmentPrivate::Key(name),
+                           QProcessEnvironmentPrivate::Value(value));
+    }
+#endif
+    return env;
+}
+
+#endif // QT_CONFIG(processenvironment)
+
+#if QT_CONFIG(process)
 
 // POSIX requires PIPE_BUF to be 512 or larger
 // so we will use 512
@@ -308,34 +343,6 @@ bool QProcessPrivate::openChannel(Channel &channel)
             return true;
         }
     }
-}
-
-QT_BEGIN_INCLUDE_NAMESPACE
-#if defined(Q_OS_MACX)
-# include <crt_externs.h>
-# define environ (*_NSGetEnviron())
-#else
-  extern char **environ;
-#endif
-QT_END_INCLUDE_NAMESPACE
-
-QProcessEnvironment QProcessEnvironment::systemEnvironment()
-{
-    QProcessEnvironment env;
-#if !defined(QT_PLATFORM_UIKIT)
-    const char *entry;
-    for (int count = 0; (entry = environ[count]); ++count) {
-        const char *equal = strchr(entry, '=');
-        if (!equal)
-            continue;
-
-        QByteArray name(entry, equal - entry);
-        QByteArray value(equal + 1);
-        env.d->hash.insert(QProcessEnvironmentPrivate::Key(name),
-                           QProcessEnvironmentPrivate::Value(value));
-    }
-#endif
-    return env;
 }
 
 static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environment, int *envc)
@@ -1044,6 +1051,6 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
     return success;
 }
 
-QT_END_NAMESPACE
-
 #endif // QT_NO_PROCESS
+
+QT_END_NAMESPACE
