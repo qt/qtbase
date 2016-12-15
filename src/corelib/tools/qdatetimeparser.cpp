@@ -713,7 +713,6 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
 
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
     QStringRef sectionTextRef = text.midRef(index, sectionmaxsize);
-    int sectiontextSize = sectionTextRef.size();
 
     QDTPDEBUG << "sectionValue for" << sn.name()
               << "with text" << text << "and st" << sectionTextRef
@@ -784,26 +783,25 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
     case MinuteSection:
     case SecondSection:
     case MSecSection: {
+        int sectiontextSize = sectionTextRef.size();
         if (sectiontextSize == 0) {
             num = 0;
             used = 0;
             state = Intermediate;
         } else {
+            for (int i = 0; i < sectiontextSize; ++i) {
+                if (sectionTextRef.at(i).isSpace())
+                    sectiontextSize = i; // which exits the loop
+            }
+
             const int absMax = absoluteMax(sectionIndex);
             QLocale loc;
             bool ok = true;
             int last = -1;
             used = -1;
 
-            QStringRef digitsStr = sectionTextRef;
-            for (int i = 0; i < sectiontextSize; ++i) {
-                if (digitsStr.at(i).isSpace()) {
-                    sectiontextSize = i;
-                    break;
-                }
-            }
-
             const int max = qMin(sectionmaxsize, sectiontextSize);
+            QStringRef digitsStr = sectionTextRef.left(max);
             for (int digits = max; digits >= 1; --digits) {
                 digitsStr.truncate(digits);
                 int tmp = (int)loc.toUInt(digitsStr, &ok);
