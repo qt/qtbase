@@ -12955,6 +12955,9 @@ void QWidget::setMask(const QBitmap &bitmap)
 */
 void QWidget::clearMask()
 {
+    Q_D(QWidget);
+    if (!d->extra || !d->extra->hasMask)
+        return;
     setMask(QRegion());
 }
 
