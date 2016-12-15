@@ -335,7 +335,7 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
     nativeItem.target = m_nativeMenu.delegate;
     nativeItem.action = @selector(itemFired:);
     // Someone's adding new items after aboutToShow() was emitted
-    if (isOpen() && nativeItem)
+    if (isOpen() && nativeItem && item->menu())
         item->menu()->setAttachedItem(nativeItem);
 
     item->setParentEnabled(isEnabled());
