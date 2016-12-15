@@ -705,7 +705,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
     state = Invalid;
     int num = 0;
     const SectionNode &sn = sectionNode(sectionIndex);
-    if ((sn.type & Internal) == Internal) {
+    if (sn.type & Internal) {
         qWarning("QDateTimeParser::parseSection Internal error (%s %d)",
                  qPrintable(sn.name()), sectionIndex);
         return -1;
@@ -756,11 +756,9 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
         if (sn.count >= 3) {
             QString sectiontext = sectionTextRef.toString();
             if (sn.type == MonthSection) {
-                int min = 1;
                 const QDate minDate = getMinimum().date();
-                if (currentValue.date().year() == minDate.year()) {
-                    min = minDate.month();
-                }
+                const int min = (currentValue.date().year() == minDate.year())
+                    ? minDate.month() : 1;
                 num = findMonth(sectiontext.toLower(), min, sectionIndex, &sectiontext, &used);
             } else {
                 num = findDay(sectiontext.toLower(), 1, sectionIndex, &sectiontext, &used);
@@ -1065,8 +1063,8 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                                 input.replace(sectionPos(sn), sectionSize(i), dayName);
                             }
                         }
-                    } else {
-                        state = qMin(Intermediate, state);
+                    } else if (state > Intermediate) {
+                        state = Intermediate;
                     }
                 }
             }
