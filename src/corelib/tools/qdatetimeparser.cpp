@@ -882,14 +882,14 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
 */
 
 QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPosition,
-                                                  const QDateTime &currentValue, bool fixup) const
+                                                  const QDateTime &defaultValue, bool fixup) const
 {
     const QDateTime minimum = getMinimum();
     const QDateTime maximum = getMaximum();
 
     State state = Acceptable;
 
-    QDateTime newCurrentValue;
+    QDateTime finalValue;
     bool conflicts = false;
     const int sectionNodesCount = sectionNodes.size();
 
@@ -897,16 +897,16 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
     {
         int pos = 0;
         int year, month, day;
-        const QDate currentDate = currentValue.date();
-        const QTime currentTime = currentValue.time();
-        currentDate.getDate(&year, &month, &day);
+        const QDate defaultDate = defaultValue.date();
+        const QTime defaultTime = defaultValue.time();
+        defaultDate.getDate(&year, &month, &day);
         int year2digits = year % 100;
-        int hour = currentTime.hour();
+        int hour = defaultTime.hour();
         int hour12 = -1;
-        int minute = currentTime.minute();
-        int second = currentTime.second();
-        int msec = currentTime.msec();
-        int dayofweek = currentDate.dayOfWeek();
+        int minute = defaultTime.minute();
+        int second = defaultTime.second();
+        int msec = defaultTime.msec();
+        int dayofweek = defaultDate.dayOfWeek();
 
         int ampm = -1;
         Sections isSet = NoSection;
@@ -927,7 +927,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
             const SectionNode sn = sectionNodes.at(index);
             int used;
 
-            num = parseSection(currentValue, index, input, cursorPosition, pos, tmpstate, &used);
+            num = parseSection(defaultValue, index, input, cursorPosition, pos, tmpstate, &used);
             QDTPDEBUG << "sectionValue" << sn.name() << input
                       << "pos" << pos << "used" << used << stateName(tmpstate);
             if (fixup && tmpstate == Intermediate && used < sn.count) {
@@ -1097,20 +1097,22 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
             }
 
-            newCurrentValue = QDateTime(QDate(year, month, day), QTime(hour, minute, second, msec), spec);
+            finalValue = QDateTime(QDate(year, month, day),
+                                   QTime(hour, minute, second, msec),
+                                   spec);
             QDTPDEBUG << year << month << day << hour << minute << second << msec;
         }
         QDTPDEBUGN("'%s' => '%s'(%s)", input.toLatin1().constData(),
-                   newCurrentValue.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")).toLatin1().constData(),
+                   finalValue.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")).toLatin1().constData(),
                    stateName(state).toLatin1().constData());
     }
 end:
-    if (newCurrentValue.isValid()) {
-        if (context != FromString && state != Invalid && newCurrentValue < minimum) {
+    if (finalValue.isValid()) {
+        if (context != FromString && state != Invalid && finalValue < minimum) {
             const QLatin1Char space(' ');
-            if (newCurrentValue >= minimum)
+            if (finalValue >= minimum)
                 qWarning("QDateTimeParser::parse Internal error 3 (%s %s)",
-                         qPrintable(newCurrentValue.toString()), qPrintable(minimum.toString()));
+                         qPrintable(finalValue.toString()), qPrintable(minimum.toString()));
 
             bool done = false;
             state = Invalid;
@@ -1134,7 +1136,7 @@ end:
                         case PossibleAM:
                         case PossiblePM:
                         case PossibleBoth: {
-                            const QDateTime copy(newCurrentValue.addSecs(12 * 60 * 60));
+                            const QDateTime copy(finalValue.addSecs(12 * 60 * 60));
                             if (copy >= minimum && copy <= maximum) {
                                 state = Intermediate;
                                 done = true;
@@ -1144,11 +1146,11 @@ end:
                         Q_FALLTHROUGH();
                     case MonthSection:
                         if (sn.count >= 3) {
-                            const int currentMonth = newCurrentValue.date().month();
-                            int tmp = currentMonth;
+                            const int finalMonth = finalValue.date().month();
+                            int tmp = finalMonth;
                             // I know the first possible month makes the date too early
                             while ((tmp = findMonth(t, tmp + 1, i)) != -1) {
-                                const QDateTime copy(newCurrentValue.addMonths(tmp - currentMonth));
+                                const QDateTime copy(finalValue.addMonths(tmp - finalMonth));
                                 if (copy >= minimum && copy <= maximum)
                                     break; // break out of while
                             }
@@ -1165,24 +1167,24 @@ end:
                         int toMax;
 
                         if (sn.type & TimeSectionMask) {
-                            if (newCurrentValue.daysTo(minimum) != 0) {
+                            if (finalValue.daysTo(minimum) != 0) {
                                 break;
                             }
-                            const QTime time = newCurrentValue.time();
+                            const QTime time = finalValue.time();
                             toMin = time.msecsTo(minimum.time());
-                            if (newCurrentValue.daysTo(maximum) > 0) {
+                            if (finalValue.daysTo(maximum) > 0) {
                                 toMax = -1; // can't get to max
                             } else {
                                 toMax = time.msecsTo(maximum.time());
                             }
                         } else {
-                            toMin = newCurrentValue.daysTo(minimum);
-                            toMax = newCurrentValue.daysTo(maximum);
+                            toMin = finalValue.daysTo(minimum);
+                            toMax = finalValue.daysTo(maximum);
                         }
                         const int maxChange = sn.maxChange();
                         if (toMin > maxChange) {
                             QDTPDEBUG << "invalid because toMin > maxChange" << toMin
-                                      << maxChange << t << newCurrentValue << minimum;
+                                      << maxChange << t << finalValue << minimum;
                             state = Invalid;
                             done = true;
                             break;
@@ -1199,11 +1201,11 @@ end:
                             break;
                         }
 
-                        int max = toMax != -1 ? getDigit(maximum, i) : absoluteMax(i, newCurrentValue);
+                        int max = toMax != -1 ? getDigit(maximum, i) : absoluteMax(i, finalValue);
                         int pos = cursorPosition - sn.pos;
                         if (pos < 0 || pos >= t.size())
                             pos = -1;
-                        if (!potentialValue(t.simplified(), min, max, i, newCurrentValue, pos)) {
+                        if (!potentialValue(t.simplified(), min, max, i, finalValue, pos)) {
                             QDTPDEBUG << "invalid because potentialValue(" << t.simplified() << min << max
                                       << sn.name() << "returned" << toMax << toMin << pos;
                             state = Invalid;
@@ -1220,21 +1222,21 @@ end:
             if (context == FromString) {
                 // optimization
                 Q_ASSERT(maximum.date().toJulianDay() == 4642999);
-                if (newCurrentValue.date().toJulianDay() > 4642999)
+                if (finalValue.date().toJulianDay() > 4642999)
                     state = Invalid;
             } else {
-                if (newCurrentValue > maximum)
+                if (finalValue > maximum)
                     state = Invalid;
             }
 
-            QDTPDEBUG << "not checking intermediate because newCurrentValue is" << newCurrentValue << minimum << maximum;
+            QDTPDEBUG << "not checking intermediate because finalValue is" << finalValue << minimum << maximum;
         }
     }
     StateNode node;
     node.input = input;
     node.state = state;
     node.conflicts = conflicts;
-    node.value = newCurrentValue.toTimeSpec(spec);
+    node.value = finalValue.toTimeSpec(spec);
     text = input;
     return node;
 }
