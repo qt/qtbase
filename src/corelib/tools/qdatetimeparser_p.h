@@ -179,11 +179,9 @@ public:
 
 #ifndef QT_NO_DATESTRING
     StateNode parse(QString &input, int &cursorPosition, const QDateTime &defaultValue, bool fixup) const;
-#endif
-    bool parseFormat(const QString &format);
-#ifndef QT_NO_DATESTRING
     bool fromString(const QString &text, QDate *date, QTime *time) const;
 #endif
+    bool parseFormat(const QString &format);
 
     enum FieldInfoFlag {
         Numeric = 0x01,
@@ -201,14 +199,15 @@ public:
 private:
     int sectionMaxSize(Section s, int count) const;
     QString sectionText(const QString &text, int sectionIndex, int index) const;
+#ifndef QT_NO_DATESTRING
     int parseSection(const QDateTime &currentValue, int sectionIndex, QString &txt, int &cursorPosition,
                      int index, QDateTimeParser::State &state, int *used = 0) const;
-#ifndef QT_NO_TEXTDATE
     int findMonth(const QString &str1, int monthstart, int sectionIndex,
                   QString *monthName = 0, int *used = 0) const;
     int findDay(const QString &str1, int intDaystart, int sectionIndex,
                 QString *dayName = 0, int *used = 0) const;
-#endif
+    int findTimeZone(QStringRef str, const QDateTime&when, int *used) const;
+    static int startsWithLocalTimeZone(const QStringRef name); // implemented in qdatetime.cpp
 
     enum AmPmFinder {
         Neither = -1,
@@ -219,8 +218,8 @@ private:
         PossibleBoth = 4
     };
     AmPmFinder findAmPm(QString &str, int index, int *used = 0) const;
-    int findTimeZone(QStringRef str, const QDateTime&when, int *used) const;
-    static int startsWithLocalTimeZone(const QStringRef name); // implemented in qdatetime.cpp
+#endif // QT_NO_DATESTRING
+
     bool potentialValue(const QStringRef &str, int min, int max, int index,
                         const QDateTime &currentValue, int insert) const;
     bool potentialValue(const QString &str, int min, int max, int index,

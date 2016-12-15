@@ -719,7 +719,7 @@ QString QDateTimeParser::sectionText(int sectionIndex) const
 }
 
 
-#ifndef QT_NO_TEXTDATE
+#ifndef QT_NO_DATESTRING
 /*!
   \internal:skipToNextSection
 
@@ -908,9 +908,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
 
     return (state != Invalid ? num : -1);
 }
-#endif // QT_NO_TEXTDATE
 
-#ifndef QT_NO_DATESTRING
 /*!
   \internal
 
@@ -1500,9 +1498,6 @@ end:
     text = input;
     return node;
 }
-#endif // QT_NO_DATESTRING
-
-#ifndef QT_NO_TEXTDATE
 
 /*
   \internal
@@ -1590,7 +1585,6 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
     const int index = findTextEntry(str1, daysOfWeek, usedDay, used);
     return index < 0 ? index : index + startDay;
 }
-#endif // QT_NO_TEXTDATE
 
 /*!
   \internal
@@ -1736,6 +1730,7 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
         return PossibleBoth;
     return (!broken[amindex] ? PossibleAM : PossiblePM);
 }
+#endif // QT_NO_DATESTRING
 
 /*!
   \internal
