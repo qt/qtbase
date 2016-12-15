@@ -1923,6 +1923,7 @@ QDateTime QDateTimeEditPrivate::validateAndInterpret(QString &input, int &positi
     }
     StateNode tmp = parse(input, position, value.toDateTime(), fixup);
     input = tmp.input;
+    position += tmp.padded;
     state = QValidator::State(int(tmp.state));
     if (state == QValidator::Acceptable) {
         if (tmp.conflicts && conflictGuard != tmp.value) {

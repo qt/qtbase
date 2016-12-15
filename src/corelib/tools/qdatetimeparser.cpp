@@ -1332,15 +1332,14 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
   \internal
 */
 
-QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPosition,
-                                                  const QDateTime &defaultValue, bool fixup) const
+QDateTimeParser::StateNode
+QDateTimeParser::parse(QString input, int position, const QDateTime &defaultValue, bool fixup) const
 {
     const QDateTime minimum = getMinimum();
     const QDateTime maximum = getMaximum();
 
     QDTPDEBUG << "parse" << input;
     StateNode scan = scanString(defaultValue, fixup, &input);
-    cursorPosition += scan.padded;
     QDTPDEBUGN("'%s' => '%s'(%s)", input.toLatin1().constData(),
                scan.value.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")).toLatin1().constData(),
                stateName(scan.state).toLatin1().constData());
@@ -1440,7 +1439,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                         }
 
                         int max = toMax != -1 ? getDigit(maximum, i) : absoluteMax(i, scan.value);
-                        int pos = cursorPosition - sn.pos;
+                        int pos = position + scan.padded - sn.pos;
                         if (pos < 0 || pos >= t.size())
                             pos = -1;
                         if (!potentialValue(t.simplified(), min, max, i, scan.value, pos)) {
@@ -1936,9 +1935,7 @@ QString QDateTimeParser::stateName(State s) const
 bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) const
 {
     QDateTime val(QDate(1900, 1, 1), QDATETIMEEDIT_TIME_MIN);
-    QString text = t;
-    int copy = -1;
-    const StateNode tmp = parse(text, copy, val, false);
+    const StateNode tmp = parse(t, -1, val, false);
     if (tmp.state != Acceptable || tmp.conflicts) {
         return false;
     }

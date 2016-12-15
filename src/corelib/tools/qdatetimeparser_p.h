@@ -181,7 +181,7 @@ public:
     };
 
 #ifndef QT_NO_DATESTRING
-    StateNode parse(QString &input, int &cursorPosition, const QDateTime &defaultValue, bool fixup) const;
+    StateNode parse(QString input, int position, const QDateTime &defaultValue, bool fixup) const;
     bool fromString(const QString &text, QDate *date, QTime *time) const;
 #endif
     bool parseFormat(const QString &format);
