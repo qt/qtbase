@@ -160,11 +160,14 @@ public:
     };
 
     struct StateNode {
-        StateNode() : state(Invalid), conflicts(false) {}
+        StateNode() : state(Invalid), padded(0), conflicts(false) {}
+        StateNode(const QDateTime &val, State ok=Acceptable, int pad=0, bool bad=false)
+            : value(val), state(ok), padded(pad), conflicts(bad) {}
         QString input;
-        State state;
-        bool conflicts;
         QDateTime value;
+        State state;
+        int padded;
+        bool conflicts;
     };
 
     enum AmPm {
@@ -200,6 +203,8 @@ private:
     int sectionMaxSize(Section s, int count) const;
     QString sectionText(const QString &text, int sectionIndex, int index) const;
 #ifndef QT_NO_DATESTRING
+    StateNode scanString(const QDateTime &defaultValue,
+                         bool fixup, QString *input) const;
     struct ParsedSection {
         int value;
         int used;

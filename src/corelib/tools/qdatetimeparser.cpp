@@ -1070,6 +1070,267 @@ static QTime actualTime(QDateTimeParser::Sections known,
 /*!
   \internal
 */
+QDateTimeParser::StateNode
+QDateTimeParser::scanString(const QDateTime &defaultValue,
+                            bool fixup, QString *input) const
+{
+    State state = Acceptable;
+    bool conflicts = false;
+    const int sectionNodesCount = sectionNodes.size();
+    int padding = 0;
+    int pos = 0;
+    int year, month, day;
+    const QDate defaultDate = defaultValue.date();
+    const QTime defaultTime = defaultValue.time();
+    defaultDate.getDate(&year, &month, &day);
+    int year2digits = year % 100;
+    int hour = defaultTime.hour();
+    int hour12 = -1;
+    int minute = defaultTime.minute();
+    int second = defaultTime.second();
+    int msec = defaultTime.msec();
+    int dayofweek = defaultDate.dayOfWeek();
+    Qt::TimeSpec tspec = defaultValue.timeSpec();
+    int zoneOffset = 0; // In seconds; local - UTC
+    QString zoneName;
+    QTimeZone timeZone;
+    switch (tspec) {
+    case Qt::OffsetFromUTC: // timeZone is ignored
+        zoneOffset = defaultValue.offsetFromUtc();
+        break;
+    case Qt::TimeZone:
+        timeZone = defaultValue.timeZone();
+        if (timeZone.isValid())
+            zoneOffset = timeZone.offsetFromUtc(defaultValue);
+        // else: is there anything we can do about this ?
+        break;
+    default: // zoneOffset and timeZone are ignored
+        break;
+    }
+
+    int ampm = -1;
+    Sections isSet = NoSection;
+
+    for (int index = 0; index < sectionNodesCount; ++index) {
+        Q_ASSERT(state != Invalid);
+        if (QStringRef(input, pos, separators.at(index).size()) != separators.at(index)) {
+            QDTPDEBUG << "invalid because" << input->midRef(pos, separators.at(index).size())
+                      << "!=" << separators.at(index)
+                      << index << pos << currentSectionIndex;
+            return StateNode();
+        }
+        pos += separators.at(index).size();
+        sectionNodes[index].pos = pos;
+        int *current = 0;
+        const SectionNode sn = sectionNodes.at(index);
+        ParsedSection sect;
+
+        {
+            const QDate date = actualDate(isSet, year, year2digits, month, day, dayofweek);
+            const QTime time = actualTime(isSet, hour, hour12, ampm, minute, second, msec);
+            sect = parseSection(tspec == Qt::TimeZone
+                                ? QDateTime(date, time, timeZone)
+                                : QDateTime(date, time, tspec, zoneOffset),
+                                index, pos, input);
+        }
+
+        QDTPDEBUG << "sectionValue" << sn.name() << *input
+                  << "pos" << pos << "used" << sect.used << stateName(sect.state);
+
+        padding += sect.zeroes;
+        if (fixup && sect.state == Intermediate && sect.used < sn.count) {
+            const FieldInfo fi = fieldInfo(index);
+            if ((fi & (Numeric|FixedWidth)) == (Numeric|FixedWidth)) {
+                const QString newText = QString::fromLatin1("%1").arg(sect.value, sn.count, 10, QLatin1Char('0'));
+                input->replace(pos, sect.used, newText);
+                sect.used = sn.count;
+            }
+        }
+
+        state = qMin<State>(state, sect.state);
+        if (state == Invalid || (state == Intermediate && context == FromString))
+            return StateNode();
+
+        switch (sn.type) {
+        case TimeZoneSection:
+            current = &zoneOffset;
+            if (sect.used > 0) {
+                // Synchronize with what findTimeZone() found:
+                QStringRef zoneName = input->midRef(pos, sect.used);
+                Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
+                const QByteArray latinZone(zoneName.toLatin1());
+                timeZone = QTimeZone(latinZone);
+                tspec = timeZone.isValid()
+                    ? (QTimeZone::isTimeZoneIdAvailable(latinZone)
+                       ? Qt::TimeZone
+                       : Qt::OffsetFromUTC)
+                    : (Q_ASSERT(startsWithLocalTimeZone(zoneName)), Qt::LocalTime);
+            }
+            break;
+        case Hour24Section: current = &hour; break;
+        case Hour12Section: current = &hour12; break;
+        case MinuteSection: current = &minute; break;
+        case SecondSection: current = &second; break;
+        case MSecSection: current = &msec; break;
+        case YearSection: current = &year; break;
+        case YearSection2Digits: current = &year2digits; break;
+        case MonthSection: current = &month; break;
+        case DayOfWeekSectionShort:
+        case DayOfWeekSectionLong: current = &dayofweek; break;
+        case DaySection: current = &day; sect.value = qMax<int>(1, sect.value); break;
+        case AmPmSection: current = &ampm; break;
+        default:
+            qWarning("QDateTimeParser::parse Internal error (%s)",
+                     qPrintable(sn.name()));
+            break;
+        }
+
+        if (sect.used > 0)
+            pos += sect.used;
+        QDTPDEBUG << index << sn.name() << "is set to"
+                  << pos << "state is" << stateName(state);
+
+        if (!current) {
+            qWarning("QDateTimeParser::parse Internal error 2");
+            return StateNode();
+        }
+        if (isSet & sn.type && *current != sect.value) {
+            QDTPDEBUG << "CONFLICT " << sn.name() << *current << sect.value;
+            conflicts = true;
+            if (index != currentSectionIndex || sect.state == Invalid) {
+                continue;
+            }
+        }
+        if (sect.state != Invalid)
+            *current = sect.value;
+
+        // Record the present section:
+        isSet |= sn.type;
+    }
+
+    if (QStringRef(input, pos, input->size() - pos) != separators.last()) {
+        QDTPDEBUG << "invalid because" << input->midRef(pos)
+                  << "!=" << separators.last() << pos;
+        return StateNode();
+    }
+
+    if (parserType != QVariant::Time) {
+        if (year % 100 != year2digits && (isSet & YearSection2Digits)) {
+            if (!(isSet & YearSection)) {
+                year = (year / 100) * 100;
+                year += year2digits;
+            } else {
+                conflicts = true;
+                const SectionNode &sn = sectionNode(currentSectionIndex);
+                if (sn.type == YearSection2Digits) {
+                    year = (year / 100) * 100;
+                    year += year2digits;
+                }
+            }
+        }
+
+        const QDate date(year, month, day);
+        const int diff = dayofweek - date.dayOfWeek();
+        if (diff != 0 && state == Acceptable && isSet & DayOfWeekSectionMask) {
+            if (isSet & DaySection)
+                conflicts = true;
+            const SectionNode &sn = sectionNode(currentSectionIndex);
+            if (sn.type & DayOfWeekSectionMask || currentSectionIndex == -1) {
+                // dayofweek should be preferred
+                day += diff;
+                if (day <= 0) {
+                    day += 7;
+                } else if (day > date.daysInMonth()) {
+                    day -= 7;
+                }
+                QDTPDEBUG << year << month << day << dayofweek
+                          << diff << QDate(year, month, day).dayOfWeek();
+            }
+        }
+
+        bool needfixday = false;
+        if (sectionType(currentSectionIndex) & DaySectionMask) {
+            cachedDay = day;
+        } else if (cachedDay > day) {
+            day = cachedDay;
+            needfixday = true;
+        }
+
+        if (!QDate::isValid(year, month, day)) {
+            if (day < 32) {
+                cachedDay = day;
+            }
+            if (day > 28 && QDate::isValid(year, month, 1)) {
+                needfixday = true;
+            }
+        }
+        if (needfixday) {
+            if (context == FromString) {
+                return StateNode();
+            }
+            if (state == Acceptable && fixday) {
+                day = qMin<int>(day, QDate(year, month, 1).daysInMonth());
+
+                const QLocale loc = locale();
+                for (int i=0; i<sectionNodesCount; ++i) {
+                    const SectionNode sn = sectionNode(i);
+                    if (sn.type & DaySection) {
+                        input->replace(sectionPos(sn), sectionSize(i), loc.toString(day));
+                    } else if (sn.type & DayOfWeekSectionMask) {
+                        const int dayOfWeek = QDate(year, month, day).dayOfWeek();
+                        const QLocale::FormatType dayFormat =
+                            (sn.type == DayOfWeekSectionShort
+                             ? QLocale::ShortFormat : QLocale::LongFormat);
+                        const QString dayName(loc.dayName(dayOfWeek, dayFormat));
+                        input->replace(sectionPos(sn), sectionSize(i), dayName);
+                    }
+                }
+            } else if (state > Intermediate) {
+                state = Intermediate;
+            }
+        }
+    }
+
+    if (parserType != QVariant::Date) {
+        if (isSet & Hour12Section) {
+            const bool hasHour = isSet & Hour24Section;
+            if (ampm == -1) {
+                if (hasHour) {
+                    ampm = (hour < 12 ? 0 : 1);
+                } else {
+                    ampm = 0; // no way to tell if this is am or pm so I assume am
+                }
+            }
+            hour12 = (ampm == 0 ? hour12 % 12 : (hour12 % 12) + 12);
+            if (!hasHour) {
+                hour = hour12;
+            } else if (hour != hour12) {
+                conflicts = true;
+            }
+        } else if (ampm != -1) {
+            if (!(isSet & (Hour24Section))) {
+                hour = (12 * ampm); // special case. Only ap section
+            } else if ((ampm == 0) != (hour < 12)) {
+                conflicts = true;
+            }
+        }
+
+    }
+
+    QDTPDEBUG << year << month << day << hour << minute << second << msec;
+    Q_ASSERT(state != Invalid);
+
+    const QDate date(year, month, day);
+    const QTime time(hour, minute, second, msec);
+    return StateNode(tspec == Qt::TimeZone
+                     ? QDateTime(date, time, timeZone)
+                     : QDateTime(date, time, tspec, zoneOffset),
+                     state, padding, conflicts);
+}
+
+/*!
+  \internal
+*/
 
 QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPosition,
                                                   const QDateTime &defaultValue, bool fixup) const
@@ -1077,302 +1338,47 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
     const QDateTime minimum = getMinimum();
     const QDateTime maximum = getMaximum();
 
-    State state = Acceptable;
-
-    QDateTime finalValue;
-    bool conflicts = false;
-    const int sectionNodesCount = sectionNodes.size();
-
     QDTPDEBUG << "parse" << input;
-    {
-        int pos = 0;
-        int year, month, day;
-        const QDate defaultDate = defaultValue.date();
-        const QTime defaultTime = defaultValue.time();
-        defaultDate.getDate(&year, &month, &day);
-        int year2digits = year % 100;
-        int hour = defaultTime.hour();
-        int hour12 = -1;
-        int minute = defaultTime.minute();
-        int second = defaultTime.second();
-        int msec = defaultTime.msec();
-        int dayofweek = defaultDate.dayOfWeek();
-        Qt::TimeSpec tspec = defaultValue.timeSpec();
-        int zoneOffset = 0; // In seconds; local - UTC
-        QTimeZone timeZone;
-        switch (tspec) {
-        case Qt::OffsetFromUTC: // timeZone is ignored
-            zoneOffset = defaultValue.offsetFromUtc();
-            break;
-        case Qt::TimeZone:
-            timeZone = defaultValue.timeZone();
-            if (timeZone.isValid())
-                zoneOffset = timeZone.offsetFromUtc(defaultValue);
-            // else: is there anything we can do about this ?
-            break;
-        default: // zoneOffset and timeZone are ignored
-            break;
-        }
+    StateNode scan = scanString(defaultValue, fixup, &input);
+    cursorPosition += scan.padded;
+    QDTPDEBUGN("'%s' => '%s'(%s)", input.toLatin1().constData(),
+               scan.value.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")).toLatin1().constData(),
+               stateName(scan.state).toLatin1().constData());
 
-        int ampm = -1;
-        Sections isSet = NoSection;
-
-        for (int index=0; state != Invalid && index<sectionNodesCount; ++index) {
-            if (QStringRef(&input, pos, separators.at(index).size()) != separators.at(index)) {
-                QDTPDEBUG << "invalid because" << input.midRef(pos, separators.at(index).size())
-                          << "!=" << separators.at(index)
-                          << index << pos << currentSectionIndex;
-                state = Invalid;
-                goto end;
-            }
-            pos += separators.at(index).size();
-            sectionNodes[index].pos = pos;
-            int *current = 0;
-            const SectionNode sn = sectionNodes.at(index);
-            ParsedSection sect;
-
-            {
-                const QDate date = actualDate(isSet, year, year2digits, month, day, dayofweek);
-                const QTime time = actualTime(isSet, hour, hour12, ampm, minute, second, msec);
-                sect = parseSection(tspec == Qt::TimeZone
-                                    ? QDateTime(date, time, timeZone)
-                                    : QDateTime(date, time, tspec, zoneOffset),
-                                    index, pos, &input);
-            }
-            cursorPosition += sect.zeroes;
-            QDTPDEBUG << "sectionValue" << sn.name() << input
-                      << "pos" << pos << "used" << sect.used << stateName(sect.state);
-            if (fixup && sect.state == Intermediate && sect.used < sn.count) {
-                const FieldInfo fi = fieldInfo(index);
-                if ((fi & (Numeric|FixedWidth)) == (Numeric|FixedWidth)) {
-                    const QString newText = QString::fromLatin1("%1").arg(sect.value, sn.count, 10, QLatin1Char('0'));
-                    input.replace(pos, sect.used, newText);
-                    sect.used = sn.count;
-                }
-            }
-
-            state = qMin<State>(state, sect.state);
-            if (state == Intermediate && context == FromString) {
-                state = Invalid;
-                break;
-            }
-
-            if (state != Invalid) {
-                switch (sn.type) {
-                case TimeZoneSection:
-                    current = &zoneOffset;
-                    if (sect.used > 0) {
-                        // Synchronize with what findTimeZone() found:
-                        QStringRef zoneName = input.midRef(pos, sect.used);
-                        Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
-                        const QByteArray latinZone(zoneName.toLatin1());
-                        timeZone = QTimeZone(latinZone);
-                        tspec = timeZone.isValid()
-                            ? (QTimeZone::isTimeZoneIdAvailable(latinZone)
-                               ? Qt::TimeZone
-                               : Qt::OffsetFromUTC)
-                            : (Q_ASSERT(startsWithLocalTimeZone(zoneName)), Qt::LocalTime);
-                    }
-                    break;
-                case Hour24Section: current = &hour; break;
-                case Hour12Section: current = &hour12; break;
-                case MinuteSection: current = &minute; break;
-                case SecondSection: current = &second; break;
-                case MSecSection: current = &msec; break;
-                case YearSection: current = &year; break;
-                case YearSection2Digits: current = &year2digits; break;
-                case MonthSection: current = &month; break;
-                case DayOfWeekSectionShort:
-                case DayOfWeekSectionLong: current = &dayofweek; break;
-                case DaySection: current = &day; sect.value = qMax<int>(1, sect.value); break;
-                case AmPmSection: current = &ampm; break;
-                default:
-                    qWarning("QDateTimeParser::parse Internal error (%s)",
-                             qPrintable(sn.name()));
-                    break;
-                }
-
-                if (sect.used > 0)
-                    pos += sect.used;
-                QDTPDEBUG << index << sn.name() << "is set to"
-                          << pos << "state is" << stateName(state);
-
-                if (!current) {
-                    qWarning("QDateTimeParser::parse Internal error 2");
-                    return StateNode();
-                }
-                if (isSet & sn.type && *current != sect.value) {
-                    QDTPDEBUG << "CONFLICT " << sn.name() << *current << sect.value;
-                    conflicts = true;
-                    if (index != currentSectionIndex || sect.state == Invalid) {
-                        continue;
-                    }
-                }
-                if (sect.state != Invalid)
-                    *current = sect.value;
-
-                // Record the present section:
-                isSet |= sn.type;
-            }
-        }
-
-        if (state != Invalid && QStringRef(&input, pos, input.size() - pos) != separators.last()) {
-            QDTPDEBUG << "invalid because" << input.midRef(pos)
-                      << "!=" << separators.last() << pos;
-            state = Invalid;
-        }
-
-        if (state != Invalid) {
-            if (parserType != QVariant::Time) {
-                if (year % 100 != year2digits && (isSet & YearSection2Digits)) {
-                    if (!(isSet & YearSection)) {
-                        year = (year / 100) * 100;
-                        year += year2digits;
-                    } else {
-                        conflicts = true;
-                        const SectionNode &sn = sectionNode(currentSectionIndex);
-                        if (sn.type == YearSection2Digits) {
-                            year = (year / 100) * 100;
-                            year += year2digits;
-                        }
-                    }
-                }
-
-                const QDate date(year, month, day);
-                const int diff = dayofweek - date.dayOfWeek();
-                if (diff != 0 && state == Acceptable && isSet & DayOfWeekSectionMask) {
-                    if (isSet & DaySection)
-                        conflicts = true;
-                    const SectionNode &sn = sectionNode(currentSectionIndex);
-                    if (sn.type & DayOfWeekSectionMask || currentSectionIndex == -1) {
-                        // dayofweek should be preferred
-                        day += diff;
-                        if (day <= 0) {
-                            day += 7;
-                        } else if (day > date.daysInMonth()) {
-                            day -= 7;
-                        }
-                        QDTPDEBUG << year << month << day << dayofweek
-                                  << diff << QDate(year, month, day).dayOfWeek();
-                    }
-                }
-
-                bool needfixday = false;
-                if (sectionType(currentSectionIndex) & DaySectionMask) {
-                    cachedDay = day;
-                } else if (cachedDay > day) {
-                    day = cachedDay;
-                    needfixday = true;
-                }
-
-                if (!QDate::isValid(year, month, day)) {
-                    if (day < 32) {
-                        cachedDay = day;
-                    }
-                    if (day > 28 && QDate::isValid(year, month, 1)) {
-                        needfixday = true;
-                    }
-                }
-                if (needfixday) {
-                    if (context == FromString) {
-                        state = Invalid;
-                        goto end;
-                    }
-                    if (state == Acceptable && fixday) {
-                        day = qMin<int>(day, QDate(year, month, 1).daysInMonth());
-
-                        const QLocale loc = locale();
-                        for (int i=0; i<sectionNodesCount; ++i) {
-                            const SectionNode sn = sectionNode(i);
-                            if (sn.type & DaySection) {
-                                input.replace(sectionPos(sn), sectionSize(i), loc.toString(day));
-                            } else if (sn.type & DayOfWeekSectionMask) {
-                                const int dayOfWeek = QDate(year, month, day).dayOfWeek();
-                                const QLocale::FormatType dayFormat =
-                                    (sn.type == DayOfWeekSectionShort
-                                     ? QLocale::ShortFormat : QLocale::LongFormat);
-                                const QString dayName(loc.dayName(dayOfWeek, dayFormat));
-                                input.replace(sectionPos(sn), sectionSize(i), dayName);
-                            }
-                        }
-                    } else if (state > Intermediate) {
-                        state = Intermediate;
-                    }
-                }
-            }
-
-            if (parserType != QVariant::Date) {
-                if (isSet & Hour12Section) {
-                    const bool hasHour = isSet & Hour24Section;
-                    if (ampm == -1) {
-                        if (hasHour) {
-                            ampm = (hour < 12 ? 0 : 1);
-                        } else {
-                            ampm = 0; // no way to tell if this is am or pm so I assume am
-                        }
-                    }
-                    hour12 = (ampm == 0 ? hour12 % 12 : (hour12 % 12) + 12);
-                    if (!hasHour) {
-                        hour = hour12;
-                    } else if (hour != hour12) {
-                        conflicts = true;
-                    }
-                } else if (ampm != -1) {
-                    if (!(isSet & (Hour24Section))) {
-                        hour = (12 * ampm); // special case. Only ap section
-                    } else if ((ampm == 0) != (hour < 12)) {
-                        conflicts = true;
-                    }
-                }
-
-            }
-
-            {
-                QDate date(year, month, day);
-                QTime time(hour, minute, second, msec);
-                finalValue = tspec == Qt::TimeZone
-                    ? QDateTime(date, time, timeZone)
-                    : QDateTime(date, time, tspec, zoneOffset);
-            }
-            QDTPDEBUG << year << month << day << hour << minute << second << msec;
-        }
-        QDTPDEBUGN("'%s' => '%s'(%s)", input.toLatin1().constData(),
-                   finalValue.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")).toLatin1().constData(),
-                   stateName(state).toLatin1().constData());
-    }
-end:
-    if (finalValue.isValid()) {
-        if (context != FromString && state != Invalid && finalValue < minimum) {
+    if (scan.value.isValid() && scan.state != Invalid) {
+        if (context != FromString && scan.value < minimum) {
             const QLatin1Char space(' ');
-            if (finalValue >= minimum)
+            if (scan.value >= minimum)
                 qWarning("QDateTimeParser::parse Internal error 3 (%s %s)",
-                         qPrintable(finalValue.toString()), qPrintable(minimum.toString()));
+                         qPrintable(scan.value.toString()), qPrintable(minimum.toString()));
 
             bool done = false;
-            state = Invalid;
+            scan.state = Invalid;
+            const int sectionNodesCount = sectionNodes.size();
             for (int i=0; i<sectionNodesCount && !done; ++i) {
                 const SectionNode &sn = sectionNodes.at(i);
                 QString t = sectionText(input, i, sn.pos).toLower();
-                if ((t.size() < sectionMaxSize(i) && (((int)fieldInfo(i) & (FixedWidth|Numeric)) != Numeric))
+                if ((t.size() < sectionMaxSize(i)
+                     && (((int)fieldInfo(i) & (FixedWidth|Numeric)) != Numeric))
                     || t.contains(space)) {
                     switch (sn.type) {
                     case AmPmSection:
                         switch (findAmPm(t, i)) {
                         case AM:
                         case PM:
-                            state = Acceptable;
+                            scan.state = Acceptable;
                             done = true;
                             break;
                         case Neither:
-                            state = Invalid;
+                            scan.state = Invalid;
                             done = true;
                             break;
                         case PossibleAM:
                         case PossiblePM:
                         case PossibleBoth: {
-                            const QDateTime copy(finalValue.addSecs(12 * 60 * 60));
+                            const QDateTime copy(scan.value.addSecs(12 * 60 * 60));
                             if (copy >= minimum && copy <= maximum) {
-                                state = Intermediate;
+                                scan.state = Intermediate;
                                 done = true;
                             }
                             break; }
@@ -1380,19 +1386,18 @@ end:
                         Q_FALLTHROUGH();
                     case MonthSection:
                         if (sn.count >= 3) {
-                            const int finalMonth = finalValue.date().month();
+                            const int finalMonth = scan.value.date().month();
                             int tmp = finalMonth;
                             // I know the first possible month makes the date too early
                             while ((tmp = findMonth(t, tmp + 1, i)) != -1) {
-                                const QDateTime copy(finalValue.addMonths(tmp - finalMonth));
+                                const QDateTime copy(scan.value.addMonths(tmp - finalMonth));
                                 if (copy >= minimum && copy <= maximum)
                                     break; // break out of while
                             }
-                            if (tmp == -1) {
-                                break;
+                            if (tmp != -1) {
+                                scan.state = Intermediate;
+                                done = true;
                             }
-                            state = Intermediate;
-                            done = true;
                             break;
                         }
                         Q_FALLTHROUGH();
@@ -1401,25 +1406,24 @@ end:
                         int toMax;
 
                         if (sn.type & TimeSectionMask) {
-                            if (finalValue.daysTo(minimum) != 0) {
+                            if (scan.value.daysTo(minimum) != 0) {
                                 break;
                             }
-                            const QTime time = finalValue.time();
+                            const QTime time = scan.value.time();
                             toMin = time.msecsTo(minimum.time());
-                            if (finalValue.daysTo(maximum) > 0) {
+                            if (scan.value.daysTo(maximum) > 0)
                                 toMax = -1; // can't get to max
-                            } else {
+                            else
                                 toMax = time.msecsTo(maximum.time());
-                            }
                         } else {
-                            toMin = finalValue.daysTo(minimum);
-                            toMax = finalValue.daysTo(maximum);
+                            toMin = scan.value.daysTo(minimum);
+                            toMax = scan.value.daysTo(maximum);
                         }
                         const int maxChange = sn.maxChange();
                         if (toMin > maxChange) {
                             QDTPDEBUG << "invalid because toMin > maxChange" << toMin
-                                      << maxChange << t << finalValue << minimum;
-                            state = Invalid;
+                                      << maxChange << t << scan.value << minimum;
+                            scan.state = Invalid;
                             done = true;
                             break;
                         } else if (toMax > maxChange) {
@@ -1430,23 +1434,23 @@ end:
                         if (min == -1) {
                             qWarning("QDateTimeParser::parse Internal error 4 (%s)",
                                      qPrintable(sn.name()));
-                            state = Invalid;
+                            scan.state = Invalid;
                             done = true;
                             break;
                         }
 
-                        int max = toMax != -1 ? getDigit(maximum, i) : absoluteMax(i, finalValue);
+                        int max = toMax != -1 ? getDigit(maximum, i) : absoluteMax(i, scan.value);
                         int pos = cursorPosition - sn.pos;
                         if (pos < 0 || pos >= t.size())
                             pos = -1;
-                        if (!potentialValue(t.simplified(), min, max, i, finalValue, pos)) {
+                        if (!potentialValue(t.simplified(), min, max, i, scan.value, pos)) {
                             QDTPDEBUG << "invalid because potentialValue(" << t.simplified() << min << max
                                       << sn.name() << "returned" << toMax << toMin << pos;
-                            state = Invalid;
+                            scan.state = Invalid;
                             done = true;
                             break;
                         }
-                        state = Intermediate;
+                        scan.state = Intermediate;
                         done = true;
                         break; }
                     }
@@ -1456,23 +1460,20 @@ end:
             if (context == FromString) {
                 // optimization
                 Q_ASSERT(maximum.date().toJulianDay() == 4642999);
-                if (finalValue.date().toJulianDay() > 4642999)
-                    state = Invalid;
+                if (scan.value.date().toJulianDay() > 4642999)
+                    scan.state = Invalid;
             } else {
-                if (finalValue > maximum)
-                    state = Invalid;
+                if (scan.value > maximum)
+                    scan.state = Invalid;
             }
 
-            QDTPDEBUG << "not checking intermediate because finalValue is" << finalValue << minimum << maximum;
+            QDTPDEBUG << "not checking intermediate because scanned value is" << scan.value << minimum << maximum;
         }
     }
-    StateNode node;
-    node.input = input;
-    node.state = state;
-    node.conflicts = conflicts;
-    node.value = finalValue.toTimeSpec(spec);
-    text = input;
-    return node;
+    text = scan.input = input;
+    // Set spec *after* all checking, so validity is a property of the string:
+    scan.value = scan.value.toTimeSpec(spec);
+    return scan;
 }
 
 /*
