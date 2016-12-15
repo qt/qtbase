@@ -877,6 +877,188 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
 #ifndef QT_NO_DATESTRING
 /*!
   \internal
+
+  Returns a date consistent with the given data on parts specified by known,
+  while staying as close to the given data as it can.  Returns an invalid date
+  when on valid date is consistent with the data.
+*/
+
+static QDate actualDate(QDateTimeParser::Sections known, int year, int year2digits,
+                        int month, int day, int dayofweek)
+{
+    QDate actual(year, month, day);
+    if (actual.isValid() && year % 100 == year2digits && actual.dayOfWeek() == dayofweek)
+        return actual; // The obvious candidate is fine :-)
+
+    if (dayofweek < 1 || dayofweek > 7) // Invalid: ignore
+        known &= ~QDateTimeParser::DayOfWeekSectionMask;
+
+    // Assuming year > 0 ...
+    if (year % 100 != year2digits) {
+        if (known & QDateTimeParser::YearSection2Digits) {
+            // Over-ride year, even if specified:
+            year += year2digits - year % 100;
+            known &= ~QDateTimeParser::YearSection;
+        } else {
+            year2digits = year % 100;
+        }
+    }
+    Q_ASSERT(year % 100 == year2digits);
+
+    if (month < 1) { // If invalid, clip to nearest valid and ignore in known.
+        month = 1;
+        known &= ~QDateTimeParser::MonthSection;
+    } else if (month > 12) {
+        month = 12;
+        known &= ~QDateTimeParser::MonthSection;
+    }
+
+    QDate first(year, month, 1);
+    int last = known & QDateTimeParser::YearSection && known & QDateTimeParser::MonthSection
+        ? first.daysInMonth() : 0;
+    // If we also know day-of-week, tweak last to the last in the month that matches it:
+    if (last && known & QDateTimeParser::DayOfWeekSectionMask) {
+        int diff = (dayofweek - first.dayOfWeek() - last) % 7;
+        Q_ASSERT(diff <= 0); // C++11 specifies (-ve) % (+ve) to be <= 0.
+        last += diff;
+    }
+    if (day < 1) {
+        if (known & QDateTimeParser::DayOfWeekSectionMask && last) {
+            day = 1 + dayofweek - first.dayOfWeek();
+            if (day < 1)
+                day += 7;
+        } else {
+            day = 1;
+        }
+        known &= ~QDateTimeParser::DaySection;
+    } else if (day > 31) {
+        day = last;
+        known &= ~QDateTimeParser::DaySection;
+    } else if (last && day > last && (known & QDateTimeParser::DaySection) == 0) {
+        day = last;
+    }
+
+    actual = QDate(year, month, day);
+    if (!actual.isValid() // We can't do better than we have, in this case
+        || (known & QDateTimeParser::DaySection
+            && known & QDateTimeParser::MonthSection
+            && known & QDateTimeParser::YearSection) // ditto
+        || actual.dayOfWeek() == dayofweek // Good enough, use it.
+        || (known & QDateTimeParser::DayOfWeekSectionMask) == 0) { // No contradiction, use it.
+        return actual;
+    }
+
+    /*
+      Now it gets trickier.
+
+      We have some inconsistency in our data; we've been told day of week, but
+      it doesn't fit with our year, month and day.  At least one of these is
+      unknown, though: so we can fix day of week by tweaking it.
+    */
+
+    if ((known & QDateTimeParser::DaySection) == 0) {
+        // Relatively easy to fix.
+        day += dayofweek - actual.dayOfWeek();
+        if (day < 1)
+            day += 7;
+        else if (day > actual.daysInMonth())
+            day -= 7;
+        actual = QDate(year, month, day);
+        return actual;
+    }
+
+    if ((known & QDateTimeParser::MonthSection) == 0) {
+        /*
+          Try possible month-offsets, m, preferring small; at least one (present
+          month doesn't work) and at most 11 (max month, 12, minus min, 1); try
+          in both directions, ignoring any offset that takes us out of range.
+        */
+        for (int m = 1; m < 12; m++) {
+            if (m < month) {
+                actual = QDate(year, month - m, day);
+                if (actual.dayOfWeek() == dayofweek)
+                    return actual;
+            }
+            if (m + month <= 12) {
+                actual = QDate(year, month + m, day);
+                if (actual.dayOfWeek() == dayofweek)
+                    return actual;
+            }
+        }
+        // Should only get here in corner cases; e.g. day == 31
+        actual = QDate(year, month, day); // Restore from trial values.
+    }
+
+    if ((known & QDateTimeParser::YearSection) == 0) {
+        if (known & QDateTimeParser::YearSection2Digits) {
+            /*
+              Two-digit year and month are specified; choice of century can only
+              fix this if diff is in one of {1, 2, 5} or {2, 4, 6}; but not if
+              diff is in the other.  It's also only reasonable to consider
+              adjacent century, e.g. if year thinks it's 2012 and two-digit year
+              is '97, it makes sense to consider 1997.  If either adjacent
+              century does work, the other won't.
+            */
+            actual = QDate(year + 100, month, day);
+            if (actual.dayOfWeek() == dayofweek)
+                return actual;
+            actual = QDate(year - 100, month, day);
+            if (actual.dayOfWeek() == dayofweek)
+                return actual;
+        } else {
+            // Offset by 7 is usually enough, but rare cases may need more:
+            for (int y = 1; y < 12; y++) {
+                actual = QDate(year - y, month, day);
+                if (actual.dayOfWeek() == dayofweek)
+                    return actual;
+                actual = QDate(year + y, month, day);
+                if (actual.dayOfWeek() == dayofweek)
+                    return actual;
+            }
+        }
+        actual = QDate(year, month, day); // Restore from trial values.
+    }
+
+    return actual; // It'll just have to do :-(
+}
+
+/*!
+  \internal
+*/
+
+static QTime actualTime(QDateTimeParser::Sections known,
+                        int hour, int hour12, int ampm,
+                        int minute, int second, int msec)
+{
+    // If we have no conflict, or don't know enough to diagonose one, use this:
+    QTime actual(hour, minute, second, msec);
+    if (hour12 < 0 || hour12 > 12) { // ignore bogus value
+        known &= ~QDateTimeParser::Hour12Section;
+        hour12 = hour % 12;
+    }
+
+    if (ampm == -1 || (known & QDateTimeParser::AmPmSection) == 0) {
+        if ((known & QDateTimeParser::Hour12Section) == 0 || hour % 12 == hour12)
+            return actual;
+
+        if ((known & QDateTimeParser::Hour24Section) == 0)
+            hour = hour12 + (hour > 12 ? 12 : 0);
+    } else {
+        Q_ASSERT(ampm == 0 || ampm == 1);
+        if (hour - hour12 == ampm * 12)
+            return actual;
+
+        if ((known & QDateTimeParser::Hour24Section) == 0
+            && known & QDateTimeParser::Hour12Section) {
+            hour = hour12 + ampm * 12;
+        }
+    }
+    actual = QTime(hour, minute, second, msec);
+    return actual;
+}
+
+/*!
+  \internal
 */
 
 QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPosition,
@@ -925,7 +1107,12 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
             const SectionNode sn = sectionNodes.at(index);
             int used;
 
-            num = parseSection(defaultValue, index, input, cursorPosition, pos, tmpstate, &used);
+            num = parseSection(QDateTime(actualDate(isSet, year, year2digits,
+                                                    month, day, dayofweek),
+                                         actualTime(isSet, hour, hour12, ampm,
+                                                    minute, second, msec),
+                                         spec),
+                               index, input, cursorPosition, pos, tmpstate, &used);
             QDTPDEBUG << "sectionValue" << sn.name() << input
                       << "pos" << pos << "used" << used << stateName(tmpstate);
             if (fixup && tmpstate == Intermediate && used < sn.count) {
