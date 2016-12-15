@@ -1594,14 +1594,13 @@ bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, con
     if (pos < 0 || pos >= text.size())
         pos = -1;
 
-    const bool potential = potentialValue(text, min, max, index, current, pos);
-    return !potential;
-
-    /* If the value potentially can become another valid entry we
-     * don't want to skip to the next. E.g. In a M field (month
-     * without leading 0 if you type 1 we don't want to autoskip but
-     * if you type 3 we do
+    /*
+      If the value potentially can become another valid entry we don't want to
+      skip to the next. E.g. In a M field (month without leading 0) if you type
+      1 we don't want to autoskip (there might be [012] following) but if you
+      type 3 we do.
     */
+    return !potentialValue(text, min, max, index, current, pos);
 }
 
 /*!
