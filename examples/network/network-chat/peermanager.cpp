@@ -63,18 +63,14 @@ PeerManager::PeerManager(Client *client)
     this->client = client;
 
     QStringList envVariables;
-    envVariables << "USERNAME.*" << "USER.*" << "USERDOMAIN.*"
-                 << "HOSTNAME.*" << "DOMAINNAME.*";
+    envVariables << "USERNAME" << "USER" << "USERDOMAIN"
+                 << "HOSTNAME" << "DOMAINNAME";
 
-    QStringList environment = QProcess::systemEnvironment();
+    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
     foreach (QString string, envVariables) {
-        int index = environment.indexOf(QRegExp(string));
-        if (index != -1) {
-            QStringList stringList = environment.at(index).split('=');
-            if (stringList.size() == 2) {
-                username = stringList.at(1).toUtf8();
-                break;
-            }
+        if (environment.contains(string)) {
+            username = environment.value(string).toUtf8();
+            break;
         }
     }
 
