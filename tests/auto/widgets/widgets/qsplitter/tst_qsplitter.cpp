@@ -81,6 +81,7 @@ private slots:
     void replaceWidget();
     void replaceWidgetWithSplitterChild_data();
     void replaceWidgetWithSplitterChild();
+    void handleMinimumWidth();
 
     // task-specific tests below me:
     void task187373_addAbstractScrollAreas();
@@ -817,6 +818,29 @@ void tst_QSplitter::replaceWidgetWithSplitterChild()
         QCOMPARE(ef->paintCount, 0);
         QCOMPARE(sp.count(), count);
         QCOMPARE(sp.sizes(), sizes);
+    }
+}
+
+void tst_QSplitter::handleMinimumWidth()
+{
+    MyFriendlySplitter split;
+    split.addWidget(new QLabel("Number Wan"));
+    split.addWidget(new QLabel("Number Too"));
+
+    split.show();
+    QTest::qWaitForWindowExposed(&split);
+    for (int i = 0; i < 10; i++) {
+        split.setHandleWidth(i);
+        QTest::qWait(100); // resizing
+        QCOMPARE(split.handle(1)->width(), qMax(4 + (i & 1), i));
+    }
+
+    split.setOrientation(Qt::Vertical);
+    QTest::qWait(100);
+    for (int i = 0; i < 10; i++) {
+        split.setHandleWidth(i);
+        QTest::qWait(100); // resizing
+        QCOMPARE(split.handle(1)->height(), qMax(4 + (i & 1), i));
     }
 }
 

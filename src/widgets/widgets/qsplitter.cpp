@@ -241,21 +241,24 @@ void QSplitterHandle::resizeEvent(QResizeEvent *event)
 {
     Q_D(const QSplitterHandle);
 
-    // When splitters are only 1 or 0 pixel large we increase the
-    // actual grab area to five pixels
+    // Ensure the actual grab area is at least 4 or 5 pixels
+    const int handleMargin = (5 - d->s->handleWidth()) / 2;
 
     // Note that QSplitter uses contentsRect for layouting
     // and ensures that handles are drawn on top of widgets
     // We simply use the contents margins for draggin and only
     // paint the mask area
-    bool useTinyMode = (d->s->handleWidth() <= 1);
+    const bool useTinyMode = handleMargin > 0;
     setAttribute(Qt::WA_MouseNoMask, useTinyMode);
     if (useTinyMode) {
         if (orientation() == Qt::Horizontal)
-            setContentsMargins(2, 0, 2, 0);
+            setContentsMargins(handleMargin, 0, handleMargin, 0);
         else
-            setContentsMargins(0, 2, 0, 2);
+            setContentsMargins(0, handleMargin, 0, handleMargin);
         setMask(QRegion(contentsRect()));
+    } else {
+        setContentsMargins(0, 0, 0, 0);
+        clearMask();
     }
 
     QWidget::resizeEvent(event);
