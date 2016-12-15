@@ -608,10 +608,8 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
             << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(21, 59, 59, 999), Qt::UTC)
             << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(23, 59, 59, 999));
     QTest::newRow("min")
-            // + 1 because, in the reference check below, calling addMSecs(qint64min)
-            // will internally apply unary minus to -qint64min, resulting in a
-            // positive value 1 too big for qint64max, causing an overflow.
-            << std::numeric_limits<qint64>::min() + 1
+            // Use -max(), which is min() + 1, to simplify filtering out overflow cases:
+            << -std::numeric_limits<qint64>::max()
             << QDateTime(QDate(-292275056, 5, 16), QTime(16, 47, 4, 193), Qt::UTC)
             << QDateTime(QDate(-292275056, 5, 16), QTime(17, 47, 4, 193), Qt::LocalTime);
     QTest::newRow("max")
@@ -689,8 +687,8 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     QDateTime dtUtc = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
     QDateTime dtOffset = QDateTime::fromMSecsSinceEpoch(msecs, Qt::OffsetFromUTC, 60*60);
 
-    // LocalTime will overflow for min or max, depending on whether you're
-    // East or West of Greenwich. The test passes at GMT.
+    // LocalTime will overflow for "min" or "max" tests, depending on whether
+    // you're East or West of Greenwich.  In UTC, we won't overflow.
     if (localTimeType == LocalTimeIsUtc
             || msecs != std::numeric_limits<qint64>::max() * localTimeType)
         QCOMPARE(dtLocal, utc);
