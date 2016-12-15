@@ -200,13 +200,24 @@ private:
     int sectionMaxSize(Section s, int count) const;
     QString sectionText(const QString &text, int sectionIndex, int index) const;
 #ifndef QT_NO_DATESTRING
-    int parseSection(const QDateTime &currentValue, int sectionIndex, QString &txt, int &cursorPosition,
-                     int index, QDateTimeParser::State &state, int *used = 0) const;
+    struct ParsedSection {
+        int value;
+        int used;
+        int zeroes;
+        State state;
+        Q_DECL_CONSTEXPR ParsedSection(State ok = Invalid,
+                                       int val = 0, int read = 0, int zs = 0)
+            : value(ok == Invalid ? -1 : val), used(read), zeroes(zs), state(ok)
+            {}
+    };
+    ParsedSection parseSection(const QDateTime &currentValue, int sectionIndex,
+                               int offset, QString *text) const;
     int findMonth(const QString &str1, int monthstart, int sectionIndex,
                   QString *monthName = 0, int *used = 0) const;
     int findDay(const QString &str1, int intDaystart, int sectionIndex,
                 QString *dayName = 0, int *used = 0) const;
-    int findTimeZone(QStringRef str, const QDateTime&when, int *used) const;
+    ParsedSection findTimeZone(QStringRef str, const QDateTime &when,
+                               int maxVal, int minVal) const;
     static int startsWithLocalTimeZone(const QStringRef name); // implemented in qdatetime.cpp
 
     enum AmPmFinder {

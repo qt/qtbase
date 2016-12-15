@@ -720,77 +720,64 @@ QString QDateTimeParser::sectionText(int sectionIndex) const
 
 
 #ifndef QT_NO_DATESTRING
-/*!
-  \internal:skipToNextSection
 
-  Parses the part of \a text that corresponds to \a s and returns
-  the value of that field. Sets *stateptr to the right state if
-  stateptr != 0.
-*/
-
-int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
-                                  QString &text, int &cursorPosition, int index,
-                                  State &state, int *usedptr) const
+QDateTimeParser::ParsedSection
+QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
+                              int offset, QString *text) const
 {
-    state = Invalid;
-    int num = 0;
+    ParsedSection result; // initially Invalid
     const SectionNode &sn = sectionNode(sectionIndex);
     if (sn.type & Internal) {
         qWarning("QDateTimeParser::parseSection Internal error (%s %d)",
                  qPrintable(sn.name()), sectionIndex);
-        return -1;
+        return result;
     }
 
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
-    QStringRef sectionTextRef = text.midRef(index, sectionmaxsize);
+    QStringRef sectionTextRef = text->midRef(offset, sectionmaxsize);
 
     QDTPDEBUG << "sectionValue for" << sn.name()
-              << "with text" << text << "and st" << sectionTextRef
-              << text.midRef(index, sectionmaxsize)
-              << index;
+              << "with text" << *text << "and (at" << offset
+              << ") st:" << sectionTextRef;
 
-    int used = 0;
     switch (sn.type) {
     case AmPmSection: {
         QString sectiontext = sectionTextRef.toString();
+        int used;
         const int ampm = findAmPm(sectiontext, sectionIndex, &used);
         switch (ampm) {
         case AM: // sectiontext == AM
         case PM: // sectiontext == PM
-            num = ampm;
-            state = Acceptable;
+            result = ParsedSection(Acceptable, ampm, used);
             break;
         case PossibleAM: // sectiontext => AM
         case PossiblePM: // sectiontext => PM
-            num = ampm - 2;
-            state = Intermediate;
+            result = ParsedSection(Intermediate, ampm - 2, used);
             break;
         case PossibleBoth: // sectiontext => AM|PM
-            num = 0;
-            state = Intermediate;
+            result = ParsedSection(Intermediate, 0, used);
             break;
         case Neither:
-            state = Invalid;
             QDTPDEBUG << "invalid because findAmPm(" << sectiontext << ") returned -1";
             break;
         default:
             QDTPDEBUGN("This should never happen (findAmPm returned %d)", ampm);
             break;
         }
-        if (state != Invalid)
-            text.replace(index, used, sectiontext.constData(), used);
+        if (result.state != Invalid)
+            text->replace(offset, used, sectiontext.constData(), used);
         break; }
     case TimeZoneSection:
-        num = findTimeZone(sectionTextRef, currentValue, &used);
-        state = (used > 0 &&
-                 absoluteMax(sectionIndex) >= num &&
-                 num >= absoluteMin(sectionIndex)) ? Acceptable : Invalid;
+        result = findTimeZone(sectionTextRef, currentValue,
+                              absoluteMax(sectionIndex),
+                              absoluteMin(sectionIndex));
         break;
     case MonthSection:
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong:
         if (sn.count >= 3) {
             QString sectiontext = sectionTextRef.toString();
+            int num = 0, used = 0;
             if (sn.type == MonthSection) {
                 const QDate minDate = getMinimum().date();
                 const int min = (currentValue.date().year() == minDate.year())
@@ -800,11 +787,11 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
                 num = findDay(sectiontext.toLower(), 1, sectionIndex, &sectiontext, &used);
             }
 
+            result = ParsedSection(Intermediate, num, used);
             if (num != -1) {
-                state = (used == sectiontext.size() ? Acceptable : Intermediate);
-                text.replace(index, used, sectiontext.constData(), used);
-            } else {
-                state = Intermediate;
+                text->replace(offset, used, sectiontext.constData(), used);
+                if (used == sectiontext.size())
+                    result = ParsedSection(Acceptable, num, used);
             }
             break;
         }
@@ -819,9 +806,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
     case MSecSection: {
         int sectiontextSize = sectionTextRef.size();
         if (sectiontextSize == 0) {
-            num = 0;
-            used = 0;
-            state = Intermediate;
+            result = ParsedSection(Intermediate);
         } else {
             for (int i = 0; i < sectiontextSize; ++i) {
                 if (sectionTextRef.at(i).isSpace())
@@ -831,8 +816,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
             const int absMax = absoluteMax(sectionIndex);
             QLocale loc;
             bool ok = true;
-            int last = -1;
-            used = -1;
+            int last = -1, used = -1;
 
             const int max = qMin(sectionmaxsize, sectiontextSize);
             QStringRef digitsStr = sectionTextRef.left(max);
@@ -857,42 +841,36 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
 
             if (last == -1) {
                 QChar first(sectionTextRef.at(0));
-                if (separators.at(sectionIndex + 1).startsWith(first)) {
-                    used = 0;
-                    state = Intermediate;
-                } else {
-                    state = Invalid;
+                if (separators.at(sectionIndex + 1).startsWith(first))
+                    result = ParsedSection(Intermediate, 0, used);
+                else
                     QDTPDEBUG << "invalid because" << sectionTextRef << "can't become a uint" << last << ok;
-                }
             } else {
-                num += last;
                 const FieldInfo fi = fieldInfo(sectionIndex);
                 const bool done = (used == sectionmaxsize);
                 if (!done && fi & Fraction) { // typing 2 in a zzz field should be .200, not .002
-                    for (int i=used; i<sectionmaxsize; ++i) {
-                        num *= 10;
-                    }
+                    for (int i = used; i < sectionmaxsize; ++i)
+                        last *= 10;
                 }
                 const int absMin = absoluteMin(sectionIndex);
-                if (num < absMin) {
-                    state = done ? Invalid : Intermediate;
-                    if (done)
-                        QDTPDEBUG << "invalid because" << num << "is less than absoluteMin" << absMin;
-                } else if (num > absMax) {
-                    state = Intermediate;
+                if (last < absMin) {
+                    if (!done) // reversed test to dodge QDTPDEBUG ugliness !
+                        result = ParsedSection(Intermediate, last, used);
+                    else
+                        QDTPDEBUG << "invalid because" << last << "is less than absoluteMin" << absMin;
+                } else if (last > absMax) {
+                    result = ParsedSection(Intermediate, last, used);
                 } else if (!done && (fi & (FixedWidth|Numeric)) == (FixedWidth|Numeric)) {
                     if (skipToNextSection(sectionIndex, currentValue, digitsStr)) {
-                        state = Acceptable;
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
-                        text.insert(index, QString(missingZeroes, QLatin1Char('0')));
-                        used = sectionmaxsize;
-                        cursorPosition += missingZeroes;
+                        result = ParsedSection(Acceptable, last, sectionmaxsize, missingZeroes);
+                        text->insert(offset, QString(missingZeroes, QLatin1Char('0')));
                         ++(const_cast<QDateTimeParser*>(this)->sectionNodes[sectionIndex].zeroesAdded);
                     } else {
-                        state = Intermediate;;
+                        result = ParsedSection(Intermediate, last, used);;
                     }
                 } else {
-                    state = Acceptable;
+                    result = ParsedSection(Acceptable, last, used);
                 }
             }
         }
@@ -900,13 +878,11 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
     default:
         qWarning("QDateTimeParser::parseSection Internal error (%s %d)",
                  qPrintable(sn.name()), sectionIndex);
-        return -1;
+        return result;
     }
+    Q_ASSERT(result.state != Invalid || result.value == -1);
 
-    if (usedptr)
-        *usedptr = used;
-
-    return (state != Invalid ? num : -1);
+    return result;
 }
 
 /*!
@@ -1140,8 +1116,6 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
 
         int ampm = -1;
         Sections isSet = NoSection;
-        int num;
-        State tmpstate;
 
         for (int index=0; state != Invalid && index<sectionNodesCount; ++index) {
             if (QStringRef(&input, pos, separators.at(index).size()) != separators.at(index)) {
@@ -1155,28 +1129,29 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
             sectionNodes[index].pos = pos;
             int *current = 0;
             const SectionNode sn = sectionNodes.at(index);
-            int used;
+            ParsedSection sect;
 
             {
                 const QDate date = actualDate(isSet, year, year2digits, month, day, dayofweek);
                 const QTime time = actualTime(isSet, hour, hour12, ampm, minute, second, msec);
-                num = parseSection(tspec == Qt::TimeZone
-                                   ? QDateTime(date, time, timeZone)
-                                   : QDateTime(date, time, tspec, zoneOffset),
-                                   index, input, cursorPosition, pos, tmpstate, &used);
+                sect = parseSection(tspec == Qt::TimeZone
+                                    ? QDateTime(date, time, timeZone)
+                                    : QDateTime(date, time, tspec, zoneOffset),
+                                    index, pos, &input);
             }
+            cursorPosition += sect.zeroes;
             QDTPDEBUG << "sectionValue" << sn.name() << input
-                      << "pos" << pos << "used" << used << stateName(tmpstate);
-            if (fixup && tmpstate == Intermediate && used < sn.count) {
+                      << "pos" << pos << "used" << sect.used << stateName(sect.state);
+            if (fixup && sect.state == Intermediate && sect.used < sn.count) {
                 const FieldInfo fi = fieldInfo(index);
                 if ((fi & (Numeric|FixedWidth)) == (Numeric|FixedWidth)) {
-                    const QString newText = QString::fromLatin1("%1").arg(num, sn.count, 10, QLatin1Char('0'));
-                    input.replace(pos, used, newText);
-                    used = sn.count;
+                    const QString newText = QString::fromLatin1("%1").arg(sect.value, sn.count, 10, QLatin1Char('0'));
+                    input.replace(pos, sect.used, newText);
+                    sect.used = sn.count;
                 }
             }
 
-            state = qMin<State>(state, tmpstate);
+            state = qMin<State>(state, sect.state);
             if (state == Intermediate && context == FromString) {
                 state = Invalid;
                 break;
@@ -1186,10 +1161,10 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                 switch (sn.type) {
                 case TimeZoneSection:
                     current = &zoneOffset;
-                    if (num != -1 && used > 0) {
+                    if (sect.used > 0) {
                         // Synchronize with what findTimeZone() found:
-                        QStringRef zoneName = input.midRef(pos, used);
-                        Q_ASSERT(!zoneName.isEmpty()); // used > 0
+                        QStringRef zoneName = input.midRef(pos, sect.used);
+                        Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
                         const QByteArray latinZone(zoneName.toLatin1());
                         timeZone = QTimeZone(latinZone);
                         tspec = timeZone.isValid()
@@ -1209,7 +1184,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                 case MonthSection: current = &month; break;
                 case DayOfWeekSectionShort:
                 case DayOfWeekSectionLong: current = &dayofweek; break;
-                case DaySection: current = &day; num = qMax<int>(1, num); break;
+                case DaySection: current = &day; sect.value = qMax<int>(1, sect.value); break;
                 case AmPmSection: current = &ampm; break;
                 default:
                     qWarning("QDateTimeParser::parse Internal error (%s)",
@@ -1217,7 +1192,8 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                     break;
                 }
 
-                pos += qMax(0, used);
+                if (sect.used > 0)
+                    pos += sect.used;
                 QDTPDEBUG << index << sn.name() << "is set to"
                           << pos << "state is" << stateName(state);
 
@@ -1225,15 +1201,15 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
                     qWarning("QDateTimeParser::parse Internal error 2");
                     return StateNode();
                 }
-                if (isSet & sn.type && *current != num) {
-                    QDTPDEBUG << "CONFLICT " << sn.name() << *current << num;
+                if (isSet & sn.type && *current != sect.value) {
+                    QDTPDEBUG << "CONFLICT " << sn.name() << *current << sect.value;
                     conflicts = true;
-                    if (index != currentSectionIndex || num == -1) {
+                    if (index != currentSectionIndex || sect.state == Invalid) {
                         continue;
                     }
                 }
-                if (num != -1)
-                    *current = num;
+                if (sect.state != Invalid)
+                    *current = sect.value;
 
                 // Record the present section:
                 isSet |= sn.type;
@@ -1589,10 +1565,12 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
 /*!
   \internal
 
-  Returns zone's offset, zone time - UTC time, in seconds.
+  Return's .value is zone's offset, zone time - UTC time, in seconds.
   See QTimeZonePrivate::isValidId() for the format of zone names.
  */
-int QDateTimeParser::findTimeZone(QStringRef str, const QDateTime &when, int *used) const
+QDateTimeParser::ParsedSection
+QDateTimeParser::findTimeZone(QStringRef str, const QDateTime &when,
+                              int maxVal, int minVal) const
 {
     int index = startsWithLocalTimeZone(str);
     int offset;
@@ -1628,19 +1606,11 @@ int QDateTimeParser::findTimeZone(QStringRef str, const QDateTime &when, int *us
             index--; // maybe we collected too much ...
         }
     }
-    /*
-      parseSection() and parse() assume -1 is an error code, but it would be a
-      valid TZ offset; thankfully, it would be a perverse one, so just assert we
-      aren't returning that ... (We could probably safely assert that the offset
-      is a multiple of 300, i.e. 5 minutes, but there *were* some time-zones,
-      historically, violating that.)  On failed parse, we return out of range,
-      instead.
-    */
-    Q_ASSERT(offset != -1);
 
-    if (used)
-        *used = index;
-    return offset;
+    if (index > 0 && maxVal >= offset && offset >= minVal)
+        return ParsedSection(Acceptable, offset, index);
+
+    return ParsedSection();
 }
 
 /*!
@@ -1883,6 +1853,9 @@ bool QDateTimeParser::potentialValue(const QStringRef &str, int min, int max, in
     return false;
 }
 
+/*!
+  \internal
+*/
 bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, const QStringRef &text) const
 {
     Q_ASSERT(text.size() < sectionMaxSize(index));
