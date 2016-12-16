@@ -116,14 +116,14 @@ namespace QTest
 #ifdef QT_WIDGETS_LIB
     inline static bool qWaitForWindowActive(QWidget *widget, int timeout = 1000)
     {
-        if (QWindow *window = widget->windowHandle())
+        if (QWindow *window = widget->window()->windowHandle())
             return qWaitForWindowActive(window, timeout);
         return false;
     }
 
     inline static bool qWaitForWindowExposed(QWidget *widget, int timeout = 1000)
     {
-        if (QWindow *window = widget->windowHandle())
+        if (QWindow *window = widget->window()->windowHandle())
             return qWaitForWindowExposed(window, timeout);
         return false;
     }
