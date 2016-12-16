@@ -168,7 +168,9 @@ inline QQuaternion::QQuaternion() : wp(1.0f), xp(0.0f), yp(0.0f), zp(0.0f) {}
 
 inline QQuaternion::QQuaternion(float aScalar, float xpos, float ypos, float zpos) : wp(aScalar), xp(xpos), yp(ypos), zp(zpos) {}
 
-
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
 inline bool QQuaternion::isNull() const
 {
     return wp == 0.0f && xp == 0.0f && yp == 0.0f && zp == 0.0f;
@@ -178,6 +180,12 @@ inline bool QQuaternion::isIdentity() const
 {
     return wp == 1.0f && xp == 0.0f && yp == 0.0f && zp == 0.0f;
 }
+
+inline bool operator==(const QQuaternion &q1, const QQuaternion &q2)
+{
+    return q1.wp == q2.wp && q1.xp == q2.xp && q1.yp == q2.yp && q1.zp == q2.zp;
+}
+QT_WARNING_POP
 
 inline float QQuaternion::x() const { return xp; }
 inline float QQuaternion::y() const { return yp; }
@@ -275,11 +283,6 @@ inline QQuaternion &QQuaternion::operator/=(float divisor)
     yp /= divisor;
     zp /= divisor;
     return *this;
-}
-
-inline bool operator==(const QQuaternion &q1, const QQuaternion &q2)
-{
-    return q1.wp == q2.wp && q1.xp == q2.xp && q1.yp == q2.yp && q1.zp == q2.zp;
 }
 
 inline bool operator!=(const QQuaternion &q1, const QQuaternion &q2)
