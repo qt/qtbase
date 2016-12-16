@@ -517,6 +517,19 @@ QHostAddress::QHostAddress(const QHostAddress &address)
 QHostAddress::QHostAddress(SpecialAddress address)
     : d(new QHostAddressPrivate)
 {
+    setAddress(address);
+}
+
+/*!
+    \overload
+    \since 5.8
+
+    Sets the special address specified by \a address.
+*/
+void QHostAddress::setAddress(SpecialAddress address)
+{
+    d->clear();
+
     Q_IPV6ADDR ip6;
     memset(&ip6, 0, sizeof ip6);
     quint32 ip4 = INADDR_ANY;
@@ -567,6 +580,7 @@ QHostAddress &QHostAddress::operator=(const QHostAddress &address)
     return *this;
 }
 
+#if QT_DEPRECATED_SINCE(5, 8)
 /*!
     Assigns the host address \a address to this object, and returns a
     reference to this object.
@@ -574,6 +588,20 @@ QHostAddress &QHostAddress::operator=(const QHostAddress &address)
     \sa setAddress()
 */
 QHostAddress &QHostAddress::operator=(const QString &address)
+{
+    setAddress(address);
+    return *this;
+}
+#endif
+
+/*!
+    \since 5.8
+    Assigns the special address \a address to this object, and returns a
+    reference to this object.
+
+    \sa setAddress()
+*/
+QHostAddress &QHostAddress::operator=(SpecialAddress address)
 {
     setAddress(address);
     return *this;

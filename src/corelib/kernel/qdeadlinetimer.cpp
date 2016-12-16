@@ -122,6 +122,7 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
 
     \code
         using namespace std::chrono;
+        using namespace std::chrono_literals;
 
         QDeadlineTimer deadline(30s);
         device->waitForReadyRead(deadline);
@@ -141,6 +142,7 @@ Q_DECL_CONST_FUNCTION static inline QPair<qint64, qint64> toSecsAndNSecs(qint64 
 
     \code
         using namespace std::chrono;
+        using namespace std::chrono_literals;
         auto now = steady_clock::now();
         QDeadlineTimer deadline(now + 1s);
         Q_ASSERT(deadline == now + 1s);
@@ -240,7 +242,7 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) Q_DECL_NOTHROW
     This constructor can be used with C++14's user-defined literals for time, such as in:
 
     \code
-        using namespace std::chrono;
+        using namespace std::chrono_literals;
         QDeadlineTimer deadline(250ms);
     \endcode
 
@@ -333,7 +335,7 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
     This function can be used with C++14's user-defined literals for time, such as in:
 
     \code
-        using namespace std::chrono;
+        using namespace std::chrono_literals;
         deadline.setRemainingTime(250ms);
     \endcode
 

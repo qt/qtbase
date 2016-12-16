@@ -144,9 +144,12 @@ signals:
 private slots:
     void establishRead();
     void handleNewDatagrams(const QList<WinRtDatagram> &datagram);
+    void handleNewData(const QVector<QByteArray> &data);
+    void handleTcpError(QAbstractSocket::SocketError error);
 
 private:
     Q_INVOKABLE void putIntoPendingDatagramsList(const QList<WinRtDatagram> &datagrams);
+    Q_INVOKABLE void putIntoPendingData(const QVector<QByteArray> &data);
 
     Q_DECLARE_PRIVATE(QNativeSocketEngine)
     Q_DISABLE_COPY(QNativeSocketEngine)
@@ -215,22 +218,16 @@ private:
     Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocketListener> tcpListener;
     Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncAction> connectOp;
 
-    // Protected by readOperationsMutex. Written in handleReadyRead (native callback)
-    QVector<Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32>>> pendingReadOps;
-
-    // Protected by readMutex. Written in handleReadyRead (native callback)
-    QBuffer readBytes;
-
     // In case of TCP readMutex protects readBytes and bytesAvailable. In case of UDP it is
     // pendingDatagrams. They are written inside native callbacks (handleReadyRead and
     // handleNewDatagrams/putIntoPendingDatagramsList)
     mutable QMutex readMutex;
 
-    // As pendingReadOps is changed inside handleReadyRead(native callback) it has to be protected
-    QMutex readOperationsMutex;
-
     // Protected by readMutex. Written in handleReadyRead (native callback)
     QAtomicInteger<int> bytesAvailable;
+
+    // Protected by readMutex. Written in handleNewData/putIntoPendingData (native callback)
+    QVector<QByteArray> pendingData;
 
     // Protected by readMutex. Written in handleNewDatagrams/putIntoPendingDatagramsList
     QList<WinRtDatagram> pendingDatagrams;
@@ -246,7 +243,6 @@ private:
     HRESULT handleClientConnection(ABI::Windows::Networking::Sockets::IStreamSocketListener *tcpListener,
                                    ABI::Windows::Networking::Sockets::IStreamSocketListenerConnectionReceivedEventArgs *args);
     HRESULT handleConnectOpFinished(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
-    HRESULT handleReadyRead(ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32> *asyncInfo, ABI::Windows::Foundation::AsyncStatus);
 };
 
 QT_END_NAMESPACE

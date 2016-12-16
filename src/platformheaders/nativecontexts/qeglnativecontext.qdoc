@@ -36,6 +36,12 @@
   that an application using it is only guaranteed to work with the Qt version it was
   developed against.
 
+  \note Due to being public while relying on otherwise hidden EGL types, this header
+  itself does not include \c{EGL/egl.h}. It is the application's responsibility to
+  include egl.h with any appropriate defines (for example, \c{MESA_EGL_NO_X11_HEADERS}
+  or other vendor-specific defines controlling the typedefs for EGL's native resources)
+  before this header.
+
   \sa QOpenGLContext::setNativeHandle(), QOpenGLContext::nativeHandle()
  */
 

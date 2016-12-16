@@ -279,7 +279,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
     for the mutex to become available.
 
     Note: Passing a negative duration as the \a duration is equivalent to
-    calling try_lock(). This behavior is different from tryLock.
+    calling try_lock(). This behavior differs from tryLock().
 
     If the lock was obtained, the mutex must be unlocked with unlock()
     before another thread can successfully lock it.
@@ -303,7 +303,7 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
     for the mutex to become available.
 
     Note: Passing a \a timePoint which has already passed is equivalent
-    to calling try_lock. This behavior is different from tryLock.
+    to calling try_lock(). This behavior differs from tryLock().
 
     If the lock was obtained, the mutex must be unlocked with unlock()
     before another thread can successfully lock it.

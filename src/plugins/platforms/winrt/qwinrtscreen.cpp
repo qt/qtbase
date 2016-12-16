@@ -486,6 +486,9 @@ public:
     QHash<ApplicationView2CallbackRemover, EventRegistrationToken> view2Tokens;
     ComPtr<IApplicationView2> view2;
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+    QAtomicPointer<QWinRTWindow> mouseGrabWindow;
+    QAtomicPointer<QWinRTWindow> keyboardGrabWindow;
+    QWindow *currentPressWindow = 0;
 };
 
 // To be called from the XAML thread
@@ -877,6 +880,44 @@ void QWinRTScreen::lower(QWindow *window)
     handleExpose();
 }
 
+bool QWinRTScreen::setMouseGrabWindow(QWinRTWindow *window, bool grab)
+{
+    Q_D(QWinRTScreen);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << window
+                          << "(" << window->window()->objectName() << "):" << grab;
+
+    if (!grab || window == nullptr)
+        d->mouseGrabWindow = nullptr;
+    else if (d->mouseGrabWindow != window)
+        d->mouseGrabWindow = window;
+    return grab;
+}
+
+QWinRTWindow *QWinRTScreen::mouseGrabWindow() const
+{
+    Q_D(const QWinRTScreen);
+    return d->mouseGrabWindow;
+}
+
+bool QWinRTScreen::setKeyboardGrabWindow(QWinRTWindow *window, bool grab)
+{
+    Q_D(QWinRTScreen);
+    qCDebug(lcQpaWindows) << __FUNCTION__ << window
+                          << "(" << window->window()->objectName() << "):" << grab;
+
+    if (!grab || window == nullptr)
+        d->keyboardGrabWindow = nullptr;
+    else if (d->keyboardGrabWindow != window)
+        d->keyboardGrabWindow = window;
+    return grab;
+}
+
+QWinRTWindow *QWinRTScreen::keyboardGrabWindow() const
+{
+    Q_D(const QWinRTScreen);
+    return d->keyboardGrabWindow;
+}
+
 void QWinRTScreen::updateWindowTitle(const QString &title)
 {
     Q_D(QWinRTScreen);
@@ -1022,7 +1063,11 @@ HRESULT QWinRTScreen::onPointerEntered(ICoreWindow *, IPointerEventArgs *args)
         pointerPoint->get_Position(&point);
         QPoint pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
 
-        QWindowSystemInterface::handleEnterEvent(topWindow(), pos, pos);
+        QWindow *targetWindow = topWindow();
+        if (d->mouseGrabWindow)
+            targetWindow = d->mouseGrabWindow.load()->window();
+
+        QWindowSystemInterface::handleEnterEvent(targetWindow, pos, pos);
     }
     return S_OK;
 }
@@ -1041,7 +1086,11 @@ HRESULT QWinRTScreen::onPointerExited(ICoreWindow *, IPointerEventArgs *args)
 
     d->touchPoints.remove(id);
 
-    QWindowSystemInterface::handleLeaveEvent(0);
+    QWindow *targetWindow = nullptr;
+    if (d->mouseGrabWindow)
+        targetWindow = d->mouseGrabWindow.load()->window();
+
+    QWindowSystemInterface::handleLeaveEvent(targetWindow);
     return S_OK;
 }
 
@@ -1063,7 +1112,12 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     QPointF localPos = pos;
 
     const QPoint posPoint = pos.toPoint();
-    QWindow *targetWindow = windowAt(posPoint);
+    QWindow *windowUnderPointer = windowAt(posPoint);
+    QWindow *targetWindow = windowUnderPointer;
+
+    if (d->mouseGrabWindow)
+        targetWindow = d->mouseGrabWindow.load()->window();
+
     if (targetWindow) {
         const QPointF globalPosDelta = pos - posPoint;
         localPos = targetWindow->mapFromGlobal(posPoint) + globalPosDelta;
@@ -1126,6 +1180,22 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         properties->get_IsXButton2Pressed(&isPressed);
         if (isPressed)
             buttons |= Qt::XButton2;
+
+        // In case of a mouse grab we have to store the target of a press event
+        // to be able to send one additional release event to this target when the mouse
+        // button is released. This is a similar approach to AutoMouseCapture in the
+        // windows qpa backend. Otherwise the release might not be propagated and the original
+        // press event receiver considers a button to still be pressed, as in Qt Quick Controls 1
+        // menus.
+        if (buttons != Qt::NoButton && d->currentPressWindow == nullptr && !d->mouseGrabWindow)
+            d->currentPressWindow = windowUnderPointer;
+        if (!isPressed && d->currentPressWindow && d->mouseGrabWindow) {
+            const QPointF globalPosDelta = pos - posPoint;
+            const QPointF localPressPos = d->currentPressWindow->mapFromGlobal(posPoint) + globalPosDelta;
+
+            QWindowSystemInterface::handleMouseEvent(d->currentPressWindow, localPressPos, pos, buttons, mods);
+            d->currentPressWindow = nullptr;
+        }
 
         QWindowSystemInterface::handleMouseEvent(targetWindow, localPos, pos, buttons, mods);
 

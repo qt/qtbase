@@ -49,7 +49,9 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#if defined(QT_PRINTSUPPORT_LIB)
 #include <QPrintPreviewDialog>
+#endif
 
 #include "mainwindow.h"
 
@@ -210,7 +212,7 @@ QMap<QString, StyleItems> MainWindow::currentPageMap()
     return pageMap;
 }
 
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
 void MainWindow::on_printAction_triggered()
 {
     pageMap = currentPageMap();
@@ -342,4 +344,4 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
 
     painter->restore();
 }
-#endif // QT_NO_PRINTER
+#endif
