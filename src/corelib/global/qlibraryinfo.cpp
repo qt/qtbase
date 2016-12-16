@@ -41,15 +41,18 @@
 #include "qdir.h"
 #include "qstringlist.h"
 #include "qfile.h"
+#include "qtemporaryfile.h"
 #include "qsettings.h"
 #include "qlibraryinfo.h"
 #include "qscopedpointer.h"
 
 #ifdef QT_BUILD_QMAKE
 QT_BEGIN_NAMESPACE
+extern QString qmake_absoluteLocation();
 extern QString qmake_libraryInfoFile();
 QT_END_NAMESPACE
 #else
+# include "qconfig.cpp"
 # include "qcoreapplication.h"
 #endif
 
@@ -57,7 +60,6 @@ QT_END_NAMESPACE
 #  include "private/qcore_mac_p.h"
 #endif
 
-#include "qconfig.cpp"
 #include "archdetect.cpp"
 
 QT_BEGIN_NAMESPACE
@@ -70,9 +72,16 @@ struct QLibrarySettings
 {
     QLibrarySettings();
     void load();
+#ifdef QT_BUILD_QMAKE
+    void loadBuiltinValues(QSettings *config);
+#endif
 
     QScopedPointer<QSettings> settings;
 #ifdef QT_BUILD_QMAKE
+    QString builtinValues[QLibraryInfo::LastHostPath + 1];
+# ifndef Q_OS_WIN
+    QString builtinSettingsPath;
+# endif
     bool haveDevicePaths;
     bool haveEffectiveSourcePaths;
     bool haveEffectivePaths;
@@ -88,6 +97,11 @@ class QLibraryInfoPrivate
 public:
     static QSettings *findConfiguration();
 #ifdef QT_BUILD_QMAKE
+    static void reload()
+    {
+        if (qt_library_settings.exists())
+            qt_library_settings->load();
+    }
     static bool haveGroup(QLibraryInfo::PathGroup group)
     {
         QLibrarySettings *ls = qt_library_settings();
@@ -99,6 +113,25 @@ public:
                          ? ls->haveDevicePaths
                          : ls->havePaths) : false;
     }
+    static bool sysrootify()
+    {
+        // This is actually bogus, as it does not consider post-configure settings.
+        QLibrarySettings *ls = qt_library_settings();
+        return ls ? (!ls->builtinValues[QLibraryInfo::SysrootPath].isEmpty()
+                     && ls->builtinValues[QLibraryInfo::ExtPrefixPath].isEmpty()) : false;
+    }
+    static QString builtinValue(int loc)
+    {
+        QLibrarySettings *ls = qt_library_settings();
+        return ls ? ls->builtinValues[loc] : QString();
+    }
+# ifndef Q_OS_WIN
+    static QString builtinSettingsPath()
+    {
+        QLibrarySettings *ls = qt_library_settings();
+        return ls ? ls->builtinSettingsPath : QString();
+    }
+# endif
 #endif
     static QSettings *configuration()
     {
@@ -121,6 +154,20 @@ QLibrarySettings::QLibrarySettings()
 {
     load();
 }
+
+#ifdef QT_BUILD_QMAKE
+static QByteArray qtconfSeparator()
+{
+# ifdef Q_OS_WIN
+    QByteArray header = QByteArrayLiteral("\r\n===========================================================\r\n");
+# else
+    QByteArray header = QByteArrayLiteral("\n===========================================================\n");
+# endif
+    QByteArray content = QByteArrayLiteral("==================== qt.conf beginning ====================");
+    // Assemble from pieces to avoid that the string appears in a raw executable
+    return header + content + header;
+}
+#endif
 
 void QLibrarySettings::load()
 {
@@ -159,6 +206,27 @@ void QLibrarySettings::load()
         havePaths = false;
 #endif
     }
+
+#ifdef QT_BUILD_QMAKE
+    // Try to use an embedded qt.conf appended to the QMake executable.
+    QFile qmakeFile(qmake_absoluteLocation());
+    if (!qmakeFile.open(QIODevice::ReadOnly))
+        return;
+    qmakeFile.seek(qmakeFile.size() - 10000);
+    QByteArray tail = qmakeFile.read(10000);
+    QByteArray separator = qtconfSeparator();
+    int qtconfOffset = tail.lastIndexOf(separator);
+    if (qtconfOffset < 0)
+        return;
+    tail.remove(0, qtconfOffset + separator.size());
+    // If QSettings had a c'tor taking a QIODevice, we'd pass a QBuffer ...
+    QTemporaryFile tmpFile;
+    tmpFile.open();
+    tmpFile.write(tail);
+    tmpFile.close();
+    QSettings builtinSettings(tmpFile.fileName(), QSettings::IniFormat);
+    loadBuiltinValues(&builtinSettings);
+#endif
 }
 
 QSettings *QLibraryInfoPrivate::findConfiguration()
@@ -420,9 +488,29 @@ static const struct {
     { "HostData", "." },
     { "TargetSpec", "" },
     { "HostSpec", "" },
+    { "ExtPrefix", "" },
     { "HostPrefix", "" },
 #endif
 };
+
+#ifdef QT_BUILD_QMAKE
+void QLibrarySettings::loadBuiltinValues(QSettings *config)
+{
+    config->beginGroup(QLatin1String("Paths"));
+    for (int i = 0; i <= QLibraryInfo::LastHostPath; i++)
+        builtinValues[i] = config->value(QLatin1String(qtConfEntries[i].key),
+                                         QLatin1String(qtConfEntries[i].value)).toString();
+# ifndef Q_OS_WIN
+    builtinSettingsPath = config->value(QLatin1String("Settings")).toString();
+# endif
+    config->endGroup();
+}
+
+void QLibraryInfo::reload()
+{
+    QLibraryInfoPrivate::reload();
+}
+#endif
 
 /*!
   Returns the location specified by \a loc.
@@ -434,7 +522,7 @@ QLibraryInfo::location(LibraryLocation loc)
     QString ret = rawLocation(loc, FinalPaths);
 
     // Automatically prepend the sysroot to target paths
-    if ((loc < SysrootPath || loc > LastHostPath) && QT_CONFIGURE_SYSROOTIFY_PREFIX) {
+    if ((loc < SysrootPath || loc > LastHostPath) && QLibraryInfoPrivate::sysrootify()) {
         QString sysroot = rawLocation(SysrootPath, FinalPaths);
         if (!sysroot.isEmpty() && ret.length() > 2 && ret.at(1) == QLatin1Char(':')
             && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\')))
@@ -528,28 +616,32 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 #endif // QT_NO_SETTINGS
 
     if (!fromConf) {
+#ifdef QT_BUILD_QMAKE
+        if ((unsigned)loc <= (unsigned)LastHostPath) {
+            if (loc == PrefixPath && group != DevicePaths)
+                ret = QLibraryInfoPrivate::builtinValue(ExtPrefixPath);
+            else
+                ret = QLibraryInfoPrivate::builtinValue(loc);
+# ifndef Q_OS_WIN // On Windows we use the registry
+        } else if (loc == SettingsPath) {
+            ret = QLibraryInfoPrivate::builtinSettingsPath();
+# endif
+        }
+#else // QT_BUILD_QMAKE
         const char * volatile path = 0;
         if (loc == PrefixPath) {
-            path =
-#ifdef QT_BUILD_QMAKE
-                (group != DevicePaths) ?
-                    QT_CONFIGURE_EXT_PREFIX_PATH :
-#endif
-                    QT_CONFIGURE_PREFIX_PATH;
+            path = QT_CONFIGURE_PREFIX_PATH;
         } else if (unsigned(loc) <= sizeof(qt_configure_str_offsets)/sizeof(qt_configure_str_offsets[0])) {
             path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
 #ifndef Q_OS_WIN // On Windows we use the registry
         } else if (loc == SettingsPath) {
             path = QT_CONFIGURE_SETTINGS_PATH;
 #endif
-#ifdef QT_BUILD_QMAKE
-        } else if (loc == HostPrefixPath) {
-            path = QT_CONFIGURE_HOST_PREFIX_PATH;
-#endif
         }
 
         if (path)
             ret = QString::fromLocal8Bit(path);
+#endif
     }
 
 #ifdef QT_BUILD_QMAKE

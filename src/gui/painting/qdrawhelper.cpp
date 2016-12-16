@@ -844,6 +844,7 @@ template <QPixelLayout::BPP bpp> static
 uint QT_FASTCALL fetchPixel(const uchar *, int)
 {
     Q_UNREACHABLE();
+    return 0;
 }
 
 template <>
@@ -1581,7 +1582,7 @@ static const uint *QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, 
     if (bpp != QPixelLayout::BPPNone) // Like this to not ICE on GCC 5.3.1
         Q_ASSERT(layout->bpp == bpp);
     // When templated 'fetch' should be inlined at compile time:
-    const FetchPixelFunc fetch = (bpp == QPixelLayout::BPPNone) ? qFetchPixel[layout->bpp] : fetchPixel<bpp>;
+    const FetchPixelFunc fetch = (bpp == QPixelLayout::BPPNone) ? qFetchPixel[layout->bpp] : FetchPixelFunc(fetchPixel<bpp>);
 
     uint *const end = buffer + length;
     uint *b = buffer;
@@ -2532,8 +2533,8 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
     if (bpp != QPixelLayout::BPPNone) // Like this to not ICE on GCC 5.3.1
         Q_ASSERT(layout->bpp == bpp);
     // When templated 'fetch' should be inlined at compile time:
-    const FetchPixelsFunc fetch = (bpp == QPixelLayout::BPPNone) ? qFetchPixels[layout->bpp] : fetchPixels<bpp>;
-    const FetchPixelFunc fetch1 = (bpp == QPixelLayout::BPPNone) ? qFetchPixel[layout->bpp] : fetchPixel<bpp>;
+    const FetchPixelsFunc fetch = (bpp == QPixelLayout::BPPNone) ? qFetchPixels[layout->bpp] : FetchPixelsFunc(fetchPixels<bpp>);
+    const FetchPixelFunc fetch1 = (bpp == QPixelLayout::BPPNone) ? qFetchPixel[layout->bpp] : FetchPixelFunc(fetchPixel<bpp>);
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;

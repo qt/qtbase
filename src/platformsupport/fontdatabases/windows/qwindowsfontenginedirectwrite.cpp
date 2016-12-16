@@ -663,7 +663,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
     glyphRun.glyphOffsets = &glyphOffset;
 
     QTransform xform = originalTransform;
-    if (fontDef.stretch != 100)
+    if (fontDef.stretch != 100 && fontDef.stretch != QFont::AnyStretch)
         xform.scale(fontDef.stretch / 100.0, 1.0);
 
     DWRITE_MATRIX transform;
@@ -933,7 +933,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     Q_UNUSED(format);
 
     QTransform matrix = originalTransform;
-    if (fontDef.stretch != 100)
+    if (fontDef.stretch != 100 && fontDef.stretch != QFont::AnyStretch)
         matrix.scale(fontDef.stretch / 100.0, 1.0);
 
     glyph_metrics_t bbox = QFontEngine::boundingBox(glyph, matrix); // To get transformed advance

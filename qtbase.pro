@@ -28,7 +28,6 @@ QMAKE_DISTCLEAN += \
     config.tests/.qmake.cache \
     mkspecs/qconfig.pri \
     mkspecs/qdevice.pri \
-    mkspecs/qhost.pri \
     mkspecs/qmodule.pri \
     src/corelib/global/qconfig.h \
     src/corelib/global/qconfig_p.h \
@@ -79,7 +78,7 @@ prefix_build|!equals(PWD, $$OUT_PWD) {
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
 mkspecs.files = \
     $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri \
-    $$OUT_PWD/mkspecs/qdevice.pri $$OUT_PWD/mkspecs/qhost.pri \
+    $$OUT_PWD/mkspecs/qdevice.pri \
     $$files($$PWD/mkspecs/*)
 mkspecs.files -= $$PWD/mkspecs/modules $$PWD/mkspecs/modules-inst
 INSTALLS += mkspecs

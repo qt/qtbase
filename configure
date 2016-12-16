@@ -84,9 +84,8 @@ if [ x"$1" = x"-top-level" ]; then
     shift
 fi
 
-CFG_REDO=no
-OPT_CMDLINE=  # excluding -verbose (for config.opt)
-QMAKE_CMDLINE=  # including -verbose (for actual parsing)
+OPT_CMDLINE=  # expanded version for the script
+QMAKE_CMDLINE=  # verbatim version for qmake call
 set -f  # suppress globbing in for loop
 SAVED_IFS=$IFS
 IFS='
@@ -105,13 +104,7 @@ for i in "$@"; do
             for a in `cat $optfile`; do
                 OPT_CMDLINE="$OPT_CMDLINE
 $a"
-                QMAKE_CMDLINE="$QMAKE_CMDLINE
-$a"
             done
-            CFG_REDO=yes  # suppress repeated config.opt writeout
-            continue
-            ;;
-        -v|-verbose|--verbose|-no-v|-no-verbose|--no-verbose)
             ;;
         *)
             OPT_CMDLINE="$OPT_CMDLINE
@@ -122,42 +115,15 @@ $i"
 $i"
 done
 set --
-for i in $QMAKE_CMDLINE; do
+for i in $OPT_CMDLINE; do
     set -- "$@" "$i"
 done
 set +f
 IFS=$SAVED_IFS
 
-# initialize global variables
-DEVICE_VARS_FILE=.device.vars
-HOST_VARS_FILE=.host.vars
-
-:> "$DEVICE_VARS_FILE"
-:> "$HOST_VARS_FILE"
-
 #-------------------------------------------------------------------------------
 # utility functions
 #-------------------------------------------------------------------------------
-
-makeabs()
-{
-    local FILE="$1"
-    local RES="$FILE"
-    if [ -z "${FILE##/*}" ]; then
-        true
-    elif [ "$OSTYPE" = "msys" -a -z "${FILE##[a-zA-Z]:[/\\]*}" ]; then
-        true
-    else
-        RES=$PWD/$FILE
-    fi
-    RES=$RES/
-    while true; do
-        nres=`echo "$RES" | sed 's,/[^/][^/]*/\.\./,/,g; s,/\./,/,g'`
-        test x"$nres" = x"$RES" && break
-        RES=$nres
-    done
-    echo "$RES" | sed 's,//,/,g; s,/$,,'
-}
 
 # Helper function for getQMakeConf. It parses include statements in
 # qmake.conf and prints out the expanded file
@@ -172,15 +138,7 @@ expandQMakeConf()
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
-            expandQMakeConf "$conf_file" "$2"
-        ;;
-        *load\(device_config\)*)
-            conf_file="$2"
-            if [ ! -f  "$conf_file" ]; then
-                echo "WARNING: Unable to find file $conf_file" >&2
-                continue
-            fi
-            expandQMakeConf "$conf_file" "$2"
+            expandQMakeConf "$conf_file"
         ;;
         *)
             echo "$line"
@@ -194,12 +152,6 @@ extractQMakeVariables()
 BEGIN {
     values["LITERAL_WHITESPACE"] = " "
     values["LITERAL_DOLLAR"] = "$"
-}
-/^!?host_build:/ {
-    scopeStart = index($0, ":") + 1
-    condition = substr($0, 0, scopeStart - 2)
-    if (condition != "'"$1"'") { next }
-    $0 = substr($0, scopeStart)
 }
 /^[_A-Z0-9.]+[ \t]*\+?=/ {
     valStart = index($0, "=") + 1
@@ -325,70 +277,10 @@ macSDKify()
 getQMakeConf()
 {
     if [ -z "$specvals" ]; then
-        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" "$HOST_VARS_FILE" | extractQMakeVariables "host_build"`
+        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" | extractQMakeVariables`
         if [ "$BUILD_ON_MAC" = "yes" ]; then specvals=$(macSDKify "$specvals"); fi
     fi
     getSingleQMakeVariable "$1" "$specvals"
-}
-
-getXQMakeConf()
-{
-    if [ -z "$xspecvals" ]; then
-        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" "$DEVICE_VARS_FILE" | extractQMakeVariables "!host_build"`
-        if [ "$XPLATFORM_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
-    fi
-    getSingleQMakeVariable "$1" "$xspecvals"
-}
-
-#-------------------------------------------------------------------------------
-# device options
-#-------------------------------------------------------------------------------
-DeviceVar()
-{
-    case "$1" in
-        set)
-            eq="="
-            ;;
-        *)
-            echo >&2 "BUG: wrong command to DeviceVar: $1"
-            ;;
-    esac
-
-    echo "$2" "$eq" "$3" >> "$DEVICE_VARS_FILE"
-}
-
-resolveDeviceMkspec()
-{
-    result=$(find "$relpath/mkspecs/devices/" -type d -name "*$1*" | sed "s,^$relpath/mkspecs/,,")
-    match_count=$(echo "$result" | wc -w)
-    if [ "$match_count" -gt 1 ]; then
-        echo >&2 "Error: Multiple matches for device '$1'. Candidates are:"
-        tabbed_result=$(echo "$result" | sed 's,^,    ,')
-        echo >&2 "$tabbed_result"
-        echo "undefined"
-    elif [ "$match_count" -eq 0 ]; then
-        echo >&2 "Error: No device matching '$1'"
-        echo "undefined"
-    else
-        echo "$result"
-    fi
-}
-
-#-------------------------------------------------------------------------------
-# Host options
-#-------------------------------------------------------------------------------
-HostVar()
-{
-    case "$1" in
-        set)
-            eq="="
-            ;;
-        *)
-            echo >&2 "BUG: wrong command to HostVar: $1"
-            ;;
-    esac
-
-    echo "$2" "$eq" "$3" >> "$HOST_VARS_FILE"
 }
 
 #-------------------------------------------------------------------------------
@@ -452,82 +344,17 @@ fi
 # initalize variables
 #-------------------------------------------------------------------------------
 
-# Use CC/CXX to run config.tests
-mkdir -p "$outpath/config.tests"
-rm -f "$outpath/config.tests/.qmake.cache"
-: > "$outpath/config.tests/.qmake.cache"
-
 # QTDIR may be set and point to an old or system-wide Qt installation
 unset QTDIR
 
 # initalize internal variables
 CFG_RELEASE_TOOLS=no
-
-XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
-XPLATFORM_MAC=no        # Whether target platform is macOS, iOS, tvOS, or watchOS
-XPLATFORM_IOS=no        # Whether target platform is iOS
-XPLATFORM_TVOS=no       # Whether target platform is tvOS
-XPLATFORM_WATCHOS=no    # Whether target platform is watchOS
-XPLATFORM_ANDROID=no
-XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 PLATFORM=
-OPT_CONFIRM_LICENSE=no
 OPT_SHADOW=maybe
 OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
-OPT_MAC_SDK=
-COMMERCIAL_USER=ask
 CFG_DEV=no
-
-# initalize variables used for installation
-QT_INSTALL_PREFIX=
-QT_INSTALL_DOCS=
-QT_INSTALL_HEADERS=
-QT_INSTALL_LIBS=
-QT_INSTALL_BINS=
-QT_INSTALL_LIBEXECS=
-QT_INSTALL_PLUGINS=
-QT_INSTALL_IMPORTS=
-QT_INSTALL_QML=
-QT_INSTALL_ARCHDATA=
-QT_INSTALL_DATA=
-QT_INSTALL_TRANSLATIONS=
-QT_INSTALL_SETTINGS=
-QT_INSTALL_EXAMPLES=
-QT_INSTALL_TESTS=
-CFG_SYSROOT=
-QT_HOST_PREFIX=
-QT_HOST_BINS=
-QT_HOST_LIBS=
-QT_HOST_DATA=
-QT_EXT_PREFIX=
-
-# Android vars
-if [ -z "$ANDROID_SDK_ROOT" ]; then
-    if [ "$UNAME_SYSTEM" = "Darwin" ] && [ -d "$HOME/Library/Android/sdk" ]; then
-        ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
-    elif [ "$UNAME_SYSTEM" = "Linux" ] && [ -d "$HOME/Android/Sdk" ]; then
-        ANDROID_SDK_ROOT="$HOME/Android/Sdk"
-    fi
-fi
-
-if [ -z "$ANDROID_NDK_ROOT" ]; then
-    if [ -d "$ANDROID_SDK_ROOT/ndk-bundle" ]; then
-        ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk-bundle"
-    elif [ "$UNAME_SYSTEM" = "Darwin" ] && [ -d "$HOME/Library/Android/sdk/ndk-bundle" ]; then
-        ANDROID_NDK_ROOT="$HOME/Library/Android/sdk/ndk-bundle"
-    elif [ "$UNAME_SYSTEM" = "Linux" ] && [ -d "$HOME/Android/Sdk/ndk-bundle" ]; then
-        ANDROID_NDK_ROOT="$HOME/Android/Sdk/ndk-bundle"
-    fi
-fi
-
-CFG_DEFAULT_ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
-CFG_DEFAULT_ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
-CFG_DEFAULT_ANDROID_PLATFORM=android-16
-CFG_DEFAULT_ANDROID_TARGET_ARCH=armeabi-v7a
-CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION=4.9
-CFG_DEFAULT_ANDROID_NDK_HOST=$ANDROID_NDK_HOST
 
 #-------------------------------------------------------------------------------
 # parse command line arguments
@@ -597,7 +424,6 @@ while [ "$#" -gt 0 ]; do
     -xplatform| \
     -device| \
     -device-option| \
-    -host-option| \
     -sdk| \
     -android-sdk| \
     -android-ndk| \
@@ -646,100 +472,11 @@ while [ "$#" -gt 0 ]; do
 
     UNKNOWN_OPT=no
     case "$VAR" in
-    prefix)
-        QT_INSTALL_PREFIX="$VAL"
-        ;;
-    hostprefix)
-	QT_HOST_PREFIX="$VAL"
-	;;
-    hostdatadir)
-        QT_HOST_DATA="$VAL"
-        ;;
-    hostbindir)
-        QT_HOST_BINS="$VAL"
-        ;;
-    hostlibdir)
-        QT_HOST_LIBS="$VAL"
-        ;;
-    extprefix)
-        QT_EXT_PREFIX="$VAL"
-        ;;
-    docdir)
-        QT_INSTALL_DOCS="$VAL"
-        ;;
-    headerdir)
-        QT_INSTALL_HEADERS="$VAL"
-        ;;
-    plugindir)
-        QT_INSTALL_PLUGINS="$VAL"
-        ;;
-    importdir)
-        QT_INSTALL_IMPORTS="$VAL"
-        ;;
-    qmldir)
-        QT_INSTALL_QML="$VAL"
-        ;;
-    archdatadir)
-        QT_INSTALL_ARCHDATA="$VAL"
-        ;;
-    datadir)
-        QT_INSTALL_DATA="$VAL"
-        ;;
-    libdir)
-        QT_INSTALL_LIBS="$VAL"
-        ;;
-    translationdir)
-        QT_INSTALL_TRANSLATIONS="$VAL"
-        ;;
-    sysconfdir|settingsdir)
-        QT_INSTALL_SETTINGS="$VAL"
-        ;;
-    examplesdir)
-        QT_INSTALL_EXAMPLES="$VAL"
-        ;;
-    testsdir)
-        QT_INSTALL_TESTS="$VAL"
-        ;;
-    sysroot)
-        CFG_SYSROOT="$VAL"
-        ;;
     external-hostbindir)
         CFG_HOST_QT_TOOLS_PATH="$VAL"
-        HostVar set HOST_QT_TOOLS "$VAL"
         ;;
-    bindir)
-        QT_INSTALL_BINS="$VAL"
-        ;;
-    libexecdir)
-        QT_INSTALL_LIBEXECS="$VAL"
-        ;;
-    sdk)
-        if [ "$BUILD_ON_MAC" = "yes" ]; then
-            DeviceVar set !host_build:QMAKE_MAC_SDK "$VAL"
-            OPT_MAC_SDK="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-	;;
     platform)
         PLATFORM="$VAL"
-        ;;
-    xplatform)
-        XPLATFORM="$VAL"
-        ;;
-    device)
-        XPLATFORM=`resolveDeviceMkspec $VAL`
-        [ "$XPLATFORM" = "undefined" ] && exit 101
-        ;;
-    device-option)
-        DEV_VAR=`echo $VAL | cut -d '=' -f 1`
-        DEV_VAL=`echo $VAL | cut -d '=' -f 2-`
-        DeviceVar set $DEV_VAR "$DEV_VAL"
-        ;;
-    host-option)
-        HOST_VAR=`echo $VAL | cut -d '=' -f 1`
-        HOST_VAL=`echo $VAL | cut -d '=' -f 2-`
-        HostVar set $HOST_VAR "$HOST_VAL"
         ;;
     optimized-qmake|optimized-tools)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -748,19 +485,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     developer-build)
         CFG_DEV="yes"
-        ;;
-    commercial)
-        COMMERCIAL_USER="yes"
-        ;;
-    opensource)
-        COMMERCIAL_USER="no"
-        ;;
-    confirm-license)
-        if [ "$VAL" = "yes" ]; then
-            OPT_CONFIRM_LICENSE="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
         ;;
     h|help)
         if [ "$VAL" = "yes" ]; then
@@ -781,24 +505,6 @@ while [ "$#" -gt 0 ]; do
     silent)
         # need to keep this here, to ensure qmake is built silently
         CFG_SILENT="$VAL"
-        ;;
-    android-sdk)
-        CFG_DEFAULT_ANDROID_SDK_ROOT="$VAL"
-        ;;
-    android-ndk)
-        CFG_DEFAULT_ANDROID_NDK_ROOT="$VAL"
-        ;;
-    android-ndk-platform)
-        CFG_DEFAULT_ANDROID_PLATFORM="$VAL"
-        ;;
-    android-ndk-host)
-        CFG_DEFAULT_ANDROID_NDK_HOST="$VAL"
-        ;;
-    android-arch)
-        CFG_DEFAULT_ANDROID_TARGET_ARCH="$VAL"
-        ;;
-    android-toolchain-version)
-        CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
         ;;
     *)
         ;;
@@ -973,115 +679,18 @@ if [ -z "$PLATFORM" ]; then
     esac
 fi
 
-[ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
-
-case "$XPLATFORM" in
-    *win32-g++*)
-        XPLATFORM_MINGW=yes
-        ;;
-    *qnx-*)
-        ;;
-    *haiku-*)
-        ;;
-    *ios*)
-        XPLATFORM_MAC=yes
-        XPLATFORM_IOS=yes
-        ;;
-    *tvos*)
-        XPLATFORM_MAC=yes
-        XPLATFORM_TVOS=yes
-        ;;
-    *watchos*)
-        XPLATFORM_MAC=yes
-        XPLATFORM_WATCHOS=yes
-        ;;
-    *macx*)
-        XPLATFORM_MAC=yes
-        ;;
-    *integrity*)
-        ;;
-    # XPLATFORM_ANDROID should not be set for unsupported/android-g++
-    *unsupported*)
-        ;;
-    *android-g++*)
-        XPLATFORM_ANDROID=g++
-        ;;
-    *android-clang*)
-        XPLATFORM_ANDROID=clang
-        ;;
-esac
-
 #-------------------------------------------------------------------------------
 # command line and environment validation
 #-------------------------------------------------------------------------------
-
-if [ "$XPLATFORM_ANDROID" != "no" ]; then
-    if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
-        case $PLATFORM in
-        linux-*)
-            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
-            elif [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86_64" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86_64
-            fi
-            ;;
-        macx-*)
-            CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86
-            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/darwin-x86_64" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86_64
-            fi
-            ;;
-        win32-*)
-            CFG_DEFAULT_ANDROID_NDK_HOST=windows
-            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/windows-x86_64" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=windows-x86_64
-            fi
-            ;;
-        esac
-    fi
-
-        if [ -z "$CFG_DEFAULT_ANDROID_NDK_ROOT" ]; then
-            echo
-            echo "Can not find Android NDK. Please use -android-ndk option to specify one"
-            exit 1
-        fi
-        if [ -z "$CFG_DEFAULT_ANDROID_SDK_ROOT" ]; then
-            echo
-            echo "Can not find Android SDK. Please use -android-sdk option to specify one"
-            exit 1
-        fi
-        if [ -z "CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION" ] || [ ! -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt" ]; then
-            echo
-            echo "Can not detect Android NDK toolchain. Please use -android-toolchain-version to specify"
-            exit 1
-        fi
-        if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ] || [ ! -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
-            echo
-            echo "Can not detect the android host. Please use -android-ndk-host option to specify one"
-            exit 1
-        fi
-
-        DeviceVar set DEFAULT_ANDROID_SDK_ROOT "$CFG_DEFAULT_ANDROID_SDK_ROOT"
-        DeviceVar set DEFAULT_ANDROID_NDK_ROOT "$CFG_DEFAULT_ANDROID_NDK_ROOT"
-        DeviceVar set DEFAULT_ANDROID_PLATFORM "$CFG_DEFAULT_ANDROID_PLATFORM"
-        DeviceVar set DEFAULT_ANDROID_NDK_HOST "$CFG_DEFAULT_ANDROID_NDK_HOST"
-        DeviceVar set DEFAULT_ANDROID_TARGET_ARCH "$CFG_DEFAULT_ANDROID_TARGET_ARCH"
-        DeviceVar set DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION "$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION"
-fi
 
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
 else
   QMAKESPEC="$relpath/mkspecs/${PLATFORM}"
 fi
-if [ -d "$XPLATFORM" ]; then
-  XQMAKESPEC="$XPLATFORM"
-else
-  XQMAKESPEC="$relpath/mkspecs/${XPLATFORM}"
-fi
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
-   if [ `basename $QMAKESPEC` = "macx-xcode" ] || [ `basename $XQMAKESPEC` = "macx-xcode" ]; then
+   if [ `basename $QMAKESPEC` = "macx-xcode" ]; then
       echo >&2
       echo "   Platform 'macx-xcode' should not be used when building Qt/Mac." >&2
       echo "   Please build Qt/Mac with 'macx-clang' or 'macx-g++', then use" >&2
@@ -1100,26 +709,6 @@ if [ '!' -d "$QMAKESPEC" ]; then
     echo "      $QMAKESPEC"
     echo
     echo "   Please see the README file for a complete list."
-    echo
-    exit 2
-fi
-if [ '!' -d "$XQMAKESPEC" ]; then
-    echo
-    echo "   The specified system/compiler is not supported:"
-    echo
-    echo "      $XQMAKESPEC"
-    echo
-    echo "   Please see the README file for a complete list."
-    echo
-    exit 2
-fi
-if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
-    echo
-    echo "   The specified system/compiler port is not complete:"
-    echo
-    echo "      $XQMAKESPEC/qplatformdefs.h"
-    echo
-    echo "   Please information use the contact form at http://www.qt.io/contact-us"
     echo
     exit 2
 fi
@@ -1155,283 +744,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 
     mkdir -p "$outpath/mkspecs"
 fi
-
-if [ "$XPLATFORM_ANDROID" = "no" ]; then
-    TEST_COMPILER=`getXQMakeConf QMAKE_CXX`
-    GCC_MACHINE_DUMP=
-    case "$TEST_COMPILER" in *g++) GCC_MACHINE_DUMP=$($TEST_COMPILER -dumpmachine);; esac
-    if [ -n "$GCC_MACHINE_DUMP" ]; then
-        DeviceVar set GCC_MACHINE_DUMP $($TEST_COMPILER -dumpmachine)
-    fi
-fi
-
-#-------------------------------------------------------------------------------
-# postprocess installation and deployment paths
-#-------------------------------------------------------------------------------
-
-if [ -z "$QT_INSTALL_PREFIX" ]; then
-    if [ "$CFG_DEV" = "yes" ]; then
-        QT_INSTALL_PREFIX="$outpath" # In Development, we use sandboxed builds by default
-    else
-        QT_INSTALL_PREFIX="/usr/local/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Qt-$QT_VERSION
-    fi
-fi
-QT_INSTALL_PREFIX=`makeabs "$QT_INSTALL_PREFIX"`
-
-if [ -z "$QT_EXT_PREFIX" ]; then
-    QT_EXT_PREFIX=$QT_INSTALL_PREFIX
-    if [ -n "$CFG_SYSROOT" ]; then
-        QMAKE_SYSROOTIFY=true
-    else
-        QMAKE_SYSROOTIFY=false
-    fi
-else
-    QT_EXT_PREFIX=`makeabs "$QT_EXT_PREFIX"`
-    QMAKE_SYSROOTIFY=false
-fi
-
-if [ -z "$QT_HOST_PREFIX" ]; then
-    if $QMAKE_SYSROOTIFY; then
-        QT_HOST_PREFIX=$CFG_SYSROOT$QT_EXT_PREFIX
-    else
-        QT_HOST_PREFIX=$QT_EXT_PREFIX
-    fi
-    HAVE_HOST_PATH=false
-else
-    QT_HOST_PREFIX=`makeabs "$QT_HOST_PREFIX"`
-    HAVE_HOST_PATH=true
-fi
-
-#------- make the paths relative to the prefixes --------
-
-PREFIX_COMPLAINTS=
-PREFIX_REMINDER=false
-while read basevar baseoption var option; do
-    eval path=\$QT_${basevar}_$var
-    [ -z "$path" ] && continue
-    path=`makeabs "$path"`
-    eval base=\$QT_${basevar}_PREFIX
-    rel=${path##$base}
-    if [ x"$rel" = x"$path" ]; then
-        if [ x"$option" != x"sysconf" ]; then
-            PREFIX_COMPLAINTS="$PREFIX_COMPLAINTS
-        NOTICE: -${option}dir is not a subdirectory of ${baseoption}prefix."
-            eval \$HAVE_${basevar}_PATH || PREFIX_REMINDER=true
-        fi
-        eval QT_REL_${basevar}_$var=\$rel
-    elif [ -z "$rel" ]; then
-        eval QT_REL_${basevar}_$var=.
-    else
-        eval QT_REL_${basevar}_$var=\${rel#/}
-    fi
-done <<EOF
-INSTALL - DOCS doc
-INSTALL - HEADERS header
-INSTALL - LIBS lib
-INSTALL - LIBEXECS libexec
-INSTALL - BINS bin
-INSTALL - PLUGINS plugin
-INSTALL - IMPORTS import
-INSTALL - QML qml
-INSTALL - ARCHDATA archdata
-INSTALL - DATA data
-INSTALL - TRANSLATIONS translation
-INSTALL - EXAMPLES examples
-INSTALL - TESTS tests
-INSTALL - SETTINGS sysconf
-HOST -host BINS hostbin
-HOST -host LIBS hostlib
-HOST -host DATA hostdata
-EOF
-$PREFIX_REMINDER && PREFIX_COMPLAINTS="$PREFIX_COMPLAINTS
-        Maybe you forgot to specify -prefix/-hostprefix?"
-
-if [ -z "$QT_REL_INSTALL_HEADERS" ]; then
-    QT_REL_INSTALL_HEADERS=include
-fi
-
-if [ -z "$QT_REL_INSTALL_LIBS" ]; then
-    QT_REL_INSTALL_LIBS=lib
-fi
-
-if [ -z "$QT_REL_INSTALL_BINS" ]; then
-    QT_REL_INSTALL_BINS=bin
-fi
-
-if [ -z "$QT_REL_INSTALL_ARCHDATA" ]; then
-    QT_REL_INSTALL_ARCHDATA=.
-fi
-if [ x"$QT_REL_INSTALL_ARCHDATA" != x. ]; then
-    QT_REL_INSTALL_ARCHDATA_PREFIX=$QT_REL_INSTALL_ARCHDATA/
-fi
-
-if [ -z "$QT_REL_INSTALL_LIBEXECS" ]; then
-    if [ "$XPLATFORM_MINGW" = "yes" ]; then
-        QT_REL_INSTALL_LIBEXECS=${QT_REL_INSTALL_ARCHDATA_PREFIX}bin
-    else
-        QT_REL_INSTALL_LIBEXECS=${QT_REL_INSTALL_ARCHDATA_PREFIX}libexec
-    fi
-fi
-
-if [ -z "$QT_REL_INSTALL_PLUGINS" ]; then
-    QT_REL_INSTALL_PLUGINS=${QT_REL_INSTALL_ARCHDATA_PREFIX}plugins
-fi
-
-if [ -z "$QT_REL_INSTALL_IMPORTS" ]; then
-    QT_REL_INSTALL_IMPORTS=${QT_REL_INSTALL_ARCHDATA_PREFIX}imports
-fi
-
-if [ -z "$QT_REL_INSTALL_QML" ]; then
-    QT_REL_INSTALL_QML=${QT_REL_INSTALL_ARCHDATA_PREFIX}qml
-fi
-
-if [ -z "$QT_REL_INSTALL_DATA" ]; then
-    QT_REL_INSTALL_DATA=.
-fi
-if [ x"$QT_REL_INSTALL_DATA" != x. ]; then
-    QT_REL_INSTALL_DATA_PREFIX=$QT_REL_INSTALL_DATA/
-fi
-
-if [ -z "$QT_REL_INSTALL_DOCS" ]; then
-    QT_REL_INSTALL_DOCS=${QT_REL_INSTALL_DATA_PREFIX}doc
-fi
-
-if [ -z "$QT_REL_INSTALL_TRANSLATIONS" ]; then
-    QT_REL_INSTALL_TRANSLATIONS=${QT_REL_INSTALL_DATA_PREFIX}translations
-fi
-
-if [ -z "$QT_REL_INSTALL_EXAMPLES" ]; then
-    QT_REL_INSTALL_EXAMPLES=examples
-fi
-
-if [ -z "$QT_REL_INSTALL_TESTS" ]; then
-    QT_REL_INSTALL_TESTS=tests
-fi
-
-if [ -z "$QT_REL_INSTALL_SETTINGS" ]; then
-    if [ "$XPLATFORM_MAC" = "yes" ]; then
-        QT_REL_INSTALL_SETTINGS=/Library/Preferences/Qt
-    else
-        QT_REL_INSTALL_SETTINGS=etc/xdg
-    fi
-fi
-
-#------- host paths --------
-
-if [ -z "$QT_REL_HOST_BINS" ]; then
-    if $HAVE_HOST_PATH; then
-        QT_REL_HOST_BINS=bin
-    else
-        QT_REL_HOST_BINS=$QT_REL_INSTALL_BINS
-    fi
-fi
-
-if [ -z "$QT_REL_HOST_LIBS" ]; then
-    if $HAVE_HOST_PATH; then
-        QT_REL_HOST_LIBS=lib
-    else
-        QT_REL_HOST_LIBS=$QT_REL_INSTALL_LIBS
-    fi
-fi
-
-if [ -z "$QT_REL_HOST_DATA" ]; then
-    if $HAVE_HOST_PATH; then
-        QT_REL_HOST_DATA=.
-    else
-        QT_REL_HOST_DATA=$QT_REL_INSTALL_ARCHDATA
-    fi
-fi
-
-shortxspec=`echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
-shortspec=`echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
-
-QT_CONFIGURE_STR_OFF=0
-
-addConfStr()
-{
-    QT_CONFIGURE_STR_OFFSETS="$QT_CONFIGURE_STR_OFFSETS $QT_CONFIGURE_STR_OFF,"
-    QT_CONFIGURE_STRS="$QT_CONFIGURE_STRS    \"$1\\0\"
-"
-    count=`echo "$1" | wc -c`
-    QT_CONFIGURE_STR_OFF=`expr $QT_CONFIGURE_STR_OFF + $count`
-}
-
-QT_CONFIGURE_STR_OFFSETS=
-QT_CONFIGURE_STRS=
-addConfStr "$QT_REL_INSTALL_DOCS"
-addConfStr "$QT_REL_INSTALL_HEADERS"
-addConfStr "$QT_REL_INSTALL_LIBS"
-addConfStr "$QT_REL_INSTALL_LIBEXECS"
-addConfStr "$QT_REL_INSTALL_BINS"
-addConfStr "$QT_REL_INSTALL_PLUGINS"
-addConfStr "$QT_REL_INSTALL_IMPORTS"
-addConfStr "$QT_REL_INSTALL_QML"
-addConfStr "$QT_REL_INSTALL_ARCHDATA"
-addConfStr "$QT_REL_INSTALL_DATA"
-addConfStr "$QT_REL_INSTALL_TRANSLATIONS"
-addConfStr "$QT_REL_INSTALL_EXAMPLES"
-addConfStr "$QT_REL_INSTALL_TESTS"
-QT_CONFIGURE_STR_OFFSETS_ALL=$QT_CONFIGURE_STR_OFFSETS
-QT_CONFIGURE_STRS_ALL=$QT_CONFIGURE_STRS
-
-QT_CONFIGURE_STR_OFFSETS=
-QT_CONFIGURE_STRS=
-addConfStr "$CFG_SYSROOT"
-addConfStr "$QT_REL_HOST_BINS"
-addConfStr "$QT_REL_HOST_LIBS"
-addConfStr "$QT_REL_HOST_DATA"
-addConfStr "$shortxspec"
-addConfStr "$shortspec"
-
-#-------------------------------------------------------------------------------
-# generate qconfig.cpp
-#-------------------------------------------------------------------------------
-[ -d "$outpath/src/corelib/global" ] || mkdir -p "$outpath/src/corelib/global"
-
-cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
-/* Installation date */
-static const char qt_configure_installation          [12+11]    = "qt_instdate=2012-12-20";
-
-/* Installation Info */
-static const char qt_configure_prefix_path_str       [256 + 12] = "qt_prfxpath=$QT_INSTALL_PREFIX";
-#ifdef QT_BUILD_QMAKE
-static const char qt_configure_ext_prefix_path_str   [256 + 12] = "qt_epfxpath=$QT_EXT_PREFIX";
-static const char qt_configure_host_prefix_path_str  [256 + 12] = "qt_hpfxpath=$QT_HOST_PREFIX";
-#endif
-
-static const short qt_configure_str_offsets[] = {
-    $QT_CONFIGURE_STR_OFFSETS_ALL
-#ifdef QT_BUILD_QMAKE
-    $QT_CONFIGURE_STR_OFFSETS
-#endif
-};
-static const char qt_configure_strs[] =
-$QT_CONFIGURE_STRS_ALL#ifdef QT_BUILD_QMAKE
-$QT_CONFIGURE_STRS#endif
-;
-
-#define QT_CONFIGURE_SETTINGS_PATH "$QT_REL_INSTALL_SETTINGS"
-
-#ifdef QT_BUILD_QMAKE
-# define QT_CONFIGURE_SYSROOTIFY_PREFIX $QMAKE_SYSROOTIFY
-#endif
-
-#define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12
-#ifdef QT_BUILD_QMAKE
-# define QT_CONFIGURE_EXT_PREFIX_PATH qt_configure_ext_prefix_path_str + 12
-# define QT_CONFIGURE_HOST_PREFIX_PATH qt_configure_host_prefix_path_str + 12
-#endif
-EOF
-
-# avoid unecessary rebuilds by copying only if qconfig.cpp has changed
-if cmp -s "$outpath/src/corelib/global/qconfig.cpp" "$outpath/src/corelib/global/qconfig.cpp.new"; then
-    rm -f "$outpath/src/corelib/global/qconfig.cpp.new"
-else
-    [ -f "$outpath/src/corelib/global/qconfig.cpp" ] && chmod +w "$outpath/src/corelib/global/qconfig.cpp"
-    mv "$outpath/src/corelib/global/qconfig.cpp.new" "$outpath/src/corelib/global/qconfig.cpp"
-    chmod -w "$outpath/src/corelib/global/qconfig.cpp"
-fi
-
 
 # -----------------------------------------------------------------------------
 # build qmake
@@ -1566,51 +878,16 @@ setBootstrapVariable()
 # create a qt.conf for the Qt build tree itself
 #-------------------------------------------------------------------------------
 
-printInstallPaths()
-{
-    cat <<EOF
-Documentation=$QT_REL_INSTALL_DOCS
-Headers=$QT_REL_INSTALL_HEADERS
-Libraries=$QT_REL_INSTALL_LIBS
-LibraryExecutables=$QT_REL_INSTALL_LIBEXECS
-Binaries=$QT_REL_INSTALL_BINS
-Plugins=$QT_REL_INSTALL_PLUGINS
-Imports=$QT_REL_INSTALL_IMPORTS
-Qml2Imports=$QT_REL_INSTALL_QML
-ArchData=$QT_REL_INSTALL_ARCHDATA
-Data=$QT_REL_INSTALL_DATA
-Translations=$QT_REL_INSTALL_TRANSLATIONS
-Examples=$QT_REL_INSTALL_EXAMPLES
-Tests=$QT_REL_INSTALL_TESTS
-EOF
-}
-
+# Note that this file is just sufficient to boot configure, by which it is
+# replaced in-place with a version which is suitable for building all of Qt.
 QTCONFFILE="$outpath/bin/qt.conf"
 cat > "$QTCONFFILE" <<EOF
 [EffectivePaths]
 Prefix=..
-EOF
-if [ -n "$CFG_HOST_QT_TOOLS_PATH" ]; then
-    cat >> "$QTCONFFILE" <<EOF
-[DevicePaths]
-Prefix=$QT_INSTALL_PREFIX
-`printInstallPaths`
 [Paths]
-Prefix=$QT_EXT_PREFIX
-`printInstallPaths`
-HostPrefix=$QT_HOST_PREFIX
-HostBinaries=$QT_REL_HOST_BINS
-HostLibraries=$QT_REL_HOST_LIBS
-HostData=$QT_REL_HOST_DATA
-TargetSpec=$XPLATFORM
+TargetSpec=dummy
 HostSpec=$PLATFORM
 EOF
-    if [ -n "$CFG_SYSROOT" ]; then
-        cat >> "$QTCONFFILE" <<EOF
-Sysroot=$CFG_SYSROOT
-EOF
-    fi
-fi
 if [ x"$relpath" != x"$outpath" ]; then
     cat >> "$QTCONFFILE" <<EOF
 [EffectiveSourcePaths]
@@ -1620,28 +897,6 @@ fi
 
 [ -z "$CFG_HOST_QT_TOOLS_PATH" ] && CFG_HOST_QT_TOOLS_PATH="$outpath/bin"
 CFG_QMAKE_PATH="$CFG_HOST_QT_TOOLS_PATH/qmake"
-
-#-------------------------------------------------------------------------------
-# write out device config before we run the test.
-#-------------------------------------------------------------------------------
-DEVICE_VARS_OUTFILE="$outpath/mkspecs/qdevice.pri"
-if cmp -s "$DEVICE_VARS_FILE" "$DEVICE_VARS_OUTFILE"; then
-    rm -f "$DEVICE_VARS_FILE"
-else
-    mv -f $DEVICE_VARS_FILE "$DEVICE_VARS_OUTFILE"
-    DEVICE_VARS_FILE="$DEVICE_VARS_OUTFILE"
-fi
-
-#-------------------------------------------------------------------------------
-# write out host config.
-#-------------------------------------------------------------------------------
-HOST_VARS_OUTFILE="$outpath/mkspecs/qhost.pri"
-if cmp -s "$HOST_VARS_FILE" "$HOST_VARS_OUTFILE"; then
-    rm -f "$HOST_VARS_FILE"
-else
-    mv -f $HOST_VARS_FILE "$HOST_VARS_OUTFILE"
-    HOST_VARS_FILE="$HOST_VARS_OUTFILE"
-fi
 
 #-------------------------------------------------------------------------------
 # run configure tests
@@ -1669,33 +924,6 @@ fi
 "$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled" -- "$@" || exit
 
 #-------------------------------------------------------------------------------
-# finally save the executed command to another script
-#-------------------------------------------------------------------------------
-if [ $CFG_REDO = no ]; then
-    if [ "$COMMERCIAL_USER" = "ask" ]; then
-        if grep '^QT_EDITION = OpenSource$' "$outpath/mkspecs/qconfig.pri" >/dev/null 2>&1; then
-            OPT_CMDLINE="$OPT_CMDLINE
--opensource"
-        else
-            OPT_CMDLINE="$OPT_CMDLINE
--commercial"
-        fi
-    fi
-    if [ "$OPT_CONFIRM_LICENSE" = "no" ]; then
-        OPT_CMDLINE="$OPT_CMDLINE
--confirm-license"
-    fi
-
-    # skip first line, as it's always empty due to unconditional field separation
-    echo "$OPT_CMDLINE" | tail -n +2 > config.opt
-
-    [ -f "config.status" ] && rm -f config.status
-    echo "#!/bin/sh" > config.status
-    echo "$relpathMangled/$relconf -redo \"\$@\"" >> config.status
-    chmod +x config.status
-fi
-
-#-------------------------------------------------------------------------------
 # final notes for the user
 #-------------------------------------------------------------------------------
 
@@ -1707,12 +935,7 @@ else
     echo
 fi
 
-if [ -n "$PREFIX_COMPLAINTS" ]; then
-    echo
-    echo "$PREFIX_COMPLAINTS"
-    echo
-fi
-
+QT_INSTALL_PREFIX=`sed -ne 's/^Prefix=//p' < "$outpath/qmake/builtin-qt.conf"`
 MAKE=`basename "$MAKE"`
 echo
 echo Qt is now configured for building. Just run \'$MAKE\'.

@@ -125,6 +125,7 @@ public:
     void setDirectories(const QString &input_dir, const QString &output_dir);
 #ifdef QT_BUILD_QMAKE
     void setQMakeProperty(QMakeProperty *prop) { property = prop; }
+    void reloadProperties() { property->reload(); }
     ProString propertyValue(const ProKey &name) const { return property->value(name); }
 #else
 #  ifdef PROEVALUATOR_INIT_PROPS

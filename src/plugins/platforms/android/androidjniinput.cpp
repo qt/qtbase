@@ -810,7 +810,7 @@ namespace QtAndroidInput
 #endif
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
         if (inputContext && qGuiApp)
-            QMetaObject::invokeMethod(inputContext, "handleLocationChanged",
+            QMetaObject::invokeMethod(inputContext, "handleLocationChanged", Qt::BlockingQueuedConnection,
                                       Q_ARG(int, id), Q_ARG(int, x), Q_ARG(int, y));
 
     }

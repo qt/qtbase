@@ -288,7 +288,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         }
 
         default:
-            qWarning() << "menu item" << m_text << "has unsupported role" << (int)m_role;
+            qWarning() << "Menu item" << m_text << "has unsupported role" << m_role;
         }
 
         if (mergeItem) {

@@ -162,7 +162,8 @@ defineTest(qtConfCommandline_addString) {
     val = $${2}
     isEmpty(val): val = $$qtConfGetNextCommandlineArg()
 
-    contains(val, "^-.*|[A-Z_]+=.*")|isEmpty(val) {
+    # Note: Arguments which are variable assignments are legit here.
+    contains(val, "^-.*")|isEmpty(val) {
         qtConfAddError("No value supplied to command line option '$$opt'.")
         return()
     }
@@ -175,6 +176,17 @@ defineTest(qtConfCommandline_addString) {
 
     config.input.$$opt += $$val
     export(config.input.$$opt)
+}
+
+defineTest(qtConfCommandline_redo) {
+    !exists($$OUT_PWD/config.opt) {
+        qtConfAddError("No config.opt present - cannot redo configuration.")
+        return()
+    }
+    QMAKE_EXTRA_ARGS = $$cat($$OUT_PWD/config.opt, lines) $$QMAKE_EXTRA_ARGS
+    export(QMAKE_EXTRA_ARGS)
+    QMAKE_REDO_CONFIG = true
+    export(QMAKE_REDO_CONFIG)
 }
 
 defineTest(qtConfParseCommandLine) {
@@ -193,29 +205,6 @@ defineTest(qtConfParseCommandLine) {
     for (ever) {
         c = $$qtConfGetNextCommandlineArg()
         isEmpty(c): break()
-
-        # handle options to turn on verbose logging
-        contains(c, "^-v")|contains(c, "^--?verbose") {
-            QMAKE_CONFIG_VERBOSE = true
-            export(QMAKE_CONFIG_VERBOSE)
-            next()
-        }
-        contains(c, "^-no-v")|contains(c, "^--?no-verbose") {
-            QMAKE_CONFIG_VERBOSE = false
-            export(QMAKE_CONFIG_VERBOSE)
-            next()
-        }
-
-        contains(c, "^--?recheck") {
-            QMAKE_CONFIG_CACHE_USE = positive
-            export(QMAKE_CONFIG_CACHE_USE)
-            next()
-        }
-        contains(c, "^--?recheck-all") {
-            QMAKE_CONFIG_CACHE_USE = none
-            export(QMAKE_CONFIG_CACHE_USE)
-            next()
-        }
 
         didCustomCall = false
         for (customCall, customCalls) {
@@ -774,6 +763,7 @@ defineTest(qtConfTest_compile) {
         QMAKE_MAKE = "$$QMAKE_MAKE clean && $$QMAKE_MAKE"
 
     mkpath($$test_out_dir)|error()
+    write_file($$test_out_dir/.qmake.cache)|error()
 
     # add possible command line args
     qmake_args += $$qtConfPrepareArgs($$eval($${1}.args)) $$eval($${1}.literal_args)
@@ -1622,6 +1612,19 @@ defineTest(qtConfOutput_privateFeature) {
     }
 }
 
+# command line built-ins post-processing
+defineTest(qtConfOutput_builtins) {
+    QMAKE_CONFIG_VERBOSE = $$eval(config.input.verbose)
+    isEmpty(QMAKE_CONFIG_VERBOSE): \
+        QMAKE_CONFIG_VERBOSE = false
+    export(QMAKE_CONFIG_VERBOSE)
+
+    QMAKE_CONFIG_CACHE_USE = $$eval(config.input.cache_use)
+    isEmpty(QMAKE_CONFIG_CACHE_USE): \
+        QMAKE_CONFIG_CACHE_USE = all
+    export(QMAKE_CONFIG_CACHE_USE)
+}
+
 defineTest(qtConfProcessOneOutput) {
     feature = $${1}
     fpfx = $${currentConfig}.features.$${feature}
@@ -1657,7 +1660,7 @@ defineTest(qtConfProcessOutput) {
     module = $$eval($${currentConfig}.module)
 
     # write it to the output files
-    isEmpty($${currentConfig}.files._KEYS_) {
+    !defined($${currentConfig}.files._KEYS_, var) {
         # set defaults that should work for most Qt modules
         isEmpty(module): \
             error("Neither module nor files section specified in configuration file.")
@@ -1677,7 +1680,7 @@ defineTest(qtConfProcessOutput) {
                 $${currentConfig}.output.$$type += "$$k -= $$eval($${currentConfig}.output.$${type}.remove.$$k)"
             for (k, $${currentConfig}.output.$${type}.append._KEYS_): \
                 $${currentConfig}.output.$$type += "$$k += $$eval($${currentConfig}.output.$${type}.append.$$k)"
-        } else {
+        } else: contains(type, ".*Header") {
             for (define, $${currentConfig}.output.$${type}._KEYS_) {
                 value = $$eval($${currentConfig}.output.$${type}.$${define})
                 $${currentConfig}.output.$$type += "$${LITERAL_HASH}define $$define $$value"
@@ -1730,6 +1733,8 @@ isEmpty(configsToProcess): \
 load(configure_base)
 
 QMAKE_POST_CONFIGURE =
+config.builtins.dir = $$PWD/data
+configsToProcess = builtins $$configsToProcess
 allConfigs =
 for(ever) {
     isEmpty(configsToProcess): \
@@ -1763,14 +1768,22 @@ for(ever) {
 for (currentConfig, allConfigs): \
     qtConfSetupLibraries()
 
+QMAKE_SAVED_ARGS = $$QMAKE_EXTRA_ARGS
+QMAKE_REDO_CONFIG = false
+qtConfParseCommandLine()
+
+for (currentConfig, allConfigs) {
+    qtConfSetModuleName()
+    qtConfSetupModuleOutputs()
+    # do early checks, mainly to validate the command line
+    qtConfProcessEarlyChecks()
+}
+qtConfCheckErrors()
+
 !isEmpty(_QMAKE_SUPER_CACHE_): \
     QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_SUPER_CACHE_)/config.cache
 else: \
     QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_CACHE_)/config.cache
-QMAKE_CONFIG_CACHE_USE = all
-
-qtConfParseCommandLine()
-
 !equals(QMAKE_CONFIG_CACHE_USE, none) {
     include($$QMAKE_CONFIG_CACHE, , true)
     # this crudely determines when to discard the cache. this also catches the case
@@ -1788,14 +1801,6 @@ equals(QMAKE_CONFIG_CACHE_USE, none) {
 QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
 !equals(QMAKE_CONFIG_CACHE_USE, all): \
     write_file($$QMAKE_CONFIG_LOG, "")
-
-for (currentConfig, allConfigs) {
-    qtConfSetModuleName()
-    qtConfSetupModuleOutputs()
-    # do early checks, mainly to validate the command line
-    qtConfProcessEarlyChecks()
-}
-qtConfCheckErrors()
 
 CONFIG += qt_conf_tests_allowed
 logn()
@@ -1842,12 +1847,16 @@ for (currentConfig, allConfigs) {
 !isEmpty(QT_CONFIGURE_SKIPPED_MODULES): \
     qtConfAddNote("The following modules are not being compiled in this configuration:" $$QT_CONFIGURE_SKIPPED_MODULES)
 
+logn("Done running configuration tests.")
+logn()
+
+!$$QMAKE_REDO_CONFIG {
+    write_file($$OUT_PWD/config.opt, QMAKE_SAVED_ARGS)|error()
+}
+
 # these come from the pri files loaded above.
 for (p, QMAKE_POST_CONFIGURE): \
     eval($$p)
-
-logn("Done running configuration tests.")
-logn()
 
 logn("Configure summary:")
 logn()

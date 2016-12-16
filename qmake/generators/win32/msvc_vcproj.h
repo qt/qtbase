@@ -63,7 +63,8 @@ public:
     static bool hasBuiltinCompiler(const QString &file);
 
     QHash<QString, QStringList> extraCompilerSources;
-    QHash<QString, QStringList> extraCompilerOutputs;
+    QHash<QString, QString> extraCompilerOutputs;
+    const QString customBuildToolFilterFileSuffix;
     bool usePCH;
     VCProjectWriter *projectWriter;
 

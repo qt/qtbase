@@ -579,6 +579,22 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \fn QDebug &QDebug::operator<<(char16_t t)
+    \since 5.5
+
+    Writes the UTF-16 character, \a t, to the stream and returns a reference
+    to the stream.
+*/
+
+/*!
+    \fn QDebug &QDebug::operator<<(char32_t t)
+    \since 5.5
+
+    Writes the UTF-32 character, \a t, to the stream and returns a reference
+    to the stream.
+*/
+
+/*!
     \fn QDebug &QDebug::operator<<(const QString &s)
 
     Writes the string, \a s, to the stream and returns a reference to the

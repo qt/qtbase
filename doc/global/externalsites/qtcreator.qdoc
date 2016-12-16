@@ -82,6 +82,34 @@
     \title Qt Creator: Using Version Control Systems
 */
 /*!
+    \externalpage http://doc.qt.io/qtcreator/creator-vcs-bazaar.html
+    \title Qt Creator: Using Bazaar
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-vcs-clearcase.html
+    \title Qt Creator: Using ClearCase
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-vcs-cvs.html
+    \title Qt Creator: Using CVS
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-vcs-git.html
+    \title Qt Creator: Using Git
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-vcs-mercurial.html
+    \title Qt Creator: Using Mercurial
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-vcs-perforce.html
+    \title Qt Creator: Using Perforce
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-vcs-subversion.html
+    \title Qt Creator: Using Subversion
+*/
+/*!
     \externalpage http://doc.qt.io/qtcreator/creator-keyboard-shortcuts.html
     \title Qt Creator: Keyboard Shortcuts
 */

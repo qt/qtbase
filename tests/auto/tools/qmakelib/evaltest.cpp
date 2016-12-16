@@ -633,6 +633,31 @@ void tst_qmakelib::addControlStructs()
             << ""
             << true;
 
+    QTest::newRow("bypassNesting()")
+            << "defineTest(func) {\n"
+                   "LOCAL = 1\n"
+                   "bypassNesting() {\n"
+                       "OUT = 1\n"
+                       "!isEmpty(GLOBAL): OUT1 = 1\n"
+                       "!isEmpty(LOCAL): OUT2 = 1\n"
+                   "}\n"
+               "}\n"
+               "GLOBAL = 1\n"
+               "func()"
+            << "GLOBAL = 1\nLOCAL = UNDEF\nOUT = 1\nOUT1 = 1\nOUT2 = UNDEF"
+            << ""
+            << true;
+
+    QTest::newRow("error() from bypassNesting()")
+            << "defineTest(func) {\n"
+                   "bypassNesting() { error(error) }\n"
+               "}\n"
+               "func()\n"
+               "OKE = 1"
+            << "OKE = UNDEF"
+            << "Project ERROR: error"
+            << false;
+
     QTest::newRow("top-level return()")
             << "VAR = good\nreturn()\nVAR = bad"
             << "VAR = good"

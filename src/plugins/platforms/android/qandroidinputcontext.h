@@ -152,7 +152,7 @@ private:
         CursorHandleShowPopup = 3
     };
     CursorHandleShowMode m_cursorHandleShown;
-    int m_batchEditNestingLevel;
+    QAtomicInt m_batchEditNestingLevel;
     QObject *m_focusObject;
 };
 

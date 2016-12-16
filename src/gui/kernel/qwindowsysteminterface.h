@@ -129,7 +129,7 @@ public:
         TouchPoint() : id(0), uniqueId(-1), pressure(0), rotation(0), state(Qt::TouchPointStationary) { }
         int id;                 // for application use
         qint64 uniqueId;        // for TUIO: object/token ID; otherwise empty
-                                // TODO for TUIO 2.0: add registerPointerUniqueID(QPointerUniqueId)
+                                // TODO for TUIO 2.0: add registerPointerUniqueID(QPointingDeviceUniqueId)
         QPointF normalPosition; // touch device coordinates, (0 to 1, 0 to 1)
         QRectF area;            // dimensions of the elliptical contact patch, unrotated, and centered at position in screen coordinates
                                 // width is the horizontal diameter, height is the vertical diameter

@@ -44,7 +44,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
-import android.app.Activity;
 import android.net.ConnectivityManager;
 
 public class QtNetworkReceiver
@@ -65,29 +64,29 @@ public class QtNetworkReceiver
 
     private QtNetworkReceiver() {}
 
-    public static void registerReceiver(final Activity activity)
+    public static void registerReceiver(final Context context)
     {
         synchronized (m_lock) {
             if (m_broadcastReceiver == null) {
                 m_broadcastReceiver = new BroadcastReceiverPrivate();
                 IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-                activity.registerReceiver(m_broadcastReceiver, intentFilter);
+                context.registerReceiver(m_broadcastReceiver, intentFilter);
             }
         }
     }
 
-    public static void unregisterReceiver(final Activity activity)
+    public static void unregisterReceiver(final Context context)
     {
         synchronized (m_lock) {
             if (m_broadcastReceiver == null)
                 return;
 
-            activity.unregisterReceiver(m_broadcastReceiver);
+            context.unregisterReceiver(m_broadcastReceiver);
         }
     }
 
-    public static ConnectivityManager getConnectivityManager(final Activity activity)
+    public static ConnectivityManager getConnectivityManager(final Context context)
     {
-        return (ConnectivityManager)activity.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        return (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 }

@@ -1042,6 +1042,10 @@ void QMessagePattern::setPattern(const QString &pattern)
         delete [] literals;
     }
     delete [] tokens;
+    timeArgs.clear();
+#ifdef QLOGGING_HAVE_BACKTRACE
+    backtraceArgs.clear();
+#endif
 
     // scanner
     QList<QString> lexemes;

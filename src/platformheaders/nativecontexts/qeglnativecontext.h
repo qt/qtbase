@@ -41,7 +41,8 @@
 #define QEGLNATIVECONTEXT_H
 
 #include <QtCore/QMetaType>
-#include <QtEglSupport/private/qt_egl_p.h>
+
+// Leave including egl.h with the appropriate defines to the client.
 
 QT_BEGIN_NAMESPACE
 

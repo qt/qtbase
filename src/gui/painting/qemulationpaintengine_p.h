@@ -62,37 +62,37 @@ class QEmulationPaintEngine : public QPaintEngineEx
 public:
     QEmulationPaintEngine(QPaintEngineEx *engine);
 
-    virtual bool begin(QPaintDevice *pdev);
-    virtual bool end();
+    bool begin(QPaintDevice *pdev) override;
+    bool end() override;
 
-    virtual Type type() const;
-    virtual QPainterState *createState(QPainterState *orig) const;
+    Type type() const override;
+    QPainterState *createState(QPainterState *orig) const override;
 
-    virtual void fill(const QVectorPath &path, const QBrush &brush);
-    virtual void stroke(const QVectorPath &path, const QPen &pen);
-    virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
+    void fill(const QVectorPath &path, const QBrush &brush) override;
+    void stroke(const QVectorPath &path, const QPen &pen) override;
+    void clip(const QVectorPath &path, Qt::ClipOperation op) override;
 
-    virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-    virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
-    virtual void drawStaticTextItem(QStaticTextItem *item);
-    virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
-    virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr, Qt::ImageConversionFlags flags);
+    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) override;
+    void drawTextItem(const QPointF &p, const QTextItem &textItem) override;
+    void drawStaticTextItem(QStaticTextItem *item) override;
+    void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s) override;
+    void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr, Qt::ImageConversionFlags flags) override;
 
-    virtual void clipEnabledChanged();
-    virtual void penChanged();
-    virtual void brushChanged();
-    virtual void brushOriginChanged();
-    virtual void opacityChanged();
-    virtual void compositionModeChanged();
-    virtual void renderHintsChanged();
-    virtual void transformChanged();
+    void clipEnabledChanged() override;
+    void penChanged() override;
+    void brushChanged() override;
+    void brushOriginChanged() override;
+    void opacityChanged() override;
+    void compositionModeChanged() override;
+    void renderHintsChanged() override;
+    void transformChanged() override;
 
-    virtual void setState(QPainterState *s);
+    void setState(QPainterState *s) override;
 
-    virtual void beginNativePainting();
-    virtual void endNativePainting();
+    void beginNativePainting() override;
+    void endNativePainting() override;
 
-    virtual uint flags() const {return QPaintEngineEx::IsEmulationEngine | QPaintEngineEx::DoNotEmulate;}
+    uint flags() const override { return QPaintEngineEx::IsEmulationEngine | QPaintEngineEx::DoNotEmulate; }
 
     inline QPainterState *state() { return (QPainterState *)QPaintEngine::state; }
     inline const QPainterState *state() const { return (const QPainterState *)QPaintEngine::state; }

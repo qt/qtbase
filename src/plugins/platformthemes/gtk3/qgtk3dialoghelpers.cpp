@@ -135,10 +135,12 @@ bool QGtk3Dialog::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWind
 
     GdkWindow *gdkWindow = gtk_widget_get_window(gtkWidget);
     if (parent) {
-        GdkDisplay *gdkDisplay = gdk_window_get_display(gdkWindow);
-        XSetTransientForHint(gdk_x11_display_get_xdisplay(gdkDisplay),
-                             gdk_x11_window_get_xid(gdkWindow),
-                             parent->winId());
+        if (GDK_IS_X11_WINDOW(gdkWindow)) {
+            GdkDisplay *gdkDisplay = gdk_window_get_display(gdkWindow);
+            XSetTransientForHint(gdk_x11_display_get_xdisplay(gdkDisplay),
+                                 gdk_x11_window_get_xid(gdkWindow),
+                                 parent->winId());
+        }
     }
 
     if (modality != Qt::NonModal) {

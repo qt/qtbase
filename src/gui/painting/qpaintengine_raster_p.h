@@ -287,7 +287,7 @@ public:
     void rasterize(QT_FT_Outline *outline, ProcessSpans callback, void *userData, QRasterBuffer *rasterBuffer);
     void updateMatrixData(QSpanData *spanData, const QBrush &brush, const QTransform &brushMatrix);
 
-    void systemStateChanged();
+    void systemStateChanged() override;
 
     void drawImage(const QPointF &pt, const QImage &img, SrcOverBlendFunc func,
                    const QRect &clip, int alpha, const QRect &sr = QRect());

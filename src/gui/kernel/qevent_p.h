@@ -81,7 +81,7 @@ public:
 
     QAtomicInt ref;
     int id;
-    QPointerUniqueId uniqueId;
+    QPointingDeviceUniqueId uniqueId;
     Qt::TouchPointStates state;
     QPointF pos, scenePos, screenPos, normalizedPos,
             startPos, startScenePos, startScreenPos, startNormalizedPos,

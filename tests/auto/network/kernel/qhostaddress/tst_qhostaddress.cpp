@@ -46,6 +46,8 @@
 #  include <netinet/in.h>
 #endif
 
+Q_DECLARE_METATYPE(QHostAddress::SpecialAddress)
+
 class tst_QHostAddress : public QObject
 {
     Q_OBJECT
@@ -232,51 +234,55 @@ void tst_QHostAddress::setAddress_QString()
 void tst_QHostAddress::specialAddresses_data()
 {
     QTest::addColumn<QString>("text");
-    QTest::addColumn<int>("address");
+    QTest::addColumn<QHostAddress::SpecialAddress>("address");
     QTest::addColumn<bool>("result");
 
-    QTest::newRow("localhost_1") << QString("127.0.0.1") << (int)QHostAddress::LocalHost << true;
-    QTest::newRow("localhost_2") << QString("127.0.0.2") << (int)QHostAddress::LocalHost << false;
-    QTest::newRow("localhost_3") << QString("127.0.0.2") << (int)QHostAddress::LocalHostIPv6 << false;
+    QTest::newRow("localhost_1") << QString("127.0.0.1") << QHostAddress::LocalHost << true;
+    QTest::newRow("localhost_2") << QString("127.0.0.2") << QHostAddress::LocalHost << false;
+    QTest::newRow("localhost_3") << QString("127.0.0.2") << QHostAddress::LocalHostIPv6 << false;
 
-    QTest::newRow("localhost_ipv6_4") << QString("::1") << (int)QHostAddress::LocalHostIPv6 << true;
-    QTest::newRow("localhost_ipv6_5") << QString("::2") << (int)QHostAddress::LocalHostIPv6 << false;
-    QTest::newRow("localhost_ipv6_6") << QString("::1") << (int)QHostAddress::LocalHost << false;
+    QTest::newRow("localhost_ipv6_4") << QString("::1") << QHostAddress::LocalHostIPv6 << true;
+    QTest::newRow("localhost_ipv6_5") << QString("::2") << QHostAddress::LocalHostIPv6 << false;
+    QTest::newRow("localhost_ipv6_6") << QString("::1") << QHostAddress::LocalHost << false;
 
-    QTest::newRow("null_1") << QString("") << (int)QHostAddress::Null << true;
-    QTest::newRow("null_2") << QString("bjarne") << (int)QHostAddress::Null << true;
+    QTest::newRow("null_1") << QString("") << QHostAddress::Null << true;
+    QTest::newRow("null_2") << QString("bjarne") << QHostAddress::Null << true;
 
-    QTest::newRow("compare_from_null") << QString("") << (int)QHostAddress::Broadcast << false;
+    QTest::newRow("compare_from_null") << QString("") << QHostAddress::Broadcast << false;
 
-    QTest::newRow("broadcast_1") << QString("255.255.255.255") << (int)QHostAddress::Any << false;
-    QTest::newRow("broadcast_2") << QString("255.255.255.255") << (int)QHostAddress::Broadcast << true;
+    QTest::newRow("broadcast_1") << QString("255.255.255.255") << QHostAddress::Any << false;
+    QTest::newRow("broadcast_2") << QString("255.255.255.255") << QHostAddress::Broadcast << true;
 
-    QTest::newRow("any_ipv6") << QString("::") << (int)QHostAddress::AnyIPv6 << true;
-    QTest::newRow("any_ipv4") << QString("0.0.0.0") << (int)QHostAddress::AnyIPv4 << true;
+    QTest::newRow("any_ipv6") << QString("::") << QHostAddress::AnyIPv6 << true;
+    QTest::newRow("any_ipv4") << QString("0.0.0.0") << QHostAddress::AnyIPv4 << true;
 
-    QTest::newRow("dual_not_ipv6") << QString("::") << (int)QHostAddress::Any << false;
-    QTest::newRow("dual_not_ipv4") << QString("0.0.0.0") << (int)QHostAddress::Any << false;
+    QTest::newRow("dual_not_ipv6") << QString("::") << QHostAddress::Any << false;
+    QTest::newRow("dual_not_ipv4") << QString("0.0.0.0") << QHostAddress::Any << false;
 }
 
 
 void tst_QHostAddress::specialAddresses()
 {
     QFETCH(QString, text);
-    QFETCH(int, address);
+    QFETCH(QHostAddress::SpecialAddress, address);
     QFETCH(bool, result);
-    QVERIFY((QHostAddress(text) == (QHostAddress::SpecialAddress)address) == result);
+    QCOMPARE(QHostAddress(text) == address, result);
 
     //check special address equal to itself (QTBUG-22898), note two overloads of operator==
-    QVERIFY(QHostAddress((QHostAddress::SpecialAddress)address) == QHostAddress((QHostAddress::SpecialAddress)address));
-    QVERIFY(QHostAddress((QHostAddress::SpecialAddress)address) == (QHostAddress::SpecialAddress)address);
+    QVERIFY(QHostAddress(address) == QHostAddress(address));
+    QVERIFY(QHostAddress(address) == address);
+    QVERIFY(!(QHostAddress(address) != QHostAddress(address)));
+    QVERIFY(!(QHostAddress(address) != address));
+
+    {
+        QHostAddress ha;
+        ha.setAddress(address);
+        QVERIFY(ha == address);
+    }
 
     QHostAddress setter;
     setter.setAddress(text);
-    if (result) {
-        QVERIFY(setter == (QHostAddress::SpecialAddress) address);
-    } else {
-        QVERIFY(!((QHostAddress::SpecialAddress) address == setter));
-    }
+    QCOMPARE(setter == address, result);
 }
 
 
@@ -359,6 +365,11 @@ void tst_QHostAddress::isEqual()
     QCOMPARE(second.isEqual(first, QHostAddress::ConversionModeFlag(flags)), result);
 }
 
+QT_WARNING_PUSH
+#ifdef QT_WARNING_DISABLE_DEPRECATED
+QT_WARNING_DISABLE_DEPRECATED
+#endif
+
 void tst_QHostAddress::assignment()
 {
     QHostAddress address;
@@ -378,6 +389,8 @@ void tst_QHostAddress::assignment()
     QCOMPARE(address, addr);
 #endif // !Q_OS_WINRT
 }
+
+QT_WARNING_POP
 
 void tst_QHostAddress::scopeId()
 {

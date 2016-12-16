@@ -1684,6 +1684,57 @@ void tst_qmakelib::addParseCustomFunctions()
     /*    22 */     << H(TokTerminator))
             << ""
             << true;
+
+    QTest::newRow("bypassNesting()-{return}")
+            << "defineTest(test) { bypassNesting() { return(true) } }"
+            << TS(
+    /*     0 */ << H(TokLine) << H(1)
+    /*     2 */ << H(TokTestDef) << HS(L"test")
+    /*    10 */ /* body */ << I(16)
+    /*    12 */     << H(TokLine) << H(1)
+    /*    14 */     << H(TokBypassNesting)
+    /*    15 */     /* block */ << I(10)
+    /*    17 */         << H(TokLine) << H(1)
+    /*    19 */         << H(TokLiteral | TokNewStr) << S(L"true")
+    /*    25 */         << H(TokReturn)
+    /*    26 */         << H(TokTerminator)
+    /*    27 */     << H(TokTerminator))
+            << ""
+            << true;
+
+    QTest::newRow("test-AND-bypassNesting()-{}")
+            << "defineTest(test) { test: bypassNesting() {} }"
+            << TS(
+    /*     0 */ << H(TokLine) << H(1)
+    /*     2 */ << H(TokTestDef) << HS(L"test")
+    /*    10 */ /* body */ << I(17)
+    /*    12 */     << H(TokLine) << H(1)
+    /*    14 */     << H(TokHashLiteral) << HS(L"test")
+    /*    22 */     << H(TokCondition)
+    /*    23 */     << H(TokAnd)
+    /*    24 */     << H(TokBypassNesting)
+    /*    25 */     /* block */ << I(1)
+    /*    27 */         << H(TokTerminator)
+    /*    28 */     << H(TokTerminator))
+            << ""
+            << true;
+
+    QTest::newRow("test-OR-bypassNesting()-{}")
+            << "defineTest(test) { test| bypassNesting() {} }"
+            << TS(
+    /*     0 */ << H(TokLine) << H(1)
+    /*     2 */ << H(TokTestDef) << HS(L"test")
+    /*    10 */ /* body */ << I(17)
+    /*    12 */     << H(TokLine) << H(1)
+    /*    14 */     << H(TokHashLiteral) << HS(L"test")
+    /*    22 */     << H(TokCondition)
+    /*    23 */     << H(TokOr)
+    /*    24 */     << H(TokBypassNesting)
+    /*    25 */     /* block */ << I(1)
+    /*    27 */         << H(TokTerminator)
+    /*    28 */     << H(TokTerminator))
+            << ""
+            << true;
 }
 
 void tst_qmakelib::addParseAbuse()
@@ -1734,6 +1785,24 @@ void tst_qmakelib::addParseAbuse()
             << "!defineTest(test) {}"
             << TS()
             << "in:1: Unexpected NOT operator in front of function definition."
+            << false;
+
+    QTest::newRow("outer-bypassNesting()-{}")
+            << "bypassNesting() {}"
+            << TS()
+            << "in:1: Unexpected bypassNesting()."
+            << false;
+
+    QTest::newRow("bypassNesting(arg)-{}")
+            << "defineTest(test) { bypassNesting(arg) {} }"
+            << TS()
+            << "in:1: bypassNesting() requires zero arguments."
+            << false;
+
+    QTest::newRow("NOT-bypassNesting()-{}")
+            << "defineTest(test) { !bypassNesting() {} }"
+            << TS()
+            << "in:1: Unexpected NOT operator in front of bypassNesting()."
             << false;
 
     QTest::newRow("AND-test")

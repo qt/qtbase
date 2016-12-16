@@ -44,27 +44,22 @@ public:
 
     void parseCmdLine();
 
-    void generateQConfigCpp();
     void buildQmake();
 
     void prepareConfigureInput();
     void configure();
 
     void generateHeaders();
-    void generateQDevicePri();
-    void prepareConfigTests();
 
     bool isDone();
     bool isOk();
-
-    int platform() const;
 
 private:
     int verbose;
 
     // Our variable dictionaries
     QMap<QString,QString> dictionary;
-    QStringList configCmdLine;
+    QStringList configCmdLine, qmakeCmdLine;
 
     QString outputLine;
 
@@ -73,25 +68,7 @@ private:
     QString sourcePathMangled, buildPathMangled;
     QDir sourceDir, buildDir;
 
-    QString confStrOffsets[2];
-    QString confStrings[2];
-    int confStringOff;
-
-    void addConfStr(int group, const QString &val);
-    QString formatPath(const QString &path);
-
     bool reloadCmdLine(int idx);
-    void saveCmdLine();
-};
-
-class FileWriter : public QTextStream
-{
-public:
-    FileWriter(const QString &name);
-    bool flush();
-private:
-    QString m_name;
-    QBuffer m_buffer;
 };
 
 QT_END_NAMESPACE

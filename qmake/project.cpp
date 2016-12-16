@@ -99,8 +99,12 @@ QStringList QMakeProject::expand(const ProKey &func, const QList<ProStringList> 
 {
     m_current.clear();
 
-    if (int func_t = statics.expands.value(func))
-        return evaluateBuiltinExpand(func_t, func, prepareBuiltinArgs(args)).toQStringList();
+    if (int func_t = statics.expands.value(func)) {
+        ProStringList ret;
+        if (evaluateBuiltinExpand(func_t, func, prepareBuiltinArgs(args), ret) == ReturnError)
+            exit(3);
+        return ret.toQStringList();
+    }
 
     QHash<ProKey, ProFunctionDef>::ConstIterator it =
             m_functionDefs.replaceFunctions.constFind(func);

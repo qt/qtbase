@@ -1389,10 +1389,6 @@ namespace QtPrivate
     };
 
 
-QT_WARNING_PUSH
-// In C++03 mode, clang consider local or unnamed type and throw a warning instead of ignoring them
-QT_WARNING_DISABLE_CLANG("-Wunnamed-type-template-args")
-QT_WARNING_DISABLE_CLANG("-Wlocal-type-template-args")
     template<typename T> char qt_getEnumMetaObject(const T&);
 
     template<typename T>
@@ -1405,7 +1401,6 @@ QT_WARNING_DISABLE_CLANG("-Wlocal-type-template-args")
         enum { Value = sizeof(qt_getEnumMetaObject(declval())) == sizeof(QMetaObject*) };
     };
     template<> struct IsQEnumHelper<void> { enum { Value = false }; };
-QT_WARNING_POP
 
     template<typename T, typename Enable = void>
     struct MetaObjectForType

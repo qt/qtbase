@@ -250,15 +250,15 @@ AndroidConnectivityManager::AndroidConnectivityManager()
 
     m_connectivityManager = QJNIObjectPrivate::callStaticObjectMethod(networkReceiverClass,
                                                                       "getConnectivityManager",
-                                                                      "(Landroid/app/Activity;)Landroid/net/ConnectivityManager;",
-                                                                      QtAndroidPrivate::activity());
+                                                                      "(Landroid/content/Context;)Landroid/net/ConnectivityManager;",
+                                                                      QtAndroidPrivate::context());
     if (!m_connectivityManager.isValid())
         return;
 
     QJNIObjectPrivate::callStaticMethod<void>(networkReceiverClass,
                                               "registerReceiver",
-                                              "(Landroid/app/Activity;)V",
-                                              QtAndroidPrivate::activity());
+                                              "(Landroid/content/Context;)V",
+                                              QtAndroidPrivate::context());
 }
 
 AndroidConnectivityManager *AndroidConnectivityManager::getInstance()
@@ -272,8 +272,8 @@ AndroidConnectivityManager::~AndroidConnectivityManager()
 {
     QJNIObjectPrivate::callStaticMethod<void>(networkReceiverClass,
                                               "unregisterReceiver",
-                                              "(Landroid/app/Activity;)V",
-                                              QtAndroidPrivate::activity());
+                                              "(Landroid/content/Context;)V",
+                                              QtAndroidPrivate::context());
 }
 
 AndroidNetworkInfo AndroidConnectivityManager::getActiveNetworkInfo() const

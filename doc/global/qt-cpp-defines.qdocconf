@@ -14,12 +14,14 @@ defines                 += Q_QDOC \
                           Q_NO_USING_KEYWORD \
                           __cplusplus \
                           Q_COMPILER_INITIALIZER_LISTS \
+                          Q_COMPILER_UNICODE_STRINGS \
                           Q_COMPILER_UNIFORM_INIT \
                           Q_COMPILER_RVALUE_REFS
 
 Cpp.ignoretokens        += \
                           ENGINIOCLIENT_EXPORT \
                           PHONON_EXPORT \
+                          Q_ALWAYS_INLINE \
                           Q_AUTOTEST_EXPORT \
                           Q_BLUETOOTH_EXPORT \
                           Q_COMPAT_EXPORT \
@@ -121,6 +123,7 @@ Cpp.ignoretokens        += \
                           QT_END_NAMESPACE \
                           QT_FASTCALL \
                           QT_MUTEX_LOCK_NOEXCEPT \
+                          QT_WARNING_DISABLE_DEPRECATED \
                           QT_WARNING_PUSH \
                           QT_WARNING_POP \
                           QT_WIDGET_PLUGIN_EXPORT \
@@ -148,8 +151,11 @@ Cpp.ignoredirectives    += \
                           Q_DUMMY_COMPARISON_OPERATOR \
                           Q_ENUM \
                           Q_ENUMS \
+                          Q_ENUM_NS \
                           Q_FLAG \
                           Q_FLAGS \
+                          Q_FLAG_NS \
+                          QT_HAS_INCLUDE \
                           Q_INTERFACES \
                           Q_PRIVATE_PROPERTY \
                           QT_FORWARD_DECLARE_CLASS \
