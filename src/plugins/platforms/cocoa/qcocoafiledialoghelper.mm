@@ -428,7 +428,7 @@ static QString strippedText(QString s)
 {
     // Call this functions if mFileMode, mFileOptions,
     // mNameFilterDropDownList or mQDirFilter changes.
-    // The savepanel does not contain the neccessary functions for this.
+    // The savepanel does not contain the necessary functions for this.
     const QFileDialogOptions::FileMode fileMode = mOptions->fileMode();
     bool chooseFilesOnly = fileMode == QFileDialogOptions::ExistingFile
         || fileMode == QFileDialogOptions::ExistingFiles;
