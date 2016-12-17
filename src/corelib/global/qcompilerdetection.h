@@ -563,7 +563,7 @@
 #  endif
 #endif
 
-#ifdef Q_CC_INTEL
+#if defined(Q_CC_INTEL) && !defined(Q_CC_MSVC)
 #  define Q_COMPILER_RESTRICTED_VLA
 #  define Q_COMPILER_VARIADIC_MACROS // C++11 feature supported as an extension in other modes, too
 #  define Q_COMPILER_THREADSAFE_STATICS
@@ -652,7 +652,7 @@
 #  endif
 #endif
 
-#if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL) && !defined(Q_CC_MSVC)
 /* General C++ features */
 #  define Q_COMPILER_RESTRICTED_VLA
 #  define Q_COMPILER_THREADSAFE_STATICS
@@ -898,7 +898,7 @@
 #  endif
 #endif
 
-#if defined(Q_CC_MSVC) && !defined(Q_CC_INTEL)
+#if defined(Q_CC_MSVC)
 #  if defined(__cplusplus)
 #    if _MSC_VER >= 1400
        /* C++11 features supported in VC8 = VC2005: */
@@ -1043,34 +1043,6 @@
 // critical definitions. (Reported as Intel Issue ID 6000117277)
 #  define __USE_CONSTEXPR 1
 #  define __USE_NOEXCEPT 1
-# endif
-# if defined(Q_CC_MSVC) && defined(Q_CC_CLANG)
-// Clang and the Intel compiler support more C++ features than the Microsoft compiler
-// so make sure we don't enable them if the MS headers aren't properly adapted.
-#  ifndef _HAS_CONSTEXPR
-#   undef Q_COMPILER_CONSTEXPR
-#  endif
-#  ifndef _HAS_DECLTYPE
-#   undef Q_COMPILER_DECLTYPE
-#  endif
-#  ifndef _HAS_INITIALIZER_LISTS
-#   undef Q_COMPILER_INITIALIZER_LISTS
-#  endif
-#  ifndef _HAS_NULLPTR_T
-#   undef Q_COMPILER_NULLPTR
-#  endif
-#  ifndef _HAS_RVALUE_REFERENCES
-#   undef Q_COMPILER_RVALUE_REFS
-#  endif
-#  ifndef _HAS_SCOPED_ENUM
-#   undef Q_COMPILER_CLASS_ENUM
-#  endif
-#  ifndef _HAS_TEMPLATE_ALIAS
-#   undef Q_COMPILER_TEMPLATE_ALIAS
-#  endif
-#  ifndef _HAS_VARIADIC_TEMPLATES
-#   undef Q_COMPILER_VARIADIC_TEMPLATES
-#  endif
 # endif
 # if defined(Q_COMPILER_THREADSAFE_STATICS) && defined(Q_OS_MAC)
 // Apple's low-level implementation of the C++ support library
