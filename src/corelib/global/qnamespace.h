@@ -1656,6 +1656,11 @@ public:
     };
     Q_DECLARE_FLAGS(MouseEventFlags, MouseEventFlag)
 
+    enum ChecksumType {
+        ChecksumIso3309,
+        ChecksumItuV41
+    };
+
 #ifndef Q_QDOC
     // NOTE: Generally, do not add QT_Q_ENUM if a corresponding Q_Q_FLAG exists.
     QT_Q_ENUM(ScrollBarPolicy)
@@ -1740,6 +1745,7 @@ public:
     QT_Q_ENUM(ScrollPhase)
     QT_Q_ENUM(MouseEventSource)
     QT_Q_FLAG(MouseEventFlag)
+    QT_Q_ENUM(ChecksumType)
     QT_Q_ENUM(TabFocusBehavior)
 #endif // Q_DOC
 

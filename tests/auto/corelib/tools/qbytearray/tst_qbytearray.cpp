@@ -43,6 +43,8 @@ public:
     tst_QByteArray();
 private slots:
     void swap();
+    void qChecksum_data();
+    void qChecksum();
     void qCompress_data();
 #ifndef QT_NO_COMPRESS
     void qCompress();
@@ -237,6 +239,34 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
 
 tst_QByteArray::tst_QByteArray()
 {
+}
+
+void tst_QByteArray::qChecksum_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<uint>("len");
+    QTest::addColumn<Qt::ChecksumType>("standard");
+    QTest::addColumn<uint>("checksum");
+
+    // Examples from ISO 14443-3
+    QTest::newRow("1") << QByteArray("\x00\x00")         << 2U << Qt::ChecksumItuV41  << 0x1EA0U;
+    QTest::newRow("2") << QByteArray("\x12\x34")         << 2U << Qt::ChecksumItuV41  << 0xCF26U;
+    QTest::newRow("3") << QByteArray("\x00\x00\x00")     << 3U << Qt::ChecksumIso3309 << 0xC6CCU;
+    QTest::newRow("4") << QByteArray("\x0F\xAA\xFF")     << 3U << Qt::ChecksumIso3309 << 0xD1FCU;
+    QTest::newRow("5") << QByteArray("\x0A\x12\x34\x56") << 4U << Qt::ChecksumIso3309 << 0xF62CU;
+}
+
+void tst_QByteArray::qChecksum()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(uint, len);
+    QFETCH(Qt::ChecksumType, standard);
+    QFETCH(uint, checksum);
+
+    if (standard == Qt::ChecksumIso3309) {
+        QCOMPARE(::qChecksum(data.constData(), len), static_cast<quint16>(checksum));
+    }
+    QCOMPARE(::qChecksum(data.constData(), len, standard), static_cast<quint16>(checksum));
 }
 
 void tst_QByteArray::qCompress_data()

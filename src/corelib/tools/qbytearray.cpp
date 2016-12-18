@@ -541,15 +541,40 @@ static const quint16 crc_tbl[16] = {
 
     Returns the CRC-16 checksum of the first \a len bytes of \a data.
 
-    The checksum is independent of the byte order (endianness).
+    The checksum is independent of the byte order (endianness) and will be
+    calculated accorded to the algorithm published in ISO 3309 (Qt::ChecksumIso3309).
 
     \note This function is a 16-bit cache conserving (16 entry table)
     implementation of the CRC-16-CCITT algorithm.
 */
-
 quint16 qChecksum(const char *data, uint len)
 {
-    quint16 crc = 0xffff;
+    return qChecksum(data, len, Qt::ChecksumIso3309);
+}
+
+/*!
+    \relates QByteArray
+    \since 5.9
+
+    Returns the CRC-16 checksum of the first \a len bytes of \a data.
+
+    The checksum is independent of the byte order (endianness) and will
+    be calculated accorded to the algorithm published in \a standard.
+
+    \note This function is a 16-bit cache conserving (16 entry table)
+    implementation of the CRC-16-CCITT algorithm.
+*/
+quint16 qChecksum(const char *data, uint len, Qt::ChecksumType standard)
+{
+    quint16 crc = 0x0000;
+    switch (standard) {
+    case Qt::ChecksumIso3309:
+        crc = 0xffff;
+        break;
+    case Qt::ChecksumItuV41:
+        crc = 0x6363;
+        break;
+    }
     uchar c;
     const uchar *p = reinterpret_cast<const uchar *>(data);
     while (len--) {
@@ -558,7 +583,14 @@ quint16 qChecksum(const char *data, uint len)
         c >>= 4;
         crc = ((crc >> 4) & 0x0fff) ^ crc_tbl[((crc ^ c) & 15)];
     }
-    return ~crc & 0xffff;
+    switch (standard) {
+    case Qt::ChecksumIso3309:
+        crc = ~crc;
+        break;
+    case Qt::ChecksumItuV41:
+        break;
+    }
+    return crc & 0xffff;
 }
 
 /*!

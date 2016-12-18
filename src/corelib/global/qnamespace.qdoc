@@ -3158,3 +3158,14 @@
 
     \omitvalue MouseEventFlagMask
 */
+
+/*!
+  \enum Qt::ChecksumType
+  \since 5.9
+
+  This enum describes the possible standards used by qChecksum().
+
+  \value ChecksumIso3309 Checksum calculation based on ISO 3309.
+
+  \value ChecksumItuV41 Checksum calculation based on ITU-V.41.
+*/
