@@ -97,6 +97,7 @@ if (NOT WIN32 OR (WIN32 AND NOT CMAKE_VERSION VERSION_LESS 2.8.11))
     expect_pass(test_add_binary_resources_delayed_file BINARY test_add_binary_resources_delayed_file)
 endif()
 expect_pass(test_private_includes)
+expect_pass(test_private_targets)
 expect_pass(test_testlib_definitions)
 expect_pass(test_json_plugin_includes)
 
