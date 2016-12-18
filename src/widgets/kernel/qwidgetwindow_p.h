@@ -56,6 +56,7 @@
 
 #include <QtCore/private/qobject_p.h>
 #include <QtGui/private/qevent_p.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -56,6 +56,7 @@
 #include "private/qwidget_p.h"
 
 #include <QtCore/qalgorithms.h>
+#include <QtGui/qscreen.h>
 
 QT_BEGIN_NAMESPACE
 
