@@ -2086,40 +2086,26 @@ void QHeaderViewPrivate::_q_layoutChanged()
 {
     Q_Q(QHeaderView);
     viewport->update();
-    if (persistentHiddenSections.isEmpty() || modelIsEmpty()) {
-        if (modelSectionCount() != sectionCount())
-            q->initializeSections();
-        persistentHiddenSections.clear();
+
+    const auto hiddenSections = persistentHiddenSections;
+    persistentHiddenSections.clear();
+
+    clear();
+    q->initializeSections();
+    invalidateCachedSizeHint();
+
+    if (modelIsEmpty()) {
         return;
     }
 
-    QBitArray oldSectionHidden = sectionsHiddenToBitVector();
-    oldSectionHidden.resize(sectionItems.size());
-    bool sectionCountChanged = false;
-
-    for (int i = 0; i < persistentHiddenSections.count(); ++i) {
-        QModelIndex index = persistentHiddenSections.at(i);
+    for (const auto &index : hiddenSections) {
         if (index.isValid()) {
             const int logical = (orientation == Qt::Horizontal
                                  ? index.column()
                                  : index.row());
             q->setSectionHidden(logical, true);
-            oldSectionHidden.setBit(logical, false);
-        } else if (!sectionCountChanged && (modelSectionCount() != sectionCount())) {
-            sectionCountChanged = true;
-            break;
         }
     }
-    persistentHiddenSections.clear();
-
-    for (int i = 0; i < oldSectionHidden.count(); ++i) {
-        if (oldSectionHidden.testBit(i))
-            q->setSectionHidden(i, false);
-    }
-
-    // the number of sections changed; we need to reread the state of the model
-    if (sectionCountChanged)
-        q->initializeSections();
 }
 
 /*!
