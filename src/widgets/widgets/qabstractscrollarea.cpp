@@ -65,7 +65,6 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 #ifdef Q_OS_WIN
-#  include <qlibrary.h>
 #  include <qt_windows.h>
 #endif
 

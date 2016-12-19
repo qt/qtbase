@@ -39,7 +39,6 @@
 
 #include "qelfparser_p.h"
 
-#ifndef QT_NO_LIBRARY
 #if defined (Q_OF_ELF) && defined(Q_CC_GNU)
 
 #include "qlibrary_p.h"
@@ -235,4 +234,3 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
 QT_END_NAMESPACE
 
 #endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
-#endif // QT_NO_LIBRARY

@@ -69,16 +69,16 @@ Q_LOGGING_CATEGORY(qLcEglDevDebug, "qt.qpa.egldeviceintegration")
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QEglFSDeviceIntegrationFactoryInterface_iid, QLatin1String("/egldeviceintegrations"), Qt::CaseInsensitive))
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QEglFSDeviceIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 
-#endif // QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
 
 QStringList QEglFSDeviceIntegrationFactory::keys(const QString &pluginPath)
 {
     QStringList list;
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     if (!pluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(pluginPath);
         list = directLoader()->keyMap().values();
@@ -102,7 +102,7 @@ QStringList QEglFSDeviceIntegrationFactory::keys(const QString &pluginPath)
 QEglFSDeviceIntegration *QEglFSDeviceIntegrationFactory::create(const QString &key, const QString &pluginPath)
 {
     QEglFSDeviceIntegration *integration = Q_NULLPTR;
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     if (!pluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(pluginPath);
         integration = qLoadPlugin<QEglFSDeviceIntegration, QEglFSDeviceIntegrationPlugin>(directLoader(), key);

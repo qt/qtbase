@@ -62,10 +62,9 @@
 #  include "QtCore/qt_windows.h"
 #endif
 
+QT_REQUIRE_CONFIG(library);
+
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_LIBRARY
-
 
 bool qt_debug_component();
 
@@ -129,8 +128,6 @@ private:
     enum { IsAPlugin, IsNotAPlugin, MightBeAPlugin } pluginState;
     friend class QLibraryStore;
 };
-
-#endif // QT_NO_LIBRARY
 
 QT_END_NAMESPACE
 

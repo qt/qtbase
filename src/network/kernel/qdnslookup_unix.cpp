@@ -39,7 +39,9 @@
 
 #include "qdnslookup_p.h"
 
+#if QT_CONFIG(library)
 #include <qlibrary.h>
+#endif
 #include <qscopedpointer.h>
 #include <qurl.h>
 #include <private/qnativesocketengine_p.h>
@@ -58,7 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 
 #if defined(Q_OS_OPENBSD)
 typedef struct __res_state* res_state;
@@ -382,6 +384,6 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     return;
 }
 
-#endif /* ifndef QT_NO_LIBRARY */
+#endif /* QT_CONFIG(library) */
 
 QT_END_NAMESPACE

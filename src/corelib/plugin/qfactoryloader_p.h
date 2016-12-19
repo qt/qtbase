@@ -60,7 +60,9 @@
 #include "QtCore/qjsondocument.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qendian.h"
+#if QT_CONFIG(library)
 #include "private/qlibrary_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -84,7 +86,7 @@ public:
                    const QString &suffix = QString(),
                    Qt::CaseSensitivity = Qt::CaseSensitive);
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     ~QFactoryLoader();
 
     void update();
@@ -93,7 +95,7 @@ public:
 #if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
     QLibraryPrivate *library(const QString &key) const;
 #endif // Q_OS_UNIX && !Q_OS_MAC
-#endif // !QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
 
     QMultiMap<int, QString> keyMap() const;
     int indexOf(const QString &needle) const;

@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include <QtCore/qglobal.h>
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(library)
 #include <QtCore/qlibrary.h>
 #endif
 #include <QtCore/qmutex.h>
@@ -54,7 +54,7 @@ void (*qdbus_resolve_me(const char *name))();
 
 #if !defined QT_LINKED_LIBDBUS
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 static QLibrary *qdbus_libdbus = 0;
 
 void qdbus_unloadLibDBus()
@@ -71,7 +71,7 @@ void qdbus_unloadLibDBus()
 
 bool qdbus_loadLibDBus()
 {
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 #ifdef QT_BUILD_INTERNAL
     // this is to simulate a library load failure for our autotest suite.
     if (!qEnvironmentVariableIsEmpty("QT_SIMULATE_DBUS_LIBFAIL"))
@@ -126,7 +126,7 @@ bool qdbus_loadLibDBus()
 #endif
 }
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 void (*qdbus_resolve_conditionally(const char *name))()
 {
     if (qdbus_loadLibDBus())
@@ -137,7 +137,7 @@ void (*qdbus_resolve_conditionally(const char *name))()
 
 void (*qdbus_resolve_me(const char *name))()
 {
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     if (Q_UNLIKELY(!qdbus_loadLibDBus()))
         qFatal("Cannot find libdbus-1 in your system to resolve symbol '%s'.", name);
 
@@ -161,7 +161,7 @@ static void qdbus_unloadLibDBus()
 
 #endif // !QT_LINKED_LIBDBUS
 
-#if defined(QT_LINKED_LIBDBUS) || !defined(QT_NO_LIBRARY)
+#if defined(QT_LINKED_LIBDBUS) || QT_CONFIG(library)
 Q_DESTRUCTOR_FUNCTION(qdbus_unloadLibDBus)
 #endif
 

@@ -54,7 +54,8 @@
 #include <qendian.h>
 #include <private/qglobal_p.h>
 
-#ifndef QT_NO_LIBRARY
+QT_REQUIRE_CONFIG(library);
+
 #if defined(Q_OF_MACH_O)
 
 QT_BEGIN_NAMESPACE
@@ -72,6 +73,5 @@ public:
 QT_END_NAMESPACE
 
 #endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
-#endif // QT_NO_LIBRARY
 
 #endif // QMACHPARSER_P_H

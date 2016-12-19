@@ -59,7 +59,6 @@
 #include <qsplitter.h>
 #include <qprogressbar.h>
 #include <qwizard.h>
-#include <qlibrary.h>
 #include <qdrawutil.h>
 #include <private/qstylehelper_p.h>
 #include <private/qdrawhelper_p.h>

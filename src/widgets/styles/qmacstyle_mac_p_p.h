@@ -89,7 +89,6 @@
 #include <qtableview.h>
 #include <qwizard.h>
 #include <qdebug.h>
-#include <qlibrary.h>
 #include <qdatetimeedit.h>
 #include <qmath.h>
 #include <qpair.h>

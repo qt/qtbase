@@ -121,7 +121,7 @@ private slots:
     void testDeleteLater();
     void testDeleteLaterProcessEvents();
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     void libraryPaths();
     void libraryPaths_qt_plugin_path();
     void libraryPaths_qt_plugin_path_2();
@@ -885,7 +885,7 @@ bool isPathListIncluded(const QStringList &l, const QStringList &r)
     return j == r.count();
 }
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 #define QT_TST_QAPP_DEBUG
 void tst_QApplication::libraryPaths()
 {

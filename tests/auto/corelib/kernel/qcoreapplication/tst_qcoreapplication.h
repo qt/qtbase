@@ -58,7 +58,7 @@ private slots:
     void applicationEventFilters_auxThread();
     void threadedEventDelivery_data();
     void threadedEventDelivery();
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     void addRemoveLibPaths();
 #endif
 };

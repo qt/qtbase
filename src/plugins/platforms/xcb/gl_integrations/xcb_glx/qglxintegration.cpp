@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include <QDebug>
+#if QT_CONFIG(library)
 #include <QLibrary>
+#endif
 
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
@@ -573,7 +575,7 @@ QFunctionPointer QGLXContext::getProcAddress(const char *procName)
             if (!glXGetProcAddressARB)
 #endif
             {
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
                 extern const QString qt_gl_library_name();
 //                QLibrary lib(qt_gl_library_name());
                 QLibrary lib(QLatin1String("GL"));

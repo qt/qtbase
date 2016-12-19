@@ -58,7 +58,6 @@
 #include <private/qwindowsxpstyle_p_p.h>
 #include <private/qstyleanimation_p.h>
 #include <private/qpaintengine_raster_p.h>
-#include <qlibrary.h>
 #include <qpaintengine.h>
 #include <qwidget.h>
 #include <qapplication.h>

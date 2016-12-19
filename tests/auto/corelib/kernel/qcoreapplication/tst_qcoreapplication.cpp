@@ -893,7 +893,7 @@ void tst_QCoreApplication::threadedEventDelivery()
     QCOMPARE(receiver.recordedEvents.contains(QEvent::User + 1), eventsReceived);
 }
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 void tst_QCoreApplication::addRemoveLibPaths()
 {
     QStringList paths = QCoreApplication::libraryPaths();
