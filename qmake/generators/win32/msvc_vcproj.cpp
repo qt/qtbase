@@ -766,6 +766,21 @@ bool VcprojGenerator::hasBuiltinCompiler(const QString &file)
     return false;
 }
 
+void VcprojGenerator::createCustomBuildToolFakeFile(const QString &cbtFilePath,
+                                                    const QString &realOutFilePath)
+{
+    QFile file(fileFixify(cbtFilePath, FileFixifyFromOutdir | FileFixifyAbsolute));
+    if (file.exists())
+        return;
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        warn_msg(WarnLogic, "Cannot create '%s'.", qPrintable(file.fileName()));
+        return;
+    }
+    file.write("This is a dummy file needed to create ");
+    file.write(qPrintable(realOutFilePath));
+    file.write("\n");
+}
+
 void VcprojGenerator::init()
 {
     is64Bit = (project->first("QMAKE_TARGET.arch") == "x86_64");
@@ -893,12 +908,14 @@ void VcprojGenerator::init()
                         if (!hasBuiltinCompiler(file)) {
                             extraCompilerSources[file] += quc.toQString();
                         } else {
-                            // Use a fake file name foo.moc.cbt for the project view.
+                            // Create a fake file foo.moc.cbt for the project view.
                             // This prevents VS from complaining about a circular
                             // dependency from foo.moc -> foo.moc.
-                            QString out = Option::fixPathToTargetOS(replaceExtraCompilerVariables(
-                                            compiler_out, file, QString(), NoShell), false);
-                            out += customBuildToolFilterFileSuffix;
+                            QString realOut = replaceExtraCompilerVariables(
+                                compiler_out, file, QString(), NoShell);
+                            QString out = realOut + customBuildToolFilterFileSuffix;
+                            createCustomBuildToolFakeFile(out, realOut);
+                            out = Option::fixPathToTargetOS(out, false);
                             extraCompilerSources[out] += quc.toQString();
                             extraCompilerOutputs[out] = file;
                         }
