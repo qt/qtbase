@@ -928,6 +928,12 @@ void tst_QCoreApplication::threadedEventDelivery()
     thread.start();
     QVERIFY(thread.wait(1000));
     QCOMPARE(receiver.recordedEvents.contains(QEvent::User + 1), eventsReceived);
+
+}
+
+void tst_QCoreApplication::testTrWithPercantegeAtTheEnd()
+{
+    QCoreApplication::translate("testcontext", "this will crash%", "testdisamb", 3);
 }
 
 #if QT_CONFIG(library)

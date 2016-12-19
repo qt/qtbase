@@ -2097,9 +2097,13 @@ static void replacePercentN(QString *result, int n)
         int len = 0;
         while ((percentPos = result->indexOf(QLatin1Char('%'), percentPos + len)) != -1) {
             len = 1;
+            if (percentPos + len == result->length())
+                break;
             QString fmt;
             if (result->at(percentPos + len) == QLatin1Char('L')) {
                 ++len;
+                if (percentPos + len == result->length())
+                    break;
                 fmt = QLatin1String("%L1");
             } else {
                 fmt = QLatin1String("%1");
