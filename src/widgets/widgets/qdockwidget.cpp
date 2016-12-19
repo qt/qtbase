@@ -219,8 +219,10 @@ QDockWidgetLayout::~QDockWidgetLayout()
 bool QDockWidgetLayout::nativeWindowDeco() const
 {
     bool floating = parentWidget()->isWindow();
-    if (!floating && qobject_cast<QDockWidgetGroupWindow*>(parentWidget()->parentWidget()))
-        return wmSupportsNativeWindowDeco();
+    if (!floating) {
+        if (auto groupWindow = qobject_cast<const QDockWidgetGroupWindow*>(parentWidget()->parentWidget()))
+            return groupWindow->hasNativeDecos();
+    }
     return nativeWindowDeco(floating);
 }
 

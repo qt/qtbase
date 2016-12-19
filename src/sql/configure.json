@@ -58,8 +58,10 @@
             "label": "MySQL",
             "test": "unix/mysql",
             "sources": [
-                { "type": "mysqlConfig", "query": "--libs_r" },
-                { "type": "mysqlConfig", "query": "--libs" },
+                { "type": "mysqlConfig", "query": "--libs_r", "cleanlibs": true },
+                { "type": "mysqlConfig", "query": "--libs", "cleanlibs": true },
+                { "type": "mysqlConfig", "query": "--libs_r", "cleanlibs": false },
+                { "type": "mysqlConfig", "query": "--libs", "cleanlibs": false },
                 { "libs": "-lmysqlclient_r", "condition": "!config.win32" },
                 { "libs": "-llibmysql", "condition": "config.win32" },
                 { "libs": "-lmysqlclient", "condition": "!config.win32" }

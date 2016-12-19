@@ -65,10 +65,12 @@ public:
     QDataBuffer(int res)
     {
         capacity = res;
-        if (res)
+        if (res) {
             buffer = (Type*) malloc(capacity * sizeof(Type));
-        else
+            Q_CHECK_PTR(buffer);
+        } else {
             buffer = 0;
+        }
         siz = 0;
     }
 
@@ -115,14 +117,16 @@ public:
             while (capacity < size)
                 capacity *= 2;
             buffer = (Type*) realloc(buffer, capacity * sizeof(Type));
+            Q_CHECK_PTR(buffer);
         }
     }
 
     inline void shrink(int size) {
         capacity = size;
-        if (size)
+        if (size) {
             buffer = (Type*) realloc(buffer, capacity * sizeof(Type));
-        else {
+            Q_CHECK_PTR(buffer);
+        } else {
             free(buffer);
             buffer = 0;
         }

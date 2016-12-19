@@ -638,6 +638,11 @@ qmakeAddCacheClear(qmakeCacheClearFunc func, void **data)
     cache_items.append(new QMakeCacheClearItem(func, data));
 }
 
+QString qmake_absoluteLocation()
+{
+    return Option::globals->qmake_abslocation;
+}
+
 QString qmake_libraryInfoFile()
 {
     if (!Option::globals->qtconf.isEmpty())

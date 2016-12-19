@@ -195,6 +195,7 @@ public:
 
 private slots:
     void cleanup();
+    void qPointerUniqueId();
     void touchDisabledByDefault();
     void touchEventAcceptedByDefault();
     void touchBeginPropagatesWhenIgnored();
@@ -224,6 +225,44 @@ tst_QTouchEvent::tst_QTouchEvent()
 void tst_QTouchEvent::cleanup()
 {
     QVERIFY(QGuiApplication::topLevelWindows().isEmpty());
+}
+
+void tst_QTouchEvent::qPointerUniqueId()
+{
+    QPointingDeviceUniqueId id1, id2;
+
+    QCOMPARE(id1.numericId(), Q_INT64_C(-1));
+    QVERIFY(!id1.isValid());
+
+    QVERIFY(  id1 == id2);
+    QVERIFY(!(id1 != id2));
+
+    QSet<QPointingDeviceUniqueId> set; // compile test
+    set.insert(id1);
+    set.insert(id2);
+    QCOMPARE(set.size(), 1);
+
+
+    const auto id3 = QPointingDeviceUniqueId::fromNumericId(-1);
+    QCOMPARE(id3.numericId(), Q_INT64_C(-1));
+    QVERIFY(!id3.isValid());
+
+    QVERIFY(  id1 == id3);
+    QVERIFY(!(id1 != id3));
+
+    set.insert(id3);
+    QCOMPARE(set.size(), 1);
+
+
+    const auto id4 = QPointingDeviceUniqueId::fromNumericId(4);
+    QCOMPARE(id4.numericId(), Q_INT64_C(4));
+    QVERIFY(id4.isValid());
+
+    QVERIFY(  id1 != id4);
+    QVERIFY(!(id1 == id4));
+
+    set.insert(id4);
+    QCOMPARE(set.size(), 2);
 }
 
 void tst_QTouchEvent::touchDisabledByDefault()

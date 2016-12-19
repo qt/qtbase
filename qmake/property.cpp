@@ -70,6 +70,12 @@ static const struct {
 
 QMakeProperty::QMakeProperty() : settings(0)
 {
+    reload();
+}
+
+void QMakeProperty::reload()
+{
+    QLibraryInfo::reload();
     for (unsigned i = 0; i < sizeof(propList)/sizeof(propList[0]); i++) {
         QString name = QString::fromLatin1(propList[i].name);
         if (!propList[i].singular) {

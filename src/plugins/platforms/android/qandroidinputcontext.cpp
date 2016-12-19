@@ -578,6 +578,11 @@ void QAndroidInputContext::updateSelectionHandles()
  */
 void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
 {
+    if (m_batchEditNestingLevel.load() || m_blockUpdateSelection)
+        return;
+
+    finishComposingText();
+
     auto im = qGuiApp->inputMethod();
     auto leftRect = im->cursorRectangle();
     // The handle is down of the cursor, but we want the position in the middle.

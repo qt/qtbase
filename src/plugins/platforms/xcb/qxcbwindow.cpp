@@ -2738,7 +2738,7 @@ bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
     const xcb_atom_t moveResize = connection()->atom(QXcbAtom::_NET_WM_MOVERESIZE);
     if (!connection()->wmSupport()->isSupportedByWM(moveResize))
         return false;
-    const QPoint globalPos = window()->mapToGlobal(pos);
+    const QPoint globalPos = QHighDpi::toNativePixels(window()->mapToGlobal(pos), window()->screen());
 #ifdef XCB_USE_XINPUT22
     if (connection()->startSystemResizeForTouchBegin(m_window, globalPos, corner))
         return true;

@@ -122,8 +122,6 @@ static int m_desktopHeightPixels = 0;
 static double m_scaledDensity = 0;
 static double m_density = 1.0;
 
-static volatile bool m_pauseApplication;
-
 static AndroidAssetsFileEngineHandler *m_androidAssetsFileEngineHandler = nullptr;
 
 

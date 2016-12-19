@@ -101,7 +101,7 @@ enum TestFunc {
     T_EXISTS, T_EXPORT, T_CLEAR, T_UNSET, T_EVAL, T_CONFIG, T_SYSTEM,
     T_DEFINED, T_DISCARD_FROM, T_CONTAINS, T_INFILE,
     T_COUNT, T_ISEMPTY, T_PARSE_JSON, T_INCLUDE, T_LOAD, T_DEBUG, T_LOG, T_MESSAGE, T_WARNING, T_ERROR, T_IF,
-    T_MKPATH, T_WRITE_FILE, T_TOUCH, T_CACHE
+    T_MKPATH, T_WRITE_FILE, T_TOUCH, T_CACHE, T_RELOAD_PROPERTIES
 };
 
 void QMakeEvaluator::initFunctionStatics()
@@ -200,6 +200,7 @@ void QMakeEvaluator::initFunctionStatics()
         { "write_file", T_WRITE_FILE },
         { "touch", T_TOUCH },
         { "cache", T_CACHE },
+        { "reload_properties", T_RELOAD_PROPERTIES },
     };
     statics.functions.reserve((int)(sizeof(testInits)/sizeof(testInits[0])));
     for (unsigned i = 0; i < sizeof(testInits)/sizeof(testInits[0]); ++i)
@@ -560,11 +561,9 @@ void QMakeEvaluator::populateDeps(
         }
 }
 
-ProStringList QMakeEvaluator::evaluateBuiltinExpand(
-        int func_t, const ProKey &func, const ProStringList &args)
+QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
+        int func_t, const ProKey &func, const ProStringList &args, ProStringList &ret)
 {
-    ProStringList ret;
-
     traceMsg("calling built-in $$%s(%s)", dbgKey(func), dbgSepStrList(args));
 
     switch (func_t) {
@@ -1110,6 +1109,11 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             if (qfile.open(stdin, QIODevice::ReadOnly)) {
                 QTextStream t(&qfile);
                 const QString &line = t.readLine();
+                if (t.atEnd()) {
+                    fputs("\n", stderr);
+                    evalError(fL1S("Unexpected EOF."));
+                    return ReturnError;
+                }
                 ret = split_value_list(QStringRef(&line));
             }
         }
@@ -1279,7 +1283,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
         break;
     }
 
-    return ret;
+    return ReturnTrue;
 }
 
 QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
@@ -2012,6 +2016,11 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         }
         return writeFile(fL1S("cache "), fn, QIODevice::Append, false, varstr);
     }
+    case T_RELOAD_PROPERTIES:
+#ifdef QT_BUILD_QMAKE
+        m_option->reloadProperties();
+#endif
+        return ReturnTrue;
     default:
         evalError(fL1S("Function '%1' is not implemented.").arg(function.toQString(m_tmp1)));
         return ReturnFalse;

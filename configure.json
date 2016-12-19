@@ -1,5 +1,7 @@
 {
     "files": {
+        "builtinQtConf": "qmake/builtin-qt.conf",
+        "qconfigSource": "src/corelib/global/qconfig.cpp",
         "publicHeader": "src/corelib/global/qconfig.h",
         "privateHeader": "src/corelib/global/qconfig_p.h",
         "publicPro": "mkspecs/qconfig.pri",
@@ -43,7 +45,7 @@
             "libexecdir": "string",
             "plugindir": "string",
             "qmldir": "string",
-            "settingsdir": "string",
+            "settingsdir": { "type": "string", "name": "sysconfdir" },
             "sysconfdir": "string",
             "testsdir": "string",
             "translationdir": "string",
@@ -65,7 +67,6 @@
             "commercial": "void",
             "compile-examples": { "type": "boolean", "name": "compile_examples" },
             "confirm-license": "void",
-            "continue": "void",
             "dbus": { "type": "optionalString", "values": [ "no", "yes", "linked", "runtime" ] },
             "dbus-linked": { "type": "void", "name": "dbus", "value": "linked" },
             "dbus-runtime": { "type": "void", "name": "dbus", "value": "runtime" },
@@ -73,7 +74,7 @@
             "debug-and-release": { "type": "boolean", "name": "debug_and_release" },
             "developer-build": "void",
             "device": "string",
-            "device-option": "string",
+            "device-option": "addString",
             "force-asserts": { "type": "boolean", "name": "force_asserts" },
             "force-debug-info": { "type": "boolean", "name": "force_debug_info" },
             "force-pkg-config": { "type": "void", "name": "pkg-config" },
@@ -83,7 +84,6 @@
             "gnumake": { "type": "boolean", "name": "GNUmake" },
             "gui": "boolean",
             "headersclean": "boolean",
-            "host-option": "string",
             "incredibuild-xge": { "type": "boolean", "name": "incredibuild_xge" },
             "libudev": "boolean",
             "ltcg": "boolean",
@@ -190,9 +190,9 @@
 
     "testTypeDependencies": {
         "linkerSupportsFlag": [ "use_gold_linker" ],
-        "verifySpec": [ "shared", "use_gold_linker", "compiler-flags", "gcc-sysroot", "qmakeargs" ],
+        "verifySpec": [ "shared", "use_gold_linker", "compiler-flags", "gcc-sysroot", "qmakeargs", "commit" ],
         "compile": [ "verifyspec" ],
-        "detectPkgConfig": [ "cross_compile" ],
+        "detectPkgConfig": [ "cross_compile", "machineTuple" ],
         "library": [ "pkg-config" ],
         "getPkgConfigVariable": [ "pkg-config" ],
         "neon": [ "architecture" ]
@@ -203,6 +203,10 @@
     },
 
     "tests": {
+        "machineTuple": {
+            "label": "machine tuple",
+            "type": "machineTuple"
+        },
         "verifyspec": {
             "label": "valid makespec",
             "type": "verifySpec",
@@ -419,6 +423,16 @@
     },
 
     "features": {
+        "prepare": {
+            "output": [ "prepareSpec", "prepareOptions", "preparePaths" ]
+        },
+        "machineTuple": {
+            "condition": "!config.linux || config.android || tests.machineTuple",
+            "output": [ "machineTuple" ]
+        },
+        "commit": {
+            "output": [ "commitOptions" ]
+        },
         "android-style-assets": {
             "label": "Android Style Assets",
             "condition": "config.android",
@@ -978,6 +992,15 @@
     },
 
     "earlyReport": [
+        {
+            "type": "fatal",
+            "condition": "input.xplatform != '' && input.device != ''",
+            "message": "Cannot specify both -xplatform and -device."
+        },
+        {
+            "condition": "!features.prepare",
+            "comment": "This is not an actual report - instead, it activates the early setup."
+        },
         {
             "type": "fatal",
             "condition": "!call.licenseCheck",

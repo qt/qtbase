@@ -133,6 +133,7 @@ private slots:
     void taskQTBUG53205_crashReparentNested();
 #ifdef Q_OS_MACOS
     void taskQTBUG56275_reinsertMenuInParentlessQMenuBar();
+    void QTBUG_57404_existingMenuItemException();
 #endif
     void taskQTBUG55966_subMenuRemoved();
 
@@ -1580,6 +1581,31 @@ void tst_QMenuBar::taskQTBUG56275_reinsertMenuInParentlessQMenuBar()
     QTest::qWait(100);
 
     QVERIFY(tst_qmenubar_taskQTBUG56275(&menubar));
+}
+
+void tst_QMenuBar::QTBUG_57404_existingMenuItemException()
+{
+    QMainWindow mw1;
+    QMainWindow mw2;
+    mw1.show();
+    mw2.show();
+
+    QMenuBar *mb = new QMenuBar(&mw1);
+    mw1.setMenuBar(mb);
+    mb->show();
+    QMenu *editMenu = new QMenu(QLatin1String("Edit"), &mw1);
+    mb->addMenu(editMenu);
+    QAction *copyAction = editMenu->addAction("&Copy");
+    copyAction->setShortcut(QKeySequence("Ctrl+C"));
+    QTest::ignoreMessage(QtWarningMsg, "Menu item \"&Copy\" has unsupported role QPlatformMenuItem::MenuRole(NoRole)");
+    copyAction->setMenuRole(QAction::NoRole);
+
+    QVERIFY(QTest::qWaitForWindowExposed(&mw2));
+    QTest::qWait(100);
+    mw2.close();
+    mw1.activateWindow();
+    QTest::qWait(100);
+    // No crash, all fine. Ideally, there should be only one warning.
 }
 #endif // Q_OS_MACOS
 

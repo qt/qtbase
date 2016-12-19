@@ -4,6 +4,8 @@ cache()
 
 load(configure_base)
 
+isEmpty(QMAKE_CONFIG_VERBOSE): QMAKE_CONFIG_VERBOSE = false
+
 QMAKE_CONFIG_LOG = $$dirname(_QMAKE_CACHE_)/config.log
 recheck: write_file($$QMAKE_CONFIG_LOG, "")
 

@@ -1,4 +1,7 @@
 
+# In early configure setup; nothing useful to be done here.
+isEmpty(QMAKE_CXX): return()
+
 defineReplace(qtMakeExpand) {
     out = "$$1"
     for(ever) {

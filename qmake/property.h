@@ -50,6 +50,8 @@ public:
     QMakeProperty();
     ~QMakeProperty();
 
+    void reload();
+
     bool hasValue(const ProKey &);
     ProString value(const ProKey &);
 

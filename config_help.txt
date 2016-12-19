@@ -85,7 +85,6 @@ Build options:
   -framework ........... Build Qt framework bundles [yes] (Apple only)
 
   -platform <target> ... Select host mkspec [detected]
-  -host-option <key=value> ..... Add option for the host mkspec
   -xplatform <target> .. Select target mkspec when cross-compiling [PLATFORM]
   -device <name> ....... Cross-compile for device <name>
   -device-option <key=value> ... Add option for the device mkspec

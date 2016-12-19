@@ -1,14 +1,31 @@
-{
-    "Id": "grayraster",
-    "Name": "Anti-aliasing rasterizer from FreeType 2",
-    "QDocModule": "qtgui",
-    "QtUsage": "Used in Qt GUI.",
-    "Path": "qgrayraster.c",
+[
+    {
+        "Id": "grayraster",
+        "Name": "Anti-aliasing rasterizer from FreeType 2",
+        "QDocModule": "qtgui",
+        "QtUsage": "Used in Qt GUI.",
+        "Path": "qgrayraster.c",
 
-    "Description": "FreeType is a freely available software library to render fonts.",
-    "Homepage": "http://www.freetype.org",
-    "License": "Freetype Project License or GNU General Public License v2.0 only",
-    "LicenseId": "FTL or GPL-2.0",
-    "LicenseFile": "../../3rdparty/freetype/docs/LICENSE.TXT",
-    "Copyright": "Copyright 2006-2015 by David Turner, Robert Wilhelm, and Werner Lemberg."
-}
+        "Description": "FreeType is a freely available software library to render fonts.",
+        "Homepage": "http://www.freetype.org",
+        "License": "Freetype Project License or GNU General Public License v2.0 only",
+        "LicenseId": "FTL or GPL-2.0",
+        "LicenseFile": "../../3rdparty/freetype/docs/LICENSE.TXT",
+        "Copyright": "Copyright 2006-2015 by David Turner, Robert Wilhelm, and Werner Lemberg."
+    },
+    {
+        "Id": "smooth-scaling-algorithm",
+        "Name": "Smooth Scaling Algorithm",
+        "QDocModule": "qtgui",
+        "QtUsage": "Used in Qt Gui (QImage::transformed() functions).",
+        "Files": "qimagescale.cpp",
+
+        "Description": "Normal smoothscale method, based on Imlib2's smoothscale.",
+        "LicenseId": "BSD-2-Clause AND Imlib2",
+        "License": "BSD 2-clause \"Simplified\" License and Imlib2 License",
+        "LicenseFile": "QIMAGETRANSFORM_LICENSE.txt",
+        "Copyright": "Copyright (C) 2004, 2005 Daniel M. Duley.
+    (C) Carsten Haitzler and various contributors.
+    (C) Willem Monsuwe <willem@stack.nl>"
+    }
+]

@@ -2603,7 +2603,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             break;
         }
 
-        if (w->d_func()->blockedByModalWindow) {
+        if (w->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
             // a modal window is blocking this window, don't allow touch events through
 
             // QTBUG-37371 temporary fix; TODO: revisit in 5.4 when we have a forwarding solution

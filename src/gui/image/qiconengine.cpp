@@ -92,6 +92,14 @@ QIconEngine::QIconEngine()
 }
 
 /*!
+    \since 5.8
+    \internal
+ */
+QIconEngine::QIconEngine(const QIconEngine &)
+{
+}
+
+/*!
   Destroys the icon engine.
  */
 QIconEngine::~QIconEngine()

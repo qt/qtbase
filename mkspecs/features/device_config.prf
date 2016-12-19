@@ -1,45 +1,12 @@
 # This file is loaded by some qmakespecs to get early configuration data.
 
-host_build: \
-    PRI_FILE_NAME = qhost.pri
-else: \
-    PRI_FILE_NAME = qdevice.pri
-DEVICE_PRI = $$[QT_HOST_DATA/get]/mkspecs/$$PRI_FILE_NAME
+# Some of these qmakespecs can be used also in host mode, but they are not
+# supposed to be influenced by -device-option then.
+host_build: return()
+
+DEVICE_PRI = $$[QT_HOST_DATA/get]/mkspecs/qdevice.pri
 exists($$DEVICE_PRI):include($$DEVICE_PRI)
 unset(DEVICE_PRI)
 
 # this variable can be persisted via qmake -set CROSS_COMPILE /foo
-!host_build:isEmpty(CROSS_COMPILE): CROSS_COMPILE = $$[CROSS_COMPILE]
-
-# Provide a function to be used by mkspecs
-defineTest(deviceSanityCheckCompiler) {
-    equals(QMAKE_HOST.os, Windows): \
-        sfx = .exe
-    else: \
-        sfx =
-
-    # Build the compiler filename using the first value in QMAKE_CXX in order to
-    # support tools like ccache, which give QMAKE_CXX values of the form:
-    #     ccache <path_to_compiler>
-    compiler = $$first(QMAKE_CXX)$$sfx
-
-    # Check if the binary exists with an absolute path. Do this check
-    # before the CROSS_COMPILE empty check below to allow the mkspec
-    # to derive the compiler path from other device options.
-    exists($$compiler):return()
-
-    # Check for possible reasons of failure
-    # check if CROSS_COMPILE device-option is set
-    isEmpty(CROSS_COMPILE):error("CROSS_COMPILE needs to be set via -device-option CROSS_COMPILE=<path>")
-
-    # Check if QMAKE_CXX points to an executable.
-    ensurePathEnv()
-    for (dir, QMAKE_PATH_ENV) {
-        exists($$dir/$${compiler}): \
-            return()
-    }
-
-    # QMAKE_CXX does not point to a compiler.
-    error("Compiler $$QMAKE_CXX not found. Check the value of CROSS_COMPILE -device-option")
-}
-
+isEmpty(CROSS_COMPILE): CROSS_COMPILE = $$[CROSS_COMPILE]

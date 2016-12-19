@@ -63,17 +63,17 @@ class QPpmHandler : public QImageIOHandler
 {
 public:
     QPpmHandler();
-    bool canRead() const;
-    bool read(QImage *image);
-    bool write(const QImage &image);
+    bool canRead() const override;
+    bool read(QImage *image) override;
+    bool write(const QImage &image) override;
 
-    QByteArray name() const;
+    QByteArray name() const override;
 
     static bool canRead(QIODevice *device, QByteArray *subType = 0);
 
-    QVariant option(ImageOption option) const;
-    void setOption(ImageOption option, const QVariant &value);
-    bool supportsOption(ImageOption option) const;
+    QVariant option(ImageOption option) const override;
+    void setOption(ImageOption option, const QVariant &value) override;
+    bool supportsOption(ImageOption option) const override;
 
 private:
     bool readHeader();
