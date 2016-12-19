@@ -1418,49 +1418,27 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsRemoved(
 void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeMoved(
     const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
-    Q_Q(QSortFilterProxyModel);
     // Because rows which are contiguous in the source model might not be contiguous
     // in the proxy due to sorting, the best thing we can do here is be specific about what
     // parents are having their children changed.
     // Optimize: Emit move signals if the proxy is not sorted. Will need to account for rows
     // being filtered out though.
 
-    saved_persistent_indexes.clear();
-
     QList<QPersistentModelIndex> parents;
-    parents << q->mapFromSource(sourceParent);
+    parents << sourceParent;
     if (sourceParent != destParent)
-      parents << q->mapFromSource(destParent);
-    emit q->layoutAboutToBeChanged(parents);
-    if (persistent.indexes.isEmpty())
-        return;
-    saved_persistent_indexes = store_persistent_indexes();
+        parents << destParent;
+    _q_sourceLayoutAboutToBeChanged(parents, QAbstractItemModel::NoLayoutChangeHint);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceRowsMoved(
     const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
-    Q_Q(QSortFilterProxyModel);
-
-    // Optimize: We only need to clear and update the persistent indexes which are children of
-    // sourceParent or destParent
-    qDeleteAll(source_index_mapping);
-    source_index_mapping.clear();
-
-    update_persistent_indexes(saved_persistent_indexes);
-    saved_persistent_indexes.clear();
-
-    if (dynamic_sortfilter && update_source_sort_column()) {
-        //update_source_sort_column might have created wrong mapping so we have to clear it again
-        qDeleteAll(source_index_mapping);
-        source_index_mapping.clear();
-    }
-
     QList<QPersistentModelIndex> parents;
-    parents << q->mapFromSource(sourceParent);
+    parents << sourceParent;
     if (sourceParent != destParent)
-      parents << q->mapFromSource(destParent);
-    emit q->layoutChanged(parents);
+        parents << destParent;
+    _q_sourceLayoutChanged(parents, QAbstractItemModel::NoLayoutChangeHint);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeInserted(
@@ -1522,42 +1500,21 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsRemoved(
 void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeMoved(
     const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
-    Q_Q(QSortFilterProxyModel);
-
-    saved_persistent_indexes.clear();
-
     QList<QPersistentModelIndex> parents;
-    parents << q->mapFromSource(sourceParent);
+    parents << sourceParent;
     if (sourceParent != destParent)
-      parents << q->mapFromSource(destParent);
-    emit q->layoutAboutToBeChanged(parents);
-
-    if (persistent.indexes.isEmpty())
-        return;
-    saved_persistent_indexes = store_persistent_indexes();
+        parents << destParent;
+    _q_sourceLayoutAboutToBeChanged(parents, QAbstractItemModel::NoLayoutChangeHint);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
-    Q_Q(QSortFilterProxyModel);
-
-    qDeleteAll(source_index_mapping);
-    source_index_mapping.clear();
-
-    update_persistent_indexes(saved_persistent_indexes);
-    saved_persistent_indexes.clear();
-
-    if (dynamic_sortfilter && update_source_sort_column()) {
-        qDeleteAll(source_index_mapping);
-        source_index_mapping.clear();
-    }
-
     QList<QPersistentModelIndex> parents;
-    parents << q->mapFromSource(sourceParent);
+    parents << sourceParent;
     if (sourceParent != destParent)
-      parents << q->mapFromSource(destParent);
-    emit q->layoutChanged(parents);
+        parents << destParent;
+    _q_sourceLayoutChanged(parents, QAbstractItemModel::NoLayoutChangeHint);
 }
 
 /*!

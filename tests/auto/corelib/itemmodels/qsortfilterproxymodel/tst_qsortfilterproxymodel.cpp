@@ -146,6 +146,7 @@ private slots:
     void filterHint();
 
     void sourceLayoutChangeLeavesValidPersistentIndexes();
+    void rowMoveLeavesValidPersistentIndexes();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -4304,6 +4305,51 @@ void tst_QSortFilterProxyModel::sourceLayoutChangeLeavesValidPersistentIndexes()
     // cause corruption at runtime with normal use on linux (before
     // the fix). valgrind confirms the fix.
     qDebug() << persistentIndex.parent();
+    QVERIFY(persistentIndex.parent().isValid());
+}
+
+void tst_QSortFilterProxyModel::rowMoveLeavesValidPersistentIndexes()
+{
+    DynamicTreeModel model;
+    Q_SET_OBJECT_NAME(model);
+
+    QList<int> ancestors;
+    for (auto i = 0; i < 5; ++i)
+    {
+        Q_UNUSED(i);
+        ModelInsertCommand insertCommand(&model);
+        insertCommand.setAncestorRowNumbers(ancestors);
+        insertCommand.setStartRow(0);
+        insertCommand.setEndRow(0);
+        insertCommand.doCommand();
+        ancestors.push_back(0);
+    }
+
+    QSortFilterProxyModel proxy1;
+    proxy1.setSourceModel(&model);
+    Q_SET_OBJECT_NAME(proxy1);
+
+    proxy1.setFilterRegExp("1|2");
+
+    auto item5 = model.match(model.index(0, 0), Qt::DisplayRole, "5", 1, Qt::MatchRecursive).first();
+    auto item3 = model.match(model.index(0, 0), Qt::DisplayRole, "3", 1, Qt::MatchRecursive).first();
+
+    Q_ASSERT(item5.isValid());
+    Q_ASSERT(item3.isValid());
+
+    QPersistentModelIndex persistentIndex = proxy1.match(proxy1.index(0, 0), Qt::DisplayRole, "2", 1, Qt::MatchRecursive).first();
+
+    ModelMoveCommand moveCommand(&model, 0);
+    moveCommand.setAncestorRowNumbers(QList<int>{0, 0, 0, 0});
+    moveCommand.setStartRow(0);
+    moveCommand.setEndRow(0);
+    moveCommand.setDestRow(0);
+    moveCommand.setDestAncestors(QList<int>{0, 0, 0});
+    moveCommand.doCommand();
+
+    // Calling parent() causes the internalPointer to be used.
+    // Before fixing QTBUG-47711 (moveRows case), that could be
+    // a dangling pointer.
     QVERIFY(persistentIndex.parent().isValid());
 }
 
