@@ -362,8 +362,7 @@ QWidget *MainWindow::createIconSizeGroupBox()
     sizeButtonGroup = new QButtonGroup(this);
     sizeButtonGroup->setExclusive(true);
 
-    typedef void (QButtonGroup::*QButtonGroupIntBoolSignal)(int, bool);
-    connect(sizeButtonGroup, static_cast<QButtonGroupIntBoolSignal>(&QButtonGroup::buttonToggled),
+    connect(sizeButtonGroup, QOverload<int, bool>::of(&QButtonGroup::buttonToggled),
             this, &MainWindow::changeSize);
 
     QRadioButton *smallRadioButton = new QRadioButton;
@@ -391,8 +390,7 @@ QWidget *MainWindow::createIconSizeGroupBox()
 //! [26]
 
 //! [27]
-    typedef void (QSpinBox::*QSpinBoxIntSignal)(int);
-    connect(otherSpinBox, static_cast<QSpinBoxIntSignal>(&QSpinBox::valueChanged),
+    connect(otherSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &MainWindow::triggerChangeSize);
 
     QHBoxLayout *otherSizeLayout = new QHBoxLayout;

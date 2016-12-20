@@ -70,8 +70,7 @@ Screenshot::Screenshot()
     delaySpinBox->setSuffix(tr(" s"));
     delaySpinBox->setMaximum(60);
 
-    typedef void (QSpinBox::*QSpinBoxIntSignal)(int);
-    connect(delaySpinBox, static_cast<QSpinBoxIntSignal>(&QSpinBox::valueChanged),
+    connect(delaySpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &Screenshot::updateCheckBox);
 
     hideThisWindowCheckBox = new QCheckBox(tr("Hide This Window"), optionsGroupBox);

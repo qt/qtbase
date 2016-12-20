@@ -122,8 +122,7 @@ Client::Client(QWidget *parent)
 //! [2] //! [3]
     connect(tcpSocket, &QIODevice::readyRead, this, &Client::readFortune);
 //! [2] //! [4]
-    typedef void (QAbstractSocket::*QAbstractSocketErrorSignal)(QAbstractSocket::SocketError);
-    connect(tcpSocket, static_cast<QAbstractSocketErrorSignal>(&QAbstractSocket::error),
+    connect(tcpSocket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),
 //! [3]
             this, &Client::displayError);
 //! [4]

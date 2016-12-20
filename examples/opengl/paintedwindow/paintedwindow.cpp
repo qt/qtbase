@@ -95,9 +95,7 @@ PaintedWindow::PaintedWindow()
 
     connect(screen(), &QScreen::orientationChanged, this, &PaintedWindow::orientationChanged);
     connect(m_animation, &QAbstractAnimation::finished, this, &PaintedWindow::rotationDone);
-    typedef void (PaintedWindow::*PaintedWindowVoidSlot)();
-    connect(this, &PaintedWindow::rotationChanged,
-            this, static_cast<PaintedWindowVoidSlot>(&PaintedWindow::paint));
+    connect(this, &PaintedWindow::rotationChanged, this, QOverload<>::of(&PaintedWindow::paint));
 }
 
 void PaintedWindow::exposeEvent(QExposeEvent *)

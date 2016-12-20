@@ -80,8 +80,7 @@ Window::Window()
 
     connect(showMessageButton, &QAbstractButton::clicked, this, &Window::showMessage);
     connect(showIconCheckBox, &QAbstractButton::toggled, trayIcon, &QSystemTrayIcon::setVisible);
-    typedef void (QComboBox::*QComboIntSignal)(int);
-    connect(iconComboBox, static_cast<QComboIntSignal>(&QComboBox::currentIndexChanged),
+    connect(iconComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &Window::setIcon);
     connect(trayIcon, &QSystemTrayIcon::messageClicked, this, &Window::messageClicked);
     connect(trayIcon, &QSystemTrayIcon::activated, this, &Window::iconActivated);

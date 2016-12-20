@@ -342,13 +342,11 @@ void TextEdit::setupTextActions()
     comboStyle->addItem("Ordered List (Roman lower)");
     comboStyle->addItem("Ordered List (Roman upper)");
 
-    typedef void (QComboBox::*QComboIntSignal)(int);
-    connect(comboStyle, static_cast<QComboIntSignal>(&QComboBox::activated), this, &TextEdit::textStyle);
+    connect(comboStyle, QOverload<int>::of(&QComboBox::activated), this, &TextEdit::textStyle);
 
-    typedef void (QComboBox::*QComboStringSignal)(const QString &);
     comboFont = new QFontComboBox(tb);
     tb->addWidget(comboFont);
-    connect(comboFont, static_cast<QComboStringSignal>(&QComboBox::activated), this, &TextEdit::textFamily);
+    connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textFamily);
 
     comboSize = new QComboBox(tb);
     comboSize->setObjectName("comboSize");
@@ -360,7 +358,7 @@ void TextEdit::setupTextActions()
         comboSize->addItem(QString::number(size));
     comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 
-    connect(comboSize, static_cast<QComboStringSignal>(&QComboBox::activated), this, &TextEdit::textSize);
+    connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textSize);
 }
 
 bool TextEdit::load(const QString &f)
