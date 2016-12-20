@@ -430,6 +430,7 @@
             "output": [ "machineTuple" ]
         },
         "commit": {
+            "condition": "features.machineTuple",
             "output": [ "commitOptions" ]
         },
         "android-style-assets": {
