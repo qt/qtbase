@@ -238,40 +238,6 @@ contains(qt_module_deps, qml): \
         write_file($$QML_IMPORT_CPP, IMPORT_FILE_CONT)|error()
         GENERATED_SOURCES += $$QML_IMPORT_CPP
         QMAKE_DISTCLEAN += $$QML_IMPORT_CPP
-
-        # copy qml files. this part is platform spesific.
-        mac {
-            osx {
-                # Note: user can override QMAKE_BUNDLE_QML from pro file to change target bundle path
-                isEmpty(QMAKE_QML_BUNDLE_PATH):QMAKE_QML_BUNDLE_PATH = "Resources/qt_qml"
-                qmlTargetPath = $$OUT_PWD/$${TARGET}.app/Contents/$$QMAKE_QML_BUNDLE_PATH
-                qtconfTargetPath = $$OUT_PWD/$${TARGET}.app/Contents/Resources/qt.conf
-            } else {
-                # iOS: flat bundle layout (no Contents/Resources)
-                isEmpty(QMAKE_QML_BUNDLE_PATH):QMAKE_QML_BUNDLE_PATH = "qt_qml"
-                qmlTargetPath = $CODESIGNING_FOLDER_PATH/$$QMAKE_QML_BUNDLE_PATH
-                qtconfTargetPath = $CODESIGNING_FOLDER_PATH/qt.conf
-            }
-
-            # set import path in qt.conf to point to the bundeled qml:
-            QT_CONF_CONTENTS = \
-                "[Paths]" \
-                "Imports = $$QMAKE_QML_BUNDLE_PATH" \
-                "Qml2Imports = $$QMAKE_QML_BUNDLE_PATH"
-            write_file("$$OUT_PWD/qt.conf", QT_CONF_CONTENTS)|error()
-
-            # write qt.conf and copy each qml import dir into the bundle.
-            # But strip away archives and other files that are not needed:
-            !isEmpty(QMAKE_POST_LINK): QMAKE_POST_LINK += ";"
-            QMAKE_POST_LINK += \
-                "cp $$shell_quote($$OUT_PWD/qt.conf) \"$$qtconfTargetPath\"; " \
-                "test -d \"$$qmlTargetPath\" && rm -r \"$$qmlTargetPath\"; " \
-                "mkdir -p \"$$qmlTargetPath\" && " \
-                "for p in $$QMLPATHS; do" \
-                    "rsync -r --exclude='*.a' --exclude='*.prl' --exclude='*.qmltypes' "
-            macx-xcode: QMAKE_POST_LINK += "$p/ \"$$qmlTargetPath\"; done"
-            else: QMAKE_POST_LINK += "\$\$p/ \"$$qmlTargetPath\"; done"
-        }
     }
 }
 
