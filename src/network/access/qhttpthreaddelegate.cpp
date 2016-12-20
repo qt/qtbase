@@ -67,7 +67,7 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
         break;
 
     case 403:               // Access denied
-        code = QNetworkReply::ContentOperationNotPermittedError;
+        code = QNetworkReply::ContentAccessDenied;
         break;
 
     case 404:               // Not Found

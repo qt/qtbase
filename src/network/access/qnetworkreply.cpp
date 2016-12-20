@@ -166,7 +166,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     any credentials offered (if any)
 
     \value ContentAccessDenied          the access to the remote
-    content was denied (similar to HTTP error 401)
+    content was denied (similar to HTTP error 403)
 
     \value ContentOperationNotPermittedError the operation requested
     on the remote content is not permitted
