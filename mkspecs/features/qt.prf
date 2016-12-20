@@ -168,10 +168,10 @@ for(ever) {
 }
 
 qt_module_deps = $$CLEAN_QT $$CLEAN_QT_PRIVATE
-qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
+all_qt_module_deps = $$resolve_depends(qt_module_deps, "QT.", ".depends" ".run_depends")
 
 !no_qt_rpath:!static:qtConfig(rpath):!qtConfig(static):\
-        contains(qt_module_deps, core) {
+        contains(all_qt_module_deps, core) {
     relative_qt_rpath:!isEmpty(QMAKE_REL_RPATH_BASE):contains(INSTALLS, target):\
             isEmpty(target.files):isEmpty(target.commands):isEmpty(target.extra) {
         # NOT the /dev property, as INSTALLS use host paths
@@ -186,8 +186,8 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
     # libraries which were NOT specified on the command line.
     # This means that paths of direct dependencies (QT & QT_PRIVATE)
     # don't need to be listed, unlike their private dependencies' paths.
-    privdep = $$resolve_depends(qt_module_deps, "QT.", ".depends" ".run_depends")
-    privdep -= $$qt_module_deps
+    privdep = $$all_qt_module_deps
+    privdep -= $$resolve_depends(qt_module_deps, "QT.")
     rpaths =
     for(dep, privdep): \
         rpaths += $$eval(QT.$${dep}.libs)
@@ -195,7 +195,7 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 }
 
 # static builds: link qml import plugins into the target.
-contains(qt_module_deps, qml): \
+contains(all_qt_module_deps, qml): \
         qtConfig(static):import_plugins:!host_build:!no_import_scan {
     exists($$[QT_INSTALL_QML/get]): \
         QMLPATHS *= $$[QT_INSTALL_QML/get]
@@ -254,14 +254,14 @@ contains(qt_module_deps, qml): \
 
 import_plugins {
     autoplugs =
-    for (qtmod, qt_module_deps) {
+    for (qtmod, all_qt_module_deps) {
         for (ptype, QT.$${qtmod}.plugin_types) {
             nptype = $$replace(ptype, [-/], _)
             isEmpty(QTPLUGIN.$$nptype) {
                 for (plug, QT_PLUGINS) {
                     equals(QT_PLUGIN.$${plug}.TYPE, $$ptype) {
                         for (dep, QT_PLUGIN.$${plug}.EXTENDS) {
-                            !contains(qt_module_deps, $$dep) {
+                            !contains(all_qt_module_deps, $$dep) {
                                 plug =
                                 break()
                             }
