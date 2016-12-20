@@ -91,6 +91,7 @@ public:
 #ifdef QT_BUILD_QMAKE
         // These are not subject to binary compatibility constraints
         SysrootPath,
+        SysrootifyPrefixPath,
         HostBinariesPath,
         HostLibrariesPath,
         HostDataPath,

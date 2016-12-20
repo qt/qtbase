@@ -680,6 +680,7 @@ defineReplace(printHostPaths) {
         $$printInstallPath(HostLibraries, hostlibdir, lib) \
         $$printInstallPath(HostData, hostdatadir, .) \
         "Sysroot=$$config.input.sysroot" \
+        "SysrootifyPrefix=$$qmake_sysrootify" \
         "TargetSpec=$$XSPEC" \
         "HostSpec=$$[QMAKE_SPEC]"
     return($$ret)

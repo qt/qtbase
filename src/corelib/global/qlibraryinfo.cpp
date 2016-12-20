@@ -113,13 +113,6 @@ public:
                          ? ls->haveDevicePaths
                          : ls->havePaths) : false;
     }
-    static bool sysrootify()
-    {
-        // This is actually bogus, as it does not consider post-configure settings.
-        QLibrarySettings *ls = qt_library_settings();
-        return ls ? (!ls->builtinValues[QLibraryInfo::SysrootPath].isEmpty()
-                     && ls->builtinValues[QLibraryInfo::ExtPrefixPath].isEmpty()) : false;
-    }
     static QString builtinValue(int loc)
     {
         QLibrarySettings *ls = qt_library_settings();
@@ -483,6 +476,7 @@ static const struct {
     { "Tests", "tests" },
 #ifdef QT_BUILD_QMAKE
     { "Sysroot", "" },
+    { "SysrootifyPrefix", "" },
     { "HostBinaries", "bin" },
     { "HostLibraries", "lib" },
     { "HostData", "." },
@@ -522,13 +516,17 @@ QLibraryInfo::location(LibraryLocation loc)
     QString ret = rawLocation(loc, FinalPaths);
 
     // Automatically prepend the sysroot to target paths
-    if ((loc < SysrootPath || loc > LastHostPath) && QLibraryInfoPrivate::sysrootify()) {
+    if (loc < SysrootPath || loc > LastHostPath) {
         QString sysroot = rawLocation(SysrootPath, FinalPaths);
-        if (!sysroot.isEmpty() && ret.length() > 2 && ret.at(1) == QLatin1Char(':')
-            && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\')))
-            ret.replace(0, 2, sysroot); // Strip out the drive on Windows targets
-        else
-            ret.prepend(sysroot);
+        if (!sysroot.isEmpty()
+                && QVariant::fromValue(rawLocation(SysrootifyPrefixPath, FinalPaths)).toBool()) {
+            if (ret.length() > 2 && ret.at(1) == QLatin1Char(':')
+                   && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\'))) {
+                ret.replace(0, 2, sysroot); // Strip out the drive on Windows targets
+            } else {
+                ret.prepend(sysroot);
+            }
+        }
     }
 
     return ret;
@@ -591,7 +589,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
                 if (loc == HostPrefixPath)
                     ret = config->value(QLatin1String(qtConfEntries[PrefixPath].key),
                                         QLatin1String(qtConfEntries[PrefixPath].value)).toString();
-                else if (loc == TargetSpecPath || loc == HostSpecPath)
+                else if (loc == TargetSpecPath || loc == HostSpecPath || loc == SysrootifyPrefixPath)
                     fromConf = false;
                 // The last case here is SysrootPath, which can be legitimately empty.
                 // All other keys have non-empty fallbacks to start with.
@@ -645,8 +643,8 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     }
 
 #ifdef QT_BUILD_QMAKE
-    // The specs need to be returned verbatim.
-    if (loc == TargetSpecPath || loc == HostSpecPath)
+    // These values aren't actually paths and thus need to be returned verbatim.
+    if (loc == TargetSpecPath || loc == HostSpecPath || loc == SysrootifyPrefixPath)
         return ret;
 #endif
 
