@@ -406,7 +406,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     xml << decl("1.0", "utf-8")
         << tag("Project")
         << attrTag("DefaultTargets","Build")
-        << attrTag("ToolsVersion", "4.0")
+        << attrTagToolsVersion(tool.Configuration)
         << attrTag("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003")
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
@@ -550,7 +550,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
 
     xmlFilter << decl("1.0", "utf-8")
               << tag("Project")
-              << attrTag("ToolsVersion", "4.0")
+              << attrTagToolsVersion(tool.Configuration)
               << attrTag("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
     xmlFilter << tag("ItemGroup");
@@ -603,13 +603,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     xml.setIndentString("  ");
 
-    const QString toolsVersion = (tool.SdkVersion == QLatin1String("10.0")) ? QStringLiteral("14.0")
-                                                                            : QStringLiteral("4.0");
-
     xml << decl("1.0", "utf-8")
         << tag("Project")
         << attrTag("DefaultTargets","Build")
-        << attrTag("ToolsVersion", toolsVersion)
+        << attrTagToolsVersion(tool.SingleProjects.first().Configuration)
         << attrTag("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003")
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
@@ -796,7 +793,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     xmlFilter << decl("1.0", "utf-8")
               << tag("Project")
-              << attrTag("ToolsVersion", "4.0")
+              << attrTagToolsVersion(tool.SingleProjects.first().Configuration)
               << attrTag("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
     xmlFilter << tag("ItemGroup");
@@ -2054,6 +2051,13 @@ void VCXProjectWriter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter,
 QString VCXProjectWriter::generateCondition(const VCConfiguration &config)
 {
     return QStringLiteral("'$(Configuration)|$(Platform)'=='") + config.Name + QLatin1Char('\'');
+}
+
+XmlOutput::xml_output VCXProjectWriter::attrTagToolsVersion(const VCConfiguration &config)
+{
+    if (config.CompilerVersion >= NET2013)
+        return noxml();
+    return attrTag("ToolsVersion", "4.0");
 }
 
 QT_END_NAMESPACE
