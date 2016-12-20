@@ -6196,20 +6196,18 @@ static void qInitDrawhelperFunctions()
 
 #if defined(QT_COMPILER_SUPPORTS_SSE4_1)
     if (qCpuHasFeature(SSE4_1)) {
-#if !defined(__SSE4_1__)
         extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
                                                                     const QVector<QRgb> *, QDitherInfo *);
         extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_sse4(uint *buffer, const uint *src, int count,
                                                                       const QVector<QRgb> *, QDitherInfo *);
-        qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_sse4;
-        qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_sse4;
-#endif
         extern const uint *QT_FASTCALL convertARGB32FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
                                                                       const QVector<QRgb> *, QDitherInfo *);
         extern const uint *QT_FASTCALL convertRGBA8888FromARGB32PM_sse4(uint *buffer, const uint *src, int count,
                                                                         const QVector<QRgb> *, QDitherInfo *);
         extern const uint *QT_FASTCALL convertRGBXFromARGB32PM_sse4(uint *buffer, const uint *src, int count,
                                                                     const QVector<QRgb> *, QDitherInfo *);
+        qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_sse4;
+        qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_sse4;
         qPixelLayouts[QImage::Format_ARGB32].convertFromARGB32PM = convertARGB32FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBA8888].convertFromARGB32PM = convertRGBA8888FromARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBX8888].convertFromARGB32PM = convertRGBXFromARGB32PM_sse4;
@@ -6220,14 +6218,6 @@ static void qInitDrawhelperFunctions()
 
 #if defined(QT_COMPILER_SUPPORTS_AVX2)
     if (qCpuHasFeature(AVX2)) {
-#if !defined(__AVX2__)
-        extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
-                                                                    const QVector<QRgb> *, QDitherInfo *);
-        extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_avx2(uint *buffer, const uint *src, int count,
-                                                                      const QVector<QRgb> *, QDitherInfo *);
-        qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_avx2;
-        qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_avx2;
-#endif
         extern void qt_blend_rgb32_on_rgb32_avx2(uchar *destPixels, int dbpl,
                                                  const uchar *srcPixels, int sbpl,
                                                  int w, int h, int const_alpha);
@@ -6276,6 +6266,15 @@ static void qInitDrawhelperFunctions()
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
 
     sourceFetchUntransformed[QImage::Format_RGB888] = qt_fetchUntransformed_888_neon;
+
+#if defined(Q_PROCESSOR_ARM_64) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    extern const uint *QT_FASTCALL convertARGB32ToARGB32PM_neon(uint *buffer, const uint *src, int count,
+                                                                const QVector<QRgb> *, QDitherInfo *);
+    extern const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_neon(uint *buffer, const uint *src, int count,
+                                                                  const QVector<QRgb> *, QDitherInfo *);
+    qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_neon;
+    qPixelLayouts[QImage::Format_RGBA8888].convertToARGB32PM = convertRGBA8888ToARGB32PM_neon;
+#endif
 
 #if defined(ENABLE_PIXMAN_DRAWHELPERS)
     // The RGB16 helpers are using Arm32 assemblythat has not been ported to AArch64
