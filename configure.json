@@ -423,7 +423,7 @@
 
     "features": {
         "prepare": {
-            "output": [ "prepareSpec", "prepareOptions", "preparePaths" ]
+            "output": [ "prepareSpec", "prepareOptions", "preparePaths", "reloadSpec" ]
         },
         "machineTuple": {
             "condition": "!config.linux || config.android || tests.machineTuple",

@@ -593,9 +593,8 @@ defineTest(qtConfOutput_prepareOptions) {
 
     export($${currentConfig}.output.devicePro)
 
-    # reload the spec to make the settings actually take effect.
-    !isEmpty($${currentConfig}.output.devicePro): \
-        reloadSpec()
+    # if any settings were made, the spec will be reloaded later
+    # to make them take effect.
 }
 
 defineTest(qtConfOutput_machineTuple) {
@@ -842,6 +841,15 @@ defineTest(qtConfOutput_preparePaths) {
             "Prefix=$$QT_SOURCE_TREE"
     write_file($$QT_BUILD_TREE/bin/qt.conf, cont)|error()
     reload_properties()
+
+    # if a sysroot was configured, the spec will be reloaded later,
+    # as some specs contain $$[SYSROOT] references.
+}
+
+defineTest(qtConfOutput_reloadSpec) {
+    !isEmpty($${currentConfig}.output.devicePro)| \
+            !isEmpty(config.input.sysroot): \
+        reloadSpec()
 }
 
 defineTest(qtConfOutput_shared) {
