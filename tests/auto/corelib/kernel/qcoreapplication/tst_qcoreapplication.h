@@ -39,6 +39,7 @@ private slots:
     void sendEventsOnProcessEvents(); // this must be the first test
     void getSetCheck();
     void qAppName();
+    void qAppVersion();
     void argc();
     void postEvent();
     void removePostedEvents();

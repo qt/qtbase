@@ -83,9 +83,10 @@ public:
     void init();
 
     QString appName() const;
+    QString appVersion() const;
 
-#ifdef Q_OS_MAC
-    static QString macMenuBarName();
+#ifdef Q_OS_DARWIN
+    static QString infoDictionaryStringProperty(const QString &propertyName);
 #endif
 
     static void initLocale();
