@@ -63,6 +63,8 @@ CLEAN_QT_PRIVATE = $$replace(QT_PRIVATE, -private$, _private)
 qt_module_deps = $$CLEAN_QT $$CLEAN_QT_PRIVATE
 all_qt_module_deps = $$resolve_depends(qt_module_deps, "QT.", ".depends" ".run_depends")
 
+QTPLUGIN = $$unique($$list($$lower($$QTPLUGIN)))
+
 import_plugins:qtConfig(static) {
     manualplugs = $$QTPLUGIN  # User may specify plugins. Mostly legacy.
     autoplugs =  # Auto-added plugins.
@@ -129,6 +131,22 @@ import_plugins:qtConfig(static) {
         write_file($$IMPORT_CPP, IMPORT_FILE_CONT)|error()
         GENERATED_SOURCES += $$IMPORT_CPP
         QMAKE_DISTCLEAN += $$IMPORT_CPP
+    }
+}
+
+# Only link against plugins in static builds
+!isEmpty(QTPLUGIN):qtConfig(static) {
+    for (plug, QTPLUGIN) {
+        # Check if the plugin is known to Qt. We can use this to determine
+        # the plugin path. Unknown plugins must rely on the default link path.
+        plug_type = $$eval(QT_PLUGIN.$${plug}.TYPE)
+        !isEmpty(plug_type) {
+            plug_path = $$eval(QT_PLUGIN.$${plug}.PATH)
+            isEmpty(plug_path): \
+                plug_path = $$[QT_INSTALL_PLUGINS/get]
+            LIBS += -L$$plug_path/$$plug_type
+        }
+        LIBS += -l$${plug}$$qtPlatformTargetSuffix()
     }
 }
 
@@ -320,26 +338,5 @@ contains(all_qt_module_deps, qml): \
         write_file($$QML_IMPORT_CPP, IMPORT_FILE_CONT)|error()
         GENERATED_SOURCES += $$QML_IMPORT_CPP
         QMAKE_DISTCLEAN += $$QML_IMPORT_CPP
-    }
-}
-qtConfig(static) {
-    for (QTPLUG, $$list($$lower($$unique(QTPLUGIN)))) {
-       # Check if the plugin is known to Qt. We can use this to determine
-       # the plugin path. Unknown plugins must rely on the default link path.
-       QT_PLUGINPATH = $$eval(QT_PLUGIN.$${QTPLUG}.TYPE)
-
-        # Generate the plugin linker line
-        QT_LINKAGE = -l$${QTPLUG}$$qtPlatformTargetSuffix()
-
-        # Only link against plugin in static builds
-        {
-            !isEmpty(QT_PLUGINPATH) {
-                plugpath = $$eval(QT_PLUGIN.$${QTPLUG}.PATH)
-                isEmpty(plugpath): \
-                    plugpath = $$[QT_INSTALL_PLUGINS/get]
-                LIBS *= -L$$plugpath/$$QT_PLUGINPATH
-            }
-                LIBS += $$QT_LINKAGE
-        }
     }
 }
