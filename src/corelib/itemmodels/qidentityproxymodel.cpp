@@ -496,15 +496,6 @@ void QIdentityProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<QPe
 {
     Q_Q(QIdentityProxyModel);
 
-    const auto proxyPersistentIndexes = q->persistentIndexList();
-    for (const QPersistentModelIndex &proxyPersistentIndex : proxyPersistentIndexes) {
-        proxyIndexes << proxyPersistentIndex;
-        Q_ASSERT(proxyPersistentIndex.isValid());
-        const QPersistentModelIndex srcPersistentIndex = q->mapToSource(proxyPersistentIndex);
-        Q_ASSERT(srcPersistentIndex.isValid());
-        layoutChangePersistentIndexes << srcPersistentIndex;
-    }
-
     QList<QPersistentModelIndex> parents;
     parents.reserve(sourceParents.size());
     for (const QPersistentModelIndex &parent : sourceParents) {
@@ -518,6 +509,15 @@ void QIdentityProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<QPe
     }
 
     q->layoutAboutToBeChanged(parents, hint);
+
+    const auto proxyPersistentIndexes = q->persistentIndexList();
+    for (const QPersistentModelIndex &proxyPersistentIndex : proxyPersistentIndexes) {
+        proxyIndexes << proxyPersistentIndex;
+        Q_ASSERT(proxyPersistentIndex.isValid());
+        const QPersistentModelIndex srcPersistentIndex = q->mapToSource(proxyPersistentIndex);
+        Q_ASSERT(srcPersistentIndex.isValid());
+        layoutChangePersistentIndexes << srcPersistentIndex;
+    }
 }
 
 void QIdentityProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint)
