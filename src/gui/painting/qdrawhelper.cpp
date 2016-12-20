@@ -6495,6 +6495,17 @@ static void qInitDrawhelperFunctions()
         qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_avx2;
         qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_avx2;
         qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_avx2;
+
+        extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                                            int &fx, int &fy, int fdx, int /*fdy*/);
+        extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                                       int &fx, int &fy, int fdx, int /*fdy*/);
+        extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                                         int &fx, int &fy, int fdx, int fdy);
+
+        bilinearFastTransformHelperARGB32PM[0][SimpleUpscaleTransform] = fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2;
+        bilinearFastTransformHelperARGB32PM[0][DownscaleTransform] = fetchTransformedBilinearARGB32PM_downscale_helper_avx2;
+        bilinearFastTransformHelperARGB32PM[0][FastRotateTransform] = fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2;
     }
 #endif
 
