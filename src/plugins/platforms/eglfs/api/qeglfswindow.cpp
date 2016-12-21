@@ -131,7 +131,6 @@ void QEglFSWindow::create()
 
     m_flags |= HasNativeWindow;
     setGeometry(QRect()); // will become fullscreen
-    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
 
     resetSurface();
 
@@ -243,11 +242,15 @@ void QEglFSWindow::setGeometry(const QRect &r)
     else
         rect = r;
 
+    const bool changed = rect != QPlatformWindow::geometry();
     QPlatformWindow::setGeometry(rect);
 
     // if we corrected the size, trigger a resize event
     if (rect != r)
         QWindowSystemInterface::handleGeometryChange(window(), rect, r);
+
+    if (changed)
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
 }
 
 QRect QEglFSWindow::geometry() const
