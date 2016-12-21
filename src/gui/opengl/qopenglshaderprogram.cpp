@@ -1310,7 +1310,7 @@ bool QOpenGLShaderProgram::link()
         GLint len;
         d->glfuncs->glGetProgramInfoLog(program, value, &len, logbuf);
         d->log = QString::fromLatin1(logbuf);
-        if (!d->linked) {
+        if (!d->linked && !d->linkBinaryRecursion) {
             QString name = objectName();
             if (name.isEmpty())
                 qWarning("QOpenGLShader::link: %ls", qUtf16Printable(d->log));
