@@ -110,9 +110,6 @@ defineReplace(qtExportLibsForModule) {
         module_master =
     MODULE_PRI_CONT = \
         "QT.$${MODULE_ID}.VERSION = $${VERSION}" \
-        "QT.$${MODULE_ID}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
-        "QT.$${MODULE_ID}.MINOR_VERSION = $$section(VERSION, ., 1, 1)" \
-        "QT.$${MODULE_ID}.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
         "" \
         "QT.$${MODULE_ID}.name = $$TARGET" \
         "QT.$${MODULE_ID}.module = $$module_module" \
@@ -151,9 +148,6 @@ defineReplace(qtExportLibsForModule) {
         private_deps ~= s,-private$,_private,g
         MODULE_PRIVATE_PRI_CONT = \
             "QT.$${MODULE}_private.VERSION = $${VERSION}" \
-            "QT.$${MODULE}_private.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
-            "QT.$${MODULE}_private.MINOR_VERSION = $$section(VERSION, ., 1, 1)" \
-            "QT.$${MODULE}_private.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
             "" \
             "QT.$${MODULE}_private.name = $${TARGET}" \   # Same name as base module
             "QT.$${MODULE}_private.module =" \
