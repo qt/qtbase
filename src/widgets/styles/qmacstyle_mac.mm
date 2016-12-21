@@ -3301,32 +3301,60 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
         break;
     case PE_IndicatorMenuCheckMark: {
-        const int checkw = 8;
-        const int checkh = 8;
-        const int xoff = qMax(0, (opt->rect.width() - checkw) / 2);
-        const int yoff = qMax(0, (opt->rect.width() - checkh) / 2);
-        const int x1 = xoff + opt->rect.x();
-        const int y1 = yoff + opt->rect.y() + checkw/2;
-        const int x2 = xoff + opt->rect.x() + checkw/4;
-        const int y2 = yoff + opt->rect.y() + checkh;
-        const int x3 = xoff + opt->rect.x() + checkw;
-        const int y3 = yoff + opt->rect.y();
+        if (!(opt->state & State_On))
+            break;
+        QColor pc;
+        if (opt->state & State_Selected)
+            pc = opt->palette.highlightedText().color();
+        else
+            pc = opt->palette.text().color();
+        QCFType<CGColorRef> checkmarkColor = CGColorCreateGenericRGB(static_cast<CGFloat>(pc.redF()),
+                                                                     static_cast<CGFloat>(pc.greenF()),
+                                                                     static_cast<CGFloat>(pc.blueF()),
+                                                                     static_cast<CGFloat>(pc.alphaF()));
+        // kCTFontUIFontSystem and others give the same result
+        // as kCTFontUIFontMenuItemMark. However, the latter is
+        // more reminiscent to HITheme's kThemeMenuItemMarkFont.
+        // See also the font for small- and mini-sized widgets,
+        // where we end up using the generic system font type.
+        const CTFontUIFontType fontType = (opt->state & State_Mini) ? kCTFontUIFontMiniSystem :
+                                          (opt->state & State_Small) ? kCTFontUIFontSmallSystem :
+                                          kCTFontUIFontMenuItemMark;
+        // Similarly for the font size, where there is a small difference
+        // between regular combobox and item view items, and and menu items.
+        // However, we ignore any difference for small- and mini-sized widgets.
+        const CGFloat fontSize = fontType == kCTFontUIFontMenuItemMark ? opt->fontMetrics.height() : 0.0;
+        QCFType<CTFontRef> checkmarkFont = CTFontCreateUIFontForLanguage(fontType, fontSize, NULL);
 
-        QVector<QLineF> a(2);
-        a << QLineF(x1, y1, x2, y2);
-        a << QLineF(x2, y2, x3, y3);
-        if (opt->palette.currentColorGroup() == QPalette::Active) {
-            if (opt->state & State_On)
-                p->setPen(QPen(opt->palette.highlightedText().color(), 3));
-            else
-                p->setPen(QPen(opt->palette.text().color(), 3));
-        } else {
-            p->setPen(QPen(QColor(100, 100, 100), 3));
-        }
-        p->save();
-        p->setRenderHint(QPainter::Antialiasing);
-        p->drawLines(a);
-        p->restore();
+        CGContextSaveGState(cg);
+        CGContextSetShouldSmoothFonts(cg, NO); // Same as HITheme and Cocoa menu checkmarks
+
+        // Baseline alignment tweaks for QComboBox and QMenu
+        const CGFloat vOffset = (opt->state & State_Mini) ? 0.0 :
+                                (opt->state & State_Small) ? 1.0 :
+                                0.75;
+
+        CGContextTranslateCTM(cg, 0, opt->rect.bottom());
+        CGContextScaleCTM(cg, 1, -1);
+        // Translate back to the original position and add rect origin and offset
+        CGContextTranslateCTM(cg, opt->rect.x(), vOffset);
+
+        // CTFont has severe difficulties finding the checkmark character among its
+        // glyphs. Fortunately, CTLine knows its ways inside the Cocoa labyrinth.
+        static const CFStringRef keys[] = { kCTFontAttributeName, kCTForegroundColorAttributeName };
+        static const int numValues = sizeof(keys) / sizeof(keys[0]);
+        const CFTypeRef values[] = { (CFTypeRef)checkmarkFont,  (CFTypeRef)checkmarkColor };
+        Q_STATIC_ASSERT((sizeof(values) / sizeof(values[0])) == numValues);
+        QCFType<CFDictionaryRef> attributes = CFDictionaryCreate(kCFAllocatorDefault, (const void **)keys, (const void **)values,
+                                                                 numValues, NULL, NULL);
+        // U+2713: CHECK MARK
+        QCFType<CFAttributedStringRef> checkmarkString = CFAttributedStringCreate(kCFAllocatorDefault, (CFStringRef)@"\u2713", attributes);
+        QCFType<CTLineRef> line = CTLineCreateWithAttributedString(checkmarkString);
+
+        CTLineDraw((CTLineRef)line, cg);
+        CGContextFlush(cg); // CTLineDraw's documentation says it doesn't flush
+
+        CGContextRestoreGState(cg);
         break; }
     case PE_IndicatorViewItemCheck:
     case PE_IndicatorRadioButton:
@@ -4412,61 +4440,27 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 p->setPen(mi->palette.buttonText().color());
 
             if (mi->checked) {
-                // Use the HIThemeTextInfo foo to draw the check mark correctly, if we do it,
-                // we somehow need to use a special encoding as it doesn't look right with our
-                // drawText().
-                p->save();
-                CGContextSetShouldAntialias(cg, true);
-                CGContextSetShouldSmoothFonts(cg, true);
-                QColor textColor = p->pen().color();
-                CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
-                                      static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
-                CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
-                CGContextSetFillColor(cg, colorComp);
-                HIThemeTextInfo tti;
-                tti.version = qt_mac_hitheme_version;
-                tti.state = tds;
-                if (active && enabled)
-                    tti.state = kThemeStatePressed;
-                switch (widgetSize) {
-                case QAquaSizeUnknown:
-                case QAquaSizeLarge:
-                    tti.fontID = kThemeMenuItemMarkFont;
-                    break;
-                case QAquaSizeSmall:
-                    tti.fontID = kThemeSmallSystemFont;
-                    break;
-                case QAquaSizeMini:
-                    tti.fontID = kThemeMiniSystemFont;
-                    break;
-                }
-                tti.horizontalFlushness = kHIThemeTextHorizontalFlushLeft;
-                tti.verticalFlushness = kHIThemeTextVerticalFlushCenter;
-                tti.options = kHIThemeTextBoxOptionNone;
-                tti.truncationPosition = kHIThemeTextTruncationNone;
-                tti.truncationMaxLines = 1;
-                QCFString checkmark;
-#if 0
-                if (mi->checkType == QStyleOptionMenuItem::Exclusive)
-                    checkmark = QString(QChar(kDiamondUnicode));
-                else
-#endif
-                    checkmark = QString(QChar(kCheckUnicode));
-                int mw = checkcol + macItemFrame;
-                int mh = contentRect.height() - 2 * macItemFrame;
-                int xp = contentRect.x();
-                xp += macItemFrame;
-                CGFloat outWidth, outHeight, outBaseline;
-                HIThemeGetTextDimensions(checkmark, 0, &tti, &outWidth, &outHeight,
-                                         &outBaseline);
+                QStyleOption checkmarkOpt;
+                checkmarkOpt.initFrom(w);
+
+                const int mw = checkcol + macItemFrame;
+                const int mh = contentRect.height() + macItemFrame;
+                const int xp = contentRect.x() + macItemFrame;
+                checkmarkOpt.rect = QRect(xp, contentRect.y() - checkmarkOpt.fontMetrics.descent(), mw, mh);
+
+                checkmarkOpt.state |= State_On; // Always on. Never rendered when off.
+                checkmarkOpt.state.setFlag(State_Selected, active);
+                checkmarkOpt.state.setFlag(State_Enabled, enabled);
                 if (widgetSize == QAquaSizeMini)
-                    outBaseline += 1;
-                QRect r(xp, contentRect.y(), mw, mh);
-                r.translate(0, p->fontMetrics().ascent() - int(outBaseline) + 1);
-                HIRect bounds = qt_hirectForQRect(r);
-                HIThemeDrawTextBox(checkmark, &bounds, &tti,
-                                   cg, kHIThemeOrientationNormal);
-                p->restore();
+                    checkmarkOpt.state |= State_Mini;
+                else if (widgetSize == QAquaSizeSmall)
+                    checkmarkOpt.state |= State_Small;
+
+                // We let drawPrimitive(PE_IndicatorMenuCheckMark) pick the right color
+                checkmarkOpt.palette.setColor(QPalette::HighlightedText, p->pen().color());
+                checkmarkOpt.palette.setColor(QPalette::Text, p->pen().color());
+
+                proxy()->drawPrimitive(PE_IndicatorMenuCheckMark, &checkmarkOpt, p, w);
             }
             if (!mi->icon.isNull()) {
                 QIcon::Mode mode = (mi->state & State_Enabled) ? QIcon::Normal
