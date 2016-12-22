@@ -69,10 +69,14 @@ void QFbWindow::setGeometry(const QRect &rect)
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     QPlatformWindow::setGeometry(rect);
+
+    if (mOldGeometry != rect)
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
 }
 
 void QFbWindow::setVisible(bool visible)
 {
+    QRect newGeom;
     QFbScreen *fbScreen = platformScreen();
     if (visible) {
         bool convOk = false;
@@ -80,9 +84,9 @@ void QFbWindow::setVisible(bool visible)
         const bool platformDisableForceFullScreen = fbScreen->flags().testFlag(QFbScreen::DontForceFirstWindowToFullScreen);
         const bool forceFullScreen = !envDisableForceFullScreen && !platformDisableForceFullScreen && fbScreen->windowCount() == 0;
         if (forceFullScreen || (mWindowState & Qt::WindowFullScreen))
-            setGeometry(platformScreen()->geometry());
+            newGeom = platformScreen()->geometry();
         else if (mWindowState & Qt::WindowMaximized)
-            setGeometry(platformScreen()->availableGeometry());
+            newGeom = platformScreen()->availableGeometry();
     }
     QPlatformWindow::setVisible(visible);
 
@@ -90,8 +94,17 @@ void QFbWindow::setVisible(bool visible)
         fbScreen->addWindow(this);
     else
         fbScreen->removeWindow(this);
-}
 
+    if (!newGeom.isEmpty())
+        setGeometry(newGeom); // may or may not generate an expose
+
+    if (newGeom.isEmpty() || newGeom == mOldGeometry) {
+        // QWindow::isExposed() maps to QWindow::visible() by default so simply
+        // generating an expose event regardless of this being a show or hide is
+        // just what is needed here.
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
+    }
+}
 
 void QFbWindow::setWindowState(Qt::WindowState state)
 {
@@ -112,11 +125,13 @@ Qt::WindowFlags QFbWindow::windowFlags() const
 void QFbWindow::raise()
 {
     platformScreen()->raise(this);
+    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
 }
 
 void QFbWindow::lower()
 {
     platformScreen()->lower(this);
+    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
 }
 
 void QFbWindow::repaint(const QRegion &region)
