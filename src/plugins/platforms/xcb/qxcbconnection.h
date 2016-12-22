@@ -517,6 +517,7 @@ public:
 
 #ifdef XCB_USE_XINPUT22
     bool xi2MouseEvents() const;
+    bool isTouchScreen(int id) const;
 #endif
 
 protected:
