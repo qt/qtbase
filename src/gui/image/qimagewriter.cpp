@@ -283,8 +283,13 @@ bool QImageWriterPrivate::canWriteHelper()
         errorString = QImageWriter::tr("Device is not set");
         return false;
     }
-    if (!device->isOpen())
-        device->open(QIODevice::WriteOnly);
+    if (!device->isOpen()) {
+        if (!device->open(QIODevice::WriteOnly)) {
+            imageWriterError = QImageWriter::DeviceError;
+            errorString = QImageWriter::tr("Cannot open device for writing: %1").arg(device->errorString());
+            return false;
+        }
+    }
     if (!device->isWritable()) {
         imageWriterError = QImageWriter::DeviceError;
         errorString = QImageWriter::tr("Device not writable");
