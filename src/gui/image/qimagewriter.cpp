@@ -705,6 +705,11 @@ bool QImageWriter::canWrite() const
     if (QFile *file = qobject_cast<QFile *>(d->device)) {
         const bool remove = !file->isOpen() && !file->exists();
         const bool result = d->canWriteHelper();
+
+        // This looks strange (why remove if it doesn't exist?) but the issue
+        // here is that canWriteHelper will create the file in the process of
+        // checking if the write can succeed. If it subsequently fails, we
+        // should remove that empty file.
         if (!result && remove)
             file->remove();
         return result;
