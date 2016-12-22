@@ -84,6 +84,9 @@ QT_BEGIN_NAMESPACE
     For the use case of protecting a resource over a long time, you should therefore call
     setStaleLockTime(0), and when tryLock() returns LockFailedError, inform the user
     that the document is locked, possibly using getLockInfo() for more details.
+
+    \note On Windows, this class has problems detecting a stale lock if the
+    machine's hostname contains characters outside the US-ASCII character set.
 */
 
 /*!
