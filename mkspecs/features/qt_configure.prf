@@ -1772,6 +1772,7 @@ for (currentConfig, allConfigs): \
 QMAKE_SAVED_ARGS = $$QMAKE_EXTRA_ARGS
 QMAKE_REDO_CONFIG = false
 qtConfParseCommandLine()
+qtConfCheckErrors()
 
 for (currentConfig, allConfigs) {
     qtConfSetModuleName()
