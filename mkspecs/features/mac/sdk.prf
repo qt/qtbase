@@ -91,7 +91,7 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
                 -Wl,-syslibroot,$$xcodeSDKInfo(Path, $$sdk)
 
             QMAKE_XARCH_CFLAGS += $(EXPORT_QMAKE_XARCH_CFLAGS_$${arch})
-            QMAKE_XARCH_LFLAGS += $(EXPORT_QMAKE_XARCH_CFLAGS_$${arch})
+            QMAKE_XARCH_LFLAGS += $(EXPORT_QMAKE_XARCH_LFLAGS_$${arch})
 
             QMAKE_EXTRA_VARIABLES += \
                 QMAKE_XARCH_CFLAGS_$${arch} \
