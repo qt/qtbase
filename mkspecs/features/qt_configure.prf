@@ -503,12 +503,16 @@ defineTest(qtConfLibrary_makeSpec) {
 # the library is found via pkg-config.
 defineTest(qtConfLibrary_pkgConfig) {
     pkg_config = $$qtConfPkgConfig($$eval($${1}.host))
-    isEmpty(pkg_config): \
+    isEmpty(pkg_config) {
+        qtLog("pkg-config use disabled globally.")
         return(false)
+    }
     args = $$qtConfPrepareArgs($$eval($${1}.args))
 
-    !qtConfPkgConfigPackageExists($$pkg_config, $$args): \
+    !qtConfPkgConfigPackageExists($$pkg_config, $$args) {
+        qtLog("pkg-config did not find package.")
         return(false)
+    }
 
     qtRunLoggedCommand("$$pkg_config --modversion $$args", version)|return(false)
     qtRunLoggedCommand("$$pkg_config --libs-only-L --libs-only-l $$args", $${1}.libs)|return(false)
@@ -619,8 +623,9 @@ defineTest(qtConfHandleLibrary) {
 
         qtLog("Trying source $$s (type $$t) of library $${1} ...")
 
-        !$$qtConfEvaluate($$eval($${spfx}.condition)) {
-            qtLog("  => source failed condition.")
+        cond = $$eval($${spfx}.condition)
+        !$$qtConfEvaluate($$cond) {
+            qtLog("  => source failed condition '$$cond'.")
             next()
         }
 
