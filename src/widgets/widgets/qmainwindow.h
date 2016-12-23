@@ -60,7 +60,6 @@ class Q_WIDGETS_EXPORT QMainWindow : public QWidget
 {
     Q_OBJECT
 
-    Q_FLAGS(DockOptions)
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
     Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle)
 #ifndef QT_NO_DOCKWIDGET
@@ -89,6 +88,7 @@ public:
     };
     Q_ENUM(DockOption)
     Q_DECLARE_FLAGS(DockOptions, DockOption)
+    Q_FLAG(DockOptions)
 
     explicit QMainWindow(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
     ~QMainWindow();

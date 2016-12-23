@@ -53,7 +53,6 @@ class QDialogButtonBoxPrivate;
 class Q_WIDGETS_EXPORT QDialogButtonBox : public QWidget
 {
     Q_OBJECT
-    Q_FLAGS(StandardButtons)
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
     Q_PROPERTY(StandardButtons standardButtons READ standardButtons WRITE setStandardButtons)
     Q_PROPERTY(bool centerButtons READ centerButtons WRITE setCenterButtons)
@@ -104,6 +103,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(StandardButtons, StandardButton)
+    Q_FLAG(StandardButtons)
 
     enum ButtonLayout {
         // keep this in sync with QMessageBox::ButtonLayout and QPlatformDialogHelper::ButtonLayout

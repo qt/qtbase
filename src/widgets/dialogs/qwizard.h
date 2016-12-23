@@ -55,7 +55,6 @@ class QWizardPrivate;
 class Q_WIDGETS_EXPORT QWizard : public QDialog
 {
     Q_OBJECT
-    Q_FLAGS(WizardOptions)
     Q_PROPERTY(WizardStyle wizardStyle READ wizardStyle WRITE setWizardStyle)
     Q_PROPERTY(WizardOptions options READ options WRITE setOptions)
     Q_PROPERTY(Qt::TextFormat titleFormat READ titleFormat WRITE setTitleFormat)
@@ -120,6 +119,7 @@ public:
     Q_ENUM(WizardOption)
 
     Q_DECLARE_FLAGS(WizardOptions, WizardOption)
+    Q_FLAG(WizardOptions)
 
     explicit QWizard(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
     ~QWizard();

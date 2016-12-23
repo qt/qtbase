@@ -56,7 +56,6 @@ class QCheckBox;
 class Q_WIDGETS_EXPORT QMessageBox : public QDialog
 {
     Q_OBJECT
-    Q_FLAGS(StandardButtons)
     Q_PROPERTY(QString text READ text WRITE setText)
     Q_PROPERTY(Icon icon READ icon WRITE setIcon)
     Q_PROPERTY(QPixmap iconPixmap READ iconPixmap WRITE setIconPixmap)
@@ -131,6 +130,7 @@ public:
     typedef StandardButton Button;  // obsolete
 
     Q_DECLARE_FLAGS(StandardButtons, StandardButton)
+    Q_FLAG(StandardButtons)
 
     explicit QMessageBox(QWidget *parent = Q_NULLPTR);
     QMessageBox(Icon icon, const QString &title, const QString &text,

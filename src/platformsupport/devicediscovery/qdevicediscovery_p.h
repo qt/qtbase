@@ -68,7 +68,6 @@ QT_BEGIN_NAMESPACE
 class QDeviceDiscovery : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(QDeviceType)
 
 public:
     enum QDeviceType {
@@ -84,6 +83,7 @@ public:
         Device_InputMask = Device_Mouse | Device_Touchpad | Device_Touchscreen | Device_Keyboard | Device_Tablet | Device_Joystick,
         Device_VideoMask = Device_DRM
     };
+    Q_ENUM(QDeviceType)
     Q_DECLARE_FLAGS(QDeviceTypes, QDeviceType)
 
     static QDeviceDiscovery *create(QDeviceTypes type, QObject *parent = 0);

@@ -62,7 +62,6 @@ class QAbstractProxyModel;
 class Q_WIDGETS_EXPORT QFileDialog : public QDialog
 {
     Q_OBJECT
-    Q_FLAGS(Options)
     Q_PROPERTY(ViewMode viewMode READ viewMode WRITE setViewMode)
     Q_PROPERTY(FileMode fileMode READ fileMode WRITE setFileMode)
     Q_PROPERTY(AcceptMode acceptMode READ acceptMode WRITE setAcceptMode)
@@ -97,6 +96,7 @@ public:
     };
     Q_ENUM(Option)
     Q_DECLARE_FLAGS(Options, Option)
+    Q_FLAG(Options)
 
     QFileDialog(QWidget *parent, Qt::WindowFlags f);
     explicit QFileDialog(QWidget *parent = Q_NULLPTR,

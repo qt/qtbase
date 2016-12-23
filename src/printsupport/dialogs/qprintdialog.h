@@ -56,7 +56,6 @@ class Q_PRINTSUPPORT_EXPORT QPrintDialog : public QAbstractPrintDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPrintDialog)
-    Q_ENUMS(PrintDialogOption)
     Q_PROPERTY(PrintDialogOptions options READ options WRITE setOptions)
 
 public:

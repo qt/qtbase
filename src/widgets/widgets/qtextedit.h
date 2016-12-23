@@ -64,7 +64,6 @@ class Q_WIDGETS_EXPORT QTextEdit : public QAbstractScrollArea
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QTextEdit)
-    Q_FLAGS(AutoFormatting)
     Q_PROPERTY(AutoFormatting autoFormatting READ autoFormatting WRITE setAutoFormatting)
     Q_PROPERTY(bool tabChangesFocus READ tabChangesFocus WRITE setTabChangesFocus)
     Q_PROPERTY(QString documentTitle READ documentTitle WRITE setDocumentTitle)
@@ -100,6 +99,7 @@ public:
     };
 
     Q_DECLARE_FLAGS(AutoFormatting, AutoFormattingFlag)
+    Q_FLAG(AutoFormatting)
 
     explicit QTextEdit(QWidget *parent = Q_NULLPTR);
     explicit QTextEdit(const QString &text, QWidget *parent = Q_NULLPTR);

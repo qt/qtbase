@@ -58,7 +58,6 @@ class Q_WIDGETS_EXPORT QDateTimeEdit : public QAbstractSpinBox
 {
     Q_OBJECT
 
-    Q_FLAGS(Sections)
     Q_PROPERTY(QDateTime dateTime READ dateTime WRITE setDateTime NOTIFY dateTimeChanged USER true)
     Q_PROPERTY(QDate date READ date WRITE setDate NOTIFY dateChanged)
     Q_PROPERTY(QTime time READ time WRITE setTime NOTIFY timeChanged)
@@ -92,6 +91,7 @@ public:
     Q_ENUM(Section)
 
     Q_DECLARE_FLAGS(Sections, Section)
+    Q_FLAG(Sections)
 
     explicit QDateTimeEdit(QWidget *parent = Q_NULLPTR);
     explicit QDateTimeEdit(const QDateTime &dt, QWidget *parent = Q_NULLPTR);

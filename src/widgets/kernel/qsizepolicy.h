@@ -54,7 +54,6 @@ Q_DECL_CONST_FUNCTION inline uint qHash(QSizePolicy key, uint seed = 0) Q_DECL_N
 class Q_WIDGETS_EXPORT QSizePolicy
 {
     Q_GADGET
-    Q_FLAGS(ControlTypes)
 
 public:
     enum PolicyFlag {
@@ -93,6 +92,7 @@ public:
         ToolButton       = 0x00004000
     };
     Q_DECLARE_FLAGS(ControlTypes, ControlType)
+    Q_FLAG(ControlTypes)
 
     QSizePolicy() : data(0) { }
 

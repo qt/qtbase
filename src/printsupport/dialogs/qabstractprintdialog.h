@@ -76,8 +76,10 @@ public:
         DontUseSheet            = 0x0020,
         PrintCurrentPage        = 0x0040
     };
+    Q_ENUM(PrintDialogOption)
 
     Q_DECLARE_FLAGS(PrintDialogOptions, PrintDialogOption)
+    Q_FLAG(PrintDialogOptions)
 
 #ifndef QT_NO_PRINTDIALOG
     explicit QAbstractPrintDialog(QPrinter *printer, QWidget *parent = Q_NULLPTR);

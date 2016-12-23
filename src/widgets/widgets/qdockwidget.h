@@ -57,7 +57,6 @@ class Q_WIDGETS_EXPORT QDockWidget : public QWidget
 {
     Q_OBJECT
 
-    Q_FLAGS(DockWidgetFeatures)
     Q_PROPERTY(bool floating READ isFloating WRITE setFloating)
     Q_PROPERTY(DockWidgetFeatures features READ features WRITE setFeatures NOTIFY featuresChanged)
     Q_PROPERTY(Qt::DockWidgetAreas allowedAreas READ allowedAreas
@@ -86,6 +85,7 @@ public:
         Reserved              = 0xff
     };
     Q_DECLARE_FLAGS(DockWidgetFeatures, DockWidgetFeature)
+    Q_FLAG(DockWidgetFeatures)
 
     void setFeatures(DockWidgetFeatures features);
     DockWidgetFeatures features() const;
