@@ -48,11 +48,7 @@ macx-xcode {
         QMAKE_XARCH_LFLAGS =
         QMAKE_EXTRA_VARIABLES += QMAKE_XARCH_CFLAGS QMAKE_XARCH_LFLAGS
 
-        single_arch {
-            device_archs = $$first(device_archs)
-            simulator_archs = $$first(simulator_archs)
-            archs = $$first(archs)
-        }
+        single_arch: archs = $$first(archs)
 
         for (arch, archs) {
             contains(simulator_archs, $$arch) {
