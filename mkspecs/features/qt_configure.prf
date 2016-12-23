@@ -1368,33 +1368,21 @@ defineTest(qtConfCreateSummary) {
 }
 
 defineTest(qtConfPrintReport) {
-    for (n, QT_CONFIGURE_REPORT): \
-        logn($$n)
-    logn()
-
-    for (n, QT_CONFIGURE_NOTES) {
-        logn($$n)
-        logn()
-    }
-
-    for (w, QT_CONFIGURE_WARNINGS) {
-        logn($$w)
-        logn()
-    }
+    blocks = \
+        "$$join(QT_CONFIGURE_REPORT, $$escape_expand(\\n))" \
+        "$$join(QT_CONFIGURE_NOTES, $$escape_expand(\\n\\n))" \
+        "$$join(QT_CONFIGURE_WARNINGS, $$escape_expand(\\n\\n))"
 
     !isEmpty(QT_CONFIGURE_ERRORS) {
-        for (e, QT_CONFIGURE_ERRORS) {
-            logn($$e)
-            logn()
-        }
-        mention_config_log:!$$QMAKE_CONFIG_VERBOSE {
-            logn("Check config.log for details.")
-            logn()
-        }
-
-        !equals(config.input.continue, yes): \
-            error()
+        blocks += "$$join(QT_CONFIGURE_ERRORS, $$escape_expand(\\n\\n))"
+        mention_config_log:!$$QMAKE_CONFIG_VERBOSE: \
+            blocks += "Check config.log for details."
     }
+    blocks = "$$join(blocks, $$escape_expand(\\n\\n))"
+    logn($$blocks)
+    !isEmpty(QT_CONFIGURE_ERRORS):!equals(config.input.continue, yes): \
+        error()
+    write_file($$OUT_PWD/config.summary, blocks)|error()
 }
 
 defineTest(qtConfCheckErrors) {
