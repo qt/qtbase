@@ -522,6 +522,16 @@ done
 
 if [ "$OPT_HELP" = "yes" ]; then
     cat $relpath/config_help.txt
+    if [ -n "$CFG_TOPLEVEL" ]; then
+        IFS='
+'
+        for i in $relpathMangled/qt*/config_help.txt; do
+            if [ x"$i" != x"$relpath/config_help.txt" ]; then
+                echo
+                cat "$i"
+            fi
+        done
+    fi
     exit 0
 fi
 

@@ -84,6 +84,16 @@ goto doneargs
 
 :help
     type %QTSRC%\config_help.txt
+    if %TOPLEVEL% == true (
+        for /d %%p in ("%TOPQTSRC%"\qt*) do (
+            if not "%%p" == "%QTSRC%" (
+                if exist "%%p\config_help.txt" (
+                    echo.
+                    type "%%p\config_help.txt"
+                )
+            )
+        )
+    )
     exit /b 1
 
 :redo
