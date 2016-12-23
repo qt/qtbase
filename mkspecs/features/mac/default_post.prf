@@ -37,21 +37,22 @@ macx-xcode {
         tvos: deployment_target = $$QMAKE_TVOS_DEPLOYMENT_TARGET
         watchos: deployment_target = $$QMAKE_WATCHOS_DEPLOYMENT_TARGET
 
-        device|!simulator: device_archs = $$QMAKE_APPLE_DEVICE_ARCHS
-        simulator: simulator_archs = $$QMAKE_APPLE_SIMULATOR_ARCHS
-        archs = $$device_archs $$simulator_archs
+        device|!simulator: VALID_DEVICE_ARCHS = $$QMAKE_APPLE_DEVICE_ARCHS
+        simulator: VALID_SIMULATOR_ARCHS = $$QMAKE_APPLE_SIMULATOR_ARCHS
+        # Note: uikit/default_post.prf relies on this variable as well.
+        VALID_ARCHS = $$VALID_DEVICE_ARCHS $$VALID_SIMULATOR_ARCHS
 
-        isEmpty(archs): \
+        isEmpty(VALID_ARCHS): \
             error("QMAKE_APPLE_DEVICE_ARCHS or QMAKE_APPLE_SIMULATOR_ARCHS must contain at least one architecture")
 
         QMAKE_XARCH_CFLAGS =
         QMAKE_XARCH_LFLAGS =
         QMAKE_EXTRA_VARIABLES += QMAKE_XARCH_CFLAGS QMAKE_XARCH_LFLAGS
 
-        single_arch: archs = $$first(archs)
+        single_arch: VALID_ARCHS = $$first(VALID_ARCHS)
 
-        for (arch, archs) {
-            contains(simulator_archs, $$arch) {
+        for (arch, VALID_ARCHS) {
+            contains(VALID_SIMULATOR_ARCHS, $$arch) {
                 sdk = $$simulator.sdk
                 version_identifier = $$simulator.deployment_identifier
             } else {
@@ -78,7 +79,7 @@ macx-xcode {
         }
 
         QMAKE_CFLAGS_USE_PRECOMPILE =
-        for (arch, archs) {
+        for (arch, VALID_ARCHS) {
             QMAKE_CFLAGS_USE_PRECOMPILE += \
                 -Xarch_$${arch} \
                 -include${QMAKE_PCH_OUTPUT_$${arch}}
