@@ -83,10 +83,10 @@ defineReplace(qtExportLibsForModule) {
     module_build_type = v2
     static: \
         module_build_type += staticlib
-    lib_bundle {
+    lib_bundle: \
         module_build_type += lib_bundle
+    module_frameworks: \
         MODULE_FRAMEWORKS = " \$\$QT_MODULE_LIB_BASE"
-    }
     internal_module: \
         module_build_type += internal_module
     ltcg: \
