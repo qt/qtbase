@@ -49,7 +49,7 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
 }
 
 !equals(MAKEFILE_GENERATOR, XCODE) {
-    uikit:!host_build {
+    uikit {
         ios: deployment_target = $$QMAKE_IOS_DEPLOYMENT_TARGET
         tvos: deployment_target = $$QMAKE_TVOS_DEPLOYMENT_TARGET
         watchos: deployment_target = $$QMAKE_WATCHOS_DEPLOYMENT_TARGET
@@ -109,7 +109,7 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
         QMAKE_OBJCXXFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
 
         QMAKE_PCH_OUTPUT_EXT = _${QMAKE_PCH_ARCH}$${QMAKE_PCH_OUTPUT_EXT}
-    } else: osx {
+    } else {
         version_identifier = macosx
         deployment_target = $$QMAKE_MACOSX_DEPLOYMENT_TARGET
         version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
