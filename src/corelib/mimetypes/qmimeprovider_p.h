@@ -56,6 +56,7 @@
 
 #ifndef QT_NO_MIMETYPE
 
+#include "qmimeglobpattern_p.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/qset.h>
 #include <QtCore/qelapsedtimer.h>
@@ -72,7 +73,7 @@ public:
 
     virtual bool isValid() = 0;
     virtual QMimeType mimeTypeForName(const QString &name) = 0;
-    virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix) = 0;
+    virtual QMimeGlobMatchResult findByFileName(const QString &fileName) = 0;
     virtual QStringList parents(const QString &mime) = 0;
     virtual QString resolveAlias(const QString &name) = 0;
     virtual QStringList listAliases(const QString &name) = 0;
@@ -99,7 +100,7 @@ public:
 
     virtual bool isValid() Q_DECL_OVERRIDE;
     virtual QMimeType mimeTypeForName(const QString &name) Q_DECL_OVERRIDE;
-    virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix) Q_DECL_OVERRIDE;
+    virtual QMimeGlobMatchResult findByFileName(const QString &fileName) Q_DECL_OVERRIDE;
     virtual QStringList parents(const QString &mime) Q_DECL_OVERRIDE;
     virtual QString resolveAlias(const QString &name) Q_DECL_OVERRIDE;
     virtual QStringList listAliases(const QString &name) Q_DECL_OVERRIDE;
@@ -142,7 +143,7 @@ public:
 
     virtual bool isValid() Q_DECL_OVERRIDE;
     virtual QMimeType mimeTypeForName(const QString &name) Q_DECL_OVERRIDE;
-    virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix) Q_DECL_OVERRIDE;
+    virtual QMimeGlobMatchResult findByFileName(const QString &fileName) Q_DECL_OVERRIDE;
     virtual QStringList parents(const QString &mime) Q_DECL_OVERRIDE;
     virtual QString resolveAlias(const QString &name) Q_DECL_OVERRIDE;
     virtual QStringList listAliases(const QString &name) Q_DECL_OVERRIDE;

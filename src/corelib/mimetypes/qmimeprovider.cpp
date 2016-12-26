@@ -287,13 +287,13 @@ QMimeType QMimeBinaryProvider::mimeTypeForName(const QString &name)
     return mimeTypeForNameUnchecked(name);
 }
 
-QStringList QMimeBinaryProvider::findByFileName(const QString &fileName, QString *foundSuffix)
+QMimeGlobMatchResult QMimeBinaryProvider::findByFileName(const QString &fileName)
 {
     checkCache();
-    if (fileName.isEmpty())
-        return QStringList();
-    const QString lowerFileName = fileName.toLower();
     QMimeGlobMatchResult result;
+    if (fileName.isEmpty())
+        return result;
+    const QString lowerFileName = fileName.toLower();
     // TODO this parses in the order (local, global). Check that it handles "NOGLOBS" correctly.
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
         matchGlobList(result, cacheFile, cacheFile->getUint32(PosLiteralListOffset), fileName);
@@ -305,9 +305,7 @@ QStringList QMimeBinaryProvider::findByFileName(const QString &fileName, QString
         if (result.m_matchingMimeTypes.isEmpty())
             matchSuffixTree(result, cacheFile, numRoots, firstRootOffset, fileName, fileName.length() - 1, true);
     }
-    if (foundSuffix)
-        *foundSuffix = result.m_foundSuffix;
-    return result.m_matchingMimeTypes;
+    return result;
 }
 
 void QMimeBinaryProvider::matchGlobList(QMimeGlobMatchResult &result, CacheFile *cacheFile, int off, const QString &fileName)
@@ -728,12 +726,11 @@ QMimeType QMimeXMLProvider::mimeTypeForName(const QString &name)
     return m_nameMimeTypeMap.value(name);
 }
 
-QStringList QMimeXMLProvider::findByFileName(const QString &fileName, QString *foundSuffix)
+QMimeGlobMatchResult QMimeXMLProvider::findByFileName(const QString &fileName)
 {
     ensureLoaded();
 
-    const QStringList matchingMimeTypes = m_mimeTypeGlobs.matchingGlobs(fileName, foundSuffix);
-    return matchingMimeTypes;
+    return m_mimeTypeGlobs.matchingGlobs(fileName);
 }
 
 QMimeType QMimeXMLProvider::findByMagic(const QByteArray &data, int *accuracyPtr)

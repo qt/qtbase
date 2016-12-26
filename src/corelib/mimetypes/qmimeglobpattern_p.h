@@ -68,7 +68,8 @@ struct QMimeGlobMatchResult
 
     void addMatch(const QString &mimeType, int weight, const QString &pattern);
 
-    QStringList m_matchingMimeTypes;
+    QStringList m_matchingMimeTypes; // only those with highest weight
+    QStringList m_allMatchingMimeTypes;
     int m_weight;
     int m_matchingPatternLength;
     QString m_foundSuffix;
@@ -153,7 +154,7 @@ public:
 
     void addGlob(const QMimeGlobPattern &glob);
     void removeMimeType(const QString &mimeType);
-    QStringList matchingGlobs(const QString &fileName, QString *foundSuffix) const;
+    QMimeGlobMatchResult matchingGlobs(const QString &fileName) const;
     void clear();
 
     PatternsMap m_fastPatterns; // example: "doc" -> "application/msword", "text/plain"
