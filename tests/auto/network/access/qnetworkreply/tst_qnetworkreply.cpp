@@ -132,7 +132,7 @@ class tst_QNetworkReply: public QObject
                     "location: %1\r\n"
                     "\r\n";
         return s;
-    };
+    }
 
     QEventLoop *loop;
     enum RunSimpleRequestReturn { Timeout = 0, Success, Failure };
