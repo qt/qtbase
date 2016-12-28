@@ -55,6 +55,7 @@
 #ifndef QT_NO_HTTP
 
 #include <private/qhttpnetworkheader_p.h>
+#include <QtNetwork/qnetworkrequest.h>
 #include <qmetatype.h>
 
 QT_BEGIN_NAMESPACE
@@ -130,7 +131,8 @@ public:
     void setPreConnect(bool preConnect);
 
     bool isFollowRedirects() const;
-    void setFollowRedirects(bool followRedirect);
+    void setRedirectsPolicy(QNetworkRequest::RedirectsPolicy policy);
+    QNetworkRequest::RedirectsPolicy redirectsPolicy() const;
 
     int redirectCount() const;
     void setRedirectCount(int count);
@@ -173,8 +175,8 @@ public:
     bool withCredentials;
     bool ssl;
     bool preConnect;
-    bool followRedirect;
     int redirectCount;
+    QNetworkRequest::RedirectsPolicy redirectsPolicy;
 };
 
 

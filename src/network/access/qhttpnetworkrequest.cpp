@@ -48,7 +48,8 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Oper
         QHttpNetworkRequest::Priority pri, const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(0),
       autoDecompress(false), pipeliningAllowed(false), spdyAllowed(false), http2Allowed(false),
-      withCredentials(true), preConnect(false), followRedirect(false), redirectCount(0)
+      withCredentials(true), preConnect(false), redirectCount(0),
+      redirectsPolicy(QNetworkRequest::ManualRedirectsPolicy)
 {
 }
 
@@ -65,8 +66,8 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
       withCredentials(other.withCredentials),
       ssl(other.ssl),
       preConnect(other.preConnect),
-      followRedirect(other.followRedirect),
-      redirectCount(other.redirectCount)
+      redirectCount(other.redirectCount),
+      redirectsPolicy(other.redirectsPolicy)
 {
 }
 
@@ -88,7 +89,8 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
         && (operation != QHttpNetworkRequest::Custom || (customVerb == other.customVerb))
         && (withCredentials == other.withCredentials)
         && (ssl == other.ssl)
-        && (preConnect == other.preConnect);
+        && (preConnect == other.preConnect)
+        && (redirectsPolicy == other.redirectsPolicy);
 }
 
 QByteArray QHttpNetworkRequest::methodName() const
@@ -229,12 +231,17 @@ void QHttpNetworkRequest::setPreConnect(bool preConnect)
 
 bool QHttpNetworkRequest::isFollowRedirects() const
 {
-    return d->followRedirect;
+    return d->redirectsPolicy != QNetworkRequest::ManualRedirectsPolicy;
 }
 
-void QHttpNetworkRequest::setFollowRedirects(bool followRedirect)
+void QHttpNetworkRequest::setRedirectsPolicy(QNetworkRequest::RedirectsPolicy policy)
 {
-    d->followRedirect = followRedirect;
+    d->redirectsPolicy = policy;
+}
+
+QNetworkRequest::RedirectsPolicy QHttpNetworkRequest::redirectsPolicy() const
+{
+    return d->redirectsPolicy;
 }
 
 int QHttpNetworkRequest::redirectCount() const

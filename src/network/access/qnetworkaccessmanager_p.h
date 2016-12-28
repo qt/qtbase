@@ -55,6 +55,7 @@
 #include "qnetworkaccessmanager.h"
 #include "qnetworkaccesscache_p.h"
 #include "qnetworkaccessbackend_p.h"
+#include "qnetworkrequest.h"
 #include "private/qobject_p.h"
 #include "QtNetwork/qnetworkproxy.h"
 #include "QtNetwork/qnetworksession.h"
@@ -91,6 +92,7 @@ public:
 #endif
           cookieJarCreated(false),
           defaultAccessControl(true),
+          redirectsPolicy(QNetworkRequest::ManualRedirectsPolicy),
           authenticationManager(QSharedPointer<QNetworkAccessAuthenticationManager>::create())
     {
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -193,6 +195,7 @@ public:
 
     bool cookieJarCreated;
     bool defaultAccessControl;
+    QNetworkRequest::RedirectsPolicy redirectsPolicy;
 
     // The cache with authorization data:
     QSharedPointer<QNetworkAccessAuthenticationManager> authenticationManager;

@@ -1079,6 +1079,45 @@ void QNetworkAccessManager::connectToHost(const QString &hostName, quint16 port)
 }
 
 /*!
+    \since 5.9
+
+    Sets the manager's redirects policy to be the \a policy specified. This policy
+    will affect all subsequent requests created by the manager.
+
+    Use this function to enable or disable HTTP redirects on the manager's level.
+
+    \note When creating a request QNetworkRequest::RedirectAttributePolicy has
+    the highest priority, next by priority is QNetworkRequest::FollowRedirectsAttribute.
+    Finally, the manager's policy has the lowest priority.
+
+    For backwards compatibility the default value is QNetworkRequest::ManualRedirectsPolicy.
+    This may change in the future and some type of auto-redirect policy will become
+    the default; clients relying on manual redirect handling are encouraged to set
+    this policy explicitly in their code.
+
+    \sa redirectsPolicy(), QNetworkRequest::RedirectsPolicy,
+    QNetworkRequest::FollowRedirectsAttribute
+*/
+void QNetworkAccessManager::setRedirectsPolicy(QNetworkRequest::RedirectsPolicy policy)
+{
+    Q_D(QNetworkAccessManager);
+    d->redirectsPolicy = policy;
+}
+
+/*!
+    \since 5.9
+
+    Returns the redirect policy that is used when creating new requests.
+
+    \sa setRedirectsPolicy(), QNetworkRequest::RedirectsPolicy
+*/
+QNetworkRequest::RedirectsPolicy QNetworkAccessManager::redirectsPolicy() const
+{
+    Q_D(const QNetworkAccessManager);
+    return d->redirectsPolicy;
+}
+
+/*!
     \since 4.7
 
     Sends a custom request to the server identified by the URL of \a request.
@@ -1147,9 +1186,9 @@ QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &r
 
 /*!
     Returns a new QNetworkReply object to handle the operation \a op
-    and request \a req. The device \a outgoingData is always 0 for Get and
-    Head requests, but is the value passed to post() and put() in
-    those operations (the QByteArray variants will pass a QBuffer
+    and request \a originalReq. The device \a outgoingData is always 0
+    for Get and Head requests, but is the value passed to post() and
+    put() in those operations (the QByteArray variants will pass a QBuffer
     object).
 
     The default implementation calls QNetworkCookieJar::cookiesForUrl()
@@ -1159,10 +1198,19 @@ QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &r
     The returned object must be in an open state.
 */
 QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Operation op,
-                                                    const QNetworkRequest &req,
+                                                    const QNetworkRequest &originalReq,
                                                     QIODevice *outgoingData)
 {
     Q_D(QNetworkAccessManager);
+
+    QNetworkRequest req(originalReq);
+    if (req.attribute(QNetworkRequest::RedirectsPolicyAttribute).isNull()
+        && req.attribute(QNetworkRequest::FollowRedirectsAttribute).isNull()) {
+        // We only apply the general manager's policy if:
+        // - RedirectsPolicyAttribute is not set already on request and
+        // - no FollowRedirectsAttribute is set.
+        req.setAttribute(QNetworkRequest::RedirectsPolicyAttribute, redirectsPolicy());
+    }
 
     bool isLocalFile = req.url().isLocalFile();
     QString scheme = req.url().scheme();

@@ -522,17 +522,17 @@ QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
     if (!reply->request().isFollowRedirects())
         return QUrl();
 
-    QUrl rUrl;
+    QUrl redirectUrl;
     const QList<QPair<QByteArray, QByteArray> > fields = reply->header();
     for (const QNetworkReply::RawHeaderPair &header : fields) {
         if (header.first.toLower() == "location") {
-            rUrl = QUrl::fromEncoded(header.second);
+            redirectUrl = QUrl::fromEncoded(header.second);
             break;
         }
     }
 
     // If the location url is invalid/empty, we emit ProtocolUnknownError
-    if (!rUrl.isValid()) {
+    if (!redirectUrl.isValid()) {
         emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
         return QUrl();
     }
@@ -544,24 +544,37 @@ QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
     }
 
     // Resolve the URL if it's relative
-    if (rUrl.isRelative())
-        rUrl = reply->request().url().resolved(rUrl);
+    if (redirectUrl.isRelative())
+        redirectUrl = reply->request().url().resolved(redirectUrl);
 
     // Check redirect url protocol
-    QString scheme = rUrl.scheme();
-    if (scheme == QLatin1String("http") || scheme == QLatin1String("https")) {
-        QString previousUrlScheme = reply->request().url().scheme();
-        // Check if we're doing an unsecure redirect (https -> http)
-        if (previousUrlScheme == QLatin1String("https")
-            && scheme == QLatin1String("http")) {
-            emitReplyError(socket, reply, QNetworkReply::InsecureRedirectError);
-            return QUrl();
+    const QUrl priorUrl(reply->request().url());
+    if (redirectUrl.scheme() == QLatin1String("http") || redirectUrl.scheme() == QLatin1String("https")) {
+        switch (reply->request().redirectsPolicy()) {
+        case QNetworkRequest::NoLessSafeRedirectsPolicy:
+            // Check if we're doing an unsecure redirect (https -> http)
+            if (priorUrl.scheme() == QLatin1String("https")
+                && redirectUrl.scheme() == QLatin1String("http")) {
+                emitReplyError(socket, reply, QNetworkReply::InsecureRedirectError);
+                return QUrl();
+            }
+            break;
+        case QNetworkRequest::SameOriginRedirectsPolicy:
+            if (priorUrl.host() != redirectUrl.host()
+                || priorUrl.scheme() != redirectUrl.scheme()
+                || priorUrl.port() != redirectUrl.port()) {
+                emitReplyError(socket, reply, QNetworkReply::InsecureRedirectError);
+                return QUrl();
+            }
+            break;
+        default:
+            Q_ASSERT(!"Unexpected redirect policy");
         }
     } else {
         emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
         return QUrl();
     }
-    return rUrl;
+    return redirectUrl;
 }
 
 void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request)

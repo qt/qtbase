@@ -289,6 +289,12 @@ QT_BEGIN_NAMESPACE
         marked to be decompressed automatically.
         (This value was introduced in 5.9.)
 
+    \value RedirectsPolicyAttribute
+        Requests only, type: QMetaType::Int, should be one of the
+        QNetworkRequest::RedirectsPolicy values (default: ManualRedirectsPolicy).
+        This attribute obsoletes FollowRedirectsAttribute.
+        (This value was introduced in 5.9.)
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
@@ -334,6 +340,26 @@ QT_BEGIN_NAMESPACE
     \value Automatic            default value: indicates default behaviour.
 
     \value Manual               indicates behaviour has been manually overridden.
+*/
+
+/*!
+    \enum QNetworkRequest::RedirectsPolicy
+    \since 5.9
+
+    Indicates whether the Network Access API should automatically follow a
+    HTTP redirect response or not.
+
+    \value ManualRedirectsPolicy        Default value: not following any redirects.
+
+    \value NoLessSafeRedirectsPolicy    Only "http"->"http", "http" -> "https"
+                                        or "https" -> "https" redirects are allowed.
+                                        Equivalent to setting the old FollowRedirectsAttribute
+                                        to true
+
+    \value SameOriginRedirectsPolicy    Require the same protocol, host and port.
+                                        Note, http://example.com and http://example.com:80
+                                        will fail with this policy (implicit/explicit ports
+                                        are considered to be a mismatch).
 */
 
 class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate

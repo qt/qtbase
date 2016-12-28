@@ -48,7 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QSslConfiguration;
 
 class QNetworkRequestPrivate;
@@ -92,6 +91,7 @@ public:
         HTTP2AllowedAttribute,
         HTTP2WasUsedAttribute,
         OriginalContentLengthAttribute,
+        RedirectsPolicyAttribute,
 
         User = 1000,
         UserMax = 32767
@@ -112,6 +112,13 @@ public:
         NormalPriority = 3,
         LowPriority = 5
     };
+
+    enum RedirectsPolicy {
+        ManualRedirectsPolicy,
+        NoLessSafeRedirectsPolicy,
+        SameOriginRedirectsPolicy
+    };
+
 
     explicit QNetworkRequest(const QUrl &url = QUrl());
     QNetworkRequest(const QNetworkRequest &other);
@@ -169,5 +176,6 @@ Q_DECLARE_SHARED(QNetworkRequest)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkRequest)
+Q_DECLARE_METATYPE(QNetworkRequest::RedirectsPolicy)
 
 #endif

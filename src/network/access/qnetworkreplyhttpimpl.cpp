@@ -655,8 +655,14 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     }
 #endif
 
-    if (newHttpRequest.attribute(QNetworkRequest::FollowRedirectsAttribute).toBool())
-        httpRequest.setFollowRedirects(true);
+    auto redirectsPolicy = QNetworkRequest::ManualRedirectsPolicy;
+    const QVariant value = newHttpRequest.attribute(QNetworkRequest::RedirectsPolicyAttribute);
+    if (value.isValid())
+        redirectsPolicy = value.value<QNetworkRequest::RedirectsPolicy>();
+    else if (newHttpRequest.attribute(QNetworkRequest::FollowRedirectsAttribute).toBool())
+        redirectsPolicy = QNetworkRequest::NoLessSafeRedirectsPolicy;
+
+    httpRequest.setRedirectsPolicy(redirectsPolicy);
 
     httpRequest.setPriority(convert(newHttpRequest.priority()));
 

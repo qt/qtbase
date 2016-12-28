@@ -41,6 +41,7 @@
 #define QNETWORKACCESSMANAGER_H
 
 #include <QtNetwork/qtnetworkglobal.h>
+#include <QtNetwork/qnetworkrequest.h>
 #include <QtCore/QObject>
 #ifndef QT_NO_SSL
 #include <QtNetwork/QSslConfiguration>
@@ -49,7 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QIODevice;
 class QAbstractNetworkCache;
 class QAuthenticator;
@@ -57,7 +57,6 @@ class QByteArray;
 template<typename T> class QList;
 class QNetworkCookie;
 class QNetworkCookieJar;
-class QNetworkRequest;
 class QNetworkReply;
 class QNetworkProxy;
 class QNetworkProxyFactory;
@@ -148,6 +147,9 @@ public:
                                 const QSslConfiguration &sslConfiguration = QSslConfiguration::defaultConfiguration());
 #endif
     void connectToHost(const QString &hostName, quint16 port = 80);
+
+    void setRedirectsPolicy(QNetworkRequest::RedirectsPolicy policy);
+    QNetworkRequest::RedirectsPolicy redirectsPolicy() const;
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
