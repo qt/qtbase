@@ -169,6 +169,9 @@ private slots:
     void moveSectionAndReset();
     void moveSectionAndRemove();
     void saveRestore();
+    void restoreQt4State();
+    void restoreToMoreColumns();
+    void restoreBeforeSetModel();
     void defaultSectionSizeTest();
     void defaultSectionSizeTestStyles();
 
@@ -1523,11 +1526,11 @@ public:
     {
         return hasIndex(row, column, parent) ? createIndex(row, column) : QModelIndex();
     }
-    int rowCount(const QModelIndex & /* parent */) const
+    int rowCount(const QModelIndex & /*parent*/ = QModelIndex()) const
     {
         return 8;
     }
-    int columnCount(const QModelIndex &/*parent= QModelIndex()*/) const
+    int columnCount(const QModelIndex &/*parent*/ = QModelIndex()) const
     {
         return m_col_count;
     }
@@ -1588,41 +1591,56 @@ void tst_QHeaderView::moveSectionAndRemove()
     QCOMPARE(v.count(), 0);
 }
 
-void tst_QHeaderView::saveRestore()
+static QByteArray savedState()
 {
-    SimpleModel m;
+    QStandardItemModel m(4, 4);
     QHeaderView h1(Qt::Horizontal);
     h1.setModel(&m);
     h1.swapSections(0, 2);
     h1.resizeSection(1, 10);
     h1.setSortIndicatorShown(true);
-    h1.setSortIndicator(1,Qt::DescendingOrder);
-    QByteArray s1 = h1.saveState();
+    h1.setSortIndicator(2, Qt::DescendingOrder);
+    h1.setSectionHidden(3, true);
+    return h1.saveState();
+}
+
+void tst_QHeaderView::saveRestore()
+{
+    QStandardItemModel m(4, 4);
+    const QByteArray s1 = savedState();
 
     QHeaderView h2(Qt::Vertical);
     QSignalSpy spy(&h2, SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)));
 
     h2.setModel(&m);
-    h2.restoreState(s1);
+    QVERIFY(h2.restoreState(s1));
 
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(spy.at(0).at(0).toInt(), 1);
+    QCOMPARE(spy.at(0).at(0).toInt(), 2);
 
     QCOMPARE(h2.logicalIndex(0), 2);
     QCOMPARE(h2.logicalIndex(2), 0);
     QCOMPARE(h2.sectionSize(1), 10);
-    QCOMPARE(h2.sortIndicatorSection(), 1);
+    QCOMPARE(h2.sortIndicatorSection(), 2);
     QCOMPARE(h2.sortIndicatorOrder(), Qt::DescendingOrder);
     QCOMPARE(h2.isSortIndicatorShown(), true);
+    QVERIFY(!h2.isSectionHidden(2));
+    QVERIFY(h2.isSectionHidden(3));
+    QCOMPARE(h2.hiddenSectionCount(), 1);
 
     QByteArray s2 = h2.saveState();
-
     QCOMPARE(s1, s2);
-    QVERIFY(!h2.restoreState(QByteArrayLiteral("Garbage")));
 
+    QVERIFY(!h2.restoreState(QByteArrayLiteral("Garbage")));
+}
+
+void tst_QHeaderView::restoreQt4State()
+{
     // QTBUG-40462
     // Setting from Qt4, where information about multiple sections were grouped together in one
     // sectionItem object
+    QStandardItemModel m(4, 10);
+    QHeaderView h2(Qt::Vertical);
     QByteArray settings_qt4 =
       QByteArray::fromHex("000000ff00000000000000010000000100000000010000000000000000000000000000"
                           "0000000003e80000000a0101000100000000000000000000000064ffffffff00000081"
@@ -1650,6 +1668,50 @@ void tst_QHeaderView::saveRestore()
     // Check nothing has been actually restored
     QCOMPARE(h2.length(), old_length);
     QCOMPARE(h2.saveState(), old_state);
+}
+
+void tst_QHeaderView::restoreToMoreColumns()
+{
+    // Restore state onto a model with more columns
+    const QByteArray s1 = savedState();
+    QHeaderView h4(Qt::Horizontal);
+    QStandardItemModel fiveColumnsModel(1, 5);
+    h4.setModel(&fiveColumnsModel);
+    QCOMPARE(fiveColumnsModel.columnCount(), 5);
+    QCOMPARE(h4.count(), 5);
+    QVERIFY(h4.restoreState(s1));
+    QCOMPARE(fiveColumnsModel.columnCount(), 5);
+    QCOMPARE(h4.count(), 5);
+    QCOMPARE(h4.sectionSize(1), 10);
+    for (int i = 0; i < h4.count(); ++i)
+        QVERIFY(h4.sectionSize(i) > 0 || h4.isSectionHidden(i));
+    QVERIFY(!h4.isSectionHidden(2));
+    QVERIFY(h4.isSectionHidden(3));
+    QCOMPARE(h4.hiddenSectionCount(), 1);
+    QCOMPARE(h4.sortIndicatorSection(), 2);
+    QCOMPARE(h4.sortIndicatorOrder(), Qt::DescendingOrder);
+}
+
+void tst_QHeaderView::restoreBeforeSetModel()
+{
+    QHeaderView h2(Qt::Horizontal);
+    const QByteArray s1 = savedState();
+    // First restore
+    QVERIFY(h2.restoreState(s1));
+    // Then setModel
+    QStandardItemModel model(4, 4);
+    h2.setModel(&model);
+
+    // Check the result
+    QCOMPARE(h2.logicalIndex(0), 2);
+    QCOMPARE(h2.logicalIndex(2), 0);
+    QCOMPARE(h2.sectionSize(1), 10);
+    QCOMPARE(h2.sortIndicatorSection(), 2);
+    QCOMPARE(h2.sortIndicatorOrder(), Qt::DescendingOrder);
+    QCOMPARE(h2.isSortIndicatorShown(), true);
+    QVERIFY(!h2.isSectionHidden(2));
+    QVERIFY(h2.isSectionHidden(3));
+    QCOMPARE(h2.hiddenSectionCount(), 1);
 }
 
 void tst_QHeaderView::defaultSectionSizeTest()
