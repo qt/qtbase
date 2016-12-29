@@ -140,12 +140,13 @@ QAdoptedThread::~QAdoptedThread()
     // fprintf(stderr, "~QAdoptedThread = %p\n", this);
 }
 
+#ifndef QT_NO_THREAD
 void QAdoptedThread::run()
 {
     // this function should never be called
     qFatal("QAdoptedThread::run(): Internal error, this implementation should never be called.");
 }
-#ifndef QT_NO_THREAD
+
 /*
   QThreadPrivate
 */
@@ -750,7 +751,8 @@ int QThread::loopLevel() const
 #else // QT_NO_THREAD
 
 QThread::QThread(QObject *parent)
-    : QObject(*(new QThreadPrivate), (QObject*)0){
+    : QObject(*(new QThreadPrivate), parent)
+{
     Q_D(QThread);
     d->data->thread = this;
 }
@@ -760,16 +762,25 @@ QThread *QThread::currentThread()
     return QThreadData::current()->thread;
 }
 
-QThreadData* QThreadData::current()
+// No threads: so we can just use static variables
+static QThreadData *data = 0;
+
+QThreadData *QThreadData::current(bool createIfNecessary)
 {
-    static QThreadData *data = 0; // reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
-    if (!data) {
-        QScopedPointer<QThreadData> newdata(new QThreadData);
-        newdata->thread = new QAdoptedThread(newdata.data());
-        data = newdata.take();
+    if (!data && createIfNecessary) {
+        data = new QThreadData;
+        data->thread = new QAdoptedThread(data);
         data->deref();
+        if (!QCoreApplicationPrivate::theMainThread)
+            QCoreApplicationPrivate::theMainThread = data->thread.load();
     }
     return data;
+}
+
+void QThreadData::clearCurrentThreadData()
+{
+    delete data;
+    data = 0;
 }
 
 /*!
@@ -781,6 +792,15 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
     Q_D(QThread);
     // fprintf(stderr, "QThreadData %p taken from private data for thread %p\n", d->data, this);
     d->data->thread = this;
+}
+
+QThreadPrivate::QThreadPrivate(QThreadData *d) : data(d ? d : new QThreadData)
+{
+}
+
+QThreadPrivate::~QThreadPrivate()
+{
+    delete data;
 }
 
 #endif // QT_NO_THREAD
@@ -819,6 +839,8 @@ void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
             qWarning("QThread::setEventDispatcher: Could not move event dispatcher to target thread");
     }
 }
+
+#ifndef QT_NO_THREAD
 
 /*!
     \reimp
@@ -982,6 +1004,8 @@ QDaemonThread::QDaemonThread(QObject *parent)
 QDaemonThread::~QDaemonThread()
 {
 }
+
+#endif // QT_NO_THREAD
 
 QT_END_NAMESPACE
 

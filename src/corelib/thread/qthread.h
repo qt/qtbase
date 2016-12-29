@@ -251,6 +251,9 @@ public:
     static void msleep(unsigned long);
     static void usleep(unsigned long);
 
+    QAbstractEventDispatcher *eventDispatcher() const;
+    void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
+
 protected:
     QThread(QThreadPrivate &dd, QObject *parent = nullptr);
 

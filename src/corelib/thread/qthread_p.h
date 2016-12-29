@@ -215,9 +215,10 @@ public:
 class QThreadPrivate : public QObjectPrivate
 {
 public:
-    QThreadPrivate(QThreadData *d = 0) : data(d ? d : new QThreadData) {}
-    ~QThreadPrivate() { delete data; }
+    QThreadPrivate(QThreadData *d = 0);
+    ~QThreadPrivate();
 
+    mutable QMutex mutex;
     QThreadData *data;
 
     static void setCurrentThread(QThread*) {}
@@ -318,7 +319,9 @@ public:
     void init();
 
 private:
+#ifndef QT_NO_THREAD
     void run() override;
+#endif
 };
 
 QT_END_NAMESPACE
