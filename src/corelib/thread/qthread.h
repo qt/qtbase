@@ -140,10 +140,10 @@ public:
     static QThread* currentThread();
 
 protected:
-    QThread(QThreadPrivate &dd, QObject *parent = 0);
+    QThread(QThreadPrivate &dd, QObject *parent = nullptr);
 
 private:
-    explicit QThread(QObject *parent = 0);
+    explicit QThread(QObject *parent = nullptr);
     static QThread *instance;
 
     friend class QCoreApplication;
