@@ -1138,7 +1138,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 
     q->data = &data;
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
     if (!parent) {
         Q_ASSERT_X(q->thread() == qApp->thread(), "QWidget",
                    "Widgets must be created in the GUI thread.");

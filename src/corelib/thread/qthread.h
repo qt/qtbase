@@ -66,7 +66,7 @@ class QThreadData;
 class QThreadPrivate;
 class QAbstractEventDispatcher;
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 class Q_CORE_EXPORT QThread : public QObject
 {
     Q_OBJECT
@@ -239,7 +239,7 @@ QThread *QThread::create(Function &&f)
 
 #endif // QT_CONFIG(cxx11_future)
 
-#else // QT_NO_THREAD
+#else // QT_CONFIG(thread)
 
 class Q_CORE_EXPORT QThread : public QObject
 {
@@ -267,7 +267,7 @@ private:
     Q_DECLARE_PRIVATE(QThread)
 };
 
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
 
 QT_END_NAMESPACE
 

@@ -58,9 +58,11 @@
 #include <qtextcodec.h>
 #ifndef QT_NO_QOBJECT
 #include <qthread.h>
-#include <qthreadpool.h>
 #include <qthreadstorage.h>
 #include <private/qthread_p.h>
+#if QT_CONFIG(thread)
+#include <qthreadpool.h>
+#endif
 #endif
 #include <qelapsedtimer.h>
 #include <qlibraryinfo.h>
@@ -268,9 +270,7 @@ typedef QList<QtStartUpFunction> QStartUpFuncList;
 Q_GLOBAL_STATIC(QStartUpFuncList, preRList)
 typedef QList<QtCleanUpFunction> QVFuncList;
 Q_GLOBAL_STATIC(QVFuncList, postRList)
-#ifndef QT_NO_QOBJECT
 static QBasicMutex globalRoutinesMutex;
-#endif
 
 /*!
     \internal
@@ -289,9 +289,7 @@ void qAddPreRoutine(QtStartUpFunction p)
 
     // Due to C++11 parallel dynamic initialization, this can be called
     // from multiple threads.
-#ifndef QT_NO_THREAD
     QMutexLocker locker(&globalRoutinesMutex);
-#endif
     list->prepend(p); // in case QCoreApplication is re-created, see qt_call_pre_routines
 }
 
@@ -300,9 +298,7 @@ void qAddPostRoutine(QtCleanUpFunction p)
     QVFuncList *list = postRList();
     if (!list)
         return;
-#ifndef QT_NO_THREAD
     QMutexLocker locker(&globalRoutinesMutex);
-#endif
     list->prepend(p);
 }
 
@@ -311,9 +307,7 @@ void qRemovePostRoutine(QtCleanUpFunction p)
     QVFuncList *list = postRList();
     if (!list)
         return;
-#ifndef QT_NO_THREAD
     QMutexLocker locker(&globalRoutinesMutex);
-#endif
     list->removeAll(p);
 }
 
@@ -324,9 +318,7 @@ static void qt_call_pre_routines()
 
     QVFuncList list;
     {
-#ifndef QT_NO_THREAD
         QMutexLocker locker(&globalRoutinesMutex);
-#endif
         // Unlike qt_call_post_routines, we don't empty the list, because
         // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
         // the function to be executed every time QCoreApplication is created.
@@ -345,9 +337,7 @@ void Q_CORE_EXPORT qt_call_post_routines()
         QVFuncList list;
         {
             // extract the current list and make the stored list empty
-#ifndef QT_NO_THREAD
             QMutexLocker locker(&globalRoutinesMutex);
-#endif
             qSwap(*postRList, list);
         }
 
@@ -513,7 +503,7 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
 void QCoreApplicationPrivate::cleanupThreadData()
 {
     if (threadData && !threadData_clean) {
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
         void *data = &threadData->tls;
         QThreadStorageData::finish((void **)data);
 #endif
@@ -888,7 +878,7 @@ QCoreApplication::~QCoreApplication()
     QCoreApplicationPrivate::is_app_running = false;
 #endif
 
-#if !defined(QT_NO_THREAD)
+#if QT_CONFIG(thread)
     // Synchronize and stop the global thread pool threads.
     QThreadPool *globalThreadPool = 0;
     QT_TRY {

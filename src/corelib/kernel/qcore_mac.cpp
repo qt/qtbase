@@ -42,6 +42,7 @@
 
 #include "qhash.h"
 #include "qpair.h"
+#include "qmutex.h"
 #include "qvarlengtharray.h"
 
 QT_BEGIN_NAMESPACE

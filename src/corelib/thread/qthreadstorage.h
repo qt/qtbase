@@ -42,7 +42,7 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 
 QT_BEGIN_NAMESPACE
 
@@ -152,7 +152,7 @@ public:
 
 QT_END_NAMESPACE
 
-#else // !QT_NO_THREAD
+#else // !QT_CONFIG(thread)
 
 #include <qscopedpointer.h>
 
@@ -227,6 +227,6 @@ public:
     }
 };
 
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
 
 #endif // QTHREADSTORAGE_H

@@ -115,7 +115,7 @@
 #define QT_NO_SYSTEMLOCALE
 #define QT_FEATURE_systemsemaphore -1
 #define QT_FEATURE_temporaryfile 1
-#define QT_NO_THREAD
+#define QT_FEATURE_thread -1
 #define QT_FEATURE_timezone -1
 #define QT_FEATURE_topleveldomain -1
 #define QT_NO_TRANSLATION

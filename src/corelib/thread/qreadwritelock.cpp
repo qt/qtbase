@@ -42,7 +42,6 @@
 #include "qplatformdefs.h"
 #include "qreadwritelock.h"
 
-#ifndef QT_NO_THREAD
 #include "qmutex.h"
 #include "qthread.h"
 #include "qwaitcondition.h"
@@ -781,5 +780,3 @@ void QReadWriteLockPrivate::release()
 */
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_THREAD

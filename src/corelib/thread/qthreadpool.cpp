@@ -43,8 +43,6 @@
 
 #include <algorithm>
 
-#ifndef QT_NO_THREAD
-
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QThreadPool, theInstance)
@@ -730,5 +728,3 @@ void QThreadPool::cancel(QRunnable *runnable)
 QT_END_NAMESPACE
 
 #include "moc_qthreadpool.cpp"
-
-#endif

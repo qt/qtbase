@@ -55,7 +55,7 @@ enum GuardValues {
 };
 }
 
-#if defined(QT_NO_THREAD) || defined(Q_COMPILER_THREADSAFE_STATICS)
+#if !QT_CONFIG(thread) || defined(Q_COMPILER_THREADSAFE_STATICS)
 // some compilers support thread-safe statics
 // The IA-64 C++ ABI requires this, so we know that all GCC versions since 3.4
 // support it. C++11 also requires this behavior.

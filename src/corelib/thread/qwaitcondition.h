@@ -46,8 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 
 class QDeadlineTimer;
 class QWaitConditionPrivate;
@@ -98,7 +97,7 @@ public:
     void wakeAll() {}
 };
 
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
 
 QT_END_NAMESPACE
 

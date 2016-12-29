@@ -43,13 +43,8 @@
 #include "private/qguiapplication_p.h"
 
 #include <qpa/qwindowsysteminterface.h>
-#include <QtCore/QElapsedTimer>
-#include <QtCore/QAtomicInt>
-#include <QtCore/QSemaphore>
 
 #include <QtCore/QDebug>
-
-#include <errno.h>
 
 QT_BEGIN_NAMESPACE
 

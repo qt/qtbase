@@ -43,7 +43,7 @@ private slots:
     void argc();
     void postEvent();
     void removePostedEvents();
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
     void deliverInDefinedOrder();
 #endif
     void applicationPid();

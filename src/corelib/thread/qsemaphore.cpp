@@ -39,8 +39,6 @@
 ****************************************************************************/
 
 #include "qsemaphore.h"
-
-#ifndef QT_NO_THREAD
 #include "qmutex.h"
 #include "qfutex_p.h"
 #include "qwaitcondition.h"
@@ -646,5 +644,3 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_THREAD

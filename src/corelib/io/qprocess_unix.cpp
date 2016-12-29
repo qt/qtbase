@@ -101,7 +101,6 @@ QT_END_NAMESPACE
 #include <qdir.h>
 #include <qlist.h>
 #include <qmutex.h>
-#include <qsemaphore.h>
 #include <qsocketnotifier.h>
 #include <qthread.h>
 #include <qelapsedtimer.h>

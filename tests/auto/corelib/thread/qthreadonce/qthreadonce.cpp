@@ -30,7 +30,6 @@
 #include "qplatformdefs.h"
 #include "qthreadonce.h"
 
-#ifndef QT_NO_THREAD
 #include "qmutex.h"
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, onceInitializationMutex, (QMutex::Recursive))
@@ -104,5 +103,3 @@ void QOnceControl::done()
 {
     extra &= ~MustRunCode;
 }
-
-#endif // QT_NO_THREAD

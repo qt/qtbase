@@ -57,7 +57,9 @@
 #include "QtCore/qthread.h"
 #include "QtCore/qmutex.h"
 #include "QtCore/qstack.h"
+#if QT_CONFIG(thread)
 #include "QtCore/qwaitcondition.h"
+#endif
 #include "QtCore/qmap.h"
 #include "QtCore/qcoreapplication.h"
 #include "private/qobject_p.h"
@@ -141,7 +143,7 @@ private:
     using QVector<QPostEvent>::insert;
 };
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 
 class Q_CORE_EXPORT QDaemonThread : public QThread
 {
@@ -210,7 +212,7 @@ public:
     }
 };
 
-#else // QT_NO_THREAD
+#else // QT_CONFIG(thread)
 
 class QThreadPrivate : public QObjectPrivate
 {
@@ -231,7 +233,7 @@ public:
     Q_DECLARE_PUBLIC(QThread)
 };
 
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
 
 class QThreadData
 {
@@ -327,7 +329,7 @@ public:
     void init();
 
 private:
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
     void run() override;
 #endif
 };

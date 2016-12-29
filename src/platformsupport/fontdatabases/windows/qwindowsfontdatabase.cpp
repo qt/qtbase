@@ -1231,7 +1231,6 @@ void QWindowsFontDatabase::populateFontDatabase()
 
 typedef QSharedPointer<QWindowsFontEngineData> QWindowsFontEngineDataPtr;
 
-#ifndef QT_NO_THREAD
 typedef QThreadStorage<QWindowsFontEngineDataPtr> FontEngineThreadLocalData;
 
 Q_GLOBAL_STATIC(FontEngineThreadLocalData, fontEngineThreadLocalData)
@@ -1243,17 +1242,6 @@ QSharedPointer<QWindowsFontEngineData> sharedFontData()
         data->setLocalData(QSharedPointer<QWindowsFontEngineData>::create());
     return data->localData();
 }
-#else // !QT_NO_THREAD
-Q_GLOBAL_STATIC(QWindowsFontEngineDataPtr, fontEngineData)
-
-QWindowsFontEngineDataPtr sharedFontData()
-{
-    QWindowsFontEngineDataPtr *data = fontEngineData();
-    if (data->isNull())
-        *data = QWindowsFontEngineDataPtr::create();
-    return *data;
-}
-#endif // QT_NO_THREAD
 
 QWindowsFontDatabase::QWindowsFontDatabase()
 {

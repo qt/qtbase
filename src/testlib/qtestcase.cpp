@@ -346,7 +346,9 @@ namespace QTest
     static int keyDelay = -1;
     static int mouseDelay = -1;
     static int eventDelay = -1;
+#if QT_CONFIG(thread)
     static int timeout = -1;
+#endif
     static bool noCrashHandler = false;
 
 /*! \internal
@@ -397,7 +399,7 @@ int Q_TESTLIB_EXPORT defaultKeyDelay()
     }
     return keyDelay;
 }
-
+#if QT_CONFIG(thread)
 static int defaultTimeout()
 {
     if (timeout == -1) {
@@ -409,6 +411,7 @@ static int defaultTimeout()
     }
     return timeout;
 }
+#endif
 
 Q_TESTLIB_EXPORT bool printAvailableFunctions = false;
 Q_TESTLIB_EXPORT QStringList testFunctions;
@@ -975,6 +978,8 @@ void TestMethods::invokeTestOnData(int index) const
     }
 }
 
+#if QT_CONFIG(thread)
+
 class WatchDog : public QThread
 {
 public:
@@ -1025,6 +1030,17 @@ private:
     QMutex mutex;
     QWaitCondition waitCondition;
 };
+
+#else // !QT_CONFIG(thread)
+
+class WatchDog : public QObject
+{
+public:
+    void beginTest() {};
+    void testFinished() {};
+};
+
+#endif
 
 
 /*!

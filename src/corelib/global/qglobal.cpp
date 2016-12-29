@@ -53,10 +53,6 @@
 
 #include <qmutex.h>
 
-#ifndef QT_NO_QOBJECT
-#include <private/qthread_p.h>
-#endif
-
 #include <stdlib.h>
 #include <limits.h>
 #include <stdarg.h>

@@ -415,7 +415,7 @@ void tst_QCoreApplication::removePostedEvents()
     expected.clear();
 }
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 class DeliverInDefinedOrderThread : public QThread
 {
     Q_OBJECT
@@ -532,7 +532,7 @@ void tst_QCoreApplication::deliverInDefinedOrder()
     QObject::connect(&obj, SIGNAL(done()), &app, SLOT(quit()));
     app.exec();
 }
-#endif // QT_NO_QTHREAD
+#endif // QT_CONFIG(thread)
 
 void tst_QCoreApplication::applicationPid()
 {

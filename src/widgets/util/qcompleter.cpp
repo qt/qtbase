@@ -144,6 +144,7 @@
 #include "qcompleter_p.h"
 
 #include "QtWidgets/qscrollbar.h"
+#include "QtCore/qdir.h"
 #include "QtCore/qstringlistmodel.h"
 #if QT_CONFIG(dirmodel)
 #include "QtWidgets/qdirmodel.h"

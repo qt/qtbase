@@ -63,7 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 
 #ifdef Q_OS_WINRT
 inline DWORD qWinRTTlsAlloc() {
@@ -330,7 +330,7 @@ void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
  ** QThreadPrivate
  *************************************************************************/
 
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
 
 QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
@@ -342,7 +342,7 @@ QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *dat
 #endif
 }
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 
 unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(void *arg) Q_DECL_NOEXCEPT
 {
@@ -444,7 +444,7 @@ void QThread::yieldCurrentThread()
 #endif
 }
 
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
 
 void QThread::sleep(unsigned long secs)
 {
@@ -461,7 +461,7 @@ void QThread::usleep(unsigned long usecs)
     ::Sleep((usecs / 1000) + 1);
 }
 
-#ifndef QT_NO_THREAD
+#if QT_CONFIG(thread)
 
 void QThread::start(Priority priority)
 {
@@ -699,6 +699,6 @@ void QThreadPrivate::setPriority(QThread::Priority threadPriority)
     }
 }
 
-#endif // QT_NO_THREAD
+#endif // QT_CONFIG(thread)
 
 QT_END_NAMESPACE

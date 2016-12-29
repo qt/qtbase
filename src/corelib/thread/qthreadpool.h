@@ -45,7 +45,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qrunnable.h>
 
-#ifndef QT_NO_THREAD
+QT_REQUIRE_CONFIG(thread);
 
 QT_BEGIN_NAMESPACE
 
@@ -96,7 +96,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_THREAD
 
 #endif

@@ -40,8 +40,6 @@
 
 #include "qplatformdefs.h"
 #include "qmutex.h"
-
-#ifndef QT_NO_THREAD
 #include "qatomic.h"
 #include "qmutex_p.h"
 #include "qfutex_p.h"
@@ -53,7 +51,6 @@
 #ifndef FUTEX_PRIVATE_FLAG
 #  define FUTEX_PRIVATE_FLAG    0
 #endif
-
 
 QT_BEGIN_NAMESPACE
 
@@ -183,5 +180,3 @@ void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_THREAD

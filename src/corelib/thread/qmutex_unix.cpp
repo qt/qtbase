@@ -42,8 +42,6 @@
 #include "qmutex.h"
 #include "qstring.h"
 #include "qelapsedtimer.h"
-
-#ifndef QT_NO_THREAD
 #include "qatomic.h"
 #include "qmutex_p.h"
 #include <errno.h>
@@ -159,5 +157,3 @@ void QMutexPrivate::wakeUp() Q_DECL_NOTHROW
 #endif
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_THREAD

@@ -54,7 +54,7 @@ class tst_QMutex;
 QT_BEGIN_NAMESPACE
 
 
-#if !defined(QT_NO_THREAD) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(thread) || defined(Q_CLANG_QDOC)
 
 #ifdef Q_OS_LINUX
 # define QT_MUTEX_LOCK_NOEXCEPT Q_DECL_NOTHROW
@@ -250,7 +250,7 @@ private:
     quintptr val;
 };
 
-#else // QT_NO_THREAD && !Q_CLANG_QDOC
+#else // !QT_CONFIG(thread) && !Q_CLANG_QDOC
 
 class Q_CORE_EXPORT QMutex
 {
@@ -301,7 +301,7 @@ private:
 
 typedef QMutex QBasicMutex;
 
-#endif // QT_NO_THREAD && !Q_CLANG_QDOC
+#endif // !QT_CONFIG(thread) && !Q_CLANG_QDOC
 
 QT_END_NAMESPACE
 
