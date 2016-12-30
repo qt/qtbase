@@ -104,13 +104,14 @@ QSaveFilePrivate::~QSaveFilePrivate()
     \sa QTextStream, QDataStream, QFileInfo, QDir, QFile, QTemporaryFile
 */
 
-/*!
-    Constructs a new file object with the given \a parent.
-*/
-QSaveFile::QSaveFile(QObject *parent)
-    : QFileDevice(*new QSaveFilePrivate, parent)
+#ifdef QT_NO_QOBJECT
+QSaveFile::QSaveFile(const QString &name)
+    : QFileDevice(*new QSaveFilePrivate)
 {
+    Q_D(QSaveFile);
+    d->fileName = name;
 }
+#else
 /*!
     Constructs a new file object to represent the file with the given \a name.
 */
@@ -119,6 +120,14 @@ QSaveFile::QSaveFile(const QString &name)
 {
     Q_D(QSaveFile);
     d->fileName = name;
+}
+
+/*!
+    Constructs a new file object with the given \a parent.
+*/
+QSaveFile::QSaveFile(QObject *parent)
+    : QFileDevice(*new QSaveFilePrivate, parent)
+{
 }
 /*!
     Constructs a new file object with the given \a parent to represent the
@@ -130,6 +139,7 @@ QSaveFile::QSaveFile(const QString &name, QObject *parent)
     Q_D(QSaveFile);
     d->fileName = name;
 }
+#endif
 
 /*!
     Destroys the file object, discarding the saved contents unless commit() was called.
