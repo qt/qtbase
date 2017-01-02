@@ -355,7 +355,7 @@ void QWellArray::paintCell(QPainter* p, int row, int col, const QRect &rect)
     paintCellContents(p, row, col, opt.rect.adjusted(dfw, dfw, -dfw, -dfw));
 }
 
-/*!
+/*
   Reimplement this function to change the contents of the well array.
  */
 void QWellArray::paintCellContents(QPainter *p, int row, int col, const QRect &r)
@@ -441,16 +441,12 @@ void QWellArray::focusInEvent(QFocusEvent*)
     emit currentChanged(curRow, curCol);
 }
 
-/*!\reimp
-*/
 
 void QWellArray::focusOutEvent(QFocusEvent*)
 {
     updateCell(curRow, curCol);
 }
 
-/*\reimp
-*/
 void QWellArray::keyPressEvent(QKeyEvent* e)
 {
     switch(e->key()) {                        // Look at the key code
