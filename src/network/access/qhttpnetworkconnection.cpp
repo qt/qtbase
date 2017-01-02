@@ -567,6 +567,8 @@ QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
                 return QUrl();
             }
             break;
+        case QNetworkRequest::UserVerifiedRedirectsPolicy:
+            break;
         default:
             Q_ASSERT(!"Unexpected redirect policy");
         }

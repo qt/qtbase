@@ -134,6 +134,8 @@ class tst_QNetworkReply: public QObject
         return s;
     }
 
+    static const QByteArray httpEmpty200Response;
+
     QEventLoop *loop;
     enum RunSimpleRequestReturn { Timeout = 0, Success, Failure };
     int returnCode;
@@ -480,6 +482,8 @@ private Q_SLOTS:
     void ioHttpRedirectPolicy();
     void ioHttpRedirectPolicyErrors_data();
     void ioHttpRedirectPolicyErrors();
+    void ioHttpUserVerifiedRedirect_data();
+    void ioHttpUserVerifiedRedirect();
 #ifndef QT_NO_SSL
     void putWithServerClosingConnectionImmediately();
 #endif
@@ -493,6 +497,8 @@ private:
     bool notEnoughDataForFastSender;
 };
 
+const QByteArray tst_QNetworkReply::httpEmpty200Response =
+                            "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
 bool tst_QNetworkReply::seedCreated = false;
 
 #define RUN_REQUEST(call)                       \
@@ -8034,10 +8040,9 @@ void tst_QNetworkReply::putWithRateLimiting()
 void tst_QNetworkReply::ioHttpSingleRedirect()
 {
     QUrl localhost = QUrl("http://localhost");
-    QByteArray http200Reply = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
 
     // Setup server to which the second server will redirect to
-    MiniHttpServer server2(http200Reply);
+    MiniHttpServer server2(httpEmpty200Response);
 
     QUrl redirectUrl = QUrl(localhost);
     redirectUrl.setPort(server2.serverPort());
@@ -8079,11 +8084,9 @@ void tst_QNetworkReply::ioHttpChangeMaxRedirects()
 {
     QUrl localhost = QUrl("http://localhost");
 
-    QByteArray http200Reply = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
-
     MiniHttpServer server1("");
     MiniHttpServer server2("");
-    MiniHttpServer server3(http200Reply);
+    MiniHttpServer server3(httpEmpty200Response);
 
     QUrl server2Url(localhost);
     server2Url.setPort(server2.serverPort());
@@ -8227,7 +8230,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
       "http://localhost"));
 
     url.setPort(redirectServer.serverPort());
-    redirectServer.responses.push_back("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+    redirectServer.responses.push_back(httpEmpty200Response);
     redirectServer.responses.push_back(tempRedirectReplyStr().arg(QString(url.toEncoded())).toLatin1());
 
     // This is the default one we preserve between tests.
@@ -8330,6 +8333,56 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
     QCOMPARE(waitForFinish(reply), int(Failure));
     QCOMPARE(spy.count(), 1);
     QCOMPARE(reply->error(), expectedError);
+}
+
+void tst_QNetworkReply::ioHttpUserVerifiedRedirect_data()
+{
+    QTest::addColumn<bool>("followRedirect");
+    QTest::addColumn<int>("statusCode");
+
+    QTest::newRow("allow-redirect") << true << 200;
+    QTest::newRow("reject-redirect") << false << 307;
+}
+
+void tst_QNetworkReply::ioHttpUserVerifiedRedirect()
+{
+    QFETCH(const bool, followRedirect);
+    QFETCH(const int, statusCode);
+
+    // Setup HTTP server.
+    MiniHttpServer target(httpEmpty200Response, false);
+    QUrl url("http://localhost");
+    url.setPort(target.serverPort());
+
+    MiniHttpServer redirectServer("", false);
+    redirectServer.setDataToTransmit(tempRedirectReplyStr().arg(QString(url.toEncoded())).toLatin1());
+    url.setPort(redirectServer.serverPort());
+
+    QCOMPARE(manager.redirectsPolicy(), QNetworkRequest::ManualRedirectsPolicy);
+    manager.setRedirectsPolicy(QNetworkRequest::UserVerifiedRedirectsPolicy);
+    QCOMPARE(manager.redirectsPolicy(), QNetworkRequest::UserVerifiedRedirectsPolicy);
+
+    QNetworkReplyPtr reply(manager.get(QNetworkRequest(url)));
+    reply->connect(reply.data(), &QNetworkReply::redirected,
+                   [&](const QUrl &redirectUrl) {
+                        qDebug() << "redirect to:" << redirectUrl;
+                        if (followRedirect) {
+                            qDebug() << "confirmed.";
+                            emit reply->redirectAllowed();
+                        } else{
+                            qDebug() << "rejected.";
+                            emit reply->abort();
+                        }
+                   });
+
+    // Before any test failed, reset the policy to default:
+    manager.setRedirectsPolicy(QNetworkRequest::ManualRedirectsPolicy);
+    QCOMPARE(manager.redirectsPolicy(), QNetworkRequest::ManualRedirectsPolicy);
+
+    QSignalSpy finishedSpy(reply.data(), SIGNAL(finished()));
+    waitForFinish(reply);
+    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), statusCode);
 }
 
 #ifndef QT_NO_SSL

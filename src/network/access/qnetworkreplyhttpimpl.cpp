@@ -824,12 +824,16 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         QObject::connect(delegate, SIGNAL(redirected(QUrl,int,int)),
                 q, SLOT(onRedirected(QUrl,int,int)),
                 Qt::QueuedConnection);
+
+        QObject::connect(q, SIGNAL(redirectAllowed()), q, SLOT(followRedirect()),
+                         Qt::QueuedConnection);
+
 #ifndef QT_NO_SSL
         QObject::connect(delegate, SIGNAL(sslConfigurationChanged(QSslConfiguration)),
                 q, SLOT(replySslConfigurationChanged(QSslConfiguration)),
                 Qt::QueuedConnection);
 #endif
-        // Those need to report back, therefire BlockingQueuedConnection
+        // Those need to report back, therefore BlockingQueuedConnection
         QObject::connect(delegate, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
                 q, SLOT(httpAuthenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
                 Qt::BlockingQueuedConnection);
@@ -1121,19 +1125,26 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
     if (httpRequest.isFollowRedirects()) // update the reply's url as it could've changed
         url = redirectUrl;
 
-    QNetworkRequest redirectRequest = createRedirectRequest(originalRequest, redirectUrl, maxRedirectsRemaining);
+    redirectRequest = createRedirectRequest(originalRequest, redirectUrl, maxRedirectsRemaining);
     operation = getRedirectOperation(operation, httpStatus);
+
+    if (httpRequest.redirectsPolicy() != QNetworkRequest::UserVerifiedRedirectsPolicy)
+        followRedirect();
+
+    emit q->redirected(redirectUrl);
+}
+
+void QNetworkReplyHttpImplPrivate::followRedirect()
+{
+    Q_Q(QNetworkReplyHttpImpl);
 
     cookedHeaders.clear();
 
     if (managerPrivate->thread)
         managerPrivate->thread->disconnect();
 
-    // Recurse
     QMetaObject::invokeMethod(q, "start", Qt::QueuedConnection,
                               Q_ARG(QNetworkRequest, redirectRequest));
-
-    emit q->redirected(redirectUrl);
 }
 
 void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)

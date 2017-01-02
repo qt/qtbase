@@ -305,6 +305,20 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
 */
 
 /*!
+    \fn void QNetworkReply::redirectAllowed()
+    \since 5.9
+
+    When client code handling the redirected() signal has verified the new URL,
+    it emits this signal to allow the redirect to go ahead.  This protocol applies
+    to network requests whose redirects policy is set to
+    QNetworkRequest::UserVerifiedRedirectsPolicy.
+
+    \sa QNetworkRequest::UserVerifiedRedirectsPolicy
+    QNetworkAccessManager::setRedirectsPolicy(),
+    QNetworkRequest::RedirectsPolicyAttribute
+*/
+
+/*!
     \fn void QNetworkReply::metaDataChanged()
 
     \omit FIXME: Update name? \endomit

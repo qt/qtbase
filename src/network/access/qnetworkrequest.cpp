@@ -360,6 +360,16 @@ QT_BEGIN_NAMESPACE
                                         Note, http://example.com and http://example.com:80
                                         will fail with this policy (implicit/explicit ports
                                         are considered to be a mismatch).
+
+    \value UserVerifiedRedirectsPolicy  Client decides whether to follow each
+                                        redirect by handling the redirected()
+                                        signal, emitting redirectAllowed() on
+                                        the QNetworkReply object to allow
+                                        the redirect or aborting/finishing it to
+                                        reject the redirect.  This can be used,
+                                        for example, to ask the user whether to
+                                        accept the redirect, or to decide
+                                        based on some app-specific configuration.
 */
 
 class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate

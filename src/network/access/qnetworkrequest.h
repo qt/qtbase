@@ -116,7 +116,8 @@ public:
     enum RedirectsPolicy {
         ManualRedirectsPolicy,
         NoLessSafeRedirectsPolicy,
-        SameOriginRedirectsPolicy
+        SameOriginRedirectsPolicy,
+        UserVerifiedRedirectsPolicy
     };
 
 

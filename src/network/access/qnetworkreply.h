@@ -163,6 +163,7 @@ Q_SIGNALS:
     void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator);
 #endif
     void redirected(const QUrl &url);
+    void redirectAllowed();
 
     void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);

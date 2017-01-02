@@ -136,6 +136,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void _q_cacheSaveDeviceAboutToClose())
     Q_PRIVATE_SLOT(d_func(), void _q_metaDataChanged())
     Q_PRIVATE_SLOT(d_func(), void onRedirected(const QUrl &, int, int))
+    Q_PRIVATE_SLOT(d_func(), void followRedirect())
 
 #ifndef QT_NO_SSL
 protected:
@@ -212,6 +213,7 @@ public:
     QSharedPointer<QRingBuffer> outgoingDataBuffer;
     void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal); // dup?
     void onRedirected(const QUrl &redirectUrl, int httpStatus, int maxRedirectsRemainig);
+    void followRedirect();
     qint64 bytesUploaded;
 
 
@@ -263,6 +265,7 @@ public:
     QList<QSslError> pendingIgnoreSslErrorsList;
 #endif
 
+    QNetworkRequest redirectRequest;
 
     bool loadFromCacheIfAllowed(QHttpNetworkRequest &httpRequest);
     void invalidateCache();
