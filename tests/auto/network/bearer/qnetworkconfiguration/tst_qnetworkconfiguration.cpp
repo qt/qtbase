@@ -119,7 +119,7 @@ void tst_QNetworkConfiguration::comparison()
 
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations(); //initiate scans
-    QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut); //wait for scan to complete
+    QTRY_VERIFY_WITH_TIMEOUT(spy.count() >= 1, TestTimeOut); //wait for scan to complete
 
     QList<QNetworkConfiguration> configs = manager.allConfigurations(QNetworkConfiguration::Discovered);
     QVERIFY(configs.count());
@@ -166,7 +166,7 @@ void tst_QNetworkConfiguration::isRoamingAvailable()
     //force update to get maximum list
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations(); //initiate scans
-    QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut); //wait for scan to complete
+    QTRY_VERIFY_WITH_TIMEOUT(spy.count() >= 1, TestTimeOut); //wait for scan to complete
 
     foreach(QNetworkConfiguration c, configs)
     {
