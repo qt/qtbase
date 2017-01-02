@@ -10107,7 +10107,7 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
 */
 
 /*! \fn bool QStringRef::contains(QLatin1String str, Qt::CaseSensitivity cs) const
-    \since 4,8
+    \since 4.8
     \overload contains()
 
     Returns \c true if this string reference contains an occurrence of

@@ -6596,7 +6596,7 @@ QGraphicsItem *QGraphicsItem::commonAncestorItem(const QGraphicsItem *other) con
 }
 
 /*!
-    \since 4,4
+    \since 4.4
     Returns \c true if this item is currently under the mouse cursor in one of
     the views; otherwise, false is returned.
 

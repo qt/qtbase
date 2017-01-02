@@ -676,7 +676,7 @@ void QMainWindow::setCentralWidget(QWidget *widget)
 
     The ownership of the removed widget is passed to the caller.
 
-    \since Qt 5.2
+    \since 5.2
 */
 QWidget *QMainWindow::takeCentralWidget()
 {
