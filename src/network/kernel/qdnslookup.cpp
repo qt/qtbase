@@ -58,7 +58,7 @@ static bool qt_qdnsmailexchangerecord_less_than(const QDnsMailExchangeRecord &r1
     return r1.preference() < r2.preference();
 }
 
-/*!
+/*
     Sorts a list of QDnsMailExchangeRecord objects according to RFC 5321.
 */
 
@@ -100,7 +100,7 @@ static bool qt_qdnsservicerecord_less_than(const QDnsServiceRecord &r1, const QD
         && r1.weight() == 0 && r2.weight() > 0);
 }
 
-/*!
+/*
     Sorts a list of QDnsServiceRecord objects according to RFC 2782.
 */
 
