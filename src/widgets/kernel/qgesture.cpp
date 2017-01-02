@@ -819,7 +819,6 @@ void QTapAndHoldGesture::setPosition(const QPointF &value)
     later the touch is still down, it will trigger the QTapAndHoldGesture.
     The default value is 700 milliseconds.
 */
-// static
 void QTapAndHoldGesture::setTimeout(int msecs)
 {
     QTapAndHoldGesturePrivate::Timeout = msecs;
@@ -832,7 +831,6 @@ void QTapAndHoldGesture::setTimeout(int msecs)
     later the touch is still down, it will trigger the QTapAndHoldGesture.
     The default value is 700 milliseconds.
 */
-// static
 int QTapAndHoldGesture::timeout()
 {
     return QTapAndHoldGesturePrivate::Timeout;
