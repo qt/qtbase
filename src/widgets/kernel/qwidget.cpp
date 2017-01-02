@@ -5250,8 +5250,6 @@ static void sendResizeEvents(QWidget *target)
 
     \sa render(), QPixmap
 */
-
-/* INVOKABLE since used by QPixmap::grabWidget(). */
 QPixmap QWidget::grab(const QRect &rectangle)
 {
     Q_D(QWidget);
@@ -12731,7 +12729,6 @@ void QWidget::activateWindow()
 }
 
 /*!
-    \fn int QWidget::metric(PaintDeviceMetric m) const
 
     Internal implementation of the virtual QPaintDevice::metric()
     function.
