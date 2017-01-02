@@ -990,11 +990,18 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::MouseWheelEvent:
     case QtWindows::MouseEvent:
     case QtWindows::LeaveEvent:
+        {
+            QWindow *window = platformWindow->window();
+            while (window->flags() & Qt::WindowTransparentForInput)
+                window = window->parent();
+            if (!window)
+                return false;
 #if !defined(QT_NO_SESSIONMANAGER)
-        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(window, hwnd, et, msg, result);
 #else
-        return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+        return d->m_mouseHandler.translateMouseEvent(window, hwnd, et, msg, result);
 #endif
+        }
     case QtWindows::TouchEvent:
 #if !defined(QT_NO_SESSIONMANAGER)
         return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
