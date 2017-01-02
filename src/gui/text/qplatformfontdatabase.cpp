@@ -423,14 +423,14 @@ QFont QPlatformFontDatabase::defaultFont() const
     return QFont(QLatin1String("Helvetica"));
 }
 
+
+QString qt_resolveFontFamilyAlias(const QString &alias);
+
 /*!
     Resolve alias to actual font family names.
 
     \since 5.0
  */
-
-QString qt_resolveFontFamilyAlias(const QString &alias);
-
 QString QPlatformFontDatabase::resolveFontFamilyAlias(const QString &family) const
 {
     return qt_resolveFontFamilyAlias(family);
@@ -628,12 +628,13 @@ QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(q
 }
 
 /*!
-    Helper function that returns the Qt font weight matching a given opentype integer value.
+    Helper function that returns the Qt font weight matching
+    a given opentype integer value. Converts the integer
+    \a weight (0 ~ 1000) to QFont::Weight and returns it.
 
     \since 5.5
 */
 
-// convert 0 ~ 1000 integer to QFont::Weight
 QFont::Weight QPlatformFontDatabase::weightFromInteger(int weight)
 {
     if (weight < 150)
