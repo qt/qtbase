@@ -68,7 +68,7 @@ void tst_QNetworkConfigurationManager::allConfigurations()
 
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations(); //initiate scans
-    QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut); //wait for scan to complete
+    QTRY_VERIFY_WITH_TIMEOUT(spy.count() >= 1, TestTimeOut); //wait for scan to complete
 
     QList<QNetworkConfiguration> configs = manager.allConfigurations();
 
@@ -145,7 +145,7 @@ void tst_QNetworkConfigurationManager::defaultConfiguration()
     QNetworkConfigurationManager manager;
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations(); //initiate scans
-    QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut); //wait for scan to complete
+    QTRY_VERIFY_WITH_TIMEOUT(spy.count() >= 1, TestTimeOut); //wait for scan to complete
 
     QList<QNetworkConfiguration> configs = manager.allConfigurations();
     QNetworkConfiguration defaultConfig = manager.defaultConfiguration();
@@ -175,7 +175,7 @@ void tst_QNetworkConfigurationManager::configurationFromIdentifier()
     //force an update to get maximum number of configs
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations(); //initiate scans
-    QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut); //wait for scan to complete
+    QTRY_VERIFY_WITH_TIMEOUT(spy.count() >= 1, TestTimeOut); //wait for scan to complete
 
     QList<QNetworkConfiguration> configs = manager.allConfigurations();
 
@@ -203,7 +203,7 @@ protected:
         preScanConfigs = manager.allConfigurations();
         QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
         manager.updateConfigurations(); //initiate scans
-        QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut); //wait for scan to complete
+        QTRY_VERIFY_WITH_TIMEOUT(spy.count() >= 1, TestTimeOut); //wait for scan to complete
         configs = manager.allConfigurations();
     }
 public:
@@ -229,7 +229,7 @@ void tst_QNetworkConfigurationManager::usedInThread()
     QList<QNetworkConfiguration> preScanConfigs = manager.allConfigurations();
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations(); //initiate scans
-    QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut); //wait for scan to complete
+    QTRY_VERIFY_WITH_TIMEOUT(spy.count() >= 1, TestTimeOut); //wait for scan to complete
     QList<QNetworkConfiguration> configs = manager.allConfigurations();
     QCOMPARE(thread.configs, configs);
     //Don't compare pre scan configs, because these may be cached and therefore give different results
