@@ -519,6 +519,8 @@ void QThread::yieldCurrentThread()
     sched_yield();
 }
 
+#endif // QT_NO_THREAD
+
 static timespec makeTimespec(time_t secs, long nsecs)
 {
     struct timespec ts;
@@ -541,6 +543,8 @@ void QThread::usleep(unsigned long usecs)
 {
     qt_nanosleep(makeTimespec(usecs / 1000 / 1000, usecs % (1000*1000) * 1000));
 }
+
+#ifndef QT_NO_THREAD
 
 #ifdef QT_HAS_THREAD_PRIORITY_SCHEDULING
 #if defined(Q_OS_QNX)

@@ -61,8 +61,9 @@
 #  include <process.h>
 #endif // Q_OS_WINRT
 
-#ifndef QT_NO_THREAD
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_THREAD
 
 #ifdef Q_OS_WINRT
 inline DWORD qWinRTTlsAlloc() {
@@ -449,6 +450,8 @@ void QThread::yieldCurrentThread()
 #endif
 }
 
+#endif // QT_NO_THREAD
+
 void QThread::sleep(unsigned long secs)
 {
     ::Sleep(secs * 1000);
@@ -463,6 +466,8 @@ void QThread::usleep(unsigned long usecs)
 {
     ::Sleep((usecs / 1000) + 1);
 }
+
+#ifndef QT_NO_THREAD
 
 void QThread::start(Priority priority)
 {
@@ -700,5 +705,6 @@ void QThreadPrivate::setPriority(QThread::Priority threadPriority)
     }
 }
 
-QT_END_NAMESPACE
 #endif // QT_NO_THREAD
+
+QT_END_NAMESPACE

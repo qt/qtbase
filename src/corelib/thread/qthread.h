@@ -247,6 +247,10 @@ public:
     static Qt::HANDLE currentThreadId() { return Qt::HANDLE(currentThread()); }
     static QThread* currentThread();
 
+    static void sleep(unsigned long);
+    static void msleep(unsigned long);
+    static void usleep(unsigned long);
+
 protected:
     QThread(QThreadPrivate &dd, QObject *parent = nullptr);
 
