@@ -235,19 +235,19 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     if (!iface || !iface->isValid())
         return nil;
 
+    if (QAccessibleInterface *parent = iface->parent()) {
+        QAccessible::Id parentId = QAccessible::uniqueId(parent);
+        return [QMacAccessibilityElement elementWithId: parentId];
+    }
+
     if (QWindow *window = iface->window()) {
-        QCocoaWindow *win = static_cast<QCocoaWindow*>(window->handle());
-        return qnsview_cast(win->view());
+        QPlatformWindow *platformWindow = window->handle();
+        if (platformWindow) {
+            QCocoaWindow *win = static_cast<QCocoaWindow*>(platformWindow);
+            return qnsview_cast(win->view());
+        }
     }
-
-    QAccessibleInterface *parent = iface->parent();
-    if (!parent) {
-        qWarning() << "INVALID PARENT FOR INTERFACE: " << iface;
-        return nil;
-    }
-
-    QAccessible::Id parentId = QAccessible::uniqueId(parent);
-    return [QMacAccessibilityElement elementWithId: parentId];
+    return nil;
 }
 
 
