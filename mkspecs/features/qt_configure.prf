@@ -1703,9 +1703,8 @@ defineTest(qtConfProcessOutput) {
     return()
 }
 
-c = $$basename(_PRO_FILE_PWD_)
-config.$${c}.dir = $$_PRO_FILE_PWD_
-cfgs = $$c
+config.$${TARGET}.dir = $$_PRO_FILE_PWD_
+cfgs = $$TARGET
 !isEmpty(_QMAKE_SUPER_CACHE_) {
     for (s, SUBDIRS) {
         config.$${s}.dir = $$_PRO_FILE_PWD_/$${s}
