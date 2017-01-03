@@ -860,7 +860,7 @@ void QFileDialog::setVisible(bool visible)
         }
     }
 
-    if (d->usingWidgets())
+    if (visible && d->usingWidgets())
         d->qFileDialogUi->fileNameEdit->setFocus();
 
     QDialog::setVisible(visible);
