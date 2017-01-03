@@ -5216,16 +5216,40 @@ protected:
             widgetDuringFocusAboutToChange = qApp->focusWidget();
         return QWidget::event(ev);
     }
+    virtual void focusInEvent(QFocusEvent *)
+    {
+        foucsObjectDuringFocusIn = qApp->focusObject();
+        detectedBadEventOrdering = foucsObjectDuringFocusIn != mostRecentFocusObjectChange;
+    }
     virtual void focusOutEvent(QFocusEvent *)
     {
+        foucsObjectDuringFocusOut = qApp->focusObject();
         widgetDuringFocusOut = qApp->focusWidget();
+        detectedBadEventOrdering = foucsObjectDuringFocusOut != mostRecentFocusObjectChange;
+    }
+
+    void focusObjectChanged(QObject *focusObject)
+    {
+        mostRecentFocusObjectChange = focusObject;
     }
 
 public:
-    FocusWidget(QWidget *parent) : QWidget(parent), widgetDuringFocusAboutToChange(0), widgetDuringFocusOut(0) {}
+    FocusWidget(QWidget *parent) : QWidget(parent),
+        widgetDuringFocusAboutToChange(0), widgetDuringFocusOut(0),
+        foucsObjectDuringFocusIn(0), foucsObjectDuringFocusOut(0),
+        mostRecentFocusObjectChange(0), detectedBadEventOrdering(false)
+    {
+        connect(qGuiApp, &QGuiApplication::focusObjectChanged, this, &FocusWidget::focusObjectChanged);
+    }
 
     QWidget *widgetDuringFocusAboutToChange;
     QWidget *widgetDuringFocusOut;
+
+    QObject *foucsObjectDuringFocusIn;
+    QObject *foucsObjectDuringFocusOut;
+
+    QObject *mostRecentFocusObjectChange;
+    bool detectedBadEventOrdering;
 };
 
 void tst_QWidget::setFocus()
@@ -5425,6 +5449,40 @@ void tst_QWidget::setFocus()
         QVERIFY(!child2.hasFocus());
         QCOMPARE(window.focusWidget(), nullptr);
         QCOMPARE(QApplication::focusWidget(), nullptr);
+    }
+
+    {
+        QWidget window;
+        window.resize(m_testWidgetSize);
+        window.move(windowPos);
+
+        FocusWidget child1(&window);
+        QWidget child2(&window);
+
+        window.show();
+        window.activateWindow();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QTRY_VERIFY(QApplication::focusWindow());
+
+        QCOMPARE(QApplication::focusObject(), &window);
+
+        child1.setFocus();
+        QTRY_VERIFY(child1.hasFocus());
+        QCOMPARE(window.focusWidget(), &child1);
+        QCOMPARE(QApplication::focusWidget(), &child1);
+        QCOMPARE(QApplication::focusObject(), &child1);
+        QCOMPARE(child1.foucsObjectDuringFocusIn, &child1);
+        QVERIFY2(!child1.detectedBadEventOrdering,
+            "focusObjectChanged should be delivered before widget focus events on setFocus");
+
+        child1.clearFocus();
+        QTRY_VERIFY(!child1.hasFocus());
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusObject(), &window);
+        QVERIFY(child1.foucsObjectDuringFocusOut != &child1);
+        QVERIFY2(!child1.detectedBadEventOrdering,
+            "focusObjectChanged should be delivered before widget focus events on clearFocus");
     }
 }
 
