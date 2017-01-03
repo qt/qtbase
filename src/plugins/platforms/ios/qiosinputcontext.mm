@@ -650,10 +650,20 @@ void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 */
 void QIOSInputContext::update(Qt::InputMethodQueries updatedProperties)
 {
+    qImDebug() << "fw =" << qApp->focusWindow() << "fo =" << qApp->focusObject();
+
+    // Changes to the focus object should always result in a call to setFocusObject(),
+    // triggering a reset() which will update all the properties based on the new
+    // focus object. We try to detect code paths that fail this assertion and smooth
+    // over the situation by doing a manual update of the focus object.
+    if (qApp->focusObject() != m_imeState.focusObject && updatedProperties != Qt::ImQueryAll) {
+        qWarning() << "stale focus object" << m_imeState.focusObject << ", doing manual update";
+        setFocusObject(qApp->focusObject());
+        return;
+    }
+
     // Mask for properties that we are interested in and see if any of them changed
     updatedProperties &= (Qt::ImEnabled | Qt::ImHints | Qt::ImQueryInput | Qt::ImEnterKeyType | Qt::ImPlatformData);
-
-    qImDebug() << "fw =" << qApp->focusWindow() << "fo =" << qApp->focusObject();
 
     // Perform update first, so we can trust the value of inputMethodAccepted()
     Qt::InputMethodQueries changedProperties = m_imeState.update(updatedProperties);
