@@ -498,15 +498,32 @@ void QIOSInputContext::scrollToCursor()
         return;
     }
 
-    const int margin = 20;
-    QRectF translatedCursorPos = qApp->inputMethod()->cursorRectangle();
-    translatedCursorPos.translate(focusView().qwindow->geometry().topLeft());
+    QWindow *focusWindow = qApp->focusWindow();
+    QRect cursorRect = qApp->inputMethod()->cursorRectangle().translated(focusWindow->geometry().topLeft()).toRect();
+    if (cursorRect.isNull()) {
+         scroll(0);
+         return;
+    }
 
-    qreal keyboardY = [rootView convertRect:m_keyboardState.keyboardEndRect fromView:nil].origin.y;
-    int statusBarY = qGuiApp->primaryScreen()->availableGeometry().y();
+     // Add some padding so that the cusor does not end up directly above the keyboard
+    static const int kCursorRectPadding = 20;
+    cursorRect.adjust(0, -kCursorRectPadding, 0, kCursorRectPadding);
 
-    scroll((translatedCursorPos.bottomLeft().y() < keyboardY - margin) ? 0
-        : qMin(rootView.bounds.size.height - keyboardY, translatedCursorPos.y() - statusBarY - margin));
+    // We explicitly ask for the geometry of the screen instead of the availableGeometry,
+    // as we hide the statusbar when scrolling the screen, so the available geometry will
+    // include the space taken by the status bar at the moment.
+    QRect screenGeometry = focusWindow->screen()->geometry();
+    QRect keyboardGeometry = QRectF::fromCGRect(m_keyboardState.keyboardEndRect).toRect();
+    QRect availableGeometry = (QRegion(screenGeometry) - keyboardGeometry).boundingRect();
+
+    if (!availableGeometry.contains(cursorRect, true)) {
+        qImDebug() << "cursor rect" << cursorRect << "not fully within" << availableGeometry;
+        int scrollToCenter = -(availableGeometry.center() - cursorRect.center()).y();
+        int scrollToBottom = focusWindow->screen()->geometry().bottom() - availableGeometry.bottom();
+        scroll(qMin(scrollToCenter, scrollToBottom));
+    } else {
+        scroll(0);
+    }
 }
 
 void QIOSInputContext::scroll(int y)
@@ -518,6 +535,8 @@ void QIOSInputContext::scroll(int y)
     CATransform3D translationTransform = CATransform3DMakeTranslation(0.0, -y, 0.0);
     if (CATransform3DEqualToTransform(translationTransform, rootView.layer.sublayerTransform))
         return;
+
+    qImDebug() << "scrolling root view to y =" << -y;
 
     QPointer<QIOSInputContext> self = this;
     [UIView animateWithDuration:m_keyboardState.animationDuration delay:0
