@@ -97,7 +97,6 @@ public:
         HostDataPath,
         TargetSpecPath,
         HostSpecPath,
-        ExtPrefixPath,
         HostPrefixPath,
         LastHostPath = HostPrefixPath,
 #endif

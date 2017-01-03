@@ -16,7 +16,7 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qstring_compat.o qstringbuilder.o qtext
       qarraydata.o qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfiledevice.o qfile.o \
       qfilesystementry.o qfilesystemengine.o qfsfileengine.o qfsfileengine_iterator.o qregexp.o qvector.o \
       qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o qfileinfo.o qdatetime.o qstringlist.o \
-      qabstractfileengine.o qtemporaryfile.o qmap.o qmetatype.o qsettings.o qsystemerror.o qlibraryinfo.o \
+      qabstractfileengine.o qtemporaryfile.o qmap.o qmetatype.o qsettings.o qsystemerror.o \
       qvariant.o qvsnprintf.o qlocale.o qlocale_tools.o qlinkedlist.o qnumeric.o \
       qcryptographichash.o qxmlstream.o qxmlutils.o qlogging.o \
       qjson.o qjsondocument.o qjsonparser.o qjsonarray.o qjsonobject.o qjsonvalue.o \
@@ -109,19 +109,24 @@ LFLAGS = $(EXTRA_LFLAGS) $(CONFIG_LFLAGS)
 
 first all: $(BUILD_PATH)/bin/qmake$(EXEEXT)
 qmake: $(BUILD_PATH)/bin/qmake$(EXEEXT)
+binary: $(BUILD_PATH)/qmake/qmake$(EXEEXT)
 
-$(BUILD_PATH)/bin/qmake$(EXEEXT): $(OBJS) $(QOBJS)
-	$(CXX) -o "$@" $(OBJS) $(QOBJS) $(LFLAGS)
+$(BUILD_PATH)/bin/qmake$(EXEEXT): $(OBJS) $(QOBJS) qlibraryinfo.o
+	$(CXX) -o "$@" $(OBJS) $(QOBJS) qlibraryinfo.o $(LFLAGS)
+
+$(BUILD_PATH)/qmake/qmake$(EXEEXT): $(OBJS) $(QOBJS) qlibraryinfo_final.o
+	$(CXX) -o "$@" $(OBJS) $(QOBJS) qlibraryinfo_final.o $(LFLAGS)
 
 Makefile: $(SOURCE_PATH)/qmake/Makefile.unix
 	@echo "Out of date, please rerun configure"
 
 clean::
-	$(RM_F) $(OBJS) $(QOBJS)
+	$(RM_F) $(OBJS) $(QOBJS) qlibraryinfo.o qlibraryinfo_final.o
 
 distclean:: clean
 	$(RM_RF) .deps
 	$(RM_F) $(BUILD_PATH)/bin/qmake$(EXEEXT)
+	$(RM_F) $(BUILD_PATH)/qmake/qmake$(EXEEXT)
 	$(RM_F) Makefile
 
 depend:
@@ -227,6 +232,9 @@ qsystemerror.o: $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 
 qlibraryinfo.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) -DQT_BUILD_QMAKE_BOOTSTRAP $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
+
+qlibraryinfo_final.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(BUILD_PATH)/src/corelib/global/qconfig.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
 
 qnumeric.o: $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp

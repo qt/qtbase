@@ -1,6 +1,5 @@
 {
     "files": {
-        "builtinQtConf": "qmake/builtin-qt.conf",
         "qconfigSource": "src/corelib/global/qconfig.cpp",
         "publicHeader": "src/corelib/global/qconfig.h",
         "privateHeader": "src/corelib/global/qconfig_p.h",

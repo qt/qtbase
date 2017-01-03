@@ -748,39 +748,55 @@ defineTest(qtConfOutput_preparePaths) {
     addConfStr($$config.rel_input.examplesdir)
     addConfStr($$config.rel_input.testsdir)
 
+    QT_CONFIGURE_STR_OFFSETS_ALL = $$QT_CONFIGURE_STR_OFFSETS
+    QT_CONFIGURE_STRS_ALL = $$QT_CONFIGURE_STRS
+    QT_CONFIGURE_STR_OFFSETS =
+    QT_CONFIGURE_STRS =
+
+    addConfStr($$config.input.sysroot)
+    addConfStr($$qmake_sysrootify)
+    addConfStr($$config.rel_input.hostbindir)
+    addConfStr($$config.rel_input.hostlibdir)
+    addConfStr($$config.rel_input.hostdatadir)
+    addConfStr($$XSPEC)
+    addConfStr($$[QMAKE_SPEC])
+
     $${currentConfig}.output.qconfigSource = \
         "/* Installation date */" \
         "static const char qt_configure_installation     [12+11]  = \"qt_instdate=2012-12-20\";" \
         "" \
         "/* Installation Info */" \
         "static const char qt_configure_prefix_path_str  [12+256] = \"qt_prfxpath=$$config.input.prefix\";" \
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
+        "static const char qt_configure_ext_prefix_path_str   [12+256] = \"qt_epfxpath=$$config.input.extprefix\";" \
+        "static const char qt_configure_host_prefix_path_str  [12+256] = \"qt_hpfxpath=$$config.input.hostprefix\";" \
+        "$${LITERAL_HASH}endif" \
         "" \
         "static const short qt_configure_str_offsets[] = {" \
+        $$QT_CONFIGURE_STR_OFFSETS_ALL \
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
         $$QT_CONFIGURE_STR_OFFSETS \
+        "$${LITERAL_HASH}endif" \
         "};" \
         "static const char qt_configure_strs[] =" \
+        $$QT_CONFIGURE_STRS_ALL \
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
         $$QT_CONFIGURE_STRS \
+        "$${LITERAL_HASH}endif" \
         ";" \
         "" \
         "$${LITERAL_HASH}define QT_CONFIGURE_SETTINGS_PATH \"$$config.rel_input.sysconfdir\"" \
         "" \
-        "$${LITERAL_HASH}define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12"
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
+        "$${LITERAL_HASH} define QT_CONFIGURE_SYSROOTIFY_PREFIX $$qmake_sysrootify" \
+        "$${LITERAL_HASH}endif" \
+        "" \
+        "$${LITERAL_HASH}define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12" \
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
+        "$${LITERAL_HASH} define QT_CONFIGURE_EXT_PREFIX_PATH qt_configure_ext_prefix_path_str + 12" \
+        "$${LITERAL_HASH} define QT_CONFIGURE_HOST_PREFIX_PATH qt_configure_host_prefix_path_str + 12" \
+        "$${LITERAL_HASH}endif"
     export($${currentConfig}.output.qconfigSource)
-
-    # populate qmake/builtin-qt.conf
-
-    $${currentConfig}.output.builtinQtConf = \
-        " " \
-        "===========================================================" \
-        "==================== qt.conf beginning ====================" \
-        "===========================================================" \
-        "[Paths]" \
-        "ExtPrefix=$$config.input.extprefix" \
-        "Prefix=$$config.input.prefix" \
-        $$printInstallPaths() \
-        "Settings=$$config.rel_input.sysconfdir" \
-        $$printHostPaths()
-    export($${currentConfig}.output.builtinQtConf)
 
     # create bin/qt.conf. this doesn't use the regular file output
     # mechanism, as the file is relied upon by configure tests.
