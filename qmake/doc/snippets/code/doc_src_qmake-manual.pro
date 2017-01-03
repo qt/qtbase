@@ -120,7 +120,7 @@ qmake -spec macx-g++
 
 
 #! [14]
-QMAKE_LFLAGS += -F/path/to/framework/directory/
+LIBS += -F/path/to/framework/directory/
 #! [14]
 
 

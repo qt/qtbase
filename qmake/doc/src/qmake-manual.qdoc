@@ -685,7 +685,7 @@
 
     Directories other than the standard framework directory need to be specified
     to the build system, and this is achieved by appending linker options to the
-    \l{QMAKE_LFLAGS} variable, as shown in the following example:
+    \l{LIBS} variable, as shown in the following example:
 
     \snippet code/doc_src_qmake-manual.pro 14
 
