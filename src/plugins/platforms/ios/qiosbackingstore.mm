@@ -122,7 +122,17 @@ QIOSBackingStore::QIOSBackingStore(QWindow *window)
 
 QIOSBackingStore::~QIOSBackingStore()
 {
-    delete m_context;
+    if (window()->surfaceType() == QSurface::RasterGLSurface) {
+        // We're using composeAndFlush from QPlatformBackingStore, which
+        // need to clean up any textures in its destructor, so make the
+        // context current and keep it alive until QPlatformBackingStore
+        // has cleaned up everything.
+        makeCurrent();
+        m_context->deleteLater();
+    } else {
+        delete m_context;
+    }
+
     delete m_glDevice;
 }
 
