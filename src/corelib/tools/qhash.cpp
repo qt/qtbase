@@ -963,7 +963,7 @@ uint qHash(double key, uint seed) Q_DECL_NOTHROW
     return key != 0.0  ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
 }
 
-#ifndef Q_OS_DARWIN
+#if !defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
 /*! \relates QHash
     \since 5.3
 

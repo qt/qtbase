@@ -1341,7 +1341,7 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
 
 enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
 
-/*!
+/*
     Returns the signatures of all methods whose name matches \a nonExistentMember,
     or an empty QByteArray if there are no matches.
 */
