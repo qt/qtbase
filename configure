@@ -884,9 +884,6 @@ fi
 # configure and build top-level makefile
 #-------------------------------------------------------------------------------
 
-[ -z "$CFG_HOST_QT_TOOLS_PATH" ] && CFG_HOST_QT_TOOLS_PATH="$outpath/bin"
-CFG_QMAKE_PATH="$CFG_HOST_QT_TOOLS_PATH/qmake"
-
 # recreate command line for qmake
 set -f
 SAVED_IFS=$IFS
@@ -902,4 +899,8 @@ if [ -n "$CFG_TOPLEVEL" ]; then
     cd ..
 fi
 
-"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled" -- "$@"
+if [ -n "$CFG_HOST_QT_TOOLS_PATH" ]; then
+    "$CFG_HOST_QT_TOOLS_PATH/qmake" -qtconf "$QTCONFFILE" "$relpathMangled" -- "$@"
+else
+    "$outpath/bin/qmake" "$relpathMangled" -- "$@"
+fi
