@@ -427,6 +427,7 @@ Option::init(int argc, char **argv)
             //return ret == QMAKE_CMDLINE_SHOW_USAGE ? usage(argv[0]) : false;
         }
         globals->qmake_args = args;
+        globals->qmake_extra_args = cmdstate.extraargs;
     }
     globals->commitCommandLineArguments(cmdstate);
     globals->debugLevel = Option::debug_level;

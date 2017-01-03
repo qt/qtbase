@@ -138,7 +138,7 @@ QMakeGlobals::ArgumentReturn QMakeGlobals::addCommandLineArguments(
             if (arg.startsWith(QLatin1Char('-'))) {
                 if (arg == QLatin1String("--")) {
                     state.extraargs = args.mid(*pos + 1);
-                    *pos = args.size();
+                    args.erase(args.begin() + *pos, args.end());
                     return ArgumentsOk;
                 }
                 if (arg == QLatin1String("-after"))
