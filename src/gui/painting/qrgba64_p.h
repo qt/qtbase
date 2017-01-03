@@ -214,7 +214,12 @@ inline uint toArgb32(QRgba64 rgba64)
     return toArgb32(v);
 #elif defined __ARM_NEON__
     uint16x4_t v = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&rgba64)));
-    v = vext_u16(v, v, 1);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    const uint8x8_t shuffleMask = { 4, 5, 2, 3, 0, 1, 6, 7 };
+    v = vreinterpret_u16_u8(vtbl1_u8(vreinterpret_u8_u16(v), shuffleMask));
+#else
+    v = vext_u16(v, v, 3);
+#endif
     return toArgb32(v);
 #else
     return rgba64.toArgb32();
