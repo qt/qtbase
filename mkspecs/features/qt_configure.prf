@@ -1698,16 +1698,18 @@ defineTest(qtConfProcessOutput) {
 # tie it all together
 #
 
-cfgs =
-isEmpty(_QMAKE_SUPER_CACHE_)|equals(OUT_PWD, $$dirname(_QMAKE_SUPER_CACHE_)) {
-    c = $$basename(_PRO_FILE_PWD_)
-    config.$${c}.dir = $$_PRO_FILE_PWD_
-    cfgs += $$c
-    !isEmpty(_QMAKE_SUPER_CACHE_) {
-        for (s, SUBDIRS) {
-            config.$${s}.dir = $$_PRO_FILE_PWD_/$${s}
-            cfgs += $$s
-        }
+!isEmpty(_QMAKE_SUPER_CACHE_):!equals(OUT_PWD, $$dirname(_QMAKE_SUPER_CACHE_)) {
+    # sub-repo within a top-level build; no need to configure anything.
+    return()
+}
+
+c = $$basename(_PRO_FILE_PWD_)
+config.$${c}.dir = $$_PRO_FILE_PWD_
+cfgs = $$c
+!isEmpty(_QMAKE_SUPER_CACHE_) {
+    for (s, SUBDIRS) {
+        config.$${s}.dir = $$_PRO_FILE_PWD_/$${s}
+        cfgs += $$s
     }
 }
 configsToProcess =
