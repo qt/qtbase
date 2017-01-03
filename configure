@@ -82,6 +82,11 @@ if [ x"$1" = x"-top-level" ]; then
     relpathMangled=`dirname "$relpath"`
     outpathPrefix=../
     shift
+else
+    if [ -f ../.qmake.super ]; then
+        echo >&2 "ERROR: You cannot configure qtbase separately within a top-level build."
+        exit 1
+    fi
 fi
 
 OPT_CMDLINE=  # expanded version for the script

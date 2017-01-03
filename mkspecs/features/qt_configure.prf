@@ -1700,6 +1700,14 @@ defineTest(qtConfProcessOutput) {
 
 !isEmpty(_QMAKE_SUPER_CACHE_):!equals(OUT_PWD, $$dirname(_QMAKE_SUPER_CACHE_)) {
     # sub-repo within a top-level build; no need to configure anything.
+    !isEmpty(QMAKE_EXTRA_ARGS) {
+        # sub-projects don't get the extra args passed down automatically,
+        # so we can use their presence to detect misguided attempts to
+        # configure the repositories separately.
+        # caveat: a plain qmake call is indistinguishable from a recursion
+        # (by design), so we cannot detect this case.
+        error("You cannot configure $$TARGET separately within a top-level build.")
+    }
     return()
 }
 
@@ -1717,8 +1725,11 @@ for (c, cfgs) {
     exists($$s/configure.json): \
         configsToProcess += $$c
 }
-isEmpty(configsToProcess): \
+isEmpty(configsToProcess) {
+    !isEmpty(QMAKE_EXTRA_ARGS): \
+        error("This module does not accept configure command line arguments.")
     return()
+}
 
 load(configure_base)
 

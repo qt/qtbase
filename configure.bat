@@ -46,7 +46,12 @@ for %%P in ("%TOPQTSRC%") do set TOPQTSRC=%%~dpP
 set TOPQTSRC=%TOPQTSRC:~0,-1%
 for %%P in ("%QTDIR%") do set TOPQTDIR=%%~dpP
 set TOPQTDIR=%TOPQTDIR:~0,-1%
+goto wastoplevel
 :notoplevel
+if not exist ..\.qmake.super goto wastoplevel
+echo ERROR: You cannot configure qtbase separately within a top-level build. >&2
+exit /b 1
+:wastoplevel
 
 set SYNCQT=
 set PLATFORM=
