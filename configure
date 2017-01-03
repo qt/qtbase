@@ -539,8 +539,8 @@ fi
 # platform detection
 #-------------------------------------------------------------------------------
 
+PLATFORM_NOTES=
 if [ -z "$PLATFORM" ]; then
-    PLATFORM_NOTES=
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
         PLATFORM=macx-clang
@@ -550,9 +550,7 @@ if [ -z "$PLATFORM" ]; then
         #PLATFORM=aix-g++-64
         PLATFORM=aix-xlc
         #PLATFORM=aix-xlc-64
-        PLATFORM_NOTES="
-            - Also available for AIX: aix-g++ aix-g++-64 aix-xlc-64
-        "
+        PLATFORM_NOTES="AIX: aix-g++ aix-g++-64 aix-xlc-64"
         ;;
      GNU:*)
         PLATFORM=hurd-g++
@@ -569,14 +567,10 @@ if [ -z "$PLATFORM" ]; then
      FreeBSD:*)
         if [ "$(uname -r | cut -d. -f1)" -ge 10 ]; then
             PLATFORM=freebsd-clang
-            PLATFORM_NOTES="
-                - Also available for FreeBSD: freebsd-g++
-            "
+            PLATFORM_NOTES="FreeBSD: freebsd-g++"
         else
             PLATFORM=freebsd-g++
-            PLATFORM_NOTES="
-                - Also available for FreeBSD: freebsd-clang
-            "
+            PLATFORM_NOTES="FreeBSD: freebsd-clang"
         fi
         ;;
      OpenBSD:*)
@@ -592,18 +586,14 @@ if [ -z "$PLATFORM" ]; then
         #PLATFORM=irix-g++
         PLATFORM=irix-cc
         #PLATFORM=irix-cc-64
-        PLATFORM_NOTES="
-            - Also available for IRIX: irix-g++ irix-cc-64
-        "
+        PLATFORM_NOTES="IRIX: irix-g++ irix-cc-64"
         ;;
      HP-UX:*)
         case "$UNAME_MACHINE" in
             ia64)
                 #PLATFORM=hpuxi-acc-32
                 PLATFORM=hpuxi-acc-64
-                PLATFORM_NOTES="
-                    - Also available for HP-UXi: hpuxi-acc-32
-                "
+                PLATFORM_NOTES="HP-UXi: hpuxi-acc-32"
             ;;
             *)
                 #PLATFORM=hpux-g++
@@ -611,39 +601,29 @@ if [ -z "$PLATFORM" ]; then
                 #PLATFORM=hpux-acc-64
                 #PLATFORM=hpux-cc
                 #PLATFORM=hpux-acc-o64
-                PLATFORM_NOTES="
-                    - Also available for HP-UX: hpux-g++ hpux-acc-64 hpux-acc-o64
-                "
+                PLATFORM_NOTES="HP-UX: hpux-g++ hpux-acc-64 hpux-acc-o64"
             ;;
         esac
         ;;
      OSF1:*)
         #PLATFORM=tru64-g++
         PLATFORM=tru64-cxx
-        PLATFORM_NOTES="
-            - Also available for Tru64: tru64-g++
-        "
+        PLATFORM_NOTES="Tru64: tru64-g++"
         ;;
      Linux:*)
         PLATFORM=linux-g++
-        PLATFORM_NOTES="
-            - Also available for Linux: linux-clang linux-kcc linux-icc linux-cxx
-        "
+        PLATFORM_NOTES="Linux: linux-clang linux-kcc linux-icc linux-cxx"
         ;;
      SunOS:5*)
         #PLATFORM=solaris-g++
         PLATFORM=solaris-cc
         #PLATFORM=solaris-cc64
-        PLATFORM_NOTES="
-            - Also available for Solaris: solaris-g++ solaris-cc-64
-        "
+        PLATFORM_NOTES="Solaris: solaris-g++ solaris-cc-64"
         ;;
      ReliantUNIX-*:*|SINIX-*:*)
         PLATFORM=reliant-cds
         #PLATFORM=reliant-cds-64
-        PLATFORM_NOTES="
-            - Also available for Reliant UNIX: reliant-cds-64
-        "
+        PLATFORM_NOTES="Reliant UNIX: reliant-cds-64"
         ;;
      CYGWIN*:*)
         PLATFORM=cygwin-g++
@@ -654,23 +634,17 @@ if [ -z "$PLATFORM" ]; then
      OpenUNIX:*)
         #PLATFORM=unixware-g++
         PLATFORM=unixware-cc
-        PLATFORM_NOTES="
-            - Also available for OpenUNIX: unixware-g++
-        "
+        PLATFORM_NOTES="OpenUNIX: unixware-g++"
         ;;
      UnixWare:*)
         #PLATFORM=unixware-g++
         PLATFORM=unixware-cc
-        PLATFORM_NOTES="
-            - Also available for UnixWare: unixware-g++
-        "
+        PLATFORM_NOTES="UnixWare: unixware-g++"
         ;;
      SCO_SV:*)
         #PLATFORM=sco-g++
         PLATFORM=sco-cc
-        PLATFORM_NOTES="
-            - Also available for SCO OpenServer: sco-g++
-        "
+        PLATFORM_NOTES="SCO OpenServer: sco-g++"
         ;;
      UNIX_SV:*)
         PLATFORM=unixware-g++
@@ -688,6 +662,7 @@ if [ -z "$PLATFORM" ]; then
             exit 2
     esac
 fi
+echo "$PLATFORM_NOTES" > "${outpathPrefix}.config.notes"
 
 #-------------------------------------------------------------------------------
 # command line and environment validation
@@ -905,12 +880,12 @@ Prefix=$relpath
 EOF
 fi
 
+#-------------------------------------------------------------------------------
+# configure and build top-level makefile
+#-------------------------------------------------------------------------------
+
 [ -z "$CFG_HOST_QT_TOOLS_PATH" ] && CFG_HOST_QT_TOOLS_PATH="$outpath/bin"
 CFG_QMAKE_PATH="$CFG_HOST_QT_TOOLS_PATH/qmake"
-
-#-------------------------------------------------------------------------------
-# run configure tests
-#-------------------------------------------------------------------------------
 
 # recreate command line for qmake
 set -f
@@ -923,40 +898,8 @@ done
 set +f
 IFS=$SAVED_IFS
 
-#-------------------------------------------------------------------------------
-# configure and build top-level makefile
-#-------------------------------------------------------------------------------
-
 if [ -n "$CFG_TOPLEVEL" ]; then
     cd ..
 fi
 
-"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled" -- "$@" || exit
-
-#-------------------------------------------------------------------------------
-# final notes for the user
-#-------------------------------------------------------------------------------
-
-if [ -n "$PLATFORM_NOTES" ]; then
-    echo
-    echo "Platform notes:"
-    echo "$PLATFORM_NOTES"
-else
-    echo
-fi
-
-QT_INSTALL_PREFIX=`sed -ne 's/^Prefix=//p' < "$outpath/qmake/builtin-qt.conf"`
-MAKE=`basename "$MAKE"`
-echo
-echo Qt is now configured for building. Just run \'$MAKE\'.
-if [ "$outpath" = "$QT_INSTALL_PREFIX" ]; then
-    echo Once everything is built, Qt is installed.
-    echo You should not run \'$MAKE install\'.
-else
-    echo Once everything is built, you must run \'$MAKE install\'.
-    echo Qt will be installed into $QT_INSTALL_PREFIX
-fi
-echo
-echo Prior to reconfiguration, make sure you remove any leftovers from
-echo the previous build.
-echo
+"$CFG_QMAKE_PATH" -qtconf "$QTCONFFILE" "$relpathMangled" -- "$@"

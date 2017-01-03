@@ -19,6 +19,7 @@ QMAKE_MAKE = $$(MAKE)
 } else {
     error("Configure tests are not supported with the $$MAKEFILE_GENERATOR Makefile generator.")
 }
+QMAKE_MAKE_NAME = $$basename(QMAKE_MAKE)
 # Make sure we don't inherit MAKEFLAGS - -i in particular is fatal.
 QMAKE_MAKE = "$${SETENV_PFX}MAKEFLAGS=$$SETENV_SFX $$QMAKE_MAKE"
 

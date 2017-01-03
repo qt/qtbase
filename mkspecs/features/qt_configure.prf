@@ -1851,3 +1851,19 @@ for (p, QMAKE_POST_CONFIGURE): \
 logn("Configure summary:")
 logn()
 qtConfPrintReport()
+
+# final notes for the user
+logn()
+logn("Qt is now configured for building. Just run '$$QMAKE_MAKE_NAME'.")
+pfx = $$[QT_INSTALL_PREFIX]
+equals(pfx, $$[QT_INSTALL_PREFIX/get]) {
+    logn("Once everything is built, Qt is installed.")
+    logn("You should NOT run '$$QMAKE_MAKE_NAME install'.")
+} else {
+    logn("Once everything is built, you must run '$$QMAKE_MAKE_NAME install'.")
+    logn("Qt will be installed into '$$system_path($$pfx)'.")
+}
+logn()
+logn("Prior to reconfiguration, make sure you remove any leftovers from")
+logn("the previous build.")
+logn()

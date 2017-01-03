@@ -458,6 +458,10 @@ defineTest(qtConfOutput_prepareSpec) {
     QMAKESPEC = $$[QT_HOST_DATA/src]/mkspecs/$$XSPEC
     export(QMAKESPEC)
 
+    notes = $$cat($$OUT_PWD/.config.notes, lines)
+    !isEmpty(notes): \
+        qtConfAddNote("Also available for $$notes")
+
     # deviceOptions() below contains conditionals coming form the spec,
     # so this cannot be delayed for a batch reload.
     reloadSpec()
