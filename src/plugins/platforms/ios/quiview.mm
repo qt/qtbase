@@ -209,18 +209,23 @@
 
 - (BOOL)becomeFirstResponder
 {
-    FirstResponderCandidate firstResponderCandidate(self);
+    {
+        // Scope for the duration of becoming first responder only, as the window
+        // activation event may trigger new responders, which we don't want to be
+        // blocked by this guard.
+        FirstResponderCandidate firstResponderCandidate(self);
 
-    qImDebug() << "win:" << m_qioswindow->window() << "self:" << self
-        << "first:" << [UIResponder currentFirstResponder];
+        qImDebug() << "win:" << m_qioswindow->window() << "self:" << self
+            << "first:" << [UIResponder currentFirstResponder];
 
-    if (![super becomeFirstResponder]) {
-        qImDebug() << m_qioswindow->window()
-            << "was not allowed to become first responder";
-        return NO;
+        if (![super becomeFirstResponder]) {
+            qImDebug() << m_qioswindow->window()
+                << "was not allowed to become first responder";
+            return NO;
+        }
+
+        qImDebug() << m_qioswindow->window() << "became first responder";
     }
-
-    qImDebug() << m_qioswindow->window() << "became first responder";
 
     if (qGuiApp->focusWindow() != m_qioswindow->window())
         QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window());
