@@ -60,7 +60,7 @@ QPlatformWindow::QPlatformWindow(QWindow *window)
     , d_ptr(new QPlatformWindowPrivate)
 {
     Q_D(QPlatformWindow);
-    d->rect = window->geometry();
+    d->rect = QHighDpi::toNativePixels(window->geometry(), window);
 }
 
 /*!
