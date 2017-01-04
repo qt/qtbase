@@ -537,7 +537,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (void)accessibilityPerformAction:(NSString *)action {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-    if (iface) {
+    if (iface && iface->isValid()) {
         const QString qtAction = QCocoaAccessible::translateAction(action, iface);
         QAccessibleBridgeUtils::performEffectiveAction(iface, qtAction);
     }
@@ -562,16 +562,16 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     int y = qt_mac_flipYCoordinate(point.y);
     QAccessibleInterface *childInterface = iface->childAt(point.x, y);
     // No child found, meaning we hit this element.
-    if (!childInterface)
+    if (!childInterface || !childInterface->isValid())
         return NSAccessibilityUnignoredAncestor(self);
 
     // find the deepest child at the point
     QAccessibleInterface *childOfChildInterface = 0;
     do {
         childOfChildInterface = childInterface->childAt(point.x, y);
-        if (childOfChildInterface)
+        if (childOfChildInterface && childOfChildInterface->isValid())
             childInterface = childOfChildInterface;
-    } while (childOfChildInterface);
+    } while (childOfChildInterface && childOfChildInterface->isValid());
 
     QAccessible::Id childId = QAccessible::uniqueId(childInterface);
     // hit a child, forward to child accessible interface.
@@ -590,7 +590,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     }
 
     QAccessibleInterface *childInterface = iface->focusChild();
-    if (childInterface) {
+    if (childInterface && childInterface->isValid()) {
         QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
         QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithId:childAxid];
         return NSAccessibilityUnignoredAncestor(accessibleElement);
