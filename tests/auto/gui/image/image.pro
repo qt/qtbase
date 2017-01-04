@@ -10,6 +10,7 @@ SUBDIRS=\
    qmovie \
    qpicture \
    qicon \
+   qiconhighdpi
 
 !qtHaveModule(network): SUBDIRS -= \
     qimagereader

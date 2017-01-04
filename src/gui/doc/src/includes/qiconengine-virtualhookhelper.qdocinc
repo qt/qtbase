@@ -1,0 +1,3 @@
+\note This is a helper method and the actual work is done by the
+virtual_hook() method, hence this method depends on icon engine support
+and may not work with all icon engines.

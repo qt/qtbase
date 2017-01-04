@@ -76,12 +76,14 @@ struct QIconDirInfo
             maxSize(0),
             minSize(0),
             threshold(0),
+            scale(1),
             type(Threshold) {}
     QString path;
     short size;
     short maxSize;
     short minSize;
     short threshold;
+    short scale;
     Type type;
 };
 Q_DECLARE_TYPEINFO(QIconDirInfo, Q_MOVABLE_TYPE);
@@ -135,7 +137,8 @@ private:
     bool hasIcon() const;
     void ensureLoaded();
     void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
-    QIconLoaderEngineEntry *entryForSize(const QSize &size);
+    QIconLoaderEngineEntry *entryForSize(const QSize &size, int scale = 1);
+
     QIconLoaderEngine(const QIconLoaderEngine &other);
     QThemeIconInfo m_info;
     QString m_iconName;

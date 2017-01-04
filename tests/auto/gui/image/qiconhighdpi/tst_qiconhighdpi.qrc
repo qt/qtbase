@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/testtheme/16x16/actions/appointment-new.png</file>
+        <file>icons/testtheme/22x22/actions/appointment-new.png</file>
+        <file>icons/testtheme/index.theme</file>
+        <file>icons/testtheme/22x22@2/actions/appointment-new.png</file>
+    </qresource>
+</RCC>

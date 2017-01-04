@@ -169,6 +169,12 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
     bool that can be set to true if the icon is null. This enum value
     was added in Qt 5.7.
 
+    \value ScaledPixmapHook Provides a way to get a pixmap that is scaled
+    according to the given scale (typically equal to the \l {Glossary Of High
+    DPI Terms}{device pixel ratio}). The \a data argument of the virtual_hook()
+    function is a \l ScaledPixmapArgument pointer that contains both the input and
+    output arguments. This enum value was added in Qt 5.9.
+
     \sa virtual_hook()
  */
 
@@ -205,6 +211,60 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
     \a state. This is an output parameter and is filled after call to
     virtual_hook(). Engines that work in terms of a scalable,
     vectorial format normally return an empty list.
+*/
+
+/*!
+    \class QIconEngine::ScaledPixmapArgument
+    \since 5.9
+
+    \inmodule QtGui
+
+    This struct represents arguments to the virtual_hook() function when
+    the \a id parameter is QIconEngine::ScaledPixmapHook.
+
+    The struct provides a way for icons created via \l QIcon::fromTheme()
+    to return pixmaps that are designed for the current \l {Glossary Of High
+    DPI Terms}{device pixel ratio}. The scale for such an icon is specified
+    using the \l {Icon Theme Specification - Directory Layout}{Scale directory key}
+    in the appropriate \c index.theme file.
+
+    Icons created via other approaches will return the same result as a call to
+    \l pixmap() would, and continue to benefit from Qt's \l {High Resolution
+    Versions of Images}{"@nx" high DPI syntax}.
+
+    \sa virtual_hook(), QIconEngine::IconEngineHook, {High DPI Icons}
+ */
+
+/*!
+    \variable QIconEngine::ScaledPixmapArgument::size
+    \brief The requested size of the pixmap.
+*/
+
+/*!
+    \variable QIconEngine::ScaledPixmapArgument::mode
+    \brief The requested mode of the pixmap.
+
+    \sa QIcon::Mode
+*/
+
+/*!
+    \variable QIconEngine::ScaledPixmapArgument::state
+    \brief The requested state of the pixmap.
+
+    \sa QIcon::State
+*/
+
+/*!
+    \variable QIconEngine::ScaledPixmapArgument::scale
+    \brief The requested scale of the pixmap.
+*/
+
+/*!
+    \variable QIconEngine::ScaledPixmapArgument::pixmap
+
+    \brief The pixmap that is the best match for the given \l size, \l mode, \l
+    \state, and \l scale. This is an output parameter that is set after calling
+    \l virtual_hook().
 */
 
 
@@ -262,6 +322,13 @@ void QIconEngine::virtual_hook(int id, void *data)
         arg.sizes.clear();
         break;
     }
+    case QIconEngine::ScaledPixmapHook: {
+        // We don't have any notion of scale besides "@nx", so just call pixmap() here.
+        QIconEngine::ScaledPixmapArgument &arg =
+            *reinterpret_cast<QIconEngine::ScaledPixmapArgument*>(data);
+        arg.pixmap = pixmap(arg.size, arg.mode, arg.state);
+        break;
+    }
     default:
         break;
     }
@@ -273,9 +340,7 @@ void QIconEngine::virtual_hook(int id, void *data)
     Returns sizes of all images that are contained in the engine for the
     specific \a mode and \a state.
 
-    \note This is a helper method and the actual work is done by
-    virtual_hook() method, hence this method depends on icon engine support
-    and may not work with all icon engines.
+    \include qiconengine-virtualhookhelper.qdocinc
  */
 QList<QSize> QIconEngine::availableSizes(QIcon::Mode mode, QIcon::State state) const
 {
@@ -291,9 +356,7 @@ QList<QSize> QIconEngine::availableSizes(QIcon::Mode mode, QIcon::State state) c
 
     Returns the name used to create the engine, if available.
 
-    \note This is a helper method and the actual work is done by
-    virtual_hook() method, hence this method depends on icon engine support
-    and may not work with all icon engines.
+    \include qiconengine-virtualhookhelper.qdocinc
  */
 QString QIconEngine::iconName() const
 {
@@ -306,12 +369,39 @@ QString QIconEngine::iconName() const
     \since 5.7
 
     Returns true if this icon engine represent a null QIcon.
+
+    \include qiconengine-virtualhookhelper.qdocinc
  */
 bool QIconEngine::isNull() const
 {
     bool isNull = false;
     const_cast<QIconEngine *>(this)->virtual_hook(QIconEngine::IsNullHook, &isNull);
     return isNull;
+}
+
+/*!
+    \since 5.9
+
+    Returns a pixmap for the given \a size, \a mode, \a state and \a scale.
+
+    The \a scale argument is typically equal to the \l {Glossary Of High DPI
+    Terms}{device pixel ratio} of the display.
+
+    \include qiconengine-virtualhookhelper.qdocinc
+
+    \note Some engines may cast \a scale to an integer.
+
+    \sa ScaledPixmapArgument
+*/
+QPixmap QIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
+{
+    ScaledPixmapArgument arg;
+    arg.size = size;
+    arg.mode = mode;
+    arg.state = state;
+    arg.scale = scale;
+    const_cast<QIconEngine *>(this)->virtual_hook(QIconEngine::ScaledPixmapHook, reinterpret_cast<void*>(&arg));
+    return arg.pixmap;
 }
 
 QT_END_NAMESPACE

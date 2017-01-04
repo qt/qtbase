@@ -50,3 +50,13 @@
     \externalpage http://www.opengl.org/wiki/Tessellation_Shader
     \title OpenGL Tessellation Shaders
 */
+
+/*!
+    \externalpage https://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+    \title Icon Theme Specification
+*/
+
+/*!
+    \externalpage https://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html#directory_layout
+    \title Icon Theme Specification - Directory Layout
+*/

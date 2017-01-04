@@ -605,6 +605,51 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
 
   \note QIcon needs a QGuiApplication instance before the icon is created.
 
+  \section1 High DPI Icons
+
+  There are two ways that QIcon supports \l {High DPI Displays}{high DPI}
+  icons: via \l addFile() and \l fromTheme().
+
+  \l addFile() is useful if you have your own custom directory structure and do
+  not need to use the \l {Icon Theme Specification}{freedesktop.org Icon Theme
+  Specification}. Icons created via this approach use Qt's \l {High Resolution
+  Versions of Images}{"@nx" high DPI syntax}.
+
+  Using \l fromTheme() is necessary if you plan on following the Icon Theme
+  Specification. To make QIcon use the high DPI version of an image, add an
+  additional entry to the appropriate \c index.theme file:
+
+  \badcode
+  [Icon Theme]
+  Name=Test
+  Comment=Test Theme
+
+  Directories=32x32/actions,32x32@2/actions
+
+  [32x32/actions]
+  Size=32
+  Context=Actions
+  Type=Fixed
+
+  # High DPI version of the entry above.
+  [32x32@2/actions]
+  Size=32
+  Scale=2
+  Type=Fixed
+  \endcode
+
+  Your icon theme directory would then look something like this:
+
+  \badcode
+    ├── 32x32
+    │   └── actions
+    │       └── appointment-new.png
+    ├── 32x32@2
+    │   └── actions
+    │       └── appointment-new.png
+    └── index.theme
+  \endcode
+
   \sa {fowler}{GUI Design Handbook: Iconic Label}, {Icons Example}
 */
 
@@ -847,9 +892,10 @@ QPixmap QIcon::pixmap(QWindow *window, const QSize &size, Mode mode, State state
     }
 
     // Try get a pixmap that is big enough to be displayed at device pixel resolution.
-    QPixmap pixmap = d->engine->pixmap(size * devicePixelRatio, mode, state);
-    pixmap.setDevicePixelRatio(d->pixmapDevicePixelRatio(devicePixelRatio, size, pixmap.size()));
-    return pixmap;
+    QIconEngine::ScaledPixmapArgument scalePixmapArg = { size * devicePixelRatio, mode, state, devicePixelRatio, QPixmap() };
+    d->engine->virtual_hook(QIconEngine::ScaledPixmapHook, reinterpret_cast<void*>(&scalePixmapArg));
+    scalePixmapArg.pixmap.setDevicePixelRatio(d->pixmapDevicePixelRatio(devicePixelRatio, size, scalePixmapArg.pixmap.size()));
+    return scalePixmapArg.pixmap;
 }
 
 /*!
