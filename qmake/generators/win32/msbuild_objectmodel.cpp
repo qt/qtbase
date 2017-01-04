@@ -587,6 +587,8 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
         outputFilter(tempProj, xml, xmlFilter, tempProj.ExtraCompilers.at(x));
     }
 
+    outputFilter(tempProj, xml, xmlFilter, "Root Files");
+
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 
     xml << tag("ImportGroup")
