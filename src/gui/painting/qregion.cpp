@@ -739,7 +739,7 @@ bool QRegion::intersects(const QRegion &region) const
 */
 
 
-#if !defined (Q_OS_UNIX) && !defined (Q_OS_WIN)
+#if !defined (Q_OS_UNIX) && !defined (Q_OS_WIN) || defined(Q_CLANG_QDOC)
 /*!
     \overload
     \since 4.4

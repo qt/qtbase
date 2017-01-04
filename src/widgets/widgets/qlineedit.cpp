@@ -737,10 +737,10 @@ void QLineEdit::setCursorPosition(int pos)
     d->control->setCursorPosition(pos);
 }
 
+// ### What should this do if the point is outside of contentsRect? Currently returns 0.
 /*!
     Returns the cursor position under the point \a pos.
 */
-// ### What should this do if the point is outside of contentsRect? Currently returns 0.
 int QLineEdit::cursorPositionAt(const QPoint &pos)
 {
     Q_D(QLineEdit);

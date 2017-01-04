@@ -678,7 +678,7 @@ bool QPushButton::event(QEvent *e)
 }
 
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
-/*! \reimp */
+/* \reimp */
 bool QPushButton::hitButton(const QPoint &pos) const
 {
     QStyleOptionButton opt;

@@ -277,13 +277,13 @@ WId QPlatformWindow::winId() const
     return WId(1);
 }
 
+//jl: It would be useful to have a property on the platform window which indicated if the sub-class
+// supported the setParent. If not, then geometry would be in screen coordinates.
 /*!
     This function is called to enable native child window in QPA. It is common not to support this
     feature in Window systems, but can be faked. When this function is called all geometry of this
     platform window will be relative to the parent.
 */
-//jl: It would be useful to have a property on the platform window which indicated if the sub-class
-// supported the setParent. If not, then geometry would be in screen coordinates.
 void QPlatformWindow::setParent(const QPlatformWindow *parent)
 {
     Q_UNUSED(parent);

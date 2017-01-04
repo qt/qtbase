@@ -834,7 +834,6 @@ bool QSslSocket::atEnd() const
 
     \sa write(), waitForBytesWritten()
 */
-// Note! docs copied from QAbstractSocket::flush()
 bool QSslSocket::flush()
 {
     return d_func()->flush();

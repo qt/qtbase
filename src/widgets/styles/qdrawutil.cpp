@@ -797,7 +797,11 @@ typedef QVarLengthArray<QPainter::PixmapFragment, 16> QPixmapFragmentsArray;
 
 void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargins &targetMargins,
                        const QPixmap &pixmap, const QRect &sourceRect,const QMargins &sourceMargins,
-                       const QTileRules &rules, QDrawBorderPixmap::DrawingHints hints)
+                       const QTileRules &rules
+#ifndef Q_CLANG_QDOC
+                       , QDrawBorderPixmap::DrawingHints hints
+#endif
+                       )
 {
     QPainter::PixmapFragment d;
     d.opacity = 1.0;

@@ -637,7 +637,6 @@ QWidget *QAbstractScrollArea::viewport() const
 Returns the size of the viewport as if the scroll bars had no valid
 scrolling range.
 */
-// ### still thinking about the name
 QSize QAbstractScrollArea::maximumViewportSize() const
 {
     Q_D(const QAbstractScrollArea);

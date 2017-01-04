@@ -154,7 +154,7 @@ QString &ProString::toQString(QString &tmp) const
     return tmp.setRawData(m_string.constData() + m_offset, m_length);
 }
 
-/*!
+/*
  * \brief ProString::prepareExtend
  * \param extraLen number of new characters to be added
  * \param thisTarget offset to which current contents should be moved

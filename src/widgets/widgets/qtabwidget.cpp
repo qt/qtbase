@@ -732,7 +732,7 @@ QTabBar* QTabWidget::tabBar() const
     return d->tabs;
 }
 
-/*!
+/*
     Ensures that the selected tab's page is visible and appropriately
     sized.
 */

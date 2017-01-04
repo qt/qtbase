@@ -303,9 +303,6 @@ int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
     return idx;
 }
 
-/*!
-    \reimp
-*/
 void QSqlRelationalTableModelPrivate::clearCache()
 {
     for (int i = 0; i < relations.count(); ++i)

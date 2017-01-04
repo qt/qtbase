@@ -2463,7 +2463,6 @@ bool QAbstractSocket::atEnd() const
 
     \sa write(), waitForBytesWritten()
 */
-// Note! docs copied to QSslSocket::flush()
 bool QAbstractSocket::flush()
 {
     return d_func()->flush();

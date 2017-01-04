@@ -1167,12 +1167,12 @@ QLayoutItem* QFormLayoutPrivate::replaceAt(int index, QLayoutItem *newitem)
 */
 
 /*!
-    \since 5.8
 
-    \struct QFormLayout::TakeRowResult
+    \class QFormLayout::TakeRowResult
 
     \brief Contains the result of a QFormLayout::takeRow() call.
-
+    \inmodule QtWidgets
+    \since 5.8
     \sa QFormLayout::takeRow()
 */
 

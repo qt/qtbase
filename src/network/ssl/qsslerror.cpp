@@ -105,13 +105,13 @@ public:
     QSslCertificate certificate;
 };
 
+// RVCT compiler in debug build does not like about default values in const-
+// So as an workaround we define all constructor overloads here explicitly
 /*!
     Constructs a QSslError object with no error and default certificate.
 
 */
 
-// RVCT compiler in debug build does not like about default values in const-
-// So as an workaround we define all constructor overloads here explicitly
 QSslError::QSslError()
     : d(new QSslErrorPrivate)
 {
