@@ -138,16 +138,17 @@ bool QProgressBarPrivate::repaintRequired() const
     if (value == lastPaintedValue)
         return false;
 
-    int valueDifference = qAbs(value - lastPaintedValue);
-
+    const qint64 valueDifference = qAbs(qint64(value) - lastPaintedValue);
     // Check if the text needs to be repainted
     if (value == minimum || value == maximum)
         return true;
+
+    const qint64 totalSteps = qint64(maximum) - minimum;
     if (textVisible) {
         if ((format.contains(QLatin1String("%v"))))
             return true;
         if ((format.contains(QLatin1String("%p"))
-             && valueDifference >= qAbs((maximum - minimum) / 100)))
+             && valueDifference >= qAbs(totalSteps / 100)))
             return true;
     }
 
@@ -160,7 +161,7 @@ bool QProgressBarPrivate::repaintRequired() const
     // (valueDifference / (maximum - minimum) > cw / groove.width())
     // transformed to avoid integer division.
     int grooveBlock = (q->orientation() == Qt::Horizontal) ? groove.width() : groove.height();
-    return (valueDifference * grooveBlock > cw * (maximum - minimum));
+    return valueDifference * grooveBlock > cw * totalSteps;
 }
 
 /*!
@@ -254,9 +255,10 @@ QProgressBar::~QProgressBar()
 void QProgressBar::reset()
 {
     Q_D(QProgressBar);
-    d->value = d->minimum - 1;
     if (d->minimum == INT_MIN)
         d->value = INT_MIN;
+    else
+        d->value = d->minimum - 1;
     repaint();
 }
 
@@ -352,7 +354,7 @@ void QProgressBar::setRange(int minimum, int maximum)
         d->minimum = minimum;
         d->maximum = qMax(minimum, maximum);
 
-        if (d->value < (d->minimum - 1) || d->value > d->maximum)
+        if (d->value < qint64(d->minimum) - 1 || d->value > d->maximum)
             reset();
         else
             update();
