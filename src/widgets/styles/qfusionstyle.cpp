@@ -1352,10 +1352,11 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             }
 
             int maxWidth = rect.width();
-            int minWidth = 0;
-            qreal progress = qMax(bar->progress, bar->minimum); // workaround for bug in QProgressBar
-            int progressBarWidth = (progress - bar->minimum) * qreal(maxWidth) / qMax(qreal(1.0), qreal(bar->maximum) - bar->minimum);
-            int width = indeterminate ? maxWidth : qMax(minWidth, progressBarWidth);
+            const auto progress = qMax(bar->progress, bar->minimum); // workaround for bug in QProgressBar
+            const auto totalSteps = qMax(Q_INT64_C(1), qint64(bar->maximum) - bar->minimum);
+            const auto progressSteps = qint64(progress) - bar->minimum;
+            const auto progressBarWidth = progressSteps * maxWidth / totalSteps;
+            int width = indeterminate ? maxWidth : progressBarWidth;
 
             bool reverse = (!vertical && (bar->direction == Qt::RightToLeft)) || vertical;
             if (inverted)
@@ -1450,8 +1451,9 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             inverted = bar->invertedAppearance;
             if (vertical)
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width()); // flip width and height
-            const int progressIndicatorPos = (bar->progress - qreal(bar->minimum)) * rect.width() /
-                    qMax(qreal(1.0), qreal(bar->maximum) - bar->minimum);
+            const auto totalSteps = qMax(Q_INT64_C(1), qint64(bar->maximum) - bar->minimum);
+            const auto progressSteps = qint64(bar->progress) - bar->minimum;
+            const auto progressIndicatorPos = progressSteps * rect.width() / totalSteps;
             if (progressIndicatorPos >= 0 && progressIndicatorPos <= rect.width())
                 leftRect = QRect(rect.left(), rect.top(), progressIndicatorPos, rect.height());
             if (vertical)
