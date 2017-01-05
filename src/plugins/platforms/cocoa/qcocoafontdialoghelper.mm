@@ -106,7 +106,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
     mHelper = 0;
     mStolenContentView = 0;
     mPanelButtons = 0;
-    mResultCode = NSCancelButton;
+    mResultCode = NSModalResponseCancel;
     mDialogIsExecuting = false;
     mResultSet = false;
 
@@ -171,7 +171,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 - (void)onOkClicked
 {
     [mFontPanel close];
-    [self finishOffWithCode:NSOKButton];
+    [self finishOffWithCode:NSModalResponseOK];
 }
 
 - (void)onCancelClicked
@@ -179,7 +179,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
     if (mPanelButtons) {
         [mFontPanel close];
         mQtFont = QFont();
-        [self finishOffWithCode:NSCancelButton];
+        [self finishOffWithCode:NSModalResponseCancel];
     }
 }
 
@@ -224,12 +224,12 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 
     [NSApp runModalForWindow:mFontPanel];
     mDialogIsExecuting = false;
-    return (mResultCode == NSOKButton);
+    return (mResultCode == NSModalResponseOK);
 }
 
 - (QPlatformDialogHelper::DialogCode)dialogResultCode
 {
-    return (mResultCode == NSOKButton) ? QPlatformDialogHelper::Accepted : QPlatformDialogHelper::Rejected;
+    return (mResultCode == NSModalResponseOK) ? QPlatformDialogHelper::Accepted : QPlatformDialogHelper::Rejected;
 }
 
 - (BOOL)windowShouldClose:(id)window
@@ -238,7 +238,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
     if (!mPanelButtons)
         [self updateQtFont];
     if (mDialogIsExecuting) {
-        [self finishOffWithCode:NSCancelButton];
+        [self finishOffWithCode:NSModalResponseCancel];
     } else {
         mResultSet = true;
         if (mHelper)
@@ -264,7 +264,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
         // This check will prevent any such recursion.
         if (!mResultSet) {
             mResultSet = true;
-            if (mResultCode == NSCancelButton) {
+            if (mResultCode == NSModalResponseCancel) {
                 emit mHelper->reject();
             } else {
                 emit mHelper->accept();

@@ -177,8 +177,7 @@ void QTabBarPrivate::initBasicStyleOption(QStyleOptionTab *option, int tabIndex)
     if (tab.textColor.isValid())
         option->palette.setColor(q->foregroundRole(), tab.textColor);
 #ifdef Q_OS_MACOS
-    else if (isCurrent && !documentMode
-             && (QSysInfo::MacintoshVersion < QSysInfo::MV_10_10 || q->isActiveWindow())) {
+    else if (isCurrent && !documentMode && q->isActiveWindow()) {
         option->palette.setColor(QPalette::WindowText, Qt::white);
     }
 #endif

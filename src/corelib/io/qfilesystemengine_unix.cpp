@@ -122,13 +122,10 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
         if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
             return true;
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MACOS
         // Find if an application other than Finder claims to know how to handle the package
-        QCFType<CFURLRef> application;
-        LSGetApplicationForURL(url,
-                               kLSRolesEditor|kLSRolesViewer,
-                               NULL,
-                               &application);
+        QCFType<CFURLRef> application = LSCopyDefaultApplicationURLForURL(url,
+            kLSRolesEditor | kLSRolesViewer, nullptr);
 
         if (application) {
             QCFType<CFBundleRef> bundle = CFBundleCreate(kCFAllocatorDefault, application);

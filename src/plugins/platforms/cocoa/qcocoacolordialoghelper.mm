@@ -80,7 +80,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
     mHelper = 0;
     mStolenContentView = 0;
     mPanelButtons = nil;
-    mResultCode = NSCancelButton;
+    mResultCode = NSModalResponseCancel;
     mDialogIsExecuting = false;
     mResultSet = false;
     mClosingDueToKnownButton = false;
@@ -168,7 +168,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
     mClosingDueToKnownButton = true;
     [mColorPanel close];
     [self updateQtColor];
-    [self finishOffWithCode:NSOKButton];
+    [self finishOffWithCode:NSModalResponseOK];
 }
 
 - (void)onCancelClicked
@@ -177,7 +177,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
         mClosingDueToKnownButton = true;
         [mColorPanel close];
         mQtColor = QColor();
-        [self finishOffWithCode:NSCancelButton];
+        [self finishOffWithCode:NSModalResponseCancel];
     }
 }
 
@@ -238,12 +238,12 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 
     [NSApp runModalForWindow:mColorPanel];
     mDialogIsExecuting = false;
-    return (mResultCode == NSOKButton);
+    return (mResultCode == NSModalResponseOK);
 }
 
 - (QPlatformDialogHelper::DialogCode)dialogResultCode
 {
-    return (mResultCode == NSOKButton) ? QPlatformDialogHelper::Accepted : QPlatformDialogHelper::Rejected;
+    return (mResultCode == NSModalResponseOK) ? QPlatformDialogHelper::Accepted : QPlatformDialogHelper::Rejected;
 }
 
 - (BOOL)windowShouldClose:(id)window
@@ -252,7 +252,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
     if (!mPanelButtons)
         [self updateQtColor];
     if (mDialogIsExecuting) {
-        [self finishOffWithCode:NSCancelButton];
+        [self finishOffWithCode:NSModalResponseCancel];
     } else {
         mResultSet = true;
         if (mHelper)
@@ -278,7 +278,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
         // This check will prevent any such recursion.
         if (!mResultSet) {
             mResultSet = true;
-            if (mResultCode == NSCancelButton) {
+            if (mResultCode == NSModalResponseCancel) {
                 emit mHelper->reject();
             } else {
                 emit mHelper->accept();

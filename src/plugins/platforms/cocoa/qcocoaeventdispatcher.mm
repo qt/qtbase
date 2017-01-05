@@ -401,7 +401,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             // [NSApp run], which is the normal code path for cocoa applications.
             if (NSModalSession session = d->currentModalSession()) {
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, false);
-                while ([NSApp runModalSession:session] == NSRunContinuesResponse && !d->interrupt)
+                while ([NSApp runModalSession:session] == NSModalResponseContinue && !d->interrupt)
                     qt_mac_waitForMoreEvents(NSModalPanelRunLoopMode);
 
                 if (!d->interrupt && session == d->currentModalSessionCached) {
@@ -435,7 +435,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                     if (flags & QEventLoop::WaitForMoreEvents)
                         qt_mac_waitForMoreEvents(NSModalPanelRunLoopMode);
                     NSInteger status = [NSApp runModalSession:session];
-                    if (status != NSRunContinuesResponse && session == d->currentModalSessionCached) {
+                    if (status != NSModalResponseContinue && session == d->currentModalSessionCached) {
                         // INVARIANT: Someone called [NSApp stopModal:] from outside the event
                         // dispatcher (e.g to stop a native dialog). But that call wrongly stopped
                         // 'session' as well. As a result, we need to restart all internal sessions:

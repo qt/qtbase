@@ -61,14 +61,14 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
 #include <net/if.h>
 #include <ifaddrs.h>
 
-@interface QT_MANGLE_NAMESPACE(QNSListener) : NSObject
+@interface QT_MANGLE_NAMESPACE(QNSListener) : NSObject <CWEventDelegate>
 {
     NSNotificationCenter *notificationCenter;
-    CWInterface *currentInterface;
+    CWWiFiClient *client;
     QCoreWlanEngine *engine;
     NSLock *locker;
 }
-- (void)notificationHandler:(NSNotification *)notification;
+- (void)powerStateDidChangeForWiFiInterfaceWithName:(NSString *)interfaceName;
 - (void)remove;
 - (void)setEngine:(QCoreWlanEngine *)coreEngine;
 - (QCoreWlanEngine *)engine;
@@ -85,8 +85,9 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
     [locker lock];
     QMacAutoReleasePool pool;
     notificationCenter = [NSNotificationCenter defaultCenter];
-    currentInterface = [CWInterface interface];
-    [notificationCenter addObserver:self selector:@selector(notificationHandler:) name:CWPowerDidChangeNotification object:nil];
+    client = [CWWiFiClient sharedWiFiClient];
+    client.delegate = self;
+    [client startMonitoringEventWithType:CWEventTypePowerDidChange error:nil];
     [locker unlock];
     return self;
 }
@@ -95,6 +96,7 @@ static QT_MANGLE_NAMESPACE(QNSListener) *listener = 0;
 
 -(void)dealloc
 {
+    client.delegate = nil;
     listener = nil;
     [super dealloc];
 }
@@ -115,13 +117,13 @@ static QT_MANGLE_NAMESPACE(QNSListener) *listener = 0;
 -(void)remove
 {
     [locker lock];
-    [notificationCenter removeObserver:self];
+    [client stopMonitoringAllEventsAndReturnError:nil];
     [locker unlock];
 }
 
-- (void)notificationHandler:(NSNotification *)notification
+- (void)powerStateDidChangeForWiFiInterfaceWithName:(NSString *)interfaceName
 {
-    Q_UNUSED(notification);
+    Q_UNUSED(interfaceName);
     engine->requestUpdate();
 }
 @end
@@ -162,7 +164,8 @@ void QScanThread::run()
     QMacAutoReleasePool pool;
     QStringList found;
     mutex.lock();
-    CWInterface *currentInterface = [CWInterface interfaceWithName:interfaceName.toNSString()];
+    CWInterface *currentInterface = [[CWWiFiClient sharedWiFiClient]
+        interfaceWithName:interfaceName.toNSString()];
     mutex.unlock();
     const bool currentInterfaceServiceActive = currentInterface.serviceActive;
 
@@ -284,10 +287,10 @@ void QScanThread::getUserConfigurations()
     QMacAutoReleasePool pool;
     userProfiles.clear();
 
-    NSSet *wifiInterfaces = [CWInterface interfaceNames];
+    NSArray<NSString *> *wifiInterfaces = [CWWiFiClient interfaceNames];
     for (NSString *ifName in wifiInterfaces) {
 
-        CWInterface *wifiInterface = [CWInterface interfaceWithName:ifName];
+        CWInterface *wifiInterface = [[CWWiFiClient sharedWiFiClient] interfaceWithName:ifName];
 
         NSString *nsInterfaceName = wifiInterface.ssid;
 // add user configured system networks
@@ -442,7 +445,7 @@ void QCoreWlanEngine::initialize()
     QMutexLocker locker(&mutex);
     QMacAutoReleasePool pool;
 
-    if ([[CWInterface interfaceNames] count] > 0 && !listener) {
+    if ([[CWWiFiClient interfaceNames] count] > 0 && !listener) {
         listener = [[QT_MANGLE_NAMESPACE(QNSListener) alloc] init];
         listener.engine = this;
         hasWifi = true;
@@ -476,7 +479,7 @@ void QCoreWlanEngine::connectToId(const QString &id)
     QString interfaceString = getInterfaceFromId(id);
 
     CWInterface *wifiInterface =
-        [CWInterface interfaceWithName:interfaceString.toNSString()];
+        [[CWWiFiClient sharedWiFiClient] interfaceWithName:interfaceString.toNSString()];
 
     if (wifiInterface.powerOn) {
         NSError *err = nil;
@@ -559,7 +562,7 @@ void QCoreWlanEngine::disconnectFromId(const QString &id)
     QMacAutoReleasePool pool;
 
     CWInterface *wifiInterface =
-        [CWInterface interfaceWithName:interfaceString.toNSString()];
+        [[CWWiFiClient sharedWiFiClient] interfaceWithName:interfaceString.toNSString()];
     disconnectedInterfaceString = interfaceString;
 
     [wifiInterface disassociate];
@@ -573,8 +576,8 @@ void QCoreWlanEngine::checkDisconnect()
     if (!disconnectedInterfaceString.isEmpty()) {
         QMacAutoReleasePool pool;
 
-        CWInterface *wifiInterface =
-                [CWInterface interfaceWithName:disconnectedInterfaceString.toNSString()];
+        CWInterface *wifiInterface = [[CWWiFiClient sharedWiFiClient]
+            interfaceWithName:disconnectedInterfaceString.toNSString()];
 
         const QString networkSsid = QString::fromNSString([wifiInterface ssid]);
         if (!networkSsid.isEmpty()) {
@@ -599,7 +602,7 @@ void QCoreWlanEngine::doRequestUpdate()
 
     QMacAutoReleasePool pool;
 
-    NSSet *wifiInterfaces = [CWInterface interfaceNames];
+    NSArray<NSString *> *wifiInterfaces = [CWWiFiClient interfaceNames];
     for (NSString *ifName in wifiInterfaces) {
             scanThread->interfaceName = QString::fromNSString(ifName);
             scanThread->start();
@@ -615,7 +618,8 @@ bool QCoreWlanEngine::isWifiReady(const QString &wifiDeviceName)
     bool haswifi = false;
     if(hasWifi) {
         QMacAutoReleasePool pool;
-        CWInterface *defaultInterface = [CWInterface interfaceWithName:wifiDeviceName.toNSString()];
+        CWInterface *defaultInterface = [[CWWiFiClient sharedWiFiClient]
+            interfaceWithName:wifiDeviceName.toNSString()];
         if (defaultInterface.powerOn) {
             haswifi = true;
         }

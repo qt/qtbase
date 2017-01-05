@@ -141,7 +141,7 @@ static void loadAdvancesForGlyphs(CTFontRef ctfont,
 {
     Q_UNUSED(flags);
     QVarLengthArray<CGSize> advances(len);
-    CTFontGetAdvancesForGlyphs(ctfont, kCTFontHorizontalOrientation, cgGlyphs.data(), advances.data(), len);
+    CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, cgGlyphs.data(), advances.data(), len);
 
     for (int i = 0; i < len; ++i) {
         if (glyphs->glyphs[i] & 0xff000000)
@@ -320,7 +320,7 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *
         return true;
 
     QVarLengthArray<CGSize> advances(glyph_pos);
-    CTFontGetAdvancesForGlyphs(ctfont, kCTFontHorizontalOrientation, cgGlyphs.data(), advances.data(), glyph_pos);
+    CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, cgGlyphs.data(), advances.data(), glyph_pos);
 
     for (int i = 0; i < glyph_pos; ++i) {
         if (glyphs->glyphs[i] & 0xff000000)
@@ -351,7 +351,7 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
 {
     glyph_metrics_t ret;
     CGGlyph g = glyph;
-    CGRect rect = CTFontGetBoundingRectsForGlyphs(ctfont, kCTFontHorizontalOrientation, &g, 0, 1);
+    CGRect rect = CTFontGetBoundingRectsForGlyphs(ctfont, kCTFontOrientationHorizontal, &g, 0, 1);
     if (synthesisFlags & QFontEngine::SynthesizedItalic) {
         rect.size.width += rect.size.height * SYNTHETIC_ITALIC_SKEW;
     }
@@ -360,7 +360,7 @@ glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
     ret.x = QFixed::fromReal(rect.origin.x);
     ret.y = -QFixed::fromReal(rect.origin.y) - ret.height;
     CGSize advances[1];
-    CTFontGetAdvancesForGlyphs(ctfont, kCTFontHorizontalOrientation, &g, advances, 1);
+    CTFontGetAdvancesForGlyphs(ctfont, kCTFontOrientationHorizontal, &g, advances, 1);
     ret.xoff = QFixed::fromReal(advances[0].width);
     ret.yoff = QFixed::fromReal(advances[0].height);
 

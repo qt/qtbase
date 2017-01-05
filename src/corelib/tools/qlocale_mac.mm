@@ -43,9 +43,11 @@
 #include "qvariant.h"
 #include "qdatetime.h"
 
-#if !defined(QWS) && defined(Q_OS_MAC)
-#   include "private/qcore_mac_p.h"
-#   include <CoreFoundation/CoreFoundation.h>
+#ifdef Q_OS_DARWIN
+#include "qtimezone.h"
+#include "private/qcore_mac_p.h"
+#include <CoreFoundation/CoreFoundation.h>
+QT_REQUIRE_CONFIG(timezone);
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -121,16 +123,8 @@ static QString macDayName(int day, bool short_format)
 
 static QString macDateToString(const QDate &date, bool short_format)
 {
-    CFGregorianDate macGDate;
-    macGDate.year = date.year();
-    macGDate.month = date.month();
-    macGDate.day = date.day();
-    macGDate.hour = 0;
-    macGDate.minute = 0;
-    macGDate.second = 0.0;
-    QCFType<CFDateRef> myDate
-        = CFDateCreate(0, CFGregorianDateGetAbsoluteTime(macGDate,
-                                                         QCFType<CFTimeZoneRef>(CFTimeZoneCopyDefault())));
+    const QTimeZone tz = QTimeZone::fromCFTimeZone(QCFType<CFTimeZoneRef>(CFTimeZoneCopyDefault()));
+    QCFType<CFDateRef> myDate = QDateTime(date, QTime(), tz).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
     CFDateFormatterStyle style = short_format ? kCFDateFormatterShortStyle : kCFDateFormatterLongStyle;
     QCFType<CFDateFormatterRef> myFormatter
@@ -142,19 +136,8 @@ static QString macDateToString(const QDate &date, bool short_format)
 
 static QString macTimeToString(const QTime &time, bool short_format)
 {
-    CFGregorianDate macGDate;
-    // Assume this is local time and the current date
-    QDate dt = QDate::currentDate();
-    macGDate.year = dt.year();
-    macGDate.month = dt.month();
-    macGDate.day = dt.day();
-    macGDate.hour = time.hour();
-    macGDate.minute = time.minute();
-    macGDate.second = time.second();
-    QCFType<CFDateRef> myDate
-        = CFDateCreate(0, CFGregorianDateGetAbsoluteTime(macGDate,
-                                                         QCFType<CFTimeZoneRef>(CFTimeZoneCopyDefault())));
-
+    const QTimeZone tz = QTimeZone::fromCFTimeZone(QCFType<CFTimeZoneRef>(CFTimeZoneCopyDefault()));
+    QCFType<CFDateRef> myDate = QDateTime(QDate::currentDate(), time, tz).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
     CFDateFormatterStyle style = short_format ? kCFDateFormatterShortStyle :  kCFDateFormatterLongStyle;
     QCFType<CFDateFormatterRef> myFormatter = CFDateFormatterCreate(kCFAllocatorDefault,
