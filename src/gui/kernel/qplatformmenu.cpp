@@ -55,4 +55,9 @@ QPlatformMenu *QPlatformMenu::createSubMenu() const
     return QGuiApplicationPrivate::platformTheme()->createPlatformMenu();
 }
 
+QPlatformMenu *QPlatformMenuBar::createMenu() const
+{
+    return QGuiApplicationPrivate::platformTheme()->createPlatformMenu();
+}
+
 QT_END_NAMESPACE

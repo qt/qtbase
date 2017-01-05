@@ -1192,10 +1192,6 @@ QPlatformMenu *QMenuBarPrivate::getPlatformMenu(QAction *action)
     QPlatformMenu *platformMenu = action->menu()->platformMenu();
     if (!platformMenu && platformMenuBar) {
         platformMenu = platformMenuBar->createMenu();
-        // QPlatformMenuBar::createMenu() was introduced in Qt 5.7. Not all third party
-        // platform themes are using it, so fallback to QPlatformTheme::createPlatformMenu().
-        if (!platformMenu)
-            platformMenu = QGuiApplicationPrivate::platformTheme()->createPlatformMenu();
         if (platformMenu)
             action->menu()->setPlatformMenu(platformMenu);
     }
