@@ -45,6 +45,7 @@ private slots:
     void destroyIndeterminate();
     void text();
     void format();
+    void setValueRepaint_data();
     void setValueRepaint();
 #ifndef Q_OS_MAC
     void setMinMaxRepaint();
@@ -191,21 +192,49 @@ void tst_QProgressBar::format()
     QCOMPARE(bar.text(), QString());
 }
 
+void tst_QProgressBar::setValueRepaint_data()
+{
+    QTest::addColumn<int>("min");
+    QTest::addColumn<int>("max");
+    QTest::addColumn<int>("increment");
+
+    auto add = [](int min, int max, int increment) {
+        QTest::addRow("%d-%d@%d", min, max, increment) << min << max << increment;
+    };
+
+    add(0, 10, 1);
+
+    auto add_set = [=](int min, int max, int increment) {
+        // check corner cases, and adjacent values (to circumvent explicit checks for corner cases)
+        add(min,     max,     increment);
+        add(min + 1, max,     increment);
+        add(min,     max - 1, increment);
+        add(min + 1, max - 1, increment);
+    };
+
+    add_set(INT_MIN, INT_MAX, INT_MAX / 50 + 1);
+    add_set(0, INT_MAX, INT_MAX / 100 + 1);
+    add_set(INT_MIN, 0, INT_MAX / 100 + 1);
+}
+
 void tst_QProgressBar::setValueRepaint()
 {
+    QFETCH(int, min);
+    QFETCH(int, max);
+    QFETCH(int, increment);
+
     ProgressBar pbar;
-    pbar.setMinimum(0);
-    pbar.setMaximum(10);
+    pbar.setMinimum(min);
+    pbar.setMaximum(max);
     pbar.setFormat("%v");
     pbar.move(300, 300);
     pbar.show();
     QVERIFY(QTest::qWaitForWindowExposed(&pbar));
 
     QApplication::processEvents();
-    for (int i = pbar.minimum(); i < pbar.maximum(); ++i) {
+    for (qint64 i = min; i < max; i += increment) {
         pbar.repainted = false;
-        pbar.setValue(i);
-        QTest::qWait(50);
+        pbar.setValue(int(i));
         QTRY_VERIFY(pbar.repainted);
     }
 }
