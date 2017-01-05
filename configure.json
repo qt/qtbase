@@ -461,7 +461,7 @@
         "cross_compile": {
             "label": "Cross compiling",
             "condition": "call.crossCompile",
-            "output": [ "publicConfig", "privateConfig" ]
+            "output": [ "publicConfig", "privateConfig", "publicFeature" ]
         },
         "cxx11default": {
             "label": "Compiler defaults to C++11 or higher",
