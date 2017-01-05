@@ -316,6 +316,7 @@ namespace QTest
         addColumnInternal(qMetaTypeId<T>(), name);
     }
     Q_TESTLIB_EXPORT QTestData &newRow(const char *dataTag);
+    Q_TESTLIB_EXPORT QTestData &addRow(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
     template <typename T>
     inline bool qCompare(T const &t1, T const &t2, const char *actual, const char *expected,

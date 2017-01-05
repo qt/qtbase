@@ -176,9 +176,9 @@ void tst_QLatin1String::relationalOperators_data()
     for (Data *lhs = data; lhs != data + sizeof data / sizeof *data; ++lhs) {
         for (Data *rhs = data; rhs != data + sizeof data / sizeof *data; ++rhs) {
             QLatin1StringContainer l = { lhs->l1 }, r = { rhs->l1 };
-            QTest::newRow(qPrintable(QString::asprintf("\"%s\" <> \"%s\"",
-                                                       lhs->l1.data() ? lhs->l1.data() : "nullptr",
-                                                       rhs->l1.data() ? rhs->l1.data() : "nullptr")))
+            QTest::addRow("\"%s\" <> \"%s\"",
+                          lhs->l1.data() ? lhs->l1.data() : "nullptr",
+                          rhs->l1.data() ? rhs->l1.data() : "nullptr")
                 << l << lhs->order << r << rhs->order;
         }
     }

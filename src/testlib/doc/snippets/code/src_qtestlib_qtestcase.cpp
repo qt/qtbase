@@ -208,6 +208,17 @@ void myTestFunction_data()
 //! [20]
 
 
+//! [addRow]
+void myTestFunction_data()
+{
+    QTest::addColumn<int>("input");
+    QTest::addColumn<QString>("output");
+    QTest::addRow("%d", 0) << 0 << QString("0");
+    QTest::addRow("%d", 1) << 1 << QString("1");
+}
+//! [addRow]
+
+
 //! [21]
 void myTestFunction_data() {
     QTest::addColumn<int>("intval");

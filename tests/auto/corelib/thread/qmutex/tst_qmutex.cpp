@@ -143,7 +143,7 @@ void tst_QMutex::convertToMilliseconds_data()
 
     auto add = [](TimeUnit unit, double d, long long i, qint64 expected) {
         const QScopedArrayPointer<char> enumName(QTest::toString(unit));
-        QTest::newRow(qPrintable(QString::asprintf("%s:%f:%lld", enumName.data(), d, i)))
+        QTest::addRow("%s:%f:%lld", enumName.data(), d, i)
             << unit << d << qint64(i) << expected;
     };
 

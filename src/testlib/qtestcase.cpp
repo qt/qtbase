@@ -2195,6 +2195,48 @@ QTestData &QTest::newRow(const char *dataTag)
     return *tbl->newData(dataTag);
 }
 
+/*!
+    \since 5.9
+
+    Appends a new row to the current test data. The function's arguments are passed
+    to qsnprintf() for formatting according to \a format. See the qvsnprintf()
+    documentation for caveats and limitations.
+
+    The formatted string will appear as the name of this test data in the test output.
+
+    Returns a QTestData reference that can be used to stream in data.
+
+    Example:
+    \snippet code/src_qtestlib_qtestcase.cpp addRow
+
+    \b {Note:} This function can only be used in a test's data function
+    that is invoked by the test framework.
+
+    See \l {Chapter 2: Data Driven Testing}{Data Driven Testing} for
+    a more extensive example.
+
+    \sa addColumn(), QFETCH()
+*/
+QTestData &QTest::addRow(const char *format, ...)
+{
+    QTEST_ASSERT_X(format, "QTest::addRow()", "Format string cannot be null");
+    QTestTable *tbl = QTestTable::currentTestTable();
+    QTEST_ASSERT_X(tbl, "QTest::addRow()", "Cannot add testdata outside of a _data slot.");
+    QTEST_ASSERT_X(tbl->elementCount(), "QTest::addRow()", "Must add columns before attempting to add rows.");
+
+    char buf[1024];
+
+    va_list va;
+    va_start(va, format);
+    // we don't care about failures, we accept truncation, as well as trailing garbage.
+    // Names with more than 1K characters are nonsense, anyway.
+    (void)qvsnprintf(buf, sizeof buf, format, va);
+    buf[sizeof buf - 1] = '\0';
+    va_end(va);
+
+    return *tbl->newData(buf);
+}
+
 /*! \fn void QTest::addColumn(const char *name, T *dummy = 0)
 
     Adds a column with type \c{T} to the current test data.
