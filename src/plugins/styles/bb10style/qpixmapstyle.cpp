@@ -650,11 +650,14 @@ void QPixmapStyle::drawProgressBarFill(const QStyleOption *option,
         drawCachedPixmap(vertical ? PB_VComplete : PB_HComplete, option->rect, painter);
 
     } else {
-        if (pbar->progress == 0)
+        if (pbar->progress == pbar->minimum)
             return;
-        const int maximum = pbar->maximum;
-        const qreal ratio = qreal(vertical?option->rect.height():option->rect.width())/maximum;
-        const int progress = pbar->progress*ratio;
+        const qint64 totalSteps = qint64(pbar->maximum) - pbar->minimum;
+        const qint64 progressSteps = qint64(pbar->progress) - pbar->minimum;
+        const int availablePixels = vertical ? option->rect.height() : option->rect.width();
+        const double pixelsPerStep = double(availablePixels) / totalSteps;
+
+        const int progress = static_cast<int>(progressSteps * pixelsPerStep); // width in pixels
 
         QRect optRect = option->rect;
         if (vertical) {
