@@ -481,7 +481,7 @@ QString QProgressBar::text() const
     // progress bar has one step and that we are on that step. Return
     // 100% here in order to avoid division by zero further down.
     if (totalSteps == 0) {
-        result.replace(QLatin1String("%p"), locale.toString(int(100)));
+        result.replace(QLatin1String("%p"), locale.toString(100));
         return result;
     }
 
