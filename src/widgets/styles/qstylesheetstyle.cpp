@@ -3903,8 +3903,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 if (inverted)
                     reverse = !reverse;
                 const bool indeterminate = pb->minimum == pb->maximum;
-                qreal fillRatio = indeterminate ? 0.50 : qreal(progress - minimum)/(maximum - minimum);
-                int fillWidth = int(rect.width() * fillRatio);
+                const auto fillRatio = indeterminate ? 0.50 : double(progress - minimum) / (maximum - minimum);
+                const auto fillWidth = static_cast<int>(rect.width() * fillRatio);
                 int chunkWidth = fillWidth;
                 if (subRule.hasContentsSize()) {
                     QSize sz = subRule.size();
