@@ -241,8 +241,8 @@ defineTest(qtConfParseCommandLine) {
             opt = $$replace(c, "^--?(disable|no)-(.*)", "\\2")
             val = no
         } else: contains(c, "^--([^=]+)=(.*)") {
-            opt = $$replace(c, "^--?([^=]+)=(.*)", "\\1")
-            val = $$replace(c, "^--?([^=]+)=(.*)", "\\2")
+            opt = $$replace(c, "^--([^=]+)=(.*)", "\\1")
+            val = $$replace(c, "^--([^=]+)=(.*)", "\\2")
         } else: contains(c, "^--(.*)") {
             opt = $$replace(c, "^--(.*)", "\\1")
             val = yes
