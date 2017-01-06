@@ -53,6 +53,8 @@
 
 #include <private/qfontengine_p.h>
 
+#include <QtEdidSupport/private/qedidparser_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
@@ -147,6 +149,10 @@ public:
 
     QWindow *topLevelAt(const QPoint &point) const override;
 
+    QString manufacturer() const override;
+    QString model() const override;
+    QString serialNumber() const override;
+
     QRect geometry() const override { return m_geometry; }
     QRect availableGeometry() const override {return m_availableGeometry;}
     int depth() const override { return screen()->root_depth; }
@@ -206,6 +212,9 @@ public:
 private:
     void sendStartupMessage(const QByteArray &message) const;
 
+    QByteArray getOutputProperty(xcb_atom_t atom) const;
+    QByteArray getEdid() const;
+
     QXcbVirtualDesktop *m_virtualDesktop;
     xcb_randr_output_t m_output;
     xcb_randr_crtc_t m_crtc;
@@ -224,6 +233,7 @@ private:
     QXcbCursor *m_cursor;
     int m_refreshRate = 60;
     int m_pixelDensity = 1;
+    QEdidParser m_edid;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -428,6 +428,18 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
         m_sizeMillimeters = m_virtualSizeMillimeters;
 
     m_cursor = new QXcbCursor(connection, this);
+
+    // Parse EDID
+    if (m_edid.parse(getEdid()))
+        qCDebug(lcQpaScreen, "EDID data for output \"%s\": identifier '%s', manufacturer '%s', model '%s', serial '%s', physical size: %.2fx%.2f",
+                name().toLatin1().constData(),
+                m_edid.identifier.toLatin1().constData(),
+                m_edid.manufacturer.toLatin1().constData(),
+                m_edid.model.toLatin1().constData(),
+                m_edid.serialNumber.toLatin1().constData(),
+                m_edid.physicalSize.width(), m_edid.physicalSize.height());
+    else
+        qCWarning(lcQpaScreen) << "Failed to parse EDID data for output" << name();
 }
 
 QXcbScreen::~QXcbScreen()
@@ -450,6 +462,21 @@ QString QXcbScreen::getOutputName(xcb_randr_get_output_info_reply_t *outputInfo)
                 + QString::number(m_virtualDesktop->number());
     }
     return name;
+}
+
+QString QXcbScreen::manufacturer() const
+{
+    return m_edid.manufacturer;
+}
+
+QString QXcbScreen::model() const
+{
+    return m_edid.model;
+}
+
+QString QXcbScreen::serialNumber() const
+{
+    return m_edid.serialNumber;
 }
 
 QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
@@ -828,6 +855,41 @@ QPixmap QXcbScreen::grabWindow(WId window, int xIn, int yIn, int width, int heig
 QXcbXSettings *QXcbScreen::xSettings() const
 {
     return m_virtualDesktop->xSettings();
+}
+
+QByteArray QXcbScreen::getOutputProperty(xcb_atom_t atom) const
+{
+    QByteArray result;
+
+    auto cookie =
+        xcb_randr_get_output_property(xcb_connection(), m_output,
+                                      atom, XCB_ATOM_ANY, 0, 100, false, false);
+    auto reply = xcb_randr_get_output_property_reply(xcb_connection(), cookie, nullptr);
+    if (reply->type == XCB_ATOM_INTEGER && reply->format == 8) {
+        quint8 *data = new quint8[reply->num_items];
+        memcpy(data, xcb_randr_get_output_property_data(reply), reply->num_items);
+        result = QByteArray(reinterpret_cast<const char *>(data), reply->num_items);
+        delete[] data;
+    }
+    free(reply);
+
+    return result;
+}
+
+QByteArray QXcbScreen::getEdid() const
+{
+    // Try a bunch of atoms
+    xcb_atom_t atom = connection()->internAtom("EDID");
+    QByteArray result = getOutputProperty(atom);
+    if (result.isEmpty()) {
+        atom = connection()->internAtom("EDID_DATA");
+        result = getOutputProperty(atom);
+    }
+    if (result.isEmpty()) {
+        atom = connection()->internAtom("XFree86_DDC_EDID1_RAWDATA");
+        result = getOutputProperty(atom);
+    }
+    return result;
 }
 
 static inline void formatRect(QDebug &debug, const QRect r)
