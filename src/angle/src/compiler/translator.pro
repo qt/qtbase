@@ -204,6 +204,5 @@ bison_impl.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.cpp
 bison_impl.input = BISON_SOURCES
 bison_impl.commands = $$MAKEFILE_NOOP_COMMAND
 bison_impl.depends = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.h
-bison_impl.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.cpp
 bison_impl.variable_out = GENERATED_SOURCES
 QMAKE_EXTRA_COMPILERS += bison_impl
