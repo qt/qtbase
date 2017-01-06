@@ -95,7 +95,7 @@ public:
     QVncDirtyMapOptimized(QVncScreen *screen) : QVncDirtyMap(screen) {}
     ~QVncDirtyMapOptimized() {}
 
-    void setDirty(int x, int y, bool force = false);
+    void setDirty(int x, int y, bool force = false) override;
 };
 
 
@@ -216,7 +216,7 @@ class QRfbRawEncoder : public QRfbEncoder
 public:
     QRfbRawEncoder(QVncClient *s) : QRfbEncoder(s) {}
 
-    void write();
+    void write() override;
 
 private:
     QByteArray buffer;
@@ -372,7 +372,7 @@ public:
 
     void write(QVncClient *client) const;
 
-    void changeCursor(QCursor *widgetCursor, QWindow *window);
+    void changeCursor(QCursor *widgetCursor, QWindow *window) override;
 
     void addClient(QVncClient *client);
     uint removeClient(QVncClient *client);
