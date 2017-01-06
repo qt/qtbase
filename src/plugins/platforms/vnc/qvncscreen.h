@@ -61,16 +61,16 @@ public:
 
     bool initialize() override;
 
-    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+    QPixmap grabWindow(WId wid, int x, int y, int width, int height) const override;
 
-    QRegion doRedraw() Q_DECL_OVERRIDE;
+    QRegion doRedraw() override;
     QImage *image() { return &mScreenImage; }
 
     void enableClientCursor(QVncClient *client);
     void disableClientCursor(QVncClient *client);
-    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
+    QPlatformCursor *cursor() const override;
 
-    Flags flags() const Q_DECL_OVERRIDE;
+    Flags flags() const override;
 
     void clearDirty() { dirtyRegion = QRegion(); }
 
