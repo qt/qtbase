@@ -204,8 +204,7 @@ static inline QDBusMessage interfaceNotFoundError(const QDBusMessage &msg, const
 {
     return msg.createErrorReply(QDBusError::UnknownInterface,
                                 QString::fromLatin1("Interface %1 was not found in object %2")
-                                .arg(interface_name)
-                                .arg(msg.path()));
+                                .arg(interface_name, msg.path()));
 }
 
 static inline QDBusMessage

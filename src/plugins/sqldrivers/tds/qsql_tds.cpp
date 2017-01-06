@@ -259,10 +259,9 @@ static int CS_PUBLIC qTdsErrHandler(DBPROCESS* dbproc,
         return INT_CANCEL;
     }
 
-
-    QString errMsg = QString::fromLatin1("%1 %2\n").arg(QLatin1String(dberrstr)).arg(
-                                QLatin1String(oserrstr));
-    errMsg += p->getErrorMsgs();
+    const QString errMsg = QLatin1String(dberrstr) + QLatin1Char(' ')
+                         + QLatin1String(oserrstr) + QLatin1Char('\n')
+                         + p->getErrorMsgs();
     p->lastError = qMakeError(errMsg, QSqlError::UnknownError, dberr);
     p->clearErrorMsgs();
 

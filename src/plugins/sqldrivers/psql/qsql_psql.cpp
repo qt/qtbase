@@ -670,7 +670,7 @@ bool QPSQLResult::exec()
     if (params.isEmpty())
         stmt = QString::fromLatin1("EXECUTE %1").arg(d->preparedStmtId);
     else
-        stmt = QString::fromLatin1("EXECUTE %1 (%2)").arg(d->preparedStmtId).arg(params);
+        stmt = QString::fromLatin1("EXECUTE %1 (%2)").arg(d->preparedStmtId, params);
 
     d->result = d->drv_d_func()->exec(stmt);
 

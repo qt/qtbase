@@ -2096,7 +2096,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
     // 5. Try current directory
     if (found.isEmpty()) {
-        QString candidate = QString::fromLatin1("%1/%2").arg(QDir::currentPath()).arg(base);
+        const QString candidate = QDir::currentPath() + QLatin1Char('/') + base;
         if (QFileInfo::exists(candidate))
             found = candidate;
     }

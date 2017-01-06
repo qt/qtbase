@@ -261,7 +261,8 @@ int runRcc(int argc, char *argv[])
     } else {
         out.setFileName(outFilename);
         if (!out.open(mode)) {
-            const QString msg = QString::fromLatin1("Unable to open %1 for writing: %2\n").arg(outFilename).arg(out.errorString());
+            const QString msg = QString::fromLatin1("Unable to open %1 for writing: %2\n")
+                                .arg(outFilename, out.errorString());
             errorDevice.write(msg.toUtf8());
             return 1;
         }
@@ -282,7 +283,7 @@ int runRcc(int argc, char *argv[])
         temp.setFileName(tempFilename);
         if (!temp.open(QIODevice::ReadOnly)) {
             const QString msg = QString::fromUtf8("Unable to open temporary file %1 for reading: %2\n")
-                    .arg(outFilename).arg(out.errorString());
+                    .arg(outFilename, out.errorString());
             errorDevice.write(msg.toUtf8());
             return 1;
         }

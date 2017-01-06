@@ -252,7 +252,7 @@ bool QLibraryPrivate::load_sys()
 #endif
 #endif // QT_NO_DYNAMIC_LIBRARY
     if (!pHnd) {
-        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName).arg(qdlerror());
+        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName, qdlerror());
     }
     if (pHnd) {
         qualifiedFileName = attempt;
@@ -273,10 +273,10 @@ bool QLibraryPrivate::unload_sys()
         char *error = dlerror();      // QtDeclarative auto test "qqmlenginecleanup" for instance
         if (!qstrcmp(error, "Shared objects still referenced")) // On QNX that's only "informative"
             return true;
-        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName)
-                                                                  .arg(QLatin1String(error));
+        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName,
+                                                                       QLatin1String(error));
 #  else
-        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName).arg(qdlerror());
+        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName, qdlerror());
 #  endif
         return false;
     }
@@ -312,7 +312,7 @@ QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 #endif
     if (!address) {
         errorString = QLibrary::tr("Cannot resolve symbol \"%1\" in %2: %3").arg(
-            QString::fromLatin1(symbol)).arg(fileName).arg(qdlerror());
+            QString::fromLatin1(symbol), fileName, qdlerror());
     } else {
         errorString.clear();
     }

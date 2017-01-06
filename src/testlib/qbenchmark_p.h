@@ -91,8 +91,8 @@ struct QBenchmarkContext
 
     QString toString() const
     {
-        QString s = QString::fromLatin1("%1,%2,%3").arg(slotName).arg(tag).arg(checkpointIndex);
-        return s;
+        return QString::fromLatin1("%1,%2,%3")
+               .arg(slotName, tag, QString::number(checkpointIndex));
     }
 
     QBenchmarkContext() : checkpointIndex(-1) {}

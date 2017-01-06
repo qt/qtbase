@@ -73,7 +73,7 @@ void RCCResourceLibrary::writeByteArray(const QByteArray &other)
 
 static inline QString msgOpenReadFailed(const QString &fname, const QString &why)
 {
-    return QString::fromLatin1("Unable to open %1 for reading: %2\n").arg(fname).arg(why);
+    return QString::fromLatin1("Unable to open %1 for reading: %2\n").arg(fname, why);
 }
 
 
@@ -499,7 +499,8 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                 QFileInfo file(absFileName);
                 if (!file.exists()) {
                     m_failedResources.push_back(absFileName);
-                    const QString msg = QString::fromLatin1("RCC: Error in '%1': Cannot find file '%2'\n").arg(fname).arg(fileName);
+                    const QString msg = QString::fromLatin1("RCC: Error in '%1': Cannot find file '%2'\n")
+                                        .arg(fname, fileName);
                     m_errorDevice->write(msg.toUtf8());
                     if (ignoreErrors)
                         continue;

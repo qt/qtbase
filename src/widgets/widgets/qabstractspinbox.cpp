@@ -2116,8 +2116,8 @@ int QAbstractSpinBoxPrivate::variantCompare(const QVariant &arg1, const QVariant
     default:
         Q_ASSERT_X(0, "QAbstractSpinBoxPrivate::variantCompare",
                    qPrintable(QString::fromLatin1("Internal error 3 (%1 %2)").
-                              arg(QString::fromLatin1(arg1.typeName())).
-                              arg(QString::fromLatin1(arg2.typeName()))));
+                              arg(QString::fromLatin1(arg1.typeName()),
+                                  QString::fromLatin1(arg2.typeName()))));
     }
     return -2;
 }

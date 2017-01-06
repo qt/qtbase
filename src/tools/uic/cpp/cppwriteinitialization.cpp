@@ -152,7 +152,8 @@ namespace {
             if (const DomResourceIcon *dri = p->elementIconSet()) {
                 if (!isIconFormat44(dri)) {
                     if (dri->text().isEmpty())  {
-                        const QString msg = QString::fromUtf8("%1: Warning: An invalid icon property '%2' was encountered.").arg(fileName).arg(p->attributeName());
+                        const QString msg = QString::fromLatin1("%1: Warning: An invalid icon property '%2' was encountered.")
+                                            .arg(fileName, p->attributeName());
                         qWarning("%s", qPrintable(msg));
                         return false;
                     }
@@ -162,7 +163,8 @@ namespace {
         case DomProperty::Pixmap:
             if (const DomResourcePixmap *drp = p->elementPixmap())
                 if (drp->text().isEmpty()) {
-                    const QString msg = QString::fromUtf8("%1: Warning: An invalid pixmap property '%2' was encountered.").arg(fileName).arg(p->attributeName());
+                    const QString msg = QString::fromUtf8("%1: Warning: An invalid pixmap property '%2' was encountered.")
+                                        .arg(fileName, p->attributeName());
                     qWarning("%s", qPrintable(msg));
                     return false;
                 }
@@ -1029,7 +1031,7 @@ void WriteInitialization::acceptLayoutItem(DomLayoutItem *node)
             const int row = node->attributeRow();
             const int colSpan = node->hasAttributeColSpan() ? node->attributeColSpan() : 1;
             const QString role = formLayoutRole(node->attributeColumn(), colSpan);
-            addArgs = QString::fromLatin1("%1, %2, %3").arg(row).arg(role).arg(itemName);
+            addArgs = QString::fromLatin1("%1, %2, %3").arg(row).arg(role, itemName);
         } else {
             addArgs = itemName;
             if (layout->attributeClass().contains(QLatin1String("Box")) && !node->attributeAlignment().isEmpty())
@@ -1364,7 +1366,7 @@ void WriteInitialization::writeProperties(const QString &varName,
         case DomProperty::Locale: {
              const DomLocale *locale = p->elementLocale();
              propertyValue = QString::fromLatin1("QLocale(QLocale::%1, QLocale::%2)")
-                             .arg(locale->attributeLanguage()).arg(locale->attributeCountry());
+                             .arg(locale->attributeLanguage(), locale->attributeCountry());
             break;
         }
         case DomProperty::SizePolicy: {

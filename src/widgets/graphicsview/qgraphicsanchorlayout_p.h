@@ -260,7 +260,7 @@ inline QString AnchorVertex::toString() const
 {
     if (m_type == Pair) {
         const AnchorVertexPair *vp = static_cast<const AnchorVertexPair *>(this);
-        return QString::fromLatin1("(%1, %2)").arg(vp->m_first->toString()).arg(vp->m_second->toString());
+        return QString::fromLatin1("(%1, %2)").arg(vp->m_first->toString(), vp->m_second->toString());
     } else if (!m_item) {
         return QString::fromLatin1("NULL_%1").arg(quintptr(this));
     }

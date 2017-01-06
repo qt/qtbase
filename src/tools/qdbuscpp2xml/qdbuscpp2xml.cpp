@@ -103,9 +103,8 @@ static inline QString typeNameToXml(const char *typeName)
 
 static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
-    QString xml = QString::fromLatin1("    <%1 name=\"%2\">\n")
-                  .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"))
-                  .arg(QLatin1String(mm.name));
+    QString xml = QString::asprintf("    <%s name=\"%s\">\n",
+                                    isSignal ? "signal" : "method", mm.name.constData());
 
     // check the return type first
     int typeId = QMetaType::type(mm.normalizedType.constData());
@@ -156,9 +155,9 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
 
         const char *signature = QDBusMetaType::typeToSignature(types.at(j));
         xml += QString::fromLatin1("      <arg %1type=\"%2\" direction=\"%3\"/>\n")
-                .arg(name)
-                .arg(QLatin1String(signature))
-                .arg(isOutput ? QLatin1String("out") : QLatin1String("in"));
+                .arg(name,
+                     QLatin1String(signature),
+                     isOutput ? QLatin1String("out") : QLatin1String("in"));
 
         // do we need to describe this argument?
         if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
@@ -220,9 +219,9 @@ static QString generateInterfaceXml(const ClassDef *mo)
                 continue;
 
             retval += QString::fromLatin1("    <property name=\"%1\" type=\"%2\" access=\"%3\"")
-                      .arg(QLatin1String(mp.name))
-                      .arg(QLatin1String(signature))
-                      .arg(QLatin1String(accessvalues[access]));
+                      .arg(QLatin1String(mp.name),
+                           QLatin1String(signature),
+                           QLatin1String(accessvalues[access]));
 
             if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
                 retval += QString::fromLatin1(">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"%3\"/>\n    </property>\n")
