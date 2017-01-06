@@ -3101,23 +3101,6 @@ QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOpt
     return icon.pixmap(qt_getWindow(widget), QSize(size, size));
 }
 
-void QMacStyle::setFocusRectPolicy(QWidget *w, FocusRectPolicy policy)
-{
-    switch (policy) {
-    case FocusDefault:
-        break;
-    case FocusEnabled:
-    case FocusDisabled:
-        w->setAttribute(Qt::WA_MacShowFocusRect, policy == FocusEnabled);
-        break;
-    }
-}
-
-QMacStyle::FocusRectPolicy QMacStyle::focusRectPolicy(const QWidget *w)
-{
-    return w->testAttribute(Qt::WA_MacShowFocusRect) ? FocusEnabled : FocusDisabled;
-}
-
 void QMacStyle::setWidgetSizePolicy(const QWidget *widget, WidgetSizePolicy policy)
 {
     QWidget *wadget = const_cast<QWidget *>(widget);

@@ -100,10 +100,6 @@ public:
     virtual int styleHint(StyleHint sh, const QStyleOption *opt = 0, const QWidget *w = 0,
                           QStyleHintReturn *shret = 0) const;
 
-    enum FocusRectPolicy { FocusEnabled, FocusDisabled, FocusDefault };
-    static void setFocusRectPolicy(QWidget *w, FocusRectPolicy policy);
-    static FocusRectPolicy focusRectPolicy(const QWidget *w);
-
     enum WidgetSizePolicy { SizeSmall, SizeLarge, SizeMini, SizeDefault
     };
 
