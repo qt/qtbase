@@ -273,4 +273,9 @@ QList<QByteArray> QMacTimeZonePrivate::availableTimeZoneIds() const
     return list;
 }
 
+NSTimeZone *QMacTimeZonePrivate::nsTimeZone() const
+{
+    return m_nstz;
+}
+
 QT_END_NAMESPACE

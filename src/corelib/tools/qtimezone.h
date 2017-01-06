@@ -47,6 +47,11 @@
 
 QT_REQUIRE_CONFIG(timezone);
 
+#if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
+Q_FORWARD_DECLARE_CF_TYPE(CFTimeZone);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QTimeZonePrivate;
@@ -141,6 +146,13 @@ public:
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                  QLocale::Country country);
+
+#if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
+    static QTimeZone fromCFTimeZone(CFTimeZoneRef timeZone);
+    CFTimeZoneRef toCFTimeZone() const Q_DECL_CF_RETURNS_RETAINED;
+    static QTimeZone fromNSTimeZone(const NSTimeZone *timeZone);
+    NSTimeZone *toNSTimeZone() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#endif
 
 private:
     QTimeZone(QTimeZonePrivate &dd);

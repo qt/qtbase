@@ -60,13 +60,9 @@
 #include <unicode/ucal.h>
 #endif
 
-#ifdef Q_OS_MAC
-#ifdef __OBJC__
-@class NSTimeZone;
-#else
-class NSTimeZone;
-#endif // __OBJC__
-#endif // Q_OS_MAC
+#ifdef Q_OS_DARWIN
+Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
+#endif // Q_OS_DARWIN
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -379,6 +375,8 @@ public:
     QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
 
     QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+
+    NSTimeZone *nsTimeZone() const;
 
 private:
     void init(const QByteArray &zoneId);

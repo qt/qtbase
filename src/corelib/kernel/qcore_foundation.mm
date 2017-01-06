@@ -46,6 +46,13 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qrect.h>
 
+#if QT_CONFIG(timezone) && !defined(QT_NO_SYSTEMLOCALE)
+#include <QtCore/qtimezone.h>
+#include <QtCore/private/qtimezoneprivate_p.h>
+#include <QtCore/private/qcore_mac_p.h>
+#endif
+
+#import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
 
 #if defined(QT_PLATFORM_UIKIT)
@@ -419,6 +426,67 @@ NSDate *QDateTime::toNSDate() const
     return [NSDate
             dateWithTimeIntervalSince1970:static_cast<NSTimeInterval>(toMSecsSinceEpoch()) / 1000];
 }
+
+// ----------------------------------------------------------------------------
+
+#if QT_CONFIG(timezone) && !defined(QT_NO_SYSTEMLOCALE)
+/*!
+    \since 5.9
+
+    Constructs a new QTimeZone containing a copy of the CFTimeZone \a timeZone.
+
+    \sa toCFTimeZone()
+*/
+QTimeZone QTimeZone::fromCFTimeZone(CFTimeZoneRef timeZone)
+{
+    if (!timeZone)
+        return QTimeZone();
+    return QTimeZone(QString::fromCFString(CFTimeZoneGetName(timeZone)).toLatin1());
+}
+
+/*!
+    \since 5.9
+
+    Creates a CFTimeZone from a QTimeZone. The caller owns the CFTimeZone object
+    and is responsible for releasing it.
+
+    \sa fromCFTimeZone()
+*/
+CFTimeZoneRef QTimeZone::toCFTimeZone() const
+{
+#ifndef QT_NO_DYNAMIC_CAST
+    Q_ASSERT(dynamic_cast<const QMacTimeZonePrivate *>(d.data()));
+#endif
+    const QMacTimeZonePrivate *p = static_cast<const QMacTimeZonePrivate *>(d.data());
+    return reinterpret_cast<CFTimeZoneRef>([p->nsTimeZone() copy]);
+}
+
+/*!
+    \since 5.9
+
+    Constructs a new QTimeZone containing a copy of the NSTimeZone \a timeZone.
+
+    \sa toNSTimeZone()
+*/
+QTimeZone QTimeZone::fromNSTimeZone(const NSTimeZone *timeZone)
+{
+    if (!timeZone)
+        return QTimeZone();
+    return QTimeZone(QString::fromNSString(timeZone.name).toLatin1());
+}
+
+/*!
+    \since 5.9
+
+    Creates an NSTimeZone from a QTimeZone. The NSTimeZone object is autoreleased.
+
+    \sa fromNSTimeZone()
+*/
+NSTimeZone *QTimeZone::toNSTimeZone() const
+{
+    return [static_cast<NSTimeZone *>(toCFTimeZone()) autorelease];
+}
+#endif
 
 // ----------------------------------------------------------------------------
 

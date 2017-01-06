@@ -56,6 +56,7 @@ private slots:
     void icuTest();
     void tzTest();
     void macTest();
+    void darwinTypes();
     void winTest();
 
 private:
@@ -953,6 +954,16 @@ void tst_QTimeZone::macTest()
 
     testCetPrivate(tzp);
 #endif // Q_OS_MAC
+}
+
+void tst_QTimeZone::darwinTypes()
+{
+#ifndef Q_OS_DARWIN
+    QSKIP("This is an Apple-only test");
+#else
+    extern void tst_QTimeZone_darwinTypes(); // in tst_qtimezone_darwin.mm
+    tst_QTimeZone_darwinTypes();
+#endif
 }
 
 void tst_QTimeZone::winTest()
