@@ -920,8 +920,12 @@ void QEvdevTouchScreenHandlerThread::filterAndSendTouchPoints()
 
         tp.velocity = QVector2D(f.x.velocity() * winRect.width(), f.y.velocity() * winRect.height());
 
-        tp.normalPosition = QPointF(f.x.position() + f.x.velocity() * m_handler->d->m_prediction / 1000.0,
-                                    f.y.position() + f.y.velocity() * m_handler->d->m_prediction / 1000.0);
+        qreal filteredNormalizedX = f.x.position() + f.x.velocity() * m_handler->d->m_prediction / 1000.0;
+        qreal filteredNormalizedY = f.y.position() + f.y.velocity() * m_handler->d->m_prediction / 1000.0;
+
+        // Clamp to the screen
+        tp.normalPosition = QPointF(qBound<qreal>(0, filteredNormalizedX, 1),
+                                    qBound<qreal>(0, filteredNormalizedY, 1));
 
         qreal x = winRect.x() + (tp.normalPosition.x() * (winRect.width() - 1));
         qreal y = winRect.y() + (tp.normalPosition.y() * (winRect.height() - 1));
@@ -931,7 +935,10 @@ void QEvdevTouchScreenHandlerThread::filterAndSendTouchPoints()
         // Store the touch point for later so we can release it if we've
         // missed the actual release between our last update and this.
         f.touchPoint = tp;
-        filteredPoints[tp.id] = f;
+
+        // Don't store the point for future reference if it is a release.
+        if (tp.state != Qt::TouchPointReleased)
+            filteredPoints[tp.id] = f;
     }
 
     for (QHash<int, FilteredTouchPoint>::const_iterator it = m_filteredPoints.constBegin(), end = m_filteredPoints.constEnd(); it != end; ++it) {
