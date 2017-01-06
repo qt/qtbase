@@ -1614,15 +1614,14 @@ void QAndroidStyle::AndroidProgressBarControl::drawControl(const QStyleOption *o
     if (!m_progressDrawable)
         return;
 
-    if (const QStyleOptionProgressBar *progressBarOption =
-           qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
+    if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
         if (m_progressDrawable->type() == QAndroidStyle::Layer) {
-            const double fraction = progressBarOption->progress / double(progressBarOption->maximum - progressBarOption->minimum);
+            const double fraction = double(qint64(pb->progress) - pb->minimum) / (qint64(pb->maximum) - pb->minimum);
             QAndroidStyle::AndroidDrawable *clipDrawable = static_cast<QAndroidStyle::AndroidLayerDrawable *>(m_progressDrawable)->layer(m_progressId);
             if (clipDrawable->type() == QAndroidStyle::Clip)
-                static_cast<AndroidClipDrawable *>(clipDrawable)->setFactor(fraction, progressBarOption->orientation);
+                static_cast<AndroidClipDrawable *>(clipDrawable)->setFactor(fraction, pb->orientation);
             else
-                static_cast<AndroidLayerDrawable *>(m_progressDrawable)->setFactor(m_progressId, fraction, progressBarOption->orientation);
+                static_cast<AndroidLayerDrawable *>(m_progressDrawable)->setFactor(m_progressId, fraction, pb->orientation);
         }
         m_progressDrawable->draw(p, option);
     }
