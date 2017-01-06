@@ -219,6 +219,12 @@ static inline QImage::Format imageFormatForVisual(int depth, quint32 red_mask, q
             return QImage::Format_RGB555;
         }
         break;
+#if QT_CONFIG(xcb_native_painting)
+    case 8:
+        if (QXcbIntegration::instance() && QXcbIntegration::instance()->nativePaintingEnabled())
+            return QImage::Format_Indexed8;
+        break;
+#endif
     default:
         break;
     }

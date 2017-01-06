@@ -71,6 +71,7 @@ qtConfig(xcb-sm) {
 }
 
 include(gl_integrations/gl_integrations.pri)
+include(nativepainting/nativepainting.pri)
 
 qtConfig(vulkan) {
     SOURCES += \

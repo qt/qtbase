@@ -467,6 +467,7 @@ public:
     bool hasXRandr() const { return has_randr_extension; }
     bool hasInputShape() const { return has_input_shape; }
     bool hasXKB() const { return has_xkb; }
+    bool hasXRender() const { return has_render_extension; }
 
     bool supportsThreadedRendering() const { return m_reader->isRunning(); }
     bool threadedEventHandling() const { return m_reader->isRunning(); }
@@ -660,6 +661,7 @@ private:
     bool has_randr_extension = false;
     bool has_input_shape;
     bool has_xkb = false;
+    bool has_render_extension;
 
     Qt::MouseButtons m_buttons = 0;
 

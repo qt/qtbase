@@ -148,8 +148,18 @@ static const char * const xcbConnectionErrors[] = {
     "Error during FD passing" /* XCB_CONN_CLOSED_FDPASSING_FAILED */
 };
 
-static int nullErrorHandler(Display *, XErrorEvent *)
+static int nullErrorHandler(Display *dpy, XErrorEvent *err)
 {
+#ifndef Q_XCB_DEBUG
+    Q_UNUSED(dpy);
+    Q_UNUSED(err);
+#else
+    const int buflen = 1024;
+    char buf[buflen];
+
+    XGetErrorText(dpy, err->error_code, buf, buflen);
+    fprintf(stderr, "X Error: serial %lu error %d %s\n", err->serial, (int) err->error_code, buf);
+#endif
     return 0;
 }
 
@@ -528,6 +538,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_defaultVisualId(defaultVisualId)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
+    , has_render_extension(false)
 {
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -1980,11 +1991,14 @@ void QXcbConnection::initializeXRender()
     if (!reply || !reply->present)
         return;
 
+    has_render_extension = true;
     auto xrender_query = Q_XCB_REPLY(xcb_render_query_version, m_connection,
                                      XCB_RENDER_MAJOR_VERSION,
                                      XCB_RENDER_MINOR_VERSION);
-    if (!xrender_query || (xrender_query->major_version == 0 && xrender_query->minor_version < 5))
+    if (!xrender_query || (xrender_query->major_version == 0 && xrender_query->minor_version < 5)) {
         qWarning("QXcbConnection: Failed to initialize XRender");
+        has_render_extension = false;
+    }
 #endif
 }
 

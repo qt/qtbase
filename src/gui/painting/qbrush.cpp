@@ -100,7 +100,7 @@ const uchar *qt_patternForBrush(int brushStyle, bool invert)
     return pat_tbl[brushStyle - Qt::Dense1Pattern][invert];
 }
 
-QPixmap qt_pixmapForBrush(int brushStyle, bool invert)
+Q_GUI_EXPORT QPixmap qt_pixmapForBrush(int brushStyle, bool invert)
 {
 
     QPixmap pm;

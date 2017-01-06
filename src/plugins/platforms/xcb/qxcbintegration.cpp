@@ -65,6 +65,11 @@
 
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
+#if QT_CONFIG(xcb_native_painting)
+#include "qxcbnativepainting.h"
+#include "qpixmap_x11_p.h"
+#include "qbackingstore_x11_p.h"
+#endif
 #endif
 
 #include <qpa/qplatforminputcontextfactory_p.h>
@@ -192,12 +197,29 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     }
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
+
+#if QT_CONFIG(xcb_native_painting)
+    if (nativePaintingEnabled()) {
+        qDebug("QXCB USING NATIVE PAINTING");
+        qt_xcb_native_x11_info_init(defaultConnection());
+    }
+#endif
 }
 
 QXcbIntegration::~QXcbIntegration()
 {
     qDeleteAll(m_connections);
     m_instance = Q_NULLPTR;
+}
+
+QPlatformPixmap *QXcbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
+{
+#if QT_CONFIG(xcb_native_painting)
+    if (nativePaintingEnabled())
+        return new QX11PlatformPixmap(type);
+#endif
+
+    return QPlatformIntegration::createPlatformPixmap(type);
 }
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
@@ -263,6 +285,11 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
 
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {
+#if QT_CONFIG(xcb_native_painting)
+    if (nativePaintingEnabled())
+        return new QXcbNativeBackingStore(window);
+#endif
+
     return new QXcbBackingStore(window);
 }
 
@@ -509,6 +536,16 @@ void QXcbIntegration::beep() const
         return;
     xcb_connection_t *connection = static_cast<QXcbScreen *>(screen)->xcb_connection();
     xcb_bell(connection, 0);
+}
+
+bool QXcbIntegration::nativePaintingEnabled() const
+{
+#if QT_CONFIG(xcb_native_painting)
+    static bool enabled = qEnvironmentVariableIsSet("QT_XCB_NATIVE_PAINTING");
+    return enabled;
+#else
+    return false;
+#endif
 }
 
 #if QT_CONFIG(vulkan)

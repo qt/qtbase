@@ -40,6 +40,7 @@
             "tslib": "boolean",
             "vulkan": "boolean",
             "xcb": { "type": "enum", "values": [ "no", "yes", "qt", "system" ] },
+            "xcb-native-painting": "boolean",
             "xcb-xlib": "boolean",
             "xinput2": "boolean",
             "xkb": "boolean",
@@ -304,6 +305,13 @@
             "export": "xkbcommon",
             "sources": [
                 { "type": "pkgConfig", "args": "xkbcommon xkbcommon-x11 >= 0.4.1" }
+            ]
+        },
+        "xrender": {
+            "label": "XRender for native painting",
+            "test": "x11/xrender",
+            "sources": [
+                "-lXrender"
             ]
         }
     },
@@ -755,6 +763,18 @@
             "condition": "libs.xcb_glx",
             "output": [ "privateFeature" ]
         },
+        "xcb-native-painting": {
+            "label": "Native painting (experimental)",
+            "emitIf": "features.xcb",
+            "condition": "features.xcb-xlib && libs.xrender",
+            "output": [ "privateFeature" ]
+        },
+        "xrender": {
+            "label": "XRender for native painting",
+            "emitIf": "features.xcb && features.xcb-native-painting",
+            "condition": "features.xcb-native-painting",
+            "output": [ "privateFeature" ]
+        },
         "xcb-render": {
             "label": "XCB render",
             "emitIf": "features.xcb",
@@ -1145,7 +1165,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "X11",
                     "condition": "features.xcb",
                     "entries": [
-                        "system-xcb", "egl_x11", "xinput2", "xkb", "xlib", "xcb-render", "xcb-glx", "xcb-xlib", "xkbcommon-system"
+                        "system-xcb", "egl_x11", "xinput2", "xkb", "xlib", "xcb-render", "xcb-glx", "xcb-xlib", "xkbcommon-system", "xcb-native-painting"
                     ]
                 },
                 {

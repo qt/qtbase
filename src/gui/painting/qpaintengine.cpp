@@ -547,8 +547,8 @@ void qt_fill_tile(QPixmap *tile, const QPixmap &pixmap)
     }
 }
 
-void qt_draw_tile(QPaintEngine *gc, qreal x, qreal y, qreal w, qreal h,
-                  const QPixmap &pixmap, qreal xOffset, qreal yOffset)
+Q_GUI_EXPORT void qt_draw_tile(QPaintEngine *gc, qreal x, qreal y, qreal w, qreal h,
+                               const QPixmap &pixmap, qreal xOffset, qreal yOffset)
 {
     qreal yPos, xPos, drawH, drawW, yOff, xOff;
     yPos = y;

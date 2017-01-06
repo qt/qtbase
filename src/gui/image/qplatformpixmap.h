@@ -69,7 +69,7 @@ public:
 
     enum ClassId { RasterClass, DirectFBClass,
                    BlitterClass, Direct2DClass,
-                   CustomClass = 1024 };
+                   X11Class, CustomClass = 1024 };
 
     QPlatformPixmap(PixelType pixelType, int classId);
     virtual ~QPlatformPixmap();
@@ -147,6 +147,7 @@ protected:
 
 private:
     friend class QPixmap;
+    friend class QX11PlatformPixmap;
     friend class QImagePixmapCleanupHooks; // Needs to set is_cached
     friend class QOpenGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPlatformPixmap>;
@@ -162,7 +163,7 @@ private:
 
 #  define QT_XFORM_TYPE_MSBFIRST 0
 #  define QT_XFORM_TYPE_LSBFIRST 1
-extern bool qt_xForm_helper(const QTransform&, int, int, int, uchar*, int, int, int, const uchar*, int, int, int);
+Q_GUI_EXPORT bool qt_xForm_helper(const QTransform&, int, int, int, uchar*, int, int, int, const uchar*, int, int, int);
 
 QT_END_NAMESPACE
 
