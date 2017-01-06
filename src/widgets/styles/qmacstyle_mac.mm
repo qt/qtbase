@@ -1017,7 +1017,7 @@ static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSiz
 
 void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius) const
 {
-    qreal pixelRatio = p->device()->devicePixelRatioF();
+    const qreal pixelRatio = p->device()->devicePixelRatioF();
     static const QString keyFormat = QLatin1String("$qt_focusring%1-%2-%3-%4");
     const QString &key = keyFormat.arg(hMargin).arg(vMargin).arg(radius).arg(pixelRatio);
     QPixmap focusRingPixmap;
@@ -1028,20 +1028,38 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
         focusRingPixmap.fill(Qt::transparent);
         focusRingPixmap.setDevicePixelRatio(pixelRatio);
         {
+            const CGFloat focusRingWidth = radius > 0 ? 3.5 : 6;
             QMacAutoReleasePool pool;
+            QMacCGContext ctx(&focusRingPixmap);
+            CGContextBeginTransparencyLayer(ctx, NULL);
+            CGContextSetAlpha(ctx, 0.5); // As applied to the stroke color below
+
+            [NSGraphicsContext saveGraphicsState];
+            [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithCGContext:ctx
+                                                                                         flipped:NO]];
+            CGRect focusRingRect = CGRectMake(hMargin, vMargin, size, size);
             NSBezierPath *focusRingPath;
-            if (radius > 0)
-                focusRingPath = [NSBezierPath bezierPathWithRoundedRect:NSMakeRect(hMargin, vMargin, size, size)
+            if (radius > 0) {
+                const CGFloat roundedRectInset = -1.5;
+                focusRingPath = [NSBezierPath bezierPathWithRoundedRect:CGRectInset(focusRingRect, roundedRectInset, roundedRectInset)
                                                                 xRadius:radius
                                                                 yRadius:radius];
-            else
-                focusRingPath = [NSBezierPath bezierPathWithRect:NSMakeRect(hMargin, vMargin, size, size)];
-            [NSGraphicsContext saveGraphicsState];
-            QMacCGContext gc(&focusRingPixmap);
-            [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithGraphicsPort:(CGContextRef)gc
-                                                                                            flipped:NO]];
-            NSSetFocusRingStyle(NSFocusRingOnly);
-            [focusRingPath fill];
+            } else {
+                const CGFloat outerClipInset = -focusRingWidth / 2;
+                NSBezierPath *focusRingClipPath = [NSBezierPath bezierPathWithRect:CGRectInset(focusRingRect, outerClipInset, outerClipInset)];
+                const CGFloat innerClipInset = 1;
+                NSBezierPath *focusRingInnerClipPath = [NSBezierPath bezierPathWithRect:CGRectInset(focusRingRect, innerClipInset, innerClipInset)];
+                [focusRingClipPath appendBezierPath:focusRingInnerClipPath.bezierPathByReversingPath];
+                [focusRingClipPath setClip];
+                focusRingPath = [NSBezierPath bezierPathWithRect:focusRingRect];
+                focusRingPath.lineJoinStyle = NSRoundLineJoinStyle;
+            }
+
+            focusRingPath.lineWidth = focusRingWidth;
+            [[NSColor keyboardFocusIndicatorColor] setStroke];
+            [focusRingPath stroke];
+
+            CGContextEndTransparencyLayer(ctx);
             [NSGraphicsContext restoreGraphicsState];
         }
         QPixmapCache::insert(key, focusRingPixmap);
