@@ -4243,12 +4243,14 @@ void tst_QWidget::update()
     }
 }
 
+#ifndef Q_OS_OSX
 static inline bool isOpaque(QWidget *widget)
 {
     if (!widget)
         return false;
     return qt_widget_private(widget)->isOpaque;
 }
+#endif
 
 void tst_QWidget::isOpaque()
 {
