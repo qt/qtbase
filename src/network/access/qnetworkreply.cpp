@@ -732,7 +732,11 @@ void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
     You can clear the list of errors you want to ignore by calling this
     function with an empty list.
 
-    \sa sslConfiguration(), sslErrors(), QSslSocket::ignoreSslErrors()
+    \note If HTTP Strict Transport Security is enabled for QNetworkAccessManager,
+    this function has no effect.
+
+    \sa sslConfiguration(), sslErrors(), QSslSocket::ignoreSslErrors(),
+    QNetworkAccessManager::enableStrictTransportSecurity()
 */
 void QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
 {
@@ -798,6 +802,9 @@ void QNetworkReply::ignoreSslErrorsImplementation(const QList<QSslError> &)
     This function can be called from the slot connected to the
     sslErrors() signal, which indicates which errors were
     found.
+
+    \note If HTTP Strict Transport Security is enabled for QNetworkAccessManager,
+    this function has no effect.
 
     \sa sslConfiguration(), sslErrors(), QSslSocket::ignoreSslErrors()
 */

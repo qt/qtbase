@@ -13,11 +13,13 @@ SUBDIRS=\
    qhttpnetworkreply \
    qabstractnetworkcache \
    hpack \
-   http2
+   http2 \
+   hsts
 
 !qtConfig(private_tests): SUBDIRS -= \
           qhttpnetworkconnection \
           qhttpnetworkreply \
           qftp \
           hpack \
-          http2
+          http2 \
+          hsts

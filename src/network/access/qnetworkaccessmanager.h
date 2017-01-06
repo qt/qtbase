@@ -120,6 +120,10 @@ public:
     QNetworkCookieJar *cookieJar() const;
     void setCookieJar(QNetworkCookieJar *cookieJar);
 
+    void enableStrictTransportSecurity();
+    void disableStrictTransportSecurity();
+    bool strictTransportSecurityEnabled() const;
+
     QNetworkReply *head(const QNetworkRequest &request);
     QNetworkReply *get(const QNetworkRequest &request);
     QNetworkReply *post(const QNetworkRequest &request, QIODevice *data);

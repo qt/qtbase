@@ -52,6 +52,7 @@
 #include "QtCore/qelapsedtimer.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "qhttpthreaddelegate_p.h"
+#include "qhsts_p.h"
 #include "qthread.h"
 #include "QtCore/qcoreapplication.h"
 
@@ -384,12 +385,24 @@ void QNetworkReplyHttpImpl::ignoreSslErrors()
 {
     Q_D(QNetworkReplyHttpImpl);
 
+    if (d->managerPrivate && d->managerPrivate->stsEnabled
+        && d->managerPrivate->stsCache.isKnownHost(url())) {
+        // We cannot ignore any Security Transport-related errors for this host.
+        return;
+    }
+
     d->pendingIgnoreAllSslErrors = true;
 }
 
 void QNetworkReplyHttpImpl::ignoreSslErrorsImplementation(const QList<QSslError> &errors)
 {
     Q_D(QNetworkReplyHttpImpl);
+
+    if (d->managerPrivate && d->managerPrivate->stsEnabled
+        && d->managerPrivate->stsCache.isKnownHost(url())) {
+        // We cannot ignore any Security Transport-related errors for this host.
+        return;
+    }
 
     // the pending list is set if QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
     // is called before QNetworkAccessManager::get() (or post(), etc.)
@@ -1179,6 +1192,15 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
     statusCode = sc;
     reasonPhrase = rp;
 
+#ifndef QT_NO_SSL
+    // We parse this header only if we're using secure transport:
+    //
+    // RFC6797, 8.1
+    // If an HTTP response is received over insecure transport, the UA MUST
+    // ignore any present STS header field(s).
+    if (url.scheme() == QLatin1String("https") && managerPrivate->stsEnabled)
+        managerPrivate->stsCache.updateFromHeaders(hm, url);
+#endif
     // Download buffer
     if (!db.isNull()) {
         downloadBufferPointer = db;

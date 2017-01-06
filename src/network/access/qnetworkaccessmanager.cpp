@@ -693,6 +693,55 @@ void QNetworkAccessManager::setCookieJar(QNetworkCookieJar *cookieJar)
 }
 
 /*!
+    \since 5.9
+
+    Enables HTTP Strict Transport Security (HSTS, RFC6797). When processing a
+    request, QNetworkAccessManager automatically replaces "http" scheme with
+    "https" and uses a secure transport if a host is a known HSTS host.
+    Port 80 if it's set explicitly is replaced by port 443.
+
+    When HSTS is enabled, for each HTTP response containing HSTS header and
+    received over a secure transport, QNetworkAccessManager will update its HSTS
+    cache, either remembering a host with a valid policy or removing a host with
+    expired/disabled HSTS policy.
+
+    \sa disableStrictTransportSecurity(), strictTransportSecurityEnabled()
+*/
+void QNetworkAccessManager::enableStrictTransportSecurity()
+{
+    Q_D(QNetworkAccessManager);
+    d->stsEnabled = true;
+}
+
+/*!
+    \since 5.9
+
+    Disables HTTP Strict Transport Security (HSTS). HSTS headers in responses would
+    be ignored, no scheme/port mapping is done.
+
+    \sa enableStrictTransportSecurity()
+*/
+void QNetworkAccessManager::disableStrictTransportSecurity()
+{
+    Q_D(QNetworkAccessManager);
+    d->stsEnabled = false;
+}
+
+/*!
+    \since 5.9
+
+    Returns true if HTTP Strict Transport Security (HSTS) was enabled. By default
+    HSTS is disabled.
+
+    \sa enableStrictTransportSecurity
+*/
+bool QNetworkAccessManager::strictTransportSecurityEnabled() const
+{
+    Q_D(const QNetworkAccessManager);
+    return d->stsEnabled;
+}
+
+/*!
     Posts a request to obtain the network headers for \a request
     and returns a new QNetworkReply object which will contain such headers.
 
@@ -1299,6 +1348,24 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         || scheme == QLatin1String("https") || scheme == QLatin1String("preconnect-https")
 #endif
         ) {
+#ifndef QT_NO_SSL
+        if (strictTransportSecurityEnabled() && d->stsCache.isKnownHost(request.url())) {
+            QUrl stsUrl(request.url());
+            // RFC6797, 8.3:
+            // The UA MUST replace the URI scheme with "https" [RFC2818],
+            // and if the URI contains an explicit port component of "80",
+            // then the UA MUST convert the port component to be "443", or
+            // if the URI contains an explicit port component that is not
+            // equal to "80", the port component value MUST be preserved;
+            // otherwise,
+            // if the URI does not contain an explicit port component, the UA
+            // MUST NOT add one.
+            if (stsUrl.port() == 80)
+                stsUrl.setPort(443);
+            stsUrl.setScheme(QLatin1String("https"));
+            request.setUrl(stsUrl);
+        }
+#endif
         QNetworkReplyHttpImpl *reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);
 #ifndef QT_NO_BEARERMANAGEMENT
         connect(this, SIGNAL(networkSessionConnected()),

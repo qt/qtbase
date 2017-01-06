@@ -56,6 +56,7 @@
 #include "qnetworkaccesscache_p.h"
 #include "qnetworkaccessbackend_p.h"
 #include "qnetworkrequest.h"
+#include "qhsts_p.h"
 #include "private/qobject_p.h"
 #include "QtNetwork/qnetworkproxy.h"
 #include "QtNetwork/qnetworksession.h"
@@ -205,8 +206,13 @@ public:
     QNetworkAccessCache objectCache;
     static inline QNetworkAccessCache *getObjectCache(QNetworkAccessBackend *backend)
     { return &backend->manager->objectCache; }
+
     Q_AUTOTEST_EXPORT static void clearAuthenticationCache(QNetworkAccessManager *manager);
     Q_AUTOTEST_EXPORT static void clearConnectionCache(QNetworkAccessManager *manager);
+
+    QHstsCache stsCache;
+    bool stsEnabled = false;
+
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_AUTOTEST_EXPORT static const QWeakPointer<const QNetworkSession> getNetworkSession(const QNetworkAccessManager *manager);
 #endif
