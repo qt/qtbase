@@ -89,6 +89,10 @@ class QTextCodec;
 class QStringRef;
 template <typename T> class QVector;
 
+namespace QtPrivate {
+template <bool...B> class BoolList;
+}
+
 class QLatin1String
 {
 public:
@@ -333,6 +337,7 @@ public:
                 QChar fillChar = QLatin1Char(' ')) const;
     Q_REQUIRED_RESULT QString arg(QLatin1String a, int fieldWidth = 0,
                 QChar fillChar = QLatin1Char(' ')) const;
+#if QT_STRINGVIEW_LEVEL < 2
     Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2) const;
     Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3) const;
     Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3,
@@ -350,6 +355,33 @@ public:
     Q_REQUIRED_RESULT QString arg(const QString &a1, const QString &a2, const QString &a3,
                 const QString &a4, const QString &a5, const QString &a6,
                 const QString &a7, const QString &a8, const QString &a9) const;
+#endif
+private:
+    template <typename T>
+    struct is_convertible_to_view_or_qstring_helper
+        : std::integral_constant<bool,
+            std::is_convertible<T, QString>::value ||
+            std::is_convertible<T, QStringView>::value ||
+            std::is_convertible<T, QLatin1String>::value> {};
+    template <typename T>
+    struct is_convertible_to_view_or_qstring
+        : is_convertible_to_view_or_qstring_helper<typename std::decay<T>::type> {};
+public:
+    template <typename...Args>
+    Q_REQUIRED_RESULT
+#ifdef Q_CLANG_QDOC
+    QString
+#else
+    typename std::enable_if<
+        sizeof...(Args) >= 2 && std::is_same<
+            QtPrivate::BoolList<is_convertible_to_view_or_qstring<Args>::value..., true>,
+            QtPrivate::BoolList<true, is_convertible_to_view_or_qstring<Args>::value...>
+        >::value,
+        QString
+    >::type
+#endif
+    arg(Args &&...args) const
+    { return qToStringViewIgnoringNull(*this).arg(std::forward<Args>(args)...); }
 
 #if QT_DEPRECATED_SINCE(5, 14)
     QT_DEPRECATED_X("Use vasprintf(), arg() or QTextStream instead")
@@ -1053,6 +1085,7 @@ inline QString QString::arg(short a, int fieldWidth, int base, QChar fillChar) c
 { return arg(qlonglong(a), fieldWidth, base, fillChar); }
 inline QString QString::arg(ushort a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qulonglong(a), fieldWidth, base, fillChar); }
+#if QT_STRINGVIEW_LEVEL < 2
 inline QString QString::arg(const QString &a1, const QString &a2) const
 { return qToStringViewIgnoringNull(*this).arg(a1, a2); }
 inline QString QString::arg(const QString &a1, const QString &a2, const QString &a3) const
@@ -1078,6 +1111,7 @@ inline QString QString::arg(const QString &a1, const QString &a2, const QString 
                             const QString &a4, const QString &a5, const QString &a6,
                             const QString &a7, const QString &a8, const QString &a9) const
 { return qToStringViewIgnoringNull(*this).arg(a1, a2, a3, a4, a5, a6, a7, a8, a9); }
+#endif
 
 inline QString QString::section(QChar asep, int astart, int aend, SectionFlags aflags) const
 { return section(QString(asep), astart, aend, aflags); }
@@ -2014,6 +2048,7 @@ Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString argToQStringDispatch(StringView patter
     return QtPrivate::argToQString(pattern, sizeof...(Args), argBases);
 }
 
+                 inline QStringViewArg   qStringLikeToArg(const QString &s) noexcept { return QStringViewArg{qToStringViewIgnoringNull(s)}; }
 Q_DECL_CONSTEXPR inline QStringViewArg   qStringLikeToArg(QStringView s) noexcept { return QStringViewArg{s}; }
                  inline QStringViewArg   qStringLikeToArg(const QChar &c) noexcept { return QStringViewArg{QStringView{&c, 1}}; }
 Q_DECL_CONSTEXPR inline QLatin1StringArg qStringLikeToArg(QLatin1String s) noexcept { return QLatin1StringArg{s}; }
