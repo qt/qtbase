@@ -17,7 +17,7 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qstring_compat.o qstringbuilder.o qtext
       qfilesystementry.o qfilesystemengine.o qfsfileengine.o qfsfileengine_iterator.o qregexp.o \
       qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o qfileinfo.o qdatetime.o qstringlist.o \
       qabstractfileengine.o qtemporaryfile.o qmap.o qmetatype.o qsettings.o qsystemerror.o \
-      qvariant.o qvsnprintf.o qlocale.o qlocale_tools.o qlinkedlist.o qnumeric.o \
+      qvariant.o qversionnumber.o qvsnprintf.o qlocale.o qlocale_tools.o qlinkedlist.o qnumeric.o \
       qcryptographichash.o qxmlstream.o qxmlutils.o qlogging.o qoperatingsystemversion.o \
       qjson.o qjsondocument.o qjsonparser.o qjsonarray.o qjsonobject.o qjsonvalue.o \
       $(QTOBJS) $(QTOBJS2)
@@ -79,6 +79,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp \
@@ -266,6 +267,9 @@ qarraydata.o: $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp
 
 qbytearray.o: $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp
+
+qversionnumber.o: $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp
 
 qvsnprintf.o: $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp

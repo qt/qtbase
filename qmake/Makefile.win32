@@ -93,6 +93,7 @@ QTOBJS= \
 	qlocale.obj \
 	qlocale_tools.obj \
 	qlocale_win.obj \
+	qversionnumber.obj \
 	qmalloc.obj \
 	qmap.obj \
 	qoperatingsystemversion.obj \
