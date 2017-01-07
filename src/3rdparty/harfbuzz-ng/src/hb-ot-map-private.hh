@@ -139,12 +139,6 @@ struct hb_ot_map_t
 
   private:
 
-  HB_INTERNAL void add_lookups (hb_face_t    *face,
-				unsigned int  table_index,
-				unsigned int  feature_index,
-				hb_mask_t     mask,
-				bool          auto_zwj);
-
   hb_mask_t global_mask;
 
   hb_prealloced_array_t<feature_map_t, 8> features;
@@ -159,23 +153,9 @@ enum hb_ot_map_feature_flags_t {
   F_MANUAL_ZWJ		= 0x0004u, /* Don't skip over ZWJ when matching. */
   F_GLOBAL_SEARCH	= 0x0008u  /* If feature not found in LangSys, look for it in global feature list and pick one. */
 };
+HB_MARK_AS_FLAG_T (hb_ot_map_feature_flags_t);
 /* Macro version for where const is desired. */
 #define F_COMBINE(l,r) (hb_ot_map_feature_flags_t ((unsigned int) (l) | (unsigned int) (r)))
-static inline hb_ot_map_feature_flags_t
-operator | (hb_ot_map_feature_flags_t l, hb_ot_map_feature_flags_t r)
-{ return hb_ot_map_feature_flags_t ((unsigned int) l | (unsigned int) r); }
-static inline hb_ot_map_feature_flags_t
-operator & (hb_ot_map_feature_flags_t l, hb_ot_map_feature_flags_t r)
-{ return hb_ot_map_feature_flags_t ((unsigned int) l & (unsigned int) r); }
-static inline hb_ot_map_feature_flags_t
-operator ~ (hb_ot_map_feature_flags_t r)
-{ return hb_ot_map_feature_flags_t (~(unsigned int) r); }
-static inline hb_ot_map_feature_flags_t&
-operator |= (hb_ot_map_feature_flags_t &l, hb_ot_map_feature_flags_t r)
-{ l = l | r; return l; }
-static inline hb_ot_map_feature_flags_t&
-operator &= (hb_ot_map_feature_flags_t& l, hb_ot_map_feature_flags_t r)
-{ l = l & r; return l; }
 
 
 struct hb_ot_map_builder_t
@@ -196,7 +176,9 @@ struct hb_ot_map_builder_t
   inline void add_gpos_pause (hb_ot_map_t::pause_func_t pause_func)
   { add_pause (1, pause_func); }
 
-  HB_INTERNAL void compile (struct hb_ot_map_t &m);
+  HB_INTERNAL void compile (hb_ot_map_t  &m,
+			    const int    *coords,
+			    unsigned int  num_coords);
 
   inline void finish (void) {
     feature_infos.finish ();
@@ -208,6 +190,14 @@ struct hb_ot_map_builder_t
 
   private:
 
+  HB_INTERNAL void add_lookups (hb_ot_map_t  &m,
+				hb_face_t    *face,
+				unsigned int  table_index,
+				unsigned int  feature_index,
+				unsigned int  variations_index,
+				hb_mask_t     mask,
+				bool          auto_zwj);
+
   struct feature_info_t {
     hb_tag_t tag;
     unsigned int seq; /* sequence#, used for stable sorting only */
@@ -217,7 +207,8 @@ struct hb_ot_map_builder_t
     unsigned int stage[2]; /* GSUB/GPOS */
 
     static int cmp (const feature_info_t *a, const feature_info_t *b)
-    { return (a->tag != b->tag) ?  (a->tag < b->tag ? -1 : 1) : (a->seq < b->seq ? -1 : 1); }
+    { return (a->tag != b->tag) ?  (a->tag < b->tag ? -1 : 1) :
+	     (a->seq < b->seq ? -1 : a->seq > b->seq ? 1 : 0); }
   };
 
   struct stage_info_t {

@@ -41,7 +41,10 @@ struct SingleSubstFormat1
   {
     TRACE_CLOSURE (this);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      /* TODO Switch to range-based API to work around malicious fonts.
+       * https://github.com/behdad/harfbuzz/issues/363 */
       hb_codepoint_t glyph_id = iter.get_glyph ();
       if (c->glyphs->has (glyph_id))
 	c->glyphs->add ((glyph_id + deltaGlyphID) & 0xFFFFu);
@@ -52,7 +55,10 @@ struct SingleSubstFormat1
   {
     TRACE_COLLECT_GLYPHS (this);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      /* TODO Switch to range-based API to work around malicious fonts.
+       * https://github.com/behdad/harfbuzz/issues/363 */
       hb_codepoint_t glyph_id = iter.get_glyph ();
       c->input->add (glyph_id);
       c->output->add ((glyph_id + deltaGlyphID) & 0xFFFFu);
@@ -120,7 +126,11 @@ struct SingleSubstFormat2
   {
     TRACE_CLOSURE (this);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    unsigned int count = substitute.len;
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      if (unlikely (iter.get_coverage () >= count))
+        break; /* Work around malicious fonts. https://github.com/behdad/harfbuzz/issues/363 */
       if (c->glyphs->has (iter.get_glyph ()))
 	c->glyphs->add (substitute[iter.get_coverage ()]);
     }
@@ -130,7 +140,11 @@ struct SingleSubstFormat2
   {
     TRACE_COLLECT_GLYPHS (this);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    unsigned int count = substitute.len;
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      if (unlikely (iter.get_coverage () >= count))
+        break; /* Work around malicious fonts. https://github.com/behdad/harfbuzz/issues/363 */
       c->input->add (iter.get_glyph ());
       c->output->add (substitute[iter.get_coverage ()]);
     }
@@ -265,21 +279,18 @@ struct Sequence
     TRACE_APPLY (this);
     unsigned int count = substitute.len;
 
-    /* TODO:
-     * Testing shows that Uniscribe actually allows zero-len susbstitute,
-     * which essentially deletes a glyph.  We don't allow for now.  It
-     * can be confusing to the client since the cluster from the deleted
-     * glyph won't be merged with any output cluster...  Also, currently
-     * buffer->move_to() makes assumptions about this too.  Perhaps fix
-     * in the future after figuring out what to do with the clusters.
-     */
-    if (unlikely (!count)) return_trace (false);
-
     /* Special-case to make it in-place and not consider this
      * as a "multiplied" substitution. */
     if (unlikely (count == 1))
     {
       c->replace_glyph (substitute.array[0]);
+      return_trace (true);
+    }
+    /* Spec disallows this, but Uniscribe allows it.
+     * https://github.com/behdad/harfbuzz/issues/253 */
+    else if (unlikely (count == 0))
+    {
+      c->buffer->delete_glyph ();
       return_trace (true);
     }
 
@@ -324,7 +335,11 @@ struct MultipleSubstFormat1
   {
     TRACE_CLOSURE (this);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    unsigned int count = sequence.len;
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      if (unlikely (iter.get_coverage () >= count))
+        break; /* Work around malicious fonts. https://github.com/behdad/harfbuzz/issues/363 */
       if (c->glyphs->has (iter.get_glyph ()))
 	(this+sequence[iter.get_coverage ()]).closure (c);
     }
@@ -442,7 +457,11 @@ struct AlternateSubstFormat1
   {
     TRACE_CLOSURE (this);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    unsigned int count = alternateSet.len;
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      if (unlikely (iter.get_coverage () >= count))
+        break; /* Work around malicious fonts. https://github.com/behdad/harfbuzz/issues/363 */
       if (c->glyphs->has (iter.get_glyph ())) {
 	const AlternateSet &alt_set = this+alternateSet[iter.get_coverage ()];
 	unsigned int count = alt_set.len;
@@ -456,7 +475,11 @@ struct AlternateSubstFormat1
   {
     TRACE_COLLECT_GLYPHS (this);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    unsigned int count = alternateSet.len;
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      if (unlikely (iter.get_coverage () >= count))
+        break; /* Work around malicious fonts. https://github.com/behdad/harfbuzz/issues/363 */
       c->input->add (iter.get_glyph ());
       const AlternateSet &alt_set = this+alternateSet[iter.get_coverage ()];
       unsigned int count = alt_set.len;
@@ -630,7 +653,7 @@ struct Ligature
     unsigned int total_component_count = 0;
 
     unsigned int match_length = 0;
-    unsigned int match_positions[MAX_CONTEXT_LENGTH];
+    unsigned int match_positions[HB_MAX_CONTEXT_LENGTH];
 
     if (likely (!match_input (c, count,
 			      &component[1],
@@ -765,7 +788,11 @@ struct LigatureSubstFormat1
   {
     TRACE_CLOSURE (this);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    unsigned int count = ligatureSet.len;
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      if (unlikely (iter.get_coverage () >= count))
+        break; /* Work around malicious fonts. https://github.com/behdad/harfbuzz/issues/363 */
       if (c->glyphs->has (iter.get_glyph ()))
 	(this+ligatureSet[iter.get_coverage ()]).closure (c);
     }
@@ -775,7 +802,11 @@ struct LigatureSubstFormat1
   {
     TRACE_COLLECT_GLYPHS (this);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    unsigned int count = ligatureSet.len;
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      if (unlikely (iter.get_coverage () >= count))
+        break; /* Work around malicious fonts. https://github.com/behdad/harfbuzz/issues/363 */
       c->input->add (iter.get_glyph ());
       (this+ligatureSet[iter.get_coverage ()]).collect_glyphs (c);
     }
@@ -926,7 +957,11 @@ struct ReverseChainSingleSubstFormat1
 
     const ArrayOf<GlyphID> &substitute = StructAfter<ArrayOf<GlyphID> > (lookahead);
     Coverage::Iter iter;
-    for (iter.init (this+coverage); iter.more (); iter.next ()) {
+    count = substitute.len;
+    for (iter.init (this+coverage); iter.more (); iter.next ())
+    {
+      if (unlikely (iter.get_coverage () >= count))
+        break; /* Work around malicious fonts. https://github.com/behdad/harfbuzz/issues/363 */
       if (c->glyphs->has (iter.get_glyph ()))
 	c->glyphs->add (substitute[iter.get_coverage ()]);
     }
@@ -970,7 +1005,7 @@ struct ReverseChainSingleSubstFormat1
   inline bool apply (hb_apply_context_t *c) const
   {
     TRACE_APPLY (this);
-    if (unlikely (c->nesting_level_left != MAX_NESTING_LEVEL))
+    if (unlikely (c->nesting_level_left != HB_MAX_NESTING_LEVEL))
       return_trace (false); /* No chaining to this type */
 
     unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
@@ -1268,7 +1303,6 @@ struct GSUB : GSUBGPOS
   { return CastR<SubstLookup> (GSUBGPOS::get_lookup (i)); }
 
   static inline void substitute_start (hb_font_t *font, hb_buffer_t *buffer);
-  static inline void substitute_finish (hb_font_t *font, hb_buffer_t *buffer);
 
   inline bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -1277,8 +1311,6 @@ struct GSUB : GSUBGPOS
     const OffsetTo<SubstLookupList> &list = CastR<OffsetTo<SubstLookupList> > (lookupList);
     return_trace (list.sanitize (c, this));
   }
-  public:
-  DEFINE_SIZE_STATIC (10);
 };
 
 
@@ -1295,11 +1327,6 @@ GSUB::substitute_start (hb_font_t *font, hb_buffer_t *buffer)
     _hb_glyph_info_clear_lig_props (&buffer->info[i]);
     buffer->info[i].syllable() = 0;
   }
-}
-
-void
-GSUB::substitute_finish (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer HB_UNUSED)
-{
 }
 
 

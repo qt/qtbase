@@ -1,3 +1,314 @@
+Overview of changes leading to 1.4.1
+Thursday, January 5, 2017
+====================================
+
+- Always build and use UCDN for Unicode data by default.
+  Reduces dependence on version of Unicode data in glib,
+  specially in the Windows bundles we are shipping, which
+  have very old glib.
+
+
+Overview of changes leading to 1.4.0
+Thursday, January 5, 2017
+====================================
+
+- Merged "OpenType GX" branch which adds core of support for
+  OpenType 1.8 Font Variations.  To that extent, the relevant
+  new API is:
+
+New API:
+hb_font_set_var_coords_normalized()
+
+  with supporting API:
+
+New API:
+HB_OT_LAYOUT_NO_VARIATIONS_INDEX
+hb_ot_layout_table_find_feature_variations()
+hb_ot_layout_feature_with_variations_get_lookups()
+hb_shape_plan_create2()
+hb_shape_plan_create_cached2()
+
+  Currently variations in GSUB/GPOS/GDEF are fully supported,
+  and no other tables are supported.  In particular, fvar/avar
+  are NOT supported, hence the hb_font_set_var_coords_normalized()
+  taking normalized coordinates.  API to take design coordinates
+  will be added in the future.
+
+  HVAR/VVAR/MVAR support will also be added to hb-ot-font in the
+  future.
+
+- Fix regression in GDEF glyph class processing.
+- Add decompositions for Chakma, Limbu, and Balinese in USE shaper.
+- Misc fixes.
+
+
+Overview of changes leading to 1.3.4
+Monday, December 5, 2016
+====================================
+
+- Fix vertical glyph origin in hb-ot-font.
+- Implement CBDT/CBLC color font glyph extents in hb-ot-font.
+
+
+Overview of changes leading to 1.3.3
+Wednesday, September 28, 2016
+====================================
+
+- Implement parsing of OpenType MATH table.
+New API:
+HB_OT_TAG_MATH
+HB_OT_MATH_SCRIPT
+hb_ot_math_constant_t
+hb_ot_math_kern_t
+hb_ot_math_glyph_variant_t
+hb_ot_math_glyph_part_flags_t
+hb_ot_math_glyph_part_t
+hb_ot_math_has_data
+hb_ot_math_get_constant
+hb_ot_math_get_glyph_italics_correction
+hb_ot_math_get_glyph_top_accent_attachment
+hb_ot_math_get_glyph_kerning
+hb_ot_math_is_glyph_extended_shape
+hb_ot_math_get_glyph_variants
+hb_ot_math_get_min_connector_overlap
+hb_ot_math_get_glyph_assembly
+
+
+Overview of changes leading to 1.3.2
+Wednesday, September 27, 2016
+====================================
+
+- Fix build of hb-coretext on older OS X versions.
+
+
+Overview of changes leading to 1.3.1
+Wednesday, September 7, 2016
+====================================
+
+- Blacklist bad GDEF of more fonts (Padauk).
+- More CoreText backend crash fixes with OS X 10.9.5.
+- Misc fixes.
+
+
+Overview of changes leading to 1.3.0
+Thursday, July 21, 2016
+====================================
+
+- Update to Unicode 9.0.0
+- Move Javanese from Indic shaper to Universal Shaping Engine.
+- Allow MultipleSubst to delete a glyph (matching Windows engine).
+- Update Universal Shaping Engine to latest draft from Microsoft.
+- DirectWrite backend improvements.  Note: this backend is for testing ONLY.
+- CoreText backend improvements with unreachable fonts.
+- Implement symbol fonts (cmap 3.0.0) in hb-ft and hb-ot-font.
+- Blacklist bad GDEF of more fonts (Tahoma & others).
+- Misc fixes.
+
+
+Overview of changes leading to 1.2.7
+Monday, May 2, 2016
+====================================
+
+- Blacklist another version of Times New Roman (Bold) Italic from Windows 7.
+- Fix Mongolian Free Variation Selectors shaping with certain fonts.
+- Fix Tibetan shorthand contractions shaping.
+- Improved list of language tag mappings.
+- Unbreak build on Windows CE.
+- Make 'glyf' table loading lazy in hb-ot-font.
+
+
+Overview of changes leading to 1.2.6
+Friday, April 8, 2016
+====================================
+
+- Blacklist GDEF table of another set of Times New Roman (Bold) Italic.
+- DirectWrite backend improvements.  Note: DirectWrite backend is
+  exclusively for our internal testing and should NOT be used in any
+  production system whatsoever.
+
+
+Overview of changes leading to 1.2.5
+Monday, April 4, 2016
+====================================
+
+- Fix GDEF mark-filtering-set, which was broken in 1.2.3.
+
+
+Overview of changes leading to 1.2.4
+Thursday, March 17, 2016
+====================================
+
+- Synthesize GDEF glyph class for any glyph that does not have one in GDEF.
+  I really hope we don't discover broken fonts that shape badly with this
+  change.
+- Misc build and other minor fixes.
+- API changes:
+  - Added HB_NDEBUG.  It's fine for production systems to define this to
+    disable high-overhead debugging checks.  However, I also reduced the
+    overhead of those checks, so it's a non-issue right now.  You can
+    forget it.  Just not defining anything at all is fine.
+
+
+Overview of changes leading to 1.2.3
+Thursday, February 25, 2016
+====================================
+
+- Blacklist GDEF table of certain versions of Times New Roman (Bold) Italic,
+  due to bug in glyph class of ASCII double-quote character.  This should
+  address "regression" introduced in 1.2.0 when we switched mark zeroing
+  in most shapers from BY_UNICODE_LATE to BY_GDEF_LATE.
+  This fourth release in a week should finally stablize things...
+
+- hb-ot-font's get_glyph() implementation saw some optimizations.  Though,
+  might be really hard to measure in real-world situations.
+
+- Also, two rather small API changes:
+
+We now disable some time-consuming internal bookkeeping if built with NDEBUG
+defined.  This is a first time that we use NDEBUG to disable debug code.  If
+there exist production systems that do NOT want to enable NDEBUG, please let
+me know and I'll add HB_NDEBUG.
+
+Added get_nominal_glyph() and get_variation_glyph() instead of get_glyph()
+
+New API:
+- hb_font_get_nominal_glyph_func_t
+- hb_font_get_variation_glyph_func_t
+- hb_font_funcs_set_nominal_glyph_func()
+- hb_font_funcs_set_variation_glyph_func()
+- hb_font_get_nominal_glyph()
+- hb_font_get_variation_glyph()
+
+Deprecated API:
+- hb_font_get_glyph_func_t
+- hb_font_funcs_set_glyph_func()
+
+Clients that implement their own font-funcs are encouraged to replace
+their get_glyph() implementation with a get_nominal_glyph() and
+get_variation_glyph() pair.  The variation version can assume that
+variation_selector argument is not zero.  Old (deprecated) functions
+will continue working indefinitely using internal gymnastics; it is
+just more efficient to use the new functions.
+
+
+Overview of changes leading to 1.2.2
+Wednesday, February 24, 2016
+====================================
+
+- Fix regression with mark positioning with fonts that have
+  non-zero mark advances.  This was introduced in 1.2.0 while
+  trying to make mark and cursive attachments to work together.
+  I have partially reverted that, so this version is much more
+  like what we had before.  All clients who updated to 1.2.0
+  should update to this version.
+
+
+Overview of changes leading to 1.2.1
+Tuesday, February 23, 2016
+====================================
+
+- CoreText: Fix bug with wrong scale if font scale was changed later.
+  https://github.com/libass/libass/issues/212
+- CoreText: Drastically speed up font initialization.
+- CoreText: Fix tiny leak.
+- Group ZWJ/ZWNJ with previous syllable under cluster-level=0.
+  https://github.com/behdad/harfbuzz/issues/217
+- Add test/shaping/README.md about how to add tests to the suite.
+
+
+Overview of changes leading to 1.2.0
+Friday, February 19, 2016
+====================================
+
+- Fix various issues (hangs mostly) in case of memory allocation failure.
+- Change mark zeroing types of most shapers from BY_UNICODE_LATE to
+  BY_GDEF_LATE.  This seems to be what Uniscribe does.
+- Change mark zeroing of USE shaper from NONE to BY_GDEF_EARLY.  That's
+  what Windows does.
+- Allow GPOS cursive connection on marks, and fix the interaction with
+  mark attachment.  This work resulted in some changes to how mark
+  attachments work.  See:
+  https://github.com/behdad/harfbuzz/issues/211
+  https://github.com/behdad/harfbuzz/commit/86c68c7a2c971efe8e35b1f1bd99401dc8b688d2
+- Graphite2 shaper: improved negative advance handling (eg. Nastaliq).
+- Add nmake-based build system for Windows.
+- Minor speedup.
+- Misc. improvements.
+
+
+Overview of changes leading to 1.1.3
+Monday, January 11, 2016
+====================================
+
+- Ported Indic shaper to Unicode 8.0 data.
+- Universal Shaping Engine fixes.
+- Speed up CoreText shaper when font fallback happens in CoreText.
+- Documentation improvements, thanks to Khaled Hosny.
+- Very rough directwrite shaper for testing, thanks to Ebrahim Byagowi.
+- Misc bug fixes.
+- New API:
+
+  * Font extents:
+      hb_font_extents_t
+      hb_font_get_font_extents_func_t
+      hb_font_get_font_h_extents_func_t
+      hb_font_get_font_v_extents_func_t
+      hb_font_funcs_set_font_h_extents_func
+      hb_font_funcs_set_font_v_extents_func
+      hb_font_get_h_extents
+      hb_font_get_v_extents
+      hb_font_get_extents_for_direction
+
+  * Buffer message (aka debug):
+      hb_buffer_message_func_t
+      hb_buffer_set_message_func()
+    Actual message protocol to be fleshed out later.
+
+
+Overview of changes leading to 1.1.2
+Wednesday, November 26, 2015
+====================================
+
+- Fix badly-broken fallback shaper that affected terminology.
+  https://github.com/behdad/harfbuzz/issues/187
+- Fix y_scaling in Graphite shaper.
+- API changes:
+  * An unset glyph_h_origin() function in font-funcs now (sensibly)
+    implies horizontal origin at 0,0.  Ie, the nil callback returns
+    true instead of false.  As such, implementations that have a
+    glyph_h_origin() that simply returns true, can remove that function
+    with HarfBuzz >= 1.1.2.  This results in a tiny speedup.
+
+
+Overview of changes leading to 1.1.1
+Wednesday, November 24, 2015
+====================================
+
+- Build fixes, specially for hb-coretext.
+
+
+Overview of changes leading to 1.1.0
+Wednesday, November 18, 2015
+====================================
+
+- Implement 'stch' stretch feature for Syriac Abbreviation Mark.
+  https://github.com/behdad/harfbuzz/issues/141
+- Disable use of decompose_compatibility() callback.
+- Implement "shaping" of various Unicode space characters, even
+  if the font does not support them.
+  https://github.com/behdad/harfbuzz/issues/153
+- If font does not support U+2011 NO-BREAK HYPHEN, fallback to
+  U+2010 HYPHEN.
+- Changes resulting from libFuzzer continuous fuzzing:
+  * Reject font tables that need more than 8 edits,
+  * Bound buffer growth during shaping to 32x,
+  * Fix assertions and other issues at OOM / buffer max-growth.
+- Misc fixes and optimizations.
+- API changes:
+  * All fonts created with hb_font_create() now inherit from
+    (ie. have parent) hb_font_get_empty().
+
+
 Overview of changes leading to 1.0.6
 Thursday, October 15, 2015
 ====================================
