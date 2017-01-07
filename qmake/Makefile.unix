@@ -30,8 +30,8 @@ QOBJS = \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraymatcher.o \
 	qcryptographichash.o qdatetime.o qhash.o qlinkedlist.o qlist.o \
 	qlocale.o qlocale_tools.o qmap.o qregexp.o qringbuffer.o \
-	qstringbuilder.o qstring_compat.o qstring.o qstringlist.o qvsnprintf.o \
-	qxmlstream.o qxmlutils.o \
+	qstringbuilder.o qstring_compat.o qstring.o qstringlist.o qversionnumber.o \
+	qvsnprintf.o qxmlstream.o qxmlutils.o \
 	$(QTOBJS) $(QTOBJS2)
 # QTOBJS and QTOBJS2 are populated by Makefile.unix.* as for QTSRC (see below).
 # Note: qlibraryinfo.o omitted deliberately - see below.
@@ -120,6 +120,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring_compat.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp \
@@ -354,6 +355,9 @@ qlocale_unix.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlocale_win.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qversionnumber.o: $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qdatastream.o: $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp

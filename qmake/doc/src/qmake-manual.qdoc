@@ -3514,6 +3514,20 @@
 
     \snippet code/doc_src_qmake-manual.pro 169
 
+    \section2 versionAtLeast(variablename, versionNumber)
+
+    Tests that the version number from \c variablename is greater than or equal
+    to \c versionNumber. The version number is considered to be a sequence of
+    non-negative decimal numbers delimited by '.'; any non-numerical tail of
+    the string will be ignored. Comparison is performed segment-wise from left
+    to right; if one version is a prefix of the other, it is considered smaller.
+
+    \section2 versionAtMost(variablename, versionNumber)
+
+    Tests that the version number from \c variablename is less than or equal to
+    \c versionNumber. Works as
+    \l{versionAtLeast(variablename, versionNumber)}{versionAtLeast()}.
+
     \section2 warning(string)
 
     Always succeeds, and displays \c string as a warning message to the user.
