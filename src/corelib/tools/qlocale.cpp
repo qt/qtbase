@@ -1305,8 +1305,8 @@ float QLocale::toFloat(const QString &s, bool *ok) const
     If \a ok is not 0, reports failure by setting
     *ok to false and success by setting *ok to true.
 
-    Unlike QString::toDouble(), this function does not fall back to
-    the "C" locale if the string cannot be interpreted in this
+    Unlike QString::toDouble(), this function does not use
+    the 'C' locale if the string cannot be interpreted in this
     locale.
 
     \snippet code/src_corelib_tools_qlocale.cpp 3
