@@ -240,7 +240,7 @@
             Only valid if RemovePath is not set.
     \value PreferLocalFile If the URL is a local file according to isLocalFile()
      and contains no query or fragment, a local file path is returned.
-    \value StripTrailingSlash  The trailing slash is removed if one is present.
+    \value StripTrailingSlash  The trailing slash is removed from the path, if one is present.
     \value NormalizePathSegments  Modifies the path to remove redundant directory separators,
              and to resolve "."s and ".."s (as far as possible).
 
