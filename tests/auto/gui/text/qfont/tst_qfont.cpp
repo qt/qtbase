@@ -63,6 +63,7 @@ private slots:
     void defaultFamily_data();
     void defaultFamily();
     void toAndFromString();
+    void fromStringWithoutStyleName();
 
     void sharing();
 };
@@ -560,6 +561,19 @@ void tst_QFont::toAndFromString()
         QCOMPARE(result, initial);
     }
 }
+
+void tst_QFont::fromStringWithoutStyleName()
+{
+    QFont font1;
+    font1.fromString("Noto Sans,12,-1,5,50,0,0,0,0,0,Regular");
+
+    QFont font2 = font1;
+    const QString str = "Times,16,-1,5,50,0,0,0,0,0";
+    font2.fromString(str);
+
+    QCOMPARE(font2.toString(), str);
+}
+
 
 void tst_QFont::sharing()
 {
