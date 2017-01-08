@@ -1507,7 +1507,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     When inserting action items you usually specify a receiver and a
     slot. The receiver will be notifed whenever the item is
     \l{QAction::triggered()}{triggered()}. In addition, QMenu provides
-    two signals, activated() and highlighted(), which signal the
+    two signals, triggered() and hovered(), which signal the
     QAction that was triggered from the menu.
 
     You clear a menu with clear() and remove individual action items
