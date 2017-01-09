@@ -36,11 +36,11 @@ if(*-g++*|*-icc*|*-clang*|*-llvm):!win32-*: HEADERS += os9-newlines.h win-newlin
 if(*-g++*|*-clang*): HEADERS += dollars.h
 SOURCES += tst_moc.cpp
 
-QT = core sql network testlib
-qtHaveModule(dbus) {
-    DEFINES += WITH_DBUS
-    QT += dbus
-}
+QT = core testlib
+qtHaveModule(dbus):       QT += dbus
+qtHaveModule(concurrent): QT += concurrent
+qtHaveModule(network):    QT += network
+qtHaveModule(sql):        QT += sql
 
 # tst_Moc::specifyMetaTagsFromCmdline()
 # Ensure that plugin_metadata.h are moc-ed with some extra -M arguments:
