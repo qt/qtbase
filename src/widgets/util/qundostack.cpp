@@ -654,10 +654,12 @@ void QUndoStack::setClean()
     This method resets the clean index to -1.
 
     This is typically called in the following cases, when a document has been:
+    \list
     \li created basing on some template and has not been saved,
         so no filename has been associated with the document yet.
     \li restored from a backup file.
     \li changed outside of the editor and the user did not reload it.
+    \endlist
 
     \sa isClean(), setClean(), cleanIndex()
 */
