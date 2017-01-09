@@ -183,7 +183,9 @@ defineTest(qtConfCommandline_redo) {
         qtConfAddError("No config.opt present - cannot redo configuration.")
         return()
     }
-    QMAKE_EXTRA_ARGS = $$cat($$OUT_PWD/config.opt, lines) $$QMAKE_EXTRA_ARGS
+    QMAKE_EXTRA_REDO_ARGS = $$cat($$OUT_PWD/config.opt, lines)
+    export(QMAKE_EXTRA_REDO_ARGS)  # just for config.log
+    QMAKE_EXTRA_ARGS = $$QMAKE_EXTRA_REDO_ARGS $$QMAKE_EXTRA_ARGS
     export(QMAKE_EXTRA_ARGS)
     QMAKE_REDO_CONFIG = true
     export(QMAKE_REDO_CONFIG)
@@ -387,12 +389,15 @@ defineTest(qtConfPkgConfigPackageExists) {
     return(true)
 }
 
-defineReplace(qtConfPrepareArgs) {
-    arglist = $$split(1)
+defineReplace(qtSystemQuote) {
     args =
-    for (a, arglist): \
+    for (a, 1): \
         args += $$system_quote($$a)
     return($$args)
+}
+
+defineReplace(qtConfPrepareArgs) {
+    return($$qtSystemQuote($$split(1)))
 }
 
 defineTest(qtConfSetupLibraries) {
@@ -1796,6 +1801,9 @@ isEmpty(QMAKE_CONFIG_VERBOSE): \
 QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
 !equals(QMAKE_CONFIG_CACHE_USE, all): \
     write_file($$QMAKE_CONFIG_LOG, "")
+qtLog("Command line: $$qtSystemQuote($$QMAKE_SAVED_ARGS)")
+$$QMAKE_REDO_CONFIG: \
+    qtLog("config.opt: $$qtSystemQuote($$QMAKE_EXTRA_REDO_ARGS)")
 
 CONFIG += qt_conf_tests_allowed
 logn()
