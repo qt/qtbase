@@ -1067,7 +1067,7 @@ void Generator::generateMetacall()
 
         fprintf(out, "\n#endif // QT_NO_PROPERTIES");
     }
-    if (methodList.size() || cdef->signalList.size() || cdef->propertyList.size())
+    if (methodList.size() || cdef->propertyList.size())
         fprintf(out, "\n    ");
     fprintf(out,"return _id;\n}\n");
 }
