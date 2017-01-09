@@ -918,14 +918,21 @@ void Generator::generateMetacall()
         fprintf(out, "    _id = %s::qt_metacall(_c, _id, _a);\n", superClass.constData());
     }
 
-    fprintf(out, "    if (_id < 0)\n        return _id;\n");
-    fprintf(out, "    ");
 
     bool needElse = false;
     QVector<FunctionDef> methodList;
     methodList += cdef->signalList;
     methodList += cdef->slotList;
     methodList += cdef->methodList;
+
+    // If there are no methods or properties, we will return _id anyway, so
+    // don't emit this comparison -- it is unnecessary, and it makes coverity
+    // unhappy.
+    if (methodList.size() || cdef->propertyList.size()) {
+        fprintf(out, "    if (_id < 0)\n        return _id;\n");
+    }
+
+    fprintf(out, "    ");
 
     if (methodList.size()) {
         needElse = true;
