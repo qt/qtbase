@@ -2069,7 +2069,7 @@ void QDockAreaLayoutInfo::reparentWidgets(QWidget *parent)
         const QDockAreaLayoutItem &item = item_list.at(i);
         if (item.flags & QDockAreaLayoutItem::GapItem)
             continue;
-        if (item.skip())
+        if (!item.widgetItem && item.skip())
             continue;
         if (item.subinfo)
             item.subinfo->reparentWidgets(parent);
@@ -2585,7 +2585,9 @@ QLayoutItem *QDockAreaLayout::plug(const QList<int> &path)
     Q_ASSERT(!path.isEmpty());
     const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
-    return docks[index].plug(path.mid(1));
+    QLayoutItem *item = docks[index].plug(path.mid(1));
+    docks[index].reparentWidgets(mainWindow);
+    return item;
 }
 
 QLayoutItem *QDockAreaLayout::unplug(const QList<int> &path)
