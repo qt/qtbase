@@ -1601,19 +1601,6 @@ defineTest(qtConfOutput_privateFeature) {
     }
 }
 
-# command line built-ins post-processing
-defineTest(qtConfOutput_builtins) {
-    QMAKE_CONFIG_VERBOSE = $$eval(config.input.verbose)
-    isEmpty(QMAKE_CONFIG_VERBOSE): \
-        QMAKE_CONFIG_VERBOSE = false
-    export(QMAKE_CONFIG_VERBOSE)
-
-    QMAKE_CONFIG_CACHE_USE = $$eval(config.input.cache_use)
-    isEmpty(QMAKE_CONFIG_CACHE_USE): \
-        QMAKE_CONFIG_CACHE_USE = all
-    export(QMAKE_CONFIG_CACHE_USE)
-}
-
 defineTest(qtConfProcessOneOutput) {
     feature = $${1}
     fpfx = $${currentConfig}.features.$${feature}
@@ -1786,6 +1773,9 @@ qtConfCheckErrors()
     QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_SUPER_CACHE_)/config.cache
 else: \
     QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_CACHE_)/config.cache
+QMAKE_CONFIG_CACHE_USE = $$eval(config.input.cache_use)
+isEmpty(QMAKE_CONFIG_CACHE_USE): \
+    QMAKE_CONFIG_CACHE_USE = all
 !equals(QMAKE_CONFIG_CACHE_USE, none) {
     include($$QMAKE_CONFIG_CACHE, , true)
     # this crudely determines when to discard the cache. this also catches the case
@@ -1800,6 +1790,9 @@ equals(QMAKE_CONFIG_CACHE_USE, none) {
     write_file($$QMAKE_CONFIG_CACHE, cont)
 }
 
+QMAKE_CONFIG_VERBOSE = $$eval(config.input.verbose)
+isEmpty(QMAKE_CONFIG_VERBOSE): \
+    QMAKE_CONFIG_VERBOSE = false
 QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
 !equals(QMAKE_CONFIG_CACHE_USE, all): \
     write_file($$QMAKE_CONFIG_LOG, "")
