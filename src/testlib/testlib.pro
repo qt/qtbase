@@ -111,4 +111,6 @@ mac {
 
 !qtHaveModule(widgets): HEADERSCLEAN_EXCLUDE += qtest_widgets.h
 
+!qtHaveModule(network): HEADERSCLEAN_EXCLUDE += qtest_network.h
+
 load(qt_module)
