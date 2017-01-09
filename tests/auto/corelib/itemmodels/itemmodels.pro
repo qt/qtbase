@@ -8,6 +8,10 @@ qtHaveModule(gui): SUBDIRS += \
     qidentityproxymodel \
     qitemselectionmodel \
 
-qtHaveModule(widgets): SUBDIRS += \
-    qitemmodel \
-    qsortfilterproxymodel \
+qtHaveModule(widgets) {
+    SUBDIRS += \
+        qsortfilterproxymodel
+
+    qtHaveModule(sql): SUBDIRS += \
+        qitemmodel
+}
