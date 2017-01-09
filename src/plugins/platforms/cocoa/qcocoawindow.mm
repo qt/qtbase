@@ -735,7 +735,7 @@ void QCocoaWindow::setVisible(bool visible)
                      || window()->type() == Qt::Sheet)
                         && parentCocoaWindow) {
                     // show the window as a sheet
-                    [NSApp beginSheet:m_nsWindow modalForWindow:parentCocoaWindow->m_nsWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
+                    [parentCocoaWindow->m_nsWindow beginSheet:m_nsWindow completionHandler:nil];
                 } else if (window()->modality() != Qt::NonModal) {
                     // show the window as application modal
                     QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
@@ -797,8 +797,10 @@ void QCocoaWindow::setVisible(bool visible)
                     cocoaEventDispatcherPrivate->endModalSession(window());
                 m_hasModalSession = false;
             } else {
-                if ([m_nsWindow isSheet])
-                    [NSApp endSheet:m_nsWindow];
+                if ([m_nsWindow isSheet]) {
+                    Q_ASSERT_X(parentCocoaWindow, "QCocoaWindow", "Window modal dialog has no transient parent.");
+                    [parentCocoaWindow->m_nsWindow endSheet:m_nsWindow];
+                }
             }
 
             hide();
