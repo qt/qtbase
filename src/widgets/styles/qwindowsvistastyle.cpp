@@ -600,6 +600,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 XPThemeData theme(widget, painter,
                                   QWindowsXPStylePrivate::EditTheme,
                                   EP_EDITBORDER_NOSCROLL, stateId, option->rect);
+                theme.noContent = true;
                 painter->save();
                 QRegion clipRegion = option->rect;
                 clipRegion -= option->rect.adjusted(2, 2, -2, -2);
