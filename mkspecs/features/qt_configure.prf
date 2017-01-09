@@ -1801,6 +1801,8 @@ isEmpty(QMAKE_CONFIG_VERBOSE): \
 QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
 !equals(QMAKE_CONFIG_CACHE_USE, all): \
     write_file($$QMAKE_CONFIG_LOG, "")
+else: \
+    write_file($$QMAKE_CONFIG_LOG, $$list($$escape_expand(\\n)), append)
 qtLog("Command line: $$qtSystemQuote($$QMAKE_SAVED_ARGS)")
 $$QMAKE_REDO_CONFIG: \
     qtLog("config.opt: $$qtSystemQuote($$QMAKE_EXTRA_REDO_ARGS)")
