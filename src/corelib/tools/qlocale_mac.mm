@@ -123,8 +123,7 @@ static QString macDayName(int day, bool short_format)
 
 static QString macDateToString(const QDate &date, bool short_format)
 {
-    const QTimeZone tz = QTimeZone::fromCFTimeZone(QCFType<CFTimeZoneRef>(CFTimeZoneCopyDefault()));
-    QCFType<CFDateRef> myDate = QDateTime(date, QTime(), tz).toCFDate();
+    QCFType<CFDateRef> myDate = QDateTime(date, QTime()).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
     CFDateFormatterStyle style = short_format ? kCFDateFormatterShortStyle : kCFDateFormatterLongStyle;
     QCFType<CFDateFormatterRef> myFormatter
@@ -136,8 +135,7 @@ static QString macDateToString(const QDate &date, bool short_format)
 
 static QString macTimeToString(const QTime &time, bool short_format)
 {
-    const QTimeZone tz = QTimeZone::fromCFTimeZone(QCFType<CFTimeZoneRef>(CFTimeZoneCopyDefault()));
-    QCFType<CFDateRef> myDate = QDateTime(QDate::currentDate(), time, tz).toCFDate();
+    QCFType<CFDateRef> myDate = QDateTime(QDate::currentDate(), time).toCFDate();
     QCFType<CFLocaleRef> mylocale = CFLocaleCopyCurrent();
     CFDateFormatterStyle style = short_format ? kCFDateFormatterShortStyle :  kCFDateFormatterLongStyle;
     QCFType<CFDateFormatterRef> myFormatter = CFDateFormatterCreate(kCFAllocatorDefault,
