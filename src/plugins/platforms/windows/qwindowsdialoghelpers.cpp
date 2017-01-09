@@ -1001,6 +1001,13 @@ void QWindowsNativeFileDialogBase::setDefaultSuffixSys(const QString &s)
     m_fileDialog->SetDefaultExtension(wSuffix);
 }
 
+static inline IFileDialog2 *getFileDialog2(IFileDialog *fileDialog)
+{
+    IFileDialog2 *result;
+    return SUCCEEDED(fileDialog->QueryInterface(IID_IFileDialog2, reinterpret_cast<void **>(&result)))
+        ? result : nullptr;
+}
+
 void QWindowsNativeFileDialogBase::setLabelText(QFileDialogOptions::DialogLabel l, const QString &text)
 {
     wchar_t *wText = const_cast<wchar_t *>(reinterpret_cast<const wchar_t *>(text.utf16()));
@@ -1011,8 +1018,13 @@ void QWindowsNativeFileDialogBase::setLabelText(QFileDialogOptions::DialogLabel 
     case QFileDialogOptions::Accept:
         m_fileDialog->SetOkButtonLabel(wText);
         break;
-    case QFileDialogOptions::LookIn:
     case QFileDialogOptions::Reject:
+        if (IFileDialog2 *dialog2 = getFileDialog2(m_fileDialog)) {
+            dialog2->SetCancelButtonLabel(wText);
+            dialog2->Release();
+        }
+        break;
+    case QFileDialogOptions::LookIn:
     case QFileDialogOptions::FileType:
     case QFileDialogOptions::DialogLabelCount:
         break;
@@ -1347,6 +1359,8 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
         result->setLabelText(QFileDialogOptions::FileName, opts->labelText(QFileDialogOptions::FileName));
     if (opts->isLabelExplicitlySet(QFileDialogOptions::Accept))
         result->setLabelText(QFileDialogOptions::Accept, opts->labelText(QFileDialogOptions::Accept));
+    if (opts->isLabelExplicitlySet(QFileDialogOptions::Reject))
+        result->setLabelText(QFileDialogOptions::Reject, opts->labelText(QFileDialogOptions::Reject));
     result->updateDirectory();
     result->updateSelectedNameFilter();
     const QList<QUrl> initialSelection = opts->initiallySelectedFiles();
