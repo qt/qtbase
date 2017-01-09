@@ -343,9 +343,7 @@
 
     Applications can also communicate with each other by putting data on
     the clipboard. To access this, you need to obtain a QClipboard object
-    from the QApplication object:
-
-    \snippet ../widgets/widgets/charactermap/mainwindow.cpp 3
+    from the QApplication object.
 
     The QMimeData class is used to represent data that is transferred to and
     from the clipboard. To put data on the clipboard, you can use the
