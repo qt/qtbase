@@ -306,13 +306,13 @@ public:
 #endif
 #ifndef QT_NO_DOCKWIDGET
     QPointer<QWidget> currentHoveredFloat; // set when dragging over a floating dock widget
+    void setCurrentHoveredFloat(QWidget *w);
 #endif
 
     void hover(QLayoutItem *widgetItem, const QPoint &mousePos);
     bool plug(QLayoutItem *widgetItem);
     QLayoutItem *unplug(QWidget *widget, bool group = false);
     void revert(QLayoutItem *widgetItem);
-    void updateGapIndicator();
     void paintDropIndicator(QPainter *p, QWidget *widget, const QRegion &clip);
     void applyState(QMainWindowLayoutState &newState, bool animate = true);
     void restore(bool keepSavedState = false);
@@ -320,6 +320,7 @@ public:
     void animationFinished(QWidget *widget);
 
 private Q_SLOTS:
+    void updateGapIndicator();
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
     void tabChanged();
