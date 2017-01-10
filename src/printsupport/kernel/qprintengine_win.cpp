@@ -1224,11 +1224,20 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
         if (!ps)
             return;
+
+        QVariant pageSize = QVariant::fromValue(d->m_pageLayout.pageSize());
+        const bool isFullPage = (d->m_pageLayout.mode() == QPageLayout::FullPageMode);
+        QVariant orientation = QVariant::fromValue(d->m_pageLayout.orientation());
+        QVariant margins = QVariant::fromValue(
+            QPair<QMarginsF, QPageLayout::Unit>(d->m_pageLayout.margins(), d->m_pageLayout.units()));
         QPrintDevice printDevice = ps->createPrintDevice(id.isEmpty() ? ps->defaultPrintDeviceId() : id);
         if (printDevice.isValid()) {
             d->m_printDevice = printDevice;
-            // TODO Do we need to check if the page size is valid on new printer?
             d->initialize();
+            setProperty(PPK_QPageSize, pageSize);
+            setProperty(PPK_FullPage, QVariant(isFullPage));
+            setProperty(PPK_Orientation, orientation);
+            setProperty(PPK_QPageMargins, margins);
         }
         break;
     }
