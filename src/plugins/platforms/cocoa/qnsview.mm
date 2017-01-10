@@ -2193,7 +2193,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     }
 
     NSPoint windowPoint = [self.window convertRectFromScreen:NSMakeRect(screenPoint.x, screenPoint.y, 1, 1)].origin;
-    QPoint qtWindowPoint(windowPoint.x, windowPoint.y);
+    NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil]; // NSView/QWindow coordinates
+    QPoint qtWindowPoint(nsViewPoint.x, nsViewPoint.y);
 
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
