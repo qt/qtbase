@@ -358,6 +358,8 @@ void tst_QFont::serialize_data()
     // Versions <= Qt 2.1 had broken point size serialization,
     // so we set an integer point size.
     basicFont.setPointSize(9);
+    // Versions <= Qt 5.4 didn't serialize styleName, so clear it
+    basicFont.setStyleName(QString());
 
     QFont font = basicFont;
     QTest::newRow("defaultConstructed") << font << QDataStream::Qt_1_0;
