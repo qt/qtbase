@@ -56,6 +56,8 @@ class QNetworkConfiguration;
 class QNetworkProxyQueryPrivate;
 class Q_NETWORK_EXPORT QNetworkProxyQuery
 {
+    Q_GADGET
+
 public:
     enum QueryType {
         TcpSocket,
@@ -65,6 +67,7 @@ public:
         UrlRequest,
         SctpServer
     };
+    Q_ENUM(QueryType)
 
     QNetworkProxyQuery();
     explicit QNetworkProxyQuery(const QUrl &requestUrl, QueryType queryType = UrlRequest);
@@ -222,6 +225,7 @@ public:
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkProxy &proxy);
+Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkProxyQuery &proxyQuery);
 #endif
 
 QT_END_NAMESPACE

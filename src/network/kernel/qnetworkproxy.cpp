@@ -1636,10 +1636,6 @@ QList<QNetworkProxy> QNetworkProxyFactory::proxyForQuery(const QNetworkProxyQuer
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-/*!
-    \since 5.0
-    Outputs a QNetworkProxy details to a debug stream
-*/
 QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
 {
     QDebugStateSaver saver(debug);
@@ -1686,6 +1682,21 @@ QDebug operator<<(QDebug debug, const QNetworkProxy &proxy)
     if (caps & QNetworkProxy::SctpListeningCapability)
         scaps << QStringLiteral("SctpListen");
     debug << '[' << scaps.join(QLatin1Char(' ')) << ']';
+    return debug;
+}
+
+QDebug operator<<(QDebug debug, const QNetworkProxyQuery &proxyQuery)
+{
+    QDebugStateSaver saver(debug);
+    debug.resetFormat().nospace()
+        << "ProxyQuery("
+        << "type: " << proxyQuery.queryType()
+        << ", protocol: " << proxyQuery.protocolTag()
+        << ", peerPort: " << proxyQuery.peerPort()
+        << ", peerHostName: " << proxyQuery.peerHostName()
+        << ", localPort: " << proxyQuery.localPort()
+        << ", url: " << proxyQuery.url()
+        << ')';
     return debug;
 }
 #endif
