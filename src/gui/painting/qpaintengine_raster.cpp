@@ -4472,9 +4472,9 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             gradient.alphaColor = !brush.isOpaque() || alpha != 256;
 
             auto cacheInfo = qt_gradient_cache()->getBuffer(*g, alpha);
-            cachedGradient = cacheInfo;
             gradient.colorTable32 = cacheInfo->buffer32;
             gradient.colorTable64 = cacheInfo->buffer64;
+            cachedGradient = std::move(cacheInfo);
 
             gradient.spread = g->spread();
 
@@ -4494,9 +4494,9 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             gradient.alphaColor = !brush.isOpaque() || alpha != 256;
 
             auto cacheInfo = qt_gradient_cache()->getBuffer(*g, alpha);
-            cachedGradient = cacheInfo;
             gradient.colorTable32 = cacheInfo->buffer32;
             gradient.colorTable64 = cacheInfo->buffer64;
+            cachedGradient = std::move(cacheInfo);
 
             gradient.spread = g->spread();
 
@@ -4520,9 +4520,9 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             gradient.alphaColor = !brush.isOpaque() || alpha != 256;
 
             auto cacheInfo = qt_gradient_cache()->getBuffer(*g, alpha);
-            cachedGradient = cacheInfo;
             gradient.colorTable32 = cacheInfo->buffer32;
             gradient.colorTable64 = cacheInfo->buffer64;
+            cachedGradient = std::move(cacheInfo);
 
             gradient.spread = QGradient::RepeatSpread;
 
