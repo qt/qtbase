@@ -767,6 +767,11 @@ class StaticEventLoop
 public:
     static void quitEventLoop()
     {
+        quitEventLoop_noexcept();
+    }
+
+    static void quitEventLoop_noexcept() Q_DECL_NOTHROW
+    {
         QVERIFY(!_e.isNull());
         _e->quit();
         if (_t)
@@ -785,6 +790,9 @@ void tst_QTimer::singleShotToFunctors()
     QCOMPARE(count, 1);
 
     QTimer::singleShot(0, &StaticEventLoop::quitEventLoop);
+    QCOMPARE(_e->exec(), 0);
+
+    QTimer::singleShot(0, &StaticEventLoop::quitEventLoop_noexcept);
     QCOMPARE(_e->exec(), 0);
 
     QThread t1;
