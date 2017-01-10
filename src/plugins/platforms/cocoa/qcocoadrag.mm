@@ -201,6 +201,10 @@ QPixmap QCocoaDrag::dragPixmap(QDrag *drag, QPoint &hotSpot) const
                             dpr = sourceWindow->devicePixelRatio();
                     }
 #endif
+                    else {
+                        if (const QWindow *focusWindow = qApp->focusWindow())
+                            dpr = focusWindow->devicePixelRatio();
+                    }
                     pm = QPixmap(width * dpr, height * dpr);
                     pm.setDevicePixelRatio(dpr);
                     QPainter p(&pm);
