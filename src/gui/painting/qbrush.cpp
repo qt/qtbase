@@ -1419,6 +1419,25 @@ void QGradient::setColorAt(qreal pos, const QColor &color)
         m_stops.insert(index, QGradientStop(pos, color));
 }
 
+static inline bool ok(QGradientStop stop)
+{
+    return stop.first >= 0 && stop.first <= 1; // rejects NaNs
+}
+
+static inline bool ok(const QGradientStops &stops)
+{
+    qreal lastPos = -1;
+    for (const QGradientStop &stop : stops) {
+        if (Q_UNLIKELY(!ok(stop)))
+            return false;
+        const bool sorted = stop.first > lastPos; // rejects duplicates
+        if (Q_UNLIKELY(!sorted))
+            return false;
+        lastPos = stop.first;
+    }
+    return true;
+}
+
 /*!
     \fn void QGradient::setStops(const QGradientStops &stopPoints)
 
@@ -1430,6 +1449,14 @@ void QGradient::setColorAt(qreal pos, const QColor &color)
 */
 void QGradient::setStops(const QGradientStops &stops)
 {
+    // ## Qt 6: consider taking \a stops by value, so we can move into m_stops
+    if (Q_LIKELY(ok(stops))) {
+        // fast path for the common case: if everything is ok with the stops, just copy them
+        m_stops = stops;
+        return;
+    }
+    // otherwise, to keep the pre-5.9 behavior, add them one after another,
+    // so each stop is checked, invalid ones are skipped, they are added in-order (which may be O(N^2)).
     m_stops.clear();
     for (int i=0; i<stops.size(); ++i)
         setColorAt(stops.at(i).first, stops.at(i).second);
