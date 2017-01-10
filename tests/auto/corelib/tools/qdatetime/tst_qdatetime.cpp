@@ -155,8 +155,6 @@ private:
     QDateTime invalidDateTime() const { return QDateTime(invalidDate(), invalidTime()); }
     QDate invalidDate() const { return QDate(); }
     QTime invalidTime() const { return QTime(-1, -1, -1); }
-    qint64 minJd() const { return QDateTimePrivate::minJd(); }
-    qint64 maxJd() const { return QDateTimePrivate::maxJd(); }
 };
 
 Q_DECLARE_METATYPE(Qt::TimeSpec)

@@ -140,9 +140,6 @@ public:
     // Inlined for its one caller in qdatetime.cpp
     inline void setUtcOffsetByTZ(qint64 atMSecsSinceEpoch);
 #endif // timezone
-
-    static inline qint64 minJd() { return QDate::minJd(); }
-    static inline qint64 maxJd() { return QDate::maxJd(); }
 };
 
 QT_END_NAMESPACE
