@@ -54,7 +54,7 @@
 #include <QPainter>
 #include <QStyleOption>
 
-#include <math.h>
+#include <cmath>
 
 static const double Pi = 3.14159265358979323846264338327950288419717;
 static double TwoPi = 2.0 * Pi;
@@ -139,9 +139,7 @@ void Mouse::timerEvent(QTimerEvent *)
 //! [5]
     QLineF lineToCenter(QPointF(0, 0), mapFromScene(0, 0));
     if (lineToCenter.length() > 150) {
-        qreal angleToCenter = ::acos(lineToCenter.dx() / lineToCenter.length());
-        if (lineToCenter.dy() < 0)
-            angleToCenter = TwoPi - angleToCenter;
+        qreal angleToCenter = std::atan2(lineToCenter.dy(), lineToCenter.dx());
         angleToCenter = normalizeAngle((Pi - angleToCenter) + Pi / 2);
 
         if (angleToCenter < Pi && angleToCenter > Pi / 4) {
@@ -170,9 +168,7 @@ void Mouse::timerEvent(QTimerEvent *)
             continue;
 
         QLineF lineToMouse(QPointF(0, 0), mapFromItem(item, 0, 0));
-        qreal angleToMouse = ::acos(lineToMouse.dx() / lineToMouse.length());
-        if (lineToMouse.dy() < 0)
-            angleToMouse = TwoPi - angleToMouse;
+        qreal angleToMouse = std::atan2(lineToMouse.dy(), lineToMouse.dx());
         angleToMouse = normalizeAngle((Pi - angleToMouse) + Pi / 2);
 
         if (angleToMouse >= 0 && angleToMouse < Pi / 2) {

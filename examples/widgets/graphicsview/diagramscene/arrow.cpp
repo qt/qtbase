@@ -51,7 +51,7 @@
 
 #include "arrow.h"
 
-#include <math.h>
+#include <cmath>
 
 #include <QPen>
 #include <QPainter>
@@ -132,9 +132,7 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
     setLine(QLineF(intersectPoint, myStartItem->pos()));
 //! [5] //! [6]
 
-    double angle = ::acos(line().dx() / line().length());
-    if (line().dy() >= 0)
-        angle = (Pi * 2) - angle;
+    double angle = std::atan2(-line().dy(), line().dx());
 
     QPointF arrowP1 = line().p1() + QPointF(sin(angle + Pi / 3) * arrowSize,
                                     cos(angle + Pi / 3) * arrowSize);

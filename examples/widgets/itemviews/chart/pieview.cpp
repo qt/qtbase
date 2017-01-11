@@ -125,9 +125,9 @@ QModelIndex PieView::indexAt(const QPoint &point) const
             return QModelIndex();
 
         // Determine the angle of the point.
-        double angle = (180 / M_PI) * std::acos(cx / d);
-        if (cy < 0)
-            angle = 360 - angle;
+        double angle = (180 / M_PI) * std::atan2(cy, cx);
+        if (angle < 0)
+            angle = 360 + angle;
 
         // Find the relevant slice of the pie.
         double startAngle = 0.0;
