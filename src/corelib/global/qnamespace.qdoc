@@ -2651,7 +2651,7 @@
     \value FontRole             The font used for items rendered with the default
                                 delegate. (QFont)
     \value TextAlignmentRole    The alignment of the text for items rendered with the
-                                default delegate. (Qt::AlignmentFlag)
+                                default delegate. (Qt::Alignment)
     \value BackgroundRole       The background brush used for items rendered with
                                 the default delegate. (QBrush)
     \value BackgroundColorRole  This role is obsolete. Use BackgroundRole instead.
