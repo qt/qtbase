@@ -423,6 +423,7 @@
         },
         "directfb": {
             "label": "DirectFB",
+            "section": "Platform plugins",
             "autoDetect": false,
             "condition": "libs.directfb",
             "output": [ "privateFeature" ]
@@ -441,6 +442,7 @@
         },
         "direct2d": {
             "label": "Direct 2D",
+            "section": "Platform plugins",
             "condition": "config.win32 && !config.winrt && libs.direct2d",
             "output": [ "privateFeature" ]
         },
@@ -493,6 +495,7 @@
         },
         "integrityfb": {
             "label": "INTEGRITY framebuffer",
+            "section": "Platform plugins",
             "condition": "config.integrity",
             "output": [ "privateFeature" ]
         },
@@ -519,11 +522,13 @@
         },
         "linuxfb": {
             "label": "LinuxFB",
+            "section": "Platform plugins",
             "condition": "tests.linuxfb",
             "output": [ "privateFeature" ]
         },
         "mirclient": {
             "label": "Mir client",
+            "section": "Platform plugins",
             "condition": "libs.mirclient",
             "output": [ "privateFeature" ]
         },
@@ -594,6 +599,7 @@
         },
         "eglfs": {
             "label": "EGLFS",
+            "section": "Platform plugins",
             "autoDetect": "!config.android && !config.win32",
             "condition": "features.egl",
             "output": [ "privateFeature" ]
@@ -691,6 +697,7 @@
         },
         "xcb": {
             "label": "XCB",
+            "section": "Platform plugins",
             "autoDetect": "!config.darwin",
             "condition": "libs.xcb",
             "output": [ "privateFeature" ]
