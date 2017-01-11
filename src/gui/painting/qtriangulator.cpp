@@ -50,10 +50,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qalgorithms.h>
-#ifndef QT_NO_OPENGL
-# include <private/qopenglcontext_p.h>
-# include <private/qopenglextensions_p.h>
-#endif
 #include <private/qrbtree_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -2266,23 +2262,12 @@ void QTriangulator<T>::MonotoneToTriangles::decompose()
 //                                qTriangulate                                //
 //============================================================================//
 
-static bool hasElementIndexUint()
-{
-#ifndef QT_NO_OPENGL
-    QOpenGLContext *context = QOpenGLContext::currentContext();
-    if (!context)
-        return false;
-    return static_cast<QOpenGLExtensions *>(context->functions())->hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
-#else
-    return false;
-#endif
-}
-
 Q_GUI_EXPORT QTriangleSet qTriangulate(const qreal *polygon,
-                          int count, uint hint, const QTransform &matrix)
+                                       int count, uint hint, const QTransform &matrix,
+                                       bool allowUintIndices)
 {
     QTriangleSet triangleSet;
-    if (hasElementIndexUint()) {
+    if (allowUintIndices) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(polygon, count, hint, matrix);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -2300,10 +2285,13 @@ Q_GUI_EXPORT QTriangleSet qTriangulate(const qreal *polygon,
 }
 
 Q_GUI_EXPORT QTriangleSet qTriangulate(const QVectorPath &path,
-                          const QTransform &matrix, qreal lod)
+                                       const QTransform &matrix, qreal lod, bool allowUintIndices)
 {
     QTriangleSet triangleSet;
-    if (hasElementIndexUint()) {
+    // For now systems that support 32-bit index values will always get 32-bit
+    // index values. This is not necessary ideal since 16-bit would be enough in
+    // many cases. TODO revisit this at a later point.
+    if (allowUintIndices) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -2320,10 +2308,10 @@ Q_GUI_EXPORT QTriangleSet qTriangulate(const QVectorPath &path,
 }
 
 QTriangleSet qTriangulate(const QPainterPath &path,
-                          const QTransform &matrix, qreal lod)
+                          const QTransform &matrix, qreal lod, bool allowUintIndices)
 {
     QTriangleSet triangleSet;
-    if (hasElementIndexUint()) {
+    if (allowUintIndices) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -2340,10 +2328,10 @@ QTriangleSet qTriangulate(const QPainterPath &path,
 }
 
 QPolylineSet qPolyline(const QVectorPath &path,
-                       const QTransform &matrix, qreal lod)
+                       const QTransform &matrix, qreal lod, bool allowUintIndices)
 {
     QPolylineSet polyLineSet;
-    if (hasElementIndexUint()) {
+    if (allowUintIndices) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.polyline();
@@ -2360,10 +2348,10 @@ QPolylineSet qPolyline(const QVectorPath &path,
 }
 
 QPolylineSet qPolyline(const QPainterPath &path,
-                       const QTransform &matrix, qreal lod)
+                       const QTransform &matrix, qreal lod, bool allowUintIndices)
 {
     QPolylineSet polyLineSet;
-    if (hasElementIndexUint()) {
+    if (allowUintIndices) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.polyline();

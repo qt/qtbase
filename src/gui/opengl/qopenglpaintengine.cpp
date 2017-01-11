@@ -761,6 +761,8 @@ void QOpenGL2PaintEngineExPrivate::fill(const QVectorPath& path)
     if (matrixDirty)
         updateMatrix();
 
+    const bool supportsElementIndexUint = funcs.hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
+
     const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
 
     // Check to see if there's any hints
@@ -881,7 +883,7 @@ void QOpenGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
             // Flatten the path at the current scale factor and fill it into the cache struct.
             if (updateCache) {
-                QTriangleSet polys = qTriangulate(path, QTransform().scale(1 / inverseScale, 1 / inverseScale));
+                QTriangleSet polys = qTriangulate(path, QTransform().scale(1 / inverseScale, 1 / inverseScale), 1, supportsElementIndexUint);
                 cache->vertexCount = polys.vertices.size() / 2;
                 cache->indexCount = polys.indices.size();
                 cache->primitiveType = GL_TRIANGLES;
@@ -950,7 +952,7 @@ void QOpenGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                                   && (bbox.top() > -0x8000 * inverseScale)
                                   && (bbox.bottom() < 0x8000 * inverseScale);
                 if (withinLimits) {
-                    QTriangleSet polys = qTriangulate(path, QTransform().scale(1 / inverseScale, 1 / inverseScale));
+                    QTriangleSet polys = qTriangulate(path, QTransform().scale(1 / inverseScale, 1 / inverseScale), 1, supportsElementIndexUint);
 
                     QVarLengthArray<float> vertices(polys.vertices.size());
                     for (int i = 0; i < polys.vertices.size(); ++i)
