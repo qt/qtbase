@@ -65,46 +65,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
 
-    Returns the stdlib open string corresponding to a QIODevice::OpenMode.
-*/
-static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QFileSystemEntry &fileEntry,
-        QFileSystemMetaData &metaData)
-{
-    QByteArray mode;
-    if ((flags & QIODevice::ReadOnly) && !(flags & QIODevice::Truncate)) {
-        mode = "rb";
-        if (flags & QIODevice::WriteOnly) {
-            metaData.clearFlags(QFileSystemMetaData::FileType);
-            if (!fileEntry.isEmpty()
-                    && QFileSystemEngine::fillMetaData(fileEntry, metaData, QFileSystemMetaData::FileType)
-                    && metaData.isFile()) {
-                mode += '+';
-            } else {
-                mode = "wb+";
-            }
-        }
-    } else if (flags & QIODevice::WriteOnly) {
-        mode = "wb";
-        if (flags & QIODevice::ReadOnly)
-            mode += '+';
-    }
-    if (flags & QIODevice::Append) {
-        mode = "ab";
-        if (flags & QIODevice::ReadOnly)
-            mode += '+';
-    }
-
-#if defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0207
-    // must be glibc >= 2.7
-    mode += 'e';
-#endif
-
-    return mode;
-}
-
-/*!
-    \internal
-
     Returns the stdio open flags corresponding to a QIODevice::OpenMode.
 */
 static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
@@ -130,17 +90,6 @@ static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
     return oflags;
 }
 
-/*!
-    \internal
-
-    Sets the file descriptor to close on exec. That is, the file
-    descriptor is not inherited by child processes.
-*/
-static inline bool setCloseOnExec(int fd)
-{
-    return fd != -1 && fcntl(fd, F_SETFD, FD_CLOEXEC) != -1;
-}
-
 static inline QString msgOpenDirectory()
 {
     const char message[] = QT_TRANSLATE_NOOP("QIODevice", "file to open is a directory");
@@ -158,6 +107,8 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
 {
     Q_Q(QFSFileEngine);
 
+    Q_ASSERT_X(openMode & QIODevice::Unbuffered, "QFSFileEngine::open",
+               "QFSFileEngine no longer supports buffered mode; upper layer must buffer");
     if (openMode & QIODevice::Unbuffered) {
         int flags = openModeToOpenFlags(openMode);
 
@@ -199,49 +150,6 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
         }
 
         fh = 0;
-    } else {
-        QByteArray fopenMode = openModeToFopenMode(openMode, fileEntry, metaData);
-
-        // Try to open the file in buffered mode.
-        do {
-            fh = QT_FOPEN(fileEntry.nativeFilePath().constData(), fopenMode.constData());
-        } while (!fh && errno == EINTR);
-
-        // On failure, return and report the error.
-        if (!fh) {
-            q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
-                        qt_error_string(int(errno)));
-            return false;
-        }
-
-        if (!(openMode & QIODevice::WriteOnly)) {
-            // we don't need this check if we tried to open for writing because then
-            // we had received EISDIR anyway.
-            if (QFileSystemEngine::fillMetaData(QT_FILENO(fh), metaData)
-                    && metaData.isDirectory()) {
-                q->setError(QFile::OpenError, msgOpenDirectory());
-                fclose(fh);
-                return false;
-            }
-        }
-
-        setCloseOnExec(fileno(fh)); // ignore failure
-
-        // Seek to the end when in Append mode.
-        if (openMode & QIODevice::Append) {
-            int ret;
-            do {
-                ret = QT_FSEEK(fh, 0, SEEK_END);
-            } while (ret == -1 && errno == EINTR);
-
-            if (ret == -1) {
-                q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
-                            qt_error_string(int(errno)));
-                return false;
-            }
-        }
-
-        fd = -1;
     }
 
     closeFileHandle = true;

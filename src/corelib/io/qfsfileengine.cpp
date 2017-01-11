@@ -195,6 +195,9 @@ void QFSFileEngine::setFileName(const QString &file)
 */
 bool QFSFileEngine::open(QIODevice::OpenMode openMode)
 {
+    Q_ASSERT_X(openMode & QIODevice::Unbuffered, "QFSFileEngine::open",
+               "QFSFileEngine no longer supports buffered mode; upper layer must buffer");
+
     Q_D(QFSFileEngine);
     if (d->fileEntry.isEmpty()) {
         qWarning("QFSFileEngine::open: No file name specified");
@@ -230,6 +233,9 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
 
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHandleFlags handleFlags)
 {
+    Q_ASSERT_X(openMode & QIODevice::Unbuffered, "QFSFileEngine::open",
+               "QFSFileEngine no longer supports buffered mode; upper layer must buffer");
+
     Q_D(QFSFileEngine);
 
     // Append implies WriteOnly.
@@ -255,6 +261,9 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh, QFile::FileHand
 */
 bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
 {
+    Q_ASSERT_X(openMode & QIODevice::Unbuffered, "QFSFileEngine::open",
+               "QFSFileEngine no longer supports buffered mode; upper layer must buffer");
+
     Q_Q(QFSFileEngine);
     this->fh = fh;
     fd = -1;

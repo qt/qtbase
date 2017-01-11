@@ -956,7 +956,9 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
         qWarning("QFile::open: File access not specified");
         return false;
     }
-    if (d->openExternalFile(mode, fh, handleFlags)) {
+
+    // QIODevice provides the buffering, so request unbuffered file engines
+    if (d->openExternalFile(mode | Unbuffered, fh, handleFlags)) {
         QIODevice::open(mode);
         if (!(mode & Append) && !isSequential()) {
             qint64 pos = (qint64)QT_FTELL(fh);
@@ -1012,7 +1014,9 @@ bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
         qWarning("QFile::open: File access not specified");
         return false;
     }
-    if (d->openExternalFile(mode, fd, handleFlags)) {
+
+    // QIODevice provides the buffering, so request unbuffered file engines
+    if (d->openExternalFile(mode | Unbuffered, fd, handleFlags)) {
         QIODevice::open(mode);
         if (!(mode & Append) && !isSequential()) {
             qint64 pos = (qint64)QT_LSEEK(fd, QT_OFF_T(0), SEEK_CUR);
