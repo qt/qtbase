@@ -206,7 +206,7 @@ QRegion QIntegrityFbScreen::doRedraw()
             (uint32_t)rects[i].width(),
             (uint32_t)rects[i].height()
         };
-        mBlitter->drawImage(rects[i], *mScreenImage, rects[i]);
+        mBlitter->drawImage(rects[i], mScreenImage, rects[i]);
         gh_FB_expose(mFbh, &fbrect, NULL);
     }
     return touched;

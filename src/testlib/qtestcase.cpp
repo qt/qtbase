@@ -99,7 +99,9 @@
 #include <errno.h>
 #include <signal.h>
 #include <time.h>
-#include <sys/resource.h>
+# if !defined(Q_OS_INTEGRITY)
+#  include <sys/resource.h>
+# endif
 #endif
 
 #if defined(Q_OS_MACX)
@@ -186,7 +188,7 @@ static void disableCoreDump()
     bool ok = false;
     const int disableCoreDump = qEnvironmentVariableIntValue("QTEST_DISABLE_CORE_DUMP", &ok);
     if (ok && disableCoreDump == 1) {
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
         struct rlimit limit;
         limit.rlim_cur = 0;
         limit.rlim_max = 0;

@@ -354,6 +354,7 @@
 #  elif defined(__ghs)
 #    define Q_CC_GHS
 #    define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
+#    define Q_PACKED __attribute__ ((__packed__))
 #    define Q_FUNC_INFO       __PRETTY_FUNCTION__
 #    define Q_TYPEOF(expr)      __typeof__(expr)
 #    define Q_ALIGNOF(type)     __alignof__(type)
