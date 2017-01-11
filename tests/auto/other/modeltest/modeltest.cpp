@@ -104,10 +104,10 @@ void ModelTest::runAllTests()
 */
 void ModelTest::nonDestructiveBasicTest()
 {
-    QVERIFY( model->buddy ( QModelIndex() ) == QModelIndex() );
+    QVERIFY(!model->buddy(QModelIndex()).isValid());
     model->canFetchMore ( QModelIndex() );
     QVERIFY( model->columnCount ( QModelIndex() ) >= 0 );
-    QVERIFY( model->data ( QModelIndex() ) == QVariant() );
+    QCOMPARE(model->data(QModelIndex()), QVariant());
     fetchingMore = true;
     model->fetchMore ( QModelIndex() );
     fetchingMore = false;
@@ -121,7 +121,7 @@ void ModelTest::nonDestructiveBasicTest()
     QVariant cache;
     model->match ( QModelIndex(), -1, cache );
     model->mimeTypes();
-    QVERIFY( model->parent ( QModelIndex() ) == QModelIndex() );
+    QVERIFY(!model->parent(QModelIndex()).isValid());
     QVERIFY( model->rowCount() >= 0 );
     QVariant variant;
     model->setData ( QModelIndex(), variant, -1 );
@@ -211,9 +211,9 @@ void ModelTest::index()
 {
 //     qDebug() << "i";
     // Make sure that invalid values returns an invalid index
-    QVERIFY( model->index ( -2, -2 ) == QModelIndex() );
-    QVERIFY( model->index ( -2, 0 ) == QModelIndex() );
-    QVERIFY( model->index ( 0, -2 ) == QModelIndex() );
+    QVERIFY(!model->index(-2, -2).isValid());
+    QVERIFY(!model->index(-2, 0).isValid());
+    QVERIFY(!model->index(0, -2).isValid());
 
     int rows = model->rowCount();
     int columns = model->columnCount();
@@ -222,13 +222,13 @@ void ModelTest::index()
         return;
 
     // Catch off by one errors
-    QVERIFY( model->index ( rows, columns ) == QModelIndex() );
-    QVERIFY( model->index ( 0, 0 ).isValid() );
+    QVERIFY(!model->index(rows, columns).isValid());
+    QVERIFY(model->index(0, 0).isValid());
 
     // Make sure that the same index is *always* returned
     QModelIndex a = model->index ( 0, 0 );
     QModelIndex b = model->index ( 0, 0 );
-    QVERIFY( a == b );
+    QCOMPARE(a, b);
 
     // index() is tested more extensively in checkChildren(),
     // but this catches the big mistakes
@@ -242,7 +242,7 @@ void ModelTest::parent()
 //     qDebug() << "p";
     // Make sure the model won't crash and will return an invalid QModelIndex
     // when asked for the parent of an invalid index.
-    QVERIFY( model->parent ( QModelIndex() ) == QModelIndex() );
+    QVERIFY(!model->parent(QModelIndex()).isValid());
 
     if ( model->rowCount() == 0 )
         return;
@@ -255,13 +255,13 @@ void ModelTest::parent()
     // Common error test #1, make sure that a top level index has a parent
     // that is a invalid QModelIndex.
     QModelIndex topIndex = model->index ( 0, 0, QModelIndex() );
-    QVERIFY( model->parent ( topIndex ) == QModelIndex() );
+    QVERIFY(!model->parent(topIndex).isValid());
 
     // Common error test #2, make sure that a second level index has a parent
     // that is the first level index.
     if ( model->rowCount ( topIndex ) > 0 ) {
         QModelIndex childIndex = model->index ( 0, 0, topIndex );
-        QVERIFY( model->parent ( childIndex ) == topIndex );
+        QCOMPARE(model->parent(childIndex), topIndex);
     }
 
     // Common error test #3, the second column should NOT have the same children
@@ -336,28 +336,28 @@ void ModelTest::checkChildren ( const QModelIndex &parent, int currentDepth )
             QVERIFY( model->hasIndex ( r, c, parent ) );
             QModelIndex index = model->index ( r, c, parent );
             // rowCount() and columnCount() said that it existed...
-            QVERIFY( index.isValid() );
+            QVERIFY(index.isValid());
 
             // index() should always return the same index when called twice in a row
             QModelIndex modifiedIndex = model->index ( r, c, parent );
-            QVERIFY( index == modifiedIndex );
+            QCOMPARE(index, modifiedIndex);
 
             // Make sure we get the same index if we request it twice in a row
             QModelIndex a = model->index ( r, c, parent );
             QModelIndex b = model->index ( r, c, parent );
-            QVERIFY( a == b );
+            QCOMPARE(a, b);
 
             {
                 const QModelIndex sibling = model->sibling( r, c, topLeftChild );
-                QVERIFY( index == sibling );
+                QCOMPARE(index, sibling);
             }
             {
                 const QModelIndex sibling = topLeftChild.sibling( r, c );
-                QVERIFY( index == sibling );
+                QCOMPARE(index, sibling);
             }
 
             // Some basic checking on the index that is returned
-            QVERIFY( index.model() == model );
+            QCOMPARE(index.model(), model);
             QCOMPARE( index.row(), r );
             QCOMPARE( index.column(), c );
             // While you can technically return a QVariant usually this is a sign
@@ -387,7 +387,7 @@ void ModelTest::checkChildren ( const QModelIndex &parent, int currentDepth )
 
             // make sure that after testing the children that the index doesn't change.
             QModelIndex newerIndex = model->index ( r, c, parent );
-            QVERIFY( index == newerIndex );
+            QCOMPARE(index, newerIndex);
         }
     }
 }
@@ -490,7 +490,7 @@ void ModelTest::rowsAboutToBeInserted ( const QModelIndex &parent, int start, in
 void ModelTest::rowsInserted ( const QModelIndex & parent, int start, int end )
 {
     Changing c = insert.pop();
-    QVERIFY( c.parent == parent );
+    QCOMPARE(c.parent, parent);
 //    qDebug() << "rowsInserted"  << "start=" << start << "end=" << end << "oldsize=" << c.oldSize
 //    << "parent=" << model->data ( parent ).toString() << "current rowcount of parent=" << model->rowCount ( parent );
 
@@ -500,8 +500,8 @@ void ModelTest::rowsInserted ( const QModelIndex & parent, int start, int end )
 //    }
 //    qDebug();
 
-    QVERIFY( c.oldSize + ( end - start + 1 ) == model->rowCount ( parent ) );
-    QVERIFY( c.last == model->data ( model->index ( start - 1, 0, c.parent ) ) );
+    QCOMPARE(c.oldSize + (end - start + 1), model->rowCount(parent));
+    QCOMPARE(c.last, model->data(model->index(start - 1, 0, c.parent)));
 
     if (c.next != model->data(model->index(end + 1, 0, c.parent))) {
         qDebug() << start << end;
@@ -510,7 +510,7 @@ void ModelTest::rowsInserted ( const QModelIndex & parent, int start, int end )
         qDebug() << c.next << model->data(model->index(end + 1, 0, c.parent));
     }
 
-    QVERIFY( c.next == model->data ( model->index ( end + 1, 0, c.parent ) ) );
+    QCOMPARE(c.next, model->data(model->index(end + 1, 0, c.parent)));
 }
 
 void ModelTest::layoutAboutToBeChanged()
@@ -523,7 +523,7 @@ void ModelTest::layoutChanged()
 {
     for ( int i = 0; i < changing.count(); ++i ) {
         QPersistentModelIndex p = changing[i];
-        QVERIFY( p == model->index ( p.row(), p.column(), p.parent() ) );
+        QCOMPARE(QModelIndex(p), model->index(p.row(), p.column(), p.parent()));
     }
     changing.clear();
 }
@@ -553,10 +553,10 @@ void ModelTest::rowsRemoved ( const QModelIndex & parent, int start, int end )
 {
   qDebug() << "rr" << parent << start << end;
     Changing c = remove.pop();
-    QVERIFY( c.parent == parent );
-    QVERIFY( c.oldSize - ( end - start + 1 ) == model->rowCount ( parent ) );
-    QVERIFY( c.last == model->data ( model->index ( start - 1, 0, c.parent ) ) );
-    QVERIFY( c.next == model->data ( model->index ( start, 0, c.parent ) ) );
+    QCOMPARE(c.parent, parent);
+    QCOMPARE(c.oldSize - (end - start + 1), model->rowCount(parent));
+    QCOMPARE(c.last, model->data(model->index(start - 1, 0, c.parent)));
+    QCOMPARE(c.next, model->data(model->index(start, 0, c.parent)));
 }
 
 void ModelTest::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
