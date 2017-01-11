@@ -53,6 +53,10 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qurl.h>
 
+#ifndef QT_NO_NETWORKPROXY
+#include <QtNetwork/qnetworkproxy.h>
+#endif
+
 #include <algorithm>
 #include <vector>
 
@@ -61,7 +65,8 @@ QT_BEGIN_NAMESPACE
 namespace
 {
 
-HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxHeaderListSize)
+HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxHeaderListSize,
+                                bool useProxy)
 {
     using namespace HPack;
 
@@ -73,7 +78,7 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
     const auto auth = request.url().authority(QUrl::FullyEncoded | QUrl::RemoveUserInfo).toLatin1();
     header.push_back(HeaderField(":authority", auth));
     header.push_back(HeaderField(":method", request.methodName()));
-    header.push_back(HeaderField(":path", request.uri(false)));
+    header.push_back(HeaderField(":path", request.uri(useProxy)));
     header.push_back(HeaderField(":scheme", request.url().scheme().toLatin1()));
 
     HeaderSize size = header_size(header);
@@ -403,7 +408,11 @@ bool QHttp2ProtocolHandler::sendHEADERS(Stream &stream)
     frameWriter.append(quint32()); // No stream dependency in Qt.
     frameWriter.append(stream.weight());
 
-    const auto headers = build_headers(stream.request(), maxHeaderListSize);
+    bool useProxy = false;
+#ifndef QT_NO_NETWORKPROXY
+    useProxy = m_connection->d_func()->networkProxy.type() != QNetworkProxy::NoProxy;
+#endif
+    const auto headers = build_headers(stream.request(), maxHeaderListSize, useProxy);
     if (!headers.size()) // nothing fits into maxHeaderListSize
         return false;
 
