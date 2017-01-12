@@ -1954,6 +1954,8 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 
 #if QT_DEPRECATED_SINCE(5, 9)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QSysInfo::MacVersion QSysInfo::macVersion()
 {
     const auto version = QOperatingSystemVersion::current();
@@ -1970,6 +1972,7 @@ QSysInfo::MacVersion QSysInfo::macVersion()
 #endif
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
+QT_WARNING_POP
 #endif
 
 #ifdef Q_OS_DARWIN
