@@ -393,7 +393,7 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
         return JNI_ERR;
 
     g_runPendingCppRunnablesMethodID = env->GetStaticMethodID(jQtNative,
-                                                       "runPendingCppRunnablesOnUiThread",
+                                                       "runPendingCppRunnablesOnAndroidThread",
                                                        "()V");
     g_hideSplashScreenMethodID = env->GetStaticMethodID(jQtNative, "hideSplashScreen", "()V");
     g_jNativeClass = static_cast<jclass>(env->NewGlobalRef(jQtNative));
