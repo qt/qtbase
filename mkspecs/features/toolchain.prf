@@ -12,7 +12,12 @@ defineReplace(qtMakeExpand) {
     }
 }
 
-isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
+host_build: \
+    target_prefix = QMAKE_HOST_CXX
+else: \
+    target_prefix = QMAKE_CXX
+
+isEmpty($${target_prefix}.INCDIRS) {
     #
     # Get default include and library paths from compiler
     #
@@ -44,6 +49,8 @@ isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
         }
         QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
     } else: msvc {
+        # This doesn't differentiate between host and target,
+        # but neither do the compilers.
         LIB = $$getenv("LIB")
         QMAKE_DEFAULT_LIBDIRS = $$split(LIB, $$QMAKE_DIRLIST_SEP)
         INCLUDE = $$getenv("INCLUDE")
@@ -55,8 +62,11 @@ isEmpty(QMAKE_DEFAULT_INCDIRS):!host_build {
         isEmpty(QMAKE_DEFAULT_LIBDIRS): QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib
     }
 
-    !isEmpty(QMAKE_DEFAULT_INCDIRS): cache(QMAKE_DEFAULT_INCDIRS, set stash)
-    !isEmpty(QMAKE_DEFAULT_LIBDIRS): cache(QMAKE_DEFAULT_LIBDIRS, set stash)
+    cache($${target_prefix}.INCDIRS, set stash, QMAKE_DEFAULT_INCDIRS)
+    cache($${target_prefix}.LIBDIRS, set stash, QMAKE_DEFAULT_LIBDIRS)
+} else {
+    QMAKE_DEFAULT_INCDIRS = $$eval($${target_prefix}.INCDIRS)
+    QMAKE_DEFAULT_LIBDIRS = $$eval($${target_prefix}.LIBDIRS)
 }
 
 #
@@ -72,11 +82,6 @@ defineReplace(qtVariablesFromGCC) {
     equals(QMAKE_HOST.os, Windows): null_device = NUL
     return($$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) <$$null_device 2>$$null_device", lines))
 }
-
-host_build: \
-    target_prefix = QMAKE_HOST_CXX
-else: \
-    target_prefix = QMAKE_CXX
 
 isEmpty($${target_prefix}.COMPILER_MACROS) {
     msvc {
