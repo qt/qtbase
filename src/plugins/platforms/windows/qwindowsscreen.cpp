@@ -188,14 +188,30 @@ QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
 
-QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int height) const
+QPixmap QWindowsScreen::grabWindow(WId window, int xIn, int yIn, int width, int height) const
 {
-    RECT r;
-    HWND hwnd = window ? reinterpret_cast<HWND>(window) : GetDesktopWindow();
-    GetClientRect(hwnd, &r);
+    QSize windowSize;
+    int x = xIn;
+    int y = yIn;
+    HWND hwnd = reinterpret_cast<HWND>(window);
+    if (hwnd) {
+        RECT r;
+        GetClientRect(hwnd, &r);
+        windowSize = QSize(r.right - r.left, r.bottom - r.top);
+    } else {
+        // Grab current screen. The client rectangle of GetDesktopWindow() is the
+        // primary screen, but it is possible to grab other screens from it.
+        hwnd = GetDesktopWindow();
+        const QRect screenGeometry = geometry();
+        windowSize = screenGeometry.size();
+        x += screenGeometry.x();
+        y += screenGeometry.y();
+    }
 
-    if (width < 0) width = r.right - r.left;
-    if (height < 0) height = r.bottom - r.top;
+    if (width < 0)
+        width = windowSize.width() - xIn;
+    if (height < 0)
+        height = windowSize.height() - yIn;
 
     // Create and setup bitmap
     HDC display_dc = GetDC(0);
