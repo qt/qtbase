@@ -103,7 +103,7 @@ public:
 
     QFbVtHandler *vtHandler() { return m_vtHandler.data(); }
 
-    void addScreen(QPlatformScreen *screen);
+    void addScreen(QPlatformScreen *screen, bool isPrimary = false);
     void removeScreen(QPlatformScreen *screen);
 
 private:

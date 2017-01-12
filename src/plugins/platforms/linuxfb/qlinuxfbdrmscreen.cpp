@@ -106,6 +106,7 @@ private:
     void *nativeDisplay() const override;
     QPlatformScreen *createScreen(const QKmsOutput &output) override;
     void registerScreen(QPlatformScreen *screen,
+                        bool isPrimary,
                         const QPoint &virtualPos,
                         const QList<QPlatformScreen *> &virtualSiblings) override;
 
@@ -175,10 +176,12 @@ QPlatformScreen *QLinuxFbDevice::createScreen(const QKmsOutput &output)
 }
 
 void QLinuxFbDevice::registerScreen(QPlatformScreen *screen,
-                            const QPoint &virtualPos,
-                            const QList<QPlatformScreen *> &virtualSiblings)
+                                    bool isPrimary,
+                                    const QPoint &virtualPos,
+                                    const QList<QPlatformScreen *> &virtualSiblings)
 {
     Q_UNUSED(screen);
+    Q_UNUSED(isPrimary);
     Q_UNUSED(virtualPos);
     Q_UNUSED(virtualSiblings);
     Q_UNREACHABLE();

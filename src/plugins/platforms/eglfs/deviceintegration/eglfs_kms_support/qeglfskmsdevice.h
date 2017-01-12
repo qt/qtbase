@@ -52,6 +52,7 @@ public:
     QEglFSKmsDevice(QKmsScreenConfig *screenConfig, const QString &path);
 
     void registerScreen(QPlatformScreen *screen,
+                        bool isPrimary,
                         const QPoint &virtualPos,
                         const QList<QPlatformScreen *> &virtualSiblings) override;
 };

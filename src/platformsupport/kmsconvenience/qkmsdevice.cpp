@@ -204,6 +204,8 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
             if (vposComp.count() == 2)
                 vinfo->virtualPos = QPoint(vposComp[0].trimmed().toInt(), vposComp[1].trimmed().toInt());
         }
+        if (userConnectorConfig.value(QStringLiteral("primary")).toBool())
+            vinfo->isPrimary = true;
     }
 
     const uint32_t crtc_id = resources->crtcs[crtc];
@@ -413,8 +415,11 @@ struct OrderedScreen
 QDebug operator<<(QDebug dbg, const OrderedScreen &s)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "OrderedScreen(" << s.screen << " : " << s.vinfo.virtualIndex
-                  << " / " << s.vinfo.virtualPos << ")";
+    dbg.nospace() << "OrderedScreen(QPlatformScreen=" << s.screen << " (" << s.screen->name() << ") : "
+                  << s.vinfo.virtualIndex
+                  << " / " << s.vinfo.virtualPos
+                  << " / primary: " << s.vinfo.isPrimary
+                  << ")";
     return dbg;
 }
 
@@ -461,13 +466,15 @@ void QKmsDevice::createScreens()
 
     drmModeFreeResources(resources);
 
-    // Use stable sort to preserve the original order for outputs with unspecified indices.
+    // Use stable sort to preserve the original (DRM connector) order
+    // for outputs with unspecified indices.
     std::stable_sort(screens.begin(), screens.end(), orderedScreenLessThan);
     qCDebug(qLcKmsDebug) << "Sorted screen list:" << screens;
 
     QPoint pos(0, 0);
     QList<QPlatformScreen *> siblings;
     QVector<QPoint> virtualPositions;
+    int primarySiblingIdx = -1;
 
     for (const OrderedScreen &orderedScreen : screens) {
         QPlatformScreen *s = orderedScreen.screen;
@@ -482,22 +489,26 @@ void QKmsDevice::createScreens()
         } else {
             virtualPos = orderedScreen.vinfo.virtualPos;
         }
-        qCDebug(qLcKmsDebug) << "Adding screen" << s << "to QPA with geometry" << s->geometry();
+        qCDebug(qLcKmsDebug) << "Adding QPlatformScren" << s << "(" << s->name() << ")"
+                             << "to QPA with geometry" << s->geometry()
+                             << "and isPrimary=" << orderedScreen.vinfo.isPrimary;
         // The order in qguiapp's screens list will match the order set by
         // virtualIndex. This is not only handy but also required since for instance
         // evdevtouch relies on it when performing touch device - screen mapping.
         if (!m_screenConfig->separateScreens()) {
             siblings.append(s);
             virtualPositions.append(virtualPos);
+            if (orderedScreen.vinfo.isPrimary)
+                primarySiblingIdx = siblings.count() - 1;
         } else {
-            registerScreen(s, virtualPos, QList<QPlatformScreen *>() << s);
+            registerScreen(s, orderedScreen.vinfo.isPrimary, virtualPos, QList<QPlatformScreen *>() << s);
         }
     }
 
     if (!m_screenConfig->separateScreens()) {
         // enable the virtual desktop
         for (int i = 0; i < siblings.count(); ++i)
-            registerScreen(siblings[i], virtualPositions[i], siblings);
+            registerScreen(siblings[i], i == primarySiblingIdx, virtualPositions[i], siblings);
     }
 }
 

@@ -116,9 +116,9 @@ QEglFSIntegration::QEglFSIntegration()
     initResources();
 }
 
-void QEglFSIntegration::addScreen(QPlatformScreen *screen)
+void QEglFSIntegration::addScreen(QPlatformScreen *screen, bool isPrimary)
 {
-    screenAdded(screen);
+    screenAdded(screen, isPrimary);
 }
 
 void QEglFSIntegration::removeScreen(QPlatformScreen *screen)

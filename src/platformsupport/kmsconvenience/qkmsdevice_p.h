@@ -120,9 +120,10 @@ class QKmsDevice
 {
 public:
     struct VirtualDesktopInfo {
-        VirtualDesktopInfo() : virtualIndex(0) { }
+    VirtualDesktopInfo() : virtualIndex(0), isPrimary(false) { }
         int virtualIndex;
         QPoint virtualPos;
+        bool isPrimary;
     };
 
     QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path = QString());
@@ -142,6 +143,7 @@ public:
 protected:
     virtual QPlatformScreen *createScreen(const QKmsOutput &output) = 0;
     virtual void registerScreen(QPlatformScreen *screen,
+                                bool isPrimary,
                                 const QPoint &virtualPos,
                                 const QList<QPlatformScreen *> &virtualSiblings) = 0;
 
