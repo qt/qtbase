@@ -12,7 +12,7 @@ defineReplace(qtMakeExpand) {
     }
 }
 
-host_build: \
+cross_compile:host_build: \
     target_prefix = QMAKE_HOST_CXX
 else: \
     target_prefix = QMAKE_CXX
