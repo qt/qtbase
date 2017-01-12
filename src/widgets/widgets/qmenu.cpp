@@ -401,17 +401,6 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
     itemsDirty = 0;
 }
 
-QSize QMenuPrivate::adjustMenuSizeForScreen(const QRect &screen)
-{
-    Q_Q(QMenu);
-    QSize ret = screen.size();
-    itemsDirty = true;
-    updateActionRects(screen);
-    const int fw = q->style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
-    ret.setWidth(actionRects.at(getLastVisibleAction()).right() + fw);
-    return ret;
-}
-
 int QMenuPrivate::getLastVisibleAction() const
 {
     //let's try to get the last visible action
@@ -2265,7 +2254,8 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     else
         pos = p;
 
-    QSize size = sizeHint();
+    const QSize menuSizeHint(sizeHint());
+    QSize size = menuSizeHint;
     QRect screen;
 #ifndef QT_NO_GRAPHICSVIEW
     bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
@@ -2278,13 +2268,11 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     bool adjustToDesktop = !window()->testAttribute(Qt::WA_DontShowOnScreen);
 
     // if the screens have very different geometries and the menu is too big, we have to recalculate
-    if (size.height() > screen.height() || size.width() > screen.width()) {
-        size = d->adjustMenuSizeForScreen(screen);
-        adjustToDesktop = true;
-    }
-    // Layout is not right, we might be able to save horizontal space
-    if (d->ncols >1 && size.height() < screen.height()) {
-        size = d->adjustMenuSizeForScreen(screen);
+    if ((size.height() > screen.height() || size.width() > screen.width()) ||
+        // Layout is not right, we might be able to save horizontal space
+        (d->ncols >1 && size.height() < screen.height())) {
+        size.setWidth(qMin(menuSizeHint.width(), screen.width() - desktopFrame * 2));
+        size.setHeight(qMin(menuSizeHint.height(), screen.height() - desktopFrame * 2));
         adjustToDesktop = true;
     }
 
@@ -2337,7 +2325,6 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->mousePopupPos = mouse;
     const bool snapToMouse = !d->causedPopup.widget && (QRect(p.x() - 3, p.y() - 3, 6, 6).contains(mouse));
 
-    const QSize menuSize(sizeHint());
     if (adjustToDesktop) {
         // handle popup falling "off screen"
         if (isRightToLeft()) {
@@ -2371,7 +2358,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
         if (pos.y() < screen.top() + desktopFrame)
             pos.setY(screen.top() + desktopFrame);
-        if (pos.y() + menuSize.height() - 1 > screen.bottom() - desktopFrame) {
+        if (pos.y() + menuSizeHint.height() - 1 > screen.bottom() - desktopFrame) {
             if (d->scroll) {
                 d->scroll->scrollFlags |= uint(QMenuPrivate::QMenuScroller::ScrollDown);
                 int y = qMax(screen.y(),pos.y());
@@ -2384,29 +2371,29 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
     const int subMenuOffset = style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, this);
     QMenu *caused = qobject_cast<QMenu*>(d_func()->causedPopup.widget);
-    if (caused && caused->geometry().width() + menuSize.width() + subMenuOffset < screen.width()) {
+    if (caused && caused->geometry().width() + menuSizeHint.width() + subMenuOffset < screen.width()) {
         QRect parentActionRect(caused->d_func()->actionRect(caused->d_func()->currentAction));
         const QPoint actionTopLeft = caused->mapToGlobal(parentActionRect.topLeft());
         parentActionRect.moveTopLeft(actionTopLeft);
         if (isRightToLeft()) {
-            if ((pos.x() + menuSize.width() > parentActionRect.left() - subMenuOffset)
+            if ((pos.x() + menuSizeHint.width() > parentActionRect.left() - subMenuOffset)
                 && (pos.x() < parentActionRect.right()))
             {
-                pos.rx() = parentActionRect.left() - menuSize.width();
+                pos.rx() = parentActionRect.left() - menuSizeHint.width();
                 if (pos.x() < screen.x())
                     pos.rx() = parentActionRect.right();
-                if (pos.x() + menuSize.width() > screen.x() + screen.width())
+                if (pos.x() + menuSizeHint.width() > screen.x() + screen.width())
                     pos.rx() = screen.x();
             }
         } else {
             if ((pos.x() < parentActionRect.right() + subMenuOffset)
-                && (pos.x() + menuSize.width() > parentActionRect.left()))
+                && (pos.x() + menuSizeHint.width() > parentActionRect.left()))
             {
                 pos.rx() = parentActionRect.right();
-                if (pos.x() + menuSize.width() > screen.x() + screen.width())
-                    pos.rx() = parentActionRect.left() - menuSize.width();
+                if (pos.x() + menuSizeHint.width() > screen.x() + screen.width())
+                    pos.rx() = parentActionRect.left() - menuSizeHint.width();
                 if (pos.x() < screen.x())
-                    pos.rx() = screen.x() + screen.width() - menuSize.width();
+                    pos.rx() = screen.x() + screen.width() - menuSizeHint.width();
             }
         }
     }
