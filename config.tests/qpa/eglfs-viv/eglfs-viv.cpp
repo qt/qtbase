@@ -42,8 +42,12 @@
 
 int main(int, char **)
 {
+#if defined(__INTEGRITY)
+    fbGetDisplay();
+#else
     // Do not rely on fbGetDisplay() since the signature has changed over time.
     // Stick to fbGetDisplayByIndex().
     fbGetDisplayByIndex(0);
+#endif
     return 0;
 }

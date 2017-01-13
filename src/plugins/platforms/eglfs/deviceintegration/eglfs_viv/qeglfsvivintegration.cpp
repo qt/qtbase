@@ -63,9 +63,11 @@ void QEglFSVivIntegration::platformInit()
 
 #ifdef Q_OS_INTEGRITY
     VivanteInit();
+    mNativeDisplay = fbGetDisplay();
+#else
+    mNativeDisplay = fbGetDisplayByIndex(framebufferIndex());
 #endif
 
-    mNativeDisplay = fbGetDisplayByIndex(framebufferIndex());
     fbGetDisplayGeometry(mNativeDisplay, &width, &height);
     mScreenSize.setHeight(height);
     mScreenSize.setWidth(width);
