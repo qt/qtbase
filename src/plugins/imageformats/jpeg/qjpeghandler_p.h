@@ -64,17 +64,17 @@ public:
     QJpegHandler();
     ~QJpegHandler();
 
-    bool canRead() const Q_DECL_OVERRIDE;
-    bool read(QImage *image) Q_DECL_OVERRIDE;
-    bool write(const QImage &image) Q_DECL_OVERRIDE;
+    bool canRead() const override;
+    bool read(QImage *image) override;
+    bool write(const QImage &image) override;
 
-    QByteArray name() const Q_DECL_OVERRIDE;
+    QByteArray name() const override;
 
     static bool canRead(QIODevice *device);
 
-    QVariant option(ImageOption option) const Q_DECL_OVERRIDE;
-    void setOption(ImageOption option, const QVariant &value) Q_DECL_OVERRIDE;
-    bool supportsOption(ImageOption option) const Q_DECL_OVERRIDE;
+    QVariant option(ImageOption option) const override;
+    void setOption(ImageOption option, const QVariant &value) override;
+    bool supportsOption(ImageOption option) const override;
 
 private:
     QJpegHandlerPrivate *d;
