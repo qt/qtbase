@@ -43,7 +43,7 @@
 #include "private/qfunctions_p.h"
 
 
-#ifndef QT_NO_CONCURRENT
+#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
 QT_BEGIN_NAMESPACE
 
@@ -63,6 +63,54 @@ static double elapsed(qint64 after, qint64 before)
 }
 
 namespace QtConcurrent {
+
+/*!
+  \class QtConcurrent::Median
+  \inmodule QtConcurrent
+  \internal
+ */
+
+/*!
+  \class QtConcurrent::MedianDouble
+  \inmodule QtConcurrent
+  \internal
+ */
+
+/*!
+  \class QtConcurrent::BlockSizeManager
+  \inmodule QtConcurrent
+  \internal
+ */
+
+/*!
+  \class QtConcurrent::BlockSizeManagerV2
+  \inmodule QtConcurrent
+  \internal
+ */
+
+/*!
+  \class QtConcurrent::ResultReporter
+  \inmodule QtConcurrent
+  \internal
+ */
+
+/*! \fn bool QtConcurrent::selectIteration(std::bidirectional_iterator_tag)
+  \internal
+ */
+
+/*! \fn bool QtConcurrent::selectIteration(std::forward_iterator_tag)
+  \internal
+ */
+
+/*! \fn bool QtConcurrent::selectIteration(std::random_access_iterator_tag)
+  \internal
+ */
+
+/*!
+  \class QtConcurrent::IterateKernel
+  \inmodule QtConcurrent
+  \internal
+ */
 
 /*! \internal
 

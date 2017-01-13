@@ -42,7 +42,7 @@
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
-#ifndef QT_NO_CONCURRENT
+#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qlist.h>
@@ -57,8 +57,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QtConcurrent {
 
-#ifndef Q_QDOC
-
 /*
     The ReduceQueueStartLimit and ReduceQueueThrottleLimit constants
     limit the reduce queue size for MapReduce. When the number of
@@ -66,10 +64,17 @@ namespace QtConcurrent {
     MapReduce won't start any new threads, and when it exceeds
     ReduceQueueThrottleLimit running threads will be stopped.
 */
+#ifdef Q_CLANG_QDOC
+enum ReduceQueueLimits {
+    ReduceQueueStartLimit = 20,
+    ReduceQueueThrottleLimit = 30
+};
+#else
 enum {
     ReduceQueueStartLimit = 20,
     ReduceQueueThrottleLimit = 30
 };
+#endif
 
 // IntermediateResults holds a block of intermediate results from a
 // map or filter functor. The begin/end offsets indicates the origin
@@ -82,8 +87,6 @@ public:
     QVector<T> vector;
 };
 
-#endif // Q_QDOC
-
 enum ReduceOption {
     UnorderedReduce = 0x1,
     OrderedReduce = 0x2,
@@ -91,10 +94,9 @@ enum ReduceOption {
     // ParallelReduce = 0x8
 };
 Q_DECLARE_FLAGS(ReduceOptions, ReduceOption)
+#ifndef Q_CLANG_QDOC
 Q_DECLARE_OPERATORS_FOR_FLAGS(ReduceOptions)
-
-#ifndef Q_QDOC
-
+#endif
 // supports both ordered and out-of-order reduction
 template <typename ReduceFunctor, typename ReduceResultType, typename T>
 class ReduceKernel
@@ -238,8 +240,6 @@ struct SequenceHolder2 : public Base
         sequence = Sequence();
     }
 };
-
-#endif //Q_QDOC
 
 } // namespace QtConcurrent
 

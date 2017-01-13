@@ -42,7 +42,7 @@
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
-#ifndef QT_NO_CONCURRENT
+#if !defined(QT_NO_CONCURRENT) || defined (Q_CLANG_QDOC)
 
 #include <QtConcurrent/qtconcurrentiteratekernel.h>
 #include <QtConcurrent/qtconcurrentreducekernel.h>
@@ -50,7 +50,6 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef Q_QDOC
 namespace QtConcurrent {
 
 // map kernel, works with both parallel-for and parallel-while
@@ -264,7 +263,6 @@ inline ThreadEngineStarter<ResultType> startMappedReduced(Iterator begin, Iterat
 
 } // namespace QtConcurrent
 
-#endif //Q_QDOC
 
 QT_END_NAMESPACE
 

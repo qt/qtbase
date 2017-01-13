@@ -42,7 +42,7 @@
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
-#ifndef QT_NO_CONCURRENT
+#if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
 #include <QtConcurrent/qtconcurrentmapkernel.h>
 #include <QtConcurrent/qtconcurrentreducekernel.h>
@@ -52,53 +52,6 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifdef Q_QDOC
-
-namespace QtConcurrent {
-
-    QFuture<void> map(Sequence &sequence, MapFunction function);
-    QFuture<void> map(Iterator begin, Iterator end, MapFunction function);
-
-    template <typename T>
-    QFuture<T> mapped(const Sequence &sequence, MapFunction function);
-    template <typename T>
-    QFuture<T> mapped(ConstIterator begin, ConstIterator end, MapFunction function);
-
-    template <typename T>
-    QFuture<T> mappedReduced(const Sequence &sequence,
-                             MapFunction function,
-                             ReduceFunction function,
-                             QtConcurrent::ReduceOptions options = UnorderedReduce | SequentialReduce);
-    template <typename T>
-    QFuture<T> mappedReduced(ConstIterator begin,
-                             ConstIterator end,
-                             MapFunction function,
-                             ReduceFunction function,
-                             QtConcurrent::ReduceOptions options = UnorderedReduce | SequentialReduce);
-
-    void blockingMap(Sequence &sequence, MapFunction function);
-    void blockingMap(Iterator begin, Iterator end, MapFunction function);
-
-    template <typename T>
-    T blockingMapped(const Sequence &sequence, MapFunction function);
-    template <typename T>
-    T blockingMapped(ConstIterator begin, ConstIterator end, MapFunction function);
-
-    template <typename T>
-    T blockingMappedReduced(const Sequence &sequence,
-                            MapFunction function,
-                            ReduceFunction function,
-                            QtConcurrent::ReduceOptions options = UnorderedReduce | SequentialReduce);
-    template <typename T>
-    T blockingMappedReduced(ConstIterator begin,
-                            ConstIterator end,
-                            MapFunction function,
-                            ReduceFunction function,
-                            QtConcurrent::ReduceOptions options = UnorderedReduce | SequentialReduce);
-
-} // namespace QtConcurrent
-
-#else
 
 namespace QtConcurrent {
 
@@ -306,7 +259,6 @@ typename QtPrivate::MapResultType<Iterator, MapFunctor>::ResultType blockingMapp
 
 } // namespace QtConcurrent
 
-#endif // Q_QDOC
 
 QT_END_NAMESPACE
 

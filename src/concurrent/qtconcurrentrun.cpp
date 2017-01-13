@@ -115,6 +115,15 @@
 */
 
 /*!
+  \typedef Function
+  \internal
+
+  This typedef is a dummy required to make the \c Function
+  type name known so that clang doesn't reject functions
+  that use it.
+*/
+
+/*!
     \fn QFuture<T> QtConcurrent::run(Function function, ...);
 
     Equivalent to

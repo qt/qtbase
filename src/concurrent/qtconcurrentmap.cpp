@@ -386,8 +386,8 @@
 /*!
   \fn template <typename OutputSequence, typename InputSequence, typename MapFunctor> OutputSequence QtConcurrent::blockingMapped(const InputSequence &sequence, MapFunctor function)
 
-  Calls \a function once for each item in \a sequence and returns a Sequence containing
-  the results. The type of the results will match the type returned my the MapFunction.
+  Calls \a function once for each item in \a sequence and returns an OutputSequence containing
+  the results. The type of the results will match the type returned my the MapFunctor.
 
   \note This function will block until all items in the sequence have been processed.
 
@@ -440,4 +440,40 @@
   sequence being processed.
 
   \sa blockingMappedReduced(), {Concurrent Map and Map-Reduce}
+*/
+
+/*!
+  \class QtConcurrent::FunctionWrapper0
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \class QtConcurrent::FunctionWrapper1
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \class QtConcurrent::FunctionWrapper2
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \class QtConcurrent::MemberFunctionWrapper
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \class QtConcurrent::MemberFunctionWrapper1
+  \inmodule QtConcurrent
+  \internal
+*/
+
+/*!
+  \class QtConcurrent::ConstMemberFunctionWrapper
+  \inmodule QtConcurrent
+  \internal
 */

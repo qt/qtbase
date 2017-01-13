@@ -42,7 +42,7 @@
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
-#ifndef QT_NO_CONCURRENT
+#if !defined(QT_NO_CONCURRENT) ||defined(Q_CLANG_QDOC)
 
 #include <QtCore/qvector.h>
 
@@ -51,7 +51,6 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef Q_QDOC
 
 namespace QtConcurrent {
 
@@ -195,7 +194,6 @@ private:
 
 } // namespace QtConcurrent
 
-#endif //Q_QDOC
 
 QT_END_NAMESPACE
 
