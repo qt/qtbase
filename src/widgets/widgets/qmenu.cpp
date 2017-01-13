@@ -3501,11 +3501,22 @@ void QMenu::internalDelayedPopup()
     d->activeMenu->d_func()->causedPopup.widget = this;
     d->activeMenu->d_func()->causedPopup.action = d->currentAction;
 
+    QRect screen;
+#ifndef QT_NO_GRAPHICSVIEW
+    bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
+    if (isEmbedded)
+        screen = d->popupGeometry(this);
+    else
+#endif
+    screen = d->popupGeometry(QApplication::desktop()->screenNumber(pos()));
+
     int subMenuOffset = style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, this);
     const QRect actionRect(d->actionRect(d->currentAction));
-    const QPoint rightPos(mapToGlobal(QPoint(actionRect.right() + subMenuOffset + 1, actionRect.top())));
+    QPoint subMenuPos(mapToGlobal(QPoint(actionRect.right() + subMenuOffset + 1, actionRect.top())));
+    if (subMenuPos.x() > screen.right())
+        subMenuPos.setX(QCursor::pos().x());
 
-    d->activeMenu->popup(rightPos);
+    d->activeMenu->popup(subMenuPos);
     d->sloppyState.setSubMenuPopup(actionRect, d->currentAction, d->activeMenu);
 
 #if !defined(Q_OS_DARWIN)
