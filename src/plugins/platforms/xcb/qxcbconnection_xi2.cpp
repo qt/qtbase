@@ -1032,6 +1032,7 @@ bool QXcbConnection::isTouchScreen(int id) const
         && device->qtTouchDevice->type() == QTouchDevice::TouchScreen;
 }
 
+#if QT_CONFIG(tabletevent)
 static QTabletEvent::TabletDevice toolIdToTabletDevice(quint32 toolId) {
     // keep in sync with wacom_intuos_inout() in Linux kernel driver wacom_wac.c
     switch (toolId) {
@@ -1065,7 +1066,6 @@ static QTabletEvent::TabletDevice toolIdToTabletDevice(quint32 toolId) {
     return QTabletEvent::Stylus;  // Safe default assumption if nonzero
 }
 
-#ifndef QT_NO_TABLETEVENT
 bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletData)
 {
     bool handled = true;
