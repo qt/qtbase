@@ -191,6 +191,7 @@ protected:
 
     QXcbScreen *parentScreen();
 
+    QXcbScreen *initialScreen() const;
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
     NetWmStates netWmStates();
     void setNetWmStates(NetWmStates);
