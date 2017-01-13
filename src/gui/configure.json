@@ -159,8 +159,8 @@
             "test": "unix/libpng",
             "sources": [
                 { "type": "pkgConfig", "args": "libpng" },
-                { "libs": "-llibpng", "condition": "config.msvc" },
-                { "libs": "-lpng", "condition": "!config.msvc" }
+                { "libs": "-llibpng -lzdll", "condition": "config.msvc" },
+                { "libs": "-lpng -lz", "condition": "!config.msvc" }
             ]
         },
         "mirclient": {
