@@ -1519,6 +1519,13 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \macro Q_CC_CLANG
+    \relates <QtGlobal>
+
+    Defined if the application is compiled using Clang.
+*/
+
+/*!
     \macro Q_CC_BOR
     \relates <QtGlobal>
 
