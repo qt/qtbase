@@ -40,6 +40,9 @@
 
 #include "qplatformsystemtrayicon.h"
 
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpa/qplatformtheme.h>
+
 #ifndef QT_NO_SYSTEMTRAYICON
 
 QT_BEGIN_NAMESPACE
@@ -158,11 +161,10 @@ QPlatformSystemTrayIcon::~QPlatformSystemTrayIcon()
 */
 
 /*!
-    This method is called in case there is no QPlatformMenu available when
-    updating the menu. This allows the abstraction to provide a menu for the
-    system tray icon even if normally a non-native menu is used.
-
-    The default implementation returns a null pointer.
+    This method allows platforms to use a different QPlatformMenu for system
+    tray menus than what would normally be used for e.g. menu bars. The default
+    implementation falls back to a platform menu created by the platform theme,
+    which may be null on platforms without native menus.
 
     \sa updateMenu()
     \since 5.3
@@ -170,7 +172,7 @@ QPlatformSystemTrayIcon::~QPlatformSystemTrayIcon()
 
 QPlatformMenu *QPlatformSystemTrayIcon::createMenu() const
 {
-    return Q_NULLPTR;
+    return QGuiApplicationPrivate::platformTheme()->createPlatformMenu();
 }
 
 QT_END_NAMESPACE

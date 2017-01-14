@@ -251,6 +251,24 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QItemSelectionModel::SelectionFlags)
 // dummy implentation of qHash() necessary for instantiating QList<QItemSelectionRange>::toSet() with MSVC
 inline uint qHash(const QItemSelectionRange &) { return 0; }
 
+#ifdef Q_CC_MSVC
+
+/*
+   ### Qt 6:
+   ### This needs to be removed for next releases of Qt. It is a workaround for vc++ because
+   ### Qt exports QItemSelection that inherits QList<QItemSelectionRange>.
+*/
+
+# ifndef Q_TEMPLATE_EXTERN
+#  if defined(QT_BUILD_CORE_LIB)
+#   define Q_TEMPLATE_EXTERN
+#  else
+#   define Q_TEMPLATE_EXTERN extern
+#  endif
+# endif
+Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QList<QItemSelectionRange>;
+#endif // Q_CC_MSVC
+
 class Q_CORE_EXPORT QItemSelection : public QList<QItemSelectionRange>
 {
 public:
