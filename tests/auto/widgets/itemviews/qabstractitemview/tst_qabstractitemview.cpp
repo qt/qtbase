@@ -1567,7 +1567,7 @@ void tst_QAbstractItemView::testChangeEditorState()
 
     QTableView view;
     view.setEditTriggers(QAbstractItemView::CurrentChanged);
-    view.setItemDelegate(new StateChangeDelegate);
+    view.setItemDelegate(new StateChangeDelegate(&view));
     view.setModel(&model);
     centerOnScreen(&view);
     moveCursorAway(&view);
@@ -1941,7 +1941,8 @@ void tst_QAbstractItemView::QTBUG50102_SH_ItemView_ScrollMode()
     QCOMPARE(view.horizontalScrollMode(), styleScrollMode);
 
     // Change style, get new value
-    view.setStyle(new ScrollModeProxyStyle(styleScrollMode));
+    ScrollModeProxyStyle proxyStyle1(styleScrollMode);
+    view.setStyle(&proxyStyle1);
     auto proxyScrollMode = static_cast<QAbstractItemView::ScrollMode>(view.style()->styleHint(QStyle::SH_ItemView_ScrollMode, 0, &view, 0));
     QVERIFY(styleScrollMode != proxyScrollMode);
     QCOMPARE(view.verticalScrollMode(), proxyScrollMode);
@@ -1953,7 +1954,8 @@ void tst_QAbstractItemView::QTBUG50102_SH_ItemView_ScrollMode()
     QCOMPARE(view.horizontalScrollMode(), proxyScrollMode);
 
     // Change style, won't change value for vertical, will change for horizontal
-    view.setStyle(new ScrollModeProxyStyle(proxyScrollMode));
+    ScrollModeProxyStyle proxyStyle2(proxyScrollMode);
+    view.setStyle(&proxyStyle2);
     QCOMPARE(view.verticalScrollMode(), proxyScrollMode);
     QCOMPARE(view.horizontalScrollMode(), styleScrollMode);
 }
