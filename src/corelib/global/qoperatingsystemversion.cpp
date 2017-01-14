@@ -54,35 +54,49 @@ QT_BEGIN_NAMESPACE
     \class QOperatingSystemVersion
     \inmodule QtCore
     \since 5.9
-    \brief The QOperatingSystemVersion class provides information about the operating system version.
+    \brief The QOperatingSystemVersion class provides information about the
+    operating system version.
 
-    Unlike other version functions in QSysInfo, QOperatingSystemVersion provides access to the full
-    version number that \a developers typically use to vary behavior or determine whether to enable
-    APIs or features based on the operating system version (as opposed to the kernel version number
-    or marketing version).
+    Unlike other version functions in QSysInfo, QOperatingSystemVersion provides
+    access to the full version number that \a developers typically use to vary
+    behavior or determine whether to enable APIs or features based on the
+    operating system version (as opposed to the kernel version number or
+    marketing version).
 
-    This class is also a complete replacement for QSysInfo::macVersion and QSysInfo::windowsVersion,
-    additionally providing access to the third (micro) version number component.
+    This class is also a complete replacement for QSysInfo::macVersion and
+    QSysInfo::windowsVersion, additionally providing access to the third (micro)
+    version number component.
 
-    Presently, Android, Apple Platforms (iOS, macOS, tvOS, and watchOS), and Windows are supported.
+    Presently, Android, Apple Platforms (iOS, macOS, tvOS, and watchOS),
+    and Windows are supported.
 
-    The \a majorVersion(), \a minorVersion(), and \a microVersion() functions return the parts of
-    the operating system version number based on:
+    The \a majorVersion(), \a minorVersion(), and \a microVersion() functions
+    return the parts of the operating system version number based on:
 
     \table
-    \header \li Platforms       \li Value
-    \row    \li Android         \li result of parsing
-                                    \l{https://developer.android.com/reference/android/os/Build.VERSION.html#RELEASE}{android.os.Build.VERSION.RELEASE}
-                                    using QVersionNumber, with a fallback to
-                                    \l{https://developer.android.com/reference/android/os/Build.VERSION.html#SDK_INT}{android.os.Build.VERSION.SDK_INT}
-                                    to determine the major and minor version component if the former fails
-    \row    \li Apple Platforms \li majorVersion, minorVersion, and patchVersion from
-                                    \l{https://developer.apple.com/reference/foundation/nsprocessinfo/1410906-operatingsystemversion?language=objc}{NSProcessInfo.operatingSystemVersion}
-    \row    \li Windows         \li dwMajorVersion, dwMinorVersion, and dwBuildNumber from
-                                    \l{https://msdn.microsoft.com/en-us/library/mt723418.aspx}{RtlGetVersion} -
-                                    note that this function ALWAYS return the version number of the underlying operating system,
-                                    as opposed to the shim underneath GetVersionEx that hides the real version number
-                                    if the application is not manifested for that version of the OS
+        \header
+            \li Platforms
+            \li Value
+        \row
+            \li Android
+            \li result of parsing
+                \l{https://developer.android.com/reference/android/os/Build.VERSION.html#RELEASE}{android.os.Build.VERSION.RELEASE}
+                using QVersionNumber, with a fallback to
+                \l{https://developer.android.com/reference/android/os/Build.VERSION.html#SDK_INT}{android.os.Build.VERSION.SDK_INT}
+                to determine the major and minor version component if the former
+                fails
+        \row
+            \li Apple Platforms
+            \li majorVersion, minorVersion, and patchVersion from
+                \l{https://developer.apple.com/reference/foundation/nsprocessinfo/1410906-operatingsystemversion?language=objc}{NSProcessInfo.operatingSystemVersion}
+        \row
+            \li Windows
+            \li dwMajorVersion, dwMinorVersion, and dwBuildNumber from
+                \l{https://msdn.microsoft.com/en-us/library/mt723418.aspx}{RtlGetVersion} -
+                note that this function ALWAYS return the version number of the
+                underlying operating system, as opposed to the shim underneath
+                GetVersionEx that hides the real version number if the
+                application is not manifested for that version of the OS
     \endtable
 */
 
@@ -163,7 +177,8 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
     };
 
     // This will give us at least the first 2 version components
-    const size_t versionIdx = size_t(QJNIObjectPrivate::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT")) - 1;
+    const size_t versionIdx = size_t(QJNIObjectPrivate::getStaticField<jint>(
+        "android/os/Build$VERSION", "SDK_INT")) - 1;
     if (versionIdx < sizeof(versions) / sizeof(versions[0])) {
         version.m_major = versions[versionIdx][0];
         version.m_minor = versions[versionIdx][1];
@@ -200,7 +215,8 @@ static inline int compareVersionComponents(int lhs, int rhs)
     the overloaded comparison operators to compare QOperatingSystemVersions
     in a safe manner.
 */
-int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1, const QOperatingSystemVersion &v2)
+int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
+                                     const QOperatingSystemVersion &v2)
 {
     if (v1.m_major == v2.m_major) {
         if (v1.m_minor == v2.m_minor) {
@@ -238,9 +254,11 @@ QVersionNumber QOperatingSystemVersion::toVersionNumber() const
 /*!
     \fn int QOperatingSystemVersion::majorVersion() const
 
-    Returns the major version number, that is, the first segment of the operating system's version number.
+    Returns the major version number, that is, the first segment of the
+    operating system's version number.
 
-    See the main class documentation for what the major version number is on a given operating system.
+    See the main class documentation for what the major version number is on a given
+    operating system.
 
     -1 indicates an unknown or absent version number component.
 
@@ -250,9 +268,11 @@ QVersionNumber QOperatingSystemVersion::toVersionNumber() const
 /*!
     \fn int QOperatingSystemVersion::minorVersion() const
 
-    Returns the minor version number, that is, the second segment of the operating system's version number.
+    Returns the minor version number, that is, the second segment of the
+    operating system's version number.
 
-    See the main class documentation for what the minor version number is on a given operating system.
+    See the main class documentation for what the minor version number is on a given
+    operating system.
 
     -1 indicates an unknown or absent version number component.
 
@@ -262,9 +282,11 @@ QVersionNumber QOperatingSystemVersion::toVersionNumber() const
 /*!
     \fn int QOperatingSystemVersion::microVersion() const
 
-    Returns the micro version number, that is, the third segment of the operating system's version number.
+    Returns the micro version number, that is, the third segment of the
+    operating system's version number.
 
-    See the main class documentation for what the micro version number is on a given operating system.
+    See the main class documentation for what the micro version number is on a given
+    operating system.
 
     -1 indicates an unknown or absent version number component.
 
@@ -322,118 +344,139 @@ QString QOperatingSystemVersion::name() const
     \brief a version corresponding to Windows 7 (version 6.1).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows7 = QOperatingSystemVersion(QOperatingSystemVersion::Windows, 6, 1);
+const QOperatingSystemVersion QOperatingSystemVersion::Windows7 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 6, 1);
 
 /*!
     \variable QOperatingSystemVersion::Windows8
     \brief a version corresponding to Windows 8 (version 6.2).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows8 = QOperatingSystemVersion(QOperatingSystemVersion::Windows, 6, 2);
+const QOperatingSystemVersion QOperatingSystemVersion::Windows8 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 6, 2);
 
 /*!
     \variable QOperatingSystemVersion::Windows8_1
     \brief a version corresponding to Windows 8.1 (version 6.3).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows8_1 = QOperatingSystemVersion(QOperatingSystemVersion::Windows, 6, 3);
+const QOperatingSystemVersion QOperatingSystemVersion::Windows8_1 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 6, 3);
 
 /*!
     \variable QOperatingSystemVersion::Windows10
     \brief a version corresponding to Windows 10 (version 10.0).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::Windows10 = QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10);
+const QOperatingSystemVersion QOperatingSystemVersion::Windows10 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10);
 
 /*!
     \variable QOperatingSystemVersion::OSXMavericks
     \brief a version corresponding to OS X Mavericks (version 10.9).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::OSXMavericks = QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 9);
+const QOperatingSystemVersion QOperatingSystemVersion::OSXMavericks =
+    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 9);
 
 /*!
     \variable QOperatingSystemVersion::OSXYosemite
     \brief a version corresponding to OS X Yosemite (version 10.10).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::OSXYosemite = QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 10);
+const QOperatingSystemVersion QOperatingSystemVersion::OSXYosemite =
+    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 10);
 
 /*!
     \variable QOperatingSystemVersion::OSXElCapitan
     \brief a version corresponding to OS X El Capitan (version 10.11).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::OSXElCapitan = QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 11);
+const QOperatingSystemVersion QOperatingSystemVersion::OSXElCapitan =
+    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 11);
 
 /*!
     \variable QOperatingSystemVersion::MacOSSierra
     \brief a version corresponding to macOS Sierra (version 10.12).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::MacOSSierra = QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 12);
+const QOperatingSystemVersion QOperatingSystemVersion::MacOSSierra =
+    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 12);
 
 /*!
     \variable QOperatingSystemVersion::AndroidJellyBean
     \brief a version corresponding to Android Jelly Bean (version 4.1, API level 16).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidJellyBean = QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 1);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidJellyBean =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 1);
 
 /*!
     \variable QOperatingSystemVersion::AndroidJellyBean_MR1
-    \brief a version corresponding to Android Jelly Bean, maintenance release 1 (version 4.2, API level 17).
+    \brief a version corresponding to Android Jelly Bean, maintenance release 1
+    (version 4.2, API level 17).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidJellyBean_MR1 = QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 2);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidJellyBean_MR1 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 2);
 
 /*!
     \variable QOperatingSystemVersion::AndroidJellyBean_MR2
-    \brief a version corresponding to Android Jelly Bean, maintenance release 2 (version 4.3, API level 18).
+    \brief a version corresponding to Android Jelly Bean, maintenance release 2
+    (version 4.3, API level 18).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidJellyBean_MR2 = QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 3);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidJellyBean_MR2 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 3);
 
 /*!
     \variable QOperatingSystemVersion::AndroidKitKat
     \brief a version corresponding to Android KitKat (versions 4.4 & 4.4W, API levels 19 & 20).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidKitKat = QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 4);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidKitKat =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 4, 4);
 
 /*!
     \variable QOperatingSystemVersion::AndroidLollipop
     \brief a version corresponding to Android Lollipop (version 5.0, API level 21).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidLollipop = QOperatingSystemVersion(QOperatingSystemVersion::Android, 5, 0);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidLollipop =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 5, 0);
 
 /*!
     \variable QOperatingSystemVersion::AndroidLollipop_MR1
-    \brief a version corresponding to Android Lollipop, maintenance release 1 (version 5.1, API level 22).
+    \brief a version corresponding to Android Lollipop, maintenance release 1
+    (version 5.1, API level 22).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidLollipop_MR1 = QOperatingSystemVersion(QOperatingSystemVersion::Android, 5, 1);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidLollipop_MR1 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 5, 1);
 
 /*!
     \variable QOperatingSystemVersion::AndroidMarshmallow
     \brief a version corresponding to Android Marshmallow (version 6.0, API level 23).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidMarshmallow = QOperatingSystemVersion(QOperatingSystemVersion::Android, 6, 0);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidMarshmallow =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 6, 0);
 
 /*!
     \variable QOperatingSystemVersion::AndroidNougat
     \brief a version corresponding to Android Nougat (version 7.0, API level 24).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat = QOperatingSystemVersion(QOperatingSystemVersion::Android, 7, 0);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 7, 0);
 
 /*!
     \variable QOperatingSystemVersion::AndroidNougat_MR1
-    \brief a version corresponding to Android Nougat, maintenance release 1 (version 7.0, API level 25).
+    \brief a version corresponding to Android Nougat, maintenance release 1
+    (version 7.0, API level 25).
     \since 5.9
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat_MR1 = QOperatingSystemVersion(QOperatingSystemVersion::Android, 7, 1);
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat_MR1 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 7, 1);
 
 QT_END_NAMESPACE
