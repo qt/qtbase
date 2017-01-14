@@ -3508,11 +3508,9 @@ void tst_QPainter::drawImage_data()
                 continue;
             for (int odd_x = 0; odd_x <= 1; ++odd_x) {
                 for (int odd_width = 0; odd_width <= 1; ++odd_width) {
-                    QString description =
-                        QString("srcFormat %1, dstFormat %2, odd x: %3, odd width: %4")
-                            .arg(srcFormat).arg(dstFormat).arg(odd_x).arg(odd_width);
-
-                    QTest::newRow(qPrintable(description)) << (10 + odd_x) << 10 << (20 + odd_width) << 20
+                    QTest::addRow("srcFormat %d, dstFormat %d, odd x: %d, odd width: %d",
+                                  srcFormat, dstFormat, odd_x, odd_width)
+                        << (10 + odd_x) << 10 << (20 + odd_width) << 20
                         << QImage::Format(srcFormat)
                         << QImage::Format(dstFormat);
                 }
