@@ -1130,6 +1130,11 @@ QDebug operator<<(QDebug d, const QHostAddress &address)
 }
 #endif
 
+/*!
+    \since 5.0
+    \relates QHostAddress
+    Returns a hash of the host address \a key, using \a seed to seed the calculation.
+*/
 uint qHash(const QHostAddress &key, uint seed)
 {
     // both lines might throw
@@ -1137,6 +1142,15 @@ uint qHash(const QHostAddress &key, uint seed)
     return qHashBits(key.d->a6.c, 16, seed);
 }
 
+/*!
+    \relates QHostAddress
+    \fn operator==(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
+
+    Returns \c true if special address \a lhs is the same as host address \a rhs;
+    otherwise returns \c false.
+
+    \sa isEqual()
+*/
 #ifndef QT_NO_DATASTREAM
 
 /*! \relates QHostAddress
