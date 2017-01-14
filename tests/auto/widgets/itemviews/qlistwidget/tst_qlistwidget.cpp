@@ -1629,7 +1629,7 @@ void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
 {
     QListWidget listWidget;
     listWidget.setEditTriggers(QAbstractItemView::AnyKeyPressed);
-    listWidget.setItemDelegate(new ItemDelegate);
+    listWidget.setItemDelegate(new ItemDelegate(&listWidget));
     QListWidgetItem *item = new QListWidgetItem(QLatin1String("select an item (don't start editing)"), &listWidget);
     item->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsEditable);
     new QListWidgetItem(QLatin1String("try to type the letter 'c'"), &listWidget);
