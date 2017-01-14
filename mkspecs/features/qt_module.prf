@@ -64,6 +64,11 @@ else: \
     MODULE_DEFINE = QT_$${ucmodule}_LIB
 MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
 
+# Make sure that the supporting runtime is linked into the application when
+# the module is built with exceptions enabled.
+integrity:CONFIG(exceptions, exceptions|exceptions_off): \
+    MODULE_CONFIG += exceptions
+
 load(qt_build_paths)
 
 header_module {
