@@ -2885,7 +2885,7 @@ public:
 
 void tst_QGraphicsView::scrollBarRanges()
 {
-    QFETCH(QString, style);
+    QFETCH(QByteArray, style);
     QFETCH(QSize, viewportSize);
     QFETCH(QRectF, sceneRect);
     QFETCH(ScrollBarCount, sceneRectOffsetFactors);
@@ -2898,7 +2898,7 @@ void tst_QGraphicsView::scrollBarRanges()
     QFETCH(ExpectedValueDescription, vmax);
     QFETCH(bool, useStyledPanel);
 
-    if (useStyledPanel && style == QStringLiteral("Macintosh") && platformName == QStringLiteral("cocoa"))
+    if (useStyledPanel && style == "Macintosh" && platformName == QStringLiteral("cocoa"))
         QSKIP("Insignificant on OSX");
 
     QScopedPointer<QStyle> stylePtr;
@@ -2909,10 +2909,10 @@ void tst_QGraphicsView::scrollBarRanges()
     view.setTransform(transform);
     view.setFrameStyle(useStyledPanel ? QFrame::StyledPanel : QFrame::NoFrame);
 
-    if (style == QString("motif"))
+    if (style == "motif")
         stylePtr.reset(new FauxMotifStyle);
     else
-        stylePtr.reset(QStyleFactory::create(style));
+        stylePtr.reset(QStyleFactory::create(QLatin1String(style)));
     view.setStyle(stylePtr.data());
     view.setStyleSheet(" "); // enables style propagation ;-)
 

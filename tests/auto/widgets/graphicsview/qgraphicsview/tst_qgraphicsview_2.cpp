@@ -44,9 +44,8 @@ Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 Q_DECLARE_METATYPE(ScrollBarCount)
 
-static void _scrollBarRanges_addTestData(const QString &style, bool styled)
+static void _scrollBarRanges_addTestData(const QByteArray &style, bool styled)
 {
-    const QString styleString = styled ? style + ", Styled" : style;
     const int viewWidth = 250;
     const int viewHeight = 100;
 
@@ -59,7 +58,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
         ExpectedValueDescription hmin, hmax, vmin, vmax;
     } data [] = {
         {
-            ", 1",
+            "1",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -71,7 +70,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 2",
+            "2",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -83,7 +82,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1, 1),
         },
         {
-            ", 3",
+            "3",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -95,7 +94,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(100, 1, 1),
         },
         {
-            ", 4",
+            "4",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -107,7 +106,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 5",
+            "5",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -119,7 +118,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 6",
+            "6",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -131,7 +130,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1, 1),
         },
         {
-            ", 7",
+            "7",
             QRectF(0, 0, viewWidth + 1, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -143,7 +142,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(1, 1, 1),
         },
         {
-            ", 8",
+            "8",
             QRectF(0, 0, viewWidth + 51, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -155,7 +154,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(1, 1, 1),
         },
         {
-            ", 9",
+            "9",
             QRectF(0, 0, viewWidth + 51, viewHeight + 101),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -167,7 +166,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(101, 1, 1),
         },
         {
-            ", 10",
+            "10",
             QRectF(-101, -101, viewWidth + 1, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -179,7 +178,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 11",
+            "11",
             QRectF(-101, -101, viewWidth + 51, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -191,7 +190,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 12",
+            "12",
             QRectF(-101, -101, viewWidth + 51, viewHeight + 101),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -203,7 +202,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1, 1),
         },
         {
-            ", 13",
+            "13",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -215,7 +214,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 2, 1),
         },
         {
-            ", 14",
+            "14",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -227,7 +226,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 2, 1),
         },
         {
-            ", 15",
+            "15",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -239,7 +238,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(100, 2, 1),
         },
         {
-            ", 16",
+            "16",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -251,7 +250,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 17",
+            "17",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -263,7 +262,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 18",
+            "18",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -275,7 +274,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1, 1),
         },
         {
-            ", 1 x2",
+            "1 x2",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -287,7 +286,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight, 1, 1),
         },
         {
-            ", 2 x2",
+            "2 x2",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -299,7 +298,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight, 1, 1),
         },
         {
-            ", 3 x2",
+            "3 x2",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -311,7 +310,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight + 200, 1, 1),
         },
         {
-            ", 4 x2",
+            "4 x2",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -323,7 +322,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight - 200, 1, 1),
         },
         {
-            ", 5 x2",
+            "5 x2",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -335,7 +334,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight - 200, 1, 1),
         },
         {
-            ", 6 x2",
+            "6 x2",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -347,7 +346,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight, 1, 1),
         },
         {
-            ", 1 No ScrollBars",
+            "1 No ScrollBars",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -359,7 +358,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 2 No ScrollBars",
+            "2 No ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -371,7 +370,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 3 No ScrollBars",
+            "3 No ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -383,7 +382,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(100),
         },
         {
-            ", 4 No ScrollBars",
+            "4 No ScrollBars",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -395,7 +394,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 5 No ScrollBars",
+            "5 No ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -407,7 +406,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 6 No ScrollBars",
+            "6 No ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -419,7 +418,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 7 No ScrollBars",
+            "7 No ScrollBars",
             QRectF(0, 0, viewWidth + 1, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -431,7 +430,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(1),
         },
         {
-            ", 8 No ScrollBars",
+            "8 No ScrollBars",
             QRectF(0, 0, viewWidth + 51, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -443,7 +442,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(1),
         },
         {
-            ", 9 No ScrollBars",
+            "9 No ScrollBars",
             QRectF(0, 0, viewWidth + 51, viewHeight + 101),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -455,7 +454,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(101),
         },
         {
-            ", 10 No ScrollBars",
+            "10 No ScrollBars",
             QRectF(-101, -101, viewWidth + 1, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -467,7 +466,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100),
         },
         {
-            ", 11 No ScrollBars",
+            "11 No ScrollBars",
             QRectF(-101, -101, viewWidth + 51, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -479,7 +478,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100),
         },
         {
-            ", 12 No ScrollBars",
+            "12 No ScrollBars",
             QRectF(-101, -101, viewWidth + 51, viewHeight + 101),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -491,7 +490,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 13 No ScrollBars",
+            "13 No ScrollBars",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -503,7 +502,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1),
         },
         {
-            ", 14 No ScrollBars",
+            "14 No ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -515,7 +514,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1),
         },
         {
-            ", 15 No ScrollBars",
+            "15 No ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -527,7 +526,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(100, 1),
         },
         {
-            ", 16 No ScrollBars",
+            "16 No ScrollBars",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -539,7 +538,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100),
         },
         {
-            ", 17 No ScrollBars",
+            "17 No ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -551,7 +550,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100),
         },
         {
-            ", 18 No ScrollBars",
+            "18 No ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -563,7 +562,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 1 x2 No ScrollBars",
+            "1 x2 No ScrollBars",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -575,7 +574,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight),
         },
         {
-            ", 2 x2 No ScrollBars",
+            "2 x2 No ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -587,7 +586,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight),
         },
         {
-            ", 3 x2 No ScrollBars",
+            "3 x2 No ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -599,7 +598,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight + 200),
         },
         {
-            ", 4 x2 No ScrollBars",
+            "4 x2 No ScrollBars",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -611,7 +610,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight - 200),
         },
         {
-            ", 5 x2 No ScrollBars",
+            "5 x2 No ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -623,7 +622,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight - 200),
         },
         {
-            ", 6 x2 No ScrollBars",
+            "6 x2 No ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -635,7 +634,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight),
         },
         {
-            ", 1 Always ScrollBars",
+            "1 Always ScrollBars",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -647,7 +646,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1, 1),
         },
         {
-            ", 2 Always ScrollBars",
+            "2 Always ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -659,7 +658,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1, 1),
         },
         {
-            ", 3 Always ScrollBars",
+            "3 Always ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -671,7 +670,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(100, 1, 1),
         },
         {
-            ", 4 Always ScrollBars",
+            "4 Always ScrollBars",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -683,7 +682,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 5 Always ScrollBars",
+            "5 Always ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -695,7 +694,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 6 Always ScrollBars",
+            "6 Always ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -707,7 +706,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1, 1),
         },
         {
-            ", 7 Always ScrollBars",
+            "7 Always ScrollBars",
             QRectF(0, 0, viewWidth + 1, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -719,7 +718,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(1, 1, 1),
         },
         {
-            ", 8 Always ScrollBars",
+            "8 Always ScrollBars",
             QRectF(0, 0, viewWidth + 51, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -731,7 +730,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(1, 1, 1),
         },
         {
-            ", 9 Always ScrollBars",
+            "9 Always ScrollBars",
             QRectF(0, 0, viewWidth + 51, viewHeight + 101),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -743,7 +742,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(101, 1, 1),
         },
         {
-            ", 10 Always ScrollBars",
+            "10 Always ScrollBars",
             QRectF(-101, -101, viewWidth + 1, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -755,7 +754,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 11 Always ScrollBars",
+            "11 Always ScrollBars",
             QRectF(-101, -101, viewWidth + 51, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -767,7 +766,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 12 Always ScrollBars",
+            "12 Always ScrollBars",
             QRectF(-101, -101, viewWidth + 51, viewHeight + 101),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -779,7 +778,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1, 1),
         },
         {
-            ", 13 Always ScrollBars",
+            "13 Always ScrollBars",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -791,7 +790,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 2, 1),
         },
         {
-            ", 14 Always ScrollBars",
+            "14 Always ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -803,7 +802,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 2, 1),
         },
         {
-            ", 15 Always ScrollBars",
+            "15 Always ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -815,7 +814,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(100, 2, 1),
         },
         {
-            ", 16 Always ScrollBars",
+            "16 Always ScrollBars",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -827,7 +826,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 17 Always ScrollBars",
+            "17 Always ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -839,7 +838,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100, 1, 1),
         },
         {
-            ", 18 Always ScrollBars",
+            "18 Always ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -851,7 +850,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1, 1),
         },
         {
-            ", 1 x2 Always ScrollBars",
+            "1 x2 Always ScrollBars",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -863,7 +862,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight, 1, 1),
         },
         {
-            ", 2 x2 Always ScrollBars",
+            "2 x2 Always ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -875,7 +874,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight, 1, 1),
         },
         {
-            ", 3 x2 Always ScrollBars",
+            "3 x2 Always ScrollBars",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -887,7 +886,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight + 200, 1, 1),
         },
         {
-            ", 4 x2 Always ScrollBars",
+            "4 x2 Always ScrollBars",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -899,7 +898,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight - 200, 1, 1),
         },
         {
-            ", 5 x2 Always ScrollBars",
+            "5 x2 Always ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -911,7 +910,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight - 200, 1, 1),
         },
         {
-            ", 6 x2 Always ScrollBars",
+            "6 x2 Always ScrollBars",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -923,7 +922,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight, 1, 1),
         },
         {
-            ", 1 Vertical Only",
+            "1 Vertical Only",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -935,7 +934,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 2 Vertical Only",
+            "2 Vertical Only",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -947,7 +946,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 3 Vertical Only",
+            "3 Vertical Only",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -959,7 +958,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(100),
         },
         {
-            ", 4 Vertical Only",
+            "4 Vertical Only",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -971,7 +970,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 5 Vertical Only",
+            "5 Vertical Only",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -983,7 +982,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 6 Vertical Only",
+            "6 Vertical Only",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -995,7 +994,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 7 Vertical Only",
+            "7 Vertical Only",
             QRectF(0, 0, viewWidth + 1, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -1007,7 +1006,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(1),
         },
         {
-            ", 8 Vertical Only",
+            "8 Vertical Only",
             QRectF(0, 0, viewWidth + 51, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -1019,7 +1018,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(1),
         },
         {
-            ", 9 Vertical Only",
+            "9 Vertical Only",
             QRectF(0, 0, viewWidth + 51, viewHeight + 101),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -1031,7 +1030,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(101),
         },
         {
-            ", 10 Vertical Only",
+            "10 Vertical Only",
             QRectF(-101, -101, viewWidth + 1, viewHeight +1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -1043,7 +1042,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100),
         },
         {
-            ", 11 Vertical Only",
+            "11 Vertical Only",
             QRectF(-101, -101, viewWidth + 51, viewHeight + 1),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -1055,7 +1054,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100),
         },
         {
-            ", 12 Vertical Only",
+            "12 Vertical Only",
             QRectF(-101, -101, viewWidth + 51, viewHeight + 101),
             ScrollBarCount(0, 0, 0, 0),
             1,
@@ -1067,7 +1066,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 13 Vertical Only",
+            "13 Vertical Only",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -1079,7 +1078,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1),
         },
         {
-            ", 14 Vertical Only",
+            "14 Vertical Only",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -1091,7 +1090,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(0, 1),
         },
         {
-            ", 15 Vertical Only",
+            "15 Vertical Only",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 1, 1),
             1,
@@ -1103,7 +1102,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(100, 1),
         },
         {
-            ", 16 Vertical Only",
+            "16 Vertical Only",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -1115,7 +1114,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100),
         },
         {
-            ", 17 Vertical Only",
+            "17 Vertical Only",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -1127,7 +1126,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(-100),
         },
         {
-            ", 18 Vertical Only",
+            "18 Vertical Only",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(-1, -1, 1, 1),
             1,
@@ -1139,7 +1138,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(),
         },
         {
-            ", 1 x2 Vertical Only",
+            "1 x2 Vertical Only",
             QRectF(0, 0, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -1151,7 +1150,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight),
         },
         {
-            ", 2 x2 Vertical Only",
+            "2 x2 Vertical Only",
             QRectF(0, 0, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -1163,7 +1162,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight),
         },
         {
-            ", 3 x2 Vertical Only",
+            "3 x2 Vertical Only",
             QRectF(0, 0, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -1175,7 +1174,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight + 200),
         },
         {
-            ", 4 x2 Vertical Only",
+            "4 x2 Vertical Only",
             QRectF(-100, -100, viewWidth, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -1187,7 +1186,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight - 200),
         },
         {
-            ", 5 x2 Vertical Only",
+            "5 x2 Vertical Only",
             QRectF(-100, -100, viewWidth + 50, viewHeight),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -1199,7 +1198,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
             ExpectedValueDescription(viewHeight - 200),
         },
         {
-            ", 6 x2 Vertical Only",
+            "6 x2 Vertical Only",
             QRectF(-100, -100, viewWidth + 50, viewHeight + 100),
             ScrollBarCount(0, 0, 0, 0),
             2,
@@ -1215,7 +1214,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
     const QSize viewSize(viewWidth, viewHeight);
 
     for (const Data &e : data) {
-        QTest::newRow(qPrintable(styleString + QLatin1String(e.name)))
+        QTest::addRow("%s%s, %s", style.data(), styled ? ", Styled" : "", e.name)
             << style << viewSize
             << e.sceneRect
             << e.sceneRectOffsetFactors
@@ -1229,7 +1228,7 @@ static void _scrollBarRanges_addTestData(const QString &style, bool styled)
 
 void _scrollBarRanges_data()
 {
-    QTest::addColumn<QString>("style");
+    QTest::addColumn<QByteArray>("style");
     QTest::addColumn<QSize>("viewportSize");
     QTest::addColumn<QRectF>("sceneRect");
     QTest::addColumn<ScrollBarCount>("sceneRectOffsetFactors");
@@ -1242,14 +1241,15 @@ void _scrollBarRanges_data()
     QTest::addColumn<ExpectedValueDescription>("vmax");
     QTest::addColumn<bool>("useStyledPanel");
 
-    foreach (const QString &style, QStyleFactory::keys()) {
-        _scrollBarRanges_addTestData(style, false);
-        _scrollBarRanges_addTestData(style, true);
+    const auto styles = QStyleFactory::keys();
+    for (const QString &style : styles) {
+        _scrollBarRanges_addTestData(style.toLatin1(), false);
+        _scrollBarRanges_addTestData(style.toLatin1(), true);
     }
 
     const QScreen *screen = QGuiApplication::primaryScreen();
     if (screen && qFuzzyCompare((double)screen->logicalDotsPerInchX(), 96.0)) {
-        _scrollBarRanges_addTestData(QString("motif"), false);
-        _scrollBarRanges_addTestData(QString("motif"), true);
+        _scrollBarRanges_addTestData("motif", false);
+        _scrollBarRanges_addTestData("motif", true);
     }
 }
