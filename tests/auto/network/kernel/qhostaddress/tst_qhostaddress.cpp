@@ -271,6 +271,7 @@ void tst_QHostAddress::specialAddresses()
     //check special address equal to itself (QTBUG-22898), note two overloads of operator==
     QVERIFY(QHostAddress(address) == QHostAddress(address));
     QVERIFY(QHostAddress(address) == address);
+    QVERIFY(address == QHostAddress(address));
     QVERIFY(!(QHostAddress(address) != QHostAddress(address)));
     QVERIFY(!(QHostAddress(address) != address));
 
