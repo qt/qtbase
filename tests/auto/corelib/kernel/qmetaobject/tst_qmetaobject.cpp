@@ -200,8 +200,11 @@ public:
 private slots:
     void connectSlotsByName();
     void invokeMetaMember();
+    void invokePointer();
     void invokeQueuedMetaMember();
+    void invokeQueuedPointer();
     void invokeBlockingQueuedMetaMember();
+    void invokeBlockingQueuedPointer();
     void invokeCustomTypes();
     void invokeMetaConstructor();
     void invokeTypedefTypes();
@@ -416,6 +419,10 @@ public slots:
         return s2;
     }
 
+public:
+    static void staticFunction0();
+    static qint64 staticFunction1();
+
 signals:
     void sig0();
     QString sig1(QString s1);
@@ -429,7 +436,10 @@ private:
 
 public:
     QString slotResult;
+    static QString staticResult;
 };
+
+QString QtTestObject::staticResult;
 
 QtTestObject::QtTestObject()
 {
@@ -489,6 +499,13 @@ void QtTestObject::testSender()
 void QtTestObject::slotWithUnregisteredParameterType(MyUnregisteredType)
 { slotResult = "slotWithUnregisteredReturnType"; }
 
+void QtTestObject::staticFunction0()
+{
+    staticResult = "staticFunction0";
+}
+
+qint64 QtTestObject::staticFunction1()
+{ staticResult = "staticFunction1"; return Q_INT64_C(123456789)*123456789; }
 
 void tst_QMetaObject::invokeMetaMember()
 {
@@ -497,9 +514,18 @@ void tst_QMetaObject::invokeMetaMember()
     QString t1("1"); QString t2("2"); QString t3("3"); QString t4("4"); QString t5("5");
     QString t6("6"); QString t7("7"); QString t8("8"); QString t9("9"); QString t10("X");
 
-    QVERIFY(!QMetaObject::invokeMethod(0, 0));
-    QVERIFY(!QMetaObject::invokeMethod(0, "sl0"));
-    QVERIFY(!QMetaObject::invokeMethod(&obj, 0));
+    // Test nullptr
+    char *nullCharArray = nullptr;
+    const char *nullConstCharArray = nullptr;
+    QVERIFY(!QMetaObject::invokeMethod(nullptr, nullCharArray));
+    QVERIFY(!QMetaObject::invokeMethod(nullptr, nullConstCharArray));
+    QVERIFY(!QMetaObject::invokeMethod(nullptr, "sl0"));
+    QVERIFY(!QMetaObject::invokeMethod(&obj, nullCharArray));
+    QVERIFY(!QMetaObject::invokeMethod(&obj, nullConstCharArray));
+    QVERIFY(!QMetaObject::invokeMethod(&obj, nullCharArray, Qt::AutoConnection));
+    QVERIFY(!QMetaObject::invokeMethod(&obj, nullConstCharArray, Qt::AutoConnection));
+    QVERIFY(!QMetaObject::invokeMethod(&obj, nullCharArray, Qt::AutoConnection, QGenericReturnArgument()));
+    QVERIFY(!QMetaObject::invokeMethod(&obj, nullConstCharArray, Qt::AutoConnection, QGenericReturnArgument()));
 
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl0"));
     QCOMPARE(obj.slotResult, QString("sl0"));
@@ -628,6 +654,56 @@ void tst_QMetaObject::invokeMetaMember()
     QCOMPARE(obj.slotResult, QString("sl1:hehe"));
 }
 
+void testFunction(){}
+
+
+void tst_QMetaObject::invokePointer()
+{
+    QtTestObject obj;
+    QtTestObject *const nullTestObject = nullptr;
+
+    QString t1("1");
+
+    // Test member functions
+    QVERIFY(!QMetaObject::invokeMethod(nullTestObject, &QtTestObject::sl0));
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl0));
+    QCOMPARE(obj.slotResult, QString("sl0"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::testSender));
+    QCOMPARE(obj.slotResult, QString("0x0"));
+
+    qint64 return64 = 0;
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl14, &return64));
+    QCOMPARE(return64, Q_INT64_C(123456789)*123456789);
+    QCOMPARE(obj.slotResult, QString("sl14"));
+
+    // signals
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sig0));
+    QCOMPARE(obj.slotResult, QString("sl0"));
+
+    // Test function pointers
+    QVERIFY(!QMetaObject::invokeMethod(0, &testFunction));
+    QVERIFY(QMetaObject::invokeMethod(&obj, &testFunction));
+
+    QVERIFY(!QMetaObject::invokeMethod(0, &QtTestObject::staticFunction0));
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::staticFunction0));
+    QCOMPARE(QtTestObject::staticResult, QString("staticFunction0"));
+
+    return64 = 0;
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::staticFunction1, &return64));
+    QCOMPARE(return64, Q_INT64_C(123456789)*123456789);
+    QCOMPARE(QtTestObject::staticResult, QString("staticFunction1"));
+
+    // Test lambdas
+    QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.sl1(t1);}));
+    QCOMPARE(obj.slotResult, QString("sl1:1"));
+
+    QString exp;
+    QVERIFY(QMetaObject::invokeMethod(&obj, [&]()->QString{return obj.sl1("bubu");}, &exp));
+    QCOMPARE(exp, QString("yessir"));
+    QCOMPARE(obj.slotResult, QString("sl1:bubu"));
+}
+
 void tst_QMetaObject::invokeQueuedMetaMember()
 {
     QtTestObject obj;
@@ -687,6 +763,44 @@ void tst_QMetaObject::invokeQueuedMetaMember()
         QVERIFY(obj.slotResult.isEmpty());
     }
 }
+
+void tst_QMetaObject::invokeQueuedPointer()
+{
+    QtTestObject obj;
+
+    // Test member function
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl0, Qt::QueuedConnection));
+    QVERIFY(obj.slotResult.isEmpty());
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult, QString("sl0"));
+
+    // signals
+    obj.slotResult.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sig0, Qt::QueuedConnection));
+    QVERIFY(obj.slotResult.isEmpty());
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult, QString("sl0"));
+
+    // Test function pointers
+    QtTestObject::staticResult.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::staticFunction0, Qt::QueuedConnection));
+    QVERIFY(QtTestObject::staticResult.isEmpty());
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(QtTestObject::staticResult, QString("staticFunction0"));
+
+    // Test lambda
+    obj.slotResult.clear();
+    QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.sl0();}, Qt::QueuedConnection));
+    QVERIFY(obj.slotResult.isEmpty());
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult, QString("sl0"));
+
+    qint32 var = 0;
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::invokeMethod: Unable to invoke methods with return values in queued connections");
+    QVERIFY(!QMetaObject::invokeMethod(&obj, []()->qint32{return 1;}, Qt::QueuedConnection, &var));
+    QCOMPARE(var, 0);
+}
+
 
 void tst_QMetaObject::invokeBlockingQueuedMetaMember()
 {
@@ -821,6 +935,62 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
 
 }
 
+void tst_QMetaObject::invokeBlockingQueuedPointer()
+{
+    QtTestObject *const nullTestObject = nullptr;
+
+    QThread t;
+    t.start();
+    QtTestObject obj;
+    obj.moveToThread(&t);
+
+    QString t1("1");
+
+    // Test member functions
+    QVERIFY(!QMetaObject::invokeMethod(nullTestObject, &QtTestObject::sl0, Qt::BlockingQueuedConnection));
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl0, Qt::BlockingQueuedConnection));
+    QCOMPARE(obj.slotResult, QString("sl0"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::testSender, Qt::BlockingQueuedConnection));
+    QCOMPARE(obj.slotResult, QString("0x0"));
+
+    // return qint64
+    qint64 return64 = 0;
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sl14, Qt::BlockingQueuedConnection,
+                                      &return64));
+    QCOMPARE(return64, Q_INT64_C(123456789)*123456789);
+    QCOMPARE(obj.slotResult, QString("sl14"));
+
+    //test signals
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::sig0, Qt::BlockingQueuedConnection));
+    QCOMPARE(obj.slotResult, QString("sl0"));
+
+    // Test function pointers
+    QVERIFY(!QMetaObject::invokeMethod(0, &testFunction, Qt::BlockingQueuedConnection));
+    QVERIFY(QMetaObject::invokeMethod(&obj, &testFunction, Qt::BlockingQueuedConnection));
+
+    QVERIFY(!QMetaObject::invokeMethod(0, &QtTestObject::staticFunction0, Qt::BlockingQueuedConnection));
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::staticFunction0, Qt::BlockingQueuedConnection));
+    QCOMPARE(QtTestObject::staticResult, QString("staticFunction0"));
+
+    return64 = 0;
+    QVERIFY(QMetaObject::invokeMethod(&obj, &QtTestObject::staticFunction1, Qt::BlockingQueuedConnection, &return64));
+    QCOMPARE(return64, Q_INT64_C(123456789)*123456789);
+    QCOMPARE(QtTestObject::staticResult, QString("staticFunction1"));
+
+    // Test lambdas
+    QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.sl1(t1);}, Qt::BlockingQueuedConnection));
+    QCOMPARE(obj.slotResult, QString("sl1:1"));
+
+    QString exp;
+    QVERIFY(QMetaObject::invokeMethod(&obj, [&]()->QString{return obj.sl1("bubu");}, Qt::BlockingQueuedConnection, &exp));
+    QCOMPARE(exp, QString("yessir"));
+    QCOMPARE(obj.slotResult, QString("sl1:bubu"));
+
+    QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.moveToThread(QThread::currentThread());}, Qt::BlockingQueuedConnection));
+    t.quit();
+    QVERIFY(t.wait());
+}
 
 
 void tst_QMetaObject::qtMetaObjectInheritance()

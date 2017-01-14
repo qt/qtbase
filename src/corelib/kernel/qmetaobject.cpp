@@ -1489,6 +1489,51 @@ bool QMetaObject::invokeMethod(QObject *obj,
                          val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
 }
 
+bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
+{
+    if (! object)
+        return false;
+
+    QThread *currentThread = QThread::currentThread();
+    QThread *objectThread = object->thread();
+    if (type == Qt::AutoConnection)
+        type = (currentThread == objectThread) ? Qt::DirectConnection : Qt::QueuedConnection;
+
+    void *argv[] = { ret };
+
+    if (type == Qt::DirectConnection) {
+        slot->call(object, argv);
+    } else if (type == Qt::QueuedConnection) {
+        if (argv[0]) {
+            qWarning("QMetaObject::invokeMethod: Unable to invoke methods with return values in "
+                     "queued connections");
+            return false;
+        }
+
+        // args and typesCopy will be deallocated by ~QMetaCallEvent() using free()
+        void **args = static_cast<void **>(calloc(1, sizeof(void *)));
+        Q_CHECK_PTR(args);
+
+        int *types = static_cast<int *>(calloc(1, sizeof(int)));
+        Q_CHECK_PTR(types);
+
+        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, 1, types, args));
+    } else if (type == Qt::BlockingQueuedConnection) {
+#ifndef QT_NO_THREAD
+        if (currentThread == objectThread)
+            qWarning("QMetaObject::invokeMethod: Dead lock detected");
+
+        QSemaphore semaphore;
+        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, 0, 0, argv, &semaphore));
+        semaphore.acquire();
+#endif // QT_NO_THREAD
+    } else {
+        qWarning("QMetaObject::invokeMethod: Unknown connection type");
+        return false;
+    }
+    return true;
+}
+
 /*! \fn bool QMetaObject::invokeMethod(QObject *obj, const char *member,
                                        QGenericReturnArgument ret,
                                        QGenericArgument val0 = QGenericArgument(0),
@@ -1541,6 +1586,44 @@ bool QMetaObject::invokeMethod(QObject *obj,
 
     This overload invokes the member using the connection type Qt::AutoConnection and
     ignores return values.
+*/
+
+/*!
+    \fn bool QMetaObject::invokeMethod(QObject *receiver, PointerToMemberFunction function, Qt::ConnectionType type = Qt::AutoConnection, MemberFunctionReturnType *ret = Q_NULLPTR)
+
+    \since 5.10
+
+    \overload
+*/
+
+/*!
+    \fn bool QMetaObject::invokeMethod(QObject *receiver, PointerToMemberFunction function, MemberFunctionReturnType *ret)
+
+    \since 5.10
+
+    \overload
+
+    This overload invokes the member function using the connection type Qt::AutoConnection.
+*/
+
+/*!
+    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, Qt::ConnectionType type = Qt::AutoConnection, FunctorReturnType *ret = Q_NULLPTR)
+
+    \since 5.10
+
+    \overload
+
+    Call the functor in the event loop of \a context.
+*/
+
+/*!
+    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, FunctorReturnType *ret = Q_NULLPTR)
+
+    \since 5.10
+
+    \overload
+
+    Call the functor in the event loop of \a context using the connection type Qt::AutoConnection.
 */
 
 /*!
