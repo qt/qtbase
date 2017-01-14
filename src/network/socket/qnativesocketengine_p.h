@@ -286,8 +286,10 @@ public:
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
 
+#if QT_CONFIG(networkinterface)
     static uint scopeIdFromString(const QString &scopeid)
     { return QNetworkInterface::interfaceIndexFromName(scopeid); }
+#endif
 
     /*! \internal
         Sets \a address and \a port in the \a aa sockaddr structure and the size in \a sockAddrSize.
@@ -301,7 +303,9 @@ public:
             || socketProtocol == QAbstractSocket::AnyIPProtocol) {
             memset(&aa->a6, 0, sizeof(sockaddr_in6));
             aa->a6.sin6_family = AF_INET6;
+#if QT_CONFIG(networkinterface)
             aa->a6.sin6_scope_id = scopeIdFromString(address.scopeId());
+#endif
             aa->a6.sin6_port = htons(port);
             Q_IPV6ADDR tmp = address.toIPv6Address();
             memcpy(&aa->a6.sin6_addr, &tmp, sizeof(tmp));

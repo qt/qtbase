@@ -121,8 +121,10 @@ static inline void qt_socket_getPortAndAddress(const qt_sockaddr *s, quint16 *po
             QHostAddress tmpAddress;
             tmpAddress.setAddress(tmp);
             *addr = tmpAddress;
+#if QT_CONFIG(networkinterface)
             if (s->a6.sin6_scope_id)
                 addr->setScopeId(QNetworkInterface::interfaceNameFromIndex(s->a6.sin6_scope_id));
+#endif
         }
         if (port)
             *port = ntohs(s->a6.sin6_port);
