@@ -1258,6 +1258,18 @@ uint qHash(const QHostAddress &key, uint seed) Q_DECL_NOTHROW
 
     \sa isEqual()
 */
+
+/*!
+    \relates QHostAddress
+    \since 5.9
+    \fn operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
+
+    Returns \c false if special address \a lhs is the same as host address \a rhs;
+    otherwise returns \c true.
+
+    \sa isEqual()
+*/
+
 #ifndef QT_NO_DATASTREAM
 
 /*! \relates QHostAddress

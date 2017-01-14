@@ -274,6 +274,7 @@ void tst_QHostAddress::specialAddresses()
     QVERIFY(address == QHostAddress(address));
     QVERIFY(!(QHostAddress(address) != QHostAddress(address)));
     QVERIFY(!(QHostAddress(address) != address));
+    QVERIFY(!(address != QHostAddress(address)));
 
     {
         QHostAddress ha;
