@@ -636,6 +636,7 @@
         },
         "gif": {
             "label": "GIF",
+            "condition": "features.imageformatplugin",
             "output": [
                 "privateFeature",
                 { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_GIF" }
@@ -643,11 +644,13 @@
         },
         "ico": {
             "label": "ICO",
+            "condition": "features.imageformatplugin",
             "output": [ "privateFeature", "feature" ]
         },
         "jpeg": {
             "label": "JPEG",
             "disable": "input.libjpeg == 'no'",
+            "condition": "features.imageformatplugin",
             "output": [
                 "privateFeature",
                 { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_JPEG" }
