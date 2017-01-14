@@ -1,7 +1,8 @@
 #!/usr/bin/env python2
+# coding=utf8
 #############################################################################
 ##
-## Copyright (C) 2017 The Qt Company Ltd.
+## Copyright (C) 2018 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -62,6 +63,8 @@ from xpathlite import DraftResolution, findAlias, findEntry, findTagsInFile
 from dateconverter import convert_date
 from localexml import Locale
 
+# TODO: make calendars a command-line option
+calendars = ['gregorian'] # 'persian', 'islamic', 'hebrew'
 findEntryInFile = xpathlite._findEntryInFile
 def wrappedwarn(prefix, tokens):
     return sys.stderr.write(
@@ -395,12 +398,12 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
         ('narrow', 'format', 'narrow'),
         )
 
-    # Month data:
-    for cal in ('gregorian',): # We shall want to add to this
+    # Month names for 12-month calendars:
+    for cal in calendars:
         stem = 'dates/calendars/calendar[' + cal + ']/months/'
         for (key, mode, size) in namings:
             prop = 'monthContext[' + mode + ']/monthWidth[' + size + ']/'
-            result[key + 'Months'] = ';'.join(
+            result[key + 'Months_' + cal] = ';'.join(
                 findEntry(path, stem + prop + "month[%d]" % i)
                 for i in range(1, 13)) + ';'
 
@@ -686,9 +689,9 @@ if skips:
     wrappedwarn('skipping likelySubtags (for unknown language codes): ', skips)
 print "    <localeList>"
 
-Locale.C().toXml()
+Locale.C(calendars).toXml(calendars)
 for key in locale_keys:
-    locale_database[key].toXml()
+    locale_database[key].toXml(calendars)
 
 print "    </localeList>"
 print "</localeDatabase>"

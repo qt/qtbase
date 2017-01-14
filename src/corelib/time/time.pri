@@ -1,10 +1,20 @@
 # Qt time / date / zone / calendar module
 
 HEADERS += \
+        time/qcalendar.h \
+        time/qcalendarbackend_p.h \
+        time/qcalendarmath_p.h \
         time/qdatetime.h \
-        time/qdatetime_p.h
+        time/qdatetime_p.h \
+        time/qgregoriancalendar_p.h \
+        time/qromancalendar_p.h \
+        time/qromancalendar_data_p.h
 
-SOURCES += time/qdatetime.cpp
+SOURCES += \
+        time/qdatetime.cpp \
+        time/qcalendar.cpp \
+        time/qgregoriancalendar.cpp \
+        time/qromancalendar.cpp
 
 qtConfig(timezone) {
     HEADERS += \

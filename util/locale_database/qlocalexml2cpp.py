@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #############################################################################
 ##
-## Copyright (C) 2017 The Qt Company Ltd.
+## Copyright (C) 2018 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -41,6 +41,10 @@ import xml.dom.minidom
 from enumdata import language_aliases, country_aliases, script_aliases
 
 from localexml import Locale
+
+# TODO: Make calendars a command-line parameter
+# map { CLDR name: Qt file name }
+calendars = {'gregorian': 'roman',} # 'persian': 'jalali', 'islamic': 'hijri', 'hebrew': 'hebrew',
 
 generated_template = """
 /*
@@ -165,7 +169,7 @@ def loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map
     result = {}
 
     for locale_elt in eachEltInGroup(doc.documentElement, "localeList", "locale"):
-        locale = Locale.fromXmlData(lambda k: firstChildText(locale_elt, k))
+        locale = Locale.fromXmlData(lambda k: firstChildText(locale_elt, k), calendars.keys())
         language_id = languageNameToId(locale.language, language_map)
         if language_id == -1:
             sys.stderr.write("Cannot find a language id for '%s'\n" % locale.language)
@@ -268,6 +272,7 @@ class StringData:
         self.data = []
         self.hash = {}
         self.name = name
+
     def append(self, s):
         if s in self.hash:
             return self.hash[s]
@@ -292,6 +297,11 @@ class StringData:
         self.hash[s] = token
         self.data += lst
         return token
+
+    def write(self, fd):
+        fd.write("\nstatic const ushort %s[] = {\n" % self.name)
+        fd.write(wrap_list(self.data))
+        fd.write("\n};\n")
 
 def escapedString(s):
     result = ""
@@ -443,7 +453,6 @@ def main():
     list_pattern_part_data = StringData('list_pattern_part_data')
     date_format_data = StringData('date_format_data')
     time_format_data = StringData('time_format_data')
-    months_data = StringData('months_data')
     days_data = StringData('days_data')
     am_data = StringData('am_data')
     pm_data = StringData('pm_data')
@@ -483,12 +492,6 @@ def main():
                          + '   lDtFmt   '
                          + '   sTmFmt   ' # Time format
                          + '   lTmFmt   '
-                         + '  ssMonth   ' # Months
-                         + '  slMonth   '
-                         + '  snMonth   '
-                         + '   sMonth   '
-                         + '   lMonth   '
-                         + '   nMonth   '
                          + '   ssDays   ' # Days
                          + '   slDays   '
                          + '   snDays   '
@@ -533,7 +536,7 @@ def main():
                    # Quotation marks:
                    + '%8d,' * 4
                    # List patterns, date/time formats, month/day names, am/pm:
-                   + '%11s,' * 22
+                   + '%11s,' * 16
                    # SI/IEC byte-unit abbreviations:
                    + '%8s,' * 3
                    # Currency ISO code:
@@ -569,12 +572,6 @@ def main():
                         date_format_data.append(l.longDateFormat),
                         time_format_data.append(l.shortTimeFormat),
                         time_format_data.append(l.longTimeFormat),
-                        months_data.append(l.standaloneShortMonths),
-                        months_data.append(l.standaloneLongMonths),
-                        months_data.append(l.standaloneNarrowMonths),
-                        months_data.append(l.shortMonths),
-                        months_data.append(l.longMonths),
-                        months_data.append(l.narrowMonths),
                         days_data.append(l.standaloneShortDays),
                         days_data.append(l.standaloneLongDays),
                         days_data.append(l.standaloneNarrowDays),
@@ -600,7 +597,7 @@ def main():
                         l.weekendEnd)
                              + ", // %s/%s/%s\n" % (l.language, l.script, l.country))
     data_temp_file.write(line_format # All zeros, matching the format:
-                         % ( (0,) * (3 + 8 + 4) + ("0,0",) * (22 + 3)
+                         % ( (0,) * (3 + 8 + 4) + ("0,0",) * (16 + 3)
                              + (currencyIsoCodeData(0),)
                              + ("0,0",) * 6 + (0,) * (2 + 3))
                          + " // trailing 0s\n")
@@ -608,13 +605,11 @@ def main():
 
     # StringData tables:
     for data in (list_pattern_part_data, date_format_data,
-                 time_format_data, months_data, days_data,
+                 time_format_data, days_data,
                  byte_unit_data, am_data, pm_data, currency_symbol_data,
                  currency_display_name_data, currency_format_data,
                  endonyms_data):
-        data_temp_file.write("\nstatic const ushort %s[] = {\n" % data.name)
-        data_temp_file.write(wrap_list(data.data))
-        data_temp_file.write("\n};\n")
+        data.write(data_temp_file)
 
     data_temp_file.write("\n")
 
@@ -738,6 +733,62 @@ def main():
 
     os.remove(qtsrcdir + "/src/corelib/text/qlocale_data_p.h")
     os.rename(data_temp_file_path, qtsrcdir + "/src/corelib/text/qlocale_data_p.h")
+
+    # Generate calendar data
+    calendar_format = '      {%6d,%6d,%6d,{%5s},{%5s},{%5s},{%5s},{%5s},{%5s}}, '
+    for calendar, stem in calendars.items():
+        months_data = StringData('months_data')
+        calendar_data_file = "q%scalendar_data_p.h" % stem
+        calendar_template_file = open(os.path.join(qtsrcdir, 'src', 'corelib', 'time',
+                                                   calendar_data_file), "r")
+        (calendar_temp_file, calendar_temp_file_path) = tempfile.mkstemp(calendar_data_file, dir=qtsrcdir)
+        calendar_temp_file = os.fdopen(calendar_temp_file, "w")
+        s = calendar_template_file.readline()
+        while s and s != GENERATED_BLOCK_START:
+            calendar_temp_file.write(s)
+            s = calendar_template_file.readline()
+        calendar_temp_file.write(GENERATED_BLOCK_START)
+        calendar_temp_file.write(generated_template % (datetime.date.today(), cldr_version))
+        calendar_temp_file.write("static const QCalendarLocale locale_data[] = {\n")
+        calendar_temp_file.write('   // '
+                                 # IDs, width 7 (6 + comma)
+                                 + ' lang  '
+                                 + ' script'
+                                 + ' terr  '
+                                 # Month-name start-end pairs, width 8 (5 plus '{},'):
+                                     + ' sShort '
+                                 + ' sLong  '
+                                 + ' sNarrow'
+                                 + ' short  '
+                                 + ' long   '
+                                 + ' narrow'
+                                 # No trailing space on last; be sure
+                                 # to pad before adding later entries.
+                                 + '\n')
+        for key in locale_keys:
+            l = locale_map[key]
+            calendar_temp_file.write(
+                calendar_format
+                % (key[0], key[1], key[2],
+                   months_data.append(l.standaloneShortMonths[calendar]),
+                   months_data.append(l.standaloneLongMonths[calendar]),
+                   months_data.append(l.standaloneNarrowMonths[calendar]),
+                   months_data.append(l.shortMonths[calendar]),
+                   months_data.append(l.longMonths[calendar]),
+                   months_data.append(l.narrowMonths[calendar]))
+                + "// %s/%s/%s\n " % (l.language, l.script, l.country))
+        calendar_temp_file.write(calendar_format % ( (0,) * 3 + ('0,0',) * 6 )
+                                      + '// trailing zeros\n')
+        calendar_temp_file.write("};\n")
+        months_data.write(calendar_temp_file)
+        s = calendar_template_file.readline()
+        while s and s != GENERATED_BLOCK_END:
+            s = calendar_template_file.readline()
+        while s:
+            calendar_temp_file.write(s)
+            s = calendar_template_file.readline()
+        os.rename(calendar_temp_file_path,
+                  os.path.join(qtsrcdir, 'src', 'corelib', 'time', calendar_data_file))
 
     # qlocale.h
 

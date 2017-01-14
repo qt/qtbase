@@ -85,7 +85,10 @@ SOURCES += \
            ../../corelib/text/qstringlist.cpp \
            ../../corelib/text/qstringview.cpp \
            ../../corelib/text/qvsnprintf.cpp \
+           ../../corelib/time/qcalendar.cpp \
            ../../corelib/time/qdatetime.cpp \
+           ../../corelib/time/qgregoriancalendar.cpp \
+           ../../corelib/time/qromancalendar.cpp \
            ../../corelib/tools/qarraydata.cpp \
            ../../corelib/tools/qbitarray.cpp \
            ../../corelib/tools/qcommandlineparser.cpp \

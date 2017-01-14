@@ -1,6 +1,7 @@
+# coding=utf8
 #############################################################################
 ##
-## Copyright (C) 2017 The Qt Company Ltd.
+## Copyright (C) 2018 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -113,12 +114,11 @@ def convertFormat(format):
     return result
 
 class Locale:
-    # Tool used during class body (see del below), not method:
-    def propsMonthDay(lengths=('long', 'short', 'narrow'), scale=('months', 'days')):
+    @staticmethod
+    def propsMonthDay(scale, lengths=('long', 'short', 'narrow')):
         for L in lengths:
-            for S in scale:
-                yield camelCase((L, S))
-                yield camelCase(('standalone', L, S))
+            yield camelCase((L, scale))
+            yield camelCase(('standalone', L, scale))
 
     # Expected to be numbers, read with int():
     __asint = ("decimal", "group", "zero",
@@ -137,15 +137,13 @@ class Locale:
                "listPatternPartEnd", "listPatternPartTwo", "am", "pm",
                'byte_unit', 'byte_si_quantified', 'byte_iec_quantified',
                "currencyIsoCode", "currencySymbol", "currencyDisplayName",
-               "currencyFormat", "currencyNegativeFormat"
-               ) + tuple(propsMonthDay())
-    del propsMonthDay
+               "currencyFormat", "currencyNegativeFormat")
 
     # Day-of-Week numbering used by Qt:
     __qDoW = {"mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6, "sun": 7}
 
     @classmethod
-    def fromXmlData(cls, lookup):
+    def fromXmlData(cls, lookup, calendars=('gregorian',)):
         """Constructor from the contents of XML elements.
 
         Single parameter, lookup, is called with the names of XML
@@ -170,12 +168,15 @@ class Locale:
         for k in cls.__asfmt:
             data[k] = convertFormat(lookup(k))
 
-        for k in cls.__astxt:
+        for k in cls.__astxt + tuple(cls.propsMonthDay('days')):
             data[k] = lookup(k)
+
+        for k in cls.propsMonthDay('months'):
+            data[k] = dict((cal, lookup('_'.join((k, cal)))) for cal in calendars)
 
         return cls(data)
 
-    def toXml(self, indent='        ', tab='    '):
+    def toXml(self, calendars=('gregorian',), indent='        ', tab='    '):
         print indent + '<locale>'
         inner = indent + tab
         get = lambda k: getattr(self, k)
@@ -199,13 +200,14 @@ class Locale:
                     'weekendStart', 'weekendEnd',
                     'longDateFormat', 'shortDateFormat',
                     'longTimeFormat', 'shortTimeFormat',
-                    'standaloneLongMonths', 'standaloneShortMonths',
-                    'standaloneNarrowMonths',
-                    'longMonths', 'shortMonths', 'narrowMonths',
                     'longDays', 'shortDays', 'narrowDays',
                     'standaloneLongDays', 'standaloneShortDays', 'standaloneNarrowDays',
                     'currencyIsoCode', 'currencySymbol', 'currencyDisplayName',
-                    'currencyFormat', 'currencyNegativeFormat'):
+                    'currencyFormat', 'currencyNegativeFormat'
+                    ) + tuple(self.propsMonthDay('days')) + tuple(
+                '_'.join((k, cal))
+                for k in self.propsMonthDay('months')
+                for cal in calendars):
             ent = camelCase(key.split('_')) if key.endswith('_endonym') else key
             print inner + "<%s>%s</%s>" % (ent, escape(get(key)).encode('utf-8'), ent)
 
@@ -218,16 +220,50 @@ class Locale:
         if data: self.__dict__.update(data)
         if kw: self.__dict__.update(kw)
 
+    # Tools used by __monthNames:
+    def fullName(i, name): return name
+    def firstThree(i, name): return name[:3]
+    def initial(i, name): return name[:1]
+    def number(i, name): return str(i + 1)
+    @staticmethod
+    def __monthNames(calendars,
+                     known={ # Map calendar to (names, extractors...):
+            'gregorian': (('January', 'February', 'March', 'April', 'May', 'June', 'July',
+                           'August', 'September', 'October', 'November', 'December'),
+                          # Extractor pairs, (plain, standalone)
+                          (fullName, fullName), # long
+                          (firstThree, firstThree), # short
+                          (number, initial)), # narrow
+            'hebrew': (('Tishri', 'Heshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar I',
+                        'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tamuz', 'Av'),
+                       (fullName, fullName),
+                       (fullName, fullName),
+                       (number, number)),
+            },
+                     sizes=('long', 'short', 'narrow')):
+        for cal in calendars:
+            try:
+                data = known[cal]
+            except KeyError: # Need to add an entry to known, above.
+                print 'Unsupported calendar:', cal
+                raise
+            names, get = data[0] + ('',), data[1:]
+            for n, size in enumerate(sizes):
+                yield ('_'.join((camelCase((size, 'months')), cal)),
+                       ';'.join(get[n][0](i, x) for i, x in enumerate(names)))
+                yield ('_'.join((camelCase(('standalone', size, 'months')), cal)),
+                       ';'.join(get[n][1](i, x) for i, x in enumerate(names)))
+    del fullName, firstThree, initial, number
+
     @classmethod
-    def C(cls,
-          # Empty entries at end to ensure final separator when join()ed:
-          months = ('January', 'February', 'March', 'April', 'May', 'June', 'July',
-                    'August', 'September', 'October', 'November', 'December', ''),
+    def C(cls, calendars=('gregorian',),
+          # Empty entry at end to ensure final separator when join()ed:
           days = ('Sunday', 'Monday', 'Tuesday', 'Wednesday',
                   'Thursday', 'Friday', 'Saturday', ''),
           quantifiers=('k', 'M', 'G', 'T', 'P', 'E')):
         """Returns an object representing the C locale."""
-        return cls(language='C', language_code='0', language_endonym='',
+        return cls(dict(cls.__monthNames(calendars)),
+                   language='C', language_code='0', language_endonym='',
                    script='AnyScript', script_code='0',
                    country='AnyCountry', country_code='0', country_endonym='',
                    decimal='.', group=',', list=';', percent='%',
@@ -245,12 +281,6 @@ class Locale:
                    weekendStart='sat', weekendEnd='sun',
                    longDateFormat='EEEE, d MMMM yyyy', shortDateFormat='d MMM yyyy',
                    longTimeFormat='HH:mm:ss z', shortTimeFormat='HH:mm:ss',
-                   longMonths=';'.join(months),
-                   shortMonths=';'.join(m[:3] for m in months),
-                   narrowMonths='1;2;3;4;5;6;7;8;9;10;11;12;',
-                   standaloneLongMonths=';'.join(months),
-                   standaloneShortMonths=';'.join(m[:3] for m in months),
-                   standaloneNarrowMonths=';'.join(m[:1] for m in months),
                    longDays=';'.join(days),
                    shortDays=';'.join(d[:3] for d in days),
                    narrowDays='7;1;2;3;4;5;6;',
