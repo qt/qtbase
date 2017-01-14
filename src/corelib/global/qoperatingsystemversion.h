@@ -84,24 +84,35 @@ public:
     Q_DECL_CONSTEXPR QOperatingSystemVersion(OSType osType,
                                              int vmajor, int vminor = -1, int vmicro = -1)
         : m_os(osType),
-          m_major(vmajor),
-          m_minor(vminor),
-          m_micro(vmicro)
+          m_major(qMax(-1, vmajor)),
+          m_minor(vmajor < 0 ? -1 : qMax(-1, vminor)),
+          m_micro(vmajor < 0 || vminor < 0 ? -1 : qMax(-1, vmicro))
     { }
 
     static QOperatingSystemVersion current();
-
-    static int compare(const QOperatingSystemVersion &v1, const QOperatingSystemVersion &v2);
-
-    QOperatingSystemVersion fromVersionNumber(const QVersionNumber &version, OSType os);
-    QVersionNumber toVersionNumber() const;
 
     Q_DECL_CONSTEXPR int majorVersion() const { return m_major; }
     Q_DECL_CONSTEXPR int minorVersion() const { return m_minor; }
     Q_DECL_CONSTEXPR int microVersion() const { return m_micro; }
 
+    Q_DECL_CONSTEXPR int segmentCount() const
+    { return m_micro >= 0 ? 3 : m_minor >= 0 ? 2 : m_major >= 0 ? 1 : 0; }
+
+    bool isAnyOfType(std::initializer_list<OSType> types) const;
     Q_DECL_CONSTEXPR OSType type() const { return m_os; }
     QString name() const;
+
+    friend bool operator>(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
+    { return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) > 0; }
+
+    friend bool operator>=(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
+    { return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) >= 0; }
+
+    friend bool operator<(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
+    { return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) < 0; }
+
+    friend bool operator<=(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
+    { return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) <= 0; }
 
 private:
     QOperatingSystemVersion() = default;
@@ -109,25 +120,9 @@ private:
     int m_major;
     int m_minor;
     int m_micro;
+
+    static int compare(const QOperatingSystemVersion &v1, const QOperatingSystemVersion &v2);
 };
-
-inline bool operator>(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
-{ return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) > 0; }
-
-inline bool operator>=(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
-{ return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) >= 0; }
-
-inline bool operator<(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
-{ return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) < 0; }
-
-inline bool operator<=(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
-{ return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) <= 0; }
-
-inline bool operator==(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
-{ return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) == 0; }
-
-inline bool operator!=(const QOperatingSystemVersion &lhs, const QOperatingSystemVersion &rhs)
-{ return !(lhs == rhs); }
 
 QT_END_NAMESPACE
 

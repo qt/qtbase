@@ -98,6 +98,33 @@ QT_BEGIN_NAMESPACE
                 GetVersionEx that hides the real version number if the
                 application is not manifested for that version of the OS
     \endtable
+
+    Because QOperatingSystemVersion stores both a version number and an OS type, the OS type
+    can be taken into account when performing comparisons. For example, on a macOS system running
+    macOS Sierra (v10.12), the following expression will return \c false even though the
+    major version number component of the object on the left hand side of the expression (10) is
+    greater than that of the object on the right (9):
+
+    \code
+    QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 9)
+    \endcode
+
+    This allows expressions for multiple operating systems to be joined with a logical OR operator
+    and still work as expected. For example:
+
+    \code
+    auto current = QOperatingSystemVersion::current();
+    if (current >= QOperatingSystemVersion::OSXYosemite ||
+        current >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 8)) {
+        // returns true on macOS >= 10.10 and iOS >= 8.0, but false on macOS < 10.10 and iOS < 8.0
+    }
+    \encode
+
+    A more naive comparison algorithm might incorrectly return true on all versions of macOS,
+    including Mac OS 9. This behavior is achieved by overloading the comparison operators to return
+    \c false whenever the OS types of the QOperatingSystemVersion instances being compared do not
+    match. Be aware that due to this it can be the case \c x >= y and \c x < y are BOTH \c false
+    for the same instances of \c x and \c y.
 */
 
 /*!
@@ -111,7 +138,7 @@ QT_BEGIN_NAMESPACE
     \value MacOS        The Apple macOS operating system.
     \value TvOS         The Apple tvOS operating system.
     \value WatchOS      The Apple watchOS operating system.
-    \value Windows      The Microsoft Windows operating system (in both Win32 and WinRT environments).
+    \value Windows      The Microsoft Windows operating system.
 
     \value Unknown      An unknown or unsupported operating system.
 */
@@ -200,21 +227,6 @@ static inline int compareVersionComponents(int lhs, int rhs)
     return lhs >= 0 && rhs >= 0 ? lhs - rhs : 0;
 }
 
-/*!
-    \fn int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
-                                             const QOperatingSystemVersion &v2)
-
-    Compares \a v1 with \a v2 and returns an integer less than, equal to, or
-    greater than zero, depending on whether \a v1 is less than, equal to, or
-    greater than \a v2, respectively.
-
-    Comparisons are performed by comparing the version number components of
-    \a v1 and \a v2.
-
-    \note This function cannot take the OS type into account; you should use
-    the overloaded comparison operators to compare QOperatingSystemVersions
-    in a safe manner.
-*/
 int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
                                      const QOperatingSystemVersion &v2)
 {
@@ -226,30 +238,6 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
     }
     return compareVersionComponents(v1.m_major, v2.m_major);
 }
-
-#ifndef QT_BOOTSTRAPPED
-/*!
-    \fn QOperatingSystemVersion QOperatingSystemVersion::fromVersionNumber(const QVersionNumber &version,
-                                                                           QOperatingSystemVersion::OSType os)
-
-    Returns a QOperatingSystemVersion consisting of the OS type \a os and version number \a version.
-*/
-QOperatingSystemVersion QOperatingSystemVersion::fromVersionNumber(const QVersionNumber &version,
-                                                                   QOperatingSystemVersion::OSType os)
-{
-    return QOperatingSystemVersion(os, version.majorVersion(), version.minorVersion(), version.microVersion());
-}
-
-/*!
-    \fn QOperatingSystemVersion QOperatingSystemVersion::toVersionNumber() const
-
-    Returns the QOperatingSystemVersion's version number as a QVersionNumber.
-*/
-QVersionNumber QOperatingSystemVersion::toVersionNumber() const
-{
-    return QVersionNumber(m_major, m_minor, m_micro);
-}
-#endif
 
 /*!
     \fn int QOperatingSystemVersion::majorVersion() const
@@ -337,6 +325,21 @@ QString QOperatingSystemVersion::name() const
     default:
         return QString();
     }
+}
+
+/*!
+    \fn bool QOperatingSystemVersion::isAnyOfType(std::initializer_list<OSType> types) const
+
+    Returns whether the OS type identified by the QOperatingSystemVersion
+    matches any of the OS types in \a types.
+*/
+bool QOperatingSystemVersion::isAnyOfType(std::initializer_list<OSType> types) const
+{
+    for (const auto &t : qAsConst(types)) {
+        if (type() == t)
+            return true;
+    }
+    return false;
 }
 
 /*!
