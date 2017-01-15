@@ -1159,7 +1159,7 @@ void QWindowsFontDatabase::populateFamily(const QString &familyName)
     ReleaseDC(0, dummy);
 }
 
-static int QT_WIN_CALLBACK populateFontFamilies(const LOGFONT *logFont, const TEXTMETRIC *,
+static int QT_WIN_CALLBACK populateFontFamilies(const LOGFONT *logFont, const TEXTMETRIC *textmetric,
                                                 DWORD, LPARAM)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
@@ -1168,6 +1168,13 @@ static int QT_WIN_CALLBACK populateFontFamilies(const LOGFONT *logFont, const TE
     if (faceNameW[0] && faceNameW[0] != L'@' && wcsncmp(faceNameW, L"WST_", 4)) {
         const QString faceName = QString::fromWCharArray(faceNameW);
         QPlatformFontDatabase::registerFontFamily(faceName);
+        // Register current font's english name as alias
+        const bool ttf = (textmetric->tmPitchAndFamily & TMPF_TRUETYPE);
+        if (ttf && qt_localizedName(faceName)) {
+            const QString englishName = qt_getEnglishName(faceName);
+            if (!englishName.isEmpty())
+                QPlatformFontDatabase::registerAliasToFontFamily(faceName, englishName);
+        }
     }
     return 1; // continue
 }
@@ -1183,7 +1190,9 @@ void QWindowsFontDatabase::populateFontDatabase()
     EnumFontFamiliesEx(dummy, &lf, populateFontFamilies, 0, 0);
     ReleaseDC(0, dummy);
     // Work around EnumFontFamiliesEx() not listing the system font.
-    QPlatformFontDatabase::registerFontFamily(QWindowsFontDatabase::systemDefaultFont().family());
+    QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().family();
+    if (QPlatformFontDatabase::resolveFontFamilyAlias(systemDefaultFamily).isEmpty())
+        QPlatformFontDatabase::registerFontFamily(systemDefaultFamily);
 }
 
 typedef QSharedPointer<QWindowsFontEngineData> QWindowsFontEngineDataPtr;

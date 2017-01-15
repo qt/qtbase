@@ -982,10 +982,12 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <QtCore/qpoint.h>
 QT_END_INCLUDE_NAMESPACE
 
+#ifndef Q_TEMPLATE_EXTERN
 #if defined(QT_BUILD_CORE_LIB)
 #define Q_TEMPLATE_EXTERN
 #else
 #define Q_TEMPLATE_EXTERN extern
+#endif
 #endif
 Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPointF>;
 Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPoint>;
