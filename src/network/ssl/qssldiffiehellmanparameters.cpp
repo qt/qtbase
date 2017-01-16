@@ -68,6 +68,12 @@
 
 QT_BEGIN_NAMESPACE
 
+// The 1024-bit MODP group from RFC 2459 (Second Oakley Group)
+Q_AUTOTEST_EXPORT const char *qssl_dhparams_default_base64 =
+    "MIGHAoGBAP//////////yQ/aoiFowjTExmKLgNwc0SkCTgiKZ8x0Agu+pjsTmyJR"
+    "Sgh5jjQE3e+VGbPNOkMbMCsKbfJfFDdP4TVtbVHCReSFtXZiXn7G9ExC6aY37WsL"
+    "/1y29Aa37e44a/taiZ+lrp8kEXxLH+ZJKGZR7OZTgf//////////AgEC";
+
 /*!
     Returns the default QSslDiffieHellmanParameters used by QSslSocket.
 
@@ -76,15 +82,9 @@ QT_BEGIN_NAMESPACE
 */
 QSslDiffieHellmanParameters QSslDiffieHellmanParameters::defaultParameters()
 {
-    // The 1024-bit MODP group from RFC 2459 (Second Oakley Group)
-    return fromEncoded(
-        QByteArray::fromBase64(QByteArrayLiteral(
-            "MIGHAoGBAP//////////yQ/aoiFowjTExmKLgNwc0SkCTgiKZ8x0Agu+pjsTmyJR"
-            "Sgh5jjQE3e+VGbPNOkMbMCsKbfJfFDdP4TVtbVHCReSFtXZiXn7G9ExC6aY37WsL"
-            "/1y29Aa37e44a/taiZ+lrp8kEXxLH+ZJKGZR7OZTgf//////////AgEC"
-        )),
-        QSsl::Der
-    );
+    QSslDiffieHellmanParameters def;
+    def.d->derData = QByteArray::fromBase64(QByteArray(qssl_dhparams_default_base64));
+    return def;
 }
 
 /*!
