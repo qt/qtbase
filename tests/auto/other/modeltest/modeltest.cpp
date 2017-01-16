@@ -338,6 +338,8 @@ void ModelTest::checkChildren(const QModelIndex &parent, int currentDepth)
             QVERIFY(model->hasIndex(r, c, parent));
             QModelIndex index = model->index(r, c, parent);
             // rowCount() and columnCount() said that it existed...
+            if (!index.isValid())
+                qWarning() << "Got invalid index at row=" << r << "col=" << c << "parent=" << parent;
             QVERIFY(index.isValid());
 
             // index() should always return the same index when called twice in a row
@@ -485,7 +487,7 @@ void ModelTest::rowsAboutToBeInserted(const QModelIndex &parent, int start, int 
 void ModelTest::rowsInserted(const QModelIndex &parent, int start, int end)
 {
     Changing c = insert.pop();
-    QCOMPARE(c.parent, parent);
+    QCOMPARE(parent, c.parent);
 //    qDebug() << "rowsInserted"  << "start=" << start << "end=" << end << "oldsize=" << c.oldSize
 //    << "parent=" << model->data ( parent ).toString() << "current rowcount of parent=" << model->rowCount ( parent );
 
@@ -495,8 +497,8 @@ void ModelTest::rowsInserted(const QModelIndex &parent, int start, int end)
 //    }
 //    qDebug();
 
-    QCOMPARE(c.oldSize + (end - start + 1), model->rowCount(parent));
-    QCOMPARE(c.last, model->data(model->index(start - 1, 0, c.parent)));
+    QCOMPARE(model->rowCount(parent), c.oldSize + (end - start + 1));
+    QCOMPARE(model->data(model->index(start - 1, 0, c.parent)), c.last);
 
     if (c.next != model->data(model->index(end + 1, 0, c.parent))) {
         qDebug() << start << end;
@@ -505,7 +507,7 @@ void ModelTest::rowsInserted(const QModelIndex &parent, int start, int end)
         qDebug() << c.next << model->data(model->index(end + 1, 0, c.parent));
     }
 
-    QCOMPARE(c.next, model->data(model->index(end + 1, 0, c.parent)));
+    QCOMPARE(model->data(model->index(end + 1, 0, c.parent)), c.next);
 }
 
 void ModelTest::layoutAboutToBeChanged()
@@ -518,7 +520,7 @@ void ModelTest::layoutChanged()
 {
     for (int i = 0; i < changing.count(); ++i) {
         QPersistentModelIndex p = changing[i];
-        QCOMPARE(QModelIndex(p), model->index(p.row(), p.column(), p.parent()));
+        QCOMPARE(model->index(p.row(), p.column(), p.parent()), QModelIndex(p));
     }
     changing.clear();
 }
@@ -548,10 +550,10 @@ void ModelTest::rowsRemoved(const QModelIndex &parent, int start, int end)
 {
     qDebug() << "rr" << parent << start << end;
     Changing c = remove.pop();
-    QCOMPARE(c.parent, parent);
-    QCOMPARE(c.oldSize - (end - start + 1), model->rowCount(parent));
-    QCOMPARE(c.last, model->data(model->index(start - 1, 0, c.parent)));
-    QCOMPARE(c.next, model->data(model->index(start, 0, c.parent)));
+    QCOMPARE(parent, c.parent);
+    QCOMPARE(model->rowCount(parent), c.oldSize - (end - start + 1));
+    QCOMPARE(model->data(model->index(start - 1, 0, c.parent)), c.last);
+    QCOMPARE(model->data(model->index(start, 0, c.parent)), c.next);
 }
 
 void ModelTest::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
