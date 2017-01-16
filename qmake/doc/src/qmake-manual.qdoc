@@ -960,6 +960,8 @@
     \row    \li c++14 \li C++14 support is enabled. This option has no effect if
             the compiler does not support C++14.
             By default, support is disabled.
+    \row    \li depend_includepath \li Appending the value of INCLUDEPATH to
+            DEPENDPATH is enabled. Set by default.
     \endtable
 
     When you use the \c debug_and_release option (which is the default under
