@@ -26,14 +26,12 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
 
 #include "modeltest.h"
 #include "dynamictreemodel.h"
-
 
 class tst_ModelTest : public QObject
 {
@@ -63,7 +61,7 @@ void tst_ModelTest::stringListModel()
     proxy.setSourceModel(&model);
 
     model.setStringList(QStringList() << "2" << "3" << "1");
-    model.setStringList(QStringList() << "a" << "e" << "plop" << "b" << "c" );
+    model.setStringList(QStringList() << "a" << "e" << "plop" << "b" << "c");
 
     proxy.setDynamicSortFilter(true);
     proxy.setFilterRegExp(QRegExp("[^b]"));
@@ -76,9 +74,8 @@ void tst_ModelTest::treeWidgetModel()
     ModelTest t1(widget.model());
 
     QTreeWidgetItem *root = new QTreeWidgetItem(&widget, QStringList("root"));
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 20; ++i)
         new QTreeWidgetItem(root, QStringList(QString::number(i)));
-    }
     QTreeWidgetItem *remove = root->child(2);
     root->removeChild(remove);
     QTreeWidgetItem *parent = new QTreeWidgetItem(&widget, QStringList("parent"));
@@ -90,9 +87,8 @@ void tst_ModelTest::treeWidgetModel()
 
 void tst_ModelTest::standardItemModel()
 {
-    QStandardItemModel model(10,10);
+    QStandardItemModel model(10, 10);
     QSortFilterProxyModel proxy;
-
 
     ModelTest t1(&model);
     ModelTest t2(&proxy);
@@ -105,8 +101,8 @@ void tst_ModelTest::standardItemModel()
     model.insertColumns(2, 5);
     model.removeColumns(4, 5);
 
-    model.insertRows(0,5, model.index(1,1));
-    model.insertColumns(0,5, model.index(1,3));
+    model.insertRows(0, 5, model.index(1, 1));
+    model.insertColumns(0, 5, model.index(1, 3));
 }
 
 void tst_ModelTest::testInsertThroughProxy()
@@ -148,7 +144,9 @@ class AccessibleProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    AccessibleProxyModel(QObject *parent = 0) : QSortFilterProxyModel(parent) {}
+    AccessibleProxyModel(QObject *parent = 0) : QSortFilterProxyModel(parent)
+    {
+    }
 
     QModelIndexList persistent()
     {
@@ -160,14 +158,16 @@ class ObservingObject : public QObject
 {
     Q_OBJECT
 public:
-    ObservingObject(AccessibleProxyModel  *proxy, QObject *parent = 0)
-    : QObject(parent)
-    , m_proxy(proxy)
-    , storePersistentFailureCount(0)
-    , checkPersistentFailureCount(0)
+    ObservingObject(AccessibleProxyModel *proxy, QObject *parent = 0) :
+        QObject(parent),
+        m_proxy(proxy),
+        storePersistentFailureCount(0),
+        checkPersistentFailureCount(0)
     {
-        connect(m_proxy, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)), SLOT(storePersistent()));
-        connect(m_proxy, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), SLOT(checkPersistent()));
+        connect(m_proxy, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+                SLOT(storePersistent()));
+        connect(m_proxy, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+                SLOT(checkPersistent()));
     }
 
 public slots:
@@ -195,7 +195,7 @@ public slots:
     void storePersistent()
     {
         // This method is called from rowsAboutToBeMoved. Persistent indexes should be valid
-        foreach(const QModelIndex &idx, m_persistentProxyIndexes)
+        foreach (const QModelIndex &idx, m_persistentProxyIndexes)
             if (!idx.isValid()) {
                 qWarning("%s: persistentProxyIndexes contains invalid index", Q_FUNC_INFO);
                 ++storePersistentFailureCount;
@@ -233,7 +233,7 @@ public slots:
     }
 
 private:
-    AccessibleProxyModel  *m_proxy;
+    AccessibleProxyModel *m_proxy;
     QList<QPersistentModelIndex> m_persistentSourceIndexes;
     QList<QPersistentModelIndex> m_persistentProxyIndexes;
 public:
@@ -295,7 +295,6 @@ void tst_ModelTest::testResetThroughProxy()
     QCOMPARE(observer.storePersistentFailureCount, 0);
     QCOMPARE(observer.checkPersistentFailureCount, 0);
 }
-
 
 QTEST_MAIN(tst_ModelTest)
 #include "tst_modeltest.moc"
