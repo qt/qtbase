@@ -192,6 +192,32 @@ QtConcurrent::ConstMemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func
     return QtConcurrent::ConstMemberFunctionWrapper<T, C>(func);
 }
 
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+template <typename T, typename U>
+QtConcurrent::FunctionWrapper1<T, U> createFunctionWrapper(T (*func)(U) noexcept)
+{
+    return QtConcurrent::FunctionWrapper1<T, U>(func);
+}
+
+template <typename T, typename C>
+QtConcurrent::MemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)() noexcept)
+{
+    return QtConcurrent::MemberFunctionWrapper<T, C>(func);
+}
+
+template <typename T, typename C, typename U>
+QtConcurrent::MemberFunctionWrapper1<T, C, U> createFunctionWrapper(T (C::*func)(U) noexcept)
+{
+    return QtConcurrent::MemberFunctionWrapper1<T, C, U>(func);
+}
+
+template <typename T, typename C>
+QtConcurrent::ConstMemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)() const noexcept)
+{
+    return QtConcurrent::ConstMemberFunctionWrapper<T, C>(func);
+}
+#endif
+
 struct PushBackWrapper
 {
     typedef void result_type;
@@ -231,6 +257,20 @@ struct ReduceResultType<T(C::*)(U)>
     typedef C ResultType;
 };
 
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+template <class U, class V>
+struct ReduceResultType<void(*)(U&,V) noexcept>
+{
+    typedef U ResultType;
+};
+
+template <class T, class C, class U>
+struct ReduceResultType<T(C::*)(U) noexcept>
+{
+    typedef C ResultType;
+};
+#endif
+
 template <class InputSequence, class MapFunctor>
 struct MapResultType
 {
@@ -248,6 +288,20 @@ struct MapResultType<void, T(C::*)() const>
 {
     typedef T ResultType;
 };
+
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+template <class U, class V>
+struct MapResultType<void, U (*)(V) noexcept>
+{
+    typedef U ResultType;
+};
+
+template <class T, class C>
+struct MapResultType<void, T(C::*)() const noexcept>
+{
+    typedef T ResultType;
+};
+#endif
 
 #ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 
@@ -269,6 +323,21 @@ struct MapResultType<InputSequence<T>, U(C::*)() const>
     typedef InputSequence<U> ResultType;
 };
 
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+
+template <template <typename> class InputSequence, class T, class U, class V>
+struct MapResultType<InputSequence<T>, U (*)(V) noexcept>
+{
+    typedef InputSequence<U> ResultType;
+};
+
+template <template <typename> class InputSequence, class T, class U, class C>
+struct MapResultType<InputSequence<T>, U(C::*)() const noexcept>
+{
+    typedef InputSequence<U> ResultType;
+};
+#endif
+
 #endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
 
 template <class MapFunctor>
@@ -288,6 +357,21 @@ struct MapResultType<QStringList, U(C::*)() const>
 {
     typedef QList<U> ResultType;
 };
+
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+
+template <class U, class V>
+struct MapResultType<QStringList, U (*)(V) noexcept>
+{
+    typedef QList<U> ResultType;
+};
+
+template <class U, class C>
+struct MapResultType<QStringList, U(C::*)() const noexcept>
+{
+    typedef QList<U> ResultType;
+};
+#endif
 
 } // namespace QtPrivate.
 
