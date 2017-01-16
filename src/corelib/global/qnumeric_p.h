@@ -163,6 +163,7 @@ Q_DECL_CONST_FUNCTION static inline bool qt_is_finite(float f)
     return qnumeric_std_wrapper::isfinite(f);
 }
 
+#ifndef Q_CLANG_QDOC
 //
 // Unsigned overflow math
 //
@@ -355,7 +356,7 @@ inline bool mul_overflow(int v1, int v2, int *r)
     return t > std::numeric_limits<int>::max() || t < std::numeric_limits<int>::min();
 }
 #endif
-
+#endif // Q_CLANG_QDOC
 }
 
 QT_END_NAMESPACE
