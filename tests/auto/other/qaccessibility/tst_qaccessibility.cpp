@@ -3001,11 +3001,11 @@ void tst_QAccessibility::treeTest()
     QVERIFY(table2);
     QCOMPARE(table2->columnCount(), 2);
     QCOMPARE(table2->rowCount(), 2);
-    QAccessibleInterface *cell1;
-    QVERIFY(cell1 = table2->cellAt(0,0));
+    QAccessibleInterface *cell1 = table2->cellAt(0,0);
+    QVERIFY(cell1);
     QCOMPARE(cell1->text(QAccessible::Name), QString("Spain"));
-    QAccessibleInterface *cell2;
-    QVERIFY(cell2 = table2->cellAt(1,0));
+    QAccessibleInterface *cell2 = table2->cellAt(1,0);
+    QVERIFY(cell2);
     QCOMPARE(cell2->text(QAccessible::Name), QString("Austria"));
     QCOMPARE(cell2->role(), QAccessible::TreeItem);
     QCOMPARE(cell2->tableCellInterface()->rowIndex(), 1);
@@ -3129,8 +3129,8 @@ void tst_QAccessibility::tableTest()
     QVERIFY(table2);
     QCOMPARE(table2->columnCount(), 3);
     QCOMPARE(table2->rowCount(), 3);
-    QAccessibleInterface *cell1;
-    QVERIFY(cell1 = table2->cellAt(0,0));
+    QAccessibleInterface *cell1 = table2->cellAt(0,0);
+    QVERIFY(cell1);
     QCOMPARE(cell1->text(QAccessible::Name), QString("0.0"));
     QCOMPARE(iface->indexOfChild(cell1), 5);
 
