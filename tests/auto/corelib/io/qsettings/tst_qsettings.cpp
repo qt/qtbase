@@ -2315,14 +2315,14 @@ void tst_QSettings::setIniCodec()
 
         {
             QFile inFile(settings4.fileName());
-            inFile.open(QIODevice::ReadOnly);
+            inFile.open(QIODevice::ReadOnly | QIODevice::Text);
             actualContents4 = inFile.readAll();
             inFile.close();
         }
 
         {
             QFile inFile(settings5.fileName());
-            inFile.open(QIODevice::ReadOnly);
+            inFile.open(QIODevice::ReadOnly | QIODevice::Text);
             actualContents5 = inFile.readAll();
             inFile.close();
         }
@@ -2330,9 +2330,6 @@ void tst_QSettings::setIniCodec()
 
     QConfFile::clearCache();
 
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "QTBUG-25446", Abort);
-#endif
     QCOMPARE(actualContents4, expeContents4);
     QCOMPARE(actualContents5, expeContents5);
 
