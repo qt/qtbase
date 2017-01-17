@@ -900,7 +900,13 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
     bool forcedAntialiasSetting = !antialias;
 
     const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
-    bool useXftConf = (services && (services->desktopEnvironment() == "GNOME" || services->desktopEnvironment() == "UNITY"));
+    bool useXftConf = false;
+
+    if (services) {
+        const QList<QByteArray> desktopEnv = services->desktopEnvironment().split(':');
+        useXftConf = desktopEnv.contains("GNOME") || desktopEnv.contains("UNITY");
+    }
+
     if (useXftConf && !forcedAntialiasSetting) {
         void *antialiasResource =
                 QGuiApplication::platformNativeInterface()->nativeResourceForScreen("antialiasingEnabled",
