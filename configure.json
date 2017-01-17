@@ -107,7 +107,6 @@
             "reduce-relocations": { "type": "boolean", "name": "reduce_relocations" },
             "release": { "type": "enum", "name": "debug", "values": { "yes": "no", "no": "yes" } },
             "rpath": "boolean",
-            "rtti": "boolean",
             "sanitize": "sanitize",
             "sdk": "string",
             "separate-debug-info": { "type": "boolean", "name": "separate_debug_info" },
@@ -553,12 +552,6 @@
             "enable": "input.rpaths != ''",
             "autoDetect": false,
             "output": [ { "type": "varAppend", "name": "EXTRA_RPATHS", "value": "input.rpaths" } ]
-        },
-        "rtti": {
-            "label": "Build with RTTI",
-            "comment": "mkspecs/features/win32/default_pre.prf sets no-rtti. Follow default behavior of configure.exe by overriding with rtti.",
-            "condition": "config.win32",
-            "output": [ "publicConfig" ]
         },
         "force_asserts": {
             "label": "Force assertions",
