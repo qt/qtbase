@@ -411,7 +411,10 @@ defineTest(reloadSpec) {
         # so don't bother with being selective.
         QMAKE_INTERNAL_INCLUDED_FEATURES = \
             # loading it gets simulated below.
-            $$[QT_HOST_DATA/src]/mkspecs/features/device_config.prf
+            $$[QT_HOST_DATA/src]/mkspecs/features/device_config.prf \
+            # must be delayed until qdevice.pri is ready.
+            $$[QT_HOST_DATA/src]/mkspecs/features/mac/toolchain.prf \
+            $$[QT_HOST_DATA/src]/mkspecs/features/toolchain.prf
 
         _SAVED_CONFIG = $$CONFIG
         load(spec_pre)
@@ -825,6 +828,13 @@ defineTest(qtConfOutput_reloadSpec) {
     !isEmpty($${currentConfig}.output.devicePro)| \
             !isEmpty(config.input.sysroot): \
         reloadSpec()
+
+    bypassNesting() {
+        QMAKE_INTERNAL_INCLUDED_FEATURES -= \
+            $$[QT_HOST_DATA/src]/mkspecs/features/mac/toolchain.prf \
+            $$[QT_HOST_DATA/src]/mkspecs/features/toolchain.prf
+        load(toolchain)
+    }
 }
 
 defineTest(qtConfOutput_shared) {

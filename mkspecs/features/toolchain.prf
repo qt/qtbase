@@ -153,3 +153,5 @@ unset(target_prefix)
 
 QMAKE_CFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_MSVC_COMPAT
+
+msvc:!intel_icl:!clang_cl: include(../common/msvc-version.conf)

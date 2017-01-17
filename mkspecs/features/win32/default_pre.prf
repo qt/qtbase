@@ -1,3 +1,2 @@
 CONFIG = rtti_off incremental_off windows $$CONFIG
 load(default_pre)
-msvc:!intel_icl:!clang_cl: include(../../common/msvc-version.conf)
