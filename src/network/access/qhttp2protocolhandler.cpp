@@ -988,7 +988,7 @@ bool QHttp2ProtocolHandler::acceptSetting(Http2::Settings identifier, quint32 ne
     }
 
     if (identifier == Settings::MAX_CONCURRENT_STREAMS_ID) {
-        if (maxConcurrentStreams > maxPeerConcurrentStreams) {
+        if (newValue > maxPeerConcurrentStreams) {
             connectionError(PROTOCOL_ERROR, "SETTINGS invalid number of concurrent streams");
             return false;
         }
