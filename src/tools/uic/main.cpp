@@ -115,7 +115,7 @@ int runUic(int argc, char *argv[])
 
     QString inputFile;
     if (!parser.positionalArguments().isEmpty())
-        inputFile = parser.positionalArguments().first();
+        inputFile = parser.positionalArguments().at(0);
     else // reading from stdin
         driver.option().headerProtection = false;
 

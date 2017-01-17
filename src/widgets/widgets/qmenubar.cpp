@@ -1119,7 +1119,7 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
         int clashCount = 0;
         QAction *first = 0, *currentSelected = 0, *firstAfterCurrent = 0;
         {
-            QChar c = e->text()[0].toUpper();
+            const QChar c = e->text().at(0).toUpper();
             for(int i = 0; i < d->actions.size(); ++i) {
                 if (d->actionRects.at(i).isNull())
                     continue;

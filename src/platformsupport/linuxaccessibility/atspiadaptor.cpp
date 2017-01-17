@@ -1398,7 +1398,7 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
         sendReply(connection, message, QVariant::fromValue(
                       QDBusVariant(QVariant::fromValue(QSpiObjectReference(connection, QDBusObjectPath(path))))));
     } else if (function == QLatin1String("GetChildAtIndex")) {
-        int index = message.arguments().first().toInt();
+        const int index = message.arguments().at(0).toInt();
         if (index < 0) {
             sendReply(connection, message, QVariant::fromValue(
                           QSpiObjectReference(connection, QDBusObjectPath(ATSPI_DBUS_PATH_NULL))));

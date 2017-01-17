@@ -765,7 +765,7 @@ bool QCalendarTextNavigator::eventFilter(QObject *o, QEvent *e)
     if (m_widget) {
         if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
             QKeyEvent* ke = (QKeyEvent*)e;
-            if ((ke->text().length() > 0 && ke->text()[0].isPrint()) || m_dateFrame) {
+            if ((ke->text().length() > 0 && ke->text().at(0).isPrint()) || m_dateFrame) {
                 if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Select) {
                     applyDate();
                     emit editingFinished();
