@@ -409,13 +409,12 @@ defineTest(reloadSpec) {
         }
         # nobody's going to try to re-load the features above,
         # so don't bother with being selective.
-        QMAKE_INTERNAL_INCLUDED_FEATURES =
+        QMAKE_INTERNAL_INCLUDED_FEATURES = \
+            # loading it gets simulated below.
+            $$[QT_HOST_DATA/src]/mkspecs/features/device_config.prf
 
         _SAVED_CONFIG = $$CONFIG
         load(spec_pre)
-        load(device_config)  # avoid that the spec loads it later.
-        # discard possible settings from an earlier configure run.
-        discard_from($$[QT_HOST_DATA/get]/mkspecs/qdevice.pri)
         # qdevice.pri gets written too late (and we can't write it early
         # enough, as it's populated in stages, with later ones depending
         # on earlier ones). so inject its variables manually.
