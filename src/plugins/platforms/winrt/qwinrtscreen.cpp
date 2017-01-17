@@ -647,7 +647,7 @@ QDpi QWinRTScreen::logicalDpi() const
 qreal QWinRTScreen::pixelDensity() const
 {
     Q_D(const QWinRTScreen);
-    return qRound(d->logicalDpi / 96);
+    return qMax(1, qRound(d->logicalDpi / 96));
 }
 
 qreal QWinRTScreen::scaleFactor() const
