@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaScreen : public QPlatformScreen
 {
 public:
-    QCocoaScreen(NSScreen *screen);
+    QCocoaScreen(int screenIndex);
     ~QCocoaScreen();
 
     // ----------------------------------------------------
@@ -84,7 +84,7 @@ public:
     // ----------------------------------------------------
     // Additional methods
     void setVirtualSiblings(const QList<QPlatformScreen *> &siblings) { m_siblings = siblings; }
-    NSScreen *nsScreen() const;
+    NSScreen *nativeScreen() const;
     void updateGeometry();
 
     QPointF mapToNative(const QPointF &pos) const { return flipCoordinate(pos); }
@@ -97,7 +97,7 @@ private:
     QRectF flipCoordinate(const QRectF &rect) const;
 
 public:
-    NSScreen *m_nsScreen;
+    int m_screenIndex;
     QRect m_geometry;
     QRect m_availableGeometry;
     QDpi m_logicalDpi;

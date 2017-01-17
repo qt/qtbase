@@ -1685,7 +1685,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
     // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
     // and dialogs
     if (shouldBePanel) {
-        QNSPanel *panel = [[QNSPanel alloc] initWithContentRect:frame screen:cocoaScreen->nsScreen()
+        QNSPanel *panel = [[QNSPanel alloc] initWithContentRect:frame screen:cocoaScreen->nativeScreen()
                                     styleMask: styleMask qPlatformWindow:this];
 
         if ((type & Qt::Popup) == Qt::Popup)
@@ -1704,7 +1704,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
 
         createdWindow = panel;
     } else {
-        createdWindow = [[QNSWindow alloc] initWithContentRect:frame screen:cocoaScreen->nsScreen()
+        createdWindow = [[QNSWindow alloc] initWithContentRect:frame screen:cocoaScreen->nativeScreen()
                                      styleMask: styleMask qPlatformWindow:this];
     }
 

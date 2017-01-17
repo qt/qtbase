@@ -69,8 +69,8 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
-QCocoaScreen::QCocoaScreen(NSScreen *screen)
-    : QPlatformScreen(), m_nsScreen(screen), m_refreshRate(60.0)
+QCocoaScreen::QCocoaScreen(int screenIndex)
+    : QPlatformScreen(), m_screenIndex(screenIndex), m_refreshRate(60.0)
 {
     updateGeometry();
     m_cursor = new QCocoaCursor;
@@ -81,9 +81,15 @@ QCocoaScreen::~QCocoaScreen()
     delete m_cursor;
 }
 
-NSScreen *QCocoaScreen::nsScreen() const
+NSScreen *QCocoaScreen::nativeScreen() const
 {
-    return m_nsScreen;
+    NSArray *screens = [NSScreen screens];
+
+    // Stale reference, screen configuration has changed
+    if (m_screenIndex < 0 || (NSUInteger)m_screenIndex >= [screens count])
+        return nil;
+
+    return [screens objectAtIndex:m_screenIndex];
 }
 
 /*!
@@ -116,28 +122,29 @@ QRectF QCocoaScreen::flipCoordinate(const QRectF &rect) const
 
 void QCocoaScreen::updateGeometry()
 {
-    if (!m_nsScreen)
+    NSScreen *nsScreen = nativeScreen();
+    if (!nsScreen)
         return;
 
     // At this point the geometry is in native coordinates, but the size
     // is correct, which we take advantage of next when we map the native
     // coordinates to the Qt coordinate system.
-    m_geometry = QRectF::fromCGRect(NSRectToCGRect(m_nsScreen.frame)).toRect();
-    m_availableGeometry = QRectF::fromCGRect(NSRectToCGRect(m_nsScreen.visibleFrame)).toRect();
+    m_geometry = QRectF::fromCGRect(NSRectToCGRect(nsScreen.frame)).toRect();
+    m_availableGeometry = QRectF::fromCGRect(NSRectToCGRect(nsScreen.visibleFrame)).toRect();
 
     // The reference screen for the geometry is always the primary screen, but since
     // we may be in the process of creating and registering the primary screen, we
     // must special-case that and assign it direcly.
-    QCocoaScreen *primaryScreen = (m_nsScreen == [[NSScreen screens] firstObject]) ?
+    QCocoaScreen *primaryScreen = (nsScreen == [[NSScreen screens] firstObject]) ?
         this : static_cast<QCocoaScreen*>(QGuiApplication::primaryScreen()->handle());
 
     m_geometry = primaryScreen->mapFromNative(m_geometry).toRect();
     m_availableGeometry = primaryScreen->mapFromNative(m_availableGeometry).toRect();
 
     m_format = QImage::Format_RGB32;
-    m_depth = NSBitsPerPixelFromDepth([m_nsScreen depth]);
+    m_depth = NSBitsPerPixelFromDepth([nsScreen depth]);
 
-    NSDictionary *devDesc = [m_nsScreen deviceDescription];
+    NSDictionary *devDesc = [nsScreen deviceDescription];
     CGDirectDisplayID dpy = [[devDesc objectForKey:@"NSScreenNumber"] unsignedIntValue];
     CGSize size = CGDisplayScreenSize(dpy);
     m_physicalSize = QSizeF(size.width, size.height);
@@ -164,7 +171,8 @@ void QCocoaScreen::updateGeometry()
 qreal QCocoaScreen::devicePixelRatio() const
 {
     QMacAutoReleasePool pool;
-    return qreal(m_nsScreen ? [m_nsScreen backingScaleFactor] : 1.0);
+    NSScreen *nsScreen = nativeScreen();
+    return qreal(nsScreen ? [nsScreen backingScaleFactor] : 1.0);
 }
 
 QPlatformScreen::SubpixelAntialiasingType QCocoaScreen::subpixelAntialiasingTypeHint() const
@@ -443,7 +451,7 @@ void QCocoaIntegration::updateScreens()
             // NSScreen documentation says do not cache the array returned from [NSScreen screens].
             // However in practice, we can identify a screen by its pointer: if resolution changes,
             // the NSScreen object will be the same instance, just with different values.
-            if (existingScr->nsScreen() == scr) {
+            if (existingScr->nativeScreen() == scr) {
                 screen = existingScr;
                 break;
             }
@@ -451,7 +459,7 @@ void QCocoaIntegration::updateScreens()
             remainingScreens.remove(screen);
             screen->updateGeometry();
         } else {
-            screen = new QCocoaScreen(scr);
+            screen = new QCocoaScreen(i);
             mScreens.append(screen);
             screenAdded(screen);
         }
@@ -468,7 +476,7 @@ void QCocoaIntegration::updateScreens()
     foreach (QCocoaScreen* screen, remainingScreens) {
         mScreens.removeOne(screen);
         // Prevent stale references to NSScreen during destroy
-        screen->m_nsScreen = nil;
+        screen->m_screenIndex = -1;
         destroyScreen(screen);
     }
 }
@@ -483,7 +491,7 @@ QCocoaScreen *QCocoaIntegration::screenForNSScreen(NSScreen *nsScreen)
         updateScreens();
 
     for (QCocoaScreen *screen : mScreens) {
-        if (screen->nsScreen() == nsScreen)
+        if (screen->nativeScreen() == nsScreen)
             return screen;
     }
 
