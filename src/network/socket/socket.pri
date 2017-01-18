@@ -2,7 +2,6 @@
 
 HEADERS += socket/qabstractsocketengine_p.h \
            socket/qhttpsocketengine_p.h \
-           socket/qsocks5socketengine_p.h \
            socket/qabstractsocket.h \
            socket/qabstractsocket_p.h \
            socket/qtcpsocket.h \
@@ -17,13 +16,21 @@ HEADERS += socket/qabstractsocketengine_p.h \
 
 SOURCES += socket/qabstractsocketengine.cpp \
            socket/qhttpsocketengine.cpp \
-           socket/qsocks5socketengine.cpp \
            socket/qabstractsocket.cpp \
            socket/qtcpsocket.cpp \
            socket/qudpsocket.cpp \
            socket/qtcpserver.cpp \
            socket/qlocalsocket.cpp \
            socket/qlocalserver.cpp
+
+# SOCK5 support.
+
+qtConfig(socks5) {
+    HEADERS += \
+        socket/qsocks5socketengine_p.h
+    SOURCES += \
+        socket/qsocks5socketengine.cpp
+}
 
 # SCTP support.
 
