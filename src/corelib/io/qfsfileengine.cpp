@@ -915,11 +915,15 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   For Unix, the list contains just the root path "/".
 */
 
-/*! \fn QString QFSFileEngine::fileName(FileName file) const
+/*! \fn QString QFSFileEngine::fileName(QAbstractFileEngine::FileName file) const
   \reimp
 */
 
-/*! \fn bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+/*! \fn bool QFSFileEngine::setFileTime(const QDateTime &newDate, QAbstractFileEngine::FileTime time)
+  \reimp
+*/
+
+/*! \fn QDateTime QFSFileEngine::fileTime(QAbstractFileEngine::FileTime time) const
   \reimp
 */
 
@@ -945,7 +949,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   \reimp
 */
 
-/*! \fn uint QFSFileEngine::ownerId(FileOwner own) const
+/*! \fn uint QFSFileEngine::ownerId(QAbstractFileEngine::FileOwner own) const
   In Unix, if stat() is successful, the \c uid is returned if
   \a own is the owner. Otherwise the \c gid is returned. If stat()
   is unsuccessful, -2 is reuturned.
@@ -953,7 +957,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   For Windows, -2 is always returned.
 */
 
-/*! \fn QString QFSFileEngine::owner(FileOwner own) const
+/*! \fn QString QFSFileEngine::owner(QAbstractFileEngine::FileOwner own) const
   \reimp
 */
 
