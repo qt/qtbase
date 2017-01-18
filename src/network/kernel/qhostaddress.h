@@ -44,7 +44,7 @@
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qshareddata.h>
 #include <QtNetwork/qabstractsocket.h>
 
 struct sockaddr;
@@ -66,7 +66,7 @@ typedef QIPv6Address Q_IPV6ADDR;
 
 class QHostAddress;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
-Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed = 0);
+Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed = 0) Q_DECL_NOTHROW;
 
 class Q_NETWORK_EXPORT QHostAddress
 {
@@ -152,9 +152,9 @@ public:
 
     static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
 
-    friend Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed);
+    friend Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed) Q_DECL_NOTHROW;
 protected:
-    QScopedPointer<QHostAddressPrivate> d;
+    QExplicitlySharedDataPointer<QHostAddressPrivate> d;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QHostAddress::ConversionMode)
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QHostAddress)
