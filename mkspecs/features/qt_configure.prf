@@ -562,14 +562,17 @@ defineReplace(qtConfLibraryArgs) {
 }
 
 defineTest(qtConfExportLibrary) {
-    isEmpty(2): return()
-    !$$qtConfEvaluate($$eval($${1}.export)): return()
+    lpfx = $${currentConfig}.libraries.$$1
+    name = $$eval($${lpfx}.export)
+    isEmpty(name): return()
+    spfx = $${lpfx}.sources.$$eval($${lpfx}.source)
+    !$$qtConfEvaluate($$eval($${spfx}.export)): return()
 
     output = privatePro
 
-    eval(libs = $$eval($${1}.libs))
-    eval(cflags = $$eval($${1}.cflags))
-    eval(includes = $$eval($${1}.includedir))
+    eval(libs = $$eval($${spfx}.libs))
+    eval(cflags = $$eval($${spfx}.cflags))
+    eval(includes = $$eval($${spfx}.includedir))
 
     # Split $$cflags into stuff that goes into DEFINES, INCLUDEPATH, and other stuff.
     defines =
@@ -588,17 +591,17 @@ defineTest(qtConfExportLibrary) {
         }
     }
     !isEmpty(ignored): \
-        qtConfAddNote("Dropped compiler flags '$$ignored' when detecting library '$$2'.")
+        qtConfAddNote("Dropped compiler flags '$$ignored' when detecting library '$$name'.")
 
-    NAME = $$upper($$2)
+    NAME = $$upper($$name)
     !isEmpty(libs): qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
-    for (b, $${1}.builds._KEYS_): \
+    for (b, $${spfx}.builds._KEYS_): \
         qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), \
-                                          $$eval($${1}.builds.$${b}))
+                                          $$eval($${spfx}.builds.$${b}))
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
     !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
     !isEmpty($${currentConfig}.module): \
-        qtConfExtendVar($$output, "QT.$${currentModule}_private.libraries", $$2)
+        qtConfExtendVar($$output, "QT.$${currentModule}_private.libraries", $$name)
 }
 
 defineTest(qtConfHandleLibrary) {
@@ -611,7 +614,7 @@ defineTest(qtConfHandleLibrary) {
 
     qtConfLoadResult($${lpfx}, $$1) {
         $$eval($${lpfx}.result): \
-            qtConfExportLibrary($${lpfx}.sources.$$eval($${lpfx}.source), $$eval($${lpfx}.export))
+            qtConfExportLibrary($$1)
         return()
     }
 
@@ -657,11 +660,12 @@ defineTest(qtConfHandleLibrary) {
         for (b, $${spfx}.builds._KEYS_): \
             $${lpfx}.cache += sources.$${s}.builds.$${b}
 
-        # immediately output the library as well.
-        qtConfExportLibrary($${spfx}, $$eval($${lpfx}.export))
-
         $${lpfx}.source = $$s
         export($${lpfx}.source)
+
+        # immediately output the library as well.
+        qtConfExportLibrary($$1)
+
         result = true
         break()
     }
