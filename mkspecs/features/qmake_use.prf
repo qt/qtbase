@@ -5,25 +5,19 @@ for(ever) {
         use = $$split(use, /)
         name = $$take_first(use)
         nu = $$upper($$name)
-        debug: \
-            libs = $$eval(QMAKE_LIBS_$${nu}_DEBUG)
-        else: \
-            libs = $$eval(QMAKE_LIBS_$${nu}_RELEASE)
-        libs += $$eval(QMAKE_LIBS_$$nu)
-        libdir = $$eval(QMAKE_LIBDIR_$$nu)
-        defines = $$eval(QMAKE_DEFINES_$${nu})
-        includes = $$eval(QMAKE_INCDIR_$${nu})
-
-        isEmpty(libs):isEmpty(defines):isEmpty(includes): \
+        !defined(QMAKE_LIBS_$$nu, var): \
             error("Library '$$name' is not defined.")
 
         !contains(use, nolink) {
-            QMAKE_LIBDIR += $$libdir
-            LIBS$${suffix} += $$libs
+            QMAKE_LIBDIR += $$eval(QMAKE_LIBDIR_$$nu)
+            debug: \
+                LIBS$${suffix} += $$eval(QMAKE_LIBS_$${nu}_DEBUG) $$eval(QMAKE_LIBS_$$nu)
+            else: \
+                LIBS$${suffix} += $$eval(QMAKE_LIBS_$${nu}_RELEASE) $$eval(QMAKE_LIBS_$$nu)
         }
         !contains(use, linkonly) {
-            DEFINES += $$defines
-            INCLUDEPATH += $$includes
+            DEFINES += $$eval(QMAKE_DEFINES_$${nu})
+            INCLUDEPATH += $$eval(QMAKE_INCDIR_$${nu})
         }
     }
     !isEmpty(suffix): break()

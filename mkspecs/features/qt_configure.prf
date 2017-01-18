@@ -603,7 +603,8 @@ defineTest(qtConfExportLibrary) {
         qtConfAddNote("Dropped compiler flags '$$ignored' when detecting library '$$name'.")
 
     NAME = $$upper($$name)
-    !isEmpty(libs): qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
+    # LIBS is emitted even if empty, as this allows the library to be "seen".
+    qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
     for (b, $${spfx}.builds._KEYS_): \
         qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), \
                                           $$eval($${spfx}.builds.$${b}))
@@ -707,11 +708,7 @@ defineTest(qtConfTestPrepare_compile) {
         }
         isEmpty(libConfig) {
             nu = $$upper($$u)
-            libs = $$eval(QMAKE_LIBS_$$nu) $$eval(QMAKE_LIBS_$${nu}_DEBUG) $$eval(QMAKE_LIBS_$${nu}_RELEASE)
-            defines = $$eval(QMAKE_DEFINES_$${nu})
-            includes = $$eval(QMAKE_INCDIR_$${nu})
-
-            isEmpty(libs):isEmpty(defines):isEmpty(includes): \
+            !defined(QMAKE_LIBS_$$nu, var): \
                 error("Test $$1 tries to use undeclared library '$$u'")
             $${1}.literal_args += $$system_quote(QMAKE_USE += $$u)
         } else {
