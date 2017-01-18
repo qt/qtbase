@@ -42,7 +42,7 @@
 
 #include <QtTest/qtestcase.h>
 #include <QtCore/qcoreapplication.h>
-#include <QtCore/qelapsedtimer.h>
+#include <QtCore/qdeadlinetimer.h>
 #ifdef QT_GUI_LIB
 #  include <QtGui/QWindow>
 #endif
@@ -58,27 +58,29 @@ namespace QTest
     {
         Q_ASSERT(QCoreApplication::instance());
 
-        QElapsedTimer timer;
-        timer.start();
+        QDeadlineTimer timer(ms);
+        int remaining = ms;
         do {
-            QCoreApplication::processEvents(QEventLoop::AllEvents, ms);
+            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
             QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
-            QTest::qSleep(10);
-        } while (timer.elapsed() < ms);
+            remaining = timer.remainingTime();
+            if (remaining <= 0)
+                break;
+            QTest::qSleep(qMin(10, remaining));
+            remaining = timer.remainingTime();
+        } while (remaining > 0);
     }
 
 #ifdef QT_GUI_LIB
     inline static bool qWaitForWindowActive(QWindow *window, int timeout = 5000)
     {
-        QElapsedTimer timer;
-        timer.start();
-        while (!window->isActive()) {
-            int remaining = timeout - int(timer.elapsed());
-            if (remaining <= 0)
-                break;
+        QDeadlineTimer timer(timeout);
+        int remaining = timeout;
+        while (!window->isActive() && remaining > 0) {
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
             QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
             QTest::qSleep(10);
+            remaining = timer.remainingTime();
         }
         // Try ensuring the platform window receives the real position.
         // (i.e. that window->pos() reflects reality)
@@ -99,15 +101,13 @@ namespace QTest
 
     inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 5000)
     {
-        QElapsedTimer timer;
-        timer.start();
-        while (!window->isExposed()) {
-            int remaining = timeout - int(timer.elapsed());
-            if (remaining <= 0)
-                break;
+        QDeadlineTimer timer(timeout);
+        int remaining = timeout;
+        while (!window->isExposed() && remaining > 0) {
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
             QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
             QTest::qSleep(10);
+            remaining = timer.remainingTime();
         }
         return window->isExposed();
     }
