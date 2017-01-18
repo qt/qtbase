@@ -1642,7 +1642,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
     it could not start a timer.
 
     A timer event will occur every \a time interval until killTimer()
-    is called. If \a interval is equal to \c{std::chrono::duration::zero()},
+    is called. If \a time is equal to \c{std::chrono::duration::zero()},
     then the timer event occurs once every time there are no more window
     system events to process.
 

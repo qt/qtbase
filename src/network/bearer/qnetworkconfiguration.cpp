@@ -343,7 +343,7 @@ int QNetworkConfiguration::connectTimeout() const
 /*!
     \since 5.9
 
-    Sets the connect timeout of this configuration.
+    Sets the connect timeout of this configuration to \a timeout.
     This allows control of the timeout used by \c QAbstractSocket
     to establish a connection.
 

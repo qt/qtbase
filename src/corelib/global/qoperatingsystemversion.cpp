@@ -118,7 +118,7 @@ QT_BEGIN_NAMESPACE
         current >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 8)) {
         // returns true on macOS >= 10.10 and iOS >= 8.0, but false on macOS < 10.10 and iOS < 8.0
     }
-    \encode
+    \endcode
 
     A more naive comparison algorithm might incorrectly return true on all versions of macOS,
     including Mac OS 9. This behavior is achieved by overloading the comparison operators to return
@@ -144,10 +144,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QOperatingSystemVersion::QOperatingSystemVersion(int maj, int min, int mic)
+    \fn QOperatingSystemVersion::QOperatingSystemVersion(OSType osType, int vmajor, int vminor = -1, int vmicro = -1)
 
-    Constructs a QOperatingSystemVersion consisting of the OS type \a os, and
-    major, minor, and micro version numbers \a maj, \a min and \a mic, respectively.
+    Constructs a QOperatingSystemVersion consisting of the OS type \a osType, and
+    major, minor, and micro version numbers \a vmajor, \a vminor and \a vmicro, respectively.
 */
 
 /*!
@@ -264,7 +264,7 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 
     -1 indicates an unknown or absent version number component.
 
-    \sa majorVersion(), macro()
+    \sa majorVersion(), microVersion()
 */
 
 /*!
@@ -286,7 +286,7 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 
     Returns the OS type identified by the QOperatingSystemVersion.
 
-    \sa typeName()
+    \sa name()
 */
 
 /*!

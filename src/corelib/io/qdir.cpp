@@ -1849,7 +1849,7 @@ bool QDir::exists(const QString &name) const
     \c{QDir::AllEntries | QDir::NoDotAndDotDot}, but faster as it just checks
     whether the directory contains at least one entry.
 
-    \note Unless you set the \p filters flags to include \c{QDir::NoDotAndDotDot}
+    \note Unless you set the \a filters flags to include \c{QDir::NoDotAndDotDot}
           (as the default value does), no directory is empty.
 
     \sa count(), entryList(), setFilter()

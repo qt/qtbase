@@ -106,7 +106,7 @@
     \fn void QXcbWindowFunctions::setWmWindowRole(QWindow *window, const QByteArray &role)
     \since 5.6.2
 
-    Sets the WM_WINDOW_ROLE property from \role on the corresponding
+    Sets the WM_WINDOW_ROLE property from \a role on the corresponding
     X11 window.
 
     This is a convenience function that can be used directly instead

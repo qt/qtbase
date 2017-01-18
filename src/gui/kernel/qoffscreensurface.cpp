@@ -335,7 +335,7 @@ void QOffscreenSurface::setScreen(QScreen *newScreen)
 }
 
 /*!
-    Sets the native handle to which the offscreen surface is connected.
+    Sets the native handle to which the offscreen surface is connected to \a handle.
 
     The native handle will be resolved in the create() function. Calling
     this function after create() will not re-create a native surface.
