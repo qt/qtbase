@@ -102,6 +102,8 @@ public:
     static void setWindowActivationBehavior(QWindowsWindowFunctions::WindowActivationBehavior b)
         { QWindowsNativeInterface::m_windowActivationBehavior = b; }
 
+    static bool isTabletMode();
+
     QFunctionPointer platformFunction(const QByteArray &function) const override;
 
 private:

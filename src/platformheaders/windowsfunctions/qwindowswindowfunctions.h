@@ -90,6 +90,15 @@ public:
         if (func)
             func(behavior);
     }
+
+    typedef bool (*IsTabletModeType)();
+    static const QByteArray isTabletModeIdentifier() { return QByteArrayLiteral("WindowsIsTabletMode"); }
+
+    static bool isTabletMode()
+    {
+        IsTabletModeType func = reinterpret_cast<IsTabletModeType>(QGuiApplication::platformFunction(isTabletModeIdentifier()));
+        return func && func();
+    }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowsWindowFunctions::TouchWindowTouchTypes)
