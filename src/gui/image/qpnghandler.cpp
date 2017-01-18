@@ -525,6 +525,12 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
 
     png_set_error_fn(png_ptr, 0, 0, qt_png_warning);
 
+#if defined(PNG_SET_OPTION_SUPPORTED) && defined(PNG_MAXIMUM_INFLATE_WINDOW)
+    // Trade off a little bit of memory for better compatibility with existing images
+    // Ref. "invalid distance too far back" explanation in libpng-manual.txt
+    png_set_option(png_ptr, PNG_MAXIMUM_INFLATE_WINDOW, PNG_OPTION_ON);
+#endif
+
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         png_destroy_read_struct(&png_ptr, 0, 0);
