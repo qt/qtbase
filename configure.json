@@ -409,6 +409,11 @@
             "type": "compile",
             "test": "unix/posix_fallocate"
         },
+        "alloca": {
+            "label": "alloca()",
+            "type": "compile",
+            "test": "common/alloca"
+        },
         "stack_protector": {
             "label": "stack protection",
             "type": "compilerSupportsFlag",
@@ -887,6 +892,11 @@
         "posix_fallocate": {
             "label": "POSIX fallocate()",
             "condition": "tests.posix_fallocate",
+            "output": [ "privateFeature" ]
+        },
+        "alloca": {
+            "label": "alloca()",
+            "condition": "tests.alloca",
             "output": [ "privateFeature" ]
         },
         "stack-protector-strong": {
