@@ -1659,9 +1659,33 @@ void QWin32PrintEnginePrivate::updatePageLayout()
     m_pageLayout.setOrientation(devMode->dmOrientation == DMORIENT_LANDSCAPE ? QPageLayout::Landscape : QPageLayout::Portrait);
     if (devMode->dmPaperSize >= DMPAPER_LAST) {
         // Is a custom size
-        QPageSize pageSize = QPageSize(QSizeF(devMode->dmPaperWidth / 10.0f, devMode->dmPaperLength / 10.0f),
-                                       QPageSize::Millimeter);
-        setPageSize(pageSize);
+        // Check if it is using the Postscript Custom Size first
+        bool hasCustom = false;
+        int feature = PSIDENT_GDICENTRIC;
+        if (ExtEscape(hdc, POSTSCRIPT_IDENTIFY,
+                      sizeof(DWORD), reinterpret_cast<LPCSTR>(&feature), 0, 0) >= 0) {
+            PSFEATURE_CUSTPAPER custPaper;
+            feature = FEATURESETTING_CUSTPAPER;
+            if (ExtEscape(hdc, GET_PS_FEATURESETTING, sizeof(INT), reinterpret_cast<LPCSTR>(&feature),
+                          sizeof(custPaper), reinterpret_cast<LPSTR>(&custPaper)) > 0) {
+                // If orientation is 1 and width/height is 0 then it's not really custom
+                if (!(custPaper.lOrientation == 1 && custPaper.lWidth == 0 && custPaper.lHeight == 0)) {
+                    if (custPaper.lOrientation == 0 || custPaper.lOrientation == 2)
+                        m_pageLayout.setOrientation(QPageLayout::Portrait);
+                    else
+                        m_pageLayout.setOrientation(QPageLayout::Landscape);
+                    QPageSize pageSize = QPageSize(QSizeF(custPaper.lWidth, custPaper.lHeight),
+                                                   QPageSize::Point);
+                    setPageSize(pageSize);
+                    hasCustom = true;
+                }
+            }
+        }
+        if (!hasCustom) {
+            QPageSize pageSize = QPageSize(QSizeF(devMode->dmPaperWidth / 10.0f, devMode->dmPaperLength / 10.0f),
+                                           QPageSize::Millimeter);
+            setPageSize(pageSize);
+        }
     } else {
         // Is a supported size
         setPageSize(QPageSize(QPageSize::id(devMode->dmPaperSize)));
