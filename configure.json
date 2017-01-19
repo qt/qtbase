@@ -192,7 +192,7 @@
         "detectPkgConfig": [ "cross_compile", "machineTuple" ],
         "library": [ "pkg-config" ],
         "getPkgConfigVariable": [ "pkg-config" ],
-        "neon": [ "architecture" ]
+        "subarch": [ "architecture" ]
     },
 
     "testTypeAliases": {
@@ -379,17 +379,18 @@
         },
         "mips_dsp": {
             "label": "MIPS DSP instructions",
-            "type": "compile",
-            "test": "unix/mips_dsp"
+            "type": "subarch",
+            "subarch": "dsp"
         },
         "mips_dspr2": {
             "label": "MIPS DSPr2 instructions",
-            "type": "compile",
-            "test": "common/mips_dspr2"
+            "type": "subarch",
+            "subarch": "dspr2"
         },
         "neon": {
             "label": "NEON instructions",
-            "type": "neon"
+            "type": "subarch",
+            "subarch": "neon"
         },
 
         "mremap": {

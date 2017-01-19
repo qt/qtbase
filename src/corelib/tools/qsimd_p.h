@@ -156,6 +156,15 @@
 #  if !defined(__ARM_FEATURE_NEON) && defined(__ARM_NEON__)
 #    define __ARM_FEATURE_NEON           // also support QT_COMPILER_SUPPORTS_HERE(NEON)
 #  endif
+#elif defined(Q_PROCESSOR_MIPS)
+#  define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
+#  define QT_FUNCTION_TARGET(x)
+#  if !defined(__MIPS_DSP__) && defined(__mips_dsp) && defined(Q_PROCESSOR_MIPS_32)
+#    define __MIPS_DSP__
+#  endif
+#  if !defined(__MIPS_DSPR2__) && defined(__mips_dspr2) && defined(Q_PROCESSOR_MIPS_32)
+#    define __MIPS_DSPR2__
+#  endif
 #elif (defined(Q_CC_INTEL) || defined(Q_CC_MSVC) \
     || (defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && (__GNUC__-0) * 100 + (__GNUC_MINOR__-0) >= 409)) \
     && !defined(QT_BOOTSTRAPPED)

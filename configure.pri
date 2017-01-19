@@ -369,8 +369,9 @@ defineTest(qtConfTest_detectPkgConfig) {
     return(true)
 }
 
-defineTest(qtConfTest_neon) {
-    contains($${currentConfig}.tests.architecture.subarch, "neon"): return(true)
+defineTest(qtConfTest_subarch) {
+    subarch = $$eval($${1}.subarch)
+    contains($${currentConfig}.tests.architecture.subarch, $${subarch}): return(true)
     return(false)
 }
 
