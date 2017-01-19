@@ -853,9 +853,6 @@ static bool _q_dontOverrideCtrlLMB = false;
     if (masked)
         return false;
 
-    if (button == Qt::RightButton)
-        m_sendUpAsRightButton = true;
-
     m_buttons |= button;
 
     [self handleMouseEvent:theEvent];
