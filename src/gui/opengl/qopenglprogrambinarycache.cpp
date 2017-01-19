@@ -59,7 +59,7 @@ Q_DECLARE_LOGGING_CATEGORY(DBG_SHADER_CACHE)
 #endif
 
 const quint32 BINSHADER_MAGIC = 0x5174;
-const quint32 BINSHADER_VERSION = 0x1;
+const quint32 BINSHADER_VERSION = 0x2;
 const quint32 BINSHADER_QTVERSION = QT_VERSION;
 
 struct GLEnvInfo
@@ -114,24 +114,42 @@ QString QOpenGLProgramBinaryCache::cacheFileName(const QByteArray &cacheKey) con
     return m_cacheDir + QString::fromUtf8(cacheKey);
 }
 
-static const int HEADER_SIZE = 3 * sizeof(quint32);
+#define BASE_HEADER_SIZE (int(3 * sizeof(quint32)))
+#define FULL_HEADER_SIZE(stringsSize) (BASE_HEADER_SIZE + 12 + stringsSize + 8)
+#define PADDING_SIZE(fullHeaderSize) (((fullHeaderSize + 3) & ~3) - fullHeaderSize)
+
+static inline quint32 readUInt(const uchar **p)
+{
+    quint32 v;
+    memcpy(&v, *p, sizeof(quint32));
+    *p += sizeof(quint32);
+    return v;
+}
+
+static inline QByteArray readStr(const uchar **p)
+{
+    quint32 len = readUInt(p);
+    QByteArray ba = QByteArray::fromRawData(reinterpret_cast<const char *>(*p), len);
+    *p += len;
+    return ba;
+}
 
 bool QOpenGLProgramBinaryCache::verifyHeader(const QByteArray &buf) const
 {
-    if (buf.size() < HEADER_SIZE) {
+    if (buf.size() < BASE_HEADER_SIZE) {
         qCDebug(DBG_SHADER_CACHE, "Cached size too small");
         return false;
     }
-    const quint32 *p = reinterpret_cast<const quint32 *>(buf.constData());
-    if (*p++ != BINSHADER_MAGIC) {
+    const uchar *p = reinterpret_cast<const uchar *>(buf.constData());
+    if (readUInt(&p) != BINSHADER_MAGIC) {
         qCDebug(DBG_SHADER_CACHE, "Magic does not match");
         return false;
     }
-    if (*p++ != BINSHADER_VERSION) {
+    if (readUInt(&p) != BINSHADER_VERSION) {
         qCDebug(DBG_SHADER_CACHE, "Version does not match");
         return false;
     }
-    if (*p++ != BINSHADER_QTVERSION) {
+    if (readUInt(&p) != BINSHADER_QTVERSION) {
         qCDebug(DBG_SHADER_CACHE, "Qt version does not match");
         return false;
     }
@@ -219,15 +237,15 @@ bool QOpenGLProgramBinaryCache::load(const QByteArray &cacheKey, uint programId)
     FdWrapper fdw(fn);
     if (fdw.fd == -1)
         return false;
-    char header[HEADER_SIZE];
-    qint64 bytesRead = qt_safe_read(fdw.fd, header, HEADER_SIZE);
-    if (bytesRead == HEADER_SIZE)
-        buf = QByteArray::fromRawData(header, HEADER_SIZE);
+    char header[BASE_HEADER_SIZE];
+    qint64 bytesRead = qt_safe_read(fdw.fd, header, BASE_HEADER_SIZE);
+    if (bytesRead == BASE_HEADER_SIZE)
+        buf = QByteArray::fromRawData(header, BASE_HEADER_SIZE);
 #else
     QFile f(fn);
     if (!f.open(QIODevice::ReadOnly))
         return false;
-    buf = f.read(HEADER_SIZE);
+    buf = f.read(BASE_HEADER_SIZE);
 #endif
 
     if (!verifyHeader(buf)) {
@@ -235,50 +253,61 @@ bool QOpenGLProgramBinaryCache::load(const QByteArray &cacheKey, uint programId)
         return false;
     }
 
-    const quint32 *p;
+    const uchar *p;
 #ifdef Q_OS_UNIX
     if (!fdw.map()) {
         undertaker.setActive();
         return false;
     }
-    p = reinterpret_cast<const quint32 *>(static_cast<const char *>(fdw.ptr) + HEADER_SIZE);
+    p = static_cast<const uchar *>(fdw.ptr) + BASE_HEADER_SIZE;
 #else
     buf = f.readAll();
-    p = reinterpret_cast<const quint32 *>(buf.constData());
+    p = reinterpret_cast<const uchar *>(buf.constData());
 #endif
 
     GLEnvInfo info;
 
-    quint32 v = *p++;
-    QByteArray vendor = QByteArray::fromRawData(reinterpret_cast<const char *>(p), v);
+    QByteArray vendor = readStr(&p);
     if (vendor != info.glvendor) {
-        qCDebug(DBG_SHADER_CACHE, "GL_VENDOR does not match (%s, %s)", vendor.constData(), info.glvendor.constData());
+        // readStr returns non-null terminated strings just pointing to inside
+        // 'p' so must print these via the stream qCDebug and not constData().
+        qCDebug(DBG_SHADER_CACHE) << "GL_VENDOR does not match" << vendor << info.glvendor;
         undertaker.setActive();
         return false;
     }
-    p = reinterpret_cast<const quint32 *>(reinterpret_cast<const char *>(p) + v);
-    v = *p++;
-    QByteArray renderer = QByteArray::fromRawData(reinterpret_cast<const char *>(p), v);
+    QByteArray renderer = readStr(&p);
     if (renderer != info.glrenderer) {
-        qCDebug(DBG_SHADER_CACHE, "GL_RENDERER does not match (%s, %s)", renderer.constData(), info.glrenderer.constData());
+        qCDebug(DBG_SHADER_CACHE) << "GL_RENDERER does not match" << renderer << info.glrenderer;
         undertaker.setActive();
         return false;
     }
-    p = reinterpret_cast<const quint32 *>(reinterpret_cast<const char *>(p) + v);
-    v = *p++;
-    QByteArray version = QByteArray::fromRawData(reinterpret_cast<const char *>(p), v);
+    QByteArray version = readStr(&p);
     if (version != info.glversion) {
-        qCDebug(DBG_SHADER_CACHE, "GL_VERSION does not match (%s, %s)", version.constData(), info.glversion.constData());
+        qCDebug(DBG_SHADER_CACHE) <<  "GL_VERSION does not match" << version << info.glversion;
         undertaker.setActive();
         return false;
     }
-    p = reinterpret_cast<const quint32 *>(reinterpret_cast<const char *>(p) + v);
 
-    quint32 blobFormat = *p++;
-    quint32 blobSize = *p++;
+    quint32 blobFormat = readUInt(&p);
+    quint32 blobSize = readUInt(&p);
+
+    p += PADDING_SIZE(FULL_HEADER_SIZE(vendor.size() + renderer.size() + version.size()));
 
     return setProgramBinary(programId, blobFormat, p, blobSize)
         && m_memCache.insert(cacheKey, new MemCacheEntry(p, blobSize, blobFormat));
+}
+
+static inline void writeUInt(uchar **p, quint32 value)
+{
+    memcpy(*p, &value, sizeof(quint32));
+    *p += sizeof(quint32);
+}
+
+static inline void writeStr(uchar **p, const QByteArray &str)
+{
+    writeUInt(p, str.size());
+    memcpy(*p, str.constData(), str.size());
+    *p += str.size();
 }
 
 void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
@@ -292,36 +321,47 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
     GLint blobSize = 0;
     while (funcs->glGetError() != GL_NO_ERROR) { }
     funcs->glGetProgramiv(programId, GL_PROGRAM_BINARY_LENGTH, &blobSize);
-    int totalSize = blobSize + 8 + 12 + 12 + info.glvendor.size() + info.glrenderer.size() + info.glversion.size();
+
+    const int headerSize = FULL_HEADER_SIZE(info.glvendor.size() + info.glrenderer.size() + info.glversion.size());
+
+    // Add padding to make the blob start 4-byte aligned in order to support
+    // OpenGL implementations on ARM that choke on non-aligned pointers passed
+    // to glProgramBinary.
+    const int paddingSize = PADDING_SIZE(headerSize);
+
+    const int totalSize = headerSize + paddingSize + blobSize;
+
     qCDebug(DBG_SHADER_CACHE, "Program binary is %d bytes, err = 0x%x, total %d", blobSize, funcs->glGetError(), totalSize);
     if (!blobSize)
         return;
 
     QByteArray blob(totalSize, Qt::Uninitialized);
-    quint32 *p = reinterpret_cast<quint32 *>(blob.data());
+    uchar *p = reinterpret_cast<uchar *>(blob.data());
 
-    *p++ = BINSHADER_MAGIC;
-    *p++ = BINSHADER_VERSION;
-    *p++ = BINSHADER_QTVERSION;
+    writeUInt(&p, BINSHADER_MAGIC);
+    writeUInt(&p, BINSHADER_VERSION);
+    writeUInt(&p, BINSHADER_QTVERSION);
 
-    *p++ = info.glvendor.size();
-    memcpy(p, info.glvendor.constData(), info.glvendor.size());
-    p = reinterpret_cast<quint32 *>(reinterpret_cast<char *>(p) + info.glvendor.size());
-    *p++ = info.glrenderer.size();
-    memcpy(p, info.glrenderer.constData(), info.glrenderer.size());
-    p = reinterpret_cast<quint32 *>(reinterpret_cast<char *>(p) + info.glrenderer.size());
-    *p++ = info.glversion.size();
-    memcpy(p, info.glversion.constData(), info.glversion.size());
-    p = reinterpret_cast<quint32 *>(reinterpret_cast<char *>(p) + info.glversion.size());
+    writeStr(&p, info.glvendor);
+    writeStr(&p, info.glrenderer);
+    writeStr(&p, info.glversion);
+
+    quint32 blobFormat = 0;
+    uchar *blobFormatPtr = p;
+    writeUInt(&p, blobFormat);
+    writeUInt(&p, blobSize);
+
+    for (int i = 0; i < paddingSize; ++i)
+        *p++ = 0;
 
     GLint outSize = 0;
-    quint32 *blobFormat = p++;
-    *p++ = blobSize;
-    funcs->glGetProgramBinary(programId, blobSize, &outSize, blobFormat, p);
+    funcs->glGetProgramBinary(programId, blobSize, &outSize, &blobFormat, p);
     if (blobSize != outSize) {
         qCDebug(DBG_SHADER_CACHE, "glGetProgramBinary returned size %d instead of %d", outSize, blobSize);
         return;
     }
+
+    writeUInt(&blobFormatPtr, blobFormat);
 
     QSaveFile f(cacheFileName(cacheKey));
     if (f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
