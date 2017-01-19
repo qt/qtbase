@@ -29,8 +29,8 @@
     \example richtext/syntaxhighlighter
     \title Syntax Highlighter Example
     \ingroup examples-richtext
-    \brief The Syntax Highligher example shows how to perform
-    simple syntax highlighing.
+    \brief The Syntax Highlighter example shows how to perform
+    simple syntax highlighting.
 
     \brief The Syntax Highlighter example shows how to perform simple syntax
     highlighting by subclassing the QSyntaxHighlighter class.
@@ -64,8 +64,9 @@
     and define your own highlighting rules.
 
     We have chosen to store our highlighting rules using a private
-    struct: A rule consists of a QRegExp pattern and a QTextCharFormat
-    instance. The various rules are then stored using a QVector.
+    struct: A rule consists of a QRegularExpression pattern and a
+    QTextCharFormat instance. The various rules are then stored using a
+    QVector.
 
     The QTextCharFormat class provides formatting information for
     characters in a QTextDocument specifying the visual properties of
@@ -78,7 +79,7 @@
 
     When subclassing the QSyntaxHighlighter class you must pass the
     parent parameter to the base class constructor. The parent is the
-    text document upon which the syntax highligning will be
+    text document upon which the syntax highlighting will be
     applied. In this example, we have also chosen to define our
     highlighting rules in the constructor:
 
@@ -138,11 +139,11 @@
     First we apply the syntax highlighting rules that we stored in the
     \c highlightingRules vector. For each rule (i.e. for each
     HighlightingRule object) we search for the pattern in the given
-    textblock using the QString::indexOf() function. When the first
+    text block using the QString::indexOf() function. When the first
     occurrence of the pattern is found, we use the
-    QRegExp::matchedLength() function to determine the string that
-    will be formatted. QRegExp::matchedLength() returns the length of
-    the last matched string, or -1 if there was no match.
+    QRegularExpressionMatch::capturedLength() function to determine the string
+    that will be formatted. QRegularExpressionMatch::capturedLength() returns
+    the length of the last matched string, or 0 if there was no match.
 
     To perform the actual formatting the QSyntaxHighlighter class
     provides the \l {QSyntaxHighlighter::setFormat()}{setFormat()}
