@@ -17,7 +17,7 @@ qtConfig(c++14): CONFIG += c++14
 qtConfig(c++1z): CONFIG += c++1z
 contains(TEMPLATE, .*lib) {
     # module and plugins
-    !host_build:qtConfig(reduce_exports): CONFIG += hide_symbols
+    if(!host_build|!cross_compile):qtConfig(reduce_exports): CONFIG += hide_symbols
     unix:qtConfig(reduce_relocations): CONFIG += bsymbolic_functions
     qtConfig(separate_debug_info): CONFIG += separate_debug_info
 
