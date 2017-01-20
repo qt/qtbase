@@ -46,8 +46,6 @@
 #include <initializer_list>
 #endif
 
-#include <type_traits>
-
 QT_BEGIN_NAMESPACE
 
 class QFlag

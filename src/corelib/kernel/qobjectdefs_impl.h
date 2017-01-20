@@ -50,8 +50,6 @@
 #pragma qt_sync_stop_processing
 #endif
 
-#include <type_traits>
-
 QT_BEGIN_NAMESPACE
 
 

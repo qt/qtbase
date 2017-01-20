@@ -44,7 +44,6 @@
 #ifdef __cplusplus
 #  include <type_traits>
 #  include <cstddef>
-#  include <type_traits>
 #  include <utility>
 #endif
 

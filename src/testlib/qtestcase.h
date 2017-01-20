@@ -51,7 +51,6 @@
 
 #include <string.h>
 
-#include <type_traits>
 #ifndef QT_NO_EXCEPTIONS
 #  include <exception>
 #endif // QT_NO_EXCEPTIONS
