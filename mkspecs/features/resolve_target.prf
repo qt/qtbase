@@ -19,7 +19,6 @@ win32 {
     contains(TEMPLATE, .*lib) {
         !skip_target_version_ext:isEmpty(TARGET_VERSION_EXT):!isEmpty(VERSION) {
             TARGET_VERSION_EXT = $$section(VERSION, ., 0, 0)
-            isEqual(TARGET_VERSION_EXT, 0):unset(TARGET_VERSION_EXT)
         }
         static:TARGET_EXT = .lib
         else:TARGET_EXT = .dll
