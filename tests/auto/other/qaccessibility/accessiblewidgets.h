@@ -98,7 +98,7 @@ public:
         return 0;
     }
     CustomTextWidgetIface(CustomTextWidget *w): QAccessibleWidget(w) {}
-    void *interface_cast(QAccessible::InterfaceType t) {
+    void *interface_cast(QAccessible::InterfaceType t)  override {
         if (t == QAccessible::TextInterface)
             return static_cast<QAccessibleTextInterface*>(this);
         return 0;
@@ -112,19 +112,19 @@ public:
         return QAccessibleWidget::text(t);
     }
 
-    QString textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType, int *startOffset, int *endOffset) const
+    QString textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType, int *startOffset, int *endOffset) const override
     {
         if (offset == -2)
             offset = textWidget()->cursorPosition;
         return QAccessibleTextInterface::textBeforeOffset(offset, boundaryType, startOffset, endOffset);
     }
-    QString textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType, int *startOffset, int *endOffset) const
+    QString textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType, int *startOffset, int *endOffset) const override
     {
         if (offset == -2)
             offset = textWidget()->cursorPosition;
         return QAccessibleTextInterface::textAtOffset(offset, boundaryType, startOffset, endOffset);
     }
-    QString textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType, int *startOffset, int *endOffset) const
+    QString textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType, int *startOffset, int *endOffset) const override
     {
         if (offset == -2)
             offset = textWidget()->cursorPosition;
