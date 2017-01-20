@@ -1460,7 +1460,7 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         ensureAllSectionsParsed(confFile);
         ParsedSettingsMap mergedKeys = confFile->mergedKeyMap();
 
-#ifndef QT_BOOTSTRAPPED
+#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(temporaryfile)
         QSaveFile sf(confFile->name);
 #else
         QFile sf(confFile->name);
@@ -1488,7 +1488,7 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
             ok = writeFunc(sf, tempOriginalKeys);
         }
 
-#ifndef QT_BOOTSTRAPPED
+#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(temporaryfile)
         if (ok)
             ok = sf.commit();
 #endif

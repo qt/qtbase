@@ -1914,6 +1914,7 @@ static inline bool isWindowsBuildDirectory(const QString &dirName)
 }
 #endif
 
+#if QT_CONFIG(temporaryfile)
 /*!
     Extracts a directory from resources to disk. The content is extracted
     recursively to a temporary folder. The extracted content is removed
@@ -1974,6 +1975,7 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
 
       return result;
 }
+#endif // QT_CONFIG(temporaryfile)
 
 /*! \internal
  */

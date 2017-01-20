@@ -283,7 +283,9 @@ namespace QTest
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern);
 #endif
 
+#if QT_CONFIG(temporaryfile)
     Q_TESTLIB_EXPORT QSharedPointer<QTemporaryDir> qExtractTestData(const QString &dirName);
+#endif
     Q_TESTLIB_EXPORT QString qFindTestData(const char* basepath, const char* file = Q_NULLPTR, int line = 0, const char* builddir = Q_NULLPTR);
     Q_TESTLIB_EXPORT QString qFindTestData(const QString& basepath, const char* file = Q_NULLPTR, int line = 0, const char* builddir = Q_NULLPTR);
 
