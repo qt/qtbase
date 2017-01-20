@@ -99,10 +99,10 @@ struct Q_CORE_EXPORT QMapNodeBase
     void setParent(QMapNodeBase *pp) { p = (p & Mask) | quintptr(pp); }
 
     template <typename T>
-    static typename QtPrivate::QEnableIf<QTypeInfo<T>::isComplex>::Type
+    static typename std::enable_if<QTypeInfo<T>::isComplex>::type
     callDestructorIfNecessary(T &t) Q_DECL_NOTHROW { Q_UNUSED(t); t.~T(); } // Q_UNUSED: silence MSVC unused 't' warning
     template <typename T>
-    static typename QtPrivate::QEnableIf<!QTypeInfo<T>::isComplex>::Type
+    static typename std::enable_if<!QTypeInfo<T>::isComplex>::type
     callDestructorIfNecessary(T &) Q_DECL_NOTHROW {}
 };
 

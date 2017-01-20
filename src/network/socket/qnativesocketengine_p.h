@@ -108,9 +108,9 @@ union qt_sockaddr {
 
 namespace {
 namespace SetSALen {
-    template <typename T> void set(T *sa, typename QtPrivate::QEnableIf<(&T::sa_len, true), QT_SOCKLEN_T>::Type len)
+    template <typename T> void set(T *sa, typename std::enable_if<(&T::sa_len, true), QT_SOCKLEN_T>::type len)
     { sa->sa_len = len; }
-    template <typename T> void set(T *sin6, typename QtPrivate::QEnableIf<(&T::sin6_len, true), QT_SOCKLEN_T>::Type len)
+    template <typename T> void set(T *sin6, typename std::enable_if<(&T::sin6_len, true), QT_SOCKLEN_T>::type len)
     { sin6->sin6_len = len; }
     template <typename T> void set(T *, ...) {}
 }

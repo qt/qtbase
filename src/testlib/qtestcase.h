@@ -240,14 +240,14 @@ namespace QTest
     namespace Internal {
 
     template<typename T> // Output registered enums
-    inline typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value, char*>::Type toString(T e)
+    inline typename std::enable_if<QtPrivate::IsQEnumHelper<T>::Value, char*>::type toString(T e)
     {
         QMetaEnum me = QMetaEnum::fromType<T>();
         return qstrdup(me.valueToKey(int(e))); // int cast is necessary to support enum classes
     }
 
     template <typename T> // Fallback
-    inline typename QtPrivate::QEnableIf<!QtPrivate::IsQEnumHelper<T>::Value, char*>::Type toString(const T &)
+    inline typename std::enable_if<!QtPrivate::IsQEnumHelper<T>::Value, char*>::type toString(const T &)
     {
         return Q_NULLPTR;
     }
