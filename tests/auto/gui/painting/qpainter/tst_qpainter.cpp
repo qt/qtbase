@@ -397,51 +397,6 @@ void tst_QPainter::cleanupTestCase()
     QFile::remove(QLatin1String("foo.png"));
 }
 
-static const char* const maskSource_data[] = {
-"16 13 6 1",
-". c None",
-"d c #000000",
-"# c #999999",
-"c c #cccccc",
-"b c #ffff00",
-"a c #ffffff",
-"...#####........",
-"..#aaaaa#.......",
-".#abcbcba######.",
-".#acbcbcaaaaaa#d",
-".#abcbcbcbcbcb#d",
-"#############b#d",
-"#aaaaaaaaaa##c#d",
-"#abcbcbcbcbbd##d",
-".#abcbcbcbcbcd#d",
-".#acbcbcbcbcbd#d",
-"..#acbcbcbcbb#dd",
-"..#############d",
-"...ddddddddddddd"};
-
-static const char* const maskResult_data[] = {
-"16 13 6 1",
-". c #ff0000",
-"d c #000000",
-"# c #999999",
-"c c #cccccc",
-"b c #ffff00",
-"a c #ffffff",
-"...#####........",
-"..#aaaaa#.......",
-".#abcbcba######.",
-".#acbcbcaaaaaa#d",
-".#abcbcbcbcbcb#d",
-"#############b#d",
-"#aaaaaaaaaa##c#d",
-"#abcbcbcbcbbd##d",
-".#abcbcbcbcbcd#d",
-".#acbcbcbcbcbd#d",
-"..#acbcbcbcbb#dd",
-"..#############d",
-"...ddddddddddddd"};
-
-
 #ifndef QT_NO_WIDGETS
 void tst_QPainter::drawPixmap_comp_data()
 {

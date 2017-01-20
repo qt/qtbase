@@ -1200,8 +1200,6 @@ void tst_QFuture::pause()
     Interface.reportFinished();
 }
 
-const int resultCount = 1000;
-
 class ResultObject : public QObject
 {
 Q_OBJECT

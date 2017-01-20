@@ -530,16 +530,6 @@ void tst_QIcon::streamAvailableSizes()
     }
 }
 
-
-static inline bool operator<(const QSize &lhs, const QSize &rhs)
-{
-    if (lhs.width() < rhs.width())
-        return true;
-    else if (lhs.width() == lhs.width())
-        return lhs.height() < lhs.height();
-    return false;
-}
-
 #ifndef QT_NO_WIDGETS
 void tst_QIcon::task184901_badCache()
 {
