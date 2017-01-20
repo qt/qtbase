@@ -68,7 +68,7 @@ PeerManager::PeerManager(Client *client)
 
     QStringList environment = QProcess::systemEnvironment();
     foreach (QString string, envVariables) {
-        int index = environment.indexOf(QRegExp(string));
+        int index = environment.indexOf(QRegularExpression(string));
         if (index != -1) {
             QStringList stringList = environment.at(index).split('=');
             if (stringList.size() == 2) {
