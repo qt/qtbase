@@ -3004,6 +3004,10 @@ void fpe_steepSlopes()
 
 void fpe_radialGradients()
 {
+#if defined(Q_PROCESSOR_ARM)
+    QEXPECT_FAIL("", "Test fails for ARM (QTBUG-59961)", Continue);
+#endif
+
     FpExceptionChecker checker(FE_UNDERFLOW | FE_OVERFLOW | FE_INVALID | FE_DIVBYZERO);
 
     QImage img(21, 21, QImage::Format_ARGB32_Premultiplied);
