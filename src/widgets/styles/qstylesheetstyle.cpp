@@ -38,10 +38,10 @@
 ****************************************************************************/
 
 #include <qglobal.h>
-
-#ifndef QT_NO_STYLE_STYLESHEET
-
 #include "qstylesheetstyle_p.h"
+
+#if QT_CONFIG(style_stylesheet)
+
 #include "private/qcssutil_p.h"
 #include <qdebug.h>
 #include <qapplication.h>
@@ -6024,4 +6024,4 @@ QT_END_NAMESPACE
 
 #include "moc_qstylesheetstyle_p.cpp"
 
-#endif // QT_NO_STYLE_STYLESHEET
+#endif // QT_CONFIG(style_stylesheet)
