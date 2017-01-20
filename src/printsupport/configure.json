@@ -31,6 +31,12 @@
             "condition": "libs.cups",
             "output": [ "privateFeature", "feature" ]
         },
+        "cupsjobwidget": {
+            "label": "CUPS job control widget",
+            "section": "Widgets",
+            "condition": "features.cups && features.calendarwidget && features.datetimeedit && features.groupbox",
+            "output": [ "privateFeature", "feature" ]
+        },
         "printer": {
             "label": "QPrinter",
             "purpose": "Provides a printer backend of QPainter.",
@@ -49,7 +55,7 @@
             "label": "QPrintDialog",
             "purpose": "Provides a dialog widget for specifying printer configuration.",
             "section": "Dialogs",
-            "condition": "features.printer && features.combobox && features.buttongroup && features.spinbox && features.treeview && features.tabwidget",
+            "condition": "features.printer && features.combobox && features.buttongroup && features.spinbox && features.treeview && features.tabwidget && features.datetimeedit",
             "output": [ "publicFeature", "feature" ]
         },
         "printpreviewdialog": {
