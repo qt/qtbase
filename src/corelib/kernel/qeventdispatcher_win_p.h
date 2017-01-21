@@ -126,9 +126,10 @@ typedef QHash<int, QSockNot *> QSNDict;
 
 struct QSockFd {
     long event;
+    long mask;
     bool selected;
 
-    explicit inline QSockFd(long ev = 0) : event(ev), selected(false) { }
+    explicit inline QSockFd(long ev = 0, long ma = 0) : event(ev), mask(ma), selected(false) { }
 };
 typedef QHash<int, QSockFd> QSFDict;
 
