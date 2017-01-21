@@ -305,6 +305,7 @@
             "label": "Mimetype handling",
             "purpose": "Provides MIME type handling.",
             "section": "Utilities",
+            "condition": "features.textcodec",
             "output": [ "publicFeature", "feature" ]
         },
         "system-pcre": {
