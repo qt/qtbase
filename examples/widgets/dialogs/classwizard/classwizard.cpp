@@ -363,9 +363,10 @@ void CodeStylePage::initializePage()
     baseIncludeLabel->setEnabled(!baseClass.isEmpty());
     baseIncludeLineEdit->setEnabled(!baseClass.isEmpty());
 
+    QRegularExpression rx("Q[A-Z].*");
     if (baseClass.isEmpty()) {
         baseIncludeLineEdit->clear();
-    } else if (QRegExp("Q[A-Z].*").exactMatch(baseClass)) {
+    } else if (rx.match(baseClass).hasMatch()) {
         baseIncludeLineEdit->setText('<' + baseClass + '>');
     } else {
         baseIncludeLineEdit->setText('"' + baseClass.toLower() + ".h\"");
