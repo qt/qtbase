@@ -741,8 +741,8 @@
     whitespace and one or several digits again.
 
     The first digits of the regular expression are captured using
-    parentheses. This enables us to use the QRegExp::cap() or
-    QRegExp::capturedTexts() functions to extract the matched
+    parentheses. This enables us to use the QRegularExpressionMatch::captured()
+    or QRegularExpressionMatch::capturedTexts() functions to extract the matched
     characters. If the first and second numbers of the spin box value
     differ (e.g., "16 x 24"), we use the first number.
 
