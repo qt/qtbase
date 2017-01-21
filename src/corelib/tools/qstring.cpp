@@ -8144,7 +8144,7 @@ bool QString::isRightToLeft() const
     to create a deep copy of the data, ensuring that the raw data
     isn't modified.
 
-    Here's an example of how we can use a QRegExp on raw data in
+    Here's an example of how we can use a QRegularExpression on raw data in
     memory without requiring to copy the data into a QString:
 
     \snippet qstring/main.cpp 22
