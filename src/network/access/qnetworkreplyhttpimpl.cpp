@@ -1135,16 +1135,40 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
     if (isFinished)
         return;
 
+    const QString schemeBefore(url.scheme());
     if (httpRequest.isFollowRedirects()) // update the reply's url as it could've changed
         url = redirectUrl;
 
-    redirectRequest = createRedirectRequest(originalRequest, redirectUrl, maxRedirectsRemaining);
+    if (managerPrivate->stsEnabled && managerPrivate->stsCache.isKnownHost(url)) {
+        // RFC6797, 8.3:
+        // The UA MUST replace the URI scheme with "https" [RFC2818],
+        // and if the URI contains an explicit port component of "80",
+        // then the UA MUST convert the port component to be "443", or
+        // if the URI contains an explicit port component that is not
+        // equal to "80", the port component value MUST be preserved;
+        // otherwise, if the URI does not contain an explicit port
+        // component, the UA MUST NOT add one.
+        url.setScheme(QLatin1String("https"));
+        if (url.port() == 80)
+            url.setPort(443);
+    }
+
+    const bool isLessSafe = schemeBefore == QLatin1String("https")
+                            && url.scheme() == QLatin1String("http");
+    if (httpRequest.redirectsPolicy() == QNetworkRequest::NoLessSafeRedirectsPolicy
+        && isLessSafe) {
+        error(QNetworkReply::InsecureRedirectError,
+              QCoreApplication::translate("QHttp", "Insecure redirect"));
+        return;
+    }
+
+    redirectRequest = createRedirectRequest(originalRequest, url, maxRedirectsRemaining);
     operation = getRedirectOperation(operation, httpStatus);
 
     if (httpRequest.redirectsPolicy() != QNetworkRequest::UserVerifiedRedirectsPolicy)
         followRedirect();
 
-    emit q->redirected(redirectUrl);
+    emit q->redirected(url);
 }
 
 void QNetworkReplyHttpImplPrivate::followRedirect()

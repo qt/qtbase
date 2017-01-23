@@ -552,12 +552,11 @@ QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socke
     if (redirectUrl.scheme() == QLatin1String("http") || redirectUrl.scheme() == QLatin1String("https")) {
         switch (reply->request().redirectsPolicy()) {
         case QNetworkRequest::NoLessSafeRedirectsPolicy:
-            // Check if we're doing an unsecure redirect (https -> http)
-            if (priorUrl.scheme() == QLatin1String("https")
-                && redirectUrl.scheme() == QLatin1String("http")) {
-                emitReplyError(socket, reply, QNetworkReply::InsecureRedirectError);
-                return QUrl();
-            }
+            // Here we could handle https->http redirects as InsecureProtocolError.
+            // However, if HSTS is enabled and redirectUrl.host() is a known STS
+            // host, then we'll replace its scheme and this won't downgrade protocol,
+            // after all.  We cannot access QNAM's STS cache from here, so delegate
+            // this check to QNetworkReplyHttpImpl.
             break;
         case QNetworkRequest::SameOriginRedirectsPolicy:
             if (priorUrl.host() != redirectUrl.host()
