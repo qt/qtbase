@@ -85,8 +85,7 @@ private:
 
     struct DomainLabel
     {
-        DomainLabel() = default;
-        DomainLabel(const QString &name) : label(name) { }
+        DomainLabel(const QString &name = QString()) : label(name), domainIndex(0) {}
 
         bool operator < (const DomainLabel &rhs) const
         { return label < rhs.label; }
