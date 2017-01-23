@@ -45,17 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool expired_policy(const QDateTime &expires)
+static bool is_valid_domain_name(const QString &host)
 {
-    return !expires.isValid() || expires <= QDateTime::currentDateTimeUtc();
-}
-
-static bool has_valid_domain_name(const QUrl &url)
-{
-    if (!url.isValid())
-        return false;
-
-    const QString host(url.host());
     if (!host.size())
         return false;
 
@@ -82,117 +73,106 @@ static bool has_valid_domain_name(const QUrl &url)
     return true;
 }
 
-QHstsCache::QHstsCache()
-{
-    // Top-level domain without any label.
-    children.push_back(Domain());
-}
-
 void QHstsCache::updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &headers,
                                    const QUrl &url)
 {
-    if (!has_valid_domain_name(url))
+    if (!url.isValid())
         return;
 
     QHstsHeaderParser parser;
     if (parser.parse(headers))
-        updateKnownHost(url, parser.expirationDate(), parser.includeSubDomains());
+        updateKnownHost(url.host(), parser.expirationDate(), parser.includeSubDomains());
 }
 
-void QHstsCache::updateKnownHost(const QUrl &originalUrl, const QDateTime &expires,
+void QHstsCache::updateFromPolicies(const QList<QHstsPolicy> &policies)
+{
+    for (const auto &policy : policies)
+        updateKnownHost(policy.host(), policy.expiry(), policy.includesSubDomains());
+}
+
+void QHstsCache::updateKnownHost(const QUrl &url, const QDateTime &expires,
                                  bool includeSubDomains)
 {
-    if (!has_valid_domain_name(originalUrl))
+    if (!url.isValid())
+        return;
+
+    updateKnownHost(url.host(), expires, includeSubDomains);
+}
+
+void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
+                                 bool includeSubDomains)
+{
+    if (!is_valid_domain_name(host))
         return;
 
     // HSTS is a per-host policy, regardless of protocol, port or any of the other
-    // details in an URL; so we only want the host part.  We still package this as
-    // a QUrl since this handles IDNA 2003 (RFC3490) for us, as required by
-    // HSTS (RFC6797, section 10).
-    QUrl url;
-    url.setHost(originalUrl.host());
-
-    // 1. Update our hosts:
-    QStringList labels(url.host().split(QLatin1Char('.')));
-    std::reverse(labels.begin(), labels.end());
-
-    size_type domainIndex = 0;
-    for (int i = 0, e = labels.size(); i < e; ++i) {
-        Q_ASSERT(domainIndex < children.size());
-        auto &subDomains = children[domainIndex].labels;
-        const auto &label = labels[i];
-        auto pos = std::lower_bound(subDomains.begin(), subDomains.end(), label);
-        if (pos == subDomains.end() || pos->label != label) {
-            // A new, previously unknown host.
-            if (expired_policy(expires)) {
-                // Nothing to do at all - we did not know this host previously,
-                // we do not have to - since its policy expired.
-                return;
-            }
-
-            pos = subDomains.insert(pos, label);
-            domainIndex = children.size();
-            pos->domainIndex = domainIndex;
-            children.resize(children.size() + (e - i));
-
-            for (int j = i + 1; j < e; ++j) {
-                auto &newDomain = children[domainIndex];
-                newDomain.labels.push_back(labels[j]);
-                newDomain.labels.back().domainIndex = ++domainIndex;
-            }
-
-            break;
+    // details in an URL; so we only want the host part.  QUrl::host handles
+    // IDNA 2003 (RFC3490) for us, as required by HSTS (RFC6797, section 10).
+    const HostName hostName(host);
+    const auto pos = knownHosts.find(hostName);
+    const QHstsPolicy newPolicy(expires, includeSubDomains, hostName.name);
+    if (pos == knownHosts.end()) {
+        // A new, previously unknown host.
+        if (newPolicy.isExpired()) {
+            // Nothing to do at all - we did not know this host previously,
+            // we do not have to - since its policy expired.
+            return;
         }
 
-        domainIndex = pos->domainIndex;
+        knownHosts.insert(pos, hostName, newPolicy);
+        return;
     }
 
-    Q_ASSERT(domainIndex > 0 && domainIndex < children.size());
-    children[domainIndex].setHostPolicy(expires, includeSubDomains);
+    if (newPolicy.isExpired())
+        knownHosts.erase(pos);
+    else
+        *pos = std::move(newPolicy);
 }
 
-bool QHstsCache::isKnownHost(const QUrl &originalUrl) const
+bool QHstsCache::isKnownHost(const QUrl &url) const
 {
-    if (!has_valid_domain_name(originalUrl))
+    if (!url.isValid() || !is_valid_domain_name(url.host()))
         return false;
 
-    QUrl url;
-    url.setHost(originalUrl.host());
+    /*
+        RFC6797, 8.2.  Known HSTS Host Domain Name Matching
 
-    QStringList labels(url.host().split(QLatin1Char('.')));
-    std::reverse(labels.begin(), labels.end());
+        * Superdomain Match
+          If a label-for-label match between an entire Known HSTS Host's
+          domain name and a right-hand portion of the given domain name
+          is found, then this Known HSTS Host's domain name is a
+          superdomain match for the given domain name.  There could be
+          multiple superdomain matches for a given domain name.
+        * Congruent Match
+          If a label-for-label match between a Known HSTS Host's domain
+          name and the given domain name is found -- i.e., there are no
+          further labels to compare -- then the given domain name
+          congruently matches this Known HSTS Host.
 
-    Q_ASSERT(children.size());
-    size_type domainIndex = 0;
-    for (int i = 0, e = labels.size(); i < e; ++i) {
-        Q_ASSERT(domainIndex < children.size());
-        const auto &subDomains = children[domainIndex].labels;
-        auto pos = std::lower_bound(subDomains.begin(), subDomains.end(), labels[i]);
-        if (pos == subDomains.end() || pos->label != labels[i])
-            return false;
+        We start from the congruent match, and then chop labels and dots and
+        proceed with superdomain match. While RFC6797 recommends to start from
+        superdomain, the result is the same - some valid policy will make a host
+        known.
+    */
 
-        Q_ASSERT(pos->domainIndex < children.size());
-        domainIndex = pos->domainIndex;
-        auto &domain = children[domainIndex];
-        if (domain.validateHostPolicy() && (i + 1 == e || domain.includeSubDomains)) {
-            /*
-            RFC6797, 8.2.  Known HSTS Host Domain Name Matching
-
-            * Superdomain Match
-              If a label-for-label match between an entire Known HSTS Host's
-              domain name and a right-hand portion of the given domain name
-              is found, then this Known HSTS Host's domain name is a
-              superdomain match for the given domain name.  There could be
-              multiple superdomain matches for a given domain name.
-            * Congruent Match
-              If a label-for-label match between a Known HSTS Host's domain
-              name and the given domain name is found -- i.e., there are no
-              further labels to compare -- then the given domain name
-              congruently matches this Known HSTS Host.
-            */
-
-            return true;
+    bool superDomainMatch = false;
+    const QString hostNameAsString(url.host());
+    HostName nameToTest(static_cast<QStringRef>(&hostNameAsString));
+    while (nameToTest.fragment.size()) {
+        auto const pos = knownHosts.find(nameToTest);
+        if (pos != knownHosts.end()) {
+            if (pos.value().isExpired())
+                knownHosts.erase(pos);
+            else if (!superDomainMatch || pos.value().includesSubDomains())
+                return true;
         }
+
+        const int dot = nameToTest.fragment.indexOf(QLatin1Char('.'));
+        if (dot == -1)
+            break;
+
+        nameToTest.fragment = nameToTest.fragment.mid(dot + 1);
+        superDomainMatch = true;
     }
 
     return false;
@@ -200,10 +180,12 @@ bool QHstsCache::isKnownHost(const QUrl &originalUrl) const
 
 void QHstsCache::clear()
 {
-    children.resize(1);
-    children[0].labels.clear();
-    // Top-level is never known:
-    Q_ASSERT(!children[0].isKnownHost);
+    knownHosts.clear();
+}
+
+QList<QHstsPolicy> QHstsCache::policies() const
+{
+    return knownHosts.values();
 }
 
 // The parser is quite simple: 'nextToken' knowns exactly what kind of tokens

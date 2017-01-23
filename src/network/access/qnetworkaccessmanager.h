@@ -61,6 +61,7 @@ class QNetworkReply;
 class QNetworkProxy;
 class QNetworkProxyFactory;
 class QSslError;
+class QHstsPolicy;
 #ifndef QT_NO_BEARERMANAGEMENT
 class QNetworkConfiguration;
 #endif
@@ -123,6 +124,8 @@ public:
     void enableStrictTransportSecurity();
     void disableStrictTransportSecurity();
     bool strictTransportSecurityEnabled() const;
+    void addStrictTransportSecurityHosts(const QList<QHstsPolicy> &knownHosts);
+    QList<QHstsPolicy> strictTransportSecurityHosts() const;
 
     QNetworkReply *head(const QNetworkRequest &request);
     QNetworkReply *get(const QNetworkRequest &request);

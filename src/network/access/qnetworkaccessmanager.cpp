@@ -45,6 +45,8 @@
 #include "qnetworkcookie.h"
 #include "qnetworkcookiejar.h"
 #include "qabstractnetworkcache.h"
+#include "qhstspolicy.h"
+#include "qhsts_p.h"
 
 #include "QtNetwork/qnetworksession.h"
 #include "QtNetwork/private/qsharednetworksession_p.h"
@@ -739,6 +741,45 @@ bool QNetworkAccessManager::strictTransportSecurityEnabled() const
 {
     Q_D(const QNetworkAccessManager);
     return d->stsEnabled;
+}
+
+/*!
+    \since 5.9
+
+    Adds HTTP Strict Transport Security policies into HSTS cache.
+
+    \note An expired policy will remove a known host from the cache, if previously
+    present.
+
+    \note While processing HTTP responses, QNetworkAccessManager can also update
+    the HSTS cache, removing or updating exitsting policies or introducing new
+    known hosts. The current implementation thus is server-driven, client code
+    can provide QNetworkAccessManager with previously known or discovered
+    policies, but this information can be overridden by "Strict-Transport-Security"
+    response headers.
+
+    \sa addStrictTransportSecurityHosts(), QHstsPolicy
+*/
+
+void QNetworkAccessManager::addStrictTransportSecurityHosts(const QList<QHstsPolicy> &knownHosts)
+{
+    Q_D(QNetworkAccessManager);
+    d->stsCache.updateFromPolicies(knownHosts);
+}
+
+/*!
+    \since 5.9
+
+    Returns the list of HTTP Strict Transport Security policies. This list can
+    differ from what was initially set via addStrictTransportSecurityHosts() if
+    HSTS cache was updated from a "Strict-Transport-Security" response header.
+
+    \sa addStrictTransportSecurityHosts(), QHstsPolicy
+*/
+QList<QHstsPolicy> QNetworkAccessManager::strictTransportSecurityHosts() const
+{
+    Q_D(const QNetworkAccessManager);
+    return d->stsCache.policies();
 }
 
 /*!

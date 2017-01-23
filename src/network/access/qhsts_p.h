@@ -51,17 +51,16 @@
 // We mean it.
 //
 
+#include <QtNetwork/qhstspolicy.h>
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qglobal.h>
-#include <QtCore/qvector.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qurl.h>
-
-#include <algorithm>
-#include <vector>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,72 +68,48 @@ class Q_AUTOTEST_EXPORT QHstsCache
 {
 public:
 
-    QHstsCache();
-
     void updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &headers,
                            const QUrl &url);
+    void updateFromPolicies(const QList<QHstsPolicy> &hosts);
     void updateKnownHost(const QUrl &url, const QDateTime &expires,
                          bool includeSubDomains);
     bool isKnownHost(const QUrl &url) const;
-
     void clear();
+
+    QList<QHstsPolicy> policies() const;
 
 private:
 
-    using size_type = std::vector<int>::size_type;
+    void updateKnownHost(const QString &hostName, const QDateTime &expires,
+                         bool includeSubDomains);
 
-    struct DomainLabel
+    struct HostName
     {
-        DomainLabel(const QString &name = QString()) : label(name), domainIndex(0) {}
+        explicit HostName(const QString &n) : name(n) { }
+        explicit HostName(const QStringRef &r) : fragment(r) { }
 
-        bool operator < (const DomainLabel &rhs) const
-        { return label < rhs.label; }
-
-        QString label;
-        size_type domainIndex;
-    };
-
-    struct Domain
-    {
-        void setHostPolicy(const QDateTime &expiration, bool subs)
+        bool operator < (const HostName &rhs) const
         {
-            expirationTime = expiration;
-            isKnownHost = expirationTime.isValid()
-                          && expirationTime > QDateTime::currentDateTimeUtc();
-            includeSubDomains = subs;
+            if (fragment.size()) {
+                if (rhs.fragment.size())
+                    return fragment < rhs.fragment;
+                return fragment < QStringRef(&rhs.name);
+            }
+
+            if (rhs.fragment.size())
+                return QStringRef(&name) < rhs.fragment;
+            return name < rhs.name;
         }
 
-        bool validateHostPolicy()
-        {
-            if (!isKnownHost)
-                return false;
-
-            if (expirationTime > QDateTime::currentDateTimeUtc())
-                return true;
-
-            isKnownHost = false;
-            includeSubDomains = false;
-            return false;
-        }
-
-        bool isKnownHost = false;
-        bool includeSubDomains = false;
-        QDateTime expirationTime;
-        std::vector<DomainLabel> labels;
+        // We use 'name' for a HostName object contained in our dictionary;
+        // we use 'fragment' only during lookup, when chopping the complete host
+        // name, removing subdomain names (such HostName object is 'transient', it
+        // must not outlive the original QString object.
+        QString name;
+        QStringRef fragment;
     };
 
-    /*
-    Each Domain represents a DNS name or prefix thereof; each entry in its
-    std::vector<DomainLabel> labels pairs the next fragment of a DNS name
-    with the index into 'children' at which to find another Domain object.
-    The root Domain, children[0], has top-level-domain DomainLabel entries,
-    such as "com", "org" and "net"; the entry in 'children' at the index it
-    pairs with "com" is the Domain entry for .com; if that has "example" in
-    its labels, it'll be paired with the index of the entry in 'children'
-    that represents example.com; from which, in turn, we can find the
-    Domain object for www.example.com, and so on.
-    */
-    mutable std::vector<Domain> children;
+    mutable QMap<HostName, QHstsPolicy> knownHosts;
 };
 
 class Q_AUTOTEST_EXPORT QHstsHeaderParser
