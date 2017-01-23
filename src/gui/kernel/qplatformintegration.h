@@ -157,7 +157,8 @@ public:
         TabFocusBehavior,
         ReplayMousePressOutsidePopup,
         ItemViewActivateItemOnSingleClick,
-        UiEffects
+        UiEffects,
+        WheelScrollLines,
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

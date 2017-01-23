@@ -409,6 +409,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::ItemViewActivateItemOnSingleClick);
     case UiEffects:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::UiEffects);
+    case WheelScrollLines:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::WheelScrollLines);
     }
 
     return 0;

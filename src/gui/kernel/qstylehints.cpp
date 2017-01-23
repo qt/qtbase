@@ -78,6 +78,7 @@ public:
         , m_cursorFlashTime(-1)
         , m_tabFocusBehavior(-1)
         , m_uiEffects(-1)
+        , m_wheelScrollLines(-1)
         {}
 
     int m_mouseDoubleClickInterval;
@@ -88,6 +89,7 @@ public:
     int m_cursorFlashTime;
     int m_tabFocusBehavior;
     int m_uiEffects;
+    int m_wheelScrollLines;
 };
 
 /*!
@@ -493,6 +495,35 @@ void QStyleHints::setUseHoverEffects(bool useHoverEffects)
     else
         d->m_uiEffects &= ~QPlatformTheme::HoverEffect;
     emit useHoverEffectsChanged(useHoverEffects);
+}
+
+/*!
+    \property QStyleHints::wheelScrollLines
+    \brief Number of lines to scroll by default for each wheel click.
+
+    \since 5.9
+*/
+int QStyleHints::wheelScrollLines() const
+{
+    Q_D(const QStyleHints);
+    if (d->m_wheelScrollLines > 0)
+        return d->m_wheelScrollLines;
+    return themeableHint(QPlatformTheme::WheelScrollLines, QPlatformIntegration::WheelScrollLines).toInt();
+}
+
+/*!
+    Sets the \a wheelScrollLines.
+    \internal
+    \sa wheelScrollLines()
+    \since 5.9
+*/
+void QStyleHints::setWheelScrollLines(int scrollLines)
+{
+    Q_D(QStyleHints);
+    if (d->m_wheelScrollLines == scrollLines)
+        return;
+    d->m_wheelScrollLines = scrollLines;
+    emit wheelScrollLinesChanged(scrollLines);
 }
 
 QT_END_NAMESPACE

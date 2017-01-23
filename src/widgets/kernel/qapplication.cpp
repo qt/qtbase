@@ -408,7 +408,6 @@ QWidget *QApplicationPrivate::focus_widget = 0;        // has keyboard input foc
 QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard input focus after show()
 QWidget *QApplicationPrivate::active_window = 0;        // toplevel with keyboard focus
 #ifndef QT_NO_WHEELEVENT
-int QApplicationPrivate::wheel_scroll_lines;   // number of lines to scroll
 QPointer<QWidget> QApplicationPrivate::wheel_widget;
 #endif
 bool qt_in_tab_key_event = false;
@@ -642,19 +641,12 @@ void QApplicationPrivate::initialize()
     if (qEnvironmentVariableIntValue("QT_USE_NATIVE_WINDOWS") > 0)
         QCoreApplication::setAttribute(Qt::AA_NativeWindows);
 
-#ifndef QT_NO_WHEELEVENT
-    QApplicationPrivate::wheel_scroll_lines = 3;
-#endif
-
     if (qt_is_gui_used)
         initializeMultitouch();
 
     if (QApplication::desktopSettingsAware())
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
             QApplicationPrivate::enabledAnimations = theme->themeHint(QPlatformTheme::UiEffects).toInt();
-#ifndef QT_NO_WHEELEVENT
-            QApplicationPrivate::wheel_scroll_lines = theme->themeHint(QPlatformTheme::WheelScrollLines).toInt();
-#endif
         }
 
     is_app_running = true; // no longer starting up
@@ -4049,16 +4041,18 @@ int QApplication::keyboardInputInterval()
     or \l{QAbstractItemView::ScrollPerPixel}{scroll one pixel}.
 
     By default, this property has a value of 3.
+
+    \sa QStyleHints::wheelScrollLines()
 */
 #ifndef QT_NO_WHEELEVENT
 int QApplication::wheelScrollLines()
 {
-    return QApplicationPrivate::wheel_scroll_lines;
+    return styleHints()->wheelScrollLines();
 }
 
 void QApplication::setWheelScrollLines(int lines)
 {
-    QApplicationPrivate::wheel_scroll_lines = lines;
+    styleHints()->setWheelScrollLines(lines);
 }
 #endif
 
