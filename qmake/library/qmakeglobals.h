@@ -131,6 +131,7 @@ public:
     void reloadProperties() { property->reload(); }
     ProString propertyValue(const ProKey &name) const { return property->value(name); }
 #else
+    static void parseProperties(const QByteArray &data, QHash<ProKey, ProString> &props);
 #  ifdef PROEVALUATOR_INIT_PROPS
     bool initProperties();
 #  else
