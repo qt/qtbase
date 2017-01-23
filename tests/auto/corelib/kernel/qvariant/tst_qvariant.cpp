@@ -371,6 +371,8 @@ void tst_QVariant::copy_constructor()
     QVERIFY(var8.isNull());
 }
 
+Q_DECLARE_METATYPE(int*)
+
 void tst_QVariant::isNull()
 {
     QVariant var;
@@ -413,6 +415,18 @@ void tst_QVariant::isNull()
     QVERIFY(var9.isNull());
     var9 = QVariant::fromValue<QJsonValue>(QJsonValue(QJsonValue::Null));
     QVERIFY(var9.isNull());
+
+    QVariant var10(QMetaType::VoidStar, nullptr);
+    QVERIFY(var10.isNull());
+    var10 = QVariant::fromValue<void*>(nullptr);
+    QVERIFY(var10.isNull());
+
+    QVariant var11(QMetaType::QObjectStar, nullptr);
+    QVERIFY(var11.isNull());
+    var11 = QVariant::fromValue<QObject*>(nullptr);
+    QVERIFY(var11.isNull());
+
+    QVERIFY(QVariant::fromValue<int*>(nullptr).isNull());
 }
 
 void tst_QVariant::swap()
@@ -2650,7 +2664,7 @@ void tst_QVariant::qvariant_cast_QObject_data()
     QTest::newRow("null QObject") << QVariant::fromValue<QObject*>(0) << true << true;
     QTest::newRow("null derived QObject") << QVariant::fromValue<CustomQObject*>(0) << true << true;
     QTest::newRow("null custom object") << QVariant::fromValue<CustomNonQObject*>(0) << false << true;
-    QTest::newRow("null int") << QVariant::fromValue<int>(0) << false << true;
+    QTest::newRow("zero int") << QVariant::fromValue<int>(0) << false << false;
 }
 
 void tst_QVariant::qvariant_cast_QObject()
@@ -2668,12 +2682,14 @@ void tst_QVariant::qvariant_cast_QObject()
         QVERIFY(data.canConvert(QMetaType::QObjectStar));
         QVERIFY(data.canConvert(::qMetaTypeId<QObject*>()));
         QCOMPARE(data.value<QObject*>() == 0, isNull);
+        QCOMPARE(data.isNull(), isNull);
         QVERIFY(data.convert(QMetaType::QObjectStar));
         QCOMPARE(data.userType(), int(QMetaType::QObjectStar));
     } else {
         QVERIFY(!data.canConvert<QObject*>());
         QVERIFY(!data.canConvert(QMetaType::QObjectStar));
         QVERIFY(!data.canConvert(::qMetaTypeId<QObject*>()));
+        QCOMPARE(data.isNull(), isNull);
         QVERIFY(!data.value<QObject*>());
         QVERIFY(!data.convert(QMetaType::QObjectStar));
         QVERIFY(data.userType() != QMetaType::QObjectStar);
@@ -3752,7 +3768,7 @@ void tst_QVariant::moreCustomTypes()
     {
         int i = 5;
         PLAY_WITH_VARIANT((void *)(&i), false, QString(), 0, false);
-        PLAY_WITH_VARIANT((void *)(0), false, QString(), 0, false);
+        PLAY_WITH_VARIANT((void *)(0), true, QString(), 0, false);
     }
 
     {

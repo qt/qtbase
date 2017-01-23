@@ -1177,7 +1177,17 @@ static void customClear(QVariant::Private *d)
 
 static bool customIsNull(const QVariant::Private *d)
 {
-    return d->is_null;
+    if (d->is_null)
+        return true;
+    const char *const typeName = QMetaType::typeName(d->type);
+    if (Q_UNLIKELY(!typeName) && Q_LIKELY(!QMetaType::isRegistered(d->type)))
+        qFatal("QVariant::isNull: type %d unknown to QVariant.", d->type);
+    uint typeNameLen = qstrlen(typeName);
+    if (typeNameLen > 0 && typeName[typeNameLen - 1] == '*') {
+        const void *d_ptr = d->is_shared ? d->data.shared->ptr : &(d->data.ptr);
+        return *static_cast<void *const *>(d_ptr) == nullptr;
+    }
+    return false;
 }
 
 static bool customCompare(const QVariant::Private *a, const QVariant::Private *b)
@@ -3740,9 +3750,10 @@ void* QVariant::data()
 
 /*!
     Returns \c true if this is a null variant, false otherwise. A variant is
-    considered null if it contains no initialized value or it contains an instance
-    of built-in type that has an isNull method, in which case the result would be
-    the same as calling isNull on the wrapped object.
+    considered null if it contains no initialized value, or the contained value
+    is a null pointer or is an instance of a built-in type that has an isNull
+    method, in which case the result would be the same as calling isNull on the
+    wrapped object.
 
     \warning Null variants is not a single state and two null variants may easily
     return \c false on the == operator if they do not contain similar null values.

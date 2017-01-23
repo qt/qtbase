@@ -187,6 +187,16 @@ public:
     }
 };
 
+template <typename T>
+struct PrimitiveIsNull<T*>
+{
+public:
+    static bool isNull(const QVariant::Private *d)
+    {
+        return d->is_null || d->data.ptr == nullptr;
+    }
+};
+
 template <>
 struct PrimitiveIsNull<std::nullptr_t>
 {
