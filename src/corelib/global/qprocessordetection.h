@@ -231,9 +231,6 @@
 #  if defined(_MIPS_ARCH_MIPS2) || (defined(__mips) && __mips - 0 >= 2)
 #    define Q_PROCESSOR_MIPS_II
 #  endif
-#  if defined(_MIPS_ARCH_MIPS32) || defined(__mips32)
-#    define Q_PROCESSOR_MIPS_32
-#  endif
 #  if defined(_MIPS_ARCH_MIPS3) || (defined(__mips) && __mips - 0 >= 3)
 #    define Q_PROCESSOR_MIPS_III
 #  endif
@@ -242,6 +239,9 @@
 #  endif
 #  if defined(_MIPS_ARCH_MIPS5) || (defined(__mips) && __mips - 0 >= 5)
 #    define Q_PROCESSOR_MIPS_V
+#  endif
+#  if defined(_MIPS_ARCH_MIPS32) || defined(__mips32) || (defined(__mips) && __mips - 0 >= 32)
+#    define Q_PROCESSOR_MIPS_32
 #  endif
 #  if defined(_MIPS_ARCH_MIPS64) || defined(__mips64)
 #    define Q_PROCESSOR_MIPS_64
