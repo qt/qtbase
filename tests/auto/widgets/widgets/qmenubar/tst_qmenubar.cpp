@@ -136,6 +136,7 @@ private slots:
     void QTBUG_57404_existingMenuItemException();
 #endif
     void taskQTBUG55966_subMenuRemoved();
+    void QTBUG_58344_invalidIcon();
 
     void platformMenu();
 
@@ -1592,6 +1593,15 @@ void tst_QMenuBar::taskQTBUG55966_subMenuRemoved()
     QApplication::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QTest::qWait(500);
+}
+
+void tst_QMenuBar::QTBUG_58344_invalidIcon()
+{
+    QMenuBar menuBar;
+    QMenu menu("menu");
+    menu.addAction(QIcon("crash.png"), "crash");
+    menuBar.addMenu(&menu);
+    // No crash, all fine.
 }
 
 QTEST_MAIN(tst_QMenuBar)
