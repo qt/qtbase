@@ -1664,7 +1664,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
 
     QOpenGL2PaintEngineState *s = q->state();
 
-    void *cacheKey = ctx->shareGroup();
+    void *cacheKey = ctx; // use context, not the shareGroup() -> the GL glyph cache uses FBOs which may not be shareable
     bool recreateVertexArrays = false;
 
     QTransform glyphCacheTransform;
