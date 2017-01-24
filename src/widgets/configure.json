@@ -504,7 +504,7 @@
             "label": "QCompleter",
             "purpose": "Provides completions based on an item model.",
             "section": "Utilities",
-            "condition": "features.proxymodel",
+            "condition": "features.proxymodel && features.itemviews",
             "output": [ "publicFeature", "feature" ]
         },
         "fscompleter": {
