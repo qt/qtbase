@@ -1186,7 +1186,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     \snippet code/src_corelib_kernel_qvariant.cpp 1
 
     QVariant can be extended to support other types than those
-    mentioned in the \l Type enum. See the \l QMetaType documentation
+    mentioned in the \l Type enum. See \l{Creating Custom Qt Types}{Creating Custom Qt Types}
     for details.
 
     \section1 A Note on GUI Types

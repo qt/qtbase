@@ -63,6 +63,7 @@ private slots:
     void defaultFamily_data();
     void defaultFamily();
     void toAndFromString();
+    void fromStringWithoutStyleName();
 
     void sharing();
 };
@@ -358,6 +359,8 @@ void tst_QFont::serialize_data()
     // Versions <= Qt 2.1 had broken point size serialization,
     // so we set an integer point size.
     basicFont.setPointSize(9);
+    // Versions <= Qt 5.4 didn't serialize styleName, so clear it
+    basicFont.setStyleName(QString());
 
     QFont font = basicFont;
     QTest::newRow("defaultConstructed") << font << QDataStream::Qt_1_0;
@@ -558,6 +561,19 @@ void tst_QFont::toAndFromString()
         QCOMPARE(result, initial);
     }
 }
+
+void tst_QFont::fromStringWithoutStyleName()
+{
+    QFont font1;
+    font1.fromString("Noto Sans,12,-1,5,50,0,0,0,0,0,Regular");
+
+    QFont font2 = font1;
+    const QString str = "Times,16,-1,5,50,0,0,0,0,0";
+    font2.fromString(str);
+
+    QCOMPARE(font2.toString(), str);
+}
+
 
 void tst_QFont::sharing()
 {

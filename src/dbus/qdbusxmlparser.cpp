@@ -385,6 +385,11 @@ QDBusXmlParser::QDBusXmlParser(const QString& service, const QString& path,
         case QXmlStreamReader::Comment:
             // ignore comments and processing instructions
             break;
+        case QXmlStreamReader::Characters:
+            // ignore whitespace
+            if (xml.isWhitespace())
+                break;
+            Q_FALLTHROUGH();
         default:
             qDBusParserError() << "unknown token" << xml.name() << xml.tokenString();
             break;

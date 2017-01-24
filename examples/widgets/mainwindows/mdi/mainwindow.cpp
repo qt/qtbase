@@ -264,16 +264,6 @@ void MainWindow::updateMenus()
 #endif
 }
 
-class ActiveMdiSubWindowFunctor {
-public:
-    explicit ActiveMdiSubWindowFunctor(QMdiArea *mdiArea, QMdiSubWindow *activeWindow) : m_mdiArea(mdiArea), m_activeWindow(activeWindow) {}
-    void operator()() const { m_mdiArea->setActiveSubWindow(m_activeWindow); }
-
-private:
-    QMdiArea *m_mdiArea;
-    QMdiSubWindow *m_activeWindow;
-};
-
 void MainWindow::updateWindowMenu()
 {
     windowMenu->clear();
@@ -302,7 +292,9 @@ void MainWindow::updateWindowMenu()
             text = tr("%1 %2").arg(i + 1)
                               .arg(child->userFriendlyCurrentFile());
         }
-        QAction *action = windowMenu->addAction(text, mdiSubWindow, ActiveMdiSubWindowFunctor(mdiArea, mdiSubWindow));
+        QAction *action = windowMenu->addAction(text, mdiSubWindow, [this, mdiSubWindow]() {
+            mdiArea->setActiveSubWindow(mdiSubWindow);
+        });
         action->setCheckable(true);
         action ->setChecked(child == activeMdiChild());
     }

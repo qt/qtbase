@@ -130,6 +130,7 @@ private:
     bool isStandardSuffix(const QString &suffix) const;
     ProString firstInputFileName(const ProString &extraCompilerName) const;
     QString firstExpandedOutputFileName(const ProString &extraCompilerName);
+    void createCustomBuildToolFakeFile(const QString &cbtFilePath, const QString &realOutFilePath);
     friend class VCFilter;
 };
 

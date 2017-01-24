@@ -19,7 +19,7 @@ qtConfig(c++14): CONFIG += c++14
 qtConfig(c++1z): CONFIG += c++1z
 contains(TEMPLATE, .*lib) {
     # module and plugins
-    !host_build:qtConfig(reduce_exports): CONFIG += hide_symbols
+    if(!host_build|!cross_compile):qtConfig(reduce_exports): CONFIG += hide_symbols
     unix:qtConfig(reduce_relocations): CONFIG += bsymbolic_functions
     qtConfig(separate_debug_info): CONFIG += separate_debug_info
 
@@ -99,6 +99,9 @@ warnings_are_errors:warning_clean {
             # GCC prints this bogus warning, after it has inlined a lot of code
             # error: assuming signed overflow does not occur when assuming that (X + c) < X is always false
             QMAKE_CXXFLAGS_WARN_ON += -Wno-error=strict-overflow
+
+            # GCC 7 includes -Wimplicit-fallthrough in -Wextra, but Qt is not yet free of implicit fallthroughs.
+            greaterThan(QT_GCC_MAJOR_VERSION, 6): QMAKE_CXXFLAGS_WARN_ON += -Wno-error=implicit-fallthrough
 
             # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
             android: QMAKE_CXXFLAGS_WARN_ON += -Wno-error=literal-suffix

@@ -171,6 +171,12 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
         uint pid = session.interface()->servicePid(KDEWatcherService).value();
         QString processName = QLockFilePrivate::processNameByPid(pid);
         necessary = processName.endsWith(QLatin1String("indicator-application-service"));
+        if (!necessary && QGuiApplication::desktopSettingsAware()) {
+            // Accessing to process name might be not allowed if the application
+            // is confined, thus we can just rely on the current desktop in use
+            const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
+            necessary = services->desktopEnvironment().split(':').contains("UNITY");
+        }
         necessity_checked = true;
     }
     if (!necessary)

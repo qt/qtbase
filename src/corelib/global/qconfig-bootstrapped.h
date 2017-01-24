@@ -83,11 +83,14 @@
 #define QT_NO_TRANSLATION
 #define QT_FEATURE_translation -1
 #define QT_NO_GEOM_VARIANT
+#define QT_FEATURE_sharedmemory -1
+#define QT_FEATURE_systemsemaphore -1
 
-#if defined(QT_BUILD_QMAKE) || defined(QT_BUILD_CONFIGURE)
+#ifdef QT_BUILD_QMAKE
 #define QT_FEATURE_commandlineparser -1
 #define QT_NO_COMPRESS
 #define QT_JSON_READONLY
+#define QT_NO_STANDARDPATHS
 #define QT_NO_TEXTCODEC
 #define QT_FEATURE_textcodec -1
 #else
@@ -95,10 +98,6 @@
 #define QT_FEATURE_codecs -1
 #define QT_FEATURE_commandlineparser 1
 #define QT_FEATURE_textcodec 1
-#endif
-
-#if defined(QT_BUILD_QMAKE)
-#define QT_NO_STANDARDPATHS
 #endif
 
 #endif // QT_BOOTSTRAPPED

@@ -749,7 +749,7 @@ void QCocoaWindow::setVisible(bool visible)
                     if (cocoaEventDispatcher)
                         cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
 
-                    if (!(cocoaEventDispatcherPrivate && cocoaEventDispatcherPrivate->currentModalSession()))
+                    if (cocoaEventDispatcherPrivate && cocoaEventDispatcherPrivate->cocoaModalSessionStack.isEmpty())
                         [m_nsWindow makeKeyAndOrderFront:nil];
                     else
                         [m_nsWindow orderFront:nil];

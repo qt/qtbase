@@ -106,7 +106,7 @@ void tst_QNetworkSession::initTestCase()
 
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations();
-    QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut);
+    QTRY_VERIFY_WITH_TIMEOUT(spy.count() >= 1, TestTimeOut);
 
     lackeyDir = QFINDTESTDATA("lackey");
     QVERIFY2(!lackeyDir.isEmpty(), qPrintable(
@@ -1007,7 +1007,7 @@ QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfigur
     QSignalSpy updateSpy(&mgr, SIGNAL(updateCompleted()));
 
     mgr.updateConfigurations();
-    QTRY_NOOP(updateSpy.count() == 1);
+    QTRY_NOOP(updateSpy.count() >= 1);
     if (updateSpy.count() != 1) {
         qDebug("tst_QNetworkSession::suitableConfiguration() failure: unable to update configurations");
         return QNetworkConfiguration();
@@ -1052,7 +1052,7 @@ void updateConfigurations()
     QNetworkConfigurationManager mgr;
     QSignalSpy updateSpy(&mgr, SIGNAL(updateCompleted()));
     mgr.updateConfigurations();
-    QTRY_NOOP(updateSpy.count() == 1);
+    QTRY_NOOP(updateSpy.count() >= 1);
 }
 
 // A convenience-function: updates and prints all available confiurations and their states

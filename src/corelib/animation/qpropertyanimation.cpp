@@ -269,10 +269,8 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
 
     QPropertyAnimation *animToStop = 0;
     {
-#ifndef QT_NO_THREAD
         static QBasicMutex mutex;
         QMutexLocker locker(&mutex);
-#endif
         typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
         typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
         static QPropertyAnimationHash hash;

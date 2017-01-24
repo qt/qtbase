@@ -306,7 +306,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     // events, "click-through") can be considered as the window under mouse.
     QWindow *currentWindowUnderMouse = platformWindow->hasMouseCapture() ?
         QWindowsScreen::windowAt(globalPosition, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT) : window;
-
+    while (currentWindowUnderMouse && currentWindowUnderMouse->flags() & Qt::WindowTransparentForInput)
+        currentWindowUnderMouse = currentWindowUnderMouse->parent();
     // QTBUG-44332: When Qt is running at low integrity level and
     // a Qt Window is parented on a Window of a higher integrity process
     // using QWindow::fromWinId() (for example, Qt running in a browser plugin)
@@ -425,22 +426,10 @@ static bool isValidWheelReceiver(QWindow *candidate)
 static void redirectWheelEvent(QWindow *window, const QPoint &globalPos, int delta,
                                Qt::Orientation orientation, Qt::KeyboardModifiers mods)
 {
-    // Redirect wheel event to one of the following, in order of preference:
-    // 1) The window under mouse
-    // 2) The window receiving the event
     // If a window is blocked by modality, it can't get the event.
-
-    QWindow *receiver = QWindowsScreen::windowAt(globalPos, CWP_SKIPINVISIBLE);
-    bool handleEvent = true;
-    if (!isValidWheelReceiver(receiver)) {
-        receiver = window;
-        if (!isValidWheelReceiver(receiver))
-            handleEvent = false;
-    }
-
-    if (handleEvent) {
-        QWindowSystemInterface::handleWheelEvent(receiver,
-                                                 QWindowsGeometryHint::mapFromGlobal(receiver, globalPos),
+    if (isValidWheelReceiver(window)) {
+        QWindowSystemInterface::handleWheelEvent(window,
+                                                 QWindowsGeometryHint::mapFromGlobal(window, globalPos),
                                                  globalPos, delta, orientation, mods);
     }
 }

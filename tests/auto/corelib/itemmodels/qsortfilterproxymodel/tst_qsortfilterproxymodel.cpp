@@ -145,6 +145,9 @@ private slots:
     void canDropMimeData();
     void filterHint();
 
+    void sourceLayoutChangeLeavesValidPersistentIndexes();
+    void rowMoveLeavesValidPersistentIndexes();
+
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -4179,6 +4182,175 @@ void tst_QSortFilterProxyModel::filterHint()
     QCOMPARE(proxy2AfterSpy.size(), 1);
     QCOMPARE(proxy2AfterSpy.first().at(1).value<QAbstractItemModel::LayoutChangeHint>(),
              QAbstractItemModel::NoLayoutChangeHint);
+}
+
+/**
+
+  Creates a model where each item has one child, to a set depth,
+  and the last item has no children.  For a model created with
+  setDepth(4):
+
+    - 1
+    - - 2
+    - - - 3
+    - - - - 4
+*/
+class StepTreeModel : public QAbstractItemModel
+{
+    Q_OBJECT
+public:
+    StepTreeModel(QObject * parent = 0)
+        : QAbstractItemModel(parent), m_depth(0) {}
+
+    int columnCount(const QModelIndex& = QModelIndex()) const override { return 1; }
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override
+    {
+        quintptr parentId = (parent.isValid()) ? parent.internalId() : 0;
+        return (parentId < m_depth) ? 1 : 0;
+    }
+
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override
+    {
+        if (role != Qt::DisplayRole)
+            return QVariant();
+
+        return QString::number(index.internalId());
+    }
+
+    QModelIndex index(int, int, const QModelIndex& parent = QModelIndex()) const override
+    {
+        quintptr parentId = (parent.isValid()) ? parent.internalId() : 0;
+        if (parentId >= m_depth)
+            return QModelIndex();
+
+        return createIndex(0, 0, parentId + 1);
+    }
+
+    QModelIndex parent(const QModelIndex& index) const override
+    {
+        if (index.internalId() == 0)
+            return QModelIndex();
+
+        return createIndex(0, 0, index.internalId() - 1);
+    }
+
+    void setDepth(quintptr depth)
+    {
+        int parentIdWithLayoutChange = (m_depth < depth) ? m_depth : depth;
+
+        QList<QPersistentModelIndex> parentsOfLayoutChange;
+        parentsOfLayoutChange.push_back(createIndex(0, 0, parentIdWithLayoutChange));
+
+        layoutAboutToBeChanged(parentsOfLayoutChange);
+
+        auto existing = persistentIndexList();
+
+        QList<QModelIndex> updated;
+
+        for (auto idx : existing) {
+            if (indexDepth(idx) <= depth)
+                updated.push_back(idx);
+            else
+                updated.push_back({});
+        }
+
+        m_depth = depth;
+
+        changePersistentIndexList(existing, updated);
+
+        layoutChanged(parentsOfLayoutChange);
+    }
+
+private:
+    static quintptr indexDepth(QModelIndex const& index)
+    {
+        return (index.isValid()) ? 1 + indexDepth(index.parent()) : 0;
+    }
+
+private:
+    quintptr m_depth;
+};
+
+void tst_QSortFilterProxyModel::sourceLayoutChangeLeavesValidPersistentIndexes()
+{
+    StepTreeModel model;
+    Q_SET_OBJECT_NAME(model);
+    model.setDepth(4);
+
+    QSortFilterProxyModel proxy1;
+    proxy1.setSourceModel(&model);
+    Q_SET_OBJECT_NAME(proxy1);
+
+    proxy1.setFilterRegExp("1|2");
+
+    // The current state of things:
+    //  model         proxy
+    //   - 1           - 1
+    //   - - 2         - - 2
+    //   - - - 3
+    //   - - - - 4
+
+    // The setDepth call below removes '4' with a layoutChanged call.
+    // Because the proxy filters that out anyway, the proxy doesn't need
+    // to emit any signals or update persistent indexes.
+
+    QPersistentModelIndex persistentIndex = proxy1.index(0, 0, proxy1.index(0, 0));
+
+    model.setDepth(3);
+
+    // Calling parent() causes the internalPointer to be used.
+    // Before fixing QTBUG-47711, that could be a dangling pointer.
+    // The use of qDebug here makes sufficient use of the heap to
+    // cause corruption at runtime with normal use on linux (before
+    // the fix). valgrind confirms the fix.
+    qDebug() << persistentIndex.parent();
+    QVERIFY(persistentIndex.parent().isValid());
+}
+
+void tst_QSortFilterProxyModel::rowMoveLeavesValidPersistentIndexes()
+{
+    DynamicTreeModel model;
+    Q_SET_OBJECT_NAME(model);
+
+    QList<int> ancestors;
+    for (auto i = 0; i < 5; ++i)
+    {
+        Q_UNUSED(i);
+        ModelInsertCommand insertCommand(&model);
+        insertCommand.setAncestorRowNumbers(ancestors);
+        insertCommand.setStartRow(0);
+        insertCommand.setEndRow(0);
+        insertCommand.doCommand();
+        ancestors.push_back(0);
+    }
+
+    QSortFilterProxyModel proxy1;
+    proxy1.setSourceModel(&model);
+    Q_SET_OBJECT_NAME(proxy1);
+
+    proxy1.setFilterRegExp("1|2");
+
+    auto item5 = model.match(model.index(0, 0), Qt::DisplayRole, "5", 1, Qt::MatchRecursive).first();
+    auto item3 = model.match(model.index(0, 0), Qt::DisplayRole, "3", 1, Qt::MatchRecursive).first();
+
+    Q_ASSERT(item5.isValid());
+    Q_ASSERT(item3.isValid());
+
+    QPersistentModelIndex persistentIndex = proxy1.match(proxy1.index(0, 0), Qt::DisplayRole, "2", 1, Qt::MatchRecursive).first();
+
+    ModelMoveCommand moveCommand(&model, 0);
+    moveCommand.setAncestorRowNumbers(QList<int>{0, 0, 0, 0});
+    moveCommand.setStartRow(0);
+    moveCommand.setEndRow(0);
+    moveCommand.setDestRow(0);
+    moveCommand.setDestAncestors(QList<int>{0, 0, 0});
+    moveCommand.doCommand();
+
+    // Calling parent() causes the internalPointer to be used.
+    // Before fixing QTBUG-47711 (moveRows case), that could be
+    // a dangling pointer.
+    QVERIFY(persistentIndex.parent().isValid());
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

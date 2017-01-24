@@ -2196,9 +2196,10 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *c)
 
 #ifndef QT_OPENGL_ES_2
     // setup fallbacks in case some methods couldn't get resolved
-    if (!f.ClearDepthf)
+    bool es = QOpenGLContext::currentContext()->isOpenGLES();
+    if (!f.ClearDepthf || !es)
         f.ClearDepthf = qopenglfSpecialClearDepthf;
-    if (!f.DepthRangef)
+    if (!f.DepthRangef || !es)
         f.DepthRangef = qopenglfSpecialDepthRangef;
     if (!f.GetShaderPrecisionFormat)
         f.GetShaderPrecisionFormat = qopenglfSpecialGetShaderPrecisionFormat;

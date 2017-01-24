@@ -93,6 +93,7 @@ private slots:
 #if !defined(Q_OS_DARWIN)
     void accel();
     void activatedCount();
+    void activatedCount_data();
 
     void check_accelKeys();
     void check_cursorKeys1();
@@ -145,8 +146,8 @@ protected slots:
     void slotForTaskQTBUG53205();
 
 private:
-    TestMenu initSimpleMenuBar(QMenuBar *mb);
-    TestMenu initWindowWithSimpleMenuBar(QMainWindow &w);
+    TestMenu initSimpleMenuBar(QMenuBar *mb, bool forceNonNative = true);
+    TestMenu initWindowWithSimpleMenuBar(QMainWindow &w, bool forceNonNative = true);
     QAction *createCharacterAction(QMenu *menu, char lowerAscii);
     QMenu *addNumberedMenu(QMenuBar *mb, int n);
     TestMenu initComplexMenuBar(QMenuBar *mb);
@@ -214,10 +215,10 @@ void tst_QMenuBar::cleanup()
 
 // Create a simple menu bar and connect its actions to onSimpleActivated().
 
-TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb)
-{
+TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb, bool forceNonNative) {
     TestMenu result;
-    mb->setNativeMenuBar(false);
+    if (forceNonNative)
+        mb->setNativeMenuBar(false);
     connect(mb, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
     QMenu *menu = mb->addMenu(QStringLiteral("&accel"));
     QAction *action = menu->addAction(QStringLiteral("menu1") );
@@ -245,11 +246,11 @@ TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb)
     return result;
 }
 
-inline TestMenu tst_QMenuBar::initWindowWithSimpleMenuBar(QMainWindow &w)
+inline TestMenu tst_QMenuBar::initWindowWithSimpleMenuBar(QMainWindow &w, bool forceNonNative)
 {
     w.resize(200, 200);
     centerOnScreen(&w);
-    return initSimpleMenuBar(w.menuBar());
+    return initSimpleMenuBar(w.menuBar(), forceNonNative);
 }
 
 // add a menu with number n, set number as data.
@@ -347,7 +348,8 @@ void tst_QMenuBar::activatedCount()
 {
     // create a popup menu with menu items set the accelerators later...
     QMainWindow w;
-    initWindowWithSimpleMenuBar(w);
+    QFETCH( bool, forceNonNative );
+    initWindowWithSimpleMenuBar(w, forceNonNative);
     w.show();
     QApplication::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
@@ -355,6 +357,13 @@ void tst_QMenuBar::activatedCount()
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_A, Qt::ControlModifier );
 //wait(5000);
     QCOMPARE( m_simpleActivatedCount, 2 ); //1 from the popupmenu and 1 from the menubar
+}
+
+void tst_QMenuBar::activatedCount_data()
+{
+    QTest::addColumn<bool>("forceNonNative");
+    QTest::newRow( "forcing non-native menubar" ) << true;
+    QTest::newRow( "not forcing non-native menubar" ) << false;
 }
 #endif
 

@@ -1267,10 +1267,12 @@ void QMenuBar::actionEvent(QActionEvent *e)
     } else if(e->type() == QEvent::ActionRemoved) {
         e->action()->disconnect(this);
     }
-    if (isVisible()) {
+    // updateGeometries() is also needed for native menu bars because
+    // it updates shortcutIndexMap
+    if (isVisible() || isNativeMenuBar())
         d->updateGeometries();
+    if (isVisible())
         update();
-    }
 }
 
 /*!
@@ -1683,6 +1685,13 @@ void QMenuBarPrivate::_q_internalShortcutActivated(int id)
 {
     Q_Q(QMenuBar);
     QAction *act = actions.at(id);
+    if (act && act->menu()) {
+        if (QPlatformMenu *platformMenu = act->menu()->platformMenu()) {
+            platformMenu->showPopup(q->windowHandle(), actionRects.at(id), Q_NULLPTR);
+            return;
+        }
+    }
+
     setCurrentAction(act, true, true);
     if (act && !act->menu()) {
         activateAction(act, QAction::Trigger);

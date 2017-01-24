@@ -71,8 +71,7 @@ QWidget *ImageDelegate::createEditor(QWidget *parent,
     else if (index.column() == 2)
         comboBox->addItems(IconPreviewArea::iconStateNames());
 
-    typedef void (QComboBox::*QComboBoxIntSignal)(int);
-    connect(comboBox, static_cast<QComboBoxIntSignal>(&QComboBox::activated),
+    connect(comboBox, QOverload<int>::of(&QComboBox::activated),
             this, &ImageDelegate::emitCommitData);
 
     return comboBox;

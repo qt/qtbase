@@ -1030,12 +1030,19 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
                                                                  Qt::Horizontal, QTabBar::RoundedSouth, mainWindow);
                 QRect geometry;
                 stream >> geometry;
-                if (!floatingTab->layoutInfo()->restoreState(stream, dockWidgets, false))
+                QDockAreaLayoutInfo *info = floatingTab->layoutInfo();
+                if (!info->restoreState(stream, dockWidgets, false))
                     return false;
                 geometry = QDockAreaLayout::constrainedRect(geometry, floatingTab);
                 floatingTab->move(geometry.topLeft());
                 floatingTab->resize(geometry.size());
-                floatingTab->show();
+
+                // Don't show an empty QDockWidgetGroupWindow if no dock widget is available yet.
+                // reparentWidgets() would be triggered by show(), so do it explicitly here.
+                if (info->onlyHasPlaceholders())
+                    info->reparentWidgets(floatingTab);
+                else
+                    floatingTab->show();
             }
             break;
 #endif // QT_NO_TABBAR

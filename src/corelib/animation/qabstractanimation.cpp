@@ -242,6 +242,7 @@ QUnifiedTimer *QUnifiedTimer::instance(bool create)
         inst = unifiedTimer() ? unifiedTimer()->localData() : 0;
     }
 #else
+    Q_UNUSED(create);
     static QUnifiedTimer unifiedTimer;
     inst = &unifiedTimer;
 #endif
@@ -576,6 +577,7 @@ QAnimationTimer *QAnimationTimer::instance(bool create)
         inst = animationTimer() ? animationTimer()->localData() : 0;
     }
 #else
+    Q_UNUSED(create);
     static QAnimationTimer animationTimer;
     inst = &animationTimer;
 #endif

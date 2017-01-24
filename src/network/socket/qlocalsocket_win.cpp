@@ -309,10 +309,8 @@ bool QLocalSocket::flush()
 {
     Q_D(QLocalSocket);
     bool written = false;
-    if (d->pipeWriter) {
-        while (d->pipeWriter->waitForWrite(0))
-            written = true;
-    }
+    while (d->pipeWriter && d->pipeWriter->waitForWrite(0))
+        written = true;
     return written;
 }
 

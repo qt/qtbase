@@ -257,7 +257,8 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
     if (nextKey == Qt::Key_Control
             || nextKey == Qt::Key_Shift
             || nextKey == Qt::Key_Meta
-            || nextKey == Qt::Key_Alt) {
+            || nextKey == Qt::Key_Alt
+            || nextKey == Qt::Key_unknown) {
         return;
     }
 

@@ -74,8 +74,7 @@ MainWindow::MainWindow()
     filterCombo->addItem(tr("Monospaced"), QVariant::fromValue(QFontComboBox::MonospacedFonts));
     filterCombo->addItem(tr("Proportional"), QVariant::fromValue(QFontComboBox::ProportionalFonts));
     filterCombo->setCurrentIndex(0);
-    typedef void (QComboBox::*QComboBoxIntSignal)(int);
-    connect(filterCombo, static_cast<QComboBoxIntSignal>(&QComboBox::currentIndexChanged),
+    connect(filterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &MainWindow::filterChanged);
 
     QLabel *fontLabel = new QLabel(tr("Font:"));
@@ -114,10 +113,9 @@ MainWindow::MainWindow()
             this, &MainWindow::findSizes);
     connect(fontCombo, &QFontComboBox::currentFontChanged,
             characterWidget, &CharacterWidget::updateFont);
-    typedef void (QComboBox::*QComboBoxStringSignal)(const QString &);
-    connect(sizeCombo, static_cast<QComboBoxStringSignal>(&QComboBox::currentIndexChanged),
+    connect(sizeCombo, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
             characterWidget, &CharacterWidget::updateSize);
-    connect(styleCombo, static_cast<QComboBoxStringSignal>(&QComboBox::currentIndexChanged),
+    connect(styleCombo, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
             characterWidget, &CharacterWidget::updateStyle);
 //! [4] //! [5]
     connect(characterWidget, &CharacterWidget::characterSelected,

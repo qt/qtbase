@@ -54,7 +54,6 @@ class tst_QSocks5SocketEngine : public QObject, public QAbstractSocketEngineRece
 
 private slots:
     void initTestCase();
-    void init();
     void construction();
     void errorTest_data();
     void errorTest();
@@ -74,13 +73,6 @@ private slots:
     void incomplete();
 
 protected slots:
-    void tcpSocketNonBlocking_hostFound();
-    void tcpSocketNonBlocking_connected();
-    void tcpSocketNonBlocking_closed();
-    void tcpSocketNonBlocking_readyRead();
-    void tcpSocketNonBlocking_bytesWritten(qint64);
-    void exitLoopSlot();
-    void downloadBigFileSlot();
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth);
 
 private:
@@ -89,11 +81,6 @@ private:
     void closeNotification() { }
     void exceptionNotification() { }
     void connectionNotification() { }
-    QTcpSocket *tcpSocketNonBlocking_socket;
-    QStringList tcpSocketNonBlocking_data;
-    qint64 tcpSocketNonBlocking_totalWritten;
-    QTcpSocket *tmpSocket;
-    qint64 bytesAvailable;
 };
 
 class MiniSocks5ResponseHandler : public QObject
@@ -151,12 +138,6 @@ private slots:
 void tst_QSocks5SocketEngine::initTestCase()
 {
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
-}
-
-void tst_QSocks5SocketEngine::init()
-{
-    tmpSocket = 0;
-    bytesAvailable = 0;
 }
 
 //---------------------------------------------------------------------------
@@ -631,13 +612,27 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
 {
     QSocks5SocketEngineHandler socks5;
 
+    qint64 tcpSocketNonBlocking_totalWritten  = 0;
+    QStringList tcpSocketNonBlocking_data;
     QTcpSocket socket;
-    connect(&socket, SIGNAL(hostFound()), SLOT(tcpSocketNonBlocking_hostFound()));
-    connect(&socket, SIGNAL(connected()), SLOT(tcpSocketNonBlocking_connected()));
-    connect(&socket, SIGNAL(disconnected()), SLOT(tcpSocketNonBlocking_closed()));
-    connect(&socket, SIGNAL(bytesWritten(qint64)), SLOT(tcpSocketNonBlocking_bytesWritten(qint64)));
-    connect(&socket, SIGNAL(readyRead()), SLOT(tcpSocketNonBlocking_readyRead()));
-    tcpSocketNonBlocking_socket = &socket;
+    connect(&socket, &QAbstractSocket::hostFound,
+            &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
+    connect(&socket, &QAbstractSocket::connected,
+            &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
+    connect(&socket, &QIODevice::bytesWritten,
+            [&tcpSocketNonBlocking_totalWritten] (qint64 written)
+            {
+                tcpSocketNonBlocking_totalWritten += written;
+                QTestEventLoop::instance().exitLoop();
+            });
+
+    connect(&socket, &QIODevice::readyRead,
+            [&tcpSocketNonBlocking_data, &socket] ()
+            {
+                while (socket.canReadLine())
+                    tcpSocketNonBlocking_data.append(socket.readLine());
+                QTestEventLoop::instance().exitLoop();
+            });
 
     // Connect
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
@@ -725,62 +720,50 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
     QCOMPARE(socket.state(), QTcpSocket::UnconnectedState);
 }
 
-void tst_QSocks5SocketEngine::tcpSocketNonBlocking_hostFound()
-{
-    QTestEventLoop::instance().exitLoop();
-}
-
-void tst_QSocks5SocketEngine::tcpSocketNonBlocking_connected()
-{
-    QTestEventLoop::instance().exitLoop();
-}
-
-void tst_QSocks5SocketEngine::tcpSocketNonBlocking_readyRead()
-{
-    while (tcpSocketNonBlocking_socket->canReadLine())
-        tcpSocketNonBlocking_data.append(tcpSocketNonBlocking_socket->readLine());
-
-    QTestEventLoop::instance().exitLoop();
-}
-
-void tst_QSocks5SocketEngine::tcpSocketNonBlocking_bytesWritten(qint64 written)
-{
-    tcpSocketNonBlocking_totalWritten += written;
-    QTestEventLoop::instance().exitLoop();
-}
-
-void tst_QSocks5SocketEngine::tcpSocketNonBlocking_closed()
-{
-}
-
 //----------------------------------------------------------------------------------
 
 void tst_QSocks5SocketEngine::downloadBigFile()
 {
     QSocks5SocketEngineHandler socks5;
 
-    if (tmpSocket)
-        delete tmpSocket;
-    tmpSocket = new QTcpSocket;
+    QTcpSocket socket;
+    qint64 bytesAvailable = 0;
+    connect(&socket, &QAbstractSocket::connected,
+            &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
+    connect(&socket, &QIODevice::readyRead,
+            [&socket, &bytesAvailable] ()
+            {
+                const QByteArray tmp = socket.readAll();
+                int correction = tmp.indexOf(char(0), 0); //skip header
+                if (correction == -1)
+                    correction = 0;
+                bytesAvailable += (tmp.size() - correction);
+                if (bytesAvailable >= 10000000)
+                    QTestEventLoop::instance().exitLoop();
+            });
 
-    connect(tmpSocket, SIGNAL(connected()), SLOT(exitLoopSlot()));
-    connect(tmpSocket, SIGNAL(readyRead()), SLOT(downloadBigFileSlot()));
+    connect(&socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),
+            [&socket] (QAbstractSocket::SocketError errorCode)
+            {
+                qWarning().noquote().nospace() << QTest::currentTestFunction()
+                    << ": error " << errorCode << ": " << socket.errorString();
+            });
 
-    tmpSocket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket.connectToHost(QtNetworkSettings::serverName(), 80);
 
     QTestEventLoop::instance().enterLoop(30);
     if (QTestEventLoop::instance().timeout())
         QFAIL("Network operation timed out");
 
     QByteArray hostName = QtNetworkSettings::serverName().toLatin1();
-    QCOMPARE(tmpSocket->state(), QAbstractSocket::ConnectedState);
-    QVERIFY(tmpSocket->write("GET /qtest/mediumfile HTTP/1.0\r\n") > 0);
-    QVERIFY(tmpSocket->write("HOST: ") > 0);
-    QVERIFY(tmpSocket->write(hostName.data()) > 0);
-    QVERIFY(tmpSocket->write("\r\n") > 0);
-    QVERIFY(tmpSocket->write("\r\n") > 0);
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
+    QVERIFY(socket.write("GET /qtest/mediumfile HTTP/1.0\r\n") > 0);
+    QVERIFY(socket.write("HOST: ") > 0);
+    QVERIFY(socket.write(hostName.data()) > 0);
+    QVERIFY(socket.write("\r\n") > 0);
+    QVERIFY(socket.write("\r\n") > 0);
 
-    bytesAvailable = 0;
+
 
     QTime stopWatch;
     stopWatch.start();
@@ -791,31 +774,12 @@ void tst_QSocks5SocketEngine::downloadBigFile()
 
     QCOMPARE(bytesAvailable, qint64(10000000));
 
-    QCOMPARE(tmpSocket->state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
 
     /*qDebug("\t\t%.1fMB/%.1fs: %.1fMB/s",
            bytesAvailable / (1024.0 * 1024.0),
            stopWatch.elapsed() / 1024.0,
            (bytesAvailable / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));*/
-
-    delete tmpSocket;
-    tmpSocket = 0;
-}
-
-void tst_QSocks5SocketEngine::exitLoopSlot()
-{
-    QTestEventLoop::instance().exitLoop();
-}
-
-
-void tst_QSocks5SocketEngine::downloadBigFileSlot()
-{
-    QByteArray tmp=tmpSocket->readAll();
-    int correction=tmp.indexOf((char)0,0); //skip header
-    if (correction==-1) correction=0;
-    bytesAvailable += (tmp.size()-correction);
-    if (bytesAvailable >= 10000000)
-        QTestEventLoop::instance().exitLoop();
 }
 
 void tst_QSocks5SocketEngine::passwordAuth()

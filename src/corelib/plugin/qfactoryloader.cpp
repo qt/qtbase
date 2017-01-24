@@ -282,6 +282,7 @@ QObject *QFactoryLoader::instance(int index) const
         return 0;
 
 #ifndef QT_NO_LIBRARY
+    QMutexLocker lock(&d->mutex);
     if (index < d->libraryList.size()) {
         QLibraryPrivate *library = d->libraryList.at(index);
         if (library->instance || library->loadPlugin()) {
@@ -297,6 +298,7 @@ QObject *QFactoryLoader::instance(int index) const
         return 0;
     }
     index -= d->libraryList.size();
+    lock.unlock();
 #endif
 
     QVector<QStaticPlugin> staticPlugins = QPluginLoader::staticPlugins();

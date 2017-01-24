@@ -59,6 +59,8 @@ QDBusMenuBar::QDBusMenuBar()
             m_menuAdaptor, &QDBusMenuAdaptor::ItemsPropertiesUpdated);
     connect(m_menu, &QDBusPlatformMenu::updated,
             m_menuAdaptor, &QDBusMenuAdaptor::LayoutUpdated);
+    connect(m_menu, &QDBusPlatformMenu::popupRequested,
+            m_menuAdaptor, &QDBusMenuAdaptor::ItemActivationRequested);
 }
 
 QDBusMenuBar::~QDBusMenuBar()

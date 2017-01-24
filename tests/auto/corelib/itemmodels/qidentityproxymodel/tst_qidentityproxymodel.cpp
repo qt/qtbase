@@ -68,6 +68,8 @@ private slots:
 
     void itemData();
 
+    void persistIndexOnLayoutChange();
+
 protected:
     void verifyIdentity(QAbstractItemModel *model, const QModelIndex &parent = QModelIndex());
 
@@ -375,6 +377,80 @@ void tst_QIdentityProxyModel::itemData()
     QCOMPARE(topIndex.data(Qt::DisplayRole).toString(), QStringLiteral("Monday_appended"));
     QCOMPARE(proxy.data(topIndex, Qt::DisplayRole).toString(), QStringLiteral("Monday_appended"));
     QCOMPARE(proxy.itemData(topIndex).value(Qt::DisplayRole).toString(), QStringLiteral("Monday_appended"));
+}
+
+void dump(QAbstractItemModel* model, QString const& indent = " - ", QModelIndex const& parent = {})
+{
+    for (auto row = 0; row < model->rowCount(parent); ++row)
+    {
+        auto idx = model->index(row, 0, parent);
+        qDebug() << (indent + idx.data().toString());
+        dump(model, indent + "- ", idx);
+    }
+}
+
+void tst_QIdentityProxyModel::persistIndexOnLayoutChange()
+{
+    DynamicTreeModel model;
+
+    QList<int> ancestors;
+    for (auto i = 0; i < 3; ++i)
+    {
+        Q_UNUSED(i);
+        ModelInsertCommand insertCommand(&model);
+        insertCommand.setAncestorRowNumbers(ancestors);
+        insertCommand.setStartRow(0);
+        insertCommand.setEndRow(0);
+        insertCommand.doCommand();
+        ancestors.push_back(0);
+    }
+    ModelInsertCommand insertCommand(&model);
+    insertCommand.setAncestorRowNumbers(ancestors);
+    insertCommand.setStartRow(0);
+    insertCommand.setEndRow(1);
+    insertCommand.doCommand();
+
+    // dump(&model);
+    // " - 1"
+    // " - - 2"
+    // " - - - 3"
+    // " - - - - 4"
+    // " - - - - 5"
+
+    QIdentityProxyModel proxy;
+    proxy.setSourceModel(&model);
+
+    QPersistentModelIndex persistentIndex;
+
+    QPersistentModelIndex sourcePersistentIndex = model.match(model.index(0, 0), Qt::DisplayRole, "5", 1, Qt::MatchRecursive).first();
+
+    QCOMPARE(sourcePersistentIndex.data().toString(), QStringLiteral("5"));
+
+    bool gotLayoutAboutToBeChanged = false;
+    bool gotLayoutChanged = false;
+
+    QObject::connect(&proxy, &QAbstractItemModel::layoutAboutToBeChanged, &proxy, [&proxy, &persistentIndex, &gotLayoutAboutToBeChanged]
+    {
+        gotLayoutAboutToBeChanged = true;
+        persistentIndex = proxy.match(proxy.index(0, 0), Qt::DisplayRole, "5", 1, Qt::MatchRecursive).first();
+    });
+
+    QObject::connect(&proxy, &QAbstractItemModel::layoutChanged, &proxy, [&proxy, &persistentIndex, &sourcePersistentIndex, &gotLayoutChanged]
+    {
+        gotLayoutChanged = true;
+        QCOMPARE(QModelIndex(persistentIndex), proxy.mapFromSource(sourcePersistentIndex));
+    });
+
+    ModelChangeChildrenLayoutsCommand layoutChangeCommand(&model, 0);
+
+    layoutChangeCommand.setAncestorRowNumbers(QList<int>{0, 0, 0});
+    layoutChangeCommand.setSecondAncestorRowNumbers(QList<int>{0, 0});
+
+    layoutChangeCommand.doCommand();
+
+    QVERIFY(gotLayoutAboutToBeChanged);
+    QVERIFY(gotLayoutChanged);
+    QVERIFY(persistentIndex.isValid());
 }
 
 QTEST_MAIN(tst_QIdentityProxyModel)

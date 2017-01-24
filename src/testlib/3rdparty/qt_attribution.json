@@ -1,17 +1,18 @@
 [
     {
-        "Id": "callgrind",
-        "Name": "Callgrind",
+        "Id": "valgrind",
+        "Name": "Valgrind",
         "QDocModule": "qttestlib",
         "QtUsage": "Used on Linux ond MacOS in the Qt Test module.",
         "Files": "valgrind_p.h callgrind_p.h",
 
-        "Description": "Part of Valgrind: an instrumentation framework for building dynamic analysis tools.",
+        "Description": "An instrumentation framework for building dynamic analysis tools.",
         "Homepage": "http://valgrind.org/",
         "License": "BSD 4-clause \"Original\" or \"Old\" License",
         "LicenseId": "BSD-4-Clause",
-        "LicenseFile": "CALLGRIND_LICENSE.txt",
-        "Copyright": "Copyright (C) 2003-2007 Josef Weidendorfer.  All rights reserved."
+        "LicenseFile": "VALGRIND_LICENSE.txt",
+        "Copyright": "Copyright (C) 2000-2007 Julian Seward
+Copyright (C) 2003-2007 Josef Weidendorfer."
     },
     {
         "Id": "cycle",

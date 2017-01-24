@@ -1872,8 +1872,7 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
     case CT_MenuBarItem:
         if (!sz.isEmpty())
             sz += QSize(windowsItemHMargin * 5 + 1, 5);
-            return sz;
-        break;
+        return sz;
 #endif
     case CT_ItemViewItem:
         sz = QWindowsXPStyle::sizeFromContents(type, option, size, widget);

@@ -124,7 +124,6 @@ src_printsupport.depends = src_corelib src_gui src_widgets src_tools_uic
 
 src_plugins.subdir = $$PWD/plugins
 src_plugins.target = sub-plugins
-src_plugins.depends = src_sql src_xml src_network
 
 src_android.subdir = $$PWD/android
 
@@ -144,7 +143,16 @@ qtConfig(regularexpression):pcre2 {
 SUBDIRS += src_corelib src_tools_qlalr
 TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
 win32:SUBDIRS += src_winmain
-SUBDIRS += src_network src_sql src_xml src_testlib
+qtConfig(network) {
+    SUBDIRS += src_network
+    src_plugins.depends += src_network
+}
+qtConfig(sql) {
+    SUBDIRS += src_sql
+    src_plugins.depends += src_sql
+}
+qtConfig(xml): SUBDIRS += src_xml
+qtConfig(testlib): SUBDIRS += src_testlib
 qtConfig(dbus) {
     force_dbus_bootstrap|qtConfig(private_tests): \
         SUBDIRS += src_tools_bootstrap_dbus

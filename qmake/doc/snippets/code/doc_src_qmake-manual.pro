@@ -120,7 +120,7 @@ qmake -spec macx-g++
 
 
 #! [14]
-QMAKE_LFLAGS += -F/path/to/framework/directory/
+LIBS += -F/path/to/framework/directory/
 #! [14]
 
 
@@ -783,10 +783,6 @@ CONFIG(debug, debug|release) {
     win32: TARGET = $$join(TARGET,,d)
 }
 #! [127]
-
-#! [142]
-DEPLOYMENT_PLUGIN += qjpeg
-#! [142]
 
 #! [149]
 SUBDIRS += my_executable my_library

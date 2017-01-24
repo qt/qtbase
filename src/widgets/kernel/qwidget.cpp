@@ -2526,10 +2526,6 @@ QWidget *QWidget::find(WId id)
     If a widget is non-native (alien) and winId() is invoked on it, that widget
     will be provided a native handle.
 
-    On \macos, the type returned depends on which framework Qt was linked
-    against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
-    is using Cocoa, {WId} is a pointer to an NSView.
-
     This value may change at run-time. An event with type QEvent::WinIdChange
     will be sent to the widget following a change in window system identifier.
 
@@ -9988,8 +9984,8 @@ bool QWidget::nativeEvent(const QByteArray &eventType, void *message, long *resu
 }
 
 /*!
-    Ensures that the widget has been polished by QStyle (i.e., has a
-    proper font and palette).
+    Ensures that the widget and its children have been polished by
+    QStyle (i.e., have a proper font and palette).
 
     QWidget calls this function after it has been fully constructed
     but before it is shown the very first time. You can call this

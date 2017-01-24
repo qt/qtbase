@@ -7,6 +7,7 @@ defineTest(qtConfLibrary_openssl) {
         export($${1}.libs)
         return(true)
     }
+    qtLog("$OPENSSL_LIBS is not set.")
     return(false)
 }
 

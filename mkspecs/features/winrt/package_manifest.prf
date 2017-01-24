@@ -93,7 +93,7 @@
         isEmpty(WINRT_MANIFEST.background): WINRT_MANIFEST.background = green
         isEmpty(WINRT_MANIFEST.foreground): WINRT_MANIFEST.foreground = light
         isEmpty(WINRT_MANIFEST.default_language): WINRT_MANIFEST.default_language = en
-        *-msvc2015 {
+        *-msvc2015|*-msvc2017 {
             isEmpty(WINRT_MANIFEST.minVersion): WINRT_MANIFEST.minVersion = $$(UCRTVersion)
             isEmpty(WINRT_MANIFEST.minVersion): error("No UCRTVersion found in environment."))
             isEmpty(WINRT_MANIFEST.maxVersionTested): WINRT_MANIFEST.maxVersionTested = $$WINRT_MANIFEST.minVersion
@@ -116,7 +116,7 @@
 
         # All Windows 10 applications need to have internetClient. It is also not marked as additional
         # capability anymore and is assumed to be standard.
-        *-msvc2015: WINRT_MANIFEST.capabilities += internetClient
+        *-msvc2015|*-msvc2017: WINRT_MANIFEST.capabilities += internetClient
 
         contains(WINRT_MANIFEST.capabilities, defaults) {
             WINRT_MANIFEST.capabilities -= defaults
@@ -143,7 +143,7 @@
         }
 
         # Dependencies are given as a string list. The CRT dependency is added automatically above.
-        # For MSVC2015 the dependencies are added in conjunction with TargetDeviceFamily
+        # For MSVC2015/2017 the dependencies are added in conjunction with TargetDeviceFamily
         # Due to the hard coded dependency on "Windows.Universal" the <Dependencies> tag
         # is already inside the MSVC2015 manifest.
         WINRT_MANIFEST.dependencies = $$unique(WINRT_MANIFEST.dependencies)
