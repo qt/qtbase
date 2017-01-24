@@ -3739,11 +3739,6 @@ QOpenGLProgramBinarySupportCheck::QOpenGLProgramBinarySupportCheck(QOpenGLContex
     : QOpenGLSharedResource(context->shareGroup()),
       m_supported(false)
 {
-// Shader cache is disabled for INTEGRITY as the driver doesn't handle
-// unaligned data.
-#if defined(Q_OS_INTEGRITY)
-    return;
-#endif
     if (QCoreApplication::testAttribute(Qt::AA_DisableShaderDiskCache)) {
         qCDebug(DBG_SHADER_CACHE, "Shader cache disabled via app attribute");
         return;
