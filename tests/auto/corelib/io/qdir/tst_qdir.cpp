@@ -355,7 +355,7 @@ void tst_QDir::mkdir_data()
          << QDir::currentPath() + "/testdir/two/three";
     QTest::newRow("data0") << dirs.at(0) << true;
     QTest::newRow("data1") << dirs.at(1) << false;
-    QTest::newRow("data2") << dirs.at(2) << false;
+    QTest::newRow("data2") << dirs.at(2) << false; // note: requires data1 to have been run!
 
     // Ensure that none of these directories already exist
     QDir dir;
