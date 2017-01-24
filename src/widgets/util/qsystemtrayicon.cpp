@@ -693,10 +693,12 @@ void QSystemTrayIconPrivate::updateIcon_sys_qpa()
 
 void QSystemTrayIconPrivate::updateMenu_sys_qpa()
 {
+#if QT_CONFIG(menu)
     if (menu) {
         addPlatformMenu(menu);
         qpa_sys->updateMenu(menu->platformMenu());
     }
+#endif
 }
 
 void QSystemTrayIconPrivate::updateToolTip_sys_qpa()
@@ -729,6 +731,7 @@ void QSystemTrayIconPrivate::showMessage_sys_qpa(const QString &title,
 
 void QSystemTrayIconPrivate::addPlatformMenu(QMenu *menu) const
 {
+#if QT_CONFIG(menu)
     if (menu->platformMenu())
         return; // The platform menu already exists.
 
@@ -745,6 +748,7 @@ void QSystemTrayIconPrivate::addPlatformMenu(QMenu *menu) const
     QPlatformMenu *platformMenu = qpa_sys->createMenu();
     if (platformMenu)
         menu->setPlatformMenu(platformMenu);
+#endif // QT_CONFIG(menu)
 }
 
 QT_END_NAMESPACE

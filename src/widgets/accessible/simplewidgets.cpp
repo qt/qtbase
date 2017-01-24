@@ -339,10 +339,12 @@ QStringList QAccessibleToolButton::actionNames() const
 {
     QStringList names;
     if (widget()->isEnabled()) {
+#if QT_CONFIG(menu)
         if (toolButton()->menu())
             names << showMenuAction();
         if (toolButton()->popupMode() != QToolButton::InstantPopup)
             names << QAccessibleButton::actionNames();
+#endif
     }
     return names;
 }
@@ -355,12 +357,12 @@ void QAccessibleToolButton::doAction(const QString &actionName)
     if (actionName == pressAction()) {
         button()->click();
     } else if (actionName == showMenuAction()) {
+#if QT_CONFIG(menu)
         if (toolButton()->popupMode() != QToolButton::InstantPopup) {
             toolButton()->setDown(true);
-#ifndef QT_NO_MENU
             toolButton()->showMenu();
-#endif
         }
+#endif
     } else {
         QAccessibleButton::doAction(actionName);
     }
