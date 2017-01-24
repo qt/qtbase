@@ -4415,14 +4415,18 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         break;
 
     case PE_IndicatorColumnViewArrow:
+#if QT_CONFIG(itemviews)
         if (const QStyleOptionViewItem *viewOpt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             bool reverse = (viewOpt->direction == Qt::RightToLeft);
             pseudoElement = reverse ? PseudoElement_LeftArrow : PseudoElement_RightArrow;
-        } else {
+        } else
+#endif
+        {
             pseudoElement = PseudoElement_RightArrow;
         }
         break;
 
+#if QT_CONFIG(itemviews)
     case PE_IndicatorBranch:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TreeViewBranch);
@@ -4437,6 +4441,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             }
         }
         return;
+#endif // QT_CONFIG(itemviews)
 
     case PE_PanelTipLabel:
         if (!rule.hasDrawable())

@@ -815,6 +815,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             p->save();
             doRestore = true;
         }
+#if QT_CONFIG(itemviews)
         if (pe == PE_IndicatorViewItemCheck) {
             const QStyleOptionViewItem *itemViewOpt = qstyleoption_cast<const QStyleOptionViewItem *>(opt);
             p->setPen(itemViewOpt
@@ -826,6 +827,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                 p->setBrush(opt->palette.brush(QPalette::Button));
             p->drawRect(opt->rect.x() + 1, opt->rect.y() + 1, 11, 11);
         }
+#endif // QT_CONFIG(itemviews)
         if (!(opt->state & State_Off)) {
             QLineF lines[7];
             int i, xx, yy;

@@ -147,6 +147,7 @@ void QPixmapStyle::polish(QWidget *widget)
     if (qobject_cast<QSlider*>(widget))
         widget->installEventFilter(this);
 
+#if QT_CONFIG(combobox)
     if (QComboBox *cb = qobject_cast<QComboBox*>(widget)) {
         widget->installEventFilter(this);
         // NOTE: This will break if the private API of QComboBox changes drastically
@@ -177,16 +178,18 @@ void QPixmapStyle::polish(QWidget *widget)
 #endif
         }
     }
-
+#endif // QT_CONFIG(combobox)
     if (qstrcmp(widget->metaObject()->className(),"QComboBoxPrivateContainer") == 0)
         widget->installEventFilter(this);
 
     if (QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget)) {
         scrollArea->viewport()->setAutoFillBackground(false);
+#if QT_CONFIG(itemviews)
         if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(scrollArea)) {
             view->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
             view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
         }
+#endif
 #if QT_CONFIG(gestures)
         QScroller::grabGesture(scrollArea->viewport(), QScroller::LeftMouseButtonGesture);
 #endif
@@ -211,8 +214,11 @@ void QPixmapStyle::unpolish(QApplication *application)
 */
 void QPixmapStyle::unpolish(QWidget *widget)
 {
-    if (qobject_cast<QSlider*>(widget) ||
-            qobject_cast<QComboBox*>(widget)) {
+    if (qobject_cast<QSlider*>(widget)
+#if QT_CONFIG(combobox)
+          ||  qobject_cast<QComboBox*>(widget)
+#endif
+        ) {
         widget->removeEventFilter(this);
     }
 
@@ -256,9 +262,11 @@ void QPixmapStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *o
         drawRadioButton(option, painter, widget);
         break;
     case PE_PanelItemViewItem:
+#if QT_CONFIG(listview)
         if (qobject_cast<const QListView*>(widget))
             drawPanelItemViewItem(option, painter, widget);
         else
+#endif
             QCommonStyle::drawPrimitive(element, option, painter, widget);
         break;
     default:
@@ -532,6 +540,7 @@ bool QPixmapStyle::eventFilter(QObject *watched, QEvent *event)
         }
     }
 
+#if QT_CONFIG(combobox)
     if (QComboBox *comboBox = qobject_cast<QComboBox*>(watched)) {
         switch (event->type()) {
         case QEvent::MouseButtonPress:
@@ -552,6 +561,7 @@ bool QPixmapStyle::eventFilter(QObject *watched, QEvent *event)
         default: ;
         }
     }
+#endif // QT_CONFIG(combobox)
 
     if (qstrcmp(watched->metaObject()->className(),"QComboBoxPrivateContainer") == 0) {
         if (event->type() == QEvent::Show) {
@@ -701,9 +711,10 @@ void QPixmapStyle::drawLineEdit(const QStyleOption *option,
                                 QPainter *painter, const QWidget *widget) const
 {
     // Don't draw for the line edit inside a combobox
+#if QT_CONFIG(combobox)
     if (widget && qobject_cast<const QComboBox*>(widget->parentWidget()))
         return;
-
+#endif
     const bool enabled = option->state & State_Enabled;
     const bool focused = option->state & State_HasFocus;
     ControlDescriptor control = enabled ? (focused ? LE_Focused : LE_Enabled) : LE_Disabled;

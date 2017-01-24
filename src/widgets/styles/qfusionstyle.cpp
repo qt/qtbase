@@ -1097,6 +1097,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
     }
         painter->restore();
         break;
+#if QT_CONFIG(toolbar)
     case CE_ToolBar:
         if (const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(option)) {
             // Reserve the beveled appearance only for mainwindow toolbars
@@ -1217,6 +1218,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             painter->setPen(oldPen);
         }
         break;
+#endif // QT_CONFIG(toolbar)
     case CE_DockWidgetTitle:
         painter->save();
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(option)) {
@@ -1550,7 +1552,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             bool ignoreCheckMark = false;
             int checkcol = qMax(menuItem->maxIconWidth, 20);
 
-            if (qobject_cast<const QComboBox*>(widget) ||
+            if (
+#if QT_CONFIG(combobox)
+                qobject_cast<const QComboBox*>(widget) ||
+#endif
                 (option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool()))
                 ignoreCheckMark = true; //ignore the checkmarks provided by the QComboMenuDelegate
 
@@ -1607,8 +1612,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
 
                 int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
                 QSize iconSize(smallIconSize, smallIconSize);
+#if QT_CONFIG(combobox)
                 if (const QComboBox *combo = qobject_cast<const QComboBox*>(widget))
                     iconSize = combo->iconSize();
+#endif
                 if (checked)
                     pixmap = menuItem->icon.pixmap(iconSize, mode, QIcon::On);
                 else
@@ -3018,10 +3025,12 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             painter->setPen(oldPen);
         }
         break;
+#if QT_CONFIG(dial)
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
             QStyleHelper::drawDial(dial, painter);
         break;
+#endif
     default:
         QCommonStyle::drawComplexControl(control, option, painter, widget);
         break;
@@ -3217,9 +3226,11 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
                 }
             }
             else if (!menuItem->icon.isNull()) {
+#if QT_CONFIG(combobox)
                 if (const QComboBox *combo = qobject_cast<const QComboBox*>(widget)) {
                     newSize.setHeight(qMax(combo->iconSize().height() + 2, newSize.height()));
                 }
+#endif
             }
             newSize.setWidth(newSize.width() + 12);
             newSize.setWidth(qMax(newSize.width(), 120));
@@ -3252,7 +3263,9 @@ void QFusionStyle::polish(QWidget *widget)
 {
     QCommonStyle::polish(widget);
     if (qobject_cast<QAbstractButton*>(widget)
+#if QT_CONFIG(combobox)
             || qobject_cast<QComboBox *>(widget)
+#endif
             || qobject_cast<QProgressBar *>(widget)
             || qobject_cast<QScrollBar *>(widget)
             || qobject_cast<QSplitterHandle *>(widget)
@@ -3281,7 +3294,9 @@ void QFusionStyle::unpolish(QWidget *widget)
 {
     QCommonStyle::unpolish(widget);
     if (qobject_cast<QAbstractButton*>(widget)
+#if QT_CONFIG(combobox)
             || qobject_cast<QComboBox *>(widget)
+#endif
             || qobject_cast<QProgressBar *>(widget)
             || qobject_cast<QScrollBar *>(widget)
             || qobject_cast<QSplitterHandle *>(widget)
