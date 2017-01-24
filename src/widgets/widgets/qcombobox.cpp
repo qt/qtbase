@@ -2746,6 +2746,22 @@ void QComboBox::showPopup()
 
     bool startTimer = !container->isVisible();
     container->raise();
+    container->create();
+    QWindow *containerWindow = container->window()->windowHandle();
+    if (containerWindow) {
+        QWindow *win = window()->windowHandle();
+        if (win) {
+            QScreen *currentScreen = win->screen();
+            if (currentScreen && !currentScreen->virtualSiblings().contains(containerWindow->screen())) {
+                containerWindow->setScreen(currentScreen);
+
+                // This seems to workaround an issue in xcb+multi GPU+multiscreen
+                // environment where the window might not always show up when screen
+                // is changed.
+                container->hide();
+            }
+        }
+    }
     container->show();
     container->updateScrollers();
     view()->setFocus();
