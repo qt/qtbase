@@ -496,7 +496,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
     if (l >= 8) {
         const QChar *end = a + l;
         const uint16x8_t mask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
-        while (a + 8 < end) {
+        while (a + 7 < end) {
             uint16x8_t da = vld1q_u16(reinterpret_cast<const uint16_t *>(a));
             uint16x8_t db = vld1q_u16(reinterpret_cast<const uint16_t *>(b));
 

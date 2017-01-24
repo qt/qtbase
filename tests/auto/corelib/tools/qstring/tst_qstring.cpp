@@ -6070,6 +6070,14 @@ void tst_QString::compare_data()
     lower += QChar(QChar::lowSurrogate(0x10428));
     QTest::newRow("data8") << upper << lower << -1 << 0;
 
+    QTest::newRow("vectorized-boundaries-7") << QString("1234567") << QString("abcdefg") << -1 << -1;
+    QTest::newRow("vectorized-boundaries-8") << QString("12345678") << QString("abcdefgh") << -1 << -1;
+    QTest::newRow("vectorized-boundaries-9") << QString("123456789") << QString("abcdefghi") << -1 << -1;
+
+    QTest::newRow("vectorized-boundaries-15") << QString("123456789012345") << QString("abcdefghiklmnop") << -1 << -1;
+    QTest::newRow("vectorized-boundaries-16") << QString("1234567890123456") << QString("abcdefghiklmnopq") << -1 << -1;
+    QTest::newRow("vectorized-boundaries-17") << QString("12345678901234567") << QString("abcdefghiklmnopqr") << -1 << -1;
+
     // embedded nulls
     // These don't work as of now. It's OK that these don't work since \0 is not a valid unicode
     /*QTest::newRow("data10") << QString(QByteArray("\0", 1)) << QString(QByteArray("\0", 1)) << 0 << 0;
