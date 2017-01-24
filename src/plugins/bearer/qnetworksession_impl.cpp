@@ -210,10 +210,10 @@ QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
     if (!engine || state != QNetworkSession::Connected || !publicConfig.isValid())
         return QNetworkInterface();
 
-    QString interface = engine->getInterfaceFromId(activeConfig.identifier());
-    if (interface.isEmpty())
+    QString iface = engine->getInterfaceFromId(activeConfig.identifier());
+    if (iface.isEmpty())
         return QNetworkInterface();
-    return QNetworkInterface::interfaceFromName(interface);
+    return QNetworkInterface::interfaceFromName(iface);
 }
 #endif
 
