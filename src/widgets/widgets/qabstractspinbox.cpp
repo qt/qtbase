@@ -1246,11 +1246,9 @@ void QAbstractSpinBox::timerEvent(QTimerEvent *event)
     \reimp
 */
 
+#if QT_CONFIG(contextmenu)
 void QAbstractSpinBox::contextMenuEvent(QContextMenuEvent *event)
 {
-#ifdef QT_NO_CONTEXTMENU
-    Q_UNUSED(event);
-#else
     Q_D(QAbstractSpinBox);
 
     QPointer<QMenu> menu = d->edit->createStandardContextMenu();
@@ -1286,8 +1284,8 @@ void QAbstractSpinBox::contextMenuEvent(QContextMenuEvent *event)
         }
     }
     event->accept();
-#endif // QT_NO_CONTEXTMENU
 }
+#endif // QT_CONFIG(contextmenu)
 
 /*!
     \reimp

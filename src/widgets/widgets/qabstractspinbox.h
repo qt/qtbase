@@ -142,7 +142,9 @@ protected:
 #endif
     void focusInEvent(QFocusEvent *event) override;
     void focusOutEvent(QFocusEvent *event) override;
+#if QT_CONFIG(contextmenu)
     void contextMenuEvent(QContextMenuEvent *event) override;
+#endif
     void changeEvent(QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void hideEvent(QHideEvent *event) override;
