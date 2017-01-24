@@ -2172,7 +2172,9 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         savedState.clear();
         currentGapPos.clear();
         pluggingWidget = 0;
-        currentHoveredFloat = Q_NULLPTR;
+#if QT_CONFIG(dockwidget)
+        currentHoveredFloat = nullptr;
+#endif
         //applying the state will make sure that the currentGap is updated correctly
         //and all the geometries (especially the one from the central widget) is correct
         layoutState.apply(false);
@@ -2408,8 +2410,16 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
 void QMainWindowLayout::updateGapIndicator()
 {
 #ifndef QT_NO_RUBBERBAND
-    if ((!widgetAnimator.animating() && !currentGapPos.isEmpty()) || currentHoveredFloat) {
-        QWidget *expectedParent = currentHoveredFloat ? currentHoveredFloat.data() : parentWidget();
+    if ((!widgetAnimator.animating() && !currentGapPos.isEmpty())
+#if QT_CONFIG(dockwidget)
+        || currentHoveredFloat
+#endif
+        ) {
+        QWidget *expectedParent =
+#if QT_CONFIG(dockwidget)
+            currentHoveredFloat ? currentHoveredFloat.data() :
+#endif
+            parentWidget();
         if (!gapIndicator) {
             gapIndicator = new QRubberBand(QRubberBand::Rectangle, expectedParent);
             // For accessibility to identify this special widget.
@@ -2417,7 +2427,11 @@ void QMainWindowLayout::updateGapIndicator()
         } else if (gapIndicator->parent() != expectedParent) {
             gapIndicator->setParent(expectedParent);
         }
-        gapIndicator->setGeometry(currentHoveredFloat ? currentHoveredFloat->rect() : currentGapRect);
+        gapIndicator->setGeometry(
+#if QT_CONFIG(dockwidget)
+            currentHoveredFloat ? currentHoveredFloat->rect() :
+#endif
+            currentGapRect);
         gapIndicator->show();
         gapIndicator->raise();
     } else if (gapIndicator) {
@@ -2540,12 +2554,14 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
     updateGapIndicator();
 }
 
+#if QT_CONFIG(dockwidget)
 QDockWidgetGroupWindow *QMainWindowLayout::createTabbedDockWindow()
 {
     QDockWidgetGroupWindow* f = new QDockWidgetGroupWindow(parentWidget(), Qt::Tool);
     new QDockWidgetGroupLayout(f);
     return f;
 }
+#endif
 
 void QMainWindowLayout::applyState(QMainWindowLayoutState &newState, bool animate)
 {
