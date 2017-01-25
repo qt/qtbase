@@ -3175,6 +3175,7 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
 
         while (path.size() > 1) {
             QDockAreaLayoutInfo *info = this->info(path);
+#if QT_CONFIG(tabbar)
             if (!info->tabbed && info->o == o) {
                 info->item_list[path.constLast()].size = size;
                 int totalSize = 0;
@@ -3187,6 +3188,7 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
                 }
                 size = totalSize;
             }
+#endif // QT_CONFIG(tabbar)
             path.removeLast();
         }
 
