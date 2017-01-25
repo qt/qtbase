@@ -4903,6 +4903,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     QSize sz = rule.adjustSize(csz);
 
     switch (ct) {
+#if QT_CONFIG(spinbox)
     case CT_SpinBox: // ### hopelessly broken QAbstractSpinBox (part 1)
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             // Add some space for the up/down buttons
@@ -4920,6 +4921,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             return sz;
         }
         break;
+#endif // QT_CONFIG(spinbox)
     case CT_ToolButton:
         if (rule.hasBox() || !rule.hasNativeBorder() || !rule.baseStyleCanDraw())
             sz += QSize(3, 3); // ### broken QToolButton
