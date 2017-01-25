@@ -104,7 +104,9 @@ QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn)
     , q(qIn)
 {
     setObjectName(QStringLiteral("QSystemTrayIconSys"));
+#if QT_CONFIG(tooltip)
     setToolTip(q->toolTip());
+#endif
     setAttribute(Qt::WA_AlwaysShowToolTips, true);
     setAttribute(Qt::WA_QuitOnClose, false);
     const QSize size(22, 22); // Gnome, standard size

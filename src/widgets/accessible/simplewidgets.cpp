@@ -550,9 +550,11 @@ QString QAccessibleGroupBox::text(QAccessible::Text t) const
         case QAccessible::Name:
             txt = qt_accStripAmp(groupBox()->title());
             break;
+#if QT_CONFIG(tooltip)
         case QAccessible::Description:
             txt = groupBox()->toolTip();
             break;
+#endif
         case QAccessible::Accelerator:
             txt = qt_accHotKey(groupBox()->title());
             break;
