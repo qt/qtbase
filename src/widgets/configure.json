@@ -435,7 +435,7 @@
             "label": "QInputDialog",
             "purpose": "Provides a simple convenience dialog to get a single value from the user.",
             "section": "Dialogs",
-            "condition": "features.combobox && features.spinbox && features.stackedwidget",
+            "condition": "features.combobox && features.spinbox && features.stackedwidget && features.textedit",
             "output": [ "publicFeature", "feature" ]
         },
         "errormessage": {

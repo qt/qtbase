@@ -336,8 +336,10 @@ void QMessageBoxPrivate::setupLayout()
 #else
     grid->addWidget(buttonBox, grid->rowCount(), 0, 1, grid->columnCount());
 #endif
+#if QT_CONFIG(textedit)
     if (detailsText)
         grid->addWidget(detailsText, grid->rowCount(), 0, 1, grid->columnCount());
+#endif
     grid->setSizeConstraint(QLayout::SetNoConstraint);
     q->setLayout(grid);
 
@@ -2654,7 +2656,9 @@ void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
     options->setWindowTitle(q->windowTitle());
     options->setText(q->text());
     options->setInformativeText(q->informativeText());
+#if QT_CONFIG(textedit)
     options->setDetailedText(q->detailedText());
+#endif
     options->setIcon(helperIcon(q->icon()));
     options->setStandardButtons(helperStandardButtons(q));
 }
