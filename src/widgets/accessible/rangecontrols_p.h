@@ -143,6 +143,7 @@ protected:
 };
 #endif // QT_NO_SPINBOX
 
+#if QT_CONFIG(slider)
 class QAccessibleAbstractSlider: public QAccessibleWidget, public QAccessibleValueInterface
 {
 public:
@@ -159,6 +160,7 @@ public:
 protected:
     QAbstractSlider *abstractSlider() const;
 };
+#endif // QT_CONFIG(slider)
 
 #ifndef QT_NO_SCROLLBAR
 class QAccessibleScrollBar : public QAccessibleAbstractSlider
