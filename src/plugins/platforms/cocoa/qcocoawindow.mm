@@ -1282,7 +1282,7 @@ void QCocoaWindow::windowDidEndLiveResize()
 {
     if (m_synchedWindowState == Qt::WindowMaximized && ![m_nsWindow isZoomed]) {
         m_effectivelyMaximized = false;
-        [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowNoState];
+        handleWindowStateChanged(Qt::WindowNoState);
     }
 }
 
@@ -1320,22 +1320,22 @@ void QCocoaWindow::windowDidResignKey()
 
 void QCocoaWindow::windowDidMiniaturize()
 {
-    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowMinimized];
+    handleWindowStateChanged(Qt::WindowMinimized);
 }
 
 void QCocoaWindow::windowDidDeminiaturize()
 {
-    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowNoState];
+    handleWindowStateChanged(Qt::WindowNoState);
 }
 
 void QCocoaWindow::windowDidEnterFullScreen()
 {
-    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowFullScreen];
+    handleWindowStateChanged(Qt::WindowFullScreen);
 }
 
 void QCocoaWindow::windowDidExitFullScreen()
 {
-    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowNoState];
+    handleWindowStateChanged(Qt::WindowNoState);
 }
 
 void QCocoaWindow::windowDidOrderOffScreen()
@@ -1398,12 +1398,6 @@ bool QCocoaWindow::windowShouldClose()
 }
 
 // --------------------------------------------------------------------------
-
-void QCocoaWindow::setSynchedWindowStateFromWindow()
-{
-    if (QWindow *w = window())
-        m_synchedWindowState = w->windowState();
-}
 
 bool QCocoaWindow::windowIsPopupType(Qt::WindowType type) const
 {
@@ -1832,6 +1826,20 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
 
     // New state is now the current synched state
     m_synchedWindowState = predictedState;
+}
+
+void QCocoaWindow::handleWindowStateChanged(Qt::WindowState newState)
+{
+    // If the window was maximized, then fullscreen, then tried to go directly to "normal" state,
+    // this notification will say that it is "normal", but it will still look maximized, and
+    // if you called performZoom it would actually take it back to "normal".
+    // So we should say that it is maximized because it actually is.
+    if (newState == Qt::WindowNoState && m_effectivelyMaximized)
+        newState = Qt::WindowMaximized;
+
+    QWindowSystemInterface::handleWindowStateChanged<QWindowSystemInterface::SynchronousDelivery>(window(), newState);
+
+    m_synchedWindowState = window()->windowState();
 }
 
 bool QCocoaWindow::setWindowModified(bool modified)

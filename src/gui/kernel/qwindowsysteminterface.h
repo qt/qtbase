@@ -175,6 +175,7 @@ public:
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleWindowActivated(QWindow *window, Qt::FocusReason r = Qt::OtherFocusReason);
 
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleWindowStateChanged(QWindow *window, Qt::WindowState newState);
     static void handleWindowScreenChanged(QWindow *window, QScreen *newScreen);
 

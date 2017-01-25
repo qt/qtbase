@@ -217,7 +217,7 @@ public:
     bool windowShouldClose();
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
 
-    void setSynchedWindowStateFromWindow();
+    void handleWindowStateChanged(Qt::WindowState);
 
     NSInteger windowLevel(Qt::WindowFlags flags);
     NSUInteger windowStyleMask(Qt::WindowFlags flags);

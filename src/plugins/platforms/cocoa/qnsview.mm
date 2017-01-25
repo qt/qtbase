@@ -339,21 +339,6 @@ static bool _q_dontOverrideCtrlLMB = false;
     }
 }
 
-- (void)notifyWindowStateChanged:(Qt::WindowState)newState
-{
-    // If the window was maximized, then fullscreen, then tried to go directly to "normal" state,
-    // this notification will say that it is "normal", but it will still look maximized, and
-    // if you called performZoom it would actually take it back to "normal".
-    // So we should say that it is maximized because it actually is.
-    if (newState == Qt::WindowNoState && m_platformWindow->m_effectivelyMaximized)
-        newState = Qt::WindowMaximized;
-    QWindowSystemInterface::handleWindowStateChanged(m_platformWindow->window(), newState);
-    // We want to read the window state back from the window,
-    // but the event we just sent may be asynchronous.
-    QWindowSystemInterface::flushWindowSystemEvents();
-    m_platformWindow->setSynchedWindowStateFromWindow();
-}
-
 - (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification
 {
     Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification)
@@ -368,7 +353,7 @@ static bool _q_dontOverrideCtrlLMB = false;
     Qt::WindowState newState = willZoom ? Qt::WindowMaximized : Qt::WindowNoState;
     if (!willZoom)
         m_platformWindow->m_effectivelyMaximized = false;
-    [self notifyWindowStateChanged:newState];
+    m_platformWindow->handleWindowStateChanged(newState);
 }
 
 - (void)viewDidHide
