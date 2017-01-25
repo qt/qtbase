@@ -266,6 +266,9 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 /*! \fn bool QMutex::try_lock()
     \since 5.8
 
+    This function returns \c true if the lock was obtained; otherwise it
+    returns \c false.
+
     This function is provided for compatibility with the Standard Library
     concept \c Lockable. It is equivalent to tryLock().
 
