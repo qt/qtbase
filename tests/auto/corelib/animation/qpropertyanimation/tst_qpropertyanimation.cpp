@@ -445,10 +445,8 @@ void tst_QPropertyAnimation::noStartValue()
     a.setDuration(250);
     a.start();
 
-    QTest::qWait(300);
-
-    QTRY_COMPARE(o.values.first(), 42);
-    QCOMPARE(o.values.last(), 420);
+    QTRY_COMPARE(o.values.value(o.values.size() - 1, -1), 420);
+    QCOMPARE(o.values.first(), 42);
 }
 
 void tst_QPropertyAnimation::noStartValueWithLoop()
