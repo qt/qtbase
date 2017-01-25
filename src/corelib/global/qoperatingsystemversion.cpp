@@ -282,6 +282,12 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 */
 
 /*!
+    \fn int QOperatingSystemVersion::segmentCount() const
+
+    Returns the number of integers stored in the version number.
+*/
+
+/*!
     \fn QOperatingSystemVersion::OSType QOperatingSystemVersion::type() const
 
     Returns the OS type identified by the QOperatingSystemVersion.
