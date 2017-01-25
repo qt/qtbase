@@ -1533,6 +1533,7 @@ void QMdiAreaPrivate::highlightNextSubWindow(int increaseFactor)
     Q_ASSERT(indexToHighlighted >= 0);
 }
 
+#if QT_CONFIG(rubberband)
 void QMdiAreaPrivate::showRubberBandFor(QMdiSubWindow *subWindow)
 {
     if (!subWindow || !rubberBand)
@@ -1546,7 +1547,7 @@ void QMdiAreaPrivate::showRubberBandFor(QMdiSubWindow *subWindow)
     rubberBand->raise();
     rubberBand->show();
 }
-
+#endif // QT_CONFIG(rubberBand)
 /*!
     \internal
     \since 4.4
