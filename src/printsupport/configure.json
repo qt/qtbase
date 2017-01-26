@@ -28,13 +28,13 @@
             "label": "CUPS",
             "purpose": "Provides support for the Common Unix Printing System.",
             "section": "Painting",
-            "condition": "libs.cups",
+            "condition": "libs.cups && features.printer",
             "output": [ "privateFeature", "feature" ]
         },
         "cupsjobwidget": {
             "label": "CUPS job control widget",
             "section": "Widgets",
-            "condition": "features.cups && features.calendarwidget && features.datetimeedit && features.groupbox",
+            "condition": "features.cups && features.calendarwidget && features.datetimeedit && features.groupbox && features.combobox",
             "output": [ "privateFeature", "feature" ]
         },
         "printer": {
