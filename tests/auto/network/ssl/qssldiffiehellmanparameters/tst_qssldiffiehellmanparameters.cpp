@@ -42,6 +42,13 @@
 #include <QSslSocket>
 #include <QByteArray>
 
+// Default DH parameters, exported by qssldiffiehellmanparameters.cpp.
+QT_BEGIN_NAMESPACE
+extern Q_AUTOTEST_EXPORT const char *qssl_dhparams_default_base64;
+QT_END_NAMESPACE
+
+QT_USE_NAMESPACE
+
 class tst_QSslDiffieHellmanParameters : public QObject
 {
     Q_OBJECT
@@ -54,6 +61,7 @@ private Q_SLOTS:
     void constructionPEM();
     void unsafe512Bits();
     void unsafeNonPrime();
+    void defaultIsValid();
 #endif
 };
 
@@ -154,6 +162,33 @@ void tst_QSslDiffieHellmanParameters::unsafeNonPrime()
 #ifndef QT_NO_OPENSSL
     QCOMPARE(dh.isValid(), false);
     QCOMPARE(dh.error(), QSslDiffieHellmanParameters::UnsafeParametersError);
+#endif
+}
+
+void tst_QSslDiffieHellmanParameters::defaultIsValid()
+{
+    // The QSslDiffieHellmanParameters::defaultParameters() method takes a shortcut,
+    // by not verifying the passed-in parameters. Instead, it simply assigns the default
+    // DH parameters to the derData field of QSslDiffieHellmanParametersPrivate.
+    //
+    // This test ensures that our default parameters pass the internal verification tests
+    // by constructing, using fromEncoded(), a QSslDiffieHellmanParameters instance that
+    // we expect to be equivalent to the one returned by defaultParameters(). By using
+    // fromEncoded() we go through the internal verification mechanisms. Finally, to ensure
+    // the two instances are equivalent, we compare them.
+
+    const auto dh = QSslDiffieHellmanParameters::fromEncoded(
+        QByteArray::fromBase64(QByteArray(qssl_dhparams_default_base64)),
+        QSsl::Der
+    );
+
+    const auto defaultdh = QSslDiffieHellmanParameters::defaultParameters();
+
+#ifndef QT_NO_OPENSSL
+    QCOMPARE(dh.isEmpty(), false);
+    QCOMPARE(dh.isValid(), true);
+    QCOMPARE(dh.error(), QSslDiffieHellmanParameters::NoError);
+    QCOMPARE(dh, defaultdh);
 #endif
 }
 

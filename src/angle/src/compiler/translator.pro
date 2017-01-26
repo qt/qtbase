@@ -189,7 +189,8 @@ QMAKE_EXTRA_COMPILERS += flex
 defineReplace(myDirName) { return($$dirname(1)) }
 bison.commands = $$addGnuPath(bison) --no-lines --skeleton=yacc.c --defines=${QMAKE_FILE_OUT} \
                 --output=${QMAKE_FUNC_FILE_OUT_myDirName}$$QMAKE_DIR_SEP${QMAKE_FILE_OUT_BASE}.cpp \
-                ${QMAKE_FILE_NAME}
+                ${QMAKE_FILE_NAME}$$escape_expand(\\n\\t) \
+                @echo // EOF>>${QMAKE_FUNC_FILE_OUT_myDirName}$$QMAKE_DIR_SEP${QMAKE_FILE_OUT_BASE}.cpp
 bison.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.h
 bison.input = BISON_SOURCES
 bison.dependency_type = TYPE_C
@@ -204,6 +205,5 @@ bison_impl.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.cpp
 bison_impl.input = BISON_SOURCES
 bison_impl.commands = $$MAKEFILE_NOOP_COMMAND
 bison_impl.depends = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.h
-bison_impl.output = $${BUILDSUBDIR}${QMAKE_FILE_BASE}_tab.cpp
 bison_impl.variable_out = GENERATED_SOURCES
 QMAKE_EXTRA_COMPILERS += bison_impl

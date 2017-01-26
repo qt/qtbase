@@ -141,9 +141,11 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
 static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();
-#if defined(Q_OS_DARWIN) && !defined(QT_NO_MENUBAR)
-    if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
-        visible = true;
+#ifndef QT_NO_MENUBAR
+    if (QMenuBar *menuBar = qobject_cast<QMenuBar *>(w)) {
+        if (menuBar->isNativeMenuBar())
+            visible = true;
+    }
 #endif
 
     if (!visible || !w->isEnabled())

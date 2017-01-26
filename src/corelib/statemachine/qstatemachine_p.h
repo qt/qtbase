@@ -79,7 +79,7 @@ class QFinalState;
 class QHistoryState;
 class QState;
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
 class QAbstractAnimation;
 #endif
 
@@ -123,7 +123,7 @@ public:
     // private slots
     void _q_start();
     void _q_process();
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     void _q_animationFinished();
 #endif
     void _q_startDelayedEventTimer(int id, int delay);
@@ -152,7 +152,7 @@ public:
                              const QList<QAbstractState*> &statesToEnter_sorted,
                              const QSet<QAbstractState*> &statesForDefaultEntry,
                              QHash<QAbstractState *, QVector<QPropertyAssignment> > &propertyAssignmentsForState
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
                      , const QList<QAbstractAnimation*> &selectedAnimations
 #endif
                      );
@@ -264,7 +264,7 @@ public:
     QSet<QAbstractState *> pendingErrorStates;
     QSet<QAbstractState *> pendingErrorStatesForDefaultEntry;
 
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation)
     bool animated;
 
     struct InitializeAnimationResult {
@@ -326,7 +326,9 @@ public:
 
     static const Handler *handler;
 };
+#if QT_CONFIG(animation)
 Q_DECLARE_SHARED(QStateMachinePrivate::InitializeAnimationResult)
+#endif
 
 Q_CORE_EXPORT const QStateMachinePrivate::Handler *qcoreStateMachineHandler();
 

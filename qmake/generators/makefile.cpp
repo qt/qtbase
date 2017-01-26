@@ -2254,12 +2254,17 @@ MakefileGenerator::writeDefaultVariables(QTextStream &t)
     t << "MOVE          = " << var("QMAKE_MOVE") << endl;
 }
 
-QString MakefileGenerator::buildArgs()
+QString MakefileGenerator::buildArgs(bool withExtra)
 {
     QString ret;
 
     for (const QString &arg : qAsConst(Option::globals->qmake_args))
         ret += " " + shellQuote(arg);
+    if (withExtra && !Option::globals->qmake_extra_args.isEmpty()) {
+        ret += " --";
+        for (const QString &arg : qAsConst(Option::globals->qmake_extra_args))
+            ret += " " + shellQuote(arg);
+    }
     return ret;
 }
 
@@ -2278,7 +2283,7 @@ QString MakefileGenerator::build_args()
     ret += " " + escapeFilePath(fileFixify(project->projectFile()));
 
     // general options and arguments
-    ret += buildArgs();
+    ret += buildArgs(true);
 
     return ret;
 }
@@ -2442,7 +2447,7 @@ MakefileGenerator::writeSubTargetCall(QTextStream &t,
         if (!in_directory.isEmpty())
             t << "\n\t" << mkdir_p_asstring(out_directory);
         pfx = "( " + chkexists.arg(out) +
-              + " $(QMAKE) -o " + out + ' ' + in + buildArgs()
+              + " $(QMAKE) -o " + out + ' ' + in + buildArgs(false)
               + " ) && ";
     }
     writeSubMakeCall(t, out_directory_cdin + pfx, makefilein);
@@ -2513,7 +2518,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 t << mkdir_p_asstring(out_directory)
                   << out_directory_cdin;
             }
-            t << "$(QMAKE) -o " << out << ' ' << in << buildArgs();
+            t << "$(QMAKE) -o " << out << ' ' << in << buildArgs(false);
             if (!dont_recurse)
                 writeSubMakeCall(t, out_directory_cdin, makefilein + " qmake_all");
             else
@@ -2710,7 +2715,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
     if(project->isEmpty("QMAKE_FAILED_REQUIREMENTS") && !project->isEmpty("QMAKE_INTERNAL_PRL_FILE")) {
         QStringList files = escapeFilePaths(fileFixify(Option::mkfile::project_files));
         t << escapeDependencyPath(project->first("QMAKE_INTERNAL_PRL_FILE").toQString()) << ": \n\t"
-          << "@$(QMAKE) -prl " << files.join(' ') << ' ' << buildArgs() << endl;
+          << "@$(QMAKE) -prl " << files.join(' ') << ' ' << buildArgs(true) << endl;
     }
 
         QString qmake = build_args();

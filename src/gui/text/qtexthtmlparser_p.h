@@ -243,7 +243,7 @@ struct QTextHtmlParserNode {
 
     void parseStyleAttribute(const QString &value, const QTextDocument *resourceProvider);
 
-#ifndef QT_NO_CSSPARSER
+#if QT_CONFIG(cssparser)
     void applyCssDeclarations(const QVector<QCss::Declaration> &declarations, const QTextDocument *resourceProvider);
 
     void setListStyle(const QVector<QCss::Value> &cssValues);
@@ -317,7 +317,7 @@ protected:
     bool nodeIsChildOf(int i, QTextHTMLElements id) const;
 
 
-#ifndef QT_NO_CSSPARSER
+#if QT_CONFIG(cssparser)
     QVector<QCss::Declaration> declarationsForNode(int node) const;
     void resolveStyleSheetImports(const QCss::StyleSheet &sheet);
     void importStyleSheet(const QString &href);
@@ -337,7 +337,9 @@ protected:
 
     const QTextDocument *resourceProvider;
 };
+#if QT_CONFIG(cssparser)
 Q_DECLARE_TYPEINFO(QTextHtmlParser::ExternalStyleSheet, Q_MOVABLE_TYPE);
+#endif
 
 QT_END_NAMESPACE
 

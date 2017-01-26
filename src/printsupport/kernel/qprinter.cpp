@@ -2200,4 +2200,8 @@ QPrinter::PrintRange QPrinter::printRange() const
 
 QT_END_NAMESPACE
 
+#elif defined(Q_OS_WINRT)
+QT_BEGIN_NAMESPACE
+bool Q_PRINTSUPPORT_EXPORT qt_winrt_export_lib_creation_variable;
+QT_END_NAMESPACE
 #endif // QT_NO_PRINTER

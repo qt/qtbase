@@ -659,11 +659,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << "$(TARGETA): " << depVar("PRE_TARGETDEPS") << " $(OBJECTS) $(OBJCOMP)";
             if(do_incremental)
                 t << " $(INCREMENTAL_OBJECTS)";
-            t << ' ' << depVar("POST_TARGETDEPS") << "\n\t"
-              << "-$(DEL_FILE) $(TARGETA) \n\t"
+            t << ' ' << depVar("POST_TARGETDEPS") << "\n\t";
+            if (!project->isEmpty("QMAKE_PRE_LINK"))
+                t << var("QMAKE_PRE_LINK") << "\n\t";
+            t << "-$(DEL_FILE) $(TARGETA) \n\t"
               << var("QMAKE_AR_CMD");
             if(do_incremental)
                 t << " $(INCREMENTAL_OBJECTS)";
+            if (!project->isEmpty("QMAKE_POST_LINK"))
+                t << "\n\t" << var("QMAKE_POST_LINK");
             if(!project->isEmpty("QMAKE_RANLIB"))
                 t << "\n\t$(RANLIB) $(TARGETA)";
             t << endl << endl;
@@ -680,6 +684,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << " $(OBJECTS) $(OBJCOMP) " << depVar("POST_TARGETDEPS") << "\n\t";
             if(!destdir.isEmpty())
                 t << mkdir_p_asstring(destdir, false) << "\n\t";
+            if (!project->isEmpty("QMAKE_PRE_LINK"))
+                t << var("QMAKE_PRE_LINK") << "\n\t";
             t << "-$(DEL_FILE) " << destdir << "$(TARGET)\n\t"
               << var("QMAKE_AR_CMD") << "\n";
             if(!project->isEmpty("QMAKE_POST_LINK"))
@@ -710,6 +716,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 }
                 if(!destdir.isEmpty())
                     t << mkdir_p_asstring(destdir, false) << "\n\t";
+                if (!project->isEmpty("QMAKE_PRE_LINK"))
+                    t << var("QMAKE_PRE_LINK") << "\n\t";
                 t << "-$(DEL_FILE) " << lib << "\n\t"
                   << ar << "\n";
                 if(!project->isEmpty("QMAKE_POST_LINK"))
@@ -732,7 +740,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
         if(!meta_files.isEmpty())
             t << escapeDependencyPaths(meta_files).join(" ") << ": \n\t"
-              << "@$(QMAKE) -prl " << escapeFilePath(project->projectFile()) << ' ' << buildArgs() << endl;
+              << "@$(QMAKE) -prl " << escapeFilePath(project->projectFile()) << ' ' << buildArgs(true) << endl;
     }
 
     if (!project->isEmpty("QMAKE_BUNDLE")) {

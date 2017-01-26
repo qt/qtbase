@@ -120,6 +120,7 @@ private slots:
     void connectCxx0x();
     void connectToStaticCxx0x();
     void connectCxx0xTypeMatching();
+    void connectCxx17Noexcept();
     void connectConvert();
     void connectWithReference();
     void connectManyArguments();
@@ -4755,10 +4756,13 @@ class LotsOfSignalsAndSlots: public QObject
 
     public slots:
         void slot_v() {}
+        void slot_v_noexcept() Q_DECL_NOTHROW {}
         void slot_vi(int) {}
+        void slot_vi_noexcept() Q_DECL_NOTHROW {}
         void slot_vii(int, int) {}
         void slot_viii(int, int, int) {}
         int slot_i() { return 0; }
+        int slot_i_noexcept() Q_DECL_NOTHROW { return 0; }
         int slot_ii(int) { return 0; }
         int slot_iii(int, int) { return 0; }
         int slot_iiii(int, int, int) { return 0; }
@@ -4772,13 +4776,18 @@ class LotsOfSignalsAndSlots: public QObject
         void slot_vPFvvE(fptr) {}
 
         void const_slot_v() const {};
+        void const_slot_v_noexcept() const Q_DECL_NOTHROW {}
         void const_slot_vi(int) const {};
+        void const_slot_vi_noexcept(int) const Q_DECL_NOTHROW {}
 
         static void static_slot_v() {}
+        static void static_slot_v_noexcept() Q_DECL_NOTHROW {}
         static void static_slot_vi(int) {}
+        static void static_slot_vi_noexcept(int) Q_DECL_NOTHROW {}
         static void static_slot_vii(int, int) {}
         static void static_slot_viii(int, int, int) {}
         static int static_slot_i() { return 0; }
+        static int static_slot_i_noexcept() Q_DECL_NOTHROW { return 0; }
         static int static_slot_ii(int) { return 0; }
         static int static_slot_iii(int, int) { return 0; }
         static int static_slot_iiii(int, int, int) { return 0; }
@@ -4939,6 +4948,32 @@ void tst_QObject::connectCxx0xTypeMatching()
 
     QVERIFY(QObject::connect(&obj, &Foo::signal_vRi, &obj, &Foo::slot_vs));
 
+}
+
+void receiverFunction_noexcept() Q_DECL_NOTHROW {}
+struct Functor_noexcept { void operator()() Q_DECL_NOTHROW {} };
+void tst_QObject::connectCxx17Noexcept()
+{
+    // this is about connecting signals to slots with the Q_DECL_NOTHROW qualifier
+    // as semantics changed due to http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html
+    typedef LotsOfSignalsAndSlots Foo;
+    Foo obj;
+
+    QObject::connect(&obj, &Foo::signal_v, &obj, &Foo::slot_v_noexcept);
+    QObject::connect(&obj, &Foo::signal_v, &obj, &Foo::slot_i_noexcept);
+    QObject::connect(&obj, &Foo::signal_v, &obj, &Foo::slot_vi_noexcept);
+
+    QObject::connect(&obj, &Foo::signal_vii, &Foo::static_slot_v_noexcept);
+    QObject::connect(&obj, &Foo::signal_vii, &Foo::static_slot_i_noexcept);
+    QObject::connect(&obj, &Foo::signal_vii, &Foo::static_slot_vi_noexcept);
+
+    QVERIFY(QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::const_slot_vi_noexcept));
+    QVERIFY(QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::const_slot_v_noexcept));
+
+    QObject::connect(&obj, &Foo::signal_v, receiverFunction_noexcept);
+
+    Functor_noexcept fn;
+    QObject::connect(&obj, &Foo::signal_v, fn);
 }
 
 class StringVariant : public QObject

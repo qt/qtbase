@@ -19,7 +19,7 @@ defineReplace(xml_escape) {
 RESOURCES += qmake_immediate
 for(resource, RESOURCES) {
     # Regular case of user qrc file
-    contains(resource, ".*\.qrc$"): \
+    contains(resource, ".*\\.qrc$"): \
         next()
 
     # Fallback for stand-alone files/directories

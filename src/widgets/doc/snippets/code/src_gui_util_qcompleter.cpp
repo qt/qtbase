@@ -62,7 +62,7 @@ lineEdit->setCompleter(completer);
 
 //! [1]
 QCompleter *completer = new QCompleter(this);
-completer->setModel(new QDirModel(completer));
+completer->setModel(new QFileSystemModel(completer));
 lineEdit->setCompleter(completer);
 //! [1]
 

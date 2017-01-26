@@ -176,7 +176,7 @@ const char _Optimization[]                      = "Optimization";
 const char _OptimizeReferences[]                = "OptimizeReferences";
 const char _OutputDirectory[]                   = "OutputDirectory";
 const char _OutputFile[]                        = "OutputFile";
-const char _PlatformToolSet[]                   = "PlatformToolSet";
+const char _PlatformToolSet[]                   = "PlatformToolset";
 const char _PrecompiledHeader[]                 = "PrecompiledHeader";
 const char _PrecompiledHeaderFile[]             = "PrecompiledHeaderFile";
 const char _PrecompiledHeaderOutputFile[]       = "PrecompiledHeaderOutputFile";
@@ -406,7 +406,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     xml << decl("1.0", "utf-8")
         << tag("Project")
         << attrTag("DefaultTargets","Build")
-        << attrTag("ToolsVersion", "4.0")
+        << attrTagToolsVersion(tool.Configuration)
         << attrTag("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003")
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
@@ -550,7 +550,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
 
     xmlFilter << decl("1.0", "utf-8")
               << tag("Project")
-              << attrTag("ToolsVersion", "4.0")
+              << attrTagToolsVersion(tool.Configuration)
               << attrTag("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
     xmlFilter << tag("ItemGroup");
@@ -587,6 +587,8 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
         outputFilter(tempProj, xml, xmlFilter, tempProj.ExtraCompilers.at(x));
     }
 
+    outputFilter(tempProj, xml, xmlFilter, "Root Files");
+
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 
     xml << tag("ImportGroup")
@@ -603,13 +605,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     xml.setIndentString("  ");
 
-    const QString toolsVersion = (tool.SdkVersion == QLatin1String("10.0")) ? QStringLiteral("14.0")
-                                                                            : QStringLiteral("4.0");
-
     xml << decl("1.0", "utf-8")
         << tag("Project")
         << attrTag("DefaultTargets","Build")
-        << attrTag("ToolsVersion", toolsVersion)
+        << attrTagToolsVersion(tool.SingleProjects.first().Configuration)
         << attrTag("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003")
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
@@ -794,7 +793,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     xmlFilter << decl("1.0", "utf-8")
               << tag("Project")
-              << attrTag("ToolsVersion", "4.0")
+              << attrTagToolsVersion(tool.SingleProjects.first().Configuration)
               << attrTag("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
     xmlFilter << tag("ItemGroup");
@@ -2052,6 +2051,13 @@ void VCXProjectWriter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter,
 QString VCXProjectWriter::generateCondition(const VCConfiguration &config)
 {
     return QStringLiteral("'$(Configuration)|$(Platform)'=='") + config.Name + QLatin1Char('\'');
+}
+
+XmlOutput::xml_output VCXProjectWriter::attrTagToolsVersion(const VCConfiguration &config)
+{
+    if (config.CompilerVersion >= NET2013)
+        return noxml();
+    return attrTag("ToolsVersion", "4.0");
 }
 
 QT_END_NAMESPACE

@@ -161,13 +161,7 @@ public:
     void setMenuType(MenuType type) Q_DECL_OVERRIDE { Q_UNUSED(type); }
     void setContainingMenuItem(QDBusPlatformMenuItem *item);
 
-    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) Q_DECL_OVERRIDE
-    {
-        Q_UNUSED(parentWindow);
-        Q_UNUSED(targetRect);
-        Q_UNUSED(item);
-        setVisible(true);
-    }
+    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) Q_DECL_OVERRIDE;
 
     void dismiss() Q_DECL_OVERRIDE { } // Closes this and all its related menu popups
 
@@ -187,6 +181,7 @@ public:
 signals:
     void updated(uint revision, int dbusId);
     void propertiesUpdated(QDBusMenuItemList updatedProps, QDBusMenuItemKeysList removedProps);
+    void popupRequested(int id, uint timestamp);
 
 private:
     quintptr m_tag;

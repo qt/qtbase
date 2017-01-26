@@ -94,10 +94,10 @@ RegularExpressionDialog::RegularExpressionDialog(QWidget *parent)
     connect(optimizeOnFirstUsageOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);
     connect(dontAutomaticallyOptimizeOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);
 
-    connect(offsetSpinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+    connect(offsetSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &RegularExpressionDialog::refresh);
 
-    connect(matchTypeComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+    connect(matchTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &RegularExpressionDialog::refresh);
 
     connect(anchoredMatchOptionCheckBox, &QCheckBox::toggled, this, &RegularExpressionDialog::refresh);

@@ -144,16 +144,17 @@ bool QProgressBarPrivate::repaintRequired() const
     if (value == lastPaintedValue)
         return false;
 
-    int valueDifference = qAbs(value - lastPaintedValue);
-
+    const auto valueDifference = qAbs(qint64(value) - lastPaintedValue);
     // Check if the text needs to be repainted
     if (value == minimum || value == maximum)
         return true;
+
+    const auto totalSteps = qint64(maximum) - minimum;
     if (textVisible) {
         if ((format.contains(QLatin1String("%v"))))
             return true;
         if ((format.contains(QLatin1String("%p"))
-             && valueDifference >= qAbs((maximum - minimum) / 100)))
+             && valueDifference >= qAbs(totalSteps / 100)))
             return true;
     }
 
@@ -166,7 +167,7 @@ bool QProgressBarPrivate::repaintRequired() const
     // (valueDifference / (maximum - minimum) > cw / groove.width())
     // transformed to avoid integer division.
     int grooveBlock = (q->orientation() == Qt::Horizontal) ? groove.width() : groove.height();
-    return (valueDifference * grooveBlock > cw * (maximum - minimum));
+    return valueDifference * grooveBlock > cw * totalSteps;
 }
 
 /*!
@@ -260,9 +261,10 @@ QProgressBar::~QProgressBar()
 void QProgressBar::reset()
 {
     Q_D(QProgressBar);
-    d->value = d->minimum - 1;
     if (d->minimum == INT_MIN)
         d->value = INT_MIN;
+    else
+        d->value = d->minimum - 1;
     repaint();
 }
 
@@ -358,7 +360,7 @@ void QProgressBar::setRange(int minimum, int maximum)
         d->minimum = minimum;
         d->maximum = qMax(minimum, maximum);
 
-        if (d->value < (d->minimum - 1) || d->value > d->maximum)
+        if (d->value < qint64(d->minimum) - 1 || d->value > d->maximum)
             reset();
         else
             update();
@@ -479,11 +481,11 @@ QString QProgressBar::text() const
     // progress bar has one step and that we are on that step. Return
     // 100% here in order to avoid division by zero further down.
     if (totalSteps == 0) {
-        result.replace(QLatin1String("%p"), locale.toString(int(100)));
+        result.replace(QLatin1String("%p"), locale.toString(100));
         return result;
     }
 
-    int progress = (qreal(d->value) - d->minimum) * 100.0 / totalSteps;
+    const auto progress = static_cast<int>((qint64(d->value) - d->minimum) * 100.0 / totalSteps);
     result.replace(QLatin1String("%p"), locale.toString(progress));
     return result;
 }

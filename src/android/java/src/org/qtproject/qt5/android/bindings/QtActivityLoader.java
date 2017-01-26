@@ -118,10 +118,12 @@ public class QtActivityLoader extends QtLoader {
     public void onCreate(Bundle savedInstanceState) {
         try {
             m_contextInfo = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), PackageManager.GET_META_DATA);
+            int theme = ((ActivityInfo)m_contextInfo).getThemeResource();
             for (Field f : Class.forName("android.R$style").getDeclaredFields()) {
-                if (f.getInt(null) == ((ActivityInfo)m_contextInfo).getThemeResource()) {
+                if (f.getInt(null) == theme) {
                     QT_ANDROID_THEMES = new String[] {f.getName()};
                     QT_ANDROID_DEFAULT_THEME = f.getName();
+                    break;
                 }
             }
         } catch (Exception e) {

@@ -79,7 +79,7 @@ public:
     void setCursorPos(const QPoint &pos);
 
 signals:
-    void deviceListChanged(DeviceType type);
+    void deviceListChanged(QInputDeviceManager::DeviceType type);
     void cursorPositionChangeRequested(const QPoint &pos);
 };
 

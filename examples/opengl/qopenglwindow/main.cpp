@@ -173,8 +173,6 @@ void OpenGLWindow::keyPressEvent(QKeyEvent *e)
 
 void OpenGLWindow::setAnimating(bool enabled)
 {
-    typedef void (QPaintDeviceWindow::*QPaintDeviceWindowVoidSlot)();
-
     if (enabled) {
         // Animate continuously, throttled by the blocking swapBuffers() call the
         // QOpenGLWindow internally executes after each paint. Once that is done
@@ -182,11 +180,11 @@ void OpenGLWindow::setAnimating(bool enabled)
         // obviously assumes that the swap interval (see
         // QSurfaceFormat::setSwapInterval()) is non-zero.
         connect(this, &QOpenGLWindow::frameSwapped,
-                this, static_cast<QPaintDeviceWindowVoidSlot>(&QPaintDeviceWindow::update));
+                this, QOverload<>::of(&QPaintDeviceWindow::update));
         update();
     } else {
         disconnect(this, &QOpenGLWindow::frameSwapped,
-                   this, static_cast<QPaintDeviceWindowVoidSlot>(&QPaintDeviceWindow::update));
+                   this, QOverload<>::of(&QPaintDeviceWindow::update));
     }
 }
 

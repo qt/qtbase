@@ -74,15 +74,21 @@ QOpenGLVersionFunctionsStorage::QOpenGLVersionFunctionsStorage()
 
 QOpenGLVersionFunctionsStorage::~QOpenGLVersionFunctionsStorage()
 {
+#ifndef QT_OPENGL_ES
     if (backends) {
-        for (int i = 0; i < QOpenGLVersionFunctionsBackend::OpenGLVersionBackendCount; ++i) {
-            if (backends[i] && !--backends[i]->refs) {
-                // deleting the base class is ok, as the derived classes don't have a destructor
-                delete backends[i];
-            }
-        }
+
+        int i = 0;
+
+#define DELETE_BACKEND(X) \
+        if (backends[i] && !--backends[i]->refs) \
+            delete static_cast<QOpenGLFunctions_##X##Backend*>(backends[i]); \
+        ++i;
+
+        QT_OPENGL_VERSIONS(DELETE_BACKEND)
+#undef DELETE_BACKEND
         delete[] backends;
     }
+#endif
 }
 
 QOpenGLVersionFunctionsBackend *QOpenGLVersionFunctionsStorage::backend(QOpenGLContext *context, QOpenGLVersionFunctionsBackend::Version v)

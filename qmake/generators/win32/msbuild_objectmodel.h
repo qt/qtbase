@@ -182,6 +182,7 @@ private:
                                  bool fileAdded, bool hasCustomBuildStep);
     static void outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter, const QString &fileName, const QString &filterName);
     static QString generateCondition(const VCConfiguration &config);
+    static XmlOutput::xml_output attrTagToolsVersion(const VCConfiguration &config);
 
     friend class XTreeNode;
     friend class XFlatNode;

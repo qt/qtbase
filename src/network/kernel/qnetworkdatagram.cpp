@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QNetworkDatagram
-    \brief The QNetworkDatagram class provides the data and matadata of a UDP datagram.
+    \brief The QNetworkDatagram class provides the data and metadata of a UDP datagram.
     \since 5.8
     \ingroup network
     \inmodule QtNetwork

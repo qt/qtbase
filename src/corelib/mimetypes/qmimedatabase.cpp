@@ -108,12 +108,12 @@ QMimeType QMimeDatabasePrivate::mimeTypeForName(const QString &nameOrAlias)
     return provider()->mimeTypeForName(provider()->resolveAlias(nameOrAlias));
 }
 
-QStringList QMimeDatabasePrivate::mimeTypeForFileName(const QString &fileName, QString *foundSuffix)
+QStringList QMimeDatabasePrivate::mimeTypeForFileName(const QString &fileName)
 {
     if (fileName.endsWith(QLatin1Char('/')))
         return QStringList() << QLatin1String("inode/directory");
 
-    QStringList matchingMimeTypes = provider()->findByFileName(QFileInfo(fileName).fileName(), foundSuffix);
+    QStringList matchingMimeTypes = provider()->findByFileName(QFileInfo(fileName).fileName()).m_matchingMimeTypes;
     matchingMimeTypes.sort(); // make it deterministic
     return matchingMimeTypes;
 }
@@ -168,13 +168,17 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
     *accuracyPtr = 0;
 
     // Pass 1) Try to match on the file name
-    QStringList candidatesByName = mimeTypeForFileName(fileName);
-    if (candidatesByName.count() == 1) {
+    QMimeGlobMatchResult candidatesByName;
+    if (fileName.endsWith(QLatin1Char('/')))
+        candidatesByName.addMatch(QLatin1String("inode/directory"), 100, QString());
+    else
+        candidatesByName = provider()->findByFileName(QFileInfo(fileName).fileName());
+    if (candidatesByName.m_allMatchingMimeTypes.count() == 1) {
         *accuracyPtr = 100;
-        const QMimeType mime = mimeTypeForName(candidatesByName.at(0));
+        const QMimeType mime = mimeTypeForName(candidatesByName.m_matchingMimeTypes.at(0));
         if (mime.isValid())
             return mime;
-        candidatesByName.clear();
+        candidatesByName = {};
     }
 
     // Extension is unknown, or matches multiple mimetypes.
@@ -193,7 +197,7 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
             // "for glob_match in glob_matches:"
             // "if glob_match is subclass or equal to sniffed_type, use glob_match"
             const QString sniffedMime = candidateByData.name();
-            for (const QString &m : qAsConst(candidatesByName)) {
+            for (const QString &m : qAsConst(candidatesByName.m_matchingMimeTypes)) {
                 if (inherits(m, sniffedMime)) {
                     // We have magic + pattern pointing to this, so it's a pretty good match
                     *accuracyPtr = 100;
@@ -205,9 +209,10 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
         }
     }
 
-    if (candidatesByName.count() > 1) {
+    if (candidatesByName.m_allMatchingMimeTypes.count() > 1) {
+        candidatesByName.m_matchingMimeTypes.sort(); // make it deterministic
         *accuracyPtr = 20;
-        const QMimeType mime = mimeTypeForName(candidatesByName.at(0));
+        const QMimeType mime = mimeTypeForName(candidatesByName.m_matchingMimeTypes.at(0));
         if (mime.isValid())
             return mime;
     }
@@ -455,9 +460,7 @@ QList<QMimeType> QMimeDatabase::mimeTypesForFileName(const QString &fileName) co
 QString QMimeDatabase::suffixForFileName(const QString &fileName) const
 {
     QMutexLocker locker(&d->mutex);
-    QString foundSuffix;
-    d->mimeTypeForFileName(fileName, &foundSuffix);
-    return foundSuffix;
+    return d->provider()->findByFileName(QFileInfo(fileName).fileName()).m_foundSuffix;
 }
 
 /*!

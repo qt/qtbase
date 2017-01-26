@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 QT_FOR_CONFIG += network
 
-SUBDIRS *= sqldrivers
+qtHaveModule(sql): SUBDIRS += sqldrivers
 qtHaveModule(network):qtConfig(bearermanagement): SUBDIRS += bearer
 qtHaveModule(gui) {
     SUBDIRS *= platforms platforminputcontexts platformthemes

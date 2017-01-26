@@ -14,12 +14,5 @@
 
             "redo": { "type": "redo" }
         }
-
-    },
-
-    "features": {
-        "builtins": {
-            "output": [ "builtins" ]
-        }
     }
 }

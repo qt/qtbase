@@ -61,8 +61,6 @@
 
 #include "glwidget.h"
 
-typedef void (QWidget::*QWidgetVoidSlot)();
-
 MainWindow::MainWindow()
     : m_nextX(1), m_nextY(1)
 {
@@ -131,14 +129,11 @@ MainWindow::MainWindow()
     QMenu *helpMenu = menuBar()->addMenu("&Help");
     helpMenu->addAction("About Qt", qApp, &QApplication::aboutQt);
 
-    connect(m_timer, &QTimer::timeout,
-            glwidget, static_cast<QWidgetVoidSlot>(&QWidget::update));
+    connect(m_timer, &QTimer::timeout, glwidget, QOverload<>::of(&QWidget::update));
 
     connect(slider, &QAbstractSlider::valueChanged, glwidget, &GLWidget::setScaling);
     connect(transparent, &QCheckBox::toggled, glwidget, &GLWidget::setTransparent);
-
-    typedef void (QSpinBox::*QSpinBoxIntSignal)(int);
-    connect(updateInterval, static_cast<QSpinBoxIntSignal>(&QSpinBox::valueChanged),
+    connect(updateInterval, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &MainWindow::updateIntervalChanged);
     connect(timerBased, &QCheckBox::toggled, this, &MainWindow::timerUsageChanged);
     connect(timerBased, &QCheckBox::toggled, updateInterval, &QWidget::setEnabled);
@@ -162,7 +157,7 @@ void MainWindow::addNew()
         return;
     GLWidget *w = new GLWidget(this, false, qRgb(qrand() % 256, qrand() % 256, qrand() % 256));
     m_glWidgets << w;
-    connect(m_timer, &QTimer::timeout, w, static_cast<QWidgetVoidSlot>(&QWidget::update));
+    connect(m_timer, &QTimer::timeout, w, QOverload<>::of(&QWidget::update));
     m_layout->addWidget(w, m_nextY, m_nextX, 1, 1);
     if (m_nextX == 3) {
         m_nextX = 1;

@@ -473,6 +473,8 @@ QMacCGContext::QMacCGContext(QPaintDevice *paintDevice) : context(0)
     context = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
                                 8, image->bytesPerLine(), colorspace, flags);
     CGContextTranslateCTM(context, 0, image->height());
+    const qreal devicePixelRatio = paintDevice->devicePixelRatioF();
+    CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
     CGContextScaleCTM(context, 1, -1);
 }
 

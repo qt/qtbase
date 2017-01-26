@@ -139,7 +139,6 @@ public:
     void handleFocusOutEvent(const xcb_focus_out_event_t *event) override;
     void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) override;
 #ifdef XCB_USE_XINPUT22
-    void handleXIMouseButtonState(const xcb_ge_event_t *);
     void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized) override;
     void handleXIEnterLeave(xcb_ge_event_t *) override;
 #endif
@@ -235,6 +234,7 @@ protected:
                                 quint8 mode, quint8 detail, xcb_timestamp_t timestamp);
 
     xcb_window_t m_window;
+    xcb_colormap_t m_cmap;
 
     uint m_depth;
     QImage::Format m_imageFormat;

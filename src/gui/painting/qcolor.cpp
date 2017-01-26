@@ -545,12 +545,8 @@ static QStringList get_colornames()
 
     \section1 The HSL Color Model
 
-    HSL is similar to HSV. Instead of value parameter from HSV,
-    HSL has the lightness parameter.
-    The lightness parameter goes from black to color and from color to white.
-    If you go outside at the night its black or dark gray. At day its colorful but
-    if you look in a really strong light a things they are going to white and
-    wash out.
+    HSL is similar to HSV, however instead of the Value parameter, HSL
+    specifies a Lightness parameter.
 
     \section1 The CMYK Color Model
 

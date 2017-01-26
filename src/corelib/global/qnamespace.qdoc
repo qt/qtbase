@@ -123,16 +123,14 @@
     \value AA_PluginApplication Indicates that Qt is used to author a plugin. Depending
            on the operating system, it suppresses specific initializations that do not
            necessarily make sense in the plugin case.
-
            For example on OS X, this includes avoiding loading our nib for the main
            menu and not taking possession of the native menu bar. Setting this
            attribute to true will also set the AA_DontUseNativeMenuBar attribute
            to true. It also disables native event filters.
-
            This attribute has been added in Qt 5.7. It must be set before
            \l {QGuiApplication}{Q(Gui)Application} is constructed.
 
-     \value AA_MacPluginApplication This attribute has been deprecated.
+    \value AA_MacPluginApplication This attribute has been deprecated.
            Use AA_PluginApplication instead.
 
     \value AA_DontUseNativeMenuBar All menubars created while this attribute is
@@ -166,7 +164,6 @@
     \value AA_UseHighDpiPixmaps Make QIcon::pixmap() generate high-dpi pixmaps
            that can be larger than the requested size. Such pixmaps will have
            \l {QPixmap::devicePixelRatio}{devicePixelRatio()} set to a value higher than 1.
-
            After setting this attribute, application code that uses pixmap
            sizes in layout geometry calculations should typically divide by
            \l {QPixmap::devicePixelRatio}{devicePixelRatio()} to get device-independent layout geometry.
@@ -2660,7 +2657,7 @@
     \value FontRole             The font used for items rendered with the default
                                 delegate. (QFont)
     \value TextAlignmentRole    The alignment of the text for items rendered with the
-                                default delegate. (Qt::AlignmentFlag)
+                                default delegate. (Qt::Alignment)
     \value BackgroundRole       The background brush used for items rendered with
                                 the default delegate. (QBrush)
     \value BackgroundColorRole  This role is obsolete. Use BackgroundRole instead.

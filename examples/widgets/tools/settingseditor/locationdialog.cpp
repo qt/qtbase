@@ -106,10 +106,9 @@ LocationDialog::LocationDialog(QWidget *parent)
 
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
-    typedef void (QComboBox::*QComboIntSignal)(int);
-    connect(formatComboBox, static_cast<QComboIntSignal>(&QComboBox::activated),
+    connect(formatComboBox, QOverload<int>::of(&QComboBox::activated),
             this, &LocationDialog::updateLocationsTable);
-    connect(scopeComboBox, static_cast<QComboIntSignal>(&QComboBox::activated),
+    connect(scopeComboBox, QOverload<int>::of(&QComboBox::activated),
             this, &LocationDialog::updateLocationsTable);
     connect(organizationComboBox->lineEdit(),
             &QLineEdit::editingFinished,
@@ -117,7 +116,7 @@ LocationDialog::LocationDialog(QWidget *parent)
     connect(applicationComboBox->lineEdit(),
             &QLineEdit::editingFinished,
             this, &LocationDialog::updateLocationsTable);
-    connect(applicationComboBox, static_cast<QComboIntSignal>(&QComboBox::activated),
+    connect(applicationComboBox, QOverload<int>::of(&QComboBox::activated),
             this, &LocationDialog::updateLocationsTable);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);

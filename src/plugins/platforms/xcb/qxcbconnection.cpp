@@ -417,7 +417,7 @@ void QXcbConnection::initializeScreens()
                 qWarning("failed to get the current screen resources");
                 free(error);
             } else {
-                xcb_timestamp_t timestamp;
+                xcb_timestamp_t timestamp = 0;
                 xcb_randr_output_t *outputs = Q_NULLPTR;
                 int outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources_current.data());
                 if (outputCount) {

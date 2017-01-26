@@ -1,6 +1,4 @@
- This file is part of callgrind, a valgrind tool for cache simulation
- and call tree tracing.
-
+ Copyright (C) 2000-2007 Julian Seward
  Copyright (C) 2003-2007 Josef Weidendorfer.  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without

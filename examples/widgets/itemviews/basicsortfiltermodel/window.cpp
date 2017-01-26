@@ -89,11 +89,9 @@ Window::Window()
 
     connect(filterPatternLineEdit, &QLineEdit::textChanged,
             this, &Window::filterRegExpChanged);
-
-    typedef void (QComboBox::*QComboIntSignal)(int);
-    connect(filterSyntaxComboBox, static_cast<QComboIntSignal>(&QComboBox::currentIndexChanged),
+    connect(filterSyntaxComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &Window::filterRegExpChanged);
-    connect(filterColumnComboBox, static_cast<QComboIntSignal>(&QComboBox::currentIndexChanged),
+    connect(filterColumnComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &Window::filterColumnChanged);
     connect(filterCaseSensitivityCheckBox, &QAbstractButton::toggled,
             this, &Window::filterRegExpChanged);

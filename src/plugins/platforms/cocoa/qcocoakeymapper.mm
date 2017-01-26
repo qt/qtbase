@@ -366,7 +366,9 @@ Qt::KeyboardModifiers QCocoaKeyMapper::queryKeyboardModifiers()
 bool QCocoaKeyMapper::updateKeyboard()
 {
     const UCKeyboardLayout *uchrData = 0;
-    QCFType<TISInputSourceRef> source = TISCopyCurrentKeyboardInputSource();
+    QCFType<TISInputSourceRef> source = TISCopyInputMethodKeyboardLayoutOverride();
+    if (!source)
+        source = TISCopyCurrentKeyboardInputSource();
     if (keyboard_mode != NullMode && source == currentInputSource) {
         return false;
     }

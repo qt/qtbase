@@ -161,7 +161,7 @@ bool QMimeMagicRule::matchNumber(const QByteArray &data) const
     //qDebug() << "mask" << QString::number(m_numberMask, 16);
 
     const char *p = data.constData() + m_startPos;
-    const char *e = data.constData() + qMin(data.size() - int(sizeof(T)), m_endPos + 1);
+    const char *e = data.constData() + qMin(data.size() - int(sizeof(T)), m_endPos);
     for ( ; p <= e; ++p) {
         if ((qFromUnaligned<T>(p) & mask) == (value & mask))
             return true;
@@ -299,20 +299,30 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
         }
         break;
     case Big16:
-    case Host16:
     case Little16:
         if (m_number <= quint16(-1)) {
             m_number = m_type == Little16 ? qFromLittleEndian<quint16>(m_number) : qFromBigEndian<quint16>(m_number);
+            if (m_numberMask != 0)
+                m_numberMask = m_type == Little16 ? qFromLittleEndian<quint16>(m_numberMask) : qFromBigEndian<quint16>(m_numberMask);
+        }
+        Q_FALLTHROUGH();
+    case Host16:
+        if (m_number <= quint16(-1)) {
             if (m_numberMask == 0)
                 m_numberMask = quint16(-1);
             m_matchFunction = &QMimeMagicRule::matchNumber<quint16>;
         }
         break;
     case Big32:
-    case Host32:
     case Little32:
         if (m_number <= quint32(-1)) {
             m_number = m_type == Little32 ? qFromLittleEndian<quint32>(m_number) : qFromBigEndian<quint32>(m_number);
+            if (m_numberMask != 0)
+                m_numberMask = m_type == Little32 ? qFromLittleEndian<quint32>(m_numberMask) : qFromBigEndian<quint32>(m_numberMask);
+        }
+        Q_FALLTHROUGH();
+    case Host32:
+        if (m_number <= quint32(-1)) {
             if (m_numberMask == 0)
                 m_numberMask = quint32(-1);
             m_matchFunction = &QMimeMagicRule::matchNumber<quint32>;
