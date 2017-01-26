@@ -173,7 +173,7 @@
             "label": "QSpinBox",
             "purpose": "Provides spin boxes handling integers and discrete sets of values.",
             "section": "Widgets",
-            "condition": "features.spinwidget && features.lineedit && features.validator",
+            "condition": "features.lineedit && features.validator",
             "output": [ "publicFeature", "feature" ]
         },
         "tabbar": {
@@ -330,12 +330,6 @@
             "purpose": "Provides various graphics effects.",
             "section": "Widgets",
             "condition": "features.graphicsview",
-            "output": [ "publicFeature", "feature" ]
-        },
-        "spinbox": {
-            "label": "QSpinBox",
-            "purpose": "Provides spinbox control widgets.",
-            "section": "Widgets",
             "output": [ "publicFeature", "feature" ]
         },
         "textedit": {
