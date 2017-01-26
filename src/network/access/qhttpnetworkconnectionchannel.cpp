@@ -44,7 +44,6 @@
 
 #include <qpair.h>
 #include <qdebug.h>
-#include <QScopedValueRollback>
 
 #ifndef QT_NO_HTTP
 
@@ -197,42 +196,41 @@ void QHttpNetworkConnectionChannel::init()
 
 void QHttpNetworkConnectionChannel::close()
 {
-    // socket can be 0 since the host lookup is done from qhttpnetworkconnection.cpp while
-    // there is no socket yet; we may also clear it, below or in abort, to avoid recursion.
-    const bool idle = !socket || socket->state() == QAbstractSocket::UnconnectedState;
-    const ChannelState final = idle ? IdleState : ClosingState;
+    if (!socket)
+        state = QHttpNetworkConnectionChannel::IdleState;
+    else if (socket->state() == QAbstractSocket::UnconnectedState)
+        state = QHttpNetworkConnectionChannel::IdleState;
+    else
+        state = QHttpNetworkConnectionChannel::ClosingState;
+
     // pendingEncrypt must only be true in between connected and encrypted states
     pendingEncrypt = false;
 
     if (socket) {
-        QAbstractSocket *const detached = socket;
-        QScopedValueRollback<QAbstractSocket *> rollback(socket, nullptr);
-        state = final; // Needed during close(), which may over-write it.
-        detached->close(); // Error states can cause recursion back to this method.
+        // socket can be 0 since the host lookup is done from qhttpnetworkconnection.cpp while
+        // there is no socket yet.
+        socket->close();
     }
-
-    // Set state *after* close(), to override any recursive call's idle setting:
-    state = final;
 }
+
 
 void QHttpNetworkConnectionChannel::abort()
 {
-    // socket can be 0 since the host lookup is done from qhttpnetworkconnection.cpp while
-    // there is no socket yet; we may also clear it, below or in close, to avoid recursion.
-    const bool idle = !socket || socket->state() == QAbstractSocket::UnconnectedState;
-    const ChannelState final = idle ? IdleState : ClosingState;
+    if (!socket)
+        state = QHttpNetworkConnectionChannel::IdleState;
+    else if (socket->state() == QAbstractSocket::UnconnectedState)
+        state = QHttpNetworkConnectionChannel::IdleState;
+    else
+        state = QHttpNetworkConnectionChannel::ClosingState;
+
     // pendingEncrypt must only be true in between connected and encrypted states
     pendingEncrypt = false;
 
     if (socket) {
-        QAbstractSocket *const detached = socket;
-        QScopedValueRollback<QAbstractSocket *> rollback(socket, nullptr);
-        state = final;
-        detached->abort();
+        // socket can be 0 since the host lookup is done from qhttpnetworkconnection.cpp while
+        // there is no socket yet.
+        socket->abort();
     }
-
-    // Set state *after* abort(), to override any recursive call's idle setting:
-    state = final;
 }
 
 
