@@ -62,9 +62,9 @@ bool QInputControl::isAcceptableInput(const QKeyEvent *event) const
 
     const QChar c = text.at(0);
 
-    // ZWNJ and ZWJ. This needs to go before the next test, since CTRL+SHIFT is
-    // used to input it on Windows.
-    if (c == QChar(0x200C) || c == QChar(0x200D))
+    // Formatting characters such as ZWNJ, ZWJ, RLM, etc. This needs to go before the
+    // next test, since CTRL+SHIFT is sometimes used to input it on Windows.
+    if (c.category() == QChar::Other_Format)
         return true;
 
     // QTBUG-35734: ignore Ctrl/Ctrl+Shift; accept only AltGr (Alt+Ctrl) on German keyboards
