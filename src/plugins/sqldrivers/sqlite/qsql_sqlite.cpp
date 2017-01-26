@@ -696,10 +696,9 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     }
 
     int openMode = (openReadOnlyOption ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
+    openMode |= (sharedCache ? SQLITE_OPEN_SHAREDCACHE : SQLITE_OPEN_PRIVATECACHE);
     if (openUriOption)
         openMode |= SQLITE_OPEN_URI;
-
-    sqlite3_enable_shared_cache(sharedCache);
 
     if (sqlite3_open_v2(db.toUtf8().constData(), &d->access, openMode, NULL) == SQLITE_OK) {
         sqlite3_busy_timeout(d->access, timeOut);
