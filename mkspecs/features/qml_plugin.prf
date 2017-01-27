@@ -21,6 +21,9 @@ if(win32|mac):!macx-xcode {
 
 CONFIG += relative_qt_rpath  # Qt's QML plugins should be relocatable
 
+# Qt libraries should only use Application Extension safe APIs
+darwin:!no_app_extension_api_only: CONFIG += app_extension_api_only
+
 !no_cxx_module:isEmpty(CXX_MODULE) {
     CXX_MODULE = $$TARGET
     TARGET = declarative_$${TARGET}

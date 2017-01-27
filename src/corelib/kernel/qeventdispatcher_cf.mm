@@ -80,7 +80,8 @@ QT_USE_NAMESPACE
 #elif defined(Q_OS_WATCHOS)
             object:[WKExtension sharedExtension]];
 #else
-            object:[UIApplication sharedApplication]];
+            // Use performSelector so this can work in an App Extension
+            object:[[UIApplication class] performSelector:@selector(sharedApplication)]];
 #endif
     }
 

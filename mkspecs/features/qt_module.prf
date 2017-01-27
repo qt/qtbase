@@ -46,6 +46,9 @@ CONFIG(shared, static|shared):qtConfig(framework): \
 
 CONFIG += relative_qt_rpath  # Qt libraries should be relocatable
 
+# Qt libraries should only use Application Extension safe APIs
+darwin:!no_app_extension_api_only: CONFIG += app_extension_api_only
+
 ucmodule = $$upper($$MODULE)
 
 isEmpty(MODULE_INCNAME): MODULE_INCNAME = $$TARGET

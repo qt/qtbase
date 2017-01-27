@@ -32,6 +32,9 @@ tool_plugin {
 
 CONFIG += relative_qt_rpath  # Qt's plugins should be relocatable
 
+# Qt libraries should only use Application Extension safe APIs
+darwin:!no_app_extension_api_only: CONFIG += app_extension_api_only
+
 CONFIG(static, static|shared)|prefix_build {
     isEmpty(MODULE): MODULE = $$basename(TARGET)
 

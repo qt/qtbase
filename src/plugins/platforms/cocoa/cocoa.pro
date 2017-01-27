@@ -86,6 +86,8 @@ QT += \
     accessibility_support-private clipboard_support-private theme_support-private \
     fontdatabase_support-private graphics_support-private cgl_support-private
 
+CONFIG += no_app_extension_api_only
+
 qtHaveModule(widgets) {
     OBJECTIVE_SOURCES += \
         qpaintengine_mac.mm \

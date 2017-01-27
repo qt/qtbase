@@ -1485,6 +1485,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             }
         }
         settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
+        settings.insert("APPLICATION_EXTENSION_API_ONLY", project->isActiveConfig("app_extension_api_only") ? "YES" : "NO");
         // required for tvOS (and watchos), optional on iOS (deployment target >= iOS 6.0)
         settings.insert("ENABLE_BITCODE", project->isActiveConfig("bitcode") ? "YES" : "NO");
         settings.insert("GCC_GENERATE_DEBUGGING_SYMBOLS", as_release ? "NO" : "YES");
