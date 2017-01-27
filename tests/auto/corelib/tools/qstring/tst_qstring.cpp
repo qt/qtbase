@@ -1066,6 +1066,7 @@ void tst_QString::acc_01()
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wformat-security")
+QT_WARNING_DISABLE_CLANG("-Wformat-security")
 
 void tst_QString::isNull()
 {
@@ -6345,7 +6346,7 @@ void tst_QString::repeatedSignature() const
 {
     /* repated() should be a const member. */
     const QString string;
-    string.repeated(3);
+    (void) string.repeated(3);
 }
 
 void tst_QString::repeated() const
