@@ -181,6 +181,20 @@
 #  define QT_FUNCTION_TARGET(x)
 #endif
 
+#if defined(Q_CC_MSVC) && (defined(_M_AVX) || defined(__AVX__))
+// Visual Studio defines __AVX__ when /arch:AVX is passed, but not the earlier macros
+// See: https://msdn.microsoft.com/en-us/library/b0084kay.aspx
+// SSE2 is handled by _M_IX86_FP below
+#  define __SSE3__ 1
+#  define __SSSE3__ 1
+// no Intel CPU supports SSE4a, so don't define it
+#  define __SSE4_1__ 1
+#  define __SSE4_2__ 1
+#  ifndef __AVX__
+#    define __AVX__ 1
+#  endif
+#endif
+
 // SSE intrinsics
 #define QT_FUNCTION_TARGET_STRING_SSE2      "sse2"
 #if defined(__SSE2__) || (defined(QT_COMPILER_SUPPORTS_SSE2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
@@ -229,20 +243,6 @@
 #if defined(__AVX__) || (defined(QT_COMPILER_SUPPORTS_AVX) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 // immintrin.h is the ultimate header, we don't need anything else after this
 #include <immintrin.h>
-
-#  if defined(Q_CC_MSVC) && (defined(_M_AVX) || defined(__AVX__))
-// MS Visual Studio 2010 has no macro pre-defined to identify the use of /arch:AVX
-// MS Visual Studio 2013 adds it: __AVX__
-// See: http://connect.microsoft.com/VisualStudio/feedback/details/605858/arch-avx-should-define-a-predefined-macro-in-x64-and-set-a-unique-value-for-m-ix86-fp-in-win32
-#    define __SSE3__ 1
-#    define __SSSE3__ 1
-// no Intel CPU supports SSE4a, so don't define it
-#    define __SSE4_1__ 1
-#    define __SSE4_2__ 1
-#    ifndef __AVX__
-#      define __AVX__ 1
-#    endif
-#  endif
 #endif
 
 #define QT_FUNCTION_TARGET_STRING_AVX512F       "avx512f"
