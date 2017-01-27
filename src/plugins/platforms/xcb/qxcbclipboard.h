@@ -102,14 +102,14 @@ private:
     QMimeData *m_clientClipboard[2];
     xcb_timestamp_t m_timestamp[2];
 
-    xcb_window_t m_requestor;
-    xcb_window_t m_owner;
+    xcb_window_t m_requestor = XCB_NONE;
+    xcb_window_t m_owner = XCB_NONE;
 
     static const int clipboard_timeout;
 
-    bool m_incr_active;
-    bool m_clipboard_closing;
-    xcb_timestamp_t m_incr_receive_time;
+    bool m_incr_active = false;
+    bool m_clipboard_closing = false;
+    xcb_timestamp_t m_incr_receive_time = 0;
 };
 
 #endif // QT_NO_CLIPBOARD

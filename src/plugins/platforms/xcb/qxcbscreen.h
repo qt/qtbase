@@ -95,12 +95,12 @@ private:
     QRect getWorkArea() const;
 
     xcb_screen_t *m_screen;
-    int m_number;
+    const int m_number;
     QList<QPlatformScreen *> m_screens;
 
-    QXcbXSettings *m_xSettings;
-    xcb_atom_t m_net_wm_cm_atom;
-    bool m_compositingActive;
+    QXcbXSettings *m_xSettings = nullptr;
+    xcb_atom_t m_net_wm_cm_atom = 0;
+    bool m_compositingActive = false;
 
     QRect m_workArea;
 };
@@ -186,9 +186,9 @@ private:
     QXcbVirtualDesktop *m_virtualDesktop;
     xcb_randr_output_t m_output;
     xcb_randr_crtc_t m_crtc;
-    xcb_randr_mode_t m_mode;
-    bool m_primary;
-    uint8_t m_rotation;
+    xcb_randr_mode_t m_mode = XCB_NONE;
+    bool m_primary = false;
+    uint8_t m_rotation = XCB_RANDR_ROTATION_ROTATE_0;
 
     QString m_outputName;
     QSizeF m_outputSizeMillimeters;
@@ -197,18 +197,18 @@ private:
     QRect m_availableGeometry;
     QSize m_virtualSize;
     QSizeF m_virtualSizeMillimeters;
-    Qt::ScreenOrientation m_orientation;
+    Qt::ScreenOrientation m_orientation = Qt::PrimaryOrientation;
     QString m_windowManagerName;
-    bool m_syncRequestSupported;
+    bool m_syncRequestSupported = false;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QMap<xcb_visualid_t, quint8> m_visualDepths;
     QXcbCursor *m_cursor;
-    int m_refreshRate;
-    int m_forcedDpi;
-    int m_pixelDensity;
-    QFontEngine::HintStyle m_hintStyle;
-    QFontEngine::SubpixelAntialiasingType m_subpixelType;
-    int m_antialiasingEnabled;
+    int m_refreshRate = 60;
+    int m_forcedDpi = -1;
+    int m_pixelDensity = 1;
+    QFontEngine::HintStyle m_hintStyle = QFontEngine::HintStyle(-1);
+    QFontEngine::SubpixelAntialiasingType m_subpixelType = QFontEngine::SubpixelAntialiasingType(-1);
+    int m_antialiasingEnabled = -1;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

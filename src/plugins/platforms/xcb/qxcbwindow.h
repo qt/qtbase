@@ -233,48 +233,48 @@ protected:
     void handleLeaveNotifyEvent(int root_x, int root_y,
                                 quint8 mode, quint8 detail, xcb_timestamp_t timestamp);
 
-    xcb_window_t m_window;
-    xcb_colormap_t m_cmap;
+    xcb_window_t m_window = 0;
+    xcb_colormap_t m_cmap = 0;
 
-    uint m_depth;
-    QImage::Format m_imageFormat;
-    bool m_imageRgbSwap;
+    uint m_depth = 0;
+    QImage::Format m_imageFormat = QImage::Format_ARGB32_Premultiplied;
+    bool m_imageRgbSwap = false;
 
     xcb_sync_int64_t m_syncValue;
-    xcb_sync_counter_t m_syncCounter;
+    xcb_sync_counter_t m_syncCounter = 0;
 
-    Qt::WindowState m_windowState;
+    Qt::WindowState m_windowState = Qt::WindowNoState;
 
-    xcb_gravity_t m_gravity;
+    xcb_gravity_t m_gravity = XCB_GRAVITY_STATIC;
 
-    bool m_mapped;
-    bool m_transparent;
-    bool m_usingSyncProtocol;
-    bool m_deferredActivation;
-    bool m_embedded;
-    bool m_alertState;
-    xcb_window_t m_netWmUserTimeWindow;
+    bool m_mapped = false;
+    bool m_transparent = false;
+    bool m_usingSyncProtocol = false;
+    bool m_deferredActivation = false;
+    bool m_embedded = false;
+    bool m_alertState = false;
+    xcb_window_t m_netWmUserTimeWindow = XCB_NONE;
 
     QSurfaceFormat m_format;
 
-    mutable bool m_dirtyFrameMargins;
+    mutable bool m_dirtyFrameMargins = false;
     mutable QMargins m_frameMargins;
 
     QRegion m_exposeRegion;
     QSize m_oldWindowSize;
 
-    xcb_visualid_t m_visualId;
-    int m_lastWindowStateEvent;
+    xcb_visualid_t m_visualId = 0;
+    int m_lastWindowStateEvent = -1;
 
     enum SyncState {
         NoSyncNeeded,
         SyncReceived,
         SyncAndConfigureReceived
     };
-    SyncState m_syncState;
+    SyncState m_syncState = NoSyncNeeded;
 
-    QXcbSyncWindowRequest *m_pendingSyncRequest;
-    xcb_cursor_t m_currentBitmapCursor;
+    QXcbSyncWindowRequest *m_pendingSyncRequest = nullptr;
+    xcb_cursor_t m_currentBitmapCursor = XCB_CURSOR_NONE;
 };
 
 QT_END_NAMESPACE

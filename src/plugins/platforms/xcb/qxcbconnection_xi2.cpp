@@ -52,14 +52,8 @@
 #include <X11/extensions/XI2proto.h>
 
 struct XInput2TouchDeviceData {
-    XInput2TouchDeviceData()
-    : xiDeviceInfo(0)
-    , qtTouchDevice(0)
-    , providesTouchOrientation(false)
-    {
-    }
-    XIDeviceInfo *xiDeviceInfo;
-    QTouchDevice *qtTouchDevice;
+    XIDeviceInfo *xiDeviceInfo = nullptr;
+    QTouchDevice *qtTouchDevice = nullptr;
     QHash<int, QWindowSystemInterface::TouchPoint> touchPoints;
     QHash<int, QPointF> pointPressedPosition; // in screen coordinates where each point was pressed
 
@@ -67,7 +61,7 @@ struct XInput2TouchDeviceData {
     QPointF firstPressedPosition;        // in screen coordinates where the first point was pressed
     QPointF firstPressedNormalPosition;  // device coordinates (0 to 1, 0 to 1) where the first point was pressed
     QSizeF size;                         // device size in mm
-    bool providesTouchOrientation;
+    bool providesTouchOrientation = false;
 };
 
 void QXcbConnection::initializeXInput2()
@@ -80,7 +74,7 @@ void QXcbConnection::initializeXInput2()
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     if (XQueryExtension(xDisplay, "XInputExtension", &m_xiOpCode, &m_xiEventBase, &m_xiErrorBase)) {
         int xiMajor = 2;
-        m_xi2Minor = 2; // try 2.2 first, needed for TouchBegin/Update/End
+        // try 2.2 first, needed for TouchBegin/Update/End
         if (XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) == BadRequest) {
             m_xi2Minor = 1; // for smooth scrolling 2.1 is enough
             if (XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) == BadRequest) {

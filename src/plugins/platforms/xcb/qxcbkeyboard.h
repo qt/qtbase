@@ -106,14 +106,14 @@ protected:
 private:
     void updateXKBStateFromState(struct xkb_state *kb_state, quint16 state);
 
-    bool m_config;
-    xcb_keycode_t m_autorepeat_code;
+    bool m_config = false;
+    xcb_keycode_t m_autorepeat_code = 0;
 
-    struct xkb_context *xkb_context;
-    struct xkb_keymap *xkb_keymap;
-    struct xkb_state *xkb_state;
+    struct xkb_context *xkb_context = nullptr;
+    struct xkb_keymap *xkb_keymap = nullptr;
+    struct xkb_state *xkb_state = nullptr;
     struct xkb_rule_names xkb_names;
-    mutable struct xkb_keymap *latin_keymap;
+    mutable struct xkb_keymap *latin_keymap = nullptr;
 
     struct _mod_masks {
         uint alt;
@@ -143,7 +143,7 @@ private:
     _mod_masks vmod_masks;
     int core_device_id;
 #endif
-    bool m_hasLatinLayout;
+    bool m_hasLatinLayout = false;
 };
 
 QT_END_NAMESPACE

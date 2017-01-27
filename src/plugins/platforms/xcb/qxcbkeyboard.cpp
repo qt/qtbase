@@ -1136,12 +1136,6 @@ int QXcbKeyboard::keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modi
 
 QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     : QXcbObject(connection)
-    , m_autorepeat_code(0)
-    , xkb_context(0)
-    , xkb_keymap(0)
-    , xkb_state(0)
-    , latin_keymap(0)
-    , m_hasLatinLayout(false)
 {
     memset(&xkb_names, 0, sizeof(xkb_names));
 #if QT_CONFIG(xkb)

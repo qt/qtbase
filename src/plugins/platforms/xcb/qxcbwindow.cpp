@@ -314,22 +314,6 @@ static const char *wm_window_role_property_id = "_q_xcb_wm_window_role";
 
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
-    , m_window(0)
-    , m_cmap(0)
-    , m_syncCounter(0)
-    , m_gravity(XCB_GRAVITY_STATIC)
-    , m_mapped(false)
-    , m_transparent(false)
-    , m_usingSyncProtocol(false)
-    , m_deferredActivation(false)
-    , m_embedded(false)
-    , m_alertState(false)
-    , m_netWmUserTimeWindow(XCB_NONE)
-    , m_dirtyFrameMargins(false)
-    , m_lastWindowStateEvent(-1)
-    , m_syncState(NoSyncNeeded)
-    , m_pendingSyncRequest(0)
-    , m_currentBitmapCursor(XCB_CURSOR_NONE)
 {
     setConnection(xcbScreen()->connection());
 }

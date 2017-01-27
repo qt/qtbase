@@ -552,32 +552,10 @@ void QXcbConnection::initializeScreens()
 }
 
 QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, xcb_visualid_t defaultVisualId, const char *displayName)
-    : m_connection(0)
-    , m_canGrabServer(canGrabServer)
+    : m_canGrabServer(canGrabServer)
     , m_defaultVisualId(defaultVisualId)
-    , m_primaryScreenNumber(0)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
-#ifdef XCB_USE_XLIB
-    , m_xlib_display(0)
-#endif
-    , xfixes_first_event(0)
-    , xrandr_first_event(0)
-    , xkb_first_event(0)
-    , has_xinerama_extension(false)
-    , has_shape_extension(false)
-    , has_randr_extension(false)
-    , has_input_shape(false)
-    , has_xkb(false)
-    , m_buttons(0)
-    , m_focusWindow(0)
-    , m_mouseGrabber(0)
-    , m_mousePressWindow(0)
-    , m_clientLeader(0)
-    , m_systemTrayTracker(0)
-    , m_glIntegration(Q_NULLPTR)
-    , m_xiGrab(false)
-    , m_qtSelectionOwner(0)
 {
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -618,9 +596,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     initializeAllAtoms();
 
-    m_time = XCB_CURRENT_TIME;
-    m_netWmUserTime = XCB_CURRENT_TIME;
-
     if (!qEnvironmentVariableIsSet("QT_XCB_NO_XRANDR"))
         initializeXRandr();
     if (!has_randr_extension)
@@ -630,7 +605,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     initializeXRender();
 #if defined(XCB_USE_XINPUT2)
-    m_xi2Enabled = false;
     initializeXInput2();
 #endif
     initializeXShape();

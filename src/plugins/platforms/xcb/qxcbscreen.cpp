@@ -59,7 +59,6 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
     : QXcbObject(connection)
     , m_screen(screen)
     , m_number(number)
-    , m_xSettings(Q_NULLPTR)
 {
     const QByteArray cmAtomName =  "_NET_WM_CM_S" + QByteArray::number(m_number);
     m_net_wm_cm_atom = connection->internAtom(cmAtomName.constData());
@@ -175,20 +174,10 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     , m_virtualDesktop(virtualDesktop)
     , m_output(outputId)
     , m_crtc(output ? output->crtc : XCB_NONE)
-    , m_mode(XCB_NONE)
-    , m_primary(false)
-    , m_rotation(XCB_RANDR_ROTATION_ROTATE_0)
     , m_outputName(getOutputName(output))
     , m_outputSizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
     , m_virtualSize(virtualDesktop->size())
     , m_virtualSizeMillimeters(virtualDesktop->physicalSize())
-    , m_orientation(Qt::PrimaryOrientation)
-    , m_refreshRate(60)
-    , m_forcedDpi(-1)
-    , m_pixelDensity(1)
-    , m_hintStyle(QFontEngine::HintStyle(-1))
-    , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
-    , m_antialiasingEnabled(-1)
 {
     if (connection->hasXRandr()) {
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
