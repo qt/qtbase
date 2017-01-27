@@ -196,7 +196,6 @@
 #endif
 
 // SSE intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSE2      "sse2"
 #if defined(__SSE2__) || (defined(QT_COMPILER_SUPPORTS_SSE2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #if defined(QT_LINUXBASE)
 /// this is an evil hack - the posix_memalign declaration in LSB
@@ -214,37 +213,38 @@
 #endif
 
 // SSE3 intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSE3      "sse3"
 #if defined(__SSE3__) || (defined(QT_COMPILER_SUPPORTS_SSE3) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <pmmintrin.h>
 #endif
 
 // SSSE3 intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSSE3     "ssse3"
 #if defined(__SSSE3__) || (defined(QT_COMPILER_SUPPORTS_SSSE3) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <tmmintrin.h>
 #endif
 
 // SSE4.1 intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSE4_1    "sse4.1"
 #if defined(__SSE4_1__) || (defined(QT_COMPILER_SUPPORTS_SSE4_1) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <smmintrin.h>
 #endif
 
 // SSE4.2 intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSE4_2    "sse4.2"
 #if defined(__SSE4_2__) || (defined(QT_COMPILER_SUPPORTS_SSE4_2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <nmmintrin.h>
 #endif
 
 // AVX intrinsics
-#define QT_FUNCTION_TARGET_STRING_AVX       "avx"
-#define QT_FUNCTION_TARGET_STRING_AVX2      "avx2"
 #if defined(__AVX__) || (defined(QT_COMPILER_SUPPORTS_AVX) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 // immintrin.h is the ultimate header, we don't need anything else after this
 #include <immintrin.h>
 #endif
 
+#define QT_FUNCTION_TARGET_STRING_SSE2      "sse2"
+#define QT_FUNCTION_TARGET_STRING_SSE3      "sse3"
+#define QT_FUNCTION_TARGET_STRING_SSSE3     "ssse3"
+#define QT_FUNCTION_TARGET_STRING_SSE4_1    "sse4.1"
+#define QT_FUNCTION_TARGET_STRING_SSE4_2    "sse4.2"
+#define QT_FUNCTION_TARGET_STRING_AVX       "avx"
+#define QT_FUNCTION_TARGET_STRING_AVX2      "avx2"
 #define QT_FUNCTION_TARGET_STRING_AVX512F       "avx512f"
 #define QT_FUNCTION_TARGET_STRING_AVX512CD      "avx512cd"
 #define QT_FUNCTION_TARGET_STRING_AVX512ER      "avx512er"
