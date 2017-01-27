@@ -1144,6 +1144,11 @@ static QRgba64 *QT_FASTCALL destFetch64uint32(QRgba64 *buffer, QRasterBuffer *ra
     return const_cast<QRgba64 *>(layout->convertToARGB64PM(buffer, src, length, 0, 0));
 }
 
+static QRgba64 * QT_FASTCALL destFetch64Undefined(QRgba64 *buffer, QRasterBuffer *, int, int, int)
+{
+    return buffer;
+}
+
 static DestFetchProc destFetchProc[QImage::NImageFormats] =
 {
     0,                  // Format_Invalid
@@ -1176,8 +1181,8 @@ static DestFetchProc destFetchProc[QImage::NImageFormats] =
 static DestFetchProc64 destFetchProc64[QImage::NImageFormats] =
 {
     0,                  // Format_Invalid
-    destFetch64,        // Format_Mono,
-    destFetch64,        // Format_MonoLSB
+    0,                  // Format_Mono,
+    0,                  // Format_MonoLSB
     0,                  // Format_Indexed8
     destFetch64uint32,  // Format_RGB32
     destFetch64uint32,  // Format_ARGB32,
@@ -3737,27 +3742,23 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
 
     op.destFetch = destFetchProc[data->rasterBuffer->format];
     op.destFetch64 = destFetchProc64[data->rasterBuffer->format];
-    if (op.mode == QPainter::CompositionMode_Source) {
-        switch (data->rasterBuffer->format) {
-        case QImage::Format_RGB32:
-        case QImage::Format_ARGB32_Premultiplied:
-            // don't clear destFetch as it sets up the pointer correctly to save one copy
-            break;
-        default: {
-            if (data->type == QSpanData::Texture && data->texture.const_alpha != 256)
+    if (op.mode == QPainter::CompositionMode_Source &&
+            (data->type != QSpanData::Texture || data->texture.const_alpha == 256)) {
+        const QSpan *lastSpan = spans + spanCount;
+        bool alphaSpans = false;
+        while (spans < lastSpan) {
+            if (spans->coverage != 255) {
+                alphaSpans = true;
                 break;
-            const QSpan *lastSpan = spans + spanCount;
-            bool alphaSpans = false;
-            while (spans < lastSpan) {
-                if (spans->coverage != 255) {
-                    alphaSpans = true;
-                    break;
-                }
-                ++spans;
             }
-            if (!alphaSpans)
-                op.destFetch = 0;
+            ++spans;
         }
+        if (!alphaSpans) {
+            // If all spans are opaque we do not need to fetch dest.
+            // But don't clear passthrough destFetch as they are just as fast and save destStore.
+            if (op.destFetch != destFetchARGB32P)
+                op.destFetch = 0;
+            op.destFetch64 = destFetch64Undefined;
         }
     }
 
