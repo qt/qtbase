@@ -427,7 +427,7 @@ NSDate *QDateTime::toNSDate() const
 
     Creates a CGRect from a QRect.
 
-    \sa fromCGRect()
+    \sa QRectF::fromCGRect()
 */
 CGRect QRect::toCGRect() const Q_DECL_NOTHROW
 {
@@ -449,7 +449,7 @@ CGRect QRectF::toCGRect() const Q_DECL_NOTHROW
 /*!
     \since 5.8
 
-    Creates a QRectF from a CGRect.
+    Creates a QRectF from CGRect \a rect.
 
     \sa toCGRect()
 */
@@ -465,7 +465,7 @@ QRectF QRectF::fromCGRect(CGRect rect) Q_DECL_NOTHROW
 
     Creates a CGPoint from a QPoint.
 
-    \sa fromCGPoint()
+    \sa QPointF::fromCGPoint()
 */
 CGPoint QPoint::toCGPoint() const Q_DECL_NOTHROW
 {
@@ -487,7 +487,7 @@ CGPoint QPointF::toCGPoint() const Q_DECL_NOTHROW
 /*!
     \since 5.8
 
-    Creates a QRectF from a CGPoint.
+    Creates a QRectF from CGPoint \a point.
 
     \sa toCGPoint()
 */
@@ -503,7 +503,7 @@ QPointF QPointF::fromCGPoint(CGPoint point) Q_DECL_NOTHROW
 
     Creates a CGSize from a QSize.
 
-    \sa fromCGSize()
+    \sa QSizeF::fromCGSize()
 */
 CGSize QSize::toCGSize() const Q_DECL_NOTHROW
 {
@@ -525,7 +525,7 @@ CGSize QSizeF::toCGSize() const Q_DECL_NOTHROW
 /*!
     \since 5.8
 
-    Creates a QRectF from a CGSize.
+    Creates a QRectF from \a size.
 
     \sa toCGSize()
 */
