@@ -7561,7 +7561,6 @@ start_lengthVariant:
             lineWidth = qMax<qreal>(0, r.width());
         if(!wordwrap)
             tf |= Qt::TextIncludeTrailingSpaces;
-        textLayout.engine()->ignoreBidi = bool(tf & Qt::TextDontPrint);
         textLayout.beginLayout();
 
         qreal leading = fm.leading();

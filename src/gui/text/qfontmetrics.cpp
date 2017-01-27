@@ -532,7 +532,6 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
     }
 
     QStackTextEngine layout(text, QFont(d.data()));
-    layout.ignoreBidi = true;
     return qRound(layout.width(0, len));
 }
 
@@ -668,7 +667,6 @@ QRect QFontMetrics::boundingRect(const QString &text) const
         return QRect();
 
     QStackTextEngine layout(text, QFont(d.data()));
-    layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.boundingBox(0, text.length());
     return QRect(qRound(gm.x), qRound(gm.y), qRound(gm.width), qRound(gm.height));
@@ -837,7 +835,6 @@ QRect QFontMetrics::tightBoundingRect(const QString &text) const
         return QRect();
 
     QStackTextEngine layout(text, QFont(d.data()));
-    layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.tightBoundingBox(0, text.length());
     return QRect(qRound(gm.x), qRound(gm.y), qRound(gm.width), qRound(gm.height));
@@ -1371,7 +1368,6 @@ qreal QFontMetricsF::width(const QString &text) const
     int len = (pos != -1) ? pos : text.length();
 
     QStackTextEngine layout(text, QFont(d.data()));
-    layout.ignoreBidi = true;
     layout.itemize();
     return layout.width(0, len).toReal();
 }
@@ -1454,7 +1450,6 @@ QRectF QFontMetricsF::boundingRect(const QString &text) const
         return QRectF();
 
     QStackTextEngine layout(text, QFont(d.data()));
-    layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.boundingBox(0, len);
     return QRectF(gm.x.toReal(), gm.y.toReal(),
@@ -1626,7 +1621,6 @@ QRectF QFontMetricsF::tightBoundingRect(const QString &text) const
         return QRect();
 
     QStackTextEngine layout(text, QFont(d.data()));
-    layout.ignoreBidi = true;
     layout.itemize();
     glyph_metrics_t gm = layout.tightBoundingBox(0, text.length());
     return QRectF(gm.x.toReal(), gm.y.toReal(), gm.width.toReal(), gm.height.toReal());
