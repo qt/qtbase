@@ -317,10 +317,20 @@
             "type": "compile",
             "test": "common/sse4_2"
         },
+        "aesni": {
+            "label": "AES new instructions",
+            "type": "compile",
+            "test": "common/aesni"
+        },
         "f16c": {
             "label": "F16C instructions",
             "type": "compile",
             "test": "common/f16c"
+        },
+        "shani": {
+            "label": "SHA new instructions",
+            "type": "compile",
+            "test": "common/shani"
         },
         "avx": {
             "label": "AVX instructions",
@@ -869,6 +879,22 @@
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512VBMI", "value": 1 }
+            ]
+        },
+        "aesni": {
+            "label": "aesni",
+            "condition": "features.sse2 && tests.aesni",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_AES", "value": 1 }
+            ]
+        },
+        "shani": {
+            "label": "shani",
+            "condition": "features.sse2 && tests.shani",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_SHA", "value": 1 }
             ]
         },
         "mips_dsp": {

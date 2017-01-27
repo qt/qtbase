@@ -261,7 +261,7 @@
 #  endif
 #endif
 
-#if defined(__AES__) || defined(__PCLMUL__)
+#if defined(__AES__) || defined(__PCLMUL__) || (defined(QT_COMPILER_SUPPORTS_AES) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #  include <wmmintrin.h>
 #endif
 
