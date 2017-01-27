@@ -180,7 +180,6 @@ public:
 
     QMainWindow::DockOptions dockOptions;
     void setDockOptions(QMainWindow::DockOptions opts);
-    bool usesHIToolBar(QToolBar *toolbar) const;
 
     void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
@@ -313,10 +312,8 @@ public:
     QLayoutItem *unplug(QWidget *widget, bool group = false);
     void revert(QLayoutItem *widgetItem);
     void updateGapIndicator();
-    void paintDropIndicator(QPainter *p, QWidget *widget, const QRegion &clip);
     void applyState(QMainWindowLayoutState &newState, bool animate = true);
     void restore(bool keepSavedState = false);
-    void updateHIToolBarStatus();
     void animationFinished(QWidget *widget);
 
 private Q_SLOTS:
@@ -329,40 +326,6 @@ private Q_SLOTS:
 private:
 #ifndef QT_NO_TABBAR
     void updateTabBarShapes();
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    static OSStatus qtmacToolbarDelegate(EventHandlerCallRef, EventRef , void *);
-    static OSStatus qtoolbarInHIToolbarHandler(EventHandlerCallRef inCallRef, EventRef event,
-                                               void *data);
-    static void qtMacHIToolbarRegisterQToolBarInHIToolborItemClass();
-    static HIToolbarItemRef CreateToolbarItemForIdentifier(CFStringRef identifier, CFTypeRef data);
-    static HIToolbarItemRef createQToolBarInHIToolbarItem(QToolBar *toolbar,
-                                                          QMainWindowLayout *layout);
-public:
-    struct ToolBarSaveState {
-        ToolBarSaveState() : movable(false) { }
-        ToolBarSaveState(bool newMovable, const QSize &newMax)
-        : movable(newMovable), maximumSize(newMax) { }
-        bool movable;
-        QSize maximumSize;
-    };
-    QList<QToolBar *> qtoolbarsInUnifiedToolbarList;
-    QList<void *> toolbarItemsCopy;
-    QHash<void *, QToolBar *> unifiedToolbarHash;
-    QHash<QToolBar *, ToolBarSaveState> toolbarSaveState;
-    QHash<QString, QToolBar *> cocoaItemIDToToolbarHash;
-    void insertIntoMacToolbar(QToolBar *before, QToolBar *after);
-    void removeFromMacToolbar(QToolBar *toolbar);
-    void cleanUpMacToolbarItems();
-    void fixSizeInUnifiedToolbar(QToolBar *tb) const;
-    bool useHIToolBar;
-    bool activateUnifiedToolbarAfterFullScreen;
-    void syncUnifiedToolbarVisibility();
-    bool blockVisiblityCheck;
-
-    QUnifiedToolbarSurface *unifiedSurface;
-    void updateUnifiedToolbarOffset();
-
 #endif
 };
 

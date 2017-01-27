@@ -70,10 +70,6 @@
 #include <private/qapplication_p.h>
 #include <private/qlayoutengine_p.h>
 #include <private/qwidgetresizehandler_p.h>
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-#   include <private/qcore_mac_p.h>
-#   include <private/qt_cocoa_helpers_mac_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1183,14 +1179,7 @@ void QMainWindowLayout::removeToolBar(QToolBar *toolbar)
         QObject::disconnect(parentWidget(), SIGNAL(toolButtonStyleChanged(Qt::ToolButtonStyle)),
                    toolbar, SLOT(_q_updateToolButtonStyle(Qt::ToolButtonStyle)));
 
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        if (usesHIToolBar(toolbar)) {
-            removeFromMacToolbar(toolbar);
-        } else
-#endif
-        {
-            removeWidget(toolbar);
-        }
+        removeWidget(toolbar);
     }
 }
 
@@ -1202,25 +1191,17 @@ void QMainWindowLayout::addToolBar(Qt::ToolBarArea area,
                                    bool)
 {
     validateToolBarArea(area);
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    if ((area == Qt::TopToolBarArea)
-            && layoutState.mainWindow->unifiedTitleAndToolBarOnMac()) {
-        insertIntoMacToolbar(0, toolbar);
-    } else
-#endif
-    {
-        //let's add the toolbar to the layout
-        addChildWidget(toolbar);
-        QLayoutItem * item = layoutState.toolBarAreaLayout.addToolBar(toDockPos(area), toolbar);
-        if (savedState.isValid() && item) {
-            // copy the toolbar also in the saved state
-            savedState.toolBarAreaLayout.insertItem(toDockPos(area), item);
-        }
-        invalidate();
-
-        //this ensures that the toolbar has the right window flags (not floating any more)
-        toolbar->d_func()->updateWindowFlags(false /*floating*/);
+    // let's add the toolbar to the layout
+    addChildWidget(toolbar);
+    QLayoutItem *item = layoutState.toolBarAreaLayout.addToolBar(toDockPos(area), toolbar);
+    if (savedState.isValid() && item) {
+        // copy the toolbar also in the saved state
+        savedState.toolBarAreaLayout.insertItem(toDockPos(area), item);
     }
+    invalidate();
+
+    // this ensures that the toolbar has the right window flags (not floating any more)
+    toolbar->d_func()->updateWindowFlags(false /*floating*/);
 }
 
 /*!
@@ -1228,27 +1209,20 @@ void QMainWindowLayout::addToolBar(Qt::ToolBarArea area,
 */
 void QMainWindowLayout::insertToolBar(QToolBar *before, QToolBar *toolbar)
 {
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    if (usesHIToolBar(before)) {
-        insertIntoMacToolbar(before, toolbar);
-    } else
-#endif
-    {
-        addChildWidget(toolbar);
-        QLayoutItem * item = layoutState.toolBarAreaLayout.insertToolBar(before, toolbar);
-        if (savedState.isValid() && item) {
-            // copy the toolbar also in the saved state
-            savedState.toolBarAreaLayout.insertItem(before, item);
-        }
-        if (!currentGapPos.isEmpty() && currentGapPos.constFirst() == 0) {
-            currentGapPos = layoutState.toolBarAreaLayout.currentGapIndex();
-            if (!currentGapPos.isEmpty()) {
-                currentGapPos.prepend(0);
-                currentGapRect = layoutState.itemRect(currentGapPos);
-            }
-        }
-        invalidate();
+    addChildWidget(toolbar);
+    QLayoutItem *item = layoutState.toolBarAreaLayout.insertToolBar(before, toolbar);
+    if (savedState.isValid() && item) {
+        // copy the toolbar also in the saved state
+        savedState.toolBarAreaLayout.insertItem(before, item);
     }
+    if (!currentGapPos.isEmpty() && currentGapPos.constFirst() == 0) {
+        currentGapPos = layoutState.toolBarAreaLayout.currentGapIndex();
+        if (!currentGapPos.isEmpty()) {
+            currentGapPos.prepend(0);
+            currentGapRect = layoutState.itemRect(currentGapPos);
+        }
+    }
+    invalidate();
 }
 
 Qt::ToolBarArea QMainWindowLayout::toolBarArea(QToolBar *toolbar) const
@@ -1261,12 +1235,6 @@ Qt::ToolBarArea QMainWindowLayout::toolBarArea(QToolBar *toolbar) const
         case QInternal::BottomDock: return Qt::BottomToolBarArea;
         default: break;
     }
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    if (pos == QInternal::DockCount) {
-        if (qtoolbarsInUnifiedToolbarList.contains(toolbar))
-            return Qt::TopToolBarArea;
-    }
-#endif
     return Qt::NoToolBarArea;
 }
 
@@ -1283,70 +1251,15 @@ void QMainWindowLayout::getStyleOptionInfo(QStyleOptionToolBar *option, QToolBar
 
 void QMainWindowLayout::toggleToolBarsVisible()
 {
-    bool updateNonUnifiedParts = true;
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    if (layoutState.mainWindow->unifiedTitleAndToolBarOnMac()) {
-        // If we hit this case, someone has pressed the "toolbar button" which will
-        // toggle the unified toolbar visibility, because that's what the user wants.
-        // We might be in a situation where someone has hidden all the toolbars
-        // beforehand (maybe in construction), but now they've hit this button and
-        // and are expecting the items to show. What do we do?
-        // 1) Check the visibility of all the toolbars, if one is visible, do nothing, this
-        //    preserves what people would expect (these toolbars were visible when I clicked last time).
-        // 2) If NONE are visible, then show them all. Again, this preserves the user expectation
-        //    of, "I want to see the toolbars." The user may get more toolbars than expected, but this
-        //    is better seeing nothing.
-        // Don't worry about any of this if we are going invisible. This does mean we may get
-        // into issues when switching into and out of fullscreen mode, but this is probably minor.
-        // If we ever need to do hiding, that would have to be taken care of after the unified toolbar
-        // has finished hiding.
-        // People can of course handle the QEvent::ToolBarChange event themselves and do
-        // WHATEVER they want if they don't like what we are doing (though the unified toolbar
-        // will fire regardless).
-
-        // Check if we REALLY need to update the geometry below. If we only have items in the
-        // unified toolbar, all the docks will be empty, so there's very little point
-        // in doing the geometry as Apple will do it (we also avoid flicker in Cocoa as well).
-        // FWIW, layoutState.toolBarAreaLayout.visible and the state of the unified toolbar
-        // visibility can get out of sync. I really don't think it's a big issue. It is kept
-        // to a minimum because we only change the visibility if we absolutely must.
-        // update the "non unified parts."
-        updateNonUnifiedParts = !layoutState.toolBarAreaLayout.isEmpty();
-
-        // We get this function before the unified toolbar does its thing.
-        // So, the value will be opposite of what we expect.
-        bool goingVisible = !macWindowToolbarIsVisible(qt_mac_window_for(layoutState.mainWindow));
-        if (goingVisible) {
-            const int ToolBarCount = qtoolbarsInUnifiedToolbarList.size();
-            bool needAllVisible = true;
-            for (int i = 0; i < ToolBarCount; ++i) {
-                if (!qtoolbarsInUnifiedToolbarList.at(i)->isHidden()) {
-                    needAllVisible = false;
-                    break;
-                }
-            }
-            if (needAllVisible) {
-                QBoolBlocker blocker(blockVisiblityCheck);  // Disable the visibilty check because
-                                                            // the toggle has already happened.
-                for (int i = 0; i < ToolBarCount; ++i)
-                    qtoolbarsInUnifiedToolbarList.at(i)->setVisible(true);
-            }
-        }
-        if (!updateNonUnifiedParts)
-            layoutState.toolBarAreaLayout.visible = goingVisible;
-    }
-#endif
-    if (updateNonUnifiedParts) {
-        layoutState.toolBarAreaLayout.visible = !layoutState.toolBarAreaLayout.visible;
-        if (!layoutState.mainWindow->isMaximized()) {
-            QPoint topLeft = parentWidget()->geometry().topLeft();
-            QRect r = parentWidget()->geometry();
-            r = layoutState.toolBarAreaLayout.rectHint(r);
-            r.moveTo(topLeft);
-            parentWidget()->setGeometry(r);
-        } else {
-            update();
-        }
+    layoutState.toolBarAreaLayout.visible = !layoutState.toolBarAreaLayout.visible;
+    if (!layoutState.mainWindow->isMaximized()) {
+        QPoint topLeft = parentWidget()->geometry().topLeft();
+        QRect r = parentWidget()->geometry();
+        r = layoutState.toolBarAreaLayout.rectHint(r);
+        r.moveTo(topLeft);
+        parentWidget()->setGeometry(r);
+    } else {
+        update();
     }
 }
 
@@ -1933,14 +1846,6 @@ QSize QMainWindowLayout::minimumSize() const
         const QSize sbMin = statusbar ? statusbar->minimumSize() : QSize(0, 0);
         minSize = QSize(qMax(sbMin.width(), minSize.width()),
                         sbMin.height() + minSize.height());
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        const QSize storedSize = minSize;
-        int minWidth = 0;
-        foreach (QToolBar *toolbar, qtoolbarsInUnifiedToolbarList) {
-            minWidth += toolbar->sizeHint().width() + 20;
-        }
-        minSize = QSize(qMax(minWidth, storedSize.width()), storedSize.height());
-#endif
     }
     return minSize;
 }
@@ -2253,9 +2158,6 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLay
 #endif // QT_NO_DOCKWIDGET
     , widgetAnimator(this)
     , pluggingWidget(0)
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    , blockVisiblityCheck(false)
-#endif
 {
     if (parentLayout)
         setParent(parentLayout);
@@ -2279,10 +2181,6 @@ QMainWindowLayout::~QMainWindowLayout()
 {
     layoutState.deleteAllLayoutItems();
     layoutState.deleteCentralWidgetItem();
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    cleanUpMacToolbarItems();
-#endif
 
     delete statusbar;
 }
@@ -2652,22 +2550,6 @@ bool QMainWindowLayout::restoreState(QDataStream &stream)
 #endif // QT_NO_DOCKWIDGET
 
     return true;
-}
-
-
-// Returns if this toolbar *should* be using HIToolbar. Won't work for all in between cases
-// for example, you have a toolbar in the top area and then you suddenly turn on
-// HIToolbar.
-bool QMainWindowLayout::usesHIToolBar(QToolBar *toolbar) const
-{
-#if 1 // Used to be excluded in Qt4 for Q_WS_MAC
-    Q_UNUSED(toolbar);
-    return false;
-#else
-    return qtoolbarsInUnifiedToolbarList.contains(toolbar)
-           || ((toolBarArea(toolbar) == Qt::TopToolBarArea)
-                && layoutState.mainWindow->unifiedTitleAndToolBarOnMac());
-#endif
 }
 
 void QMainWindowLayout::timerEvent(QTimerEvent *e)

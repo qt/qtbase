@@ -61,13 +61,6 @@
 #ifdef Q_OS_OSX
 #include <qpa/qplatformnativeinterface.h>
 #endif
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-#include <private/qt_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
-QT_BEGIN_NAMESPACE
-extern OSWindowRef qt_mac_window_for(const QWidget *); // qwidget_mac.cpp
-QT_END_NAMESPACE
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -80,10 +73,6 @@ public:
 #ifdef Q_OS_OSX
             , useUnifiedToolBar(false)
 #endif
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-            , useHIToolBar(false)
-            , activateUnifiedToolbarAfterFullScreen(false)
-#endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
             , hasOldCursor(false) , cursorAdjusted(false)
 #endif
@@ -94,10 +83,6 @@ public:
     Qt::ToolButtonStyle toolButtonStyle;
 #ifdef Q_OS_OSX
     bool useUnifiedToolBar;
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    bool useHIToolBar;
-    bool activateUnifiedToolbarAfterFullScreen;
 #endif
     void init();
     QList<int> hoverSeparator;
@@ -805,11 +790,7 @@ void QMainWindow::addToolBar(Qt::ToolBarArea area, QToolBar *toolbar)
 #endif
     }
 
-    if (!d->layout->usesHIToolBar(toolbar)) {
-        d->layout->removeWidget(toolbar);
-    } else {
-        d->layout->removeToolBar(toolbar);
-    }
+    d->layout->removeToolBar(toolbar);
 
     toolbar->d_func()->_q_updateIconSize(d->iconSize);
     toolbar->d_func()->_q_updateToolButtonStyle(d->toolButtonStyle);
@@ -1111,21 +1092,6 @@ void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget
     }
     d_func()->layout->removeWidget(dockwidget); // in case it was already in here
     addDockWidget(area, dockwidget, orientation);
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC     //drawer support
-    QMacAutoReleasePool pool;
-    extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
-    if (qt_mac_is_macdrawer(dockwidget)) {
-        extern bool qt_mac_set_drawer_preferred_edge(QWidget *, Qt::DockWidgetArea); //qwidget_mac.cpp
-        window()->createWinId();
-        dockwidget->window()->createWinId();
-        qt_mac_set_drawer_preferred_edge(dockwidget, area);
-        if (dockwidget->isVisible()) {
-            dockwidget->hide();
-            dockwidget->show();
-        }
-    }
-#endif
 }
 
 /*!
@@ -1516,26 +1482,6 @@ bool QMainWindow::event(QEvent *event)
             if (!d->explicitIconSize)
                 setIconSize(QSize());
             break;
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        case QEvent::Show:
-            if (unifiedTitleAndToolBarOnMac())
-                d->layout->syncUnifiedToolbarVisibility();
-            d->layout->blockVisiblityCheck = false;
-            break;
-       case QEvent::WindowStateChange:
-            {
-                if (isHidden()) {
-                    // We are coming out of a minimize, leave things as is.
-                    d->layout->blockVisiblityCheck = true;
-                }
-                // We need to update the HIToolbar status when we go out of or into fullscreen.
-                QWindowStateChangeEvent *wce = static_cast<QWindowStateChangeEvent *>(event);
-                if ((windowState() & Qt::WindowFullScreen) || (wce->oldState() & Qt::WindowFullScreen)) {
-                    d->layout->updateHIToolBarStatus();
-                }
-            }
-            break;
-#endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
        case QEvent::CursorChange:
            // CursorChange events are triggered as mouse moves to new widgets even
@@ -1589,33 +1535,6 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
         (reinterpret_cast<SetContentBorderEnabledFunction>(function))(window()->windowHandle(), set);
         update();
     }
-#endif
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    Q_D(QMainWindow);
-    if (!isWindow() || d->useHIToolBar == set || QSysInfo::MacintoshVersion < QSysInfo::MV_10_3)
-        return;
-
-    d->useHIToolBar = set;
-    createWinId(); // We need the hiview for down below.
-
-    // Activate the unified toolbar with the raster engine.
-    if (windowSurface() && set) {
-        d->layout->unifiedSurface = new QUnifiedToolbarSurface(this);
-    }
-
-    d->layout->updateHIToolBarStatus();
-
-    // Deactivate the unified toolbar with the raster engine.
-    if (windowSurface() && !set) {
-        if (d->layout->unifiedSurface) {
-            delete d->layout->unifiedSurface;
-            d->layout->unifiedSurface = 0;
-        }
-    }
-
-    // Enabling the unified toolbar clears the opaque size grip setting, update it.
-    d->macUpdateOpaqueSizeGrip();
 #else
     Q_UNUSED(set)
 #endif
@@ -1625,9 +1544,6 @@ bool QMainWindow::unifiedTitleAndToolBarOnMac() const
 {
 #ifdef Q_OS_OSX
     return d_func()->useUnifiedToolBar;
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    return d_func()->useHIToolBar && !testAttribute(Qt::WA_MacBrushedMetal) && !(windowFlags() & Qt::FramelessWindowHint);
 #endif
     return false;
 }
