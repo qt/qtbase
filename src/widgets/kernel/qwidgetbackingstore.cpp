@@ -164,23 +164,11 @@ static void showYellowThing_win(QWidget *widget, const QRegion &region, int msec
         return;
     const HDC hdc = reinterpret_cast<HDC>(hdcV);
 
-    HBRUSH brush;
-    static int i = 0;
-    switch (i) {
-    case 0:
-        brush = CreateSolidBrush(RGB(255, 255, 0));
-        break;
-    case 1:
-        brush = CreateSolidBrush(RGB(255, 200, 55));
-        break;
-    case 2:
-        brush = CreateSolidBrush(RGB(200, 255, 55));
-        break;
-    case 3:
-        brush = CreateSolidBrush(RGB(200, 200, 0));
-        break;
-    }
-    i = (i + 1) & 3;
+    static const COLORREF colors[] = {RGB(255, 255, 0), RGB(255, 200, 55), RGB(200, 255, 55), RGB(200, 200, 0)};
+
+    static size_t i = 0;
+    const HBRUSH brush = CreateSolidBrush(colors[i]);
+    i = (i + 1) % (sizeof(colors) / sizeof(colors[0]));
 
     for (const QRect &rect : region) {
         RECT winRect;
