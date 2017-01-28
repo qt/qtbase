@@ -4635,6 +4635,8 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
 QByteArray QString::toLocal8Bit_helper(const QChar *data, int size)
 {
+    if (!data)
+        return QByteArray();
 #ifndef QT_NO_TEXTCODEC
     QTextCodec *localeCodec = QTextCodec::codecForLocale();
     if (localeCodec)
@@ -10376,6 +10378,8 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
 */
 QByteArray QStringRef::toLatin1() const
 {
+    if (isNull())
+        return QByteArray();
     return QString::toLatin1_helper(unicode(), length());
 }
 
@@ -10414,9 +10418,11 @@ QByteArray QStringRef::toLatin1() const
 QByteArray QStringRef::toLocal8Bit() const
 {
 #ifndef QT_NO_TEXTCODEC
-    QTextCodec *localeCodec = QTextCodec::codecForLocale();
-    if (localeCodec)
-        return localeCodec->fromUnicode(unicode(), length());
+    if (!isNull()) {
+        QTextCodec *localeCodec = QTextCodec::codecForLocale();
+        if (localeCodec)
+            return localeCodec->fromUnicode(unicode(), length());
+    }
 #endif // QT_NO_TEXTCODEC
     return toLatin1();
 }

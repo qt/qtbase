@@ -532,9 +532,9 @@ public:
     QByteArray toUtf8() && Q_REQUIRED_RESULT
     { return toUtf8_helper(*this); }
     QByteArray toLocal8Bit() const & Q_REQUIRED_RESULT
-    { return toLocal8Bit_helper(constData(), size()); }
+    { return toLocal8Bit_helper(isNull() ? nullptr : constData(), size()); }
     QByteArray toLocal8Bit() && Q_REQUIRED_RESULT
-    { return toLocal8Bit_helper(constData(), size()); }
+    { return toLocal8Bit_helper(isNull() ? nullptr : constData(), size()); }
 #else
     QByteArray toLatin1() const Q_REQUIRED_RESULT;
     QByteArray toUtf8() const Q_REQUIRED_RESULT;
