@@ -67,9 +67,11 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
 
     QString result = prefix;
 
-    QString part1 = key;
-    part1.replace(QRegExp(QLatin1String("[^A-Za-z]")), QString());
-    result.append(part1);
+    for (QChar ch : key) {
+        if ((ch >= QLatin1Char('a') && ch <= QLatin1Char('z')) ||
+           (ch >= QLatin1Char('A') && ch <= QLatin1Char('Z')))
+           result += ch;
+    }
 
     QByteArray hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
     result.append(QLatin1String(hex));

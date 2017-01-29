@@ -815,6 +815,7 @@ void tst_QSharedMemory::uniqueKey_data()
     QTest::newRow("key != key1") << QString("key") << QString("key1");
     QTest::newRow("ke1y != key1") << QString("ke1y") << QString("key1");
     QTest::newRow("key1 != key2") << QString("key1") << QString("key2");
+    QTest::newRow("Noël -> Nol") << QString::fromUtf8("N\xc3\xabl") << QString("Nol");
 }
 
 void tst_QSharedMemory::uniqueKey()
