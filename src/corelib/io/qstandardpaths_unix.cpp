@@ -42,6 +42,7 @@
 #include <qfile.h>
 #include <qhash.h>
 #include <qtextstream.h>
+#include <qregularexpression.h>
 #include <private/qfilesystemengine_p.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -179,11 +180,12 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         QHash<QString, QString> lines;
         QTextStream stream(&file);
         // Only look for lines like: XDG_DESKTOP_DIR="$HOME/Desktop"
-        QRegExp exp(QLatin1String("^XDG_(.*)_DIR=(.*)$"));
+        QRegularExpression exp(QLatin1String("^XDG_(.*)_DIR=(.*)$"));
         while (!stream.atEnd()) {
             const QString &line = stream.readLine();
-            if (exp.indexIn(line) != -1) {
-                const QStringList lst = exp.capturedTexts();
+            QRegularExpressionMatch match = exp.match(line);
+            if (match.hasMatch()) {
+                const QStringList lst = match.capturedTexts();
                 const QString key = lst.at(1);
                 QString value = lst.at(2);
                 if (value.length() > 2
