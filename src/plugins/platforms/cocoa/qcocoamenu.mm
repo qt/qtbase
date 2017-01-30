@@ -581,8 +581,8 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
 
     // The calls above block, and also swallow any mouse release event,
     // so we need to clear any mouse button that triggered the menu popup.
-    if ([view isKindOfClass:[QNSView class]])
-        [(QNSView *)view resetMouseButtons];
+    if (!cocoaWindow->isForeignWindow())
+        [qnsview_cast(view) resetMouseButtons];
 }
 
 void QCocoaMenu::dismiss()
