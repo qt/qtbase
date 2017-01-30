@@ -6364,7 +6364,7 @@ qlonglong QString::toIntegral_helper(const QChar *data, int len, bool *ok, int b
     }
 #endif
 
-    return QLocaleData::c()->stringToLongLong(data, len, base, ok, QLocale::RejectGroupSeparator);
+    return QLocaleData::c()->stringToLongLong(QStringView(data, len), base, ok, QLocale::RejectGroupSeparator);
 }
 
 
@@ -6404,7 +6404,7 @@ qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int
     }
 #endif
 
-    return QLocaleData::c()->stringToUnsLongLong(data, len, base, ok,
+    return QLocaleData::c()->stringToUnsLongLong(QStringView(data, len), base, ok,
                                                  QLocale::RejectGroupSeparator);
 }
 
@@ -6606,7 +6606,7 @@ ushort QString::toUShort(bool *ok, int base) const
 
 double QString::toDouble(bool *ok) const
 {
-    return QLocaleData::c()->stringToDouble(constData(), size(), ok, QLocale::RejectGroupSeparator);
+    return QLocaleData::c()->stringToDouble(*this, ok, QLocale::RejectGroupSeparator);
 }
 
 /*!
@@ -10863,7 +10863,7 @@ ushort QStringRef::toUShort(bool *ok, int base) const
 
 double QStringRef::toDouble(bool *ok) const
 {
-    return QLocaleData::c()->stringToDouble(constData(), size(), ok, QLocale::RejectGroupSeparator);
+    return QLocaleData::c()->stringToDouble(*this, ok, QLocale::RejectGroupSeparator);
 }
 
 /*!

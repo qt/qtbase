@@ -254,25 +254,21 @@ public:
         return float(d);
     }
 
-    double stringToDouble(const QChar *begin, int len, bool *ok,
-                          QLocale::NumberOptions number_options) const;
-    qint64 stringToLongLong(const QChar *begin, int len, int base, bool *ok,
-                            QLocale::NumberOptions number_options) const;
-    quint64 stringToUnsLongLong(const QChar *begin, int len, int base, bool *ok,
-                                QLocale::NumberOptions number_options) const;
+    double stringToDouble(QStringView str, bool *ok, QLocale::NumberOptions options) const;
+    qint64 stringToLongLong(QStringView str, int base, bool *ok, QLocale::NumberOptions options) const;
+    quint64 stringToUnsLongLong(QStringView str, int base, bool *ok, QLocale::NumberOptions options) const;
 
     // these functions are used in QIntValidator (QtGui)
     Q_CORE_EXPORT static double bytearrayToDouble(const char *num, bool *ok, bool *overflow = 0);
     Q_CORE_EXPORT static qint64 bytearrayToLongLong(const char *num, int base, bool *ok, bool *overflow = 0);
     Q_CORE_EXPORT static quint64 bytearrayToUnsLongLong(const char *num, int base, bool *ok);
 
-    bool numberToCLocale(const QChar *str, int len, QLocale::NumberOptions number_options,
+    bool numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
                          CharBuff *result) const;
     inline char digitToCLocale(QChar c) const;
 
     // this function is used in QIntValidator (QtGui)
-    Q_CORE_EXPORT bool validateChars(
-            const QString &str, NumberMode numMode, QByteArray *buff, int decDigits = -1,
+    Q_CORE_EXPORT bool validateChars(QStringView str, NumberMode numMode, QByteArray *buff, int decDigits = -1,
             QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
 
 public:

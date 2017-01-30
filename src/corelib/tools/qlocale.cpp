@@ -1113,27 +1113,27 @@ QString QLocale::name() const
     return d->languageCode() + QLatin1Char('_') + d->countryCode();
 }
 
-static qlonglong toIntegral_helper(const QLocaleData *d, const QChar *data, int len, bool *ok,
+static qlonglong toIntegral_helper(const QLocaleData *d, QStringView str, bool *ok,
                                    QLocale::NumberOptions mode, qlonglong)
 {
-    return d->stringToLongLong(data, len, 10, ok, mode);
+    return d->stringToLongLong(str, 10, ok, mode);
 }
 
-static qulonglong toIntegral_helper(const QLocaleData *d, const QChar *data, int len, bool *ok,
+static qulonglong toIntegral_helper(const QLocaleData *d, QStringView str, bool *ok,
                                     QLocale::NumberOptions mode, qulonglong)
 {
-    return d->stringToUnsLongLong(data, len, 10, ok, mode);
+    return d->stringToUnsLongLong(str, 10, ok, mode);
 }
 
 template <typename T> static inline
-T toIntegral_helper(const QLocalePrivate *d, const QChar *data, int len, bool *ok)
+T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
 {
     // ### Qt6: use std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type
     const bool isUnsigned = T(0) < T(-1);
     typedef typename QtPrivate::QConditional<isUnsigned, qulonglong, qlonglong>::Type Int64;
 
     // we select the right overload by the last, unused parameter
-    Int64 val = toIntegral_helper(d->m_data, data, len, ok, d->m_numberOptions, Int64());
+    Int64 val = toIntegral_helper(d->m_data, str, ok, d->m_numberOptions, Int64());
     if (T(val) != val) {
         if (ok)
             *ok = false;
@@ -1217,7 +1217,7 @@ QString QLocale::scriptToString(QLocale::Script script)
 
 short QLocale::toShort(const QString &s, bool *ok) const
 {
-    return toIntegral_helper<short>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<short>(d, s, ok);
 }
 
 /*!
@@ -1235,7 +1235,7 @@ short QLocale::toShort(const QString &s, bool *ok) const
 
 ushort QLocale::toUShort(const QString &s, bool *ok) const
 {
-    return toIntegral_helper<ushort>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<ushort>(d, s, ok);
 }
 
 /*!
@@ -1253,7 +1253,7 @@ ushort QLocale::toUShort(const QString &s, bool *ok) const
 
 int QLocale::toInt(const QString &s, bool *ok) const
 {
-    return toIntegral_helper<int>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<int>(d, s, ok);
 }
 
 /*!
@@ -1271,7 +1271,7 @@ int QLocale::toInt(const QString &s, bool *ok) const
 
 uint QLocale::toUInt(const QString &s, bool *ok) const
 {
-    return toIntegral_helper<uint>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<uint>(d, s, ok);
 }
 
 /*!
@@ -1290,7 +1290,7 @@ uint QLocale::toUInt(const QString &s, bool *ok) const
 
 qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 {
-    return toIntegral_helper<qlonglong>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<qlonglong>(d, s, ok);
 }
 
 /*!
@@ -1309,7 +1309,7 @@ qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 
 qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
 {
-    return toIntegral_helper<qulonglong>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<qulonglong>(d, s, ok);
 }
 
 /*!
@@ -1352,7 +1352,7 @@ float QLocale::toFloat(const QString &s, bool *ok) const
 
 double QLocale::toDouble(const QString &s, bool *ok) const
 {
-    return d->m_data->stringToDouble(s.constData(), s.size(), ok, d->m_numberOptions);
+    return d->m_data->stringToDouble(s, ok, d->m_numberOptions);
 }
 
 /*!
@@ -1372,7 +1372,7 @@ double QLocale::toDouble(const QString &s, bool *ok) const
 
 short QLocale::toShort(const QStringRef &s, bool *ok) const
 {
-    return toIntegral_helper<short>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<short>(d, s, ok);
 }
 
 /*!
@@ -1392,7 +1392,7 @@ short QLocale::toShort(const QStringRef &s, bool *ok) const
 
 ushort QLocale::toUShort(const QStringRef &s, bool *ok) const
 {
-    return toIntegral_helper<ushort>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<ushort>(d, s, ok);
 }
 
 /*!
@@ -1412,7 +1412,7 @@ ushort QLocale::toUShort(const QStringRef &s, bool *ok) const
 
 int QLocale::toInt(const QStringRef &s, bool *ok) const
 {
-    return toIntegral_helper<int>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<int>(d, s, ok);
 }
 
 /*!
@@ -1432,7 +1432,7 @@ int QLocale::toInt(const QStringRef &s, bool *ok) const
 
 uint QLocale::toUInt(const QStringRef &s, bool *ok) const
 {
-    return toIntegral_helper<uint>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<uint>(d, s, ok);
 }
 
 /*!
@@ -1453,7 +1453,7 @@ uint QLocale::toUInt(const QStringRef &s, bool *ok) const
 
 qlonglong QLocale::toLongLong(const QStringRef &s, bool *ok) const
 {
-    return toIntegral_helper<qlonglong>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<qlonglong>(d, s, ok);
 }
 
 /*!
@@ -1474,7 +1474,7 @@ qlonglong QLocale::toLongLong(const QStringRef &s, bool *ok) const
 
 qulonglong QLocale::toULongLong(const QStringRef &s, bool *ok) const
 {
-    return toIntegral_helper<qulonglong>(d, s.constData(), s.size(), ok);
+    return toIntegral_helper<qulonglong>(d, s, ok);
 }
 
 /*!
@@ -1521,7 +1521,7 @@ float QLocale::toFloat(const QStringRef &s, bool *ok) const
 
 double QLocale::toDouble(const QStringRef &s, bool *ok) const
 {
-    return d->m_data->stringToDouble(s.constData(), s.size(), ok, d->m_numberOptions);
+    return d->m_data->stringToDouble(s, ok, d->m_numberOptions);
 }
 
 
@@ -3067,12 +3067,12 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
     number. We can't detect junk here, since we don't even know the base
     of the number.
 */
-bool QLocaleData::numberToCLocale(const QChar *str, int len, QLocale::NumberOptions number_options,
+bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
                                   CharBuff *result) const
 {
-    const QChar *uc = str;
-    int l = len;
-    int idx = 0;
+    const QChar *uc = s.data();
+    auto l = s.size();
+    decltype(l) idx = 0;
 
     // Skip whitespace
     while (idx < l && uc[idx].isSpace())
@@ -3190,7 +3190,7 @@ bool QLocaleData::numberToCLocale(const QChar *str, int len, QLocale::NumberOpti
     return idx == l;
 }
 
-bool QLocaleData::validateChars(const QString &str, NumberMode numMode, QByteArray *buff,
+bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray *buff,
                                 int decDigits, QLocale::NumberOptions number_options) const
 {
     buff->clear();
@@ -3204,7 +3204,7 @@ bool QLocaleData::validateChars(const QString &str, NumberMode numMode, QByteArr
     bool dec = false;
     int decDigitCnt = 0;
 
-    for (int i = 0; i < str.length(); ++i) {
+    for (QStringView::size_type i = 0; i < str.size(); ++i) {
         char c = digitToCLocale(str.at(i));
 
         if (c >= '0' && c <= '9') {
@@ -3291,11 +3291,11 @@ bool QLocaleData::validateChars(const QString &str, NumberMode numMode, QByteArr
     return true;
 }
 
-double QLocaleData::stringToDouble(const QChar *begin, int len, bool *ok,
+double QLocaleData::stringToDouble(QStringView str, bool *ok,
                                    QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(begin, len, number_options, &buff)) {
+    if (!numberToCLocale(str, number_options, &buff)) {
         if (ok != 0)
             *ok = false;
         return 0.0;
@@ -3308,11 +3308,11 @@ double QLocaleData::stringToDouble(const QChar *begin, int len, bool *ok,
     return d;
 }
 
-qlonglong QLocaleData::stringToLongLong(const QChar *begin, int len, int base, bool *ok,
+qlonglong QLocaleData::stringToLongLong(QStringView str, int base, bool *ok,
                                         QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(begin, len, number_options, &buff)) {
+    if (!numberToCLocale(str, number_options, &buff)) {
         if (ok != 0)
             *ok = false;
         return 0;
@@ -3321,11 +3321,11 @@ qlonglong QLocaleData::stringToLongLong(const QChar *begin, int len, int base, b
     return bytearrayToLongLong(buff.constData(), base, ok);
 }
 
-qulonglong QLocaleData::stringToUnsLongLong(const QChar *begin, int len, int base, bool *ok,
+qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
                                             QLocale::NumberOptions number_options) const
 {
     CharBuff buff;
-    if (!numberToCLocale(begin, len, number_options, &buff)) {
+    if (!numberToCLocale(str, number_options, &buff)) {
         if (ok != 0)
             *ok = false;
         return 0;
