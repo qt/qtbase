@@ -1622,7 +1622,8 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
     if (message == WM_ERASEBKGND) // Backing store - ignored.
         return true;
     // Ignore invalid update bounding rectangles
-    if (!GetUpdateRect(m_data.hwnd, 0, FALSE))
+    RECT updateRect;
+    if (!GetUpdateRect(m_data.hwnd, &updateRect, FALSE))
         return false;
     PAINTSTRUCT ps;
 
@@ -1646,7 +1647,7 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
     // we still need to send isExposed=true, for compatibility.
     // Our tests depend on it.
     fireExpose(QRegion(qrectFromRECT(ps.rcPaint)), true);
-    if (!QWindowsContext::instance()->asyncExpose())
+    if (qSizeOfRect(updateRect) == m_data.geometry.size() && !QWindowsContext::instance()->asyncExpose())
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
     EndPaint(hwnd, &ps);
