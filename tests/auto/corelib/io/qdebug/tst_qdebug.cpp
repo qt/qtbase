@@ -51,6 +51,7 @@ private slots:
     void qDebugQChar() const;
     void qDebugQString() const;
     void qDebugQStringRef() const;
+    void qDebugQStringView() const;
     void qDebugQLatin1String() const;
     void qDebugQByteArray() const;
     void qDebugQFlags() const;
@@ -489,6 +490,46 @@ void tst_QDebug::qDebugQStringRef() const
         QCOMPARE(QString::fromLatin1(s_file), file);
         QCOMPARE(s_line, line);
         QCOMPARE(QString::fromLatin1(s_function), function);
+    }
+}
+
+void tst_QDebug::qDebugQStringView() const
+{
+    /* Use a basic string. */
+    {
+        QLatin1String file, function;
+        int line = 0;
+        const QStringView inView = QStringViewLiteral("input");
+
+        MessageHandlerSetter mhs(myMessageHandler);
+        { qDebug() << inView; }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+        file = QLatin1String(__FILE__); line = __LINE__ - 2; function = QLatin1String(Q_FUNC_INFO);
+#endif
+        QCOMPARE(s_msgType, QtDebugMsg);
+        QCOMPARE(s_msg, QLatin1String("\"input\""));
+        QCOMPARE(QLatin1String(s_file), file);
+        QCOMPARE(s_line, line);
+        QCOMPARE(QLatin1String(s_function), function);
+    }
+
+    /* Use a null QStringView. */
+    {
+        QString file, function;
+        int line = 0;
+
+        const QStringView inView;
+
+        MessageHandlerSetter mhs(myMessageHandler);
+        { qDebug() << inView; }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+        file = __FILE__; line = __LINE__ - 2; function = Q_FUNC_INFO;
+#endif
+        QCOMPARE(s_msgType, QtDebugMsg);
+        QCOMPARE(s_msg, QLatin1String("\"\""));
+        QCOMPARE(QLatin1String(s_file), file);
+        QCOMPARE(s_line, line);
+        QCOMPARE(QLatin1String(s_function), function);
     }
 }
 

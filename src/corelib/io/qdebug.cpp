@@ -648,6 +648,21 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \since 5.10
+    \fn QDebug &QDebug::operator<<(QStringView s)
+
+    Writes the string view, \a s, to the stream and returns a reference to the
+    stream. Normally, QDebug prints the string inside quotes and transforms
+    non-printable characters to their Unicode values (\\u1234).
+
+    To print non-printable characters without transformation, enable the
+    noquote() functionality. Note that some QDebug backends might not be 8-bit
+    clean.
+
+    See the QString overload for examples.
+*/
+
+/*!
     \fn QDebug &QDebug::operator<<(QLatin1String s)
 
     Writes the string, \a s, to the stream and returns a reference to the
