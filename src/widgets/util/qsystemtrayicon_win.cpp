@@ -564,7 +564,8 @@ void QSystemTrayIconPrivate::updateIcon_sys()
 
 void QSystemTrayIconPrivate::updateMenu_sys()
 {
-
+#if QT_CONFIG(menu)
+#endif
 }
 
 void QSystemTrayIconPrivate::updateToolTip_sys()

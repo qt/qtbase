@@ -43,6 +43,7 @@
 
 #include "qboxlayout.h"
 #include "qlineedit.h"
+#include <private/qkeymapper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,15 +81,8 @@ void QKeySequenceEditPrivate::init()
 
 int QKeySequenceEditPrivate::translateModifiers(Qt::KeyboardModifiers state, const QString &text)
 {
+    Q_UNUSED(text);
     int result = 0;
-    // The shift modifier only counts when it is not used to type a symbol
-    // that is only reachable using the shift key anyway
-    if ((state & Qt::ShiftModifier) && (text.isEmpty() ||
-                                        !text.at(0).isPrint() ||
-                                        text.at(0).isLetterOrNumber() ||
-                                        text.at(0).isSpace()))
-        result |= Qt::SHIFT;
-
     if (state & Qt::ControlModifier)
         result |= Qt::CTRL;
     if (state & Qt::MetaModifier)
@@ -272,7 +266,27 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
     if (d->keyNum >= QKeySequencePrivate::MaxKeyCount)
         return;
 
-    nextKey |= d->translateModifiers(e->modifiers(), e->text());
+    if (e->modifiers() & Qt::ShiftModifier) {
+        QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
+        int pkTotal = possibleKeys.count();
+        if (!pkTotal)
+            return;
+        bool found = false;
+        for (int i = 0; i < possibleKeys.size(); ++i) {
+            if (possibleKeys.at(i) - nextKey == int(e->modifiers())
+                || (possibleKeys.at(i) == nextKey && e->modifiers() == Qt::ShiftModifier)) {
+                nextKey = possibleKeys.at(i);
+                found = true;
+                break;
+            }
+        }
+        // Use as fallback
+        if (!found)
+            nextKey = possibleKeys.first();
+    } else {
+        nextKey |= d->translateModifiers(e->modifiers(), e->text());
+    }
+
 
     d->key[d->keyNum] = nextKey;
     d->keyNum++;

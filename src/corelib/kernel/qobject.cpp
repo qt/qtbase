@@ -2636,6 +2636,9 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     (exact same signal to the exact same slot on the same objects),
     the connection will fail and connect will return an invalid QMetaObject::Connection.
 
+    \note Qt::UniqueConnections do not work for lambdas, non-member functions
+    and functors; they only apply to connecting to member functions.
+
     The optional \a type parameter describes the type of connection
     to establish. In particular, it determines whether a particular
     signal is delivered to a slot immediately or queued for delivery
@@ -4705,7 +4708,10 @@ void qDeleteInEventHandler(QObject *o)
 
     Creates a connection of a given \a type from \a signal in
     \a sender object to \a functor to be placed in a specific event
-    loop of \a context, and returns a handle to the connection
+    loop of \a context, and returns a handle to the connection.
+
+    \note Qt::UniqueConnections do not work for lambdas, non-member functions
+    and functors; they only apply to connecting to member functions.
 
     The signal must be a function declared as a signal in the header.
     The slot function can be any function or functor that can be connected

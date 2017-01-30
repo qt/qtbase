@@ -29,7 +29,18 @@ isEmpty($${target_prefix}.INCDIRS) {
             cmd_prefix = "set LC_ALL=C&"
             cmd_suffix = "<NUL >NUL"
         }
-        output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$QMAKE_CXXFLAGS) -xc++ -E -v - 2>&1 $$cmd_suffix", lines)
+
+        cxx_flags = $$QMAKE_CXXFLAGS
+
+        # Manually inject the sysroot for Apple Platforms because its resolution
+        # normally does not happen until default_post.prf. This is especially
+        # important for moc to gain the correct default include directory list.
+        # While technically incorrect but without any likely practical effect,
+        # UIKit simulator platforms will see the device SDK's sysroot in
+        # QMAKE_DEFAULT_*DIRS, because they're handled in a single build pass.
+        darwin: cxx_flags += -isysroot $$QMAKE_MAC_SDK_PATH
+
+        output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$cxx_flags) -xc++ -E -v - 2>&1 $$cmd_suffix", lines)
         add_includes = false
         for (line, output) {
             line ~= s/^ *//  # remove leading spaces

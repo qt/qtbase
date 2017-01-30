@@ -106,7 +106,6 @@ Build options:
 
   -c++std <edition> .... Select C++ standard <edition> [c++1z/c++14/c++11]
                          (Not supported with MSVC)
-  -rtti ................ Build with Runtime Type Information [yes] (MSVC only)
 
   -sse2 ................ Use SSE2 instructions [auto]
   -sse3/-ssse3/-sse4.1/-sse4.2/-avx/-avx2/-avx512

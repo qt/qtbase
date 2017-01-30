@@ -135,6 +135,8 @@ NSImage *qt_mac_create_nsimage(const QIcon &icon, int defaultSize)
         availableSizes << QSize(defaultSize, defaultSize);
     foreach (QSize size, availableSizes) {
         QPixmap pm = icon.pixmap(size);
+        if (pm.isNull())
+            continue;
         QImage image = pm.toImage();
         CGImageRef cgImage = qt_mac_toCGImage(image);
         NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];

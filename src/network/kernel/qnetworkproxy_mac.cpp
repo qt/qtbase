@@ -189,12 +189,19 @@ struct PACInfo {
 
 void proxyAutoConfigCallback(void *client, CFArrayRef proxylist, CFErrorRef error)
 {
-    PACInfo *info = reinterpret_cast<PACInfo *>(reinterpret_cast<CFStreamClientContext *>(client)->info);
+    Q_ASSERT(client);
+
+    PACInfo *info = static_cast<PACInfo *>(client);
     info->done = true;
-    if (proxylist)
+
+    if (error) {
+        CFRetain(error);
+        info->error = error;
+    }
+    if (proxylist) {
         CFRetain(proxylist);
-    info->proxies = proxylist;
-    info->error = error;
+        info->proxies = proxylist;
+    }
 }
 } // anon namespace
 

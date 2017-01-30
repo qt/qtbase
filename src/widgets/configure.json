@@ -173,7 +173,7 @@
             "label": "QSpinBox",
             "purpose": "Provides spin boxes handling integers and discrete sets of values.",
             "section": "Widgets",
-            "condition": "features.spinwidget && features.lineedit && features.validator",
+            "condition": "features.lineedit && features.validator",
             "output": [ "publicFeature", "feature" ]
         },
         "tabbar": {
@@ -332,12 +332,6 @@
             "condition": "features.graphicsview",
             "output": [ "publicFeature", "feature" ]
         },
-        "spinbox": {
-            "label": "QSpinBox",
-            "purpose": "Provides spinbox control widgets.",
-            "section": "Widgets",
-            "output": [ "publicFeature", "feature" ]
-        },
         "textedit": {
             "label": "QTextEdit",
             "purpose": "Supports rich text editing.",
@@ -435,7 +429,7 @@
             "label": "QInputDialog",
             "purpose": "Provides a simple convenience dialog to get a single value from the user.",
             "section": "Dialogs",
-            "condition": "features.combobox && features.spinbox && features.stackedwidget",
+            "condition": "features.combobox && features.spinbox && features.stackedwidget && features.textedit",
             "output": [ "publicFeature", "feature" ]
         },
         "errormessage": {
@@ -504,7 +498,7 @@
             "label": "QCompleter",
             "purpose": "Provides completions based on an item model.",
             "section": "Utilities",
-            "condition": "features.proxymodel",
+            "condition": "features.proxymodel && features.itemviews",
             "output": [ "publicFeature", "feature" ]
         },
         "fscompleter": {

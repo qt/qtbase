@@ -6105,18 +6105,10 @@ void qt_memfill16(quint16 *dest, quint16 color, int count)
     qt_memfill_template<quint16>(dest, color, count);
 }
 #endif
-#if !defined(__SSE2__) && !defined(__ARM_NEON__)
-#  ifdef QT_COMPILER_SUPPORTS_MIPS_DSP
-extern "C" void qt_memfill32_asm_mips_dsp(quint32 *, quint32, int);
-#  endif
-
+#if !defined(__SSE2__) && !defined(__ARM_NEON__) && !defined(__mips_dsp)
 void qt_memfill32(quint32 *dest, quint32 color, int count)
 {
-#  ifdef QT_COMPILER_SUPPORTS_MIPS_DSP
-    qt_memfill32_asm_mips_dsp(dest, color, count);
-#  else
     qt_memfill_template<quint32>(dest, color, count);
-#  endif
 }
 #endif
 
@@ -6307,10 +6299,6 @@ static void qInitDrawhelperFunctions()
 #endif
 
 #endif
-
-#if defined(Q_PROCESSOR_MIPS_32) && defined(QT_COMPILER_SUPPORTS_MIPS_DSP)
-    qt_memfill32 = qt_memfill32_asm_mips_dsp;
-#endif // Q_PROCESSOR_MIPS_32
 
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSP) || defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
     if (qCpuHasFeature(DSP) && qCpuHasFeature(DSPR2)) {

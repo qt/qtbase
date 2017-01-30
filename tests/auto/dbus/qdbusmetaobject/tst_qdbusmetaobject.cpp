@@ -370,8 +370,7 @@ void tst_QDBusMetaObject::types()
 
     QDBusError error;
 
-    QMetaObject *result = QDBusMetaObject::createMetaObject("local.Interface", xml,
-                                                            map, error);
+    const QScopedPointer<QDBusMetaObject> result(QDBusMetaObject::createMetaObject("local.Interface", xml, map, error));
     QVERIFY2(result, qPrintable(error.message()));
 
     QCOMPARE(result->enumeratorCount(), 0);
