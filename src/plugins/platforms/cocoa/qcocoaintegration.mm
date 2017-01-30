@@ -524,6 +524,11 @@ QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWindow *window) const
     return new QCocoaWindow(window);
 }
 
+QPlatformWindow *QCocoaIntegration::createForeignWindow(QWindow *window, WId nativeHandle) const
+{
+    return new QCocoaWindow(window, nativeHandle);
+}
+
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QCocoaIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {

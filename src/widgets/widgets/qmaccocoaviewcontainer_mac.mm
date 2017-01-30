@@ -44,6 +44,7 @@
 #include <QtGui/QWindow>
 #include <qpa/qplatformnativeinterface.h>
 #include <private/qwidget_p.h>
+#include <private/qwindow_p.h>
 
 /*!
     \class QMacCocoaViewContainer
@@ -117,7 +118,9 @@ QMacCocoaViewContainerPrivate::~QMacCocoaViewContainerPrivate()
 QMacCocoaViewContainer::QMacCocoaViewContainer(NSView *view, QWidget *parent)
    : QWidget(*new QMacCocoaViewContainerPrivate, parent, 0)
 {
+    // Ensures that we have a QWindow, even if we're not a top level widget
     setAttribute(Qt::WA_NativeWindow);
+
     setCocoaView(view);
 }
 
@@ -149,23 +152,19 @@ void QMacCocoaViewContainer::setCocoaView(NSView *view)
     [view retain];
     d->nsview = view;
 
+    // Get rid of QWindow completely, and re-create a new vanilla one, which
+    // we will then re-configure to be a foreign window.
+    destroy();
+    create();
+
+    // Can't use QWindow::fromWinId() here due to QWidget controlling its
+    // QWindow, and can't use QWidget::createWindowContainer() due to the
+    // QMacCocoaViewContainer class being public API instead of a factory
+    // function.
     QWindow *window = windowHandle();
-
-    // Note that we only set the flag on the QWindow, and not the QWidget.
-    // These two are not in sync, so from a QWidget standpoint the widget
-    // is not a Window, and hence will be shown when the parent widget is
-    // shown, like all QWidget children.
-    window->setFlags(Qt::ForeignWindow);
-    window->setProperty("_q_foreignWinId", view ? WId(view) : QVariant());
-
-    // Destroying the platform window implies hiding the window, and we
-    // also lose the geometry information that the platform window kept,
-    // and fall back to the stale QWindow geometry, so we update the two
-    // based on the widget visibility and geometry, which is up to date.
     window->destroy();
-    window->setVisible(isVisible());
-    window->setGeometry(geometry());
-    window->create();
+    qt_window_private(window)->create(false, WId(view));
+    Q_ASSERT(window->handle());
 
     [oldView release];
 }

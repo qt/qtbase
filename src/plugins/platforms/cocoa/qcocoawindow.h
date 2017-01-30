@@ -156,7 +156,7 @@ class QCocoaWindow : public QObject, public QPlatformWindow
 {
     Q_OBJECT
 public:
-    QCocoaWindow(QWindow *tlw);
+    QCocoaWindow(QWindow *tlw, WId nativeHandle = 0);
     ~QCocoaWindow();
 
     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
@@ -185,6 +185,8 @@ public:
     bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
     QMargins frameMargins() const Q_DECL_OVERRIDE;
     QSurfaceFormat format() const Q_DECL_OVERRIDE;
+
+    bool isForeignWindow() const Q_DECL_OVERRIDE;
 
     void requestActivateWindow() Q_DECL_OVERRIDE;
 

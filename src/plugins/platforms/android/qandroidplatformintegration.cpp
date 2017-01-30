@@ -284,10 +284,13 @@ QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *wind
 {
     if (!QtAndroid::activity())
         return nullptr;
-    if (window->type() == Qt::ForeignWindow)
-        return new QAndroidPlatformForeignWindow(window);
-    else
-        return new QAndroidPlatformOpenGLWindow(window, m_eglDisplay);
+
+    return new QAndroidPlatformOpenGLWindow(window, m_eglDisplay);
+}
+
+QPlatformWindow *QAndroidPlatformIntegration::createForeignWindow(QWindow *window, WId nativeHandle) const
+{
+    return new QAndroidPlatformForeignWindow(window, nativeHandle);
 }
 
 QAbstractEventDispatcher *QAndroidPlatformIntegration::createEventDispatcher() const

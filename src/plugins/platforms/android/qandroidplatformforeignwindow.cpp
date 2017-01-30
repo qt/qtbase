@@ -45,12 +45,11 @@
 
 QT_BEGIN_NAMESPACE
 
-QAndroidPlatformForeignWindow::QAndroidPlatformForeignWindow(QWindow *window)
+QAndroidPlatformForeignWindow::QAndroidPlatformForeignWindow(QWindow *window, WId nativeHandle)
     : QAndroidPlatformWindow(window),
       m_surfaceId(-1)
 {
-    const WId wId = window->property("_q_foreignWinId").value<WId>();
-    m_view = reinterpret_cast<jobject>(wId);
+    m_view = reinterpret_cast<jobject>(nativeHandle);
     if (m_view.isValid())
         QtAndroid::setViewVisibility(m_view.object(), false);
 }

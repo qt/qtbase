@@ -341,11 +341,6 @@ enum {
 
 void QXcbWindow::create()
 {
-    if (window()->type() == Qt::ForeignWindow) {
-        m_window = window()->winId();
-        return;
-    }
-
     destroy();
 
     m_windowState = Qt::WindowNoState;
@@ -590,9 +585,10 @@ QXcbWindow::~QXcbWindow()
     if (m_currentBitmapCursor != XCB_CURSOR_NONE) {
         xcb_free_cursor(xcb_connection(), m_currentBitmapCursor);
     }
-    if (window()->type() != Qt::ForeignWindow)
-        destroy();
-    else {
+
+    destroy();
+
+    if (isForeignWindow()) {
         if (connection()->mouseGrabber() == this)
             connection()->setMouseGrabber(Q_NULLPTR);
         if (connection()->mousePressWindow() == this)

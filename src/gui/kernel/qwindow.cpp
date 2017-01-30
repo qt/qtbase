@@ -424,7 +424,7 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
     }
 }
 
-void QWindowPrivate::create(bool recursive)
+void QWindowPrivate::create(bool recursive, WId nativeHandle)
 {
     Q_Q(QWindow);
     if (platformWindow)
@@ -433,8 +433,10 @@ void QWindowPrivate::create(bool recursive)
     if (q->parent())
         q->parent()->create();
 
-    platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(q);
-    Q_ASSERT(platformWindow || q->type() == Qt::ForeignWindow);
+    QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    platformWindow = nativeHandle ? platformIntegration->createForeignWindow(q, nativeHandle)
+        : platformIntegration->createPlatformWindow(q);
+    Q_ASSERT(platformWindow);
 
     if (!platformWindow) {
         qWarning() << "Failed to create platform window for" << q << "with flags" << q->flags();
@@ -628,9 +630,6 @@ void QWindow::create()
 WId QWindow::winId() const
 {
     Q_D(const QWindow);
-
-    if (type() == Qt::ForeignWindow)
-        return WId(property("_q_foreignWinId").value<WId>());
 
     if(!d->platformWindow)
         const_cast<QWindow *>(this)->create();
@@ -865,7 +864,12 @@ void QWindow::setFlags(Qt::WindowFlags flags)
 Qt::WindowFlags QWindow::flags() const
 {
     Q_D(const QWindow);
-    return d->windowFlags;
+    Qt::WindowFlags flags = d->windowFlags;
+
+    if (d->platformWindow && d->platformWindow->isForeignWindow())
+        flags |= Qt::ForeignWindow;
+
+    return flags;
 }
 
 /*!
@@ -2584,13 +2588,13 @@ QWindow *QWindow::fromWinId(WId id)
     }
 
     QWindow *window = new QWindow;
-    window->setFlags(Qt::ForeignWindow);
-    window->setProperty("_q_foreignWinId", QVariant::fromValue(id));
-    window->create();
+    qt_window_private(window)->create(false, id);
+
     if (!window->handle()) {
         delete window;
         return nullptr;
     }
+
     return window;
 }
 

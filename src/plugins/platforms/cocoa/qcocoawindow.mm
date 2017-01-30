@@ -433,7 +433,7 @@ Q_CONSTRUCTOR_FUNCTION(qRegisterNotificationCallbacks)
 
 const int QCocoaWindow::NoAlertRequest = -1;
 
-QCocoaWindow::QCocoaWindow(QWindow *tlw)
+QCocoaWindow::QCocoaWindow(QWindow *tlw, WId nativeHandle)
     : QPlatformWindow(tlw)
     , m_view(nil)
     , m_nsWindow(0)
@@ -470,8 +470,8 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
     QMacAutoReleasePool pool;
 
-    if (tlw->type() == Qt::ForeignWindow) {
-        m_view = (NSView *)WId(tlw->property("_q_foreignWinId").value<WId>());
+    if (nativeHandle) {
+        m_view = reinterpret_cast<NSView *>(nativeHandle);
         [m_view retain];
     } else {
         m_view = [[QNSView alloc] initWithCocoaWindow:this];
@@ -561,6 +561,11 @@ void QCocoaWindow::setGeometry(const QRect &rectIn)
         return;
 
     setCocoaGeometry(rect);
+}
+
+bool QCocoaWindow::isForeignWindow() const
+{
+    return ![m_view isKindOfClass:[QNSView class]];
 }
 
 QRect QCocoaWindow::geometry() const
