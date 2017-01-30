@@ -42,7 +42,7 @@
 
 #include <QtCore/qstring.h>
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 #ifndef GUID_DEFINED
 #define GUID_DEFINED
 typedef struct _GUID
@@ -55,7 +55,7 @@ typedef struct _GUID
 #endif
 #endif
 
-#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+#if defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
 Q_FORWARD_DECLARE_CF_TYPE(CFUUID);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSUUID);
 #endif
@@ -85,7 +85,7 @@ public:
         Sha1                 = 5 // 0 1 0 1
     };
 
-#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_QDOC)
+#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
     Q_DECL_CONSTEXPR QUuid() Q_DECL_NOTHROW : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
 
     Q_DECL_CONSTEXPR QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
@@ -148,10 +148,10 @@ public:
     bool operator<(const QUuid &other) const Q_DECL_NOTHROW;
     bool operator>(const QUuid &other) const Q_DECL_NOTHROW;
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
     // On Windows we have a type GUID that is used by the platform API, so we
     // provide convenience operators to cast from and to this type.
-#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_QDOC)
+#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
     Q_DECL_CONSTEXPR QUuid(const GUID &guid) Q_DECL_NOTHROW
         : data1(guid.Data1), data2(guid.Data2), data3(guid.Data3),
           data4{guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
@@ -208,7 +208,7 @@ public:
     QUuid::Variant variant() const Q_DECL_NOTHROW;
     QUuid::Version version() const Q_DECL_NOTHROW;
 
-#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+#if defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
     static QUuid fromCFUUID(CFUUIDRef uuid);
     CFUUIDRef toCFUUID() const Q_DECL_CF_RETURNS_RETAINED;
     static QUuid fromNSUUID(const NSUUID *uuid);
