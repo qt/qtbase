@@ -199,14 +199,14 @@ static uint crc32(...)
 }
 #endif
 
-static inline uint hash(const uchar *p, int len, uint seed) Q_DECL_NOTHROW
+static inline uint hash(const uchar *p, size_t len, uint seed) Q_DECL_NOTHROW
 {
     uint h = seed;
 
     if (hasFastCrc32())
-        return crc32(p, size_t(len), h);
+        return crc32(p, len, h);
 
-    for (int i = 0; i < len; ++i)
+    for (size_t i = 0; i < len; ++i)
         h = 31 * h + p[i];
 
     return h;
@@ -217,14 +217,14 @@ uint qHashBits(const void *p, size_t len, uint seed) Q_DECL_NOTHROW
     return hash(static_cast<const uchar*>(p), int(len), seed);
 }
 
-static inline uint hash(const QChar *p, int len, uint seed) Q_DECL_NOTHROW
+static inline uint hash(const QChar *p, size_t len, uint seed) Q_DECL_NOTHROW
 {
     uint h = seed;
 
     if (hasFastCrc32())
-        return crc32(p, size_t(len), h);
+        return crc32(p, len, h);
 
-    for (int i = 0; i < len; ++i)
+    for (size_t i = 0; i < len; ++i)
         h = 31 * h + p[i].unicode();
 
     return h;
@@ -232,23 +232,24 @@ static inline uint hash(const QChar *p, int len, uint seed) Q_DECL_NOTHROW
 
 uint qHash(const QByteArray &key, uint seed) Q_DECL_NOTHROW
 {
-    return hash(reinterpret_cast<const uchar *>(key.constData()), key.size(), seed);
+    return hash(reinterpret_cast<const uchar *>(key.constData()), size_t(key.size()), seed);
 }
 
 uint qHash(const QString &key, uint seed) Q_DECL_NOTHROW
 {
-    return hash(key.unicode(), key.size(), seed);
+    return hash(key.unicode(), size_t(key.size()), seed);
 }
 
 uint qHash(const QStringRef &key, uint seed) Q_DECL_NOTHROW
 {
-    return hash(key.unicode(), key.size(), seed);
+    return hash(key.unicode(), size_t(key.size()), seed);
 }
 
 uint qHash(const QBitArray &bitArray, uint seed) Q_DECL_NOTHROW
 {
     int m = bitArray.d.size() - 1;
-    uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()), qMax(0, m), seed);
+    uint result = hash(reinterpret_cast<const uchar *>(bitArray.d.constData()),
+                       size_t(qMax(0, m)), seed);
 
     // deal with the last 0 to 7 bits manually, because we can't trust that
     // the padding is initialized to 0 in bitArray.d
@@ -260,7 +261,7 @@ uint qHash(const QBitArray &bitArray, uint seed) Q_DECL_NOTHROW
 
 uint qHash(QLatin1String key, uint seed) Q_DECL_NOTHROW
 {
-    return hash(reinterpret_cast<const uchar *>(key.data()), key.size(), seed);
+    return hash(reinterpret_cast<const uchar *>(key.data()), size_t(key.size()), seed);
 }
 
 /*!
