@@ -97,6 +97,9 @@ public:
     Q_DECL_CONSTEXPR int size() const Q_DECL_NOTHROW { return m_size; }
     Q_DECL_CONSTEXPR const char *data() const Q_DECL_NOTHROW { return m_data; }
 
+    Q_DECL_CONSTEXPR bool isNull() const Q_DECL_NOTHROW { return !data(); }
+    Q_DECL_CONSTEXPR bool isEmpty() const Q_DECL_NOTHROW { return !size(); }
+
     Q_DECL_CONSTEXPR QLatin1Char at(int i) const { return QLatin1Char(m_data[i]); }
     Q_DECL_CONSTEXPR QLatin1Char operator[](int i) const { return at(i); }
 

@@ -8366,6 +8366,24 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns the size of the Latin-1 string stored in this object.
 */
 
+/*! \fn bool QLatin1String::isNull() const
+    \since 5.10
+
+    Returns whether the Latin-1 string stored in this object is null
+    (\c{data() == nullptr}) or not.
+
+    \sa isEmpty(), data()
+*/
+
+/*! \fn bool QLatin1String::isEmpty() const
+    \since 5.10
+
+    Returns whether the Latin-1 string stored in this object is empty
+    (\c{size() == 0}) or not.
+
+    \sa isNull(), size()
+*/
+
 /*! \fn QLatin1Char QLatin1String::at(int pos) const
     \since 5.8
 
