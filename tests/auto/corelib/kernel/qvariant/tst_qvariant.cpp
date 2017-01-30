@@ -400,6 +400,17 @@ void tst_QVariant::isNull()
     QVERIFY( !varLL.isNull() );
     QVariant var7(QString::null);
     QVERIFY(var7.isNull());
+    var7 = QVariant::fromValue<QString>(QString::null);
+    QVERIFY(var7.isNull());
+
+    QVariant var8(QMetaType::Nullptr, nullptr);
+    QVERIFY(var8.isNull());
+    var8 = QVariant::fromValue<std::nullptr_t>(nullptr);
+    QVERIFY(var8.isNull());
+    QVariant var9 = QVariant(QJsonValue(QJsonValue::Null));
+    QVERIFY(var9.isNull());
+    var9 = QVariant::fromValue<QJsonValue>(QJsonValue(QJsonValue::Null));
+    QVERIFY(var9.isNull());
 }
 
 void tst_QVariant::swap()

@@ -2523,7 +2523,8 @@ void tst_QHeaderView::calculateAndCheck(int cppline, const int precalced_compare
     const bool sanity_checks = true;
     if (sanity_checks) {
         QString msg = QString("sanity problem at ") + sline;
-        char *verifytext = QTest::toString(msg);
+        const QScopedArrayPointer<char> holder(QTest::toString(msg));
+        const auto verifytext = holder.data();
 
         QVERIFY2(m_tableview->model()->rowCount() == view->count() , verifytext);
         QVERIFY2(view->visualIndex(lastindex + 1) <= 0, verifytext);       // there is no such index in model
@@ -2555,7 +2556,8 @@ void tst_QHeaderView::calculateAndCheck(int cppline, const int precalced_compare
     msg += istr(chk_visual) + istr(chk_logical) + istr(chk_sizes) + istr(chk_hidden_size)
         + istr(chk_lookup_visual) + istr(chk_lookup_logical) + istr(header_lenght, false) + "};";
 
-    char *verifytext = QTest::toString(msg);
+    const QScopedArrayPointer<char> holder(QTest::toString(msg));
+    const auto verifytext = holder.data();
 
     QVERIFY2(chk_visual            == x[0], verifytext);
     QVERIFY2(chk_logical           == x[1], verifytext);

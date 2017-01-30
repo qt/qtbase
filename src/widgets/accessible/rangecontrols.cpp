@@ -81,10 +81,14 @@ QAbstractSpinBox *QAccessibleAbstractSpinBox::abstractSpinBox() const
 
 QAccessibleInterface *QAccessibleAbstractSpinBox::lineEditIface() const
 {
+#if QT_CONFIG(lineedit)
     // QAccessibleLineEdit is only used to forward the text functions
     if (!lineEdit)
         lineEdit = new QAccessibleLineEdit(abstractSpinBox()->lineEdit());
     return lineEdit;
+#else
+    return nullptr;
+#endif
 }
 
 QString QAccessibleAbstractSpinBox::text(QAccessible::Text t) const

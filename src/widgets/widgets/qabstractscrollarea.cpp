@@ -473,6 +473,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     // move the scrollbars away from top/left headers
     int vHeaderRight = 0;
     int hHeaderBottom = 0;
+#if QT_CONFIG(itemviews)
     if ((vscrollOverlap > 0 && needv) || (hscrollOverlap > 0 && needh)) {
         const QList<QHeaderView *> headers = q->findChildren<QHeaderView*>();
         if (headers.count() <= 2) {
@@ -485,7 +486,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
              }
          }
     }
-
+#endif // QT_CONFIG(itemviews)
     if (needh) {
         QRect horizontalScrollBarRect(QPoint(controlsRect.left() + vHeaderRight, cornerPoint.y()), QPoint(cornerPoint.x() - 1, controlsRect.bottom()));
 #if 0 // Used to be included in Qt4 for Q_WS_MAC

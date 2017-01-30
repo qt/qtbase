@@ -189,7 +189,7 @@ void tst_QTimeLine::frameRate()
 
 void tst_QTimeLine::value()
 {
-    QTimeLine timeLine(5000);
+    QTimeLine timeLine(4500); // Should be at least 5% under 5000ms
     QCOMPARE(timeLine.currentValue(), 0.0);
 
     // Default speed

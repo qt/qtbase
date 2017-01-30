@@ -130,12 +130,16 @@ public:
         case QAccessible::Accelerator:
             str = qt_accHotKey(m_parent->tabText(m_index));
             break;
+#if QT_CONFIG(tooltip)
         case QAccessible::Description:
             str = m_parent->tabToolTip(m_index);
             break;
+#endif
+#if QT_CONFIG(whatsthis)
         case QAccessible::Help:
             str = m_parent->tabWhatsThis(m_index);
             break;
+#endif
         default:
             break;
         }

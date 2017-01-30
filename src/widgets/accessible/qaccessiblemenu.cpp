@@ -117,7 +117,11 @@ QAccessibleInterface *QAccessibleMenu::parent() const
         parentCandidates << menu()->parentWidget();
         parentCandidates << menuAction->associatedWidgets();
         foreach (QWidget *w, parentCandidates) {
-            if (qobject_cast<QMenu*>(w) || qobject_cast<QMenuBar*>(w)) {
+            if (qobject_cast<QMenu*>(w)
+#if QT_CONFIG(menubar)
+                || qobject_cast<QMenuBar*>(w)
+#endif
+                ) {
                 if (w->actions().indexOf(menuAction) != -1)
                     return getOrCreateMenu(w, menuAction);
             }
@@ -348,13 +352,16 @@ void QAccessibleMenuItem::doAction(const QString &actionName)
     if (actionName == pressAction()) {
         m_action->trigger();
     } else if (actionName == showMenuAction()) {
+#if QT_CONFIG(menubar)
         if (QMenuBar *bar = qobject_cast<QMenuBar*>(owner())) {
             if (m_action->menu() && m_action->menu()->isVisible()) {
                 m_action->menu()->hide();
             } else {
                 bar->setActiveAction(m_action);
             }
-        } else if (QMenu *menu = qobject_cast<QMenu*>(owner())){
+        } else
+#endif
+          if (QMenu *menu = qobject_cast<QMenu*>(owner())){
             if (m_action->menu() && m_action->menu()->isVisible()) {
                 m_action->menu()->hide();
             } else {

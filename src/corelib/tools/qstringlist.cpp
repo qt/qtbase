@@ -143,8 +143,8 @@ QT_BEGIN_NAMESPACE
 
     \snippet qstringlist/main.cpp 6
 
-    The argument to split can be a single character, a string, or a
-    QRegExp.
+    The argument to split can be a single character, a string, a
+    QRegularExpression or a (deprecated) QRegExp.
 
     In addition, the \l {QStringList::operator+()}{operator+()}
     function allows you to concatenate two string lists into one. To

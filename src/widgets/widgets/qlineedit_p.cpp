@@ -313,6 +313,8 @@ void QLineEditPrivate::drag()
 
 #endif // QT_NO_DRAGANDDROP
 
+
+#if QT_CONFIG(toolbutton)
 QLineEditIconButton::QLineEditIconButton(QWidget *parent)
     : QToolButton(parent)
     , m_opacity(0)
@@ -390,6 +392,7 @@ void QLineEditIconButton::updateCursor()
     setCursor(qFuzzyCompare(m_opacity, qreal(1.0)) || !parentWidget() ? QCursor(Qt::ArrowCursor) : parentWidget()->cursor());
 #endif
 }
+#endif // QT_CONFIG(toolbutton)
 
 void QLineEditPrivate::_q_textChanged(const QString &text)
 {
@@ -397,7 +400,7 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
         const int newTextSize = text.size();
         if (!newTextSize || !lastTextSize) {
             lastTextSize = newTextSize;
-#ifndef QT_NO_ANIMATION
+#if QT_CONFIG(animation) && QT_CONFIG(toolbutton)
             const bool fadeIn = newTextSize > 0;
             for (const SideWidgetEntry &e : leadingSideWidgets) {
                 if (e.flags & SideWidgetFadeInWithText)
@@ -507,6 +510,7 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
             flags |= SideWidgetCreatedByWidgetAction;
     }
     if (!w) {
+#if QT_CONFIG(toolbutton)
         QLineEditIconButton *toolButton = new QLineEditIconButton(q);
         toolButton->setIcon(newAction->icon());
         toolButton->setOpacity(lastTextSize > 0 || !(flags & SideWidgetFadeInWithText) ? 1 : 0);
@@ -514,6 +518,9 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
             QObject::connect(toolButton, SIGNAL(clicked()), q, SLOT(_q_clearButtonClicked()));
         toolButton->setDefaultAction(newAction);
         w = toolButton;
+#else
+        return nullptr;
+#endif
     }
     // If there is a 'before' action, it takes preference
     PositionIndexPair positionIndex = before ? findSideWidget(before) : PositionIndexPair(position, -1);

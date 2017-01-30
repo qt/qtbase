@@ -554,16 +554,16 @@ void tst_QTreeWidget::removeChild()
     QFETCH(int, childCount);
     QFETCH(int, removeAt);
 
-    QTreeWidgetItem *root = new QTreeWidgetItem;
+    const QScopedPointer<QTreeWidgetItem> root(new QTreeWidgetItem);
     for (int i = 0; i < childCount; ++i)
-        new QTreeWidgetItem(root, QStringList(QString::number(i)));
+        new QTreeWidgetItem(root.data(), QStringList(QString::number(i)));
 
     QCOMPARE(root->childCount(), childCount);
     for (int j = 0; j < childCount; ++j)
         QCOMPARE(root->child(j)->text(0), QString::number(j));
 
-    QTreeWidgetItem *remove = root->child(removeAt);
-    root->removeChild(remove);
+    const QScopedPointer<QTreeWidgetItem> remove(root->child(removeAt));
+    root->removeChild(remove.data());
 
     QCOMPARE(root->childCount(), childCount - 1);
     for (int k = 0; k < childCount; ++k) {
@@ -574,7 +574,6 @@ void tst_QTreeWidget::removeChild()
         else if (k > removeAt)
             QCOMPARE(root->child(k - 1)->text(0), QString::number(k));
     }
-    delete root;
 }
 
 void tst_QTreeWidget::setItemHidden()
@@ -1954,9 +1953,9 @@ void tst_QTreeWidget::itemData()
 
 void tst_QTreeWidget::enableDisable()
 {
-    QTreeWidgetItem *itm = new QTreeWidgetItem();
+    const QScopedPointer<QTreeWidgetItem> itm(new QTreeWidgetItem);
     for (int i = 0; i < 10; ++i)
-        new QTreeWidgetItem(itm);
+        new QTreeWidgetItem(itm.data());
 
     // make sure all items are enabled
     QVERIFY(itm->flags() & Qt::ItemIsEnabled);
@@ -2720,7 +2719,10 @@ void tst_QTreeWidget::setDisabled()
     children.append(new QTreeWidgetItem());
     children.append(new QTreeWidgetItem());
     children.append(new QTreeWidgetItem());
-    i1 = top->takeChild(0);
+    {
+        const QScopedPointer<QTreeWidgetItem> taken(top->takeChild(0));
+        QCOMPARE(taken.data(), i1);
+    }
 
     top->addChildren(children);
     QCOMPARE(top->child(0)->isDisabled(), false);
@@ -2732,16 +2734,21 @@ void tst_QTreeWidget::setDisabled()
     QCOMPARE(top->child(1)->isDisabled(), true);
     QCOMPARE(top->child(1)->isDisabled(), true);
 
-    children = top->takeChildren();
-    QCOMPARE(children.at(0)->isDisabled(), false);
-    QCOMPARE(children.at(1)->isDisabled(), false);
-    QCOMPARE(children.at(1)->isDisabled(), false);
+    struct Deleter {
+        QList<QTreeWidgetItem *> items;
+        explicit Deleter(QList<QTreeWidgetItem *> items) : items(std::move(items)) {}
+        ~Deleter() { qDeleteAll(items); }
+    };
 
+    const Deleter takenChildren(top->takeChildren());
+    QCOMPARE(takenChildren.items[0]->isDisabled(), false);
+    QCOMPARE(takenChildren.items[1]->isDisabled(), false);
+    QCOMPARE(takenChildren.items[1]->isDisabled(), false);
 }
 
 void tst_QTreeWidget::removeSelectedItem()
 {
-    QTreeWidget *w = new QTreeWidget();
+    const QScopedPointer <QTreeWidget> w(new QTreeWidget);
     w->setSortingEnabled(true);
 
     QTreeWidgetItem *first = new QTreeWidgetItem();
@@ -2767,15 +2774,13 @@ void tst_QTreeWidget::removeSelectedItem()
     QCOMPARE(selModel->hasSelection(), true);
     QCOMPARE(selModel->selectedRows().count(), 1);
 
-    QTreeWidgetItem *taken = w->takeTopLevelItem(2);
+    const QScopedPointer<QTreeWidgetItem> taken(w->takeTopLevelItem(2));
     QCOMPARE(taken->text(0), QLatin1String("C"));
 
     QCOMPARE(selModel->hasSelection(), false);
     QCOMPARE(selModel->selectedRows().count(), 0);
     QItemSelection sel = selModel->selection();
     QCOMPARE(selModel->isSelected(w->model()->index(0,0)), false);
-
-    delete w;
 }
 
 class AnotherTreeWidget : public QTreeWidget
@@ -2934,11 +2939,11 @@ void tst_QTreeWidget::sortAndSelect()
 
 void tst_QTreeWidget::defaultRowSizes()
 {
-    QTreeWidget *tw = new QTreeWidget();
+    const QScopedPointer<QTreeWidget> tw(new QTreeWidget);
     tw->setIconSize(QSize(50, 50));
     tw->setColumnCount(6);
     for (int i=0; i<10; ++i) {
-        QTreeWidgetItem *it = new QTreeWidgetItem(tw);
+        auto it = new QTreeWidgetItem(tw.data());
         for (int j=0; j<tw->columnCount() - 1; ++j) {
             it->setText(j, "This is a test");
         }

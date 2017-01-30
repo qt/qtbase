@@ -38,10 +38,10 @@
 ****************************************************************************/
 
 #include <qglobal.h>
-
-#ifndef QT_NO_COLUMNVIEW
-
 #include "qcolumnview.h"
+
+#if QT_CONFIG(columnview)
+
 #include "qcolumnview_p.h"
 #include "qcolumnviewgrip_p.h"
 
@@ -1170,4 +1170,4 @@ QT_END_NAMESPACE
 
 #include "moc_qcolumnview.cpp"
 
-#endif // QT_NO_COLUMNVIEW
+#endif // QT_CONFIG(columnview)

@@ -530,14 +530,24 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             }
 #endif
 
-            // expand environment variables in the form $(ENVVAR)
-            int rep;
-            QRegExp reg_var(QLatin1String("\\$\\(.*\\)"));
-            reg_var.setMinimal(true);
-            while((rep = reg_var.indexIn(ret)) != -1) {
-                ret.replace(rep, reg_var.matchedLength(),
-                            QString::fromLocal8Bit(qgetenv(ret.midRef(rep + 2,
-                                reg_var.matchedLength() - 3).toLatin1().constData()).constData()));
+            int startIndex = 0;
+            forever {
+                startIndex = ret.indexOf(QLatin1Char('$'), startIndex);
+                if (startIndex < 0)
+                    break;
+                if (ret.length() < startIndex + 3)
+                    break;
+                if (ret.at(startIndex + 1) != QLatin1Char('(')) {
+                    startIndex++;
+                    continue;
+                }
+                int endIndex = ret.indexOf(QLatin1Char(')'), startIndex + 2);
+                if (endIndex < 0)
+                    break;
+                QStringRef envVarName = ret.midRef(startIndex + 2, endIndex - startIndex - 2);
+                QString value = QString::fromLocal8Bit(qgetenv(envVarName.toLocal8Bit().constData()));
+                ret.replace(startIndex, endIndex - startIndex + 1, value);
+                startIndex += value.length();
             }
 
             config->endGroup();

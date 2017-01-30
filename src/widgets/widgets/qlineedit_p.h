@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 class QLineEditPrivate;
 
 // QLineEditIconButton: This is a simple helper class that represents clickable icons that fade in with text
-
+#if QT_CONFIG(toolbutton)
 class Q_AUTOTEST_EXPORT QLineEditIconButton : public QToolButton
 {
     Q_OBJECT
@@ -103,6 +103,7 @@ private:
 
     qreal m_opacity;
 };
+#endif // QT_CONFIG(toolbutton)
 
 class Q_AUTOTEST_EXPORT QLineEditPrivate : public QWidgetPrivate
 {

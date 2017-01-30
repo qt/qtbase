@@ -176,6 +176,9 @@ public:
     }
 #endif
     inline QAtomicPointer(const QAtomicPointer<T> &other) Q_DECL_NOTHROW
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+        : QBasicAtomicPointer<T>()
+#endif
     {
         this->storeRelease(other.loadAcquire());
     }

@@ -97,7 +97,7 @@ Widget::Widget(QWidget *parent)
 //! [6]
 
 //! [7]
-    QStringList monospacedFonts = fonts.filter(QRegExp("Courier|Fixed"));
+    QStringList monospacedFonts = fonts.filter(QRegularExpression("Courier|Fixed"));
 //! [7]
 
 //! [8]
