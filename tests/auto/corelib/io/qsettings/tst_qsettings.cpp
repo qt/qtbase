@@ -178,6 +178,7 @@ private slots:
 
     void testByteArray_data();
     void testByteArray();
+    void testByteArrayNativeFormat();
     void iniCodec();
     void bom();
     void embeddedZeroByte_data();
@@ -668,6 +669,16 @@ void tst_QSettings::testByteArray()
         QByteArray ret = settings.value("byteArray", data).toByteArray();
         QCOMPARE(ret, data);
     }
+}
+
+void tst_QSettings::testByteArrayNativeFormat()
+{
+#ifndef Q_OS_MACOS
+    QSKIP("This test is specific to macOS plist reading.");
+#else
+    QSettings settings(":/resourcefile6.plist", QSettings::NativeFormat);
+    QCOMPARE(settings.value("passwordData"), QVariant(QByteArray::fromBase64("RBxVAAsDVsO/")));
+#endif
 }
 
 void tst_QSettings::iniCodec()
