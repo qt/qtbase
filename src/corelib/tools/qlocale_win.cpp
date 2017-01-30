@@ -691,7 +691,7 @@ QString QSystemLocalePrivate::winToQtFormat(const QString &sys_fmt)
             if (text == QLatin1String("'"))
                 result += QLatin1String("''");
             else
-                result += QString(QLatin1Char('\'') + text + QLatin1Char('\''));
+                result += QLatin1Char('\'') + text + QLatin1Char('\'');
             continue;
         }
 
