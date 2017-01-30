@@ -935,6 +935,7 @@ public:
     QString nativeLanguageName() const;
     QString nativeCountryName() const;
 
+#if QT_STRINGVIEW_LEVEL < 2
     short toShort(const QString &s, bool *ok = Q_NULLPTR) const;
     ushort toUShort(const QString &s, bool *ok = Q_NULLPTR) const;
     int toInt(const QString &s, bool *ok = Q_NULLPTR) const;
@@ -952,6 +953,16 @@ public:
     qulonglong toULongLong(const QStringRef &s, bool *ok = Q_NULLPTR) const;
     float toFloat(const QStringRef &s, bool *ok = Q_NULLPTR) const;
     double toDouble(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+#endif
+
+    short toShort(QStringView s, bool *ok = nullptr) const;
+    ushort toUShort(QStringView s, bool *ok = nullptr) const;
+    int toInt(QStringView s, bool *ok = nullptr) const;
+    uint toUInt(QStringView s, bool *ok = nullptr) const;
+    qlonglong toLongLong(QStringView s, bool *ok = nullptr) const;
+    qulonglong toULongLong(QStringView s, bool *ok = nullptr) const;
+    float toFloat(QStringView s, bool *ok = nullptr) const;
+    double toDouble(QStringView s, bool *ok = nullptr) const;
 
     QString toString(qlonglong i) const;
     QString toString(qulonglong i) const;

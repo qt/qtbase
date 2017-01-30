@@ -103,3 +103,20 @@ d = german.toDouble( "1234.56", &ok );  // ok == false
 
 d = german.toDouble( "1.234", &ok );    // ok == true, d == 1234.0
 //! [3]
+
+//! [3-qstringview]
+bool ok;
+double d;
+
+QLocale c(QLocale::C);
+d = c.toDouble(u"1234.56", &ok);  // ok == true, d == 1234.56
+d = c.toDouble(u"1,234.56", &ok); // ok == true, d == 1234.56
+d = c.toDouble(u"1234,56", &ok);  // ok == false
+
+QLocale german(QLocale::German);
+d = german.toDouble(u"1234,56", &ok);  // ok == true, d == 1234.56
+d = german.toDouble(u"1.234,56", &ok); // ok == true, d == 1234.56
+d = german.toDouble(u"1234.56", &ok);  // ok == false
+
+d = german.toDouble(u"1.234", &ok);    // ok == true, d == 1234.0
+//! [3-qstringview]

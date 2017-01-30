@@ -1202,6 +1202,7 @@ QString QLocale::scriptToString(QLocale::Script script)
     return QLatin1String(script_name_list + script_name_index[script]);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns the short int represented by the localized string \a s.
 
@@ -1523,7 +1524,176 @@ double QLocale::toDouble(const QStringRef &s, bool *ok) const
 {
     return d->m_data->stringToDouble(s, ok, d->m_numberOptions);
 }
+#endif // QT_STRINGVIEW_LEVEL < 2
 
+/*!
+    Returns the short int represented by the localized string \a s.
+
+    If the conversion fails, the function returns 0.
+
+    If \a ok is not null, failure is reported by setting *ok to false, and
+    success by setting *ok to true.
+
+    This function ignores leading and trailing whitespace.
+
+    \sa toUShort(), toString()
+
+    \since 5.10
+*/
+
+short QLocale::toShort(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<short>(d, s, ok);
+}
+
+/*!
+    Returns the unsigned short int represented by the localized string \a s.
+
+    If the conversion fails, the function returns 0.
+
+    If \a ok is not null, failure is reported by setting *ok to false, and
+    success by setting *ok to true.
+
+    This function ignores leading and trailing whitespace.
+
+    \sa toShort(), toString()
+
+    \since 5.10
+*/
+
+ushort QLocale::toUShort(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<ushort>(d, s, ok);
+}
+
+/*!
+    Returns the int represented by the localized string \a s.
+
+    If the conversion fails, the function returns 0.
+
+    If \a ok is not null, failure is reported by setting *ok to false, and
+    success by setting *ok to true.
+
+    This function ignores leading and trailing whitespace.
+
+    \sa toUInt(), toString()
+
+    \since 5.10
+*/
+
+int QLocale::toInt(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<int>(d, s, ok);
+}
+
+/*!
+    Returns the unsigned int represented by the localized string \a s.
+
+    If the conversion fails, the function returns 0.
+
+    If \a ok is not null, failure is reported by setting *ok to false, and
+    success by setting *ok to true.
+
+    This function ignores leading and trailing whitespace.
+
+    \sa toInt(), toString()
+
+    \since 5.10
+*/
+
+uint QLocale::toUInt(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<uint>(d, s, ok);
+}
+
+/*!
+    Returns the long long int represented by the localized string \a s.
+
+    If the conversion fails, the function returns 0.
+
+    If \a ok is not null, failure is reported by setting *ok to false, and
+    success by setting *ok to true.
+
+    This function ignores leading and trailing whitespace.
+
+    \sa toInt(), toULongLong(), toDouble(), toString()
+
+    \since 5.10
+*/
+
+
+qlonglong QLocale::toLongLong(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<qlonglong>(d, s, ok);
+}
+
+/*!
+    Returns the unsigned long long int represented by the localized
+    string \a s.
+
+    If the conversion fails, the function returns 0.
+
+    If \a ok is not null, failure is reported by setting *ok to false, and
+    success by setting *ok to true.
+
+    This function ignores leading and trailing whitespace.
+
+    \sa toLongLong(), toInt(), toDouble(), toString()
+
+    \since 5.10
+*/
+
+qulonglong QLocale::toULongLong(QStringView s, bool *ok) const
+{
+    return toIntegral_helper<qulonglong>(d, s, ok);
+}
+
+/*!
+    Returns the float represented by the localized string \a s, or 0.0
+    if the conversion failed.
+
+    If \a ok is not null, reports failure by setting
+    *ok to false and success by setting *ok to true.
+
+    This function ignores leading and trailing whitespace.
+
+    \sa toDouble(), toInt(), toString()
+
+    \since 5.10
+*/
+
+float QLocale::toFloat(QStringView s, bool *ok) const
+{
+    return QLocaleData::convertDoubleToFloat(toDouble(s, ok), ok);
+}
+
+/*!
+    Returns the double represented by the localized string \a s, or
+    0.0 if the conversion failed.
+
+    If \a ok is not null, reports failure by setting
+    *ok to false and success by setting *ok to true.
+
+    Unlike QString::toDouble(), this function does not fall back to
+    the "C" locale if the string cannot be interpreted in this
+    locale.
+
+    \snippet code/src_corelib_tools_qlocale.cpp 3-qstringview
+
+    Notice that the last conversion returns 1234.0, because '.' is the
+    thousands group separator in the German locale.
+
+    This function ignores leading and trailing whitespace.
+
+    \sa toFloat(), toInt(), toString()
+
+    \since 5.10
+*/
+
+double QLocale::toDouble(QStringView s, bool *ok) const
+{
+    return d->m_data->stringToDouble(s, ok, d->m_numberOptions);
+}
 
 /*!
     Returns a localized string representation of \a i.
