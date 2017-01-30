@@ -183,6 +183,15 @@ public:
 
     Q_DECL_CONSTEXPR QChar at(size_type n) const { return (*this)[n]; }
 
+    Q_DECL_CONSTEXPR QStringView mid(size_type pos) const
+    { return Q_ASSERT(pos >= 0), Q_ASSERT(pos <= size()), QStringView(m_data + pos, m_size - pos); }
+    Q_DECL_CONSTEXPR QStringView mid(size_type pos, size_type n) const
+    { return Q_ASSERT(pos >= 0), Q_ASSERT(n >= 0), Q_ASSERT(pos + n <= size()), QStringView(m_data + pos, n); }
+    Q_DECL_CONSTEXPR QStringView left(size_type n) const
+    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, n); }
+    Q_DECL_CONSTEXPR QStringView right(size_type n) const
+    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data + m_size - n, n); }
+
     //
     // STL compatibility API:
     //

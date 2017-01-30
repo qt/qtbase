@@ -548,4 +548,50 @@ QT_BEGIN_NAMESPACE
     \sa back(), front(), first()
 */
 
+/*!
+    \fn QStringView QStringView::mid(size_type start) const
+
+    Returns the substring starting at position \a start in this object,
+    and extending to the end of the string.
+
+    \note The behavior is undefined when \a start < 0 or \a start > size().
+
+    \sa left(), right()
+*/
+
+/*!
+    \fn QStringView QStringView::mid(size_type start, size_type length) const
+    \overload
+
+    Returns the substring of length \a length starting at position
+    \a start in this object.
+
+    \note The behavior is undefined when \a start < 0, \a length < 0,
+    or \a start + \a length > size().
+
+    \sa left(), right()
+*/
+
+/*!
+    \fn QStringView QStringView::left(size_type length) const
+
+    Returns the substring of length \a length starting at position
+    0 in this object.
+
+    \note The behavior is undefined when \a length < 0 or \a length > size().
+
+    \sa mid(), right()
+*/
+
+/*!
+    \fn QStringView QStringView::right(size_type length) const
+
+    Returns the substring of length \a length starting at position
+    size() - \a length in this object.
+
+    \note The behavior is undefined when \a length < 0 or \a length > size().
+
+    \sa mid(), left()
+*/
+
 QT_END_NAMESPACE
