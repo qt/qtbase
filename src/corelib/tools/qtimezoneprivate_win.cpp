@@ -386,7 +386,7 @@ static QLocale::Country userCountry()
     const GEOID id = GetUserGeoID(GEOCLASS_NATION);
     wchar_t code[3];
     const int size = GetGeoInfo(id, GEO_ISO2, code, 3, 0);
-    return (size == 3) ? QLocalePrivate::codeToCountry(reinterpret_cast<const QChar*>(code), size)
+    return (size == 3) ? QLocalePrivate::codeToCountry(QStringView(code, size))
                        : QLocale::AnyCountry;
 }
 

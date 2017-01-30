@@ -89,8 +89,9 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qlocale_data_p.h"
 QT_END_INCLUDE_NAMESPACE
 
-QLocale::Language QLocalePrivate::codeToLanguage(const QChar *code, int len) Q_DECL_NOTHROW
+QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) Q_DECL_NOTHROW
 {
+    const auto len = code.size();
     if (len != 2 && len != 3)
         return QLocale::C;
     ushort uc1 = code[0].toLower().unicode();
@@ -131,8 +132,9 @@ QLocale::Language QLocalePrivate::codeToLanguage(const QChar *code, int len) Q_D
     return QLocale::C;
 }
 
-QLocale::Script QLocalePrivate::codeToScript(const QChar *code, int len) Q_DECL_NOTHROW
+QLocale::Script QLocalePrivate::codeToScript(QStringView code) Q_DECL_NOTHROW
 {
+    const auto len = code.size();
     if (len != 4)
         return QLocale::AnyScript;
 
@@ -150,10 +152,12 @@ QLocale::Script QLocalePrivate::codeToScript(const QChar *code, int len) Q_DECL_
     return QLocale::AnyScript;
 }
 
-QLocale::Country QLocalePrivate::codeToCountry(const QChar *code, int len) Q_DECL_NOTHROW
+QLocale::Country QLocalePrivate::codeToCountry(QStringView code) Q_DECL_NOTHROW
 {
+    const auto len = code.size();
     if (len != 2 && len != 3)
         return QLocale::AnyCountry;
+
     ushort uc1 = code[0].toUpper().unicode();
     ushort uc2 = code[1].toUpper().unicode();
     ushort uc3 = len > 2 ? code[2].toUpper().unicode() : 0;
