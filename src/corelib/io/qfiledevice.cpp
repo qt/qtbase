@@ -328,6 +328,9 @@ void QFileDevice::close()
     d->lastWasWrite = false;
     d->writeBuffer.clear();
 
+    // reset cached size
+    d->cachedSize = 0;
+
     // keep earlier error from flush
     if (d->fileEngine->close() && flushed)
         unsetError();
