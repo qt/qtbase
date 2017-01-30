@@ -167,48 +167,35 @@ QLocale::Country QLocalePrivate::codeToCountry(const QChar *code, int len) Q_DEC
     return QLocale::AnyCountry;
 }
 
-QString QLocalePrivate::languageToCode(QLocale::Language language)
+QLatin1String QLocalePrivate::languageToCode(QLocale::Language language)
 {
     if (language == QLocale::AnyLanguage)
-        return QString();
+        return QLatin1String();
     if (language == QLocale::C)
         return QLatin1String("C");
 
     const unsigned char *c = language_code_list + 3*(uint(language));
 
-    QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
+    return QLatin1String(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
 
-    code[0] = ushort(c[0]);
-    code[1] = ushort(c[1]);
-    if (c[2] != 0)
-        code[2] = ushort(c[2]);
-
-    return code;
 }
 
-QString QLocalePrivate::scriptToCode(QLocale::Script script)
+QLatin1String QLocalePrivate::scriptToCode(QLocale::Script script)
 {
     if (script == QLocale::AnyScript || script > QLocale::LastScript)
-        return QString();
+        return QLatin1String();
     const unsigned char *c = script_code_list + 4*(uint(script));
-    return QString::fromLatin1((const char *)c, 4);
+    return QLatin1String(reinterpret_cast<const char *>(c), 4);
 }
 
-QString QLocalePrivate::countryToCode(QLocale::Country country)
+QLatin1String QLocalePrivate::countryToCode(QLocale::Country country)
 {
     if (country == QLocale::AnyCountry)
-        return QString();
+        return QLatin1String();
 
     const unsigned char *c = country_code_list + 3*(uint(country));
 
-    QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
-
-    code[0] = ushort(c[0]);
-    code[1] = ushort(c[1]);
-    if (c[2] != 0)
-        code[2] = ushort(c[2]);
-
-    return code;
+    return QLatin1String(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
 }
 
 // http://www.unicode.org/reports/tr35/#Likely_Subtags

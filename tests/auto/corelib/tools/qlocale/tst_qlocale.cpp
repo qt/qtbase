@@ -2450,8 +2450,8 @@ void tst_QLocale::textDirection_data()
         default:
             break;
         }
-        QString testName = QLocalePrivate::languageToCode(QLocale::Language(language));
-        QTest::newRow(testName.toLatin1().constData()) << language << int(QLocale::AnyScript) << rightToLeft;
+        const QLatin1String testName = QLocalePrivate::languageToCode(QLocale::Language(language));
+        QTest::newRow(qPrintable(testName)) << language << int(QLocale::AnyScript) << rightToLeft;
     }
     QTest::newRow("pa_Arab") << int(QLocale::Punjabi) << int(QLocale::ArabicScript) << true;
     QTest::newRow("uz_Arab") << int(QLocale::Uzbek) << int(QLocale::ArabicScript) << true;
