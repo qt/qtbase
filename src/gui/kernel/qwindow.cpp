@@ -2440,7 +2440,7 @@ QPoint QWindow::mapToGlobal(const QPoint &pos) const
     Q_D(const QWindow);
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
-        && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded())) {
+        && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
         return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapToGlobal(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
     return pos + d->globalPosition();
@@ -2460,7 +2460,7 @@ QPoint QWindow::mapFromGlobal(const QPoint &pos) const
     Q_D(const QWindow);
     // QTBUG-43252, prefer platform implementation for foreign windows.
     if (d->platformWindow
-        && (type() == Qt::ForeignWindow || d->platformWindow->isEmbedded())) {
+        && (d->platformWindow->isForeignWindow() || d->platformWindow->isEmbedded())) {
         return QHighDpi::fromNativeLocalPosition(d->platformWindow->mapFromGlobal(QHighDpi::toNativeLocalPosition(pos, this)), this);
     }
     return pos - d->globalPosition();
@@ -2471,11 +2471,13 @@ QPoint QWindowPrivate::globalPosition() const
     Q_Q(const QWindow);
     QPoint offset = q->position();
     for (const QWindow *p = q->parent(); p; p = p->parent()) {
-        if (p->type() != Qt::ForeignWindow) {
-            offset += p->position();
-        } else { // Use mapToGlobal() for foreign windows
+        QPlatformWindow *pw = p->handle();
+        if (pw && pw->isForeignWindow()) {
+            // Use mapToGlobal() for foreign windows
             offset += p->mapToGlobal(QPoint(0, 0));
             break;
+        } else {
+            offset += p->position();
         }
     }
     return offset;

@@ -151,7 +151,8 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions)
     a no-op.
 
     For extra verbosity and clearer code, please consider checking
-    that window()->type() != Qt::ForeignWindow before using this cast.
+    that the platform window is not a foreign window before using
+    this cast, via QPlatformWindow::isForeignWindow().
 
     Do not use this method soley to check for foreign windows, as
     that will make the code harder to read for people not working

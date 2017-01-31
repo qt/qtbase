@@ -71,7 +71,7 @@ public:
     void requestActivateWindow() override;
     void updateStatusBarVisibility();
     inline bool isRaster() const {
-        if ((window()->flags() & Qt::ForeignWindow) == Qt::ForeignWindow)
+        if (isForeignWindow())
             return false;
 
         return window()->surfaceType() == QSurface::RasterSurface

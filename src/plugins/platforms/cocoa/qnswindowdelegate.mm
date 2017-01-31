@@ -66,7 +66,7 @@
 - (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
 {
     Q_UNUSED(newFrame);
-    if (m_cocoaWindow && m_cocoaWindow->window()->type() != Qt::ForeignWindow)
+    if (m_cocoaWindow && !m_cocoaWindow->isForeignWindow())
         [qnsview_cast(m_cocoaWindow->view()) notifyWindowWillZoom:![window isZoomed]];
     return YES;
 }

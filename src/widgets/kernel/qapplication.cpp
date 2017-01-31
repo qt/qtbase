@@ -2161,11 +2161,14 @@ QWidget *qt_tlw_for_window(QWindow *wnd)
     // QTBUG-32177, wnd might be a QQuickView embedded via window container.
     while (wnd && !wnd->isTopLevel()) {
         QWindow *parent = wnd->parent();
-        // Don't end up in windows not belonging to this application
-        if (parent && parent->type() != Qt::ForeignWindow)
-            wnd = wnd->parent();
-        else
+        if (!parent)
             break;
+
+        // Don't end up in windows not belonging to this application
+        if (parent->handle() && parent->handle()->isForeignWindow())
+            break;
+
+        wnd = wnd->parent();
     }
     if (wnd) {
         const auto tlws = qApp->topLevelWidgets();

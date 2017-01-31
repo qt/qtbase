@@ -1122,7 +1122,7 @@ void QWindowsWindow::updateDropSite(bool topLevel)
         // if the parent window is a foreign window wrapped via QWindow::fromWinId, we need to enable the drop site
         // on the first child window
         const QWindow *parent = window()->parent();
-        if (parent && (parent->type() == Qt::ForeignWindow))
+        if (parent && parent->handle() && parent->handle()->isForeignWindow())
             parentIsEmbedded = true;
     }
 
