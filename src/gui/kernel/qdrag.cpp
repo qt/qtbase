@@ -393,7 +393,7 @@ Qt::DropAction QDrag::defaultAction() const
 
     \note This is currently implemented on Windows and X11.
 
-    \since 5.6
+    \since 5.7
     \sa exec()
 */
 void QDrag::cancel()
