@@ -518,7 +518,7 @@ static const QLocaleData *findLocaleData(const QString &name)
     return QLocaleData::findLocaleData(lang, script, cntry);
 }
 
-QString qt_readEscapedFormatString(const QString &format, int *idx)
+QString qt_readEscapedFormatString(QStringView format, int *idx)
 {
     int &i = *idx;
 
@@ -552,13 +552,31 @@ QString qt_readEscapedFormatString(const QString &format, int *idx)
     return result;
 }
 
-int qt_repeatCount(const QString &s, int i)
+/*!
+    \internal
+
+    Counts the number of identical leading characters in \a s.
+
+    If \a s is empty, returns 0.
+
+    Otherwise, returns the number of consecutive \c{s.front()}
+    characters at the start of \a s.
+
+    \code
+    qt_repeatCount(u"a");   // == 1
+    qt_repeatCount(u"ab");  // == 1
+    qt_repeatCount(u"aab"); // == 2
+    \endcode
+*/
+int qt_repeatCount(QStringView s)
 {
-    QChar c = s.at(i);
-    int j = i + 1;
+    if (s.isEmpty())
+        return 0;
+    const QChar c = s.front();
+    qssize_t j = 1;
     while (j < s.size() && s.at(j) == c)
         ++j;
-    return j - i;
+    return int(j);
 }
 
 static const QLocaleData *default_data = 0;
@@ -1725,6 +1743,7 @@ QString QLocale::toString(qulonglong i) const
     return d->m_data->unsLongLongToString(i, -1, 10, -1, flags);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a localized string representation of the given \a date in the
     specified \a format.
@@ -1732,6 +1751,19 @@ QString QLocale::toString(qulonglong i) const
 */
 
 QString QLocale::toString(const QDate &date, const QString &format) const
+{
+    return d->dateTimeToString(format, QDateTime(), date, QTime(), this);
+}
+#endif
+
+/*!
+    \since 5.10
+
+    Returns a localized string representation of the given \a date in the
+    specified \a format.
+    If \a format is an empty string, an empty string is returned.
+*/
+QString QLocale::toString(const QDate &date, QStringView format) const
 {
     return d->dateTimeToString(format, QDateTime(), date, QTime(), this);
 }
@@ -1760,7 +1792,7 @@ QString QLocale::toString(const QDate &date, FormatType format) const
     return toString(date, format_str);
 }
 
-static bool timeFormatContainsAP(const QString &format)
+static bool timeFormatContainsAP(QStringView format)
 {
     int i = 0;
     while (i < format.size()) {
@@ -1777,6 +1809,7 @@ static bool timeFormatContainsAP(const QString &format)
     return false;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a localized string representation of the given \a time according
     to the specified \a format.
@@ -1786,7 +1819,21 @@ QString QLocale::toString(const QTime &time, const QString &format) const
 {
     return d->dateTimeToString(format, QDateTime(), QDate(), time, this);
 }
+#endif
 
+/*!
+    \since 5.10
+
+    Returns a localized string representation of the given \a time according
+    to the specified \a format.
+    If \a format is an empty string, an empty string is returned.
+*/
+QString QLocale::toString(const QTime &time, QStringView format) const
+{
+    return d->dateTimeToString(format, QDateTime(), QDate(), time, this);
+}
+
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 4.4
 
@@ -1796,6 +1843,19 @@ QString QLocale::toString(const QTime &time, const QString &format) const
 */
 
 QString QLocale::toString(const QDateTime &dateTime, const QString &format) const
+{
+    return d->dateTimeToString(format, dateTime, QDate(), QTime(), this);
+}
+#endif
+
+/*!
+    \since 5.10
+
+    Returns a localized string representation of the given \a dateTime according
+    to the specified \a format.
+    If \a format is an empty string, an empty string is returned.
+*/
+QString QLocale::toString(const QDateTime &dateTime, QStringView format) const
 {
     return d->dateTimeToString(format, dateTime, QDate(), QTime(), this);
 }
@@ -2710,7 +2770,7 @@ QString QLocale::pmText() const
 }
 
 
-QString QLocalePrivate::dateTimeToString(const QString &format, const QDateTime &datetime,
+QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &datetime,
                                          const QDate &dateOnly, const QTime &timeOnly,
                                          const QLocale *q) const
 {
@@ -2743,7 +2803,7 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDateTime 
         }
 
         const QChar c = format.at(i);
-        int repeat = qt_repeatCount(format, i);
+        int repeat = qt_repeatCount(format.mid(i));
         bool used = false;
         if (formatDate) {
             switch (c.unicode()) {
@@ -2878,7 +2938,7 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDateTime 
 
             case 'a':
                 used = true;
-                if (i + 1 < format.length() && format.at(i + 1).unicode() == 'p') {
+                if (i + 1 < format.size() && format.at(i + 1).unicode() == 'p') {
                     repeat = 2;
                 } else {
                     repeat = 1;
@@ -2888,7 +2948,7 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDateTime 
 
             case 'A':
                 used = true;
-                if (i + 1 < format.length() && format.at(i + 1).unicode() == 'P') {
+                if (i + 1 < format.size() && format.at(i + 1).unicode() == 'P') {
                     repeat = 2;
                 } else {
                     repeat = 1;

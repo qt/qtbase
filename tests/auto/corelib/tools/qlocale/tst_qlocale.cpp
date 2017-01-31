@@ -1163,6 +1163,9 @@ void tst_QLocale::dayOfWeek()
 
     QCOMPARE(QLocale::c().toString(date, "ddd"), shortName);
     QCOMPARE(QLocale::c().toString(date, "dddd"), longName);
+
+    QCOMPARE(QLocale::c().toString(date, QStringViewLiteral("ddd")), shortName);
+    QCOMPARE(QLocale::c().toString(date, QStringViewLiteral("dddd")), longName);
 }
 
 void tst_QLocale::formatDate_data()
@@ -1205,6 +1208,7 @@ void tst_QLocale::formatDate()
 
     QLocale l(QLocale::C);
     QCOMPARE(l.toString(date, format), result);
+    QCOMPARE(l.toString(date, QStringView(format)), result);
 }
 
 
@@ -1260,6 +1264,7 @@ void tst_QLocale::formatTime()
 
     QLocale l(QLocale::C);
     QCOMPARE(l.toString(time, format), result);
+    QCOMPARE(l.toString(time, QStringView(format)), result);
 }
 
 
@@ -1421,6 +1426,7 @@ void tst_QLocale::formatDateTime()
 
     QLocale l(localeName);
     QCOMPARE(l.toString(dateTime, format), result);
+    QCOMPARE(l.toString(dateTime, QStringView(format)), result);
 }
 
 void tst_QLocale::formatTimeZone()

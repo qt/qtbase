@@ -972,12 +972,18 @@ public:
     inline QString toString(uint i) const;
     QString toString(double i, char f = 'g', int prec = 6) const;
     inline QString toString(float i, char f = 'g', int prec = 6) const;
+
+#if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QDate &date, const QString &formatStr) const;
-    QString toString(const QDate &date, FormatType format = LongFormat) const;
     QString toString(const QTime &time, const QString &formatStr) const;
+    QString toString(const QDateTime &dateTime, const QString &format) const;
+#endif
+    QString toString(const QDate &date, QStringView formatStr) const;
+    QString toString(const QTime &time, QStringView formatStr) const;
+    QString toString(const QDateTime &dateTime, QStringView format) const;
+    QString toString(const QDate &date, FormatType format = LongFormat) const;
     QString toString(const QTime &time, FormatType format = LongFormat) const;
     QString toString(const QDateTime &dateTime, FormatType format = LongFormat) const;
-    QString toString(const QDateTime &dateTime, const QString &format) const;
 
     QString dateFormat(FormatType format = LongFormat) const;
     QString timeFormat(FormatType format = LongFormat) const;

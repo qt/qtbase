@@ -866,7 +866,7 @@ QString QDate::toString(Qt::DateFormat format) const
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
     case Qt::RFC2822Date:
-        return QLocale::c().toString(*this, QStringLiteral("dd MMM yyyy"));
+        return QLocale::c().toString(*this, QStringViewLiteral("dd MMM yyyy"));
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate:
@@ -3795,7 +3795,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
     case Qt::RFC2822Date: {
-        buf = QLocale::c().toString(*this, QStringLiteral("dd MMM yyyy hh:mm:ss "));
+        buf = QLocale::c().toString(*this, QStringViewLiteral("dd MMM yyyy hh:mm:ss "));
         buf += toOffsetString(Qt::TextDate, offsetFromUtc());
         return buf;
     }

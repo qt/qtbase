@@ -362,7 +362,7 @@ public:
 
     static void updateSystemPrivate();
 
-    QString dateTimeToString(const QString &format, const QDateTime &datetime,
+    QString dateTimeToString(QStringView format, const QDateTime &datetime,
                              const QDate &dateOnly, const QTime &timeOnly,
                              const QLocale *q) const;
 
@@ -412,9 +412,9 @@ inline char QLocaleData::digitToCLocale(QChar in) const
     return 0;
 }
 
-QString qt_readEscapedFormatString(const QString &format, int *idx);
+QString qt_readEscapedFormatString(QStringView format, int *idx);
 bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
-int qt_repeatCount(const QString &s, int i);
+int qt_repeatCount(QStringView s);
 
 enum { AsciiSpaceMask = (1 << (' ' - 1)) |
                         (1 << ('\t' - 1)) |   // 9: HT - horizontal tab

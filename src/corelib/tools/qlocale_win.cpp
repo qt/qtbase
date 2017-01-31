@@ -160,7 +160,7 @@ private:
     SubstitutionType substitution();
     QString &substituteDigits(QString &string);
 
-    static QString winToQtFormat(const QString &sys_fmt);
+    static QString winToQtFormat(QStringView sys_fmt);
 
 };
 Q_GLOBAL_STATIC(QSystemLocalePrivate, systemLocalePrivate)
@@ -680,7 +680,7 @@ void QSystemLocalePrivate::update()
     zero = QChar();
 }
 
-QString QSystemLocalePrivate::winToQtFormat(const QString &sys_fmt)
+QString QSystemLocalePrivate::winToQtFormat(QStringView sys_fmt)
 {
     QString result;
     int i = 0;
@@ -696,7 +696,7 @@ QString QSystemLocalePrivate::winToQtFormat(const QString &sys_fmt)
         }
 
         QChar c = sys_fmt.at(i);
-        int repeat = qt_repeatCount(sys_fmt, i);
+        int repeat = qt_repeatCount(sys_fmt.mid(i));
 
         switch (c.unicode()) {
             // Date
