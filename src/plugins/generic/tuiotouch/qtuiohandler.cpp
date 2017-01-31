@@ -488,7 +488,7 @@ void QTuioHandler::process2DObjSet(const QOscMessage &message)
         return;
     }
 
-    qCDebug(lcTuioSet) << "Processing SET for token " << classId << id << " @ " << x << y << "∡" << angle <<
+    qCDebug(lcTuioSet) << "Processing SET for token " << classId << id << " @ " << x << y << " angle: " << angle <<
                           "vel" << vx << vy << angularVelocity << "acc" << acceleration << angularAcceleration;
     QTuioToken &tok = *it;
     tok.setClassId(classId);

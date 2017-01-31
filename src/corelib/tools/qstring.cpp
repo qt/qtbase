@@ -1840,7 +1840,7 @@ QString &QString::operator=(const QString &other) Q_DECL_NOTHROW
 */
 QString &QString::operator=(QLatin1String other)
 {
-    if (isDetached() && other.size() <= capacity()) { // assumes d->alloc == 0 → !isDetached() (sharedNull)
+    if (isDetached() && other.size() <= capacity()) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
         d->size = other.size();
         d->data()[other.size()] = 0;
         qt_from_latin1(d->data(), other.latin1(), other.size());
@@ -1899,7 +1899,7 @@ QString &QString::operator=(QLatin1String other)
 */
 QString &QString::operator=(QChar ch)
 {
-    if (isDetached() && capacity() >= 1) { // assumes d->alloc == 0 → !isDetached() (sharedNull)
+    if (isDetached() && capacity() >= 1) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
         // re-use existing capacity:
         ushort *dat = d->data();
         dat[0] = ch.unicode();
@@ -8357,7 +8357,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns the character at position \a pos in this object.
 
     \note This function performs no error checking.
-    The behavior is undefined when \a pos < 0 or \a pos ≥ size().
+    The behavior is undefined when \a pos < 0 or \a pos >= size().
 
     \sa operator[]()
 */
@@ -8368,7 +8368,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns the character at position \a pos in this object.
 
     \note This function performs no error checking.
-    The behavior is undefined when \a pos < 0 or \a pos ≥ size().
+    The behavior is undefined when \a pos < 0 or \a pos >= size().
 
     \sa at()
 */

@@ -277,7 +277,7 @@ static HB_Bool HB_ThaiConvertStringToGlyphIndices (HB_ShaperItem *item)
             }
         }
 
-        /* Special case to handle U+0E33 (SARA AM, ำ): SARA AM is normally written at the end of a
+        /* Special case to handle U+0E33 (SARA AM): SARA AM is normally written at the end of a
          * word with a base character and an optional top character before it. For example, U+0E0B
          * (base), U+0E49 (top), U+0E33 (SARA AM). The sequence should be converted to 4 glyphs:
          * base, hilo (the little circle in the top left part of SARA AM, NIKHAHIT), top, then the
