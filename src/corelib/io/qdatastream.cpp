@@ -42,6 +42,7 @@
 
 #if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 #include "qbuffer.h"
+#include "qfloat16.h"
 #include "qstring.h"
 #include <stdio.h>
 #include <ctype.h>
@@ -975,7 +976,6 @@ QDataStream &QDataStream::operator>>(double &f)
 
 
 /*!
-    \fn QDataStream &QDataStream::operator>>(qfloat16 &f)
     \overload
     \since 5.9
 
@@ -983,6 +983,11 @@ QDataStream &QDataStream::operator>>(double &f)
     using the standard IEEE 754 format. Returns a reference to the
     stream.
 */
+QDataStream &QDataStream::operator>>(qfloat16 &f)
+{
+    return *this >> reinterpret_cast<qint16&>(f);
+}
+
 
 /*!
     \overload
@@ -1280,6 +1285,10 @@ QDataStream &QDataStream::operator<<(double f)
     Writes a floating point number, \a f, to the stream using
     the standard IEEE 754 format. Returns a reference to the stream.
 */
+QDataStream &QDataStream::operator<<(qfloat16 f)
+{
+    return *this << reinterpret_cast<qint16&>(f);
+}
 
 /*!
     \overload
