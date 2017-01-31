@@ -72,7 +72,10 @@ public:
     inline QColor(int r, int g, int b, int a = 255);
     QColor(QRgb rgb) Q_DECL_NOTHROW;
     QColor(QRgba64 rgba64) Q_DECL_NOTHROW;
+#if QT_STRINGVIEW_LEVEL < 2
     inline QColor(const QString& name);
+#endif
+    explicit inline QColor(QStringView name);
     inline QColor(const char *aname) : QColor(QLatin1String(aname)) {}
     inline QColor(QLatin1String name);
     QColor(Spec spec) Q_DECL_NOTHROW;
@@ -95,7 +98,10 @@ public:
     QString name() const;
     QString name(NameFormat format) const;
 
+#if QT_STRINGVIEW_LEVEL < 2
     void setNamedColor(const QString& name);
+#endif
+    void setNamedColor(QStringView name);
     void setNamedColor(QLatin1String name);
 
     static QStringList colorNames();
@@ -221,14 +227,17 @@ public:
 
     operator QVariant() const;
 
+#if QT_STRINGVIEW_LEVEL < 2
     static bool isValidColor(const QString &name);
+#endif
+    static bool isValidColor(QStringView) Q_DECL_NOTHROW;
     static bool isValidColor(QLatin1String) Q_DECL_NOTHROW;
 
 private:
 
     void invalidate() Q_DECL_NOTHROW;
     template <typename String>
-    bool setColorFromString(const String &name);
+    bool setColorFromString(String name);
 
     Spec cspec;
     union {
@@ -280,8 +289,13 @@ inline QColor::QColor(int r, int g, int b, int a)
 inline QColor::QColor(QLatin1String aname)
 { setNamedColor(aname); }
 
+inline QColor::QColor(QStringView aname)
+{ setNamedColor(aname); }
+
+#if QT_STRINGVIEW_LEVEL < 2
 inline QColor::QColor(const QString& aname)
 { setNamedColor(aname); }
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 inline QColor::QColor(const QColor &acolor) Q_DECL_NOTHROW

@@ -79,7 +79,7 @@ static inline int hex2int(char s)
     return h < 0 ? h : (h << 4) | h;
 }
 
-static bool get_hex_rgb(const char *name, int len, QRgb *rgb)
+static bool get_hex_rgb(const char *name, size_t len, QRgb *rgb)
 {
     if (name[0] != '#')
         return false;
@@ -124,12 +124,12 @@ bool qt_get_hex_rgb(const char *name, QRgb *rgb)
     return get_hex_rgb(name, qstrlen(name), rgb);
 }
 
-static bool get_hex_rgb(const QChar *str, int len, QRgb *rgb)
+static bool get_hex_rgb(const QChar *str, size_t len, QRgb *rgb)
 {
     if (len > 13)
         return false;
     char tmp[16];
-    for (int i = 0; i < len; ++i)
+    for (size_t i = 0; i < len; ++i)
         tmp[i] = str[i].toLatin1();
     tmp[len] = 0;
     return get_hex_rgb(tmp, len, rgb);
@@ -858,6 +858,7 @@ QString QColor::name(NameFormat format) const
     return QString();
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Sets the RGB value of this QColor to \a name, which may be in one
     of these formats:
@@ -883,6 +884,17 @@ QString QColor::name(NameFormat format) const
 
 void QColor::setNamedColor(const QString &name)
 {
+    setColorFromString(QStringView(name));
+}
+#endif
+
+/*!
+    \overload
+    \since 5.10
+*/
+
+void QColor::setNamedColor(QStringView name)
+{
     setColorFromString(name);
 }
 
@@ -896,6 +908,7 @@ void QColor::setNamedColor(QLatin1String name)
     setColorFromString(name);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
    \since 4.7
 
@@ -909,7 +922,17 @@ void QColor::setNamedColor(QLatin1String name)
 */
 bool QColor::isValidColor(const QString &name)
 {
-    return !name.isEmpty() && QColor().setColorFromString(name);
+    return isValidColor(QStringView(name));
+}
+#endif
+
+/*!
+    \overload
+    \since 5.10
+*/
+bool QColor::isValidColor(QStringView name) Q_DECL_NOTHROW
+{
+    return name.size() && QColor().setColorFromString(name);
 }
 
 /*!
@@ -922,7 +945,7 @@ bool QColor::isValidColor(QLatin1String name) Q_DECL_NOTHROW
 }
 
 template <typename String>
-bool QColor::setColorFromString(const String &name)
+bool QColor::setColorFromString(String name)
 {
     if (!name.size()) {
         invalidate();
