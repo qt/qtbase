@@ -1,9 +1,7 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/qt-project.org/mac/cursors">
-<file>images/copyarrowcursor.png</file>
-<file>images/forbiddencursor.png</file>
-<file>images/spincursor.png</file>
-<file>images/waitcursor.png</file>
-<file>images/sizeallcursor.png</file>
-</qresource>
+<RCC>
+    <qresource prefix="/qt-project.org/mac/cursors">
+        <file>images/spincursor.png</file>
+        <file>images/waitcursor.png</file>
+        <file>images/sizeallcursor.png</file>
+    </qresource>
 </RCC>

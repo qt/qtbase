@@ -97,6 +97,9 @@ NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
     case Qt::ArrowCursor:
         cocoaCursor= [NSCursor arrowCursor];
         break;
+    case Qt::ForbiddenCursor:
+        cocoaCursor = [NSCursor operationNotAllowedCursor];
+        break;
     case Qt::CrossCursor:
         cocoaCursor = [NSCursor crosshairCursor];
         break;
@@ -123,7 +126,7 @@ NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
         cocoaCursor = [NSCursor crosshairCursor];
         break;
     case Qt::DragCopyCursor:
-        cocoaCursor = [NSCursor crosshairCursor];
+        cocoaCursor = [NSCursor dragCopyCursor];
         break;
     case Qt::DragLinkCursor:
         cocoaCursor = [NSCursor dragLinkCursor];
@@ -233,10 +236,6 @@ NSCursor *QCocoaCursor::createCursorData(QCursor *cursor)
         break; }
     case Qt::BusyCursor: {
         QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/waitcursor.png"));
-        return createCursorFromPixmap(pixmap, hotspot);
-        break; }
-    case Qt::ForbiddenCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/forbiddencursor.png"));
         return createCursorFromPixmap(pixmap, hotspot);
         break; }
 #define QT_USE_APPROXIMATE_CURSORS
