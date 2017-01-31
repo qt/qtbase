@@ -6549,8 +6549,8 @@ static void qInitDrawhelperFunctions()
     destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
     destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
 
-    qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
-    qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
+    qMemRotateFunctions[QPixelLayout::BPP16][0] = qt_memrotate90_16_neon;
+    qMemRotateFunctions[QPixelLayout::BPP16][2] = qt_memrotate270_16_neon;
 #endif
 #endif // defined(__ARM_NEON__)
 
