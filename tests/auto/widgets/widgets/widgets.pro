@@ -49,6 +49,7 @@ SUBDIRS=\
 
 # The following tests depend on private API:
 !qtConfig(private_tests): SUBDIRS -= \
+           qabstractspinbox \
            qcombobox \
            qmainwindow \
            qtextedit \

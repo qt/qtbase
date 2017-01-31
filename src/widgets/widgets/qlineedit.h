@@ -239,6 +239,7 @@ public:
 private:
     friend class QAbstractSpinBox;
     friend class QAccessibleLineEdit;
+    friend class QComboBox;
 #ifdef QT_KEYPAD_NAVIGATION
     friend class QDateTimeEdit;
 #endif

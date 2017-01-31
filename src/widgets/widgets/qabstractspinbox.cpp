@@ -694,6 +694,10 @@ void QAbstractSpinBox::setLineEdit(QLineEdit *lineEdit)
                 this, SLOT(_q_editorTextChanged(QString)));
         connect(d->edit, SIGNAL(cursorPositionChanged(int,int)),
                 this, SLOT(_q_editorCursorPositionChanged(int,int)));
+        connect(d->edit, SIGNAL(cursorPositionChanged(int,int)),
+                this, SLOT(updateMicroFocus()));
+        connect(d->edit->d_func()->control, SIGNAL(updateMicroFocus()),
+                this, SLOT(updateMicroFocus()));
     }
     d->updateEditFieldGeometry();
     d->edit->setContextMenuPolicy(Qt::NoContextMenu);
