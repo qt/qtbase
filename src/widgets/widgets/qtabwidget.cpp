@@ -209,7 +209,6 @@ public:
     bool dirty;
     QTabWidget::TabPosition pos;
     QTabWidget::TabShape shape;
-    int alignment;
     QWidget *leftCornerWidget;
     QWidget *rightCornerWidget;
 };

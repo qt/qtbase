@@ -519,12 +519,14 @@ void QTabBarPrivate::layoutTabs()
         maxExtent = maxWidth;
     }
 
+    if (!expanding) {
+        // Mirror our front item.
+        tabChain[tabChainIndex].init();
+        tabChain[tabChainIndex].expansive = (tabAlignment != Qt::AlignRight)
+                                            && (tabAlignment != Qt::AlignJustify);
+        tabChain[tabChainIndex].empty = true;
+    }
     Q_ASSERT(tabChainIndex == tabChain.count() - 1); // add an assert just to make sure.
-    // Mirror our front item.
-    tabChain[tabChainIndex].init();
-    tabChain[tabChainIndex].expansive = (tabAlignment != Qt::AlignRight)
-                                        && (tabAlignment != Qt::AlignJustify);
-    tabChain[tabChainIndex].empty = true;
 
     // Do the calculation
     qGeomCalc(tabChain, 0, tabChain.count(), 0, qMax(available, last), 0);
@@ -662,6 +664,15 @@ QRect QTabBarPrivate::normalizedScrollRect(int index)
 
         return QRect(leftEdge, 0, rightEdge - leftEdge, q->height());
     }
+}
+
+int QTabBarPrivate::hoveredTabIndex() const
+{
+    if (dragInProgress)
+        return currentIndex;
+    if (hoverIndex >= 0)
+        return hoverIndex;
+    return -1;
 }
 
 void QTabBarPrivate::makeVisible(int index)
@@ -1053,6 +1064,17 @@ void QTabBar::removeTab(int index)
         }
         d->refresh();
         d->autoHideTabs();
+        if (!d->hoverRect.isEmpty()) {
+            for (int i = 0; i < d->tabList.count(); ++i) {
+                const QRect area = tabRect(i);
+                if (area.contains(mapFromGlobal(QCursor::pos()))) {
+                    d->hoverIndex = i;
+                    d->hoverRect = area;
+                    break;
+                }
+            }
+            update(d->hoverRect);
+        }
         tabRemoved(index);
     }
 }
@@ -1577,20 +1599,28 @@ bool QTabBar::event(QEvent *event)
         QHoverEvent *he = static_cast<QHoverEvent *>(event);
         if (!d->hoverRect.contains(he->pos())) {
             QRect oldHoverRect = d->hoverRect;
+            bool cursorOverTabs = false;
             for (int i = 0; i < d->tabList.count(); ++i) {
                 QRect area = tabRect(i);
                 if (area.contains(he->pos())) {
+                    d->hoverIndex = i;
                     d->hoverRect = area;
+                    cursorOverTabs = true;
                     break;
                 }
+            }
+            if (!cursorOverTabs) {
+                d->hoverIndex = -1;
+                d->hoverRect = QRect();
             }
             if (he->oldPos() != QPoint(-1, -1))
                 update(oldHoverRect);
             update(d->hoverRect);
         }
         return true;
-    } else if (event->type() == QEvent::HoverLeave ) {
+    } else if (event->type() == QEvent::HoverLeave) {
         QRect oldHoverRect = d->hoverRect;
+        d->hoverIndex = -1;
         d->hoverRect = QRect();
         update(oldHoverRect);
         return true;
@@ -2435,7 +2465,7 @@ void QTabBar::setMovable(bool movable)
 
     This property is used as a hint for styles to draw the tabs in a different
     way then they would normally look in a tab widget.  On \macos this will
-    look similar to the tabs in Safari or Leopard's Terminal.app.
+    look similar to the tabs in Safari or Sierra's Terminal.app.
 
     \sa QTabWidget::documentMode
 */

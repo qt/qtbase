@@ -87,7 +87,7 @@ class QTabBarPrivate  : public QWidgetPrivate
 public:
     QTabBarPrivate()
         :currentIndex(-1), pressedIndex(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
-        drawBase(true), scrollOffset(0), elideModeSetByUser(false), useScrollButtonsSetByUser(false), expanding(true), closeButtonOnTabs(false),
+        drawBase(true), scrollOffset(0), hoverIndex(-1), elideModeSetByUser(false), useScrollButtonsSetByUser(false), expanding(true), closeButtonOnTabs(false),
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
         dragInProgress(false), documentMode(false), autoHide(false), changeCurrentOnDrag(false),
         switchTabCurrentIndex(-1), switchTabTimerId(0), movingTab(0)
@@ -192,6 +192,7 @@ public:
     void moveTab(int index, int offset);
     void moveTabFinished(int index);
     QRect hoverRect;
+    int hoverIndex;
 
     void refresh();
     void layoutTabs();
@@ -202,6 +203,7 @@ public:
     void setupMovableTab();
     void autoHideTabs();
     QRect normalizedScrollRect(int index = -1);
+    int hoveredTabIndex() const;
 
     void initBasicStyleOption(QStyleOptionTab *option, int tabIndex) const;
 

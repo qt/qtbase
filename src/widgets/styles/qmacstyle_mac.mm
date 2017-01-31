@@ -52,6 +52,7 @@
 
 #include <private/qcore_mac_p.h>
 #include <private/qcombobox_p.h>
+#include <private/qtabbar_p.h>
 #include <private/qpainter_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
@@ -190,11 +191,33 @@ static const QColor mainWindowGradientEnd(200, 200, 200);
 
 static const int DisclosureOffset = 4;
 
+// Tab bar colors
+// active: window is active
+// selected: tab is selected
+// hovered: tab is hovered
+static const QColor tabBarTabBackgroundActive(190, 190, 190);
+static const QColor tabBarTabBackgroundActiveHovered(178, 178, 178);
+static const QColor tabBarTabBackgroundActiveSelected(211, 211, 211);
+static const QColor tabBarTabBackground(227, 227, 227);
+static const QColor tabBarTabBackgroundSelected(246, 246, 246);
+static const QColor tabBarTabLineActive(160, 160, 160);
+static const QColor tabBarTabLineActiveHovered(150, 150, 150);
+static const QColor tabBarTabLine(210, 210, 210);
+static const QColor tabBarTabLineSelected(189, 189, 189);
+static const QColor tabBarCloseButtonBackgroundHovered(162, 162, 162);
+static const QColor tabBarCloseButtonBackgroundPressed(153, 153, 153);
+static const QColor tabBarCloseButtonBackgroundSelectedHovered(192, 192, 192);
+static const QColor tabBarCloseButtonBackgroundSelectedPressed(181, 181, 181);
+static const QColor tabBarCloseButtonCross(100, 100, 100);
+static const QColor tabBarCloseButtonCrossSelected(115, 115, 115);
+
+static const int closeButtonSize = 14;
+static const qreal closeButtonCornerRadius = 2.0;
+
 // Resolve these at run-time, since the functions was moved in Leopard.
 typedef HIRect * (*PtrHIShapeGetBounds)(HIShapeRef, HIRect *);
 static PtrHIShapeGetBounds ptrHIShapeGetBounds = 0;
 
-static int closeButtonSize = 12;
 #ifndef QT_NO_TABBAR
 static bool isVerticalTabs(const QTabBar::Shape shape) {
     return (shape == QTabBar::RoundedEast
@@ -217,41 +240,35 @@ static bool isInMacUnifiedToolbarArea(QWindow *window, int windowY)
 }
 
 
-void drawTabCloseButton(QPainter *p, bool hover, bool active, bool selected)
+void drawTabCloseButton(QPainter *p, bool hover, bool selected, bool pressed)
 {
-    // draw background circle
     p->setRenderHints(QPainter::Antialiasing);
     QRect rect(0, 0, closeButtonSize, closeButtonSize);
-    QColor background;
+    const int width = rect.width();
+    const int height = rect.height();
+
     if (hover) {
-        background = QColor(124, 124, 124);
-    } else {
-        if (active) {
-            if (selected)
-                background = QColor(104, 104, 104);
-            else
-                background = QColor(83, 83, 83);
+        // draw background circle
+        QColor background;
+        if (selected) {
+            background = pressed ? tabBarCloseButtonBackgroundSelectedPressed : tabBarCloseButtonBackgroundSelectedHovered;
         } else {
-            if (selected)
-                background = QColor(144, 144, 144);
-            else
-                background = QColor(114, 114, 114);
+            background = pressed ? tabBarCloseButtonBackgroundPressed : tabBarCloseButtonBackgroundHovered;
         }
+        p->setPen(Qt::transparent);
+        p->setBrush(background);
+        p->drawRoundedRect(rect, closeButtonCornerRadius, closeButtonCornerRadius);
     }
-    p->setPen(Qt::transparent);
-    p->setBrush(background);
-    p->drawEllipse(rect);
 
     // draw cross
-    int min = 3;
-    int max = 9;
+    const int margin = 3;
     QPen crossPen;
-    crossPen.setColor(QColor(194, 194, 194));
-    crossPen.setWidthF(1.3);
+    crossPen.setColor(selected ? tabBarCloseButtonCrossSelected : tabBarCloseButtonCross);
+    crossPen.setWidthF(1.1);
     crossPen.setCapStyle(Qt::FlatCap);
     p->setPen(crossPen);
-    p->drawLine(min, min, max, max);
-    p->drawLine(min, max, max, min);
+    p->drawLine(margin, margin, width - margin, height - margin);
+    p->drawLine(margin, height - margin, width - margin, margin);
 }
 
 #ifndef QT_NO_TABBAR
@@ -278,108 +295,71 @@ QRect rotateTabPainter(QPainter *p, QTabBar::Shape shape, QRect tabRect)
     return tabRect;
 }
 
-void drawTabShape(QPainter *p, const QStyleOptionTab *tabOpt, bool isUnified)
+void drawTabShape(QPainter *p, const QStyleOptionTab *tabOpt, bool isUnified, int tabOverlap)
 {
-    QRect r = tabOpt->rect;
-    p->translate(tabOpt->rect.x(), tabOpt->rect.y());
-    r.moveLeft(0);
-    r.moveTop(0);
-    QRect tabRect = rotateTabPainter(p, tabOpt->shape, r);
+    QRect rect = tabOpt->rect;
 
-    int width = tabRect.width();
-    int height = 20;
-    bool active = (tabOpt->state & QStyle::State_Active);
-    bool selected = (tabOpt->state & QStyle::State_Selected);
+    switch (tabOpt->shape) {
+    case QTabBar::RoundedNorth:
+    case QTabBar::TriangularNorth:
+    case QTabBar::RoundedSouth:
+    case QTabBar::TriangularSouth:
+        rect.adjust(-tabOverlap, 0, 0, 0);
+        break;
+    case QTabBar::RoundedEast:
+    case QTabBar::TriangularEast:
+    case QTabBar::RoundedWest:
+    case QTabBar::TriangularWest:
+        rect.adjust(0, -tabOverlap, 0, 0);
+        break;
+    default:
+        break;
+    }
 
+    p->translate(rect.x(), rect.y());
+    rect.moveLeft(0);
+    rect.moveTop(0);
+    const QRect tabRect = rotateTabPainter(p, tabOpt->shape, rect);
+
+    const int width = tabRect.width();
+    const int height = tabRect.height();
+    const bool active = (tabOpt->state & QStyle::State_Active);
+    const bool selected = (tabOpt->state & QStyle::State_Selected);
+
+    const QRect bodyRect(1, 1, width - 2, height - 2);
+    const QRect topLineRect(1, 0, width - 2, 1);
+    const QRect bottomLineRect(1, height - 1, width - 2, 1);
     if (selected) {
-        QRect rect(1, 0, width - 2, height);
-
         // fill body
         if (tabOpt->documentMode && isUnified) {
             p->save();
             p->setCompositionMode(QPainter::CompositionMode_Source);
-            p->fillRect(rect, QColor(Qt::transparent));
+            p->fillRect(tabRect, QColor(Qt::transparent));
             p->restore();
         } else if (active) {
-            p->fillRect(rect, QColor(167, 167, 167));
+            p->fillRect(bodyRect, tabBarTabBackgroundActiveSelected);
+            // top line
+            p->fillRect(topLineRect, tabBarTabLineSelected);
         } else {
-            QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
-            gradient.setColorAt(0, QColor(216, 216, 216));
-            gradient.setColorAt(0.5, QColor(215, 215, 215));
-            gradient.setColorAt(1, QColor(210, 210, 210));
-            p->fillRect(rect, gradient);
+            p->fillRect(bodyRect, tabBarTabBackgroundSelected);
         }
-
-        // draw border
-        QColor borderSides;
-        QColor borderBottom;
-        if (active) {
-            borderSides = QColor(88, 88, 88);
-            borderBottom = QColor(88, 88, 88);
-        } else {
-            borderSides = QColor(121, 121, 121);
-            borderBottom = QColor(116, 116, 116);
-        }
-
-        p->setPen(borderSides);
-
-        int bottom = height;
-        // left line
-        p->drawLine(0, 1, 0, bottom-2);
-        // right line
-        p->drawLine(width-1, 1, width-1, bottom-2);
-
-        // bottom line
-        if (active) {
-            p->setPen(QColor(168, 168, 168));
-            p->drawLine(3, bottom-1, width-3, bottom-1);
-        }
-        p->setPen(borderBottom);
-        p->drawLine(2, bottom, width-2, bottom);
-
-        int w = 3;
-        QRectF rectangleLeft(1, height - w, w, w);
-        QRectF rectangleRight(width - 2, height - 1, w, w);
-        int startAngle = 180 * 16;
-        int spanAngle = 90 * 16;
-        p->setRenderHint(QPainter::Antialiasing);
-        p->drawArc(rectangleLeft, startAngle, spanAngle);
-        p->drawArc(rectangleRight, startAngle, -spanAngle);
     } else {
         // when the mouse is over non selected tabs they get a new color
-        bool hover = (tabOpt->state & QStyle::State_MouseOver);
+        const bool hover = (tabOpt->state & QStyle::State_MouseOver);
         if (hover) {
-            QRect rect(1, 2, width - 1, height - 1);
-            p->fillRect(rect, QColor(110, 110, 110));
-        }
-
-        // seperator lines between tabs
-        bool west = (tabOpt->shape == QTabBar::RoundedWest || tabOpt->shape == QTabBar::TriangularWest);
-        bool drawOnRight = !west;
-        if ((!drawOnRight && tabOpt->selectedPosition != QStyleOptionTab::NextIsSelected)
-            || (drawOnRight && tabOpt->selectedPosition != QStyleOptionTab::NextIsSelected)) {
-            QColor borderColor;
-            QColor borderHighlightColor;
-            if (active) {
-                borderColor = QColor(64, 64, 64);
-                borderHighlightColor = QColor(140, 140, 140);
-            } else {
-                borderColor = QColor(135, 135, 135);
-                borderHighlightColor = QColor(178, 178, 178);
-            }
-
-            int x = drawOnRight ? width : 0;
-
-            // tab seperator line
-            p->setPen(borderColor);
-            p->drawLine(x, 2, x, height + 1);
-
-            // tab seperator highlight
-            p->setPen(borderHighlightColor);
-            p->drawLine(x-1, 2, x-1, height + 1);
-            p->drawLine(x+1, 2, x+1, height + 1);
+            // fill body
+            p->fillRect(bodyRect, tabBarTabBackgroundActiveHovered);
+            // bottom line
+            p->fillRect(bottomLineRect, tabBarTabLineActiveHovered);
         }
     }
+
+    // separator lines between tabs
+    const QRect leftLineRect(0, 1, 1, height - 2);
+    const QRect rightLineRect(width - 1, 1, 1, height - 2);
+    const QColor separatorLineColor = active ? tabBarTabLineActive : tabBarTabLine;
+    p->fillRect(leftLineRect, separatorLineColor);
+    p->fillRect(rightLineRect, separatorLineColor);
 }
 
 void drawTabBase(QPainter *p, const QStyleOptionTabBarBase *tbb, const QWidget *w)
@@ -390,53 +370,25 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBase *tbb, const QWidget *
     } else {
         r.setHeight(w->height());
     }
-    QRect tabRect = rotateTabPainter(p, tbb->shape, r);
-    int width = tabRect.width();
-    int height = tabRect.height();
-    bool active = (tbb->state & QStyle::State_Active);
+    const QRect tabRect = rotateTabPainter(p, tbb->shape, r);
+    const int width = tabRect.width();
+    const int height = tabRect.height();
+    const bool active = (tbb->state & QStyle::State_Active);
 
-    // top border lines
-    QColor borderHighlightTop;
-    QColor borderTop;
-    if (active) {
-        borderTop = QColor(64, 64, 64);
-        borderHighlightTop = QColor(174, 174, 174);
-    } else {
-        borderTop = QColor(135, 135, 135);
-        borderHighlightTop = QColor(207, 207, 207);
-    }
-    p->setPen(borderHighlightTop);
-    p->drawLine(tabRect.x(), 0, width, 0);
-    p->setPen(borderTop);
-    p->drawLine(tabRect.x(), 1, width, 1);
+    // fill body
+    const QRect bodyRect(0, 1, width, height - 1);
+    const QColor bodyColor = active ? tabBarTabBackgroundActive : tabBarTabBackground;
+    p->fillRect(bodyRect, bodyColor);
 
-    // center block
-    QRect centralRect(tabRect.x(), 2, width, height - 2);
-    if (active) {
-        QColor mainColor = QColor(120, 120, 120);
-        p->fillRect(centralRect, mainColor);
-    } else {
-        QLinearGradient gradient(centralRect.topLeft(), centralRect.bottomLeft());
-        gradient.setColorAt(0, QColor(165, 165, 165));
-        gradient.setColorAt(0.5, QColor(164, 164, 164));
-        gradient.setColorAt(1, QColor(158, 158, 158));
-        p->fillRect(centralRect, gradient);
-    }
+    // top line
+    const QRect topLineRect(0, 0, width, 1);
+    const QColor topLineColor = active ? tabBarTabLineActive : tabBarTabLine;
+    p->fillRect(topLineRect, topLineColor);
 
-    // bottom border lines
-    QColor borderHighlightBottom;
-    QColor borderBottom;
-    if (active) {
-        borderHighlightBottom = QColor(153, 153, 153);
-        borderBottom = QColor(64, 64, 64);
-    } else {
-        borderHighlightBottom = QColor(177, 177, 177);
-        borderBottom = QColor(127, 127, 127);
-    }
-    p->setPen(borderHighlightBottom);
-    p->drawLine(tabRect.x(), height - 2, width, height - 2);
-    p->setPen(borderBottom);
-    p->drawLine(tabRect.x(), height - 1, width, height - 1);
+    // bottom line
+    const QRect bottomLineRect(0, height - 1, width, 1);
+    const QColor bottomLineColor = active ? tabBarTabLineActive : tabBarTabLine;
+    p->fillRect(bottomLineRect, bottomLineColor);
 }
 #endif
 
@@ -1104,6 +1056,55 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
     p->drawPixmap(QRectF(targetRect.right() - hCornerSize + 1, targetRect.top() + vCornerSize, hCornerSize, targetRect.height() - 2 * vCornerSize), focusRingPixmap,
                   QRect(focusRingPixmap.width() - shCornerSize, svCornerSize, shCornerSize, focusRingPixmap.width() - 2 * svCornerSize));
 }
+
+#ifndef QT_NO_TABBAR
+void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect) const
+{
+    Q_ASSERT(textRect);
+    QRect tr = opt->rect;
+    const bool verticalTabs = opt->shape == QTabBar::RoundedEast
+                              || opt->shape == QTabBar::RoundedWest
+                              || opt->shape == QTabBar::TriangularEast
+                              || opt->shape == QTabBar::TriangularWest;
+    if (verticalTabs)
+        tr.setRect(0, 0, tr.height(), tr.width()); // 0, 0 as we will have a translate transform
+
+    int verticalShift = proxyStyle->pixelMetric(QStyle::PM_TabBarTabShiftVertical, opt, widget);
+    int horizontalShift = proxyStyle->pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, opt, widget);
+    const int hpadding = 4;
+    const int vpadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
+    if (opt->shape == QTabBar::RoundedSouth || opt->shape == QTabBar::TriangularSouth)
+        verticalShift = -verticalShift;
+    tr.adjust(hpadding, verticalShift - vpadding, horizontalShift - hpadding, vpadding);
+    const bool selected = opt->state & QStyle::State_Selected;
+    if (selected) {
+        tr.setTop(tr.top() - verticalShift);
+        tr.setRight(tr.right() - horizontalShift);
+    }
+
+    // left widget
+    if (!opt->leftButtonSize.isEmpty()) {
+        const int buttonSize = verticalTabs ? opt->leftButtonSize.height() : opt->leftButtonSize.width();
+        tr.setLeft(tr.left() + 4 + buttonSize);
+        // make text aligned to center
+        if (opt->rightButtonSize.isEmpty())
+            tr.setRight(tr.right() - 4 - buttonSize);
+    }
+    // right widget
+    if (!opt->rightButtonSize.isEmpty()) {
+        const int buttonSize = verticalTabs ? opt->rightButtonSize.height() : opt->rightButtonSize.width();
+        tr.setRight(tr.right() - 4 - buttonSize);
+        // make text aligned to center
+        if (opt->leftButtonSize.isEmpty())
+            tr.setLeft(tr.left() + 4 + buttonSize);
+    }
+
+    if (!verticalTabs)
+        tr = proxyStyle->visualRect(opt->direction, opt->rect, tr);
+
+    *textRect = tr;
+}
+#endif //QT_NO_TABBAR
 
 QAquaWidgetSize QMacStylePrivate::effectiveAquaSizeConstrain(const QStyleOption *option,
                                                             const QWidget *widg,
@@ -2473,6 +2474,26 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = int([NSWindow frameRectForContentRect:NSZeroRect
                                           styleMask:NSTitledWindowMask].size.height);
         break;
+    case QStyle::PM_TabBarTabHSpace:
+        switch (d->aquaSizeConstrain(opt, widget)) {
+        case QAquaSizeLarge:
+            ret = QCommonStyle::pixelMetric(metric, opt, widget);
+            break;
+        case QAquaSizeSmall:
+            ret = 20;
+            break;
+        case QAquaSizeMini:
+            ret = 16;
+            break;
+        case QAquaSizeUnknown:
+            const QStyleOptionTab *tb = qstyleoption_cast<const QStyleOptionTab *>(opt);
+            if (tb && tb->documentMode)
+                ret = 24;
+            else
+                ret = QCommonStyle::pixelMetric(metric, opt, widget);
+            break;
+        }
+        break;
     case PM_TabBarTabVSpace:
         ret = 4;
         break;
@@ -2481,10 +2502,10 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 0;
         break;
     case PM_TabBarBaseHeight:
-        ret = 0;
+        ret = 21;
         break;
     case PM_TabBarTabOverlap:
-        ret = 0;
+        ret = 1;
         break;
     case PM_TabBarBaseOverlap:
         switch (d->aquaSizeConstrain(opt, widget)) {
@@ -2661,20 +2682,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     case PM_LayoutHorizontalSpacing:
     case PM_LayoutVerticalSpacing:
         return -1;
-    case QStyle::PM_TabBarTabHSpace:
-        switch (d->aquaSizeConstrain(opt, widget)) {
-        case QAquaSizeLarge:
-        case QAquaSizeUnknown:
-            ret = QCommonStyle::pixelMetric(metric, opt, widget);
-            break;
-        case QAquaSizeSmall:
-            ret = 20;
-            break;
-        case QAquaSizeMini:
-            ret = 16;
-            break;
-        }
-        break;
     case PM_MenuHMargin:
         ret = 0;
         break;
@@ -3526,10 +3533,18 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_FrameStatusBarItem:
         break;
     case PE_IndicatorTabClose: {
-        bool hover = (opt->state & State_MouseOver);
-        bool selected = (opt->state & State_Selected);
-        bool active = (opt->state & State_Active);
-        drawTabCloseButton(p, hover, active, selected);
+        // Make close button visible only on the hovered tab.
+        if (QTabBar *tabBar = qobject_cast<QTabBar*>(w->parentWidget())) {
+            const QTabBarPrivate *tabBarPrivate = static_cast<QTabBarPrivate *>(QObjectPrivate::get(tabBar));
+            const int hoveredTabIndex = tabBarPrivate->hoveredTabIndex();
+            if (hoveredTabIndex != -1 && ((w == tabBar->tabButton(hoveredTabIndex, QTabBar::LeftSide)) ||
+                                          (w == tabBar->tabButton(hoveredTabIndex, QTabBar::RightSide)))) {
+                const bool hover = (opt->state & State_MouseOver);
+                const bool selected = (opt->state & State_Selected);
+                const bool pressed = (opt->state & State_Sunken);
+                drawTabCloseButton(p, hover, selected, pressed);
+            }
+        }
         } break;
     case PE_PanelStatusBar: {
         // Fill the status bar with the titlebar gradient.
@@ -4066,7 +4081,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 #ifndef QT_NO_TABBAR
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tabOpt = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-
             if (tabOpt->documentMode) {
                 p->save();
                 bool isUnified = false;
@@ -4076,7 +4090,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     isUnified = isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowTabStart.y());
                 }
 
-                drawTabShape(p, tabOpt, isUnified);
+                const int tabOverlap = proxy()->pixelMetric(PM_TabBarTabOverlap, opt, w);
+                drawTabShape(p, tabOpt, isUnified, tabOverlap);
+
                 p->restore();
                 return;
             }
@@ -4201,23 +4217,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         heightOffset = 2;
                 }
                 myTab.rect.setHeight(myTab.rect.height() + heightOffset);
-
-                if (myTab.documentMode) {
-                    p->save();
-                    rotateTabPainter(p, myTab.shape, myTab.rect);
-
-                    QColor shadowColor = QColor(myTab.documentMode ? Qt::white : Qt::black);
-                    shadowColor.setAlpha(75);
-                    QPalette np = tab->palette;
-                    np.setColor(QPalette::WindowText, shadowColor);
-
-                    QRect nr = proxy()->subElementRect(SE_TabBarTabText, opt, w);
-                    nr.moveTop(-1);
-                    int alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextHideMnemonic;
-                    proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
-                                               tab->text, QPalette::WindowText);
-                    p->restore();
-                }
 
                 QCommonStyle::drawControl(ce, &myTab, p, w);
             } else {
@@ -4933,6 +4932,73 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 case kThemeTabEast:
                     rect.adjust(+1, +1, -14, -1);
                 }
+            }
+        }
+        break;
+    case SE_TabBarTabText:
+        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
+            d->tabLayout(tab, widget, &rect);
+        }
+        break;
+    case SE_TabBarTabLeftButton:
+    case SE_TabBarTabRightButton:
+        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
+            bool selected = tab->state & State_Selected;
+            int verticalShift = proxy()->pixelMetric(QStyle::PM_TabBarTabShiftVertical, tab, widget);
+            int horizontalShift = proxy()->pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, tab, widget);
+            int hpadding = 5;
+
+            bool verticalTabs = tab->shape == QTabBar::RoundedEast
+                    || tab->shape == QTabBar::RoundedWest
+                    || tab->shape == QTabBar::TriangularEast
+                    || tab->shape == QTabBar::TriangularWest;
+
+            QRect tr = tab->rect;
+            if (tab->shape == QTabBar::RoundedSouth || tab->shape == QTabBar::TriangularSouth)
+                verticalShift = -verticalShift;
+            if (verticalTabs) {
+                qSwap(horizontalShift, verticalShift);
+                horizontalShift *= -1;
+                verticalShift *= -1;
+            }
+            if (tab->shape == QTabBar::RoundedWest || tab->shape == QTabBar::TriangularWest)
+                horizontalShift = -horizontalShift;
+
+            tr.adjust(0, 0, horizontalShift, verticalShift);
+            if (selected)
+            {
+                tr.setBottom(tr.bottom() - verticalShift);
+                tr.setRight(tr.right() - horizontalShift);
+            }
+
+            QSize size = (sr == SE_TabBarTabLeftButton) ? tab->leftButtonSize : tab->rightButtonSize;
+            int w = size.width();
+            int h = size.height();
+            int midHeight = static_cast<int>(qCeil(float(tr.height() - h) / 2));
+            int midWidth = ((tr.width() - w) / 2);
+
+            bool atTheTop = true;
+            switch (tab->shape) {
+            case QTabBar::RoundedWest:
+            case QTabBar::TriangularWest:
+                atTheTop = (sr == SE_TabBarTabLeftButton);
+                break;
+            case QTabBar::RoundedEast:
+            case QTabBar::TriangularEast:
+                atTheTop = (sr == SE_TabBarTabRightButton);
+                break;
+            default:
+                if (sr == SE_TabBarTabLeftButton)
+                    rect = QRect(tab->rect.x() + hpadding, midHeight, w, h);
+                else
+                    rect = QRect(tab->rect.right() - w - hpadding, midHeight, w, h);
+                rect = visualRect(tab->direction, tab->rect, rect);
+            }
+            if (verticalTabs) {
+                if (atTheTop)
+                    rect = QRect(midWidth, tr.y() + tab->rect.height() - hpadding - h, w, h);
+                else
+                    rect = QRect(midWidth, tr.y() + hpadding, w, h);
             }
         }
         break;
@@ -6543,13 +6609,14 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             if (vertTabs)
                 sz = sz.transposed();
             int defaultTabHeight;
-            int defaultExtraSpace = proxy()->pixelMetric(PM_TabBarTabHSpace, tab, widget); // Remove spurious gcc warning (AFAIK)
+            int extraHSpace = proxy()->pixelMetric(PM_TabBarTabHSpace, tab, widget);
+            int extraVSpace = proxy()->pixelMetric(PM_TabBarTabVSpace, tab, widget);
             QFontMetrics fm = opt->fontMetrics;
             switch (AquaSize) {
             case QAquaSizeUnknown:
             case QAquaSizeLarge:
                 if (tab->documentMode)
-                    defaultTabHeight = 23;
+                    defaultTabHeight = 24;
                 else
                     defaultTabHeight = 21;
                 break;
@@ -6563,10 +6630,11 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             bool setWidth = false;
             if (differentFont || !tab->icon.isNull()) {
                 sz.rheight() = qMax(defaultTabHeight, sz.height());
+                sz.rwidth() += extraHSpace;
             } else {
                 QSize textSize = fm.size(Qt::TextShowMnemonic, tab->text);
                 sz.rheight() = qMax(defaultTabHeight, textSize.height());
-                sz.rwidth() = textSize.width() + defaultExtraSpace;
+                sz.rwidth() = textSize.width() + extraVSpace;
                 setWidth = true;
             }
 

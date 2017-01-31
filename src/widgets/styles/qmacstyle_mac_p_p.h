@@ -229,6 +229,10 @@ public:
 
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
 
+#ifndef QT_NO_TABBAR
+    void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect) const;
+#endif
+
 public:
     mutable QPointer<QObject> pressedButton;
     mutable QPointer<QObject> defaultButton;
