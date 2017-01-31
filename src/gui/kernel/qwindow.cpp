@@ -208,7 +208,8 @@ QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
 */
 QWindow::~QWindow()
 {
-    destroy();
+    Q_D(QWindow);
+    d->destroy();
     QGuiApplicationPrivate::window_list.removeAll(this);
     if (!QGuiApplicationPrivate::is_app_closing)
         QGuiApplicationPrivate::instance()->modalWindowList.removeOne(this);
@@ -1762,42 +1763,54 @@ void QWindow::destroy()
     if (!d->platformWindow)
         return;
 
-    QObjectList childrenWindows = children();
+    if (d->platformWindow->isForeignWindow())
+        return;
+
+    d->destroy();
+}
+
+void QWindowPrivate::destroy()
+{
+    if (!platformWindow)
+        return;
+
+    Q_Q(QWindow);
+    QObjectList childrenWindows = q->children();
     for (int i = 0; i < childrenWindows.size(); i++) {
         QObject *object = childrenWindows.at(i);
         if (object->isWindowType()) {
             QWindow *w = static_cast<QWindow*>(object);
-            w->destroy();
+            qt_window_private(w)->destroy();
         }
     }
 
-    if (QGuiApplicationPrivate::focus_window == this)
-        QGuiApplicationPrivate::focus_window = parent();
-    if (QGuiApplicationPrivate::currentMouseWindow == this)
-        QGuiApplicationPrivate::currentMouseWindow = parent();
-    if (QGuiApplicationPrivate::currentMousePressWindow == this)
-        QGuiApplicationPrivate::currentMousePressWindow = parent();
+    if (QGuiApplicationPrivate::focus_window == q)
+        QGuiApplicationPrivate::focus_window = q->parent();
+    if (QGuiApplicationPrivate::currentMouseWindow == q)
+        QGuiApplicationPrivate::currentMouseWindow = q->parent();
+    if (QGuiApplicationPrivate::currentMousePressWindow == q)
+        QGuiApplicationPrivate::currentMousePressWindow = q->parent();
 
     for (int i = 0; i < QGuiApplicationPrivate::tabletDevicePoints.size(); ++i)
-        if (QGuiApplicationPrivate::tabletDevicePoints.at(i).target == this)
-            QGuiApplicationPrivate::tabletDevicePoints[i].target = parent();
+        if (QGuiApplicationPrivate::tabletDevicePoints.at(i).target == q)
+            QGuiApplicationPrivate::tabletDevicePoints[i].target = q->parent();
 
-    bool wasVisible = isVisible();
-    d->visibilityOnDestroy = wasVisible && d->platformWindow;
+    bool wasVisible = q->isVisible();
+    visibilityOnDestroy = wasVisible && platformWindow;
 
-    setVisible(false);
+    q->setVisible(false);
 
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
-    QGuiApplication::sendEvent(this, &e);
+    QGuiApplication::sendEvent(q, &e);
 
-    delete d->platformWindow;
-    d->resizeEventPending = true;
-    d->receivedExpose = false;
-    d->exposed = false;
-    d->platformWindow = 0;
+    delete platformWindow;
+    resizeEventPending = true;
+    receivedExpose = false;
+    exposed = false;
+    platformWindow = 0;
 
     if (wasVisible)
-        d->maybeQuitOnLastWindowClosed();
+        maybeQuitOnLastWindowClosed();
 }
 
 /*!
