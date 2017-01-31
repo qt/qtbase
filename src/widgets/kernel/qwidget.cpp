@@ -1483,6 +1483,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         win->handle()->setFrameStrutEventsEnabled(true);
 
     data.window_flags = win->flags();
+    if (!win->isTopLevel()) // In a Widget world foreign windows can only be top level
+      data.window_flags &= ~Qt::ForeignWindow;
 
     if (!topData()->role.isNull())
         QXcbWindowFunctions::setWmWindowRole(win, topData()->role.toLatin1());
