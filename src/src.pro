@@ -49,6 +49,11 @@ src_tools_qdbuscpp2xml.target = sub-qdbuscpp2xml
 force_bootstrap: src_tools_qdbuscpp2xml.depends = src_tools_bootstrap_dbus
 else: src_tools_qdbuscpp2xml.depends = src_dbus
 
+src_tools_qvkgen.subdir = tools/qvkgen
+src_tools_qvkgen.target = sub-qvkgen
+force_bootstrap: src_tools_qvkgen.depends = src_tools_bootstrap
+else: src_tools_qvkgen.depends = src_corelib
+
 src_winmain.subdir = $$PWD/winmain
 src_winmain.target = sub-winmain
 src_winmain.depends = sub-corelib  # just for the module .pri file
@@ -185,6 +190,9 @@ qtConfig(gui) {
         SUBDIRS += src_3rdparty_freetype
         src_platformsupport.depends += src_3rdparty_freetype
     }
+    SUBDIRS += src_tools_qvkgen
+    src_gui.depends += src_tools_qvkgen
+    TOOLS += src_tools_qvkgen
     SUBDIRS += src_gui src_platformsupport src_platformheaders
     qtConfig(opengl): SUBDIRS += src_openglextensions
     src_plugins.depends += src_gui src_platformsupport src_platformheaders

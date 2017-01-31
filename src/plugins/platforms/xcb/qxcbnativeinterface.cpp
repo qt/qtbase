@@ -67,6 +67,10 @@
 
 #include "qxcbnativeinterfacehandler.h"
 
+#if QT_CONFIG(vulkan)
+#include "qxcbvulkanwindow.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // return QXcbNativeInterface::ResourceType for the key.
@@ -82,7 +86,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("rootwindow"),
         QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingenabled"),
         QByteArrayLiteral("atspibus"),
-        QByteArrayLiteral("compositingenabled")
+        QByteArrayLiteral("compositingenabled"),
+        QByteArrayLiteral("vksurface")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -257,6 +262,14 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
     case Screen:
         result = screenForWindow(window);
         break;
+#if QT_CONFIG(vulkan)
+    case VkSurface:
+        if (window->surfaceType() == QSurface::VulkanSurface && window->handle()) {
+            // return a pointer to the VkSurfaceKHR value, not the value itself
+            result = static_cast<QXcbVulkanWindow *>(window->handle())->surface();
+        }
+        break;
+#endif
     default:
         break;
     }

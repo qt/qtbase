@@ -73,7 +73,8 @@ public:
         ScreenSubpixelType,
         ScreenAntialiasingEnabled,
         AtspiBus,
-        CompositingEnabled
+        CompositingEnabled,
+        VkSurface
     };
 
     QXcbNativeInterface();

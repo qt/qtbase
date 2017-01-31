@@ -11,6 +11,8 @@ QT += \
     eventdispatcher_support-private accessibility_support-private \
     fontdatabase_support-private egl_support-private
 
+qtConfig(vulkan): QT += vulkan_support-private
+
 OTHER_FILES += $$PWD/android.json
 
 INCLUDEPATH += \
@@ -77,6 +79,13 @@ HEADERS += $$PWD/qandroidplatformintegration.h \
 
 qtConfig(android-style-assets): SOURCES += $$PWD/extract.cpp
 else: SOURCES += $$PWD/extract-dummy.cpp
+
+qtConfig(vulkan) {
+    SOURCES += $$PWD/qandroidplatformvulkaninstance.cpp \
+               $$PWD/qandroidplatformvulkanwindow.cpp
+    HEADERS += $$PWD/qandroidplatformvulkaninstance.h \
+               $$PWD/qandroidplatformvulkanwindow.h
+}
 
 PLUGIN_TYPE = platforms
 load(qt_plugin)

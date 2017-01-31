@@ -606,4 +606,11 @@ void QWindowsIntegration::beep() const
     MessageBeep(MB_OK);  // For QApplication
 }
 
+#if QT_CONFIG(vulkan)
+QPlatformVulkanInstance *QWindowsIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const
+{
+    return new QWindowsVulkanInstance(instance);
+}
+#endif
+
 QT_END_NAMESPACE

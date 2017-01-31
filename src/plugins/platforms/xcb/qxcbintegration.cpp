@@ -83,6 +83,11 @@
 
 #include <QtCore/QFileInfo>
 
+#if QT_CONFIG(vulkan)
+#include "qxcbvulkaninstance.h"
+#include "qxcbvulkanwindow.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // Find out if our parent process is gdb by looking at the 'exe' symlink under /proc,.
@@ -199,11 +204,19 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
     QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
-    if (window->type() != Qt::Desktop && window->supportsOpenGL()) {
-        if (glIntegration) {
-            QXcbWindow *xcbWindow = glIntegration->createWindow(window);
+    if (window->type() != Qt::Desktop) {
+        if (window->supportsOpenGL()) {
+            if (glIntegration) {
+                QXcbWindow *xcbWindow = glIntegration->createWindow(window);
+                xcbWindow->create();
+                return xcbWindow;
+            }
+#if QT_CONFIG(vulkan)
+        } else if (window->surfaceType() == QSurface::VulkanSurface) {
+            QXcbWindow *xcbWindow = new QXcbVulkanWindow(window);
             xcbWindow->create();
             return xcbWindow;
+#endif
         }
     }
 
@@ -497,5 +510,12 @@ void QXcbIntegration::beep() const
     xcb_connection_t *connection = static_cast<QXcbScreen *>(screen)->xcb_connection();
     xcb_bell(connection, 0);
 }
+
+#if QT_CONFIG(vulkan)
+QPlatformVulkanInstance *QXcbIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const
+{
+    return new QXcbVulkanInstance(instance);
+}
+#endif
 
 QT_END_NAMESPACE

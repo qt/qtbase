@@ -42,3 +42,6 @@ darwin {
     macos: \
         SUBDIRS += cglconvenience
 }
+
+qtConfig(vulkan): \
+    SUBDIRS += vkconvenience

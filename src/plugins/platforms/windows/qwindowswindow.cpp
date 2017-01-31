@@ -67,6 +67,10 @@
 
 #include <dwmapi.h>
 
+#if QT_CONFIG(vulkan)
+#include "qwindowsvulkaninstance.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 enum {
@@ -308,13 +312,15 @@ static QWindow::Visibility windowVisibility_sys(HWND hwnd)
     return QWindow::Windowed;
 }
 
-static inline bool windowIsOpenGL(const QWindow *w)
+static inline bool windowIsAccelerated(const QWindow *w)
 {
     switch (w->surfaceType()) {
     case QSurface::OpenGLSurface:
         return true;
     case QSurface::RasterGLSurface:
         return qt_window_private(const_cast<QWindow *>(w))->compositing;
+    case QSurface::VulkanSurface:
+        return true;
     default:
         return false;
     }
@@ -375,11 +381,11 @@ bool QWindowsWindow::setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool has
     return needsLayered;
 }
 
-static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bool openGL, qreal level)
+static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bool accelerated, qreal level)
 {
     if (QWindowsWindow::setWindowLayered(hwnd, flags, hasAlpha, level)) {
         const BYTE alpha = BYTE(qRound(255.0 * level));
-        if (hasAlpha && !openGL && (flags & Qt::FramelessWindowHint)) {
+        if (hasAlpha && !accelerated && (flags & Qt::FramelessWindowHint)) {
             // Non-GL windows with alpha: Use blend function to update.
             BLENDFUNCTION blend = {AC_SRC_OVER, 0, alpha, AC_SRC_ALPHA};
             UpdateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
@@ -393,13 +399,13 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bo
 
 static inline void updateGLWindowSettings(const QWindow *w, HWND hwnd, Qt::WindowFlags flags, qreal opacity)
 {
-    const bool isGL = windowIsOpenGL(w);
+    const bool isAccelerated = windowIsAccelerated(w);
     const bool hasAlpha = w->format().hasAlpha();
 
-    if (isGL && hasAlpha)
+    if (isAccelerated && hasAlpha)
         applyBlurBehindWindow(hwnd);
 
-    setWindowOpacity(hwnd, flags, hasAlpha, isGL, opacity);
+    setWindowOpacity(hwnd, flags, hasAlpha, isAccelerated, opacity);
 }
 
 /*!
@@ -1053,6 +1059,9 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     m_data(data),
     m_cursor(new CursorHandle),
     m_format(aWindow->requestedFormat())
+#if QT_CONFIG(vulkan)
+  , m_vkSurface(0)
+#endif
 {
     // Clear the creation context as the window can be found in QWindowsContext's map.
     QWindowsContext::instance()->setWindowCreationContext(QSharedPointer<QWindowCreationContext>());
@@ -1068,6 +1077,10 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
             setFlag(OpenGL_ES2);
     }
 #endif // QT_NO_OPENGL
+#if QT_CONFIG(vulkan)
+    if (aWindow->surfaceType() == QSurface::VulkanSurface)
+        setFlag(VulkanSurface);
+#endif
     updateDropSite(window()->isTopLevel());
 
     registerTouchWindow();
@@ -1121,6 +1134,14 @@ void QWindowsWindow::destroyWindow()
         if (hasMouseCapture())
             setMouseGrabEnabled(false);
         setDropSiteEnabled(false);
+#if QT_CONFIG(vulkan)
+        if (m_vkSurface) {
+            QVulkanInstance *inst = window()->vulkanInstance();
+            if (inst)
+                static_cast<QWindowsVulkanInstance *>(inst->handle())->destroySurface(m_vkSurface);
+            m_vkSurface = 0;
+        }
+#endif
 #ifndef QT_NO_OPENGL
         if (m_surface) {
             if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
@@ -1470,8 +1491,10 @@ void QWindowsWindow::handleHidden()
 void QWindowsWindow::handleCompositionSettingsChanged()
 {
     const QWindow *w = window();
-    if (w->surfaceType() == QWindow::OpenGLSurface && w->format().hasAlpha())
+    if ((w->surfaceType() == QWindow::OpenGLSurface || w->surfaceType() == QWindow::VulkanSurface)
+            && w->format().hasAlpha()) {
         applyBlurBehindWindow(handle());
+    }
 }
 
 static QRect normalFrameGeometry(HWND hwnd)
@@ -1693,8 +1716,11 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
     BeginPaint(hwnd, &ps);
 
     // Observed painting problems with Aero style disabled (QTBUG-7865).
-    if (Q_UNLIKELY(testFlag(OpenGLSurface) && testFlag(OpenGLDoubleBuffered) && !dwmIsCompositionEnabled()))
+    if (Q_UNLIKELY(!dwmIsCompositionEnabled())
+            && ((testFlag(OpenGLSurface) && testFlag(OpenGLDoubleBuffered)) || testFlag(VulkanSurface)))
+    {
         SelectClipRgn(ps.hdc, NULL);
+    }
 
     // If the a window is obscured by another window (such as a child window)
     // we still need to send isExposed=true, for compatibility.
@@ -2030,7 +2056,7 @@ void QWindowsWindow::setOpacity(qreal level)
         m_opacity = level;
         if (m_data.hwnd)
             setWindowOpacity(m_data.hwnd, m_data.flags,
-                             window()->format().hasAlpha(), testFlag(OpenGLSurface),
+                             window()->format().hasAlpha(), testFlag(OpenGLSurface) || testFlag(VulkanSurface),
                              level);
     }
 }
@@ -2448,11 +2474,27 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
 
 void *QWindowsWindow::surface(void *nativeConfig, int *err)
 {
-#ifdef QT_NO_OPENGL
+#if QT_CONFIG(vulkan)
+    Q_UNUSED(nativeConfig);
+    Q_UNUSED(err);
+    if (window()->surfaceType() == QSurface::VulkanSurface) {
+        if (!m_vkSurface) {
+            QVulkanInstance *inst = window()->vulkanInstance();
+            if (inst)
+                m_vkSurface = static_cast<QWindowsVulkanInstance *>(inst->handle())->createSurface(handle());
+            else
+                qWarning("Attempted to create Vulkan surface without an instance; was QWindow::setVulkanInstance() called?");
+        }
+        // Different semantics for VkSurfaces: the return value is the address,
+        // not the value, given that this is a 64-bit handle even on x86.
+        return &m_vkSurface;
+    }
+#elif defined(QT_NO_OPENGL)
     Q_UNUSED(err)
     Q_UNUSED(nativeConfig)
     return 0;
-#else
+#endif
+#ifndef QT_NO_OPENGL
     if (!m_surface) {
         if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())
             m_surface = staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig, err);
@@ -2464,6 +2506,14 @@ void *QWindowsWindow::surface(void *nativeConfig, int *err)
 
 void QWindowsWindow::invalidateSurface()
 {
+#if QT_CONFIG(vulkan)
+    if (m_vkSurface) {
+        QVulkanInstance *inst = window()->vulkanInstance();
+        if (inst)
+            static_cast<QWindowsVulkanInstance *>(inst->handle())->destroySurface(m_vkSurface);
+        m_vkSurface = 0;
+    }
+#endif
 #ifndef QT_NO_OPENGL
     if (m_surface) {
         if (QWindowsStaticOpenGLContext *staticOpenGLContext = QWindowsIntegration::staticOpenGLContext())

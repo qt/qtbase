@@ -9,8 +9,11 @@ SUBDIRS = \
     painting \
     qopenglconfig \
     qopengl \
+    qvulkan \
     text \
     util \
     itemmodels \
 
 !qtConfig(opengl): SUBDIRS -= qopengl qopenglconfig
+
+!qtConfig(vulkan): SUBDIRS -= qvulkan

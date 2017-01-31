@@ -38,6 +38,7 @@
             "qpa-platform-guard": "boolean",
             "sm": { "type": "boolean", "name": "sessionmanager" },
             "tslib": "boolean",
+            "vulkan": "boolean",
             "xcb": { "type": "enum", "values": [ "no", "yes", "qt", "system" ] },
             "xcb-xlib": "boolean",
             "xinput2": "boolean",
@@ -209,6 +210,14 @@
             "test": "unix/tslib",
             "sources": [
                 "-lts"
+            ]
+        },
+        "vulkan": {
+            "label": "Vulkan",
+            "test": "qpa/vulkan",
+            "sources": [
+                { "type": "pkgConfig", "args": "vulkan" },
+                { "type": "makeSpec", "spec": "VULKAN" }
             ]
         },
         "wayland_server": {
@@ -604,6 +613,11 @@
             "label": "OpenGL",
             "condition": "features.opengl-desktop || features.opengl-dynamic || features.opengles2",
             "output": [ "publicFeature", "feature" ]
+        },
+        "vulkan": {
+            "label": "Vulkan",
+            "condition": "libs.vulkan",
+            "output": [ "publicFeature" ]
         },
         "openvg": {
             "label": "OpenVG",
@@ -1096,6 +1110,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                         "opengles31"
                     ]
                 },
+                "vulkan",
                 "sessionmanager"
             ]
         },

@@ -46,6 +46,10 @@
 #include <qpa/qplatformwindow.h>
 #include <QtPlatformHeaders/qwindowswindowfunctions.h>
 
+#if QT_CONFIG(vulkan)
+#include "qwindowsvulkaninstance.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QWindowsOleDropTarget;
@@ -209,6 +213,7 @@ public:
         Compositing = 0x200000,
         HasBorderInFullScreen = 0x400000,
         WithinDpiChanged = 0x800000,
+        VulkanSurface = 0x1000000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
@@ -351,6 +356,11 @@ private:
     HICON m_iconSmall = 0;
     HICON m_iconBig = 0;
     void *m_surface = nullptr;
+
+#if QT_CONFIG(vulkan)
+    // note: intentionally not using void * in order to avoid breaking x86
+    VkSurfaceKHR m_vkSurface = 0;
+#endif
 };
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -88,6 +88,9 @@ class QWindowContainer;
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
 #endif
+#if QT_CONFIG(vulkan)
+class QVulkanInstance;
+#endif
 
 class Q_GUI_EXPORT QWindow : public QObject, public QSurface
 {
@@ -268,6 +271,11 @@ public:
 #endif
 
     static QWindow *fromWinId(WId id);
+
+#if QT_CONFIG(vulkan)
+    void setVulkanInstance(QVulkanInstance *instance);
+    QVulkanInstance *vulkanInstance() const;
+#endif
 
 public Q_SLOTS:
     Q_REVISION(1) void requestActivate();

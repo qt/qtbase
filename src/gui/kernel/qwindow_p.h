@@ -105,6 +105,9 @@ public:
         , hasCursor(false)
 #endif
         , compositing(false)
+#if QT_CONFIG(vulkan)
+        , vulkanInstance(nullptr)
+#endif
     {
         isWindow = true;
     }
@@ -196,6 +199,10 @@ public:
 
     bool compositing;
     QElapsedTimer lastComposeTime;
+
+#if QT_CONFIG(vulkan)
+    QVulkanInstance *vulkanInstance;
+#endif
 };
 
 

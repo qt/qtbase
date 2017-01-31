@@ -68,6 +68,11 @@ qtConfig(dynamicgl) {
     HEADERS += $$PWD/qwindowseglcontext.h
 }
 
+qtConfig(vulkan) {
+    SOURCES += $$PWD/qwindowsvulkaninstance.cpp
+    HEADERS += $$PWD/qwindowsvulkaninstance.h
+}
+
 !contains( DEFINES, QT_NO_CLIPBOARD ) {
     SOURCES += $$PWD/qwindowsclipboard.cpp
     HEADERS += $$PWD/qwindowsclipboard.h

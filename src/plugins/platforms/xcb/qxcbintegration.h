@@ -113,6 +113,10 @@ public:
 
     void beep() const override;
 
+#if QT_CONFIG(vulkan)
+    QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const override;
+#endif
+
     static QXcbIntegration *instance() { return m_instance; }
 
 private:

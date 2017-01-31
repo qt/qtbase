@@ -26,6 +26,7 @@
     "QtFbSupport" => "$basedir/src/platformsupport/fbconvenience",
     "QtGlxSupport" => "$basedir/src/platformsupport/glxconvenience",
     "QtKmsSupport" => "$basedir/src/platformsupport/kmsconvenience",
+    "QtVulkanSupport" => "$basedir/src/platformsupport/vkconvenience",
     "QtPlatformHeaders" => "$basedir/src/platformheaders",
     "QtANGLE/KHR" => "!$basedir/src/3rdparty/angle/include/KHR",
     "QtANGLE/GLES2" => "!$basedir/src/3rdparty/angle/include/GLES2",
@@ -52,6 +53,7 @@
     "qnamespace.h" => "Qt",
     "qnumeric.h" => "QtNumeric",
     "qvariant.h" => "QVariantHash,QVariantList,QVariantMap",
+    "qvulkanfunctions.h" => "QVulkanFunctions,QVulkanDeviceFunctions",
     "qgl.h" => "QGL",
     "qsql.h" => "QSql",
     "qssl.h" => "QSsl",
@@ -80,4 +82,7 @@ my @zlib_headers = ( "zconf.h", "zlib.h" );
 @ignore_headers = ( @internal_zlib_headers );
 @ignore_for_include_check = ( "qsystemdetection.h", "qcompilerdetection.h", "qprocessordetection.h", @zlib_headers, @angle_headers);
 @ignore_for_qt_begin_namespace_check = ( "qt_windows.h", @zlib_headers, @angle_headers);
-%inject_headers = ( "$basedir/src/corelib/global" => [ "qconfig.h", "qconfig_p.h" ] );
+%inject_headers = (
+    "$basedir/src/corelib/global" => [ "qconfig.h", "qconfig_p.h" ],
+    "$basedir/src/gui/vulkan" => [ "qvulkanfunctions.h" ]
+);

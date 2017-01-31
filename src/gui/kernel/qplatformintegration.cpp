@@ -629,4 +629,26 @@ void QPlatformIntegration::setApplicationIcon(const QIcon &icon) const
     Q_UNUSED(icon);
 }
 
+#if QT_CONFIG(vulkan)
+
+/*!
+    Factory function for QPlatformVulkanInstance. The \a instance parameter is a
+    pointer to the instance for which a platform-specific backend needs to be
+    created.
+
+    Returns a pointer to a QPlatformOpenGLContext instance or \c NULL if the context could
+    not be created.
+
+    \sa QVulkanInstance
+    \since 5.10
+*/
+QPlatformVulkanInstance *QPlatformIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const
+{
+    Q_UNUSED(instance);
+    qWarning("This plugin does not support createPlatformVulkanInstance");
+    return nullptr;
+}
+
+#endif // QT_CONFIG(vulkan)
+
 QT_END_NAMESPACE

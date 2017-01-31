@@ -67,3 +67,5 @@ win32: SUBDIRS -= network_remote_stresstest network_stresstest
 lessThan(QT_MAJOR_VERSION, 5): SUBDIRS -= bearerex lance qnetworkaccessmanager/qget qmimedatabase qnetworkreply \
 qpainfo qscreen  socketengine xembed-raster xembed-widgets windowtransparency \
 embeddedintoforeignwindow foreignwindows
+
+qtConfig(vulkan): SUBDIRS += qvulkaninstance

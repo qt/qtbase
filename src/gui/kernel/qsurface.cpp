@@ -78,6 +78,8 @@ QT_BEGIN_NAMESPACE
     requires the use of private API.
     \value OpenVGSurface The surface is an OpenVG compatible surface and can be used
     in conjunction with OpenVG contexts.
+    \value VulkanSurface The surface is a Vulkan compatible surface and can be used
+    in conjunction with the Vulkan graphics API.
  */
 
 

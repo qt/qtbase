@@ -69,6 +69,11 @@
 
 #include <QtPlatformHeaders/QEGLNativeContext>
 
+#if QT_CONFIG(vulkan)
+#include "qandroidplatformvulkanwindow.h"
+#include "qandroidplatformvulkaninstance.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 int QAndroidPlatformIntegration::m_defaultGeometryWidth = 320;
@@ -119,6 +124,23 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
         return &deviceName;
     }
     return 0;
+}
+
+void *QAndroidPlatformNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
+{
+#if QT_CONFIG(vulkan)
+    if (resource == "vkSurface") {
+        if (window->surfaceType() == QSurface::VulkanSurface) {
+            QAndroidPlatformVulkanWindow *w = static_cast<QAndroidPlatformVulkanWindow *>(window->handle());
+            // return a pointer to the VkSurfaceKHR, not the value
+            return w ? w->vkSurface() : nullptr;
+        }
+    }
+#else
+    Q_UNUSED(resource);
+    Q_UNUSED(window);
+#endif
+    return nullptr;
 }
 
 QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &paramList)
@@ -286,6 +308,11 @@ QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *wind
     if (!QtAndroid::activity())
         return nullptr;
 
+#if QT_CONFIG(vulkan)
+    if (window->surfaceType() == QSurface::VulkanSurface)
+        return new QAndroidPlatformVulkanWindow(window);
+#endif
+
     return new QAndroidPlatformOpenGLWindow(window, m_eglDisplay);
 }
 
@@ -425,5 +452,14 @@ void QAndroidPlatformIntegration::setScreenSize(int width, int height)
     if (m_primaryScreen)
         QMetaObject::invokeMethod(m_primaryScreen, "setSize", Qt::AutoConnection, Q_ARG(QSize, QSize(width, height)));
 }
+
+#if QT_CONFIG(vulkan)
+
+QPlatformVulkanInstance *QAndroidPlatformIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const
+{
+    return new QAndroidPlatformVulkanInstance(instance);
+}
+
+#endif // QT_CONFIG(vulkan)
 
 QT_END_NAMESPACE

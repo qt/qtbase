@@ -2797,6 +2797,30 @@ QDebug operator<<(QDebug debug, const QWindow *window)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
+#if QT_CONFIG(vulkan)
+
+/*!
+    Associates this window with the specified Vulkan \a instance.
+
+    \a instance must stay valid as long as this QWindow instance exists.
+ */
+void QWindow::setVulkanInstance(QVulkanInstance *instance)
+{
+    Q_D(QWindow);
+    d->vulkanInstance = instance;
+}
+
+/*!
+    \return the associrated Vulkan instance or \c null if there is none.
+ */
+QVulkanInstance *QWindow::vulkanInstance() const
+{
+    Q_D(const QWindow);
+    return d->vulkanInstance;
+}
+
+#endif // QT_CONFIG(vulkan)
+
 QT_END_NAMESPACE
 
 #include "moc_qwindow.cpp"

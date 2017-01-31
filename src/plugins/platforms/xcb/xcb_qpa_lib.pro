@@ -10,6 +10,8 @@ QT += \
 qtHaveModule(linuxaccessibility_support-private): \
     QT += linuxaccessibility_support-private
 
+qtConfig(vulkan): QT += vulkan_support-private
+
 SOURCES = \
         qxcbclipboard.cpp \
         qxcbconnection.cpp \
@@ -69,6 +71,16 @@ qtConfig(xcb-sm) {
 }
 
 include(gl_integrations/gl_integrations.pri)
+
+qtConfig(vulkan) {
+    SOURCES += \
+        qxcbvulkaninstance.cpp \
+        qxcbvulkanwindow.cpp
+
+    HEADERS += \
+        qxcbvulkaninstance.h \
+        qxcbvulkanwindow.h
+}
 
 !qtConfig(system-xcb) {
     DEFINES += XCB_USE_RENDER
