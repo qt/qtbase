@@ -972,6 +972,13 @@ QList<QSslCertificate> QSslSocket::localCertificateChain() const
     sockets, but are also rarely used by client sockets if the server requires
     the client to authenticate.
 
+    \note Secure Transport SSL backend on macOS may update the default keychain
+    (the default is probably your login keychain) by importing your local certificates
+    and keys. This can also result in system dialogs showing up and asking for
+    permission when your application is using these private keys. If such behavior
+    is undesired, set the QT_SSL_USE_TEMPORARY_KEYCHAIN environment variable to a
+    non-zero value; this will prompt QSslSocket to use its own temporary keychain.
+
     \sa localCertificate(), setPrivateKey()
 */
 void QSslSocket::setLocalCertificate(const QSslCertificate &certificate)

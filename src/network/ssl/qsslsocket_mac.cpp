@@ -53,9 +53,12 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/quuid.h>
+#include <QtCore/qdir.h>
 
 #include <algorithm>
 #include <cstddef>
+#include <vector>
 
 #include <QtCore/private/qcore_mac_p.h>
 
@@ -64,6 +67,102 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+namespace
+{
+#ifdef Q_OS_MACOS
+/*
+
+Our own temporarykeychain is needed only on macOS where SecPKCS12Import changes
+the default keychain and where we see annoying pop-ups asking about accessing a
+private key.
+
+*/
+
+struct EphemeralSecKeychain
+{
+    EphemeralSecKeychain();
+    ~EphemeralSecKeychain();
+
+    SecKeychainRef keychain = nullptr;
+    Q_DISABLE_COPY(EphemeralSecKeychain)
+};
+
+EphemeralSecKeychain::EphemeralSecKeychain()
+{
+    const auto uuid = QUuid::createUuid();
+    if (uuid.isNull()) {
+        qCWarning(lcSsl) << "Failed to create an unique keychain name";
+        return;
+    }
+
+    QString uuidAsString(uuid.toString());
+    Q_ASSERT(uuidAsString.size() > 2);
+    Q_ASSERT(uuidAsString.startsWith(QLatin1Char('{'))
+             && uuidAsString.endsWith(QLatin1Char('}')));
+    uuidAsString = uuidAsString.mid(1, uuidAsString.size() - 2);
+
+    QString keychainName(QDir::tempPath());
+    keychainName.append(QDir::separator());
+    keychainName += uuidAsString;
+    keychainName += QLatin1String(".keychain");
+    // SecKeychainCreate, pathName parameter:
+    //
+    // "A constant character string representing the POSIX path indicating where
+    // to store the keychain."
+    //
+    // Internally they seem to use std::string, but this does not really help.
+    // Fortunately, CFString has a convenient API.
+    QCFType<CFStringRef> cfName = keychainName.toCFString();
+    std::vector<char> posixPath;
+    // "Extracts the contents of a string as a NULL-terminated 8-bit string
+    // appropriate for passing to POSIX APIs."
+    posixPath.resize(CFStringGetMaximumSizeOfFileSystemRepresentation(cfName));
+    const auto ok = CFStringGetFileSystemRepresentation(cfName, &posixPath[0],
+                                                        CFIndex(posixPath.size()));
+    if (!ok) {
+        qCWarning(lcSsl) << "Failed to create a unique keychain name from"
+                         << "QDir::tempPath()";
+        return;
+    }
+
+    std::vector<uint8_t> passUtf8(256);
+    if (SecRandomCopyBytes(kSecRandomDefault, passUtf8.size(), &passUtf8[0])) {
+        qCWarning(lcSsl) << "SecRandomCopyBytes: failed to create a key";
+        return;
+    }
+
+    const OSStatus status = SecKeychainCreate(&posixPath[0], passUtf8.size(),
+                                              &passUtf8[0], FALSE, nullptr,
+                                              &keychain);
+    if (status != errSecSuccess || !keychain) {
+        qCWarning(lcSsl) << "SecKeychainCreate: failed to create a custom keychain";
+        if (keychain) {
+            SecKeychainDelete(keychain);
+            CFRelease(keychain);
+            keychain = nullptr;
+        }
+    }
+
+#ifdef QSSLSOCKET_DEBUG
+    if (keychain) {
+        qCDebug(lcSsl) << "Custom keychain with name" << keychainName << "was created"
+                       << "successfully";
+    }
+#endif
+}
+
+EphemeralSecKeychain::~EphemeralSecKeychain()
+{
+    if (keychain) {
+        // clear file off disk
+        SecKeychainDelete(keychain);
+        CFRelease(keychain);
+    }
+}
+
+#endif // Q_OS_MACOS
+}
 
 static SSLContextRef qt_createSecureTransportContext(QSslSocket::SslMode mode)
 {
@@ -815,11 +914,24 @@ bool QSslSocketBackendPrivate::setSessionCertificate(QString &errorDescription, 
         QCFType<CFDataRef> pkcs12 = _q_makePkcs12(configuration.localCertificateChain,
                                                   configuration.privateKey, passPhrase).toCFData();
         QCFType<CFStringRef> password = passPhrase.toCFString();
-        const void *keys[] = { kSecImportExportPassphrase };
-        const void *values[] = { password };
-        QCFType<CFDictionaryRef> options(CFDictionaryCreate(Q_NULLPTR, keys, values, 1,
-                                                            Q_NULLPTR, Q_NULLPTR));
-        CFArrayRef items = Q_NULLPTR;
+        const void *keys[2] = { kSecImportExportPassphrase };
+        const void *values[2] = { password };
+        CFIndex nKeys = 1;
+#ifdef Q_OS_MACOS
+        bool envOk = false;
+        const int env = qEnvironmentVariableIntValue("QT_SSL_USE_TEMPORARY_KEYCHAIN", &envOk);
+        if (envOk && env) {
+            static const EphemeralSecKeychain temporaryKeychain;
+            if (temporaryKeychain.keychain) {
+                nKeys = 2;
+                keys[1] = kSecImportExportKeychain;
+                values[1] = temporaryKeychain.keychain;
+            }
+        }
+#endif
+        QCFType<CFDictionaryRef> options = CFDictionaryCreate(nullptr, keys, values, nKeys,
+                                                              nullptr, nullptr);
+        CFArrayRef items = nullptr;
         OSStatus err = SecPKCS12Import(pkcs12, options, &items);
         if (err != noErr) {
 #ifdef QSSLSOCKET_DEBUG
@@ -851,7 +963,7 @@ bool QSslSocketBackendPrivate::setSessionCertificate(QString &errorDescription, 
             return false;
         }
 
-        QCFType<CFMutableArrayRef> certs = CFArrayCreateMutable(Q_NULLPTR, 0, &kCFTypeArrayCallBacks);
+        QCFType<CFMutableArrayRef> certs = CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks);
         if (!certs) {
             errorCode = QAbstractSocket::SslInternalError;
             errorDescription = QStringLiteral("Failed to allocate certificates array");
