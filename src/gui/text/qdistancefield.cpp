@@ -437,7 +437,7 @@ static void drawPolygons(qint32 *bits, int width, int height, const QPoint *vert
 {
     Q_ASSERT(indexCount != 0);
     Q_ASSERT(height <= 128);
-    QVarLengthArray<quint8, 16> scans[128];
+    QVarLengthArray<quint16, 16> scans[128];
     int first = 0;
     for (int i = 1; i < indexCount; ++i) {
         quint32 idx1 = indices[i - 1];
@@ -461,16 +461,16 @@ static void drawPolygons(qint32 *bits, int width, int height, const QPoint *vert
         for (int y = fromY; y < toY; ++y) {
             quint32 c = quint32(x >> 8);
             if (c < quint32(width))
-                scans[y].append(quint8(c));
+                scans[y].append(quint16(c));
             x += dx;
         }
     }
     for (int i = 0; i < height; ++i) {
-        quint8 *scanline = scans[i].data();
+        quint16 *scanline = scans[i].data();
         int size = scans[i].size();
         for (int j = 1; j < size; ++j) {
             int k = j;
-            quint8 value = scanline[k];
+            quint16 value = scanline[k];
             for (; k != 0 && value < scanline[k - 1]; --k)
                 scanline[k] = scanline[k - 1];
             scanline[k] = value;
@@ -478,7 +478,7 @@ static void drawPolygons(qint32 *bits, int width, int height, const QPoint *vert
         qint32 *line = bits + i * width;
         int j = 0;
         for (; j + 1 < size; j += 2) {
-            for (quint8 x = scanline[j]; x < scanline[j + 1]; ++x)
+            for (quint16 x = scanline[j]; x < scanline[j + 1]; ++x)
                 line[x] = value;
         }
         if (j < size) {
