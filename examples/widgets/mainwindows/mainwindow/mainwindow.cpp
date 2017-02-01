@@ -63,7 +63,6 @@
 #include <QFileDialog>
 #include <QDialogButtonBox>
 #include <QMessageBox>
-#include <QSignalMapper>
 #include <QApplication>
 #include <QPainter>
 #include <QMouseEvent>

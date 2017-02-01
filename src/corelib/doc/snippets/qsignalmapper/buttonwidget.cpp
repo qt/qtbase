@@ -49,6 +49,7 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QtWidgets>
 
 #include "buttonwidget.h"
 
@@ -74,3 +75,18 @@ ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
     setLayout(gridLayout);
 }
 //! [2]
+
+//! [3]
+ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
+    : QWidget(parent)
+{
+    QGridLayout *gridLayout = new QGridLayout;
+    for (int i = 0; i < texts.size(); ++i) {
+        QString text = texts[i];
+        QPushButton *button = new QPushButton(text);
+        connect(button, &QPushButton::clicked, [=] { clicked(text); });
+        gridLayout->addWidget(button, i / 3, i % 3);
+    }
+    setLayout(gridLayout);
+}
+//! [3]

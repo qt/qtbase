@@ -395,24 +395,12 @@
     signal, Qt provides the QObject::sender() function, which returns
     a pointer to the object that sent the signal.
 
-    The QSignalMapper class is provided for situations where many
-    signals are connected to the same slot and the slot needs to
-    handle each signal differently.
+    Lambda expressions are a convenient way to pass custom arguments to a slot:
 
-    Suppose you have three push buttons that determine which file you
-    will open: "Tax File", "Accounts File", or "Report File".
-
-    In order to open the correct file, you use QSignalMapper::setMapping() to
-    map all the QPushButton::clicked() signals to a QSignalMapper object. Then you connect
-    the file's QPushButton::clicked() signal to the QSignalMapper::map() slot.
-
-    \snippet signalmapper/filereader.cpp 0
-
-    Then, you connect the \l{QSignalMapper::}{mapped()} signal to
-    \c{readFile()} where a different file will be opened, depending on
-    which push button is pressed.
-
-    \snippet signalmapper/filereader.cpp 1
+    \code
+    connect(action, &QAction::triggered, engine,
+            [=]() { engine->processAction(action->text()); });
+    \endcode
 
     \sa {Meta-Object System}, {Qt's Property System}
 

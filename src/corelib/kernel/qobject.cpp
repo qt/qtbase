@@ -2339,7 +2339,7 @@ static void err_info_about_objects(const char * func,
     a thread different from this object's thread. Do not use this
     function in this type of scenario.
 
-    \sa senderSignalIndex(), QSignalMapper
+    \sa senderSignalIndex()
 */
 
 QObject *QObject::sender() const
