@@ -111,7 +111,12 @@ QImage::Format QEglFSKmsScreen::format() const
 
 QSizeF QEglFSKmsScreen::physicalSize() const
 {
-    return m_output.physical_size;
+    if (!m_output.physical_size.isEmpty()) {
+        return m_output.physical_size;
+    } else {
+        const QSize s = geometry().size();
+        return QSizeF(0.254 * s.width(), 0.254 * s.height());
+    }
 }
 
 QDpi QEglFSKmsScreen::logicalDpi() const
