@@ -106,13 +106,13 @@ void ControllerWidget::updatePreview()
 {
     const Qt::WindowFlags flags = typeControl->type() | hintsControl->hints();
 
-    previewWindow->hide();
-    previewDialog->hide();
-
-    if (previewWidgetButton->isChecked())
+    if (previewWidgetButton->isChecked()) {
         previewWidget = previewWindow;
-    else
+        previewDialog->hide();
+    } else {
         previewWidget = previewDialog;
+        previewWindow->hide();
+    }
 
     if (modalWindowCheckBox->isChecked()) {
         parentWindow->show();
