@@ -54,6 +54,8 @@
 #include "qjsonobject.h"
 #include "qjsonarray.h"
 
+#include <qtcore_tracepoints_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QFactoryLoaderPrivate : public QObjectPrivate
@@ -142,6 +144,9 @@ void QFactoryLoader::update()
             if (qt_debug_component()) {
                 qDebug() << "QFactoryLoader::QFactoryLoader() looking at" << fileName;
             }
+
+            Q_TRACE(qfactoryloader_update, fileName);
+
             library = QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath());
             if (!library->isPlugin()) {
                 if (qt_debug_component()) {

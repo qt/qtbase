@@ -1,0 +1,5 @@
+qcoreapplicationprivate_init_entry()
+qcoreapplicationprivate_init_exit()
+qfactoryloader_update(const QString &fileName)
+qlibraryprivate_load_entry(const QString &fileName)
+qlibraryprivate_load_exit(bool success)

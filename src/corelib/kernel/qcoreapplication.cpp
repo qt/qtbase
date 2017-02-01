@@ -116,6 +116,12 @@
 #  include <taskLib.h>
 #endif
 
+#ifdef QT_BOOTSTRAPPED
+#include <private/qtrace_p.h>
+#else
+#include <qtcore_tracepoints_p.h>
+#endif
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
@@ -790,6 +796,8 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
 
 void QCoreApplicationPrivate::init()
 {
+    Q_TRACE(qcoreapplicationprivate_init_entry);
+
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
 #endif
@@ -873,6 +881,8 @@ void QCoreApplicationPrivate::init()
 #ifndef QT_NO_QOBJECT
     is_app_running = true; // No longer starting up.
 #endif
+
+    Q_TRACE(qcoreapplicationprivate_init_exit);
 }
 
 /*!

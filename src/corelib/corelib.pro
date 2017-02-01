@@ -6,6 +6,9 @@ MODULE = core     # not corelib, as per project file
 MODULE_CONFIG = moc resources
 !isEmpty(QT_NAMESPACE): MODULE_DEFINES = QT_NAMESPACE=$$QT_NAMESPACE
 
+TRACEPOINT_PROVIDER = $$PWD/qtcore.tracepoints
+CONFIG += qt_tracepoints
+
 CONFIG += $$MODULE_CONFIG
 DEFINES += $$MODULE_DEFINES
 DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH

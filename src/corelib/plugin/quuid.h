@@ -192,18 +192,20 @@ public:
     static QUuid createUuid();
 #ifndef QT_BOOTSTRAPPED
     static QUuid createUuidV3(const QUuid &ns, const QByteArray &baseData);
+#endif
     static QUuid createUuidV5(const QUuid &ns, const QByteArray &baseData);
+#ifndef QT_BOOTSTRAPPED
     static inline QUuid createUuidV3(const QUuid &ns, const QString &baseData)
     {
         return QUuid::createUuidV3(ns, baseData.toUtf8());
     }
+#endif
 
     static inline QUuid createUuidV5(const QUuid &ns, const QString &baseData)
     {
         return QUuid::createUuidV5(ns, baseData.toUtf8());
     }
 
-#endif
 
     QUuid::Variant variant() const Q_DECL_NOTHROW;
     QUuid::Version version() const Q_DECL_NOTHROW;

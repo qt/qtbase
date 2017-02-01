@@ -78,6 +78,7 @@
 #define QT_FEATURE_cxx11_random (QT_HAS_INCLUDE(<random>) ? 1 : -1)
 #define QT_NO_DATASTREAM
 #define QT_FEATURE_datetimeparser -1
+#define QT_FEATURE_etw -1
 #define QT_FEATURE_getauxval (QT_HAS_INCLUDE(<sys/auxv.h>) ? 1 : -1)
 #define QT_FEATURE_getentropy -1
 #define QT_NO_GEOM_VARIANT
@@ -92,6 +93,7 @@
 #else
 # define QT_FEATURE_linkat -1
 #endif
+#define QT_FEATURE_lttng -1
 #define QT_NO_QOBJECT
 #define QT_FEATURE_process -1
 #define QT_FEATURE_regularexpression -1

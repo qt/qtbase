@@ -119,6 +119,11 @@ Build options:
 
   -testcocoon .......... Instrument with the TestCocoon code coverage tool [no]
   -gcov ................ Instrument with the GCov code coverage tool [no]
+
+  -trace [backend] ..... Enable instrumentation with tracepoints.
+                         Currently supported backends are 'etw' (Windows) and
+                         'lttng' (Linux), or 'yes' for auto-detection. [no]
+
   -sanitize {address|thread|memory|undefined}
                          Instrument with the specified compiler sanitizer.
 
