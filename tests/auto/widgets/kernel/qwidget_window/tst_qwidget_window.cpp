@@ -99,6 +99,9 @@ private slots:
     void tst_eventfilter_on_toplevel();
 
     void QTBUG_50561_QCocoaBackingStore_paintDevice_crash();
+
+    void setWindowState_data();
+    void setWindowState();
 };
 
 void tst_QWidget_window::initTestCase()
@@ -859,6 +862,57 @@ void tst_QWidget_window::QTBUG_50561_QCocoaBackingStore_paintDevice_crash()
     // No crash, all good.
     // Wrap up and leave
     w.close();
+}
+
+void tst_QWidget_window::setWindowState_data()
+{
+    QString platformName = QGuiApplication::platformName().toLower();
+
+    QTest::addColumn<Qt::WindowStates>("state");
+    QTest::newRow("0") << Qt::WindowStates();
+    QTest::newRow("Qt::WindowMaximized") << Qt::WindowStates(Qt::WindowMaximized);
+    QTest::newRow("Qt::WindowMinimized") << Qt::WindowStates(Qt::WindowMinimized);
+    QTest::newRow("Qt::WindowFullScreen") << Qt::WindowStates(Qt::WindowFullScreen);
+
+    if (platformName != "xcb" && platformName != "windows" && !platformName.startsWith("wayland")
+        && platformName != "offscreen")
+        return; // Combination of states is not preserved on all platforms.
+    if (platformName == "xcb" && qgetenv("XDG_CURRENT_DESKTOP") != "KDE"
+        && qgetenv("XDG_CURRENT_DESKTOP") != "Unity")
+        return; // Not all window managers support state combinations.
+
+    QTest::newRow("Qt::WindowMaximized|Qt::WindowMinimized")
+        << (Qt::WindowMaximized | Qt::WindowMinimized);
+    QTest::newRow("Qt::WindowFullScreen|Qt::WindowMinimized")
+        << (Qt::WindowFullScreen | Qt::WindowMinimized);
+    QTest::newRow("Qt::WindowMaximized|Qt::WindowFullScreen")
+        << (Qt::WindowMaximized | Qt::WindowFullScreen);
+    QTest::newRow("Qt::WindowMaximized|Qt::WindowFullScreen|Qt::WindowMinimized")
+        << (Qt::WindowMaximized | Qt::WindowFullScreen | Qt::WindowMinimized);
+}
+
+void tst_QWidget_window::setWindowState()
+{
+    QFETCH(Qt::WindowStates, state);
+
+    // This tests make sure that the states are preserved when the window is shown.
+
+    QWidget w;
+    w.setWindowState(state);
+    QCOMPARE(w.windowState(), state);
+    w.show();
+    QCOMPARE(w.windowState(), state);
+    QCOMPARE(w.windowHandle()->windowStates(), state);
+    QTest::qWaitForWindowExposed(&w);
+    QTRY_COMPARE(w.windowState(), state);
+    QCOMPARE(w.windowHandle()->windowStates(), state);
+
+    // Minimizing keeps other states
+    w.showMinimized();
+    QCOMPARE(w.windowState(), state | Qt::WindowMinimized);
+    QTest::qWait(100);
+    QCOMPARE(w.windowState(), state | Qt::WindowMinimized);
+    QCOMPARE(w.windowHandle()->windowStates(), state | Qt::WindowMinimized);
 }
 
 QTEST_MAIN(tst_QWidget_window)

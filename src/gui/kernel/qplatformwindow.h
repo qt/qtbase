@@ -89,7 +89,7 @@ public:
 
     virtual void setVisible(bool visible);
     virtual void setWindowFlags(Qt::WindowFlags flags);
-    virtual void setWindowState(Qt::WindowState state);
+    virtual void setWindowState(Qt::WindowStates state);
 
     virtual WId winId() const;
     virtual void setParent(const QPlatformWindow *window);

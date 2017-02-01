@@ -94,7 +94,7 @@ public:
     BWindow* nativeHandle() const;
 
     void requestActivateWindow() Q_DECL_OVERRIDE;
-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowStates state) Q_DECL_OVERRIDE;
     void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
 
     void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
@@ -120,7 +120,7 @@ private Q_SLOTS:
     void haikuDrawRequest(const QRect &rect);
 
 private:
-    Qt::WindowState m_windowState;
+    Qt::WindowStates m_windowState;
 };
 
 QT_END_NAMESPACE

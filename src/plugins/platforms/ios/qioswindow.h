@@ -62,7 +62,7 @@ public:
 
     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
 
-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowStates state) Q_DECL_OVERRIDE;
     void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
     void handleContentOrientationChange(Qt::ScreenOrientation orientation) Q_DECL_OVERRIDE;
     void setVisible(bool visible) Q_DECL_OVERRIDE;

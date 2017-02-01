@@ -68,7 +68,7 @@ public:
     WId winId() const override;
 
     qreal devicePixelRatio() const override;
-    void setWindowState(Qt::WindowState state) override;
+    void setWindowState(Qt::WindowStates state) override;
 
     bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
     bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;

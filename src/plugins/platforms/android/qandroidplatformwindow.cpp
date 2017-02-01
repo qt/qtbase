@@ -56,7 +56,7 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     m_windowState = Qt::WindowNoState;
     static QAtomicInt winIdGenerator(1);
     m_windowId = winIdGenerator.fetchAndAddRelaxed(1);
-    setWindowState(window->windowState());
+    setWindowState(window->windowStates());
 }
 
 void QAndroidPlatformWindow::lower()
@@ -103,7 +103,7 @@ void QAndroidPlatformWindow::setVisible(bool visible)
         QtAndroid::setApplicationActive();
 }
 
-void QAndroidPlatformWindow::setWindowState(Qt::WindowState state)
+void QAndroidPlatformWindow::setWindowState(Qt::WindowStates state)
 {
     if (m_windowState == state)
         return;

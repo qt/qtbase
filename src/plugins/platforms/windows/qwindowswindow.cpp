@@ -1071,7 +1071,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     updateDropSite(window()->isTopLevel());
 
     registerTouchWindow();
-    setWindowState(aWindow->windowState());
+    setWindowState(aWindow->windowStates());
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
@@ -1338,20 +1338,48 @@ static inline bool testShowWithoutActivating(const QWindow *window)
     return showWithoutActivating.isValid() && showWithoutActivating.toBool();
 }
 
+static void setMinimizedGeometry(HWND hwnd, const QRect &r)
+{
+    WINDOWPLACEMENT windowPlacement;
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
+    if (GetWindowPlacement(hwnd, &windowPlacement)) {
+        windowPlacement.showCmd = SW_SHOWMINIMIZED;
+        windowPlacement.rcNormalPosition = RECTfromQRect(r);
+        SetWindowPlacement(hwnd, &windowPlacement);
+    }
+}
+
+static void setRestoreMaximizedFlag(HWND hwnd, bool set = true)
+{
+    // Let Windows know that we need to restore as maximized
+    WINDOWPLACEMENT windowPlacement;
+    windowPlacement.length = sizeof(WINDOWPLACEMENT);
+    if (GetWindowPlacement(hwnd, &windowPlacement)) {
+        if (set)
+            windowPlacement.flags |= WPF_RESTORETOMAXIMIZED;
+        else
+            windowPlacement.flags &= ~WPF_RESTORETOMAXIMIZED;
+        SetWindowPlacement(hwnd, &windowPlacement);
+    }
+}
+
 // partially from QWidgetPrivate::show_sys()
 void QWindowsWindow::show_sys() const
 {
     int sm = SW_SHOWNORMAL;
     bool fakedMaximize = false;
+    bool restoreMaximize = false;
     const QWindow *w = window();
     const Qt::WindowFlags flags = w->flags();
     const Qt::WindowType type = w->type();
     if (w->isTopLevel()) {
-        const Qt::WindowState state = w->windowState();
+        const Qt::WindowStates state = w->windowStates();
         if (state & Qt::WindowMinimized) {
             sm = SW_SHOWMINIMIZED;
             if (!isVisible())
                 sm = SW_SHOWMINNOACTIVE;
+            if (state & Qt::WindowMaximized)
+                restoreMaximize = true;
         } else {
             updateTransientParent();
             if (state & Qt::WindowMaximized) {
@@ -1372,7 +1400,7 @@ void QWindowsWindow::show_sys() const
     if (type == Qt::Popup || type == Qt::ToolTip || type == Qt::Tool || testShowWithoutActivating(w))
         sm = SW_SHOWNOACTIVATE;
 
-    if (w->windowState() & Qt::WindowMaximized)
+    if (w->windowStates() & Qt::WindowMaximized)
         setFlag(WithinMaximize); // QTBUG-8361
 
     ShowWindow(m_data.hwnd, sm);
@@ -1385,6 +1413,8 @@ void QWindowsWindow::show_sys() const
                      SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER
                      | SWP_FRAMECHANGED);
     }
+    if (restoreMaximize)
+        setRestoreMaximizedFlag(m_data.hwnd);
 }
 
 void QWindowsWindow::setParent(const QPlatformWindow *newParent)
@@ -1458,7 +1488,8 @@ static QRect normalFrameGeometry(HWND hwnd)
 QRect QWindowsWindow::normalGeometry() const
 {
     // Check for fake 'fullscreen' mode.
-    const bool fakeFullScreen = m_savedFrameGeometry.isValid() && window()->windowState() == Qt::WindowFullScreen;
+    const bool fakeFullScreen =
+        m_savedFrameGeometry.isValid() && (window()->windowStates() & Qt::WindowFullScreen);
     const QRect frame = fakeFullScreen ? m_savedFrameGeometry : normalFrameGeometry(m_data.hwnd);
     const QMargins margins = fakeFullScreen ? QWindowsGeometryHint::frame(m_savedStyle, 0) : frameMargins();
     return frame.isValid() ? frame.marginsRemoved(margins) : frame;
@@ -1473,13 +1504,15 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
         const QMargins margins = frameMargins();
         rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
     }
-    if (m_windowState == Qt::WindowMinimized)
+    if (m_windowState & Qt::WindowMinimized)
         m_data.geometry = rect; // Otherwise set by handleGeometryChange() triggered by event.
     if (m_data.hwnd) {
         // A ResizeEvent with resulting geometry will be sent. If we cannot
         // achieve that size (for example, window title minimal constraint),
         // notify and warn.
+        setFlag(WithinSetGeometry);
         setGeometry_sys(rect);
+        clearFlag(WithinSetGeometry);
         if (m_data.geometry != rect) {
             qWarning("%s: Unable to set geometry %dx%d+%d+%d on %s/'%s'."
                      " Resulting geometry:  %dx%d+%d+%d "
@@ -1516,18 +1549,21 @@ void QWindowsWindow::handleResized(int wParam)
     case SIZE_MAXSHOW:
         return;
     case SIZE_MINIMIZED: // QTBUG-53577, prevent state change events during programmatic state change
-        if (!testFlag(WithinSetStyle))
-            handleWindowStateChange(Qt::WindowMinimized);
+        if (!testFlag(WithinSetStyle) && !testFlag(WithinSetGeometry))
+            handleWindowStateChange(m_windowState | Qt::WindowMinimized);
         return;
     case SIZE_MAXIMIZED:
-        if (!testFlag(WithinSetStyle))
-            handleWindowStateChange(Qt::WindowMaximized);
+        if (!testFlag(WithinSetStyle) && !testFlag(WithinSetGeometry))
+            handleWindowStateChange(Qt::WindowMaximized | (isFullScreen_sys() ? Qt::WindowFullScreen
+                                                                              : Qt::WindowNoState));
         handleGeometryChange();
         break;
     case SIZE_RESTORED:
-        if (!testFlag(WithinSetStyle)) {
+        if (!testFlag(WithinSetStyle) && !testFlag(WithinSetGeometry)) {
             if (isFullScreen_sys())
-                handleWindowStateChange(Qt::WindowFullScreen);
+                handleWindowStateChange(
+                    Qt::WindowFullScreen
+                    | (testFlag(MaximizeToFullScreen) ? Qt::WindowMaximized : Qt::WindowNoState));
             else if (m_windowState != Qt::WindowNoState && !testFlag(MaximizeToFullScreen))
                 handleWindowStateChange(Qt::WindowNoState);
         }
@@ -1714,20 +1750,16 @@ QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
     return result;
 }
 
-void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
+void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window()
                  << "\n    from " << m_windowState << " to " << state;
     m_windowState = state;
     QWindowSystemInterface::handleWindowStateChanged(window(), state);
-    switch (state) {
-    case Qt::WindowMinimized:
+    if (state & Qt::WindowMinimized) {
         handleHidden();
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents); // Tell QQuickWindow to stop rendering now.
-        break;
-    case Qt::WindowMaximized:
-    case Qt::WindowFullScreen:
-    case Qt::WindowNoState: {
+    } else {
         // QTBUG-17548: We send expose events when receiving WM_Paint, but for
         // layered windows and transient children, we won't receive any WM_Paint.
         QWindow *w = window();
@@ -1748,13 +1780,9 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
         if (exposeEventsSent && !QWindowsContext::instance()->asyncExpose())
             QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
     }
-        break;
-    default:
-        break;
-    }
 }
 
-void QWindowsWindow::setWindowState(Qt::WindowState state)
+void QWindowsWindow::setWindowState(Qt::WindowStates state)
 {
     if (m_data.hwnd) {
         setWindowState_sys(state);
@@ -1783,18 +1811,19 @@ bool QWindowsWindow::isFullScreen_sys() const
     to ShowWindow.
 */
 
-void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
+void QWindowsWindow::setWindowState_sys(Qt::WindowStates newState)
 {
-    const Qt::WindowState oldState = m_windowState;
+    const Qt::WindowStates oldState = m_windowState;
     if (oldState == newState)
         return;
     qCDebug(lcQpaWindows) << '>' << __FUNCTION__ << this << window()
         << " from " << oldState << " to " << newState;
 
     const bool visible = isVisible();
+    auto stateChange = oldState ^ newState;
 
-    if ((oldState == Qt::WindowFullScreen) != (newState == Qt::WindowFullScreen)) {
-        if (newState == Qt::WindowFullScreen) {
+    if (stateChange & Qt::WindowFullScreen) {
+        if (newState & Qt::WindowFullScreen) {
 #ifndef Q_FLATTEN_EXPOSE
             UINT newStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
 #else
@@ -1805,7 +1834,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             // Window state but emulated by changing geometry and style.
             if (!m_savedStyle) {
                 m_savedStyle = style();
-                if (oldState == Qt::WindowMinimized || oldState == Qt::WindowMaximized) {
+                if ((oldState & Qt::WindowMinimized) || (oldState & Qt::WindowMaximized)) {
                     const QRect nf = normalFrameGeometry(m_data.hwnd);
                     if (nf.isValid())
                         m_savedFrameGeometry = nf;
@@ -1813,6 +1842,8 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
                     m_savedFrameGeometry = frameGeometry_sys();
                 }
             }
+            if (newState & Qt::WindowMaximized)
+                setFlag(MaximizeToFullScreen);
             if (m_savedStyle & WS_SYSMENU)
                 newStyle |= WS_SYSMENU;
             if (visible)
@@ -1826,15 +1857,23 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (!screen)
                 screen = QGuiApplication::primaryScreen();
             const QRect r = screen ? QHighDpi::toNativePixels(screen->geometry(), window()) : m_savedFrameGeometry;
-            const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
-            const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
-            setFlag(SynchronousGeometryChangeEvent);
-            SetWindowPos(m_data.hwnd, HWND_TOP, r.left(), r.top(), r.width(), r.height(), swpf);
-            if (!wasSync)
-                clearFlag(SynchronousGeometryChangeEvent);
-            QWindowSystemInterface::handleGeometryChange(window(), r);
-            QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
-        } else if (newState != Qt::WindowMinimized) {
+
+            if (newState & Qt::WindowMinimized) {
+                setMinimizedGeometry(m_data.hwnd, r);
+                if (stateChange & Qt::WindowMaximized)
+                    setRestoreMaximizedFlag(m_data.hwnd, newState & Qt::WindowMaximized);
+            } else {
+                const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
+                const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
+                setFlag(SynchronousGeometryChangeEvent);
+                SetWindowPos(m_data.hwnd, HWND_TOP, r.left(), r.top(), r.width(), r.height(), swpf);
+                if (!wasSync)
+                    clearFlag(SynchronousGeometryChangeEvent);
+                clearFlag(MaximizeToFullScreen);
+                QWindowSystemInterface::handleGeometryChange(window(), r);
+                QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
+            }
+        } else {
             // Restore saved state.
             unsigned newStyle = m_savedStyle ? m_savedStyle : style();
             if (visible)
@@ -1848,43 +1887,58 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (!screen->geometry().intersects(m_savedFrameGeometry))
                 m_savedFrameGeometry.moveTo(screen->geometry().topLeft());
 
-            UINT swpf = SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE;
-            if (!m_savedFrameGeometry.isValid())
-                swpf |= SWP_NOSIZE | SWP_NOMOVE;
-            const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
-            setFlag(SynchronousGeometryChangeEvent);
-            // After maximized/fullscreen; the window can be in a maximized state. Clear
-            // it before applying the normal geometry.
-            if (windowVisibility_sys(m_data.hwnd) == QWindow::Maximized)
-                ShowWindow(m_data.hwnd, SW_SHOWNOACTIVATE);
-            SetWindowPos(m_data.hwnd, 0, m_savedFrameGeometry.x(), m_savedFrameGeometry.y(),
-                         m_savedFrameGeometry.width(), m_savedFrameGeometry.height(), swpf);
-            if (!wasSync)
-                clearFlag(SynchronousGeometryChangeEvent);
-            // preserve maximized state
-            if (visible) {
-                setFlag(WithinMaximize);
-                ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNA);
-                clearFlag(WithinMaximize);
+            if (newState & Qt::WindowMinimized) {
+                setMinimizedGeometry(m_data.hwnd, m_savedFrameGeometry);
+                if (stateChange & Qt::WindowMaximized)
+                    setRestoreMaximizedFlag(m_data.hwnd, newState & Qt::WindowMaximized);
+            } else {
+                UINT swpf = SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE;
+                if (!m_savedFrameGeometry.isValid())
+                    swpf |= SWP_NOSIZE | SWP_NOMOVE;
+                const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
+                setFlag(SynchronousGeometryChangeEvent);
+                // After maximized/fullscreen; the window can be in a maximized state. Clear
+                // it before applying the normal geometry.
+                if (windowVisibility_sys(m_data.hwnd) == QWindow::Maximized)
+                    ShowWindow(m_data.hwnd, SW_SHOWNOACTIVATE);
+                SetWindowPos(m_data.hwnd, 0, m_savedFrameGeometry.x(), m_savedFrameGeometry.y(),
+                             m_savedFrameGeometry.width(), m_savedFrameGeometry.height(), swpf);
+                if (!wasSync)
+                    clearFlag(SynchronousGeometryChangeEvent);
+                // preserve maximized state
+                if (visible) {
+                    setFlag(WithinMaximize);
+                    ShowWindow(m_data.hwnd,
+                               (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNA);
+                    clearFlag(WithinMaximize);
+                }
             }
             m_savedStyle = 0;
             m_savedFrameGeometry = QRect();
         }
-    } else if ((oldState == Qt::WindowMaximized) != (newState == Qt::WindowMaximized)) {
-        if (visible && !(newState == Qt::WindowMinimized)) {
+    } else if ((oldState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized)) {
+        if (visible && !(newState & Qt::WindowMinimized)) {
             setFlag(WithinMaximize);
-            if (newState == Qt::WindowFullScreen)
+            if (newState & Qt::WindowFullScreen)
                 setFlag(MaximizeToFullScreen);
-            ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+            ShowWindow(m_data.hwnd,
+                       (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
             clearFlag(WithinMaximize);
             clearFlag(MaximizeToFullScreen);
+        } else if (visible && (oldState & newState & Qt::WindowMinimized)) {
+            // change of the maximized state while keeping minimized
+            setRestoreMaximizedFlag(m_data.hwnd, newState & Qt::WindowMaximized);
         }
     }
 
-    if ((oldState == Qt::WindowMinimized) != (newState == Qt::WindowMinimized)) {
-        if (visible)
-            ShowWindow(m_data.hwnd, (newState == Qt::WindowMinimized) ? SW_MINIMIZE :
-                       (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNORMAL);
+    if (stateChange & Qt::WindowMinimized) {
+        if (visible) {
+            ShowWindow(m_data.hwnd,
+                       (newState & Qt::WindowMinimized) ? SW_MINIMIZE :
+                       (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNORMAL);
+            if ((newState & Qt::WindowMinimized) && (oldState ^ newState & Qt::WindowMaximized))
+                setRestoreMaximizedFlag(m_data.hwnd, newState & Qt::WindowMaximized);
+        }
     }
     qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << this << window() << newState;
 }
@@ -2145,7 +2199,7 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
         hint.applyToMinMaxInfo(m_data.hwnd, mmi);
     }
 
-    if ((testFlag(WithinMaximize) || (window()->windowState() == Qt::WindowMinimized))
+    if ((testFlag(WithinMaximize) || (window()->windowStates() & Qt::WindowMinimized))
             && (m_data.flags & Qt::FramelessWindowHint)) {
         // This block fixes QTBUG-8361: Frameless windows shouldn't cover the
         // taskbar when maximized
@@ -2175,7 +2229,7 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
     // QTBUG-32663, suppress resize cursor for fixed size windows.
     const QWindow *w = window();
     if (!w->isTopLevel() // Task 105852, minimized windows need to respond to user input.
-        || (m_windowState != Qt::WindowNoState && m_windowState != Qt::WindowActive)
+        || !(m_windowState & ~Qt::WindowActive)
         || (m_data.flags & Qt::FramelessWindowHint)) {
         return false;
     }

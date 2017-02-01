@@ -176,8 +176,8 @@
         return;
 
     // Re-apply window states to update geometry
-    if (window->windowState() & (Qt::WindowFullScreen | Qt::WindowMaximized))
-        window->handle()->setWindowState(window->windowState());
+    if (window->windowStates() & (Qt::WindowFullScreen | Qt::WindowMaximized))
+        window->handle()->setWindowState(window->windowStates());
 }
 
 // Even if the root view controller has both wantsFullScreenLayout and

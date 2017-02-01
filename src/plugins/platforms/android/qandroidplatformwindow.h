@@ -59,7 +59,7 @@ public:
 
     void setVisible(bool visible) override;
 
-    void setWindowState(Qt::WindowState state) override;
+    void setWindowState(Qt::WindowStates state) override;
     void setWindowFlags(Qt::WindowFlags flags) override;
     Qt::WindowFlags windowFlags() const;
     void setParent(const QPlatformWindow *window) override;
@@ -91,7 +91,7 @@ protected:
 
 protected:
     Qt::WindowFlags m_windowFlags;
-    Qt::WindowState m_windowState;
+    Qt::WindowStates m_windowState;
 
     WId m_windowId;
 

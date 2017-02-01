@@ -168,7 +168,7 @@ public:
     void hide(bool becauseOfAncestor = false);
     void setVisible(bool visible) Q_DECL_OVERRIDE;
     void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowStates state) Q_DECL_OVERRIDE;
     void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
     void setWindowFilePath(const QString &filePath) Q_DECL_OVERRIDE;
     void setWindowIcon(const QIcon &icon) Q_DECL_OVERRIDE;
@@ -292,7 +292,7 @@ protected:
     void removeChildWindow(QCocoaWindow *child);
 
     Qt::WindowState windowState() const;
-    void applyWindowState(Qt::WindowState newState);
+    void applyWindowState(Qt::WindowStates newState);
     void toggleMaximized();
     void toggleFullScreen();
     bool isTransitioningToFullScreen() const;
@@ -313,7 +313,7 @@ public: // for QNSView
     bool m_viewIsToBeEmbedded; // true if the m_view is intended to be embedded in a "foreign" NSView hiearchy
 
     Qt::WindowFlags m_windowFlags;
-    Qt::WindowState m_lastReportedWindowState;
+    Qt::WindowStates m_lastReportedWindowState;
     Qt::WindowModality m_windowModality;
     QPointer<QWindow> m_enterLeaveTargetWindow;
     bool m_windowUnderMouse;

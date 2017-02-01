@@ -82,7 +82,7 @@ public:
 
     void setVisible(bool visible) override;
     void setWindowFlags(Qt::WindowFlags flags) override;
-    void setWindowState(Qt::WindowState state) override;
+    void setWindowState(Qt::WindowStates state) override;
     WId winId() const override;
     void setParent(const QPlatformWindow *window) override;
 
@@ -243,7 +243,7 @@ protected:
     xcb_sync_int64_t m_syncValue;
     xcb_sync_counter_t m_syncCounter = 0;
 
-    Qt::WindowState m_windowState = Qt::WindowNoState;
+    Qt::WindowStates m_windowState = Qt::WindowNoState;
 
     xcb_gravity_t m_gravity = XCB_GRAVITY_STATIC;
 
@@ -253,6 +253,7 @@ protected:
     bool m_deferredActivation = false;
     bool m_embedded = false;
     bool m_alertState = false;
+    bool m_minimized = false;
     xcb_window_t m_netWmUserTimeWindow = XCB_NONE;
 
     QSurfaceFormat m_format;
@@ -264,7 +265,8 @@ protected:
     QSize m_oldWindowSize;
 
     xcb_visualid_t m_visualId = 0;
-    int m_lastWindowStateEvent = -1;
+    // Last sent state. Initialized to an invalid state, on purpose.
+    Qt::WindowStates m_lastWindowStateEvent = Qt::WindowActive;
 
     enum SyncState {
         NoSyncNeeded,

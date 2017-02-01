@@ -91,7 +91,7 @@ public:
 
     QSurfaceFormat surfaceFormat;
     QString windowTitle;
-    Qt::WindowState state;
+    Qt::WindowStates state;
     EGLDisplay display;
     EGLSurface surface;
 
@@ -158,7 +158,7 @@ QWinRTWindow::QWinRTWindow(QWindow *window)
     Q_ASSERT_SUCCEEDED(hr);
 
     setWindowFlags(window->flags());
-    setWindowState(window->windowState());
+    setWindowState(window->windowStates());
     setWindowTitle(window->title());
 
     setGeometry(window->geometry());
@@ -323,7 +323,7 @@ qreal QWinRTWindow::devicePixelRatio() const
     return screen()->devicePixelRatio();
 }
 
-void QWinRTWindow::setWindowState(Qt::WindowState state)
+void QWinRTWindow::setWindowState(Qt::WindowStates state)
 {
     Q_D(QWinRTWindow);
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << state;
@@ -331,7 +331,13 @@ void QWinRTWindow::setWindowState(Qt::WindowState state)
     if (d->state == state)
         return;
 
-    if (state == Qt::WindowFullScreen) {
+    if (state & Qt::WindowMinimized) {
+        setUIElementVisibility(d->uiElement.Get(), false);
+        d->state = state;
+        return;
+    }
+
+    if (state & Qt::WindowFullScreen) {
         HRESULT hr;
         boolean success;
         hr = QEventDispatcherWinRT::runOnXamlThread([&hr, &success]() {
@@ -356,7 +362,7 @@ void QWinRTWindow::setWindowState(Qt::WindowState state)
         return;
     }
 
-    if (d->state == Qt::WindowFullScreen) {
+    if (d->state & Qt::WindowFullScreen) {
         HRESULT hr;
         hr = QEventDispatcherWinRT::runOnXamlThread([&hr]() {
             ComPtr<IApplicationViewStatics2> applicationViewStatics;
@@ -378,10 +384,7 @@ void QWinRTWindow::setWindowState(Qt::WindowState state)
         }
     }
 
-    if (state == Qt::WindowMinimized)
-        setUIElementVisibility(d->uiElement.Get(), false);
-
-    if (d->state == Qt::WindowMinimized || state == Qt::WindowNoState || state == Qt::WindowActive)
+    if (d->state & Qt::WindowMinimized || state == Qt::WindowNoState || state == Qt::WindowActive)
         setUIElementVisibility(d->uiElement.Get(), true);
 
     d->state = state;

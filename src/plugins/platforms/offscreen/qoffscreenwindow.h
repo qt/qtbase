@@ -54,7 +54,7 @@ public:
     ~QOffscreenWindow();
 
     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowStates states) Q_DECL_OVERRIDE;
 
     QMargins frameMargins() const Q_DECL_OVERRIDE;
 

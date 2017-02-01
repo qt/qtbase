@@ -726,8 +726,6 @@ void QWidgetWindow::repaintWindow()
                                                  QWidgetBackingStore::UpdateNow, QWidgetBackingStore::BufferInvalid);
 }
 
-Qt::WindowState effectiveState(Qt::WindowStates state);
-
 // Store normal geometry used for saving application settings.
 void QWidgetWindow::updateNormalGeometry()
 {
@@ -738,7 +736,7 @@ void QWidgetWindow::updateNormalGeometry()
     QRect normalGeometry;
     if (const QPlatformWindow *pw = handle())
         normalGeometry = QHighDpi::fromNativePixels(pw->normalGeometry(), this);
-    if (!normalGeometry.isValid() && effectiveState(m_widget->windowState()) == Qt::WindowNoState)
+    if (!normalGeometry.isValid() && !(m_widget->windowState() & ~Qt::WindowActive))
         normalGeometry = m_widget->geometry();
     if (normalGeometry.isValid())
         tle->normalGeometry = normalGeometry;
@@ -930,30 +928,18 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
     // QWindow does currently not know 'active'.
     Qt::WindowStates eventState = event->oldState();
     Qt::WindowStates widgetState = m_widget->windowState();
+    Qt::WindowStates windowState = windowStates();
     if (widgetState & Qt::WindowActive)
         eventState |= Qt::WindowActive;
 
     // Determine the new widget state, remember maximized/full screen
     // during minimized.
-    switch (windowState()) {
-    case Qt::WindowNoState:
-        widgetState &= ~(Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen);
-        break;
-    case Qt::WindowMinimized:
+    if (windowState & Qt::WindowMinimized) {
         widgetState |= Qt::WindowMinimized;
-        break;
-    case Qt::WindowMaximized:
-        updateNormalGeometry();
-        widgetState |= Qt::WindowMaximized;
-        widgetState &= ~(Qt::WindowMinimized | Qt::WindowFullScreen);
-        break;
-    case Qt::WindowFullScreen:
-        updateNormalGeometry();
-        widgetState |= Qt::WindowFullScreen;
-        widgetState &= ~(Qt::WindowMinimized);
-        break;
-    case Qt::WindowActive: // Not handled by QWindow
-        break;
+    } else {
+        widgetState = windowState | (widgetState & Qt::WindowActive);
+        if (windowState) // Maximized or FullScreen
+            updateNormalGeometry();
     }
 
     // Sent event if the state changed (that is, it is not triggered by

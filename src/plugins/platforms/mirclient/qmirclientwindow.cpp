@@ -785,8 +785,16 @@ void QMirClientWindow::handleSurfaceStateChanged(Qt::WindowState state)
     QWindowSystemInterface::handleWindowStateChanged(window(), state);
 }
 
-void QMirClientWindow::setWindowState(Qt::WindowState state)
+void QMirClientWindow::setWindowState(Qt::WindowStates states)
 {
+    Qt::WindowState state = Qt::WindowNoState;
+    if (states & Qt::WindowMinimized)
+        state = Qt::WindowMinimized;
+    else if (states & Qt::WindowFullScreen)
+        state = Qt::WindowFullScreen;
+    else if (states & Qt::WindowMaximized)
+        state = Qt::WindowMaximized;
+
     QMutexLocker lock(&mMutex);
     qCDebug(mirclient, "setWindowState(window=%p, %s)", this, qtWindowStateToStr(state));
 

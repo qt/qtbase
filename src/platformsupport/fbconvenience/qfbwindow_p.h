@@ -70,7 +70,7 @@ public:
     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
     void setVisible(bool visible) Q_DECL_OVERRIDE;
 
-    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowStates state) Q_DECL_OVERRIDE;
     void setWindowFlags(Qt::WindowFlags type) Q_DECL_OVERRIDE;
     Qt::WindowFlags windowFlags() const;
 
@@ -93,7 +93,7 @@ protected:
     QFbBackingStore *mBackingStore;
     QRect mOldGeometry;
     Qt::WindowFlags mWindowFlags;
-    Qt::WindowState mWindowState;
+    Qt::WindowStates mWindowState;
 
     WId mWindowId;
 };

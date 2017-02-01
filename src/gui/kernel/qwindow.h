@@ -189,7 +189,9 @@ public:
     qreal devicePixelRatio() const;
 
     Qt::WindowState windowState() const;
+    Qt::WindowStates windowStates() const;
     void setWindowState(Qt::WindowState state);
+    void setWindowStates(Qt::WindowStates states);
 
     void setTransientParent(QWindow *parent);
     QWindow *transientParent() const;

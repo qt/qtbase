@@ -552,7 +552,7 @@ void QXcbWindow::create()
     connection()->xi2Select(m_window);
 #endif
 
-    setWindowState(window()->windowState());
+    setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
     setWindowTitle(window()->title());
 
@@ -762,7 +762,7 @@ void QXcbWindow::show()
         xcb_wm_hints_t hints;
         xcb_get_wm_hints_reply(xcb_connection(), cookie, &hints, NULL);
 
-        if (window()->windowState() & Qt::WindowMinimized)
+        if (window()->windowStates() & Qt::WindowMinimized)
             xcb_wm_hints_set_iconic(&hints);
         else
             xcb_wm_hints_set_normal(&hints);
@@ -1215,66 +1215,43 @@ void QXcbWindow::changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two)
                    (const char *)&event);
 }
 
-void QXcbWindow::setWindowState(Qt::WindowState state)
+void QXcbWindow::setWindowState(Qt::WindowStates state)
 {
     if (state == m_windowState)
         return;
 
-    // unset old state
-    switch (m_windowState) {
-    case Qt::WindowMinimized:
+    if ((m_windowState & Qt::WindowMinimized) && !(state & Qt::WindowMinimized)) {
         xcb_map_window(xcb_connection(), m_window);
-        break;
-    case Qt::WindowMaximized:
-        changeNetWmState(false,
-                         atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ),
-                         atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
-        break;
-    case Qt::WindowFullScreen:
-        changeNetWmState(false, atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
-        break;
-    default:
-        break;
+    } else if (!(m_windowState & Qt::WindowMinimized) && (state & Qt::WindowMinimized)) {
+        xcb_client_message_event_t event;
+
+        event.response_type = XCB_CLIENT_MESSAGE;
+        event.format = 32;
+        event.sequence = 0;
+        event.window = m_window;
+        event.type = atom(QXcbAtom::WM_CHANGE_STATE);
+        event.data.data32[0] = XCB_WM_STATE_ICONIC;
+        event.data.data32[1] = 0;
+        event.data.data32[2] = 0;
+        event.data.data32[3] = 0;
+        event.data.data32[4] = 0;
+
+        xcb_send_event(xcb_connection(), 0, xcbScreen()->root(),
+                       XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+                       (const char *)&event);
+        m_minimized = true;
     }
 
-    // set new state
-    switch (state) {
-    case Qt::WindowMinimized:
-        {
-            xcb_client_message_event_t event;
-
-            event.response_type = XCB_CLIENT_MESSAGE;
-            event.format = 32;
-            event.sequence = 0;
-            event.window = m_window;
-            event.type = atom(QXcbAtom::WM_CHANGE_STATE);
-            event.data.data32[0] = XCB_WM_STATE_ICONIC;
-            event.data.data32[1] = 0;
-            event.data.data32[2] = 0;
-            event.data.data32[3] = 0;
-            event.data.data32[4] = 0;
-
-            xcb_send_event(xcb_connection(), 0, xcbScreen()->root(),
-                           XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
-                           (const char *)&event);
-        }
-        break;
-    case Qt::WindowMaximized:
-        changeNetWmState(true,
-                         atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ),
+    if ((m_windowState ^ state) & Qt::WindowMaximized) {
+        changeNetWmState(state & Qt::WindowMaximized, atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ),
                          atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
-        break;
-    case Qt::WindowFullScreen:
-        changeNetWmState(true, atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
-        break;
-    case Qt::WindowNoState:
-        break;
-    default:
-        break;
+    }
+
+    if ((m_windowState ^ state) & Qt::WindowFullScreen) {
+        changeNetWmState(state & Qt::WindowFullScreen, atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
     }
 
     connection()->sync();
-
     m_windowState = state;
 }
 
@@ -1346,10 +1323,10 @@ void QXcbWindow::updateNetWmStateBeforeMap()
         states |= NetWmStateBelow;
     }
 
-    if (window()->windowState() & Qt::WindowFullScreen)
+    if (window()->windowStates() & Qt::WindowFullScreen)
         states |= NetWmStateFullScreen;
 
-    if (window()->windowState() & Qt::WindowMaximized) {
+    if (window()->windowStates() & Qt::WindowMaximized) {
         states |= NetWmStateMaximizedHorz;
         states |= NetWmStateMaximizedVert;
     }
@@ -2486,39 +2463,33 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
         if (propertyDeleted)
             return;
 
-        Qt::WindowState newState = Qt::WindowNoState;
+        Qt::WindowStates newState = Qt::WindowNoState;
+
         if (event->atom == atom(QXcbAtom::WM_STATE)) { // WM_STATE: Quick check for 'Minimize'.
             auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(),
                                      0, m_window, atom(QXcbAtom::WM_STATE),
                                      XCB_ATOM_ANY, 0, 1024);
             if (reply && reply->format == 32 && reply->type == atom(QXcbAtom::WM_STATE)) {
                 const quint32 *data = (const quint32 *)xcb_get_property_value(reply.get());
-                if (reply->length != 0) {
-                    if (data[0] == XCB_WM_STATE_ICONIC
-                            || (data[0] == XCB_WM_STATE_WITHDRAWN
-                                && m_lastWindowStateEvent == Qt::WindowMinimized)) {
-                        newState = Qt::WindowMinimized;
-                    }
-                }
+                if (reply->length != 0)
+                    m_minimized = (data[0] == XCB_WM_STATE_ICONIC
+                                   || (data[0] == XCB_WM_STATE_WITHDRAWN && m_minimized));
             }
-        } else { // _NET_WM_STATE can't change minimized state
-            if (m_lastWindowStateEvent == Qt::WindowMinimized)
-                newState = Qt::WindowMinimized;
         }
+        if (m_minimized)
+            newState = Qt::WindowMinimized;
 
-        if (newState != Qt::WindowMinimized) { // Something else changed, get _NET_WM_STATE.
-            const NetWmStates states = netWmStates();
-            if (states & NetWmStateFullScreen)
-                newState = Qt::WindowFullScreen;
-            else if ((states & NetWmStateMaximizedHorz) && (states & NetWmStateMaximizedVert))
-                newState = Qt::WindowMaximized;
-        }
+        const NetWmStates states = netWmStates();
+        if (states & NetWmStateFullScreen)
+            newState |= Qt::WindowFullScreen;
+        if ((states & NetWmStateMaximizedHorz) && (states & NetWmStateMaximizedVert))
+            newState |= Qt::WindowMaximized;
         // Send Window state, compress events in case other flags (modality, etc) are changed.
         if (m_lastWindowStateEvent != newState) {
             QWindowSystemInterface::handleWindowStateChanged(window(), newState);
             m_lastWindowStateEvent = newState;
             m_windowState = newState;
-            if (m_windowState == Qt::WindowMinimized && connection()->mouseGrabber() == this)
+            if ((m_windowState & Qt::WindowMinimized) && connection()->mouseGrabber() == this)
                 connection()->setMouseGrabber(Q_NULLPTR);
         }
         return;

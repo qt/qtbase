@@ -176,7 +176,7 @@ public:
     static void handleWindowActivated(QWindow *window, Qt::FocusReason r = Qt::OtherFocusReason);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static void handleWindowStateChanged(QWindow *window, Qt::WindowState newState, int oldState = -1);
+    static void handleWindowStateChanged(QWindow *window, Qt::WindowStates newState, int oldState = -1);
     static void handleWindowScreenChanged(QWindow *window, QScreen *newScreen);
 
     static void handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate = false);

@@ -762,7 +762,7 @@ void QCocoaWindow::setVisible(bool visible)
 
             // setWindowState might have been called while the window was hidden and
             // will not change the NSWindow state in that case. Sync up here:
-            applyWindowState(window()->windowState());
+            applyWindowState(window()->windowStates());
 
             if (window()->windowState() != Qt::WindowMinimized) {
                 if ((window()->modality() == Qt::WindowModal
@@ -1010,7 +1010,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     m_windowFlags = flags;
 }
 
-void QCocoaWindow::setWindowState(Qt::WindowState state)
+void QCocoaWindow::setWindowState(Qt::WindowStates state)
 {
     if (window()->isVisible())
         applyWindowState(state); // Window state set for hidden windows take effect when show() is called
@@ -1812,9 +1812,11 @@ QRect QCocoaWindow::nativeWindowGeometry() const
     updated yet, so window()->windowState() will reflect the previous state that was
     reported to QtGui.
 */
-void QCocoaWindow::applyWindowState(Qt::WindowState newState)
+void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
 {
     const Qt::WindowState currentState = windowState();
+    const Qt::WindowState newState = QWindowPrivate::effectiveState(requestedState);
+
     if (newState == currentState)
         return;
 

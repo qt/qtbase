@@ -3037,17 +3037,6 @@ void QWidget::overrideWindowState(Qt::WindowStates newstate)
     QApplication::sendEvent(this, &e);
 }
 
-Qt::WindowState effectiveState(Qt::WindowStates state)
-{
-    if (state & Qt::WindowMinimized)
-        return Qt::WindowMinimized;
-    else if (state & Qt::WindowFullScreen)
-        return Qt::WindowFullScreen;
-    else if (state & Qt::WindowMaximized)
-        return Qt::WindowMaximized;
-    return Qt::WindowNoState;
-}
-
 /*!
     \fn void QWidget::setWindowState(Qt::WindowStates windowState)
 
@@ -3089,19 +3078,17 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
     data->window_state = newstate;
     data->in_set_window_state = 1;
-    Qt::WindowState newEffectiveState = effectiveState(newstate);
-    Qt::WindowState oldEffectiveState = effectiveState(oldstate);
-    if (isWindow() && newEffectiveState != oldEffectiveState) {
+    if (isWindow()) {
         // Ensure the initial size is valid, since we store it as normalGeometry below.
         if (!testAttribute(Qt::WA_Resized) && !isVisible())
             adjustSize();
 
         d->createTLExtra();
-        if (oldEffectiveState == Qt::WindowNoState)
+        if (!(oldstate & (Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen)))
             d->topData()->normalGeometry = geometry();
 
         Q_ASSERT(windowHandle());
-        windowHandle()->setWindowState(newEffectiveState);
+        windowHandle()->setWindowStates(newstate & ~Qt::WindowActive);
     }
     data->in_set_window_state = 0;
 

@@ -261,7 +261,7 @@ QPoint QPlatformWindow::mapFromGlobal(const QPoint &pos) const
 
     Qt::WindowActive can be ignored.
 */
-void QPlatformWindow::setWindowState(Qt::WindowState)
+void QPlatformWindow::setWindowState(Qt::WindowStates)
 {
 }
 

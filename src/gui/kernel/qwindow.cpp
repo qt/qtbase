@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
     application, isExposed() will simply return the same value as isVisible().
 
     QWindow::Visibility queried through visibility() is a convenience API
-    combining the functions of visible() and windowState().
+    combining the functions of visible() and windowStates().
 
     \section1 Rendering
 
@@ -323,27 +323,16 @@ void QWindowPrivate::updateVisibility()
 
     QWindow::Visibility old = visibility;
 
-    if (visible) {
-        switch (windowState) {
-        case Qt::WindowMinimized:
-            visibility = QWindow::Minimized;
-            break;
-        case Qt::WindowMaximized:
-            visibility = QWindow::Maximized;
-            break;
-        case Qt::WindowFullScreen:
-            visibility = QWindow::FullScreen;
-            break;
-        case Qt::WindowNoState:
-            visibility = QWindow::Windowed;
-            break;
-        default:
-            Q_ASSERT(false);
-            break;
-        }
-    } else {
+    if (!visible)
         visibility = QWindow::Hidden;
-    }
+    else if (windowState & Qt::WindowMinimized)
+        visibility = QWindow::Minimized;
+    else if (windowState & Qt::WindowFullScreen)
+        visibility = QWindow::FullScreen;
+    else if (windowState & Qt::WindowMaximized)
+        visibility = QWindow::Maximized;
+    else
+        visibility = QWindow::Windowed;
 
     if (visibility != old)
         emit q->visibilityChanged(visibility);
@@ -1216,6 +1205,17 @@ qreal QWindow::devicePixelRatio() const
     return d->platformWindow->devicePixelRatio() * QHighDpiScaling::factor(this);
 }
 
+Qt::WindowState QWindowPrivate::effectiveState(Qt::WindowStates state)
+{
+    if (state & Qt::WindowMinimized)
+        return Qt::WindowMinimized;
+    else if (state & Qt::WindowFullScreen)
+        return Qt::WindowFullScreen;
+    else if (state & Qt::WindowMaximized)
+        return Qt::WindowMaximized;
+    return Qt::WindowNoState;
+}
+
 /*!
     \brief set the screen-occupation state of the window
 
@@ -1224,29 +1224,67 @@ qreal QWindow::devicePixelRatio() const
 
     The enum value Qt::WindowActive is not an accepted parameter.
 
-    \sa showNormal(), showFullScreen(), showMinimized(), showMaximized()
+    \sa showNormal(), showFullScreen(), showMinimized(), showMaximized(), setWindowStates()
 */
 void QWindow::setWindowState(Qt::WindowState state)
 {
-    if (state == Qt::WindowActive) {
-        qWarning("QWindow::setWindowState does not accept Qt::WindowActive");
-        return;
+    setWindowStates(state);
+}
+
+/*!
+    \brief set the screen-occupation state of the window
+    \since 5.10
+
+    The window \a state represents whether the window appears in the
+    windowing system as maximized, minimized and/or fullscreen.
+
+    The window can be in a combination of several states. For example, if
+    the window is both minimized and maximized, the window will appear
+    minimized, but clicking on the task bar entry will restore it to the
+    maximized state.
+
+    The enum value Qt::WindowActive should not be set.
+
+    \sa showNormal(), showFullScreen(), showMinimized(), showMaximized()
+ */
+void QWindow::setWindowStates(Qt::WindowStates state)
+{
+    Q_D(QWindow);
+    if (state & Qt::WindowActive) {
+        qWarning("QWindow::setWindowStates does not accept Qt::WindowActive");
+        state &= ~Qt::WindowActive;
     }
 
-    Q_D(QWindow);
     if (d->platformWindow)
         d->platformWindow->setWindowState(state);
     d->windowState = state;
-    emit windowStateChanged(d->windowState);
+    emit windowStateChanged(QWindowPrivate::effectiveState(d->windowState));
     d->updateVisibility();
 }
 
 /*!
     \brief the screen-occupation state of the window
 
-    \sa setWindowState()
+    \sa setWindowState(), windowStates()
 */
 Qt::WindowState QWindow::windowState() const
+{
+    Q_D(const QWindow);
+    return QWindowPrivate::effectiveState(d->windowState);
+}
+
+/*!
+    \brief the screen-occupation state of the window
+    \since 5.10
+
+    The window can be in a combination of several states. For example, if
+    the window is both minimized and maximized, the window will appear
+    minimized, but clicking on the task bar entry will restore it to
+    the maximized state.
+
+    \sa setWindowStates()
+*/
+Qt::WindowStates QWindow::windowStates() const
 {
     Q_D(const QWindow);
     return d->windowState;
@@ -1256,7 +1294,7 @@ Qt::WindowState QWindow::windowState() const
     \fn QWindow::windowStateChanged(Qt::WindowState windowState)
 
     This signal is emitted when the \a windowState changes, either
-    by being set explicitly with setWindowState(), or automatically when
+    by being set explicitly with setWindowStates(), or automatically when
     the user clicks one of the titlebar buttons or by other means.
 */
 
@@ -1997,42 +2035,42 @@ void QWindow::hide()
 /*!
     Shows the window as minimized.
 
-    Equivalent to calling setWindowState(Qt::WindowMinimized) and then
+    Equivalent to calling setWindowStates(Qt::WindowMinimized) and then
     setVisible(true).
 
-    \sa setWindowState(), setVisible()
+    \sa setWindowStates(), setVisible()
 */
 void QWindow::showMinimized()
 {
-    setWindowState(Qt::WindowMinimized);
+    setWindowStates(Qt::WindowMinimized);
     setVisible(true);
 }
 
 /*!
     Shows the window as maximized.
 
-    Equivalent to calling setWindowState(Qt::WindowMaximized) and then
+    Equivalent to calling setWindowStates(Qt::WindowMaximized) and then
     setVisible(true).
 
-    \sa setWindowState(), setVisible()
+    \sa setWindowStates(), setVisible()
 */
 void QWindow::showMaximized()
 {
-    setWindowState(Qt::WindowMaximized);
+    setWindowStates(Qt::WindowMaximized);
     setVisible(true);
 }
 
 /*!
     Shows the window as fullscreen.
 
-    Equivalent to calling setWindowState(Qt::WindowFullScreen) and then
+    Equivalent to calling setWindowStates(Qt::WindowFullScreen) and then
     setVisible(true).
 
-    \sa setWindowState(), setVisible()
+    \sa setWindowStates(), setVisible()
 */
 void QWindow::showFullScreen()
 {
-    setWindowState(Qt::WindowFullScreen);
+    setWindowStates(Qt::WindowFullScreen);
     setVisible(true);
 #if !defined Q_OS_QNX // On QNX this window will be activated anyway from libscreen
                       // activating it here before libscreen activates it causes problems
@@ -2043,14 +2081,14 @@ void QWindow::showFullScreen()
 /*!
     Shows the window as normal, i.e. neither maximized, minimized, nor fullscreen.
 
-    Equivalent to calling setWindowState(Qt::WindowNoState) and then
+    Equivalent to calling setWindowStates(Qt::WindowNoState) and then
     setVisible(true).
 
-    \sa setWindowState(), setVisible()
+    \sa setWindowStates(), setVisible()
 */
 void QWindow::showNormal()
 {
-    setWindowState(Qt::WindowNoState);
+    setWindowStates(Qt::WindowNoState);
     setVisible(true);
 }
 
@@ -2246,7 +2284,7 @@ bool QWindow::event(QEvent *ev)
 
     case QEvent::WindowStateChange: {
         Q_D(QWindow);
-        emit windowStateChanged(d->windowState);
+        emit windowStateChanged(QWindowPrivate::effectiveState(d->windowState));
         d->updateVisibility();
         break;
     }

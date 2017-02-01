@@ -106,7 +106,7 @@ void QFbWindow::setVisible(bool visible)
     }
 }
 
-void QFbWindow::setWindowState(Qt::WindowState state)
+void QFbWindow::setWindowState(Qt::WindowStates state)
 {
     QPlatformWindow::setWindowState(state);
     mWindowState = state;

@@ -151,6 +151,8 @@ public:
 
     static QWindowPrivate *get(QWindow *window) { return window->d_func(); }
 
+    static Qt::WindowState effectiveState(Qt::WindowStates);
+
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;
@@ -163,7 +165,7 @@ public:
     QString windowFilePath;
     QIcon windowIcon;
     QRect geometry;
-    Qt::WindowState windowState;
+    Qt::WindowStates windowState;
     QWindow::Visibility visibility;
     bool resizeEventPending;
     bool receivedExpose;

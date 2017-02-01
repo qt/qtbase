@@ -188,6 +188,7 @@ public:
     {
         AutoMouseCapture = 0x1, //! Automatic mouse capture on button press.
         WithinSetParent = 0x2,
+        WithinSetGeometry = 0x8,
         OpenGLSurface = 0x10,
         OpenGL_ES2 = 0x20,
         OpenGLDoubleBuffered = 0x40,
@@ -230,7 +231,7 @@ public:
     QPoint mapFromGlobal(const QPoint &pos) const override;
 
     void setWindowFlags(Qt::WindowFlags flags) override;
-    void setWindowState(Qt::WindowState state) override;
+    void setWindowState(Qt::WindowStates state) override;
 
     void setParent(const QPlatformWindow *window) override;
 
@@ -323,7 +324,7 @@ private:
     inline void show_sys() const;
     inline QWindowsWindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
     inline bool isFullScreen_sys() const;
-    inline void setWindowState_sys(Qt::WindowState newState);
+    inline void setWindowState_sys(Qt::WindowStates newState);
     inline void setParent_sys(const QPlatformWindow *parent);
     inline void updateTransientParent() const;
     void destroyWindow();
@@ -331,14 +332,14 @@ private:
     void setDropSiteEnabled(bool enabled);
     void updateDropSite(bool topLevel);
     void handleGeometryChange();
-    void handleWindowStateChange(Qt::WindowState state);
+    void handleWindowStateChange(Qt::WindowStates state);
     inline void destroyIcon();
     void fireExpose(const QRegion &region, bool force=false);
 
     mutable QWindowsWindowData m_data;
     mutable unsigned m_flags = WithinCreate;
     HDC m_hdc = 0;
-    Qt::WindowState m_windowState = Qt::WindowNoState;
+    Qt::WindowStates m_windowState = Qt::WindowNoState;
     qreal m_opacity = 1;
 #ifndef QT_NO_CURSOR
     CursorHandlePtr m_cursor;

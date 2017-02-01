@@ -241,14 +241,14 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowActivated, QWindow *window, Qt::Fo
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowStateChanged, QWindow *window, Qt::WindowState newState, int oldState)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleWindowStateChanged, QWindow *window, Qt::WindowStates newState, int oldState)
 {
     Q_ASSERT(window);
     if (oldState < Qt::WindowNoState)
         oldState = window->windowState();
 
     QWindowSystemInterfacePrivate::WindowStateChangedEvent *e =
-        new QWindowSystemInterfacePrivate::WindowStateChangedEvent(window, newState, Qt::WindowState(oldState));
+        new QWindowSystemInterfacePrivate::WindowStateChangedEvent(window, newState, Qt::WindowStates(oldState));
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 

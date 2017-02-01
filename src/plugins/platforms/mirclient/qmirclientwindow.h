@@ -73,7 +73,7 @@ public:
     WId winId() const override;
     QRect geometry() const override;
     void setGeometry(const QRect&) override;
-    void setWindowState(Qt::WindowState state) override;
+    void setWindowState(Qt::WindowStates state) override;
     void setWindowFlags(Qt::WindowFlags flags) override;
     void setVisible(bool visible) override;
     void setWindowTitle(const QString &title) override;

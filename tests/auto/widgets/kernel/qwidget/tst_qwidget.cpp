@@ -1781,9 +1781,11 @@ void tst_QWidget::windowState()
     QCOMPARE(widget1.pos(), pos);
     QCOMPARE(widget1.size(), size);
 
-#define VERIFY_STATE(s) QCOMPARE(int(widget1.windowState() & stateMask), int(s))
+#define VERIFY_STATE(s)                                                                            \
+    QCOMPARE(int(widget1.windowState() & stateMask), int(s));                                      \
+    QCOMPARE(int(widget1.windowHandle()->windowStates() & stateMask), int(s))
 
-    const int stateMask = Qt::WindowMaximized|Qt::WindowMinimized|Qt::WindowFullScreen;
+    const auto stateMask = Qt::WindowMaximized | Qt::WindowMinimized | Qt::WindowFullScreen;
 
     widget1.setWindowState(Qt::WindowMaximized);
     QTest::qWait(100);

@@ -56,7 +56,7 @@ QOffscreenWindow::QOffscreenWindow(QWindow *window)
     if (window->windowState() == Qt::WindowNoState)
         setGeometry(window->geometry());
     else
-        setWindowState(window->windowState());
+        setWindowState(window->windowStates());
 
     QWindowSystemInterface::flushWindowSystemEvents();
 
@@ -163,26 +163,19 @@ void QOffscreenWindow::setFrameMarginsEnabled(bool enabled)
         m_margins = QMargins(0, 0, 0, 0);
 }
 
-void QOffscreenWindow::setWindowState(Qt::WindowState state)
+void QOffscreenWindow::setWindowState(Qt::WindowStates state)
 {
-    setFrameMarginsEnabled(state != Qt::WindowFullScreen);
+    setFrameMarginsEnabled(!(state & Qt::WindowFullScreen));
     m_positionIncludesFrame = false;
 
-    switch (state) {
-    case Qt::WindowFullScreen:
+    if (state & Qt::WindowMinimized)
+        ; // nothing to do
+    else if (state & Qt::WindowFullScreen)
         setGeometryImpl(screen()->geometry());
-        break;
-    case Qt::WindowMaximized:
+    else if (state & Qt::WindowMaximized)
         setGeometryImpl(screen()->availableGeometry().adjusted(m_margins.left(), m_margins.top(), -m_margins.right(), -m_margins.bottom()));
-        break;
-    case Qt::WindowMinimized:
-        break;
-    case Qt::WindowNoState:
+    else
         setGeometryImpl(m_normalGeometry);
-        break;
-    default:
-        break;
-    }
 
     QWindowSystemInterface::handleWindowStateChanged(window(), state);
 }
