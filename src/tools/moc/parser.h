@@ -68,8 +68,8 @@ public:
     inline QByteArray unquotedLexem() { return symbols.at(index-1).unquotedLexem();}
     inline const Symbol &symbol() { return symbols.at(index-1);}
 
-    void error(int rollback);
-    void error(const char *msg = 0);
+    Q_NORETURN void error(int rollback);
+    Q_NORETURN void error(const char *msg = 0);
     void warning(const char * = 0);
     void note(const char * = 0);
 

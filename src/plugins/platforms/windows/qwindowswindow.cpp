@@ -43,7 +43,7 @@
 #include "qwindowsscreen.h"
 #include "qwindowsintegration.h"
 #include "qwindowsnativeinterface.h"
-#include "qwindowsopenglcontext.h"
+#include "qwindowsglcontext.h"
 #ifdef QT_NO_CURSOR
 #  include "qwindowscursor.h"
 #endif
@@ -1300,6 +1300,12 @@ void QWindowsWindow::updateTransientParent() const
         if (const QWindowsWindow *tw = QWindowsWindow::windowsWindowOf(tp))
             if (!tw->testFlag(WithinDestroy)) // Prevent destruction by parent window (QTBUG-35499, QTBUG-36666)
                 newTransientParent = tw->handle();
+
+    // QTSOLBUG-71: When using the MFC/winmigrate solution, it is possible that a child
+    // window is found, which can cause issues with modality. Loop up to top level.
+    while (newTransientParent && (GetWindowLongPtr(newTransientParent, GWL_STYLE) & WS_CHILD) != 0)
+        newTransientParent = GetParent(newTransientParent);
+
     if (newTransientParent != oldTransientParent)
         SetWindowLongPtr(m_data.hwnd, GWL_HWNDPARENT, LONG_PTR(newTransientParent));
 }
@@ -1488,18 +1494,22 @@ void QWindowsWindow::handleResized(int wParam)
     case SIZE_MAXHIDE: // Some other window affected.
     case SIZE_MAXSHOW:
         return;
-    case SIZE_MINIMIZED:
-        handleWindowStateChange(Qt::WindowMinimized);
+    case SIZE_MINIMIZED: // QTBUG-53577, prevent state change events during programmatic state change
+        if (!testFlag(WithinSetStyle))
+            handleWindowStateChange(Qt::WindowMinimized);
         return;
     case SIZE_MAXIMIZED:
-        handleWindowStateChange(Qt::WindowMaximized);
+        if (!testFlag(WithinSetStyle))
+            handleWindowStateChange(Qt::WindowMaximized);
         handleGeometryChange();
         break;
     case SIZE_RESTORED:
-        if (isFullScreen_sys())
-            handleWindowStateChange(Qt::WindowFullScreen);
-        else if (m_windowState != Qt::WindowNoState && !testFlag(MaximizeToFullScreen))
-            handleWindowStateChange(Qt::WindowNoState);
+        if (!testFlag(WithinSetStyle)) {
+            if (isFullScreen_sys())
+                handleWindowStateChange(Qt::WindowFullScreen);
+            else if (m_windowState != Qt::WindowNoState && !testFlag(MaximizeToFullScreen))
+                handleWindowStateChange(Qt::WindowNoState);
+        }
         handleGeometryChange();
         break;
     }
@@ -1507,9 +1517,6 @@ void QWindowsWindow::handleResized(int wParam)
 
 void QWindowsWindow::handleGeometryChange()
 {
-    //Prevent recursive resizes for Windows CE
-    if (testFlag(WithinSetStyle))
-        return;
     const QRect previousGeometry = m_data.geometry;
     m_data.geometry = geometry_sys();
     QPlatformWindow::setGeometry(m_data.geometry);
@@ -1608,6 +1615,16 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
     if (!GetUpdateRect(m_data.hwnd, 0, FALSE))
         return false;
     PAINTSTRUCT ps;
+
+#if QT_CONFIG(dynamicgl)
+    // QTBUG-58178: GL software rendering needs InvalidateRect() to suppress
+    // artifacts while resizing.
+    if (testFlag(OpenGLSurface)
+        && QOpenGLStaticContext::opengl32.moduleIsNotOpengl32()
+        && QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+        InvalidateRect(hwnd, 0, false);
+    }
+#endif // dynamicgl
 
     BeginPaint(hwnd, &ps);
 

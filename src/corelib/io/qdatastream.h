@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
+class qfloat16;
 class QByteArray;
 class QIODevice;
 
@@ -154,6 +154,7 @@ public:
     QDataStream &operator>>(quint64 &i);
 
     QDataStream &operator>>(bool &i);
+    QDataStream &operator>>(qfloat16 &f);
     QDataStream &operator>>(float &f);
     QDataStream &operator>>(double &f);
     QDataStream &operator>>(char *&str);
@@ -167,6 +168,7 @@ public:
     QDataStream &operator<<(qint64 i);
     QDataStream &operator<<(quint64 i);
     QDataStream &operator<<(bool i);
+    QDataStream &operator<<(qfloat16 f);
     QDataStream &operator<<(float f);
     QDataStream &operator<<(double f);
     QDataStream &operator<<(const char *str);

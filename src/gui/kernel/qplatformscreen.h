@@ -95,6 +95,11 @@ public:
         PowerStateOff
     };
 
+    struct Mode {
+        QSize size;
+        qreal refreshRate;
+    };
+
     QPlatformScreen();
     virtual ~QPlatformScreen();
 
@@ -138,6 +143,11 @@ public:
 
     virtual PowerState powerState() const;
     virtual void setPowerState(PowerState state);
+
+    virtual QVector<Mode> modes() const;
+
+    virtual int currentMode() const;
+    virtual int preferredMode() const;
 
     static int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b);
     static QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);

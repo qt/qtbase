@@ -43,6 +43,11 @@
 
 QT_BEGIN_NAMESPACE
 
+void qt_memfill32(quint32 *dest, quint32 color, int count)
+{
+    qt_memfill32_asm_mips_dsp(dest, color, count);
+}
+
 void qt_blend_argb32_on_argb32_mips_dsp(uchar *destPixels, int dbpl,
                                       const uchar *srcPixels, int sbpl,
                                       int w, int h,

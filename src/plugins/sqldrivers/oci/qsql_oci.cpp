@@ -2405,16 +2405,16 @@ static QString make_where_clause(const QString &user, Expression e)
     static const char joinC[][4] = { "or" , "and" };
     static Q_CONSTEXPR QLatin1Char bang[] = { QLatin1Char(' '), QLatin1Char('!') };
 
-    const QLatin1String join(joinC[e], -1); // -1: force strlen call
+    const QLatin1String join(joinC[e]);
 
     QString result;
     result.reserve(sizeof sysUsers / sizeof *sysUsers *
                    // max-sizeof(owner != <sysuser> and )
                                 (9 + sizeof *sysUsers + 5));
     for (const auto &sysUser : sysUsers) {
-        const QLatin1String l1(sysUser, -1); // -1: force strlen call
+        const QLatin1String l1(sysUser);
         if (l1 != user)
-            result += QLatin1String("owner ") + bang[e] + QLatin1String("= '") + l1 + QLatin1Char(' ') + join + QLatin1Char(' ');
+            result += QLatin1String("owner ") + bang[e] + QLatin1String("= '") + l1 + QLatin1String("' ") + join + QLatin1Char(' ');
     }
 
     result.chop(join.size() + 2); // remove final " <join> "

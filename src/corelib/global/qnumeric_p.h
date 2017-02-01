@@ -174,7 +174,7 @@ static inline bool qt_is_finite(float f)
 // Unsigned overflow math
 //
 namespace {
-template <typename T> inline typename QtPrivate::QEnableIf<std::is_unsigned<T>::value, bool>::Type
+template <typename T> inline typename std::enable_if<std::is_unsigned<T>::value, bool>::type
 add_overflow(T v1, T v2, T *r)
 {
     // unsigned additions are well-defined
@@ -182,7 +182,7 @@ add_overflow(T v1, T v2, T *r)
     return v1 > T(v1 + v2);
 }
 
-template <typename T> inline typename QtPrivate::QEnableIf<std::is_unsigned<T>::value, bool>::Type
+template <typename T> inline typename std::enable_if<std::is_unsigned<T>::value, bool>::type
 mul_overflow(T v1, T v2, T *r)
 {
     // use the next biggest type

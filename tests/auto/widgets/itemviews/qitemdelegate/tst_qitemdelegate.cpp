@@ -1350,7 +1350,7 @@ void tst_QItemDelegate::QTBUG4435_keepSelectionOnCheck()
     }
     QTableView view;
     view.setModel(&model);
-    view.setItemDelegate(new TestItemDelegate);
+    view.setItemDelegate(new TestItemDelegate(&view));
     view.show();
     view.selectAll();
     QVERIFY(QTest::qWaitForWindowExposed(&view));

@@ -49,14 +49,8 @@ class QWinRTIntegrationPlugin : public QPlatformIntegrationPlugin
     Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "winrt.json")
 
 public:
-    QStringList keys() const;
     QPlatformIntegration *create(const QString&, const QStringList&) override;
 };
-
-QStringList QWinRTIntegrationPlugin::keys() const
-{
-    return QStringList(QStringLiteral("WinRT"));
-}
 
 QPlatformIntegration *QWinRTIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {

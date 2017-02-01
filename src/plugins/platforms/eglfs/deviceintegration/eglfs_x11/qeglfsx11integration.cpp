@@ -114,7 +114,7 @@ void EventReader::run()
 {
     Qt::MouseButtons buttons;
 
-    xcb_generic_event_t *event;
+    xcb_generic_event_t *event = nullptr;
     while (running.load() && (event = xcb_wait_for_event(m_integration->connection()))) {
         uint response_type = event->response_type & ~0x80;
         switch (response_type) {

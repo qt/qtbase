@@ -151,6 +151,7 @@ private slots:
     void taskQTBUG_7232_AllowUserToControlSingleStep();
     void taskQTBUG_51086_skippingIndexesInSelectedIndexes();
     void expandingListItems();
+    void taskQTBUG_47694_indexOutOfBoundBatchLayout();
 };
 
 // Testing get/set functions
@@ -1488,7 +1489,7 @@ void tst_QListView::task203585_selectAll()
     //we make sure that "select all" doesn't select the hidden items
     QListView view;
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
-    view.setModel(new QStringListModel( QStringList() << "foo"));
+    view.setModel(new QStringListModel(QStringList() << "foo", &view));
     view.setRowHidden(0, true);
     view.selectAll();
     QVERIFY(view.selectionModel()->selectedIndexes().isEmpty());
@@ -2508,6 +2509,19 @@ void tst_QListView::expandingListItems()
     QApplication::processEvents();
 
     QVERIFY(w.visualRect(item1->index()).width() < w.visualRect(item2->index()).width());
+}
+
+void tst_QListView::taskQTBUG_47694_indexOutOfBoundBatchLayout()
+{
+    QListView view;
+    view.setLayoutMode(QListView::Batched);
+    int batchSize = view.batchSize();
+
+    QStandardItemModel model(batchSize + 1, 1);
+
+    view.setModel(&model);
+
+    view.scrollTo(model.index(batchSize - 1, 0));
 }
 
 QTEST_MAIN(tst_QListView)

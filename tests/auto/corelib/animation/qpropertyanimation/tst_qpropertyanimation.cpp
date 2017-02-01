@@ -427,7 +427,7 @@ public:
     void setOle(int v) { o = v; values << v; }
 
     int o;
-    QList<int> values;
+    QVector<int> values;
 };
 
 void tst_QPropertyAnimation::noStartValue()
@@ -441,10 +441,8 @@ void tst_QPropertyAnimation::noStartValue()
     a.setDuration(250);
     a.start();
 
-    QTest::qWait(300);
-
-    QTRY_COMPARE(o.values.first(), 42);
-    QCOMPARE(o.values.last(), 420);
+    QTRY_COMPARE(o.values.value(o.values.size() - 1, -1), 420);
+    QCOMPARE(o.values.first(), 42);
 }
 
 void tst_QPropertyAnimation::noStartValueWithLoop()
@@ -674,19 +672,15 @@ struct Number
     Number(int n)
         : n(n) {}
 
-    Number(const Number &other)
-        : n(other.n){}
-
-    Number &operator=(const Number &other) {
-        n = other.n;
-        return *this;
-    }
     bool operator==(const Number &other) const {
         return n == other.n;
     }
 
     int n;
 };
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(Number, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(Number)
 

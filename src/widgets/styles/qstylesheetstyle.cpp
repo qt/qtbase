@@ -38,10 +38,10 @@
 ****************************************************************************/
 
 #include <qglobal.h>
-
-#ifndef QT_NO_STYLE_STYLESHEET
-
 #include "qstylesheetstyle_p.h"
+
+#if QT_CONFIG(style_stylesheet)
+
 #include "private/qcssutil_p.h"
 #include <qdebug.h>
 #include <qapplication.h>
@@ -3903,8 +3903,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 if (inverted)
                     reverse = !reverse;
                 const bool indeterminate = pb->minimum == pb->maximum;
-                qreal fillRatio = indeterminate ? 0.50 : qreal(progress - minimum)/(maximum - minimum);
-                int fillWidth = int(rect.width() * fillRatio);
+                const auto fillRatio = indeterminate ? 0.50 : double(progress - minimum) / (maximum - minimum);
+                const auto fillWidth = static_cast<int>(rect.width() * fillRatio);
                 int chunkWidth = fillWidth;
                 if (subRule.hasContentsSize()) {
                     QSize sz = subRule.size();
@@ -4415,14 +4415,18 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         break;
 
     case PE_IndicatorColumnViewArrow:
+#if QT_CONFIG(itemviews)
         if (const QStyleOptionViewItem *viewOpt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             bool reverse = (viewOpt->direction == Qt::RightToLeft);
             pseudoElement = reverse ? PseudoElement_LeftArrow : PseudoElement_RightArrow;
-        } else {
+        } else
+#endif
+        {
             pseudoElement = PseudoElement_RightArrow;
         }
         break;
 
+#if QT_CONFIG(itemviews)
     case PE_IndicatorBranch:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TreeViewBranch);
@@ -4437,6 +4441,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             }
         }
         return;
+#endif // QT_CONFIG(itemviews)
 
     case PE_PanelTipLabel:
         if (!rule.hasDrawable())
@@ -4898,6 +4903,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     QSize sz = rule.adjustSize(csz);
 
     switch (ct) {
+#if QT_CONFIG(spinbox)
     case CT_SpinBox: // ### hopelessly broken QAbstractSpinBox (part 1)
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             // Add some space for the up/down buttons
@@ -4915,6 +4921,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             return sz;
         }
         break;
+#endif // QT_CONFIG(spinbox)
     case CT_ToolButton:
         if (rule.hasBox() || !rule.hasNativeBorder() || !rule.baseStyleCanDraw())
             sz += QSize(3, 3); // ### broken QToolButton
@@ -6024,4 +6031,4 @@ QT_END_NAMESPACE
 
 #include "moc_qstylesheetstyle_p.cpp"
 
-#endif // QT_NO_STYLE_STYLESHEET
+#endif // QT_CONFIG(style_stylesheet)

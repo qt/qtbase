@@ -510,11 +510,6 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         return QVariant(keyBoardAutoRepeatRateMS());
 #endif
     case QPlatformIntegration::ShowIsMaximized:
-#ifndef QT_NO_CLIPBOARD
-        return qt_windowsIsTabletMode(d->m_clipboard.clipboardViewer());
-#else
-        break;
-#endif
     case QPlatformIntegration::StartDragTime:
     case QPlatformIntegration::StartDragDistance:
     case QPlatformIntegration::KeyboardInputInterval:

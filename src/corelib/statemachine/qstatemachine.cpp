@@ -2024,7 +2024,9 @@ void QStateMachinePrivate::processEvents(EventProcessingMode processingMode)
         if (QThread::currentThread() == q->thread()) {
             _q_process();
             break;
-        } // fallthrough -- processing must be done in the machine thread
+        }
+        // processing must be done in the machine thread, so:
+        Q_FALLTHROUGH();
     case QueuedProcessing:
         processingScheduled = true;
         QMetaObject::invokeMethod(q, "_q_process", Qt::QueuedConnection);

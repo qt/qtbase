@@ -267,11 +267,6 @@ const int QXcbClipboard::clipboard_timeout = 5000;
 
 QXcbClipboard::QXcbClipboard(QXcbConnection *c)
     : QXcbObject(c), QPlatformClipboard()
-    , m_requestor(XCB_NONE)
-    , m_owner(XCB_NONE)
-    , m_incr_active(false)
-    , m_clipboard_closing(false)
-    , m_incr_receive_time(0)
 {
     Q_ASSERT(QClipboard::Clipboard == 0);
     Q_ASSERT(QClipboard::Selection == 1);

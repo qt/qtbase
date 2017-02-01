@@ -80,7 +80,6 @@ QXcbSystemTrayTracker::QXcbSystemTrayTracker(QXcbConnection *connection,
     , m_selection(selection)
     , m_trayAtom(trayAtom)
     , m_connection(connection)
-    , m_trayWindow(0)
 {
 }
 

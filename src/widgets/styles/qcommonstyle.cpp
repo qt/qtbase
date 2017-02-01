@@ -1099,7 +1099,7 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
                         || opt->shape == QTabBar::TriangularEast
                         || opt->shape == QTabBar::TriangularWest;
     if (verticalTabs)
-        tr.setRect(0, 0, tr.height(), tr.width()); //0, 0 as we will have a translate transform
+        tr.setRect(0, 0, tr.height(), tr.width()); // 0, 0 as we will have a translate transform
 
     int verticalShift = proxyStyle->pixelMetric(QStyle::PM_TabBarTabShiftVertical, opt, widget);
     int horizontalShift = proxyStyle->pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, opt, widget);
@@ -1122,7 +1122,7 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
     // right widget
     if (!opt->rightButtonSize.isEmpty()) {
         tr.setRight(tr.right() - 4 -
-        (verticalTabs ? opt->rightButtonSize.height() : opt->rightButtonSize.width()));
+            (verticalTabs ? opt->rightButtonSize.height() : opt->rightButtonSize.width()));
     }
 
     // icon
@@ -1134,12 +1134,12 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
         }
         QSize tabIconSize = opt->icon.actualSize(iconSize,
                         (opt->state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled,
-                        (opt->state & QStyle::State_Selected) ? QIcon::On : QIcon::Off  );
-        // High-dpi icons do not need adjustmet; make sure tabIconSize is not larger than iconSize
+                        (opt->state & QStyle::State_Selected) ? QIcon::On : QIcon::Off);
+        // High-dpi icons do not need adjustment; make sure tabIconSize is not larger than iconSize
         tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.height()));
 
         *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
-                    tabIconSize.width(), tabIconSize .height());
+                    tabIconSize.width(), tabIconSize.height());
         if (!verticalTabs)
             *iconRect = proxyStyle->visualRect(opt->direction, opt->rect, *iconRect);
         tr.setLeft(tr.left() + tabIconSize.width() + 4);
@@ -5226,9 +5226,11 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_Splitter_OpaqueResize:
         ret = true;
         break;
+#if QT_CONFIG(itemviews)
     case SH_ItemView_ScrollMode:
         ret = QAbstractItemView::ScrollPerItem;
         break;
+#endif
     default:
         ret = 0;
         break;

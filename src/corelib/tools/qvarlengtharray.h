@@ -77,7 +77,7 @@ public:
         : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array))
     {
         if (args.size())
-            append(args.begin(), args.size());
+            append(args.begin(), int(args.size()));
     }
 #endif
 

@@ -197,6 +197,7 @@ Type Moc::parseType()
                 prev();
                 break;
             }
+            Q_FALLTHROUGH();
         case CHAR:
         case SHORT:
         case INT:

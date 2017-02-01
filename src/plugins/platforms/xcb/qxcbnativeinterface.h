@@ -129,7 +129,7 @@ private:
 
     const QByteArray m_genericEventFilterType;
 
-    xcb_atom_t m_sysTraySelectionAtom;
+    xcb_atom_t m_sysTraySelectionAtom = XCB_ATOM_NONE;
 
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
 

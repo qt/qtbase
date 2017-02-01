@@ -996,11 +996,20 @@
 #ifdef __cplusplus
 # include <utility>
 # if defined(Q_OS_QNX)
-// QNX: test if we are using libcpp (Dinkumware-based).
-// Older versions (QNX 650) do not support C++11 features
+// By default, QNX 7.0 uses libc++ (from LLVM) and
+// QNX 6.X uses Dinkumware's libcpp. In all versions,
+// it is also possible to use GNU libstdc++.
+
+// For Dinkumware, some features must be disabled
+// (mostly because of library problems).
+// Dinkumware is assumed when __GLIBCXX__ (GNU libstdc++)
+// and _LIBCPP_VERSION (LLVM libc++) are both absent.
+#  if !defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
+
+// Older versions of libcpp (QNX 650) do not support C++11 features
 // _HAS_* macros are set to 1 by toolchains that actually include
 // Dinkum C++11 libcpp.
-#  if !defined(__GLIBCXX__)
+
 #   if !defined(_HAS_CPP0X) || !_HAS_CPP0X
 // Disable C++11 features that depend on library support
 #    undef Q_COMPILER_INITIALIZER_LISTS
@@ -1017,7 +1026,7 @@
 // Disable constexpr support on QNX even if the compiler supports it
 #    undef Q_COMPILER_CONSTEXPR
 #   endif // !_HAS_CONSTEXPR
-#  endif // !__GLIBCXX__
+#  endif // !__GLIBCXX__ && !_LIBCPP_VERSION
 # endif // Q_OS_QNX
 # if (defined(Q_CC_CLANG) || defined(Q_CC_INTEL)) && defined(Q_OS_MAC) && defined(__GNUC_LIBSTD__) \
     && ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)

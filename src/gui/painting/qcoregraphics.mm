@@ -135,6 +135,8 @@ NSImage *qt_mac_create_nsimage(const QIcon &icon, int defaultSize)
         availableSizes << QSize(defaultSize, defaultSize);
     foreach (QSize size, availableSizes) {
         QPixmap pm = icon.pixmap(size);
+        if (pm.isNull())
+            continue;
         QImage image = pm.toImage();
         CGImageRef cgImage = qt_mac_toCGImage(image);
         NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
@@ -473,6 +475,8 @@ QMacCGContext::QMacCGContext(QPaintDevice *paintDevice) : context(0)
     context = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
                                 8, image->bytesPerLine(), colorspace, flags);
     CGContextTranslateCTM(context, 0, image->height());
+    const qreal devicePixelRatio = paintDevice->devicePixelRatioF();
+    CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
     CGContextScaleCTM(context, 1, -1);
 }
 

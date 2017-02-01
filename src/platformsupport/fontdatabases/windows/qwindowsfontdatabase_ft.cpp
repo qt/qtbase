@@ -362,8 +362,15 @@ static int QT_WIN_CALLBACK populateFontFamilies(const LOGFONT *logFont, const TE
             if (!key && ttf && qt_localizedName(faceName))
                 key = findFontKey(qt_getEnglishName(faceName));
         }
-        if (key)
+        if (key) {
             QPlatformFontDatabase::registerFontFamily(faceName);
+            // Register current font's english name as alias
+            if (ttf && qt_localizedName(faceName)) {
+                const QString englishName = qt_getEnglishName(faceName);
+                if (!englishName.isEmpty())
+                    QPlatformFontDatabase::registerAliasToFontFamily(faceName, englishName);
+            }
+        }
     }
     return 1; // continue
 }
@@ -378,7 +385,9 @@ void QWindowsFontDatabaseFT::populateFontDatabase()
     EnumFontFamiliesEx(dummy, &lf, populateFontFamilies, 0, 0);
     ReleaseDC(0, dummy);
     // Work around EnumFontFamiliesEx() not listing the system font
-    QPlatformFontDatabase::registerFontFamily(QWindowsFontDatabase::systemDefaultFont().family());
+    QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().family();
+    if (QPlatformFontDatabase::resolveFontFamilyAlias(systemDefaultFamily) == systemDefaultFamily)
+        QPlatformFontDatabase::registerFontFamily(systemDefaultFamily);
 }
 
 QFontEngine * QWindowsFontDatabaseFT::fontEngine(const QFontDef &fontDef, void *handle)

@@ -161,6 +161,8 @@ Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QHostAddress)
 
 inline bool operator ==(QHostAddress::SpecialAddress address1, const QHostAddress &address2)
 { return address2 == address1; }
+inline bool operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
+{ return rhs != lhs; }
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, const QHostAddress &);

@@ -99,6 +99,7 @@ private slots:
     void task_51271();
 
     void convertFromImageNoDetach();
+    void convertFromImageNoDetach2();
     void convertFromImageDetach();
     void convertFromImageCacheKey();
 
@@ -764,6 +765,33 @@ void tst_QPixmap::convertFromImageNoDetach()
     const QImage constOrig = orig;
     const QImage constCopy = copy;
     QCOMPARE(constOrig.bits(), constCopy.bits());
+}
+
+void tst_QPixmap::convertFromImageNoDetach2()
+{
+    QPixmap randomPixmap(10, 10);
+    if (randomPixmap.handle()->classId() != QPlatformPixmap::RasterClass)
+        QSKIP("Test only valid for raster pixmaps");
+
+    //first get the screen format
+    QImage::Format screenFormat = randomPixmap.toImage().format();
+    QVERIFY(screenFormat != QImage::Format_Invalid);
+    if (screenFormat != QImage::Format_RGB32 &&
+        screenFormat != QImage::Format_ARGB32_Premultiplied)
+        QSKIP("Test only valid for platforms with RGB32 pixmaps");
+
+    QImage orig(100,100, QImage::Format_ARGB32_Premultiplied);
+    orig.fill(Qt::white);
+
+    const uchar *origBits = orig.constBits();
+
+    QPixmap pix = QPixmap::fromImage(std::move(orig));
+    QImage copy = pix.toImage();
+
+    QVERIFY(!copy.hasAlphaChannel());
+    QCOMPARE(copy.format(), QImage::Format_RGB32);
+
+    QCOMPARE(origBits, copy.constBits());
 }
 
 void tst_QPixmap::convertFromImageDetach()

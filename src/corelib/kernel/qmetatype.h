@@ -1413,17 +1413,17 @@ namespace QtPrivate
         static inline const QMetaObject *value() { return Q_NULLPTR; }
     };
     template<typename T>
-    struct MetaObjectForType<T*, typename QEnableIf<IsPointerToTypeDerivedFromQObject<T*>::Value>::Type>
+    struct MetaObjectForType<T*, typename std::enable_if<IsPointerToTypeDerivedFromQObject<T*>::Value>::type>
     {
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
     };
     template<typename T>
-    struct MetaObjectForType<T, typename QEnableIf<IsGadgetHelper<T>::Value>::Type>
+    struct MetaObjectForType<T, typename std::enable_if<IsGadgetHelper<T>::Value>::type>
     {
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
     };
     template<typename T>
-    struct MetaObjectForType<T, typename QEnableIf<IsQEnumHelper<T>::Value>::Type >
+    struct MetaObjectForType<T, typename std::enable_if<IsQEnumHelper<T>::Value>::type >
     {
         static inline const QMetaObject *value() { return qt_getEnumMetaObject(T()); }
     };
@@ -2009,7 +2009,7 @@ struct SharedPointerMetaTypeIdHelper<SMART_POINTER<T>, true> \
 }; \
 template<typename T> \
 struct MetaTypeSmartPointerHelper<SMART_POINTER<T> , \
-        typename QEnableIf<IsPointerToTypeDerivedFromQObject<T*>::Value >::Type> \
+        typename std::enable_if<IsPointerToTypeDerivedFromQObject<T*>::Value>::type> \
 { \
     static bool registerConverter(int id) \
     { \

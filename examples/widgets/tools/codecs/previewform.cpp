@@ -159,8 +159,7 @@ PreviewForm::PreviewForm(QWidget *parent)
         new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     okButton = buttonBox->button(QDialogButtonBox::Ok);
 
-    typedef void(QComboBox::*ComboBoxIntSignal)(int);
-    connect(encodingComboBox, static_cast<ComboBoxIntSignal>(&QComboBox::activated),
+    connect(encodingComboBox, QOverload<int>::of(&QComboBox::activated),
             this, &PreviewForm::updateTextEdit);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);

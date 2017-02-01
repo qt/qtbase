@@ -40,6 +40,16 @@
 
 #ifdef BAD_TIMER_RESOLUTION
 static const char timerError[] = "On this platform, consistent timing is not working properly due to bad timer resolution";
+
+#  define WAIT_FOR_STOPPED(animation, duration) \
+       QTest::qWait(duration); \
+       if (animation.state() != QAbstractAnimation::Stopped) \
+           QEXPECT_FAIL("", timerError, Abort); \
+       QCOMPARE(animation.state(), QAbstractAnimation::Stopped)
+#else
+// Use QTRY_COMPARE with one additional timer tick
+#  define WAIT_FOR_STOPPED(animation, duration) \
+       QTRY_COMPARE_WITH_TIMEOUT(animation.state(), QAbstractAnimation::Stopped, (duration))
 #endif
 
 class TestablePauseAnimation : public QPauseAnimation
@@ -108,11 +118,10 @@ void tst_QPauseAnimation::changeDirectionWhileRunning()
     TestablePauseAnimation animation;
     animation.setDuration(400);
     animation.start();
-    QTest::qWait(100);
-    QCOMPARE(animation.state(), QAbstractAnimation::Running);
+    QTRY_COMPARE(animation.state(), QAbstractAnimation::Running);
     animation.setDirection(QAbstractAnimation::Backward);
-    QTest::qWait(animation.totalDuration() + 50);
-    QCOMPARE(animation.state(), QAbstractAnimation::Stopped);
+    const int expectedDuration = animation.totalDuration() + 100;
+    WAIT_FOR_STOPPED(animation, expectedDuration);
 }
 
 void tst_QPauseAnimation::noTimerUpdates_data()
@@ -137,14 +146,9 @@ void tst_QPauseAnimation::noTimerUpdates()
     animation.setDuration(duration);
     animation.setLoopCount(loopCount);
     animation.start();
-    QTest::qWait(animation.totalDuration() + 100);
+    const int expectedDuration = animation.totalDuration() + 150;
+    WAIT_FOR_STOPPED(animation, expectedDuration);
 
-#ifdef BAD_TIMER_RESOLUTION
-    if (animation.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", timerError, Abort);
-#endif
-
-    QCOMPARE(animation.state(), QAbstractAnimation::Stopped);
     const int expectedLoopCount = 1 + loopCount;
 
 #ifdef BAD_TIMER_RESOLUTION
@@ -166,13 +170,9 @@ void tst_QPauseAnimation::multiplePauseAnimations()
 
     animation.start();
     animation2.start();
-    QTest::qWait(animation.totalDuration() + 100);
 
-#ifdef BAD_TIMER_RESOLUTION
-    if (animation.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", timerError, Abort);
-#endif
-    QCOMPARE(animation.state(), QAbstractAnimation::Stopped);
+    const int expectedDuration = animation.totalDuration() + 150;
+    WAIT_FOR_STOPPED(animation, expectedDuration);
 
 #ifdef BAD_TIMER_RESOLUTION
     if (animation2.state() != QAbstractAnimation::Running)
@@ -192,13 +192,7 @@ void tst_QPauseAnimation::multiplePauseAnimations()
 #endif
     QCOMPARE(animation2.m_updateCurrentTimeCount, 2);
 
-    QTest::qWait(550);
-
-#ifdef BAD_TIMER_RESOLUTION
-    if (animation2.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", timerError, Abort);
-#endif
-    QCOMPARE(animation2.state(), QAbstractAnimation::Stopped);
+    WAIT_FOR_STOPPED(animation2, 600);
 
 #ifdef BAD_TIMER_RESOLUTION
     if (animation2.m_updateCurrentTimeCount != 3)
@@ -229,13 +223,9 @@ void tst_QPauseAnimation::pauseAndPropertyAnimations()
     QCOMPARE(pause.state(), QAbstractAnimation::Running);
     QCOMPARE(pause.m_updateCurrentTimeCount, 2);
 
-    QTest::qWait(animation.totalDuration() + 100);
+    const int expectedDuration = animation.totalDuration() + 150;
+    WAIT_FOR_STOPPED(animation, expectedDuration);
 
-#ifdef BAD_TIMER_RESOLUTION
-    if (animation.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", timerError, Abort);
-#endif
-    QCOMPARE(animation.state(), QAbstractAnimation::Stopped);
     QCOMPARE(pause.state(), QAbstractAnimation::Stopped);
     QVERIFY(pause.m_updateCurrentTimeCount > 3);
 }
@@ -405,13 +395,8 @@ void tst_QPauseAnimation::multipleSequentialGroups()
     // This is a pretty long animation so it tends to get rather out of sync
     // when using the consistent timer, so run for an extra half second for good
     // measure...
-    QTest::qWait(group.totalDuration() + 500);
-
-#ifdef BAD_TIMER_RESOLUTION
-    if (group.state() != QAbstractAnimation::Stopped)
-        QEXPECT_FAIL("", timerError, Abort);
-#endif
-    QCOMPARE(group.state(), QAbstractAnimation::Stopped);
+    const int expectedDuration = group.totalDuration() + 550;
+    WAIT_FOR_STOPPED(group, expectedDuration);
 
 #ifdef BAD_TIMER_RESOLUTION
     if (subgroup1.state() != QAbstractAnimation::Stopped)
@@ -449,8 +434,9 @@ void tst_QPauseAnimation::zeroDuration()
     TestablePauseAnimation animation;
     animation.setDuration(0);
     animation.start();
-    QTest::qWait(animation.totalDuration() + 100);
-    QCOMPARE(animation.state(), QAbstractAnimation::Stopped);
+    const int expectedDuration = animation.totalDuration() + 150;
+    WAIT_FOR_STOPPED(animation, expectedDuration);
+
     QCOMPARE(animation.m_updateCurrentTimeCount, 1);
 }
 

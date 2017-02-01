@@ -15,8 +15,3 @@ build_all:!build_pass {
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/sql/sqlbrowser
 INSTALLS += target
-
-
-wince {
-    DEPLOYMENT_PLUGIN += qsqlite
-}

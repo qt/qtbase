@@ -283,7 +283,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAndRelaxed(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndAndRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         // implement fetchAndAnd on top of testAndSet
         T tmp = BaseClass::load(_q_value);
@@ -294,7 +294,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAndAcquire(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndAndAcquire(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         T tmp = BaseClass::fetchAndAndRelaxed(_q_value, operand);
         BaseClass::acquireMemoryFence(_q_value);
@@ -302,21 +302,21 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAndRelease(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndAndRelease(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndAndRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAndOrdered(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndAndOrdered(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndAndRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndOrRelaxed(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndOrRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         // implement fetchAndOr on top of testAndSet
         T tmp = BaseClass::load(_q_value);
@@ -327,7 +327,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndOrAcquire(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndOrAcquire(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         T tmp = BaseClass::fetchAndOrRelaxed(_q_value, operand);
         BaseClass::acquireMemoryFence(_q_value);
@@ -335,21 +335,21 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndOrRelease(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndOrRelease(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndOrRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndOrOrdered(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndOrOrdered(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndOrRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndXorRelaxed(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndXorRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         // implement fetchAndXor on top of testAndSet
         T tmp = BaseClass::load(_q_value);
@@ -360,7 +360,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndXorAcquire(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndXorAcquire(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         T tmp = BaseClass::fetchAndXorRelaxed(_q_value, operand);
         BaseClass::acquireMemoryFence(_q_value);
@@ -368,14 +368,14 @@ template <typename BaseClass> struct QGenericAtomicOps
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndXorRelease(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndXorRelease(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         BaseClass::releaseMemoryFence(_q_value);
         return BaseClass::fetchAndXorRelaxed(_q_value, operand);
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndXorOrdered(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
+    T fetchAndXorOrdered(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
     {
         BaseClass::orderedMemoryFence(_q_value);
         return BaseClass::fetchAndXorRelaxed(_q_value, operand);

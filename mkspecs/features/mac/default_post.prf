@@ -1,9 +1,5 @@
 load(default_post)
 
-# Ensure that we process sdk.prf first, as it will update QMAKE_CXX
-# and friends that other features/extra compilers may depend on.
-sdk: load(sdk)
-
 !no_objective_c:CONFIG += objective_c
 
 qt {
@@ -72,9 +68,9 @@ macx-xcode {
     only_active_arch.build = debug
     QMAKE_MAC_XCODE_SETTINGS += only_active_arch
 } else {
-    VALID_ARCHS =
-    device|!simulator: VALID_ARCHS += $$QMAKE_APPLE_DEVICE_ARCHS
-    simulator: VALID_ARCHS += $$QMAKE_APPLE_SIMULATOR_ARCHS
+    device|!simulator: VALID_DEVICE_ARCHS = $$QMAKE_APPLE_DEVICE_ARCHS
+    simulator: VALID_SIMULATOR_ARCHS = $$QMAKE_APPLE_SIMULATOR_ARCHS
+    VALID_ARCHS = $$VALID_DEVICE_ARCHS $$VALID_SIMULATOR_ARCHS
 
     isEmpty(VALID_ARCHS): \
         error("QMAKE_APPLE_DEVICE_ARCHS or QMAKE_APPLE_SIMULATOR_ARCHS must contain at least one architecture")
@@ -93,6 +89,78 @@ macx-xcode {
     QMAKE_LFLAGS += $$arch_flags
 
     QMAKE_PCH_ARCHS = $$VALID_ARCHS
+
+    macos: deployment_target = $$QMAKE_MACOSX_DEPLOYMENT_TARGET
+    ios: deployment_target = $$QMAKE_IOS_DEPLOYMENT_TARGET
+    tvos: deployment_target = $$QMAKE_TVOS_DEPLOYMENT_TARGET
+    watchos: deployment_target = $$QMAKE_WATCHOS_DEPLOYMENT_TARGET
+
+    # If we're doing a simulator and device build, device and simulator
+    # architectures use different paths and flags for the sysroot and
+    # deployment target switch, so we must multiplex them across multiple
+    # architectures using -Xarch. Otherwise we fall back to the simple path.
+    # This is not strictly necessary, but results in cleaner command lines
+    # and makes it easier for people to override EXPORT_VALID_ARCHS to limit
+    # individual rules to a different set of architecture(s) from the overall
+    # build (such as machtest in QtCore).
+    simulator:device {
+        QMAKE_XARCH_CFLAGS =
+        QMAKE_XARCH_LFLAGS =
+        QMAKE_EXTRA_VARIABLES += QMAKE_XARCH_CFLAGS QMAKE_XARCH_LFLAGS
+
+        for (arch, VALID_ARCHS) {
+            contains(VALID_SIMULATOR_ARCHS, $$arch) {
+                sdk = $$simulator.sdk
+                version_identifier = $$simulator.deployment_identifier
+            } else {
+                sdk = $$device.sdk
+                version_identifier = $$device.deployment_identifier
+            }
+
+            version_min_flags = \
+                -Xarch_$${arch} \
+                -m$${version_identifier}-version-min=$$deployment_target
+            QMAKE_XARCH_CFLAGS_$${arch} = $$version_min_flags \
+                -Xarch_$${arch} \
+                -isysroot$$xcodeSDKInfo(Path, $$sdk)
+            QMAKE_XARCH_LFLAGS_$${arch} = $$version_min_flags \
+                -Xarch_$${arch} \
+                -Wl,-syslibroot,$$xcodeSDKInfo(Path, $$sdk)
+
+            QMAKE_XARCH_CFLAGS += $(EXPORT_QMAKE_XARCH_CFLAGS_$${arch})
+            QMAKE_XARCH_LFLAGS += $(EXPORT_QMAKE_XARCH_LFLAGS_$${arch})
+
+            QMAKE_EXTRA_VARIABLES += \
+                QMAKE_XARCH_CFLAGS_$${arch} \
+                QMAKE_XARCH_LFLAGS_$${arch}
+        }
+
+        QMAKE_CFLAGS += $(EXPORT_QMAKE_XARCH_CFLAGS)
+        QMAKE_CXXFLAGS += $(EXPORT_QMAKE_XARCH_CFLAGS)
+        QMAKE_LFLAGS += $(EXPORT_QMAKE_XARCH_LFLAGS)
+    } else {
+        simulator: \
+            version_identifier = $$simulator.deployment_identifier
+        else: \
+            version_identifier = $$device.deployment_identifier
+        version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
+        QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH $$version_min_flag
+        QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH $$version_min_flag
+        QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK_PATH $$version_min_flag
+    }
+
+    # Enable precompiled headers for multiple architectures
+    QMAKE_CFLAGS_USE_PRECOMPILE =
+    for (arch, VALID_ARCHS) {
+        QMAKE_CFLAGS_USE_PRECOMPILE += \
+            -Xarch_$${arch} \
+            -include${QMAKE_PCH_OUTPUT_$${arch}}
+    }
+    QMAKE_CXXFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
+    QMAKE_OBJCFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
+    QMAKE_OBJCXXFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
+
+    QMAKE_PCH_OUTPUT_EXT = _${QMAKE_PCH_ARCH}$${QMAKE_PCH_OUTPUT_EXT}
 }
 
 cache(QMAKE_XCODE_DEVELOPER_PATH, stash)

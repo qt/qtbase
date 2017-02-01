@@ -37,6 +37,9 @@
 **
 ****************************************************************************/
 
+// see comment in ../platformdefs_win.h.
+#define WIN32_LEAN_AND_MEAN 1
+
 #include "qnetworksession_impl.h"
 #include "qbearerengine_impl.h"
 
@@ -207,10 +210,10 @@ QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
     if (!engine || state != QNetworkSession::Connected || !publicConfig.isValid())
         return QNetworkInterface();
 
-    QString interface = engine->getInterfaceFromId(activeConfig.identifier());
-    if (interface.isEmpty())
+    QString iface = engine->getInterfaceFromId(activeConfig.identifier());
+    if (iface.isEmpty())
         return QNetworkInterface();
-    return QNetworkInterface::interfaceFromName(interface);
+    return QNetworkInterface::interfaceFromName(iface);
 }
 #endif
 

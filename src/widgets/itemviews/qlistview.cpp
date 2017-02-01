@@ -2370,7 +2370,7 @@ QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) c
 {
     if (flowPositions.isEmpty()
         || segmentPositions.isEmpty()
-        || index.row() >= flowPositions.count())
+        || index.row() >= flowPositions.count() - 1)
         return QListViewItem();
 
     const int segment = qBinarySearch<int>(segmentStartRows, index.row(),

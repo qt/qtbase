@@ -427,6 +427,7 @@ Option::init(int argc, char **argv)
             //return ret == QMAKE_CMDLINE_SHOW_USAGE ? usage(argv[0]) : false;
         }
         globals->qmake_args = args;
+        globals->qmake_extra_args = cmdstate.extraargs;
     }
     globals->commitCommandLineArguments(cmdstate);
     globals->debugLevel = Option::debug_level;
@@ -636,11 +637,6 @@ void
 qmakeAddCacheClear(qmakeCacheClearFunc func, void **data)
 {
     cache_items.append(new QMakeCacheClearItem(func, data));
-}
-
-QString qmake_absoluteLocation()
-{
-    return Option::globals->qmake_abslocation;
 }
 
 QString qmake_libraryInfoFile()

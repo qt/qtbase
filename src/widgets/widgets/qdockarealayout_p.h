@@ -167,6 +167,7 @@ public:
 
     void clear();
     bool isEmpty() const;
+    bool onlyHasPlaceholders() const;
     bool hasFixedSize() const;
     QList<int> findSeparator(const QPoint &pos) const;
     int next(int idx) const;

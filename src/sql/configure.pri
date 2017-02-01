@@ -26,6 +26,7 @@ defineTest(qtConfLibrary_psqlConfig) {
         export($${1}.includedir)
         return(true)
     }
+    qtLog("pg_config not found.")
     return(false)
 }
 
@@ -74,6 +75,7 @@ defineTest(qtConfLibrary_mysqlConfig) {
         export($${1}.includedir)
         return(true)
     }
+    qtLog("mysql_config not found.")
     return(false)
 }
 

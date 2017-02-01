@@ -194,8 +194,11 @@ static QVector<QComposeTableElement> loadCache(const QComposeCacheFileHeader &co
 static bool saveCache(const QComposeCacheFileHeader &info, const QVector<QComposeTableElement> &vec)
 {
     const QString filePath = getCacheFilePath();
+#if QT_CONFIG(temporaryfile)
     QSaveFile outputFile(filePath);
-
+#else
+    QFile outputFile(filePath);
+#endif
     if (!outputFile.open(QIODevice::WriteOnly))
         return false;
     const char *data = reinterpret_cast<const char*>(&info);
@@ -207,7 +210,11 @@ static bool saveCache(const QComposeCacheFileHeader &info, const QVector<QCompos
 
     if (outputFile.write(data, size) != size)
         return false;
+#if QT_CONFIG(temporaryfile)
     return outputFile.commit();
+#else
+    return true;
+#endif
 }
 
 TableGenerator::TableGenerator() : m_state(NoErrors),

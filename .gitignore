@@ -89,6 +89,7 @@ bin/makeqpf*
 bin/pixeltool*
 bin/qmake*
 bin/qdoc*
+bin/qfloat16-tables*
 bin/qt3to4*
 bin/qttracereplay*
 bin/rcc*
@@ -120,6 +121,7 @@ config.opt
 config.status
 config.summary
 config.log
+config.cache
 mkspecs/default
 mkspecs/default-host
 mkspecs/qconfig.pri
@@ -127,13 +129,16 @@ mkspecs/qdevice.pri
 mkspecs/qfeatures.pri
 mkspecs/qhost.pri
 moc_*.cpp
+qmake/qmake
 qmake/qmake.exe
 qmake/Makefile.bak
 qmake/qmake_pch.pch
 src/corelib/global/qconfig.cpp
 src/corelib/global/qconfig.h
 src/corelib/global/qconfig.h.qmake
+src/corelib/global/qconfig_p.h
 src/corelib/global/qfeatures.h
+src/corelib/global/qfloat16tables.cpp
 src/platformsupport/*_interface.*
 src/platformsupport/*_adaptor.*
 ui_*.h
@@ -155,6 +160,9 @@ translations/*_untranslated.ts
 qrc_*.cpp
 *.version
 *.version.in
+qt*-config.h
+qt*-config_p.h
+qt*-config.pri
 
 # Test generated files
 QObject.log

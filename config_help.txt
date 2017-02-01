@@ -72,6 +72,8 @@ Build options:
   -debug ............... Build Qt with debugging turned on [no]
   -debug-and-release ... Build two versions of Qt, with and without
                          debugging turned on [yes] (Apple and Windows only)
+  -optimize-debug ...... Enable debug-friendly optimizations in debug builds
+                         [auto] (Not supported with MSVC)
   -optimized-tools ..... Build optimized host tools even in debug build [no]
   -force-debug-info .... Create symbol files for release builds [no]
   -separate-debug-info . Split off debug information to separate files [no]
@@ -104,7 +106,6 @@ Build options:
 
   -c++std <edition> .... Select C++ standard <edition> [c++1z/c++14/c++11]
                          (Not supported with MSVC)
-  -rtti ................ Build with Runtime Type Information [yes] (MSVC only)
 
   -sse2 ................ Use SSE2 instructions [auto]
   -sse3/-ssse3/-sse4.1/-sse4.2/-avx/-avx2/-avx512

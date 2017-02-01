@@ -1069,6 +1069,67 @@ const uint * QT_FASTCALL qt_fetchUntransformed_888_neon(uint *buffer, const Oper
     return buffer;
 }
 
+#if defined(Q_PROCESSOR_ARM_64) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+template<bool RGBA>
+static inline void convertARGBToARGB32PM_neon(uint *buffer, const uint *src, int count)
+{
+    int i = 0;
+    const uint8x16_t rgbaMask  = { 2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15};
+    const uint8x8_t shuffleMask = { 3, 3, 3, 3, 7, 7, 7, 7};
+    const uint32x4_t blendMask = vdupq_n_u32(0xff000000);
+
+    for (; i < count - 3; i += 4) {
+        uint32x4_t srcVector = vld1q_u32(src + i);
+        uint32x4_t alphaVector = vshrq_n_u32(srcVector, 24);
+        uint32_t alphaSum = vaddvq_u32(alphaVector);
+        if (alphaSum) {
+            if (alphaSum != 255 * 4) {
+                if (RGBA)
+                    srcVector = vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(srcVector), rgbaMask));
+                const uint8x8_t s1 = vreinterpret_u8_u32(vget_low_u32(srcVector));
+                const uint8x8_t s2 = vreinterpret_u8_u32(vget_high_u32(srcVector));
+                const uint8x8_t alpha1 = vtbl1_u8(s1, shuffleMask);
+                const uint8x8_t alpha2 = vtbl1_u8(s2, shuffleMask);
+                uint16x8_t src1 = vmull_u8(s1, alpha1);
+                uint16x8_t src2 = vmull_u8(s2, alpha2);
+                src1 = vsraq_n_u16(src1, src1, 8);
+                src2 = vsraq_n_u16(src2, src2, 8);
+                const uint8x8_t d1 = vrshrn_n_u16(src1, 8);
+                const uint8x8_t d2 = vrshrn_n_u16(src2, 8);
+                const uint32x4_t d = vbslq_u32(blendMask, srcVector, vreinterpretq_u32_u8(vcombine_u8(d1, d2)));
+                vst1q_u32(buffer + i, d);
+            } else {
+                if (RGBA)
+                    vst1q_u32(buffer + i, vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(srcVector), rgbaMask)));
+                else if (buffer != src)
+                    vst1q_u32(buffer + i, srcVector);
+            }
+        } else {
+            vst1q_u32(buffer + i, vdupq_n_u32(0));
+        }
+    }
+
+    SIMD_EPILOGUE(i, count, 3) {
+        uint v = qPremultiply(src[i]);
+        buffer[i] = RGBA ? RGBA2ARGB(v) : v;
+    }
+}
+
+const uint *QT_FASTCALL convertARGB32ToARGB32PM_neon(uint *buffer, const uint *src, int count,
+                                                     const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_neon<false>(buffer, src, count);
+    return buffer;
+}
+
+const uint *QT_FASTCALL convertRGBA8888ToARGB32PM_neon(uint *buffer, const uint *src, int count,
+                                                       const QVector<QRgb> *, QDitherInfo *)
+{
+    convertARGBToARGB32PM_neon<true>(buffer, src, count);
+    return buffer;
+}
+#endif
+
 QT_END_NAMESPACE
 
 #endif // __ARM_NEON__

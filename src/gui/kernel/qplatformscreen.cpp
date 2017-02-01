@@ -533,4 +533,53 @@ void QPlatformScreen::setPowerState(PowerState state)
     Q_UNUSED(state);
 }
 
+/*!
+    Reimplement this function in subclass to return the list
+    of modes for this screen.
+
+    The default implementation returns a list with
+    only one mode from the current screen size and refresh rate.
+
+    \sa QPlatformScreen::geometry
+    \sa QPlatformScreen::refreshRate
+
+    \since 5.9
+*/
+QVector<QPlatformScreen::Mode> QPlatformScreen::modes() const
+{
+    QVector<QPlatformScreen::Mode> list;
+    list.append({geometry().size(), refreshRate()});
+    return list;
+}
+
+/*!
+    Reimplement this function in subclass to return the
+    index of the current mode from the modes list.
+
+    The default implementation returns 0.
+
+    \sa QPlatformScreen::modes
+
+    \since 5.9
+*/
+int QPlatformScreen::currentMode() const
+{
+    return 0;
+}
+
+/*!
+    Reimplement this function in subclass to return the preferred
+    mode index from the modes list.
+
+    The default implementation returns 0.
+
+    \sa QPlatformScreen::modes
+
+    \since 5.9
+*/
+int QPlatformScreen::preferredMode() const
+{
+    return 0;
+}
+
 QT_END_NAMESPACE

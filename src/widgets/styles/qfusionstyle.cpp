@@ -453,6 +453,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             drawPrimitive(PE_IndicatorArrowRight, option, painter, widget);
         break;
     }
+#if QT_CONFIG(tabbar)
     case PE_FrameTabBarBase:
         if (const QStyleOptionTabBarBase *tbb
                 = qstyleoption_cast<const QStyleOptionTabBarBase *>(option)) {
@@ -489,6 +490,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->restore();
         }
         return;
+#endif // QT_CONFIG(tabbar)
     case PE_PanelScrollAreaCorner: {
         painter->save();
         QColor alphaOutline = outline;
@@ -938,6 +940,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     case PE_FrameTabWidget:
         painter->save();
         painter->fillRect(option->rect.adjusted(0, 0, -1, -1), tabFrameColor);
+#if QT_CONFIG(tabwidget)
         if (const QStyleOptionTabWidgetFrame *twf = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option)) {
             QColor borderColor = outline.lighter(110);
             QRect rect = option->rect.adjusted(0, 0, -1, -1);
@@ -960,6 +963,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->drawRect(rect.adjusted(1, 1, -1, -1));
 
         }
+#endif // QT_CONFIG(tabwidget)
         painter->restore();
         break ;
 
@@ -1057,6 +1061,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         }
         break;
     }
+#if QT_CONFIG(rubberband)
     case CE_RubberBand:
         if (qstyleoption_cast<const QStyleOptionRubberBand *>(option)) {
             QColor highlight = option->palette.color(QPalette::Active, QPalette::Highlight);
@@ -1082,6 +1087,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             painter->restore();
         }
         break;
+#endif //QT_CONFIG(rubberband)
     case CE_SizeGrip:
         painter->save();
     {
@@ -1097,6 +1103,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
     }
         painter->restore();
         break;
+#if QT_CONFIG(toolbar)
     case CE_ToolBar:
         if (const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(option)) {
             // Reserve the beveled appearance only for mainwindow toolbars
@@ -1217,6 +1224,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             painter->setPen(oldPen);
         }
         break;
+#endif // QT_CONFIG(toolbar)
     case CE_DockWidgetTitle:
         painter->save();
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(option)) {
@@ -1352,10 +1360,11 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             }
 
             int maxWidth = rect.width();
-            int minWidth = 0;
-            qreal progress = qMax(bar->progress, bar->minimum); // workaround for bug in QProgressBar
-            int progressBarWidth = (progress - bar->minimum) * qreal(maxWidth) / qMax(qreal(1.0), qreal(bar->maximum) - bar->minimum);
-            int width = indeterminate ? maxWidth : qMax(minWidth, progressBarWidth);
+            const auto progress = qMax(bar->progress, bar->minimum); // workaround for bug in QProgressBar
+            const auto totalSteps = qMax(Q_INT64_C(1), qint64(bar->maximum) - bar->minimum);
+            const auto progressSteps = qint64(progress) - bar->minimum;
+            const auto progressBarWidth = progressSteps * maxWidth / totalSteps;
+            int width = indeterminate ? maxWidth : progressBarWidth;
 
             bool reverse = (!vertical && (bar->direction == Qt::RightToLeft)) || vertical;
             if (inverted)
@@ -1450,8 +1459,9 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             inverted = bar->invertedAppearance;
             if (vertical)
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width()); // flip width and height
-            const int progressIndicatorPos = (bar->progress - qreal(bar->minimum)) * rect.width() /
-                    qMax(qreal(1.0), qreal(bar->maximum) - bar->minimum);
+            const auto totalSteps = qMax(Q_INT64_C(1), qint64(bar->maximum) - bar->minimum);
+            const auto progressSteps = qint64(bar->progress) - bar->minimum;
+            const auto progressIndicatorPos = progressSteps * rect.width() / totalSteps;
             if (progressIndicatorPos >= 0 && progressIndicatorPos <= rect.width())
                 leftRect = QRect(rect.left(), rect.top(), progressIndicatorPos, rect.height());
             if (vertical)
@@ -1548,7 +1558,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             bool ignoreCheckMark = false;
             int checkcol = qMax(menuItem->maxIconWidth, 20);
 
-            if (qobject_cast<const QComboBox*>(widget) ||
+            if (
+#if QT_CONFIG(combobox)
+                qobject_cast<const QComboBox*>(widget) ||
+#endif
                 (option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool()))
                 ignoreCheckMark = true; //ignore the checkmarks provided by the QComboMenuDelegate
 
@@ -1605,8 +1618,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
 
                 int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
                 QSize iconSize(smallIconSize, smallIconSize);
+#if QT_CONFIG(combobox)
                 if (const QComboBox *combo = qobject_cast<const QComboBox*>(widget))
                     iconSize = combo->iconSize();
+#endif
                 if (checked)
                     pixmap = menuItem->icon.pixmap(iconSize, mode, QIcon::On);
                 else
@@ -1791,6 +1806,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
     }
         painter->restore();
         break;
+#if QT_CONFIG(tabbar)
     case CE_TabBarTabShape:
         painter->save();
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
@@ -1906,6 +1922,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         }
         painter->restore();
         break;
+#endif //QT_CONFIG(tabbar)
     default:
         QCommonStyle::drawControl(element,option,painter,widget);
         break;
@@ -1991,6 +2008,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
         }
         painter->restore();
         break;
+#if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QPixmap cache;
@@ -2141,6 +2159,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             painter->drawPixmap(spinBox->rect.topLeft(), cache);
         }
         break;
+#endif // QT_CONFIG(spinbox)
     case CC_TitleBar:
         painter->save();
         if (const QStyleOptionTitleBar *titleBar = qstyleoption_cast<const QStyleOptionTitleBar *>(option)) {
@@ -2401,6 +2420,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
         }
         painter->restore();
         break;
+#if QT_CONFIG(slider)
     case CC_ScrollBar:
         painter->save();
         if (const QStyleOptionSlider *scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
@@ -2709,6 +2729,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
         }
         painter->restore();
         break;;
+#endif // QT_CONFIG(slider)
     case CC_ComboBox:
         painter->save();
         if (const QStyleOptionComboBox *comboBox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
@@ -2806,6 +2827,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
         }
         painter->restore();
         break;
+#if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
             QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
@@ -3016,10 +3038,13 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             painter->setPen(oldPen);
         }
         break;
+#endif // QT_CONFIG(slider)
+#if QT_CONFIG(dial)
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
             QStyleHelper::drawDial(dial, painter);
         break;
+#endif
     default:
         QCommonStyle::drawComplexControl(control, option, painter, widget);
         break;
@@ -3215,9 +3240,11 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
                 }
             }
             else if (!menuItem->icon.isNull()) {
+#if QT_CONFIG(combobox)
                 if (const QComboBox *combo = qobject_cast<const QComboBox*>(widget)) {
                     newSize.setHeight(qMax(combo->iconSize().height() + 2, newSize.height()));
                 }
+#endif
             }
             newSize.setWidth(newSize.width() + 12);
             newSize.setWidth(qMax(newSize.width(), 120));
@@ -3250,12 +3277,22 @@ void QFusionStyle::polish(QWidget *widget)
 {
     QCommonStyle::polish(widget);
     if (qobject_cast<QAbstractButton*>(widget)
+#if QT_CONFIG(combobox)
             || qobject_cast<QComboBox *>(widget)
+#endif
+#if QT_CONFIG(progressbar)
             || qobject_cast<QProgressBar *>(widget)
+#endif
+#if QT_CONFIG(scrollbar)
             || qobject_cast<QScrollBar *>(widget)
+#endif
+#if QT_CONFIG(splitter)
             || qobject_cast<QSplitterHandle *>(widget)
+#endif
             || qobject_cast<QAbstractSlider *>(widget)
+#if QT_CONFIG(spinbox)
             || qobject_cast<QAbstractSpinBox *>(widget)
+#endif
             || (widget->inherits("QDockSeparator"))
             || (widget->inherits("QDockWidgetSeparator"))
             ) {
@@ -3279,12 +3316,22 @@ void QFusionStyle::unpolish(QWidget *widget)
 {
     QCommonStyle::unpolish(widget);
     if (qobject_cast<QAbstractButton*>(widget)
+#if QT_CONFIG(combobox)
             || qobject_cast<QComboBox *>(widget)
+#endif
+#if QT_CONFIG(progressbar)
             || qobject_cast<QProgressBar *>(widget)
+#endif
+#if QT_CONFIG(scrollbar)
             || qobject_cast<QScrollBar *>(widget)
+#endif
+#if QT_CONFIG(splitter)
             || qobject_cast<QSplitterHandle *>(widget)
+#endif
             || qobject_cast<QAbstractSlider *>(widget)
+#if QT_CONFIG(spinbox)
             || qobject_cast<QAbstractSpinBox *>(widget)
+#endif
             || (widget->inherits("QDockSeparator"))
             || (widget->inherits("QDockWidgetSeparator"))
             ) {
@@ -3309,6 +3356,7 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
     QRect rect = QCommonStyle::subControlRect(control, option, subControl, widget);
 
     switch (control) {
+#if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
             int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
@@ -3359,6 +3407,8 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             }
         }
         break;
+#endif // QT_CONFIG(slider)
+#if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             int center = spinbox->rect.height() / 2;
@@ -3396,7 +3446,7 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             rect = visualRect(spinbox->direction, spinbox->rect, rect);
         }
         break;
-
+#endif // QT_CONFIG(spinbox)
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             rect = option->rect;

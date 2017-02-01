@@ -517,6 +517,7 @@ public:
 
 #ifdef XCB_USE_XINPUT22
     bool xi2MouseEvents() const;
+    bool isTouchScreen(int id) const;
 #endif
 
 protected:
@@ -550,10 +551,9 @@ private:
     void destroyScreen(QXcbScreen *screen);
     void initializeScreens();
     bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
-
 #ifdef XCB_USE_XINPUT2
-    bool m_xi2Enabled;
-    int m_xi2Minor;
+    bool m_xi2Enabled = false;
+    int m_xi2Minor = 2;
     void initializeXInput2();
     void finalizeXInput2();
     void xi2SetupDevices();
@@ -567,20 +567,17 @@ private:
 #endif // XCB_USE_XINPUT22
 #ifndef QT_NO_TABLETEVENT
     struct TabletData {
-        TabletData() : deviceId(0), pointerType(QTabletEvent::UnknownPointer),
-            tool(QTabletEvent::Stylus), buttons(0), serialId(0), inProximity(false) { }
-        int deviceId;
-        QTabletEvent::PointerType pointerType;
-        QTabletEvent::TabletDevice tool;
-        Qt::MouseButtons buttons;
-        qint64 serialId;
-        bool inProximity;
+        int deviceId = 0;
+        QTabletEvent::PointerType pointerType = QTabletEvent::UnknownPointer;
+        QTabletEvent::TabletDevice tool = QTabletEvent::Stylus;
+        Qt::MouseButtons buttons = 0;
+        qint64 serialId = 0;
+        bool inProximity = false;
         struct ValuatorClassInfo {
-            ValuatorClassInfo() : minVal(0.), maxVal(0.), curVal(0.) { }
-            double minVal;
-            double maxVal;
-            double curVal;
-            int number;
+            double minVal = 0;
+            double maxVal = 0;
+            double curVal = 0;
+            int number = -1;
         };
         QHash<int, ValuatorClassInfo> valuatorInfo;
     };
@@ -592,12 +589,13 @@ private:
     TabletData *tabletDataForDevice(int id);
 #endif // !QT_NO_TABLETEVENT
     struct ScrollingDevice {
-        ScrollingDevice() : deviceId(0), verticalIndex(0), horizontalIndex(0), orientations(0), legacyOrientations(0) { }
-        int deviceId;
-        int verticalIndex, horizontalIndex;
-        double verticalIncrement, horizontalIncrement;
-        Qt::Orientations orientations;
-        Qt::Orientations legacyOrientations;
+        int deviceId = 0;
+        int verticalIndex = 0;
+        int horizontalIndex = 0;
+        double verticalIncrement = 0;
+        double horizontalIncrement = 0;
+        Qt::Orientations orientations = 0;
+        Qt::Orientations legacyOrientations = 0;
         QPointF lastScrollPosition;
     };
     void updateScrollingDevice(ScrollingDevice& scrollingDevice, int num_classes, void *classes);
@@ -608,36 +606,36 @@ private:
     static void xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event);
 #endif
 
-    xcb_connection_t *m_connection;
-    const xcb_setup_t *m_setup;
-    bool m_canGrabServer;
-    xcb_visualid_t m_defaultVisualId;
+    xcb_connection_t *m_connection = nullptr;
+    const xcb_setup_t *m_setup = nullptr;
+    const bool m_canGrabServer;
+    const xcb_visualid_t m_defaultVisualId;
 
     QList<QXcbVirtualDesktop *> m_virtualDesktops;
     QList<QXcbScreen *> m_screens;
-    int m_primaryScreenNumber;
+    int m_primaryScreenNumber = 0;
 
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
-    xcb_timestamp_t m_time;
-    xcb_timestamp_t m_netWmUserTime;
+    xcb_timestamp_t m_time = XCB_CURRENT_TIME;
+    xcb_timestamp_t m_netWmUserTime = XCB_CURRENT_TIME;
 
     QByteArray m_displayName;
 
-    QXcbKeyboard *m_keyboard;
+    QXcbKeyboard *m_keyboard = nullptr;
 #ifndef QT_NO_CLIPBOARD
-    QXcbClipboard *m_clipboard;
+    QXcbClipboard *m_clipboard = nullptr;
 #endif
 #ifndef QT_NO_DRAGANDDROP
-    QXcbDrag *m_drag;
+    QXcbDrag *m_drag = nullptr;
 #endif
     QScopedPointer<QXcbWMSupport> m_wmSupport;
-    QXcbNativeInterface *m_nativeInterface;
+    QXcbNativeInterface *m_nativeInterface = nullptr;
 
 #if defined(XCB_USE_XLIB)
-    void *m_xlib_display;
+    void *m_xlib_display = nullptr;
 #endif
-    QXcbEventReader *m_reader;
+    QXcbEventReader *m_reader = nullptr;
 #if defined(XCB_USE_XINPUT2)
     QHash<int, XInput2TouchDeviceData*> m_touchDevices;
 #ifdef XCB_USE_XINPUT22
@@ -670,29 +668,29 @@ private:
 
     QVector<PeekFunc> m_peekFuncs;
 
-    uint32_t xfixes_first_event;
-    uint32_t xrandr_first_event;
-    uint32_t xkb_first_event;
+    uint32_t xfixes_first_event = 0;
+    uint32_t xrandr_first_event = 0;
+    uint32_t xkb_first_event = 0;
 
-    bool has_xinerama_extension;
-    bool has_shape_extension;
-    bool has_randr_extension;
+    bool has_xinerama_extension = false;
+    bool has_shape_extension = false;
+    bool has_randr_extension = false;
     bool has_input_shape;
-    bool has_xkb;
+    bool has_xkb = false;
 
-    Qt::MouseButtons m_buttons;
+    Qt::MouseButtons m_buttons = 0;
 
-    QXcbWindow *m_focusWindow;
-    QXcbWindow *m_mouseGrabber;
-    QXcbWindow *m_mousePressWindow;
+    QXcbWindow *m_focusWindow = nullptr;
+    QXcbWindow *m_mouseGrabber = nullptr;
+    QXcbWindow *m_mousePressWindow = nullptr;
 
-    xcb_window_t m_clientLeader;
+    xcb_window_t m_clientLeader = 0;
     QByteArray m_startupId;
-    QXcbSystemTrayTracker *m_systemTrayTracker;
-    QXcbGlIntegration *m_glIntegration;
-    bool m_xiGrab;
+    QXcbSystemTrayTracker *m_systemTrayTracker = nullptr;
+    QXcbGlIntegration *m_glIntegration = nullptr;
+    bool m_xiGrab = false;
 
-    xcb_window_t m_qtSelectionOwner;
+    xcb_window_t m_qtSelectionOwner = 0;
 
     friend class QXcbEventReader;
 };

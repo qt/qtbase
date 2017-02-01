@@ -171,6 +171,7 @@ public:
     QRowsRemoval itemsBeingRemoved;
 
     QModelIndexPairList saved_persistent_indexes;
+    QList<QPersistentModelIndex> saved_layoutChange_parents;
 
     QHash<QModelIndex, Mapping *>::const_iterator create_mapping(
         const QModelIndex &source_parent) const;
@@ -1331,23 +1332,23 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<Q
     Q_UNUSED(hint); // We can't forward Hint because we might filter additional rows or columns
     saved_persistent_indexes.clear();
 
-    QList<QPersistentModelIndex> parents;
+    saved_layoutChange_parents.clear();
     for (const QPersistentModelIndex &parent : sourceParents) {
         if (!parent.isValid()) {
-            parents << QPersistentModelIndex();
+            saved_layoutChange_parents << QPersistentModelIndex();
             continue;
         }
         const QModelIndex mappedParent = q->mapFromSource(parent);
         // Might be filtered out.
         if (mappedParent.isValid())
-            parents << mappedParent;
+            saved_layoutChange_parents << mappedParent;
     }
 
     // All parents filtered out.
-    if (!sourceParents.isEmpty() && parents.isEmpty())
+    if (!sourceParents.isEmpty() && saved_layoutChange_parents.isEmpty())
         return;
 
-    emit q->layoutAboutToBeChanged(parents);
+    emit q->layoutAboutToBeChanged(saved_layoutChange_parents);
     if (persistent.indexes.isEmpty())
         return;
 
@@ -1358,6 +1359,9 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersisten
 {
     Q_Q(QSortFilterProxyModel);
     Q_UNUSED(hint); // We can't forward Hint because we might filter additional rows or columns
+
+    if (!sourceParents.isEmpty() && saved_layoutChange_parents.isEmpty())
+        return;
 
     // Optimize: We only actually have to clear the mapping related to the contents of
     // sourceParents, not everything.
@@ -1373,21 +1377,8 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersisten
         source_index_mapping.clear();
     }
 
-    QList<QPersistentModelIndex> parents;
-    for (const QPersistentModelIndex &parent : sourceParents) {
-        if (!parent.isValid()) {
-            parents << QPersistentModelIndex();
-            continue;
-        }
-        const QModelIndex mappedParent = q->mapFromSource(parent);
-        if (mappedParent.isValid())
-            parents << mappedParent;
-    }
-
-    if (!sourceParents.isEmpty() && parents.isEmpty())
-        return;
-
-    emit q->layoutChanged(parents);
+    emit q->layoutChanged(saved_layoutChange_parents);
+    saved_layoutChange_parents.clear();
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeInserted(
@@ -1427,49 +1418,27 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsRemoved(
 void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeMoved(
     const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
-    Q_Q(QSortFilterProxyModel);
     // Because rows which are contiguous in the source model might not be contiguous
     // in the proxy due to sorting, the best thing we can do here is be specific about what
     // parents are having their children changed.
     // Optimize: Emit move signals if the proxy is not sorted. Will need to account for rows
     // being filtered out though.
 
-    saved_persistent_indexes.clear();
-
     QList<QPersistentModelIndex> parents;
-    parents << q->mapFromSource(sourceParent);
+    parents << sourceParent;
     if (sourceParent != destParent)
-      parents << q->mapFromSource(destParent);
-    emit q->layoutAboutToBeChanged(parents);
-    if (persistent.indexes.isEmpty())
-        return;
-    saved_persistent_indexes = store_persistent_indexes();
+        parents << destParent;
+    _q_sourceLayoutAboutToBeChanged(parents, QAbstractItemModel::NoLayoutChangeHint);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceRowsMoved(
     const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
-    Q_Q(QSortFilterProxyModel);
-
-    // Optimize: We only need to clear and update the persistent indexes which are children of
-    // sourceParent or destParent
-    qDeleteAll(source_index_mapping);
-    source_index_mapping.clear();
-
-    update_persistent_indexes(saved_persistent_indexes);
-    saved_persistent_indexes.clear();
-
-    if (dynamic_sortfilter && update_source_sort_column()) {
-        //update_source_sort_column might have created wrong mapping so we have to clear it again
-        qDeleteAll(source_index_mapping);
-        source_index_mapping.clear();
-    }
-
     QList<QPersistentModelIndex> parents;
-    parents << q->mapFromSource(sourceParent);
+    parents << sourceParent;
     if (sourceParent != destParent)
-      parents << q->mapFromSource(destParent);
-    emit q->layoutChanged(parents);
+        parents << destParent;
+    _q_sourceLayoutChanged(parents, QAbstractItemModel::NoLayoutChangeHint);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeInserted(
@@ -1531,42 +1500,21 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsRemoved(
 void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeMoved(
     const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
-    Q_Q(QSortFilterProxyModel);
-
-    saved_persistent_indexes.clear();
-
     QList<QPersistentModelIndex> parents;
-    parents << q->mapFromSource(sourceParent);
+    parents << sourceParent;
     if (sourceParent != destParent)
-      parents << q->mapFromSource(destParent);
-    emit q->layoutAboutToBeChanged(parents);
-
-    if (persistent.indexes.isEmpty())
-        return;
-    saved_persistent_indexes = store_persistent_indexes();
+        parents << destParent;
+    _q_sourceLayoutAboutToBeChanged(parents, QAbstractItemModel::NoLayoutChangeHint);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
-    Q_Q(QSortFilterProxyModel);
-
-    qDeleteAll(source_index_mapping);
-    source_index_mapping.clear();
-
-    update_persistent_indexes(saved_persistent_indexes);
-    saved_persistent_indexes.clear();
-
-    if (dynamic_sortfilter && update_source_sort_column()) {
-        qDeleteAll(source_index_mapping);
-        source_index_mapping.clear();
-    }
-
     QList<QPersistentModelIndex> parents;
-    parents << q->mapFromSource(sourceParent);
+    parents << sourceParent;
     if (sourceParent != destParent)
-      parents << q->mapFromSource(destParent);
-    emit q->layoutChanged(parents);
+        parents << destParent;
+    _q_sourceLayoutChanged(parents, QAbstractItemModel::NoLayoutChangeHint);
 }
 
 /*!

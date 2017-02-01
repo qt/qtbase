@@ -197,33 +197,59 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
 {
     Q_Q(QOpenGLVertexArrayObject);
 
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    QOpenGLContext *oldContext = 0;
+    QSurface *oldContextSurface = 0;
+    QScopedPointer<QOffscreenSurface> offscreenSurface;
+    if (context && context != ctx) {
+        oldContext = ctx;
+        oldContextSurface = ctx ? ctx->surface() : 0;
+        // Cannot just make the current surface current again with another context.
+        // The format may be incompatible and some platforms (iOS) may impose
+        // restrictions on using a window with different contexts. Create an
+        // offscreen surface (a pbuffer or a hidden window) instead to be safe.
+        offscreenSurface.reset(new QOffscreenSurface);
+        offscreenSurface->setFormat(context->format());
+        offscreenSurface->create();
+        if (context->makeCurrent(offscreenSurface.data())) {
+            ctx = context;
+        } else {
+            qWarning("QOpenGLVertexArrayObject::destroy() failed to make VAO's context current");
+            ctx = 0;
+        }
+    }
+
     if (context) {
         QObject::disconnect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
         context = 0;
     }
 
-    if (!vao)
-        return;
-
-    switch (vaoFuncsType) {
+    if (vao) {
+        switch (vaoFuncsType) {
 #ifndef QT_OPENGL_ES_2
-    case Core_3_2:
-        vaoFuncs.core_3_2->glDeleteVertexArrays(1, &vao);
-        break;
-    case Core_3_0:
-        vaoFuncs.core_3_0->glDeleteVertexArrays(1, &vao);
-        break;
+        case Core_3_2:
+            vaoFuncs.core_3_2->glDeleteVertexArrays(1, &vao);
+            break;
+        case Core_3_0:
+            vaoFuncs.core_3_0->glDeleteVertexArrays(1, &vao);
+            break;
 #endif
-    case ARB:
-    case APPLE:
-    case OES:
-        vaoFuncs.helper->glDeleteVertexArrays(1, &vao);
-        break;
-    default:
-        break;
+        case ARB:
+        case APPLE:
+        case OES:
+            vaoFuncs.helper->glDeleteVertexArrays(1, &vao);
+            break;
+        default:
+            break;
+        }
+
+        vao = 0;
     }
 
-    vao = 0;
+    if (oldContext && oldContextSurface) {
+        if (!oldContext->makeCurrent(oldContextSurface))
+            qWarning("QOpenGLVertexArrayObject::destroy() failed to restore current context");
+    }
 }
 
 /*!
@@ -354,37 +380,7 @@ QOpenGLVertexArrayObject::QOpenGLVertexArrayObject(QOpenGLVertexArrayObjectPriva
 */
 QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject()
 {
-    QOpenGLContext* ctx = QOpenGLContext::currentContext();
-
-    Q_D(QOpenGLVertexArrayObject);
-    QOpenGLContext *oldContext = 0;
-    QSurface *oldContextSurface = 0;
-    QScopedPointer<QOffscreenSurface> offscreenSurface;
-    if (d->context && ctx && d->context != ctx) {
-        oldContext = ctx;
-        oldContextSurface = ctx->surface();
-        // Cannot just make the current surface current again with another context.
-        // The format may be incompatible and some platforms (iOS) may impose
-        // restrictions on using a window with different contexts. Create an
-        // offscreen surface (a pbuffer or a hidden window) instead to be safe.
-        offscreenSurface.reset(new QOffscreenSurface);
-        offscreenSurface->setFormat(d->context->format());
-        offscreenSurface->create();
-        if (d->context->makeCurrent(offscreenSurface.data())) {
-            ctx = d->context;
-        } else {
-            qWarning("QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject() failed to make VAO's context current");
-            ctx = 0;
-        }
-    }
-
-    if (ctx)
-        destroy();
-
-    if (oldContext) {
-        if (!oldContext->makeCurrent(oldContextSurface))
-            qWarning("QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject() failed to restore current context");
-    }
+    destroy();
 }
 
 /*!

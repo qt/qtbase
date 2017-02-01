@@ -170,11 +170,11 @@
     \sa QMovie::stop()
 */
 
-#include "qglobal.h"
+#include "qmovie.h"
 
 #ifndef QT_NO_MOVIE
 
-#include "qmovie.h"
+#include "qglobal.h"
 #include "qimage.h"
 #include "qimagereader.h"
 #include "qpixmap.h"

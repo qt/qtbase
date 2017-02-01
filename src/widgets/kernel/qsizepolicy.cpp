@@ -395,6 +395,18 @@ void QSizePolicy::setControlType(ControlType type)
     \fn void QSizePolicy::transpose()
 
     Swaps the horizontal and vertical policies and stretches.
+
+    \sa transposed()
+*/
+
+/*!
+    \fn QSizePolicy QSizePolicy::transposed()
+    \since 5.9
+
+    Returns a size policy object with the horizontal and vertical
+    policies and stretches swapped.
+
+    \sa transpose()
 */
 
 /*!

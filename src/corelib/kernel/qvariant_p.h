@@ -177,6 +177,26 @@ inline void v_clear(QVariant::Private *d, T* = 0)
 
 }
 
+template <typename T>
+struct PrimitiveIsNull
+{
+public:
+    static bool isNull(const QVariant::Private *d)
+    {
+        return d->is_null;
+    }
+};
+
+template <>
+struct PrimitiveIsNull<std::nullptr_t>
+{
+public:
+    static bool isNull(const QVariant::Private *)
+    {
+        return true;
+    }
+};
+
 template<class Filter>
 class QVariantComparator {
     template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
@@ -268,7 +288,7 @@ class QVariantIsNull
     {
         static bool isNull(const QVariant::Private *d)
         {
-            return d->is_null;
+            return PrimitiveIsNull<T>::isNull(d);
         }
     };
 

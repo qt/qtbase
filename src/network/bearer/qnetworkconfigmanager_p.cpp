@@ -40,8 +40,6 @@
 #include "qnetworkconfigmanager_p.h"
 #include "qbearerplugin_p.h"
 
-#include <QtCore/private/qfactoryloader_p.h>
-
 #include <QtCore/qdebug.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qstringlist.h>
@@ -60,7 +58,9 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
-    : QObject(), pollTimer(0), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
+    : QObject(), pollTimer(0), mutex(QMutex::Recursive),
+      loader(QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")),
+      forcedPolling(0), firstUpdate(true)
 {
     qRegisterMetaType<QNetworkConfiguration>();
     qRegisterMetaType<QNetworkConfigurationPrivatePointer>();
@@ -365,7 +365,6 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         bool envOK  = false;
         const int skipGeneric = qEnvironmentVariableIntValue("QT_EXCLUDE_GENERIC_BEARER", &envOK);
         QBearerEngine *generic = 0;
-        static QFactoryLoader loader(QBearerEngineFactoryInterface_iid, QLatin1String("/bearer"));
         QFactoryLoader *l = &loader;
         const PluginKeyMap keyMap = l->keyMap();
         const PluginKeyMapConstIterator cend = keyMap.constEnd();

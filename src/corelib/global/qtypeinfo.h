@@ -124,7 +124,7 @@ struct QTypeInfoQuery : public QTypeInfo<T>
 
 // if QTypeInfo<T>::isRelocatable exists, use it
 template <typename T>
-struct QTypeInfoQuery<T, typename QtPrivate::QEnableIf<QTypeInfo<T>::isRelocatable || true>::Type> : public QTypeInfo<T>
+struct QTypeInfoQuery<T, typename std::enable_if<QTypeInfo<T>::isRelocatable || true>::type> : public QTypeInfo<T>
 {};
 
 /*!

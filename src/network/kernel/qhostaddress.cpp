@@ -282,21 +282,27 @@ bool QNetmaskAddress::setAddress(const QHostAddress &address)
             d->clear();
             return false;       // invalid IP-style netmask
 
-            // the rest always falls through
         case 254:
             ++netmask;
+            Q_FALLTHROUGH();
         case 252:
             ++netmask;
+            Q_FALLTHROUGH();
         case 248:
             ++netmask;
+            Q_FALLTHROUGH();
         case 240:
             ++netmask;
+            Q_FALLTHROUGH();
         case 224:
             ++netmask;
+            Q_FALLTHROUGH();
         case 192:
             ++netmask;
+            Q_FALLTHROUGH();
         case 128:
             ++netmask;
+            Q_FALLTHROUGH();
         case 0:
             break;
         }
@@ -1233,10 +1239,36 @@ QDebug operator<<(QDebug d, const QHostAddress &address)
 }
 #endif
 
+/*!
+    \since 5.0
+    \relates QHostAddress
+    Returns a hash of the host address \a key, using \a seed to seed the calculation.
+*/
 uint qHash(const QHostAddress &key, uint seed) Q_DECL_NOTHROW
 {
     return qHashBits(key.d->a6.c, 16, seed);
 }
+
+/*!
+    \relates QHostAddress
+    \fn operator==(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
+
+    Returns \c true if special address \a lhs is the same as host address \a rhs;
+    otherwise returns \c false.
+
+    \sa isEqual()
+*/
+
+/*!
+    \relates QHostAddress
+    \since 5.9
+    \fn operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
+
+    Returns \c false if special address \a lhs is the same as host address \a rhs;
+    otherwise returns \c true.
+
+    \sa isEqual()
+*/
 
 #ifndef QT_NO_DATASTREAM
 

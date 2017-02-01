@@ -279,16 +279,8 @@ NSRect qt_mac_flipRect(const QRect &rect)
 
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 {
-    if (buttonNum == 0)
-        return Qt::LeftButton;
-    if (buttonNum == 1)
-        return Qt::RightButton;
-    if (buttonNum == 2)
-        return Qt::MiddleButton;
-    if (buttonNum >= 3 && buttonNum <= 31) { // handle XButton1 and higher via logical shift
-        return Qt::MouseButton(uint(Qt::MiddleButton) << (buttonNum - 3));
-    }
-    // else error: buttonNum too high, or negative
+    if (buttonNum >= 0 && buttonNum <= 31)
+        return Qt::MouseButton(1 << buttonNum);
     return Qt::NoButton;
 }
 

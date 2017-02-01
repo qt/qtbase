@@ -53,8 +53,8 @@
 
 #include <QtCore/qstack.h>
 
-#ifndef QT_NO_TREEWIDGET
 #include "qtreewidgetitemiterator.h"
+#if QT_CONFIG(treewidget)
 
 QT_BEGIN_NAMESPACE
 
@@ -103,6 +103,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_TREEWIDGET
+#endif // QT_CONFIG(treewidget)
 
 #endif //QTREEWIDGETITEMITERATOR_P_H

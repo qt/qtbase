@@ -231,9 +231,9 @@ public:
     void raise(QDockWidget *widget);
     void setVerticalTabsEnabled(bool enabled);
     bool restoreDockWidget(QDockWidget *dockwidget);
-    QDockAreaLayoutInfo *dockInfo(QWidget *w);
 
 #ifndef QT_NO_TABBAR
+    QDockAreaLayoutInfo *dockInfo(QWidget *w);
     bool _documentMode;
     bool documentMode() const;
     void setDocumentMode(bool enabled);

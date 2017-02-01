@@ -54,7 +54,8 @@ static DotNET vsVersionFromString(const char *versionString)
         "10.0", NET2010,
         "11.0", NET2012,
         "12.0", NET2013,
-        "14.0", NET2015
+        "14.0", NET2015,
+        "15.0", NET2017
     };
     DotNET result = NETUnknown;
     for (const auto entry : mapping) {

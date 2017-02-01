@@ -699,10 +699,8 @@ QVariant QMYSQLResult::data(int field)
         }
         if(ok)
             return v;
-        else
-            return QVariant();
+        return QVariant();
     }
-        return QVariant(val.toDouble());
     case QVariant::Date:
         return qDateFromString(val);
     case QVariant::Time:
@@ -719,12 +717,11 @@ QVariant QMYSQLResult::data(int field)
         }
         return QVariant(ba);
     }
-    default:
     case QVariant::String:
+    default:
         return QVariant(val);
     }
-    qWarning("QMYSQLResult::data: unknown data type");
-    return QVariant();
+    Q_UNREACHABLE();
 }
 
 bool QMYSQLResult::isNull(int field)

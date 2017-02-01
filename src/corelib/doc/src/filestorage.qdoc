@@ -75,7 +75,7 @@ by a Sun SPARC running Solaris. You can also use a data stream to read/write
 raw unencoded binary data.
 
 For more details on the datatypes that QDataStream can serialize, see
-{Serializing Qt Data Types}.
+\l{Serializing Qt Data Types}.
 
 The QTextStream class provides a convenient interface for reading and
 writing text. QTextStream can operate on a QIODevice, a QByteArray or

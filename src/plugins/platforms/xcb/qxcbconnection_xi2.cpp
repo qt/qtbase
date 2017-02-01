@@ -52,14 +52,8 @@
 #include <X11/extensions/XI2proto.h>
 
 struct XInput2TouchDeviceData {
-    XInput2TouchDeviceData()
-    : xiDeviceInfo(0)
-    , qtTouchDevice(0)
-    , providesTouchOrientation(false)
-    {
-    }
-    XIDeviceInfo *xiDeviceInfo;
-    QTouchDevice *qtTouchDevice;
+    XIDeviceInfo *xiDeviceInfo = nullptr;
+    QTouchDevice *qtTouchDevice = nullptr;
     QHash<int, QWindowSystemInterface::TouchPoint> touchPoints;
     QHash<int, QPointF> pointPressedPosition; // in screen coordinates where each point was pressed
 
@@ -67,7 +61,7 @@ struct XInput2TouchDeviceData {
     QPointF firstPressedPosition;        // in screen coordinates where the first point was pressed
     QPointF firstPressedNormalPosition;  // device coordinates (0 to 1, 0 to 1) where the first point was pressed
     QSizeF size;                         // device size in mm
-    bool providesTouchOrientation;
+    bool providesTouchOrientation = false;
 };
 
 void QXcbConnection::initializeXInput2()
@@ -80,7 +74,7 @@ void QXcbConnection::initializeXInput2()
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     if (XQueryExtension(xDisplay, "XInputExtension", &m_xiOpCode, &m_xiEventBase, &m_xiErrorBase)) {
         int xiMajor = 2;
-        m_xi2Minor = 2; // try 2.2 first, needed for TouchBegin/Update/End
+        // try 2.2 first, needed for TouchBegin/Update/End
         if (XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) == BadRequest) {
             m_xi2Minor = 1; // for smooth scrolling 2.1 is enough
             if (XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) == BadRequest) {
@@ -1025,6 +1019,14 @@ Qt::MouseButton QXcbConnection::xiToQtMouseButton(uint32_t b)
     return Qt::NoButton;
 }
 
+bool QXcbConnection::isTouchScreen(int id) const
+{
+    auto device = m_touchDevices.value(id);
+    return device && device->qtTouchDevice
+        && device->qtTouchDevice->type() == QTouchDevice::TouchScreen;
+}
+
+#if QT_CONFIG(tabletevent)
 static QTabletEvent::TabletDevice toolIdToTabletDevice(quint32 toolId) {
     // keep in sync with wacom_intuos_inout() in Linux kernel driver wacom_wac.c
     switch (toolId) {
@@ -1058,7 +1060,6 @@ static QTabletEvent::TabletDevice toolIdToTabletDevice(quint32 toolId) {
     return QTabletEvent::Stylus;  // Safe default assumption if nonzero
 }
 
-#ifndef QT_NO_TABLETEVENT
 bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletData)
 {
     bool handled = true;

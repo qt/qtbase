@@ -757,6 +757,14 @@ void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
     updateBlockedStatusRecursion(window, shouldBeBlocked);
 }
 
+// Return whether the window needs to be notified about window blocked events.
+// As opposed to QGuiApplication::topLevelWindows(), embedded windows are
+// included in this list (QTBUG-18099).
+static inline bool needsWindowBlockedEvent(const QWindow *w)
+{
+    return w->isTopLevel() && w->type() != Qt::Desktop;
+}
+
 void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
 {
     self->modalWindowList.prepend(modal);
@@ -774,10 +782,8 @@ void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
         }
     }
 
-    QWindowList windows = QGuiApplication::topLevelWindows();
-    for (int i = 0; i < windows.count(); ++i) {
-        QWindow *window = windows.at(i);
-        if (!window->d_func()->blockedByModalWindow)
+    for (QWindow *window : qAsConst(QGuiApplicationPrivate::window_list)) {
+        if (needsWindowBlockedEvent(window) && !window->d_func()->blockedByModalWindow)
             updateBlockedStatus(window);
     }
 
@@ -788,10 +794,8 @@ void QGuiApplicationPrivate::hideModalWindow(QWindow *window)
 {
     self->modalWindowList.removeAll(window);
 
-    QWindowList windows = QGuiApplication::topLevelWindows();
-    for (int i = 0; i < windows.count(); ++i) {
-        QWindow *window = windows.at(i);
-        if (window->d_func()->blockedByModalWindow)
+    for (QWindow *window : qAsConst(QGuiApplicationPrivate::window_list)) {
+        if (needsWindowBlockedEvent(window) && window->d_func()->blockedByModalWindow)
             updateBlockedStatus(window);
     }
 }
@@ -2470,7 +2474,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     QWindow *window = e->window.data();
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QWindow *, StatesAndTouchPoints> windowsNeedingEvents;
-    bool velocityOnly = false;
+    bool stationaryTouchPointChangedVelocity = false;
 
     for (int i = 0; i < e->points.count(); ++i) {
         QTouchEvent::TouchPoint touchPoint = e->points.at(i);
@@ -2550,7 +2554,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (touchPoint.state() == Qt::TouchPointStationary) {
                 if (touchInfo.touchPoint.velocity() != touchPoint.velocity()) {
                     touchInfo.touchPoint.setVelocity(touchPoint.velocity());
-                    velocityOnly = true;
+                    stationaryTouchPointChangedVelocity = true;
                 }
             } else {
                 touchInfo.touchPoint = touchPoint;
@@ -2591,10 +2595,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             break;
         case Qt::TouchPointStationary:
             // don't send the event if nothing changed
-            if (velocityOnly)
-                eventType = QEvent::TouchUpdate;
-            else
+            if (!stationaryTouchPointChangedVelocity)
                 continue;
+            Q_FALLTHROUGH();
         default:
             eventType = QEvent::TouchUpdate;
             break;

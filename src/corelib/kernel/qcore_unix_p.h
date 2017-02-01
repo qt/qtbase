@@ -370,7 +370,7 @@ union qt_semun {
 };
 
 #ifndef QT_POSIX_IPC
-#ifndef QT_NO_SHAREDMEMORY
+#if QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 #ifndef Q_OS_ANDROID
 static inline key_t qt_safe_ftok(const QByteArray &filename, int proj_id)
 {
@@ -379,7 +379,7 @@ static inline key_t qt_safe_ftok(const QByteArray &filename, int proj_id)
     return ::ftok(filename.constData(), qHash(filename, proj_id));
 }
 #endif // !Q_OS_ANDROID
-#endif // !QT_NO_SHAREDMEMORY
+#endif // QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
 #endif // !QT_POSIX_IPC
 
 QT_END_NAMESPACE

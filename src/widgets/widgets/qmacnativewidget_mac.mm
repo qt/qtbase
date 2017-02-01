@@ -65,15 +65,11 @@
     but it cannot be shown on its own. It needs to be put into a window
     when it is created or later through a native call.
 
-    QMacNativeWidget works for either Carbon or Cocoa depending on how Qt was configured. If Qt is
-    using Carbon, QMacNativeWidget will embed into Carbon hierarchies. If Qt is
-    using Cocoa, QMacNativeWidget embeds into Cocoa hierarchies.
-
-    Here is an example of putting a QPushButton into a NSWindow:
+    Here is an example showing how to put a QPushButton into a NSWindow:
 
     \snippet qmacnativewidget/main.mm 0
 
-    Note that QMacNativeWidget requires knowledge of Carbon or Cocoa. All it
+    Note that QMacNativeWidget requires knowledge of Cocoa. All it
     does is get the Qt hierarchy into a window not owned by Qt. It is then up
     to the programmer to ensure it is placed correctly in the window and
     responds correctly to events.

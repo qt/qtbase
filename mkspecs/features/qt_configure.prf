@@ -183,7 +183,9 @@ defineTest(qtConfCommandline_redo) {
         qtConfAddError("No config.opt present - cannot redo configuration.")
         return()
     }
-    QMAKE_EXTRA_ARGS = $$cat($$OUT_PWD/config.opt, lines) $$QMAKE_EXTRA_ARGS
+    QMAKE_EXTRA_REDO_ARGS = $$cat($$OUT_PWD/config.opt, lines)
+    export(QMAKE_EXTRA_REDO_ARGS)  # just for config.log
+    QMAKE_EXTRA_ARGS = $$QMAKE_EXTRA_REDO_ARGS $$QMAKE_EXTRA_ARGS
     export(QMAKE_EXTRA_ARGS)
     QMAKE_REDO_CONFIG = true
     export(QMAKE_REDO_CONFIG)
@@ -241,8 +243,8 @@ defineTest(qtConfParseCommandLine) {
             opt = $$replace(c, "^--?(disable|no)-(.*)", "\\2")
             val = no
         } else: contains(c, "^--([^=]+)=(.*)") {
-            opt = $$replace(c, "^--?([^=]+)=(.*)", "\\1")
-            val = $$replace(c, "^--?([^=]+)=(.*)", "\\2")
+            opt = $$replace(c, "^--([^=]+)=(.*)", "\\1")
+            val = $$replace(c, "^--([^=]+)=(.*)", "\\2")
         } else: contains(c, "^--(.*)") {
             opt = $$replace(c, "^--(.*)", "\\1")
             val = yes
@@ -387,12 +389,15 @@ defineTest(qtConfPkgConfigPackageExists) {
     return(true)
 }
 
-defineReplace(qtConfPrepareArgs) {
-    arglist = $$split(1)
+defineReplace(qtSystemQuote) {
     args =
-    for (a, arglist): \
+    for (a, 1): \
         args += $$system_quote($$a)
     return($$args)
+}
+
+defineReplace(qtConfPrepareArgs) {
+    return($$qtSystemQuote($$split(1)))
 }
 
 defineTest(qtConfSetupLibraries) {
@@ -503,12 +508,16 @@ defineTest(qtConfLibrary_makeSpec) {
 # the library is found via pkg-config.
 defineTest(qtConfLibrary_pkgConfig) {
     pkg_config = $$qtConfPkgConfig($$eval($${1}.host))
-    isEmpty(pkg_config): \
+    isEmpty(pkg_config) {
+        qtLog("pkg-config use disabled globally.")
         return(false)
+    }
     args = $$qtConfPrepareArgs($$eval($${1}.args))
 
-    !qtConfPkgConfigPackageExists($$pkg_config, $$args): \
+    !qtConfPkgConfigPackageExists($$pkg_config, $$args) {
+        qtLog("pkg-config did not find package.")
         return(false)
+    }
 
     qtRunLoggedCommand("$$pkg_config --modversion $$args", version)|return(false)
     qtRunLoggedCommand("$$pkg_config --libs-only-L --libs-only-l $$args", $${1}.libs)|return(false)
@@ -619,8 +628,9 @@ defineTest(qtConfHandleLibrary) {
 
         qtLog("Trying source $$s (type $$t) of library $${1} ...")
 
-        !$$qtConfEvaluate($$eval($${spfx}.condition)) {
-            qtLog("  => source failed condition.")
+        cond = $$eval($${spfx}.condition)
+        !$$qtConfEvaluate($$cond) {
+            qtLog("  => source failed condition '$$cond'.")
             next()
         }
 
@@ -1367,33 +1377,21 @@ defineTest(qtConfCreateSummary) {
 }
 
 defineTest(qtConfPrintReport) {
-    for (n, QT_CONFIGURE_REPORT): \
-        logn($$n)
-    logn()
-
-    for (n, QT_CONFIGURE_NOTES) {
-        logn($$n)
-        logn()
-    }
-
-    for (w, QT_CONFIGURE_WARNINGS) {
-        logn($$w)
-        logn()
-    }
+    blocks = \
+        "$$join(QT_CONFIGURE_REPORT, $$escape_expand(\\n))" \
+        "$$join(QT_CONFIGURE_NOTES, $$escape_expand(\\n\\n))" \
+        "$$join(QT_CONFIGURE_WARNINGS, $$escape_expand(\\n\\n))"
 
     !isEmpty(QT_CONFIGURE_ERRORS) {
-        for (e, QT_CONFIGURE_ERRORS) {
-            logn($$e)
-            logn()
-        }
-        mention_config_log:!$$QMAKE_CONFIG_VERBOSE {
-            logn("Check config.log for details.")
-            logn()
-        }
-
-        !equals(config.input.continue, yes): \
-            error()
+        blocks += "$$join(QT_CONFIGURE_ERRORS, $$escape_expand(\\n\\n))"
+        mention_config_log:!$$QMAKE_CONFIG_VERBOSE: \
+            blocks += "Check config.log for details."
     }
+    blocks = "$$join(blocks, $$escape_expand(\\n\\n))"
+    logn($$blocks)
+    !isEmpty(QT_CONFIGURE_ERRORS):!equals(config.input.continue, yes): \
+        error()
+    write_file($$OUT_PWD/config.summary, blocks)|error()
 }
 
 defineTest(qtConfCheckErrors) {
@@ -1612,19 +1610,6 @@ defineTest(qtConfOutput_privateFeature) {
     }
 }
 
-# command line built-ins post-processing
-defineTest(qtConfOutput_builtins) {
-    QMAKE_CONFIG_VERBOSE = $$eval(config.input.verbose)
-    isEmpty(QMAKE_CONFIG_VERBOSE): \
-        QMAKE_CONFIG_VERBOSE = false
-    export(QMAKE_CONFIG_VERBOSE)
-
-    QMAKE_CONFIG_CACHE_USE = $$eval(config.input.cache_use)
-    isEmpty(QMAKE_CONFIG_CACHE_USE): \
-        QMAKE_CONFIG_CACHE_USE = all
-    export(QMAKE_CONFIG_CACHE_USE)
-}
-
 defineTest(qtConfProcessOneOutput) {
     feature = $${1}
     fpfx = $${currentConfig}.features.$${feature}
@@ -1709,16 +1694,25 @@ defineTest(qtConfProcessOutput) {
 # tie it all together
 #
 
-cfgs =
-isEmpty(_QMAKE_SUPER_CACHE_)|equals(OUT_PWD, $$dirname(_QMAKE_SUPER_CACHE_)) {
-    c = $$basename(_PRO_FILE_PWD_)
-    config.$${c}.dir = $$_PRO_FILE_PWD_
-    cfgs += $$c
-    !isEmpty(_QMAKE_SUPER_CACHE_) {
-        for (s, SUBDIRS) {
-            config.$${s}.dir = $$_PRO_FILE_PWD_/$${s}
-            cfgs += $$s
-        }
+!isEmpty(_QMAKE_SUPER_CACHE_):!equals(OUT_PWD, $$dirname(_QMAKE_SUPER_CACHE_)) {
+    # sub-repo within a top-level build; no need to configure anything.
+    !isEmpty(QMAKE_EXTRA_ARGS) {
+        # sub-projects don't get the extra args passed down automatically,
+        # so we can use their presence to detect misguided attempts to
+        # configure the repositories separately.
+        # caveat: a plain qmake call is indistinguishable from a recursion
+        # (by design), so we cannot detect this case.
+        error("You cannot configure $$TARGET separately within a top-level build.")
+    }
+    return()
+}
+
+config.$${TARGET}.dir = $$_PRO_FILE_PWD_
+cfgs = $$TARGET
+!isEmpty(_QMAKE_SUPER_CACHE_) {
+    for (s, SUBDIRS) {
+        config.$${s}.dir = $$_PRO_FILE_PWD_/$${s}
+        cfgs += $$s
     }
 }
 configsToProcess =
@@ -1727,8 +1721,11 @@ for (c, cfgs) {
     exists($$s/configure.json): \
         configsToProcess += $$c
 }
-isEmpty(configsToProcess): \
+isEmpty(configsToProcess) {
+    !isEmpty(QMAKE_EXTRA_ARGS): \
+        error("This module does not accept configure command line arguments.")
     return()
+}
 
 load(configure_base)
 
@@ -1771,6 +1768,7 @@ for (currentConfig, allConfigs): \
 QMAKE_SAVED_ARGS = $$QMAKE_EXTRA_ARGS
 QMAKE_REDO_CONFIG = false
 qtConfParseCommandLine()
+qtConfCheckErrors()
 
 for (currentConfig, allConfigs) {
     qtConfSetModuleName()
@@ -1784,6 +1782,9 @@ qtConfCheckErrors()
     QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_SUPER_CACHE_)/config.cache
 else: \
     QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_CACHE_)/config.cache
+QMAKE_CONFIG_CACHE_USE = $$eval(config.input.cache_use)
+isEmpty(QMAKE_CONFIG_CACHE_USE): \
+    QMAKE_CONFIG_CACHE_USE = all
 !equals(QMAKE_CONFIG_CACHE_USE, none) {
     include($$QMAKE_CONFIG_CACHE, , true)
     # this crudely determines when to discard the cache. this also catches the case
@@ -1798,9 +1799,17 @@ equals(QMAKE_CONFIG_CACHE_USE, none) {
     write_file($$QMAKE_CONFIG_CACHE, cont)
 }
 
+QMAKE_CONFIG_VERBOSE = $$eval(config.input.verbose)
+isEmpty(QMAKE_CONFIG_VERBOSE): \
+    QMAKE_CONFIG_VERBOSE = false
 QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
 !equals(QMAKE_CONFIG_CACHE_USE, all): \
     write_file($$QMAKE_CONFIG_LOG, "")
+else: \
+    write_file($$QMAKE_CONFIG_LOG, $$list($$escape_expand(\\n)), append)
+qtLog("Command line: $$qtSystemQuote($$QMAKE_SAVED_ARGS)")
+$$QMAKE_REDO_CONFIG: \
+    qtLog("config.opt: $$qtSystemQuote($$QMAKE_EXTRA_REDO_ARGS)")
 
 CONFIG += qt_conf_tests_allowed
 logn()
@@ -1861,3 +1870,20 @@ for (p, QMAKE_POST_CONFIGURE): \
 logn("Configure summary:")
 logn()
 qtConfPrintReport()
+
+# final notes for the user
+logn()
+logn("Qt is now configured for building. Just run '$$QMAKE_MAKE_NAME'.")
+pfx = $$[QT_INSTALL_PREFIX]
+equals(pfx, $$[QT_INSTALL_PREFIX/get]) {
+    logn("Once everything is built, Qt is installed.")
+    logn("You should NOT run '$$QMAKE_MAKE_NAME install'.")
+    logn("Note that this build cannot be deployed to other machines or devices.")
+} else {
+    logn("Once everything is built, you must run '$$QMAKE_MAKE_NAME install'.")
+    logn("Qt will be installed into '$$system_path($$pfx)'.")
+}
+logn()
+logn("Prior to reconfiguration, make sure you remove any leftovers from")
+logn("the previous build.")
+logn()

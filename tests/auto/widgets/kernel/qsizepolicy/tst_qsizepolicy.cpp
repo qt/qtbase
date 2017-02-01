@@ -41,9 +41,12 @@ class tst_QSizePolicy : public QObject
 private Q_SLOTS:
     void cleanup() { QVERIFY(QApplication::topLevelWidgets().isEmpty()); }
     void qtest();
+    void constExpr();
     void defaultValues();
     void getSetCheck_data() { data(); }
     void getSetCheck();
+    void transposed_data() { data(); }
+    void transposed();
     void dataStream();
     void horizontalStretch();
     void verticalStretch();
@@ -102,6 +105,19 @@ void tst_QSizePolicy::qtest()
 #undef CHECK2
 }
 
+void tst_QSizePolicy::constExpr()
+{
+/* gcc < 4.8.0 has problems with init'ing variant members in constexpr ctors */
+/* https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54922 */
+#if !defined(Q_CC_GNU) || defined(Q_CC_INTEL) || defined(Q_CC_CLANG) || Q_CC_GNU >= 408
+    // check that certain ctors are constexpr (compile-only):
+    { Q_CONSTEXPR QSizePolicy sp; Q_UNUSED(sp); }
+    { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(); Q_UNUSED(sp); }
+#else
+    QSKIP("QSizePolicy cannot be constexpr with this version of the compiler.");
+#endif
+}
+
 void tst_QSizePolicy::defaultValues()
 {
     {
@@ -145,6 +161,26 @@ void tst_QSizePolicy::getSetCheck()
     QCOMPARE(sp.hasHeightForWidth(),   hfw);
     QCOMPARE(sp.hasWidthForHeight(),   wfh);
     QCOMPARE(sp.expandingDirections(), ed);
+}
+
+void tst_QSizePolicy::transposed()
+{
+    FETCH_TEST_DATA;
+
+    const QSizePolicy tr = sp.transposed();
+
+    QCOMPARE(tr.horizontalPolicy(),    vp);  // swapped
+    QCOMPARE(tr.verticalPolicy(),      hp);  // swapped
+    QCOMPARE(tr.horizontalStretch(),   vst); // swapped
+    QCOMPARE(tr.verticalStretch(),     hst); // swapped
+    QCOMPARE(tr.controlType(),         ct);  // not swapped
+    QCOMPARE(tr.hasHeightForWidth(),   hfw); // not swapped (historic behavior)
+    QCOMPARE(tr.hasWidthForHeight(),   wfh); // not swapped (historic behavior)
+    QCOMPARE(tr.expandingDirections(), ed);  // swapped
+
+    // destructive test - keep last:
+    sp.transpose();
+    QCOMPARE(sp, tr);
 }
 
 static void makeRow(QSizePolicy sp, QSizePolicy::Policy hp, QSizePolicy::Policy vp,

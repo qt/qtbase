@@ -2070,9 +2070,24 @@
 
     Normally, the begin and end functions are capable of informing other components
     about changes to the model's underlying structure. For more complex changes to the
-    model's structure, perhaps involving internal reorganization or sorting of data,
-    it is necessary to emit the \l{QAbstractItemModel::layoutChanged()}{layoutChanged()}
-    signal to cause any attached views to be updated.
+    model's structure, perhaps involving internal reorganization, sorting of data or
+    any other structural change, it is necessary to perform the following sequence:
+
+    \list
+    \li Emit the \l{QAbstractItemModel::layoutAboutToBeChanged()}{layoutAboutToBeChanged()} signal
+    \li Update internal data which represents the structure of the model.
+    \li Update persistent indexes using \l{QAbstractItemModel::changePersistentIndexList()}{changePersistentIndexList()}
+    \li Emit the \l{QAbstractItemModel::layoutChanged()}{layoutChanged()} signal.
+    \endlist
+
+    This sequence can be used for any structural update in lieu of the more
+    high-level and convenient protected methods. For example, if a model of
+    two million rows needs to have all odd numbered rows removed, that
+    is 1 million discountiguous ranges of 1 element each. It would be
+    possible to use beginRemoveRows and endRemoveRows 1 million times, but
+    that would obviously be inefficient. Instead, this can be signalled as a
+    single layout change which updates all necessary persistent indexes at
+    once.
 
     \section3 Lazy population of model data
 

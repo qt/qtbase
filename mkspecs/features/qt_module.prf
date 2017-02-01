@@ -214,7 +214,10 @@ android: CONFIG += qt_android_deps no_linker_version_script
     } else {
         verscript_content = "Qt_$${QT_MAJOR_VERSION}_PRIVATE_API {" \
                             "    qt_private_api_tag*;"
-        for(header, SYNCQT.PRIVATE_HEADER_FILES): \
+
+        private_api_headers = $$SYNCQT.PRIVATE_HEADER_FILES $$SYNCQT.QPA_HEADER_FILES
+
+        for(header, private_api_headers): \
             verscript_content += "    @FILE:$${_PRO_FILE_PWD_}/$$header@"
         verscript_content += "};"
 
@@ -235,7 +238,7 @@ android: CONFIG += qt_android_deps no_linker_version_script
         verscriptprocess.name = linker version script ${QMAKE_FILE_BASE}
         verscriptprocess.input = verscript_in
         verscriptprocess.CONFIG += no_link target_predeps
-        for(header, SYNCQT.PRIVATE_HEADER_FILES): \
+        for(header, private_api_headers): \
             verscriptprocess.depends += $${_PRO_FILE_PWD_}/$$header
         verscriptprocess.output = $$verscript
         verscriptprocess.commands = perl $${PWD}/data/unix/findclasslist.pl < ${QMAKE_FILE_IN} > $@

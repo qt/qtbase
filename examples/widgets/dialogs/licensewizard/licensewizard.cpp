@@ -54,6 +54,8 @@
 
 #include "licensewizard.h"
 
+QString emailRegExp = QStringLiteral(".+@.+");
+
 //! [0] //! [1] //! [2]
 LicenseWizard::LicenseWizard(QWidget *parent)
     : QWizard(parent)
@@ -189,7 +191,7 @@ EvaluatePage::EvaluatePage(QWidget *parent)
 
     emailLabel = new QLabel(tr("&Email address:"));
     emailLineEdit = new QLineEdit;
-    emailLineEdit->setValidator(new QRegExpValidator(QRegExp(".*@.*"), this));
+    emailLineEdit->setValidator(new QRegularExpressionValidator(QRegularExpression(emailRegExp), this));
     emailLabel->setBuddy(emailLineEdit);
 
 //! [21]
@@ -264,7 +266,7 @@ DetailsPage::DetailsPage(QWidget *parent)
 
     emailLabel = new QLabel(tr("&Email address:"));
     emailLineEdit = new QLineEdit;
-    emailLineEdit->setValidator(new QRegExpValidator(QRegExp(".*@.*"), this));
+    emailLineEdit->setValidator(new QRegularExpressionValidator(QRegularExpression(emailRegExp), this));
     emailLabel->setBuddy(emailLineEdit);
 
     postalLabel = new QLabel(tr("&Postal address:"));

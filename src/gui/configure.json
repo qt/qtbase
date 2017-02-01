@@ -160,8 +160,8 @@
             "test": "unix/libpng",
             "sources": [
                 { "type": "pkgConfig", "args": "libpng" },
-                { "libs": "-llibpng", "condition": "config.msvc" },
-                { "libs": "-lpng", "condition": "!config.msvc" }
+                { "libs": "-llibpng -lzdll", "condition": "config.msvc" },
+                { "libs": "-lpng -lz", "condition": "!config.msvc" }
             ]
         },
         "mirclient": {
@@ -331,7 +331,7 @@
             "use": "egl xcb_xlib"
         },
         "egl-brcm": {
-            "label": "Broadcom EGL (Rasberry Pi)",
+            "label": "Broadcom EGL (Raspberry Pi)",
             "type": "compile",
             "test": "qpa/eglfs-brcm",
             "use": "egl bcm_host"
@@ -432,6 +432,7 @@
         },
         "directfb": {
             "label": "DirectFB",
+            "section": "Platform plugins",
             "autoDetect": false,
             "condition": "libs.directfb",
             "output": [ "privateFeature" ]
@@ -450,6 +451,7 @@
         },
         "direct2d": {
             "label": "Direct 2D",
+            "section": "Platform plugins",
             "condition": "config.win32 && !config.winrt && libs.direct2d",
             "output": [ "privateFeature" ]
         },
@@ -502,6 +504,7 @@
         },
         "integrityfb": {
             "label": "INTEGRITY framebuffer",
+            "section": "Platform plugins",
             "condition": "config.integrity",
             "output": [ "privateFeature" ]
         },
@@ -528,11 +531,13 @@
         },
         "linuxfb": {
             "label": "LinuxFB",
+            "section": "Platform plugins",
             "condition": "tests.linuxfb",
             "output": [ "privateFeature" ]
         },
         "mirclient": {
             "label": "Mir client",
+            "section": "Platform plugins",
             "condition": "libs.mirclient",
             "output": [ "privateFeature" ]
         },
@@ -608,12 +613,13 @@
         },
         "eglfs": {
             "label": "EGLFS",
+            "section": "Platform plugins",
             "autoDetect": "!config.android && !config.win32",
             "condition": "features.egl",
             "output": [ "privateFeature" ]
         },
         "eglfs_brcm": {
-            "label": "EGLFS Rasberry Pi",
+            "label": "EGLFS Raspberry Pi",
             "condition": "features.eglfs && tests.egl-brcm",
             "output": [ "privateFeature" ]
         },
@@ -644,6 +650,7 @@
         },
         "gif": {
             "label": "GIF",
+            "condition": "features.imageformatplugin",
             "output": [
                 "privateFeature",
                 { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_GIF" }
@@ -651,11 +658,13 @@
         },
         "ico": {
             "label": "ICO",
+            "condition": "features.imageformatplugin",
             "output": [ "privateFeature", "feature" ]
         },
         "jpeg": {
             "label": "JPEG",
             "disable": "input.libjpeg == 'no'",
+            "condition": "features.imageformatplugin",
             "output": [
                 "privateFeature",
                 { "type": "define", "negative": true, "name": "QT_NO_IMAGEFORMAT_JPEG" }
@@ -705,6 +714,7 @@
         },
         "xcb": {
             "label": "XCB",
+            "section": "Platform plugins",
             "autoDetect": "!config.darwin",
             "condition": "libs.xcb",
             "output": [ "privateFeature" ]

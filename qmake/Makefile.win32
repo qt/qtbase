@@ -14,35 +14,29 @@ QMKSRC = $(SOURCE_PATH)\qmake
 CXX               = icl
 LINKER            = link
 CFLAGS_EXTRA      = /Zc:forScope /Qstd=c++11
-!elseif "$(QMAKESPEC)" == "win32-clang-msvc2015"
+!elseif "$(QMAKESPEC)" == "win32-clang-msvc"
 CXX               = clang-cl
 LINKER            = link
 CFLAGS_EXTRA      = -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-value
 !else
 CXX               = cl
 LINKER            = link
-!  if "$(QMAKESPEC)" == "win32-msvc2013"
-CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS $(CFLAGS_CRT)
-!  elseif "$(QMAKESPEC)" == "win32-msvc2015" || "$(QMAKESPEC)" == "win32-msvc2017" || "$(QMAKESPEC)" == "win32-clang-msvc2015"
-CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS /Zc:strictStrings /w44456 /w44457 /w44458 /wd4577 $(CFLAGS_CRT)
-!  else
-!    error Unsupported compiler for this Makefile
-!  endif
+CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS \
+                    /wd4577 $(CFLAGS_CRT)
 !endif  # !win32-icc
 
-!if "$(QMAKESPEC)" != "win32-clang-msvc2015"
+!if "$(QMAKESPEC)" != "win32-clang-msvc"
 CFLAGS_PCH        = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch
 PCH_OBJECT        = qmake_pch.obj
 !endif
 
 CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
-              -W3 -nologo -O1 \
+              -W2 -nologo -O1 \
               $(CFLAGS_EXTRA) \
               -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac \
               -I$(INC_PATH) -I$(INC_PATH)\QtCore -I$(INC_PATH)\QtCore\$(QT_VERSION) -I$(INC_PATH)\QtCore\$(QT_VERSION)\QtCore \
               -I$(BUILD_PATH)\src\corelib\global \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
-              -I$(SOURCE_PATH)\tools\shared \
               -DQT_VERSION_STR=\"$(QT_VERSION)\" -DQT_VERSION_MAJOR=$(QT_MAJOR_VERSION) -DQT_VERSION_MINOR=$(QT_MINOR_VERSION) -DQT_VERSION_PATCH=$(QT_PATCH_VERSION) \
               -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
               -DQT_NO_FOREACH -DUNICODE
@@ -116,7 +110,6 @@ QTOBJS= \
 	quuid.obj \
 	qvector.obj \
 	qsettings.obj \
-	qlibraryinfo.obj \
 	qvariant.obj \
 	qsettings_win.obj \
 	qmetatype.obj \
@@ -132,12 +125,16 @@ QTOBJS= \
 	qjsonvalue.obj
 
 first all: $(BUILD_PATH)\bin\qmake.exe
+binary: $(BUILD_PATH)\qmake\qmake.exe
 
-$(BUILD_PATH)\bin\qmake.exe: $(OBJS) $(QTOBJS)
-	$(LINKER) $(LFLAGS) /OUT:$(BUILD_PATH)\bin\qmake.exe $(OBJS) $(QTOBJS) $(PCH_OBJECT) $(LIBS)
+$(BUILD_PATH)\bin\qmake.exe: $(OBJS) $(QTOBJS) qlibraryinfo.obj
+	$(LINKER) $(LFLAGS) /OUT:$(BUILD_PATH)\bin\qmake.exe $(OBJS) $(QTOBJS) qlibraryinfo.obj $(PCH_OBJECT) $(LIBS)
+
+$(BUILD_PATH)\qmake\qmake.exe: $(OBJS) $(QTOBJS) qlibraryinfo_final.obj
+	$(LINKER) $(LFLAGS) /OUT:$(BUILD_PATH)\qmake\qmake.exe $(OBJS) $(QTOBJS) qlibraryinfo_final.obj $(PCH_OBJECT) $(LIBS)
 
 clean::
-	-del $(QTOBJS)
+	-del $(QTOBJS) qlibraryinfo.obj qlibraryinfo_final.obj
 	-del $(OBJS)
 	-del qmake_pch.obj
 	-del qmake_pch.pch
@@ -147,6 +144,7 @@ clean::
 
 distclean:: clean
 	-del $(BUILD_PATH)\bin\qmake.exe
+	-del $(BUILD_PATH)\qmake\qmake.exe
 	-del Makefile
 
 .cpp.obj:
@@ -155,6 +153,9 @@ distclean:: clean
 $(OBJS): $(PCH_OBJECT)
 
 $(QTOBJS): $(PCH_OBJECT)
+
+qlibraryinfo.obj: $(PCH_OBJECT)
+qlibraryinfo_final.obj: $(PCH_OBJECT)
 
 qmake_pch.obj:
 	$(CXX) $(CXXFLAGS_BARE) -c -Yc -Fpqmake_pch.pch -TP $(QMKSRC)\qmake_pch.h
@@ -204,9 +205,12 @@ qmake_pch.obj:
 {$(SOURCE_PATH)\src\corelib\json}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
-{$(SOURCE_PATH)\tools\shared\windows}.cpp{}.obj::
-	$(CXX) $(CXXFLAGS) $<
-
 # Make sure qstring_compat.obj isn't compiled with PCH enabled
 qstring_compat.obj: $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp
 	$(CXX) -c $(CXXFLAGS_BARE) $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp
+
+qlibraryinfo.obj: $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp
+	$(CXX) $(CXXFLAGS) -DQT_BUILD_QMAKE_BOOTSTRAP $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp
+
+qlibraryinfo_final.obj: $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp $(BUILD_PATH)\src\corelib\global\qconfig.cpp
+	$(CXX) $(CXXFLAGS) -Foqlibraryinfo_final.obj $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp

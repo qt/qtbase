@@ -397,50 +397,6 @@ defineTest(qtConfTest_buildParts) {
     return(true)
 }
 
-defineTest(qtConfTest_checkCompiler) {
-    contains(QMAKE_CXX, ".*clang.*") {
-        qtRunLoggedCommand("$$QMAKE_CXX -v 2>&1", versionstr)|return(false)
-        versionstr = "$$versionstr"
-        contains(versionstr, "^Apple (clang|LLVM) version .*") {
-            $${1}.compilerDescription = "Apple Clang"
-            $${1}.compilerId = "apple_clang"
-            $${1}.compilerVersion = $$replace(versionstr, "^Apple (clang|LLVM) version ([0-9.]+).*$", "\\2")
-        } else: contains(versionstr, ".*clang version.*") {
-            $${1}.compilerDescription = "Clang"
-            $${1}.compilerId = "clang"
-            $${1}.compilerVersion = $$replace(versionstr, "^.*clang version ([0-9.]+).*", "\\1")
-        } else {
-            return(false)
-        }
-    } else: contains(QMAKE_CXX, ".*g\\+\\+.*") {
-        qtRunLoggedCommand("$$QMAKE_CXX -dumpversion", version)|return(false)
-        $${1}.compilerDescription = "GCC"
-        $${1}.compilerId = "gcc"
-        $${1}.compilerVersion = $$version
-    } else: contains(QMAKE_CXX, ".*icpc") {
-        qtRunLoggedCommand("$$QMAKE_CXX -dumpversion", version)|return(false)
-        $${1}.compilerDescription = "ICC"
-        $${1}.compilerId = "icc"
-        $${1}.compilerVersion = $$version
-    } else: msvc {
-        command = $$QMAKE_CXX /EP /nologo $$source $$system_quote($$QMAKE_CONFIG_TESTS_DIR/win/msvc_version.cpp)
-        qtRunLoggedCommand("$$command", version)|return(false)
-        version = "$$version"
-        $${1}.compilerDescription = "MSVC"
-        $${1}.compilerId = "cl"
-        $${1}.compilerVersion = $$replace(version, "^.*([0-9]{2})([0-9]{2})([0-9]{5}).*$", "\\1.\\2.\\3")
-    } else {
-        return(false)
-    }
-    $${1}.compilerDescription += $$eval($${1}.compilerVersion)
-    export($${1}.compilerDescription)
-    export($${1}.compilerId)
-    export($${1}.compilerVersion)
-    $${1}.cache += compilerDescription compilerId compilerVersion
-    export($${1}.cache)
-    return(true)
-}
-
 # custom outputs
 
 # this reloads the qmakespec as completely as reasonably possible.
@@ -453,13 +409,15 @@ defineTest(reloadSpec) {
         }
         # nobody's going to try to re-load the features above,
         # so don't bother with being selective.
-        QMAKE_INTERNAL_INCLUDED_FEATURES =
+        QMAKE_INTERNAL_INCLUDED_FEATURES = \
+            # loading it gets simulated below.
+            $$[QT_HOST_DATA/src]/mkspecs/features/device_config.prf \
+            # must be delayed until qdevice.pri is ready.
+            $$[QT_HOST_DATA/src]/mkspecs/features/mac/toolchain.prf \
+            $$[QT_HOST_DATA/src]/mkspecs/features/toolchain.prf
 
         _SAVED_CONFIG = $$CONFIG
         load(spec_pre)
-        load(device_config)  # avoid that the spec loads it later.
-        # discard possible settings from an earlier configure run.
-        discard_from($$[QT_HOST_DATA/get]/mkspecs/qdevice.pri)
         # qdevice.pri gets written too late (and we can't write it early
         # enough, as it's populated in stages, with later ones depending
         # on earlier ones). so inject its variables manually.
@@ -501,6 +459,10 @@ defineTest(qtConfOutput_prepareSpec) {
     export(XSPEC)
     QMAKESPEC = $$[QT_HOST_DATA/src]/mkspecs/$$XSPEC
     export(QMAKESPEC)
+
+    notes = $$cat($$OUT_PWD/.config.notes, lines)
+    !isEmpty(notes): \
+        qtConfAddNote("Also available for $$notes")
 
     # deviceOptions() below contains conditionals coming form the spec,
     # so this cannot be delayed for a batch reload.
@@ -623,9 +585,8 @@ defineTest(qtConfOutput_prepareOptions) {
 
     export($${currentConfig}.output.devicePro)
 
-    # reload the spec to make the settings actually take effect.
-    !isEmpty($${currentConfig}.output.devicePro): \
-        reloadSpec()
+    # if any settings were made, the spec will be reloaded later
+    # to make them take effect.
 }
 
 defineTest(qtConfOutput_machineTuple) {
@@ -710,6 +671,7 @@ defineReplace(printHostPaths) {
         $$printInstallPath(HostLibraries, hostlibdir, lib) \
         $$printInstallPath(HostData, hostdatadir, .) \
         "Sysroot=$$config.input.sysroot" \
+        "SysrootifyPrefix=$$qmake_sysrootify" \
         "TargetSpec=$$XSPEC" \
         "HostSpec=$$[QMAKE_SPEC]"
     return($$ret)
@@ -818,39 +780,55 @@ defineTest(qtConfOutput_preparePaths) {
     addConfStr($$config.rel_input.examplesdir)
     addConfStr($$config.rel_input.testsdir)
 
+    QT_CONFIGURE_STR_OFFSETS_ALL = $$QT_CONFIGURE_STR_OFFSETS
+    QT_CONFIGURE_STRS_ALL = $$QT_CONFIGURE_STRS
+    QT_CONFIGURE_STR_OFFSETS =
+    QT_CONFIGURE_STRS =
+
+    addConfStr($$config.input.sysroot)
+    addConfStr($$qmake_sysrootify)
+    addConfStr($$config.rel_input.hostbindir)
+    addConfStr($$config.rel_input.hostlibdir)
+    addConfStr($$config.rel_input.hostdatadir)
+    addConfStr($$XSPEC)
+    addConfStr($$[QMAKE_SPEC])
+
     $${currentConfig}.output.qconfigSource = \
         "/* Installation date */" \
         "static const char qt_configure_installation     [12+11]  = \"qt_instdate=2012-12-20\";" \
         "" \
         "/* Installation Info */" \
         "static const char qt_configure_prefix_path_str  [12+256] = \"qt_prfxpath=$$config.input.prefix\";" \
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
+        "static const char qt_configure_ext_prefix_path_str   [12+256] = \"qt_epfxpath=$$config.input.extprefix\";" \
+        "static const char qt_configure_host_prefix_path_str  [12+256] = \"qt_hpfxpath=$$config.input.hostprefix\";" \
+        "$${LITERAL_HASH}endif" \
         "" \
         "static const short qt_configure_str_offsets[] = {" \
+        $$QT_CONFIGURE_STR_OFFSETS_ALL \
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
         $$QT_CONFIGURE_STR_OFFSETS \
+        "$${LITERAL_HASH}endif" \
         "};" \
         "static const char qt_configure_strs[] =" \
+        $$QT_CONFIGURE_STRS_ALL \
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
         $$QT_CONFIGURE_STRS \
+        "$${LITERAL_HASH}endif" \
         ";" \
         "" \
         "$${LITERAL_HASH}define QT_CONFIGURE_SETTINGS_PATH \"$$config.rel_input.sysconfdir\"" \
         "" \
-        "$${LITERAL_HASH}define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12"
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
+        "$${LITERAL_HASH} define QT_CONFIGURE_SYSROOTIFY_PREFIX $$qmake_sysrootify" \
+        "$${LITERAL_HASH}endif" \
+        "" \
+        "$${LITERAL_HASH}define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12" \
+        "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
+        "$${LITERAL_HASH} define QT_CONFIGURE_EXT_PREFIX_PATH qt_configure_ext_prefix_path_str + 12" \
+        "$${LITERAL_HASH} define QT_CONFIGURE_HOST_PREFIX_PATH qt_configure_host_prefix_path_str + 12" \
+        "$${LITERAL_HASH}endif"
     export($${currentConfig}.output.qconfigSource)
-
-    # populate qmake/builtin-qt.conf
-
-    $${currentConfig}.output.builtinQtConf = \
-        " " \
-        "===========================================================" \
-        "==================== qt.conf beginning ====================" \
-        "===========================================================" \
-        "[Paths]" \
-        "ExtPrefix=$$config.input.extprefix" \
-        "Prefix=$$config.input.prefix" \
-        $$printInstallPaths() \
-        "Settings=$$config.rel_input.sysconfdir" \
-        $$printHostPaths()
-    export($${currentConfig}.output.builtinQtConf)
 
     # create bin/qt.conf. this doesn't use the regular file output
     # mechanism, as the file is relied upon by configure tests.
@@ -871,6 +849,22 @@ defineTest(qtConfOutput_preparePaths) {
             "Prefix=$$QT_SOURCE_TREE"
     write_file($$QT_BUILD_TREE/bin/qt.conf, cont)|error()
     reload_properties()
+
+    # if a sysroot was configured, the spec will be reloaded later,
+    # as some specs contain $$[SYSROOT] references.
+}
+
+defineTest(qtConfOutput_reloadSpec) {
+    !isEmpty($${currentConfig}.output.devicePro)| \
+            !isEmpty(config.input.sysroot): \
+        reloadSpec()
+
+    bypassNesting() {
+        QMAKE_INTERNAL_INCLUDED_FEATURES -= \
+            $$[QT_HOST_DATA/src]/mkspecs/features/mac/toolchain.prf \
+            $$[QT_HOST_DATA/src]/mkspecs/features/toolchain.prf
+        load(toolchain)
+    }
 }
 
 defineTest(qtConfOutput_shared) {
@@ -966,25 +960,6 @@ defineTest(qtConfOutput_debugAndRelease) {
         $${2}: qtConfOutputVar(append, "publicPro", "QT_CONFIG", "debug")
         qtConfOutputVar(append, "publicPro", "QT_CONFIG", "release")
     }
-}
-
-defineTest(qtConfOutput_compilerVersion) {
-    !$${2}: return()
-
-    name = $$upper($$eval($${currentConfig}.tests.compiler.compilerId))
-    version = $$eval($${currentConfig}.tests.compiler.compilerVersion)
-    major = $$section(version, '.', 0, 0)
-    minor = $$section(version, '.', 1, 1)
-    patch = $$section(version, '.', 2, 2)
-    isEmpty(minor): minor = 0
-    isEmpty(patch): patch = 0
-
-    $${currentConfig}.output.publicPro += \
-        "QT_$${name}_MAJOR_VERSION = $$major" \
-        "QT_$${name}_MINOR_VERSION = $$minor" \
-        "QT_$${name}_PATCH_VERSION = $$patch"
-
-    export($${currentConfig}.output.publicPro)
 }
 
 defineTest(qtConfOutput_compilerFlags) {

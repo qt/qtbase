@@ -380,14 +380,14 @@ void Widget::fillFunction()
 void Widget::fromRawDataFunction()
 {
     //! [22]
-    QRegExp pattern;
+    QRegularExpression pattern("\u00A4");
     static const QChar unicode[] = {
             0x005A, 0x007F, 0x00A4, 0x0060,
             0x1009, 0x0020, 0x0020};
     int size = sizeof(unicode) / sizeof(QChar);
 
     QString str = QString::fromRawData(unicode, size);
-    if (str.contains(QRegExp(pattern))) {
+    if (str.contains(pattern) {
         // ...
     //! [22] //! [23]
     }

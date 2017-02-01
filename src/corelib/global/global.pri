@@ -11,6 +11,8 @@ HEADERS +=  \
         global/qendian.h \
         global/qnumeric_p.h \
         global/qnumeric.h \
+        global/qfloat16_p.h \
+        global/qfloat16.h \
         global/qglobalstatic.h \
         global/qlibraryinfo.h \
         global/qlogging.h \
@@ -29,6 +31,7 @@ SOURCES += \
         global/qlibraryinfo.cpp \
 	global/qmalloc.cpp \
         global/qnumeric.cpp \
+        global/qfloat16.cpp \
         global/qoperatingsystemversion.cpp \
         global/qlogging.cpp \
         global/qhooks.cpp
@@ -76,3 +79,14 @@ gcc:ltcg {
 } else {
     SOURCES += $$VERSIONTAGGING_SOURCES
 }
+
+QMAKE_QFLOAT16_TABLES_GENERATE = global/qfloat16.h
+
+qtPrepareTool(QMAKE_QFLOAT16_TABLES, qfloat16-tables)
+
+qfloat16_tables.commands = $$QMAKE_QFLOAT16_TABLES ${QMAKE_FILE_OUT}
+qfloat16_tables.output = global/qfloat16tables.cpp
+qfloat16_tables.depends = $$QMAKE_QFLOAT16_TABLES
+qfloat16_tables.input = QMAKE_QFLOAT16_TABLES_GENERATE
+qfloat16_tables.variable_out = SOURCES
+QMAKE_EXTRA_COMPILERS += qfloat16_tables

@@ -59,7 +59,6 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
     : QXcbObject(connection)
     , m_screen(screen)
     , m_number(number)
-    , m_xSettings(Q_NULLPTR)
 {
     const QByteArray cmAtomName =  "_NET_WM_CM_S" + QByteArray::number(m_number);
     m_net_wm_cm_atom = connection->internAtom(cmAtomName.constData());
@@ -175,20 +174,10 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     , m_virtualDesktop(virtualDesktop)
     , m_output(outputId)
     , m_crtc(output ? output->crtc : XCB_NONE)
-    , m_mode(XCB_NONE)
-    , m_primary(false)
-    , m_rotation(XCB_RANDR_ROTATION_ROTATE_0)
     , m_outputName(getOutputName(output))
     , m_outputSizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
     , m_virtualSize(virtualDesktop->size())
     , m_virtualSizeMillimeters(virtualDesktop->physicalSize())
-    , m_orientation(Qt::PrimaryOrientation)
-    , m_refreshRate(60)
-    , m_forcedDpi(-1)
-    , m_pixelDensity(1)
-    , m_hintStyle(QFontEngine::HintStyle(-1))
-    , m_subpixelType(QFontEngine::SubpixelAntialiasingType(-1))
-    , m_antialiasingEnabled(-1)
 {
     if (connection->hasXRandr()) {
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
@@ -631,7 +620,7 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
         m_sizeMillimeters = sizeInMillimeters(xGeometry.size(), virtualDpi());
 
     qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
-    m_pixelDensity = qRound(dpi/96);
+    m_pixelDensity = qMax(1, qRound(dpi/96));
     m_geometry = QRect(xGeometry.topLeft(), xGeometry.size());
     m_availableGeometry = xGeometry & m_virtualDesktop->workArea();
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
@@ -678,85 +667,88 @@ void QXcbScreen::updateRefreshRate(xcb_randr_mode_t mode)
     }
 }
 
-QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) const
+static xcb_get_geometry_reply_t *getGeometryUnchecked(xcb_connection_t *connection, xcb_window_t window)
+{
+    const xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry_unchecked(connection, window);
+    return xcb_get_geometry_reply(connection, geometry_cookie, NULL);
+}
+
+static inline bool translate(xcb_connection_t *connection, xcb_window_t child, xcb_window_t parent,
+                             int *x, int *y)
+{
+    const xcb_translate_coordinates_cookie_t translate_cookie =
+        xcb_translate_coordinates_unchecked(connection, child, parent, *x, *y);
+    xcb_translate_coordinates_reply_t *translate_reply =
+        xcb_translate_coordinates_reply(connection, translate_cookie, NULL);
+    if (!translate_reply)
+        return false;
+    *x = translate_reply->dst_x;
+    *y = translate_reply->dst_y;
+    free(translate_reply);
+    return true;
+}
+
+QPixmap QXcbScreen::grabWindow(WId window, int xIn, int yIn, int width, int height) const
 {
     if (width == 0 || height == 0)
         return QPixmap();
 
-    // TODO: handle multiple screens
+    int x = xIn;
+    int y = yIn;
     QXcbScreen *screen = const_cast<QXcbScreen *>(this);
     xcb_window_t root = screen->root();
 
-    if (window == 0)
-        window = root;
-
-    xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry_unchecked(xcb_connection(), window);
-
-    xcb_get_geometry_reply_t *reply =
-        xcb_get_geometry_reply(xcb_connection(), geometry_cookie, NULL);
-
-    if (!reply) {
+    xcb_get_geometry_reply_t *rootReply = getGeometryUnchecked(xcb_connection(), root);
+    if (!rootReply)
         return QPixmap();
+
+    const quint8 rootDepth = rootReply->depth;
+    free(rootReply);
+
+    QSize windowSize;
+    quint8 effectiveDepth = 0;
+    if (window) {
+        xcb_get_geometry_reply_t *windowReply = getGeometryUnchecked(xcb_connection(), window);
+        if (!windowReply)
+            return QPixmap();
+        windowSize = QSize(windowReply->width, windowReply->height);
+        effectiveDepth = windowReply->depth;
+        free(windowReply);
+        if (effectiveDepth == rootDepth) {
+            // if the depth of the specified window and the root window are the
+            // same, grab pixels from the root window (so that we get the any
+            // overlapping windows and window manager frames)
+
+            // map x and y to the root window
+            if (!translate(xcb_connection(), window, root, &x, &y))
+                return QPixmap();
+
+            window = root;
+        }
+    } else {
+        window = root;
+        effectiveDepth = rootDepth;
+        windowSize = m_geometry.size();
+        x += m_geometry.x();
+        y += m_geometry.y();
     }
 
     if (width < 0)
-        width = reply->width - x;
+        width = windowSize.width() - xIn;
     if (height < 0)
-        height = reply->height - y;
-
-    geometry_cookie = xcb_get_geometry_unchecked(xcb_connection(), root);
-    xcb_get_geometry_reply_t *root_reply =
-        xcb_get_geometry_reply(xcb_connection(), geometry_cookie, NULL);
-
-    if (!root_reply) {
-        free(reply);
-        return QPixmap();
-    }
-
-    if (reply->depth == root_reply->depth) {
-        // if the depth of the specified window and the root window are the
-        // same, grab pixels from the root window (so that we get the any
-        // overlapping windows and window manager frames)
-
-        // map x and y to the root window
-        xcb_translate_coordinates_cookie_t translate_cookie =
-            xcb_translate_coordinates_unchecked(xcb_connection(), window, root, x, y);
-
-        xcb_translate_coordinates_reply_t *translate_reply =
-            xcb_translate_coordinates_reply(xcb_connection(), translate_cookie, NULL);
-
-        if (!translate_reply) {
-            free(reply);
-            free(root_reply);
-            return QPixmap();
-        }
-
-        x = translate_reply->dst_x;
-        y = translate_reply->dst_y;
-
-        window = root;
-
-        free(translate_reply);
-        free(reply);
-        reply = root_reply;
-    } else {
-        free(root_reply);
-        root_reply = 0;
-    }
+        height = windowSize.height() - yIn;
 
     xcb_get_window_attributes_reply_t *attributes_reply =
         xcb_get_window_attributes_reply(xcb_connection(), xcb_get_window_attributes_unchecked(xcb_connection(), window), NULL);
 
-    if (!attributes_reply) {
-        free(reply);
+    if (!attributes_reply)
         return QPixmap();
-    }
 
     const xcb_visualtype_t *visual = screen->visualForId(attributes_reply->visual);
     free(attributes_reply);
 
     xcb_pixmap_t pixmap = xcb_generate_id(xcb_connection());
-    xcb_create_pixmap(xcb_connection(), reply->depth, pixmap, window, width, height);
+    xcb_create_pixmap(xcb_connection(), effectiveDepth, pixmap, window, width, height);
 
     uint32_t gc_value_mask = XCB_GC_SUBWINDOW_MODE;
     uint32_t gc_value_list[] = { XCB_SUBWINDOW_MODE_INCLUDE_INFERIORS };
@@ -766,9 +758,7 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
 
     xcb_copy_area(xcb_connection(), window, pixmap, gc, x, y, 0, 0, width, height);
 
-    QPixmap result = qt_xcb_pixmapFromXPixmap(connection(), pixmap, width, height, reply->depth, visual);
-
-    free(reply);
+    QPixmap result = qt_xcb_pixmapFromXPixmap(connection(), pixmap, width, height, effectiveDepth, visual);
     xcb_free_gc(xcb_connection(), gc);
     xcb_free_pixmap(xcb_connection(), pixmap);
 

@@ -57,7 +57,7 @@
 #endif
 
 #ifdef HAS_UI_VIEW_SETTINGS_INTEROP
-#  include <UIViewSettingsInterop.h>
+#  include <uiviewsettingsinterop.h>
 #endif
 
 #ifndef HAS_UI_VIEW_SETTINGS_INTEROP

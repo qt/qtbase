@@ -1,6 +1,5 @@
 {
     "files": {
-        "builtinQtConf": "qmake/builtin-qt.conf",
         "qconfigSource": "src/corelib/global/qconfig.cpp",
         "publicHeader": "src/corelib/global/qconfig.h",
         "privateHeader": "src/corelib/global/qconfig_p.h",
@@ -94,6 +93,7 @@
             "mp": { "type": "boolean", "name": "msvc_mp" },
             "nomake": { "type": "addString", "values": [ "examples", "tests", "tools" ] },
             "opensource": { "type": "void", "name": "commercial", "value": "no" },
+            "optimize-debug": { "type": "boolean", "name": "optimize_debug" },
             "optimized-qmake": { "type": "boolean", "name": "release_tools" },
             "optimized-tools":  { "type": "boolean", "name": "release_tools" },
             "pch": { "type": "boolean", "name": "precompile_header" },
@@ -109,7 +109,6 @@
             "reduce-relocations": { "type": "boolean", "name": "reduce_relocations" },
             "release": { "type": "enum", "name": "debug", "values": { "yes": "no", "no": "yes" } },
             "rpath": "boolean",
-            "rtti": "boolean",
             "sanitize": "sanitize",
             "sdk": "string",
             "separate-debug-info": { "type": "boolean", "name": "separate_debug_info" },
@@ -254,11 +253,6 @@
             "type": "compile",
             "test": "common/c++98default"
         },
-        "compiler": {
-            "label": "Compiler",
-            "type": "checkCompiler",
-            "log": "compilerDescription"
-        },
         "precompile_header": {
             "label": "precompiled header support",
             "type": "compile",
@@ -268,6 +262,11 @@
             "label": "gold linker",
             "type": "compilerSupportsFlag",
             "flag": "-fuse-ld=gold"
+        },
+        "optimize_debug": {
+            "label": "-Og support",
+            "type": "compilerSupportsFlag",
+            "flag": "-Og"
         },
         "enable_new_dtags": {
             "label": "new dtags support",
@@ -410,6 +409,11 @@
             "type": "compile",
             "test": "unix/posix_fallocate"
         },
+        "alloca": {
+            "label": "alloca()",
+            "type": "compile",
+            "test": "common/alloca"
+        },
         "stack_protector": {
             "label": "stack protection",
             "type": "compilerSupportsFlag",
@@ -424,13 +428,14 @@
 
     "features": {
         "prepare": {
-            "output": [ "prepareSpec", "prepareOptions", "preparePaths" ]
+            "output": [ "prepareSpec", "prepareOptions", "preparePaths", "reloadSpec" ]
         },
         "machineTuple": {
             "condition": "!config.linux || config.android || tests.machineTuple",
             "output": [ "machineTuple" ]
         },
         "commit": {
+            "condition": "features.machineTuple",
             "output": [ "commitOptions" ]
         },
         "android-style-assets": {
@@ -483,6 +488,11 @@
             "label": "Using gold linker",
             "condition": "!config.msvc && !config.integrity && tests.use_gold_linker",
             "output": [ "privateConfig", "useGoldLinker" ]
+        },
+        "optimize_debug": {
+            "label": "Optimize debug build",
+            "condition": "!config.msvc && (features.debug || features.debug_and_release) && tests.optimize_debug",
+            "output": [ "privateConfig" ]
         },
         "architecture": {
             "label": "Architecture",
@@ -566,12 +576,6 @@
             "enable": "input.rpaths != ''",
             "autoDetect": false,
             "output": [ { "type": "varAppend", "name": "EXTRA_RPATHS", "value": "input.rpaths" } ]
-        },
-        "rtti": {
-            "label": "Build with RTTI",
-            "comment": "mkspecs/features/win32/default_pre.prf sets no-rtti. Follow default behavior of configure.exe by overriding with rtti.",
-            "condition": "config.win32",
-            "output": [ "publicConfig" ]
         },
         "force_asserts": {
             "label": "Force assertions",
@@ -690,11 +694,6 @@
             "label": "C++1z",
             "condition": "features.c++14 && tests.c++1z",
             "output": [ "publicFeature", "publicQtConfig" ]
-        },
-        "compiler": {
-            "label": "Compiler version",
-            "condition": "tests.compiler",
-            "output": [ "compilerVersion" ]
         },
         "precompile_header": {
             "label": "Using precompiled headers",
@@ -895,6 +894,11 @@
             "condition": "tests.posix_fallocate",
             "output": [ "privateFeature" ]
         },
+        "alloca": {
+            "label": "alloca()",
+            "condition": "tests.alloca",
+            "output": [ "privateFeature" ]
+        },
         "stack-protector-strong": {
             "label": "stack protection",
             "condition": "config.qnx && tests.stack_protector",
@@ -947,6 +951,18 @@
                 { "type": "publicQtConfig", "negative": true }
             ]
         },
+        "network": {
+            "label": "Qt Network",
+            "output": [ "privateFeature" ]
+        },
+        "sql": {
+            "label": "Qt Sql",
+            "output": [ "privateFeature" ]
+        },
+        "testlib": {
+            "label": "Qt Testlib",
+            "output": [ "privateFeature" ]
+        },
         "widgets": {
             "label": "Qt Widgets",
             "autoDetect": "!config.tvos && !config.watchos",
@@ -956,6 +972,10 @@
                 { "type": "define", "negative": true, "name": "QT_NO_WIDGETS" },
                 { "type": "publicQtConfig", "negative": true }
             ]
+        },
+        "xml": {
+            "label": "Qt Xml",
+            "output": [ "privateFeature" ]
         },
         "libudev": {
             "label": "udev",
@@ -1072,6 +1092,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                     "message": "Mode",
                     "type": "buildMode"
                 },
+                {
+                    "type": "feature",
+                    "args": "optimize_debug",
+                    "condition": "!config.msvc && (features.debug || features.debug_and_release)"
+                },
                 "shared",
                 {
                     "message": "Using C++ standard",
@@ -1146,7 +1171,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 "dbus",
                 "dbus-linked",
                 "gui",
-                "widgets"
+                "network",
+                "sql",
+                "testlib",
+                "widgets",
+                "xml"
             ]
         }, {
             "section": "Support enabled for",

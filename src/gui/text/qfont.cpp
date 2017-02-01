@@ -2077,6 +2077,8 @@ bool QFont::fromString(const QString &descrip)
         setFixedPitch(l[8].toInt());
         if (count == 11)
             d->request.styleName = l[10].toString();
+        else
+            d->request.styleName.clear();
     }
 
     if (count >= 9 && !d->request.fixedPitch) // assume 'false' fixedPitch equals default

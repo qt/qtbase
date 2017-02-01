@@ -282,23 +282,10 @@ void MainWindow::loadLayout()
     }
 }
 
-class DockWidgetAreaCornerFunctor {
-public:
-    explicit DockWidgetAreaCornerFunctor(QMainWindow *mw, Qt::Corner c, Qt::DockWidgetArea a)
-        : m_mainWindow(mw), m_area(a), m_corner(c) {}
-
-    void operator()() const { m_mainWindow->setCorner(m_corner, m_area); }
-
-private:
-    QMainWindow *m_mainWindow;
-    Qt::DockWidgetArea m_area;
-    Qt::Corner m_corner;
-};
-
 static QAction *addCornerAction(const QString &text, QMainWindow *mw, QMenu *menu, QActionGroup *group,
                                 Qt::Corner c, Qt::DockWidgetArea a)
 {
-    QAction *result = menu->addAction(text, mw, DockWidgetAreaCornerFunctor(mw, c, a));
+    QAction *result = menu->addAction(text, mw, [=]() { mw->setCorner(c, a); });
     result->setCheckable(true);
     group->addAction(result);
     return result;

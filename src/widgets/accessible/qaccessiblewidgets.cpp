@@ -85,7 +85,9 @@ QList<QWidget*> childWidgets(const QWidget *widget)
         QString objectName = w->objectName();
         if (!w->isWindow()
               && !qobject_cast<QFocusFrame*>(w)
+#if QT_CONFIG(menu)
               && !qobject_cast<QMenu*>(w)
+#endif
               && objectName != QLatin1String("qt_rubberband")
               && objectName != QLatin1String("qt_qmainwindow_extended_splitter")) {
             widgets.append(w);

@@ -47,6 +47,11 @@ optimize_full {
     }
 }
 
+optimize_debug {
+    QMAKE_CFLAGS_DEBUG += $$QMAKE_CFLAGS_OPTIMIZE_DEBUG
+    QMAKE_CXXFLAGS_DEBUG += $$QMAKE_CFLAGS_OPTIMIZE_DEBUG
+}
+
 debug {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS_DEBUG
     QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_DEBUG
@@ -60,7 +65,7 @@ debug {
 }
 
 # disable special linker flags for host builds (no proper test for host support yet)
-!host_build {
+!host_build|!cross_compile {
     use_gold_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_GOLD
     enable_new_dtags: QMAKE_LFLAGS += $$QMAKE_LFLAGS_NEW_DTAGS
 }

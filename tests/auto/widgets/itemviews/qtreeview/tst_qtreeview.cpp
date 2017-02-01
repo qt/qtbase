@@ -3796,25 +3796,24 @@ void tst_QTreeView::task248022_changeSelection()
 void tst_QTreeView::task245654_changeModelAndExpandAll()
 {
     QTreeView view;
-    QStandardItemModel *model = new QStandardItemModel;
+    QScopedPointer<QStandardItemModel> model(new QStandardItemModel);
     QStandardItem *top = new QStandardItem("top");
     QStandardItem *sub = new QStandardItem("sub");
     top->appendRow(sub);
     model->appendRow(top);
-    view.setModel(model);
+    view.setModel(model.data());
     view.expandAll();
     QApplication::processEvents();
     QVERIFY(view.isExpanded(top->index()));
 
     //now let's try to delete the model
     //then repopulate and expand again
-    delete model;
-    model = new QStandardItemModel;
+    model.reset(new QStandardItemModel);
     top = new QStandardItem("top");
     sub = new QStandardItem("sub");
     top->appendRow(sub);
     model->appendRow(top);
-    view.setModel(model);
+    view.setModel(model.data());
     view.expandAll();
     QApplication::processEvents();
     QVERIFY(view.isExpanded(top->index()));

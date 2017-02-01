@@ -171,6 +171,7 @@ Cpp.ignoretokens        += \
                           QT_END_NAMESPACE \
                           QT_FASTCALL \
                           QT_MUTEX_LOCK_NOEXCEPT \
+                          QT_SIZEPOLICY_CONSTEXPR \
                           QT_WARNING_DISABLE_DEPRECATED \
                           QT_WARNING_PUSH \
                           QT_WARNING_POP \
