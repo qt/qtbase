@@ -408,6 +408,11 @@ defineTest(qtConfSetupLibraries) {
             $${lpfx}.export = $$l
             export($${lpfx}.export)
         }
+        # 'export' may also be empty, but we need a derived identifier
+        alias = $$eval($${lpfx}.export)
+        isEmpty(alias): alias = $$l
+        $${lpfx}.alias = $$alias
+        export($${lpfx}.alias)
         isEmpty($${lpfx}.sources._KEYS_): \
             error("Library $$l defines no sources")
         for (s, $${lpfx}.sources._KEYS_) {
@@ -444,9 +449,13 @@ defineTest(qtConfLibrary_inline) {
     !defined($${1}.libs, var): \
         error("'inline' source in library '$$lib' does not specify 'libs'.")
 
+    # if multiple libraries provide the same export, it makes sense
+    # to make them recognize the same input variables.
+    input = $$eval($${2}.alias)
+
     # direct libs. overwrites inline libs.
-    defined(config.input.$${lib}.libs, var) {
-        $${1}.libs = $$eval(config.input.$${lib}.libs)
+    defined(config.input.$${input}.libs, var) {
+        $${1}.libs = $$eval(config.input.$${input}.libs)
         export($${1}.libs)
     }
 
@@ -455,7 +464,7 @@ defineTest(qtConfLibrary_inline) {
     any = false
     all = true
     for (b, $${1}.builds._KEYS_) {
-        iv = $${lib}.libs.$${b}
+        iv = $${input}.libs.$${b}
         vars += $$eval(config.commandline.rev_assignments.$${iv})
         defined(config.input.$${iv}, var) {
             $${1}.builds.$${b}.libs = $$eval(config.input.$${iv})
@@ -471,7 +480,7 @@ defineTest(qtConfLibrary_inline) {
     }
 
     # prefix. prepends to (possibly overwritten) inline libs.
-    prefix = $$val_escape(config.input.$${lib}.prefix)
+    prefix = $$val_escape(config.input.$${input}.prefix)
     !isEmpty(prefix) {
         $${1}.includedir = $$prefix/include
         export($${1}.includedir)
@@ -637,7 +646,7 @@ defineTest(qtConfHandleLibrary) {
             next()
         }
 
-        !$${call}($$spfx) {
+        !$${call}($$spfx, $$lpfx) {
             qtLog("  => source produced no result.")
             next()
         }
