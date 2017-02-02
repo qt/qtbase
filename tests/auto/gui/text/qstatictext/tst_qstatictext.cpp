@@ -716,6 +716,7 @@ void tst_QStaticText::drawStruckOutText()
 
     QFont font;
     font.setStrikeOut(true);
+    font.setStyleStrategy(QFont::ForceIntegerMetrics);
 
     {
         QPainter p(&imageDrawText);
@@ -751,6 +752,7 @@ void tst_QStaticText::drawOverlinedText()
 
     QFont font;
     font.setOverline(true);
+    font.setStyleStrategy(QFont::ForceIntegerMetrics);
 
     {
         QPainter p(&imageDrawText);
@@ -786,6 +788,7 @@ void tst_QStaticText::drawUnderlinedText()
 
     QFont font;
     font.setUnderline(true);
+    font.setStyleStrategy(QFont::ForceIntegerMetrics);
 
     {
         QPainter p(&imageDrawText);
