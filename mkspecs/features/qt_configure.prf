@@ -718,7 +718,8 @@ defineTest(qtConfTest_compile) {
     isEmpty(host): host = false
 
     test_dir = $$QMAKE_CONFIG_TESTS_DIR/$$test
-    test_out_dir = $$shadowed($$test_dir)
+    test_base_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR)
+    test_out_dir = $$test_base_out_dir/$$test
     !isEmpty($${1}.pro): \
         test_dir = $$test_dir/$$eval($${1}.pro)
     test_cmd_base = "$$QMAKE_CD $$system_quote($$system_path($$test_out_dir)) &&"
@@ -775,7 +776,7 @@ defineTest(qtConfTest_compile) {
         QMAKE_MAKE = "$$QMAKE_MAKE clean && $$QMAKE_MAKE"
 
     mkpath($$test_out_dir)|error()
-    write_file($$test_out_dir/.qmake.cache)|error()
+    write_file($$test_base_out_dir/.qmake.cache)|error()
 
     # add possible command line args
     qmake_args += $$qtConfPrepareArgs($$eval($${1}.args)) $$eval($${1}.literal_args)
