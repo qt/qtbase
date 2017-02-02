@@ -463,6 +463,7 @@ public:
 
     void drawScroller(QPainter *painter, ScrollerTearOffItem::Type type, const QRect &rect);
     void drawTearOff(QPainter *painter, const QRect &rect);
+    QRect rect() const;
 };
 
 #endif // QT_NO_MENU
