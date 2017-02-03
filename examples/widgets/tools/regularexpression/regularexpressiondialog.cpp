@@ -109,6 +109,19 @@ RegularExpressionDialog::RegularExpressionDialog(QWidget *parent)
     refresh();
 }
 
+void RegularExpressionDialog::setResultUiEnabled(bool enabled)
+{
+    matchDetailsTreeWidget->setEnabled(enabled);
+    namedGroupsTreeWidget->setEnabled(enabled);
+}
+
+static void setTextColor(QWidget *widget, const QColor &color)
+{
+    QPalette palette = widget->palette();
+    palette.setColor(QPalette::Text, color);
+    widget->setPalette(palette);
+}
+
 void RegularExpressionDialog::refresh()
 {
     setUpdatesEnabled(false);
@@ -125,7 +138,30 @@ void RegularExpressionDialog::refresh()
     escaped.append(QLatin1Char('"'));
     escapedPatternLineEdit->setText(escaped);
 
+    setTextColor(patternLineEdit, subjectTextEdit->palette().color(QPalette::Text));
+    matchDetailsTreeWidget->clear();
+    namedGroupsTreeWidget->clear();
+    regexpStatusLabel->setText(QString());
+
+    if (pattern.isEmpty()) {
+        setResultUiEnabled(false);
+        setUpdatesEnabled(true);
+        return;
+    }
+
     QRegularExpression rx(pattern);
+    if (!rx.isValid()) {
+        setTextColor(patternLineEdit, Qt::red);
+        regexpStatusLabel->setText(tr("Invalid: syntax error at position %1 (%2)")
+                                   .arg(rx.patternErrorOffset())
+                                   .arg(rx.errorString()));
+        setResultUiEnabled(false);
+        setUpdatesEnabled(true);
+        return;
+    }
+
+    setResultUiEnabled(true);
+
     QRegularExpression::MatchType matchType = matchTypeComboBox->currentData().value<QRegularExpression::MatchType>();
     QRegularExpression::PatternOptions patternOptions = QRegularExpression::NoPatternOption;
     QRegularExpression::MatchOptions matchOptions = QRegularExpression::NoMatchOption;
@@ -156,59 +192,39 @@ void RegularExpressionDialog::refresh()
 
     rx.setPatternOptions(patternOptions);
 
-    QPalette palette = patternLineEdit->palette();
-    if (rx.isValid())
-        palette.setColor(QPalette::Text, subjectTextEdit->palette().color(QPalette::Text));
-    else
-        palette.setColor(QPalette::Text, Qt::red);
-    patternLineEdit->setPalette(palette);
+    const int capturingGroupsCount = rx.captureCount() + 1;
 
-    matchDetailsTreeWidget->clear();
-    matchDetailsTreeWidget->setEnabled(rx.isValid());
+    QRegularExpressionMatchIterator iterator = rx.globalMatch(text, offsetSpinBox->value(), matchType, matchOptions);
+    int i = 0;
 
-    if (rx.isValid()) {
-        const int capturingGroupsCount = rx.captureCount() + 1;
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
 
-        QRegularExpressionMatchIterator iterator = rx.globalMatch(text, offsetSpinBox->value(), matchType, matchOptions);
-        int i = 0;
+        QTreeWidgetItem *matchDetailTopItem = new QTreeWidgetItem(matchDetailsTreeWidget);
+        matchDetailTopItem->setText(0, QString::number(i));
 
-        while (iterator.hasNext()) {
-            QRegularExpressionMatch match = iterator.next();
-
-            QTreeWidgetItem *matchDetailTopItem = new QTreeWidgetItem(matchDetailsTreeWidget);
-            matchDetailTopItem->setText(0, QString::number(i));
-
-            for (int captureGroupIndex = 0; captureGroupIndex < capturingGroupsCount; ++captureGroupIndex) {
-                QTreeWidgetItem *matchDetailItem = new QTreeWidgetItem(matchDetailTopItem);
-                matchDetailItem->setText(1, QString::number(captureGroupIndex));
-                matchDetailItem->setText(2, match.captured(captureGroupIndex));
-            }
-
-            ++i;
+        for (int captureGroupIndex = 0; captureGroupIndex < capturingGroupsCount; ++captureGroupIndex) {
+            QTreeWidgetItem *matchDetailItem = new QTreeWidgetItem(matchDetailTopItem);
+            matchDetailItem->setText(1, QString::number(captureGroupIndex));
+            matchDetailItem->setText(2, match.captured(captureGroupIndex));
         }
+
+        ++i;
     }
 
     matchDetailsTreeWidget->expandAll();
 
-    namedGroupsTreeWidget->clear();
-    namedGroupsTreeWidget->setEnabled(rx.isValid());
+    regexpStatusLabel->setText(tr("Valid"));
 
-    if (rx.isValid()) {
-        regexpStatusLabel->setText(tr("Valid"));
+    const QStringList namedCaptureGroups = rx.namedCaptureGroups();
+    for (int i = 0; i < namedCaptureGroups.size(); ++i) {
+        const QString currentNamedCaptureGroup = namedCaptureGroups.at(i);
 
-        const QStringList namedCaptureGroups = rx.namedCaptureGroups();
-        for (int i = 0; i < namedCaptureGroups.size(); ++i) {
-            const QString currentNamedCaptureGroup = namedCaptureGroups.at(i);
-
-            QTreeWidgetItem *namedGroupItem = new QTreeWidgetItem(namedGroupsTreeWidget);
-            namedGroupItem->setText(0, QString::number(i));
-            namedGroupItem->setText(1, currentNamedCaptureGroup.isNull() ? tr("<no name>") : currentNamedCaptureGroup);
-        }
-    } else {
-        regexpStatusLabel->setText(tr("Invalid: syntax error at position %1 (%2)")
-                                   .arg(rx.patternErrorOffset())
-                                   .arg(rx.errorString()));
+        QTreeWidgetItem *namedGroupItem = new QTreeWidgetItem(namedGroupsTreeWidget);
+        namedGroupItem->setText(0, QString::number(i));
+        namedGroupItem->setText(1, currentNamedCaptureGroup.isNull() ? tr("<no name>") : currentNamedCaptureGroup);
     }
+
 
     setUpdatesEnabled(true);
 }
