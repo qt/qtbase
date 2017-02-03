@@ -34,6 +34,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QTemporaryDir>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QStandardPaths>
 
 class tst_uic : public QObject
@@ -63,12 +64,12 @@ private:
     const QString m_command;
     QString m_baseline;
     QTemporaryDir m_generated;
-    QRegExp m_versionRegexp;
+    QRegularExpression m_versionRegexp;
 };
 
 tst_uic::tst_uic()
     : m_command(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/uic"))
-    , m_versionRegexp(QLatin1String("Created by: Qt User Interface Compiler version [.\\d]{5,5}"))
+    , m_versionRegexp(QLatin1String("\\*\\* Created by: Qt User Interface Compiler version \\d{1,2}\\.\\d{1,2}\\.\\d{1,2}"))
 {
 }
 
