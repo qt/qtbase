@@ -930,7 +930,8 @@ void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
     // in line with the platform style guidelines.
     bool fixedSizeNoZoom = (windowMinimumSize().isValid() && windowMaximumSize().isValid()
                             && windowMinimumSize() == windowMaximumSize());
-    bool customizeNoZoom = ((flags & Qt::CustomizeWindowHint) && !(flags & Qt::WindowMaximizeButtonHint));
+    bool customizeNoZoom = ((flags & Qt::CustomizeWindowHint)
+        && !(flags & (Qt::WindowMaximizeButtonHint | Qt::WindowFullscreenButtonHint)));
     [[m_nsWindow standardWindowButton:NSWindowZoomButton] setEnabled:!(fixedSizeNoZoom || customizeNoZoom)];
 }
 
