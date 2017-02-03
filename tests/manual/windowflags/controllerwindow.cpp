@@ -70,7 +70,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     hintsControl->setHints(previewWindow->windowFlags());
     connect(hintsControl, SIGNAL(changed(Qt::WindowFlags)), this, SLOT(updatePreview()));
 
-    statesControl = new WindowStatesControl(WindowStatesControl::WantVisibleCheckBox|WindowStatesControl::WantActiveCheckBox);
+    statesControl = new WindowStatesControl;
     statesControl->setStates(previewWindow->windowState());
     statesControl->setVisibleValue(true);
     connect(statesControl, SIGNAL(changed()), this, SLOT(updatePreview()));

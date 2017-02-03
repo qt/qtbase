@@ -77,29 +77,20 @@ private:
 class WindowStateControl : public QWidget {
     Q_OBJECT
 public:
-    enum Flags {
-        WantVisibleCheckBox = 0x1,
-        WantMinimizeRadioButton = 0x2
-    };
+    explicit WindowStateControl(QWidget *parent= 0);
 
-    explicit WindowStateControl(unsigned flags, QWidget *parent= 0);
-
-    Qt::WindowState state() const;
-    void setState(Qt::WindowState s);
-
-    bool visibleValue() const;
-    void setVisibleValue(bool);
+    Qt::WindowStates state() const;
+    void setState(Qt::WindowStates s);
 
 signals:
-    void changed();
+    void stateChanged(int);
 
 private:
     QButtonGroup *group;
-    QCheckBox    *visibleCheckBox;
-    QRadioButton *restoreButton;
-    QRadioButton *minimizeButton;
-    QRadioButton *maximizeButton;
-    QRadioButton *fullscreenButton;
+    QCheckBox *restoreButton;
+    QCheckBox *minimizeButton;
+    QCheckBox *maximizeButton;
+    QCheckBox *fullscreenButton;
 };
 
 // Control for the Qt::WindowStates flags (normal, maximized, fullscreen exclusively
@@ -108,12 +99,7 @@ class WindowStatesControl : public QGroupBox
 {
     Q_OBJECT
 public:
-    enum Flags {
-        WantVisibleCheckBox = 0x1,
-        WantActiveCheckBox = 0x2
-    };
-
-    explicit WindowStatesControl(unsigned flags, QWidget *parent= 0);
+    explicit WindowStatesControl(QWidget *parent= 0);
 
     Qt::WindowStates states() const;
     void setStates(Qt::WindowStates s);
@@ -129,7 +115,6 @@ signals:
 private:
     QCheckBox *visibleCheckBox;
     QCheckBox *activeCheckBox;
-    QCheckBox *minimizeCheckBox;
     WindowStateControl *stateControl;
 };
 
