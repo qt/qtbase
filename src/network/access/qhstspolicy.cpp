@@ -156,7 +156,7 @@ QString QHstsPolicy::host(QUrl::ComponentFormattingOptions options) const
 }
 
 /*!
-    Sets the expiration date for the policy (in UTC).
+    Sets the expiration date for the policy (in UTC) to \a expiry.
 
     \sa expiry()
 */
@@ -176,9 +176,9 @@ QDateTime QHstsPolicy::expiry() const
 }
 
 /*!
-    Includes or excludes subdomains for this policy.
+    Sets whether subdomains are included for this policy to \a include.
 
-    \sa includeSubdomains()
+    \sa includesSubDomains()
 */
 void QHstsPolicy::setIncludesSubDomains(bool include)
 {
@@ -196,7 +196,7 @@ bool QHstsPolicy::includesSubDomains() const
 }
 
 /*!
-    Returns \c true if the two policies have the same host and expriration date
+    Returns \c true if the two policies have the same host and expiration date
     while agreeing on whether to include or exclude subdomains.
 */
 bool QHstsPolicy::operator==(const QHstsPolicy &other) const

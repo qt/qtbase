@@ -370,7 +370,7 @@ int qFindByteArray(
 */
 
 /*!
-    \fn QStaticByteArrayMatcher::indexIn(const char *haystack, int hlen, int from)
+    \fn int QStaticByteArrayMatcher::indexIn(const char *haystack, int hlen, int from = 0) const
 
     Searches the char string \a haystack, which has length \a hlen, from
     byte position \a from (default 0, i.e. from the first byte), for
@@ -380,7 +380,7 @@ int qFindByteArray(
 */
 
 /*!
-    \fn QStaticByteArrayMatcher::indexIn(const QByteArray &haystack, int from)
+    \fn int QStaticByteArrayMatcher::indexIn(const QByteArray &haystack, int from = 0) const
 
     Searches the char string \a haystack, from byte position \a from
     (default 0, i.e. from the first byte), for the byte array pattern()

@@ -400,7 +400,7 @@ void QSizePolicy::setControlType(ControlType type)
 */
 
 /*!
-    \fn QSizePolicy QSizePolicy::transposed()
+    \fn QSizePolicy QSizePolicy::transposed() const
     \since 5.9
 
     Returns a size policy object with the horizontal and vertical
