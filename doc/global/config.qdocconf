@@ -13,3 +13,7 @@ navigation.homepage = "Qt $QT_VER"
 sourcedirs += includes $$BUILDDIR
 
 url = http://doc.qt.io/qt-5
+
+# Uncomment the following two lines to generate documentation marked as \internal
+# alias.internal = disable
+# macro.internal.HTML = "<span style="color:red">[internal]</span>"
