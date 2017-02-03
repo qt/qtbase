@@ -244,7 +244,7 @@ void QProgressDialogPrivate::_q_disconnectOnClose()
   A modeless progress dialog is suitable for operations that take
   place in the background, where the user is able to interact with the
   application. Such operations are typically based on QTimer (or
-  QObject::timerEvent()), QSocketNotifier, or QUrlOperator; or performed
+  QObject::timerEvent()) or QSocketNotifier; or performed
   in a separate thread. A QProgressBar in the status bar of your main window
   is often an alternative to a modeless progress dialog.
 

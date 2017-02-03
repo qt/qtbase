@@ -1376,18 +1376,6 @@ void tst_QUrl::compat_constructor_01_data()
 
 void tst_QUrl::compat_constructor_01()
 {
-    /* The following should work as expected:
-     *
-     * QUrlOperator op;
-     * op.copy( QString( "Makefile" ),
-     *          QString("ftp://rms:grmpf12@nibbler/home/rms/tmp"),
-     *          false );
-     *
-     * as well as the following:
-     *
-     * QUrlOperator op;
-     * op.copy(QString("ftp://ftp.qt-project.org/qt/INSTALL"), ".");
-     */
     QFETCH( QString, urlStr );
 
     {
@@ -1417,11 +1405,6 @@ void tst_QUrl::compat_constructor_02_data()
 
 void tst_QUrl::compat_constructor_02()
 {
-    /* The following should work as expected:
-     *
-     * QUrlOperator op( "ftp://ftp.qt-project.org/qt" );
-     * op.copy(QString("INSTALL"), ".");
-     */
     QFETCH( QString, urlStr );
     QFETCH( QString, fileName );
 
