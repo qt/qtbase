@@ -60,14 +60,13 @@ void MyHighlighter::highlightBlock(const QString &text)
     QTextCharFormat myClassFormat;
     myClassFormat.setFontWeight(QFont::Bold);
     myClassFormat.setForeground(Qt::darkMagenta);
-    QString pattern = "\\bMy[A-Za-z]+\\b";
 
-    QRegExp expression(pattern);
-    int index = text.indexOf(expression);
-    while (index >= 0) {
-        int length = expression.matchedLength();
-        setFormat(index, length, myClassFormat);
-        index = text.indexOf(expression, index + length);
+    QRegularExpression expression("\\bMy[A-Za-z]+\\b");
+    QRegularExpressionMatchIterator i = expression.globalMatch(text);
+    while (i.hasNext())
+    {
+      QRegularExpressionMatch match = i.next();
+      setFormat(match.capturedStart(), match.capturedLength(), myClassFormat);
     }
 }
 //! [1]
@@ -77,8 +76,8 @@ void MyHighlighter::highlightBlock(const QString &text)
 QTextCharFormat multiLineCommentFormat;
 multiLineCommentFormat.setForeground(Qt::red);
 
-QRegExp startExpression("/\\*");
-QRegExp endExpression("\\*/");
+QRegularExpression startExpression("/\\*");
+QRegularExpression endExpression("\\*/");
 
 setCurrentBlockState(0);
 
@@ -87,14 +86,15 @@ if (previousBlockState() != 1)
     startIndex = text.indexOf(startExpression);
 
 while (startIndex >= 0) {
-   int endIndex = text.indexOf(endExpression, startIndex);
+   QRegularExpressionMatch endMatch;
+   int endIndex = text.indexOf(endExpression, startIndex, &endMatch);
    int commentLength;
    if (endIndex == -1) {
        setCurrentBlockState(1);
        commentLength = text.length() - startIndex;
    } else {
        commentLength = endIndex - startIndex
-                       + endExpression.matchedLength();
+                       + endMatch.capturedLength();
    }
    setFormat(startIndex, commentLength, multiLineCommentFormat);
    startIndex = text.indexOf(startExpression,
@@ -104,25 +104,6 @@ while (startIndex >= 0) {
 
 
 //! [3]
-void MyHighlighter::highlightBlock(const QString &text)
-{
-    QTextCharFormat myClassFormat;
-    myClassFormat.setFontWeight(QFont::Bold);
-    myClassFormat.setForeground(Qt::darkMagenta);
-    QString pattern = "\\bMy[A-Za-z]+\\b";
-
-    QRegExp expression(pattern);
-    int index = text.indexOf(expression);
-    while (index >= 0) {
-        int length = expression.matchedLength();
-        setFormat(index, length, myClassFormat);
-        index = text.indexOf(expression, index + length);
-     }
- }
-//! [3]
-
-
-//! [4]
 struct ParenthesisInfo
 {
     QChar char;
@@ -133,4 +114,4 @@ struct BlockData : public QTextBlockUserData
 {
     QVector<ParenthesisInfo> parentheses;
 };
-//! [4]
+//! [3]
