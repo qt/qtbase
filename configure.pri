@@ -830,6 +830,9 @@ defineTest(qtConfOutput_reloadSpec) {
             !isEmpty(config.input.sysroot): \
         reloadSpec()
 
+    # toolchain.prf uses this.
+    dummy = $$qtConfEvaluate("features.cross_compile")
+
     bypassNesting() {
         QMAKE_INTERNAL_INCLUDED_FEATURES -= \
             $$[QT_HOST_DATA/src]/mkspecs/features/mac/toolchain.prf \
@@ -911,6 +914,14 @@ defineTest(qtConfOutput_pkgConfig) {
         qtConfOutputVar(assign, "publicPro", "PKG_CONFIG_LIBDIR", $$PKG_CONFIG_LIBDIR)
         export(PKG_CONFIG_LIBDIR)
     }
+}
+
+defineTest(qtConfOutput_crossCompile) {
+    !$${2}: return()
+
+    # We need to preempt the output here, as subsequent tests rely on it
+    CONFIG += cross_compile
+    export(CONFIG)
 }
 
 defineTest(qtConfOutput_useGoldLinker) {
