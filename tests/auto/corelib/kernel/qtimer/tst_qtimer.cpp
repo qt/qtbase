@@ -158,6 +158,7 @@ void tst_QTimer::remainingTime()
     QTimer timer;
 
     connect(&timer, SIGNAL(timeout()), &helper, SLOT(timeout()));
+    timer.setTimerType(Qt::PreciseTimer);
     timer.start(200);
 
     QCOMPARE(helper.count, 0);
