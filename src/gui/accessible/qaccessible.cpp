@@ -1373,8 +1373,13 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
     if (!iface)
         return 0;
-    if (m_child != -1)
+    if (m_child != -1) {
         iface = iface->child(m_child);
+        if (Q_UNLIKELY(!iface)) {
+            qCWarning(lcAccessibilityCore) << "Invalid child in QAccessibleEvent:" << m_object << "child:" << m_child;
+            return 0;
+        }
+    }
     return QAccessible::uniqueId(iface);
 }
 
