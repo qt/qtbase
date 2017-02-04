@@ -58,7 +58,7 @@ int main()
 {
 //! [0]
 QString string(QStringLiteral("a string"));
-QStringIterator i(string);
+QStringIterator i(string); // implicitly converted to QStringView
 //! [0]
 
 //! [1]
@@ -71,8 +71,7 @@ while (i.hasNext())
 
 {
 //! [2]
-QString string(QStringLiteral("𝄞 is the G clef"));
-QStringIterator i(string);
+QStringIterator i(u"𝄞 is the G clef");
 qDebug() << hex << i.next(); // will print 1d11e (U+1D11E, MUSICAL SYMBOL G CLEF)
 qDebug() << hex << i.next(); // will print 20 (U+0020, SPACE)
 qDebug() << hex << i.next(); // will print 69 (U+0069, LATIN SMALL LETTER I)

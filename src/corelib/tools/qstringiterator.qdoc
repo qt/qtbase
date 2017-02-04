@@ -55,7 +55,7 @@
     that may be present in a QString, and return the individual Unicode code points.
 
     You can create a QStringIterator that iterates over a given
-    QString by passing the string to the QStringIterator's constructor:
+    QStringView by passing the string to the QStringIterator's constructor:
 
     \snippet code/src_corelib_tools_qstringiterator.cpp 0
 
@@ -120,12 +120,12 @@
 */
 
 /*!
-    \fn QStringIterator::QStringIterator(const QString &string)
+    \fn QStringIterator::QStringIterator(QStringView string, QStringView::size_type idx)
 
     Constructs an iterator over the contents of \a string. The iterator will point
-    before the first position in the string.
+    before position \a idx in the string.
 
-    The string \a string must remain valid while the iterator is being used.
+    The string view \a string must remain valid while the iterator is being used.
 */
 
 /*!

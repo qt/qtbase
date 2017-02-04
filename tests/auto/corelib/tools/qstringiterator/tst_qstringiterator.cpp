@@ -326,22 +326,22 @@ void tst_QStringIterator::position()
         QLatin1Char('p')
         // codeunit count: 35
     };
+    static const int stringDataSize = sizeof(stringData) / sizeof(stringData[0]);
 
-    const QString string(stringData, sizeof(stringData) / sizeof(stringData[0]));
-    QStringIterator i(string);
+    QStringIterator i(QStringView(stringData, stringDataSize));
 
-    QCOMPARE(i.position(), string.constBegin());
+    QCOMPARE(i.position(), stringData);
     QVERIFY(i.hasNext());
     QVERIFY(!i.hasPrevious());
 
-    i.setPosition(string.constEnd());
-    QCOMPARE(i.position(), string.constEnd());
+    i.setPosition(stringData + stringDataSize);
+    QCOMPARE(i.position(), stringData + stringDataSize);
     QVERIFY(!i.hasNext());
     QVERIFY(i.hasPrevious());
 
 #define QCHAR_UNICODE_VALUE(x) ((uint)(QChar(x).unicode()))
 
-    const QString::const_iterator begin = string.constBegin();
+    const QChar *begin = stringData;
     i.setPosition(begin);
     QCOMPARE(i.position(), begin);
     QCOMPARE(i.peekNext(), QCHAR_UNICODE_VALUE(QLatin1Char('a')));

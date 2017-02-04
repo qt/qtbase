@@ -60,12 +60,12 @@ QT_BEGIN_NAMESPACE
 class QStringIterator
 {
     QString::const_iterator i, pos, e;
-
+    Q_STATIC_ASSERT((std::is_same<QString::const_iterator, const QChar *>::value));
 public:
-    inline explicit QStringIterator(const QString &string)
-        : i(string.constBegin()),
-          pos(string.constBegin()),
-          e(string.constEnd())
+    explicit QStringIterator(QStringView string, QStringView::size_type idx = 0)
+        : i(string.begin()),
+          pos(i + idx),
+          e(string.end())
     {
     }
 
