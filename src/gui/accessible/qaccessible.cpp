@@ -52,11 +52,14 @@
 #include <qpa/qplatformintegration.h>
 
 #include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qhash.h>
 #include <private/qfactoryloader_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
 
 /*!
     \class QAccessible
@@ -1769,7 +1772,7 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
         if (child) {
             iface = child;
         } else {
-            qWarning() << "Cannot creat accessible child interface for object: " << m_object << " index: " << m_child;
+            qCWarning(lcAccessibilityCore) << "Cannot create accessible child interface for object: " << m_object << " index: " << m_child;
         }
     }
     return iface;
