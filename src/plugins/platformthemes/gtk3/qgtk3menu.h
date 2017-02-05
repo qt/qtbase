@@ -55,7 +55,7 @@ public:
     GtkWidget *create();
     GtkWidget *handle() const;
 
-    quintptr tag() const;
+    quintptr tag() const override;
     void setTag(quintptr tag) override;
 
     QString text() const;
