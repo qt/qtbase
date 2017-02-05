@@ -59,12 +59,21 @@ void tst_QStringMatcher::qstringmatcher()
 // public Qt::CaseSensitivity caseSensitivity() const
 void tst_QStringMatcher::caseSensitivity()
 {
-    QStringMatcher matcher;
+    const QString haystack = QStringLiteral("foobarFoo");
+    const QStringRef needle = haystack.rightRef(3); // "Foo"
+    QStringMatcher matcher(needle.data(), needle.size());
+
+    QCOMPARE(matcher.caseSensitivity(), Qt::CaseSensitive);
+    QCOMPARE(matcher.indexIn(haystack), 6);
+
+    matcher.setCaseSensitivity(Qt::CaseInsensitive);
+
+    QCOMPARE(matcher.caseSensitivity(), Qt::CaseInsensitive);
+    QCOMPARE(matcher.indexIn(haystack), 0);
 
     matcher.setCaseSensitivity(Qt::CaseSensitive);
     QCOMPARE(matcher.caseSensitivity(), Qt::CaseSensitive);
-    matcher.setCaseSensitivity(Qt::CaseInsensitive);
-    QCOMPARE(matcher.caseSensitivity(), Qt::CaseInsensitive);
+    QCOMPARE(matcher.indexIn(haystack), 6);
 }
 
 void tst_QStringMatcher::indexIn_data()

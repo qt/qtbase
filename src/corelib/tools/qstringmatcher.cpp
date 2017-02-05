@@ -246,7 +246,7 @@ void QStringMatcher::setCaseSensitivity(Qt::CaseSensitivity cs)
 {
     if (cs == q_cs)
         return;
-    bm_init_skiptable((const ushort *)q_pattern.unicode(), q_pattern.size(), p.q_skiptable, cs);
+    bm_init_skiptable((const ushort *)p.uc, p.len, p.q_skiptable, cs);
     q_cs = cs;
 }
 
