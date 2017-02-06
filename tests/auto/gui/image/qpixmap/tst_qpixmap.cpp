@@ -119,6 +119,7 @@ private slots:
     void refUnref();
 
     void copy();
+    void deepCopyPreservesDpr();
     void depthOfNullObjects();
 
     void transformed();
@@ -1131,6 +1132,19 @@ void tst_QPixmap::copy()
 
     QPixmap transCopy = trans.copy();
     QCOMPARE(trans, transCopy);
+}
+
+// QTBUG-58653: Force a deep copy of a pixmap by
+// having a QPainter and check whether DevicePixelRatio is preserved
+void tst_QPixmap::deepCopyPreservesDpr()
+{
+    const qreal dpr = 2;
+    QPixmap src(32, 32);
+    src.setDevicePixelRatio(dpr);
+    src.fill(Qt::red);
+    QPainter painter(&src);
+    const QPixmap dest = src.copy();
+    QCOMPARE(dest.devicePixelRatio(), dpr);
 }
 
 void tst_QPixmap::depthOfNullObjects()
