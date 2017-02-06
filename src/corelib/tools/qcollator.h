@@ -69,7 +69,7 @@ public:
 protected:
     QCollatorSortKey(QCollatorSortKeyPrivate*);
 
-    QSharedDataPointer<QCollatorSortKeyPrivate> d;
+    QExplicitlySharedDataPointer<QCollatorSortKeyPrivate> d;
 
 private:
     QCollatorSortKey();
