@@ -147,7 +147,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     if (finalSize == 0) {
         qWarning() << "there were problems when generating the ::sortKey by LCMapStringW with error:" << GetLastError();
     }
-    return QCollatorSortKey(new QCollatorSortKeyPrivate(ret));
+    return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(ret)));
 }
 
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const

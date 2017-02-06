@@ -131,9 +131,10 @@ class QCollatorSortKeyPrivate : public QSharedData
 {
     friend class QCollator;
 public:
-    QCollatorSortKeyPrivate(const CollatorKeyType &key)
+    template <typename...T>
+    explicit QCollatorSortKeyPrivate(T &&...args)
         : QSharedData()
-        , m_key(key)
+        , m_key(std::forward<T>(args)...)
     {
     }
 

@@ -110,7 +110,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     }
     result.resize(size+1);
     result[size] = 0;
-    return QCollatorSortKey(new QCollatorSortKeyPrivate(result));
+    return QCollatorSortKey(new QCollatorSortKeyPrivate(std::move(result)));
 }
 
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
