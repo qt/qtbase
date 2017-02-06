@@ -33,8 +33,6 @@
 
 QT_USE_NAMESPACE
 
-bool macNativeAccessibilityEnabled();
-bool trusted();
 bool testLineEdit();
 bool testHierarchy(QWidget *w);
 bool singleWidget();
