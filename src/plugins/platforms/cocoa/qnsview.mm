@@ -348,14 +348,6 @@ static bool _q_dontOverrideCtrlLMB = false;
     }
 }
 
-- (void)notifyWindowWillZoom:(BOOL)willZoom
-{
-    Qt::WindowState newState = willZoom ? Qt::WindowMaximized : Qt::WindowNoState;
-    if (!willZoom)
-        m_platformWindow->m_effectivelyMaximized = false;
-    m_platformWindow->handleWindowStateChanged(newState);
-}
-
 - (void)viewDidHide
 {
     m_platformWindow->obscureWindow();
