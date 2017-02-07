@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 #include "qcollator_p.h"
+#include "qlocale_p.h"
 #include "qstringlist.h"
 #include "qstring.h"
 
@@ -56,7 +57,7 @@ void QCollatorPrivate::init()
     cleanup();
 
     UErrorCode status = U_ZERO_ERROR;
-    QByteArray name = locale.bcp47Name().replace(QLatin1Char('-'), QLatin1Char('_')).toLatin1();
+    QByteArray name = QLocalePrivate::get(locale)->bcp47Name('_');
     collator = ucol_open(name.constData(), &status);
     if (U_FAILURE(status)) {
         qWarning("Could not create collator: %d", status);
