@@ -186,9 +186,10 @@ void QLoggingRule::parse(const QStringRef &pattern)
 */
 void QLoggingSettingsParser::setContent(const QString &content)
 {
-    QString content_ = content;
-    QTextStream stream(&content_, QIODevice::ReadOnly);
-    setContent(stream);
+    _rules.clear();
+    const auto lines = content.splitRef(QLatin1Char('\n'));
+    for (const auto &line : lines)
+        parseNextLine(line);
 }
 
 /*!
@@ -198,42 +199,50 @@ void QLoggingSettingsParser::setContent(const QString &content)
 void QLoggingSettingsParser::setContent(QTextStream &stream)
 {
     _rules.clear();
-    while (!stream.atEnd()) {
-        QString line = stream.readLine();
+    QString line;
+    while (stream.readLineInto(&line))
+        parseNextLine(QStringRef(&line));
+}
 
-        // Remove all whitespace from line
-        line = line.simplified();
-        line.remove(QLatin1Char(' '));
+/*!
+    \internal
+    Parses one line of the configuation file
+*/
 
-        // comment
-        if (line.startsWith(QLatin1Char(';')))
-            continue;
+void QLoggingSettingsParser::parseNextLine(QStringRef line)
+{
+    // Remove whitespace at start and end of line:
+    line = line.trimmed();
 
-        if (line.startsWith(QLatin1Char('[')) && line.endsWith(QLatin1Char(']'))) {
-            // new section
-            _section = line.mid(1, line.size() - 2);
-            continue;
-        }
+    // comment
+    if (line.startsWith(QLatin1Char(';')))
+        return;
 
-        if (_section.compare(QLatin1String("rules"), Qt::CaseInsensitive) == 0) {
-            int equalPos = line.indexOf(QLatin1Char('='));
-            if (equalPos != -1) {
-                if (line.lastIndexOf(QLatin1Char('=')) == equalPos) {
-                    const QStringRef pattern = line.leftRef(equalPos);
-                    const QStringRef valueStr = line.midRef(equalPos + 1);
-                    int value = -1;
-                    if (valueStr == QLatin1String("true"))
-                        value = 1;
-                    else if (valueStr == QLatin1String("false"))
-                        value = 0;
-                    QLoggingRule rule(pattern, (value == 1));
-                    if (rule.flags != 0 && (value != -1))
-                        _rules.append(rule);
-                    else
-                        warnMsg("Ignoring malformed logging rule: '%s'", line.toUtf8().constData());
-                } else {
+    if (line.startsWith(QLatin1Char('[')) && line.endsWith(QLatin1Char(']'))) {
+        // new section
+        auto sectionName = line.mid(1, line.size() - 2).trimmed();
+        m_inRulesSection = sectionName.compare(QLatin1String("rules"), Qt::CaseInsensitive) == 0;
+        return;
+    }
+
+    if (m_inRulesSection) {
+        int equalPos = line.indexOf(QLatin1Char('='));
+        if (equalPos != -1) {
+            if (line.lastIndexOf(QLatin1Char('=')) == equalPos) {
+                const auto pattern = line.left(equalPos).trimmed();
+                const auto valueStr = line.mid(equalPos + 1).trimmed();
+                int value = -1;
+                if (valueStr == QLatin1String("true"))
+                    value = 1;
+                else if (valueStr == QLatin1String("false"))
+                    value = 0;
+                QLoggingRule rule(pattern, (value == 1));
+                if (rule.flags != 0 && (value != -1))
+                    _rules.append(rule);
+                else
                     warnMsg("Ignoring malformed logging rule: '%s'", line.toUtf8().constData());
-                }
+            } else {
+                warnMsg("Ignoring malformed logging rule: '%s'", line.toUtf8().constData());
             }
         }
     }
@@ -286,7 +295,7 @@ void QLoggingRegistry::init()
     if (!rulesSrc.isEmpty()) {
          QTextStream stream(rulesSrc);
          QLoggingSettingsParser parser;
-         parser.setSection(QStringLiteral("Rules"));
+         parser.setImplicitRulesSection(true);
          parser.setContent(stream);
          er += parser.rules();
     }
@@ -350,7 +359,7 @@ void QLoggingRegistry::unregisterCategory(QLoggingCategory *cat)
 void QLoggingRegistry::setApiRules(const QString &content)
 {
     QLoggingSettingsParser parser;
-    parser.setSection(QStringLiteral("Rules"));
+    parser.setImplicitRulesSection(true);
     parser.setContent(content);
 
     if (qtLoggingDebug())
