@@ -314,10 +314,6 @@
             "type": "compile",
             "test": "common/avx"
         },
-        "avx_apple_clang": {
-            "label": "bugfree AVX support in compiler",
-            "type": "avx_test_apple_clang"
-        },
         "avx2": {
             "label": "AVX2 instructions",
             "type": "compile",
@@ -751,7 +747,7 @@
         },
         "avx": {
             "label": "AVX",
-            "condition": "features.sse4_2 && tests.avx && tests.avx_apple_clang",
+            "condition": "features.sse4_2 && tests.avx",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX", "value": 1 }

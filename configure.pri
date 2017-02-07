@@ -274,18 +274,6 @@ defineTest(qtConfTest_architecture) {
     return(true)
 }
 
-defineTest(qtConfTest_avx_test_apple_clang) {
-    !*g++*:!*-clang*: return(true)
-
-    qtRunLoggedCommand("$$QMAKE_CXX --version", compiler)|return(false)
-    contains(compiler, "Apple clang version [23]") {
-        # Some clang versions produce internal compiler errors compiling Qt AVX code
-        return(false)
-    } else {
-        return(true)
-    }
-}
-
 defineTest(qtConfTest_gnumake) {
     make = $$qtConfFindInPath("gmake")
     isEmpty(make): make = $$qtConfFindInPath("make")
