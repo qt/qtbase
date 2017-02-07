@@ -54,41 +54,60 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest
 {
+    template <typename Predicate>
+    static Q_REQUIRED_RESULT bool qWaitFor(Predicate predicate, int timeout = 5000)
+    {
+        // We should not spint the event loop in case the predicate is already true,
+        // otherwise we might send new events that invalidate the predicate.
+        if (predicate())
+            return true;
+
+        // qWait() is expected to spin the event loop, even when called with a small
+        // timeout like 1ms, so we we can't use a simple while-loop here based on
+        // the deadline timer not having timed out. Use do-while instead.
+
+        int remaining = timeout;
+        QDeadlineTimer deadline(remaining, Qt::PreciseTimer);
+
+        do {
+            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+
+            remaining = deadline.remainingTime();
+            if (remaining > 0) {
+                QTest::qSleep(qMin(10, remaining));
+                remaining = deadline.remainingTime();
+            }
+
+            if (predicate())
+                return true;
+
+            remaining = deadline.remainingTime();
+        } while (remaining > 0);
+
+        return predicate(); // Last chance
+    }
+
     Q_DECL_UNUSED inline static void qWait(int ms)
     {
         Q_ASSERT(QCoreApplication::instance());
-
-        QDeadlineTimer timer(ms, Qt::PreciseTimer);
-        int remaining = ms;
-        do {
-            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
-            remaining = timer.remainingTime();
-            if (remaining <= 0)
-                break;
-            QTest::qSleep(qMin(10, remaining));
-            remaining = timer.remainingTime();
-        } while (remaining > 0);
+        auto unconditionalWait = []() { return false; };
+        bool timedOut = !qWaitFor(unconditionalWait, ms);
+        Q_UNUSED(timedOut);
     }
 
 #ifdef QT_GUI_LIB
     inline static bool qWaitForWindowActive(QWindow *window, int timeout = 5000)
     {
-        QDeadlineTimer timer(timeout, Qt::PreciseTimer);
-        int remaining = timeout;
-        while (!window->isActive() && remaining > 0) {
-            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
-            QTest::qSleep(10);
-            remaining = timer.remainingTime();
-        }
+        bool becameActive = qWaitFor([&]() { return window->isActive(); }, timeout);
+
         // Try ensuring the platform window receives the real position.
         // (i.e. that window->pos() reflects reality)
         // isActive() ( == FocusIn in case of X) does not guarantee this. It seems some WMs randomly
         // send the final ConfigureNotify (the one with the non-bogus 0,0 position) after the FocusIn.
         // If we just let things go, every mapTo/FromGlobal call the tests perform directly after
         // qWaitForWindowShown() will generate bogus results.
-        if (window->isActive()) {
+        if (becameActive) {
             int waitNo = 0; // 0, 0 might be a valid position after all, so do not wait for ever
             while (window->position().isNull()) {
                 if (waitNo++ > timeout / 10)
@@ -101,15 +120,7 @@ namespace QTest
 
     inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 5000)
     {
-        QDeadlineTimer timer(timeout, Qt::PreciseTimer);
-        int remaining = timeout;
-        while (!window->isExposed() && remaining > 0) {
-            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
-            QTest::qSleep(10);
-            remaining = timer.remainingTime();
-        }
-        return window->isExposed();
+        return qWaitFor([&]() { return window->isExposed(); }, timeout);
     }
 #endif
 
