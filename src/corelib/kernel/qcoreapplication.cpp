@@ -270,12 +270,13 @@ void qRemovePostRoutine(QtCleanUpFunction p)
 
 static void qt_call_pre_routines()
 {
-    QStartUpFuncList *list = preRList();
-    if (!list)
+    if (!preRList.exists())
         return;
+
 #ifndef QT_NO_THREAD
     QMutexLocker locker(&globalPreRoutinesMutex);
 #endif
+    QVFuncList *list = &(*preRList);
     // Unlike qt_call_post_routines, we don't empty the list, because
     // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
     // the function to be executed every time QCoreApplication is created.
@@ -285,16 +286,10 @@ static void qt_call_pre_routines()
 
 void Q_CORE_EXPORT qt_call_post_routines()
 {
-    QVFuncList *list = 0;
-    QT_TRY {
-        list = postRList();
-    } QT_CATCH(const std::bad_alloc &) {
-        // ignore - if we can't allocate a post routine list,
-        // there's a high probability that there's no post
-        // routine to be executed :)
-    }
-    if (!list)
+    if (!postRList.exists())
         return;
+
+    QVFuncList *list = &(*postRList);
     while (!list->isEmpty())
         (list->takeFirst())();
 }
