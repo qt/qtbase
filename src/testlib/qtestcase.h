@@ -147,6 +147,8 @@ do {\
         } \
     }
 
+// Ideally we'd use qWaitFor instead of QTRY_LOOP_IMPL, but due
+// to a compiler bug on MSVC < 2017 we can't (see QTBUG-59096)
 #define QTRY_IMPL(expr, timeout)\
     const int qt_test_step = 50; \
     const int qt_test_timeoutValue = timeout; \
