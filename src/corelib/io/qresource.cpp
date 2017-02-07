@@ -149,12 +149,23 @@ static QString cleanPath(const QString &_path)
 
 Q_DECLARE_TYPEINFO(QResourceRoot, Q_MOVABLE_TYPE);
 
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, resourceMutex, (QMutex::Recursive))
-
 typedef QList<QResourceRoot*> ResourceList;
-Q_GLOBAL_STATIC(ResourceList, resourceList)
+struct QResourceGlobalData
+{
+    QMutex resourceMutex{QMutex::Recursive};
+    ResourceList resourceList;
+    QStringList resourceSearchPaths;
+};
+Q_GLOBAL_STATIC(QResourceGlobalData, resourceGlobalData)
 
-Q_GLOBAL_STATIC(QStringList, resourceSearchPaths)
+static inline QMutex *resourceMutex()
+{ return &resourceGlobalData->resourceMutex; }
+
+static inline ResourceList *resourceList()
+{ return &resourceGlobalData->resourceList; }
+
+static inline QStringList *resourceSearchPaths()
+{ return &resourceGlobalData->resourceSearchPaths; }
 
 /*!
     \class QResource
@@ -870,6 +881,9 @@ Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
 Q_CORE_EXPORT bool qUnregisterResourceData(int version, const unsigned char *tree,
                                            const unsigned char *name, const unsigned char *data)
 {
+    if (resourceGlobalData.isDestroyed())
+        return false;
+
     QMutexLocker lock(resourceMutex());
     if ((version == 0x01 || version == 0x02) && resourceList()) {
         QResourceRoot res(version, tree, name, data);
