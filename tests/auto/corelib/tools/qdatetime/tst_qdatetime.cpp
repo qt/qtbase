@@ -31,6 +31,9 @@
 #include <time.h>
 #include <qdatetime.h>
 #include <private/qdatetime_p.h>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#  include <locale.h>
+#endif
 
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
@@ -185,6 +188,14 @@ Q_DECLARE_METATYPE(Qt::DateFormat)
 
 tst_QDateTime::tst_QDateTime()
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    // Some tests depend on C locale - BF&I it with belt *and* braces:
+    qputenv("LC_ALL", "C");
+    setlocale(LC_ALL, "C");
+    // Need to do this as early as possible, before anything accesses the
+    // QSystemLocale singleton; once it exists, there's no changing it.
+#endif // remove for ### Qt 6
+
     /*
       Due to some jurisdictions changing their zones and rules, it's possible
       for a non-CET zone to accidentally match CET at a few tested moments but
@@ -2269,13 +2280,6 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::addColumn<QString>("format");
     QTest::addColumn<QDateTime>("expected");
 
-    QString january = QDate::longMonthName(1);
-    QString oct = QDate::shortMonthName(10);
-    QString december = QDate::longMonthName(12);
-    QString thu = QDate::shortDayName(4);
-    QString fri = QDate::shortDayName(5);
-    QString date = "10 " + oct + " 10";
-
     QTest::newRow("data0") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
     QTest::newRow("data1") << QString("1020") << QString("sss") << invalidDateTime();
     QTest::newRow("data2") << QString("1010") << QString("sss") << QDateTime(defDate(), QTime(0, 0, 10));
@@ -2286,16 +2290,14 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("data7") << QString("foo") << QString("ap") << invalidDateTime();
     // Day non-conflict should not hide earlier year conflict (1963-03-01 was a
     // Friday; asking for Thursday moves this, without conflict, to the 7th):
-    QTest::newRow("data8") << QString("77 03 1963 " + thu) << QString("yy MM yyyy ddd") << invalidDateTime();
+    QTest::newRow("data8") << QString("77 03 1963 Thu") << QString("yy MM yyyy ddd") << invalidDateTime();
     QTest::newRow("data9") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
     QTest::newRow("data10") << QString("101010") << QString("dMyy") << QDateTime(QDate(1910, 10, 10), QTime());
-    QTest::newRow("data11") << date << QString("dd MMM yy") << QDateTime(QDate(1910, 10, 10), QTime());
-    date = fri + QLatin1Char(' ') + december + " 3 2004";
-    QTest::newRow("data12") << date << QString("ddd MMMM d yyyy") << QDateTime(QDate(2004, 12, 3), QTime());
+    QTest::newRow("data11") << QString("10 Oct 10") << QString("dd MMM yy") << QDateTime(QDate(1910, 10, 10), QTime());
+    QTest::newRow("data12") << QString("Fri December 3 2004") << QString("ddd MMMM d yyyy") << QDateTime(QDate(2004, 12, 3), QTime());
     QTest::newRow("data13") << QString("30.02.2004") << QString("dd.MM.yyyy") << invalidDateTime();
     QTest::newRow("data14") << QString("32.01.2004") << QString("dd.MM.yyyy") << invalidDateTime();
-    date = thu + QLatin1Char(' ') + january + " 2004";
-    QTest::newRow("data15") << date << QString("ddd MMMM yyyy") << QDateTime(QDate(2004, 1, 1), QTime());
+    QTest::newRow("data15") << QString("Thu January 2004") << QString("ddd MMMM yyyy") << QDateTime(QDate(2004, 1, 1), QTime());
     QTest::newRow("data16") << QString("2005-06-28T07:57:30.001Z")
                             << QString("yyyy-MM-ddThh:mm:ss.zZ")
                             << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1));
