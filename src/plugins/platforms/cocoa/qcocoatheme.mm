@@ -347,6 +347,8 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return QVariant(int(HoverEffect));
     case QPlatformTheme::SpellCheckUnderlineStyle:
         return QVariant(int(QTextCharFormat::DotLine));
+    case QPlatformTheme::UseFullScreenForPopupMenu:
+        return QVariant(bool([[NSApplication sharedApplication] presentationOptions] & NSApplicationPresentationFullScreen));
     default:
         break;
     }
