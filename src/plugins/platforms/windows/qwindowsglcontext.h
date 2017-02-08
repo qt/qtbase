@@ -48,6 +48,7 @@
 #include <vector>
 
 QT_BEGIN_NAMESPACE
+#ifndef QT_NO_OPENGL
 
 class QDebug;
 
@@ -228,7 +229,7 @@ private:
     GLenum (APIENTRY * m_getGraphicsResetStatus)();
     bool m_lost;
 };
-
+#endif
 QT_END_NAMESPACE
 
 #endif // QWINDOWSGLCONTEXT_H
