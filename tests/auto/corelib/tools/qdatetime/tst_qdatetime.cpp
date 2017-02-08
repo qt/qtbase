@@ -155,6 +155,29 @@ private:
     QTime invalidTime() const { return QTime(-1, -1, -1); }
     qint64 minJd() const { return QDateTimePrivate::minJd(); }
     qint64 maxJd() const { return QDateTimePrivate::maxJd(); }
+
+    class TimeZoneRollback
+    {
+        const QByteArray prior;
+    public:
+        // Save the previous timezone so we can restore it afterwards, otherwise
+        // later tests may break:
+        explicit TimeZoneRollback(const QByteArray &zone) : prior(qgetenv("TZ"))
+        { reset(zone); }
+        void reset(const QByteArray &zone)
+        {
+            qputenv("TZ", zone.constData());
+            tzset();
+        }
+        ~TimeZoneRollback()
+        {
+            if (prior.isNull())
+                qunsetenv("TZ");
+            else
+                qputenv("TZ", prior.constData());
+            tzset();
+        }
+    };
 };
 
 Q_DECLARE_METATYPE(Qt::TimeSpec)
@@ -1890,12 +1913,8 @@ void tst_QDateTime::operator_insert_extract()
     QFETCH(QString, deserialiseAs);
     QFETCH(QDataStream::Version, dataStreamVersion);
 
-    // Save the previous timezone so we can restore it afterwards, otherwise later tests will break
-    QByteArray previousTimeZone = qgetenv("TZ");
-
     // Start off in a certain timezone.
-    qputenv("TZ", serialiseAs.toLocal8Bit().constData());
-    tzset();
+    TimeZoneRollback useZone(serialiseAs.toLocal8Bit());
     QDateTime dateTimeAsUTC(dateTime.toUTC());
 
     QByteArray byteArray;
@@ -1920,8 +1939,7 @@ void tst_QDateTime::operator_insert_extract()
 
     // Ensure that a change in timezone between serialisation and deserialisation
     // still results in identical UTC-converted datetimes.
-    qputenv("TZ", deserialiseAs.toLocal8Bit().constData());
-    tzset();
+    useZone.reset(deserialiseAs.toLocal8Bit());
     QDateTime expectedLocalTime(dateTimeAsUTC.toLocalTime());
     {
         // Deserialise whole QDateTime at once.
@@ -1972,12 +1990,6 @@ void tst_QDateTime::operator_insert_extract()
             QCOMPARE(localDeserialized, dateTime);
         }
     }
-
-    if (previousTimeZone.isNull())
-        qunsetenv("TZ");
-    else
-        qputenv("TZ", previousTimeZone.constData());
-    tzset();
 }
 
 void tst_QDateTime::toString_strformat()
