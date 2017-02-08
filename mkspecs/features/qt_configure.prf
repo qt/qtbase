@@ -1258,14 +1258,14 @@ defineTest(qtConfProcessFeatures) {
 # reporting
 #
 
-QT_CONF_REPORT_PADDING = "........................................"
+defineReplace(qtConfPadCols) {
+    pad = $$num_add($$str_size($$2), -$$str_size($${1}))
+    lessThan(pad, 0): pad = 0
+    return("$$1 $$str_member($$2, 0, $$pad) $$3")
+}
 
 defineTest(qtConfReportPadded) {
-    pad = $$num_add($$str_size($$QT_CONF_REPORT_PADDING), -$$str_size($${1}))
-    lessThan(pad, 0): pad = 0
-    str = "$$1 $$str_member($$QT_CONF_REPORT_PADDING, 0, $$pad)"
-
-    qtConfAddReport("$$str $${2}")
+    qtConfAddReport($$qtConfPadCols($$1, "........................................", $$2))
 }
 
 defineReplace(qtConfCollectFeatures) {
@@ -1782,6 +1782,24 @@ QMAKE_SAVED_ARGS = $$QMAKE_EXTRA_ARGS
 QMAKE_REDO_CONFIG = false
 qtConfParseCommandLine()
 qtConfCheckErrors()
+
+!isEmpty(config.input.list-features) {
+    all_ft =
+    for (currentConfig, allConfigs) {
+        for (k, $${currentConfig}.features._KEYS_) {
+            pp = $$eval($${currentConfig}.features.$${k}.purpose)
+            !isEmpty(pp) {
+                all_ft += $$qtConfPadCols($$k, ".......................", \
+                                          $$section(pp, $$escape_expand(\\n), 0, 0))
+            }
+        }
+    }
+    all_ft = $$sorted(all_ft)
+    logn()
+    for (ft, all_ft): \
+        logn($$ft)
+    error()
+}
 
 for (currentConfig, allConfigs) {
     qtConfSetModuleName()

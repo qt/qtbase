@@ -62,6 +62,11 @@ Configure meta:
                          Use this after installing missing dependencies.
   -recheck-all ......... Discard all cached configure test results.
 
+  -feature-<feature> ... Enable <feature>
+  -no-feature-<feature>  Disable <feature> [none]
+  -list-features ....... List available features. Note that some features
+                         have dedicated command line options as well.
+
 Build options:
 
   -opensource .......... Build the Open-Source Edition of Qt
@@ -182,8 +187,6 @@ Component selection:
   -dbus-linked ......... Build Qt D-Bus and link to libdbus-1 [auto]
   -dbus-runtime ........ Build Qt D-Bus and dynamically load libdbus-1 [no]
                          DBUS_PATH= DBUS_HOST_PATH=
-  -feature-<feature> ... Enable <feature>. The available features are described
-                         in src/corelib/global/qfeatures.txt. [all enabled]
   -accessibility ....... Enable accessibility support [yes]
                          Note: Disabling accessibility is not recommended.
   -qml-debug ........... Enable QML debugging support [yes]
