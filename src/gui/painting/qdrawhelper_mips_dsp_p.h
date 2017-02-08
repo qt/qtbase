@@ -192,12 +192,9 @@ const uint * QT_FASTCALL qt_fetchUntransformed_argb8565_premultiplied_mips_dsp (
                                                                                 const QSpanData *data,
                                                                                 int y, int x, int length);
 
-#endif // QT_COMPILER_SUPPORTS_MIPS_DSP
 
 
-#ifdef QT_COMPILER_SUPPORTS_MIPS_DSPR2
-
-extern "C" void  qConvertRgb16To32_asm_mips_dspr2(quint32 *dest, const quint16 *src, int length);
+#if defined(__MIPS_DSPR2__)
 
 extern "C" void qt_blend_rgb16_on_rgb16_mips_dspr2_asm(quint16 *dest, const quint16 *src, int length, uint const_alpha);
 
@@ -206,7 +203,12 @@ void qt_blend_rgb16_on_rgb16_mips_dspr2(uchar *destPixels, int dbpl,
                                         int w, int h,
                                         int const_alpha);
 
-#endif // QT_COMPILER_SUPPORTS_MIPS_DSPR2
+const uint *QT_FASTCALL qt_fetchUntransformedRGB16_mips_dspr2(uint *buffer, const Operator *,
+                                                              const QSpanData *data, int y, int x,
+                                                              int length);
+#endif // defined(__MIPS_DSPR2__)
+
+#endif // QT_COMPILER_SUPPORTS_MIPS_DSP
 
 QT_END_NAMESPACE
 

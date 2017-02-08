@@ -274,18 +274,6 @@ defineTest(qtConfTest_architecture) {
     return(true)
 }
 
-defineTest(qtConfTest_avx_test_apple_clang) {
-    !*g++*:!*-clang*: return(true)
-
-    qtRunLoggedCommand("$$QMAKE_CXX --version", compiler)|return(false)
-    contains(compiler, "Apple clang version [23]") {
-        # Some clang versions produce internal compiler errors compiling Qt AVX code
-        return(false)
-    } else {
-        return(true)
-    }
-}
-
 defineTest(qtConfTest_gnumake) {
     make = $$qtConfFindInPath("gmake")
     isEmpty(make): make = $$qtConfFindInPath("make")
@@ -369,8 +357,9 @@ defineTest(qtConfTest_detectPkgConfig) {
     return(true)
 }
 
-defineTest(qtConfTest_neon) {
-    contains($${currentConfig}.tests.architecture.subarch, "neon"): return(true)
+defineTest(qtConfTest_subarch) {
+    subarch = $$eval($${1}.subarch)
+    contains($${currentConfig}.tests.architecture.subarch, $${subarch}): return(true)
     return(false)
 }
 
@@ -859,6 +848,9 @@ defineTest(qtConfOutput_reloadSpec) {
             !isEmpty(config.input.sysroot): \
         reloadSpec()
 
+    # toolchain.prf uses this.
+    dummy = $$qtConfEvaluate("features.cross_compile")
+
     bypassNesting() {
         QMAKE_INTERNAL_INCLUDED_FEATURES -= \
             $$[QT_HOST_DATA/src]/mkspecs/features/mac/toolchain.prf \
@@ -940,6 +932,14 @@ defineTest(qtConfOutput_pkgConfig) {
         qtConfOutputVar(assign, "publicPro", "PKG_CONFIG_LIBDIR", $$PKG_CONFIG_LIBDIR)
         export(PKG_CONFIG_LIBDIR)
     }
+}
+
+defineTest(qtConfOutput_crossCompile) {
+    !$${2}: return()
+
+    # We need to preempt the output here, as subsequent tests rely on it
+    CONFIG += cross_compile
+    export(CONFIG)
 }
 
 defineTest(qtConfOutput_useGoldLinker) {
@@ -1026,7 +1026,7 @@ defineTest(qtConfOutput_gccSysroot) {
 defineTest(qtConfOutput_qmakeArgs) {
     !$${2}: return()
 
-    $${currentConfig}.output.privatePro = "!host_build {"
+    $${currentConfig}.output.privatePro = "!host_build|!cross_compile {"
     for (a, config.input.qmakeArgs) {
         $${currentConfig}.output.privatePro += "    $$a"
         EXTRA_QMAKE_ARGS += $$system_quote($$a)

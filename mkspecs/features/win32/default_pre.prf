@@ -1,2 +1,2 @@
-CONFIG = incremental_off windows $$CONFIG
+CONFIG = windows $$CONFIG
 load(default_pre)

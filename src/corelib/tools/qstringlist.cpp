@@ -716,7 +716,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularEx
 /*!
     \fn int QStringList::removeDuplicates()
 
-    \since  4.5
+    \since 4.5
 
     This function removes duplicate entries from a list.
     The entries do not have to be sorted. They will retain their

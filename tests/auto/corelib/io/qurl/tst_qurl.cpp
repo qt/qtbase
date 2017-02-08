@@ -3075,8 +3075,11 @@ void tst_QUrl::fromUserInputWithCwd_data()
 #endif
                                       ); // fromUserInput cleans the path
         }
-        QTest::newRow(("file-" + QByteArray::number(c++)).constData())
+        QTest::newRow(("file-" + QByteArray::number(c)).constData())
                       << it.fileName() << QDir::currentPath() << url << url;
+        QTest::newRow(("file-" + QByteArray::number(c) + "-dot").constData())
+                      << it.fileName() << QStringLiteral(".") << url << url;
+        ++c;
     }
 #ifndef Q_OS_WINRT // WinRT cannot cd outside current / sandbox
     QDir parent = QDir::current();

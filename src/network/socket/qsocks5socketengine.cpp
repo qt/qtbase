@@ -1271,13 +1271,6 @@ void QSocks5SocketEnginePrivate::_q_controlSocketStateChanged(QAbstractSocket::S
 }
 
 #ifndef QT_NO_UDPSOCKET
-void QSocks5SocketEnginePrivate::checkForDatagrams() const
-{
-    // udp should be unbuffered so we need to do some polling at certain points
-    if (udpData->udpSocket->hasPendingDatagrams())
-        const_cast<QSocks5SocketEnginePrivate *>(this)->_q_udpSocketReadNotification();
-}
-
 void QSocks5SocketEnginePrivate::_q_udpSocketReadNotification()
 {
     QSOCKS5_D_DEBUG << "_q_udpSocketReadNotification()";
@@ -1609,16 +1602,12 @@ bool QSocks5SocketEngine::hasPendingDatagrams() const
     Q_D(const QSocks5SocketEngine);
     Q_INIT_CHECK(false);
 
-    d->checkForDatagrams();
-
     return !d->udpData->pendingDatagrams.isEmpty();
 }
 
 qint64 QSocks5SocketEngine::pendingDatagramSize() const
 {
     Q_D(const QSocks5SocketEngine);
-
-    d->checkForDatagrams();
 
     if (!d->udpData->pendingDatagrams.isEmpty())
         return d->udpData->pendingDatagrams.head().data.size();
@@ -1630,8 +1619,6 @@ qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
 {
 #ifndef QT_NO_UDPSOCKET
     Q_D(QSocks5SocketEngine);
-
-    d->checkForDatagrams();
 
     if (d->udpData->pendingDatagrams.isEmpty())
         return 0;

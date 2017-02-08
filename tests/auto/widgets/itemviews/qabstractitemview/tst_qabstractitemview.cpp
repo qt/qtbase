@@ -52,6 +52,7 @@
 #include <qstringlistmodel.h>
 #include <qsortfilterproxymodel.h>
 #include <qproxystyle.h>
+#include <qdialog.h>
 
 static inline void setFrameless(QWidget *w)
 {
@@ -149,6 +150,7 @@ private slots:
     void QTBUG50535_update_on_new_selection_model();
     void testSelectionModelInSyncWithView();
     void testClickToSelect();
+    void testDialogAsEditor();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -171,6 +173,29 @@ public:
     mutable bool calledVirtualDtor;
     mutable QWidget *openedEditor;
     QSize size;
+};
+
+class DialogItemDelegate : public QStyledItemDelegate
+{
+public:
+    DialogItemDelegate() : QStyledItemDelegate() { }
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const
+    {
+        openedEditor = new QDialog(parent);
+        return openedEditor;
+    }
+
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+    {
+        Q_UNUSED(model)
+        Q_UNUSED(index)
+
+        QDialog *dialog = qobject_cast<QDialog *>(editor);
+        result = static_cast<QDialog::DialogCode>(dialog->result());
+    }
+
+    mutable QDialog::DialogCode result;
+    mutable QDialog *openedEditor;
 };
 
 // Testing get/set functions
@@ -2154,6 +2179,38 @@ void tst_QAbstractItemView::testClickToSelect()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, nearCenterA);
     QCOMPARE(spy.count(), 2);
     QCOMPARE(spy.back().front().value<QRect>(), QRect(nearCenterA, QSize(1, 1)));
+}
+
+void tst_QAbstractItemView::testDialogAsEditor()
+{
+    DialogItemDelegate delegate;
+
+    QStandardItemModel model;
+    model.appendRow(new QStandardItem(QStringLiteral("editme")));
+
+    QListView view;
+    view.setItemDelegate(&delegate);
+    view.setModel(&model);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    view.edit(model.index(0,0));
+
+    QVERIFY(QTest::qWaitForWindowExposed(delegate.openedEditor));
+
+    delegate.openedEditor->reject();
+    QApplication::processEvents();
+
+    QCOMPARE(delegate.result, QDialog::Rejected);
+
+    view.edit(model.index(0,0));
+
+    QVERIFY(QTest::qWaitForWindowExposed(delegate.openedEditor));
+
+    delegate.openedEditor->accept();
+    QApplication::processEvents();
+
+    QCOMPARE(delegate.result, QDialog::Accepted);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

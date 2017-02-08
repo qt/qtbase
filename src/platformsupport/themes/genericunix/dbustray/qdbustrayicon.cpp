@@ -65,9 +65,32 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcTray, "qt.qpa.tray")
 
+static QString iconTempPath()
+{
+    QString tempPath = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+    if (!tempPath.isEmpty())
+        return tempPath;
+
+    tempPath = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
+
+    if (!tempPath.isEmpty()) {
+        QDir tempDir(tempPath);
+        if (tempDir.exists())
+            return tempPath;
+
+        if (tempDir.mkpath(QStringLiteral("."))) {
+            const QFile::Permissions permissions = QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
+            if (QFile(tempPath).setPermissions(permissions))
+                return tempPath;
+        }
+    }
+
+    return QDir::tempPath();
+}
+
 static const QString KDEItemFormat = QStringLiteral("org.kde.StatusNotifierItem-%1-%2");
 static const QString KDEWatcherService = QStringLiteral("org.kde.StatusNotifierWatcher");
-static const QString TempFileTemplate =  QDir::tempPath() + QLatin1String("/qt-trayicon-XXXXXX.png");
+static const QString TempFileTemplate = iconTempPath() + QLatin1String("/qt-trayicon-XXXXXX.png");
 static const QString XdgNotificationService = QStringLiteral("org.freedesktop.Notifications");
 static const QString XdgNotificationPath = QStringLiteral("/org/freedesktop/Notifications");
 static const QString DefaultAction = QStringLiteral("default");

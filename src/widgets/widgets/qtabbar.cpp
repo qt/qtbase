@@ -1447,7 +1447,7 @@ static QString computeElidedText(Qt::TextElideMode mode, const QString &text)
 
 /*!
     Returns the minimum tab size hint for the tab at position \a index.
-    \since Qt 5.0
+    \since 5.0
 */
 
 QSize QTabBar::minimumTabSizeHint(int index) const

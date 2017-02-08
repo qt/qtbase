@@ -54,7 +54,13 @@
 #include <QtCore/private/qcoreapplication_p.h>
 
 #if defined(Q_OS_WIN32)
+// PMIB_TCPTABLE2 is only available since Vista
+#if _WIN32_WINNT < 0x0600
+#  undef _WIN32_WINNT
+#  define _WIN32_WINNT 0x0600
+#endif // _WIN32_WINNT < 0x0600
 #include "../platformdefs_win.h"
+#include <iphlpapi.h>
 #endif
 
 #ifdef Q_OS_WINRT
@@ -71,9 +77,10 @@ using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::Networking;
 using namespace ABI::Windows::Networking::Connectivity;
+#endif // Q_OS_WINRT
+
 // needed as interface is used as parameter name in qGetInterfaceType
 #undef interface
-#endif // Q_OS_WINRT
 
 #ifdef Q_OS_LINUX
 #include <sys/socket.h>
@@ -89,62 +96,38 @@ QT_BEGIN_NAMESPACE
 static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interface)
 {
 #if defined(Q_OS_WIN32)
-    DWORD bytesWritten;
-    NDIS_MEDIUM medium;
-    NDIS_PHYSICAL_MEDIUM physicalMedium;
-
-    unsigned long oid;
-    HANDLE handle = CreateFile((TCHAR *)QString::fromLatin1("\\\\.\\%1").arg(interface).utf16(), 0,
-                               FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-    if (handle == INVALID_HANDLE_VALUE)
+    // QNetworkInterface::name returns a more friendly name on Windows. That name is not
+    // accepted as an identifier for CreateFile so we have to obtain the Luid.
+    std::wstring buf = interface.toStdWString();
+    if (buf.size() == 0)
         return QNetworkConfiguration::BearerUnknown;
 
-    bytesWritten = 0;
+    NET_LUID luid;
+    NETIO_STATUS status = ConvertInterfaceNameToLuidW(buf.c_str(), &luid);
+    if (status != NO_ERROR)
+        return QNetworkConfiguration::BearerUnknown;
 
-    oid = OID_GEN_MEDIA_SUPPORTED;
-    bool result = DeviceIoControl(handle, IOCTL_NDIS_QUERY_GLOBAL_STATS, &oid, sizeof(oid),
-                                  &medium, sizeof(medium), &bytesWritten, 0);
-    if (!result) {
-        CloseHandle(handle);
+    switch (luid.Info.IfType) {
+    case IF_TYPE_ETHERNET_CSMACD:
+    case IF_TYPE_ISO88025_TOKENRING:
+    case IF_TYPE_PPP:
+    case IF_TYPE_SOFTWARE_LOOPBACK:
+        return QNetworkConfiguration::BearerEthernet;
+    case IF_TYPE_IEEE80211:
+        return QNetworkConfiguration::BearerWLAN;
+    case IF_TYPE_ATM:
+    case IF_TYPE_IEEE1394:
+    case IF_TYPE_OTHER:
+    case IF_TYPE_TUNNEL:
+        return QNetworkConfiguration::BearerUnknown;
+    default:
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug() << "Interface Type" << luid.Info.IfType;
+#endif
         return QNetworkConfiguration::BearerUnknown;
     }
+    return QNetworkConfiguration::BearerUnknown;
 
-    bytesWritten = 0;
-
-    oid = OID_GEN_PHYSICAL_MEDIUM;
-    result = DeviceIoControl(handle, IOCTL_NDIS_QUERY_GLOBAL_STATS, &oid, sizeof(oid),
-                             &physicalMedium, sizeof(physicalMedium), &bytesWritten, 0);
-
-    if (!result) {
-        CloseHandle(handle);
-
-        if (medium == NdisMedium802_3)
-            return QNetworkConfiguration::BearerEthernet;
-        else
-            return QNetworkConfiguration::BearerUnknown;
-    }
-
-    CloseHandle(handle);
-
-    if (medium == NdisMedium802_3) {
-        switch (physicalMedium) {
-        case NdisPhysicalMediumWirelessLan:
-            return QNetworkConfiguration::BearerWLAN;
-        case NdisPhysicalMediumBluetooth:
-            return QNetworkConfiguration::BearerBluetooth;
-        case NdisPhysicalMediumWiMax:
-            return QNetworkConfiguration::BearerWiMAX;
-        default:
-#ifdef BEARER_MANAGEMENT_DEBUG
-            qDebug() << "Physical Medium" << physicalMedium;
-#endif
-            return QNetworkConfiguration::BearerEthernet;
-        }
-    }
-
-#ifdef BEARER_MANAGEMENT_DEBUG
-    qDebug() << medium << physicalMedium;
-#endif
 #elif defined(Q_OS_LINUX)
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
 

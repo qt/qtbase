@@ -68,7 +68,7 @@ class QAndroidEventDispatcherStopper
 {
 public:
     static QAndroidEventDispatcherStopper *instance();
-    static bool stopped() {return !instance()->started; }
+    static bool stopped() {return !instance()->m_started.load(); }
     void startAll();
     void stopAll();
     void addEventDispatcher(QAndroidEventDispatcher *dispatcher);
@@ -77,7 +77,7 @@ public:
 
 private:
     QMutex m_mutex;
-    bool started = true;
+    QAtomicInt m_started = 1;
     QVector<QAndroidEventDispatcher *> m_dispatchers;
 };
 

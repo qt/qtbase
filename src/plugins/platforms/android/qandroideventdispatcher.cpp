@@ -108,10 +108,9 @@ QAndroidEventDispatcherStopper *QAndroidEventDispatcherStopper::instance()
 void QAndroidEventDispatcherStopper::startAll()
 {
     QMutexLocker lock(&m_mutex);
-    if (started)
+    if (!m_started.testAndSetOrdered(0, 1))
         return;
 
-    started = true;
     for (QAndroidEventDispatcher *d : qAsConst(m_dispatchers))
         d->start();
 }
@@ -119,10 +118,9 @@ void QAndroidEventDispatcherStopper::startAll()
 void QAndroidEventDispatcherStopper::stopAll()
 {
     QMutexLocker lock(&m_mutex);
-    if (!started)
+    if (!m_started.testAndSetOrdered(1, 0))
         return;
 
-    started = false;
     for (QAndroidEventDispatcher *d : qAsConst(m_dispatchers))
         d->stop();
 }

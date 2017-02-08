@@ -55,6 +55,11 @@ QT_BEGIN_NAMESPACE
 
 typedef QSqlTableModelSql Sql;
 
+QSqlTableModelPrivate::~QSqlTableModelPrivate()
+{
+
+}
+
 /*! \internal
     Populates our record with values.
 */

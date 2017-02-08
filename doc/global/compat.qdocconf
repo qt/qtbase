@@ -6,4 +6,5 @@ macro.endquote                  = "\\endquotation"
 macro.relatesto                 = "\\relates"
 
 spurious                        = "Missing comma in .*" \
-                                  "Missing pattern .*"
+                                  "Missing pattern .*" \
+                                  "Unable to parse (QML|JavaScript).*"

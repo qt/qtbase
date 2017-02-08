@@ -133,7 +133,7 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
 
 /*!
     \fn QFlag::QFlag(uint value)
-    \since Qt 5.3
+    \since 5.3
 
     Constructs a QFlag object that stores the given \a value.
 */
@@ -147,7 +147,7 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
 
 /*!
     \fn QFlag::QFlag(ushort value)
-    \since Qt 5.3
+    \since 5.3
 
     Constructs a QFlag object that stores the given \a value.
 */
@@ -160,7 +160,7 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
 
 /*!
     \fn QFlag::operator uint() const
-    \since Qt 5.3
+    \since 5.3
 
     Returns the value stored by the QFlag object.
 */

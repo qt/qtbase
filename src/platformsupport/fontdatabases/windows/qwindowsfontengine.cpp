@@ -896,7 +896,7 @@ int QWindowsFontEngine::synthesized() const
                 synthesized_flags = SynthesizedItalic;
             if (fontDef.stretch != 100 && ttf)
                 synthesized_flags |= SynthesizedStretch;
-            if (tm.tmWeight >= 500 && !(macStyle & 1))
+            if (tm.tmWeight >= 500 && tm.tmWeight < 750 && !(macStyle & 1))
                 synthesized_flags |= SynthesizedBold;
             //qDebug() << "font is" << _name <<
             //    "it=" << (macStyle & 2) << fontDef.style << "flags=" << synthesized_flags;
