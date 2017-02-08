@@ -1,8 +1,7 @@
 Usage:  configure [options] [assignments]
 
 Configure understands variable assignments like VAR=value on the command line.
-These override any values possibly obtained from pkg-config. The variables
-are mentioned in the descriptions of the options they relate to.
+The variables are mentioned in the descriptions of the options they relate to.
 
 It is also possible to manipulate any QMAKE_* variable, to amend the values
 from the mkspec for the build of Qt itself, e.g., QMAKE_CXXFLAGS+=-g3.
