@@ -67,6 +67,8 @@ Configure meta:
   -list-features ....... List available features. Note that some features
                          have dedicated command line options as well.
 
+  -list-libraries ...... List possible external dependencies.
+
 Build options:
 
   -opensource .......... Build the Open-Source Edition of Qt

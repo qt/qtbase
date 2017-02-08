@@ -14,7 +14,8 @@
 
             "redo": { "type": "redo" },
 
-            "list-features": "void"
+            "list-features": "void",
+            "list-libraries": "void"
         }
     }
 }

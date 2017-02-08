@@ -413,6 +413,10 @@ defineTest(qtConfSetupLibraries) {
         isEmpty(alias): alias = $$l
         $${lpfx}.alias = $$alias
         export($${lpfx}.alias)
+        # make it easy to refer to the library by its export name.
+        $${currentConfig}.exports._KEYS_ += $$alias
+        $${currentConfig}.exports.$$alias += $$l
+        export($${currentConfig}.exports.$$alias)
         isEmpty($${lpfx}.sources._KEYS_): \
             error("Library $$l defines no sources")
         for (s, $${lpfx}.sources._KEYS_) {
@@ -432,6 +436,8 @@ defineTest(qtConfSetupLibraries) {
             }
         }
     }
+    $${currentConfig}.exports._KEYS_ = $$unique($${currentConfig}.exports._KEYS_)
+    export($${currentConfig}.exports._KEYS_)
 
     # reverse mapping for assignments on command line.
     for (a, $${currentConfig}.commandline.assignments._KEYS_) {
@@ -1798,6 +1804,36 @@ qtConfCheckErrors()
     logn()
     for (ft, all_ft): \
         logn($$ft)
+    error()
+}
+
+!isEmpty(config.input.list-libraries) {
+    logn()
+    for (currentConfig, allConfigs) {
+        !isEmpty($${currentConfig}.exports._KEYS_) {
+            !isEmpty($${currentConfig}.module): \
+                logn($$eval($${currentConfig}.module):)
+            else: \
+                logn($$section(currentConfig, ., -1):)
+            all_xp =
+            for (xport, $${currentConfig}.exports._KEYS_) {
+                libs = $$eval($${currentConfig}.exports.$$xport)
+                isEqual($${currentConfig}.libraries.$$first(libs).export, "") {  # not isEmpty()!
+                    !isEmpty(config.input.verbose): \
+                        all_xp += "$$xport!"
+                } else {
+                    out = "$$xport"
+                    !isEmpty(config.input.verbose):!isEqual(xport, $$libs): \
+                        out += "($$libs)"
+                    all_xp += "$$out"
+                }
+            }
+            all_xp = $$sorted(all_xp)
+            all_xp ~= s,^([^!]*)!$,(\\1),g
+            for (xp, all_xp): \
+                logn("  $$xp")
+        }
+    }
     error()
 }
 
