@@ -110,7 +110,6 @@ SOURCES += \
         tools/qtextboundaryfinder.cpp \
         tools/qtimeline.cpp \
         tools/qunicodetools.cpp \
-        tools/qvector.cpp \
         tools/qvsnprintf.cpp \
         tools/qversionnumber.cpp
 
