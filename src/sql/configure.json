@@ -8,7 +8,6 @@
     "commandline": {
         "assignments": {
             "MYSQL_PATH": "mysql.prefix",
-            "PSQL_LIBS": "psql.libs",
             "SYBASE": "tds.prefix",
             "SYBASE_LIBS": "tds.libs"
         },

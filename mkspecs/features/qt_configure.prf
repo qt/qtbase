@@ -401,6 +401,7 @@ defineReplace(qtConfPrepareArgs) {
 }
 
 defineTest(qtConfSetupLibraries) {
+    asspfx = $${currentConfig}.commandline.assignments
     for (l, $${currentConfig}.libraries._KEYS_) {
         lpfx = $${currentConfig}.libraries.$${l}
         # 'export' may be omitted, in which case it falls back to the library's name
@@ -439,9 +440,30 @@ defineTest(qtConfSetupLibraries) {
     $${currentConfig}.exports._KEYS_ = $$unique($${currentConfig}.exports._KEYS_)
     export($${currentConfig}.exports._KEYS_)
 
+    for (alias, $${currentConfig}.exports._KEYS_) {
+        ua = $$upper($$alias)
+        $${asspfx}._KEYS_ += \
+            $${ua}_PREFIX $${ua}_INCDIR $${ua}_LIBDIR \
+            $${ua}_LIBS $${ua}_LIBS_DEBUG $${ua}_LIBS_RELEASE
+        uapfx = $${asspfx}.$${ua}
+        $${uapfx}_PREFIX = $${alias}.prefix
+        $${uapfx}_INCDIR = $${alias}.incdir
+        $${uapfx}_LIBDIR = $${alias}.libdir
+        $${uapfx}_LIBS = $${alias}.libs
+        $${uapfx}_LIBS_DEBUG = $${alias}.libs.debug
+        $${uapfx}_LIBS_RELEASE = $${alias}.libs.release
+        export($${uapfx}_PREFIX)
+        export($${uapfx}_INCDIR)
+        export($${uapfx}_LIBDIR)
+        export($${uapfx}_LIBS)
+        export($${uapfx}_LIBS_DEBUG)
+        export($${uapfx}_LIBS_RELEASE)
+    }
+    export($${asspfx}._KEYS_)
+
     # reverse mapping for assignments on command line.
-    for (a, $${currentConfig}.commandline.assignments._KEYS_) {
-        apfx = $${currentConfig}.commandline.assignments.$${a}
+    for (a, $${asspfx}._KEYS_) {
+        apfx = $${asspfx}.$${a}
         ra = config.commandline.rev_assignments.$$eval($$apfx)
         $$ra = $$a
         export($$ra)
@@ -491,6 +513,18 @@ defineTest(qtConfLibrary_inline) {
         $${1}.includedir = $$prefix/include
         export($${1}.includedir)
         $${1}.libs = "-L$$prefix/lib $$eval($${1}.libs)"
+        export($${1}.libs)
+    }
+
+    incdir = $$val_escape(config.input.$${input}.incdir)
+    !isEmpty(incdir) {
+        $${1}.includedir = $$incdir
+        export($${1}.includedir)
+    }
+
+    libdir = $$val_escape(config.input.$${input}.libdir)
+    !isEmpty(libdir) {
+        $${1}.libs = "-L$$libdir $$eval($${1}.libs)"
         export($${1}.libs)
     }
 

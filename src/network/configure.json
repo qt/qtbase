@@ -7,9 +7,6 @@
 
     "commandline": {
         "assignments": {
-            "OPENSSL_LIBS": "openssl.libs",
-            "OPENSSL_LIBS_DEBUG": "openssl.libs.debug",
-            "OPENSSL_LIBS_RELEASE": "openssl.libs.release",
             "OPENSSL_PATH": "openssl.prefix"
         },
         "options": {

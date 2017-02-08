@@ -1,7 +1,10 @@
 Usage:  configure [options] [assignments]
 
 Configure understands variable assignments like VAR=value on the command line.
-The variables are mentioned in the descriptions of the options they relate to.
+Each uppercased library name (obtainable with -list-libraries) supports the
+suffixes _INCDIR, _LIBDIR, _PREFIX (INCDIR=PREFIX/include, LIBDIR=PREFIX/lib),
+_LIBS, and - on Windows and Darwin - _LIBS_DEBUG and _LIBS_RELEASE. E.g.,
+ICU_PREFIX=/opt/icu42 ICU_LIBS="-licui18n -licuuc -licudata".
 
 It is also possible to manipulate any QMAKE_* variable, to amend the values
 from the mkspec for the build of Qt itself, e.g., QMAKE_CXXFLAGS+=-g3.
@@ -187,7 +190,6 @@ Component selection:
                          [default on Android and Windows]
   -dbus-linked ......... Build Qt D-Bus and link to libdbus-1 [auto]
   -dbus-runtime ........ Build Qt D-Bus and dynamically load libdbus-1 [no]
-                         DBUS_PATH= DBUS_HOST_PATH=
   -accessibility ....... Enable accessibility support [yes]
                          Note: Disabling accessibility is not recommended.
   -qml-debug ........... Enable QML debugging support [yes]
@@ -207,7 +209,6 @@ Core options:
   -pps ................. Enable PPS support [auto] (QNX only)
   -pcre ................ Select used libpcre3 [system/qt]
   -zlib ................ Select used zlib [system/qt]
-                         ZLIB_LIBS=
 
   Logging backends:
     -journald .......... Enable journald support [no] (Unix only)
@@ -220,8 +221,6 @@ Network options:
   -no-openssl .......... Do not use OpenSSL [default on Apple and WinRT]
   -openssl-linked ...... Use OpenSSL and link to libssl [no]
   -openssl-runtime ..... Use OpenSSL and dynamically load libssl [auto]
-                         OPENSSL_PATH= OPENSSL_LIBS=, and on Windows also
-                         OPENSSL_LIBS_DEBUG= OPENSSL_LIBS_RELEASE=
   -securetransport ..... Use SecureTransport [auto] (Apple only)
 
   -sctp ................ Enable SCTP support [no]
@@ -289,5 +288,4 @@ Database options:
   -sql-<driver> ........ Enable SQL <driver> plugin. Supported drivers:
                          db2 ibase mysql oci odbc psql sqlite2 sqlite tds
                          [all auto]
-                         MYSQL_PATH= PSQL_LIBS= SYBASE= SYBASE_LIBS=
   -sqlite .............. Select used sqlite3 [system/qt]

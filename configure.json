@@ -20,8 +20,7 @@
     "commandline": {
         "assignments": {
             "DBUS_HOST_PATH": "host_dbus.prefix",
-            "DBUS_PATH": "dbus.prefix",
-            "ZLIB_LIBS": "zlib.libs"
+            "DBUS_PATH": "dbus.prefix"
         },
         "custom": "qmakeArgs",
         "options": {
