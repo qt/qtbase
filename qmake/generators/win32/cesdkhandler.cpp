@@ -183,10 +183,13 @@ QStringList CeSdkHandler::filterMsBuildToolPaths(const QStringList &paths) const
         if (path.endsWith(QLatin1String("bin")))
             dirVC110.cdUp();
         QDir dirVC120 = dirVC110;
+        QDir dirVC140 = dirVC110;
         if (dirVC110.cd(QStringLiteral("Microsoft.Cpp\\v4.0\\V110\\Platforms")))
             result << dirVC110.absolutePath();
         if (dirVC120.cd(QStringLiteral("Microsoft.Cpp\\v4.0\\V120\\Platforms")))
             result << dirVC120.absolutePath();
+        if (dirVC140.cd(QStringLiteral("Microsoft.Cpp\\v4.0\\V140\\Platforms")))
+            result << dirVC140.absolutePath();
     }
     return result;
 }
@@ -289,6 +292,8 @@ void CeSdkHandler::retrieveWEC2013SDKs()
             retrieveEnvironment(currentProperty.properties.value(QLatin1String("MSBuild Files110")).value.split(';'),
                                 filteredToolPaths, &currentSdk);
             retrieveEnvironment(currentProperty.properties.value(QLatin1String("MSBuild Files120")).value.split(';'),
+                                filteredToolPaths, &currentSdk);
+            retrieveEnvironment(currentProperty.properties.value(QLatin1String("MSBuild Files140")).value.split(';'),
                                 filteredToolPaths, &currentSdk);
             if (!currentSdk.m_include.isEmpty())
                 m_list.append(currentSdk);
