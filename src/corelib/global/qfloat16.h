@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 #if 0
 #pragma qt_class(QFloat16)
+#pragma qt_no_master_include
 #endif
 
 class qfloat16
