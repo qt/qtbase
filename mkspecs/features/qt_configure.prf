@@ -757,7 +757,7 @@ defineTest(qtConfTestPrepare_compile) {
             libConfig = $${currentConfig}
             qtConfHandleLibrary($$u)
         } else {
-            for (d, QMAKE_CONFIG_DEPS) {
+            for (d, QMAKE_LIBRARY_DEPS) {
                 contains($${d}.libraries._KEYS_, $$u) {
                     libConfig = $$d
                     break()
@@ -1813,14 +1813,27 @@ for(ever) {
     jsonFile = $$thisDir/configure.json
     priFile = $$thisDir/configure.pri
 
-    allConfigs += $$currentConfig
-
     # load configuration data
     configure_data = $$cat($$jsonFile, blob)
     !parseJson(configure_data, $$currentConfig): \
         error("Invalid or non-existent file $${jsonFile}.")
     exists($$priFile): \
         !include($$priFile): error()
+
+    # only configs which contain more than just subconfigs are saved for later.
+    $${currentConfig}._KEYS_ -= subconfigs
+    !isEmpty($${currentConfig}._KEYS_) {
+        allConfigs += $$currentConfig
+        contains($${currentConfig}._KEYS_, libraries) {
+            qtConfSetupLibraries()
+            # this ensures that references in QMAKE_LIBRARY_DEPS are unique.
+            qtConfSetModuleName()
+            ex = $$eval(config.modules.$${currentModule})
+            !isEmpty(ex): \
+                error("Module $$currentModule is claimed by both $$currentConfig and $${ex}.")
+            config.modules.$${currentModule} = $$currentConfig
+        }
+    }
 
     # prepend all subconfigs to files to keep a depth first search order
     subconfigs =
@@ -1835,9 +1848,6 @@ for(ever) {
     }
     configsToProcess = $$subconfigs $$configsToProcess
 }
-
-for (currentConfig, allConfigs): \
-    qtConfSetupLibraries()
 
 QMAKE_SAVED_ARGS = $$QMAKE_EXTRA_ARGS
 QMAKE_REDO_CONFIG = false
@@ -1948,11 +1958,15 @@ for (currentConfig, allConfigs) {
 
     # correctly setup dependencies
     QMAKE_CONFIG_DEPS = global global_private
+    QMAKE_LIBRARY_DEPS = $$eval(config.modules.global)
     !isEmpty($${currentConfig}.module) {
         for (d, $${currentConfig}.depends._KEYS_) {
             dep = $$replace($${currentConfig}.depends.$$d, -private$, _private)
-            dep *= $$replace(dep, _private$, )
+            gdep = $$replace(dep, _private$, )
+            dep *= $$gdep
             QMAKE_CONFIG_DEPS += $$dep
+            !isEqual(gdep, $$dep): \  # libraries are in the private module.
+                QMAKE_LIBRARY_DEPS += $$eval(config.modules.$$gdep)
         }
     }
 
