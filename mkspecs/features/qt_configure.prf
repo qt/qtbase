@@ -673,7 +673,11 @@ defineTest(qtConfHandleLibrary) {
     }
 
     qtConfEnsureTestTypeDeps("library")
-    qtConfTestPrepare_compile($$lpfx)
+    !qtConfTestPrepare_compile($$lpfx) {
+        $${lpfx}.result = false
+        export($${lpfx}.result)
+        return()
+    }
     use_args = $$eval($${lpfx}.literal_args)
 
     qtConfLoadResult($${lpfx}, $$1) {
