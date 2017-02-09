@@ -612,6 +612,9 @@ defineReplace(qtConfLibraryArgs) {
 
 defineTest(qtConfExportLibrary) {
     lpfx = $${currentConfig}.libraries.$$1
+    alias = $$eval($${lpfx}.alias)
+    $${currentConfig}.found.$$alias = $$1
+    export($${currentConfig}.found.$$alias)
     name = $$eval($${lpfx}.export)
     isEmpty(name): return()
     spfx = $${lpfx}.sources.$$eval($${lpfx}.source)
@@ -657,6 +660,17 @@ defineTest(qtConfExportLibrary) {
 defineTest(qtConfHandleLibrary) {
     lpfx = $${currentConfig}.libraries.$$1
     defined($${lpfx}.result, var): return()
+
+    alias = $$eval($${lpfx}.alias)
+    !isEmpty($${currentConfig}.found.$$alias) {
+        # this happening indicates a logic error in the conditions
+        # of the feature(s) referring to this library.
+        # note that this does not look across module boundaries, as
+        # multiple modules may know the same libraries; de-duplication
+        # happens via the cache (obviously, this assumes identical
+        # definitions and logic).
+        error("A library exporting '$$alias' was already found.")
+    }
 
     qtConfEnsureTestTypeDeps("library")
     qtConfTestPrepare_compile($$lpfx)
