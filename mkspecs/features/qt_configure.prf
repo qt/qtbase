@@ -753,14 +753,53 @@ defineTest(qtConfTest_library) {
 defineTest(qtConfTestPrepare_compile) {
     for (u, $$list($$eval($${1}.use))) {
         libConfig =
-        contains($${currentConfig}.libraries._KEYS_, $$u) {
-            libConfig = $${currentConfig}
+        exports = $$eval($${currentConfig}.exports.$$u)
+        !isEmpty(exports) {
+            # using a local library by exported name.
+            ru = $$eval($${currentConfig}.found.$$u)
+            !isEmpty(ru) {
+                # if it was already found, all is good.
+                u = $$ru
+            } else: count(exports, 1) {
+                # otherwise, if there is only one option, ensure it's resolved.
+                u = $$exports
+                qtConfHandleLibrary($$u)
+            } else {
+                # otherwise, verify that all options were resolved.
+                for (x, exports) {
+                    isEmpty($${currentConfig}.libraries.$${x}.result) {
+                        # the higher-level logic is in the features, which we cannot
+                        # infer from here. so the only option is failing.
+                        error("Test $$1 refers to yet unresolved library export '$$u'")
+                    }
+                }
+                return(false)
+            }
+            libConfig = $$currentConfig
+        } else: contains($${currentConfig}.libraries._KEYS_, $$u) {
+            # using a local library by real name. this should be the exception.
             qtConfHandleLibrary($$u)
+            libConfig = $$currentConfig
         } else {
             for (d, QMAKE_LIBRARY_DEPS) {
-                contains($${d}.libraries._KEYS_, $$u) {
-                    libConfig = $$d
-                    break()
+                exports = $$eval($${d}.exports.$$u)
+                !isEmpty(exports) {
+                    # using a foreign library by exported name.
+                    # foreign libraries may be external (if they are from a different
+                    # repository and the build is modular), and using these by real
+                    # name is impossible. so for consistency, uses by real name are
+                    # limited to local libraries.
+                    ru = $$eval($${d}.found.$$u)
+                    !isEmpty(ru) {
+                        u = $$ru
+                        libConfig = $$d
+                        break()
+                    }
+                    for (x, exports) {
+                        isEmpty($${d}.libraries.$${x}.result): \
+                            error("Test $$1 refers to unresolved library export '$$u' in '$$d'")
+                    }
+                    return(false)
                 }
             }
         }
@@ -768,6 +807,7 @@ defineTest(qtConfTestPrepare_compile) {
             nu = $$upper($$u)
             !defined(QMAKE_LIBS_$$nu, var): \
                 error("Test $$1 tries to use undeclared library '$$u'")
+            # using an external library by exported name.
             $${1}.literal_args += $$system_quote(QMAKE_USE += $$u)
         } else {
             lpfx = $${libConfig}.libraries.$${u}
