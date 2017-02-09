@@ -600,8 +600,7 @@
         "eglfs": {
             "label": "EGLFS",
             "section": "Platform plugins",
-            "autoDetect": "!config.android && !config.win32",
-            "condition": "features.egl",
+            "condition": "!config.android && !config.darwin && !config.win32 && features.egl",
             "output": [ "privateFeature" ]
         },
         "eglfs_brcm": {
