@@ -296,7 +296,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         qDebug() << "geometry" << geometry;
 #endif
         //geometry = QRect(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y + screenRect.size.height), screenRect.size.width, screenRect.size.height);
-    } else if (m_platformWindow->m_nsWindow) {
+    } else if (m_platformWindow->isContentView()) {
         // top level window, get window rect and flip y.
         NSRect rect = [self frame];
         NSRect windowRect = [[self window] frame];
@@ -309,7 +309,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         geometry = QRectF::fromCGRect(NSRectToCGRect([self frame])).toRect();
     }
 
-    if (m_platformWindow->m_nsWindow && geometry == m_platformWindow->geometry())
+    if (m_platformWindow->isContentView() && geometry == m_platformWindow->geometry())
         return;
 
     const bool isResize = geometry.size() != m_platformWindow->geometry().size();
@@ -431,8 +431,8 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)invalidateWindowShadowIfNeeded
 {
-    if (m_shouldInvalidateWindowShadow && m_platformWindow->m_nsWindow) {
-        [m_platformWindow->m_nsWindow invalidateShadow];
+    if (m_shouldInvalidateWindowShadow && m_platformWindow->isContentView()) {
+        [m_platformWindow->nativeWindow() invalidateShadow];
         m_shouldInvalidateWindowShadow = false;
     }
 }
@@ -507,7 +507,7 @@ static bool _q_dontOverrideCtrlLMB = false;
     // Optimization: Copy frame buffer content instead of blending for
     // top-level windows where Qt fills the entire window content area.
     // (But don't overpaint the title-bar gradient)
-    if (m_platformWindow->m_nsWindow && !m_platformWindow->m_drawContentBorderGradient)
+    if (m_platformWindow->isContentView() && !m_platformWindow->m_drawContentBorderGradient)
         CGContextSetBlendMode(cgContext, kCGBlendModeCopy);
 
     CGContextDrawImage(cgContext, dirtyWindowRect, cleanImg);
@@ -971,7 +971,7 @@ static bool _q_dontOverrideCtrlLMB = false;
     // the time of the leave. This is dificult to accomplish by
     // handling mouseEnter and mouseLeave envents, since they are sent
     // individually to different views.
-    if (m_platformWindow->m_nsWindow && childWindow) {
+    if (m_platformWindow->isContentView() && childWindow) {
         if (childWindow != m_platformWindow->m_enterLeaveTargetWindow) {
             QWindowSystemInterface::handleEnterLeaveEvent(childWindow, m_platformWindow->m_enterLeaveTargetWindow, windowPoint, screenPoint);
             m_platformWindow->m_enterLeaveTargetWindow = childWindow;
@@ -998,7 +998,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         return;
 
     // Top-level windows generate enter events for sub-windows.
-    if (!m_platformWindow->m_nsWindow)
+    if (!m_platformWindow->isContentView())
         return;
 
     QPointF windowPoint;
@@ -1020,7 +1020,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         return;
 
     // Top-level windows generate leave events for sub-windows.
-    if (!m_platformWindow->m_nsWindow)
+    if (!m_platformWindow->isContentView())
         return;
 
     QWindowSystemInterface::handleLeaveEvent(m_platformWindow->m_enterLeaveTargetWindow);

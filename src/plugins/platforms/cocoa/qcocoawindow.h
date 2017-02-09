@@ -279,9 +279,6 @@ public:
     Q_FLAG(RecreationReasons)
 
 protected:
-    bool isChildNSWindow() const;
-    bool isContentView() const;
-
     void foreachChildNSWindow(void (^block)(QCocoaWindow *));
 
     void recreateWindowIfNeeded();
@@ -301,6 +298,9 @@ protected:
 public: // for QNSView
     friend class QCocoaBackingStore;
     friend class QCocoaNativeInterface;
+
+    bool isContentView() const;
+    bool isChildNSWindow() const;
 
     void removeMonitor();
 

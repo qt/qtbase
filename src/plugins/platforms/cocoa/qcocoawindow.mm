@@ -612,7 +612,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
         // call this here: updateGeometry in qnsview.mm is a no-op for this case
         QWindowSystemInterface::handleGeometryChange(window(), rect);
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
-    } else if (m_nsWindow) {
+    } else if (isContentView()) {
         NSRect bounds = qt_mac_flipRect(rect);
         [m_nsWindow setFrame:[m_nsWindow frameRectForContentRect:bounds] display:YES animate:NO];
     } else {
@@ -761,7 +761,7 @@ void QCocoaWindow::setVisible(bool visible)
         //   viewDidUnhide message.
         exposeWindow();
 
-        if (m_nsWindow) {
+        if (isContentView()) {
             QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
             // setWindowState might have been called while the window was hidden and
@@ -829,7 +829,7 @@ void QCocoaWindow::setVisible(bool visible)
         QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = 0;
         if (cocoaEventDispatcher)
             cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
-        if (m_nsWindow) {
+        if (isContentView()) {
             if (m_hasModalSession) {
                 if (cocoaEventDispatcherPrivate)
                     cocoaEventDispatcherPrivate->endModalSession(window());
@@ -979,7 +979,7 @@ void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
 
 void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
-    if (m_nsWindow && !isChildNSWindow()) {
+    if (isContentView() && !isChildNSWindow()) {
         NSUInteger styleMask = windowStyleMask(flags);
         NSInteger level = this->windowLevel(flags);
         // While setting style mask we can have -updateGeometry calls on a content
@@ -1008,7 +1008,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         setWindowZoomButton(flags);
     }
 
-    if (m_nsWindow)
+    if (isContentView())
         m_nsWindow.ignoresMouseEvents = flags & Qt::WindowTransparentForInput;
 
     m_windowFlags = flags;
@@ -1023,7 +1023,7 @@ void QCocoaWindow::setWindowState(Qt::WindowStates state)
 void QCocoaWindow::setWindowTitle(const QString &title)
 {
     QMacAutoReleasePool pool;
-    if (!m_nsWindow)
+    if (!isContentView())
         return;
 
     CFStringRef windowTitle = title.toCFString();
@@ -1034,7 +1034,7 @@ void QCocoaWindow::setWindowTitle(const QString &title)
 void QCocoaWindow::setWindowFilePath(const QString &filePath)
 {
     QMacAutoReleasePool pool;
-    if (!m_nsWindow)
+    if (!isContentView())
         return;
 
     QFileInfo fi(filePath);
@@ -1084,12 +1084,12 @@ void QCocoaWindow::raise()
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::raise" << window();
 
     // ### handle spaces (see Qt 4 raise_sys in qwidget_mac.mm)
-    if (!m_nsWindow)
+    if (!isContentView())
         return;
-    if (isChildNSWindow()) {
-        if (m_hiddenByClipping)
-            return;
-    }
+
+    if (isChildNSWindow() && m_hiddenByClipping)
+        return;
+
     if ([m_nsWindow isVisible]) {
         if (isChildNSWindow()) {
             // -[NSWindow orderFront:] doesn't work with attached windows.
@@ -1119,12 +1119,12 @@ void QCocoaWindow::raise()
 void QCocoaWindow::lower()
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::lower" << window();
-    if (!m_nsWindow)
+    if (!isContentView())
         return;
-    if (isChildNSWindow()) {
-        if (m_hiddenByClipping)
-            return;
-    }
+
+    if (isChildNSWindow() && m_hiddenByClipping)
+        return;
+
     if ([m_nsWindow isVisible]) {
         if (isChildNSWindow()) {
             // -[NSWindow orderBack:] doesn't work with attached windows.
@@ -1165,7 +1165,7 @@ bool QCocoaWindow::isOpaque() const
 void QCocoaWindow::propagateSizeHints()
 {
     QMacAutoReleasePool pool;
-    if (!m_nsWindow)
+    if (!isContentView())
         return;
 
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::propagateSizeHints" << window() << "\n"
@@ -1204,16 +1204,17 @@ void QCocoaWindow::propagateSizeHints()
 void QCocoaWindow::setOpacity(qreal level)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setOpacity" << level;
-    if (m_nsWindow) {
-        [m_nsWindow setAlphaValue:level];
-        [m_nsWindow setOpaque: isOpaque()];
-    }
+    if (!isContentView())
+        return;
+
+    [m_nsWindow setAlphaValue:level];
+    [m_nsWindow setOpaque:isOpaque()];
 }
 
 void QCocoaWindow::setMask(const QRegion &region)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setMask" << window() << region;
-    if (m_nsWindow)
+    if (isContentView())
         [m_nsWindow setBackgroundColor:[NSColor clearColor]];
 
     [qnsview_cast(m_view) setMaskRegion:&region];
@@ -1223,7 +1224,7 @@ void QCocoaWindow::setMask(const QRegion &region)
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setKeyboardGrabEnabled" << window() << grab;
-    if (!m_nsWindow)
+    if (!isContentView())
         return false;
 
     if (grab && ![m_nsWindow isKeyWindow])
@@ -1235,7 +1236,7 @@ bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 bool QCocoaWindow::setMouseGrabEnabled(bool grab)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setMouseGrabEnabled" << window() << grab;
-    if (!m_nsWindow)
+    if (!isContentView())
         return false;
 
     if (grab && ![m_nsWindow isKeyWindow])
@@ -1300,7 +1301,7 @@ void QCocoaWindow::windowDidMove()
 
 void QCocoaWindow::windowDidResize()
 {
-    if (!m_nsWindow)
+    if (!isContentView())
         return;
 
     if (isChildNSWindow())
@@ -1808,7 +1809,7 @@ void QCocoaWindow::removeMonitor()
 // Returns the current global screen geometry for the nswindow associated with this window.
 QRect QCocoaWindow::nativeWindowGeometry() const
 {
-    if (!m_nsWindow || isChildNSWindow())
+    if (!isContentView() || isChildNSWindow())
         return geometry();
 
     NSRect rect = [m_nsWindow frame];
@@ -1833,7 +1834,7 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
     if (newState == currentState)
         return;
 
-    if (!m_nsWindow)
+    if (!isContentView())
         return;
 
     const NSSize contentSize = m_view.frame.size;
@@ -1957,8 +1958,9 @@ void QCocoaWindow::reportCurrentWindowState(bool unconditionally)
 
 bool QCocoaWindow::setWindowModified(bool modified)
 {
-    if (!m_nsWindow)
+    if (!isContentView())
         return false;
+
     [m_nsWindow setDocumentEdited:(modified?YES:NO)];
     return true;
 }
@@ -2101,7 +2103,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
 
 void QCocoaWindow::updateNSToolbar()
 {
-    if (!m_nsWindow)
+    if (!isContentView())
         return;
 
     NSToolbar *toolbar = QCocoaIntegration::instance()->toolbar(window());
@@ -2115,7 +2117,7 @@ void QCocoaWindow::updateNSToolbar()
 
 bool QCocoaWindow::testContentBorderAreaPosition(int position) const
 {
-    return m_nsWindow && m_drawContentBorderGradient &&
+    return isContentView() && m_drawContentBorderGradient &&
             0 <= position && position < [m_nsWindow contentBorderThicknessForEdge: NSMaxYEdge];
 }
 
