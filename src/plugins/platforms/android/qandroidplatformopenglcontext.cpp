@@ -91,10 +91,6 @@ bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
     bool ret = QEGLPlatformContext::makeCurrent(surface);
     QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(context());
 
-    const char *rendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
-    if (rendererString != 0 && qstrncmp(rendererString, "Android Emulator", 16) == 0)
-        ctx_d->workaround_missingPrecisionQualifiers = true;
-
     if (!ctx_d->workaround_brokenFBOReadBack && needsFBOReadBackWorkaround())
         ctx_d->workaround_brokenFBOReadBack = true;
 
