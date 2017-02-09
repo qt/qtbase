@@ -144,15 +144,10 @@ typedef QLatin1String QLatin1Literal;
 
 typedef QTypedArrayData<ushort> QStringData;
 
-#if defined(Q_COMPILER_UNICODE_STRINGS)
-
-#define QT_UNICODE_LITERAL_II(str) u"" str
-typedef char16_t qunicodechar;
-
-#elif defined(Q_OS_WIN) \
-       || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) \
-       || (!defined(__SIZEOF_WCHAR_T__) && defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536))
-// wchar_t is 2 bytes
+#if defined(Q_OS_WIN) && !defined(Q_COMPILER_UNICODE_STRINGS)
+// fall back to wchar_t if the a Windows compiler does not
+// support Unicode string literals, assuming wchar_t is 2 bytes
+// on that platform (sanity-checked by static_assert further below)
 
 #if defined(Q_CC_MSVC)
 #    define QT_UNICODE_LITERAL_II(str) L##str
@@ -162,21 +157,22 @@ typedef char16_t qunicodechar;
 typedef wchar_t qunicodechar;
 
 #else
+// all our supported compilers support Unicode string literals,
+// even if their Q_COMPILER_UNICODE_STRING has been revoked due
+// to lacking stdlib support. But QStringLiteral only needs the
+// core language feature, so just use u"" here unconditionally:
 
-#define QT_NO_UNICODE_LITERAL
-typedef ushort qunicodechar;
+#define QT_UNICODE_LITERAL_II(str) u"" str
+typedef char16_t qunicodechar;
 
 #endif
 
 Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
         "qunicodechar must typedef an integral type of size 2");
 
-#ifndef QT_NO_UNICODE_LITERAL
-#  define QT_UNICODE_LITERAL(str) QT_UNICODE_LITERAL_II(str)
-# if defined(Q_COMPILER_LAMBDA)
-
-#  define QStringLiteral(str) \
-    ([]() -> QString { \
+#define QT_UNICODE_LITERAL(str) QT_UNICODE_LITERAL_II(str)
+#define QStringLiteral(str) \
+    ([]() Q_DECL_NOEXCEPT -> QString { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = { \
             Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
@@ -186,17 +182,6 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
         return qstring_literal_temp; \
     }()) \
     /**/
-
-# endif
-#endif // QT_NO_UNICODE_LITERAL
-
-#ifndef QStringLiteral
-// no lambdas, not GCC, or GCC in C++98 mode with 4-byte wchar_t
-// fallback, return a temporary QString
-// source code is assumed to be encoded in UTF-8
-
-# define QStringLiteral(str) QString::fromUtf8("" str "", sizeof(str) - 1)
-#endif
 
 #define Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
     { Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, offset } \
