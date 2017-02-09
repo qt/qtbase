@@ -1827,6 +1827,9 @@ for(ever) {
     for(n, $${currentConfig}.subconfigs._KEYS_) {
         subconfig = $$eval($${currentConfig}.subconfigs.$${n})
         name = $$basename(subconfig)
+        ex = $$eval(config.$${name}.dir)
+        !isEmpty(ex): \
+            error("Basename clash between $$thisDir/$$subconfig and $${ex}.")
         config.$${name}.dir = $$thisDir/$$subconfig
         subconfigs += $$name
     }
