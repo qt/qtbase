@@ -3916,10 +3916,12 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 if (pb->minimum == 0 && pb->maximum == 0) {
                     int chunkCount = fillWidth/chunkWidth;
                     int offset = 0;
+#if QT_CONFIG(animation)
                     if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
                         offset = animation->animationStep() * 8 % rect.width();
                     else
                         d->startAnimation(new QProgressStyleAnimation(d->animationFps, opt->styleObject));
+#endif
                     int x = reverse ? r.left() + r.width() - offset - chunkWidth : r.x() + offset;
                     while (chunkCount > 0) {
                         r.setRect(x, rect.y(), chunkWidth, rect.height());
@@ -3950,8 +3952,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         subRule.drawRule(p, r);
                         x += reverse ? -chunkWidth : chunkWidth;
                     }
-
+#if QT_CONFIG(animation)
                     d->stopAnimation(opt->styleObject);
+#endif
                 }
 
                 p->restore();

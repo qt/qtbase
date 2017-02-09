@@ -166,7 +166,7 @@ Qt::DropAction QPlatformDrag::defaultAction(Qt::DropActions possibleActions,
 
     The default implementation does nothing.
 
-    \since 5.6
+    \since 5.7
  */
 
 void QPlatformDrag::cancelDrag()

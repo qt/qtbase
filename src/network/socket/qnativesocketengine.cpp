@@ -761,7 +761,9 @@ bool QNativeSocketEngine::leaveMulticastGroup(const QHostAddress &groupAddress,
     return d->nativeLeaveMulticastGroup(groupAddress, iface);
 }
 
-/*! \since 4.8 */
+/*!
+    \since 4.8
+*/
 QNetworkInterface QNativeSocketEngine::multicastInterface() const
 {
     Q_D(const QNativeSocketEngine);
@@ -770,7 +772,9 @@ QNetworkInterface QNativeSocketEngine::multicastInterface() const
     return d->nativeMulticastInterface();
 }
 
-/*! \since 4.8 */
+/*!
+    \since 4.8
+*/
 bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 {
     Q_D(QNativeSocketEngine);

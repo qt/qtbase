@@ -84,6 +84,7 @@ android|uikit|winrt: \
     CONFIG += builtin_testdata
 
 CONFIG += \
+    utf8_source \
     create_prl link_prl \
     prepare_docs qt_docs_targets \
     no_private_qt_headers_warning QTDIR_build \

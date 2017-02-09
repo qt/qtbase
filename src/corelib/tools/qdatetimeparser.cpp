@@ -60,6 +60,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_BOOTSTRAPPED
 
+QDateTimeParser::~QDateTimeParser()
+{
+}
+
 /*!
   \internal
   Gets the digit from a datetime. E.g.

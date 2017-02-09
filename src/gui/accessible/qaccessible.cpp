@@ -52,11 +52,14 @@
 #include <qpa/qplatformintegration.h>
 
 #include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qhash.h>
 #include <private/qfactoryloader_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
 
 /*!
     \class QAccessible
@@ -1370,8 +1373,13 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
     if (!iface)
         return 0;
-    if (m_child != -1)
+    if (m_child != -1) {
         iface = iface->child(m_child);
+        if (Q_UNLIKELY(!iface)) {
+            qCWarning(lcAccessibilityCore) << "Invalid child in QAccessibleEvent:" << m_object << "child:" << m_child;
+            return 0;
+        }
+    }
     return QAccessible::uniqueId(iface);
 }
 
@@ -1769,7 +1777,7 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
         if (child) {
             iface = child;
         } else {
-            qWarning() << "Cannot creat accessible child interface for object: " << m_object << " index: " << m_child;
+            qCWarning(lcAccessibilityCore) << "Cannot create accessible child interface for object: " << m_object << " index: " << m_child;
         }
     }
     return iface;

@@ -1755,6 +1755,10 @@ void tst_QVariant::compareNumbers_data() const
     QTest::newRow("double5") << qVariantFromValue(0.) << qVariantFromValue(-qInf()) << +1;
     QTest::newRow("double6") << qVariantFromValue(-double(qInf())) << qVariantFromValue(-qInf()) << 0;
     QTest::newRow("double7") << qVariantFromValue(qInf()) << qVariantFromValue(qInf()) << 0;
+    QTest::newRow("double8") << qVariantFromValue(-qInf()) << qVariantFromValue(qInf()) << -1;
+    QTest::newRow("double9") << qVariantFromValue(qQNaN()) << qVariantFromValue(0.) << INT_MAX;
+    QTest::newRow("double10") << qVariantFromValue(0.) << qVariantFromValue(qQNaN()) << INT_MAX;
+    QTest::newRow("double11") << qVariantFromValue(qQNaN()) << qVariantFromValue(qQNaN()) << INT_MAX;
 
     // mixed comparisons
     // fp + fp
@@ -1763,8 +1767,12 @@ void tst_QVariant::compareNumbers_data() const
     QTest::newRow("float+double3") << qVariantFromValue(0.f) << qVariantFromValue(-1.) << +1;
     QTest::newRow("float+double4") << qVariantFromValue(-float(qInf())) << qVariantFromValue(0.) << -1;
     QTest::newRow("float+double5") << qVariantFromValue(0.f) << qVariantFromValue(-qInf()) << +1;
-    QTest::newRow("float+double6") << qVariantFromValue(-float(qInf())) << qVariantFromValue(qInf()) << 0;
+    QTest::newRow("float+double6") << qVariantFromValue(-float(qInf())) << qVariantFromValue(-qInf()) << 0;
     QTest::newRow("float+double7") << qVariantFromValue(float(qInf())) << qVariantFromValue(qInf()) << 0;
+    QTest::newRow("float+double8") << qVariantFromValue(-float(qInf())) << qVariantFromValue(qInf()) << -1;
+    QTest::newRow("float+double9") << qVariantFromValue(qQNaN()) << qVariantFromValue(0.) << INT_MAX;
+    QTest::newRow("float+double10") << qVariantFromValue(0.) << qVariantFromValue(qQNaN()) << INT_MAX;
+    QTest::newRow("float+double11") << qVariantFromValue(qQNaN()) << qVariantFromValue(qQNaN()) << INT_MAX;
 
     // fp + int
     QTest::newRow("float+int1") << qVariantFromValue(0.f) << qVariantFromValue(0) << 0;
@@ -1978,7 +1986,7 @@ void tst_QVariant::compareNumbers() const
         QCOMPARE(v2, v1);
         QVERIFY(v2 >= v1);
         QVERIFY(!(v2 > v1));
-    } else {
+    } else if (expected == +1) {
         QVERIFY(!(v1 < v2));
         QVERIFY(!(v1 <= v2));
         QVERIFY(!(v1 == v2));
@@ -1990,6 +1998,9 @@ void tst_QVariant::compareNumbers() const
         QVERIFY(!(v2 == v1));
         QVERIFY(!(v2 >= v1));
         QVERIFY(!(v2 > v1));
+    } else {
+        // unorderable (NaN)
+        QVERIFY(!(v1 == v2));
     }
 }
 

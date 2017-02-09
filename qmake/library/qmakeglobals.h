@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 class QMakeEvaluator;
 
+enum QMakeEvalPhase { QMakeEvalEarly, QMakeEvalBefore, QMakeEvalAfter, QMakeEvalLate };
+
 class QMakeBaseKey
 {
 public:
@@ -83,12 +85,13 @@ public:
 class QMAKE_EXPORT QMakeCmdLineParserState
 {
 public:
-    QMakeCmdLineParserState(const QString &_pwd) : pwd(_pwd), after(false) {}
+    QMakeCmdLineParserState(const QString &_pwd) : pwd(_pwd), phase(QMakeEvalBefore) {}
     QString pwd;
-    QStringList precmds, preconfigs, postcmds, postconfigs, extraargs;
-    bool after;
+    QStringList cmds[4], configs[4];
+    QStringList extraargs;
+    QMakeEvalPhase phase;
 
-    void flush() { after = false; }
+    void flush() { phase = QMakeEvalBefore; }
 };
 
 class QMAKE_EXPORT QMakeGlobals
@@ -110,7 +113,7 @@ public:
     QString qtconf;
     QString qmakespec, xqmakespec;
     QString user_template, user_template_prefix;
-    QString precmds, postcmds;
+    QString extra_cmds[4];
 
 #ifdef PROEVALUATOR_DEBUG
     int debugLevel;

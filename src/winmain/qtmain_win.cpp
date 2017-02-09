@@ -61,15 +61,8 @@
   linking to the Qt DLL.
 
   When a Windows application starts, the WinMain function is
-  invoked. WinMain calls qWinMain in the Qt DLL/library, which
-  initializes Qt.
+  invoked.
 */
-
-QT_BEGIN_NAMESPACE
-
-extern void qWinMain(HINSTANCE, HINSTANCE, LPSTR, int, int &, QVector<char *> &);
-
-QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 

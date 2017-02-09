@@ -45,7 +45,6 @@
 #include <QtGui/private/qopengl_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
-#include <QtCore/qloggingcategory.h>
 
 #ifdef Q_OS_INTEGRITY
 #include <EGL/egl.h>
@@ -56,9 +55,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-Q_LOGGING_CATEGORY(lcGLES3, "qt.opengl.es3")
-
 
 #define QT_OPENGL_COUNT_FUNCTIONS(ret, name, args) +1
 #define QT_OPENGL_FUNCTION_NAMES(ret, name, args) \

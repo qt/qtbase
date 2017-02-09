@@ -714,7 +714,7 @@ Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
         }
 
         // Never break between a combining mark (gc= Mc, Mn or Me) and its base character.
-        // Thus, a combining mark — whatever its script property value is — should inherit
+        // Thus, a combining mark - whatever its script property value is - should inherit
         // the script property value of its base character.
         static const int test = (FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining) | FLAG(QChar::Mark_Enclosing));
         if (Q_UNLIKELY(FLAG(prop->category) & test))

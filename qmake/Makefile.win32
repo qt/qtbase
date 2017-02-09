@@ -205,12 +205,12 @@ qmake_pch.obj:
 {$(SOURCE_PATH)\src\corelib\json}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
-# Make sure qstring_compat.obj isn't compiled with PCH enabled
+# Make sure qstring_compat.obj and qlibraryinfo.obj aren't compiled with PCH enabled
 qstring_compat.obj: $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp
 	$(CXX) -c $(CXXFLAGS_BARE) $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp
 
 qlibraryinfo.obj: $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp
-	$(CXX) $(CXXFLAGS) -DQT_BUILD_QMAKE_BOOTSTRAP $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp
+        $(CXX) $(CXXFLAGS_BARE) -DQT_BUILD_QMAKE_BOOTSTRAP $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp
 
 qlibraryinfo_final.obj: $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp $(BUILD_PATH)\src\corelib\global\qconfig.cpp
 	$(CXX) $(CXXFLAGS) -Foqlibraryinfo_final.obj $(SOURCE_PATH)\src\corelib\global\qlibraryinfo.cpp

@@ -182,7 +182,7 @@
             "label": "Desktop OpenGL",
             "test": "unix/opengldesktop",
             "sources": [
-                { "type": "pkgConfig", "args": "gl" },
+                { "type": "pkgConfig", "args": "gl", "condition": "!config.darwin" },
                 { "type": "makeSpec", "spec": "OPENGL" }
             ]
         },
@@ -190,7 +190,7 @@
             "label": "OpenGL ES 2.0",
             "test": "unix/opengles2",
             "sources": [
-                { "type": "pkgConfig", "args": "glesv2" },
+                { "type": "pkgConfig", "args": "glesv2", "condition": "!config.darwin" },
                 { "type": "makeSpec", "spec": "OPENGL_ES2" }
             ]
         },

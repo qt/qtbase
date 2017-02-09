@@ -103,7 +103,7 @@ public:
         none.count = -1;
         none.zeroesAdded = 0;
     }
-    virtual ~QDateTimeParser() {}
+    virtual ~QDateTimeParser();
 
     enum Section {
         NoSection     = 0x00000,
