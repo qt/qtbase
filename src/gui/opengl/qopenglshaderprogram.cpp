@@ -215,10 +215,12 @@ Q_LOGGING_CATEGORY(DBG_SHADER_CACHE, "qt.opengl.diskcache")
 #define GL_NUM_PROGRAM_BINARY_FORMATS     0x87FE
 #endif
 
+#ifndef QT_OPENGL_ES_2
 static inline bool isFormatGLES(const QSurfaceFormat &f)
 {
     return (f.renderableType() == QSurfaceFormat::OpenGLES);
 }
+#endif
 
 static inline bool supportsGeometry(const QSurfaceFormat &f)
 {
