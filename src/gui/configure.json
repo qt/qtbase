@@ -511,7 +511,7 @@
         },
         "libinput-axis-api": {
             "label": "axis API in libinput",
-            "condition": "tests.libinput_axis_api",
+            "condition": "features.libinput && tests.libinput_axis_api",
             "output": [ "privateFeature" ]
         },
         "lgmon": {
