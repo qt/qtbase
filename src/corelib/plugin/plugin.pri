@@ -35,4 +35,4 @@ integrity {
 	SOURCES += plugin/qlibrary_unix.cpp
 }
 
-!no-libdl: LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD
+qtConfig(dlopen): QMAKE_USE_PRIVATE += libdl

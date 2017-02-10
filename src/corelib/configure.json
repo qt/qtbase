@@ -74,10 +74,10 @@
             ]
         },
         "libdl": {
-            "label": "dlopen() in libdl",
-            "export": "",
+            "label": "dlopen()",
             "test": "unix/dlopen",
             "sources": [
+                "",
                 "-ldl"
             ]
         },
@@ -130,11 +130,6 @@
             "label": "O_CLOEXEC",
             "type": "compile",
             "test": "unix/cloexec"
-        },
-        "dlopen": {
-            "label": "dlopen() in libc",
-            "type": "compile",
-            "test": "unix/dlopen"
         },
         "eventfd": {
             "label": "eventfd",
@@ -211,12 +206,8 @@
         },
         "dlopen": {
             "label": "dlopen()",
-            "condition": "tests.dlopen || libs.libdl"
-        },
-        "libdl": {
-            "label": "dlopen() in libdl",
-            "condition": "!tests.dlopen && libs.libdl",
-            "output": [ { "type": "privateConfig", "negative": true } ]
+            "condition": "config.unix && libs.libdl",
+            "output": [ "privateFeature" ]
         },
         "doubleconversion": {
             "label": "DoubleConversion",

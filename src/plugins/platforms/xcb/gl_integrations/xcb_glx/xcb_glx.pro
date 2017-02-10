@@ -12,7 +12,7 @@ qtConfig(xcb-glx) {
     QMAKE_USE += xcb_glx
 }
 
-LIBS += $$QMAKE_LIBS_DYNLOAD
+!static:qtConfig(dlopen): QMAKE_USE += libdl
 
 HEADERS += \
     qxcbglxintegration.h \
