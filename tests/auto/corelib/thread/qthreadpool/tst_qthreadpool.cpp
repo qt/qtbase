@@ -958,16 +958,19 @@ void tst_QThreadPool::clear()
 void tst_QThreadPool::cancel()
 {
     QSemaphore sem(0);
+    QSemaphore startedThreads(0);
+
     class BlockingRunnable : public QRunnable
     {
     public:
         QSemaphore & sem;
+        QSemaphore &startedThreads;
         QAtomicInt &dtorCounter;
         QAtomicInt &runCounter;
         int dummy;
 
-        explicit BlockingRunnable(QSemaphore &s, QAtomicInt &c, QAtomicInt &r)
-            : sem(s), dtorCounter(c), runCounter(r){}
+        explicit BlockingRunnable(QSemaphore &s, QSemaphore &started, QAtomicInt &c, QAtomicInt &r)
+            : sem(s), startedThreads(started), dtorCounter(c), runCounter(r){}
 
         ~BlockingRunnable()
         {
@@ -976,6 +979,7 @@ void tst_QThreadPool::cancel()
 
         void run()
         {
+            startedThreads.release();
             runCounter.fetchAndAddRelaxed(1);
             sem.acquire();
             count.ref();
@@ -995,11 +999,14 @@ void tst_QThreadPool::cancel()
     QAtomicInt dtorCounter = 0;
     QAtomicInt runCounter = 0;
     for (int i = 0; i < runs; i++) {
-        runnables[i] = new BlockingRunnable(sem, dtorCounter, runCounter);
+        runnables[i] = new BlockingRunnable(sem, startedThreads, dtorCounter, runCounter);
         runnables[i]->setAutoDelete(i != 0 && i != (runs-1)); //one which will run and one which will not
         threadPool.cancel(runnables[i]); //verify NOOP for jobs not in the queue
         threadPool.start(runnables[i]);
     }
+    // wait for all worker threads to have started up:
+    QVERIFY(startedThreads.tryAcquire(MaxThreadCount, 60*1000 /* 1min */));
+
     for (int i = 0; i < runs; i++) {
         threadPool.cancel(runnables[i]);
     }
