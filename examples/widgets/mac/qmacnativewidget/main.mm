@@ -119,11 +119,10 @@ QApplication *qtApp = 0;
     QVBoxLayout *vlayout = new QVBoxLayout();
     vlayout->addLayout(hlayout);
 
-    //RedWidget * redWidget = new RedWidget;
-    //vlayout->addWidget(redWidget);
+    RedWidget *redWidget = new RedWidget;
+    vlayout->addWidget(redWidget);
 
     nativeWidget->setLayout(vlayout);
-
 
     // show() must be called on nativeWiget to get the widgets int he correct state.
     nativeWidget->show();
