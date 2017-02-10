@@ -985,12 +985,16 @@ void tst_QThreadPool::cancel()
             count.ref();
         }
     };
-    typedef BlockingRunnable* BlockingRunnablePtr;
+
+    enum {
+        MaxThreadCount = 3,
+        OverProvisioning = 2,
+        runs = MaxThreadCount * OverProvisioning
+    };
 
     QThreadPool threadPool;
-    threadPool.setMaxThreadCount(3);
-    int runs = 2 * threadPool.maxThreadCount();
-    BlockingRunnablePtr* runnables = new BlockingRunnablePtr[runs];
+    threadPool.setMaxThreadCount(MaxThreadCount);
+    BlockingRunnable *runnables[runs];
     count.store(0);
     QAtomicInt dtorCounter = 0;
     QAtomicInt runCounter = 0;
@@ -1013,7 +1017,6 @@ void tst_QThreadPool::cancel()
     QCOMPARE(dtorCounter.load(), runs - 2);
     delete runnables[0]; //if the pool deletes them then we'll get double-free crash
     delete runnables[runs-1];
-    delete[] runnables;
 }
 
 void tst_QThreadPool::destroyingWaitsForTasksToFinish()
