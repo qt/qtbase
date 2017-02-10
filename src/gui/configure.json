@@ -159,9 +159,10 @@
             "test": "unix/libpng",
             "sources": [
                 { "type": "pkgConfig", "args": "libpng" },
-                { "libs": "-llibpng -lzdll", "condition": "config.msvc" },
-                { "libs": "-lpng -lz", "condition": "!config.msvc" }
-            ]
+                { "libs": "-llibpng", "condition": "config.msvc" },
+                { "libs": "-lpng", "condition": "!config.msvc" }
+            ],
+            "use": "zlib"
         },
         "mirclient": {
             "label": "Mir client libraries",

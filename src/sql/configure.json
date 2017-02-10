@@ -114,8 +114,10 @@
             "test": "unix/sqlite",
             "sources": [
                 { "type": "pkgConfig", "args": "sqlite3" },
-                { "libs": "-lsqlite3", "condition": "config.win32" },
-                { "libs": "-lsqlite3 -lz", "condition": "!config.win32" }
+                "-lsqlite3"
+            ],
+            "use": [
+                { "lib": "zlib", "condition": "!config.win32" }
             ]
         }
     },
