@@ -332,6 +332,9 @@ public:
         return retval;
     }
 
+    static QLocalePrivate *get(QLocale &l) { return l.d; }
+    static const    QLocalePrivate *get(const QLocale &l) { return l.d; }
+
     QChar decimal() const { return QChar(m_data->m_decimal); }
     QChar group() const { return QChar(m_data->m_group); }
     QChar list() const { return QChar(m_data->m_list); }

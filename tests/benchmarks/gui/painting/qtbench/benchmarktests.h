@@ -320,7 +320,7 @@ public:
     DrawScaledImage(const QImage &image, qreal scale, bool asPixmap)
         : Benchmark(QSize(image.width(), image.height())),
           m_image(image),
-          m_type(m_as_pixmap ? "Pixmap" : "Image"),
+          m_type(asPixmap ? "Pixmap" : "Image"),
           m_scale(scale),
           m_as_pixmap(asPixmap)
     {
@@ -368,7 +368,7 @@ public:
     DrawTransformedImage(const QImage &image, bool asPixmap)
         : Benchmark(QSize(image.width(), image.height())),
           m_image(image),
-          m_type(m_as_pixmap ? "Pixmap" : "Image"),
+          m_type(asPixmap ? "Pixmap" : "Image"),
           m_as_pixmap(asPixmap)
     {
         m_pixmap = QPixmap::fromImage(m_image);
@@ -414,7 +414,7 @@ public:
     DrawImage(const QImage &image, bool asPixmap)
         : Benchmark(QSize(image.width(), image.height())),
           m_image(image),
-          m_type(m_as_pixmap ? "Pixmap" : "Image"),
+          m_type(asPixmap ? "Pixmap" : "Image"),
           m_as_pixmap(asPixmap)
     {
         m_pixmap = QPixmap::fromImage(image);

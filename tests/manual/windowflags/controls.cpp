@@ -161,97 +161,71 @@ void HintControl::slotCheckBoxChanged()
     emit changed(hints());
 }
 
-WindowStateControl::WindowStateControl(unsigned flags, QWidget *parent)
+WindowStateControl::WindowStateControl(QWidget *parent)
     : QWidget(parent)
     , group(new QButtonGroup)
-    , visibleCheckBox(0)
-    , restoreButton(new QRadioButton(tr("Normal")))
-    , minimizeButton(0)
-    , maximizeButton(new QRadioButton(tr("Maximized")))
-    , fullscreenButton(new QRadioButton(tr("Fullscreen")))
+    , restoreButton(new QCheckBox(tr("Normal")))
+    , minimizeButton(new QCheckBox(tr("Minimized")))
+    , maximizeButton(new QCheckBox(tr("Maximized")))
+    , fullscreenButton(new QCheckBox(tr("Fullscreen")))
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setSpacing(0);
+    group->setExclusive(false);
     layout->setMargin(ControlLayoutMargin);
-    if (flags & WantVisibleCheckBox) {
-        visibleCheckBox = new QCheckBox(tr("Visible"));
-        connect(visibleCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(changed()));
-        layout->addWidget(visibleCheckBox);
-    }
-
-    group->setExclusive(true);
-    if (flags & WantMinimizeRadioButton) {
-        minimizeButton = new QRadioButton(tr("Minimized"));
-        group->addButton(minimizeButton, Qt::WindowMinimized);
-        layout->addWidget(minimizeButton);
-    }
     group->addButton(restoreButton, Qt::WindowNoState);
+    restoreButton->setEnabled(false);
     layout->addWidget(restoreButton);
+    group->addButton(minimizeButton, Qt::WindowMinimized);
+    layout->addWidget(minimizeButton);
     group->addButton(maximizeButton, Qt::WindowMaximized);
     layout->addWidget(maximizeButton);
     group->addButton(fullscreenButton, Qt::WindowFullScreen);
     layout->addWidget(fullscreenButton);
-    connect(group, SIGNAL(buttonReleased(int)), this, SIGNAL(changed()));
+    connect(group, SIGNAL(buttonReleased(int)), this, SIGNAL(stateChanged(int)));
 }
 
-Qt::WindowState WindowStateControl::state() const
+Qt::WindowStates WindowStateControl::state() const
 {
-    return Qt::WindowState(group->checkedId());
+    Qt::WindowStates states;
+    foreach (QAbstractButton *button, group->buttons()) {
+        if (button->isChecked())
+            states |= Qt::WindowState(group->id(button));
+    }
+    return states;
 }
 
-void WindowStateControl::setState(Qt::WindowState s)
+void WindowStateControl::setState(Qt::WindowStates s)
 {
     group->blockSignals(true);
-    if (QAbstractButton *b = group->button(s))
-        b->setChecked(true);
+    foreach (QAbstractButton *button, group->buttons())
+        button->setChecked(s & Qt::WindowState(group->id(button)));
+
+    if (!(s & (Qt::WindowMaximized | Qt::WindowFullScreen)))
+        restoreButton->setChecked(true);
+
     group->blockSignals(false);
 }
 
-bool WindowStateControl::visibleValue() const
-{
-    return visibleCheckBox && visibleCheckBox->isChecked();
-}
-
-void WindowStateControl::setVisibleValue(bool v)
-{
-    if (visibleCheckBox) {
-        visibleCheckBox->blockSignals(true);
-        visibleCheckBox->setChecked(v);
-        visibleCheckBox->blockSignals(false);
-    }
-}
-
-WindowStatesControl::WindowStatesControl(unsigned flags, QWidget *parent)
+WindowStatesControl::WindowStatesControl(QWidget *parent)
     : QGroupBox(tr("States"), parent)
-    , visibleCheckBox(0)
-    , activeCheckBox(0)
-    , minimizeCheckBox(new QCheckBox(tr("Minimized")))
-    , stateControl(new WindowStateControl(0))
+    , visibleCheckBox(new QCheckBox(tr("Visible")))
+    , activeCheckBox(new QCheckBox(tr("Active")))
+    , stateControl(new WindowStateControl)
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setSpacing(0);
     layout->setMargin(ControlLayoutMargin);
-    if (flags & WantVisibleCheckBox) {
-        visibleCheckBox = new QCheckBox(tr("Visible"));
-        connect(visibleCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(changed()));
-        layout->addWidget(visibleCheckBox);
-    }
-    if (flags & WantActiveCheckBox) {
-        activeCheckBox = new QCheckBox(tr("Active"));
-        connect(activeCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(changed()));
-        layout->addWidget(activeCheckBox);
-    }
-    layout->addWidget(minimizeCheckBox);
+    connect(visibleCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(changed()));
+    layout->addWidget(visibleCheckBox);
+    connect(activeCheckBox, SIGNAL(toggled(bool)), this, SIGNAL(changed()));
+    layout->addWidget(activeCheckBox);
     layout->addWidget(stateControl);
-    connect(stateControl, SIGNAL(changed()), this, SIGNAL(changed()));
-    connect(minimizeCheckBox, SIGNAL(clicked()), this, SIGNAL(changed()));
+    connect(stateControl, SIGNAL(stateChanged(int)), this, SIGNAL(changed()));
 }
 
 Qt::WindowStates WindowStatesControl::states() const
 {
     Qt::WindowStates s = stateControl->state();
-    if (minimizeCheckBox->isChecked())
-        s |= Qt::WindowMinimized;
     if (activeValue())
         s |= Qt::WindowActive;
     return s;
@@ -259,11 +233,7 @@ Qt::WindowStates WindowStatesControl::states() const
 
 void WindowStatesControl::setStates(Qt::WindowStates s)
 {
-    minimizeCheckBox->blockSignals(true);
-    minimizeCheckBox->setChecked(s & Qt::WindowMinimized);
-    minimizeCheckBox->blockSignals(false);
-    s &= ~Qt::WindowMinimized;
-    stateControl->setState(Qt::WindowState(int(s)));
+    stateControl->setState(s);
     setActiveValue(s & Qt::WindowActive);
 }
 

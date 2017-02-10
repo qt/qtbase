@@ -485,7 +485,7 @@ QCocoaWindow::~QCocoaWindow()
 
     // Make sure to disconnect observer in all case if view is valid
     // to avoid notifications received when deleting when using Qt::AA_NativeWindows attribute
-    if (window()->type() != Qt::ForeignWindow)
+    if (!isForeignWindow())
         [[NSNotificationCenter defaultCenter] removeObserver:m_view];
 
     // While it is unlikely that this window will be in the popup stack
@@ -557,7 +557,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
     QMacAutoReleasePool pool;
 
     if (m_viewIsEmbedded) {
-        if (window()->type() != Qt::ForeignWindow) {
+        if (!isForeignWindow()) {
             [m_view setFrame:NSMakeRect(0, 0, rect.width(), rect.height())];
         } else {
             QPlatformWindow::setGeometry(rect);
@@ -581,7 +581,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
         [m_view setFrame:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
     }
 
-    if (window()->type() == Qt::ForeignWindow)
+    if (isForeignWindow())
         QPlatformWindow::setGeometry(rect);
 
     // will call QPlatformWindow::setGeometry(rect) during resize confirmation (see qnsview.mm)
@@ -1288,7 +1288,7 @@ void QCocoaWindow::windowDidEndLiveResize()
 
 void QCocoaWindow::windowDidBecomeKey()
 {
-    if (window()->type() == Qt::ForeignWindow)
+    if (isForeignWindow())
         return;
 
     if (m_windowUnderMouse) {
@@ -1304,7 +1304,7 @@ void QCocoaWindow::windowDidBecomeKey()
 
 void QCocoaWindow::windowDidResignKey()
 {
-    if (window()->type() == Qt::ForeignWindow)
+    if (isForeignWindow())
         return;
 
     // Key window will be non-nil if another window became key, so do not
@@ -1885,7 +1885,7 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
         return;
 
     // Setting a cursor in a foregin view is not supported.
-    if (window()->type() == Qt::ForeignWindow)
+    if (isForeignWindow())
         return;
 
     [m_windowCursor release];

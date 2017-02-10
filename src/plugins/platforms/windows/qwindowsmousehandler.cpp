@@ -414,7 +414,7 @@ static bool isValidWheelReceiver(QWindow *candidate)
 {
     if (candidate) {
         const QWindow *toplevel = QWindowsWindow::topLevelOf(candidate);
-        if (toplevel->type() == Qt::ForeignWindow)
+        if (toplevel->handle() && toplevel->handle()->isForeignWindow())
             return true;
         if (const QWindowsWindow *ww = QWindowsWindow::windowsWindowOf(toplevel))
             return !ww->testFlag(QWindowsWindow::BlockedByModal);

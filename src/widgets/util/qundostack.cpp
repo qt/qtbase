@@ -164,7 +164,7 @@ bool QUndoCommand::isObsolete() const
 /*!
     \since 5.9
 
-    Sets whether the command is obsolete.
+    Sets whether the command is obsolete to \a obsolete.
 
     \sa isObsolete(), mergeWith(), QUndoStack::push(), QUndoStack::undo(), QUndoStack::redo()
 */

@@ -67,8 +67,11 @@ defineTest(qtConfLibrary_mysqlConfig) {
             libs = $$cleanlibs
         }
         $${1}.libs = "$$val_escape(libs)"
-        eval(includedir = $$includedir)
-        includedir ~= s/^-I//g
+        eval(rawincludedir = $$includedir)
+        rawincludedir ~= s/^-I//g
+        includedir =
+        for (id, rawincludedir): \
+            includedir += $$clean_path($$id)
         includedir -= $$QMAKE_DEFAULT_INCDIRS
         $${1}.includedir = "$$val_escape(includedir)"
         export($${1}.libs)

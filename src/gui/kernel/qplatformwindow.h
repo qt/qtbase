@@ -104,6 +104,7 @@ public:
     virtual bool isActive() const;
     virtual bool isAncestorOf(const QPlatformWindow *child) const;
     virtual bool isEmbedded() const;
+    virtual bool isForeignWindow() const { return window()->type() == Qt::ForeignWindow; };
     virtual QPoint mapToGlobal(const QPoint &pos) const;
     virtual QPoint mapFromGlobal(const QPoint &pos) const;
 

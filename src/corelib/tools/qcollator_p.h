@@ -85,7 +85,7 @@ typedef QVector<wchar_t> CollatorKeyType;
 typedef int CollatorType;
 #endif
 
-class Q_CORE_EXPORT QCollatorPrivate
+class QCollatorPrivate
 {
 public:
     QAtomicInt ref;
@@ -127,7 +127,7 @@ private:
     Q_DISABLE_COPY(QCollatorPrivate)
 };
 
-class Q_CORE_EXPORT QCollatorSortKeyPrivate : public QSharedData
+class QCollatorSortKeyPrivate : public QSharedData
 {
     friend class QCollator;
 public:

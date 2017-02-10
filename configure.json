@@ -194,7 +194,7 @@
         "detectPkgConfig": [ "cross_compile", "machineTuple" ],
         "library": [ "pkg-config" ],
         "getPkgConfigVariable": [ "pkg-config" ],
-        "neon": [ "architecture" ]
+        "subarch": [ "architecture" ]
     },
 
     "testTypeAliases": {
@@ -321,10 +321,6 @@
             "type": "compile",
             "test": "common/avx"
         },
-        "avx_apple_clang": {
-            "label": "bugfree AVX support in compiler",
-            "type": "avx_test_apple_clang"
-        },
         "avx2": {
             "label": "AVX2 instructions",
             "type": "compile",
@@ -386,17 +382,18 @@
         },
         "mips_dsp": {
             "label": "MIPS DSP instructions",
-            "type": "compile",
-            "test": "unix/mips_dsp"
+            "type": "subarch",
+            "subarch": "dsp"
         },
         "mips_dspr2": {
             "label": "MIPS DSPr2 instructions",
-            "type": "compile",
-            "test": "common/mips_dspr2"
+            "type": "subarch",
+            "subarch": "dspr2"
         },
         "neon": {
             "label": "NEON instructions",
-            "type": "neon"
+            "type": "subarch",
+            "subarch": "neon"
         },
 
         "mremap": {
@@ -466,7 +463,7 @@
         "cross_compile": {
             "label": "Cross compiling",
             "condition": "call.crossCompile",
-            "output": [ "publicConfig", "privateConfig", "publicFeature" ]
+            "output": [ "publicConfig", "privateConfig", "publicFeature", "crossCompile" ]
         },
         "cxx11default": {
             "label": "Compiler defaults to C++11 or higher",
@@ -774,7 +771,7 @@
         },
         "avx": {
             "label": "AVX",
-            "condition": "features.sse4_2 && tests.avx && tests.avx_apple_clang",
+            "condition": "features.sse4_2 && tests.avx",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX", "value": 1 }

@@ -385,15 +385,14 @@ QPoint QWindowsGeometryHint::mapFromGlobal(const QWindow *w, const QPoint &p)
 
 inline QWindowsWindow *QWindowsWindow::windowsWindowOf(const QWindow *w)
 {
-    QWindowsWindow *result = Q_NULLPTR;
-    if (w) {
-        const Qt::WindowType type = w->type();
-        if (type != Qt::Desktop && type != Qt::ForeignWindow) {
-            if (QPlatformWindow *pw = w->handle())
-                result = static_cast<QWindowsWindow *>(pw);
-        }
-    }
-    return result;
+    if (!w || !w->handle())
+        return nullptr;
+
+    const Qt::WindowType type = w->type();
+    if (type == Qt::Desktop || w->handle()->isForeignWindow())
+        return nullptr;
+
+    return static_cast<QWindowsWindow *>(w->handle());
 }
 
 void *QWindowsWindow::userDataOf(HWND hwnd)

@@ -1856,6 +1856,27 @@ void QMainWindowLayout::invalidate()
     minSize = szHint = QSize();
 }
 
+#ifndef QT_NO_DOCKWIDGET
+void QMainWindowLayout::setCurrentHoveredFloat(QWidget *w)
+{
+    if (currentHoveredFloat != w) {
+        if (currentHoveredFloat) {
+            disconnect(currentHoveredFloat.data(), &QObject::destroyed,
+                       this, &QMainWindowLayout::updateGapIndicator);
+        }
+
+        currentHoveredFloat = w;
+
+        if (w) {
+            connect(w, &QObject::destroyed,
+                    this, &QMainWindowLayout::updateGapIndicator, Qt::UniqueConnection);
+        }
+
+        updateGapIndicator();
+    }
+}
+#endif //QT_NO_DOCKWIDGET
+
 /******************************************************************************
 ** QMainWindowLayout - remaining stuff
 */
@@ -1942,7 +1963,7 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
             dropTo->setParent(floatingTabs);
             dropTo->show();
             dropTo->d_func()->plug(QRect());
-            currentHoveredFloat = floatingTabs;
+            setCurrentHoveredFloat(floatingTabs);
         }
 #endif // QT_CONFIG(tabwidget)
 #if QT_CONFIG(tabbar)
@@ -2095,7 +2116,7 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         currentGapPos.clear();
         pluggingWidget = 0;
 #if QT_CONFIG(dockwidget)
-        currentHoveredFloat = nullptr;
+        setCurrentHoveredFloat(nullptr);
 #endif
         //applying the state will make sure that the currentGap is updated correctly
         //and all the geometries (especially the one from the central widget) is correct
@@ -2395,12 +2416,12 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
             if (!w->geometry().contains(mousePos))
                 continue;
 
-            currentHoveredFloat = w;
+            setCurrentHoveredFloat(w);
             restore(true);
             return;
         }
     }
-    currentHoveredFloat = Q_NULLPTR;
+    setCurrentHoveredFloat(nullptr);
 #endif //QT_NO_DOCKWIDGET
 
     QPoint pos = parentWidget()->mapFromGlobal(mousePos);

@@ -397,7 +397,7 @@ void QXcbWindow::create()
     xcb_window_t xcb_parent_id = platformScreen->root();
     if (parent()) {
         xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
-        m_embedded = parent()->window()->type() == Qt::ForeignWindow;
+        m_embedded = parent()->isForeignWindow();
 
         QSurfaceFormat parentFormat = parent()->window()->requestedFormat();
         if (window()->surfaceType() != QSurface::OpenGLSurface && parentFormat.hasAlpha()) {
@@ -1508,7 +1508,7 @@ void QXcbWindow::setParent(const QPlatformWindow *parent)
     if (parent) {
         const QXcbWindow *qXcbParent = static_cast<const QXcbWindow *>(parent);
         xcb_parent_id = qXcbParent->xcb_window();
-        m_embedded = qXcbParent->window()->type() == Qt::ForeignWindow;
+        m_embedded = qXcbParent->isForeignWindow();
     } else {
         xcb_parent_id = xcbScreen()->root();
         m_embedded = false;

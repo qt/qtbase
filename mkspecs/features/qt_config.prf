@@ -26,11 +26,7 @@ QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
          QT_MODULE_INCLUDE_BASE = $$[QT_INSTALL_HEADERS]
          QT_MODULE_LIB_BASE = $$[QT_INSTALL_LIBS]
          QT_MODULE_HOST_LIB_BASE = $$[QT_HOST_LIBS]
-         QT_MODULE_PLUGIN_BASE = $$[QT_INSTALL_PLUGINS]
-         QT_MODULE_LIBEXEC_BASE = $$[QT_INSTALL_LIBEXECS]
          QT_MODULE_BIN_BASE = $$[QT_INSTALL_BINS]
-         QT_MODULE_IMPORT_BASE = $$[QT_INSTALL_IMPORTS]
-         QT_MODULE_QML_BASE = $$[QT_INSTALL_QML]
          include($$mod)
       }
       unset(mods)
@@ -39,11 +35,7 @@ QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
    unset(QT_MODULE_INCLUDE_BASE)
    unset(QT_MODULE_LIB_BASE)
    unset(QT_MODULE_HOST_LIB_BASE)
-   unset(QT_MODULE_PLUGIN_BASE)
-   unset(QT_MODULE_LIBEXEC_BASE)
    unset(QT_MODULE_BIN_BASE)
-   unset(QT_MODULE_IMPORT_BASE)
-   unset(QT_MODULE_QML_BASE)
 }
 
 load(qt_functions)

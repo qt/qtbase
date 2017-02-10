@@ -1447,7 +1447,7 @@ static QString computeElidedText(Qt::TextElideMode mode, const QString &text)
 
 /*!
     Returns the minimum tab size hint for the tab at position \a index.
-    \since Qt 5.0
+    \since 5.0
 */
 
 QSize QTabBar::minimumTabSizeHint(int index) const
@@ -1756,7 +1756,10 @@ void QTabBar::paintEvent(QPaintEvent *)
             p.drawControl(QStyle::CE_TabBarTab, tab);
         else {
             int taboverlap = style()->pixelMetric(QStyle::PM_TabBarTabOverlap, 0, this);
-            d->movingTab->setGeometry(tab.rect.adjusted(-taboverlap, 0, taboverlap, 0));
+            if (verticalTabs(d->shape))
+                d->movingTab->setGeometry(tab.rect.adjusted(0, -taboverlap, 0, taboverlap));
+            else
+                d->movingTab->setGeometry(tab.rect.adjusted(-taboverlap, 0, taboverlap, 0));
         }
     }
 
@@ -2035,7 +2038,10 @@ void QTabBarPrivate::setupMovableTab()
 
     int taboverlap = q->style()->pixelMetric(QStyle::PM_TabBarTabOverlap, 0 ,q);
     QRect grabRect = q->tabRect(pressedIndex);
-    grabRect.adjust(-taboverlap, 0, taboverlap, 0);
+    if (verticalTabs(shape))
+        grabRect.adjust(0, -taboverlap, 0, taboverlap);
+    else
+        grabRect.adjust(-taboverlap, 0, taboverlap, 0);
 
     QPixmap grabImage(grabRect.size() * q->devicePixelRatioF());
     grabImage.setDevicePixelRatio(q->devicePixelRatioF());
@@ -2045,7 +2051,11 @@ void QTabBarPrivate::setupMovableTab()
 
     QStyleOptionTab tab;
     q->initStyleOption(&tab, pressedIndex);
-    tab.rect.moveTopLeft(QPoint(taboverlap, 0));
+    tab.position = QStyleOptionTab::OnlyOneTab;
+    if (verticalTabs(shape))
+        tab.rect.moveTopLeft(QPoint(0, taboverlap));
+    else
+        tab.rect.moveTopLeft(QPoint(taboverlap, 0));
     p.drawControl(QStyle::CE_TabBarTab, tab);
     p.end();
 

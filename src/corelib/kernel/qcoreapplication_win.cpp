@@ -197,33 +197,6 @@ Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window sho
 }
 #endif
 
-/*****************************************************************************
-  qWinMain() - Initializes Windows. Called from WinMain() in qtmain_win.cpp
- *****************************************************************************/
-
-#if !defined(Q_OS_WINRT)
-
-// ### Qt6: FIXME: Consider removing this function. It is here for Active Qt
-// servers and for binary for compatibility to applications built with Qt 5.3
-// using qtmain.lib which calls it In Qt 5.4, qtmain.lib was changed to use
-// CommandLineToArgvW() without calling into Qt5Core.
-Q_CORE_EXPORT
-void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
-              int cmdShow, int &argc, QVector<char *> &argv)
-{
-    Q_UNUSED(instance)
-    Q_UNUSED(prevInstance)
-    Q_UNUSED(cmdShow)
-
-    const QStringList wArgv = qWinCmdArgs(QString::fromLocal8Bit(cmdParam));
-    argv.clear();
-    argc = wArgv.size();
-    for (const QString &wArg : wArgv)
-        argv.append(_strdup(wArg.toLocal8Bit().constData()));
-}
-
-#endif // !Q_OS_WINRT
-
 #ifndef QT_NO_QOBJECT
 
 #if defined(Q_OS_WIN) && !defined(QT_NO_DEBUG_STREAM)

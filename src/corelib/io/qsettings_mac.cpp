@@ -269,8 +269,10 @@ static QVariant qtValue(CFPropertyListRef cfvalue)
 
         // Fast-path for QByteArray, so that we don't have to go
         // though the expensive and lossy conversion via UTF-8.
-        if (!byteArray.startsWith('@'))
+        if (!byteArray.startsWith('@')) {
+            byteArray.detach();
             return byteArray;
+        }
 
         const QString str = QString::fromUtf8(byteArray.constData(), byteArray.size());
         return QSettingsPrivate::stringToVariant(str);

@@ -568,8 +568,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     // Make sure that all temp projects are configured
     // for release so that the depends are created
     // without the debug <lib>dxxx.lib name mangling
-    QString old_after_vars = Option::globals->postcmds;
-    Option::globals->postcmds.append("\nCONFIG+=release");
+    QString old_after_vars = Option::globals->extra_cmds[QMakeEvalAfter];
+    Option::globals->extra_cmds[QMakeEvalAfter].append("\nCONFIG+=release");
 
     QHash<QString, QString> profileLookup;
     QHash<QString, QString> projGuids;
@@ -623,7 +623,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     t << slnConf;
 
     // Restore previous after_user_var options
-    Option::globals->postcmds = old_after_vars;
+    Option::globals->extra_cmds[QMakeEvalAfter] = old_after_vars;
 
     t << _slnProjConfBeg;
     for(QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {

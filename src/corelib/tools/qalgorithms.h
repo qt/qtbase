@@ -638,6 +638,17 @@ Q_ALWAYS_INLINE uint qt_builtin_clzs(quint16 v) Q_DECL_NOTHROW
 {
     return qt_builtin_clz(v) - 16U;
 }
+
+// Neither MSVC nor the Intel compiler define a macro for the POPCNT processor
+// feature, so we're using either the SSE4.2 or the AVX macro as a proxy (Clang
+// does define the macro). It's incorrect for two reasons:
+// 1. It's a separate bit in CPUID, so a processor could implement SSE4.2 and
+//    not POPCNT, but that's unlikely to happen.
+// 2. There are processors that support POPCNT but not AVX (Intel Nehalem
+//    architecture), but unlike the other compilers, MSVC has no option
+//    to generate code for those processors.
+// So it's an acceptable compromise.
+#if defined(__AVX__) || defined(__SSE4_2__) || defined(__POPCNT__)
 #define QALGORITHMS_USE_BUILTIN_POPCOUNT
 Q_ALWAYS_INLINE uint qt_builtin_popcount(quint32 v) Q_DECL_NOTHROW
 {
@@ -658,6 +669,8 @@ Q_ALWAYS_INLINE uint qt_builtin_popcountll(quint64 v) Q_DECL_NOTHROW
     return __popcnt64(v);
 }
 #endif // MSVC 64bit
+#endif // __AVX__ || __SSE4_2__ || __POPCNT__
+
 #endif // MSVC
 #endif // QT_HAS_CONSTEXPR_BUILTINS
 

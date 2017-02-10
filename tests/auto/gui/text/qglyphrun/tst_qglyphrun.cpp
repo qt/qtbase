@@ -527,6 +527,7 @@ void tst_QGlyphRun::drawStruckOutText()
 
     QFont font;
     font.setStrikeOut(true);
+    font.setStyleStrategy(QFont::ForceIntegerMetrics);
 
     QTextLayout layout(s);
     layout.setFont(font);
@@ -569,6 +570,7 @@ void tst_QGlyphRun::drawOverlinedText()
 
     QFont font;
     font.setOverline(true);
+    font.setStyleStrategy(QFont::ForceIntegerMetrics);
 
     QTextLayout layout(s);
     layout.setFont(font);
@@ -611,6 +613,7 @@ void tst_QGlyphRun::drawUnderlinedText()
 
     QFont font;
     font.setUnderline(true);
+    font.setStyleStrategy(QFont::ForceIntegerMetrics);
 
     QTextLayout layout(s);
     layout.setFont(font);

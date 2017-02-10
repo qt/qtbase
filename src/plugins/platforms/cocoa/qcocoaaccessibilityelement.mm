@@ -235,9 +235,16 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     if (!iface || !iface->isValid())
         return nil;
 
+    // macOS expects that the hierarchy is:
+    // App -> Window -> Children
+    // We don't actually have the window reflected properly in QAccessibility.
+    // Check if the parent is the application and then instead return the native window.
+
     if (QAccessibleInterface *parent = iface->parent()) {
-        QAccessible::Id parentId = QAccessible::uniqueId(parent);
-        return [QMacAccessibilityElement elementWithId: parentId];
+        if (parent->role() != QAccessible::Application) {
+            QAccessible::Id parentId = QAccessible::uniqueId(parent);
+            return [QMacAccessibilityElement elementWithId: parentId];
+        }
     }
 
     if (QWindow *window = iface->window()) {

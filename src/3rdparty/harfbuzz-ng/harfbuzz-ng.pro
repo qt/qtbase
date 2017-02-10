@@ -15,8 +15,13 @@ SHAPERS += opentype       # HB's main shaper; enabling it should be enough most 
 # native shaper on Apple platforms; could be used alone to handle both OT and AAT fonts
 darwin: SHAPERS += coretext
 
+# fallback shaper: not really useful with opentype or coretext shaper
+#SHAPERS += fallback
+
 DEFINES += HAVE_CONFIG_H
 DEFINES += HB_NO_UNICODE_FUNCS HB_DISABLE_DEPRECATED
+DEFINES += HB_NDEBUG
+DEFINES += HB_EXTERN=
 
 # platform/compiler specific definitions
 DEFINES += HAVE_ATEXIT
@@ -57,6 +62,7 @@ HEADERS += \
     $$PWD/src/hb-object-private.hh \
     $$PWD/src/hb-open-file-private.hh \
     $$PWD/src/hb-open-type-private.hh \
+    $$PWD/src/hb-ot-cbdt-table.hh \
     $$PWD/src/hb-ot-cmap-table.hh \
     $$PWD/src/hb-ot-glyf-table.hh \
     $$PWD/src/hb-ot-head-table.hh \
@@ -64,6 +70,8 @@ HEADERS += \
     $$PWD/src/hb-ot-hmtx-table.hh \
     $$PWD/src/hb-ot-maxp-table.hh \
     $$PWD/src/hb-ot-name-table.hh \
+    $$PWD/src/hb-ot-os2-table.hh \
+    $$PWD/src/hb-ot-post-table.hh \
     $$PWD/src/hb-private.hh \
     $$PWD/src/hb-set-private.hh \
     $$PWD/src/hb-shape-plan-private.hh \
@@ -94,6 +102,7 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-font.cc \
         $$PWD/src/hb-ot-layout.cc \
         $$PWD/src/hb-ot-map.cc \
+        $$PWD/src/hb-ot-math.cc \
         $$PWD/src/hb-ot-shape.cc \
         $$PWD/src/hb-ot-shape-complex-arabic.cc \
         $$PWD/src/hb-ot-shape-complex-default.cc \
@@ -116,11 +125,13 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot-layout-gsubgpos-private.hh \
         $$PWD/src/hb-ot-layout-gsub-table.hh \
         $$PWD/src/hb-ot-layout-jstf-table.hh \
+        $$PWD/src/hb-ot-layout-math-table.hh \
         $$PWD/src/hb-ot-layout-private.hh \
         $$PWD/src/hb-ot-map-private.hh \
         $$PWD/src/hb-ot-shape-complex-arabic-fallback.hh \
         $$PWD/src/hb-ot-shape-complex-arabic-private.hh \
         $$PWD/src/hb-ot-shape-complex-arabic-table.hh \
+#        $$PWD/src/hb-ot-shape-complex-arabic-win1256.hh \ # disabled with HB_NO_WIN1256
         $$PWD/src/hb-ot-shape-complex-indic-machine.hh \
         $$PWD/src/hb-ot-shape-complex-indic-private.hh \
         $$PWD/src/hb-ot-shape-complex-myanmar-machine.hh \
@@ -135,6 +146,7 @@ contains(SHAPERS, opentype) {
         $$PWD/src/hb-ot.h \
         $$PWD/src/hb-ot-font.h \
         $$PWD/src/hb-ot-layout.h \
+        $$PWD/src/hb-ot-math.h \
         $$PWD/src/hb-ot-shape.h \
         $$PWD/src/hb-ot-tag.h
 }
@@ -171,4 +183,11 @@ contains(SHAPERS, coretext) {
                 -F$$device_system_frameworks
         }
     }
+}
+
+contains(SHAPERS, fallback)|isEmpty(SHAPERS) {
+    DEFINES += HAVE_FALLBACK
+
+    SOURCES += \
+        $$PWD/src/hb-fallback-shape.cc
 }

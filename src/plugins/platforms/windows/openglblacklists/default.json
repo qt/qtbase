@@ -114,6 +114,18 @@
            "features": [
                "disable_desktopgl"
            ]
-        }
+        },
+        {
+          "id": 10,
+          "description": "Intel(R) HD Graphics IronLake (Arrandale) crashes on makeCurrent QTBUG-53888",
+          "vendor_id": "0x8086",
+          "device_id": [ "0x0046" ],
+          "os": {
+              "type": "win"
+          },
+          "features": [
+              "disable_desktopgl"
+          ]
+       }
     ]
 }

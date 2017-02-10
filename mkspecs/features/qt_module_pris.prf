@@ -110,9 +110,6 @@ defineReplace(qtExportLibsForModule) {
         module_master =
     MODULE_PRI_CONT = \
         "QT.$${MODULE_ID}.VERSION = $${VERSION}" \
-        "QT.$${MODULE_ID}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
-        "QT.$${MODULE_ID}.MINOR_VERSION = $$section(VERSION, ., 1, 1)" \
-        "QT.$${MODULE_ID}.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
         "" \
         "QT.$${MODULE_ID}.name = $$TARGET" \
         "QT.$${MODULE_ID}.module = $$module_module" \
@@ -122,10 +119,6 @@ defineReplace(qtExportLibsForModule) {
         "QT.$${MODULE_ID}.frameworks =$$MODULE_FRAMEWORKS"
     !host_build: MODULE_PRI_CONT += \
         "QT.$${MODULE_ID}.bins = \$\$QT_MODULE_BIN_BASE" \
-        "QT.$${MODULE_ID}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
-        "QT.$${MODULE_ID}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
-        "QT.$${MODULE_ID}.imports = \$\$QT_MODULE_IMPORT_BASE" \
-        "QT.$${MODULE_ID}.qml = \$\$QT_MODULE_QML_BASE" \
         $$module_plugtypes
     MODULE_PRI_CONT += \
         "QT.$${MODULE_ID}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
@@ -151,9 +144,6 @@ defineReplace(qtExportLibsForModule) {
         private_deps ~= s,-private$,_private,g
         MODULE_PRIVATE_PRI_CONT = \
             "QT.$${MODULE}_private.VERSION = $${VERSION}" \
-            "QT.$${MODULE}_private.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
-            "QT.$${MODULE}_private.MINOR_VERSION = $$section(VERSION, ., 1, 1)" \
-            "QT.$${MODULE}_private.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
             "" \
             "QT.$${MODULE}_private.name = $${TARGET}" \   # Same name as base module
             "QT.$${MODULE}_private.module =" \
@@ -181,12 +171,8 @@ defineReplace(qtExportLibsForModule) {
         MODULE_FWD_PRI_CONT = \
             "QT_MODULE_BIN_BASE = $$val_escape(MODULE_BASE_OUTDIR)/bin" \
             "QT_MODULE_INCLUDE_BASE = $$val_escape(MODULE_BASE_INCDIR)/include" \
-            "QT_MODULE_IMPORT_BASE = $$val_escape(MODULE_BASE_OUTDIR)/imports" \
-            "QT_MODULE_QML_BASE = $$val_escape(MODULE_BASE_OUTDIR)/qml" \
             "QT_MODULE_LIB_BASE = $$val_escape(MODULE_BASE_OUTDIR)/lib" \
             "QT_MODULE_HOST_LIB_BASE = $$val_escape(MODULE_BASE_OUTDIR)/lib" \
-            "QT_MODULE_LIBEXEC_BASE = $$val_escape(MODULE_BASE_OUTDIR)/libexec" \
-            "QT_MODULE_PLUGIN_BASE = $$val_escape(MODULE_BASE_OUTDIR)/plugins" \
             "include($$val_escape(MODULE_PRI))" \
             "QT.$${MODULE_ID}.priority = 1"
         !internal_module:!no_private_module: MODULE_FWD_PRI_CONT += \
@@ -210,12 +196,8 @@ defineReplace(qtExportLibsForModule) {
         # This is needed for the direct include() below. Mirrors qt_config.prf
         QT_MODULE_BIN_BASE = $$[QT_INSTALL_BINS]
         QT_MODULE_INCLUDE_BASE = $$[QT_INSTALL_HEADERS]
-        QT_MODULE_IMPORT_BASE = $$[QT_INSTALL_IMPORTS]
-        QT_MODULE_QML_BASE = $$[QT_INSTALL_QML]
         QT_MODULE_LIB_BASE = $$[QT_INSTALL_LIBS]
         QT_MODULE_HOST_LIB_BASE = $$[QT_HOST_LIBS]
-        QT_MODULE_LIBEXEC_BASE = $$[QT_INSTALL_LIBEXECS]
-        QT_MODULE_PLUGIN_BASE = $$[QT_INSTALL_PLUGINS]
 
     }
 
@@ -227,7 +209,7 @@ defineReplace(qtExportLibsForModule) {
     for(mod, mods_to_load) {
         for(var, $$list(VERSION MAJOR_VERSION MINOR_VERSION PATCH_VERSION \
                         name module depends run_depends plugin_types module_config CONFIG DEFINES \
-                        priority includes bins libs frameworks libexecs plugins imports qml \
+                        priority includes bins libs frameworks \
                         winrt_capabilities winrt_capabilities_device \
                 )):defined(QT.$${mod}.$$var, var):cache(QT.$${mod}.$$var, transient)
     }

@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qcollator_p.h"
+#include "qlocale_p.h"
 #include "qstringlist.h"
 #include "qstring.h"
 
@@ -61,7 +62,7 @@ void QCollatorPrivate::init()
     collator = 0;
 
 #ifndef USE_COMPARESTRINGEX
-    localeID = qt_inIsoNametoLCID(locale.bcp47Name().toUtf8().constData());
+    localeID = qt_inIsoNametoLCID(QLocalePrivate::get(locale)->bcp47Name().constData());
 #else
     localeName = locale.bcp47Name();
 #endif

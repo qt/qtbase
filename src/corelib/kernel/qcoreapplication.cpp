@@ -353,10 +353,6 @@ Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 
 QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = 0;
 
-#ifdef Q_OS_UNIX
-Qt::HANDLE qt_application_thread_id = 0;
-#endif
-
 #endif // QT_NO_QOBJECT
 
 QCoreApplication *QCoreApplication::self = 0;
@@ -467,10 +463,6 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     if (Q_UNLIKELY(!setuidAllowed && (geteuid() != getuid())))
         qFatal("FATAL: The application binary appears to be running setuid, this is a security hole.");
 #  endif // Q_OS_UNIX
-
-#  if defined(Q_OS_UNIX)
-    qt_application_thread_id = QThread::currentThreadId();
-#  endif
 
     QThread *cur = QThread::currentThread(); // note: this may end up setting theMainThread!
     if (cur != theMainThread)

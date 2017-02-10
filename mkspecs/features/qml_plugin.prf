@@ -101,10 +101,10 @@ load(qt_common)
     build_pass|!debug_and_release {
         isEmpty(IMPORT_VERSION) {
             no_cxx_module {
-                IMPORT_VERSION = $$replace(MODULE_VERSION, ^(\\d+\\.\\d+).*, \\1)
+                IMPORT_VERSION = $$section(MODULE_VERSION, ., 0, 1)
                 isEmpty(IMPORT_VERSION): error("Must set IMPORT_VERSION")
             } else {
-                IMPORT_VERSION = $$eval(QT.$${CXX_MODULE}.MAJOR_VERSION).$$eval(QT.$${CXX_MODULE}.MINOR_VERSION)
+                IMPORT_VERSION = $$section(QT.$${CXX_MODULE}.VERSION, ., 0, 1)
             }
         }
 

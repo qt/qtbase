@@ -178,6 +178,7 @@ private slots:
 
     void testByteArray_data();
     void testByteArray();
+    void testByteArrayNativeFormat();
     void iniCodec();
     void bom();
     void embeddedZeroByte_data();
@@ -669,6 +670,16 @@ void tst_QSettings::testByteArray()
         QByteArray ret = settings.value("byteArray", data).toByteArray();
         QCOMPARE(ret, data);
     }
+}
+
+void tst_QSettings::testByteArrayNativeFormat()
+{
+#ifndef Q_OS_MACOS
+    QSKIP("This test is specific to macOS plist reading.");
+#else
+    QSettings settings(":/resourcefile6.plist", QSettings::NativeFormat);
+    QCOMPARE(settings.value("passwordData"), QVariant(QByteArray::fromBase64("RBxVAAsDVsO/")));
+#endif
 }
 
 void tst_QSettings::iniCodec()
@@ -2316,14 +2327,14 @@ void tst_QSettings::setIniCodec()
 
         {
             QFile inFile(settings4.fileName());
-            inFile.open(QIODevice::ReadOnly);
+            inFile.open(QIODevice::ReadOnly | QIODevice::Text);
             actualContents4 = inFile.readAll();
             inFile.close();
         }
 
         {
             QFile inFile(settings5.fileName());
-            inFile.open(QIODevice::ReadOnly);
+            inFile.open(QIODevice::ReadOnly | QIODevice::Text);
             actualContents5 = inFile.readAll();
             inFile.close();
         }
@@ -2331,9 +2342,6 @@ void tst_QSettings::setIniCodec()
 
     QConfFile::clearCache();
 
-#ifdef Q_OS_WIN
-    QEXPECT_FAIL("", "QTBUG-25446", Abort);
-#endif
     QCOMPARE(actualContents4, expeContents4);
     QCOMPARE(actualContents5, expeContents5);
 

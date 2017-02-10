@@ -113,7 +113,7 @@ void qt_blend_rgb32_on_rgb32_mips_dsp(uchar *destPixels, int dbpl,
     }
 }
 
-#if defined QT_COMPILER_SUPPORTS_MIPS_DSPR2
+#if defined(__MIPS_DSPR2__)
 void qt_blend_rgb16_on_rgb16_mips_dspr2(uchar *destPixels, int dbpl,
                                         const uchar *srcPixels, int sbpl,
                                         int w, int h,
@@ -520,5 +520,18 @@ const uint * QT_FASTCALL qt_fetchUntransformed_argb8565_premultiplied_mips_dsp (
     fetchUntransformed_argb8565_premultiplied_asm_mips_dsp(buffer, line, length);
     return buffer;
 }
+
+#if defined(__MIPS_DSPR2__)
+extern "C" void  qConvertRgb16To32_asm_mips_dspr2(quint32 *dest, const quint16 *src, int length);
+
+const uint *QT_FASTCALL qt_fetchUntransformedRGB16_mips_dspr2(uint *buffer, const Operator *,
+                                                              const QSpanData *data, int y, int x,
+                                                              int length)
+{
+    const quint16 *scanLine = (const quint16 *)data->texture.scanLine(y) + x;
+    qConvertRgb16To32_asm_mips_dspr2(buffer, scanLine, length);
+    return buffer;
+}
+#endif
 
 QT_END_NAMESPACE

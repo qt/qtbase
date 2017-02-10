@@ -750,7 +750,7 @@ defineTest(qtConfTest_compile) {
 
     qmake_args += "\"CONFIG += $$qmake_configs\""
 
-    !$$host {
+    !$$host|!cross_compile {
         # On WinRT we need to change the entry point as we cannot create windows
         # applications
         winrt: \
@@ -766,6 +766,12 @@ defineTest(qtConfTest_compile) {
         !isEmpty(EXTRA_INCLUDEPATH): \
             qmake_args += $$system_quote(INCLUDEPATH += $$val_escape(EXTRA_INCLUDEPATH))
         qmake_args += $$EXTRA_QMAKE_ARGS
+    }
+
+    # make sure to make this the last override (because of -early)
+    cross_compile {
+        # must be done before loading default_pre.prf.
+        qmake_args += -early "\"CONFIG += cross_compile\""
     }
 
     # Clean up after previous run

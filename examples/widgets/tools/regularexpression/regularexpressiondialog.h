@@ -78,6 +78,7 @@ private:
     void setupUi();
     QWidget *setupLeftUi();
     QWidget *setupRightUi();
+    void setResultUiEnabled(bool enabled);
 
     QLineEdit *patternLineEdit;
     QLineEdit *escapedPatternLineEdit;

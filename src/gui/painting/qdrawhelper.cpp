@@ -1540,12 +1540,8 @@ static const uint *QT_FASTCALL fetchUntransformedRGB16(uint *buffer, const Opera
                                                        int length)
 {
     const quint16 *scanLine = (const quint16 *)data->texture.scanLine(y) + x;
-#ifdef QT_COMPILER_SUPPORTS_MIPS_DSPR2
-    qConvertRgb16To32_asm_mips_dspr2(buffer, scanLine, length);
-#else
     for (int i = 0; i < length; ++i)
         buffer[i] = qConvertRgb16To32(scanLine[i]);
-#endif
     return buffer;
 }
 
@@ -5543,32 +5539,160 @@ inline static void qt_bitmapblit_quint16(QRasterBuffer *rasterBuffer,
                                     map, mapWidth, mapHeight, mapStride);
 }
 
-static void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
+static inline void alphamapblend_generic(int coverage, QRgba64 *dest, int x, const QRgba64 &srcLinear, const QRgba64 &src, const QColorProfile *colorProfile)
+{
+    if (coverage == 0) {
+        // nothing
+    } else if (coverage == 255) {
+        dest[x] = src;
+    } else {
+        QRgba64 dstColor = dest[x];
+        if (colorProfile) {
+            if (dstColor.isOpaque())
+                dstColor = colorProfile->toLinear(dstColor);
+            else if (!dstColor.isTransparent())
+                dstColor = colorProfile->toLinear(dstColor.unpremultiplied()).premultiplied();
+        }
+
+        dstColor = interpolate255(srcLinear, coverage, dstColor, 255 - coverage);
+        if (colorProfile) {
+            if (dstColor.isOpaque())
+                dstColor = colorProfile->fromLinear(dstColor);
+            else if (!dstColor.isTransparent())
+                dstColor = colorProfile->fromLinear(dstColor.unpremultiplied()).premultiplied();
+        }
+        dest[x] = dstColor;
+    }
+}
+
+static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
                                     int x, int y, const QRgba64 &color,
                                     const uchar *map,
                                     int mapWidth, int mapHeight, int mapStride,
-                                    const QClipData *, bool /*useGammaCorrection*/)
+                                    const QClipData *clip, bool useGammaCorrection)
 {
-    const quint16 c = color.toRgb16();
-    quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
-    const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
+    if (color.isTransparent())
+        return;
 
-    while (mapHeight--) {
-        for (int i = 0; i < mapWidth; ++i) {
-            const int coverage = map[i];
+    const QColorProfile *colorProfile = nullptr;
 
-            if (coverage == 0) {
-                // nothing
-            } else if (coverage == 255) {
-                dest[i] = c;
-            } else {
-                int ialpha = 255 - coverage;
-                dest[i] = BYTE_MUL_RGB16(c, coverage)
-                          + BYTE_MUL_RGB16(dest[i], ialpha);
+    if (useGammaCorrection)
+        colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA8Text();
+
+    QRgba64 srcColor = color;
+    if (colorProfile) {
+        if (color.isOpaque())
+            srcColor = colorProfile->toLinear(srcColor);
+        else
+            srcColor = colorProfile->toLinear(srcColor.unpremultiplied()).premultiplied();
+    }
+
+    QRgba64 buffer[buffer_size];
+    const DestFetchProc64 destFetch64 = destFetchProc64[rasterBuffer->format];
+    const DestStoreProc64 destStore64 = destStoreProc64[rasterBuffer->format];
+
+    if (!clip) {
+        for (int ly = 0; ly < mapHeight; ++ly) {
+            int i = x;
+            int length = mapWidth;
+            while (length > 0) {
+                int l = qMin(buffer_size, length);
+                QRgba64 *dest = destFetch64(buffer, rasterBuffer, i, y + ly, l);
+                for (int j=0; j < l; ++j) {
+                    const int coverage = map[j + (i - x)];
+                    alphamapblend_generic(coverage, dest, j, srcColor, color, colorProfile);
+                }
+                destStore64(rasterBuffer, i, y + ly, buffer, l);
+                length -= l;
+                i += l;
             }
+            map += mapStride;
         }
-        dest += destStride;
-        map += mapStride;
+    } else {
+        int bottom = qMin(y + mapHeight, rasterBuffer->height());
+
+        int top = qMax(y, 0);
+        map += (top - y) * mapStride;
+
+        const_cast<QClipData *>(clip)->initialize();
+        for (int yp = top; yp<bottom; ++yp) {
+            const QClipData::ClipLine &line = clip->m_clipLines[yp];
+
+            for (int i=0; i<line.count; ++i) {
+                const QSpan &clip = line.spans[i];
+
+                int start = qMax<int>(x, clip.x);
+                int end = qMin<int>(x + mapWidth, clip.x + clip.len);
+                Q_ASSERT(clip.len <= buffer_size);
+                QRgba64 *dest = destFetch64(buffer, rasterBuffer, start, clip.y, clip.len);
+
+                for (int xp=start; xp<end; ++xp) {
+                    const int coverage = map[xp - x];
+                    alphamapblend_generic(coverage, dest, xp - start, srcColor, color, colorProfile);
+                }
+                destStore64(rasterBuffer, start, clip.y, dest, clip.len);
+            } // for (i -> line.count)
+            map += mapStride;
+        } // for (yp -> bottom)
+    }
+}
+
+static inline void alphamapblend_quint16(int coverage, quint16 *dest, int x, const quint16 srcColor)
+{
+    if (coverage == 0) {
+        // nothing
+    } else if (coverage == 255) {
+        dest[x] = srcColor;
+    } else {
+        dest[x] = BYTE_MUL_RGB16(srcColor, coverage)
+                + BYTE_MUL_RGB16(dest[x], 255 - coverage);
+    }
+}
+
+void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
+                             int x, int y, const QRgba64 &color,
+                             const uchar *map,
+                             int mapWidth, int mapHeight, int mapStride,
+                             const QClipData *clip, bool useGammaCorrection)
+{
+    if (useGammaCorrection) {
+        qt_alphamapblit_generic(rasterBuffer, x, y, color, map, mapWidth, mapHeight, mapStride, clip, useGammaCorrection);
+        return;
+    }
+
+    const quint16 c = color.toRgb16();
+
+    if (!clip) {
+        quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
+        const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
+        while (mapHeight--) {
+            for (int i = 0; i < mapWidth; ++i)
+                alphamapblend_quint16(map[i], dest, i, c);
+            dest += destStride;
+            map += mapStride;
+        }
+    } else {
+        int top = qMax(y, 0);
+        int bottom = qMin(y + mapHeight, rasterBuffer->height());
+        map += (top - y) * mapStride;
+
+        const_cast<QClipData *>(clip)->initialize();
+        for (int yp = top; yp<bottom; ++yp) {
+            const QClipData::ClipLine &line = clip->m_clipLines[yp];
+
+            quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(yp));
+
+            for (int i=0; i<line.count; ++i) {
+                const QSpan &clip = line.spans[i];
+
+                int start = qMax<int>(x, clip.x);
+                int end = qMin<int>(x + mapWidth, clip.x + clip.len);
+
+                for (int xp=start; xp<end; ++xp)
+                    alphamapblend_quint16(map[xp - x], dest, xp, c);
+            } // for (i -> line.count)
+            map += mapStride;
+        } // for (yp -> bottom)
     }
 }
 
@@ -5694,9 +5818,108 @@ static void qt_alphamapblit_rgba8888(QRasterBuffer *rasterBuffer,
 }
 #endif
 
-inline static int qRgbAvg(QRgb rgb)
+static inline int qRgbAvg(QRgb rgb)
 {
     return (qRed(rgb) * 5 + qGreen(rgb) * 6 + qBlue(rgb) * 5) / 16;
+}
+
+static inline void alphargbblend_generic(uint coverage, QRgba64 *dest, int x, const QRgba64 &srcLinear, const QRgba64 &src, const QColorProfile *colorProfile)
+{
+    if (coverage == 0xff000000) {
+        // nothing
+    } else if (coverage == 0xffffffff) {
+        dest[x] = src;
+    } else {
+        QRgba64 dstColor = dest[x];
+        if (dstColor.isOpaque()) {
+            if (colorProfile)
+                dstColor = colorProfile->toLinear(dstColor);
+            dstColor = rgbBlend(dstColor, srcLinear, coverage);
+            if (colorProfile)
+                dstColor = colorProfile->fromLinear(dstColor);
+            dest[x] = dstColor;
+        } else {
+            // Give up and do a gray alphablend.
+            if (colorProfile && !dstColor.isTransparent())
+                dstColor = colorProfile->toLinear(dstColor.unpremultiplied()).premultiplied();
+            const int a = qRgbAvg(coverage);
+            dstColor = interpolate255(srcLinear, coverage, dstColor, 255 - a);
+            if (colorProfile && !dstColor.isTransparent())
+                dstColor = colorProfile->fromLinear(dstColor.unpremultiplied()).premultiplied();
+            dest[x] = dstColor;
+        }
+    }
+}
+
+static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
+                                    int x, int y, const QRgba64 &color,
+                                    const uint *src, int mapWidth, int mapHeight, int srcStride,
+                                    const QClipData *clip, bool useGammaCorrection)
+{
+    if (color.isTransparent())
+        return;
+
+    const QColorProfile *colorProfile = nullptr;
+
+    if (useGammaCorrection)
+        colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA8Text();
+
+    QRgba64 srcColor = color;
+    if (colorProfile) {
+        if (color.isOpaque())
+            srcColor = colorProfile->toLinear(srcColor);
+        else
+            srcColor = colorProfile->toLinear(srcColor.unpremultiplied()).premultiplied();
+    }
+
+    QRgba64 buffer[buffer_size];
+    const DestFetchProc64 destFetch64 = destFetchProc64[rasterBuffer->format];
+    const DestStoreProc64 destStore64 = destStoreProc64[rasterBuffer->format];
+
+    if (!clip) {
+        for (int ly = 0; ly < mapHeight; ++ly) {
+            int i = x;
+            int length = mapWidth;
+            while (length > 0) {
+                int l = qMin(buffer_size, length);
+                QRgba64 *dest = destFetch64(buffer, rasterBuffer, i, y + ly, l);
+                for (int j=0; j < l; ++j) {
+                    const uint coverage = src[j + (i - x)];
+                    alphargbblend_generic(coverage, dest, j, srcColor, color, colorProfile);
+                }
+                destStore64(rasterBuffer, i, y + ly, buffer, l);
+                length -= l;
+                i += l;
+            }
+            src += srcStride;
+        }
+    } else {
+        int bottom = qMin(y + mapHeight, rasterBuffer->height());
+
+        int top = qMax(y, 0);
+        src += (top - y) * srcStride;
+
+        const_cast<QClipData *>(clip)->initialize();
+        for (int yp = top; yp<bottom; ++yp) {
+            const QClipData::ClipLine &line = clip->m_clipLines[yp];
+
+            for (int i=0; i<line.count; ++i) {
+                const QSpan &clip = line.spans[i];
+
+                int start = qMax<int>(x, clip.x);
+                int end = qMin<int>(x + mapWidth, clip.x + clip.len);
+                Q_ASSERT(clip.len <= buffer_size);
+                QRgba64 *dest = destFetch64(buffer, rasterBuffer, start, clip.y, clip.len);
+
+                for (int xp=start; xp<end; ++xp) {
+                    const uint coverage = src[xp - x];
+                    alphargbblend_generic(coverage, dest, xp - start, srcColor, color, colorProfile);
+                }
+                destStore64(rasterBuffer, start, clip.y, dest, clip.len);
+            } // for (i -> line.count)
+            src += srcStride;
+        } // for (yp -> bottom)
+    }
 }
 
 static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
@@ -5704,18 +5927,16 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                                    const uint *src, int mapWidth, int mapHeight, int srcStride,
                                    const QClipData *clip, bool useGammaCorrection)
 {
-    const quint32 c = color.toArgb32();
+    if (color.isTransparent())
+        return;
 
-    int sa = qAlpha(c);
+    const quint32 c = color.toArgb32();
 
     const QColorProfile *colorProfile = QGuiApplicationPrivate::instance()->colorProfileForA32Text();
     if (!colorProfile)
         return;
 
     const QRgba64 slinear = useGammaCorrection ? colorProfile->toLinear64(c) : color;
-
-    if (sa == 0)
-        return;
 
     if (!clip) {
         quint32 *dst = reinterpret_cast<quint32*>(rasterBuffer->scanLine(y)) + x;
@@ -5729,9 +5950,12 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                     if (dst[i] >= 0xff000000) {
                         rgbBlendPixel(dst+i, coverage, slinear, colorProfile, useGammaCorrection);
                     } else {
-                        // Give up and do a naive blend.
+                        // Give up and do a gray blend.
                         const int a = qRgbAvg(coverage);
-                        dst[i] = INTERPOLATE_PIXEL_255(c, a, dst[i], 255 - a);
+                        if (useGammaCorrection)
+                            grayBlendPixel(dst+i, a, slinear, colorProfile);
+                        else
+                            dst[i] = INTERPOLATE_PIXEL_255(c, a, dst[i], 255 - a);
                     }
                 }
             }
@@ -5765,9 +5989,12 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                         if (dst[xp] >= 0xff000000) {
                             rgbBlendPixel(dst+xp, coverage, slinear, colorProfile, useGammaCorrection);
                         } else {
-                            // Give up and do a naive blend.
+                            // Give up and do a gray blend.
                             const int a = qRgbAvg(coverage);
-                            dst[xp] = INTERPOLATE_PIXEL_255(c, a, dst[xp], 255 - coverage);
+                            if (useGammaCorrection)
+                                grayBlendPixel(dst+xp, a, slinear, colorProfile);
+                            else
+                                dst[xp] = INTERPOLATE_PIXEL_255(c, a, dst[xp], 255 - coverage);
                         }
                     }
                 }
@@ -5901,56 +6128,80 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         qt_gradient_quint16,
         qt_bitmapblit_quint16,
         qt_alphamapblit_quint16,
-        0,
+        qt_alphargbblit_generic,
         qt_rectfill_quint16
     },
     // Format_ARGB8565_Premultiplied
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0, 0
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
+        0
     },
     // Format_RGB666
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0, 0
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
+        0
     },
     // Format_ARGB6666_Premultiplied
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0, 0
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
+        0
     },
     // Format_RGB555
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0, 0
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
+        0
     },
     // Format_ARGB8555_Premultiplied
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0, 0
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
+        0
     },
     // Format_RGB888
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0, 0
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
+        0
     },
     // Format_RGB444
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0, 0
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
+        0
     },
     // Format_ARGB4444_Premultiplied
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0, 0
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
+        0
     },
     // Format_RGBX8888
     {
@@ -5960,9 +6211,9 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         qt_alphamapblit_rgba8888,
 #else
-        0,
+        qt_alphamapblit_generic,
 #endif
-        0,
+        qt_alphargbblit_generic,
         qt_rectfill_rgba
     },
     // Format_RGBA8888
@@ -5973,9 +6224,9 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         qt_alphamapblit_rgba8888,
 #else
-        0,
+        qt_alphamapblit_generic,
 #endif
-        0,
+        qt_alphargbblit_generic,
         qt_rectfill_nonpremul_rgba
     },
     // Format_RGB8888_Premultiplied
@@ -5986,9 +6237,9 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         qt_alphamapblit_rgba8888,
 #else
-        0,
+        qt_alphamapblit_generic,
 #endif
-        0,
+        qt_alphargbblit_generic,
         qt_rectfill_rgba
     },
     // Format_BGR30
@@ -5996,8 +6247,8 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         blend_color_generic_rgb64,
         blend_src_generic_rgb64,
         qt_bitmapblit_rgb30<PixelOrderBGR>,
-        0,
-        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
         qt_rectfill_rgb30<PixelOrderBGR>
     },
     // Format_A2BGR30_Premultiplied
@@ -6005,8 +6256,8 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         blend_color_generic_rgb64,
         blend_src_generic_rgb64,
         qt_bitmapblit_rgb30<PixelOrderBGR>,
-        0,
-        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
         qt_rectfill_rgb30<PixelOrderBGR>
     },
     // Format_RGB30
@@ -6014,8 +6265,8 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         blend_color_generic_rgb64,
         blend_src_generic_rgb64,
         qt_bitmapblit_rgb30<PixelOrderRGB>,
-        0,
-        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
         qt_rectfill_rgb30<PixelOrderRGB>
     },
     // Format_A2RGB30_Premultiplied
@@ -6023,22 +6274,26 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         blend_color_generic_rgb64,
         blend_src_generic_rgb64,
         qt_bitmapblit_rgb30<PixelOrderRGB>,
-        0,
-        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
         qt_rectfill_rgb30<PixelOrderRGB>
     },
     // Format_Alpha8
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0,
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
         qt_rectfill_alpha
     },
     // Format_Grayscale8
     {
         blend_color_generic,
         blend_src_generic,
-        0, 0, 0,
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
         qt_rectfill_gray
     },
 };
@@ -6105,7 +6360,7 @@ void qt_memfill16(quint16 *dest, quint16 color, int count)
     qt_memfill_template<quint16>(dest, color, count);
 }
 #endif
-#if !defined(__SSE2__) && !defined(__ARM_NEON__) && !defined(__mips_dsp)
+#if !defined(__SSE2__) && !defined(__ARM_NEON__) && !defined(__MIPS_DSP__)
 void qt_memfill32(quint32 *dest, quint32 color, int count)
 {
     qt_memfill_template<quint32>(dest, color, count);
@@ -6296,52 +6551,50 @@ static void qInitDrawhelperFunctions()
     qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
     qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
 #endif
+#endif // defined(__ARM_NEON__)
 
-#endif
+#if defined(__MIPS_DSP__)
+    // Composition functions are all DSP r1
+    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_asm_mips_dsp;
+    qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_mips_dsp;
+    qt_functionForMode_C[QPainter::CompositionMode_DestinationOver] = comp_func_DestinationOver_mips_dsp;
+    qt_functionForMode_C[QPainter::CompositionMode_SourceIn] = comp_func_SourceIn_mips_dsp;
+    qt_functionForMode_C[QPainter::CompositionMode_DestinationIn] = comp_func_DestinationIn_mips_dsp;
+    qt_functionForMode_C[QPainter::CompositionMode_DestinationOut] = comp_func_DestinationOut_mips_dsp;
+    qt_functionForMode_C[QPainter::CompositionMode_SourceAtop] = comp_func_SourceAtop_mips_dsp;
+    qt_functionForMode_C[QPainter::CompositionMode_DestinationAtop] = comp_func_DestinationAtop_mips_dsp;
+    qt_functionForMode_C[QPainter::CompositionMode_Xor] = comp_func_XOR_mips_dsp;
+    qt_functionForMode_C[QPainter::CompositionMode_SourceOut] = comp_func_SourceOut_mips_dsp;
 
-#if defined(QT_COMPILER_SUPPORTS_MIPS_DSP) || defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
-    if (qCpuHasFeature(DSP) && qCpuHasFeature(DSPR2)) {
-        // Composition functions are all DSP r1
-        qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_asm_mips_dsp;
-        qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_mips_dsp;
-        qt_functionForMode_C[QPainter::CompositionMode_DestinationOver] = comp_func_DestinationOver_mips_dsp;
-        qt_functionForMode_C[QPainter::CompositionMode_SourceIn] = comp_func_SourceIn_mips_dsp;
-        qt_functionForMode_C[QPainter::CompositionMode_DestinationIn] = comp_func_DestinationIn_mips_dsp;
-        qt_functionForMode_C[QPainter::CompositionMode_DestinationOut] = comp_func_DestinationOut_mips_dsp;
-        qt_functionForMode_C[QPainter::CompositionMode_SourceAtop] = comp_func_SourceAtop_mips_dsp;
-        qt_functionForMode_C[QPainter::CompositionMode_DestinationAtop] = comp_func_DestinationAtop_mips_dsp;
-        qt_functionForMode_C[QPainter::CompositionMode_Xor] = comp_func_XOR_mips_dsp;
-        qt_functionForMode_C[QPainter::CompositionMode_SourceOut] = comp_func_SourceOut_mips_dsp;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_mips_dsp;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_DestinationOver] = comp_func_solid_DestinationOver_mips_dsp;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceIn] = comp_func_solid_SourceIn_mips_dsp;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_DestinationIn] = comp_func_solid_DestinationIn_mips_dsp;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceAtop] = comp_func_solid_SourceAtop_mips_dsp;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_DestinationAtop] = comp_func_solid_DestinationAtop_mips_dsp;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_Xor] = comp_func_solid_XOR_mips_dsp;
+    qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOut] = comp_func_solid_SourceOut_mips_dsp;
 
-        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_mips_dsp;
-        qt_functionForModeSolid_C[QPainter::CompositionMode_DestinationOver] = comp_func_solid_DestinationOver_mips_dsp;
-        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceIn] = comp_func_solid_SourceIn_mips_dsp;
-        qt_functionForModeSolid_C[QPainter::CompositionMode_DestinationIn] = comp_func_solid_DestinationIn_mips_dsp;
-        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceAtop] = comp_func_solid_SourceAtop_mips_dsp;
-        qt_functionForModeSolid_C[QPainter::CompositionMode_DestinationAtop] = comp_func_solid_DestinationAtop_mips_dsp;
-        qt_functionForModeSolid_C[QPainter::CompositionMode_Xor] = comp_func_solid_XOR_mips_dsp;
-        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOut] = comp_func_solid_SourceOut_mips_dsp;
+    qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mips_dsp;
+    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mips_dsp;
+    qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_mips_dsp;
+    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_mips_dsp;
 
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mips_dsp;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mips_dsp;
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_mips_dsp;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_mips_dsp;
+    destFetchProc[QImage::Format_ARGB32] = qt_destFetchARGB32_mips_dsp;
 
-        destFetchProc[QImage::Format_ARGB32] = qt_destFetchARGB32_mips_dsp;
+    destStoreProc[QImage::Format_ARGB32] = qt_destStoreARGB32_mips_dsp;
 
-        destStoreProc[QImage::Format_ARGB32] = qt_destStoreARGB32_mips_dsp;
+    sourceFetchUntransformed[QImage::Format_RGB888] = qt_fetchUntransformed_888_mips_dsp;
+    sourceFetchUntransformed[QImage::Format_RGB444] = qt_fetchUntransformed_444_mips_dsp;
+    sourceFetchUntransformed[QImage::Format_ARGB8565_Premultiplied] = qt_fetchUntransformed_argb8565_premultiplied_mips_dsp;
 
-        sourceFetchUntransformed[QImage::Format_RGB888] = qt_fetchUntransformed_888_mips_dsp;
-        sourceFetchUntransformed[QImage::Format_RGB444] = qt_fetchUntransformed_444_mips_dsp;
-        sourceFetchUntransformed[QImage::Format_ARGB8565_Premultiplied] = qt_fetchUntransformed_argb8565_premultiplied_mips_dsp;
-
-#if defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
-        qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_mips_dspr2;
+#if defined(__MIPS_DSPR2__)
+    qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_mips_dspr2;
+    sourceFetchUntransformed[QImage::Format_RGB16] = qt_fetchUntransformedRGB16_mips_dspr2;
 #else
-        qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_mips_dsp;
-#endif // QT_COMPILER_SUPPORTS_MIPS_DSPR2
-    }
-#endif // QT_COMPILER_SUPPORTS_MIPS_DSP || QT_COMPILER_SUPPORTS_MIPS_DSPR2
+    qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_mips_dsp;
+#endif // defined(__MIPS_DSPR2__)
+#endif // defined(__MIPS_DSP__)
 }
 
 // Ensure initialization if this object file is linked.

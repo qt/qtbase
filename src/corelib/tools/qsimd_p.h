@@ -156,6 +156,15 @@
 #  if !defined(__ARM_FEATURE_NEON) && defined(__ARM_NEON__)
 #    define __ARM_FEATURE_NEON           // also support QT_COMPILER_SUPPORTS_HERE(NEON)
 #  endif
+#elif defined(Q_PROCESSOR_MIPS)
+#  define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
+#  define QT_FUNCTION_TARGET(x)
+#  if !defined(__MIPS_DSP__) && defined(__mips_dsp) && defined(Q_PROCESSOR_MIPS_32)
+#    define __MIPS_DSP__
+#  endif
+#  if !defined(__MIPS_DSPR2__) && defined(__mips_dspr2) && defined(Q_PROCESSOR_MIPS_32)
+#    define __MIPS_DSPR2__
+#  endif
 #elif (defined(Q_CC_INTEL) || defined(Q_CC_MSVC) \
     || (defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && (__GNUC__-0) * 100 + (__GNUC_MINOR__-0) >= 409)) \
     && !defined(QT_BOOTSTRAPPED)
@@ -172,8 +181,21 @@
 #  define QT_FUNCTION_TARGET(x)
 #endif
 
+#if defined(Q_CC_MSVC) && (defined(_M_AVX) || defined(__AVX__))
+// Visual Studio defines __AVX__ when /arch:AVX is passed, but not the earlier macros
+// See: https://msdn.microsoft.com/en-us/library/b0084kay.aspx
+// SSE2 is handled by _M_IX86_FP below
+#  define __SSE3__ 1
+#  define __SSSE3__ 1
+// no Intel CPU supports SSE4a, so don't define it
+#  define __SSE4_1__ 1
+#  define __SSE4_2__ 1
+#  ifndef __AVX__
+#    define __AVX__ 1
+#  endif
+#endif
+
 // SSE intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSE2      "sse2"
 #if defined(__SSE2__) || (defined(QT_COMPILER_SUPPORTS_SSE2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #if defined(QT_LINUXBASE)
 /// this is an evil hack - the posix_memalign declaration in LSB
@@ -191,51 +213,38 @@
 #endif
 
 // SSE3 intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSE3      "sse3"
 #if defined(__SSE3__) || (defined(QT_COMPILER_SUPPORTS_SSE3) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <pmmintrin.h>
 #endif
 
 // SSSE3 intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSSE3     "ssse3"
 #if defined(__SSSE3__) || (defined(QT_COMPILER_SUPPORTS_SSSE3) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <tmmintrin.h>
 #endif
 
 // SSE4.1 intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSE4_1    "sse4.1"
 #if defined(__SSE4_1__) || (defined(QT_COMPILER_SUPPORTS_SSE4_1) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <smmintrin.h>
 #endif
 
 // SSE4.2 intrinsics
-#define QT_FUNCTION_TARGET_STRING_SSE4_2    "sse4.2"
 #if defined(__SSE4_2__) || (defined(QT_COMPILER_SUPPORTS_SSE4_2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <nmmintrin.h>
 #endif
 
 // AVX intrinsics
-#define QT_FUNCTION_TARGET_STRING_AVX       "avx"
-#define QT_FUNCTION_TARGET_STRING_AVX2      "avx2"
 #if defined(__AVX__) || (defined(QT_COMPILER_SUPPORTS_AVX) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 // immintrin.h is the ultimate header, we don't need anything else after this
 #include <immintrin.h>
-
-#  if defined(Q_CC_MSVC) && (defined(_M_AVX) || defined(__AVX__))
-// MS Visual Studio 2010 has no macro pre-defined to identify the use of /arch:AVX
-// MS Visual Studio 2013 adds it: __AVX__
-// See: http://connect.microsoft.com/VisualStudio/feedback/details/605858/arch-avx-should-define-a-predefined-macro-in-x64-and-set-a-unique-value-for-m-ix86-fp-in-win32
-#    define __SSE3__ 1
-#    define __SSSE3__ 1
-// no Intel CPU supports SSE4a, so don't define it
-#    define __SSE4_1__ 1
-#    define __SSE4_2__ 1
-#    ifndef __AVX__
-#      define __AVX__ 1
-#    endif
-#  endif
 #endif
 
+#define QT_FUNCTION_TARGET_STRING_SSE2      "sse2"
+#define QT_FUNCTION_TARGET_STRING_SSE3      "sse3"
+#define QT_FUNCTION_TARGET_STRING_SSSE3     "ssse3"
+#define QT_FUNCTION_TARGET_STRING_SSE4_1    "sse4.1"
+#define QT_FUNCTION_TARGET_STRING_SSE4_2    "sse4.2"
+#define QT_FUNCTION_TARGET_STRING_AVX       "avx"
+#define QT_FUNCTION_TARGET_STRING_AVX2      "avx2"
 #define QT_FUNCTION_TARGET_STRING_AVX512F       "avx512f"
 #define QT_FUNCTION_TARGET_STRING_AVX512CD      "avx512cd"
 #define QT_FUNCTION_TARGET_STRING_AVX512ER      "avx512er"

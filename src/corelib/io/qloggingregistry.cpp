@@ -365,7 +365,12 @@ void QLoggingRegistry::setApiRules(const QString &content)
 */
 void QLoggingRegistry::updateRules()
 {
-    rules = qtConfigRules + configRules + apiRules + envRules;
+    rules.clear();
+    rules.reserve(qtConfigRules.size() + configRules.size() + apiRules.size() + envRules.size()),
+    rules += qtConfigRules;
+    rules += configRules;
+    rules += apiRules;
+    rules += envRules;
 
     for (auto it = categories.keyBegin(), end = categories.keyEnd(); it != end; ++it)
         (*categoryFilter)(*it);

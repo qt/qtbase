@@ -1165,6 +1165,20 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
         hb_buffer_clear_contents(buffer);
         hb_buffer_add_utf16(buffer, reinterpret_cast<const uint16_t *>(string) + item_pos, item_length, 0, item_length);
 
+#if defined(Q_OS_DARWIN)
+        // ### temporary workaround for QTBUG-38113
+        // CoreText throws away the PDF token, while the OpenType backend will replace it with
+        // a zero-advance glyph. This becomes a real issue when PDF is the last character,
+        // since it gets treated like if it were a grapheme extender, so we
+        // temporarily replace it with some visible grapheme starter.
+        bool endsWithPDF = actualFontEngine->type() == QFontEngine::Mac && string[item_pos + item_length - 1] == 0x202c;
+        if (Q_UNLIKELY(endsWithPDF)) {
+            uint num_glyphs;
+            hb_glyph_info_t *infos = hb_buffer_get_glyph_infos(buffer, &num_glyphs);
+            infos[num_glyphs - 1].codepoint = '.';
+        }
+#endif
+
         hb_buffer_set_segment_properties(buffer, &props);
         hb_buffer_guess_segment_properties(buffer);
 
@@ -1285,6 +1299,20 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
         }
         while (str_pos < item_length)
             log_clusters[str_pos++] = last_glyph_pos;
+
+#if defined(Q_OS_DARWIN)
+        if (Q_UNLIKELY(endsWithPDF)) {
+            int last_glyph_idx = num_glyphs - 1;
+            g.glyphs[last_glyph_idx] = 0xffff;
+            g.advances[last_glyph_idx] = QFixed();
+            g.offsets[last_glyph_idx].x = QFixed();
+            g.offsets[last_glyph_idx].y = QFixed();
+            g.attributes[last_glyph_idx].clusterStart = true;
+            g.attributes[last_glyph_idx].dontPrint = true;
+
+            log_clusters[item_length - 1] = glyphs_shaped + last_glyph_idx;
+        }
+#endif
 
         if (Q_UNLIKELY(engineIdx != 0)) {
             for (quint32 i = 0; i < num_glyphs; ++i)

@@ -70,7 +70,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     hintsControl->setHints(previewWindow->windowFlags());
     connect(hintsControl, SIGNAL(changed(Qt::WindowFlags)), this, SLOT(updatePreview()));
 
-    statesControl = new WindowStatesControl(WindowStatesControl::WantVisibleCheckBox|WindowStatesControl::WantActiveCheckBox);
+    statesControl = new WindowStatesControl;
     statesControl->setStates(previewWindow->windowState());
     statesControl->setVisibleValue(true);
     connect(statesControl, SIGNAL(changed()), this, SLOT(updatePreview()));
@@ -106,13 +106,13 @@ void ControllerWidget::updatePreview()
 {
     const Qt::WindowFlags flags = typeControl->type() | hintsControl->hints();
 
-    previewWindow->hide();
-    previewDialog->hide();
-
-    if (previewWidgetButton->isChecked())
+    if (previewWidgetButton->isChecked()) {
         previewWidget = previewWindow;
-    else
+        previewDialog->hide();
+    } else {
         previewWidget = previewDialog;
+        previewWindow->hide();
+    }
 
     if (modalWindowCheckBox->isChecked()) {
         parentWindow->show();
