@@ -83,7 +83,12 @@ public:
     bool waitForDone(int msecs = -1);
 
     void clear();
+
+#if QT_DEPRECATED_SINCE(5, 9)
+    QT_DEPRECATED_X("use tryTake(), but note the different deletion rules")
     void cancel(QRunnable *runnable);
+#endif
+    bool tryTake(QRunnable *runnable) Q_REQUIRED_RESULT;
 };
 
 QT_END_NAMESPACE

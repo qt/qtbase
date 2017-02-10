@@ -89,6 +89,7 @@ private slots:
     void waitForDone();
     void clear();
     void cancel();
+    void tryTake();
     void waitForDoneTimeout();
     void destroyingWaitsForTasksToFinish();
     void stressTest();
@@ -1040,6 +1041,97 @@ void tst_QThreadPool::cancel()
     QCOMPARE(dtorCounter.load(), runs - 2);
     delete runnables[0]; //if the pool deletes them then we'll get double-free crash
     delete runnables[runs-1];
+}
+
+void tst_QThreadPool::tryTake()
+{
+    QSemaphore sem(0);
+    QSemaphore startedThreads(0);
+
+    class SemaphoreReleaser
+    {
+        QSemaphore &sem;
+        int n;
+        Q_DISABLE_COPY(SemaphoreReleaser)
+    public:
+        explicit SemaphoreReleaser(QSemaphore &sem, int n)
+            : sem(sem), n(n) {}
+
+        ~SemaphoreReleaser()
+        {
+            sem.release(n);
+        }
+    };
+
+    class BlockingRunnable : public QRunnable
+    {
+    public:
+        QSemaphore &sem;
+        QSemaphore &startedThreads;
+        QAtomicInt &dtorCounter;
+        QAtomicInt &runCounter;
+        int dummy;
+
+        explicit BlockingRunnable(QSemaphore &s, QSemaphore &started, QAtomicInt &c, QAtomicInt &r)
+            : sem(s), startedThreads(started), dtorCounter(c), runCounter(r) {}
+
+        ~BlockingRunnable()
+        {
+            dtorCounter.fetchAndAddRelaxed(1);
+        }
+
+        void run() override
+        {
+            startedThreads.release();
+            runCounter.fetchAndAddRelaxed(1);
+            sem.acquire();
+            count.ref();
+        }
+    };
+
+    enum {
+        MaxThreadCount = 3,
+        OverProvisioning = 2,
+        Runs = MaxThreadCount * OverProvisioning
+    };
+
+    QThreadPool threadPool;
+    threadPool.setMaxThreadCount(MaxThreadCount);
+    BlockingRunnable *runnables[Runs];
+
+    // ensure that the QThreadPool doesn't deadlock if any of the checks fail
+    // and cause an early return:
+    const SemaphoreReleaser semReleaser(sem, Runs);
+
+    count.store(0);
+    QAtomicInt dtorCounter = 0;
+    QAtomicInt runCounter = 0;
+    for (int i = 0; i < Runs; i++) {
+        runnables[i] = new BlockingRunnable(sem, startedThreads, dtorCounter, runCounter);
+        runnables[i]->setAutoDelete(i != 0 && i != Runs - 1); // one which will run and one which will not
+        QVERIFY(!threadPool.tryTake(runnables[i])); // verify NOOP for jobs not in the queue
+        threadPool.start(runnables[i]);
+    }
+    // wait for all worker threads to have started up:
+    QVERIFY(startedThreads.tryAcquire(MaxThreadCount, 60*1000 /* 1min */));
+
+    for (int i = 0; i < MaxThreadCount; ++i) {
+        // check taking runnables doesn't work once they were started:
+        QVERIFY(!threadPool.tryTake(runnables[i]));
+    }
+    for (int i = MaxThreadCount; i < Runs ; ++i) {
+        QVERIFY(threadPool.tryTake(runnables[i]));
+        delete runnables[i];
+    }
+
+    runnables[0]->dummy = 0; // valgrind will catch this if tryTake() is crazy enough to delete currently running jobs
+    QCOMPARE(dtorCounter.load(), int(Runs - MaxThreadCount));
+    sem.release(MaxThreadCount);
+    threadPool.waitForDone();
+    QCOMPARE(runCounter.load(), int(MaxThreadCount));
+    QCOMPARE(count.load(), int(MaxThreadCount));
+    QCOMPARE(dtorCounter.load(), int(Runs - 1));
+    delete runnables[0]; // if the pool deletes them then we'll get double-free crash
 }
 
 void tst_QThreadPool::destroyingWaitsForTasksToFinish()
