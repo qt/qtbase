@@ -1,13 +1,19 @@
-CONFIG += testcase
-
-QT += qml qmltest
-
-mac: CONFIG -= app_bundle
+!isEmpty(SOURCES) {
+    QT += qml qmltest
+    load(testcase)
+    CONFIG -= app_bundle
+    DEFINES += QUICK_TEST_SOURCE_DIR=\"\\\"$$_PRO_FILE_PWD_\\\"\"
+} else {
+    # Allow a project to run tests without a CPP stub
+    TEMPLATE = aux
+    QMAKE_EXTRA_TARGETS += check
+    qtPrepareTool(QMAKE_QMLTESTRUNNER, qmltestrunner)
+    check.commands = $$QMAKE_QMLTESTRUNNER
+}
 
 # If the .pro file specified an IMPORTPATH, then add that to
 # the command-line when the test is run.
 !isEmpty(IMPORTPATH) {
-    load(testcase)
     for(import, IMPORTPATH): check.commands += -import \"$$import\"
 }
-DEFINES += QUICK_TEST_SOURCE_DIR=\"\\\"$$_PRO_FILE_PWD_\\\"\"
+
