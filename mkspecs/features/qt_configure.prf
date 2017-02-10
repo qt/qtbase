@@ -1739,10 +1739,6 @@ defineTest(qtConfProcessOneOutput) {
     fpfx = $${currentConfig}.features.$${feature}
     opfx = $${fpfx}.output.$${2}
 
-    condition = $$eval($${opfx}.condition)
-    !isEmpty(condition):!$$qtConfEvaluate($$condition): \
-        return()
-
     call = $$eval($${opfx}.type)
     isEmpty(call) {
         # output is just a string, not an object
@@ -1751,11 +1747,8 @@ defineTest(qtConfProcessOneOutput) {
     !defined("qtConfOutput_$$call", test): \
         error("Undefined type '$$call' in output '$$2' of feature '$$feature'.")
 
-    condition = $$eval($${opfx}.condition)
-    !isEmpty(condition) {
-        !$$qtConfEvaluate($$condition): \
-            return(false)
-    }
+    !$$qtConfEvaluate($$eval($${opfx}.condition)): \
+        return()
 
     $${opfx}.feature = $$feature
     qtConfOutput_$${call}($$opfx, $$eval($${fpfx}.available))
