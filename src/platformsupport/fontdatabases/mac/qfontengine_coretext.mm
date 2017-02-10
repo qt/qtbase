@@ -260,10 +260,10 @@ void QCoreTextFontEngine::init()
     if (slant > 500 && !(traits & kCTFontItalicTrait))
         fontDef.style = QFont::StyleOblique;
 
-    if (fontDef.weight >= QFont::Bold && !(traits & kCTFontBoldTrait))
+    if (fontDef.weight >= QFont::Bold && !(traits & kCTFontBoldTrait) && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD"))
         synthesisFlags |= SynthesizedBold;
     // XXX: we probably don't need to synthesis italic for oblique font
-    if (fontDef.style != QFont::StyleNormal && !(traits & kCTFontItalicTrait))
+    if (fontDef.style != QFont::StyleNormal && !(traits & kCTFontItalicTrait) && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_ITALIC"))
         synthesisFlags |= SynthesizedItalic;
 
     avgCharWidth = 0;
