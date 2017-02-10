@@ -73,7 +73,7 @@ public:
     void clearDirty() { dirtyRegion = QRegion(); }
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-    bool swapBytes() const
+    bool swapBytes() const;
 #endif
 
     QStringList mArgs;
