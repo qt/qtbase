@@ -712,7 +712,7 @@ defineTest(qtConfHandleLibrary) {
 
         # if the library defines a test, use it to verify the source.
         !isEmpty($${lpfx}.test) {
-            $${lpfx}.literal_args = $$use_args $$qtConfLibraryArgs($$spfx)
+            $${lpfx}.literal_args = $$qtConfLibraryArgs($$spfx) $$use_args
             $${lpfx}.host = $$eval($${spfx}.host)
             !qtConfTest_compile($$lpfx) {
                 qtLog(" => source failed verification.")
