@@ -160,6 +160,45 @@ private Q_SLOTS:
     //void compare_const_char_star_const_char_star_data() { compare_data(); }
     //void compare_const_char_star_const_char_star() { compare_impl<const char *, const char *>(); }
 
+private:
+    void mid_data();
+    template <typename String> void mid_impl();
+
+    void left_data();
+    template <typename String> void left_impl();
+
+    void right_data();
+    template <typename String> void right_impl();
+
+private Q_SLOTS:
+
+    void mid_QString_data() { mid_data(); }
+    void mid_QString() { mid_impl<QString>(); }
+    void mid_QStringRef_data() { mid_data(); }
+    void mid_QStringRef() { mid_impl<QStringRef>(); }
+    void mid_QLatin1String_data() { mid_data(); }
+    void mid_QLatin1String() { mid_impl<QLatin1String>(); }
+    void mid_QByteArray_data() { mid_data(); }
+    void mid_QByteArray() { mid_impl<QByteArray>(); }
+
+    void left_QString_data() { left_data(); }
+    void left_QString() { left_impl<QString>(); }
+    void left_QStringRef_data() { left_data(); }
+    void left_QStringRef() { left_impl<QStringRef>(); }
+    void left_QLatin1String_data() { left_data(); }
+    void left_QLatin1String() { left_impl<QLatin1String>(); }
+    void left_QByteArray_data() { left_data(); }
+    void left_QByteArray() { left_impl<QByteArray>(); }
+
+    void right_QString_data() { right_data(); }
+    void right_QString() { right_impl<QString>(); }
+    void right_QStringRef_data() { right_data(); }
+    void right_QStringRef() { right_impl<QStringRef>(); }
+    void right_QLatin1String_data() { right_data(); }
+    void right_QLatin1String() { right_impl<QLatin1String>(); }
+    void right_QByteArray_data() { right_data(); }
+    void right_QByteArray() { right_impl<QByteArray>(); }
+
     //
     // UTF-16-only checks:
     //
@@ -298,6 +337,178 @@ void tst_QStringApiSymmetry::compare_impl() const
     CHECK(<=);
     CHECK(>=);
 #undef CHECK
+}
+
+static QString empty = QLatin1String("");
+// the tests below rely on the fact that these objects' names match their contents:
+static QString a = QStringLiteral("a");
+static QString b = QStringLiteral("b");
+static QString c = QStringLiteral("c");
+static QString ab = QStringLiteral("ab");
+static QString bc = QStringLiteral("bc");
+static QString abc = QStringLiteral("abc");
+
+void tst_QStringApiSymmetry::mid_data()
+{
+    QTest::addColumn<QStringRef>("unicode");
+    QTest::addColumn<QLatin1String>("latin1");
+    QTest::addColumn<int>("pos");
+    QTest::addColumn<int>("n");
+    QTest::addColumn<QStringRef>("result");
+    QTest::addColumn<QStringRef>("result2");
+
+    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << 0 << QStringRef() << QStringRef();
+    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << 0 << QStringRef(&empty) << QStringRef(&empty);
+
+    // Some classes' mid() implementations have a wide contract, others a narrow one
+    // so only test valid arguents here:
+#define ROW(base, p, n, r1, r2) \
+    QTest::addRow("%s%d%d", #base, p, n) << QStringRef(&base) << QLatin1String(#base) << p << n << QStringRef(&r1) << QStringRef(&r2)
+
+    ROW(a, 0, 0, a, empty);
+    ROW(a, 0, 1, a, a);
+    ROW(a, 1, 0, empty, empty);
+
+    ROW(ab, 0, 0, ab, empty);
+    ROW(ab, 0, 1, ab, a);
+    ROW(ab, 0, 2, ab, ab);
+    ROW(ab, 1, 0, b,  empty);
+    ROW(ab, 1, 1, b,  b);
+    ROW(ab, 2, 0, empty, empty);
+
+    ROW(abc, 0, 0, abc, empty);
+    ROW(abc, 0, 1, abc, a);
+    ROW(abc, 0, 2, abc, ab);
+    ROW(abc, 0, 3, abc, abc);
+    ROW(abc, 1, 0, bc,  empty);
+    ROW(abc, 1, 1, bc,  b);
+    ROW(abc, 1, 2, bc,  bc);
+    ROW(abc, 2, 0, c,   empty);
+    ROW(abc, 2, 1, c,   c);
+    ROW(abc, 3, 0, empty, empty);
+#undef ROW
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::mid_impl()
+{
+    QFETCH(const QStringRef, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, pos);
+    QFETCH(const int, n);
+    QFETCH(const QStringRef, result);
+    QFETCH(const QStringRef, result2);
+
+    const auto utf8 = unicode.toUtf8();
+
+    const auto s = make<String>(unicode, latin1, utf8);
+
+    const auto mid = s.mid(pos);
+    const auto mid2 = s.mid(pos, n);
+
+    QVERIFY(mid == result);
+    QCOMPARE(mid.isNull(), result.isNull());
+    QCOMPARE(mid.isEmpty(), result.isEmpty());
+
+    QVERIFY(mid2 == result2);
+    QCOMPARE(mid2.isNull(), result2.isNull());
+    QCOMPARE(mid2.isEmpty(), result2.isEmpty());
+}
+
+void tst_QStringApiSymmetry::left_data()
+{
+    QTest::addColumn<QStringRef>("unicode");
+    QTest::addColumn<QLatin1String>("latin1");
+    QTest::addColumn<int>("n");
+    QTest::addColumn<QStringRef>("result");
+
+    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << QStringRef();
+    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << QStringRef(&empty);
+
+    // Some classes' left() implementations have a wide contract, others a narrow one
+    // so only test valid arguents here:
+#define ROW(base, n, res) \
+    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
+
+    ROW(a, 0, empty);
+    ROW(a, 1, a);
+
+    ROW(ab, 0, empty);
+    ROW(ab, 1, a);
+    ROW(ab, 2, ab);
+
+    ROW(abc, 0, empty);
+    ROW(abc, 1, a);
+    ROW(abc, 2, ab);
+    ROW(abc, 3, abc);
+#undef ROW
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::left_impl()
+{
+    QFETCH(const QStringRef, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, n);
+    QFETCH(const QStringRef, result);
+
+    const auto utf8 = unicode.toUtf8();
+
+    const auto s = make<String>(unicode, latin1, utf8);
+
+    const auto left = s.left(n);
+
+    QVERIFY(left == result);
+    QCOMPARE(left.isNull(), result.isNull());
+    QCOMPARE(left.isEmpty(), result.isEmpty());
+}
+
+void tst_QStringApiSymmetry::right_data()
+{
+    QTest::addColumn<QStringRef>("unicode");
+    QTest::addColumn<QLatin1String>("latin1");
+    QTest::addColumn<int>("n");
+    QTest::addColumn<QStringRef>("result");
+
+    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << QStringRef();
+    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << QStringRef(&empty);
+
+    // Some classes' right() implementations have a wide contract, others a narrow one
+    // so only test valid arguents here:
+#define ROW(base, n, res) \
+    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
+
+    ROW(a, 0, empty);
+    ROW(a, 1, a);
+
+    ROW(ab, 0, empty);
+    ROW(ab, 1, b);
+    ROW(ab, 2, ab);
+
+    ROW(abc, 0, empty);
+    ROW(abc, 1, c);
+    ROW(abc, 2, bc);
+    ROW(abc, 3, abc);
+#undef ROW
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::right_impl()
+{
+    QFETCH(const QStringRef, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, n);
+    QFETCH(const QStringRef, result);
+
+    const auto utf8 = unicode.toUtf8();
+
+    const auto s = make<String>(unicode, latin1, utf8);
+
+    const auto right = s.right(n);
+
+    QVERIFY(right == result);
+    QCOMPARE(right.isNull(), result.isNull());
+    QCOMPARE(right.isEmpty(), result.isEmpty());
 }
 
 //
