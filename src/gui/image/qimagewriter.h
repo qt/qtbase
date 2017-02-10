@@ -60,7 +60,8 @@ public:
     enum ImageWriterError {
         UnknownError,
         DeviceError,
-        UnsupportedFormatError
+        UnsupportedFormatError,
+        InvalidImageError
     };
 
     QImageWriter();

@@ -77,6 +77,9 @@ private slots:
     void saveWithNoFormat();
 
     void saveToTemporaryFile();
+
+    void writeEmpty();
+
 private:
     QTemporaryDir m_temporaryDir;
     QString prefix;
@@ -527,6 +530,19 @@ void tst_QImageWriter::saveToTemporaryFile()
         QVERIFY(tmp.load(&file, "PNG"));
         QCOMPARE(tmp, image);
     }
+}
+
+void tst_QImageWriter::writeEmpty()
+{
+    // check writing a null QImage errors gracefully
+    QTemporaryDir dir;
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
+    QString fileName(dir.path() + QLatin1String("/testimage.bmp"));
+    QVERIFY(!QFileInfo(fileName).exists());
+    QImageWriter writer(fileName);
+    QVERIFY(!writer.write(QImage()));
+    QCOMPARE(writer.error(), QImageWriter::InvalidImageError);
+    QVERIFY(!QFileInfo(fileName).exists());
 }
 
 QTEST_MAIN(tst_QImageWriter)

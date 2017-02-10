@@ -87,6 +87,9 @@
     \value UnsupportedFormatError Qt does not support the requested
     image format.
 
+    \value InvalidImageError An attempt was made to write an invalid QImage. An
+    example of an invalid image would be a null QImage.
+
     \value UnknownError An unknown error occurred. If you get this
     value after calling write(), it is most likely caused by a bug in
     QImageWriter.
@@ -736,6 +739,13 @@ extern void qt_imageTransform(QImage &src, QImageIOHandler::Transformations orie
 */
 bool QImageWriter::write(const QImage &image)
 {
+    // Do this before canWrite, so it doesn't create a file if this fails.
+    if (Q_UNLIKELY(image.isNull())) {
+        d->imageWriterError = QImageWriter::InvalidImageError;
+        d->errorString = QImageWriter::tr("Image is empty");
+        return false;
+    }
+
     if (!canWrite())
         return false;
 
