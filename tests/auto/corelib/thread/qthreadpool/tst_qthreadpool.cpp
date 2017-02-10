@@ -964,6 +964,21 @@ void tst_QThreadPool::cancel()
     QSemaphore sem(0);
     QSemaphore startedThreads(0);
 
+    class SemaphoreReleaser
+    {
+        QSemaphore &sem;
+        int n;
+        Q_DISABLE_COPY(SemaphoreReleaser)
+    public:
+        explicit SemaphoreReleaser(QSemaphore &sem, int n)
+            : sem(sem), n(n) {}
+
+        ~SemaphoreReleaser()
+        {
+            sem.release(n);
+        }
+    };
+
     class BlockingRunnable : public QRunnable
     {
     public:
@@ -999,6 +1014,11 @@ void tst_QThreadPool::cancel()
     QThreadPool threadPool;
     threadPool.setMaxThreadCount(MaxThreadCount);
     BlockingRunnable *runnables[runs];
+
+    // ensure that the QThreadPool doesn't deadlock if any of the checks fail
+    // and cause an early return:
+    const SemaphoreReleaser semReleaser(sem, runs);
+
     count.store(0);
     QAtomicInt dtorCounter = 0;
     QAtomicInt runCounter = 0;
