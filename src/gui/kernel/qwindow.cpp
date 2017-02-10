@@ -532,7 +532,9 @@ void QWindow::setVisible(bool visible)
         // can defer creation until the parent is created or we're re-parented.
         if (parent() && !parent()->handle())
             return;
-        else
+
+        // We only need to create the window if it's being shown
+        if (visible)
             create();
     }
 
@@ -574,7 +576,8 @@ void QWindow::setVisible(bool visible)
         d->applyCursor();
 #endif
 
-    d->platformWindow->setVisible(visible);
+    if (d->platformWindow)
+        d->platformWindow->setVisible(visible);
 
     if (!visible) {
         QHideEvent hideEvent;
