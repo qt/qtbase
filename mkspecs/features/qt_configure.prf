@@ -751,7 +751,20 @@ defineTest(qtConfTest_library) {
 }
 
 defineTest(qtConfTestPrepare_compile) {
-    for (u, $$list($$eval($${1}.use))) {
+    !isEmpty($${1}.use._KEYS_) {
+        uses =
+        for (k, $${1}.use._KEYS_) {
+            use = $$eval($${1}.use.$${k}.lib)
+            isEmpty(use): \
+                error("'use' entry $$k in test $$1 lacks 'lib' field.")
+            !$$qtConfEvaluate($$eval($${1}.use.$${k}.condition)): \
+                next()
+            uses += $$use
+        }
+    } else {
+        uses = $$split($${1}.use)
+    }
+    for (u, uses) {
         libConfig =
         exports = $$eval($${currentConfig}.exports.$$u)
         !isEmpty(exports) {
