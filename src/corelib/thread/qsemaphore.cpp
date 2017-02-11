@@ -94,7 +94,7 @@ QT_BEGIN_NAMESPACE
     seated (taking the available seats to 5, making the party of 10
     people wait longer).
 
-    \sa QMutex, QWaitCondition, QThread, {Semaphores Example}
+    \sa QSemaphoreReleaser, QMutex, QWaitCondition, QThread, {Semaphores Example}
 */
 
 class QSemaphorePrivate {
@@ -152,7 +152,10 @@ void QSemaphore::acquire(int n)
 
     \snippet code/src_corelib_thread_qsemaphore.cpp 1
 
-    \sa acquire(), available()
+    QSemaphoreReleaser is a \l{http://en.cppreference.com/w/cpp/language/raii}{RAII}
+    wrapper around this function.
+
+    \sa acquire(), available(), QSemaphoreReleaser
 */
 void QSemaphore::release(int n)
 {
@@ -233,6 +236,152 @@ bool QSemaphore::tryAcquire(int n, int timeout)
 
 
 }
+
+/*!
+    \class QSemaphoreReleaser
+    \brief The QSemaphoreReleaser class provides exception-safe deferral of a QSemaphore::release() call
+    \since 5.10
+    \ingroup thread
+    \inmodule QtCore
+
+    \reentrant
+
+    QSemaphoreReleaser can be used wherever you would otherwise use
+    QSemaphore::release(). Constructing a QSemaphoreReleaser defers the
+    release() call on the semaphore until the QSemaphoreReleaser is
+    destroyed (see
+    \l{http://en.cppreference.com/w/cpp/language/raii}{RAII pattern}).
+
+    You can use this to reliably release a semaphore to avoid dead-lock
+    in the face of exceptions or early returns:
+
+    \code
+    // ... do something that may throw or return early
+    sem.release();
+    \endcode
+
+    If an early return is taken or an exception is thrown before the
+    \c{sem.release()} call is reached, the semaphore is not released,
+    possibly preventing the thread waiting in the corresponding
+    \c{sem.acquire()} call from ever continuing execution.
+
+    When using RAII instead:
+
+    \code
+    const QSemaphoreReleaser releaser(sem);
+    // ... do something that may throw or early return
+    // implicitly calls sem.release() here and at every other return in between
+    \endcode
+
+    this can no longer happen, because the compiler will make sure that
+    the QSemaphoreReleaser destructor is always called, and therefore
+    the semaphore is always released.
+
+    QSemaphoreReleaser is move-enabled and can therefore be returned
+    from functions to transfer responsibility for releasing a semaphore
+    out of a function or a scope:
+
+    \code
+    { // some scope
+        QSemaphoreReleaser releaser; // does nothing
+        // ...
+        if (someCondition) {
+            releaser = QSemaphoreReleaser(sem);
+            // ...
+        }
+        // ...
+    } // conditionally calls sem.release(), depending on someCondition
+    \endcode
+
+    A QSemaphoreReleaser can be canceled by a call to cancel(). A canceled
+    semaphore releaser will no longer call QSemaphore::release() in its
+    destructor.
+
+    \sa QMutexLocker
+*/
+
+/*!
+    \fn QSemaphoreReleaser::QSemaphoreReleaser()
+
+    Default constructor. Creates a QSemaphoreReleaser that does nothing.
+*/
+
+/*!
+    \fn QSemaphoreReleaser::QSemaphoreReleaser(QSemaphore &sem, int n)
+
+    Constructor. Stores the arguments and calls \a{sem}.release(\a{n})
+    in the destructor.
+*/
+
+/*!
+    \fn QSemaphoreReleaser::QSemaphoreReleaser(QSemaphore *sem, int n)
+
+    Constructor. Stores the arguments and calls \a{sem}->release(\a{n})
+    in the destructor.
+*/
+
+/*!
+    \fn QSemaphoreReleaser::QSemaphoreReleaser(QSemaphoreReleaser &&other)
+
+    Move constructor. Takes over responsibility to call QSemaphore::release()
+    from \a other, which in turn is canceled.
+
+    \sa cancel()
+*/
+
+/*!
+    \fn QSemaphoreReleaser::operator=(QSemaphoreReleaser &&other)
+
+    Move assignment operator. Takes over responsibility to call QSemaphore::release()
+    from \a other, which in turn is canceled.
+
+    If this semaphore releaser had the responsibility to call some QSemaphore::release()
+    itself, it performs the call before taking over from \a other.
+
+    \sa cancel()
+*/
+
+/*!
+    \fn QSemaphoreReleaser::~QSemaphoreReleaser()
+
+    Unless canceled, calls QSemaphore::release() with the arguments provided
+    to the constructor, or by the last move assignment.
+*/
+
+/*!
+    \fn QSemaphoreReleaser::swap(QSemaphoreReleaser &other)
+
+    Exchanges the responsibilites of \c{*this} and \a other.
+
+    Unlike move assignment, neither of the two objects ever releases its
+    semaphore, if any, as a consequence of swapping.
+
+    Therefore this function is very fast and never fails.
+*/
+
+/*!
+    \fn QSemaphoreReleaser::semaphore() const
+
+    Returns a pointer to the QSemaphore object provided to the constructor,
+    or by the last move assignment, if any. Otherwise, returns \c nullptr.
+*/
+
+/*!
+    \fn QSemaphoreReleaser::cancel()
+
+    Cancels this QSemaphoreReleaser such that the destructor will no longer
+    call \c{semaphore()->release()}. Returns the value of semaphore()
+    before this call. After this call, semaphore() will return \c nullptr.
+
+    To enable again, assign a new QSemaphoreReleaser:
+
+    \code
+    releaser.cancel(); // avoid releasing old semaphore()
+    releaser = QSemaphoreReleaser(sem, 42);
+    // now will call sem.release(42) when 'releaser' is destroyed
+    \endcode
+*/
+
 
 QT_END_NAMESPACE
 

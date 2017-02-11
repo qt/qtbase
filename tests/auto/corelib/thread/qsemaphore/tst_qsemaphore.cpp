@@ -42,6 +42,7 @@ private slots:
     void tryAcquireWithTimeout();
     void tryAcquireWithTimeoutStarvation();
     void producerConsumer();
+    void raii();
 };
 
 static QSemaphore *semaphore = 0;
@@ -413,6 +414,55 @@ void tst_QSemaphore::producerConsumer()
     consumer.start();
     producer.wait();
     consumer.wait();
+}
+
+void tst_QSemaphore::raii()
+{
+    QSemaphore sem;
+
+    QCOMPARE(sem.available(), 0);
+
+    // basic operation:
+    {
+        QSemaphoreReleaser r0;
+        const QSemaphoreReleaser r1(sem);
+        const QSemaphoreReleaser r2(sem, 2);
+
+        QCOMPARE(r0.semaphore(), nullptr);
+        QCOMPARE(r1.semaphore(), &sem);
+        QCOMPARE(r2.semaphore(), &sem);
+    }
+
+    QCOMPARE(sem.available(), 3);
+
+    // cancel:
+    {
+        const QSemaphoreReleaser r1(sem);
+        QSemaphoreReleaser r2(sem, 2);
+
+        QCOMPARE(r2.cancel(), &sem);
+        QCOMPARE(r2.semaphore(), nullptr);
+    }
+
+    QCOMPARE(sem.available(), 4);
+
+    // move-assignment:
+    {
+        const QSemaphoreReleaser r1(sem);
+        QSemaphoreReleaser r2(sem, 2);
+
+        QCOMPARE(sem.available(), 4);
+
+        r2 = QSemaphoreReleaser();
+
+        QCOMPARE(sem.available(), 6);
+
+        r2 = QSemaphoreReleaser(sem, 42);
+
+        QCOMPARE(sem.available(), 6);
+    }
+
+    QCOMPARE(sem.available(), 49);
 }
 
 QTEST_MAIN(tst_QSemaphore)
