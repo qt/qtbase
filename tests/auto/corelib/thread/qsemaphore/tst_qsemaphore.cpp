@@ -367,16 +367,18 @@ public:
     void run();
 };
 
+static const int Timeout = 60 * 1000; // 1min
+
 void Producer::run()
 {
     for (int i = 0; i < DataSize; ++i) {
-        freeSpace.acquire();
+        QVERIFY(freeSpace.tryAcquire(1, Timeout));
         buffer[i % BufferSize] = alphabet[i % AlphabetSize];
         usedSpace.release();
     }
     for (int i = 0; i < DataSize; ++i) {
         if ((i % ProducerChunkSize) == 0)
-            freeSpace.acquire(ProducerChunkSize);
+            QVERIFY(freeSpace.tryAcquire(ProducerChunkSize, Timeout));
         buffer[i % BufferSize] = alphabet[i % AlphabetSize];
         if ((i % ProducerChunkSize) == (ProducerChunkSize - 1))
             usedSpace.release(ProducerChunkSize);
