@@ -33,11 +33,6 @@
 
 #include <cstring>
 
-Q_CONSTEXPR inline int sign(int i) Q_DECL_NOTHROW
-{ return i < 0 ? -1 : i > 0 ? 1 : 0; }
-
-#define QCOMPARE_SIGN(x, y) QCOMPARE(sign(x), sign(y))
-
 class tst_QCollator : public QObject
 {
     Q_OBJECT
@@ -178,28 +173,9 @@ void tst_QCollator::compare()
     if (numericMode)
         collator.setNumericMode(true);
 
-    QCOMPARE_SIGN(collator.compare(s1, s2), result);
-    {
-        const auto s1sk = collator.sortKey(s1);
-        const auto s2sk = collator.sortKey(s2);
-
-        QCOMPARE_SIGN(s1sk.compare(s2sk), result);
-#define CHECK(op) QCOMPARE(s1sk op s2sk, result op 0)
-        CHECK(<);
-#undef CHECK
-    }
-
+    QCOMPARE(collator.compare(s1, s2), result);
     collator.setCaseSensitivity(Qt::CaseInsensitive);
-    QCOMPARE_SIGN(collator.compare(s1, s2), caseInsensitiveResult);
-    {
-        const auto s1sk = collator.sortKey(s1);
-        const auto s2sk = collator.sortKey(s2);
-
-        QCOMPARE_SIGN(s1sk.compare(s2sk), caseInsensitiveResult);
-#define CHECK(op) QCOMPARE(s1sk op s2sk, caseInsensitiveResult op 0)
-        CHECK(<);
-#undef CHECK
-    }
+    QCOMPARE(collator.compare(s1, s2), caseInsensitiveResult);
 }
 
 
