@@ -53,7 +53,7 @@
 #include <QtGui/QColor>
 
 #include <QtCore/QDebug>
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QTimer>
 #include <QtCore/QDir>
 #include <QtCore/QScopedArrayPointer>
@@ -1017,7 +1017,7 @@ static QList<FilterSpec> filterSpecs(const QStringList &filters,
     result.reserve(filters.size());
     *totalStringLength = 0;
 
-    const QRegExp filterSeparatorRE(QStringLiteral("[;\\s]+"));
+    const QRegularExpression filterSeparatorRE(QStringLiteral("[;\\s]+"));
     const QString separator = QStringLiteral(";");
     Q_ASSERT(filterSeparatorRE.isValid());
     // Split filter specification as 'Texts (*.txt[;] *.doc)', '*.txt[;] *.doc'
