@@ -1000,7 +1000,7 @@ QT_FT_END_STMNT
     /* each bisection predictably reduces deviation exactly 4-fold. */
     /* Even 32-bit deviation would vanish after 16 bisections.      */
     draw = 1;
-    while ( dx > ONE_PIXEL / 4 );
+    while ( dx > ONE_PIXEL / 4 )
     {
       dx >>= 2;
       draw <<= 1;
