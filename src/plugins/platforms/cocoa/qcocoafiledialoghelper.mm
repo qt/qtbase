@@ -63,7 +63,8 @@
 #include <qsysinfo.h>
 #include <qoperatingsystemversion.h>
 #include <qglobal.h>
-#include <QDir>
+#include <qdir.h>
+#include <qregularexpression.h>
 
 #include <qpa/qplatformnativeinterface.h>
 
@@ -509,9 +510,10 @@ static QString strippedText(QString s)
 
 - (QString)removeExtensions:(const QString &)filter
 {
-    QRegExp regExp(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
-    if (regExp.indexIn(filter) != -1)
-        return regExp.cap(1).trimmed();
+    QRegularExpression regExp(QString::fromLatin1(QPlatformFileDialogHelper::filterRegExp));
+    QRegularExpressionMatch match = regExp.match(filter);
+    if (match.hasMatch())
+        return match.captured(1).trimmed();
     return filter;
 }
 

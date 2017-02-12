@@ -49,6 +49,7 @@
 #include "qcocoaapplication.h" // for custom application category
 #include "qcocoamenuloader.h"
 #include <QtGui/private/qcoregraphics_p.h>
+#include <QtCore/qregularexpression.h>
 
 #include <QtCore/QDebug>
 
@@ -261,7 +262,8 @@ NSMenuItem *QCocoaMenuItem::sync()
             m_detectedRole = detectMenuRole(m_text);
             switch (m_detectedRole) {
             case QPlatformMenuItem::AboutRole:
-                if (m_text.indexOf(QRegExp(QString::fromLatin1("qt$"), Qt::CaseInsensitive)) == -1)
+                if (m_text.indexOf(QRegularExpression(QString::fromLatin1("qt$"),
+                                                      QRegularExpression::CaseInsensitiveOption)) == -1)
                     mergeItem = [loader aboutMenuItem];
                 else
                     mergeItem = [loader aboutQtMenuItem];
