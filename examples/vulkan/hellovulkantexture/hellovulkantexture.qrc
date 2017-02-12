@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>texture_vert.spv</file>
+    <file>texture_frag.spv</file>
+    <file>qt256.png</file>
+</qresource>
+</RCC>

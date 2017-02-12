@@ -1,12 +1,15 @@
 qtConfig(vulkan) {
     HEADERS += \
         vulkan/qvulkaninstance.h \
-        vulkan/qplatformvulkaninstance.h
+        vulkan/qplatformvulkaninstance.h \
+        vulkan/qvulkanwindow.h \
+        vulkan/qvulkanwindow_p.h
 
     SOURCES += \
         vulkan/qvulkaninstance.cpp \
         vulkan/qplatformvulkaninstance.cpp \
-        vulkan/qvulkanfunctions.cpp
+        vulkan/qvulkanfunctions.cpp \
+        vulkan/qvulkanwindow.cpp
 
     # Applications must inherit the Vulkan header include path.
     QMAKE_USE += vulkan/nolink

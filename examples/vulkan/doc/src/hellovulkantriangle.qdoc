@@ -1,0 +1,49 @@
+/****************************************************************************
+**
+** Copyright (C) 2017 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example hellovulkantriangle
+    \ingroup examples-vulkan
+    \title Hello Vulkan Triangle Example
+    \brief Shows the basics of rendering with QVulkanWindow and the Vulkan API
+
+    The \e{Hello Vulkan Triangle Example} builds on \l hellovulkanwindow. This
+    time a full graphics pipeline is created, including a vertex and fragment
+    shader. This pipeline is then used to render a triangle.
+
+    \image hellovulkantriangle.png
+
+    The example also demonstrates multisample antialiasing. Based on the
+    supported sample counts reported by QVulkanWindow::supportedSampleCounts()
+    the example chooses between 8x, 4x, or no multisampling. Once configured
+    via QVulkanWindow::setSamples(), QVulkanWindow takes care of the rest: the
+    additional multisample color buffers are created automatically, and
+    resolving into the swapchain buffers is performed at the end of the default
+    render pass for each frame.
+
+    \include examples-run.qdocinc
+*/

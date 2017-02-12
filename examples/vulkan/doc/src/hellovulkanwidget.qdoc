@@ -1,0 +1,49 @@
+/****************************************************************************
+**
+** Copyright (C) 2017 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example hellovulkanwidget
+    \ingroup examples-vulkan
+    \title Hello Vulkan Widget Example
+    \brief Shows the usage of QVulkanWindow in QWidget applications
+
+    The \e{Hello Vulkan Widget Example} is a variant of \l hellovulkantriangle
+    that embeds the QVulkanWindow into a QWidget-based user interface using
+    QWidget::createWindowContainer().
+
+    \image hellovulkanwidget.png
+
+    The code to set up the Vulkan pipeline and render the triangle is the same
+    as in \l hellovulkantriangle. In addition, this example demonstrates
+    another feature of QVulkanWindow: reading the image content back from the
+    color buffer into a QImage. By clicking the Grab button, the example
+    renders the next frame and follows it up with a transfer operation in order
+    to get the swapchain color buffer content copied into host accessible
+    memory. The image is then saved to disk via QImage::save().
+
+    \include examples-run.qdocinc
+*/
