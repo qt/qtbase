@@ -41,6 +41,7 @@
 #include "qeglfskmsegldevice.h"
 #include <QGuiApplication>
 #include <QLoggingCategory>
+#include <errno.h>
 
 QT_BEGIN_NAMESPACE
 
