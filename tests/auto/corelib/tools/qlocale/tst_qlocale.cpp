@@ -1589,9 +1589,7 @@ void tst_QLocale::macDefaultLocale()
     // To run this test make sure "Curreny" is US Dollar in System Preferences->Language & Region->Advanced.
     if (locale.currencySymbol() == QString("$")) {
         QCOMPARE(locale.toCurrencyString(qulonglong(1234)), systemLocaleFormatNumber(QString("$1,234.00")));
-        QCOMPARE(locale.toCurrencyString(qlonglong(-1234)), systemLocaleFormatNumber(QString("($1,234.00)")));
         QCOMPARE(locale.toCurrencyString(double(1234.56)), systemLocaleFormatNumber(QString("$1,234.56")));
-        QCOMPARE(locale.toCurrencyString(double(-1234.56)), systemLocaleFormatNumber(QString("($1,234.56)")));
     }
 
     // Depending on the configured time zone, the time string might not
