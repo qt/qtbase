@@ -220,225 +220,225 @@ projectgenerator.o: $(QMKSRC)/generators/projectgenerator.cpp
 
 
 qtextstream.o: $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qvariant.o: $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qsettings.o: $(SOURCE_PATH)/src/corelib/io/qsettings.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qsettings.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qsystemerror.o: $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlibraryinfo.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) -DQT_BUILD_QMAKE_BOOTSTRAP $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) -DQT_BUILD_QMAKE_BOOTSTRAP $<
 
 qlibraryinfo_final.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(BUILD_PATH)/src/corelib/global/qconfig.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qnumeric.o: $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qsettings_mac.o: $(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qsettings_win.o: $(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qiodevice.o: $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qringbuffer.o: $(SOURCE_PATH)/src/corelib/tools/qringbuffer.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qringbuffer.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qdebug.o: $(SOURCE_PATH)/src/corelib/io/qdebug.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qdebug.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qmalloc.o: $(SOURCE_PATH)/src/corelib/global/qmalloc.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qmalloc.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qglobal.o: $(SOURCE_PATH)/src/corelib/global/qglobal.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qglobal.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qarraydata.o: $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qbytearray.o: $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qvsnprintf.o: $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qbytearraymatcher.o: $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qmetatype.o: $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qcore_mac.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qoperatingsystemversion.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qoperatingsystemversion_win.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_win.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qoperatingsystemversion_darwin.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_darwin.mm
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion_darwin.mm
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qcore_mac_objc.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qcore_foundation.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qutfcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qtextcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qstring.o: $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstring.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qstring_compat.o: $(SOURCE_PATH)/src/corelib/tools/qstring_compat.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstring_compat.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qstringbuilder.o: $(SOURCE_PATH)/src/corelib/tools/qstringbuilder.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstringbuilder.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlocale.o: $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlocale_tools.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlocale_unix.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlocale_win.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qdatastream.o: $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qbuffer.o: $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlist.o: $(SOURCE_PATH)/src/corelib/tools/qlist.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlist.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfile.o: $(SOURCE_PATH)/src/corelib/io/qfile.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfile.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfiledevice.o: $(SOURCE_PATH)/src/corelib/io/qfiledevice.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfiledevice.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfilesystementry.o: $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfilesystemengine.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfilesystemengine_unix.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfilesystemengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfilesystemiterator_unix.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfilesystemiterator_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfsfileengine.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfsfileengine_iterator.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfsfileengine_unix.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfsfileengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qabstractfileengine.o: $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qtemporaryfile.o: $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qregexp.o: $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qvector.o: $(SOURCE_PATH)/src/corelib/tools/qvector.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qvector.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qbitarray.o: $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qdir.o: $(SOURCE_PATH)/src/corelib/io/qdir.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qdir.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qdiriterator.o: $(SOURCE_PATH)/src/corelib/io/qdiriterator.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qdiriterator.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 quuid.o: $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qfileinfo.o: $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qdatetime.o: $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qstringlist.o: $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qmap.o: $(SOURCE_PATH)/src/corelib/tools/qmap.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qmap.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qhash.o: $(SOURCE_PATH)/src/corelib/tools/qhash.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qhash.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlinkedlist.o: $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-qcryptographichash.o:  $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
+qcryptographichash.o: $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qxmlstream.o: $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qxmlutils.o: $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qlogging.o: $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qsystemlibrary.o: $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qjson.o: $(SOURCE_PATH)/src/corelib/json/qjson.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjson.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qjsondocument.o: $(SOURCE_PATH)/src/corelib/json/qjsondocument.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsondocument.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qjsonparser.o: $(SOURCE_PATH)/src/corelib/json/qjsonparser.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsonparser.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qjsonarray.o: $(SOURCE_PATH)/src/corelib/json/qjsonarray.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsonarray.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qjsonobject.o: $(SOURCE_PATH)/src/corelib/json/qjsonobject.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsonobject.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qjsonvalue.o: $(SOURCE_PATH)/src/corelib/json/qjsonvalue.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsonvalue.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 # DO NOT DELETE THIS LINE -- make depend depends on it
