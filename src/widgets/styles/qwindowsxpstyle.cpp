@@ -397,13 +397,7 @@ HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
                 return topLevelHwnd;
     }
 
-    if (QDesktopWidget *desktop = qApp->desktop())
-        if (const HWND desktopHwnd = QApplicationPrivate::getHWNDForWidget(desktop))
-            return desktopHwnd;
-
-    Q_ASSERT(false);
-
-    return 0;
+    return GetDesktopWindow();
 }
 
 /*! \internal
