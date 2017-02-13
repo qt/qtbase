@@ -1108,6 +1108,12 @@ bool QSslSocketBackendPrivate::verifySessionProtocol() const
         protocolOk = (sessionProtocol() >= QSsl::SslV3);
     else if (configuration.protocol == QSsl::SecureProtocols)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_0);
+    else if (configuration.protocol == QSsl::TlsV1_0OrLater)
+        protocolOk = (sessionProtocol() >= QSsl::TlsV1_0);
+    else if (configuration.protocol == QSsl::TlsV1_1OrLater)
+        protocolOk = (sessionProtocol() >= QSsl::TlsV1_1);
+    else if (configuration.protocol == QSsl::TlsV1_2OrLater)
+        protocolOk = (sessionProtocol() >= QSsl::TlsV1_2);
     else
         protocolOk = (sessionProtocol() == configuration.protocol);
 
