@@ -75,7 +75,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm \
-           $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm \
+	   $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm \
 	   $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
@@ -101,8 +101,8 @@ CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
 	   -I$(BUILD_PATH)/src/corelib/global \
 	   -I$(QMAKESPEC) \
 	   -DQT_VERSION_STR=\"$(QT_VERSION)\" -DQT_VERSION_MAJOR=$(QT_MAJOR_VERSION) -DQT_VERSION_MINOR=$(QT_MINOR_VERSION) -DQT_VERSION_PATCH=$(QT_PATCH_VERSION) \
-           -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
-           -DQT_NO_FOREACH
+	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
+	   -DQT_NO_FOREACH
 
 CXXFLAGS = $(EXTRA_CXXFLAGS) $(CONFIG_CXXFLAGS) $(CPPFLAGS)
 LFLAGS = $(EXTRA_LFLAGS) $(CONFIG_LFLAGS)
