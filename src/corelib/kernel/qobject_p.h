@@ -234,7 +234,7 @@ public:
     mutable quint32 connectedSignals[2];
 
     union {
-        QObject *currentChildBeingDeleted;
+        QObject *currentChildBeingDeleted; // should only be used when QObjectData::isDeletingChildren is set
         QAbstractDeclarativeData *declarativeData; //extra data used by the declarative module
     };
 
