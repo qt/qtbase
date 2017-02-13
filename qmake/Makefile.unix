@@ -2,96 +2,131 @@ QMKSRC = $(SOURCE_PATH)/qmake
 QMKLIBSRC = $(QMKSRC)/library
 QMKGENSRC = $(QMKSRC)/generators
 
-#qmake code
-OBJS=project.o option.o property.o main.o ioutils.o proitems.o \
-     qmakevfs.o qmakeglobals.o qmakeparser.o qmakeevaluator.o qmakebuiltins.o \
-     makefile.o unixmake2.o unixmake.o  \
-     mingw_make.o winmakefile.o projectgenerator.o \
-     meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
-     msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o
+#qmake code (please keep in order matching DEPEND_SRC)
+OBJS = \
+	main.o meta.o option.o project.o property.o \
+	ioutils.o proitems.o qmakebuiltins.o qmakeevaluator.o \
+	qmakeglobals.o qmakeparser.o qmakevfs.o \
+	pbuilder_pbx.o \
+	makefile.o makefiledeps.o metamakefile.o projectgenerator.o \
+	unixmake2.o unixmake.o \
+	mingw_make.o msbuild_objectmodel.o \
+	msvc_nmake.o msvc_objectmodel.o msvc_vcproj.o msvc_vcxproj.o \
+	winmakefile.o \
+	xmloutput.o
 
-#qt code
-QOBJS=qtextcodec.o qutfcodec.o qstring.o qstring_compat.o qstringbuilder.o qtextstream.o qiodevice.o \
-      qringbuffer.o qdebug.o qmalloc.o qglobal.o \
-      qarraydata.o qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfiledevice.o qfile.o \
-      qfilesystementry.o qfilesystemengine.o qfsfileengine.o qfsfileengine_iterator.o qregexp.o \
-      qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o qfileinfo.o qdatetime.o qstringlist.o \
-      qabstractfileengine.o qtemporaryfile.o qmap.o qmetatype.o qsettings.o qsystemerror.o \
-      qvariant.o qvsnprintf.o qlocale.o qlocale_tools.o qlinkedlist.o qnumeric.o \
-      qcryptographichash.o qxmlstream.o qxmlutils.o qlogging.o qoperatingsystemversion.o \
-      qjson.o qjsondocument.o qjsonparser.o qjsonarray.o qjsonobject.o qjsonvalue.o \
-      $(QTOBJS) $(QTOBJS2)
+#qt code (please keep in order matching DEPEND_SRC)
+QOBJS = \
+	qtextcodec.o qutfcodec.o \
+	qglobal.o qlogging.o qmalloc.o qnumeric.o qoperatingsystemversion.o \
+	qabstractfileengine.o qbuffer.o qdatastream.o qdebug.o \
+	qdir.o qdiriterator.o \
+	qfile.o qfiledevice.o qfileinfo.o qfilesystemengine.o \
+	qfilesystementry.o qfsfileengine.o qfsfileengine_iterator.o \
+	qiodevice.o qsettings.o qtemporaryfile.o qtextstream.o \
+	qjsonarray.o qjson.o qjsondocument.o qjsonobject.o qjsonparser.o qjsonvalue.o \
+	qmetatype.o qsystemerror.o qvariant.o \
+	quuid.o \
+	qarraydata.o qbitarray.o qbytearray.o qbytearraymatcher.o \
+	qcryptographichash.o qdatetime.o qhash.o qlinkedlist.o qlist.o \
+	qlocale.o qlocale_tools.o qmap.o qregexp.o qringbuffer.o \
+	qstringbuilder.o qstring_compat.o qstring.o qstringlist.o qvsnprintf.o \
+	qxmlstream.o qxmlutils.o \
+	$(QTOBJS) $(QTOBJS2)
+# QTOBJS and QTOBJS2 are populated by Makefile.unix.* as for QTSRC (see below).
+# Note: qlibraryinfo.o omitted deliberately - see below.
+# Note: qcore_mac_objc.o is in SOURCES (see qmake.pri) but not QOBJS.
 
-
-#all sources, used for the depend target
+#all sources, used for the depend target (please keep alphabetic in each block)
 DEPEND_SRC = \
-	   $(QMKSRC)/main.cpp $(QMKSRC)/project.cpp $(QMKSRC)/option.cpp $(QMKSRC)/property.cpp \
+	   $(QMKSRC)/main.cpp \
 	   $(QMKSRC)/meta.cpp \
-	   $(QMKLIBSRC)/ioutils.cpp $(QMKLIBSRC)/proitems.cpp $(QMKLIBSRC)/qmakeglobals.cpp \
-	   $(QMKLIBSRC)/qmakeparser.cpp $(QMKLIBSRC)/qmakeevaluator.cpp $(QMKLIBSRC)/qmakebuiltins.cpp \
-	   $(QMKGENSRC)/makefiledeps.cpp $(QMKGENSRC)/metamakefile.cpp \
-	   $(QMKGENSRC)/projectgenerator.cpp $(QMKGENSRC)/makefile.cpp \
-	   $(QMKGENSRC)/unix/unixmake.cpp $(QMKGENSRC)/unix/unixmake2.cpp \
+	   $(QMKSRC)/option.cpp \
+	   $(QMKSRC)/project.cpp \
+	   $(QMKSRC)/property.cpp \
+	   $(QMKLIBSRC)/ioutils.cpp \
+	   $(QMKLIBSRC)/proitems.cpp \
+	   $(QMKLIBSRC)/qmakebuiltins.cpp \
+	   $(QMKLIBSRC)/qmakeevaluator.cpp \
+	   $(QMKLIBSRC)/qmakeglobals.cpp \
+	   $(QMKLIBSRC)/qmakeparser.cpp \
+	   $(QMKLIBSRC)/qmakevfs.cpp \
 	   $(QMKGENSRC)/mac/pbuilder_pbx.cpp \
-	   $(QMKGENSRC)/win32/registry.cpp \
+	   $(QMKGENSRC)/makefile.cpp \
+	   $(QMKGENSRC)/makefiledeps.cpp \
+	   $(QMKGENSRC)/metamakefile.cpp \
+	   $(QMKGENSRC)/projectgenerator.cpp \
+	   $(QMKGENSRC)/unix/unixmake2.cpp \
+	   $(QMKGENSRC)/unix/unixmake.cpp \
+	   $(QMKGENSRC)/win32/mingw_make.cpp \
+	   $(QMKGENSRC)/win32/msbuild_objectmodel.cpp \
+	   $(QMKGENSRC)/win32/msvc_nmake.cpp \
+	   $(QMKGENSRC)/win32/msvc_objectmodel.cpp \
+	   $(QMKGENSRC)/win32/msvc_vcproj.cpp \
+	   $(QMKGENSRC)/win32/msvc_vcxproj.cpp \
 	   $(QMKGENSRC)/win32/winmakefile.cpp \
-	   $(QMKGENSRC)/win32/mingw_make.cpp $(QMKGENSRC)/win32/msvc_nmake.cpp \
 	   $(QMKGENSRC)/xmloutput.cpp \
-	   $(QMKGENSRC)/win32/msvc_vcproj.cpp $(QMKGENSRC)/win32/msvc_vcxproj.cpp \
-	   $(QMKGENSRC)/win32/msvc_objectmodel.cpp $(QMKGENSRC)/win32/msbuild_objectmodel.cpp \
-	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qstring_compat.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfiledevice.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qringbuffer.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qdebug.cpp \
-	   $(SOURCE_PATH)/src/corelib/global/qmalloc.cpp \
-	   $(SOURCE_PATH)/src/corelib/global/qglobal.cpp $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp\
-	   $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qdiriterator.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qdir.cpp $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp $(SOURCE_PATH)/src/corelib/tools/qmap.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qstringbuilder.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp \
-	   $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm \
-	   $(SOURCE_PATH)/src/corelib/kernel/qcore_foundation.mm \
-	   $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
-	   $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp \
-	   $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp \
-	   $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp \
-	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
+	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp \
+	   $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
+	   $(SOURCE_PATH)/src/corelib/global/qglobal.cpp \
+	   $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlogging.cpp \
-	   $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp \
+	   $(SOURCE_PATH)/src/corelib/global/qmalloc.cpp \
+	   $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp \
+	   $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qdebug.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qdir.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qdiriterator.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfiledevice.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp \
+	   $(SOURCE_PATH)/src/corelib/json/qjsonarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/json/qjson.cpp \
 	   $(SOURCE_PATH)/src/corelib/json/qjsondocument.cpp \
-	   $(SOURCE_PATH)/src/corelib/json/qjsonparser.cpp \
-	   $(SOURCE_PATH)/src/corelib/json/qjsonarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/json/qjsonobject.cpp \
+	   $(SOURCE_PATH)/src/corelib/json/qjsonparser.cpp \
 	   $(SOURCE_PATH)/src/corelib/json/qjsonvalue.cpp \
+	   $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm \
+	   $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp \
+	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
+	   $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
+	   $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp\
+	   $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qmap.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qringbuffer.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qstringbuilder.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qstring_compat.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp \
+	   $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp \
+	   $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp \
 	   $(QTSRCS) $(QTSRCS2)
+# QTSRCS and QTSRCS2 come from Makefile.unix.* (concatenated with this
+# by configure); QTSRCS2 may include *.mm entries on macOS.
+# See below for special handling of qlibraryinfo.cpp
 
 CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
 	   -I$(QMKSRC) -I$(QMKLIBSRC) -I$(QMKGENSRC) \
