@@ -36,7 +36,7 @@ DEPEND_SRC = \
 	   $(QMKGENSRC)/win32/registry.cpp \
 	   $(QMKGENSRC)/win32/winmakefile.cpp \
 	   $(QMKGENSRC)/win32/mingw_make.cpp $(QMKGENSRC)/win32/msvc_nmake.cpp \
-	   $(QMKGENSRC)/mac/xmloutput.cpp \
+	   $(QMKGENSRC)/xmloutput.cpp \
 	   $(QMKGENSRC)/win32/msvc_vcproj.cpp $(QMKGENSRC)/win32/msvc_vcxproj.cpp \
 	   $(QMKGENSRC)/win32/msvc_objectmodel.cpp $(QMKGENSRC)/win32/msbuild_objectmodel.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
