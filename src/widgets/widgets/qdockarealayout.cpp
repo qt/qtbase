@@ -2605,12 +2605,16 @@ bool QDockAreaLayout::insertGap(const QList<int> &path, QLayoutItem *dockWidgetI
 
 QLayoutItem *QDockAreaLayout::plug(const QList<int> &path)
 {
+#if QT_CONFIG(tabbar)
     Q_ASSERT(!path.isEmpty());
     const int index = path.first();
     Q_ASSERT(index >= 0 && index < QInternal::DockCount);
     QLayoutItem *item = docks[index].plug(path.mid(1));
     docks[index].reparentWidgets(mainWindow);
     return item;
+#else
+    return nullptr;
+#endif
 }
 
 QLayoutItem *QDockAreaLayout::unplug(const QList<int> &path)
