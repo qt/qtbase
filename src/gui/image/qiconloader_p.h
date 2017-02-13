@@ -132,12 +132,13 @@ public:
     bool read(QDataStream &in) Q_DECL_OVERRIDE;
     bool write(QDataStream &out) const Q_DECL_OVERRIDE;
 
+    Q_GUI_EXPORT static QIconLoaderEngineEntry *entryForSize(const QThemeIconInfo &info, const QSize &size, int scale = 1);
+
 private:
     QString key() const Q_DECL_OVERRIDE;
     bool hasIcon() const;
     void ensureLoaded();
     void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
-    QIconLoaderEngineEntry *entryForSize(const QSize &size, int scale = 1);
 
     QIconLoaderEngine(const QIconLoaderEngine &other);
     QThemeIconInfo m_info;

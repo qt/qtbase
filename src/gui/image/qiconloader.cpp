@@ -609,18 +609,18 @@ static int directorySizeDistance(const QIconDirInfo &dir, int iconsize, int icon
     return INT_MAX;
 }
 
-QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QSize &size, int scale)
+QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QThemeIconInfo &info, const QSize &size, int scale)
 {
     int iconsize = qMin(size.width(), size.height());
 
     // Note that m_info.entries are sorted so that png-files
     // come first
 
-    const int numEntries = m_info.entries.size();
+    const int numEntries = info.entries.size();
 
     // Search for exact matches first
     for (int i = 0; i < numEntries; ++i) {
-        QIconLoaderEngineEntry *entry = m_info.entries.at(i);
+        QIconLoaderEngineEntry *entry = info.entries.at(i);
         if (directoryMatchesSize(entry->dir, iconsize, scale)) {
             return entry;
         }
@@ -630,7 +630,7 @@ QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QSize &size, int s
     int minimalSize = INT_MAX;
     QIconLoaderEngineEntry *closestMatch = 0;
     for (int i = 0; i < numEntries; ++i) {
-        QIconLoaderEngineEntry *entry = m_info.entries.at(i);
+        QIconLoaderEngineEntry *entry = info.entries.at(i);
         int distance = directorySizeDistance(entry->dir, iconsize, scale);
         if (distance < minimalSize) {
             minimalSize  = distance;
@@ -651,7 +651,7 @@ QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
 {
     ensureLoaded();
 
-    QIconLoaderEngineEntry *entry = entryForSize(size);
+    QIconLoaderEngineEntry *entry = entryForSize(m_info, size);
     if (entry) {
         const QIconDirInfo &dir = entry->dir;
         if (dir.type == QIconDirInfo::Scalable)
@@ -715,7 +715,7 @@ QPixmap QIconLoaderEngine::pixmap(const QSize &size, QIcon::Mode mode,
 {
     ensureLoaded();
 
-    QIconLoaderEngineEntry *entry = entryForSize(size);
+    QIconLoaderEngineEntry *entry = entryForSize(m_info, size);
     if (entry)
         return entry->pixmap(size, mode, state);
 
@@ -764,7 +764,7 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
             QIconEngine::ScaledPixmapArgument &arg = *reinterpret_cast<QIconEngine::ScaledPixmapArgument*>(data);
             // QIcon::pixmap() multiplies size by the device pixel ratio.
             const int integerScale = qCeil(arg.scale);
-            QIconLoaderEngineEntry *entry = entryForSize(arg.size / integerScale, integerScale);
+            QIconLoaderEngineEntry *entry = entryForSize(m_info, arg.size / integerScale, integerScale);
             arg.pixmap = entry ? entry->pixmap(arg.size, arg.mode, arg.state) : QPixmap();
         }
         break;
