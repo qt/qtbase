@@ -1447,30 +1447,6 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     updateXKBStateFromState(kb_state, state);
 
     xcb_keysym_t sym = xkb_state_key_get_one_sym(kb_state, code);
-
-    QPlatformInputContext *inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext();
-    QMetaMethod method;
-
-    if (inputContext) {
-        int methodIndex = inputContext->metaObject()->indexOfMethod("x11FilterEvent(uint,uint,uint,bool)");
-        if (methodIndex != -1)
-            method = inputContext->metaObject()->method(methodIndex);
-    }
-
-    if (method.isValid()) {
-        bool retval = false;
-        method.invoke(inputContext, Qt::DirectConnection,
-                      Q_RETURN_ARG(bool, retval),
-                      Q_ARG(uint, sym),
-                      Q_ARG(uint, code),
-                      Q_ARG(uint, state),
-                      Q_ARG(bool, type == QEvent::KeyPress));
-        if (retval) {
-            xkb_state_unref(kb_state);
-            return;
-        }
-    }
-
     QString string = lookupString(kb_state, code);
 
     // Ιf control modifier is set we should prefer latin character, this is
@@ -1502,6 +1478,7 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     }
 
     bool filtered = false;
+    QPlatformInputContext *inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext();
     if (inputContext) {
         QKeyEvent event(type, qtcode, modifiers, code, sym, state, string, isAutoRepeat, string.length());
         event.setTimestamp(time);
@@ -1524,16 +1501,7 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     if (isAutoRepeat && type == QEvent::KeyRelease) {
         // since we removed it from the event queue using checkEvent we need to send the key press here
         filtered = false;
-        if (method.isValid()) {
-            method.invoke(inputContext, Qt::DirectConnection,
-                          Q_RETURN_ARG(bool, filtered),
-                          Q_ARG(uint, sym),
-                          Q_ARG(uint, code),
-                          Q_ARG(uint, state),
-                          Q_ARG(bool, true));
-        }
-
-        if (!filtered && inputContext) {
+        if (inputContext) {
             QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, code, sym, state, string, isAutoRepeat, string.length());
             event.setTimestamp(time);
             filtered = inputContext->filterEvent(&event);
