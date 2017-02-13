@@ -1096,6 +1096,9 @@ public:
     QString m_interFile;
     QString ciphers;
 
+signals:
+    void socketError(QAbstractSocket::SocketError);
+
 protected:
     void incomingConnection(qintptr socketDescriptor)
     {
@@ -1105,6 +1108,7 @@ protected:
         socket->setProtocol(protocol);
         if (ignoreSslErrors)
             connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+        connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SIGNAL(socketError(QAbstractSocket::SocketError)));
 
         QFile file(m_keyFile);
         QVERIFY(file.open(QIODevice::ReadOnly));
@@ -1240,6 +1244,37 @@ void tst_QSslSocket::protocolServerSide_data()
 #if !defined(OPENSSL_NO_SSL3)
     QTest::newRow("any-ssl3") << QSsl::AnyProtocol << QSsl::SslV3 << true;
 #endif
+
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
+    QTest::newRow("tls1.0orlater-ssl2") << QSsl::TlsV1_0OrLater << QSsl::SslV2 << false;
+#endif
+#if !defined(OPENSSL_NO_SSL3)
+    QTest::newRow("tls1.0orlater-ssl3") << QSsl::TlsV1_0OrLater << QSsl::SslV3 << false;
+#endif
+    QTest::newRow("tls1.0orlater-tls1.0") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_0 << true;
+    QTest::newRow("tls1.0orlater-tls1.1") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_1 << true;
+    QTest::newRow("tls1.0orlater-tls1.2") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_2 << true;
+
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
+    QTest::newRow("tls1.1orlater-ssl2") << QSsl::TlsV1_1OrLater << QSsl::SslV2 << false;
+#endif
+#if !defined(OPENSSL_NO_SSL3)
+    QTest::newRow("tls1.1orlater-ssl3") << QSsl::TlsV1_1OrLater << QSsl::SslV3 << false;
+#endif
+    QTest::newRow("tls1.1orlater-tls1.0") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_0 << false;
+    QTest::newRow("tls1.1orlater-tls1.1") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_1 << true;
+    QTest::newRow("tls1.1orlater-tls1.2") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_2 << true;
+
+#if !defined(OPENSSL_NO_SSL2) && !defined(QT_SECURETRANSPORT)
+    QTest::newRow("tls1.2orlater-ssl2") << QSsl::TlsV1_2OrLater << QSsl::SslV2 << false;
+#endif
+#if !defined(OPENSSL_NO_SSL3)
+    QTest::newRow("tls1.2orlater-ssl3") << QSsl::TlsV1_2OrLater << QSsl::SslV3 << false;
+#endif
+    QTest::newRow("tls1.2orlater-tls1.0") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_0 << false;
+    QTest::newRow("tls1.2orlater-tls1.1") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_1 << false;
+    QTest::newRow("tls1.2orlater-tls1.2") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_2 << true;
+
     QTest::newRow("any-tls1.0") << QSsl::AnyProtocol << QSsl::TlsV1_0 << true;
     QTest::newRow("any-tls1ssl3") << QSsl::AnyProtocol << QSsl::TlsV1SslV3 << true;
     QTest::newRow("any-secure") << QSsl::AnyProtocol << QSsl::SecureProtocols << true;
@@ -1262,6 +1297,7 @@ void tst_QSslSocket::protocolServerSide()
     QVERIFY(server.listen());
 
     QEventLoop loop;
+    connect(&server, SIGNAL(socketError(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
     QTimer::singleShot(5000, &loop, SLOT(quit()));
 
     QSslSocket client;
@@ -1279,7 +1315,15 @@ void tst_QSslSocket::protocolServerSide()
 
     QFETCH(bool, works);
     QAbstractSocket::SocketState expectedState = (works) ? QAbstractSocket::ConnectedState : QAbstractSocket::UnconnectedState;
-    QCOMPARE(int(client.state()), int(expectedState));
+    // Determine whether the client or the server caused the event loop
+    // to quit due to a socket error, and investigate the culprit.
+    if (server.socket->error() != QAbstractSocket::UnknownSocketError) {
+        QVERIFY(client.error() == QAbstractSocket::UnknownSocketError);
+        QCOMPARE(int(server.socket->state()), int(expectedState));
+    } else if (client.error() != QAbstractSocket::UnknownSocketError) {
+        QVERIFY(server.socket->error() == QAbstractSocket::UnknownSocketError);
+        QCOMPARE(int(client.state()), int(expectedState));
+    }
     QCOMPARE(client.isEncrypted(), works);
 }
 
