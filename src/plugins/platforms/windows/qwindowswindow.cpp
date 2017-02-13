@@ -2114,8 +2114,12 @@ void QWindowsWindow::setFrameStrutEventsEnabled(bool enabled)
 
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
-    const QWindowsGeometryHint hint(window(), m_data.customMargins);
-    hint.applyToMinMaxInfo(m_data.hwnd, mmi);
+    // We don't apply the min/max size hint as we change the dpi, because we did not adjust the
+    // QScreen of the window yet so we don't have the min/max with the right ratio
+    if (!testFlag(QWindowsWindow::WithinDpiChanged)) {
+        const QWindowsGeometryHint hint(window(), m_data.customMargins);
+        hint.applyToMinMaxInfo(m_data.hwnd, mmi);
+    }
 
     if ((testFlag(WithinMaximize) || (window()->windowState() == Qt::WindowMinimized))
             && (m_data.flags & Qt::FramelessWindowHint)) {

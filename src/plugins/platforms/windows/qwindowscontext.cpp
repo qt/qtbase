@@ -1088,6 +1088,15 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
 #endif
     }   break;
+    case QtWindows::DpiChangedEvent: {
+        platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
+        const RECT *prcNewWindow = reinterpret_cast<RECT *>(lParam);
+        SetWindowPos(hwnd, NULL, prcNewWindow->left, prcNewWindow->top,
+                     prcNewWindow->right - prcNewWindow->left,
+                     prcNewWindow->bottom - prcNewWindow->top, SWP_NOZORDER | SWP_NOACTIVATE);
+        platformWindow->clearFlag(QWindowsWindow::WithinDpiChanged);
+        return true;
+    }
 #if !defined(QT_NO_SESSIONMANAGER)
     case QtWindows::QueryEndSessionApplicationEvent: {
         QWindowsSessionManager *sessionManager = platformSessionManager();
