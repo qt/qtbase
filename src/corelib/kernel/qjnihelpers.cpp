@@ -61,7 +61,7 @@ static jclass g_jNativeClass = Q_NULLPTR;
 static jmethodID g_runPendingCppRunnablesMethodID = Q_NULLPTR;
 static jmethodID g_hideSplashScreenMethodID = Q_NULLPTR;
 Q_GLOBAL_STATIC(std::deque<QtAndroidPrivate::Runnable>, g_pendingRunnables);
-Q_GLOBAL_STATIC(QMutex, g_pendingRunnablesMutex);
+QBasicMutex g_pendingRunnablesMutex;
 
 class PermissionsResultClass : public QObject
 {
@@ -76,21 +76,24 @@ private:
 
 typedef QHash<int, QSharedPointer<PermissionsResultClass>> PendingPermissionRequestsHash;
 Q_GLOBAL_STATIC(PendingPermissionRequestsHash, g_pendingPermissionRequests);
-Q_GLOBAL_STATIC(QMutex, g_pendingPermissionRequestsMutex);
-Q_GLOBAL_STATIC(QAtomicInt, g_requestPermissionsRequestCode);
+QBasicMutex g_pendingPermissionRequestsMutex;
+static int nextRequestCode()
+{
+    static QBasicAtomicInt counter;
+    return counter.fetchAndAddRelaxed(0);
+}
 
 // function called from Java from Android UI thread
 static void runPendingCppRunnables(JNIEnv */*env*/, jobject /*obj*/)
 {
     for (;;) { // run all posted runnables
-        g_pendingRunnablesMutex->lock();
+        QMutexLocker locker(&g_pendingRunnablesMutex);
         if (g_pendingRunnables->empty()) {
-            g_pendingRunnablesMutex->unlock();
             break;
         }
         QtAndroidPrivate::Runnable runnable(std::move(g_pendingRunnables->front()));
         g_pendingRunnables->pop_front();
-        g_pendingRunnablesMutex->unlock();
+        locker.unlock();
         runnable(); // run it outside the sync block!
     }
 }
@@ -110,14 +113,13 @@ Q_GLOBAL_STATIC(GenericMotionEventListeners, g_genericMotionEventListeners)
 static void sendRequestPermissionsResult(JNIEnv *env, jobject /*obj*/, jint requestCode,
                                          jobjectArray permissions, jintArray grantResults)
 {
-    g_pendingPermissionRequestsMutex->lock();
+    QMutexLocker locker(&g_pendingPermissionRequestsMutex);
     auto it = g_pendingPermissionRequests->find(requestCode);
     if (it == g_pendingPermissionRequests->end()) {
-        g_pendingPermissionRequestsMutex->unlock();
         // show an error or something ?
         return;
     }
-    g_pendingPermissionRequestsMutex->unlock();
+    locker.unlock();
 
     Qt::ConnectionType connection = QThread::currentThread() == it.value()->thread() ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
     QtAndroidPrivate::PermissionsHash hash;
@@ -132,9 +134,9 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject /*obj*/, jint requ
         hash[permission] = value;
     }
     QMetaObject::invokeMethod(it.value().data(), "sendResult", connection, Q_ARG(QtAndroidPrivate::PermissionsHash, hash));
-    g_pendingPermissionRequestsMutex->lock();
+
+    locker.relock();
     g_pendingPermissionRequests->erase(it);
-    g_pendingPermissionRequestsMutex->unlock();
 }
 
 static jboolean dispatchGenericMotionEvent(JNIEnv *, jclass, jobject event)
@@ -447,10 +449,10 @@ void QtAndroidPrivate::runOnUiThread(QRunnable *runnable, JNIEnv *env)
 
 void QtAndroidPrivate::runOnAndroidThread(const QtAndroidPrivate::Runnable &runnable, JNIEnv *env)
 {
-    g_pendingRunnablesMutex->lock();
+    QMutexLocker locker(&g_pendingRunnablesMutex);
     const bool triggerRun = g_pendingRunnables->empty();
     g_pendingRunnables->push_back(runnable);
-    g_pendingRunnablesMutex->unlock();
+    locker.unlock();
     if (triggerRun)
         env->CallStaticVoidMethod(g_jNativeClass, g_runPendingCppRunnablesMethodID);
 }
@@ -475,18 +477,16 @@ void QtAndroidPrivate::requestPermissions(JNIEnv *env, const QStringList &permis
         return;
     }
     // Check API 23+ permissions
-    const int requestCode = (*g_requestPermissionsRequestCode)++;
+    const int requestCode = nextRequestCode();
     if (!directCall) {
-        g_pendingPermissionRequestsMutex->lock();
+        QMutexLocker locker(&g_pendingPermissionRequestsMutex);
         (*g_pendingPermissionRequests)[requestCode] = QSharedPointer<PermissionsResultClass>::create(callbackFunc);
-        g_pendingPermissionRequestsMutex->unlock();
     }
 
     runOnAndroidThread([permissions, callbackFunc, requestCode, directCall] {
         if (directCall) {
-            g_pendingPermissionRequestsMutex->lock();
+            QMutexLocker locker(&g_pendingPermissionRequestsMutex);
             (*g_pendingPermissionRequests)[requestCode] = QSharedPointer<PermissionsResultClass>::create(callbackFunc);
-            g_pendingPermissionRequestsMutex->unlock();
         }
 
         QJNIEnvironmentPrivate env;
