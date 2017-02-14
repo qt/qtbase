@@ -947,6 +947,10 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     if (m_drawContentBorderGradient)
         styleMask |= NSTexturedBackgroundWindowMask;
 
+    // Don't wipe fullscreen state
+    if (m_nsWindow.styleMask & NSFullScreenWindowMask)
+        styleMask |= NSFullScreenWindowMask;
+
     return styleMask;
 }
 
@@ -1369,18 +1373,39 @@ void QCocoaWindow::windowDidDeminiaturize()
     reportCurrentWindowState();
 }
 
+void QCocoaWindow::windowWillEnterFullScreen()
+{
+    // The NSWindow needs to be resizable, otherwise we'll end up with
+    // the normal window geometry, centered in the middle of the screen
+    // on a black background. The styleMask will be reset below.
+    m_nsWindow.styleMask |= NSResizableWindowMask;
+}
+
 void QCocoaWindow::windowDidEnterFullScreen()
 {
     Q_ASSERT_X(m_nsWindow.qt_fullScreen, "QCocoaWindow",
         "FullScreen category processes window notifications first");
 
+    // Reset to original styleMask
+    setWindowFlags(m_windowFlags);
+
     reportCurrentWindowState();
+}
+
+void QCocoaWindow::windowWillExitFullScreen()
+{
+    // The NSWindow needs to be resizable, otherwise we'll end up with
+    // a weird zoom animation. The styleMask will be reset below.
+    m_nsWindow.styleMask |= NSResizableWindowMask;
 }
 
 void QCocoaWindow::windowDidExitFullScreen()
 {
     Q_ASSERT_X(!m_nsWindow.qt_fullScreen, "QCocoaWindow",
         "FullScreen category processes window notifications first");
+
+    // Reset to original styleMask
+    setWindowFlags(m_windowFlags);
 
     Qt::WindowState requestedState = window()->windowState();
 
@@ -1875,24 +1900,13 @@ void QCocoaWindow::toggleMaximized()
 
 void QCocoaWindow::toggleFullScreen()
 {
-    // The NSWindow needs to be resizable, otherwise we'll end up with
-    // the normal window geometry, centered in the middle of the screen
-    // on a black background.
-    const bool wasResizable = m_nsWindow.styleMask & NSResizableWindowMask;
-    m_nsWindow.styleMask |= NSResizableWindowMask;
-
-    // It also needs to have the correct collection behavior for the
-    // toggleFullScreen call to have an effect.
-    const bool wasFullScreenEnabled = m_nsWindow.collectionBehavior & NSWindowCollectionBehaviorFullScreenPrimary;
+    // The window needs to have the correct collection behavior for the
+    // toggleFullScreen call to have an effect. The collection behavior
+    // will be reset in windowDidEnterFullScreen/windowDidLeaveFullScreen.
     m_nsWindow.collectionBehavior |= NSWindowCollectionBehaviorFullScreenPrimary;
 
     const id sender = m_nsWindow;
     [m_nsWindow toggleFullScreen:sender];
-
-    if (!wasResizable)
-        m_nsWindow.styleMask &= ~NSResizableWindowMask;
-    if (!wasFullScreenEnabled)
-        m_nsWindow.collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
 }
 
 bool QCocoaWindow::isTransitioningToFullScreen() const
