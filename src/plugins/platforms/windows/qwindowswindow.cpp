@@ -1533,10 +1533,16 @@ void QWindowsWindow::handleGeometryChange()
         && !(m_data.geometry.width() > previousGeometry.width() || m_data.geometry.height() > previousGeometry.height())) {
         fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), true);
     }
-    if (previousGeometry.topLeft() != m_data.geometry.topLeft()) {
-        QPlatformScreen *newScreen = screenForGeometry(m_data.geometry);
-        if (newScreen != screen())
-            QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+    if (!parent() && previousGeometry.topLeft() != m_data.geometry.topLeft()) {
+        HMONITOR hMonitor = MonitorFromWindow(m_data.hwnd, MONITOR_DEFAULTTONULL);
+        QPlatformScreen *currentScreen = screen();
+        const auto screens = QWindowsContext::instance()->screenManager().screens();
+        auto newScreenIt = std::find_if(screens.begin(), screens.end(), [&](QWindowsScreen *s) {
+            return s->data().hMonitor == hMonitor
+                && s->data().flags & QWindowsScreenData::VirtualDesktop;
+        });
+        if (newScreenIt != screens.end() && *newScreenIt != currentScreen)
+            QWindowSystemInterface::handleWindowScreenChanged(window(), (*newScreenIt)->screen());
     }
     if (testFlag(SynchronousGeometryChangeEvent))
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);

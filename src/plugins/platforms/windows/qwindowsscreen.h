@@ -69,6 +69,7 @@ struct QWindowsScreenData
     QString name;
     Qt::ScreenOrientation orientation = Qt::LandscapeOrientation;
     qreal refreshRateHz = 60;
+    HMONITOR hMonitor = nullptr;
 };
 
 class QWindowsScreen : public QPlatformScreen
