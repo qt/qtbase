@@ -1445,12 +1445,14 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
                 now.start();
                 uint ms = now.msecsSinceReference();
                 message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
+#if QT_CONFIG(datestring)
             } else if (timeFormat.isEmpty()) {
                     message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
             } else {
                 message.append(QDateTime::currentDateTime().toString(timeFormat));
+#endif // QT_CONFIG(datestring)
             }
-#endif
+#endif // !QT_BOOTSTRAPPED
         } else if (token == ifCategoryTokenC) {
             if (!context.category || (strcmp(context.category, "default") == 0))
                 skip = true;
