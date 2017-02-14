@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QThreadData::QThreadData(int initialRefCount)
-    : _ref(initialRefCount), loopLevel(0), scopeLevel(0), thread(0), threadId(0),
+    : _ref(initialRefCount), loopLevel(0), scopeLevel(0),
       eventDispatcher(0),
       quitNow(false), canWait(true), isAdopted(false), requiresCoreApplication(true)
 {

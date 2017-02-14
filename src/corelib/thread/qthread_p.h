@@ -284,7 +284,7 @@ public:
     QStack<QEventLoop *> eventLoops;
     QPostEventList postEventList;
     QAtomicPointer<QThread> thread;
-    Qt::HANDLE threadId;
+    QAtomicPointer<void> threadId;
     QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;
     QVector<void *> tls;
     FlaggedDebugSignatures flaggedSignatures;
