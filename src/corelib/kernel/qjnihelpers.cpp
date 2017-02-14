@@ -119,9 +119,11 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject /*obj*/, jint requ
         // show an error or something ?
         return;
     }
+    auto request = std::move(*it);
+    g_pendingPermissionRequests->erase(it);
     locker.unlock();
 
-    Qt::ConnectionType connection = QThread::currentThread() == it.value()->thread() ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
+    Qt::ConnectionType connection = QThread::currentThread() == request->thread() ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
     QtAndroidPrivate::PermissionsHash hash;
     const int size = env->GetArrayLength(permissions);
     std::unique_ptr<jint[]> results(new jint[size]);
@@ -133,10 +135,7 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject /*obj*/, jint requ
                             QtAndroidPrivate::PermissionsResult::Denied;
         hash[permission] = value;
     }
-    QMetaObject::invokeMethod(it.value().data(), "sendResult", connection, Q_ARG(QtAndroidPrivate::PermissionsHash, hash));
-
-    locker.relock();
-    g_pendingPermissionRequests->erase(it);
+    QMetaObject::invokeMethod(request.data(), "sendResult", connection, Q_ARG(QtAndroidPrivate::PermissionsHash, hash));
 }
 
 static jboolean dispatchGenericMotionEvent(JNIEnv *, jclass, jobject event)
