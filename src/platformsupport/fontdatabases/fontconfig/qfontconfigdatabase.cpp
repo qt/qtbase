@@ -40,6 +40,8 @@
 #include "qfontconfigdatabase_p.h"
 #include "qfontenginemultifontconfig_p.h"
 
+#include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
+
 #include <QtCore/QList>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
@@ -49,7 +51,6 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
 
-#include <QtGui/private/qfontengine_ft_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 

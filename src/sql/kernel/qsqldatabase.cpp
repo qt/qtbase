@@ -313,7 +313,7 @@ void QSqlDatabasePrivate::disable()
 
 /*!
     \class QSqlDatabase
-    \brief The QSqlDatabase class represents a connection to
+    \brief The QSqlDatabase class handles a connection to
     a database.
 
     \ingroup database
@@ -332,18 +332,17 @@ void QSqlDatabasePrivate::disable()
     Create a connection (i.e., an instance of QSqlDatabase) by calling
     one of the static addDatabase() functions, where you specify
     \l{SQL Database Drivers#Supported Databases} {the driver or type
-    of driver} to use (i.e., what kind of database will you access?)
+    of driver} to use (depending on the type of database)
     and a connection name. A connection is known by its own name,
     \e{not} by the name of the database it connects to. You can have
     multiple connections to one database. QSqlDatabase also supports
     the concept of a \e{default} connection, which is the unnamed
     connection. To create the default connection, don't pass the
     connection name argument when you call addDatabase().
-    Subsequently, when you call any static member function that takes
-    the connection name argument, if you don't pass the connection
-    name argument, the default connection is assumed. The following
-    snippet shows how to create and open a default connection to a
-    PostgreSQL database:
+    Subsequently, the default connection will be assumed if you call
+    any static member function without specifying the connection name.
+    The following snippet shows how to create and open a default connection
+    to a PostgreSQL database:
 
     \snippet sqldatabase/sqldatabase.cpp 0
 
@@ -374,26 +373,49 @@ void QSqlDatabasePrivate::disable()
     referenced by other QSqlDatabase objects. Use contains() to see if
     a given connection name is in the list of connections.
 
-    Once a connection is established, you can call tables() to get the
-    list of tables in the database, call primaryIndex() to get a
-    table's primary index, and call record() to get meta-information
-    about a table's fields (e.g., field names).
+    \table
+    \header
+       \li {2,1}Some utility methods:
+    \row
+        \li tables()
+         \li returns the list of tables
+    \row
+        \li primaryIndex()
+        \li returns a table's primary index
+    \row
+        \li record()
+        \li returns meta-information about a table's fields
+    \row
+        \li transaction()
+        \li starts a transaction
+    \row
+        \li commit()
+        \li saves and completes a transaction
+    \row
+        \li rollback()
+        \li cancels a transaction
+    \row
+        \li hasFeature()
+        \li checks if a driver supports transactions
+    \row
+        \li lastError()
+        \li returns information about the last error
+    \row
+        \li drivers()
+        \li returns the names of the available SQL drivers
+    \row
+        \li isDriverAvailable()
+        \li checks if a particular driver is available
+    \row
+        \li registerSqlDriver()
+        \li registers a custom-made driver
+    \endtable
 
     \note QSqlDatabase::exec() is deprecated. Use QSqlQuery::exec()
     instead.
 
-    If the driver supports transactions, use transaction() to start a
-    transaction, and commit() or rollback() to complete it. Use
-    \l{QSqlDriver::} {hasFeature()} to ask if the driver supports
-    transactions. \note When using transactions, you must start the
+    \note When using transactions, you must start the
     transaction before you create your query.
-
-    If an error occurs, lastError() will return information about it.
-
-    Get the names of the available SQL drivers with drivers().  Check
-    for the presence of a particular driver with isDriverAvailable().
-    If you have created your own custom driver, you must register it
-    with registerSqlDriver().
 
     \sa QSqlDriver, QSqlQuery, {Qt SQL}, {Threads and the SQL Module}
 */
@@ -963,9 +985,9 @@ QString QSqlDatabase::userName() const
 }
 
 /*!
-    Returns the connection's password. If the password was not set
-    with setPassword(), and if the password was given in the open()
-    call, or if no password was used, an empty string is returned.
+    Returns the connection's password. An empty string will be returned
+    if the password was not set with setPassword(), and if the password
+    was given in the open() call, or if no password was used.
 */
 QString QSqlDatabase::password() const
 {
@@ -1045,7 +1067,7 @@ QStringList QSqlDatabase::tables(QSql::TableType type) const
 
 /*!
     Returns the primary index for table \a tablename. If no primary
-    index exists an empty QSqlIndex is returned.
+    index exists, an empty QSqlIndex is returned.
 
     \sa tables(), record()
 */
@@ -1071,8 +1093,9 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
 
 /*!
     Sets database-specific \a options. This must be done before the
-    connection is opened or it has no effect (or you can close() the
-    connection, call this function and open() the connection again).
+    connection is opened, otherwise it has no effect. Another possibility
+    is to close the connection, call QSqlDatabase::setConnectOptions(),
+    and open() the connection again.
 
     The format of the \a options string is a semicolon separated list
     of option names or option=value pairs. The options depend on the

@@ -39,11 +39,12 @@
 
 #include "qwinrtfontdatabase_p.h"
 
+#include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFile>
 
 #include <QtCore/QUuid>
-#include <QtGui/private/qfontengine_ft_p.h>
 #include <dwrite_1.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;

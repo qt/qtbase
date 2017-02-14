@@ -3,4 +3,4 @@ HEADERS += $$PWD/qfontconfigdatabase_p.h \
 SOURCES += $$PWD/qfontconfigdatabase.cpp \
            $$PWD/qfontenginemultifontconfig.cpp
 
-QMAKE_USE += fontconfig
+QMAKE_USE_PRIVATE += fontconfig

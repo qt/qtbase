@@ -68,7 +68,6 @@ bootstrap { #Qt code
         qlibraryinfo.cpp \
         qsystemerror.cpp \
         qvariant.cpp \
-        qvector.cpp \
         qvsnprintf.cpp \
         qxmlstream.cpp \
         qxmlutils.cpp \

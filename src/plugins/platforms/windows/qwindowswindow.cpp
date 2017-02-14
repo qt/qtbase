@@ -43,7 +43,11 @@
 #include "qwindowsscreen.h"
 #include "qwindowsintegration.h"
 #include "qwindowsnativeinterface.h"
-#include "qwindowsglcontext.h"
+#if QT_CONFIG(dynamicgl)
+#  include "qwindowsglcontext.h"
+#else
+#  include "qwindowsopenglcontext.h"
+#endif
 #ifdef QT_NO_CURSOR
 #  include "qwindowscursor.h"
 #endif

@@ -39,6 +39,8 @@ class tst_qiodevice : public QObject
 private slots:
     void read_old();
     void read_old_data() { read_data(); }
+    void peekAndRead();
+    void peekAndRead_data() { read_data(); }
     //void read_new();
     //void read_new_data() { read_data(); }
 private:
@@ -86,6 +88,36 @@ void tst_qiodevice::read_old()
     }
 }
 
+void tst_qiodevice::peekAndRead()
+{
+    QFETCH(qint64, size);
+
+    QString name = "tmp" + QString::number(size);
+
+    {
+        QFile file(name);
+        file.open(QIODevice::WriteOnly);
+        file.seek(size);
+        file.write("x", 1);
+        file.close();
+    }
+
+    QBENCHMARK {
+        QFile file(name);
+        file.open(QIODevice::ReadOnly);
+
+        QByteArray ba(size / 1024, Qt::Uninitialized);
+        while (!file.atEnd()) {
+            file.peek(ba.data(), ba.size());
+            file.read(ba.data(), ba.size());
+        }
+    }
+
+    {
+        QFile file(name);
+        file.remove();
+    }
+}
 
 QTEST_MAIN(tst_qiodevice)
 

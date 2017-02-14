@@ -80,7 +80,6 @@ SOURCES += \
            ../../corelib/tools/qstringbuilder.cpp \
            ../../corelib/tools/qstring_compat.cpp \
            ../../corelib/tools/qstringlist.cpp \
-           ../../corelib/tools/qvector.cpp \
            ../../corelib/tools/qvsnprintf.cpp \
            ../../corelib/xml/qxmlutils.cpp \
            ../../corelib/xml/qxmlstream.cpp \
