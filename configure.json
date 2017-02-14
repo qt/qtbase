@@ -56,7 +56,6 @@
             "android-sdk": "string",
             "android-toolchain-version": "string",
 
-            "accessibility": "boolean",
             "android-style-assets": "boolean",
             "appstore-compliant": "boolean",
             "avx": "boolean",
@@ -915,10 +914,6 @@
             "condition": "config.qnx && tests.stack_protector",
             "output": [ "publicQtConfig" ]
         },
-        "accessibility": {
-            "label": "Accessibility",
-            "output": [ "publicFeature", "feature" ]
-        },
         "system-zlib": {
             "label": "Using system zlib",
             "condition": "libs.zlib",
@@ -1081,11 +1076,6 @@ or compile needed modules into the library."
 Configure with '-qreal float' to create a build that is binary-compatible with 5.1."
         },
         {
-            "type": "warning",
-            "condition": "!features.accessibility",
-            "message": "Accessibility disabled. This configuration of Qt is unsupported."
-        },
-        {
             "type": "error",
             "condition": "!features.stl",
             "message": "Qt requires a compliant STL library."
@@ -1191,7 +1181,6 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
         }, {
             "section": "Support enabled for",
             "entries": [
-                "accessibility",
                 "pkg-config",
                 "qml-debug",
                 "libudev",
