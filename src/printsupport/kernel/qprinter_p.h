@@ -75,7 +75,8 @@ class Q_PRINTSUPPORT_EXPORT QPrinterPrivate
     Q_DECLARE_PUBLIC(QPrinter)
 public:
     QPrinterPrivate(QPrinter *printer)
-        : printEngine(0),
+        : pdfVersion(QPrinter::PdfVersion_1_4),
+          printEngine(0),
           paintEngine(0),
           realPrintEngine(0),
           realPaintEngine(0),
@@ -107,6 +108,7 @@ public:
 
     QPrinter::PrinterMode printerMode;
     QPrinter::OutputFormat outputFormat;
+    QPrinter::PdfVersion pdfVersion;
     QPrintEngine *printEngine;
     QPaintEngine *paintEngine;
 

@@ -134,6 +134,9 @@ public:
     void setOutputFormat(OutputFormat format);
     OutputFormat outputFormat() const;
 
+    void setPdfVersion(PdfVersion version);
+    PdfVersion pdfVersion() const;
+
     void setPrinterName(const QString &);
     QString printerName() const;
 

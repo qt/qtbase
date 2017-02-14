@@ -58,10 +58,12 @@
 
 QT_BEGIN_NAMESPACE
 
-QPdfPrintEngine::QPdfPrintEngine(QPrinter::PrinterMode m)
+QPdfPrintEngine::QPdfPrintEngine(QPrinter::PrinterMode m, QPdfEngine::PdfVersion version)
     : QPdfEngine(*new QPdfPrintEnginePrivate(m))
 {
     state = QPrinter::Idle;
+
+    setPdfVersion(version);
 }
 
 QPdfPrintEngine::QPdfPrintEngine(QPdfPrintEnginePrivate &p)

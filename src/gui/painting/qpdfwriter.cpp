@@ -56,6 +56,7 @@ public:
     {
         engine = new QPdfEngine();
         output = 0;
+        pdfVersion = QPdfWriter::PdfVersion_1_4;
     }
     ~QPdfWriterPrivate()
     {
@@ -65,6 +66,7 @@ public:
 
     QPdfEngine *engine;
     QFile *output;
+    QPdfWriter::PdfVersion pdfVersion;
 };
 
 class QPdfPagedPaintDevicePrivate : public QPagedPaintDevicePrivate
@@ -174,6 +176,35 @@ QPdfWriter::QPdfWriter(QIODevice *device)
 QPdfWriter::~QPdfWriter()
 {
 
+}
+
+/*!
+    \since 5.10
+
+    Sets the PDF version for this writer to \a version.
+
+    If \a version is the same value as currently set then no change will be made.
+*/
+void QPdfWriter::setPdfVersion(PdfVersion version)
+{
+    Q_D(QPdfWriter);
+
+    if (d->pdfVersion == version)
+        return;
+
+    d->pdfVersion = version;
+    d->engine->setPdfVersion(d->pdfVersion == QPdfWriter::PdfVersion_1_4 ? QPdfEngine::Version_1_4 : QPdfEngine::Version_A1b);
+}
+
+/*!
+    \since 5.10
+
+    Returns the PDF version for this writer. The default is \c PdfVersion_1_4.
+*/
+QPdfWriter::PdfVersion QPdfWriter::pdfVersion() const
+{
+    Q_D(const QPdfWriter);
+    return d->pdfVersion;
 }
 
 /*!

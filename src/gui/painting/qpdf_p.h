@@ -168,6 +168,12 @@ class Q_GUI_EXPORT QPdfEngine : public QPaintEngine
     Q_DECLARE_PRIVATE(QPdfEngine)
     friend class QPdfWriter;
 public:
+    enum PdfVersion
+    {
+        Version_1_4,
+        Version_A1b
+    };
+
     QPdfEngine();
     QPdfEngine(QPdfEnginePrivate &d);
     ~QPdfEngine() {}
@@ -176,6 +182,8 @@ public:
 
     void setResolution(int resolution);
     int resolution() const;
+
+    void setPdfVersion(PdfVersion version);
 
     // reimplementations QPaintEngine
     bool begin(QPaintDevice *pdev) Q_DECL_OVERRIDE;
@@ -258,6 +266,7 @@ public:
     bool hasBrush;
     bool simplePen;
     qreal opacity;
+    QPdfEngine::PdfVersion pdfVersion;
 
     QHash<QFontEngine::FaceId, QFontSubset *> fonts;
 
@@ -286,6 +295,8 @@ private:
     int createShadingFunction(const QGradient *gradient, int from, int to, bool reflect, bool alpha);
 
     void writeInfo();
+    int writeXmpMetaData();
+    int writeOutputIntent();
     void writePageRoot();
     void writeFonts();
     void embedFont(QFontSubset *font);
