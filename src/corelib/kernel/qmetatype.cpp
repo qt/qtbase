@@ -830,38 +830,27 @@ void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
 const char *QMetaType::typeName(int typeId)
 {
     const uint type = typeId;
-    // In theory it can be filled during compilation time, but for some reason template code
-    // that is able to do it causes GCC 4.6 to generate additional 3K of executable code. Probably
-    // it is not worth of it.
-    static const char *namesCache[QMetaType::HighestInternalId + 1];
-
-    const char *result;
-    if (type <= QMetaType::HighestInternalId && ((result = namesCache[type])))
-        return result;
-
 #define QT_METATYPE_TYPEID_TYPENAME_CONVERTER(MetaTypeName, TypeId, RealName) \
-        case QMetaType::MetaTypeName: result = #RealName; break;
+        case QMetaType::MetaTypeName: return #RealName; break;
 
     switch (QMetaType::Type(type)) {
     QT_FOR_EACH_STATIC_TYPE(QT_METATYPE_TYPEID_TYPENAME_CONVERTER)
+    case QMetaType::UnknownType:
+    case QMetaType::User:
+        break;
+    }
 
-    default: {
-        if (Q_UNLIKELY(type < QMetaType::User)) {
-            return 0; // It can happen when someone cast int to QVariant::Type, we should not crash...
-        } else {
-            const QVector<QCustomTypeInfo> * const ct = customTypes();
-            QReadLocker locker(customTypesLock());
-            return ct && uint(ct->count()) > type - QMetaType::User && !ct->at(type - QMetaType::User).typeName.isEmpty()
-                    ? ct->at(type - QMetaType::User).typeName.constData()
-                    : 0;
-        }
+    if (Q_UNLIKELY(type < QMetaType::User)) {
+        return Q_NULLPTR; // It can happen when someone cast int to QVariant::Type, we should not crash...
     }
-    }
+
+    const QVector<QCustomTypeInfo> * const ct = customTypes();
+    QReadLocker locker(customTypesLock());
+    return ct && uint(ct->count()) > type - QMetaType::User && !ct->at(type - QMetaType::User).typeName.isEmpty()
+            ? ct->at(type - QMetaType::User).typeName.constData()
+            : Q_NULLPTR;
+
 #undef QT_METATYPE_TYPEID_TYPENAME_CONVERTER
-
-    Q_ASSERT(type <= QMetaType::HighestInternalId);
-    namesCache[type] = result;
-    return result;
 }
 
 /*!
