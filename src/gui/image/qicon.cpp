@@ -97,7 +97,11 @@ QT_BEGIN_NAMESPACE
   \value On  Display the pixmap when the widget is in an "on" state
 */
 
-static QBasicAtomicInt serialNumCounter = Q_BASIC_ATOMIC_INITIALIZER(1);
+static int nextSerialNumCounter()
+{
+    static QBasicAtomicInt serial;
+    return 1 + serial.fetchAndAddRelaxed(1);
+}
 
 static void qt_cleanup_icon_cache();
 namespace {
@@ -139,7 +143,7 @@ static qreal qt_effective_device_pixel_ratio(QWindow *window = 0)
 
 QIconPrivate::QIconPrivate(QIconEngine *e)
     : engine(e), ref(1),
-    serialNum(serialNumCounter.fetchAndAddRelaxed(1)),
+      serialNum(nextSerialNumCounter()),
     detach_no(0),
     is_mask(false)
 {

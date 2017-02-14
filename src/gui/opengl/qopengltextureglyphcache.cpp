@@ -47,7 +47,11 @@
 QT_BEGIN_NAMESPACE
 
 
-QBasicAtomicInt qopengltextureglyphcache_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
+static int next_qopengltextureglyphcache_serial_number()
+{
+    static QBasicAtomicInt serial;
+    return 1 + serial.fetchAndAddRelaxed(1);
+}
 
 QOpenGLTextureGlyphCache::QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix)
     : QImageTextureGlyphCache(format, matrix)
@@ -55,7 +59,7 @@ QOpenGLTextureGlyphCache::QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat form
     , pex(0)
     , m_blitProgram(0)
     , m_filterMode(Nearest)
-    , m_serialNumber(qopengltextureglyphcache_serial_number.fetchAndAddRelaxed(1))
+    , m_serialNumber(next_qopengltextureglyphcache_serial_number())
     , m_buffer(QOpenGLBuffer::VertexBuffer)
 {
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
