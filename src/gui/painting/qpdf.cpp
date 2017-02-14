@@ -1465,6 +1465,7 @@ void QPdfEnginePrivate::writeHeader()
     addXrefEntry(0,false);
 
     xprintf("%%PDF-1.4\n");
+    xprintf("%%\303\242\303\243\n");
 
     writeInfo();
 
@@ -1597,7 +1598,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
             "/CapHeight " << properties.capHeight.toReal()*scale << "\n"
             "/StemV " << properties.lineWidth.toReal()*scale << "\n"
             "/FontFile2 " << fontstream << "0 R\n"
-            ">> endobj\n";
+            ">>\nendobj\n";
         write(descriptor);
     }
     {
@@ -1615,7 +1616,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
             "stream\n";
         write(header);
         int len = writeCompressed(fontData);
-        write("endstream\n"
+        write("\nendstream\n"
               "endobj\n");
         addXrefEntry(length_object);
         xprintf("%d\n"
@@ -1642,7 +1643,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
         xprintf("<< /Length %d >>\n"
                 "stream\n", touc.length());
         write(touc);
-        write("endstream\n"
+        write("\nendstream\n"
               "endobj\n");
     }
     {
@@ -1748,7 +1749,7 @@ void QPdfEnginePrivate::writePage()
     xprintf("stream\n");
     QIODevice *content = currentPage->stream();
     int len = writeCompressed(content);
-    xprintf("endstream\n"
+    xprintf("\nendstream\n"
             "endobj\n");
 
     addXrefEntry(pageStreamLength);
@@ -1794,7 +1795,13 @@ int QPdfEnginePrivate::addXrefEntry(int object, bool printostr)
     return object;
 }
 
-void QPdfEnginePrivate::printString(const QString &string) {
+void QPdfEnginePrivate::printString(const QString &string)
+{
+    if (string.isEmpty()) {
+        write("()");
+        return;
+    }
+
     // The 'text string' type in PDF is encoded either as PDFDocEncoding, or
     // Unicode UTF-16 with a Unicode byte order mark as the first character
     // (0xfeff), with the high-order byte first.
