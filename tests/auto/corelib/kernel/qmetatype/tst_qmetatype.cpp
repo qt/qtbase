@@ -377,6 +377,8 @@ void tst_QMetaType::typeName_data()
 
     QT_FOR_EACH_STATIC_TYPE(TYPENAME_DATA)
     QTest::newRow("QMetaType::UnknownType") << int(QMetaType::UnknownType) << static_cast<const char*>(0);
+    QTest::newRow("QMetaType::User-1") << (int(QMetaType::User) - 1) << static_cast<const char *>(nullptr);
+    QTest::newRow("QMetaType::FirstWidgetsType-1") << (int(QMetaType::FirstWidgetsType) - 1) << static_cast<const char *>(nullptr);
 
     QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << QString::fromLatin1("Whity<double>");
     QTest::newRow("Whity<int>") << ::qMetaTypeId<Whity<int> >() << QString::fromLatin1("Whity<int>");
@@ -404,10 +406,12 @@ void tst_QMetaType::typeName()
     QFETCH(int, aType);
     QFETCH(QString, aTypeName);
 
-    QString name = QString::fromLatin1(QMetaType::typeName(aType));
+    const char *rawname = QMetaType::typeName(aType);
+    QString name = QString::fromLatin1(rawname);
 
     QCOMPARE(name, aTypeName);
     QCOMPARE(name.toLatin1(), QMetaObject::normalizedType(name.toLatin1().constData()));
+    QCOMPARE(rawname == nullptr, aTypeName.isNull());
 }
 
 void tst_QMetaType::type_data()
