@@ -9191,6 +9191,7 @@ bool QWidget::event(QEvent *event)
             const QWindow *win = te->window;
             d->setWinId((win && win->handle()) ? win->handle()->winId() : 0);
         }
+        d->updateFont(d->data.fnt);
 #ifndef QT_NO_OPENGL
         d->renderToTextureReallyDirty = 1;
 #endif
