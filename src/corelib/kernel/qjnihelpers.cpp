@@ -506,8 +506,10 @@ QHash<QString, QtAndroidPrivate::PermissionsResult> QtAndroidPrivate::requestPer
         *res = result;
         sem->release();
     }, true);
-    sem->tryAcquire(1, timeoutMs);
-    return *res;
+    if (sem->tryAcquire(1, timeoutMs))
+        return std::move(*res);
+    else // mustn't touch *res
+        return QHash<QString, QtAndroidPrivate::PermissionsResult>();
 }
 
 QtAndroidPrivate::PermissionsResult QtAndroidPrivate::checkPermission(const QString &permission)
