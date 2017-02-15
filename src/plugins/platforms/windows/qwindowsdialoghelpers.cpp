@@ -41,6 +41,7 @@
 
 #define _WIN32_WINNT 0x0600
 
+#include "qwindowscombase.h"
 #include "qwindowsdialoghelpers.h"
 
 #include "qwindowscontext.h"
@@ -504,32 +505,10 @@ inline void QWindowsFileDialogSharedData::fromOptions(const QSharedPointer<QFile
 
 class QWindowsNativeFileDialogBase;
 
-class QWindowsNativeFileDialogEventHandler : public IFileDialogEvents
+class QWindowsNativeFileDialogEventHandler : public QWindowsComBase<IFileDialogEvents>
 {
 public:
     static IFileDialogEvents *create(QWindowsNativeFileDialogBase *nativeFileDialog);
-
-    // IUnknown methods
-    IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv)
-    {
-        if (riid != IID_IUnknown && riid != IID_IFileDialogEvents) {
-            *ppv = NULL;
-            return ResultFromScode(E_NOINTERFACE);
-        }
-        *ppv = this;
-        AddRef();
-        return NOERROR;
-    }
-
-    IFACEMETHODIMP_(ULONG) AddRef() { return InterlockedIncrement(&m_ref); }
-
-    IFACEMETHODIMP_(ULONG) Release()
-    {
-        const long ref = InterlockedDecrement(&m_ref);
-        if (!ref)
-            delete this;
-        return ref;
-    }
 
     // IFileDialogEvents methods
     IFACEMETHODIMP OnFileOk(IFileDialog *);
@@ -546,7 +525,6 @@ public:
     virtual ~QWindowsNativeFileDialogEventHandler() {}
 
 private:
-    long m_ref = 1;
     QWindowsNativeFileDialogBase *m_nativeFileDialog;
 };
 

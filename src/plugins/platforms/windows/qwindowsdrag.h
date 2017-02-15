@@ -40,6 +40,7 @@
 #ifndef QWINDOWSDRAG_H
 #define QWINDOWSDRAG_H
 
+#include "qwindowscombase.h"
 #include "qwindowsinternalmimedata.h"
 
 #include <qpa/qplatformdrag.h>
@@ -57,16 +58,11 @@ public:
     IDataObject *retrieveDataObject() const override;
 };
 
-class QWindowsOleDropTarget : public IDropTarget
+class QWindowsOleDropTarget : public QWindowsComBase<IDropTarget>
 {
 public:
     explicit QWindowsOleDropTarget(QWindow *w);
     virtual ~QWindowsOleDropTarget();
-
-    // IUnknown methods
-    STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-    STDMETHOD_(ULONG, AddRef)(void);
-    STDMETHOD_(ULONG, Release)(void);
 
     // IDropTarget methods
     STDMETHOD(DragEnter)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
@@ -77,7 +73,6 @@ public:
 private:
     void handleDrag(QWindow *window, DWORD grfKeyState, const QPoint &, LPDWORD pdwEffect);
 
-    ULONG m_refs = 1;
     QWindow *const m_window;
     QRect m_answerRect;
     QPoint m_lastPoint;

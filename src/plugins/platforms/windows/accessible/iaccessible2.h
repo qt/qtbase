@@ -42,6 +42,7 @@
 #include <QtCore/QtConfig>
 #ifndef QT_NO_ACCESSIBILITY
 
+#include "qwindowscombase.h"
 #include "qwindowsmsaaaccessible.h"
 #include "comutils.h"
 
@@ -258,28 +259,18 @@ private:
 /**************************************************************\
  *                     AccessibleApplication                  *
  **************************************************************/
-class AccessibleApplication : public IAccessibleApplication
+class AccessibleApplication : public QWindowsComBase<IAccessibleApplication>
 {
 public:
-    AccessibleApplication() : m_ref(1)
-    {
-
-    }
+    AccessibleApplication() {}
 
     virtual ~AccessibleApplication() {}
-
-    /* IUnknown */
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID, LPVOID *);
-    ULONG STDMETHODCALLTYPE AddRef();
-    ULONG STDMETHODCALLTYPE Release();
 
     /* IAccessibleApplication */
     HRESULT STDMETHODCALLTYPE get_appName(/* [retval][out] */ BSTR *name);
     HRESULT STDMETHODCALLTYPE get_appVersion(/* [retval][out] */ BSTR *version);
     HRESULT STDMETHODCALLTYPE get_toolkitName(/* [retval][out] */ BSTR *name);
     HRESULT STDMETHODCALLTYPE get_toolkitVersion(/* [retval][out] */ BSTR *version);
-private:
-    ULONG m_ref;
 };
 
 
@@ -287,18 +278,13 @@ private:
 /**************************************************************\
  *                     AccessibleRelation                      *
  **************************************************************/
-class AccessibleRelation : public IAccessibleRelation
+class AccessibleRelation : public QWindowsComBase<IAccessibleRelation>
 {
 public:
     AccessibleRelation(const QList<QAccessibleInterface *> &targets,
                        QAccessible::Relation relation);
 
     virtual ~AccessibleRelation() {}
-
-    /* IUnknown */
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface);
-    ULONG STDMETHODCALLTYPE AddRef();
-    ULONG STDMETHODCALLTYPE Release();
 
     /* IAccessibleRelation */
     HRESULT STDMETHODCALLTYPE get_relationType(BSTR *relationType);
@@ -341,7 +327,6 @@ private:
 
     QList<QAccessibleInterface *> m_targets;
     QAccessible::Relation m_relation;
-    ULONG m_ref;
 };
 
 QT_END_NAMESPACE

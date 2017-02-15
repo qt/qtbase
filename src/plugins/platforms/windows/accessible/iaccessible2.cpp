@@ -61,40 +61,7 @@ static inline T *coTaskMemAllocArray(int size)
 /**************************************************************\
  *                     AccessibleApplication                  *
  **************************************************************/
-//  IUnknown
-HRESULT STDMETHODCALLTYPE AccessibleApplication::QueryInterface(REFIID id, LPVOID *iface)
-{
-    *iface = 0;
-    if (id == IID_IUnknown) {
-        qCDebug(lcQpaAccessibility) << "AccessibleApplication::QI(): IID_IUnknown";
-        *iface = static_cast<IUnknown *>(this);
-    } else if (id == IID_IAccessibleApplication) {
-        qCDebug(lcQpaAccessibility) << "AccessibleApplication::QI(): IID_IAccessibleApplication";
-        *iface = static_cast<IAccessibleApplication*>(this);
-    }
 
-    if (*iface) {
-        AddRef();
-        return S_OK;
-    }
-    return E_NOINTERFACE;
-}
-
-ULONG STDMETHODCALLTYPE AccessibleApplication::AddRef()
-{
-    return ++m_ref;
-}
-
-ULONG STDMETHODCALLTYPE AccessibleApplication::Release()
-{
-    if (!--m_ref) {
-        delete this;
-        return 0;
-    }
-    return m_ref;
-}
-
-/* IAccessibleApplication */
 HRESULT STDMETHODCALLTYPE AccessibleApplication::get_appName(/* [retval][out] */ BSTR *name)
 {
     const QString appName = QGuiApplication::applicationName();
@@ -127,38 +94,9 @@ HRESULT STDMETHODCALLTYPE AccessibleApplication::get_toolkitVersion(/* [retval][
  **************************************************************/
 AccessibleRelation::AccessibleRelation(const QList<QAccessibleInterface *> &targets,
                     QAccessible::Relation relation)
-    : m_targets(targets), m_relation(relation), m_ref(1)
+    : m_targets(targets), m_relation(relation)
 {
     Q_ASSERT(m_targets.count());
-}
-
-/* IUnknown */
-HRESULT STDMETHODCALLTYPE AccessibleRelation::QueryInterface(REFIID id, LPVOID *iface)
-{
-    *iface = 0;
-    if (id == IID_IUnknown || id == IID_IAccessibleRelation)
-        *iface = static_cast<IUnknown *>(this);
-
-    if (*iface) {
-        AddRef();
-        return S_OK;
-    }
-
-    return E_NOINTERFACE;
-}
-
-ULONG STDMETHODCALLTYPE AccessibleRelation::AddRef()
-{
-    return ++m_ref;
-}
-
-ULONG STDMETHODCALLTYPE AccessibleRelation::Release()
-{
-    if (!--m_ref) {
-        delete this;
-        return 0;
-    }
-    return m_ref;
 }
 
 /* IAccessibleRelation */
@@ -237,56 +175,53 @@ HRESULT STDMETHODCALLTYPE AccessibleRelation::get_targets(
  **************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryInterface(REFIID id, LPVOID *iface)
 {
+    *iface = nullptr;
     QAccessibleInterface *accessible = accessibleInterface();
     if (!accessible)
         return E_NOINTERFACE;
 
-    HRESULT hr = QWindowsMsaaAccessible::QueryInterface(id, iface);
-    if (!SUCCEEDED(hr)) {
-        if (id == IID_IServiceProvider) {
-            *iface = static_cast<IServiceProvider *>(this);
-        } else if (id == IID_IAccessible2) {
-            *iface = static_cast<IAccessible2 *>(this);
-        } else if (id == IID_IAccessibleAction) {
-            if (accessible->actionInterface())
-                *iface = static_cast<IAccessibleAction *>(this);
-        } else if (id == IID_IAccessibleComponent) {
-            *iface = static_cast<IAccessibleComponent *>(this);
-        } else if (id == IID_IAccessibleEditableText) {
-            if (accessible->editableTextInterface() ||
-                accessible->role() == QAccessible::EditableText)
-            {
-                *iface = static_cast<IAccessibleEditableText *>(this);
-            }
-        } else if (id == IID_IAccessibleHyperlink) {
-            //*iface = static_cast<IAccessibleHyperlink *>(this);
-        } else if (id == IID_IAccessibleHypertext) {
-            //*iface = static_cast<IAccessibleHypertext *>(this);
-        } else if (id == IID_IAccessibleImage) {
-            //*iface = static_cast<IAccessibleImage *>(this);
-        } else if (id == IID_IAccessibleTable) {
-            //*iface = static_cast<IAccessibleTable *>(this); // not supported
-        } else if (id == IID_IAccessibleTable2) {
-            if (accessible->tableInterface())
-                *iface = static_cast<IAccessibleTable2 *>(this);
-        } else if (id == IID_IAccessibleTableCell) {
-            if (accessible->tableCellInterface())
-                *iface = static_cast<IAccessibleTableCell *>(this);
-        } else if (id == IID_IAccessibleText) {
-            if (accessible->textInterface())
-                *iface = static_cast<IAccessibleText *>(this);
-        } else if (id == IID_IAccessibleValue) {
-            if (accessible->valueInterface())
-                *iface = static_cast<IAccessibleValue *>(this);
-        }
-        if (*iface) {
-            AddRef();
-            hr = S_OK;
-        } else {
-            hr = E_NOINTERFACE;
-        }
+    if (SUCCEEDED(QWindowsMsaaAccessible::QueryInterface(id, iface))
+        || qWindowsComQueryInterface<IServiceProvider>(this, id, iface)
+        || qWindowsComQueryInterface<IAccessible2>(this, id, iface)
+        || qWindowsComQueryInterface<IAccessibleComponent>(this, id, iface)) {
+        return S_OK;
     }
-    return hr;
+
+    if (id == IID_IAccessibleAction) {
+        if (accessible->actionInterface())
+            *iface = static_cast<IAccessibleAction *>(this);
+    } else if (id == IID_IAccessibleEditableText) {
+        if (accessible->editableTextInterface() ||
+            accessible->role() == QAccessible::EditableText)
+        {
+            *iface = static_cast<IAccessibleEditableText *>(this);
+        }
+    } else if (id == IID_IAccessibleHyperlink) {
+        //*iface = static_cast<IAccessibleHyperlink *>(this);
+    } else if (id == IID_IAccessibleHypertext) {
+        //*iface = static_cast<IAccessibleHypertext *>(this);
+    } else if (id == IID_IAccessibleImage) {
+        //*iface = static_cast<IAccessibleImage *>(this);
+    } else if (id == IID_IAccessibleTable) {
+        //*iface = static_cast<IAccessibleTable *>(this); // not supported
+    } else if (id == IID_IAccessibleTable2) {
+        if (accessible->tableInterface())
+            *iface = static_cast<IAccessibleTable2 *>(this);
+    } else if (id == IID_IAccessibleTableCell) {
+        if (accessible->tableCellInterface())
+            *iface = static_cast<IAccessibleTableCell *>(this);
+    } else if (id == IID_IAccessibleText) {
+        if (accessible->textInterface())
+            *iface = static_cast<IAccessibleText *>(this);
+    } else if (id == IID_IAccessibleValue) {
+        if (accessible->valueInterface())
+            *iface = static_cast<IAccessibleValue *>(this);
+    }
+    if (*iface) {
+        AddRef();
+        return S_OK;
+    }
+    return E_NOINTERFACE;
 }
 
 

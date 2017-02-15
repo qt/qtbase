@@ -215,7 +215,7 @@ static inline Qt::MouseButtons toQtMouseButtons(DWORD keyState)
     \ingroup qt-lighthouse-win
 */
 
-class QWindowsOleDropSource : public IDropSource
+class QWindowsOleDropSource : public QWindowsComBase<IDropSource>
 {
 public:
     enum Mode {
@@ -227,11 +227,6 @@ public:
     virtual ~QWindowsOleDropSource();
 
     void createCursors();
-
-    // IUnknown methods
-    STDMETHOD(QueryInterface)(REFIID riid, void ** ppvObj);
-    STDMETHOD_(ULONG,AddRef)(void);
-    STDMETHOD_(ULONG,Release)(void);
 
     // IDropSource methods
     STDMETHOD(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState);
@@ -257,7 +252,6 @@ private:
     ActionCursorMap m_cursors;
     QWindowsDragCursorWindow *m_touchDragWindow;
 
-    ULONG m_refs;
 #ifndef QT_NO_DEBUG_STREAM
     friend QDebug operator<<(QDebug, const QWindowsOleDropSource::CursorEntry &);
 #endif
@@ -268,7 +262,6 @@ QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag)
     , m_drag(drag)
     , m_currentButtons(Qt::NoButton)
     , m_touchDragWindow(0)
-    , m_refs(1)
 {
     qCDebug(lcQpaMime) << __FUNCTION__ << m_mode;
 }
@@ -373,38 +366,6 @@ void QWindowsOleDropSource::createCursors()
 #endif // !QT_NO_DEBUG_OUTPUT
 }
 
-//---------------------------------------------------------------------
-//                    IUnknown Methods
-//---------------------------------------------------------------------
-
-STDMETHODIMP
-QWindowsOleDropSource::QueryInterface(REFIID iid, void FAR* FAR* ppv)
-{
-    if (iid == IID_IUnknown || iid == IID_IDropSource) {
-      *ppv = this;
-      ++m_refs;
-      return NOERROR;
-    }
-    *ppv = NULL;
-    return ResultFromScode(E_NOINTERFACE);
-}
-
-STDMETHODIMP_(ULONG)
-QWindowsOleDropSource::AddRef(void)
-{
-    return ++m_refs;
-}
-
-STDMETHODIMP_(ULONG)
-QWindowsOleDropSource::Release(void)
-{
-    if (--m_refs == 0) {
-      delete this;
-      return 0;
-    }
-    return m_refs;
-}
-
 /*!
     \brief Check for cancel.
 */
@@ -502,34 +463,6 @@ QWindowsOleDropTarget::QWindowsOleDropTarget(QWindow *w) : m_window(w)
 QWindowsOleDropTarget::~QWindowsOleDropTarget()
 {
     qCDebug(lcQpaMime) << __FUNCTION__ <<  this;
-}
-
-STDMETHODIMP
-QWindowsOleDropTarget::QueryInterface(REFIID iid, void FAR* FAR* ppv)
-{
-    if (iid == IID_IUnknown || iid == IID_IDropTarget) {
-      *ppv = this;
-      AddRef();
-      return NOERROR;
-    }
-    *ppv = NULL;
-    return ResultFromScode(E_NOINTERFACE);
-}
-
-STDMETHODIMP_(ULONG)
-QWindowsOleDropTarget::AddRef(void)
-{
-    return ++m_refs;
-}
-
-STDMETHODIMP_(ULONG)
-QWindowsOleDropTarget::Release(void)
-{
-    if (--m_refs == 0) {
-      delete this;
-      return 0;
-    }
-    return m_refs;
 }
 
 void QWindowsOleDropTarget::handleDrag(QWindow *window, DWORD grfKeyState,

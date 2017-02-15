@@ -72,13 +72,14 @@ QWindow *window_helper(const QAccessibleInterface *iface);
 /**************************************************************\
  *                     QWindowsAccessible                     *
  **************************************************************/
-class QWindowsMsaaAccessible : public
-#ifdef Q_CC_MINGW
-        IAccessible
+
+#ifndef Q_CC_MINGW
+typedef IAccessible2 AccessibleBase;
 #else
-        IAccessible2
+typedef IAccessible AccessibleBase;
 #endif
-        , public IOleWindow
+
+class QWindowsMsaaAccessible : public AccessibleBase, public IOleWindow
 {
 public:
     QWindowsMsaaAccessible(QAccessibleInterface *a)

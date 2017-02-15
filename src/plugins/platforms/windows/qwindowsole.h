@@ -40,6 +40,7 @@
 #ifndef QWINDOWSOLE_H
 #define QWINDOWSOLE_H
 
+#include "qwindowscombase.h"
 #include <QtCore/qt_windows.h>
 
 #include <QtCore/QMap>
@@ -53,7 +54,7 @@ QT_BEGIN_NAMESPACE
 class QMimeData;
 class QWindow;
 
-class QWindowsOleDataObject : public IDataObject
+class QWindowsOleDataObject : public QWindowsComBase<IDataObject>
 {
 public:
     explicit QWindowsOleDataObject(QMimeData *mimeData);
@@ -62,11 +63,6 @@ public:
     void releaseQt();
     QMimeData *mimeData() const;
     DWORD reportedPerformedEffect() const;
-
-    // IUnknown methods
-    STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-    STDMETHOD_(ULONG,AddRef)(void);
-    STDMETHOD_(ULONG,Release)(void);
 
     // IDataObject methods
     STDMETHOD(GetData)(LPFORMATETC pformatetcIn, LPSTGMEDIUM pmedium);
@@ -82,13 +78,12 @@ public:
     STDMETHOD(EnumDAdvise)(LPENUMSTATDATA FAR* ppenumAdvise);
 
 private:
-    ULONG m_refs = 1;
     QPointer<QMimeData> data;
     const int CF_PERFORMEDDROPEFFECT;
     DWORD performedEffect = DROPEFFECT_NONE;
 };
 
-class QWindowsOleEnumFmtEtc : public IEnumFORMATETC
+class QWindowsOleEnumFmtEtc : public QWindowsComBase<IEnumFORMATETC>
 {
 public:
     explicit QWindowsOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs);
@@ -96,11 +91,6 @@ public:
     virtual ~QWindowsOleEnumFmtEtc();
 
     bool isNull() const;
-
-    // IUnknown methods
-    STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-    STDMETHOD_(ULONG,AddRef)(void);
-    STDMETHOD_(ULONG,Release)(void);
 
     // IEnumFORMATETC methods
     STDMETHOD(Next)(ULONG celt, LPFORMATETC rgelt, ULONG FAR* pceltFetched);
@@ -111,7 +101,6 @@ public:
 private:
     bool copyFormatEtc(LPFORMATETC dest, const FORMATETC *src) const;
 
-    ULONG m_dwRefs = 1;
     ULONG m_nIndex = 0;
     QVector<LPFORMATETC> m_lpfmtetcs;
     bool m_isNull = false;

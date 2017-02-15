@@ -42,6 +42,7 @@
 
 #include "qwindowsmsaaaccessible.h"
 #include "qwindowsaccessibility.h"
+#include "qwindowscombase.h"
 #include <oleacc.h>
 #include <servprov.h>
 #include <winuser.h>
@@ -71,19 +72,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsEnumerate : public IEnumVARIANT
+class QWindowsEnumerate : public QWindowsComBase<IEnumVARIANT>
 {
 public:
-    QWindowsEnumerate(const QVector<int> &a)
-        : ref(0), current(0),array(a)
-    {
-    }
-
+    QWindowsEnumerate(const QVector<int> &a) : QWindowsComBase<IEnumVARIANT>(0), current(0),array(a) {}
     virtual ~QWindowsEnumerate() {}
-
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID, LPVOID *);
-    ULONG STDMETHODCALLTYPE AddRef();
-    ULONG STDMETHODCALLTYPE Release();
 
     HRESULT STDMETHODCALLTYPE Clone(IEnumVARIANT **ppEnum);
     HRESULT STDMETHODCALLTYPE Next(unsigned long  celt, VARIANT FAR*  rgVar, unsigned long FAR*  pCeltFetched);
@@ -91,40 +84,9 @@ public:
     HRESULT STDMETHODCALLTYPE Skip(unsigned long celt);
 
 private:
-    ULONG ref;
     ULONG current;
     QVector<int> array;
 };
-
-HRESULT STDMETHODCALLTYPE QWindowsEnumerate::QueryInterface(REFIID id, LPVOID *iface)
-{
-    *iface = 0;
-    if (id == IID_IUnknown)
-        *iface = static_cast<IUnknown *>(this);
-    else if (id == IID_IEnumVARIANT)
-        *iface = static_cast<IEnumVARIANT *>(this);
-
-    if (*iface) {
-        AddRef();
-        return S_OK;
-    }
-
-    return E_NOINTERFACE;
-}
-
-ULONG STDMETHODCALLTYPE QWindowsEnumerate::AddRef()
-{
-    return ++ref;
-}
-
-ULONG STDMETHODCALLTYPE QWindowsEnumerate::Release()
-{
-    if (!--ref) {
-        delete this;
-        return 0;
-    }
-    return ref;
-}
 
 HRESULT STDMETHODCALLTYPE QWindowsEnumerate::Clone(IEnumVARIANT **ppEnum)
 {
@@ -193,29 +155,17 @@ void accessibleDebugClientCalls_helper(const char* funcName, const QAccessibleIn
  **************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::QueryInterface(REFIID id, LPVOID *iface)
 {
-    *iface = 0;
+    *iface = nullptr;
+    const bool result = qWindowsComQueryUnknownInterfaceMulti<AccessibleBase>(this, id, iface)
+        || qWindowsComQueryInterface<IDispatch>(this, id, iface)
+        || qWindowsComQueryInterface<IAccessible>(this, id, iface)
+        || qWindowsComQueryInterface<IOleWindow>(this, id, iface);
 
-    QByteArray strIID = IIDToString(id);
-    if (!strIID.isEmpty()) {
+    if (result) {
         qCDebug(lcQpaAccessibility) << "QWindowsIA2Accessible::QI() - IID:"
-                                    << strIID << ", iface:" << accessibleInterface();
+            << IIDToString(id) << ", iface:" << accessibleInterface();
     }
-    if (id == IID_IUnknown) {
-        *iface =  static_cast<IUnknown *>(static_cast<IDispatch *>(this));
-    } else if (id == IID_IDispatch) {
-        *iface = static_cast<IDispatch *>(this);
-    } else if (id == IID_IAccessible) {
-        *iface = static_cast<IAccessible *>(this);
-    } else if (id == IID_IOleWindow) {
-        *iface = static_cast<IOleWindow *>(this);
-    }
-
-    if (*iface) {
-        AddRef();
-        return S_OK;
-    }
-
-    return E_NOINTERFACE;
+    return result ? S_OK : E_NOINTERFACE;
 }
 
 ULONG STDMETHODCALLTYPE QWindowsMsaaAccessible::AddRef()

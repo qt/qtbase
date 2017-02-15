@@ -29,6 +29,7 @@ SOURCES += \
     $$PWD/qwin10helpers.cpp
 
 HEADERS += \
+    $$PWD/qwindowscombase.h \
     $$PWD/qwindowswindow.h \
     $$PWD/qwindowsintegration.h \
     $$PWD/qwindowscontext.h \
