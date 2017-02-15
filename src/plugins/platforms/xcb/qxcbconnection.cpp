@@ -631,7 +631,8 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeXRender();
 #if defined(XCB_USE_XINPUT2)
     m_xi2Enabled = false;
-    initializeXInput2();
+    if (!qEnvironmentVariableIsSet("QT_XCB_NO_XI2"))
+        initializeXInput2();
 #endif
     initializeXShape();
     initializeXKB();
