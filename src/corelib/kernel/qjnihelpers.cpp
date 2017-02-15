@@ -61,7 +61,7 @@ static jclass g_jNativeClass = Q_NULLPTR;
 static jmethodID g_runPendingCppRunnablesMethodID = Q_NULLPTR;
 static jmethodID g_hideSplashScreenMethodID = Q_NULLPTR;
 Q_GLOBAL_STATIC(std::deque<QtAndroidPrivate::Runnable>, g_pendingRunnables);
-QBasicMutex g_pendingRunnablesMutex;
+static QBasicMutex g_pendingRunnablesMutex;
 
 class PermissionsResultClass : public QObject
 {
@@ -76,7 +76,7 @@ private:
 
 typedef QHash<int, QSharedPointer<PermissionsResultClass>> PendingPermissionRequestsHash;
 Q_GLOBAL_STATIC(PendingPermissionRequestsHash, g_pendingPermissionRequests);
-QBasicMutex g_pendingPermissionRequestsMutex;
+static QBasicMutex g_pendingPermissionRequestsMutex;
 static int nextRequestCode()
 {
     static QBasicAtomicInt counter;
