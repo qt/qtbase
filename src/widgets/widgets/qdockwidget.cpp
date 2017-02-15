@@ -930,7 +930,9 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
     }
 
     if (state->dragging && !state->nca) {
-        QPoint pos = event->globalPos() - state->pressPos;
+        QMargins windowMargins = q->window()->windowHandle()->frameMargins();
+        QPoint windowMarginOffset = QPoint(windowMargins.left(), windowMargins.top());
+        QPoint pos = event->globalPos() - state->pressPos - windowMarginOffset;
 
         QDockWidgetGroupWindow *floatingTab = qobject_cast<QDockWidgetGroupWindow*>(parent);
         if (floatingTab && !q->isFloating())
