@@ -58,7 +58,7 @@ namespace QTest
     {
         Q_ASSERT(QCoreApplication::instance());
 
-        QDeadlineTimer timer(ms);
+        QDeadlineTimer timer(ms, Qt::PreciseTimer);
         int remaining = ms;
         do {
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
@@ -74,7 +74,7 @@ namespace QTest
 #ifdef QT_GUI_LIB
     inline static bool qWaitForWindowActive(QWindow *window, int timeout = 5000)
     {
-        QDeadlineTimer timer(timeout);
+        QDeadlineTimer timer(timeout, Qt::PreciseTimer);
         int remaining = timeout;
         while (!window->isActive() && remaining > 0) {
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
@@ -101,7 +101,7 @@ namespace QTest
 
     inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 5000)
     {
-        QDeadlineTimer timer(timeout);
+        QDeadlineTimer timer(timeout, Qt::PreciseTimer);
         int remaining = timeout;
         while (!window->isExposed() && remaining > 0) {
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
