@@ -493,7 +493,7 @@ static QString quoteNewline(const QString &s)
 
 QTextHtmlParserNode::QTextHtmlParserNode()
     : parent(0), id(Html_unknown),
-      cssFloat(QTextFrameFormat::InFlow), hasOwnListStyle(false), hasOwnLineHeightType(false),
+      cssFloat(QTextFrameFormat::InFlow), hasOwnListStyle(false), hasOwnLineHeightType(false), hasLineHeightMultiplier(false),
       hasCssListIndent(false), isEmptyParagraph(false), isTextFrame(false), isRootFrame(false),
       displayMode(QTextHtmlElement::DisplayInline), hasHref(false),
       listStyle(QTextListFormat::ListStyleUndefined), imageWidth(-1), imageHeight(-1), tableBorder(0),
@@ -1216,6 +1216,11 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
             else
                 lineHeightType = QTextBlockFormat::SingleHeight;
 
+            if (hasLineHeightMultiplier) {
+                qreal lineHeight = blockFormat.lineHeight() / 100.0;
+                blockFormat.setProperty(QTextBlockFormat::LineHeight, lineHeight);
+            }
+
             blockFormat.setProperty(QTextBlockFormat::LineHeightType, lineHeightType);
             hasOwnLineHeightType = true;
         }
@@ -1227,9 +1232,14 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
                 lineHeightType = QTextBlockFormat::MinimumHeight;
             } else {
                 bool ok;
-                QString value = decl.d->values.first().toString();
+                QCss::Value cssValue = decl.d->values.first();
+                QString value = cssValue.toString();
                 lineHeight = value.toDouble(&ok);
                 if (ok) {
+                    if (!hasOwnLineHeightType && cssValue.type == QCss::Value::Number) {
+                        lineHeight *= 100.0;
+                        hasLineHeightMultiplier = true;
+                    }
                     lineHeightType = QTextBlockFormat::ProportionalHeight;
                 } else {
                     lineHeight = 0.0;

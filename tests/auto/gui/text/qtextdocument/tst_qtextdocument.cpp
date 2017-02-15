@@ -187,6 +187,7 @@ private slots:
     void cssInheritance();
 
     void lineHeightType();
+    void cssLineHeightMultiplier();
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -3398,6 +3399,33 @@ void tst_QTextDocument::lineHeightType()
 
     {
         QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">body { -qt-line-height-type: fixed; line-height: 10; -qt-line-height-type: fixed; }</style></head><body>Foobar</body></html>");
+        QTextBlock block = td.begin();
+        QTextBlockFormat format = block.blockFormat();
+        QCOMPARE(int(format.lineHeightType()), int(QTextBlockFormat::FixedHeight));
+        QCOMPARE(format.lineHeight(), 10.0);
+    }
+
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">body { -qt-line-height-type: proportional; line-height: 3; }</style></head><body>Foobar</body></html>");
+        QTextBlock block = td.begin();
+        QTextBlockFormat format = block.blockFormat();
+        QCOMPARE(int(format.lineHeightType()), int(QTextBlockFormat::ProportionalHeight));
+        QCOMPARE(format.lineHeight(), 3.0);
+    }
+
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">body { line-height: 2.5; -qt-line-height-type: proportional; }</style></head><body>Foobar</body></html>");
+        QTextBlock block = td.begin();
+        QTextBlockFormat format = block.blockFormat();
+        QCOMPARE(int(format.lineHeightType()), int(QTextBlockFormat::ProportionalHeight));
+        QCOMPARE(format.lineHeight(), 2.5);
+    }
+
+    {
+        QTextDocument td;
         td.setHtml("<html><head><style type=\"text/css\">body { line-height: 33; -qt-line-height-type: minimum; }</style></head><body>Foobar</body></html>");
         QTextBlock block = td.begin();
         QTextBlockFormat format = block.blockFormat();
@@ -3421,6 +3449,27 @@ void tst_QTextDocument::lineHeightType()
         QTextBlockFormat format = block.blockFormat();
         QCOMPARE(int(format.lineHeightType()), int(QTextBlockFormat::FixedHeight));
         QCOMPARE(format.lineHeight(), 200.0);
+    }
+}
+
+void tst_QTextDocument::cssLineHeightMultiplier()
+{
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">body { line-height: 10; }</style></head><body>Foobar</body></html>");
+        QTextBlock block = td.begin();
+        QTextBlockFormat format = block.blockFormat();
+        QCOMPARE(int(format.lineHeightType()), int(QTextBlockFormat::ProportionalHeight));
+        QCOMPARE(format.lineHeight(), 1000.0);
+    }
+
+    {
+        QTextDocument td;
+        td.setHtml("<html><head><style type=\"text/css\">body {line-height: 1.38; }</style></head><body>Foobar</body></html>");
+        QTextBlock block = td.begin();
+        QTextBlockFormat format = block.blockFormat();
+        QCOMPARE(int(format.lineHeightType()), int(QTextBlockFormat::ProportionalHeight));
+        QCOMPARE(format.lineHeight(), 138.0);
     }
 }
 
