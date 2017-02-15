@@ -659,7 +659,7 @@ void QFileDialogPrivate::retranslateStrings()
     /* WIDGETS */
     if (defaultFileTypes)
         q->setNameFilter(QFileDialog::tr("All Files (*)"));
-    if (nativeDialogInUse)
+    if (!usingWidgets())
         return;
 
     QList<QAction*> actions = qFileDialogUi->treeView->header()->actions();
