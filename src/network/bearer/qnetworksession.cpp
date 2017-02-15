@@ -252,6 +252,10 @@ QT_BEGIN_NAMESPACE
 QNetworkSession::QNetworkSession(const QNetworkConfiguration &connectionConfig, QObject *parent)
     : QObject(parent), d(0)
 {
+    qRegisterMetaType<QNetworkSession::State>();
+    qRegisterMetaType<QNetworkSession::SessionError>();
+    qRegisterMetaType<QNetworkSession::UsagePolicies>();
+
     // invalid configuration
     if (!connectionConfig.identifier().isEmpty()) {
         const auto engines = qNetworkConfigurationManagerPrivate()->engines();
@@ -277,10 +281,6 @@ QNetworkSession::QNetworkSession(const QNetworkConfiguration &connectionConfig, 
             }
         }
     }
-
-    qRegisterMetaType<QNetworkSession::State>();
-    qRegisterMetaType<QNetworkSession::SessionError>();
-    qRegisterMetaType<QNetworkSession::UsagePolicies>();
 }
 
 /*!
