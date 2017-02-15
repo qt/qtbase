@@ -143,21 +143,17 @@ public:
     }
     bool operator==(const QArgumentType &other) const
     {
-        if (_type)
+        if (_type && other._type)
             return _type == other._type;
-        else if (other._type)
-            return false;
         else
-            return _name == other._name;
+            return name() == other.name();
     }
     bool operator!=(const QArgumentType &other) const
     {
-        if (_type)
+        if (_type && other._type)
             return _type != other._type;
-        else if (other._type)
-            return true;
         else
-            return _name != other._name;
+            return name() != other.name();
     }
 
 private:
