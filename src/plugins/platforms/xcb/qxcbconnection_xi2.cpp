@@ -208,6 +208,8 @@ void QXcbConnection::xi2SetupDevices()
             isTablet = true;
             tabletData.pointerType = QTabletEvent::Cursor;
             dbgType = QLatin1String("cursor");
+        } else if (name.contains("wacom") && name.contains("finger touch")) {
+            isTablet = false;
         } else if ((name.contains("pen") || name.contains("stylus")) && isTablet) {
             tabletData.pointerType = QTabletEvent::Pen;
             dbgType = QLatin1String("pen");
