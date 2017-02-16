@@ -95,7 +95,6 @@ public:
     virtual ~QPlatformDrag();
 
     QDrag *currentDrag() const;
-    virtual QMimeData *platformDropData() = 0;
 
     virtual Qt::DropAction drag(QDrag *m_drag) = 0;
     virtual void cancelDrag();

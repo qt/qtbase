@@ -134,7 +134,6 @@ public:
     QObject *source() const;
 
 private:
-    QMimeData *m_platformDropData;
     QObject *m_currentDropTarget;
     QPlatformDrag *m_platformDrag;
     QDrag *m_object;

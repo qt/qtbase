@@ -91,7 +91,6 @@ public:
     virtual ~QWinRTDrag();
     static QWinRTDrag *instance();
 
-    QMimeData *platformDropData(void) override;
     Qt::DropAction drag(QDrag *) override;
 
     void setDropTarget(QWindow *target);

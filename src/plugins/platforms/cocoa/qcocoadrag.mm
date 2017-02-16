@@ -68,7 +68,7 @@ void QCocoaDrag::setLastMouseEvent(NSEvent *event, NSView *view)
     m_lastView = view;
 }
 
-QMimeData *QCocoaDrag::platformDropData()
+QMimeData *QCocoaDrag::dragMimeData()
 {
     if (m_drag)
         return m_drag->mimeData();

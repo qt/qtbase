@@ -71,14 +71,11 @@ QDragManager *QDragManager::m_instance = 0;
 
 
 QDragManager::QDragManager()
-    : QObject(qApp), m_platformDropData(0), m_currentDropTarget(0),
+    : QObject(qApp), m_currentDropTarget(0),
       m_platformDrag(QGuiApplicationPrivate::platformIntegration()->drag()),
       m_object(0)
 {
     Q_ASSERT(!m_instance);
-
-    if (m_platformDrag)
-        m_platformDropData = m_platformDrag->platformDropData();
 }
 
 

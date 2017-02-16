@@ -75,7 +75,6 @@ public:
 class QOffscreenDrag : public QPlatformDrag
 {
 public:
-    QMimeData *platformDropData() Q_DECL_OVERRIDE { return 0; }
     Qt::DropAction drag(QDrag *) Q_DECL_OVERRIDE { return Qt::IgnoreAction; }
 };
 #endif

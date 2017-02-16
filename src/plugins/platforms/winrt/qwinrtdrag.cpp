@@ -768,12 +768,6 @@ void QWinRTDrag::setDropTarget(QWindow *target)
     m_dragTarget = target;
 }
 
-QMimeData *QWinRTDrag::platformDropData()
-{
-    qCDebug(lcQpaMime) << __FUNCTION__;
-    return m_mimeData;
-}
-
 void QWinRTDrag::setUiElement(ComPtr<ABI::Windows::UI::Xaml::IUIElement> &element)
 {
     qCDebug(lcQpaMime) << __FUNCTION__;

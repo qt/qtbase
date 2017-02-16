@@ -137,7 +137,7 @@ protected:
 
 QXcbDrag::QXcbDrag(QXcbConnection *c) : QXcbObject(c)
 {
-    dropData = new QXcbDropData(this);
+    m_dropData = new QXcbDropData(this);
 
     init();
     cleanup_timer = -1;
@@ -145,7 +145,7 @@ QXcbDrag::QXcbDrag(QXcbConnection *c) : QXcbObject(c)
 
 QXcbDrag::~QXcbDrag()
 {
-    delete dropData;
+    delete m_dropData;
 }
 
 void QXcbDrag::init()
@@ -165,11 +165,6 @@ void QXcbDrag::init()
 
     QXcbCursor::queryPointer(connection(), &current_virtual_desktop, 0);
     drag_types.clear();
-}
-
-QMimeData *QXcbDrag::platformDropData()
-{
-    return dropData;
 }
 
 bool QXcbDrag::eventFilter(QObject *o, QEvent *e)
@@ -737,7 +732,7 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
         dropData = currentDrag()->mimeData();
         supported_actions = currentDrag()->supportedActions();
     } else {
-        dropData = platformDropData();
+        dropData = m_dropData;
         supported_actions = Qt::DropActions(toDropAction(e->data.data32[4]));
     }
 
@@ -958,7 +953,7 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
         dropData = currentDrag()->mimeData();
         supported_drop_actions = Qt::DropActions(l[4]);
     } else {
-        dropData = platformDropData();
+        dropData = m_dropData;
         supported_drop_actions = accepted_drop_action;
 
         // Drop coming from another app? Update keyboard modifiers.

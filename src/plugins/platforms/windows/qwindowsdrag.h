@@ -86,8 +86,6 @@ public:
     QWindowsDrag();
     virtual ~QWindowsDrag();
 
-    QMimeData *platformDropData() override { return &m_dropData; }
-
     Qt::DropAction drag(QDrag *drag) override;
 
     static QWindowsDrag *instance();

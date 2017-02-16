@@ -74,7 +74,6 @@ public:
     QXcbDrag(QXcbConnection *c);
     ~QXcbDrag();
 
-    QMimeData *platformDropData() override;
     bool eventFilter(QObject *o, QEvent *e) override;
 
     void startDrag() override;
@@ -117,7 +116,7 @@ private:
     QPointer<QWindow> currentWindow;
     QPoint currentPosition;
 
-    QXcbDropData *dropData;
+    QXcbDropData *m_dropData;
     Qt::DropAction accepted_drop_action;
 
     QWindow *desktop_proxy;

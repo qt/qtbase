@@ -353,13 +353,6 @@ QSimpleDrag::QSimpleDrag() : m_current_window(0)
 {
 }
 
-QMimeData *QSimpleDrag::platformDropData()
-{
-    if (drag())
-        return drag()->mimeData();
-    return 0;
-}
-
 void QSimpleDrag::startDrag()
 {
     QBasicDrag::startDrag();
