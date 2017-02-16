@@ -243,13 +243,24 @@ public class QtNative
         }
     }
 
-    private static void runPendingCppRunnablesOnUiThread()
+    private static void runPendingCppRunnablesOnAndroidThread()
     {
         synchronized (m_mainActivityMutex) {
-            if (!m_activityPaused && m_activity != null)
-                m_activity.runOnUiThread(runPendingCppRunnablesRunnable);
-            else
-                runAction(runPendingCppRunnablesRunnable);
+            if (m_activity != null) {
+                if (!m_activityPaused)
+                    m_activity.runOnUiThread(runPendingCppRunnablesRunnable);
+                else
+                    runAction(runPendingCppRunnablesRunnable);
+            } else {
+                final Looper mainLooper = Looper.getMainLooper();
+                final Thread looperThread = mainLooper.getThread();
+                if (looperThread.equals(Thread.currentThread())) {
+                    runPendingCppRunnablesRunnable.run();
+                } else {
+                    final Handler handler = new Handler(mainLooper);
+                    handler.post(runPendingCppRunnablesRunnable);
+                }
+            }
         }
     }
 

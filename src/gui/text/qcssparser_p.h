@@ -75,6 +75,10 @@ QT_END_NAMESPACE
 #if defined(Q_OS_INTEGRITY)
 #  undef Value
 #endif
+// Hurd has #define TILDE 0x00080000 from <sys/ioctl.h>
+#if defined(TILDE)
+#  undef TILDE
+#endif
 
 #define QT_CSS_DECLARE_TYPEINFO(Class, Type) \
     } /* namespace QCss */ \

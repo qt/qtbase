@@ -239,9 +239,9 @@ private:
         int i = data.indexOf("a href=\"?view=detail");
         if (i > 0) {
             QString href = data.mid(i, data.indexOf('\"', i + 8) - i + 1);
-            QRegExp regex("dpap=([A-Za-z0-9]+)");
-            regex.indexIn(href);
-            QString airport = regex.cap(1);
+            QRegularExpression regex("dpap=([A-Za-z0-9]+)");
+            QRegularExpressionMatch match = regex.match(href);
+            QString airport = match.captured(1);
             QUrlQuery query(m_url);
             query.addQueryItem("dpap", airport);
             m_url.setQuery(query);

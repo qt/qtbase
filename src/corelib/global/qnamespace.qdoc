@@ -2105,7 +2105,7 @@
                    On \macos, tool windows correspond to the
                    \l{http://developer.apple.com/documentation/Carbon/Conceptual/HandlingWindowsControls/hitb-wind_cont_concept/chapter_2_section_2.html}{Floating}
                    class of windows. This means that the window lives on a
-                   level above normal windows; it impossible to put a normal
+                   level above normal windows making it impossible to put a normal
                    window on top of it. By default, tool windows will disappear
                    when the application is inactive.  This can be controlled by
                    the Qt::WA_MacAlwaysShowToolWindow attribute.

@@ -1153,6 +1153,7 @@ void WriteInitialization::writeProperties(const QString &varName,
         DomPropertyMap properties = propertyMap(lst);
         if (properties.contains(QLatin1String("control"))) {
             DomProperty *p = properties.value(QLatin1String("control"));
+            Q_ASSERT( p );
             m_output << m_indent << varName << "->setControl("
                    << writeString(toString(p->elementString()), m_dindent) << ");\n";
         }

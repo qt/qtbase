@@ -57,11 +57,12 @@ StyleSheetEditor::StyleSheetEditor(QWidget *parent)
 {
     ui.setupUi(this);
 
-    QRegExp regExp(".(.*)\\+?Style");
+    QRegularExpression regExp("^.(.*)\\+?Style$");
     QString defaultStyle = QApplication::style()->metaObject()->className();
+    QRegularExpressionMatch match = regExp.match(defaultStyle);
 
-    if (regExp.exactMatch(defaultStyle))
-        defaultStyle = regExp.cap(1);
+    if (match.hasMatch())
+        defaultStyle = match.captured(1);
 
     ui.styleCombo->addItems(QStyleFactory::keys());
     ui.styleCombo->setCurrentIndex(ui.styleCombo->findText(defaultStyle, Qt::MatchContains));
