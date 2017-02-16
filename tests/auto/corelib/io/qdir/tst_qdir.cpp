@@ -99,13 +99,10 @@ private slots:
 
     void entryListWithSymLinks();
 
-    void mkdir_data();
-    void mkdir();
+    void mkdirRmdir_data();
+    void mkdirRmdir();
 
     void makedirReturnCode();
-
-    void rmdir_data();
-    void rmdir();
 
     void removeRecursively_data();
     void removeRecursively();
@@ -339,26 +336,29 @@ void tst_QDir::setPath()
     QCOMPARE(shared.entryList(), entries2);
 }
 
-void tst_QDir::mkdir_data()
+void tst_QDir::mkdirRmdir_data()
 {
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("recurse");
 
     QStringList dirs;
-    dirs << QDir::currentPath() + "/testdir/one/two/three"
-         << QDir::currentPath() + "/testdir/two"
-         << QDir::currentPath() + "/testdir/two/three";
-    QTest::newRow("data0") << dirs.at(0) << true;
-    QTest::newRow("data1") << dirs.at(1) << false;
-    QTest::newRow("data2") << dirs.at(2) << false; // note: requires data1 to have been run!
+    dirs << "testdir/one"
+         << "testdir/two/three/four"
+         << "testdir/../testdir/three";
+    QTest::newRow("plain") << QDir::currentPath() + "/" + dirs.at(0) << false;
+    QTest::newRow("recursive") << QDir::currentPath() + "/" + dirs.at(1) << true;
+    QTest::newRow("with-..") << QDir::currentPath() + "/" + dirs.at(2) << false;
+
+    QTest::newRow("relative-plain") << dirs.at(0) << false;
+    QTest::newRow("relative-recursive") << dirs.at(1) << true;
+    QTest::newRow("relative-with-..") << dirs.at(2) << false;
 
     // Ensure that none of these directories already exist
-    QDir dir;
     for (int i = 0; i < dirs.count(); ++i)
-        dir.rmpath(dirs.at(i));
+        QVERIFY(!QFile::exists(dirs.at(i)));
 }
 
-void tst_QDir::mkdir()
+void tst_QDir::mkdirRmdir()
 {
     QFETCH(QString, path);
     QFETCH(bool, recurse);
@@ -373,6 +373,15 @@ void tst_QDir::mkdir()
     //make sure it really exists (ie that mkdir returns the right value)
     QFileInfo fi(path);
     QVERIFY2(fi.exists() && fi.isDir(), msgDoesNotExist(path).constData());
+
+    if (recurse)
+        QVERIFY(dir.rmpath(path));
+    else
+        QVERIFY(dir.rmdir(path));
+
+    //make sure it really doesn't exist (ie that rmdir returns the right value)
+    fi.refresh();
+    QVERIFY(!fi.exists());
 }
 
 void tst_QDir::makedirReturnCode()
@@ -400,32 +409,6 @@ void tst_QDir::makedirReturnCode()
     QVERIFY(!QDir::current().mkdir(dirName)); // calling mkdir on an existing file will fail.
     QVERIFY(!QDir::current().mkpath(dirName)); // calling mkpath on an existing file will fail.
     f.remove();
-}
-
-void tst_QDir::rmdir_data()
-{
-    QTest::addColumn<QString>("path");
-    QTest::addColumn<bool>("recurse");
-
-    QTest::newRow("data0") << QDir::currentPath() + "/testdir/one/two/three" << true;
-    QTest::newRow("data1") << QDir::currentPath() + "/testdir/two/three" << false;
-    QTest::newRow("data2") << QDir::currentPath() + "/testdir/two" << false;
-}
-
-void tst_QDir::rmdir()
-{
-    QFETCH(QString, path);
-    QFETCH(bool, recurse);
-
-    QDir dir;
-    if (recurse)
-        QVERIFY(dir.rmpath(path));
-    else
-        QVERIFY(dir.rmdir(path));
-
-    //make sure it really doesn't exist (ie that rmdir returns the right value)
-    QFileInfo fi(path);
-    QVERIFY(!fi.exists());
 }
 
 void tst_QDir::removeRecursively_data()
