@@ -82,8 +82,21 @@ struct Foo
 
 void tst_QVarLengthArray::append()
 {
-    QVarLengthArray<QString> v;
-    v.append(QString("hello"));
+    QVarLengthArray<QString, 2> v;
+    v.append(QString("1"));
+    v.append(v.front());
+    QCOMPARE(v.capacity(), 2);
+    // transition from prealloc to heap:
+    v.append(v.front());
+    QVERIFY(v.capacity() > 2);
+    QCOMPARE(v.front(), v.back());
+    while (v.size() < v.capacity())
+        v.push_back(v[0]);
+    QCOMPARE(v.back(), v.front());
+    QCOMPARE(v.size(), v.capacity());
+    // transition from heap to larger heap:
+    v.push_back(v.front());
+    QCOMPARE(v.back(), v.front());
 
     QVarLengthArray<int> v2; // rocket!
     v2.append(5);

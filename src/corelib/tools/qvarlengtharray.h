@@ -140,15 +140,25 @@ public:
     T value(int i, const T &defaultValue) const;
 
     inline void append(const T &t) {
-        if (s == a)   // i.e. s != 0
+        if (s == a) {   // i.e. s != 0
+            T copy(t);
             realloc(s, s<<1);
-        const int idx = s++;
-        if (QTypeInfo<T>::isComplex) {
-            new (ptr + idx) T(t);
+            const int idx = s++;
+            if (QTypeInfo<T>::isComplex) {
+                new (ptr + idx) T(qMove(copy));
+            } else {
+                ptr[idx] = qMove(copy);
+            }
         } else {
-            ptr[idx] = t;
+            const int idx = s++;
+            if (QTypeInfo<T>::isComplex) {
+                new (ptr + idx) T(t);
+            } else {
+                ptr[idx] = t;
+            }
         }
     }
+
     void append(const T *buf, int size);
     inline QVarLengthArray<T, Prealloc> &operator<<(const T &t)
     { append(t); return *this; }
