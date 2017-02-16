@@ -664,11 +664,13 @@ void QAccessibleLineEdit::setText(QAccessible::Text t, const QString &text)
     }
 
     QString newText = text;
+#if QT_CONFIG(validator)
     if (lineEdit()->validator()) {
         int pos = 0;
         if (lineEdit()->validator()->validate(newText, pos) != QValidator::Acceptable)
             return;
     }
+#endif
     lineEdit()->setText(newText);
 }
 
