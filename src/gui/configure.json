@@ -534,7 +534,7 @@
         "linuxfb": {
             "label": "LinuxFB",
             "section": "Platform plugins",
-            "condition": "tests.linuxfb",
+            "condition": "tests.linuxfb && features.regularexpression",
             "output": [ "privateFeature" ]
         },
         "vnc": {
