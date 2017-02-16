@@ -91,7 +91,7 @@ static QImage rotated270(const QImage &src);
 
 static int next_qimage_serial_number()
 {
-    static QBasicAtomicInt serial;
+    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
     return 1 + serial.fetchAndAddRelaxed(1);
 }
 

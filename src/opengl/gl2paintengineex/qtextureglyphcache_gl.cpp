@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 static int next_qgltextureglyphcache_serial_number()
 {
-    static QBasicAtomicInt serial;
+    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
     return 1 + serial.fetchAndAddRelaxed(1);
 }
 

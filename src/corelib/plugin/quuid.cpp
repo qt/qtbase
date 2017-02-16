@@ -968,7 +968,7 @@ QUuid QUuid::createUuid()
         if (!uuidseed.hasLocalData())
         {
             int *pseed = new int;
-            static QBasicAtomicInt serial;
+            static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
             qsrand(*pseed = QDateTime::currentSecsSinceEpoch()
                    + quintptr(&pseed)
                    + 2 + serial.fetchAndAddRelaxed(1));
