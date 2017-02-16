@@ -162,8 +162,8 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::QueryInterface(REFIID id, LPVO
         || qWindowsComQueryInterface<IOleWindow>(this, id, iface);
 
     if (result) {
-        qCDebug(lcQpaAccessibility) << "QWindowsIA2Accessible::QI() - IID:"
-            << IIDToString(id) << ", iface:" << accessibleInterface();
+        qCDebug(lcQpaAccessibility) << "QWindowsIA2Accessible::QI() - "
+            << QWindowsAccessibleGuid(id) << ", iface:" << accessibleInterface();
     }
     return result ? S_OK : E_NOINTERFACE;
 }
@@ -1159,16 +1159,66 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::ContextSensitiveHelp(BOOL)
     return S_OK;
 }
 
-#define IF_EQUAL_RETURN_IIDSTRING(id, iid) if (id == iid) return QByteArray(#iid)
-QByteArray QWindowsMsaaAccessible::IIDToString(REFIID id)
+const char *QWindowsAccessibleGuid::iidToString(const GUID &id)
 {
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IUnknown);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IDispatch);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessible);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IOleWindow);
-
-    return QByteArray();
+    const char *result = nullptr;
+    if (id == IID_IUnknown)
+        result = "IID_IUnknown";
+    else if (id == IID_IDispatch)
+        result = "IID_IDispatch";
+    else if (id == IID_IAccessible)
+        result = "IID_IAccessible";
+    else if (id == IID_IOleWindow)
+        result = "IID_IOleWindow";
+    else if (id == IID_IServiceProvider)
+        result = "IID_IServiceProvider";
+#ifndef Q_CC_MINGW
+    else if (id == IID_IAccessible2)
+        result = "IID_IAccessible2";
+    else if (id == IID_IAccessibleAction)
+        result = "IID_IAccessibleAction";
+    else if (id == IID_IAccessibleApplication)
+        result = "IID_IAccessibleApplication";
+    else if (id == IID_IAccessibleComponent)
+        result = "IID_IAccessibleComponent";
+    else if (id == IID_IAccessibleEditableText)
+        result = "IID_IAccessibleEditableText";
+    else if (id == IID_IAccessibleHyperlink)
+        result = "IID_IAccessibleHyperlink";
+    else if (id == IID_IAccessibleHypertext)
+        result = "IID_IAccessibleHypertext";
+    else if (id == IID_IAccessibleImage)
+        result = "IID_IAccessibleImage";
+    else if (id == IID_IAccessibleRelation)
+        result = "IID_IAccessibleRelation";
+    else if (id == IID_IAccessibleTable)
+        result = "IID_IAccessibleTable";
+    else if (id == IID_IAccessibleTable2)
+        result = "IID_IAccessibleTable2";
+    else if (id == IID_IAccessibleTableCell)
+        result = "IID_IAccessibleTableCell";
+    else if (id == IID_IAccessibleText)
+        result = "IID_IAccessibleText";
+    else if (id == IID_IAccessibleValue)
+        result = "IID_IAccessibleValue";
+#endif // !Q_CC_MINGW
+    return result;
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug, const GUID &);
+
+QDebug operator<<(QDebug d, const QWindowsAccessibleGuid &aguid)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    if (const char *ids = QWindowsAccessibleGuid::iidToString(aguid.guid()))
+        d << ids;
+    else
+        d << aguid.guid();
+    return d;
+}
+#endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
 

@@ -220,6 +220,23 @@ QDebug operator<<(QDebug d, const WINDOWPLACEMENT &wp)
         << ", rcNormalPosition=" << wp.rcNormalPosition;
     return d;
 }
+
+QDebug operator<<(QDebug d, const GUID &guid)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << '{' << hex << uppercasedigits << qSetPadChar(QLatin1Char('0'))
+      << qSetFieldWidth(8) << guid.Data1
+      << qSetFieldWidth(0) << '-' << qSetFieldWidth(4)
+      << guid.Data2 << qSetFieldWidth(0) << '-' << qSetFieldWidth(4)
+      << guid.Data3 << qSetFieldWidth(0) << '-' << qSetFieldWidth(4)
+      << qSetFieldWidth(2) << guid.Data4[0] << guid.Data4[1]
+      << qSetFieldWidth(0) << '-' << qSetFieldWidth(2);
+    for (int i = 2; i < 8; ++i)
+        d << guid.Data4[i];
+    d << qSetFieldWidth(0) << '}';
+    return d;
+}
 #endif // !QT_NO_DEBUG_STREAM
 
 // QTBUG-43872, for windows that do not have WS_EX_TOOLWINDOW set, WINDOWPLACEMENT

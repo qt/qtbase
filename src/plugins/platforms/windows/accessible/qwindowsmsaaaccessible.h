@@ -69,6 +69,21 @@ void accessibleDebugClientCalls_helper(const char* funcName, const QAccessibleIn
 
 QWindow *window_helper(const QAccessibleInterface *iface);
 
+class QWindowsAccessibleGuid // Helper for QDebug, outputs known ids by name.
+{
+public:
+    explicit QWindowsAccessibleGuid(const GUID &g) : m_guid(g) {}
+    GUID guid () const { return m_guid; }
+    static const char *iidToString(const GUID &id);
+
+private:
+    GUID m_guid;
+};
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, const QWindowsAccessibleGuid &aguid);
+#endif
+
 /**************************************************************\
  *                     QWindowsAccessible                     *
  **************************************************************/
@@ -133,8 +148,6 @@ public:
     HRESULT STDMETHODCALLTYPE ContextSensitiveHelp(BOOL fEnterMode);
 
 protected:
-    virtual QByteArray IIDToString(REFIID id);
-
     QAccessible::Id id;
 
     QAccessibleInterface *accessibleInterface() const

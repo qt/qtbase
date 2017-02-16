@@ -250,7 +250,6 @@ private:
 
     HRESULT getRelationsHelper(IAccessibleRelation **relations, int startIndex, long maxRelations, long *nRelations = 0);
     HRESULT wrapListOfCells(const QList<QAccessibleInterface*> &inputCells, IUnknown ***outputAccessibles, long *nCellCount);
-    QByteArray IIDToString(REFIID id);
     QString textForRange(int startOffset, int endOffset) const;
     void replaceTextFallback(long startOffset, long endOffset, const QString &txt);
 

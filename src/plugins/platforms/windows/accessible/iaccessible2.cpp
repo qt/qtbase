@@ -1528,7 +1528,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryService(REFGUID guidServic
         return E_POINTER;
     Q_UNUSED(guidService);
     *iface = 0;
-    qCDebug(lcQpaAccessibility) << "QWindowsIA2Accessible::QS(): " << IIDToString(riid);
+    qCDebug(lcQpaAccessibility) << "QWindowsIA2Accessible::QS(): " << QWindowsAccessibleGuid(riid);
 
 
     if (guidService == IID_IAccessible) {
@@ -1625,45 +1625,6 @@ HRESULT QWindowsIA2Accessible::wrapListOfCells(const QList<QAccessibleInterface*
                        QWindowsAccessibility::wrap);
     }
     return count > 0 ? S_OK : S_FALSE;
-}
-
-#define IF_EQUAL_RETURN_IIDSTRING(id, iid) if (id == iid) return QByteArray(#iid)
-
-QByteArray QWindowsIA2Accessible::IIDToString(REFIID id)
-{
-    QByteArray strGuid = QWindowsMsaaAccessible::IIDToString(id);
-    if (!strGuid.isEmpty())
-        return strGuid;
-
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IUnknown);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IDispatch);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessible);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IOleWindow);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IServiceProvider);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessible2);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleAction);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleApplication);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleComponent);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleEditableText);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleHyperlink);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleHypertext);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleImage);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleRelation);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleTable);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleTable2);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleTableCell);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleText);
-    IF_EQUAL_RETURN_IIDSTRING(id, IID_IAccessibleValue);
-
-    // else...
-#if 0   // Can be useful for debugging, but normally we'd like to reduce the noise a bit...
-    OLECHAR szGuid[39]={0};
-    ::StringFromGUID2(id, szGuid, 39);
-    strGuid.reserve(40);
-    ::WideCharToMultiByte(CP_UTF8, 0, szGuid, 39, strGuid.data(), 39, NULL, NULL);
-    strGuid[38] = '\0';
-#endif
-    return strGuid;
 }
 
 // Q_STATIC_ASSERT(IA2_ROLE_CANVAS == QAccessible::Canvas); // ### Qt 6: make them the same
