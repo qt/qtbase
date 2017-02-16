@@ -537,6 +537,12 @@
             "condition": "tests.linuxfb",
             "output": [ "privateFeature" ]
         },
+        "vnc": {
+            "label": "VNC",
+            "section": "Platform plugins",
+            "condition": "config.unix && !config.android && !config.darwin && features.regularexpression",
+            "output": [ "privateFeature" ]
+        },
         "mirclient": {
             "label": "Mir client",
             "section": "Platform plugins",
@@ -1114,7 +1120,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                         "eglfs_viv", "eglfs_viv_wl", "eglfs_egldevice", "eglfs_gbm", "eglfs_mali", "eglfs_brcm", "egl_x11"
                     ]
                 },
-                "linuxfb", "mirclient",
+                "linuxfb", "vnc", "mirclient",
                 {
                     "type": "feature",
                     "message": "INTEGRITY framebuffer",

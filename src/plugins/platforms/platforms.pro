@@ -36,7 +36,7 @@ qtConfig(directfb) {
 
 qtConfig(linuxfb): SUBDIRS += linuxfb
 
-unix:!android:!darwin: SUBDIRS += vnc
+qtConfig(vnc): SUBDIRS += vnc
 
 freebsd {
     SUBDIRS += bsdfb
