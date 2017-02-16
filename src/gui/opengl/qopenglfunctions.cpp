@@ -2584,7 +2584,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
 */
 
 /*!
-    \fn void QOpenGLExtraFunctions::glEndTransformFeedback(void)
+    \fn void QOpenGLExtraFunctions::glEndTransformFeedback()
 
     Convenience function that calls glEndTransformFeedback().
 
@@ -3091,7 +3091,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
 */
 
 /*!
-    \fn void QOpenGLExtraFunctions::glPauseTransformFeedback(void)
+    \fn void QOpenGLExtraFunctions::glPauseTransformFeedback()
 
     Convenience function that calls glPauseTransformFeedback().
 
@@ -3156,7 +3156,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
 */
 
 /*!
-    \fn void QOpenGLExtraFunctions::glResumeTransformFeedback(void)
+    \fn void QOpenGLExtraFunctions::glResumeTransformFeedback()
 
     Convenience function that calls glResumeTransformFeedback().
 
