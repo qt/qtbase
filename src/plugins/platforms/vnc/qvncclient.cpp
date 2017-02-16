@@ -425,14 +425,14 @@ void QVncClient::checkUpdate()
 {
     if (!m_wantUpdate)
         return;
-
+#if QT_CONFIG(cursor)
     if (m_dirtyCursor) {
         m_server->screen()->clientCursor->write(this);
         m_dirtyCursor = false;
         m_wantUpdate = false;
         return;
     }
-
+#endif
     if (!m_dirtyRegion.isEmpty()) {
         if (m_encoder)
             m_encoder->write();

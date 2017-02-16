@@ -86,7 +86,9 @@ public:
     QRegion dirtyRegion;
     int refreshRate = 30;
     QVncServer *vncServer = 0;
+#if QT_CONFIG(cursor)
     QVncClientCursor *clientCursor = 0;
+#endif
 };
 
 QT_END_NAMESPACE
