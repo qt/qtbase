@@ -79,8 +79,8 @@ Q_GLOBAL_STATIC(PendingPermissionRequestsHash, g_pendingPermissionRequests);
 static QBasicMutex g_pendingPermissionRequestsMutex;
 static int nextRequestCode()
 {
-    static QBasicAtomicInt counter;
-    return counter.fetchAndAddRelaxed(0);
+    static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(0);
+    return counter.fetchAndAddRelaxed(1);
 }
 
 // function called from Java from Android UI thread
