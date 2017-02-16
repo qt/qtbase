@@ -50,6 +50,8 @@
 #include "private/qfreelist_p.h"
 #include "private/qlocking_p.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -534,6 +536,11 @@ void QReadWriteLockPrivate::unlock()
         readerCond.wakeAll();
 }
 
+static auto handleEquals(Qt::HANDLE handle)
+{
+    return [handle](QReadWriteLockPrivate::Reader reader) { return reader.handle == handle; };
+}
+
 bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
 {
     Q_ASSERT(recursive);
@@ -541,16 +548,18 @@ bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
 
     Qt::HANDLE self = QThread::currentThreadId();
 
-    auto it = currentReaders.find(self);
+    auto it = std::find_if(currentReaders.begin(), currentReaders.end(),
+                           handleEquals(self));
     if (it != currentReaders.end()) {
-        ++it.value();
+        ++it->recursionLevel;
         return true;
     }
 
     if (!lockForRead(timeout))
         return false;
 
-    currentReaders.insert(self, 1);
+    Reader r = {self, 1};
+    currentReaders.append(std::move(r));
     return true;
 }
 
@@ -583,12 +592,13 @@ void QReadWriteLockPrivate::recursiveUnlock()
             return;
         currentWriter = nullptr;
     } else {
-        auto it = currentReaders.find(self);
+        auto it = std::find_if(currentReaders.begin(), currentReaders.end(),
+                               handleEquals(self));
         if (it == currentReaders.end()) {
             qWarning("QReadWriteLock::unlock: unlocking from a thread that did not lock");
             return;
         } else {
-            if (--it.value() <= 0) {
+            if (--it->recursionLevel <= 0) {
                 currentReaders.erase(it);
                 readerCount--;
             }

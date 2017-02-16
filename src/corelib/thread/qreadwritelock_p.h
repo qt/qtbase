@@ -53,7 +53,7 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
-#include <QtCore/qhash.h>
+#include <QtCore/qvarlengtharray.h>
 #include <QtCore/qwaitcondition.h>
 
 QT_REQUIRE_CONFIG(thread);
@@ -87,13 +87,20 @@ public:
 
     // Recusive mutex handling
     Qt::HANDLE currentWriter = {};
-    QHash<Qt::HANDLE, int> currentReaders;
+
+    struct Reader {
+        Qt::HANDLE handle;
+        int recursionLevel;
+    };
+
+    QVarLengthArray<Reader, 16> currentReaders;
 
     // called with the mutex unlocked
     bool recursiveLockForWrite(int timeout);
     bool recursiveLockForRead(int timeout);
     void recursiveUnlock();
 };
+Q_DECLARE_TYPEINFO(QReadWriteLockPrivate::Reader, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 
