@@ -700,6 +700,8 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     if (openUriOption)
         openMode |= SQLITE_OPEN_URI;
 
+    openMode |= SQLITE_OPEN_NOMUTEX;
+
     if (sqlite3_open_v2(db.toUtf8().constData(), &d->access, openMode, NULL) == SQLITE_OK) {
         sqlite3_busy_timeout(d->access, timeOut);
         setOpen(true);
