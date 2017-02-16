@@ -432,8 +432,27 @@ bool QSQLiteResult::exec()
         d->finalize();
         return false;
     }
+
     int paramCount = sqlite3_bind_parameter_count(d->stmt);
-    if (paramCount == values.count()) {
+    bool paramCountIsValid = paramCount == values.count();
+
+#if (SQLITE_VERSION_NUMBER >= 3003011)
+    // In the case of the reuse of a named placeholder
+    if (!paramCountIsValid) {
+        const auto countIndexes = [](int counter, const QList<int>& indexList) {
+                                      return counter + indexList.length();
+                                  };
+
+        const int bindParamCount = std::accumulate(d->indexes.cbegin(),
+                                                   d->indexes.cend(),
+                                                   0,
+                                                   countIndexes);
+
+        paramCountIsValid = bindParamCount == values.count();
+    }
+#endif
+
+    if (paramCountIsValid) {
         for (int i = 0; i < paramCount; ++i) {
             res = SQLITE_OK;
             const QVariant value = values.at(i);
@@ -629,11 +648,17 @@ bool QSQLiteDriver::hasFeature(DriverFeature f) const
     case EventNotifications:
         return true;
     case QuerySize:
-    case NamedPlaceholders:
     case BatchOperations:
     case MultipleResultSets:
     case CancelQuery:
         return false;
+    case NamedPlaceholders:
+#if (SQLITE_VERSION_NUMBER < 3003011)
+        return false;
+#else
+        return true;
+#endif
+
     }
     return false;
 }
