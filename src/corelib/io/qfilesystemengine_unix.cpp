@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2017 Intel Corporation.
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Contact: https://www.qt.io/licensing/
@@ -603,25 +604,7 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
     if (!createParents)
         return false;
 
-    // we need the cleaned path in order to create the parents
-    // and we save errno just in case encodeName needs to load codecs
-    int savedErrno = errno;
-    bool pathChanged;
-    {
-        QString cleanName = QDir::cleanPath(dirName);
-
-        // Check if the cleaned name is the same or not. If we were given a
-        // path with resolvable "../" sections, cleanPath will remove them, but
-        // this may change the target dir if one of those segments was a
-        // symlink. This operation depends on cleanPath's optimization of
-        // returning the original string if it didn't modify anything.
-        pathChanged = !dirName.isSharedWith(cleanName);
-        if (pathChanged)
-            nativeName = QFile::encodeName(cleanName);
-    }
-
-    errno = savedErrno;
-    return createDirectoryWithParents(nativeName, pathChanged);
+    return createDirectoryWithParents(nativeName, false);
 }
 
 //static
