@@ -2584,7 +2584,8 @@ void QMenu::hideEvent(QHideEvent *)
     if (QMenuBar *mb = qobject_cast<QMenuBar*>(d->causedPopup.widget))
         mb->d_func()->setCurrentAction(0);
 #endif
-    d->mouseDown = 0;
+    if (d->mouseDown == this)
+        d->mouseDown = 0;
     d->hasHadMouse = false;
     if (d->activeMenu)
         d->hideMenu(d->activeMenu);

@@ -110,6 +110,8 @@ private slots:
 #ifdef Q_OS_MAC
     void QTBUG_37933_ampersands_data();
     void QTBUG_37933_ampersands();
+#else
+    void click_while_dismissing_submenu();
 #endif
     void QTBUG_56917_wideMenuSize();
     void QTBUG_56917_wideMenuScreenNumber();
@@ -1133,6 +1135,39 @@ void tst_QMenu::QTBUG20403_nested_popup_on_shortcut_trigger()
     QTRY_VERIFY(sub1.isVisible());
     QVERIFY(!subsub1.isVisible());
 }
+
+#ifndef Q_OS_MACOS
+void tst_QMenu::click_while_dismissing_submenu()
+{
+    QMenu menu("Test Menu");
+    QAction *action = menu.addAction("action");
+    QMenu sub("&sub");
+    sub.addAction("subaction");
+    menu.addMenu(&sub);
+    centerOnScreen(&menu, QSize(120, 100));
+    menu.show();
+    QSignalSpy spy(action, SIGNAL(triggered()));
+    QSignalSpy menuShownSpy(&sub, SIGNAL(aboutToShow()));
+    QSignalSpy menuHiddenSpy(&sub, SIGNAL(aboutToHide()));
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
+    //go over the submenu, press, move and release over the top level action
+    //this opens the submenu, move two times to emulate user interaction (d->motions > 0 in QMenu)
+    QTest::mouseMove(&menu, menu.rect().center() + QPoint(0,2));
+    QTest::mouseMove(&menu, menu.rect().center() + QPoint(1,3), 60);
+    QVERIFY(menuShownSpy.wait());
+    QVERIFY(sub.isVisible());
+    QVERIFY(QTest::qWaitForWindowExposed(&sub));
+    //press over the submenu entry
+    QTest::mousePress(&menu, Qt::LeftButton, 0, menu.rect().center() + QPoint(0,2), 300);
+    //move over the main action
+    QTest::mouseMove(&menu, menu.rect().center() - QPoint(0,2));
+    QVERIFY(menuHiddenSpy.wait());
+    //the submenu must have been hidden for the bug to be triggered
+    QVERIFY(!sub.isVisible());
+    QTest::mouseRelease(&menu, Qt::LeftButton, 0, menu.rect().center() - QPoint(0,2), 300);
+    QCOMPARE(spy.count(), 1);
+}
+#endif
 
 class MyWidget : public QWidget
 {
