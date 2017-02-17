@@ -360,8 +360,9 @@ protected:
     QModelIndex indexFromItem(const QTreeWidgetItem *item, int column = 0) const;
     QModelIndex indexFromItem(QTreeWidgetItem *item, int column = 0) const; // ### Qt 6: remove
     QTreeWidgetItem *itemFromIndex(const QModelIndex &index) const;
+#if QT_CONFIG(draganddrop)
     void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
-
+#endif
 private:
     void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
 

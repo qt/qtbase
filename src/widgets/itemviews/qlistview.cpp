@@ -2020,7 +2020,9 @@ int QCommonListViewBase::horizontalScrollToValue(const int /*index*/, QListView:
 QListModeViewBase::QListModeViewBase(QListView *q, QListViewPrivate *d)
     : QCommonListViewBase(q, d)
 {
+#if QT_CONFIG(draganddrop)
     dd->defaultDropAction = Qt::CopyAction;
+#endif
 }
 
 #ifndef QT_NO_DRAGANDDROP
