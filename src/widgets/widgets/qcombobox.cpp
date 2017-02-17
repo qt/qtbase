@@ -682,10 +682,12 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             combo->hidePopup();
             return true;
         default:
+#if QT_CONFIG(shortcut)
             if (keyEvent->matches(QKeySequence::Cancel)) {
                 combo->hidePopup();
                 return true;
             }
+#endif
             break;
         }
         break;

@@ -3813,12 +3813,12 @@ void QFileDialogPrivate::_q_nativeEnterDirectory(const QUrl &directory)
 bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
 
     Q_Q(QFileDialog);
-
+#if QT_CONFIG(shortcut)
     if (event->matches(QKeySequence::Cancel)) {
         q->reject();
         return true;
     }
-
+#endif
     switch (event->key()) {
     case Qt::Key_Backspace:
         _q_navigateToParent();
@@ -4020,7 +4020,9 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 
     int key = e->key();
     QLineEdit::keyPressEvent(e);
+#if QT_CONFIG(shortcut)
     if (!e->matches(QKeySequence::Cancel) && key != Qt::Key_Back)
+#endif
         e->accept();
 }
 

@@ -410,9 +410,9 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
         qWarning("QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
     else
         addButton(button, static_cast<QDialogButtonBox::ButtonRole>(role), doLayout);
-
+#if QT_CONFIG(shortcut)
     button->setShortcut(QGuiApplicationPrivate::platformTheme()->standardButtonShortcut(sbutton));
-
+#endif
     return button;
 }
 

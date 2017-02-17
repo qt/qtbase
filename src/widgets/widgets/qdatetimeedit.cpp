@@ -2662,11 +2662,13 @@ void QCalendarPopup::mouseReleaseEvent(QMouseEvent*)
 
 bool QCalendarPopup::event(QEvent *event)
 {
+#if QT_CONFIG(shortcut)
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
         if (keyEvent->matches(QKeySequence::Cancel))
             dateChanged = false;
     }
+#endif
     return QWidget::event(event);
 }
 

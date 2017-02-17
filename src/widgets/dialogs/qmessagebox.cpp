@@ -1405,7 +1405,7 @@ void QMessageBox::changeEvent(QEvent *ev)
 void QMessageBox::keyPressEvent(QKeyEvent *e)
 {
     Q_D(QMessageBox);
-
+#if QT_CONFIG(shortcut)
         if (e->matches(QKeySequence::Cancel)) {
             if (d->detectedEscapeButton) {
 #ifdef Q_OS_MAC
@@ -1416,7 +1416,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             }
             return;
         }
-
+#endif // QT_CONFIG(shortcut)
 
 #if !defined(QT_NO_CLIPBOARD) && !defined(QT_NO_SHORTCUT)
 

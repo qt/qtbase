@@ -1347,11 +1347,12 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
         }
 
         // default implementation for keys not handled by the widget when popup is open
+#if QT_CONFIG(shortcut)
         if (ke->matches(QKeySequence::Cancel)) {
             d->popup->hide();
             return true;
         }
-
+#endif
         switch (key) {
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Select:
