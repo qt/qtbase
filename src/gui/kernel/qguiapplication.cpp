@@ -2162,7 +2162,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
 void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)
 {
     if (QWindow *window  = wse->window.data()) {
-        QWindowStateChangeEvent e(window->windowState());
+        QWindowStateChangeEvent e(wse->oldState);
         window->d_func()->windowState = wse->newState;
         QGuiApplication::sendSpontaneousEvent(window, &e);
     }

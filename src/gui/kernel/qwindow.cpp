@@ -155,8 +155,17 @@ QWindow::QWindow(QScreen *targetScreen)
     , QSurface(QSurface::Window)
 {
     Q_D(QWindow);
-    d->connectToScreen(targetScreen ? targetScreen : QGuiApplication::primaryScreen());
-    d->init();
+    d->init(targetScreen);
+}
+
+static QWindow *nonDesktopParent(QWindow *parent)
+{
+    if (parent && parent->type() == Qt::Desktop) {
+        qWarning("QWindows can not be reparented into desktop windows");
+        return nullptr;
+    }
+
+    return parent;
 }
 
 /*!
@@ -170,14 +179,8 @@ QWindow::QWindow(QScreen *targetScreen)
     \sa setParent()
 */
 QWindow::QWindow(QWindow *parent)
-    : QObject(*new QWindowPrivate(), parent)
-    , QSurface(QSurface::Window)
+    : QWindow(*new QWindowPrivate(), parent)
 {
-    Q_D(QWindow);
-    d->parentWindow = parent;
-    if (!parent)
-        d->connectToScreen(QGuiApplication::primaryScreen());
-    d->init();
 }
 
 /*!
@@ -193,13 +196,10 @@ QWindow::QWindow(QWindow *parent)
     \sa setParent()
 */
 QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
-    : QObject(dd, parent)
+    : QObject(dd, nonDesktopParent(parent))
     , QSurface(QSurface::Window)
 {
     Q_D(QWindow);
-    d->parentWindow = parent;
-    if (!parent)
-        d->connectToScreen(QGuiApplication::primaryScreen());
     d->init();
 }
 
@@ -215,9 +215,14 @@ QWindow::~QWindow()
         QGuiApplicationPrivate::instance()->modalWindowList.removeOne(this);
 }
 
-void QWindowPrivate::init()
+void QWindowPrivate::init(QScreen *targetScreen)
 {
     Q_Q(QWindow);
+
+    parentWindow = static_cast<QWindow *>(q->QObject::parent());
+
+    if (!parentWindow)
+        connectToScreen(targetScreen ? targetScreen : QGuiApplication::primaryScreen());
 
     // If your application aborts here, you are probably creating a QWindow
     // before the screen list is populated.
@@ -532,7 +537,9 @@ void QWindow::setVisible(bool visible)
         // can defer creation until the parent is created or we're re-parented.
         if (parent() && !parent()->handle())
             return;
-        else
+
+        // We only need to create the window if it's being shown
+        if (visible)
             create();
     }
 
@@ -574,7 +581,8 @@ void QWindow::setVisible(bool visible)
         d->applyCursor();
 #endif
 
-    d->platformWindow->setVisible(visible);
+    if (d->platformWindow)
+        d->platformWindow->setVisible(visible);
 
     if (!visible) {
         QHideEvent hideEvent;
@@ -668,6 +676,8 @@ QWindow *QWindow::parent() const
 */
 void QWindow::setParent(QWindow *parent)
 {
+    parent = nonDesktopParent(parent);
+
     Q_D(QWindow);
     if (d->parentWindow == parent)
         return;

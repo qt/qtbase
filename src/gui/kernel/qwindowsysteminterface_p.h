@@ -168,12 +168,13 @@ public:
 
     class WindowStateChangedEvent : public WindowSystemEvent {
     public:
-        WindowStateChangedEvent(QWindow *_window, Qt::WindowState _newState)
-            : WindowSystemEvent(WindowStateChanged), window(_window), newState(_newState)
+        WindowStateChangedEvent(QWindow *_window, Qt::WindowState _newState, Qt::WindowState _oldState)
+            : WindowSystemEvent(WindowStateChanged), window(_window), newState(_newState), oldState(_oldState)
         { }
 
         QPointer<QWindow> window;
         Qt::WindowState newState;
+        Qt::WindowState oldState;
     };
 
     class WindowScreenChangedEvent : public WindowSystemEvent {

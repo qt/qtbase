@@ -561,7 +561,8 @@ bool QPlatformWindow::isAlertState() const
 // Return the effective screen for the initial geometry of a window. In a
 // multimonitor-setup, try to find the right screen by checking the transient
 // parent or the mouse cursor for parentless windows (cf QTBUG-34204,
-// QDialog::adjustPosition()).
+// QDialog::adjustPosition()), unless a non-primary screen has been set,
+// in which case we try to respect that.
 static inline const QScreen *effectiveScreen(const QWindow *window)
 {
     if (!window)
@@ -569,6 +570,8 @@ static inline const QScreen *effectiveScreen(const QWindow *window)
     const QScreen *screen = window->screen();
     if (!screen)
         return QGuiApplication::primaryScreen();
+    if (screen != QGuiApplication::primaryScreen())
+        return screen;
 #ifndef QT_NO_CURSOR
     const QList<QScreen *> siblings = screen->virtualSiblings();
     if (siblings.size() > 1) {

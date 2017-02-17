@@ -44,6 +44,10 @@
 #include <QtCore/qmetatype.h>
 #include <string.h>
 
+#if defined __F16C__
+#include <immintrin.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if 0
@@ -111,19 +115,34 @@ inline int qIntCast(qfloat16 f) Q_DECL_NOTHROW
 
 inline qfloat16::qfloat16(float f) Q_DECL_NOTHROW
 {
+#if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
+    b16 = _cvtss_sh(f, 0);
+#elif defined (__ARM_FP16_FORMAT_IEEE)
+    __fp16 f16 = f;
+    memcpy(&b16, &f16, sizeof(quint16));
+#else
     quint32 u;
     memcpy(&u, &f, sizeof(quint32));
     b16 = basetable[(u >> 23) & 0x1ff]
           + ((u & 0x007fffff) >> shifttable[(u >> 23) & 0x1ff]);
+#endif
 }
 
 inline qfloat16::operator float() const Q_DECL_NOTHROW
 {
+#if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
+    return _cvtsh_ss(b16);
+#elif defined (__ARM_FP16_FORMAT_IEEE)
+    __fp16 f16;
+    memcpy(&f16, &b16, sizeof(quint16));
+    return f16;
+#else
     quint32 u = mantissatable[offsettable[b16 >> 10] + (b16 & 0x3ff)]
                 + exponenttable[b16 >> 10];
     float f;
     memcpy(&f, &u, sizeof(quint32));
     return f;
+#endif
 }
 
 inline qfloat16::operator double() const Q_DECL_NOTHROW

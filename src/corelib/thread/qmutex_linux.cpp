@@ -107,8 +107,6 @@ QT_BEGIN_NAMESPACE
  * waiting in the past. We then set the mutex to 0x0 and perform a FUTEX_WAKE.
  */
 
-static QBasicAtomicInt futexFlagSupport = Q_BASIC_ATOMIC_INITIALIZER(-1);
-
 static inline int _q_futex(void *addr, int op, int val, const struct timespec *timeout) Q_DECL_NOTHROW
 {
     volatile int *int_addr = reinterpret_cast<volatile int *>(addr);

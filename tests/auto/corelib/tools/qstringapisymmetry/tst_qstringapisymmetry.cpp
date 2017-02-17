@@ -34,6 +34,7 @@
 #include <QChar>
 #include <QStringRef>
 #include <QLatin1String>
+#include <QVector>
 
 #include <QTest>
 
@@ -70,6 +71,10 @@ MAKE_ALL(const char*, QChar)
 class tst_QStringApiSymmetry : public QObject
 {
     Q_OBJECT
+
+    //
+    // Mixed UTF-16, UTF-8, Latin-1 checks:
+    //
 
     void compare_data(bool hasConceptOfNullAndEmpty=true);
     template <typename LHS, typename RHS>
@@ -155,6 +160,44 @@ private Q_SLOTS:
     //void compare_const_char_star_const_char_star_data() { compare_data(); }
     //void compare_const_char_star_const_char_star() { compare_impl<const char *, const char *>(); }
 
+    //
+    // UTF-16-only checks:
+    //
+private:
+
+    void toLocal8Bit_data();
+    template <typename String> void toLocal8Bit_impl();
+
+    void toLatin1_data();
+    template <typename String> void toLatin1_impl();
+
+    void toUtf8_data();
+    template <typename String> void toUtf8_impl();
+
+    void toUcs4_data();
+    template <typename String> void toUcs4_impl();
+
+private Q_SLOTS:
+
+    void toLocal8Bit_QString_data() { toLocal8Bit_data(); }
+    void toLocal8Bit_QString() { toLocal8Bit_impl<QString>(); }
+    void toLocal8Bit_QStringRef_data() { toLocal8Bit_data(); }
+    void toLocal8Bit_QStringRef() { toLocal8Bit_impl<QStringRef>(); }
+
+    void toLatin1_QString_data() { toLatin1_data(); }
+    void toLatin1_QString() { toLatin1_impl<QString>(); }
+    void toLatin1_QStringRef_data() { toLatin1_data(); }
+    void toLatin1_QStringRef() { toLatin1_impl<QStringRef>(); }
+
+    void toUtf8_QString_data() { toUtf8_data(); }
+    void toUtf8_QString() { toUtf8_impl<QString>(); }
+    void toUtf8_QStringRef_data() { toUtf8_data(); }
+    void toUtf8_QStringRef() { toUtf8_impl<QStringRef>(); }
+
+    void toUcs4_QString_data() { toUcs4_data(); }
+    void toUcs4_QString() { toUcs4_impl<QString>(); }
+    void toUcs4_QStringRef_data() { toUcs4_data(); }
+    void toUcs4_QStringRef() { toUcs4_impl<QStringRef>(); }
 };
 
 void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
@@ -255,6 +298,159 @@ void tst_QStringApiSymmetry::compare_impl() const
     CHECK(<=);
     CHECK(>=);
 #undef CHECK
+}
+
+//
+//
+// UTF-16-only checks:
+//
+//
+
+template <class Str> Str  make(const QString &s);
+template <> QStringRef    make(const QString &s)   { return QStringRef(&s); }
+template <> QString       make(const QString &s)   { return s; }
+
+#define REPEAT_16X(X) X X X X  X X X X   X X X X  X X X X
+#define LONG_STRING_256 REPEAT_16X("0123456789abcdef")
+
+void tst_QStringApiSymmetry::toLocal8Bit_data()
+{
+    QTest::addColumn<QString>("unicode");
+    QTest::addColumn<QByteArray>("local");
+
+    auto add = [](const char *local) {
+        const QByteArray ba(local);
+        QString s;
+        for (char c : ba)
+            s += QLatin1Char(c);
+        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ba;
+    };
+
+    QTest::addRow("null") << QString() << QByteArray();
+    QTest::addRow("empty") << QString("") << QByteArray("");
+
+    add("Moebius");
+    add(LONG_STRING_256);
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::toLocal8Bit_impl()
+{
+    QFETCH(const QString, unicode);
+    QFETCH(const QByteArray, local);
+
+    const auto str = make<String>(unicode);
+
+    const auto result = str.toLocal8Bit();
+
+    QCOMPARE(result, local);
+    QCOMPARE(unicode.isEmpty(), result.isEmpty());
+    QCOMPARE(unicode.isNull(), result.isNull());
+}
+
+void tst_QStringApiSymmetry::toLatin1_data()
+{
+    QTest::addColumn<QString>("unicode");
+    QTest::addColumn<QByteArray>("latin1");
+
+    auto add = [](const char *l1) {
+        const QByteArray ba(l1);
+        QString s;
+        for (char c : ba)
+            s += QLatin1Char(c);
+        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ba;
+    };
+
+    QTest::addRow("null") << QString() << QByteArray();
+    QTest::addRow("empty") << QString("") << QByteArray("");
+
+    add("M\xF6" "bius");
+    add(LONG_STRING_256);
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::toLatin1_impl()
+{
+    QFETCH(const QString, unicode);
+    QFETCH(const QByteArray, latin1);
+
+    const auto str = make<String>(unicode);
+
+    const auto result = str.toLatin1();
+
+    QCOMPARE(result, latin1);
+    QCOMPARE(unicode.isEmpty(), result.isEmpty());
+    QCOMPARE(unicode.isNull(), result.isNull());
+}
+
+void tst_QStringApiSymmetry::toUtf8_data()
+{
+    QTest::addColumn<QString>("unicode");
+    QTest::addColumn<QByteArray>("utf8");
+
+    auto add = [](const char *u8) {
+        QByteArray ba(u8);
+        QString s = ba;
+        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ba;
+    };
+
+    QTest::addRow("null") << QString() << QByteArray();
+    QTest::addRow("empty") << QString("") << QByteArray("");
+
+    add("M\xC3\xB6" "bius");
+    add(LONG_STRING_256);
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::toUtf8_impl()
+{
+    QFETCH(const QString, unicode);
+    QFETCH(const QByteArray, utf8);
+
+    const auto str = make<String>(unicode);
+
+    const auto result = str.toUtf8();
+
+    QCOMPARE(result, utf8);
+    QCOMPARE(unicode.isEmpty(), result.isEmpty());
+    QCOMPARE(unicode.isNull(), result.isNull());
+}
+
+void tst_QStringApiSymmetry::toUcs4_data()
+{
+    QTest::addColumn<QString>("unicode");
+    QTest::addColumn<QVector<uint>>("ucs4");
+
+    auto add = [](const char *l1) {
+        const QByteArray ba(l1);
+        QString s;
+        QVector<uint> ucs4;
+        for (char c : ba) {
+            s += QLatin1Char(c);
+            ucs4.append(uint(uchar(c)));
+        }
+        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ucs4;
+    };
+
+    QTest::addRow("null") << QString() << QVector<uint>();
+    QTest::addRow("empty") << QString("") << QVector<uint>();
+
+    add("M\xF6" "bius");
+    add(LONG_STRING_256);
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::toUcs4_impl()
+{
+    QFETCH(const QString, unicode);
+    QFETCH(const QVector<uint>, ucs4);
+
+    const auto str = make<String>(unicode);
+
+    const auto result = str.toUcs4();
+
+    QCOMPARE(result, ucs4);
+    QCOMPARE(unicode.isEmpty(), ucs4.isEmpty());
 }
 
 QTEST_APPLESS_MAIN(tst_QStringApiSymmetry)

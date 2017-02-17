@@ -52,7 +52,6 @@
 - (id)initWithQCocoaWindow:(QCocoaWindow *)cocoaWindow;
 
 - (BOOL)windowShouldClose:(NSNotification *)notification;
-- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame;
 
 - (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu;
 - (BOOL)window:(NSWindow *)window shouldDragDocumentWithEvent:(NSEvent *)event from:(NSPoint)dragImageLocation withPasteboard:(NSPasteboard *)pasteboard;

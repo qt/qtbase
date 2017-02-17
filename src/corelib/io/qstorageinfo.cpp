@@ -268,7 +268,7 @@ QByteArray QStorageInfo::device() const
 }
 
 /*!
-    \since 5.8
+    \since 5.9
     Returns the subvolume name for this volume.
 
     Some filesystem types allow multiple subvolumes inside one device, which

@@ -1477,10 +1477,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     qt_window_private(win)->positionPolicy = topData()->posIncludesFrame ?
         QWindowPrivate::WindowFrameInclusive : QWindowPrivate::WindowFrameExclusive;
-    win->create();
-    // Enable nonclient-area events for QDockWidget and other NonClientArea-mouse event processing.
-    if ((flags & Qt::Desktop) == Qt::Window)
+
+    if (q->windowType() != Qt::Desktop || q->testAttribute(Qt::WA_NativeWindow)) {
+        win->create();
+        // Enable nonclient-area events for QDockWidget and other NonClientArea-mouse event processing.
         win->handle()->setFrameStrutEventsEnabled(true);
+    }
 
     data.window_flags = win->flags();
     if (!win->isTopLevel()) // In a Widget world foreign windows can only be top level
@@ -1501,10 +1503,13 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 
     setWindowModified_helper();
-    WId id = win->winId();
-    // See the QPlatformWindow::winId() documentation
-    Q_ASSERT(id != WId(0));
-    setWinId(id);
+
+    if (win->handle()) {
+        WId id = win->winId();
+        // See the QPlatformWindow::winId() documentation
+        Q_ASSERT(id != WId(0));
+        setWinId(id);
+    }
 
     // Check children and create windows for them if necessary
     q_createNativeChildrenAndSetParent(q);

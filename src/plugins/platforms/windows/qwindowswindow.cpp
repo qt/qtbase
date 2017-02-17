@@ -43,7 +43,11 @@
 #include "qwindowsscreen.h"
 #include "qwindowsintegration.h"
 #include "qwindowsnativeinterface.h"
-#include "qwindowsglcontext.h"
+#if QT_CONFIG(dynamicgl)
+#  include "qwindowsglcontext.h"
+#else
+#  include "qwindowsopenglcontext.h"
+#endif
 #ifdef QT_NO_CURSOR
 #  include "qwindowscursor.h"
 #endif
@@ -1546,10 +1550,16 @@ void QWindowsWindow::handleGeometryChange()
         && !(m_data.geometry.width() > previousGeometry.width() || m_data.geometry.height() > previousGeometry.height())) {
         fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), true);
     }
-    if (previousGeometry.topLeft() != m_data.geometry.topLeft()) {
-        QPlatformScreen *newScreen = screenForGeometry(m_data.geometry);
-        if (newScreen != screen())
-            QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+    if (!parent() && previousGeometry.topLeft() != m_data.geometry.topLeft()) {
+        HMONITOR hMonitor = MonitorFromWindow(m_data.hwnd, MONITOR_DEFAULTTONULL);
+        QPlatformScreen *currentScreen = screen();
+        const auto screens = QWindowsContext::instance()->screenManager().screens();
+        auto newScreenIt = std::find_if(screens.begin(), screens.end(), [&](QWindowsScreen *s) {
+            return s->data().hMonitor == hMonitor
+                && s->data().flags & QWindowsScreenData::VirtualDesktop;
+        });
+        if (newScreenIt != screens.end() && *newScreenIt != currentScreen)
+            QWindowSystemInterface::handleWindowScreenChanged(window(), (*newScreenIt)->screen());
     }
     if (testFlag(SynchronousGeometryChangeEvent))
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
@@ -1629,7 +1639,8 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
     if (message == WM_ERASEBKGND) // Backing store - ignored.
         return true;
     // Ignore invalid update bounding rectangles
-    if (!GetUpdateRect(m_data.hwnd, 0, FALSE))
+    RECT updateRect;
+    if (!GetUpdateRect(m_data.hwnd, &updateRect, FALSE))
         return false;
     PAINTSTRUCT ps;
 
@@ -1653,7 +1664,7 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
     // we still need to send isExposed=true, for compatibility.
     // Our tests depend on it.
     fireExpose(QRegion(qrectFromRECT(ps.rcPaint)), true);
-    if (!QWindowsContext::instance()->asyncExpose())
+    if (qSizeOfRect(updateRect) == m_data.geometry.size() && !QWindowsContext::instance()->asyncExpose())
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
     EndPaint(hwnd, &ps);
@@ -2121,8 +2132,12 @@ void QWindowsWindow::setFrameStrutEventsEnabled(bool enabled)
 
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
-    const QWindowsGeometryHint hint(window(), m_data.customMargins);
-    hint.applyToMinMaxInfo(m_data.hwnd, mmi);
+    // We don't apply the min/max size hint as we change the dpi, because we did not adjust the
+    // QScreen of the window yet so we don't have the min/max with the right ratio
+    if (!testFlag(QWindowsWindow::WithinDpiChanged)) {
+        const QWindowsGeometryHint hint(window(), m_data.customMargins);
+        hint.applyToMinMaxInfo(m_data.hwnd, mmi);
+    }
 
     if ((testFlag(WithinMaximize) || (window()->windowState() == Qt::WindowMinimized))
             && (m_data.flags & Qt::FramelessWindowHint)) {

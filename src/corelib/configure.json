@@ -211,8 +211,7 @@
         },
         "dlopen": {
             "label": "dlopen()",
-            "condition": "tests.dlopen || libs.libdl",
-            "output": [ { "type": "define", "negative": true, "name": "QT_NO_DYNAMIC_LIBRARY" } ]
+            "condition": "tests.dlopen || libs.libdl"
         },
         "libdl": {
             "label": "dlopen() in libdl",
@@ -443,7 +442,7 @@
             "label": "QProcess",
             "purpose": "Supports external process invocation.",
             "section": "File I/O",
-            "condition": "!config.winrt && !config.uikit && !config.integrity && !config.vxworks",
+            "condition": "features.processenvironment && !config.winrt && !config.uikit && !config.integrity && !config.vxworks",
             "output": [ "publicFeature", "feature" ]
         },
         "processenvironment": {
@@ -463,6 +462,7 @@
             "label": "QLibrary",
             "purpose": "Provides a wrapper for dynamically loaded libraries.",
             "section": "File I/O",
+            "condition": "config.win32 || config.hpux || (!config.nacl && features.dlopen)",
             "output": [ "publicFeature", "feature" ]
         },
         "settings": {

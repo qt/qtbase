@@ -96,7 +96,7 @@ void qt_create_tls()
 {
     if (qt_current_thread_data_tls_index != TLS_OUT_OF_INDEXES)
         return;
-    static QMutex mutex;
+    static QBasicMutex mutex;
     QMutexLocker locker(&mutex);
     qt_current_thread_data_tls_index = TlsAlloc();
 }
@@ -137,7 +137,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         }
         threadData->deref();
         threadData->isAdopted = true;
-        threadData->threadId = reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId()));
+        threadData->threadId.store(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
 
         if (!QCoreApplicationPrivate::theMainThread) {
             QCoreApplicationPrivate::theMainThread = threadData->thread.load();
@@ -166,7 +166,7 @@ void QAdoptedThread::init()
 
 static QVector<HANDLE> qt_adopted_thread_handles;
 static QVector<QThread *> qt_adopted_qthreads;
-static QMutex qt_adopted_thread_watcher_mutex;
+static QBasicMutex qt_adopted_thread_watcher_mutex;
 static DWORD qt_adopted_thread_watcher_id = 0;
 static HANDLE qt_adopted_thread_wakeup = 0;
 
@@ -351,7 +351,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
 
     qt_create_tls();
     TlsSetValue(qt_current_thread_data_tls_index, data);
-    data->threadId = reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId()));
+    data->threadId.store(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
 
     QThread::setTerminationEnabled(false);
 

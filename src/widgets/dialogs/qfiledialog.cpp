@@ -656,7 +656,7 @@ void QFileDialogPrivate::retranslateStrings()
     /* WIDGETS */
     if (options->useDefaultNameFilters())
         q->setNameFilter(QFileDialogOptions::defaultNameFilterString());
-    if (nativeDialogInUse)
+    if (!usingWidgets())
         return;
 
     QList<QAction*> actions = qFileDialogUi->treeView->header()->actions();
@@ -2246,7 +2246,7 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
 }
 
 /*!
-    This is a convenience static function that will return or or more existing
+    This is a convenience static function that will return one or more existing
     files selected by the user. If the user presses Cancel, it returns an
     empty list.
 

@@ -148,6 +148,14 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMEROUTPUTEXTPROC) (EGLDisplay 
 #define EGL_PLATFORM_X11_KHR              0x31D5
 #endif
 
+#ifndef EGL_NV_stream_attrib
+typedef EGLStreamKHR (EGLAPIENTRYP PFNEGLCREATESTREAMATTRIBNVPROC) (EGLDisplay dpy, const EGLAttrib *attrib_list);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLSETSTREAMATTRIBNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLAttrib value);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYSTREAMATTRIBNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLAttrib *value);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMERACQUIREATTRIBNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, const EGLAttrib *attrib_list);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMERRELEASEATTRIBNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, const EGLAttrib *attrib_list);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QEGLStreamConvenience
@@ -160,6 +168,11 @@ public:
     PFNEGLQUERYDEVICESEXTPROC query_devices;
     PFNEGLQUERYDEVICESTRINGEXTPROC query_device_string;
     PFNEGLCREATESTREAMKHRPROC create_stream;
+    PFNEGLCREATESTREAMATTRIBNVPROC create_stream_attrib_nv;
+    PFNEGLSETSTREAMATTRIBNVPROC set_stream_attrib_nv;
+    PFNEGLQUERYSTREAMATTRIBNVPROC query_stream_attrib_nv;
+    PFNEGLSTREAMCONSUMERACQUIREATTRIBNVPROC acquire_stream_attrib_nv;
+    PFNEGLSTREAMCONSUMERRELEASEATTRIBNVPROC release_stream_attrib_nv;
     PFNEGLDESTROYSTREAMKHRPROC destroy_stream;
     PFNEGLSTREAMATTRIBKHRPROC stream_attrib;
     PFNEGLQUERYSTREAMKHRPROC query_stream;

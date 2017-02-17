@@ -142,10 +142,12 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
     data += sizeof(qelfhalf_t); // e_shtrndx
 
     if ((quint32)(e_shnum * e_shentsize) > fdlen) {
-        if (lib)
-            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)")
-                               .arg(library, QLibrary::tr("announced %1 section(s), each %2 byte(s), exceed file size")
-                                             .arg(e_shnum).arg(e_shentsize));
+        if (lib) {
+            const QString message =
+                QLibrary::tr("announced %n section(s), each %1 byte(s), exceed file size",
+                             nullptr, int(e_shnum)).arg(e_shentsize);
+            lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, message);
+        }
         return Corrupt;
     }
 

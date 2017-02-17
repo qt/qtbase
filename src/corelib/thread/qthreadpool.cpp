@@ -245,7 +245,8 @@ void QThreadPoolPrivate::startThread(QRunnable *runnable)
 {
     QScopedPointer <QThreadPoolThread> thread(new QThreadPoolThread(this));
     thread->setObjectName(QLatin1String("Thread (pooled)"));
-    allThreads.insert(thread.data());
+    Q_ASSERT(!allThreads.contains(thread.data())); // if this assert hits, we have an ABA problem (deleted threads don't get removed here)
+    allThreads.append(thread.data());
     ++activeThreads;
 
     if (runnable->autoDelete())
@@ -265,7 +266,7 @@ void QThreadPoolPrivate::reset()
 
     while (!allThreads.empty()) {
         // move the contents of the set out so that we can iterate without the lock
-        QSet<QThreadPoolThread *> allThreadsCopy;
+        QList<QThreadPoolThread *> allThreadsCopy;
         allThreadsCopy.swap(allThreads);
         locker.unlock();
 

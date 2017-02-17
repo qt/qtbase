@@ -108,7 +108,6 @@ QTOBJS= \
 	qtextstream.obj \
 	qdatastream.obj \
 	quuid.obj \
-	qvector.obj \
 	qsettings.obj \
 	qvariant.obj \
 	qsettings_win.obj \

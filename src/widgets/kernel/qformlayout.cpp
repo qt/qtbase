@@ -1551,24 +1551,19 @@ QFormLayout::TakeRowResult QFormLayout::takeRow(int row)
 {
     Q_D(QFormLayout);
 
-    const int storageIndex = storageIndexFromLayoutItem(d->m_matrix, d->m_things.value(row));
-    if (Q_UNLIKELY(storageIndex == -1)) {
+    if (Q_UNLIKELY(!(uint(row) < uint(d->m_matrix.rowCount())))) {
         qWarning("QFormLayout::takeRow: Invalid row %d", row);
         return TakeRowResult();
     }
 
-    int storageRow, dummy;
-    QFormLayoutPrivate::ItemMatrix::storageIndexToPosition(storageIndex, &storageRow, &dummy);
-    Q_ASSERT(d->m_matrix(storageRow, dummy));
-
-    QFormLayoutItem *label = d->m_matrix(storageRow, 0);
-    QFormLayoutItem *field = d->m_matrix(storageRow, 1);
+    QFormLayoutItem *label = d->m_matrix(row, 0);
+    QFormLayoutItem *field = d->m_matrix(row, 1);
 
     Q_ASSERT(field);
 
     d->m_things.removeOne(label);
     d->m_things.removeOne(field);
-    d->m_matrix.removeRow(storageRow);
+    d->m_matrix.removeRow(row);
 
     invalidate();
 

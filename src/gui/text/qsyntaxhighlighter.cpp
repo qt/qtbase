@@ -243,6 +243,8 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
 
     \snippet code/src_gui_text_qsyntaxhighlighter.cpp 1
 
+    \target QSyntaxHighlighter multiblock
+
     Some syntaxes can have constructs that span several text
     blocks. For example, a C++ syntax highlighter should be able to
     cope with \c{/}\c{*...*}\c{/} multiline comments. To deal with
@@ -267,12 +269,12 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
     \snippet code/src_gui_text_qsyntaxhighlighter.cpp 2
 
     In the example above, we first set the current block state to
-    0. Then, if the previous block ended within a comment, we higlight
+    0. Then, if the previous block ended within a comment, we highlight
     from the beginning of the current block (\c {startIndex =
     0}). Otherwise, we search for the given start expression. If the
     specified end expression cannot be found in the text block, we
     change the current block state by calling setCurrentBlockState(),
-    and make sure that the rest of the block is higlighted.
+    and make sure that the rest of the block is highlighted.
 
     In addition you can query the current formatting and user data
     using the format() and currentBlockUserData() functions
@@ -411,33 +413,12 @@ void QSyntaxHighlighter::rehighlightBlock(const QTextBlock &block)
     setFormat() as often as necessary to apply any font and color
     changes that you require. For example:
 
-    \snippet code/src_gui_text_qsyntaxhighlighter.cpp 3
+    \snippet code/src_gui_text_qsyntaxhighlighter.cpp 1
 
-    Some syntaxes can have constructs that span several text
-    blocks. For example, a C++ syntax highlighter should be able to
-    cope with \c{/}\c{*...*}\c{/} multiline comments. To deal with
-    these cases it is necessary to know the end state of the previous
-    text block (e.g. "in comment").
-
-    Inside your highlightBlock() implementation you can query the end
-    state of the previous text block using the previousBlockState()
-    function. After parsing the block you can save the last state
-    using setCurrentBlockState().
-
-    The currentBlockState() and previousBlockState() functions return
-    an int value. If no state is set, the returned value is -1. You
-    can designate any other value to identify any given state using
-    the setCurrentBlockState() function. Once the state is set the
-    QTextBlock keeps that value until it is set set again or until the
-    corresponding paragraph of text gets deleted.
-
-    For example, if you're writing a simple C++ syntax highlighter,
-    you might designate 1 to signify "in comment". For a text block
-    that ended in the middle of a comment you'd set 1 using
-    setCurrentBlockState, and for other paragraphs you'd set 0.
-    In your parsing code if the return value of previousBlockState()
-    is 1, you would highlight the text as a C++ comment until you
-    reached the closing \c{*}\c{/}.
+    See the \l{QSyntaxHighlighter multiblock}{Detailed Description} for
+    examples of using setCurrentBlockState(), currentBlockState()
+    and previousBlockState() to handle syntaxes with constructs that
+    span several text blocks
 
     \sa previousBlockState(), setFormat(), setCurrentBlockState()
 */
@@ -581,7 +562,7 @@ void QSyntaxHighlighter::setCurrentBlockState(int newState)
     and store their relative position and the actual QChar in a simple
     class derived from QTextBlockUserData:
 
-    \snippet code/src_gui_text_qsyntaxhighlighter.cpp 4
+    \snippet code/src_gui_text_qsyntaxhighlighter.cpp 3
 
     During cursor navigation in the associated editor, you can ask the
     current QTextBlock (retrieved using the QTextCursor::block()

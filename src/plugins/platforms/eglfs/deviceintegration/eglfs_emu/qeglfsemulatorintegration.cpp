@@ -122,13 +122,13 @@ EGLNativeWindowType QEglFSEmulatorIntegration::createNativeWindow(QPlatformWindo
 {
     Q_UNUSED(size);
     Q_UNUSED(format);
-    static QAtomicInt uniqueWindowId(1);
     QEglFSEmulatorScreen *screen = static_cast<QEglFSEmulatorScreen *>(platformWindow->screen());
     if (screen && setDisplay) {
         // Let the emulator know which screen the window surface is attached to
         setDisplay(screen->id());
     }
-    return EGLNativeWindowType(qintptr(uniqueWindowId.fetchAndAddRelaxed(1)));
+    static QBasicAtomicInt uniqueWindowId = Q_BASIC_ATOMIC_INITIALIZER(0);
+    return EGLNativeWindowType(qintptr(1 + uniqueWindowId.fetchAndAddRelaxed(1)));
 }
 
 QT_END_NAMESPACE

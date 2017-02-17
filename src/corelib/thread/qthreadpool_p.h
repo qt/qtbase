@@ -86,7 +86,7 @@ public:
     void stealAndRunRunnable(QRunnable *runnable);
 
     mutable QMutex mutex;
-    QSet<QThreadPoolThread *> allThreads;
+    QList<QThreadPoolThread *> allThreads;
     QQueue<QThreadPoolThread *> waitingThreads;
     QQueue<QThreadPoolThread *> expiredThreads;
     QVector<QPair<QRunnable *, int> > queue;

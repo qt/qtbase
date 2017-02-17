@@ -540,6 +540,8 @@ void tst_Http2::clientPrefaceError()
 void tst_Http2::serverSettingsAcked()
 {
     serverGotSettingsACK = true;
+    if (!nRequests)
+        stopEventLoop();
 }
 
 void tst_Http2::invalidFrame()
@@ -592,7 +594,7 @@ void tst_Http2::replyFinished()
         QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     --nRequests;
-    if (!nRequests)
+    if (!nRequests && serverGotSettingsACK)
         stopEventLoop();
 }
 

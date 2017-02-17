@@ -89,12 +89,16 @@ static QImage rotated90(const QImage &src);
 static QImage rotated180(const QImage &src);
 static QImage rotated270(const QImage &src);
 
-QBasicAtomicInt qimage_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
+static int next_qimage_serial_number()
+{
+    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
+    return 1 + serial.fetchAndAddRelaxed(1);
+}
 
 QImageData::QImageData()
     : ref(0), width(0), height(0), depth(0), nbytes(0), devicePixelRatio(1.0), data(0),
       format(QImage::Format_ARGB32), bytes_per_line(0),
-      ser_no(qimage_serial_number.fetchAndAddRelaxed(1)),
+      ser_no(next_qimage_serial_number()),
       detach_no(0),
       dpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
       dpmy(qt_defaultDpiY() * 100 / qreal(2.54)),

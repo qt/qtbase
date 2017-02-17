@@ -83,17 +83,16 @@ typedef void* GLeglImageOES;
 
 # else // "uncontrolled" ES2 platforms
 
-// In "es2" builds (QT_OPENGL_ES_2) additional defines indicate if ES
-// 3.0 or higher is available. In this case include the corresponding
-// header. These are backwards compatible and it should be safe to
-// include headers on top of each other, meaning that applications can
-// include gl2.h even if gl31.h gets included here.
+// In "es2" builds (QT_OPENGL_ES_2) additional defines indicate GLES 3.0 or
+// higher is available *at build time*. In this case include the corresponding
+// header. These are backwards compatible and it should be safe to include
+// headers on top of each other, meaning that applications can include gl2.h
+// even if gl31.h gets included here.
 
-// NB! This file contains the only usages of the ES_3 and ES_3_1
-// macros. They are useless for pretty much anything else. The fact
-// that Qt was built against an SDK with f.ex. ES 2 only does not mean
-// applications cannot target ES 3. Therefore QOpenGLFunctions and
-// friends do everything dynamically and never rely on these macros.
+// NB! The fact that Qt was built against an SDK with GLES 2 only does not mean
+// applications cannot be deployed on a GLES 3 system. Therefore
+// QOpenGLFunctions and friends must do everything dynamically and must not rely
+// on these macros, except in special cases for controlled build/run environments.
 
 // Some Khronos headers use the ext proto guard in the standard headers as well,
 // which is bad. Work it around, but avoid spilling over to the ext header.

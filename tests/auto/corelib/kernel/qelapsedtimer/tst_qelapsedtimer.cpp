@@ -31,7 +31,7 @@
 #include <QtCore/QElapsedTimer>
 #include <QtTest/QtTest>
 
-static const int minResolution = 50; // the minimum resolution for the tests
+static const int minResolution = 100; // the minimum resolution for the tests
 
 QDebug operator<<(QDebug s, const QElapsedTimer &t)
 {
@@ -107,7 +107,7 @@ void tst_QElapsedTimer::elapsed()
     QElapsedTimer t1;
     t1.start();
 
-    QTest::qSleep(4*minResolution);
+    QTest::qSleep(2*minResolution);
     QElapsedTimer t2;
     t2.start();
 
@@ -128,8 +128,8 @@ void tst_QElapsedTimer::elapsed()
     QVERIFY(!t2.hasExpired(-1));
 
     qint64 elapsed = t1.restart();
-    QVERIFY(elapsed > 3*minResolution);
-    QVERIFY(elapsed < 5*minResolution);
+    QVERIFY(elapsed > minResolution);
+    QVERIFY(elapsed < 3*minResolution);
     qint64 diff = t2.msecsTo(t1);
     QVERIFY(diff < minResolution);
 }

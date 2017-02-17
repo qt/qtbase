@@ -113,7 +113,7 @@ public:
     {
     }
 
-    void init();
+    void init(QScreen *targetScreen = nullptr);
 
     void maybeQuitOnLastWindowClosed();
 #ifndef QT_NO_CURSOR

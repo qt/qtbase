@@ -65,36 +65,36 @@ namespace QtAndroidPrivate
     class Q_CORE_EXPORT ActivityResultListener
     {
     public:
-        virtual ~ActivityResultListener() {}
+        virtual ~ActivityResultListener();
         virtual bool handleActivityResult(jint requestCode, jint resultCode, jobject data) = 0;
     };
 
     class Q_CORE_EXPORT NewIntentListener
     {
     public:
-        virtual ~NewIntentListener() {}
+        virtual ~NewIntentListener();
         virtual bool handleNewIntent(JNIEnv *env, jobject intent) = 0;
     };
 
     class Q_CORE_EXPORT ResumePauseListener
     {
     public:
-        virtual ~ResumePauseListener() {}
-        virtual void handlePause() {};
-        virtual void handleResume() {};
+        virtual ~ResumePauseListener();
+        virtual void handlePause();
+        virtual void handleResume();
     };
 
     class Q_CORE_EXPORT GenericMotionEventListener
     {
     public:
-        virtual ~GenericMotionEventListener() {}
+        virtual ~GenericMotionEventListener();
         virtual bool handleGenericMotionEvent(jobject event) = 0;
     };
 
     class Q_CORE_EXPORT KeyEventListener
     {
     public:
-        virtual ~KeyEventListener() {}
+        virtual ~KeyEventListener();
         virtual bool handleKeyEvent(jobject event) = 0;
     };
 

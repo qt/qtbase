@@ -40,6 +40,8 @@
 #include "qwindowsfontdatabase_ft_p.h"
 #include "qwindowsfontdatabase_p.h"
 
+#include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
+
 #include <ft2build.h>
 #include FT_TRUETYPE_TABLES_H
 
@@ -47,7 +49,6 @@
 #include <QtCore/QDirIterator>
 #include <QtCore/QSettings>
 #include <QtCore/QRegularExpression>
-#include <QtGui/private/qfontengine_ft_p.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QFontDatabase>
 

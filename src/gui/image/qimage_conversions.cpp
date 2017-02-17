@@ -46,6 +46,22 @@
 
 QT_BEGIN_NAMESPACE
 
+struct QDefaultColorTables
+{
+    QDefaultColorTables()
+        : gray(256), alpha(256)
+    {
+        for (int i = 0; i < 256; ++i) {
+            gray[i] = qRgb(i, i, i);
+            alpha[i] = qRgba(0, 0, 0, i);
+        }
+    }
+
+    QVector<QRgb> gray, alpha;
+};
+
+Q_GLOBAL_STATIC(QDefaultColorTables, defaultColorTables);
+
 // table to flip bits
 static const uchar bitflip[256] = {
     /*
@@ -1952,11 +1968,7 @@ static void convert_Alpha8_to_Indexed8(QImageData *dest, const QImageData *src, 
 
     memcpy(dest->data, src->data, src->bytes_per_line * src->height);
 
-    QVector<QRgb> colors(256);
-    for (int i=0; i<256; ++i)
-        colors[i] = qRgba(0, 0, 0, i);
-
-    dest->colortable = colors;
+    dest->colortable = defaultColorTables->alpha;
 }
 
 static void convert_Grayscale8_to_Indexed8(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
@@ -1966,22 +1978,15 @@ static void convert_Grayscale8_to_Indexed8(QImageData *dest, const QImageData *s
 
     memcpy(dest->data, src->data, src->bytes_per_line * src->height);
 
-    QVector<QRgb> colors(256);
-    for (int i=0; i<256; ++i)
-        colors[i] = qRgb(i, i, i);
 
-    dest->colortable = colors;
+    dest->colortable = defaultColorTables->gray;
 }
 
 static bool convert_Alpha8_to_Indexed8_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_Alpha8);
 
-    QVector<QRgb> colors(256);
-    for (int i=0; i<256; ++i)
-        colors[i] = qRgba(0, 0, 0, i);
-
-    data->colortable = colors;
+    data->colortable = defaultColorTables->alpha;
     data->format = QImage::Format_Indexed8;
 
     return true;
@@ -1991,11 +1996,7 @@ static bool convert_Grayscale8_to_Indexed8_inplace(QImageData *data, Qt::ImageCo
 {
     Q_ASSERT(data->format == QImage::Format_Grayscale8);
 
-    QVector<QRgb> colors(256);
-    for (int i=0; i<256; ++i)
-        colors[i] = qRgb(i, i, i);
-
-    data->colortable = colors;
+    data->colortable = defaultColorTables->gray;
     data->format = QImage::Format_Indexed8;
 
     return true;

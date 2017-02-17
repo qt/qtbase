@@ -82,6 +82,7 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
     if (GetMonitorInfo(hMonitor, &info) == FALSE)
         return false;
 
+    data->hMonitor = hMonitor;
     data->geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     data->availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
     data->name = QString::fromWCharArray(info.szDevice);

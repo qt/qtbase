@@ -103,6 +103,11 @@ void QEGLStreamConvenience::initialize(EGLDisplay dpy)
     stream_consumer_gltexture = reinterpret_cast<PFNEGLSTREAMCONSUMERGLTEXTUREEXTERNALKHRPROC>(eglGetProcAddress("eglStreamConsumerGLTextureExternalKHR"));
     stream_consumer_acquire = reinterpret_cast<PFNEGLSTREAMCONSUMERACQUIREKHRPROC>(eglGetProcAddress("eglStreamConsumerAcquireKHR"));
     stream_consumer_release = reinterpret_cast<PFNEGLSTREAMCONSUMERRELEASEKHRPROC>(eglGetProcAddress("eglStreamConsumerReleaseKHR"));
+    create_stream_attrib_nv = reinterpret_cast<PFNEGLCREATESTREAMATTRIBNVPROC>(eglGetProcAddress("eglCreateStreamAttribNV"));
+    set_stream_attrib_nv = reinterpret_cast<PFNEGLSETSTREAMATTRIBNVPROC>(eglGetProcAddress("eglSetStreamAttribNV"));
+    query_stream_attrib_nv = reinterpret_cast<PFNEGLQUERYSTREAMATTRIBNVPROC>(eglGetProcAddress("eglQueryStreamAttribNV"));
+    acquire_stream_attrib_nv = reinterpret_cast<PFNEGLSTREAMCONSUMERACQUIREATTRIBNVPROC>(eglGetProcAddress("eglStreamConsumerAcquireAttribNV"));
+    release_stream_attrib_nv = reinterpret_cast<PFNEGLSTREAMCONSUMERRELEASEATTRIBNVPROC>(eglGetProcAddress("eglStreamConsumerReleaseAttribNV"));
 
     has_egl_stream = strstr(extensions, "EGL_KHR_stream");
     has_egl_stream_producer_eglsurface = strstr(extensions, "EGL_KHR_stream_producer_eglsurface");

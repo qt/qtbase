@@ -256,11 +256,12 @@ Q_ALWAYS_INLINE uint16x4_t addWithSaturation(uint16x4_t a, uint16x4_t b)
 inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
 {
     QRgba64 blend;
-#ifdef __SSE2__
+#if defined(__SSE2__)
     __m128i vd = _mm_loadl_epi64((const __m128i *)&d);
     __m128i vs = _mm_loadl_epi64((const __m128i *)&s);
     __m128i va =  _mm_cvtsi32_si128(rgbAlpha);
     va = _mm_unpacklo_epi8(va, va);
+    va = _mm_shufflelo_epi16(va, _MM_SHUFFLE(3, 0, 1, 2));
     __m128i vb = _mm_xor_si128(_mm_set1_epi16(-1), va);
 
     vs = _mm_unpacklo_epi16(_mm_mullo_epi16(vs, va), _mm_mulhi_epu16(vs, va));
@@ -275,7 +276,7 @@ inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
 #elif defined(__ARM_NEON__)
     uint16x4_t vd = vreinterpret_u16_u64(vmov_n_u64(d));
     uint16x4_t vs = vreinterpret_u16_u64(vmov_n_u64(s));
-    uint8x8_t va8 = vreinterpret_u8_u32(vmov_n_u32(rgbAlpha));
+    uint8x8_t va8 = vreinterpret_u8_u32(vmov_n_u32(ARGB2RGBA(rgbAlpha)));
     uint16x4_t va = vreinterpret_u16_u8(vzip_u8(va8, va8).val[0]);
     uint16x4_t vb = vdup_n_u16(0xffff);
     vb = vsub_u16(vb, va);

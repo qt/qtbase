@@ -205,7 +205,8 @@ public:
         MaximizeToFullScreen = 0x80000,
         InputMethodDisabled = 0x100000,
         Compositing = 0x200000,
-        HasBorderInFullScreen = 0x400000
+        HasBorderInFullScreen = 0x400000,
+        WithinDpiChanged = 0x800000,
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);

@@ -968,10 +968,10 @@ QUuid QUuid::createUuid()
         if (!uuidseed.hasLocalData())
         {
             int *pseed = new int;
-            static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
+            static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
             qsrand(*pseed = QDateTime::currentSecsSinceEpoch()
                    + quintptr(&pseed)
-                   + serial.fetchAndAddRelaxed(1));
+                   + 2 + serial.fetchAndAddRelaxed(1));
             uuidseed.setLocalData(pseed);
         }
 #else

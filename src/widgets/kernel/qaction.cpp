@@ -625,7 +625,7 @@ QActionGroup *QAction::actionGroup() const
     it is displayed to the left of the menu text. There is no default
     icon.
 
-    If a null icon (QIcon::isNull() is passed into this function,
+    If a null icon (QIcon::isNull()) is passed into this function,
     the icon of the action is cleared.
 */
 void QAction::setIcon(const QIcon &icon)

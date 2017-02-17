@@ -617,40 +617,34 @@ bool QLibrary::isLibrary(const QString &fileName)
 {
 #if defined(Q_OS_WIN)
     return fileName.endsWith(QLatin1String(".dll"), Qt::CaseInsensitive);
-#else
+#else // Generic Unix
     QString completeSuffix = QFileInfo(fileName).completeSuffix();
     if (completeSuffix.isEmpty())
         return false;
     const QVector<QStringRef> suffixes = completeSuffix.splitRef(QLatin1Char('.'));
-# if defined(Q_OS_DARWIN)
-
-    // On Mac, libs look like libmylib.1.0.0.dylib
-    const QStringRef &lastSuffix = suffixes.at(suffixes.count() - 1);
-    const QStringRef &firstSuffix = suffixes.at(0);
-
-    bool valid = (lastSuffix == QLatin1String("dylib")
-            || firstSuffix == QLatin1String("so")
-            || firstSuffix == QLatin1String("bundle"));
-
-    return valid;
-# else  // Generic Unix
     QStringList validSuffixList;
 
-#  if defined(Q_OS_HPUX)
+# if defined(Q_OS_HPUX)
 /*
     See "HP-UX Linker and Libraries User's Guide", section "Link-time Differences between PA-RISC and IPF":
     "In PA-RISC (PA-32 and PA-64) shared libraries are suffixed with .sl. In IPF (32-bit and 64-bit),
     the shared libraries are suffixed with .so. For compatibility, the IPF linker also supports the .sl suffix."
  */
     validSuffixList << QLatin1String("sl");
-#   if defined __ia64
-    validSuffixList << QLatin1String("so");
-#   endif
-#  elif defined(Q_OS_AIX)
-    validSuffixList << QLatin1String("a") << QLatin1String("so");
-#  elif defined(Q_OS_UNIX)
+#  if defined __ia64
     validSuffixList << QLatin1String("so");
 #  endif
+# elif defined(Q_OS_AIX)
+    validSuffixList << QLatin1String("a") << QLatin1String("so");
+# elif defined(Q_OS_DARWIN)
+    // On Apple platforms, dylib look like libmylib.1.0.0.dylib
+    if (suffixes.last() == QLatin1String("dylib"))
+        return true;
+
+    validSuffixList << QLatin1String("so") << QLatin1String("bundle");
+# elif defined(Q_OS_UNIX)
+    validSuffixList << QLatin1String("so");
+# endif
 
     // Examples of valid library names:
     //  libfoo.so
@@ -669,9 +663,7 @@ bool QLibrary::isLibrary(const QString &fileName)
         if (i != suffixPos)
             suffixes.at(i).toInt(&valid);
     return valid;
-# endif
 #endif
-
 }
 
 typedef const char * (*QtPluginQueryVerificationDataFunction)();

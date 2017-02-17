@@ -56,6 +56,10 @@
 #  define WM_GESTURE 0x0119
 #endif
 
+#ifndef WM_DPICHANGED
+#  define WM_DPICHANGED 0x02E0
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWindows
@@ -96,6 +100,7 @@ enum WindowsEventType // Simplify event types
     FocusInEvent = WindowEventFlag + 17,
     FocusOutEvent = WindowEventFlag + 18,
     WhatsThisEvent = WindowEventFlag + 19,
+    DpiChangedEvent = WindowEventFlag + 21,
     MouseEvent = MouseEventFlag + 1,
     MouseWheelEvent = MouseEventFlag + 2,
     CursorEvent = MouseEventFlag + 3,
@@ -266,6 +271,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
 #endif
     case WM_GESTURE:
         return QtWindows::GestureEvent;
+    case WM_DPICHANGED:
+        return QtWindows::DpiChangedEvent;
     default:
         break;
     }

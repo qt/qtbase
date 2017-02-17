@@ -566,9 +566,9 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
     if(!project->isEmpty("QMAKE_PRE_LINK"))
         t << "\n\t" <<var("QMAKE_PRE_LINK");
     if(project->isActiveConfig("staticlib")) {
-        t << "\n\t$(LIBAPP) $(LIBFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) @<<\n\t  "
-          << "$(OBJECTS)"
-          << "\n<<";
+        t << "\n\t$(LIBAPP) $(LIBFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) @<<\n\t  ";
+        writeResponseFileFiles(t, project->values("OBJECTS"));
+        t << "<<";
     } else {
         const bool embedManifest = ((templateName == "app" && project->isActiveConfig("embed_manifest_exe"))
                                     || (templateName == "lib" && project->isActiveConfig("embed_manifest_dll")
@@ -652,11 +652,38 @@ void NmakeMakefileGenerator::writeLinkCommand(QTextStream &t, const QString &ext
     t << "$(LINKER) $(LFLAGS)";
     if (!extraFlags.isEmpty())
         t << ' ' << extraFlags;
-    t << " " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) @<<\n"
-      << "$(OBJECTS) $(LIBS)";
+    t << " " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) @<<\n";
+    writeResponseFileFiles(t, project->values("OBJECTS"));
+    t << "$(LIBS)\n";
     if (!extraInlineFileContent.isEmpty())
-        t << ' ' << extraInlineFileContent;
-    t << "\n<<";
+        t << extraInlineFileContent << '\n';
+    t << "<<";
+}
+
+void NmakeMakefileGenerator::writeResponseFileFiles(QTextStream &t, const ProStringList &files)
+{
+    if (files.isEmpty())
+        return;
+    // Add line breaks in file lists in reponse files to work around LNK1170.
+    // The actual line length limit is 131070, but let's use a smaller limit
+    // in case other tools are similarly hampered.
+    const int maxLineLength = 1000;
+    int len = 0;
+    for (const ProString &file : files) {
+        const ProString escapedFilePath = escapeFilePath(file);
+        if (len) {
+            if (len + escapedFilePath.length() > maxLineLength) {
+                t << '\n';
+                len = 0;
+            } else {
+                t << ' ';
+                len++;
+            }
+        }
+        t << escapedFilePath;
+        len += escapedFilePath.length();
+    }
+    t << '\n';
 }
 
 int NmakeMakefileGenerator::msvcVersion() const

@@ -230,12 +230,39 @@
 // SSE4.2 intrinsics
 #if defined(__SSE4_2__) || (defined(QT_COMPILER_SUPPORTS_SSE4_2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <nmmintrin.h>
+
+#  if defined(__SSE4_2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
+// POPCNT instructions:
+// All processors that support SSE4.2 support POPCNT
+// (but neither MSVC nor the Intel compiler define this macro)
+#    define __POPCNT__                      1
+#  endif
 #endif
 
 // AVX intrinsics
 #if defined(__AVX__) || (defined(QT_COMPILER_SUPPORTS_AVX) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 // immintrin.h is the ultimate header, we don't need anything else after this
 #include <immintrin.h>
+
+#  if defined(__AVX__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
+// AES, PCLMULQDQ instructions:
+// All processors that support AVX support AES, PCLMULQDQ
+// (but neither MSVC nor the Intel compiler define these macros)
+#    define __AES__                         1
+#    define __PCLMUL__                      1
+#  endif
+
+#  if defined(__AVX2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
+// F16C & RDRAND instructions:
+// All processors that support AVX2 support F16C & RDRAND:
+// (but neither MSVC nor the Intel compiler define these macros)
+#    define __F16C__                        1
+#    define __RDRND__                       1
+#  endif
+#endif
+
+#if defined(__AES__) || defined(__PCLMUL__)
+#  include <wmmintrin.h>
 #endif
 
 #define QT_FUNCTION_TARGET_STRING_SSE2      "sse2"
@@ -255,7 +282,10 @@
 #define QT_FUNCTION_TARGET_STRING_AVX512IFMA    "avx512ifma"
 #define QT_FUNCTION_TARGET_STRING_AVX512VBMI    "avx512vbmi"
 
-#define QT_FUNCTION_TARGET_STRING_F16C          "f16c"
+#define QT_FUNCTION_TARGET_STRING_AES           "aes,sse4.2"
+#define QT_FUNCTION_TARGET_STRING_PCLMUL        "pclmul,sse4.2"
+#define QT_FUNCTION_TARGET_STRING_POPCNT        "popcnt"
+#define QT_FUNCTION_TARGET_STRING_F16C          "f16c,avx"
 #define QT_FUNCTION_TARGET_STRING_RDRAND        "rdrnd"
 #define QT_FUNCTION_TARGET_STRING_BMI           "bmi"
 #define QT_FUNCTION_TARGET_STRING_BMI2          "bmi2"

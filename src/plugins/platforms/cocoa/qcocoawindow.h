@@ -217,7 +217,7 @@ public:
     bool windowShouldClose();
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
 
-    void setSynchedWindowStateFromWindow();
+    void reportCurrentWindowState(bool unconditionally = false);
 
     NSInteger windowLevel(Qt::WindowFlags flags);
     NSUInteger windowStyleMask(Qt::WindowFlags flags);
@@ -284,9 +284,14 @@ protected:
     QCocoaNSWindow *createNSWindow(bool shouldBeChildNSWindow, bool shouldBePanel);
 
     QRect nativeWindowGeometry() const;
-    void syncWindowState(Qt::WindowState newState);
     void reinsertChildWindow(QCocoaWindow *child);
     void removeChildWindow(QCocoaWindow *child);
+
+    Qt::WindowState windowState() const;
+    void applyWindowState(Qt::WindowState newState);
+    void toggleMaximized();
+    void toggleFullScreen();
+    bool isTransitioningToFullScreen() const;
 
 // private:
 public: // for QNSView
@@ -304,8 +309,7 @@ public: // for QNSView
     bool m_viewIsToBeEmbedded; // true if the m_view is intended to be embedded in a "foreign" NSView hiearchy
 
     Qt::WindowFlags m_windowFlags;
-    bool m_effectivelyMaximized;
-    Qt::WindowState m_synchedWindowState;
+    Qt::WindowState m_lastReportedWindowState;
     Qt::WindowModality m_windowModality;
     QPointer<QWindow> m_enterLeaveTargetWindow;
     bool m_windowUnderMouse;
@@ -338,11 +342,6 @@ public: // for QNSView
     bool m_drawContentBorderGradient;
     int m_topContentBorderThickness;
     int m_bottomContentBorderThickness;
-
-    // used by showFullScreen in fake mode
-    QRect m_normalGeometry;
-    Qt::WindowFlags m_oldWindowFlags;
-    NSApplicationPresentationOptions m_presentationOptions;
 
     struct BorderRange {
         BorderRange(quintptr i, int u, int l) : identifier(i), upper(u), lower(l) { }

@@ -183,7 +183,11 @@ void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
     \sa QAbstractSocket, {http://www.rfc-editor.org/rfc/rfc3492.txt}{RFC 3492}
 */
 
-static QBasicAtomicInt theIdCounter = Q_BASIC_ATOMIC_INITIALIZER(1);
+static int nextId()
+{
+    static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(0);
+    return 1 + counter.fetchAndAddRelaxed(1);
+}
 
 /*!
     Looks up the IP address(es) associated with host name \a name, and
@@ -229,7 +233,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
 
     qRegisterMetaType<QHostInfo>();
 
-    int id = theIdCounter.fetchAndAddRelaxed(1); // generate unique ID
+    int id = nextId(); // generate unique ID
 
     if (name.isEmpty()) {
         if (!receiver)
@@ -596,7 +600,7 @@ int QHostInfo::lookupHostImpl(const QString &name,
 
     qRegisterMetaType<QHostInfo>();
 
-    int id = theIdCounter.fetchAndAddRelaxed(1); // generate unique ID
+    int id = nextId(); // generate unique ID
 
     if (Q_UNLIKELY(name.isEmpty())) {
         QHostInfo hostInfo(id);

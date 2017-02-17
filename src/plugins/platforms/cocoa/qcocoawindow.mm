@@ -87,6 +87,36 @@ static void qt_closePopups()
     }
 }
 
+@interface NSWindow (FullScreenProperty)
+@property(readonly) BOOL qt_fullScreen;
+@end
+
+@implementation NSWindow (FullScreenProperty)
+
++ (void)load
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserverForName:NSWindowDidEnterFullScreenNotification object:nil queue:nil
+        usingBlock:^(NSNotification *notification) {
+            objc_setAssociatedObject(notification.object, @selector(qt_fullScreen),
+                [NSNumber numberWithBool:YES], OBJC_ASSOCIATION_RETAIN);
+        }
+    ];
+    [center addObserverForName:NSWindowDidExitFullScreenNotification object:nil queue:nil
+        usingBlock:^(NSNotification *notification) {
+            objc_setAssociatedObject(notification.object, @selector(qt_fullScreen),
+                nil, OBJC_ASSOCIATION_RETAIN);
+        }
+    ];
+}
+
+- (BOOL)qt_fullScreen
+{
+    NSNumber *number = objc_getAssociatedObject(self, @selector(qt_fullScreen));
+    return [number boolValue];
+}
+@end
+
 @implementation QNSWindowHelper
 
 @synthesize window = _window;
@@ -409,8 +439,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_nsWindow(0)
     , m_viewIsEmbedded(false)
     , m_viewIsToBeEmbedded(false)
-    , m_effectivelyMaximized(false)
-    , m_synchedWindowState(Qt::WindowActive)
+    , m_lastReportedWindowState(Qt::WindowNoState)
     , m_windowModality(Qt::NonModal)
     , m_windowUnderMouse(false)
     , m_inConstructor(true)
@@ -435,7 +464,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_drawContentBorderGradient(false)
     , m_topContentBorderThickness(0)
     , m_bottomContentBorderThickness(0)
-    , m_normalGeometry(QRect(0,0,-1,-1))
     , m_hasWindowFilePath(false)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::QCocoaWindow" << window();
@@ -728,7 +756,7 @@ void QCocoaWindow::setVisible(bool visible)
 
             // setWindowState might have been called while the window was hidden and
             // will not change the NSWindow state in that case. Sync up here:
-            syncWindowState(window()->windowState());
+            applyWindowState(window()->windowState());
 
             if (window()->windowState() != Qt::WindowMinimized) {
                 if ((window()->modality() == Qt::WindowModal
@@ -930,7 +958,8 @@ void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
     // in line with the platform style guidelines.
     bool fixedSizeNoZoom = (windowMinimumSize().isValid() && windowMaximumSize().isValid()
                             && windowMinimumSize() == windowMaximumSize());
-    bool customizeNoZoom = ((flags & Qt::CustomizeWindowHint) && !(flags & Qt::WindowMaximizeButtonHint));
+    bool customizeNoZoom = ((flags & Qt::CustomizeWindowHint)
+        && !(flags & (Qt::WindowMaximizeButtonHint | Qt::WindowFullscreenButtonHint)));
     [[m_nsWindow standardWindowButton:NSWindowZoomButton] setEnabled:!(fixedSizeNoZoom || customizeNoZoom)];
 }
 
@@ -965,13 +994,16 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         setWindowZoomButton(flags);
     }
 
+    if (m_nsWindow)
+        m_nsWindow.ignoresMouseEvents = flags & Qt::WindowTransparentForInput;
+
     m_windowFlags = flags;
 }
 
 void QCocoaWindow::setWindowState(Qt::WindowState state)
 {
     if (window()->isVisible())
-        syncWindowState(state);  // Window state set for hidden windows take effect when show() is called.
+        applyWindowState(state); // Window state set for hidden windows take effect when show() is called
 }
 
 void QCocoaWindow::setWindowTitle(const QString &title)
@@ -1247,6 +1279,9 @@ void QCocoaWindow::windowDidMove()
         return;
 
     [qnsview_cast(m_view) updateGeometry];
+
+    // Moving a window might bring it out of maximized state
+    reportCurrentWindowState();
 }
 
 void QCocoaWindow::windowDidResize()
@@ -1259,6 +1294,9 @@ void QCocoaWindow::windowDidResize()
 
     clipChildWindows();
     [qnsview_cast(m_view) updateGeometry];
+
+    if (!m_view.inLiveResize)
+        reportCurrentWindowState();
 }
 
 void QCocoaWindow::viewDidChangeFrame()
@@ -1280,10 +1318,7 @@ void QCocoaWindow::viewDidChangeGlobalFrame()
 
 void QCocoaWindow::windowDidEndLiveResize()
 {
-    if (m_synchedWindowState == Qt::WindowMaximized && ![m_nsWindow isZoomed]) {
-        m_effectivelyMaximized = false;
-        [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowNoState];
-    }
+    reportCurrentWindowState();
 }
 
 void QCocoaWindow::windowDidBecomeKey()
@@ -1320,22 +1355,37 @@ void QCocoaWindow::windowDidResignKey()
 
 void QCocoaWindow::windowDidMiniaturize()
 {
-    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowMinimized];
+    reportCurrentWindowState();
 }
 
 void QCocoaWindow::windowDidDeminiaturize()
 {
-    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowNoState];
+    reportCurrentWindowState();
 }
 
 void QCocoaWindow::windowDidEnterFullScreen()
 {
-    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowFullScreen];
+    Q_ASSERT_X(m_nsWindow.qt_fullScreen, "QCocoaWindow",
+        "FullScreen category processes window notifications first");
+
+    reportCurrentWindowState();
 }
 
 void QCocoaWindow::windowDidExitFullScreen()
 {
-    [qnsview_cast(m_view) notifyWindowStateChanged:Qt::WindowNoState];
+    Q_ASSERT_X(!m_nsWindow.qt_fullScreen, "QCocoaWindow",
+        "FullScreen category processes window notifications first");
+
+    Qt::WindowState requestedState = window()->windowState();
+
+    // Deliver update of QWindow state
+    reportCurrentWindowState();
+
+    if (requestedState != windowState() && requestedState != Qt::WindowFullScreen) {
+        // We were only going out of full screen as an intermediate step before
+        // progressing into the final step, so re-sync the desired state.
+       applyWindowState(requestedState);
+    }
 }
 
 void QCocoaWindow::windowDidOrderOffScreen()
@@ -1398,12 +1448,6 @@ bool QCocoaWindow::windowShouldClose()
 }
 
 // --------------------------------------------------------------------------
-
-void QCocoaWindow::setSynchedWindowStateFromWindow()
-{
-    if (QWindow *w = window())
-        m_synchedWindowState = w->windowState();
-}
 
 bool QCocoaWindow::windowIsPopupType(Qt::WindowType type) const
 {
@@ -1579,15 +1623,8 @@ void QCocoaWindow::recreateWindowIfNeeded()
         }
 
         // Set properties after the window has been made a child NSWindow
-        m_nsWindow.styleMask = NSBorderlessWindowMask;
-        m_nsWindow.hasShadow = NO;
-        m_nsWindow.level = NSNormalWindowLevel;
-        NSWindowCollectionBehavior collectionBehavior =
-                NSWindowCollectionBehaviorManaged | NSWindowCollectionBehaviorIgnoresCycle
-                | NSWindowCollectionBehaviorFullScreenAuxiliary;
-        m_nsWindow.animationBehavior = NSWindowAnimationBehaviorNone;
-        m_nsWindow.collectionBehavior = collectionBehavior;
         setCocoaGeometry(windowGeometry());
+        setWindowFlags(window()->flags());
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
         if ([m_view superview])
@@ -1603,9 +1640,6 @@ void QCocoaWindow::recreateWindowIfNeeded()
         [m_view setFrame:frame];
         [m_view setHidden:!window()->isVisible()];
     }
-
-    m_nsWindow.ignoresMouseEvents =
-        (window()->flags() & Qt::WindowTransparentForInput) == Qt::WindowTransparentForInput;
 
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
@@ -1674,62 +1708,49 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
     Qt::WindowType type = window()->type();
     Qt::WindowFlags flags = window()->flags();
 
-    NSUInteger styleMask;
-    if (shouldBeChildNSWindow) {
-        styleMask = NSBorderlessWindowMask;
-    } else {
-        styleMask = windowStyleMask(flags);
-    }
-    QCocoaNSWindow *createdWindow = 0;
+    // Create NSWindow
+    Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
+    NSUInteger styleMask = shouldBeChildNSWindow ? NSBorderlessWindowMask : windowStyleMask(flags);
+    QCocoaNSWindow *window = [[windowClass alloc] initWithContentRect:frame
+        screen:cocoaScreen->nativeScreen() styleMask:styleMask qPlatformWindow:this];
 
-    // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
-    // and dialogs
+    window.restorable = NO;
+    window.level = shouldBeChildNSWindow ? NSNormalWindowLevel : windowLevel(flags);
+
+    if (!isOpaque()) {
+        window.backgroundColor = [NSColor clearColor];
+        window.opaque = NO;
+    }
+
+    Q_ASSERT(!(shouldBePanel && shouldBeChildNSWindow));
+
     if (shouldBePanel) {
-        QNSPanel *panel = [[QNSPanel alloc] initWithContentRect:frame screen:cocoaScreen->nativeScreen()
-                                    styleMask: styleMask qPlatformWindow:this];
+        // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set
+        window.hidesOnDeactivate = ((type & Qt::Tool) == Qt::Tool) &&
+            !qt_mac_resolveOption(false, QPlatformWindow::window(), "_q_macAlwaysShowToolWindow", "");
 
-        if ((type & Qt::Popup) == Qt::Popup)
-            [panel setHasShadow:YES];
+        // Make popup windows show on the same desktop as the parent full-screen window
+        window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
 
-        // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set.
-        QVariant showWithoutActivating = QPlatformWindow::window()->property("_q_macAlwaysShowToolWindow");
-        bool shouldHideOnDeactivate = ((type & Qt::Tool) == Qt::Tool) &&
-                                      !(showWithoutActivating.isValid() && showWithoutActivating.toBool());
-        [panel setHidesOnDeactivate: shouldHideOnDeactivate];
-
-        // Make popup windows show on the same desktop as the parent full-screen window.
-        [panel setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-        if ((type & Qt::Popup) == Qt::Popup)
-            [panel setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
-
-        createdWindow = panel;
-    } else {
-        createdWindow = [[QNSWindow alloc] initWithContentRect:frame screen:cocoaScreen->nativeScreen()
-                                     styleMask: styleMask qPlatformWindow:this];
+        if ((type & Qt::Popup) == Qt::Popup) {
+            window.hasShadow = YES;
+            window.animationBehavior = NSWindowAnimationBehaviorUtilityWindow;
+        }
+    } else if (shouldBeChildNSWindow) {
+        window.collectionBehavior =
+              NSWindowCollectionBehaviorManaged
+            | NSWindowCollectionBehaviorIgnoresCycle
+            | NSWindowCollectionBehaviorFullScreenAuxiliary;
+        window.hasShadow = NO;
+        window.animationBehavior = NSWindowAnimationBehaviorNone;
     }
 
-    if ([createdWindow respondsToSelector:@selector(setRestorable:)])
-        [createdWindow setRestorable: NO];
+    // Persist modality so we can detect changes later on
+    m_windowModality = QPlatformWindow::window()->modality();
 
-    NSInteger level = windowLevel(flags);
-    [createdWindow setLevel:level];
+    applyContentBorderThickness(window);
 
-    // OpenGL surfaces can be ordered either above(default) or below the NSWindow.
-    // When ordering below the window must be tranclucent and have a clear background color.
-    static GLint openglSourfaceOrder = qt_mac_resolveOption(1, "QT_MAC_OPENGL_SURFACE_ORDER");
-
-    bool isTranslucent = window()->format().alphaBufferSize() > 0
-                         || (surface()->supportsOpenGL() && openglSourfaceOrder == -1);
-    if (isTranslucent) {
-        [createdWindow setBackgroundColor:[NSColor clearColor]];
-        [createdWindow setOpaque:NO];
-    }
-
-    m_windowModality = window()->modality();
-
-    applyContentBorderThickness(createdWindow);
-
-    return createdWindow;
+    return window;
 }
 
 void QCocoaWindow::removeMonitor()
@@ -1753,85 +1774,155 @@ QRect QCocoaWindow::nativeWindowGeometry() const
     return qRect;
 }
 
-// Syncs the NSWindow minimize/maximize/fullscreen state with the current QWindow state
-void QCocoaWindow::syncWindowState(Qt::WindowState newState)
+/*!
+    Applies the given state to the NSWindow, going in/out of minimize/zoomed/fullscreen
+
+    When this is called from QWindow::setWindowState(), the QWindow state has not been
+    updated yet, so window()->windowState() will reflect the previous state that was
+    reported to QtGui.
+*/
+void QCocoaWindow::applyWindowState(Qt::WindowState newState)
 {
+    const Qt::WindowState currentState = windowState();
+    if (newState == currentState)
+        return;
+
     if (!m_nsWindow)
         return;
-    // if content view width or height is 0 then the window animations will crash so
-    // do nothing except set the new state
-    NSRect contentRect = m_view.frame;
-    if (contentRect.size.width <= 0 || contentRect.size.height <= 0) {
+
+    const NSSize contentSize = m_view.frame.size;
+    if (contentSize.width <= 0 || contentSize.height <= 0) {
+        // If content view width or height is 0 then the window animations will crash so
+        // do nothing. We report the current state back to reflect the failed operation.
         qWarning("invalid window content view size, check your window geometry");
-        m_synchedWindowState = newState;
+        reportCurrentWindowState(true);
         return;
     }
 
-    Qt::WindowState predictedState = newState;
-    if ((m_synchedWindowState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized)) {
-        const int styleMask = [m_nsWindow styleMask];
-        const bool usePerform = styleMask & NSResizableWindowMask;
-        [m_nsWindow setStyleMask:styleMask | NSResizableWindowMask];
-        if (usePerform)
-            [m_nsWindow performZoom : m_nsWindow]; // toggles
-        else
-            [m_nsWindow zoom : m_nsWindow]; // toggles
-        [m_nsWindow setStyleMask:styleMask];
+    if (m_nsWindow.styleMask & NSUtilityWindowMask) {
+        // Utility panels cannot be fullscreen
+        qWarning() << window()->type() << "windows can not be made full screen";
+        reportCurrentWindowState(true);
+        return;
     }
 
-    if ((m_synchedWindowState & Qt::WindowMinimized) != (newState & Qt::WindowMinimized)) {
-        if (newState & Qt::WindowMinimized) {
-            if ([m_nsWindow styleMask] & NSMiniaturizableWindowMask)
-                [m_nsWindow performMiniaturize : m_nsWindow];
-            else
-                [m_nsWindow miniaturize : m_nsWindow];
-        } else {
-            [m_nsWindow deminiaturize : m_nsWindow];
+    const id sender = m_nsWindow;
+
+    // First we need to exit states that can't transition directly to other states
+    switch (currentState) {
+    case Qt::WindowMinimized:
+        [m_nsWindow deminiaturize:sender];
+        Q_ASSERT_X(windowState() != Qt::WindowMinimized, "QCocoaWindow",
+            "[NSWindow deminiaturize:] is synchronous");
+        break;
+    case Qt::WindowFullScreen: {
+        toggleFullScreen();
+        // Exiting fullscreen is not synchronous, so we need to wait for the
+        // NSWindowDidExitFullScreenNotification before continuing to apply
+        // the new state.
+        return;
+    }
+    default:
+        Q_FALLTHROUGH();
+    }
+
+    // Then we apply the new state if needed
+    if (newState == windowState())
+        return;
+
+    switch (newState) {
+    case Qt::WindowFullScreen:
+        toggleFullScreen();
+        break;
+    case Qt::WindowMaximized:
+        toggleMaximized();
+        break;
+    case Qt::WindowMinimized:
+        [m_nsWindow miniaturize:sender];
+        break;
+    case Qt::WindowNoState:
+        switch (windowState()) {
+        case Qt::WindowMaximized:
+            toggleMaximized();
+        default:
+            Q_FALLTHROUGH();
         }
+        break;
+    default:
+        Q_UNREACHABLE();
     }
+}
 
-    const bool effMax = m_effectivelyMaximized;
-    if ((m_synchedWindowState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized) || (m_effectivelyMaximized && newState == Qt::WindowNoState)) {
-        if ((m_synchedWindowState & Qt::WindowFullScreen) == (newState & Qt::WindowFullScreen)) {
-            [m_nsWindow zoom : m_nsWindow]; // toggles
-            m_effectivelyMaximized = !effMax;
-        } else if (!(newState & Qt::WindowMaximized)) {
-            // it would be nice to change the target geometry that toggleFullScreen will animate toward
-            // but there is no known way, so the maximized state is not possible at this time
-            predictedState = static_cast<Qt::WindowState>(static_cast<int>(newState) | Qt::WindowMaximized);
-            m_effectivelyMaximized = true;
-        }
-    }
+void QCocoaWindow::toggleMaximized()
+{
+    // The NSWindow needs to be resizable, otherwise the window will
+    // not be possible to zoom back to non-zoomed state.
+    const bool wasResizable = m_nsWindow.styleMask & NSResizableWindowMask;
+    m_nsWindow.styleMask |= NSResizableWindowMask;
 
-    if ((m_synchedWindowState & Qt::WindowFullScreen) != (newState & Qt::WindowFullScreen)) {
-        if (window()->flags() & Qt::WindowFullscreenButtonHint) {
-            if (m_effectivelyMaximized && m_synchedWindowState == Qt::WindowFullScreen)
-                predictedState = Qt::WindowMaximized;
-            [m_nsWindow toggleFullScreen : m_nsWindow];
-        } else {
-            if (newState & Qt::WindowFullScreen) {
-                QScreen *screen = window()->screen();
-                if (screen) {
-                    if (m_normalGeometry.width() < 0) {
-                        m_oldWindowFlags = m_windowFlags;
-                        window()->setFlags(window()->flags() | Qt::FramelessWindowHint);
-                        m_normalGeometry = nativeWindowGeometry();
-                        setGeometry(screen->geometry());
-                        m_presentationOptions = [NSApp presentationOptions];
-                        [NSApp setPresentationOptions : m_presentationOptions | NSApplicationPresentationAutoHideMenuBar | NSApplicationPresentationAutoHideDock];
-                    }
-                }
-            } else {
-                window()->setFlags(m_oldWindowFlags);
-                setGeometry(m_normalGeometry);
-                m_normalGeometry.setRect(0, 0, -1, -1);
-                [NSApp setPresentationOptions : m_presentationOptions];
-            }
-        }
-    }
+    const id sender = m_nsWindow;
+    [m_nsWindow zoom:sender];
 
-    // New state is now the current synched state
-    m_synchedWindowState = predictedState;
+    if (!wasResizable)
+        m_nsWindow.styleMask &= ~NSResizableWindowMask;
+}
+
+void QCocoaWindow::toggleFullScreen()
+{
+    // The NSWindow needs to be resizable, otherwise we'll end up with
+    // the normal window geometry, centered in the middle of the screen
+    // on a black background.
+    const bool wasResizable = m_nsWindow.styleMask & NSResizableWindowMask;
+    m_nsWindow.styleMask |= NSResizableWindowMask;
+
+    // It also needs to have the correct collection behavior for the
+    // toggleFullScreen call to have an effect.
+    const bool wasFullScreenEnabled = m_nsWindow.collectionBehavior & NSWindowCollectionBehaviorFullScreenPrimary;
+    m_nsWindow.collectionBehavior |= NSWindowCollectionBehaviorFullScreenPrimary;
+
+    const id sender = m_nsWindow;
+    [m_nsWindow toggleFullScreen:sender];
+
+    if (!wasResizable)
+        m_nsWindow.styleMask &= ~NSResizableWindowMask;
+    if (!wasFullScreenEnabled)
+        m_nsWindow.collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
+}
+
+bool QCocoaWindow::isTransitioningToFullScreen() const
+{
+    NSWindow *window = m_view.window;
+    return window.styleMask & NSFullScreenWindowMask && !window.qt_fullScreen;
+}
+
+Qt::WindowState QCocoaWindow::windowState() const
+{
+    // FIXME: Support compound states (Qt::WindowStates)
+
+    NSWindow *window = m_view.window;
+    if (window.miniaturized)
+        return Qt::WindowMinimized;
+    if (window.qt_fullScreen)
+        return Qt::WindowFullScreen;
+    if ((window.zoomed && !isTransitioningToFullScreen())
+        || (m_lastReportedWindowState == Qt::WindowMaximized && isTransitioningToFullScreen()))
+        return Qt::WindowMaximized;
+
+    // Note: We do not report Qt::WindowActive, even if isActive()
+    // is true, as QtGui does not expect this window state to be set.
+
+    return Qt::WindowNoState;
+}
+
+void QCocoaWindow::reportCurrentWindowState(bool unconditionally)
+{
+    Qt::WindowState currentState = windowState();
+    if (!unconditionally && currentState == m_lastReportedWindowState)
+        return;
+
+    QWindowSystemInterface::handleWindowStateChanged<QWindowSystemInterface::SynchronousDelivery>(
+        window(), currentState, m_lastReportedWindowState);
+    m_lastReportedWindowState = currentState;
 }
 
 bool QCocoaWindow::setWindowModified(bool modified)

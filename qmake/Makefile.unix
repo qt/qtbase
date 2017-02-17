@@ -14,7 +14,7 @@ OBJS=project.o option.o property.o main.o ioutils.o proitems.o \
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qstring_compat.o qstringbuilder.o qtextstream.o qiodevice.o \
       qringbuffer.o qdebug.o qmalloc.o qglobal.o \
       qarraydata.o qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfiledevice.o qfile.o \
-      qfilesystementry.o qfilesystemengine.o qfsfileengine.o qfsfileengine_iterator.o qregexp.o qvector.o \
+      qfilesystementry.o qfilesystemengine.o qfsfileengine.o qfsfileengine_iterator.o qregexp.o \
       qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o qfileinfo.o qdatetime.o qstringlist.o \
       qabstractfileengine.o qtemporaryfile.o qmap.o qmetatype.o qsettings.o qsystemerror.o \
       qvariant.o qvsnprintf.o qlocale.o qlocale_tools.o qlinkedlist.o qnumeric.o \
@@ -62,7 +62,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qvector.cpp $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qdiriterator.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qdir.cpp $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp \
@@ -373,9 +373,6 @@ qtemporaryfile.o: $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qregexp.o: $(SOURCE_PATH)/src/corelib/tools/qregexp.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-qvector.o: $(SOURCE_PATH)/src/corelib/tools/qvector.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qbitarray.o: $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp

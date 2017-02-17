@@ -215,8 +215,7 @@ void QVistaHelper::disconnectBackButton()
 QColor QVistaHelper::basicWindowFrameColor()
 {
     DWORD rgb;
-    HWND handle = QApplicationPrivate::getHWNDForWidget(QApplication::desktop());
-    const HANDLE hTheme = OpenThemeData(handle, L"WINDOW");
+    const HANDLE hTheme = OpenThemeData(GetDesktopWindow(), L"WINDOW");
     GetThemeColor(hTheme, WP_CAPTION, CS_ACTIVE,
                   wizard->isActiveWindow() ? TMT_FILLCOLORHINT : TMT_BORDERCOLORHINT, &rgb);
     BYTE r = GetRValue(rgb);
@@ -258,8 +257,7 @@ static LOGFONT getCaptionLogFont(HANDLE hTheme)
 
 static bool getCaptionQFont(int dpi, QFont *result)
 {
-    const HANDLE hTheme =
-        OpenThemeData(QApplicationPrivate::getHWNDForWidget(QApplication::desktop()), L"WINDOW");
+    const HANDLE hTheme = OpenThemeData(GetDesktopWindow(), L"WINDOW");
     if (!hTheme)
         return false;
     // Call into QWindowsNativeInterface to convert the LOGFONT into a QFont.
@@ -590,8 +588,7 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
     if (vistaState() == VistaAero) {
         const QRect rectDp = QRect(rect.topLeft() * QVistaHelper::m_devicePixelRatio,
                                    rect.size() * QVistaHelper::m_devicePixelRatio);
-        HWND handle = QApplicationPrivate::getHWNDForWidget(QApplication::desktop());
-        const HANDLE hTheme = OpenThemeData(handle, L"WINDOW");
+        const HANDLE hTheme = OpenThemeData(GetDesktopWindow(), L"WINDOW");
         if (!hTheme) return false;
         // Set up a memory DC and bitmap that we'll draw into
         HDC dcMem;

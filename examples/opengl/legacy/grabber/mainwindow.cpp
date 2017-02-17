@@ -203,10 +203,11 @@ QSize MainWindow::getSize()
     if (!ok)
         return QSize();
 
-    QRegExp regExp(tr("([0-9]+) *x *([0-9]+)"));
-    if (regExp.exactMatch(text)) {
-        int width = regExp.cap(1).toInt();
-        int height = regExp.cap(2).toInt();
+    QRegularExpression regExp(tr("^([0-9]+) *x *([0-9]+)$"));
+    QRegularExpressionMatch match = regExp.match(text);
+    if (match.hasMatch()) {
+        int width = match.captured(1).toInt();
+        int height = match.captured(2).toInt();
         if (width > 0 && width < 2048 && height > 0 && height < 2048)
             return QSize(width, height);
     }

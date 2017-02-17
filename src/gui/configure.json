@@ -520,7 +520,7 @@
         },
         "libinput-axis-api": {
             "label": "axis API in libinput",
-            "condition": "tests.libinput_axis_api",
+            "condition": "features.libinput && tests.libinput_axis_api",
             "output": [ "privateFeature" ]
         },
         "lgmon": {
@@ -614,8 +614,7 @@
         "eglfs": {
             "label": "EGLFS",
             "section": "Platform plugins",
-            "autoDetect": "!config.android && !config.win32",
-            "condition": "features.egl",
+            "condition": "!config.android && !config.darwin && !config.win32 && features.egl",
             "output": [ "privateFeature" ]
         },
         "eglfs_brcm": {

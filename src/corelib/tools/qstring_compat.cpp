@@ -80,7 +80,7 @@ QByteArray QString::toLatin1() const
 
 QByteArray QString::toLocal8Bit() const
 {
-    return toLocal8Bit_helper(constData(), size());
+    return toLocal8Bit_helper(isNull() ? nullptr : constData(), size());
 }
 
 QByteArray QString::toUtf8() const

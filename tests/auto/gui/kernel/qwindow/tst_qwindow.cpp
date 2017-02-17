@@ -56,6 +56,7 @@ private slots:
     void create();
     void setParent();
     void setVisible();
+    void setVisibleFalseDoesNotCreateWindow();
     void eventOrderOnShow();
     void resizeEventAfterResize();
     void exposeEventOnShrink_QTBUG54040();
@@ -232,6 +233,16 @@ void tst_QWindow::setVisible()
     i.setParent(&h);
     QVERIFY2(i.handle(), "Making a visible but not created child window child of a created window should create it");
     QVERIFY(QTest::qWaitForWindowExposed(&i));
+}
+
+void tst_QWindow::setVisibleFalseDoesNotCreateWindow()
+{
+    QWindow w;
+    QVERIFY(!w.handle());
+    w.setVisible(false);
+    QVERIFY2(!w.handle(), "Hiding a non-created window doesn't create it");
+    w.setVisible(true);
+    QVERIFY2(w.handle(), "Showing a non-created window creates it");
 }
 
 void tst_QWindow::mapGlobal()

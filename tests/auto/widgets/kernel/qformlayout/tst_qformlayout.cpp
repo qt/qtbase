@@ -757,13 +757,14 @@ void tst_QFormLayout::removeRow()
 
     layout->removeRow(1);
 
-    QVERIFY(!w1);
-    QCOMPARE(layout->count(), 1);
+    QVERIFY(w1);
+    QVERIFY(!w2);
+    QCOMPARE(layout->count(), 2);
     QCOMPARE(layout->rowCount(), 1);
 
     layout->removeRow(0);
 
-    QVERIFY(!w2);
+    QVERIFY(!w1);
     QCOMPARE(layout->count(), 0);
     QCOMPARE(layout->rowCount(), 0);
 }
@@ -863,17 +864,19 @@ void tst_QFormLayout::takeRow()
 
     QVERIFY(w2);
     QVERIFY(result.fieldItem);
-    QVERIFY(result.labelItem);
-    QCOMPARE(layout->count(), 1);
+    QVERIFY(!result.labelItem);
+    QCOMPARE(layout->count(), 2);
     QCOMPARE(layout->rowCount(), 1);
+    QCOMPARE(result.fieldItem->widget(), w2.data());
 
     result = layout->takeRow(0);
 
     QVERIFY(w1);
     QVERIFY(result.fieldItem);
-    QVERIFY(!result.labelItem);
+    QVERIFY(result.labelItem);
     QCOMPARE(layout->count(), 0);
     QCOMPARE(layout->rowCount(), 0);
+    QCOMPARE(result.fieldItem->widget(), w1.data());
 
     result = layout->takeRow(0);
 
