@@ -3708,7 +3708,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
                 continue;
 
             QObject * const receiver = c->receiver;
-            const bool receiverInSameThread = currentThreadId == receiver->d_func()->threadData->threadId;
+            const bool receiverInSameThread = currentThreadId == receiver->d_func()->threadData->threadId.load();
 
             // determine if this connection should be sent immediately or
             // put into the event queue

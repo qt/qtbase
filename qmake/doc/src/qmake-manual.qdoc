@@ -1230,10 +1230,6 @@
     This variable is also used to specify which additional files will be
     deployed to embedded devices.
 
-    For Windows CE, the default deployment target path is
-    \c{%CSIDL_PROGRAM_FILES%\target}, which usually gets expanded to
-    \c{\Program Files\target}.
-
     \target LEXIMPLS
     \section1 LEXIMPLS
 
@@ -2353,16 +2349,6 @@
     The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
     needs to be modified.
-
-    \target SIGNATURE_FILE
-    \section1 SIGNATURE_FILE
-
-    \note This variable is only used on Windows CE.
-
-    Specifies which signature file should be used to sign the project target.
-
-    \note This variable will overwrite the setting you have specified in configure,
-    with the \c -signature option.
 
     \target SOURCES
     \section1 SOURCES
@@ -4483,8 +4469,8 @@
     include the precompiled header file in \c HEADERS, as
     qmake will do this if the configuration supports precompiled headers.
 
-    The MSVC and g++ specs targeting Windows (and Windows CE) enable
-    \c precompile_header by default.
+    The MSVC and g++ specs targeting Windows enable \c precompile_header
+    by default.
 
     Using this option, you may trigger
     conditional blocks in your project file to add settings when using

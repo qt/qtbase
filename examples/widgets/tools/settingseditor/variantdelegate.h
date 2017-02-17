@@ -52,7 +52,7 @@
 #define VARIANTDELEGATE_H
 
 #include <QItemDelegate>
-#include <QRegExp>
+#include <QRegularExpression>
 
 class VariantDelegate : public QItemDelegate
 {
@@ -73,19 +73,19 @@ public:
     static QString displayText(const QVariant &value);
 
 private:
-    mutable QRegExp boolExp;
-    mutable QRegExp byteArrayExp;
-    mutable QRegExp charExp;
-    mutable QRegExp colorExp;
-    mutable QRegExp dateExp;
-    mutable QRegExp dateTimeExp;
-    mutable QRegExp doubleExp;
-    mutable QRegExp pointExp;
-    mutable QRegExp rectExp;
-    mutable QRegExp signedIntegerExp;
-    mutable QRegExp sizeExp;
-    mutable QRegExp timeExp;
-    mutable QRegExp unsignedIntegerExp;
+    mutable QRegularExpression boolExp;
+    mutable QRegularExpression byteArrayExp;
+    mutable QRegularExpression charExp;
+    mutable QRegularExpression colorExp;
+    mutable QRegularExpression dateExp;
+    mutable QRegularExpression dateTimeExp;
+    mutable QRegularExpression doubleExp;
+    mutable QRegularExpression pointExp;
+    mutable QRegularExpression rectExp;
+    mutable QRegularExpression signedIntegerExp;
+    mutable QRegularExpression sizeExp;
+    mutable QRegularExpression timeExp;
+    mutable QRegularExpression unsignedIntegerExp;
 };
 
 #endif

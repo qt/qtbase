@@ -211,8 +211,7 @@
         },
         "dlopen": {
             "label": "dlopen()",
-            "condition": "tests.dlopen || libs.libdl",
-            "output": [ { "type": "define", "negative": true, "name": "QT_NO_DYNAMIC_LIBRARY" } ]
+            "condition": "tests.dlopen || libs.libdl"
         },
         "libdl": {
             "label": "dlopen() in libdl",
@@ -463,6 +462,7 @@
             "label": "QLibrary",
             "purpose": "Provides a wrapper for dynamically loaded libraries.",
             "section": "File I/O",
+            "condition": "config.win32 || config.hpux || (!config.nacl && features.dlopen)",
             "output": [ "publicFeature", "feature" ]
         },
         "settings": {

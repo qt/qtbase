@@ -138,7 +138,8 @@ void MainWindow::aboutToShowSaveAsMenu()
 void MainWindow::findCodecs()
 {
     QMap<QString, QTextCodec *> codecMap;
-    QRegExp iso8859RegExp("ISO[- ]8859-([0-9]+).*");
+    QRegularExpression iso8859RegExp("^ISO[- ]8859-([0-9]+).*$");
+    QRegularExpressionMatch match;
 
     foreach (int mib, QTextCodec::availableMibs()) {
         QTextCodec *codec = QTextCodec::codecForMib(mib);
@@ -150,8 +151,8 @@ void MainWindow::findCodecs()
             rank = 1;
         } else if (sortKey.startsWith(QLatin1String("UTF-16"))) {
             rank = 2;
-        } else if (iso8859RegExp.exactMatch(sortKey)) {
-            if (iso8859RegExp.cap(1).size() == 1)
+        } else if ((match = iso8859RegExp.match(sortKey)).hasMatch()) {
+            if (match.captured(1).size() == 1)
                 rank = 3;
             else
                 rank = 4;
