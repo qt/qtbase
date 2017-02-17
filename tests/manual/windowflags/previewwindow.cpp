@@ -202,16 +202,21 @@ PreviewWindow::PreviewWindow(QWidget *parent)
     setWindowTitle(tr("Preview <QWidget> Qt %1").arg(QLatin1String(QT_VERSION_STR)));
 }
 
-void PreviewWindow::resizeEvent(QResizeEvent *e)
+bool PreviewWindow::event(QEvent *event)
 {
-    QWidget::resizeEvent(e);
-    updateInfo();
-}
+    const bool ret = QWidget::event(event);
 
-void PreviewWindow::moveEvent(QMoveEvent *e)
-{
-    QWidget::moveEvent(e);
-    updateInfo();
+    switch (event->type()) {
+    case QEvent::Move:
+    case QEvent::Resize:
+    case QEvent::WindowStateChange:
+        updateInfo();
+        break;
+    default:
+        break;
+    }
+
+    return ret;
 }
 
 void PreviewWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -234,16 +239,21 @@ PreviewDialog::PreviewDialog(QWidget *parent)
     setWindowTitle(tr("Preview <QDialog> Qt %1").arg(QLatin1String(QT_VERSION_STR)));
 }
 
-void PreviewDialog::resizeEvent(QResizeEvent *e)
+bool PreviewDialog::event(QEvent *event)
 {
-    QDialog::resizeEvent(e);
-    updateInfo();
-}
+    const bool ret = QDialog::event(event);
 
-void PreviewDialog::moveEvent(QMoveEvent *e)
-{
-    QDialog::moveEvent(e);
-    updateInfo();
+    switch (event->type()) {
+    case QEvent::Move:
+    case QEvent::Resize:
+    case QEvent::WindowStateChange:
+        updateInfo();
+        break;
+    default:
+        break;
+    }
+
+    return ret;
 }
 
 void PreviewDialog::setWindowFlags(Qt::WindowFlags flags)
