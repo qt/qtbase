@@ -136,7 +136,7 @@ QByteArray QFontSubset::widthArray() const
 
     QByteArray width;
     QPdf::ByteStream s(&width);
-    QFixed scale = QFixed(1000)/emSquare;
+    const qreal scale = 1000.0/emSquare.toInt();
 
     QFixed defWidth = widths[0];
     //qDebug("defWidth=%d, scale=%f", defWidth.toInt(), scale.toReal());
@@ -145,7 +145,7 @@ QByteArray QFontSubset::widthArray() const
             defWidth = 0;
     }
     if (defWidth > 0) {
-        s << "/DW " << (defWidth*scale).toInt();
+        s << "/DW " << qRound(defWidth.toInt() * scale);
     } else {
         s << "/W [";
         for (int g = 0; g < nGlyphs();) {
@@ -174,11 +174,11 @@ QByteArray QFontSubset::widthArray() const
             if (endnonlinear > start) {
                 s << start << '[';
                 for (int i = start; i < endnonlinear; ++i)
-                    s << (widths[i]*scale).toInt();
+                    s << qRound(widths[i].toInt() * scale);
                 s << "]\n";
             }
             if (startLinear)
-                s << startLinear << g - 1 << (widths[startLinear]*scale).toInt() << '\n';
+                s << startLinear << g - 1 << qRound(widths[startLinear].toInt() * scale) << '\n';
         }
         s << "]\n";
     }
