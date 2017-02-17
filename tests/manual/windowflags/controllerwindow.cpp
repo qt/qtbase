@@ -191,12 +191,12 @@ static bool isTopLevel(const QObject *o)
     return false;
 }
 
-static Qt::WindowState windowState(const QObject *o)
+static Qt::WindowStates windowState(const QObject *o)
 {
     if (o->isWidgetType()) {
         Qt::WindowStates states = static_cast<const QWidget *>(o)->windowState();
         states &= ~Qt::WindowActive;
-        return static_cast<Qt::WindowState>(int(states));
+        return states;
     }
 #if QT_VERSION >= 0x050000
     if (o->isWindowType())
