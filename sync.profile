@@ -52,7 +52,7 @@
     "qnumeric.h" => "QtNumeric",
     "qvariant.h" => "QVariantHash,QVariantList,QVariantMap",
     "qgl.h" => "QGL",
-    "qsql.h" => "QSql",
+    "qtsqlglobal.h" => "QSql",
     "qssl.h" => "QSsl",
     "qtest.h" => "QTest",
     "qtconcurrentmap.h" => "QtConcurrentMap",
