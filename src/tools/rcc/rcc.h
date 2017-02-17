@@ -48,7 +48,7 @@ class RCCResourceLibrary
     RCCResourceLibrary &operator=(const RCCResourceLibrary &);
 
 public:
-    RCCResourceLibrary();
+    RCCResourceLibrary(quint8 formatVersion);
     ~RCCResourceLibrary();
 
     bool output(QIODevice &outDevice, QIODevice &tempDevice, QIODevice &errorDevice);
@@ -90,6 +90,8 @@ public:
     bool useNameSpace() const { return m_useNameSpace; }
 
     QStringList failedResources() const { return m_failedResources; }
+
+    int formatVersion() const { return m_formatVersion; }
 
 private:
     struct Strings {
@@ -141,6 +143,7 @@ private:
     QIODevice *m_errorDevice;
     QIODevice *m_outDevice;
     QByteArray m_out;
+    quint8 m_formatVersion;
 };
 
 QT_END_NAMESPACE

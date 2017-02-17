@@ -153,6 +153,9 @@ int runRcc(int argc, char *argv[])
     QCommandLineOption projectOption(QStringLiteral("project"), QStringLiteral("Output a resource file containing all files from the current directory."));
     parser.addOption(projectOption);
 
+    QCommandLineOption formatVersionOption(QStringLiteral("format-version"), QStringLiteral("The RCC format version to write"), QStringLiteral("number"));
+    parser.addOption(formatVersionOption);
+
     parser.addPositionalArgument(QStringLiteral("inputs"), QStringLiteral("Input files (*.qrc)."));
 
 
@@ -160,7 +163,19 @@ int runRcc(int argc, char *argv[])
     parser.process(app);
 
     QString errorMsg;
-    RCCResourceLibrary library;
+
+    quint8 formatVersion = 2;
+    if (parser.isSet(formatVersionOption)) {
+        bool ok = false;
+        formatVersion = parser.value(formatVersionOption).toUInt(&ok);
+        if (!ok) {
+            errorMsg = QLatin1String("Invalid format version specified");
+        } else if (formatVersion != 1 && formatVersion != 2) {
+            errorMsg = QLatin1String("Unsupported format version specified");
+        }
+    }
+
+    RCCResourceLibrary library(formatVersion);
     if (parser.isSet(nameOption))
         library.setInitName(parser.value(nameOption));
     if (parser.isSet(rootOption)) {
