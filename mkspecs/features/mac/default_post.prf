@@ -24,6 +24,13 @@ qt {
     }
 }
 
+# Don't pass -headerpad_max_install_names when using Bitcode.
+# In that case the linker emits a warning stating that the flag is ignored when
+# used with bitcode, for reasons that cannot be determined (rdar://problem/20748962).
+# Using this flag is also unnecessary in practice on UIKit platforms since they
+# are sandboxed, and only UIKit platforms support bitcode to begin with.
+!bitcode: QMAKE_LFLAGS += -headerpad_max_install_names
+
 macx-xcode {
     !isEmpty(QMAKE_XCODE_DEBUG_INFORMATION_FORMAT) {
         debug_information_format.name = DEBUG_INFORMATION_FORMAT
