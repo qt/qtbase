@@ -317,13 +317,12 @@ void QLoggingRegistry::init()
 
     const QMutexLocker locker(&registryMutex);
 
-    envRules = std::move(er);
-    qtConfigRules = std::move(qr);
-    configRules = std::move(cr);
+    ruleSets[EnvironmentRules] = std::move(er);
+    ruleSets[QtConfigRules] = std::move(qr);
+    ruleSets[ConfigRules] = std::move(cr);
 
-    if (!envRules.isEmpty() || !qtConfigRules.isEmpty() || !configRules.isEmpty()) {
+    if (!ruleSets[EnvironmentRules].isEmpty() || !ruleSets[QtConfigRules].isEmpty() || !ruleSets[ConfigRules].isEmpty())
         updateRules();
-    }
 }
 
 /*!
@@ -367,7 +366,7 @@ void QLoggingRegistry::setApiRules(const QString &content)
 
     const QMutexLocker locker(&registryMutex);
 
-    apiRules = parser.rules();
+    ruleSets[ApiRules] = parser.rules();
 
     updateRules();
 }
@@ -380,13 +379,6 @@ void QLoggingRegistry::setApiRules(const QString &content)
 */
 void QLoggingRegistry::updateRules()
 {
-    rules.clear();
-    rules.reserve(qtConfigRules.size() + configRules.size() + apiRules.size() + envRules.size()),
-    rules += qtConfigRules;
-    rules += configRules;
-    rules += apiRules;
-    rules += envRules;
-
     for (auto it = categories.keyBegin(), end = categories.keyEnd(); it != end; ++it)
         (*categoryFilter)(*it);
 }
@@ -406,8 +398,7 @@ QLoggingRegistry::installFilter(QLoggingCategory::CategoryFilter filter)
     QLoggingCategory::CategoryFilter old = categoryFilter;
     categoryFilter = filter;
 
-    for (auto it = categories.keyBegin(), end = categories.keyEnd(); it != end; ++it)
-        (*categoryFilter)(*it);
+    updateRules();
 
     return old;
 }
@@ -446,19 +437,22 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
     }
 
     QString categoryName = QLatin1String(cat->categoryName());
-    for (const QLoggingRule &item : reg->rules) {
-        int filterpass = item.pass(categoryName, QtDebugMsg);
-        if (filterpass != 0)
-            debug = (filterpass > 0);
-        filterpass = item.pass(categoryName, QtInfoMsg);
-        if (filterpass != 0)
-            info = (filterpass > 0);
-        filterpass = item.pass(categoryName, QtWarningMsg);
-        if (filterpass != 0)
-            warning = (filterpass > 0);
-        filterpass = item.pass(categoryName, QtCriticalMsg);
-        if (filterpass != 0)
-            critical = (filterpass > 0);
+
+    for (const auto &ruleSet : reg->ruleSets) {
+        for (const auto &rule : ruleSet) {
+            int filterpass = rule.pass(categoryName, QtDebugMsg);
+            if (filterpass != 0)
+                debug = (filterpass > 0);
+            filterpass = rule.pass(categoryName, QtInfoMsg);
+            if (filterpass != 0)
+                info = (filterpass > 0);
+            filterpass = rule.pass(categoryName, QtWarningMsg);
+            if (filterpass != 0)
+                warning = (filterpass > 0);
+            filterpass = rule.pass(categoryName, QtCriticalMsg);
+            if (filterpass != 0)
+                critical = (filterpass > 0);
+        }
     }
 
     cat->setEnabled(QtDebugMsg, debug);

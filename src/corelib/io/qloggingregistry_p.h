@@ -130,14 +130,20 @@ private:
 
     static void defaultCategoryFilter(QLoggingCategory *category);
 
+    enum RuleSet {
+        // sorted by order in which defaultCategoryFilter considers them:
+        QtConfigRules,
+        ConfigRules,
+        ApiRules,
+        EnvironmentRules,
+
+        NumRuleSets
+    };
+
     QMutex registryMutex;
 
     // protected by mutex:
-    QVector<QLoggingRule> qtConfigRules;
-    QVector<QLoggingRule> configRules;
-    QVector<QLoggingRule> envRules;
-    QVector<QLoggingRule> apiRules;
-    QVector<QLoggingRule> rules;
+    QVector<QLoggingRule> ruleSets[NumRuleSets];
     QHash<QLoggingCategory*,QtMsgType> categories;
     QLoggingCategory::CategoryFilter categoryFilter;
 
