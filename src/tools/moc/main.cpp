@@ -305,7 +305,7 @@ int runMoc(int argc, char **argv)
 
     const QStringList files = parser.positionalArguments();
     if (files.count() > 1) {
-        error(qPrintable(QStringLiteral("Too many input files specified: '") + files.join(QStringLiteral("' '")) + QLatin1Char('\'')));
+        error(qPrintable(QLatin1String("Too many input files specified: '") + files.join(QLatin1String("' '")) + QLatin1Char('\'')));
         parser.showHelp(1);
     } else if (!files.isEmpty()) {
         filename = files.first();

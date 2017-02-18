@@ -1124,7 +1124,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
                 = QStringLiteral("This application failed to start because it could not find or load the Qt platform plugin \"%1\"\nin \"%2\".\n\n").arg(name, QDir::toNativeSeparators(platformPluginPath));
         if (!keys.isEmpty()) {
             fatalMessage += QStringLiteral("Available platform plugins are: %1.\n\n").arg(
-                        keys.join(QStringLiteral(", ")));
+                        keys.join(QLatin1String(", ")));
         }
         fatalMessage += QStringLiteral("Reinstalling the application may fix this problem.");
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
