@@ -270,10 +270,11 @@ static QVector<QLoggingRule> loadRulesFromFile(const QString &filePath)
  */
 void QLoggingRegistry::init()
 {
+    QVector<QLoggingRule> er, qr, cr;
     // get rules from environment
     const QByteArray rulesFilePath = qgetenv("QT_LOGGING_CONF");
     if (!rulesFilePath.isEmpty())
-        envRules = loadRulesFromFile(QFile::decodeName(rulesFilePath));
+        er = loadRulesFromFile(QFile::decodeName(rulesFilePath));
 
     const QByteArray rulesSrc = qgetenv("QT_LOGGING_RULES").replace(';', '\n');
     if (!rulesSrc.isEmpty()) {
@@ -281,7 +282,7 @@ void QLoggingRegistry::init()
          QLoggingSettingsParser parser;
          parser.setSection(QStringLiteral("Rules"));
          parser.setContent(stream);
-         envRules += parser.rules();
+         er += parser.rules();
     }
 
     const QString configFileName = QStringLiteral("qtlogging.ini");
@@ -290,17 +291,22 @@ void QLoggingRegistry::init()
     // get rules from Qt data configuration path
     const QString qtConfigPath
             = QDir(QLibraryInfo::location(QLibraryInfo::DataPath)).absoluteFilePath(configFileName);
-    qtConfigRules = loadRulesFromFile(qtConfigPath);
+    qr = loadRulesFromFile(qtConfigPath);
 #endif
 
     // get rules from user's/system configuration
     const QString envPath = QStandardPaths::locate(QStandardPaths::GenericConfigLocation,
                                                    QString::fromLatin1("QtProject/") + configFileName);
     if (!envPath.isEmpty())
-        configRules = loadRulesFromFile(envPath);
+        cr = loadRulesFromFile(envPath);
+
+    const QMutexLocker locker(&registryMutex);
+
+    envRules = qMove(er);
+    qtConfigRules = qMove(qr);
+    configRules = qMove(cr);
 
     if (!envRules.isEmpty() || !qtConfigRules.isEmpty() || !configRules.isEmpty()) {
-        QMutexLocker locker(&registryMutex);
         updateRules();
     }
 }
@@ -341,10 +347,10 @@ void QLoggingRegistry::setApiRules(const QString &content)
     parser.setSection(QStringLiteral("Rules"));
     parser.setContent(content);
 
-    QMutexLocker locker(&registryMutex);
-
     if (qtLoggingDebug())
         debugMsg("Loading logging rules set by QLoggingCategory::setFilterRules ...");
+
+    const QMutexLocker locker(&registryMutex);
 
     apiRules = parser.rules();
 
@@ -394,6 +400,8 @@ QLoggingRegistry *QLoggingRegistry::instance()
 /*!
     \internal
     Updates category settings according to rules.
+
+    As a category filter, it is run with registryMutex held.
 */
 void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
 {
