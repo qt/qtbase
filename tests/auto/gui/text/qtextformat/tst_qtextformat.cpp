@@ -60,6 +60,7 @@ private slots:
     void setFont();
     void setFont_collection_data();
     void setFont_collection();
+    void clearCollection();
 };
 
 /*! \internal
@@ -638,6 +639,33 @@ void tst_QTextFormat::setFont_collection()
         else
             QCOMPARE(f.font().kerning(), font1.kerning());
     }
+}
+
+void tst_QTextFormat::clearCollection()
+{
+    QTextFormatCollection collection;
+    QFont f;
+    f.setUnderline(true);
+    collection.setDefaultFont(f);
+    QTextCharFormat charFormat;
+    charFormat.setFontStyleHint(QFont::SansSerif);
+    int formatIndex = collection.indexForFormat(charFormat);
+    QCOMPARE(formatIndex, 0);
+    QTextCharFormat charFormat2;
+    charFormat2.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+    int formatIndex2 = collection.indexForFormat(charFormat2);
+    QCOMPARE(formatIndex2, 1);
+    QCOMPARE(collection.formats.count(), 2);
+    QCOMPARE(collection.hashes.count(), 2);
+    QCOMPARE(collection.defaultFont(), f);
+
+    collection.clear();
+    QCOMPARE(collection.formats.count(), 0);
+    QCOMPARE(collection.hashes.count(), 0);
+    QCOMPARE(collection.indexForFormat(charFormat2), 0);
+    QCOMPARE(collection.formats.count(), 1);
+    QCOMPARE(collection.hashes.count(), 1);
+    QCOMPARE(collection.defaultFont(), f); // kept, QTextDocument::clear or setPlainText should not reset the font set by setDefaultFont
 }
 
 QTEST_MAIN(tst_QTextFormat)
