@@ -86,7 +86,7 @@ static const int windowsRightBorder      = 15; // right border on windows
 static const int groupBoxBottomMargin    =  0;  // space below the groupbox
 static const int groupBoxTopMargin       =  3;
 
-
+#if QT_CONFIG(imageformat_xpm)
 /* XPM */
 static const char * const dock_widget_close_xpm[] = {
     "11 13 7 1",
@@ -173,7 +173,7 @@ static const char * const qt_titlebar_context_help[] = {
     "          ",
     "    ##    ",
     "    ##    "};
-
+#endif // QT_CONFIG(imageformat_xpm)
 
 static QColor mergedColors(const QColor &colorA, const QColor &colorB, int factor = 50)
 {
@@ -2368,6 +2368,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     bool hover = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_MouseOver);
                     bool sunken = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_Sunken);
                     qt_fusion_draw_mdibutton(painter, titleBar, contextHelpButtonRect, hover, sunken);
+#if QT_CONFIG(imageformat_xpm)
                     QImage image(qt_titlebar_context_help);
                     QColor alpha = textColor;
                     alpha.setAlpha(128);
@@ -2375,6 +2376,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     image.setColor(2, alpha.rgba());
                     painter->setRenderHint(QPainter::SmoothPixmapTransform);
                     painter->drawImage(contextHelpButtonRect.adjusted(4, 4, -4, -4), image);
+#endif
                 }
             }
 
