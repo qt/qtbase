@@ -412,7 +412,7 @@ struct QArrayOpsSelector
 template <class T>
 struct QArrayOpsSelector<T,
     typename std::enable_if<
-        !QTypeInfo<T>::isComplex && !QTypeInfo<T>::isStatic
+        !QTypeInfoQuery<T>::isComplex && QTypeInfoQuery<T>::isRelocatable
     >::type>
 {
     typedef QPodArrayOps<T> Type;
@@ -421,7 +421,7 @@ struct QArrayOpsSelector<T,
 template <class T>
 struct QArrayOpsSelector<T,
     typename std::enable_if<
-        QTypeInfo<T>::isComplex && !QTypeInfo<T>::isStatic
+        QTypeInfoQuery<T>::isComplex && QTypeInfoQuery<T>::isRelocatable
     >::type>
 {
     typedef QMovableArrayOps<T> Type;
