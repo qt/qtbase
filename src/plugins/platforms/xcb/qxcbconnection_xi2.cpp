@@ -441,10 +441,10 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
                     dev->size.setHeight((vci->max - vci->min) * 1000.0 / vciResolution);
                 } else if (vci->label == atom(QXcbAtom::AbsX)) {
                     caps |= QTouchDevice::Position;
-                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vciResolution);
+                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vciResolution);
                 } else if (vci->label == atom(QXcbAtom::AbsY)) {
                     caps |= QTouchDevice::Position;
-                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vciResolution);
+                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vciResolution);
                 }
                 break;
             }
