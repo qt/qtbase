@@ -472,6 +472,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
     if (tlw->type() == Qt::ForeignWindow) {
         m_view = (NSView *)WId(tlw->property("_q_foreignWinId").value<WId>());
+        [m_view retain];
     } else {
         m_view = [[QNSView alloc] initWithCocoaWindow:this];
         // Enable high-dpi OpenGL for retina displays. Enabling has the side
