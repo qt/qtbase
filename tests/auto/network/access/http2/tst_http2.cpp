@@ -590,8 +590,15 @@ void tst_Http2::replyFinished()
 {
     QVERIFY(nRequests);
 
-    if (const auto reply = qobject_cast<QNetworkReply *>(sender()))
+    if (const auto reply = qobject_cast<QNetworkReply *>(sender())) {
         QCOMPARE(reply->error(), QNetworkReply::NoError);
+        const QVariant http2Used(reply->attribute(QNetworkRequest::HTTP2WasUsedAttribute));
+        QVERIFY(http2Used.isValid());
+        QVERIFY(http2Used.toBool());
+        const QVariant spdyUsed(reply->attribute(QNetworkRequest::SpdyWasUsedAttribute));
+        QVERIFY(spdyUsed.isValid());
+        QVERIFY(!spdyUsed.toBool());
+    }
 
     --nRequests;
     if (!nRequests && serverGotSettingsACK)

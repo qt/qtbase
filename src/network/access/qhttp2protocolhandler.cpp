@@ -1387,6 +1387,8 @@ void QHttp2ProtocolHandler::initReplyFromPushPromise(const HttpMessagePair &mess
 {
     Q_ASSERT(promisedData.contains(cacheKey));
     auto promise = promisedData.take(cacheKey);
+    Q_ASSERT(message.second);
+    message.second->setSpdyWasUsed(true);
 
     qCDebug(QT_HTTP2) << "found cached/promised response on stream" << promise.reservedID;
 

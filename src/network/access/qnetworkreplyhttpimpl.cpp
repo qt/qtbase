@@ -1234,7 +1234,14 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
     }
 
     q->setAttribute(QNetworkRequest::HttpPipeliningWasUsedAttribute, pu);
-    q->setAttribute(QNetworkRequest::SpdyWasUsedAttribute, spdyWasUsed);
+    const QVariant http2Allowed = request.attribute(QNetworkRequest::HTTP2AllowedAttribute);
+    if (http2Allowed.isValid() && http2Allowed.toBool()) {
+        q->setAttribute(QNetworkRequest::HTTP2WasUsedAttribute, spdyWasUsed);
+        q->setAttribute(QNetworkRequest::SpdyWasUsedAttribute, false);
+    } else {
+        q->setAttribute(QNetworkRequest::SpdyWasUsedAttribute, spdyWasUsed);
+        q->setAttribute(QNetworkRequest::HTTP2WasUsedAttribute, false);
+    }
 
     // reconstruct the HTTP header
     QList<QPair<QByteArray, QByteArray> > headerMap = hm;
