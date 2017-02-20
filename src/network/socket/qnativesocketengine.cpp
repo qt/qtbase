@@ -358,17 +358,41 @@ bool QNativeSocketEnginePrivate::checkProxy(const QHostAddress &address)
 #if !defined(QT_NO_NETWORKPROXY)
     QObject *parent = q_func()->parent();
     QNetworkProxy proxy;
+    QNetworkProxyQuery::QueryType queryType = QNetworkProxyQuery::TcpSocket;
     if (QAbstractSocket *socket = qobject_cast<QAbstractSocket *>(parent)) {
         proxy = socket->proxy();
+        switch (socket->socketType()) {
+        case QAbstractSocket::UdpSocket:
+            queryType = QNetworkProxyQuery::UdpSocket;
+            break;
+        case QAbstractSocket::SctpSocket:
+            queryType = QNetworkProxyQuery::SctpSocket;
+            break;
+        case QAbstractSocket::TcpSocket:
+        case QAbstractSocket::UnknownSocketType:
+            queryType = QNetworkProxyQuery::TcpSocket;
+        }
     } else if (QTcpServer *server = qobject_cast<QTcpServer *>(parent)) {
         proxy = server->proxy();
+        queryType = QNetworkProxyQuery::TcpServer;
+#ifndef QT_NO_SCTP
+        if (qobject_cast<QSctpServer *>(server))
+            queryType = QNetworkProxyQuery::SctpServer;
+#endif
     } else {
         // no parent -> no proxy
         return true;
     }
 
-    if (proxy.type() == QNetworkProxy::DefaultProxy)
-        proxy = QNetworkProxy::applicationProxy();
+    if (proxy.type() == QNetworkProxy::DefaultProxy) {
+        // This is similar to what we have in QNetworkProxy::applicationProxy,
+        // the only difference is that we provide the correct query type instead of
+        // always using TcpSocket unconditionally (this is the default type for
+        // QNetworkProxyQuery).
+        QNetworkProxyQuery query;
+        query.setQueryType(queryType);
+        proxy = QNetworkProxyFactory::systemProxyForQuery(query).constFirst();
+    }
 
     if (proxy.type() != QNetworkProxy::DefaultProxy &&
         proxy.type() != QNetworkProxy::NoProxy) {
