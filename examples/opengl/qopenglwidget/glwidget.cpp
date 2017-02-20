@@ -61,6 +61,10 @@
 
 const int bubbleNum = 8;
 
+#ifndef GL_SRGB8_ALPHA8
+#define GL_SRGB8_ALPHA8 0x8C43
+#endif
+
 GLWidget::GLWidget(MainWindow *mw, bool button, const QColor &background)
     : m_mainWindow(mw),
       m_showBubbles(true),
@@ -75,6 +79,8 @@ GLWidget::GLWidget(MainWindow *mw, bool button, const QColor &background)
       m_background(background)
 {
     setMinimumSize(300, 250);
+    if (QCoreApplication::arguments().contains(QStringLiteral("--srgb")))
+        setTextureFormat(GL_SRGB8_ALPHA8);
 }
 
 GLWidget::~GLWidget()

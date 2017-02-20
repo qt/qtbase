@@ -64,6 +64,7 @@ void tst_QOpenGLWidget::create()
 {
     QScopedPointer<QOpenGLWidget> w(new QOpenGLWidget);
     QVERIFY(!w->isValid());
+    QVERIFY(w->textureFormat() == 0);
     QSignalSpy frameSwappedSpy(w.data(), SIGNAL(frameSwapped()));
     w->show();
     QTest::qWaitForWindowExposed(w.data());
@@ -73,6 +74,7 @@ void tst_QOpenGLWidget::create()
     QVERIFY(w->context());
     QCOMPARE(w->context()->format(), w->format());
     QVERIFY(w->defaultFramebufferObject() != 0);
+    QVERIFY(w->textureFormat() != 0);
 }
 
 class ClearWidget : public QOpenGLWidget, protected QOpenGLFunctions

@@ -72,6 +72,9 @@ public:
     void setFormat(const QSurfaceFormat &format);
     QSurfaceFormat format() const;
 
+    GLenum textureFormat() const;
+    void setTextureFormat(GLenum texFormat);
+
     bool isValid() const;
 
     void makeCurrent();

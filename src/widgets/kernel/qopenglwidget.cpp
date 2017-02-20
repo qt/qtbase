@@ -566,7 +566,8 @@ public:
           paintDevice(0),
           updateBehavior(QOpenGLWidget::NoPartialUpdate),
           requestedSamples(0),
-          inPaintGL(false)
+          inPaintGL(false),
+          textureFormat(0)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
@@ -610,6 +611,7 @@ public:
     QOpenGLWidget::UpdateBehavior updateBehavior;
     int requestedSamples;
     bool inPaintGL;
+    GLenum textureFormat;
 };
 
 void QOpenGLWidgetPaintDevicePrivate::beginPaint()
@@ -703,11 +705,15 @@ void QOpenGLWidgetPrivate::recreateFbo()
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
     format.setSamples(samples);
+    if (textureFormat)
+        format.setInternalTextureFormat(textureFormat);
 
     const QSize deviceSize = q->size() * q->devicePixelRatioF();
     fbo = new QOpenGLFramebufferObject(deviceSize, format);
     if (samples > 0)
         resolvedFbo = new QOpenGLFramebufferObject(deviceSize);
+
+    textureFormat = fbo->format().internalTextureFormat();
 
     fbo->bind();
     context->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -767,7 +773,9 @@ void QOpenGLWidgetPrivate::initialize()
         return;
     }
 
-    // Propagate settings that make sense only for the tlw.
+    // Propagate settings that make sense only for the tlw. Note that this only
+    // makes sense for properties that get picked up even after the native
+    // window is created.
     QSurfaceFormat tlwFormat = tlw->windowHandle()->format();
     if (requestedFormat.swapInterval() != tlwFormat.swapInterval()) {
         // Most platforms will pick up the changed swap interval on the next
@@ -990,7 +998,6 @@ QOpenGLWidget::UpdateBehavior QOpenGLWidget::updateBehavior() const
  */
 void QOpenGLWidget::setFormat(const QSurfaceFormat &format)
 {
-    Q_UNUSED(format);
     Q_D(QOpenGLWidget);
     if (Q_UNLIKELY(d->initialized)) {
         qWarning("QOpenGLWidget: Already initialized, setting the format has no effect");
@@ -1020,6 +1027,47 @@ QSurfaceFormat QOpenGLWidget::format() const
 {
     Q_D(const QOpenGLWidget);
     return d->initialized ? d->context->format() : d->requestedFormat;
+}
+
+/*!
+    Sets a custom internal texture format.
+
+    When working with sRGB framebuffers, it will be necessary to specify a
+    format like \c{GL_SRGB8_ALPHA8}. This can be achieved by calling this
+    function.
+
+    \note This function has no effect if called after the widget has already
+    been shown and thus it performed initialization.
+
+    \note This function will typically have to be used in combination with a
+    QSurfaceFormat::setDefaultFormat() call that sets the color space to
+    QSurfaceFormat::sRGBColorSpace.
+
+    \since 5.10
+ */
+void QOpenGLWidget::setTextureFormat(GLenum texFormat)
+{
+    Q_D(QOpenGLWidget);
+    if (Q_UNLIKELY(d->initialized)) {
+        qWarning("QOpenGLWidget: Already initialized, setting the internal texture format has no effect");
+        return;
+    }
+
+    d->textureFormat = texFormat;
+}
+
+/*!
+    \return the active internal texture format if the widget has already
+    initialized, the requested format if one was set but the widget has not yet
+    been made visible, or 0 if setTextureFormat() was not called and the widget
+    has not yet been made visible.
+
+    \since 5.10
+ */
+GLenum QOpenGLWidget::textureFormat() const
+{
+    Q_D(const QOpenGLWidget);
+    return d->textureFormat;
 }
 
 /*!

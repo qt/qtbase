@@ -61,6 +61,8 @@ int main( int argc, char ** argv )
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
+    if (QCoreApplication::arguments().contains(QStringLiteral("--srgb")))
+        format.setColorSpace(QSurfaceFormat::sRGBColorSpace);
     if (QCoreApplication::arguments().contains(QStringLiteral("--multisample")))
         format.setSamples(4);
     QSurfaceFormat::setDefaultFormat(format);
