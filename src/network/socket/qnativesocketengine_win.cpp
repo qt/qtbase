@@ -959,10 +959,16 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
 
         if (iface.isValid()) {
             const QList<QNetworkAddressEntry> addressEntries = iface.addressEntries();
-            if (!addressEntries.isEmpty()) {
-                QHostAddress firstIP = addressEntries.first().ip();
-                mreq4.imr_interface.s_addr = htonl(firstIP.toIPv4Address());
-            } else {
+            bool found = false;
+            for (const QNetworkAddressEntry &entry : addressEntries) {
+                const QHostAddress ip = entry.ip();
+                if (ip.protocol() == QAbstractSocket::IPv4Protocol) {
+                    mreq4.imr_interface.s_addr = htonl(ip.toIPv4Address());
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
                 d->setError(QAbstractSocket::NetworkError,
                             QNativeSocketEnginePrivate::NetworkUnreachableErrorString);
                 return false;
