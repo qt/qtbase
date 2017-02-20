@@ -60,7 +60,7 @@ public:
     enum {
         isPointer = false,
         isIntegral = std::is_integral<T>::value,
-        isComplex = true,
+        isComplex = !isIntegral && !std::is_enum<T>::value,
         isStatic = true,
         isRelocatable = std::is_enum<T>::value,
         isLarge = (sizeof(T)>sizeof(void*)),
