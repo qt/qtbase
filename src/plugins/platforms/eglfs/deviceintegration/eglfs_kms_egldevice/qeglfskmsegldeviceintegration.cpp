@@ -280,7 +280,11 @@ bool QEglFSKmsEglDeviceIntegration::query_egl_device()
 
 QPlatformCursor *QEglFSKmsEglDeviceIntegration::createCursor(QPlatformScreen *screen) const
 {
-    return screenConfig()->separateScreens() ? new QEglFSCursor(screen) : nullptr;
+#if QT_CONFIG(opengl)
+    if (screenConfig()->separateScreens())
+        return  new QEglFSCursor(screen);
+#endif
+    return nullptr;
 }
 
 QT_END_NAMESPACE

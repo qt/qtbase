@@ -9,7 +9,7 @@ qtConfig(eglfs_mali): SUBDIRS += eglfs_mali
 qtConfig(eglfs_viv): SUBDIRS += eglfs_viv
 qtConfig(eglfs_viv_wl): SUBDIRS += eglfs_viv_wl
 
-SUBDIRS += eglfs_emu
+qtConfig(opengl): SUBDIRS += eglfs_emu
 
 eglfs_kms_egldevice.depends = eglfs_kms_support
 eglfs_kms.depends = eglfs_kms_support

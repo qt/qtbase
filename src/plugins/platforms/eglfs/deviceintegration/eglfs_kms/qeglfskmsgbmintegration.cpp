@@ -105,12 +105,13 @@ void QEglFSKmsGbmIntegration::destroyNativeWindow(EGLNativeWindowType window)
 
 QPlatformCursor *QEglFSKmsGbmIntegration::createCursor(QPlatformScreen *screen) const
 {
-    if (screenConfig()->hwCursor()) {
-        return nullptr;
-    } else {
+#if QT_CONFIG(opengl)
+    if (!screenConfig()->hwCursor()) {
         qCDebug(qLcEglfsKmsDebug, "Using plain OpenGL mouse cursor");
         return new QEglFSCursor(screen);
     }
+#endif
+    return nullptr;
 }
 
 void QEglFSKmsGbmIntegration::presentBuffer(QPlatformSurface *surface)
