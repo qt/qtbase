@@ -407,6 +407,8 @@ private slots:
 
     void testForOutsideWSRangeFlag();
 
+    void tabletTracking();
+
 private:
     bool ensureScreenSize(int width, int height);
 
@@ -10527,6 +10529,110 @@ void tst_QWidget::testForOutsideWSRangeFlag()
         // The layout should change the size, so the widget must be visible!
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
     }
+}
+
+class TabletWidget : public QWidget
+{
+public:
+    TabletWidget(QWidget *parent) : QWidget(parent) { }
+
+    int tabletEventCount = 0;
+    int pressEventCount = 0;
+    int moveEventCount = 0;
+    int releaseEventCount = 0;
+    int trackingChangeEventCount = 0;
+    qint64 uid = -1;
+
+protected:
+    void tabletEvent(QTabletEvent *event) override {
+        ++tabletEventCount;
+        uid = event->uniqueId();
+        switch (event->type()) {
+        case QEvent::TabletMove:
+            ++moveEventCount;
+            break;
+        case QEvent::TabletPress:
+            ++pressEventCount;
+            break;
+        case QEvent::TabletRelease:
+            ++releaseEventCount;
+            break;
+        default:
+            break;
+        }
+    }
+
+    bool event(QEvent *ev) override {
+        if (ev->type() == QEvent::TabletTrackingChange)
+            ++trackingChangeEventCount;
+        return QWidget::event(ev);
+    }
+};
+
+void tst_QWidget::tabletTracking()
+{
+    QWidget parent;
+    parent.resize(200,200);
+    // QWidgetWindow::handleTabletEvent doesn't deliver tablet events to the window's widget, only to a child.
+    // So it doesn't do any good to show a TabletWidget directly: it needs a parent.
+    TabletWidget widget(&parent);
+    widget.resize(200,200);
+    parent.showNormal();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+    widget.setAttribute(Qt::WA_TabletTracking);
+    QTRY_COMPARE(widget.trackingChangeEventCount, 1);
+    QVERIFY(widget.hasTabletTracking());
+
+    QWindow *window = parent.windowHandle();
+    QPointF local(10, 10);
+    QPointF global = window->mapToGlobal(local.toPoint());
+    QPointF deviceLocal = QHighDpi::toNativeLocalPosition(local, window);
+    QPointF deviceGlobal = QHighDpi::toNativePixels(global, window->screen());
+    qint64 uid = 1234UL;
+
+    QWindowSystemInterface::handleTabletEvent(window, QDateTime::currentMSecsSinceEpoch(), deviceLocal, deviceGlobal,
+        QTabletEvent::Stylus, QTabletEvent::Pen, Qt::NoButton, 0, 0, 0, 0, 0, 0, uid, Qt::NoModifier);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(widget.moveEventCount, 1);
+    QCOMPARE(widget.uid, uid);
+
+    local += QPoint(10, 10);
+    deviceLocal += QPoint(10, 10);
+    deviceGlobal += QPoint(10, 10);
+    QWindowSystemInterface::handleTabletEvent(window, QDateTime::currentMSecsSinceEpoch(), deviceLocal, deviceGlobal,
+        QTabletEvent::Stylus, QTabletEvent::Pen, Qt::NoButton, 0, 0, 0, 0, 0, 0, uid, Qt::NoModifier);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(widget.moveEventCount, 2);
+
+    widget.setTabletTracking(false);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(widget.trackingChangeEventCount, 2);
+
+    QWindowSystemInterface::handleTabletEvent(window, QDateTime::currentMSecsSinceEpoch(), deviceLocal, deviceGlobal,
+        QTabletEvent::Stylus, QTabletEvent::Pen, Qt::LeftButton, 0, 0, 0, 0, 0, 0, uid, Qt::NoModifier);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(widget.pressEventCount, 1);
+
+    local += QPoint(10, 10);
+    deviceLocal += QPoint(10, 10);
+    deviceGlobal += QPoint(10, 10);
+    QWindowSystemInterface::handleTabletEvent(window, QDateTime::currentMSecsSinceEpoch(), deviceLocal, deviceGlobal,
+        QTabletEvent::Stylus, QTabletEvent::Pen, Qt::LeftButton, 0, 0, 0, 0, 0, 0, uid, Qt::NoModifier);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(widget.moveEventCount, 3);
+
+    QWindowSystemInterface::handleTabletEvent(window, QDateTime::currentMSecsSinceEpoch(), deviceLocal, deviceGlobal,
+        QTabletEvent::Stylus, QTabletEvent::Pen, Qt::NoButton, 0, 0, 0, 0, 0, 0, uid, Qt::NoModifier);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(widget.releaseEventCount, 1);
+
+    local += QPoint(10, 10);
+    deviceLocal += QPoint(10, 10);
+    deviceGlobal += QPoint(10, 10);
+    QWindowSystemInterface::handleTabletEvent(window, QDateTime::currentMSecsSinceEpoch(), deviceLocal, deviceGlobal,
+                                              QTabletEvent::Stylus, QTabletEvent::Pen, Qt::NoButton, 0, 0, 0, 0, 0, 0, uid, Qt::NoModifier);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(widget.moveEventCount, 3);
 }
 
 QTEST_MAIN(tst_QWidget)
