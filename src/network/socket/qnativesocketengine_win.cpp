@@ -943,9 +943,7 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
         Q_IPV6ADDR ip6 = groupAddress.toIPv6Address();
         memcpy(&mreq6.ipv6mr_multiaddr, &ip6, sizeof(ip6));
         mreq6.ipv6mr_interface = iface.index();
-    } else
-
-    if (groupAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+    } else if (groupAddress.protocol() == QAbstractSocket::IPv4Protocol) {
         level = IPPROTO_IP;
         sockOpt = how4;
         sockArg = reinterpret_cast<char *>(&mreq4);
