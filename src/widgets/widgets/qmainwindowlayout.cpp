@@ -2112,10 +2112,8 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         }
 
         if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget)) {
-            if (currentHoveredFloat) {
-                dw->setParent(currentHoveredFloat);
-                dw->show();
-            }
+            dw->setParent(currentHoveredFloat ? currentHoveredFloat.data() : parentWidget());
+            dw->show();
             dw->d_func()->plug(currentGapRect);
         }
 #endif
