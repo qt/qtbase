@@ -85,6 +85,12 @@ public:
     };
     Q_ENUM(OpenGLContextProfile)
 
+    enum ColorSpace {
+        DefaultColorSpace,
+        sRGBColorSpace
+    };
+    Q_ENUM(ColorSpace)
+
     QSurfaceFormat();
     /*implicit*/ QSurfaceFormat(FormatOptions options);
     QSurfaceFormat(const QSurfaceFormat &other);
@@ -144,6 +150,9 @@ public:
 
     int swapInterval() const;
     void setSwapInterval(int interval);
+
+    ColorSpace colorSpace() const;
+    void setColorSpace(ColorSpace colorSpace);
 
     static void setDefaultFormat(const QSurfaceFormat &format);
     static QSurfaceFormat defaultFormat();
