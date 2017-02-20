@@ -145,7 +145,7 @@ struct QGenericArrayOps
 
         T *const begin = this->begin();
         do {
-            new (begin + this->size) T();
+            new (begin + this->size) T;
         } while (uint(++this->size) != newSize);
     }
 
