@@ -2842,6 +2842,9 @@ inline bool QDateTime::Data::isShort() const
 {
     bool b = quintptr(d) & QDateTimePrivate::ShortData;
 
+    // sanity check:
+    Q_ASSERT(b || (d->m_status & QDateTimePrivate::ShortData) == 0);
+
     // even if CanBeSmall = false, we have short data for a default-constructed
     // QDateTime object. But it's unlikely.
     if (CanBeSmall)
@@ -3658,7 +3661,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         d.data.status = status;
     } else {
         d.detach();
-        d->m_status = status;
+        d->m_status = status & ~QDateTimePrivate::ShortData;
         d->m_msecs = msecs;
     }
 

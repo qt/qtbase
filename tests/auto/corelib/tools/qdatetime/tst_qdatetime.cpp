@@ -667,6 +667,29 @@ void tst_QDateTime::setMSecsSinceEpoch()
     QCOMPARE(dt.time(), utc.time());
     QCOMPARE(dt.timeSpec(), Qt::UTC);
 
+    {
+        QDateTime dt1 = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
+        QCOMPARE(dt1, utc);
+        QCOMPARE(dt1.date(), utc.date());
+        QCOMPARE(dt1.time(), utc.time());
+        QCOMPARE(dt1.timeSpec(), Qt::UTC);
+    }
+    {
+        QDateTime dt1(utc.date(), utc.time(), Qt::UTC);
+        QCOMPARE(dt1, utc);
+        QCOMPARE(dt1.date(), utc.date());
+        QCOMPARE(dt1.time(), utc.time());
+        QCOMPARE(dt1.timeSpec(), Qt::UTC);
+    }
+    {
+        // used to fail to clear the ShortData bit, causing corruption
+        QDateTime dt1 = dt.addDays(0);
+        QCOMPARE(dt1, utc);
+        QCOMPARE(dt1.date(), utc.date());
+        QCOMPARE(dt1.time(), utc.time());
+        QCOMPARE(dt1.timeSpec(), Qt::UTC);
+    }
+
     if (zoneIsCET) {
         QCOMPARE(dt.toLocalTime(), cet);
 
