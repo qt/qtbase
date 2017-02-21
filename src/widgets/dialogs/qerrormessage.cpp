@@ -163,14 +163,20 @@ static void jump(QtMsgType t, const QMessageLogContext & /*context*/, const QStr
 
     switch (t) {
     case QtDebugMsg:
-    default:
         rich = QErrorMessage::tr("Debug Message:");
         break;
     case QtWarningMsg:
         rich = QErrorMessage::tr("Warning:");
         break;
+    case QtCriticalMsg:
+        rich = QErrorMessage::tr("Critical Error:");
+        break;
     case QtFatalMsg:
         rich = QErrorMessage::tr("Fatal Error:");
+        break;
+    case QtInfoMsg:
+        rich = QErrorMessage::tr("Information:");
+        break;
     }
     rich = QString::fromLatin1("<p><b>%1</b></p>").arg(rich);
     rich += Qt::convertFromPlainText(m, Qt::WhiteSpaceNormal);
