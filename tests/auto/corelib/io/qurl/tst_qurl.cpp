@@ -46,6 +46,7 @@ class tst_QUrl : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void effectiveTLDs_data();
     void effectiveTLDs();
     void getSetCheck();
@@ -182,7 +183,14 @@ private slots:
 
 private:
     void testThreadingHelper();
+
+    QTemporaryDir m_tempDir;
 };
+
+void tst_QUrl::initTestCase()
+{
+    QVERIFY2(m_tempDir.isValid(), qPrintable(m_tempDir.errorString()));
+}
 
 // Testing get/set functions
 void tst_QUrl::getSetCheck()
@@ -3062,26 +3070,35 @@ void tst_QUrl::fromUserInputWithCwd_data()
     // Null
     QTest::newRow("null") << QString() << QString() << QUrl() << QUrl();
 
-    // Existing files
-    const QString base = QDir::currentPath();
-    QDirIterator it(base, QDir::NoDotDot | QDir::AllEntries);
-    int c = 0;
-    while (it.hasNext()) {
-        it.next();
-        QUrl url = QUrl::fromLocalFile(it.filePath());
-        if (it.fileName() == QLatin1String(".")) {
-            url = QUrl::fromLocalFile(base
+    // Use a tempdir with files, for testing specific file names
+    // We use canonicalPath() on the dir path because ::getcwd() canonicalizes,
+    // so we get a canonical base path for URLs with "." as working directory.
+    const QString base = QDir(m_tempDir.path()).canonicalPath();
+    QDir::setCurrent(base); // for the tests that use "." as working dir
+
+    // "."
+    {
+        const QUrl url = QUrl::fromLocalFile(base
 #ifdef Q_OS_WINRT
                                       + QLatin1Char('/')
 #endif
                                       ); // fromUserInput cleans the path
-        }
-        QTest::newRow(("file-" + QByteArray::number(c)).constData())
-                      << it.fileName() << base << url << url;
-        QTest::newRow(("file-" + QByteArray::number(c) + "-dot").constData())
-                      << it.fileName() << QStringLiteral(".") << url << url;
-        ++c;
+        QTest::newRow("dot-in-path") << "." << base << url << url;
+        QTest::newRow("dot-in-dot") << "." << QStringLiteral(".") << url << url;
     }
+
+    // Existing files
+    for (const char *fileName : {"file.txt", "file#a.txt", "file .txt"}) {
+        const QString filePath = base + '/' + fileName;
+        QFile file(filePath);
+        QVERIFY2(file.open(QIODevice::WriteOnly), qPrintable(filePath));
+        file.write("Hello world\n");
+
+        const QUrl url = QUrl::fromLocalFile(filePath);
+        QTest::newRow(fileName) << fileName << base << url << url;
+        QTest::newRow(QByteArray(fileName) + "-in-dot") << fileName << QStringLiteral(".") << url << url;
+    }
+
 #ifndef Q_OS_WINRT // WinRT cannot cd outside current / sandbox
     QDir parent(base);
     QVERIFY(parent.cdUp());
