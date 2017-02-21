@@ -2378,7 +2378,8 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
             // We are unplugging a dock widget from a floating window.
             if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget)) {
                 dw->d_func()->unplug(widget->geometry());
-                return 0;
+                int index = widget->parentWidget()->layout()->indexOf(widget);
+                return widget->parentWidget()->layout()->itemAt(index);
             }
         }
     }
