@@ -139,7 +139,8 @@ class QOpenGLStaticContext : public QWindowsStaticOpenGLContext
 public:
     enum Extensions
     {
-        SampleBuffers = 0x1
+        SampleBuffers = 0x1,
+        sRGBCapableFramebuffer = 0x2
     };
 
     typedef bool
@@ -159,6 +160,9 @@ public:
         (APIENTRY *WglSwapInternalExt)(int interval);
     typedef int
         (APIENTRY *WglGetSwapInternalExt)(void);
+
+    typedef const char *
+        (APIENTRY *WglGetExtensionsStringARB)(HDC);
 
     bool hasExtensions() const
         { return wglGetPixelFormatAttribIVARB && wglChoosePixelFormatARB && wglCreateContextAttribsARB; }
@@ -185,6 +189,7 @@ public:
     WglCreateContextAttribsARB wglCreateContextAttribsARB;
     WglSwapInternalExt wglSwapInternalExt;
     WglGetSwapInternalExt wglGetSwapInternalExt;
+    WglGetExtensionsStringARB wglGetExtensionsStringARB;
 
     static QWindowsOpengl32DLL opengl32;
 };
