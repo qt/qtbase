@@ -2230,52 +2230,6 @@ bool QXcbConnection::xi2MouseEvents() const
 }
 #endif
 
-#if defined(XCB_USE_XINPUT2)
-static int xi2ValuatorOffset(const unsigned char *maskPtr, int maskLen, int number)
-{
-    int offset = 0;
-    for (int i = 0; i < maskLen; i++) {
-        if (number < 8) {
-            if ((maskPtr[i] & (1 << number)) == 0)
-                return -1;
-        }
-        for (int j = 0; j < 8; j++) {
-            if (j == number)
-                return offset;
-            if (maskPtr[i] & (1 << j))
-                offset++;
-        }
-        number -= 8;
-    }
-    return -1;
-}
-
-bool QXcbConnection::xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value)
-{
-    const xXIDeviceEvent *xideviceevent = static_cast<const xXIDeviceEvent *>(event);
-    const unsigned char *buttonsMaskAddr = (const unsigned char*)&xideviceevent[1];
-    const unsigned char *valuatorsMaskAddr = buttonsMaskAddr + xideviceevent->buttons_len * 4;
-    FP3232 *valuatorsValuesAddr = (FP3232*)(valuatorsMaskAddr + xideviceevent->valuators_len * 4);
-
-    int valuatorOffset = xi2ValuatorOffset(valuatorsMaskAddr, xideviceevent->valuators_len, valuatorNum);
-    if (valuatorOffset < 0)
-        return false;
-
-    *value = valuatorsValuesAddr[valuatorOffset].integral;
-    *value += ((double)valuatorsValuesAddr[valuatorOffset].frac / (1 << 16) / (1 << 16));
-    return true;
-}
-
-void QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event)
-{
-    // xcb event structs contain stuff that wasn't on the wire, the full_sequence field
-    // adds an extra 4 bytes and generic events cookie data is on the wire right after the standard 32 bytes.
-    // Move this data back to have the same layout in memory as it was on the wire
-    // and allow casting, overwriting the full_sequence field.
-    memmove((char*) event + 32, (char*) event + 36, event->length * 4);
-}
-#endif // defined(XCB_USE_XINPUT2)
-
 QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker() const
 {
     if (!m_systemTrayTracker) {
