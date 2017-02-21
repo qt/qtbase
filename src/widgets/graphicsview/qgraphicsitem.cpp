@@ -4430,7 +4430,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     otherwise, \a matrix \e replaces the current matrix. \a combine is false
     by default.
 
-    To simplify interation with items using a transformed view, QGraphicsItem
+    To simplify interaction with items using a transformed view, QGraphicsItem
     provides mapTo... and mapFrom... functions that can translate between
     items' and the scene's coordinates. For example, you can call mapToScene()
     to map an item coordiate to a scene coordinate, or mapFromScene() to map

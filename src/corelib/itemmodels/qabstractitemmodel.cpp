@@ -2986,7 +2986,7 @@ void QAbstractItemModel::endRemoveColumns()
     When reimplementing a subclass, this method simplifies moving
     entities in your model. This method is responsible for moving
     persistent indexes in the model, which you would otherwise be
-    required to do yourself. Using beginMoveRows and endMoveRows
+    required to do yourself. Using beginMoveColumns and endMoveColumns
     is an alternative to emitting layoutAboutToBeChanged and
     layoutChanged directly along with changePersistentIndex.
 
