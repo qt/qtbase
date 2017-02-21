@@ -70,6 +70,13 @@
 #define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
 #endif
 
+#ifndef GL_FRAMEBUFFER_SRB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+#ifndef GL_FRAMEBUFFER_SRGB_CAPABLE
+#define GL_FRAMEBUFFER_SRGB_CAPABLE 0x8DBA
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QPlatformBackingStorePrivate
@@ -269,7 +276,7 @@ static inline QRect toBottomLeftRect(const QRect &topLeftRect, int windowHeight)
 }
 
 static void blitTextureForWidget(const QPlatformTextureList *textures, int idx, QWindow *window, const QRect &deviceWindowRect,
-                                 QOpenGLTextureBlitter *blitter, const QPoint &offset)
+                                 QOpenGLTextureBlitter *blitter, const QPoint &offset, bool canUseSrgb)
 {
     const QRect clipRect = textures->clipRect(idx);
     if (clipRect.isEmpty())
@@ -289,7 +296,15 @@ static void blitTextureForWidget(const QPlatformTextureList *textures, int idx, 
                                                                      deviceRect(rectInWindow, window).size(),
                                                                      QOpenGLTextureBlitter::OriginBottomLeft);
 
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    const bool srgb = textures->flags(idx).testFlag(QPlatformTextureList::TextureIsSrgb);
+    if (srgb && canUseSrgb)
+        funcs->glEnable(GL_FRAMEBUFFER_SRGB);
+
     blitter->blit(textures->textureId(idx), target, source);
+
+    if (srgb && canUseSrgb)
+        funcs->glDisable(GL_FRAMEBUFFER_SRGB);
 }
 
 /*!
@@ -334,10 +349,23 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     const QRect deviceWindowRect = deviceRect(QRect(QPoint(), window->size()), window);
 
+    bool canUseSrgb = false;
+    // If there are any sRGB textures in the list, check if the destination
+    // framebuffer is sRGB capable.
+    for (int i = 0; i < textures->count(); ++i) {
+        if (textures->flags(i).testFlag(QPlatformTextureList::TextureIsSrgb)) {
+            GLint cap = 0;
+            funcs->glGetIntegerv(GL_FRAMEBUFFER_SRGB_CAPABLE, &cap);
+            if (cap)
+                canUseSrgb = true;
+            break;
+        }
+    }
+
     // Textures for renderToTexture widgets.
     for (int i = 0; i < textures->count(); ++i) {
         if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop))
-            blitTextureForWidget(textures, i, window, deviceWindowRect, d_ptr->blitter, offset);
+            blitTextureForWidget(textures, i, window, deviceWindowRect, d_ptr->blitter, offset, canUseSrgb);
     }
 
     // Backingstore texture with the normal widgets.
@@ -406,7 +434,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
     for (int i = 0; i < textures->count(); ++i) {
         if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop))
-            blitTextureForWidget(textures, i, window, deviceWindowRect, d_ptr->blitter, offset);
+            blitTextureForWidget(textures, i, window, deviceWindowRect, d_ptr->blitter, offset, canUseSrgb);
     }
 
     funcs->glDisable(GL_BLEND);

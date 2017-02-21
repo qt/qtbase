@@ -78,7 +78,8 @@ class Q_GUI_EXPORT QPlatformTextureList : public QObject
     Q_DECLARE_PRIVATE(QPlatformTextureList)
 public:
     enum Flag {
-        StacksOnTop = 0x01
+        StacksOnTop = 0x01,
+        TextureIsSrgb = 0x02
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

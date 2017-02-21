@@ -69,6 +69,7 @@
 #include "QtWidgets/qgraphicsscene.h"
 #include "QtWidgets/qgraphicsview.h"
 #include <private/qgesture_p.h>
+#include <qpa/qplatformbackingstore.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -81,7 +82,6 @@ class QWidgetBackingStore;
 class QGraphicsProxyWidget;
 class QWidgetItemV2;
 class QOpenGLContext;
-class QPlatformTextureList;
 
 class QStyle;
 
@@ -630,6 +630,12 @@ public:
 
 #ifndef QT_NO_OPENGL
     virtual GLuint textureId() const { return 0; }
+    virtual QPlatformTextureList::Flags textureListFlags() {
+        Q_Q(QWidget);
+        return q->testAttribute(Qt::WA_AlwaysStackOnTop)
+            ? QPlatformTextureList::StacksOnTop
+            : QPlatformTextureList::Flags(0);
+    }
     virtual QImage grabFramebuffer() { return QImage(); }
     virtual void beginBackingStorePainting() { }
     virtual void endBackingStorePainting() { }

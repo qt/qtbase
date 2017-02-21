@@ -945,9 +945,7 @@ static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget, QPlatfo
 {
     QWidgetPrivate *wd = QWidgetPrivate::get(widget);
     if (wd->renderToTexture) {
-        QPlatformTextureList::Flags flags = 0;
-        if (widget->testAttribute(Qt::WA_AlwaysStackOnTop))
-            flags |= QPlatformTextureList::StacksOnTop;
+        QPlatformTextureList::Flags flags = wd->textureListFlags();
         const QRect rect(widget->mapTo(tlw, QPoint()), widget->size());
         widgetTextures->appendTexture(widget, wd->textureId(), rect, wd->clipRect(), flags);
     }

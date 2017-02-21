@@ -581,6 +581,7 @@ public:
     void recreateFbo();
 
     GLuint textureId() const Q_DECL_OVERRIDE;
+    QPlatformTextureList::Flags textureListFlags() Q_DECL_OVERRIDE;
 
     void initialize();
     void invokeUserPaint();
@@ -654,6 +655,35 @@ void QOpenGLWidgetPaintDevice::ensureActiveTarget()
 GLuint QOpenGLWidgetPrivate::textureId() const
 {
     return resolvedFbo ? resolvedFbo->texture() : (fbo ? fbo->texture() : 0);
+}
+
+#ifndef GL_SRGB
+#define GL_SRGB 0x8C40
+#endif
+#ifndef GL_SRGB8
+#define GL_SRGB8 0x8C41
+#endif
+#ifndef GL_SRGB_ALPHA
+#define GL_SRGB_ALPHA 0x8C42
+#endif
+#ifndef GL_SRGB8_ALPHA8
+#define GL_SRGB8_ALPHA8 0x8C43
+#endif
+
+QPlatformTextureList::Flags QOpenGLWidgetPrivate::textureListFlags()
+{
+    QPlatformTextureList::Flags flags = QWidgetPrivate::textureListFlags();
+    switch (textureFormat) {
+    case GL_SRGB:
+    case GL_SRGB8:
+    case GL_SRGB_ALPHA:
+    case GL_SRGB8_ALPHA8:
+        flags |= QPlatformTextureList::TextureIsSrgb;
+        break;
+    default:
+        break;
+    }
+    return flags;
 }
 
 void QOpenGLWidgetPrivate::reset()
