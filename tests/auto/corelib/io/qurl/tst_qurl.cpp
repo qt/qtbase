@@ -3062,49 +3062,50 @@ void tst_QUrl::fromUserInputWithCwd_data()
     // Null
     QTest::newRow("null") << QString() << QString() << QUrl() << QUrl();
 
-    // Existing file
-    QDirIterator it(QDir::currentPath(), QDir::NoDotDot | QDir::AllEntries);
+    // Existing files
+    const QString base = QDir::currentPath();
+    QDirIterator it(base, QDir::NoDotDot | QDir::AllEntries);
     int c = 0;
     while (it.hasNext()) {
         it.next();
         QUrl url = QUrl::fromLocalFile(it.filePath());
         if (it.fileName() == QLatin1String(".")) {
-            url = QUrl::fromLocalFile(QDir::currentPath()
+            url = QUrl::fromLocalFile(base
 #ifdef Q_OS_WINRT
                                       + QLatin1Char('/')
 #endif
                                       ); // fromUserInput cleans the path
         }
         QTest::newRow(("file-" + QByteArray::number(c)).constData())
-                      << it.fileName() << QDir::currentPath() << url << url;
+                      << it.fileName() << base << url << url;
         QTest::newRow(("file-" + QByteArray::number(c) + "-dot").constData())
                       << it.fileName() << QStringLiteral(".") << url << url;
         ++c;
     }
 #ifndef Q_OS_WINRT // WinRT cannot cd outside current / sandbox
-    QDir parent = QDir::current();
+    QDir parent(base);
     QVERIFY(parent.cdUp());
     QUrl parentUrl = QUrl::fromLocalFile(parent.path());
-    QTest::newRow("dotdot") << ".." << QDir::currentPath() << parentUrl << parentUrl;
+    QTest::newRow("dotdot") << ".." << base << parentUrl << parentUrl;
 #endif
 
-    QTest::newRow("nonexisting") << "nonexisting" << QDir::currentPath() << QUrl("http://nonexisting") << QUrl::fromLocalFile(QDir::currentPath() + "/nonexisting");
-    QTest::newRow("short-url") << "example.org" << QDir::currentPath() << QUrl("http://example.org") << QUrl::fromLocalFile(QDir::currentPath() + "/example.org");
-    QTest::newRow("full-url") << "http://example.org" << QDir::currentPath() << QUrl("http://example.org") << QUrl("http://example.org");
-    QTest::newRow("absolute") << "/doesnotexist.txt" << QDir::currentPath() << QUrl("file:///doesnotexist.txt") << QUrl("file:///doesnotexist.txt");
+    QTest::newRow("nonexisting") << "nonexisting" << base << QUrl("http://nonexisting") << QUrl::fromLocalFile(base + "/nonexisting");
+    QTest::newRow("short-url") << "example.org" << base << QUrl("http://example.org") << QUrl::fromLocalFile(base + "/example.org");
+    QTest::newRow("full-url") << "http://example.org" << base << QUrl("http://example.org") << QUrl("http://example.org");
+    QTest::newRow("absolute") << "/doesnotexist.txt" << base << QUrl("file:///doesnotexist.txt") << QUrl("file:///doesnotexist.txt");
 #ifdef Q_OS_WIN
-    QTest::newRow("windows-absolute") << "c:/doesnotexist.txt" << QDir::currentPath() << QUrl("file:///c:/doesnotexist.txt") << QUrl("file:///c:/doesnotexist.txt");
+    QTest::newRow("windows-absolute") << "c:/doesnotexist.txt" << base << QUrl("file:///c:/doesnotexist.txt") << QUrl("file:///c:/doesnotexist.txt");
 #endif
 
     // IPv4 & IPv6
     // same as fromUserInput, but needs retesting
-    QTest::newRow("ipv4-1") << "127.0.0.1" << QDir::currentPath() << QUrl("http://127.0.0.1") << QUrl::fromLocalFile(QDir::currentPath() + "/127.0.0.1");
-    QTest::newRow("ipv6-0") << "::" << QDir::currentPath() << QUrl("http://[::]") << QUrl("http://[::]");
-    QTest::newRow("ipv6-1") << "::1" << QDir::currentPath() << QUrl("http://[::1]") << QUrl("http://[::1]");
-    QTest::newRow("ipv6-2") << "1::1" << QDir::currentPath() << QUrl("http://[1::1]") << QUrl("http://[1::1]");
-    QTest::newRow("ipv6-3") << "1::" << QDir::currentPath() << QUrl("http://[1::]") << QUrl("http://[1::]");
-    QTest::newRow("ipv6-4") << "c::" << QDir::currentPath() << QUrl("http://[c::]") << QUrl("http://[c::]");
-    QTest::newRow("ipv6-5") << "c:f00:ba4::" << QDir::currentPath() << QUrl("http://[c:f00:ba4::]") << QUrl("http://[c:f00:ba4::]");
+    QTest::newRow("ipv4-1") << "127.0.0.1" << base << QUrl("http://127.0.0.1") << QUrl::fromLocalFile(base + "/127.0.0.1");
+    QTest::newRow("ipv6-0") << "::" << base << QUrl("http://[::]") << QUrl("http://[::]");
+    QTest::newRow("ipv6-1") << "::1" << base << QUrl("http://[::1]") << QUrl("http://[::1]");
+    QTest::newRow("ipv6-2") << "1::1" << base << QUrl("http://[1::1]") << QUrl("http://[1::1]");
+    QTest::newRow("ipv6-3") << "1::" << base << QUrl("http://[1::]") << QUrl("http://[1::]");
+    QTest::newRow("ipv6-4") << "c::" << base << QUrl("http://[c::]") << QUrl("http://[c::]");
+    QTest::newRow("ipv6-5") << "c:f00:ba4::" << base << QUrl("http://[c:f00:ba4::]") << QUrl("http://[c:f00:ba4::]");
 }
 
 void tst_QUrl::fromUserInputWithCwd()
