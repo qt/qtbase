@@ -305,8 +305,7 @@ QXcbClipboard::~QXcbClipboard()
             m_timestamp[QClipboard::Selection] != XCB_CURRENT_TIME) {
 
         // First we check if there is a clipboard manager.
-        xcb_get_selection_owner_cookie_t cookie = xcb_get_selection_owner(xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
-        xcb_get_selection_owner_reply_t *reply = xcb_get_selection_owner_reply(xcb_connection(), cookie, 0);
+        auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
         if (reply && reply->owner != XCB_NONE) {
             // we delete the property so the manager saves all TARGETS.
             xcb_delete_property(xcb_connection(), m_owner, atom(QXcbAtom::_QT_SELECTION));
@@ -320,7 +319,6 @@ QXcbClipboard::~QXcbClipboard()
                          "clipboard manager in a reasonable time");
             }
         }
-        free(reply);
     }
 
     if (m_clientClipboard[QClipboard::Clipboard] != m_clientClipboard[QClipboard::Selection])
@@ -759,17 +757,14 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
         format = &dummy_format;
 
     // Don't read anything, just get the size of the property data
-    xcb_get_property_cookie_t cookie = Q_XCB_CALL(xcb_get_property(xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, 0, 0));
-    xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
+    auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, 0, 0);
     if (!reply || reply->type == XCB_NONE) {
-        free(reply);
         buffer->resize(0);
         return false;
     }
     *type = reply->type;
     *format = reply->format;
     bytes_left = reply->bytes_after;
-    free(reply);
 
     int  offset = 0, buffer_offset = 0;
 
@@ -784,17 +779,15 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
         while (bytes_left) {
             // more to read...
 
-            xcb_get_property_cookie_t cookie = Q_XCB_CALL(xcb_get_property(xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, offset, maxsize/4));
-            reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
-            if (!reply || reply->type == XCB_NONE) {
-                free(reply);
+            reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, offset, maxsize/4);
+            if (!reply || reply->type == XCB_NONE)
                 break;
-            }
+
             *type = reply->type;
             *format = reply->format;
             bytes_left = reply->bytes_after;
-            char *data = (char *)xcb_get_property_value(reply);
-            int length = xcb_get_property_value_length(reply);
+            char *data = (char *)xcb_get_property_value(reply.get());
+            int length = xcb_get_property_value_length(reply.get());
 
             // Here we check if we get a buffer overflow and tries to
             // recover -- this shouldn't normally happen, but it doesn't
@@ -814,7 +807,6 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
                 // offset is specified in 32-bit multiples
                 offset += length / 4;
             }
-            free(reply);
         }
     }
 
@@ -891,13 +883,9 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int 
             return e;
 
         if (checkManager) {
-            xcb_get_selection_owner_cookie_t cookie = xcb_get_selection_owner(xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
-            xcb_get_selection_owner_reply_t *reply = xcb_get_selection_owner_reply(xcb_connection(), cookie, 0);
-            if (!reply || reply->owner == XCB_NONE) {
-                free(reply);
+            auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
+            if (!reply || reply->owner == XCB_NONE)
                 return 0;
-            }
-            free(reply);
         }
 
         // process other clipboard events, since someone is probably requesting data from us

@@ -673,12 +673,10 @@ QMargins QXcbWindow::frameMargins() const
 {
     if (m_dirtyFrameMargins) {
         if (connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_FRAME_EXTENTS))) {
-            xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, m_window,
-                                                                atom(QXcbAtom::_NET_FRAME_EXTENTS), XCB_ATOM_CARDINAL, 0, 4);
-            QScopedPointer<xcb_get_property_reply_t, QScopedPointerPodDeleter> reply(
-                xcb_get_property_reply(xcb_connection(), cookie, NULL));
+            auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, m_window,
+                                     atom(QXcbAtom::_NET_FRAME_EXTENTS), XCB_ATOM_CARDINAL, 0, 4);
             if (reply && reply->type == XCB_ATOM_CARDINAL && reply->format == 32 && reply->value_len == 4) {
-                quint32 *data = (quint32 *)xcb_get_property_value(reply.data());
+                quint32 *data = (quint32 *)xcb_get_property_value(reply.get());
                 // _NET_FRAME_EXTENTS format is left, right, top, bottom
                 m_frameMargins = QMargins(data[0], data[2], data[1], data[3]);
                 m_dirtyFrameMargins = false;
@@ -697,9 +695,7 @@ QMargins QXcbWindow::frameMargins() const
             connection()->wmSupport()->virtualRoots();
 
         while (!foundRoot) {
-            xcb_query_tree_cookie_t cookie = xcb_query_tree_unchecked(xcb_connection(), parent);
-
-            xcb_query_tree_reply_t *reply = xcb_query_tree_reply(xcb_connection(), cookie, NULL);
+            auto reply = Q_XCB_REPLY_UNCHECKED(xcb_query_tree, xcb_connection(), parent);
             if (reply) {
                 if (reply->root == reply->parent || virtualRoots.indexOf(reply->parent) != -1 || reply->parent == XCB_WINDOW_NONE) {
                     foundRoot = true;
@@ -707,8 +703,6 @@ QMargins QXcbWindow::frameMargins() const
                     window = parent;
                     parent = reply->parent;
                 }
-
-                free(reply);
             } else {
                 m_dirtyFrameMargins = false;
                 m_frameMargins = QMargins();
@@ -718,23 +712,12 @@ QMargins QXcbWindow::frameMargins() const
 
         QPoint offset;
 
-        xcb_translate_coordinates_reply_t *reply =
-            xcb_translate_coordinates_reply(
-                xcb_connection(),
-                xcb_translate_coordinates(xcb_connection(), window, parent, 0, 0),
-                NULL);
-
+        auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(), window, parent, 0, 0);
         if (reply) {
             offset = QPoint(reply->dst_x, reply->dst_y);
-            free(reply);
         }
 
-        xcb_get_geometry_reply_t *geom =
-            xcb_get_geometry_reply(
-                xcb_connection(),
-                xcb_get_geometry(xcb_connection(), parent),
-                NULL);
-
+        auto geom = Q_XCB_REPLY(xcb_get_geometry, xcb_connection(), parent);
         if (geom) {
             // --
             // add the border_width for the window managers frame... some window managers
@@ -751,8 +734,6 @@ QMargins QXcbWindow::frameMargins() const
             int bottom = geom->height + geom->border_width - geometry().height() - offset.y();
 
             m_frameMargins = QMargins(left, top, right, bottom);
-
-            free(geom);
         }
 
         m_dirtyFrameMargins = false;
@@ -779,6 +760,7 @@ static inline bool testShowWithoutActivating(const QWindow *window)
 void QXcbWindow::show()
 {
     if (window()->isTopLevel()) {
+
         xcb_get_property_cookie_t cookie = xcb_get_wm_hints_unchecked(xcb_connection(), m_window);
 
         xcb_wm_hints_t hints;
@@ -1006,15 +988,11 @@ static QtMotifWmHints getMotifWmHints(QXcbConnection *c, xcb_window_t window)
 {
     QtMotifWmHints hints;
 
-    xcb_get_property_cookie_t get_cookie =
-        xcb_get_property_unchecked(c->xcb_connection(), 0, window, c->atom(QXcbAtom::_MOTIF_WM_HINTS),
-                         c->atom(QXcbAtom::_MOTIF_WM_HINTS), 0, 20);
-
-    xcb_get_property_reply_t *reply =
-        xcb_get_property_reply(c->xcb_connection(), get_cookie, NULL);
+    auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, c->xcb_connection(), 0, window,
+                                       c->atom(QXcbAtom::_MOTIF_WM_HINTS), c->atom(QXcbAtom::_MOTIF_WM_HINTS), 0, 20);
 
     if (reply && reply->format == 32 && reply->type == c->atom(QXcbAtom::_MOTIF_WM_HINTS)) {
-        hints = *((QtMotifWmHints *)xcb_get_property_value(reply));
+        hints = *((QtMotifWmHints *)xcb_get_property_value(reply.get()));
     } else {
         hints.flags = 0L;
         hints.functions = MWM_FUNC_ALL;
@@ -1022,8 +1000,6 @@ static QtMotifWmHints getMotifWmHints(QXcbConnection *c, xcb_window_t window)
         hints.input_mode = 0L;
         hints.status = 0L;
     }
-
-    free(reply);
 
     return hints;
 }
@@ -1048,15 +1024,12 @@ QXcbWindow::NetWmStates QXcbWindow::netWmStates()
 {
     NetWmStates result(0);
 
-    xcb_get_property_cookie_t get_cookie =
-        xcb_get_property_unchecked(xcb_connection(), 0, m_window, atom(QXcbAtom::_NET_WM_STATE),
-                         XCB_ATOM_ATOM, 0, 1024);
-
-    xcb_get_property_reply_t *reply =
-        xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
+    auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                       0, m_window, atom(QXcbAtom::_NET_WM_STATE),
+                                       XCB_ATOM_ATOM, 0, 1024);
 
     if (reply && reply->format == 32 && reply->type == XCB_ATOM_ATOM) {
-        const xcb_atom_t *states = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply));
+        const xcb_atom_t *states = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply.get()));
         const xcb_atom_t *statesEnd = states + reply->length;
         if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_ABOVE)))
             result |= NetWmStateAbove;
@@ -1074,7 +1047,6 @@ QXcbWindow::NetWmStates QXcbWindow::netWmStates()
             result |= NetWmStateStaysOnTop;
         if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION)))
             result |= NetWmStateDemandsAttention;
-        free(reply);
     } else {
 #ifdef NET_WM_STATE_DEBUG
         printf("getting net wm state (%x), empty\n", m_window);
@@ -1088,20 +1060,14 @@ void QXcbWindow::setNetWmStates(NetWmStates states)
 {
     QVector<xcb_atom_t> atoms;
 
-    xcb_get_property_cookie_t get_cookie =
-        xcb_get_property_unchecked(xcb_connection(), 0, m_window, atom(QXcbAtom::_NET_WM_STATE),
-                         XCB_ATOM_ATOM, 0, 1024);
-
-    xcb_get_property_reply_t *reply =
-        xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
-
+    auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                       0, m_window, atom(QXcbAtom::_NET_WM_STATE),
+                                       XCB_ATOM_ATOM, 0, 1024);
     if (reply && reply->format == 32 && reply->type == XCB_ATOM_ATOM && reply->value_len > 0) {
-        const xcb_atom_t *data = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply));
+        const xcb_atom_t *data = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply.get()));
         atoms.resize(reply->value_len);
         memcpy((void *)&atoms.first(), (void *)data, reply->value_len * sizeof(xcb_atom_t));
     }
-
-    free(reply);
 
     if (states & NetWmStateAbove && !atoms.contains(atom(QXcbAtom::_NET_WM_STATE_ABOVE)))
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_ABOVE));
@@ -1743,15 +1709,11 @@ QXcbWindowFunctions::WmWindowTypes QXcbWindow::wmWindowTypes() const
 {
     QXcbWindowFunctions::WmWindowTypes result(0);
 
-    xcb_get_property_cookie_t get_cookie =
-        xcb_get_property_unchecked(xcb_connection(), 0, m_window, atom(QXcbAtom::_NET_WM_WINDOW_TYPE),
-                         XCB_ATOM_ATOM, 0, 1024);
-
-    xcb_get_property_reply_t *reply =
-        xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
-
+    auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                       0, m_window, atom(QXcbAtom::_NET_WM_WINDOW_TYPE),
+                                       XCB_ATOM_ATOM, 0, 1024);
     if (reply && reply->format == 32 && reply->type == XCB_ATOM_ATOM) {
-        const xcb_atom_t *types = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply));
+        const xcb_atom_t *types = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply.get()));
         const xcb_atom_t *types_end = types + reply->length;
         for (; types != types_end; types++) {
             QXcbAtom::Atom type = connection()->qatom(*types);
@@ -1805,7 +1767,6 @@ QXcbWindowFunctions::WmWindowTypes QXcbWindow::wmWindowTypes() const
                 break;
             }
         }
-        free(reply);
     }
     return result;
 }
@@ -2091,13 +2052,11 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     QPoint pos(event->x, event->y);
     if (!parent() && !fromSendEvent) {
         // Do not trust the position, query it instead.
-        xcb_translate_coordinates_cookie_t cookie = xcb_translate_coordinates(xcb_connection(), xcb_window(),
-                                                                              xcbScreen()->root(), 0, 0);
-        xcb_translate_coordinates_reply_t *reply = xcb_translate_coordinates_reply(xcb_connection(), cookie, NULL);
+        auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(),
+                                 xcb_window(), xcbScreen()->root(), 0, 0);
         if (reply) {
             pos.setX(reply->dst_x);
             pos.setY(reply->dst_y);
-            free(reply);
         }
     }
 
@@ -2152,15 +2111,12 @@ QPoint QXcbWindow::mapToGlobal(const QPoint &pos) const
         return pos;
 
     QPoint ret;
-    xcb_translate_coordinates_cookie_t cookie =
-        xcb_translate_coordinates(xcb_connection(), xcb_window(), xcbScreen()->root(),
-                                  pos.x(), pos.y());
-    xcb_translate_coordinates_reply_t *reply =
-        xcb_translate_coordinates_reply(xcb_connection(), cookie, NULL);
+    auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(),
+                             xcb_window(), xcbScreen()->root(),
+                             pos.x(), pos.y());
     if (reply) {
         ret.setX(reply->dst_x);
         ret.setY(reply->dst_y);
-        free(reply);
     }
 
     return ret;
@@ -2172,15 +2128,12 @@ QPoint QXcbWindow::mapFromGlobal(const QPoint &pos) const
         return pos;
 
     QPoint ret;
-    xcb_translate_coordinates_cookie_t cookie =
-        xcb_translate_coordinates(xcb_connection(), xcbScreen()->root(), xcb_window(),
-                                  pos.x(), pos.y());
-    xcb_translate_coordinates_reply_t *reply =
-        xcb_translate_coordinates_reply(xcb_connection(), cookie, NULL);
+    auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(),
+                             xcbScreen()->root(), xcb_window(),
+                             pos.x(), pos.y());
     if (reply) {
         ret.setX(reply->dst_x);
         ret.setY(reply->dst_y);
-        free(reply);
     }
 
     return ret;
@@ -2533,15 +2486,11 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
 
         Qt::WindowState newState = Qt::WindowNoState;
         if (event->atom == atom(QXcbAtom::WM_STATE)) { // WM_STATE: Quick check for 'Minimize'.
-            const xcb_get_property_cookie_t get_cookie =
-            xcb_get_property(xcb_connection(), 0, m_window, atom(QXcbAtom::WM_STATE),
-                             XCB_ATOM_ANY, 0, 1024);
-
-            xcb_get_property_reply_t *reply =
-                xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
-
+            auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(),
+                                     0, m_window, atom(QXcbAtom::WM_STATE),
+                                     XCB_ATOM_ANY, 0, 1024);
             if (reply && reply->format == 32 && reply->type == atom(QXcbAtom::WM_STATE)) {
-                const quint32 *data = (const quint32 *)xcb_get_property_value(reply);
+                const quint32 *data = (const quint32 *)xcb_get_property_value(reply.get());
                 if (reply->length != 0) {
                     if (data[0] == XCB_WM_STATE_ICONIC
                             || (data[0] == XCB_WM_STATE_WITHDRAWN
@@ -2550,7 +2499,6 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
                     }
                 }
             }
-            free(reply);
         } else { // _NET_WM_STATE can't change minimized state
             if (m_lastWindowStateEvent == Qt::WindowMinimized)
                 newState = Qt::WindowMinimized;
@@ -2627,13 +2575,11 @@ bool QXcbWindow::setKeyboardGrabEnabled(bool grab)
         xcb_ungrab_keyboard(xcb_connection(), XCB_TIME_CURRENT_TIME);
         return true;
     }
-    xcb_grab_keyboard_cookie_t cookie = xcb_grab_keyboard(xcb_connection(), false,
-                                                          m_window, XCB_TIME_CURRENT_TIME,
-                                                          XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
-    xcb_grab_keyboard_reply_t *reply = xcb_grab_keyboard_reply(xcb_connection(), cookie, NULL);
-    bool result = !(!reply || reply->status != XCB_GRAB_STATUS_SUCCESS);
-    free(reply);
-    return result;
+
+    auto reply = Q_XCB_REPLY(xcb_grab_keyboard, xcb_connection(), false,
+                             m_window, XCB_TIME_CURRENT_TIME,
+                             XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
+    return reply && reply->status == XCB_GRAB_STATUS_SUCCESS;
 }
 
 bool QXcbWindow::setMouseGrabEnabled(bool grab)
@@ -2655,16 +2601,16 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
         xcb_ungrab_pointer(xcb_connection(), XCB_TIME_CURRENT_TIME);
         return true;
     }
-    xcb_grab_pointer_cookie_t cookie = xcb_grab_pointer(xcb_connection(), false, m_window,
-                                                        (XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE
-                                                         | XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_ENTER_WINDOW
-                                                         | XCB_EVENT_MASK_LEAVE_WINDOW | XCB_EVENT_MASK_POINTER_MOTION),
-                                                        XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
-                                                        XCB_WINDOW_NONE, XCB_CURSOR_NONE,
-                                                        XCB_TIME_CURRENT_TIME);
-    xcb_grab_pointer_reply_t *reply = xcb_grab_pointer_reply(xcb_connection(), cookie, NULL);
-    bool result = !(!reply || reply->status != XCB_GRAB_STATUS_SUCCESS);
-    free(reply);
+
+    auto reply = Q_XCB_REPLY(xcb_grab_pointer, xcb_connection(),
+                             false, m_window,
+                             (XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE
+                              | XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_ENTER_WINDOW
+                              | XCB_EVENT_MASK_LEAVE_WINDOW | XCB_EVENT_MASK_POINTER_MOTION),
+                             XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
+                             XCB_WINDOW_NONE, XCB_CURSOR_NONE,
+                             XCB_TIME_CURRENT_TIME);
+    bool result = reply && reply->status == XCB_GRAB_STATUS_SUCCESS;
     if (result)
         connection()->setMouseGrabber(this);
     return result;

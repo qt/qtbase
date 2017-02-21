@@ -243,11 +243,8 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
         } else if (!screen && output.connection == XCB_RANDR_CONNECTION_CONNECTED) {
             // New XRandR output is available and it's enabled
             if (output.crtc != XCB_NONE && output.mode != XCB_NONE) {
-                xcb_randr_get_output_info_cookie_t outputInfoCookie =
-                    xcb_randr_get_output_info(xcb_connection(), output.output, output.config_timestamp);
-                QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> outputInfo(
-                    xcb_randr_get_output_info_reply(xcb_connection(), outputInfoCookie, NULL));
-
+                auto outputInfo = Q_XCB_REPLY(xcb_randr_get_output_info, xcb_connection(),
+                                              output.output, output.config_timestamp);
                 // Find a fake screen
                 const auto scrs = virtualDesktop->screens();
                 for (QPlatformScreen *scr : scrs) {
@@ -261,12 +258,12 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
                 if (screen) {
                     QString nameWas = screen->name();
                     // Transform the fake screen into a physical screen
-                    screen->setOutput(output.output, outputInfo.data());
+                    screen->setOutput(output.output, outputInfo.get());
                     updateScreen(screen, output);
                     qCDebug(lcQpaScreen) << "output" << screen->name()
                                          << "is connected and enabled; was fake:" << nameWas;
                 } else {
-                    screen = createScreen(virtualDesktop, output, outputInfo.data());
+                    screen = createScreen(virtualDesktop, output, outputInfo.get());
                     qCDebug(lcQpaScreen) << "output" << screen->name() << "is connected and enabled";
                 }
                 QHighDpiScaling::updateHighDpiScaling();
@@ -274,10 +271,8 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
         } else if (screen) {
             if (output.crtc == XCB_NONE && output.mode == XCB_NONE) {
                 // Screen has been disabled
-                xcb_randr_get_output_info_cookie_t outputInfoCookie =
-                    xcb_randr_get_output_info(xcb_connection(), output.output, output.config_timestamp);
-                QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> outputInfo(
-                    xcb_randr_get_output_info_reply(xcb_connection(), outputInfoCookie, NULL));
+                auto outputInfo = Q_XCB_REPLY(xcb_randr_get_output_info, xcb_connection(),
+                                              output.output, output.config_timestamp);
                 if (outputInfo->crtc == XCB_NONE) {
                     qCDebug(lcQpaScreen) << "output" << screen->name() << "has been disabled";
                     destroyScreen(screen);
@@ -299,16 +294,10 @@ void QXcbConnection::updateScreens(const xcb_randr_notify_event_t *event)
 
 bool QXcbConnection::checkOutputIsPrimary(xcb_window_t rootWindow, xcb_randr_output_t output)
 {
-    xcb_generic_error_t *error = 0;
-    xcb_randr_get_output_primary_cookie_t primaryCookie =
-        xcb_randr_get_output_primary(xcb_connection(), rootWindow);
-    QScopedPointer<xcb_randr_get_output_primary_reply_t, QScopedPointerPodDeleter> primary (
-        xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, &error));
-    if (!primary || error) {
+    auto primary = Q_XCB_REPLY(xcb_randr_get_output_primary, xcb_connection(), rootWindow);
+    if (!primary)
         qWarning("failed to get the primary output of the screen");
-        free(error);
-        error = NULL;
-    }
+
     const bool isPrimary = primary ? (primary->output == output) : false;
 
     return isPrimary;
@@ -404,72 +393,59 @@ void QXcbConnection::initializeScreens()
         m_virtualDesktops.append(virtualDesktop);
         QList<QPlatformScreen *> siblings;
         if (has_randr_extension) {
-            xcb_generic_error_t *error = NULL;
             // RRGetScreenResourcesCurrent is fast but it may return nothing if the
             // configuration is not initialized wrt to the hardware. We should call
             // RRGetScreenResources in this case.
-            QScopedPointer<xcb_randr_get_screen_resources_reply_t, QScopedPointerPodDeleter> resources;
-            xcb_randr_get_screen_resources_current_cookie_t resourcesCookie =
-                xcb_randr_get_screen_resources_current(xcb_connection(), xcbScreen->root);
-            QScopedPointer<xcb_randr_get_screen_resources_current_reply_t, QScopedPointerPodDeleter> resources_current(
-                    xcb_randr_get_screen_resources_current_reply(xcb_connection(), resourcesCookie, &error));
-            if (!resources_current || error) {
+            auto resources_current = Q_XCB_REPLY(xcb_randr_get_screen_resources_current,
+                                                 xcb_connection(), xcbScreen->root);
+            if (!resources_current) {
                 qWarning("failed to get the current screen resources");
-                free(error);
             } else {
                 xcb_timestamp_t timestamp = 0;
                 xcb_randr_output_t *outputs = Q_NULLPTR;
-                int outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources_current.data());
+                int outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources_current.get());
                 if (outputCount) {
                     timestamp = resources_current->config_timestamp;
-                    outputs = xcb_randr_get_screen_resources_current_outputs(resources_current.data());
+                    outputs = xcb_randr_get_screen_resources_current_outputs(resources_current.get());
                 } else {
-                    xcb_randr_get_screen_resources_cookie_t resourcesCookie =
-                        xcb_randr_get_screen_resources(xcb_connection(), xcbScreen->root);
-                    resources.reset(xcb_randr_get_screen_resources_reply(xcb_connection(), resourcesCookie, &error));
-                    if (!resources || error) {
+                    auto resources = Q_XCB_REPLY(xcb_randr_get_screen_resources,
+                                                 xcb_connection(), xcbScreen->root);
+                    if (!resources) {
                         qWarning("failed to get the screen resources");
-                        free(error);
                     } else {
                         timestamp = resources->config_timestamp;
-                        outputCount = xcb_randr_get_screen_resources_outputs_length(resources.data());
-                        outputs = xcb_randr_get_screen_resources_outputs(resources.data());
+                        outputCount = xcb_randr_get_screen_resources_outputs_length(resources.get());
+                        outputs = xcb_randr_get_screen_resources_outputs(resources.get());
                     }
                 }
 
                 if (outputCount) {
-                    xcb_randr_get_output_primary_cookie_t primaryCookie =
-                        xcb_randr_get_output_primary(xcb_connection(), xcbScreen->root);
-                    QScopedPointer<xcb_randr_get_output_primary_reply_t, QScopedPointerPodDeleter> primary(
-                            xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, &error));
-                    if (!primary || error) {
+                    auto primary = Q_XCB_REPLY(xcb_randr_get_output_primary, xcb_connection(), xcbScreen->root);
+                    if (!primary) {
                         qWarning("failed to get the primary output of the screen");
-                        free(error);
                     } else {
                         for (int i = 0; i < outputCount; i++) {
-                            QScopedPointer<xcb_randr_get_output_info_reply_t, QScopedPointerPodDeleter> output(
-                                    xcb_randr_get_output_info_reply(xcb_connection(),
-                                        xcb_randr_get_output_info_unchecked(xcb_connection(), outputs[i], timestamp), NULL));
-
+                            auto output = Q_XCB_REPLY_UNCHECKED(xcb_randr_get_output_info,
+                                                                xcb_connection(), outputs[i], timestamp);
                             // Invalid, disconnected or disabled output
-                            if (output == NULL)
+                            if (!output)
                                 continue;
 
                             if (output->connection != XCB_RANDR_CONNECTION_CONNECTED) {
                                 qCDebug(lcQpaScreen, "Output %s is not connected", qPrintable(
-                                            QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.data()),
-                                                              xcb_randr_get_output_info_name_length(output.data()))));
+                                            QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.get()),
+                                                              xcb_randr_get_output_info_name_length(output.get()))));
                                 continue;
                             }
 
                             if (output->crtc == XCB_NONE) {
                                 qCDebug(lcQpaScreen, "Output %s is not enabled", qPrintable(
-                                            QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.data()),
-                                                              xcb_randr_get_output_info_name_length(output.data()))));
+                                            QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.get()),
+                                                              xcb_randr_get_output_info_name_length(output.get()))));
                                 continue;
                             }
 
-                            QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, outputs[i], output.data());
+                            QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, outputs[i], output.get());
                             siblings << screen;
                             m_screens << screen;
 
@@ -492,12 +468,9 @@ void QXcbConnection::initializeScreens()
             }
         } else if (has_xinerama_extension) {
             // Xinerama is available
-            xcb_xinerama_query_screens_cookie_t cookie = xcb_xinerama_query_screens(m_connection);
-            xcb_xinerama_query_screens_reply_t *screens = xcb_xinerama_query_screens_reply(m_connection,
-                                                                                           cookie,
-                                                                                           Q_NULLPTR);
+            auto screens = Q_XCB_REPLY(xcb_xinerama_query_screens, m_connection);
             if (screens) {
-                xcb_xinerama_screen_info_iterator_t it = xcb_xinerama_query_screens_screen_info_iterator(screens);
+                xcb_xinerama_screen_info_iterator_t it = xcb_xinerama_query_screens_screen_info_iterator(screens.get());
                 while (it.rem) {
                     xcb_xinerama_screen_info_t *screen_info = it.data;
                     QXcbScreen *screen = new QXcbScreen(this, virtualDesktop,
@@ -507,7 +480,6 @@ void QXcbConnection::initializeScreens()
                     m_screens << screen;
                     xcb_xinerama_screen_info_next(&it);
                 }
-                free(screens);
             }
         }
         if (siblings.isEmpty()) {
@@ -1461,13 +1433,7 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
 
 xcb_window_t QXcbConnection::getSelectionOwner(xcb_atom_t atom) const
 {
-    xcb_connection_t *c = xcb_connection();
-    xcb_get_selection_owner_cookie_t cookie = xcb_get_selection_owner(c, atom);
-    xcb_get_selection_owner_reply_t *reply;
-    reply = xcb_get_selection_owner_reply(c, cookie, 0);
-    xcb_window_t win = reply->owner;
-    free(reply);
-    return win;
+    return Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom)->owner;
 }
 
 xcb_window_t QXcbConnection::getQtSelectionOwner()
@@ -1993,11 +1959,7 @@ xcb_atom_t QXcbConnection::internAtom(const char *name)
     if (!name || *name == 0)
         return XCB_NONE;
 
-    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(xcb_connection(), false, strlen(name), name);
-    xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(xcb_connection(), cookie, 0);
-    int atom = reply->atom;
-    free(reply);
-    return atom;
+    return Q_XCB_REPLY(xcb_intern_atom, xcb_connection(), false, strlen(name), name)->atom;
 }
 
 QByteArray QXcbConnection::atomName(xcb_atom_t atom)
@@ -2005,18 +1967,12 @@ QByteArray QXcbConnection::atomName(xcb_atom_t atom)
     if (!atom)
         return QByteArray();
 
-    xcb_generic_error_t *error = 0;
-    xcb_get_atom_name_cookie_t cookie = Q_XCB_CALL(xcb_get_atom_name(xcb_connection(), atom));
-    xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, &error);
-    if (error) {
+    auto reply = Q_XCB_REPLY(xcb_get_atom_name, xcb_connection(), atom);
+    if (!reply)
         qWarning() << "QXcbConnection::atomName: bad Atom" << atom;
-        free(error);
-    }
-    if (reply) {
-        QByteArray result(xcb_get_atom_name_name(reply), xcb_get_atom_name_name_length(reply));
-        free(reply);
-        return result;
-    }
+    else
+        return QByteArray(xcb_get_atom_name_name(reply.get()), xcb_get_atom_name_name_length(reply.get()));
+
     return QByteArray();
 }
 
@@ -2044,23 +2000,18 @@ void QXcbConnection::sync()
 
 void QXcbConnection::initializeXFixes()
 {
-    xcb_generic_error_t *error = 0;
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xfixes_id);
     if (!reply || !reply->present)
         return;
 
     xfixes_first_event = reply->first_event;
-    xcb_xfixes_query_version_cookie_t xfixes_query_cookie = xcb_xfixes_query_version(m_connection,
-                                                                                     XCB_XFIXES_MAJOR_VERSION,
-                                                                                     XCB_XFIXES_MINOR_VERSION);
-    xcb_xfixes_query_version_reply_t *xfixes_query = xcb_xfixes_query_version_reply (m_connection,
-                                                                                     xfixes_query_cookie, &error);
-    if (!xfixes_query || error || xfixes_query->major_version < 2) {
+    auto xfixes_query = Q_XCB_REPLY(xcb_xfixes_query_version, m_connection,
+                                    XCB_XFIXES_MAJOR_VERSION,
+                                    XCB_XFIXES_MINOR_VERSION);
+    if (!xfixes_query || xfixes_query->major_version < 2) {
         qWarning("QXcbConnection: Failed to initialize XFixes");
-        free(error);
         xfixes_first_event = 0;
     }
-    free(xfixes_query);
 }
 
 void QXcbConnection::initializeXRender()
@@ -2070,17 +2021,11 @@ void QXcbConnection::initializeXRender()
     if (!reply || !reply->present)
         return;
 
-    xcb_generic_error_t *error = 0;
-    xcb_render_query_version_cookie_t xrender_query_cookie = xcb_render_query_version(m_connection,
-                                                                                      XCB_RENDER_MAJOR_VERSION,
-                                                                                      XCB_RENDER_MINOR_VERSION);
-    xcb_render_query_version_reply_t *xrender_query = xcb_render_query_version_reply(m_connection,
-                                                                                     xrender_query_cookie, &error);
-    if (!xrender_query || error || (xrender_query->major_version == 0 && xrender_query->minor_version < 5)) {
+    auto xrender_query = Q_XCB_REPLY(xcb_render_query_version, m_connection,
+                                     XCB_RENDER_MAJOR_VERSION,
+                                     XCB_RENDER_MINOR_VERSION);
+    if (!xrender_query || (xrender_query->major_version == 0 && xrender_query->minor_version < 5))
         qWarning("QXcbConnection: Failed to initialize XRender");
-        free(error);
-    }
-    free(xrender_query);
 #endif
 }
 
@@ -2092,21 +2037,16 @@ void QXcbConnection::initializeXRandr()
 
     xrandr_first_event = reply->first_event;
 
-    xcb_generic_error_t *error = 0;
-    xcb_randr_query_version_cookie_t xrandr_query_cookie = xcb_randr_query_version(m_connection,
-                                                                                   XCB_RANDR_MAJOR_VERSION,
-                                                                                   XCB_RANDR_MINOR_VERSION);
+    auto xrandr_query = Q_XCB_REPLY(xcb_randr_query_version, m_connection,
+                                    XCB_RANDR_MAJOR_VERSION,
+                                    XCB_RANDR_MINOR_VERSION);
 
     has_randr_extension = true;
 
-    xcb_randr_query_version_reply_t *xrandr_query = xcb_randr_query_version_reply(m_connection,
-                                                                                  xrandr_query_cookie, &error);
-    if (!xrandr_query || error || (xrandr_query->major_version < 1 || (xrandr_query->major_version == 1 && xrandr_query->minor_version < 2))) {
+    if (!xrandr_query || (xrandr_query->major_version < 1 || (xrandr_query->major_version == 1 && xrandr_query->minor_version < 2))) {
         qWarning("QXcbConnection: Failed to initialize XRandr");
-        free(error);
         has_randr_extension = false;
     }
-    free(xrandr_query);
 
     xcb_screen_iterator_t rootIter = xcb_setup_roots_iterator(m_setup);
     for (; rootIter.rem; xcb_screen_next(&rootIter)) {
@@ -2126,14 +2066,8 @@ void QXcbConnection::initializeXinerama()
     if (!reply || !reply->present)
         return;
 
-    xcb_generic_error_t *error = Q_NULLPTR;
-    xcb_xinerama_is_active_cookie_t xinerama_query_cookie = xcb_xinerama_is_active(m_connection);
-    xcb_xinerama_is_active_reply_t *xinerama_is_active = xcb_xinerama_is_active_reply(m_connection,
-                                                                                      xinerama_query_cookie,
-                                                                                      &error);
-    has_xinerama_extension = xinerama_is_active && !error && xinerama_is_active->state;
-    free(error);
-    free(xinerama_is_active);
+    auto xinerama_is_active = Q_XCB_REPLY(xcb_xinerama_is_active, m_connection);
+    has_xinerama_extension = xinerama_is_active && xinerama_is_active->state;
 }
 
 void QXcbConnection::initializeXShape()
@@ -2143,16 +2077,13 @@ void QXcbConnection::initializeXShape()
         return;
 
     has_shape_extension = true;
-    xcb_shape_query_version_cookie_t cookie = xcb_shape_query_version(m_connection);
-    xcb_shape_query_version_reply_t *shape_query = xcb_shape_query_version_reply(m_connection,
-                                                                                 cookie, NULL);
+    auto shape_query = Q_XCB_REPLY(xcb_shape_query_version, m_connection);
     if (!shape_query) {
         qWarning("QXcbConnection: Failed to initialize SHAPE extension");
     } else if (shape_query->major_version > 1 || (shape_query->major_version == 1 && shape_query->minor_version >= 1)) {
         // The input shape is the only thing added in SHAPE 1.1
         has_input_shape = true;
     }
-    free(shape_query);
 }
 
 void QXcbConnection::initializeXKB()
@@ -2167,11 +2098,10 @@ void QXcbConnection::initializeXKB()
     xkb_first_event = reply->first_event;
 
     xcb_connection_t *c = connection()->xcb_connection();
-    xcb_xkb_use_extension_cookie_t xkb_query_cookie;
-    xcb_xkb_use_extension_reply_t *xkb_query;
 
-    xkb_query_cookie = xcb_xkb_use_extension(c, XKB_X11_MIN_MAJOR_XKB_VERSION, XKB_X11_MIN_MINOR_XKB_VERSION);
-    xkb_query = xcb_xkb_use_extension_reply(c, xkb_query_cookie, 0);
+    auto xkb_query = Q_XCB_REPLY(xcb_xkb_use_extension, c,
+                                 XKB_X11_MIN_MAJOR_XKB_VERSION,
+                                 XKB_X11_MIN_MINOR_XKB_VERSION);
 
     if (!xkb_query) {
         qWarning("Qt: Failed to initialize XKB extension");
@@ -2180,12 +2110,10 @@ void QXcbConnection::initializeXKB()
         qWarning("Qt: Unsupported XKB version (We want %d %d, but X server has %d %d)",
                  XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION,
                  xkb_query->serverMajor, xkb_query->serverMinor);
-        free(xkb_query);
         return;
     }
 
     has_xkb = true;
-    free(xkb_query);
 
     const uint16_t required_map_parts = (XCB_XKB_MAP_PART_KEY_TYPES |
         XCB_XKB_MAP_PART_KEY_SYMS |

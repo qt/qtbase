@@ -130,11 +130,9 @@ void QXcbVirtualDesktop::subscribeToXFixesSelectionNotify()
 QRect QXcbVirtualDesktop::getWorkArea() const
 {
     QRect r;
-    xcb_get_property_reply_t * workArea =
-        xcb_get_property_reply(xcb_connection(),
-            xcb_get_property_unchecked(xcb_connection(), false, screen()->root,
-                             atom(QXcbAtom::_NET_WORKAREA),
-                             XCB_ATOM_CARDINAL, 0, 1024), NULL);
+    auto workArea = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(), false, screen()->root,
+                                          atom(QXcbAtom::_NET_WORKAREA),
+                                          XCB_ATOM_CARDINAL, 0, 1024);
     if (workArea && workArea->type == XCB_ATOM_CARDINAL && workArea->format == 32 && workArea->value_len >= 4) {
         // If workArea->value_len > 4, the remaining ones seem to be for WM's virtual desktops
         // (don't mess with QXcbVirtualDesktop which represents an X screen).
@@ -142,12 +140,11 @@ QRect QXcbVirtualDesktop::getWorkArea() const
         // "docked" panel (with _NET_WM_STRUT_PARTIAL atom set) on just one desktop.
         // But for now just assume the first 4 values give us the geometry of the
         // "work area", AKA "available geometry"
-        uint32_t *geom = (uint32_t*)xcb_get_property_value(workArea);
+        uint32_t *geom = (uint32_t*)xcb_get_property_value(workArea.get());
         r = QRect(geom[0], geom[1], geom[2], geom[3]);
     } else {
         r = QRect(QPoint(), size());
     }
-    free(workArea);
     return r;
 }
 
@@ -181,14 +178,11 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 {
     if (connection->hasXRandr()) {
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
-        xcb_randr_get_crtc_info_cookie_t crtcCookie =
-            xcb_randr_get_crtc_info_unchecked(xcb_connection(), m_crtc, output ? output->timestamp : 0);
-        xcb_randr_get_crtc_info_reply_t *crtc =
-            xcb_randr_get_crtc_info_reply(xcb_connection(), crtcCookie, NULL);
+        auto crtc = Q_XCB_REPLY_UNCHECKED(xcb_randr_get_crtc_info, xcb_connection(),
+                                          m_crtc, output ? output->timestamp : 0);
         if (crtc) {
             updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
             updateRefreshRate(crtc->mode);
-            free(crtc);
         }
     } else if (xineramaScreenInfo) {
         m_geometry = QRect(xineramaScreenInfo->x_org, xineramaScreenInfo->y_org,
@@ -210,10 +204,9 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 
     readXResources();
 
-    QScopedPointer<xcb_get_window_attributes_reply_t, QScopedPointerPodDeleter> rootAttribs(
-        xcb_get_window_attributes_reply(xcb_connection(),
-            xcb_get_window_attributes_unchecked(xcb_connection(), screen()->root), NULL));
-    const quint32 existingEventMask = rootAttribs.isNull() ? 0 : rootAttribs->your_event_mask;
+    auto rootAttribs = Q_XCB_REPLY_UNCHECKED(xcb_get_window_attributes, xcb_connection(),
+                                             screen()->root);
+    const quint32 existingEventMask = !rootAttribs ? 0 : rootAttribs->your_event_mask;
 
     const quint32 mask = XCB_CW_EVENT_MASK;
     const quint32 values[] = {
@@ -227,29 +220,24 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 
     xcb_change_window_attributes(xcb_connection(), screen()->root, mask, values);
 
-    xcb_get_property_reply_t *reply =
-        xcb_get_property_reply(xcb_connection(),
-            xcb_get_property_unchecked(xcb_connection(), false, screen()->root,
-                             atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
-                             XCB_ATOM_WINDOW, 0, 1024), NULL);
-
+    auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                       false, screen()->root,
+                                       atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
+                                       XCB_ATOM_WINDOW, 0, 1024);
     if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
-        xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply));
+        xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply.get()));
 
         if (windowManager != XCB_WINDOW_NONE) {
-            xcb_get_property_reply_t *windowManagerReply =
-                xcb_get_property_reply(xcb_connection(),
-                    xcb_get_property_unchecked(xcb_connection(), false, windowManager,
-                                     atom(QXcbAtom::_NET_WM_NAME),
-                                     atom(QXcbAtom::UTF8_STRING), 0, 1024), NULL);
+            auto windowManagerReply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                                            false, windowManager,
+                                                            atom(QXcbAtom::_NET_WM_NAME),
+                                                            atom(QXcbAtom::UTF8_STRING), 0, 1024);
             if (windowManagerReply && windowManagerReply->format == 8 && windowManagerReply->type == atom(QXcbAtom::UTF8_STRING)) {
-                m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply), xcb_get_property_value_length(windowManagerReply));
+                m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply.get()),
+                                                        xcb_get_property_value_length(windowManagerReply.get()));
             }
-
-            free(windowManagerReply);
         }
     }
-    free(reply);
 
     const xcb_query_extension_reply_t *sync_reply = xcb_get_extension_data(xcb_connection(), &xcb_sync_id);
     if (!sync_reply || !sync_reply->present)
@@ -311,12 +299,7 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
     xcb_window_t child = root;
 
     do {
-        xcb_translate_coordinates_cookie_t translate_cookie =
-            xcb_translate_coordinates_unchecked(xcb_connection(), parent, child, x, y);
-
-        xcb_translate_coordinates_reply_t *translate_reply =
-            xcb_translate_coordinates_reply(xcb_connection(), translate_cookie, NULL);
-
+        auto translate_reply = Q_XCB_REPLY_UNCHECKED(xcb_translate_coordinates, xcb_connection(), parent, child, x, y);
         if (!translate_reply) {
             return 0;
         }
@@ -325,8 +308,6 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
         child = translate_reply->child;
         x = translate_reply->dst_x;
         y = translate_reply->dst_y;
-
-        free(translate_reply);
 
         if (!child || child == root)
             return 0;
@@ -581,14 +562,10 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
     if (!connection()->hasXRandr())
         return;
 
-    xcb_randr_get_crtc_info_cookie_t crtcCookie =
-        xcb_randr_get_crtc_info_unchecked(xcb_connection(), m_crtc, timestamp);
-    xcb_randr_get_crtc_info_reply_t *crtc =
-        xcb_randr_get_crtc_info_reply(xcb_connection(), crtcCookie, NULL);
-    if (crtc) {
+    auto crtc = Q_XCB_REPLY_UNCHECKED(xcb_randr_get_crtc_info, xcb_connection(),
+                                      m_crtc, timestamp);
+    if (crtc)
         updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
-        free(crtc);
-    }
 }
 
 void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
@@ -645,13 +622,11 @@ void QXcbScreen::updateRefreshRate(xcb_randr_mode_t mode)
 
     // we can safely use get_screen_resources_current here, because in order to
     // get here, we must have called get_screen_resources before
-    xcb_randr_get_screen_resources_current_cookie_t resourcesCookie =
-        xcb_randr_get_screen_resources_current_unchecked(xcb_connection(), screen()->root);
-    xcb_randr_get_screen_resources_current_reply_t *resources =
-        xcb_randr_get_screen_resources_current_reply(xcb_connection(), resourcesCookie, NULL);
+    auto resources = Q_XCB_REPLY_UNCHECKED(xcb_randr_get_screen_resources_current,
+                                           xcb_connection(), screen()->root);
     if (resources) {
         xcb_randr_mode_info_iterator_t modesIter =
-            xcb_randr_get_screen_resources_current_modes_iterator(resources);
+            xcb_randr_get_screen_resources_current_modes_iterator(resources.get());
         for (; modesIter.rem; xcb_randr_mode_info_next(&modesIter)) {
             xcb_randr_mode_info_t *modeInfo = modesIter.data;
             if (modeInfo->id == mode) {
@@ -662,29 +637,19 @@ void QXcbScreen::updateRefreshRate(xcb_randr_mode_t mode)
             }
         }
 
-        free(resources);
         QWindowSystemInterface::handleScreenRefreshRateChange(QPlatformScreen::screen(), m_refreshRate);
     }
-}
-
-static xcb_get_geometry_reply_t *getGeometryUnchecked(xcb_connection_t *connection, xcb_window_t window)
-{
-    const xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry_unchecked(connection, window);
-    return xcb_get_geometry_reply(connection, geometry_cookie, NULL);
 }
 
 static inline bool translate(xcb_connection_t *connection, xcb_window_t child, xcb_window_t parent,
                              int *x, int *y)
 {
-    const xcb_translate_coordinates_cookie_t translate_cookie =
-        xcb_translate_coordinates_unchecked(connection, child, parent, *x, *y);
-    xcb_translate_coordinates_reply_t *translate_reply =
-        xcb_translate_coordinates_reply(connection, translate_cookie, NULL);
+    auto translate_reply = Q_XCB_REPLY_UNCHECKED(xcb_translate_coordinates,
+                                                 connection, child, parent, *x, *y);
     if (!translate_reply)
         return false;
     *x = translate_reply->dst_x;
     *y = translate_reply->dst_y;
-    free(translate_reply);
     return true;
 }
 
@@ -698,22 +663,20 @@ QPixmap QXcbScreen::grabWindow(WId window, int xIn, int yIn, int width, int heig
     QXcbScreen *screen = const_cast<QXcbScreen *>(this);
     xcb_window_t root = screen->root();
 
-    xcb_get_geometry_reply_t *rootReply = getGeometryUnchecked(xcb_connection(), root);
+    auto rootReply = Q_XCB_REPLY_UNCHECKED(xcb_get_geometry, xcb_connection(), root);
     if (!rootReply)
         return QPixmap();
 
     const quint8 rootDepth = rootReply->depth;
-    free(rootReply);
 
     QSize windowSize;
     quint8 effectiveDepth = 0;
     if (window) {
-        xcb_get_geometry_reply_t *windowReply = getGeometryUnchecked(xcb_connection(), window);
+        auto windowReply = Q_XCB_REPLY_UNCHECKED(xcb_get_geometry, xcb_connection(), window);
         if (!windowReply)
             return QPixmap();
         windowSize = QSize(windowReply->width, windowReply->height);
         effectiveDepth = windowReply->depth;
-        free(windowReply);
         if (effectiveDepth == rootDepth) {
             // if the depth of the specified window and the root window are the
             // same, grab pixels from the root window (so that we get the any
@@ -738,14 +701,12 @@ QPixmap QXcbScreen::grabWindow(WId window, int xIn, int yIn, int width, int heig
     if (height < 0)
         height = windowSize.height() - yIn;
 
-    xcb_get_window_attributes_reply_t *attributes_reply =
-        xcb_get_window_attributes_reply(xcb_connection(), xcb_get_window_attributes_unchecked(xcb_connection(), window), NULL);
+    auto attributes_reply = Q_XCB_REPLY_UNCHECKED(xcb_get_window_attributes, xcb_connection(), window);
 
     if (!attributes_reply)
         return QPixmap();
 
     const xcb_visualtype_t *visual = screen->visualForId(attributes_reply->visual);
-    free(attributes_reply);
 
     xcb_pixmap_t pixmap = xcb_generate_id(xcb_connection());
     xcb_create_pixmap(xcb_connection(), effectiveDepth, pixmap, window, width, height);
@@ -819,20 +780,16 @@ void QXcbScreen::readXResources()
     int offset = 0;
     QByteArray resources;
     while(1) {
-        xcb_get_property_reply_t *reply =
-            xcb_get_property_reply(xcb_connection(),
-                xcb_get_property_unchecked(xcb_connection(), false, screen()->root,
-                                 XCB_ATOM_RESOURCE_MANAGER,
-                                 XCB_ATOM_STRING, offset/4, 8192), NULL);
+        auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                           false, screen()->root,
+                                           XCB_ATOM_RESOURCE_MANAGER,
+                                           XCB_ATOM_STRING, offset/4, 8192);
         bool more = false;
         if (reply && reply->format == 8 && reply->type == XCB_ATOM_STRING) {
-            resources += QByteArray((const char *)xcb_get_property_value(reply), xcb_get_property_value_length(reply));
-            offset += xcb_get_property_value_length(reply);
+            resources += QByteArray((const char *)xcb_get_property_value(reply.get()), xcb_get_property_value_length(reply.get()));
+            offset += xcb_get_property_value_length(reply.get());
             more = reply->bytes_after != 0;
         }
-
-        if (reply)
-            free(reply);
 
         if (!more)
             break;

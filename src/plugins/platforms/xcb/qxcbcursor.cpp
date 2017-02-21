@@ -629,10 +629,9 @@ void QXcbCursor::queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDes
         *pos = QPoint();
 
     xcb_window_t root = c->primaryVirtualDesktop()->root();
-    xcb_query_pointer_cookie_t cookie = xcb_query_pointer(c->xcb_connection(), root);
-    xcb_generic_error_t *err = 0;
-    xcb_query_pointer_reply_t *reply = xcb_query_pointer_reply(c->xcb_connection(), cookie, &err);
-    if (!err && reply) {
+
+    auto reply = Q_XCB_REPLY(xcb_query_pointer, c->xcb_connection(), root);
+    if (reply) {
         if (virtualDesktop) {
             const auto virtualDesktops = c->virtualDesktops();
             for (QXcbVirtualDesktop *vd : virtualDesktops) {
@@ -646,11 +645,8 @@ void QXcbCursor::queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDes
             *pos = QPoint(reply->root_x, reply->root_y);
         if (keybMask)
             *keybMask = reply->mask;
-        free(reply);
         return;
     }
-    free(err);
-    free(reply);
 }
 
 QPoint QXcbCursor::pos() const

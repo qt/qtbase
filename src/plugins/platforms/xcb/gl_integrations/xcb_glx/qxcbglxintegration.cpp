@@ -111,18 +111,13 @@ bool QXcbGlxIntegration::initialize(QXcbConnection *connection)
 
     m_glx_first_event = reply->first_event;
 
-    xcb_generic_error_t *error = 0;
-    xcb_glx_query_version_cookie_t xglx_query_cookie = xcb_glx_query_version(m_connection->xcb_connection(),
-                                                                             XCB_GLX_MAJOR_VERSION,
-                                                                             XCB_GLX_MINOR_VERSION);
-    xcb_glx_query_version_reply_t *xglx_query = xcb_glx_query_version_reply(m_connection->xcb_connection(),
-                                                                            xglx_query_cookie, &error);
-    if (!xglx_query || error) {
+    auto xglx_query = Q_XCB_REPLY(xcb_glx_query_version, m_connection->xcb_connection(),
+                                  XCB_GLX_MAJOR_VERSION,
+                                  XCB_GLX_MINOR_VERSION);
+    if (!xglx_query) {
         qCWarning(lcQpaGl) << "QXcbConnection: Failed to initialize GLX";
-        free(error);
         return false;
     }
-    free(xglx_query);
 #endif
 
     m_native_interface_handler.reset(new QXcbGlxNativeInterfaceHandler(connection->nativeInterface()));

@@ -66,16 +66,15 @@ void QXcbWMSupport::updateNetWMAtoms()
     int offset = 0;
     int remaining = 0;
     do {
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_SUPPORTED), XCB_ATOM_ATOM, offset, 1024);
-        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, NULL);
+        auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(), false, root, atom(QXcbAtom::_NET_SUPPORTED), XCB_ATOM_ATOM, offset, 1024);
         if (!reply)
             break;
 
         remaining = 0;
 
         if (reply->type == XCB_ATOM_ATOM && reply->format == 32) {
-            int len = xcb_get_property_value_length(reply)/sizeof(xcb_atom_t);
-            xcb_atom_t *atoms = (xcb_atom_t *)xcb_get_property_value(reply);
+            int len = xcb_get_property_value_length(reply.get())/sizeof(xcb_atom_t);
+            xcb_atom_t *atoms = (xcb_atom_t *)xcb_get_property_value(reply.get());
             int s = net_wm_atoms.size();
             net_wm_atoms.resize(s + len);
             memcpy(net_wm_atoms.data() + s, atoms, len*sizeof(xcb_atom_t));
@@ -83,8 +82,6 @@ void QXcbWMSupport::updateNetWMAtoms()
             remaining = reply->bytes_after;
             offset += len;
         }
-
-        free(reply);
     } while (remaining > 0);
 }
 
@@ -100,16 +97,16 @@ void QXcbWMSupport::updateVirtualRoots()
     int offset = 0;
     int remaining = 0;
     do {
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), XCB_ATOM_WINDOW, offset, 1024);
-        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, NULL);
+        auto reply = Q_XCB_REPLY(xcb_get_property, xcb_connection(),
+                                 false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), XCB_ATOM_WINDOW, offset, 1024);
         if (!reply)
             break;
 
         remaining = 0;
 
         if (reply->type == XCB_ATOM_WINDOW && reply->format == 32) {
-            int len = xcb_get_property_value_length(reply)/sizeof(xcb_window_t);
-            xcb_window_t *roots = (xcb_window_t *)xcb_get_property_value(reply);
+            int len = xcb_get_property_value_length(reply.get())/sizeof(xcb_window_t);
+            xcb_window_t *roots = (xcb_window_t *)xcb_get_property_value(reply.get());
             int s = net_virtual_roots.size();
             net_virtual_roots.resize(s + len);
             memcpy(net_virtual_roots.data() + s, roots, len*sizeof(xcb_window_t));
@@ -118,7 +115,6 @@ void QXcbWMSupport::updateVirtualRoots()
             offset += len;
         }
 
-        free(reply);
     } while (remaining > 0);
 
 #ifdef Q_XCB_DEBUG

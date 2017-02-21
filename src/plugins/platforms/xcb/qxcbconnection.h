@@ -56,6 +56,8 @@
 #include <QtCore/QLoggingCategory>
 #include <QtCore/private/qglobal_p.h>
 
+#include <memory>
+
 // This is needed to make Qt compile together with XKB. xkb.h is using a variable
 // which is called 'explicit', this is a reserved keyword in c++
 #if QT_CONFIG(xkb)
@@ -730,6 +732,20 @@ public:
 private:
     QXcbConnection *m_connection;
 };
+
+#define Q_XCB_REPLY_CONNECTION_ARG(connection, ...) connection
+
+#define Q_XCB_REPLY(call, ...) \
+    std::unique_ptr<call##_reply_t, decltype(std::free) *>( \
+        call##_reply(Q_XCB_REPLY_CONNECTION_ARG(__VA_ARGS__), call(__VA_ARGS__), nullptr), \
+        std::free \
+    )
+
+#define Q_XCB_REPLY_UNCHECKED(call, ...) \
+    std::unique_ptr<call##_reply_t, decltype(std::free) *>( \
+        call##_reply(Q_XCB_REPLY_CONNECTION_ARG(__VA_ARGS__), call##_unchecked(__VA_ARGS__), nullptr), \
+        std::free \
+    )
 
 #ifdef Q_XCB_DEBUG
 template <typename cookie_t>

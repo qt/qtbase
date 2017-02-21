@@ -106,25 +106,22 @@ public:
         QByteArray settings;
         xcb_atom_t _xsettings_atom = screen->connection()->atom(QXcbAtom::_XSETTINGS_SETTINGS);
         while (1) {
-            xcb_get_property_cookie_t get_prop_cookie =
-                    xcb_get_property_unchecked(screen->xcb_connection(),
+            auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property,
+                                               screen->xcb_connection(),
                                                false,
                                                x_settings_window,
                                                _xsettings_atom,
                                                _xsettings_atom,
                                                offset/4,
                                                8192);
-            xcb_get_property_reply_t *reply = xcb_get_property_reply(screen->xcb_connection(), get_prop_cookie, NULL);
             bool more = false;
             if (!reply)
                 return settings;
 
-            const auto property_value_length = xcb_get_property_value_length(reply);
-            settings.append(static_cast<const char *>(xcb_get_property_value(reply)), property_value_length);
+            const auto property_value_length = xcb_get_property_value_length(reply.get());
+            settings.append(static_cast<const char *>(xcb_get_property_value(reply.get())), property_value_length);
             offset += property_value_length;
             more = reply->bytes_after != 0;
-
-            free(reply);
 
             if (!more)
                 break;
@@ -228,34 +225,24 @@ QXcbXSettings::QXcbXSettings(QXcbVirtualDesktop *screen)
 {
     QByteArray settings_atom_for_screen("_XSETTINGS_S");
     settings_atom_for_screen.append(QByteArray::number(screen->number()));
-    xcb_intern_atom_cookie_t atom_cookie = xcb_intern_atom(screen->xcb_connection(),
-                                                           true,
-                                                           settings_atom_for_screen.length(),
-                                                           settings_atom_for_screen.constData());
-    xcb_generic_error_t *error = 0;
-    xcb_intern_atom_reply_t *atom_reply = xcb_intern_atom_reply(screen->xcb_connection(),atom_cookie,&error);
-    if (error) {
-        free(error);
+    auto atom_reply = Q_XCB_REPLY(xcb_intern_atom,
+                                  screen->xcb_connection(),
+                                  true,
+                                  settings_atom_for_screen.length(),
+                                  settings_atom_for_screen.constData());
+    if (!atom_reply)
         return;
-    }
+
     xcb_atom_t selection_owner_atom = atom_reply->atom;
-    free(atom_reply);
 
-    xcb_get_selection_owner_cookie_t selection_cookie =
-            xcb_get_selection_owner(screen->xcb_connection(), selection_owner_atom);
-
-    xcb_get_selection_owner_reply_t *selection_result =
-            xcb_get_selection_owner_reply(screen->xcb_connection(), selection_cookie, &error);
-    if (error) {
-        free(error);
+    auto selection_result = Q_XCB_REPLY(xcb_get_selection_owner,
+                                        screen->xcb_connection(), selection_owner_atom);
+    if (!selection_result)
         return;
-    }
 
     d_ptr->x_settings_window = selection_result->owner;
-    free(selection_result);
-    if (!d_ptr->x_settings_window) {
+    if (!d_ptr->x_settings_window)
         return;
-    }
 
     const uint32_t event = XCB_CW_EVENT_MASK;
     const uint32_t event_mask[] = { XCB_EVENT_MASK_STRUCTURE_NOTIFY|XCB_EVENT_MASK_PROPERTY_CHANGE };
