@@ -381,7 +381,14 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         const QEnterEvent *ee = static_cast<QEnterEvent *>(event);
         QWidget *child = m_widget->childAt(ee->pos());
         QWidget *receiver = child ? child : m_widget.data();
-        QApplicationPrivate::dispatchEnterLeave(receiver, 0, ee->screenPos());
+        QWidget *leave = Q_NULLPTR;
+        if (QApplicationPrivate::inPopupMode() && receiver == m_widget
+                && qt_last_mouse_receiver != m_widget) {
+            // This allows to deliver the leave event to the native widget
+            // action on first-level menu.
+            leave = qt_last_mouse_receiver;
+        }
+        QApplicationPrivate::dispatchEnterLeave(receiver, leave, ee->screenPos());
         qt_last_mouse_receiver = receiver;
     }
 }
@@ -471,34 +478,31 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 receiver = popupChild;
             if (receiver != activePopupWidget)
                 widgetPos = receiver->mapFromGlobal(event->globalPos());
-            QWidget *alien = receiver;
 
 #if !defined(Q_OS_OSX) && !defined(Q_OS_IOS) // Cocoa tracks popups
             const bool reallyUnderMouse = activePopupWidget->rect().contains(mapped);
             const bool underMouse = activePopupWidget->underMouse();
-            if (activePopupWidget != m_widget || (!underMouse && qt_button_down)) {
-                // If active popup menu is not the first-level popup menu then we must emulate enter/leave events,
-                // because first-level popup menu grabs the mouse and enter/leave events are delivered only to it
-                // by QPA. Make an exception for first-level popup menu when the mouse button is pressed on widget.
-                if (underMouse != reallyUnderMouse) {
-                    if (reallyUnderMouse) {
+            if (underMouse != reallyUnderMouse) {
+                if (reallyUnderMouse) {
+                    const QPoint receiverMapped = receiver->mapFromGlobal(event->screenPos().toPoint());
+                    // Prevent negative mouse position on enter event - this event
+                    // should be properly handled in "handleEnterLeaveEvent()".
+                    if (receiverMapped.x() >= 0 && receiverMapped.y() >= 0) {
                         QApplicationPrivate::dispatchEnterLeave(receiver, Q_NULLPTR, event->screenPos());
                         qt_last_mouse_receiver = receiver;
-                    } else {
-                        QApplicationPrivate::dispatchEnterLeave(Q_NULLPTR, qt_last_mouse_receiver, event->screenPos());
-                        qt_last_mouse_receiver = receiver;
-                        receiver = activePopupWidget;
                     }
+                } else {
+                    QApplicationPrivate::dispatchEnterLeave(Q_NULLPTR, qt_last_mouse_receiver, event->screenPos());
+                    qt_last_mouse_receiver = receiver;
+                    receiver = activePopupWidget;
                 }
-            } else if (!reallyUnderMouse) {
-                alien = Q_NULLPTR;
             }
 #endif
 
             QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(),
                           event->button(), event->buttons(), event->modifiers(), event->source());
             e.setTimestamp(event->timestamp());
-            QApplicationPrivate::sendMouseEvent(receiver, &e, alien, receiver->window(), &qt_button_down, qt_last_mouse_receiver);
+            QApplicationPrivate::sendMouseEvent(receiver, &e, receiver, receiver->window(), &qt_button_down, qt_last_mouse_receiver);
             qt_last_mouse_receiver = receiver;
         } else {
             // close disabled popups when a mouse button is pressed or released
