@@ -3,5 +3,8 @@ SOURCES += $$PWD/qgenericunixthemes.cpp
 
 qtConfig(dbus) {
     include(dbusmenu/dbusmenu.pri)
-    include(dbustray/dbustray.pri)
+
+    qtConfig(systemtrayicon) {
+      include(dbustray/dbustray.pri)
+    }
 }

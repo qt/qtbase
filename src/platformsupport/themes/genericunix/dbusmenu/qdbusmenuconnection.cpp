@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <QtGui/qtgui-config.h>
+
 #ifndef QT_NO_SYSTEMTRAYICON
 #include "qdbustrayicon_p.h"
 #endif
