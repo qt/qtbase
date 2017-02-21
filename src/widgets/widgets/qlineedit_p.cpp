@@ -485,21 +485,21 @@ void QLineEditPrivate::positionSideWidgets()
     }
 }
 
-QLineEditPrivate::PositionIndexPair QLineEditPrivate::findSideWidget(const QAction *a) const
+QLineEditPrivate::SideWidgetLocation QLineEditPrivate::findSideWidget(const QAction *a) const
 {
     int i = 0;
     for (const auto &e : leadingSideWidgets) {
         if (a == e.action)
-            return PositionIndexPair(QLineEdit::LeadingPosition, i);
+            return {QLineEdit::LeadingPosition, i};
         ++i;
     }
     i = 0;
     for (const auto &e : trailingSideWidgets) {
         if (a == e.action)
-            return PositionIndexPair(QLineEdit::TrailingPosition, i);
+            return {QLineEdit::TrailingPosition, i};
         ++i;
     }
-    return PositionIndexPair(QLineEdit::LeadingPosition, -1);
+    return {QLineEdit::LeadingPosition, -1};
 }
 
 QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineEdit::ActionPosition position, int flags)
@@ -534,11 +534,10 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
 #endif
     }
     // If there is a 'before' action, it takes preference
-    PositionIndexPair positionIndex = before ? findSideWidget(before) : PositionIndexPair(position, -1);
-    SideWidgetEntryList &list = positionIndex.first == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
-    if (positionIndex.second < 0)
-        positionIndex.second = int(list.size());
-    list.insert(list.begin() + positionIndex.second, SideWidgetEntry(w, newAction, flags));
+    const auto location = before ? findSideWidget(before) : SideWidgetLocation{position, -1};
+    SideWidgetEntryList &list = location.position == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
+    list.insert(location.isValid() ? list.begin() + location.index : list.end(),
+                SideWidgetEntry(w, newAction, flags));
     positionSideWidgets();
     w->show();
     return w;
@@ -548,12 +547,12 @@ void QLineEditPrivate::removeAction(QAction *action)
 {
 #if QT_CONFIG(action)
     Q_Q(QLineEdit);
-    const PositionIndexPair positionIndex = findSideWidget(action);
-    if (positionIndex.second == -1)
+    const auto location = findSideWidget(action);
+    if (!location.isValid())
         return;
-     SideWidgetEntryList &list = positionIndex.first == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
-     SideWidgetEntry entry = list[positionIndex.second];
-     list.erase(list.begin() + positionIndex.second);
+    SideWidgetEntryList &list = location.position == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
+    SideWidgetEntry entry = list[location.index];
+    list.erase(list.begin() + location.index);
      if (entry.flags & SideWidgetCreatedByWidgetAction)
          static_cast<QWidgetAction *>(entry.action)->releaseWidget(entry.widget);
      else
