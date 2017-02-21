@@ -122,8 +122,6 @@ public:
     void reset();
     bool enabled() const { return m_enabled; }
 
-    void setResetAction(QAction *action) { m_reset_action = action; }
-
     enum MouseEventResult {
         EventIsProcessed,
         EventShouldBePropagated,
@@ -148,22 +146,9 @@ public:
     }
 
     void enter();
+    void childEnter();
 
-    void childEnter()
-    {
-        stopTimer();
-        if (m_parent)
-            m_parent->childEnter();
-    }
-
-    void leave()
-    {
-        if (m_dont_start_time_on_leave)
-            return;
-        if (m_parent)
-            m_parent->childLeave();
-        startTimer();
-    }
+    void leave();
     void childLeave();
 
     static float slope(const QPointF &p1, const QPointF &p2)
@@ -189,8 +174,7 @@ public:
         if (!m_enabled)
             return EventShouldBePropagated;
 
-        if (!m_time.isActive())
-            startTimer();
+        startTimerIfNotRunning();
 
         if (!m_sub_menu) {
             reset();
@@ -493,7 +477,6 @@ public:
     QAction* wceCommands(uint command);
 #endif
     QPointer<QWidget> noReplayFor;
-    static QPointer<QMenu> previousMouseMenu;
 };
 
 #endif // QT_NO_MENU
