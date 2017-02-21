@@ -408,7 +408,7 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q56
     // We normalize the result just in case the values are close
     // to zero, as suggested in the above FAQ.
-    float a = (angle / 2.0f) * M_PI / 180.0f;
+    float a = qDegreesToRadians(angle / 2.0f);
     float s = std::sin(a);
     float c = std::cos(a);
     QVector3D ax = axis.normalized();
@@ -467,7 +467,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
         y /= length;
         z /= length;
     }
-    float a = (angle / 2.0f) * M_PI / 180.0f;
+    float a = qDegreesToRadians(angle / 2.0f);
     float s = std::sin(a);
     float c = std::cos(a);
     return QQuaternion(c, x * s, y * s, z * s).normalized();

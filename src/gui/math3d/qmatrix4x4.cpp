@@ -1128,7 +1128,7 @@ void QMatrix4x4::rotate(float angle, float x, float y, float z)
         s = 0.0f;
         c = -1.0f;
     } else {
-        float a = angle * M_PI / 180.0f;
+        float a = qDegreesToRadians(angle);
         c = std::cos(a);
         s = std::sin(a);
     }
@@ -1237,7 +1237,7 @@ void QMatrix4x4::projectedRotate(float angle, float x, float y, float z)
         s = 0.0f;
         c = -1.0f;
     } else {
-        float a = angle * M_PI / 180.0f;
+        float a = qDegreesToRadians(angle);
         c = std::cos(a);
         s = std::sin(a);
     }
@@ -1496,7 +1496,7 @@ void QMatrix4x4::perspective(float verticalAngle, float aspectRatio, float nearP
 
     // Construct the projection.
     QMatrix4x4 m(1);
-    float radians = (verticalAngle / 2.0f) * M_PI / 180.0f;
+    float radians = qDegreesToRadians(verticalAngle / 2.0f);
     float sine = std::sin(radians);
     if (sine == 0.0f)
         return;

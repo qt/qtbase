@@ -523,7 +523,7 @@ QWindowSystemInterface::TouchPoint QTuioHandler::tokenToTouchPoint(const QTuioTo
     QPointF delta = relPos - relPos.toPoint();
     tp.area.moveCenter(win->mapToGlobal(relPos.toPoint()) + delta);
     tp.velocity = QVector2D(win->size().width() * tc.vx(), win->size().height() * tc.vy());
-    tp.rotation = tc.angle() * 180.0 / M_PI; // convert radians to degrees
+    tp.rotation = qRadiansToDegrees(tc.angle());
     return tp;
 }
 

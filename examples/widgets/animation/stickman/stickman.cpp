@@ -53,13 +53,7 @@
 
 #include <QPainter>
 #include <QTimer>
-
-#define _USE_MATH_DEFINES
-#include <math.h>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <qmath.h>
 
 static const qreal Coords[NodeCount * 2] = {
     0.0, -150.0, // head, #0
@@ -300,7 +294,7 @@ void StickMan::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
             QPointF dist = node2->pos() - node1->pos();
 
             qreal sinAngle = dist.x() / sqrt(pow(dist.x(), 2) + pow(dist.y(), 2));
-            qreal angle = asin(sinAngle) * 180.0 / M_PI;
+            qreal angle = qRadiansToDegrees(asin(sinAngle));
 
             QPointF headPos = node1->pos();
             painter->translate(headPos);

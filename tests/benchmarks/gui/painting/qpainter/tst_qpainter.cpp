@@ -33,10 +33,7 @@
 #include <QImage>
 #include <QPaintEngine>
 #include <QTileRules>
-#include <math.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <qmath.h>
 
 #include <private/qpixmap_raster_p.h>
 
@@ -1232,7 +1229,7 @@ QTransform tst_QPainter::transformForAngle(qreal angle)
     QTransform rotTrans2;
     rotTrans2.translate(40, 0);
 
-    qreal rad = angle * 2. * M_PI / 360.;
+    qreal rad = qDegreesToRadians(angle);
     qreal c = ::cos(rad);
     qreal s = ::sin(rad);
 

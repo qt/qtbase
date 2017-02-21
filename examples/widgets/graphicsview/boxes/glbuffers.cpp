@@ -50,11 +50,11 @@
 
 #include "glbuffers.h"
 #include <QtGui/qmatrix4x4.h>
-
+#include <QtCore/qmath.h>
 
 void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
 {
-    const GLdouble ymax = zNear * tan(fovy * M_PI / 360.0);
+    const GLdouble ymax = zNear * tan(qDegreesToRadians(fovy) / 2.0);
     const GLdouble ymin = -ymax;
     const GLdouble xmin = ymin * aspect;
     const GLdouble xmax = ymax * aspect;

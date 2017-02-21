@@ -49,13 +49,8 @@
 ****************************************************************************/
 
 #include "lighting.h"
-
 #include <QtWidgets>
 #include <QtCore/qmath.h>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 Lighting::Lighting(QWidget *parent): QGraphicsView(parent), angle(0.0)
 {
@@ -120,7 +115,7 @@ void Lighting::setupScene()
 
 void Lighting::animate()
 {
-    angle += (M_PI / 30);
+    angle += qDegreesToRadians(qreal(6));
     qreal xs = 200 * qSin(angle) - 40 + 25;
     qreal ys = 200 * qCos(angle) - 40 + 25;
     m_lightSource->setPos(xs, ys);

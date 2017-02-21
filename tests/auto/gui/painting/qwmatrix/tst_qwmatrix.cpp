@@ -114,12 +114,8 @@ void tst_QWMatrix::mapping_data()
                                 << QRect( 0, 0, 30, 40 )
                                 << QPolygon( QRect( -300, -400, 300, 400 ) );
 
-#if defined(Q_OS_WIN) && !defined(M_PI)
-#define M_PI 3.14159265897932384626433832795f
-#endif
-
     const auto rotate = [](qreal degrees) {
-        const qreal rad = M_PI * degrees / 180.;
+        const qreal rad = qDegreesToRadians(degrees);
         return QMatrix(std::cos(rad), -std::sin(rad),
                        std::sin(rad),  std::cos(rad), 0, 0);
     };
@@ -140,7 +136,7 @@ void tst_QWMatrix::mapping_data()
 
 #if 0
     const auto rotScale = [](qreal degrees, qreal scale) {
-        const qreal rad = M_PI * degrees / 180.;
+        const qreal rad = qDegreesToRadians(degrees);
         return QMatrix(scale * std::cos(rad), -scale * std::sin(rad),
                        scale * std::sin(rad),  scale * std::cos(rad), 0, 0);
     };

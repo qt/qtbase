@@ -516,7 +516,7 @@ static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path
     for (int i = 0; i < imgWidth * imgHeight; ++i)
         bits[i] = exteriorColor;
 
-    const qreal angleStep = qreal(15 * 3.141592653589793238 / 180);
+    const qreal angleStep = qDegreesToRadians(qreal(15));
     const QPoint rotation(qRound(qCos(angleStep) * 0x4000),
                           qRound(qSin(angleStep) * 0x4000)); // 2:14 signed
 

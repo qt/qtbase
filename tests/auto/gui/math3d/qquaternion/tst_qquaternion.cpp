@@ -815,7 +815,7 @@ void tst_QQuaternion::fromAxisAndAngle()
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q56
     // to calculate the answer we expect to get.
     QVector3D vector = QVector3D(x1, y1, z1).normalized();
-    const float a = (angle * M_PI / 180.0) / 2.0;
+    const float a = qDegreesToRadians(angle) / 2.0;
     const float sin_a = std::sin(a);
     const float cos_a = std::cos(a);
     QQuaternion result(cos_a,
