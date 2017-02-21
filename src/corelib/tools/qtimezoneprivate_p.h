@@ -287,12 +287,12 @@ Q_DECL_CONSTEXPR inline bool operator!=(const QTzTransitionRule &lhs, const QTzT
 
 class Q_AUTOTEST_EXPORT QTzTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
 {
+    QTzTimeZonePrivate(const QTzTimeZonePrivate &) = default;
 public:
     // Create default time zone
     QTzTimeZonePrivate();
     // Create named time zone
     QTzTimeZonePrivate(const QByteArray &ianaId);
-    QTzTimeZonePrivate(const QTzTimeZonePrivate &other);
     ~QTzTimeZonePrivate();
 
     QTimeZonePrivate *clone() Q_DECL_OVERRIDE;

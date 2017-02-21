@@ -615,30 +615,14 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
 
 // Create the system default time zone
 QTzTimeZonePrivate::QTzTimeZonePrivate()
-#if QT_CONFIG(icu)
-    : m_icu(0)
-#endif
 {
     init(systemTimeZoneId());
 }
 
 // Create a named time zone
 QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
-#if QT_CONFIG(icu)
-    : m_icu(0)
-#endif
 {
     init(ianaId);
-}
-
-QTzTimeZonePrivate::QTzTimeZonePrivate(const QTzTimeZonePrivate &other)
-                  : QTimeZonePrivate(other), m_tranTimes(other.m_tranTimes),
-                    m_tranRules(other.m_tranRules), m_abbreviations(other.m_abbreviations),
-#if QT_CONFIG(icu)
-                    m_icu(other.m_icu),
-#endif
-                    m_posixRule(other.m_posixRule)
-{
 }
 
 QTzTimeZonePrivate::~QTzTimeZonePrivate()
