@@ -275,6 +275,8 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #ifndef QT_NO_OPENGL
       , renderToTextureReallyDirty(1)
 #endif
+      , childrenHiddenByWState(0)
+      , childrenShownByExpose(0)
 #if defined(Q_OS_WIN)
       , noPaintOnScreen(0)
 #endif
@@ -9002,13 +9004,23 @@ bool QWidget::event(QEvent *event)
     case QEvent::WindowStateChange: {
         const bool wasMinimized = static_cast<const QWindowStateChangeEvent *>(event)->oldState() & Qt::WindowMinimized;
         if (wasMinimized != isMinimized()) {
+            QWidget *widget = const_cast<QWidget *>(this);
             if (wasMinimized) {
-                QShowEvent showEvent;
-                QCoreApplication::sendEvent(const_cast<QWidget *>(this), &showEvent);
+                // Always send the spontaneous events here, otherwise it can break the application!
+                if (!d->childrenShownByExpose) {
+                    // Show widgets only when they are not yet shown by the expose event
+                    d->showChildren(true);
+                    QShowEvent showEvent;
+                    QCoreApplication::sendSpontaneousEvent(widget, &showEvent);
+                }
+                d->childrenHiddenByWState = false; // Set it always to "false" when window is restored
             } else {
                 QHideEvent hideEvent;
-                QCoreApplication::sendEvent(const_cast<QWidget *>(this), &hideEvent);
+                QCoreApplication::sendSpontaneousEvent(widget, &hideEvent);
+                d->hideChildren(true);
+                d->childrenHiddenByWState = true;
             }
+            d->childrenShownByExpose = false; // Set it always to "false" when window state changes
         }
         changeEvent(event);
     }

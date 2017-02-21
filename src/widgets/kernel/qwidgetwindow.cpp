@@ -871,10 +871,40 @@ void QWidgetWindow::handleDropEvent(QDropEvent *event)
 
 void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {
-    if (isExposed()) {
+    QWidgetPrivate *wPriv = m_widget->d_func();
+    const bool exposed = isExposed();
+
+    if (wPriv->childrenHiddenByWState) {
+        // If widgets has been previously hidden by window state change event
+        // and they aren't yet shown...
+        if (exposed) {
+            // If the window becomes exposed...
+            if (!wPriv->childrenShownByExpose) {
+                // ... and they haven't been shown by this function yet - show it.
+                wPriv->showChildren(true);
+                QShowEvent showEvent;
+                QCoreApplication::sendSpontaneousEvent(m_widget, &showEvent);
+                wPriv->childrenShownByExpose = true;
+            }
+        } else {
+            // If the window becomes not exposed...
+            if (wPriv->childrenShownByExpose) {
+                // ... and child widgets was previously shown by the expose event - hide widgets again.
+                // This is a workaround, because sometimes when window is minimized programatically,
+                // the QPA can notify that the window is exposed after changing window state to minimized
+                // and then, the QPA can send next expose event with null exposed region (not exposed).
+                wPriv->hideChildren(true);
+                QHideEvent hideEvent;
+                QCoreApplication::sendSpontaneousEvent(m_widget, &hideEvent);
+                wPriv->childrenShownByExpose = false;
+            }
+        }
+    }
+
+    if (exposed) {
         m_widget->setAttribute(Qt::WA_Mapped);
         if (!event->region().isNull())
-            m_widget->d_func()->syncBackingStore(event->region());
+            wPriv->syncBackingStore(event->region());
     } else {
         m_widget->setAttribute(Qt::WA_Mapped, false);
     }
