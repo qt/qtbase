@@ -975,6 +975,7 @@
             "label": "QSystemTrayIcon",
             "purpose": "Provides an icon for an application in the system tray.",
             "section": "Utilities",
+            "condition": "features.temporaryfile",
             "output": [ "publicFeature", "feature" ]
         },
         "accessibility": {
