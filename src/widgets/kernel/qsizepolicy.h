@@ -42,6 +42,7 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qalgorithms.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -175,7 +176,24 @@ private:
     struct Bits;
     QT_SIZEPOLICY_CONSTEXPR explicit QSizePolicy(Bits b) Q_DECL_NOTHROW : bits(b) { }
 
-    static quint32 toControlTypeFieldValue(ControlType type) Q_DECL_NOTHROW;
+    static Q_DECL_RELAXED_CONSTEXPR quint32 toControlTypeFieldValue(ControlType type) Q_DECL_NOTHROW
+    {
+        /*
+          The control type is a flag type, with values 0x1, 0x2, 0x4, 0x8, 0x10,
+          etc. In memory, we pack it onto the available bits (CTSize) in
+          setControlType(), and unpack it here.
+
+          Example:
+
+          0x00000001 maps to 0
+          0x00000002 maps to 1
+          0x00000004 maps to 2
+          0x00000008 maps to 3
+          etc.
+        */
+
+        return qCountTrailingZeroBits(static_cast<quint32>(type));
+    }
 
     struct Bits {
         quint32 horStretch : 8;

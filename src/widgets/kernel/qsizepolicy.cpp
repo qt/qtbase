@@ -258,30 +258,6 @@ void QSizePolicy::setControlType(ControlType type) Q_DECL_NOTHROW
     bits.ctype = toControlTypeFieldValue(type);
 }
 
-quint32 QSizePolicy::toControlTypeFieldValue(ControlType type) Q_DECL_NOTHROW
-{
-    /*
-        The control type is a flag type, with values 0x1, 0x2, 0x4, 0x8, 0x10,
-        etc. In memory, we pack it onto the available bits (CTSize) in
-        setControlType(), and unpack it here.
-
-        Example:
-
-            0x00000001 maps to 0
-            0x00000002 maps to 1
-            0x00000004 maps to 2
-            0x00000008 maps to 3
-            etc.
-    */
-
-    int i = 0;
-    while (true) {
-        if (type & (0x1 << i))
-            return i;
-        ++i;
-    }
-}
-
 /*!
     \fn void QSizePolicy::setHeightForWidth(bool dependent)
 
