@@ -75,7 +75,6 @@ private:
     static QWindowsTheme *m_instance;
     QPalette *m_palettes[NPalettes];
     QFont *m_fonts[NFonts];
-    mutable QWindowsThreadPoolRunner m_threadPoolRunner;
 };
 
 QT_END_NAMESPACE
