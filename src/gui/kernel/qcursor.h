@@ -112,9 +112,13 @@ public:
     inline static void setPos(QScreen *screen, const QPoint &p) { setPos(screen, p.x(), p.y()); }
 
 private:
+    friend Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW;
     QCursorData *d;
 };
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QCursor)
+
+Q_GUI_EXPORT bool operator==(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW;
+inline bool operator!=(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
 
 /*****************************************************************************
   QCursor stream functions

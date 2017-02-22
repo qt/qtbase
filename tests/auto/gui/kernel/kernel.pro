@@ -2,6 +2,7 @@ TEMPLATE=subdirs
 SUBDIRS=\
    qbackingstore \
    qclipboard \
+   qcursor \
    qdrag \
    qevent \
    qfileopenevent \

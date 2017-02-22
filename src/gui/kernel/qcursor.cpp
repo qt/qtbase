@@ -471,6 +471,54 @@ QCursor::QCursor(Qt::CursorShape shape)
     setShape(shape);
 }
 
+/*!
+    \fn bool operator==(const QCursor &lhs, const QCursor &rhs)
+    \relates QCursor
+    \since 5.10
+
+    Equality operator. Returns \c true if \a lhs and \a rhs
+    have the same \l{QCursor::}{shape()} and, in the case of
+    \l{Qt::BitmapCursor}{bitmap cursors}, the same \l{QCursor::}{hotSpot()}
+    and either the same \l{QCursor::}{pixmap()} or the same
+    \l{QCursor::}{bitmap()} and \l{QCursor::}{mask()}.
+
+    \note When comparing bitmap cursors, this function only
+    compares the bitmaps' \l{QPixmap::cacheKey()}{cache keys},
+    not each pixel.
+
+    \sa operator!=(const QCursor &lhs, const QCursor &rhs)
+*/
+bool operator==(const QCursor &lhs, const QCursor &rhs) Q_DECL_NOTHROW
+{
+    if (lhs.d == rhs.d)
+        return true; // Copy or same shape
+
+    // Check pixmaps or bitmaps cache keys. Notice that having BitmapCursor
+    // shape implies either non-null pixmap or non-null bitmap and mask
+    if (lhs.shape() == Qt::BitmapCursor && rhs.shape() == Qt::BitmapCursor
+            && lhs.hotSpot() == rhs.hotSpot()) {
+        if (!lhs.d->pixmap.isNull())
+            return lhs.d->pixmap.cacheKey() == rhs.d->pixmap.cacheKey();
+
+        if (!rhs.d->pixmap.isNull())
+            return false;
+
+        return lhs.d->bm->cacheKey() == rhs.d->bm->cacheKey()
+                && lhs.d->bmm->cacheKey() == rhs.d->bmm->cacheKey();
+    }
+
+    return false;
+}
+
+/*!
+    \fn bool operator!=(const QCursor &lhs, const QCursor &rhs)
+    \relates QCursor
+    \since 5.10
+
+    Inequality operator. Returns the equivalent of !(\a lhs == \a rhs).
+
+    \sa operator==(const QCursor &lhs, const QCursor &rhs)
+*/
 
 /*!
     Returns the cursor shape identifier. The return value is one of
