@@ -625,17 +625,26 @@ QFileInfoList QFSFileEngine::drives()
 {
     QFileInfoList ret;
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+    QFileInfoList mappedDrives = QFileSystemEngine::getMappedDrives();
 #if defined(Q_OS_WIN32)
     quint32 driveBits = (quint32) GetLogicalDrives() & 0x3ffffff;
 #endif
     char driveName[] = "A:/";
 
     while (driveBits) {
-        if (driveBits & 1)
-            ret.append(QFileInfo(QLatin1String(driveName)));
+        if (driveBits & 1) {
+            int i;
+            for (i = 0; i < mappedDrives.size(); i++) {
+                if (mappedDrives.at(i).filePath() == QLatin1String(driveName))
+                    break;
+            }
+            if (i == mappedDrives.size())
+                ret.append(QFileInfo(QLatin1String(driveName)));
+        }
         driveName[0]++;
         driveBits = driveBits >> 1;
     }
+    ret.append(mappedDrives);
     return ret;
 #else // !Q_OS_WINCE && !Q_OS_WINRT
     ret.append(QFileInfo(QLatin1String("/")));

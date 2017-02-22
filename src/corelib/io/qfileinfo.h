@@ -139,6 +139,8 @@ private:
     {
         return d_ptr.constData();
     }
+
+    friend class QFileInfoPrivate;
 };
 
 Q_DECLARE_SHARED(QFileInfo)
