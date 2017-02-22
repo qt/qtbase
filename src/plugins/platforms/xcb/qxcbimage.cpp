@@ -41,7 +41,7 @@
 #include <QtGui/QColor>
 #include <QtGui/private/qimage_p.h>
 #include <QtGui/private/qdrawhelper_p.h>
-#ifdef XCB_USE_RENDER
+#if QT_CONFIG(xcb_render)
 #include <xcb/render.h>
 // 'template' is used as a function argument name in xcb_renderutil.h
 #define template template_param
@@ -199,7 +199,7 @@ xcb_pixmap_t qt_xcb_XPixmapFromBitmap(QXcbScreen *screen, const QImage &image)
 xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
                                         const QPoint &spot)
 {
-#ifdef XCB_USE_RENDER
+#if QT_CONFIG(xcb_render)
     xcb_connection_t *conn = screen->xcb_connection();
     const int w = image.width();
     const int h = image.height();

@@ -80,7 +80,7 @@
 #include <X11/extensions/XI2proto.h>
 #endif
 
-#ifdef XCB_USE_RENDER
+#if QT_CONFIG(xcb_render)
 #include <xcb/render.h>
 #endif
 
@@ -583,7 +583,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 #if QT_CONFIG(xkb)
         &xcb_xkb_id,
 #endif
-#ifdef XCB_USE_RENDER
+#if QT_CONFIG(xcb_render)
         &xcb_render_id,
 #endif
         0
@@ -1533,7 +1533,7 @@ xcb_window_t QXcbConnection::clientLeader()
                                        1,
                                        &m_clientLeader));
 
-#if !defined(QT_NO_SESSIONMANAGER) && defined(XCB_USE_SM)
+#if QT_CONFIG(xcb_sm)
         // If we are session managed, inform the window manager about it
         QByteArray session = qGuiApp->sessionId().toLatin1();
         if (!session.isEmpty()) {
@@ -2067,7 +2067,7 @@ void QXcbConnection::initializeXFixes()
 
 void QXcbConnection::initializeXRender()
 {
-#ifdef XCB_USE_RENDER
+#if QT_CONFIG(xcb_render)
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_render_id);
     if (!reply || !reply->present)
         return;

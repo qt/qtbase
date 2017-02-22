@@ -40,6 +40,7 @@
 #ifndef QXCBINTEGRATION_H
 #define QXCBINTEGRATION_H
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 
@@ -105,7 +106,7 @@ public:
 
     QByteArray wmClass() const;
 
-#if !defined(QT_NO_SESSIONMANAGER) && defined(XCB_USE_SM)
+#if QT_CONFIG(xcb_sm)
     QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const override;
 #endif
 
