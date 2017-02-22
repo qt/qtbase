@@ -92,7 +92,7 @@ public:
     QTimeZonePrivate(const QTimeZonePrivate &other);
     virtual ~QTimeZonePrivate();
 
-    virtual QTimeZonePrivate *clone();
+    virtual QTimeZonePrivate *clone() const;
 
     bool operator==(const QTimeZonePrivate &other) const;
     bool operator!=(const QTimeZonePrivate &other) const;
@@ -187,7 +187,7 @@ public:
     QUtcTimeZonePrivate(const QUtcTimeZonePrivate &other);
     virtual ~QUtcTimeZonePrivate();
 
-    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
+    QUtcTimeZonePrivate *clone() const override;
 
     Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
 
@@ -234,7 +234,7 @@ public:
     QIcuTimeZonePrivate(const QIcuTimeZonePrivate &other);
     ~QIcuTimeZonePrivate();
 
-    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
+    QIcuTimeZonePrivate *clone() const override;
 
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
                         const QLocale &locale) const Q_DECL_OVERRIDE;
@@ -295,7 +295,7 @@ public:
     QTzTimeZonePrivate(const QByteArray &ianaId);
     ~QTzTimeZonePrivate();
 
-    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
+    QTzTimeZonePrivate *clone() const override;
 
     QLocale::Country country() const Q_DECL_OVERRIDE;
     QString comment() const Q_DECL_OVERRIDE;
@@ -351,7 +351,7 @@ public:
     QMacTimeZonePrivate(const QMacTimeZonePrivate &other);
     ~QMacTimeZonePrivate();
 
-    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
+    QMacTimeZonePrivate *clone() const override;
 
     QString comment() const Q_DECL_OVERRIDE;
 
@@ -404,7 +404,7 @@ public:
     QWinTimeZonePrivate(const QWinTimeZonePrivate &other);
     ~QWinTimeZonePrivate();
 
-    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
+    QWinTimeZonePrivate *clone() const override;
 
     QString comment() const Q_DECL_OVERRIDE;
 
@@ -454,7 +454,7 @@ public:
     QAndroidTimeZonePrivate(const QAndroidTimeZonePrivate &other);
     ~QAndroidTimeZonePrivate();
 
-    QTimeZonePrivate *clone() Q_DECL_OVERRIDE;
+    QAndroidTimeZonePrivate *clone() const override;
 
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
                         const QLocale &locale) const Q_DECL_OVERRIDE;

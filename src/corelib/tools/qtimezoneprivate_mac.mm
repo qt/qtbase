@@ -82,7 +82,7 @@ QMacTimeZonePrivate::~QMacTimeZonePrivate()
     [m_nstz release];
 }
 
-QTimeZonePrivate *QMacTimeZonePrivate::clone()
+QMacTimeZonePrivate *QMacTimeZonePrivate::clone() const
 {
     return new QMacTimeZonePrivate(*this);
 }

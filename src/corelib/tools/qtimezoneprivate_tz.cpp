@@ -629,7 +629,7 @@ QTzTimeZonePrivate::~QTzTimeZonePrivate()
 {
 }
 
-QTimeZonePrivate *QTzTimeZonePrivate::clone()
+QTzTimeZonePrivate *QTzTimeZonePrivate::clone() const
 {
     return new QTzTimeZonePrivate(*this);
 }

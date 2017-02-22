@@ -136,7 +136,7 @@ QTimeZonePrivate::~QTimeZonePrivate()
 {
 }
 
-QTimeZonePrivate *QTimeZonePrivate::clone()
+QTimeZonePrivate *QTimeZonePrivate::clone() const
 {
     return new QTimeZonePrivate(*this);
 }
@@ -784,7 +784,7 @@ QUtcTimeZonePrivate::~QUtcTimeZonePrivate()
 {
 }
 
-QTimeZonePrivate *QUtcTimeZonePrivate::clone()
+QUtcTimeZonePrivate *QUtcTimeZonePrivate::clone() const
 {
     return new QUtcTimeZonePrivate(*this);
 }

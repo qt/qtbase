@@ -305,7 +305,7 @@ QIcuTimeZonePrivate::~QIcuTimeZonePrivate()
     ucal_close(m_ucal);
 }
 
-QTimeZonePrivate *QIcuTimeZonePrivate::clone()
+QIcuTimeZonePrivate *QIcuTimeZonePrivate::clone() const
 {
     return new QIcuTimeZonePrivate(*this);
 }
