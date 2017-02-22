@@ -50,7 +50,6 @@ load(qt_build_paths)
 DEFINES += QT_BUILD_XCB_PLUGIN
 # needed by Xcursor ...
 qtConfig(xcb-xlib) {
-    DEFINES += XCB_USE_XLIB
     QMAKE_USE += xcb_xlib
 
     qtConfig(xinput2) {

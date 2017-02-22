@@ -75,7 +75,7 @@ typedef struct xcb_glx_buffer_swap_complete_event_t {
 } xcb_glx_buffer_swap_complete_event_t;
 #endif
 
-#if defined(XCB_USE_XLIB) && defined(XCB_USE_GLX)
+#if defined(XCB_USE_GLX)
 typedef struct {
     int type;
     unsigned long serial;       /* # of last request processed by server */
@@ -202,10 +202,9 @@ QPlatformOffscreenSurface *QXcbGlxIntegration::createPlatformOffscreenSurface(QO
     if (!vendorChecked) {
         vendorChecked = true;
         Display *display = glXGetCurrentDisplay();
-#ifdef XCB_USE_XLIB
         if (!display)
             display = static_cast<Display *>(m_connection->xlib_display());
-#endif
+
         const char *glxvendor = glXGetClientString(display, GLX_VENDOR);
         if (glxvendor) {
             if (!strcmp(glxvendor, "ATI") || !strcmp(glxvendor, "Chromium"))
@@ -231,10 +230,9 @@ bool QXcbGlxIntegration::supportsSwitchableWidgetComposition() const
     if (!vendorChecked) {
         vendorChecked = true;
         Display *display = glXGetCurrentDisplay();
-#ifdef XCB_USE_XLIB
         if (!display)
             display = static_cast<Display *>(m_connection->xlib_display());
-#endif
+
         const char *glxvendor = glXGetClientString(display, GLX_VENDOR);
         if (glxvendor) {
             if (!strcmp(glxvendor, "Parallels Inc"))

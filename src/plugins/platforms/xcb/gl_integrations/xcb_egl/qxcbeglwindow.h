@@ -62,7 +62,7 @@ protected:
     void create() override;
     void resolveFormat(const QSurfaceFormat &format) override;
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     const xcb_visualtype_t *createVisual() override;
 #endif
 

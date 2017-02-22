@@ -63,7 +63,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
 #include <X11/Xlib.h>
 #endif
 
@@ -123,7 +123,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     qApp->setAttribute(Qt::AA_CompressHighFrequencyEvents, true);
 
     qRegisterMetaType<QXcbWindow*>();
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     XInitThreads();
 #endif
     m_nativeInterface.reset(new QXcbNativeInterface);

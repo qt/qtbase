@@ -99,7 +99,7 @@
 #include <QTextCodec>
 #include <stdio.h>
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
@@ -251,7 +251,7 @@ static inline bool positionIncludesFrame(QWindow *w)
     return qt_window_private(w)->positionPolicy == QWindowPrivate::WindowFrameInclusive;
 }
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
 static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
 {
     #include <X11/Xatom.h>
@@ -297,7 +297,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
 #endif
     return &tp;
 }
-#endif // XCB_USE_XLIB
+#endif // QT_CONFIG(xcb_xlib)
 
 // TODO move this into a utility function in QWindow or QGuiApplication
 static QWindow *childWindowAt(QWindow *win, const QPoint &p)
@@ -569,7 +569,7 @@ void QXcbWindow::create()
     if (window()->flags() & Qt::WindowTransparentForInput)
         setTransparentForMouseEvents(true);
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     // force sync to read outstanding requests - see QTBUG-29106
     XSync(DISPLAY_FROM_XCB(platformScreen), false);
 #endif
@@ -1535,7 +1535,7 @@ void QXcbWindow::setWindowTitle(const QString &title)
                                    ba.length(),
                                    ba.constData()));
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     XTextProperty *text = qstringToXTP(DISPLAY_FROM_XCB(this), title);
     if (text)
         XSetWMName(DISPLAY_FROM_XCB(this), m_window, text);

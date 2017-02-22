@@ -69,7 +69,7 @@
 #include <xcb/xfixes.h>
 #include <xcb/xinerama.h>
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xlibint.h>
@@ -136,7 +136,7 @@ static inline bool isXIEvent(xcb_generic_event_t *event, int opCode)
 }
 #endif // XCB_USE_XINPUT2
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
 static const char * const xcbConnectionErrors[] = {
     "No error", /* Error 0 */
     "I/O error", /* XCB_CONN_ERROR */
@@ -557,7 +557,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
 {
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     Display *dpy = XOpenDisplay(m_displayName.constData());
     if (dpy) {
         m_primaryScreenNumber = DefaultScreen(dpy);
@@ -569,7 +569,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     }
 #else
     m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreenNumber);
-#endif //XCB_USE_XLIB
+#endif // QT_CONFIG(xcb_xlib)
 
     if (Q_UNLIKELY(!m_connection || xcb_connection_has_error(m_connection)))
         qFatal("QXcbConnection: Could not connect to display %s", m_displayName.constData());
@@ -685,7 +685,7 @@ QXcbConnection::~QXcbConnection()
 
     delete m_glIntegration;
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     XCloseDisplay(static_cast<Display *>(m_xlib_display));
 #else
     xcb_disconnect(xcb_connection());
@@ -1551,7 +1551,7 @@ xcb_window_t QXcbConnection::clientLeader()
     return m_clientLeader;
 }
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
 void *QXcbConnection::xlib_display() const
 {
     return m_xlib_display;

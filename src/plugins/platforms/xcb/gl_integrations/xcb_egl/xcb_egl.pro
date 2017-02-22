@@ -5,8 +5,6 @@ QT += egl_support-private
 
 CONFIG += egl
 
-qtConfig(xcb-xlib): DEFINES += XCB_USE_XLIB
-
 DEFINES += QT_NO_FOREACH
 
 HEADERS += \

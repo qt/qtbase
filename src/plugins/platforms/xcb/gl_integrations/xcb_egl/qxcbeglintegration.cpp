@@ -116,7 +116,7 @@ QPlatformOffscreenSurface *QXcbEglIntegration::createPlatformOffscreenSurface(QO
 
 void *QXcbEglIntegration::xlib_display() const
 {
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     return m_connection->xlib_display();
 #else
     return EGL_DEFAULT_DISPLAY;

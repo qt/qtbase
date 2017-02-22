@@ -421,7 +421,7 @@ public:
     bool hasDefaultVisualId() const { return m_defaultVisualId != UINT_MAX; }
     xcb_visualid_t defaultVisualId() const { return m_defaultVisualId; }
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     void *xlib_display() const;
     void *createVisualInfoForDefaultVisualId() const;
 #endif
@@ -632,7 +632,7 @@ private:
     QScopedPointer<QXcbWMSupport> m_wmSupport;
     QXcbNativeInterface *m_nativeInterface = nullptr;
 
-#if defined(XCB_USE_XLIB)
+#if QT_CONFIG(xcb_xlib)
     void *m_xlib_display = nullptr;
 #endif
     QXcbEventReader *m_reader = nullptr;

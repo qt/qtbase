@@ -7,7 +7,6 @@ load(qt_build_paths)
 
 # needed by Xcursor ...
 qtConfig(xcb-xlib) {
-    DEFINES += XCB_USE_XLIB
     qtConfig(xinput2) {
         DEFINES += XCB_USE_XINPUT2
     }

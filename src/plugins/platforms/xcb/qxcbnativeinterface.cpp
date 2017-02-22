@@ -57,11 +57,7 @@
 #include <QtPlatformHeaders/qxcbintegrationfunctions.h>
 #include <QtPlatformHeaders/qxcbscreenfunctions.h>
 
-#ifdef XCB_USE_XLIB
-#  include <X11/Xlib.h>
-#else
-#  include <stdio.h>
-#endif
+#include <stdio.h>
 
 #include <algorithm>
 
@@ -210,7 +206,7 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
     const QXcbScreen *xcbScreen = static_cast<QXcbScreen *>(screen->handle());
     switch (resourceType(lowerCaseResource)) {
     case Display:
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
         result = xcbScreen->connection()->xlib_display();
 #endif
         break;
@@ -436,7 +432,7 @@ void *QXcbNativeInterface::rootWindow()
 
 void *QXcbNativeInterface::display()
 {
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     QXcbIntegration *integration = QXcbIntegration::instance();
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
@@ -514,7 +510,7 @@ QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
 
 void *QXcbNativeInterface::displayForWindow(QWindow *window)
 {
-#if defined(XCB_USE_XLIB)
+#if QT_CONFIG(xcb_xlib)
     QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen ? screen->connection()->xlib_display() : Q_NULLPTR;
 #else
