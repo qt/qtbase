@@ -12770,8 +12770,6 @@ void QWidget::activateWindow()
 */
 int QWidget::metric(PaintDeviceMetric m) const
 {
-    Q_D(const QWidget);
-
     QWindow *topLevelWindow = 0;
     QScreen *screen = 0;
     if (QWidget *topLevel = window()) {
@@ -12799,16 +12797,16 @@ int QWidget::metric(PaintDeviceMetric m) const
     } else if (m == PdmDepth) {
         return screen->depth();
     } else if (m == PdmDpiX) {
-        if (d->extra && d->extra->customDpiX)
-            return d->extra->customDpiX;
-        else if (d->parent)
-            return static_cast<QWidget *>(d->parent)->metric(m);
+        for (const QWidget *p = this; p; p = p->parentWidget()) {
+            if (p->d_func()->extra && p->d_func()->extra->customDpiX)
+                return p->d_func()->extra->customDpiX;
+        }
         return qRound(screen->logicalDotsPerInchX());
     } else if (m == PdmDpiY) {
-        if (d->extra && d->extra->customDpiY)
-            return d->extra->customDpiY;
-        else if (d->parent)
-            return static_cast<QWidget *>(d->parent)->metric(m);
+        for (const QWidget *p = this; p; p = p->parentWidget()) {
+            if (p->d_func()->extra && p->d_func()->extra->customDpiY)
+                return p->d_func()->extra->customDpiY;
+        }
         return qRound(screen->logicalDotsPerInchY());
     } else if (m == PdmPhysicalDpiX) {
         return qRound(screen->physicalDotsPerInchX());
