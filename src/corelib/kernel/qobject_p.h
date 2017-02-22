@@ -243,6 +243,7 @@ public:
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
 };
 
+Q_DECLARE_TYPEINFO(QObjectPrivate::ConnectionList, Q_MOVABLE_TYPE);
 
 /*! \internal
 

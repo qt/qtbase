@@ -159,6 +159,8 @@ private:
     qint64 bufferSize;
 };
 
+Q_DECLARE_TYPEINFO(QRingBuffer, Q_MOVABLE_TYPE);
+
 QT_END_NAMESPACE
 
 #endif // QRINGBUFFER_P_H

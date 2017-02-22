@@ -109,6 +109,8 @@ private:
 };
 #endif
 
+Q_DECLARE_TYPEINFO(QSettingsKey, Q_MOVABLE_TYPE);
+
 typedef QMap<QSettingsKey, QByteArray> UnparsedSettingsMap;
 typedef QMap<QSettingsKey, QVariant> ParsedSettingsMap;
 

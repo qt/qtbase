@@ -124,6 +124,8 @@ protected:
                              QObject *parent);
 };
 
+Q_DECLARE_TYPEINFO(QAbstractEventDispatcher::TimerInfo, (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) ? Q_PRIMITIVE_TYPE : Q_RELOCATABLE_TYPE));
+
 QT_END_NAMESPACE
 
 #endif // QABSTRACTEVENTDISPATCHER_H

@@ -228,6 +228,8 @@ public:
 
 } // namespace QtPrivate
 
+Q_DECLARE_TYPEINFO(QtPrivate::ResultItem, Q_PRIMITIVE_TYPE);
+
 #endif //Q_QDOC
 
 QT_END_NAMESPACE

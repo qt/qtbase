@@ -103,6 +103,8 @@ struct sockaddr;
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_TYPEINFO(pollfd, Q_PRIMITIVE_TYPE);
+
 // Internal operator functions for timespecs
 inline timespec &normalizedTimespec(timespec &t)
 {

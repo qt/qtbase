@@ -1802,6 +1802,8 @@ struct QSettingsIniSection
     inline QSettingsIniSection() : position(-1) {}
 };
 
+Q_DECLARE_TYPEINFO(QSettingsIniSection, Q_MOVABLE_TYPE);
+
 typedef QMap<QString, QSettingsIniSection> IniMap;
 
 /*
