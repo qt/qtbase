@@ -62,6 +62,13 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+struct Message {
+    QString content;
+    QString type;
+};
+}
+
 class QErrorMessagePrivate : public QDialogPrivate
 {
     Q_DECLARE_PUBLIC(QErrorMessage)
@@ -70,7 +77,7 @@ public:
     QCheckBox * again;
     QTextEdit * errors;
     QLabel * icon;
-    std::queue<QPair<QString, QString> > pending;
+    std::queue<Message> pending;
     QSet<QString> doNotShow;
     QSet<QString> doNotShowType;
     QString currentMessage;
@@ -303,9 +310,8 @@ bool QErrorMessagePrivate::isMessageToBeShown(const QString &message, const QStr
 bool QErrorMessagePrivate::nextPending()
 {
     while (!pending.empty()) {
-        QPair<QString,QString> &pendingMessage = pending.front();
-        QString message = qMove(pendingMessage.first);
-        QString type = qMove(pendingMessage.second);
+        QString message = std::move(pending.front().content);
+        QString type = std::move(pending.front().type);
         pending.pop();
         if (isMessageToBeShown(message, type)) {
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -355,7 +361,7 @@ void QErrorMessage::showMessage(const QString &message, const QString &type)
     Q_D(QErrorMessage);
     if (!d->isMessageToBeShown(message, type))
         return;
-    d->pending.push(qMakePair(message, type));
+    d->pending.push({message, type});
     if (!isVisible() && d->nextPending())
         show();
 }
