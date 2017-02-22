@@ -342,7 +342,7 @@ static inline void qt_mac_waitForMoreEvents(NSString *runLoopMode = NSDefaultRun
 bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QCocoaEventDispatcher);
-    d->interrupt = false;
+    QBoolBlocker interruptBlocker(d->interrupt, false);
 
     bool interruptLater = false;
     QtCocoaInterruptDispatcher::cancelInterruptLater();
