@@ -82,11 +82,6 @@
    QCOMPARE tries to output the contents of the values if the comparison fails,
    so it is visible from the test log why the comparison failed.
 
-   QCOMPARE is very strict on the data types. Both \a actual and \a expected
-   have to be of the same type, otherwise the test won't compile. This prohibits
-   unspecified behavior from being introduced; that is behavior that usually
-   occurs when the compiler implicitly casts the argument.
-
    For your own classes, you can use \l QTest::toString() to format values for
    outputting into the test log.
 
