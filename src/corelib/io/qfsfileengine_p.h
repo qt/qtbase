@@ -108,6 +108,7 @@ public:
     qint64 read(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
     qint64 readLine(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
     qint64 write(const char *data, qint64 len) Q_DECL_OVERRIDE;
+    bool clone(int sourceHandle) override;
 
     bool extension(Extension extension, const ExtensionOption *option = 0, ExtensionReturn *output = 0) Q_DECL_OVERRIDE;
     bool supportsExtension(Extension extension) const Q_DECL_OVERRIDE;

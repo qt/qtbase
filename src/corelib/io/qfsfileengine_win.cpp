@@ -984,4 +984,13 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
     return true;
 }
 
+/*!
+    \reimp
+*/
+bool QFSFileEngine::clone(int sourceHandle)
+{
+    Q_UNUSED(sourceHandle);
+    return false;
+}
+
 QT_END_NAMESPACE

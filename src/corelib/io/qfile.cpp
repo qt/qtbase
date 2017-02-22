@@ -42,6 +42,7 @@
 #include "qfile.h"
 #include "qfsfileengine_p.h"
 #include "qtemporaryfile.h"
+#include "qtemporaryfile_p.h"
 #include "qlist.h"
 #include "qfileinfo.h"
 #include "private/qiodevice_p.h"
@@ -790,25 +791,27 @@ QFile::copy(const QString &newName)
                     close();
                     d->setError(QFile::CopyError, tr("Cannot open for output"));
                 } else {
-                    char block[4096];
-                    qint64 totalRead = 0;
-                    while(!atEnd()) {
-                        qint64 in = read(block, sizeof(block));
-                        if (in <= 0)
-                            break;
-                        totalRead += in;
-                        if(in != out.write(block, in)) {
-                            close();
-                            d->setError(QFile::CopyError, tr("Failure to write block"));
-                            error = true;
-                            break;
+                    if (!out.d_func()->engine()->clone(d->engine()->handle())) {
+                        char block[4096];
+                        qint64 totalRead = 0;
+                        while (!atEnd()) {
+                            qint64 in = read(block, sizeof(block));
+                            if (in <= 0)
+                                break;
+                            totalRead += in;
+                            if (in != out.write(block, in)) {
+                                close();
+                                d->setError(QFile::CopyError, tr("Failure to write block"));
+                                error = true;
+                                break;
+                            }
                         }
-                    }
 
-                    if (totalRead != size()) {
-                        // Unable to read from the source. The error string is
-                        // already set from read().
-                        error = true;
+                        if (totalRead != size()) {
+                            // Unable to read from the source. The error string is
+                            // already set from read().
+                            error = true;
+                        }
                     }
                     if (!error && !out.rename(newName)) {
                         error = true;

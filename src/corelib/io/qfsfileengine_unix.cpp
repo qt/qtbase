@@ -780,6 +780,23 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
 #endif
 }
 
+/*!
+    \reimp
+*/
+bool QFSFileEngine::clone(int sourceHandle)
+{
+#if defined(Q_OS_LINUX)
+    Q_D(QFSFileEngine);
+#  if !defined FICLONE
+#    define FICLONE _IOW (0x94, 9, int)
+#  endif
+    return ::ioctl(d->fd, FICLONE, sourceHandle) == 0;
+#else
+    Q_UNUSED(sourceHandle);
+    return false;
+#endif
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_FSFILEENGINE

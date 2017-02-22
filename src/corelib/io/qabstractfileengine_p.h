@@ -147,6 +147,7 @@ public:
     virtual QDateTime fileTime(FileTime time) const;
     virtual void setFileName(const QString &file);
     virtual int handle() const;
+    virtual bool clone(int sourceHandle);
     bool atEnd() const;
     uchar *map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags);
     bool unmap(uchar *ptr);

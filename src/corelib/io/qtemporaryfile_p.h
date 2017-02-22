@@ -65,7 +65,7 @@ class QTemporaryFilePrivate : public QFilePrivate
 {
     Q_DECLARE_PUBLIC(QTemporaryFile)
 
-protected:
+public:
     QTemporaryFilePrivate();
     explicit QTemporaryFilePrivate(const QString &templateNameIn);
     ~QTemporaryFilePrivate();

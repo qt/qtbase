@@ -832,6 +832,19 @@ bool QAbstractFileEngine::unmap(uchar *address)
 }
 
 /*!
+    \since 5.10
+
+    Copies the contents from the file specified by \a sourceHandle to this file
+    by cloning it.
+    Returns \c true on success; otherwise, \c false is returned.
+ */
+bool QAbstractFileEngine::clone(int sourceHandle)
+{
+    Q_UNUSED(sourceHandle);
+    return false;
+}
+
+/*!
     \since 4.3
     \class QAbstractFileEngineIterator
     \inmodule QtCore
