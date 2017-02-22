@@ -153,6 +153,28 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
     return *this;
 }
 
+/*!
+    \fn QJsonDocument::QJsonDocument(QJsonDocument &&other)
+    \since 5.10
+
+    Move-constructs a QJsonDocument from \a other.
+*/
+
+/*!
+    \fn QJsonDocument &QJsonDocument::operator =(QJsonDocument &&other)
+    \since 5.10
+
+    Move-assigns \a other to this document.
+*/
+
+/*!
+    \fn void QJsonDocument::swap(QJsonDocument &other)
+    \since 5.10
+
+    Swaps the document \a other with this. This operation is very fast and never fails.
+*/
+
+
 /*! \enum QJsonDocument::DataValidation
 
   This value is used to tell QJsonDocument whether to validate the binary data

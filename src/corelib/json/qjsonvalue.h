@@ -92,6 +92,29 @@ public:
     QJsonValue(const QJsonValue &other);
     QJsonValue &operator =(const QJsonValue &other);
 
+    QJsonValue(QJsonValue &&other) Q_DECL_NOTHROW
+        : ui(other.ui),
+          d(other.d),
+          t(other.t)
+    {
+        other.ui = 0;
+        other.d = nullptr;
+        other.t = Null;
+    }
+
+    QJsonValue &operator =(QJsonValue &&other) Q_DECL_NOTHROW
+    {
+        swap(other);
+        return *this;
+    }
+
+    void swap(QJsonValue &other) Q_DECL_NOTHROW
+    {
+        qSwap(ui, other.ui);
+        qSwap(d, other.d);
+        qSwap(t, other.t);
+    }
+
     static QJsonValue fromVariant(const QVariant &variant);
     QVariant toVariant() const;
 
@@ -216,6 +239,8 @@ public:
     QJsonValueRef* operator->() { return &valueRef; }
 };
 #endif
+
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonValue)
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonValue &);

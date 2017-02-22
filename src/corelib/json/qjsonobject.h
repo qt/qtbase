@@ -74,6 +74,25 @@ public:
     QJsonObject(const QJsonObject &other);
     QJsonObject &operator =(const QJsonObject &other);
 
+    QJsonObject(QJsonObject &&other) Q_DECL_NOTHROW
+        : d(other.d), o(other.o)
+    {
+        other.d = nullptr;
+        other.o = nullptr;
+    }
+
+    QJsonObject &operator =(QJsonObject &&other) Q_DECL_NOTHROW
+    {
+        swap(other);
+        return *this;
+    }
+
+    void swap(QJsonObject &other) Q_DECL_NOTHROW
+    {
+        qSwap(d, other.d);
+        qSwap(o, other.o);
+    }
+
     static QJsonObject fromVariantMap(const QVariantMap &map);
     QVariantMap toVariantMap() const;
     static QJsonObject fromVariantHash(const QVariantHash &map);
@@ -240,6 +259,8 @@ private:
     QJsonPrivate::Data *d;
     QJsonPrivate::Object *o;
 };
+
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonObject)
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonObject &);

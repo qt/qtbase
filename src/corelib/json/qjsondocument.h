@@ -93,6 +93,23 @@ public:
     QJsonDocument(const QJsonDocument &other);
     QJsonDocument &operator =(const QJsonDocument &other);
 
+    QJsonDocument(QJsonDocument &&other) Q_DECL_NOTHROW
+        : d(other.d)
+    {
+        other.d = nullptr;
+    }
+
+    QJsonDocument &operator =(QJsonDocument &&other) Q_DECL_NOTHROW
+    {
+        swap(other);
+        return *this;
+    }
+
+    void swap(QJsonDocument &other) Q_DECL_NOTHROW
+    {
+        qSwap(d, other.d);
+    }
+
     enum DataValidation {
         Validate,
         BypassValidation
@@ -146,6 +163,8 @@ private:
 
     QJsonPrivate::Data *d;
 };
+
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonDocument)
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonDocument &);

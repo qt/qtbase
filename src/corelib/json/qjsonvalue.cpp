@@ -284,6 +284,27 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
 }
 
 /*!
+    \fn QJsonValue::QJsonValue(QJsonValue &&other)
+    \since 5.10
+
+    Move-constructs a QJsonValue from \a other.
+*/
+
+/*!
+    \fn QJsonValue &QJsonValue::operator =(QJsonValue &&other)
+    \since 5.10
+
+    Move-assigns \a other to this value.
+*/
+
+/*!
+    \fn void QJsonValue::swap(QJsonValue &other)
+    \since 5.10
+
+    Swaps the value \a other with this. This operation is very fast and never fails.
+*/
+
+/*!
     \fn bool QJsonValue::isNull() const
 
     Returns \c true if the value is null.

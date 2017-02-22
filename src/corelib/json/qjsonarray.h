@@ -72,6 +72,20 @@ public:
     QJsonArray(const QJsonArray &other);
     QJsonArray &operator =(const QJsonArray &other);
 
+    QJsonArray(QJsonArray &&other) Q_DECL_NOTHROW
+        : d(other.d),
+          a(other.a)
+    {
+        other.d = nullptr;
+        other.a = nullptr;
+    }
+
+    QJsonArray &operator =(QJsonArray &&other) Q_DECL_NOTHROW
+    {
+        swap(other);
+        return *this;
+    }
+
     static QJsonArray fromStringList(const QStringList &list);
     static QJsonArray fromVariantList(const QVariantList &list);
     QVariantList toVariantList() const;
@@ -100,6 +114,12 @@ public:
 
     bool operator==(const QJsonArray &other) const;
     bool operator!=(const QJsonArray &other) const;
+
+    void swap(QJsonArray &other) Q_DECL_NOTHROW
+    {
+        qSwap(d, other.d);
+        qSwap(a, other.a);
+    }
 
     class const_iterator;
 
@@ -242,6 +262,8 @@ private:
     QJsonPrivate::Data *d;
     QJsonPrivate::Array *a;
 };
+
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonArray)
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonArray &);

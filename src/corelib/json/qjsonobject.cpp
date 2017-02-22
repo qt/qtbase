@@ -194,6 +194,28 @@ QJsonObject &QJsonObject::operator =(const QJsonObject &other)
 }
 
 /*!
+    \fn QJsonObject::QJsonObject(QJsonObject &&other)
+    \since 5.10
+
+    Move-constructs a QJsonObject from \a other.
+*/
+
+/*!
+    \fn QJsonObject &QJsonObject::operator =(QJsonObject &&other)
+    \since 5.10
+
+    Move-assigns \a other to this object.
+*/
+
+/*!
+    \fn void QJsonObject::swap(QJsonObject &other)
+    \since 5.10
+
+    Swaps the object \a other with this. This operation is very fast and never fails.
+*/
+
+
+/*!
     Converts the variant map \a map to a QJsonObject.
 
     The keys in \a map will be used as the keys in the JSON object,
