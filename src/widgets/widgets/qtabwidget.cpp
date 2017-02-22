@@ -766,16 +766,17 @@ void QTabWidget::setUpLayout(bool onlyCheck)
     if (onlyCheck && !d->dirty)
         return; // nothing to do
 
+    if (!isVisible()) {
+        d->dirty = true;
+        // this must be done immediately, because QWidgetItem relies on it (even if !isVisible())
+        d->setLayoutItemMargins(QStyle::SE_TabWidgetLayoutItem, Q_NULLPTR);
+        return; // we'll do it later
+    }
+
     QStyleOptionTabWidgetFrame option;
     initStyleOption(&option);
 
-    // this must be done immediately, because QWidgetItem relies on it (even if !isVisible())
     d->setLayoutItemMargins(QStyle::SE_TabWidgetLayoutItem, &option);
-
-    if (!isVisible()) {
-        d->dirty = true;
-        return; // we'll do it later
-    }
 
     QRect tabRect = style()->subElementRect(QStyle::SE_TabWidgetTabBar, &option, this);
     d->panelRect = style()->subElementRect(QStyle::SE_TabWidgetTabPane, &option, this);
