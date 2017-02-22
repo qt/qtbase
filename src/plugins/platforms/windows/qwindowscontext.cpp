@@ -1104,6 +1104,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     }   break;
     case QtWindows::DpiChangedEvent: {
+        if (GetWindowLongPtr(hwnd, GWL_STYLE) & WS_DLGFRAME)
+            return false; // Fixed-size window should not be resized
+
         platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
         const RECT *prcNewWindow = reinterpret_cast<RECT *>(lParam);
         SetWindowPos(hwnd, NULL, prcNewWindow->left, prcNewWindow->top,
