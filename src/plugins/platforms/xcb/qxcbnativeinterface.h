@@ -38,6 +38,7 @@
 #include <xcb/xcb.h>
 
 #include <QtCore/QRect>
+#include <QtPlatformHeaders/QXcbAbstractEventPeeker>
 
 #include "qxcbexport.h"
 
@@ -69,7 +70,8 @@ public:
         ScreenAntialiasingEnabled,
         NoFontHinting,
         AtspiBus,
-        CompositingEnabled
+        CompositingEnabled,
+        PeekEventQueue
     };
 
     QXcbNativeInterface();
@@ -105,6 +107,7 @@ public:
     static void setStartupId(const char *);
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);
+    static void peekEventQueue(QXcbAbstractEventPeeker *peeker, QXcbAbstractEventPeeker::PeekOption option);
 
     Q_INVOKABLE void beep();
     Q_INVOKABLE bool systemTrayAvailable(const QScreen *screen) const;

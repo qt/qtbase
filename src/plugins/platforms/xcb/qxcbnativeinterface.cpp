@@ -80,7 +80,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingenabled"),
         QByteArrayLiteral("nofonthinting"),
         QByteArrayLiteral("atspibus"),
-        QByteArrayLiteral("compositingenabled")
+        QByteArrayLiteral("compositingenabled"),
+        QByteArrayLiteral("peekeventqueue")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -304,6 +305,9 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterfa
 
     if (lowerCaseResource == "setstartupid")
         return NativeResourceForIntegrationFunction(setStartupId);
+    if (lowerCaseResource == "peekeventqueue")
+        return NativeResourceForIntegrationFunction(peekEventQueue);
+
     return 0;
 }
 
@@ -446,6 +450,12 @@ void *QXcbNativeInterface::connection()
 {
     QXcbIntegration *integration = QXcbIntegration::instance();
     return integration->defaultConnection()->xcb_connection();
+}
+
+void QXcbNativeInterface::peekEventQueue(QXcbAbstractEventPeeker *peeker, QXcbAbstractEventPeeker::PeekOption option)
+{
+    QXcbIntegration *integration = QXcbIntegration::instance();
+    integration->defaultConnection()->peekEventQueue(peeker, option);
 }
 
 void *QXcbNativeInterface::atspiBus()

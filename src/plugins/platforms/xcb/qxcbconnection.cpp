@@ -566,6 +566,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_glIntegration(Q_NULLPTR)
     , m_xiGrab(false)
     , m_qtSelectionOwner(0)
+    , m_cachedPeekIndex(0)
 {
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -1283,6 +1284,7 @@ void QXcbConnection::addPeekFunc(PeekFunc f)
 
 QXcbEventReader::QXcbEventReader(QXcbConnection *connection)
     : m_connection(connection)
+    , m_mainThreadAccessedEventQueue(false)
 {
     checkXcbPollForQueuedEvent();
 }
@@ -1346,9 +1348,11 @@ void QXcbEventReader::addEvent(xcb_generic_event_t *event)
     m_events << event;
 }
 
-QXcbEventArray *QXcbEventReader::lock()
+QXcbEventArray *QXcbEventReader::lock(bool calledFromPeeker)
 {
     m_mutex.lock();
+    if (!calledFromPeeker)
+        m_mainThreadAccessedEventQueue = true;
     if (!local_xcb_poll_for_queued_event) {
         while (xcb_generic_event_t *event = xcb_poll_for_event(m_connection->xcb_connection()))
             m_events << event;
@@ -1356,8 +1360,10 @@ QXcbEventArray *QXcbEventReader::lock()
     return &m_events;
 }
 
-void QXcbEventReader::unlock()
+void QXcbEventReader::unlock(bool calledFromPeeker)
 {
+    if (calledFromPeeker)
+        m_mainThreadAccessedEventQueue = false;
     m_mutex.unlock();
 }
 
@@ -1574,6 +1580,28 @@ void *QXcbConnection::createVisualInfoForDefaultVisualId() const
 }
 
 #endif
+
+void QXcbConnection::peekEventQueue(QXcbAbstractEventPeeker *peeker, QXcbAbstractEventPeeker::PeekOption option)
+{
+    QXcbEventArray *eventqueue = m_reader->lock(true);
+
+    if (m_reader->mainThreadAccessedEventQueue()
+        || option == QXcbAbstractEventPeeker::PeekFromQueueStart) {
+        m_cachedPeekIndex = 0;
+    }
+
+    for (int i = m_cachedPeekIndex; i < eventqueue->size(); ++i) {
+        m_cachedPeekIndex = i + 1;
+        xcb_generic_event_t *event = eventqueue->at(i);
+        if (!event)
+            continue;
+
+        if (peeker->peekEventQueue(event))
+            break;
+    }
+
+    m_reader->unlock(true);
+}
 
 #if defined(XCB_USE_XINPUT2)
 // it is safe to cast XI_* events here as long as we are only touching the first 32 bytes,

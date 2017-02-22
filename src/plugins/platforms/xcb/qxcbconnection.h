@@ -47,6 +47,7 @@
 #include <QVarLengthArray>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/QLoggingCategory>
+#include <QtPlatformHeaders/QXcbAbstractEventPeeker>
 
 // This is needed to make Qt compile together with XKB. xkb.h is using a variable
 // which is called 'explicit', this is a reserved keyword in c++
@@ -308,12 +309,13 @@ public:
 
     void run() Q_DECL_OVERRIDE;
 
-    QXcbEventArray *lock();
-    void unlock();
+    QXcbEventArray *lock(bool calledFromPeeker = false);
+    void unlock(bool calledFromPeeker = false);
 
     void start();
 
     void registerEventDispatcher(QAbstractEventDispatcher *dispatcher);
+    bool mainThreadAccessedEventQueue() const { return m_mainThreadAccessedEventQueue; }
 
 signals:
     void eventPending();
@@ -327,6 +329,7 @@ private:
     QMutex m_mutex;
     QXcbEventArray m_events;
     QXcbConnection *m_connection;
+    bool m_mainThreadAccessedEventQueue;
 };
 
 class QXcbWindowEventListener
@@ -462,6 +465,8 @@ public:
 
     bool supportsThreadedRendering() const { return m_reader->isRunning(); }
     bool threadedEventHandling() const { return m_reader->isRunning(); }
+
+    void peekEventQueue(QXcbAbstractEventPeeker *peeker, QXcbAbstractEventPeeker::PeekOption option);
 
     xcb_timestamp_t getTimestamp();
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
@@ -671,6 +676,7 @@ private:
 
     xcb_window_t m_qtSelectionOwner;
 
+    int m_cachedPeekIndex;
     friend class QXcbEventReader;
 };
 

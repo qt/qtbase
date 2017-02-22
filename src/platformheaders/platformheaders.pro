@@ -5,6 +5,7 @@ MODULE_INCNAME = QtPlatformHeaders
 
 include(nativecontexts/nativecontexts.pri)
 include(xcbfunctions/xcbfunctions.pri)
+include(xcbheaders/xcbheaders.pri)
 include(eglfsfunctions/eglfsfunctions.pri)
 include(windowsfunctions/windowsfunctions.pri)
 include(helper/helper.pri)
