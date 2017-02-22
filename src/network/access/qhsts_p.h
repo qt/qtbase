@@ -57,12 +57,14 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qglobal.h>
-#include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
+
+template<typename T> class QList;
+template <typename T> class QVector;
 
 class Q_AUTOTEST_EXPORT QHstsCache
 {
@@ -70,13 +72,13 @@ public:
 
     void updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &headers,
                            const QUrl &url);
-    void updateFromPolicies(const QList<QHstsPolicy> &hosts);
+    void updateFromPolicies(const QVector<QHstsPolicy> &hosts);
     void updateKnownHost(const QUrl &url, const QDateTime &expires,
                          bool includeSubDomains);
     bool isKnownHost(const QUrl &url) const;
     void clear();
 
-    QList<QHstsPolicy> policies() const;
+    QVector<QHstsPolicy> policies() const;
 
 private:
 

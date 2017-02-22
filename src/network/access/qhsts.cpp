@@ -39,9 +39,9 @@
 
 #include "qhsts_p.h"
 
-#include "QtCore/qstringlist.h"
-
 #include "QtCore/private/qipaddress_p.h"
+#include "QtCore/qvector.h"
+#include "QtCore/qlist.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -84,7 +84,7 @@ void QHstsCache::updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &h
         updateKnownHost(url.host(), parser.expirationDate(), parser.includeSubDomains());
 }
 
-void QHstsCache::updateFromPolicies(const QList<QHstsPolicy> &policies)
+void QHstsCache::updateFromPolicies(const QVector<QHstsPolicy> &policies)
 {
     for (const auto &policy : policies)
         updateKnownHost(policy.host(), policy.expiry(), policy.includesSubDomains());
@@ -183,9 +183,13 @@ void QHstsCache::clear()
     knownHosts.clear();
 }
 
-QList<QHstsPolicy> QHstsCache::policies() const
+QVector<QHstsPolicy> QHstsCache::policies() const
 {
-    return knownHosts.values();
+    QVector<QHstsPolicy> values;
+    values.reserve(knownHosts.size());
+    for (const auto &host : knownHosts)
+        values << host;
+    return values;
 }
 
 // The parser is quite simple: 'nextToken' knowns exactly what kind of tokens

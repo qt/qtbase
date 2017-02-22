@@ -42,6 +42,7 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtNetwork/qnetworkrequest.h>
+#include <QtCore/QVector>
 #include <QtCore/QObject>
 #ifndef QT_NO_SSL
 #include <QtNetwork/QSslConfiguration>
@@ -121,11 +122,10 @@ public:
     QNetworkCookieJar *cookieJar() const;
     void setCookieJar(QNetworkCookieJar *cookieJar);
 
-    void enableStrictTransportSecurity();
-    void disableStrictTransportSecurity();
-    bool strictTransportSecurityEnabled() const;
-    void addStrictTransportSecurityHosts(const QList<QHstsPolicy> &knownHosts);
-    QList<QHstsPolicy> strictTransportSecurityHosts() const;
+    void setStrictTransportSecurityEnabled(bool enabled);
+    bool isStrictTransportSecurityEnabled() const;
+    void addStrictTransportSecurityHosts(const QVector<QHstsPolicy> &knownHosts);
+    QVector<QHstsPolicy> strictTransportSecurityHosts() const;
 
     QNetworkReply *head(const QNetworkRequest &request);
     QNetworkReply *get(const QNetworkRequest &request);

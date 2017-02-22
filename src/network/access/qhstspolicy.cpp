@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
     applies to subdomains, either in the constructor or by calling setExpiry(),
     setHost() and setIncludesSubdomains().
 
-    \sa QNetworkAccessManager::enableStrictTransportSecurity()
+    \sa QNetworkAccessManager::setStrictTransportSecurityEnabled()
 */
 
 class QHstsPolicyPrivate

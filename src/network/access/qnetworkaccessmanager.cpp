@@ -697,36 +697,22 @@ void QNetworkAccessManager::setCookieJar(QNetworkCookieJar *cookieJar)
 /*!
     \since 5.9
 
-    Enables HTTP Strict Transport Security (HSTS, RFC6797). When processing a
-    request, QNetworkAccessManager automatically replaces "http" scheme with
-    "https" and uses a secure transport if a host is a known HSTS host.
-    Port 80 if it's set explicitly is replaced by port 443.
+    If \a enabled is \c true, QNetworkAccessManager follows the HTTP Strict Transport
+    Security policy (HSTS, RFC6797). When processing a request, QNetworkAccessManager
+    automatically replaces the "http" scheme with "https" and uses a secure transport
+    for HSTS hosts. If it's set explicitly, port 80 is replaced by port 443.
 
     When HSTS is enabled, for each HTTP response containing HSTS header and
     received over a secure transport, QNetworkAccessManager will update its HSTS
     cache, either remembering a host with a valid policy or removing a host with
-    expired/disabled HSTS policy.
+    an expired or disabled HSTS policy.
 
-    \sa disableStrictTransportSecurity(), strictTransportSecurityEnabled()
+    \sa isStrictTransportSecurityEnabled()
 */
-void QNetworkAccessManager::enableStrictTransportSecurity()
+void QNetworkAccessManager::setStrictTransportSecurityEnabled(bool enabled)
 {
     Q_D(QNetworkAccessManager);
-    d->stsEnabled = true;
-}
-
-/*!
-    \since 5.9
-
-    Disables HTTP Strict Transport Security (HSTS). HSTS headers in responses would
-    be ignored, no scheme/port mapping is done.
-
-    \sa enableStrictTransportSecurity()
-*/
-void QNetworkAccessManager::disableStrictTransportSecurity()
-{
-    Q_D(QNetworkAccessManager);
-    d->stsEnabled = false;
+    d->stsEnabled = enabled;
 }
 
 /*!
@@ -735,9 +721,9 @@ void QNetworkAccessManager::disableStrictTransportSecurity()
     Returns true if HTTP Strict Transport Security (HSTS) was enabled. By default
     HSTS is disabled.
 
-    \sa enableStrictTransportSecurity
+    \sa setStrictTransportSecurityEnabled()
 */
-bool QNetworkAccessManager::strictTransportSecurityEnabled() const
+bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
 {
     Q_D(const QNetworkAccessManager);
     return d->stsEnabled;
@@ -761,7 +747,7 @@ bool QNetworkAccessManager::strictTransportSecurityEnabled() const
     \sa addStrictTransportSecurityHosts(), QHstsPolicy
 */
 
-void QNetworkAccessManager::addStrictTransportSecurityHosts(const QList<QHstsPolicy> &knownHosts)
+void QNetworkAccessManager::addStrictTransportSecurityHosts(const QVector<QHstsPolicy> &knownHosts)
 {
     Q_D(QNetworkAccessManager);
     d->stsCache.updateFromPolicies(knownHosts);
@@ -776,7 +762,7 @@ void QNetworkAccessManager::addStrictTransportSecurityHosts(const QList<QHstsPol
 
     \sa addStrictTransportSecurityHosts(), QHstsPolicy
 */
-QList<QHstsPolicy> QNetworkAccessManager::strictTransportSecurityHosts() const
+QVector<QHstsPolicy> QNetworkAccessManager::strictTransportSecurityHosts() const
 {
     Q_D(const QNetworkAccessManager);
     return d->stsCache.policies();
@@ -1390,7 +1376,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #endif
         ) {
 #ifndef QT_NO_SSL
-        if (strictTransportSecurityEnabled() && d->stsCache.isKnownHost(request.url())) {
+        if (isStrictTransportSecurityEnabled() && d->stsCache.isKnownHost(request.url())) {
             QUrl stsUrl(request.url());
             // RFC6797, 8.3:
             // The UA MUST replace the URI scheme with "https" [RFC2818],
