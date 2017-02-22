@@ -2418,20 +2418,21 @@ QList<int> QDockAreaLayout::indexOf(QWidget *dockWidget) const
     return QList<int>();
 }
 
-QList<int> QDockAreaLayout::gapIndex(const QPoint &pos) const
+QList<int> QDockAreaLayout::gapIndex(const QPoint &pos, bool disallowTabs) const
 {
     QMainWindow::DockOptions opts = mainWindow->dockOptions();
     bool nestingEnabled = opts & QMainWindow::AllowNestedDocks;
     QDockAreaLayoutInfo::TabMode tabMode = QDockAreaLayoutInfo::NoTabs;
 #ifndef QT_NO_TABBAR
-    if (opts & QMainWindow::AllowTabbedDocks
-        || opts & QMainWindow::VerticalTabs)
-        tabMode = QDockAreaLayoutInfo::AllowTabs;
-    if (opts & QMainWindow::ForceTabbedDocks)
-        tabMode = QDockAreaLayoutInfo::ForceTabs;
+    if (!disallowTabs) {
+        if (opts & QMainWindow::AllowTabbedDocks || opts & QMainWindow::VerticalTabs)
+            tabMode = QDockAreaLayoutInfo::AllowTabs;
+        if (opts & QMainWindow::ForceTabbedDocks)
+            tabMode = QDockAreaLayoutInfo::ForceTabs;
 
-    if (tabMode == QDockAreaLayoutInfo::ForceTabs)
-        nestingEnabled = false;
+        if (tabMode == QDockAreaLayoutInfo::ForceTabs)
+            nestingEnabled = false;
+    }
 #endif
 
 
@@ -3300,6 +3301,19 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
 
     apply(false);
 
+    return delta;
+}
+
+int QDockAreaLayoutInfo::separatorMove(const QList<int> &separator, const QPoint &origin,
+                                       const QPoint &dest)
+{
+    int delta = 0;
+    int index = separator.last();
+    QDockAreaLayoutInfo *info = this->info(separator);
+    delta = pick(info->o, dest - origin);
+    if (delta != 0)
+        delta = info->separatorMove(index, delta);
+    info->apply(false);
     return delta;
 }
 

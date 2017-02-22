@@ -327,10 +327,18 @@ public:
     explicit QDockWidgetGroupWindow(QWidget* parent = 0, Qt::WindowFlags f = 0)
         : QWidget(parent, f) {}
     QDockAreaLayoutInfo *layoutInfo() const;
-    QDockWidget *topDockWidget() const;
+    const QDockAreaLayoutInfo *tabLayoutInfo() const;
+    QDockWidget *activeTabbedDockWidget() const;
     void destroyOrHideIfEmpty();
     void adjustFlags();
     bool hasNativeDecos() const;
+
+    bool hover(QLayoutItem *widgetItem, const QPoint &mousePos);
+    void restore();
+    void apply();
+
+    QRect currentGapRect;
+    QList<int> currentGapPos;
 
 protected:
     bool event(QEvent *) Q_DECL_OVERRIDE;
@@ -543,8 +551,8 @@ public:
     QPointer<QRubberBand> gapIndicator;
 #endif
 #ifndef QT_NO_DOCKWIDGET
-    QPointer<QWidget> currentHoveredFloat; // set when dragging over a floating dock widget
-    void setCurrentHoveredFloat(QWidget *w);
+    QPointer<QDockWidgetGroupWindow> currentHoveredFloat; // set when dragging over a floating dock widget
+    void setCurrentHoveredFloat(QDockWidgetGroupWindow *w);
 #endif
 
     void hover(QLayoutItem *widgetItem, const QPoint &mousePos);

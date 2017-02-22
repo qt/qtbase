@@ -214,10 +214,9 @@ QDockWidgetLayout::~QDockWidgetLayout()
 bool QDockWidgetLayout::nativeWindowDeco() const
 {
     bool floating = parentWidget()->isWindow();
-    if (!floating) {
-        if (auto groupWindow = qobject_cast<const QDockWidgetGroupWindow*>(parentWidget()->parentWidget()))
-            return groupWindow->hasNativeDecos();
-    }
+    if (auto groupWindow =
+            qobject_cast<const QDockWidgetGroupWindow *>(parentWidget()->parentWidget()))
+        floating = floating || groupWindow->tabLayoutInfo();
     return nativeWindowDeco(floating);
 }
 
