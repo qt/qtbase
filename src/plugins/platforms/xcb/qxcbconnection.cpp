@@ -76,7 +76,7 @@
 #include <X11/Xutil.h>
 #endif
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
 #include <X11/extensions/XI2proto.h>
 #endif
 
@@ -116,7 +116,7 @@ Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
 #define XCB_GE_GENERIC 35
 #endif
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
 // Starting from the xcb version 1.9.3 struct xcb_ge_event_t has changed:
 // - "pad0" became "extension"
 // - "pad1" and "pad" became "pad0"
@@ -134,7 +134,7 @@ static inline bool isXIEvent(xcb_generic_event_t *event, int opCode)
     qt_xcb_ge_event_t *e = reinterpret_cast<qt_xcb_ge_event_t *>(event);
     return e->extension == opCode;
 }
-#endif // XCB_USE_XINPUT2
+#endif // QT_CONFIG(xinput2)
 
 #if QT_CONFIG(xcb_xlib)
 static const char * const xcbConnectionErrors[] = {
@@ -604,7 +604,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeScreens();
 
     initializeXRender();
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
     if (!qEnvironmentVariableIsSet("QT_XCB_NO_XI2"))
         initializeXInput2();
 #endif
@@ -664,7 +664,7 @@ QXcbConnection::~QXcbConnection()
     delete m_drag;
 #endif
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
     finalizeXInput2();
 #endif
 
@@ -1201,7 +1201,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             }
             break;
         }
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
         case XCB_GE_GENERIC:
             // Here the windowEventListener is invoked from xi2HandleEvent()
             if (m_xi2Enabled && isXIEvent(event, m_xiOpCode))
@@ -1573,7 +1573,7 @@ void *QXcbConnection::createVisualInfoForDefaultVisualId() const
 
 #endif
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
 // it is safe to cast XI_* events here as long as we are only touching the first 32 bytes,
 // after that position event needs memmove, see xi2PrepareXIGenericDeviceEvent
 static inline bool isXIType(xcb_generic_event_t *event, int opCode, uint16_t type)
@@ -1618,7 +1618,7 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
         }
         return false;
     }
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
     // compress XI_* events
     if (responseType == XCB_GE_GENERIC) {
         if (!m_xi2Enabled)
@@ -2232,7 +2232,7 @@ bool QXcbConnection::xi2MouseEvents() const
 }
 #endif
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
 static int xi2ValuatorOffset(const unsigned char *maskPtr, int maskLen, int number)
 {
     int offset = 0;
@@ -2276,7 +2276,7 @@ void QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event)
     // and allow casting, overwriting the full_sequence field.
     memmove((char*) event + 32, (char*) event + 36, event->length * 4);
 }
-#endif // defined(XCB_USE_XINPUT2)
+#endif // QT_CONFIG(xinput2)
 
 QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker() const
 {

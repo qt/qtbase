@@ -104,7 +104,7 @@
 #include <X11/Xutil.h>
 #endif
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XI2proto.h>
 #endif
@@ -558,7 +558,7 @@ void QXcbWindow::create()
                                    32, 2, (void *)data));
 
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
     connection()->xi2Select(m_window);
 #endif
 

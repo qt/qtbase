@@ -47,8 +47,6 @@
 #include <QDebug>
 #include <cmath>
 
-#ifdef XCB_USE_XINPUT2
-
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XI2proto.h>
 
@@ -698,10 +696,8 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         if (m_xiGrab) {
             // XIAllowTouchEvents deadlocks with libXi < 1.7.4 (this has nothing to do with the XI2 versions like 2.2)
             // http://lists.x.org/archives/xorg-devel/2014-July/043059.html
-#ifdef XCB_USE_XINPUT2
             XIAllowTouchEvents(static_cast<Display *>(m_xlib_display), xiDeviceEvent->deviceid,
                                xiDeviceEvent->detail, xiDeviceEvent->event, XIAcceptTouch);
-#endif
         }
         break;
     case XI_TouchUpdate:
@@ -1241,5 +1237,3 @@ QXcbConnection::TabletData *QXcbConnection::tabletDataForDevice(int id)
 }
 
 #endif // QT_CONFIG(tabletevent)
-
-#endif // XCB_USE_XINPUT2

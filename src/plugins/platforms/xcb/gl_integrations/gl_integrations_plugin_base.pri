@@ -5,13 +5,6 @@ INCLUDEPATH += $$PWD/../
 
 load(qt_build_paths)
 
-# needed by Xcursor ...
-qtConfig(xcb-xlib) {
-    qtConfig(xinput2) {
-        DEFINES += XCB_USE_XINPUT2
-    }
-}
-
 # build with session management support
 qtConfig(xcb-sm) {
     DEFINES += XCB_USE_SM

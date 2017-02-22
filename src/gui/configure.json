@@ -799,7 +799,7 @@
         "xinput2": {
             "label": "Xinput2",
             "emitIf": "features.xcb",
-            "condition": "libs.xinput2",
+            "condition": "features.xcb-xlib && libs.xinput2",
             "output": [ "privateFeature" ]
         },
         "xkbcommon-evdev": {

@@ -68,7 +68,7 @@
 #include <QTabletEvent>
 #endif
 
-#if XCB_USE_XINPUT2
+#if QT_CONFIG(xinput2)
 #include <X11/extensions/XI2.h>
 #ifdef XIScrollClass
 #define XCB_USE_XINPUT21    // XI 2.1 adds smooth scrolling support
@@ -77,7 +77,7 @@
 #endif
 #endif
 struct XInput2TouchDeviceData;
-#endif // XCB_USE_XINPUT2
+#endif // QT_CONFIG(xinput2)
 
 struct xcb_randr_get_output_info_reply_t;
 
@@ -426,7 +426,7 @@ public:
     void *createVisualInfoForDefaultVisualId() const;
 #endif
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
     void xi2Select(xcb_window_t window);
 #endif
 #ifdef XCB_USE_XINPUT21
@@ -551,7 +551,7 @@ private:
     void destroyScreen(QXcbScreen *screen);
     void initializeScreens();
     bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
-#ifdef XCB_USE_XINPUT2
+#if QT_CONFIG(xinput2)
     bool m_xi2Enabled = false;
     int m_xi2Minor = 2;
     void initializeXInput2();
@@ -636,7 +636,7 @@ private:
     void *m_xlib_display = nullptr;
 #endif
     QXcbEventReader *m_reader = nullptr;
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
     QHash<int, XInput2TouchDeviceData*> m_touchDevices;
 #ifdef XCB_USE_XINPUT22
     struct StartSystemResizeInfo {
@@ -694,7 +694,7 @@ private:
 
     friend class QXcbEventReader;
 };
-#ifdef XCB_USE_XINPUT2
+#if QT_CONFIG(xinput2)
 #if QT_CONFIG(tabletevent)
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData::ValuatorClassInfo, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
