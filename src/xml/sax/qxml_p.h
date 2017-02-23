@@ -85,6 +85,8 @@ private:
 
         Q_DUMMY_COMPARISON_OPERATOR(ExternParameterEntity)
     };
+    friend class QTypeInfo<ExternParameterEntity>;
+
     struct ExternEntity
     {
         ExternEntity() {}
@@ -95,6 +97,8 @@ private:
         QString notation;
         Q_DUMMY_COMPARISON_OPERATOR(ExternEntity)
     };
+    friend class QTypeInfo<ExternEntity>;
+
     QMap<QString,ExternParameterEntity> externParameterEntities;
     QMap<QString,QString> parameterEntities;
     QMap<QString,ExternEntity> externEntities;
@@ -306,6 +310,8 @@ private:
 };
 Q_DECLARE_TYPEINFO(QXmlSimpleReaderPrivate::ParseState, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QXmlSimpleReaderPrivate::XmlRef, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXmlSimpleReaderPrivate::ExternParameterEntity, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXmlSimpleReaderPrivate::ExternEntity, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

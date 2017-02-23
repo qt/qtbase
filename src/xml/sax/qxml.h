@@ -156,11 +156,13 @@ private:
     struct Attribute {
         QString qname, uri, localname, value;
     };
+    friend class QTypeInfo<Attribute>;
     typedef QList<Attribute> AttributeList;
     AttributeList attList;
 
     QXmlAttributesPrivate *d;
 };
+Q_DECLARE_TYPEINFO(QXmlAttributes::Attribute, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QXmlAttributes)
 
 //
