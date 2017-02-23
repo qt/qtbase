@@ -950,7 +950,10 @@
         },
         "qml-debug": {
             "label": "QML debugging",
-            "output": [ { "type": "publicQtConfig", "negative": true } ]
+            "output": [
+                "privateFeature",
+                { "type": "publicQtConfig", "negative": true }
+            ]
         },
         "compile_examples": {
             "label": "Compile examples",
