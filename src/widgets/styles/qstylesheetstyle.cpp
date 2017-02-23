@@ -2594,7 +2594,7 @@ void QStyleSheetStyle::setPalette(QWidget *w)
 
     if (!useStyleSheetPropagationInWidgetStyles || p.resolve() != 0) {
         QPalette wp = w->palette();
-        styleSheetCaches->customPaletteWidgets.insert(w, qMakePair(wp, p.resolve()));
+        styleSheetCaches->customPaletteWidgets.insert(w, {wp, p.resolve()});
 
         if (useStyleSheetPropagationInWidgetStyles) {
             p = p.resolve(wp);
@@ -2614,20 +2614,14 @@ void QStyleSheetStyle::unsetPalette(QWidget *w)
 
     const auto it = styleSheetCaches->customPaletteWidgets.find(w);
     if (it != styleSheetCaches->customPaletteWidgets.end()) {
-        QPair<QPalette, uint> p = std::move(*it);
+        auto customizedPalette = std::move(*it);
         styleSheetCaches->customPaletteWidgets.erase(it);
 
-        QPalette original = p.first;
-
-        if (useStyleSheetPropagationInWidgetStyles) {
-            original.resolve(original.resolve() & p.second);
-
-            QPalette wp = w->palette();
-            wp.resolve(wp.resolve() & ~p.second);
-            wp.resolve(original);
-            wp.resolve(wp.resolve() | original.resolve());
-            original = wp;
-        }
+        QPalette original;
+        if (useStyleSheetPropagationInWidgetStyles)
+            original = std::move(customizedPalette).reverted(w->palette());
+        else
+            original = customizedPalette.oldWidgetValue;
 
         w->setPalette(original);
         QWidget *ew = embeddedWidget(w);
@@ -2657,18 +2651,9 @@ void QStyleSheetStyle::unsetStyleSheetFont(QWidget *w) const
 {
     const auto it = styleSheetCaches->customFontWidgets.find(w);
     if (it != styleSheetCaches->customFontWidgets.end()) {
-        QPair<QFont, uint> f = std::move(*it);
+        auto customizedFont = std::move(*it);
         styleSheetCaches->customFontWidgets.erase(it);
-
-        QFont original = f.first;
-        original.resolve(original.resolve() & f.second);
-
-        QFont font = w->font();
-        font.resolve(font.resolve() & ~f.second);
-        font.resolve(original);
-        font.resolve(font.resolve() | original.resolve());
-
-        w->setFont(font);
+        w->setFont(std::move(customizedFont).reverted(w->font()));
     }
 }
 
@@ -5953,7 +5938,7 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
 
         if (rule.font.resolve()) {
             QFont wf = w->font();
-            styleSheetCaches->customFontWidgets.insert(w, qMakePair(wf, rule.font.resolve()));
+            styleSheetCaches->customFontWidgets.insert(w, {wf, rule.font.resolve()});
 
             QFont font = rule.font.resolve(wf);
             font.resolve(wf.resolve() | rule.font.resolve());
