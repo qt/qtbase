@@ -1729,7 +1729,8 @@ void QXcbConnection::processXcbEvents()
             continue;
         }
 
-        if (compressEvent(event, i, eventqueue))
+        if (Q_LIKELY(QCoreApplication::testAttribute(Qt::AA_CompressHighFrequencyEvents)) &&
+                compressEvent(event, i, eventqueue))
             continue;
 
         bool accepted = false;
