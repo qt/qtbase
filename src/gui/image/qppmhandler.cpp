@@ -45,6 +45,7 @@
 #include <qvariant.h>
 #include <qvector.h>
 #include <ctype.h>
+#include <qrgba64.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,6 +121,11 @@ static bool read_pbm_header(QIODevice *device, char& type, int& w, int& h, int& 
     return true;
 }
 
+static inline QRgb scale_pbm_color(quint16 mx, quint16 rv, quint16 gv, quint16 bv)
+{
+    return QRgba64::fromRgba64((rv * 0xffff) / mx, (gv * 0xffff) / mx, (bv * 0xffff) / mx, 0xffff).toArgb32();
+}
+
 static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, QImage *outImage)
 {
     int nbits, y;
@@ -148,9 +154,6 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
     }
     raw = type >= '4';
 
-    int maxc = mcc;
-    if (maxc > 255)
-        maxc = 255;
     if (outImage->size() != QSize(w, h) || outImage->format() != format) {
         *outImage = QImage(w, h, format);
         if (outImage->isNull())
@@ -175,22 +178,50 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                 b = buf24;
                 while (p < end) {
                     if (mcc < 256) {
-                        *p++ = qRgb(b[0],b[1],b[2]);
+                        if (mcc == 255)
+                            *p++ = qRgb(b[0],b[1],b[2]);
+                        else
+                            *p++ = scale_pbm_color(mcc, b[0], b[1], b[2]);
                         b += 3;
                     } else {
-                        *p++ = qRgb(((int(b[0]) * 256 + int(b[1]) + 1) * 256) / (mcc + 1) - 1,
-                                    ((int(b[2]) * 256 + int(b[3]) + 1) * 256) / (mcc + 1) - 1,
-                                    ((int(b[4]) * 256 + int(b[5]) + 1) * 256) / (mcc + 1) - 1);
+                        quint16 rv = b[0] << 8 | b[1];
+                        quint16 gv = b[2] << 8 | b[3];
+                        quint16 bv = b[4] << 8 | b[5];
+                        if (mcc == 0xffff)
+                            *p++ = QRgba64::fromRgba64(rv, gv, bv, 0xffff).toArgb32();
+                        else
+                            *p++ = scale_pbm_color(mcc, rv, gv, bv);
                         b += 6;
                     }
                 }
             }
             delete[] buf24;
+        } else if (nbits == 8 && mcc > 255) {  // type 5 16bit
+            pbm_bpl = 2*w;
+            uchar *buf16 = new uchar[pbm_bpl];
+            for (y=0; y<h; y++) {
+                if (device->read((char *)buf16, pbm_bpl) != pbm_bpl) {
+                    delete[] buf16;
+                    return false;
+                }
+                uchar *p = outImage->scanLine(y);
+                uchar *end = p + w;
+                uchar *b = buf16;
+                while (p < end) {
+                    *p++ = (b[0] << 8 | b[1]) * 255 / mcc;
+                    b += 2;
+                }
+            }
+            delete[] buf16;
         } else {                                // type 4,5
             for (y=0; y<h; y++) {
-                if (device->read((char *)outImage->scanLine(y), pbm_bpl)
-                        != pbm_bpl)
+                uchar *p = outImage->scanLine(y);
+                if (device->read((char *)p, pbm_bpl) != pbm_bpl)
                     return false;
+                if (nbits == 8 && mcc < 255) {
+                    for (int i = 0; i < pbm_bpl; i++)
+                        p[i] = (p[i] * 255) / mcc;
+                }
             }
         }
     } else {                                        // read ascii data
@@ -227,7 +258,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
             } else {                                // 32 bits
                 n /= 4;
                 int r, g, b;
-                if (mcc == maxc) {
+                if (mcc == 255) {
                     while (n--) {
                         r = read_pbm_int(device);
                         g = read_pbm_int(device);
@@ -237,10 +268,10 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                     }
                 } else {
                     while (n--) {
-                        r = read_pbm_int(device) * maxc / mcc;
-                        g = read_pbm_int(device) * maxc / mcc;
-                        b = read_pbm_int(device) * maxc / mcc;
-                        *((QRgb*)p) = qRgb(r, g, b);
+                        r = read_pbm_int(device);
+                        g = read_pbm_int(device);
+                        b = read_pbm_int(device);
+                        *((QRgb*)p) = scale_pbm_color(mcc, r, g, b);
                         p += 4;
                     }
                 }
