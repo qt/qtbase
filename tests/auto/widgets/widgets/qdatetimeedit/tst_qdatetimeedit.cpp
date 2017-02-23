@@ -239,6 +239,8 @@ private slots:
 
     void deleteCalendarWidget();
 
+    void setLocaleOnCalendarWidget();
+
 #ifdef QT_BUILD_INTERNAL
     void dateEditCorrectSectionSize_data();
     void dateEditCorrectSectionSize();
@@ -3406,6 +3408,25 @@ void tst_QDateTimeEdit::deleteCalendarWidget()
         // it should create a new widget
         QVERIFY(edit.calendarWidget());
         QVERIFY(edit.calendarWidget()->objectName() != QLatin1String("cw1"));
+    }
+}
+
+void tst_QDateTimeEdit::setLocaleOnCalendarWidget()
+{
+    QDateEdit dateEdit;
+    QList<QLocale> allLocales = QLocale::matchingLocales(
+                QLocale::AnyLanguage,
+                QLocale::AnyScript,
+                QLocale::AnyCountry);
+    QLocale c = QLocale::c();
+    dateEdit.setCalendarPopup(true);
+    dateEdit.setLocale(c);
+    for (const QLocale& l : allLocales) {
+        dateEdit.setLocale(l);
+        const QLocale locCal = dateEdit.calendarWidget()->locale();
+        const QLocale locEdit = dateEdit.locale();
+        QCOMPARE(locCal.name(), locEdit.name());
+        QVERIFY(locCal == locEdit);
     }
 }
 
