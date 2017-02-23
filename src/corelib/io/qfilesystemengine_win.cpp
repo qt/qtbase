@@ -41,6 +41,7 @@
 #include <qdebug.h>
 
 #include "qfile.h"
+#include "qfileinfo_p.h"
 #include "qdir.h"
 #include "private/qmutexpool_p.h"
 #include "qvarlengtharray.h"
@@ -291,6 +292,25 @@ typedef struct _SHARE_INFO_1 {
     LPWSTR shi1_remark;
 } SHARE_INFO_1;
 
+#if defined( _WIN32_WINNT ) || defined( WINNT ) || defined( __midl ) \
+    || defined( FORCE_UNICODE )
+#define LMSTR   LPWSTR
+#define LMCSTR  LPCWSTR
+#else
+#define LMSTR   LPSTR
+#define LMCSTR  LPCSTR
+#endif
+typedef DWORD (WINAPI *PtrNetUseGetInfo)(LMSTR, LMSTR, DWORD, LPBYTE*);
+static PtrNetUseGetInfo ptrNetUseGetInfo = 0;
+typedef struct _USE_INFO_1 {
+    LMSTR ui1_local;
+    LMSTR ui1_remote;
+    LMSTR ui1_password;
+    DWORD ui1_status;
+    DWORD ui1_asg_type;
+    DWORD ui1_refcount;
+    DWORD ui1_usecount;
+} USE_INFO_1, *LPUSE_INFO_1;
 
 static bool resolveUNCLibs()
 {
@@ -299,7 +319,7 @@ static bool resolveUNCLibs()
 #ifndef QT_NO_THREAD
         QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
         if (triedResolve) {
-            return ptrNetShareEnum && ptrNetApiBufferFree;
+            return ptrNetShareEnum && ptrNetApiBufferFree && ptrNetUseGetInfo;
         }
 #endif
         triedResolve = true;
@@ -309,10 +329,12 @@ static bool resolveUNCLibs()
             ptrNetShareEnum = (PtrNetShareEnum)GetProcAddress(hLib, "NetShareEnum");
             if (ptrNetShareEnum)
                 ptrNetApiBufferFree = (PtrNetApiBufferFree)GetProcAddress(hLib, "NetApiBufferFree");
+            if (ptrNetApiBufferFree)
+                ptrNetUseGetInfo = (PtrNetUseGetInfo)GetProcAddress(hLib, "NetUseGetInfo");
         }
 #endif // !Q_OS_WINCE && !Q_OS_WINRT
     }
-    return ptrNetShareEnum && ptrNetApiBufferFree;
+    return ptrNetShareEnum && ptrNetApiBufferFree && ptrNetUseGetInfo;
 }
 
 static QString readSymLink(const QFileSystemEntry &link)
@@ -921,7 +943,7 @@ static bool tryDriveUNCFallback(const QFileSystemEntry &fname, QFileSystemMetaDa
     }
 #endif
     if (entryExists)
-        data.fillFromFileAttribute(fileAttrib);
+        data.fillFromFileAttribute(fileAttrib, fname.isDriveRoot());
     return entryExists;
 }
 
@@ -1468,6 +1490,140 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
     if(!ret)
         error = QSystemError(errno, QSystemError::StandardLibraryError);
     return ret;
+}
+
+typedef DWORD (WINAPI *PtrWNetOpenEnumW) (DWORD, DWORD, DWORD, LPNETRESOURCEW, LPHANDLE);
+static PtrWNetOpenEnumW ptrWNetOpenEnumW = 0;
+typedef DWORD (WINAPI *PtrWNetEnumResourceW) (HANDLE, LPDWORD, LPVOID, LPDWORD);
+static PtrWNetEnumResourceW ptrWNetEnumResourceW = 0;
+typedef DWORD (WINAPI *PtrWNetCloseEnum) (HANDLE);
+static PtrWNetCloseEnum ptrWNetCloseEnum = 0;
+typedef DWORD (WINAPI *PtrWNetGetConnection) (LPCTSTR, LPTSTR, LPDWORD);
+static PtrWNetGetConnection ptrWNetGetConnection = 0;
+#define USE_SESSLOST 2
+#define USE_DISCONN 3
+#define USE_NETERR 4
+
+static bool resolveMprLibrary()
+{
+    static bool triedResolve = false;
+
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
+#endif
+    if (!triedResolve) {
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+        HINSTANCE hLib = QSystemLibrary::load(L"Mpr");
+        if (hLib) {
+            if (ptrWNetOpenEnumW = (PtrWNetOpenEnumW)GetProcAddress(hLib, "WNetOpenEnumW"))
+                if (ptrWNetEnumResourceW = (PtrWNetEnumResourceW)GetProcAddress(hLib, "WNetEnumResourceW"))
+                    if (ptrWNetCloseEnum = (PtrWNetCloseEnum)GetProcAddress(hLib, "WNetCloseEnum"))
+                        if (ptrWNetGetConnection = (PtrWNetGetConnection)GetProcAddress(hLib, "WNetGetConnection"))
+                            triedResolve = true;
+        }
+#endif // !Q_OS_WINCE && !Q_OS_WINRT
+    }
+    return ptrWNetOpenEnumW && ptrWNetEnumResourceW && ptrWNetCloseEnum;
+}
+
+bool QFileSystemEngine::getMappedNetworkDrives(DWORD dwScope, QFileInfoList &list)
+{
+    if (!resolveMprLibrary())
+        return false;
+
+    DWORD ret;
+    HANDLE hEnum;
+    DWORD bufferSize = 16384;
+    DWORD entryCount = -1;
+    LPNETRESOURCE lpnr;
+
+    lpnr = NULL;
+    ret = ptrWNetOpenEnumW(dwScope, RESOURCETYPE_DISK, 0, NULL, &hEnum);
+
+    if (ret != NO_ERROR) {
+        qWarning() << "WNetOpenEnum failed with error" << ret;
+        return FALSE;
+    }
+
+    lpnr = (LPNETRESOURCE) GlobalAlloc(GPTR, bufferSize);
+    if (!lpnr) {
+        qWarning() << "WNetOpenEnum failed with error" << ret;
+        return FALSE;
+    }
+
+    do {
+        ZeroMemory(lpnr, bufferSize);
+        ret = ptrWNetEnumResourceW(hEnum, &entryCount, lpnr, &bufferSize);
+        if (ret == NO_ERROR) {
+           for (DWORD i = 0; i < entryCount; i++) {
+               if (!(lpnr[i].dwType == RESOURCETYPE_DISK
+                     && lpnr[i].dwDisplayType == RESOURCEDISPLAYTYPE_SHARE
+                     && lpnr[i].lpLocalName))
+                   continue;
+               QString localName = QString::fromWCharArray(lpnr[i].lpLocalName) + QLatin1Char('/');
+               QFileInfo info(localName);
+               const QFileInfoPrivate *priv = QFileInfoPrivate::get(&info);
+               priv->metaData.size_ = 0;
+               priv->metaData.knownFlagsMask = QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType
+                                                | QFileSystemMetaData::SizeAttribute;
+               priv->metaData.entryFlags = QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType;
+               priv->mappedDrive = true;
+               priv->mappedDriveRemoteName = QString::fromWCharArray(lpnr[i].lpRemoteName);
+               QString str = QString::fromWCharArray(lpnr[i].lpProvider);
+               priv->smb = (str == QLatin1String("Microsoft Windows Network"));
+               priv->connected = mappedNetworkDriveConnectStatus(localName, priv->smb);
+               // for disconnected mapped drives, set knowFlagsMask to 0xFFFFFFFF since the attributes other than
+               //QFileSystemMetaData::ExistsAttribute and QFileSystemMetaData::DirectoryType don't seem to be valid.
+               if (!priv->connected)
+                   priv->metaData.knownFlagsMask = (QFileSystemMetaData::MetaDataFlags)0xFFFFFFFF;
+               bool found = false;
+               for (int i = 0; i < list.size(); i++) {
+                   if (localName == list.at(i).filePath())
+                       found = true;
+               }
+               if (!found)
+                    list.append(info);
+            }
+        }
+        else if (ret != ERROR_NO_MORE_ITEMS) {
+            qWarning() << "WNetEnumResource failed with error" << ret;
+
+            break;
+        }
+    } while (ret != ERROR_NO_MORE_ITEMS);
+
+    GlobalFree((HGLOBAL) lpnr);
+    lpnr = NULL;
+
+    ret = ptrWNetCloseEnum(hEnum);
+
+    if (ret != NO_ERROR) {
+        qWarning() << "WNetCloseEnum failed with error" << ret;
+        return false;
+    }
+    return true;
+}
+
+bool QFileSystemEngine::mappedNetworkDriveConnectStatus(const QString &name, bool smb)
+{
+    bool connect = false;
+    if ( smb && resolveUNCLibs()) {
+        LPUSE_INFO_1 pUse_Info = NULL;
+        if (!ptrNetUseGetInfo(NULL, (wchar_t *)name.utf16(), 1, (LPBYTE *)&pUse_Info)) {
+            if (pUse_Info)
+                connect = !(pUse_Info->ui1_status==USE_SESSLOST || pUse_Info->ui1_status==USE_DISCONN
+                            || pUse_Info->ui1_status==USE_NETERR);
+        }
+        ptrNetApiBufferFree(pUse_Info);
+    }
+    else {
+        wchar_t buffer[256];
+        DWORD bufferLength = 256;
+        DWORD res = ptrWNetGetConnection((wchar_t *)name.utf16(), buffer, &bufferLength);
+        if (res == NO_ERROR)
+            connect = true;
+    }
+    return connect;
 }
 
 static inline QDateTime fileTimeToQDateTime(const FILETIME *time)

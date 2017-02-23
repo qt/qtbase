@@ -64,6 +64,7 @@ public:
 
     void addWidget(QWidget *widget);
     void insertWidget(int index, QWidget *widget);
+    QWidget *replaceWidget(int index, QWidget *widget);
 
     void setOrientation(Qt::Orientation);
     Qt::Orientation orientation() const;

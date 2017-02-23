@@ -46,6 +46,7 @@
 //
 
 #include "qfile.h"
+#include "qfileinfo.h"
 #include "qfilesystementry_p.h"
 #include "qfilesystemmetadata_p.h"
 #include <QtCore/private/qsystemerror_p.h>
@@ -84,6 +85,10 @@ public:
 
     static bool fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                              QFileSystemMetaData::MetaDataFlags what);
+
+    static QFileInfoList getMappedDrives();
+    static bool mappedDriveConnectStatus(const QString &name, bool smb);
+
 #if defined(Q_OS_UNIX)
     static bool fillMetaData(int fd, QFileSystemMetaData &data); // what = PosixStatFlags
 #endif
@@ -98,7 +103,10 @@ public:
                                 QFileSystemMetaData::MetaDataFlags what);
     static QString owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own);
     static QString nativeAbsoluteFilePath(const QString &path);
+    static bool getMappedNetworkDrives(DWORD dwScope, QFileInfoList &list);
+    static bool mappedNetworkDriveConnectStatus(const QString &name, bool smb);
 #endif
+
     //homePath, rootPath and tempPath shall return clean paths
     static QString homePath();
     static QString rootPath();
@@ -121,6 +129,7 @@ public:
 
     static QAbstractFileEngine *resolveEntryAndCreateLegacyEngine(QFileSystemEntry &entry,
                                                                   QFileSystemMetaData &data);
+
 private:
     static QString slowCanonicalized(const QString &path);
 #if defined(Q_OS_WIN)

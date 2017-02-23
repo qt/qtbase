@@ -57,6 +57,7 @@
 #include <qelapsedtimer.h>
 
 #include <private/qfilesystemengine_p.h>
+#include <private/qfileinfo_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -132,6 +133,8 @@ public:
             size = -1;
         return size;
     }
+
+    QString displayFileType() const;
 
     QString displayType;
     QIcon icon;

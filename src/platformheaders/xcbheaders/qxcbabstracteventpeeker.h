@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -31,52 +31,25 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSTHEME_H
-#define QWINDOWSTHEME_H
+#ifndef QXCBABSTRACTEVENTPEEKER_H
+#define QXCBABSTRACTEVENTPEEKER_H
 
-#include "qwindowsthreadpoolrunner.h"
-#include <qpa/qplatformtheme.h>
+#include <xcb/xcb.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindow;
-
-class QWindowsTheme : public QPlatformTheme
+class QXcbAbstractEventPeeker
 {
 public:
-    QWindowsTheme();
-    ~QWindowsTheme();
+    enum PeekOption {
+        PeekDefault = 0,
+        PeekFromQueueStart = 1
+    };
 
-    static QWindowsTheme *instance() { return m_instance; }
-
-    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
-    QVariant themeHint(ThemeHint) const Q_DECL_OVERRIDE;
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE
-        { return m_palettes[type]; }
-    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE
-        { return m_fonts[type]; }
-
-    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
-    QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
-                           QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
-
-    void windowsThemeChanged(QWindow *window);
-
-    static const char *name;
-
-private:
-    void refresh() { refreshPalettes(); refreshFonts(); }
-    void clearPalettes();
-    void refreshPalettes();
-    void clearFonts();
-    void refreshFonts();
-
-    static QWindowsTheme *m_instance;
-    QPalette *m_palettes[NPalettes];
-    QFont *m_fonts[NFonts];
+    virtual ~QXcbAbstractEventPeeker() {}
+    virtual bool peekEventQueue(xcb_generic_event_t *event) = 0;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSTHEME_H
+#endif  /*QXCBABSTRACTEVENTPEEKER_H*/

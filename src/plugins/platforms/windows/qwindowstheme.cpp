@@ -126,31 +126,110 @@ static inline QColor getSysColor(int index)
 // QTBUG-48823/Windows 10: SHGetFileInfo() (as called by item views on file system
 // models has been observed to trigger a WM_PAINT on the mainwindow. Suppress the
 // behavior by running it in a thread.
-class ShGetFileInfoFunction
+
+struct ShGetFileInfoParams
 {
-public:
-    explicit ShGetFileInfoFunction(const wchar_t *fn, DWORD a, SHFILEINFO *i, UINT f, bool *r) :
-        m_fileName(fn), m_attributes(a), m_flags(f), m_info(i), m_result(r) {}
+    ShGetFileInfoParams(const wchar_t *fn, DWORD a, SHFILEINFO *i, UINT f, bool *r)
+        : fileName(fn), attributes(a), flags(f), info(i), result(r)
+    { }
 
-    void operator()() const { *m_result = SHGetFileInfo(m_fileName, m_attributes, m_info, sizeof(SHFILEINFO), m_flags); }
-
-private:
-    const wchar_t *m_fileName;
-    const DWORD m_attributes;
-    const UINT m_flags;
-    SHFILEINFO *const m_info;
-    bool *m_result;
+    const wchar_t *fileName;
+    const DWORD attributes;
+    const UINT flags;
+    SHFILEINFO *const info;
+    bool *result;
 };
 
-static bool shGetFileInfoBackground(QWindowsThreadPoolRunner &r,
-                                    const wchar_t *fileName, DWORD attributes,
+class ShGetFileInfoThread : public QThread
+{
+public:
+    explicit ShGetFileInfoThread()
+        : QThread(), m_params(Q_NULLPTR)
+    { }
+
+    void run() Q_DECL_OVERRIDE
+    {
+        m_init = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+
+        QMutexLocker readyLocker(&m_readyMutex);
+        forever {
+            if (!m_params && !m_cancelled.load())
+                m_readyCondition.wait(&m_readyMutex);
+            if (m_cancelled.load())
+                break;
+
+            if (m_params)
+                getFileInfo();
+            m_params = Q_NULLPTR;
+
+            m_doneMutex.lock();
+            m_doneCondition.wakeAll();
+            m_doneMutex.unlock();
+        }
+
+        if (m_init != S_FALSE)
+            CoUninitialize();
+    }
+
+    void getFileInfo() const
+     {
+ #ifndef Q_OS_WINCE
+         const UINT oldErrorMode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
+ #endif
+        *m_params->result = SHGetFileInfo(m_params->fileName, m_params->attributes, m_params->info, sizeof(SHFILEINFO), m_params->flags);
+ #ifndef Q_OS_WINCE
+         SetErrorMode(oldErrorMode);
+ #endif
+     }
+
+    bool runWithParams(ShGetFileInfoParams *params, unsigned long timeOutMSecs)
+    {
+        QMutexLocker doneLocker(&m_doneMutex);
+
+        m_readyMutex.lock();
+        m_params = params;
+        m_readyCondition.wakeAll();
+        m_readyMutex.unlock();
+
+        const bool ok = m_doneCondition.wait(&m_doneMutex, timeOutMSecs);
+        return ok;
+    }
+
+    void cancel()
+    {
+        m_cancelled.store(1);
+        m_readyCondition.wakeAll();
+    }
+
+private:
+    HRESULT m_init;
+    ShGetFileInfoParams *m_params;
+    QAtomicInt m_cancelled;
+    QWaitCondition m_readyCondition;
+    QWaitCondition m_doneCondition;
+    QMutex m_readyMutex;
+    QMutex m_doneMutex;
+};
+
+static bool shGetFileInfoBackground(const wchar_t *fileName, DWORD attributes,
                                     SHFILEINFO *info, UINT flags,
                                     unsigned long  timeOutMSecs = 5000)
 {
+    static ShGetFileInfoThread *getFileInfoThread = Q_NULLPTR;
+    if (!getFileInfoThread) {
+        getFileInfoThread = new ShGetFileInfoThread;
+        getFileInfoThread->start();
+    }
+
     bool result = false;
-    if (!r.run(ShGetFileInfoFunction(fileName, attributes, info, flags, &result), timeOutMSecs)) {
-        qWarning().noquote() << "ShGetFileInfoBackground() timed out for "
-            << QString::fromWCharArray(fileName);
+    ShGetFileInfoParams params(fileName, attributes, info, flags, &result);
+    if (!getFileInfoThread->runWithParams(&params, timeOutMSecs)) {
+         qWarning().noquote() << "ShGetFileInfoBackground() timed out for "
+             << QString::fromWCharArray(fileName);
+        // Cancel and reset getFileInfoThread. It'll
+        // be initialized the next time we get called.
+        getFileInfoThread->cancel();
+        getFileInfoThread = Q_NULLPTR;
         return false;
     }
     return result;
@@ -729,10 +808,8 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
 
 #if !defined(QT_NO_WINCE_SHELLSDK)
     const bool val = cacheableDirIcon && useDefaultFolderIcon
-        ? shGetFileInfoBackground(m_threadPoolRunner, L"dummy", FILE_ATTRIBUTE_DIRECTORY,
-                                  &info, flags | SHGFI_USEFILEATTRIBUTES)
-        : shGetFileInfoBackground(m_threadPoolRunner, reinterpret_cast<const wchar_t *>(filePath.utf16()), 0,
-                                  &info, flags);
+        ? shGetFileInfoBackground(L"dummy", FILE_ATTRIBUTE_DIRECTORY, &info, flags | SHGFI_USEFILEATTRIBUTES)
+        : shGetFileInfoBackground(reinterpret_cast<const wchar_t *>(filePath.utf16()), 0, &info, flags);
 #else
     const bool val = false;
 #endif // !QT_NO_WINCE_SHELLSDK

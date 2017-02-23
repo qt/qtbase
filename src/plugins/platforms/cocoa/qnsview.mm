@@ -1936,7 +1936,24 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
 - (BOOL) ignoreModifierKeysWhileDragging
 {
-    return NO;
+    // From the "Dragging Sources" chapter on Cocoa DnD Programming:
+    //
+    // The allowed operations may differ if the drag is occurring entirely
+    // within your application or between your application and another.
+    // The flag passed to draggingSourceOperationMaskForLocal: indicates
+    // whether it is a local, or internal, drag.
+    //
+    // The user can press modifier keys to further select which operation
+    // to perform. If the control, option, or command key is pressed,
+    // the source’s operation mask is filtered to only contain the
+    // operations given in Table 2. To prevent modifiers from altering
+    // the mask, your dragging source should implement
+    // ignoreModifierKeysWhileDragging and return YES.
+
+    // Since Qt already takes care of tracking the keyboard modifiers, we
+    // don't need (or want) Cocoa to filter anything. Instead, we'll let
+    // the application do the actual filtering.
+    return YES;
 }
 
 - (BOOL)wantsPeriodicDraggingUpdates

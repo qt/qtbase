@@ -215,6 +215,19 @@
            environment variable to 0. This value has been added in Qt 5.6. This
            attribute must be set before Q(Gui)Application is constructed.
 
+    \value AA_CompressHighFrequencyEvents Enables compression of certain events
+           on certain platforms. On the X11 windowing system,
+           QEvent::MouseMove, QEvent::TouchUpdate, QEvent::TabletMove and
+           changes in window size and position will be combined whenever they
+           occur more frequently than the application handles them, so that
+           they don't accumulate and overwhelm the application later.
+           In Qt 5.6, compression does not occur on every platform. In the future,
+           the compression feature may be implemented differently, across platforms.
+           You can test the attribute to see whether compression is enabled.
+           If your application needs to handle all events with no compression,
+           you can unset this attribute. This is commonly necessary in
+           drawing-tablet applications, for example.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

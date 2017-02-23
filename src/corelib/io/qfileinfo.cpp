@@ -197,6 +197,19 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     return fileTimes[request];
 }
 
+#if defined(Q_OS_WIN)
+bool QFileInfoPrivate::isConnected() const {
+    if (mappedDrive) {
+        QString driveName = fileEntry.path();
+        if (driveName.endsWith(QLatin1Char('/')))
+            driveName.chop(1);
+        connected = QFileSystemEngine::mappedDriveConnectStatus(driveName, smb);
+        return connected;
+    }
+    return true;
+}
+#endif
+
 //************* QFileInfo
 
 /*!

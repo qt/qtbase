@@ -119,6 +119,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     , m_defaultVisualId(UINT_MAX)
 {
     m_instance = this;
+    qApp->setAttribute(Qt::AA_CompressHighFrequencyEvents, true);
 
     qRegisterMetaType<QXcbWindow*>();
 #ifdef XCB_USE_XLIB

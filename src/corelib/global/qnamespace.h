@@ -498,6 +498,7 @@ public:
         AA_SetPalette = 19,
         AA_EnableHighDpiScaling = 20,
         AA_DisableHighDpiScaling = 21,
+        AA_CompressHighFrequencyEvents = 22,
 
         // Add new attributes before this line
         AA_AttributeCount

@@ -725,6 +725,12 @@ void QSplitterPrivate::setSizes_helper(const QList<int> &sizes, bool clampNegati
     doResize();
 }
 
+bool QSplitterPrivate::shouldShowWidget(const QWidget *w)
+{
+    Q_Q(QSplitter);
+    return q->isVisible() && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide));
+}
+
 void QSplitterPrivate::setGeo(QSplitterLayoutStruct *sls, int p, int s, bool allowCollapse)
 {
     Q_Q(QSplitter);
@@ -821,8 +827,7 @@ void QSplitterPrivate::insertWidget_helper(int index, QWidget *widget, bool show
 {
     Q_Q(QSplitter);
     QBoolBlocker b(blockChildAdd);
-    bool needShow = show && q->isVisible() &&
-                    !(widget->isHidden() && widget->testAttribute(Qt::WA_WState_ExplicitShowHide));
+    const bool needShow = show && shouldShowWidget(widget);
     if (widget->parentWidget() != q)
         widget->setParent(q);
     if (needShow)
@@ -1122,6 +1127,49 @@ void QSplitter::insertWidget(int index, QWidget *widget)
 }
 
 /*!
+    \since 5.9
+
+    Replaces the widget in the splitter's layout at the given \a index by \a widget.
+
+    Returns the widget that has just been replaced if \a index is valid. Otherwise,
+    it returns null and no replacement or addition is made.
+
+    The size of the newly inserted widget will be the same as the widget it replaces.
+    Its visible and collapsed states are also inherited.
+
+    \note The splitter takes ownership of \a widget and sets the parent of the
+    replaced widget to null.
+
+    \sa insertWidget(), indexOf()
+*/
+QWidget *QSplitter::replaceWidget(int index, QWidget *widget)
+{
+    Q_D(QSplitter);
+    if (index < 0 || index >= d->list.count())
+        return Q_NULLPTR;
+
+    QBoolBlocker b(d->blockChildAdd);
+
+    QSplitterLayoutStruct *s = d->list.at(index);
+    QWidget *current = s->widget;
+    const QRect geom = current->geometry();
+    const bool shouldShow = d->shouldShowWidget(current);
+
+    s->widget = widget;
+    current->setParent(Q_NULLPTR);
+    if (widget->parentWidget() != this)
+        widget->setParent(this);
+
+    // The splitter layout struct's geometry is already set and
+    // should not change. Only set the geometry on the new widget
+    widget->setGeometry(geom);
+    widget->lower();
+    widget->setVisible(shouldShow);
+
+    return current;
+}
+
+/*!
     \fn int QSplitter::indexOf(QWidget *widget) const
 
     Returns the index in the splitter's layout of the specified \a widget. This
@@ -1229,7 +1277,7 @@ void QSplitter::childEvent(QChildEvent *c)
     if (c->added() && !d->blockChildAdd && !d->findWidget(w)) {
         d->insertWidget_helper(d->list.count(), w, false);
     } else if (c->polished() && !d->blockChildAdd) {
-        if (isVisible() && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide)))
+        if (d->shouldShowWidget(w))
             w->show();
     } else if (c->type() == QEvent::ChildRemoved) {
         for (int i = 0; i < d->list.size(); ++i) {

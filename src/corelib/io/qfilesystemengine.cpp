@@ -425,4 +425,23 @@ QString QFileSystemEngine::resolveGroupName(const QFileSystemEntry &entry, QFile
 #endif
 }
 
+QFileInfoList QFileSystemEngine::getMappedDrives()
+{
+    QFileInfoList infoList;
+#if defined(Q_OS_WIN)
+    getMappedNetworkDrives(RESOURCE_CONNECTED, infoList);
+    getMappedNetworkDrives(RESOURCE_REMEMBERED, infoList);
+#endif
+    return infoList;
+}
+
+bool QFileSystemEngine::mappedDriveConnectStatus(const QString &name, bool smb)
+{
+#if defined(Q_OS_WIN)
+    return mappedNetworkDriveConnectStatus(name, smb);
+#endif
+    // not supported yet for other OSes
+    return false;
+}
+
 QT_END_NAMESPACE

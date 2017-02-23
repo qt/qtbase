@@ -50,6 +50,7 @@
 #ifndef QT_NO_FILESYSTEMMODEL
 
 #include <private/qabstractitemmodel_p.h>
+#include <private/qfileinfo_p.h>
 #include <qabstractitemmodel.h>
 #include "qfileinfogatherer_p.h"
 #include <qpair.h>
@@ -94,7 +95,10 @@ public:
 #endif
 
         inline qint64 size() const { if (info && !info->isDir()) return info->size(); return 0; }
-        inline QString type() const { if (info) return info->displayType; return QLatin1String(""); }
+        inline QString type() const {
+            if (info) return info->displayFileType();
+            return QLatin1String("");
+        }
         inline QDateTime lastModified() const { if (info) return info->lastModified(); return QDateTime(); }
         inline QFile::Permissions permissions() const { if (info) return info->permissions(); return 0; }
         inline bool isReadable() const { return ((permissions() & QFile::ReadUser) != 0); }
