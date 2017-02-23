@@ -140,8 +140,6 @@ struct QByteArrayDataPtr
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, sizeof(QByteArrayData)) \
     /**/
 
-#if defined(Q_COMPILER_LAMBDA)
-
 #  define QByteArrayLiteral(str) \
     ([]() -> QByteArray { \
         enum { Size = sizeof(str) - 1 }; \
@@ -153,14 +151,6 @@ struct QByteArrayDataPtr
         return ba; \
     }()) \
     /**/
-
-#endif
-
-#ifndef QByteArrayLiteral
-// no lambdas, not GCC, just return a temporary QByteArray
-
-# define QByteArrayLiteral(str) QByteArray(str, sizeof(str) - 1)
-#endif
 
 class Q_CORE_EXPORT QByteArray
 {
