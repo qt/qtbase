@@ -42,7 +42,7 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qshareddata.h>
 #include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
@@ -55,12 +55,14 @@ class Q_NETWORK_EXPORT QHstsPolicy
 public:
 
     QHstsPolicy();
-    QHstsPolicy(const QDateTime &expiry, bool includeSubDomains, const QString &host,
-                QUrl::ParsingMode mode = QUrl::DecodedMode);
+    explicit QHstsPolicy(const QDateTime &expiry, bool includeSubDomains, const QString &host,
+                         QUrl::ParsingMode mode = QUrl::DecodedMode);
     QHstsPolicy(const QHstsPolicy &rhs);
     QHstsPolicy &operator=(const QHstsPolicy &rhs);
-    QHstsPolicy &operator=(QHstsPolicy &&rhs) Q_DECL_NOTHROW;
+    QHstsPolicy &operator=(QHstsPolicy &&other) Q_DECL_NOTHROW { swap(other); return *this; }
     ~QHstsPolicy();
+
+    void swap(QHstsPolicy &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     void setHost(const QString &host, QUrl::ParsingMode mode = QUrl::DecodedMode);
     QString host(QUrl::ComponentFormattingOptions options = QUrl::FullyDecoded) const;
@@ -69,13 +71,24 @@ public:
     void setIncludesSubDomains(bool include);
     bool includesSubDomains() const;
 
-    bool operator==(const QHstsPolicy &rhs) const;
     bool isExpired() const;
 
 private:
 
-    QScopedPointer<QHstsPolicyPrivate> d;
+    QSharedDataPointer<QHstsPolicyPrivate> d;
+
+    friend Q_NETWORK_EXPORT bool operator==(const QHstsPolicy &lhs, const QHstsPolicy &rhs);
 };
+
+Q_DECLARE_SHARED(QHstsPolicy)
+
+Q_NETWORK_EXPORT bool operator==(const QHstsPolicy &lhs, const QHstsPolicy &rhs);
+
+inline bool operator!=(const QHstsPolicy &lhs, const QHstsPolicy &rhs)
+{
+    return !(lhs == rhs);
+}
+
 
 QT_END_NAMESPACE
 
