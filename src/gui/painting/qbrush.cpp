@@ -1006,7 +1006,7 @@ bool QBrush::operator==(const QBrush &b) const
 */
 QDebug operator<<(QDebug dbg, const QBrush &b)
 {
-    static const char *const BRUSH_STYLES[] = {
+    static const char BRUSH_STYLES[][24] = {
      "NoBrush",
      "SolidPattern",
      "Dense1Pattern",
@@ -1025,7 +1025,7 @@ QDebug operator<<(QDebug dbg, const QBrush &b)
      "LinearGradientPattern",
      "RadialGradientPattern",
      "ConicalGradientPattern",
-     0, 0, 0, 0, 0, 0,
+     "", "", "", "", "", "",
      "TexturePattern" // 24
     };
 
