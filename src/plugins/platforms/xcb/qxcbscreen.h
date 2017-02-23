@@ -91,8 +91,27 @@ public:
     void handleXFixesSelectionNotify(xcb_xfixes_selection_notify_event_t *notify_event);
     void subscribeToXFixesSelectionNotify();
 
+    int forcedDpi() const { return m_forcedDpi; }
+    QFontEngine::HintStyle hintStyle() const { return m_hintStyle; }
+    QFontEngine::SubpixelAntialiasingType subpixelType() const { return m_subpixelType; }
+    int antialiasingEnabled() const { return m_antialiasingEnabled; }
+
+    QString windowManagerName() const { return m_windowManagerName; }
+    bool syncRequestSupported() const { return m_syncRequestSupported; }
+
+    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &format) const;
+
+    const xcb_visualtype_t *visualForFormat(const QSurfaceFormat &format) const;
+    const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
+    quint8 depthOfVisual(xcb_visualid_t) const;
+
 private:
     QRect getWorkArea() const;
+
+    static bool xResource(const QByteArray &identifier,
+                          const QByteArray &expectedIdentifier,
+                          QByteArray &stringValue);
+    void readXResources();
 
     xcb_screen_t *m_screen;
     const int m_number;
@@ -103,6 +122,15 @@ private:
     bool m_compositingActive = false;
 
     QRect m_workArea;
+
+    int m_forcedDpi = -1;
+    QFontEngine::HintStyle m_hintStyle = QFontEngine::HintStyle(-1);
+    QFontEngine::SubpixelAntialiasingType m_subpixelType = QFontEngine::SubpixelAntialiasingType(-1);
+    int m_antialiasingEnabled = -1;
+    QString m_windowManagerName;
+    bool m_syncRequestSupported = false;
+    QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
+    QMap<xcb_visualid_t, quint8> m_visualDepths;
 };
 
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
@@ -152,14 +180,14 @@ public:
     void setCrtc(xcb_randr_crtc_t crtc) { m_crtc = crtc; }
 
     void windowShown(QXcbWindow *window);
-    QString windowManagerName() const { return m_windowManagerName; }
-    bool syncRequestSupported() const { return m_syncRequestSupported; }
+    QString windowManagerName() const { return m_virtualDesktop->windowManagerName(); }
+    bool syncRequestSupported() const { return m_virtualDesktop->syncRequestSupported(); }
 
     QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &format) const;
 
-    const xcb_visualtype_t *visualForFormat(const QSurfaceFormat &format) const;
-    const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
-    quint8 depthOfVisual(xcb_visualid_t) const;
+    const xcb_visualtype_t *visualForFormat(const QSurfaceFormat &format) const { return m_virtualDesktop->visualForFormat(format); }
+    const xcb_visualtype_t *visualForId(xcb_visualid_t visualid) const;
+    quint8 depthOfVisual(xcb_visualid_t visualid) const { return m_virtualDesktop->depthOfVisual(visualid); }
 
     QString name() const override { return m_outputName; }
 
@@ -169,18 +197,13 @@ public:
     void updateAvailableGeometry();
     void updateRefreshRate(xcb_randr_mode_t mode);
 
-    void readXResources();
-
-    QFontEngine::HintStyle hintStyle() const { return m_hintStyle; }
-    QFontEngine::SubpixelAntialiasingType subpixelType() const { return m_subpixelType; }
-    int antialiasingEnabled() const { return m_antialiasingEnabled; }
+    QFontEngine::HintStyle hintStyle() const { return m_virtualDesktop->hintStyle(); }
+    QFontEngine::SubpixelAntialiasingType subpixelType() const { return m_virtualDesktop->subpixelType(); }
+    int antialiasingEnabled() const { return m_virtualDesktop->antialiasingEnabled(); }
 
     QXcbXSettings *xSettings() const;
 
 private:
-    static bool xResource(const QByteArray &identifier,
-                          const QByteArray &expectedIdentifier,
-                          QByteArray &stringValue);
     void sendStartupMessage(const QByteArray &message) const;
 
     QXcbVirtualDesktop *m_virtualDesktop;
@@ -198,17 +221,9 @@ private:
     QSize m_virtualSize;
     QSizeF m_virtualSizeMillimeters;
     Qt::ScreenOrientation m_orientation = Qt::PrimaryOrientation;
-    QString m_windowManagerName;
-    bool m_syncRequestSupported = false;
-    QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
-    QMap<xcb_visualid_t, quint8> m_visualDepths;
     QXcbCursor *m_cursor;
     int m_refreshRate = 60;
-    int m_forcedDpi = -1;
     int m_pixelDensity = 1;
-    QFontEngine::HintStyle m_hintStyle = QFontEngine::HintStyle(-1);
-    QFontEngine::SubpixelAntialiasingType m_subpixelType = QFontEngine::SubpixelAntialiasingType(-1);
-    int m_antialiasingEnabled = -1;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

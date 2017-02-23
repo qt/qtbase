@@ -65,6 +65,67 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
     m_compositingActive = connection->getSelectionOwner(m_net_wm_cm_atom);
 
     m_workArea = getWorkArea();
+
+    readXResources();
+
+    auto rootAttribs = Q_XCB_REPLY_UNCHECKED(xcb_get_window_attributes, xcb_connection(),
+                                             screen->root);
+    const quint32 existingEventMask = !rootAttribs ? 0 : rootAttribs->your_event_mask;
+
+    const quint32 mask = XCB_CW_EVENT_MASK;
+    const quint32 values[] = {
+        // XCB_CW_EVENT_MASK
+        XCB_EVENT_MASK_ENTER_WINDOW
+        | XCB_EVENT_MASK_LEAVE_WINDOW
+        | XCB_EVENT_MASK_PROPERTY_CHANGE
+        | XCB_EVENT_MASK_STRUCTURE_NOTIFY // for the "MANAGER" atom (system tray notification).
+        | existingEventMask // don't overwrite the event mask on the root window
+    };
+
+    xcb_change_window_attributes(xcb_connection(), screen->root, mask, values);
+
+    auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                       false, screen->root,
+                                       atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
+                                       XCB_ATOM_WINDOW, 0, 1024);
+    if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
+        xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply.get()));
+
+        if (windowManager != XCB_WINDOW_NONE) {
+            auto windowManagerReply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                                            false, windowManager,
+                                                            atom(QXcbAtom::_NET_WM_NAME),
+                                                            atom(QXcbAtom::UTF8_STRING), 0, 1024);
+            if (windowManagerReply && windowManagerReply->format == 8 && windowManagerReply->type == atom(QXcbAtom::UTF8_STRING)) {
+                m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply.get()),
+                                                        xcb_get_property_value_length(windowManagerReply.get()));
+            }
+        }
+    }
+
+    const xcb_query_extension_reply_t *sync_reply = xcb_get_extension_data(xcb_connection(), &xcb_sync_id);
+    if (!sync_reply || !sync_reply->present)
+        m_syncRequestSupported = false;
+    else
+        m_syncRequestSupported = true;
+
+    xcb_depth_iterator_t depth_iterator =
+        xcb_screen_allowed_depths_iterator(screen);
+
+    while (depth_iterator.rem) {
+        xcb_depth_t *depth = depth_iterator.data;
+        xcb_visualtype_iterator_t visualtype_iterator =
+            xcb_depth_visuals_iterator(depth);
+
+        while (visualtype_iterator.rem) {
+            xcb_visualtype_t *visualtype = visualtype_iterator.data;
+            m_visuals.insert(visualtype->visual_id, *visualtype);
+            m_visualDepths.insert(visualtype->visual_id, depth->depth);
+            xcb_visualtype_next(&visualtype_iterator);
+        }
+
+        xcb_depth_next(&depth_iterator);
+    }
 }
 
 QXcbVirtualDesktop::~QXcbVirtualDesktop()
@@ -164,6 +225,170 @@ static inline QSizeF sizeInMillimeters(const QSize &size, const QDpi &dpi)
                   Q_MM_PER_INCH * size.height() / dpi.second);
 }
 
+bool QXcbVirtualDesktop::xResource(const QByteArray &identifier,
+                                   const QByteArray &expectedIdentifier,
+                                   QByteArray& stringValue)
+{
+    if (identifier.startsWith(expectedIdentifier)) {
+        stringValue = identifier.mid(expectedIdentifier.size());
+        return true;
+    }
+    return false;
+}
+
+static bool parseXftInt(const QByteArray& stringValue, int *value)
+{
+    Q_ASSERT(value != 0);
+    bool ok;
+    *value = stringValue.toInt(&ok);
+    return ok;
+}
+
+static QFontEngine::HintStyle parseXftHintStyle(const QByteArray& stringValue)
+{
+    if (stringValue == "hintfull")
+        return QFontEngine::HintFull;
+    else if (stringValue == "hintnone")
+        return QFontEngine::HintNone;
+    else if (stringValue == "hintmedium")
+        return QFontEngine::HintMedium;
+    else if (stringValue == "hintslight")
+        return QFontEngine::HintLight;
+
+    return QFontEngine::HintStyle(-1);
+}
+
+static QFontEngine::SubpixelAntialiasingType parseXftRgba(const QByteArray& stringValue)
+{
+    if (stringValue == "none")
+        return QFontEngine::Subpixel_None;
+    else if (stringValue == "rgb")
+        return QFontEngine::Subpixel_RGB;
+    else if (stringValue == "bgr")
+        return QFontEngine::Subpixel_BGR;
+    else if (stringValue == "vrgb")
+        return QFontEngine::Subpixel_VRGB;
+    else if (stringValue == "vbgr")
+        return QFontEngine::Subpixel_VBGR;
+
+    return QFontEngine::SubpixelAntialiasingType(-1);
+}
+
+void QXcbVirtualDesktop::readXResources()
+{
+    int offset = 0;
+    QByteArray resources;
+    while (true) {
+        auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                           false, screen()->root,
+                                           XCB_ATOM_RESOURCE_MANAGER,
+                                           XCB_ATOM_STRING, offset/4, 8192);
+        bool more = false;
+        if (reply && reply->format == 8 && reply->type == XCB_ATOM_STRING) {
+            resources += QByteArray((const char *)xcb_get_property_value(reply.get()), xcb_get_property_value_length(reply.get()));
+            offset += xcb_get_property_value_length(reply.get());
+            more = reply->bytes_after != 0;
+        }
+
+        if (!more)
+            break;
+    }
+
+    QList<QByteArray> split = resources.split('\n');
+    for (int i = 0; i < split.size(); ++i) {
+        const QByteArray &r = split.at(i);
+        int value;
+        QByteArray stringValue;
+        if (xResource(r, "Xft.dpi:\t", stringValue)) {
+            if (parseXftInt(stringValue, &value))
+                m_forcedDpi = value;
+        } else if (xResource(r, "Xft.hintstyle:\t", stringValue)) {
+            m_hintStyle = parseXftHintStyle(stringValue);
+        } else if (xResource(r, "Xft.antialias:\t", stringValue)) {
+            if (parseXftInt(stringValue, &value))
+                m_antialiasingEnabled = value;
+        } else if (xResource(r, "Xft.rgba:\t", stringValue)) {
+            m_subpixelType = parseXftRgba(stringValue);
+        }
+    }
+}
+
+QSurfaceFormat QXcbVirtualDesktop::surfaceFormatFor(const QSurfaceFormat &format) const
+{
+    const xcb_visualid_t xcb_visualid = connection()->hasDefaultVisualId() ? connection()->defaultVisualId()
+                                                                           : screen()->root_visual;
+    const xcb_visualtype_t *xcb_visualtype = visualForId(xcb_visualid);
+
+    const int redSize = qPopulationCount(xcb_visualtype->red_mask);
+    const int greenSize = qPopulationCount(xcb_visualtype->green_mask);
+    const int blueSize = qPopulationCount(xcb_visualtype->blue_mask);
+
+    QSurfaceFormat result = format;
+
+    if (result.redBufferSize() < 0)
+        result.setRedBufferSize(redSize);
+
+    if (result.greenBufferSize() < 0)
+        result.setGreenBufferSize(greenSize);
+
+    if (result.blueBufferSize() < 0)
+        result.setBlueBufferSize(blueSize);
+
+    return result;
+}
+
+const xcb_visualtype_t *QXcbVirtualDesktop::visualForFormat(const QSurfaceFormat &format) const
+{
+    const xcb_visualtype_t *candidate = nullptr;
+
+    for (const xcb_visualtype_t &xcb_visualtype : m_visuals) {
+
+        const int redSize = qPopulationCount(xcb_visualtype.red_mask);
+        const int greenSize = qPopulationCount(xcb_visualtype.green_mask);
+        const int blueSize = qPopulationCount(xcb_visualtype.blue_mask);
+        const int alphaSize = depthOfVisual(xcb_visualtype.visual_id) - redSize - greenSize - blueSize;
+
+        if (format.redBufferSize() != -1 && redSize != format.redBufferSize())
+            continue;
+
+        if (format.greenBufferSize() != -1 && greenSize != format.greenBufferSize())
+            continue;
+
+        if (format.blueBufferSize() != -1 && blueSize != format.blueBufferSize())
+            continue;
+
+        if (format.alphaBufferSize() != -1 && alphaSize != format.alphaBufferSize())
+            continue;
+
+        // Try to find a RGB visual rather than e.g. BGR or GBR
+        if (qCountTrailingZeroBits(xcb_visualtype.blue_mask) == 0)
+            return &xcb_visualtype;
+
+        // In case we do not find anything we like, just remember the first one
+        // and hope for the best:
+        if (!candidate)
+            candidate = &xcb_visualtype;
+    }
+
+    return candidate;
+}
+
+const xcb_visualtype_t *QXcbVirtualDesktop::visualForId(xcb_visualid_t visualid) const
+{
+    QMap<xcb_visualid_t, xcb_visualtype_t>::const_iterator it = m_visuals.find(visualid);
+    if (it == m_visuals.constEnd())
+        return 0;
+    return &*it;
+}
+
+quint8 QXcbVirtualDesktop::depthOfVisual(xcb_visualid_t visualid) const
+{
+    QMap<xcb_visualid_t, quint8>::const_iterator it = m_visualDepths.find(visualid);
+    if (it == m_visualDepths.constEnd())
+        return 0;
+    return *it;
+}
+
 QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
                        xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
                        const xcb_xinerama_screen_info_t *xineramaScreenInfo, int xineramaScreenIdx)
@@ -201,67 +426,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 
     if (m_sizeMillimeters.isEmpty())
         m_sizeMillimeters = m_virtualSizeMillimeters;
-
-    readXResources();
-
-    auto rootAttribs = Q_XCB_REPLY_UNCHECKED(xcb_get_window_attributes, xcb_connection(),
-                                             screen()->root);
-    const quint32 existingEventMask = !rootAttribs ? 0 : rootAttribs->your_event_mask;
-
-    const quint32 mask = XCB_CW_EVENT_MASK;
-    const quint32 values[] = {
-        // XCB_CW_EVENT_MASK
-        XCB_EVENT_MASK_ENTER_WINDOW
-        | XCB_EVENT_MASK_LEAVE_WINDOW
-        | XCB_EVENT_MASK_PROPERTY_CHANGE
-        | XCB_EVENT_MASK_STRUCTURE_NOTIFY // for the "MANAGER" atom (system tray notification).
-        | existingEventMask // don't overwrite the event mask on the root window
-    };
-
-    xcb_change_window_attributes(xcb_connection(), screen()->root, mask, values);
-
-    auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
-                                       false, screen()->root,
-                                       atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
-                                       XCB_ATOM_WINDOW, 0, 1024);
-    if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
-        xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply.get()));
-
-        if (windowManager != XCB_WINDOW_NONE) {
-            auto windowManagerReply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
-                                                            false, windowManager,
-                                                            atom(QXcbAtom::_NET_WM_NAME),
-                                                            atom(QXcbAtom::UTF8_STRING), 0, 1024);
-            if (windowManagerReply && windowManagerReply->format == 8 && windowManagerReply->type == atom(QXcbAtom::UTF8_STRING)) {
-                m_windowManagerName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply.get()),
-                                                        xcb_get_property_value_length(windowManagerReply.get()));
-            }
-        }
-    }
-
-    const xcb_query_extension_reply_t *sync_reply = xcb_get_extension_data(xcb_connection(), &xcb_sync_id);
-    if (!sync_reply || !sync_reply->present)
-        m_syncRequestSupported = false;
-    else
-        m_syncRequestSupported = true;
-
-    xcb_depth_iterator_t depth_iterator =
-        xcb_screen_allowed_depths_iterator(screen());
-
-    while (depth_iterator.rem) {
-        xcb_depth_t *depth = depth_iterator.data;
-        xcb_visualtype_iterator_t visualtype_iterator =
-            xcb_depth_visuals_iterator(depth);
-
-        while (visualtype_iterator.rem) {
-            xcb_visualtype_t *visualtype = visualtype_iterator.data;
-            m_visuals.insert(visualtype->visual_id, *visualtype);
-            m_visualDepths.insert(visualtype->visual_id, depth->depth);
-            xcb_visualtype_next(&visualtype_iterator);
-        }
-
-        xcb_depth_next(&depth_iterator);
-    }
 
     m_cursor = new QXcbCursor(connection, this);
 }
@@ -331,62 +495,12 @@ void QXcbScreen::windowShown(QXcbWindow *window)
 
 QSurfaceFormat QXcbScreen::surfaceFormatFor(const QSurfaceFormat &format) const
 {
-    const xcb_visualid_t xcb_visualid = connection()->hasDefaultVisualId() ? connection()->defaultVisualId()
-                                                                           : screen()->root_visual;
-    const xcb_visualtype_t *xcb_visualtype = visualForId(xcb_visualid);
-
-    const int redSize = qPopulationCount(xcb_visualtype->red_mask);
-    const int greenSize = qPopulationCount(xcb_visualtype->green_mask);
-    const int blueSize = qPopulationCount(xcb_visualtype->blue_mask);
-
-    QSurfaceFormat result = format;
-
-    if (result.redBufferSize() < 0)
-        result.setRedBufferSize(redSize);
-
-    if (result.greenBufferSize() < 0)
-        result.setGreenBufferSize(greenSize);
-
-    if (result.blueBufferSize() < 0)
-        result.setBlueBufferSize(blueSize);
-
-    return result;
+    return m_virtualDesktop->surfaceFormatFor(format);
 }
 
-const xcb_visualtype_t *QXcbScreen::visualForFormat(const QSurfaceFormat &format) const
+const xcb_visualtype_t *QXcbScreen::visualForId(xcb_visualid_t visualid) const
 {
-    const xcb_visualtype_t *candidate = nullptr;
-
-    for (const xcb_visualtype_t &xcb_visualtype : m_visuals) {
-
-        const int redSize = qPopulationCount(xcb_visualtype.red_mask);
-        const int greenSize = qPopulationCount(xcb_visualtype.green_mask);
-        const int blueSize = qPopulationCount(xcb_visualtype.blue_mask);
-        const int alphaSize = depthOfVisual(xcb_visualtype.visual_id) - redSize - greenSize - blueSize;
-
-        if (format.redBufferSize() != -1 && redSize != format.redBufferSize())
-            continue;
-
-        if (format.greenBufferSize() != -1 && greenSize != format.greenBufferSize())
-            continue;
-
-        if (format.blueBufferSize() != -1 && blueSize != format.blueBufferSize())
-            continue;
-
-        if (format.alphaBufferSize() != -1 && alphaSize != format.alphaBufferSize())
-            continue;
-
-        // Try to find a RGB visual rather than e.g. BGR or GBR
-        if (qCountTrailingZeroBits(xcb_visualtype.blue_mask) == 0)
-            return &xcb_visualtype;
-
-        // In case we do not find anything we like, just remember the first one
-        // and hope for the best:
-        if (!candidate)
-            candidate = &xcb_visualtype;
-    }
-
-    return candidate;
+    return m_virtualDesktop->visualForId(visualid);
 }
 
 void QXcbScreen::sendStartupMessage(const QByteArray &message) const
@@ -415,22 +529,6 @@ void QXcbScreen::sendStartupMessage(const QByteArray &message) const
     } while (sent < length);
 }
 
-const xcb_visualtype_t *QXcbScreen::visualForId(xcb_visualid_t visualid) const
-{
-    QMap<xcb_visualid_t, xcb_visualtype_t>::const_iterator it = m_visuals.find(visualid);
-    if (it == m_visuals.constEnd())
-        return 0;
-    return &*it;
-}
-
-quint8 QXcbScreen::depthOfVisual(xcb_visualid_t visualid) const
-{
-    QMap<xcb_visualid_t, quint8>::const_iterator it = m_visualDepths.find(visualid);
-    if (it == m_visualDepths.constEnd())
-        return 0;
-    return *it;
-}
-
 QImage::Format QXcbScreen::format() const
 {
     return qt_xcb_imageFormatForVisual(connection(), screen()->root_depth, visualForId(screen()->root_visual));
@@ -449,8 +547,9 @@ QDpi QXcbScreen::logicalDpi() const
     if (overrideDpi)
         return QDpi(overrideDpi, overrideDpi);
 
-    if (m_forcedDpi > 0) {
-        return QDpi(m_forcedDpi, m_forcedDpi);
+    const int forcedDpi = m_virtualDesktop->forcedDpi();
+    if (forcedDpi > 0) {
+        return QDpi(forcedDpi, forcedDpi);
     }
     return virtualDpi();
 }
@@ -724,94 +823,6 @@ QPixmap QXcbScreen::grabWindow(WId window, int xIn, int yIn, int width, int heig
     xcb_free_pixmap(xcb_connection(), pixmap);
 
     return result;
-}
-
-static bool parseXftInt(const QByteArray& stringValue, int *value)
-{
-    Q_ASSERT(value != 0);
-    bool ok;
-    *value = stringValue.toInt(&ok);
-    return ok;
-}
-
-static QFontEngine::HintStyle parseXftHintStyle(const QByteArray& stringValue)
-{
-    if (stringValue == "hintfull")
-        return QFontEngine::HintFull;
-    else if (stringValue == "hintnone")
-        return QFontEngine::HintNone;
-    else if (stringValue == "hintmedium")
-        return QFontEngine::HintMedium;
-    else if (stringValue == "hintslight")
-        return QFontEngine::HintLight;
-
-    return QFontEngine::HintStyle(-1);
-}
-
-static QFontEngine::SubpixelAntialiasingType parseXftRgba(const QByteArray& stringValue)
-{
-    if (stringValue == "none")
-        return QFontEngine::Subpixel_None;
-    else if (stringValue == "rgb")
-        return QFontEngine::Subpixel_RGB;
-    else if (stringValue == "bgr")
-        return QFontEngine::Subpixel_BGR;
-    else if (stringValue == "vrgb")
-        return QFontEngine::Subpixel_VRGB;
-    else if (stringValue == "vbgr")
-        return QFontEngine::Subpixel_VBGR;
-
-    return QFontEngine::SubpixelAntialiasingType(-1);
-}
-
-bool QXcbScreen::xResource(const QByteArray &identifier,
-                           const QByteArray &expectedIdentifier,
-                           QByteArray& stringValue)
-{
-    if (identifier.startsWith(expectedIdentifier)) {
-        stringValue = identifier.mid(expectedIdentifier.size());
-        return true;
-    }
-    return false;
-}
-
-void QXcbScreen::readXResources()
-{
-    int offset = 0;
-    QByteArray resources;
-    while(1) {
-        auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
-                                           false, screen()->root,
-                                           XCB_ATOM_RESOURCE_MANAGER,
-                                           XCB_ATOM_STRING, offset/4, 8192);
-        bool more = false;
-        if (reply && reply->format == 8 && reply->type == XCB_ATOM_STRING) {
-            resources += QByteArray((const char *)xcb_get_property_value(reply.get()), xcb_get_property_value_length(reply.get()));
-            offset += xcb_get_property_value_length(reply.get());
-            more = reply->bytes_after != 0;
-        }
-
-        if (!more)
-            break;
-    }
-
-    QList<QByteArray> split = resources.split('\n');
-    for (int i = 0; i < split.size(); ++i) {
-        const QByteArray &r = split.at(i);
-        int value;
-        QByteArray stringValue;
-        if (xResource(r, "Xft.dpi:\t", stringValue)) {
-            if (parseXftInt(stringValue, &value))
-                m_forcedDpi = value;
-        } else if (xResource(r, "Xft.hintstyle:\t", stringValue)) {
-            m_hintStyle = parseXftHintStyle(stringValue);
-        } else if (xResource(r, "Xft.antialias:\t", stringValue)) {
-            if (parseXftInt(stringValue, &value))
-                m_antialiasingEnabled = value;
-        } else if (xResource(r, "Xft.rgba:\t", stringValue)) {
-            m_subpixelType = parseXftRgba(stringValue);
-        }
-    }
 }
 
 QXcbXSettings *QXcbScreen::xSettings() const
