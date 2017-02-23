@@ -923,18 +923,6 @@ const char *xcb_protocol_request_codes[] =
     "Unknown"
 };
 
-#ifdef Q_XCB_DEBUG
-void QXcbConnection::log(const char *file, int line, int sequence)
-{
-    QMutexLocker locker(&m_callLogMutex);
-    CallInfo info;
-    info.sequence = sequence;
-    info.file = file;
-    info.line = line;
-    m_callLog << info;
-}
-#endif
-
 void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
 {
     long result = 0;
@@ -950,26 +938,6 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
            int(error->sequence), int(error->resource_id),
            int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
            int(error->minor_code));
-#ifdef Q_XCB_DEBUG
-    QMutexLocker locker(&m_callLogMutex);
-    int i = 0;
-    for (; i < m_callLog.size(); ++i) {
-        if (m_callLog.at(i).sequence == error->sequence) {
-            qDebug("Caused by: %s:%d", m_callLog.at(i).file.constData(), m_callLog.at(i).line);
-            break;
-        } else if (m_callLog.at(i).sequence > error->sequence) {
-            qDebug("Caused some time before: %s:%d", m_callLog.at(i).file.constData(),
-                   m_callLog.at(i).line);
-            if (i > 0)
-                qDebug("and after: %s:%d", m_callLog.at(i-1).file.constData(),
-                       m_callLog.at(i-1).line);
-            break;
-        }
-    }
-    if (i == m_callLog.size() && !m_callLog.isEmpty())
-        qDebug("Caused some time after: %s:%d", qAsConst(m_callLog).first().file.constData(),
-               qAsConst(m_callLog).first().line);
-#endif
 }
 
 static Qt::MouseButtons translateMouseButtons(int s)
@@ -1039,17 +1007,6 @@ namespace {
 
 void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 {
-#ifdef Q_XCB_DEBUG
-    {
-        QMutexLocker locker(&m_callLogMutex);
-        int i = 0;
-        for (; i < m_callLog.size(); ++i)
-            if (m_callLog.at(i).sequence >= event->sequence)
-                break;
-        m_callLog.remove(0, i);
-    }
-#endif
-
     long result = 0;
     QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
     bool handled = dispatcher && dispatcher->filterNativeEvent(m_nativeInterface->genericEventFilterType(), event, &result);
@@ -1362,10 +1319,10 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
     const xcb_window_t eventListener = xcb_generate_id(m_connection);
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
     xcb_screen_t *screen = it.data;
-    Q_XCB_CALL(xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
-                                 eventListener, screen->root,
-                                 0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
-                                 screen->root_visual, 0, 0));
+    xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
+                      eventListener, screen->root,
+                      0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
+                      screen->root_visual, 0, 0);
 
     event.response_type = XCB_CLIENT_MESSAGE;
     event.format = 32;
@@ -1374,8 +1331,8 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
     event.type = atom(a);
     event.data.data32[0] = id;
 
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, eventListener, XCB_EVENT_MASK_NO_EVENT, reinterpret_cast<const char *>(&event)));
-    Q_XCB_CALL(xcb_destroy_window(m_connection, eventListener));
+    xcb_send_event(xcb_connection(), false, eventListener, XCB_EVENT_MASK_NO_EVENT, reinterpret_cast<const char *>(&event));
+    xcb_destroy_window(m_connection, eventListener);
     xcb_flush(xcb_connection());
 }
 
@@ -1443,16 +1400,16 @@ xcb_window_t QXcbConnection::getQtSelectionOwner()
         int16_t x = 0, y = 0;
         uint16_t w = 3, h = 3;
         m_qtSelectionOwner = xcb_generate_id(xcb_connection());
-        Q_XCB_CALL(xcb_create_window(xcb_connection(),
-                                     XCB_COPY_FROM_PARENT,               // depth -- same as root
-                                     m_qtSelectionOwner,                 // window id
-                                     xcbScreen->root,                    // parent window id
-                                     x, y, w, h,
-                                     0,                                  // border width
-                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,      // window class
-                                     xcbScreen->root_visual,             // visual
-                                     0,                                  // value mask
-                                     0));                                // value list
+        xcb_create_window(xcb_connection(),
+                          XCB_COPY_FROM_PARENT,               // depth -- same as root
+                          m_qtSelectionOwner,                 // window id
+                          xcbScreen->root,                    // parent window id
+                          x, y, w, h,
+                          0,                                  // border width
+                          XCB_WINDOW_CLASS_INPUT_OUTPUT,      // window class
+                          xcbScreen->root_visual,             // visual
+                          0,                                  // value mask
+                          0);                                 // value list
     }
     return m_qtSelectionOwner;
 }
@@ -1468,47 +1425,47 @@ xcb_window_t QXcbConnection::clientLeader()
     if (m_clientLeader == 0) {
         m_clientLeader = xcb_generate_id(xcb_connection());
         QXcbScreen *screen = primaryScreen();
-        Q_XCB_CALL(xcb_create_window(xcb_connection(),
-                                     XCB_COPY_FROM_PARENT,
-                                     m_clientLeader,
-                                     screen->root(),
-                                     0, 0, 1, 1,
-                                     0,
-                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                                     screen->screen()->root_visual,
-                                     0, 0));
+        xcb_create_window(xcb_connection(),
+                          XCB_COPY_FROM_PARENT,
+                          m_clientLeader,
+                          screen->root(),
+                          0, 0, 1, 1,
+                          0,
+                          XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                          screen->screen()->root_visual,
+                          0, 0);
 #ifndef QT_NO_DEBUG
         QByteArray ba("Qt client leader window");
-        Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                       XCB_PROP_MODE_REPLACE,
-                                       m_clientLeader,
-                                       atom(QXcbAtom::_NET_WM_NAME),
-                                       atom(QXcbAtom::UTF8_STRING),
-                                       8,
-                                       ba.length(),
-                                       ba.constData()));
+        xcb_change_property(xcb_connection(),
+                            XCB_PROP_MODE_REPLACE,
+                            m_clientLeader,
+                            atom(QXcbAtom::_NET_WM_NAME),
+                            atom(QXcbAtom::UTF8_STRING),
+                            8,
+                            ba.length(),
+                            ba.constData());
 #endif
-        Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                       XCB_PROP_MODE_REPLACE,
-                                       m_clientLeader,
-                                       atom(QXcbAtom::WM_CLIENT_LEADER),
-                                       XCB_ATOM_WINDOW,
-                                       32,
-                                       1,
-                                       &m_clientLeader));
+        xcb_change_property(xcb_connection(),
+                            XCB_PROP_MODE_REPLACE,
+                            m_clientLeader,
+                            atom(QXcbAtom::WM_CLIENT_LEADER),
+                            XCB_ATOM_WINDOW,
+                            32,
+                            1,
+                            &m_clientLeader);
 
 #if !defined(QT_NO_SESSIONMANAGER) && defined(XCB_USE_SM)
         // If we are session managed, inform the window manager about it
         QByteArray session = qGuiApp->sessionId().toLatin1();
         if (!session.isEmpty()) {
-            Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                           XCB_PROP_MODE_REPLACE,
-                                           m_clientLeader,
-                                           atom(QXcbAtom::SM_CLIENT_ID),
-                                           XCB_ATOM_STRING,
-                                           8,
-                                           session.length(),
-                                           session.constData()));
+            xcb_change_property(xcb_connection(),
+                                XCB_PROP_MODE_REPLACE,
+                                m_clientLeader,
+                                atom(QXcbAtom::SM_CLIENT_ID),
+                                XCB_ATOM_STRING,
+                                8,
+                                session.length(),
+                                session.constData());
         }
 #endif
     }
@@ -1994,7 +1951,7 @@ const xcb_format_t *QXcbConnection::formatForDepth(uint8_t depth) const
 void QXcbConnection::sync()
 {
     // from xcb_aux_sync
-    xcb_get_input_focus_cookie_t cookie = Q_XCB_CALL(xcb_get_input_focus(xcb_connection()));
+    xcb_get_input_focus_cookie_t cookie = xcb_get_input_focus(xcb_connection());
     free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
 }
 

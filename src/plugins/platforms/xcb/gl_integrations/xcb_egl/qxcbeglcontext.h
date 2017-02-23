@@ -47,7 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-//####todo remove the noops (looks like their where there in the initial commit)
 class QXcbEglContext : public QEGLPlatformContext
 {
 public:
@@ -56,29 +55,21 @@ public:
         : QEGLPlatformContext(glFormat, share, display, 0, nativeHandle)
         , m_connection(c)
     {
-        Q_XCB_NOOP(m_connection);
     }
 
     void swapBuffers(QPlatformSurface *surface)
     {
-        Q_XCB_NOOP(m_connection);
         QEGLPlatformContext::swapBuffers(surface);
-        Q_XCB_NOOP(m_connection);
     }
 
     bool makeCurrent(QPlatformSurface *surface)
     {
-        Q_XCB_NOOP(m_connection);
-        bool ret = QEGLPlatformContext::makeCurrent(surface);
-        Q_XCB_NOOP(m_connection);
-        return ret;
+        return QEGLPlatformContext::makeCurrent(surface);
     }
 
     void doneCurrent()
     {
-        Q_XCB_NOOP(m_connection);
         QEGLPlatformContext::doneCurrent();
-        Q_XCB_NOOP(m_connection);
     }
 
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface)

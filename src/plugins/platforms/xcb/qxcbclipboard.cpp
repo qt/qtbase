@@ -278,22 +278,22 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
 
 #ifndef QT_NO_DEBUG
     QByteArray ba("Qt clipboard window");
-    Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                   XCB_PROP_MODE_REPLACE,
-                                   m_owner,
-                                   atom(QXcbAtom::_NET_WM_NAME),
-                                   atom(QXcbAtom::UTF8_STRING),
-                                   8,
-                                   ba.length(),
-                                   ba.constData()));
+    xcb_change_property(xcb_connection(),
+                        XCB_PROP_MODE_REPLACE,
+                        m_owner,
+                        atom(QXcbAtom::_NET_WM_NAME),
+                        atom(QXcbAtom::UTF8_STRING),
+                        8,
+                        ba.length(),
+                        ba.constData());
 #endif
 
     if (connection()->hasXFixes()) {
         const uint32_t mask = XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
                 XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
                 XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
-        Q_XCB_CALL(xcb_xfixes_select_selection_input_checked(xcb_connection(), m_owner, XCB_ATOM_PRIMARY, mask));
-        Q_XCB_CALL(xcb_xfixes_select_selection_input_checked(xcb_connection(), m_owner, atom(QXcbAtom::CLIPBOARD), mask));
+        xcb_xfixes_select_selection_input_checked(xcb_connection(), m_owner, XCB_ATOM_PRIMARY, mask);
+        xcb_xfixes_select_selection_input_checked(xcb_connection(), m_owner, atom(QXcbAtom::CLIPBOARD), mask);
     }
 }
 
@@ -457,26 +457,26 @@ xcb_window_t QXcbClipboard::requestor() const
         QXcbClipboard *that = const_cast<QXcbClipboard *>(this);
 
         xcb_window_t window = xcb_generate_id(xcb_connection());
-        Q_XCB_CALL(xcb_create_window(xcb_connection(),
-                                     XCB_COPY_FROM_PARENT,            // depth -- same as root
-                                     window,                        // window id
-                                     platformScreen->screen()->root,                   // parent window id
-                                     x, y, w, h,
-                                     0,                               // border width
-                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                     platformScreen->screen()->root_visual, // visual
-                                     0,                               // value mask
-                                     0));                             // value list
+        xcb_create_window(xcb_connection(),
+                          XCB_COPY_FROM_PARENT,                  // depth -- same as root
+                          window,                                // window id
+                          platformScreen->screen()->root,        // parent window id
+                          x, y, w, h,
+                          0,                                     // border width
+                          XCB_WINDOW_CLASS_INPUT_OUTPUT,         // window class
+                          platformScreen->screen()->root_visual, // visual
+                          0,                                     // value mask
+                          0);                                    // value list
 #ifndef QT_NO_DEBUG
         QByteArray ba("Qt clipboard requestor window");
-        Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                       XCB_PROP_MODE_REPLACE,
-                                       window,
-                                       atom(QXcbAtom::_NET_WM_NAME),
-                                       atom(QXcbAtom::UTF8_STRING),
-                                       8,
-                                       ba.length(),
-                                       ba.constData()));
+        xcb_change_property(xcb_connection(),
+                            XCB_PROP_MODE_REPLACE,
+                            window,
+                            atom(QXcbAtom::_NET_WM_NAME),
+                            atom(QXcbAtom::UTF8_STRING),
+                            8,
+                            ba.length(),
+                            ba.constData());
 #endif
 
         uint32_t mask = XCB_EVENT_MASK_PROPERTY_CHANGE;

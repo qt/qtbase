@@ -184,7 +184,7 @@ void QXcbVirtualDesktop::subscribeToXFixesSelectionNotify()
         const uint32_t mask = XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
                               XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
                               XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
-        Q_XCB_CALL(xcb_xfixes_select_selection_input_checked(xcb_connection(), connection()->getQtSelectionOwner(), m_net_wm_cm_atom, mask));
+        xcb_xfixes_select_selection_input_checked(xcb_connection(), connection()->getQtSelectionOwner(), m_net_wm_cm_atom, mask);
     }
 }
 

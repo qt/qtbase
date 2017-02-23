@@ -435,11 +435,11 @@ void QXcbWindow::create()
 
     if ((window()->supportsOpenGL() && haveOpenGL) || m_format.hasAlpha()) {
         m_cmap = xcb_generate_id(xcb_connection());
-        Q_XCB_CALL(xcb_create_colormap(xcb_connection(),
-                                       XCB_COLORMAP_ALLOC_NONE,
-                                       m_cmap,
-                                       xcb_parent_id,
-                                       m_visualId));
+        xcb_create_colormap(xcb_connection(),
+                            XCB_COLORMAP_ALLOC_NONE,
+                            m_cmap,
+                            xcb_parent_id,
+                            m_visualId);
 
         mask |= XCB_CW_COLORMAP;
     }
@@ -455,23 +455,23 @@ void QXcbWindow::create()
     };
 
     m_window = xcb_generate_id(xcb_connection());
-    Q_XCB_CALL(xcb_create_window(xcb_connection(),
-                                 m_depth,
-                                 m_window,                        // window id
-                                 xcb_parent_id,                   // parent window id
-                                 rect.x(),
-                                 rect.y(),
-                                 rect.width(),
-                                 rect.height(),
-                                 0,                               // border width
-                                 XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                 m_visualId,                      // visual
-                                 mask,
-                                 values));
+    xcb_create_window(xcb_connection(),
+                      m_depth,
+                      m_window,                        // window id
+                      xcb_parent_id,                   // parent window id
+                      rect.x(),
+                      rect.y(),
+                      rect.width(),
+                      rect.height(),
+                      0,                               // border width
+                      XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
+                      m_visualId,                      // visual
+                      mask,
+                      values);
 
     connection()->addWindowEventListener(m_window, this);
 
-    Q_XCB_CALL(xcb_change_window_attributes(xcb_connection(), m_window, mask, values));
+    xcb_change_window_attributes(xcb_connection(), m_window, mask, values);
 
     propagateSizeHints();
 
@@ -489,43 +489,43 @@ void QXcbWindow::create()
     if (window()->flags() & Qt::WindowContextHelpButtonHint)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_CONTEXT_HELP);
 
-    Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                   XCB_PROP_MODE_REPLACE,
-                                   m_window,
-                                   atom(QXcbAtom::WM_PROTOCOLS),
-                                   XCB_ATOM_ATOM,
-                                   32,
-                                   propertyCount,
-                                   properties));
+    xcb_change_property(xcb_connection(),
+                        XCB_PROP_MODE_REPLACE,
+                        m_window,
+                        atom(QXcbAtom::WM_PROTOCOLS),
+                        XCB_ATOM_ATOM,
+                        32,
+                        propertyCount,
+                        properties);
     m_syncValue.hi = 0;
     m_syncValue.lo = 0;
 
     const QByteArray wmClass = QXcbIntegration::instance()->wmClass();
     if (!wmClass.isEmpty()) {
-        Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE,
-                                       m_window, atom(QXcbAtom::WM_CLASS),
-                                       XCB_ATOM_STRING, 8, wmClass.size(), wmClass.constData()));
+        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE,
+                            m_window, atom(QXcbAtom::WM_CLASS),
+                            XCB_ATOM_STRING, 8, wmClass.size(), wmClass.constData());
     }
 
     if (m_usingSyncProtocol) {
         m_syncCounter = xcb_generate_id(xcb_connection());
-        Q_XCB_CALL(xcb_sync_create_counter(xcb_connection(), m_syncCounter, m_syncValue));
+        xcb_sync_create_counter(xcb_connection(), m_syncCounter, m_syncValue);
 
-        Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                       XCB_PROP_MODE_REPLACE,
-                                       m_window,
-                                       atom(QXcbAtom::_NET_WM_SYNC_REQUEST_COUNTER),
-                                       XCB_ATOM_CARDINAL,
-                                       32,
-                                       1,
-                                       &m_syncCounter));
+        xcb_change_property(xcb_connection(),
+                            XCB_PROP_MODE_REPLACE,
+                            m_window,
+                            atom(QXcbAtom::_NET_WM_SYNC_REQUEST_COUNTER),
+                            XCB_ATOM_CARDINAL,
+                            32,
+                            1,
+                            &m_syncCounter);
     }
 
     // set the PID to let the WM kill the application if unresponsive
     quint32 pid = getpid();
-    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                   atom(QXcbAtom::_NET_WM_PID), XCB_ATOM_CARDINAL, 32,
-                                   1, &pid));
+    xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                        atom(QXcbAtom::_NET_WM_PID), XCB_ATOM_CARDINAL, 32,
+                        1, &pid);
 
     xcb_wm_hints_t hints;
     memset(&hints, 0, sizeof(hints));
@@ -536,16 +536,16 @@ void QXcbWindow::create()
     xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
     xcb_window_t leader = connection()->clientLeader();
-    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                   atom(QXcbAtom::WM_CLIENT_LEADER), XCB_ATOM_WINDOW, 32,
-                                   1, &leader));
+    xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                        atom(QXcbAtom::WM_CLIENT_LEADER), XCB_ATOM_WINDOW, 32,
+                        1, &leader);
 
     /* Add XEMBED info; this operation doesn't initiate the embedding. */
     quint32 data[] = { XEMBED_VERSION, XEMBED_MAPPED };
-    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                   atom(QXcbAtom::_XEMBED_INFO),
-                                   atom(QXcbAtom::_XEMBED_INFO),
-                                   32, 2, (void *)data));
+    xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                        atom(QXcbAtom::_XEMBED_INFO),
+                        atom(QXcbAtom::_XEMBED_INFO),
+                        32, 2, (void *)data);
 
 
 #if defined(XCB_USE_XINPUT2)
@@ -604,7 +604,7 @@ void QXcbWindow::destroy()
         connection()->setMouseGrabber(Q_NULLPTR);
 
     if (m_syncCounter && m_usingSyncProtocol)
-        Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
+        xcb_sync_destroy_counter(xcb_connection(), m_syncCounter);
     if (m_window) {
         if (m_netWmUserTimeWindow) {
             xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW));
@@ -615,7 +615,7 @@ void QXcbWindow::destroy()
             m_netWmUserTimeWindow = XCB_NONE;
         }
         connection()->removeWindowEventListener(m_window);
-        Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
+        xcb_destroy_window(xcb_connection(), m_window);
         m_window = 0;
     }
     if (m_cmap) {
@@ -650,7 +650,7 @@ void QXcbWindow::setGeometry(const QRect &rect)
             qBound<qint32>(1,           wmGeometry.width(),  XCOORD_MAX),
             qBound<qint32>(1,           wmGeometry.height(), XCOORD_MAX),
         };
-        Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values)));
+        xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values));
     } else {
         const quint32 mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
         const qint32 values[] = {
@@ -659,7 +659,7 @@ void QXcbWindow::setGeometry(const QRect &rect)
             qBound<qint32>(1,           wmGeometry.width(),  XCOORD_MAX),
             qBound<qint32>(1,           wmGeometry.height(), XCOORD_MAX),
         };
-        Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values)));
+        xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values));
     }
 
     xcb_flush(xcb_connection());
@@ -788,13 +788,13 @@ void QXcbWindow::show()
             if (!transientXcbParent)
                 transientXcbParent = connection()->clientLeader();
             if (transientXcbParent) { // ICCCM 4.1.2.6
-                Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                               XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
-                                               1, &transientXcbParent));
+                xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                    XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
+                                    1, &transientXcbParent);
             }
         }
         if (!transientXcbParent)
-            Q_XCB_CALL(xcb_delete_property(xcb_connection(), m_window, XCB_ATOM_WM_TRANSIENT_FOR));
+            xcb_delete_property(xcb_connection(), m_window, XCB_ATOM_WM_TRANSIENT_FOR);
 
         // update _MOTIF_WM_HINTS
         updateMotifWmHintsBeforeMap();
@@ -811,7 +811,7 @@ void QXcbWindow::show()
     if (window()->objectName() == QLatin1String("QSystemTrayIconSysWindow"))
         return; // defer showing until XEMBED_EMBEDDED_NOTIFY
 
-    Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
+    xcb_map_window(xcb_connection(), m_window);
 
     if (QGuiApplication::modalWindow() == window())
         requestActivateWindow();
@@ -823,7 +823,7 @@ void QXcbWindow::show()
 
 void QXcbWindow::hide()
 {
-    Q_XCB_CALL(xcb_unmap_window(xcb_connection(), m_window));
+    xcb_unmap_window(xcb_connection(), m_window);
 
     // send synthetic UnmapNotify event according to icccm 4.1.4
     xcb_unmap_notify_event_t event;
@@ -831,8 +831,8 @@ void QXcbWindow::hide()
     event.event = xcbScreen()->root();
     event.window = m_window;
     event.from_configure = false;
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, xcbScreen()->root(),
-                              XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+    xcb_send_event(xcb_connection(), false, xcbScreen()->root(),
+                   XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event);
 
     xcb_flush(xcb_connection());
 
@@ -1003,16 +1003,16 @@ static QtMotifWmHints getMotifWmHints(QXcbConnection *c, xcb_window_t window)
 static void setMotifWmHints(QXcbConnection *c, xcb_window_t window, const QtMotifWmHints &hints)
 {
     if (hints.flags != 0l) {
-        Q_XCB_CALL2(xcb_change_property(c->xcb_connection(),
-                                       XCB_PROP_MODE_REPLACE,
-                                       window,
-                                       c->atom(QXcbAtom::_MOTIF_WM_HINTS),
-                                       c->atom(QXcbAtom::_MOTIF_WM_HINTS),
-                                       32,
-                                       5,
-                                       &hints), c);
+        xcb_change_property(c->xcb_connection(),
+                            XCB_PROP_MODE_REPLACE,
+                            window,
+                            c->atom(QXcbAtom::_MOTIF_WM_HINTS),
+                            c->atom(QXcbAtom::_MOTIF_WM_HINTS),
+                            32,
+                            5,
+                            &hints);
     } else {
-        Q_XCB_CALL2(xcb_delete_property(c->xcb_connection(), window, c->atom(QXcbAtom::_MOTIF_WM_HINTS)), c);
+        xcb_delete_property(c->xcb_connection(), window, c->atom(QXcbAtom::_MOTIF_WM_HINTS));
     }
 }
 
@@ -1083,11 +1083,11 @@ void QXcbWindow::setNetWmStates(NetWmStates states)
         atoms.push_back(atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION));
 
     if (atoms.isEmpty()) {
-        Q_XCB_CALL(xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_STATE)));
+        xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_STATE));
     } else {
-        Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                       atom(QXcbAtom::_NET_WM_STATE), XCB_ATOM_ATOM, 32,
-                                       atoms.count(), atoms.constData()));
+        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                            atom(QXcbAtom::_NET_WM_STATE), XCB_ATOM_ATOM, 32,
+                            atoms.count(), atoms.constData());
     }
     xcb_flush(xcb_connection());
 }
@@ -1210,7 +1210,9 @@ void QXcbWindow::changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two)
     event.data.data32[3] = 0;
     event.data.data32[4] = 0;
 
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), 0, xcbScreen()->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+    xcb_send_event(xcb_connection(), 0, xcbScreen()->root(),
+                   XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+                   (const char *)&event);
 }
 
 void QXcbWindow::setWindowState(Qt::WindowState state)
@@ -1221,7 +1223,7 @@ void QXcbWindow::setWindowState(Qt::WindowState state)
     // unset old state
     switch (m_windowState) {
     case Qt::WindowMinimized:
-        Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
+        xcb_map_window(xcb_connection(), m_window);
         break;
     case Qt::WindowMaximized:
         changeNetWmState(false,
@@ -1252,7 +1254,9 @@ void QXcbWindow::setWindowState(Qt::WindowState state)
             event.data.data32[3] = 0;
             event.data.data32[4] = 0;
 
-            Q_XCB_CALL(xcb_send_event(xcb_connection(), 0, xcbScreen()->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+            xcb_send_event(xcb_connection(), 0, xcbScreen()->root(),
+                           XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+                           (const char *)&event);
         }
         break;
     case Qt::WindowMaximized:
@@ -1378,30 +1382,30 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
     if (m_netWmUserTimeWindow || isSupportedByWM) {
         if (!m_netWmUserTimeWindow) {
             m_netWmUserTimeWindow = xcb_generate_id(xcb_connection());
-            Q_XCB_CALL(xcb_create_window(xcb_connection(),
-                                         XCB_COPY_FROM_PARENT,            // depth -- same as root
-                                         m_netWmUserTimeWindow,                        // window id
-                                         m_window,                   // parent window id
-                                         -1, -1, 1, 1,
-                                         0,                               // border width
-                                         XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                         m_visualId,                      // visual
-                                         0,                               // value mask
-                                         0));                             // value list
+            xcb_create_window(xcb_connection(),
+                              XCB_COPY_FROM_PARENT,            // depth -- same as root
+                              m_netWmUserTimeWindow,           // window id
+                              m_window,                        // parent window id
+                              -1, -1, 1, 1,
+                              0,                               // border width
+                              XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
+                              m_visualId,                      // visual
+                              0,                               // value mask
+                              0);                              // value list
             wid = m_netWmUserTimeWindow;
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW),
                                 XCB_ATOM_WINDOW, 32, 1, &m_netWmUserTimeWindow);
             xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_USER_TIME));
 #ifndef QT_NO_DEBUG
             QByteArray ba("Qt NET_WM user time window");
-            Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                           XCB_PROP_MODE_REPLACE,
-                                           m_netWmUserTimeWindow,
-                                           atom(QXcbAtom::_NET_WM_NAME),
-                                           atom(QXcbAtom::UTF8_STRING),
-                                           8,
-                                           ba.length(),
-                                           ba.constData()));
+            xcb_change_property(xcb_connection(),
+                                XCB_PROP_MODE_REPLACE,
+                                m_netWmUserTimeWindow,
+                                atom(QXcbAtom::_NET_WM_NAME),
+                                atom(QXcbAtom::UTF8_STRING),
+                                8,
+                                ba.length(),
+                                ba.constData());
 #endif
         } else if (!isSupportedByWM) {
             // WM no longer supports it, then we should remove the
@@ -1475,21 +1479,21 @@ void QXcbWindow::setParent(const QPlatformWindow *parent)
         xcb_parent_id = xcbScreen()->root();
         m_embedded = false;
     }
-    Q_XCB_CALL(xcb_reparent_window(xcb_connection(), xcb_window(), xcb_parent_id, topLeft.x(), topLeft.y()));
+    xcb_reparent_window(xcb_connection(), xcb_window(), xcb_parent_id, topLeft.x(), topLeft.y());
 }
 
 void QXcbWindow::setWindowTitle(const QString &title)
 {
     const QString fullTitle = formatWindowTitle(title, QString::fromUtf8(" \xe2\x80\x94 ")); // unicode character U+2014, EM DASH
     const QByteArray ba = fullTitle.toUtf8();
-    Q_XCB_CALL(xcb_change_property(xcb_connection(),
+    xcb_change_property(xcb_connection(),
                                    XCB_PROP_MODE_REPLACE,
                                    m_window,
                                    atom(QXcbAtom::_NET_WM_NAME),
                                    atom(QXcbAtom::UTF8_STRING),
                                    8,
                                    ba.length(),
-                                   ba.constData()));
+                                   ba.constData());
 
 #ifdef XCB_USE_XLIB
     XTextProperty *text = qstringToXTP(DISPLAY_FROM_XCB(this), title);
@@ -1502,14 +1506,14 @@ void QXcbWindow::setWindowTitle(const QString &title)
 void QXcbWindow::setWindowIconText(const QString &title)
 {
     const QByteArray ba = title.toUtf8();
-    Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                   XCB_PROP_MODE_REPLACE,
-                                   m_window,
-                                   atom(QXcbAtom::_NET_WM_ICON_NAME),
-                                   atom(QXcbAtom::UTF8_STRING),
-                                   8,
-                                   ba.length(),
-                                   ba.constData()));
+    xcb_change_property(xcb_connection(),
+                        XCB_PROP_MODE_REPLACE,
+                        m_window,
+                        atom(QXcbAtom::_NET_WM_ICON_NAME),
+                        atom(QXcbAtom::UTF8_STRING),
+                        8,
+                        ba.length(),
+                        ba.constData());
 }
 
 void QXcbWindow::setWindowIcon(const QIcon &icon)
@@ -1539,18 +1543,18 @@ void QXcbWindow::setWindowIcon(const QIcon &icon)
     }
 
     if (!icon_data.isEmpty()) {
-        Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                       XCB_PROP_MODE_REPLACE,
-                                       m_window,
-                                       atom(QXcbAtom::_NET_WM_ICON),
-                                       atom(QXcbAtom::CARDINAL),
-                                       32,
-                                       icon_data.size(),
-                                       (unsigned char *) icon_data.data()));
+        xcb_change_property(xcb_connection(),
+                            XCB_PROP_MODE_REPLACE,
+                            m_window,
+                            atom(QXcbAtom::_NET_WM_ICON),
+                            atom(QXcbAtom::CARDINAL),
+                            32,
+                            icon_data.size(),
+                            (unsigned char *) icon_data.data());
     } else {
-        Q_XCB_CALL(xcb_delete_property(xcb_connection(),
-                                       m_window,
-                                       atom(QXcbAtom::_NET_WM_ICON)));
+        xcb_delete_property(xcb_connection(),
+                            m_window,
+                            atom(QXcbAtom::_NET_WM_ICON));
     }
 }
 
@@ -1558,14 +1562,14 @@ void QXcbWindow::raise()
 {
     const quint32 mask = XCB_CONFIG_WINDOW_STACK_MODE;
     const quint32 values[] = { XCB_STACK_MODE_ABOVE };
-    Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, values));
+    xcb_configure_window(xcb_connection(), m_window, mask, values);
 }
 
 void QXcbWindow::lower()
 {
     const quint32 mask = XCB_CONFIG_WINDOW_STACK_MODE;
     const quint32 values[] = { XCB_STACK_MODE_BELOW };
-    Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, values));
+    xcb_configure_window(xcb_connection(), m_window, mask, values);
 }
 
 // Adapt the geometry to match the WM expection with regards
@@ -1659,9 +1663,11 @@ void QXcbWindow::requestActivateWindow()
         event.data.data32[3] = 0;
         event.data.data32[4] = 0;
 
-        Q_XCB_CALL(xcb_send_event(xcb_connection(), 0, xcbScreen()->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+        xcb_send_event(xcb_connection(), 0, xcbScreen()->root(),
+                       XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+                       (const char *)&event);
     } else {
-        Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, connection()->time()));
+        xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, connection()->time());
     }
 
     connection()->sync();
@@ -1845,20 +1851,20 @@ void QXcbWindow::setWmWindowType(QXcbWindowFunctions::WmWindowTypes types, Qt::W
         atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_NORMAL));
 
     if (atoms.isEmpty()) {
-        Q_XCB_CALL(xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_WINDOW_TYPE)));
+        xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_WINDOW_TYPE));
     } else {
-        Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                       atom(QXcbAtom::_NET_WM_WINDOW_TYPE), XCB_ATOM_ATOM, 32,
-                                       atoms.count(), atoms.constData()));
+        xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                            atom(QXcbAtom::_NET_WM_WINDOW_TYPE), XCB_ATOM_ATOM, 32,
+                            atoms.count(), atoms.constData());
     }
     xcb_flush(xcb_connection());
 }
 
 void QXcbWindow::setWmWindowRole(const QByteArray &role)
 {
-    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                   atom(QXcbAtom::WM_WINDOW_ROLE), XCB_ATOM_STRING, 8,
-                                   role.size(), role.constData()));
+    xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                        atom(QXcbAtom::WM_WINDOW_ROLE), XCB_ATOM_STRING, 8,
+                        role.size(), role.constData());
 }
 
 void QXcbWindow::setParentRelativeBackPixmapStatic(QWindow *window)
@@ -1871,7 +1877,7 @@ void QXcbWindow::setParentRelativeBackPixmap()
 {
     const quint32 mask = XCB_CW_BACK_PIXMAP;
     const quint32 values[] = { XCB_BACK_PIXMAP_PARENT_RELATIVE };
-    Q_XCB_CALL(xcb_change_window_attributes(xcb_connection(), m_window, mask, values));
+    xcb_change_window_attributes(xcb_connection(), m_window, mask, values);
 }
 
 bool QXcbWindow::requestSystemTrayWindowDockStatic(const QWindow *window)
@@ -2547,7 +2553,7 @@ void QXcbWindow::updateSyncRequestCounter()
         return;
     }
     if (m_usingSyncProtocol && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
-        Q_XCB_CALL(xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue));
+        xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue);
         xcb_flush(xcb_connection());
 
         m_syncValue.lo = 0;
@@ -2714,8 +2720,7 @@ void QXcbWindow::sendXEmbedMessage(xcb_window_t window, quint32 message,
     event.data.data32[2] = detail;
     event.data.data32[3] = data1;
     event.data.data32[4] = data2;
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, window,
-                              XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
+    xcb_send_event(xcb_connection(), false, window, XCB_EVENT_MASK_NO_EVENT, (const char *)&event);
 }
 
 static bool activeWindowChangeQueued(const QWindow *window)
@@ -2737,12 +2742,12 @@ void QXcbWindow::handleXEmbedMessage(const xcb_client_message_event_t *event)
     case XEMBED_WINDOW_DEACTIVATE:
         break;
     case XEMBED_EMBEDDED_NOTIFY:
-        Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
+        xcb_map_window(xcb_connection(), m_window);
         xcbScreen()->windowShown(this);
         // Without Qt::WA_TranslucentBackground, we use a ParentRelative BackPixmap.
         // Clear the whole tray icon window to its background color as early as possible
         // so that we can get a clean result from grabWindow() later.
-        Q_XCB_CALL(xcb_clear_area(xcb_connection(), false, m_window, 0, 0, geometry().width(), geometry().height()));
+        xcb_clear_area(xcb_connection(), false, m_window, 0, 0, geometry().width(), geometry().height());
         xcb_flush(xcb_connection());
         break;
     case XEMBED_FOCUS_IN:
@@ -2789,14 +2794,14 @@ void QXcbWindow::setOpacity(qreal level)
 
     quint32 value = qRound64(qBound(qreal(0), level, qreal(1)) * 0xffffffff);
 
-    Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                   XCB_PROP_MODE_REPLACE,
-                                   m_window,
-                                   atom(QXcbAtom::_NET_WM_WINDOW_OPACITY),
-                                   XCB_ATOM_CARDINAL,
-                                   32,
-                                   1,
-                                   (uchar *)&value));
+    xcb_change_property(xcb_connection(),
+                        XCB_PROP_MODE_REPLACE,
+                        m_window,
+                        atom(QXcbAtom::_NET_WM_WINDOW_OPACITY),
+                        XCB_ATOM_CARDINAL,
+                        32,
+                        1,
+                        (uchar *)&value);
 }
 
 void QXcbWindow::setMask(const QRegion &region)

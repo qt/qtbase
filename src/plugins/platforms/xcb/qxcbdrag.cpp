@@ -780,8 +780,8 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
         handle_xdnd_status(&response);
     else
 #endif
-        Q_XCB_CALL(xcb_send_event(xcb_connection(), false, current_proxy_target,
-                                  XCB_EVENT_MASK_NO_EVENT, (const char *)&response));
+    xcb_send_event(xcb_connection(), false, current_proxy_target,
+                   XCB_EVENT_MASK_NO_EVENT, (const char *)&response);
 }
 
 namespace
@@ -985,8 +985,8 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     finished.data.data32[0] = currentWindow ? xcb_window(currentWindow.data()) : XCB_NONE;
     finished.data.data32[1] = response.isAccepted(); // flags
     finished.data.data32[2] = toXdndAction(response.acceptedAction());
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, current_proxy_target,
-                              XCB_EVENT_MASK_NO_EVENT, (char *)&finished));
+    xcb_send_event(xcb_connection(), false, current_proxy_target,
+                   XCB_EVENT_MASK_NO_EVENT, (char *)&finished);
 
     xdnd_dragsource = 0;
     currentWindow.clear();

@@ -1427,8 +1427,6 @@ private:
 void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code,
                                   quint16 state, xcb_timestamp_t time)
 {
-    Q_XCB_NOOP(connection());
-
     if (!m_config)
         return;
 
