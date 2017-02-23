@@ -306,13 +306,5 @@ QTest::keyClick(myWindow, Qt::Key_Escape);
 QTest::keyClick(myWindow, Qt::Key_Escape, Qt::ShiftModifier, 200);
 //! [29]
 
-//! [30]
-MyObject obj;
-obj.startup();
-QTest::qWaitFor([&]() {
-    return obj.isReady();
-}, 3000);
-//! [30]
-
 }
 

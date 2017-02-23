@@ -150,8 +150,7 @@ do {\
 #define QTRY_IMPL(expr, timeout)\
     const int qt_test_step = 50; \
     const int qt_test_timeoutValue = timeout; \
-    bool timedOut = !QTest::qWaitFor([&]() { return (expr); }, qt_test_timeoutValue); \
-    Q_UNUSED(timedOut); \
+    QTRY_LOOP_IMPL((expr), qt_test_timeoutValue, qt_test_step); \
     QTRY_TIMEOUT_DEBUG_IMPL((expr), qt_test_timeoutValue, qt_test_step)\
 
 // Will try to wait for the expression to become true while allowing event processing
