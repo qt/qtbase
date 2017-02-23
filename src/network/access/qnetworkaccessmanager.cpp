@@ -1157,7 +1157,7 @@ void QNetworkAccessManager::connectToHost(const QString &hostName, quint16 port)
 /*!
     \since 5.9
 
-    Sets the manager's redirects policy to be the \a policy specified. This policy
+    Sets the manager's redirect policy to be the \a policy specified. This policy
     will affect all subsequent requests created by the manager.
 
     Use this function to enable or disable HTTP redirects on the manager's level.
@@ -1166,18 +1166,18 @@ void QNetworkAccessManager::connectToHost(const QString &hostName, quint16 port)
     the highest priority, next by priority is QNetworkRequest::FollowRedirectsAttribute.
     Finally, the manager's policy has the lowest priority.
 
-    For backwards compatibility the default value is QNetworkRequest::ManualRedirectsPolicy.
+    For backwards compatibility the default value is QNetworkRequest::ManualRedirectPolicy.
     This may change in the future and some type of auto-redirect policy will become
     the default; clients relying on manual redirect handling are encouraged to set
     this policy explicitly in their code.
 
-    \sa redirectsPolicy(), QNetworkRequest::RedirectsPolicy,
+    \sa redirectPolicy(), QNetworkRequest::RedirectPolicy,
     QNetworkRequest::FollowRedirectsAttribute
 */
-void QNetworkAccessManager::setRedirectsPolicy(QNetworkRequest::RedirectsPolicy policy)
+void QNetworkAccessManager::setRedirectPolicy(QNetworkRequest::RedirectPolicy policy)
 {
     Q_D(QNetworkAccessManager);
-    d->redirectsPolicy = policy;
+    d->redirectPolicy = policy;
 }
 
 /*!
@@ -1185,12 +1185,12 @@ void QNetworkAccessManager::setRedirectsPolicy(QNetworkRequest::RedirectsPolicy 
 
     Returns the redirect policy that is used when creating new requests.
 
-    \sa setRedirectsPolicy(), QNetworkRequest::RedirectsPolicy
+    \sa setRedirectPolicy(), QNetworkRequest::RedirectPolicy
 */
-QNetworkRequest::RedirectsPolicy QNetworkAccessManager::redirectsPolicy() const
+QNetworkRequest::RedirectPolicy QNetworkAccessManager::redirectPolicy() const
 {
     Q_D(const QNetworkAccessManager);
-    return d->redirectsPolicy;
+    return d->redirectPolicy;
 }
 
 /*!
@@ -1280,12 +1280,12 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     Q_D(QNetworkAccessManager);
 
     QNetworkRequest req(originalReq);
-    if (req.attribute(QNetworkRequest::RedirectsPolicyAttribute).isNull()
+    if (req.attribute(QNetworkRequest::RedirectPolicyAttribute).isNull()
         && req.attribute(QNetworkRequest::FollowRedirectsAttribute).isNull()) {
         // We only apply the general manager's policy if:
-        // - RedirectsPolicyAttribute is not set already on request and
+        // - RedirectPolicyAttribute is not set already on request and
         // - no FollowRedirectsAttribute is set.
-        req.setAttribute(QNetworkRequest::RedirectsPolicyAttribute, redirectsPolicy());
+        req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, redirectPolicy());
     }
 
     bool isLocalFile = req.url().isLocalFile();

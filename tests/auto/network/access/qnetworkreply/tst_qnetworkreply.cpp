@@ -8194,22 +8194,22 @@ struct SameOriginRedirector : MiniHttpServer
 
 void tst_QNetworkReply::ioHttpRedirectPolicy_data()
 {
-    QTest::addColumn<QNetworkRequest::RedirectsPolicy>("policy");
+    QTest::addColumn<QNetworkRequest::RedirectPolicy>("policy");
     QTest::addColumn<bool>("ssl");
     QTest::addColumn<int>("redirectCount");
     QTest::addColumn<int>("statusCode");
 
-    QTest::newRow("manual-nossl") << QNetworkRequest::ManualRedirectsPolicy << false << 0 << 307;
-    QTest::newRow("manual-ssl") << QNetworkRequest::ManualRedirectsPolicy << true << 0 << 307;
-    QTest::newRow("nolesssafe-nossl") << QNetworkRequest::NoLessSafeRedirectsPolicy << false << 1 << 200;
-    QTest::newRow("nolesssafe-ssl") << QNetworkRequest::NoLessSafeRedirectsPolicy << true << 1 << 200;
-    QTest::newRow("same-origin-nossl") << QNetworkRequest::SameOriginRedirectsPolicy << false << 1 << 200;
-    QTest::newRow("same-origin-ssl") << QNetworkRequest::SameOriginRedirectsPolicy << true << 1 << 200;
+    QTest::newRow("manual-nossl") << QNetworkRequest::ManualRedirectPolicy << false << 0 << 307;
+    QTest::newRow("manual-ssl") << QNetworkRequest::ManualRedirectPolicy << true << 0 << 307;
+    QTest::newRow("nolesssafe-nossl") << QNetworkRequest::NoLessSafeRedirectPolicy << false << 1 << 200;
+    QTest::newRow("nolesssafe-ssl") << QNetworkRequest::NoLessSafeRedirectPolicy << true << 1 << 200;
+    QTest::newRow("same-origin-nossl") << QNetworkRequest::SameOriginRedirectPolicy << false << 1 << 200;
+    QTest::newRow("same-origin-ssl") << QNetworkRequest::SameOriginRedirectPolicy << true << 1 << 200;
 }
 
 void tst_QNetworkReply::ioHttpRedirectPolicy()
 {
-    QFETCH(const QNetworkRequest::RedirectsPolicy, policy);
+    QFETCH(const QNetworkRequest::RedirectPolicy, policy);
 
     QFETCH(const bool, ssl);
 #ifdef QT_NO_SSL
@@ -8234,16 +8234,16 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
     redirectServer.responses.push_back(tempRedirectReplyStr().arg(QString(url.toEncoded())).toLatin1());
 
     // This is the default one we preserve between tests.
-    QCOMPARE(manager.redirectsPolicy(), QNetworkRequest::ManualRedirectsPolicy);
+    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::ManualRedirectPolicy);
 
-    manager.setRedirectsPolicy(policy);
-    QCOMPARE(manager.redirectsPolicy(), policy);
+    manager.setRedirectPolicy(policy);
+    QCOMPARE(manager.redirectPolicy(), policy);
     QNetworkReplyPtr reply(manager.get(QNetworkRequest(url)));
     if (ssl)
         reply->ignoreSslErrors();
 
     // Restore default:
-    manager.setRedirectsPolicy(QNetworkRequest::ManualRedirectsPolicy);
+    manager.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
     QSignalSpy redirectSpy(reply.data(), SIGNAL(redirected(QUrl)));
     QSignalSpy finishedSpy(reply.data(), SIGNAL(finished()));
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
@@ -8254,43 +8254,43 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
 
 void tst_QNetworkReply::ioHttpRedirectPolicyErrors_data()
 {
-    QTest::addColumn<QNetworkRequest::RedirectsPolicy>("policy");
+    QTest::addColumn<QNetworkRequest::RedirectPolicy>("policy");
     QTest::addColumn<bool>("ssl");
     QTest::addColumn<QString>("location");
     QTest::addColumn<int>("maxRedirects");
     QTest::addColumn<QNetworkReply::NetworkError>("expectedError");
 
     // 1. NoLessSafeRedirectsPolicy
-    QTest::newRow("nolesssafe-nossl-nossl-too-many") << QNetworkRequest::NoLessSafeRedirectsPolicy
+    QTest::newRow("nolesssafe-nossl-nossl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
-    QTest::newRow("nolesssafe-ssl-ssl-too-many") << QNetworkRequest::NoLessSafeRedirectsPolicy
+    QTest::newRow("nolesssafe-ssl-ssl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("https:/localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
-    QTest::newRow("nolesssafe-ssl-nossl-insecure-redirect") << QNetworkRequest::NoLessSafeRedirectsPolicy
+    QTest::newRow("nolesssafe-ssl-nossl-insecure-redirect") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
     // 2. SameOriginRedirectsPolicy
-    QTest::newRow("same-origin-nossl-nossl-too-many") << QNetworkRequest::SameOriginRedirectsPolicy
+    QTest::newRow("same-origin-nossl-nossl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
-    QTest::newRow("same-origin-ssl-ssl-too-many") << QNetworkRequest::SameOriginRedirectsPolicy
+    QTest::newRow("same-origin-ssl-ssl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
-    QTest::newRow("same-origin-https-http-wrong-protocol") << QNetworkRequest::SameOriginRedirectsPolicy
+    QTest::newRow("same-origin-https-http-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
-    QTest::newRow("same-origin-http-https-wrong-protocol") << QNetworkRequest::SameOriginRedirectsPolicy
+    QTest::newRow("same-origin-http-https-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("https://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
-    QTest::newRow("same-origin-http-http-wrong-host") << QNetworkRequest::SameOriginRedirectsPolicy
+    QTest::newRow("same-origin-http-http-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
-    QTest::newRow("same-origin-https-https-wrong-host") << QNetworkRequest::SameOriginRedirectsPolicy
+    QTest::newRow("same-origin-https-https-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
-    QTest::newRow("same-origin-http-http-wrong-port") << QNetworkRequest::SameOriginRedirectsPolicy
+    QTest::newRow("same-origin-http-http-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
-    QTest::newRow("same-origin-https-https-wrong-port") << QNetworkRequest::SameOriginRedirectsPolicy
+    QTest::newRow("same-origin-https-https-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
 }
 
 void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
 {
-    QFETCH(const QNetworkRequest::RedirectsPolicy, policy);
+    QFETCH(const QNetworkRequest::RedirectPolicy, policy);
     // This should never happen:
-    QVERIFY(policy != QNetworkRequest::ManualRedirectsPolicy);
+    QVERIFY(policy != QNetworkRequest::ManualRedirectPolicy);
 
     QFETCH(const bool, ssl);
     QFETCH(const QString, location);
@@ -8317,13 +8317,13 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
     request.setMaximumRedirectsAllowed(maxRedirects);
     // We always reset the policy to the default one ('Manual') after any related
     // test is finished:
-    QCOMPARE(manager.redirectsPolicy(), QNetworkRequest::ManualRedirectsPolicy);
-    manager.setRedirectsPolicy(policy);
-    QCOMPARE(manager.redirectsPolicy(), policy);
+    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::ManualRedirectPolicy);
+    manager.setRedirectPolicy(policy);
+    QCOMPARE(manager.redirectPolicy(), policy);
 
     QNetworkReplyPtr reply(manager.get(request));
     // Set it back to default:
-    manager.setRedirectsPolicy(QNetworkRequest::ManualRedirectsPolicy);
+    manager.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
     if (ssl)
         reply->ignoreSslErrors();
@@ -8358,9 +8358,9 @@ void tst_QNetworkReply::ioHttpUserVerifiedRedirect()
     redirectServer.setDataToTransmit(tempRedirectReplyStr().arg(QString(url.toEncoded())).toLatin1());
     url.setPort(redirectServer.serverPort());
 
-    QCOMPARE(manager.redirectsPolicy(), QNetworkRequest::ManualRedirectsPolicy);
-    manager.setRedirectsPolicy(QNetworkRequest::UserVerifiedRedirectsPolicy);
-    QCOMPARE(manager.redirectsPolicy(), QNetworkRequest::UserVerifiedRedirectsPolicy);
+    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::ManualRedirectPolicy);
+    manager.setRedirectPolicy(QNetworkRequest::UserVerifiedRedirectPolicy);
+    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::UserVerifiedRedirectPolicy);
 
     QNetworkReplyPtr reply(manager.get(QNetworkRequest(url)));
     reply->connect(reply.data(), &QNetworkReply::redirected,
@@ -8376,8 +8376,8 @@ void tst_QNetworkReply::ioHttpUserVerifiedRedirect()
                    });
 
     // Before any test failed, reset the policy to default:
-    manager.setRedirectsPolicy(QNetworkRequest::ManualRedirectsPolicy);
-    QCOMPARE(manager.redirectsPolicy(), QNetworkRequest::ManualRedirectsPolicy);
+    manager.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
+    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::ManualRedirectPolicy);
 
     QSignalSpy finishedSpy(reply.data(), SIGNAL(finished()));
     waitForFinish(reply);

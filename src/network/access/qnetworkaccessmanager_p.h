@@ -93,7 +93,7 @@ public:
 #endif
           cookieJarCreated(false),
           defaultAccessControl(true),
-          redirectsPolicy(QNetworkRequest::ManualRedirectsPolicy),
+          redirectPolicy(QNetworkRequest::ManualRedirectPolicy),
           authenticationManager(QSharedPointer<QNetworkAccessAuthenticationManager>::create())
     {
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -196,7 +196,7 @@ public:
 
     bool cookieJarCreated;
     bool defaultAccessControl;
-    QNetworkRequest::RedirectsPolicy redirectsPolicy;
+    QNetworkRequest::RedirectPolicy redirectPolicy;
 
     // The cache with authorization data:
     QSharedPointer<QNetworkAccessAuthenticationManager> authenticationManager;

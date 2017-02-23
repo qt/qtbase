@@ -155,8 +155,8 @@ public:
 #endif
     void connectToHost(const QString &hostName, quint16 port = 80);
 
-    void setRedirectsPolicy(QNetworkRequest::RedirectsPolicy policy);
-    QNetworkRequest::RedirectsPolicy redirectsPolicy() const;
+    void setRedirectPolicy(QNetworkRequest::RedirectPolicy policy);
+    QNetworkRequest::RedirectPolicy redirectPolicy() const;
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY

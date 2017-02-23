@@ -668,14 +668,14 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     }
 #endif
 
-    auto redirectsPolicy = QNetworkRequest::ManualRedirectsPolicy;
-    const QVariant value = newHttpRequest.attribute(QNetworkRequest::RedirectsPolicyAttribute);
+    auto redirectPolicy = QNetworkRequest::ManualRedirectPolicy;
+    const QVariant value = newHttpRequest.attribute(QNetworkRequest::RedirectPolicyAttribute);
     if (value.isValid())
-        redirectsPolicy = value.value<QNetworkRequest::RedirectsPolicy>();
+        redirectPolicy = value.value<QNetworkRequest::RedirectPolicy>();
     else if (newHttpRequest.attribute(QNetworkRequest::FollowRedirectsAttribute).toBool())
-        redirectsPolicy = QNetworkRequest::NoLessSafeRedirectsPolicy;
+        redirectPolicy = QNetworkRequest::NoLessSafeRedirectPolicy;
 
-    httpRequest.setRedirectsPolicy(redirectsPolicy);
+    httpRequest.setRedirectPolicy(redirectPolicy);
 
     httpRequest.setPriority(convert(newHttpRequest.priority()));
 
@@ -1155,7 +1155,7 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
 
     const bool isLessSafe = schemeBefore == QLatin1String("https")
                             && url.scheme() == QLatin1String("http");
-    if (httpRequest.redirectsPolicy() == QNetworkRequest::NoLessSafeRedirectsPolicy
+    if (httpRequest.redirectPolicy() == QNetworkRequest::NoLessSafeRedirectPolicy
         && isLessSafe) {
         error(QNetworkReply::InsecureRedirectError,
               QCoreApplication::translate("QHttp", "Insecure redirect"));
@@ -1165,7 +1165,7 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
     redirectRequest = createRedirectRequest(originalRequest, url, maxRedirectsRemaining);
     operation = getRedirectOperation(operation, httpStatus);
 
-    if (httpRequest.redirectsPolicy() != QNetworkRequest::UserVerifiedRedirectsPolicy)
+    if (httpRequest.redirectPolicy() != QNetworkRequest::UserVerifiedRedirectPolicy)
         followRedirect();
 
     emit q->redirected(url);
