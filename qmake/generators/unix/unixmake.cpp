@@ -584,7 +584,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
                 dst = escapeFilePath(filePrefixRoot(root, targetdir + src.section('/', -1)));
         if(!ret.isEmpty())
             ret += "\n\t";
-        ret += "-$(INSTALL_FILE) " + escapeFilePath(Option::fixPathToTargetOS(src, false)) + ' ' + dst;
+        ret += "-$(QINSTALL_FILE) " + escapeFilePath(Option::fixPathToTargetOS(src, false)) + ' ' + dst;
         if(!uninst.isEmpty())
             uninst.append("\n\t");
         uninst.append("-$(DEL_FILE) " + dst);
@@ -622,7 +622,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
         if (bundle == SolidBundle) {
             copy_cmd += "-$(INSTALL_DIR) " + src_targ + ' ' + plain_targ;
         } else if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("staticlib")) {
-            copy_cmd += "-$(INSTALL_FILE) " + src_targ + ' ' + dst_targ;
+            copy_cmd += "-$(QINSTALL_FILE) " + src_targ + ' ' + dst_targ;
         } else if (!isAux) {
             if (bundle == SlicedBundle) {
                 if (!ret.isEmpty())

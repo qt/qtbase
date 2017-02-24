@@ -62,6 +62,9 @@ public:
 #else
         { return shellQuoteWin(arg); }
 #endif
+#if defined(PROEVALUATOR_FULL)
+    static bool touchFile(const QString &targetFileName, const QString &referenceFileName, QString *errorString);
+#endif
 };
 
 } // namespace ProFileEvaluatorInternal
