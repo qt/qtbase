@@ -3371,22 +3371,15 @@ QTextTableCellFormat::QTextTableCellFormat(const QTextFormat &fmt)
 
 // ------------------------------------------------------
 
-
-QTextFormatCollection::QTextFormatCollection(const QTextFormatCollection &rhs)
-{
-    formats = rhs.formats;
-    objFormats = rhs.objFormats;
-}
-
-QTextFormatCollection &QTextFormatCollection::operator=(const QTextFormatCollection &rhs)
-{
-    formats = rhs.formats;
-    objFormats = rhs.objFormats;
-    return *this;
-}
-
 QTextFormatCollection::~QTextFormatCollection()
 {
+}
+
+void QTextFormatCollection::clear()
+{
+    formats.clear();
+    objFormats.clear();
+    hashes.clear();
 }
 
 int QTextFormatCollection::indexForFormat(const QTextFormat &format)

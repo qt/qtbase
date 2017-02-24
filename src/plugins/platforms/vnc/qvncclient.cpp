@@ -142,7 +142,7 @@ void QVncClient::convertPixels(char *dst, const char *src, int count) const
         case 16: {
             quint16 p = *reinterpret_cast<const quint16*>(src);
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-            if (swapBytes)
+            if (m_swapBytes)
                 p = ((p & 0xff) << 8) | ((p & 0xff00) >> 8);
 #endif
             r = (p >> 11) & 0x1f;
@@ -484,7 +484,7 @@ void QVncClient::setPixelFormat()
         m_sameEndian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) == !!m_pixelFormat.bigEndian;
         m_needConversion = pixelConversionNeeded();
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        m_swapBytes = qvnc_screen->swapBytes();
+        m_swapBytes = server()->screen()->swapBytes();
 #endif
     }
 }
@@ -639,7 +639,7 @@ bool QVncClient::pixelConversionNeeded() const
         return true;
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-    if (qvnc_screen->swapBytes())
+    if (server()->screen()->swapBytes())
         return true;
 #endif
 

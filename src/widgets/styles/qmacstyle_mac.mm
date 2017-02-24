@@ -6669,12 +6669,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
     }
     case CT_Menu: {
-        QStyleHintReturnMask menuMask;
-        QStyleOption myOption = *opt;
-        myOption.rect.setSize(sz);
-        if (proxy()->styleHint(SH_Menu_Mask, &myOption, widget, &menuMask)) {
-            sz = menuMask.region.boundingRect().size();
-        }
+        sz = csz;
         break; }
     case CT_HeaderSection:{
         const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt);

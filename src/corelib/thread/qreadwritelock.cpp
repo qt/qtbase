@@ -392,13 +392,13 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
 */
 void QReadWriteLock::unlock()
 {
-    QReadWriteLockPrivate *d = d_ptr.load();
+    QReadWriteLockPrivate *d = d_ptr.loadAcquire();
     while (true) {
         Q_ASSERT_X(d, "QReadWriteLock::unlock()", "Cannot unlock an unlocked lock");
 
         // Fast case: no contention: (no waiters, no other readers)
         if (quintptr(d) <= 2) { // 1 or 2 (StateLockedForRead or StateLockedForWrite)
-            if (!d_ptr.testAndSetRelease(d, nullptr, d))
+            if (!d_ptr.testAndSetOrdered(d, nullptr, d))
                 continue;
             return;
         }
@@ -407,7 +407,7 @@ void QReadWriteLock::unlock()
             Q_ASSERT(quintptr(d) > (1U<<4)); //otherwise that would be the fast case
             // Just decrease the reader's count.
             auto val = reinterpret_cast<QReadWriteLockPrivate *>(quintptr(d) - (1U<<4));
-            if (!d_ptr.testAndSetRelease(d, val, d))
+            if (!d_ptr.testAndSetOrdered(d, val, d))
                 continue;
             return;
         }

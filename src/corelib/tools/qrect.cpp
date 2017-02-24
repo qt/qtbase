@@ -1323,8 +1323,8 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     rendering.
 
     A QRectF can be constructed with a set of left, top, width and
-    height integers, or from a QPoint and a QSize.  The following code
-    creates two identical rectangles.
+    height coordinates, or from a QPointF and a QSizeF.  The following
+    code creates two identical rectangles.
 
     \snippet code/src_corelib_tools_qrect.cpp 1
 
@@ -1344,7 +1344,7 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     translated copy of this rectangle.
 
     The size() function returns the rectange's dimensions as a
-    QSize. The dimensions can also be retrieved separately using the
+    QSizeF. The dimensions can also be retrieved separately using the
     width() and height() functions. To manipulate the dimensions use
     the setSize(), setWidth() or setHeight() functions. Alternatively,
     the size can be changed by applying either of the functions

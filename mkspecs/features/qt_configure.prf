@@ -401,6 +401,7 @@ defineReplace(qtConfPrepareArgs) {
 }
 
 defineTest(qtConfSetupLibraries) {
+    asspfx = $${currentConfig}.commandline.assignments
     for (l, $${currentConfig}.libraries._KEYS_) {
         lpfx = $${currentConfig}.libraries.$${l}
         # 'export' may be omitted, in which case it falls back to the library's name
@@ -408,6 +409,15 @@ defineTest(qtConfSetupLibraries) {
             $${lpfx}.export = $$l
             export($${lpfx}.export)
         }
+        # 'export' may also be empty, but we need a derived identifier
+        alias = $$eval($${lpfx}.export)
+        isEmpty(alias): alias = $$l
+        $${lpfx}.alias = $$alias
+        export($${lpfx}.alias)
+        # make it easy to refer to the library by its export name.
+        $${currentConfig}.exports._KEYS_ += $$alias
+        $${currentConfig}.exports.$$alias += $$l
+        export($${currentConfig}.exports.$$alias)
         isEmpty($${lpfx}.sources._KEYS_): \
             error("Library $$l defines no sources")
         for (s, $${lpfx}.sources._KEYS_) {
@@ -427,10 +437,33 @@ defineTest(qtConfSetupLibraries) {
             }
         }
     }
+    $${currentConfig}.exports._KEYS_ = $$unique($${currentConfig}.exports._KEYS_)
+    export($${currentConfig}.exports._KEYS_)
+
+    for (alias, $${currentConfig}.exports._KEYS_) {
+        ua = $$upper($$alias)
+        $${asspfx}._KEYS_ += \
+            $${ua}_PREFIX $${ua}_INCDIR $${ua}_LIBDIR \
+            $${ua}_LIBS $${ua}_LIBS_DEBUG $${ua}_LIBS_RELEASE
+        uapfx = $${asspfx}.$${ua}
+        $${uapfx}_PREFIX = $${alias}.prefix
+        $${uapfx}_INCDIR = $${alias}.incdir
+        $${uapfx}_LIBDIR = $${alias}.libdir
+        $${uapfx}_LIBS = $${alias}.libs
+        $${uapfx}_LIBS_DEBUG = $${alias}.libs.debug
+        $${uapfx}_LIBS_RELEASE = $${alias}.libs.release
+        export($${uapfx}_PREFIX)
+        export($${uapfx}_INCDIR)
+        export($${uapfx}_LIBDIR)
+        export($${uapfx}_LIBS)
+        export($${uapfx}_LIBS_DEBUG)
+        export($${uapfx}_LIBS_RELEASE)
+    }
+    export($${asspfx}._KEYS_)
 
     # reverse mapping for assignments on command line.
-    for (a, $${currentConfig}.commandline.assignments._KEYS_) {
-        apfx = $${currentConfig}.commandline.assignments.$${a}
+    for (a, $${asspfx}._KEYS_) {
+        apfx = $${asspfx}.$${a}
         ra = config.commandline.rev_assignments.$$eval($$apfx)
         $$ra = $$a
         export($$ra)
@@ -444,9 +477,13 @@ defineTest(qtConfLibrary_inline) {
     !defined($${1}.libs, var): \
         error("'inline' source in library '$$lib' does not specify 'libs'.")
 
+    # if multiple libraries provide the same export, it makes sense
+    # to make them recognize the same input variables.
+    input = $$eval($${2}.alias)
+
     # direct libs. overwrites inline libs.
-    defined(config.input.$${lib}.libs, var) {
-        $${1}.libs = $$eval(config.input.$${lib}.libs)
+    defined(config.input.$${input}.libs, var) {
+        $${1}.libs = $$eval(config.input.$${input}.libs)
         export($${1}.libs)
     }
 
@@ -455,7 +492,7 @@ defineTest(qtConfLibrary_inline) {
     any = false
     all = true
     for (b, $${1}.builds._KEYS_) {
-        iv = $${lib}.libs.$${b}
+        iv = $${input}.libs.$${b}
         vars += $$eval(config.commandline.rev_assignments.$${iv})
         defined(config.input.$${iv}, var) {
             $${1}.builds.$${b}.libs = $$eval(config.input.$${iv})
@@ -471,11 +508,23 @@ defineTest(qtConfLibrary_inline) {
     }
 
     # prefix. prepends to (possibly overwritten) inline libs.
-    prefix = $$val_escape(config.input.$${lib}.prefix)
+    prefix = $$val_escape(config.input.$${input}.prefix)
     !isEmpty(prefix) {
         $${1}.includedir = $$prefix/include
         export($${1}.includedir)
         $${1}.libs = "-L$$prefix/lib $$eval($${1}.libs)"
+        export($${1}.libs)
+    }
+
+    incdir = $$val_escape(config.input.$${input}.incdir)
+    !isEmpty(incdir) {
+        $${1}.includedir = $$incdir
+        export($${1}.includedir)
+    }
+
+    libdir = $$val_escape(config.input.$${input}.libdir)
+    !isEmpty(libdir) {
+        $${1}.libs = "-L$$libdir $$eval($${1}.libs)"
         export($${1}.libs)
     }
 
@@ -562,14 +611,20 @@ defineReplace(qtConfLibraryArgs) {
 }
 
 defineTest(qtConfExportLibrary) {
-    isEmpty(2): return()
-    !$$qtConfEvaluate($$eval($${1}.export)): return()
+    lpfx = $${currentConfig}.libraries.$$1
+    alias = $$eval($${lpfx}.alias)
+    $${currentConfig}.found.$$alias = $$1
+    export($${currentConfig}.found.$$alias)
+    name = $$eval($${lpfx}.export)
+    isEmpty(name): return()
+    spfx = $${lpfx}.sources.$$eval($${lpfx}.source)
+    !$$qtConfEvaluate($$eval($${spfx}.export)): return()
 
     output = privatePro
 
-    eval(libs = $$eval($${1}.libs))
-    eval(cflags = $$eval($${1}.cflags))
-    eval(includes = $$eval($${1}.includedir))
+    eval(libs = $$eval($${spfx}.libs))
+    eval(cflags = $$eval($${spfx}.cflags))
+    eval(includes = $$eval($${spfx}.includedir))
 
     # Split $$cflags into stuff that goes into DEFINES, INCLUDEPATH, and other stuff.
     defines =
@@ -588,30 +643,46 @@ defineTest(qtConfExportLibrary) {
         }
     }
     !isEmpty(ignored): \
-        qtConfAddNote("Dropped compiler flags '$$ignored' when detecting library '$$2'.")
+        qtConfAddNote("Dropped compiler flags '$$ignored' when detecting library '$$name'.")
 
-    NAME = $$upper($$2)
-    !isEmpty(libs): qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
-    for (b, $${1}.builds._KEYS_): \
+    NAME = $$upper($$name)
+    # LIBS is emitted even if empty, as this allows the library to be "seen".
+    qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
+    for (b, $${spfx}.builds._KEYS_): \
         qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), \
-                                          $$eval($${1}.builds.$${b}))
+                                          $$eval($${spfx}.builds.$${b}))
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
     !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
     !isEmpty($${currentConfig}.module): \
-        qtConfExtendVar($$output, "QT.$${currentModule}_private.libraries", $$2)
+        qtConfExtendVar($$output, "QT.$${currentModule}_private.libraries", $$name)
 }
 
 defineTest(qtConfHandleLibrary) {
     lpfx = $${currentConfig}.libraries.$$1
     defined($${lpfx}.result, var): return()
 
+    alias = $$eval($${lpfx}.alias)
+    !isEmpty($${currentConfig}.found.$$alias) {
+        # this happening indicates a logic error in the conditions
+        # of the feature(s) referring to this library.
+        # note that this does not look across module boundaries, as
+        # multiple modules may know the same libraries; de-duplication
+        # happens via the cache (obviously, this assumes identical
+        # definitions and logic).
+        error("A library exporting '$$alias' was already found.")
+    }
+
     qtConfEnsureTestTypeDeps("library")
-    qtConfTestPrepare_compile($$lpfx)
+    !qtConfTestPrepare_compile($$lpfx) {
+        $${lpfx}.result = false
+        export($${lpfx}.result)
+        return()
+    }
     use_args = $$eval($${lpfx}.literal_args)
 
     qtConfLoadResult($${lpfx}, $$1) {
         $$eval($${lpfx}.result): \
-            qtConfExportLibrary($${lpfx}.sources.$$eval($${lpfx}.source), $$eval($${lpfx}.export))
+            qtConfExportLibrary($$1)
         return()
     }
 
@@ -634,14 +705,14 @@ defineTest(qtConfHandleLibrary) {
             next()
         }
 
-        !$${call}($$spfx) {
+        !$${call}($$spfx, $$lpfx) {
             qtLog("  => source produced no result.")
             next()
         }
 
         # if the library defines a test, use it to verify the source.
         !isEmpty($${lpfx}.test) {
-            $${lpfx}.literal_args = $$use_args $$qtConfLibraryArgs($$spfx)
+            $${lpfx}.literal_args = $$qtConfLibraryArgs($$spfx) $$use_args
             $${lpfx}.host = $$eval($${spfx}.host)
             !qtConfTest_compile($$lpfx) {
                 qtLog(" => source failed verification.")
@@ -657,11 +728,12 @@ defineTest(qtConfHandleLibrary) {
         for (b, $${spfx}.builds._KEYS_): \
             $${lpfx}.cache += sources.$${s}.builds.$${b}
 
-        # immediately output the library as well.
-        qtConfExportLibrary($${spfx}, $$eval($${lpfx}.export))
-
         $${lpfx}.source = $$s
         export($${lpfx}.source)
+
+        # immediately output the library as well.
+        qtConfExportLibrary($$1)
+
         result = true
         break()
     }
@@ -679,27 +751,76 @@ defineTest(qtConfTest_library) {
 }
 
 defineTest(qtConfTestPrepare_compile) {
-    for (u, $$list($$eval($${1}.use))) {
+    !isEmpty($${1}.use._KEYS_) {
+        uses =
+        for (k, $${1}.use._KEYS_) {
+            use = $$eval($${1}.use.$${k}.lib)
+            isEmpty(use): \
+                error("'use' entry $$k in test $$1 lacks 'lib' field.")
+            !$$qtConfEvaluate($$eval($${1}.use.$${k}.condition)): \
+                next()
+            uses += $$use
+        }
+    } else {
+        uses = $$split($${1}.use)
+    }
+    for (u, uses) {
         libConfig =
-        contains($${currentConfig}.libraries._KEYS_, $$u) {
-            libConfig = $${currentConfig}
+        exports = $$eval($${currentConfig}.exports.$$u)
+        !isEmpty(exports) {
+            # using a local library by exported name.
+            ru = $$eval($${currentConfig}.found.$$u)
+            !isEmpty(ru) {
+                # if it was already found, all is good.
+                u = $$ru
+            } else: count(exports, 1) {
+                # otherwise, if there is only one option, ensure it's resolved.
+                u = $$exports
+                qtConfHandleLibrary($$u)
+            } else {
+                # otherwise, verify that all options were resolved.
+                for (x, exports) {
+                    isEmpty($${currentConfig}.libraries.$${x}.result) {
+                        # the higher-level logic is in the features, which we cannot
+                        # infer from here. so the only option is failing.
+                        error("Test $$1 refers to yet unresolved library export '$$u'")
+                    }
+                }
+                return(false)
+            }
+            libConfig = $$currentConfig
+        } else: contains($${currentConfig}.libraries._KEYS_, $$u) {
+            # using a local library by real name. this should be the exception.
             qtConfHandleLibrary($$u)
+            libConfig = $$currentConfig
         } else {
-            for (d, QMAKE_CONFIG_DEPS) {
-                contains($${d}.libraries._KEYS_, $$u) {
-                    libConfig = $$d
-                    break()
+            for (d, QMAKE_LIBRARY_DEPS) {
+                exports = $$eval($${d}.exports.$$u)
+                !isEmpty(exports) {
+                    # using a foreign library by exported name.
+                    # foreign libraries may be external (if they are from a different
+                    # repository and the build is modular), and using these by real
+                    # name is impossible. so for consistency, uses by real name are
+                    # limited to local libraries.
+                    ru = $$eval($${d}.found.$$u)
+                    !isEmpty(ru) {
+                        u = $$ru
+                        libConfig = $$d
+                        break()
+                    }
+                    for (x, exports) {
+                        isEmpty($${d}.libraries.$${x}.result): \
+                            error("Test $$1 refers to unresolved library export '$$u' in '$$d'")
+                    }
+                    return(false)
                 }
             }
         }
         isEmpty(libConfig) {
             nu = $$upper($$u)
-            libs = $$eval(QMAKE_LIBS_$$nu) $$eval(QMAKE_LIBS_$${nu}_DEBUG) $$eval(QMAKE_LIBS_$${nu}_RELEASE)
-            defines = $$eval(QMAKE_DEFINES_$${nu})
-            includes = $$eval(QMAKE_INCDIR_$${nu})
-
-            isEmpty(libs):isEmpty(defines):isEmpty(includes): \
+            !defined(QMAKE_LIBS_$$nu, var): \
                 error("Test $$1 tries to use undeclared library '$$u'")
+            # using an external library by exported name.
             $${1}.literal_args += $$system_quote(QMAKE_USE += $$u)
         } else {
             lpfx = $${libConfig}.libraries.$${u}
@@ -1252,14 +1373,14 @@ defineTest(qtConfProcessFeatures) {
 # reporting
 #
 
-QT_CONF_REPORT_PADDING = "........................................"
+defineReplace(qtConfPadCols) {
+    pad = $$num_add($$str_size($$2), -$$str_size($${1}))
+    lessThan(pad, 0): pad = 0
+    return("$$1 $$str_member($$2, 0, $$pad) $$3")
+}
 
 defineTest(qtConfReportPadded) {
-    pad = $$num_add($$str_size($$QT_CONF_REPORT_PADDING), -$$str_size($${1}))
-    lessThan(pad, 0): pad = 0
-    str = "$$1 $$str_member($$QT_CONF_REPORT_PADDING, 0, $$pad)"
-
-    qtConfAddReport("$$str $${2}")
+    qtConfAddReport($$qtConfPadCols($$1, "........................................", $$2))
 }
 
 defineReplace(qtConfCollectFeatures) {
@@ -1749,8 +1870,6 @@ for(ever) {
     jsonFile = $$thisDir/configure.json
     priFile = $$thisDir/configure.pri
 
-    allConfigs += $$currentConfig
-
     # load configuration data
     configure_data = $$cat($$jsonFile, blob)
     !parseJson(configure_data, $$currentConfig): \
@@ -1758,24 +1877,87 @@ for(ever) {
     exists($$priFile): \
         !include($$priFile): error()
 
+    # only configs which contain more than just subconfigs are saved for later.
+    $${currentConfig}._KEYS_ -= subconfigs
+    !isEmpty($${currentConfig}._KEYS_) {
+        allConfigs += $$currentConfig
+        contains($${currentConfig}._KEYS_, libraries) {
+            qtConfSetupLibraries()
+            # this ensures that references in QMAKE_LIBRARY_DEPS are unique.
+            qtConfSetModuleName()
+            ex = $$eval(config.modules.$${currentModule})
+            !isEmpty(ex): \
+                error("Module $$currentModule is claimed by both $$currentConfig and $${ex}.")
+            config.modules.$${currentModule} = $$currentConfig
+        }
+    }
+
     # prepend all subconfigs to files to keep a depth first search order
     subconfigs =
     for(n, $${currentConfig}.subconfigs._KEYS_) {
         subconfig = $$eval($${currentConfig}.subconfigs.$${n})
         name = $$basename(subconfig)
+        ex = $$eval(config.$${name}.dir)
+        !isEmpty(ex): \
+            error("Basename clash between $$thisDir/$$subconfig and $${ex}.")
         config.$${name}.dir = $$thisDir/$$subconfig
         subconfigs += $$name
     }
     configsToProcess = $$subconfigs $$configsToProcess
 }
 
-for (currentConfig, allConfigs): \
-    qtConfSetupLibraries()
-
 QMAKE_SAVED_ARGS = $$QMAKE_EXTRA_ARGS
 QMAKE_REDO_CONFIG = false
 qtConfParseCommandLine()
 qtConfCheckErrors()
+
+!isEmpty(config.input.list-features) {
+    all_ft =
+    for (currentConfig, allConfigs) {
+        for (k, $${currentConfig}.features._KEYS_) {
+            pp = $$eval($${currentConfig}.features.$${k}.purpose)
+            !isEmpty(pp) {
+                all_ft += $$qtConfPadCols($$k, ".......................", \
+                                          $$section(pp, $$escape_expand(\\n), 0, 0))
+            }
+        }
+    }
+    all_ft = $$sorted(all_ft)
+    logn()
+    for (ft, all_ft): \
+        logn($$ft)
+    error()
+}
+
+!isEmpty(config.input.list-libraries) {
+    logn()
+    for (currentConfig, allConfigs) {
+        !isEmpty($${currentConfig}.exports._KEYS_) {
+            !isEmpty($${currentConfig}.module): \
+                logn($$eval($${currentConfig}.module):)
+            else: \
+                logn($$section(currentConfig, ., -1):)
+            all_xp =
+            for (xport, $${currentConfig}.exports._KEYS_) {
+                libs = $$eval($${currentConfig}.exports.$$xport)
+                isEqual($${currentConfig}.libraries.$$first(libs).export, "") {  # not isEmpty()!
+                    !isEmpty(config.input.verbose): \
+                        all_xp += "$$xport!"
+                } else {
+                    out = "$$xport"
+                    !isEmpty(config.input.verbose):!isEqual(xport, $$libs): \
+                        out += "($$libs)"
+                    all_xp += "$$out"
+                }
+            }
+            all_xp = $$sorted(all_xp)
+            all_xp ~= s,^([^!]*)!$,(\\1),g
+            for (xp, all_xp): \
+                logn("  $$xp")
+        }
+    }
+    error()
+}
 
 for (currentConfig, allConfigs) {
     qtConfSetModuleName()
@@ -1833,11 +2015,15 @@ for (currentConfig, allConfigs) {
 
     # correctly setup dependencies
     QMAKE_CONFIG_DEPS = global global_private
+    QMAKE_LIBRARY_DEPS = $$eval(config.modules.global)
     !isEmpty($${currentConfig}.module) {
         for (d, $${currentConfig}.depends._KEYS_) {
             dep = $$replace($${currentConfig}.depends.$$d, -private$, _private)
-            dep *= $$replace(dep, _private$, )
+            gdep = $$replace(dep, _private$, )
+            dep *= $$gdep
             QMAKE_CONFIG_DEPS += $$dep
+            !isEqual(gdep, $$dep): \  # libraries are in the private module.
+                QMAKE_LIBRARY_DEPS += $$eval(config.modules.$$gdep)
         }
     }
 

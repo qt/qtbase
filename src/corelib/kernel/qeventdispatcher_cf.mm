@@ -44,7 +44,6 @@
 #include <QtCore/qthread.h>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qcore_unix_p.h>
-#include <QtCore/private/qcore_mac_p.h>
 #include <QtCore/private/qthread_p.h>
 
 #include <limits>
@@ -59,10 +58,12 @@
 
 QT_USE_NAMESPACE
 
-@interface RunLoopModeTracker : NSObject {
+@interface QT_MANGLE_NAMESPACE(RunLoopModeTracker) : NSObject {
     QStack<CFStringRef> m_runLoopModes;
 }
 @end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(RunLoopModeTracker);
 
 @implementation RunLoopModeTracker
 

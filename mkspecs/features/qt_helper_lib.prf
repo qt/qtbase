@@ -42,6 +42,7 @@ THE_TARGET = $$qt5LibraryTarget($$TARGET)
         darwin: MODULE_DEBUG_LIBS = -L$$DESTDIR -l$${TARGET}_debug
         MODULE_RELEASE_LIBS = -L$$DESTDIR -l$$TARGET
         MODULE_PRI_CONT += \
+            "QMAKE_LIBS_$${ucmodule} =" \  # Needed for the module to be recognized.
             "QMAKE_LIBS_$${ucmodule}_DEBUG = $$val_escape(MODULE_DEBUG_LIBS)" \
             "QMAKE_LIBS_$${ucmodule}_RELEASE = $$val_escape(MODULE_RELEASE_LIBS)"
     } else {

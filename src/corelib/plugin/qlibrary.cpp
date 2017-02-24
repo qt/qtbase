@@ -42,6 +42,7 @@
 
 #ifndef QT_NO_LIBRARY
 
+#include "qfactoryloader_p.h"
 #include "qlibrary_p.h"
 #include <qstringlist.h>
 #include <qfile.h>

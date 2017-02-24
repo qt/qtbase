@@ -7,9 +7,6 @@
 
     "commandline": {
         "assignments": {
-            "OPENSSL_LIBS": "openssl.libs",
-            "OPENSSL_LIBS_DEBUG": "openssl.libs.debug",
-            "OPENSSL_LIBS_RELEASE": "openssl.libs.release",
             "OPENSSL_PATH": "openssl.prefix"
         },
         "options": {
@@ -46,13 +43,24 @@
                 "-lproxy"
             ]
         },
+        "openssl_headers": {
+            "label": "OpenSSL Headers",
+            "export": "openssl",
+            "test": "unix/openssl",
+            "sources": [
+                {
+                    "comment": "placeholder for OPENSSL_PATH",
+                    "libs": ""
+                }
+            ]
+        },
         "openssl": {
-            "label": "OpenSSL Libraries",
-            "export": "",
+            "label": "OpenSSL",
+            "test": "unix/openssl",
             "sources": [
                 { "type": "openssl" },
                 {
-                    "comment": "placeholder for OPENSSL_LIBS{,_{DEBUG,RELEASE}}",
+                    "comment": "placeholder for OPENSSL_{PATH,LIBS{,_{DEBUG,RELEASE}}}",
                     "libs": "",
                     "builds": {
                         "debug": "",
@@ -91,11 +99,6 @@
             "type": "compile",
             "test": "unix/ipv6ifname",
             "use": "network"
-        },
-        "openssl": {
-            "label": "OpenSSL",
-            "type": "compile",
-            "test": "unix/openssl"
         },
         "sctp": {
             "label": "SCTP support",
@@ -138,7 +141,7 @@
             "enable": "input.openssl == 'yes' || input.openssl == 'linked' || input.openssl == 'runtime'",
             "disable": "input.openssl == 'no' || input.ssl == 'no'",
             "autoDetect": "!config.winrt",
-            "condition": "!features.securetransport && tests.openssl",
+            "condition": "!features.securetransport && (features.openssl-linked || libs.openssl_headers)",
             "output": [
                 "privateFeature",
                 { "type": "publicQtConfig", "condition": "!features.openssl-linked" },
@@ -149,14 +152,9 @@
             "label": "  Qt directly linked to OpenSSL",
             "enable": "input.openssl == 'linked'",
             "disable": "input.openssl != 'linked'",
-            "condition": "features.openssl && libs.openssl",
+            "condition": "!features.securetransport && libs.openssl",
             "output": [
                 "privateFeature",
-                { "type": "varAssign", "name": "OPENSSL_LIBS", "value": "libs.openssl.libs", "eval": "true" },
-                { "type": "varAssign", "name": "OPENSSL_LIBS_DEBUG", "value": "libs.openssl.builds.debug.libs",
-                  "eval": "true", "condition": "config.win32" },
-                { "type": "varAssign", "name": "OPENSSL_LIBS_RELEASE", "value": "libs.openssl.builds.release.libs",
-                  "eval": "true", "condition": "config.win32" },
                 { "type": "define", "name": "QT_LINKED_OPENSSL" }
             ]
         },

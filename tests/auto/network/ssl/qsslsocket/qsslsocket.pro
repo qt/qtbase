@@ -14,12 +14,6 @@ win32 {
   }
 }
 
-# OpenSSL support
-qtConfig(openssl)|qtConfig(openssl-linked) {
-    # Add optional SSL libs
-    LIBS += $$OPENSSL_LIBS
-}
-
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 requires(qtConfig(private_tests))

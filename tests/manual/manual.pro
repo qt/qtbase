@@ -54,7 +54,7 @@ dialogs \
 windowtransparency \
 unc
 
-!qtConfig(openssl):!qtConfig(openssl-linked): SUBDIRS -= qssloptions
+!qtConfig(openssl): SUBDIRS -= qssloptions
 
 qtConfig(opengl) {
     SUBDIRS += qopengltextureblitter

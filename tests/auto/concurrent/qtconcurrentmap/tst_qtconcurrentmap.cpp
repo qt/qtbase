@@ -48,6 +48,7 @@ private slots:
     void blocking_mappedReduced();
     void assignResult();
     void functionOverloads();
+    void noExceptFunctionOverloads();
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
 #endif
@@ -2025,6 +2026,16 @@ int fn(int &i)
     return i;
 }
 
+int fnConstNoExcept(const int &i) Q_DECL_NOTHROW
+{
+    return i;
+}
+
+int fnNoExcept(int &i) Q_DECL_NOTHROW
+{
+    return i;
+}
+
 QString changeTypeConst(const int &)
 {
     return QString();
@@ -2035,12 +2046,32 @@ QString changeType(int &)
     return QString();
 }
 
+QString changeTypeConstNoExcept(const int &) Q_DECL_NOTHROW
+{
+    return QString();
+}
+
+QString changeTypeNoExcept(int &) Q_DECL_NOTHROW
+{
+    return QString();
+}
+
 int changeTypeQStringListConst(const QStringList &)
 {
     return 0;
 }
 
 int changeTypeQStringList(QStringList &)
+{
+    return 0;
+}
+
+int changeTypeQStringListConstNoExcept(const QStringList &) Q_DECL_NOTHROW
+{
+    return 0;
+}
+
+int changeTypeQStringListNoExcept(QStringList &) Q_DECL_NOTHROW
 {
     return 0;
 }
@@ -2066,6 +2097,26 @@ public:
     }
 
     QString changeTypeConst() const
+    {
+        return QString();
+    }
+
+    MemFnTester fnNoExcept() Q_DECL_NOTHROW
+    {
+        return MemFnTester();
+    }
+
+    MemFnTester fnConstNoExcept() const Q_DECL_NOTHROW
+    {
+        return MemFnTester();
+    }
+
+    QString changeTypeNoExcept() Q_DECL_NOTHROW
+    {
+        return QString();
+    }
+
+    QString changeTypeConstNoExcept() const Q_DECL_NOTHROW
     {
         return QString();
     }
@@ -2095,6 +2146,29 @@ void tst_QtConcurrentMap::functionOverloads()
     QtConcurrent::blockingMapped<QList<QString> >(constIntList, changeTypeConst);
     QtConcurrent::blockingMapped<QList<QString> >(classList, &MemFnTester::changeTypeConst);
     QtConcurrent::blockingMapped<QList<QString> >(constMemFnTesterList, &MemFnTester::changeTypeConst);
+}
+
+void tst_QtConcurrentMap::noExceptFunctionOverloads()
+{
+    QList<int> intList;
+    const QList<int> constIntList;
+    QList<MemFnTester> classList;
+    const QList<MemFnTester> constMemFnTesterList;
+
+    QtConcurrent::mapped(intList, fnConstNoExcept);
+    QtConcurrent::mapped(constIntList, fnConstNoExcept);
+    QtConcurrent::mapped(classList, &MemFnTester::fnConstNoExcept);
+    QtConcurrent::mapped(constMemFnTesterList, &MemFnTester::fnConstNoExcept);
+
+    QtConcurrent::blockingMapped<QVector<int> >(intList, fnConstNoExcept);
+    QtConcurrent::blockingMapped<QVector<int> >(constIntList, fnConstNoExcept);
+    QtConcurrent::blockingMapped<QVector<MemFnTester> >(classList, &MemFnTester::fnConstNoExcept);
+    QtConcurrent::blockingMapped<QVector<MemFnTester> >(constMemFnTesterList, &MemFnTester::fnConstNoExcept);
+
+    QtConcurrent::blockingMapped<QList<QString> >(intList, changeTypeConstNoExcept);
+    QtConcurrent::blockingMapped<QList<QString> >(constIntList, changeTypeConstNoExcept);
+    QtConcurrent::blockingMapped<QList<QString> >(classList, &MemFnTester::changeTypeConstNoExcept);
+    QtConcurrent::blockingMapped<QList<QString> >(constMemFnTesterList, &MemFnTester::changeTypeConstNoExcept);
 }
 
 QAtomicInt currentInstanceCount;

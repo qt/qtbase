@@ -56,7 +56,7 @@ qtConfig(ssl) {
                    ssl/qsslellipticcurve_dummy.cpp
     }
 
-    qtConfig(openssl)|qtConfig(openssl-linked) {
+    qtConfig(openssl) {
         HEADERS += ssl/qsslcontext_openssl_p.h \
                    ssl/qsslsocket_openssl_p.h \
                    ssl/qsslsocket_openssl_symbols_p.h
@@ -79,16 +79,10 @@ qtConfig(ssl) {
         #   - libs in <OPENSSL_DIR>\lib\VC\static
         #   - configure: -openssl -openssl-linked -I <OPENSSL_DIR>\include -L <OPENSSL_DIR>\lib\VC\static OPENSSL_LIBS="-lUser32 -lAdvapi32 -lGdi32" OPENSSL_LIBS_DEBUG="-lssleay32MDd -llibeay32MDd" OPENSSL_LIBS_RELEASE="-lssleay32MD -llibeay32MD"
 
-        include($$OUT_PWD/qtnetwork-config.pri)
-
-        CONFIG(debug, debug|release) {
-            LIBS_PRIVATE += $$OPENSSL_LIBS_DEBUG
-        } else {
-            LIBS_PRIVATE += $$OPENSSL_LIBS_RELEASE
-        }
-
-        QMAKE_CXXFLAGS += $$OPENSSL_CFLAGS
-        LIBS_PRIVATE += $$OPENSSL_LIBS
+        qtConfig(openssl-linked): \
+            QMAKE_USE_FOR_PRIVATE += openssl
+        else: \
+            QMAKE_USE_FOR_PRIVATE += openssl/nolink
         win32: LIBS_PRIVATE += -lcrypt32
     }
 }

@@ -12,7 +12,10 @@
             "recheck": { "type": "void", "name": "cache_use", "value": "positive" },
             "recheck-all": { "type": "void", "name": "cache_use", "value": "none" },
 
-            "redo": { "type": "redo" }
+            "redo": { "type": "redo" },
+
+            "list-features": "void",
+            "list-libraries": "void"
         }
     }
 }
