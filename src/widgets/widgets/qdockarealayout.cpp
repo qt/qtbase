@@ -1044,33 +1044,6 @@ QLayoutItem *QDockAreaLayoutInfo::plug(const QList<int> &path)
     Q_ASSERT(item.widgetItem != 0);
     Q_ASSERT(item.flags & QDockAreaLayoutItem::GapItem);
     item.flags &= ~QDockAreaLayoutItem::GapItem;
-
-    QRect result;
-
-#ifndef QT_NO_TABBAR
-    if (tabbed) {
-    } else
-#endif
-    {
-        int prev = this->prev(index);
-        int next = this->next(index);
-
-        if (prev != -1 && !(item_list.at(prev).flags & QDockAreaLayoutItem::GapItem)) {
-            item.pos += *sep;
-            item.size -= *sep;
-        }
-        if (next != -1 && !(item_list.at(next).flags & QDockAreaLayoutItem::GapItem))
-            item.size -= *sep;
-
-        QPoint pos;
-        rpick(o, pos) = item.pos;
-        rperp(o, pos) = perp(o, rect.topLeft());
-        QSize s;
-        rpick(o, s) = item.size;
-        rperp(o, s) = perp(o, rect.size());
-        result = QRect(pos, s);
-    }
-
     return item.widgetItem;
 }
 
