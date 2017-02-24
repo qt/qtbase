@@ -112,9 +112,9 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
         return false;
     }
 
-    QMouseEvent *e = (QMouseEvent*)ee;
-    switch (e->type()) {
+    switch (ee->type()) {
     case QEvent::MouseButtonPress: {
+        QMouseEvent *e = static_cast<QMouseEvent *>(ee);
         if (w->isMaximized())
             break;
         if (!widget->rect().contains(widget->mapFromGlobal(e->globalPos())))
@@ -155,7 +155,7 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
     case QEvent::MouseButtonRelease:
         if (w->isMaximized())
             break;
-        if (e->button() == Qt::LeftButton) {
+        if (static_cast<QMouseEvent *>(ee)->button() == Qt::LeftButton) {
             moveResizeMode = false;
             buttonDown = false;
             widget->releaseMouse();
@@ -171,6 +171,7 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
     case QEvent::MouseMove: {
         if (w->isMaximized())
             break;
+        QMouseEvent *e = static_cast<QMouseEvent *>(ee);
         buttonDown = buttonDown && (e->buttons() & Qt::LeftButton); // safety, state machine broken!
         bool me = movingEnabled;
         movingEnabled = (me && o == widget && (buttonDown || moveResizeMode));
@@ -184,11 +185,11 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
         }
     } break;
     case QEvent::KeyPress:
-        keyPressEvent((QKeyEvent*)e);
+        keyPressEvent(static_cast<QKeyEvent *>(ee));
         break;
     case QEvent::ShortcutOverride:
         if (buttonDown) {
-            ((QKeyEvent*)ee)->accept();
+            ee->accept();
             return true;
         }
         break;
