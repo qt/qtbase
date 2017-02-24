@@ -220,7 +220,7 @@ void QFileInfoGatherer::run()
         getFileInfos(thisPath, thisList);
     }
 }
-
+#if defined(Q_OS_WIN)
 static QString mappedDriveType(const QFileInfoPrivate *fileInfo)
 {
     if (!fileInfo)
@@ -229,7 +229,7 @@ static QString mappedDriveType(const QFileInfoPrivate *fileInfo)
     return fileInfo->isConnected() ? QObject::tr("Network Drive")
                                    : QObject::tr("Disconnected Network Drive");
 }
-
+#endif
 QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
 {
     QExtendedInformation info(fileInfo);

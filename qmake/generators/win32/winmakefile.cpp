@@ -264,7 +264,7 @@ void Win32MakefileGenerator::processRcFileVar()
 
         QStringList vers = project->first("VERSION").toQString().split(".", QString::SkipEmptyParts);
         for (int i = vers.size(); i < 4; i++)
-            vers += "0";
+            vers += "2"; //it's "0" here for Maya2017, "1" for Update2, "2" for update3. "5.6.1.1"->"5.6.1.2"
         QString versionString = vers.join('.');
 
         QStringList rcIcons;
