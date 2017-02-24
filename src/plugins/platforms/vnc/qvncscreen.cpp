@@ -43,6 +43,7 @@
 #include <QtFbSupport/private/qfbcursor_p.h>
 
 #include <QtGui/QPainter>
+#include <QtGui/QScreen>
 #include <QtCore/QRegularExpression>
 
 
@@ -172,14 +173,18 @@ QPixmap QVncScreen::grabWindow(WId wid, int x, int y, int width, int height) con
 }
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
-bool QVNCScreen::swapBytes() const
+bool QVncScreen::swapBytes() const
 {
+    return false;
+
+    /* TODO
     if (depth() != 16)
         return false;
 
     if (screen())
         return screen()->frameBufferLittleEndian();
     return frameBufferLittleEndian();
+    */
 }
 #endif
 

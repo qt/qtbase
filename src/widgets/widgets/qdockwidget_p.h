@@ -118,6 +118,7 @@ public:
     void startDrag(bool group = true);
     void endDrag(bool abort = false);
     void moveEvent(QMoveEvent *event);
+    void recalculatePressPos(QResizeEvent *event);
 
     void unplug(const QRect &rect);
     void plug(const QRect &rect);

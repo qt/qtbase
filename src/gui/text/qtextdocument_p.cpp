@@ -265,7 +265,7 @@ void QTextDocumentPrivate::clear()
         unreachableCharacterCount = 0;
         modifiedState = 0;
         modified = false;
-        formats = QTextFormatCollection();
+        formats.clear();
         int len = fragments.length();
         fragments.clear();
         blocks.clear();

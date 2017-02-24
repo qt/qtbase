@@ -43,7 +43,7 @@
 #include "qcoreapplication.h"
 #include "qpluginloader.h"
 #include <qfileinfo.h>
-#include "qlibrary_p.h"
+#include "qfactoryloader_p.h"
 #include "qdebug.h"
 #include "qdir.h"
 
