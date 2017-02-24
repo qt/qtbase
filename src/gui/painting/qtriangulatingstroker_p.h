@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/qmath.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include <private/qdatabuffer_p.h>
 #include <qvarlengtharray.h>
@@ -134,18 +135,9 @@ private:
 inline void QTriangulatingStroker::normalVector(float x1, float y1, float x2, float y2,
                                                 float *nx, float *ny)
 {
-    float dx = x2 - x1;
-    float dy = y2 - y1;
-    Q_ASSERT(dx != 0 || dy != 0);
-
-    float pw;
-
-    if (dx == 0)
-        pw = m_width / std::abs(dy);
-    else if (dy == 0)
-        pw = m_width / std::abs(dx);
-    else
-        pw = m_width / std::sqrt(dx*dx + dy*dy);
+    const float dx = x2 - x1;
+    const float dy = y2 - y1;
+    const float pw = m_width / qHypot(dx, dy);
 
     *nx = -dy * pw;
     *ny = dx * pw;

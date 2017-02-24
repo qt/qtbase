@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -134,6 +134,72 @@ template <typename T> auto qSqrt(T v)
     using std::sqrt;
     return sqrt(v);
 }
+
+namespace QtPrivate {
+template <typename R, typename F> // For qfloat16 to specialize
+struct QHypotType { using type = decltype(std::hypot(R(1), F(1))); };
+
+// Implements hypot() without limiting number of arguments:
+template <typename T>
+class QHypotHelper
+{
+    const T scale, total;
+    template <typename F> friend class QHypotHelper;
+    QHypotHelper(T first, T prior) : scale(first), total(prior) {}
+public:
+    QHypotHelper(T first) : scale(qAbs(first)), total(1) {}
+    T result() const
+    { return qIsFinite(scale) ? scale > 0 ? scale * T(std::sqrt(total)) : T(0) : scale; }
+
+    template<typename F, typename ...Fs>
+    auto add(F first, Fs... rest) const
+    { return add(first).add(rest...); }
+
+    template<typename F, typename R = typename QHypotType<T, F>::type>
+    QHypotHelper<R> add(F next) const
+    {
+        if (qIsInf(scale) || (qIsNaN(scale) && !qIsInf(next)))
+            return QHypotHelper<R>(scale, R(1));
+        if (qIsNaN(next))
+            return QHypotHelper<R>(next, R(1));
+        const R val = qAbs(next);
+        if (!(scale > 0) || qIsInf(next))
+            return QHypotHelper<R>(val, R(1));
+        if (!(val > 0))
+            return QHypotHelper<R>(scale, total);
+        if (val > scale) {
+            const R ratio = scale / next;
+            return QHypotHelper<R>(val, total * ratio * ratio + 1);
+        }
+        const R ratio = next / scale;
+        return QHypotHelper<R>(scale, total + ratio * ratio);
+    }
+};
+} // QtPrivate
+
+template<typename F, typename ...Fs>
+auto qHypot(F first, Fs... rest)
+{
+    return QtPrivate::QHypotHelper<F>(first).add(rest...).result();
+}
+
+// However, where possible, use the standard library implementations:
+template <typename Tx, typename Ty>
+auto qHypot(Tx x, Ty y)
+{
+    // C99 has hypot(), hence C++11 has std::hypot()
+    using std::hypot;
+    return hypot(x, y);
+}
+
+#if __cpp_lib_hypot >= 201603L // Expected to be true
+template <typename Tx, typename Ty, typename Tz>
+auto qHypot(Tx x, Ty y, Tz z)
+{
+    using std::hypot;
+    return hypot(x, y, z);
+}
+#endif // else: no need to over-ride the arbitrarily-many-arg form
 
 template <typename T> auto qLn(T v)
 {

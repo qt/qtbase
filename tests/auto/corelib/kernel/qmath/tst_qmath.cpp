@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2013 Laszlo Papp <lpapp@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -29,6 +29,7 @@
 
 #include <QTest>
 #include <qmath.h>
+#include <qfloat16.h>
 
 class tst_QMath : public QObject
 {
@@ -41,6 +42,7 @@ private slots:
     void radiansToDegrees();
     void trigonometry_data();
     void trigonometry();
+    void hypotenuse();
     void funcs_data();
     void funcs();
     void qNextPowerOfTwo32S_data();
@@ -152,7 +154,7 @@ void tst_QMath::trigonometry()
     QFETCH(const double, x);
     QFETCH(const double, y);
     QFETCH(const double, angle);
-    const double hypot = std::hypot(x, y);
+    const double hypot = qHypot(x, y);
     QVERIFY(hypot > 0);
     QCOMPARE(qAtan2(y, x), angle);
     QCOMPARE(qSin(angle), y / hypot);
@@ -165,6 +167,79 @@ void tst_QMath::trigonometry()
         QCOMPARE(qTan(angle), y / x);
         QCOMPARE(qAtan(y / x), angle);
     }
+}
+
+void tst_QMath::hypotenuse()
+{
+    // Correct return-types, particularly when qfloat16 is involved:
+    static_assert(std::is_same<decltype(qHypot(qfloat16(1), qfloat16(1), qfloat16(1),
+                                               qfloat16(1), qfloat16(1), qfloat16(1),
+                                               qfloat16(1), qfloat16(1), qfloat16(1))),
+                               qfloat16>::value);
+    static_assert(std::is_same<decltype(qHypot(qfloat16(3), qfloat16(4), qfloat16(12))),
+                               qfloat16>::value);
+    static_assert(std::is_same<decltype(qHypot(qfloat16(3), qfloat16(4), 12.0f)), float>::value);
+    static_assert(std::is_same<decltype(qHypot(qfloat16(3), 4.0f, qfloat16(12))), float>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0f, qfloat16(4), qfloat16(12))), float>::value);
+    static_assert(std::is_same<decltype(qHypot(qfloat16(3), 4.0f, 12.0f)), float>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0f, qfloat16(4), 12.0f)), float>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0f, 4.0f, qfloat16(12))), float>::value);
+    static_assert(std::is_same<decltype(qHypot(qfloat16(3), qfloat16(4))), qfloat16>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0f, qfloat16(4))), float>::value);
+    static_assert(std::is_same<decltype(qHypot(qfloat16(3), 4.0f)), float>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0, qfloat16(4))), double>::value);
+    static_assert(std::is_same<decltype(qHypot(qfloat16(3), 4.0)), double>::value);
+    static_assert(std::is_same<decltype(qHypot(qfloat16(3), 4)), double>::value);
+    static_assert(std::is_same<decltype(qHypot(3, qfloat16(4))), double>::value);
+    static_assert(std::is_same<decltype(qHypot(qfloat16(3), 4.0L)), long double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0L, qfloat16(4))), long double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0f, 4.0f)), float>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0f, 4.0)), double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0f, 4)), double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0f, 4.0L)), long double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0, 4.0f)), double>::value);
+    static_assert(std::is_same<decltype(qHypot(3, 4.0f)), double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0L, 4.0f)), long double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0, 4.0L)), long double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0L, 4.0)), long double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0, 4.0)), double>::value);
+    static_assert(std::is_same<decltype(qHypot(3, 4.0)), double>::value);
+    static_assert(std::is_same<decltype(qHypot(3.0, 4)), double>::value);
+    static_assert(std::is_same<decltype(qHypot(3, 4)), double>::value);
+
+    // Works for all numeric types:
+    QCOMPARE(qHypot(3, 4), 5);
+    QCOMPARE(qHypot(qfloat16(5), qfloat16(12)), qfloat16(13));
+    QCOMPARE(qHypot(3.0f, 4.0f, 12.0f), 13.0f);
+    QCOMPARE(qHypot(3.0, 4.0, 12.0, 84.0), 85.0);
+    QCOMPARE(qHypot(3.0f, 4.0f, 12.0f, 84.0f, 720.0f), 725.0f);
+    QCOMPARE(qHypot(3.0, 4.0, 12.0, 84.0, 3612.0), 3613.0);
+    // Integral gets promoted to double:
+    QCOMPARE(qHypot(1, 1), M_SQRT2);
+    // Caller can mix types freely:
+    QCOMPARE(qHypot(3.0f, 4, 12.0, 84.0f, qfloat16(720), 10500), 10525);
+    // NaN wins over any finite:
+    QCOMPARE(qHypot(3, 4.0, 12.0f, qQNaN()), qQNaN());
+    QCOMPARE(qHypot(3, 4.0, qQNaN(), 12.0f), qQNaN());
+    QCOMPARE(qHypot(3, qQNaN(), 4.0, 12.0f), qQNaN());
+    QCOMPARE(qHypot(qQNaN(), 3, 4.0, 12.0f), qQNaN());
+    // but Infinity beats NaN:
+    QCOMPARE(qHypot(3, 4.0f, -qInf(), qQNaN()), qInf());
+    QCOMPARE(qHypot(3, -qInf(), 4.0f, qQNaN()), qInf());
+    QCOMPARE(qHypot(-qInf(), 3, 4.0f, qQNaN()), qInf());
+    QCOMPARE(qHypot(qQNaN(), 3, -qInf(), 4.0f), qInf());
+    QCOMPARE(qHypot(3, qQNaN(), 4.0f, -qInf()), qInf());
+    QCOMPARE(qHypot(3, 4.0f, qQNaN(), -qInf()), qInf());
+    // Components whose squares sum to zero don't change the end result:
+    const double minD = std::numeric_limits<double>::min();
+    QVERIFY(minD * minD + minD * minD == 0); // *NOT* QCOMPARE
+    QCOMPARE(qHypot(minD, minD, 12.0), 12.0);
+    const float minF = std::numeric_limits<float>::min();
+    QVERIFY(minF * minF + minF * minF == 0.0f); // *NOT* QCOMPARE
+    QCOMPARE(qHypot(minF, minF, 12.0f), 12.0f);
+    const qfloat16 minF16 = std::numeric_limits<qfloat16>::min();
+    QVERIFY(minF16 * minF16 + minF16 * minF16 == qfloat16(0)); // *NOT* QCOMPARE
+    QCOMPARE(qHypot(minF16, minF16, qfloat16(12)), qfloat16(12));
 }
 
 void tst_QMath::funcs_data()

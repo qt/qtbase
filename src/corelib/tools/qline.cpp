@@ -572,8 +572,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 */
 qreal QLineF::length() const
 {
-    using std::hypot;
-    return hypot(dx(), dy());
+    return qHypot(dx(), dy());
 }
 
 /*!
@@ -651,12 +650,11 @@ QLineF QLineF::fromPolar(qreal length, qreal angle)
 */
 QLineF QLineF::unitVector() const
 {
-    qreal x = dx();
-    qreal y = dy();
-    using std::hypot;
-    qreal len = hypot(x, y);
+    const qreal x = dx();
+    const qreal y = dy();
 
-    QLineF f(p1(), QPointF(pt1.x() + x/len, pt1.y() + y/len));
+    const qreal len = qHypot(x, y);
+    QLineF f(p1(), QPointF(pt1.x() + x / len, pt1.y() + y / len));
 
 #ifndef QT_NO_DEBUG
     if (qAbs(f.length() - 1) >= 0.001)

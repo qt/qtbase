@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -139,7 +139,7 @@
     This function will return the angle (argument) of that point.
 
     \relates <QtMath>
-    \sa qAtan()
+    \sa qAtan(), qHypot()
 */
 
 /*!
@@ -148,7 +148,57 @@
     This function returns a NaN if \a v is a negative number.
 
     \relates <QtMath>
-    \sa qPow()
+    \sa qPow(), qHypot()
+*/
+
+/*!
+    \since 6.1
+    \overload
+    \fn template <typename Tx, typename Ty> auto qHypot(Tx x, Ty y)
+    Returns the distance of a point (x, y) from the origin (0, 0).
+
+    This is qSqrt(x * x + y * y), optimized.
+    In particular, underflow and overflow may be avoided.
+
+    Accepts any mix of numeric types, returning the same
+    floating-point type as std::hypot(). If either parameter is
+    infinite, so is the result; otherwise, if either is a NaN, so is
+    the result.
+
+    \relates <QtMath>
+    \sa qSqrt(), qAtan2()
+*/
+
+/*!
+    \since 6.1
+    \overload
+    \fn template <typename Tx, typename Ty, typename Tz> auto qHypot(Tx x, Ty y, Tz z)
+    Returns the distance of a point (x, y, z) from the origin (0, 0, 0).
+
+    This is qSqrt(x * x + y * y + z * z), optimized where supported.
+    In particular, underflow and overflow may be avoided.
+
+    Accepts any mix of numeric types, returning the same
+    floating-point type as std::hypot(). If any parameter is infinite,
+    so is the result; otherwise, if any is NaN, so is the result.
+
+    \relates <QtMath>
+    \sa qSqrt()
+*/
+
+/*!
+    \since 6.1
+    \fn template<typename F, typename ...Fs> auto qHypot(F first, Fs... rest)
+    Returns the distance from origin in arbitrarily many dimensions
+
+    This is as for the two-argument and three-argument forms, supported by
+    std::hypot(), but with as many numeric parameters as you care to pass to
+    it. Uses \a first and each of the \a rest as co-ordinates, performing a
+    calculation equivalent to squaring each, summing and returning the square
+    root, save that underflow and overflow are avoided as far as possible.
+
+    \relates <QtMath>
+    \sa qSqrt()
 */
 
 /*!

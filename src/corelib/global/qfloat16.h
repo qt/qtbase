@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 by Southwest Research Institute (R)
 ** Contact: http://www.qt-project.org/legal
 **
@@ -307,6 +307,63 @@ inline qfloat16::operator float() const noexcept
 {
     return qAbs(static_cast<float>(f)) <= 0.001f;
 }
+
+/*
+  qHypot compatibility; see ../kernel/qmath.h
+*/
+namespace QtPrivate {
+template <typename R>
+struct QHypotType<R, qfloat16> { using type = decltype(std::hypot(R(1), 1.0f)); };
+template <typename R>
+struct QHypotType<qfloat16, R> { using type = decltype(std::hypot(1.0f, R(1))); };
+template <> struct QHypotType<qfloat16, qfloat16> { using type = qfloat16; };
+}
+// Avoid passing qfloat16 to std::hypot(), while ensuring return types
+// consistent with the above:
+template<typename F, typename ...Fs> auto qHypot(F first, Fs... rest);
+template <typename T, typename std::enable_if<!std::is_same<qfloat16, T>::value, int>::type = 0>
+auto qHypot(T x, qfloat16 y) { return qHypot(x, float(y)); }
+template <typename T, typename std::enable_if<!std::is_same<qfloat16, T>::value, int>::type = 0>
+auto qHypot(qfloat16 x, T y) { return qHypot(float(x), y); }
+template <> inline auto qHypot(qfloat16 x, qfloat16 y)
+{
+#if (defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)) || defined (__ARM_FP16_FORMAT_IEEE)
+    return QtPrivate::QHypotHelper<qfloat16>(x).add(y).result();
+#else
+    return qfloat16(qHypot(float(x), float(y)));
+#endif
+}
+#if __cpp_lib_hypot >= 201603L // Expected to be true
+// If any are not qfloat16, convert each qfloat16 to float:
+/* (The following splits the some-but-not-all-qfloat16 cases up, using
+   (X|Y|Z)&~(X&Y&Z) = X ? ~(Y&Z) : Y|Z = X&~(Y&Z) | ~X&Y | ~X&~Y&Z,
+   into non-overlapping cases, to avoid ambiguity.) */
+template <typename Ty, typename Tz,
+          typename std::enable_if<
+              // Ty, Tz aren't both qfloat16:
+              !(std::is_same_v<qfloat16, Ty> && std::is_same_v<qfloat16, Tz>), int>::type = 0>
+auto qHypot(qfloat16 x, Ty y, Tz z) { return qHypot(float(x), y, z); }
+template <typename Tx, typename Tz,
+          typename std::enable_if<
+              // Tx isn't qfloat16:
+              !std::is_same_v<qfloat16, Tx>, int>::type = 0>
+auto qHypot(Tx x, qfloat16 y, Tz z) { return qHypot(x, float(y), z); }
+template <typename Tx, typename Ty,
+          typename std::enable_if<
+              // Neither Tx nor Ty is qfloat16:
+              !std::is_same_v<qfloat16, Tx> && !std::is_same_v<qfloat16, Ty>, int>::type = 0>
+auto qHypot(Tx x, Ty y, qfloat16 z) { return qHypot(x, y, float(z)); }
+// If all are qfloat16, stay with qfloat16 (albeit via float, if no native support):
+template <>
+inline auto qHypot(qfloat16 x, qfloat16 y, qfloat16 z)
+{
+#if (defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)) || defined (__ARM_FP16_FORMAT_IEEE)
+    return QtPrivate::QHypotHelper<qfloat16>(x).add(y).add(z).result();
+#else
+    return qfloat16(qHypot(float(x), float(y), float(z)));
+#endif
+}
+#endif // 3-arg std::hypot() is available
 
 QT_END_NAMESPACE
 

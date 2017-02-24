@@ -43,11 +43,11 @@
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 #include "QtCore/qmetaobject.h"
+#include "QtCore/qmath.h"
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qpointingdevice_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <QDebug>
-#include <cmath>
 
 #include <xcb/xinput.h>
 
@@ -758,11 +758,11 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         } else if (vci.label == QXcbAtom::AbsMTTouchMajor) {
             const qreal sw = screen->geometry().width();
             const qreal sh = screen->geometry().height();
-            w = valuatorNormalized * std::sqrt(sw * sw + sh * sh);
+            w = valuatorNormalized * qHypot(sw, sh);
         } else if (vci.label == QXcbAtom::AbsMTTouchMinor) {
             const qreal sw = screen->geometry().width();
             const qreal sh = screen->geometry().height();
-            h = valuatorNormalized * std::sqrt(sw * sw + sh * sh);
+            h = valuatorNormalized * qHypot(sw, sh);
         } else if (vci.label == QXcbAtom::AbsMTOrientation) {
             // Find the closest axis.
             // 0 corresponds to the Y axis, vci.max to the X axis.
