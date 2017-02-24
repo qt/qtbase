@@ -42,6 +42,7 @@
 #include "qfilesystemengine_p.h"
 #include "qfile.h"
 
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qvarlengtharray.h>
 
 #include <stdlib.h> // for realpath()
@@ -66,6 +67,9 @@
 #endif
 
 #if defined(Q_OS_DARWIN)
+# if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(101200, 100000, 100000, 30000)
+#  include <sys/clonefile.h>
+# endif
 // We cannot include <Foundation/Foundation.h> (it's an Objective-C header), but
 // we need these declarations:
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
@@ -629,8 +633,22 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 //static
 bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(101200, 100000, 100000, 30000)
+    const auto current = QOperatingSystemVersion::current();
+    if (current >= QOperatingSystemVersion::MacOSSierra ||
+        current >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 10) ||
+        current >= QOperatingSystemVersion(QOperatingSystemVersion::TvOS, 10) ||
+        current >= QOperatingSystemVersion(QOperatingSystemVersion::WatchOS, 3)) {
+        if (::clonefile(source.nativeFilePath().constData(),
+                        target.nativeFilePath().constData(), 0) == 0)
+            return true;
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+        return false;
+    }
+#else
     Q_UNUSED(source);
     Q_UNUSED(target);
+#endif
     error = QSystemError(ENOSYS, QSystemError::StandardLibraryError); //Function not implemented
     return false;
 }

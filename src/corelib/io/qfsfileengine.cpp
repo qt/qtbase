@@ -860,9 +860,9 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 
 /*! \fn bool QFSFileEngine::copy(const QString &copyName)
 
-  For windows, copy the file to file \a copyName.
+  For Windows or Apple platforms, copy the file to file \a copyName.
 
-  Not implemented for Unix.
+  Not implemented for other Unix platforms.
 */
 
 /*! \fn QString QFSFileEngine::currentPath(const QString &fileName)
