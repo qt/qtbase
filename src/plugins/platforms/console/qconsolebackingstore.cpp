@@ -31,52 +31,55 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSTHEME_H
-#define QWINDOWSTHEME_H
 
-#include "qwindowsthreadpoolrunner.h"
-#include <qpa/qplatformtheme.h>
+#include "qconsolebackingstore.h"
+#include "qconsoleintegration.h"
+#include "qscreen.h"
+#include <QtCore/qdebug.h>
+#include <qpa/qplatformscreen.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindow;
-
-class QWindowsTheme : public QPlatformTheme
+QConsoleBackingStore::QConsoleBackingStore(QWindow *window)
+    : QPlatformBackingStore(window)
+    , mDebug(QConsoleIntegration::instance()->options() & QConsoleIntegration::DebugBackingStore)
 {
-public:
-    QWindowsTheme();
-    ~QWindowsTheme();
+    if (mDebug)
+        qDebug() << "QConsoleBackingStore::QConsoleBackingStore:" << (quintptr)this;
+}
 
-    static QWindowsTheme *instance() { return m_instance; }
+QConsoleBackingStore::~QConsoleBackingStore()
+{
+}
 
-    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
-    QVariant themeHint(ThemeHint) const Q_DECL_OVERRIDE;
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE
-        { return m_palettes[type]; }
-    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE
-        { return m_fonts[type]; }
+QPaintDevice *QConsoleBackingStore::paintDevice()
+{
+    if (mDebug)
+        qDebug() << "QConsoleBackingStore::paintDevice";
 
-    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
-    QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
-                           QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
+    return &mImage;
+}
 
-    void windowsThemeChanged(QWindow *window);
+void QConsoleBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+{
+    Q_UNUSED(window);
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
 
-    static const char *name;
+    if (mDebug) {
+        static int c = 0;
+        QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
+        qDebug() << "QConsoleBackingStore::flush() saving contents to" << filename.toLocal8Bit().constData();
+        mImage.save(filename);
+    }
+}
 
-private:
-    void refresh() { refreshPalettes(); refreshFonts(); }
-    void clearPalettes();
-    void refreshPalettes();
-    void clearFonts();
-    void refreshFonts();
-
-    static QWindowsTheme *m_instance;
-    QPalette *m_palettes[NPalettes];
-    QFont *m_fonts[NFonts];
-};
+void QConsoleBackingStore::resize(const QSize &size, const QRegion &)
+{
+    QImage::Format format = QGuiApplication::primaryScreen()->handle()->format();
+    if (mImage.size() != size)
+        mImage = QImage(size, format);
+}
 
 QT_END_NAMESPACE
-
-#endif // QWINDOWSTHEME_H

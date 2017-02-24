@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFileInfoPrivate : public QSharedData
+class Q_CORE_EXPORT QFileInfoPrivate : public QSharedData
 {
 public:
     enum { CachedFileFlags=0x01, CachedLinkTypeFlag=0x02, CachedBundleTypeFlag=0x04,
@@ -70,6 +70,9 @@ public:
         cachedFlags(0),
         isDefaultConstructed(true),
         cache_enabled(true), fileFlags(0), fileSize(0)
+#if defined(Q_OS_WIN)
+        ,mappedDrive(false), connected(false), smb(false)
+#endif
     {}
     inline QFileInfoPrivate(const QFileInfoPrivate &copy)
         : QSharedData(copy),
@@ -83,6 +86,9 @@ public:
         isDefaultConstructed(!fileEngine),
 #endif
         cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
+#if defined(Q_OS_WIN)
+        ,mappedDrive(copy.mappedDrive), connected(copy.connected), mappedDriveRemoteName(copy.mappedDriveRemoteName), smb(copy.smb)
+#endif
     {}
     inline QFileInfoPrivate(const QString &file)
         : fileEntry(QDir::fromNativeSeparators(file)),
@@ -94,7 +100,13 @@ public:
         isDefaultConstructed(!fileEngine),
 #endif
         cache_enabled(true), fileFlags(0), fileSize(0)
+#if defined(Q_OS_WIN)
+        ,mappedDrive(false), connected(false), smb(false)
+#endif
     {
+#if defined(Q_OS_WIN)
+
+#endif
     }
 
     inline QFileInfoPrivate(const QFileSystemEntry &file, const QFileSystemMetaData &data)
@@ -105,6 +117,9 @@ public:
         cachedFlags(0),
         isDefaultConstructed(false),
         cache_enabled(true), fileFlags(0), fileSize(0)
+#if defined(Q_OS_WIN)
+        ,mappedDrive(false), connected(false), smb(false)
+#endif
     {
         //If the file engine is not null, this maybe a "mount point" for a custom file engine
         //in which case we can't trust the metadata
@@ -123,6 +138,9 @@ public:
         isDefaultConstructed(!fileEngine),
 #endif
         cache_enabled(true), fileFlags(0), fileSize(0)
+#if defined(Q_OS_WIN)
+         ,mappedDrive(false), connected(false), smb(false)
+#endif
     {
     }
 
@@ -139,6 +157,10 @@ public:
             fileNames[i].clear();
         fileOwners[1].clear();
         fileOwners[0].clear();
+    }
+
+    static const QFileInfoPrivate *get(const QFileInfo *o) {
+        return o->d_func();
     }
 
     uint getFileFlags(QAbstractFileEngine::FileFlags) const;
@@ -170,6 +192,14 @@ public:
     inline void setCachedFlag(uint c) const
     { if (cache_enabled) cachedFlags |= c; }
 
+#if defined(Q_OS_WIN)
+    //mapped network drive support
+    mutable bool mappedDrive;
+    mutable bool connected;
+    mutable QString mappedDriveRemoteName;
+    mutable bool smb;
+    bool isConnected() const;
+#endif
 };
 
 QT_END_NAMESPACE

@@ -31,52 +31,59 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSTHEME_H
-#define QWINDOWSTHEME_H
+#ifndef QPLATFORMINTEGRATION_CONSOLE_H
+#define QPLATFORMINTEGRATION_CONSOLE_H
 
-#include "qwindowsthreadpoolrunner.h"
-#include <qpa/qplatformtheme.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindow;
-
-class QWindowsTheme : public QPlatformTheme
+class QConsoleScreen : public QPlatformScreen
 {
 public:
-    QWindowsTheme();
-    ~QWindowsTheme();
+    QConsoleScreen()
+        : mDepth(32), mFormat(QImage::Format_ARGB32_Premultiplied) {}
 
-    static QWindowsTheme *instance() { return m_instance; }
+    QRect geometry() const Q_DECL_OVERRIDE { return mGeometry; }
+    int depth() const Q_DECL_OVERRIDE { return mDepth; }
+    QImage::Format format() const Q_DECL_OVERRIDE { return mFormat; }
 
-    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
-    QVariant themeHint(ThemeHint) const Q_DECL_OVERRIDE;
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE
-        { return m_palettes[type]; }
-    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE
-        { return m_fonts[type]; }
+public:
+    QRect mGeometry;
+    int mDepth;
+    QImage::Format mFormat;
+    QSize mPhysicalSize;
+};
 
-    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
-    QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
-                           QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
+class QConsoleIntegration : public QPlatformIntegration
+{
+public:
+    enum Options { // Options to be passed on command line or determined from environment
+        DebugBackingStore = 0x1,
+        EnableFonts = 0x2,
+        UseCompleteFontSet = 0x3
+    };
 
-    void windowsThemeChanged(QWindow *window);
+    explicit QConsoleIntegration(const QStringList &parameters);
+    ~QConsoleIntegration();
 
-    static const char *name;
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+
+    unsigned options() const { return m_options; }
+
+    static QConsoleIntegration *instance();
 
 private:
-    void refresh() { refreshPalettes(); refreshFonts(); }
-    void clearPalettes();
-    void refreshPalettes();
-    void clearFonts();
-    void refreshFonts();
-
-    static QWindowsTheme *m_instance;
-    QPalette *m_palettes[NPalettes];
-    QFont *m_fonts[NFonts];
+    mutable QPlatformFontDatabase *m_fontDatabase;
+    unsigned m_options;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSTHEME_H
+#endif

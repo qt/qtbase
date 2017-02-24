@@ -1677,10 +1677,15 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
         wchar_t name[MAX_PATH + 1];
         //GetVolumeInformation requires to add trailing backslash
         const QString nodeName = fileName + QLatin1String("\\");
+        const QFileInfoPrivate *priv = QFileInfoPrivate::get(&info);
+        if (!priv->mappedDrive) {
         BOOL success = ::GetVolumeInformation((wchar_t *)(nodeName.utf16()),
                 name, MAX_PATH + 1, NULL, 0, NULL, NULL, 0);
         if (success && name[0])
             node->volumeName = QString::fromWCharArray(name);
+        }
+        else
+            node->volumeName = priv->mappedDriveRemoteName;
     }
 #endif
     parentNode->children.insert(fileName, node);

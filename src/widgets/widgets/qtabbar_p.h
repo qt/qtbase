@@ -159,6 +159,7 @@ public:
 #endif //QT_NO_ANIMATION
     };
     QList<Tab> tabList;
+    mutable QHash<QString, QSize> textSizes;
 
     int calculateNewPosition(int from, int to, int index) const;
     void slide(int from, int to);
@@ -191,6 +192,8 @@ public:
     bool isTabInMacUnifiedToolbarArea() const;
     void setupMovableTab();
     void autoHideTabs();
+
+    void initBasicStyleOption(QStyleOptionTab *option, int tabIndex) const;
 
     void makeVisible(int index);
     QSize iconSize;

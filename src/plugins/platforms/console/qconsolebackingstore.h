@@ -31,52 +31,30 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSTHEME_H
-#define QWINDOWSTHEME_H
+#ifndef QBACKINGSTORE_CONSOLE_H
+#define QBACKINGSTORE_CONSOLE_H
 
-#include "qwindowsthreadpoolrunner.h"
-#include <qpa/qplatformtheme.h>
+#include <qpa/qplatformbackingstore.h>
+#include <qpa/qplatformwindow.h>
+#include <QtGui/QImage>
 
 QT_BEGIN_NAMESPACE
 
-class QWindow;
-
-class QWindowsTheme : public QPlatformTheme
+class QConsoleBackingStore : public QPlatformBackingStore
 {
 public:
-    QWindowsTheme();
-    ~QWindowsTheme();
+    QConsoleBackingStore(QWindow *window);
+    ~QConsoleBackingStore();
 
-    static QWindowsTheme *instance() { return m_instance; }
-
-    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
-    QVariant themeHint(ThemeHint) const Q_DECL_OVERRIDE;
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE
-        { return m_palettes[type]; }
-    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE
-        { return m_fonts[type]; }
-
-    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
-    QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
-                           QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
-
-    void windowsThemeChanged(QWindow *window);
-
-    static const char *name;
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
 
 private:
-    void refresh() { refreshPalettes(); refreshFonts(); }
-    void clearPalettes();
-    void refreshPalettes();
-    void clearFonts();
-    void refreshFonts();
-
-    static QWindowsTheme *m_instance;
-    QPalette *m_palettes[NPalettes];
-    QFont *m_fonts[NFonts];
+    QImage mImage;
+    const bool mDebug;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSTHEME_H
+#endif

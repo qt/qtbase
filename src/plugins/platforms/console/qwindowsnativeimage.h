@@ -31,52 +31,42 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSTHEME_H
-#define QWINDOWSTHEME_H
+#ifndef CONSOLE_QWINDOWSNATIVEIMAGE_H
+#define CONSOLE_QWINDOWSNATIVEIMAGE_H
 
-#include "qwindowsthreadpoolrunner.h"
-#include <qpa/qplatformtheme.h>
+#include "qtwindows_additional.h"
+
+#include <QtGui/QImage>
 
 QT_BEGIN_NAMESPACE
 
-class QWindow;
-
-class QWindowsTheme : public QPlatformTheme
+class QWindowsNativeImage
 {
+    Q_DISABLE_COPY(QWindowsNativeImage)
 public:
-    QWindowsTheme();
-    ~QWindowsTheme();
+    QWindowsNativeImage(int width, int height,
+                        QImage::Format format);
 
-    static QWindowsTheme *instance() { return m_instance; }
+    ~QWindowsNativeImage();
 
-    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
-    QVariant themeHint(ThemeHint) const Q_DECL_OVERRIDE;
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE
-        { return m_palettes[type]; }
-    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE
-        { return m_fonts[type]; }
+    inline int width() const  { return m_image.width(); }
+    inline int height() const { return m_image.height(); }
 
-    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
-    QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
-                           QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
+    QImage &image() { return m_image; }
+    const QImage &image() const { return m_image; }
 
-    void windowsThemeChanged(QWindow *window);
+    HDC hdc() const { return m_hdc; }
 
-    static const char *name;
+    static QImage::Format systemFormat();
 
 private:
-    void refresh() { refreshPalettes(); refreshFonts(); }
-    void clearPalettes();
-    void refreshPalettes();
-    void clearFonts();
-    void refreshFonts();
+    const HDC m_hdc;
+    QImage m_image;
 
-    static QWindowsTheme *m_instance;
-    QPalette *m_palettes[NPalettes];
-    QFont *m_fonts[NFonts];
+    HBITMAP m_bitmap;
+    HBITMAP m_null_bitmap;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSTHEME_H
+#endif // QWINDOWSNATIVEIMAGE_H

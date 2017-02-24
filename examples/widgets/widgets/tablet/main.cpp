@@ -48,6 +48,7 @@
 int main(int argv, char *args[])
 {
     TabletApplication app(argv, args);
+    app.setAttribute(Qt::AA_CompressHighFrequencyEvents, false);
     TabletCanvas *canvas = new TabletCanvas;
     app.setCanvas(canvas);
 

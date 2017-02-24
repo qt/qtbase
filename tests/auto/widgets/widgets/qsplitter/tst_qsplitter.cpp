@@ -82,6 +82,8 @@ private slots:
     void rubberBandNotInSplitter();
     void saveAndRestoreStateOfNotYetShownSplitter();
     void saveAndRestoreHandleWidth();
+    void replaceWidget_data();
+    void replaceWidget();
 
     // task-specific tests below me:
     void task187373_addAbstractScrollAreas();
@@ -650,8 +652,126 @@ public:
     MyFriendlySplitter(QWidget *parent = 0) : QSplitter(parent) {}
     void setRubberBand(int pos) { QSplitter::setRubberBand(pos); }
 
+    void moveSplitter(int pos, int index) { QSplitter::moveSplitter(pos, index); }
+
     friend class tst_QSplitter;
 };
+
+class EventCounterSpy : public QObject
+{
+public:
+    EventCounterSpy(QWidget *parentWidget) : QObject(parentWidget)
+    {
+        reset();
+    }
+
+    bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE
+    {
+        // Watch for events in the parent widget and all its children
+        if (watched == parent() || watched->parent() == parent()) {
+            if (event->type() == QEvent::Resize)
+                resizeCount++;
+            else if (event->type() == QEvent::Paint)
+                paintCount++;
+        }
+
+        return QObject::eventFilter(watched, event);
+    }
+
+    void reset() {
+        resizeCount = 0;
+        paintCount = 0;
+    }
+
+    int resizeCount;
+    int paintCount;
+};
+
+void tst_QSplitter::replaceWidget_data()
+{
+    QTest::addColumn<int>("index");
+    QTest::addColumn<bool>("visible");
+    QTest::addColumn<bool>("collapsed");
+
+    QTest::newRow("negative index") << -1 << true << false;
+    QTest::newRow("index too large") << 80 << true << false;
+    QTest::newRow("visible, not collapsed") << 3 << true << false;
+    QTest::newRow("visible, collapsed") << 3 << true << true;
+    QTest::newRow("not visible, not collapsed") << 3 << false << false;
+    QTest::newRow("not visible, collapsed") << 3 << false << true;
+}
+
+void tst_QSplitter::replaceWidget()
+{
+    QFETCH(int, index);
+    QFETCH(bool, visible);
+    QFETCH(bool, collapsed);
+
+    // Setup
+    MyFriendlySplitter sp;
+    const int count = 7;
+    for (int i = 0; i < count; i++) {
+        // We use labels instead of plain widgets to
+        // make it easier to fix eventual regressions.
+        QLabel *w = new QLabel(QString::asprintf("WIDGET #%d", i));
+        sp.addWidget(w);
+    }
+    sp.setWindowTitle(QString::asprintf("index %d, visible %d, collapsed %d", index, visible, collapsed));
+    sp.show();
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(&sp));
+
+    // Configure splitter
+    QWidget *oldWidget = sp.widget(index);
+    const QRect oldGeom = oldWidget ? oldWidget->geometry() : QRect();
+    if (oldWidget) {
+        // Collapse first, then hide, if necessary
+        if (collapsed) {
+            sp.setCollapsible(index, true);
+            sp.moveSplitter(oldWidget->x() + 1, index + 1);
+        }
+        if (!visible)
+            oldWidget->hide();
+    }
+
+    // Replace widget
+    QTest::qWait(100); // Flush event queue
+    const QList<int> sizes = sp.sizes();
+    // Shorter label: The important thing is to ensure we can set
+    // the same size on the new widget. Because of QLabel's sizing
+    // constraints (they can expand but not shrink) the easiest is
+    // to set a shorter label.
+    QLabel *newWidget = new QLabel(QLatin1String("<b>NEW</b>"));
+
+    EventCounterSpy *ef = new EventCounterSpy(&sp);
+    qApp->installEventFilter(ef);
+    const QWidget *res = sp.replaceWidget(index, newWidget);
+    QTest::qWait(100); // Give visibility and resizing some time
+    qApp->removeEventFilter(ef);
+
+    // Check
+    if (index < 0 || index >= count) {
+        QVERIFY(!res);
+        QVERIFY(!newWidget->parentWidget());
+        QCOMPARE(ef->resizeCount, 0);
+        QCOMPARE(ef->paintCount, 0);
+    } else {
+        QCOMPARE(res, oldWidget);
+        QVERIFY(!res->parentWidget());
+        QVERIFY(!res->isVisible());
+        QCOMPARE(newWidget->parentWidget(), &sp);
+        QCOMPARE(newWidget->isVisible(), visible);
+        if (visible && !collapsed)
+            QCOMPARE(newWidget->geometry(), oldGeom);
+        QCOMPARE(newWidget->size().isEmpty(), !visible || collapsed);
+        const int expectedResizeCount = visible ? 1 : 0; // new widget only
+        const int expectedPaintCount = visible && !collapsed ? 2 : 0; // splitter and new widget
+        QCOMPARE(ef->resizeCount, expectedResizeCount);
+        QCOMPARE(ef->paintCount, expectedPaintCount);
+        delete res;
+    }
+    QCOMPARE(sp.count(), count);
+    QCOMPARE(sp.sizes(), sizes);
+}
 
 void tst_QSplitter::rubberBandNotInSplitter()
 {

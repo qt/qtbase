@@ -278,8 +278,8 @@ public:
                       cancelAction(0),
 #endif
                       scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
-                      hasCheckableItems(0), doChildEffects(false), platformMenu(0)
-
+                      hasCheckableItems(0), doChildEffects(false), platformMenu(0),
+                      scrollUpTearOffItem(nullptr), scrollDownItem(nullptr)
 #if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
                       ,wce_menu(0)
 #endif
@@ -477,6 +477,24 @@ public:
     QAction* wceCommands(uint command);
 #endif
     QPointer<QWidget> noReplayFor;
+
+    class ScrollerTearOffItem : public QWidget {
+    public:
+        enum Type { ScrollUp, ScrollDown };
+        ScrollerTearOffItem(Type type, QMenuPrivate *mPrivate,
+                            QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+        void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+        void updateScrollerRects(const QRect &rect);
+
+    private:
+        QMenuPrivate *menuPrivate;
+        Type scrollType;
+    };
+    ScrollerTearOffItem *scrollUpTearOffItem;
+    ScrollerTearOffItem *scrollDownItem;
+
+    void drawScroller(QPainter *painter, ScrollerTearOffItem::Type type, const QRect &rect);
+    void drawTearOff(QPainter *painter, const QRect &rect);
 };
 
 #endif // QT_NO_MENU
