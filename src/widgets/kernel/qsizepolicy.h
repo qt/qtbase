@@ -51,10 +51,6 @@ QT_BEGIN_NAMESPACE
 # define QT_SIZEPOLICY_CONSTEXPR Q_DECL_CONSTEXPR
 # if defined(Q_COMPILER_UNIFORM_INIT)
 #  define QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT Q_DECL_CONSTEXPR
-#  if defined(Q_COMPILER_CONSTEXPR)
-#   define QT_SIZEPOLICY_RETURN_BITS(E1, E2, E3, E4, E5, E6, E7, E8) \
-        return Bits{ E1, E2, E3, E4, E5, E6, E7, E8 }
-#  endif // constexpr && uniform-init
 # endif // uniform-init
 #endif
 
@@ -63,10 +59,6 @@ QT_BEGIN_NAMESPACE
 #endif
 #ifndef QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
 # define QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
-#endif
-#ifndef QT_SIZEPOLICY_RETURN_BITS
-# define QT_SIZEPOLICY_RETURN_BITS(E1, E2, E3, E4, E5, E6, E7, E8) \
-    const Bits result = { E1, E2, E3, E4, E5, E6, E7, E8 }; return result
 #endif
 
 class QVariant;
@@ -198,14 +190,14 @@ private:
         QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
         Bits transposed() const Q_DECL_NOTHROW
         {
-            QT_SIZEPOLICY_RETURN_BITS(verStretch, // \ swap
-                                      horStretch, // /
-                                      verPolicy, // \ swap
-                                      horPolicy, // /
-                                      ctype,
-                                      hfw, // \ don't swap (historic behavior)
-                                      wfh, // /
-                                      retainSizeWhenHidden);
+            return {verStretch, // \ swap
+                    horStretch, // /
+                    verPolicy, // \ swap
+                    horPolicy, // /
+                    ctype,
+                    hfw, // \ don't swap (historic behavior)
+                    wfh, // /
+                    retainSizeWhenHidden};
         }
     };
     union {
@@ -234,7 +226,6 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QSizePolicy &);
 
 #undef QT_SIZEPOLICY_CONSTEXPR
 #undef QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
-#undef QT_SIZEPOLICY_RETURN_BITS
 
 QT_END_NAMESPACE
 
