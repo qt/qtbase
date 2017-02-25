@@ -56,15 +56,17 @@
 #include <QPair>
 #include "glwindow.h"
 
-bool OGLSupports(int major, int minor, bool gles = false)
+bool OGLSupports(int major, int minor, bool gles = false, QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile)
 {
     QOpenGLContext ctx;
     QSurfaceFormat fmt;
     fmt.setVersion(major, minor);
-    if (gles)
+    if (gles) {
         fmt.setRenderableType(QSurfaceFormat::OpenGLES);
-    else
+    } else {
         fmt.setRenderableType(QSurfaceFormat::OpenGL);
+        fmt.setProfile(profile);
+    }
 
     ctx.setFormat(fmt);
     ctx.create();
@@ -78,6 +80,8 @@ bool OGLSupports(int major, int minor, bool gles = false)
     if (ctxMajor < major) return false;
     if (ctxMajor == major && ctxMinor < minor)
         return false;
+    if (!gles && ctx.format().profile() != profile)
+        return false;
     return true;
 }
 
@@ -85,18 +89,34 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    qDebug() << "Support for GL 2.0   "<<( OGLSupports(2,0) ? "yes" : "no");
-    qDebug() << "Support for GL 2.1   "<<( OGLSupports(2,1) ? "yes" : "no");
-    qDebug() << "Support for GL 3.0   "<<( OGLSupports(3,0) ? "yes" : "no");
-    qDebug() << "Support for GL 3.1   "<<( OGLSupports(3,1) ? "yes" : "no");
-    qDebug() << "Support for GL 3.2   "<<( OGLSupports(3,2) ? "yes" : "no");
-    qDebug() << "Support for GL 3.3   "<<( OGLSupports(3,3) ? "yes" : "no");
-    qDebug() << "Support for GL 4.0   "<<( OGLSupports(4,0) ? "yes" : "no");
-    qDebug() << "Support for GL 4.1   "<<( OGLSupports(4,1) ? "yes" : "no");
-    qDebug() << "Support for GL 4.2   "<<( OGLSupports(4,2) ? "yes" : "no");
-    qDebug() << "Support for GL 4.3   "<<( OGLSupports(4,3) ? "yes" : "no");
-    qDebug() << "Support for GL 4.4   "<<( OGLSupports(4,4) ? "yes" : "no");
-    qDebug() << "Support for GL 4.5   "<<( OGLSupports(4,5) ? "yes" : "no");
+    qDebug() << "Support for GL 2.0 noprof "<<( OGLSupports(2,0,false) ? "yes" : "no");
+    qDebug() << "Support for GL 2.0 core   "<<( OGLSupports(2,0,false, QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 2.0 compat "<<( OGLSupports(2,0,false, QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 2.1 noprof "<<( OGLSupports(2,1,false) ? "yes" : "no");
+    qDebug() << "Support for GL 2.1 core   "<<( OGLSupports(2,1,false, QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 2.1 compat "<<( OGLSupports(2,1,false, QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 3.0 noprof "<<( OGLSupports(3,0,false) ? "yes" : "no");
+    qDebug() << "Support for GL 3.0 core   "<<( OGLSupports(3,0,false, QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 3.0 compat "<<( OGLSupports(3,0,false, QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 3.1 noprof "<<( OGLSupports(3,1,false) ? "yes" : "no");
+    qDebug() << "Support for GL 3.1 core   "<<( OGLSupports(3,1,false, QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 3.1 compat "<<( OGLSupports(3,1,false, QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 3.2 core   "<<( OGLSupports(3,2,false,QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 3.2 compat "<<( OGLSupports(3,2,false,QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 3.3 core   "<<( OGLSupports(3,3,false,QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 3.3 compat "<<( OGLSupports(3,3,false,QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.0 core   "<<( OGLSupports(4,0,false,QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.0 compat "<<( OGLSupports(4,0,false,QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.1 core   "<<( OGLSupports(4,1,false,QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.1 compat "<<( OGLSupports(4,1,false,QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.2 core   "<<( OGLSupports(4,2,false,QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.2 compat "<<( OGLSupports(4,2,false,QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.3 core   "<<( OGLSupports(4,3,false,QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.3 compat "<<( OGLSupports(4,3,false,QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.4 core   "<<( OGLSupports(4,4,false,QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.4 compat "<<( OGLSupports(4,4,false,QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.5 core   "<<( OGLSupports(4,5,false,QSurfaceFormat::CoreProfile) ? "yes" : "no");
+    qDebug() << "Support for GL 4.5 compat "<<( OGLSupports(4,5,false,QSurfaceFormat::CompatibilityProfile) ? "yes" : "no");
     qDebug() << "Support for GLES 2.0 "<<( OGLSupports(2,0,true) ? "yes" : "no");
     qDebug() << "Support for GLES 3.0 "<<( OGLSupports(3,0,true) ? "yes" : "no");
     qDebug() << "Support for GLES 3.1 "<<( OGLSupports(3,1,true) ? "yes" : "no");
@@ -105,16 +125,16 @@ int main(int argc, char *argv[])
     QSurfaceFormat fmt;
     fmt.setDepthBufferSize(24);
 
-    // Request OpenGL 4.3 compatibility or OpenGL ES 3.1.
-    if (OGLSupports(4,3)) {
-        qDebug("Requesting 4.3 compatibility context");
-        fmt.setVersion(4, 3);
-        fmt.setRenderableType(QSurfaceFormat::OpenGL);
-        fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
-    } else if (OGLSupports(3,1,true)) {
+    // Request OpenGL ES 3.1 context, as this is a GLES example. If not available, go for OpenGL 4.3 core.
+    if (OGLSupports(3,1,true)) {
         qDebug("Requesting 3.1 GLES context");
         fmt.setVersion(3, 1);
         fmt.setRenderableType(QSurfaceFormat::OpenGLES);
+    } else if (OGLSupports(4,3,false,QSurfaceFormat::CoreProfile)) {
+        qDebug("Requesting 4.3 core context");
+        fmt.setVersion(4, 3);
+        fmt.setRenderableType(QSurfaceFormat::OpenGL);
+        fmt.setProfile(QSurfaceFormat::CoreProfile);
     } else {
         qWarning("Error: This system does not support OpenGL Compute Shaders! Exiting.");
         return -1;

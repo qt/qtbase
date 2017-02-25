@@ -104,6 +104,7 @@ private:
 
     int m_blurRadius;
     bool m_animate;
+    QOpenGLVertexArrayObject *m_vao;
 };
 
 #endif

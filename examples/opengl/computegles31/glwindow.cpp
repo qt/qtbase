@@ -54,7 +54,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QOpenGLExtraFunctions>
-//#include <QtGui/qopenglext.h>
+#include <QOpenGLVertexArrayObject>
 #include <QtGui/qopengl.h>
 #include <QDebug>
 #include <QTimer>
@@ -80,7 +80,8 @@ GLWindow::GLWindow()
       m_shaderComputeV(0),
       m_shaderComputeH(0),
       m_blurRadius(0.0f),
-      m_animate(true)
+      m_animate(true),
+      m_vao(0)
 {
     const float animationStart = 0.0;
     const float animationEnd = 10.0;
@@ -116,6 +117,7 @@ GLWindow::~GLWindow()
     delete m_animationGroup;
     delete m_animationForward;
     delete m_animationBackward;
+    delete m_vao;
 }
 
 void GLWindow::setBlurRadius(float blurRadius)
@@ -178,19 +180,21 @@ static const char *fsDisplaySource =
     "}\n";
 
 static const char *csComputeSourceV =
-        //"#extension GL_EXT_gpu_shader5 : require \n"
         "#define COMPUTEPATCHSIZE 32 \n"
         "#define IMGFMT rgba8 \n"
         "layout (local_size_x = COMPUTEPATCHSIZE, local_size_y = COMPUTEPATCHSIZE) in;\n"
-        "layout(binding=0, IMGFMT) uniform highp image2D inputImage; // Use a sampler to improve performance  \n"
-        "layout(binding=1, IMGFMT) uniform highp image2D resultImage;\n"
+        "layout(binding=0, IMGFMT) uniform readonly highp image2D inputImage; // Use a sampler to improve performance  \n"
+        "layout(binding=1, IMGFMT) uniform writeonly highp image2D resultImage;\n"
         "uniform int radius;\n"
         "const float cutoff = 2.2;\n"
-        "float sigma  = clamp(float(radius) / cutoff,0.02,100.0);\n" // Const initialization with dynamically uniform expressions doesn't work in GLES
-        "float expFactor = 1.0 / (2.0 * sigma * sigma);\n"           // Same here
 
-        "float gaussian(float distance) {\n"
-        "   return exp( -(distance * distance) * expFactor);\n"
+        "float expFactor() { // a function, otherwise MESA produces error: initializer of global variable `expFactor' must be a constant expression\n"
+        "   float sigma = clamp(float(radius) / cutoff,0.02,100.0);\n"
+        "   return 1.0 / (2.0 * sigma * sigma);\n"
+        "}\n"
+
+        "float gaussian(float distance, float expfactor) {\n"
+        "   return exp( -(distance * distance) * expfactor);\n"
         "}\n"
 
         "void main() {\n"
@@ -204,31 +208,34 @@ static const char *csComputeSourceV =
         "  int right  = clamp(x + radius, 0, imgSize.x - 1);\n"
         "  int top    = clamp(y - radius, 0, imgSize.y - 1);\n"
         "  int bottom = clamp(y + radius, 0, imgSize.y - 1);\n"
+        "  float expfactor = expFactor();\n"
         "  for (int iY = top; iY <= bottom; iY++) {\n"
         "      float dy = float(abs(iY - y));\n"
         "      vec4 imgValue =  imageLoad(inputImage, ivec2(x,iY));\n"
-        "      float weight = gaussian(dy);\n"
+        "      float weight = gaussian(dy, expfactor);\n"
         "      sumWeights += weight;\n"
         "      sumPixels += (imgValue * weight);\n"
         "  }\n"
         "  sumPixels /= sumWeights;\n"
-        "  imageStore(resultImage, ivec2(x,y), sumPixels);"
+        "  imageStore(resultImage, ivec2(x,y), sumPixels);\n"
         "}\n";
 
 static const char *csComputeSourceH =
-        //"#extension GL_EXT_gpu_shader5 : require \n"
         "#define COMPUTEPATCHSIZE 32 \n"
         "#define IMGFMT rgba8 \n"
         "layout (local_size_x = COMPUTEPATCHSIZE, local_size_y = COMPUTEPATCHSIZE) in;\n"
-        "layout(binding=0, IMGFMT) uniform highp image2D inputImage; // Use a sampler to improve performance  \n"
-        "layout(binding=1, IMGFMT) uniform highp image2D resultImage;\n"
+        "layout(binding=0, IMGFMT) uniform readonly highp image2D inputImage; // Use a sampler to improve performance  \n"
+        "layout(binding=1, IMGFMT) uniform writeonly highp image2D resultImage;\n"
         "uniform int radius;\n"
         "const float cutoff = 2.2;\n"
-        "float sigma  = clamp(float(radius) / cutoff,0.02,100.0);\n"
-        "float expFactor = 1.0 / (2.0 * sigma * sigma);\n"
 
-        "float gaussian(float distance) {\n"
-        "   return exp( -(distance * distance) * expFactor);\n"
+        "float expFactor() { // a function, otherwise MESA produces error: initializer of global variable `expFactor' must be a constant expression\n"
+        "   float sigma = clamp(float(radius) / cutoff,0.02,100.0);\n"
+        "   return 1.0 / (2.0 * sigma * sigma);\n"
+        "}\n"
+
+        "float gaussian(float distance, float expfactor) {\n"
+        "   return exp( -(distance * distance) * expfactor);\n"
         "}\n"
 
         "void main() {\n"
@@ -242,15 +249,16 @@ static const char *csComputeSourceH =
         "  int right  = clamp(x + radius, 0, imgSize.x - 1);\n"
         "  int top    = clamp(y - radius, 0, imgSize.y - 1);\n"
         "  int bottom = clamp(y + radius, 0, imgSize.y - 1);\n"
-        "    for (int iX = left; iX <= right; iX++) {\n"
+        "  float expfactor = expFactor();\n"
+        "  for (int iX = left; iX <= right; iX++) {\n"
         "      float dx = float(abs(iX - x));\n"
         "      vec4 imgValue =  imageLoad(inputImage, ivec2(iX,y));\n"
-        "      float weight = gaussian(dx);\n"
+        "      float weight = gaussian(dx, expfactor);\n"
         "      sumWeights += weight;\n"
         "      sumPixels += (imgValue * weight);\n"
-        "    }\n"
+        "  }\n"
         "  sumPixels /= sumWeights;\n"
-        "  imageStore(resultImage, ivec2(x,y), sumPixels);"
+        "  imageStore(resultImage, ivec2(x,y), sumPixels);\n"
         "}\n";
 
 
@@ -262,7 +270,7 @@ QByteArray versionedShaderCode(const char *src)
     if (QOpenGLContext::currentContext()->isOpenGLES())
         versionedSrc.append(QByteArrayLiteral("#version 310 es\n"));
     else
-        versionedSrc.append(QByteArrayLiteral("#version 430\n"));
+        versionedSrc.append(QByteArrayLiteral("#version 430 core\n"));
 
     versionedSrc.append(src);
     return versionedSrc;
@@ -315,7 +323,6 @@ void GLWindow::initializeGL()
              << ctx->format().minorVersion()
              << ((ctx->format().renderableType() == QSurfaceFormat::OpenGLES) ? (" GLES") : (" GL"))
              << " context";
-    //QOpenGLFunctions *f = ctx->functions();
 
     if (m_texImageInput) {
         delete m_texImageInput;
@@ -373,6 +380,10 @@ void GLWindow::initializeGL()
     m_shaderComputeH = new QOpenGLShaderProgram;
     m_shaderComputeH->addShaderFromSourceCode(QOpenGLShader::Compute, versionedShaderCode(csComputeSourceH));
     m_shaderComputeH->link();
+
+    // Create a VAO. Not strictly required for ES 3, but it is for plain OpenGL core context.
+    m_vao = new QOpenGLVertexArrayObject;
+    m_vao->create();
 }
 
 void GLWindow::resizeGL(int w, int h)
@@ -421,13 +432,15 @@ void GLWindow::paintGL()
     // Display processed image
     f->glClearColor(0, 0, 0, 1);
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    m_texImageProcessed->bind(GL_TEXTURE0);
+    m_texImageProcessed->bind(0);
     m_shaderDisplay->bind();
     m_shaderDisplay->setUniformValue("matProjection",m_proj);
     m_shaderDisplay->setUniformValue("imageRatio",m_quadSize);
     m_shaderDisplay->setUniformValue("samImage",0);
+    m_vao->bind();
     f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    m_vao->release();
     m_shaderDisplay->release();
-    m_texImageProcessed->release(GL_TEXTURE0);
+    m_texImageProcessed->release(0);
 }
 
