@@ -123,6 +123,8 @@ private slots:
     void fromStringDateFormat();
     void fromStringStringFormat_data();
     void fromStringStringFormat();
+    void fromStringStringFormatLocale_data();
+    void fromStringStringFormatLocale();
 #ifdef Q_OS_WIN
     void fromString_LOCALE_ILDATE();
 #endif
@@ -2310,6 +2312,54 @@ void tst_QDateTime::fromStringStringFormat()
     QDateTime dt = QDateTime::fromString(string, format);
 
     QCOMPARE(dt, expected);
+}
+
+void tst_QDateTime::fromStringStringFormatLocale_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("format");
+    QTest::addColumn<QLocale>("locale");
+    QTest::addColumn<QDateTime>("expected");
+
+    QLocale c = QLocale::c();
+    QDateTime dt(QDate(2017, 02, 25), QTime(17, 21, 25));
+
+    // The formats correspond to the locale formats, with the timezone removed.
+    // We hardcode them in case an update to the locale DB changes them.
+
+    QTest::newRow("C:long") << "Saturday, 25 February 2017 17:21:25" << "dddd, d MMMM yyyy HH:mm:ss" << c << dt;
+    QTest::newRow("C:short") << "25 Feb 2017 17:21:25" << "d MMM yyyy HH:mm:ss" << c << dt;
+    QTest::newRow("C:narrow") << "25 Feb 2017 17:21:25" << "d MMM yyyy HH:mm:ss" << c << dt;
+
+    QLocale fr(QLocale::French);
+    QTest::newRow("fr:long") << "Samedi 25 février 2017 17:21:25" << "dddd d MMMM yyyy HH:mm:ss" << fr << dt;
+    QTest::newRow("fr:short") << "25/02/2017 17:21" << "dd/MM/yyyy HH:mm" << fr << dt.addSecs(-25);
+
+    // In Turkish, the word for Friday ("Cuma") is a prefix for the word for
+    // Saturday ("Cumartesi")
+    QLocale tr(QLocale::Turkish);
+    QTest::newRow("tr:long") << "25 Şubat 2017 Cumartesi 17:21:25" << "d MMMM yyyy dddd HH:mm:ss" << tr << dt;
+    QTest::newRow("tr:long2") << "24 Şubat 2017 Cuma 17:21:25" << "d MMMM yyyy dddd HH:mm:ss" << tr << dt.addDays(-1);
+    QTest::newRow("tr:mashed") << "25 Şubat2017 Cumartesi17:21:25" << "d MMMMyyyy ddddHH:mm:ss" << tr << dt;
+    QTest::newRow("tr:mashed2") << "24 Şubat2017 Cuma17:21:25" << "d MMMMyyyy ddddHH:mm:ss" << tr << dt.addDays(-1);
+    QTest::newRow("tr:short") << "25.02.2017 17:21" << "d.MM.yyyy HH:mm" << tr << dt.addSecs(-25);
+}
+
+void tst_QDateTime::fromStringStringFormatLocale()
+{
+    QFETCH(QString, string);
+    QFETCH(QString, format);
+    QFETCH(QLocale, locale);
+    QFETCH(QDateTime, expected);
+
+    QDateTime parsed = locale.toDateTime(string, format);
+    QCOMPARE(parsed, expected);
+
+    parsed = locale.toDateTime(string.toLower(), format);
+    QCOMPARE(parsed, expected);
+
+    parsed = locale.toDateTime(string.toUpper(), format);
+    QCOMPARE(parsed, expected);
 }
 
 #ifdef Q_OS_WIN
