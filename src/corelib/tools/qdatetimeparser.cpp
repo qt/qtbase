@@ -1243,6 +1243,34 @@ end:
 #endif // QT_NO_DATESTRING
 
 #ifndef QT_NO_TEXTDATE
+
+static int findTextEntry(const QString &text, int start, const QVector<QString> &entries, QString *usedText, int *used)
+{
+    if (text.isEmpty())
+        return -1;
+
+    int bestMatch = -1;
+    int bestCount = 0;
+    for (int n = start; n <= entries.size(); ++n) {
+        const QString name = entries.at(n - 1).toLower();
+
+        const int limit = qMin(text.size(), name.size());
+        int i = 0;
+        while (i < limit && text.at(i) == name.at(i))
+            ++i;
+        if (i > bestCount) {
+            bestCount = i;
+            bestMatch = n;
+        }
+    }
+    if (usedText && bestMatch != -1)
+        *usedText = entries.at(bestMatch - 1);
+    if (used)
+        *used = bestCount;
+
+    return bestMatch;
+}
+
 /*!
   \internal
   finds the first possible monthname that \a str1 can
@@ -1252,99 +1280,37 @@ end:
 int QDateTimeParser::findMonth(const QString &str1, int startMonth, int sectionIndex,
                                QString *usedMonth, int *used) const
 {
-    int bestMatch = -1;
-    int bestCount = 0;
-    if (!str1.isEmpty()) {
-        const SectionNode &sn = sectionNode(sectionIndex);
-        if (sn.type != MonthSection) {
-            qWarning("QDateTimeParser::findMonth Internal error");
-            return -1;
-        }
-
-        QLocale::FormatType type = sn.count == 3 ? QLocale::ShortFormat : QLocale::LongFormat;
-        QLocale l = locale();
-
-        for (int month=startMonth; month<=12; ++month) {
-            const QString monthName = l.monthName(month, type);
-            QString str2 = monthName.toLower();
-
-            if (str1.startsWith(str2)) {
-                if (used) {
-                    QDTPDEBUG << "used is set to" << str2.size();
-                    *used = str2.size();
-                }
-                if (usedMonth)
-                    *usedMonth = monthName;
-
-                return month;
-            }
-            if (context == FromString)
-                continue;
-
-            const int limit = qMin(str1.size(), str2.size());
-
-            QDTPDEBUG << "limit is" << limit << str1 << str2;
-            bool equal = true;
-            for (int i=0; i<limit; ++i) {
-                if (str1.at(i) != str2.at(i)) {
-                    equal = false;
-                    if (i > bestCount) {
-                        bestCount = i;
-                        bestMatch = month;
-                    }
-                    break;
-                }
-            }
-            if (equal) {
-                if (used)
-                    *used = limit;
-                if (usedMonth)
-                    *usedMonth = monthName;
-                return month;
-            }
-        }
-        if (usedMonth && bestMatch != -1)
-            *usedMonth = l.monthName(bestMatch, type);
+    const SectionNode &sn = sectionNode(sectionIndex);
+    if (sn.type != MonthSection) {
+        qWarning("QDateTimeParser::findMonth Internal error");
+        return -1;
     }
-    if (used) {
-        QDTPDEBUG << "used is set to" << bestCount;
-        *used = bestCount;
-    }
-    return bestMatch;
+
+    QLocale::FormatType type = sn.count == 3 ? QLocale::ShortFormat : QLocale::LongFormat;
+    QLocale l = locale();
+    QVector<QString> monthNames;
+    monthNames.reserve(12);
+    for (int month = 1; month <= 12; ++month)
+        monthNames.append(month >= startMonth ? l.monthName(month, type) : QString());
+
+    return findTextEntry(str1, startMonth, monthNames, usedMonth, used);
 }
 
 int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex, QString *usedDay, int *used) const
 {
-    int bestMatch = -1;
-    int bestCount = 0;
-    if (!str1.isEmpty()) {
-        const SectionNode &sn = sectionNode(sectionIndex);
-        if (!(sn.type & DaySectionMask)) {
-            qWarning("QDateTimeParser::findDay Internal error");
-            return -1;
-        }
-        const QLocale l = locale();
-        for (int day=startDay; day<=7; ++day) {
-            const QString dayName = l.dayName(day, sn.count == 4 ? QLocale::LongFormat : QLocale::ShortFormat);
-            const QString str2 = dayName.toLower();
-
-            const int limit = qMin(str1.size(), str2.size());
-            int i = 0;
-            while (i < limit && str1.at(i) == str2.at(i))
-                ++i;
-            if (i > bestCount) {
-                bestCount = i;
-                bestMatch = day;
-            }
-        }
-        if (usedDay && bestMatch != -1) {
-            *usedDay = l.dayName(bestMatch, sn.count == 4 ? QLocale::LongFormat : QLocale::ShortFormat);
-        }
+    const SectionNode &sn = sectionNode(sectionIndex);
+    if (!(sn.type & DaySectionMask)) {
+        qWarning("QDateTimeParser::findDay Internal error");
+        return -1;
     }
-    if (used)
-        *used = bestCount;
 
-    return bestMatch;
+    QLocale::FormatType type = sn.count == 4 ? QLocale::LongFormat : QLocale::ShortFormat;
+    QLocale l = locale();
+    QVector<QString> daysOfWeek;
+    daysOfWeek.reserve(7);
+    for (int day = 1; day <= 7; ++day)
+        daysOfWeek.append(day >= startDay ? l.dayName(day, type) : QString());
+    return findTextEntry(str1, startDay, daysOfWeek, usedDay, used);
 }
 #endif // QT_NO_TEXTDATE
 
