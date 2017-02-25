@@ -445,7 +445,7 @@ extern "C" int qt_ucstrncmp_mips_dsp_asm(const ushort *a,
 #endif
 
 // Unicode case-sensitive compare two same-sized strings
-static int ucstrncmp(const QChar *a, const QChar *b, int l)
+static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
 {
 #ifdef __OPTIMIZE_SIZE__
     const QChar *end = a + l;
@@ -458,6 +458,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
     return 0;
 #else
 #if defined(__mips_dsp)
+    Q_STATIC_ASSERT(sizeof(uint) == sizeof(size_t));
     if (l >= 8) {
         return qt_ucstrncmp_mips_dsp_asm(reinterpret_cast<const ushort*>(a),
                                          reinterpret_cast<const ushort*>(b),
@@ -484,13 +485,11 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
                     - reinterpret_cast<const QChar *>(ptr + distance + idx)->unicode();
         }
     }
-#  if defined(Q_COMPILER_LAMBDA)
-    const auto &lambda = [=](int i) -> int {
+    const auto lambda = [=](size_t i) -> int {
         return reinterpret_cast<const QChar *>(ptr)[i].unicode()
                 - reinterpret_cast<const QChar *>(ptr + distance)[i].unicode();
     };
     return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
-#  endif
 #endif
 #if defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
     if (l >= 8) {
@@ -511,7 +510,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
         }
         l &= 7;
     }
-    const auto &lambda = [=](int i) -> int {
+    const auto lambda = [=](size_t i) -> int {
         return a[i].unicode() - b[i].unicode();
     };
     return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
@@ -640,8 +639,8 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     uc += offset;
     c += offset;
 
-#  if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
-    const auto &lambda = [=](int i) { return uc[i] - ushort(c[i]); };
+#  if !defined(__OPTIMIZE_SIZE__)
+    const auto lambda = [=](size_t i) { return uc[i] - ushort(c[i]); };
     return UnrollTailLoop<MaxTailLength>::exec(e - uc, 0, lambda, lambda);
 #  endif
 #endif
@@ -672,7 +671,7 @@ static int ucstrnicmp(const ushort *a, const ushort *b, int l)
     return ucstricmp(a, a + l, b, b + l);
 }
 
-static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
+static bool qMemEquals(const quint16 *a, const quint16 *b, size_t length)
 {
     if (a == b || !length)
         return true;
