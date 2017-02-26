@@ -1814,6 +1814,15 @@ void QWindowPrivate::destroy()
 
     q->setVisible(false);
 
+    // Let subclasses act, typically by doing graphics resource cleaup, when
+    // the window, to which graphics resource may be tied, is going away.
+    //
+    // NB! This is disfunctional when destroy() is invoked from the dtor since
+    // a reimplemented event() will not get called in the subclasses at that
+    // stage. However, the typical QWindow cleanup involves either close() or
+    // going through QWindowContainer, both of which will do an explicit, early
+    // destroy(), which is good here.
+
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
     QGuiApplication::sendEvent(q, &e);
 

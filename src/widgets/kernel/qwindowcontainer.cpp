@@ -241,6 +241,14 @@ QWindow *QWindowContainer::containedWindow() const
 QWindowContainer::~QWindowContainer()
 {
     Q_D(QWindowContainer);
+
+    // Call destroy() explicitly first. The dtor would do this too, but
+    // QEvent::PlatformSurface delivery relies on virtuals. Getting
+    // SurfaceAboutToBeDestroyed can be essential for OpenGL, Vulkan, etc.
+    // QWindow subclasses in particular. Keep these working.
+    if (d->window)
+        d->window->destroy();
+
     delete d->window;
 }
 
