@@ -612,6 +612,18 @@ private:
     void *pool;
 };
 
+#else
+
+#define QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(macos, ios, tvos, watchos) (0)
+#define QT_MACOS_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(macos, ios) (0)
+#define QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(macos) (0)
+#define QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(ios) (0)
+#define QT_TVOS_PLATFORM_SDK_EQUAL_OR_ABOVE(tvos) (0)
+#define QT_WATCHOS_PLATFORM_SDK_EQUAL_OR_ABOVE(watchos) (0)
+
+#define QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(osx, ios) (0)
+#define QT_OSX_PLATFORM_SDK_EQUAL_OR_ABOVE(osx) (0)
+
 #endif // Q_OS_DARWIN
 
 /*
