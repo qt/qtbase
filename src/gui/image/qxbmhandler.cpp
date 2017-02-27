@@ -143,6 +143,8 @@ static bool read_xbm_body(QIODevice *device, int w, int h, QImage *outImage)
             return false;
     }
 
+    outImage->fill(Qt::color0);       // in case the image data does not cover the full image
+
     outImage->setColorCount(2);
     outImage->setColor(0, qRgb(255,255,255));        // white
     outImage->setColor(1, qRgb(0,0,0));                // black
