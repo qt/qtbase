@@ -348,9 +348,6 @@ public:
                             QObject *receiver, const char *signal, int minMIdx,
                             bool buildSignature);
     static DBusHandlerResult messageFilter(DBusConnection *, DBusMessage *, void *);
-    static bool checkReplyForDelivery(QDBusConnectionPrivate *target, QObject *object,
-                                      int idx, const QList<int> &metaTypes,
-                                      const QDBusMessage &msg);
     static QDBusCallDeliveryEvent *prepareReply(QDBusConnectionPrivate *target, QObject *object,
                                                 int idx, const QVector<int> &metaTypes,
                                                 const QDBusMessage &msg);
