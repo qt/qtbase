@@ -159,7 +159,7 @@ public:
     ~QFutureInterface()
     {
         if (!derefT())
-            resultStore().clear();
+            resultStoreBase().template clear<T>();
     }
 
     static QFutureInterface canceledResult()
@@ -169,7 +169,7 @@ public:
     {
         other.refT();
         if (!derefT())
-            resultStore().clear();
+            resultStoreBase().template clear<T>();
         QFutureInterfaceBase::operator=(other);
         return *this;
     }
@@ -184,11 +184,6 @@ public:
     inline const T &resultReference(int index) const;
     inline const T *resultPointer(int index) const;
     inline QList<T> results();
-private:
-    QtPrivate::ResultStore<T> &resultStore()
-    { return static_cast<QtPrivate::ResultStore<T> &>(resultStoreBase()); }
-    const QtPrivate::ResultStore<T> &resultStore() const
-    { return static_cast<const QtPrivate::ResultStore<T> &>(resultStoreBase()); }
 };
 
 template <typename T>
@@ -199,15 +194,14 @@ inline void QFutureInterface<T>::reportResult(const T *result, int index)
         return;
     }
 
-    QtPrivate::ResultStore<T> &store = resultStore();
-
+    QtPrivate::ResultStoreBase &store = resultStoreBase();
 
     if (store.filterMode()) {
         const int resultCountBefore = store.count();
-        store.addResult(index, result);
+        store.addResult<T>(index, result);
         this->reportResultsReady(resultCountBefore, resultCountBefore + store.count());
     } else {
-        const int insertIndex = store.addResult(index, result);
+        const int insertIndex = store.addResult<T>(index, result);
         this->reportResultsReady(insertIndex, insertIndex + 1);
     }
 }
@@ -226,7 +220,7 @@ inline void QFutureInterface<T>::reportResults(const QVector<T> &_results, int b
         return;
     }
 
-    QtPrivate::ResultStore<T> &store = resultStore();
+    auto &store = resultStoreBase();
 
     if (store.filterMode()) {
         const int resultCountBefore = store.count();
@@ -250,14 +244,14 @@ template <typename T>
 inline const T &QFutureInterface<T>::resultReference(int index) const
 {
     QMutexLocker lock(mutex());
-    return resultStore().resultAt(index).value();
+    return resultStoreBase().resultAt(index).template value<T>();
 }
 
 template <typename T>
 inline const T *QFutureInterface<T>::resultPointer(int index) const
 {
     QMutexLocker lock(mutex());
-    return resultStore().resultAt(index).pointer();
+    return resultStoreBase().resultAt(index).template pointer<T>();
 }
 
 template <typename T>
@@ -272,9 +266,9 @@ inline QList<T> QFutureInterface<T>::results()
     QList<T> res;
     QMutexLocker lock(mutex());
 
-    QtPrivate::ResultIterator<T> it = resultStore().begin();
-    while (it != resultStore().end()) {
-        res.append(it.value());
+    QtPrivate::ResultIteratorBase it = resultStoreBase().begin();
+    while (it != resultStoreBase().end()) {
+        res.append(it.value<T>());
         ++it;
     }
 
