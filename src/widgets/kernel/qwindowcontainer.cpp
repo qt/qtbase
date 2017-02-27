@@ -329,6 +329,19 @@ bool QWindowContainer::event(QEvent *e)
         e->accept();
         return true;
 #endif
+
+    case QEvent::Paint:
+    {
+        static bool needsPunch = !QGuiApplicationPrivate::platformIntegration()->hasCapability(
+            QPlatformIntegration::TopStackedNativeChildWindows);
+        if (needsPunch) {
+            QPainter p(this);
+            p.setCompositionMode(QPainter::CompositionMode_Source);
+            p.fillRect(rect(), Qt::transparent);
+        }
+        break;
+    }
+
     default:
         break;
     }

@@ -237,6 +237,10 @@ QPlatformServices *QPlatformIntegration::services() const
     is required to have this capability.
 
     \value ApplicationIcon The platform supports setting the application icon. (since 5.5)
+
+    \value TopStackedNativeChildWindows The platform supports native child windows via
+    QWindowContainer without having to punch a transparent hole in the
+    backingstore. (since 5.10)
  */
 
 /*!
@@ -260,7 +264,8 @@ QPlatformServices *QPlatformIntegration::services() const
 
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {
-    return cap == NonFullScreenWindows || cap == NativeWidgets || cap == WindowManagement;
+    return cap == NonFullScreenWindows || cap == NativeWidgets || cap == WindowManagement
+        || cap == TopStackedNativeChildWindows;
 }
 
 QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const

@@ -233,6 +233,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case ForeignWindows: return QtAndroid::activity();
         case ThreadedOpenGL: return !needsBasicRenderloopWorkaround() && QtAndroid::activity();
         case RasterGLSurface: return QtAndroid::activity();
+        case TopStackedNativeChildWindows: return false;
         default:
             return QPlatformIntegration::hasCapability(cap);
     }

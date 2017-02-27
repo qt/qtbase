@@ -99,7 +99,8 @@ public:
         RasterGLSurface,
         AllGLFunctionsQueryable,
         ApplicationIcon,
-        SwitchableWidgetComposition
+        SwitchableWidgetComposition,
+        TopStackedNativeChildWindows
     };
 
     virtual ~QPlatformIntegration() { }
