@@ -43,6 +43,7 @@
 #include <QtNetwork/qtnetworkglobal.h>
 
 #include <QtCore/qshareddata.h>
+#include <QtCore/qflags.h>
 #include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
@@ -53,10 +54,15 @@ class QString;
 class Q_NETWORK_EXPORT QHstsPolicy
 {
 public:
+    enum PolicyFlag
+    {
+        IncludeSubDomains = 1
+    };
+    Q_DECLARE_FLAGS(PolicyFlags, PolicyFlag)
 
     QHstsPolicy();
-    explicit QHstsPolicy(const QDateTime &expiry, bool includeSubDomains, const QString &host,
-                         QUrl::ParsingMode mode = QUrl::DecodedMode);
+    QHstsPolicy(const QDateTime &expiry, PolicyFlags flags, const QString &host,
+                QUrl::ParsingMode mode = QUrl::DecodedMode);
     QHstsPolicy(const QHstsPolicy &rhs);
     QHstsPolicy &operator=(const QHstsPolicy &rhs);
     QHstsPolicy &operator=(QHstsPolicy &&other) Q_DECL_NOTHROW { swap(other); return *this; }
@@ -81,6 +87,7 @@ private:
 };
 
 Q_DECLARE_SHARED(QHstsPolicy)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QHstsPolicy::PolicyFlags)
 
 Q_NETWORK_EXPORT bool operator==(const QHstsPolicy &lhs, const QHstsPolicy &rhs);
 
