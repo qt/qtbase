@@ -531,6 +531,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << endl;
     t << "INSTALL_DIR     = " << var("QMAKE_INSTALL_DIR") << endl;
     t << "QINSTALL_FILE   = " << var("QMAKE_QMAKE") << " -install qinstall file" << endl;
+    t << "QINSTALL_PROGRAM = " << var("QMAKE_QMAKE") << " -install qinstall program" << endl;
     t << endl;
 
     t << "####### Output directory\n\n";

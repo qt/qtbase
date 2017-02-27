@@ -236,7 +236,7 @@ static int doLink(int argc, char **argv)
 
 #endif
 
-static int installFile(const QString &source, const QString &targetFileOrDirectory)
+static int installFile(const QString &source, const QString &targetFileOrDirectory, bool exe = false)
 {
     QFile sourceFile(source);
 
@@ -253,6 +253,17 @@ static int installFile(const QString &source, const QString &targetFileOrDirecto
         fprintf(stderr, "Error copying %s to %s: %s\n", source.toLatin1().constData(), qPrintable(target), qPrintable(sourceFile.errorString()));
         return 3;
     }
+
+    if (exe) {
+        QFile targetFile(target);
+        if (!targetFile.setPermissions(sourceFile.permissions() | QFileDevice::ExeOwner | QFileDevice::ExeUser |
+                                       QFileDevice::ExeGroup | QFileDevice::ExeOther)) {
+            fprintf(stderr, "Error setting execute permissions on %s: %s\n",
+                    qPrintable(target), qPrintable(targetFile.errorString()));
+            return 3;
+        }
+    }
+
     // Copy file times
     QString error;
     if (!IoUtils::touchFile(target, sourceFile.fileName(), &error)) {
@@ -274,6 +285,8 @@ static int doQInstall(int argc, char **argv)
 
     if (!strcmp(argv[0], "file"))
         return installFile(source, target);
+    if (!strcmp(argv[0], "program"))
+        return installFile(source, target, /*exe=*/true);
 
     fprintf(stderr, "Error: Unsupported qinstall command type %s\n", argv[0]);
     return 3;

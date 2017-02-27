@@ -629,7 +629,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
                     ret += "\n\t";
                 ret += mkdir_p_asstring("\"`dirname " + dst_targ + "`\"", false);
             }
-            copy_cmd += "-$(INSTALL_PROGRAM) " + src_targ + ' ' + dst_targ;
+            copy_cmd += "-$(QINSTALL_PROGRAM) " + src_targ + ' ' + dst_targ;
         }
         if(project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib")
            && project->values(ProKey(t + ".CONFIG")).indexOf("fix_rpath") != -1) {
