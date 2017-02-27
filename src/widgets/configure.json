@@ -117,6 +117,12 @@
             "condition": "features.tableview",
             "output": [ "publicFeature", "feature" ]
         },
+        "commandlinkbutton": {
+            "label": "QCommandLinkButton",
+            "purpose": "Provides a Vista style command link button.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
         "datetimeedit": {
             "label": "QDateTimeEdit",
             "purpose": "Supports editing dates and times.",

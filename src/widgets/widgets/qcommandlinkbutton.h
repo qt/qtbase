@@ -43,6 +43,8 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qpushbutton.h>
 
+QT_REQUIRE_CONFIG(commandlinkbutton);
+
 QT_BEGIN_NAMESPACE
 
 

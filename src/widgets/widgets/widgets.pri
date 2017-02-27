@@ -13,7 +13,6 @@ HEADERS += \
         widgets/qcheckbox.h \
         widgets/qcombobox.h \
         widgets/qcombobox_p.h \
-        widgets/qcommandlinkbutton.h \
         widgets/qdatetimeedit.h \
         widgets/qdatetimeedit_p.h \
         widgets/qdial.h \
@@ -92,7 +91,6 @@ SOURCES += \
         widgets/qcalendarwidget.cpp \
         widgets/qcheckbox.cpp \
         widgets/qcombobox.cpp \
-        widgets/qcommandlinkbutton.cpp \
         widgets/qdatetimeedit.cpp \
         widgets/qdial.cpp \
         widgets/qdialogbuttonbox.cpp \
@@ -144,6 +142,14 @@ SOURCES += \
         widgets/qwidgetlinecontrol.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp
+
+qtConfig(commandlinkbutton) {
+    HEADERS += \
+        widgets/qcommandlinkbutton.h
+
+    SOURCES += \
+        widgets/qcommandlinkbutton.cpp
+}
 
 macx {
     HEADERS += \
