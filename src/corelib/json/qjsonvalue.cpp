@@ -276,10 +276,7 @@ QJsonValue::QJsonValue(const QJsonValue &other)
 QJsonValue &QJsonValue::operator =(const QJsonValue &other)
 {
     QJsonValue copy(other);
-    // swap(copy);
-    qSwap(dbl, copy.dbl);
-    qSwap(d,   copy.d);
-    qSwap(t,   copy.t);
+    swap(copy);
     return *this;
 }
 
