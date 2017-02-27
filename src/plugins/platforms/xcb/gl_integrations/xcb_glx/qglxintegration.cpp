@@ -711,8 +711,7 @@ void QGLXContext::queryDummyContext()
 
 bool QGLXContext::supportsThreading()
 {
-    if (!m_queriedDummyContext)
-        queryDummyContext();
+    queryDummyContext();
     return m_supportsThreading;
 }
 
