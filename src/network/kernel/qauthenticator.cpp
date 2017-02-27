@@ -1445,7 +1445,8 @@ static PSecurityFunctionTable pSecurityFunctionTable = NULL;
 
 static bool q_NTLM_SSPI_library_load()
 {
-    QMutexLocker locker(QMutexPool::globalInstanceGet((void *)&pSecurityFunctionTable));
+    static QBasicMutex mutex;
+    QMutexLocker l(&mutex);
 
     // Initialize security interface
     if (pSecurityFunctionTable == NULL) {
