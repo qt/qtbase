@@ -85,7 +85,8 @@ private:
 # define PROFILE_SCOPE
 #endif
 
-QAndroidPlatformScreen::QAndroidPlatformScreen():QObject(),QPlatformScreen()
+QAndroidPlatformScreen::QAndroidPlatformScreen()
+    : QObject(), QPlatformScreen()
 {
     m_availableGeometry = QRect(0, 0, QAndroidPlatformIntegration::m_defaultGeometryWidth, QAndroidPlatformIntegration::m_defaultGeometryHeight);
     m_size = QSize(QAndroidPlatformIntegration::m_defaultScreenWidth, QAndroidPlatformIntegration::m_defaultScreenHeight);
@@ -100,9 +101,6 @@ QAndroidPlatformScreen::QAndroidPlatformScreen():QObject(),QPlatformScreen()
     }
     m_physicalSize.setHeight(QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight);
     m_physicalSize.setWidth(QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth);
-    m_redrawTimer.setSingleShot(true);
-    m_redrawTimer.setInterval(0);
-    connect(&m_redrawTimer, SIGNAL(timeout()), this, SLOT(doRedraw()));
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QAndroidPlatformScreen::applicationStateChanged);
 }
 
@@ -134,6 +132,16 @@ QWindow *QAndroidPlatformScreen::topLevelAt(const QPoint &p) const
             return w->window();
     }
     return 0;
+}
+
+bool QAndroidPlatformScreen::event(QEvent *event)
+{
+    if (event->type() == QEvent::UpdateRequest) {
+        doRedraw();
+        m_updatePending = false;
+        return true;
+    }
+    return QObject::event(event);
 }
 
 void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
@@ -209,8 +217,10 @@ void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::scheduleUpdate()
 {
-    if (!m_redrawTimer.isActive())
-        m_redrawTimer.start();
+    if (!m_updatePending) {
+        m_updatePending = true;
+        QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
+    }
 }
 
 void QAndroidPlatformScreen::setDirty(const QRect &rect)

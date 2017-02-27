@@ -89,10 +89,12 @@ public slots:
     void setSize(const QSize &size);
 
 protected:
+    bool event(QEvent *event);
+
     typedef QList<QAndroidPlatformWindow *> WindowStackType;
     WindowStackType m_windowStack;
     QRect m_dirtyRect;
-    QTimer m_redrawTimer;
+    bool m_updatePending = false;
 
     QRect m_availableGeometry;
     int m_depth;
