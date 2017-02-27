@@ -160,7 +160,7 @@ public:
     void fitItems();
     bool expansive(Qt::Orientation o) const;
     int changeSize(int index, int size, bool below);
-    QRect itemRect(int index) const;
+    QRect itemRect(int index, bool isGap = false) const;
     QRect itemRect(const QList<int> &path) const;
     QRect separatorRect(int index) const;
     QRect separatorRect(const QList<int> &path) const;
