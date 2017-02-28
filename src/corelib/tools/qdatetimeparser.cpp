@@ -1248,9 +1248,12 @@ end:
   \internal
   \brief Returns the index in \a entries with the best prefix match to \a text
 
-  Scans \a entries looking for an entry overlapping \a text as much as possible.
-  Records the length of overlap in *used (if \a used is non-NULL) and the first
-  entry that overlapped this much in *usedText (if \a usedText is non-NULL).
+  Scans \a entries looking for an entry overlapping \a text as much as possible
+  (an exact match beats any prefix match; a match of the full entry as prefix of
+  text beats any entry but one matching a longer prefix; otherwise, the match of
+  longest prefix wins, earlier entries beating later on a draw).  Records the
+  length of overlap in *used (if \a used is non-NULL) and the first entry that
+  overlapped this much in *usedText (if \a usedText is non-NULL).
  */
 static int findTextEntry(const QString &text, const QVector<QString> &entries, QString *usedText, int *used)
 {
@@ -1267,9 +1270,12 @@ static int findTextEntry(const QString &text, const QVector<QString> &entries, Q
         int i = 0;
         while (i < limit && text.at(i) == name.at(i).toLower())
             ++i;
-        if (i > bestCount) {
+        // Full match beats an equal prefix match:
+        if (i > bestCount || (i == bestCount && i == name.size())) {
             bestCount = i;
             bestMatch = n;
+            if (i == name.size() && i == text.size())
+                break; // Exact match, name == text, wins.
         }
     }
     if (usedText && bestMatch != -1)
