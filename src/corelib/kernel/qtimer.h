@@ -168,7 +168,7 @@ public:
     Q_ALWAYS_INLINE
     void setInterval(std::chrono::milliseconds value)
     {
-        setInterval(value.count());
+        setInterval(int(value.count()));
     }
 
     Q_ALWAYS_INLINE
