@@ -81,7 +81,7 @@ static QDebug operator<<(QDebug d, const QMimeData *mimeData)
     d << "QMimeData(";
     if (mimeData) {
         const QStringList formats = mimeData->formats();
-        d << "formats=" << formats.join(QStringLiteral(", "));
+        d << "formats=" << formats.join(QLatin1String(", "));
         if (mimeData->hasText())
             d << ", text=" << mimeData->text();
         if (mimeData->hasHtml())
@@ -321,7 +321,7 @@ void QWindowsClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
     const HRESULT src = OleSetClipboard(m_data);
     if (src != S_OK) {
         QString mimeDataFormats = mimeData ?
-            mimeData->formats().join(QStringLiteral(", ")) : QString(QStringLiteral("NULL"));
+            mimeData->formats().join(QLatin1String(", ")) : QString(QStringLiteral("NULL"));
         qErrnoWarning("OleSetClipboard: Failed to set mime data (%s) on clipboard: %s",
                       qPrintable(mimeDataFormats),
                       QWindowsContext::comErrorString(src).constData());

@@ -126,6 +126,7 @@ class QList
 public:
     struct MemoryLayout
         : std::conditional<
+            // must stay isStatic until ### Qt 6 for BC reasons (don't use !isRelocatable)!
             QTypeInfo<T>::isStatic || QTypeInfo<T>::isLarge,
             QListData::IndirectLayout,
             typename std::conditional<

@@ -415,7 +415,7 @@ QWinTimeZonePrivate::~QWinTimeZonePrivate()
 {
 }
 
-QTimeZonePrivate *QWinTimeZonePrivate::clone()
+QWinTimeZonePrivate *QWinTimeZonePrivate::clone() const
 {
     return new QWinTimeZonePrivate(*this);
 }

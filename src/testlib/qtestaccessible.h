@@ -47,8 +47,6 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_ACCESSIBILITY
-
 #define QVERIFY_EVENT(event) \
     QVERIFY(QTestAccessibility::verifyEvent(event))
 
@@ -58,6 +56,8 @@
 #include <QtGui/qguiapplication.h>
 #include <QtTest/qtest_global.h>
 #include <QtTest/qtestsystem.h>
+
+#if QT_CONFIG(accessibility)
 
 QT_BEGIN_NAMESPACE
 
@@ -294,5 +294,5 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif // QT_CONFIG(accessibility)
 #endif // QTESTACCESSIBLE_H

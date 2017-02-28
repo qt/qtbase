@@ -132,6 +132,9 @@ private:
     }
 };
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4351) // MSVC 2013: "new behavior: elements of array ... will be default initialized"
+                              // remove once we drop MSVC 2013 support
 template <uint N>
 class QStaticByteArrayMatcher : QStaticByteArrayMatcherBase
 {
@@ -152,6 +155,8 @@ public:
 
     QByteArray pattern() const { return QByteArray(m_pattern, int(N - 1)); }
 };
+
+QT_WARNING_POP
 
 template <uint N>
 Q_DECL_RELAXED_CONSTEXPR QStaticByteArrayMatcher<N> qMakeStaticByteArrayMatcher(const char (&pattern)[N]) Q_DECL_NOTHROW

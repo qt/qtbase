@@ -1167,7 +1167,7 @@ void QWindowsNativeFileDialogBase::selectNameFilter(const QString &filter)
     if (index < 0) {
         qWarning("%s: Invalid parameter '%s' not found in '%s'.",
                  __FUNCTION__, qPrintable(filter),
-                 qPrintable(m_nameFilters.join(QStringLiteral(", "))));
+                 qPrintable(m_nameFilters.join(QLatin1String(", "))));
         return;
     }
     m_fileDialog->SetFileTypeIndex(index + 1); // one-based.

@@ -171,6 +171,7 @@ public:
     void raise() override { raise_sys(); }
     void lower() override { lower_sys(); }
     void setWindowTitle(const QString &title) override { setWindowTitle_sys(title); }
+    bool isForeignWindow() const override { return true; }
 
 protected:
     HWND handle() const override { return m_hwnd; }

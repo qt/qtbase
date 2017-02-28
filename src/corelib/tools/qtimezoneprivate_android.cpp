@@ -88,7 +88,7 @@ void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
         m_id = ianaId;
 }
 
-QTimeZonePrivate *QAndroidTimeZonePrivate::clone()
+QAndroidTimeZonePrivate *QAndroidTimeZonePrivate::clone() const
 {
     return new QAndroidTimeZonePrivate(*this);
 }

@@ -82,7 +82,6 @@ public:
     void reset();
     bool waitForDone(int msecs);
     void clear();
-    bool stealRunnable(QRunnable *runnable);
     void stealAndRunRunnable(QRunnable *runnable);
 
     mutable QMutex mutex;

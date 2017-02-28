@@ -294,6 +294,8 @@ private slots:
     void inputMethodQueryImHints_data();
     void inputMethodQueryImHints();
 
+    void inputMethodUpdate();
+
     void undoRedoAndEchoModes_data();
     void undoRedoAndEchoModes();
 
@@ -4182,6 +4184,57 @@ void tst_QLineEdit::inputMethodQueryImHints()
 
     QVariant value = testWidget->inputMethodQuery(Qt::ImHints);
     QCOMPARE(static_cast<Qt::InputMethodHints>(value.toInt()), hints);
+}
+
+void tst_QLineEdit::inputMethodUpdate()
+{
+    QLineEdit *testWidget = ensureTestWidget();
+
+    centerOnScreen(testWidget);
+    testWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(testWidget));
+
+    testWidget->setText("");
+    testWidget->activateWindow();
+    testWidget->setFocus();
+    QTRY_VERIFY(testWidget->hasFocus());
+    QTRY_COMPARE(qApp->focusObject(), testWidget);
+
+    m_platformInputContext.m_updateCallCount = 0;
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("preedit text", attributes);
+        QApplication::sendEvent(testWidget, &event);
+    }
+    QVERIFY(m_platformInputContext.m_updateCallCount >= 1);
+
+    m_platformInputContext.m_updateCallCount = 0;
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, 0, 1, QVariant());
+        QInputMethodEvent event("preedit text", attributes);
+        QApplication::sendEvent(testWidget, &event);
+    }
+    QVERIFY(m_platformInputContext.m_updateCallCount >= 1);
+
+    m_platformInputContext.m_updateCallCount = 0;
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("preedit text");
+        QApplication::sendEvent(testWidget, &event);
+    }
+    QVERIFY(m_platformInputContext.m_updateCallCount >= 1);
+    QCOMPARE(testWidget->text(), QString("preedit text"));
+
+    m_platformInputContext.m_updateCallCount = 0;
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 0, 0, QVariant());
+        QInputMethodEvent event("", attributes);
+        QApplication::sendEvent(testWidget, &event);
+    }
+    QVERIFY(m_platformInputContext.m_updateCallCount >= 1);
 }
 
 void tst_QLineEdit::undoRedoAndEchoModes_data()

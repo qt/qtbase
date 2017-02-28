@@ -553,7 +553,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
                 T *srcEnd = asize > d->size ? d->end() : d->begin() + asize;
                 T *dst = x->begin();
 
-                if (QTypeInfo<T>::isStatic || (isShared && QTypeInfo<T>::isComplex)) {
+                if (!QTypeInfoQuery<T>::isRelocatable || (isShared && QTypeInfo<T>::isComplex)) {
                     // we can not move the data, we need to copy construct it
                     while (srcBegin != srcEnd) {
                         new (dst++) T(*srcBegin++);
@@ -598,7 +598,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
     }
     if (d != x) {
         if (!d->ref.deref()) {
-            if (QTypeInfo<T>::isStatic || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
+            if (!QTypeInfoQuery<T>::isRelocatable || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
                 // data was copy constructed, we need to call destructors
                 // or if !alloc we did nothing to the old 'd'.
                 freeData(d);
@@ -697,7 +697,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
         const T copy(t);
         if (!isDetached() || d->size + n > int(d->alloc))
             reallocData(d->size, d->size + n, QArrayData::Grow);
-        if (QTypeInfo<T>::isStatic) {
+        if (!QTypeInfoQuery<T>::isRelocatable) {
             T *b = d->end();
             T *i = d->end() + n;
             while (i != b)
@@ -746,7 +746,7 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
         detach();
         abegin = d->begin() + itemsUntouched;
         aend = abegin + itemsToErase;
-        if (QTypeInfo<T>::isStatic) {
+        if (!QTypeInfoQuery<T>::isRelocatable) {
             iterator moveBegin = abegin + itemsToErase;
             iterator moveEnd = d->end();
             while (moveBegin != moveEnd) {

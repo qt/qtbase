@@ -78,6 +78,7 @@ public:
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformWindow *createForeignWindow(QWindow *window, WId nativeHandle) const override;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
     QAbstractEventDispatcher *createEventDispatcher() const override;

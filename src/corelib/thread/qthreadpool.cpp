@@ -316,22 +316,39 @@ void QThreadPoolPrivate::clear()
 }
 
 /*!
-    \internal
-    Searches for \a runnable in the queue, removes it from the queue and
-    returns \c true if it was found in the queue
+    \since 5.9
+
+    Attempts to remove the specified \a runnable from the queue if it is not yet started.
+    If the runnable had not been started, returns \c true, and ownership of \a runnable
+    is transferred to the caller (even when \c{runnable->autoDelete() == true}).
+    Otherwise returns \c false.
+
+    \note If \c{runnable->autoDelete() == true}, this function may remove the wrong
+    runnable. This is known as the \l{https://en.wikipedia.org/wiki/ABA_problem}{ABA problem}:
+    the original \a runnable may already have executed and has since been deleted.
+    The memory is re-used for another runnable, which then gets removed instead of
+    the intended one. For this reason, we recommend calling this function only for
+    runnables that are not auto-deleting.
+
+    \sa start(), QRunnable::autoDelete()
 */
-bool QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
+bool QThreadPool::tryTake(QRunnable *runnable)
 {
+    Q_D(QThreadPool);
+
     if (runnable == 0)
         return false;
     {
-        QMutexLocker locker(&mutex);
-        QVector<QPair<QRunnable *, int> >::iterator it = queue.begin();
-        QVector<QPair<QRunnable *, int> >::iterator end = queue.end();
+        QMutexLocker locker(&d->mutex);
+
+        auto it = d->queue.begin();
+        auto end = d->queue.end();
 
         while (it != end) {
             if (it->first == runnable) {
-                queue.erase(it);
+                d->queue.erase(it);
+                if (runnable->autoDelete())
+                    --runnable->ref; // undo ++ref in start()
                 return true;
             }
             ++it;
@@ -349,10 +366,10 @@ bool QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
      */
 void QThreadPoolPrivate::stealAndRunRunnable(QRunnable *runnable)
 {
-    if (!stealRunnable(runnable))
+    Q_Q(QThreadPool);
+    if (!q->tryTake(runnable))
         return;
-    const bool autoDelete = runnable->autoDelete();
-    bool del = autoDelete && !--runnable->ref;
+    const bool del = runnable->autoDelete() && !runnable->ref; // tryTake already deref'ed
 
     runnable->run();
 
@@ -642,24 +659,23 @@ void QThreadPool::clear()
     d->clear();
 }
 
+#if QT_DEPRECATED_SINCE(5, 9)
 /*!
     \since 5.5
+    \obsolete use tryTake() instead, but note the different deletion rules.
 
     Removes the specified \a runnable from the queue if it is not yet started.
     The runnables for which \l{QRunnable::autoDelete()}{runnable->autoDelete()}
     returns \c true are deleted.
 
-    \sa start()
+    \sa start(), tryTake()
 */
 void QThreadPool::cancel(QRunnable *runnable)
 {
-    Q_D(QThreadPool);
-    if (!d->stealRunnable(runnable))
-        return;
-    if (runnable->autoDelete() && !--runnable->ref) {
+    if (tryTake(runnable) && runnable->autoDelete() && !runnable->ref) // tryTake already deref'ed
         delete runnable;
-    }
 }
+#endif
 
 QT_END_NAMESPACE
 

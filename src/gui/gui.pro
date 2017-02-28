@@ -3,7 +3,7 @@ QT = core-private
 
 qtConfig(opengl.*): MODULE_CONFIG = opengl
 
-DEFINES   += QT_NO_USING_NAMESPACE
+DEFINES   += QT_NO_USING_NAMESPACE QT_NO_FOREACH
 
 QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
 

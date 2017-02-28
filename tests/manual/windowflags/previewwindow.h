@@ -48,8 +48,7 @@ public slots:
     void updateInfo();
 
 protected:
-    void resizeEvent(QResizeEvent *);
-    void moveEvent(QMoveEvent *);
+    bool event(QEvent *) override;
 
 private:
     QPlainTextEdit *textEdit;
@@ -68,8 +67,7 @@ public slots:
     void updateInfo();
 
 protected:
-    void resizeEvent(QResizeEvent *);
-    void moveEvent(QMoveEvent *);
+    bool event(QEvent *) override;
 
 private:
     QPlainTextEdit *textEdit;

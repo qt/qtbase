@@ -156,7 +156,7 @@ class QCocoaWindow : public QObject, public QPlatformWindow
 {
     Q_OBJECT
 public:
-    QCocoaWindow(QWindow *tlw);
+    QCocoaWindow(QWindow *tlw, WId nativeHandle = 0);
     ~QCocoaWindow();
 
     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
@@ -186,6 +186,8 @@ public:
     QMargins frameMargins() const Q_DECL_OVERRIDE;
     QSurfaceFormat format() const Q_DECL_OVERRIDE;
 
+    bool isForeignWindow() const Q_DECL_OVERRIDE;
+
     void requestActivateWindow() Q_DECL_OVERRIDE;
 
     WId winId() const Q_DECL_OVERRIDE;
@@ -206,7 +208,9 @@ public:
     Q_NOTIFICATION_HANDLER(NSWindowDidResignKeyNotification) void windowDidResignKey();
     Q_NOTIFICATION_HANDLER(NSWindowDidMiniaturizeNotification) void windowDidMiniaturize();
     Q_NOTIFICATION_HANDLER(NSWindowDidDeminiaturizeNotification) void windowDidDeminiaturize();
+    Q_NOTIFICATION_HANDLER(NSWindowWillEnterFullScreenNotification) void windowWillEnterFullScreen();
     Q_NOTIFICATION_HANDLER(NSWindowDidEnterFullScreenNotification) void windowDidEnterFullScreen();
+    Q_NOTIFICATION_HANDLER(NSWindowWillExitFullScreenNotification) void windowWillExitFullScreen();
     Q_NOTIFICATION_HANDLER(NSWindowDidExitFullScreenNotification) void windowDidExitFullScreen();
     Q_NOTIFICATION_HANDLER(NSWindowDidOrderOffScreenNotification) void windowDidOrderOffScreen();
     Q_NOTIFICATION_HANDLER(NSWindowDidOrderOnScreenAndFinishAnimatingNotification) void windowDidOrderOnScreen();

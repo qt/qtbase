@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 class QAndroidPlatformForeignWindow : public QAndroidPlatformWindow
 {
 public:
-    explicit QAndroidPlatformForeignWindow(QWindow *window);
+    explicit QAndroidPlatformForeignWindow(QWindow *window, WId nativeHandle);
     ~QAndroidPlatformForeignWindow();
     void lower() override;
     void raise() override;
@@ -57,6 +57,7 @@ public:
     void setVisible(bool visible) override;
     void applicationStateChanged(Qt::ApplicationState state) override;
     void setParent(const QPlatformWindow *window) override;
+    bool isForeignWindow() const override { return true; }
 
 private:
     int m_surfaceId;
