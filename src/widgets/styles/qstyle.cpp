@@ -1987,6 +1987,11 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            by the style. Can be overridden with QAbstractItemView::setVerticalScrollMode() and
            QAbstractItemView::setHorizontalScrollMode(). This enum value has been introduced in Qt 5.7.
 
+    \value SH_TitleBar_ShowToolTipsOnButtons
+           Determines if tool tips are shown on window title bar buttons.
+           The Mac style, for example, sets this to false.
+           This enum value has been introduced in Qt 5.10.
+
     \sa styleHint()
 */
 

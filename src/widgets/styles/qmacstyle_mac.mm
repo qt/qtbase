@@ -3025,6 +3025,10 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_ItemView_ScrollMode:
         ret = QAbstractItemView::ScrollPerPixel;
         break;
+    case SH_TitleBar_ShowToolTipsOnButtons:
+        // min/max/close buttons on windows don't show tool tips
+        ret = false;
+        break;
     default:
         ret = QCommonStyle::styleHint(sh, opt, w, hret);
         break;

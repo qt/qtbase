@@ -5231,6 +5231,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = QAbstractItemView::ScrollPerItem;
         break;
 #endif
+    case SH_TitleBar_ShowToolTipsOnButtons:
+        ret = true;
+        break;
     default:
         ret = 0;
         break;

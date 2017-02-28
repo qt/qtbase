@@ -158,9 +158,6 @@
 #include <QMainWindow>
 #include <QScrollBar>
 #include <QDebug>
-#if QT_CONFIG(style_mac)
-#include <private/qmacstyle_mac_p.h>
-#endif
 #include <QMdiArea>
 #include <QScopedValueRollback>
 
@@ -300,11 +297,8 @@ static void showToolTip(QHelpEvent *helpEvent, QWidget *widget, const QStyleOpti
     Q_ASSERT(helpEvent->type() == QEvent::ToolTip);
     Q_ASSERT(widget);
 
-#if QT_CONFIG(style_mac)
-    // Native Mac windows don't show tool tip.
-    if (qobject_cast<QMacStyle *>(widget->style()))
+    if (widget->style()->styleHint(QStyle::SH_TitleBar_ShowToolTipsOnButtons, &opt, widget))
         return;
-#endif
 
     // Convert CC_MdiControls to CC_TitleBar. Sub controls of different complex
     // controls cannot be in the same switch as they might have the same value.

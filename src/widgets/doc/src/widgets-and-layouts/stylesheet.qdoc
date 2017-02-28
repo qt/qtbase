@@ -2434,6 +2434,12 @@
            \l{Qt Style Sheets Reference#subcontrol-origin-prop}{subcontrol-origin}.
 
     \row
+        \li \b{\c titlebar-show-tooltips-on-buttons}}
+            \target titlebar-show-tooltips-on-buttons-prop
+        \li \c bool
+        \li Whether tool tips are shown on window title bar buttons.
+
+    \row
         \li \b{\c text-align} \target text-align-prop
         \li \l{#Alignment}{Alignment}
         \li The alignment of text and icon within the contents of the widget.
