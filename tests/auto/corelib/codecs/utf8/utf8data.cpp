@@ -85,10 +85,10 @@ void loadInvalidUtf8Rows()
     // overlong 6: xxxx:xxz0 xz00:0000 xz00:0000 xz00:0000 xz00:0001 xz00:0001
     QTest::newRow("overlong-1-6") << QByteArray("\xFC\x80\x80\x80\x81\x81");
 
-    // NBSP: U+00A0:                                             10    00 0000
+    // U+0080:                                                    10   00 0000
     // proper encoding:                                    xxz0:0010 xz00:0000
     // overlong 3:                               xxxz:0000 xz00:0010 xz00:0000
-    QTest::newRow("overlong-2-3") << QByteArray("\xC0\x82\x80");
+    QTest::newRow("overlong-2-3") << QByteArray("\xE0\x82\x80");
     // overlong 4:                     xxxx:z000 xz00:0000 xz00:0010 xz00:0000
     QTest::newRow("overlong-2-4") << QByteArray("\xF0\x80\x82\x80");
     // overlong 5:           xxxx:xz00 xz00:0000 xz00:0000 xz00:0010 xz00:0000
