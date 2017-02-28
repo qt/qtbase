@@ -641,6 +641,7 @@ QDoubleValidator::~QDoubleValidator()
 #   define LLONG_MAX Q_INT64_C(0x7fffffffffffffff)
 #endif
 
+#define ADSK_QDOUBLEVALIDATOR
 QValidator::State QDoubleValidator::validate(QString & input, int &) const
 {
     Q_D(const QDoubleValidator);
@@ -654,8 +655,15 @@ QValidator::State QDoubleValidator::validate(QString & input, int &) const
             numMode = QLocaleData::DoubleScientificMode;
             break;
     }
-
+#ifdef ADSK_QDOUBLEVALIDATOR
+    State currentLocaleValidation = d->validateWithLocale(input, numMode, locale());
+    if (currentLocaleValidation == Acceptable || locale().language() == QLocale::C)
+        return currentLocaleValidation;
+    State cLocaleValidation = d->validateWithLocale(input, numMode, QLocale(QLocale::C));
+    return qMax(currentLocaleValidation, cLocaleValidation);
+#else
     return d->validateWithLocale(input, numMode, locale());
+#endif
 }
 
 QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QLocaleData::NumberMode numMode, const QLocale &locale) const
