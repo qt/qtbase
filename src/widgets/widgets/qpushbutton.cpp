@@ -56,10 +56,6 @@
 #include "qdebug.h"
 #include "qlayoutitem.h"
 #include "qdialogbuttonbox.h"
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-#include "private/qmacstyle_mac_p.h"
-#include "private/qmacstyle_mac_p_p.h"
-#endif
 
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"

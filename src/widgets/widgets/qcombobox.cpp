@@ -67,11 +67,6 @@
 #include <private/qabstractscrollarea_p.h>
 #include <private/qlineedit_p.h>
 #include <qdebug.h>
-#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && !defined(QT_NO_EFFECTS) && QT_CONFIG(style_mac)
-#include <private/qcore_mac_p.h>
-#include <private/qmacstyle_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
-#endif
 #ifndef QT_NO_EFFECTS
 # include <private/qeffects_p.h>
 #endif

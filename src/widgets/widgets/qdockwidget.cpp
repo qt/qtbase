@@ -58,11 +58,6 @@
 
 #include "qdockwidget_p.h"
 #include "qmainwindowlayout_p.h"
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-#include <private/qapplication_p.h>
-#include <private/qt_mac_p.h>
-#include <private/qmacstyle_mac_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
