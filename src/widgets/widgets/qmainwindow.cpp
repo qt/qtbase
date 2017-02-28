@@ -73,9 +73,6 @@ public:
 #ifdef Q_OS_OSX
             , useUnifiedToolBar(false)
 #endif
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
-            , hasOldCursor(false) , cursorAdjusted(false)
-#endif
     { }
     QMainWindowLayout *layout;
     QSize iconSize;
@@ -85,17 +82,6 @@ public:
     bool useUnifiedToolBar;
 #endif
     void init();
-    QList<int> hoverSeparator;
-    QPoint hoverPos;
-
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
-    QCursor separatorCursor(const QList<int> &path) const;
-    void adjustCursor(const QPoint &pos);
-    QCursor oldCursor;
-    QCursor adjustedCursor;
-    uint hasOldCursor : 1;
-    uint cursorAdjusted : 1;
-#endif
 
     static inline QMainWindowLayout *mainWindowLayout(const QMainWindow *mainWindow)
     {
@@ -1310,152 +1296,13 @@ bool QMainWindow::restoreState(const QByteArray &state, int version)
     return restored;
 }
 
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
-QCursor QMainWindowPrivate::separatorCursor(const QList<int> &path) const
-{
-    QDockAreaLayoutInfo *info = layout->layoutState.dockAreaLayout.info(path);
-    Q_ASSERT(info != 0);
-    if (path.size() == 1) { // is this the "top-level" separator which separates a dock area
-                            // from the central widget?
-        switch (path.first()) {
-            case QInternal::LeftDock:
-            case QInternal::RightDock:
-                return Qt::SplitHCursor;
-            case QInternal::TopDock:
-            case QInternal::BottomDock:
-                return Qt::SplitVCursor;
-            default:
-                break;
-        }
-    }
-
-    // no, it's a splitter inside a dock area, separating two dock widgets
-
-    return info->o == Qt::Horizontal
-            ? Qt::SplitHCursor : Qt::SplitVCursor;
-}
-
-void QMainWindowPrivate::adjustCursor(const QPoint &pos)
-{
-    Q_Q(QMainWindow);
-
-    hoverPos = pos;
-
-    if (pos == QPoint(0, 0)) {
-        if (!hoverSeparator.isEmpty())
-            q->update(layout->layoutState.dockAreaLayout.separatorRect(hoverSeparator));
-        hoverSeparator.clear();
-
-        if (cursorAdjusted) {
-            cursorAdjusted = false;
-            if (hasOldCursor)
-                q->setCursor(oldCursor);
-            else
-                q->unsetCursor();
-        }
-    } else if (layout->movingSeparator.isEmpty()) { // Don't change cursor when moving separator
-        QList<int> pathToSeparator
-            = layout->layoutState.dockAreaLayout.findSeparator(pos);
-
-        if (pathToSeparator != hoverSeparator) {
-            if (!hoverSeparator.isEmpty())
-                q->update(layout->layoutState.dockAreaLayout.separatorRect(hoverSeparator));
-
-            hoverSeparator = pathToSeparator;
-
-            if (hoverSeparator.isEmpty()) {
-                if (cursorAdjusted) {
-                    cursorAdjusted = false;
-                    if (hasOldCursor)
-                        q->setCursor(oldCursor);
-                    else
-                        q->unsetCursor();
-                }
-            } else {
-                q->update(layout->layoutState.dockAreaLayout.separatorRect(hoverSeparator));
-                if (!cursorAdjusted) {
-                    oldCursor = q->cursor();
-                    hasOldCursor = q->testAttribute(Qt::WA_SetCursor);
-                }
-                adjustedCursor = separatorCursor(hoverSeparator);
-                q->setCursor(adjustedCursor);
-                cursorAdjusted = true;
-            }
-        }
-    }
-}
-#endif
-
 /*! \reimp */
 bool QMainWindow::event(QEvent *event)
 {
     Q_D(QMainWindow);
+    if (d->layout && d->layout->windowEvent(event))
+        return true;
     switch (event->type()) {
-
-#ifndef QT_NO_DOCKWIDGET
-        case QEvent::Paint: {
-            QPainter p(this);
-            QRegion r = static_cast<QPaintEvent*>(event)->region();
-            d->layout->layoutState.dockAreaLayout.paintSeparators(&p, this, r, d->hoverPos);
-            break;
-        }
-
-#ifndef QT_NO_CURSOR
-        case QEvent::HoverMove:  {
-            d->adjustCursor(static_cast<QHoverEvent*>(event)->pos());
-            break;
-        }
-
-        // We don't want QWidget to call update() on the entire QMainWindow
-        // on HoverEnter and HoverLeave, hence accept the event (return true).
-        case QEvent::HoverEnter:
-            return true;
-        case QEvent::HoverLeave:
-            d->adjustCursor(QPoint(0, 0));
-            return true;
-        case QEvent::ShortcutOverride: // when a menu pops up
-            d->adjustCursor(QPoint(0, 0));
-            break;
-#endif // QT_NO_CURSOR
-
-        case QEvent::MouseButtonPress: {
-            QMouseEvent *e = static_cast<QMouseEvent*>(event);
-            if (e->button() == Qt::LeftButton && d->layout->startSeparatorMove(e->pos())) {
-                // The click was on a separator, eat this event
-                e->accept();
-                return true;
-            }
-            break;
-        }
-
-        case QEvent::MouseMove: {
-            QMouseEvent *e = static_cast<QMouseEvent*>(event);
-
-#ifndef QT_NO_CURSOR
-            d->adjustCursor(e->pos());
-#endif
-            if (e->buttons() & Qt::LeftButton) {
-                if (d->layout->separatorMove(e->pos())) {
-                    // We're moving a separator, eat this event
-                    e->accept();
-                    return true;
-                }
-            }
-
-            break;
-        }
-
-        case QEvent::MouseButtonRelease: {
-            QMouseEvent *e = static_cast<QMouseEvent*>(event);
-            if (d->layout->endSeparatorMove(e->pos())) {
-                // We've released a separator, eat this event
-                e->accept();
-                return true;
-            }
-            break;
-        }
-
-#endif
 
 #ifndef QT_NO_TOOLBAR
         case QEvent::ToolBarChange: {
@@ -1482,20 +1329,6 @@ bool QMainWindow::event(QEvent *event)
             if (!d->explicitIconSize)
                 setIconSize(QSize());
             break;
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
-       case QEvent::CursorChange:
-           // CursorChange events are triggered as mouse moves to new widgets even
-           // if the cursor doesn't actually change, so do not change oldCursor if
-           // the "changed" cursor has same shape as adjusted cursor.
-           if (d->cursorAdjusted && d->adjustedCursor.shape() != cursor().shape()) {
-               d->oldCursor = cursor();
-               d->hasOldCursor = testAttribute(Qt::WA_SetCursor);
-
-               // Ensure our adjusted cursor stays visible
-               setCursor(d->adjustedCursor);
-           }
-           break;
-#endif
         default:
             break;
     }

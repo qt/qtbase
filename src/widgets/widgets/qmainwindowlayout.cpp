@@ -1689,39 +1689,6 @@ void QMainWindowLayout::tabMoved(int from, int to)
 }
 #endif // QT_NO_TABBAR
 
-bool QMainWindowLayout::startSeparatorMove(const QPoint &pos)
-{
-    movingSeparator = layoutState.dockAreaLayout.findSeparator(pos);
-
-    if (movingSeparator.isEmpty())
-        return false;
-
-    layoutState.dockAreaLayout.fallbackToSizeHints = false;
-
-    savedState = layoutState;
-    movingSeparatorPos = movingSeparatorOrigin = pos;
-
-    return true;
-}
-
-bool QMainWindowLayout::separatorMove(const QPoint &pos)
-{
-    if (movingSeparator.isEmpty())
-        return false;
-    movingSeparatorPos = pos;
-    separatorMoveTimer.start(0, this);
-    return true;
-}
-
-bool QMainWindowLayout::endSeparatorMove(const QPoint&)
-{
-    if (movingSeparator.isEmpty())
-        return false;
-    movingSeparator.clear();
-    savedState.clear();
-    return true;
-}
-
 void QMainWindowLayout::raise(QDockWidget *widget)
 {
 #ifndef QT_NO_TABBAR
@@ -2424,6 +2391,7 @@ void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)
         }
     }
     setCurrentHoveredFloat(nullptr);
+    layoutState.dockAreaLayout.fallbackToSizeHints = false;
 #endif //QT_NO_DOCKWIDGET
 
     QPoint pos = parentWidget()->mapFromGlobal(mousePos);
@@ -2574,30 +2542,6 @@ bool QMainWindowLayout::restoreState(QDataStream &stream)
 
     return true;
 }
-
-void QMainWindowLayout::timerEvent(QTimerEvent *e)
-{
-#ifndef QT_NO_DOCKWIDGET
-    if (e->timerId() == separatorMoveTimer.timerId()) {
-        //let's move the separators
-        separatorMoveTimer.stop();
-        if (movingSeparator.isEmpty())
-            return;
-        if (movingSeparatorOrigin == movingSeparatorPos)
-            return;
-
-        //when moving the separator, we need to update the previous position
-        parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
-
-        layoutState = savedState;
-        layoutState.dockAreaLayout.separatorMove(movingSeparator, movingSeparatorOrigin,
-                                                    movingSeparatorPos);
-        movingSeparatorPos = movingSeparatorOrigin;
-    }
-#endif
-    QLayout::timerEvent(e);
-}
-
 
 QT_END_NAMESPACE
 
