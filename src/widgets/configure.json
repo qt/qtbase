@@ -408,7 +408,16 @@
             "label": "QFileDialog",
             "purpose": "Provides a dialog widget for selecting files or directories.",
             "section": "Dialogs",
-            "condition": "features.dirmodel && features.treeview && features.combobox && features.toolbutton && features.buttongroup && features.tooltip && features.splitter && features.stackedwidget && features.proxymodel",
+            "condition": [
+                "features.buttongroup",
+                "features.combobox",
+                "features.dirmodel",
+                "features.proxymodel",
+                "features.splitter",
+                "features.stackedwidget",
+                "features.treeview",
+                "features.toolbutton"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "fontdialog": {
