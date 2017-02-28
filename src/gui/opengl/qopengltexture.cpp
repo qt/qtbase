@@ -3685,7 +3685,7 @@ bool QOpenGLTexture::hasFeature(Feature feature)
         const char *renderer = reinterpret_cast<const char *>(ctx->functions()->glGetString(GL_RENDERER));
         switch (feature) {
         case ImmutableStorage:
-            supported = (f.version() >= qMakePair(3, 0) || ctx->hasExtension(QByteArrayLiteral("EXT_texture_storage")))
+            supported = (f.version() >= qMakePair(3, 0) || ctx->hasExtension(QByteArrayLiteral("GL_EXT_texture_storage")))
                 && !(renderer && strstr(renderer, "Mali")); // do not use on Mali: QTBUG-45106
             break;
 
