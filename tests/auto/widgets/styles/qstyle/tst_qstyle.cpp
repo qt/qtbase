@@ -143,9 +143,6 @@ void tst_QStyle::testStyleFactory()
 #ifndef QT_NO_STYLE_WINDOWS
     QVERIFY(keys.contains("Windows"));
 #endif
-#ifdef Q_OS_WIN
-    QVERIFY(keys.contains("WindowsVista"));
-#endif
 
     foreach (QString styleName , keys) {
         QStyle *style = QStyleFactory::create(styleName);

@@ -39,8 +39,6 @@
 #include "qwindowsxpstyle_p.h"
 #include "qwindowsxpstyle_p_p.h"
 
-#if QT_CONFIG(style_windowsvista) || defined(QT_PLUGIN)
-
 #include <private/qobject_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qapplication_p.h>
@@ -4223,5 +4221,3 @@ void QWindowsXPStylePrivate::showProperties(XPThemeData &themeData)
 
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_WINDOWSXP

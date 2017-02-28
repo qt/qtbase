@@ -212,7 +212,7 @@ private:
     bool fast;
 };
 
-class Q_AUTOTEST_EXPORT QComboBoxPrivateContainer : public QFrame
+class Q_WIDGETS_EXPORT QComboBoxPrivateContainer : public QFrame
 {
     Q_OBJECT
 

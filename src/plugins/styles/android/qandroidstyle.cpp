@@ -39,8 +39,6 @@
 
 #include "qandroidstyle_p.h"
 
-#if QT_CONFIG(style_android) || defined(QT_PLUGIN)
-
 #include <QFile>
 #include <QFont>
 #include <QApplication>
@@ -1805,5 +1803,3 @@ QRect QAndroidStyle::AndroidSpinnerControl::subControlRect(const QStyleOptionCom
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_CONFIG(style_android) || defined(QT_PLUGIN)

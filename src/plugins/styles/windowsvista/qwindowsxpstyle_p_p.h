@@ -53,7 +53,7 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qwindowsxpstyle_p.h"
-#include "qwindowsstyle_p_p.h"
+#include <QtWidgets/private/qwindowsstyle_p_p.h>
 #include <qmap.h>
 #include <qt_windows.h>
 
@@ -93,8 +93,6 @@ QT_BEGIN_NAMESPACE
 
 // Uncomment define below to build debug assisting code, and output
 // #define DEBUG_XP_STYLE
-
-#if QT_CONFIG(style_windowsvista)
 
 // Declarations -----------------------------------------------------------------------------------
 class XPThemeData
@@ -337,8 +335,6 @@ inline QMarginsF XPThemeData::themeMargins(const QWidget *w, QPainter *p, int th
     XPThemeData theme(w, p, themeIn, part, state);
     return theme.margins(propId);
 }
-
-#endif // style_windows
 
 QT_END_NAMESPACE
 

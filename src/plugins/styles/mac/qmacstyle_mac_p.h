@@ -56,9 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-#if QT_CONFIG(style_mac)
-
 class QPalette;
 
 class QPushButton;
@@ -125,8 +122,6 @@ private:
     friend bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
 #endif
 };
-
-#endif
 
 QT_END_NAMESPACE
 

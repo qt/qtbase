@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 class QTime;
 
-class QWindowsStylePrivate : public QCommonStylePrivate
+class Q_WIDGETS_EXPORT QWindowsStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QWindowsStyle)
 public:

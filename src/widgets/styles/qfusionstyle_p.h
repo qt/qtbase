@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 #if QT_CONFIG(style_fusion)
 
 class QFusionStylePrivate;
-class QFusionStyle : public QCommonStyle
+class Q_WIDGETS_EXPORT QFusionStyle : public QCommonStyle
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFusionStyle)

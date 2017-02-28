@@ -53,9 +53,7 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qwindowsvistastyle_p.h"
-
-#if QT_CONFIG(style_windowsvista)
-#include <private/qwindowsxpstyle_p_p.h>
+#include "qwindowsxpstyle_p_p.h"
 #include <private/qstyleanimation_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <qpaintengine.h>
@@ -178,7 +176,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // style_windowsvista
 
 #endif // QWINDOWSVISTASTYLE_P_P_H

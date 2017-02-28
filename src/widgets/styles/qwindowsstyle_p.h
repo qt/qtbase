@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsStylePrivate;
 
-class QWindowsStyle : public QCommonStyle
+class Q_WIDGETS_EXPORT QWindowsStyle : public QCommonStyle
 {
     Q_OBJECT
 public:

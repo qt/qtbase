@@ -8,6 +8,7 @@ qtHaveModule(gui) {
     qtConfig(imageformatplugin): SUBDIRS *= imageformats
     !android:qtConfig(library): SUBDIRS *= generic
 }
+qtHaveModule(widgets): SUBDIRS += styles
 
 !winrt:!wince:qtHaveModule(printsupport): \
     SUBDIRS += printsupport

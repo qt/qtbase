@@ -81,7 +81,7 @@ private:
     QPixmap m_pixmap;
 };
 
-class QTabBarPrivate  : public QWidgetPrivate
+class Q_WIDGETS_EXPORT QTabBarPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QTabBar)
 public:

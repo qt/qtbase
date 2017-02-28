@@ -37,22 +37,6 @@ RESOURCES += styles/qstyle.qrc
 
 include($$OUT_PWD/qtwidgets-config.pri)
 
-qtConfig(style-mac) {
-    HEADERS += \
-        styles/qmacstyle_mac_p.h \
-        styles/qmacstyle_mac_p_p.h
-    OBJECTIVE_SOURCES += styles/qmacstyle_mac.mm
-    LIBS_PRIVATE += -framework Carbon
-}
-
-qtConfig(style-windowsvista) {
-    HEADERS += styles/qwindowsvistastyle_p.h styles/qwindowsvistastyle_p_p.h
-    SOURCES += styles/qwindowsvistastyle.cpp
-
-    HEADERS += styles/qwindowsxpstyle_p.h styles/qwindowsxpstyle_p_p.h
-    SOURCES += styles/qwindowsxpstyle.cpp
-}
-
 qtConfig(style-windows) {
     HEADERS += styles/qwindowsstyle_p.h styles/qwindowsstyle_p_p.h
     SOURCES += styles/qwindowsstyle.cpp
@@ -61,9 +45,4 @@ qtConfig(style-windows) {
 qtConfig(style-fusion) {
     HEADERS += styles/qfusionstyle_p.h styles/qfusionstyle_p_p.h
     SOURCES += styles/qfusionstyle.cpp
-}
-
-qtConfig(style-android) {
-    HEADERS += styles/qandroidstyle_p.h
-    SOURCES += styles/qandroidstyle.cpp
 }

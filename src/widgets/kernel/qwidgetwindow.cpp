@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
 
-QWidget *qt_button_down = 0; // widget got last button-down
+Q_WIDGETS_EXPORT QWidget *qt_button_down = 0; // widget got last button-down
 
 // popup control
 QWidget *qt_popup_down = 0; // popup that contains the pressed widget

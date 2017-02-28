@@ -52,15 +52,13 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtWidgets/private/qfusionstyle_p.h>
 #include <QtCore/QList>
 #include <QtCore/QMargins>
 #include <QtCore/QHash>
 #include <QtCore/QVariantMap>
-#include "qfusionstyle_p.h"
 
 QT_BEGIN_NAMESPACE
-
-#if QT_CONFIG(style_android)
 
 class Q_WIDGETS_EXPORT QAndroidStyle : public QFusionStyle
 {
@@ -387,8 +385,6 @@ private:
     QPalette m_standardPalette;
     AndroidCompoundButtonControl *checkBoxControl;
 };
-
-#endif // style_android
 
 QT_END_NAMESPACE
 

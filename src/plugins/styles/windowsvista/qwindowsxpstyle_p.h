@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSVISTASTYLE_P_H
-#define QWINDOWSVISTASTYLE_P_H
+#ifndef QWINDOWSXPSTYLE_P_H
+#define QWINDOWSXPSTYLE_P_H
 
 //
 //  W A R N I N G
@@ -52,59 +52,53 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <private/qwindowsxpstyle_p.h>
+#include <QtWidgets/private/qwindowsstyle_p.h>
 
 QT_BEGIN_NAMESPACE
 
-
-#if QT_CONFIG(style_windowsvista)
-
-class QWindowsVistaStylePrivate;
-class QWindowsVistaStyle : public QWindowsXPStyle
+class QWindowsXPStylePrivate;
+class QWindowsXPStyle : public QWindowsStyle
 {
     Q_OBJECT
 public:
-    QWindowsVistaStyle();
-    ~QWindowsVistaStyle();
+    QWindowsXPStyle();
+    QWindowsXPStyle(QWindowsXPStylePrivate &dd);
+    ~QWindowsXPStyle();
 
-    void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
-                       QPainter *painter, const QWidget *widget = 0) const;
-    void drawControl(ControlElement element, const QStyleOption *option,
-                     QPainter *painter, const QWidget *widget) const;
-    void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
-                            QPainter *painter, const QWidget *widget) const;
-    QSize sizeFromContents(ContentsType type, const QStyleOption *option,
-                           const QSize &size, const QWidget *widget) const;
+    void unpolish(QApplication*);
+    void polish(QApplication*);
+    void polish(QWidget*);
+    void polish(QPalette&);
+    void unpolish(QWidget*);
 
-    QRect subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const;
-    QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
-                         SubControl sc, const QWidget *widget) const;
-
-    SubControl hitTestComplexControl(ComplexControl control, const QStyleOptionComplex *option,
-                                     const QPoint &pos, const QWidget *widget = 0) const;
-
-    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+    void drawPrimitive(PrimitiveElement pe, const QStyleOption *option, QPainter *p,
                        const QWidget *widget = 0) const;
-    QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
+    void drawControl(ControlElement element, const QStyleOption *option, QPainter *p,
+                     const QWidget *wwidget = 0) const;
+    QRect subElementRect(SubElement r, const QStyleOption *option, const QWidget *widget = 0) const;
+    QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *option, SubControl sc,
+                         const QWidget *widget = 0) const;
+    void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *option, QPainter *p,
+                            const QWidget *widget = 0) const;
+    QSize sizeFromContents(ContentsType ct, const QStyleOption *option, const QSize &contentsSize,
                            const QWidget *widget = 0) const;
-    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const;
-    int styleHint(StyleHint hint, const QStyleOption *opt = 0, const QWidget *widget = 0,
+    int pixelMetric(PixelMetric pm, const QStyleOption *option = 0,
+                    const QWidget *widget = 0) const;
+    int styleHint(StyleHint hint, const QStyleOption *option = 0, const QWidget *widget = 0,
                   QStyleHintReturn *returnData = 0) const;
 
-    void polish(QWidget *widget);
-    void unpolish(QWidget *widget);
-    void polish(QPalette &pal);
-    void polish(QApplication *app);
-    void unpolish(QApplication *app);
     QPalette standardPalette() const;
+    QPixmap standardPixmap(StandardPixmap standardIcon, const QStyleOption *option,
+                           const QWidget *widget = 0) const;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                       const QWidget *widget = 0) const;
 
 private:
-    Q_DISABLE_COPY(QWindowsVistaStyle)
-    Q_DECLARE_PRIVATE(QWindowsVistaStyle)
+    Q_DISABLE_COPY(QWindowsXPStyle)
+    Q_DECLARE_PRIVATE(QWindowsXPStyle)
     friend class QStyleFactory;
 };
-#endif // style_windowsvista
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSVISTASTYLE_P_H
+#endif // QWINDOWSXPSTYLE_P_H

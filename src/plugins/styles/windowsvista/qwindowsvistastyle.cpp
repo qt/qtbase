@@ -47,8 +47,6 @@
 #include <private/qapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
 
-#if QT_CONFIG(style_windowsvista) || defined(QT_PLUGIN)
-
 QT_BEGIN_NAMESPACE
 
 static const int windowsItemFrame        =  2; // menu item frame width
@@ -2487,5 +2485,3 @@ QIcon QWindowsVistaStyle::standardIcon(StandardPixmap standardIcon,
 }
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_WINDOWSVISTA

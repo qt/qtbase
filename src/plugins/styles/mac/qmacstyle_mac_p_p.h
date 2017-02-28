@@ -45,8 +45,8 @@
 #undef check
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtWidgets/private/qcommonstyle_p.h>
 #include "qmacstyle_mac_p.h"
-#include "qcommonstyle_p.h"
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
 #include <private/qpainter_p.h>

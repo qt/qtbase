@@ -71,27 +71,27 @@ class QWindow;
 namespace QStyleHelper
 {
     QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size);
-    qreal dpiScaled(qreal value);
+    Q_WIDGETS_EXPORT qreal dpiScaled(qreal value);
 #ifndef QT_NO_DIAL
     qreal angle(const QPointF &p1, const QPointF &p2);
     QPolygonF calcLines(const QStyleOptionSlider *dial);
     int calcBigLineSize(int radius);
-    void drawDial(const QStyleOptionSlider *dial, QPainter *painter);
+    Q_WIDGETS_EXPORT void drawDial(const QStyleOptionSlider *dial, QPainter *painter);
 #endif //QT_NO_DIAL
-    void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rect,
+    Q_WIDGETS_EXPORT void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rect,
                      int left = 0, int top = 0, int right = 0,
                      int bottom = 0);
 #ifndef QT_NO_ACCESSIBILITY
-    bool isInstanceOf(QObject *obj, QAccessible::Role role);
-    bool hasAncestor(QObject *obj, QAccessible::Role role);
+    Q_WIDGETS_EXPORT bool isInstanceOf(QObject *obj, QAccessible::Role role);
+    Q_WIDGETS_EXPORT bool hasAncestor(QObject *obj, QAccessible::Role role);
 #endif
-    QColor backgroundColor(const QPalette &pal, const QWidget* widget = 0);
-    QWindow *styleObjectWindow(QObject *so);
+    Q_WIDGETS_EXPORT QColor backgroundColor(const QPalette &pal, const QWidget* widget = 0);
+    Q_WIDGETS_EXPORT QWindow *styleObjectWindow(QObject *so);
 
     enum WidgetSizePolicy { SizeSmall, SizeLarge, SizeMini, SizeDefault };
 
     void setWidgetSizePolicy(const QWidget *w, WidgetSizePolicy policy);
-    WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = 0);
+    Q_WIDGETS_EXPORT WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = 0);
 }
 
 
