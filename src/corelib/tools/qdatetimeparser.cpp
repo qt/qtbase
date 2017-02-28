@@ -1244,19 +1244,28 @@ end:
 
 #ifndef QT_NO_TEXTDATE
 
-static int findTextEntry(const QString &text, int start, const QVector<QString> &entries, QString *usedText, int *used)
+/*
+  \internal
+  \brief Returns the index in \a entries with the best prefix match to \a text
+
+  Scans \a entries looking for an entry overlapping \a text as much as possible.
+  Records the length of overlap in *used (if \a used is non-NULL) and the first
+  entry that overlapped this much in *usedText (if \a usedText is non-NULL).
+ */
+static int findTextEntry(const QString &text, const QVector<QString> &entries, QString *usedText, int *used)
 {
     if (text.isEmpty())
         return -1;
 
     int bestMatch = -1;
     int bestCount = 0;
-    for (int n = start; n <= entries.size(); ++n) {
-        const QString name = entries.at(n - 1).toLower();
+    for (int n = 0; n < entries.size(); ++n)
+    {
+        const QString &name = entries.at(n);
 
         const int limit = qMin(text.size(), name.size());
         int i = 0;
-        while (i < limit && text.at(i) == name.at(i))
+        while (i < limit && text.at(i) == name.at(i).toLower())
             ++i;
         if (i > bestCount) {
             bestCount = i;
@@ -1264,7 +1273,7 @@ static int findTextEntry(const QString &text, int start, const QVector<QString> 
         }
     }
     if (usedText && bestMatch != -1)
-        *usedText = entries.at(bestMatch - 1);
+        *usedText = entries.at(bestMatch);
     if (used)
         *used = bestCount;
 
@@ -1289,11 +1298,12 @@ int QDateTimeParser::findMonth(const QString &str1, int startMonth, int sectionI
     QLocale::FormatType type = sn.count == 3 ? QLocale::ShortFormat : QLocale::LongFormat;
     QLocale l = locale();
     QVector<QString> monthNames;
-    monthNames.reserve(12);
-    for (int month = 1; month <= 12; ++month)
-        monthNames.append(month >= startMonth ? l.monthName(month, type) : QString());
+    monthNames.reserve(13 - startMonth);
+    for (int month = startMonth; month <= 12; ++month)
+        monthNames.append(l.monthName(month, type));
 
-    return findTextEntry(str1, startMonth, monthNames, usedMonth, used);
+    const int index = findTextEntry(str1, monthNames, usedMonth, used);
+    return index < 0 ? index : index + startMonth;
 }
 
 int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex, QString *usedDay, int *used) const
@@ -1307,10 +1317,12 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
     QLocale::FormatType type = sn.count == 4 ? QLocale::LongFormat : QLocale::ShortFormat;
     QLocale l = locale();
     QVector<QString> daysOfWeek;
-    daysOfWeek.reserve(7);
-    for (int day = 1; day <= 7; ++day)
-        daysOfWeek.append(day >= startDay ? l.dayName(day, type) : QString());
-    return findTextEntry(str1, startDay, daysOfWeek, usedDay, used);
+    daysOfWeek.reserve(8 - startDay);
+    for (int day = startDay; day <= 7; ++day)
+        daysOfWeek.append(l.dayName(day, type));
+
+    const int index = findTextEntry(str1, daysOfWeek, usedDay, used);
+    return index < 0 ? index : index + startDay;
 }
 #endif // QT_NO_TEXTDATE
 
