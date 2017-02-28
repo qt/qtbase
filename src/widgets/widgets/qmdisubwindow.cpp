@@ -194,6 +194,11 @@ static const Qt::WindowFlags CustomizeWindowFlags =
 
 static const int BoundaryMargin = 5;
 
+static inline bool isMacStyle(QStyle *style)
+{
+    return style->inherits("QMacStyle");
+}
+
 static inline int getMoveDeltaComponent(uint cflags, uint moveFlag, uint resizeFlag,
                                         int delta, int maxDelta, int minDelta)
 {
@@ -1077,7 +1082,7 @@ void QMdiSubWindowPrivate::updateCursor()
 #ifndef QT_NO_CURSOR
     Q_Q(QMdiSubWindow);
 #if QT_CONFIG(style_mac)
-    if (qobject_cast<QMacStyle *>(q->style()))
+    if (isMacStyle(q->style()))
         return;
 #endif
 
@@ -1505,7 +1510,7 @@ void QMdiSubWindowPrivate::processClickedSubControl()
         break;
     case QStyle::SC_TitleBarMinButton:
 #if QT_CONFIG(style_mac)
-        if (qobject_cast<QMacStyle *>(q->style())) {
+        if (isMacStyle(q->style())) {
             if (q->isMinimized())
                 q->showNormal();
             else
@@ -1522,7 +1527,7 @@ void QMdiSubWindowPrivate::processClickedSubControl()
         break;
     case QStyle::SC_TitleBarMaxButton:
 #if QT_CONFIG(style_mac)
-        if (qobject_cast<QMacStyle *>(q->style())) {
+        if (isMacStyle(q->style())) {
             if (q->isMaximized())
                 q->showNormal();
             else
@@ -1569,7 +1574,7 @@ QRegion QMdiSubWindowPrivate::getRegion(Operation operation) const
 
     QRegion region;
 #if QT_CONFIG(style_mac)
-    if (qobject_cast<QMacStyle *>(q->style()))
+    if (isMacStyle(q->style()))
         return region;
 #endif
 
@@ -2192,7 +2197,7 @@ void QMdiSubWindowPrivate::setSizeGrip(QSizeGrip *newSizeGrip)
     newSizeGrip->setFixedSize(newSizeGrip->sizeHint());
     bool putSizeGripInLayout = layout ? true : false;
 #if QT_CONFIG(style_mac)
-    if (qobject_cast<QMacStyle *>(q->style()))
+    if (isMacStyle(q->style()))
         putSizeGripInLayout = false;
 #endif
     if (putSizeGripInLayout) {
@@ -2844,7 +2849,7 @@ bool QMdiSubWindow::event(QEvent *event)
         d->isWidgetHiddenByUs = false;
         if (!parent()) {
 #if !defined(QT_NO_SIZEGRIP) && QT_CONFIG(style_mac)
-            if (qobject_cast<QMacStyle *>(style()))
+            if (isMacStyle(style()))
                 delete d->sizeGrip;
 #endif
             setOption(RubberBandResize, false);
@@ -2939,7 +2944,7 @@ void QMdiSubWindow::showEvent(QShowEvent *showEvent)
     }
 
 #if !defined(QT_NO_SIZEGRIP) && QT_CONFIG(style_mac)
-    if (qobject_cast<QMacStyle *>(style()) && !d->sizeGrip
+    if (isMacStyle(style()) && !d->sizeGrip
             && !(windowFlags() & Qt::FramelessWindowHint)) {
         d->setSizeGrip(new QSizeGrip(this));
         Q_ASSERT(d->sizeGrip);
@@ -3334,7 +3339,7 @@ void QMdiSubWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
                     d->hoveredSubControl, this);
         }
 #if QT_CONFIG(style_mac)
-        if (qobject_cast<QMacStyle *>(style()) && !hoverRegion.isEmpty())
+        if (isMacStyle(style()) && !hoverRegion.isEmpty())
             hoverRegion += QRegion(0, 0, width(), d->titleBarHeight(options));
 #endif
         if (!hoverRegion.isEmpty())
@@ -3544,7 +3549,7 @@ QSize QMdiSubWindow::minimumSizeHint() const
     if (d->sizeGrip && d->sizeGrip->isVisibleTo(const_cast<QMdiSubWindow *>(this)))
         sizeGripHeight = d->sizeGrip->height();
 #if QT_CONFIG(style_mac)
-    else if (parent() && qobject_cast<QMacStyle *>(style()) && !d->sizeGrip)
+    else if (parent() && isMacStyle(style()) && !d->sizeGrip)
         sizeGripHeight = style()->pixelMetric(QStyle::PM_SizeGripSize, 0, this);
 #endif
     minHeight = qMax(minHeight, decorationHeight + sizeGripHeight);
