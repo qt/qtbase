@@ -60,7 +60,9 @@
 #include <QAbstractScrollArea>
 #include <QScrollBar>
 
+#if QT_CONFIG(scroller)
 #include <qscroller.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -194,7 +196,7 @@ void QPixmapStyle::polish(QWidget *widget)
             view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
         }
 #endif
-#if QT_CONFIG(gestures)
+#if QT_CONFIG(gestures) && QT_CONFIG(scroller)
         QScroller::grabGesture(scrollArea->viewport(), QScroller::LeftMouseButtonGesture);
 #endif
     }
@@ -235,7 +237,7 @@ void QPixmapStyle::unpolish(QWidget *widget)
     if (qstrcmp(widget->metaObject()->className(),"QComboBoxPrivateContainer") == 0)
         widget->removeEventFilter(this);
 
-#if QT_CONFIG(gestures) && QT_CONFIG(scrollarea)
+#if QT_CONFIG(gestures) && QT_CONFIG(scrollarea) && QT_CONFIG(scroller)
     if (QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea*>(widget))
         QScroller::ungrabGesture(scrollArea->viewport());
 #endif

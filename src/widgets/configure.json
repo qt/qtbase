@@ -324,6 +324,12 @@
             "condition": "features.scrollbar",
             "output": [ "publicFeature", "feature" ]
         },
+        "scroller": {
+            "label": "QScroller",
+            "purpose": "Enables kinetic scrolling for any scrolling widget or graphics item.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
         "graphicsview": {
             "label": "QGraphicsView",
             "purpose": "Provides a canvas/sprite framework.",

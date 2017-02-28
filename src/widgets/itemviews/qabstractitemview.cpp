@@ -64,7 +64,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
-#ifndef QT_NO_GESTURES
+#if QT_CONFIG(gestures) && QT_CONFIG(scroller)
 #  include <qscroller.h>
 #endif
 
@@ -196,7 +196,7 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
     }
 }
 
-#ifndef QT_NO_GESTURES
+#if QT_CONFIG(gestures) && QT_CONFIG(scroller)
 
 // stores and restores the selection and current item when flicking
 void QAbstractItemViewPrivate::_q_scrollerStateChanged()
@@ -1736,7 +1736,7 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
         break;
     case QEvent::ScrollPrepare:
         executeDelayedItemsLayout();
-#ifndef QT_NO_GESTURES
+#if QT_CONFIG(gestures) && QT_CONFIG(scroller)
         connect(QScroller::scroller(d->viewport), SIGNAL(stateChanged(QScroller::State)), this, SLOT(_q_scrollerStateChanged()), Qt::UniqueConnection);
 #endif
         break;

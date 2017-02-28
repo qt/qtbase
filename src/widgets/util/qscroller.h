@@ -45,6 +45,8 @@
 #include <QtCore/QPointF>
 #include <QtWidgets/QScrollerProperties>
 
+QT_REQUIRE_CONFIG(scroller);
+
 QT_BEGIN_NAMESPACE
 
 

@@ -6,11 +6,6 @@ HEADERS += \
         util/qcompleter.h \
         util/qcompleter_p.h \
         util/qsystemtrayicon_p.h \
-        util/qscroller.h \
-        util/qscroller_p.h \
-        util/qscrollerproperties.h \
-        util/qscrollerproperties_p.h \
-        util/qflickgesture_p.h \
         util/qundogroup.h \
         util/qundostack.h \
         util/qundostack_p.h \
@@ -20,12 +15,23 @@ SOURCES += \
         util/qsystemtrayicon.cpp \
         util/qcolormap.cpp \
         util/qcompleter.cpp \
-        util/qscroller.cpp \
-        util/qscrollerproperties.cpp \
-        util/qflickgesture.cpp \
         util/qundogroup.cpp \
         util/qundostack.cpp \
         util/qundoview.cpp
+
+qtConfig(scroller) {
+    HEADERS += \
+        util/qscroller.h \
+        util/qscroller_p.h \
+        util/qscrollerproperties.h \
+        util/qscrollerproperties_p.h \
+        util/qflickgesture_p.h
+
+    SOURCES += \
+        util/qscroller.cpp \
+        util/qscrollerproperties.cpp \
+        util/qflickgesture.cpp \
+}
 
 win32:!winrt {
     SOURCES += util/qsystemtrayicon_win.cpp
