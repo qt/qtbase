@@ -764,13 +764,13 @@ public class QtNative
         });
     }
 
-    private static void hideSplashScreen()
+    private static void hideSplashScreen(final int duration)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null)
-                    m_activityDelegate.hideSplashScreen();
+                    m_activityDelegate.hideSplashScreen(duration);
             }
         });
     }
