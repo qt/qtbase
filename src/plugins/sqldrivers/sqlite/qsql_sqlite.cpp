@@ -574,13 +574,16 @@ static void _q_regexp(sqlite3_context* context, int argc, sqlite3_value** argv)
         reinterpret_cast<const char*>(sqlite3_value_text(argv[1])));
 
     auto cache = static_cast<QCache<QString, QRegularExpression>*>(sqlite3_user_data(context));
-    QRegularExpression *regexp = cache->object(pattern);
-    if (!regexp) {
-        regexp = new QRegularExpression(pattern, QRegularExpression::DontCaptureOption
-                                        | QRegularExpression::OptimizeOnFirstUsageOption);
-        cache->insert(pattern, regexp);
-    }
+    auto regexp = cache->object(pattern);
+    const bool wasCached = regexp;
+
+    if (!wasCached)
+        regexp = new QRegularExpression(pattern, QRegularExpression::DontCaptureOption | QRegularExpression::OptimizeOnFirstUsageOption);
+
     const bool found = subject.contains(*regexp);
+
+    if (!wasCached)
+        cache->insert(pattern, regexp);
 
     sqlite3_result_int(context, int(found));
 }
