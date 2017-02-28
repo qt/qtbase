@@ -38,11 +38,9 @@
 ****************************************************************************/
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include "private/qstylehelper_p.h"
 #include "qstyleoption.h"
 #include "qapplication.h"
-#if QT_CONFIG(style_mac)
-# include "qmacstyle_mac_p.h"
-#endif
 #include <qdebug.h>
 #include <QtCore/qmath.h>
 
@@ -205,18 +203,16 @@ void QStyleOption::init(const QWidget *widget)
     if (!(state & QStyle::State_Active) && !qt_mac_can_clickThrough(widget))
         state &= ~QStyle::State_Enabled;
 #endif
-#if QT_CONFIG(style_mac)
-    switch (QMacStyle::widgetSizePolicy(widget)) {
-    case QMacStyle::SizeSmall:
+    switch (QStyleHelper::widgetSizePolicy(widget)) {
+    case QStyleHelper::SizeSmall:
         state |= QStyle::State_Small;
         break;
-    case QMacStyle::SizeMini:
+    case QStyleHelper::SizeMini:
         state |= QStyle::State_Mini;
         break;
     default:
         ;
     }
-#endif
 #ifdef QT_KEYPAD_NAVIGATION
     if (widget->hasEditFocus())
         state |= QStyle::State_HasEditFocus;

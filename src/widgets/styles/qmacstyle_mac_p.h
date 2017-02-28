@@ -100,12 +100,6 @@ public:
     virtual int styleHint(StyleHint sh, const QStyleOption *opt = 0, const QWidget *w = 0,
                           QStyleHintReturn *shret = 0) const;
 
-    enum WidgetSizePolicy { SizeSmall, SizeLarge, SizeMini, SizeDefault
-    };
-
-    static void setWidgetSizePolicy(const QWidget *w, WidgetSizePolicy policy);
-    static WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = 0);
-
     QPixmap standardPixmap(StandardPixmap sp, const QStyleOption *opt,
                            const QWidget *widget = 0) const;
 

@@ -439,10 +439,10 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBase *tbb, const QWidget *
 
 static int getControlSize(const QStyleOption *option, const QWidget *widget)
 {
-    switch (QMacStyle::widgetSizePolicy(widget, option)) {
-    case QMacStyle::SizeSmall:
+    switch (QStyleHelper::widgetSizePolicy(widget, option)) {
+    case QStyleHelper::SizeSmall:
         return QAquaSizeSmall;
-    case QMacStyle::SizeMini:
+    case QStyleHelper::SizeMini:
         return QAquaSizeMini;
     default:
         break;
@@ -1128,20 +1128,19 @@ QAquaWidgetSize QMacStylePrivate::aquaSizeConstrain(const QStyleOption *option, 
         return QAquaSizeUnknown;
     }
 
-    Q_Q(const QMacStyle);
     QSize large = qt_aqua_get_known_size(ct, widg, szHint, QAquaSizeLarge),
           small = qt_aqua_get_known_size(ct, widg, szHint, QAquaSizeSmall),
           mini  = qt_aqua_get_known_size(ct, widg, szHint, QAquaSizeMini);
     bool guess_size = false;
     QAquaWidgetSize ret = QAquaSizeUnknown;
-    QMacStyle::WidgetSizePolicy wsp = q->widgetSizePolicy(widg);
-    if (wsp == QMacStyle::SizeDefault)
+    QStyleHelper::WidgetSizePolicy wsp = QStyleHelper::widgetSizePolicy(widg);
+    if (wsp == QStyleHelper::SizeDefault)
         guess_size = true;
-    else if (wsp == QMacStyle::SizeMini)
+    else if (wsp == QStyleHelper::SizeMini)
         ret = QAquaSizeMini;
-    else if (wsp == QMacStyle::SizeSmall)
+    else if (wsp == QStyleHelper::SizeSmall)
         ret = QAquaSizeSmall;
-    else if (wsp == QMacStyle::SizeLarge)
+    else if (wsp == QStyleHelper::SizeLarge)
         ret = QAquaSizeLarge;
     if (guess_size)
         ret = qt_aqua_guess_size(widg, large, small, mini);
@@ -1606,13 +1605,13 @@ void QMacStylePrivate::drawTableHeader(const HIRect &outerBounds,
     scrollButtonsCutoff is the smallest size where the up/down buttons is drawn.
 */
 enum ScrollBarCutoffType { thumbIndicatorCutoff = 0, scrollButtonsCutoff = 1 };
-static int scrollButtonsCutoffSize(ScrollBarCutoffType cutoffType, QMacStyle::WidgetSizePolicy widgetSize)
+static int scrollButtonsCutoffSize(ScrollBarCutoffType cutoffType, QStyleHelper::WidgetSizePolicy widgetSize)
 {
     // Mini scroll bars do not exist as of version 10.4.
-    if (widgetSize ==  QMacStyle::SizeMini)
+    if (widgetSize ==  QStyleHelper::SizeMini)
         return 0;
 
-    const int sizeIndex = (widgetSize == QMacStyle::SizeSmall) ? 1 : 0;
+    const int sizeIndex = (widgetSize == QStyleHelper::SizeSmall) ? 1 : 0;
     static const int sizeTable[2][2] = { { 61, 56 }, { 49, 44 } };
     return sizeTable[sizeIndex][cutoffType];
 }
@@ -3087,35 +3086,6 @@ QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOpt
             break;
     }
     return icon.pixmap(qt_getWindow(widget), QSize(size, size));
-}
-
-void QMacStyle::setWidgetSizePolicy(const QWidget *widget, WidgetSizePolicy policy)
-{
-    QWidget *wadget = const_cast<QWidget *>(widget);
-    wadget->setAttribute(Qt::WA_MacNormalSize, policy == SizeLarge);
-    wadget->setAttribute(Qt::WA_MacSmallSize, policy == SizeSmall);
-    wadget->setAttribute(Qt::WA_MacMiniSize, policy == SizeMini);
-}
-
-QMacStyle::WidgetSizePolicy QMacStyle::widgetSizePolicy(const QWidget *widget, const QStyleOption *opt)
-{
-    while (widget) {
-        if (widget->testAttribute(Qt::WA_MacMiniSize)) {
-            return SizeMini;
-        } else if (widget->testAttribute(Qt::WA_MacSmallSize)) {
-            return SizeSmall;
-        } else if (widget->testAttribute(Qt::WA_MacNormalSize)) {
-            return SizeLarge;
-        }
-        widget = widget->parentWidget();
-    }
-
-    if (opt && opt->state & State_Mini)
-        return SizeMini;
-    else if (opt && opt->state & State_Small)
-        return SizeSmall;
-
-    return SizeDefault;
 }
 
 void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
@@ -5275,7 +5245,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     QMacStylePrivate::scrollBars.append(QPointer<QObject>(opt->styleObject));
                 const int scrollBarLength = (slider->orientation == Qt::Horizontal)
                     ? slider->rect.width() : slider->rect.height();
-                const QMacStyle::WidgetSizePolicy sizePolicy = widgetSizePolicy(widget, opt);
+                const QStyleHelper::WidgetSizePolicy sizePolicy = QStyleHelper::widgetSizePolicy(widget, opt);
                 if (scrollBarLength < scrollButtonsCutoffSize(thumbIndicatorCutoff, sizePolicy))
                     tdi.attributes &= ~kThemeTrackShowThumb;
                 if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, sizePolicy))
@@ -6010,7 +5980,7 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
             // exclude them from the hit test.
             const int scrollBarLength = (sb->orientation == Qt::Horizontal)
                 ? sb->rect.width() : sb->rect.height();
-            if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, widgetSizePolicy(widget, opt)))
+            if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, QStyleHelper::widgetSizePolicy(widget, opt)))
                 sbi.enableState = kThemeTrackNothingToScroll;
 
             sbi.viewsize = sb->pageStep;
@@ -6680,7 +6650,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case CT_ScrollBar :
         // Make sure that the scroll bar is large enough to display the thumb indicator.
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            const int minimumSize = scrollButtonsCutoffSize(thumbIndicatorCutoff, widgetSizePolicy(widget, opt));
+            const int minimumSize = scrollButtonsCutoffSize(thumbIndicatorCutoff, QStyleHelper::widgetSizePolicy(widget, opt));
             if (slider->orientation == Qt::Horizontal)
                 sz = sz.expandedTo(QSize(minimumSize, sz.height()));
             else

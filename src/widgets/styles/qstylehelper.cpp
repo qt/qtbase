@@ -427,5 +427,34 @@ QWindow *styleObjectWindow(QObject *so)
     return 0;
 }
 
+void setWidgetSizePolicy(const QWidget *widget, WidgetSizePolicy policy)
+{
+    QWidget *wadget = const_cast<QWidget *>(widget);
+    wadget->setAttribute(Qt::WA_MacNormalSize, policy == SizeLarge);
+    wadget->setAttribute(Qt::WA_MacSmallSize, policy == SizeSmall);
+    wadget->setAttribute(Qt::WA_MacMiniSize, policy == SizeMini);
+}
+
+WidgetSizePolicy widgetSizePolicy(const QWidget *widget, const QStyleOption *opt)
+{
+    while (widget) {
+        if (widget->testAttribute(Qt::WA_MacMiniSize)) {
+            return SizeMini;
+        } else if (widget->testAttribute(Qt::WA_MacSmallSize)) {
+            return SizeSmall;
+        } else if (widget->testAttribute(Qt::WA_MacNormalSize)) {
+            return SizeLarge;
+        }
+        widget = widget->parentWidget();
+    }
+
+    if (opt && opt->state & QStyle::State_Mini)
+        return SizeMini;
+    else if (opt && opt->state & QStyle::State_Small)
+        return SizeSmall;
+
+    return SizeDefault;
+}
+
 }
 QT_END_NAMESPACE

@@ -87,6 +87,11 @@ namespace QStyleHelper
 #endif
     QColor backgroundColor(const QPalette &pal, const QWidget* widget = 0);
     QWindow *styleObjectWindow(QObject *so);
+
+    enum WidgetSizePolicy { SizeSmall, SizeLarge, SizeMini, SizeDefault };
+
+    void setWidgetSizePolicy(const QWidget *w, WidgetSizePolicy policy);
+    WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = 0);
 }
 
 
