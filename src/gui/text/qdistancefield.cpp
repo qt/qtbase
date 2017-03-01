@@ -428,8 +428,8 @@ static void drawPolygons(qint32 *bits, int width, int height, const QPoint *vert
                          const quint32 *indices, int indexCount, qint32 value)
 {
     Q_ASSERT(indexCount != 0);
-    Q_ASSERT(height <= 128);
-    QVarLengthArray<quint8, 16> scans[128];
+    typedef QVarLengthArray<quint8, 16> ScanLine;
+    QVarLengthArray<ScanLine, 128> scans(height);
     int first = 0;
     for (int i = 1; i < indexCount; ++i) {
         quint32 idx1 = indices[i - 1];
