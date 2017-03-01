@@ -71,8 +71,6 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 static QTouchDevice *touchDevice = 0;
 
-static bool _q_dontOverrideCtrlLMB = false;
-
 @interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
   - (CGFloat)deviceDeltaX;
   - (CGFloat)deviceDeltaY;
@@ -133,11 +131,6 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 @implementation QT_MANGLE_NAMESPACE(QNSView)
 
-+ (void)initialize
-{
-    _q_dontOverrideCtrlLMB = qt_mac_resolveOption(false, "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
-}
-
 - (id) init
 {
     if (self = [super initWithFrame:NSZeroRect]) {
@@ -153,6 +146,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         m_shouldSetGLContextinDrawRect = false;
 #endif
         currentCustomDragTypes = 0;
+        m_dontOverrideCtrlLMB = false;
         m_sendUpAsRightButton = false;
         m_inputSource = 0;
         m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
@@ -196,6 +190,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
     m_platformWindow = platformWindow;
     m_sendKeyEvent = false;
+    m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, platformWindow->window(), "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
     m_trackingArea = nil;
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
@@ -855,7 +850,7 @@ static bool _q_dontOverrideCtrlLMB = false;
     if ([self hasMarkedText]) {
         [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
-        if (!_q_dontOverrideCtrlLMB && [QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
+        if (!m_dontOverrideCtrlLMB && [QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
             m_buttons |= Qt::RightButton;
             m_sendUpAsRightButton = true;
         } else {

@@ -72,6 +72,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     QString m_composingText;
     bool m_sendKeyEvent;
     QStringList *currentCustomDragTypes;
+    bool m_dontOverrideCtrlLMB;
     bool m_sendUpAsRightButton;
     Qt::KeyboardModifiers currentWheelModifiers;
 #ifndef QT_NO_OPENGL
