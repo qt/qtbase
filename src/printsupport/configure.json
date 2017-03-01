@@ -55,7 +55,16 @@
             "label": "QPrintDialog",
             "purpose": "Provides a dialog widget for specifying printer configuration.",
             "section": "Dialogs",
-            "condition": "features.printer && features.combobox && features.buttongroup && features.spinbox && features.treeview && features.tabwidget && features.datetimeedit",
+            "condition": [
+                "features.buttongroup",
+                "features.combobox",
+                "features.datetimeedit",
+                "features.printer",
+                "features.radiobutton",
+                "features.spinbox",
+                "features.tabwidget",
+                "features.treeview"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "printpreviewdialog": {

@@ -58,7 +58,6 @@
 #include "private/qabstractscrollarea_p.h"
 #include <qtooltip.h>
 #include <qshareddata.h>
-#include <qradiobutton.h>
 #include <qtoolbutton.h>
 #include <qscrollbar.h>
 #include <qstring.h>

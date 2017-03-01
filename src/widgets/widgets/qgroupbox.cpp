@@ -44,7 +44,9 @@
 #include "qdrawutil.h"
 #include "qevent.h"
 #include "qlayout.h"
+#if QT_CONFIG(radiobutton)
 #include "qradiobutton.h"
+#endif
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qstylepainter.h"
@@ -430,11 +432,13 @@ void QGroupBoxPrivate::_q_fixFocus(Qt::FocusReason reason)
         QWidget * w = q;
         while ((w = w->nextInFocusChain()) != q) {
             if (q->isAncestorOf(w) && (w->focusPolicy() & Qt::TabFocus) == Qt::TabFocus && w->isVisibleTo(q)) {
+#if QT_CONFIG(radiobutton)
                 if (!best && qobject_cast<QRadioButton*>(w) && ((QRadioButton*)w)->isChecked())
                     // we prefer a checked radio button or a widget that
                     // already has focus, if there is one
                     best = w;
                 else
+#endif
                     if (!candidate)
                         // but we'll accept anything that takes focus
                         candidate = w;

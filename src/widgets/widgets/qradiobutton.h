@@ -43,6 +43,8 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractbutton.h>
 
+QT_REQUIRE_CONFIG(radiobutton);
+
 QT_BEGIN_NAMESPACE
 
 

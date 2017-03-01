@@ -175,6 +175,12 @@
             "section": "Widgets",
             "output": [ "publicFeature", "feature" ]
         },
+        "radiobutton": {
+            "label": "QRadioButton",
+            "purpose": "Provides a radio button with a text label.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
         "spinbox": {
             "label": "QSpinBox",
             "purpose": "Provides spin boxes handling integers and discrete sets of values.",

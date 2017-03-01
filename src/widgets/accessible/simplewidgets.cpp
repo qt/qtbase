@@ -44,7 +44,9 @@
 #include <qpushbutton.h>
 #include <qprogressbar.h>
 #include <qstatusbar.h>
+#if QT_CONFIG(radiobutton)
 #include <qradiobutton.h>
+#endif
 #include <qtoolbutton.h>
 #include <qmenu.h>
 #include <qlabel.h>
@@ -169,12 +171,15 @@ QRect QAccessibleButton::rect() const
         QStyleOptionButton opt;
         cb->initStyleOption(&opt);
         return cb->style()->subElementRect(QStyle::SE_CheckBoxClickRect, &opt, cb).translated(wpos);
-    } else if (QRadioButton *rb = qobject_cast<QRadioButton *>(ab)) {
+    }
+#if QT_CONFIG(radiobutton)
+    else if (QRadioButton *rb = qobject_cast<QRadioButton *>(ab)) {
         QPoint wpos = rb->mapToGlobal(QPoint(0, 0));
         QStyleOptionButton opt;
         rb->initStyleOption(&opt);
         return rb->style()->subElementRect(QStyle::SE_RadioButtonClickRect, &opt, rb).translated(wpos);
     }
+#endif
     return QAccessibleWidget::rect();
 }
 

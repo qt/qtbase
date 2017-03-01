@@ -44,7 +44,6 @@ HEADERS += \
         widgets/qprogressbar.h \
         widgets/qpushbutton.h \
         widgets/qpushbutton_p.h \
-        widgets/qradiobutton.h \
         widgets/qrubberband.h \
         widgets/qscrollbar.h \
         widgets/qscrollbar_p.h \
@@ -113,7 +112,6 @@ SOURCES += \
         widgets/qmenubar.cpp \
         widgets/qprogressbar.cpp \
         widgets/qpushbutton.cpp \
-        widgets/qradiobutton.cpp \
         widgets/qrubberband.cpp \
         widgets/qscrollbar.cpp \
         widgets/qsizegrip.cpp \
@@ -149,6 +147,14 @@ qtConfig(commandlinkbutton) {
 
     SOURCES += \
         widgets/qcommandlinkbutton.cpp
+}
+
+qtConfig(radiobutton) {
+    HEADERS += \
+        widgets/qradiobutton.h
+
+    SOURCES += \
+        widgets/qradiobutton.cpp
 }
 
 macx {
