@@ -36,12 +36,18 @@
 #include <qdebug.h>
 #include <qregexp.h>
 #include <qdir.h>
+#include <qdiriterator.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#if defined(Q_OS_UNIX)
+#include <errno.h>
+#include <unistd.h>
+#endif
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -267,6 +273,44 @@ static int installFile(const QString &source, const QString &target, bool exe = 
     return 0;
 }
 
+static int installDirectory(const QString &source, const QString &target)
+{
+    QFileInfo fi(source);
+    if (false) {
+#if defined(Q_OS_UNIX)
+    } else if (fi.isSymLink()) {
+        QString linkTarget;
+        if (!IoUtils::readLinkTarget(fi.absoluteFilePath(), &linkTarget)) {
+            fprintf(stderr, "Could not read link %s: %s\n", qPrintable(fi.absoluteFilePath()), strerror(errno));
+            return 3;
+        }
+        QFile::remove(target);
+        if (::symlink(linkTarget.toLocal8Bit().constData(), target.toLocal8Bit().constData()) < 0) {
+            fprintf(stderr, "Could not create link: %s\n", strerror(errno));
+            return 3;
+        }
+#endif
+    } else if (fi.isDir()) {
+        QDir::current().mkpath(target);
+
+        QDirIterator it(source, QDir::AllEntries | QDir::NoDotAndDotDot);
+        while (it.hasNext()) {
+            it.next();
+            const QFileInfo &entry = it.fileInfo();
+            const QString &entryTarget = target + QDir::separator() + entry.fileName();
+
+            const int recursionResult = installDirectory(entry.filePath(), entryTarget);
+            if (recursionResult != 0)
+                return recursionResult;
+        }
+    } else {
+        const int fileCopyResult = installFile(source, target);
+        if (fileCopyResult != 0)
+            return fileCopyResult;
+    }
+    return 0;
+}
+
 static int doQInstall(int argc, char **argv)
 {
     if (argc != 3) {
@@ -281,6 +325,8 @@ static int doQInstall(int argc, char **argv)
         return installFile(source, target);
     if (!strcmp(argv[0], "program"))
         return installFile(source, target, /*exe=*/true);
+    if (!strcmp(argv[0], "directory"))
+        return installDirectory(source, target);
 
     fprintf(stderr, "Error: Unsupported qinstall command type %s\n", argv[0]);
     return 3;

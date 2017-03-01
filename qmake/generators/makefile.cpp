@@ -1283,14 +1283,12 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                 if(is_target || exists(wild)) { //real file or target
                     QFileInfo fi(fileInfo(wild));
                     QString dst_file = filePrefixRoot(root, dst_dir);
-                    if (!fi.isDir() || project->isActiveConfig("copy_dir_files")) {
-                        if(!dst_file.endsWith(Option::dir_sep))
-                            dst_file += Option::dir_sep;
-                        dst_file += fi.fileName();
-                    }
+                    if (!dst_file.endsWith(Option::dir_sep))
+                        dst_file += Option::dir_sep;
+                    dst_file += fi.fileName();
                     QString cmd;
                     if (fi.isDir())
-                       cmd = "-$(INSTALL_DIR)";
+                       cmd = "-$(QINSTALL_DIR)";
                     else if (is_target || fi.isExecutable())
                        cmd = "-$(QINSTALL_PROGRAM)";
                     else
@@ -1310,22 +1308,15 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                 if (installConfigValues.contains("no_check_exist") && files.isEmpty()) {
                     QString dst_file = filePrefixRoot(root, dst_dir);
                     QString cmd;
+                    if (!dst_file.endsWith(Option::dir_sep))
+                        dst_file += Option::dir_sep;
+                    dst_file += filestr;
                     if (installConfigValues.contains("directory")) {
-                        cmd = QLatin1String("-$(INSTALL_DIR)");
-                        if (project->isActiveConfig("copy_dir_files")) {
-                            if (!dst_file.endsWith(Option::dir_sep))
-                                dst_file += Option::dir_sep;
-                            dst_file += filestr;
-                        }
+                        cmd = QLatin1String("-$(QINSTALL_DIR)");
+                    } else if (installConfigValues.contains("executable")) {
+                        cmd = QLatin1String("-$(QINSTALL_PROGRAM)");
                     } else {
-                        if (installConfigValues.contains("executable")) {
-                            cmd = QLatin1String("-$(QINSTALL_PROGRAM)");
-                        } else {
-                            cmd = QLatin1String("-$(QINSTALL_FILE)");
-                        }
-                        if (!dst_file.endsWith(Option::dir_sep))
-                            dst_file += Option::dir_sep;
-                        dst_file += filestr;
+                        cmd = QLatin1String("-$(QINSTALL_FILE)");
                     }
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
                     inst << cmd;
@@ -1336,12 +1327,10 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst_dir + file, FileFixifyAbsolute, false))));
                     QFileInfo fi(fileInfo(dirstr + file));
                     QString dst_file = filePrefixRoot(root, fileFixify(dst_dir, FileFixifyAbsolute, false));
-                    if (!fi.isDir() || project->isActiveConfig("copy_dir_files")) {
-                        if(!dst_file.endsWith(Option::dir_sep))
-                            dst_file += Option::dir_sep;
-                        dst_file += fi.fileName();
-                    }
-                    QString cmd = QString(fi.isDir() ? "-$(INSTALL_DIR)" : "-$(QINSTALL_FILE)") + " " +
+                    if (!dst_file.endsWith(Option::dir_sep))
+                        dst_file += Option::dir_sep;
+                    dst_file += fi.fileName();
+                    QString cmd = QString(fi.isDir() ? "-$(QINSTALL_DIR)" : "-$(QINSTALL_FILE)") + " " +
                                   escapeFilePath(dirstr + file) + " " + escapeFilePath(dst_file);
                     inst << cmd;
                     if (!project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
@@ -2255,6 +2244,7 @@ MakefileGenerator::writeDefaultVariables(QTextStream &t)
     t << "INSTALL_DIR   = " << var("QMAKE_INSTALL_DIR") << endl;
     t << "QINSTALL_FILE = " << var("QMAKE_QMAKE") << " -install qinstall file" << endl;
     t << "QINSTALL_PROGRAM = " << var("QMAKE_QMAKE") << " -install qinstall program" << endl;
+    t << "QINSTALL_DIR  = " << var("QMAKE_QMAKE") << " -install qinstall directory" << endl;
     t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
     t << "SYMLINK       = " << var("QMAKE_SYMBOLIC_LINK") << endl;
     t << "DEL_DIR       = " << var("QMAKE_DEL_DIR") << endl;

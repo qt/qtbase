@@ -636,7 +636,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
 
         QString copy_cmd;
         if (bundle == SolidBundle) {
-            copy_cmd += "-$(INSTALL_DIR) " + src_targ + ' ' + plain_targ;
+            copy_cmd += "-$(QINSTALL_DIR) " + src_targ + ' ' + plain_targ;
         } else if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("staticlib")) {
             copy_cmd += "-$(QINSTALL_FILE) " + src_targ + ' ' + dst_targ;
         } else if (!isAux) {
@@ -698,7 +698,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
                     ret += "\n\t";
                 ret += mkdir_p_asstring("\"`dirname " + dst + "`\"", false) + "\n\t";
                 ret += "-$(DEL_FILE) " + dst + "\n\t"; // Can't overwrite symlinks to directories
-                ret += "-$(INSTALL_DIR) " + escapeFilePath(src) + " " + dst; // Use cp -R to copy symlinks
+                ret += "-$(QINSTALL_DIR) " + escapeFilePath(src) + " " + dst;
                 if (!uninst.isEmpty())
                     uninst.append("\n\t");
                 uninst.append("-$(DEL_FILE) " + dst);

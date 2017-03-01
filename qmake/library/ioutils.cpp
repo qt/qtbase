@@ -253,4 +253,39 @@ bool IoUtils::touchFile(const QString &targetFileName, const QString &referenceF
 }
 #endif
 
+#ifdef Q_OS_UNIX
+bool IoUtils::readLinkTarget(const QString &symlinkPath, QString *target)
+{
+    const QByteArray localSymlinkPath = QFile::encodeName(symlinkPath);
+#  if defined(__GLIBC__) && !defined(PATH_MAX)
+#    define PATH_CHUNK_SIZE 256
+    char *s = 0;
+    int len = -1;
+    int size = PATH_CHUNK_SIZE;
+
+    forever {
+        s = (char *)::realloc(s, size);
+        len = ::readlink(localSymlinkPath.constData(), s, size);
+        if (len < 0) {
+            ::free(s);
+            break;
+        }
+        if (len < size)
+            break;
+        size *= 2;
+    }
+#  else
+    char s[PATH_MAX+1];
+    int len = readlink(localSymlinkPath.constData(), s, PATH_MAX);
+#  endif
+    if (len <= 0)
+        return false;
+    *target = QFile::decodeName(QByteArray(s, len));
+#  if defined(__GLIBC__) && !defined(PATH_MAX)
+    ::free(s);
+#  endif
+    return true;
+}
+#endif
+
 QT_END_NAMESPACE
