@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'chatmainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.9.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -151,10 +151,14 @@ public:
     {
         ChatMainWindow->setWindowTitle(QApplication::translate("ChatMainWindow", "Qt D-Bus Chat", Q_NULLPTR));
         actionQuit->setText(QApplication::translate("ChatMainWindow", "Quit", Q_NULLPTR));
+#ifndef QT_NO_SHORTCUT
         actionQuit->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+Q", Q_NULLPTR));
+#endif // QT_NO_SHORTCUT
         actionAboutQt->setText(QApplication::translate("ChatMainWindow", "About Qt...", Q_NULLPTR));
         actionChangeNickname->setText(QApplication::translate("ChatMainWindow", "Change nickname...", Q_NULLPTR));
+#ifndef QT_NO_SHORTCUT
         actionChangeNickname->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+N", Q_NULLPTR));
+#endif // QT_NO_SHORTCUT
 #ifndef QT_NO_TOOLTIP
         chatHistory->setToolTip(QApplication::translate("ChatMainWindow", "Messages sent and received from other users", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP

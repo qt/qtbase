@@ -1484,6 +1484,8 @@ void WriteInitialization::writeProperties(const QString &varName,
                 defineC = whatsThisDefineC;
             else if (propertyName == QLatin1String("statusTip"))
                 defineC = statusTipDefineC;
+            else if (propertyName == QLatin1String("shortcut"))
+                defineC = shortcutDefineC;
             else if (propertyName == QLatin1String("accessibleName") || propertyName == QLatin1String("accessibleDescription"))
                 defineC = accessibilityDefineC;
 

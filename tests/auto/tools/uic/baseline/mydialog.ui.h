@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mydialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.9.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -62,7 +62,9 @@ public:
         MyDialog->setWindowTitle(QApplication::translate("MyDialog", "Mach 2!", Q_NULLPTR));
         aLabel->setText(QApplication::translate("MyDialog", "Join the life in the fastlane; - PCH enable your project today! -", Q_NULLPTR));
         aButton->setText(QApplication::translate("MyDialog", "&Quit", Q_NULLPTR));
+#ifndef QT_NO_SHORTCUT
         aButton->setShortcut(QApplication::translate("MyDialog", "Alt+Q", Q_NULLPTR));
+#endif // QT_NO_SHORTCUT
     } // retranslateUi
 
 };

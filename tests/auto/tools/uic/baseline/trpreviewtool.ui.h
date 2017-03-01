@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'trpreviewtool.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.9.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -168,7 +168,9 @@ public:
         actionOpenForm->setText(QApplication::translate("TrPreviewToolClass", "&Open Form...", Q_NULLPTR));
         actionLoadTranslation->setText(QApplication::translate("TrPreviewToolClass", "&Load Translation...", Q_NULLPTR));
         actionReloadTranslations->setText(QApplication::translate("TrPreviewToolClass", "&Reload Translations", Q_NULLPTR));
+#ifndef QT_NO_SHORTCUT
         actionReloadTranslations->setShortcut(QApplication::translate("TrPreviewToolClass", "F5", Q_NULLPTR));
+#endif // QT_NO_SHORTCUT
         actionClose->setText(QApplication::translate("TrPreviewToolClass", "&Close", Q_NULLPTR));
         actionAbout->setText(QApplication::translate("TrPreviewToolClass", "About", Q_NULLPTR));
         actionAbout_Qt->setText(QApplication::translate("TrPreviewToolClass", "About Qt", Q_NULLPTR));
