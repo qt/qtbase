@@ -364,9 +364,6 @@
     connect(sender, &QObject::destroyed, [=](){ this->m_objects.remove(sender); });
     \endcode
 
-    Note that if your compiler does not support C++11 variadic templates,
-    this syntax only works if the signal and slot have 6 arguments or less.
-
     The other way to connect a signal to a slot is to use QObject::connect()
     and the \c{SIGNAL} and \c{SLOT} macros.
     The rule about whether to
