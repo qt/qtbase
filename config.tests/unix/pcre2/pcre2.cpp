@@ -37,9 +37,11 @@
 **
 ****************************************************************************/
 
+#define PCRE2_CODE_UNIT_WIDTH 16
+
 #include <pcre2.h>
 
-#if (PCRE2_MAJOR < 10) || ((PCRE2_MAJOR == 10) && (PCRE_MINOR < 20))
+#if (PCRE2_MAJOR < 10) || ((PCRE2_MAJOR == 10) && (PCRE2_MINOR < 20))
 #error This PCRE version is not supported
 #endif
 
