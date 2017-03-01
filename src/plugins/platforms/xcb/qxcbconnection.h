@@ -705,6 +705,19 @@ private:
     QXcbConnection *m_connection;
 };
 
+template <typename T>
+union q_padded_xcb_event {
+  T event;
+  char padding[32];
+};
+
+// The xcb_send_event() requires all events to have 32 bytes. It calls memcpy() on the
+// passed in event. If the passed in event is less than 32 bytes, memcpy() reaches into
+// unrelated memory.
+#define Q_DECLARE_XCB_EVENT(event_var, event_type) \
+    q_padded_xcb_event<event_type> store = q_padded_xcb_event<event_type>(); \
+    auto &event_var = store.event;
+
 #ifdef Q_XCB_DEBUG
 template <typename cookie_t>
 cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line)
