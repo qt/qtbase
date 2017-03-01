@@ -846,6 +846,9 @@ static bool read_xpm_header(
 #endif
         return false;                                        // < 4 numbers parsed
 
+    if (*w <= 0 || *w > 32767 || *h <= 0 || *h > 32767 || *ncols <= 0 || *ncols > (64 * 64 * 64 * 64) || *cpp <= 0 || *cpp > 15)
+        return false;                                        // failed sanity check
+
     return true;
 }
 
