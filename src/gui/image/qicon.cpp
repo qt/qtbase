@@ -700,7 +700,7 @@ QIcon::QIcon(const QIcon &other)
     the relevant file must be found relative to the runtime working
     directory.
 
-    The file name can be either refer to an actual file on disk or to
+    The file name can refer to an actual file on disk or to
     one of the application's embedded resources.  See the
     \l{resources.html}{Resource System} overview for details on how to
     embed images and other resource files in the application's
@@ -1049,7 +1049,7 @@ static QIconEngine *iconEngineFromSuffix(const QString &fileName, const QString 
      the relevant file must be found relative to the runtime working
      directory.
 
-    The file name can be either refer to an actual file on disk or to
+    The file name can refer to an actual file on disk or to
     one of the application's embedded resources. See the
     \l{resources.html}{Resource System} overview for details on how to
     embed images and other resource files in the application's
