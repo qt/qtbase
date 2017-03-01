@@ -607,7 +607,7 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
         return;
     }
 
-    xcb_selection_notify_event_t event;
+    Q_DECLARE_XCB_EVENT(event, xcb_selection_notify_event_t);
     event.response_type = XCB_SELECTION_NOTIFY;
     event.requestor = req->requestor;
     event.selection = req->selection;
