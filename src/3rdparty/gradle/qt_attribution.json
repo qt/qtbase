@@ -1,0 +1,13 @@
+{
+    "Id": "android-gradle-wrapper",
+    "Name": "Gradle wrapper",
+    "Homepage": "https://gradle.org",
+    "Version": "3.4.1",
+    "DownloadLocation": "https://github.com/gradle/gradle/releases/tag/v3.4.1",
+    "QtUsage": "Needed to create Android packages",
+
+    "License": "Apache License 2.0",
+    "LicenseId": "Apache-2.0",
+    "LicenseFile": "LICENSE-GRADLEW.txt",
+    "Copyright": "Copyright (C) 2017 Gradle Inc."
+}
