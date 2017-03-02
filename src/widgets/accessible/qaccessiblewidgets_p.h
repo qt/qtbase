@@ -248,11 +248,13 @@ protected:
 };
 #endif // QT_NO_MDIAREA
 
+#if QT_CONFIG(dialogbuttonbox)
 class QAccessibleDialogButtonBox : public QAccessibleWidget
 {
 public:
     explicit QAccessibleDialogButtonBox(QWidget *widget);
 };
+#endif
 
 #if !defined(QT_NO_TEXTBROWSER) && !defined(QT_NO_CURSOR)
 class QAccessibleTextBrowser : public QAccessibleTextEdit

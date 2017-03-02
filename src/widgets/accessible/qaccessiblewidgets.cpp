@@ -54,7 +54,9 @@
 #include <QToolBox>
 #include <QMdiArea>
 #include <QMdiSubWindow>
+#if QT_CONFIG(dialogbuttonbox)
 #include <QDialogButtonBox>
+#endif
 #include <limits.h>
 #include <QRubberBand>
 #include <QTextBrowser>
@@ -480,7 +482,7 @@ QMdiSubWindow *QAccessibleMdiSubWindow::mdiSubWindow() const
 }
 #endif // QT_NO_MDIAREA
 
-#ifndef QT_NO_DIALOGBUTTONBOX
+#if QT_CONFIG(dialogbuttonbox)
 // ======================= QAccessibleDialogButtonBox ======================
 QAccessibleDialogButtonBox::QAccessibleDialogButtonBox(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Grouping)
@@ -488,7 +490,7 @@ QAccessibleDialogButtonBox::QAccessibleDialogButtonBox(QWidget *widget)
     Q_ASSERT(qobject_cast<QDialogButtonBox*>(widget));
 }
 
-#endif // QT_NO_DIALOGBUTTONBOX
+#endif // QT_CONFIG(dialogbuttonbox)
 
 #if !defined(QT_NO_TEXTBROWSER) && !defined(QT_NO_CURSOR)
 QAccessibleTextBrowser::QAccessibleTextBrowser(QWidget *widget)

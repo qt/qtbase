@@ -55,7 +55,9 @@
 #include <qbitmap.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>
+#if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
+#endif
 #include <qdockwidget.h>
 #include <qevent.h>
 #include <qfocusframe.h>

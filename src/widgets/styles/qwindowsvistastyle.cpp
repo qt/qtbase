@@ -775,6 +775,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         }
     case PE_Widget:
         {
+#if QT_CONFIG(dialogbuttonbox)
             const QDialogButtonBox *buttonBox = 0;
 
             if (qobject_cast<const QMessageBox *> (widget))
@@ -801,6 +802,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 theme.partId = TDLG_SECONDARYPANEL;
                 d->drawBackground(theme);
             }
+#endif
         }
         break;
     default:
@@ -2315,16 +2317,20 @@ void QWindowsVistaStyle::polish(QWidget *widget)
         }
     } else if (qobject_cast<QMessageBox *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
+#if QT_CONFIG(dialogbuttonbox)
         QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 9, 0, 0);
+#endif
     }
 #ifndef QT_NO_INPUTDIALOG
     else if (qobject_cast<QInputDialog *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
+#if QT_CONFIG(dialogbuttonbox)
         QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 9, 0, 0);
+#endif
     }
 #endif // QT_NO_INPUTDIALOG
     else if (QTreeView *tree = qobject_cast<QTreeView *> (widget)) {
@@ -2355,16 +2361,20 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
         widget->setAttribute(Qt::WA_Hover, false);
     else if (qobject_cast<QMessageBox *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
+#if QT_CONFIG(dialogbuttonbox)
         QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 0, 0, 0);
+#endif
     }
 #ifndef QT_NO_INPUTDIALOG
     else if (qobject_cast<QInputDialog *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
+#if QT_CONFIG(dialogbuttonbox)
         QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 0, 0, 0);
+#endif
     }
 #endif // QT_NO_INPUTDIALOG
     else if (QTreeView *tree = qobject_cast<QTreeView *> (widget)) {

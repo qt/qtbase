@@ -55,7 +55,9 @@
 #include "qtoolbar.h"
 #include "qdebug.h"
 #include "qlayoutitem.h"
+#if QT_CONFIG(dialogbuttonbox)
 #include "qdialogbuttonbox.h"
+#endif
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
 #include "private/qmacstyle_mac_p.h"
 #include "private/qmacstyle_mac_p_p.h"
@@ -400,8 +402,7 @@ QSize QPushButton::sizeHint() const
     initStyleOption(&opt);
 
     // calculate contents size...
-#ifndef QT_NO_ICON
-
+#if !defined(QT_NO_ICON) && QT_CONFIG(dialogbuttonbox)
     bool showButtonBoxIcons = qobject_cast<QDialogButtonBox*>(parentWidget())
                           && style()->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons);
 

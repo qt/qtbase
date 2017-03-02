@@ -16,7 +16,6 @@ HEADERS += \
         widgets/qdatetimeedit.h \
         widgets/qdatetimeedit_p.h \
         widgets/qdial.h \
-        widgets/qdialogbuttonbox.h \
         widgets/qdockwidget.h \
         widgets/qdockwidget_p.h \
         widgets/qdockarealayout_p.h \
@@ -90,7 +89,6 @@ SOURCES += \
         widgets/qcombobox.cpp \
         widgets/qdatetimeedit.cpp \
         widgets/qdial.cpp \
-        widgets/qdialogbuttonbox.cpp \
         widgets/qdockwidget.cpp \
         widgets/qdockarealayout.cpp \
         widgets/qeffects.cpp \
@@ -161,6 +159,14 @@ qtConfig(radiobutton) {
 
     SOURCES += \
         widgets/qradiobutton.cpp
+}
+
+qtConfig(dialogbuttonbox) {
+    HEADERS += \
+        widgets/qdialogbuttonbox.h
+
+    SOURCES += \
+        widgets/qdialogbuttonbox.cpp
 }
 
 macx {

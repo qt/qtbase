@@ -53,7 +53,6 @@
 #include <qgroupbox.h>
 #include <qprocess.h>
 #include <qpixmapcache.h>
-#include <qdialogbuttonbox.h>
 #include <qscrollbar.h>
 #include <qspinbox.h>
 #include <qslider.h>

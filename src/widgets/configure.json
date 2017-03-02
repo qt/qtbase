@@ -423,18 +423,28 @@
             "condition": "features.lineedit && features.shortcut",
             "output": [ "publicFeature", "feature" ]
         },
+        "dialogbuttonbox": {
+            "label": "QDialogButtonBox",
+            "purpose": "Presents buttons in a layout that is appropriate for the current widget style.",
+            "section": "Dialogs",
+            "output": [ "publicFeature" ]
+        },
         "messagebox": {
             "label": "QMessageBox",
             "purpose": "Provides message boxes displaying informative messages and simple questions.",
             "section": "Dialogs",
-            "condition" : "features.label",
+            "condition" : "features.dialogbuttonbox && features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "colordialog": {
             "label": "QColorDialog",
             "purpose": "Provides a dialog widget for specifying colors.",
             "section": "Dialogs",
-            "condition": "features.spinbox && features.label",
+            "condition": [
+                "features.dialogbuttonbox",
+                "features.label",
+                "features.spinbox"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "filedialog": {
@@ -444,6 +454,7 @@
             "condition": [
                 "features.buttongroup",
                 "features.combobox",
+                "features.dialogbuttonbox",
                 "features.dirmodel",
                 "features.label",
                 "features.proxymodel",
@@ -458,7 +469,14 @@
             "label": "QFontDialog",
             "purpose": "Provides a dialog widget for selecting fonts.",
             "section": "Dialogs",
-            "condition": "features.stringlistmodel && features.combobox && features.validator && features.groupbox && features.label",
+            "condition": [
+               "features.combobox",
+               "features.dialogbuttonbox",
+               "features.groupbox",
+               "features.label",
+               "features.stringlistmodel",
+               "features.validator"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "progressdialog": {
@@ -472,7 +490,14 @@
             "label": "QInputDialog",
             "purpose": "Provides a simple convenience dialog to get a single value from the user.",
             "section": "Dialogs",
-            "condition": "features.combobox && features.spinbox && features.stackedwidget && features.textedit && features.label",
+            "condition": [
+                "features.combobox",
+                "features.dialogbuttonbox",
+                "features.label",
+                "features.spinbox",
+                "features.stackedwidget",
+                "features.textedit"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "errormessage": {

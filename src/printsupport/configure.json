@@ -59,6 +59,7 @@
                 "features.buttongroup",
                 "features.combobox",
                 "features.datetimeedit",
+                "features.dialogbuttonbox",
                 "features.printer",
                 "features.radiobutton",
                 "features.spinbox",

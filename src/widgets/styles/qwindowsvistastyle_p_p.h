@@ -80,7 +80,9 @@
 #include <qtreeview.h>
 #include <qtextedit.h>
 #include <qmessagebox.h>
+#if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
+#endif
 #include <qinputdialog.h>
 #include <qtableview.h>
 #include <qdatetime.h>

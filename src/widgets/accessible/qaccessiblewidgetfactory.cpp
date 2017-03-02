@@ -184,8 +184,10 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QMdiSubWindow")) {
         iface = new QAccessibleMdiSubWindow(widget);
 #endif
+#if QT_CONFIG(dialogbuttonbox)
     } else if (classname == QLatin1String("QDialogButtonBox")) {
         iface = new QAccessibleDialogButtonBox(widget);
+#endif
 #ifndef QT_NO_DIAL
     } else if (classname == QLatin1String("QDial")) {
         iface = new QAccessibleDial(widget);

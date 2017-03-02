@@ -48,7 +48,9 @@
 #include <qcache.h>
 #include <qdockwidget.h>
 #include <qdrawutil.h>
+#if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
+#endif
 #if QT_CONFIG(formlayout)
 #include <qformlayout.h>
 #else
@@ -4926,9 +4928,11 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_ScrollBar_ContextMenu:
         ret = true;
         break;
+#if QT_CONFIG(dialogbuttonbox)
     case SH_DialogButtons_DefaultButton:  // This value not used anywhere.
         ret = QDialogButtonBox::AcceptRole;
         break;
+#endif
 #ifndef QT_NO_GROUPBOX
     case SH_GroupBox_TextLabelVerticalAlignment:
         ret = Qt::AlignVCenter;
@@ -5116,11 +5120,13 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_TabBar_ElideMode:
         ret = Qt::ElideNone;
         break;
+#if QT_CONFIG(dialogbuttonbox)
     case SH_DialogButtonLayout:
         ret = QDialogButtonBox::WinLayout;
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
             ret = theme->themeHint(QPlatformTheme::DialogButtonBoxLayout).toInt();
         break;
+#endif
     case SH_ComboBox_PopupFrameStyle:
         ret = QFrame::StyledPanel | QFrame::Plain;
         break;

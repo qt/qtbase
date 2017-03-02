@@ -57,7 +57,9 @@
 #include <qbitmap.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>
+#if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
+#endif
 #include <qdockwidget.h>
 #include <qevent.h>
 #include <qfocusframe.h>
@@ -2931,9 +2933,11 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_TabBar_ElideMode:
         ret = Qt::ElideRight;
         break;
+#if QT_CONFIG(dialogbuttonbox)
     case SH_DialogButtonLayout:
         ret = QDialogButtonBox::MacLayout;
         break;
+#endif
     case SH_FormLayoutWrapPolicy:
         ret = QFormLayout::DontWrapRows;
         break;
