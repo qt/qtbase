@@ -156,6 +156,19 @@
             "condition": "features.rubberband",
             "output": [ "publicFeature", "feature" ]
         },
+        "label": {
+            "label": "QLabel",
+            "purpose": "Provides a text or image display.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
+        "formlayout": {
+            "label": "QFormLayout",
+            "purpose": "Manages forms of input widgets and their associated labels.",
+            "section": "Widgets",
+            "condition": "features.label",
+            "output": [ "publicFeature" ]
+        },
         "lcdnumber": {
             "label": "QLCDNumber",
             "purpose": "Provides LCD-like digits.",
@@ -374,6 +387,7 @@
             "label": "QToolTip",
             "purpose": "Supports presentation of tooltips.",
             "section": "Widgets",
+            "condition": "features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "statustip": {
@@ -399,7 +413,7 @@
             "label": "QCalendarWidget",
             "purpose": "Provides a monthly based calendar widget allowing the user to select a date.",
             "section": "Widgets",
-            "condition": "features.tableview && features.menu && features.textdate && features.spinbox && features.toolbutton",
+            "condition": "features.tableview && features.menu && features.textdate && features.spinbox && features.toolbutton && features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "keysequenceedit": {
@@ -413,13 +427,14 @@
             "label": "QMessageBox",
             "purpose": "Provides message boxes displaying informative messages and simple questions.",
             "section": "Dialogs",
+            "condition" : "features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "colordialog": {
             "label": "QColorDialog",
             "purpose": "Provides a dialog widget for specifying colors.",
             "section": "Dialogs",
-            "condition": "features.spinbox",
+            "condition": "features.spinbox && features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "filedialog": {
@@ -430,6 +445,7 @@
                 "features.buttongroup",
                 "features.combobox",
                 "features.dirmodel",
+                "features.label",
                 "features.proxymodel",
                 "features.splitter",
                 "features.stackedwidget",
@@ -442,35 +458,35 @@
             "label": "QFontDialog",
             "purpose": "Provides a dialog widget for selecting fonts.",
             "section": "Dialogs",
-            "condition": "features.stringlistmodel && features.combobox && features.validator && features.groupbox",
+            "condition": "features.stringlistmodel && features.combobox && features.validator && features.groupbox && features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "progressdialog": {
             "label": "QProgressDialog",
             "purpose": "Provides feedback on the progress of a slow operation.",
             "section": "Dialogs",
-            "condition": "features.progressbar",
+            "condition": "features.progressbar && features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "inputdialog": {
             "label": "QInputDialog",
             "purpose": "Provides a simple convenience dialog to get a single value from the user.",
             "section": "Dialogs",
-            "condition": "features.combobox && features.spinbox && features.stackedwidget && features.textedit",
+            "condition": "features.combobox && features.spinbox && features.stackedwidget && features.textedit && features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "errormessage": {
             "label": "QErrorMessage",
             "purpose": "Provides an error message display dialog.",
             "section": "Dialogs",
-            "condition": "features.textedit",
+            "condition": "features.textedit && features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "wizard": {
             "label": "QWizard",
             "purpose": "Provides a framework for multi-page click-through dialogs.",
             "section": "Dialogs",
-            "condition": "features.properties",
+            "condition": "features.properties && features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "dirmodel": {

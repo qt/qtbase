@@ -49,7 +49,9 @@
 #endif
 #include <qtoolbutton.h>
 #include <qmenu.h>
+#if QT_CONFIG(label)
 #include <qlabel.h>
+#endif
 #include <qgroupbox.h>
 #include <qlcdnumber.h>
 #include <qlineedit.h>
@@ -395,6 +397,7 @@ QAccessibleDisplay::QAccessibleDisplay(QWidget *w, QAccessible::Role role)
 
 QAccessible::Role QAccessibleDisplay::role() const
 {
+#if QT_CONFIG(label)
     QLabel *l = qobject_cast<QLabel*>(object());
     if (l) {
         if (l->pixmap())
@@ -416,6 +419,7 @@ QAccessible::Role QAccessibleDisplay::role() const
         return QAccessible::StatusBar;
 #endif
     }
+#endif
     return QAccessibleWidget::role();
 }
 
@@ -426,7 +430,9 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
     case QAccessible::Name:
         str = widget()->accessibleName();
         if (str.isEmpty()) {
-            if (qobject_cast<QLabel*>(object())) {
+            if (false) {
+#if QT_CONFIG(label)
+            } else if (qobject_cast<QLabel*>(object())) {
                 QLabel *label = qobject_cast<QLabel*>(object());
                 str = label->text();
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -441,6 +447,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
                 if (label->buddy())
                     str = qt_accStripAmp(str);
 #endif
+#endif // QT_CONFIG(label)
 #ifndef QT_NO_LCDNUMBER
             } else if (qobject_cast<QLCDNumber*>(object())) {
                 QLCDNumber *l = qobject_cast<QLCDNumber*>(object());
@@ -475,7 +482,7 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
 QAccessibleDisplay::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
     QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut) && QT_CONFIG(label)
     if (match & QAccessible::Labelled) {
         if (QLabel *label = qobject_cast<QLabel*>(object())) {
             const QAccessible::Relation rel = QAccessible::Labelled;
@@ -507,26 +514,34 @@ QString QAccessibleDisplay::imageDescription() const
 /*! \internal */
 QSize QAccessibleDisplay::imageSize() const
 {
+#if QT_CONFIG(label)
     QLabel *label = qobject_cast<QLabel *>(widget());
     if (!label)
+#endif
         return QSize();
+#if QT_CONFIG(label)
     const QPixmap *pixmap = label->pixmap();
     if (!pixmap)
         return QSize();
     return pixmap->size();
+#endif
 }
 
 /*! \internal */
 QPoint QAccessibleDisplay::imagePosition() const
 {
+#if QT_CONFIG(label)
     QLabel *label = qobject_cast<QLabel *>(widget());
     if (!label)
+#endif
         return QPoint();
+#if QT_CONFIG(label)
     const QPixmap *pixmap = label->pixmap();
     if (!pixmap)
         return QPoint();
 
     return QPoint(label->mapToGlobal(label->pos()));
+#endif
 }
 
 #ifndef QT_NO_GROUPBOX

@@ -37,7 +37,10 @@
 **
 ****************************************************************************/
 
+#include "qtwidgetsglobal.h"
+#if QT_CONFIG(label)
 #include "qlabel.h"
+#endif
 #include "qpainter.h"
 #include "qpixmap.h"
 #include "qbitmap.h"

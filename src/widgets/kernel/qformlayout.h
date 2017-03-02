@@ -43,6 +43,8 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/QLayout>
 
+QT_REQUIRE_CONFIG(formlayout);
+
 QT_BEGIN_NAMESPACE
 
 

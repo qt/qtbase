@@ -75,7 +75,9 @@
 #include <qdialog.h>
 #include <private/qwidget_p.h>
 #include <QAbstractSpinBox>
+#if QT_CONFIG(label)
 #include <QLabel>
+#endif
 #include "qdrawutil.h"
 
 #include <limits.h>
@@ -1414,11 +1416,13 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
 
 static inline QObject *parentObject(const QObject *obj)
 {
+#if QT_CONFIG(tooltip)
     if (qobject_cast<const QLabel *>(obj) && qstrcmp(obj->metaObject()->className(), "QTipLabel") == 0) {
         QObject *p = qvariant_cast<QObject *>(obj->property("_q_stylesheet_parent"));
         if (p)
             return p;
     }
+#endif
     return obj->parent();
 }
 

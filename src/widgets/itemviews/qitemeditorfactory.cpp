@@ -45,7 +45,9 @@
 
 #include <qcombobox.h>
 #include <qdatetimeedit.h>
+#if QT_CONFIG(label)
 #include <qlabel.h>
+#endif
 #include <qlineedit.h>
 #include <qspinbox.h>
 #include <limits.h>
@@ -261,8 +263,10 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         ed->setFrame(false);
         return ed; }
 #endif
+#if QT_CONFIG(label)
     case QVariant::Pixmap:
         return new QLabel(parent);
+#endif
 #ifndef QT_NO_SPINBOX
     case QVariant::Double: {
         QDoubleSpinBox *sb = new QDoubleSpinBox(parent);

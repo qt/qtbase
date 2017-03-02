@@ -43,18 +43,19 @@
 #include <qapplication.h>
 #include <qdesktopwidget.h>
 #include <qevent.h>
-#include <qlabel.h>
 #include <qpointer.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qstylepainter.h>
 #include <qtimer.h>
-#include <qtooltip.h>
 #include <private/qeffects_p.h>
 #include <qtextdocument.h>
 #include <qdebug.h>
 #include <private/qstylesheetstyle_p.h>
+
 #ifndef QT_NO_TOOLTIP
+#include <qlabel.h>
+#include <qtooltip.h>
 
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
 # include <private/qcore_mac_p.h>

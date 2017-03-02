@@ -49,7 +49,11 @@
 #include <qdockwidget.h>
 #include <qdrawutil.h>
 #include <qdialogbuttonbox.h>
+#if QT_CONFIG(formlayout)
 #include <qformlayout.h>
+#else
+#include <qlayout.h>
+#endif
 #include <qgroupbox.h>
 #include <qmath.h>
 #include <qmenu.h>
@@ -5162,12 +5166,14 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = QWizard::ClassicStyle;
         break;
 #endif
+#if QT_CONFIG(formlayout)
     case SH_FormLayoutWrapPolicy:
         ret = QFormLayout::DontWrapRows;
         break;
     case SH_FormLayoutFieldGrowthPolicy:
         ret = QFormLayout::AllNonFixedFieldsGrow;
         break;
+#endif
     case SH_FormLayoutFormAlignment:
         ret = Qt::AlignLeft | Qt::AlignTop;
         break;

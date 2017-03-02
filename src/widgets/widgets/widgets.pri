@@ -26,8 +26,6 @@ HEADERS += \
         widgets/qgroupbox.h \
         widgets/qkeysequenceedit.h \
         widgets/qkeysequenceedit_p.h \
-        widgets/qlabel.h \
-        widgets/qlabel_p.h \
         widgets/qlcdnumber.h \
         widgets/qlineedit.h \
         widgets/qlineedit_p.h \
@@ -100,7 +98,6 @@ SOURCES += \
         widgets/qframe.cpp \
         widgets/qgroupbox.cpp \
         widgets/qkeysequenceedit.cpp \
-        widgets/qlabel.cpp \
         widgets/qlcdnumber.cpp \
         widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
@@ -147,6 +144,15 @@ qtConfig(commandlinkbutton) {
 
     SOURCES += \
         widgets/qcommandlinkbutton.cpp
+}
+
+qtConfig(label) {
+    HEADERS += \
+        widgets/qlabel.h \
+        widgets/qlabel_p.h
+
+    SOURCES += \
+        widgets/qlabel.cpp
 }
 
 qtConfig(radiobutton) {
