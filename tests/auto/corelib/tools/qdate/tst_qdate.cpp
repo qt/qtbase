@@ -1033,7 +1033,8 @@ void tst_QDate::fromStringFormat_data()
     QTest::addColumn<QString>("format");
     QTest::addColumn<QDate>("expected");
 
-    //get localized names
+    // Undo this (inline the C-locale versions) for ### Qt 6
+    // Get localized names:
     QString january = QDate::longMonthName(1);
     QString february = QDate::longMonthName(2);
     QString march = QDate::longMonthName(3);

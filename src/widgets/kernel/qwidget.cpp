@@ -6386,6 +6386,24 @@ void QWidget::setWindowRole(const QString &role)
     \sa mouseMoveEvent()
 */
 
+/*!
+    \property QWidget::tabletTracking
+    \brief whether tablet tracking is enabled for the widget
+    \since 5.9
+
+    If tablet tracking is disabled (the default), the widget only
+    receives tablet move events when the stylus is in contact with
+    the tablet, or at least one stylus button is pressed,
+    while the stylus is being moved.
+
+    If tablet tracking is enabled, the widget receives tablet move
+    events even while hovering in proximity.  This is useful for
+    monitoring position as well as the auxiliary properties such
+    as rotation and tilt, and providing feedback in the UI.
+
+    \sa tabletEvent()
+*/
+
 
 /*!
     Sets the widget's focus proxy to widget \a w. If \a w is 0, the
@@ -8787,6 +8805,9 @@ bool QWidget::event(QEvent *event)
 #endif
 #ifndef QT_NO_TABLETEVENT
     case QEvent::TabletMove:
+        if (static_cast<QTabletEvent *>(event)->buttons() == Qt::NoButton && !testAttribute(Qt::WA_TabletTracking))
+            break;
+        Q_FALLTHROUGH();
     case QEvent::TabletPress:
     case QEvent::TabletRelease:
         tabletEvent((QTabletEvent*)event);
@@ -9019,6 +9040,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::IconTextChange:
     case QEvent::ModifiedChange:
     case QEvent::MouseTrackingChange:
+    case QEvent::TabletTrackingChange:
     case QEvent::ParentChange:
     case QEvent::LocaleChange:
     case QEvent::MacSizeChange:
@@ -9424,7 +9446,13 @@ void QWidget::wheelEvent(QWheelEvent *event)
 
     The default implementation ignores the event.
 
-    \sa QEvent::ignore(), QEvent::accept(), event(),
+    If tablet tracking is switched off, tablet move events only occur if the
+    stylus is in contact with the tablet, or at least one stylus button is
+    pressed, while the stylus is being moved. If tablet tracking is switched on,
+    tablet move events occur even while the stylus is hovering in proximity of
+    the tablet, with no buttons pressed.
+
+    \sa QEvent::ignore(), QEvent::accept(), event(), setTabletTracking(),
     QTabletEvent
 */
 
@@ -11191,6 +11219,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_MouseTracking: {
         QEvent e(QEvent::MouseTrackingChange);
+        QApplication::sendEvent(this, &e);
+        break; }
+    case Qt::WA_TabletTracking: {
+        QEvent e(QEvent::TabletTrackingChange);
         QApplication::sendEvent(this, &e);
         break; }
     case Qt::WA_NativeWindow: {

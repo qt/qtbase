@@ -441,10 +441,10 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
                     dev->size.setHeight((vci->max - vci->min) * 1000.0 / vciResolution);
                 } else if (vci->label == atom(QXcbAtom::AbsX)) {
                     caps |= QTouchDevice::Position;
-                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vciResolution);
+                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vciResolution);
                 } else if (vci->label == atom(QXcbAtom::AbsY)) {
                     caps |= QTouchDevice::Position;
-                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vciResolution);
+                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vciResolution);
                 }
                 break;
             }
@@ -1128,10 +1128,7 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
         break;
     }
     case XI_Motion:
-        // Report TabletMove only when the stylus is touching the tablet or any button is pressed.
-        // TODO: report proximity (hover) motion (no suitable Qt event exists yet).
-        if (tabletData->buttons != Qt::NoButton)
-            xi2ReportTabletEvent(xiEvent, tabletData);
+        xi2ReportTabletEvent(xiEvent, tabletData);
         break;
     case XI_PropertyEvent: {
         // This is the wacom driver's way of reporting tool proximity.

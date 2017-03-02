@@ -63,8 +63,7 @@ public:
     QTextFormatCollection() {}
     ~QTextFormatCollection();
 
-    QTextFormatCollection(const QTextFormatCollection &rhs);
-    QTextFormatCollection &operator=(const QTextFormatCollection &rhs);
+    void clear();
 
     inline QTextFormat objectFormat(int objectIndex) const
     { return format(objectFormatIndex(objectIndex)); }
@@ -104,6 +103,8 @@ public:
 
 private:
     QFont defaultFnt;
+
+    Q_DISABLE_COPY(QTextFormatCollection)
 };
 
 QT_END_NAMESPACE

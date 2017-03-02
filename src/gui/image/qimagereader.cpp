@@ -190,32 +190,42 @@ enum _qt_BuiltInFormatType {
     _qt_NoFormat = -1
 };
 
+#if !defined(QT_NO_IMAGEFORMAT_PPM)
+# define MAX_MT_SIZE 20
+#elif !defined(QT_NO_IMAGEFORMAT_XBM) || !defined(QT_NO_IMAGEFORMAT_XPM)
+#  define MAX_MT_SIZE 10
+#else
+#  define MAX_MT_SIZE 4
+#endif
+
 struct _qt_BuiltInFormatStruct
 {
-    const char *extension;
-    const char *mimeType;
+    char extension[4];
+    char mimeType[MAX_MT_SIZE];
 };
+
+#undef MAX_MT_SIZE
 
 static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
 #ifndef QT_NO_IMAGEFORMAT_PNG
-    {"png", "image/png"},
+    {"png", "png"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_BMP
-    {"bmp", "image/bmp"},
+    {"bmp", "bmp"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_PPM
-    {"ppm", "image/x-portable-pixmap"},
-    {"pgm", "image/x-portable-graymap"},
-    {"pbm", "image/x-portable-bitmap"},
+    {"ppm", "x-portable-pixmap"},
+    {"pgm", "x-portable-graymap"},
+    {"pbm", "x-portable-bitmap"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_XBM
-    {"xbm", "image/x-xbitmap"},
+    {"xbm", "x-xbitmap"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_XPM
-    {"xpm", "image/x-xpixmap"},
+    {"xpm", "x-xpixmap"},
 #endif
-    {"", ""}
 };
+Q_STATIC_ASSERT(_qt_NumFormats == sizeof _qt_BuiltInFormats / sizeof *_qt_BuiltInFormats);
 
 static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
                                                 const QByteArray &format,
@@ -1604,8 +1614,8 @@ QList<QByteArray> QImageReader::supportedMimeTypes()
 {
     QList<QByteArray> mimeTypes;
     mimeTypes.reserve(_qt_NumFormats);
-    for (int i = 0; i < _qt_NumFormats; ++i)
-        mimeTypes << _qt_BuiltInFormats[i].mimeType;
+    for (const auto &fmt : _qt_BuiltInFormats)
+        mimeTypes.append(QByteArrayLiteral("image/") + fmt.mimeType);
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
     supportedImageHandlerMimeTypes(loader(), QImageIOPlugin::CanRead, &mimeTypes);

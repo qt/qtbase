@@ -42,6 +42,7 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qalgorithms.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,10 +52,6 @@ QT_BEGIN_NAMESPACE
 # define QT_SIZEPOLICY_CONSTEXPR Q_DECL_CONSTEXPR
 # if defined(Q_COMPILER_UNIFORM_INIT)
 #  define QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT Q_DECL_CONSTEXPR
-#  if defined(Q_COMPILER_CONSTEXPR)
-#   define QT_SIZEPOLICY_RETURN_BITS(E1, E2, E3, E4, E5, E6, E7, E8) \
-        return Bits{ E1, E2, E3, E4, E5, E6, E7, E8 }
-#  endif // constexpr && uniform-init
 # endif // uniform-init
 #endif
 
@@ -63,10 +60,6 @@ QT_BEGIN_NAMESPACE
 #endif
 #ifndef QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
 # define QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
-#endif
-#ifndef QT_SIZEPOLICY_RETURN_BITS
-# define QT_SIZEPOLICY_RETURN_BITS(E1, E2, E3, E4, E5, E6, E7, E8) \
-    const Bits result = { E1, E2, E3, E4, E5, E6, E7, E8 }; return result
 #endif
 
 class QVariant;
@@ -117,55 +110,55 @@ public:
     Q_DECLARE_FLAGS(ControlTypes, ControlType)
     Q_FLAG(ControlTypes)
 
-    QT_SIZEPOLICY_CONSTEXPR QSizePolicy() : data(0) { }
+    QT_SIZEPOLICY_CONSTEXPR QSizePolicy() Q_DECL_NOTHROW : data(0) { }
 
 #ifdef Q_COMPILER_UNIFORM_INIT
-    QT_SIZEPOLICY_CONSTEXPR QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType)
+    QT_SIZEPOLICY_CONSTEXPR QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType) Q_DECL_NOTHROW
         : bits{0, 0, quint32(horizontal), quint32(vertical),
                type == DefaultType ? 0 : toControlTypeFieldValue(type), 0, 0, 0}
     {}
 #else
-    QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType)
+    QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType) Q_DECL_NOTHROW
         : data(0) {
         bits.horPolicy = horizontal;
         bits.verPolicy = vertical;
         setControlType(type);
     }
 #endif // uniform-init
-    QT_SIZEPOLICY_CONSTEXPR Policy horizontalPolicy() const { return static_cast<Policy>(bits.horPolicy); }
-    QT_SIZEPOLICY_CONSTEXPR Policy verticalPolicy() const { return static_cast<Policy>(bits.verPolicy); }
-    ControlType controlType() const;
+    QT_SIZEPOLICY_CONSTEXPR Policy horizontalPolicy() const Q_DECL_NOTHROW { return static_cast<Policy>(bits.horPolicy); }
+    QT_SIZEPOLICY_CONSTEXPR Policy verticalPolicy() const Q_DECL_NOTHROW { return static_cast<Policy>(bits.verPolicy); }
+    ControlType controlType() const Q_DECL_NOTHROW;
 
-    Q_DECL_RELAXED_CONSTEXPR void setHorizontalPolicy(Policy d) { bits.horPolicy = d; }
-    Q_DECL_RELAXED_CONSTEXPR void setVerticalPolicy(Policy d) { bits.verPolicy = d; }
-    void setControlType(ControlType type);
+    Q_DECL_RELAXED_CONSTEXPR void setHorizontalPolicy(Policy d) Q_DECL_NOTHROW { bits.horPolicy = d; }
+    Q_DECL_RELAXED_CONSTEXPR void setVerticalPolicy(Policy d) Q_DECL_NOTHROW { bits.verPolicy = d; }
+    void setControlType(ControlType type) Q_DECL_NOTHROW;
 
-    QT_SIZEPOLICY_CONSTEXPR Qt::Orientations expandingDirections() const {
+    QT_SIZEPOLICY_CONSTEXPR Qt::Orientations expandingDirections() const Q_DECL_NOTHROW {
         return ( (verticalPolicy()   & ExpandFlag) ? Qt::Vertical   : Qt::Orientations() )
              | ( (horizontalPolicy() & ExpandFlag) ? Qt::Horizontal : Qt::Orientations() ) ;
     }
 
-    Q_DECL_RELAXED_CONSTEXPR void setHeightForWidth(bool b) { bits.hfw = b;  }
-    QT_SIZEPOLICY_CONSTEXPR bool hasHeightForWidth() const { return bits.hfw; }
-    Q_DECL_RELAXED_CONSTEXPR void setWidthForHeight(bool b) { bits.wfh = b;  }
-    QT_SIZEPOLICY_CONSTEXPR bool hasWidthForHeight() const { return bits.wfh; }
+    Q_DECL_RELAXED_CONSTEXPR void setHeightForWidth(bool b) Q_DECL_NOTHROW { bits.hfw = b;  }
+    QT_SIZEPOLICY_CONSTEXPR bool hasHeightForWidth() const Q_DECL_NOTHROW { return bits.hfw; }
+    Q_DECL_RELAXED_CONSTEXPR void setWidthForHeight(bool b) Q_DECL_NOTHROW { bits.wfh = b;  }
+    QT_SIZEPOLICY_CONSTEXPR bool hasWidthForHeight() const Q_DECL_NOTHROW { return bits.wfh; }
 
-    QT_SIZEPOLICY_CONSTEXPR bool operator==(const QSizePolicy& s) const { return data == s.data; }
-    QT_SIZEPOLICY_CONSTEXPR bool operator!=(const QSizePolicy& s) const { return data != s.data; }
+    QT_SIZEPOLICY_CONSTEXPR bool operator==(const QSizePolicy& s) const Q_DECL_NOTHROW { return data == s.data; }
+    QT_SIZEPOLICY_CONSTEXPR bool operator!=(const QSizePolicy& s) const Q_DECL_NOTHROW { return data != s.data; }
 
     friend Q_DECL_CONST_FUNCTION uint qHash(QSizePolicy key, uint seed) Q_DECL_NOTHROW { return qHash(key.data, seed); }
 
     operator QVariant() const;
 
-    QT_SIZEPOLICY_CONSTEXPR int horizontalStretch() const { return static_cast<int>(bits.horStretch); }
-    QT_SIZEPOLICY_CONSTEXPR int verticalStretch() const { return static_cast<int>(bits.verStretch); }
+    QT_SIZEPOLICY_CONSTEXPR int horizontalStretch() const Q_DECL_NOTHROW { return static_cast<int>(bits.horStretch); }
+    QT_SIZEPOLICY_CONSTEXPR int verticalStretch() const Q_DECL_NOTHROW { return static_cast<int>(bits.verStretch); }
     Q_DECL_RELAXED_CONSTEXPR void setHorizontalStretch(int stretchFactor) { bits.horStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
     Q_DECL_RELAXED_CONSTEXPR void setVerticalStretch(int stretchFactor) { bits.verStretch = static_cast<quint32>(qBound(0, stretchFactor, 255)); }
 
-    QT_SIZEPOLICY_CONSTEXPR bool retainSizeWhenHidden() const { return bits.retainSizeWhenHidden; }
-    Q_DECL_RELAXED_CONSTEXPR void setRetainSizeWhenHidden(bool retainSize) { bits.retainSizeWhenHidden = retainSize; }
+    QT_SIZEPOLICY_CONSTEXPR bool retainSizeWhenHidden() const Q_DECL_NOTHROW { return bits.retainSizeWhenHidden; }
+    Q_DECL_RELAXED_CONSTEXPR void setRetainSizeWhenHidden(bool retainSize) Q_DECL_NOTHROW { bits.retainSizeWhenHidden = retainSize; }
 
-    Q_DECL_RELAXED_CONSTEXPR void transpose() { *this = transposed(); }
+    Q_DECL_RELAXED_CONSTEXPR void transpose() Q_DECL_NOTHROW { *this = transposed(); }
 #ifndef Q_QDOC
     QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
 #endif
@@ -179,11 +172,28 @@ private:
     friend Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
     friend Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 #endif
-    QT_SIZEPOLICY_CONSTEXPR QSizePolicy(int i) : data(i) { }
+    QT_SIZEPOLICY_CONSTEXPR QSizePolicy(int i) Q_DECL_NOTHROW : data(i) { }
     struct Bits;
     QT_SIZEPOLICY_CONSTEXPR explicit QSizePolicy(Bits b) Q_DECL_NOTHROW : bits(b) { }
 
-    static quint32 toControlTypeFieldValue(ControlType type) Q_DECL_NOTHROW;
+    static Q_DECL_RELAXED_CONSTEXPR quint32 toControlTypeFieldValue(ControlType type) Q_DECL_NOTHROW
+    {
+        /*
+          The control type is a flag type, with values 0x1, 0x2, 0x4, 0x8, 0x10,
+          etc. In memory, we pack it onto the available bits (CTSize) in
+          setControlType(), and unpack it here.
+
+          Example:
+
+          0x00000001 maps to 0
+          0x00000002 maps to 1
+          0x00000004 maps to 2
+          0x00000008 maps to 3
+          etc.
+        */
+
+        return qCountTrailingZeroBits(static_cast<quint32>(type));
+    }
 
     struct Bits {
         quint32 horStretch : 8;
@@ -198,14 +208,14 @@ private:
         QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
         Bits transposed() const Q_DECL_NOTHROW
         {
-            QT_SIZEPOLICY_RETURN_BITS(verStretch, // \ swap
-                                      horStretch, // /
-                                      verPolicy, // \ swap
-                                      horPolicy, // /
-                                      ctype,
-                                      hfw, // \ don't swap (historic behavior)
-                                      wfh, // /
-                                      retainSizeWhenHidden);
+            return {verStretch, // \ swap
+                    horStretch, // /
+                    verPolicy, // \ swap
+                    horPolicy, // /
+                    ctype,
+                    hfw, // \ don't swap (historic behavior)
+                    wfh, // /
+                    retainSizeWhenHidden};
         }
     };
     union {
@@ -216,6 +226,8 @@ private:
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 // Can't add in Qt 5, as QList<QSizePolicy> would be BiC:
 Q_DECLARE_TYPEINFO(QSizePolicy, Q_PRIMITIVE_TYPE);
+#else
+Q_DECLARE_TYPEINFO(QSizePolicy, Q_RELOCATABLE_TYPE);
 #endif
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSizePolicy::ControlTypes)
@@ -232,7 +244,6 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QSizePolicy &);
 
 #undef QT_SIZEPOLICY_CONSTEXPR
 #undef QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
-#undef QT_SIZEPOLICY_RETURN_BITS
 
 QT_END_NAMESPACE
 

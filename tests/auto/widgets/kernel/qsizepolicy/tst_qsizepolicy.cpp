@@ -114,7 +114,10 @@ void tst_QSizePolicy::constExpr()
     { Q_CONSTEXPR QSizePolicy sp; Q_UNUSED(sp); }
     { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(); Q_UNUSED(sp); }
     { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred); Q_UNUSED(sp); }
-    { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding, QSizePolicy::DefaultType); Q_UNUSED(sp); }
+    { Q_CONSTEXPR QSizePolicy sp = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding, QSizePolicy::DefaultType);
+      Q_CONSTEXPR QSizePolicy tp = sp.transposed(); Q_UNUSED(tp); }
+    { Q_RELAXED_CONSTEXPR auto sp = QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed, QSizePolicy::CheckBox);
+      Q_RELAXED_CONSTEXPR auto tp = sp.transposed(); Q_UNUSED(tp); }
 #else
     QSKIP("QSizePolicy cannot be constexpr with this version of the compiler.");
 #endif

@@ -2607,9 +2607,10 @@ void QStyleSheetStyle::unsetPalette(QWidget *w)
     const bool useStyleSheetPropagationInWidgetStyles =
         QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
 
-    if (styleSheetCaches->customPaletteWidgets.contains(w)) {
-        QPair<QPalette, uint> p = styleSheetCaches->customPaletteWidgets.value(w);
-        styleSheetCaches->customPaletteWidgets.remove(w);
+    const auto it = styleSheetCaches->customPaletteWidgets.find(w);
+    if (it != styleSheetCaches->customPaletteWidgets.end()) {
+        QPair<QPalette, uint> p = std::move(*it);
+        styleSheetCaches->customPaletteWidgets.erase(it);
 
         QPalette original = p.first;
 
@@ -2649,9 +2650,10 @@ void QStyleSheetStyle::unsetPalette(QWidget *w)
 
 void QStyleSheetStyle::unsetStyleSheetFont(QWidget *w) const
 {
-    if (styleSheetCaches->customFontWidgets.contains(w)) {
-        QPair<QFont, uint> f = styleSheetCaches->customFontWidgets.value(w);
-        styleSheetCaches->customFontWidgets.remove(w);
+    const auto it = styleSheetCaches->customFontWidgets.find(w);
+    if (it != styleSheetCaches->customFontWidgets.end()) {
+        QPair<QFont, uint> f = std::move(*it);
+        styleSheetCaches->customFontWidgets.erase(it);
 
         QFont original = f.first;
         original.resolve(original.resolve() & f.second);

@@ -2100,10 +2100,8 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         }
 
         if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget)) {
-            if (currentHoveredFloat) {
-                dw->setParent(currentHoveredFloat);
-                dw->show();
-            }
+            dw->setParent(currentHoveredFloat ? currentHoveredFloat.data() : parentWidget());
+            dw->show();
             dw->d_func()->plug(currentGapRect);
         }
 #endif
@@ -2278,7 +2276,8 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
             // We are unplugging a dock widget from a floating window.
             if (QDockWidget *dw = qobject_cast<QDockWidget*>(widget)) {
                 dw->d_func()->unplug(widget->geometry());
-                return 0;
+                int index = widget->parentWidget()->layout()->indexOf(widget);
+                return widget->parentWidget()->layout()->itemAt(index);
             }
         }
     }

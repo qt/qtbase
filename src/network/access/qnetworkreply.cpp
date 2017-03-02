@@ -736,7 +736,7 @@ void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
     this function has no effect.
 
     \sa sslConfiguration(), sslErrors(), QSslSocket::ignoreSslErrors(),
-    QNetworkAccessManager::enableStrictTransportSecurity()
+    QNetworkAccessManager::setStrictTransportSecurityEnabled()
 */
 void QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
 {

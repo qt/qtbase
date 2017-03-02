@@ -1021,6 +1021,12 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
     }
 }
 
+void QDockWidgetPrivate::recalculatePressPos(QResizeEvent *event)
+{
+    qreal ratio = event->oldSize().width() / (1.0 * event->size().width());
+    state->pressPos.setX(state->pressPos.x() / ratio);
+}
+
 /*! \internal
     Called when the QDockWidget or the QDockWidgetGroupWindow is moved
  */
@@ -1537,6 +1543,13 @@ bool QDockWidget::event(QEvent *event)
         // if the mainwindow is plugging us, we don't want to update undocked geometry
         if (isFloating() && layout != 0 && layout->pluggingWidget != this)
             d->undockedGeometry = geometry();
+
+        // Usually the window won't get resized while it's being moved, but it can happen,
+        // for example on Windows when moving to a screen with bigger scale factor
+        // (and Qt::AA_EnableHighDpiScaling is enabled). If that happens we should
+        // update state->pressPos, otherwise it will be outside the window when the window shrinks.
+        if (d->state && d->state->dragging)
+            d->recalculatePressPos(static_cast<QResizeEvent*>(event));
         break;
     default:
         break;

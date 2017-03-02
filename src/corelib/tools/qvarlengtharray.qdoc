@@ -303,6 +303,34 @@
 */
 
 /*!
+    \fn void QVarLengthArray::append(T &&t)
+    \overload append
+    \since 5.9
+
+    \note Unlike the lvalue overload of append(), passing a reference to
+    an object that is already an element of \c *this leads to undefined
+    behavior:
+
+    \code
+    vla.append(std::move(vla[0])); // BUG: passing an object that is already in the container
+    \endcode
+*/
+
+/*!
+    \fn void QVarLengthArray::push_back(T &&t)
+    \overload push_back
+    \since 5.9
+
+    \note Unlike the lvalue overload of push_back(), passing a reference to
+    an object that is already an element of \c *this leads to undefined
+    behavior:
+
+    \code
+    vla.push_back(std::move(vla[0])); // BUG: passing an object that is already in the container
+    \endcode
+*/
+
+/*!
     \fn inline void QVarLengthArray::removeLast()
     \since 4.5
 

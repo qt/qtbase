@@ -594,7 +594,6 @@ static QLocalePrivate *c_private()
 */
 QSystemLocale::QSystemLocale()
 {
-    delete _systemLocale;
     _systemLocale = this;
 
     if (system_data)

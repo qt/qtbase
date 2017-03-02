@@ -121,7 +121,7 @@
             "label": "QDateTimeEdit",
             "purpose": "Supports editing dates and times.",
             "section": "Widgets",
-            "condition": "features.calendarwidget && features.datestring",
+            "condition": "features.calendarwidget && features.datestring && features.textdate",
             "output": [ "publicFeature", "feature" ]
         },
         "stackedwidget": {

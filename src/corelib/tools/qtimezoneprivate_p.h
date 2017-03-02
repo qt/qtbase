@@ -74,7 +74,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QTimeZonePrivate : public QSharedData
+class Q_AUTOTEST_EXPORT QTimeZonePrivate : public QSharedData
 {
 public:
     //Version of QTimeZone::OffsetData struct using msecs for efficiency

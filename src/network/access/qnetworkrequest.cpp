@@ -289,9 +289,9 @@ QT_BEGIN_NAMESPACE
         marked to be decompressed automatically.
         (This value was introduced in 5.9.)
 
-    \value RedirectsPolicyAttribute
+    \value RedirectPolicyAttribute
         Requests only, type: QMetaType::Int, should be one of the
-        QNetworkRequest::RedirectsPolicy values (default: ManualRedirectsPolicy).
+        QNetworkRequest::RedirectPolicy values (default: ManualRedirectPolicy).
         This attribute obsoletes FollowRedirectsAttribute.
         (This value was introduced in 5.9.)
 
@@ -343,33 +343,33 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QNetworkRequest::RedirectsPolicy
+    \enum QNetworkRequest::RedirectPolicy
     \since 5.9
 
     Indicates whether the Network Access API should automatically follow a
     HTTP redirect response or not.
 
-    \value ManualRedirectsPolicy        Default value: not following any redirects.
+    \value ManualRedirectPolicy        Default value: not following any redirects.
 
-    \value NoLessSafeRedirectsPolicy    Only "http"->"http", "http" -> "https"
-                                        or "https" -> "https" redirects are allowed.
-                                        Equivalent to setting the old FollowRedirectsAttribute
-                                        to true
+    \value NoLessSafeRedirectPolicy    Only "http"->"http", "http" -> "https"
+                                       or "https" -> "https" redirects are allowed.
+                                       Equivalent to setting the old FollowRedirectsAttribute
+                                       to true
 
-    \value SameOriginRedirectsPolicy    Require the same protocol, host and port.
-                                        Note, http://example.com and http://example.com:80
-                                        will fail with this policy (implicit/explicit ports
-                                        are considered to be a mismatch).
+    \value SameOriginRedirectPolicy    Require the same protocol, host and port.
+                                       Note, http://example.com and http://example.com:80
+                                       will fail with this policy (implicit/explicit ports
+                                       are considered to be a mismatch).
 
-    \value UserVerifiedRedirectsPolicy  Client decides whether to follow each
-                                        redirect by handling the redirected()
-                                        signal, emitting redirectAllowed() on
-                                        the QNetworkReply object to allow
-                                        the redirect or aborting/finishing it to
-                                        reject the redirect.  This can be used,
-                                        for example, to ask the user whether to
-                                        accept the redirect, or to decide
-                                        based on some app-specific configuration.
+    \value UserVerifiedRedirectPolicy  Client decides whether to follow each
+                                       redirect by handling the redirected()
+                                       signal, emitting redirectAllowed() on
+                                       the QNetworkReply object to allow
+                                       the redirect or aborting/finishing it to
+                                       reject the redirect.  This can be used,
+                                       for example, to ask the user whether to
+                                       accept the redirect, or to decide
+                                       based on some app-specific configuration.
 */
 
 class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate

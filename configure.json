@@ -20,8 +20,7 @@
     "commandline": {
         "assignments": {
             "DBUS_HOST_PATH": "host_dbus.prefix",
-            "DBUS_PATH": "dbus.prefix",
-            "ZLIB_LIBS": "zlib.libs"
+            "DBUS_PATH": "dbus.prefix"
         },
         "custom": "qmakeArgs",
         "options": {
@@ -1016,7 +1015,10 @@
         },
         "qml-debug": {
             "label": "QML debugging",
-            "output": [ { "type": "publicQtConfig", "negative": true } ]
+            "output": [
+                "privateFeature",
+                { "type": "publicQtConfig", "negative": true }
+            ]
         },
         "compile_examples": {
             "label": "Compile examples",

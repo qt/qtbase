@@ -60,10 +60,10 @@ QT_BEGIN_NAMESPACE
     applies to subdomains, either in the constructor or by calling setExpiry(),
     setHost() and setIncludesSubdomains().
 
-    \sa QNetworkAccessManager::enableStrictTransportSecurity()
+    \sa QNetworkAccessManager::setStrictTransportSecurityEnabled()
 */
 
-class QHstsPolicyPrivate
+class QHstsPolicyPrivate : public QSharedData
 {
 public:
     QUrl url;
@@ -76,6 +76,15 @@ public:
                && includeSubDomains == other.includeSubDomains;
     }
 };
+
+/*!
+    Returns \c true if the two policies have the same host and expiration date
+    while agreeing on whether to include or exclude subdomains.
+*/
+bool operator==(const QHstsPolicy &lhs, const QHstsPolicy &rhs)
+{
+    return *lhs.d == *rhs.d;
+}
 
 /*!
     Constructs an invalid (expired) policy with empty host name and subdomains
@@ -121,17 +130,7 @@ QHstsPolicy::~QHstsPolicy()
 */
 QHstsPolicy &QHstsPolicy::operator=(const QHstsPolicy &other)
 {
-    *d = *other.d;
-    return *this;
-}
-
-
-/*!
-    Move-assignment operator.
-*/
-QHstsPolicy &QHstsPolicy::operator=(QHstsPolicy &&other) Q_DECL_NOTHROW
-{
-    qSwap(d, other.d);
+    d = other.d;
     return *this;
 }
 
@@ -193,15 +192,6 @@ void QHstsPolicy::setIncludesSubDomains(bool include)
 bool QHstsPolicy::includesSubDomains() const
 {
     return d->includeSubDomains;
-}
-
-/*!
-    Returns \c true if the two policies have the same host and expiration date
-    while agreeing on whether to include or exclude subdomains.
-*/
-bool QHstsPolicy::operator==(const QHstsPolicy &other) const
-{
-    return *d == *other.d;
 }
 
 /*!

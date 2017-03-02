@@ -2065,7 +2065,7 @@ void QDockAreaLayoutInfo::reparentWidgets(QWidget *parent)
         const QDockAreaLayoutItem &item = item_list.at(i);
         if (item.flags & QDockAreaLayoutItem::GapItem)
             continue;
-        if (!item.widgetItem && item.skip())
+        if (item.skip())
             continue;
         if (item.subinfo)
             item.subinfo->reparentWidgets(parent);

@@ -697,36 +697,22 @@ void QNetworkAccessManager::setCookieJar(QNetworkCookieJar *cookieJar)
 /*!
     \since 5.9
 
-    Enables HTTP Strict Transport Security (HSTS, RFC6797). When processing a
-    request, QNetworkAccessManager automatically replaces "http" scheme with
-    "https" and uses a secure transport if a host is a known HSTS host.
-    Port 80 if it's set explicitly is replaced by port 443.
+    If \a enabled is \c true, QNetworkAccessManager follows the HTTP Strict Transport
+    Security policy (HSTS, RFC6797). When processing a request, QNetworkAccessManager
+    automatically replaces the "http" scheme with "https" and uses a secure transport
+    for HSTS hosts. If it's set explicitly, port 80 is replaced by port 443.
 
     When HSTS is enabled, for each HTTP response containing HSTS header and
     received over a secure transport, QNetworkAccessManager will update its HSTS
     cache, either remembering a host with a valid policy or removing a host with
-    expired/disabled HSTS policy.
+    an expired or disabled HSTS policy.
 
-    \sa disableStrictTransportSecurity(), strictTransportSecurityEnabled()
+    \sa isStrictTransportSecurityEnabled()
 */
-void QNetworkAccessManager::enableStrictTransportSecurity()
+void QNetworkAccessManager::setStrictTransportSecurityEnabled(bool enabled)
 {
     Q_D(QNetworkAccessManager);
-    d->stsEnabled = true;
-}
-
-/*!
-    \since 5.9
-
-    Disables HTTP Strict Transport Security (HSTS). HSTS headers in responses would
-    be ignored, no scheme/port mapping is done.
-
-    \sa enableStrictTransportSecurity()
-*/
-void QNetworkAccessManager::disableStrictTransportSecurity()
-{
-    Q_D(QNetworkAccessManager);
-    d->stsEnabled = false;
+    d->stsEnabled = enabled;
 }
 
 /*!
@@ -735,9 +721,9 @@ void QNetworkAccessManager::disableStrictTransportSecurity()
     Returns true if HTTP Strict Transport Security (HSTS) was enabled. By default
     HSTS is disabled.
 
-    \sa enableStrictTransportSecurity
+    \sa setStrictTransportSecurityEnabled()
 */
-bool QNetworkAccessManager::strictTransportSecurityEnabled() const
+bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
 {
     Q_D(const QNetworkAccessManager);
     return d->stsEnabled;
@@ -761,7 +747,7 @@ bool QNetworkAccessManager::strictTransportSecurityEnabled() const
     \sa addStrictTransportSecurityHosts(), QHstsPolicy
 */
 
-void QNetworkAccessManager::addStrictTransportSecurityHosts(const QList<QHstsPolicy> &knownHosts)
+void QNetworkAccessManager::addStrictTransportSecurityHosts(const QVector<QHstsPolicy> &knownHosts)
 {
     Q_D(QNetworkAccessManager);
     d->stsCache.updateFromPolicies(knownHosts);
@@ -776,7 +762,7 @@ void QNetworkAccessManager::addStrictTransportSecurityHosts(const QList<QHstsPol
 
     \sa addStrictTransportSecurityHosts(), QHstsPolicy
 */
-QList<QHstsPolicy> QNetworkAccessManager::strictTransportSecurityHosts() const
+QVector<QHstsPolicy> QNetworkAccessManager::strictTransportSecurityHosts() const
 {
     Q_D(const QNetworkAccessManager);
     return d->stsCache.policies();
@@ -1171,7 +1157,7 @@ void QNetworkAccessManager::connectToHost(const QString &hostName, quint16 port)
 /*!
     \since 5.9
 
-    Sets the manager's redirects policy to be the \a policy specified. This policy
+    Sets the manager's redirect policy to be the \a policy specified. This policy
     will affect all subsequent requests created by the manager.
 
     Use this function to enable or disable HTTP redirects on the manager's level.
@@ -1180,18 +1166,18 @@ void QNetworkAccessManager::connectToHost(const QString &hostName, quint16 port)
     the highest priority, next by priority is QNetworkRequest::FollowRedirectsAttribute.
     Finally, the manager's policy has the lowest priority.
 
-    For backwards compatibility the default value is QNetworkRequest::ManualRedirectsPolicy.
+    For backwards compatibility the default value is QNetworkRequest::ManualRedirectPolicy.
     This may change in the future and some type of auto-redirect policy will become
     the default; clients relying on manual redirect handling are encouraged to set
     this policy explicitly in their code.
 
-    \sa redirectsPolicy(), QNetworkRequest::RedirectsPolicy,
+    \sa redirectPolicy(), QNetworkRequest::RedirectPolicy,
     QNetworkRequest::FollowRedirectsAttribute
 */
-void QNetworkAccessManager::setRedirectsPolicy(QNetworkRequest::RedirectsPolicy policy)
+void QNetworkAccessManager::setRedirectPolicy(QNetworkRequest::RedirectPolicy policy)
 {
     Q_D(QNetworkAccessManager);
-    d->redirectsPolicy = policy;
+    d->redirectPolicy = policy;
 }
 
 /*!
@@ -1199,12 +1185,12 @@ void QNetworkAccessManager::setRedirectsPolicy(QNetworkRequest::RedirectsPolicy 
 
     Returns the redirect policy that is used when creating new requests.
 
-    \sa setRedirectsPolicy(), QNetworkRequest::RedirectsPolicy
+    \sa setRedirectPolicy(), QNetworkRequest::RedirectPolicy
 */
-QNetworkRequest::RedirectsPolicy QNetworkAccessManager::redirectsPolicy() const
+QNetworkRequest::RedirectPolicy QNetworkAccessManager::redirectPolicy() const
 {
     Q_D(const QNetworkAccessManager);
-    return d->redirectsPolicy;
+    return d->redirectPolicy;
 }
 
 /*!
@@ -1294,12 +1280,12 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     Q_D(QNetworkAccessManager);
 
     QNetworkRequest req(originalReq);
-    if (req.attribute(QNetworkRequest::RedirectsPolicyAttribute).isNull()
+    if (req.attribute(QNetworkRequest::RedirectPolicyAttribute).isNull()
         && req.attribute(QNetworkRequest::FollowRedirectsAttribute).isNull()) {
         // We only apply the general manager's policy if:
-        // - RedirectsPolicyAttribute is not set already on request and
+        // - RedirectPolicyAttribute is not set already on request and
         // - no FollowRedirectsAttribute is set.
-        req.setAttribute(QNetworkRequest::RedirectsPolicyAttribute, redirectsPolicy());
+        req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, redirectPolicy());
     }
 
     bool isLocalFile = req.url().isLocalFile();
@@ -1390,7 +1376,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #endif
         ) {
 #ifndef QT_NO_SSL
-        if (strictTransportSecurityEnabled() && d->stsCache.isKnownHost(request.url())) {
+        if (isStrictTransportSecurityEnabled() && d->stsCache.isKnownHost(request.url())) {
             QUrl stsUrl(request.url());
             // RFC6797, 8.3:
             // The UA MUST replace the URI scheme with "https" [RFC2818],

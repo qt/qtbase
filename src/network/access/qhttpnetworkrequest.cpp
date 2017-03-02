@@ -49,7 +49,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Oper
     : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(0),
       autoDecompress(false), pipeliningAllowed(false), spdyAllowed(false), http2Allowed(false),
       withCredentials(true), preConnect(false), redirectCount(0),
-      redirectsPolicy(QNetworkRequest::ManualRedirectsPolicy)
+      redirectPolicy(QNetworkRequest::ManualRedirectPolicy)
 {
 }
 
@@ -67,7 +67,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
       ssl(other.ssl),
       preConnect(other.preConnect),
       redirectCount(other.redirectCount),
-      redirectsPolicy(other.redirectsPolicy)
+      redirectPolicy(other.redirectPolicy)
 {
 }
 
@@ -90,7 +90,7 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
         && (withCredentials == other.withCredentials)
         && (ssl == other.ssl)
         && (preConnect == other.preConnect)
-        && (redirectsPolicy == other.redirectsPolicy);
+        && (redirectPolicy == other.redirectPolicy);
 }
 
 QByteArray QHttpNetworkRequest::methodName() const
@@ -231,17 +231,17 @@ void QHttpNetworkRequest::setPreConnect(bool preConnect)
 
 bool QHttpNetworkRequest::isFollowRedirects() const
 {
-    return d->redirectsPolicy != QNetworkRequest::ManualRedirectsPolicy;
+    return d->redirectPolicy != QNetworkRequest::ManualRedirectPolicy;
 }
 
-void QHttpNetworkRequest::setRedirectsPolicy(QNetworkRequest::RedirectsPolicy policy)
+void QHttpNetworkRequest::setRedirectPolicy(QNetworkRequest::RedirectPolicy policy)
 {
-    d->redirectsPolicy = policy;
+    d->redirectPolicy = policy;
 }
 
-QNetworkRequest::RedirectsPolicy QHttpNetworkRequest::redirectsPolicy() const
+QNetworkRequest::RedirectPolicy QHttpNetworkRequest::redirectPolicy() const
 {
-    return d->redirectsPolicy;
+    return d->redirectPolicy;
 }
 
 int QHttpNetworkRequest::redirectCount() const

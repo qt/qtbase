@@ -123,6 +123,28 @@ public:
     int operator()(int in) const { return in; }
 };
 
+class ANoExcept
+{
+public:
+    int member0() Q_DECL_NOTHROW { return 10; }
+    int member1(int in) Q_DECL_NOTHROW { return in; }
+
+    typedef int result_type;
+    int operator()() Q_DECL_NOTHROW { return 10; }
+    int operator()(int in) Q_DECL_NOTHROW { return in; }
+};
+
+class AConstNoExcept
+{
+public:
+    int member0() const Q_DECL_NOTHROW { return 10; }
+    int member1(int in) const Q_DECL_NOTHROW { return in; }
+
+    typedef int result_type;
+    int operator()() const Q_DECL_NOTHROW { return 10; }
+    int operator()(int in) const Q_DECL_NOTHROW { return in; }
+};
+
 void tst_QtConcurrentRun::returnValue()
 {
     QThreadPool pool;
@@ -213,6 +235,88 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&aConst, 20);
     QCOMPARE(f.result(), 20);
     f = run(&pool, &aConst, 20);
+    QCOMPARE(f.result(), 20);
+
+    ANoExcept aNoExcept;
+    f = run(&aNoExcept, &ANoExcept::member0);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &aNoExcept, &ANoExcept::member0);
+    QCOMPARE(f.result(), 10);
+
+    f = run(&aNoExcept, &ANoExcept::member1, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &aNoExcept, &ANoExcept::member1, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(aNoExcept, &ANoExcept::member0);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, aNoExcept, &ANoExcept::member0);
+    QCOMPARE(f.result(), 10);
+
+    f = run(aNoExcept, &ANoExcept::member1, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, aNoExcept, &ANoExcept::member1, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(aNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, aNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = run(&aNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &aNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = run(aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(&aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &aNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+
+    const AConstNoExcept aConstNoExcept = AConstNoExcept();
+    f = run(&aConstNoExcept, &AConstNoExcept::member0);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &aConstNoExcept, &AConstNoExcept::member0);
+    QCOMPARE(f.result(), 10);
+
+    f = run(&aConstNoExcept, &AConstNoExcept::member1, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &aConstNoExcept, &AConstNoExcept::member1, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(aConstNoExcept, &AConstNoExcept::member0);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, aConstNoExcept, &AConstNoExcept::member0);
+    QCOMPARE(f.result(), 10);
+
+    f = run(aConstNoExcept, &AConstNoExcept::member1, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, aConstNoExcept, &AConstNoExcept::member1, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = run(&aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &aConstNoExcept);
+    QCOMPARE(f.result(), 10);
+
+    f = run(aConstNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, aConstNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+
+    f = run(&aConstNoExcept, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &aConstNoExcept, 20);
     QCOMPARE(f.result(), 20);
 }
 

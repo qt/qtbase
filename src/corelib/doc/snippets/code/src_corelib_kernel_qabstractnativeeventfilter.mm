@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 Samuel Gaist <samuel.gaist@edeltech.ch>
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **

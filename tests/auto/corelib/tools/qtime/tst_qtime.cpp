@@ -28,10 +28,26 @@
 
 #include <QtTest/QtTest>
 #include "qdatetime.h"
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#  include <locale.h>
+#endif
 
 class tst_QTime : public QObject
 {
     Q_OBJECT
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+public:
+    tst_QTime()
+    {
+        // Some tests depend on C locale - BF&I it with belt *and* braces:
+        qputenv("LC_ALL", "C");
+        setlocale(LC_ALL, "C");
+        // Need to instantiate as early as possible, before anything accesses
+        // the QSystemLocale singleton; once it exists, there's no changing it.
+    }
+#endif // remove for ### Qt 6
+
 private slots:
     void msecsTo_data();
     void msecsTo();

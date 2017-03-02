@@ -472,6 +472,8 @@ public:
 
         WA_AlwaysStackOnTop = 128,
 
+        WA_TabletTracking = 129,
+
         // Add new attributes before this line
         WA_AttributeCount
     };

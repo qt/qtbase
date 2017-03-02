@@ -37,6 +37,7 @@
 #include <qmainwindow.h>
 #include <qscreen.h>
 #include <qscopedpointer.h>
+#include <qevent.h>
 
 
 class Window : public QWindow
@@ -77,6 +78,7 @@ private slots:
     void testAncestorChange();
     void testDockWidget();
     void testNativeContainerParent();
+    void testPlatformSurfaceEvent();
     void cleanup();
 
 private:
@@ -341,6 +343,41 @@ void tst_QWindowContainer::testNativeContainerParent()
 
     QVERIFY(QTest::qWaitForWindowExposed(window));
     QTRY_COMPARE(window->parent(), container->windowHandle());
+}
+
+class EventWindow : public QWindow
+{
+public:
+    EventWindow(bool *surfaceDestroyFlag)  : m_surfaceDestroyFlag(surfaceDestroyFlag) { }
+    bool event(QEvent *e) override;
+
+private:
+    bool *m_surfaceDestroyFlag;
+};
+
+bool EventWindow::event(QEvent *e)
+{
+    if (e->type() == QEvent::PlatformSurface) {
+        if (static_cast<QPlatformSurfaceEvent *>(e)->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
+            *m_surfaceDestroyFlag = true;
+    }
+    return QWindow::event(e);
+}
+
+void tst_QWindowContainer::testPlatformSurfaceEvent()
+{
+    // Verify that SurfaceAboutToBeDestroyed is delivered and the
+    // window subclass still gets a chance to process it.
+
+    bool ok = false;
+    QPointer<EventWindow> window(new EventWindow(&ok));
+    window->create();
+    QWidget *container = QWidget::createWindowContainer(window);
+
+    delete container;
+
+    QCOMPARE(window.data(), nullptr);
+    QVERIFY(ok);
 }
 
 QTEST_MAIN(tst_QWindowContainer)

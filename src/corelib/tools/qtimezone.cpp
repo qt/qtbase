@@ -674,9 +674,9 @@ bool QTimeZone::isDaylightTime(const QDateTime &atDateTime) const
 QTimeZone::OffsetData QTimeZone::offsetData(const QDateTime &forDateTime) const
 {
     if (hasTransitions())
-        return d->toOffsetData(d->data(forDateTime.toMSecsSinceEpoch()));
+        return QTimeZonePrivate::toOffsetData(d->data(forDateTime.toMSecsSinceEpoch()));
     else
-        return d->invalidOffsetData();
+        return QTimeZonePrivate::invalidOffsetData();
 }
 
 /*!
@@ -712,9 +712,9 @@ bool QTimeZone::hasTransitions() const
 QTimeZone::OffsetData QTimeZone::nextTransition(const QDateTime &afterDateTime) const
 {
     if (hasTransitions())
-        return d->toOffsetData(d->nextTransition(afterDateTime.toMSecsSinceEpoch()));
+        return QTimeZonePrivate::toOffsetData(d->nextTransition(afterDateTime.toMSecsSinceEpoch()));
     else
-        return d->invalidOffsetData();
+        return QTimeZonePrivate::invalidOffsetData();
 }
 
 /*!
@@ -733,9 +733,9 @@ QTimeZone::OffsetData QTimeZone::nextTransition(const QDateTime &afterDateTime) 
 QTimeZone::OffsetData QTimeZone::previousTransition(const QDateTime &beforeDateTime) const
 {
     if (hasTransitions())
-        return d->toOffsetData(d->previousTransition(beforeDateTime.toMSecsSinceEpoch()));
+        return QTimeZonePrivate::toOffsetData(d->previousTransition(beforeDateTime.toMSecsSinceEpoch()));
     else
-        return d->invalidOffsetData();
+        return QTimeZonePrivate::invalidOffsetData();
 }
 
 /*!
@@ -755,7 +755,7 @@ QTimeZone::OffsetDataList QTimeZone::transitions(const QDateTime &fromDateTime,
                                                                 toDateTime.toMSecsSinceEpoch());
         list.reserve(plist.count());
         for (const QTimeZonePrivate::Data &pdata : plist)
-            list.append(d->toOffsetData(pdata));
+            list.append(QTimeZonePrivate::toOffsetData(pdata));
     }
     return list;
 }

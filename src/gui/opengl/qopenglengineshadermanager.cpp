@@ -532,7 +532,7 @@ GLuint QOpenGLEngineShaderManager::getUniformLocation(Uniform id)
     if (uniformLocations.isEmpty())
         uniformLocations.fill(GLuint(-1), NumUniforms);
 
-    static const char *const uniformNames[] = {
+    const char uniformNames[][26] = {
         "imageTexture",
         "patternColor",
         "globalOpacity",

@@ -67,6 +67,7 @@ TabletCanvas::TabletCanvas()
     resize(500, 500);
     initPixmap();
     setAutoFillBackground(true);
+    setAttribute(Qt::WA_TabletTracking);
 }
 
 void TabletCanvas::initPixmap()

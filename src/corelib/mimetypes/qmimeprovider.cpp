@@ -296,12 +296,15 @@ QMimeGlobMatchResult QMimeBinaryProvider::findByFileName(const QString &fileName
     const QString lowerFileName = fileName.toLower();
     // TODO this parses in the order (local, global). Check that it handles "NOGLOBS" correctly.
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
+        // Check literals (e.g. "Makefile")
         matchGlobList(result, cacheFile, cacheFile->getUint32(PosLiteralListOffset), fileName);
+        // Check complex globs (e.g. "callgrind.out[0-9]*")
         matchGlobList(result, cacheFile, cacheFile->getUint32(PosGlobListOffset), fileName);
+        // Check the very common *.txt cases with the suffix tree
         const int reverseSuffixTreeOffset = cacheFile->getUint32(PosReverseSuffixTreeOffset);
         const int numRoots = cacheFile->getUint32(reverseSuffixTreeOffset);
         const int firstRootOffset = cacheFile->getUint32(reverseSuffixTreeOffset + 4);
-        matchSuffixTree(result, cacheFile, numRoots, firstRootOffset, lowerFileName, fileName.length() - 1, false);
+        matchSuffixTree(result, cacheFile, numRoots, firstRootOffset, lowerFileName, lowerFileName.length() - 1, false);
         if (result.m_matchingMimeTypes.isEmpty())
             matchSuffixTree(result, cacheFile, numRoots, firstRootOffset, fileName, fileName.length() - 1, true);
     }

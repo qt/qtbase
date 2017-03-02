@@ -131,8 +131,8 @@ public:
     void setPreConnect(bool preConnect);
 
     bool isFollowRedirects() const;
-    void setRedirectsPolicy(QNetworkRequest::RedirectsPolicy policy);
-    QNetworkRequest::RedirectsPolicy redirectsPolicy() const;
+    void setRedirectPolicy(QNetworkRequest::RedirectPolicy policy);
+    QNetworkRequest::RedirectPolicy redirectPolicy() const;
 
     int redirectCount() const;
     void setRedirectCount(int count);
@@ -176,7 +176,7 @@ public:
     bool ssl;
     bool preConnect;
     int redirectCount;
-    QNetworkRequest::RedirectsPolicy redirectsPolicy;
+    QNetworkRequest::RedirectPolicy redirectPolicy;
 };
 
 

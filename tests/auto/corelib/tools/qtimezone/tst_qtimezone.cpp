@@ -346,6 +346,7 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
     foreach (const QByteArray &id, available)
         QVERIFY(QTimeZone::isTimeZoneIdAvailable(id));
 
+#ifdef QT_BUILD_INTERNAL
     // a-z, A-Z, 0-9, '.', '-', '_' are valid chars
     // Can't start with '-'
     // Parts separated by '/', each part min 1 and max of 14 chars
@@ -368,6 +369,7 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
     QCOMPARE(QTimeZonePrivate::isValidId("123456789012345"), false);
     QCOMPARE(QTimeZonePrivate::isValidId("123456789012345/12345678901234"), false);
     QCOMPARE(QTimeZonePrivate::isValidId("12345678901234/123456789012345"), false);
+#endif // QT_BUILD_INTERNAL
 }
 
 void tst_QTimeZone::transitionEachZone_data()

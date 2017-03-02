@@ -1118,16 +1118,16 @@ QDataStream & operator>>(QDataStream &s, QTransform &t)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QTransform &m)
 {
-    static const char *const typeStr[] =
+    static const char typeStr[][12] =
     {
         "TxNone",
         "TxTranslate",
         "TxScale",
-        0,
+        "",
         "TxRotate",
-        0, 0, 0,
+        "", "", "",
         "TxShear",
-        0, 0, 0, 0, 0, 0, 0,
+        "", "", "", "", "", "", "",
         "TxProject"
     };
 

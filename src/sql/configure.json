@@ -8,7 +8,6 @@
     "commandline": {
         "assignments": {
             "MYSQL_PATH": "mysql.prefix",
-            "PSQL_LIBS": "psql.libs",
             "SYBASE": "tds.prefix",
             "SYBASE_LIBS": "tds.libs"
         },
@@ -115,8 +114,10 @@
             "test": "unix/sqlite",
             "sources": [
                 { "type": "pkgConfig", "args": "sqlite3" },
-                { "libs": "-lsqlite3", "condition": "config.win32" },
-                { "libs": "-lsqlite3 -lz", "condition": "!config.win32" }
+                "-lsqlite3"
+            ],
+            "use": [
+                { "lib": "zlib", "condition": "!config.win32" }
             ]
         }
     },
@@ -152,7 +153,7 @@
         },
         "sql-odbc": {
             "label": "ODBC",
-            "condition": "libs.odbc",
+            "condition": "libs.odbc && features.textdate",
             "output": [ "publicFeature" ]
         },
         "sql-psql": {
@@ -167,6 +168,7 @@
         },
         "sql-sqlite": {
             "label": "SQLite",
+            "condition": "features.textdate",
             "output": [ "publicFeature" ]
         },
         "system-sqlite": {
@@ -177,7 +179,7 @@
         },
         "sql-tds": {
             "label": "TDS (Sybase)",
-            "condition": "libs.tds",
+            "condition": "libs.tds && features.textdate",
             "output": [ "publicFeature" ]
         }
     },

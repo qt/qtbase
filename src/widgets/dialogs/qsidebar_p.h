@@ -108,9 +108,16 @@ private:
     void changed(const QString &path);
     void addIndexToWatch(const QString &path, const QModelIndex &index);
     QFileSystemModel *fileSystemModel;
-    QVector<QPair<QModelIndex, QString> > watching;
+    struct WatchItem {
+        QModelIndex index;
+        QString path;
+    };
+    friend class QTypeInfo<WatchItem>;
+
+    QVector<WatchItem> watching;
     QList<QUrl> invalidUrls;
 };
+Q_DECLARE_TYPEINFO(QUrlModel::WatchItem, Q_MOVABLE_TYPE);
 
 class Q_AUTOTEST_EXPORT QSidebar : public QListView
 {

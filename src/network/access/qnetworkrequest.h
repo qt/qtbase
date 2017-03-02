@@ -91,7 +91,7 @@ public:
         HTTP2AllowedAttribute,
         HTTP2WasUsedAttribute,
         OriginalContentLengthAttribute,
-        RedirectsPolicyAttribute,
+        RedirectPolicyAttribute,
 
         User = 1000,
         UserMax = 32767
@@ -113,11 +113,11 @@ public:
         LowPriority = 5
     };
 
-    enum RedirectsPolicy {
-        ManualRedirectsPolicy,
-        NoLessSafeRedirectsPolicy,
-        SameOriginRedirectsPolicy,
-        UserVerifiedRedirectsPolicy
+    enum RedirectPolicy {
+        ManualRedirectPolicy,
+        NoLessSafeRedirectPolicy,
+        SameOriginRedirectPolicy,
+        UserVerifiedRedirectPolicy
     };
 
 
@@ -177,6 +177,6 @@ Q_DECLARE_SHARED(QNetworkRequest)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkRequest)
-Q_DECLARE_METATYPE(QNetworkRequest::RedirectsPolicy)
+Q_DECLARE_METATYPE(QNetworkRequest::RedirectPolicy)
 
 #endif
