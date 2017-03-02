@@ -80,6 +80,7 @@ private slots:
     void ctor();
     void emptyCtor();
     void legacyNames();
+    void consistentC();
     void unixLocaleName();
     void matchingLocales();
     void stringToDouble_data();
@@ -577,6 +578,15 @@ void tst_QLocale::legacyNames()
     TEST_CTOR("iw", Hebrew, Israel)
     TEST_CTOR("in", Indonesian, Indonesia)
 #undef TEST_CTOR
+}
+
+void tst_QLocale::consistentC()
+{
+    const QLocale c(QLocale::C);
+    QCOMPARE(c, QLocale::c());
+    QCOMPARE(c, QLocale(QLocale::C, QLocale::AnyScript, QLocale::AnyCountry));
+    QVERIFY(QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript,
+                                     QLocale::AnyCountry).contains(c));
 }
 
 void tst_QLocale::matchingLocales()
