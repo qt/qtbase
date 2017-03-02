@@ -198,13 +198,11 @@
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 14
 
-    \section2 Using Bound Function Arguments
+    \section2 Wrapping Functions that Take Multiple Arguments
 
     If you want to use a map function that takes more than one argument you can
-    use std::bind() to transform it onto a function that takes one argument. If
-    C++11 support is not available, \l{http://www.boost.org/libs/bind/bind.html}
-    {boost::bind()} or \l{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf}
-    {std::tr1::bind()} are suitable replacements.
+    use a lambda function or \c std::bind() to transform it onto a function that
+    takes one argument.
 
     As an example, we'll use QImage::scaledToWidth():
 
@@ -215,16 +213,6 @@
     QtConcurrent::mapped() expects a function that takes one argument. To use
     QImage::scaledToWidth() with QtConcurrent::mapped() we have to provide a
     value for the \e{width} and the \e{transformation mode}:
-
-    \snippet code/src_concurrent_qtconcurrentmap.cpp 11
-
-    The return value from std::bind() is a function object (functor) with
-    the following signature:
-
-    \snippet code/src_concurrent_qtconcurrentmap.cpp 12
-
-    This matches what QtConcurrent::mapped() expects, and the complete example
-    becomes:
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 13
 */

@@ -148,13 +148,11 @@
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 13
 
-    \section2 Using Bound Function Arguments
+    \section2 Wrapping Functions that Take Multiple Arguments
 
     If you want to use a filter function takes more than one argument, you can
-    use std::bind() to transform it onto a function that takes one argument. If
-    C++11 support is not available, \l{http://www.boost.org/libs/bind/bind.html}
-    {boost::bind()} or \l{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf}
-    {std::tr1::bind()} are suitable replacements.
+    use a lambda function or \c std::bind() to transform it onto a function that
+    takes one argument.
 
     As an example, we use QString::contains():
 
@@ -165,16 +163,6 @@
     QtConcurrent::filtered() expects a function that takes one argument. To
     use QString::contains() with QtConcurrent::filtered() we have to provide a
     value for the \e regexp argument:
-
-    \snippet code/src_concurrent_qtconcurrentfilter.cpp 10
-
-    The return value from std::bind() is a function object (functor) with
-    the following signature:
-
-    \snippet code/src_concurrent_qtconcurrentfilter.cpp 11
-
-    This matches what QtConcurrent::filtered() expects, and the complete
-    example becomes:
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 12
 */
