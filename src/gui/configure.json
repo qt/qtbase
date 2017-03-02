@@ -896,7 +896,6 @@
             "label": "QImageIOPlugin",
             "purpose": "Provides a base for writing a image format plugins.",
             "section": "Images",
-            "condition": "features.library",
             "output": [ "publicFeature", "feature" ]
         },
         "movie": {
