@@ -95,7 +95,6 @@ QCocoaMenuItem::QCocoaMenuItem() :
     m_itemView(nil),
     m_menu(NULL),
     m_role(NoRole),
-    m_tag(0),
     m_iconSize(16),
     m_textSynced(false),
     m_isVisible(true),

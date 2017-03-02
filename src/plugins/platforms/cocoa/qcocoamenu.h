@@ -55,11 +55,6 @@ public:
     QCocoaMenu();
     ~QCocoaMenu();
 
-    void setTag(quintptr tag) Q_DECL_OVERRIDE
-    { m_tag = tag; }
-    quintptr tag() const Q_DECL_OVERRIDE
-    { return m_tag; }
-
     void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) Q_DECL_OVERRIDE;
     void removeMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
     void syncMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
@@ -103,7 +98,6 @@ private:
     QList<QCocoaMenuItem *> m_menuItems;
     NSMenu *m_nativeMenu;
     NSMenuItem *m_attachedItem;
-    quintptr m_tag;
     bool m_enabled:1;
     bool m_parentEnabled:1;
     bool m_visible:1;

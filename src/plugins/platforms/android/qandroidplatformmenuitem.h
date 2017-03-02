@@ -49,8 +49,6 @@ class QAndroidPlatformMenuItem: public QPlatformMenuItem
 {
 public:
     QAndroidPlatformMenuItem();
-    void setTag(quintptr tag) override;
-    quintptr tag() const override;
 
     void setText(const QString &text) override;
     QString text() const;
@@ -86,7 +84,6 @@ public:
     void setIconSize(int size) override;
 
 private:
-    quintptr m_tag;
     QString m_text;
     QIcon m_icon;
     QAndroidPlatformMenu *m_menu;

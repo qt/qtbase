@@ -259,7 +259,6 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
 QIOSMenuItem::QIOSMenuItem()
     : QPlatformMenuItem()
-    , m_tag(0)
     , m_visible(true)
     , m_text(QString())
     , m_role(MenuRole(0))
@@ -267,16 +266,6 @@ QIOSMenuItem::QIOSMenuItem()
     , m_separator(false)
     , m_menu(0)
 {
-}
-
-void QIOSMenuItem::setTag(quintptr tag)
-{
-    m_tag = tag;
-}
-
-quintptr QIOSMenuItem::tag() const
-{
-    return m_tag;
 }
 
 void QIOSMenuItem::setText(const QString &text)
@@ -319,7 +308,6 @@ void QIOSMenuItem::setEnabled(bool enabled)
 
 QIOSMenu::QIOSMenu()
     : QPlatformMenu()
-    , m_tag(0)
     , m_enabled(true)
     , m_visible(false)
     , m_text(QString())
@@ -369,16 +357,6 @@ void QIOSMenu::syncMenuItem(QPlatformMenuItem *)
         [m_pickerView setVisibleMenuItems:visibleMenuItems() selectItem:m_targetItem];
         break;
     }
-}
-
-void QIOSMenu::setTag(quintptr tag)
-{
-    m_tag = tag;
-}
-
-quintptr QIOSMenu::tag() const
-{
-    return m_tag;
 }
 
 void QIOSMenu::setText(const QString &text)

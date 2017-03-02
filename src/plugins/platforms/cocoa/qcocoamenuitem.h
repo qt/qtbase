@@ -78,11 +78,6 @@ public:
     QCocoaMenuItem();
     ~QCocoaMenuItem();
 
-    void setTag(quintptr tag) Q_DECL_OVERRIDE
-        { m_tag = tag; }
-    quintptr tag() const Q_DECL_OVERRIDE
-        { return m_tag; }
-
     void setText(const QString &text) Q_DECL_OVERRIDE;
     void setIcon(const QIcon &icon) Q_DECL_OVERRIDE;
     void setMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
@@ -129,7 +124,6 @@ private:
 #ifndef QT_NO_SHORTCUT
     QKeySequence m_shortcut;
 #endif
-    quintptr m_tag;
     int m_iconSize;
     bool m_textSynced:1;
     bool m_isVisible:1;

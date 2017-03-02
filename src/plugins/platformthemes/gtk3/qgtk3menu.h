@@ -61,9 +61,6 @@ public:
     GtkWidget *create();
     GtkWidget *handle() const;
 
-    quintptr tag() const override;
-    void setTag(quintptr tag) override;
-
     QString text() const;
     void setText(const QString &text) override;
 
@@ -110,7 +107,6 @@ private:
     bool m_exclusive;
     bool m_underline;
     bool m_invalid;
-    quintptr m_tag;
     QGtk3Menu *m_menu;
     GtkWidget *m_item;
     QString m_text;
@@ -131,9 +127,6 @@ public:
     void removeMenuItem(QPlatformMenuItem *item) override;
     void syncMenuItem(QPlatformMenuItem *item) override;
     void syncSeparatorsCollapsible(bool enable) override;
-
-    quintptr tag() const override;
-    void setTag(quintptr tag) override;
 
     void setEnabled(bool enabled) override;
     void setVisible(bool visible) override;
@@ -157,7 +150,6 @@ protected:
     static void onHide(GtkWidget *menu, void *data);
 
 private:
-    quintptr m_tag;
     GtkWidget *m_menu;
     QPoint m_targetPos;
     QVector<QGtk3MenuItem *> m_items;

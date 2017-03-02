@@ -62,6 +62,8 @@ class Q_GUI_EXPORT QPlatformMenuItem : public QObject
 {
 Q_OBJECT
 public:
+    QPlatformMenuItem();
+
     // copied from, and must stay in sync with, QAction menu roles.
     enum MenuRole { NoRole = 0, TextHeuristicRole, ApplicationSpecificRole, AboutQtRole,
                     AboutRole, PreferencesRole, QuitRole,
@@ -71,8 +73,8 @@ public:
                     RoleCount };
     Q_ENUM(MenuRole)
 
-    virtual void setTag(quintptr tag) = 0;
-    virtual quintptr tag()const = 0;
+    virtual void setTag(quintptr tag);
+    virtual quintptr tag() const;
 
     virtual void setText(const QString &text) = 0;
     virtual void setIcon(const QIcon &icon) = 0;
@@ -94,12 +96,17 @@ public:
 Q_SIGNALS:
     void activated();
     void hovered();
+
+private:
+    quintptr m_tag;
 };
 
 class Q_GUI_EXPORT QPlatformMenu : public QObject
 {
 Q_OBJECT
 public:
+    QPlatformMenu();
+
     enum MenuType { DefaultMenu = 0, EditMenu };
     Q_ENUM(MenuType)
 
@@ -108,8 +115,8 @@ public:
     virtual void syncMenuItem(QPlatformMenuItem *menuItem) = 0;
     virtual void syncSeparatorsCollapsible(bool enable) = 0;
 
-    virtual void setTag(quintptr tag) = 0;
-    virtual quintptr tag()const = 0;
+    virtual void setTag(quintptr tag);
+    virtual quintptr tag() const;
 
     virtual void setText(const QString &text) = 0;
     virtual void setIcon(const QIcon &icon) = 0;
@@ -138,6 +145,9 @@ public:
 Q_SIGNALS:
     void aboutToShow();
     void aboutToHide();
+
+private:
+    quintptr m_tag;
 };
 
 class Q_GUI_EXPORT QPlatformMenuBar : public QObject

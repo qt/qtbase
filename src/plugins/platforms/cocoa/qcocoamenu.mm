@@ -259,7 +259,6 @@ QT_BEGIN_NAMESPACE
 
 QCocoaMenu::QCocoaMenu() :
     m_attachedItem(0),
-    m_tag(0),
     m_enabled(true),
     m_parentEnabled(true),
     m_visible(true),

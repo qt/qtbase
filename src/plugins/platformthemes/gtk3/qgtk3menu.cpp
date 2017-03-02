@@ -84,7 +84,6 @@ QGtk3MenuItem::QGtk3MenuItem()
       m_enabled(true),
       m_underline(false),
       m_invalid(true),
-      m_tag(reinterpret_cast<quintptr>(this)),
       m_menu(nullptr),
       m_item(nullptr)
 {
@@ -143,16 +142,6 @@ GtkWidget *QGtk3MenuItem::create()
 GtkWidget *QGtk3MenuItem::handle() const
 {
     return m_item;
-}
-
-quintptr QGtk3MenuItem::tag() const
-{
-    return m_tag;
-}
-
-void QGtk3MenuItem::setTag(quintptr tag)
-{
-    m_tag = tag;
 }
 
 QString QGtk3MenuItem::text() const
@@ -341,7 +330,6 @@ void QGtk3MenuItem::onToggle(GtkCheckMenuItem *check, void *data)
 }
 
 QGtk3Menu::QGtk3Menu()
-    : m_tag(reinterpret_cast<quintptr>(this))
 {
     m_menu = gtk_menu_new();
 
@@ -400,16 +388,6 @@ void QGtk3Menu::syncMenuItem(QPlatformMenuItem *item)
 void QGtk3Menu::syncSeparatorsCollapsible(bool enable)
 {
     Q_UNUSED(enable);
-}
-
-quintptr QGtk3Menu::tag() const
-{
-    return m_tag;
-}
-
-void QGtk3Menu::setTag(quintptr tag)
-{
-    m_tag = tag;
 }
 
 void QGtk3Menu::setEnabled(bool enabled)

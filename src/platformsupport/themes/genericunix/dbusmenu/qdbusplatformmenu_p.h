@@ -73,11 +73,8 @@ class QDBusPlatformMenuItem : public QPlatformMenuItem
     Q_OBJECT
 
 public:
-    QDBusPlatformMenuItem(quintptr tag = 0LL);
+    QDBusPlatformMenuItem();
     ~QDBusPlatformMenuItem();
-
-    quintptr tag()const Q_DECL_OVERRIDE { return m_tag; }
-    void setTag(quintptr tag) Q_DECL_OVERRIDE;
 
     const QString text() const { return m_text; }
     void setText(const QString &text) Q_DECL_OVERRIDE;
@@ -110,13 +107,10 @@ public:
 
     void trigger();
 
-    bool operator==(const QDBusPlatformMenuItem& other) { return m_tag == other.m_tag; }
-
     static QDBusPlatformMenuItem *byId(int id);
     static QList<const QDBusPlatformMenuItem *> byIds(const QList<int> &ids);
 
 private:
-    quintptr m_tag;
     QString m_text;
     QIcon m_icon;
     QPlatformMenu *m_subMenu;
@@ -137,16 +131,13 @@ class QDBusPlatformMenu : public QPlatformMenu
     Q_OBJECT
 
 public:
-    QDBusPlatformMenu(quintptr tag = 0LL);
+    QDBusPlatformMenu();
     ~QDBusPlatformMenu();
     void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) Q_DECL_OVERRIDE;
     void removeMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
     void syncSubMenu(const QDBusPlatformMenu *menu);
     void syncMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
     void syncSeparatorsCollapsible(bool enable) Q_DECL_OVERRIDE { Q_UNUSED(enable); }
-
-    quintptr tag()const Q_DECL_OVERRIDE { return m_tag; }
-    void setTag(quintptr tag) Q_DECL_OVERRIDE;
 
     const QString text() const { return m_text; }
     void setText(const QString &text) Q_DECL_OVERRIDE;
@@ -172,8 +163,6 @@ public:
     QPlatformMenuItem *createMenuItem() const Q_DECL_OVERRIDE;
     QPlatformMenu *createSubMenu() const Q_DECL_OVERRIDE;
 
-    bool operator==(const QDBusPlatformMenu& other) { return m_tag == other.m_tag; }
-
     uint revision() const { return m_revision; }
 
     void emitUpdated();
@@ -184,7 +173,6 @@ signals:
     void popupRequested(int id, uint timestamp);
 
 private:
-    quintptr m_tag;
     QString m_text;
     QIcon m_icon;
     bool m_isEnabled;

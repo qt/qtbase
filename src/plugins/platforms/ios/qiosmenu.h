@@ -56,9 +56,6 @@ class QIOSMenuItem : public QPlatformMenuItem
 public:
     QIOSMenuItem();
 
-    void setTag(quintptr tag) Q_DECL_OVERRIDE;
-    quintptr tag()const Q_DECL_OVERRIDE;
-
     void setText(const QString &text) Q_DECL_OVERRIDE;
     void setIcon(const QIcon &) Q_DECL_OVERRIDE {}
     void setMenu(QPlatformMenu *) Q_DECL_OVERRIDE;
@@ -74,7 +71,6 @@ public:
     void setEnabled(bool enabled) Q_DECL_OVERRIDE;
     void setIconSize(int) Q_DECL_OVERRIDE {}
 
-    quintptr m_tag;
     bool m_visible;
     QString m_text;
     MenuRole m_role;
@@ -97,9 +93,6 @@ public:
     void syncMenuItem(QPlatformMenuItem *) Q_DECL_OVERRIDE;
     void syncSeparatorsCollapsible(bool) Q_DECL_OVERRIDE {}
 
-    void setTag(quintptr tag) Q_DECL_OVERRIDE;
-    quintptr tag()const Q_DECL_OVERRIDE;
-
     void setText(const QString &) Q_DECL_OVERRIDE;
     void setIcon(const QIcon &) Q_DECL_OVERRIDE {}
     void setEnabled(bool enabled) Q_DECL_OVERRIDE;
@@ -121,7 +114,6 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
 
 private:
-    quintptr m_tag;
     bool m_enabled;
     bool m_visible;
     QString m_text;

@@ -45,6 +45,37 @@
 
 QT_BEGIN_NAMESPACE
 
+QPlatformMenuItem::QPlatformMenuItem()
+{
+    m_tag = reinterpret_cast<quintptr>(this);
+}
+
+void QPlatformMenuItem::setTag(quintptr tag)
+{
+    m_tag = tag;
+}
+
+quintptr QPlatformMenuItem::tag() const
+{
+    return m_tag;
+}
+
+QPlatformMenu::QPlatformMenu()
+{
+    m_tag = reinterpret_cast<quintptr>(this);
+}
+
+void QPlatformMenu::setTag(quintptr tag)
+{
+    m_tag = tag;
+}
+
+quintptr QPlatformMenu::tag() const
+{
+    return m_tag;
+
+}
+
 QPlatformMenuItem *QPlatformMenu::createMenuItem() const
 {
     return QGuiApplicationPrivate::platformTheme()->createPlatformMenuItem();

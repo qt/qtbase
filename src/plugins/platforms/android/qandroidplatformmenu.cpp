@@ -46,7 +46,6 @@ QT_BEGIN_NAMESPACE
 
 QAndroidPlatformMenu::QAndroidPlatformMenu()
 {
-    m_tag = reinterpret_cast<quintptr>(this); // QMenu will overwrite this later, but we need a unique ID for QtQuick
     m_enabled = true;
     m_isVisible = true;
 }
@@ -90,16 +89,6 @@ void QAndroidPlatformMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 void QAndroidPlatformMenu::syncSeparatorsCollapsible(bool enable)
 {
     Q_UNUSED(enable)
-}
-
-void QAndroidPlatformMenu::setTag(quintptr tag)
-{
-    m_tag = tag;
-}
-
-quintptr QAndroidPlatformMenu::tag() const
-{
-    return m_tag;
 }
 
 void QAndroidPlatformMenu::setText(const QString &text)
