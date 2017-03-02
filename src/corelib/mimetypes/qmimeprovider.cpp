@@ -655,7 +655,7 @@ void QMimeBinaryProvider::loadMimeTypePrivate(QMimeTypePrivate &data)
 }
 
 // Binary search in the icons or generic-icons list
-QString QMimeBinaryProvider::iconForMime(CacheFile *cacheFile, int posListOffset, const QByteArray &inputMime)
+QLatin1String QMimeBinaryProvider::iconForMime(CacheFile *cacheFile, int posListOffset, const QByteArray &inputMime)
 {
     const int iconsListOffset = cacheFile->getUint32(posListOffset);
     const int numIcons = cacheFile->getUint32(iconsListOffset);
@@ -676,7 +676,7 @@ QString QMimeBinaryProvider::iconForMime(CacheFile *cacheFile, int posListOffset
             return QLatin1String(cacheFile->getCharStar(iconOffset));
         }
     }
-    return QString();
+    return QLatin1String();
 }
 
 void QMimeBinaryProvider::loadIcon(QMimeTypePrivate &data)
@@ -684,7 +684,7 @@ void QMimeBinaryProvider::loadIcon(QMimeTypePrivate &data)
     checkCache();
     const QByteArray inputMime = data.name.toLatin1();
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
-        const QString icon = iconForMime(cacheFile, PosIconsListOffset, inputMime);
+        const QLatin1String icon = iconForMime(cacheFile, PosIconsListOffset, inputMime);
         if (!icon.isEmpty()) {
             data.iconName = icon;
             return;
@@ -697,7 +697,7 @@ void QMimeBinaryProvider::loadGenericIcon(QMimeTypePrivate &data)
     checkCache();
     const QByteArray inputMime = data.name.toLatin1();
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
-        const QString icon = iconForMime(cacheFile, PosGenericIconsListOffset, inputMime);
+        const QLatin1String icon = iconForMime(cacheFile, PosGenericIconsListOffset, inputMime);
         if (!icon.isEmpty()) {
             data.genericIconName = icon;
             return;
