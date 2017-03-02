@@ -40,7 +40,9 @@
 #include "simplewidgets_p.h"
 
 #include <qabstractbutton.h>
+#if QT_CONFIG(checkbox)
 #include <qcheckbox.h>
+#endif
 #include <qpushbutton.h>
 #include <qprogressbar.h>
 #include <qstatusbar.h>
@@ -140,13 +142,17 @@ QAccessible::State QAccessibleButton::state() const
     QAccessible::State state = QAccessibleWidget::state();
 
     QAbstractButton *b = button();
+#if QT_CONFIG(checkbox)
     QCheckBox *cb = qobject_cast<QCheckBox *>(b);
+#endif
     if (b->isCheckable())
         state.checkable = true;
     if (b->isChecked())
         state.checked = true;
+#if QT_CONFIG(checkbox)
     else if (cb && cb->checkState() == Qt::PartiallyChecked)
         state.checkStateMixed = true;
+#endif
     if (b->isDown())
         state.pressed = true;
     QPushButton *pb = qobject_cast<QPushButton*>(b);
@@ -168,12 +174,14 @@ QRect QAccessibleButton::rect() const
     if (!ab->isVisible())
         return QRect();
 
+#if QT_CONFIG(checkbox)
     if (QCheckBox *cb = qobject_cast<QCheckBox *>(ab)) {
         QPoint wpos = cb->mapToGlobal(QPoint(0, 0));
         QStyleOptionButton opt;
         cb->initStyleOption(&opt);
         return cb->style()->subElementRect(QStyle::SE_CheckBoxClickRect, &opt, cb).translated(wpos);
     }
+#endif
 #if QT_CONFIG(radiobutton)
     else if (QRadioButton *rb = qobject_cast<QRadioButton *>(ab)) {
         QPoint wpos = rb->mapToGlobal(QPoint(0, 0));

@@ -34,7 +34,14 @@
         "cupsjobwidget": {
             "label": "CUPS job control widget",
             "section": "Widgets",
-            "condition": "features.cups && features.calendarwidget && features.datetimeedit && features.groupbox && features.combobox",
+            "condition": [
+                "features.calendarwidget",
+                "features.checkbox",
+                "features.combobox",
+                "features.cups",
+                "features.datetimeedit",
+                "features.groupbox"
+            ],
             "output": [ "privateFeature", "feature" ]
         },
         "printer": {
@@ -57,6 +64,7 @@
             "section": "Dialogs",
             "condition": [
                 "features.buttongroup",
+                "features.checkbox",
                 "features.combobox",
                 "features.datetimeedit",
                 "features.dialogbuttonbox",

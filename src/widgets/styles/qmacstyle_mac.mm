@@ -55,7 +55,6 @@
 #include <private/qpainter_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
-#include <qcheckbox.h>
 #include <qcombobox.h>
 #if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
@@ -668,8 +667,10 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             ct = QStyle::CT_PushButton;
         else if (qobject_cast<const QRadioButton *>(widg))
             ct = QStyle::CT_RadioButton;
+#if QT_CONFIG(checkbox)
         else if (qobject_cast<const QCheckBox *>(widg))
             ct = QStyle::CT_CheckBox;
+#endif
 #ifndef QT_NO_COMBOBOX
         else if (qobject_cast<const QComboBox *>(widg))
             ct = QStyle::CT_ComboBox;

@@ -66,7 +66,6 @@
 #include <qstyleoption.h>
 #include <qpushbutton.h>
 #include <qradiobutton.h>
-#include <qcheckbox.h>
 #include <qlineedit.h>
 #include <qgroupbox.h>
 #include <qtoolbutton.h>

@@ -229,6 +229,12 @@
             "condition": "features.combobox && features.stringlistmodel",
             "output": [ "publicFeature", "feature" ]
         },
+        "checkbox": {
+            "label": "QCheckBox(",
+            "purpose": "Provides a checkbox with a text label.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
         "toolbutton": {
             "label": "QToolButton",
             "purpose": "Provides quick-access buttons to commands and options.",
@@ -433,7 +439,11 @@
             "label": "QMessageBox",
             "purpose": "Provides message boxes displaying informative messages and simple questions.",
             "section": "Dialogs",
-            "condition" : "features.dialogbuttonbox && features.label",
+            "condition" : [
+                "features.checkbox",
+                "features.dialogbuttonbox",
+                "features.label"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "colordialog": {
@@ -470,6 +480,7 @@
             "purpose": "Provides a dialog widget for selecting fonts.",
             "section": "Dialogs",
             "condition": [
+               "features.checkbox",
                "features.combobox",
                "features.dialogbuttonbox",
                "features.groupbox",
@@ -504,7 +515,11 @@
             "label": "QErrorMessage",
             "purpose": "Provides an error message display dialog.",
             "section": "Dialogs",
-            "condition": "features.textedit && features.label",
+            "condition": [
+                "features.checkbox",
+                "features.textedit",
+                "features.label"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "wizard": {

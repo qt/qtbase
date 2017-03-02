@@ -53,7 +53,9 @@
 #include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
+#if QT_CONFIG(checkbox)
 #include <qcheckbox.h>
+#endif
 #include <qcombobox.h>
 #if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>

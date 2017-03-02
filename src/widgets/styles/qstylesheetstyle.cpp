@@ -62,7 +62,9 @@
 #include <qscrollbar.h>
 #include <qstring.h>
 #include <qfile.h>
+#if QT_CONFIG(checkbox)
 #include <qcheckbox.h>
+#endif
 #include <qstatusbar.h>
 #include <qheaderview.h>
 #include <private/qwindowsstyle_p_p.h>
@@ -4740,10 +4742,12 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
             return rule.box()->spacing;
         break;
     case PM_CheckBoxLabelSpacing:
+#if QT_CONFIG(checkbox)
         if (qobject_cast<const QCheckBox *>(w)) {
             if (rule.hasBox() && rule.box()->spacing != -1)
                 return rule.box()->spacing;
         }
+#endif
         // assume group box
         subRule = renderRule(w, opt, PseudoElement_GroupBoxTitle);
         if (subRule.hasBox() && subRule.box()->spacing != -1)

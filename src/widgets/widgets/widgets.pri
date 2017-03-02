@@ -10,7 +10,6 @@ HEADERS += \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
         widgets/qcalendarwidget.h \
-        widgets/qcheckbox.h \
         widgets/qcombobox.h \
         widgets/qcombobox_p.h \
         widgets/qdatetimeedit.h \
@@ -85,7 +84,6 @@ SOURCES += \
         widgets/qabstractslider.cpp \
         widgets/qabstractspinbox.cpp \
         widgets/qcalendarwidget.cpp \
-        widgets/qcheckbox.cpp \
         widgets/qcombobox.cpp \
         widgets/qdatetimeedit.cpp \
         widgets/qdial.cpp \
@@ -135,6 +133,14 @@ SOURCES += \
         widgets/qwidgetlinecontrol.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp
+
+qtConfig(checkbox) {
+    HEADERS += \
+        widgets/qcheckbox.h
+
+    SOURCES += \
+        widgets/qcheckbox.cpp
+}
 
 qtConfig(commandlinkbutton) {
     HEADERS += \
