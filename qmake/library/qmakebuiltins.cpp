@@ -469,7 +469,7 @@ QMakeEvaluator::writeFile(const QString &ctx, const QString &fn, QIODevice::Open
     return ReturnTrue;
 }
 
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(process)
 void QMakeEvaluator::runProcess(QProcess *proc, const QString &command) const
 {
     proc->setWorkingDirectory(currentDirectory());
@@ -490,7 +490,7 @@ void QMakeEvaluator::runProcess(QProcess *proc, const QString &command) const
 QByteArray QMakeEvaluator::getCommandOutput(const QString &args, int *exitCode) const
 {
     QByteArray out;
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(process)
     QProcess proc;
     runProcess(&proc, args);
     *exitCode = (proc.exitStatus() == QProcess::NormalExit) ? proc.exitCode() : -1;
@@ -1711,7 +1711,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
 #ifdef PROEVALUATOR_FULL
         if (m_cumulative) // Anything else would be insanity
             return ReturnFalse;
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(process)
         QProcess proc;
         proc.setProcessChannelMode(QProcess::ForwardedChannels);
         runProcess(&proc, args.at(0).toQString(m_tmp2));
