@@ -150,7 +150,6 @@ private slots:
     void horizontalScrollingByVerticalWheelEvents();
     void taskQTBUG_7232_AllowUserToControlSingleStep();
     void taskQTBUG_51086_skippingIndexesInSelectedIndexes();
-    void expandingListItems();
     void taskQTBUG_47694_indexOutOfBoundBatchLayout();
 };
 
@@ -2486,29 +2485,6 @@ void tst_QListView::taskQTBUG_51086_skippingIndexesInSelectedIndexes()
 
     QVERIFY(!indexes.contains(data.index(7, 0)));
     QVERIFY(!indexes.contains(data.index(8, 0)));
-}
-
-void tst_QListView::expandingListItems()
-{
-    auto item1 = new QStandardItem("111");
-    auto item2 = new QStandardItem("111111");
-    QStandardItemModel model;
-    model.appendRow(item1);
-    model.appendRow(item2);
-
-    QListView w;
-    w.setModel(&model);
-    w.setWrapping(true);
-    w.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&w));
-
-    QVERIFY(w.visualRect(item1->index()).width() > 0);
-    QVERIFY(w.visualRect(item1->index()).width() == w.visualRect(item2->index()).width());
-
-    w.setExpandingListItems(false);
-    QApplication::processEvents();
-
-    QVERIFY(w.visualRect(item1->index()).width() < w.visualRect(item2->index()).width());
 }
 
 void tst_QListView::taskQTBUG_47694_indexOutOfBoundBatchLayout()
