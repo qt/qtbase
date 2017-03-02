@@ -4,7 +4,7 @@ TEMPLATE = subdirs
 SUBDIRS = listnames \
     pingpong
 
-!uikit: SUBDIRS += complexpingpong
+qtConfig(process): SUBDIRS += complexpingpong
 
 qtHaveModule(widgets) {
     SUBDIRS += chat \

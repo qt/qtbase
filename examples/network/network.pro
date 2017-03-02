@@ -20,8 +20,7 @@ qtHaveModule(widgets) {
                 multicastsender
 
     qtConfig(bearermanagement) {
-        # no QProcess
-        !vxworks:!qnx:!winrt:!integrity:!uikit: SUBDIRS += network-chat
+        qtConfig(process): SUBDIRS += network-chat
 
         SUBDIRS += \
                 bearermonitor \
