@@ -464,7 +464,7 @@ public:
     void create(int type, const void *copy);
     bool cmp(const QVariant &other) const;
     int compare(const QVariant &other) const;
-    bool convert(const int t, void *ptr) const;
+    bool convert(const int t, void *ptr) const; // ### Qt6: drop const
 
 private:
     // force compile error, prevent QVariant(bool) to be called

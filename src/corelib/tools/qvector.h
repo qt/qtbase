@@ -291,6 +291,7 @@ public:
 private:
     friend class QRegion; // Optimization for QRegion::rects()
 
+    // ### Qt6: remove const from int parameters
     void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
     void reallocData(const int sz) { reallocData(sz, d->alloc); }
     void freeData(Data *d);
