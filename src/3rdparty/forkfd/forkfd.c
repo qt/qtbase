@@ -297,10 +297,12 @@ static void sigchld_handler(int signum, siginfo_t *handler_info, void *handler_c
      * But we pass them anyway. Let's call the chained handler first, while
      * those two arguments have a chance of being correct.
      */
-    if (old_sigaction.sa_flags & SA_SIGINFO)
-        old_sigaction.sa_sigaction(signum, handler_info, handler_context);
-    else if (old_sigaction.sa_handler != SIG_IGN && old_sigaction.sa_handler != SIG_DFL)
-        old_sigaction.sa_handler(signum);
+    if (old_sigaction.sa_handler != SIG_IGN && old_sigaction.sa_handler != SIG_DFL) {
+        if (old_sigaction.sa_flags & SA_SIGINFO)
+            old_sigaction.sa_sigaction(signum, handler_info, handler_context);
+        else
+            old_sigaction.sa_handler(signum);
+    }
 
     if (ffd_atomic_load(&forkfd_status, FFD_ATOMIC_RELAXED) == 1) {
         /* is this one of our children? */
