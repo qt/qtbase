@@ -42,6 +42,7 @@
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 #include "qtouchdevice.h"
+#include "QtCore/qmetaobject.h"
 #include <qpa/qwindowsysteminterface_p.h>
 #include <QDebug>
 #include <cmath>
@@ -1065,6 +1066,18 @@ static QTabletEvent::TabletDevice toolIdToTabletDevice(quint32 toolId) {
     return QTabletEvent::Stylus;  // Safe default assumption if nonzero
 }
 
+static const char *toolName(QTabletEvent::TabletDevice tool) {
+    static const QMetaObject *metaObject = qt_getEnumMetaObject(tool);
+    static const QMetaEnum me = metaObject->enumerator(metaObject->indexOfEnumerator(qt_getEnumName(tool)));
+    return me.valueToKey(tool);
+}
+
+static const char *pointerTypeName(QTabletEvent::PointerType ptype) {
+    static const QMetaObject *metaObject = qt_getEnumMetaObject(ptype);
+    static const QMetaEnum me = metaObject->enumerator(metaObject->indexOfEnumerator(qt_getEnumName(ptype)));
+    return me.valueToKey(ptype);
+}
+
 bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletData)
 {
     bool handled = true;
@@ -1138,9 +1151,9 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
                         // TODO maybe have a hash of tabletData->deviceId to device data so we can
                         // look up the tablet name here, and distinguish multiple tablets
                         if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
-                            qCDebug(lcQpaXInputEvents, "XI2 proximity change on tablet %d (USB %x): last tool: %x id %x current tool: %x id %x TabletDevice %d",
+                            qCDebug(lcQpaXInputEvents, "XI2 proximity change on tablet %d (USB %x): last tool: %x id %x current tool: %x id %x %s",
                                     tabletData->deviceId, ptr[_WACSER_USB_ID], ptr[_WACSER_LAST_TOOL_SERIAL], ptr[_WACSER_LAST_TOOL_ID],
-                                    ptr[_WACSER_TOOL_SERIAL], ptr[_WACSER_TOOL_ID], tabletData->tool);
+                                    ptr[_WACSER_TOOL_SERIAL], ptr[_WACSER_TOOL_ID], toolName(tabletData->tool));
                     }
                     XFree(data);
                 }
@@ -1203,9 +1216,10 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
     }
 
     if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
-        qCDebug(lcQpaXInputEvents, "XI2 event on tablet %d with tool %d type %d seq %d detail %d time %d "
+        qCDebug(lcQpaXInputEvents, "XI2 event on tablet %d with tool %s type %s seq %d detail %d time %d "
             "pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
-            tabletData->deviceId, tabletData->tool, ev->evtype, ev->sequenceNumber, ev->detail, ev->time,
+            tabletData->deviceId, toolName(tabletData->tool), pointerTypeName(tabletData->pointerType),
+            ev->sequenceNumber, ev->detail, ev->time,
             fixed1616ToReal(ev->event_x), fixed1616ToReal(ev->event_y),
             fixed1616ToReal(ev->root_x), fixed1616ToReal(ev->root_y),
             (int)tabletData->buttons, pressure, xTilt, yTilt, rotation);
