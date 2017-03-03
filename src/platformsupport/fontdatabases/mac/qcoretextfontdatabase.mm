@@ -251,6 +251,24 @@ struct FontDescription {
     QSupportedWritingSystems writingSystems;
 };
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_DECL_UNUSED static inline QDebug operator<<(QDebug debug, const FontDescription &fd)
+{
+    QDebugStateSaver saver(debug);
+    return debug.nospace() << "FontDescription("
+        << "familyName=" << QString(fd.familyName)
+        << ", styleName=" << QString(fd.styleName)
+        << ", foundry=" << fd.foundryName
+        << ", weight=" << fd.weight
+        << ", style=" << fd.style
+        << ", stretch=" << fd.stretch
+        << ", pixelSize=" << fd.pixelSize
+        << ", fixedPitch=" << fd.fixedPitch
+        << ", writingSystems=" << fd.writingSystems
+    << ")";
+}
+#endif
+
 static void getFontDescription(CTFontDescriptorRef font, FontDescription *fd)
 {
     QCFType<CFDictionaryRef> styles = (CFDictionaryRef) CTFontDescriptorCopyAttribute(font, kCTFontTraitsAttribute);

@@ -45,6 +45,7 @@
 #include <qpa/qplatformscreen.h>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDir>
+#include <QtCore/QMetaEnum>
 
 #include <algorithm>
 #include <iterator>
@@ -200,6 +201,26 @@ QSupportedWritingSystems &QSupportedWritingSystems::operator=(const QSupportedWr
     }
     return *this;
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QSupportedWritingSystems &sws)
+{
+    QMetaObject mo = QFontDatabase::staticMetaObject;
+    QMetaEnum me = mo.enumerator(mo.indexOfEnumerator("WritingSystem"));
+
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "QSupportedWritingSystems(";
+    int i = sws.d->vector.indexOf(true);
+    while (i > 0) {
+        debug << me.valueToKey(i);
+        i = sws.d->vector.indexOf(true, i + 1);
+        if (i > 0)
+            debug << ", ";
+    }
+    debug << ")";
+    return debug;
+}
+#endif
 
 /*!
     Destroys the supported writing systems object.
