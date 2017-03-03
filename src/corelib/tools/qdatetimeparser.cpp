@@ -1216,15 +1216,15 @@ end:
         } else {
             if (context == FromString) {
                 // optimization
-                Q_ASSERT(getMaximum().date().toJulianDay() == 4642999);
+                Q_ASSERT(maximum.date().toJulianDay() == 4642999);
                 if (newCurrentValue.date().toJulianDay() > 4642999)
                     state = Invalid;
             } else {
-                if (newCurrentValue > getMaximum())
+                if (newCurrentValue > maximum)
                     state = Invalid;
             }
 
-            QDTPDEBUG << "not checking intermediate because newCurrentValue is" << newCurrentValue << getMinimum() << getMaximum();
+            QDTPDEBUG << "not checking intermediate because newCurrentValue is" << newCurrentValue << minimum << maximum;
         }
     }
     StateNode node;
@@ -1607,13 +1607,13 @@ bool QDateTimeParser::potentialValue(const QStringRef &str, int min, int max, in
 
 bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, const QStringRef &text) const
 {
-    Q_ASSERT(current >= getMinimum() && current <= getMaximum());
-
     const SectionNode &node = sectionNode(index);
     Q_ASSERT(text.size() < sectionMaxSize(index));
 
     const QDateTime maximum = getMaximum();
     const QDateTime minimum = getMinimum();
+    Q_ASSERT(current >= minimum && current <= maximum);
+
     QDateTime tmp = current;
     int min = absoluteMin(index);
     setDigit(tmp, index, min);
@@ -1713,11 +1713,21 @@ bool QDateTimeParser::fromString(const QString &t, QDate *date, QTime *time) con
 
 QDateTime QDateTimeParser::getMinimum() const
 {
+    // Cache the most common case
+    if (spec == Qt::LocalTime) {
+        static const QDateTime localTimeMin(QDATETIMEEDIT_DATE_MIN, QDATETIMEEDIT_TIME_MIN, Qt::LocalTime);
+        return localTimeMin;
+    }
     return QDateTime(QDATETIMEEDIT_DATE_MIN, QDATETIMEEDIT_TIME_MIN, spec);
 }
 
 QDateTime QDateTimeParser::getMaximum() const
 {
+    // Cache the most common case
+    if (spec == Qt::LocalTime) {
+        static const QDateTime localTimeMax(QDATETIMEEDIT_DATE_MAX, QDATETIMEEDIT_TIME_MAX, Qt::LocalTime);
+        return localTimeMax;
+    }
     return QDateTime(QDATETIMEEDIT_DATE_MAX, QDATETIMEEDIT_TIME_MAX, spec);
 }
 

@@ -547,8 +547,9 @@ void tst_QDateTime::currentMSecsSinceEpoch()
 
 void tst_QDateTime::fromString()
 {
-    QString format = "yyy-MM-dd hh:mm:ss.zzz t";
-    QString input = "2010-01-01 13:12:11.999 UTC";
+    QString format = "yyyy-MM-dd hh:mm:ss.zzz";
+    QString input = "2010-01-01 13:12:11.999";
+    QVERIFY(QDateTime::fromString(input, format).isValid());
     QBENCHMARK {
         for (int i = 0; i < 1000; ++i)
             QDateTime::fromString(input, format);
