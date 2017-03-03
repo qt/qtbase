@@ -277,6 +277,7 @@ private slots:
 #endif
 
     void setLocale();
+    void propagateLocale();
     void deleteStyle();
     void multipleToplevelFocusCheck();
     void setFocus();
@@ -1201,6 +1202,33 @@ void tst_QWidget::setLocale()
     QCOMPARE(child2.locale(), QLocale());
     child2.setParent(&w);
     QCOMPARE(child2.locale(), QLocale(QLocale::French));
+}
+
+void tst_QWidget::propagateLocale()
+{
+    QWidget parent;
+    parent.setLocale(QLocale::French);
+    // Non-window widget; propagates locale:
+    QWidget *child = new QWidget(&parent);
+    QVERIFY(!child->isWindow());
+    QVERIFY(!child->testAttribute(Qt::WA_WindowPropagation));
+    QCOMPARE(child->locale(), QLocale(QLocale::French));
+    parent.setLocale(QLocale::Italian);
+    QCOMPARE(child->locale(), QLocale(QLocale::Italian));
+    delete child;
+    // Window: doesn't propagate locale:
+    child = new QWidget(&parent, Qt::Window);
+    QVERIFY(child->isWindow());
+    QVERIFY(!child->testAttribute(Qt::WA_WindowPropagation));
+    QCOMPARE(child->locale(), QLocale());
+    parent.setLocale(QLocale::French);
+    QCOMPARE(child->locale(), QLocale());
+    // ... unless we tell it to:
+    child->setAttribute(Qt::WA_WindowPropagation, true);
+    QVERIFY(child->testAttribute(Qt::WA_WindowPropagation));
+    QCOMPARE(child->locale(), QLocale(QLocale::French));
+    parent.setLocale(QLocale::Italian);
+    QCOMPARE(child->locale(), QLocale(QLocale::Italian));
 }
 
 void tst_QWidget::visible_setWindowOpacity()
