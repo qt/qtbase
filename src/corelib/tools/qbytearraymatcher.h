@@ -83,7 +83,8 @@ private:
     };
 };
 
-class QStaticByteArrayMatcherBase {
+class QStaticByteArrayMatcherBase
+{
     struct Skiptable {
         uchar data[256];
     } m_skiptable;
