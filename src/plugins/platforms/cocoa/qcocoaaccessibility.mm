@@ -41,8 +41,6 @@
 #include <QtGui/qaccessible.h>
 #include <private/qcore_mac_p.h>
 
-#include <Carbon/Carbon.h>
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -369,7 +367,7 @@ id getValueAttribute(QAccessibleInterface *interface)
             QString text;
             if (interface->state().passwordEdit) {
                 // return round password replacement chars
-                text = QString(end, QChar(kBulletUnicode));
+                text = QString(end, QChar(0x2022));
             } else {
                 // VoiceOver will read out the entire text string at once when returning
                 // text as a value. For large text edits the size of the returned string

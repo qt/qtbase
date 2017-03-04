@@ -42,7 +42,6 @@
 
 #ifdef Q_OS_OSX
 #include <AppKit/NSText.h>
-#include <Carbon/Carbon.h>
 #endif
 
 #include <qdebug.h>
@@ -140,6 +139,7 @@ struct qtKey2CocoaKeySortLessThan
     }
 };
 
+static const int NSEscapeCharacter = 27; // not defined by Cocoa headers
 static const int NumEntries = 59;
 static const KeyPair entries[NumEntries] = {
     { NSEnterCharacter, Qt::Key_Enter },
@@ -148,7 +148,7 @@ static const KeyPair entries[NumEntries] = {
     { NSNewlineCharacter, Qt::Key_Return },
     { NSCarriageReturnCharacter, Qt::Key_Return },
     { NSBackTabCharacter, Qt::Key_Backtab },
-    { kEscapeCharCode, Qt::Key_Escape },
+    { NSEscapeCharacter, Qt::Key_Escape },
     // Cocoa sends us delete when pressing backspace!
     // (NB when we reverse this list in qtKey2CocoaKey, there
     // will be two indices of Qt::Key_Backspace. But is seems to work

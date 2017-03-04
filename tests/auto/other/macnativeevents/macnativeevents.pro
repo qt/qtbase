@@ -1,9 +1,8 @@
 CONFIG += testcase
 TARGET = tst_macnativeevents
-LIBS += -framework Carbon
 QT += widgets testlib
 HEADERS += qnativeevents.h nativeeventlist.h expectedeventlist.h
-SOURCES += qnativeevents.cpp qnativeevents_mac.cpp 
+SOURCES += qnativeevents.cpp qnativeevents_mac.cpp
 SOURCES += expectedeventlist.cpp nativeeventlist.cpp
 SOURCES += tst_macnativeevents.cpp
 

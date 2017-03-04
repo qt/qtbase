@@ -43,8 +43,6 @@
 
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
 
-#include <Carbon/Carbon.h>
-
 //![0]
 SearchWidget::SearchWidget(QWidget *parent)
     : QMacCocoaViewContainer(0, parent)

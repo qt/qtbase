@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include "qnativeevents.h"
-#include <Carbon/Carbon.h>
+#include <CoreGraphics/CoreGraphics.h>
 #include <QtCore>
 
 //  ************************************************************

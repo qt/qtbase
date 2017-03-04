@@ -56,7 +56,6 @@
 
 #if defined(Q_OS_MACX)
 #include <QtCore/private/qcore_mac_p.h>
-#include <Carbon/Carbon.h>
 #endif
 
 #include <algorithm>
@@ -69,6 +68,13 @@ struct MacSpecialKey {
     int key;
     ushort macSymbol;
 };
+
+// Unicode code points for the glyphs associated with these keys
+// Defined by Carbon headers but not anywhere in Cocoa
+static const int kShiftUnicode = 0x21E7;
+static const int kControlUnicode = 0x2303;
+static const int kOptionUnicode = 0x2325;
+static const int kCommandUnicode = 0x2318;
 
 static const int NumEntries = 21;
 static const MacSpecialKey entries[NumEntries] = {

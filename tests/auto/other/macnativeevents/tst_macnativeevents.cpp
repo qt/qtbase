@@ -35,9 +35,13 @@
 #include "qnativeevents.h"
 #include "nativeeventlist.h"
 #include "expectedeventlist.h"
-#include <Carbon/Carbon.h>
 
 QT_USE_NAMESPACE
+
+// Unicode code points for the glyphs associated with these keys
+// Defined by Carbon headers but not anywhere in Cocoa
+static const int kControlUnicode = 0x2303;
+static const int kCommandUnicode = 0x2318;
 
 class tst_MacNativeEvents : public QObject
 {

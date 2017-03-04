@@ -1,6 +1,5 @@
 CONFIG += testcase
 TARGET = tst_qaccessibilitymac
-# LIBS += -framework Carbon
 QT += widgets testlib
 
 HEADERS += tst_qaccessibilitymac_helpers.h

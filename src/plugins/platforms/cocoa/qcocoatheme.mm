@@ -330,7 +330,7 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
     case IconPixmapSizes:
         return QVariant::fromValue(QCocoaFileIconEngine::availableIconSizes());
     case QPlatformTheme::PasswordMaskCharacter:
-        return QVariant(QChar(kBulletUnicode));
+        return QVariant(QChar(0x2022));
     case QPlatformTheme::UiEffects:
         return QVariant(int(HoverEffect));
     default:
