@@ -3220,11 +3220,15 @@ static QBasicMutex environmentMutex;
 
     Returns the value of the environment variable with name \a
     varName. To get the variable string, use QByteArray::constData().
+    To convert the data to a QString use QString::fromLocal8Bit().
 
     \note qgetenv() was introduced because getenv() from the standard
     C library was deprecated in VC2005 (and later versions). qgetenv()
     uses the new replacement function in VC, and calls the standard C
     library's implementation on all other platforms.
+
+    \warning Don't use qgetenv on Windows if the content may contain
+    non-US-ASCII characters, like file paths.
 
     \sa qputenv(), qEnvironmentVariableIsSet(), qEnvironmentVariableIsEmpty()
 */
