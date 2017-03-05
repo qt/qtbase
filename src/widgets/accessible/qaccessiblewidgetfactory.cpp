@@ -45,7 +45,6 @@
 #include "complexwidgets_p.h"
 #include "itemviews_p.h"
 
-#include <qpushbutton.h>
 #include <qtoolbutton.h>
 #include <qtreeview.h>
 #include <qvariant.h>

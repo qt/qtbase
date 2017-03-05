@@ -64,7 +64,9 @@
 #include <qapplication.h>
 #include <qpixmapcache.h>
 #include <qstyleoption.h>
+#if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
+#endif
 #include <qradiobutton.h>
 #include <qlineedit.h>
 #include <qgroupbox.h>

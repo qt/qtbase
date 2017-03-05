@@ -56,7 +56,9 @@
 #include "QtCore/qeventloop.h"
 #include "QtCore/qpointer.h"
 #include "QtWidgets/qdialog.h"
+#if QT_CONFIG(pushbutton)
 #include "QtWidgets/qpushbutton.h"
+#endif
 #include <qpa/qplatformdialoghelper.h>
 
 QT_BEGIN_NAMESPACE
@@ -69,7 +71,11 @@ class Q_WIDGETS_EXPORT QDialogPrivate : public QWidgetPrivate
 public:
 
     QDialogPrivate()
-        : mainDef(0), orientation(Qt::Horizontal),extension(0), doShowExtension(false),
+        :
+#if QT_CONFIG(pushbutton)
+          mainDef(0),
+#endif
+          orientation(Qt::Horizontal),extension(0), doShowExtension(false),
 #ifndef QT_NO_SIZEGRIP
           resizer(0),
           sizeGripEnabled(false),
@@ -84,7 +90,9 @@ public:
     QVariant styleHint(QPlatformDialogHelper::StyleHint hint) const;
     void deletePlatformHelper();
 
+#if QT_CONFIG(pushbutton)
     QPointer<QPushButton> mainDef;
+#endif
     Qt::Orientation orientation;
     QWidget *extension;
     bool doShowExtension;
@@ -95,9 +103,11 @@ public:
 #endif
     QPoint lastRMBPress;
 
+#if QT_CONFIG(pushbutton)
     void setDefault(QPushButton *);
     void setMainDefault(QPushButton *);
     void hideDefault();
+#endif
     void resetModalitySetByOpen();
 
     int rescode;

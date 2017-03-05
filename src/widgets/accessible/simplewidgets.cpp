@@ -43,7 +43,9 @@
 #if QT_CONFIG(checkbox)
 #include <qcheckbox.h>
 #endif
+#if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
+#endif
 #include <qprogressbar.h>
 #include <qstatusbar.h>
 #if QT_CONFIG(radiobutton)
@@ -115,7 +117,7 @@ QString QAccessibleButton::text(QAccessible::Text t) const
     switch (t) {
     case QAccessible::Accelerator:
     {
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut) && QT_CONFIG(pushbutton)
         QPushButton *pb = qobject_cast<QPushButton*>(object());
         if (pb && pb->isDefault())
             str = QKeySequence(Qt::Key_Enter).toString(QKeySequence::NativeText);
@@ -155,6 +157,7 @@ QAccessible::State QAccessibleButton::state() const
 #endif
     if (b->isDown())
         state.pressed = true;
+#if QT_CONFIG(pushbutton)
     QPushButton *pb = qobject_cast<QPushButton*>(b);
     if (pb) {
         if (pb->isDefault())
@@ -164,6 +167,7 @@ QAccessible::State QAccessibleButton::state() const
             state.hasPopup = true;
 #endif
     }
+#endif
 
     return state;
 }

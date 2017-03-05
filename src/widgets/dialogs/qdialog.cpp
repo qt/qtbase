@@ -43,7 +43,6 @@
 
 #include "qevent.h"
 #include "qdesktopwidget.h"
-#include "qpushbutton.h"
 #include "qapplication.h"
 #include "qlayout.h"
 #include "qsizegrip.h"
@@ -367,6 +366,7 @@ QDialog::~QDialog()
   default default button becomes the default button. This is what a
   push button calls when it loses focus.
 */
+#if QT_CONFIG(pushbutton)
 void QDialogPrivate::setDefault(QPushButton *pushButton)
 {
     Q_Q(QDialog);
@@ -411,6 +411,7 @@ void QDialogPrivate::hideDefault()
         list.at(i)->setDefault(false);
     }
 }
+#endif
 
 void QDialogPrivate::resetModalitySetByOpen()
 {
@@ -644,6 +645,7 @@ void QDialog::keyPressEvent(QKeyEvent *e)
 #endif
     if (!e->modifiers() || (e->modifiers() & Qt::KeypadModifier && e->key() == Qt::Key_Enter)) {
         switch (e->key()) {
+#if QT_CONFIG(pushbutton)
         case Qt::Key_Enter:
         case Qt::Key_Return: {
             QList<QPushButton*> list = findChildren<QPushButton*>();
@@ -657,6 +659,7 @@ void QDialog::keyPressEvent(QKeyEvent *e)
             }
         }
         break;
+#endif
         default:
             e->ignore();
             return;
@@ -716,6 +719,7 @@ void QDialog::setVisible(bool visible)
           and actually catches most cases... If not, then they simply
           have to use [widget*]->setFocus() themselves...
         */
+#if QT_CONFIG(pushbutton)
         if (d->mainDef && fw->focusPolicy() == Qt::NoFocus) {
             QWidget *first = fw;
             while ((first = first->nextInFocusChain()) != fw && first->focusPolicy() == Qt::NoFocus)
@@ -733,6 +737,7 @@ void QDialog::setVisible(bool visible)
                 }
             }
         }
+#endif
         if (fw && !fw->hasFocus()) {
             QFocusEvent e(QEvent::FocusIn, Qt::TabFocusReason);
             QApplication::sendEvent(fw, &e);
@@ -760,10 +765,12 @@ void QDialog::setVisible(bool visible)
             d->eventLoop->exit();
     }
 
+#if QT_CONFIG(pushbutton)
     const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
     if (d->mainDef && isActiveWindow()
         && theme->themeHint(QPlatformTheme::DialogSnapToDefaultButton).toBool())
         QCursor::setPos(d->mainDef->mapToGlobal(d->mainDef->rect().center()));
+#endif
 }
 
 /*!\reimp */

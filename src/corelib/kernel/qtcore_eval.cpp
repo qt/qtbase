@@ -207,7 +207,9 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qmessagebox.h>
+#if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
+#endif
 #include <qtimer.h>
 #include <qapplication.h>
 QT_END_INCLUDE_NAMESPACE

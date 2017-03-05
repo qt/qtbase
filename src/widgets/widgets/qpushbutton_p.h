@@ -43,6 +43,8 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qabstractbutton_p.h"
 
+QT_REQUIRE_CONFIG(pushbutton);
+
 //
 //  W A R N I N G
 //  -------------

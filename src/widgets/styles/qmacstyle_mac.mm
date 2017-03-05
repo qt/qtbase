@@ -75,7 +75,9 @@
 #include <qpixmapcache.h>
 #include <qpointer.h>
 #include <qprogressbar.h>
+#if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
+#endif
 #include <qradiobutton.h>
 #include <qrubberband.h>
 #include <qscrollbar.h>
@@ -663,8 +665,10 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
     }
 
     if (ct == QStyle::CT_CustomBase && widg) {
+#if QT_CONFIG(pushbutton)
         if (qobject_cast<const QPushButton *>(widg))
             ct = QStyle::CT_PushButton;
+#endif
         else if (qobject_cast<const QRadioButton *>(widg))
             ct = QStyle::CT_RadioButton;
 #if QT_CONFIG(checkbox)
@@ -704,6 +708,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
     }
 
     switch (ct) {
+#if QT_CONFIG(pushbutton)
     case QStyle::CT_PushButton: {
         const QPushButton *psh = qobject_cast<const QPushButton *>(widg);
         // If this comparison is false, then the widget was not a push button.
@@ -746,6 +751,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
                 // Since there's no default size we return the large size...
                 ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricPushButtonHeight));
          }
+#endif
 #if 0 //Not sure we are applying the rules correctly for RadioButtons/CheckBoxes --Sam
     } else if (ct == QStyle::CT_RadioButton) {
         QRadioButton *rdo = static_cast<QRadioButton *>(widg);
@@ -1308,6 +1314,7 @@ void QMacStylePrivate::initHIThemePushButton(const QStyleOptionButton *btn,
     }
 }
 
+#if QT_CONFIG(pushbutton)
 bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option)
 {
     QMacStyle *macStyle = qobject_cast<QMacStyle *>(pushButton->style());
@@ -1317,6 +1324,7 @@ bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOpti
     macStyle->d_func()->initHIThemePushButton(option, pushButton, kThemeStateActive, &bdi);
     return bdi.kind == kThemeBevelButton;
 }
+#endif
 
 /**
     Creates a HIThemeButtonDrawInfo structure that specifies the correct button

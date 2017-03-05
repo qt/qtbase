@@ -78,7 +78,9 @@
 #include <qpixmapcache.h>
 #include <qpointer.h>
 #include <qprogressbar.h>
+#if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
+#endif
 #include <qradiobutton.h>
 #include <qrubberband.h>
 #include <qsizegrip.h>
@@ -158,7 +160,9 @@ typedef void (^QCocoaDrawRectBlock)(NSRect, CGContextRef);
         return sizes[controlSize]; \
     } while (0)
 
+#if QT_CONFIG(pushbutton)
 bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
+#endif
 
 class QMacStylePrivate : public QCommonStylePrivate
 {

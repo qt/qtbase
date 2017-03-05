@@ -38,8 +38,6 @@ HEADERS += \
         widgets/qmenubar.h \
         widgets/qmenubar_p.h \
         widgets/qprogressbar.h \
-        widgets/qpushbutton.h \
-        widgets/qpushbutton_p.h \
         widgets/qrubberband.h \
         widgets/qscrollbar.h \
         widgets/qscrollbar_p.h \
@@ -104,7 +102,6 @@ SOURCES += \
         widgets/qmenu.cpp \
         widgets/qmenubar.cpp \
         widgets/qprogressbar.cpp \
-        widgets/qpushbutton.cpp \
         widgets/qrubberband.cpp \
         widgets/qscrollbar.cpp \
         widgets/qsizegrip.cpp \
@@ -157,6 +154,16 @@ qtConfig(label) {
 
     SOURCES += \
         widgets/qlabel.cpp
+}
+
+
+qtConfig(pushbutton) {
+    HEADERS += \
+        widgets/qpushbutton.h \
+        widgets/qpushbutton_p.h
+
+    SOURCES += \
+        widgets/qpushbutton.cpp
 }
 
 qtConfig(radiobutton) {

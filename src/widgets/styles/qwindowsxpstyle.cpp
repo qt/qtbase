@@ -65,7 +65,9 @@
 #include <qspinbox.h>
 #include <qlistview.h>
 #include <qstackedwidget.h>
+#if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
+#endif
 #include <qtoolbar.h>
 #include <qlabel.h>
 #include <qvarlengtharray.h>

@@ -50,7 +50,9 @@
 #include "qlabel.h"
 #include "private/qlabel_p.h"
 #endif
+#if QT_CONFIG(pushbutton)
 #include "qpushbutton.h"
+#endif
 #include "qpainterpath.h"
 #include "qpainter.h"
 #include "qstyle.h"
@@ -496,12 +498,14 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
     const int iconSize = 18;
     const int closeButtonSize = 15;
 
+#if QT_CONFIG(pushbutton)
     QPushButton *closeButton = new QPushButton;
     closeButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
     closeButton->setIconSize(QSize(closeButtonSize, closeButtonSize));
     closeButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     closeButton->setFixedSize(closeButtonSize, closeButtonSize);
     QObject::connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+#endif
 
 #if QT_CONFIG(label)
     QLabel *msgLabel = new QLabel;
@@ -542,7 +546,10 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
     }
 #endif
 
+#if QT_CONFIG(pushbutton)
     layout->addWidget(closeButton, 0, 2);
+#endif
+
 #if QT_CONFIG(label)
     layout->addWidget(msgLabel, 1, 0, 1, 3);
 #endif
