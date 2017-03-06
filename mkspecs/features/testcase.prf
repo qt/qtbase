@@ -195,18 +195,24 @@ isEmpty(BUILDS)|build_pass {
 }
 
 builtin_testdata {
-    ALL_TESTDATA = $$TESTDATA $$GENERATED_TESTDATA
-
+    # RESOURCES does not support wildcards (for good reasons)
+    for (td, TESTDATA): \
+        testdata.files += $$files($$absolute_path($$td, $$_PRO_FILE_PWD_))
     # BLACKLIST needs to be added to the testdata
     BLACKLISTPATH = $$_PRO_FILE_PWD_/BLACKLIST
-    exists($$BLACKLISTPATH): ALL_TESTDATA *= $$BLACKLISTPATH
-
-    # RESOURCES does not support wildcards (for good reasons)
-    for(td, ALL_TESTDATA): \
-        testdata.files += $$files($$absolute_path($$td, $$_PRO_FILE_PWD_))
+    exists($$BLACKLISTPATH): \
+        testdata.files *= $$BLACKLISTPATH
     !isEmpty(testdata.files) {
         testdata.base = $$_PRO_FILE_PWD_
         RESOURCES += testdata
+    }
+
+    # Extra compilers don't create wildcards to start with.
+    for (td, GENERATED_TESTDATA): \
+        gentestdata.files += $$absolute_path($$td, $$OUT_PWD)
+    !isEmpty(gentestdata.files) {
+        gentestdata.base = $$OUT_PWD
+        RESOURCES += gentestdata
     }
 
     !isEmpty(TEST_HELPER_INSTALLS): \
