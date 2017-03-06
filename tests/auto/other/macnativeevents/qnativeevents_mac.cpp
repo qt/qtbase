@@ -176,28 +176,18 @@ static CGEventRef EventHandler_Quartz(CGEventTapProxy proxy, CGEventType type, C
     return inEvent;
 }
 
-Qt::Native::Status insertEventHandler_Quartz(QNativeInput *nativeInput, int pid = 0)
+Qt::Native::Status insertEventHandler_Quartz(QNativeInput *nativeInput)
 {
     uid_t uid = geteuid();
     if (uid != 0)
         qWarning("MacNativeEvents: You must be root to listen for key events!");
 
-    CFMachPortRef port;
-    if (!pid){
-        port = CGEventTapCreate(kCGHIDEventTap,
-            kCGHeadInsertEventTap, kCGEventTapOptionListenOnly,
-            kCGEventMaskForAllEvents, EventHandler_Quartz, nativeInput);
-    } else {
-        ProcessSerialNumber psn;
-        GetProcessForPID(pid, &psn);
-        port = CGEventTapCreateForPSN(&psn,
-            kCGHeadInsertEventTap, kCGEventTapOptionListenOnly,
-            kCGEventMaskForAllEvents, EventHandler_Quartz, nativeInput);
-    }
+    CFMachPortRef port = CGEventTapCreate(kCGHIDEventTap,
+        kCGHeadInsertEventTap, kCGEventTapOptionListenOnly,
+        kCGEventMaskForAllEvents, EventHandler_Quartz, nativeInput);
 
     CFRunLoopSourceRef eventSrc = CFMachPortCreateRunLoopSource(NULL, port, 0);
-    CFRunLoopAddSource((CFRunLoopRef) GetCFRunLoopFromEventLoop(GetMainEventLoop()),
-        eventSrc, kCFRunLoopCommonModes);
+    CFRunLoopAddSource(CFRunLoopGetMain(), eventSrc, kCFRunLoopCommonModes);
 
     return Qt::Native::Success;
 }
@@ -205,19 +195,6 @@ Qt::Native::Status insertEventHandler_Quartz(QNativeInput *nativeInput, int pid 
 Qt::Native::Status removeEventHandler_Quartz()
 {
     return Qt::Native::Success; // ToDo:
-}
-
-Qt::Native::Status sendNativeKeyEventToProcess_Quartz(const QNativeKeyEvent &event, int pid)
-{
-    ProcessSerialNumber psn;
-    GetProcessForPID(pid, &psn);
-
-    CGEventRef e = CGEventCreateKeyboardEvent(0, (uint)event.nativeKeyCode, event.press);
-    setModifiersFromQNativeEvent(e, event);
-    SetFrontProcess(&psn);
-    CGEventPostToPSN(&psn, e);
-    CFRelease(e);
-    return Qt::Native::Success;
 }
 
 Qt::Native::Status sendNativeKeyEvent_Quartz(const QNativeKeyEvent &event)
@@ -344,12 +321,9 @@ Qt::Native::Status QNativeInput::sendNativeMouseWheelEvent(const QNativeMouseWhe
     return sendNativeMouseWheelEvent_Quartz(event);
 }
 
-Qt::Native::Status QNativeInput::sendNativeKeyEvent(const QNativeKeyEvent &event, int pid)
+Qt::Native::Status QNativeInput::sendNativeKeyEvent(const QNativeKeyEvent &event)
 {
-    if (!pid)
-        return sendNativeKeyEvent_Quartz(event);
-    else
-        return sendNativeKeyEventToProcess_Quartz(event, pid);
+    return sendNativeKeyEvent_Quartz(event);
 }
 
 Qt::Native::Status QNativeInput::sendNativeModifierEvent(const QNativeModifierEvent &event)

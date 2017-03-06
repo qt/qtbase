@@ -204,10 +204,10 @@ class QNativeInput
     static Qt::Native::Status sendNativeMouseMoveEvent(const QNativeMouseMoveEvent &event);
     static Qt::Native::Status sendNativeMouseDragEvent(const QNativeMouseDragEvent &event);
     static Qt::Native::Status sendNativeMouseWheelEvent(const QNativeMouseWheelEvent &event);
-    static Qt::Native::Status sendNativeKeyEvent(const QNativeKeyEvent &event, int pid = 0);
+    static Qt::Native::Status sendNativeKeyEvent(const QNativeKeyEvent &event);
     static Qt::Native::Status sendNativeModifierEvent(const QNativeModifierEvent &event);
     // sendNativeEvent will NOT differ from OS to OS.
-    static Qt::Native::Status sendNativeEvent(const QNativeEvent &event, int pid = 0);
+    static Qt::Native::Status sendNativeEvent(const QNativeEvent &event);
 
     // The following methods will differ in implementation from OS to OS:
     Qt::Native::Status subscribeForNativeEvents();

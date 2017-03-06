@@ -72,7 +72,7 @@ void QNativeInput::nativeEvent(QNativeEvent *event)
     }
 }
 
-Qt::Native::Status QNativeInput::sendNativeEvent(const QNativeEvent &event, int pid)
+Qt::Native::Status QNativeInput::sendNativeEvent(const QNativeEvent &event)
 {
     switch (event.id()){
         case QNativeMouseMoveEvent::eventId:
@@ -84,7 +84,7 @@ Qt::Native::Status QNativeInput::sendNativeEvent(const QNativeEvent &event, int 
         case QNativeMouseWheelEvent::eventId:
             return sendNativeMouseWheelEvent(static_cast<const QNativeMouseWheelEvent &>(event));
         case QNativeKeyEvent::eventId:
-            return sendNativeKeyEvent(static_cast<const QNativeKeyEvent &>(event), pid);
+            return sendNativeKeyEvent(static_cast<const QNativeKeyEvent &>(event));
         case QNativeModifierEvent::eventId:
             return sendNativeModifierEvent(static_cast<const QNativeModifierEvent &>(event));
         case QNativeEvent::eventId:
