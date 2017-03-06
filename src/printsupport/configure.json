@@ -71,7 +71,7 @@
             "label": "QPrintPreviewDialog",
             "purpose": "Provides a dialog for previewing and configuring page layouts for printer output.",
             "section": "Dialogs",
-            "condition": "features.printpreviewwidget && features.printdialog && features.toolbar",
+            "condition": "features.printpreviewwidget && features.printdialog && features.toolbar && features.formlayout",
             "output": [ "publicFeature", "feature" ]
         }
     },
