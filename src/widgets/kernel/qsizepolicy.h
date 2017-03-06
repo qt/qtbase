@@ -112,7 +112,7 @@ public:
 
     QT_SIZEPOLICY_CONSTEXPR QSizePolicy() Q_DECL_NOTHROW : data(0) { }
 
-#ifdef Q_COMPILER_UNIFORM_INIT
+#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_QDOC)
     QT_SIZEPOLICY_CONSTEXPR QSizePolicy(Policy horizontal, Policy vertical, ControlType type = DefaultType) Q_DECL_NOTHROW
         : bits{0, 0, quint32(horizontal), quint32(vertical),
                type == DefaultType ? 0 : toControlTypeFieldValue(type), 0, 0, 0}
