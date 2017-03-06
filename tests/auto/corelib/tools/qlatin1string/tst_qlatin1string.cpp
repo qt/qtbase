@@ -48,6 +48,7 @@ private Q_SLOTS:
     void midLeftRight();
     void nullString();
     void emptyString();
+    void iterators();
     void relationalOperators_data();
     void relationalOperators();
 };
@@ -153,6 +154,22 @@ void tst_QLatin1String::emptyString()
         QVERIFY(s.isEmpty());
         QVERIFY(!s.isNull());
     }
+}
+
+void tst_QLatin1String::iterators()
+{
+    QLatin1String hello("hello");
+    QLatin1String olleh("olleh");
+
+    QVERIFY(std::equal(hello.begin(), hello.end(),
+                       olleh.rbegin()));
+    QVERIFY(std::equal(hello.rbegin(), hello.rend(),
+                       QT_MAKE_CHECKED_ARRAY_ITERATOR(olleh.begin(), olleh.size())));
+
+    QVERIFY(std::equal(hello.cbegin(), hello.cend(),
+                       olleh.rbegin()));
+    QVERIFY(std::equal(hello.crbegin(), hello.crend(),
+                       QT_MAKE_CHECKED_ARRAY_ITERATOR(olleh.begin(), olleh.size())));
 }
 
 void tst_QLatin1String::relationalOperators_data()

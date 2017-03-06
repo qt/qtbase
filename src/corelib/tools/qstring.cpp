@@ -8313,6 +8313,76 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}
 */
 
+/*!
+    \typedef QLatin1String::value_type
+    \since 5.10
+
+    Alias for \c{const char}. Provided for compatibility with the STL.
+*/
+
+/*!
+    \typedef QLatin1String::difference_type
+    \since 5.10
+
+    Alias for \c{int}. Provided for compatibility with the STL.
+*/
+
+/*!
+    \typedef QLatin1String::size_type
+    \since 5.10
+
+    Alias for \c{int}. Provided for compatibility with the STL.
+*/
+
+/*!
+    \typedef QLatin1String::reference
+    \since 5.10
+
+    Alias for \c{value_type &}. Provided for compatibility with the STL.
+*/
+
+/*!
+    \typedef QLatin1String::iterator
+    \since 5.10
+
+    This typedef provides an STL-style const iterator for QLatin1String.
+
+    QLatin1String does not support mutable iterators, so this is the same
+    as const_iterator.
+
+    \sa const_iterator, reverse_iterator
+*/
+
+/*!
+    \typedef QLatin1String::const_iterator
+    \since 5.10
+
+    This typedef provides an STL-style const iterator for QLatin1String.
+
+    \sa iterator, const_reverse_iterator
+*/
+
+/*!
+    \typedef QLatin1String::reverse_iterator
+    \since 5.10
+
+    This typedef provides an STL-style const reverse iterator for QLatin1String.
+
+    QLatin1String does not support mutable reverse iterators, so this is the
+    same as const_reverse_iterator.
+
+    \sa const_reverse_iterator, iterator
+*/
+
+/*!
+    \typedef QLatin1String::const_reverse_iterator
+    \since 5.10
+
+    This typedef provides an STL-style const reverse iterator for QLatin1String.
+
+    \sa reverse_iterator, const_iterator
+*/
+
 /*! \fn QLatin1String::QLatin1String()
     \since 5.6
 
@@ -8405,6 +8475,97 @@ QString &QString::setRawData(const QChar *unicode, int size)
     The behavior is undefined when \a pos < 0 or \a pos >= size().
 
     \sa at()
+*/
+
+/*!
+    \fn QLatin1String::const_iterator QLatin1String::begin() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character in
+    the string.
+
+    This function is provided for STL compatibility.
+
+    \sa end(), cbegin(), rbegin(), data()
+*/
+
+/*!
+    \fn QLatin1String::const_iterator QLatin1String::cbegin() const
+    \since 5.10
+
+    Same as begin().
+
+    This function is provided for STL compatibility.
+
+    \sa cend(), begin(), crbegin(), data()
+*/
+
+/*!
+    \fn QLatin1String::const_iterator QLatin1String::end() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
+    character after the last character in the list.
+
+    This function is provided for STL compatibility.
+
+    \sa begin(), cend(), rend()
+*/
+
+/*! \fn QLatin1String::const_iterator QLatin1String::cend() const
+    \since 5.10
+
+    Same as end().
+
+    This function is provided for STL compatibility.
+
+    \sa cbegin(), end(), crend()
+*/
+
+/*!
+    \fn QLatin1String::const_reverse_iterator QLatin1String::rbegin() const
+    \since 5.10
+
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
+    character in the string, in reverse order.
+
+    This function is provided for STL compatibility.
+
+    \sa rend(), crbegin(), begin()
+*/
+
+/*!
+    \fn QLatin1String::const_reverse_iterator QLatin1String::crbegin() const
+    \since 5.10
+
+    Same as rbegin().
+
+    This function is provided for STL compatibility.
+
+    \sa crend(), rbegin(), cbegin()
+*/
+
+/*!
+    \fn QLatin1String::const_reverse_iterator QLatin1String::rend() const
+    \since 5.10
+
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
+    the last character in the string, in reverse order.
+
+    This function is provided for STL compatibility.
+
+    \sa rbegin(), crend(), end()
+*/
+
+/*!
+    \fn QLatin1String::const_reverse_iterator QLatin1String::crend() const
+    \since 5.10
+
+    Same as rend().
+
+    This function is provided for STL compatibility.
+
+    \sa crbegin(), rend(), cend()
 */
 
 /*! \fn QLatin1String QLatin1String::mid(int start) const

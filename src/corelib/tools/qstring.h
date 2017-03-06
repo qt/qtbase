@@ -103,6 +103,27 @@ public:
     Q_DECL_CONSTEXPR QLatin1Char at(int i) const { return QLatin1Char(m_data[i]); }
     Q_DECL_CONSTEXPR QLatin1Char operator[](int i) const { return at(i); }
 
+    using value_type = const char;
+    using reference = value_type&;
+    using const_reference = reference;
+    using iterator = value_type*;
+    using const_iterator = iterator;
+    using difference_type = int; // violates Container concept requirements
+    using size_type = int;       // violates Container concept requirements
+
+    Q_DECL_CONSTEXPR const_iterator begin() const Q_DECL_NOTHROW { return data(); }
+    Q_DECL_CONSTEXPR const_iterator cbegin() const Q_DECL_NOTHROW { return data(); }
+    Q_DECL_CONSTEXPR const_iterator end() const Q_DECL_NOTHROW { return data() + size(); }
+    Q_DECL_CONSTEXPR const_iterator cend() const Q_DECL_NOTHROW { return data() + size(); }
+
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = reverse_iterator;
+
+    const_reverse_iterator rbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
+
     Q_DECL_CONSTEXPR QLatin1String mid(int pos) const
     { return QLatin1String(m_data + pos, m_size - pos); }
     Q_DECL_CONSTEXPR QLatin1String mid(int pos, int n) const
