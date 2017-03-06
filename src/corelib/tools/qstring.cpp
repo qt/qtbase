@@ -165,8 +165,8 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
 namespace {
 template <uint MaxCount> struct UnrollTailLoop
 {
-    template <typename RetType, typename Functor1, typename Functor2>
-    static inline RetType exec(int count, RetType returnIfExited, Functor1 loopCheck, Functor2 returnIfFailed, int i = 0)
+    template <typename RetType, typename Functor1, typename Functor2, typename Number>
+    static inline RetType exec(Number count, RetType returnIfExited, Functor1 loopCheck, Functor2 returnIfFailed, Number i = 0)
     {
         /* equivalent to:
          *   while (count--) {
@@ -188,18 +188,18 @@ template <uint MaxCount> struct UnrollTailLoop
         return UnrollTailLoop<MaxCount - 1>::exec(count - 1, returnIfExited, loopCheck, returnIfFailed, i + 1);
     }
 
-    template <typename Functor>
-    static inline void exec(int count, Functor code)
+    template <typename Functor, typename Number>
+    static inline void exec(Number count, Functor code)
     {
         /* equivalent to:
-         *   for (int i = 0; i < count; ++i)
+         *   for (Number i = 0; i < count; ++i)
          *       code(i);
          */
-        exec(count, 0, [=](int i) -> bool { code(i); return false; }, [](int) { return 0; });
+        exec(count, 0, [=](Number i) -> bool { code(i); return false; }, [](Number) { return 0; });
     }
 };
-template <> template <typename RetType, typename Functor1, typename Functor2>
-inline RetType UnrollTailLoop<0>::exec(int, RetType returnIfExited, Functor1, Functor2, int)
+template <> template <typename RetType, typename Functor1, typename Functor2, typename Number>
+inline RetType UnrollTailLoop<0>::exec(Number, RetType returnIfExited, Functor1, Functor2, Number)
 {
     return returnIfExited;
 }
