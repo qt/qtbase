@@ -42,12 +42,13 @@
 #define QDIAL_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
+
+#if QT_CONFIG(dial)
+
 #include <QtWidgets/qabstractslider.h>
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_DIAL
 
 class QDialPrivate;
 class QStyleOptionSlider;
@@ -98,8 +99,8 @@ private:
     Q_DISABLE_COPY(QDial)
 };
 
-#endif  // QT_NO_DIAL
-
 QT_END_NAMESPACE
+
+#endif // QT_CONFIG(dial)
 
 #endif // QDIAL_H

@@ -2426,9 +2426,11 @@ static bool unstylable(const QWidget *w)
 static quint64 extendedPseudoClass(const QWidget *w)
 {
     quint64 pc = w->isWindow() ? quint64(PseudoClass_Window) : 0;
+#if QT_CONFIG(abstractslider)
     if (const QAbstractSlider *slider = qobject_cast<const QAbstractSlider *>(w)) {
         pc |= ((slider->orientation() == Qt::Vertical) ? PseudoClass_Vertical : PseudoClass_Horizontal);
     } else
+#endif
 #ifndef QT_NO_COMBOBOX
     if (const QComboBox *combo = qobject_cast<const QComboBox *>(w)) {
         if (combo->isEditable())

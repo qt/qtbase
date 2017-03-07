@@ -42,12 +42,12 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
+
+#if QT_CONFIG(scrollbar)
+
 #include <QtWidgets/qabstractslider.h>
 
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_SCROLLBAR
 
 class QScrollBarPrivate;
 class QStyleOptionSlider;
@@ -94,8 +94,8 @@ private:
 #endif
 };
 
-#endif // QT_NO_SCROLLBAR
-
 QT_END_NAMESPACE
+
+#endif // QT_CONFIG(scrollbar)
 
 #endif // QSCROLLBAR_H

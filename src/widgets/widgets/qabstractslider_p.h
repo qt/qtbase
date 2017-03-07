@@ -57,6 +57,8 @@
 #include "private/qwidget_p.h"
 #include "qstyle.h"
 
+QT_REQUIRE_CONFIG(abstractslider);
+
 QT_BEGIN_NAMESPACE
 
 class QAbstractSliderPrivate : public QWidgetPrivate

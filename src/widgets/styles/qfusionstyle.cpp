@@ -3294,7 +3294,9 @@ void QFusionStyle::polish(QWidget *widget)
 #if QT_CONFIG(splitter)
             || qobject_cast<QSplitterHandle *>(widget)
 #endif
+#if QT_CONFIG(abstractslider)
             || qobject_cast<QAbstractSlider *>(widget)
+#endif
 #if QT_CONFIG(spinbox)
             || qobject_cast<QAbstractSpinBox *>(widget)
 #endif
@@ -3333,7 +3335,9 @@ void QFusionStyle::unpolish(QWidget *widget)
 #if QT_CONFIG(splitter)
             || qobject_cast<QSplitterHandle *>(widget)
 #endif
+#if QT_CONFIG(abstractslider)
             || qobject_cast<QAbstractSlider *>(widget)
+#endif
 #if QT_CONFIG(spinbox)
             || qobject_cast<QAbstractSpinBox *>(widget)
 #endif

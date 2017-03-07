@@ -330,10 +330,17 @@
             "section": "Widgets",
             "output": [ "publicFeature", "feature" ]
         },
+        "abstractslider": {
+            "label": "QAbstractSlider",
+            "purpose": "Common super class for widgets like QScrollBar, QSlider and QDial.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
         "slider": {
             "label": "QSlider",
             "purpose": "Provides sliders controlling a bounded value.",
             "section": "Widgets",
+            "condition": "features.abstractslider",
             "output": [ "publicFeature", "feature" ]
         },
         "scrollbar": {
