@@ -285,6 +285,7 @@ bool QWidgetWindow::event(QEvent *event)
         return true;
 
     case QEvent::WindowStateChange:
+        QWindow::event(event); // Update QWindow::Visibility and emit signals.
         handleWindowStateChangedEvent(static_cast<QWindowStateChangeEvent *>(event));
         return true;
 
