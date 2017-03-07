@@ -3208,19 +3208,31 @@ public:
 };
 Q_STATIC_ASSERT(Q_ALIGNOF(Aligned4) % 4 == 0);
 
-class Q_DECL_ALIGN(128) Aligned128
+#if defined(Q_PROCESSOR_ARM)
+#  if defined(Q_COMPILER_ALIGNAS) && defined(__BIGGEST_ALIGNMENT__)
+     // On ARM __BIGGEST_ALIGNMENT__ must be multiplied by 8 to
+     // get the same limit as enforced by alignas()
+#    define BIGGEST_ALIGNMENT_TO_TEST (__BIGGEST_ALIGNMENT__ << 3)
+#  endif
+#endif
+
+#if !defined(BIGGEST_ALIGNMENT_TO_TEST)
+#  define BIGGEST_ALIGNMENT_TO_TEST 128
+#endif
+
+class Q_DECL_ALIGN(BIGGEST_ALIGNMENT_TO_TEST) AlignedBiggest
 {
     char i;
 public:
-    Aligned128(int i = 0) : i(i) {}
+    AlignedBiggest(int i = 0) : i(i) {}
 
-    enum { PreferredAlignment = 128 };
+    enum { PreferredAlignment = BIGGEST_ALIGNMENT_TO_TEST };
 
-    inline bool operator==(const Aligned128 &other) const { return i == other.i; }
-    inline bool operator<(const Aligned128 &other) const { return i < other.i; }
-    friend inline int qHash(const Aligned128 &a) { return qHash(a.i); }
+    inline bool operator==(const AlignedBiggest &other) const { return i == other.i; }
+    inline bool operator<(const AlignedBiggest &other) const { return i < other.i; }
+    friend inline int qHash(const AlignedBiggest &a) { return qHash(a.i); }
 };
-Q_STATIC_ASSERT(Q_ALIGNOF(Aligned128) % 128 == 0);
+Q_STATIC_ASSERT(Q_ALIGNOF(AlignedBiggest) % BIGGEST_ALIGNMENT_TO_TEST == 0);
 
 template<typename C>
 void testVectorAlignment()
@@ -3278,17 +3290,17 @@ void testAssociativeContainerAlignment()
 void tst_Collections::alignment()
 {
     testVectorAlignment<QVector<Aligned4> >();
-    testVectorAlignment<QVector<Aligned128> >();
+    testVectorAlignment<QVector<AlignedBiggest> >();
     testContiguousCacheAlignment<QContiguousCache<Aligned4> >();
-    testContiguousCacheAlignment<QContiguousCache<Aligned128> >();
+    testContiguousCacheAlignment<QContiguousCache<AlignedBiggest> >();
     testAssociativeContainerAlignment<QMap<Aligned4, Aligned4> >();
-    testAssociativeContainerAlignment<QMap<Aligned4, Aligned128> >();
-    testAssociativeContainerAlignment<QMap<Aligned128, Aligned4> >();
-    testAssociativeContainerAlignment<QMap<Aligned128, Aligned128> >();
+    testAssociativeContainerAlignment<QMap<Aligned4, AlignedBiggest> >();
+    testAssociativeContainerAlignment<QMap<AlignedBiggest, Aligned4> >();
+    testAssociativeContainerAlignment<QMap<AlignedBiggest, AlignedBiggest> >();
     testAssociativeContainerAlignment<QHash<Aligned4, Aligned4> >();
-    testAssociativeContainerAlignment<QHash<Aligned4, Aligned128> >();
-    testAssociativeContainerAlignment<QHash<Aligned128, Aligned4> >();
-    testAssociativeContainerAlignment<QHash<Aligned128, Aligned128> >();
+    testAssociativeContainerAlignment<QHash<Aligned4, AlignedBiggest> >();
+    testAssociativeContainerAlignment<QHash<AlignedBiggest, Aligned4> >();
+    testAssociativeContainerAlignment<QHash<AlignedBiggest, AlignedBiggest> >();
 }
 
 #else
