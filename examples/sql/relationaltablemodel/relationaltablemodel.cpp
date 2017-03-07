@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 
     initializeModel(&model);
 
-    QTableView *view = createView(QObject::tr("Relational Table Model"), &model);
+    QScopedPointer<QTableView> view(createView(QObject::tr("Relational Table Model"), &model));
     view->show();
 
     return app.exec();
