@@ -750,7 +750,6 @@ void tst_QArrayData::reallocate()
     QFETCH(size_t, alignment);
     QFETCH(QArrayData::AllocationOptions, allocateOptions);
     QFETCH(bool, isCapacityReserved);
-    QFETCH(const QArrayData *, commonEmpty);
 
     // Maximum alignment that can be requested is that of QArrayData,
     // otherwise, we can't use reallocate().
