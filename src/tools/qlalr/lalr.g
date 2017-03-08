@@ -192,6 +192,8 @@ protected:
 
 #include "recognizer.h"
 
+#include <QtCore/qdir.h>
+
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
@@ -343,7 +345,7 @@ int Recognizer::nextToken()
       text.clear ();
       if (! _M_no_lines)
         text += QLatin1String("\n#line ") + QString::number(_M_action_line) +
-                QLatin1String(" \"") + _M_input_file + QLatin1String("\"\n");
+                QLatin1String(" \"") + QDir::fromNativeSeparators(_M_input_file) + QLatin1String("\"\n");
       inp (); // skip ':'
 
       forever
@@ -381,7 +383,7 @@ int Recognizer::nextToken()
       text.clear ();
       if (! _M_no_lines)
         text += QLatin1String("\n#line ") + QString::number(_M_action_line) +
-                QLatin1String(" \"") + _M_input_file + QLatin1String("\"\n");
+                QLatin1String(" \"") + QDir::fromNativeSeparators(_M_input_file) + QLatin1String("\"\n");
 
       inp (); // skip ':'
 
