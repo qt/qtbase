@@ -374,7 +374,7 @@ static void qt_to_latin1(uchar *dst, const ushort *src, int length)
 }
 
 // Unicode case-insensitive comparison
-static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const ushort *be)
+static int ucstricmp(const QChar *a, const QChar *ae, const QChar *b, const QChar *be)
 {
     if (a == b)
         return (ae - be);
@@ -383,7 +383,7 @@ static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const u
     if (b == 0)
         return a - ae;
 
-    const ushort *e = ae;
+    const QChar *e = ae;
     if (be - b < ae - a)
         e = a + (be - b);
 
@@ -393,7 +393,7 @@ static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const u
 //         qDebug() << hex << alast << blast;
 //         qDebug() << hex << "*a=" << *a << "alast=" << alast << "folded=" << foldCase (*a, alast);
 //         qDebug() << hex << "*b=" << *b << "blast=" << blast << "folded=" << foldCase (*b, blast);
-        int diff = foldCase(*a, alast) - foldCase(*b, blast);
+        int diff = foldCase(a->unicode(), alast) - foldCase(b->unicode(), blast);
         if ((diff))
             return diff;
         ++a;
@@ -408,19 +408,19 @@ static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const u
 }
 
 // Case-insensitive comparison between a Unicode string and a QLatin1String
-static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b, const uchar *be)
+static int ucstricmp(const QChar *a, const QChar *ae, const char *b, const char *be)
 {
     if (!a)
         return be - b;
     if (!b)
         return a - ae;
 
-    const ushort *e = ae;
+    auto e = ae;
     if (be - b < ae - a)
         e = a + (be - b);
 
     while (a < e) {
-        int diff = foldCase(*a) - foldCase(*b);
+        int diff = foldCase(a->unicode()) - foldCase(uchar(*b));
         if ((diff))
             return diff;
         ++a;
@@ -561,7 +561,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
 #endif
 }
 
-static int ucstrncmp(const QChar *a, const uchar *c, int l)
+static int ucstrncmp(const QChar *a, const uchar *c, size_t l)
 {
     const ushort *uc = reinterpret_cast<const ushort *>(a);
     const ushort *e = uc + l;
@@ -652,36 +652,47 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     return 0;
 }
 
+template <typename Number>
+Q_DECL_CONSTEXPR int lencmp(Number lhs, Number rhs) Q_DECL_NOTHROW
+{
+    return lhs == rhs ? 0 :
+           lhs >  rhs ? 1 :
+           /* else */  -1 ;
+}
+
 // Unicode case-sensitive comparison
-static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
+static int ucstrcmp(const QChar *a, size_t alen, const QChar *b, size_t blen)
 {
     if (a == b && alen == blen)
         return 0;
-    int l = qMin(alen, blen);
+    const size_t l = qMin(alen, blen);
     int cmp = ucstrncmp(a, b, l);
-    return cmp ? cmp : (alen-blen);
+    return cmp ? cmp : lencmp(alen, blen);
 }
 
-// Unicode case-insensitive compare two same-sized strings
-static int ucstrnicmp(const ushort *a, const ushort *b, int l)
+static int ucstrcmp(const QChar *a, size_t alen, const char *b, size_t blen)
 {
-    return ucstricmp(a, a + l, b, b + l);
+    const size_t l = qMin(alen, blen);
+    const int cmp = ucstrncmp(a, reinterpret_cast<const uchar*>(b), l);
+    return cmp ? cmp : lencmp(alen, blen);
 }
 
-static bool qMemEquals(const quint16 *a, const quint16 *b, size_t length)
+static int qt_compare_strings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
-    if (a == b || !length)
-        return true;
-
-    return ucstrncmp(reinterpret_cast<const QChar *>(a), reinterpret_cast<const QChar *>(b), length) == 0;
+    if (cs == Qt::CaseSensitive)
+        return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
+    else
+        return ucstricmp(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
-static int ucstrcmp(const QChar *a, int alen, const uchar *b, int blen)
+static int qt_compare_strings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
-    int l = qMin(alen, blen);
-    int cmp = ucstrncmp(a, b, l);
-    return cmp ? cmp : (alen-blen);
+    if (cs == Qt::CaseSensitive)
+        return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size());
+    else
+        return ucstricmp(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
+
 
 /*!
     \internal
@@ -2785,7 +2796,7 @@ bool operator==(const QString &s1, const QString &s2) Q_DECL_NOTHROW
     if (s1.d->size != s2.d->size)
         return false;
 
-    return qMemEquals(s1.d->data(), s2.d->data(), s1.d->size);
+    return qt_compare_strings(s1, s2, Qt::CaseSensitive) == 0;
 }
 
 /*!
@@ -2798,10 +2809,7 @@ bool QString::operator==(QLatin1String other) const Q_DECL_NOTHROW
     if (d->size != other.size())
         return false;
 
-    if (!other.size())
-        return isEmpty();
-
-    return compare_helper(data(), size(), other, Qt::CaseSensitive) == 0;
+    return qt_compare_strings(*this, other, Qt::CaseSensitive) == 0;
 }
 
 /*! \fn bool QString::operator==(const QByteArray &other) const
@@ -2846,8 +2854,9 @@ bool QString::operator==(QLatin1String other) const Q_DECL_NOTHROW
 */
 bool operator<(const QString &s1, const QString &s2) Q_DECL_NOTHROW
 {
-    return ucstrcmp(s1.constData(), s1.length(), s2.constData(), s2.length()) < 0;
+    return qt_compare_strings(s1, s2, Qt::CaseSensitive) < 0;
 }
+
 /*!
    \overload operator<()
 
@@ -2856,11 +2865,7 @@ bool operator<(const QString &s1, const QString &s2) Q_DECL_NOTHROW
 */
 bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
 {
-    const uchar *c = (const uchar *) other.latin1();
-    if (!c || *c == 0)
-        return false;
-
-    return compare_helper(data(), size(), other, Qt::CaseSensitive) < 0;
+    return qt_compare_strings(*this, other, Qt::CaseSensitive) < 0;
 }
 
 /*! \fn bool QString::operator<(const QByteArray &other) const
@@ -2961,11 +2966,7 @@ bool QString::operator<(QLatin1String other) const Q_DECL_NOTHROW
 */
 bool QString::operator>(QLatin1String other) const Q_DECL_NOTHROW
 {
-    const uchar *c = (const uchar *) other.latin1();
-    if (!c || *c == '\0')
-        return !isEmpty();
-
-    return compare_helper(data(), size(), other, Qt::CaseSensitive) > 0;
+    return qt_compare_strings(*this, other, Qt::CaseSensitive) > 0;
 }
 
 /*! \fn bool QString::operator>(const QByteArray &other) const
@@ -3162,11 +3163,12 @@ int qFindString(
         return qFindStringBoyerMoore(haystack0, haystackLen, from,
             needle0, needleLen, cs);
 
+    auto sv = [sl](const ushort *v) { return QStringView(v, sl); };
     /*
         We use some hashing for efficiency's sake. Instead of
         comparing strings, we compare the hash value of str with that
         of a part of this QString. Only if that matches, we call
-        ucstrncmp() or ucstrnicmp().
+        qt_string_compare().
     */
     const ushort *needle = (const ushort *)needle0;
     const ushort *haystack = (const ushort *)haystack0 + from;
@@ -3185,7 +3187,7 @@ int qFindString(
         while (haystack <= end) {
             hashHaystack += haystack[sl_minus_1];
             if (hashHaystack == hashNeedle
-                 && ucstrncmp((const QChar *)needle, (const QChar *)haystack, sl) == 0)
+                 && qt_compare_strings(sv(needle), sv(haystack), Qt::CaseSensitive) == 0)
                 return haystack - (const ushort *)haystack0;
 
             REHASH(*haystack);
@@ -3201,7 +3203,8 @@ int qFindString(
 
         while (haystack <= end) {
             hashHaystack += foldCase(haystack + sl_minus_1, haystack_start);
-            if (hashHaystack == hashNeedle && ucstrnicmp(needle, haystack, sl) == 0)
+            if (hashHaystack == hashNeedle
+                 && qt_compare_strings(sv(needle), sv(haystack), Qt::CaseInsensitive) == 0)
                 return haystack - (const ushort *)haystack0;
 
             REHASH(foldCase(haystack, haystack_start));
@@ -3246,6 +3249,8 @@ static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *nee
         See indexOf() for explanations.
     */
 
+    auto sv = [sl](const ushort *v) { return QStringView(v, sl); };
+
     const ushort *end = haystack;
     haystack += from;
     const uint sl_minus_1 = sl - 1;
@@ -3264,7 +3269,7 @@ static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *nee
         while (haystack >= end) {
             hashHaystack += *haystack;
             if (hashHaystack == hashNeedle
-                 && ucstrncmp((const QChar *)needle, (const QChar *)haystack, sl) == 0)
+                 && qt_compare_strings(sv(needle), sv(haystack), Qt::CaseSensitive) == 0)
                 return haystack - end;
             --haystack;
             REHASH(haystack[sl]);
@@ -3278,7 +3283,8 @@ static int lastIndexOfHelper(const ushort *haystack, int from, const ushort *nee
 
         while (haystack >= end) {
             hashHaystack += foldCase(haystack, end);
-            if (hashHaystack == hashNeedle && ucstrnicmp(needle, haystack, sl) == 0)
+            if (hashHaystack == hashNeedle
+                 && qt_compare_strings(sv(haystack), sv(needle), Qt::CaseInsensitive) == 0)
                 return haystack - end;
             --haystack;
             REHASH(foldCase(haystack + sl, end));
@@ -5450,9 +5456,7 @@ QString& QString::fill(QChar ch, int size)
 */
 int QString::compare(const QString &other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 {
-    if (cs == Qt::CaseSensitive)
-        return ucstrcmp(constData(), length(), other.constData(), other.length());
-    return ucstricmp(d->data(), d->data() + d->size, other.d->data(), other.d->data() + other.d->size);
+    return qt_compare_strings(*this, other, cs);
 }
 
 /*!
@@ -5462,11 +5466,11 @@ int QString::compare(const QString &other, Qt::CaseSensitivity cs) const Q_DECL_
 int QString::compare_helper(const QChar *data1, int length1, const QChar *data2, int length2,
                             Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
-    if (cs == Qt::CaseSensitive)
-        return ucstrcmp(data1, length1, data2, length2);
-    const ushort *s1 = reinterpret_cast<const ushort *>(data1);
-    const ushort *s2 = reinterpret_cast<const ushort *>(data2);
-    return ucstricmp(s1, s1 + length1, s2, s2 + length2);
+    Q_ASSERT(length1 >= 0);
+    Q_ASSERT(length2 >= 0);
+    Q_ASSERT(data1 || length1 == 0);
+    Q_ASSERT(data2 || length2 == 0);
+    return qt_compare_strings(QStringView(data1, length1), QStringView(data2, length2), cs);
 }
 
 /*!
@@ -5477,7 +5481,7 @@ int QString::compare_helper(const QChar *data1, int length1, const QChar *data2,
 */
 int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 {
-    return compare_helper(unicode(), length(), other, cs);
+    return qt_compare_strings(*this, other, cs);
 }
 
 /*!
@@ -5496,6 +5500,8 @@ int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_N
 int QString::compare_helper(const QChar *data1, int length1, const char *data2, int length2,
                             Qt::CaseSensitivity cs)
 {
+    Q_ASSERT(length1 >= 0);
+    Q_ASSERT(data1 || length1 == 0);
     if (!data2)
         return length1;
     if (Q_UNLIKELY(length2 < 0))
@@ -5504,7 +5510,7 @@ int QString::compare_helper(const QChar *data1, int length1, const char *data2, 
     QVarLengthArray<ushort> s2(length2);
     const auto beg = reinterpret_cast<QChar *>(s2.data());
     const auto end = QUtf8::convertToUnicode(beg, data2, length2);
-    return compare_helper(data1, length1, beg, end - beg, cs);
+    return qt_compare_strings(QStringView(data1, length1), QStringView(beg, end - beg), cs);
 }
 
 /*!
@@ -5519,18 +5525,9 @@ int QString::compare_helper(const QChar *data1, int length1, const char *data2, 
 int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
                             Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
-    const ushort *uc = reinterpret_cast<const ushort *>(data1);
-    const ushort *uce = uc + length1;
-    const uchar *c = (const uchar *)s2.latin1();
-
-    if (!c)
-        return length1;
-
-    if (cs == Qt::CaseSensitive) {
-        return ucstrcmp(data1, length1, c, s2.size());
-    } else {
-        return ucstricmp(uc, uce, c, c + s2.size());
-    }
+    Q_ASSERT(length1 >= 0);
+    Q_ASSERT(data1 || length1 == 0);
+    return qt_compare_strings(QStringView(data1, length1), s2, cs);
 }
 
 /*!
@@ -5616,9 +5613,15 @@ Q_GLOBAL_STATIC(QThreadStorage<QCollator>, defaultCollator)
 int QString::localeAwareCompare_helper(const QChar *data1, int length1,
                                        const QChar *data2, int length2)
 {
+    Q_ASSERT(length1 >= 0);
+    Q_ASSERT(data1 || length1 == 0);
+    Q_ASSERT(length2 >= 0);
+    Q_ASSERT(data2 || length2 == 0);
+
     // do the right thing for null and empty
     if (length1 == 0 || length2 == 0)
-        return ucstrcmp(data1, length1, data2, length2);
+        return qt_compare_strings(QStringView(data1, length1), QStringView(data2, length2),
+                               Qt::CaseSensitive);
 
 #if defined(Q_OS_WIN)
 #  ifndef Q_OS_WINRT
@@ -5659,10 +5662,12 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     // declared in <string.h>
     int delta = strcoll(toLocal8Bit_helper(data1, length1).constData(), toLocal8Bit_helper(data2, length2).constData());
     if (delta == 0)
-        delta = ucstrcmp(data1, length1, data2, length2);
+        delta = qt_compare_strings(QStringView(data1, length1), QStringView(data2, length2),
+                                Qt::CaseSensitive);
     return delta;
 #else
-    return ucstrcmp(data1, length1, data2, length2);
+    return qt_compare_strings(QStringView(data1, length1), QStringView(data2, length2),
+                           Qt::CaseSensitive);
 #endif
 }
 
@@ -9312,8 +9317,8 @@ QString QStringRef::toString() const {
    returns \c false.
 */
 bool operator==(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
-{ return (s1.size() == s2.size() &&
-          qMemEquals((const ushort *)s1.unicode(), (const ushort *)s2.unicode(), s1.size()));
+{
+    return s1.size() == s2.size() && qt_compare_strings(s1, s2, Qt::CaseSensitive) == 0;
 }
 
 /*! \relates QStringRef
@@ -9322,8 +9327,8 @@ bool operator==(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
    returns \c false.
 */
 bool operator==(const QString &s1,const QStringRef &s2) Q_DECL_NOTHROW
-{ return (s1.size() == s2.size() &&
-          qMemEquals((const ushort *)s1.unicode(), (const ushort *)s2.unicode(), s1.size()));
+{
+    return s1.size() == s2.size() && qt_compare_strings(s1, s2, Qt::CaseSensitive) == 0;
 }
 
 /*! \relates QStringRef
@@ -9336,10 +9341,7 @@ bool operator==(QLatin1String s1, const QStringRef &s2) Q_DECL_NOTHROW
     if (s1.size() != s2.size())
         return false;
 
-    const uchar *c = reinterpret_cast<const uchar *>(s1.latin1());
-    if (!c)
-        return s2.isEmpty();
-    return ucstrncmp(s2.unicode(), c, s2.size()) == 0;
+    return qt_compare_strings(s2, s1, Qt::CaseSensitive) == 0;
 }
 
 /*!
@@ -9355,7 +9357,7 @@ bool operator==(QLatin1String s1, const QStringRef &s2) Q_DECL_NOTHROW
 */
 bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
 {
-    return ucstrcmp(s1.constData(), s1.length(), s2.constData(), s2.length()) < 0;
+    return qt_compare_strings(s1, s2, Qt::CaseSensitive) < 0;
 }
 
 /*!\fn bool operator<=(const QStringRef &s1,const QStringRef &s2)
@@ -10432,6 +10434,11 @@ static inline int qt_find_latin1_string(const QChar *haystack, int size,
 static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
                                   const QChar *needle, int needleLen, Qt::CaseSensitivity cs)
 {
+    Q_ASSERT(haystackLen >= 0);
+    Q_ASSERT(haystack || !haystackLen);
+    Q_ASSERT(needleLen >= 0);
+    Q_ASSERT(needle || !needleLen);
+
     if (!haystack)
         return !needle;
     if (haystackLen == 0)
@@ -10439,24 +10446,15 @@ static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
     if (needleLen > haystackLen)
         return false;
 
-    const ushort *h = reinterpret_cast<const ushort*>(haystack);
-    const ushort *n = reinterpret_cast<const ushort*>(needle);
-
-    if (cs == Qt::CaseSensitive) {
-        return qMemEquals(h, n, needleLen);
-    } else {
-        uint last = 0;
-        uint olast = 0;
-        for (int i = 0; i < needleLen; ++i)
-            if (foldCase(h[i], last) != foldCase(n[i], olast))
-                return false;
-    }
-    return true;
+    return qt_compare_strings(QStringView(haystack, needleLen), QStringView(needle, needleLen), cs) == 0;
 }
 
 static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
                                   QLatin1String needle, Qt::CaseSensitivity cs)
 {
+    Q_ASSERT(haystackLen >= 0);
+    Q_ASSERT(haystack || !haystackLen);
+
     if (!haystack)
         return !needle.latin1();
     if (haystackLen == 0)
@@ -10464,21 +10462,18 @@ static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
     const int slen = needle.size();
     if (slen > haystackLen)
         return false;
-    const ushort *data = reinterpret_cast<const ushort*>(haystack);
-    const uchar *latin = reinterpret_cast<const uchar*>(needle.latin1());
-    if (cs == Qt::CaseSensitive) {
-        return ucstrncmp(haystack, latin, slen) == 0;
-    } else {
-        for (int i = 0; i < slen; ++i)
-            if (foldCase(data[i]) != foldCase((ushort)latin[i]))
-                return false;
-    }
-    return true;
+
+    return qt_compare_strings(QStringView(haystack, slen), needle, cs) == 0;
 }
 
 static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
                                 const QChar *needle, int needleLen, Qt::CaseSensitivity cs)
 {
+    Q_ASSERT(haystackLen >= 0);
+    Q_ASSERT(haystack || !haystackLen);
+    Q_ASSERT(needleLen >= 0);
+    Q_ASSERT(needle || !needleLen);
+
     if (!haystack)
         return !needle;
     if (haystackLen == 0)
@@ -10487,25 +10482,17 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
     if (pos < 0)
         return false;
 
-    const ushort *h = reinterpret_cast<const ushort*>(haystack);
-    const ushort *n = reinterpret_cast<const ushort*>(needle);
-
-    if (cs == Qt::CaseSensitive) {
-        return qMemEquals(h + pos, n, needleLen);
-    } else {
-        uint last = 0;
-        uint olast = 0;
-        for (int i = 0; i < needleLen; i++)
-            if (foldCase(h[pos+i], last) != foldCase(n[i], olast))
-                return false;
-    }
-    return true;
+    return qt_compare_strings(QStringView(haystack + pos, needleLen),
+                           QStringView(needle, needleLen), cs) == 0;
 }
 
 
 static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
                                 QLatin1String needle, Qt::CaseSensitivity cs)
 {
+    Q_ASSERT(haystackLen >= 0);
+    Q_ASSERT(haystack || !haystackLen);
+
     if (!haystack)
         return !needle.latin1();
     if (haystackLen == 0)
@@ -10514,16 +10501,8 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
     int pos = haystackLen - slen;
     if (pos < 0)
         return false;
-    const uchar *latin = reinterpret_cast<const uchar*>(needle.latin1());
-    const ushort *data = reinterpret_cast<const ushort*>(haystack);
-    if (cs == Qt::CaseSensitive) {
-        return ucstrncmp(haystack + pos, latin, slen) == 0;
-    } else {
-        for (int i = 0; i < slen; i++)
-            if (foldCase(data[pos+i]) != foldCase((ushort)latin[i]))
-                return false;
-    }
-    return true;
+
+    return qt_compare_strings(QStringView(haystack + pos, slen), needle, cs) == 0;
 }
 
 /*!
