@@ -196,6 +196,7 @@ Cpp.ignoredirectives    += \
                           Q_DECLARE_TYPEINFO \
                           Q_DECL_NOEXCEPT_EXPR \
                           QT_DEPRECATED_X \
+                          QT_SYSINFO_DEPRECATED_X \
                           Q_DISABLE_COPY \
                           Q_DUMMY_COMPARISON_OPERATOR \
                           Q_ENUM \
