@@ -379,9 +379,9 @@ static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const u
     if (a == b)
         return (ae - be);
     if (a == 0)
-        return 1;
+        return be - b;
     if (b == 0)
-        return -1;
+        return a - ae;
 
     const ushort *e = ae;
     if (be - b < ae - a)
@@ -410,13 +410,10 @@ static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const u
 // Case-insensitive comparison between a Unicode string and a QLatin1String
 static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b, const uchar *be)
 {
-    if (a == 0) {
-        if (b == 0)
-            return 0;
-        return 1;
-    }
-    if (b == 0)
-        return -1;
+    if (!a)
+        return be - b;
+    if (!b)
+        return a - ae;
 
     const ushort *e = ae;
     if (be - b < ae - a)
