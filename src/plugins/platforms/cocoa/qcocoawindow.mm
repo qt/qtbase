@@ -1636,6 +1636,13 @@ void QCocoaWindow::recreateWindowIfNeeded()
             [m_nsWindow setContentView:m_view];
             [m_view release];
             [m_view setPostsFrameChangedNotifications:YES];
+            // QTBUG-58963
+            // viewDidChangeFrame() should be called for each window automatically at this point because it is
+            // registered with Q_NOTIFICATION_HANDLER(NSViewFrameDidChangeNotification);
+            // The corner case when it's not called and we need to make a manual geometry update is when window's
+            // size is not specified explicitly but minimumSize is set and matches to the size NSView was created with.
+            if (QSizeF::fromCGSize(m_view.frame.size) == [QNSView defaultViewSize])
+                viewDidChangeFrame();
         }
     }
 
