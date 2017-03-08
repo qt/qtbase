@@ -49,7 +49,9 @@
 #include <qevent.h>
 #include <qbitarray.h>
 #include <qscrollbar.h>
+#if QT_CONFIG(abstractbutton)
 #include <qabstractbutton.h>
+#endif
 #include <private/qtableview_p.h>
 #include <private/qheaderview_p.h>
 #include <private/qscrollbar_p.h>
@@ -578,6 +580,7 @@ bool QSpanCollection::checkConsistency() const
 }
 #endif
 
+#if QT_CONFIG(abstractbutton)
 class QTableCornerButton : public QAbstractButton
 {
     Q_OBJECT
@@ -600,6 +603,7 @@ public:
         style()->drawControl(QStyle::CE_Header, &opt, &painter, this);
     }
 };
+#endif
 
 void QTableViewPrivate::init()
 {
@@ -619,9 +623,11 @@ void QTableViewPrivate::init()
 
     tabKeyNavigation = true;
 
+#if QT_CONFIG(abstractbutton)
     cornerWidget = new QTableCornerButton(q);
     cornerWidget->setFocusPolicy(Qt::NoFocus);
     QObject::connect(cornerWidget, SIGNAL(clicked()), q, SLOT(selectAll()));
+#endif
 }
 
 /*!
@@ -2121,6 +2127,7 @@ void QTableView::updateGeometries()
     if (d->horizontalHeader->isHidden())
         QMetaObject::invokeMethod(d->horizontalHeader, "updateGeometries");
 
+#if QT_CONFIG(abstractbutton)
     // update cornerWidget
     if (d->horizontalHeader->isHidden() || d->verticalHeader->isHidden()) {
         d->cornerWidget->setHidden(true);
@@ -2128,6 +2135,7 @@ void QTableView::updateGeometries()
         d->cornerWidget->setHidden(false);
         d->cornerWidget->setGeometry(verticalLeft, horizontalTop, width, height);
     }
+#endif
 
     // update scroll bars
 
@@ -2642,6 +2650,7 @@ bool QTableView::wordWrap() const
     return d->wrapItemText;
 }
 
+#if QT_CONFIG(abstractbutton)
 /*!
     \property QTableView::cornerButtonEnabled
     \brief whether the button in the top-left corner is enabled
@@ -2664,6 +2673,7 @@ bool QTableView::isCornerButtonEnabled() const
     Q_D(const QTableView);
     return d->cornerWidget->isEnabled();
 }
+#endif
 
 /*!
     \internal

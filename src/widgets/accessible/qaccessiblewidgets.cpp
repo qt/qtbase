@@ -64,7 +64,6 @@
 #include <QAbstractItemView>
 #include <QDockWidget>
 #include <QMainWindow>
-#include <QAbstractButton>
 #include <private/qdockwidget_p.h>
 #include <QFocusFrame>
 

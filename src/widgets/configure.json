@@ -117,6 +117,12 @@
             "condition": "features.tableview",
             "output": [ "publicFeature", "feature" ]
         },
+        "abstractbutton": {
+            "label": "QAbstractButton",
+            "purpose": "Abstract base class of button widgets, providing functionality common to buttons.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
         "commandlinkbutton": {
             "label": "QCommandLinkButton",
             "purpose": "Provides a Vista style command link button.",
@@ -193,6 +199,7 @@
             "label": "QRadioButton",
             "purpose": "Provides a radio button with a text label.",
             "section": "Widgets",
+            "condition": "features.abstractbutton",
             "output": [ "publicFeature" ]
         },
         "spinbox": {
@@ -234,20 +241,21 @@
             "label": "QCheckBox(",
             "purpose": "Provides a checkbox with a text label.",
             "section": "Widgets",
+            "condition": "features.abstractbutton",
             "output": [ "publicFeature" ]
         },
         "pushbutton": {
             "label": "QPushButton",
             "purpose": "Provides a command button.",
             "section": "Widgets",
-            "condition": "features.action",
+            "condition": "features.abstractbutton && features.action",
             "output": [ "publicFeature" ]
         },
         "toolbutton": {
             "label": "QToolButton",
             "purpose": "Provides quick-access buttons to commands and options.",
             "section": "Widgets",
-            "condition": "features.action",
+            "condition": "features.abstractbutton && features.action",
             "output": [ "publicFeature", "feature" ]
         },
         "toolbar": {
@@ -274,7 +282,7 @@
             "label": "QButtonGroup",
             "purpose": "Supports organizing groups of button widgets.",
             "section": "Widgets",
-            "condition": "features.groupbox",
+            "condition": "features.abstractbutton && features.groupbox",
             "output": [ "publicFeature", "feature" ]
         },
         "mainwindow": {
