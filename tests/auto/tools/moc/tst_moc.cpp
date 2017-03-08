@@ -521,6 +521,10 @@ public slots:
 private:
      myNS::Points m_points;
 
+#ifdef Q_MOC_RUN
+    int xx = 11'11; // digit separator must not confuse moc (QTBUG-59351)
+#endif
+
 private slots:
      inline virtual void blub1() {}
      virtual inline void blub2() {}
