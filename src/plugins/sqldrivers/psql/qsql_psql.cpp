@@ -50,7 +50,6 @@
 #include <qsqlquery.h>
 #include <qsocketnotifier.h>
 #include <qstringlist.h>
-#include <qmutex.h>
 #include <QtSql/private/qsqlresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
 
@@ -618,13 +617,10 @@ static QString qCreateParamString(const QVector<QVariant> &boundValues, const QS
     return params;
 }
 
-Q_GLOBAL_STATIC(QMutex, qMutex)
 QString qMakePreparedStmtId()
 {
-    qMutex()->lock();
-    static unsigned int qPreparedStmtCount = 0;
-    QString id = QLatin1String("qpsqlpstmt_") + QString::number(++qPreparedStmtCount, 16);
-    qMutex()->unlock();
+    static QBasicAtomicInt qPreparedStmtCount = Q_BASIC_ATOMIC_INITIALIZER(0);
+    QString id = QLatin1String("qpsqlpstmt_") + QString::number(qPreparedStmtCount.fetchAndAddRelaxed(1) + 1, 16);
     return id;
 }
 
