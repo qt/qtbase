@@ -1255,7 +1255,6 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::UnknownType:
     case QMetaType::Void:
     case QMetaType::VoidStar:
-    case QMetaType::Nullptr:
     case QMetaType::QObjectStar:
     case QMetaType::QModelIndex:
     case QMetaType::QPersistentModelIndex:
@@ -1264,6 +1263,8 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QJsonArray:
     case QMetaType::QJsonDocument:
         return false;
+    case QMetaType::Nullptr:
+        return true;
     case QMetaType::Long:
         stream << qlonglong(*static_cast<const long *>(data));
         break;
@@ -1477,7 +1478,6 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::UnknownType:
     case QMetaType::Void:
     case QMetaType::VoidStar:
-    case QMetaType::Nullptr:
     case QMetaType::QObjectStar:
     case QMetaType::QModelIndex:
     case QMetaType::QPersistentModelIndex:
@@ -1486,6 +1486,8 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QJsonArray:
     case QMetaType::QJsonDocument:
         return false;
+    case QMetaType::Nullptr:
+        return true;
     case QMetaType::Long: {
         qlonglong l;
         stream >> l;

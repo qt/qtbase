@@ -1559,7 +1559,6 @@ DECLARE_NONSTREAMABLE(QJsonArray)
 DECLARE_NONSTREAMABLE(QJsonDocument)
 DECLARE_NONSTREAMABLE(QObject*)
 DECLARE_NONSTREAMABLE(QWidget*)
-DECLARE_NONSTREAMABLE(std::nullptr_t)
 
 #define DECLARE_GUI_CLASS_NONSTREAMABLE(MetaTypeName, MetaTypeId, RealType) \
     DECLARE_NONSTREAMABLE(RealType)
@@ -1598,7 +1597,10 @@ void tst_QMetaType::saveAndLoadBuiltin()
 
     if (isStreamable) {
         QVERIFY(QMetaType::load(stream, type, value)); // Hmmm, shouldn't it return false?
-        QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+
+        // std::nullptr_t is nullary: it doesn't actually read anything
+        if (type != QMetaType::Nullptr)
+            QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
     }
 
     stream.device()->seek(0);
@@ -1608,7 +1610,10 @@ void tst_QMetaType::saveAndLoadBuiltin()
 
     if (isStreamable) {
         QVERIFY(QMetaType::load(stream, type, value)); // Hmmm, shouldn't it return false?
-        QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+
+        // std::nullptr_t is nullary: it doesn't actually read anything
+        if (type != QMetaType::Nullptr)
+            QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
     }
 
     QMetaType::destroy(type, value);
