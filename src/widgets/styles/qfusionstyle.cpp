@@ -59,6 +59,9 @@
 #include <qpixmapcache.h>
 #include <qscrollbar.h>
 #include <qspinbox.h>
+#if QT_CONFIG(abstractslider)
+#include <qabstractslider.h>
+#endif
 #include <qslider.h>
 #include <qsplitter.h>
 #include <qprogressbar.h>

@@ -60,6 +60,9 @@
 #include <qshareddata.h>
 #include <qtoolbutton.h>
 #include <qscrollbar.h>
+#if QT_CONFIG(abstractslider)
+#include <qabstractslider.h>
+#endif
 #include <qstring.h>
 #include <qfile.h>
 #if QT_CONFIG(checkbox)
