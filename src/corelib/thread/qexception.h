@@ -54,7 +54,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_EXCEPTIONS
+#if !defined(QT_NO_EXCEPTIONS) || defined(Q_CLANG_QDOC)
 
 class Q_CORE_EXPORT QException : public std::exception
 {

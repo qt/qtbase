@@ -415,7 +415,7 @@ int QStaticByteArrayMatcherBase::indexOfIn(const char *needle, uint nlen, const 
 */
 
 /*!
-    \fn qMakeStaticByteArrayMatcher(const char (&pattern)[N])
+    \fn QStaticByteArrayMatcher qMakeStaticByteArrayMatcher(const char (&pattern)[N])
     \since 5.9
     \relates QStaticByteArrayMatcher
 

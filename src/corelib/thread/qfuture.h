@@ -42,7 +42,7 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_QFUTURE
+#if !defined(QT_NO_QFUTURE) || defined(Q_CLANG_QDOC)
 
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qstring.h>
