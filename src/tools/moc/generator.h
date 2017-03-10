@@ -46,6 +46,7 @@ private:
     void registerClassInfoStrings();
     void generateClassInfos();
     void registerFunctionStrings(const QVector<FunctionDef> &list);
+    void registerByteArrayVector(const QVector<QByteArray> &list);
     void generateFunctions(const QVector<FunctionDef> &list, const char *functype, int type, int &paramsIndex);
     void generateFunctionRevisions(const QVector<FunctionDef> &list, const char *functype);
     void generateFunctionParameters(const QVector<FunctionDef> &list, const char *functype);

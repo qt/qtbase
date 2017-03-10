@@ -1830,13 +1830,25 @@ void tst_Moc::notifyError()
     const QString header = m_sourceDirectory + QStringLiteral("/error-on-wrong-notify.h");
     proc.start(m_moc, QStringList(header));
     QVERIFY(proc.waitForFinished());
-    QCOMPARE(proc.exitCode(), 1);
+    QCOMPARE(proc.exitCode(), 0);
     QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
     QByteArray mocOut = proc.readAllStandardOutput();
-    QVERIFY(mocOut.isEmpty());
-    QString mocError = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocError, header +
-        QString(":42: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
+    QVERIFY(!mocOut.isEmpty());
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+
+    QStringList args;
+    args << "-c" << "-x" << "c++" << "-I" << "."
+         << "-I" << qtIncludePath << "-o" << "/dev/null" << "-fPIC" << "-std=c++11" << "-";
+    proc.start("gcc", args);
+    QVERIFY(proc.waitForStarted());
+    proc.write(mocOut);
+    proc.closeWriteChannel();
+
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 1);
+    const QString gccOutput = QString::fromLocal8Bit(proc.readAllStandardError());
+    QVERIFY(gccOutput.contains(QLatin1String("error")));
+    QVERIFY(gccOutput.contains(QLatin1String("fooChanged")));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif

@@ -28,7 +28,7 @@
 
 #ifndef ERROR_ON_WRONG_NOTIFY_H
 #define ERROR_ON_WRONG_NOTIFY_H
-#include <QObject>
+#include <QtCore/QObject>
 
 class ClassWithWrongNOTIFY : public QObject
 {

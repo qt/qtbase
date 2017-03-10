@@ -111,7 +111,8 @@ enum MetaObjectFlags {
 
 enum MetaDataFlags {
     IsUnresolvedType = 0x80000000,
-    TypeNameIndexMask = 0x7FFFFFFF
+    TypeNameIndexMask = 0x7FFFFFFF,
+    IsUnresolvedSignal = 0x70000000
 };
 
 enum EnumFlags {

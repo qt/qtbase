@@ -3347,7 +3347,21 @@ int QMetaProperty::notifySignalIndex() const
     if (hasNotifySignal()) {
         int offset = priv(mobj->d.data)->propertyData +
                      priv(mobj->d.data)->propertyCount * 3 + idx;
-        return mobj->d.data[offset] + mobj->methodOffset();
+        int methodIndex = mobj->d.data[offset];
+        if (methodIndex & IsUnresolvedSignal) {
+            methodIndex &= ~IsUnresolvedSignal;
+            const QByteArray signalName = stringData(mobj, methodIndex);
+            const QMetaObject *m = mobj;
+            const int idx = indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
+            if (idx >= 0) {
+                return idx + m->methodOffset();
+            } else {
+                qWarning("QMetaProperty::notifySignal: cannot find the NOTIFY signal %s in class %s for property '%s'",
+                         signalName.constData(), objectClassName(mobj), name());
+                return -1;
+            }
+        }
+        return methodIndex + mobj->methodOffset();
     } else {
         return -1;
     }

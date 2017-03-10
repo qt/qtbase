@@ -147,6 +147,77 @@ namespace MyNamespace {
     {
         Q_OBJECT
     };
+
+    class ClassWithSetterGetterSignals : public QObject
+    {
+        Q_OBJECT
+
+        public:
+            int value1() const { return m_value1; }
+            void setValue1(int v) {
+                if (v != m_value1) {
+                    m_value1 = v;
+                    Q_EMIT value1Changed();
+                }
+            }
+
+            int value2() const { return m_value2; }
+            void setValue2(int v) {
+                if (v != m_value2) {
+                    m_value2 = v;
+                    Q_EMIT value2Changed();
+                }
+            }
+
+        Q_SIGNALS:
+            void value1Changed();
+            void value2Changed();
+
+        private:
+            int m_value1 = 0;
+            int m_value2 = 0;
+    };
+
+    class ClassWithSetterGetterSignalsAddsProperties : public ClassWithSetterGetterSignals
+    {
+        Q_OBJECT
+        Q_PROPERTY(int value1 READ value1 WRITE setValue1 NOTIFY value1Changed)
+        Q_PROPERTY(int value2 READ value2 WRITE setValue2 NOTIFY value2Changed)
+    };
+
+    class ClassWithChangedSignal : public QObject
+    {
+        Q_OBJECT
+
+        public:
+            int value1() const { return m_value1; }
+            void setValue1(int v) {
+                if (v != m_value1) {
+                    m_value1 = v;
+                    Q_EMIT propertiesChanged();
+                }
+            }
+
+            void thisIsNotASignal() { }
+
+        Q_SIGNALS:
+            void propertiesChanged();
+
+        private:
+            int m_value1 = 0;
+    };
+
+    class ClassWithChangedSignalNewValue : public ClassWithChangedSignal
+    {
+        Q_OBJECT
+
+        Q_PROPERTY(int value2 MEMBER m_value2 NOTIFY propertiesChanged)
+        Q_PROPERTY(int value3 MEMBER m_value3 NOTIFY thisIsNotASignal)
+
+        private:
+            int m_value2 = 0;
+            int m_value3 = 0;
+    };
 }
 
 
@@ -244,6 +315,8 @@ private slots:
 
     void inherits_data();
     void inherits();
+
+    void notifySignalsInParentClass();
 
 signals:
     void value6Changed();
@@ -1670,6 +1743,19 @@ void tst_QMetaObject::inherits()
     QFETCH(bool, inheritsResult);
 
     QCOMPARE(derivedMetaObject->inherits(baseMetaObject), inheritsResult);
+}
+
+void tst_QMetaObject::notifySignalsInParentClass()
+{
+    MyNamespace::ClassWithSetterGetterSignalsAddsProperties obj;
+    QCOMPARE(obj.metaObject()->property(obj.metaObject()->indexOfProperty("value1")).notifySignal().name(), QByteArray("value1Changed"));
+    QCOMPARE(obj.metaObject()->property(obj.metaObject()->indexOfProperty("value2")).notifySignal().name(), QByteArray("value2Changed"));
+
+    MyNamespace::ClassWithChangedSignalNewValue obj2;
+    QCOMPARE(obj2.metaObject()->property(obj2.metaObject()->indexOfProperty("value2")).notifySignal().name(), QByteArray("propertiesChanged"));
+
+    QTest::ignoreMessage(QtWarningMsg, "QMetaProperty::notifySignal: cannot find the NOTIFY signal thisIsNotASignal in class MyNamespace::ClassWithChangedSignalNewValue for property 'value3'");
+    obj2.metaObject()->property(obj2.metaObject()->indexOfProperty("value3")).notifySignal();
 }
 
 QTEST_MAIN(tst_QMetaObject)

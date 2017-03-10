@@ -218,6 +218,7 @@ void Generator::generateCode()
     registerFunctionStrings(cdef->slotList);
     registerFunctionStrings(cdef->methodList);
     registerFunctionStrings(cdef->constructorList);
+    registerByteArrayVector(cdef->nonClassSignalList);
     registerPropertyStrings();
     registerEnumStrings();
 
@@ -603,6 +604,19 @@ void Generator::generateCode()
 // Generate plugin meta data
 //
     generatePluginMetaData();
+
+//
+// Generate function to make sure the non-class signals exist in the parent classes
+//
+    if (!cdef->nonClassSignalList.isEmpty()) {
+        fprintf(out, "// If you get a compile error in this function it can be because either\n");
+        fprintf(out, "//     a) You are using a NOTIFY signal that does not exist. Fix it.\n");
+        fprintf(out, "//     b) You are using a NOTIFY signal that does exist (in a parent class) but has a non-empty parameter list. This is a moc limitation.\n");
+        fprintf(out, "Q_DECL_UNUSED static void checkNotifySignalValidity_%s(%s *t) {\n", qualifiedClassNameIdentifier.constData(), cdef->qualified.constData());
+        for (const QByteArray &nonClassSignal : cdef->nonClassSignalList)
+            fprintf(out, "    t->%s();\n", nonClassSignal.constData());
+        fprintf(out, "}\n");
+    }
 }
 
 
@@ -646,6 +660,12 @@ void Generator::registerFunctionStrings(const QVector<FunctionDef>& list)
             strreg(a.name);
         }
     }
+}
+
+void Generator::registerByteArrayVector(const QVector<QByteArray> &list)
+{
+    for (const QByteArray &ba : list)
+        strreg(ba);
 }
 
 void Generator::generateFunctions(const QVector<FunctionDef>& list, const char *functype, int type, int &paramsIndex)
@@ -841,12 +861,17 @@ void Generator::generateProperties()
         fprintf(out, "\n // properties: notify_signal_id\n");
         for (int i = 0; i < cdef->propertyList.count(); ++i) {
             const PropertyDef &p = cdef->propertyList.at(i);
-            if(p.notifyId == -1)
+            if (p.notifyId == -1) {
                 fprintf(out, "    %4d,\n",
                         0);
-            else
+            } else if (p.notifyId > -1) {
                 fprintf(out, "    %4d,\n",
                         p.notifyId);
+            } else {
+                const int indexInStrings = strings.indexOf(p.notify);
+                fprintf(out, "    %4d,\n",
+                        indexInStrings | IsUnresolvedSignal);
+            }
         }
     }
     if (cdef->revisionedProperties) {
@@ -1401,13 +1426,15 @@ void Generator::generateStaticMetacall()
                             prefix.constData(), p.member.constData(), p.type.constData());
                     fprintf(out, "                %s%s = *reinterpret_cast< %s*>(_v);\n",
                             prefix.constData(), p.member.constData(), p.type.constData());
-                    if (!p.notify.isEmpty() && p.notifyId != -1) {
+                    if (!p.notify.isEmpty() && p.notifyId > -1) {
                         const FunctionDef &f = cdef->signalList.at(p.notifyId);
                         if (f.arguments.size() == 0)
                             fprintf(out, "                Q_EMIT _t->%s();\n", p.notify.constData());
                         else if (f.arguments.size() == 1 && f.arguments.at(0).normalizedType == p.type)
                             fprintf(out, "                Q_EMIT _t->%s(%s%s);\n",
                                     p.notify.constData(), prefix.constData(), p.member.constData());
+                    } else if (!p.notify.isEmpty() && p.notifyId < -1) {
+                        fprintf(out, "                Q_EMIT _t->%s();\n", p.notify.constData());
                     }
                     fprintf(out, "            }\n");
                     fprintf(out, "            break;\n");

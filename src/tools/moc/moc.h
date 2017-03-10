@@ -121,7 +121,7 @@ struct PropertyDef
 {
     PropertyDef():notifyId(-1), constant(false), final(false), gspec(ValueSpec), revision(0){}
     QByteArray name, type, member, read, write, reset, designable, scriptable, editable, stored, user, notify, inPrivateClass;
-    int notifyId;
+    int notifyId; // -1 means no notifyId, >= 0 means signal defined in this class, < -1 means signal not defined in this class
     bool constant;
     bool final;
     enum Specification  { ValueSpec, ReferenceSpec, PointerSpec };
@@ -179,6 +179,7 @@ struct ClassDef : BaseDef {
 
     QVector<FunctionDef> constructorList;
     QVector<FunctionDef> signalList, slotList, methodList, publicList;
+    QVector<QByteArray> nonClassSignalList;
     int notifyableProperties = 0;
     QVector<PropertyDef> propertyList;
     int revisionedMethods = 0;
