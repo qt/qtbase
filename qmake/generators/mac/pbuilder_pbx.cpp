@@ -1433,13 +1433,20 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
         QMap<QString, QString> settings;
         if (!project->isActiveConfig("no_xcode_development_team")) {
-            const QList<QVariantMap> teams = provisioningTeams();
-            if (!teams.isEmpty()) {
-                // first suitable team we find is the one we'll use by default
-                settings.insert("DEVELOPMENT_TEAM",
-                    teams.first().value(QLatin1String("teamID")).toString());
+            QString teamId;
+            if (!project->isEmpty("QMAKE_DEVELOPMENT_TEAM")) {
+                teamId = project->first("QMAKE_DEVELOPMENT_TEAM").toQString();
+            } else {
+                const QList<QVariantMap> teams = provisioningTeams();
+                if (!teams.isEmpty()) // first suitable team we find is the one we'll use by default
+                    teamId = teams.first().value(QLatin1String("teamID")).toString();
             }
+            if (!teamId.isEmpty())
+                settings.insert("DEVELOPMENT_TEAM", teamId);
+            if (!project->isEmpty("QMAKE_PROVISIONING_PROFILE"))
+                settings.insert("PROVISIONING_PROFILE_SPECIFIER", project->first("QMAKE_PROVISIONING_PROFILE").toQString());
         }
+
         settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
         // Bitcode is only supported with a deployment target >= iOS 6.0.
         // Disable it for now, and consider switching it on when later
