@@ -693,6 +693,93 @@ static int qt_compare_strings(QStringView lhs, QLatin1String rhs, Qt::CaseSensit
         return ucstricmp(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
+static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    const auto l = std::min(lhs.size(), rhs.size());
+    int r;
+    if (cs == Qt::CaseSensitive)
+        r = qstrncmp(lhs.data(), rhs.data(), l);
+    else
+        r = qstrnicmp(lhs.data(), rhs.data(), l);
+    return r ? r : lencmp(lhs.size(), rhs.size());
+}
+
+/*!
+    \relates QStringView
+    \since 5.10
+
+    Returns an integer that compares to 0 as \a lhs compares to \a rhs.
+
+    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
+    otherwise the comparison is case-insensitive.
+
+    Case-sensitive comparison is based exclusively on the numeric Unicode values
+    of the characters and is very fast, but is not what a human would expect.
+    Consider sorting user-visible strings with QString::localeAwareCompare().
+
+    \snippet qstring/main.cpp qCompareStrings-QSV-QSV
+*/
+int qCompareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_compare_strings(lhs, rhs, cs);
+}
+
+/*!
+    \relates QStringView
+    \since 5.10
+    \overload
+
+    Returns an integer that compares to 0 as \a lhs compares to \a rhs.
+
+    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
+    otherwise the comparison is case-insensitive.
+
+    Case-sensitive comparison is based exclusively on the numeric Unicode values
+    of the characters and is very fast, but is not what a human would expect.
+    Consider sorting user-visible strings with QString::localeAwareCompare().
+*/
+int qCompareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_compare_strings(lhs, rhs, cs);
+}
+
+/*!
+    \relates QStringView
+    \since 5.10
+    \overload
+
+    Returns an integer that compares to 0 as \a lhs compares to \a rhs.
+
+    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
+    otherwise the comparison is case-insensitive.
+
+    Case-sensitive comparison is based exclusively on the numeric Unicode values
+    of the characters and is very fast, but is not what a human would expect.
+    Consider sorting user-visible strings with QString::localeAwareCompare().
+*/
+int qCompareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return -qt_compare_strings(rhs, lhs, cs);
+}
+
+/*!
+    \relates QStringView
+    \since 5.10
+    \overload
+
+    Returns an integer that compares to 0 as \a lhs compares to \a rhs.
+
+    If \a cs is Qt::CaseSensitive (the default), the comparison is case-sensitive;
+    otherwise the comparison is case-insensitive.
+
+    Case-sensitive comparison is based exclusively on the numeric Latin-1 values
+    of the characters and is very fast, but is not what a human would expect.
+    Consider sorting user-visible strings with QString::localeAwareCompare().
+*/
+int qCompareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_compare_strings(lhs, rhs, cs);
+}
 
 /*!
     \internal
@@ -5279,7 +5366,7 @@ QString& QString::fill(QChar ch, int size)
 
     Equivalent to \c {s1 != 0 && compare(s1, s2) == 0}.
 
-    \sa QString::compare()
+    \sa qCompareStrings()
 */
 
 /*!
@@ -5292,7 +5379,7 @@ QString& QString::fill(QChar ch, int size)
     For \a s1 != 0, this is equivalent to \c {compare(} \a s1, \a s2
     \c {) != 0}. Note that no string is equal to \a s1 being 0.
 
-    \sa QString::compare()
+    \sa qCompareStrings()
 */
 
 /*!
@@ -5308,7 +5395,7 @@ QString& QString::fill(QChar ch, int size)
     expect. Consider sorting user-interface strings using the
     QString::localeAwareCompare() function.
 
-    \sa QString::compare()
+    \sa qCompareStrings()
 */
 
 /*!
@@ -5324,7 +5411,7 @@ QString& QString::fill(QChar ch, int size)
     expect. Consider sorting user-interface strings with
     QString::localeAwareCompare().
 
-    \sa QString::compare()
+    \sa qCompareStrings()
 */
 
 /*!
@@ -5339,7 +5426,7 @@ QString& QString::fill(QChar ch, int size)
     expect. Consider sorting user-interface strings using the
     QString::localeAwareCompare() function.
 
-    \sa QString::compare()
+    \sa qCompareStrings()
 */
 
 /*!
@@ -5420,7 +5507,7 @@ QString& QString::fill(QChar ch, int size)
 
     \snippet qstring/main.cpp 16
 
-    \sa operator==(), operator<(), operator>()
+    \sa qCompareStrings(), operator==(), operator<(), operator>()
 */
 
 /*!
@@ -5430,6 +5517,8 @@ QString& QString::fill(QChar ch, int size)
 
     Performs a comparison of \a s1 and \a s2, using the case
     sensitivity setting \a cs.
+
+    \sa qCompareStrings()
 */
 
 /*!
@@ -5440,6 +5529,8 @@ QString& QString::fill(QChar ch, int size)
 
     Performs a comparison of \a s1 and \a s2, using the case
     sensitivity setting \a cs.
+
+    \sa qCompareStrings()
 */
 
 
@@ -5453,6 +5544,8 @@ QString& QString::fill(QChar ch, int size)
     string.
 
     Same as compare(*this, \a other, \a cs).
+
+    \sa qCompareStrings()
 */
 int QString::compare(const QString &other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 {
@@ -5478,6 +5571,8 @@ int QString::compare_helper(const QChar *data1, int length1, const QChar *data2,
     \since 4.2
 
     Same as compare(*this, \a other, \a cs).
+
+    \sa qCompareStrings()
 */
 int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 {
@@ -5491,6 +5586,8 @@ int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_N
   Compares the string reference, \a ref, with the string and returns
   an integer less than, equal to, or greater than zero if the string
   is less than, equal to, or greater than \a ref.
+
+    \sa qCompareStrings()
 */
 
 /*!
@@ -5516,6 +5613,8 @@ int QString::compare_helper(const QChar *data1, int length1, const char *data2, 
 /*!
   \fn int QString::compare(const QString &s1, const QStringRef &s2, Qt::CaseSensitivity cs = Qt::CaseSensitive)
   \overload compare()
+
+    \sa qCompareStrings()
 */
 
 /*!
@@ -9588,6 +9687,8 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
     otherwise the comparison is case insensitive.
+
+    \sa qCompareStrings()
 */
 
 /*!
@@ -9601,6 +9702,8 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
     otherwise the comparison is case insensitive.
+
+    \sa qCompareStrings()
 */
 
 /*!
@@ -9614,6 +9717,8 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
     otherwise the comparison is case insensitive.
+
+    \sa qCompareStrings()
 */
 
 /*!
@@ -9630,7 +9735,7 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     Equivalent to \c {compare(*this, other, cs)}.
 
-    \sa QString::compare()
+    \sa qCompareStrings()
 */
 
 /*!
@@ -9647,7 +9752,7 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     Equivalent to \c {compare(*this, other, cs)}.
 
-    \sa QString::compare()
+    \sa qCompareStrings()
 */
 
 /*!
@@ -9664,7 +9769,7 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     Equivalent to \c {compare(*this, other, cs)}.
 
-    \sa QString::compare()
+    \sa qCompareStrings()
 */
 
 /*!
@@ -9682,7 +9787,7 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     Equivalent to \c {compare(*this, other, cs)}.
 
-    \sa QString::compare()
+    \sa qCompareStrings()
 */
 
 /*!
