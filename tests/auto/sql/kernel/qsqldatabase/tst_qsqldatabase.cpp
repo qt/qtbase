@@ -2191,7 +2191,7 @@ void tst_QSqlDatabase::sqlStatementUseIsNull_189093()
     CHECK_DATABASE(db);
 
     // select a record with NULL value
-    QSqlQuery q(QString::null, db);
+    QSqlQuery q(QString(), db);
     QVERIFY_SQL(q, exec("select * from " + qTableName("qtest", __FILE__, db) + " where id = 4"));
     QVERIFY_SQL(q, next());
 

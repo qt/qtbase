@@ -519,7 +519,7 @@ QString QAccessibleDisplay::imageDescription() const
 #ifndef QT_NO_TOOLTIP
     return widget()->toolTip();
 #else
-    return QString::null;
+    return QString();
 #endif
 }
 

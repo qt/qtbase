@@ -779,7 +779,9 @@ inline char qToLower(char ch)
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 9)
 const QString::Null QString::null = { };
+#endif
 
 /*!
   \macro QT_RESTRICTED_CAST_FROM_ASCII

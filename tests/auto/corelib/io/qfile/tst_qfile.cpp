@@ -1684,7 +1684,7 @@ void tst_QFile::isSequential()
 
 void tst_QFile::encodeName()
 {
-    QCOMPARE(QFile::encodeName(QString::null), QByteArray());
+    QCOMPARE(QFile::encodeName(QString()), QByteArray());
 }
 
 void tst_QFile::truncate()
