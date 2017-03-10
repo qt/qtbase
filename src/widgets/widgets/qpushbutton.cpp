@@ -40,8 +40,9 @@
 #include "qapplication.h"
 #include "qbitmap.h"
 #include "qdesktopwidget.h"
-#include "qdialog.h"
+#if QT_CONFIG(dialog)
 #include <private/qdialog_p.h>
+#endif
 #include "qdrawutil.h"
 #include "qevent.h"
 #include "qfontmetrics.h"
@@ -292,6 +293,7 @@ QPushButton::~QPushButton()
 {
 }
 
+#if QT_CONFIG(dialog)
 QDialog *QPushButtonPrivate::dialogParent() const
 {
     Q_Q(const QPushButton);
@@ -303,6 +305,7 @@ QDialog *QPushButtonPrivate::dialogParent() const
     }
     return 0;
 }
+#endif
 
 /*!
     Initialize \a option with the values from this QPushButton. This method is useful
@@ -366,10 +369,12 @@ void QPushButton::setDefault(bool enable)
     if (d->defaultButton == enable)
         return;
     d->defaultButton = enable;
+#if QT_CONFIG(dialog)
     if (d->defaultButton) {
         if (QDialog *dlg = d->dialogParent())
             dlg->d_func()->setMainDefault(this);
     }
+#endif
     update();
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::State s;
@@ -478,9 +483,11 @@ void QPushButton::focusInEvent(QFocusEvent *e)
     Q_D(QPushButton);
     if (e->reason() != Qt::PopupFocusReason && autoDefault() && !d->defaultButton) {
         d->defaultButton = true;
+#if QT_CONFIG(dialog)
         QDialog *dlg = qobject_cast<QDialog*>(window());
         if (dlg)
             dlg->d_func()->setDefault(this);
+#endif
     }
     QAbstractButton::focusInEvent(e);
 }
@@ -492,11 +499,13 @@ void QPushButton::focusOutEvent(QFocusEvent *e)
 {
     Q_D(QPushButton);
     if (e->reason() != Qt::PopupFocusReason && autoDefault() && d->defaultButton) {
+#if QT_CONFIG(dialog)
         QDialog *dlg = qobject_cast<QDialog*>(window());
         if (dlg)
             dlg->d_func()->setDefault(0);
         else
             d->defaultButton = false;
+#endif
     }
 
     QAbstractButton::focusOutEvent(e);
@@ -661,10 +670,12 @@ bool QPushButton::event(QEvent *e)
 {
     Q_D(QPushButton);
     if (e->type() == QEvent::ParentChange) {
+#if QT_CONFIG(dialog)
         if (QDialog *dialog = d->dialogParent()) {
             if (d->defaultButton)
                 dialog->d_func()->setMainDefault(this);
         }
+#endif
     } else if (e->type() == QEvent::StyleChange
 #ifdef Q_OS_MAC
                || e->type() == QEvent::MacSizeChange

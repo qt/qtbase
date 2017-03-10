@@ -53,9 +53,10 @@
 //
 
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
-#include "private/qdialog_p.h"
 
 #ifndef QT_NO_PRINTDIALOG
+
+#include "private/qdialog_p.h"
 
 #include "qbytearray.h"
 #include "qpagesetupdialog.h"

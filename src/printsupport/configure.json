@@ -66,6 +66,7 @@
                 "features.buttongroup",
                 "features.checkbox",
                 "features.combobox",
+                "features.dialog",
                 "features.datetimeedit",
                 "features.dialogbuttonbox",
                 "features.printer",

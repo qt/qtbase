@@ -41,12 +41,13 @@
 #define QPROGRESSDIALOG_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
+
+#ifndef QT_NO_PROGRESSDIALOG
+
 #include <QtWidgets/qdialog.h>
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_PROGRESSDIALOG
 
 class QPushButton;
 class QLabel;
@@ -127,8 +128,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_disconnectOnClose())
 };
 
-#endif // QT_NO_PROGRESSDIALOG
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_PROGRESSDIALOG
 
 #endif // QPROGRESSDIALOG_H

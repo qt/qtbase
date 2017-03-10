@@ -77,7 +77,9 @@
 #include <qmainwindow.h>
 #include <qdockwidget.h>
 #include <qmdisubwindow.h>
+#if QT_CONFIG(dialog)
 #include <qdialog.h>
+#endif
 #include <private/qwidget_p.h>
 #include <QAbstractSpinBox>
 #if QT_CONFIG(label)
@@ -2819,7 +2821,10 @@ void QStyleSheetStyle::polish(QWidget *w)
 #ifndef QT_NO_MENUBAR
               || qobject_cast<QMenuBar *>(w)
 #endif
-              || qobject_cast<QDialog *>(w)) {
+#if QT_CONFIG(dialog)
+              || qobject_cast<QDialog *>(w)
+#endif
+                                           ) {
             w->setAttribute(Qt::WA_StyledBackground, true);
         }
         QWidget *ew = embeddedWidget(w);
