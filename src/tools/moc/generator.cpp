@@ -1483,10 +1483,7 @@ void Generator::generateSignal(FunctionDef *def,int index)
     }
 
     Q_ASSERT(!def->normalizedType.isEmpty());
-    if (def->arguments.isEmpty() && def->normalizedType == "void") {
-        if (def->isPrivateSignal)
-            fprintf(out, "QPrivateSignal");
-
+    if (def->arguments.isEmpty() && def->normalizedType == "void" && !def->isPrivateSignal) {
         fprintf(out, ")%s\n{\n"
                 "    QMetaObject::activate(%s, &staticMetaObject, %d, nullptr);\n"
                 "}\n", constQualifier, thisPtr.constData(), index);
@@ -1503,7 +1500,7 @@ void Generator::generateSignal(FunctionDef *def,int index)
     if (def->isPrivateSignal) {
         if (!def->arguments.isEmpty())
             fprintf(out, ", ");
-        fprintf(out, "QPrivateSignal");
+        fprintf(out, "QPrivateSignal _t%d", offset++);
     }
 
     fprintf(out, ")%s\n{\n", constQualifier);
@@ -1527,7 +1524,7 @@ void Generator::generateSignal(FunctionDef *def,int index)
     }
     int i;
     for (i = 1; i < offset; ++i)
-        if (def->arguments.at(i - 1).type.isVolatile)
+        if (i <= def->arguments.count() && def->arguments.at(i - 1).type.isVolatile)
             fprintf(out, ", const_cast<void*>(reinterpret_cast<const volatile void*>(&_t%d))", i);
         else
             fprintf(out, ", const_cast<void*>(reinterpret_cast<const void*>(&_t%d))", i);

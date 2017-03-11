@@ -2837,6 +2837,21 @@ void tst_Moc::privateSignalConnection()
     // We can't use function pointer connections to private signals which are overloaded because we would have to cast in this case to:
     //   static_cast<void (ClassWithPrivateSignals::*)(int, ClassWithPrivateSignals::QPrivateSignal)>(&ClassWithPrivateSignals::overloadedMaybePrivate)
     // Which doesn't work as ClassWithPrivateSignals::QPrivateSignal is private.
+
+    // Connecting from one private signal to another
+    {
+        ClassWithPrivateSignals classWithPrivateSignals1;
+        ClassWithPrivateSignals classWithPrivateSignals2;
+        SignalConnectionTester tester;
+        QObject::connect(&classWithPrivateSignals1, &ClassWithPrivateSignals::privateSignal1,
+                         &classWithPrivateSignals2, &ClassWithPrivateSignals::privateSignal1);
+        QObject::connect(&classWithPrivateSignals2, &ClassWithPrivateSignals::privateSignal1,
+                         &tester, &SignalConnectionTester::testSlot);
+
+        QVERIFY(!tester.testPassed);
+        classWithPrivateSignals1.emitPrivateSignals();
+        QVERIFY(tester.testPassed);
+    }
 }
 
 void tst_Moc::finalClasses_data()
