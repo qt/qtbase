@@ -45,6 +45,7 @@
 #include "qapplication.h"
 #include "qevent.h"
 #include "qlist.h"
+#include "qstylehints.h"
 #include <private/qshortcutmap_p.h>
 #include <private/qapplication_p.h>
 #include <private/qmenu_p.h>
@@ -75,6 +76,7 @@ static QString qt_strippedText(QString s)
 QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),
                                    visible(1), forceInvisible(0), checkable(0), checked(0), separator(0), fontSet(false),
                                    iconVisibleInMenu(-1),
+                                   shortcutVisibleInContextMenu(-1),
                                    menuRole(QAction::TextHeuristicRole),
                                    priority(QAction::NormalPriority)
 {
@@ -1290,6 +1292,46 @@ bool QAction::isIconVisibleInMenu() const
         return !QApplication::instance()->testAttribute(Qt::AA_DontShowIconsInMenus);
     }
     return d->iconVisibleInMenu;
+}
+
+/*!
+    \property QAction::shortcutVisibleInContextMenu
+    \brief Whether or not an action should show a shortcut in a context menu
+    \since 5.10
+
+    In some applications, it may make sense to have actions with shortcuts in
+    context menus. If true, the shortcut (if valid) is shown when the action is
+    shown via a context menu, when it is false, it is not shown.
+
+    The default is to follow whether the Qt::AA_DontShowShortcutsInContextMenus attribute
+    is set for the application, falling back to the widget style hint.
+    Explicitly setting this property overrides the presence (or abscence) of the attribute.
+
+    \sa QAction::shortcut, QCoreApplication::setAttribute()
+*/
+void QAction::setShortcutVisibleInContextMenu(bool visible)
+{
+    Q_D(QAction);
+    if (d->shortcutVisibleInContextMenu == -1 || visible != bool(d->shortcutVisibleInContextMenu)) {
+        int oldValue = d->shortcutVisibleInContextMenu;
+        d->shortcutVisibleInContextMenu = visible;
+        // Only send data changed if we really need to.
+        if (oldValue != -1
+            || visible == !QApplication::instance()->testAttribute(Qt::AA_DontShowShortcutsInContextMenus)) {
+            d->sendDataChanged();
+        }
+    }
+}
+
+bool QAction::isShortcutVisibleInContextMenu() const
+{
+    Q_D(const QAction);
+    if (d->shortcutVisibleInContextMenu == -1) {
+        if (QApplication::instance()->testAttribute(Qt::AA_DontShowIconsInMenus))
+            return false;
+        return qApp->styleHints()->showShortcutsInContextMenus();
+    }
+    return d->shortcutVisibleInContextMenu;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

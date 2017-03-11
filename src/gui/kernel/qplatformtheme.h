@@ -115,7 +115,8 @@ public:
         MousePressAndHoldInterval,
         MouseDoubleClickDistance,
         WheelScrollLines,
-        TouchDoubleTapDistance
+        TouchDoubleTapDistance,
+        ShowShortcutsInContextMenus
     };
 
     enum DialogType {

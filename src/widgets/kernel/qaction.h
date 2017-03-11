@@ -80,6 +80,7 @@ class Q_WIDGETS_EXPORT QAction : public QObject
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY changed)
     Q_PROPERTY(MenuRole menuRole READ menuRole WRITE setMenuRole NOTIFY changed)
     Q_PROPERTY(bool iconVisibleInMenu READ isIconVisibleInMenu WRITE setIconVisibleInMenu NOTIFY changed)
+    Q_PROPERTY(bool shortcutVisibleInContextMenu READ isShortcutVisibleInContextMenu WRITE setShortcutVisibleInContextMenu NOTIFY changed)
     Q_PROPERTY(Priority priority READ priority WRITE setPriority)
 
 public:
@@ -168,6 +169,8 @@ public:
     void setIconVisibleInMenu(bool visible);
     bool isIconVisibleInMenu() const;
 
+    void setShortcutVisibleInContextMenu(bool show);
+    bool isShortcutVisibleInContextMenu() const;
 
     QWidget *parentWidget() const;
 

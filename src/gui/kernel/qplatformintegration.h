@@ -161,6 +161,7 @@ public:
         ItemViewActivateItemOnSingleClick,
         UiEffects,
         WheelScrollLines,
+        ShowShortcutsInContextMenus,
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

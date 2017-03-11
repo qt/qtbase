@@ -365,6 +365,17 @@ bool QStyleHints::showIsMaximized() const
 }
 
 /*!
+    \property QStyleHints::showShortcutsInContextMenus
+    \since 5.10
+    \brief \c true if the platform normally shows shortcut key sequences in
+    context menus, otherwise \c false.
+*/
+bool QStyleHints::showShortcutsInContextMenus() const
+{
+    return themeableHint(QPlatformTheme::ShowShortcutsInContextMenus, QPlatformIntegration::ShowShortcutsInContextMenus).toBool();
+}
+
+/*!
     \property QStyleHints::passwordMaskDelay
     \brief the time, in milliseconds, a typed letter is displayed unshrouded
     in a text input field in password mode.

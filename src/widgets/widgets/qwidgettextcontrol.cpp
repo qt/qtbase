@@ -85,7 +85,10 @@
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include <qkeysequence.h>
-#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? \
+#define ACCEL_KEY(k) ((qApp->testAttribute(Qt::AA_DontShowIconsInMenus) \
+                        ? false \
+                        : qApp->styleHints()->showShortcutsInContextMenus()) \
+                      && !qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? \
                       QLatin1Char('\t') + QKeySequence(k).toString(QKeySequence::NativeText) : QString())
 
 #else

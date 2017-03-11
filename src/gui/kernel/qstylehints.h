@@ -90,6 +90,7 @@ public:
     int cursorFlashTime() const;
     bool showIsFullScreen() const;
     bool showIsMaximized() const;
+    bool showShortcutsInContextMenus() const;
     int passwordMaskDelay() const;
     QChar passwordMaskCharacter() const;
     qreal fontSmoothingGamma() const;

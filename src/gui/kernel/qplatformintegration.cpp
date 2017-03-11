@@ -392,6 +392,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return false;
     case ShowIsMaximized:
         return false;
+    case ShowShortcutsInContextMenus:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::ShowShortcutsInContextMenus);
     case PasswordMaskDelay:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::PasswordMaskDelay);
     case PasswordMaskCharacter:

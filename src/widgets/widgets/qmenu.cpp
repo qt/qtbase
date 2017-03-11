@@ -332,7 +332,7 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
                     tabWidth = qMax(int(tabWidth), qfm.width(s.mid(t+1)));
                     s = s.left(t);
     #ifndef QT_NO_SHORTCUT
-                } else {
+                } else if (action->isShortcutVisibleInContextMenu()) {
                     QKeySequence seq = action->shortcut();
                     if (!seq.isEmpty())
                         tabWidth = qMax(int(tabWidth), qfm.width(seq.toString(QKeySequence::NativeText)));
@@ -1447,7 +1447,8 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
         option->icon = action->icon();
     QString textAndAccel = action->text();
 #ifndef QT_NO_SHORTCUT
-    if (textAndAccel.indexOf(QLatin1Char('\t')) == -1) {
+    if (action->isShortcutVisibleInContextMenu()
+            && textAndAccel.indexOf(QLatin1Char('\t')) == -1) {
         QKeySequence seq = action->shortcut();
         if (!seq.isEmpty())
             textAndAccel += QLatin1Char('\t') + seq.toString(QKeySequence::NativeText);
