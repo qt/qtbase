@@ -670,7 +670,7 @@ void QGuiApplication::setApplicationDisplayName(const QString &name)
             disconnect(qGuiApp, &QGuiApplication::applicationNameChanged,
                     qGuiApp, &QGuiApplication::applicationDisplayNameChanged);
 
-            if (QGuiApplicationPrivate::displayName != applicationName())
+            if (*QGuiApplicationPrivate::displayName != applicationName())
                 emit qGuiApp->applicationDisplayNameChanged();
         }
     } else if (name != *QGuiApplicationPrivate::displayName) {
