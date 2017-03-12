@@ -972,7 +972,7 @@ QLocale::NumberOptions QLocale::numberOptions() const
 */
 QString QLocale::quoteString(const QString &str, QuotationStyle style) const
 {
-    return quoteString(&str, style);
+    return quoteString(QStringRef(&str), style);
 }
 
 /*!

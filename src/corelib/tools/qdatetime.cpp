@@ -1971,7 +1971,7 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
     case Qt::ISODateWithMs:
     case Qt::TextDate:
     default:
-        return fromIsoTimeString(&string, format, 0);
+        return fromIsoTimeString(QStringRef(&string), format, 0);
     }
 }
 
