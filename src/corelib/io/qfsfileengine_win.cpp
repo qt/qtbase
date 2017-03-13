@@ -589,7 +589,7 @@ bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) cons
 bool QFSFileEngine::link(const QString &newName)
 {
 #if !defined(Q_OS_WINRT)
-#  if !defined(QT_NO_LIBRARY)
+#  if QT_CONFIG(library)
     bool ret = false;
 
     QString linkName = newName;
@@ -630,10 +630,10 @@ bool QFSFileEngine::link(const QString &newName)
         CoUninitialize();
 
     return ret;
-#  else // QT_NO_LIBRARY
+#  else // QT_CONFIG(library)
     Q_UNUSED(newName);
     return false;
-#  endif // QT_NO_LIBRARY
+#  endif // QT_CONFIG(library)
 #else // !Q_OS_WINRT
     Q_UNUSED(newName);
     Q_UNIMPLEMENTED();

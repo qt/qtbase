@@ -28,7 +28,9 @@
 
 #include "qbaselinetest.h"
 #include "baselineprotocol.h"
-#include <QtCore/QProcess>
+#if QT_CONFIG(process)
+# include <QtCore/QProcess>
+#endif
 #include <QtCore/QDir>
 
 #define MAXCMDLINEARGS 128
@@ -126,7 +128,7 @@ void addClientProperty(const QString& key, const QString& value)
 */
 void fetchCustomClientProperties()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
     QString script = "hostinfo.sh";  //### TBD: Windows implementation (hostinfo.bat)
@@ -151,7 +153,7 @@ void fetchCustomClientProperties()
         else
             qDebug() << "Unparseable script output ignored:" << line;
     }
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 

@@ -2117,8 +2117,8 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
             && (language == QLocale::AnyLanguage || data->m_language_id == uint(language))) {
         if ((script == QLocale::AnyScript || data->m_script_id == uint(script))
             && (country == QLocale::AnyCountry || data->m_country_id == uint(country))) {
-            QLocale locale(*QLocalePrivate::create(data));
-            result.append(locale);
+            result.append(QLocale(*(data->m_language_id == C ? c_private()
+                                    : QLocalePrivate::create(data))));
         }
         ++data;
     }

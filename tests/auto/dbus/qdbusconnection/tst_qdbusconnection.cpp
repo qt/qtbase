@@ -1410,7 +1410,7 @@ void tst_QDBusConnection::callVirtualObjectLocal()
 
 void tst_QDBusConnection::pendingCallWhenDisconnected()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("Test requires QProcess");
 #else
     if (!QCoreApplication::instance())

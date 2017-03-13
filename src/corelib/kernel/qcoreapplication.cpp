@@ -376,7 +376,7 @@ struct QCoreApplicationData {
     bool applicationNameSet; // true if setApplicationName was called
     bool applicationVersionSet; // true if setApplicationVersion was called
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     QScopedPointer<QStringList> app_libpaths;
     QScopedPointer<QStringList> manual_libpaths;
 #endif
@@ -569,7 +569,7 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 
 void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 {
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     QStringList *app_libpaths = coreappdata()->app_libpaths.data();
     if (!app_libpaths)
         coreappdata()->app_libpaths.reset(app_libpaths = new QStringList);
@@ -773,7 +773,7 @@ void QCoreApplicationPrivate::init()
 
     QLoggingRegistry::instance()->init();
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
     // into account. If necessary, recompute right away and replay the manual changes on top of the
     // new lib paths.
@@ -872,7 +872,7 @@ QCoreApplication::~QCoreApplication()
     QCoreApplicationPrivate::eventDispatcher = 0;
 #endif
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     coreappdata()->app_libpaths.reset();
     coreappdata()->manual_libpaths.reset();
 #endif
@@ -2479,7 +2479,7 @@ QString QCoreApplication::applicationVersion()
     return coreappdata() ? coreappdata()->applicationVersion : QString();
 }
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
 
@@ -2691,7 +2691,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     QFactoryLoader::refreshAll();
 }
 
-#endif //QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
 
 #ifndef QT_NO_QOBJECT
 

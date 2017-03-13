@@ -42,6 +42,7 @@
 
 #include <qmenu.h>
 #include <qstyle.h>
+#include <QStyleHints>
 #include <QTimer>
 #include <qdebug.h>
 
@@ -110,6 +111,9 @@ private slots:
     void QTBUG_37933_ampersands_data();
     void QTBUG_37933_ampersands();
 #endif
+    void QTBUG_56917_wideMenuSize();
+    void QTBUG_56917_wideMenuScreenNumber();
+    void QTBUG_56917_wideSubmenuScreenNumber();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -1310,6 +1314,64 @@ void tst_QMenu::QTBUG_37933_ampersands()
     tst_qmenu_QTBUG_37933_ampersands();
 }
 #endif
+
+void tst_QMenu::QTBUG_56917_wideMenuSize()
+{
+    // menu shouldn't to take on full screen height when menu width is larger than screen width
+    QMenu menu;
+    QString longString;
+    longString.fill(QLatin1Char('Q'), 3000);
+    menu.addAction(longString);
+    QSize menuSizeHint = menu.sizeHint();
+    menu.popup(QPoint());
+    QTest::qWait(100);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
+    QVERIFY(menu.isVisible());
+    QVERIFY(menu.height() <= menuSizeHint.height());
+}
+
+void tst_QMenu::QTBUG_56917_wideMenuScreenNumber()
+{
+    if (QApplication::styleHints()->showIsFullScreen())
+        QSKIP("The platform defaults to windows being fullscreen.");
+    // menu must appear on the same screen where show action is triggered
+    QString longString;
+    longString.fill(QLatin1Char('Q'), 3000);
+
+    for (int i = 0; i < QApplication::desktop()->screenCount(); i++) {
+        QMenu menu;
+        menu.addAction(longString);
+        menu.popup(QApplication::desktop()->screen(i)->geometry().center());
+        QTest::qWait(100);
+        QVERIFY(QTest::qWaitForWindowExposed(&menu));
+        QVERIFY(menu.isVisible());
+        QCOMPARE(QApplication::desktop()->screenNumber(&menu), i);
+    }
+}
+
+void tst_QMenu::QTBUG_56917_wideSubmenuScreenNumber()
+{
+    if (QApplication::styleHints()->showIsFullScreen())
+        QSKIP("The platform defaults to windows being fullscreen.");
+    // submenu must appear on the same screen where its parent menu is shown
+    QString longString;
+    longString.fill(QLatin1Char('Q'), 3000);
+
+    for (int i = 0; i < QApplication::desktop()->screenCount(); i++) {
+        QMenu menu;
+        QMenu submenu("Submenu");
+        submenu.addAction(longString);
+        QAction *action = menu.addMenu(&submenu);
+        menu.popup(QApplication::desktop()->screen(i)->geometry().center());
+        QVERIFY(QTest::qWaitForWindowExposed(&menu));
+        QVERIFY(menu.isVisible());
+        QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.actionGeometry(action).center());
+        QTest::qWait(100);
+        QVERIFY(QTest::qWaitForWindowExposed(&submenu));
+        QVERIFY(submenu.isVisible());
+        QCOMPARE(QApplication::desktop()->screenNumber(&submenu), i);
+    }
+}
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"

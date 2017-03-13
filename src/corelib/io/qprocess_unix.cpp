@@ -119,7 +119,7 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-#if QT_CONFIG(processenvironment) && !defined(Q_OS_DARWIN)
+#if !defined(Q_OS_DARWIN)
 
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
@@ -138,7 +138,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
     return env;
 }
 
-#endif // QT_CONFIG(processenvironment) && !defined(Q_OS_DARWIN)
+#endif // !defined(Q_OS_DARWIN)
 
 #if QT_CONFIG(process)
 
@@ -1040,6 +1040,6 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
     return success;
 }
 
-#endif // QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
 QT_END_NAMESPACE

@@ -50,7 +50,9 @@ QT_END_NAMESPACE
 #if !defined(QT_NO_NETWORK)
 #include <QHostInfo>
 #endif
-#include <QProcess>
+#if QT_CONFIG(process)
+# include <QProcess>
+#endif
 #ifdef Q_OS_WIN
 # include <qt_windows.h>
 #else
@@ -884,7 +886,7 @@ void tst_QFile::readAllBuffer()
     QFile::remove(fileName);
 }
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
 class StdinReaderProcessGuard { // Ensure the stdin reader process is stopped on destruction.
     Q_DISABLE_COPY(StdinReaderProcessGuard)
 
@@ -908,11 +910,11 @@ public:
 private:
     QProcess *m_process;
 };
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
 void tst_QFile::readAllStdin()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QByteArray lotsOfData(1024, '@'); // 10 megs
@@ -935,7 +937,7 @@ void tst_QFile::readAllStdin()
 
 void tst_QFile::readLineStdin()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QByteArray lotsOfData(1024, '@'); // 10 megs
@@ -976,7 +978,7 @@ void tst_QFile::readLineStdin()
 
 void tst_QFile::readLineStdin_lineByLine()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     for (int i = 0; i < 2; ++i) {

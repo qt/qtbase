@@ -44,8 +44,6 @@
 #include <qcoreapplication.h>
 #include <private/qfilesystementry_p.h>
 
-#ifndef QT_NO_LIBRARY
-
 #ifdef Q_OS_MAC
 #  include <private/qcore_mac_p.h>
 #endif
@@ -308,5 +306,3 @@ QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_LIBRARY

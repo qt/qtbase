@@ -51,14 +51,14 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QPlatformIntegrationFactoryInterface_iid, QLatin1String("/platforms"), Qt::CaseInsensitive))
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QPlatformIntegrationFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
-#endif // !QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
 
 QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platform, const QStringList &paramList, int &argc, char **argv, const QString &platformPluginPath)
 {
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
@@ -81,7 +81,7 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString &platfor
 QStringList QPlatformIntegrationFactory::keys(const QString &platformPluginPath)
 {
     QStringList list;
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
         list = directLoader()->keyMap().values();

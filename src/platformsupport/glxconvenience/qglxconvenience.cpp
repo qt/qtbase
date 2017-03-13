@@ -47,10 +47,6 @@
 #include <QtCore/QVector>
 #include <QtCore/QVarLengthArray>
 
-#ifndef QT_NO_XRENDER
-#include <X11/extensions/Xrender.h>
-#endif
-
 #include <GL/glxext.h>
 
 enum {

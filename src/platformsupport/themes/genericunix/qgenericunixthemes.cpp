@@ -225,6 +225,8 @@ QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
     }
     case QPlatformTheme::KeyboardScheme:
         return QVariant(int(X11KeyboardScheme));
+    case QPlatformTheme::UiEffects:
+        return QVariant(int(HoverEffect));
     default:
         break;
     }
@@ -540,6 +542,8 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(d->singleClick);
     case QPlatformTheme::WheelScrollLines:
         return QVariant(d->wheelScrollLines);
+    case QPlatformTheme::UiEffects:
+        return QVariant(int(HoverEffect));
     default:
         break;
     }

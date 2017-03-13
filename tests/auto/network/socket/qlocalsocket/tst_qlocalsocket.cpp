@@ -904,7 +904,7 @@ void tst_QLocalSocket::processConnection_data()
     QTest::newRow("30 clients") << 30;
 }
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
 class ProcessOutputDumper
 {
 public:
@@ -933,7 +933,7 @@ private:
  */
 void tst_QLocalSocket::processConnection()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
 #ifdef Q_OS_MAC

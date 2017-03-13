@@ -40,7 +40,9 @@
 #include "qharfbuzz_p.h"
 
 #include "qunicodetables_p.h"
+#if QT_CONFIG(library)
 #include "qlibrary.h"
+#endif
 
 QT_USE_NAMESPACE
 
@@ -70,7 +72,7 @@ HB_UChar16 HB_GetMirroredChar(HB_UChar16 ch)
 
 void (*HB_Library_Resolve(const char *library, int version, const char *symbol))()
 {
-#ifdef QT_NO_LIBRARY
+#if !QT_CONFIG(library)
     Q_UNUSED(library);
     Q_UNUSED(version);
     Q_UNUSED(symbol);

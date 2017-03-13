@@ -858,7 +858,7 @@ void tst_QMimeDatabase::fromThreads()
     QVERIFY(tp.waitForDone(60000));
 }
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
 
 enum {
     UpdateMimeDatabaseTimeout = 120 * 1000 // 2min
@@ -901,7 +901,7 @@ static bool waitAndRunUpdateMimeDatabase(const QString &path)
     }
     return runUpdateMimeDatabase(path);
 }
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
 static void checkHasMimeType(const QString &mimeType)
 {
@@ -936,7 +936,7 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QSKIP("This test requires XDG_DATA_DIRS");
 #endif
 
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
     qmime_secondsBetweenChecks = 0;
@@ -989,12 +989,12 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 void tst_QMimeDatabase::installNewLocalMimeType()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
     qmime_secondsBetweenChecks = 0;
@@ -1057,7 +1057,7 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
-#endif
+#endif // QT_CONFIG(process)
 }
 
 QTEST_GUILESS_MAIN(tst_QMimeDatabase)

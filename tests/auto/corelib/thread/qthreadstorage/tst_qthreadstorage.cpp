@@ -76,7 +76,7 @@ int Pointer::count = 0;
 
 void tst_QThreadStorage::initTestCase()
 {
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     const QString crashOnExitDir = QFINDTESTDATA("crashonexit");
     QVERIFY2(!crashOnExitDir.isEmpty(),
              qPrintable(QString::fromLatin1("Could not find 'crashonexit' starting from '%1'")
@@ -300,7 +300,7 @@ void tst_QThreadStorage::ensureCleanupOrder()
     QVERIFY(First::order < Second::order);
 }
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
 static inline bool runCrashOnExit(const QString &binary, QString *errorMessage)
 {
     const int timeout = 60000;
@@ -325,7 +325,7 @@ static inline bool runCrashOnExit(const QString &binary, QString *errorMessage)
 
 void tst_QThreadStorage::crashOnExit()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QString errorMessage;

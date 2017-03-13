@@ -855,7 +855,7 @@ void tst_QDir::entryList()
 
 void tst_QDir::entryListTimedSort()
 {
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     const QString touchBinary = "/bin/touch";
     if (!QFile::exists(touchBinary))
         QSKIP("/bin/touch not found");
@@ -889,7 +889,7 @@ void tst_QDir::entryListTimedSort()
     QCOMPARE(actual.last(), aFileInfo.fileName());
 #else
     QSKIP("This test requires QProcess support.");
-#endif // QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 void tst_QDir::entryListSimple_data()

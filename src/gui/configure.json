@@ -45,8 +45,7 @@
             "xkb-config-root": "string",
             "xkbcommon": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "xkbcommon-evdev": "boolean",
-            "xkbcommon-x11": { "type": "enum", "name": "xkbcommon", "values": [ "no", "qt", "system" ] },
-            "xrender": "boolean"
+            "xkbcommon-x11": { "type": "enum", "name": "xkbcommon", "values": [ "no", "qt", "system" ] }
         }
     },
 
@@ -294,13 +293,6 @@
             "export": "xkbcommon",
             "sources": [
                 { "type": "pkgConfig", "args": "xkbcommon xkbcommon-x11 >= 0.4.1" }
-            ]
-        },
-        "xrender": {
-            "label": "XRender",
-            "test": "x11/xrender",
-            "sources": [
-                "-lXrender"
             ]
         }
     },
@@ -798,11 +790,6 @@
             "condition": "tests.xlib",
             "output": [ "privateFeature" ]
         },
-        "xrender": {
-            "label": "Xrender",
-            "condition": "libs.xrender",
-            "output": [ "privateFeature", "feature" ]
-        },
         "texthtmlparser": {
             "label": "HtmlParser",
             "purpose": "Provides a parser for HTML.",
@@ -1138,7 +1125,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "X11",
                     "condition": "features.xcb",
                     "entries": [
-                        "system-xcb", "egl_x11", "xinput2", "xkb", "xlib", "xrender", "xcb-render", "xcb-glx", "xcb-xlib", "xkbcommon-system"
+                        "system-xcb", "egl_x11", "xinput2", "xkb", "xlib", "xcb-render", "xcb-glx", "xcb-xlib", "xkbcommon-system"
                     ]
                 },
                 {

@@ -31,7 +31,9 @@
 
 #include <QtCore/QTemporaryFile>
 #include <QtCore/QTemporaryDir>
-#include <QtCore/QProcess>
+#if QT_CONFIG(process)
+# include <QtCore/QProcess>
+#endif
 #include <QtCore/QByteArray>
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
@@ -66,7 +68,7 @@ static QString makespec()
 
 QT_BEGIN_NAMESPACE
 namespace QTest {
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     class QExternalProcess: public QProcess
     {
     protected:
@@ -87,7 +89,7 @@ namespace QTest {
         }
 #endif
     };
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
     class QExternalTestPrivate
     {
@@ -554,7 +556,7 @@ namespace QTest {
 
     bool QExternalTestPrivate::runQmake()
     {
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
         if (temporaryDirPath.isEmpty())
             qWarning() << "Temporary directory is expected to be non-empty";
 
@@ -597,14 +599,14 @@ namespace QTest {
         }
 
         return ok && exitCode == 0;
-#else // QT_NO_PROCESS
+#else // QT_CONFIG(process)
         return false;
-#endif // QT_NO_PROCESS
+#endif // QT_CONFIG(process)
     }
 
     bool QExternalTestPrivate::runMake(Target target)
     {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
         return false;
 #else
         if (temporaryDirPath.isEmpty())
@@ -663,7 +665,7 @@ namespace QTest {
         std_err += make.readAllStandardError();
 
         return ok;
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
     }
 
     bool QExternalTestPrivate::commonSetup(const QByteArray &body)

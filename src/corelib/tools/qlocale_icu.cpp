@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qglobal.h"
-#include "qlibrary.h"
 #include "qdebug.h"
 #include "qlocale_p.h"
 #include "qmutex.h"

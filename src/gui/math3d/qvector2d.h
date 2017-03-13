@@ -204,6 +204,9 @@ inline QVector2D &QVector2D::operator/=(const QVector2D &vector)
     return *this;
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
 Q_DECL_CONSTEXPR inline bool operator==(const QVector2D &v1, const QVector2D &v2)
 {
     return v1.xp == v2.xp && v1.yp == v2.yp;
@@ -213,6 +216,7 @@ Q_DECL_CONSTEXPR inline bool operator!=(const QVector2D &v1, const QVector2D &v2
 {
     return v1.xp != v2.xp || v1.yp != v2.yp;
 }
+QT_WARNING_POP
 
 Q_DECL_CONSTEXPR inline const QVector2D operator+(const QVector2D &v1, const QVector2D &v2)
 {

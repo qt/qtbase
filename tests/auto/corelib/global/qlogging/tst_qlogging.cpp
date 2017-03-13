@@ -29,7 +29,9 @@
 
 #include <qdebug.h>
 #include <qglobal.h>
-#include <QtCore/QProcess>
+#if QT_CONFIG(process)
+# include <QtCore/QProcess>
+#endif
 #include <QtTest/QTest>
 
 class tst_qmessagehandler : public QObject
@@ -102,7 +104,7 @@ void tst_qmessagehandler::initTestCase()
     QVERIFY2(!m_appDir.isEmpty(), qPrintable(
         QString::fromLatin1("Couldn't find helper app dir starting from %1.").arg(QDir::currentPath())));
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     m_baseEnvironment = QProcess::systemEnvironment();
     for (int i = 0; i < m_baseEnvironment.count(); ++i) {
         if (m_baseEnvironment.at(i).startsWith("QT_MESSAGE_PATTERN=")) {
@@ -110,7 +112,7 @@ void tst_qmessagehandler::initTestCase()
             break;
         }
     }
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 void tst_qmessagehandler::cleanup()
@@ -813,7 +815,7 @@ void tst_qmessagehandler::qMessagePattern_data()
 
 void tst_qmessagehandler::qMessagePattern()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
     QFETCH(QString, pattern);
@@ -855,7 +857,7 @@ void tst_qmessagehandler::qMessagePattern()
 
 void tst_qmessagehandler::setMessagePattern()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
 
@@ -892,7 +894,7 @@ void tst_qmessagehandler::setMessagePattern()
     output.replace("\r\n", "\n");
 #endif
     QCOMPARE(QString::fromLatin1(output), QString::fromLatin1(expected));
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 Q_DECLARE_METATYPE(QtMsgType)

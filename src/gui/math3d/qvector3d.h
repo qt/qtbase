@@ -229,6 +229,9 @@ inline QVector3D &QVector3D::operator/=(const QVector3D &vector)
     return *this;
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
 Q_DECL_CONSTEXPR inline bool operator==(const QVector3D &v1, const QVector3D &v2)
 {
     return v1.xp == v2.xp && v1.yp == v2.yp && v1.zp == v2.zp;
@@ -238,6 +241,7 @@ Q_DECL_CONSTEXPR inline bool operator!=(const QVector3D &v1, const QVector3D &v2
 {
     return v1.xp != v2.xp || v1.yp != v2.yp || v1.zp != v2.zp;
 }
+QT_WARNING_POP
 
 Q_DECL_CONSTEXPR inline const QVector3D operator+(const QVector3D &v1, const QVector3D &v2)
 {

@@ -1421,13 +1421,17 @@ bool QMYSQLDriver::open(const QString& db,
     if (mysql_get_client_version() >= 50503 && mysql_get_server_version(d->mysql) >= 50503) {
         // force the communication to be utf8mb4 (only utf8mb4 supports 4-byte characters)
         mysql_set_character_set(d->mysql, "utf8mb4");
-    } else {
+#ifndef QT_NO_TEXTCODEC
+        d->tc = QTextCodec::codecForName("UTF-8");
+#endif
+    } else
+    {
         // force the communication to be utf8
         mysql_set_character_set(d->mysql, "utf8");
-    }
-#endif
 #ifndef QT_NO_TEXTCODEC
-    d->tc = codec(d->mysql);
+        d->tc = codec(d->mysql);
+#endif
+    }
 #endif
 
 #if MYSQL_VERSION_ID >= 40108

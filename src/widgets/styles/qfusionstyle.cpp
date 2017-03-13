@@ -56,7 +56,6 @@
 #include <qmainwindow.h>
 #include <qfont.h>
 #include <qgroupbox.h>
-#include <qprocess.h>
 #include <qpixmapcache.h>
 #include <qscrollbar.h>
 #include <qspinbox.h>
@@ -67,7 +66,6 @@
 #include <qsplitter.h>
 #include <qprogressbar.h>
 #include <qwizard.h>
-#include <qlibrary.h>
 #include <qdrawutil.h>
 #include <private/qstylehelper_p.h>
 #include <private/qdrawhelper_p.h>

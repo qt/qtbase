@@ -182,7 +182,7 @@ headersclean:!internal_module {
         # Turn on some extra warnings not found in -Wall -Wextra.
         # Common to GCC, Clang and ICC (and other compilers that masquerade as GCC):
         hcleanFLAGS = -Wall -Wextra -Werror \
-                      -Woverloaded-virtual -Wshadow -Wundef \
+                      -Woverloaded-virtual -Wshadow -Wundef -Wfloat-equal \
                       -Wnon-virtual-dtor -Wpointer-arith -Wformat-security \
                       -Wno-long-long -Wno-variadic-macros -pedantic-errors
 

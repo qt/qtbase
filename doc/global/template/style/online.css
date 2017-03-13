@@ -1721,3 +1721,22 @@ a.qa-mark:target:before {
   color: #ff0000;
 }
 
+.mainContent .video {
+  width:60%;
+  max-width:640px;
+  margin: 0.5em 0 1.5em 0.5em;
+  position:relative;
+  display:table
+}
+
+.mainContent .video > .vspan {
+  padding-top:60%;
+  display:block
+}
+.mainContent .video iframe {
+  width:100%;
+  height:100%;
+  position:absolute;
+  top:0;
+  left:0
+}

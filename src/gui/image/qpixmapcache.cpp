@@ -341,7 +341,6 @@ bool QPMCache::insert(const QString& key, const QPixmap &pixmap, int cost)
     } else {
         //Insertion failed we released the new allocated key
         cacheKeys.remove(key);
-        releaseKey(cacheKey);
     }
     return success;
 }
@@ -355,9 +354,6 @@ QPixmapCache::Key QPMCache::insert(const QPixmap &pixmap, int cost)
             theid = startTimer(flush_time);
             t = false;
         }
-    } else {
-        //Insertion failed we released the key and return an invalid one
-        releaseKey(cacheKey);
     }
     return cacheKey;
 }
@@ -377,9 +373,6 @@ bool QPMCache::replace(const QPixmapCache::Key &key, const QPixmap &pixmap, int 
             t = false;
         }
         const_cast<QPixmapCache::Key&>(key) = cacheKey;
-    } else {
-        //Insertion failed we released the key
-        releaseKey(cacheKey);
     }
     return success;
 }

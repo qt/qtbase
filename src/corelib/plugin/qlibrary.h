@@ -42,9 +42,9 @@
 
 #include <QtCore/qobject.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(library);
 
-#ifndef QT_NO_LIBRARY
+QT_BEGIN_NAMESPACE
 
 class QLibraryPrivate;
 
@@ -98,8 +98,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLibrary::LoadHints)
-
-#endif //QT_NO_LIBRARY
 
 QT_END_NAMESPACE
 
