@@ -1176,6 +1176,7 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
     if (!xcbWindow)
         return;
     QWindow *window = xcbWindow->window();
+    const Qt::KeyboardModifiers modifiers = keyboard()->translateModifiers(ev->mods.effective_mods);
     const double scale = 65536.0;
     QPointF local(ev->event_x / scale, ev->event_y / scale);
     QPointF global(ev->root_x / scale, ev->root_y / scale);
@@ -1217,18 +1218,18 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
 
     if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
         qCDebug(lcQpaXInputEvents, "XI2 event on tablet %d with tool %s type %s seq %d detail %d time %d "
-            "pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
+            "pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf modifiers 0x%x",
             tabletData->deviceId, toolName(tabletData->tool), pointerTypeName(tabletData->pointerType),
             ev->sequenceNumber, ev->detail, ev->time,
             fixed1616ToReal(ev->event_x), fixed1616ToReal(ev->event_y),
             fixed1616ToReal(ev->root_x), fixed1616ToReal(ev->root_y),
-            (int)tabletData->buttons, pressure, xTilt, yTilt, rotation);
+            (int)tabletData->buttons, pressure, xTilt, yTilt, rotation, (int)modifiers);
 
     QWindowSystemInterface::handleTabletEvent(window, ev->time, local, global,
                                               tabletData->tool, tabletData->pointerType,
                                               tabletData->buttons, pressure,
                                               xTilt, yTilt, tangentialPressure,
-                                              rotation, 0, tabletData->serialId);
+                                              rotation, 0, tabletData->serialId, modifiers);
 }
 
 QXcbConnection::TabletData *QXcbConnection::tabletDataForDevice(int id)
