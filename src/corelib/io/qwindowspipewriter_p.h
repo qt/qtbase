@@ -156,4 +156,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_PROCESS
+#endif // QWINDOWSPIPEWRITER_P_H

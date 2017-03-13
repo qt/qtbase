@@ -486,7 +486,7 @@ void tst_QFont::styleName()
 
 QString getPlatformGenericFont(const char* genericName)
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_FONTCONFIG)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_FONTCONFIG) && QT_CONFIG(process)
     QProcess p;
     p.start(QLatin1String("fc-match"), (QStringList() << "-f%{family}" << genericName));
     if (!p.waitForStarted())

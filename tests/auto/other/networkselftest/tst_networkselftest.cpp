@@ -961,7 +961,7 @@ void tst_NetworkSelfTest::supportsSsl()
 #endif
 }
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
 static const QByteArray msgProcessError(const QProcess &process, const char *what)
 {
     QString result;
@@ -978,7 +978,7 @@ static void ensureTermination(QProcess &process)
             process.kill();
     }
 }
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
 void tst_NetworkSelfTest::smbServer()
 {
@@ -996,7 +996,7 @@ void tst_NetworkSelfTest::smbServer()
     QCOMPARE(ret, strlen(contents));
     QVERIFY(memcmp(buf, contents, strlen(contents)) == 0);
 #else
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     enum { sambaTimeOutSecs = 5 };
     // try to use Samba
     const QString progname = "smbclient";

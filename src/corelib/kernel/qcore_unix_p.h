@@ -300,7 +300,7 @@ static inline int qt_safe_close(int fd)
 #define QT_CLOSE qt_safe_close
 
 // - VxWorks & iOS/tvOS/watchOS don't have processes
-#if !defined(Q_OS_VXWORKS) && !defined(QT_NO_PROCESS)
+#if QT_CONFIG(process)
 static inline int qt_safe_execve(const char *filename, char *const argv[],
                                  char *const envp[])
 {
@@ -329,7 +329,7 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
     EINTR_LOOP(ret, ::waitpid(pid, status, options));
     return ret;
 }
-#endif // Q_OS_VXWORKS
+#endif // QT_CONFIG(process)
 
 #if !defined(_POSIX_MONOTONIC_CLOCK)
 #  define _POSIX_MONOTONIC_CLOCK -1

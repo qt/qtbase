@@ -62,7 +62,7 @@ class QFactoryLoaderPrivate : public QObjectPrivate
 public:
     QFactoryLoaderPrivate(){}
     QByteArray iid;
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     ~QFactoryLoaderPrivate();
     mutable QMutex mutex;
     QList<QLibraryPrivate*> libraryList;
@@ -73,7 +73,7 @@ public:
 #endif
 };
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 
 Q_GLOBAL_STATIC(QList<QFactoryLoader *>, qt_factory_loaders)
 
@@ -232,7 +232,7 @@ void QFactoryLoader::refreshAll()
     }
 }
 
-#endif // QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
 
 QFactoryLoader::QFactoryLoader(const char *iid,
                                const QString &suffix,
@@ -242,7 +242,7 @@ QFactoryLoader::QFactoryLoader(const char *iid,
     moveToThread(QCoreApplicationPrivate::mainThread());
     Q_D(QFactoryLoader);
     d->iid = iid;
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     d->cs = cs;
     d->suffix = suffix;
 
@@ -259,7 +259,7 @@ QList<QJsonObject> QFactoryLoader::metaData() const
 {
     Q_D(const QFactoryLoader);
     QList<QJsonObject> metaData;
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     QMutexLocker locker(&d->mutex);
     for (int i = 0; i < d->libraryList.size(); ++i)
         metaData.append(d->libraryList.at(i)->metaData);
@@ -281,7 +281,7 @@ QObject *QFactoryLoader::instance(int index) const
     if (index < 0)
         return 0;
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     QMutexLocker lock(&d->mutex);
     if (index < d->libraryList.size()) {
         QLibraryPrivate *library = d->libraryList.at(index);

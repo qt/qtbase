@@ -98,6 +98,12 @@ bool ResultIteratorBase::canIncrementVectorIndex() const
 ResultStoreBase::ResultStoreBase()
     : insertIndex(0), resultCount(0), m_filterMode(false), filteredResults(0) { }
 
+ResultStoreBase::~ResultStoreBase()
+{
+    // QFutureInterface's dtor must delete the contents of m_results.
+    Q_ASSERT(m_results.isEmpty());
+}
+
 void ResultStoreBase::setFilterMode(bool enable)
 {
     m_filterMode = enable;

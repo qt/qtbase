@@ -57,6 +57,9 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qshareddata.h"
 #include "private/qiodevice_p.h"
+
+QT_REQUIRE_CONFIG(processenvironment);
+
 #ifdef Q_OS_UNIX
 #include <QtCore/private/qorderedmutexlocker_p.h>
 #endif
@@ -77,8 +80,6 @@ class QWindowsPipeReader;
 class QWindowsPipeWriter;
 class QWinEventNotifier;
 class QTimer;
-
-#if QT_CONFIG(processenvironment)
 
 #ifdef Q_OS_WIN
 class QProcEnvKey : public QString
@@ -232,8 +233,6 @@ template<> Q_INLINE_TEMPLATE void QSharedDataPointer<QProcessEnvironmentPrivate>
         delete d;
     d = x;
 }
-
-#endif // QT_CONFIG(processenvironment)
 
 #if QT_CONFIG(process)
 
@@ -390,7 +389,7 @@ public:
     void setErrorAndEmit(QProcess::ProcessError error, const QString &description = QString());
 };
 
-#endif // QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
 QT_END_NAMESPACE
 

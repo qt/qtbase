@@ -54,7 +54,9 @@
 #include <QHostInfo>
 #include <QMap>
 #include <QPointer>
-#include <QProcess>
+#if QT_CONFIG(process)
+# include <QProcess>
+#endif
 #include <QStringList>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -2403,7 +2405,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect_data()
 
 void tst_QTcpSocket::suddenRemoteDisconnect()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
     QFETCH(QString, client);
@@ -2459,7 +2461,7 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
 #endif
     QCOMPARE(clientProcess.readAll().constData(), "SUCCESS\n");
     QCOMPARE(serverProcess.readAll().constData(), "SUCCESS\n");
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 //----------------------------------------------------------------------------------

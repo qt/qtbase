@@ -97,6 +97,8 @@ private slots:
     void testDefaultButton();
 
     void task191642_default();
+    void testDeletedStandardButton();
+
 private:
     qint64 timeStamp;
     qint64 buttonClicked1TimeStamp;
@@ -841,6 +843,23 @@ void tst_QDialogButtonBox::task191642_default()
     QTest::keyPress( &dlg, Qt::Key_Enter );
     QTest::qWait(100);
     QCOMPARE(clicked.count(), 1);
+}
+
+void tst_QDialogButtonBox::testDeletedStandardButton()
+{
+    QDialogButtonBox buttonBox;
+    delete buttonBox.addButton(QDialogButtonBox::Ok);
+    QPointer<QPushButton> buttonC = buttonBox.addButton(QDialogButtonBox::Cancel);
+    delete buttonBox.addButton(QDialogButtonBox::Cancel);
+    QPointer<QPushButton> buttonA = buttonBox.addButton(QDialogButtonBox::Apply);
+    delete buttonBox.addButton(QDialogButtonBox::Help);
+    // A few button have been deleted, they should automatically be removed
+    QCOMPARE(buttonBox.standardButtons(), QDialogButtonBox::Apply | QDialogButtonBox::Cancel);
+
+    buttonBox.setStandardButtons(QDialogButtonBox::Reset | QDialogButtonBox::Cancel);
+    // setStanderdButton should delete previous buttons
+    QVERIFY(!buttonA);
+    QVERIFY(!buttonC);
 }
 
 QTEST_MAIN(tst_QDialogButtonBox)

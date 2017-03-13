@@ -956,7 +956,7 @@ void tst_QUdpSocket::writeToNonExistingPeer()
 
 void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess serverProcess;
@@ -1017,7 +1017,7 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 
 void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess serverProcess;

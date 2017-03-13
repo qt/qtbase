@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 
 /*!
     \class QPluginLoader
@@ -417,7 +417,7 @@ QLibrary::LoadHints QPluginLoader::loadHints() const
     return d ? d->loadHints() : QLibrary::LoadHints();
 }
 
-#endif // QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
 
 typedef QVector<QStaticPlugin> StaticPluginList;
 Q_GLOBAL_STATIC(StaticPluginList, staticPluginList)

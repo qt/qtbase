@@ -39,7 +39,6 @@
 
 // these might be defined via precompiled headers
 #include <QtCore/qatomic.h>
-#include "qprocess_p.h"
 
 #define FORKFD_NO_SPAWNFD
 

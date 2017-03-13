@@ -78,7 +78,6 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvarlengtharray.h>
-#include <QLibrary> // for loading the security lib for the CA store
 
 #include <string.h>
 
@@ -530,7 +529,7 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     resetDefaultCiphers();
     resetDefaultEllipticCurves();
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     //load symbols needed to receive certificates from system store
 #if defined(Q_OS_WIN)
     HINSTANCE hLib = LoadLibraryW(L"Crypt32");
@@ -558,7 +557,7 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
         }
     }
 #endif
-#endif //QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
     // if on-demand loading was not enabled, load the certs now
     if (!s_loadRootCertsOnDemand)
         setDefaultCaCertificates(systemCaCertificates());

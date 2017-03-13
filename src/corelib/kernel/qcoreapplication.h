@@ -141,12 +141,12 @@ public:
     static QString applicationFilePath();
     static qint64 applicationPid();
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     static void setLibraryPaths(const QStringList &);
     static QStringList libraryPaths();
     static void addLibraryPath(const QString &);
     static void removeLibraryPath(const QString &);
-#endif // QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
 
 #ifndef QT_NO_TRANSLATION
     static bool installTranslator(QTranslator * messageFile);

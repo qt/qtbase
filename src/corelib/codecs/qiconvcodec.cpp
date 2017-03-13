@@ -43,7 +43,6 @@ QT_REQUIRE_CONFIG(iconv);
 
 #include "qiconvcodec_p.h"
 #include "qtextcodec_p.h"
-#include <qlibrary.h>
 #include <qdebug.h>
 #include <qthreadstorage.h>
 

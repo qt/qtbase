@@ -44,8 +44,6 @@
 #include "qfileinfo.h"
 #include <private/qfilesystementry_p.h>
 
-#ifndef QT_NO_LIBRARY
-
 #include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
@@ -174,5 +172,3 @@ QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
     return QFunctionPointer(address);
 }
 QT_END_NAMESPACE
-
-#endif // QT_NO_LIBRARY

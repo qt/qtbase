@@ -41,8 +41,9 @@
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
-#include <QProcess>
-
+#if QT_CONFIG(process)
+# include <QProcess>
+#endif
 #include "qobject.h"
 #ifdef QT_BUILD_INTERNAL
 #include <private/qobject_p.h>
@@ -281,7 +282,7 @@ static void playWithObjects()
 
 void tst_QObject::initTestCase()
 {
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     const QString testDataDir = QFileInfo(QFINDTESTDATA("signalbug")).absolutePath();
     QVERIFY2(QDir::setCurrent(testDataDir), qPrintable("Could not chdir to " + testDataDir));
 #endif
@@ -3006,7 +3007,7 @@ void tst_QObject::dynamicProperties()
 
 void tst_QObject::recursiveSignalEmission()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess proc;

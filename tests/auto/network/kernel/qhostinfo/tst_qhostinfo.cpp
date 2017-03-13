@@ -54,7 +54,6 @@
 #endif
 
 #include <time.h>
-#include <qlibrary.h>
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #else

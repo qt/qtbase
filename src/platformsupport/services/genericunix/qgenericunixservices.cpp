@@ -41,7 +41,9 @@
 #include <QtGui/private/qtguiglobal_p.h>
 
 #include <QtCore/QStandardPaths>
-#include <QtCore/QProcess>
+#if QT_CONFIG(process)
+# include <QtCore/QProcess>
+#endif
 #include <QtCore/QUrl>
 #include <QtCore/QDebug>
 
@@ -121,7 +123,7 @@ static inline bool launch(const QString &launcher, const QUrl &url)
     const QString command = launcher + QLatin1Char(' ') + QLatin1String(url.toEncoded());
     if (debug)
         qDebug("Launching %s", qPrintable(command));
-#if defined(QT_NO_PROCESS)
+#if !QT_CONFIG(process)
     const bool ok = ::system(qPrintable(command + QLatin1String(" &")));
 #else
     const bool ok = QProcess::startDetached(command);

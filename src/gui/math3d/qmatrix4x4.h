@@ -212,6 +212,9 @@ private:
     friend class QGraphicsRotation;
 };
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
 Q_DECLARE_TYPEINFO(QMatrix4x4, Q_MOVABLE_TYPE);
 
 inline QMatrix4x4::QMatrix4x4
@@ -1092,6 +1095,8 @@ inline void QMatrix4x4::viewport(const QRectF &rect)
 {
     viewport(rect.x(), rect.y(), rect.width(), rect.height());
 }
+
+QT_WARNING_POP
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QMatrix4x4 &m);
