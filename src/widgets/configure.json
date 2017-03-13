@@ -163,10 +163,17 @@
             "condition": "features.rubberband",
             "output": [ "publicFeature", "feature" ]
         },
+        "widgettextcontrol": {
+            "label": "QWidgetTextControl",
+            "purpose": "Provides text control functionality to other widgets.",
+            "section": "Widgets",
+            "output": [ "privateFeature" ]
+        },
         "label": {
             "label": "QLabel",
             "purpose": "Provides a text or image display.",
             "section": "Widgets",
+            "condition": "features.widgettextcontrol",
             "output": [ "publicFeature" ]
         },
         "formlayout": {
@@ -193,6 +200,7 @@
             "label": "QLineEdit",
             "purpose": "Provides single-line edits.",
             "section": "Widgets",
+            "condition": "features.widgettextcontrol",
             "output": [ "publicFeature", "feature" ]
         },
         "radiobutton": {
@@ -382,7 +390,7 @@
             "label": "QGraphicsView",
             "purpose": "Provides a canvas/sprite framework.",
             "section": "Widgets",
-            "condition": "features.scrollarea",
+            "condition": "features.scrollarea && features.widgettextcontrol",
             "output": [ "publicFeature", "feature" ]
         },
         "graphicseffect": {
@@ -396,7 +404,7 @@
             "label": "QTextEdit",
             "purpose": "Supports rich text editing.",
             "section": "Widgets",
-            "condition": "features.scrollarea && features.properties",
+            "condition": "features.scrollarea && features.properties && features.widgettextcontrol",
             "output": [ "publicFeature", "feature" ]
         },
         "syntaxhighlighter": {

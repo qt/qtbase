@@ -65,8 +65,6 @@ HEADERS += \
         widgets/qfocusframe.h \
         widgets/qscrollarea.h \
         widgets/qwidgetanimator_p.h \
-        widgets/qwidgettextcontrol_p.h \
-        widgets/qwidgettextcontrol_p_p.h \
         widgets/qwidgetlinecontrol_p.h \
         widgets/qtoolbararealayout_p.h \
         widgets/qplaintextedit.h \
@@ -120,7 +118,6 @@ SOURCES += \
         widgets/qfocusframe.cpp \
         widgets/qscrollarea.cpp \
         widgets/qwidgetanimator.cpp \
-        widgets/qwidgettextcontrol.cpp \
         widgets/qwidgetlinecontrol.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp
@@ -192,6 +189,15 @@ qtConfig(dialogbuttonbox) {
 
     SOURCES += \
         widgets/qdialogbuttonbox.cpp
+}
+
+qtConfig(widgettextcontrol) {
+    HEADERS += \
+        widgets/qwidgettextcontrol_p.h \
+        widgets/qwidgettextcontrol_p_p.h
+
+    SOURCES += \
+        widgets/qwidgettextcontrol.cpp
 }
 
 macx {
