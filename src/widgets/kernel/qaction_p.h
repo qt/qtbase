@@ -105,7 +105,7 @@ public:
     uint separator : 1;
     uint fontSet : 1;
 
-    int iconVisibleInMenu : 3;  // Only has values -1, 0, and 1
+    int iconVisibleInMenu : 2;  // Only has values -1, 0, and 1
     int shortcutVisibleInContextMenu : 2; // Only has values -1, 0, and 1
 
     QAction::MenuRole menuRole;

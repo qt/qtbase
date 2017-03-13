@@ -1278,8 +1278,7 @@ void QAction::setIconVisibleInMenu(bool visible)
         d->iconVisibleInMenu = visible;
         // Only send data changed if we really need to.
         if (oldValue != -1
-            || (oldValue == -1
-                && visible == !QApplication::instance()->testAttribute(Qt::AA_DontShowIconsInMenus))) {
+            || visible == !QApplication::instance()->testAttribute(Qt::AA_DontShowIconsInMenus)) {
             d->sendDataChanged();
         }
     }
