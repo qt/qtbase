@@ -64,9 +64,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest
 {
-/*!
-    \internal
- */
 template<>
 inline char *toString<QHostAddress>(const QHostAddress &addr)
 {
@@ -83,9 +80,6 @@ inline char *toString<QHostAddress>(const QHostAddress &addr)
     return toString(addr.toString());
 }
 
-/*!
-    \internal
- */
 inline char *toString(QNetworkReply::NetworkError code)
 {
     const QMetaObject *mo = &QNetworkReply::staticMetaObject;
@@ -97,17 +91,11 @@ inline char *toString(QNetworkReply::NetworkError code)
     return qstrdup(qme.valueToKey(code));
 }
 
-/*!
-    \internal
- */
 inline char *toString(const QNetworkCookie &cookie)
 {
     return toString(cookie.toRawForm());
 }
 
-/*!
-    \internal
- */
 inline char *toString(const QList<QNetworkCookie> &list)
 {
     QByteArray result = "QList(";

@@ -75,9 +75,6 @@ QT_BEGIN_NAMESPACE
 namespace QTest
 {
 
-/*!
-    \internal
- */
 template<> inline char *toString(const QColor &color)
 {
     return qstrdup(color.name(QColor::HexArgb).toLocal8Bit().constData());

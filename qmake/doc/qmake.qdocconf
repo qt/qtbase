@@ -1,6 +1,7 @@
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QMake
+moduleheader            = qmake_pch.h
 description             = QMake Manual
 
 qhp.projects            = qmake
