@@ -31,6 +31,7 @@
 
 #include <QWidget>
 #include <QTabletEvent>
+#include <QShortcut>
 
 // a widget showing the information of the last tablet event
 class TabletWidget : public QWidget
@@ -64,6 +65,7 @@ private:
     bool mMouseToo;
     ulong mTimestamp;
     int mWheelEventCount;
+    QShortcut mQuitShortcut;
 };
 
 #endif // TABLETWIDGET_H

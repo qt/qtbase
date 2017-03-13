@@ -33,7 +33,7 @@
 #include <QMetaObject>
 #include <QMetaEnum>
 
-TabletWidget::TabletWidget(bool mouseToo) : mMouseToo(mouseToo), mWheelEventCount(0)
+TabletWidget::TabletWidget(bool mouseToo) : mMouseToo(mouseToo), mWheelEventCount(0), mQuitShortcut(QKeySequence::Quit, this)
 {
     QPalette newPalette = palette();
     newPalette.setColor(QPalette::Window, Qt::white);
@@ -41,6 +41,7 @@ TabletWidget::TabletWidget(bool mouseToo) : mMouseToo(mouseToo), mWheelEventCoun
     setPalette(newPalette);
     qApp->installEventFilter(this);
     resetAttributes();
+    connect(&mQuitShortcut, SIGNAL(activated()), qApp, SLOT(quit()));
 }
 
 bool TabletWidget::eventFilter(QObject *, QEvent *ev)
