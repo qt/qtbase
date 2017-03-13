@@ -56,6 +56,8 @@
 #include <QtGlxSupport/private/qglxconvenience_p.h>
 #include <QtPlatformHeaders/QGLXNativeContext>
 
+#include "qxcbglintegration.h"
+
 #if !defined(QT_STATIC) && QT_CONFIG(dlopen)
 #include <dlfcn.h>
 #endif
@@ -691,6 +693,10 @@ void QGLXContext::queryDummyContext()
     if (const char *renderer = (const char *) glGetString(GL_RENDERER)) {
         for (int i = 0; qglx_threadedgl_blacklist_renderer[i]; ++i) {
             if (strstr(renderer, qglx_threadedgl_blacklist_renderer[i]) != 0) {
+                qCInfo(lcQpaGl).nospace() << "Multithreaded OpenGL disabled: "
+                                             "blacklisted renderer \""
+                                          << qglx_threadedgl_blacklist_renderer[i]
+                                          << "\"";
                 m_supportsThreading = false;
                 break;
             }
@@ -700,6 +706,11 @@ void QGLXContext::queryDummyContext()
     if (glxvendor) {
         for (int i = 0; qglx_threadedgl_blacklist_vendor[i]; ++i) {
             if (strstr(glxvendor, qglx_threadedgl_blacklist_vendor[i]) != 0) {
+                qCInfo(lcQpaGl).nospace() << "Multithreaded OpenGL disabled: "
+                                             "blacklisted vendor \""
+                                          << qglx_threadedgl_blacklist_vendor[i]
+                                          << "\"";
+
                 m_supportsThreading = false;
                 break;
             }
@@ -709,6 +720,11 @@ void QGLXContext::queryDummyContext()
     context.doneCurrent();
     if (oldContext && oldSurface)
         oldContext->makeCurrent(oldSurface);
+
+    if (!m_supportsThreading) {
+        qCInfo(lcQpaGl) << "Force-enable multithreaded OpenGL by setting "
+                           "environment variable QT_OPENGL_NO_SANITY_CHECK";
+    }
 }
 
 bool QGLXContext::supportsThreading()
