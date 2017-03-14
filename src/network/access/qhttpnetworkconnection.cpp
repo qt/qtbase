@@ -462,7 +462,12 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         else
             channels[i].authMethod = priv->method;
 
-        if (priv->phase == QAuthenticatorPrivate::Done) {
+        if (priv->phase == QAuthenticatorPrivate::Done ||
+                (priv->phase == QAuthenticatorPrivate::Start
+                    && priv->method == QAuthenticatorPrivate::Ntlm)) {
+            if (priv->phase == QAuthenticatorPrivate::Start)
+                priv->phase = QAuthenticatorPrivate::Phase1;
+
             pauseConnection();
             if (!isProxy) {
                 if (channels[i].authenticationCredentialsSent) {
