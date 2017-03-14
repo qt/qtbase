@@ -243,7 +243,7 @@ headersclean:!internal_module {
         }
 
         hcleanCOMMAND = $$QMAKE_CXX -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -xc++ ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-    } else: win32-msvc2013 {
+    } else: msvc:!intel_icl {
         # 4180: qualifier applied to function type has no meaning; ignored
         # 4458: declaration of 'identifier' hides class member
         # -Za enables strict standards behavior, but we can't add it because
