@@ -618,9 +618,9 @@ QT_BEGIN_NAMESPACE
     Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
 
     \note This constructor is not available when \c QT_NO_CAST_FROM_ASCII
-    is defined.
+    or QT_RESTRICTED_CAST_FROM_ASCII is defined.
 
-    \sa QT_NO_CAST_FROM_ASCII
+    \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
 */
 
 /*!
