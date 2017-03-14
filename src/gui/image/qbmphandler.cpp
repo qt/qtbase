@@ -183,14 +183,14 @@ static bool read_dib_infoheader(QDataStream &s, BMP_INFOHDR &bi)
     return true;
 }
 
-static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int startpos, QImage &image)
+static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 offset, qint64 startpos, QImage &image)
 {
     QIODevice* d = s.device();
     if (d->atEnd())                                // end of stream/file
         return false;
 #if 0
-    qDebug("offset...........%d", offset);
-    qDebug("startpos.........%d", startpos);
+    qDebug("offset...........%lld", offset);
+    qDebug("startpos.........%lld", startpos);
     qDebug("biSize...........%d", bi.biSize);
     qDebug("biWidth..........%d", bi.biWidth);
     qDebug("biHeight.........%d", bi.biHeight);
