@@ -86,6 +86,13 @@ public:
     Q_DECL_CONSTEXPR QChar(int rc) Q_DECL_NOTHROW : ucs(ushort(rc & 0xffff)) {}
     Q_DECL_CONSTEXPR QChar(SpecialCharacter s) Q_DECL_NOTHROW : ucs(ushort(s)) {} // implicit
     Q_DECL_CONSTEXPR QChar(QLatin1Char ch) Q_DECL_NOTHROW : ucs(ch.unicode()) {} // implicit
+#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+    Q_DECL_CONSTEXPR QChar(char16_t ch) Q_DECL_NOTHROW : ucs(ushort(ch)) {} // implicit
+#endif
+#if defined(Q_OS_WIN)
+    Q_STATIC_ASSERT(sizeof(wchar_t) == sizeof(ushort));
+    Q_DECL_CONSTEXPR QChar(wchar_t ch) Q_DECL_NOTHROW : ucs(ushort(ch)) {} // implicit
+#endif
 
 #ifndef QT_NO_CAST_FROM_ASCII
     QT_ASCII_CAST_WARN Q_DECL_CONSTEXPR explicit QChar(char c) Q_DECL_NOTHROW : ucs(uchar(c)) { }

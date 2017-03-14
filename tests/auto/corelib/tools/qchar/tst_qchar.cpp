@@ -36,6 +36,8 @@ class tst_QChar : public QObject
 {
     Q_OBJECT
 private slots:
+    void fromChar16_t();
+    void fromWchar_t();
     void operator_eqeq_int();
     void operators_data();
     void operators();
@@ -74,6 +76,30 @@ private slots:
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
+
+void tst_QChar::fromChar16_t()
+{
+#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+    QChar aUmlaut = u'\u00E4'; // German small letter a-umlaut
+    QCOMPARE(aUmlaut, QChar(0xE4));
+    QChar replacementCharacter = u'\uFFFD';
+    QCOMPARE(replacementCharacter, QChar(QChar::ReplacementCharacter));
+#else
+    QSKIP("This test requires C++11 char16_t support enabled in the compiler.");
+#endif
+}
+
+void tst_QChar::fromWchar_t()
+{
+#if defined(Q_OS_WIN)
+    QChar aUmlaut = L'\u00E4'; // German small letter a-umlaut
+    QCOMPARE(aUmlaut, QChar(0xE4));
+    QChar replacementCharacter = L'\uFFFD';
+    QCOMPARE(replacementCharacter, QChar(QChar::ReplacementCharacter));
+#else
+    QSKIP("This is a Windows-only test.");
+#endif
+}
 
 void tst_QChar::operator_eqeq_int()
 {
