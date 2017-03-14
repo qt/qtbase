@@ -32,6 +32,7 @@
 #include <qdir.h>
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qhashfunctions.h>
 #include <qtextstream.h>
 #include <qatomic.h>
 #include <qglobal.h>
@@ -312,16 +313,17 @@ int runRcc(int argc, char *argv[])
     return 0;
 }
 
-Q_CORE_EXPORT extern QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
-
 QT_END_NAMESPACE
 
 int main(int argc, char *argv[])
 {
     // rcc uses a QHash to store files in the resource system.
     // we must force a certain hash order when testing or tst_rcc will fail, see QTBUG-25078
-    if (Q_UNLIKELY(!qEnvironmentVariableIsEmpty("QT_RCC_TEST") && !qt_qhash_seed.testAndSetRelaxed(-1, 0)))
-        qFatal("Cannot force QHash seed for testing as requested");
+    if (Q_UNLIKELY(!qEnvironmentVariableIsEmpty("QT_RCC_TEST"))) {
+        qSetGlobalQHashSeed(0);
+        if (qGlobalQHashSeed() != 0)
+            qFatal("Cannot force QHash seed for testing as requested");
+    }
 
     return QT_PREPEND_NAMESPACE(runRcc)(argc, argv);
 }
