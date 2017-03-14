@@ -70,6 +70,7 @@
 #include "non-gadget-parent-class.h"
 #include "grand-parent-gadget-class.h"
 #include "namespace.h"
+#include "cxx17-namespaces.h"
 
 #ifdef Q_MOC_RUN
 // check that moc can parse these constructs, they are being used in Windows winsock2.h header
@@ -521,6 +522,10 @@ public slots:
 private:
      myNS::Points m_points;
 
+#ifdef Q_MOC_RUN
+    int xx = 11'11; // digit separator must not confuse moc (QTBUG-59351)
+#endif
+
 private slots:
      inline virtual void blub1() {}
      virtual inline void blub2() {}
@@ -696,6 +701,7 @@ private slots:
     void optionsFileError_data();
     void optionsFileError();
     void testQNamespace();
+    void cxx17Namespaces();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3797,6 +3803,25 @@ void tst_Moc::testQNamespace()
     QCOMPARE(FooNamespace::staticMetaObject.enumeratorCount(), 1);
     QCOMPARE(FooNamespace::FooNestedNamespace::staticMetaObject.enumeratorCount(), 2);
     QCOMPARE(FooNamespace::FooNestedNamespace::FooMoreNestedNamespace::staticMetaObject.enumeratorCount(), 1);
+}
+
+void tst_Moc::cxx17Namespaces()
+{
+    QCOMPARE(CXX17Namespace::A::B::C::D::staticMetaObject.className(),
+             "CXX17Namespace::A::B::C::D");
+    QCOMPARE(CXX17Namespace::A::B::C::D::staticMetaObject.enumeratorCount(), 1);
+    QCOMPARE(CXX17Namespace::A::B::C::D::staticMetaObject.enumerator(0).name(), "NamEn");
+    QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::NamEn>().name(), "NamEn");
+    QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::NamEn>().keyCount(), 1);
+    QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::NamEn>().value(0), 4);
+
+    QCOMPARE(CXX17Namespace::A::B::C::D::ClassInNamespace::staticMetaObject.className(),
+             "CXX17Namespace::A::B::C::D::ClassInNamespace");
+    QCOMPARE(CXX17Namespace::A::B::C::D::ClassInNamespace::staticMetaObject.enumeratorCount(), 1);
+    QCOMPARE(CXX17Namespace::A::B::C::D::ClassInNamespace::staticMetaObject.enumerator(0).name(), "GadEn");
+    QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().name(), "GadEn");
+    QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().keyCount(), 1);
+    QCOMPARE(QMetaEnum::fromType<CXX17Namespace::A::B::C::D::ClassInNamespace::GadEn>().value(0), 3);
 }
 
 QTEST_MAIN(tst_Moc)

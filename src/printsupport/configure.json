@@ -28,13 +28,20 @@
             "label": "CUPS",
             "purpose": "Provides support for the Common Unix Printing System.",
             "section": "Painting",
-            "condition": "libs.cups && features.printer",
+            "condition": "libs.cups && features.printer && features.datestring",
             "output": [ "privateFeature", "feature" ]
         },
         "cupsjobwidget": {
             "label": "CUPS job control widget",
             "section": "Widgets",
-            "condition": "features.cups && features.calendarwidget && features.datetimeedit && features.groupbox && features.combobox",
+            "condition": [
+                "features.calendarwidget",
+                "features.checkbox",
+                "features.combobox",
+                "features.cups",
+                "features.datetimeedit",
+                "features.groupbox"
+            ],
             "output": [ "privateFeature", "feature" ]
         },
         "printer": {
@@ -55,14 +62,25 @@
             "label": "QPrintDialog",
             "purpose": "Provides a dialog widget for specifying printer configuration.",
             "section": "Dialogs",
-            "condition": "features.printer && features.combobox && features.buttongroup && features.spinbox && features.treeview && features.tabwidget && features.datetimeedit",
+            "condition": [
+                "features.buttongroup",
+                "features.checkbox",
+                "features.combobox",
+                "features.datetimeedit",
+                "features.dialogbuttonbox",
+                "features.printer",
+                "features.radiobutton",
+                "features.spinbox",
+                "features.tabwidget",
+                "features.treeview"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "printpreviewdialog": {
             "label": "QPrintPreviewDialog",
             "purpose": "Provides a dialog for previewing and configuring page layouts for printer output.",
             "section": "Dialogs",
-            "condition": "features.printpreviewwidget && features.printdialog && features.toolbar",
+            "condition": "features.printpreviewwidget && features.printdialog && features.toolbar && features.formlayout",
             "output": [ "publicFeature", "feature" ]
         }
     },

@@ -1938,6 +1938,19 @@ bool qSharedBuild() Q_DECL_NOTHROW
   disable functions deprecated in Qt 5.1 and earlier. In any release, set
   QT_DISABLE_DEPRECATED_BEFORE=0x000000 to enable any functions, including the ones
   deprecated in Qt 5.0
+
+  \sa QT_DEPRECATED_WARNINGS
+ */
+
+
+/*!
+  \macro QT_DEPRECATED_WARNINGS
+  \relates <QtGlobal>
+
+  If this macro is defined, the compiler will generate warnings if API declared as
+  deprecated by Qt is used.
+
+  \sa QT_DISABLE_DEPRECATED_BEFORE
  */
 
 #if defined(QT_BUILD_QMAKE)

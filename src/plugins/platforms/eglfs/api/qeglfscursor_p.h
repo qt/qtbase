@@ -79,7 +79,10 @@ private:
     QEglFSCursor *m_cursor;
 };
 
-class Q_EGLFS_EXPORT QEglFSCursor : public QPlatformCursor, protected QOpenGLFunctions
+#if QT_CONFIG(opengl)
+
+class Q_EGLFS_EXPORT QEglFSCursor : public QPlatformCursor
+                                  , protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
@@ -153,6 +156,7 @@ private:
     };
     QHash<QOpenGLContext *, GraphicsContextData> m_gfx;
 };
+#endif // QT_CONFIG(opengl)
 
 QT_END_NAMESPACE
 

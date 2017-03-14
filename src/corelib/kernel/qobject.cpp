@@ -4655,11 +4655,7 @@ void qDeleteInEventHandler(QObject *o)
     make sure to declare the argument type with Q_DECLARE_METATYPE
 
     Overloaded functions can be resolved with help of \l qOverload.
-
-    \note The number of arguments in the signal or slot are limited to 6 if
-    the compiler does not support C++11 variadic templates.
  */
-
 
 /*!
     \fn QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, Functor functor)
@@ -4683,7 +4679,7 @@ void qDeleteInEventHandler(QObject *o)
 
     \snippet code/src_corelib_kernel_qobject.cpp 45
 
-    If your compiler support C++11 lambda expressions, you can use them:
+    Lambda expressions can also be used:
 
     \snippet code/src_corelib_kernel_qobject.cpp 46
 
@@ -4693,9 +4689,6 @@ void qDeleteInEventHandler(QObject *o)
 
     Overloaded functions can be resolved with help of \l qOverload.
 
-    \note If the compiler does not support C++11 variadic templates, the number
-    of arguments in the signal or slot are limited to 6, and the functor object
-    must not have an overloaded or templated operator().
  */
 
 /*!
@@ -4726,7 +4719,7 @@ void qDeleteInEventHandler(QObject *o)
 
     \snippet code/src_corelib_kernel_qobject.cpp 50
 
-    If your compiler support C++11 lambda expressions, you can use them:
+    Lambda expressions can also be used:
 
     \snippet code/src_corelib_kernel_qobject.cpp 51
 
@@ -4736,10 +4729,6 @@ void qDeleteInEventHandler(QObject *o)
     are still alive when the signal is emitted.
 
     Overloaded functions can be resolved with help of \l qOverload.
-
-    \note If the compiler does not support C++11 variadic templates, the number
-    of arguments in the signal or slot are limited to 6, and the functor object
-    must not have an overloaded or templated operator().
  */
 
 /*!

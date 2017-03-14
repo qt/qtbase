@@ -121,7 +121,9 @@ private:
     Q_DISABLE_COPY(QMacStyle)
     Q_DECLARE_PRIVATE(QMacStyle)
 
+#if QT_CONFIG(pushbutton)
     friend bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
+#endif
 };
 
 #endif

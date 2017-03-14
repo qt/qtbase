@@ -63,6 +63,14 @@ QT_BEGIN_NAMESPACE
     \sa QNetworkAccessManager::setStrictTransportSecurityEnabled()
 */
 
+/*
+    \enum QHstsPolicy::PolicyFlag
+
+    Specifies attributes that a policy can have.
+
+    \value IncludeSubDomains HSTS policy also applies to subdomains.
+*/
+
 class QHstsPolicyPrivate : public QSharedData
 {
 public:
@@ -101,13 +109,13 @@ QHstsPolicy::QHstsPolicy() : d(new QHstsPolicyPrivate)
 
     \sa QUrl::setHost(), QUrl::ParsingMode
 */
-QHstsPolicy::QHstsPolicy(const QDateTime &expiry, bool includeSubDomains, const QString &host,
-                         QUrl::ParsingMode mode)
+QHstsPolicy::QHstsPolicy(const QDateTime &expiry, PolicyFlags flags,
+                         const QString &host, QUrl::ParsingMode mode)
     : d(new QHstsPolicyPrivate)
 {
     d->url.setHost(host, mode);
     d->expiry = expiry;
-    d->includeSubDomains = includeSubDomains;
+    d->includeSubDomains = flags.testFlag(IncludeSubDomains);
 }
 
 /*!

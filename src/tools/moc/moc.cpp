@@ -549,12 +549,20 @@ void Moc::parse()
             case NAMESPACE: {
                 int rewind = index;
                 if (test(IDENTIFIER)) {
+                    QByteArray nsName = lexem();
+                    QByteArrayList nested;
+                    while (test(SCOPE)) {
+                        next(IDENTIFIER);
+                        nested.append(nsName);
+                        nsName = lexem();
+                    }
                     if (test(EQ)) {
                         // namespace Foo = Bar::Baz;
                         until(SEMIC);
                     } else if (!test(SEMIC)) {
                         NamespaceDef def;
-                        def.classname = lexem();
+                        def.classname = nsName;
+
                         next(LBRACE);
                         def.begin = index - 1;
                         until(RBRACE);
@@ -568,11 +576,23 @@ void Moc::parse()
                                     def.qualified.prepend(namespaceList.at(i).classname + "::");
                                 }
                             }
+                            for (const QByteArray &ns : nested) {
+                                NamespaceDef parentNs;
+                                parentNs.classname = ns;
+                                parentNs.qualified = def.qualified;
+                                def.qualified += ns + "::";
+                                parentNs.begin = def.begin;
+                                parentNs.end = def.end;
+                                namespaceList += parentNs;
+                            }
                         }
+
                         while (parseNamespace && inNamespace(&def) && hasNext()) {
                             switch (next()) {
                             case NAMESPACE:
                                 if (test(IDENTIFIER)) {
+                                    while (test(SCOPE))
+                                        next(IDENTIFIER);
                                     if (test(EQ)) {
                                         // namespace Foo = Bar::Baz;
                                         until(SEMIC);

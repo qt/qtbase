@@ -235,15 +235,22 @@ public:
     int effectiveRightTextMargin() const;
 
 private:
-    typedef QPair<QLineEdit::ActionPosition, int> PositionIndexPair;
+    struct SideWidgetLocation {
+        QLineEdit::ActionPosition position;
+        int index;
 
-    PositionIndexPair findSideWidget(const QAction *a) const;
+        bool isValid() const { return index >= 0; }
+    };
+    friend class QTypeInfo<SideWidgetLocation>;
+
+    SideWidgetLocation findSideWidget(const QAction *a) const;
 
     SideWidgetEntryList leadingSideWidgets;
     SideWidgetEntryList trailingSideWidgets;
     int lastTextSize;
 };
 Q_DECLARE_TYPEINFO(QLineEditPrivate::SideWidgetEntry, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QLineEditPrivate::SideWidgetLocation, Q_PRIMITIVE_TYPE);
 
 #endif // QT_NO_LINEEDIT
 

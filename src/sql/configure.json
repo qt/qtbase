@@ -153,7 +153,7 @@
         },
         "sql-odbc": {
             "label": "ODBC",
-            "condition": "libs.odbc && features.textdate",
+            "condition": "libs.odbc && features.datestring",
             "output": [ "publicFeature" ]
         },
         "sql-psql": {
@@ -168,7 +168,7 @@
         },
         "sql-sqlite": {
             "label": "SQLite",
-            "condition": "features.textdate",
+            "condition": "features.datestring",
             "output": [ "publicFeature" ]
         },
         "system-sqlite": {
@@ -179,7 +179,7 @@
         },
         "sql-tds": {
             "label": "TDS (Sybase)",
-            "condition": "libs.tds && features.textdate",
+            "condition": "libs.tds && features.datestring",
             "output": [ "publicFeature" ]
         }
     },

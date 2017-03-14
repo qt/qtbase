@@ -8181,7 +8181,7 @@ void tst_QWidget::customDpi()
     custom->logicalDpiX();
     QCOMPARE(custom->metricCallCount, 1);
     child->logicalDpiX();
-    QCOMPARE(custom->metricCallCount, 2);
+    QCOMPARE(custom->metricCallCount, 1);
 }
 
 void tst_QWidget::customDpiProperty()

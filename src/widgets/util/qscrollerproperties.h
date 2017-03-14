@@ -45,6 +45,8 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QVariant>
 
+QT_REQUIRE_CONFIG(scroller);
+
 QT_BEGIN_NAMESPACE
 
 

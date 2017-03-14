@@ -52,7 +52,8 @@ xembed-widgets \
 shortcuts \
 dialogs \
 windowtransparency \
-unc
+unc \
+qtabbar
 
 !qtConfig(openssl): SUBDIRS -= qssloptions
 

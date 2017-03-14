@@ -145,19 +145,11 @@ bool QString::contains(const QRegularExpression &regexp) const;
 //! [9]
 
 
-//! [10]
-std::bind(&QString::contains, QRegularExpression("^\\S+$")); // matches strings without whitespace
-//! [10]
-
-
-//! [11]
-bool contains(const QString &string)
-//! [11]
-
-
 //! [12]
 QStringList strings = ...;
-std::bind(static_cast<bool(QString::*)(const QRegularExpression&)>( &QString::contains ), QRegularExpression("..."));
+QFuture<QString> future = QtConcurrent::filtered(list, [](const QString &str) {
+    return str.contains(QRegularExpression("^\\S+$")); // matches strings without whitespace
+});
 //! [12]
 
 //! [13]

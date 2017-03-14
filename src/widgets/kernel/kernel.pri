@@ -15,7 +15,6 @@ HEADERS += \
         kernel/qwidgetbackingstore_p.h \
 	kernel/qboxlayout.h \
 	kernel/qdesktopwidget.h \
-	kernel/qformlayout.h \
 	kernel/qgridlayout.h \
         kernel/qlayout.h \
 	kernel/qlayout_p.h \
@@ -45,7 +44,6 @@ SOURCES += \
 	kernel/qapplication.cpp \
         kernel/qwidgetbackingstore.cpp \
         kernel/qboxlayout.cpp \
-	kernel/qformlayout.cpp \
 	kernel/qgridlayout.cpp \
         kernel/qlayout.cpp \
 	kernel/qlayoutengine.cpp \
@@ -83,4 +81,9 @@ wince {
 qtConfig(opengl) {
     HEADERS += kernel/qopenglwidget.h
     SOURCES += kernel/qopenglwidget.cpp
+}
+
+qtConfig(formlayout) {
+    HEADERS += kernel/qformlayout.h
+    SOURCES += kernel/qformlayout.cpp
 }

@@ -57,7 +57,6 @@
 #include "QtWidgets/qspinbox.h"
 #include "QtWidgets/qtoolbutton.h"
 #include "QtWidgets/qmenu.h"
-#include "QtWidgets/qlabel.h"
 #include "QtWidgets/qdatetimeedit.h"
 #include "private/qabstractspinbox_p.h"
 #include "private/qdatetimeparser_p.h"

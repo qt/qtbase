@@ -49,7 +49,9 @@
 #include "qvariant.h"
 #include "qwidget_p.h"
 #include "qlayout_p.h"
+#if QT_CONFIG(formlayout)
 #include "qformlayout.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -320,8 +322,10 @@ int QLayout::spacing() const
         return boxlayout->spacing();
     } else if (const QGridLayout* gridlayout = qobject_cast<const QGridLayout*>(this)) {
         return gridlayout->spacing();
+#if QT_CONFIG(formlayout)
     } else if (const QFormLayout* formlayout = qobject_cast<const QFormLayout*>(this)) {
         return formlayout->spacing();
+#endif
     } else {
         Q_D(const QLayout);
         if (d->insideSpacing >=0) {
@@ -347,8 +351,10 @@ void QLayout::setSpacing(int spacing)
         boxlayout->setSpacing(spacing);
     } else if (QGridLayout* gridlayout = qobject_cast<QGridLayout*>(this)) {
         gridlayout->setSpacing(spacing);
+#if QT_CONFIG(formlayout)
     } else if (QFormLayout* formlayout = qobject_cast<QFormLayout*>(this)) {
         formlayout->setSpacing(spacing);
+#endif
     } else {
         Q_D(QLayout);
         d->insideSpacing = spacing;

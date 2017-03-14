@@ -85,12 +85,12 @@ EGLNativeDisplayType QEglFSKmsEglDevice::nativeDisplay() const
 QPlatformScreen *QEglFSKmsEglDevice::createScreen(const QKmsOutput &output)
 {
     QEglFSKmsScreen *screen = new QEglFSKmsEglDeviceScreen(this, output);
-
+#if QT_CONFIG(opengl)
     if (!m_globalCursor && !screenConfig()->separateScreens()) {
         qCDebug(qLcEglfsKmsDebug, "Creating new global mouse cursor");
         m_globalCursor = new QEglFSCursor(screen);
     }
-
+#endif
     return screen;
 }
 

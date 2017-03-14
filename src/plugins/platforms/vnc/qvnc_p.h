@@ -364,6 +364,7 @@ private:
     friend class QRfbMultiColorHextile<SRC>;
 };
 
+#if QT_CONFIG(cursor)
 class QVncClientCursor : public QPlatformCursor
 {
 public:
@@ -381,7 +382,7 @@ public:
     QPoint hotspot;
     QVector<QVncClient *> clients;
 };
-
+#endif // QT_CONFIG(cursor)
 
 class QVncServer : public QObject
 {

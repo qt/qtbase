@@ -2024,6 +2024,15 @@
     of this variable is typically handled by qmake
     or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
+    \section1 QMAKE_LINK
+
+    Specifies the linker that will be used when building
+    application based projects. Only the file name of the linker
+    executable needs to be specified as long as it is on a path
+    contained in the \c PATH variable when the Makefile is processed.
+    The value of this variable is typically handled by qmake or
+    \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \section1 QMAKE_LINK_SHLIB_CMD
 
     Specifies the command to execute when creating a shared

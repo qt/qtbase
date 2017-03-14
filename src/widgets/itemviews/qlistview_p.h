@@ -431,8 +431,6 @@ public:
 
     QRect elasticBand;
     bool showElasticBand;
-
-    bool expandingListItems;
 };
 
 // inline implementations

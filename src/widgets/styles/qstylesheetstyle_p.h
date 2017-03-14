@@ -189,12 +189,31 @@ public:
     QHash<const QObject *, QRenderRules> renderRulesCache;
     QHash<const void *, QCss::StyleSheet> styleSheetCache; // parsed style sheets
     QSet<const QWidget *> autoFillDisabledWidgets;
-    // widgets whose palettes and fonts we have tampered. stored value pair is
-    // QPair<old widget value, resolve mask of stylesheet value>
-    QHash<const QWidget *, QPair<QPalette, uint> > customPaletteWidgets;
-    QHash<const QWidget *, QPair<QFont, uint> > customFontWidgets;
-};
+    // widgets with whose palettes and fonts we have tampered:
+    template <typename T>
+    struct Tampered {
+        T oldWidgetValue;
+        uint resolveMask;
 
+        // only call this function on an rvalue *this (it mangles oldWidgetValue)
+        T reverted(T current)
+#ifdef Q_COMPILER_REF_QUALIFIERS
+        &&
+#endif
+        {
+            oldWidgetValue.resolve(oldWidgetValue.resolve() & resolveMask);
+            current.resolve(current.resolve() & ~resolveMask);
+            current.resolve(oldWidgetValue);
+            current.resolve(current.resolve() | oldWidgetValue.resolve());
+            return current;
+        }
+    };
+    QHash<const QWidget *, Tampered<QPalette>> customPaletteWidgets;
+    QHash<const QWidget *, Tampered<QFont>> customFontWidgets;
+};
+template <typename T>
+class QTypeInfo<QStyleSheetStyleCaches::Tampered<T>>
+    : QTypeInfoMerger<QStyleSheetStyleCaches::Tampered<T>, T> {};
 
 QT_END_NAMESPACE
 #endif // QT_NO_STYLE_STYLESHEET

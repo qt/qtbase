@@ -44,6 +44,13 @@
 
 QT_BEGIN_NAMESPACE
 
+static Q_CONSTEXPR int BufferSize = 2048;
+
+enum {
+    FixedScale = 1 << 16,
+    HalfPoint = 1 << 15
+};
+
 // Vectorized blend functions:
 
 // See BYTE_MUL_SSE2 for details.
@@ -340,6 +347,413 @@ void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, u
         }
         SIMD_EPILOGUE(x, length, 7)
             destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
+    }
+}
+
+#define interpolate_4_pixels_16_avx2(tlr1, tlr2, blr1, blr2, distx, disty, colorMask, v_256, b)  \
+{ \
+    /* Correct for later unpack */ \
+    const __m256i vdistx = _mm256_permute4x64_epi64(distx, _MM_SHUFFLE(3, 1, 2, 0)); \
+    const __m256i vdisty = _mm256_permute4x64_epi64(disty, _MM_SHUFFLE(3, 1, 2, 0)); \
+    \
+    __m256i dxdy = _mm256_mullo_epi16 (vdistx, vdisty); \
+    const __m256i distx_ = _mm256_slli_epi16(vdistx, 4); \
+    const __m256i disty_ = _mm256_slli_epi16(vdisty, 4); \
+    __m256i idxidy =  _mm256_add_epi16(dxdy, _mm256_sub_epi16(v_256, _mm256_add_epi16(distx_, disty_))); \
+    __m256i dxidy =  _mm256_sub_epi16(distx_, dxdy); \
+    __m256i idxdy =  _mm256_sub_epi16(disty_, dxdy); \
+ \
+    __m256i tlr1AG = _mm256_srli_epi16(tlr1, 8); \
+    __m256i tlr1RB = _mm256_and_si256(tlr1, colorMask); \
+    __m256i tlr2AG = _mm256_srli_epi16(tlr2, 8); \
+    __m256i tlr2RB = _mm256_and_si256(tlr2, colorMask); \
+    __m256i blr1AG = _mm256_srli_epi16(blr1, 8); \
+    __m256i blr1RB = _mm256_and_si256(blr1, colorMask); \
+    __m256i blr2AG = _mm256_srli_epi16(blr2, 8); \
+    __m256i blr2RB = _mm256_and_si256(blr2, colorMask); \
+ \
+    __m256i odxidy1 = _mm256_unpacklo_epi32(idxidy, dxidy); \
+    __m256i odxidy2 = _mm256_unpackhi_epi32(idxidy, dxidy); \
+    tlr1AG = _mm256_mullo_epi16(tlr1AG, odxidy1); \
+    tlr1RB = _mm256_mullo_epi16(tlr1RB, odxidy1); \
+    tlr2AG = _mm256_mullo_epi16(tlr2AG, odxidy2); \
+    tlr2RB = _mm256_mullo_epi16(tlr2RB, odxidy2); \
+    __m256i odxdy1 = _mm256_unpacklo_epi32(idxdy, dxdy); \
+    __m256i odxdy2 = _mm256_unpackhi_epi32(idxdy, dxdy); \
+    blr1AG = _mm256_mullo_epi16(blr1AG, odxdy1); \
+    blr1RB = _mm256_mullo_epi16(blr1RB, odxdy1); \
+    blr2AG = _mm256_mullo_epi16(blr2AG, odxdy2); \
+    blr2RB = _mm256_mullo_epi16(blr2RB, odxdy2); \
+ \
+    /* Add the values, and shift to only keep 8 significant bits per colors */ \
+    __m256i topAG = _mm256_hadd_epi32(tlr1AG, tlr2AG); \
+    __m256i topRB = _mm256_hadd_epi32(tlr1RB, tlr2RB); \
+    __m256i botAG = _mm256_hadd_epi32(blr1AG, blr2AG); \
+    __m256i botRB = _mm256_hadd_epi32(blr1RB, blr2RB); \
+    __m256i rAG = _mm256_add_epi16(topAG, botAG); \
+    __m256i rRB = _mm256_add_epi16(topRB, botRB); \
+    rRB = _mm256_srli_epi16(rRB, 8); \
+    /* Correct for hadd */ \
+    rAG = _mm256_permute4x64_epi64(rAG, _MM_SHUFFLE(3, 1, 2, 0)); \
+    rRB = _mm256_permute4x64_epi64(rRB, _MM_SHUFFLE(3, 1, 2, 0)); \
+    _mm256_storeu_si256((__m256i*)(b), _mm256_blendv_epi8(rAG, rRB, colorMask)); \
+}
+
+inline void fetchTransformedBilinear_pixelBounds(int, int l1, int l2, int &v1, int &v2)
+{
+    if (v1 < l1)
+        v2 = v1 = l1;
+    else if (v1 >= l2)
+        v2 = v1 = l2;
+    else
+        v2 = v1 + 1;
+    Q_ASSERT(v1 >= l1 && v1 <= l2);
+    Q_ASSERT(v2 >= l1 && v2 <= l2);
+}
+
+void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                             int &fx, int &fy, int fdx, int /*fdy*/)
+{
+    int y1 = (fy >> 16);
+    int y2;
+    fetchTransformedBilinear_pixelBounds(image.height, image.y1, image.y2 - 1, y1, y2);
+    const uint *s1 = (const uint *)image.scanLine(y1);
+    const uint *s2 = (const uint *)image.scanLine(y2);
+
+    int disty = (fy & 0x0000ffff) >> 8;
+    int idisty = 256 - disty;
+    int x = fx >> 16;
+    int length = end - b;
+
+    // The idea is first to do the interpolation between the row s1 and the row s2
+    // into an intermediate buffer, then we interpolate between two pixel of this buffer.
+
+    // intermediate_buffer[0] is a buffer of red-blue component of the pixel, in the form 0x00RR00BB
+    // intermediate_buffer[1] is the alpha-green component of the pixel, in the form 0x00AA00GG
+    // +1 for the last pixel to interpolate with, and +1 for rounding errors.
+    quint32 intermediate_buffer[2][BufferSize + 2];
+    // count is the size used in the intermediate_buffer.
+    int count = (qint64(length) * fdx + FixedScale - 1) / FixedScale + 2;
+    Q_ASSERT(count <= BufferSize + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
+    int f = 0;
+    int lim = qMin(count, image.x2 - x);
+    if (x < image.x1) {
+        Q_ASSERT(x < image.x2);
+        uint t = s1[image.x1];
+        uint b = s2[image.x1];
+        quint32 rb = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
+        quint32 ag = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
+        do {
+            intermediate_buffer[0][f] = rb;
+            intermediate_buffer[1][f] = ag;
+            f++;
+            x++;
+        } while (x < image.x1 && f < lim);
+    }
+
+    const __m256i disty_ = _mm256_set1_epi16(disty);
+    const __m256i idisty_ = _mm256_set1_epi16(idisty);
+    const __m256i colorMask = _mm256_set1_epi32(0x00ff00ff);
+
+    lim -= 7;
+    for (; f < lim; x += 8, f += 8) {
+        // Load 8 pixels from s1, and split the alpha-green and red-blue component
+        __m256i top = _mm256_loadu_si256((const __m256i*)((const uint *)(s1)+x));
+        __m256i topAG = _mm256_srli_epi16(top, 8);
+        __m256i topRB = _mm256_and_si256(top, colorMask);
+        // Multiplies each color component by idisty
+        topAG = _mm256_mullo_epi16 (topAG, idisty_);
+        topRB = _mm256_mullo_epi16 (topRB, idisty_);
+
+        // Same for the s2 vector
+        __m256i bottom = _mm256_loadu_si256((const __m256i*)((const uint *)(s2)+x));
+        __m256i bottomAG = _mm256_srli_epi16(bottom, 8);
+        __m256i bottomRB = _mm256_and_si256(bottom, colorMask);
+        bottomAG = _mm256_mullo_epi16 (bottomAG, disty_);
+        bottomRB = _mm256_mullo_epi16 (bottomRB, disty_);
+
+        // Add the values, and shift to only keep 8 significant bits per colors
+        __m256i rAG =_mm256_add_epi16(topAG, bottomAG);
+        rAG = _mm256_srli_epi16(rAG, 8);
+        _mm256_storeu_si256((__m256i*)(&intermediate_buffer[1][f]), rAG);
+        __m256i rRB =_mm256_add_epi16(topRB, bottomRB);
+        rRB = _mm256_srli_epi16(rRB, 8);
+        _mm256_storeu_si256((__m256i*)(&intermediate_buffer[0][f]), rRB);
+    }
+
+    for (; f < count; f++) { // Same as above but without simd
+        x = qMin(x, image.x2 - 1);
+
+        uint t = s1[x];
+        uint b = s2[x];
+
+        intermediate_buffer[0][f] = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
+        intermediate_buffer[1][f] = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
+        x++;
+    }
+    // Now interpolate the values from the intermediate_buffer to get the final result.
+    fx &= FixedScale - 1;
+    Q_ASSERT((fx >> 16) == 0);
+
+    const __m128i v_fdx = _mm_set1_epi32(fdx * 4);
+    const __m128i v_blend = _mm_set1_epi32(0x00800080);
+    __m128i v_fx = _mm_setr_epi32(fx, fx + fdx, fx + fdx + fdx, fx + fdx + fdx + fdx);
+
+    while (b < end - 3) {
+        const __m128i offset = _mm_srli_epi32(v_fx, 16);
+        __m256i vrb = _mm256_i32gather_epi64((const long long *)intermediate_buffer[0], offset, 4);
+        __m256i vag = _mm256_i32gather_epi64((const long long *)intermediate_buffer[1], offset, 4);
+
+        __m128i vdx = _mm_and_si128(v_fx, _mm_set1_epi32(0x0000ffff));
+        vdx = _mm_srli_epi16(vdx, 8);
+        __m128i vidx = _mm_sub_epi32(_mm_set1_epi32(256), vdx);
+        __m256i vmulx = _mm256_castsi128_si256(_mm_unpacklo_epi32(vidx, vdx));
+        vmulx = _mm256_inserti128_si256(vmulx, _mm_unpackhi_epi32(vidx, vdx), 1);
+
+        vrb = _mm256_mullo_epi32(vrb, vmulx);
+        vag = _mm256_mullo_epi32(vag, vmulx);
+
+        __m256i vrbag = _mm256_hadd_epi32(vrb, vag);
+        vrbag = _mm256_permute4x64_epi64(vrbag, _MM_SHUFFLE(3, 1, 2, 0));
+
+        __m128i rb = _mm256_castsi256_si128(vrbag);
+        __m128i ag = _mm256_extracti128_si256(vrbag, 1);
+        rb = _mm_srli_epi16(rb, 8);
+
+        _mm_storeu_si128((__m128i*)b, _mm_blendv_epi8(ag, rb, v_blend));
+
+        b += 4;
+        fx += 4 * fdx;
+        v_fx = _mm_add_epi32(v_fx, v_fdx);
+    }
+    while (b < end) {
+        int x = (fx >> 16);
+
+        uint distx = (fx & 0x0000ffff) >> 8;
+        uint idistx = 256 - distx;
+
+        uint rb = ((intermediate_buffer[0][x] * idistx + intermediate_buffer[0][x + 1] * distx) >> 8) & 0xff00ff;
+        uint ag = (intermediate_buffer[1][x] * idistx + intermediate_buffer[1][x + 1] * distx) & 0xff00ff00;
+        *b = rb | ag;
+        b++;
+        fx += fdx;
+    }
+}
+
+void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                        int &fx, int &fy, int fdx, int /*fdy*/)
+{
+    int y1 = (fy >> 16);
+    int y2;
+    fetchTransformedBilinear_pixelBounds(image.height, image.y1, image.y2 - 1, y1, y2);
+    const uint *s1 = (const uint *)image.scanLine(y1);
+    const uint *s2 = (const uint *)image.scanLine(y2);
+    const int disty8 = (fy & 0x0000ffff) >> 8;
+    const int disty4 = (disty8 + 0x08) >> 4;
+
+    const qint64 min_fx = qint64(image.x1) * FixedScale;
+    const qint64 max_fx = qint64(image.x2 - 1) * FixedScale;
+    while (b < end) {
+        int x1 = (fx >> 16);
+        int x2;
+        fetchTransformedBilinear_pixelBounds(image.width, image.x1, image.x2 - 1, x1, x2);
+        if (x1 != x2)
+            break;
+        uint top = s1[x1];
+        uint bot = s2[x1];
+        *b = INTERPOLATE_PIXEL_256(top, 256 - disty8, bot, disty8);
+        fx += fdx;
+        ++b;
+    }
+    uint *boundedEnd = end;
+    if (fdx > 0)
+        boundedEnd = qMin(boundedEnd, b + (max_fx - fx) / fdx);
+    else if (fdx < 0)
+        boundedEnd = qMin(boundedEnd, b + (min_fx - fx) / fdx);
+
+    // A fast middle part without boundary checks
+    const __m256i vdistShuffle =
+        _mm256_setr_epi8(0, char(0x80), 0, char(0x80), 4, char(0x80), 4, char(0x80), 8, char(0x80), 8, char(0x80), 12, char(0x80), 12, char(0x80),
+                         0, char(0x80), 0, char(0x80), 4, char(0x80), 4, char(0x80), 8, char(0x80), 8, char(0x80), 12, char(0x80), 12, char(0x80));
+    const __m256i colorMask = _mm256_set1_epi32(0x00ff00ff);
+    const __m256i v_256 = _mm256_set1_epi16(256);
+    const __m256i v_disty = _mm256_set1_epi16(disty4);
+    const __m256i v_fdx = _mm256_set1_epi32(fdx * 8);
+    const __m256i v_fx_r = _mm256_set1_epi32(0x08);
+    const __m256i v_index = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+    __m256i v_fx = _mm256_set1_epi32(fx);
+    v_fx = _mm256_add_epi32(v_fx, _mm256_mullo_epi32(_mm256_set1_epi32(fdx), v_index));
+
+    while (b < boundedEnd - 7) {
+        const __m256i offset = _mm256_srli_epi32(v_fx, 16);
+        const __m128i offsetLo = _mm256_castsi256_si128(offset);
+        const __m128i offsetHi = _mm256_extracti128_si256(offset, 1);
+        const __m256i toplo = _mm256_i32gather_epi64((const long long *)s1, offsetLo, 4);
+        const __m256i tophi = _mm256_i32gather_epi64((const long long *)s1, offsetHi, 4);
+        const __m256i botlo = _mm256_i32gather_epi64((const long long *)s2, offsetLo, 4);
+        const __m256i bothi = _mm256_i32gather_epi64((const long long *)s2, offsetHi, 4);
+
+        __m256i v_distx = _mm256_srli_epi16(v_fx, 8);
+        v_distx = _mm256_srli_epi16(_mm256_add_epi32(v_distx, v_fx_r), 4);
+        v_distx = _mm256_shuffle_epi8(v_distx, vdistShuffle);
+
+        interpolate_4_pixels_16_avx2(toplo, tophi, botlo, bothi, v_distx, v_disty, colorMask, v_256, b);
+        b += 8;
+        v_fx = _mm256_add_epi32(v_fx, v_fdx);
+    }
+    fx = _mm_extract_epi32(_mm256_castsi256_si128(v_fx) , 0);
+
+    while (b < boundedEnd) {
+        int x = (fx >> 16);
+        int distx8 = (fx & 0x0000ffff) >> 8;
+        *b = interpolate_4_pixels(s1 + x, s2 + x, distx8, disty8);
+        fx += fdx;
+        ++b;
+    }
+
+    while (b < end) {
+        int x1 = (fx >> 16);
+        int x2;
+        fetchTransformedBilinear_pixelBounds(image.width, image.x1, image.x2 - 1, x1, x2);
+        uint tl = s1[x1];
+        uint tr = s1[x2];
+        uint bl = s2[x1];
+        uint br = s2[x2];
+        int distx8 = (fx & 0x0000ffff) >> 8;
+        *b = interpolate_4_pixels(tl, tr, bl, br, distx8, disty8);
+        fx += fdx;
+        ++b;
+    }
+}
+
+void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                          int &fx, int &fy, int fdx, int fdy)
+{
+    const qint64 min_fx = qint64(image.x1) * FixedScale;
+    const qint64 max_fx = qint64(image.x2 - 1) * FixedScale;
+    const qint64 min_fy = qint64(image.y1) * FixedScale;
+    const qint64 max_fy = qint64(image.y2 - 1) * FixedScale;
+    // first handle the possibly bounded part in the beginning
+    while (b < end) {
+        int x1 = (fx >> 16);
+        int x2;
+        int y1 = (fy >> 16);
+        int y2;
+        fetchTransformedBilinear_pixelBounds(image.width, image.x1, image.x2 - 1, x1, x2);
+        fetchTransformedBilinear_pixelBounds(image.height, image.y1, image.y2 - 1, y1, y2);
+        if (x1 != x2 && y1 != y2)
+            break;
+        const uint *s1 = (const uint *)image.scanLine(y1);
+        const uint *s2 = (const uint *)image.scanLine(y2);
+        uint tl = s1[x1];
+        uint tr = s1[x2];
+        uint bl = s2[x1];
+        uint br = s2[x2];
+        int distx = (fx & 0x0000ffff) >> 8;
+        int disty = (fy & 0x0000ffff) >> 8;
+        *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+        fx += fdx;
+        fy += fdy;
+        ++b;
+    }
+    uint *boundedEnd = end;
+    if (fdx > 0)
+        boundedEnd = qMin(boundedEnd, b + (max_fx - fx) / fdx);
+    else if (fdx < 0)
+        boundedEnd = qMin(boundedEnd, b + (min_fx - fx) / fdx);
+    if (fdy > 0)
+        boundedEnd = qMin(boundedEnd, b + (max_fy - fy) / fdy);
+    else if (fdy < 0)
+        boundedEnd = qMin(boundedEnd, b + (min_fy - fy) / fdy);
+
+    // until boundedEnd we can now have a fast middle part without boundary checks
+    const __m256i vdistShuffle =
+        _mm256_setr_epi8(0, char(0x80), 0, char(0x80), 4, char(0x80), 4, char(0x80), 8, char(0x80), 8, char(0x80), 12, char(0x80), 12, char(0x80),
+                         0, char(0x80), 0, char(0x80), 4, char(0x80), 4, char(0x80), 8, char(0x80), 8, char(0x80), 12, char(0x80), 12, char(0x80));
+    const __m256i colorMask = _mm256_set1_epi32(0x00ff00ff);
+    const __m256i v_256 = _mm256_set1_epi16(256);
+    const __m256i v_fdx = _mm256_set1_epi32(fdx * 8);
+    const __m256i v_fdy = _mm256_set1_epi32(fdy * 8);
+    const __m256i v_fxy_r = _mm256_set1_epi32(0x08);
+    const __m256i v_index = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+    __m256i v_fx = _mm256_set1_epi32(fx);
+    __m256i v_fy = _mm256_set1_epi32(fy);
+    v_fx = _mm256_add_epi32(v_fx, _mm256_mullo_epi32(_mm256_set1_epi32(fdx), v_index));
+    v_fy = _mm256_add_epi32(v_fy, _mm256_mullo_epi32(_mm256_set1_epi32(fdy), v_index));
+
+    const uchar *textureData = image.imageData;
+    const int bytesPerLine = image.bytesPerLine;
+    const __m256i vbpl = _mm256_set1_epi16(bytesPerLine/4);
+
+    while (b < boundedEnd - 7) {
+        const __m256i vy = _mm256_packs_epi32(_mm256_srli_epi32(v_fy, 16), _mm256_setzero_si256());
+        // 8x16bit * 8x16bit -> 8x32bit
+        __m256i offset = _mm256_unpacklo_epi16(_mm256_mullo_epi16(vy, vbpl), _mm256_mulhi_epi16(vy, vbpl));
+        offset = _mm256_add_epi32(offset, _mm256_srli_epi32(v_fx, 16));
+        const __m128i offsetLo = _mm256_castsi256_si128(offset);
+        const __m128i offsetHi = _mm256_extracti128_si256(offset, 1);
+        const uint *topData = (const uint *)(textureData);
+        const uint *botData = (const uint *)(textureData + bytesPerLine);
+        const __m256i toplo = _mm256_i32gather_epi64((const long long *)topData, offsetLo, 4);
+        const __m256i tophi = _mm256_i32gather_epi64((const long long *)topData, offsetHi, 4);
+        const __m256i botlo = _mm256_i32gather_epi64((const long long *)botData, offsetLo, 4);
+        const __m256i bothi = _mm256_i32gather_epi64((const long long *)botData, offsetHi, 4);
+
+        __m256i v_distx = _mm256_srli_epi16(v_fx, 8);
+        __m256i v_disty = _mm256_srli_epi16(v_fy, 8);
+        v_distx = _mm256_srli_epi16(_mm256_add_epi32(v_distx, v_fxy_r), 4);
+        v_disty = _mm256_srli_epi16(_mm256_add_epi32(v_disty, v_fxy_r), 4);
+        v_distx = _mm256_shuffle_epi8(v_distx, vdistShuffle);
+        v_disty = _mm256_shuffle_epi8(v_disty, vdistShuffle);
+
+        interpolate_4_pixels_16_avx2(toplo, tophi, botlo, bothi, v_distx, v_disty, colorMask, v_256, b);
+        b += 8;
+        v_fx = _mm256_add_epi32(v_fx, v_fdx);
+        v_fy = _mm256_add_epi32(v_fy, v_fdy);
+    }
+    fx = _mm_extract_epi32(_mm256_castsi256_si128(v_fx) , 0);
+    fy = _mm_extract_epi32(_mm256_castsi256_si128(v_fy) , 0);
+
+    while (b < boundedEnd) {
+        int x = (fx >> 16);
+        int y = (fy >> 16);
+
+        const uint *s1 = (const uint *)image.scanLine(y);
+        const uint *s2 = (const uint *)image.scanLine(y + 1);
+
+        int distx = (fx & 0x0000ffff) >> 8;
+        int disty = (fy & 0x0000ffff) >> 8;
+        *b = interpolate_4_pixels(s1 + x, s2 + x, distx, disty);
+
+        fx += fdx;
+        fy += fdy;
+        ++b;
+    }
+
+    while (b < end) {
+        int x1 = (fx >> 16);
+        int x2;
+        int y1 = (fy >> 16);
+        int y2;
+
+        fetchTransformedBilinear_pixelBounds(image.width, image.x1, image.x2 - 1, x1, x2);
+        fetchTransformedBilinear_pixelBounds(image.height, image.y1, image.y2 - 1, y1, y2);
+
+        const uint *s1 = (const uint *)image.scanLine(y1);
+        const uint *s2 = (const uint *)image.scanLine(y2);
+
+        uint tl = s1[x1];
+        uint tr = s1[x2];
+        uint bl = s2[x1];
+        uint br = s2[x2];
+
+        int distx = (fx & 0x0000ffff) >> 8;
+        int disty = (fy & 0x0000ffff) >> 8;
+        *b = interpolate_4_pixels(tl, tr, bl, br, distx, disty);
+
+        fx += fdx;
+        fy += fdy;
+        ++b;
     }
 }
 

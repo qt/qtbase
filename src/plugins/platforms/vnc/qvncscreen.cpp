@@ -58,8 +58,10 @@ QVncScreen::QVncScreen(const QStringList &args)
 
 QVncScreen::~QVncScreen()
 {
+#if QT_CONFIG(cursor)
     if (clientCursor)
         delete clientCursor;
+#endif
 }
 
 bool QVncScreen::initialize()
@@ -120,17 +122,21 @@ QRegion QVncScreen::doRedraw()
     return touched;
 }
 
+
 void QVncScreen::enableClientCursor(QVncClient *client)
 {
+#if QT_CONFIG(cursor)
     delete mCursor;
     mCursor = nullptr;
     if (!clientCursor)
         clientCursor = new QVncClientCursor();
     clientCursor->addClient(client);
+#endif
 }
 
 void QVncScreen::disableClientCursor(QVncClient *client)
 {
+#if QT_CONFIG(cursor)
     uint clientCount = clientCursor->removeClient(client);
     if (clientCount == 0) {
         delete clientCursor;
@@ -138,11 +144,16 @@ void QVncScreen::disableClientCursor(QVncClient *client)
     }
 
     mCursor = new QFbCursor(this);
+#endif
 }
 
 QPlatformCursor *QVncScreen::cursor() const
 {
+#if QT_CONFIG(cursor)
     return mCursor ? static_cast<QPlatformCursor *>(mCursor) : static_cast<QPlatformCursor *>(clientCursor);
+#else
+    return nullptr;
+#endif
 }
 
 // grabWindow() grabs "from the screen" not from the backingstores.

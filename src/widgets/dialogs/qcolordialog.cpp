@@ -2246,10 +2246,13 @@ bool QColorDialogPrivate::handleColorPickingMouseButtonRelease(QMouseEvent *e)
 bool QColorDialogPrivate::handleColorPickingKeyPress(QKeyEvent *e)
 {
     Q_Q(QColorDialog);
+#if QT_CONFIG(shortcut)
     if (e->matches(QKeySequence::Cancel)) {
         releaseColorPicking();
         q->setCurrentColor(beforeScreenColorPicking);
-    } else if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
+    } else
+#endif
+      if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
         q->setCurrentColor(grabScreenColor(QCursor::pos()));
         releaseColorPicking();
     }

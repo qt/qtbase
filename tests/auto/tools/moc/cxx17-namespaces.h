@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2011 Olivier Goffart.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:GPL-EXCEPT$
 ** Commercial License Usage
@@ -26,29 +26,39 @@
 **
 ****************************************************************************/
 
-#ifndef MWERKS_MAC_H
-#define MWERKS_MAC_H
+#ifndef CXX17_NAMESPACES_H
+#define CXX11_NAMESPACES_H
+#include <QtCore/QObject>
 
-#include <qglobal.h>
-
-QT_BEGIN_NAMESPACE
-
-#ifdef Q_OS_MAC
-
-#define macintosh
-
-/*make moc a plugin*/
-enum moc_status {
-    moc_success = 1,
-    moc_parse_error = 2,
-    moc_no_qobject = 3,
-    moc_not_time = 4,
-    moc_no_source = 5,
-    moc_general_error = 6
-};
-
+#if defined(__cpp_nested_namespace_definitions) || defined(Q_MOC_RUN)
+namespace CXX17Namespace::A::B {
+namespace C::D {
+namespace E::F::G { } // don't confuse moc
+#else
+namespace CXX17Namespace { namespace A { namespace B {
+namespace C { namespace D {
 #endif
 
-QT_END_NAMESPACE
+Q_NAMESPACE
 
-#endif // MWERKS_MAC_H
+class ClassInNamespace
+{
+    Q_GADGET
+public:
+    enum GadEn { Value = 3 };
+    Q_ENUM(GadEn)
+};
+
+enum NamEn { Value = 4 };
+Q_ENUM_NS(NamEn);
+
+
+#if defined(__cpp_nested_namespace_definitions) || defined(Q_MOC_RUN)
+}
+}
+#else
+} } }
+} }
+#endif
+
+#endif

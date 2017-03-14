@@ -252,8 +252,9 @@ public:
 
     bool isItemHidden(const QListWidgetItem *item) const;
     void setItemHidden(const QListWidgetItem *item, bool hide);
+#if QT_CONFIG(draganddrop)
     void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
-
+#endif
 public Q_SLOTS:
     void scrollToItem(const QListWidgetItem *item, QAbstractItemView::ScrollHint hint = EnsureVisible);
     void clear();

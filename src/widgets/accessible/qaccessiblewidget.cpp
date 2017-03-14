@@ -44,7 +44,9 @@
 #include "qaction.h"
 #include "qapplication.h"
 #include "qgroupbox.h"
+#if QT_CONFIG(label)
 #include "qlabel.h"
+#endif
 #include "qtooltip.h"
 #include "qwhatsthis.h"
 #include "qwidget.h"
@@ -81,7 +83,7 @@ static QString buddyString(const QWidget *widget)
     QWidget *parent = widget->parentWidget();
     if (!parent)
         return QString();
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut) && QT_CONFIG(label)
     for (QObject *o : parent->children()) {
         QLabel *label = qobject_cast<QLabel*>(o);
         if (label && label->buddy() == widget)
@@ -309,7 +311,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
     if (match & QAccessible::Label) {
         const QAccessible::Relation rel = QAccessible::Label;
         if (QWidget *parent = widget()->parentWidget()) {
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut) && QT_CONFIG(label)
             // first check for all siblings that are labels to us
             // ideally we would go through all objects and check, but that
             // will be too expensive

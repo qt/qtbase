@@ -54,6 +54,8 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qdatastream.h>
 
+#define PCRE2_CODE_UNIT_WIDTH 16
+
 #include <pcre2.h>
 
 QT_BEGIN_NAMESPACE

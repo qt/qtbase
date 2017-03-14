@@ -170,7 +170,7 @@
             "label": "Mir client libraries",
             "test": "qpa/mirclient",
             "sources": [
-                { "type": "pkgConfig", "args": "egl mirclient ubuntu-platform-api libcontent-hub" }
+                { "type": "pkgConfig", "args": "egl mirclient ubuntu-platform-api libcontent-hub >= 0.2.0" }
             ]
         },
         "mtdev": {
@@ -534,12 +534,19 @@
         "linuxfb": {
             "label": "LinuxFB",
             "section": "Platform plugins",
-            "condition": "tests.linuxfb",
+            "condition": "tests.linuxfb && features.regularexpression",
+            "output": [ "privateFeature" ]
+        },
+        "vnc": {
+            "label": "VNC",
+            "section": "Platform plugins",
+            "condition": "config.unix && !config.android && !config.darwin && features.regularexpression",
             "output": [ "privateFeature" ]
         },
         "mirclient": {
             "label": "Mir client",
             "section": "Platform plugins",
+            "autoDetect": false,
             "condition": "libs.mirclient",
             "output": [ "privateFeature" ]
         },
@@ -889,7 +896,6 @@
             "label": "QImageIOPlugin",
             "purpose": "Provides a base for writing a image format plugins.",
             "section": "Images",
-            "condition": "features.library",
             "output": [ "publicFeature", "feature" ]
         },
         "movie": {
@@ -1114,7 +1120,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                         "eglfs_viv", "eglfs_viv_wl", "eglfs_egldevice", "eglfs_gbm", "eglfs_mali", "eglfs_brcm", "egl_x11"
                     ]
                 },
-                "linuxfb", "mirclient",
+                "linuxfb", "vnc", "mirclient",
                 {
                     "type": "feature",
                     "message": "INTEGRITY framebuffer",

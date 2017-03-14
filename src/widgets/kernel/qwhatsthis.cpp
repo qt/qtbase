@@ -462,11 +462,13 @@ bool QWhatsThisPrivate::eventFilter(QObject *o, QEvent *e)
     case QEvent::KeyPress:
     {
         QKeyEvent* kev = (QKeyEvent*)e;
-
+#if QT_CONFIG(shortcut)
         if (kev->matches(QKeySequence::Cancel)) {
             QWhatsThis::leaveWhatsThisMode();
             return true;
-        } else if (customWhatsThis) {
+        } else
+#endif
+          if (customWhatsThis) {
             return false;
         } else if (kev->key() == Qt::Key_Menu ||
                     (kev->key() == Qt::Key_F10 &&

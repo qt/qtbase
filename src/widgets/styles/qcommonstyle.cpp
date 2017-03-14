@@ -48,8 +48,14 @@
 #include <qcache.h>
 #include <qdockwidget.h>
 #include <qdrawutil.h>
+#if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
+#endif
+#if QT_CONFIG(formlayout)
 #include <qformlayout.h>
+#else
+#include <qlayout.h>
+#endif
 #include <qgroupbox.h>
 #include <qmath.h>
 #include <qmenu.h>
@@ -4922,9 +4928,11 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_ScrollBar_ContextMenu:
         ret = true;
         break;
+#if QT_CONFIG(dialogbuttonbox)
     case SH_DialogButtons_DefaultButton:  // This value not used anywhere.
         ret = QDialogButtonBox::AcceptRole;
         break;
+#endif
 #ifndef QT_NO_GROUPBOX
     case SH_GroupBox_TextLabelVerticalAlignment:
         ret = Qt::AlignVCenter;
@@ -5112,11 +5120,13 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_TabBar_ElideMode:
         ret = Qt::ElideNone;
         break;
+#if QT_CONFIG(dialogbuttonbox)
     case SH_DialogButtonLayout:
         ret = QDialogButtonBox::WinLayout;
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
             ret = theme->themeHint(QPlatformTheme::DialogButtonBoxLayout).toInt();
         break;
+#endif
     case SH_ComboBox_PopupFrameStyle:
         ret = QFrame::StyledPanel | QFrame::Plain;
         break;
@@ -5162,12 +5172,14 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = QWizard::ClassicStyle;
         break;
 #endif
+#if QT_CONFIG(formlayout)
     case SH_FormLayoutWrapPolicy:
         ret = QFormLayout::DontWrapRows;
         break;
     case SH_FormLayoutFieldGrowthPolicy:
         ret = QFormLayout::AllNonFixedFieldsGrow;
         break;
+#endif
     case SH_FormLayoutFormAlignment:
         ret = Qt::AlignLeft | Qt::AlignTop;
         break;
@@ -5242,6 +5254,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     return ret;
 }
 
+#if QT_CONFIG(imageformat_xpm)
 static QPixmap cachedPixmapFromXPM(const char * const *xpm)
 {
     QPixmap result;
@@ -5254,6 +5267,7 @@ static QPixmap cachedPixmapFromXPM(const char * const *xpm)
 }
 
 static inline QPixmap titleBarMenuCachedPixmapFromXPM() { return cachedPixmapFromXPM(qt_menu_xpm); }
+#endif // QT_CONFIG(imageformat_xpm)
 
 #ifndef QT_NO_IMAGEFORMAT_PNG
 static inline QString clearText16IconPath()

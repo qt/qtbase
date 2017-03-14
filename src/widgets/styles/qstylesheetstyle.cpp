@@ -58,12 +58,16 @@
 #include "private/qabstractscrollarea_p.h"
 #include <qtooltip.h>
 #include <qshareddata.h>
-#include <qradiobutton.h>
 #include <qtoolbutton.h>
 #include <qscrollbar.h>
+#if QT_CONFIG(abstractslider)
+#include <qabstractslider.h>
+#endif
 #include <qstring.h>
 #include <qfile.h>
+#if QT_CONFIG(checkbox)
 #include <qcheckbox.h>
+#endif
 #include <qstatusbar.h>
 #include <qheaderview.h>
 #include <private/qwindowsstyle_p_p.h>
@@ -76,7 +80,9 @@
 #include <qdialog.h>
 #include <private/qwidget_p.h>
 #include <QAbstractSpinBox>
+#if QT_CONFIG(label)
 #include <QLabel>
+#endif
 #include "qdrawutil.h"
 
 #include <limits.h>
@@ -1416,11 +1422,13 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
 
 static inline QObject *parentObject(const QObject *obj)
 {
+#if QT_CONFIG(tooltip)
     if (qobject_cast<const QLabel *>(obj) && qstrcmp(obj->metaObject()->className(), "QTipLabel") == 0) {
         QObject *p = qvariant_cast<QObject *>(obj->property("_q_stylesheet_parent"));
         if (p)
             return p;
     }
+#endif
     return obj->parent();
 }
 
@@ -2422,9 +2430,11 @@ static bool unstylable(const QWidget *w)
 static quint64 extendedPseudoClass(const QWidget *w)
 {
     quint64 pc = w->isWindow() ? quint64(PseudoClass_Window) : 0;
+#if QT_CONFIG(abstractslider)
     if (const QAbstractSlider *slider = qobject_cast<const QAbstractSlider *>(w)) {
         pc |= ((slider->orientation() == Qt::Vertical) ? PseudoClass_Vertical : PseudoClass_Horizontal);
     } else
+#endif
 #ifndef QT_NO_COMBOBOX
     if (const QComboBox *combo = qobject_cast<const QComboBox *>(w)) {
         if (combo->isEditable())
@@ -2590,7 +2600,7 @@ void QStyleSheetStyle::setPalette(QWidget *w)
 
     if (!useStyleSheetPropagationInWidgetStyles || p.resolve() != 0) {
         QPalette wp = w->palette();
-        styleSheetCaches->customPaletteWidgets.insert(w, qMakePair(wp, p.resolve()));
+        styleSheetCaches->customPaletteWidgets.insert(w, {wp, p.resolve()});
 
         if (useStyleSheetPropagationInWidgetStyles) {
             p = p.resolve(wp);
@@ -2610,20 +2620,14 @@ void QStyleSheetStyle::unsetPalette(QWidget *w)
 
     const auto it = styleSheetCaches->customPaletteWidgets.find(w);
     if (it != styleSheetCaches->customPaletteWidgets.end()) {
-        QPair<QPalette, uint> p = std::move(*it);
+        auto customizedPalette = std::move(*it);
         styleSheetCaches->customPaletteWidgets.erase(it);
 
-        QPalette original = p.first;
-
-        if (useStyleSheetPropagationInWidgetStyles) {
-            original.resolve(original.resolve() & p.second);
-
-            QPalette wp = w->palette();
-            wp.resolve(wp.resolve() & ~p.second);
-            wp.resolve(original);
-            wp.resolve(wp.resolve() | original.resolve());
-            original = wp;
-        }
+        QPalette original;
+        if (useStyleSheetPropagationInWidgetStyles)
+            original = std::move(customizedPalette).reverted(w->palette());
+        else
+            original = customizedPalette.oldWidgetValue;
 
         w->setPalette(original);
         QWidget *ew = embeddedWidget(w);
@@ -2653,18 +2657,9 @@ void QStyleSheetStyle::unsetStyleSheetFont(QWidget *w) const
 {
     const auto it = styleSheetCaches->customFontWidgets.find(w);
     if (it != styleSheetCaches->customFontWidgets.end()) {
-        QPair<QFont, uint> f = std::move(*it);
+        auto customizedFont = std::move(*it);
         styleSheetCaches->customFontWidgets.erase(it);
-
-        QFont original = f.first;
-        original.resolve(original.resolve() & f.second);
-
-        QFont font = w->font();
-        font.resolve(font.resolve() & ~f.second);
-        font.resolve(original);
-        font.resolve(font.resolve() | original.resolve());
-
-        w->setFont(font);
+        w->setFont(std::move(customizedFont).reverted(w->font()));
     }
 }
 
@@ -4738,10 +4733,12 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
             return rule.box()->spacing;
         break;
     case PM_CheckBoxLabelSpacing:
+#if QT_CONFIG(checkbox)
         if (qobject_cast<const QCheckBox *>(w)) {
             if (rule.hasBox() && rule.box()->spacing != -1)
                 return rule.box()->spacing;
         }
+#endif
         // assume group box
         subRule = renderRule(w, opt, PseudoElement_GroupBoxTitle);
         if (subRule.hasBox() && subRule.box()->spacing != -1)
@@ -5948,7 +5945,7 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
 
         if (rule.font.resolve()) {
             QFont wf = w->font();
-            styleSheetCaches->customFontWidgets.insert(w, qMakePair(wf, rule.font.resolve()));
+            styleSheetCaches->customFontWidgets.insert(w, {wf, rule.font.resolve()});
 
             QFont font = rule.font.resolve(wf);
             font.resolve(wf.resolve() | rule.font.resolve());

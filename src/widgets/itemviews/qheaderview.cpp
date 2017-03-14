@@ -2479,7 +2479,10 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
             if (d->shouldAutoScroll(e->pos()))
                 d->startAutoScroll();
             if (qAbs(pos - d->firstPos) >= QApplication::startDragDistance()
-                || !d->sectionIndicator->isHidden()) {
+#if QT_CONFIG(label)
+                || !d->sectionIndicator->isHidden()
+#endif
+                ) {
                 int visual = visualIndexAt(pos);
                 if (visual == -1)
                     return;
@@ -2548,7 +2551,11 @@ void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
     int pos = d->orientation == Qt::Horizontal ? e->x() : e->y();
     switch (d->state) {
     case QHeaderViewPrivate::MoveSection:
-        if (!d->sectionIndicator->isHidden()) { // moving
+        if (true
+#if QT_CONFIG(label)
+            && !d->sectionIndicator->isHidden()
+#endif
+      ) { // moving
             int from = visualIndex(d->section);
             Q_ASSERT(from != -1);
             int to = visualIndex(d->target);
@@ -3138,9 +3145,11 @@ int QHeaderViewPrivate::sectionHandleAt(int position)
 void QHeaderViewPrivate::setupSectionIndicator(int section, int position)
 {
     Q_Q(QHeaderView);
+#if QT_CONFIG(label)
     if (!sectionIndicator) {
         sectionIndicator = new QLabel(viewport);
     }
+#endif
 
     int w, h;
     int p = q->sectionViewportPosition(section);
@@ -3151,7 +3160,9 @@ void QHeaderViewPrivate::setupSectionIndicator(int section, int position)
         w = viewport->width();
         h = q->sectionSize(section);
     }
+#if QT_CONFIG(label)
     sectionIndicator->resize(w, h);
+#endif
 
     QPixmap pm(w, h);
     pm.fill(QColor(0, 0, 0, 45));
@@ -3162,12 +3173,15 @@ void QHeaderViewPrivate::setupSectionIndicator(int section, int position)
     q->paintSection(&painter, rect, section);
     painter.end();
 
+#if QT_CONFIG(label)
     sectionIndicator->setPixmap(pm);
+#endif
     sectionIndicatorOffset = position - qMax(p, 0);
 }
 
 void QHeaderViewPrivate::updateSectionIndicator(int section, int position)
 {
+#if QT_CONFIG(label)
     if (!sectionIndicator)
         return;
 
@@ -3182,6 +3196,7 @@ void QHeaderViewPrivate::updateSectionIndicator(int section, int position)
         sectionIndicator->move(0, position - sectionIndicatorOffset);
 
     sectionIndicator->show();
+#endif
 }
 
 /*!

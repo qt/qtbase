@@ -770,8 +770,10 @@ bool QCalendarTextNavigator::eventFilter(QObject *o, QEvent *e)
                     applyDate();
                     emit editingFinished();
                     removeDateLabel();
+#if QT_CONFIG(shortcut)
                 } else if (ke->matches(QKeySequence::Cancel)) {
                     removeDateLabel();
+#endif
                 } else if (e->type() == QEvent::KeyPress) {
                     createDateLabel();
                     m_dateValidator->handleKeyEvent(ke);
@@ -3107,12 +3109,14 @@ void QCalendarWidget::resizeEvent(QResizeEvent * event)
 */
 void QCalendarWidget::keyPressEvent(QKeyEvent * event)
 {
+#if QT_CONFIG(shortcut)
     Q_D(QCalendarWidget);
     if (d->yearEdit->isVisible()&& event->matches(QKeySequence::Cancel)) {
         d->yearEdit->setValue(yearShown());
         d->_q_yearEditingFinished();
         return;
     }
+#endif
     QWidget::keyPressEvent(event);
 }
 

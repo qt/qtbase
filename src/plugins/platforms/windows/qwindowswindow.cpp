@@ -1767,10 +1767,9 @@ bool QWindowsWindow::isFullScreen_sys() const
     const QWindow *w = window();
     if (!w->isTopLevel())
         return false;
-    const QScreen *screen = w->screen();
-    if (!screen)
-        screen = QGuiApplication::primaryScreen();
-    return screen && geometry_sys() == QHighDpi::toNativePixels(screen->geometry(), w);
+    QRect geometry = geometry_sys();
+    QPlatformScreen *screen = screenForGeometry(geometry);
+    return screen && geometry == QHighDpi::toNativePixels(screen->geometry(), screen);
 }
 
 /*!
@@ -1841,6 +1840,13 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (visible)
                 newStyle |= WS_VISIBLE;
             setStyle(newStyle);
+
+            const QScreen *screen = window()->screen();
+            if (!screen)
+                screen = QGuiApplication::primaryScreen();
+            // That area of the virtual desktop might not be covered by a screen anymore.
+            if (!screen->geometry().intersects(m_savedFrameGeometry))
+                m_savedFrameGeometry.moveTo(screen->geometry().topLeft());
 
             UINT swpf = SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE;
             if (!m_savedFrameGeometry.isValid())

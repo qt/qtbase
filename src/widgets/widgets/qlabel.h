@@ -43,6 +43,8 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 
+QT_REQUIRE_CONFIG(label);
+
 QT_BEGIN_NAMESPACE
 
 

@@ -58,7 +58,7 @@
 #include <functional>
 #include <wrl.h>
 #include <windows.system.h>
-#include <Windows.Applicationmodel.h>
+#include <Windows.ApplicationModel.h>
 #include <Windows.ApplicationModel.core.h>
 #include <windows.devices.input.h>
 #include <windows.ui.h>

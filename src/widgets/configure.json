@@ -117,6 +117,13 @@
             "condition": "features.tableview",
             "output": [ "publicFeature", "feature" ]
         },
+        "commandlinkbutton": {
+            "label": "QCommandLinkButton",
+            "purpose": "Provides a Vista style command link button.",
+            "section": "Widgets",
+            "condition": "features.pushbutton",
+            "output": [ "publicFeature" ]
+        },
         "datetimeedit": {
             "label": "QDateTimeEdit",
             "purpose": "Supports editing dates and times.",
@@ -150,6 +157,19 @@
             "condition": "features.rubberband",
             "output": [ "publicFeature", "feature" ]
         },
+        "label": {
+            "label": "QLabel",
+            "purpose": "Provides a text or image display.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
+        "formlayout": {
+            "label": "QFormLayout",
+            "purpose": "Manages forms of input widgets and their associated labels.",
+            "section": "Widgets",
+            "condition": "features.label",
+            "output": [ "publicFeature" ]
+        },
         "lcdnumber": {
             "label": "QLCDNumber",
             "purpose": "Provides LCD-like digits.",
@@ -160,7 +180,7 @@
             "label": "QMenu",
             "purpose": "Provides popup-menus.",
             "section": "Widgets",
-            "condition": "features.action",
+            "condition": "features.action && features.pushbutton",
             "output": [ "publicFeature", "feature" ]
         },
         "lineedit": {
@@ -168,6 +188,12 @@
             "purpose": "Provides single-line edits.",
             "section": "Widgets",
             "output": [ "publicFeature", "feature" ]
+        },
+        "radiobutton": {
+            "label": "QRadioButton",
+            "purpose": "Provides a radio button with a text label.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
         },
         "spinbox": {
             "label": "QSpinBox",
@@ -203,6 +229,19 @@
             "section": "Widgets",
             "condition": "features.combobox && features.stringlistmodel",
             "output": [ "publicFeature", "feature" ]
+        },
+        "checkbox": {
+            "label": "QCheckBox(",
+            "purpose": "Provides a checkbox with a text label.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
+        "pushbutton": {
+            "label": "QPushButton",
+            "purpose": "Provides a command button.",
+            "section": "Widgets",
+            "condition": "features.action",
+            "output": [ "publicFeature" ]
         },
         "toolbutton": {
             "label": "QToolButton",
@@ -291,10 +330,17 @@
             "section": "Widgets",
             "output": [ "publicFeature", "feature" ]
         },
+        "abstractslider": {
+            "label": "QAbstractSlider",
+            "purpose": "Common super class for widgets like QScrollBar, QSlider and QDial.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
+        },
         "slider": {
             "label": "QSlider",
             "purpose": "Provides sliders controlling a bounded value.",
             "section": "Widgets",
+            "condition": "features.abstractslider",
             "output": [ "publicFeature", "feature" ]
         },
         "scrollbar": {
@@ -317,6 +363,12 @@
             "section": "Widgets",
             "condition": "features.scrollbar",
             "output": [ "publicFeature", "feature" ]
+        },
+        "scroller": {
+            "label": "QScroller",
+            "purpose": "Enables kinetic scrolling for any scrolling widget or graphics item.",
+            "section": "Widgets",
+            "output": [ "publicFeature" ]
         },
         "graphicsview": {
             "label": "QGraphicsView",
@@ -356,6 +408,7 @@
             "label": "QToolTip",
             "purpose": "Supports presentation of tooltips.",
             "section": "Widgets",
+            "condition": "features.label",
             "output": [ "publicFeature", "feature" ]
         },
         "statustip": {
@@ -381,7 +434,15 @@
             "label": "QCalendarWidget",
             "purpose": "Provides a monthly based calendar widget allowing the user to select a date.",
             "section": "Widgets",
-            "condition": "features.tableview && features.menu && features.textdate && features.spinbox && features.toolbutton",
+            "condition": [
+                "features.label",
+                "features.menu",
+                "features.pushbutton",
+                "features.spinbox",
+                "features.tableview",
+                "features.textdate",
+                "features.toolbutton"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "keysequenceedit": {
@@ -391,59 +452,119 @@
             "condition": "features.lineedit && features.shortcut",
             "output": [ "publicFeature", "feature" ]
         },
+        "dialogbuttonbox": {
+            "label": "QDialogButtonBox",
+            "purpose": "Presents buttons in a layout that is appropriate for the current widget style.",
+            "section": "Dialogs",
+            "condition": "features.pushbutton",
+            "output": [ "publicFeature" ]
+        },
         "messagebox": {
             "label": "QMessageBox",
             "purpose": "Provides message boxes displaying informative messages and simple questions.",
             "section": "Dialogs",
+            "condition" : [
+                "features.checkbox",
+                "features.dialogbuttonbox",
+                "features.label",
+                "features.pushbutton"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "colordialog": {
             "label": "QColorDialog",
             "purpose": "Provides a dialog widget for specifying colors.",
             "section": "Dialogs",
-            "condition": "features.spinbox",
+            "condition": [
+                "features.dialogbuttonbox",
+                "features.label",
+                "features.pushbutton",
+                "features.spinbox"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "filedialog": {
             "label": "QFileDialog",
             "purpose": "Provides a dialog widget for selecting files or directories.",
             "section": "Dialogs",
-            "condition": "features.dirmodel && features.treeview && features.combobox && features.toolbutton && features.buttongroup && features.tooltip && features.splitter && features.stackedwidget && features.proxymodel",
+            "condition": [
+                "features.buttongroup",
+                "features.combobox",
+                "features.dialogbuttonbox",
+                "features.dirmodel",
+                "features.label",
+                "features.proxymodel",
+                "features.splitter",
+                "features.stackedwidget",
+                "features.treeview",
+                "features.toolbutton"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "fontdialog": {
             "label": "QFontDialog",
             "purpose": "Provides a dialog widget for selecting fonts.",
             "section": "Dialogs",
-            "condition": "features.stringlistmodel && features.combobox && features.validator && features.groupbox",
+            "condition": [
+               "features.checkbox",
+               "features.combobox",
+               "features.dialogbuttonbox",
+               "features.groupbox",
+               "features.label",
+               "features.pushbutton",
+               "features.stringlistmodel",
+               "features.validator"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "progressdialog": {
             "label": "QProgressDialog",
             "purpose": "Provides feedback on the progress of a slow operation.",
             "section": "Dialogs",
-            "condition": "features.progressbar",
+            "condition": [
+                "features.label",
+                "features.pushbutton",
+                "features.progressbar"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "inputdialog": {
             "label": "QInputDialog",
             "purpose": "Provides a simple convenience dialog to get a single value from the user.",
             "section": "Dialogs",
-            "condition": "features.combobox && features.spinbox && features.stackedwidget && features.textedit",
+            "condition": [
+                "features.combobox",
+                "features.dialogbuttonbox",
+                "features.label",
+                "features.pushbutton",
+                "features.spinbox",
+                "features.stackedwidget",
+                "features.textedit"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "errormessage": {
             "label": "QErrorMessage",
             "purpose": "Provides an error message display dialog.",
             "section": "Dialogs",
-            "condition": "features.textedit",
+            "condition": [
+                "features.checkbox",
+                "features.textedit",
+                "features.label",
+                "features.pushbutton",
+                "features.textedit"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "wizard": {
             "label": "QWizard",
             "purpose": "Provides a framework for multi-page click-through dialogs.",
             "section": "Dialogs",
-            "condition": "features.properties",
+            "condition": [
+                "features.pushbutton",
+                "features.properties",
+                "features.label"
+            ],
             "output": [ "publicFeature", "feature" ]
         },
         "dirmodel": {

@@ -110,7 +110,11 @@ void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
     // IDNA 2003 (RFC3490) for us, as required by HSTS (RFC6797, section 10).
     const HostName hostName(host);
     const auto pos = knownHosts.find(hostName);
-    const QHstsPolicy newPolicy(expires, includeSubDomains, hostName.name);
+    QHstsPolicy::PolicyFlags flags;
+    if (includeSubDomains)
+        flags = QHstsPolicy::IncludeSubDomains;
+
+    const QHstsPolicy newPolicy(expires, flags, hostName.name);
     if (pos == knownHosts.end()) {
         // A new, previously unknown host.
         if (newPolicy.isExpired()) {

@@ -46,8 +46,13 @@
 #include "qlist.h"
 #include "qevent.h"
 #include "qpoint.h"
+#if QT_CONFIG(label)
 #include "qlabel.h"
+#include "private/qlabel_p.h"
+#endif
+#if QT_CONFIG(pushbutton)
 #include "qpushbutton.h"
+#endif
 #include "qpainterpath.h"
 #include "qpainter.h"
 #include "qstyle.h"
@@ -55,7 +60,6 @@
 #include "qapplication.h"
 #include "qdesktopwidget.h"
 #include "qbitmap.h"
-#include "private/qlabel_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -481,6 +485,7 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
     setAttribute(Qt::WA_DeleteOnClose);
     QObject::connect(ti, SIGNAL(destroyed()), this, SLOT(close()));
 
+#if QT_CONFIG(label)
     QLabel *titleLabel = new QLabel;
     titleLabel->installEventFilter(this);
     titleLabel->setText(title);
@@ -488,17 +493,21 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
     f.setBold(true);
     titleLabel->setFont(f);
     titleLabel->setTextFormat(Qt::PlainText); // to maintain compat with windows
+#endif
 
     const int iconSize = 18;
     const int closeButtonSize = 15;
 
+#if QT_CONFIG(pushbutton)
     QPushButton *closeButton = new QPushButton;
     closeButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
     closeButton->setIconSize(QSize(closeButtonSize, closeButtonSize));
     closeButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     closeButton->setFixedSize(closeButtonSize, closeButtonSize);
     QObject::connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+#endif
 
+#if QT_CONFIG(label)
     QLabel *msgLabel = new QLabel;
     msgLabel->installEventFilter(this);
     msgLabel->setText(message);
@@ -521,8 +530,10 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
         // to emulate the weird standard windows behavior.
         msgLabel->setFixedSize(limit, msgLabel->heightForWidth(limit));
     }
+#endif
 
     QGridLayout *layout = new QGridLayout;
+#if QT_CONFIG(label)
     if (!icon.isNull()) {
         QLabel *iconLabel = new QLabel;
         iconLabel->setPixmap(icon.pixmap(iconSize, iconSize));
@@ -533,9 +544,15 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
     } else {
         layout->addWidget(titleLabel, 0, 0, 1, 2);
     }
+#endif
 
+#if QT_CONFIG(pushbutton)
     layout->addWidget(closeButton, 0, 2);
+#endif
+
+#if QT_CONFIG(label)
     layout->addWidget(msgLabel, 1, 0, 1, 3);
+#endif
     layout->setSizeConstraint(QLayout::SetFixedSize);
     layout->setMargin(3);
     setLayout(layout);

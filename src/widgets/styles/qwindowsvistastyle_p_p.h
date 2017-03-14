@@ -64,9 +64,10 @@
 #include <qapplication.h>
 #include <qpixmapcache.h>
 #include <qstyleoption.h>
+#if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
+#endif
 #include <qradiobutton.h>
-#include <qcheckbox.h>
 #include <qlineedit.h>
 #include <qgroupbox.h>
 #include <qtoolbutton.h>
@@ -80,7 +81,9 @@
 #include <qtreeview.h>
 #include <qtextedit.h>
 #include <qmessagebox.h>
+#if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
+#endif
 #include <qinputdialog.h>
 #include <qtableview.h>
 #include <qdatetime.h>

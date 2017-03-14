@@ -440,6 +440,7 @@ bool QLineEdit::hasFrame() const
     \since 5.2
 */
 
+#if QT_CONFIG(action)
 /*!
     \overload
 
@@ -469,7 +470,7 @@ QAction *QLineEdit::addAction(const QIcon &icon, ActionPosition position)
     addAction(result, position);
     return result;
 }
-
+#endif // QT_CONFIG(action)
 /*!
     \property QLineEdit::clearButtonEnabled
     \brief Whether the line edit displays a clear button when it is not empty.
@@ -486,6 +487,7 @@ static const char clearButtonActionNameC[] = "_q_qlineeditclearaction";
 
 void QLineEdit::setClearButtonEnabled(bool enable)
 {
+#if QT_CONFIG(action)
     Q_D(QLineEdit);
     if (enable == isClearButtonEnabled())
         return;
@@ -500,11 +502,16 @@ void QLineEdit::setClearButtonEnabled(bool enable)
         d->removeAction(clearAction);
         delete clearAction;
     }
+#endif // QT_CONFIG(action)
 }
 
 bool QLineEdit::isClearButtonEnabled() const
 {
+#if QT_CONFIG(action)
     return findChild<QAction *>(QLatin1String(clearButtonActionNameC));
+#else
+    return false;
+#endif
 }
 
 void QLineEdit::setFrame(bool enable)
@@ -1435,8 +1442,10 @@ bool QLineEdit::event(QEvent * e)
                 || style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
                 d->setCursorVisible(true);
         }
+#if QT_CONFIG(action)
     } else if (e->type() == QEvent::ActionRemoved) {
         d->removeAction(static_cast<QActionEvent *>(e)->action());
+#endif
     } else if (e->type() == QEvent::Resize) {
         d->positionSideWidgets();
     }

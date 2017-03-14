@@ -107,25 +107,9 @@
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 5
 
-    \section2 Using Bound Function Arguments
+    \section2 Using Lambda Functions
 
-    You can use std::bind() to \e bind a number of arguments to a function when
-    called. If C++11 support is not available, \l{http://www.boost.org/libs/bind/bind.html}
-    {boost::bind()} or \l{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf}
-    {std::tr1::bind()} are suitable replacements.
-
-    There are number of reasons for binding:
-
-    \list
-    \li To call a function that takes more than 5 arguments.
-    \li To simplify calling a function with constant arguments.
-    \li Changing the order of arguments.
-    \endlist
-
-    See the documentation for the relevant functions for details on how to use
-    the bind API.
-
-    Calling a bound function is done like this:
+    Calling a lambda function is done like this:
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 6
 */

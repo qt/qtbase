@@ -5588,7 +5588,7 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
             srcColor = colorProfile->toLinear(srcColor.unpremultiplied()).premultiplied();
     }
 
-    QRgba64 buffer[buffer_size];
+    quint64 buffer[buffer_size];
     const DestFetchProc64 destFetch64 = destFetchProc64[rasterBuffer->format];
     const DestStoreProc64 destStore64 = destStoreProc64[rasterBuffer->format];
 
@@ -5598,12 +5598,12 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
             int length = mapWidth;
             while (length > 0) {
                 int l = qMin(buffer_size, length);
-                QRgba64 *dest = destFetch64(buffer, rasterBuffer, i, y + ly, l);
+                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, i, y + ly, l);
                 for (int j=0; j < l; ++j) {
                     const int coverage = map[j + (i - x)];
                     alphamapblend_generic(coverage, dest, j, srcColor, color, colorProfile);
                 }
-                destStore64(rasterBuffer, i, y + ly, buffer, l);
+                destStore64(rasterBuffer, i, y + ly, dest, l);
                 length -= l;
                 i += l;
             }
@@ -5625,7 +5625,7 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
                 int start = qMax<int>(x, clip.x);
                 int end = qMin<int>(x + mapWidth, clip.x + clip.len);
                 Q_ASSERT(clip.len <= buffer_size);
-                QRgba64 *dest = destFetch64(buffer, rasterBuffer, start, clip.y, clip.len);
+                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, clip.len);
 
                 for (int xp=start; xp<end; ++xp) {
                     const int coverage = map[xp - x];
@@ -5873,7 +5873,7 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
             srcColor = colorProfile->toLinear(srcColor.unpremultiplied()).premultiplied();
     }
 
-    QRgba64 buffer[buffer_size];
+    quint64 buffer[buffer_size];
     const DestFetchProc64 destFetch64 = destFetchProc64[rasterBuffer->format];
     const DestStoreProc64 destStore64 = destStoreProc64[rasterBuffer->format];
 
@@ -5883,12 +5883,12 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
             int length = mapWidth;
             while (length > 0) {
                 int l = qMin(buffer_size, length);
-                QRgba64 *dest = destFetch64(buffer, rasterBuffer, i, y + ly, l);
+                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, i, y + ly, l);
                 for (int j=0; j < l; ++j) {
                     const uint coverage = src[j + (i - x)];
                     alphargbblend_generic(coverage, dest, j, srcColor, color, colorProfile);
                 }
-                destStore64(rasterBuffer, i, y + ly, buffer, l);
+                destStore64(rasterBuffer, i, y + ly, dest, l);
                 length -= l;
                 i += l;
             }
@@ -5910,7 +5910,7 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
                 int start = qMax<int>(x, clip.x);
                 int end = qMin<int>(x + mapWidth, clip.x + clip.len);
                 Q_ASSERT(clip.len <= buffer_size);
-                QRgba64 *dest = destFetch64(buffer, rasterBuffer, start, clip.y, clip.len);
+                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, clip.len);
 
                 for (int xp=start; xp<end; ++xp) {
                     const uint coverage = src[xp - x];
@@ -6495,6 +6495,17 @@ static void qInitDrawhelperFunctions()
         qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_avx2;
         qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_avx2;
         qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_avx2;
+
+        extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                                            int &fx, int &fy, int fdx, int /*fdy*/);
+        extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                                       int &fx, int &fy, int fdx, int /*fdy*/);
+        extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                                         int &fx, int &fy, int fdx, int fdy);
+
+        bilinearFastTransformHelperARGB32PM[0][SimpleUpscaleTransform] = fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2;
+        bilinearFastTransformHelperARGB32PM[0][DownscaleTransform] = fetchTransformedBilinearARGB32PM_downscale_helper_avx2;
+        bilinearFastTransformHelperARGB32PM[0][FastRotateTransform] = fetchTransformedBilinearARGB32PM_fast_rotate_helper_avx2;
     }
 #endif
 

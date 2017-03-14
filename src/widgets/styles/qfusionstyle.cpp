@@ -43,7 +43,11 @@
 #if QT_CONFIG(style_fusion) || defined(QT_PLUGIN)
 #include "qcommonstyle_p.h"
 #include <qcombobox.h>
+#if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
+#else
+#include <qabstractbutton.h>
+#endif
 #include <qpainter.h>
 #include <qdir.h>
 #include <qstyleoption.h>
@@ -53,9 +57,11 @@
 #include <qgroupbox.h>
 #include <qprocess.h>
 #include <qpixmapcache.h>
-#include <qdialogbuttonbox.h>
 #include <qscrollbar.h>
 #include <qspinbox.h>
+#if QT_CONFIG(abstractslider)
+#include <qabstractslider.h>
+#endif
 #include <qslider.h>
 #include <qsplitter.h>
 #include <qprogressbar.h>
@@ -86,7 +92,7 @@ static const int windowsRightBorder      = 15; // right border on windows
 static const int groupBoxBottomMargin    =  0;  // space below the groupbox
 static const int groupBoxTopMargin       =  3;
 
-
+#if QT_CONFIG(imageformat_xpm)
 /* XPM */
 static const char * const dock_widget_close_xpm[] = {
     "11 13 7 1",
@@ -173,7 +179,7 @@ static const char * const qt_titlebar_context_help[] = {
     "          ",
     "    ##    ",
     "    ##    "};
-
+#endif // QT_CONFIG(imageformat_xpm)
 
 static QColor mergedColors(const QColor &colorA, const QColor &colorB, int factor = 50)
 {
@@ -2368,6 +2374,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     bool hover = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_MouseOver);
                     bool sunken = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_Sunken);
                     qt_fusion_draw_mdibutton(painter, titleBar, contextHelpButtonRect, hover, sunken);
+#if QT_CONFIG(imageformat_xpm)
                     QImage image(qt_titlebar_context_help);
                     QColor alpha = textColor;
                     alpha.setAlpha(128);
@@ -2375,6 +2382,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     image.setColor(2, alpha.rgba());
                     painter->setRenderHint(QPainter::SmoothPixmapTransform);
                     painter->drawImage(contextHelpButtonRect.adjusted(4, 4, -4, -4), image);
+#endif
                 }
             }
 
@@ -3289,7 +3297,9 @@ void QFusionStyle::polish(QWidget *widget)
 #if QT_CONFIG(splitter)
             || qobject_cast<QSplitterHandle *>(widget)
 #endif
+#if QT_CONFIG(abstractslider)
             || qobject_cast<QAbstractSlider *>(widget)
+#endif
 #if QT_CONFIG(spinbox)
             || qobject_cast<QAbstractSpinBox *>(widget)
 #endif
@@ -3328,7 +3338,9 @@ void QFusionStyle::unpolish(QWidget *widget)
 #if QT_CONFIG(splitter)
             || qobject_cast<QSplitterHandle *>(widget)
 #endif
+#if QT_CONFIG(abstractslider)
             || qobject_cast<QAbstractSlider *>(widget)
+#endif
 #if QT_CONFIG(spinbox)
             || qobject_cast<QAbstractSpinBox *>(widget)
 #endif

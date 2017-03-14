@@ -5,19 +5,14 @@ HEADERS += \
         widgets/qbuttongroup_p.h \
         widgets/qabstractbutton.h \
         widgets/qabstractbutton_p.h \
-        widgets/qabstractslider.h \
-        widgets/qabstractslider_p.h \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
         widgets/qcalendarwidget.h \
-        widgets/qcheckbox.h \
         widgets/qcombobox.h \
         widgets/qcombobox_p.h \
-        widgets/qcommandlinkbutton.h \
         widgets/qdatetimeedit.h \
         widgets/qdatetimeedit_p.h \
         widgets/qdial.h \
-        widgets/qdialogbuttonbox.h \
         widgets/qdockwidget.h \
         widgets/qdockwidget_p.h \
         widgets/qdockarealayout_p.h \
@@ -27,8 +22,6 @@ HEADERS += \
         widgets/qgroupbox.h \
         widgets/qkeysequenceedit.h \
         widgets/qkeysequenceedit_p.h \
-        widgets/qlabel.h \
-        widgets/qlabel_p.h \
         widgets/qlcdnumber.h \
         widgets/qlineedit.h \
         widgets/qlineedit_p.h \
@@ -43,9 +36,6 @@ HEADERS += \
         widgets/qmenubar.h \
         widgets/qmenubar_p.h \
         widgets/qprogressbar.h \
-        widgets/qpushbutton.h \
-        widgets/qpushbutton_p.h \
-        widgets/qradiobutton.h \
         widgets/qrubberband.h \
         widgets/qscrollbar.h \
         widgets/qscrollbar_p.h \
@@ -87,15 +77,11 @@ HEADERS += \
 SOURCES += \
         widgets/qbuttongroup.cpp \
         widgets/qabstractbutton.cpp \
-        widgets/qabstractslider.cpp \
         widgets/qabstractspinbox.cpp \
         widgets/qcalendarwidget.cpp \
-        widgets/qcheckbox.cpp \
         widgets/qcombobox.cpp \
-        widgets/qcommandlinkbutton.cpp \
         widgets/qdatetimeedit.cpp \
         widgets/qdial.cpp \
-        widgets/qdialogbuttonbox.cpp \
         widgets/qdockwidget.cpp \
         widgets/qdockarealayout.cpp \
         widgets/qeffects.cpp \
@@ -103,7 +89,6 @@ SOURCES += \
         widgets/qframe.cpp \
         widgets/qgroupbox.cpp \
         widgets/qkeysequenceedit.cpp \
-        widgets/qlabel.cpp \
         widgets/qlcdnumber.cpp \
         widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
@@ -114,8 +99,6 @@ SOURCES += \
         widgets/qmenu.cpp \
         widgets/qmenubar.cpp \
         widgets/qprogressbar.cpp \
-        widgets/qpushbutton.cpp \
-        widgets/qradiobutton.cpp \
         widgets/qrubberband.cpp \
         widgets/qscrollbar.cpp \
         widgets/qsizegrip.cpp \
@@ -144,6 +127,66 @@ SOURCES += \
         widgets/qwidgetlinecontrol.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp
+
+qtConfig(abstractslider) {
+    HEADERS += \
+        widgets/qabstractslider.h \
+        widgets/qabstractslider_p.h
+
+    SOURCES += \
+        widgets/qabstractslider.cpp
+}
+
+qtConfig(checkbox) {
+    HEADERS += \
+        widgets/qcheckbox.h
+
+    SOURCES += \
+        widgets/qcheckbox.cpp
+}
+
+qtConfig(commandlinkbutton) {
+    HEADERS += \
+        widgets/qcommandlinkbutton.h
+
+    SOURCES += \
+        widgets/qcommandlinkbutton.cpp
+}
+
+qtConfig(label) {
+    HEADERS += \
+        widgets/qlabel.h \
+        widgets/qlabel_p.h
+
+    SOURCES += \
+        widgets/qlabel.cpp
+}
+
+
+qtConfig(pushbutton) {
+    HEADERS += \
+        widgets/qpushbutton.h \
+        widgets/qpushbutton_p.h
+
+    SOURCES += \
+        widgets/qpushbutton.cpp
+}
+
+qtConfig(radiobutton) {
+    HEADERS += \
+        widgets/qradiobutton.h
+
+    SOURCES += \
+        widgets/qradiobutton.cpp
+}
+
+qtConfig(dialogbuttonbox) {
+    HEADERS += \
+        widgets/qdialogbuttonbox.h
+
+    SOURCES += \
+        widgets/qdialogbuttonbox.cpp
+}
 
 macx {
     HEADERS += \
