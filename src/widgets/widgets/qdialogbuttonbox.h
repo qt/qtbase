@@ -108,11 +108,13 @@ public:
     Q_FLAG(StandardButtons)
 
     enum ButtonLayout {
-        // keep this in sync with QMessageBox::ButtonLayout and QPlatformDialogHelper::ButtonLayout
+        // keep this in sync with QPlatformDialogHelper::ButtonLayout
         WinLayout,
         MacLayout,
         KdeLayout,
-        GnomeLayout
+        GnomeLayout,
+        // MacModelessLayout,
+        AndroidLayout = GnomeLayout + 2 // ### Qt 6: reorder
     };
 
     QDialogButtonBox(QWidget *parent = Q_NULLPTR);

@@ -103,11 +103,7 @@ bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
     if (!str.isEmpty())
         m_javaMessageDialog.callMethod<void>("setDetailedText", "(Ljava/lang/String;)V", QJNIObjectPrivate::fromString(str).object());
 
-    // http://developer.android.com/design/building-blocks/dialogs.html
-    // dismissive action on the left, affirmative on the right
-    // There don't seem to be more fine-grained rules, but the OS X layout
-    // at least conforms to this one rule and makes the rest deterministic.
-    const int * currentLayout = buttonLayout(Qt::Horizontal, MacLayout);
+    const int * currentLayout = buttonLayout(Qt::Horizontal, AndroidLayout);
     while (*currentLayout != QPlatformDialogHelper::EOL) {
         int role = (*currentLayout & ~QPlatformDialogHelper::Reverse);
         addButtons(opt, static_cast<ButtonRole>(role));

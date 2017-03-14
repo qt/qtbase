@@ -1793,8 +1793,9 @@
            a QMessageBox. The possible values are 0
            (\l{QDialogButtonBox::}{WinLayout}), 1
            (\l{QDialogButtonBox::}{MacLayout}), 2
-           (\l{QDialogButtonBox::}{KdeLayout}), and 3
-           (\l{QDialogButtonBox::}{GnomeLayout}).
+           (\l{QDialogButtonBox::}{KdeLayout}), 3
+           (\l{QDialogButtonBox::}{GnomeLayout}) and 5
+           (\l{QDialogButtonBox::}{AndroidLayout}).
 
            If this property is not specified, it defaults to the
            value specified by the current style for the

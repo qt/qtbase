@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 */
 
-static const int buttonRoleLayouts[2][5][14] =
+static const int buttonRoleLayouts[2][6][14] =
 {
     // Qt::Horizontal
     {
@@ -92,7 +92,15 @@ static const int buttonRoleLayouts[2][5][14] =
         // MacModelessLayout
         { QPlatformDialogHelper::ResetRole, QPlatformDialogHelper::ApplyRole, QPlatformDialogHelper::ActionRole, QPlatformDialogHelper::Stretch,
           QPlatformDialogHelper::HelpRole, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL,
-          QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL }
+          QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL },
+
+          // AndroidLayout (neutral, stretch, dismissive, affirmative)
+          // https://material.io/guidelines/components/dialogs.html#dialogs-specs
+        { QPlatformDialogHelper::HelpRole, QPlatformDialogHelper::ResetRole, QPlatformDialogHelper::ApplyRole, QPlatformDialogHelper::ActionRole,
+          QPlatformDialogHelper::Stretch, QPlatformDialogHelper::RejectRole | QPlatformDialogHelper::Reverse,
+          QPlatformDialogHelper::NoRole | QPlatformDialogHelper::Reverse, QPlatformDialogHelper::DestructiveRole | QPlatformDialogHelper::Reverse,
+          QPlatformDialogHelper::AlternateRole | QPlatformDialogHelper::Reverse, QPlatformDialogHelper::AcceptRole | QPlatformDialogHelper::Reverse,
+          QPlatformDialogHelper::YesRole | QPlatformDialogHelper::Reverse, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL }
     },
 
     // Qt::Vertical
@@ -120,9 +128,19 @@ static const int buttonRoleLayouts[2][5][14] =
         // MacModelessLayout
         { QPlatformDialogHelper::ActionRole, QPlatformDialogHelper::ApplyRole, QPlatformDialogHelper::ResetRole, QPlatformDialogHelper::Stretch,
           QPlatformDialogHelper::HelpRole, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL,
-          QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL }
+          QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL },
+
+          // AndroidLayout
+          // (affirmative
+          //  dismissive
+          //  neutral)
+          // https://material.io/guidelines/components/dialogs.html#dialogs-specs
+        { QPlatformDialogHelper::YesRole, QPlatformDialogHelper::AcceptRole, QPlatformDialogHelper::AlternateRole, QPlatformDialogHelper::DestructiveRole,
+          QPlatformDialogHelper::NoRole, QPlatformDialogHelper::RejectRole, QPlatformDialogHelper::Stretch, QPlatformDialogHelper::ActionRole, QPlatformDialogHelper::ApplyRole,
+          QPlatformDialogHelper::ResetRole, QPlatformDialogHelper::HelpRole, QPlatformDialogHelper::EOL, QPlatformDialogHelper::EOL }
     }
 };
+
 
 QPlatformDialogHelper::QPlatformDialogHelper()
 {
@@ -917,6 +935,8 @@ const int *QPlatformDialogHelper::buttonLayout(Qt::Orientation orientation, Butt
         policy = MacLayout;
 #elif defined (Q_OS_LINUX) || defined (Q_OS_UNIX)
         policy = KdeLayout;
+#elif defined (Q_OS_ANDROID)
+        policy = AndroidLayout;
 #else
         policy = WinLayout;
 #endif

@@ -577,6 +577,8 @@ QDialogButtonBox::~QDialogButtonBox()
     \value MacLayout Use a policy appropriate for applications on \macos.
     \value KdeLayout Use a policy appropriate for applications on KDE.
     \value GnomeLayout Use a policy appropriate for applications on GNOME.
+    \value AndroidLayout Use a policy appropriate for applications on Android.
+                            This enum value was added in Qt 5.10.
 
     The button layout is specified by the \l{style()}{current style}. However,
     on the X11 platform, it may be influenced by the desktop environment.
