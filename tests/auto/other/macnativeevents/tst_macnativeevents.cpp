@@ -280,6 +280,8 @@ void tst_MacNativeEvents::testMouseEnter()
 
 void tst_MacNativeEvents::testChildDialogInFrontOfModalParent()
 {
+    QSKIP("Modal dialog causes later tests to fail, see QTBUG-58474");
+
     // Test that a child dialog of a modal parent dialog is
     // in front of the parent, and active:
     QDialog parent;
