@@ -100,7 +100,8 @@ public:
     Q_DECL_CONSTEXPR bool isNull() const Q_DECL_NOTHROW { return !data(); }
     Q_DECL_CONSTEXPR bool isEmpty() const Q_DECL_NOTHROW { return !size(); }
 
-    Q_DECL_CONSTEXPR QLatin1Char at(int i) const { return QLatin1Char(m_data[i]); }
+    Q_DECL_CONSTEXPR QLatin1Char at(int i) const
+    { return Q_ASSERT(i >= 0), Q_ASSERT(i < size()), QLatin1Char(m_data[i]); }
     Q_DECL_CONSTEXPR QLatin1Char operator[](int i) const { return at(i); }
 
     using value_type = const char;
@@ -125,13 +126,13 @@ public:
     const_reverse_iterator crend() const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
 
     Q_DECL_CONSTEXPR QLatin1String mid(int pos) const
-    { return QLatin1String(m_data + pos, m_size - pos); }
+    { return Q_ASSERT(pos >= 0), Q_ASSERT(pos <= size()), QLatin1String(m_data + pos, m_size - pos); }
     Q_DECL_CONSTEXPR QLatin1String mid(int pos, int n) const
-    { return QLatin1String(m_data + pos, n); }
+    { return Q_ASSERT(pos >= 0), Q_ASSERT(n >= 0), Q_ASSERT(pos + n <= size()), QLatin1String(m_data + pos, n); }
     Q_DECL_CONSTEXPR QLatin1String left(int n) const
-    { return QLatin1String(m_data, n); }
+    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data, n); }
     Q_DECL_CONSTEXPR QLatin1String right(int n) const
-    { return QLatin1String(m_data + m_size - n, n); }
+    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data + m_size - n, n); }
 
     inline bool operator==(const QString &s) const Q_DECL_NOTHROW;
     inline bool operator!=(const QString &s) const Q_DECL_NOTHROW;
