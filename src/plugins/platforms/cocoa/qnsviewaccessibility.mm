@@ -53,6 +53,9 @@
 @implementation QNSView (QNSViewAccessibility)
 
 - (id)childAccessibleElement {
+    if (m_platformWindow.isNull())
+        return nil;
+
     if (!m_platformWindow->window()->accessibleRoot())
         return nil;
 
