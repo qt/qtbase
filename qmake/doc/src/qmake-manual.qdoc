@@ -1581,6 +1581,14 @@
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
     needs to be modified.
 
+    \target QMAKE_DEVELOPMENT_TEAM
+    \section1 QMAKE_DEVELOPMENT_TEAM
+
+    \note This variable is used on \macos, iOS, tvOS, and watchOS only.
+
+    The identifier of a development team to use for signing certificates
+    and provisioning profiles.
+
     \target QMAKE_DISTCLEAN
     \section1 QMAKE_DISTCLEAN
 
@@ -2075,6 +2083,17 @@
     Determines the name of the project when generating project
     files for IDEs. The default value is the target name. The value of this
     variable is typically handled by qmake and rarely needs to be modified.
+
+    \target QMAKE_PROVISIONING_PROFILE
+    \section1 QMAKE_PROVISIONING_PROFILE
+
+    \note This variable is used on \macos, iOS, tvOS, and watchOS only.
+
+    The UUID of a valid provisioning profile. Use in conjunction with
+    \l{QMAKE_DEVELOPMENT_TEAM} to specify the provisioning profile.
+
+    \note Specifying the provisioning profile disables the automatically
+    managed signing.
 
     \section1 QMAKE_MAC_SDK
 
