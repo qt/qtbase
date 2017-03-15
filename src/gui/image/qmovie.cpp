@@ -161,6 +161,8 @@
 
     This signal is emitted by QMovie when the error \a error occurred during
     playback.  QMovie will stop the movie, and enter QMovie::NotRunning state.
+
+    \sa lastError(), lastErrorString()
 */
 
 /*! \fn void QMovie::finished()
@@ -792,11 +794,36 @@ QImage QMovie::currentImage() const
 /*!
     Returns \c true if the movie is valid (e.g., the image data is readable and
     the image format is supported); otherwise returns \c false.
+
+    For information about why the movie is not valid, see lastError().
 */
 bool QMovie::isValid() const
 {
     Q_D(const QMovie);
     return d->isValid();
+}
+
+/*!
+    Returns the most recent error that occurred while attempting to read image data.
+
+    \sa lastErrorString()
+*/
+QImageReader::ImageReaderError QMovie::lastError() const
+{
+    Q_D(const QMovie);
+    return d->reader->error();
+}
+
+/*!
+     Returns a human-readable representation of the most recent error that occurred
+     while attempting to read image data.
+
+    \sa lastError()
+*/
+QString QMovie::lastErrorString() const
+{
+    Q_D(const QMovie);
+    return d->reader->errorString();
 }
 
 /*!
