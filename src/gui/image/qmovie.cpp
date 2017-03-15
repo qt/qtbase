@@ -330,6 +330,8 @@ int QMoviePrivate::speedAdjustedDelay(int delay) const
 */
 QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
 {
+    Q_Q(QMovie);
+
     if (frameNumber < 0)
         return QFrameInfo(); // Invalid
 
@@ -358,7 +360,8 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
                         reader = new QImageReader(device, format);
                     else
                         reader = new QImageReader(absoluteFilePath, format);
-                    (void)reader->canRead(); // Provoke a device->open() call
+                    if (!reader->canRead()) // Provoke a device->open() call
+                        emit q->error(reader->error());
                     reader->device()->seek(initialDevicePos);
                     reader->setBackgroundColor(bgColor);
                     reader->setScaledSize(scaledSize);
@@ -525,8 +528,20 @@ void QMoviePrivate::_q_loadNextFrame(bool starting)
 */
 bool QMoviePrivate::isValid() const
 {
-    return (greatestFrameNumber >= 0) // have we seen valid data
-        || reader->canRead(); // or does the reader see valid data
+    Q_Q(const QMovie);
+
+    if (greatestFrameNumber >= 0)
+        return true; // have we seen valid data
+    bool canRead = reader->canRead();
+    if (!canRead) {
+        // let the consumer know it's broken
+        //
+        // ### the const_cast here is ugly, but 'const' of this method is
+        // technically wrong right now, since it may cause the underlying device
+        // to open.
+        emit const_cast<QMovie*>(q)->error(reader->error());
+    }
+    return canRead;
 }
 
 /*!
