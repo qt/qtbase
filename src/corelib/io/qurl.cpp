@@ -4170,12 +4170,15 @@ QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirecto
         return url;
     }
 
+    const QFileInfo fileInfo(QDir(workingDirectory), userInput);
+    if (fileInfo.exists()) {
+        return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
+    }
+
     QUrl url = QUrl(userInput, QUrl::TolerantMode);
     // Check both QUrl::isRelative (to detect full URLs) and QDir::isAbsolutePath (since on Windows drive letters can be interpreted as schemes)
-    if (url.isRelative() && !QDir::isAbsolutePath(userInput)) {
-        QFileInfo fileInfo(QDir(workingDirectory), userInput);
-        if ((options & AssumeLocalFile) || fileInfo.exists())
-            return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
+    if ((options & AssumeLocalFile) && url.isRelative() && !QDir::isAbsolutePath(userInput)) {
+        return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
     }
 
     return fromUserInput(trimmedString);
