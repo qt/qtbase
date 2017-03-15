@@ -564,6 +564,16 @@ bool QImageReaderPrivate::initHandler()
 
     // probe the file extension
     if (deleteDevice && !device->isOpen() && !device->open(QIODevice::ReadOnly) && autoDetectImageFormat) {
+        Q_ASSERT(qobject_cast<QFile*>(device) != 0); // future-proofing; for now this should always be the case, so...
+        QFile *file = static_cast<QFile *>(device);
+
+        if (file->error() == QFileDevice::ResourceError) {
+            // this is bad. we should abort the open attempt and note the failure.
+            imageReaderError = QImageReader::DeviceError;
+            errorString = file->errorString();
+            return false;
+        }
+
         QList<QByteArray> extensions = QImageReader::supportedImageFormats();
         if (!format.isEmpty()) {
             // Try the most probable extension first
@@ -574,7 +584,6 @@ bool QImageReaderPrivate::initHandler()
 
         int currentExtension = 0;
 
-        QFile *file = static_cast<QFile *>(device);
         QString fileName = file->fileName();
 
         do {
