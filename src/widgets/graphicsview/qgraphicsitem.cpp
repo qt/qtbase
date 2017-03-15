@@ -268,27 +268,93 @@
 */
 
 /*!
-    \variable QGraphicsItem::Type
+  \enum QGraphicsItem::anonymous
 
-    The type value returned by the virtual type() function in standard
-    graphics item classes in Qt. All such standard graphics item
-    classes in Qt are associated with a unique value for Type,
-    e.g. the value returned by QGraphicsPathItem::type() is 2.
+  The value returned by the virtual type() function in standard
+  graphics item classes in Qt. All such standard graphics item classes
+  in Qt are associated with a unique value for Type, e.g. the value
+  returned by QGraphicsPathItem::type() is 2.
+
+  \value Type
 
     \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 18
+
+  \value UserType The lowest value returned by the virtual type()
+  function for custom subclasses of QGraphicsItem.
+
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 1
 */
 
 /*!
-    \variable QGraphicsItem::UserType
+  \enum QGraphicsPathItem::anonymous
 
-    The lowest permitted type value for custom items (subclasses
-    of QGraphicsItem or any of the standard items). This value is
-    used in conjunction with a reimplementation of QGraphicsItem::type()
-    and declaring a Type enum value. Example:
+  The value returned by the virtual type() function.
 
-    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 1
+  \value Type A graphics path item
+*/
 
-    \note UserType = 65536
+/*!
+  \enum QGraphicsRectItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics rect item
+*/
+
+/*!
+  \enum QGraphicsEllipseItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics ellipse item
+*/
+
+/*!
+  \enum QGraphicsPolygonItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics polygon item
+*/
+
+/*!
+  \enum QGraphicsPixmapItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics pixmap item
+*/
+
+/*!
+  \enum QGraphicsTextItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics text item
+*/
+
+/*!
+  \enum QGraphicsSimpleTextItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics simple text item
+*/
+
+/*!
+  \enum QGraphicsItemGroup::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics item group
+*/
+
+/*!
+  \enum QGraphicsLineItem::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics line item
 */
 
 /*!
