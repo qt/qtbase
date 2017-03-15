@@ -1507,6 +1507,10 @@ void tst_QMdiArea::setBackground()
 
 void tst_QMdiArea::setViewport()
 {
+#ifdef Q_OS_MACOS
+    QSKIP("Sometimes crashes in the CI, see QTBUG-58520");
+#endif
+
     QMdiArea workspace;
     workspace.show();
 
