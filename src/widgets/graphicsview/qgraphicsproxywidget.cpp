@@ -1537,6 +1537,14 @@ void QGraphicsProxyWidget::paint(QPainter *painter, const QStyleOptionGraphicsIt
 }
 
 /*!
+  \enum QGraphicsProxyWidget::anonymous
+
+  The value returned by the virtual type() function.
+
+  \value Type A graphics proxy widget
+*/
+
+/*!
     \reimp
 */
 int QGraphicsProxyWidget::type() const

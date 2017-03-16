@@ -781,6 +781,12 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
 #endif
 }
 
+/*!
+  \enum QCoreApplication::anonymous
+  \internal
+
+  \value ApplicationFlags QT_VERSION
+*/
 
 void QCoreApplicationPrivate::init()
 {

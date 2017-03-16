@@ -694,6 +694,13 @@ QHoverEvent::~QHoverEvent()
 */
 
 /*!
+  \enum QWheelEvent::anonymous
+  \internal
+
+  \value DefaultDeltasPerStep Defaqult deltas per step
+*/
+
+/*!
     \fn Qt::MouseButtons QWheelEvent::buttons() const
 
     Returns the mouse state when the event occurred.

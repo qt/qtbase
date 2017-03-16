@@ -165,6 +165,12 @@
 */
 
 /*!
+  \enum QDBusPendingReply::anonymous
+
+  \value Count The number of arguments the reply is expected to have
+ */
+
+/*!
     \fn int QDBusPendingReply::count() const
 
     Return the number of arguments the reply is supposed to have. This
