@@ -118,7 +118,7 @@ public:
     void maybeQuitOnLastWindowClosed();
 #ifndef QT_NO_CURSOR
     void setCursor(const QCursor *c = 0);
-    void applyCursor();
+    bool applyCursor();
 #endif
 
     void deliverUpdateRequest();
