@@ -5024,7 +5024,7 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, void **
  */
 
 /*!
-    Create a copy of the handle to the connection
+    Create a copy of the handle to the \a other connection
  */
 QMetaObject::Connection::Connection(const QMetaObject::Connection &other) : d_ptr(other.d_ptr)
 {

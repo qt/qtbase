@@ -2134,8 +2134,8 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
 /*!
     \since 5.9
 
-    Changes the \a format of the image without changing the data. Only
-    works between formats of the same depth.
+    Changes the format of the image to \a format without changing the
+    data. Only works between formats of the same depth.
 
     Returns \c true if successful.
 

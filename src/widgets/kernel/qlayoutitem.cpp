@@ -400,8 +400,8 @@ int QLayoutItem::minimumHeightForWidth(int w) const
 
 
 /*!
-    Returns the preferred height for this layout item, given the width
-    \a w.
+    Returns the preferred height for this layout item, given the
+    width, which is not used in this default implementation.
 
     The default implementation returns -1, indicating that the
     preferred height is independent of the width of the item. Using

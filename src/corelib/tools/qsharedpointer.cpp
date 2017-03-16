@@ -503,11 +503,15 @@
 */
 
 /*!
-    \fn QSharedPointer::QSharedPointer(std::nullptr_t, Deleter)
+    \fn QSharedPointer::QSharedPointer(std::nullptr_t, Deleter deleter)
     \since 5.8
 
     Creates a QSharedPointer that is null. This is equivalent to the
     QSharedPointer default constructor.
+
+    The \a deleter parameter specifies the custom deleter for this
+    object. The custom deleter is called, instead of the operator
+    delete(), when the strong reference count drops to 0.
 */
 
 /*!

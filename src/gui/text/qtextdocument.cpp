@@ -74,6 +74,8 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n);
 
 /*!
+    \fn bool Qt::mightBeRichText(const QString& text)
+
     Returns \c true if the string \a text is likely to be rich text;
     otherwise returns \c false.
 
@@ -144,6 +146,8 @@ bool Qt::mightBeRichText(const QString& text)
 
 
 /*!
+    \fn QString Qt::convertFromPlainText(const QString &plain, Qt::WhiteSpaceMode mode)
+
     Converts the plain text string \a plain to an HTML-formatted
     paragraph while preserving most of its look.
 
