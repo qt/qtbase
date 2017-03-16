@@ -1053,6 +1053,10 @@ void tst_QHash::keyIterator()
     QCOMPARE(*(--key_it), (--it).key());
 
     QCOMPARE(std::count(hash.keyBegin(), hash.keyEnd(), 99), 1);
+
+    // DefaultConstructible test
+    typedef QHash<int, int>::key_iterator keyIterator;
+    Q_STATIC_ASSERT(std::is_default_constructible<keyIterator>::value);
 }
 
 void tst_QHash::rehash_isnt_quadratic()
