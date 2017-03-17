@@ -76,7 +76,9 @@ QT_BEGIN_NAMESPACE
         msvc-2010
 
   Keys are lower-case.  Distribution name and version are supported if
-  QSysInfo's productType() and productVersion() return them.
+  QSysInfo's productType() and productVersion() return them. Keys can be
+  added via the space-separated QTEST_ENVIRONMENT environment variable.
+
   The other known keys are listed below:
 */
 
@@ -166,6 +168,11 @@ static QSet<QByteArray> activeConditions()
             if (result.find(versioned) == result.end())
                 result.insert(versioned);
         }
+    }
+
+    if (qEnvironmentVariableIsSet("QTEST_ENVIRONMENT")) {
+        foreach (const QByteArray &k, qgetenv("QTEST_ENVIRONMENT").split(' '))
+            result.insert(k);
     }
 
     return result;
