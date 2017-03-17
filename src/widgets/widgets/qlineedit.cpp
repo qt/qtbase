@@ -437,8 +437,6 @@ bool QLineEdit::hasFrame() const
 
 #if QT_CONFIG(action)
 /*!
-    \overload
-
     Adds the \a action to the list of actions at the \a position.
 
     \since 5.2

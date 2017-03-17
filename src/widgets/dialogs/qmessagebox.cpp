@@ -1500,8 +1500,6 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
 }
 
 /*!
-    \overload
-
     Opens the dialog and connects its finished() or buttonClicked() signal to
     the slot specified by \a receiver and \a member. If the slot in \a member
     has a pointer for its first parameter the connection is to buttonClicked(),

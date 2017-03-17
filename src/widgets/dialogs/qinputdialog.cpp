@@ -1070,7 +1070,6 @@ QString QInputDialog::cancelButtonText() const
 
 /*!
     \since 4.5
-    \overload
 
     This function connects one of its signals to the slot specified by \a receiver
     and \a member. The specific signal depends on the arguments that are specified

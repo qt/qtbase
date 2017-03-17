@@ -1345,7 +1345,6 @@ void QApplication::setGlobalStrut(const QSize& strut)
 
 /*!
     \fn QPalette QApplication::palette(const QWidget* widget)
-    \overload
 
     If a \a widget is passed, the default palette for the widget's class is
     returned. This may or may not be the application palette. In most cases

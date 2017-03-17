@@ -802,8 +802,6 @@ QFileDialog::Options QFileDialog::options() const
 }
 
 /*!
-    \overload
-
     \since 4.5
 
     This function connects one of its signals to the slot specified by \a receiver
