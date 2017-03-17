@@ -864,6 +864,11 @@ void tst_QMimeDatabase::fromThreads()
 }
 
 #ifndef QT_NO_PROCESS
+
+enum {
+    UpdateMimeDatabaseTimeout = 4 * 60 * 1000 // 4min
+};
+
 static bool runUpdateMimeDatabase(const QString &path) // TODO make it a QMimeDatabase method?
 {
     const QString umdCommand = QString::fromLatin1("update-mime-database");
@@ -884,7 +889,7 @@ static bool runUpdateMimeDatabase(const QString &path) // TODO make it a QMimeDa
                  qPrintable(umd), qPrintable(proc.errorString()));
         return false;
     }
-    const bool success = proc.waitForFinished();
+    const bool success = proc.waitForFinished(UpdateMimeDatabaseTimeout);
     qDebug().noquote() << "runUpdateMimeDatabase: done,"
         << success << timer.elapsed() << "ms";
     return true;
