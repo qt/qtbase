@@ -1282,35 +1282,11 @@ static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool includ
         return img;
     }
 
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    // Without GL_UNSIGNED_INT_8_8_8_8_REV, GL_BGRA only makes sense on little endian.
-    const bool has_bgra_ext = context->isOpenGLES()
-                              ? context->hasExtension(QByteArrayLiteral("GL_EXT_read_format_bgra"))
-                              : context->hasExtension(QByteArrayLiteral("GL_EXT_bgra"));
+    // For OpenGL ES stick with the byte ordered format / RGBA readback format
+    // since that is the only spec mandated way. (also, skip the
+    // GL_IMPLEMENTATION_COLOR_READ_FORMAT mess since there is nothing saying a
+    // BGRA capable impl would return BGRA from there)
 
-#ifndef Q_OS_IOS
-    const char *renderer = reinterpret_cast<const char *>(funcs->glGetString(GL_RENDERER));
-    const char *ver = reinterpret_cast<const char *>(funcs->glGetString(GL_VERSION));
-
-    // Blacklist GPU chipsets that have problems with their BGRA support.
-    const bool blackListed = (qstrcmp(renderer, "PowerVR Rogue G6200") == 0
-                             && ::strstr(ver, "1.3") != 0) ||
-                             (qstrcmp(renderer, "Mali-T760") == 0
-                             && ::strstr(ver, "3.1") != 0) ||
-                             (qstrcmp(renderer, "Mali-T720") == 0
-                             && ::strstr(ver, "3.1") != 0) ||
-                             qstrcmp(renderer, "PowerVR SGX 554") == 0;
-#else
-    const bool blackListed = true;
-#endif
-    const bool supports_bgra = has_bgra_ext && !blackListed;
-
-    if (supports_bgra) {
-        QImage img(size, include_alpha ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
-        funcs->glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, img.bits());
-        return img;
-    }
-#endif
     QImage rgbaImage(size, include_alpha ? QImage::Format_RGBA8888_Premultiplied : QImage::Format_RGBX8888);
     funcs->glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgbaImage.bits());
     return rgbaImage;
@@ -1362,8 +1338,11 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
     If used together with QOpenGLPaintDevice, \a flipped should be the opposite of the value
     of QOpenGLPaintDevice::paintFlipped().
 
-    The returned image has a format of premultiplied ARGB32 or RGB32. The latter is used
-    only when internalTextureFormat() is set to \c GL_RGB.
+    The returned image has a format of premultiplied ARGB32 or RGB32. The latter
+    is used only when internalTextureFormat() is set to \c GL_RGB. Since Qt 5.2
+    the function will fall back to premultiplied RGBA8888 or RGBx8888 when
+    reading to (A)RGB32 is not supported, and this includes OpenGL ES. Since Qt
+    5.4 an A2BGR30 image is returned if the internal format is RGB10_A2.
 
     If the rendering in the framebuffer was not done with premultiplied alpha in mind,
     create a wrapper QImage with a non-premultiplied format. This is necessary before
@@ -1375,10 +1354,6 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
     QImage fboImage(fbo.toImage());
     QImage image(fboImage.constBits(), fboImage.width(), fboImage.height(), QImage::Format_ARGB32);
     \endcode
-
-    Since Qt 5.2 the function will fall back to premultiplied RGBA8888 or RGBx8888 when
-    reading to (A)RGB32 is not supported. Since 5.4 an A2BGR30 image is returned if the
-    internal format is RGB10_A2.
 
     For multisampled framebuffer objects the samples are resolved using the
     \c{GL_EXT_framebuffer_blit} extension. If the extension is not available, the contents

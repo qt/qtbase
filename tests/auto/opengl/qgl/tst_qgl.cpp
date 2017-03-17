@@ -1195,7 +1195,9 @@ void tst_QGL::currentFboSync()
 
         QGLFramebufferObject::bindDefault();
 
-        QCOMPARE(fbo1.toImage(), fbo2Image);
+        // Convert the QGLFBO's result since QOpenGLFBO uses a wider
+        // variety of possible return formats.
+        QCOMPARE(fbo1.toImage().convertToFormat(fbo2Image.format()), fbo2Image);
     }
 
     {
