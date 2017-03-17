@@ -861,7 +861,7 @@ void tst_QMimeDatabase::fromThreads()
 #if QT_CONFIG(process)
 
 enum {
-    UpdateMimeDatabaseTimeout = 120 * 1000 // 2min
+    UpdateMimeDatabaseTimeout = 4 * 60 * 1000 // 4min
 };
 
 static bool runUpdateMimeDatabase(const QString &path) // TODO make it a QMimeDatabase method?
