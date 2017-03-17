@@ -537,6 +537,7 @@ public:
           w(widget) { }
 
     void beginPaint() Q_DECL_OVERRIDE;
+    void endPaint() Q_DECL_OVERRIDE;
 
     QOpenGLWidget *w;
 };
@@ -631,6 +632,16 @@ void QOpenGLWidgetPaintDevicePrivate::beginPaint()
     }
 }
 
+void QOpenGLWidgetPaintDevicePrivate::endPaint()
+{
+    QOpenGLWidgetPrivate *wd = static_cast<QOpenGLWidgetPrivate *>(QWidgetPrivate::get(w));
+    if (!wd->initialized)
+        return;
+
+    if (!wd->inPaintGL)
+        QOpenGLContextPrivate::get(wd->context)->defaultFboRedirect = 0;
+}
+
 void QOpenGLWidgetPaintDevice::ensureActiveTarget()
 {
     QOpenGLWidgetPaintDevicePrivate *d = static_cast<QOpenGLWidgetPaintDevicePrivate *>(d_ptr.data());
@@ -642,6 +653,9 @@ void QOpenGLWidgetPaintDevice::ensureActiveTarget()
         d->w->makeCurrent();
     else
         wd->fbo->bind();
+
+    if (!wd->inPaintGL)
+        QOpenGLContextPrivate::get(wd->context)->defaultFboRedirect = wd->fbo->handle();
 
     // When used as a viewport, drawing is done via opening a QPainter on the widget
     // without going through paintEvent(). We will have to make sure a glFlush() is done
