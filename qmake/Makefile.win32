@@ -21,8 +21,7 @@ CFLAGS_EXTRA      = -fms-compatibility-version=19.00.23506 -Wno-microsoft-enum-v
 !else
 CXX               = cl
 LINKER            = link
-CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS \
-                    /wd4577 $(CFLAGS_CRT)
+CFLAGS_EXTRA      = /MP /wd4577 $(CFLAGS_CRT)
 !endif  # !win32-icc
 
 !if "$(QMAKESPEC)" != "win32-clang-msvc"
@@ -37,6 +36,7 @@ CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               -I$(INC_PATH) -I$(INC_PATH)\QtCore -I$(INC_PATH)\QtCore\$(QT_VERSION) -I$(INC_PATH)\QtCore\$(QT_VERSION)\QtCore \
               -I$(BUILD_PATH)\src\corelib\global \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
+              -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS \
               -DQT_VERSION_STR=\"$(QT_VERSION)\" -DQT_VERSION_MAJOR=$(QT_MAJOR_VERSION) -DQT_VERSION_MINOR=$(QT_MINOR_VERSION) -DQT_VERSION_PATCH=$(QT_PATCH_VERSION) \
               -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
               -DQT_NO_FOREACH -DUNICODE
