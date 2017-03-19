@@ -45,6 +45,7 @@
 #include <qsocketnotifier.h>
 #include <qstringlist.h>
 #include <qmutex.h>
+#include <qlocale.h>
 #include <QtSql/private/qsqlresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
 
@@ -1280,7 +1281,9 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 // we force the value to be considered with a timezone information, and we force it to be UTC
                 // this is safe since postgresql stores only the UTC value and not the timezone offset (only used
                 // while parsing), so we have correct behavior in both case of with timezone and without tz
-                r = QLatin1String("TIMESTAMP WITH TIME ZONE ") + QLatin1Char('\'') + field.value().toDateTime().toUTC().toString(QLatin1String("yyyy-MM-ddThh:mm:ss.zzz")) + QLatin1Char('Z') + QLatin1Char('\'');
+                r = QLatin1String("TIMESTAMP WITH TIME ZONE ") + QLatin1Char('\'') +
+                        QLocale::c().toString(field.value().toDateTime().toUTC(), QLatin1String("yyyy-MM-ddThh:mm:ss.zzz")) +
+                        QLatin1Char('Z') + QLatin1Char('\'');
             } else {
                 r = QLatin1String("NULL");
             }
