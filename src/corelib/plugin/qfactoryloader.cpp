@@ -131,10 +131,10 @@ void QFactoryLoader::update()
 #ifdef Q_OS_MAC
             if (isLoadingDebugAndReleaseCocoa) {
 #ifdef QT_DEBUG
-               if (fileName.contains(QStringLiteral("libqcocoa.dylib")))
+               if (fileName.contains(QLatin1String("libqcocoa.dylib")))
                    continue;    // Skip release plugin in debug mode
 #else
-               if (fileName.contains(QStringLiteral("libqcocoa_debug.dylib")))
+               if (fileName.contains(QLatin1String("libqcocoa_debug.dylib")))
                    continue;    // Skip debug plugin in release mode
 #endif
             }
