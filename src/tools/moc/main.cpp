@@ -395,9 +395,9 @@ int runMoc(int argc, char **argv)
         pp.macros.remove(macro);
     }
     const QStringList noNotesCompatValues = parser.values(noNotesWarningsCompatOption);
-    if (parser.isSet(noNotesOption) || noNotesCompatValues.contains(QStringLiteral("n")))
+    if (parser.isSet(noNotesOption) || noNotesCompatValues.contains(QLatin1String("n")))
         moc.displayNotes = false;
-    if (parser.isSet(noWarningsOption) || noNotesCompatValues.contains(QStringLiteral("w")))
+    if (parser.isSet(noWarningsOption) || noNotesCompatValues.contains(QLatin1String("w")))
         moc.displayWarnings = moc.displayNotes = false;
 
     if (autoInclude) {

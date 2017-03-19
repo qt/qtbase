@@ -118,7 +118,7 @@ QString QOfonoManagerInterface::currentModem()
     for (const QString &modem : modems) {
         QOfonoModemInterface device(modem);
         if (device.isPowered() && device.isOnline()
-                && device.interfaces().contains(QStringLiteral("org.ofono.NetworkRegistration")))
+                && device.interfaces().contains(QLatin1String("org.ofono.NetworkRegistration")))
         return modem;
     }
     return QString();
