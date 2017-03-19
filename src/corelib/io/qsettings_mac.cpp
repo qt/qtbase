@@ -425,8 +425,7 @@ QMacSettingsPrivate::QMacSettingsPrivate(QSettings::Scope scope, const QString &
     suiteId = javaPackageName;
 
     if (!application.isEmpty()) {
-        javaPackageName += QLatin1Char('.');
-        javaPackageName += application;
+        javaPackageName += QLatin1Char('.') + application;
         applicationId = javaPackageName;
     }
 
