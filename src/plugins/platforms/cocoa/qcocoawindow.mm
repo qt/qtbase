@@ -58,6 +58,8 @@
 
 #include <QDebug>
 
+#include <vector>
+
 enum {
     defaultWindowWidth = 160,
     defaultWindowHeight = 160
@@ -2068,10 +2070,10 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     }
 
     // Find consecutive registered border areas, starting from the top.
-    QList<BorderRange> ranges = m_contentBorderAreas.values();
+    std::vector<BorderRange> ranges(m_contentBorderAreas.cbegin(), m_contentBorderAreas.cend());
     std::sort(ranges.begin(), ranges.end());
     int effectiveTopContentBorderThickness = m_topContentBorderThickness;
-    foreach (BorderRange range, ranges) {
+    for (BorderRange range : ranges) {
         // Skip disiabled ranges (typically hidden tool bars)
         if (!m_enabledContentBorderAreas.value(range.identifier, false))
             continue;
