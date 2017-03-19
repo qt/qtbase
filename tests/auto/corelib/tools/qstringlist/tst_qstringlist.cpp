@@ -264,6 +264,15 @@ void tst_QStringList::contains()
     QVERIFY(list.contains("ARTHUR", Qt::CaseInsensitive));
     QVERIFY(list.contains("dent", Qt::CaseInsensitive));
     QVERIFY(!list.contains("hans", Qt::CaseInsensitive));
+
+    QVERIFY(list.contains(QLatin1String("arthur")));
+    QVERIFY(!list.contains(QLatin1String("ArthuR")));
+    QVERIFY(!list.contains(QLatin1String("Hans")));
+    QVERIFY(list.contains(QLatin1String("arthur"), Qt::CaseInsensitive));
+    QVERIFY(list.contains(QLatin1String("ArthuR"), Qt::CaseInsensitive));
+    QVERIFY(list.contains(QLatin1String("ARTHUR"), Qt::CaseInsensitive));
+    QVERIFY(list.contains(QLatin1String("dent"), Qt::CaseInsensitive));
+    QVERIFY(!list.contains(QLatin1String("hans"), Qt::CaseInsensitive));
 }
 
 void tst_QStringList::removeDuplicates_data()

@@ -299,6 +299,16 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
     return res;
 }
 
+template<typename T>
+static bool stringList_contains(const QStringList &stringList, const T &str, Qt::CaseSensitivity cs)
+{
+    for (const auto &string : stringList) {
+        if (string.size() == str.size() && string.compare(str, cs) == 0)
+            return true;
+    }
+    return false;
+}
+
 
 /*!
     \fn bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
@@ -312,12 +322,24 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
 bool QtPrivate::QStringList_contains(const QStringList *that, const QString &str,
                                      Qt::CaseSensitivity cs)
 {
-    for (int i = 0; i < that->size(); ++i) {
-        const QString & string = that->at(i);
-        if (string.length() == str.length() && str.compare(string, cs) == 0)
-            return true;
-    }
-    return false;
+    return stringList_contains(*that, str, cs);
+}
+
+/*!
+    \fn bool QStringList::contains(QLatin1String str, Qt::CaseSensitivity cs) const
+    \overload
+    \since 5.10
+
+    Returns \c true if the list contains the string \a str; otherwise
+    returns \c false. The search is case insensitive if \a cs is
+    Qt::CaseInsensitive; the search is case sensitive by default.
+
+    \sa indexOf(), lastIndexOf(), QString::contains()
+ */
+bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
+                                     Qt::CaseSensitivity cs)
+{
+    return stringList_contains(*that, str, cs);
 }
 
 #ifndef QT_NO_REGEXP
