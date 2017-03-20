@@ -677,7 +677,7 @@ public:
     {}
     template <int N>
     inline QString &operator=(const char (&ch)[N])
-    { return (*this = fromLatin1(ch, N - 1)); }
+    { return (*this = fromUtf8(ch, N - 1)); }
 #endif
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     inline QT_ASCII_CAST_WARN QString(const char *ch)
