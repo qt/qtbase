@@ -4269,6 +4269,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 
     case PE_PanelButtonTool:
     case PE_PanelButtonCommand:
+#if QT_CONFIG(abstractbutton)
         if (qobject_cast<const QAbstractButton *>(w) && rule.hasBackground() && rule.hasNativeBorder()) {
             //the window style will draw the borders
             ParentStyle::drawPrimitive(pe, opt, p, w);
@@ -4277,6 +4278,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             }
             return;
         }
+#endif
         if (!rule.hasNativeBorder()) {
             rule.drawRule(p, rule.boxRect(opt->rect, QRenderRule::Margin));
             return;

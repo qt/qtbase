@@ -32,6 +32,7 @@
 #include <qdir.h>
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qhashfunctions.h>
 #include <qtextstream.h>
 #include <qatomic.h>
 #include <qglobal.h>
@@ -153,6 +154,9 @@ int runRcc(int argc, char *argv[])
     QCommandLineOption projectOption(QStringLiteral("project"), QStringLiteral("Output a resource file containing all files from the current directory."));
     parser.addOption(projectOption);
 
+    QCommandLineOption formatVersionOption(QStringLiteral("format-version"), QStringLiteral("The RCC format version to write"), QStringLiteral("number"));
+    parser.addOption(formatVersionOption);
+
     parser.addPositionalArgument(QStringLiteral("inputs"), QStringLiteral("Input files (*.qrc)."));
 
 
@@ -160,7 +164,19 @@ int runRcc(int argc, char *argv[])
     parser.process(app);
 
     QString errorMsg;
-    RCCResourceLibrary library;
+
+    quint8 formatVersion = 2;
+    if (parser.isSet(formatVersionOption)) {
+        bool ok = false;
+        formatVersion = parser.value(formatVersionOption).toUInt(&ok);
+        if (!ok) {
+            errorMsg = QLatin1String("Invalid format version specified");
+        } else if (formatVersion != 1 && formatVersion != 2) {
+            errorMsg = QLatin1String("Unsupported format version specified");
+        }
+    }
+
+    RCCResourceLibrary library(formatVersion);
     if (parser.isSet(nameOption))
         library.setInitName(parser.value(nameOption));
     if (parser.isSet(rootOption)) {
@@ -297,16 +313,17 @@ int runRcc(int argc, char *argv[])
     return 0;
 }
 
-Q_CORE_EXPORT extern QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
-
 QT_END_NAMESPACE
 
 int main(int argc, char *argv[])
 {
     // rcc uses a QHash to store files in the resource system.
     // we must force a certain hash order when testing or tst_rcc will fail, see QTBUG-25078
-    if (Q_UNLIKELY(!qEnvironmentVariableIsEmpty("QT_RCC_TEST") && !qt_qhash_seed.testAndSetRelaxed(-1, 0)))
-        qFatal("Cannot force QHash seed for testing as requested");
+    if (Q_UNLIKELY(!qEnvironmentVariableIsEmpty("QT_RCC_TEST"))) {
+        qSetGlobalQHashSeed(0);
+        if (qGlobalQHashSeed() != 0)
+            qFatal("Cannot force QHash seed for testing as requested");
+    }
 
     return QT_PREPEND_NAMESPACE(runRcc)(argc, argv);
 }

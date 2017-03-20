@@ -795,10 +795,13 @@ public:
     NSString *toNSString() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
     // compatibility
+#if QT_DEPRECATED_SINCE(5, 9)
     struct Null { };
+    QT_DEPRECATED_X("use QString()")
     static const Null null;
     inline QString(const Null &): d(Data::sharedNull()) {}
     inline QString &operator=(const Null &) { *this = QString(); return *this; }
+#endif
     inline bool isNull() const { return d == Data::sharedNull(); }
 
 
@@ -1159,13 +1162,18 @@ inline bool QString::contains(QLatin1String s, Qt::CaseSensitivity cs) const
 inline bool QString::contains(QChar c, Qt::CaseSensitivity cs) const
 { return indexOf(c, 0, cs) != -1; }
 
-
+#if QT_DEPRECATED_SINCE(5, 9)
 inline bool operator==(QString::Null, QString::Null) { return true; }
+QT_DEPRECATED_X("use QString::isNull()")
 inline bool operator==(QString::Null, const QString &s) { return s.isNull(); }
+QT_DEPRECATED_X("use QString::isNull()")
 inline bool operator==(const QString &s, QString::Null) { return s.isNull(); }
 inline bool operator!=(QString::Null, QString::Null) { return false; }
+QT_DEPRECATED_X("use !QString::isNull()")
 inline bool operator!=(QString::Null, const QString &s) { return !s.isNull(); }
+QT_DEPRECATED_X("use !QString::isNull()")
 inline bool operator!=(const QString &s, QString::Null) { return !s.isNull(); }
+#endif
 
 inline bool operator==(QLatin1String s1, QLatin1String s2) Q_DECL_NOTHROW
 { return s1.size() == s2.size() && (!s1.size() || !memcmp(s1.latin1(), s2.latin1(), s1.size())); }

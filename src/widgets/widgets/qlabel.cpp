@@ -41,7 +41,9 @@
 #include "qevent.h"
 #include "qdrawutil.h"
 #include "qapplication.h"
+#if QT_CONFIG(abstractbutton)
 #include "qabstractbutton.h"
+#endif
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include <limits.h>
@@ -972,12 +974,14 @@ bool QLabel::event(QEvent *e)
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         if (se->shortcutId() == d->shortcutId) {
             QWidget * w = d->buddy;
-            QAbstractButton *button = qobject_cast<QAbstractButton *>(w);
             if (w->focusPolicy() != Qt::NoFocus)
                 w->setFocus(Qt::ShortcutFocusReason);
+#if QT_CONFIG(abstractbutton)
+            QAbstractButton *button = qobject_cast<QAbstractButton *>(w);
             if (button && !se->isAmbiguous())
                 button->animateClick();
             else
+#endif
                 window()->setAttribute(Qt::WA_KeyboardFocusChange);
             return true;
         }

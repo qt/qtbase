@@ -45,7 +45,9 @@
 #include "private/qnativesocketengine_p.h"
 #include "qiodevice.h"
 #include <qbytearray.h>
+#if QT_CONFIG(library)
 #include <qlibrary.h>
+#endif
 #include <qbasicatomic.h>
 #include <qurl.h>
 #include <qfile.h>
@@ -93,7 +95,7 @@ static res_state_ptr local_res = 0;
 
 static bool resolveLibraryInternal()
 {
-#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_QNX)
+#if QT_CONFIG(library) && !defined(Q_OS_QNX)
     QLibrary lib;
 #ifdef LIBRESOLV_SO
     lib.setFileName(QStringLiteral(LIBRESOLV_SO));

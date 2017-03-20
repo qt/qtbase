@@ -29,11 +29,12 @@
 #include <QtTest/qtest.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
+#include <QtCore/qplugin.h>
 #include <private/qfactoryloader_p.h>
 #include "plugin1/plugininterface1.h"
 #include "plugin2/plugininterface2.h"
 
-#ifdef QT_NO_LIBRARY
+#if !QT_CONFIG(library)
 Q_IMPORT_PLUGIN(Plugin1)
 Q_IMPORT_PLUGIN(Plugin2)
 #endif
@@ -54,7 +55,7 @@ void tst_QFactoryLoader::initTestCase()
 {
     const QString binFolder = QFINDTESTDATA(binFolderC);
     QVERIFY2(!binFolder.isEmpty(), "Unable to locate 'bin' folder");
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     QCoreApplication::setLibraryPaths(QStringList(QFileInfo(binFolder).absolutePath()));
 #endif
 }

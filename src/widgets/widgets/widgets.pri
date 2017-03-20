@@ -3,8 +3,6 @@
 HEADERS += \
         widgets/qbuttongroup.h \
         widgets/qbuttongroup_p.h \
-        widgets/qabstractbutton.h \
-        widgets/qabstractbutton_p.h \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
         widgets/qcalendarwidget.h \
@@ -76,7 +74,6 @@ HEADERS += \
 
 SOURCES += \
         widgets/qbuttongroup.cpp \
-        widgets/qabstractbutton.cpp \
         widgets/qabstractspinbox.cpp \
         widgets/qcalendarwidget.cpp \
         widgets/qcombobox.cpp \
@@ -127,6 +124,15 @@ SOURCES += \
         widgets/qwidgetlinecontrol.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp
+
+qtConfig(abstractbutton) {
+    HEADERS += \
+        widgets/qabstractbutton.h \
+        widgets/qabstractbutton_p.h
+
+    SOURCES += \
+        widgets/qabstractbutton.cpp
+}
 
 qtConfig(abstractslider) {
     HEADERS += \

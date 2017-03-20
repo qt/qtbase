@@ -134,7 +134,7 @@ void tst_QVersionNumber::singleInstanceData()
 
 namespace UglyOperator {
 // ugh, but the alternative (operator <<) is even worse...
-static inline QVector<int> operator+(QVector<int> v, int i) { v.push_back(i); return qMove(v); }
+static inline QVector<int> operator+(QVector<int> v, int i) { v.push_back(i); return v; }
 }
 
 void tst_QVersionNumber::comparisonData()

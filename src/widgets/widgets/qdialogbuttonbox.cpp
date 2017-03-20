@@ -711,8 +711,7 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
         return;
 
     // Remove it from the standard button hash first and then from the roles
-    if (QPushButton *pushButton = qobject_cast<QPushButton *>(button))
-        d->standardButtonHash.remove(pushButton);
+    d->standardButtonHash.remove(reinterpret_cast<QPushButton *>(button));
     for (int i = 0; i < NRoles; ++i) {
         QList<QAbstractButton *> &list = d->buttonLists[i];
         for (int j = 0; j < list.count(); ++j) {
@@ -878,7 +877,7 @@ void QDialogButtonBoxPrivate::_q_handleButtonDestroyed()
     Q_Q(QDialogButtonBox);
     if (QObject *object = q->sender()) {
         QBoolBlocker skippy(internalRemove);
-        q->removeButton(static_cast<QAbstractButton *>(object));
+        q->removeButton(reinterpret_cast<QAbstractButton *>(object));
     }
 }
 

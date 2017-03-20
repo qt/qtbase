@@ -49,7 +49,9 @@
 #include <qtcpsocket.h>
 #include <qtcpserver.h>
 #include <qhostaddress.h>
-#include <qprocess.h>
+#if QT_CONFIG(process)
+# include <qprocess.h>
+#endif
 #include <qstringlist.h>
 #include <qplatformdefs.h>
 #include <qhostinfo.h>
@@ -544,7 +546,7 @@ protected:
 
 void tst_QTcpServer::addressReusable()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
 #ifdef Q_OS_LINUX

@@ -767,7 +767,7 @@ QWidgetItemV2::QWidgetItemV2(QWidget *widget)
 QWidgetItemV2::~QWidgetItemV2()
 {
     if (wid) {
-        QWidgetPrivate *wd = wid->d_func();
+        auto *wd = static_cast<QWidgetPrivate *>(QObjectPrivate::get(wid));
         if (wd->widgetItem == this)
             wd->widgetItem = 0;
     }

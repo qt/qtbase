@@ -311,7 +311,6 @@ public:
     mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
     uint toolTipsVisible : 1;
-    QSize adjustMenuSizeForScreen(const QRect & screen);
     int getLastVisibleAction() const;
 
     bool activationRecursionGuard;

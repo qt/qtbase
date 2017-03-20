@@ -40,8 +40,6 @@
 #include "qplatformdefs.h"
 #include "qlibrary.h"
 
-#ifndef QT_NO_LIBRARY
-
 #include "qfactoryloader_p.h"
 #include "qlibrary_p.h"
 #include <qstringlist.h>
@@ -1131,5 +1129,3 @@ bool qt_debug_component()
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_LIBRARY

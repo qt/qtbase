@@ -38,6 +38,6 @@ qtConfig(xlib) {
 }
 CONFIG += egl
 
-LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD
+qtConfig(dlopen): QMAKE_USE += libdl
 
 load(qt_module)

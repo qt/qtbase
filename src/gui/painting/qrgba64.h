@@ -64,26 +64,14 @@ class QRgba64 {
 #endif
     };
 
-    // No constructors are allowed in C++98, since this needs to be usable in a union.
-    // We however require one for constexprs in C++11/C++14
-#ifdef Q_COMPILER_CONSTEXPR
     explicit Q_ALWAYS_INLINE Q_DECL_CONSTEXPR QRgba64(quint64 c) : rgba(c) { }
-#endif
 public:
-#ifdef Q_COMPILER_CONSTEXPR
-    Q_ALWAYS_INLINE Q_DECL_CONSTEXPR QRgba64() : rgba(0) { }
-#endif
+    QRgba64() = default;
 
     Q_DECL_CONSTEXPR static
     QRgba64 fromRgba64(quint64 c)
     {
-#ifdef Q_COMPILER_CONSTEXPR
         return QRgba64(c);
-#else
-        QRgba64 rgba64;
-        rgba64.rgba = c;
-        return rgba64;
-#endif
     }
     Q_DECL_CONSTEXPR static
     QRgba64 fromRgba64(quint16 red, quint16 green, quint16 blue, quint16 alpha)

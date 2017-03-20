@@ -692,7 +692,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
 {
     Q_ASSERT_X(isValidIterator(before),  "QVector::insert", "The specified iterator argument 'before' is invalid");
 
-    int offset = std::distance(d->begin(), before);
+    const auto offset = std::distance(d->begin(), before);
     if (n != 0) {
         const T copy(t);
         if (!isDetached() || d->size + n > int(d->alloc))
@@ -728,7 +728,7 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
     Q_ASSERT_X(isValidIterator(abegin), "QVector::erase", "The specified iterator argument 'abegin' is invalid");
     Q_ASSERT_X(isValidIterator(aend), "QVector::erase", "The specified iterator argument 'aend' is invalid");
 
-    const int itemsToErase = aend - abegin;
+    const auto itemsToErase = aend - abegin;
 
     if (!itemsToErase)
         return abegin;
@@ -737,7 +737,7 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
     Q_ASSERT(aend <= d->end());
     Q_ASSERT(abegin <= aend);
 
-    const int itemsUntouched = abegin - d->begin();
+    const auto itemsUntouched = abegin - d->begin();
 
     // FIXME we could do a proper realloc, which copy constructs only needed data.
     // FIXME we are about to delete data - maybe it is good time to shrink?
@@ -766,7 +766,7 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
             memmove(static_cast<void *>(abegin), static_cast<void *>(aend),
                     (d->size - itemsToErase - itemsUntouched) * sizeof(T));
         }
-        d->size -= itemsToErase;
+        d->size -= int(itemsToErase);
     }
     return d->begin() + itemsUntouched;
 }

@@ -1139,7 +1139,10 @@ void QWindowsXPStyle::polish(QWidget *widget)
     if (!QWindowsXPStylePrivate::useXP())
         return;
 
-    if (qobject_cast<QAbstractButton*>(widget)
+    if (false
+#if QT_CONFIG(abstractbutton)
+        || qobject_cast<QAbstractButton*>(widget)
+#endif
         || qobject_cast<QToolButton*>(widget)
         || qobject_cast<QTabBar*>(widget)
 #ifndef QT_NO_COMBOBOX
@@ -1211,7 +1214,10 @@ void QWindowsXPStyle::unpolish(QWidget *widget)
         // already in the map might be old (other style).
         d->cleanupHandleMap();
     }
-    if (qobject_cast<QAbstractButton*>(widget)
+    if (false
+#if QT_CONFIG(abstractbutton)
+        || qobject_cast<QAbstractButton*>(widget)
+#endif
         || qobject_cast<QToolButton*>(widget)
         || qobject_cast<QTabBar*>(widget)
 #ifndef QT_NO_COMBOBOX

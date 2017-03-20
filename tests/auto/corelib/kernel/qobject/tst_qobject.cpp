@@ -41,8 +41,9 @@
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
-#include <QProcess>
-
+#if QT_CONFIG(process)
+# include <QProcess>
+#endif
 #include "qobject.h"
 #ifdef QT_BUILD_INTERNAL
 #include <private/qobject_p.h>
@@ -281,7 +282,7 @@ static void playWithObjects()
 
 void tst_QObject::initTestCase()
 {
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     const QString testDataDir = QFileInfo(QFINDTESTDATA("signalbug")).absolutePath();
     QVERIFY2(QDir::setCurrent(testDataDir), qPrintable("Could not chdir to " + testDataDir));
 #endif
@@ -3006,7 +3007,7 @@ void tst_QObject::dynamicProperties()
 
 void tst_QObject::recursiveSignalEmission()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess proc;
@@ -5306,6 +5307,15 @@ void tst_QObject::connectNoDefaultConstructorArg()
     QVERIFY(connect(&ob, &NoDefaultContructorArguments::mySignal, &ob, &NoDefaultContructorArguments::mySlot, Qt::QueuedConnection));
 }
 
+struct MoveOnly
+{
+    int value;
+    explicit MoveOnly(int v = 1) : value(v) {}
+    MoveOnly(MoveOnly &&o) : value(o.value) { o.value = -1; }
+    MoveOnly &operator=(MoveOnly &&o) { value = o.value; o.value = -1; return *this;  }
+    Q_DISABLE_COPY(MoveOnly);
+};
+
 class ReturnValue : public QObject {
 friend class tst_QObject;
 Q_OBJECT
@@ -5315,6 +5325,7 @@ signals:
     int returnInt(int);
     void returnVoid(int);
     CustomType returnCustomType(int);
+    MoveOnly returnMoveOnly(int);
 
     QObject *returnPointer();
 public slots:
@@ -5327,6 +5338,7 @@ public slots:
     QString returnHello() { return QStringLiteral("hello"); }
     QObject *returnThisSlot1() { return this; }
     ReturnValue *returnThisSlot2() { return this; }
+    MoveOnly returnMoveOnlySlot(int i) { return MoveOnly(i); }
 public:
     struct VariantFunctor {
         QVariant operator()(int i) { return i; }
@@ -5342,6 +5354,9 @@ public:
     };
     struct VoidFunctor {
         void operator()(int) {}
+    };
+    struct MoveOnlyFunctor {
+        MoveOnly operator()(int i) { return MoveOnly(i); }
     };
 };
 
@@ -5380,6 +5395,7 @@ void tst_QObject::returnValue()
         emit r.returnVoid(45);
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType().value());
         QCOMPARE((emit r.returnPointer()), static_cast<QObject *>(0));
+        QCOMPARE((emit r.returnMoveOnly(666)).value, MoveOnly().value);
     }
     { // connected to a slot returning the same type
         CheckInstanceCount checker;
@@ -5394,6 +5410,8 @@ void tst_QObject::returnValue()
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType(45).value());
         QVERIFY(connect(&r, &ReturnValue::returnPointer, &receiver, &ReturnValue::returnThisSlot1, type));
         QCOMPARE((emit r.returnPointer()), static_cast<QObject *>(&receiver));
+        QVERIFY(connect(&r, &ReturnValue::returnMoveOnly, &receiver, &ReturnValue::returnMoveOnlySlot, type));
+        QCOMPARE((emit r.returnMoveOnly(666)).value, 666);
     }
     if (!isBlockingQueued) { // connected to simple functions or functor
         CheckInstanceCount checker;
@@ -5412,6 +5430,10 @@ void tst_QObject::returnValue()
         ReturnValue::IntFunctor intFunctor;
         QVERIFY(connect(&r, &ReturnValue::returnInt, intFunctor));
         QCOMPARE(emit r.returnInt(45), int(45));
+
+        ReturnValue::MoveOnlyFunctor moveOnlyFunctor;
+        QVERIFY(connect(&r, &ReturnValue::returnMoveOnly, moveOnlyFunctor));
+        QCOMPARE((emit r.returnMoveOnly(666)).value, 666);
     }
     { // connected to a slot with different type
         CheckInstanceCount checker;
@@ -5450,6 +5472,8 @@ void tst_QObject::returnValue()
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType().value());
         QVERIFY(connect(&r, &ReturnValue::returnPointer, &receiver, &ReturnValue::returnVoidSlot, type));
         QCOMPARE((emit r.returnPointer()), static_cast<QObject *>(0));
+        QVERIFY(connect(&r, &ReturnValue::returnMoveOnly, &receiver, &ReturnValue::returnVoidSlot, type));
+        QCOMPARE((emit r.returnMoveOnly(666)).value, MoveOnly().value);
     }
     if (!isBlockingQueued) {
         // queued connection should not forward the return value
@@ -5465,6 +5489,8 @@ void tst_QObject::returnValue()
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType().value());
         QVERIFY(connect(&r, &ReturnValue::returnPointer, &receiver, &ReturnValue::returnThisSlot1, Qt::QueuedConnection));
         QCOMPARE((emit r.returnPointer()), static_cast<QObject *>(0));
+        QVERIFY(connect(&r, &ReturnValue::returnMoveOnly, &receiver, &ReturnValue::returnMoveOnlySlot, Qt::QueuedConnection));
+        QCOMPARE((emit r.returnMoveOnly(666)).value, MoveOnly().value);
 
         QCoreApplication::processEvents();
 
@@ -5548,6 +5574,8 @@ void tst_QObject::returnValue2()
         QCOMPARE(emit r.returnInt(45), int(45));
         QVERIFY(connect(&r, SIGNAL(returnCustomType(int)), &receiver, SLOT(returnCustomTypeSlot(int)), type));
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType(45).value());
+        QVERIFY(connect(&r, SIGNAL(returnMoveOnly(int)), &receiver, SLOT(returnMoveOnlySlot(int)), type));
+        QCOMPARE((emit r.returnMoveOnly(45)).value, 45);
     }
     { // connected to a slot returning void
         CheckInstanceCount checker;
@@ -5560,6 +5588,8 @@ void tst_QObject::returnValue2()
         QCOMPARE(emit r.returnInt(45), int());
         QVERIFY(connect(&r, SIGNAL(returnCustomType(int)), &receiver, SLOT(returnVoidSlot()), type));
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType().value());
+        QVERIFY(connect(&r, SIGNAL(returnMoveOnly(int)), &receiver, SLOT(returnVoidSlot()), type));
+        QCOMPARE((emit r.returnMoveOnly(45)).value, MoveOnly().value);
     }
     if (!isBlockingQueued) {
         // queued connection should not forward the return value
@@ -5573,6 +5603,9 @@ void tst_QObject::returnValue2()
         QCOMPARE(emit r.returnInt(45), int());
         QVERIFY(connect(&r, SIGNAL(returnCustomType(int)), &receiver, SLOT(returnCustomTypeSlot(int)), Qt::QueuedConnection));
         QCOMPARE((emit r.returnCustomType(45)).value(), CustomType().value());
+        QVERIFY(connect(&r, SIGNAL(returnMoveOnly(int)), &receiver, SLOT(returnMoveOnlySlot(int)), Qt::QueuedConnection));
+        QCOMPARE((emit r.returnMoveOnly(45)).value, MoveOnly().value);
+
         QCoreApplication::processEvents();
 
         //Queued conneciton with different return type should be safe
@@ -5679,6 +5712,27 @@ public slots:
     virtual void slot2() { ++virtual_base_count; }
 };
 
+struct NormalBase
+{
+    QByteArray lastCalled;
+    virtual ~NormalBase() {}
+    virtual void virtualBaseSlot() { lastCalled = "virtualBaseSlot"; }
+    void normalBaseSlot() { lastCalled = "normalBaseSlot"; }
+};
+
+class ObjectWithMultiInheritance : public VirtualSlotsObject, public NormalBase
+{
+    Q_OBJECT
+};
+
+// Normally, the class that inherit QObject always must go first, because of the way qobject_cast
+// work, and moc checks for that. But if we don't use Q_OBJECT, this should work
+class ObjectWithMultiInheritance2 : public NormalBase, public VirtualSlotsObject
+{
+    // no QObject as QObject always must go first
+    // Q_OBJECT
+};
+
 // VMI = Virtual or Multiple Inheritance
 // (in this case, both)
 void tst_QObject::connectSlotsVMIClass()
@@ -5760,6 +5814,93 @@ void tst_QObject::connectSlotsVMIClass()
         QCOMPARE(obj.derived_counter2, 0);
         QCOMPARE(obj.virtual_base_count, 1);
         QCOMPARE(obj.regular_call_count, 0);
+    }
+
+    // test connecting a slot that is virtual within the second base
+    {
+        ObjectWithMultiInheritance obj;
+        void (ObjectWithMultiInheritance::*slot)() = &ObjectWithMultiInheritance::virtualBaseSlot;
+        QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+        QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray("virtualBaseSlot"));
+        obj.lastCalled.clear();
+
+        QVERIFY( QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+        QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray());
+    }
+
+    // test connecting a slot that is not virtual within the second base
+    {
+        ObjectWithMultiInheritance obj;
+        void (ObjectWithMultiInheritance::*slot)() = &ObjectWithMultiInheritance::normalBaseSlot;
+        QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+        QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray("normalBaseSlot"));
+        obj.lastCalled.clear();
+
+        QVERIFY( QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+        QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray());
+    }
+
+    // test connecting a slot within the first non-QObject base
+    {
+        ObjectWithMultiInheritance2 obj;
+        void (ObjectWithMultiInheritance2::*slot)() = &ObjectWithMultiInheritance2::normalBaseSlot;
+        QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+        QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray("normalBaseSlot"));
+        obj.lastCalled.clear();
+
+        QVERIFY( QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+        QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 0);
+        QCOMPARE(obj.lastCalled, QByteArray());
+    }
+
+    // test connecting a slot within the second QObject base
+    {
+        ObjectWithMultiInheritance2 obj;
+        void (ObjectWithMultiInheritance2::*slot)() = &ObjectWithMultiInheritance2::slot1;
+        QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+        QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot, Qt::UniqueConnection));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 1);
+        QCOMPARE(obj.lastCalled, QByteArray());
+
+        QVERIFY( QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+        QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, slot));
+
+        emit obj.signal1();
+        QCOMPARE(obj.base_counter1, 0);
+        QCOMPARE(obj.derived_counter1, 1);
+        QCOMPARE(obj.lastCalled, QByteArray());
     }
 }
 

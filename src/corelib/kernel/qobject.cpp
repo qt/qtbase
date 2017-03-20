@@ -2653,7 +2653,8 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     call qRegisterMetaType() to register the data type before you
     establish the connection.
 
-    \sa disconnect(), sender(), qRegisterMetaType(), Q_DECLARE_METATYPE()
+    \sa disconnect(), sender(), qRegisterMetaType(), Q_DECLARE_METATYPE(),
+    {Differences between String-Based and Functor-Based Connections}
 */
 QMetaObject::Connection QObject::connect(const QObject *sender, const char *signal,
                                      const QObject *receiver, const char *method,
@@ -4655,6 +4656,8 @@ void qDeleteInEventHandler(QObject *o)
     make sure to declare the argument type with Q_DECLARE_METATYPE
 
     Overloaded functions can be resolved with help of \l qOverload.
+
+    \sa {Differences between String-Based and Functor-Based Connections}
  */
 
 /*!

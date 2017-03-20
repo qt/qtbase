@@ -45,7 +45,8 @@
 #include <qcombobox.h>
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
-#else
+#endif
+#if QT_CONFIG(abstractbutton)
 #include <qabstractbutton.h>
 #endif
 #include <qpainter.h>
@@ -55,7 +56,6 @@
 #include <qmainwindow.h>
 #include <qfont.h>
 #include <qgroupbox.h>
-#include <qprocess.h>
 #include <qpixmapcache.h>
 #include <qscrollbar.h>
 #include <qspinbox.h>
@@ -66,7 +66,6 @@
 #include <qsplitter.h>
 #include <qprogressbar.h>
 #include <qwizard.h>
-#include <qlibrary.h>
 #include <qdrawutil.h>
 #include <private/qstylehelper_p.h>
 #include <private/qdrawhelper_p.h>
@@ -3284,7 +3283,10 @@ void QFusionStyle::polish(QApplication *app)
 void QFusionStyle::polish(QWidget *widget)
 {
     QCommonStyle::polish(widget);
-    if (qobject_cast<QAbstractButton*>(widget)
+    if (false
+#if QT_CONFIG(abstractbutton)
+            || qobject_cast<QAbstractButton*>(widget)
+#endif
 #if QT_CONFIG(combobox)
             || qobject_cast<QComboBox *>(widget)
 #endif
@@ -3325,7 +3327,10 @@ void QFusionStyle::polish(QPalette &pal)
 void QFusionStyle::unpolish(QWidget *widget)
 {
     QCommonStyle::unpolish(widget);
-    if (qobject_cast<QAbstractButton*>(widget)
+    if (false
+#if QT_CONFIG(abstractbutton)
+            || qobject_cast<QAbstractButton*>(widget)
+#endif
 #if QT_CONFIG(combobox)
             || qobject_cast<QComboBox *>(widget)
 #endif

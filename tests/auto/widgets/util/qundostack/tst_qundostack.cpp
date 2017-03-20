@@ -3853,7 +3853,7 @@ void tst_QUndoStack::undoLimit()
 
 void tst_QUndoStack::commandTextFormat()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No QProcess available");
 #else
     QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);

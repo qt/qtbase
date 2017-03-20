@@ -897,7 +897,7 @@ QDebug operator<<(QDebug debug, const QList<QNetworkConfiguration> &list)
 // at Discovered -state.
 void tst_QNetworkSession::outOfProcessSession()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     updateConfigurations();

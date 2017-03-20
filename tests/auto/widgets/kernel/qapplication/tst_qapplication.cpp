@@ -35,7 +35,9 @@
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
-#include <QtCore/QProcess>
+#if QT_CONFIG(process)
+# include <QtCore/QProcess>
+#endif
 #include <QtCore/private/qeventloop_p.h>
 
 #include <QtGui/QFontDatabase>
@@ -119,7 +121,7 @@ private slots:
     void testDeleteLater();
     void testDeleteLaterProcessEvents();
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     void libraryPaths();
     void libraryPaths_qt_plugin_path();
     void libraryPaths_qt_plugin_path_2();
@@ -883,7 +885,7 @@ bool isPathListIncluded(const QStringList &l, const QStringList &r)
     return j == r.count();
 }
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 #define QT_TST_QAPP_DEBUG
 void tst_QApplication::libraryPaths()
 {
@@ -1432,7 +1434,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
 */
 void tst_QApplication::desktopSettingsAware()
 {
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     QString path;
     {
         // We need an application object for QFINDTESTDATA to work
@@ -2121,7 +2123,7 @@ void tst_QApplication::qtbug_12673()
     QVERIFY2(!path.isEmpty(), "Cannot locate modal helper application");
     path += "modal";
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     QProcess testProcess;
     QStringList arguments;
     testProcess.start(path, arguments);
@@ -2254,7 +2256,7 @@ void tst_QApplication::settableStyleHints()
     executed *after* the destruction of QApplication.
  */
 Q_GLOBAL_STATIC(QLocale, tst_qapp_locale);
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
 Q_GLOBAL_STATIC(QProcess, tst_qapp_process);
 #endif
 #ifndef QT_NO_FILESYSTEMWATCHER
@@ -2279,7 +2281,7 @@ void tst_QApplication::globalStaticObjectDestruction()
     int argc = 1;
     QApplication app(argc, &argv0);
     QVERIFY(tst_qapp_locale());
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
     QVERIFY(tst_qapp_process());
 #endif
 #ifndef QT_NO_FILESYSTEMWATCHER

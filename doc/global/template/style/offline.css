@@ -780,3 +780,23 @@ div.multi-column div {
     margin-right: 4em;
     width: 24em;
 }
+
+.mainContent .video {
+  width:40%;
+  max-width:640px;
+  margin: 15px 0 0 15px;
+  position:relative;
+  display:table
+}
+
+.mainContent .video > .vspan {
+  padding-top:60%;
+  display:block
+}
+.mainContent .video iframe {
+  width:100%;
+  height:100%;
+  position:absolute;
+  top:0;
+  left:0
+}

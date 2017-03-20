@@ -40,8 +40,9 @@
 #include <QTemporaryDir>
 #include <QTextStream>
 #include <QTextCodec>
-#include <QProcess>
-
+#if QT_CONFIG(process)
+# include <QProcess>
+#endif
 #include "../../../network-settings.h"
 
 
@@ -1493,7 +1494,7 @@ void tst_QTextStream::pos3LargeFile()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readStdin()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess stdinProcess;
@@ -1520,7 +1521,7 @@ void tst_QTextStream::readStdin()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readAllFromStdin()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess stdinProcess;
@@ -1541,7 +1542,7 @@ void tst_QTextStream::readAllFromStdin()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readLineFromStdin()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess stdinProcess;

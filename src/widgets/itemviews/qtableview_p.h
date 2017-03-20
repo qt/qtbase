@@ -192,7 +192,9 @@ public:
     QVector<int> rowsToUpdate;
     QHeaderView *horizontalHeader;
     QHeaderView *verticalHeader;
+#if QT_CONFIG(abstractbutton)
     QWidget *cornerWidget;
+#endif
     bool sortingEnabled;
     bool geometryRecursionBlock;
     QPoint visualCursor;  // (Row,column) cell coordinates to track through span navigation.

@@ -53,7 +53,6 @@ public slots:
     void cleanupTestCase();
     void init();
 
-#ifndef QT_NO_PROCESS
 private slots:
     void getSetCheck();
     void constructing();
@@ -159,34 +158,24 @@ protected slots:
 private:
     qint64 bytesAvailable;
     QTemporaryDir m_temporaryDir;
-#endif //QT_NO_PROCESS
 };
 
 void tst_QProcess::initTestCase()
 {
-#ifdef QT_NO_PROCESS
-    QSKIP("This test requires QProcess support");
-#else
     QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
     // chdir to our testdata path and execute helper apps relative to that.
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessNormal")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
-#endif
 }
 
 void tst_QProcess::cleanupTestCase()
 {
-#ifdef QT_NO_PROCESS
-    QSKIP("This test requires QProcess support");
-#endif
 }
 
 void tst_QProcess::init()
 {
     bytesAvailable = 0;
 }
-
-#ifndef QT_NO_PROCESS
 
 // Testing get/set functions
 void tst_QProcess::getSetCheck()
@@ -2405,8 +2394,6 @@ void tst_QProcess::processEventsInAReadyReadSlot()
     if (process.state() == QProcess::Running)
         QVERIFY(process.waitForFinished());
 }
-
-#endif //QT_NO_PROCESS
 
 QTEST_MAIN(tst_QProcess)
 #include "tst_qprocess.moc"

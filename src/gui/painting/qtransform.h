@@ -291,6 +291,10 @@ inline qreal QTransform::dy() const
     return affine._dy;
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+
 inline QTransform &QTransform::operator*=(qreal num)
 {
     if (num == 1.)
@@ -347,6 +351,8 @@ inline QTransform &QTransform::operator-=(qreal num)
     m_dirty     = TxProject;
     return *this;
 }
+
+QT_WARNING_POP
 
 inline bool qFuzzyCompare(const QTransform& t1, const QTransform& t2)
 {

@@ -20,8 +20,6 @@ qtHaveModule(input_support-private): \
 qtHaveModule(platformcompositor_support-private): \
     QT += platformcompositor_support-private
 
-LIBS += $$QMAKE_LIBS_DYNLOAD
-
 # Avoid X11 header collision, use generic EGL native types
 DEFINES += QT_EGL_NO_X11
 

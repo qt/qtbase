@@ -45,6 +45,8 @@
 #include <QtGui/qkeysequence.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(abstractbutton);
+
 QT_BEGIN_NAMESPACE
 
 

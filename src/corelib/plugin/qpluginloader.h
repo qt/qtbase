@@ -40,12 +40,15 @@
 #ifndef QPLUGINLOADER_H
 #define QPLUGINLOADER_H
 
+#include <QtCore/qglobal.h>
+#if QT_CONFIG(library)
 #include <QtCore/qlibrary.h>
+#endif
 #include <QtCore/qplugin.h>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 
 class QLibraryPrivate;
 class QJsonObject;
@@ -93,7 +96,7 @@ public:
     static QVector<QStaticPlugin> staticPlugins();
 };
 
-#endif // QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
 
 QT_END_NAMESPACE
 

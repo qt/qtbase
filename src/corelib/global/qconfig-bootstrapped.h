@@ -71,9 +71,9 @@
 #define QT_FEATURE_iconv -1
 #define QT_FEATURE_icu -1
 #define QT_FEATURE_journald -1
-#define QT_NO_LIBRARY
 #define QT_FEATURE_library -1
 #define QT_NO_QOBJECT
+#define QT_FEATURE_process -1
 #define QT_NO_SYSTEMLOCALE
 #define QT_FEATURE_slog2 -1
 #define QT_FEATURE_syslog -1

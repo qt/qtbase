@@ -90,14 +90,9 @@ namespace QtPrivate {
         explicit ApplyReturnValue(void *data_) : data(data_) {}
     };
     template<typename T, typename U>
-    void operator,(const T &value, const ApplyReturnValue<U> &container) {
-        if (container.data)
-            *reinterpret_cast<U*>(container.data) = value;
-    }
-    template<typename T, typename U>
     void operator,(T &&value, const ApplyReturnValue<U> &container) {
         if (container.data)
-            *reinterpret_cast<U*>(container.data) = value;
+            *reinterpret_cast<U *>(container.data) = std::forward<T>(value);
     }
     template<typename T>
     void operator,(T, const ApplyReturnValue<void> &) {}

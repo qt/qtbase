@@ -751,7 +751,9 @@ void tst_QTextBoundaryFinder::isAtSoftHyphen()
     doTestData(testString, expectedSoftHyphenPositions, QTextBoundaryFinder::Line, QTextBoundaryFinder::SoftHyphen);
 }
 
+#if QT_CONFIG(library)
 #include <qlibrary.h>
+#endif
 
 #define LIBTHAI_MAJOR   0
 typedef int (*th_brk_def) (const unsigned char*, int*, size_t);
@@ -759,7 +761,7 @@ static th_brk_def th_brk = 0;
 
 static bool init_libthai()
 {
-#if !defined(QT_NO_LIBRARY)
+#if QT_CONFIG(library)
     static bool triedResolve = false;
     if (!triedResolve) {
         th_brk = (th_brk_def) QLibrary::resolve("thai", (int)LIBTHAI_MAJOR, "th_brk");

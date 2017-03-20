@@ -49,6 +49,8 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtFbSupport/private/qfbvthandler_p.h>
 
+#include <errno.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)

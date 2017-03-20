@@ -124,7 +124,7 @@ protected slots:
 private:
     QFtp *newFtp();
     void addCommand( QFtp::Command, int );
-    bool fileExists( const QString &host, quint16 port, const QString &user, const QString &password, const QString &file, const QString &cdDir = QString::null );
+    bool fileExists( const QString &host, quint16 port, const QString &user, const QString &password, const QString &file, const QString &cdDir = QString() );
     bool dirExists( const QString &host, quint16 port, const QString &user, const QString &password, const QString &cdDir, const QString &dirToCreate );
 
     void renameInit( const QString &host, const QString &user, const QString &password, const QString &createFile );
