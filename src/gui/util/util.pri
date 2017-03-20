@@ -8,6 +8,7 @@ HEADERS += \
         util/qabstractlayoutstyleinfo_p.h \
         util/qlayoutpolicy_p.h \
         util/qshaderformat_p.h \
+        util/qshadernode_p.h \
         util/qshadernodeport_p.h
 
 SOURCES += \
@@ -17,4 +18,5 @@ SOURCES += \
         util/qabstractlayoutstyleinfo.cpp \
         util/qlayoutpolicy.cpp \
         util/qshaderformat.cpp \
+        util/qshadernode.cpp \
         util/qshadernodeport.cpp

@@ -30,6 +30,7 @@
 #include <QtTest/QtTest>
 
 #include <QtGui/private/qshaderformat_p.h>
+#include <QtGui/private/qshadernode_p.h>
 #include <QtGui/private/qshadernodeport_p.h>
 
 namespace
@@ -68,6 +69,9 @@ private slots:
     void shouldHaveDefaultPortState();
     void shouldVerifyPortsEquality_data();
     void shouldVerifyPortsEquality();
+
+    void shouldManipulateNodeUuidPortsAndRules();
+    void shouldHandleNodeRulesSupportAndOrder();
 };
 
 void tst_QShaderNodes::shouldManipulateFormatMembers()
@@ -330,6 +334,161 @@ void tst_QShaderNodes::shouldVerifyPortsEquality()
     QFETCH(bool, expected);
     QCOMPARE(equal, expected);
     QCOMPARE(notEqual, !expected);
+}
+
+void tst_QShaderNodes::shouldManipulateNodeUuidPortsAndRules()
+{
+    // GIVEN
+    const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
+    const auto openGL3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
+
+    const auto es2Rule = QShaderNode::Rule(QByteArrayLiteral("gles2"), {"#pragma include es2/foo.inc", "#pragma include es2/bar.inc"});
+    const auto gl3Rule = QShaderNode::Rule(QByteArrayLiteral("gl3"), {"#pragma include gl3/foo.inc", "#pragma include gl3/bar.inc"});
+    const auto gl3bisRule = QShaderNode::Rule(QByteArrayLiteral("gl3bis"), {"#pragma include gl3/foo.inc", "#pragma include gl3/bar.inc"});
+
+    auto node = QShaderNode();
+
+    // THEN (default state)
+    QCOMPARE(node.type(), QShaderNode::Invalid);
+    QVERIFY(node.uuid().isNull());
+    QVERIFY(node.ports().isEmpty());
+    QVERIFY(node.availableFormats().isEmpty());
+
+    // WHEN
+    const auto uuid = QUuid::createUuid();
+    node.setUuid(uuid);
+
+    // THEN
+    QCOMPARE(node.uuid(), uuid);
+
+    // WHEN
+    auto firstPort = QShaderNodePort();
+    firstPort.direction = QShaderNodePort::Input;
+    firstPort.name = QStringLiteral("foo");
+    node.addPort(firstPort);
+
+    // THEN
+    QCOMPARE(node.type(), QShaderNode::Output);
+    QCOMPARE(node.ports().size(), 1);
+    QCOMPARE(node.ports().at(0), firstPort);
+    QVERIFY(node.availableFormats().isEmpty());
+
+    // WHEN
+    auto secondPort = QShaderNodePort();
+    secondPort.direction = QShaderNodePort::Output;
+    secondPort.name = QStringLiteral("bar");
+    node.addPort(secondPort);
+
+    // THEN
+    QCOMPARE(node.type(), QShaderNode::Function);
+    QCOMPARE(node.ports().size(), 2);
+    QCOMPARE(node.ports().at(0), firstPort);
+    QCOMPARE(node.ports().at(1), secondPort);
+    QVERIFY(node.availableFormats().isEmpty());
+
+    // WHEN
+    node.removePort(firstPort);
+
+    // THEN
+    QCOMPARE(node.type(), QShaderNode::Input);
+    QCOMPARE(node.ports().size(), 1);
+    QCOMPARE(node.ports().at(0), secondPort);
+    QVERIFY(node.availableFormats().isEmpty());
+
+
+    // WHEN
+    node.addRule(openGLES2, es2Rule);
+    node.addRule(openGL3, gl3Rule);
+
+    // THEN
+    QCOMPARE(node.availableFormats().size(), 2);
+    QCOMPARE(node.availableFormats().at(0), openGLES2);
+    QCOMPARE(node.availableFormats().at(1), openGL3);
+    QCOMPARE(node.rule(openGLES2), es2Rule);
+    QCOMPARE(node.rule(openGL3), gl3Rule);
+
+    // WHEN
+    node.removeRule(openGLES2);
+
+    // THEN
+    QCOMPARE(node.availableFormats().size(), 1);
+    QCOMPARE(node.availableFormats().at(0), openGL3);
+    QCOMPARE(node.rule(openGL3), gl3Rule);
+
+    // WHEN
+    node.addRule(openGLES2, es2Rule);
+
+    // THEN
+    QCOMPARE(node.availableFormats().size(), 2);
+    QCOMPARE(node.availableFormats().at(0), openGL3);
+    QCOMPARE(node.availableFormats().at(1), openGLES2);
+    QCOMPARE(node.rule(openGLES2), es2Rule);
+    QCOMPARE(node.rule(openGL3), gl3Rule);
+
+    // WHEN
+    node.addRule(openGL3, gl3bisRule);
+
+    // THEN
+    QCOMPARE(node.availableFormats().size(), 2);
+    QCOMPARE(node.availableFormats().at(0), openGLES2);
+    QCOMPARE(node.availableFormats().at(1), openGL3);
+    QCOMPARE(node.rule(openGLES2), es2Rule);
+    QCOMPARE(node.rule(openGL3), gl3bisRule);
+}
+
+void tst_QShaderNodes::shouldHandleNodeRulesSupportAndOrder()
+{
+    // GIVEN
+    const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
+    const auto openGL3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
+    const auto openGL32 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 2);
+    const auto openGL4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    const auto es2Rule = QShaderNode::Rule(QByteArrayLiteral("gles2"), {"#pragma include es2/foo.inc", "#pragma include es2/bar.inc"});
+    const auto gl3Rule = QShaderNode::Rule(QByteArrayLiteral("gl3"), {"#pragma include gl3/foo.inc", "#pragma include gl3/bar.inc"});
+    const auto gl32Rule = QShaderNode::Rule(QByteArrayLiteral("gl32"), {"#pragma include gl32/foo.inc", "#pragma include gl32/bar.inc"});
+    const auto gl3bisRule = QShaderNode::Rule(QByteArrayLiteral("gl3bis"), {"#pragma include gl3/foo.inc", "#pragma include gl3/bar.inc"});
+
+    auto node = QShaderNode();
+
+    // WHEN
+    node.addRule(openGLES2, es2Rule);
+    node.addRule(openGL3, gl3Rule);
+
+    // THEN
+    QCOMPARE(node.availableFormats().size(), 2);
+    QCOMPARE(node.availableFormats().at(0), openGLES2);
+    QCOMPARE(node.availableFormats().at(1), openGL3);
+    QCOMPARE(node.rule(openGLES2), es2Rule);
+    QCOMPARE(node.rule(openGL3), gl3Rule);
+    QCOMPARE(node.rule(openGL32), gl3Rule);
+    QCOMPARE(node.rule(openGL4), gl3Rule);
+
+    // WHEN
+    node.addRule(openGL32, gl32Rule);
+
+    // THEN
+    QCOMPARE(node.availableFormats().size(), 3);
+    QCOMPARE(node.availableFormats().at(0), openGLES2);
+    QCOMPARE(node.availableFormats().at(1), openGL3);
+    QCOMPARE(node.availableFormats().at(2), openGL32);
+    QCOMPARE(node.rule(openGLES2), es2Rule);
+    QCOMPARE(node.rule(openGL3), gl3Rule);
+    QCOMPARE(node.rule(openGL32), gl32Rule);
+    QCOMPARE(node.rule(openGL4), gl32Rule);
+
+    // WHEN
+    node.addRule(openGL3, gl3bisRule);
+
+    // THEN
+    QCOMPARE(node.availableFormats().size(), 3);
+    QCOMPARE(node.availableFormats().at(0), openGLES2);
+    QCOMPARE(node.availableFormats().at(1), openGL32);
+    QCOMPARE(node.availableFormats().at(2), openGL3);
+    QCOMPARE(node.rule(openGLES2), es2Rule);
+    QCOMPARE(node.rule(openGL3), gl3bisRule);
+    QCOMPARE(node.rule(openGL32), gl3bisRule);
+    QCOMPARE(node.rule(openGL4), gl3bisRule);
 }
 
 QTEST_MAIN(tst_QShaderNodes)
