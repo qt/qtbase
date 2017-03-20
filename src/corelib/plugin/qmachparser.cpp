@@ -39,7 +39,7 @@
 
 #include "qmachparser_p.h"
 
-#if defined(Q_OF_MACH_O) && !defined(QT_NO_LIBRARY)
+#if defined(Q_OF_MACH_O)
 
 #include <qendian.h>
 #include "qlibrary_p.h"

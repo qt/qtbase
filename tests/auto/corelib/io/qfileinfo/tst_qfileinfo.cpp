@@ -31,7 +31,6 @@
 #include <qfile.h>
 #include <qdir.h>
 #include <qcoreapplication.h>
-#include <qlibrary.h>
 #include <qtemporaryfile.h>
 #include <qtemporarydir.h>
 #include <qdir.h>

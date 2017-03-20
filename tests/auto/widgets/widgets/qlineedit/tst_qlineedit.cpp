@@ -713,8 +713,8 @@ void tst_QLineEdit::clearInputMask()
 {
     QLineEdit *testWidget = ensureTestWidget();
     testWidget->setInputMask("000.000.000.000");
-    QVERIFY(testWidget->inputMask() != QString::null);
-    testWidget->setInputMask(QString::null);
+    QVERIFY(!testWidget->inputMask().isNull());
+    testWidget->setInputMask(QString());
     QCOMPARE(testWidget->inputMask(), QString());
 }
 
@@ -2277,7 +2277,7 @@ void tst_QLineEdit::textChangedAndTextEdited()
 
     changed_count = 0;
     edited_count = 0;
-    changed_string = QString::null;
+    changed_string.clear();
 
     testWidget->setText("foo");
     QCOMPARE(changed_count, 1);
@@ -2286,7 +2286,7 @@ void tst_QLineEdit::textChangedAndTextEdited()
 
     changed_count = 0;
     edited_count = 0;
-    changed_string = QString::null;
+    changed_string.clear();
 
     testWidget->setText("");
     QCOMPARE(changed_count, 1);
@@ -3108,7 +3108,7 @@ void tst_QLineEdit::maxLengthAndInputMask()
     QVERIFY(testWidget->inputMask().isNull());
     testWidget->setMaxLength(10);
     QCOMPARE(testWidget->maxLength(), 10);
-    testWidget->setInputMask(QString::null);
+    testWidget->setInputMask(QString());
     QVERIFY(testWidget->inputMask().isNull());
     QCOMPARE(testWidget->maxLength(), 10);
 }

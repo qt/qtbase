@@ -1076,11 +1076,6 @@ void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widg
     if (opt->shape == QTabBar::RoundedSouth || opt->shape == QTabBar::TriangularSouth)
         verticalShift = -verticalShift;
     tr.adjust(hpadding, verticalShift - vpadding, horizontalShift - hpadding, vpadding);
-    const bool selected = opt->state & QStyle::State_Selected;
-    if (selected) {
-        tr.setTop(tr.top() - verticalShift);
-        tr.setRight(tr.right() - horizontalShift);
-    }
 
     // left widget
     if (!opt->leftButtonSize.isEmpty()) {
@@ -2487,7 +2482,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         case QAquaSizeUnknown:
             const QStyleOptionTab *tb = qstyleoption_cast<const QStyleOptionTab *>(opt);
             if (tb && tb->documentMode)
-                ret = 24;
+                ret = 30;
             else
                 ret = QCommonStyle::pixelMetric(metric, opt, widget);
             break;
@@ -6584,7 +6579,6 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz = sz.transposed();
             int defaultTabHeight;
             int extraHSpace = proxy()->pixelMetric(PM_TabBarTabHSpace, tab, widget);
-            int extraVSpace = proxy()->pixelMetric(PM_TabBarTabVSpace, tab, widget);
             QFontMetrics fm = opt->fontMetrics;
             switch (AquaSize) {
             case QAquaSizeUnknown:
@@ -6604,13 +6598,13 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             bool setWidth = false;
             if (differentFont || !tab->icon.isNull()) {
                 sz.rheight() = qMax(defaultTabHeight, sz.height());
-                sz.rwidth() += extraHSpace;
             } else {
                 QSize textSize = fm.size(Qt::TextShowMnemonic, tab->text);
                 sz.rheight() = qMax(defaultTabHeight, textSize.height());
-                sz.rwidth() = textSize.width() + extraVSpace;
+                sz.rwidth() = textSize.width();
                 setWidth = true;
             }
+            sz.rwidth() += extraHSpace;
 
             if (vertTabs)
                 sz = sz.transposed();
@@ -6724,7 +6718,15 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
     }
     case CT_Menu: {
-        sz = csz;
+        if (proxy() == this) {
+            sz = csz;
+        } else {
+            QStyleHintReturnMask menuMask;
+            QStyleOption myOption = *opt;
+            myOption.rect.setSize(sz);
+            if (proxy()->styleHint(SH_Menu_Mask, &myOption, widget, &menuMask))
+                sz = menuMask.region.boundingRect().size();
+        }
         break; }
     case CT_HeaderSection:{
         const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt);

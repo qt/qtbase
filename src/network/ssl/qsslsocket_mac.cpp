@@ -575,6 +575,7 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
 {
     QSslCipher ciph;
     switch (cipher) {
+    // Sorted as in CipherSuite.h (and groupped by their RFC)
     case SSL_RSA_WITH_NULL_MD5:
         ciph.d->name = QLatin1String("NULL-MD5");
         ciph.d->protocol = QSsl::SslV3;
@@ -592,38 +593,21 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
         ciph.d->protocol = QSsl::SslV3;
         break;
 
-    case TLS_RSA_WITH_3DES_EDE_CBC_SHA:
-        ciph.d->name = QLatin1String("DES-CBC3-SHA");
-        break;
+    // TLS addenda using AES, per RFC 3268
     case TLS_RSA_WITH_AES_128_CBC_SHA:
         ciph.d->name = QLatin1String("AES128-SHA");
-        break;
-    case TLS_RSA_WITH_AES_128_CBC_SHA256:
-        ciph.d->name = QLatin1String("AES128-SHA256");
-        break;
-    case TLS_RSA_WITH_AES_256_CBC_SHA:
-        ciph.d->name = QLatin1String("AES256-SHA");
-        break;
-    case TLS_RSA_WITH_AES_256_CBC_SHA256:
-        ciph.d->name = QLatin1String("AES256-SHA256");
-        break;
-
-    case TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA:
-        ciph.d->name = QLatin1String("DHE-RSA-DES-CBC3-SHA");
         break;
     case TLS_DHE_RSA_WITH_AES_128_CBC_SHA:
         ciph.d->name = QLatin1String("DHE-RSA-AES128-SHA");
         break;
-    case TLS_DHE_RSA_WITH_AES_128_CBC_SHA256:
-        ciph.d->name = QLatin1String("DHE-RSA-AES128-SHA256");
+    case TLS_RSA_WITH_AES_256_CBC_SHA:
+        ciph.d->name = QLatin1String("AES256-SHA");
         break;
     case TLS_DHE_RSA_WITH_AES_256_CBC_SHA:
         ciph.d->name = QLatin1String("DHE-RSA-AES256-SHA");
         break;
-    case TLS_DHE_RSA_WITH_AES_256_CBC_SHA256:
-        ciph.d->name = QLatin1String("DHE-RSA-AES256-SHA256");
-        break;
 
+    // ECDSA addenda, RFC 4492
     case TLS_ECDH_ECDSA_WITH_NULL_SHA:
         ciph.d->name = QLatin1String("ECDH-ECDSA-NULL-SHA");
         break;
@@ -636,38 +620,9 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
     case TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA:
         ciph.d->name = QLatin1String("ECDH-ECDSA-AES128-SHA");
         break;
-    case TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256:
-        ciph.d->name = QLatin1String("ECDH-ECDSA-AES128-SHA256");
-        break;
     case TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA:
         ciph.d->name = QLatin1String("ECDH-ECDSA-AES256-SHA");
         break;
-    case TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384:
-        ciph.d->name = QLatin1String("ECDH-ECDSA-AES256-SHA384");
-        break;
-
-    case TLS_ECDH_RSA_WITH_NULL_SHA:
-        ciph.d->name = QLatin1String("ECDH-RSA-NULL-SHA");
-        break;
-    case TLS_ECDH_RSA_WITH_RC4_128_SHA:
-        ciph.d->name = QLatin1String("ECDH-RSA-AES256-SHA");
-        break;
-    case TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA:
-        ciph.d->name = QLatin1String("ECDH-RSA-DES-CBC3-SHA");
-        break;
-    case TLS_ECDH_RSA_WITH_AES_128_CBC_SHA:
-        ciph.d->name = QLatin1String("ECDH-RSA-AES128-SHA");
-        break;
-    case TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256:
-        ciph.d->name = QLatin1String("ECDH-RSA-AES128-SHA256");
-        break;
-    case TLS_ECDH_RSA_WITH_AES_256_CBC_SHA:
-        ciph.d->name = QLatin1String("ECDH-RSA-AES256-SHA");
-        break;
-    case TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384:
-        ciph.d->name = QLatin1String("ECDH-RSA-AES256-SHA384");
-        break;
-
     case TLS_ECDHE_ECDSA_WITH_NULL_SHA:
         ciph.d->name = QLatin1String("ECDHE-ECDSA-NULL-SHA");
         break;
@@ -680,21 +635,29 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
     case TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:
         ciph.d->name = QLatin1String("ECDHE-ECDSA-AES128-SHA");
         break;
-    case TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256:
-        ciph.d->name = QLatin1String("ECDHE-ECDSA-AES128-SHA256");
-        break;
     case TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:
         ciph.d->name = QLatin1String("ECDHE-ECDSA-AES256-SHA");
         break;
-    case TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384:
-        ciph.d->name = QLatin1String("ECDHE-ECDSA-AES256-SHA384");
+    case TLS_ECDH_RSA_WITH_NULL_SHA:
+        ciph.d->name = QLatin1String("ECDH-RSA-NULL-SHA");
         break;
-
+    case TLS_ECDH_RSA_WITH_RC4_128_SHA:
+        ciph.d->name = QLatin1String("ECDH-RSA-RC4-SHA");
+        break;
+    case TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA:
+        ciph.d->name = QLatin1String("ECDH-RSA-DES-CBC3-SHA");
+        break;
+    case TLS_ECDH_RSA_WITH_AES_128_CBC_SHA:
+        ciph.d->name = QLatin1String("ECDH-RSA-AES128-SHA");
+        break;
+    case TLS_ECDH_RSA_WITH_AES_256_CBC_SHA:
+        ciph.d->name = QLatin1String("ECDH-RSA-AES256-SHA");
+        break;
     case TLS_ECDHE_RSA_WITH_NULL_SHA:
         ciph.d->name = QLatin1String("ECDHE-RSA-NULL-SHA");
         break;
     case TLS_ECDHE_RSA_WITH_RC4_128_SHA:
-        ciph.d->name = QLatin1String("ECDHE-RSA-AES256-SHA");
+        ciph.d->name = QLatin1String("ECDHE-RSA-RC4-SHA");
         break;
     case TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA:
         ciph.d->name = QLatin1String("ECDHE-RSA-DES-CBC3-SHA");
@@ -702,18 +665,76 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
     case TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:
         ciph.d->name = QLatin1String("ECDHE-RSA-AES128-SHA");
         break;
-    case TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256:
-        ciph.d->name = QLatin1String("ECDHE-RSA-AES128-SHA256");
-        break;
     case TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:
         ciph.d->name = QLatin1String("ECDHE-RSA-AES256-SHA");
+        break;
+
+    // TLS 1.2 addenda, RFC 5246
+    case TLS_RSA_WITH_3DES_EDE_CBC_SHA:
+        ciph.d->name = QLatin1String("DES-CBC3-SHA");
+        break;
+    case TLS_RSA_WITH_AES_128_CBC_SHA256:
+        ciph.d->name = QLatin1String("AES128-SHA256");
+        break;
+    case TLS_RSA_WITH_AES_256_CBC_SHA256:
+        ciph.d->name = QLatin1String("AES256-SHA256");
+        break;
+    case TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA:
+        ciph.d->name = QLatin1String("DHE-RSA-DES-CBC3-SHA");
+        break;
+    case TLS_DHE_RSA_WITH_AES_128_CBC_SHA256:
+        ciph.d->name = QLatin1String("DHE-RSA-AES128-SHA256");
+        break;
+    case TLS_DHE_RSA_WITH_AES_256_CBC_SHA256:
+        ciph.d->name = QLatin1String("DHE-RSA-AES256-SHA256");
+        break;
+
+    // Addendum from RFC 4279, TLS PSK
+    // all missing atm.
+
+    // RFC 4785 - Pre-Shared Key (PSK) Ciphersuites with NULL Encryption
+    // all missing atm.
+
+    // Addenda from rfc 5288 AES Galois Counter Mode (CGM) Cipher Suites for TLS
+    case TLS_RSA_WITH_AES_256_GCM_SHA384:
+        ciph.d->name = QLatin1String("AES256-GCM-SHA384");
+        break;
+
+    // RFC 5487 - PSK with SHA-256/384 and AES GCM
+    // all missing atm.
+
+    // Addenda from rfc 5289 Elliptic Curve Cipher Suites with HMAC SHA-256/384
+    case TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256:
+        ciph.d->name = QLatin1String("ECDHE-ECDSA-AES128-SHA256");
+        break;
+    case TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384:
+        ciph.d->name = QLatin1String("ECDHE-ECDSA-AES256-SHA384");
+        break;
+    case TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256:
+        ciph.d->name = QLatin1String("ECDH-ECDSA-AES128-SHA256");
+        break;
+    case TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384:
+        ciph.d->name = QLatin1String("ECDH-ECDSA-AES256-SHA384");
+        break;
+    case TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256:
+        ciph.d->name = QLatin1String("ECDHE-RSA-AES128-SHA256");
         break;
     case TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384:
         ciph.d->name = QLatin1String("ECDHE-RSA-AES256-SHA384");
         break;
+    case TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256:
+        ciph.d->name = QLatin1String("ECDH-RSA-AES128-SHA256");
+        break;
+    case TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384:
+        ciph.d->name = QLatin1String("ECDH-RSA-AES256-SHA384");
+        break;
+
+    // Addenda from rfc 5289 Elliptic Curve Cipher Suites
+    // with SHA-256/384 and AES Galois Counter Mode (GCM)
     case TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:
         ciph.d->name = QLatin1String("ECDHE-RSA-AES256-GCM-SHA384");
         break;
+
     default:
         return ciph;
     }

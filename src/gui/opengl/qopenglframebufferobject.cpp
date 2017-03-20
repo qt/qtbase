@@ -47,7 +47,6 @@
 #include <private/qfont_p.h>
 
 #include <qwindow.h>
-#include <qlibrary.h>
 #include <qimage.h>
 #include <QtCore/qbytearray.h>
 

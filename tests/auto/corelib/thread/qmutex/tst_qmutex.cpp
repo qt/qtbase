@@ -36,11 +36,6 @@
 #include <qthread.h>
 #include <qwaitcondition.h>
 
-#ifdef Q_OS_WIN
-#include <private/qsystemlibrary_p.h>
-#include <cmath>
-#endif
-
 class tst_QMutex : public QObject
 {
     Q_OBJECT
@@ -54,7 +49,6 @@ public:
     Q_ENUM(TimeUnit);
 
 private slots:
-    void initTestCase();
     void convertToMilliseconds_data();
     void convertToMilliseconds();
     void tryLock_non_recursive();
@@ -70,8 +64,6 @@ private slots:
     void tryLockNegative_data();
     void tryLockNegative();
     void moreStress();
-private:
-    void initializeSystemTimersResolution();
 };
 
 static const int iterations = 100;
@@ -81,57 +73,24 @@ QMutex normalMutex, recursiveMutex(QMutex::Recursive);
 QSemaphore testsTurn;
 QSemaphore threadsTurn;
 
-enum { waitTime = 100 };
-uint systemTimersResolution = 1;
-
-#if QT_HAS_INCLUDE(<chrono>)
-static Q_CONSTEXPR std::chrono::milliseconds waitTimeAsDuration(waitTime);
-#endif
-
 /*
     Depending on the OS, tryWaits may return early than expected because of the
     resolution of the underlying timer is too coarse. E.g.: on Windows
     WaitForSingleObjectEx does *not* use high resolution multimedia timers, and
     it's actually very coarse, about 16msec by default.
-
-    Try to find out the timer resolution in here, so that the tryLock tests can
-    actually take into account early wakes.
 */
-void tst_QMutex::initializeSystemTimersResolution()
-{
+enum {
 #ifdef Q_OS_WIN
-    // according to MSDN, Windows can default up to this
-    systemTimersResolution = 16;
+    systemTimersResolution = 16,
+#else
+    systemTimersResolution = 1,
+#endif
+    waitTime = 100
+};
 
-    // private API. There's no way on Windows to otherwise know the
-    // actual resolution of the application's timers (you can only set it)
-    // cf. https://stackoverflow.com/questions/7685762/windows-7-timing-functions-how-to-use-getsystemtimeadjustment-correctly/11743614#11743614
-    typedef NTSTATUS (NTAPI *NtQueryTimerResolutionType)(OUT PULONG MinimumResolution,
-                                                         OUT PULONG MaximumResolution,
-                                                         OUT PULONG ActualResolution);
-
-    const NtQueryTimerResolutionType NtQueryTimerResolutionPtr =
-            reinterpret_cast<NtQueryTimerResolutionType>(QSystemLibrary::resolve(QStringLiteral("ntdll"), "NtQueryTimerResolution"));
-
-    if (!NtQueryTimerResolutionPtr)
-        return;
-
-    ULONG minimumResolution;
-    ULONG maximumResolution;
-    ULONG actualResolution;
-
-    if (!NtQueryTimerResolutionPtr(&minimumResolution, &maximumResolution, &actualResolution)) {
-        // the result is in 100ns units => adjust to msec
-        const double actualResolutionMsec = actualResolution / 10000.0;
-        systemTimersResolution = static_cast<int>(std::ceil(actualResolutionMsec));
-    }
-#endif // Q_OS_WIN
-}
-
-void tst_QMutex::initTestCase()
-{
-    initializeSystemTimersResolution();
-}
+#if QT_HAS_INCLUDE(<chrono>)
+static Q_CONSTEXPR std::chrono::milliseconds waitTimeAsDuration(waitTime);
+#endif
 
 void tst_QMutex::convertToMilliseconds_data()
 {

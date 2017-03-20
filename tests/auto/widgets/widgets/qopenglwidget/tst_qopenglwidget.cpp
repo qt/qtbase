@@ -284,6 +284,13 @@ protected:
 void CountingGraphicsView::drawForeground(QPainter *, const QRectF &)
 {
     ++m_count;
+
+    // QTBUG-59318: verify that the context's internal default fbo redirection
+    // is active also when using the QOpenGLWidget as a viewport.
+    GLint currentFbo = -1;
+    QOpenGLContext::currentContext()->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFbo);
+    GLuint defFbo = QOpenGLContext::currentContext()->defaultFramebufferObject();
+    QCOMPARE(GLuint(currentFbo), defFbo);
 }
 
 void tst_QOpenGLWidget::asViewport()

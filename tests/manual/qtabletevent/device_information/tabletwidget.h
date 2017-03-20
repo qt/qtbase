@@ -31,6 +31,7 @@
 
 #include <QWidget>
 #include <QTabletEvent>
+#include <QShortcut>
 
 // a widget showing the information of the last tablet event
 class TabletWidget : public QWidget
@@ -43,6 +44,7 @@ protected:
     void paintEvent(QPaintEvent *event);
     const char *buttonToString(Qt::MouseButton b);
     QString buttonsToString(Qt::MouseButtons bs);
+    QString modifiersToString(Qt::KeyboardModifiers m);
 private:
     void resetAttributes() {
         mType = mDev = mPointerType = mXT = mYT = mZ = 0;
@@ -57,11 +59,13 @@ private:
     int mDev, mPointerType, mXT, mYT, mZ;
     Qt::MouseButton mButton;
     Qt::MouseButtons mButtons;
+    Qt::KeyboardModifiers mModifiers;
     qreal mPress, mTangential, mRot;
     qint64 mUnique;
     bool mMouseToo;
     ulong mTimestamp;
     int mWheelEventCount;
+    QShortcut mQuitShortcut;
 };
 
 #endif // TABLETWIDGET_H

@@ -125,7 +125,8 @@ defineTest(qtConfValidateValue) {
 defineTest(qtConfCommandline_string) {
     opt = $${1}
     val = $${2}
-    isEmpty(val): val = $$qtConfGetNextCommandlineArg()
+    nextok = $${3}
+    isEmpty(val):$$nextok: val = $$qtConfGetNextCommandlineArg()
 
     # Note: Arguments which are variable assignments are legit here.
     contains(val, "^-.*")|isEmpty(val) {
@@ -142,9 +143,10 @@ defineTest(qtConfCommandline_string) {
 defineTest(qtConfCommandline_optionalString) {
     opt = $${1}
     val = $${2}
+    nextok = $${3}
     isEmpty(val) {
-        v = $$qtConfPeekNextCommandlineArg()
-        contains(v, "^-.*|[A-Z_]+=.*")|isEmpty(v): \
+        $$nextok: val = $$qtConfPeekNextCommandlineArg()
+        contains(val, "^-.*|[A-Z_]+=.*")|isEmpty(val): \
             val = "yes"
         else: \
             val = $$qtConfGetNextCommandlineArg()
@@ -160,7 +162,8 @@ defineTest(qtConfCommandline_optionalString) {
 defineTest(qtConfCommandline_addString) {
     opt = $${1}
     val = $${2}
-    isEmpty(val): val = $$qtConfGetNextCommandlineArg()
+    nextok = $${3}
+    isEmpty(val):$$nextok: val = $$qtConfGetNextCommandlineArg()
 
     # Note: Arguments which are variable assignments are legit here.
     contains(val, "^-.*")|isEmpty(val) {
@@ -236,6 +239,7 @@ defineTest(qtConfParseCommandLine) {
         }
 
         # parse out opt and val
+        nextok = false
         contains(c, "^--?enable-(.*)") {
             opt = $$replace(c, "^--?enable-(.*)", "\\1")
             val = yes
@@ -247,10 +251,11 @@ defineTest(qtConfParseCommandLine) {
             val = $$replace(c, "^--([^=]+)=(.*)", "\\2")
         } else: contains(c, "^--(.*)") {
             opt = $$replace(c, "^--(.*)", "\\1")
-            val = yes
+            val =
         } else: contains(c, "^-(.*)") {
             opt = $$replace(c, "^-(.*)", "\\1")
             val =
+            nextok = true
             for (cc, allConfigs) {
                 type = $$eval($${cc}.commandline.options.$${opt})
                 !isEmpty(type): break()
@@ -277,6 +282,7 @@ defineTest(qtConfParseCommandLine) {
                     contains(c, $$e) {
                         opt = $$eval($${cc}.commandline.prefix.$${p})
                         val = $$replace(c, $$e, "\\1")
+                        nextok = true
                         type = "addString"
                         break()
                     }
@@ -315,7 +321,7 @@ defineTest(qtConfParseCommandLine) {
             error("Command line option '$$c' has unknown type '$$type'.")
 
         # now that we have opt and value, process it
-        $${call}($$opt, $$val)
+        $${call}($$opt, $$val, $$nextok)
     }
 }
 
@@ -1743,10 +1749,6 @@ defineTest(qtConfProcessOneOutput) {
     fpfx = $${currentConfig}.features.$${feature}
     opfx = $${fpfx}.output.$${2}
 
-    condition = $$eval($${opfx}.condition)
-    !isEmpty(condition):!$$qtConfEvaluate($$condition): \
-        return()
-
     call = $$eval($${opfx}.type)
     isEmpty(call) {
         # output is just a string, not an object
@@ -1755,11 +1757,8 @@ defineTest(qtConfProcessOneOutput) {
     !defined("qtConfOutput_$$call", test): \
         error("Undefined type '$$call' in output '$$2' of feature '$$feature'.")
 
-    condition = $$eval($${opfx}.condition)
-    !isEmpty(condition) {
-        !$$qtConfEvaluate($$condition): \
-            return(false)
-    }
+    !$$qtConfEvaluate($$eval($${opfx}.condition)): \
+        return()
 
     $${opfx}.feature = $$feature
     qtConfOutput_$${call}($$opfx, $$eval($${fpfx}.available))

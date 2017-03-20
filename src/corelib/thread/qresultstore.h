@@ -93,20 +93,14 @@ public:
 protected:
     QMap<int, ResultItem>::const_iterator mapIterator;
     int m_vectorIndex;
-};
-
-template <typename T>
-class  ResultIterator : public ResultIteratorBase
-{
 public:
-    ResultIterator(const ResultIteratorBase &base)
-    : ResultIteratorBase(base) { }
-
+    template <typename T>
     const T &value() const
     {
-        return *pointer();
+        return *pointer<T>();
     }
 
+    template <typename T>
     const T *pointer() const
     {
         if (mapIterator.value().isVector())
@@ -130,7 +124,7 @@ public:
     ResultIteratorBase resultAt(int index) const;
     bool contains(int index) const;
     int count() const;
-    virtual ~ResultStoreBase() { }
+    virtual ~ResultStoreBase();
 
 protected:
     int insertResultItem(int index, ResultItem &resultItem);
@@ -147,64 +141,44 @@ protected:
     QMap<int, ResultItem> pendingResults;
     int filteredResults;
 
-};
-
-template <typename T>
-class ResultStore : public ResultStoreBase
-{
 public:
-    ResultStore() { }
-
-    ResultStore(const ResultStoreBase &base)
-    : ResultStoreBase(base) { }
-
-    int addResult(int index, const T  *result)
+    template <typename T>
+    int addResult(int index, const T *result)
     {
         if (result == 0)
-            return ResultStoreBase::addResult(index, result);
+            return addResult(index, static_cast<void *>(nullptr));
         else
-            return ResultStoreBase::addResult(index, new T(*result));
+            return addResult(index, static_cast<void *>(new T(*result)));
     }
 
+    template <typename T>
     int addResults(int index, const QVector<T> *results)
     {
-        return ResultStoreBase::addResults(index, new QVector<T>(*results), results->count(), results->count());
+        return addResults(index, new QVector<T>(*results), results->count(), results->count());
     }
 
+    template <typename T>
     int addResults(int index, const QVector<T> *results, int totalCount)
     {
         if (m_filterMode == true && results->count() != totalCount && 0 == results->count())
-            return ResultStoreBase::addResults(index, 0, 0, totalCount);
+            return addResults(index, 0, 0, totalCount);
         else
-            return ResultStoreBase::addResults(index, new QVector<T>(*results), results->count(), totalCount);
+            return addResults(index, new QVector<T>(*results), results->count(), totalCount);
     }
 
     int addCanceledResult(int index)
     {
-        return addResult(index, 0);
+        return addResult(index, static_cast<void *>(nullptr));
     }
 
+    template <typename T>
     int addCanceledResults(int index, int _count)
     {
         QVector<T> empty;
         return addResults(index, &empty, _count);
     }
 
-    ResultIterator<T> begin() const
-    {
-        return static_cast<ResultIterator<T> >(ResultStoreBase::begin());
-    }
-
-    ResultIterator<T> end() const
-    {
-        return static_cast<ResultIterator<T> >(ResultStoreBase::end());
-    }
-
-    ResultIterator<T> resultAt(int index) const
-    {
-        return static_cast<ResultIterator<T> >(ResultStoreBase::resultAt(index));
-    }
-
+    template <typename T>
     void clear()
     {
         QMap<int, ResultItem>::const_iterator mapIterator = m_results.constBegin();
@@ -218,12 +192,6 @@ public:
         resultCount = 0;
         m_results.clear();
     }
-
-    ~ResultStore()
-    {
-        clear();
-    }
-
 };
 
 } // namespace QtPrivate

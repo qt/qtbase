@@ -1153,7 +1153,12 @@ bool VCCLCompilerTool::parseOption(const char* option)
         }
         found = false; break;
     case 'u':
-        UndefineAllPreprocessorDefinitions = _True;
+        if (!second)
+            UndefineAllPreprocessorDefinitions = _True;
+        else if (second == 't' && third == 'f' && fourth == '8')
+            AdditionalOptions += option;
+        else
+            found = false;
         break;
     case 'v':
         if(second == 'd' || second == 'm') {

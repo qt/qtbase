@@ -835,7 +835,7 @@ defineTest(qtConfOutput_preparePaths) {
     !equals(QT_SOURCE_TREE, $$QT_BUILD_TREE): \
         cont += \
             "[EffectiveSourcePaths]" \
-            "Prefix=$$QT_SOURCE_TREE"
+            "Prefix=$$[QT_INSTALL_PREFIX/src]"
     write_file($$QT_BUILD_TREE/bin/qt.conf, cont)|error()
     reload_properties()
 

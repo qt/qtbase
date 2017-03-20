@@ -728,6 +728,19 @@ private:
         std::free \
     )
 
+template <typename T>
+union q_padded_xcb_event {
+  T event;
+  char padding[32];
+};
+
+// The xcb_send_event() requires all events to have 32 bytes. It calls memcpy() on the
+// passed in event. If the passed in event is less than 32 bytes, memcpy() reaches into
+// unrelated memory.
+#define Q_DECLARE_XCB_EVENT(event_var, event_type) \
+    q_padded_xcb_event<event_type> store = {}; \
+    auto &event_var = store.event;
+
 QT_END_NAMESPACE
 
 #endif

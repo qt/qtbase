@@ -1,2 +1,4 @@
 [tryAcquireWithTimeout:0.2s]
 windows
+[tryAcquireWithTimeout:2s]
+windows

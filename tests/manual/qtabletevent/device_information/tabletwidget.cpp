@@ -33,7 +33,7 @@
 #include <QMetaObject>
 #include <QMetaEnum>
 
-TabletWidget::TabletWidget(bool mouseToo) : mMouseToo(mouseToo), mWheelEventCount(0)
+TabletWidget::TabletWidget(bool mouseToo) : mMouseToo(mouseToo), mWheelEventCount(0), mQuitShortcut(QKeySequence::Quit, this)
 {
     QPalette newPalette = palette();
     newPalette.setColor(QPalette::Window, Qt::white);
@@ -41,6 +41,7 @@ TabletWidget::TabletWidget(bool mouseToo) : mMouseToo(mouseToo), mWheelEventCoun
     setPalette(newPalette);
     qApp->installEventFilter(this);
     resetAttributes();
+    connect(&mQuitShortcut, SIGNAL(activated()), qApp, SLOT(quit()));
 }
 
 bool TabletWidget::eventFilter(QObject *, QEvent *ev)
@@ -68,6 +69,7 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
             mRot = event->rotation();
             mButton = event->button();
             mButtons = event->buttons();
+            mModifiers = event->modifiers();
             mTimestamp = event->timestamp();
             if (isVisible())
                 update();
@@ -172,6 +174,7 @@ void TabletWidget::paintEvent(QPaintEvent *)
 
         eventInfo << QString("Button: %1 (0x%2)").arg(buttonToString(mButton)).arg(mButton, 0, 16);
         eventInfo << QString("Buttons currently pressed: %1 (0x%2)").arg(buttonsToString(mButtons)).arg(mButtons, 0, 16);
+        eventInfo << QString("Keyboard modifiers: %1 (0x%2)").arg(modifiersToString(mModifiers)).arg(mModifiers, 0, 16);
         eventInfo << QString("Pressure: %1").arg(QString::number(mPress));
         eventInfo << QString("Tangential pressure: %1").arg(QString::number(mTangential));
         eventInfo << QString("Rotation: %1").arg(QString::number(mRot));
@@ -202,6 +205,24 @@ QString TabletWidget::buttonsToString(Qt::MouseButtons bs)
         if (bs.testFlag(b))
             ret << buttonToString(b);
     }
+    return ret.join(QLatin1Char('|'));
+}
+
+QString TabletWidget::modifiersToString(Qt::KeyboardModifiers m)
+{
+    QStringList ret;
+    if (m & Qt::ShiftModifier)
+        ret << QLatin1String("Shift");
+    if (m & Qt::ControlModifier)
+        ret << QLatin1String("Control");
+    if (m & Qt::AltModifier)
+        ret << QLatin1String("Alt");
+    if (m & Qt::MetaModifier)
+        ret << QLatin1String("Meta");
+    if (m & Qt::KeypadModifier)
+        ret << QLatin1String("Keypad");
+    if (m & Qt::GroupSwitchModifier)
+        ret << QLatin1String("GroupSwitch");
     return ret.join(QLatin1Char('|'));
 }
 

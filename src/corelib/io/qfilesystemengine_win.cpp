@@ -151,14 +151,15 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 
 #if defined(Q_OS_WINRT)
-// As none of the functions we try to resolve do exist on WinRT
-// we use QT_NO_LIBRARY to shorten everything up a little bit.
-#  ifndef QT_NO_LIBRARY
-#    define QT_NO_LIBRARY 1
-#  endif
+// As none of the functions we try to resolve do exist on WinRT we
+// avoid library loading on WinRT in general to shorten everything
+// up a little bit.
+#  define QT_FEATURE_fslibs -1
+#else
+#  define QT_FEATURE_fslibs QT_FEATURE_library
 #endif // Q_OS_WINRT
 
-#if !defined(QT_NO_LIBRARY)
+#if QT_CONFIG(fslibs)
 QT_BEGIN_INCLUDE_NAMESPACE
 typedef DWORD (WINAPI *PtrGetNamedSecurityInfoW)(LPWSTR, SE_OBJECT_TYPE, SECURITY_INFORMATION, PSID*, PSID*, PACL*, PACL*, PSECURITY_DESCRIPTOR*);
 static PtrGetNamedSecurityInfoW ptrGetNamedSecurityInfoW = 0;
@@ -255,7 +256,7 @@ struct LibResolver
 Q_GLOBAL_STATIC(LibResolver, resolveLibs)
 
 } // anonymous namespace
-#endif // QT_NO_LIBRARY
+#endif // QT_CONFIG(fslibs)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 typedef DWORD (WINAPI *PtrNetShareEnum)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
@@ -327,7 +328,7 @@ static QString readSymLink(const QFileSystemEntry &link)
         free(rdb);
         CloseHandle(handle);
 
-#if !defined(QT_NO_LIBRARY)
+#if QT_CONFIG(fslibs)
         resolveLibs();
         QRegExp matchVolName(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), Qt::CaseInsensitive);
         if (matchVolName.indexIn(result) == 0) {
@@ -337,7 +338,7 @@ static QString readSymLink(const QFileSystemEntry &link)
             if (GetVolumePathNamesForVolumeName(reinterpret_cast<LPCWSTR>(volumeName.utf16()), buffer, MAX_PATH, &len) != 0)
                 result.replace(0,matchVolName.matchedLength(), QString::fromWCharArray(buffer));
         }
-#endif // !Q_OS_WINRT
+#endif // QT_CONFIG(fslibs)
     }
 #else
     Q_UNUSED(link);
@@ -347,7 +348,7 @@ static QString readSymLink(const QFileSystemEntry &link)
 
 static QString readLink(const QFileSystemEntry &link)
 {
-#if !defined(QT_NO_LIBRARY)
+#if QT_CONFIG(fslibs)
     QString ret;
 
     bool neededCoInit = false;
@@ -386,7 +387,7 @@ static QString readLink(const QFileSystemEntry &link)
 #else
     Q_UNUSED(link);
     return QString();
-#endif // QT_NO_LIBRARY
+#endif // QT_CONFIG(fslibs)
 }
 
 static bool uncShareExists(const QString &server)
@@ -619,7 +620,7 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own)
 {
     QString name;
-#if !defined(QT_NO_LIBRARY)
+#if QT_CONFIG(fslibs)
     extern int qt_ntfs_permission_lookup;
     if((qt_ntfs_permission_lookup > 0) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
         resolveLibs();
@@ -669,7 +670,7 @@ QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEng
 bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                                         QFileSystemMetaData::MetaDataFlags what)
 {
-#if !defined(QT_NO_LIBRARY)
+#if QT_CONFIG(fslibs)
     if((qt_ntfs_permission_lookup > 0) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
         resolveLibs();
         if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
@@ -1133,7 +1134,7 @@ QString QFileSystemEngine::rootPath()
 QString QFileSystemEngine::homePath()
 {
     QString ret;
-#if !defined(QT_NO_LIBRARY)
+#if QT_CONFIG(fslibs)
     resolveLibs();
     if (ptrGetUserProfileDirectoryW) {
         HANDLE hnd = ::GetCurrentProcess();

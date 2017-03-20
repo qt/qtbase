@@ -536,7 +536,7 @@ void tst_Selftests::runSubTest_data()
     }
 }
 
-#ifndef QT_NO_PROCESS
+#if QT_CONFIG(process)
 
 static QProcessEnvironment processEnvironment()
 {
@@ -820,11 +820,11 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
     }
 }
 
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
 void tst_Selftests::runSubTest()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
     QFETCH(QString, subdir);
@@ -833,7 +833,7 @@ void tst_Selftests::runSubTest()
     QFETCH(bool, crashes);
 
     doRunSubTest(subdir, loggers, arguments, crashes);
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 // attribute must contain ="

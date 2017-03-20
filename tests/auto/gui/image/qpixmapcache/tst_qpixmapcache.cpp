@@ -56,6 +56,7 @@ private slots:
     void pixmapKey();
     void noLeak();
     void strictCacheLimit();
+    void noCrashOnLargeInsert();
 };
 
 static QPixmapCache::KeyData* getPrivate(QPixmapCache::Key &key)
@@ -523,6 +524,16 @@ void tst_QPixmapCache::strictCacheLimit()
     }
 
     QVERIFY(QPixmapCache::totalUsed() <= limit);
+}
+
+void tst_QPixmapCache::noCrashOnLargeInsert()
+{
+    QPixmapCache::clear();
+    QPixmapCache::setCacheLimit(100);
+    QPixmap pixmap(500, 500);
+    pixmap.fill(Qt::transparent);
+    QPixmapCache::insert("test", pixmap);
+    QVERIFY(true); // no crash
 }
 
 QTEST_MAIN(tst_QPixmapCache)

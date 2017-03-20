@@ -1118,7 +1118,7 @@ static xcb_window_t findXdndAwareParent(QXcbConnection *c, xcb_window_t window)
 
 void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event)
 {
-    xcb_selection_notify_event_t notify;
+    Q_DECLARE_XCB_EVENT(notify, xcb_selection_notify_event_t);
     notify.response_type = XCB_SELECTION_NOTIFY;
     notify.requestor = event->requestor;
     notify.selection = event->selection;

@@ -103,11 +103,13 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QToolButton")) {
         iface = new QAccessibleToolButton(widget);
 #endif // QT_NO_TOOLBUTTON
+#if QT_CONFIG(abstractbutton)
     } else if (classname == QLatin1String("QCheckBox")
             || classname == QLatin1String("QRadioButton")
             || classname == QLatin1String("QPushButton")
             || classname == QLatin1String("QAbstractButton")) {
         iface = new QAccessibleButton(widget);
+#endif
     } else if (classname == QLatin1String("QDialog")) {
         iface = new QAccessibleWidget(widget, QAccessible::Dialog);
     } else if (classname == QLatin1String("QMessageBox")) {

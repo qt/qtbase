@@ -49,7 +49,7 @@
 
 //#define QDATETIMEPARSER_DEBUG
 #if defined (QDATETIMEPARSER_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
-#  define QDTPDEBUG qDebug() << QString("%1:%2").arg(__FILE__).arg(__LINE__)
+#  define QDTPDEBUG qDebug()
 #  define QDTPDEBUGN qDebug
 #else
 #  define QDTPDEBUG if (false) qDebug()
@@ -1325,39 +1325,16 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
         }
         const QLocale l = locale();
         for (int day=startDay; day<=7; ++day) {
-            const QString str2 = l.dayName(day, sn.count == 4 ? QLocale::LongFormat : QLocale::ShortFormat);
-
-            if (str1.startsWith(str2.toLower())) {
-                if (used)
-                    *used = str2.size();
-                if (usedDay) {
-                    *usedDay = str2;
-                }
-                return day;
-            }
-            if (context == FromString)
-                continue;
+            const QString dayName = l.dayName(day, sn.count == 4 ? QLocale::LongFormat : QLocale::ShortFormat);
+            const QString str2 = dayName.toLower();
 
             const int limit = qMin(str1.size(), str2.size());
-            bool found = true;
-            for (int i=0; i<limit; ++i) {
-                if (str1.at(i) != str2.at(i) && !str1.at(i).isSpace()) {
-                    if (i > bestCount) {
-                        bestCount = i;
-                        bestMatch = day;
-                    }
-                    found = false;
-                    break;
-                }
-
-            }
-            if (found) {
-                if (used)
-                    *used = limit;
-                if (usedDay)
-                    *usedDay = str2;
-
-                return day;
+            int i = 0;
+            while (i < limit && str1.at(i) == str2.at(i))
+                ++i;
+            if (i > bestCount) {
+                bestCount = i;
+                bestMatch = day;
             }
         }
         if (usedDay && bestMatch != -1) {

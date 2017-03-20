@@ -65,6 +65,7 @@ class QToolButton;
 class QGroupBox;
 class QProgressBar;
 
+#if QT_CONFIG(abstractbutton)
 class QAccessibleButton : public QAccessibleWidget
 {
     Q_DECLARE_TR_FUNCTIONS(QAccessibleButton)
@@ -83,6 +84,7 @@ public:
 protected:
     QAbstractButton *button() const;
 };
+#endif
 
 #ifndef QT_NO_TOOLBUTTON
 class QAccessibleToolButton : public QAccessibleButton

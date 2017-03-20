@@ -99,7 +99,7 @@
 #include <QtGui/QClipboard>
 #endif
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 #include <QtCore/QLibrary>
 #endif
 
@@ -670,7 +670,7 @@ void QGuiApplication::setApplicationDisplayName(const QString &name)
             disconnect(qGuiApp, &QGuiApplication::applicationNameChanged,
                     qGuiApp, &QGuiApplication::applicationDisplayNameChanged);
 
-            if (QGuiApplicationPrivate::displayName != applicationName())
+            if (*QGuiApplicationPrivate::displayName != applicationName())
                 emit qGuiApp->applicationDisplayNameChanged();
         }
     } else if (name != *QGuiApplicationPrivate::displayName) {
@@ -1449,7 +1449,7 @@ void QGuiApplicationPrivate::init()
     session_manager = new QSessionManager(q, session_id, session_key);
 #endif
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     if (qEnvironmentVariableIntValue("QT_LOAD_TESTABILITY") > 0)
         loadTestability = true;
 
@@ -1469,7 +1469,7 @@ void QGuiApplicationPrivate::init()
     }
 #else
     Q_UNUSED(loadTestability);
-#endif // QT_NO_LIBRARY
+#endif // QT_CONFIG(library)
 
     if (layout_direction == Qt::LayoutDirectionAuto || force_reverse)
         QGuiApplication::setLayoutDirection(qt_detectRTLLanguage() ? Qt::RightToLeft : Qt::LeftToRight);

@@ -39,7 +39,9 @@
 
 #include "simplewidgets_p.h"
 
+#if QT_CONFIG(abstractbutton)
 #include <qabstractbutton.h>
+#endif
 #if QT_CONFIG(checkbox)
 #include <qcheckbox.h>
 #endif
@@ -80,6 +82,7 @@ extern QList<QWidget*> childWidgets(const QWidget *widget);
 QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
 
+#if QT_CONFIG(abstractbutton)
 /*!
   \class QAccessibleButton
   \brief The QAccessibleButton class implements the QAccessibleInterface for button type widgets.
@@ -267,7 +270,7 @@ QStringList QAccessibleButton::keyBindingsForAction(const QString &actionName) c
     }
     return QStringList();
 }
-
+#endif // QT_CONFIG(abstractbutton)
 
 #ifndef QT_NO_TOOLBUTTON
 /*!
@@ -519,7 +522,7 @@ QString QAccessibleDisplay::imageDescription() const
 #ifndef QT_NO_TOOLTIP
     return widget()->toolTip();
 #else
-    return QString::null;
+    return QString();
 #endif
 }
 

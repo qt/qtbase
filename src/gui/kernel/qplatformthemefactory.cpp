@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QPlatformThemeFactoryInterface_iid, QLatin1String("/platformthemes"), Qt::CaseInsensitive))
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
                           (QPlatformThemeFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 #endif
@@ -60,7 +60,7 @@ QPlatformTheme *QPlatformThemeFactory::create(const QString& key, const QString 
 {
     QStringList paramList = key.split(QLatin1Char(':'));
     const QString platform = paramList.takeFirst().toLower();
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     // Try loading the plugin from platformPluginPath first:
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
@@ -83,7 +83,7 @@ QStringList QPlatformThemeFactory::keys(const QString &platformPluginPath)
 {
     QStringList list;
 
-#ifndef QT_NO_LIBRARY
+#if QT_CONFIG(library)
     if (!platformPluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(platformPluginPath);
         list += directLoader()->keyMap().values();

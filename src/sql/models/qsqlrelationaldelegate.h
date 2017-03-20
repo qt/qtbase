@@ -56,7 +56,7 @@ class QSqlRelationalDelegate: public QItemDelegate
 {
 public:
 
-explicit QSqlRelationalDelegate(QObject *aParent = 0)
+explicit QSqlRelationalDelegate(QObject *aParent = nullptr)
     : QItemDelegate(aParent)
 {}
 
@@ -68,7 +68,7 @@ QWidget *createEditor(QWidget *aParent,
                       const QModelIndex &index) const override
 {
     const QSqlRelationalTableModel *sqlModel = qobject_cast<const QSqlRelationalTableModel *>(index.model());
-    QSqlTableModel *childModel = sqlModel ? sqlModel->relationModel(index.column()) : 0;
+    QSqlTableModel *childModel = sqlModel ? sqlModel->relationModel(index.column()) : nullptr;
     if (!childModel)
         return QItemDelegate::createEditor(aParent, option, index);
 
@@ -86,7 +86,7 @@ void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex 
         return;
 
     QSqlRelationalTableModel *sqlModel = qobject_cast<QSqlRelationalTableModel *>(model);
-    QSqlTableModel *childModel = sqlModel ? sqlModel->relationModel(index.column()) : 0;
+    QSqlTableModel *childModel = sqlModel ? sqlModel->relationModel(index.column()) : nullptr;
     QComboBox *combo = qobject_cast<QComboBox *>(editor);
     if (!sqlModel || !childModel || !combo) {
         QItemDelegate::setModelData(editor, model, index);

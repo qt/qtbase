@@ -77,3 +77,12 @@ drawRect 0 250 50 50
 setBrushOrigin 50 250
 drawRect 50 250 50 50
 
+
+setBrush dome_indexed.png
+setPen nopen
+brushScale 0.7 0.7
+drawRect 20 320 600 200
+
+setBrush dome_argb32.png
+brushScale 1.5 1.5
+drawRect 20 540 600 200

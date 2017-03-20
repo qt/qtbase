@@ -65,7 +65,6 @@
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
 #include "qfile.h"
-#include "qlibrary.h"
 #include <qmutex.h>
 
 #include "qsurfaceformat.h"

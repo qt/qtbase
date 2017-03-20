@@ -362,7 +362,7 @@ void tst_QPlainTextEdit::emptyAppend()
 {
     ed->appendPlainText("Blah");
     QCOMPARE(blockCount(), 1);
-    ed->appendPlainText(QString::null);
+    ed->appendPlainText(QString());
     QCOMPARE(blockCount(), 2);
     ed->appendPlainText(QString("   "));
     QCOMPARE(blockCount(), 3);

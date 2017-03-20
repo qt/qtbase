@@ -46,11 +46,11 @@
 
 #include <functional>
 
+QT_REQUIRE_CONFIG(processenvironment);
+
 QT_BEGIN_NAMESPACE
 
 class QProcessPrivate;
-
-#if QT_CONFIG(processenvironment)
 
 #if !defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 typedef qint64 Q_PID;
@@ -104,8 +104,6 @@ private:
 };
 
 Q_DECLARE_SHARED(QProcessEnvironment)
-
-#endif // QT_CONFIG(processenvironment)
 
 #if QT_CONFIG(process)
 
@@ -302,7 +300,7 @@ private:
     friend class QProcessManager;
 };
 
-#endif // QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
 QT_END_NAMESPACE
 

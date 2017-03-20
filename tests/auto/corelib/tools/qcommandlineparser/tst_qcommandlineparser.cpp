@@ -509,7 +509,7 @@ void tst_QCommandLineParser::testCpp11StyleInitialization()
 
 void tst_QCommandLineParser::testVersionOption()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
 #if defined(Q_OS_ANDROID)
@@ -526,7 +526,7 @@ void tst_QCommandLineParser::testVersionOption()
     output.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
 #endif
     QCOMPARE(output, QString("qcommandlineparser_test_helper 1.0\n"));
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 static const char expectedOptionsHelp[] =
@@ -575,7 +575,7 @@ void tst_QCommandLineParser::testHelpOption_data()
 
 void tst_QCommandLineParser::testHelpOption()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
 #if defined(Q_OS_ANDROID)
@@ -618,12 +618,12 @@ void tst_QCommandLineParser::testHelpOption()
     expectedResizeHelp.replace("testhelper/", "testhelper\\");
 #endif
     QCOMPARE(output, QString(expectedResizeHelp));
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 void tst_QCommandLineParser::testQuoteEscaping()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #elif defined(Q_OS_ANDROID)
     QSKIP("Deploying executable applications to file system on Android not supported.");
@@ -644,7 +644,7 @@ void tst_QCommandLineParser::testQuoteEscaping()
     QVERIFY2(output.contains("KEY1=\"VALUE1\""), qPrintable(output));
     QVERIFY2(output.contains("QTBUG-15379=C:\\path\\'file.ext"), qPrintable(output));
     QVERIFY2(output.contains("QTBUG-30628=C:\\temp\\'file'.ext"), qPrintable(output));
-#endif // !QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 }
 
 QTEST_APPLESS_MAIN(tst_QCommandLineParser)

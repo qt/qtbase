@@ -701,14 +701,14 @@ void tst_QShortcut::disabledItems()
     sendKeyEvents( Qt::CTRL+Qt::Key_M, 0 );
     QCOMPARE( currentResult, NoResult );
     if (over_330)
-        QCOMPARE( sbText, QString::null );
+        QCOMPARE( sbText, QString() );
 
     currentResult = NoResult;
     sendKeyEvents( Qt::CTRL+Qt::Key_K, 0 );
     sendKeyEvents( Qt::CTRL+Qt::Key_L, 0 );
     QCOMPARE( currentResult, Slot1Triggered );
     if (over_330)
-        QCOMPARE( sbText, QString::null );
+        QCOMPARE( sbText, QString() );
 #endif
     clearAllShortcuts();
     cut1 = 0;

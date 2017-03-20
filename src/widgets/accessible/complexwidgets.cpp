@@ -41,7 +41,6 @@
 
 #include <qaccessible.h>
 #include <qapplication.h>
-#include <qabstractbutton.h>
 #include <qevent.h>
 #include <qheaderview.h>
 #include <qtabbar.h>

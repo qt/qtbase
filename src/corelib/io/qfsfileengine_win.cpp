@@ -108,6 +108,20 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
 {
     Q_Q(QFSFileEngine);
 
+    // Check if the file name is valid:
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#naming_conventions
+    const QString fileName = fileEntry.fileName();
+    for (QString::const_iterator it = fileName.constBegin(), end = fileName.constEnd();
+         it != end; ++it) {
+        const QChar c = *it;
+        if (c == QLatin1Char('<') || c == QLatin1Char('>') || c == QLatin1Char(':') ||
+            c == QLatin1Char('\"') || c == QLatin1Char('/') || c == QLatin1Char('\\') ||
+            c == QLatin1Char('|') || c == QLatin1Char('?') || c == QLatin1Char('*')) {
+            q->setError(QFile::OpenError, QStringLiteral("Invalid file name"));
+            return false;
+        }
+    }
+
     // All files are opened in share mode (both read and write).
     DWORD shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 
@@ -589,7 +603,7 @@ bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) cons
 bool QFSFileEngine::link(const QString &newName)
 {
 #if !defined(Q_OS_WINRT)
-#  if !defined(QT_NO_LIBRARY)
+#  if QT_CONFIG(library)
     bool ret = false;
 
     QString linkName = newName;
@@ -630,10 +644,10 @@ bool QFSFileEngine::link(const QString &newName)
         CoUninitialize();
 
     return ret;
-#  else // QT_NO_LIBRARY
+#  else // QT_CONFIG(library)
     Q_UNUSED(newName);
     return false;
-#  endif // QT_NO_LIBRARY
+#  endif // QT_CONFIG(library)
 #else // !Q_OS_WINRT
     Q_UNUSED(newName);
     Q_UNIMPLEMENTED();

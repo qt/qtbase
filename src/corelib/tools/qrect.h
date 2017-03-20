@@ -662,11 +662,17 @@ Q_DECL_CONSTEXPR inline QRectF::QRectF(const QRect &r) Q_DECL_NOTHROW
 {
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+
 Q_DECL_CONSTEXPR inline bool QRectF::isNull() const Q_DECL_NOTHROW
 { return w == 0. && h == 0.; }
 
 Q_DECL_CONSTEXPR inline bool QRectF::isEmpty() const Q_DECL_NOTHROW
 { return w <= 0. || h <= 0.; }
+
+QT_WARNING_POP
 
 Q_DECL_CONSTEXPR inline bool QRectF::isValid() const Q_DECL_NOTHROW
 { return w > 0. && h > 0.; }

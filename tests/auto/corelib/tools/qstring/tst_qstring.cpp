@@ -3818,7 +3818,7 @@ void tst_QString::startsWith()
     QVERIFY( !a.startsWith(QLatin1Char('x')) );
     QVERIFY( !a.startsWith(QChar()) );
 
-    a = QString::null;
+    a = QString();
     QVERIFY( !a.startsWith("") );
     QVERIFY( a.startsWith(QString::null) );
     QVERIFY( !a.startsWith("ABC") );
@@ -3928,7 +3928,7 @@ void tst_QString::endsWith()
     QVERIFY( a.endsWith(QLatin1String(0)) );
     QVERIFY( !a.endsWith(QLatin1String("ABC")) );
 
-    a = QString::null;
+    a = QString();
     QVERIFY( !a.endsWith("") );
     QVERIFY( a.endsWith(QString::null) );
     QVERIFY( !a.endsWith("ABC") );

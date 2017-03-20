@@ -172,7 +172,7 @@ void tst_QSystemSemaphore::release()
 
 void tst_QSystemSemaphore::basicProcesses()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QSystemSemaphore sem("store", 0, QSystemSemaphore::Create);
@@ -208,7 +208,7 @@ void tst_QSystemSemaphore::processes_data()
 
 void tst_QSystemSemaphore::processes()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);
@@ -237,7 +237,7 @@ void tst_QSystemSemaphore::processes()
 #if !defined(Q_OS_WIN) && !defined(QT_POSIX_IPC)
 void tst_QSystemSemaphore::undo()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);
@@ -262,7 +262,7 @@ void tst_QSystemSemaphore::undo()
 
 void tst_QSystemSemaphore::initialValue()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);

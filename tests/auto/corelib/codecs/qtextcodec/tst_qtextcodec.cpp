@@ -33,7 +33,9 @@
 #include <qtextcodec.h>
 #include <qfile.h>
 #include <time.h>
-#include <qprocess.h>
+#if QT_CONFIG(process)
+# include <qprocess.h>
+#endif
 #include <QThreadPool>
 
 class tst_QTextCodec : public QObject
@@ -2085,7 +2087,7 @@ void tst_QTextCodec::codecForUtfText()
 #if defined(Q_OS_UNIX)
 void tst_QTextCodec::toLocal8Bit()
 {
-#ifdef QT_NO_PROCESS
+#if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
 #else
     QProcess process;

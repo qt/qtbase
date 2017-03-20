@@ -5,7 +5,7 @@ SUBDIRS = \
         qfile \
         qfileinfo \
         qiodevice \
-        qprocess \
         qtemporaryfile \
         qtextstream
 
+qtConfig(process): SUBDIRS += qprocess

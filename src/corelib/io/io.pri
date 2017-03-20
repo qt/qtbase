@@ -22,8 +22,6 @@ HEADERS +=  \
         io/qlockfile.h \
         io/qlockfile_p.h \
         io/qnoncontiguousbytedevice_p.h \
-        io/qprocess.h \
-        io/qprocess_p.h \
         io/qtextstream.h \
         io/qtextstream_p.h \
         io/qtemporarydir.h \
@@ -72,7 +70,6 @@ SOURCES += \
         io/qiodevice.cpp \
         io/qlockfile.cpp \
         io/qnoncontiguousbytedevice.cpp \
-        io/qprocess.cpp \
         io/qstorageinfo.cpp \
         io/qtextstream.cpp \
         io/qtemporarydir.cpp \
@@ -96,6 +93,19 @@ SOURCES += \
         io/qloggingcategory.cpp \
         io/qloggingregistry.cpp
 
+qtConfig(processenvironment) {
+    SOURCES += \
+        io/qprocess.cpp
+    HEADERS += \
+        io/qprocess.h \
+        io/qprocess_p.h
+
+    win32:!winrt: \
+        SOURCES += io/qprocess_win.cpp
+    else: unix: \
+        SOURCES += io/qprocess_unix.cpp
+}
+
 win32 {
         SOURCES += io/qfsfileengine_win.cpp
         SOURCES += io/qlockfile_win.cpp
@@ -112,7 +122,6 @@ win32 {
             io/qwinoverlappedionotifier_p.h
 
         SOURCES += \
-            io/qprocess_win.cpp \
             io/qsettings_win.cpp \
             io/qstandardpaths_win.cpp \
             io/qstorageinfo_win.cpp \
@@ -132,7 +141,6 @@ win32 {
                 io/qfsfileengine_unix.cpp \
                 io/qfilesystemengine_unix.cpp \
                 io/qlockfile_unix.cpp \
-                io/qprocess_unix.cpp \
                 io/qfilesystemiterator_unix.cpp
 
         !integrity:!uikit {

@@ -55,7 +55,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if (defined(Q_OS_LINUX) || defined Q_OS_MAC) && !defined(QT_NO_PROCESS)
+#if (defined(Q_OS_LINUX) || defined Q_OS_MACOS) && QT_CONFIG(process)
 #define QTESTLIB_USE_VALGRIND
 #else
 #undef QTESTLIB_USE_VALGRIND

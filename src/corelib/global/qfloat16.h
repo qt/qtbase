@@ -196,6 +196,10 @@ QF16_MAKE_ARITH_OP_INT(*)
 QF16_MAKE_ARITH_OP_INT(/)
 #undef QF16_MAKE_ARITH_OP_INT
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+
 inline bool operator>(qfloat16 a, qfloat16 b)  Q_DECL_NOTHROW { return static_cast<float>(a) >  static_cast<float>(b); }
 inline bool operator<(qfloat16 a, qfloat16 b)  Q_DECL_NOTHROW { return static_cast<float>(a) <  static_cast<float>(b); }
 inline bool operator>=(qfloat16 a, qfloat16 b) Q_DECL_NOTHROW { return static_cast<float>(a) >= static_cast<float>(b); }
@@ -229,6 +233,8 @@ QF16_MAKE_BOOL_OP_INT(<=)
 QF16_MAKE_BOOL_OP_INT(==)
 QF16_MAKE_BOOL_OP_INT(!=)
 #undef QF16_MAKE_BOOL_OP_INT
+
+QT_WARNING_POP
 
 /*!
   \internal

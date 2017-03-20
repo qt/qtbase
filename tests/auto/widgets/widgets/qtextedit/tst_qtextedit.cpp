@@ -676,7 +676,7 @@ void tst_QTextEdit::emptyAppend()
 {
     ed->append("Blah");
     QCOMPARE(blockCount(), 1);
-    ed->append(QString::null);
+    ed->append(QString());
     QCOMPARE(blockCount(), 2);
     ed->append(QString("   "));
     QCOMPARE(blockCount(), 3);

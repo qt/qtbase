@@ -62,8 +62,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if QT_CONFIG(processenvironment)
-
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
     QProcessEnvironment env;
@@ -85,8 +83,6 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
     }
     return env;
 }
-
-#endif // QT_CONFIG(processenvironment)
 
 #if QT_CONFIG(process)
 
@@ -895,6 +891,6 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
     return success;
 }
 
-#endif // QT_NO_PROCESS
+#endif // QT_CONFIG(process)
 
 QT_END_NAMESPACE
