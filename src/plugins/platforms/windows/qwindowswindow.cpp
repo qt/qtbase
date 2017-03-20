@@ -1962,7 +1962,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowStates newState)
             ShowWindow(m_data.hwnd,
                        (newState & Qt::WindowMinimized) ? SW_MINIMIZE :
                        (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNORMAL);
-            if ((newState & Qt::WindowMinimized) && (oldState ^ newState & Qt::WindowMaximized))
+            if ((newState & Qt::WindowMinimized) && (stateChange & Qt::WindowMaximized))
                 setRestoreMaximizedFlag(m_data.hwnd, newState & Qt::WindowMaximized);
         }
     }
