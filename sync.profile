@@ -84,5 +84,5 @@ my @zlib_headers = ( "zconf.h", "zlib.h" );
 @ignore_for_qt_begin_namespace_check = ( "qt_windows.h", @zlib_headers, @angle_headers);
 %inject_headers = (
     "$basedir/src/corelib/global" => [ "qconfig.h", "qconfig_p.h" ],
-    "$basedir/src/gui/vulkan" => [ "qvulkanfunctions.h" ]
+    "$basedir/src/gui/vulkan" => [ "^qvulkanfunctions.h" ]
 );

@@ -1004,13 +1004,16 @@ foreach my $lib (@modules_to_sync) {
                 @headers = grep(!/^qt[a-z0-9]+-config(_p)?\.h$/, @headers);
                 if (defined $inject_headers{$subdir}) {
                     foreach my $if (@{$inject_headers{$subdir}}) {
-                        @headers = grep(!/^\Q$if\E$/, @headers); #in case we configure'd previously
+                        my $cif = $if;
+                        $cif =~ s/^\^//;
+                        @headers = grep(!/^\Q$cif\E$/, @headers); #in case we configure'd previously
                         push @headers, "*".$if;
                     }
                 }
                 my $header_dirname = "";
                 foreach my $header (@headers) {
                     my $shadow = ($header =~ s/^\*//);
+                    my $no_stamp = $shadow && ($header =~ s/^\^//);
                     $header = 0 if ($header =~ /^ui_.*\.h$/);
                     foreach (@ignore_headers) {
                         $header = 0 if($header eq $_);
@@ -1106,7 +1109,7 @@ foreach my $lib (@modules_to_sync) {
                                 $pri_install_pfiles.= "$pri_install_iheader ";;
                             }
                             $pri_injections .= fixPaths($iheader, "$out_basedir/include/$lib")
-                                               .":".fixPaths($oheader, "$out_basedir/include/$lib")
+                                               .":".($no_stamp ? "^" : "").fixPaths($oheader, "$out_basedir/include/$lib")
                                                .$injection." " if ($shadow);
                         }
 

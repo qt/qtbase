@@ -119,18 +119,19 @@ exists($$OUT_PWD/qt$${MODULE}-config.h) {
 for (injection, SYNCQT.INJECTIONS) {
     injects = $$split(injection, :)
     dst_hdr = $$absolute_path($$member(injects, 0), $$MODULE_INC_OUTDIR)
-    fwd_hdr = $$member(injects, 1)
+    ofwd_hdr = $$member(injects, 1)
+    fwd_hdr = $$replace(ofwd_hdr, ^\\^, )
     MAIN_FWD = $$MODULE_INC_OUTDIR/$$fwd_hdr
     MAIN_FWD_CONT = '$${LITERAL_HASH}include "$$relative_path($$dst_hdr, $$dirname(MAIN_FWD))"'
     write_file($$MAIN_FWD, MAIN_FWD_CONT)|error()
-    touch($$MAIN_FWD, $$dst_hdr)
+    equals(fwd_hdr, ofwd_hdr): touch($$MAIN_FWD, $$dst_hdr)
     !git_build: QMAKE_DISTCLEAN += $$MAIN_FWD
     injects = $$member(injects, 2, -1)
     for (inject, injects) {
         CLASS_FWD = $$MODULE_INC_OUTDIR/$$inject
         CLASS_FWD_CONT = '$${LITERAL_HASH}include "$$fwd_hdr"'
         write_file($$CLASS_FWD, CLASS_FWD_CONT)|error()
-        touch($$CLASS_FWD, $$dst_hdr)
+        touch($$CLASS_FWD, $$MAIN_FWD)
         !git_build: QMAKE_DISTCLEAN += $$CLASS_FWD
     }
 }
