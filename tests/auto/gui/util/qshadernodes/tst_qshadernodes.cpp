@@ -30,6 +30,7 @@
 #include <QtTest/QtTest>
 
 #include <QtGui/private/qshaderformat_p.h>
+#include <QtGui/private/qshadernodeport_p.h>
 
 namespace
 {
@@ -44,6 +45,14 @@ namespace
         format.setVendor(vendor);
         return format;
     }
+
+    QShaderNodePort createPort(QShaderNodePort::Direction direction, const QString &name)
+    {
+        auto port = QShaderNodePort();
+        port.direction = direction;
+        port.name = name;
+        return port;
+    }
 }
 
 class tst_QShaderNodes : public QObject
@@ -55,6 +64,10 @@ private slots:
     void shouldVerifyFormatsEquality();
     void shouldVerifyFormatsCompatibilities_data();
     void shouldVerifyFormatsCompatibilities();
+
+    void shouldHaveDefaultPortState();
+    void shouldVerifyPortsEquality_data();
+    void shouldVerifyPortsEquality();
 };
 
 void tst_QShaderNodes::shouldManipulateFormatMembers()
@@ -274,6 +287,49 @@ void tst_QShaderNodes::shouldVerifyFormatsCompatibilities()
     // THEN
     QFETCH(bool, expected);
     QCOMPARE(supported, expected);
+}
+
+void tst_QShaderNodes::shouldHaveDefaultPortState()
+{
+    // GIVEN
+    auto port = QShaderNodePort();
+
+    // THEN
+    QCOMPARE(port.direction, QShaderNodePort::Output);
+    QVERIFY(port.name.isEmpty());
+}
+
+void tst_QShaderNodes::shouldVerifyPortsEquality_data()
+{
+    QTest::addColumn<QShaderNodePort>("left");
+    QTest::addColumn<QShaderNodePort>("right");
+    QTest::addColumn<bool>("expected");
+
+    QTest::newRow("Equals") << createPort(QShaderNodePort::Input, "foo")
+                            << createPort(QShaderNodePort::Input, "foo")
+                            << true;
+    QTest::newRow("Direction") << createPort(QShaderNodePort::Input, "foo")
+                               << createPort(QShaderNodePort::Output, "foo")
+                               << false;
+    QTest::newRow("Name") << createPort(QShaderNodePort::Input, "foo")
+                          << createPort(QShaderNodePort::Input, "bar")
+                          << false;
+}
+
+void tst_QShaderNodes::shouldVerifyPortsEquality()
+{
+    // GIVEN
+    QFETCH(QShaderNodePort, left);
+    QFETCH(QShaderNodePort, right);
+
+    // WHEN
+    const auto equal = (left == right);
+    const auto notEqual = (left != right);
+
+    // THEN
+    QFETCH(bool, expected);
+    QCOMPARE(equal, expected);
+    QCOMPARE(notEqual, !expected);
 }
 
 QTEST_MAIN(tst_QShaderNodes)

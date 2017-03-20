@@ -7,7 +7,8 @@ HEADERS += \
         util/qgridlayoutengine_p.h \
         util/qabstractlayoutstyleinfo_p.h \
         util/qlayoutpolicy_p.h \
-        util/qshaderformat_p.h
+        util/qshaderformat_p.h \
+        util/qshadernodeport_p.h
 
 SOURCES += \
         util/qdesktopservices.cpp \
@@ -15,4 +16,5 @@ SOURCES += \
         util/qgridlayoutengine.cpp \
         util/qabstractlayoutstyleinfo.cpp \
         util/qlayoutpolicy.cpp \
-        util/qshaderformat.cpp
+        util/qshaderformat.cpp \
+        util/qshadernodeport.cpp
