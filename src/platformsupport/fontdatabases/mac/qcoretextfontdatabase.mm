@@ -199,10 +199,6 @@ static CFArrayRef availableFamilyNames()
 
 void QCoreTextFontDatabase::populateFontDatabase()
 {
-    // The caller (QFontDB) expects the db to be populate only with system fonts, so we need
-    // to make sure that any previously registered app fonts become invisible.
-    removeApplicationFonts();
-
     QCFType<CFArrayRef> familyNames = availableFamilyNames();
     const int numberOfFamilies = CFArrayGetCount(familyNames);
     for (int i = 0; i < numberOfFamilies; ++i) {
@@ -585,21 +581,19 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 }
 
 template <>
-CFArrayRef QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::createDescriptorArrayForFont(CTFontRef font, const QString &fileName)
+CFArrayRef QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::createDescriptorArrayForDescriptor(CTFontDescriptorRef descriptor, const QString &fileName)
 {
     Q_UNUSED(fileName)
     CFMutableArrayRef array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
-    QCFType<CTFontDescriptorRef> descriptor = CTFontCopyFontDescriptor(font);
     CFArrayAppendValue(array, descriptor);
     return array;
 }
 
 #ifndef QT_NO_FREETYPE
 template <>
-CFArrayRef QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::createDescriptorArrayForFont(CTFontRef font, const QString &fileName)
+CFArrayRef QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::createDescriptorArrayForDescriptor(CTFontDescriptorRef descriptor, const QString &fileName)
 {
     CFMutableArrayRef array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
-    QCFType<CTFontDescriptorRef> descriptor = CTFontCopyFontDescriptor(font);
 
     // The physical font source URL (usually a local file or Qt resource) is only required for
     // FreeType, when using non-system fonts, and needs some hackery to attach in a format
@@ -630,43 +624,35 @@ CFArrayRef QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::createDescriptorAr
 QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
     QCFType<CFArrayRef> fonts;
-    QStringList families;
 
-    CFErrorRef error = 0;
     if (!fontData.isEmpty()) {
         QByteArray* fontDataCopy = new QByteArray(fontData);
         QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(fontDataCopy,
                 fontDataCopy->constData(), fontDataCopy->size(), releaseFontData);
-        QCFType<CGFontRef> cgFont = CGFontCreateWithDataProvider(dataProvider);
-        if (cgFont) {
-            if (CTFontManagerRegisterGraphicsFont(cgFont, &error)) {
-                QCFType<CTFontRef> font = CTFontCreateWithGraphicsFont(cgFont, 0.0, NULL, NULL);
-                fonts = createDescriptorArrayForFont(font, fileName);
-                m_applicationFonts.append(QVariant::fromValue(QCFType<CGFontRef>::constructFromGet(cgFont)));
-            }
+        if (QCFType<CGFontRef> cgFont = CGFontCreateWithDataProvider(dataProvider)) {
+            QCFType<CTFontRef> ctFont = CTFontCreateWithGraphicsFont(cgFont, 0.0, NULL, NULL);
+            QCFType<CTFontDescriptorRef> descriptor = CTFontCopyFontDescriptor(ctFont);
+            fonts = createDescriptorArrayForDescriptor(descriptor, fileName);
         }
     } else {
-        QCFType<CFURLRef> fontURL = CFURLCreateWithFileSystemPath(NULL, QCFString(fileName), kCFURLPOSIXPathStyle, false);
-        if (CTFontManagerRegisterFontsForURL(fontURL, kCTFontManagerScopeProcess, &error)) {
-            fonts = CTFontManagerCreateFontDescriptorsFromURL(fontURL);
-            m_applicationFonts.append(QVariant::fromValue(QCFType<CFURLRef>::constructFromGet(fontURL)));
-        }
+        QCFType<CFURLRef> fontURL = QUrl::fromLocalFile(fileName).toCFURL();
+        fonts = CTFontManagerCreateFontDescriptorsFromURL(fontURL);
     }
 
-    if (error) {
-        NSLog(@"Unable to register font: %@", error);
-        CFRelease(error);
+    if (!fonts)
+        return QStringList();
+
+    QStringList families;
+    const int numFonts = CFArrayGetCount(fonts);
+    for (int i = 0; i < numFonts; ++i) {
+        CTFontDescriptorRef fontDescriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(fonts, i));
+        populateFromDescriptor(fontDescriptor);
+        QCFType<CFStringRef> familyName = CFStringRef(CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute));
+        families.append(QString::fromCFString(familyName));
     }
 
-    if (fonts) {
-        const int numFonts = CFArrayGetCount(fonts);
-        for (int i = 0; i < numFonts; ++i) {
-            CTFontDescriptorRef fontDescriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(fonts, i));
-            populateFromDescriptor(fontDescriptor);
-            QCFType<CFStringRef> familyName = CFStringRef(CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute));
-            families.append(QCFString(familyName));
-        }
-    }
+    // Note: We don't do font matching via CoreText for application fonts, so we don't
+    // need to enable font matching for them via CTFontManagerEnableFontDescriptors.
 
     return families;
 }
@@ -844,23 +830,6 @@ QList<int> QCoreTextFontDatabase::standardSizes() const
     const unsigned short *sizes = standard;
     while (*sizes) ret << *sizes++;
     return ret;
-}
-
-void QCoreTextFontDatabase::removeApplicationFonts()
-{
-    if (m_applicationFonts.isEmpty())
-        return;
-
-    for (const QVariant &font : qAsConst(m_applicationFonts)) {
-        CFErrorRef error;
-        if (font.canConvert(qMetaTypeId<QCFType<CGFontRef> >())) {
-            CTFontManagerUnregisterGraphicsFont(font.value<QCFType<CGFontRef> >(), &error);
-        } else if (font.canConvert(qMetaTypeId<QCFType<CFURLRef> >())) {
-            CTFontManagerUnregisterFontsForURL(font.value<QCFType<CFURLRef> >(), kCTFontManagerScopeProcess, &error);
-        }
-    }
-
-    m_applicationFonts.clear();
 }
 
 QT_END_NAMESPACE

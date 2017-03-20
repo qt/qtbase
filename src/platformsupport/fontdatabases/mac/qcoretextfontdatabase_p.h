@@ -91,13 +91,10 @@ public:
 
 private:
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString());
-    virtual CFArrayRef createDescriptorArrayForFont(CTFontRef font, const QString &fileName) = 0;
+    virtual CFArrayRef createDescriptorArrayForDescriptor(CTFontDescriptorRef descriptor, const QString &fileName) = 0;
 
     mutable QString defaultFontName;
 
-    void removeApplicationFonts();
-
-    QVector<QVariant> m_applicationFonts;
     mutable QSet<CTFontDescriptorRef> m_systemFontDescriptors;
     mutable QHash<QPlatformTheme::Font, QFont *> m_themeFonts;
 };
@@ -112,7 +109,7 @@ public:
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
 protected:
-    CFArrayRef createDescriptorArrayForFont(CTFontRef font, const QString &fileName) override;
+    CFArrayRef createDescriptorArrayForDescriptor(CTFontDescriptorRef descriptor, const QString &fileName) override;
 };
 
 QT_END_NAMESPACE
