@@ -36,6 +36,8 @@
 
 #include <private/cycle_p.h>
 
+#include "emulationdetector.h"
+
 struct LoggerSet;
 
 class tst_Selftests: public QObject
@@ -550,6 +552,7 @@ static QProcessEnvironment processEnvironment()
                 || key == QLatin1String("GRAPHICS_ROOT") || key == QLatin1String("TZ")
 #elif defined(Q_OS_UNIX)
                 || key == QLatin1String("HOME") || key == QLatin1String("USER") // Required for X11 on openSUSE
+                || key == QLatin1String("QEMU_SET_ENV") || key == QLatin1String("QEMU_LD_PREFIX") // Required for QEMU
 #  if !defined(Q_OS_MAC)
                 || key == QLatin1String("DISPLAY") || key == QLatin1String("XAUTHLOCALHOSTNAME")
                 || key.startsWith(QLatin1String("XDG_"))
@@ -641,6 +644,16 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
 #ifdef Q_CC_MINGW
         && subdir != QLatin1String("blacklisted") // calls qFatal()
         && subdir != QLatin1String("silent") // calls qFatal()
+#endif
+#ifdef Q_OS_LINUX
+        // QEMU outputs to stderr about uncaught signals
+        && (!EmulationDetector::isRunningArmOnX86() ||
+                (subdir != QLatin1String("blacklisted")
+                 && subdir != QLatin1String("silent")
+                 && subdir != QLatin1String("assert")
+                 && subdir != QLatin1String("crashes")
+                )
+            )
 #endif
         && subdir != QLatin1String("benchlibcallgrind"))
         QVERIFY2(err.isEmpty(), err.constData());
