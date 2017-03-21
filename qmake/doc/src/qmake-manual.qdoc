@@ -3170,6 +3170,7 @@
 
     See also \l{fn_size}{size()}.
 
+    \target system_replace
     \section2 system(command[, mode[, stsvar]])
 
     You can use this variant of the \c system function to obtain stdout from the
@@ -3517,7 +3518,7 @@
 
     \snippet code/doc_src_qmake-manual.pro 71
 
-    See also the replace variant of \l{system(command[, mode])}{system()}.
+    See also the replace variant of \l{system_replace}{system()}.
 
     \target touchfunction
     \section2 touch(filename, reference_filename)
