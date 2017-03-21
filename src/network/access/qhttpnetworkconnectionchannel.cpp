@@ -1083,12 +1083,36 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             }
         }
             Q_FALLTHROUGH();
-        case QSslConfiguration::NextProtocolNegotiationNone:
+        case QSslConfiguration::NextProtocolNegotiationNone: {
             protocolHandler.reset(new QHttpProtocolHandler(this));
+
+            QList<QByteArray> protocols = sslConfiguration.allowedNextProtocols();
+            const int nProtocols = protocols.size();
+            // Clear the protocol that we failed to negotiate, so we do not try
+            // it again on other channels that our connection can create/open.
+            if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2)
+                protocols.removeAll(QSslConfiguration::ALPNProtocolHTTP2);
+            else if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY)
+                protocols.removeAll(QSslConfiguration::NextProtocolSpdy3_0);
+
+            if (nProtocols > protocols.size()) {
+                sslConfiguration.setAllowedNextProtocols(protocols);
+                const int channelCount = connection->d_func()->channelCount;
+                for (int i = 0; i < channelCount; ++i)
+                    connection->d_func()->channels[i].setSslConfiguration(sslConfiguration);
+            }
+
             connection->setConnectionType(QHttpNetworkConnection::ConnectionTypeHTTP);
-            // re-queue requests from SPDY queue to HTTP queue, if any
-            requeueSpdyRequests();
+            // We use only one channel for SPDY or HTTP/2, but normally six for
+            // HTTP/1.1 - let's restore this number to the reserved number of
+            // channels:
+            if (connection->d_func()->activeChannelCount < connection->d_func()->channelCount) {
+                connection->d_func()->activeChannelCount = connection->d_func()->channelCount;
+                // re-queue requests from SPDY queue to HTTP queue, if any
+                requeueSpdyRequests();
+            }
             break;
+        }
         default:
             emitFinishedWithError(QNetworkReply::SslHandshakeFailedError,
                                   "detected unknown Next Protocol Negotiation protocol");

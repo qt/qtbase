@@ -22,16 +22,18 @@ include(ssl/ssl.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_NETWORK
 
-ANDROID_BUNDLED_JAR_DEPENDENCIES = \
-    jar/QtAndroidBearer-bundled.jar
-ANDROID_JAR_DEPENDENCIES = \
-    jar/QtAndroidBearer.jar
-ANDROID_LIB_DEPENDENCIES = \
-    plugins/bearer/libqandroidbearer.so
-MODULE_PLUGIN_TYPES = \
-    bearer
-ANDROID_PERMISSIONS += \
-    android.permission.ACCESS_NETWORK_STATE
+qtConfig(bearermanagement) {
+    ANDROID_BUNDLED_JAR_DEPENDENCIES = \
+        jar/QtAndroidBearer-bundled.jar
+    ANDROID_JAR_DEPENDENCIES = \
+        jar/QtAndroidBearer.jar
+    ANDROID_LIB_DEPENDENCIES = \
+        plugins/bearer/libqandroidbearer.so
+    MODULE_PLUGIN_TYPES = \
+        bearer
+    ANDROID_PERMISSIONS += \
+        android.permission.ACCESS_NETWORK_STATE
+}
 
 MODULE_WINRT_CAPABILITIES = \
     internetClient \

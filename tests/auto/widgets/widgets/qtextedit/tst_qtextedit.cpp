@@ -46,6 +46,7 @@
 #include <qcommonstyle.h>
 #include <qlayout.h>
 #include <qdir.h>
+#include <qpaintengine.h>
 
 #include <qabstracttextdocumentlayout.h>
 #include <qtextdocumentfragment.h>
@@ -59,6 +60,8 @@
 typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;
 typedef QList<keyPairType> pairListType;
 Q_DECLARE_METATYPE(keyPairType);
+
+Q_DECLARE_METATYPE(QList<QInputMethodEvent::Attribute>);
 
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 
@@ -199,6 +202,9 @@ private slots:
 #ifndef QT_NO_WHEELEVENT
     void wheelEvent();
 #endif
+
+    void preeditCharFormat_data();
+    void preeditCharFormat();
 
 private:
     void createSelection();
@@ -2593,6 +2599,236 @@ void tst_QTextEdit::wheelEvent()
 }
 
 #endif
+
+namespace {
+    class MyPaintEngine : public QPaintEngine
+    {
+    public:
+        bool begin(QPaintDevice *)
+        {
+            return true;
+        }
+
+        bool end()
+        {
+            return true;
+        }
+
+        void updateState(const QPaintEngineState &)
+        {
+        }
+
+        void drawPixmap(const QRectF &, const QPixmap &, const QRectF &)
+        {
+        }
+
+        void drawTextItem(const QPointF &, const QTextItem &textItem) Q_DECL_OVERRIDE
+        {
+            itemFonts.append(qMakePair(textItem.text(), textItem.font()));
+        }
+
+        Type type() const { return User; }
+
+
+        QList<QPair<QString, QFont> > itemFonts;
+    };
+
+    class MyPaintDevice : public QPaintDevice
+    {
+    public:
+        MyPaintDevice() : m_paintEngine(new MyPaintEngine)
+        {
+        }
+
+
+        QPaintEngine *paintEngine () const
+        {
+            return m_paintEngine;
+        }
+
+        int metric (QPaintDevice::PaintDeviceMetric metric) const {
+            switch (metric) {
+            case QPaintDevice::PdmWidth:
+            case QPaintDevice::PdmHeight:
+            case QPaintDevice::PdmWidthMM:
+            case QPaintDevice::PdmHeightMM:
+            case QPaintDevice::PdmNumColors:
+                return INT_MAX;
+            case QPaintDevice::PdmDepth:
+                return 32;
+            case QPaintDevice::PdmDpiX:
+            case QPaintDevice::PdmDpiY:
+            case QPaintDevice::PdmPhysicalDpiX:
+            case QPaintDevice::PdmPhysicalDpiY:
+                return 72;
+            case QPaintDevice::PdmDevicePixelRatio:
+            case QPaintDevice::PdmDevicePixelRatioScaled:
+                ; // fall through
+            }
+            return 0;
+        }
+
+        MyPaintEngine *m_paintEngine;
+    };
+}
+
+void tst_QTextEdit::preeditCharFormat_data()
+{
+    QTest::addColumn<QList<QInputMethodEvent::Attribute> >("imeAttributes");
+    QTest::addColumn<QStringList>("substrings");
+    QTest::addColumn<QList<bool> >("boldnessList");
+    QTest::addColumn<QList<bool> >("italicnessList");
+    QTest::addColumn<QList<int> >("pointSizeList");
+
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        {
+            QTextCharFormat tcf;
+            tcf.setFontPointSize(13);
+            tcf.setFontItalic(true);
+            attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 1, 1, tcf));
+        }
+
+        {
+            QTextCharFormat tcf;
+            tcf.setFontPointSize(8);
+            tcf.setFontWeight(QFont::Normal);
+            attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 4, 2, tcf));
+        }
+
+        QTest::newRow("Two formats, middle, in order")
+            << attributes
+            << (QStringList() << "P" << "r" << "eE" << "di" << "tText")
+            << (QList<bool>() << true << true << true << false << true)
+            << (QList<bool>() << false << true << false << false << false)
+            << (QList<int>() << 20 << 13 << 20 << 8 << 20);
+    }
+
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        {
+            QTextCharFormat tcf;
+            tcf.setFontPointSize(8);
+            tcf.setFontWeight(QFont::Normal);
+            attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 4, 2, tcf));
+        }
+
+        {
+            QTextCharFormat tcf;
+            tcf.setFontPointSize(13);
+            tcf.setFontItalic(true);
+            attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 1, 1, tcf));
+        }
+
+        QTest::newRow("Two formats, middle, out of order")
+            << attributes
+            << (QStringList() << "P" << "r" << "eE" << "di" << "tText")
+            << (QList<bool>() << true << true << true << false << true)
+            << (QList<bool>() << false << true << false << false << false)
+            << (QList<int>() << 20 << 13 << 20 << 8 << 20);
+    }
+
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        {
+            QTextCharFormat tcf;
+            tcf.setFontPointSize(13);
+            tcf.setFontItalic(true);
+            attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, 1, tcf));
+        }
+
+        {
+            QTextCharFormat tcf;
+            tcf.setFontPointSize(8);
+            tcf.setFontWeight(QFont::Normal);
+            attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 4, 2, tcf));
+        }
+
+        QTest::newRow("Two formats, front, in order")
+            << attributes
+            << (QStringList() << "P" << "reE" << "di" << "tText")
+            << (QList<bool>() << true << true << false << true)
+            << (QList<bool>() << true << false << false << false)
+            << (QList<int>() << 13 << 20 << 8 << 20);
+    }
+
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        {
+            QTextCharFormat tcf;
+            tcf.setFontPointSize(8);
+            tcf.setFontWeight(QFont::Normal);
+            attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 4, 2, tcf));
+        }
+
+        {
+            QTextCharFormat tcf;
+            tcf.setFontPointSize(13);
+            tcf.setFontItalic(true);
+            attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, 1, tcf));
+        }
+
+        QTest::newRow("Two formats, front, out of order")
+            << attributes
+            << (QStringList() << "P" << "reE" << "di" << "tText")
+            << (QList<bool>() << true << true << false << true)
+            << (QList<bool>() << true << false << false << false)
+            << (QList<int>() << 13 << 20 << 8 << 20);
+    }
+}
+
+void tst_QTextEdit::preeditCharFormat()
+{
+    QFETCH(QList<QInputMethodEvent::Attribute>, imeAttributes);
+    QFETCH(QStringList, substrings);
+    QFETCH(QList<bool>, boldnessList);
+    QFETCH(QList<bool>, italicnessList);
+    QFETCH(QList<int>, pointSizeList);
+
+    QTextEdit *w = new QTextEdit;
+    w->show();
+    QVERIFY(QTest::qWaitForWindowExposed(w));
+
+    // Set main char format
+    {
+        QTextCharFormat tcf;
+        tcf.setFontPointSize(20);
+        tcf.setFontWeight(QFont::Bold);
+        w->mergeCurrentCharFormat(tcf);
+    }
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes.prepend(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor,
+                                                   w->textCursor().position(),
+                                                   0,
+                                                   QVariant()));
+
+    attributes += imeAttributes;
+
+    QInputMethodEvent event("PreEditText", attributes);
+    QApplication::sendEvent(w, &event);
+
+    MyPaintDevice device;
+    {
+        QPainter p(&device);
+        w->document()->drawContents(&p);
+    }
+
+    QCOMPARE(device.m_paintEngine->itemFonts.size(), substrings.size());
+    for (int i = 0; i < substrings.size(); ++i)
+        QCOMPARE(device.m_paintEngine->itemFonts.at(i).first, substrings.at(i));
+
+    for (int i = 0; i < substrings.size(); ++i)
+        QCOMPARE(device.m_paintEngine->itemFonts.at(i).second.bold(), boldnessList.at(i));
+
+    for (int i = 0; i < substrings.size(); ++i)
+        QCOMPARE(device.m_paintEngine->itemFonts.at(i).second.italic(), italicnessList.at(i));
+
+    for (int i = 0; i < substrings.size(); ++i)
+        QCOMPARE(device.m_paintEngine->itemFonts.at(i).second.pointSize(), pointSizeList.at(i));
+
+    delete w;
+}
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"
