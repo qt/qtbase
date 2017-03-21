@@ -122,10 +122,10 @@ QT_BEGIN_NAMESPACE
 
     By default Vulkan debug output, for example messages from the validation
     layers, is routed to qDebug(). This can be disabled by passing the flag
-    \c NoDebugOutputRedirect to setFlags() <i>before</i> invoking create().
+    \c NoDebugOutputRedirect to setFlags() \e before invoking create().
 
     To enable additional layers and extensions, provide the list via
-    setLayers() and setExtensions() <i>before</i> invoking create(). When a
+    setLayers() and setExtensions() \e before invoking create(). When a
     given layer or extension is not reported as available from the instance,
     the request is ignored. After a successful call to create(), the values
     returned from functions like layers() and extensions() reflect the actual
@@ -183,7 +183,15 @@ QT_BEGIN_NAMESPACE
     To access the \c VkInstance handle the QVulkanInstance wraps, call
     vkInstance(). To resolve Vulkan functions, call getInstanceProcAddr(). For
     core Vulkan commands manual resolving is not necessary as they are provided
-    via the QVulkanFunctions object accessible by calling functions().
+    via the QVulkanFunctions and QVulkanDeviceFunctions objects accessible via
+    functions() and deviceFunctions().
+
+    \note QVulkanFunctions and QVulkanDeviceFunctions are generated from the
+    Vulkan API XML specifications when building the Qt libraries. Therefore no
+    documentation is provided for them. They contain the Vulkan 1.0 functions
+    with the same signatures as described in the
+    \l{https://www.khronos.org/registry/vulkan/specs/1.0/html/}{Vulkan API
+    documentation}.
 
     \section1 Getting a Native Vulkan Surface for a Window
 
@@ -689,12 +697,8 @@ QVersionNumber QVulkanInstance::apiVersion() const
 /*!
     Resolves the Vulkan function with the given \a name.
 
-    For core Vulkan commands use functions() and QVulkanFunctions instead.
-
-    \note When resolving device-specific extensions, prefer using
-    QVulkanFunctions::vkGetDeviceProcAddr() as explained
-    \l{https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkGetDeviceProcAddr.html}{in
-    the Vulkan specification}.
+    For core Vulkan commands prefer using the function wrappers retrievable from
+    functions() and deviceFunctions() instead.
  */
 PFN_vkVoidFunction QVulkanInstance::getInstanceProcAddr(const char *name)
 {
