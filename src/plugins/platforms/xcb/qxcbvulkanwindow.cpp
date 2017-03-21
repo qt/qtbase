@@ -59,10 +59,15 @@ QXcbVulkanWindow::~QXcbVulkanWindow()
 void QXcbVulkanWindow::resolveFormat(const QSurfaceFormat &format)
 {
     m_format = format;
-    m_format.setRedBufferSize(8);
-    m_format.setGreenBufferSize(8);
-    m_format.setBlueBufferSize(8);
+    if (m_format.redBufferSize() <= 0)
+        m_format.setRedBufferSize(8);
+    if (m_format.greenBufferSize() <= 0)
+        m_format.setGreenBufferSize(8);
+    if (m_format.blueBufferSize() <= 0)
+        m_format.setBlueBufferSize(8);
 }
+
+// No createVisual() needed, use the default that picks one based on the R/G/B/A size.
 
 VkSurfaceKHR *QXcbVulkanWindow::surface()
 {
