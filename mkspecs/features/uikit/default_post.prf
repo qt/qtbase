@@ -39,7 +39,7 @@ macx-xcode {
         qmake_launch_images.files = $$qmake_copy_image.output
         QMAKE_BUNDLE_DATA += qmake_launch_images
 
-        lessThan(QMAKE_XCODE_VERSION, "6.0") {
+        !versionAtLeast(QMAKE_XCODE_VERSION, 6.0) {
             warning("You need to update Xcode to version 6 or newer to fully support iPhone6/6+")
         } else {
             # Set up default LaunchScreen to support iPhone6/6+

@@ -195,7 +195,7 @@ sse2:!contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):!host_build:!if(static:qtConfig(
 clang {
     apple_clang_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
     reg_clang_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
-    !lessThan(apple_clang_ver, "5.1")|!lessThan(reg_clang_ver, "3.4"): \
+    versionAtLeast(apple_clang_ver, 5.1)|versionAtLeast(reg_clang_ver, 3.4): \
         CONFIG += compiler_supports_fpmath
 } else: gcc {
     CONFIG += compiler_supports_fpmath
