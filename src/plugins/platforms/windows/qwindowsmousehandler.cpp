@@ -567,7 +567,7 @@ bool QWindowsMouseHandler::translateGestureEvent(QWindow *window, HWND hwnd,
                                                  QtWindows::WindowsEventType,
                                                  MSG msg, LRESULT *)
 {
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) || !defined(QT_TOUCH_FROM_GESTURE)
     Q_UNUSED(window)
     Q_UNUSED(hwnd)
     Q_UNUSED(msg)

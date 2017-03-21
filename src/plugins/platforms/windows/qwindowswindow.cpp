@@ -672,7 +672,7 @@ QWindowsWindowData
                                  context->frameX, context->frameY,
                                  context->frameWidth, context->frameHeight,
                                  parentHandle, NULL, appinst, NULL);
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) && defined(QT_TOUCH_FROM_GESTURE)
     if (DisableGestures(result.hwnd, TGF_GID_ALL, TGF_SCOPE_WINDOW))
         EnableGestures(result.hwnd, TGF_GID_DIRECTMANIPULATION, TGF_SCOPE_WINDOW);
 #endif
