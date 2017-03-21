@@ -102,7 +102,6 @@ QPlatformOpenGLContext *QXcbEglIntegration::createPlatformOpenGLContext(QOpenGLC
     QXcbEglContext *platformContext = new QXcbEglContext(screen->surfaceFormatFor(context->format()),
                                                          context->shareHandle(),
                                                          eglDisplay(),
-                                                         screen->connection(),
                                                          context->nativeHandle());
     context->setNativeHandle(platformContext->nativeHandle());
     return platformContext;

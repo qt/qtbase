@@ -51,9 +51,8 @@ class QXcbEglContext : public QEGLPlatformContext
 {
 public:
     QXcbEglContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share,
-                           EGLDisplay display, QXcbConnection *c, const QVariant &nativeHandle)
+                           EGLDisplay display, const QVariant &nativeHandle)
         : QEGLPlatformContext(glFormat, share, display, 0, nativeHandle)
-        , m_connection(c)
     {
     }
 
@@ -83,9 +82,6 @@ public:
     QVariant nativeHandle() const {
         return QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(eglContext(), eglDisplay()));
     }
-
-private:
-    QXcbConnection *m_connection;
 };
 
 QT_END_NAMESPACE
