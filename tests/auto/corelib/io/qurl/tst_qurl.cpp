@@ -3088,7 +3088,11 @@ void tst_QUrl::fromUserInputWithCwd_data()
     }
 
     // Existing files
-    for (const char *fileName : {"file.txt", "file#a.txt", "file .txt", "file.txt ", "file:colon.txt"}) {
+    for (const char *fileName : {"file.txt", "file#a.txt", "file .txt", "file.txt "
+#ifndef Q_OS_WIN
+            , "file:colon.txt"
+#endif
+            }) {
         const QString filePath = base + '/' + fileName;
         QFile file(filePath);
         QVERIFY2(file.open(QIODevice::WriteOnly), qPrintable(filePath));
