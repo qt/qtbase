@@ -213,20 +213,15 @@ headersclean:!internal_module {
             !contains(QT_ARCH, arm):!contains(QT_ARCH, mips): \
                 hcleanFLAGS += -Wcast-align
 
-            greaterThan(QT_CLANG_MAJOR_VERSION, 3) {
-                hcleanFLAGS += -Wdouble-promotion
-            } greaterThan(QT_CLANG_MAJOR_VERSION, 2):greaterThan(QT_CLANG_MINOR_VERSION, 7) {
-                hcleanFLAGS += -Wdouble-promotion
-            }
+            clang_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
+            versionAtLeast(clang_ver, 3.8): hcleanFLAGS += -Wdouble-promotion
 
             !clang {
                 # options accepted only by GCC
 
-                greaterThan(QT_GCC_MAJOR_VERSION, 4) {
-                    hcleanFLAGS += -Wdouble-promotion
-                } greaterThan(QT_GCC_MAJOR_VERSION, 3):greaterThan(QT_GCC_MINOR_VERSION, 4) {
-                    hcleanFLAGS += -Wdouble-promotion
-                }
+                gcc_ver = $${QT_GCC_MAJOR_VERSION}.$${QT_GCC_MINOR_VERSION}
+                versionAtLeast(gcc_ver, 4.5): hcleanFLAGS += -Wdouble-promotion
+
                 c++11 {
                     # only enabled for actual c++11 builds due to
                     # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52806

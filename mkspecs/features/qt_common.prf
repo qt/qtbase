@@ -55,9 +55,8 @@ host_build:cross_compile: return()
 # -Wdate-time: warn if we use __DATE__ or __TIME__ (we want to be able to reproduce the exact same binary)
 # -Wvla: use of variable-length arrays (an extension to C++)
 clang {
-    # Clang 3.5 introduced -Wdate-time
-    # The conditional assumes we aren't compiling against Clang 2.x anymore
-    greaterThan(QT_CLANG_MAJOR_VERSION, 3)|greaterThan(QT_CLANG_MINOR_VERSION, 4): \
+    clang_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
+    versionAtLeast(clang_ver, 3.5): \
         QMAKE_CXXFLAGS_WARN_ON += -Wdate-time
 } else: gcc:!intel_icc {
     QMAKE_CXXFLAGS_WARN_ON += -Wvla

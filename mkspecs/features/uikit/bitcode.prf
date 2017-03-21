@@ -1,4 +1,4 @@
-lessThan(QMAKE_XCODE_VERSION, "7.0") {
+!versionAtLeast(QMAKE_XCODE_VERSION, 7.0) {
     warning("You need to update Xcode to version 7 or newer to support bitcode")
 } else: !macx-xcode {
     # Simulator builds and all debug builds SHOULD use -fembed-bitcode-marker,

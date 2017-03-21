@@ -17,22 +17,8 @@ isEmpty(CTEST_VERSION) {
 }
 
 CMAKE_VERSION = $$last(CMAKE_VERSION)
-CMAKE_VERSION_MAJOR = $$section(CMAKE_VERSION, ., 0, 0)
-CMAKE_VERSION_MINOR = $$section(CMAKE_VERSION, ., 1, 1)
-CMAKE_VERSION_PATCH = $$section(CMAKE_VERSION, ., 2, 2)
-# CMake can report versions like 2.8.11-rc1, so strip off the rc part.
-CMAKE_VERSION_PATCH ~= s,-.*,,
 
-VERSION_OK =
-greaterThan(CMAKE_VERSION_MAJOR, 2) {
-    VERSION_OK = 1
-} else:greaterThan(CMAKE_VERSION_MAJOR, 1):greaterThan(CMAKE_VERSION_MINOR, 8) {
-    VERSION_OK = 1
-} else:greaterThan(CMAKE_VERSION_MAJOR, 1):greaterThan(CMAKE_VERSION_MINOR, 7):greaterThan(CMAKE_VERSION_PATCH, 2) {
-    VERSION_OK = 1
-}
-
-isEmpty(VERSION_OK) {
+!versionAtLeast(CMAKE_VERSION, 2.8.3) {
     message("cmake $$CMAKE_VERSION is too old for this test.")
     return()
 }
