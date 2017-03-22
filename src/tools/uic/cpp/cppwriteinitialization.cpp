@@ -590,15 +590,15 @@ void WriteInitialization::addWizardPage(const QString &pageVarName, const DomWid
     /* If the node has a (free-format) string "pageId" attribute (which could
      * an integer or an enumeration value), use setPage(), else addPage(). */
     QString id;
-    const DomPropertyList attributes = page->elementAttribute();
+    const auto &attributes = page->elementAttribute();
     if (!attributes.empty()) {
-        const DomPropertyList::const_iterator acend = attributes.constEnd();
-        for (DomPropertyList::const_iterator it = attributes.constBegin(); it != acend; ++it)
-            if ((*it)->attributeName() == QLatin1String("pageId")) {
-                if (const DomString *ds = (*it)->elementString())
+        for (const DomProperty *p : attributes) {
+            if (p->attributeName() == QLatin1String("pageId")) {
+                if (const DomString *ds = p->elementString())
                     id = ds->text();
                 break;
             }
+        }
     }
     if (id.isEmpty()) {
         m_output << m_indent << parentWidget << "->addPage(" << pageVarName << ");\n";
@@ -1707,7 +1707,7 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
         return;
 
     // old format
-    const QList<DomColor*> colors = colorGroup->elementColor();
+    const auto &colors = colorGroup->elementColor();
     for (int i=0; i<colors.size(); ++i) {
         const DomColor *color = colors.at(i);
 
@@ -1718,7 +1718,7 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
     }
 
     // new format
-    const QList<DomColorRole *> colorRoles = colorGroup->elementColorRole();
+    const auto &colorRoles = colorGroup->elementColorRole();
     for (const DomColorRole *colorRole : colorRoles) {
         if (colorRole->hasAttributeRole()) {
             const QString brushName = writeBrushInitialization(colorRole->elementBrush());
@@ -1795,7 +1795,7 @@ void WriteInitialization::writeBrush(const DomBrush *brush, const QString &brush
                 << gradient->attributeCoordinateMode() << ");\n";
         }
 
-       const  QList<DomGradientStop *> stops = gradient->elementGradientStop();
+       const auto &stops = gradient->elementGradientStop();
         for (const DomGradientStop *stop : stops) {
             const DomColor *color = stop->elementColor();
             m_output << m_indent << gradientName << ".setColorAt("
@@ -1928,7 +1928,7 @@ void WriteInitialization::initializeComboBox(DomWidget *w)
     const QString varName = m_driver->findOrInsertWidget(w);
     const QString className = w->attributeClass();
 
-    const QList<DomItem*> items = w->elementItem();
+    const auto &items = w->elementItem();
 
     if (items.isEmpty())
         return;
@@ -2119,7 +2119,7 @@ void WriteInitialization::initializeListWidget(DomWidget *w)
     const QString varName = m_driver->findOrInsertWidget(w);
     const QString className = w->attributeClass();
 
-    const QList<DomItem*> items = w->elementItem();
+    const auto &items = w->elementItem();
 
     if (items.isEmpty())
         return;
@@ -2149,7 +2149,7 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
     // columns
     Item item(QLatin1String("QTreeWidgetItem"), m_indent, m_output, m_refreshOut, m_driver);
 
-    const QList<DomColumn*> columns = w->elementColumn();
+    const auto &columns = w->elementColumn();
     for (int i = 0; i < columns.size(); ++i) {
         const DomColumn *column = columns.at(i);
 
@@ -2192,7 +2192,7 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
     conditions an item is needed needs to be done bottom-up, the whole process makes
     two passes, storing the intermediate result in a recursive StringInitializerListMap.
 */
-QList<WriteInitialization::Item *> WriteInitialization::initializeTreeWidgetItems(const QList<DomItem *> &domItems)
+QList<WriteInitialization::Item *> WriteInitialization::initializeTreeWidgetItems(const QVector<DomItem *> &domItems)
 {
     // items
     QList<Item *> items;
@@ -2236,7 +2236,7 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     const QString varName = m_driver->findOrInsertWidget(w);
 
     // columns
-    const QList<DomColumn *> columns = w->elementColumn();
+    const auto &columns = w->elementColumn();
 
     if (columns.size() != 0) {
         m_output << m_indent << "if (" << varName << "->columnCount() < " << columns.size() << ")\n"
@@ -2258,7 +2258,7 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     }
 
     // rows
-    const QList<DomRow *> rows = w->elementRow();
+    const auto &rows = w->elementRow();
 
     if (rows.size() != 0) {
         m_output << m_indent << "if (" << varName << "->rowCount() < " << rows.size() << ")\n"
@@ -2282,7 +2282,7 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     // items
     QString tempName = disableSorting(w, varName);
 
-    const QList<DomItem *> items = w->elementItem();
+    const auto &items = w->elementItem();
 
     for (int i = 0; i < items.size(); ++i) {
         const DomItem *cell = items.at(i);

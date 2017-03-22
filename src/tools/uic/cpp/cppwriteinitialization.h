@@ -221,7 +221,7 @@ private:
     void initializeComboBox(DomWidget *w);
     void initializeListWidget(DomWidget *w);
     void initializeTreeWidget(DomWidget *w);
-    QList<Item *> initializeTreeWidgetItems(const QList<DomItem *> &domItems);
+    QList<Item *> initializeTreeWidgetItems(const QVector<DomItem *> &domItems);
     void initializeTableWidget(DomWidget *w);
 
     QString disableSorting(DomWidget *w, const QString &varName);

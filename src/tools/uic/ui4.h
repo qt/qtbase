@@ -45,6 +45,7 @@
 #include <qlist.h>
 #include <qstring.h>
 #include <qstringlist.h>
+#include <qvector.h>
 #include <qxmlstream.h>
 #include <qglobal.h>
 
@@ -147,6 +148,7 @@ class DomStringPropertySpecification;
 */
 
 class QDESIGNER_UILIB_EXPORT DomUI {
+    Q_DISABLE_COPY(DomUI)
 public:
     DomUI();
     ~DomUI();
@@ -338,12 +340,10 @@ private:
         Slots = 32768,
         ButtonGroups = 65536
     };
-
-    DomUI(const DomUI &other);
-    void operator = (const DomUI&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomIncludes {
+    Q_DISABLE_COPY(DomIncludes)
 public:
     DomIncludes();
     ~DomIncludes();
@@ -355,8 +355,8 @@ public:
 
     // attribute accessors
     // child element accessors
-    inline QList<DomInclude*> elementInclude() const { return m_include; }
-    void setElementInclude(const QList<DomInclude*>& a);
+    inline QVector<DomInclude*> elementInclude() const { return m_include; }
+    void setElementInclude(const QVector<DomInclude*>& a);
 
 private:
     QString m_text;
@@ -365,16 +365,14 @@ private:
     // attribute data
     // child element data
     uint m_children;
-    QList<DomInclude*> m_include;
+    QVector<DomInclude*> m_include;
     enum Child {
         Include = 1
     };
-
-    DomIncludes(const DomIncludes &other);
-    void operator = (const DomIncludes&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomInclude {
+    Q_DISABLE_COPY(DomInclude)
 public:
     DomInclude();
     ~DomInclude();
@@ -409,12 +407,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomInclude(const DomInclude &other);
-    void operator = (const DomInclude&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomResources {
+    Q_DISABLE_COPY(DomResources)
 public:
     DomResources();
     ~DomResources();
@@ -431,8 +427,8 @@ public:
     inline void clearAttributeName() { m_has_attr_name = false; }
 
     // child element accessors
-    inline QList<DomResource*> elementInclude() const { return m_include; }
-    void setElementInclude(const QList<DomResource*>& a);
+    inline QVector<DomResource*> elementInclude() const { return m_include; }
+    void setElementInclude(const QVector<DomResource*>& a);
 
 private:
     QString m_text;
@@ -444,16 +440,14 @@ private:
 
     // child element data
     uint m_children;
-    QList<DomResource*> m_include;
+    QVector<DomResource*> m_include;
     enum Child {
         Include = 1
     };
-
-    DomResources(const DomResources &other);
-    void operator = (const DomResources&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomResource {
+    Q_DISABLE_COPY(DomResource)
 public:
     DomResource();
     ~DomResource();
@@ -480,12 +474,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomResource(const DomResource &other);
-    void operator = (const DomResource&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomActionGroup {
+    Q_DISABLE_COPY(DomActionGroup)
 public:
     DomActionGroup();
     ~DomActionGroup();
@@ -502,11 +494,11 @@ public:
     inline void clearAttributeName() { m_has_attr_name = false; }
 
     // child element accessors
-    inline QList<DomAction*> elementAction() const { return m_action; }
-    void setElementAction(const QList<DomAction*>& a);
+    inline QVector<DomAction*> elementAction() const { return m_action; }
+    void setElementAction(const QVector<DomAction*>& a);
 
-    inline QList<DomActionGroup*> elementActionGroup() const { return m_actionGroup; }
-    void setElementActionGroup(const QList<DomActionGroup*>& a);
+    inline QVector<DomActionGroup*> elementActionGroup() const { return m_actionGroup; }
+    void setElementActionGroup(const QVector<DomActionGroup*>& a);
 
     inline QList<DomProperty*> elementProperty() const { return m_property; }
     void setElementProperty(const QList<DomProperty*>& a);
@@ -524,8 +516,8 @@ private:
 
     // child element data
     uint m_children;
-    QList<DomAction*> m_action;
-    QList<DomActionGroup*> m_actionGroup;
+    QVector<DomAction*> m_action;
+    QVector<DomActionGroup*> m_actionGroup;
     QList<DomProperty*> m_property;
     QList<DomProperty*> m_attribute;
     enum Child {
@@ -534,12 +526,10 @@ private:
         Property = 4,
         Attribute = 8
     };
-
-    DomActionGroup(const DomActionGroup &other);
-    void operator = (const DomActionGroup&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomAction {
+    Q_DISABLE_COPY(DomAction)
 public:
     DomAction();
     ~DomAction();
@@ -586,12 +576,10 @@ private:
         Property = 1,
         Attribute = 2
     };
-
-    DomAction(const DomAction &other);
-    void operator = (const DomAction&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomActionRef {
+    Q_DISABLE_COPY(DomActionRef)
 public:
     DomActionRef();
     ~DomActionRef();
@@ -618,12 +606,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomActionRef(const DomActionRef &other);
-    void operator = (const DomActionRef&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomButtonGroup {
+    Q_DISABLE_COPY(DomButtonGroup)
 public:
     DomButtonGroup();
     ~DomButtonGroup();
@@ -662,12 +648,10 @@ private:
         Property = 1,
         Attribute = 2
     };
-
-    DomButtonGroup(const DomButtonGroup &other);
-    void operator = (const DomButtonGroup&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomButtonGroups {
+    Q_DISABLE_COPY(DomButtonGroups)
 public:
     DomButtonGroups();
     ~DomButtonGroups();
@@ -679,8 +663,8 @@ public:
 
     // attribute accessors
     // child element accessors
-    inline QList<DomButtonGroup*> elementButtonGroup() const { return m_buttonGroup; }
-    void setElementButtonGroup(const QList<DomButtonGroup*>& a);
+    inline QVector<DomButtonGroup*> elementButtonGroup() const { return m_buttonGroup; }
+    void setElementButtonGroup(const QVector<DomButtonGroup*>& a);
 
 private:
     QString m_text;
@@ -689,16 +673,14 @@ private:
     // attribute data
     // child element data
     uint m_children;
-    QList<DomButtonGroup*> m_buttonGroup;
+    QVector<DomButtonGroup*> m_buttonGroup;
     enum Child {
         ButtonGroup = 1
     };
-
-    DomButtonGroups(const DomButtonGroups &other);
-    void operator = (const DomButtonGroups&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomImages {
+    Q_DISABLE_COPY(DomImages)
 public:
     DomImages();
     ~DomImages();
@@ -710,8 +692,8 @@ public:
 
     // attribute accessors
     // child element accessors
-    inline QList<DomImage*> elementImage() const { return m_image; }
-    void setElementImage(const QList<DomImage*>& a);
+    inline QVector<DomImage*> elementImage() const { return m_image; }
+    void setElementImage(const QVector<DomImage*>& a);
 
 private:
     QString m_text;
@@ -720,16 +702,14 @@ private:
     // attribute data
     // child element data
     uint m_children;
-    QList<DomImage*> m_image;
+    QVector<DomImage*> m_image;
     enum Child {
         Image = 1
     };
-
-    DomImages(const DomImages &other);
-    void operator = (const DomImages&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomImage {
+    Q_DISABLE_COPY(DomImage)
 public:
     DomImage();
     ~DomImage();
@@ -766,12 +746,10 @@ private:
     enum Child {
         Data = 1
     };
-
-    DomImage(const DomImage &other);
-    void operator = (const DomImage&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomImageData {
+    Q_DISABLE_COPY(DomImageData)
 public:
     DomImageData();
     ~DomImageData();
@@ -806,12 +784,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomImageData(const DomImageData &other);
-    void operator = (const DomImageData&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomCustomWidgets {
+    Q_DISABLE_COPY(DomCustomWidgets)
 public:
     DomCustomWidgets();
     ~DomCustomWidgets();
@@ -823,8 +799,8 @@ public:
 
     // attribute accessors
     // child element accessors
-    inline QList<DomCustomWidget*> elementCustomWidget() const { return m_customWidget; }
-    void setElementCustomWidget(const QList<DomCustomWidget*>& a);
+    inline QVector<DomCustomWidget*> elementCustomWidget() const { return m_customWidget; }
+    void setElementCustomWidget(const QVector<DomCustomWidget*>& a);
 
 private:
     QString m_text;
@@ -833,16 +809,14 @@ private:
     // attribute data
     // child element data
     uint m_children;
-    QList<DomCustomWidget*> m_customWidget;
+    QVector<DomCustomWidget*> m_customWidget;
     enum Child {
         CustomWidget = 1
     };
-
-    DomCustomWidgets(const DomCustomWidgets &other);
-    void operator = (const DomCustomWidgets&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomHeader {
+    Q_DISABLE_COPY(DomHeader)
 public:
     DomHeader();
     ~DomHeader();
@@ -869,12 +843,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomHeader(const DomHeader &other);
-    void operator = (const DomHeader&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomCustomWidget {
+    Q_DISABLE_COPY(DomCustomWidget)
 public:
     DomCustomWidget();
     ~DomCustomWidget();
@@ -986,12 +958,10 @@ private:
         Slots = 1024,
         Propertyspecifications = 2048
     };
-
-    DomCustomWidget(const DomCustomWidget &other);
-    void operator = (const DomCustomWidget&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomProperties {
+    Q_DISABLE_COPY(DomProperties)
 public:
     DomProperties();
     ~DomProperties();
@@ -1003,8 +973,8 @@ public:
 
     // attribute accessors
     // child element accessors
-    inline QList<DomPropertyData*> elementProperty() const { return m_property; }
-    void setElementProperty(const QList<DomPropertyData*>& a);
+    inline QVector<DomPropertyData*> elementProperty() const { return m_property; }
+    void setElementProperty(const QVector<DomPropertyData*>& a);
 
 private:
     QString m_text;
@@ -1013,16 +983,14 @@ private:
     // attribute data
     // child element data
     uint m_children;
-    QList<DomPropertyData*> m_property;
+    QVector<DomPropertyData*> m_property;
     enum Child {
         Property = 1
     };
-
-    DomProperties(const DomProperties &other);
-    void operator = (const DomProperties&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomPropertyData {
+    Q_DISABLE_COPY(DomPropertyData)
 public:
     DomPropertyData();
     ~DomPropertyData();
@@ -1049,12 +1017,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomPropertyData(const DomPropertyData &other);
-    void operator = (const DomPropertyData&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomSizePolicyData {
+    Q_DISABLE_COPY(DomSizePolicyData)
 public:
     DomSizePolicyData();
     ~DomSizePolicyData();
@@ -1089,12 +1055,10 @@ private:
         HorData = 1,
         VerData = 2
     };
-
-    DomSizePolicyData(const DomSizePolicyData &other);
-    void operator = (const DomSizePolicyData&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomLayoutDefault {
+    Q_DISABLE_COPY(DomLayoutDefault)
 public:
     DomLayoutDefault();
     ~DomLayoutDefault();
@@ -1129,12 +1093,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomLayoutDefault(const DomLayoutDefault &other);
-    void operator = (const DomLayoutDefault&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomLayoutFunction {
+    Q_DISABLE_COPY(DomLayoutFunction)
 public:
     DomLayoutFunction();
     ~DomLayoutFunction();
@@ -1169,12 +1131,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomLayoutFunction(const DomLayoutFunction &other);
-    void operator = (const DomLayoutFunction&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomTabStops {
+    Q_DISABLE_COPY(DomTabStops)
 public:
     DomTabStops();
     ~DomTabStops();
@@ -1200,12 +1160,10 @@ private:
     enum Child {
         TabStop = 1
     };
-
-    DomTabStops(const DomTabStops &other);
-    void operator = (const DomTabStops&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomLayout {
+    Q_DISABLE_COPY(DomLayout)
 public:
     DomLayout();
     ~DomLayout();
@@ -1258,8 +1216,8 @@ public:
     inline QList<DomProperty*> elementAttribute() const { return m_attribute; }
     void setElementAttribute(const QList<DomProperty*>& a);
 
-    inline QList<DomLayoutItem*> elementItem() const { return m_item; }
-    void setElementItem(const QList<DomLayoutItem*>& a);
+    inline QVector<DomLayoutItem*> elementItem() const { return m_item; }
+    void setElementItem(const QVector<DomLayoutItem*>& a);
 
 private:
     QString m_text;
@@ -1291,18 +1249,16 @@ private:
     uint m_children;
     QList<DomProperty*> m_property;
     QList<DomProperty*> m_attribute;
-    QList<DomLayoutItem*> m_item;
+    QVector<DomLayoutItem*> m_item;
     enum Child {
         Property = 1,
         Attribute = 2,
         Item = 4
     };
-
-    DomLayout(const DomLayout &other);
-    void operator = (const DomLayout&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomLayoutItem {
+    Q_DISABLE_COPY(DomLayoutItem)
 public:
     DomLayoutItem();
     ~DomLayoutItem();
@@ -1379,12 +1335,10 @@ private:
     DomWidget* m_widget;
     DomLayout* m_layout;
     DomSpacer* m_spacer;
-
-    DomLayoutItem(const DomLayoutItem &other);
-    void operator = (const DomLayoutItem&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomRow {
+    Q_DISABLE_COPY(DomRow)
 public:
     DomRow();
     ~DomRow();
@@ -1410,12 +1364,10 @@ private:
     enum Child {
         Property = 1
     };
-
-    DomRow(const DomRow &other);
-    void operator = (const DomRow&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomColumn {
+    Q_DISABLE_COPY(DomColumn)
 public:
     DomColumn();
     ~DomColumn();
@@ -1441,12 +1393,10 @@ private:
     enum Child {
         Property = 1
     };
-
-    DomColumn(const DomColumn &other);
-    void operator = (const DomColumn&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomItem {
+    Q_DISABLE_COPY(DomItem)
 public:
     DomItem();
     ~DomItem();
@@ -1471,8 +1421,8 @@ public:
     inline QList<DomProperty*> elementProperty() const { return m_property; }
     void setElementProperty(const QList<DomProperty*>& a);
 
-    inline QList<DomItem*> elementItem() const { return m_item; }
-    void setElementItem(const QList<DomItem*>& a);
+    inline QVector<DomItem*> elementItem() const { return m_item; }
+    void setElementItem(const QVector<DomItem*>& a);
 
 private:
     QString m_text;
@@ -1488,17 +1438,15 @@ private:
     // child element data
     uint m_children;
     QList<DomProperty*> m_property;
-    QList<DomItem*> m_item;
+    QVector<DomItem*> m_item;
     enum Child {
         Property = 1,
         Item = 2
     };
-
-    DomItem(const DomItem &other);
-    void operator = (const DomItem&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomWidget {
+    Q_DISABLE_COPY(DomWidget)
 public:
     DomWidget();
     ~DomWidget();
@@ -1531,38 +1479,38 @@ public:
     inline QList<DomProperty*> elementProperty() const { return m_property; }
     void setElementProperty(const QList<DomProperty*>& a);
 
-    inline QList<DomScript*> elementScript() const { return m_script; }
-    void setElementScript(const QList<DomScript*>& a);
+    inline QVector<DomScript*> elementScript() const { return m_script; }
+    void setElementScript(const QVector<DomScript*>& a);
 
-    inline QList<DomWidgetData*> elementWidgetData() const { return m_widgetData; }
-    void setElementWidgetData(const QList<DomWidgetData*>& a);
+    inline QVector<DomWidgetData*> elementWidgetData() const { return m_widgetData; }
+    void setElementWidgetData(const QVector<DomWidgetData*>& a);
 
     inline QList<DomProperty*> elementAttribute() const { return m_attribute; }
     void setElementAttribute(const QList<DomProperty*>& a);
 
-    inline QList<DomRow*> elementRow() const { return m_row; }
-    void setElementRow(const QList<DomRow*>& a);
+    inline QVector<DomRow*> elementRow() const { return m_row; }
+    void setElementRow(const QVector<DomRow*>& a);
 
-    inline QList<DomColumn*> elementColumn() const { return m_column; }
-    void setElementColumn(const QList<DomColumn*>& a);
+    inline QVector<DomColumn*> elementColumn() const { return m_column; }
+    void setElementColumn(const QVector<DomColumn*>& a);
 
-    inline QList<DomItem*> elementItem() const { return m_item; }
-    void setElementItem(const QList<DomItem*>& a);
+    inline QVector<DomItem*> elementItem() const { return m_item; }
+    void setElementItem(const QVector<DomItem*>& a);
 
-    inline QList<DomLayout*> elementLayout() const { return m_layout; }
-    void setElementLayout(const QList<DomLayout*>& a);
+    inline QVector<DomLayout*> elementLayout() const { return m_layout; }
+    void setElementLayout(const QVector<DomLayout*>& a);
 
-    inline QList<DomWidget*> elementWidget() const { return m_widget; }
-    void setElementWidget(const QList<DomWidget*>& a);
+    inline QVector<DomWidget*> elementWidget() const { return m_widget; }
+    void setElementWidget(const QVector<DomWidget*>& a);
 
-    inline QList<DomAction*> elementAction() const { return m_action; }
-    void setElementAction(const QList<DomAction*>& a);
+    inline QVector<DomAction*> elementAction() const { return m_action; }
+    void setElementAction(const QVector<DomAction*>& a);
 
-    inline QList<DomActionGroup*> elementActionGroup() const { return m_actionGroup; }
-    void setElementActionGroup(const QList<DomActionGroup*>& a);
+    inline QVector<DomActionGroup*> elementActionGroup() const { return m_actionGroup; }
+    void setElementActionGroup(const QVector<DomActionGroup*>& a);
 
-    inline QList<DomActionRef*> elementAddAction() const { return m_addAction; }
-    void setElementAddAction(const QList<DomActionRef*>& a);
+    inline QVector<DomActionRef*> elementAddAction() const { return m_addAction; }
+    void setElementAddAction(const QVector<DomActionRef*>& a);
 
     inline QStringList elementZOrder() const { return m_zOrder; }
     void setElementZOrder(const QStringList& a);
@@ -1585,17 +1533,17 @@ private:
     uint m_children;
     QStringList m_class;
     QList<DomProperty*> m_property;
-    QList<DomScript*> m_script;
-    QList<DomWidgetData*> m_widgetData;
+    QVector<DomScript*> m_script;
+    QVector<DomWidgetData*> m_widgetData;
     QList<DomProperty*> m_attribute;
-    QList<DomRow*> m_row;
-    QList<DomColumn*> m_column;
-    QList<DomItem*> m_item;
-    QList<DomLayout*> m_layout;
-    QList<DomWidget*> m_widget;
-    QList<DomAction*> m_action;
-    QList<DomActionGroup*> m_actionGroup;
-    QList<DomActionRef*> m_addAction;
+    QVector<DomRow*> m_row;
+    QVector<DomColumn*> m_column;
+    QVector<DomItem*> m_item;
+    QVector<DomLayout*> m_layout;
+    QVector<DomWidget*> m_widget;
+    QVector<DomAction*> m_action;
+    QVector<DomActionGroup*> m_actionGroup;
+    QVector<DomActionRef*> m_addAction;
     QStringList m_zOrder;
     enum Child {
         Class = 1,
@@ -1613,12 +1561,10 @@ private:
         AddAction = 4096,
         ZOrder = 8192
     };
-
-    DomWidget(const DomWidget &other);
-    void operator = (const DomWidget&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomSpacer {
+    Q_DISABLE_COPY(DomSpacer)
 public:
     DomSpacer();
     ~DomSpacer();
@@ -1652,12 +1598,10 @@ private:
     enum Child {
         Property = 1
     };
-
-    DomSpacer(const DomSpacer &other);
-    void operator = (const DomSpacer&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomColor {
+    Q_DISABLE_COPY(DomColor)
 public:
     DomColor();
     ~DomColor();
@@ -1707,12 +1651,10 @@ private:
         Green = 2,
         Blue = 4
     };
-
-    DomColor(const DomColor &other);
-    void operator = (const DomColor&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomGradientStop {
+    Q_DISABLE_COPY(DomGradientStop)
 public:
     DomGradientStop();
     ~DomGradientStop();
@@ -1749,12 +1691,10 @@ private:
     enum Child {
         Color = 1
     };
-
-    DomGradientStop(const DomGradientStop &other);
-    void operator = (const DomGradientStop&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomGradient {
+    Q_DISABLE_COPY(DomGradient)
 public:
     DomGradient();
     ~DomGradient();
@@ -1831,8 +1771,8 @@ public:
     inline void clearAttributeCoordinateMode() { m_has_attr_coordinateMode = false; }
 
     // child element accessors
-    inline QList<DomGradientStop*> elementGradientStop() const { return m_gradientStop; }
-    void setElementGradientStop(const QList<DomGradientStop*>& a);
+    inline QVector<DomGradientStop*> elementGradientStop() const { return m_gradientStop; }
+    void setElementGradientStop(const QVector<DomGradientStop*>& a);
 
 private:
     QString m_text;
@@ -1880,16 +1820,14 @@ private:
 
     // child element data
     uint m_children;
-    QList<DomGradientStop*> m_gradientStop;
+    QVector<DomGradientStop*> m_gradientStop;
     enum Child {
         GradientStop = 1
     };
-
-    DomGradient(const DomGradient &other);
-    void operator = (const DomGradient&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomBrush {
+    Q_DISABLE_COPY(DomBrush)
 public:
     DomBrush();
     ~DomBrush();
@@ -1934,12 +1872,10 @@ private:
     DomColor* m_color;
     DomProperty* m_texture;
     DomGradient* m_gradient;
-
-    DomBrush(const DomBrush &other);
-    void operator = (const DomBrush&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomColorRole {
+    Q_DISABLE_COPY(DomColorRole)
 public:
     DomColorRole();
     ~DomColorRole();
@@ -1976,12 +1912,10 @@ private:
     enum Child {
         Brush = 1
     };
-
-    DomColorRole(const DomColorRole &other);
-    void operator = (const DomColorRole&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomColorGroup {
+    Q_DISABLE_COPY(DomColorGroup)
 public:
     DomColorGroup();
     ~DomColorGroup();
@@ -1993,11 +1927,11 @@ public:
 
     // attribute accessors
     // child element accessors
-    inline QList<DomColorRole*> elementColorRole() const { return m_colorRole; }
-    void setElementColorRole(const QList<DomColorRole*>& a);
+    inline QVector<DomColorRole*> elementColorRole() const { return m_colorRole; }
+    void setElementColorRole(const QVector<DomColorRole*>& a);
 
-    inline QList<DomColor*> elementColor() const { return m_color; }
-    void setElementColor(const QList<DomColor*>& a);
+    inline QVector<DomColor*> elementColor() const { return m_color; }
+    void setElementColor(const QVector<DomColor*>& a);
 
 private:
     QString m_text;
@@ -2006,18 +1940,16 @@ private:
     // attribute data
     // child element data
     uint m_children;
-    QList<DomColorRole*> m_colorRole;
-    QList<DomColor*> m_color;
+    QVector<DomColorRole*> m_colorRole;
+    QVector<DomColor*> m_color;
     enum Child {
         ColorRole = 1,
         Color = 2
     };
-
-    DomColorGroup(const DomColorGroup &other);
-    void operator = (const DomColorGroup&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomPalette {
+    Q_DISABLE_COPY(DomPalette)
 public:
     DomPalette();
     ~DomPalette();
@@ -2062,12 +1994,10 @@ private:
         Inactive = 2,
         Disabled = 4
     };
-
-    DomPalette(const DomPalette &other);
-    void operator = (const DomPalette&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomFont {
+    Q_DISABLE_COPY(DomFont)
 public:
     DomFont();
     ~DomFont();
@@ -2158,12 +2088,10 @@ private:
         StyleStrategy = 256,
         Kerning = 512
     };
-
-    DomFont(const DomFont &other);
-    void operator = (const DomFont&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomPoint {
+    Q_DISABLE_COPY(DomPoint)
 public:
     DomPoint();
     ~DomPoint();
@@ -2198,12 +2126,10 @@ private:
         X = 1,
         Y = 2
     };
-
-    DomPoint(const DomPoint &other);
-    void operator = (const DomPoint&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomRect {
+    Q_DISABLE_COPY(DomRect)
 public:
     DomRect();
     ~DomRect();
@@ -2252,12 +2178,10 @@ private:
         Width = 4,
         Height = 8
     };
-
-    DomRect(const DomRect &other);
-    void operator = (const DomRect&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomLocale {
+    Q_DISABLE_COPY(DomLocale)
 public:
     DomLocale();
     ~DomLocale();
@@ -2292,12 +2216,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomLocale(const DomLocale &other);
-    void operator = (const DomLocale&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomSizePolicy {
+    Q_DISABLE_COPY(DomSizePolicy)
 public:
     DomSizePolicy();
     ~DomSizePolicy();
@@ -2362,12 +2284,10 @@ private:
         HorStretch = 4,
         VerStretch = 8
     };
-
-    DomSizePolicy(const DomSizePolicy &other);
-    void operator = (const DomSizePolicy&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomSize {
+    Q_DISABLE_COPY(DomSize)
 public:
     DomSize();
     ~DomSize();
@@ -2402,12 +2322,10 @@ private:
         Width = 1,
         Height = 2
     };
-
-    DomSize(const DomSize &other);
-    void operator = (const DomSize&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomDate {
+    Q_DISABLE_COPY(DomDate)
 public:
     DomDate();
     ~DomDate();
@@ -2449,12 +2367,10 @@ private:
         Month = 2,
         Day = 4
     };
-
-    DomDate(const DomDate &other);
-    void operator = (const DomDate&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomTime {
+    Q_DISABLE_COPY(DomTime)
 public:
     DomTime();
     ~DomTime();
@@ -2496,12 +2412,10 @@ private:
         Minute = 2,
         Second = 4
     };
-
-    DomTime(const DomTime &other);
-    void operator = (const DomTime&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomDateTime {
+    Q_DISABLE_COPY(DomDateTime)
 public:
     DomDateTime();
     ~DomDateTime();
@@ -2564,12 +2478,10 @@ private:
         Month = 16,
         Day = 32
     };
-
-    DomDateTime(const DomDateTime &other);
-    void operator = (const DomDateTime&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomStringList {
+    Q_DISABLE_COPY(DomStringList)
 public:
     DomStringList();
     ~DomStringList();
@@ -2619,12 +2531,10 @@ private:
     enum Child {
         String = 1
     };
-
-    DomStringList(const DomStringList &other);
-    void operator = (const DomStringList&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomResourcePixmap {
+    Q_DISABLE_COPY(DomResourcePixmap)
 public:
     DomResourcePixmap();
     ~DomResourcePixmap();
@@ -2659,12 +2569,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomResourcePixmap(const DomResourcePixmap &other);
-    void operator = (const DomResourcePixmap&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomResourceIcon {
+    Q_DISABLE_COPY(DomResourceIcon)
 public:
     DomResourceIcon();
     ~DomResourceIcon();
@@ -2765,12 +2673,10 @@ private:
         SelectedOff = 64,
         SelectedOn = 128
     };
-
-    DomResourceIcon(const DomResourceIcon &other);
-    void operator = (const DomResourceIcon&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomString {
+    Q_DISABLE_COPY(DomString)
 public:
     DomString();
     ~DomString();
@@ -2813,12 +2719,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomString(const DomString &other);
-    void operator = (const DomString&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomPointF {
+    Q_DISABLE_COPY(DomPointF)
 public:
     DomPointF();
     ~DomPointF();
@@ -2853,12 +2757,10 @@ private:
         X = 1,
         Y = 2
     };
-
-    DomPointF(const DomPointF &other);
-    void operator = (const DomPointF&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomRectF {
+    Q_DISABLE_COPY(DomRectF)
 public:
     DomRectF();
     ~DomRectF();
@@ -2907,12 +2809,10 @@ private:
         Width = 4,
         Height = 8
     };
-
-    DomRectF(const DomRectF &other);
-    void operator = (const DomRectF&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomSizeF {
+    Q_DISABLE_COPY(DomSizeF)
 public:
     DomSizeF();
     ~DomSizeF();
@@ -2947,12 +2847,10 @@ private:
         Width = 1,
         Height = 2
     };
-
-    DomSizeF(const DomSizeF &other);
-    void operator = (const DomSizeF&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomChar {
+    Q_DISABLE_COPY(DomChar)
 public:
     DomChar();
     ~DomChar();
@@ -2980,12 +2878,10 @@ private:
     enum Child {
         Unicode = 1
     };
-
-    DomChar(const DomChar &other);
-    void operator = (const DomChar&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomUrl {
+    Q_DISABLE_COPY(DomUrl)
 public:
     DomUrl();
     ~DomUrl();
@@ -3014,12 +2910,10 @@ private:
     enum Child {
         String = 1
     };
-
-    DomUrl(const DomUrl &other);
-    void operator = (const DomUrl&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomProperty {
+    Q_DISABLE_COPY(DomProperty)
 public:
     DomProperty();
     ~DomProperty();
@@ -3210,12 +3104,10 @@ private:
     uint m_UInt;
     qulonglong m_uLongLong;
     DomBrush* m_brush;
-
-    DomProperty(const DomProperty &other);
-    void operator = (const DomProperty&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomConnections {
+    Q_DISABLE_COPY(DomConnections)
 public:
     DomConnections();
     ~DomConnections();
@@ -3227,8 +3119,8 @@ public:
 
     // attribute accessors
     // child element accessors
-    inline QList<DomConnection*> elementConnection() const { return m_connection; }
-    void setElementConnection(const QList<DomConnection*>& a);
+    inline QVector<DomConnection*> elementConnection() const { return m_connection; }
+    void setElementConnection(const QVector<DomConnection*>& a);
 
 private:
     QString m_text;
@@ -3237,16 +3129,14 @@ private:
     // attribute data
     // child element data
     uint m_children;
-    QList<DomConnection*> m_connection;
+    QVector<DomConnection*> m_connection;
     enum Child {
         Connection = 1
     };
-
-    DomConnections(const DomConnections &other);
-    void operator = (const DomConnections&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomConnection {
+    Q_DISABLE_COPY(DomConnection)
 public:
     DomConnection();
     ~DomConnection();
@@ -3303,12 +3193,10 @@ private:
         Slot = 8,
         Hints = 16
     };
-
-    DomConnection(const DomConnection &other);
-    void operator = (const DomConnection&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomConnectionHints {
+    Q_DISABLE_COPY(DomConnectionHints)
 public:
     DomConnectionHints();
     ~DomConnectionHints();
@@ -3320,8 +3208,8 @@ public:
 
     // attribute accessors
     // child element accessors
-    inline QList<DomConnectionHint*> elementHint() const { return m_hint; }
-    void setElementHint(const QList<DomConnectionHint*>& a);
+    inline QVector<DomConnectionHint*> elementHint() const { return m_hint; }
+    void setElementHint(const QVector<DomConnectionHint*>& a);
 
 private:
     QString m_text;
@@ -3330,16 +3218,14 @@ private:
     // attribute data
     // child element data
     uint m_children;
-    QList<DomConnectionHint*> m_hint;
+    QVector<DomConnectionHint*> m_hint;
     enum Child {
         Hint = 1
     };
-
-    DomConnectionHints(const DomConnectionHints &other);
-    void operator = (const DomConnectionHints&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomConnectionHint {
+    Q_DISABLE_COPY(DomConnectionHint)
 public:
     DomConnectionHint();
     ~DomConnectionHint();
@@ -3382,12 +3268,10 @@ private:
         X = 1,
         Y = 2
     };
-
-    DomConnectionHint(const DomConnectionHint &other);
-    void operator = (const DomConnectionHint&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomScript {
+    Q_DISABLE_COPY(DomScript)
 public:
     DomScript();
     ~DomScript();
@@ -3422,12 +3306,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomScript(const DomScript &other);
-    void operator = (const DomScript&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomWidgetData {
+    Q_DISABLE_COPY(DomWidgetData)
 public:
     DomWidgetData();
     ~DomWidgetData();
@@ -3453,12 +3335,10 @@ private:
     enum Child {
         Property = 1
     };
-
-    DomWidgetData(const DomWidgetData &other);
-    void operator = (const DomWidgetData&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomDesignerData {
+    Q_DISABLE_COPY(DomDesignerData)
 public:
     DomDesignerData();
     ~DomDesignerData();
@@ -3484,12 +3364,10 @@ private:
     enum Child {
         Property = 1
     };
-
-    DomDesignerData(const DomDesignerData &other);
-    void operator = (const DomDesignerData&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomSlots {
+    Q_DISABLE_COPY(DomSlots)
 public:
     DomSlots();
     ~DomSlots();
@@ -3520,12 +3398,10 @@ private:
         Signal = 1,
         Slot = 2
     };
-
-    DomSlots(const DomSlots &other);
-    void operator = (const DomSlots&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomPropertySpecifications {
+    Q_DISABLE_COPY(DomPropertySpecifications)
 public:
     DomPropertySpecifications();
     ~DomPropertySpecifications();
@@ -3537,11 +3413,11 @@ public:
 
     // attribute accessors
     // child element accessors
-    inline QList<DomPropertyToolTip*> elementTooltip() const { return m_tooltip; }
-    void setElementTooltip(const QList<DomPropertyToolTip*>& a);
+    inline QVector<DomPropertyToolTip*> elementTooltip() const { return m_tooltip; }
+    void setElementTooltip(const QVector<DomPropertyToolTip*>& a);
 
-    inline QList<DomStringPropertySpecification*> elementStringpropertyspecification() const { return m_stringpropertyspecification; }
-    void setElementStringpropertyspecification(const QList<DomStringPropertySpecification*>& a);
+    inline QVector<DomStringPropertySpecification*> elementStringpropertyspecification() const { return m_stringpropertyspecification; }
+    void setElementStringpropertyspecification(const QVector<DomStringPropertySpecification*>& a);
 
 private:
     QString m_text;
@@ -3550,18 +3426,16 @@ private:
     // attribute data
     // child element data
     uint m_children;
-    QList<DomPropertyToolTip*> m_tooltip;
-    QList<DomStringPropertySpecification*> m_stringpropertyspecification;
+    QVector<DomPropertyToolTip*> m_tooltip;
+    QVector<DomStringPropertySpecification*> m_stringpropertyspecification;
     enum Child {
         Tooltip = 1,
         Stringpropertyspecification = 2
     };
-
-    DomPropertySpecifications(const DomPropertySpecifications &other);
-    void operator = (const DomPropertySpecifications&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomPropertyToolTip {
+    Q_DISABLE_COPY(DomPropertyToolTip)
 public:
     DomPropertyToolTip();
     ~DomPropertyToolTip();
@@ -3588,12 +3462,10 @@ private:
 
     // child element data
     uint m_children;
-
-    DomPropertyToolTip(const DomPropertyToolTip &other);
-    void operator = (const DomPropertyToolTip&other);
 };
 
 class QDESIGNER_UILIB_EXPORT DomStringPropertySpecification {
+    Q_DISABLE_COPY(DomStringPropertySpecification)
 public:
     DomStringPropertySpecification();
     ~DomStringPropertySpecification();
@@ -3636,9 +3508,6 @@ private:
 
     // child element data
     uint m_children;
-
-    DomStringPropertySpecification(const DomStringPropertySpecification &other);
-    void operator = (const DomStringPropertySpecification&other);
 };
 
 

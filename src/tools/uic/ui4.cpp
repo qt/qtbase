@@ -740,7 +740,7 @@ void DomIncludes::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomIncludes::setElementInclude(const QList<DomInclude*>& a)
+void DomIncludes::setElementInclude(const QVector<DomInclude*>& a)
 {
     m_children |= Include;
     m_include = a;
@@ -904,7 +904,7 @@ void DomResources::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomResources::setElementInclude(const QList<DomResource*>& a)
+void DomResources::setElementInclude(const QVector<DomResource*>& a)
 {
     m_children |= Include;
     m_include = a;
@@ -1100,13 +1100,13 @@ void DomActionGroup::write(QXmlStreamWriter &writer, const QString &tagName) con
     writer.writeEndElement();
 }
 
-void DomActionGroup::setElementAction(const QList<DomAction*>& a)
+void DomActionGroup::setElementAction(const QVector<DomAction*>& a)
 {
     m_children |= Action;
     m_action = a;
 }
 
-void DomActionGroup::setElementActionGroup(const QList<DomActionGroup*>& a)
+void DomActionGroup::setElementActionGroup(const QVector<DomActionGroup*>& a)
 {
     m_children |= ActionGroup;
     m_actionGroup = a;
@@ -1480,7 +1480,7 @@ void DomButtonGroups::write(QXmlStreamWriter &writer, const QString &tagName) co
     writer.writeEndElement();
 }
 
-void DomButtonGroups::setElementButtonGroup(const QList<DomButtonGroup*>& a)
+void DomButtonGroups::setElementButtonGroup(const QVector<DomButtonGroup*>& a)
 {
     m_children |= ButtonGroup;
     m_buttonGroup = a;
@@ -1552,7 +1552,7 @@ void DomImages::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomImages::setElementImage(const QList<DomImage*>& a)
+void DomImages::setElementImage(const QVector<DomImage*>& a)
 {
     m_children |= Image;
     m_image = a;
@@ -1806,7 +1806,7 @@ void DomCustomWidgets::write(QXmlStreamWriter &writer, const QString &tagName) c
     writer.writeEndElement();
 }
 
-void DomCustomWidgets::setElementCustomWidget(const QList<DomCustomWidget*>& a)
+void DomCustomWidgets::setElementCustomWidget(const QVector<DomCustomWidget*>& a)
 {
     m_children |= CustomWidget;
     m_customWidget = a;
@@ -2347,7 +2347,7 @@ void DomProperties::write(QXmlStreamWriter &writer, const QString &tagName) cons
     writer.writeEndElement();
 }
 
-void DomProperties::setElementProperty(const QList<DomPropertyData*>& a)
+void DomProperties::setElementProperty(const QVector<DomPropertyData*>& a)
 {
     m_children |= Property;
     m_property = a;
@@ -2913,7 +2913,7 @@ void DomLayout::setElementAttribute(const QList<DomProperty*>& a)
     m_attribute = a;
 }
 
-void DomLayout::setElementItem(const QList<DomLayoutItem*>& a)
+void DomLayout::setElementItem(const QVector<DomLayoutItem*>& a)
 {
     m_children |= Item;
     m_item = a;
@@ -3387,7 +3387,7 @@ void DomItem::setElementProperty(const QList<DomProperty*>& a)
     m_property = a;
 }
 
-void DomItem::setElementItem(const QList<DomItem*>& a)
+void DomItem::setElementItem(const QVector<DomItem*>& a)
 {
     m_children |= Item;
     m_item = a;
@@ -3680,13 +3680,13 @@ void DomWidget::setElementProperty(const QList<DomProperty*>& a)
     m_property = a;
 }
 
-void DomWidget::setElementScript(const QList<DomScript*>& a)
+void DomWidget::setElementScript(const QVector<DomScript*>& a)
 {
     m_children |= Script;
     m_script = a;
 }
 
-void DomWidget::setElementWidgetData(const QList<DomWidgetData*>& a)
+void DomWidget::setElementWidgetData(const QVector<DomWidgetData*>& a)
 {
     m_children |= WidgetData;
     m_widgetData = a;
@@ -3698,49 +3698,49 @@ void DomWidget::setElementAttribute(const QList<DomProperty*>& a)
     m_attribute = a;
 }
 
-void DomWidget::setElementRow(const QList<DomRow*>& a)
+void DomWidget::setElementRow(const QVector<DomRow*>& a)
 {
     m_children |= Row;
     m_row = a;
 }
 
-void DomWidget::setElementColumn(const QList<DomColumn*>& a)
+void DomWidget::setElementColumn(const QVector<DomColumn*>& a)
 {
     m_children |= Column;
     m_column = a;
 }
 
-void DomWidget::setElementItem(const QList<DomItem*>& a)
+void DomWidget::setElementItem(const QVector<DomItem*>& a)
 {
     m_children |= Item;
     m_item = a;
 }
 
-void DomWidget::setElementLayout(const QList<DomLayout*>& a)
+void DomWidget::setElementLayout(const QVector<DomLayout*>& a)
 {
     m_children |= Layout;
     m_layout = a;
 }
 
-void DomWidget::setElementWidget(const QList<DomWidget*>& a)
+void DomWidget::setElementWidget(const QVector<DomWidget*>& a)
 {
     m_children |= Widget;
     m_widget = a;
 }
 
-void DomWidget::setElementAction(const QList<DomAction*>& a)
+void DomWidget::setElementAction(const QVector<DomAction*>& a)
 {
     m_children |= Action;
     m_action = a;
 }
 
-void DomWidget::setElementActionGroup(const QList<DomActionGroup*>& a)
+void DomWidget::setElementActionGroup(const QVector<DomActionGroup*>& a)
 {
     m_children |= ActionGroup;
     m_actionGroup = a;
 }
 
-void DomWidget::setElementAddAction(const QList<DomActionRef*>& a)
+void DomWidget::setElementAddAction(const QVector<DomActionRef*>& a)
 {
     m_children |= AddAction;
     m_addAction = a;
@@ -4285,7 +4285,7 @@ void DomGradient::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomGradient::setElementGradientStop(const QList<DomGradientStop*>& a)
+void DomGradient::setElementGradientStop(const QVector<DomGradientStop*>& a)
 {
     m_children |= GradientStop;
     m_gradientStop = a;
@@ -4640,13 +4640,13 @@ void DomColorGroup::write(QXmlStreamWriter &writer, const QString &tagName) cons
     writer.writeEndElement();
 }
 
-void DomColorGroup::setElementColorRole(const QList<DomColorRole*>& a)
+void DomColorGroup::setElementColorRole(const QVector<DomColorRole*>& a)
 {
     m_children |= ColorRole;
     m_colorRole = a;
 }
 
-void DomColorGroup::setElementColor(const QList<DomColor*>& a)
+void DomColorGroup::setElementColor(const QVector<DomColor*>& a)
 {
     m_children |= Color;
     m_color = a;
@@ -8147,7 +8147,7 @@ void DomConnections::write(QXmlStreamWriter &writer, const QString &tagName) con
     writer.writeEndElement();
 }
 
-void DomConnections::setElementConnection(const QList<DomConnection*>& a)
+void DomConnections::setElementConnection(const QVector<DomConnection*>& a)
 {
     m_children |= Connection;
     m_connection = a;
@@ -8383,7 +8383,7 @@ void DomConnectionHints::write(QXmlStreamWriter &writer, const QString &tagName)
     writer.writeEndElement();
 }
 
-void DomConnectionHints::setElementHint(const QList<DomConnectionHint*>& a)
+void DomConnectionHints::setElementHint(const QVector<DomConnectionHint*>& a)
 {
     m_children |= Hint;
     m_hint = a;
@@ -8882,13 +8882,13 @@ void DomPropertySpecifications::write(QXmlStreamWriter &writer, const QString &t
     writer.writeEndElement();
 }
 
-void DomPropertySpecifications::setElementTooltip(const QList<DomPropertyToolTip*>& a)
+void DomPropertySpecifications::setElementTooltip(const QVector<DomPropertyToolTip*>& a)
 {
     m_children |= Tooltip;
     m_tooltip = a;
 }
 
-void DomPropertySpecifications::setElementStringpropertyspecification(const QList<DomStringPropertySpecification*>& a)
+void DomPropertySpecifications::setElementStringpropertyspecification(const QVector<DomStringPropertySpecification*>& a)
 {
     m_children |= Stringpropertyspecification;
     m_stringpropertyspecification = a;

@@ -113,8 +113,7 @@ void TreeWalker::acceptWidget(DomWidget *widget)
     if (!widget->elementLayout().isEmpty())
         acceptLayout(widget->elementLayout().at(0));
 
-    const DomScripts scripts(widget->elementScript());
-    acceptWidgetScripts(scripts, widget, childWidgets);
+    acceptWidgetScripts(widget->elementScript(), widget, childWidgets);
 }
 
 void TreeWalker::acceptSpacer(DomSpacer *spacer)
@@ -301,11 +300,9 @@ void TreeWalker::acceptWidgetScripts(const DomScripts &, DomWidget *, const  Dom
 
 void TreeWalker::acceptButtonGroups(const DomButtonGroups *domButtonGroups)
 {
-    typedef QList<DomButtonGroup*> DomButtonGroupList;
-    const DomButtonGroupList domGroups = domButtonGroups->elementButtonGroup();
-    const DomButtonGroupList::const_iterator cend = domGroups.constEnd();
-    for (DomButtonGroupList::const_iterator it = domGroups.constBegin(); it != cend; ++it)
-        acceptButtonGroup(*it);
+    const auto &domGroups = domButtonGroups->elementButtonGroup();
+    for (const DomButtonGroup *g : domGroups)
+        acceptButtonGroup(g);
 }
 
 void TreeWalker::acceptButtonGroup(const DomButtonGroup *)
