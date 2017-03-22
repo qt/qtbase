@@ -126,7 +126,7 @@ void TrackBall::move(const QPointF& p, const QQuaternion &transformation)
                 currentPos3D.normalize();
 
             m_axis = QVector3D::crossProduct(lastPos3D, currentPos3D);
-            float angle = qRadiansToDegrees(std::asin(std::sqrt(QVector3D::dotProduct(m_axis, m_axis))));
+            float angle = qRadiansToDegrees(std::asin(m_axis.length()));
 
             m_angularVelocity = angle / msecs;
             m_axis.normalize();
