@@ -41,7 +41,11 @@
 
 QT_BEGIN_NAMESPACE
 
-/*! \headerfile <QFloat16>
+/*!
+    \headerfile <QFloat16>
+    \title 16-bit Floating Point Support
+    \ingroup funclists
+    \brief The <QFloat16> header file provides 16-bit floating point support.
 
     This header file provides support for half-precision (16-bit) floating
     point data with the class \c qfloat16.  It is fully compliant with IEEE
