@@ -39,7 +39,6 @@ HEADERS +=  \
         tools/qmargins.h \
         tools/qmessageauthenticationcode.h \
         tools/qcontiguouscache.h \
-        tools/qpodlist_p.h \
         tools/qpair.h \
         tools/qpoint.h \
         tools/qqueue.h \
