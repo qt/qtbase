@@ -47,6 +47,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <qmath.h>
 
 //! [0]
 QPair<QString, double> pair;
@@ -55,7 +56,7 @@ QPair<QString, double> pair;
 
 //! [1]
 pair.first = "pi";
-pair.second = 3.14159265358979323846;
+pair.second = M_PI;
 //! [1]
 
 //! [struct]
@@ -65,10 +66,10 @@ struct Variable {
 };
 Variable v;
 v.name = "pi";
-v.value = 3.14159265358979323846;
+v.value = M_PI;
 //! [struct]
 
 //! [2]
 QList<QPair<int, double> > list;
-list.append(qMakePair(66, 3.14159));
+list.append(qMakePair(66, M_PI));
 //! [2]

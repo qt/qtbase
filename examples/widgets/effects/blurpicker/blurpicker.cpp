@@ -52,12 +52,8 @@
 
 #include <QtWidgets>
 #include <QtCore/qmath.h>
-
+#include <qmath.h>
 #include "blureffect.h"
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 BlurPicker::BlurPicker(QWidget *parent): QGraphicsView(parent), m_index(0.0), m_animation(this, "index")
 {
@@ -84,9 +80,10 @@ void BlurPicker::setIndex(qreal index)
     m_index = index;
 
     qreal baseline = 0;
+    const qreal iconAngle = 2 * M_PI / m_icons.count();
     for (int i = 0; i < m_icons.count(); ++i) {
         QGraphicsItem *icon = m_icons[i];
-        qreal a = ((i + m_index) * 2 * M_PI) / m_icons.count();
+        qreal a = (i + m_index) * iconAngle;
         qreal xs = 170 * qSin(a);
         qreal ys = 100 * qCos(a);
         QPointF pos(xs, ys);

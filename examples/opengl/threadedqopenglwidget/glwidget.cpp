@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 #include "glwidget.h"
-#include <math.h>
+#include <qmath.h>
 #include <QGuiApplication>
 
 GLWidget::GLWidget(QWidget *parent)
@@ -282,21 +282,21 @@ void Renderer::createGeometry()
     extrude(x4, y4, y4, x4);
     extrude(y4, x4, y3, x3);
 
-    const qreal Pi = 3.14159f;
     const int NumSectors = 100;
+    const qreal sectorAngle = 2 * qreal(M_PI) / NumSectors;
 
     for (int i = 0; i < NumSectors; ++i) {
-        qreal angle1 = (i * 2 * Pi) / NumSectors;
-        qreal x5 = 0.30 * sin(angle1);
-        qreal y5 = 0.30 * cos(angle1);
-        qreal x6 = 0.20 * sin(angle1);
-        qreal y6 = 0.20 * cos(angle1);
+        qreal angle = i * sectorAngle;
+        qreal x5 = 0.30 * sin(angle);
+        qreal y5 = 0.30 * cos(angle);
+        qreal x6 = 0.20 * sin(angle);
+        qreal y6 = 0.20 * cos(angle);
 
-        qreal angle2 = ((i + 1) * 2 * Pi) / NumSectors;
-        qreal x7 = 0.20 * sin(angle2);
-        qreal y7 = 0.20 * cos(angle2);
-        qreal x8 = 0.30 * sin(angle2);
-        qreal y8 = 0.30 * cos(angle2);
+        angle += sectorAngle;
+        qreal x7 = 0.20 * sin(angle);
+        qreal y7 = 0.20 * cos(angle);
+        qreal x8 = 0.30 * sin(angle);
+        qreal y8 = 0.30 * cos(angle);
 
         quad(x5, y5, x6, y6, x7, y7, x8, y8);
 

@@ -52,14 +52,8 @@
 #include <QtWidgets>
 #include <QtNetwork>
 
-#include <math.h>
-
 #include "lightmaps.h"
 #include "slippymap.h"
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 // how long (milliseconds) the user need to hold (after a tap on the screen)
 // before triggering the magnifying glass feature

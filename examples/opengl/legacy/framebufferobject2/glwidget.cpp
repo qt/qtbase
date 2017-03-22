@@ -50,8 +50,7 @@
 
 #include "glwidget.h"
 #include <QtGui/QImage>
-
-#include <math.h>
+#include <qmath.h>
 
 static GLint cubeArray[][3] = {
     {0, 0, 0}, {0, 1, 0}, {1, 1, 0}, {1, 0, 0},
@@ -253,6 +252,6 @@ void GLWidget::drawCube(int i, GLfloat z, GLfloat rotation, GLfloat jmp, GLfloat
         xOffs[i] = xOffs[i] > 1.0f ? 1.0f : -1.0f;
     }
     xOffs[i] += xInc[i];
-    yOffs[i] = qAbs(cos((-3.141592f * jmp) * xOffs[i]) * amp) - 1;
+    yOffs[i] = qAbs(cos((-GLfloat(M_PI) * jmp) * xOffs[i]) * amp) - 1;
     rot[i] += rotation;
 }

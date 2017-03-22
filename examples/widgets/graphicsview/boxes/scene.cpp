@@ -52,7 +52,7 @@
 #include "scene.h"
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qvector3d.h>
-#include <cmath>
+#include <qmath.h>
 
 #include "3rdparty/fbm.h"
 
@@ -868,11 +868,12 @@ void Scene::renderCubemaps()
 
     QVector3D center;
 
+    const float eachAngle = 2 * M_PI / m_cubemaps.size();
     for (int i = m_frame % N; i < m_cubemaps.size(); i += N) {
         if (0 == m_cubemaps[i])
             continue;
 
-        float angle = 2.0f * PI * i / m_cubemaps.size();
+        float angle = i * eachAngle;
 
         center = m_trackBalls[1].rotation().rotatedVector(QVector3D(std::cos(angle), std::sin(angle), 0.0f));
 

@@ -50,12 +50,10 @@
 
 #include <QtWidgets>
 
-#include <cmath>
+#include <qmath.h>
 #include <stdlib.h>
 
 #include "basictoolsplugin.h"
-
-const float Pi = 3.14159f;
 
 //! [0]
 QStringList BasicToolsPlugin::brushes() const
@@ -149,8 +147,8 @@ QPainterPath BasicToolsPlugin::generateShape(const QString &shape,
     } else if (shape == tr("Star")) {
         path.moveTo(90, 50);
         for (int i = 1; i < 5; ++i) {
-            path.lineTo(50 + 40 * std::cos(0.8 * i * Pi),
-                        50 + 40 * std::sin(0.8 * i * Pi));
+            path.lineTo(50 + 40 * std::cos(0.8 * i * M_PI),
+                        50 + 40 * std::sin(0.8 * i * M_PI));
         }
         path.closeSubpath();
     } else if (shape == tr("Text...")) {

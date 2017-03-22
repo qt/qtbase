@@ -49,9 +49,8 @@
 ****************************************************************************/
 
 #include <QtGui/QImage>
+#include <qmath.h>
 #include "glwidget.h"
-
-#include <math.h>
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D
@@ -291,8 +290,6 @@ void GLWidget::restoreGLState()
     glPopAttrib();
 }
 
-#define PI 3.14159
-
 void GLWidget::timerEvent(QTimerEvent *)
 {
     if (QApplication::mouseButtons() != 0)
@@ -310,7 +307,7 @@ void GLWidget::timerEvent(QTimerEvent *)
     rot_x += 0.1f;
 
     int dx, dy; // disturbance point
-    float s, v, W, t;
+    float s, v, W;
     int i, j;
     static float wt[128][128];
     const int width = logo.width();
@@ -325,11 +322,11 @@ void GLWidget::timerEvent(QTimerEvent *)
         for ( j = 0; j < width; ++j) {
             s = sqrt((double) ((j - dx) * (j - dx) + (i - dy) * (i - dy)));
             wt[i][j] += 0.1f;
-            t = s / v;
+            const double angle = 2 * M_PI * W * (wt[i][j] + s / v);
             if (s != 0)
-                wave[i*width + j] = AMP * sin(2 * PI * W * (wt[i][j] + t)) / (0.2*(s + 2));
+                wave[i * width + j] = AMP * sin(angle) / (0.2 * (s + 2));
             else
-                wave[i*width + j] = AMP * sin(2 * PI * W * (wt[i][j] + t));
+                wave[i * width + j] = AMP * sin(angle);
         }
     }
 }

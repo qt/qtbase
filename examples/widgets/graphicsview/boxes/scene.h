@@ -63,8 +63,6 @@
 #include "glbuffers.h"
 #include "qtbox.h"
 
-#define PI 3.14159265358979
-
 QT_BEGIN_NAMESPACE
 class QMatrix4x4;
 QT_END_NAMESPACE

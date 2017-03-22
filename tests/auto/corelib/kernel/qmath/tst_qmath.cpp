@@ -30,8 +30,6 @@
 #include <QtTest/QtTest>
 #include <qmath.h>
 
-static const double PI = 3.14159265358979323846264338327950288;
-
 class tst_QMath : public QObject
 {
     Q_OBJECT
@@ -55,8 +53,9 @@ void tst_QMath::fastSinCos()
 {
     // Test evenly spaced angles from 0 to 2pi radians.
     const int LOOP_COUNT = 100000;
+    const qreal loopAngle = 2 * M_PI / (LOOP_COUNT - 1);
     for (int i = 0; i < LOOP_COUNT; ++i) {
-        qreal angle = i * 2 * PI / (LOOP_COUNT - 1);
+        qreal angle = i * loopAngle;
         QVERIFY(qAbs(qSin(angle) - qFastSin(angle)) < 1e-5);
         QVERIFY(qAbs(qCos(angle) - qFastCos(angle)) < 1e-5);
     }
@@ -69,18 +68,18 @@ void tst_QMath::degreesToRadians_data()
     QTest::addColumn<double>("degreesDouble");
     QTest::addColumn<double>("radiansDouble");
 
-    QTest::newRow( "pi" ) << 180.0f << float(M_PI) << 180.0 << PI;
-    QTest::newRow( "doublepi" ) << 360.0f << float(2*M_PI) << 360.0 << 2*PI;
-    QTest::newRow( "halfpi" ) << 90.0f << float(M_PI_2) << 90.0 << PI/2;
+    QTest::newRow( "pi" ) << 180.0f << float(M_PI) << 180.0 << M_PI;
+    QTest::newRow( "doublepi" ) << 360.0f << float(2 * M_PI) << 360.0 << 2 * M_PI;
+    QTest::newRow( "halfpi" ) << 90.0f << float(M_PI_2) << 90.0 << M_PI_2;
 
     QTest::newRow( "random" ) << 123.1234567f << 2.1489097058516724f << 123.123456789123456789 << 2.148909707407169856192285627;
     QTest::newRow( "bigrandom" ) << 987654321.9876543f << 17237819.79023679f << 987654321987654321.987654321987654321 << 17237819790236794.0;
 
     QTest::newRow( "zero" ) << 0.0f << 0.0f << 0.0 << 0.0;
 
-    QTest::newRow( "minuspi" ) << -180.0f << float(-M_PI) << 180.0 << PI;
-    QTest::newRow( "minusdoublepi" ) << -360.0f << float(-2*M_PI) << -360.0 << -2*PI;
-    QTest::newRow( "minushalfpi" ) << -90.0f << float(-M_PI_2) << -90.0 << -PI/2;
+    QTest::newRow( "minuspi" ) << -180.0f << float(-M_PI) << 180.0 << M_PI;
+    QTest::newRow( "minusdoublepi" ) << -360.0f << float(-2 * M_PI) << -360.0 << -2 * M_PI;
+    QTest::newRow( "minushalfpi" ) << -90.0f << float(-M_PI_2) << -90.0 << -M_PI_2;
 
     QTest::newRow( "minusrandom" ) << -123.1234567f << -2.1489097058516724f << -123.123456789123456789 << -2.148909707407169856192285627;
     QTest::newRow( "minusbigrandom" ) << -987654321.9876543f << -17237819.79023679f << -987654321987654321.987654321987654321 << -17237819790236794.0;
@@ -104,18 +103,18 @@ void tst_QMath::radiansToDegrees_data()
     QTest::addColumn<double>("radiansDouble");
     QTest::addColumn<double>("degreesDouble");
 
-    QTest::newRow( "pi" ) << float(M_PI) << 180.0f << PI << 180.0;
-    QTest::newRow( "doublepi" ) << float(2*M_PI) << 360.0f << 2*PI << 360.0;
-    QTest::newRow( "halfpi" ) << float(M_PI_2) << 90.0f<< PI/2 << 90.0;
+    QTest::newRow( "pi" ) << float(M_PI) << 180.0f << M_PI << 180.0;
+    QTest::newRow( "doublepi" ) << float(2 * M_PI) << 360.0f << 2 * M_PI << 360.0;
+    QTest::newRow( "halfpi" ) << float(M_PI_2) << 90.0f << M_PI_2 << 90.0;
 
     QTest::newRow( "random" ) << 123.1234567f << 7054.454427971739f << 123.123456789123456789 << 7054.4544330781363896676339209079742431640625;
     QTest::newRow( "bigrandom" ) << 987654321.9876543f << 56588424267.74745f << 987654321987654321.987654321987654321 << 56588424267747450880.0;
 
     QTest::newRow( "zero" ) << 0.0f << 0.0f << 0.0 << 0.0;
 
-    QTest::newRow( "minuspi" ) << float(-M_PI) << -180.0f << -PI << -180.0;
-    QTest::newRow( "minusdoublepi" ) << float(-2*M_PI) << -360.0f << -2*PI << -360.0;
-    QTest::newRow( "minushalfpi" ) << float(-M_PI_2) << -90.0f << -PI/2 << -90.0;
+    QTest::newRow( "minuspi" ) << float(-M_PI) << -180.0f << -M_PI << -180.0;
+    QTest::newRow( "minusdoublepi" ) << float(-2 * M_PI) << -360.0f << -2 * M_PI << -360.0;
+    QTest::newRow( "minushalfpi" ) << float(-M_PI_2) << -90.0f << -M_PI_2 << -90.0;
 
     QTest::newRow( "minusrandom" ) << -123.1234567f << -7054.454427971739f << -123.123456789123456789 << -7054.4544330781363896676339209079742431640625;
     QTest::newRow( "minusbigrandom" ) << -987654321.9876543f << -56588424267.74745f << -987654321987654321.987654321987654321 << -56588424267747450880.0;

@@ -53,11 +53,7 @@
 
 #include <QtWidgets>
 
-#include <cmath>
-
-//! [0]
-const float Pi = 3.14159f;
-//! [0]
+#include <qmath.h>
 
 //! [1]
 Window::Window()
@@ -133,8 +129,8 @@ Window::Window()
     QPainterPath starPath;
     starPath.moveTo(90, 50);
     for (int i = 1; i < 5; ++i) {
-        starPath.lineTo(50 + 40 * std::cos(0.8 * i * Pi),
-                        50 + 40 * std::sin(0.8 * i * Pi));
+        starPath.lineTo(50 + 40 * std::cos(0.8 * i * M_PI),
+                        50 + 40 * std::sin(0.8 * i * M_PI));
     }
     starPath.closeSubpath();
 //! [9]

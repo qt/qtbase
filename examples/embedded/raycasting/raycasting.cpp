@@ -50,12 +50,7 @@
 
 #include <QtCore>
 #include <QtWidgets>
-
-#include <math.h>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <qmath.h>
 
 #define WORLD_SIZE 8
 int world_map[WORLD_SIZE][WORLD_SIZE] = {

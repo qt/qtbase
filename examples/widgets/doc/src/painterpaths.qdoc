@@ -98,14 +98,9 @@
 
     \section1 Window Class Implementation
 
-    In the implementation of the \c Window class we first declare the
-    constant \c Pi with six significant figures:
-
-    \snippet painting/painterpaths/window.cpp 0
-
-    In the constructor, we then define the various painter paths and
-    create corresponding \c RenderArea widgets which will render the
-    graphical shapes:
+    In the \c Window constructor, we define the various painter paths
+    and create corresponding \c RenderArea widgets which will render
+    the graphical shapes:
 
     \snippet painting/painterpaths/window.cpp 1
 

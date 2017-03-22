@@ -29,7 +29,6 @@
 
 #include <QtTest/QtTest>
 #include "qtransform.h"
-#include <math.h>
 #include <qpolygon.h>
 #include <qdebug.h>
 
@@ -66,10 +65,6 @@ private:
 };
 
 Q_DECLARE_METATYPE(QTransform)
-
-#if defined(Q_OS_WIN) && !defined(M_PI)
-#define M_PI 3.14159265897932384626433832795f
-#endif
 
 void tst_QTransform::mapRect_data()
 {
