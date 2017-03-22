@@ -106,7 +106,8 @@ static bool tabBetweenSubWindowsIn(QMdiArea *mdiArea, int tabCount = -1, bool re
             }
             QMdiSubWindow *subWindow = subWindows.at(reverse ? subWindows.size() -1 - i : i);
             if (rubberBand->geometry() != subWindow->geometry()) {
-                qWarning("Rubber band has different geometry");
+                qWarning().nospace() << "Rubber band of tab " << i << " has different geometry: "
+                    << rubberBand->geometry() << " (sub window: " << subWindow->geometry() << ").";
                 return false;
             }
         }
