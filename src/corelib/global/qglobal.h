@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -612,7 +612,8 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 #  define Q_ALWAYS_INLINE inline
 #endif
 
-#if defined(Q_CC_GNU) && defined(Q_OS_WIN)
+#if defined(Q_CC_GNU) && defined(Q_OS_WIN) && !defined(QT_NO_DATA_RELOCATION)
+// ### Qt6: you can remove me
 #  define QT_INIT_METAOBJECT __attribute__((init_priority(101)))
 #else
 #  define QT_INIT_METAOBJECT

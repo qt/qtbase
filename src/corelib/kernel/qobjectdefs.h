@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -572,13 +572,42 @@ struct Q_CORE_EXPORT QMetaObject
     int static_metacall(Call, int, void **) const;
     static int metacall(QObject *, Call, int, void **);
 
+    template <const QMetaObject &MO> static constexpr const QMetaObject *staticMetaObject()
+    {
+        return &MO;
+    }
+
+    struct SuperData {
+        const QMetaObject *direct;
+        SuperData() = default;
+        constexpr SuperData(std::nullptr_t) : direct(nullptr) {}
+        constexpr SuperData(const QMetaObject *mo) : direct(mo) {}
+
+        constexpr const QMetaObject *operator->() const { return operator const QMetaObject *(); }
+
+#ifdef QT_NO_DATA_RELOCATION
+        using Getter = const QMetaObject *(*)();
+        Getter indirect = nullptr;
+        constexpr SuperData(Getter g) : direct(nullptr), indirect(g) {}
+        constexpr operator const QMetaObject *() const
+        { return indirect ? indirect() : direct; }
+        template <const QMetaObject &MO> static constexpr SuperData link()
+        { return SuperData(QMetaObject::staticMetaObject<MO>); }
+#else
+        constexpr operator const QMetaObject *() const
+        { return direct; }
+        template <const QMetaObject &MO> static constexpr SuperData link()
+        { return SuperData(QMetaObject::staticMetaObject<MO>()); }
+#endif
+    };
+
     struct { // private data
-        const QMetaObject *superdata;
+        SuperData superdata;
         const QByteArrayData *stringdata;
         const uint *data;
         typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **);
         StaticMetacallFunction static_metacall;
-        const QMetaObject * const *relatedMetaObjects;
+        const SuperData *relatedMetaObjects;
         void *extradata; //reserved for future use
     } d;
 
