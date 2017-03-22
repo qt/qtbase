@@ -55,6 +55,7 @@
 #pragma qt_sync_stop_processing
 #endif
 
+#ifndef Q_CLANG_QDOC
 #define zero $0
 #define AT   $1
 #define v0   $2
@@ -88,6 +89,7 @@
 #define fp   $30
 #define s8   $30
 #define ra   $31
+#endif
 
 /*
  * LEAF_MIPS32R2 - declare leaf_mips32r2 routine
