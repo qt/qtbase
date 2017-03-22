@@ -286,6 +286,7 @@ static bool convert(const QVariant::Private *d, int t,
         default:
             break;
         }
+        break;
     }
 #endif
 #ifndef QT_NO_ICON
