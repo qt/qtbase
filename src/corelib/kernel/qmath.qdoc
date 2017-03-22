@@ -35,7 +35,24 @@
     These functions are partly convenience definitions for basic math operations
     not available in the C or Standard Template Libraries.
 
-    \pagekeywords math trigonometry qmath floor ceiling absolute sine cosine tangent inverse tan exponent power natural logarithm
+    The header also ensures some constants specified in POSIX, but not present
+    in C++ standards (so absent from <math.h> on some platforms), are defined:
+
+    \value M_E The base of the natural logarithms, e = exp(1)
+    \value M_LOG2E The base-two logarithm of e
+    \value M_LOG10E The base-ten logarithm of e
+    \value M_LN2 The natural logarithm of two
+    \value M_LN10 The natural logarithm of ten
+    \value M_PI The ratio of a circle's circumference to diameter, \unicode{0x3C0}
+    \value M_PI_2 Half M_PI, \unicode{0x3C0} / 2
+    \value M_PI_4 Quarter M_PI, \unicode{0x3C0} / 4
+    \value M_1_PI The inverse of M_PI, 1 / \unicode{0x3C0}
+    \value M_2_PI Twice the inverse of M_PI, 2 / \unicode{0x3C0}
+    \value M_2_SQRTPI Two divided by the square root of pi, 2 / \unicode{0x221A}\unicode{0x3C0}
+    \value M_SQRT2 The square root of two, \unicode{0x221A}2
+    \value M_SQRT1_2 The square roof of half, 1 / \unicode{0x221A}2
+
+    \pagekeywords math trigonometry qmath floor ceiling absolute sine cosine tangent inverse tan exponent power natural logarithm pi
 */
 
 /*!

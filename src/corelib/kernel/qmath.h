@@ -149,6 +149,8 @@ inline qreal qPow(qreal x, qreal y)
     return pow(x, y);
 }
 
+// TODO: use template variables (e.g. Qt::pi<type>) for these once we have C++14 support:
+
 #ifndef M_E
 #define M_E (2.7182818284590452354)
 #endif
