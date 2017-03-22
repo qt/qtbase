@@ -2052,14 +2052,57 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
             preeditCursor = a.start;
             hideCursor = !a.length;
         } else if (a.type == QInputMethodEvent::TextFormat) {
-            QTextCharFormat f = qvariant_cast<QTextFormat>(a.value).toCharFormat();
+            QTextCharFormat f = cursor.charFormat();
+            f.merge(qvariant_cast<QTextFormat>(a.value).toCharFormat());
             if (f.isValid()) {
                 QTextLayout::FormatRange o;
                 o.start = a.start + cursor.position() - block.position();
                 o.length = a.length;
                 o.format = f;
-                overrides.append(o);
+
+                // Make sure list is sorted by start index
+                QVector<QTextLayout::FormatRange>::iterator it = overrides.end();
+                while (it != overrides.begin()) {
+                    QVector<QTextLayout::FormatRange>::iterator previous = it - 1;
+                    if (o.start >= previous->start) {
+                        overrides.insert(it, o);
+                        break;
+                    }
+                    it = previous;
+                }
+
+                if (it == overrides.begin())
+                    overrides.prepend(o);
             }
+        }
+    }
+
+    if (cursor.charFormat().isValid()) {
+        int start = cursor.position() - block.position();
+        int end = start + e->preeditString().length();
+
+        QVector<QTextLayout::FormatRange>::iterator it = overrides.begin();
+        while (it != overrides.end()) {
+            QTextLayout::FormatRange range = *it;
+            int rangeStart = range.start;
+            if (rangeStart > start) {
+                QTextLayout::FormatRange o;
+                o.start = start;
+                o.length = rangeStart - start;
+                o.format = cursor.charFormat();
+                it = overrides.insert(it, o) + 1;
+            }
+
+            ++it;
+            start = range.start + range.length;
+        }
+
+        if (start < end) {
+            QTextLayout::FormatRange o;
+            o.start = start;
+            o.length = end - start;
+            o.format = cursor.charFormat();
+            overrides.append(o);
         }
     }
     layout->setFormats(overrides);

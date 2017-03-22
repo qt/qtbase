@@ -1703,6 +1703,7 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
         d->viewportEnteredNeeded = true;
         break;
     case QEvent::Leave:
+        d->setHoverIndex(QModelIndex()); // If we've left, no hover should be needed anymore
     #ifndef QT_NO_STATUSTIP
         if (d->shouldClearStatusTip && d->parent) {
             QString empty;

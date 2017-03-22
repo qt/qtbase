@@ -898,19 +898,17 @@ void QXcbWindow::hide()
     }
 }
 
-static QWindow *tlWindow(QWindow *window)
-{
-    if (window && window->parent())
-        return tlWindow(window->parent());
-    return window;
-}
-
 bool QXcbWindow::relayFocusToModalWindow() const
 {
-    QWindow *w = tlWindow(static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver());
-    QWindow *modal_window = 0;
-    if (QGuiApplicationPrivate::instance()->isWindowBlocked(w,&modal_window) && modal_window != w) {
-        modal_window->requestActivate();
+    QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver();
+    // get top-level window
+    while (w && w->parent())
+        w = w->parent();
+
+    QWindow *modalWindow = 0;
+    const bool blocked = QGuiApplicationPrivate::instance()->isWindowBlocked(w, &modalWindow);
+    if (blocked && modalWindow != w) {
+        modalWindow->requestActivate();
         connection()->flush();
         return true;
     }
