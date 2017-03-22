@@ -2411,7 +2411,8 @@ void QWindowsWindow::setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWind
 
 void QWindowsWindow::registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes)
 {
-    if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)) {
+    if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
+        && !testFlag(TouchRegistered)) {
         ULONG touchFlags = 0;
         const bool ret = QWindowsContext::user32dll.isTouchWindow(m_data.hwnd, &touchFlags);
         // Return if it is not a touch window or the flags are already set by a hook

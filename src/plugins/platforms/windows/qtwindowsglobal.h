@@ -120,6 +120,7 @@ enum WindowsEventType // Simplify event types
     QueryEndSessionApplicationEvent = ApplicationEventFlag + 4,
     EndSessionApplicationEvent = ApplicationEventFlag + 5,
     AppCommandEvent = ApplicationEventFlag + 6,
+    DeviceChangeEvent = ApplicationEventFlag + 7,
     InputMethodStartCompositionEvent = InputMethodEventFlag + 1,
     InputMethodCompositionEvent = InputMethodEventFlag + 2,
     InputMethodEndCompositionEvent = InputMethodEventFlag + 3,
@@ -271,6 +272,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
 #endif
     case WM_GESTURE:
         return QtWindows::GestureEvent;
+    case WM_DEVICECHANGE:
+        return QtWindows::DeviceChangeEvent;
     case WM_DPICHANGED:
         return QtWindows::DpiChangedEvent;
     default:
