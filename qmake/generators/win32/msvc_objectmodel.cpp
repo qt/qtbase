@@ -1216,6 +1216,7 @@ VCLinkerTool::VCLinkerTool()
     :   DataExecutionPrevention(unset),
         EnableCOMDATFolding(optFoldingDefault),
         GenerateDebugInformation(unset),
+        DebugInfoOption(linkerDebugOptionNone),
         GenerateMapFile(unset),
         HeapCommitSize(-1),
         HeapReserveSize(-1),
