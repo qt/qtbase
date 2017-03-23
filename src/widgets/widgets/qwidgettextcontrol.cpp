@@ -1141,52 +1141,8 @@ void QWidgetTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget 
         case QEvent::ShortcutOverride:
             if (d->interactionFlags & Qt::TextEditable) {
                 QKeyEvent* ke = static_cast<QKeyEvent *>(e);
-                if (ke->modifiers() == Qt::NoModifier
-                    || ke->modifiers() == Qt::ShiftModifier
-                    || ke->modifiers() == Qt::KeypadModifier) {
-                    if (ke->key() < Qt::Key_Escape) {
-                        ke->accept();
-                    } else {
-                        switch (ke->key()) {
-                            case Qt::Key_Return:
-                            case Qt::Key_Enter:
-                            case Qt::Key_Delete:
-                            case Qt::Key_Home:
-                            case Qt::Key_End:
-                            case Qt::Key_Backspace:
-                            case Qt::Key_Left:
-                            case Qt::Key_Right:
-                            case Qt::Key_Up:
-                            case Qt::Key_Down:
-                            case Qt::Key_Tab:
-                            ke->accept();
-                        default:
-                            break;
-                        }
-                    }
-#ifndef QT_NO_SHORTCUT
-                } else if (ke == QKeySequence::Copy
-                           || ke == QKeySequence::Paste
-                           || ke == QKeySequence::Cut
-                           || ke == QKeySequence::Redo
-                           || ke == QKeySequence::Undo
-                           || ke == QKeySequence::MoveToNextWord
-                           || ke == QKeySequence::MoveToPreviousWord
-                           || ke == QKeySequence::MoveToStartOfDocument
-                           || ke == QKeySequence::MoveToEndOfDocument
-                           || ke == QKeySequence::SelectNextWord
-                           || ke == QKeySequence::SelectPreviousWord
-                           || ke == QKeySequence::SelectStartOfLine
-                           || ke == QKeySequence::SelectEndOfLine
-                           || ke == QKeySequence::SelectStartOfBlock
-                           || ke == QKeySequence::SelectEndOfBlock
-                           || ke == QKeySequence::SelectStartOfDocument
-                           || ke == QKeySequence::SelectEndOfDocument
-                           || ke == QKeySequence::SelectAll
-                          ) {
+                if (isCommonTextEditShortcut(ke))
                     ke->accept();
-#endif
-                }
             }
             break;
         default:
