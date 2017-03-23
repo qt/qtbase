@@ -925,8 +925,10 @@ void QVulkanWindowPrivate::reset()
 
     devFuncs->vkDeviceWaitIdle(dev);
 
-    if (renderer)
+    if (renderer) {
         renderer->releaseResources();
+        devFuncs->vkDeviceWaitIdle(dev);
+    }
 
     if (defaultRenderPass) {
         devFuncs->vkDestroyRenderPass(dev, defaultRenderPass, nullptr);
@@ -1436,8 +1438,10 @@ void QVulkanWindowPrivate::releaseSwapChain()
 
     devFuncs->vkDeviceWaitIdle(dev);
 
-    if (renderer)
+    if (renderer) {
         renderer->releaseSwapChainResources();
+        devFuncs->vkDeviceWaitIdle(dev);
+    }
 
     for (int i = 0; i < frameLag; ++i) {
         FrameResources &frame(frameRes[i]);
@@ -1676,8 +1680,8 @@ void QVulkanWindowRenderer::initResources()
     have multiple calls to initSwapChainResources() and
     releaseSwapChainResources() calls in-between.
 
-    Accessors like swapChainImageSize() are only guaranteed to return valid
-    values inside this function and afterwards, up until
+    Accessors like QVulkanWindow::swapChainImageSize() are only guaranteed to
+    return valid values inside this function and afterwards, up until
     releaseSwapChainResources() is called.
 
     This is also the place where size-dependent calculations (for example, the
@@ -1698,9 +1702,16 @@ void QVulkanWindowRenderer::initSwapChainResources()
     followed by a new call to initSwapChainResources() at a later point.
 
     QVulkanWindow takes care of waiting for the device to become idle before
-    invoking this function.
+    and after invoking this function.
 
     The default implementation is empty.
+
+    \note This is the last place to act with all graphics resources intact
+    before QVulkanWindow starts releasing them. It is therefore essential that
+    implementations with an asynchronous, potentially multi-threaded
+    startNextFrame() perform a blocking wait and call
+    QVulkanWindow::frameReady() before returning from this function in case
+    there is a pending frame submission.
  */
 void QVulkanWindowRenderer::releaseSwapChainResources()
 {
@@ -1714,7 +1725,7 @@ void QVulkanWindowRenderer::releaseSwapChainResources()
     followed by an initResources() at a later point.
 
     QVulkanWindow takes care of waiting for the device to become idle before
-    invoking this function.
+    and after invoking this function.
 
     The default implementation is empty.
  */
