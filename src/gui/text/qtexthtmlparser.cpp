@@ -706,8 +706,8 @@ void QTextHtmlParser::parseTag()
     node = resolveParent();
     resolveNode();
 
-    const int nodeIndex = nodes.count() - 1; // this new node is always the last
 #ifndef QT_NO_CSSPARSER
+    const int nodeIndex = nodes.count() - 1; // this new node is always the last
     node->applyCssDeclarations(declarationsForNode(nodeIndex), resourceProvider);
 #endif
     applyAttributes(node->attributes);
