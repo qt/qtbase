@@ -2432,6 +2432,9 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
     }
 #endif
 
+#if !QT_CONFIG(dockwidget) && !QT_CONFIG(tabbar)
+    Q_UNUSED(group);
+#endif
 
     layoutState.unplug(path ,&savedState);
     savedState.fitLayout();
