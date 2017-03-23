@@ -80,6 +80,7 @@ private:
     friend Q_DECL_CONSTEXPR bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) Q_DECL_NOTHROW;
     friend Q_DECL_CONSTEXPR uint qHash(QSslEllipticCurve curve, uint seed) Q_DECL_NOTHROW;
 
+    friend class QSslContext;
     friend class QSslSocketPrivate;
     friend class QSslSocketBackendPrivate;
 };

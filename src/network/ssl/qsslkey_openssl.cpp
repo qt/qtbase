@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2016 Richard J. Moore <rich@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -84,33 +85,30 @@ void QSslKeyPrivate::clear(bool deep)
 
 bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
 {
-    if (pkey->type == EVP_PKEY_RSA) {
+#if QT_CONFIG(opensslv11)
+    const int keyType = q_EVP_PKEY_type(q_EVP_PKEY_base_id(pkey));
+#else
+    const int keyType = pkey->type;
+#endif
+    if (keyType == EVP_PKEY_RSA) {
         isNull = false;
         algorithm = QSsl::Rsa;
         type = QSsl::PrivateKey;
-
-        rsa = q_RSA_new();
-        memcpy(rsa, q_EVP_PKEY_get1_RSA(pkey), sizeof(RSA));
-
+        rsa = q_EVP_PKEY_get1_RSA(pkey);
         return true;
-    }
-    else if (pkey->type == EVP_PKEY_DSA) {
+    } else if (keyType == EVP_PKEY_DSA) {
         isNull = false;
         algorithm = QSsl::Dsa;
         type = QSsl::PrivateKey;
-
-        dsa = q_DSA_new();
-        memcpy(dsa, q_EVP_PKEY_get1_DSA(pkey), sizeof(DSA));
-
+        dsa = q_EVP_PKEY_get1_DSA(pkey);
         return true;
     }
 #ifndef OPENSSL_NO_EC
-    else if (pkey->type == EVP_PKEY_EC) {
+    else if (keyType == EVP_PKEY_EC) {
         isNull = false;
         algorithm = QSsl::Ec;
         type = QSsl::PrivateKey;
-        ec = q_EC_KEY_dup(q_EVP_PKEY_get1_EC_KEY(pkey));
-
+        ec = q_EVP_PKEY_get1_EC_KEY(pkey);
         return true;
     }
 #endif
@@ -178,8 +176,8 @@ int QSslKeyPrivate::length() const
         return -1;
 
     switch (algorithm) {
-        case QSsl::Rsa: return q_BN_num_bits(rsa->n);
-        case QSsl::Dsa: return q_BN_num_bits(dsa->p);
+        case QSsl::Rsa: return q_RSA_bits(rsa);
+        case QSsl::Dsa: return q_DSA_bits(dsa);
 #ifndef OPENSSL_NO_EC
         case QSsl::Ec: return q_EC_GROUP_get_degree(q_EC_KEY_get0_group(ec));
 #endif
@@ -273,7 +271,13 @@ Qt::HANDLE QSslKeyPrivate::handle() const
 
 static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv, int enc)
 {
-    EVP_CIPHER_CTX ctx;
+#if QT_CONFIG(opensslv11)
+    EVP_CIPHER_CTX *ctx = q_EVP_CIPHER_CTX_new();
+#else
+    EVP_CIPHER_CTX evpCipherContext;
+    EVP_CIPHER_CTX *ctx = &evpCipherContext;
+#endif
+
     const EVP_CIPHER* type = 0;
     int i = 0, len = 0;
 
@@ -291,21 +295,44 @@ static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
 
     QByteArray output;
     output.resize(data.size() + EVP_MAX_BLOCK_LENGTH);
-    q_EVP_CIPHER_CTX_init(&ctx);
-    q_EVP_CipherInit(&ctx, type, NULL, NULL, enc);
-    q_EVP_CIPHER_CTX_set_key_length(&ctx, key.size());
+
+#if QT_CONFIG(opensslv11)
+    q_EVP_CIPHER_CTX_reset(ctx);
+#else
+    q_EVP_CIPHER_CTX_init(ctx);
+#endif
+
+    q_EVP_CipherInit(ctx, type, NULL, NULL, enc);
+    q_EVP_CIPHER_CTX_set_key_length(ctx, key.size());
     if (cipher == QSslKeyPrivate::Rc2Cbc)
-        q_EVP_CIPHER_CTX_ctrl(&ctx, EVP_CTRL_SET_RC2_KEY_BITS, 8 * key.size(), NULL);
-    q_EVP_CipherInit(&ctx, NULL,
+        q_EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_SET_RC2_KEY_BITS, 8 * key.size(), NULL);
+
+#if QT_CONFIG(opensslv11)
+    // EVP_CipherInit in 1.1 resets the context thus making the calls above useless.
+    // We call EVP_CipherInit_ex instead.
+    q_EVP_CipherInit_ex(ctx, nullptr, nullptr,
+                        reinterpret_cast<const unsigned char *>(key.constData()),
+                        reinterpret_cast<const unsigned char *>(iv.constData()),
+                        enc);
+#else
+    q_EVP_CipherInit(ctx, NULL,
         reinterpret_cast<const unsigned char *>(key.constData()),
         reinterpret_cast<const unsigned char *>(iv.constData()), enc);
-    q_EVP_CipherUpdate(&ctx,
+#endif // opensslv11
+
+    q_EVP_CipherUpdate(ctx,
         reinterpret_cast<unsigned char *>(output.data()), &len,
         reinterpret_cast<const unsigned char *>(data.constData()), data.size());
-    q_EVP_CipherFinal(&ctx,
+    q_EVP_CipherFinal(ctx,
         reinterpret_cast<unsigned char *>(output.data()) + len, &i);
     len += i;
-    q_EVP_CIPHER_CTX_cleanup(&ctx);
+
+#if QT_CONFIG(opensslv11)
+    q_EVP_CIPHER_CTX_reset(ctx);
+    q_EVP_CIPHER_CTX_free(ctx);
+#else
+    q_EVP_CIPHER_CTX_cleanup(ctx);
+#endif
 
     return output.left(len);
 }

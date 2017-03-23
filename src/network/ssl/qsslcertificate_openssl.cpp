@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2016 Richard J. Moore <rich@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -64,12 +65,14 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
 uint qHash(const QSslCertificate &key, uint seed) Q_DECL_NOTHROW
 {
     if (X509 * const x509 = key.d->x509) {
-        (void)q_X509_cmp(x509, x509); // populate x509->sha1_hash
-                                      // (if someone knows a better way...)
-        return qHashBits(x509->sha1_hash, SHA_DIGEST_LENGTH, seed);
-    } else {
-        return seed;
+        const EVP_MD *sha1 = q_EVP_sha1();
+        unsigned int len = 0;
+        unsigned char md[EVP_MAX_MD_SIZE];
+        q_X509_digest(x509, sha1, md, &len);
+        return qHashBits(md, len, seed);
     }
+
+    return seed;
 }
 
 bool QSslCertificate::isNull() const
@@ -89,8 +92,7 @@ QByteArray QSslCertificate::version() const
 {
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     if (d->versionString.isEmpty() && d->x509)
-        d->versionString =
-            QByteArray::number(qlonglong(q_ASN1_INTEGER_get(d->x509->cert_info->version)) + 1);
+        d->versionString = QByteArray::number(qlonglong(q_X509_get_version(d->x509)) + 1);
 
     return d->versionString;
 }
@@ -99,7 +101,7 @@ QByteArray QSslCertificate::serialNumber() const
 {
     QMutexLocker lock(QMutexPool::globalInstanceGet(d.data()));
     if (d->serialNumberString.isEmpty() && d->x509) {
-        ASN1_INTEGER *serialNumber = d->x509->cert_info->serialNumber;
+        ASN1_INTEGER *serialNumber = q_X509_get_serialNumber(d->x509);
         QByteArray hexString;
         hexString.reserve(serialNumber->length * 3);
         for (int a = 0; a < serialNumber->length; ++a) {
@@ -199,14 +201,15 @@ QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlter
                 continue;
             }
 
-            const char *altNameStr = reinterpret_cast<const char *>(q_ASN1_STRING_data(genName->d.ia5));
+            const char *altNameStr = reinterpret_cast<const char *>(q_ASN1_STRING_get0_data(genName->d.ia5));
             const QString altName = QString::fromLatin1(altNameStr, len);
             if (genName->type == GEN_DNS)
                 result.insert(QSsl::DnsEntry, altName);
             else if (genName->type == GEN_EMAIL)
                 result.insert(QSsl::EmailEntry, altName);
         }
-        q_sk_pop_free((STACK*)altNames, reinterpret_cast<void(*)(void*)>(q_sk_free));
+
+        q_OPENSSL_sk_pop_free((OPENSSL_STACK*)altNames, reinterpret_cast<void(*)(void*)>(q_OPENSSL_sk_free));
     }
 
     return result;
@@ -235,25 +238,26 @@ QSslKey QSslCertificate::publicKey() const
     QSslKey key;
 
     key.d->type = QSsl::PublicKey;
-    X509_PUBKEY *xkey = d->x509->cert_info->key;
-    EVP_PKEY *pkey = q_X509_PUBKEY_get(xkey);
-    Q_ASSERT(pkey);
 
-    if (q_EVP_PKEY_type(pkey->type) == EVP_PKEY_RSA) {
+    EVP_PKEY *pkey = q_X509_get_pubkey(d->x509);
+    Q_ASSERT(pkey);
+    const int keyType = q_EVP_PKEY_type(q_EVP_PKEY_base_id(pkey));
+
+    if (keyType == EVP_PKEY_RSA) {
         key.d->rsa = q_EVP_PKEY_get1_RSA(pkey);
         key.d->algorithm = QSsl::Rsa;
         key.d->isNull = false;
-    } else if (q_EVP_PKEY_type(pkey->type) == EVP_PKEY_DSA) {
+    } else if (keyType == EVP_PKEY_DSA) {
         key.d->dsa = q_EVP_PKEY_get1_DSA(pkey);
         key.d->algorithm = QSsl::Dsa;
         key.d->isNull = false;
 #ifndef OPENSSL_NO_EC
-    } else if (q_EVP_PKEY_type(pkey->type) == EVP_PKEY_EC) {
+    } else if (keyType == EVP_PKEY_EC) {
         key.d->ec = q_EVP_PKEY_get1_EC_KEY(pkey);
         key.d->algorithm = QSsl::Ec;
         key.d->isNull = false;
 #endif
-    } else if (q_EVP_PKEY_type(pkey->type) == EVP_PKEY_DH) {
+    } else if (keyType == EVP_PKEY_DH) {
         // DH unsupported
     } else {
         // error?
@@ -275,7 +279,7 @@ static QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
     X509V3_EXT_METHOD *meth = const_cast<X509V3_EXT_METHOD *>(q_X509V3_EXT_get(ext));
     if (!meth) {
         ASN1_OCTET_STRING *value = q_X509_EXTENSION_get_data(ext);
-        QByteArray result( reinterpret_cast<const char *>(q_ASN1_STRING_data(value)),
+        QByteArray result( reinterpret_cast<const char *>(q_ASN1_STRING_get0_data(value)),
                            q_ASN1_STRING_length(value));
         return result;
     }
@@ -371,7 +375,7 @@ static QVariant x509ExtensionToValue(X509_EXTENSION *ext)
                         continue;
                     }
 
-                    const char *uriStr = reinterpret_cast<const char *>(q_ASN1_STRING_data(name->d.uniformResourceIdentifier));
+                    const char *uriStr = reinterpret_cast<const char *>(q_ASN1_STRING_get0_data(name->d.uniformResourceIdentifier));
                     const QString uri = QString::fromUtf8(uriStr, len);
 
                     result[QString::fromUtf8(QSslCertificatePrivate::asn1ObjectName(ad->method))] = uri;
@@ -380,11 +384,7 @@ static QVariant x509ExtensionToValue(X509_EXTENSION *ext)
                 }
             }
 
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-            q_sk_pop_free((_STACK*)info, reinterpret_cast<void(*)(void*)>(q_sk_free));
-#else
-            q_sk_pop_free((STACK*)info, reinterpret_cast<void(*)(void*)>(q_sk_free));
-#endif
+            q_OPENSSL_sk_pop_free((OPENSSL_STACK*)info, reinterpret_cast<void(*)(void *)>(q_OPENSSL_sk_free));
             return result;
         }
         break;
@@ -607,7 +607,11 @@ static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name)
         unsigned char *data = 0;
         int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
         info.insertMulti(name, QString::fromUtf8((char*)data, size));
+#if QT_CONFIG(opensslv11)
+        q_CRYPTO_free(data, 0, 0);
+#else
         q_CRYPTO_free(data);
+#endif
     }
 
     return info;
@@ -619,8 +623,9 @@ QSslCertificate QSslCertificatePrivate::QSslCertificate_from_X509(X509 *x509)
     if (!x509 || !QSslSocket::supportsSsl())
         return certificate;
 
-    ASN1_TIME *nbef = q_X509_get_notBefore(x509);
-    ASN1_TIME *naft = q_X509_get_notAfter(x509);
+    ASN1_TIME *nbef = q_X509_getm_notBefore(x509);
+    ASN1_TIME *naft = q_X509_getm_notAfter(x509);
+
     certificate.d->notValidBefore = q_getTimeFromASN1(nbef);
     certificate.d->notValidAfter = q_getTimeFromASN1(naft);
     certificate.d->null = false;

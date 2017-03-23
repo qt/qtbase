@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Governikus GmbH & Co. KG.
+** Copyright (C) 2016 Richard J. Moore <rich@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -78,17 +79,18 @@ QSslEllipticCurve QSslEllipticCurve::fromShortName(const QString &name)
     QSslEllipticCurve result;
 
 #ifndef OPENSSL_NO_EC
-    const QByteArray curveNameLatin1 = name.toLatin1();
 
+    const QByteArray curveNameLatin1 = name.toLatin1();
     int nid = q_OBJ_sn2nid(curveNameLatin1.data());
 
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
-    if (nid == 0 && q_SSLeay() >= 0x10002000L)
+    if (nid == 0 && QSslSocket::sslLibraryVersionNumber() >= 0x10002000L)
         nid = q_EC_curve_nist2nid(curveNameLatin1.data());
 #endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
 
     result.id = nid;
-#endif
+
+#endif // !OPENSSL_NO_EC
 
     return result;
 }

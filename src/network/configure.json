@@ -105,6 +105,12 @@
             "type": "compile",
             "test": "unix/sctp",
             "use": "network"
+        },
+        "openssl11": {
+            "label": "OpenSSL v. 1.1 support",
+            "type": "compile",
+            "test": "unix/openssl11",
+            "use": "network"
         }
     },
 
@@ -171,6 +177,11 @@
             "label": "SSL",
             "condition": "config.winrt || features.securetransport || features.openssl",
             "output": [ "publicFeature", "feature" ]
+        },
+        "opensslv11": {
+            "label": "OpenSSL v. 1.1",
+            "condition": "tests.openssl11",
+            "output": ["publicFeature", "feature"]
         },
         "sctp": {
             "label": "SCTP",
