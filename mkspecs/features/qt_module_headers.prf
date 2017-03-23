@@ -180,7 +180,7 @@ headersclean:!internal_module {
                  -Dforeach=public: \
                  -Dforever=public:
 
-    gcc {
+    gcc:!rim_qcc {
         # Turn on some extra warnings not found in -Wall -Wextra.
         # Common to GCC, Clang and ICC (and other compilers that masquerade as GCC):
         hcleanFLAGS = -Wall -Wextra -Werror \

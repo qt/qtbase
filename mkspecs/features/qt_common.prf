@@ -88,7 +88,7 @@ warnings_are_errors:warning_clean {
             #      (NULL in C++ is usually a literal 0)
             QMAKE_CXXFLAGS_WARN_ON += -Werror -ww177,1224,1478,1881 $$WERROR
         }
-    } else:gcc:!clang:!intel_icc {
+    } else:gcc:!clang:!intel_icc:!rim_qcc {
         # GCC 4.6-4.9, 5.x, ...
         ver = $${QT_GCC_MAJOR_VERSION}.$${QT_GCC_MINOR_VERSION}
         contains(ver, "(4\\.[6789]|[5-9]\\..)") {
