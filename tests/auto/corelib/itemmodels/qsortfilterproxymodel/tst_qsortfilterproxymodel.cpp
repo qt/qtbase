@@ -148,6 +148,9 @@ private slots:
     void sourceLayoutChangeLeavesValidPersistentIndexes();
     void rowMoveLeavesValidPersistentIndexes();
 
+    void emitLayoutChangedOnlyIfSortingChanged_data();
+    void emitLayoutChangedOnlyIfSortingChanged();
+
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -2057,8 +2060,6 @@ static void checkSortedTableModel(const QAbstractItemModel *model, const QString
 
 void tst_QSortFilterProxyModel::changeSourceDataKeepsStableSorting_qtbug1548()
 {
-    QSKIP("This test will fail, see QTBUG-1548");
-
     // Check that emitting dataChanged from the source model
     // for a change of a role which is not the sorting role
     // doesn't alter the sorting. In this case, we sort on the DisplayRole,
@@ -3568,6 +3569,13 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
             parentItem = item;
         }
     }
+    // item 0
+    // item 10
+    //  - item 1
+    //  - item 11
+    //    - item 2
+    //    - item 12
+    // ...
 
     QSortFilterProxyModel proxy;
     proxy.sort(0, Qt::AscendingOrder);
@@ -3609,11 +3617,12 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
     QVERIFY(proxy2ParentsChangedSpy.isValid());
 
     QStandardItem *item = model.invisibleRootItem()->child(1)->child(1);
+    QCOMPARE(item->text(), QStringLiteral("item 11"));
 
     // Ensure mapped:
     proxy.mapFromSource(model.indexFromItem(item));
 
-    item->setData("Changed");
+    item->setText("Changed");
 
     QCOMPARE(dataChangedSpy.size(), 1);
     QCOMPARE(layoutAboutToBeChangedSpy.size(), 1);
@@ -4352,6 +4361,130 @@ void tst_QSortFilterProxyModel::rowMoveLeavesValidPersistentIndexes()
     // a dangling pointer.
     QVERIFY(persistentIndex.parent().isValid());
 }
+
+void tst_QSortFilterProxyModel::emitLayoutChangedOnlyIfSortingChanged_data()
+{
+    QTest::addColumn<int>("changedRow");
+    QTest::addColumn<Qt::ItemDataRole>("changedRole");
+    QTest::addColumn<QString>("newData");
+    QTest::addColumn<QString>("expectedSourceRowTexts");
+    QTest::addColumn<QString>("expectedProxyRowTexts");
+    QTest::addColumn<int>("expectedLayoutChanged");
+
+    // Starting point:
+    // a source model with 8,7,6,5,4,3,2,1
+    // a proxy model keeping only even rows and sorting them, therefore showing 2,4,6,8
+
+    // When setData changes ordering, layoutChanged should be emitted
+    QTest::newRow("ordering_change") << 0 << Qt::DisplayRole << "0" << "07654321" << "0246" << 1;
+
+    // When setData on visible row doesn't change ordering, layoutChanged should not be emitted
+    QTest::newRow("no_ordering_change") << 6 << Qt::DisplayRole << "0" << "87654301" << "0468" << 0;
+
+    // When setData happens on a filtered out row, layoutChanged should not be emitted
+    QTest::newRow("filtered_out") << 1 << Qt::DisplayRole << "9" << "89654321" << "2468" << 0;
+
+    // When setData makes a row visible, layoutChanged should not be emitted (rowsInserted is emitted instead)
+    QTest::newRow("make_row_visible") << 7 << Qt::DisplayRole << "0" << "87654320" << "02468" << 0;
+
+    // When setData makes a row hidden, layoutChanged should not be emitted (rowsRemoved is emitted instead)
+    QTest::newRow("make_row_hidden") << 4 << Qt::DisplayRole << "1" << "87651321" << "268" << 0;
+
+    // When setData happens on an unrelated role, layoutChanged should not be emitted
+    QTest::newRow("unrelated_role") << 0 << Qt::DecorationRole << "" << "87654321" << "2468" << 0;
+
+    // When many changes happen together... and trigger removal, insertion, and layoutChanged
+    QTest::newRow("many_changes") << -1 << Qt::DisplayRole << "3,4,2,5,6,0,7,9" << "34256079" << "0246" << 1;
+
+    // When many changes happen together... and trigger removal, insertion, but no change in ordering of visible rows => no layoutChanged
+    QTest::newRow("many_changes_no_layoutChanged") << -1 << Qt::DisplayRole << "7,5,4,3,2,1,0,8" << "75432108" << "0248" << 0;
+}
+
+void tst_QSortFilterProxyModel::emitLayoutChangedOnlyIfSortingChanged()
+{
+    QFETCH(int, changedRow);
+    QFETCH(QString, newData);
+    QFETCH(Qt::ItemDataRole, changedRole);
+    QFETCH(QString, expectedSourceRowTexts);
+    QFETCH(QString, expectedProxyRowTexts);
+    QFETCH(int, expectedLayoutChanged);
+
+    // Custom version of QStringListModel which supports emitting dataChanged for many rows at once
+    class CustomStringListModel : public QAbstractListModel
+    {
+    public:
+        bool setData(const QModelIndex &index, const QVariant &value, int role) override
+        {
+            if (index.row() >= 0 && index.row() < lst.size()
+                && (role == Qt::EditRole || role == Qt::DisplayRole)) {
+                lst.replace(index.row(), value.toString());
+                emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
+                return true;
+            }
+            return false;
+        }
+        QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+        {
+            if (role == Qt::DisplayRole || role == Qt::EditRole)
+                return lst.at(index.row());
+            return QVariant();
+        }
+        int rowCount(const QModelIndex & = QModelIndex()) const override
+        {
+            return lst.count();
+        }
+
+        void replaceData(const QStringList &newData)
+        {
+            lst = newData;
+            emit dataChanged(index(0, 0), index(rowCount()-1, 0), {Qt::DisplayRole, Qt::EditRole});
+        }
+
+        void emitDecorationChangedSignal()
+        {
+            const QModelIndex idx = index(0, 0);
+            emit dataChanged(idx, idx, {Qt::DecorationRole});
+        }
+    private:
+        QStringList lst;
+    };
+    CustomStringListModel model;
+    QStringList strings;
+    for (auto i = 8; i >= 1; --i)
+        strings.append(QString::number(i));
+    model.replaceData(strings);
+    QCOMPARE(rowTexts(&model), QStringLiteral("87654321"));
+
+    class FilterEvenRowsProxyModel : public QSortFilterProxyModel
+    {
+    public:
+        bool filterAcceptsRow(int srcRow, const QModelIndex& srcParent) const override
+        {
+            return sourceModel()->index(srcRow, 0, srcParent).data().toInt() % 2 == 0;
+        }
+    };
+
+    FilterEvenRowsProxyModel proxy;
+    proxy.sort(0);
+    proxy.setSourceModel(&model);
+    QCOMPARE(rowTexts(&proxy), QStringLiteral("2468"));
+
+    QSignalSpy modelDataChangedSpy(&model, &QAbstractItemModel::dataChanged);
+    QSignalSpy proxyLayoutChangedSpy(&proxy, &QAbstractItemModel::layoutChanged);
+
+    if (changedRole == Qt::DecorationRole)
+        model.emitDecorationChangedSignal();
+    else if (changedRow == -1)
+        model.replaceData(newData.split(QLatin1Char(',')));
+    else
+        model.setData(model.index(changedRow, 0), newData, changedRole);
+
+    QCOMPARE(rowTexts(&model), expectedSourceRowTexts);
+    QCOMPARE(rowTexts(&proxy), expectedProxyRowTexts);
+    QCOMPARE(modelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyLayoutChangedSpy.size(), expectedLayoutChanged);
+}
+
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
 #include "tst_qsortfilterproxymodel.moc"

@@ -302,6 +302,8 @@ public:
 
     virtual void _q_sourceModelDestroyed() Q_DECL_OVERRIDE;
 
+    bool needsReorder(const QVector<int> &source_rows, const QModelIndex &source_parent) const;
+
     bool filterAcceptsRowInternal(int source_row, const QModelIndex &source_parent) const;
     bool filterRecursiveAcceptsRow(int source_row, const QModelIndex &source_parent) const;
 };
@@ -1197,6 +1199,33 @@ QSet<int> QSortFilterProxyModelPrivate::handle_filter_changed(
     return qVectorToSet(source_items_remove);
 }
 
+bool QSortFilterProxyModelPrivate::needsReorder(const QVector<int> &source_rows, const QModelIndex &source_parent) const
+{
+    Q_Q(const QSortFilterProxyModel);
+    Q_ASSERT(source_sort_column != -1);
+    const int proxyRowCount = q->rowCount(source_to_proxy(source_parent));
+    // If any modified proxy row no longer passes lessThan(previous, current) or lessThan(current, next) then we need to reorder.
+    return std::any_of(source_rows.begin(), source_rows.end(),
+            [this, q, proxyRowCount, source_parent](int sourceRow) -> bool {
+        const QModelIndex sourceIndex = model->index(sourceRow, source_sort_column, source_parent);
+        const QModelIndex proxyIndex = source_to_proxy(sourceIndex);
+        Q_ASSERT(proxyIndex.isValid()); // caller ensured source_rows were not filtered out
+        if (proxyIndex.row() > 0) {
+            const QModelIndex prevProxyIndex = q->sibling(proxyIndex.row() - 1, proxy_sort_column, proxyIndex);
+            const QModelIndex prevSourceIndex = proxy_to_source(prevProxyIndex);
+            if (sort_order == Qt::AscendingOrder ? q->lessThan(sourceIndex, prevSourceIndex) : q->lessThan(prevSourceIndex, sourceIndex))
+                return true;
+        }
+        if (proxyIndex.row() < proxyRowCount - 1) {
+            const QModelIndex nextProxyIndex = q->sibling(proxyIndex.row() + 1, proxy_sort_column, proxyIndex);
+            const QModelIndex nextSourceIndex = proxy_to_source(nextProxyIndex);
+            if (sort_order == Qt::AscendingOrder ? q->lessThan(nextSourceIndex, sourceIndex) : q->lessThan(sourceIndex, nextSourceIndex))
+                return true;
+        }
+        return false;
+    });
+}
+
 void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &source_top_left,
                                                         const QModelIndex &source_bottom_right,
                                                         const QVector<int> &roles)
@@ -1277,18 +1306,20 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
         }
 
         if (!source_rows_resort.isEmpty()) {
-            // Re-sort the rows of this level
-            QList<QPersistentModelIndex> parents;
-            parents << q->mapFromSource(source_parent);
-            emit q->layoutAboutToBeChanged(parents, QAbstractItemModel::VerticalSortHint);
-            QModelIndexPairList source_indexes = store_persistent_indexes();
-            remove_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
-                                source_parent, Qt::Vertical, false);
-            sort_source_rows(source_rows_resort, source_parent);
-            insert_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
-                                source_parent, Qt::Vertical, false);
-            update_persistent_indexes(source_indexes);
-            emit q->layoutChanged(parents, QAbstractItemModel::VerticalSortHint);
+            if (needsReorder(source_rows_resort, source_parent)) {
+                // Re-sort the rows of this level
+                QList<QPersistentModelIndex> parents;
+                parents << q->mapFromSource(source_parent);
+                emit q->layoutAboutToBeChanged(parents, QAbstractItemModel::VerticalSortHint);
+                QModelIndexPairList source_indexes = store_persistent_indexes();
+                remove_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
+                        source_parent, Qt::Vertical, false);
+                sort_source_rows(source_rows_resort, source_parent);
+                insert_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
+                        source_parent, Qt::Vertical, false);
+                update_persistent_indexes(source_indexes);
+                emit q->layoutChanged(parents, QAbstractItemModel::VerticalSortHint);
+            }
             // Make sure we also emit dataChanged for the rows
             source_rows_change += source_rows_resort;
         }
