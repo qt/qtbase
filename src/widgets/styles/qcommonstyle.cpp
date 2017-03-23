@@ -4882,6 +4882,8 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz.rheight() += 2; // Prevent icons from overlapping.
                       }
         break;
+#else
+        Q_UNUSED(d);
 #endif // QT_NO_ITEMVIEWS
 #ifndef QT_NO_SPINBOX
     case CT_SpinBox:
