@@ -2246,7 +2246,7 @@ void QTest::qSleep(int ms)
 #elif defined(Q_OS_WIN)
     Sleep(uint(ms));
 #else
-    struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
+    struct timespec ts = { time_t(ms / 1000), (ms % 1000) * 1000 * 1000 };
     nanosleep(&ts, NULL);
 #endif
 }
