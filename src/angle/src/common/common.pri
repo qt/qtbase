@@ -30,28 +30,10 @@ winrt|msvc {
         error("Cannot determine DirectX SDK location. Please set DXSDK_DIR environment variable.")
     }
 
-    DXINC_DIR = $${DX_DIR}Include
-    contains(QT_ARCH, x86_64) {
-        DXLIB_DIR = $${DX_DIR}Lib\\x64
-    } else {
-        DXLIB_DIR = $${DX_DIR}Lib\\x86
-    }
-
     equals(QMAKE_TARGET.arch, x86_64) {
         FXC = \"$${DX_DIR}Utilities\\bin\\x64\\fxc.exe\"
     } else {
         FXC = \"$${DX_DIR}Utilities\\bin\\x86\\fxc.exe\"
-    }
-
-    msvc {
-        # Unfortunately MinGW cannot use the DirectX headers from the DX SDK because d3d11shader.h uses
-        # buffer annotation macros (eg: __out, __in) which are not defined in the MinGW copy of
-        # specstrings_strict.h
-        INCLUDEPATH += $$DXINC_DIR
-
-        # Similarly we want the MinGW linker to use the import libraries shipped with the compiler
-        # instead of those from the SDK which cause a crash on startup.
-        LIBS_PRIVATE += -L$$DXLIB_DIR
     }
 }
 
