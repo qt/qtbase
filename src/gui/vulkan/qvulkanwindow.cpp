@@ -252,6 +252,25 @@ Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
  */
 
 /*!
+  \class QVulkanWindowRenderer
+  \inmodule QtGui
+  \since 5.10
+
+  \brief The QVulkanWindowRenderer class is used to implement the
+  application-specific rendering logic for a QVulkanWindow.
+
+  Applications typically subclass both QVulkanWindow and QVulkanWindowRenderer.
+  The former allows handling events, for example, input, while the latter allows
+  implementing the Vulkan resource management and command buffer building that
+  make up the application's rendering.
+
+  In addition to event handling, the QVulkanWindow subclass is responsible for
+  providing an implementation for QVulkanWindow::createRenderer() as well. This
+  is where the window and renderer get connected. A typical implementation will
+  simply create a new instance of a subclass of QVulkanWindowRenderer.
+ */
+
+/*!
     Constructs a new QVulkanWindow with the given \a parent.
 
     The surface type is set to QSurface::VulkanSurface.
@@ -1723,10 +1742,11 @@ void QVulkanWindowRenderer::releaseResources()
     graphics queue are available via QVulkanWindow::device() and
     QVulkanWindow::graphicsQueue(). Implementations can create additional
     command buffers from the pool returned by
-    QVulkanWindow::graphicsCommandPool(). For convenience, the index of the
-    best performing host visible memory type index is exposed via
-    QVulkanWindow::hostVisibleMemoryIndex(). All these accessors are safe to
-    invoke from any thread.
+    QVulkanWindow::graphicsCommandPool(). For convenience, the index of a host
+    visible and device local memory type index are exposed via
+    QVulkanWindow::hostVisibleMemoryIndex() and
+    QVulkanWindow::deviceLocalMemoryIndex(). All these accessors are safe to be
+    called from any thread.
 
     \sa QVulkanWindow::frameReady(), QVulkanWindow
  */
