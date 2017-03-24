@@ -93,6 +93,7 @@ public:
 
 private:
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString());
+    CFArrayRef createDescriptorArrayForFont(CTFontRef font, const QString &fileName);
 
 #ifndef QT_NO_FREETYPE
     bool m_useFreeType;
