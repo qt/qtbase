@@ -66,7 +66,7 @@ extern QPointer<QWindow> qt_last_mouse_receiver;
 
 // ------------------- QWindowSystemInterfacePrivate -------------------
 
-/*!
+/*
     Handles a window system event asynchronously by posting the event to Qt Gui.
 
     This function posts the event on the window system event queue and wakes the
@@ -82,7 +82,7 @@ bool QWindowSystemInterfacePrivate::handleWindowSystemEvent<QWindowSystemInterfa
     return true;
 }
 
-/*!
+/*
     Handles a window system event synchronously.
 
     Qt Gui will process the event immediately. The return value indicates if Qt
@@ -112,7 +112,7 @@ bool QWindowSystemInterfacePrivate::handleWindowSystemEvent<QWindowSystemInterfa
     return accepted;
 }
 
-/*!
+/*
     Handles a window system event.
 
     By default this function posts the event on the window system event queue and
