@@ -311,7 +311,7 @@ protected:
 private:
     friend class QFontEngineFTRawFont;
     friend class QFontconfigDatabase;
-    friend class QBasicFontDatabase;
+    friend class QFreeTypeFontDatabase;
     friend class QCoreTextFontDatabase;
     friend class QFontEngineMultiFontConfig;
 

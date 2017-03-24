@@ -51,13 +51,13 @@
 // We mean it.
 //
 
-#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsFontDatabaseFT : public QBasicFontDatabase
+class QWindowsFontDatabaseFT : public QFreeTypeFontDatabase
 {
 public:
     void populateFontDatabase() Q_DECL_OVERRIDE;

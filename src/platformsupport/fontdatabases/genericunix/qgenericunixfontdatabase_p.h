@@ -57,8 +57,8 @@
 #include <QtFontDatabaseSupport/private/qfontconfigdatabase_p.h>
 typedef QFontconfigDatabase QGenericUnixFontDatabase;
 #else
-#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
-typedef QBasicFontDatabase QGenericUnixFontDatabase;
+#include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
+typedef QFreeTypeFontDatabase QGenericUnixFontDatabase;
 #endif //Q_FONTCONFIGDATABASE
 
 #endif // QGENERICUNIXFONTDATABASE_H

@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qbasicfontdatabase_p.h"
+#include "qfreetypefontdatabase_p.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformscreen.h>
@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void QBasicFontDatabase::populateFontDatabase()
+void QFreeTypeFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
     QDir dir(fontpath);
@@ -79,11 +79,11 @@ void QBasicFontDatabase::populateFontDatabase()
     const auto fis = dir.entryInfoList(nameFilters, QDir::Files);
     for (const QFileInfo &fi : fis) {
         const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
-        QBasicFontDatabase::addTTFile(QByteArray(), file);
+        QFreeTypeFontDatabase::addTTFile(QByteArray(), file);
     }
 }
 
-QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, void *usrPtr)
+QFontEngine *QFreeTypeFontDatabase::fontEngine(const QFontDef &fontDef, void *usrPtr)
 {
     FontFile *fontfile = static_cast<FontFile *> (usrPtr);
     QFontEngine::FaceId fid;
@@ -147,7 +147,7 @@ namespace {
 
 }
 
-QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
+QFontEngine *QFreeTypeFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
                                                 QFont::HintingPreference hintingPreference)
 {
     QFontDef fontDef;
@@ -166,12 +166,12 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pi
     return fe;
 }
 
-QStringList QBasicFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QFreeTypeFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
-    return QBasicFontDatabase::addTTFile(fontData, fileName.toLocal8Bit());
+    return QFreeTypeFontDatabase::addTTFile(fontData, fileName.toLocal8Bit());
 }
 
-void QBasicFontDatabase::releaseHandle(void *handle)
+void QFreeTypeFontDatabase::releaseHandle(void *handle)
 {
     FontFile *file = static_cast<FontFile *>(handle);
     delete file;
@@ -179,7 +179,7 @@ void QBasicFontDatabase::releaseHandle(void *handle)
 
 extern FT_Library qt_getFreetype();
 
-QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
+QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
 {
     FT_Library library = qt_getFreetype();
 

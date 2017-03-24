@@ -393,14 +393,14 @@ void QWindowsFontDatabaseFT::populateFontDatabase()
 
 QFontEngine * QWindowsFontDatabaseFT::fontEngine(const QFontDef &fontDef, void *handle)
 {
-    QFontEngine *fe = QBasicFontDatabase::fontEngine(fontDef, handle);
+    QFontEngine *fe = QFreeTypeFontDatabase::fontEngine(fontDef, handle);
     qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef.family << fe << handle;
     return fe;
 }
 
 QFontEngine *QWindowsFontDatabaseFT::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
-    QFontEngine *fe = QBasicFontDatabase::fontEngine(fontData, pixelSize, hintingPreference);
+    QFontEngine *fe = QFreeTypeFontDatabase::fontEngine(fontData, pixelSize, hintingPreference);
     qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDATA" << fontData << pixelSize << hintingPreference << fe;
     return fe;
 }
@@ -410,7 +410,7 @@ QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QF
     QStringList result;
     result.append(QWindowsFontDatabase::familyForStyleHint(styleHint));
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
-    result.append(QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script));
+    result.append(QFreeTypeFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
         << script << result;

@@ -52,13 +52,13 @@
 //
 
 #include <qpa/qplatformfontdatabase.h>
-#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QFontEngineFT;
 
-class QFontconfigDatabase : public QBasicFontDatabase
+class QFontconfigDatabase : public QFreeTypeFontDatabase
 {
 public:
     void populateFontDatabase() Q_DECL_OVERRIDE;

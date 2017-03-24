@@ -11,7 +11,7 @@ darwin {
     include($$PWD/mac/coretext.pri)
 } else {
     qtConfig(freetype) {
-        include($$PWD/basic/basic.pri)
+        include($$PWD/freetype/freetype.pri)
     }
 
     unix {

@@ -44,7 +44,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformwindow.h>
 
-#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
 #if defined(Q_OS_WINRT)
 #  include <QtFontDatabaseSupport/private/qwinrtfontdatabase_p.h>
 #elif defined(Q_OS_WIN)
