@@ -348,7 +348,8 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
             << qTableName("qtest_sqlguid", __FILE__, db)
             << qTableName("uint_table", __FILE__, db)
             << qTableName("uint_test", __FILE__, db)
-            << qTableName("bug_249059", __FILE__, db);
+            << qTableName("bug_249059", __FILE__, db)
+            << qTableName("regexp_test", __FILE__, db);
 
     QSqlQuery q(0, db);
     if (dbType == QSqlDriver::PostgreSQL) {
@@ -2275,7 +2276,7 @@ void tst_QSqlDatabase::sqlite_enableRegexp()
     QVERIFY_SQL(db, open());
 
     QSqlQuery q(db);
-    const QString tableName(qTableName("uint_test", __FILE__, db));
+    const QString tableName(qTableName("regexp_test", __FILE__, db));
     QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(text TEXT)").arg(tableName)));
     QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES(?)").arg(tableName)));
     q.addBindValue("a0");
