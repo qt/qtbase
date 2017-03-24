@@ -2692,6 +2692,10 @@ QImage QVulkanWindow::grab()
    without any further corrections to the vertex Z positions, while using the
    projection matrices retrieved from the QMatrix4x4 functions, such as
    QMatrix4x4::perspective(), as-is.
+
+   \note With vertex data following the default OpenGL rules (that is, the
+   front face being CCW), the correct winding order in the rasterization state
+   after applying this matrix is clockwise (\c{VK_FRONT_FACE_CLOCKWISE}).
  */
 const QMatrix4x4 *QVulkanWindow::clipCorrectionMatrix()
 {
