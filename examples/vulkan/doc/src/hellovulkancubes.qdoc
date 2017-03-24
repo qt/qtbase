@@ -1,0 +1,58 @@
+/****************************************************************************
+**
+** Copyright (C) 2017 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example hellovulkancubes
+    \title Hello Vulkan Cubes Example
+    \ingroup examples-vulkan
+    \brief Shows the basics of using QVulkanWindow
+
+    The \e{Hello Vulkan Cubes Example} shows more advanced usage of QVulkanWindow.
+
+    \image hellovulkancubes.png
+
+    In this example there is a mesh loaded from a file and two different
+    materials and corresponding graphics pipelines. The rounded cubes are drawn
+    using instancing and feature a Phong lighting model with a single
+    directional light.
+
+    Unlike hellovulkantexture and hellovulkantriangle, the uniform buffer
+    handling takes an alternative approach here: dynamic uniform buffers are
+    used instead of multiple descriptor sets.
+
+    The example requires QtConcurrent since it demonstrates simple usage of
+    QtConcurrent::run(), QFuture, and QFutureWatcher in combination of
+    QVulkanWindow. Mesh and shader data loading, the potentially expensive
+    graphics pipeline construction, and the building of the frame command buffer
+    are all done in separate worker threads.
+
+    The scene is embedded into a widget-based user interface. The QVulkanWindow
+    subclass handles mouse and keyboard input as well since it provides a
+    first-person style camera in order to allow moving around in the scene.
+
+    \include examples-run.qdocinc
+*/

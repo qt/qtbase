@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file alias="block.buf">../shared/block.buf</file>
+    <file alias="qt_logo.buf">../shared/qt_logo.buf</file>
+    <file>color_phong_vert.spv</file>
+    <file>color_phong_frag.spv</file>
+    <file>color_vert.spv</file>
+    <file>color_frag.spv</file>
+</qresource>
+</RCC>
