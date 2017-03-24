@@ -292,6 +292,9 @@ private:
     bool initFromFontEngine(const QFontEngineFT *fontEngine);
 
     HintStyle defaultHintStyle() const { return default_hint_style; }
+
+    static QFontEngineFT *create(const QFontDef &fontDef, FaceId faceId, const QByteArray &fontData = QByteArray());
+
 protected:
 
     QFreetypeFace *freetype;
@@ -312,7 +315,6 @@ private:
     friend class QFontEngineFTRawFont;
     friend class QFontconfigDatabase;
     friend class QFreeTypeFontDatabase;
-    friend class QCoreTextFontDatabase;
     friend class QFontEngineMultiFontConfig;
 
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;

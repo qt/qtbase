@@ -116,7 +116,6 @@ public:
     virtual QString resolveFontFamilyAlias(const QString &family) const;
     virtual bool fontsAlwaysScalable() const;
     virtual QList<int> standardSizes() const;
-    QFontEngine::SubpixelAntialiasingType subpixelAntialiasingTypeHint() const;
 
     // helper
     static QSupportedWritingSystems writingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);

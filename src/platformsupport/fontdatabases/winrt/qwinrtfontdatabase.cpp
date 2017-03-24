@@ -444,15 +444,8 @@ QFontEngine *QWinRTFontDatabase::fontEngine(const QFontDef &fontDef, void *handl
     const FontDescription description = m_fonts.value(fontFile);
     faceId.uuid = description.uuid;
     faceId.index = description.index;
-    const bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    QFontEngineFT::GlyphFormat format = antialias ? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
-    QFontEngineFT *engine = new QFontEngineFT(fontDef);
-    if (!engine->init(faceId, antialias, format, fontData) || engine->invalid()) {
-        delete engine;
-        return 0;
-    }
 
-    return engine;
+    return QFontEngineFT::create(fontDef, faceId, fontData);
 }
 
 QStringList QWinRTFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style,

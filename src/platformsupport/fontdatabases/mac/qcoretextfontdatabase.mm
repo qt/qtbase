@@ -890,28 +890,7 @@ QFontEngine *QCoreTextFontDatabase::freeTypeFontEngine(const QFontDef &fontDef, 
 {
     QFontEngine::FaceId faceId;
     faceId.filename = filename;
-    const bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-
-    QScopedPointer<QFontEngineFT> engine(new QFontEngineFT(fontDef));
-    QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_Mono;
-    if (antialias) {
-        QFontEngine::SubpixelAntialiasingType subpixelType = subpixelAntialiasingTypeHint();
-        if (subpixelType == QFontEngine::Subpixel_None || (fontDef.styleStrategy & QFont::NoSubpixelAntialias)) {
-            format = QFontEngineFT::Format_A8;
-            engine->subpixelType = QFontEngine::Subpixel_None;
-        } else {
-            format = QFontEngineFT::Format_A32;
-            engine->subpixelType = subpixelType;
-        }
-    }
-
-    if (!engine->init(faceId, antialias, format, fontData) || engine->invalid()) {
-        qWarning("QCoreTextFontDatabase::freeTypefontEngine Failed to create engine");
-        return Q_NULLPTR;
-    }
-    engine->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));
-
-    return engine.take();
+    return QFontEngineFT::create(fontDef, faceId, fontData);
 }
 #endif
 
