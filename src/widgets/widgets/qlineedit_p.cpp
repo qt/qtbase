@@ -534,7 +534,19 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
 #endif
     }
     // If there is a 'before' action, it takes preference
+
+    // There's a bug in GHS compiler that causes internal error on the following code.
+    // The affected GHS compiler versions are 2016.5.4 and 2017.1
+    // This temporary workaround allows to compile with GHS toolchain and should be
+    // removed when GHS provides a patch to fix the compiler issue.
+
+#if defined(Q_CC_GHS)
+    const SideWidgetLocation loc = {position, -1};
+    const auto location = before ? findSideWidget(before) : loc;
+#else
     const auto location = before ? findSideWidget(before) : SideWidgetLocation{position, -1};
+#endif
+
     SideWidgetEntryList &list = location.position == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
     list.insert(location.isValid() ? list.begin() + location.index : list.end(),
                 SideWidgetEntry(w, newAction, flags));
