@@ -49,7 +49,7 @@
 @implementation QNSView (QNSViewAccessibility)
 
 - (id)childAccessibleElement {
-    if (!m_window->accessibleRoot())
+    if (m_platformWindow.isNull())
         return nil;
 
     QAccessible::Id childId = QAccessible::uniqueId(m_window->accessibleRoot());
