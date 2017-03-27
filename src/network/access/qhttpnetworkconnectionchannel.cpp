@@ -55,7 +55,6 @@
 #    include <private/qsslsocket_p.h>
 #    include <QtNetwork/qsslkey.h>
 #    include <QtNetwork/qsslcipher.h>
-#    include <QtNetwork/qsslconfiguration.h>
 #endif
 
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -176,8 +175,8 @@ void QHttpNetworkConnectionChannel::init()
         if (!ignoreSslErrorsList.isEmpty())
             sslSocket->ignoreSslErrors(ignoreSslErrorsList);
 
-        if (!sslConfiguration.isNull())
-           sslSocket->setSslConfiguration(sslConfiguration);
+        if (sslConfiguration.data() && !sslConfiguration->isNull())
+           sslSocket->setSslConfiguration(*sslConfiguration);
     } else {
 #endif // !QT_NO_SSL
         if (connection->connectionType() != QHttpNetworkConnection::ConnectionTypeHTTP2)
@@ -656,7 +655,10 @@ void QHttpNetworkConnectionChannel::setSslConfiguration(const QSslConfiguration 
     if (socket)
         static_cast<QSslSocket *>(socket)->setSslConfiguration(config);
 
-    sslConfiguration = config;
+    if (sslConfiguration.data())
+        *sslConfiguration = config;
+    else
+        sslConfiguration.reset(new QSslConfiguration(config));
 }
 
 #endif
@@ -1085,8 +1087,15 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             Q_FALLTHROUGH();
         case QSslConfiguration::NextProtocolNegotiationNone: {
             protocolHandler.reset(new QHttpProtocolHandler(this));
+            if (!sslConfiguration.data()) {
+                // Our own auto-tests bypass the normal initialization (done by
+                // QHttpThreadDelegate), this means in the past we'd have here
+                // the default constructed QSslConfiguration without any protocols
+                // to negotiate. Let's create it now:
+                sslConfiguration.reset(new QSslConfiguration);
+            }
 
-            QList<QByteArray> protocols = sslConfiguration.allowedNextProtocols();
+            QList<QByteArray> protocols = sslConfiguration->allowedNextProtocols();
             const int nProtocols = protocols.size();
             // Clear the protocol that we failed to negotiate, so we do not try
             // it again on other channels that our connection can create/open.
@@ -1096,10 +1105,10 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
                 protocols.removeAll(QSslConfiguration::NextProtocolSpdy3_0);
 
             if (nProtocols > protocols.size()) {
-                sslConfiguration.setAllowedNextProtocols(protocols);
+                sslConfiguration->setAllowedNextProtocols(protocols);
                 const int channelCount = connection->d_func()->channelCount;
                 for (int i = 0; i < channelCount; ++i)
-                    connection->d_func()->channels[i].setSslConfiguration(sslConfiguration);
+                    connection->d_func()->channels[i].setSslConfiguration(*sslConfiguration);
             }
 
             connection->setConnectionType(QHttpNetworkConnection::ConnectionTypeHTTP);

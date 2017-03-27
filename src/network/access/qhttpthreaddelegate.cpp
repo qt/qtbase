@@ -293,19 +293,22 @@ void QHttpThreadDelegate::startRequest()
         = httpRequest.isHTTP2Allowed() ? QHttpNetworkConnection::ConnectionTypeHTTP2
                                        : QHttpNetworkConnection::ConnectionTypeHTTP;
 
+    if (ssl && !incomingSslConfiguration.data())
+        incomingSslConfiguration.reset(new QSslConfiguration);
+
 #ifndef QT_NO_SSL
     if (httpRequest.isHTTP2Allowed() && ssl) {
         QList<QByteArray> protocols;
         protocols << QSslConfiguration::ALPNProtocolHTTP2
                   << QSslConfiguration::NextProtocolHttp1_1;
-        incomingSslConfiguration.setAllowedNextProtocols(protocols);
+        incomingSslConfiguration->setAllowedNextProtocols(protocols);
     } else if (httpRequest.isSPDYAllowed() && ssl) {
         connectionType = QHttpNetworkConnection::ConnectionTypeSPDY;
         urlCopy.setScheme(QStringLiteral("spdy")); // to differentiate SPDY requests from HTTPS requests
         QList<QByteArray> nextProtocols;
         nextProtocols << QSslConfiguration::NextProtocolSpdy3_0
                       << QSslConfiguration::NextProtocolHttp1_1;
-        incomingSslConfiguration.setAllowedNextProtocols(nextProtocols);
+        incomingSslConfiguration->setAllowedNextProtocols(nextProtocols);
     }
 #endif // QT_NO_SSL
 
@@ -334,9 +337,8 @@ void QHttpThreadDelegate::startRequest()
 #endif
 #ifndef QT_NO_SSL
         // Set the QSslConfiguration from this QNetworkRequest.
-        if (ssl && incomingSslConfiguration != QSslConfiguration::defaultConfiguration()) {
-            httpConnection->setSslConfiguration(incomingSslConfiguration);
-        }
+        if (ssl)
+            httpConnection->setSslConfiguration(*incomingSslConfiguration);
 #endif
 
 #ifndef QT_NO_NETWORKPROXY

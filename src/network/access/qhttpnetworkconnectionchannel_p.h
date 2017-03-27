@@ -78,6 +78,8 @@
 #   include <QtNetwork/qtcpsocket.h>
 #endif
 
+#include <QtCore/qscopedpointer.h>
+
 QT_BEGIN_NAMESPACE
 
 class QHttpNetworkRequest;
@@ -128,7 +130,7 @@ public:
 #ifndef QT_NO_SSL
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;
-    QSslConfiguration sslConfiguration;
+    QScopedPointer<QSslConfiguration> sslConfiguration;
     void ignoreSslErrors();
     void ignoreSslErrors(const QList<QSslError> &errors);
     void setSslConfiguration(const QSslConfiguration &config);

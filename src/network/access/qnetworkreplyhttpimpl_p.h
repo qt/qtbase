@@ -58,6 +58,7 @@
 #include "QtCore/qpointer.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qsharedpointer.h"
+#include "QtCore/qscopedpointer.h"
 #include "qatomic.h"
 
 #include <QtNetwork/QNetworkCacheMetaData>
@@ -260,7 +261,7 @@ public:
 
 
 #ifndef QT_NO_SSL
-    QSslConfiguration sslConfiguration;
+    QScopedPointer<QSslConfiguration> sslConfiguration;
     bool pendingIgnoreAllSslErrors;
     QList<QSslError> pendingIgnoreSslErrorsList;
 #endif
@@ -290,7 +291,7 @@ public:
 #ifndef QT_NO_SSL
     void replyEncrypted();
     void replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *);
-    void replySslConfigurationChanged(const QSslConfiguration&);
+    void replySslConfigurationChanged(const QSslConfiguration &newSslConfiguration);
     void replyPreSharedKeyAuthenticationRequiredSlot(QSslPreSharedKeyAuthenticator *);
 #endif
 #ifndef QT_NO_NETWORKPROXY
