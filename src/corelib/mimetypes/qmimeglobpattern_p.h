@@ -83,11 +83,9 @@ public:
     static const unsigned MinWeight = 1;
 
     explicit QMimeGlobPattern(const QString &thePattern, const QString &theMimeType, unsigned theWeight = DefaultWeight, Qt::CaseSensitivity s = Qt::CaseInsensitive) :
-        m_pattern(thePattern), m_mimeType(theMimeType), m_weight(theWeight), m_caseSensitivity(s)
+        m_pattern(s == Qt::CaseInsensitive ? thePattern.toLower() : thePattern),
+        m_mimeType(theMimeType), m_weight(theWeight), m_caseSensitivity(s)
     {
-        if (s == Qt::CaseInsensitive) {
-            m_pattern = m_pattern.toLower();
-        }
     }
 
     void swap(QMimeGlobPattern &other) Q_DECL_NOTHROW
