@@ -419,7 +419,7 @@ QMacSettingsPrivate::QMacSettingsPrivate(QSettings::Scope scope, const QString &
         curPos = nextDot + 1;
     }
     javaPackageName.prepend(domainName.midRef(curPos));
-    javaPackageName = javaPackageName.toLower();
+    javaPackageName = std::move(javaPackageName).toLower();
     if (curPos == 0)
         javaPackageName.prepend(QLatin1String("com."));
     suiteId = javaPackageName;

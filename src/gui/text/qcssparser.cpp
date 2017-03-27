@@ -1822,7 +1822,7 @@ void StyleSheet::buildIndexes(Qt::CaseSensitivity nameCaseSensitivity)
                 nr.order = i;
                 QString name = sel.elementName;
                 if (nameCaseSensitivity == Qt::CaseInsensitive)
-                    name=name.toLower();
+                    name = std::move(name).toLower();
                 nameIndex.insert(name, nr);
             } else {
                 universalsSelectors += selector;
@@ -2027,7 +2027,7 @@ QVector<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
             for (int i = 0; i < names.count(); i++) {
                 QString name = names.at(i);
                 if (nameCaseSensitivity == Qt::CaseInsensitive)
-                    name = name.toLower();
+                    name = std::move(name).toLower();
                 QMultiHash<QString, StyleRule>::const_iterator it = styleSheet.nameIndex.constFind(name);
                 while (it != styleSheet.nameIndex.constEnd() && it.key() == name) {
                     matchRule(node, it.value(), styleSheet.origin, styleSheet.depth, &weightedRules);

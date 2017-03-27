@@ -2891,7 +2891,7 @@ QString QLocaleData::doubleToString(const QChar _zero, const QChar plus, const Q
         num_str.prepend(QLatin1Char(' '));
 
     if (flags & QLocaleData::CapitalEorX)
-        num_str = num_str.toUpper();
+        num_str = std::move(num_str).toUpper();
 
     return num_str;
 }
@@ -2973,7 +2973,7 @@ QString QLocaleData::longLongToString(const QChar zero, const QChar group,
     }
 
     if (flags & CapitalEorX)
-        num_str = num_str.toUpper();
+        num_str = std::move(num_str).toUpper();
 
     if (base == 16 && (flags & ShowBase))
         num_str.prepend(QLatin1String(flags & UppercaseBase ? "0X" : "0x"));
@@ -3052,7 +3052,7 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
     }
 
     if (flags & CapitalEorX)
-        num_str = num_str.toUpper();
+        num_str = std::move(num_str).toUpper();
 
     if (base == 16 && flags & ShowBase)
         num_str.prepend(QLatin1String(flags & UppercaseBase ? "0X" : "0x"));

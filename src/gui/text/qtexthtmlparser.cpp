@@ -1525,7 +1525,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                     } else if (value == QLatin1String("I")) {
                         node->listStyle = QTextListFormat::ListUpperRoman;
                     } else {
-                        value = value.toLower();
+                        value = std::move(value).toLower();
                         if (value == QLatin1String("square"))
                             node->listStyle = QTextListFormat::ListSquare;
                         else if (value == QLatin1String("disc"))
@@ -1636,7 +1636,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
             node->parseStyleAttribute(value, resourceProvider);
 #endif
         } else if (key == QLatin1String("align")) {
-            value = value.toLower();
+            value = std::move(value).toLower();
             bool alignmentSet = true;
 
             if (value == QLatin1String("left"))
@@ -1664,7 +1664,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                 }
             }
         } else if (key == QLatin1String("valign")) {
-            value = value.toLower();
+            value = std::move(value).toLower();
             if (value == QLatin1String("top"))
                 node->charFormat.setVerticalAlignment(QTextCharFormat::AlignTop);
             else if (value == QLatin1String("middle"))
@@ -1672,7 +1672,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
             else if (value == QLatin1String("bottom"))
                 node->charFormat.setVerticalAlignment(QTextCharFormat::AlignBottom);
         } else if (key == QLatin1String("dir")) {
-            value = value.toLower();
+            value = std::move(value).toLower();
             if (value == QLatin1String("ltr"))
                 node->blockFormat.setLayoutDirection(Qt::LeftToRight);
             else if (value == QLatin1String("rtl"))

@@ -1073,12 +1073,12 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
     if (isIdentifierEscaped(tbl, QSqlDriver::TableName))
         tbl = stripDelimiters(tbl, QSqlDriver::TableName);
     else
-        tbl = tbl.toLower();
+        tbl = std::move(tbl).toLower();
 
     if (isIdentifierEscaped(schema, QSqlDriver::TableName))
         schema = stripDelimiters(schema, QSqlDriver::TableName);
     else
-        schema = schema.toLower();
+        schema = std::move(schema).toLower();
 
     switch(d->pro) {
     case QPSQLDriver::Version6:
@@ -1153,12 +1153,12 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
     if (isIdentifierEscaped(tbl, QSqlDriver::TableName))
         tbl = stripDelimiters(tbl, QSqlDriver::TableName);
     else
-        tbl = tbl.toLower();
+        tbl = std::move(tbl).toLower();
 
     if (isIdentifierEscaped(schema, QSqlDriver::TableName))
         schema = stripDelimiters(schema, QSqlDriver::TableName);
     else
-        schema = schema.toLower();
+        schema = std::move(schema).toLower();
 
     QString stmt;
     switch(d->pro) {
