@@ -3,19 +3,18 @@ CONFIG += no_docs_target
 
 SUBDIRS = \
     corelib \
-    dbus \
     embedded \
-    gui \
-    network \
     qpa \
-    qtconcurrent \
-    qtestlib \
-    sql \
-    touch \
-    widgets \
-    xml
+    touch
 
-qtHaveModule(gui):qtConfig(opengl): SUBDIRS += opengl
+qtHaveModule(dbus): SUBDIRS += dbus
+qtHaveModule(network): SUBDIRS += network
+qtHaveModule(testlib): SUBDIRS += qtestlib
+qtHaveModule(concurrent): SUBDIRS += qtconcurrent
+qtHaveModule(sql): SUBDIRS += sql
+qtHaveModule(widgets): SUBDIRS += widgets
+qtHaveModule(xml): SUBDIRS += xml
+qtHaveModule(gui): SUBDIRS += gui opengl
 
 aggregate.files = aggregate/examples.pro
 aggregate.path = $$[QT_INSTALL_EXAMPLES]

@@ -8,7 +8,7 @@ SUBDIRS             =   books \
                         relationaltablemodel \
                         sqlwidgetmapper
 
-!wince:  SUBDIRS   +=  masterdetail
+!wince:qtHaveModule(xml): SUBDIRS += masterdetail
 
 !wince:  SUBDIRS += \
                         querymodel \

@@ -95,6 +95,9 @@ src_3rdparty_libpng.target = sub-3rdparty-libpng
 src_3rdparty_freetype.subdir = $$PWD/3rdparty/freetype
 src_3rdparty_freetype.target = sub-3rdparty-freetype
 
+src_3rdparty_gradle.subdir = $$PWD/3rdparty/gradle
+src_3rdparty_gradle.target = sub-3rdparty-gradle
+
 src_angle.subdir = $$PWD/angle
 src_angle.target = sub-angle
 
@@ -204,7 +207,7 @@ SUBDIRS += src_plugins
 
 nacl: SUBDIRS -= src_network src_testlib
 
-android: SUBDIRS += src_android
+android: SUBDIRS += src_android src_3rdparty_gradle
 
 TR_EXCLUDE = \
     src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_tools_qlalr \
