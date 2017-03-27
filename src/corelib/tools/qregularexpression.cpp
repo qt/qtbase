@@ -445,19 +445,25 @@ QT_BEGIN_NAMESPACE
 
     Other differences are outlined below.
 
-    \section2 Exact matching
+    \section2 Porting from QRegExp::exactMatch()
 
     QRegExp::exactMatch() in Qt 4 served two purposes: it exactly matched
     a regular expression against a subject string, and it implemented partial
-    matching. In fact, if an exact match was not found, one could still find
-    out how much of the subject string was matched by the regular expression
-    by calling QRegExp::matchedLength(). If the returned length was equal
-    to the subject string's length, then one could desume that a partial match
-    was found.
+    matching.
 
-    QRegularExpression supports partial matching explicitly by means of the
-    appropriate MatchType. If instead you simply want to be sure that the
-    subject string matches the regular expression exactly, you can wrap the
+    \section3 Porting from QRegExp's Exact Matching
+
+    Exact matching indicates whether the regular expression matches the entire
+    subject string. For example, the classes yield on the subject string \c{"abc123"}:
+
+    \table
+    \header \li                  \li QRegExp::exactMatch() \li QRegularExpressionMatch::hasMatch()
+    \row    \li \c{"\\d+"}       \li \b false              \li \b true
+    \row    \li \c{"[a-z]+\\d+"} \li \b true               \li \b true
+    \endtable
+
+    Exact matching is not reflected in QRegularExpression. If you want to be
+    sure that the subject string matches the regular expression exactly, you can wrap the
     pattern between a couple of anchoring expressions. Simply
     putting the pattern between the \c{^} and the \c{$} anchors is enough
     in most cases:
@@ -478,6 +484,17 @@ QT_BEGIN_NAMESPACE
 
     Note the usage of the non-capturing group in order to preserve the meaning
     of the branch operator inside the pattern.
+
+    \section3 Porting from QRegExp's Partial Matching
+
+    When using QRegExp::exactMatch(), if an exact match was not found, one
+    could still find out how much of the subject string was matched by the
+    regular expression by calling QRegExp::matchedLength(). If the returned length
+    was equal to the subject string's length, then one could conclude that a partial
+    match was found.
+
+    QRegularExpression supports partial matching explicitly by means of the
+    appropriate MatchType.
 
     \section2 Global matching
 
