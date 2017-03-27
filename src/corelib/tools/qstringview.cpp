@@ -106,7 +106,10 @@ QT_BEGIN_NAMESPACE
     If in doubt, obtain a strong reference to the data by calling toString() to convert
     the QStringView into a QString.
 
-    QStringView is a \e{Literal Type}.
+    QStringView is a \e{Literal Type}, but since it stores data as \c{char16_t}, iteration
+    is not \c constexpr (casts from \c{const char16_t*} to \c{const QChar*}, which is not
+    allowed in \c constexpr functions). You can use an indexed loop and/or utf16() in
+    \c constexpr contexts instead.
 
     \note We strongly discourage the use of QList<QStringView>,
     because QList is a very inefficient container for QStringViews (it would heap-allocate
@@ -318,7 +321,22 @@ QT_BEGIN_NAMESPACE
 
     Returns a const pointer to the first character in the string.
 
-    \sa begin(), end()
+    \note The character array represented by the return value is \e not null-terminated.
+
+    \sa begin(), end(), utf16()
+*/
+
+/*!
+    \fn const storage_type *QStringView::utf16() const
+
+    Returns a const pointer to the first character in the string.
+
+    \c{storage_type} is \c{char16_t}, except on MSVC 2013 (which lacks \c char16_t support),
+    where it is \c{wchar_t} instead.
+
+    \note The character array represented by the return value is \e not null-terminated.
+
+    \sa begin(), end(), data()
 */
 
 /*!
