@@ -43,9 +43,20 @@
 template <typename T>
 using CanConvert = std::is_convertible<T, QStringView>;
 
+Q_STATIC_ASSERT(!CanConvert<QLatin1String>::value);
+Q_STATIC_ASSERT(!CanConvert<const char*>::value);
+Q_STATIC_ASSERT(!CanConvert<QByteArray>::value);
+
+// QStringView qchar_does_not_compile() { return QStringView(QChar('a')); }
+// QStringView qlatin1string_does_not_compile() { return QStringView(QLatin1String("a")); }
+// QStringView const_char_star_does_not_compile() { return QStringView("a"); }
+// QStringView qbytearray_does_not_compile() { return QStringView(QByteArray("a")); }
+
 //
 // QChar
 //
+
+Q_STATIC_ASSERT(!CanConvert<QChar>::value);
 
 Q_STATIC_ASSERT(CanConvert<      QString >::value);
 Q_STATIC_ASSERT(CanConvert<const QString >::value);
@@ -62,6 +73,8 @@ Q_STATIC_ASSERT(CanConvert<const QStringRef&>::value);
 // ushort
 //
 
+Q_STATIC_ASSERT(!CanConvert<ushort>::value);
+
 Q_STATIC_ASSERT(CanConvert<      ushort*>::value);
 Q_STATIC_ASSERT(CanConvert<const ushort*>::value);
 
@@ -71,6 +84,8 @@ Q_STATIC_ASSERT(CanConvert<const ushort*>::value);
 //
 
 #if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+
+Q_STATIC_ASSERT(!CanConvert<char16_t>::value);
 
 Q_STATIC_ASSERT(CanConvert<      char16_t*>::value);
 Q_STATIC_ASSERT(CanConvert<const char16_t*>::value);
@@ -98,6 +113,8 @@ Q_CONSTEXPR bool CanConvertFromWCharT =
         false
 #endif
         ;
+
+Q_STATIC_ASSERT(!CanConvert<wchar_t>::value);
 
 Q_STATIC_ASSERT(CanConvert<      wchar_t*>::value == CanConvertFromWCharT);
 Q_STATIC_ASSERT(CanConvert<const wchar_t*>::value == CanConvertFromWCharT);

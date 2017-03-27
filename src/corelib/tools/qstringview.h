@@ -111,6 +111,9 @@ private:
     template <typename T>
     using if_compatible_string = typename std::enable_if<QtPrivate::IsCompatibleStdBasicString<T>::value, bool>::type;
 
+    template <typename T>
+    using if_compatible_qstring_like = typename std::enable_if<std::is_same<T, QString>::value || std::is_same<T, QStringRef>::value, bool>::type;
+
     template <typename Char>
     static Q_DECL_RELAXED_CONSTEXPR size_type lengthHelper(const Char *str) Q_DECL_NOTHROW
     {
@@ -133,20 +136,6 @@ private:
     static Q_DECL_CONSTEXPR const storage_type *castHelper(const storage_type *str) Q_DECL_NOTHROW
     { return str; }
 
-    // prevent
-    //   T t; QStringView sv(t), T \in {QChar, QLatin1String, QByteArray, const char*}
-    // from compiling as QStringView sv(QString(t)):
-    QStringView(QChar) = delete;
-    QStringView(QLatin1String) = delete;
-    QStringView(const QByteArray &) = delete;
-    QStringView(const char *) = delete;
-
-#ifdef Q_OS_WIN
-    // prevent QStringView(Char), Char compatible, from compiling due to:
-    // https://connect.microsoft.com/VisualStudio/feedback/details/2256407/c-two-user-defined-conversions-incorrectly-accepted-in-implicit-conversion-sequence
-    template <typename Char, if_compatible_char<Char> = true>
-    QStringView(Char) = delete;
-#endif
 public:
     Q_DECL_CONSTEXPR QStringView() Q_DECL_NOTHROW
         : m_size(0), m_data(nullptr) {}
@@ -166,10 +155,14 @@ public:
     Q_DECL_CONSTEXPR QStringView(const Char *str)
         : QStringView(str, str ? lengthHelper(str) : 0) {}
 
-    QStringView(const QString &str) Q_DECL_NOTHROW
+#ifdef Q_QDOC
+    QStringView(const QString &str) Q_DECL_NOTHROW;
+    QStringView(const QStringRef &str) Q_DECL_NOTHROW;
+#else
+    template <typename String, if_compatible_qstring_like<String> = true>
+    QStringView(const String &str) Q_DECL_NOTHROW
         : QStringView(str.isNull() ? nullptr : str.data(), size_type(str.size())) {}
-    QStringView(const QStringRef &str) Q_DECL_NOTHROW
-        : QStringView(str.isNull() ? nullptr : str.data(), size_type(str.size())) {}
+#endif
 
     template <typename StdBasicString, if_compatible_string<StdBasicString> = true>
     QStringView(const StdBasicString &str) Q_DECL_NOTHROW
