@@ -1613,6 +1613,13 @@ void QCocoaWindow::recreateWindowIfNeeded()
         [m_nsWindow closeAndRelease];
         if (isChildNSWindow())
             [m_view.window.parentWindow removeChildWindow:m_view.window];
+        if (isContentView()) {
+            // We explicitly disassociate m_view from the window's contentView,
+            // as AppKit does not automatically do this in response to removing
+            // the view from the NSThemeFrame subview list, so we might end up
+            // with a NSWindow contentView pointing to a deallocated NSView.
+            m_view.window.contentView = nil;
+        }
         m_nsWindow = 0;
     }
 
