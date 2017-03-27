@@ -2556,6 +2556,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
         qreal size = ti.fontEngine->fontDef.pixelSize;
         int synthesized = ti.fontEngine->synthesized();
         qreal stretch = synthesized & QFontEngine::SynthesizedStretch ? ti.fontEngine->fontDef.stretch/100. : 1.;
+        Q_ASSERT(stretch > qreal(0));
 
         QTransform trans;
         // Build text rendering matrix (Trm). We need it to map the text area to user
@@ -2632,6 +2633,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
         return;
     int synthesized = ti.fontEngine->synthesized();
     qreal stretch = synthesized & QFontEngine::SynthesizedStretch ? ti.fontEngine->fontDef.stretch/100. : 1.;
+    Q_ASSERT(stretch > qreal(0));
 
     *currentPage << "BT\n"
                  << "/F" << font->object_id << size << "Tf "
