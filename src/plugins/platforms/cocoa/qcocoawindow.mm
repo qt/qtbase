@@ -438,6 +438,13 @@ QCocoaWindow::~QCocoaWindow()
         [m_qtView clearQWindowPointers];
     }
 
+    // The QNSView object may outlive the corresponding QCocoaWindow object,
+    // for example during app shutdown when the QNSView is embedded in a
+    // foregin NSView hiearchy. Clear the pointers to the QWindow/QCocoaWindow
+    // here to make sure QNSView does not dereference stale pointers.
+    if (window()->type() != Qt::ForeignWindow)
+        [qnsview_cast(m_view) clearQWindowPointers];
+
     // While it is unlikely that this window will be in the popup stack
     // during deletetion we clear any pointers here to make sure.
     if (QCocoaIntegration::instance()) {

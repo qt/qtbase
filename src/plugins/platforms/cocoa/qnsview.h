@@ -56,7 +56,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     uchar *m_maskData;
     bool m_shouldInvalidateWindowShadow;
     QPointer<QWindow> m_window;
-    QCocoaWindow *m_platformWindow;
+    QPointer<QCocoaWindow> m_platformWindow;
     NSTrackingArea *m_trackingArea;
     Qt::MouseButtons m_buttons;
     Qt::MouseButtons m_frameStrutButtons;
@@ -87,7 +87,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 - (id)init;
 - (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
-- (void) clearQWindowPointers;
 #ifndef QT_NO_OPENGL
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif

@@ -240,12 +240,6 @@ static NSMutableSet *_q_leftButtonLimbo = nil;
     return self;
 }
 
-- (void) clearQWindowPointers
-{
-    m_window = 0;
-    m_platformWindow = 0;
-}
-
 #ifndef QT_NO_OPENGL
 - (void) setQCocoaGLContext:(QCocoaGLContext *)context
 {
