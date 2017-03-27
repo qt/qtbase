@@ -70,7 +70,7 @@ public:
         cachedFlags(0),
         isDefaultConstructed(true),
         cache_enabled(true), fileFlags(0), fileSize(0)
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)  && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
         ,mappedDrive(false), connected(false), smb(false)
 #endif
     {}
@@ -86,7 +86,7 @@ public:
         isDefaultConstructed(!fileEngine),
 #endif
         cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
         ,mappedDrive(copy.mappedDrive), connected(copy.connected), mappedDriveRemoteName(copy.mappedDriveRemoteName), smb(copy.smb)
 #endif
     {}
@@ -100,14 +100,10 @@ public:
         isDefaultConstructed(!fileEngine),
 #endif
         cache_enabled(true), fileFlags(0), fileSize(0)
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
         ,mappedDrive(false), connected(false), smb(false)
 #endif
-    {
-#if defined(Q_OS_WIN)
-
-#endif
-    }
+    {}
 
     inline QFileInfoPrivate(const QFileSystemEntry &file, const QFileSystemMetaData &data)
         : QSharedData(),
@@ -117,7 +113,7 @@ public:
         cachedFlags(0),
         isDefaultConstructed(false),
         cache_enabled(true), fileFlags(0), fileSize(0)
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
         ,mappedDrive(false), connected(false), smb(false)
 #endif
     {
@@ -138,7 +134,7 @@ public:
         isDefaultConstructed(!fileEngine),
 #endif
         cache_enabled(true), fileFlags(0), fileSize(0)
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
          ,mappedDrive(false), connected(false), smb(false)
 #endif
     {
@@ -192,7 +188,7 @@ public:
     inline void setCachedFlag(uint c) const
     { if (cache_enabled) cachedFlags |= c; }
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     //mapped network drive support
     mutable bool mappedDrive;
     mutable bool connected;

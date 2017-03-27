@@ -220,7 +220,8 @@ void QFileInfoGatherer::run()
         getFileInfos(thisPath, thisList);
     }
 }
-#if defined(Q_OS_WIN)
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 static QString mappedDriveType(const QFileInfoPrivate *fileInfo)
 {
     if (!fileInfo)
@@ -230,17 +231,18 @@ static QString mappedDriveType(const QFileInfoPrivate *fileInfo)
                                    : QObject::tr("Disconnected Network Drive");
 }
 #endif
+
 QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
 {
     QExtendedInformation info(fileInfo);
     info.icon = m_iconProvider->icon(fileInfo);
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     const QFileInfoPrivate *priv = QFileInfoPrivate::get(&fileInfo);
     if (priv->mappedDrive)
         info.displayType = mappedDriveType(priv);
     else
 #endif
-    info.displayType = m_iconProvider->type(fileInfo);
+        info.displayType = m_iconProvider->type(fileInfo);
 #ifndef QT_NO_FILESYSTEMWATCHER
     // ### Not ready to listen all modifications
     #if 0
@@ -353,7 +355,7 @@ void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QElapsedTimer &base, bo
 
 QString QExtendedInformation::displayFileType() const
 {
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     const QFileInfoPrivate *priv = QFileInfoPrivate::get(&mFileInfo);
     if (priv->mappedDrive)
         return mappedDriveType(priv);

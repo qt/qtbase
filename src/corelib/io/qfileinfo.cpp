@@ -197,7 +197,7 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     return fileTimes[request];
 }
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 bool QFileInfoPrivate::isConnected() const {
     if (mappedDrive) {
         QString driveName = fileEntry.path();

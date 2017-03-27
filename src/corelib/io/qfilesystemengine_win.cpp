@@ -1518,12 +1518,12 @@ static bool resolveMprLibrary()
             if (ptrWNetOpenEnumW = (PtrWNetOpenEnumW)GetProcAddress(hLib, "WNetOpenEnumW"))
                 if (ptrWNetEnumResourceW = (PtrWNetEnumResourceW)GetProcAddress(hLib, "WNetEnumResourceW"))
                     if (ptrWNetCloseEnum = (PtrWNetCloseEnum)GetProcAddress(hLib, "WNetCloseEnum"))
-                        if (ptrWNetGetConnection = (PtrWNetGetConnection)GetProcAddress(hLib, "WNetGetConnection"))
+                        if (ptrWNetGetConnection = (PtrWNetGetConnection)GetProcAddress(hLib, "WNetGetConnectionW"))
                             triedResolve = true;
         }
 #endif // !Q_OS_WINCE && !Q_OS_WINRT
     }
-    return ptrWNetOpenEnumW && ptrWNetEnumResourceW && ptrWNetCloseEnum;
+    return ptrWNetOpenEnumW && ptrWNetEnumResourceW && ptrWNetCloseEnum && ptrWNetGetConnection;
 }
 
 bool QFileSystemEngine::getMappedNetworkDrives(DWORD dwScope, QFileInfoList &list)
