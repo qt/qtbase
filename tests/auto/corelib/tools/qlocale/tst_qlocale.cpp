@@ -1584,10 +1584,9 @@ void tst_QLocale::macDefaultLocale()
     // make sure we are using the system to parse them
     QCOMPARE(locale.toString(1234.56), systemLocaleFormatNumber(QString("1,234.56")));
 
-    QTime currentTime = QTime::currentTime();
-    QTime utcTime = QDateTime::currentDateTime().toUTC().time();
-
-    int diff = currentTime.hour() - utcTime.hour();
+    QTime testTime = QTime(1, 2, 3);
+    QTime utcTime = QDateTime(QDate::currentDate(), testTime).toUTC().time();
+    int diff = testTime.hour() - utcTime.hour();
 
     // Check if local time and utc time are on opposite sides of the 24-hour wrap-around.
     if (diff < -12)
@@ -1595,7 +1594,7 @@ void tst_QLocale::macDefaultLocale()
     if (diff > 12)
         diff -= 24;
 
-    const QString timeString = locale.toString(QTime(1,2,3), QLocale::LongFormat);
+    const QString timeString = locale.toString(testTime, QLocale::LongFormat);
     QVERIFY(timeString.contains(QString("1:02:03")));
 
     // To run this test make sure "Curreny" is US Dollar in System Preferences->Language & Region->Advanced.
