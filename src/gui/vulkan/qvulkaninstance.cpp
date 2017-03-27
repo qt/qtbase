@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qvulkaninstance.h"
-#include "qvulkanfunctions_p.h"
+#include <private/qvulkanfunctions_p.h>
 #include <qpa/qplatformvulkaninstance.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>

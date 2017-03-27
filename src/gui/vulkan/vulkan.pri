@@ -1,4 +1,6 @@
 qtConfig(vulkan) {
+    CONFIG += generated_privates
+
     HEADERS += \
         vulkan/qvulkaninstance.h \
         vulkan/qplatformvulkaninstance.h \
@@ -21,7 +23,7 @@ QMAKE_QVKGEN_LICENSE_HEADER = $$QT_SOURCE_TREE/header.LGPL
 qtPrepareTool(QMAKE_QVKGEN, qvkgen)
 
 qvkgen_h.commands = $$QMAKE_QVKGEN ${QMAKE_FILE_IN} $$shell_quote($$QMAKE_QVKGEN_LICENSE_HEADER) ${QMAKE_FILE_OUT_PATH}/${QMAKE_FILE_OUT_BASE}
-qvkgen_h.output = vulkan/qvulkanfunctions.h
+qvkgen_h.output = $$OUT_PWD/vulkan/qvulkanfunctions.h
 qvkgen_h.input = QMAKE_QVKGEN_INPUT
 qtConfig(vulkan): \
     qvkgen_h.variable_out = HEADERS
@@ -30,9 +32,9 @@ else: \
 QMAKE_EXTRA_COMPILERS += qvkgen_h
 
 qvkgen_ph.commands = $$escape_expand(\\n)
-qvkgen_ph.output = vulkan/qvulkanfunctions_p.h
+qvkgen_ph.output = $$OUT_PWD/vulkan/qvulkanfunctions_p.h
 qvkgen_ph.input = QMAKE_QVKGEN_INPUT
-qvkgen_ph.depends += vulkan/qvulkanfunctions.h
+qvkgen_ph.depends += $$OUT_PWD/vulkan/qvulkanfunctions.h
 qtConfig(vulkan): \
     qvkgen_ph.variable_out = HEADERS
 else: \
@@ -40,9 +42,9 @@ else: \
 QMAKE_EXTRA_COMPILERS += qvkgen_ph
 
 qvkgen_pimpl.commands = $$escape_expand(\\n)
-qvkgen_pimpl.output = vulkan/qvulkanfunctions_p.cpp
+qvkgen_pimpl.output = $$OUT_PWD/vulkan/qvulkanfunctions_p.cpp
 qvkgen_pimpl.input = QMAKE_QVKGEN_INPUT
-qvkgen_pimpl.depends += vulkan/qvulkanfunctions_p.h
+qvkgen_pimpl.depends += $$OUT_PWD/vulkan/qvulkanfunctions_p.h
 qtConfig(vulkan): \
     qvkgen_pimpl.variable_out = SOURCES
 else: \

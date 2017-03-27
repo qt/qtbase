@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qvulkanfunctions_p.h"
+#include <private/qvulkanfunctions_p.h>
 
 QT_BEGIN_NAMESPACE
 
