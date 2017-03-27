@@ -117,7 +117,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     }
     case RuntimeLocation:
     {
-        const uid_t myUid = geteuid();
+        const uint myUid = uint(geteuid());
         // http://standards.freedesktop.org/basedir-spec/latest/
         QFileInfo fileInfo;
         QString xdgRuntimeDir = QFile::decodeName(qgetenv("XDG_RUNTIME_DIR"));

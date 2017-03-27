@@ -34,3 +34,6 @@ SUBDIRS+=\
            qdbusabstractinterface \
            qdbusinterface \
            qdbusmarshall
+
+!qtHaveModule(xml): SUBDIRS -= \
+           qdbusxmlparser

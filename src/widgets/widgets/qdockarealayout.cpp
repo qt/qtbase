@@ -2092,15 +2092,15 @@ void QDockAreaLayoutInfo::reparentWidgets(QWidget *parent)
         const QDockAreaLayoutItem &item = item_list.at(i);
         if (item.flags & QDockAreaLayoutItem::GapItem)
             continue;
-        if (item.skip())
-            continue;
         if (item.subinfo)
             item.subinfo->reparentWidgets(parent);
         if (item.widgetItem) {
             QWidget *w = item.widgetItem->widget();
+            if (qobject_cast<QDockWidgetGroupWindow *>(w))
+                continue;
             if (w->parent() != parent) {
                 bool hidden = w->isHidden();
-                w->setParent(parent);
+                w->setParent(parent, w->windowFlags());
                 if (!hidden)
                     w->show();
             }

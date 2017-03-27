@@ -340,7 +340,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
         // from the terminal. On 10.12+ this call has been moved to applicationDidFinishLauching
         // to work around issues with loss of focus at startup.
         if (QSysInfo::macVersion() < QSysInfo::MV_10_12) {
-            // Ignoring other apps is neccessary (we must ignore the terminal), but makes
+            // Ignoring other apps is necessary (we must ignore the terminal), but makes
             // Qt apps play slightly less nice with other apps when lanching from Finder
             // (See the activateIgnoringOtherApps docs.)
             [cocoaApplication activateIgnoringOtherApps : YES];

@@ -31,6 +31,8 @@ else:!qtConfig(process):                    SUBDIRS -= tools
 !qtHaveModule(concurrent):                  SUBDIRS -= concurrent
 !qtHaveModule(network):                     SUBDIRS -= network
 !qtHaveModule(dbus):                        SUBDIRS -= dbus
+!qtHaveModule(xml):                         SUBDIRS -= xml
+!qtHaveModule(sql):                         SUBDIRS -= sql
 
 # Disable the QtDBus tests if we can't connect to the session bus
 !cross_compile:qtHaveModule(dbus) {

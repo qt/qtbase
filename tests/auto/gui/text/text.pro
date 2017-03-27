@@ -35,3 +35,7 @@ win32:SUBDIRS -= qtextpiecetable
            qtextpiecetable \
            qzip \
            qtextodfwriter
+
+!qtHaveModule(xml): SUBDIRS -= \
+           qcssparser \
+           qtextdocument

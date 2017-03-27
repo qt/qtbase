@@ -59,7 +59,9 @@ load(qt_build_paths)
 # even beyond the module's own build. The implication of this is that
 # qmake might never use a framework's headers in a non-prefix build,
 # as there is no separate set of .pri files for users outside Qt.
-prefix_build:lib_bundle: \
+# Borrowing is assumed to happen from modules which, in a framework build,
+# actually are frameworks.
+prefix_build:module_frameworks: \
     fwd = _FWD
 # When using a split include path during the build, the installed module's
 # include path is also structurally different from that in the build dir.
@@ -82,7 +84,7 @@ for(mod, MODULE_INCNAME) {
         generated_privates: \
             MODULE$${sfwd}$${prv}_INCLUDES += $$mbibase/$$VERSION $$mbibase/$$VERSION/$$mod
     }
-    prefix_build:lib_bundle {
+    prefix_build:module_frameworks {
         mfbase = \$\$QT_MODULE_LIB_BASE/$${mod}.framework/Headers
         MODULE_INCLUDES += $$mfbase
         MODULE$${prv}_INCLUDES += $$mfbase/$$VERSION $$mfbase/$$VERSION/$$mod
@@ -178,7 +180,7 @@ headersclean:!internal_module {
                  -Dforeach=public: \
                  -Dforever=public:
 
-    gcc {
+    gcc:!rim_qcc {
         # Turn on some extra warnings not found in -Wall -Wextra.
         # Common to GCC, Clang and ICC (and other compilers that masquerade as GCC):
         hcleanFLAGS = -Wall -Wextra -Werror \

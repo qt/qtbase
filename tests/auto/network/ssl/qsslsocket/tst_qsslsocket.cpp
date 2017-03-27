@@ -191,6 +191,7 @@ private slots:
     void supportedCiphers();
     void systemCaCertificates();
     void wildcardCertificateNames();
+    void isMatchingHostname();
     void wildcard();
     void setEmptyKey();
     void spontaneousWrite();
@@ -1643,10 +1644,15 @@ void tst_QSslSocket::wildcardCertificateNames()
 {
     // Passing CN matches
     QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("www.example.com"), QString("www.example.com")), true );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("WWW.EXAMPLE.COM"), QString("www.example.com")), true );
     QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.example.com"), QString("www.example.com")), true );
     QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("xxx*.example.com"), QString("xxxwww.example.com")), true );
     QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("f*.example.com"), QString("foo.example.com")), true );
     QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("192.168.0.0"), QString("192.168.0.0")), true );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("foo.éxample.com"), QString("foo.xn--xample-9ua.com")), true );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.éxample.com"), QString("foo.xn--xample-9ua.com")), true );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("xn--kcry6tjko.example.org"), QString("xn--kcry6tjko.example.org")), true);
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.xn--kcry6tjko.example.org"), QString("xn--kcr.xn--kcry6tjko.example.org")), true);
 
     // Failing CN matches
     QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("xxx.example.com"), QString("www.example.com")), false );
@@ -1661,6 +1667,26 @@ void tst_QSslSocket::wildcardCertificateNames()
     QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString(""), QString("www")), false );
     QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*"), QString("www")), false );
     QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("*.168.0.0"), QString("192.168.0.0")), false );
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("xn--kcry6tjko*.example.org"), QString("xn--kcry6tjkoanc.example.org")), false );  // RFC 6125 §7.2
+    QCOMPARE( QSslSocketPrivate::isMatchingHostname(QString("å*.example.org"), QString("xn--la-xia.example.org")), false );
+}
+
+void tst_QSslSocket::isMatchingHostname()
+{
+    // with normalization:  (the certificate has *.SCHÄUFELE.DE as a CN)
+    // openssl req -x509 -nodes -subj "/CN=*.SCHÄUFELE.DE" -newkey rsa:512 -keyout /dev/null -out xn--schufele-2za.crt
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(SRCDIR "certs/xn--schufele-2za.crt");
+    QVERIFY(!certs.isEmpty());
+    QSslCertificate cert = certs.first();
+
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("WWW.SCHÄUFELE.DE")), true);
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("www.xn--schufele-2za.de")), true);
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("www.schäufele.de")), true);
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("föo.schäufele.de")), true);
+
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("foo.foo.xn--schufele-2za.de")), false);
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("www.schaufele.de")), false);
+    QCOMPARE(QSslSocketPrivate::isMatchingHostname(cert, QString::fromUtf8("www.schufele.de")), false);
 }
 
 void tst_QSslSocket::wildcard()

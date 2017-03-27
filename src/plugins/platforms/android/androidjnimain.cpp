@@ -402,11 +402,6 @@ namespace QtAndroid
         if (surfaceId == -1)
             return;
 
-        QMutexLocker lock(&m_surfacesMutex);
-        const auto &it = m_surfaces.find(surfaceId);
-        if (it != m_surfaces.end())
-            m_surfaces.remove(surfaceId);
-
         QJNIEnvironmentPrivate env;
         if (!env)
             return;
@@ -583,14 +578,18 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface,
 {
     QMutexLocker lock(&m_surfacesMutex);
     const auto &it = m_surfaces.find(id);
-    if (it.value() == nullptr) // This should never happen...
-        return;
-
     if (it == m_surfaces.end()) {
         qWarning()<<"Can't find surface" << id;
         return;
     }
-    it.value()->surfaceChanged(env, jSurface, w, h);
+    auto surfaceClient = it.value();
+    if (!surfaceClient) // This should never happen...
+        return;
+
+    surfaceClient->surfaceChanged(env, jSurface, w, h);
+
+    if (!jSurface)
+        m_surfaces.erase(it);
 }
 
 static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,

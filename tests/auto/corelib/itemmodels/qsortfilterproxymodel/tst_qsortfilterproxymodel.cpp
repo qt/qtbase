@@ -3994,21 +3994,21 @@ class DropOnOddRows : public QAbstractListModel
 public:
     DropOnOddRows(QObject *parent = 0) : QAbstractListModel(parent) {}
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
     {
         if (role == Qt::DisplayRole)
             return (index.row() % 2 == 0) ? "A" : "B";
         return QVariant();
     }
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override
     {
         Q_UNUSED(parent);
         return 10;
     }
 
     bool canDropMimeData(const QMimeData *, Qt::DropAction,
-                         int row, int column, const QModelIndex &parent) const Q_DECL_OVERRIDE
+                         int row, int column, const QModelIndex &parent) const override
     {
         Q_UNUSED(row);
         Q_UNUSED(column);
