@@ -49,6 +49,7 @@
 #include <QtCore/qmath.h>
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/private/qjni_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include "qdebug.h"
 
@@ -137,7 +138,7 @@ namespace QtAndroidAccessibility
         QRect rect;
         QAccessibleInterface *iface = interfaceFromId(objectId);
         if (iface && iface->isValid()) {
-            rect = iface->rect();
+            rect = QHighDpi::toNativePixels(iface->rect(), iface->window());
         }
 
         jclass rectClass = env->FindClass("android/graphics/Rect");
@@ -150,11 +151,13 @@ namespace QtAndroidAccessibility
     {
         QAccessibleInterface *root = interfaceFromId(-1);
         if (root) {
-            QAccessibleInterface *child = root->childAt((int)x, (int)y);
+            QPoint pos = QHighDpi::fromNativePixels(QPoint(int(x), int(y)), root->window());
+
+            QAccessibleInterface *child = root->childAt(pos.x(), pos.y());
             QAccessibleInterface *lastChild = 0;
             while (child && (child != lastChild)) {
                 lastChild = child;
-                child = child->childAt((int)x, (int)y);
+                child = child->childAt(pos.x(), pos.y());
             }
             if (lastChild)
                 return QAccessible::uniqueId(lastChild);

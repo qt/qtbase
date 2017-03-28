@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static const char *standardButtonText(int button)
+static QByteArray standardButtonText(int button)
 {
     return QGtk3Theme::defaultStandardButtonText(button).toUtf8();
 }

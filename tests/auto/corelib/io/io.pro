@@ -50,6 +50,11 @@ SUBDIRS=\
     qprocess \
     qtextstream
 
+!qtHaveModule(concurrent): SUBDIRS -= \
+    qdebug \
+    qlockfile \
+    qurl
+
 !qtConfig(private_tests): SUBDIRS -= \
     qabstractfileengine \
     qfileinfo \

@@ -326,6 +326,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qurl.h>
 #include <QtCore/qelapsedtimer.h>
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qhostinfo.h>
@@ -2679,31 +2680,35 @@ QSharedPointer<QSslContext> QSslSocketPrivate::sslContext(QSslSocket *socket)
 
 bool QSslSocketPrivate::isMatchingHostname(const QSslCertificate &cert, const QString &peerName)
 {
-    const QString lowerPeerName = peerName.toLower();
+    const QString lowerPeerName = QString::fromLatin1(QUrl::toAce(peerName));
     const QStringList commonNames = cert.subjectInfo(QSslCertificate::CommonName);
 
     for (const QString &commonName : commonNames) {
-        if (isMatchingHostname(commonName.toLower(), lowerPeerName))
+        if (isMatchingHostname(commonName, lowerPeerName))
             return true;
     }
 
     const auto subjectAlternativeNames = cert.subjectAlternativeNames();
     const auto altNames = subjectAlternativeNames.equal_range(QSsl::DnsEntry);
     for (auto it = altNames.first; it != altNames.second; ++it) {
-        if (isMatchingHostname(it->toLower(), lowerPeerName))
+        if (isMatchingHostname(*it, lowerPeerName))
             return true;
     }
 
     return false;
 }
 
+/*! \internal
+   Checks if the certificate's name \a cn matches the \a hostname.
+   \a hostname must be normalized in ASCII-Compatible Encoding, but \a cn is not normalized
+ */
 bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hostname)
 {
     int wildcard = cn.indexOf(QLatin1Char('*'));
 
     // Check this is a wildcard cert, if not then just compare the strings
     if (wildcard < 0)
-        return cn == hostname;
+        return QLatin1String(QUrl::toAce(cn)) == hostname;
 
     int firstCnDot = cn.indexOf(QLatin1Char('.'));
     int secondCnDot = cn.indexOf(QLatin1Char('.'), firstCnDot+1);
@@ -2720,13 +2725,21 @@ bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hos
     if (cn.lastIndexOf(QLatin1Char('*')) != wildcard)
         return false;
 
+    // Reject wildcard character embedded within the A-labels or U-labels of an internationalized
+    // domain name (RFC6125 section 7.2)
+    if (cn.startsWith(QLatin1String("xn--"), Qt::CaseInsensitive))
+        return false;
+
     // Check characters preceding * (if any) match
-    if (wildcard && (hostname.leftRef(wildcard) != cn.leftRef(wildcard)))
+    if (wildcard && hostname.leftRef(wildcard).compare(cn.leftRef(wildcard), Qt::CaseInsensitive) != 0)
         return false;
 
     // Check characters following first . match
-    if (hostname.midRef(hostname.indexOf(QLatin1Char('.'))) != cn.midRef(firstCnDot))
+    int hnDot = hostname.indexOf(QLatin1Char('.'));
+    if (hostname.midRef(hnDot + 1) != cn.midRef(firstCnDot + 1)
+        && hostname.midRef(hnDot + 1) != QLatin1String(QUrl::toAce(cn.mid(firstCnDot + 1)))) {
         return false;
+    }
 
     // Check if the hostname is an IP address, if so then wildcards are not allowed
     QHostAddress addr(hostname);

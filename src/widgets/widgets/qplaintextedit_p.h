@@ -60,10 +60,11 @@
 #include "QtWidgets/qmenu.h"
 #include "QtGui/qabstracttextdocumentlayout.h"
 #include "QtCore/qbasictimer.h"
-#include "private/qwidgettextcontrol_p.h"
 #include "qplaintextedit.h"
 
 #ifndef QT_NO_TEXTEDIT
+
+#include "private/qwidgettextcontrol_p.h"
 
 QT_BEGIN_NAMESPACE
 

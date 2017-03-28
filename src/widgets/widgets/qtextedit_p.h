@@ -61,12 +61,13 @@
 #include "QtGui/qabstracttextdocumentlayout.h"
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qurl.h"
-#include "private/qwidgettextcontrol_p.h"
 #include "qtextedit.h"
 
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_TEXTEDIT
+
+#include "private/qwidgettextcontrol_p.h"
+
+QT_BEGIN_NAMESPACE
 
 class QMimeData;
 class QTextEditPrivate : public QAbstractScrollAreaPrivate
@@ -135,9 +136,9 @@ public:
     QBasicTimer deleteAllTimer;
 #endif
 };
-#endif // QT_NO_TEXTEDIT
-
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_TEXTEDIT
 
 #endif // QTEXTEDIT_P_H

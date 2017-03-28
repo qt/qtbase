@@ -5987,7 +5987,7 @@ void QWidgetPrivate::resolveLocale()
     Q_Q(const QWidget);
 
     if (!q->testAttribute(Qt::WA_SetLocale)) {
-        setLocale_helper(q->isWindow()
+        setLocale_helper(q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)
                             ? QLocale()
                             : q->parentWidget()->locale());
     }

@@ -38,7 +38,7 @@ class tst_QChar : public QObject
 private slots:
     void fromChar16_t();
     void fromWchar_t();
-    void operator_eqeq_int();
+    void operator_eqeq_null();
     void operators_data();
     void operators();
     void toUpper();
@@ -101,31 +101,53 @@ void tst_QChar::fromWchar_t()
 #endif
 }
 
-void tst_QChar::operator_eqeq_int()
+void tst_QChar::operator_eqeq_null()
 {
     {
         const QChar ch = QLatin1Char(' ');
-        QVERIFY(ch != 0);
-        QVERIFY(!(ch == 0));
+#define CHECK(NUL) \
+        do { \
+            QVERIFY(!(ch  == NUL)); \
+            QVERIFY(  ch  != NUL ); \
+            QVERIFY(!(ch  <  NUL)); \
+            QVERIFY(  ch  >  NUL ); \
+            QVERIFY(!(ch  <= NUL)); \
+            QVERIFY(  ch  >= NUL ); \
+            QVERIFY(!(NUL == ch )); \
+            QVERIFY(  NUL != ch  ); \
+            QVERIFY(  NUL <  ch  ); \
+            QVERIFY(!(NUL >  ch )); \
+            QVERIFY(  NUL <= ch  ); \
+            QVERIFY(!(NUL >= ch )); \
+        } while (0)
 
-        QVERIFY(ch == 0x20);
-        QVERIFY(!(ch != 0x20));
-        QVERIFY(0x20 == ch);
-        QVERIFY(!(0x20 != ch));
+        CHECK(0);
+        CHECK('\0');
+#undef CHECK
     }
     {
         const QChar ch = QLatin1Char('\0');
-        QVERIFY(ch == 0);
-        QVERIFY(!(ch != 0));
+#define CHECK(NUL) \
+        do { \
+            QVERIFY(  ch  == NUL ); \
+            QVERIFY(!(ch  != NUL)); \
+            QVERIFY(!(ch  <  NUL)); \
+            QVERIFY(!(ch  >  NUL)); \
+            QVERIFY(  ch  <= NUL ); \
+            QVERIFY(  ch  >= NUL ); \
+            QVERIFY(  NUL == ch  ); \
+            QVERIFY(!(NUL != ch )); \
+            QVERIFY(!(NUL <  ch )); \
+            QVERIFY(!(NUL >  ch )); \
+            QVERIFY(  NUL <= ch  ); \
+            QVERIFY(  NUL >= ch  ); \
+        } while (0)
 
-        QVERIFY(ch != 0x20);
-        QVERIFY(!(ch == 0x20));
-        QVERIFY(0x20 != ch);
-        QVERIFY(!(0x20 == ch));
+        CHECK(0);
+        CHECK('\0');
+#undef CHECK
     }
 }
-
-QT_WARNING_POP
 
 void tst_QChar::operators_data()
 {

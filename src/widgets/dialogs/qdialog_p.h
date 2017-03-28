@@ -61,6 +61,8 @@
 #endif
 #include <qpa/qplatformdialoghelper.h>
 
+QT_REQUIRE_CONFIG(dialog);
+
 QT_BEGIN_NAMESPACE
 
 class QSizeGrip;

@@ -503,6 +503,8 @@ static QByteArray extractSubvolume(const QStorageIterator &it)
         // if we didn't find the subvolume name, return the subvolume ID
         return id;
     }
+#else
+    Q_UNUSED(it);
 #endif
     return QByteArray();
 }

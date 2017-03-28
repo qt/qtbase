@@ -32,6 +32,7 @@
 #include "qjsonobject.h"
 #include "qjsonvalue.h"
 #include "qjsondocument.h"
+#include "qregularexpression.h"
 #include <limits>
 
 #define INVALID_UNICODE "\xCE\xBA\xE1"
@@ -49,6 +50,7 @@ private Q_SLOTS:
     void testNumbers();
     void testNumbers_2();
     void testNumbers_3();
+    void testNumbers_4();
 
     void testObjectSimple();
     void testObjectSmallKeys();
@@ -373,6 +375,33 @@ void tst_QtJson::testNumbers_3()
     double d1_1(jDocument2.object().value("d1").toDouble());
     double d2_1(jDocument2.object().value("d2").toDouble());
     QVERIFY(d1_1 != d2_1);
+}
+
+void tst_QtJson::testNumbers_4()
+{
+    // no exponent notation used to print numbers between -2^64 and 2^64
+    QJsonArray array;
+    array << QJsonValue(+1000000000000000.0);
+    array << QJsonValue(-1000000000000000.0);
+    array << QJsonValue(+9007199254740992.0);
+    array << QJsonValue(-9007199254740992.0);
+    array << QJsonValue(+9223372036854775808.0);
+    array << QJsonValue(-9223372036854775808.0);
+    array << QJsonValue(+18446744073709551616.0);
+    array << QJsonValue(-18446744073709551616.0);
+    const QByteArray json(QJsonDocument(array).toJson());
+    const QByteArray expected =
+            "[\n"
+            "    1000000000000000,\n"
+            "    -1000000000000000,\n"
+            "    9007199254740992,\n"
+            "    -9007199254740992,\n"
+            "    9223372036854776000,\n"
+            "    -9223372036854776000,\n"
+            "    18446744073709552000,\n"
+            "    -18446744073709552000\n"
+            "]\n";
+    QCOMPARE(json, expected);
 }
 
 void tst_QtJson::testObjectSimple()

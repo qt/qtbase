@@ -38,6 +38,7 @@
 **
 ****************************************************************************/
 
+#include <cmath>
 #include <qlocale.h>
 #include "qjsonwriter_p.h"
 #include "qjson_p.h"
@@ -129,10 +130,12 @@ static void valueToJson(const QJsonPrivate::Base *b, const QJsonPrivate::Value &
         break;
     case QJsonValue::Double: {
         const double d = v.toDouble(b);
-        if (qIsFinite(d)) // +2 to format to ensure the expected precision
-            json += QByteArray::number(d, 'g', QLocale::FloatingPointShortest);
-        else
+        if (qIsFinite(d)) { // +2 to format to ensure the expected precision
+            const double abs = std::abs(d);
+            json += QByteArray::number(d, abs == static_cast<quint64>(abs) ? 'f' : 'g', QLocale::FloatingPointShortest);
+        } else {
             json += "null"; // +INF || -INF || NaN (see RFC4627#section2.4)
+        }
         break;
     }
     case QJsonValue::String:

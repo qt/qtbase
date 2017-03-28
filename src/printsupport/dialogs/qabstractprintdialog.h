@@ -41,12 +41,13 @@
 #define QABSTRACTPRINTDIALOG_H
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
+
+#if QT_CONFIG(printdialog)
+
 #include <QtWidgets/qdialog.h>
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_PRINTER
 
 class QAbstractPrintDialogPrivate;
 class QPrinter;
@@ -81,7 +82,6 @@ public:
     Q_DECLARE_FLAGS(PrintDialogOptions, PrintDialogOption)
     Q_FLAG(PrintDialogOptions)
 
-#ifndef QT_NO_PRINTDIALOG
     explicit QAbstractPrintDialog(QPrinter *printer, QWidget *parent = Q_NULLPTR);
     ~QAbstractPrintDialog();
 
@@ -114,13 +114,12 @@ protected:
 private:
     Q_DISABLE_COPY(QAbstractPrintDialog)
 
-#endif // QT_NO_PRINTDIALOG
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractPrintDialog::PrintDialogOptions)
 
-#endif // QT_NO_PRINTER
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_PRINTDIALOG
 
 #endif // QABSTRACTPRINTDIALOG_H

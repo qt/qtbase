@@ -44,12 +44,13 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qurl.h>
+
+#ifndef QT_NO_FILEDIALOG
+
 #include <QtWidgets/qdialog.h>
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_FILEDIALOG
 
 class QModelIndex;
 class QItemSelection;
@@ -313,8 +314,8 @@ inline void QFileDialog::setDirectory(const QDir &adirectory)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFileDialog::Options)
 
-#endif // QT_NO_FILEDIALOG
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_FILEDIALOG
 
 #endif // QFILEDIALOG_H

@@ -243,6 +243,9 @@ public:
     bool encrypt;
     bool delayIpv4;
 
+    // Number of channels we are trying to use at the moment:
+    int activeChannelCount;
+    // The total number of channels we reserved:
     const int channelCount;
     QTimer delayedConnectionTimer;
     QHttpNetworkConnectionChannel *channels; // parallel connections to the server

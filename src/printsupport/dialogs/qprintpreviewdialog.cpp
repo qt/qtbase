@@ -40,7 +40,6 @@
 #include "qprintpreviewdialog.h"
 #include "qprintpreviewwidget.h"
 #include <private/qprinter_p.h>
-#include "private/qdialog_p.h"
 #include "qprintdialog.h"
 
 #include <QtWidgets/qaction.h>
@@ -58,6 +57,8 @@
 #include <QtCore/QCoreApplication>
 
 #ifndef QT_NO_PRINTPREVIEWDIALOG
+
+#include "private/qdialog_p.h"
 
 #include <QtWidgets/qformlayout.h>
 #include <QtWidgets/qlabel.h>

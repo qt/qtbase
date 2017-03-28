@@ -96,6 +96,12 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
         str << "windowState=" << hex << showbase << states << dec << noshowbase << ' ';
     formatRect(str, w->geometry());
     if (w->isWindow()) {
+        str << ' ' << w->logicalDpiX() << "DPI";
+#if QT_VERSION > 0x050600
+        const qreal dpr = w->devicePixelRatioF();
+        if (!qFuzzyCompare(dpr, qreal(1)))
+            str << " dpr=" << dpr;
+#endif // Qt 5.6
         const QRect normalGeometry = w->normalGeometry();
         if (normalGeometry.isValid() && !normalGeometry.isEmpty() && normalGeometry != w->geometry()) {
             str << " normal=";

@@ -1,3 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = qmimedatabase-xml
-unix:!mac:!qnx: SUBDIRS += qmimedatabase-cache
+qtHaveModule(concurrent) {
+    SUBDIRS = qmimedatabase-xml
+    unix:!darwin:!qnx: SUBDIRS += qmimedatabase-cache
+}

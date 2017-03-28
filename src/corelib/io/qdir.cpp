@@ -2105,11 +2105,11 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
         return name;
 
     int i = len - 1;
-    QVarLengthArray<QChar> outVector(len);
+    QVarLengthArray<ushort> outVector(len);
     int used = len;
-    QChar *out = outVector.data();
-    const QChar *p = name.unicode();
-    const QChar *prefix = p;
+    ushort *out = outVector.data();
+    const ushort *p = name.utf16();
+    const ushort *prefix = p;
     int up = 0;
 
     const int prefixLength = rootLength(name, allowUncPaths);
@@ -2117,39 +2117,39 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
     i -= prefixLength;
 
     // replicate trailing slash (i > 0 checks for emptiness of input string p)
-    if (i > 0 && p[i].unicode() == '/') {
-        out[--used].unicode() = '/';
+    if (i > 0 && p[i] == '/') {
+        out[--used] = '/';
         --i;
     }
 
     while (i >= 0) {
         // remove trailing slashes
-        if (p[i].unicode() == '/') {
+        if (p[i] == '/') {
             --i;
             continue;
         }
 
         // remove current directory
-        if (p[i].unicode() == '.' && (i == 0 || p[i-1].unicode() == '/')) {
+        if (p[i] == '.' && (i == 0 || p[i-1] == '/')) {
             --i;
             continue;
         }
 
         // detect up dir
-        if (i >= 1 && p[i].unicode() == '.' && p[i-1].unicode() == '.'
-                && (i == 1 || (i >= 2 && p[i-2].unicode() == '/'))) {
+        if (i >= 1 && p[i] == '.' && p[i-1] == '.'
+                && (i == 1 || (i >= 2 && p[i-2] == '/'))) {
             ++up;
             i -= 2;
             continue;
         }
 
         // prepend a slash before copying when not empty
-        if (!up && used != len && out[used].unicode() != '/')
-            out[--used] = QLatin1Char('/');
+        if (!up && used != len && out[used] != '/')
+            out[--used] = '/';
 
         // skip or copy
         while (i >= 0) {
-            if (p[i].unicode() == '/') { // do not copy slashes
+            if (p[i] == '/') { // do not copy slashes
                 --i;
                 break;
             }
@@ -2171,17 +2171,17 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
 
     // add remaining '..'
     while (up) {
-        if (used != len && out[used].unicode() != '/') // is not empty and there isn't already a '/'
-            out[--used] = QLatin1Char('/');
-        out[--used] = QLatin1Char('.');
-        out[--used] = QLatin1Char('.');
+        if (used != len && out[used] != '/') // is not empty and there isn't already a '/'
+            out[--used] = '/';
+        out[--used] = '.';
+        out[--used] = '.';
         --up;
     }
 
     bool isEmpty = used == len;
 
     if (prefixLength) {
-        if (!isEmpty && out[used].unicode() == '/') {
+        if (!isEmpty && out[used] == '/') {
             // Eventhough there is a prefix the out string is a slash. This happens, if the input
             // string only consists of a prefix followed by one or more slashes. Just skip the slash.
             ++used;
@@ -2192,18 +2192,19 @@ Q_AUTOTEST_EXPORT QString qt_normalizePathSegments(const QString &name, bool all
         if (isEmpty) {
             // After resolving the input path, the resulting string is empty (e.g. "foo/.."). Return
             // a dot in that case.
-            out[--used] = QLatin1Char('.');
-        } else if (out[used].unicode() == '/') {
+            out[--used] = '.';
+        } else if (out[used] == '/') {
             // After parsing the input string, out only contains a slash. That happens whenever all
             // parts are resolved and there is a trailing slash ("./" or "foo/../" for example).
             // Prepend a dot to have the correct return value.
-            out[--used] = QLatin1Char('.');
+            out[--used] = '.';
         }
     }
 
     // If path was not modified return the original value
-    QString ret = (used == 0 ? name : QString(out + used, len - used));
-    return ret;
+    if (used == 0)
+        return name;
+    return QString::fromUtf16(out + used, len - used);
 }
 
 static QString qt_cleanPath(const QString &path, bool *ok)

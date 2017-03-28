@@ -34,6 +34,7 @@
 #include <qsysinfo.h>
 #if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
 #include <unistd.h>
+#include <sys/time.h>
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <qt_windows.h>
 #endif
@@ -59,6 +60,7 @@ private slots:
     void noPermissions();
     void noPermissionsWindows();
     void corruptedLockFile();
+    void corruptedLockFileInTheFuture();
 
 private:
     static bool overwritePidInLockFile(const QString &filePath, qint64 pid);
@@ -519,6 +521,32 @@ void tst_QLockFile::corruptedLockFile()
     secondLock.setStaleLockTime(100);
     QVERIFY(secondLock.tryLock(10000));
     QCOMPARE(int(secondLock.error()), int(QLockFile::NoError));
+}
+
+void tst_QLockFile::corruptedLockFileInTheFuture()
+{
+#if !defined(Q_OS_UNIX)
+    QSKIP("This tests needs utimes");
+#else
+    // This test is the same as the previous one, but the corruption was so there is a corrupted
+    // .rmlock whose timestamp is in the future
+
+    const QString fileName = dir.path() + "/corruptedLockFile.rmlock";
+
+    {
+        QFile file(fileName);
+        QVERIFY(file.open(QFile::WriteOnly));
+    }
+
+    struct timeval times[2];
+    gettimeofday(times, 0);
+    times[1].tv_sec = (times[0].tv_sec += 600);
+    times[1].tv_usec = times[0].tv_usec;
+    utimes(fileName.toLocal8Bit(), times);
+
+    QTest::ignoreMessage(QtInfoMsg, "QLockFile: Lock file '" + fileName.toUtf8() + "' has a modification time in the future");
+    corruptedLockFile();
+#endif
 }
 
 bool tst_QLockFile::overwritePidInLockFile(const QString &filePath, qint64 pid)

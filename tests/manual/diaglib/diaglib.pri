@@ -10,7 +10,7 @@ HEADERS += \
     $$PWD/qwindowdump.h \
     $$PWD/nativewindowdump.h
 
-win32!winrt:  {
+win32:!winrt:  {
     SOURCES += $$PWD/nativewindowdump_win.cpp
     LIBS *= -luser32
 } else {

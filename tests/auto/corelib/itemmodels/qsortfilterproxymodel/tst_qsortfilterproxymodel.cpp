@@ -4017,7 +4017,7 @@ public:
     }
 
     bool canDropMimeData(const QMimeData *, Qt::DropAction,
-                         int row, int column, const QModelIndex &parent) const Q_DECL_OVERRIDE
+                         int row, int column, const QModelIndex &parent) const override
     {
         Q_UNUSED(row);
         Q_UNUSED(column);

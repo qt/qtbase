@@ -41,9 +41,10 @@
 #define QPRINTPREVIEWDIALOG_H
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
-#include <QtWidgets/qdialog.h>
 
 #ifndef QT_NO_PRINTPREVIEWDIALOG
+
+#include <QtWidgets/qdialog.h>
 
 QT_BEGIN_NAMESPACE
 

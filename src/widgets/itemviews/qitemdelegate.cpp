@@ -62,7 +62,6 @@
 #include <private/qtextengine_p.h>
 #include <qdebug.h>
 #include <qlocale.h>
-#include <qdialog.h>
 #include <qmath.h>
 
 #include <limits.h>

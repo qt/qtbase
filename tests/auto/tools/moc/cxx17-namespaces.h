@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #ifndef CXX17_NAMESPACES_H
-#define CXX11_NAMESPACES_H
+#define CXX17_NAMESPACES_H
 #include <QtCore/QObject>
 
 #if defined(__cpp_nested_namespace_definitions) || defined(Q_MOC_RUN)

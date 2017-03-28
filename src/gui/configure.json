@@ -164,7 +164,9 @@
                 { "libs": "-llibpng", "condition": "config.msvc" },
                 { "libs": "-lpng", "condition": "!config.msvc" }
             ],
-            "use": "zlib"
+            "use": [
+                { "lib": "zlib", "condition": "features.system-zlib" }
+            ]
         },
         "mirclient": {
             "label": "Mir client libraries",
@@ -703,6 +705,7 @@
             "label": "  Using system libpng",
             "disable": "input.libpng == 'qt'",
             "enable": "input.libpng == 'system'",
+            "autoDetect": "features.system-zlib",
             "condition": "features.png && libs.libpng",
             "output": [ "privateFeature" ]
         },
