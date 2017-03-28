@@ -353,7 +353,7 @@ public:
     void start(QIODevice::OpenMode mode);
     void startProcess();
 #if defined(Q_OS_UNIX)
-    void execChild(const char *workingDirectory, char **path, char **argv, char **envp);
+    void execChild(const char *workingDirectory, char **argv, char **envp);
 #endif
     bool processStarted(QString *errorMessage = Q_NULLPTR);
     void terminateProcess();
