@@ -180,8 +180,44 @@ public:
         SHA3Context sha3Context;
 #endif
     };
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    void sha3Finish(int bitCount);
+#endif
     QByteArray result;
 };
+
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+void QCryptographicHashPrivate::sha3Finish(int bitCount)
+{
+    /*
+        FIPS 202 §6.1 defines SHA-3 in terms of calculating the Keccak function
+        over the original message with the two-bit suffix "01" appended to it.
+        This variable stores that suffix (and it's fed into the calculations
+        when the hash is returned to users).
+
+        Only 2 bits of this variable are actually used (see the call to sha3Update
+        below). The Keccak implementation we're using will actually use the
+        *leftmost* 2 bits, and interpret them right-to-left. In other words, the
+        bits must appear in order of *increasing* significance; and as the two most
+        significant bits of the byte -- the rightmost 6 are ignored. (Yes, this
+        seems self-contradictory, but it's the way it is...)
+
+        Overall, this means:
+        * the leftmost two bits must be "10" (not "01"!);
+        * we don't care what the other six bits are set to (they can be set to
+        any value), but we arbitrarily set them to 0;
+
+        and for an unsigned char this gives us 0b10'00'00'00, or 0x80.
+    */
+    static const unsigned char sha3FinalSuffix = 0x80;
+
+    result.resize(bitCount / 8);
+
+    SHA3Context copy = sha3Context;
+    sha3Update(&copy, reinterpret_cast<const BitSequence *>(&sha3FinalSuffix), 2);
+    sha3Final(&copy, reinterpret_cast<BitSequence *>(result.data()));
+}
+#endif
 
 /*!
   \class QCryptographicHash
@@ -427,27 +463,19 @@ QByteArray QCryptographicHash::result() const
         break;
     }
     case Sha3_224: {
-        SHA3Context copy = d->sha3Context;
-        d->result.resize(224/8);
-        sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
+        d->sha3Finish(224);
         break;
     }
     case Sha3_256: {
-        SHA3Context copy = d->sha3Context;
-        d->result.resize(256/8);
-        sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
+        d->sha3Finish(256);
         break;
     }
     case Sha3_384: {
-        SHA3Context copy = d->sha3Context;
-        d->result.resize(384/8);
-        sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
+        d->sha3Finish(384);
         break;
     }
     case Sha3_512: {
-        SHA3Context copy = d->sha3Context;
-        d->result.resize(512/8);
-        sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
+        d->sha3Finish(512);
         break;
     }
 #endif
