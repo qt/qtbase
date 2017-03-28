@@ -2082,7 +2082,8 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
         for (int i = 0; i < gradientBounds.size(); ++i)
             s << gradientBounds.at(i).function << "0 R ";
         s << "]\n"
-             ">>\n";
+             ">>\n"
+             "endobj\n";
         write(data);
     } else {
         function = functions.at(0);
