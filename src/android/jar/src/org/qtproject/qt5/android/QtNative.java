@@ -348,6 +348,7 @@ public class QtNative
     // application methods
     public static native void startQtApplication(String params, String env);
     public static native boolean startQtAndroidPlugin();
+    public static native void quitQtCoreApplication();
     public static native void quitQtAndroidPlugin();
     public static native void terminateQt();
     // application methods

@@ -6315,13 +6315,13 @@ inline void qt_memfill_template(T *dest, T color, int count)
     int n = (count + 7) / 8;
     switch (count & 0x07)
     {
-    case 0: do { *dest++ = color;
-    case 7:      *dest++ = color;
-    case 6:      *dest++ = color;
-    case 5:      *dest++ = color;
-    case 4:      *dest++ = color;
-    case 3:      *dest++ = color;
-    case 2:      *dest++ = color;
+    case 0: do { *dest++ = color; Q_FALLTHROUGH();
+    case 7:      *dest++ = color; Q_FALLTHROUGH();
+    case 6:      *dest++ = color; Q_FALLTHROUGH();
+    case 5:      *dest++ = color; Q_FALLTHROUGH();
+    case 4:      *dest++ = color; Q_FALLTHROUGH();
+    case 3:      *dest++ = color; Q_FALLTHROUGH();
+    case 2:      *dest++ = color; Q_FALLTHROUGH();
     case 1:      *dest++ = color;
     } while (--n > 0);
     }
@@ -6332,7 +6332,7 @@ inline void qt_memfill_template(quint16 *dest, quint16 value, int count)
 {
     if (count < 3) {
         switch (count) {
-        case 2: *dest++ = value;
+        case 2: *dest++ = value; Q_FALLTHROUGH();
         case 1: *dest = value;
         }
         return;

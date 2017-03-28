@@ -237,11 +237,11 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
 {
     if (count < 7) {
         switch (count) {
-        case 6: *dest++ = value;
-        case 5: *dest++ = value;
-        case 4: *dest++ = value;
-        case 3: *dest++ = value;
-        case 2: *dest++ = value;
+        case 6: *dest++ = value; Q_FALLTHROUGH();
+        case 5: *dest++ = value; Q_FALLTHROUGH();
+        case 4: *dest++ = value; Q_FALLTHROUGH();
+        case 3: *dest++ = value; Q_FALLTHROUGH();
+        case 2: *dest++ = value; Q_FALLTHROUGH();
         case 1: *dest   = value;
         }
         return;
@@ -249,16 +249,16 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
 
     const int align = (quintptr)(dest) & 0xf;
     switch (align) {
-    case 4:  *dest++ = value; --count;
-    case 8:  *dest++ = value; --count;
+    case 4:  *dest++ = value; --count; Q_FALLTHROUGH();
+    case 8:  *dest++ = value; --count; Q_FALLTHROUGH();
     case 12: *dest++ = value; --count;
     }
 
     const int rest = count & 0x3;
     if (rest) {
         switch (rest) {
-        case 3: dest[count - 3] = value;
-        case 2: dest[count - 2] = value;
+        case 3: dest[count - 3] = value; Q_FALLTHROUGH();
+        case 2: dest[count - 2] = value; Q_FALLTHROUGH();
         case 1: dest[count - 1] = value;
         }
     }
@@ -277,8 +277,8 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
     }
 
     switch (count128 & 0x3) {
-    case 3:      _mm_stream_si128(dst128++, value128);
-    case 2:      _mm_stream_si128(dst128++, value128);
+    case 3:      _mm_stream_si128(dst128++, value128); Q_FALLTHROUGH();
+    case 2:      _mm_stream_si128(dst128++, value128); Q_FALLTHROUGH();
     case 1:      _mm_stream_si128(dst128++, value128);
     }
 }
@@ -318,7 +318,7 @@ void qt_memfill16(quint16 *dest, quint16 value, int count)
 {
     if (count < 3) {
         switch (count) {
-        case 2: *dest++ = value;
+        case 2: *dest++ = value; Q_FALLTHROUGH();
         case 1: *dest = value;
         }
         return;

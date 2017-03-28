@@ -185,6 +185,6 @@ public class QtServiceDelegate
 
     public void onDestroy()
     {
-        QtNative.setService(null, null);
+        QtNative.quitQtCoreApplication();
     }
 }
