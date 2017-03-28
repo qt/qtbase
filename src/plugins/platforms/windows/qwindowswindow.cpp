@@ -42,6 +42,7 @@
 #include "qwindowsdrag.h"
 #include "qwindowsscreen.h"
 #include "qwindowsintegration.h"
+#include "qwindowsmenu.h"
 #include "qwindowsnativeinterface.h"
 #if QT_CONFIG(dynamicgl)
 #  include "qwindowsglcontext.h"
@@ -1016,6 +1017,8 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
         const QMargins effectiveMargins = margins + customMargins;
         frameWidth = effectiveMargins.left() + geometry.width() + effectiveMargins.right();
         frameHeight = effectiveMargins.top() + geometry.height() + effectiveMargins.bottom();
+        if (QWindowsMenuBar::menuBarOf(w) != nullptr)
+            frameHeight += GetSystemMetrics(SM_CYMENU);
         const bool isDefaultPosition = !frameX && !frameY && w->isTopLevel();
         if (!QWindowsGeometryHint::positionIncludesFrame(w) && !isDefaultPosition) {
             frameX -= effectiveMargins.left();
@@ -2444,6 +2447,16 @@ void QWindowsWindow::setWindowIcon(const QIcon &icon)
 bool QWindowsWindow::isTopLevel() const
 {
     return window()->isTopLevel() && !m_data.embedded;
+}
+
+QWindowsMenuBar *QWindowsWindow::menuBar() const
+{
+    return m_menuBar.data();
+}
+
+void QWindowsWindow::setMenuBar(QWindowsMenuBar *mb)
+{
+    m_menuBar = mb;
 }
 
 /*!

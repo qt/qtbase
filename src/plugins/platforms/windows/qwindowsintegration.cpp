@@ -42,6 +42,7 @@
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
 #include "qwin10helpers.h"
+#include "qwindowsmenu.h"
 #include "qwindowsopenglcontext.h"
 
 #include "qwindowsscreen.h"
@@ -206,6 +207,10 @@ static inline unsigned parseOptions(const QStringList &paramList,
         } else if (parseIntOption(param, QLatin1String("verbose"), 0, INT_MAX, &QWindowsContext::verbose)
             || parseIntOption(param, QLatin1String("tabletabsoluterange"), 0, INT_MAX, tabletAbsoluteRange)
             || parseIntOption(param, QLatin1String("dpiawareness"), QtWindows::ProcessDpiUnaware, QtWindows::ProcessPerMonitorDpiAware, dpiAwareness)) {
+        } else if (param == QLatin1String("menus=native")) {
+            options |= QWindowsIntegration::AlwaysUseNativeMenus;
+        } else if (param == QLatin1String("menus=none")) {
+            options |= QWindowsIntegration::NoNativeMenus;
         } else {
             qWarning() << "Unknown option" << param;
         }
@@ -333,6 +338,9 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
 
     QWindowsWindow *result = createPlatformWindowHelper(window, obtained);
     Q_ASSERT(result);
+
+    if (QWindowsMenuBar *menuBarToBeInstalled = QWindowsMenuBar::menuBarOf(window))
+        menuBarToBeInstalled->install(result);
 
     if (requested.flags != obtained.flags)
         window->setFlags(obtained.flags);

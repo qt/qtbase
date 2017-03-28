@@ -570,6 +570,15 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
         \li \c {dialogs=[xp|none]}, \c xp uses XP-style native dialogs and
             \c none disables them.
         \li \c {fontengine=freetype}, uses the FreeType font engine.
+        \li \c {menus=[native|none]}, controls the use of native menus.
+
+               Native menus are implemented using Win32 API and are simpler than
+               QMenu-based menus in for example that they do allow for placing
+               widgets on them or changing properties like fonts and do not
+               provide hover signals. They are mainly intended for Qt Quick.
+               By default, they will be used if the application is not an
+               instance of QApplication or for Qt Quick Controls 2
+               applications.
     \endlist
 
     For more information about the platform-specific arguments available for

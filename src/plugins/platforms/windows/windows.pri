@@ -22,6 +22,7 @@ SOURCES += \
     $$PWD/qwindowscursor.cpp \
     $$PWD/qwindowsinputcontext.cpp \
     $$PWD/qwindowstheme.cpp \
+    $$PWD/qwindowsmenu.cpp \
     $$PWD/qwindowsdialoghelpers.cpp \
     $$PWD/qwindowsservices.cpp \
     $$PWD/qwindowsnativeinterface.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     $$PWD/qwindowscursor.h \
     $$PWD/qwindowsinputcontext.h \
     $$PWD/qwindowstheme.h \
+    $$PWD/qwindowsmenu.h \
     $$PWD/qwindowsdialoghelpers.h \
     $$PWD/qwindowsservices.h \
     $$PWD/qwindowsnativeinterface.h \

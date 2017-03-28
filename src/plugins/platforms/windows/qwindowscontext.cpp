@@ -44,6 +44,7 @@
 #include "qwindowskeymapper.h"
 #include "qwindowsmousehandler.h"
 #include "qtwindowsglobal.h"
+#include "qwindowsmenu.h"
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowstabletsupport.h"
@@ -90,6 +91,7 @@ Q_LOGGING_CATEGORY(lcQpaGl, "qt.qpa.gl")
 Q_LOGGING_CATEGORY(lcQpaMime, "qt.qpa.mime")
 Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods")
 Q_LOGGING_CATEGORY(lcQpaDialogs, "qt.qpa.dialogs")
+Q_LOGGING_CATEGORY(lcQpaMenus, "qt.qpa.menus")
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 
@@ -601,6 +603,15 @@ void QWindowsContext::removeWindow(HWND hwnd)
     }
 }
 
+QWindowsWindow *QWindowsContext::findPlatformWindow(const QWindowsMenuBar *mb) const
+{
+    for (auto it = d->m_windows.cbegin(), end = d->m_windows.cend(); it != end; ++it) {
+        if ((*it)->menuBar() == mb)
+            return *it;
+    }
+    return nullptr;
+}
+
 QWindowsWindow *QWindowsContext::findPlatformWindow(HWND hwnd) const
 {
     return d->m_windows.value(hwnd);
@@ -994,6 +1005,22 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::InputMethodKeyDownEvent:
     case QtWindows::AppCommandEvent:
         return sessionManagerInteractionBlocked() ||  d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
+    case QtWindows::MenuAboutToShowEvent:
+        if (sessionManagerInteractionBlocked())
+            return true;
+        if (QWindowsPopupMenu::notifyAboutToShow(reinterpret_cast<HMENU>(wParam)))
+            return true;
+        if (platformWindow == nullptr || platformWindow->menuBar() == nullptr)
+            return false;
+        return platformWindow->menuBar()->notifyAboutToShow(reinterpret_cast<HMENU>(wParam));
+    case QtWindows::MenuCommandEvent:
+        if (sessionManagerInteractionBlocked())
+            return true;
+        if (QWindowsPopupMenu::notifyTriggered(LOWORD(wParam)))
+            return true;
+        if (platformWindow == nullptr || platformWindow->menuBar() == nullptr)
+            return false;
+        return platformWindow->menuBar()->notifyTriggered(LOWORD(wParam));
     case QtWindows::MoveEvent:
         platformWindow->handleMoved();
         return true;

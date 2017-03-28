@@ -903,6 +903,12 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
         return true;
     }
 
+    // Enable Alt accelerators ("&File") on menus
+    if (msgType == WM_SYSKEYDOWN && (nModifiers & AltAny) != 0 && GetMenu(msg.hwnd) != nullptr)
+        return false;
+    if (msgType == WM_SYSKEYUP && nModifiers == 0 && GetMenu(msg.hwnd) != nullptr)
+        return false;
+
     bool result = false;
     // handle Directionality changes (BiDi) with RTL extensions
     if (m_useRTLExtensions) {

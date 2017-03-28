@@ -64,7 +64,9 @@ public:
         DontPassOsMouseEventsSynthesizedFromTouch = 0x20, // Do not pass OS-generated mouse events from touch.
         // Keep in sync with QWindowsFontDatabase::FontOptions
         DontUseDirectWriteFonts = QWindowsFontDatabase::DontUseDirectWriteFonts,
-        DontUseColorFonts = QWindowsFontDatabase::DontUseColorFonts
+        DontUseColorFonts = QWindowsFontDatabase::DontUseColorFonts,
+        AlwaysUseNativeMenus = 0x100,
+        NoNativeMenus = 0x200
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);

@@ -63,11 +63,13 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaGl)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaMime)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaDialogs)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaMenus)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaTablet)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaAccessibility)
 
 class QWindow;
 class QPlatformScreen;
+class QWindowsMenuBar;
 class QWindowsScreenManager;
 class QWindowsTabletSupport;
 class QWindowsWindow;
@@ -177,6 +179,7 @@ public:
 
     QWindowsWindow *findClosestPlatformWindow(HWND) const;
     QWindowsWindow *findPlatformWindow(HWND) const;
+    QWindowsWindow *findPlatformWindow(const QWindowsMenuBar *mb) const;
     QWindow *findWindow(HWND) const;
     QWindowsWindow *findPlatformWindowAt(HWND parent, const QPoint &screenPoint,
                                              unsigned cwex_flags) const;

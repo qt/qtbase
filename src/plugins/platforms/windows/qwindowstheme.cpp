@@ -44,6 +44,7 @@
 #endif
 
 #include "qwindowstheme.h"
+#include "qwindowsmenu.h"
 #include "qwindowsdialoghelpers.h"
 #include "qwindowscontext.h"
 #include "qwindowsintegration.h"
@@ -908,6 +909,57 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
 QIcon QWindowsTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const
 {
     return QIcon(new QWindowsFileIconEngine(fileInfo, iconOptions));
+}
+
+static inline bool doUseNativeMenus()
+{
+    const unsigned options = QWindowsIntegration::instance()->options();
+    if ((options & QWindowsIntegration::NoNativeMenus) != 0)
+        return false;
+    if ((options & QWindowsIntegration::AlwaysUseNativeMenus) != 0)
+        return true;
+    // "Auto" mode: For non-widget or Quick Controls 2 applications
+    if (!QCoreApplication::instance()->inherits("QApplication"))
+        return true;
+    const QWindowList &topLevels = QGuiApplication::topLevelWindows();
+    for (const QWindow *t : topLevels) {
+        if (t->inherits("QQuickApplicationWindow"))
+            return true;
+    }
+    return false;
+}
+
+bool QWindowsTheme::useNativeMenus()
+{
+    static const bool result = doUseNativeMenus();
+    return result;
+}
+
+QPlatformMenuItem *QWindowsTheme::createPlatformMenuItem() const
+{
+    qCDebug(lcQpaMenus) << __FUNCTION__;
+    return QWindowsTheme::useNativeMenus() ? new QWindowsMenuItem : nullptr;
+}
+
+QPlatformMenu *QWindowsTheme::createPlatformMenu() const
+{
+    qCDebug(lcQpaMenus) << __FUNCTION__;
+    // We create a popup menu here, since it will likely be used as context
+    // menu. Submenus should be created the factory functions of
+    // QPlatformMenu/Bar. Note though that Quick Controls 1 will use this
+    // function for submenus as well, but this has been found to work.
+    return QWindowsTheme::useNativeMenus() ? new QWindowsPopupMenu : nullptr;
+}
+
+QPlatformMenuBar *QWindowsTheme::createPlatformMenuBar() const
+{
+    qCDebug(lcQpaMenus) << __FUNCTION__;
+    return QWindowsTheme::useNativeMenus() ? new QWindowsMenuBar : nullptr;
+}
+
+void QWindowsTheme::showPlatformMenuBar()
+{
+    qCDebug(lcQpaMenus) << __FUNCTION__;
 }
 
 QT_END_NAMESPACE

@@ -41,6 +41,7 @@
 #define QWINDOWSWINDOW_H
 
 #include <QtCore/qt_windows.h>
+#include <QtCore/QPointer>
 #include "qwindowscursor.h"
 
 #include <qpa/qplatformwindow.h>
@@ -53,6 +54,7 @@
 QT_BEGIN_NAMESPACE
 
 class QWindowsOleDropTarget;
+class QWindowsMenuBar;
 class QDebug;
 
 struct QWindowsGeometryHint
@@ -270,6 +272,9 @@ public:
     HWND handle() const override { return m_data.hwnd; }
     bool isTopLevel() const override;
 
+    QWindowsMenuBar *menuBar() const;
+    void setMenuBar(QWindowsMenuBar *mb);
+
     QMargins customMargins() const { return m_data.customMargins; }
     void setCustomMargins(const QMargins &m);
 
@@ -342,6 +347,7 @@ private:
     void fireExpose(const QRegion &region, bool force=false);
 
     mutable QWindowsWindowData m_data;
+    QPointer<QWindowsMenuBar> m_menuBar;
     mutable unsigned m_flags = WithinCreate;
     HDC m_hdc = 0;
     Qt::WindowStates m_windowState = Qt::WindowNoState;

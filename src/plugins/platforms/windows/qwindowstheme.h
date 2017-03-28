@@ -74,6 +74,13 @@ public:
 
     QList<QSize> availableFileIconSizes() const { return m_fileIconSizes; }
 
+    QPlatformMenuItem *createPlatformMenuItem() const override;
+    QPlatformMenu *createPlatformMenu() const override;
+    QPlatformMenuBar *createPlatformMenuBar() const override;
+    void showPlatformMenuBar() override;
+
+    static bool useNativeMenus();
+
     static const char *name;
 
 private:
