@@ -42,6 +42,9 @@
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qpainter.h>
 
+#include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformwindow.h>
+
 QT_BEGIN_NAMESPACE
 
 QRasterBackingStore::QRasterBackingStore(QWindow *window)
@@ -57,14 +60,14 @@ void QRasterBackingStore::resize(const QSize &size, const QRegion &staticContent
 {
     Q_UNUSED(staticContents);
 
-    int windowDevicePixelRatio = window()->devicePixelRatio();
-    QSize effectiveBufferSize = size * windowDevicePixelRatio;
+    qreal nativeWindowDevicePixelRatio = window()->handle()->devicePixelRatio();
+    QSize effectiveBufferSize = size * nativeWindowDevicePixelRatio;
 
     if (m_image.size() == effectiveBufferSize)
         return;
 
     m_image = QImage(effectiveBufferSize, format());
-    m_image.setDevicePixelRatio(windowDevicePixelRatio);
+    m_image.setDevicePixelRatio(nativeWindowDevicePixelRatio);
     if (m_image.format() == QImage::Format_ARGB32_Premultiplied)
         m_image.fill(Qt::transparent);
 }
@@ -106,8 +109,11 @@ bool QRasterBackingStore::scroll(const QRegion &region, int dx, int dy)
 void QRasterBackingStore::beginPaint(const QRegion &region)
 {
     // Keep backing store device pixel ratio in sync with window
-    if (m_image.devicePixelRatio() != window()->devicePixelRatio())
-        resize(backingStore()->size(), backingStore()->staticContents());
+    qreal nativeWindowDevicePixelRatio = window()->handle()->devicePixelRatio();
+    if (m_image.devicePixelRatio() != nativeWindowDevicePixelRatio) {
+        const QSize nativeSize = QHighDpi::toNativePixels(backingStore()->size(), window());
+        resize(nativeSize, backingStore()->staticContents());
+    }
 
     if (!m_image.hasAlphaChannel())
         return;
