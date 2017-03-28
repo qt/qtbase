@@ -28,6 +28,7 @@ SUBPROGRAMS = \
      longstring \
      maxwarnings \
      multiexec \
+     pairdiagnostics \
      printdatatags \
      printdatatagswithglobaltags \
      qexecstringlist \

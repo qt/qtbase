@@ -115,6 +115,11 @@
         <file>expected_maxwarnings.xml</file>
         <file>expected_maxwarnings.xunitxml</file>
         <file>expected_multiexec.txt</file>
+        <file>expected_pairdiagnostics.lightxml</file>
+        <file>expected_pairdiagnostics.teamcity</file>
+        <file>expected_pairdiagnostics.txt</file>
+        <file>expected_pairdiagnostics.xml</file>
+        <file>expected_pairdiagnostics.xunitxml</file>
         <file>expected_printdatatags.txt</file>
         <file>expected_printdatatagswithglobaltags.txt</file>
         <file>expected_qexecstringlist.txt</file>

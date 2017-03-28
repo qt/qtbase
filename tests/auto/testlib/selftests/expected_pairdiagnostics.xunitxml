@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="2" tests="4" name="tst_PairDiagnostics">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+    <property value="" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="testQPair">
+    <failure message="Compared values are not the same
+   Actual   (pair1): &quot;QPair(1,1)&quot;
+   Expected (pair2): &quot;QPair(1,2)&quot;" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testStdPair">
+    <failure message="Compared values are not the same
+   Actual   (pair1): &quot;std::pair(1,1)&quot;
+   Expected (pair2): &quot;std::pair(1,2)&quot;" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

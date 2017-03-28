@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCase name="tst_PairDiagnostics">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QtBuild/>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0.680795"/>
+</TestFunction>
+<TestFunction name="testQPair">
+<Incident type="fail" file="../../../qt5/qtbase_fixItemData/tests/auto/testlib/selftests/pairdiagnostics/tst_pairdiagnostics.cpp" line="51">
+    <Description><![CDATA[Compared values are not the same
+   Actual   (pair1): "QPair(1,1)"
+   Expected (pair2): "QPair(1,2)"]]></Description>
+</Incident>
+    <Duration msecs="0.085705"/>
+</TestFunction>
+<TestFunction name="testStdPair">
+<Incident type="fail" file="../../../qt5/qtbase_fixItemData/tests/auto/testlib/selftests/pairdiagnostics/tst_pairdiagnostics.cpp" line="58">
+    <Description><![CDATA[Compared values are not the same
+   Actual   (pair1): "std::pair(1,1)"
+   Expected (pair2): "std::pair(1,2)"]]></Description>
+</Incident>
+    <Duration msecs="0.030780"/>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0.039052"/>
+</TestFunction>
+<Duration msecs="0.995227"/>
+</TestCase>

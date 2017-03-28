@@ -259,6 +259,22 @@ namespace QTest
         return Internal::toString(t);
     }
 
+    template <typename T1, typename T2>
+    inline char *toString(const QPair<T1, T2> &pair)
+    {
+        const QScopedArrayPointer<char> first(toString(pair.first));
+        const QScopedArrayPointer<char> second(toString(pair.second));
+        return toString(QString::asprintf("QPair(%s,%s)", first.data(), second.data()));
+    }
+
+    template <typename T1, typename T2>
+    inline char *toString(const std::pair<T1, T2> &pair)
+    {
+        const QScopedArrayPointer<char> first(toString(pair.first));
+        const QScopedArrayPointer<char> second(toString(pair.second));
+        return toString(QString::asprintf("std::pair(%s,%s)", first.data(), second.data()));
+    }
+
     Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, int length);
     Q_TESTLIB_EXPORT char *toPrettyCString(const char *unicode, int length);
     Q_TESTLIB_EXPORT char *toPrettyUnicode(const ushort *unicode, int length);

@@ -395,6 +395,7 @@ void tst_Selftests::runSubTest_data()
         << "longstring"
         << "maxwarnings"
         << "multiexec"
+        << "pairdiagnostics"
         << "printdatatags"
         << "printdatatagswithglobaltags"
         << "qexecstringlist"
