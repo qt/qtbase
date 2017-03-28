@@ -774,6 +774,21 @@ Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined in
 */
 
 /*!
+    \typedef qssize_t
+    \relates <QtGlobal>
+    \since 5.10
+
+    Integral type providing Posix' \c ssize_t for all platforms.
+
+    This type is guaranteed to be the same size as a \c size_t on all
+    platforms supported by Qt.
+
+    Note that qssize_t is signed. Use \c size_t for unsigned values.
+
+    \sa qptrdiff
+*/
+
+/*!
     \enum QtMsgType
     \relates <QtGlobal>
 
