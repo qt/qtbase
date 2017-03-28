@@ -170,12 +170,11 @@ void QTabBarPrivate::initBasicStyleOption(QStyleOptionTab *option, int tabIndex)
 
     if (tab.textColor.isValid())
         option->palette.setColor(q->foregroundRole(), tab.textColor);
-#ifdef Q_OS_MACOS
-    else if (isCurrent && !documentMode
+    else if (q->style()->inherits("QMacStyle")
+             && isCurrent && !documentMode
              && (QSysInfo::MacintoshVersion < QSysInfo::MV_10_10 || q->isActiveWindow())) {
         option->palette.setColor(QPalette::WindowText, Qt::white);
     }
-#endif
     option->icon = tab.icon;
     option->iconSize = q->iconSize();  // Will get the default value then.
 
