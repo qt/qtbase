@@ -85,8 +85,6 @@ namespace QtAndroid
     jobject activity();
     jobject service();
 
-    void setApplicationActive();
-
     void showStatusBar();
     void hideStatusBar();
 

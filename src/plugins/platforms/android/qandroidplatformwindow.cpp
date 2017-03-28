@@ -96,11 +96,6 @@ void QAndroidPlatformWindow::setVisible(bool visible)
     QRect availableGeometry = screen()->availableGeometry();
     if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
         QPlatformWindow::setVisible(visible);
-
-    // The Android Activity is activated before Qt is initialized, causing the application state to
-    // never be set to 'active'. We explicitly set this state when the first window becomes visible.
-    if (visible)
-        QtAndroid::setApplicationActive();
 }
 
 void QAndroidPlatformWindow::setWindowState(Qt::WindowState state)
