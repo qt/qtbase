@@ -1867,8 +1867,7 @@ void QCocoaWindow::applyWindowState(Qt::WindowState newState)
         // the new state.
         return;
     }
-    default:
-        Q_FALLTHROUGH();
+    default:;
     }
 
     // Then we apply the new state if needed
@@ -1886,12 +1885,8 @@ void QCocoaWindow::applyWindowState(Qt::WindowState newState)
         [m_nsWindow miniaturize:sender];
         break;
     case Qt::WindowNoState:
-        switch (windowState()) {
-        case Qt::WindowMaximized:
+        if (windowState() == Qt::WindowMaximized)
             toggleMaximized();
-        default:
-            Q_FALLTHROUGH();
-        }
         break;
     default:
         Q_UNREACHABLE();
