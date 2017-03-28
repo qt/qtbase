@@ -2748,7 +2748,7 @@ bool Parser::testAndParseUri(QString *uri)
         index = rewind;
         return false;
     }
-    if (name.toLower() != QLatin1String("url")) {
+    if (name.compare(QLatin1String("url"), Qt::CaseInsensitive) != 0) {
         index = rewind;
         return false;
     }

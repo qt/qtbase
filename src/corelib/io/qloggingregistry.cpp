@@ -215,7 +215,7 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
             continue;
         }
 
-        if (_section.toLower() == QLatin1String("rules")) {
+        if (_section.compare(QLatin1String("rules"), Qt::CaseInsensitive) == 0) {
             int equalPos = line.indexOf(QLatin1Char('='));
             if (equalPos != -1) {
                 if (line.lastIndexOf(QLatin1Char('=')) == equalPos) {
