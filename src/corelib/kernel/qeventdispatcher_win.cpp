@@ -407,7 +407,9 @@ void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t)
     } else if (internalHwnd) {
         KillTimer(internalHwnd, t->timerId);
     }
-    delete t;
+    t->timerId = -1;
+    if (!t->inTimerEvent)
+        delete t;
 }
 
 void QEventDispatcherWin32Private::sendTimerEvent(int timerId)
@@ -424,8 +426,9 @@ void QEventDispatcherWin32Private::sendTimerEvent(int timerId)
         QCoreApplication::sendEvent(t->obj, &e);
 
         // timer could have been removed
-        t = timerDict.value(timerId);
-        if (t) {
+        if (t->timerId == -1) {
+            delete t;
+        } else {
             t->inTimerEvent = false;
         }
     }
@@ -1013,8 +1016,10 @@ bool QEventDispatcherWin32::event(QEvent *e)
             QTimerEvent te(zte->timerId());
             QCoreApplication::sendEvent(t->obj, &te);
 
-            t = d->timerDict.value(zte->timerId());
-            if (t) {
+            // timer could have been removed
+            if (t->timerId == -1) {
+                delete t;
+            } else {
                 if (t->interval == 0 && t->inTimerEvent) {
                     // post the next zero timer event as long as the timer was not restarted
                     QCoreApplication::postEvent(this, new QZeroTimerEvent(zte->timerId()));

@@ -160,7 +160,7 @@ bool QLockFilePrivate::isApparentlyStale() const
     Q_UNUSED(appname);
 #endif // Q_OS_WINRT
     const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
-    return staleLockTime > 0 && age > staleLockTime;
+    return staleLockTime > 0 && qAbs(age) > staleLockTime;
 }
 
 QString QLockFilePrivate::processNameByPid(qint64 pid)

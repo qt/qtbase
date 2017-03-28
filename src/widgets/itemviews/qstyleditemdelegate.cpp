@@ -67,7 +67,6 @@
 #include <private/qlayoutengine_p.h>
 #include <qdebug.h>
 #include <qlocale.h>
-#include <qdialog.h>
 #include <qtableview.h>
 
 #include <limits.h>

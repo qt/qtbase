@@ -36,6 +36,29 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qmap.h>
 
+namespace {
+
+void generateSeparator(int i, QTextStream &out)
+{
+    if (!(i % 10)) {
+        if (i)
+            out << ",";
+        out << endl << "    ";
+    } else {
+        out << ", ";
+    }
+}
+
+void generateList(const QVector<int> &list, QTextStream &out)
+{
+    for (int i = 0; i < list.size(); ++i) {
+        generateSeparator(i, out);
+
+        out << list[i];
+    }
+}
+
+}
 
 QString CppGenerator::copyrightHeader() const
 {
@@ -47,7 +70,7 @@ QString CppGenerator::copyrightHeader() const
     "**\n"
     "** This file is part of the Qt Toolkit.\n"
     "**\n"
-    "** $QT_BEGIN_LICENSE:LGPL$\n"
+    "** $QT_BEGIN_LICENSE:GPL-EXCEPT$\n"
     "** Commercial License Usage\n"
     "** Licensees holding valid commercial Qt licenses may use this file in\n"
     "** accordance with the commercial license agreement provided with the\n"
@@ -56,24 +79,13 @@ QString CppGenerator::copyrightHeader() const
     "** and conditions see https://www.qt.io/terms-conditions. For further\n"
     "** information use the contact form at https://www.qt.io/contact-us.\n"
     "**\n"
-    "** GNU Lesser General Public License Usage\n"
-    "** Alternatively, this file may be used under the terms of the GNU Lesser\n"
-    "** General Public License version 3 as published by the Free Software\n"
-    "** Foundation and appearing in the file LICENSE.LGPL3 included in the\n"
-    "** packaging of this file. Please review the following information to\n"
-    "** ensure the GNU Lesser General Public License version 3 requirements\n"
-    "** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.\n"
-    "**\n"
     "** GNU General Public License Usage\n"
     "** Alternatively, this file may be used under the terms of the GNU\n"
-    "** General Public License version 2.0 or (at your option) the GNU General\n"
-    "** Public license version 3 or any later version approved by the KDE Free\n"
-    "** Qt Foundation. The licenses are as published by the Free Software\n"
-    "** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3\n"
+    "** General Public License version 3 as published by the Free Software\n"
+    "** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT\n"
     "** included in the packaging of this file. Please review the following\n"
     "** information to ensure the GNU General Public License requirements will\n"
-    "** be met: https://www.gnu.org/licenses/gpl-2.0.html and\n"
-    "** https://www.gnu.org/licenses/gpl-3.0.html.\n"
+    "** be met: https://www.gnu.org/licenses/gpl-3.0.html.\n"
     "**\n"
     "** $QT_END_LICENSE$\n"
     "**\n"
@@ -446,7 +458,7 @@ void CppGenerator::generateDecl (QTextStream &out)
   out << "class " << grammar.table_name << endl
       << "{" << endl
       << "public:" << endl
-      << "  enum VariousConstants {" << endl;
+      << "    enum VariousConstants {" << endl;
 
   for (Name t : qAsConst(grammar.terminals))
     {
@@ -462,59 +474,59 @@ void CppGenerator::generateDecl (QTextStream &out)
       else
         name.prepend (grammar.token_prefix);
 
-      out << "    " << name << " = " << value << "," << endl;
+      out << "        " << name << " = " << value << "," << endl;
     }
 
   out << endl
-      << "    ACCEPT_STATE = " << accept_state << "," << endl
-      << "    RULE_COUNT = " << grammar.rules.size () << "," << endl
-      << "    STATE_COUNT = " << state_count << "," << endl
-      << "    TERMINAL_COUNT = " << terminal_count << "," << endl
-      << "    NON_TERMINAL_COUNT = " << non_terminal_count << "," << endl
+      << "        ACCEPT_STATE = " << accept_state << "," << endl
+      << "        RULE_COUNT = " << grammar.rules.size () << "," << endl
+      << "        STATE_COUNT = " << state_count << "," << endl
+      << "        TERMINAL_COUNT = " << terminal_count << "," << endl
+      << "        NON_TERMINAL_COUNT = " << non_terminal_count << "," << endl
       << endl
-      << "    GOTO_INDEX_OFFSET = " << compressed_action.index.size () << "," << endl
-      << "    GOTO_INFO_OFFSET = " << compressed_action.info.size () << "," << endl
-      << "    GOTO_CHECK_OFFSET = " << compressed_action.check.size () << endl
-      << "  };" << endl
+      << "        GOTO_INDEX_OFFSET = " << compressed_action.index.size () << "," << endl
+      << "        GOTO_INFO_OFFSET = " << compressed_action.info.size () << "," << endl
+      << "        GOTO_CHECK_OFFSET = " << compressed_action.check.size () << endl
+      << "    };" << endl
       << endl
-      << "  static const char  *const    spell [];" << endl
-      << "  static const short             lhs [];" << endl
-      << "  static const short             rhs [];" << endl;
+      << "    static const char *const     spell[];" << endl
+      << "    static const short             lhs[];" << endl
+      << "    static const short             rhs[];" << endl;
 
   if (debug_info)
     {
       QString prot = debugInfoProt();
 
       out << endl << "#ifndef " << prot << endl
-          << "  static const int     rule_index [];" << endl
-          << "  static const int      rule_info [];" << endl
+          << "    static const int     rule_index[];" << endl
+          << "    static const int      rule_info[];" << endl
           << "#endif // " << prot << endl << endl;
     }
 
-  out << "  static const short    goto_default [];" << endl
-      << "  static const short  action_default [];" << endl
-      << "  static const short    action_index [];" << endl
-      << "  static const short     action_info [];" << endl
-      << "  static const short    action_check [];" << endl
+  out << "    static const short    goto_default[];" << endl
+      << "    static const short  action_default[];" << endl
+      << "    static const short    action_index[];" << endl
+      << "    static const short     action_info[];" << endl
+      << "    static const short    action_check[];" << endl
       << endl
-      << "  static inline int nt_action (int state, int nt)" << endl
-      << "  {" << endl
-      << "    const int yyn = action_index [GOTO_INDEX_OFFSET + state] + nt;" << endl
-      << "    if (yyn < 0 || action_check [GOTO_CHECK_OFFSET + yyn] != nt)" << endl
-      << "      return goto_default [nt];" << endl
+      << "    static inline int nt_action (int state, int nt)" << endl
+      << "    {" << endl
+      << "        const int yyn = action_index [GOTO_INDEX_OFFSET + state] + nt;" << endl
+      << "        if (yyn < 0 || action_check [GOTO_CHECK_OFFSET + yyn] != nt)" << endl
+      << "            return goto_default [nt];" << endl
       << endl
-      << "    return action_info [GOTO_INFO_OFFSET + yyn];" << endl
-      << "  }" << endl
+      << "        return action_info [GOTO_INFO_OFFSET + yyn];" << endl
+      << "    }" << endl
       << endl
-      << "  static inline int t_action (int state, int token)" << endl
-      << "  {" << endl
-      << "    const int yyn = action_index [state] + token;" << endl
+      << "    static inline int t_action (int state, int token)" << endl
+      << "    {" << endl
+      << "        const int yyn = action_index [state] + token;" << endl
       << endl
-      << "    if (yyn < 0 || action_check [yyn] != token)" << endl
-      << "      return - action_default [state];" << endl
+      << "        if (yyn < 0 || action_check [yyn] != token)" << endl
+      << "            return - action_default [state];" << endl
       << endl
-      << "    return action_info [yyn];" << endl
-      << "  }" << endl
+      << "        return action_info [yyn];" << endl
+      << "    }" << endl
       << "};" << endl
       << endl
       << endl;
@@ -539,11 +551,7 @@ void CppGenerator::generateImpl (QTextStream &out)
 
       name_ids.insert (t, idx);
 
-      if (idx)
-        out << ", ";
-
-      if (! (idx % 10))
-        out << endl << "  ";
+      generateSeparator(idx, out);
 
       if (terminal)
         {
@@ -569,35 +577,27 @@ void CppGenerator::generateImpl (QTextStream &out)
   if (debug_info)
     out << endl << "#endif // " << debugInfoProt() << endl;
 
-  out << "};" << endl << endl;
+  out << endl << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::lhs [] = {";
   idx = 0;
   for (RulePointer rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
     {
-      if (idx)
-        out << ", ";
-
-      if (! (idx % 10))
-        out << endl << "  ";
+      generateSeparator(idx, out);
 
       out << aut.id (rule->lhs);
     }
-  out << "};" << endl << endl;
+  out << endl << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::rhs [] = {";
   idx = 0;
   for (RulePointer rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
     {
-      if (idx)
-        out << ", ";
-
-      if (! (idx % 10))
-        out << endl << "  ";
+      generateSeparator(idx, out);
 
       out << rule->rhs.size ();
     }
-  out << "};" << endl << endl;
+  out << endl << "};" << endl << endl;
 
   if (debug_info)
     {
@@ -608,35 +608,26 @@ void CppGenerator::generateImpl (QTextStream &out)
       idx = 0;
       for (auto rule = grammar.rules.cbegin (); rule != grammar.rules.cend (); ++rule, ++idx)
         {
-          out << endl << "  ";
-
-          if (idx)
-            out << ", ";
-          else
-            out << "  ";
+          generateSeparator(idx, out);
 
           out << name_ids.value(rule->lhs);
 
           for (const Name &n : rule->rhs)
             out << ", " << name_ids.value (n);
         }
-      out << "};" << endl << endl;
+      out << endl << "};" << endl << endl;
 
       out << "const int " << grammar.table_name << "::rule_index [] = {";
       idx = 0;
       int offset = 0;
       for (RulePointer rule = grammar.rules.begin (); rule != grammar.rules.end (); ++rule, ++idx)
         {
-          if (idx)
-            out << ", ";
-
-          if (! (idx % 10))
-            out << endl << "  ";
+          generateSeparator(idx, out);
 
           out << offset;
           offset += rule->rhs.size () + 1;
         }
-      out << "};" << endl
+      out << endl << "};" << endl
           << "#endif // " << prot << endl << endl;
     }
 
@@ -644,92 +635,34 @@ void CppGenerator::generateImpl (QTextStream &out)
   idx = 0;
   for (StatePointer state = aut.states.begin (); state != aut.states.end (); ++state, ++idx)
     {
-      if (state != aut.states.begin ())
-        out << ", ";
-
-      if (! (idx % 10))
-        out << endl << "  ";
+      generateSeparator(idx, out);
 
       if (state->defaultReduce != grammar.rules.end ())
         out << aut.id (state->defaultReduce);
       else
         out << "0";
     }
-  out << "};" << endl << endl;
+  out << endl << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::goto_default [] = {";
-  for (int i = 0; i < defgoto.size (); ++i)
-    {
-      if (i)
-        out << ", ";
-
-      if (! (i % 10))
-        out << endl << "  ";
-
-      out << defgoto [i];
-    }
-  out << "};" << endl << endl;
+  generateList(defgoto, out);
+  out << endl << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::action_index [] = {";
-  for (int i = 0; i < compressed_action.index.size (); ++i)
-    {
-      if (! (i % 10))
-        out << endl << "  ";
-
-      out << compressed_action.index [i] << ", ";
-    }
-  out << endl;
-  for (int i = 0; i < compressed_goto.index.size (); ++i)
-    {
-      if (i)
-        out << ", ";
-
-      if (! (i % 10))
-        out << endl << "  ";
-
-      out << compressed_goto.index [i];
-    }
-  out << "};" << endl << endl;
+  generateList(compressed_action.index, out);
+  out << "," << endl;
+  generateList(compressed_goto.index, out);
+  out << endl << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::action_info [] = {";
-  for (int i = 0; i < compressed_action.info.size (); ++i)
-    {
-      if (! (i % 10))
-        out << endl << "  ";
-
-      out << compressed_action.info [i] << ", ";
-    }
-  out << endl;
-  for (int i = 0; i < compressed_goto.info.size (); ++i)
-    {
-      if (i)
-        out << ", ";
-
-      if (! (i % 10))
-        out << endl << "  ";
-
-      out << compressed_goto.info [i];
-    }
-  out << "};" << endl << endl;
+  generateList(compressed_action.info, out);
+  out << "," << endl;
+  generateList(compressed_goto.info, out);
+  out << endl << "};" << endl << endl;
 
   out << "const short " << grammar.table_name << "::action_check [] = {";
-  for (int i = 0; i < compressed_action.check.size (); ++i)
-    {
-      if (! (i % 10))
-        out << endl << "  ";
-
-      out << compressed_action.check [i] << ", ";
-    }
-  out << endl;
-  for (int i = 0; i < compressed_goto.check.size (); ++i)
-    {
-      if (i)
-        out << ", ";
-
-      if (! (i % 10))
-        out << endl << "  ";
-
-      out << compressed_goto.check [i];
-    }
-  out << "};" << endl << endl;
+  generateList(compressed_action.check, out);
+  out << "," << endl;
+  generateList(compressed_goto.check, out);
+  out << endl << "};" << endl << endl;
 }

@@ -1089,7 +1089,7 @@ void QWizardPrivate::recreateLayout(const QWizardLayoutInfo &info)
             // ### hardcoded for now:
             titleFont = QFont(QLatin1String("Segoe UI"), 12);
             QPalette pal(titleLabel->palette());
-            pal.setColor(QPalette::Text, "#003399");
+            pal.setColor(QPalette::Text, QColor(0x00, 0x33, 0x99));
             titleLabel->setPalette(pal);
         }
 

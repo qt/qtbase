@@ -175,6 +175,9 @@ unix|integrity {
         SOURCES += kernel/qsharedmemory_android.cpp \
                    kernel/qsystemsemaphore_android.cpp
     }
+
+    # This is needed by QMetaType::typeName array implementation
+    integrity: QMAKE_CXXFLAGS += --pending_instantiations=128
 }
 
 vxworks {

@@ -79,6 +79,7 @@
 #include <stdio.h>
 #include <windowsx.h>
 #include <comdef.h>
+#include <dbt.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -322,6 +323,13 @@ bool QWindowsContext::initTouch(unsigned integrationOptions)
     QWindowSystemInterface::registerTouchDevice(touchDevice);
 
     d->m_systemInfo |= QWindowsContext::SI_SupportsTouch;
+
+    // A touch device was plugged while the app is running. Register all windows for touch.
+    if (QGuiApplicationPrivate::is_app_running) {
+        for (QWindowsWindow *w : qAsConst(d->m_windows))
+            w->registerTouchWindow();
+    }
+
     return true;
 }
 
@@ -965,6 +973,13 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     }
 
     switch (et) {
+    case QtWindows::DeviceChangeEvent:
+        if (d->m_systemInfo & QWindowsContext::SI_SupportsTouch)
+            break;
+        // See if there are any touch devices added
+        if (wParam == DBT_DEVNODES_CHANGED)
+            initTouch();
+        break;
     case QtWindows::KeyboardLayoutChangeEvent:
         if (QWindowsInputContext *wic = windowsInputContext())
             wic->handleInputLanguageChanged(wParam, lParam);

@@ -1168,8 +1168,8 @@
     and Windows) the window will take a modified appearance. This flag is set
     or cleared by QWidget::setWindowModified().
 
-    \value WA_WindowPropagation Makes a toplevel window inherit font and
-    palette from its parent.
+    \value WA_WindowPropagation Makes a toplevel window inherit font, palette
+    and locale from its parent.
 
     \value WA_MacAlwaysShowToolWindow On \macos, show the tool window even
     when the application is not active.  By default, all tool windows are

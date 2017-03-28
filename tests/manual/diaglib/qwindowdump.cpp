@@ -138,7 +138,7 @@ void formatWindow(QTextStream &str, const QWindow *w, FormatWindowOptions option
         str << " \"" << w->screen()->name() << "\" ";
 #if QT_VERSION >= 0x050600
         if (QHighDpiScaling::isActive())
-            str << "factor=" << QHighDpiScaling::factor(w) << ' ';
+            str << "factor=" << QHighDpiScaling::factor(w) << " dpr=" << w->devicePixelRatio();
 #endif
     }
     if (!(options & DontPrintWindowFlags)) {
@@ -161,7 +161,7 @@ static void dumpWindowRecursion(QTextStream &str, const QWindow *w,
                                 FormatWindowOptions options = 0, int depth = 0)
 {
     indentStream(str, 2 * depth);
-    formatWindow(str, w);
+    formatWindow(str, w, options);
     foreach (const QObject *co, w->children()) {
         if (co->isWindowType())
             dumpWindowRecursion(str, static_cast<const QWindow *>(co), options, depth + 1);

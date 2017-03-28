@@ -41,12 +41,13 @@
 #define QPAGESETUPDIALOG_H
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
+
+#ifndef QT_NO_PRINTDIALOG
+
 #include <QtWidgets/qdialog.h>
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_PRINTDIALOG
 
 class QPrinter;
 class QPageSetupDialogPrivate;
@@ -74,8 +75,8 @@ public:
     QPrinter *printer();
 };
 
-#endif // QT_NO_PRINTDIALOG
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_PRINTDIALOG
 
 #endif // QPAGESETUPDIALOG_H

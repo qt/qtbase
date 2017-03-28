@@ -81,7 +81,11 @@ public:
 #endif
     void resetLayoutItemMargins();
     void _q_popupPressed();
+#if QT_CONFIG(dialog)
     QDialog *dialogParent() const;
+#else
+    QDialog *dialogParent() const { return 0; };
+#endif
 
     QPointer<QMenu> menu;
     uint autoDefault : 2;

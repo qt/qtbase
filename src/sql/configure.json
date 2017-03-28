@@ -117,7 +117,7 @@
                 "-lsqlite3"
             ],
             "use": [
-                { "lib": "zlib", "condition": "!config.win32" }
+                { "lib": "zlib", "condition": "!config.win32 && features.system-zlib" }
             ]
         }
     },

@@ -41,8 +41,12 @@ host_build {
     }
 }
 
-CONFIG(shared, static|shared):qtConfig(framework): \
-    CONFIG += lib_bundle
+qtConfig(framework) {
+    minimal_syncqt: \
+        CONFIG += module_frameworks
+    else: CONFIG(shared, static|shared): \
+        CONFIG += module_frameworks lib_bundle
+}
 
 CONFIG += relative_qt_rpath  # Qt libraries should be relocatable
 

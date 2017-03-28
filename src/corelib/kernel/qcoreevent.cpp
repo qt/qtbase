@@ -216,6 +216,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue OkRequest
     \value TabletEnterProximity             Wacom tablet enter proximity event (QTabletEvent), sent to QApplication.
     \value TabletLeaveProximity             Wacom tablet leave proximity event (QTabletEvent), sent to QApplication.
+    \value TabletTrackingChange             The Wacom tablet tracking state has changed (since Qt 5.9).
     \omitvalue ThemeChange
     \value ThreadChange                     The object is moved to another thread. This is the last event sent to this object in the previous thread. See QObject::moveToThread().
     \value Timer                            Regular timer events (QTimerEvent).

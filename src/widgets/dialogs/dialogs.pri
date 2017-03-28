@@ -3,8 +3,6 @@
 HEADERS += \
 	dialogs/qcolordialog.h \
         dialogs/qfscompleter_p.h \
-	dialogs/qdialog.h \
-	dialogs/qdialog_p.h \
 	dialogs/qerrormessage.h \
 	dialogs/qfiledialog.h \
 	dialogs/qfiledialog_p.h \
@@ -30,7 +28,6 @@ else: FORMS += dialogs/qfiledialog.ui
 INCLUDEPATH += $$PWD
 SOURCES += \
 	dialogs/qcolordialog.cpp \
-	dialogs/qdialog.cpp \
 	dialogs/qerrormessage.cpp \
 	dialogs/qfiledialog.cpp \
 	dialogs/qfontdialog.cpp \
@@ -41,5 +38,14 @@ SOURCES += \
         dialogs/qfilesystemmodel.cpp \
         dialogs/qfileinfogatherer.cpp \
 	dialogs/qwizard.cpp \
+
+qtConfig(dialog) {
+    HEADERS += \
+        dialogs/qdialog.h \
+        dialogs/qdialog_p.h
+
+    SOURCES += \
+        dialogs/qdialog.cpp
+}
 
 RESOURCES += dialogs/qmessagebox.qrc

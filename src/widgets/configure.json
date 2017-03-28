@@ -163,10 +163,17 @@
             "condition": "features.rubberband",
             "output": [ "publicFeature", "feature" ]
         },
+        "widgettextcontrol": {
+            "label": "QWidgetTextControl",
+            "purpose": "Provides text control functionality to other widgets.",
+            "section": "Widgets",
+            "output": [ "privateFeature" ]
+        },
         "label": {
             "label": "QLabel",
             "purpose": "Provides a text or image display.",
             "section": "Widgets",
+            "condition": "features.widgettextcontrol",
             "output": [ "publicFeature" ]
         },
         "formlayout": {
@@ -193,6 +200,7 @@
             "label": "QLineEdit",
             "purpose": "Provides single-line edits.",
             "section": "Widgets",
+            "condition": "features.widgettextcontrol",
             "output": [ "publicFeature", "feature" ]
         },
         "radiobutton": {
@@ -382,7 +390,7 @@
             "label": "QGraphicsView",
             "purpose": "Provides a canvas/sprite framework.",
             "section": "Widgets",
-            "condition": "features.scrollarea",
+            "condition": "features.scrollarea && features.widgettextcontrol",
             "output": [ "publicFeature", "feature" ]
         },
         "graphicseffect": {
@@ -396,7 +404,7 @@
             "label": "QTextEdit",
             "purpose": "Supports rich text editing.",
             "section": "Widgets",
-            "condition": "features.scrollarea && features.properties",
+            "condition": "features.scrollarea && features.properties && features.widgettextcontrol",
             "output": [ "publicFeature", "feature" ]
         },
         "syntaxhighlighter": {
@@ -460,11 +468,17 @@
             "condition": "features.lineedit && features.shortcut",
             "output": [ "publicFeature", "feature" ]
         },
+        "dialog" : {
+            "label": "QDialog",
+            "purpose": "Base class of dialog windows.",
+            "section": "Dialogs",
+            "output": [ "publicFeature" ]
+        },
         "dialogbuttonbox": {
             "label": "QDialogButtonBox",
             "purpose": "Presents buttons in a layout that is appropriate for the current widget style.",
             "section": "Dialogs",
-            "condition": "features.pushbutton",
+            "condition": "features.dialog && features.pushbutton",
             "output": [ "publicFeature" ]
         },
         "messagebox": {
@@ -473,6 +487,7 @@
             "section": "Dialogs",
             "condition" : [
                 "features.checkbox",
+                "features.dialog",
                 "features.dialogbuttonbox",
                 "features.label",
                 "features.pushbutton"
@@ -484,6 +499,7 @@
             "purpose": "Provides a dialog widget for specifying colors.",
             "section": "Dialogs",
             "condition": [
+                "features.dialog",
                 "features.dialogbuttonbox",
                 "features.label",
                 "features.pushbutton",
@@ -498,6 +514,7 @@
             "condition": [
                 "features.buttongroup",
                 "features.combobox",
+                "features.dialog",
                 "features.dialogbuttonbox",
                 "features.dirmodel",
                 "features.label",
@@ -516,6 +533,7 @@
             "condition": [
                "features.checkbox",
                "features.combobox",
+               "features.dialog",
                "features.dialogbuttonbox",
                "features.groupbox",
                "features.label",
@@ -530,6 +548,7 @@
             "purpose": "Provides feedback on the progress of a slow operation.",
             "section": "Dialogs",
             "condition": [
+                "features.dialog",
                 "features.label",
                 "features.pushbutton",
                 "features.progressbar"
@@ -542,6 +561,7 @@
             "section": "Dialogs",
             "condition": [
                 "features.combobox",
+                "features.dialog",
                 "features.dialogbuttonbox",
                 "features.label",
                 "features.pushbutton",
@@ -557,6 +577,7 @@
             "section": "Dialogs",
             "condition": [
                 "features.checkbox",
+                "features.dialog",
                 "features.textedit",
                 "features.label",
                 "features.pushbutton",
@@ -569,6 +590,7 @@
             "purpose": "Provides a framework for multi-page click-through dialogs.",
             "section": "Dialogs",
             "condition": [
+                "features.dialog",
                 "features.pushbutton",
                 "features.properties",
                 "features.label"

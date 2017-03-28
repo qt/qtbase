@@ -116,6 +116,11 @@ static void executeBlockWithoutAnimation(Block block)
                 dispatch_async(dispatch_get_main_queue (), ^{ self.visible = YES; });
             }
         }];
+        [center addObserverForName:UIKeyboardDidHideNotification object:nil queue:nil
+            usingBlock:^(NSNotification *) {
+                self.visible = NO;
+        }];
+
     }
 
     return self;

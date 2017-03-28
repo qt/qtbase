@@ -139,10 +139,22 @@ OSStatus QMacPasteboard::promiseKeeper(PasteboardRef paste, PasteboardItemID id,
     const long promise_id = (long)id;
 
     // Find the kept promise
+    QList<QMacInternalPasteboardMime*> availableConverters
+        = QMacInternalPasteboardMime::all(QMacInternalPasteboardMime::MIME_ALL);
     const QString flavorAsQString = QString::fromCFString(flavor);
     QMacPasteboard::Promise promise;
     for (int i = 0; i < qpaste->promises.size(); i++){
         QMacPasteboard::Promise tmp = qpaste->promises[i];
+        if (!availableConverters.contains(tmp.convertor)) {
+            // promise.converter is a pointer initialized by the value found
+            // in QMacInternalPasteboardMime's global list of QMacInternalPasteboardMimes.
+            // We add pointers to this list in QMacInternalPasteboardMime's ctor;
+            // we remove these pointers in QMacInternalPasteboardMime's dtor.
+            // If tmp.converter was not found in this list, we probably have a
+            // dangling pointer so let's skip it.
+            continue;
+        }
+
         if (tmp.itemId == promise_id && tmp.convertor->canConvert(tmp.mime, flavorAsQString)){
             promise = tmp;
             break;

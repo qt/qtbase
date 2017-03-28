@@ -98,7 +98,11 @@ static inline QString mailCommand()
         RegQueryValueEx(handle, L"", 0, 0, reinterpret_cast<unsigned char*>(command), &bufferSize);
         RegCloseKey(handle);
     }
-    if (!command[0])
+    // QTBUG-57816: As of Windows 10, if there is no mail client installed, an entry like
+    // "rundll32.exe .. url.dll,MailToProtocolHandler %l" is returned. Launching it
+    // silently fails or brings up a broken dialog after a long time, so exclude it and
+    // fall back to ShellExecute() which brings up the URL assocation dialog.
+    if (!command[0] || wcsstr(command, L",MailToProtocolHandler") != nullptr)
         return QString();
     wchar_t expandedCommand[MAX_PATH] = {0};
     return ExpandEnvironmentStrings(command, expandedCommand, MAX_PATH) ?

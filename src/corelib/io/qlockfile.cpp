@@ -44,6 +44,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qfileinfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -226,6 +227,8 @@ bool QLockFile::tryLock(int timeout)
             return false;
         case LockFailedError:
             if (!d->isLocked && d->isApparentlyStale()) {
+                if (Q_UNLIKELY(QFileInfo(d->fileName).lastModified() > QDateTime::currentDateTime()))
+                    qInfo("QLockFile: Lock file '%ls' has a modification time in the future", qUtf16Printable(d->fileName));
                 // Stale lock from another thread/process
                 // Ensure two processes don't remove it at the same time
                 QLockFile rmlock(d->fileName + QLatin1String(".rmlock"));
