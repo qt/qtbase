@@ -316,6 +316,12 @@ QUrl QGtk3FileDialogHelper::directory() const
 
 void QGtk3FileDialogHelper::selectFile(const QUrl &filename)
 {
+    setFileChooserAction();
+    selectFileInternal(filename);
+}
+
+void QGtk3FileDialogHelper::selectFileInternal(const QUrl &filename)
+{
     GtkDialog *gtkDialog = d->gtkDialog();
     if (options()->acceptMode() == QFileDialogOptions::AcceptSave) {
         QFileInfo fi(filename.toLocalFile());
@@ -409,6 +415,14 @@ static GtkFileChooserAction gtkFileChooserAction(const QSharedPointer<QFileDialo
     }
 }
 
+void QGtk3FileDialogHelper::setFileChooserAction()
+{
+    GtkDialog *gtkDialog = d->gtkDialog();
+
+    const GtkFileChooserAction action = gtkFileChooserAction(options());
+    gtk_file_chooser_set_action(GTK_FILE_CHOOSER(gtkDialog), action);
+}
+
 void QGtk3FileDialogHelper::applyOptions()
 {
     GtkDialog *gtkDialog = d->gtkDialog();
@@ -417,8 +431,7 @@ void QGtk3FileDialogHelper::applyOptions()
     gtk_window_set_title(GTK_WINDOW(gtkDialog), opts->windowTitle().toUtf8());
     gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(gtkDialog), true);
 
-    const GtkFileChooserAction action = gtkFileChooserAction(opts);
-    gtk_file_chooser_set_action(GTK_FILE_CHOOSER(gtkDialog), action);
+    setFileChooserAction();
 
     const bool selectMultiple = opts->fileMode() == QFileDialogOptions::ExistingFiles;
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(gtkDialog), selectMultiple);
@@ -437,7 +450,7 @@ void QGtk3FileDialogHelper::applyOptions()
         setDirectory(opts->initialDirectory());
 
     foreach (const QUrl &filename, opts->initiallySelectedFiles())
-        selectFile(filename);
+        selectFileInternal(filename);
 
     const QString initialNameFilter = opts->initiallySelectedNameFilter();
     if (!initialNameFilter.isEmpty())

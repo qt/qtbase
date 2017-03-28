@@ -110,6 +110,8 @@ private:
     static void onFilterChanged(QGtk3FileDialogHelper *helper);
     void applyOptions();
     void setNameFilters(const QStringList &filters);
+    void selectFileInternal(const QUrl &filename);
+    void setFileChooserAction();
 
     QUrl _dir;
     QList<QUrl> _selection;
