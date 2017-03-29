@@ -235,6 +235,7 @@ uint qHash(const QByteArray &key, uint seed) Q_DECL_NOTHROW
     return hash(reinterpret_cast<const uchar *>(key.constData()), size_t(key.size()), seed);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 uint qHash(const QString &key, uint seed) Q_DECL_NOTHROW
 {
     return hash(key.unicode(), size_t(key.size()), seed);
@@ -243,6 +244,12 @@ uint qHash(const QString &key, uint seed) Q_DECL_NOTHROW
 uint qHash(const QStringRef &key, uint seed) Q_DECL_NOTHROW
 {
     return hash(key.unicode(), size_t(key.size()), seed);
+}
+#endif
+
+uint qHash(QStringView key, uint seed) Q_DECL_NOTHROW
+{
+    return hash(key.data(), key.size(), seed);
 }
 
 uint qHash(const QBitArray &bitArray, uint seed) Q_DECL_NOTHROW
@@ -1019,6 +1026,13 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
 /*! \fn uint qHash(const QStringRef &key, uint seed = 0)
     \relates QHash
     \since 5.0
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+
+/*! \fn uint qHash(QStringView key, uint seed = 0)
+    \relates QStringView
+    \since 5.10
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
