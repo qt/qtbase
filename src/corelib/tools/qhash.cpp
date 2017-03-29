@@ -406,7 +406,7 @@ void qSetGlobalQHashSeed(int newSeed)
 
     The qt_hash functions must *never* change their results.
 */
-static uint qt_hash(const QChar *p, int n) Q_DECL_NOTHROW
+static uint qt_hash(const QChar *p, size_t n) Q_DECL_NOTHROW
 {
     uint h = 0;
 
@@ -420,20 +420,10 @@ static uint qt_hash(const QChar *p, int n) Q_DECL_NOTHROW
 
 /*!
     \internal
-    \overload
 */
-uint qt_hash(const QString &key) Q_DECL_NOTHROW
+uint qt_hash(QStringView key) Q_DECL_NOTHROW
 {
-    return qt_hash(key.unicode(), key.size());
-}
-
-/*!
-    \internal
-    \overload
-*/
-uint qt_hash(const QStringRef &key) Q_DECL_NOTHROW
-{
-    return qt_hash(key.unicode(), key.size());
+    return qt_hash(key.data(), key.size());
 }
 
 /*

@@ -99,8 +99,7 @@ Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QString &key, uint seed = 0)
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QStringRef &key, uint seed = 0) Q_DECL_NOTHROW;
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QBitArray &key, uint seed = 0) Q_DECL_NOTHROW;
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(QLatin1String key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(const QString &key) Q_DECL_NOTHROW;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(const QStringRef &key) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(QStringView key) Q_DECL_NOTHROW;
 
 template <class T> inline uint qHash(const T *key, uint seed = 0) Q_DECL_NOTHROW
 {
