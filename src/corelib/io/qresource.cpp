@@ -833,24 +833,24 @@ QStringList QResourceRoot::children(int node) const
 bool QResourceRoot::mappingRootSubdir(const QString &path, QString *match) const
 {
     const QString root = mappingRoot();
-    if(!root.isEmpty()) {
-        const QVector<QStringRef> root_segments = root.splitRef(QLatin1Char('/'), QString::SkipEmptyParts),
-                                  path_segments = path.splitRef(QLatin1Char('/'), QString::SkipEmptyParts);
-        if(path_segments.size() <= root_segments.size()) {
-            int matched = 0;
-            for(int i = 0; i < path_segments.size(); ++i) {
-                if(root_segments[i] != path_segments[i])
-                    break;
-                ++matched;
-            }
-            if(matched == path_segments.size()) {
-                if(match && root_segments.size() > matched)
-                    *match = root_segments.at(matched).toString();
-                return true;
-            }
+    if (root.isEmpty())
+        return false;
+
+    QStringSplitter rootIt(root);
+    QStringSplitter pathIt(path);
+    while (rootIt.hasNext()) {
+        if (pathIt.hasNext()) {
+            if (rootIt.next() != pathIt.next()) // mismatch
+                return false;
+        } else {
+            // end of path, but not of root:
+            if (match)
+                *match = rootIt.next().toString();
+            return true;
         }
     }
-    return false;
+    // end of root
+    return !pathIt.hasNext();
 }
 
 Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
