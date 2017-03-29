@@ -317,6 +317,71 @@ static void qt_closePopups()
 
 @synthesize helper = _helper;
 
++ (void)applicationActivationChanged:(NSNotification*)notification
+{
+    const id sender = self;
+    NSEnumerator<NSWindow*> *windowEnumerator = nullptr;
+    NSApplication *application = [NSApplication sharedApplication];
+
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra) {
+        // Unfortunately there's no NSWindowListOrderedBackToFront,
+        // so we have to manually reverse the order using an array.
+        NSMutableArray *windows = [[[NSMutableArray alloc] init] autorelease];
+        [application enumerateWindowsWithOptions:NSWindowListOrderedFrontToBack
+            usingBlock:^(NSWindow *window, BOOL *) {
+                // For some reason AppKit will give us nil-windows, skip those
+                if (!window)
+                    return;
+
+                [(NSMutableArray*)windows addObject:window];
+            }
+        ];
+
+        windowEnumerator = windows.reverseObjectEnumerator;
+    } else
+#endif
+    {
+        // No way to get ordered list of windows, so fall back to unordered,
+        // list, which typically corresponds to window creation order.
+        windowEnumerator = application.windows.objectEnumerator;
+    }
+
+    for (NSWindow *window in windowEnumerator) {
+        // We're meddling with normal and floating windows, so leave others alone
+        if (!(window.level == NSNormalWindowLevel || window.level == NSFloatingWindowLevel))
+            continue;
+
+        // Windows that hide automatically will keep their NSFloatingWindowLevel,
+        // and hence be on top of the window stack. We don't want to affect these
+        // windows, as otherwise we might end up with key windows being ordered
+        // behind these auto-hidden windows when activating the application by
+        // clicking on a new tool window.
+        if (window.hidesOnDeactivate)
+            continue;
+
+        if ([window conformsToProtocol:@protocol(QNSWindowProtocol)]) {
+            QCocoaWindow *cocoaWindow = static_cast<id<QNSWindowProtocol>>(window).helper.platformWindow;
+            window.level = notification.name == NSApplicationWillResignActiveNotification ?
+                NSNormalWindowLevel : cocoaWindow->windowLevel(cocoaWindow->window()->flags());
+        }
+
+        // The documentation says that "when a window enters a new level, it’s ordered
+        // in front of all its peers in that level", but that doesn't seem to be the
+        // case in practice. To keep the order correct after meddling with the window
+        // levels, we explicitly order each window to the front. Since we are iterating
+        // the windows in back-to-front order, this is okey. The call also triggers AppKit
+        // to re-evaluate the level in relation to windows from other applications,
+        // working around an issue where our tool windows would stay on top of other
+        // application windows if activation was transferred to another application by
+        // clicking on it instead of via the application switcher or Dock. Finally, we
+        // do this re-ordering for all windows (except auto-hiding ones), otherwise we would
+        // end up triggering a bug in AppKit where the tool windows would disappear behind
+        // the application window.
+        [window orderFront:sender];
+    }
+}
+
 - (id)initWithContentRect:(NSRect)contentRect
       screen:(NSScreen*)screen
       styleMask:(NSUInteger)windowStyle
@@ -330,6 +395,17 @@ static void qt_closePopups()
 
     if (self) {
         _helper = [[QNSWindowHelper alloc] initWithNSWindow:self platformWindow:qpw];
+
+        if (qpw->alwaysShowToolWindow()) {
+            static dispatch_once_t onceToken;
+            dispatch_once(&onceToken, ^{
+                NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+                [center addObserver:[self class] selector:@selector(applicationActivationChanged:)
+                    name:NSApplicationWillResignActiveNotification object:nil];
+                [center addObserver:[self class] selector:@selector(applicationActivationChanged:)
+                    name:NSApplicationWillBecomeActiveNotification object:nil];
+            });
+        }
     }
     return self;
 }
@@ -1778,8 +1854,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
 
     if (shouldBePanel) {
         // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set
-        window.hidesOnDeactivate = ((type & Qt::Tool) == Qt::Tool) &&
-            !qt_mac_resolveOption(false, QPlatformWindow::window(), "_q_macAlwaysShowToolWindow", "");
+        window.hidesOnDeactivate = ((type & Qt::Tool) == Qt::Tool) && !alwaysShowToolWindow();
 
         // Make popup windows show on the same desktop as the parent full-screen window
         window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
@@ -1803,6 +1878,11 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
     applyContentBorderThickness(window);
 
     return window;
+}
+
+bool QCocoaWindow::alwaysShowToolWindow() const
+{
+    return qt_mac_resolveOption(false, window(), "_q_macAlwaysShowToolWindow", "");
 }
 
 void QCocoaWindow::removeMonitor()
