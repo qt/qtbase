@@ -277,6 +277,7 @@ public: // for QNSView
     friend class QCocoaBackingStore;
     friend class QCocoaNativeInterface;
 
+    bool alwaysShowToolWindow() const;
     void removeMonitor();
 
     NSView *m_contentView;
