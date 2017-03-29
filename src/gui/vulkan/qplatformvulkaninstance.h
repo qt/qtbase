@@ -51,7 +51,7 @@
 
 #include <QtGui/qtguiglobal.h>
 
-#if QT_CONFIG(vulkan)
+#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
 
 #include <qvulkaninstance.h>
 
