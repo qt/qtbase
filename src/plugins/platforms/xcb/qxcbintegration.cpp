@@ -466,7 +466,7 @@ QByteArray QXcbIntegration::wmClass() const
         }
 
         if (!name.isEmpty() && !className.isEmpty())
-            m_wmClass = name.toLocal8Bit() + '\0' + className.toLocal8Bit() + '\0';
+            m_wmClass = std::move(name).toLocal8Bit() + '\0' + std::move(className).toLocal8Bit() + '\0';
     }
     return m_wmClass;
 }

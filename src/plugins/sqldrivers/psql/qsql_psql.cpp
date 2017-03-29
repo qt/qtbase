@@ -911,7 +911,7 @@ bool QPSQLDriver::open(const QString & db,
         connectString.append(QLatin1Char(' ')).append(opt);
     }
 
-    d->connection = PQconnectdb(connectString.toLocal8Bit().constData());
+    d->connection = PQconnectdb(std::move(connectString).toLocal8Bit().constData());
     if (PQstatus(d->connection) == CONNECTION_BAD) {
         setLastError(qMakeError(tr("Unable to connect"), QSqlError::ConnectionError, d));
         setOpenError(true);
