@@ -1706,6 +1706,44 @@ inline bool operator> (QLatin1String lhs, QChar rhs) Q_DECL_NOTHROW { return   r
 inline bool operator<=(QLatin1String lhs, QChar rhs) Q_DECL_NOTHROW { return !(rhs <  lhs); }
 inline bool operator>=(QLatin1String lhs, QChar rhs) Q_DECL_NOTHROW { return !(rhs >  lhs); }
 
+// QStringView <> QStringView
+inline bool operator==(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return lhs.size() == rhs.size() && qCompareStrings(lhs, rhs) == 0; }
+inline bool operator!=(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
+inline bool operator< (QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <  0; }
+inline bool operator<=(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <= 0; }
+inline bool operator> (QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >  0; }
+inline bool operator>=(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >= 0; }
+
+// QStringView <> QChar
+inline bool operator==(QStringView lhs, QChar rhs) Q_DECL_NOTHROW { return lhs == QStringView(&rhs, 1); }
+inline bool operator!=(QStringView lhs, QChar rhs) Q_DECL_NOTHROW { return lhs != QStringView(&rhs, 1); }
+inline bool operator< (QStringView lhs, QChar rhs) Q_DECL_NOTHROW { return lhs <  QStringView(&rhs, 1); }
+inline bool operator<=(QStringView lhs, QChar rhs) Q_DECL_NOTHROW { return lhs <= QStringView(&rhs, 1); }
+inline bool operator> (QStringView lhs, QChar rhs) Q_DECL_NOTHROW { return lhs >  QStringView(&rhs, 1); }
+inline bool operator>=(QStringView lhs, QChar rhs) Q_DECL_NOTHROW { return lhs >= QStringView(&rhs, 1); }
+
+inline bool operator==(QChar lhs, QStringView rhs) Q_DECL_NOTHROW { return QStringView(&lhs, 1) == rhs; }
+inline bool operator!=(QChar lhs, QStringView rhs) Q_DECL_NOTHROW { return QStringView(&lhs, 1) != rhs; }
+inline bool operator< (QChar lhs, QStringView rhs) Q_DECL_NOTHROW { return QStringView(&lhs, 1) <  rhs; }
+inline bool operator<=(QChar lhs, QStringView rhs) Q_DECL_NOTHROW { return QStringView(&lhs, 1) <= rhs; }
+inline bool operator> (QChar lhs, QStringView rhs) Q_DECL_NOTHROW { return QStringView(&lhs, 1) >  rhs; }
+inline bool operator>=(QChar lhs, QStringView rhs) Q_DECL_NOTHROW { return QStringView(&lhs, 1) >= rhs; }
+
+// QStringView <> QLatin1String
+inline bool operator==(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return lhs.size() == rhs.size() && qCompareStrings(lhs, rhs) == 0; }
+inline bool operator!=(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
+inline bool operator< (QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <  0; }
+inline bool operator<=(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <= 0; }
+inline bool operator> (QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >  0; }
+inline bool operator>=(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >= 0; }
+
+inline bool operator==(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return lhs.size() == rhs.size() && qCompareStrings(lhs, rhs) == 0; }
+inline bool operator!=(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
+inline bool operator< (QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <  0; }
+inline bool operator<=(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <= 0; }
+inline bool operator> (QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >  0; }
+inline bool operator>=(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >= 0; }
+
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 // QStringRef <> QByteArray
 inline QT_ASCII_CAST_WARN bool operator==(const QStringRef &lhs, const QByteArray &rhs) { return lhs.compare(rhs) == 0; }
