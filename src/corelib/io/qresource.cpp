@@ -66,10 +66,9 @@ QT_BEGIN_NAMESPACE
 class QStringSplitter
 {
 public:
-    QStringSplitter(const QString &s)
-        : m_string(s), m_data(m_string.constData()), m_len(s.length()), m_pos(0)
+    explicit QStringSplitter(QStringView sv)
+        : m_data(sv.data()), m_len(sv.size())
     {
-        m_splitChar = QLatin1Char('/');
     }
 
     inline bool hasNext() {
@@ -78,18 +77,17 @@ public:
         return m_pos < m_len;
     }
 
-    inline QStringRef next() {
+    inline QStringView next() {
         int start = m_pos;
         while (m_pos < m_len && m_data[m_pos] != m_splitChar)
             ++m_pos;
-        return QStringRef(&m_string, start, m_pos - start);
+        return QStringView(m_data + start, m_pos - start);
     }
 
-    QString m_string;
     const QChar *m_data;
-    QChar m_splitChar;
-    int m_len;
-    int m_pos;
+    qssize_t m_len;
+    qssize_t m_pos = 0;
+    QChar m_splitChar = QLatin1Char('/');
 };
 
 
@@ -678,7 +676,7 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 
     QStringSplitter splitter(path);
     while (child_count && splitter.hasNext()) {
-        QStringRef segment = splitter.next();
+        QStringView segment = splitter.next();
 
 #ifdef DEBUG_RESOURCE_MATCH
         qDebug() << "  CHILDREN" << segment;
