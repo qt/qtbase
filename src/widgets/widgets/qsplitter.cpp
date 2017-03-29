@@ -1800,7 +1800,7 @@ QTextStream& operator>>(QTextStream& ts, QSplitter& splitter)
     line.replace(QLatin1Char(' '), QString());
     line = std::move(line).toUpper();
 
-    splitter.restoreState(line.toLatin1());
+    splitter.restoreState(std::move(line).toLatin1());
     return ts;
 }
 

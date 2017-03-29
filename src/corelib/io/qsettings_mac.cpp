@@ -211,7 +211,7 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
     default:
         QString string = QSettingsPrivate::variantToString(value);
         if (string.contains(QChar::Null))
-            result = string.toUtf8().toCFData();
+            result = std::move(string).toUtf8().toCFData();
         else
             result = string.toCFString();
     }

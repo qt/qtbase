@@ -299,7 +299,7 @@ static QByteArray windowsSystemZoneId()
         id = readRegistryString(key, L"TimeZoneKeyName");
         RegCloseKey(key);
         if (!id.isEmpty())
-            return id.toUtf8();
+            return std::move(id).toUtf8();
     }
 
     // On XP we have to iterate over the zones until we find a match on

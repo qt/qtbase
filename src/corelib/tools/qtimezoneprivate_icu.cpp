@@ -98,7 +98,7 @@ static QByteArray ucalDefaultTimeZoneId()
     // If successful on first or second go, resize and return
     if (U_SUCCESS(status)) {
         result.resize(size);
-        return result.toUtf8();
+        return std::move(result).toUtf8();
     }
 
     return QByteArray();

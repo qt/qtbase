@@ -305,7 +305,7 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
         QString formatWithCharset = format;
         formatWithCharset.append(QLatin1String(";charset=utf-8"));
 
-        xcb_atom_t a = connection->internAtom(formatWithCharset.toLatin1());
+        xcb_atom_t a = connection->internAtom(std::move(formatWithCharset).toLatin1());
         if (a && atoms.contains(a)) {
             *requestedEncoding = "utf-8";
             return a;

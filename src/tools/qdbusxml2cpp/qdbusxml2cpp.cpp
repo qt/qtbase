@@ -217,7 +217,7 @@ static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection:
             annotationName += QString::fromLatin1(".%1%2").arg(QLatin1String(direction)).arg(paramId);
         QString qttype = annotations.value(annotationName);
         if (!qttype.isEmpty())
-            return qttype.toLatin1();
+            return std::move(qttype).toLatin1();
 
         QString oldAnnotationName = QString::fromLatin1("com.trolltech.QtDBus.QtTypeName");
         if (paramId >= 0)
@@ -242,7 +242,7 @@ static QByteArray qtTypeName(const QString &signature, const QDBusIntrospection:
                         "suggest updating to '%s'\n",
                 PROGRAMNAME, qPrintable(oldAnnotationName), qPrintable(inputFile),
                 qPrintable(annotationName));
-        return qttype.toLatin1();
+        return std::move(qttype).toLatin1();
     }
 
     return QVariant::typeToName(QVariant::Type(type));
