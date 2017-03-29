@@ -551,3 +551,7 @@
     \externalpage http://doc.qt.io/qtcreator/creator-autotest.html
     \title Qt Creator: Running Autotests
 */
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-project-creating.html#creating-c-classes
+    \title Qt Creator: Creating C++ Classes
+*/
