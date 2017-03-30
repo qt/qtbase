@@ -5,5 +5,6 @@ SUBDIRS= \
     qintvalidator \
     qregexpvalidator \
     qregularexpressionvalidator \
+    qshadergraph \
     qshadernodes \
 
