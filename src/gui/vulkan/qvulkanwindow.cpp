@@ -324,7 +324,7 @@ void QVulkanWindow::setFlags(Flags flags)
 }
 
 /*!
-    \return the requested flags.
+    Return the requested flags.
  */
 QVulkanWindow::Flags QVulkanWindow::flags() const
 {
@@ -333,7 +333,7 @@ QVulkanWindow::Flags QVulkanWindow::flags() const
 }
 
 /*!
-   \return the list of properties for the supported physical devices in the system.
+   Returns the list of properties for the supported physical devices in the system.
 
    \note This function can be called before making the window visible.
  */
@@ -407,7 +407,7 @@ void QVulkanWindow::setPhysicalDeviceIndex(int idx)
 }
 
 /*!
-    \return the list of the extensions that are supported by logical devices
+    Returns the list of the extensions that are supported by logical devices
     created from the physical device selected by setPhysicalDeviceIndex().
 
     \note This function can be called before making the window visible.
@@ -521,8 +521,8 @@ static struct {
     { VK_SAMPLE_COUNT_64_BIT, 64 }
 };
 
-/*
-    \return the set of supported sample counts when using the physical device
+/*!
+    Returns the set of supported sample counts when using the physical device
     selected by setPhysicalDeviceIndex().
 
     By default QVulkanWindow uses a sample count of 1. By calling setSampleCount()
@@ -1598,7 +1598,7 @@ bool QVulkanWindow::event(QEvent *e)
 }
 
 /*!
-    \return true if this window has successfully initialized all Vulkan
+    Returns true if this window has successfully initialized all Vulkan
     resources, including the swapchain.
 
     \note Initialization happens on the first expose event after the window is
@@ -1611,7 +1611,7 @@ bool QVulkanWindow::isValid() const
 }
 
 /*!
-    \return a new instance of QVulkanWindowRenderer.
+    Returns a new instance of QVulkanWindowRenderer.
 
     This virtual function is called once during the lifetime of the window, at
     some point after making it visible for the first time.
@@ -2205,7 +2205,7 @@ void QVulkanWindowPrivate::finishBlockingReadback()
 }
 
 /*!
-    \return the active physical device.
+    Returns the active physical device.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::preInitResources() up until
@@ -2221,7 +2221,7 @@ VkPhysicalDevice QVulkanWindow::physicalDevice() const
 }
 
 /*!
-    \return a pointer to the properties for the active physical device.
+    Returns a pointer to the properties for the active physical device.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::preInitResources() up until
@@ -2237,7 +2237,7 @@ const VkPhysicalDeviceProperties *QVulkanWindow::physicalDeviceProperties() cons
 }
 
 /*!
-    \return the active logical device.
+    Returns the active logical device.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initResources() up until
@@ -2250,7 +2250,7 @@ VkDevice QVulkanWindow::device() const
 }
 
 /*!
-    \return the active graphics queue.
+    Returns the active graphics queue.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initResources() up until
@@ -2263,7 +2263,7 @@ VkQueue QVulkanWindow::graphicsQueue() const
 }
 
 /*!
-    \return the active graphics command pool.
+    Returns the active graphics command pool.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initResources() up until
@@ -2276,7 +2276,7 @@ VkCommandPool QVulkanWindow::graphicsCommandPool() const
 }
 
 /*!
-    \return a host visible memory type index suitable for general use.
+    Returns a host visible memory type index suitable for general use.
 
     The returned memory type will be both host visible and coherent. In
     addition, it will also be cached, if possible.
@@ -2292,7 +2292,7 @@ uint32_t QVulkanWindow::hostVisibleMemoryIndex() const
 }
 
 /*!
-    \return a device local memory type index suitable for general use.
+    Returns a device local memory type index suitable for general use.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initResources() up until
@@ -2305,7 +2305,7 @@ uint32_t QVulkanWindow::deviceLocalMemoryIndex() const
 }
 
 /*!
-    \return a typical render pass with one sub-pass.
+    Returns a typical render pass with one sub-pass.
 
     \note Applications are not required to use this render pass. However, they
     are then responsible for ensuring the current swap chain and depth-stencil
@@ -2329,7 +2329,7 @@ VkRenderPass QVulkanWindow::defaultRenderPass() const
 }
 
 /*!
-    \return the color buffer format used by the swapchain.
+    Returns the color buffer format used by the swapchain.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initResources() up until
@@ -2344,7 +2344,7 @@ VkFormat QVulkanWindow::colorFormat() const
 }
 
 /*!
-    \return the format used by the depth-stencil buffer(s).
+    Returns the format used by the depth-stencil buffer(s).
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initResources() up until
@@ -2357,7 +2357,7 @@ VkFormat QVulkanWindow::depthStencilFormat() const
 }
 
 /*!
-    \return the image size of the swapchain.
+    Returns the image size of the swapchain.
 
     This usually matches the size of the window, but may also differ in case
     \c vkGetPhysicalDeviceSurfaceCapabilitiesKHR reports a fixed size.
@@ -2373,7 +2373,7 @@ QSize QVulkanWindow::swapChainImageSize() const
 }
 
 /*!
-    \return The active command buffer for the current swap chain image.
+    Returns The active command buffer for the current swap chain image.
     Implementations of QVulkanWindowRenderer::startNextFrame() are expected to
     add commands to this command buffer.
 
@@ -2391,7 +2391,7 @@ VkCommandBuffer QVulkanWindow::currentCommandBuffer() const
 }
 
 /*!
-    \return a VkFramebuffer for the current swapchain image using the default
+    Returns a VkFramebuffer for the current swapchain image using the default
     render pass.
 
     The framebuffer has two attachments (color, depth-stencil) when
@@ -2420,7 +2420,7 @@ VkFramebuffer QVulkanWindow::currentFramebuffer() const
 }
 
 /*!
-    \return the current frame index in the range [0, concurrentFrameCount() - 1].
+    Returns the current frame index in the range [0, concurrentFrameCount() - 1].
 
     Renderer implementations will have to ensure that uniform data and other
     dynamic resources exist in multiple copies, in order to prevent frame N
@@ -2467,7 +2467,7 @@ int QVulkanWindow::currentFrame() const
  */
 
 /*!
-    \return the number of frames that can be potentially active at the same time.
+    Returns the number of frames that can be potentially active at the same time.
 
     \note The value is constant for the entire lifetime of the QVulkanWindow.
 
@@ -2495,7 +2495,7 @@ int QVulkanWindow::concurrentFrameCount() const
 }
 
 /*!
-    \return the number of images in the swap chain.
+    Returns the number of images in the swap chain.
 
     \note Accessing this is necessary when providing a custom render pass and
     framebuffer. The framebuffer is specific to the current swapchain image and
@@ -2512,7 +2512,7 @@ int QVulkanWindow::swapChainImageCount() const
 }
 
 /*!
-    \return the current swap chain image index in the range [0, swapChainImageCount() - 1].
+    Returns the current swap chain image index in the range [0, swapChainImageCount() - 1].
 
     \note This function must only be called from within startNextFrame() and, in
     case of asynchronous command generation, up until the call to frameReady().
@@ -2526,7 +2526,7 @@ int QVulkanWindow::currentSwapChainImageIndex() const
 }
 
 /*!
-    \return the specified swap chain image.
+    Returns the specified swap chain image.
 
     \a idx must be in the range [0, swapChainImageCount() - 1].
 
@@ -2541,7 +2541,7 @@ VkImage QVulkanWindow::swapChainImage(int idx) const
 }
 
 /*!
-    \return the specified swap chain image view.
+    Returns the specified swap chain image view.
 
     \a idx must be in the range [0, swapChainImageCount() - 1].
 
@@ -2556,7 +2556,7 @@ VkImageView QVulkanWindow::swapChainImageView(int idx) const
 }
 
 /*!
-    \return the depth-stencil image.
+    Returns the depth-stencil image.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initSwapChainResources() up until
@@ -2569,7 +2569,7 @@ VkImage QVulkanWindow::depthStencilImage() const
 }
 
 /*!
-    \return the depth-stencil image view.
+    Returns the depth-stencil image view.
 
     \note Calling this function is only valid from the invocation of
     QVulkanWindowRenderer::initSwapChainResources() up until
@@ -2582,7 +2582,7 @@ VkImageView QVulkanWindow::depthStencilImageView() const
 }
 
 /*!
-    \return the current sample count as a \c VkSampleCountFlagBits value.
+    Returns the current sample count as a \c VkSampleCountFlagBits value.
 
     When targeting the default render target, the \c rasterizationSamples field
     of \c VkPipelineMultisampleStateCreateInfo must be set to this value.
@@ -2596,7 +2596,7 @@ VkSampleCountFlagBits QVulkanWindow::sampleCountFlagBits() const
 }
 
 /*!
-    \return the specified multisample color image, or \c{VK_NULL_HANDLE} if
+    Returns the specified multisample color image, or \c{VK_NULL_HANDLE} if
     multisampling is not in use.
 
     \a idx must be in the range [0, swapChainImageCount() - 1].
@@ -2612,7 +2612,7 @@ VkImage QVulkanWindow::msaaColorImage(int idx) const
 }
 
 /*!
-    \return the specified multisample color image view, or \c{VK_NULL_HANDLE} if
+    Returns the specified multisample color image view, or \c{VK_NULL_HANDLE} if
     multisampling is not in use.
 
     \a idx must be in the range [0, swapChainImageCount() - 1].
@@ -2628,7 +2628,7 @@ VkImageView QVulkanWindow::msaaColorImageView(int idx) const
 }
 
 /*!
-    \return true if the swapchain supports usage as transfer source, meaning
+    Returns true if the swapchain supports usage as transfer source, meaning
     grab() is functional.
 
     \note Calling this function is only valid from the invocation of
@@ -2642,10 +2642,16 @@ bool QVulkanWindow::supportsGrab() const
 }
 
 /*!
+  \fn void QVulkanWindow::frameGrabbed(const QImage &image)
+
+  This signal is emitted when the \a image is ready.
+*/
+
+/*!
     Builds and renders the next frame without presenting it, then performs a
     blocking readback of the image content.
 
-    \return the image if the renderer's
+    Returns the image if the renderer's
     \l{QVulkanWindowRenderer::startNextFrame()}{startNextFrame()}
     implementation calls back frameReady() directly. Otherwise, returns an
     incomplete image, that has the correct size but not the content yet. The
@@ -2683,7 +2689,7 @@ QImage QVulkanWindow::grab()
 }
 
 /*!
-   \return a pointer to a QMatrix4x4 that can be used to correct for coordinate
+   Returns a pointer to a QMatrix4x4 that can be used to correct for coordinate
    system differences between OpenGl and Vulkan.
 
    By pre-multiplying the projection matrix with this matrix, applications can

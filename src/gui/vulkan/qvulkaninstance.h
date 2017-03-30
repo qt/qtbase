@@ -47,7 +47,14 @@
 #ifndef VK_NO_PROTOTYPES
 #define VK_NO_PROTOTYPES
 #endif
+#ifndef Q_CLANG_QDOC
 #include <vulkan/vulkan.h>
+#else
+typedef void* PFN_vkVoidFunction;
+typedef unsigned long VkSurfaceKHR;
+typedef unsigned long VkImage;
+typedef unsigned long VkImageView;
+#endif
 
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qvector.h>

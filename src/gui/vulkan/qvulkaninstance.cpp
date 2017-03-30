@@ -403,45 +403,59 @@ QVulkanInstance::~QVulkanInstance()
 }
 
 /*!
-    \struct QVulkanLayer
+    \class QVulkanLayer
     \brief Represents information about a Vulkan layer.
  */
 
 /*!
-    \value QVulkanLayer::name
+    \variable QVulkanLayer::name
     \brief The name of the layer.
  */
 
 /*!
-    \value QVulkanLayer::version
+    \variable QVulkanLayer::version
     \brief The version of the layer. This is an integer, increasing with each backward
     compatible change.
  */
 
 /*!
-    \value QVulkanLayer::specVersion
+    \variable QVulkanLayer::specVersion
     \brief The Vulkan version the layer was written against.
  */
 
 /*!
-    \value QVulkanLayer::description
+    \variable QVulkanLayer::description
     \brief The description of the layer.
  */
 
 /*!
-    \struct QVulkanExtension
+  \fn bool QVulkanLayer::operator==(const QVulkanLayer &other) const
+
+  Returns true if this vulkan layer and the \a other vulkan layer have
+  the same name, version, and spec version.
+ */
+
+/*!
+    \class QVulkanExtension
     \brief Represents information about a Vulkan extension.
  */
 
 /*!
-    \value QVulkanExtension::name
+    \variable QVulkanExtension::name
     \brief The name of the extension.
  */
 
 /*!
-    \value QVulkanExtension::version
+    \variable QVulkanExtension::version
     \brief The version of the extension. This is an integer, increasing with each backward
     compatible change.
+ */
+
+/*!
+  \fn bool QVulkanExtension::operator==(const QVulkanExtension &other) const
+
+  Returns true if the name and version of this vulkan extension are the same
+  as the name and version of the \a other vulkan extension.
  */
 
 /*!
