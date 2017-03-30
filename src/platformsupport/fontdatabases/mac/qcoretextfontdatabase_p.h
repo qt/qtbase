@@ -57,12 +57,7 @@
 #include <qpa/qplatformtheme.h>
 #include <private/qcore_mac_p.h>
 
-#ifdef Q_OS_OSX
-#include <ApplicationServices/ApplicationServices.h>
-#else
-#include <CoreText/CoreText.h>
-#include <CoreGraphics/CoreGraphics.h>
-#endif
+Q_FORWARD_DECLARE_CF_TYPE(CTFontDescriptor);
 
 Q_DECLARE_METATYPE(QCFType<CGFontRef>);
 Q_DECLARE_METATYPE(QCFType<CFURLRef>);
