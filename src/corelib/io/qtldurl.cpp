@@ -50,9 +50,21 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool containsTLDEntry(const QStringRef &entry)
+enum TLDMatchType {
+    ExactMatch,
+    SuffixMatch,
+    ExceptionMatch,
+};
+
+static bool containsTLDEntry(QStringView entry, TLDMatchType match)
 {
-    int index = qt_hash(entry) % tldCount;
+    const QStringView matchSymbols[] = {
+        QStringViewLiteral(""),
+        QStringViewLiteral("*"),
+        QStringViewLiteral("!"),
+    };
+    const auto symbol = matchSymbols[match];
+    int index = qt_hash(entry, qt_hash(symbol)) % tldCount;
 
     // select the right chunk from the big table
     short chunk = 0;
@@ -65,17 +77,12 @@ static bool containsTLDEntry(const QStringRef &entry)
 
     // check all the entries from the given index
     while (chunkIndex < tldIndices[index+1] - offset) {
-        QString currentEntry = QString::fromUtf8(tldData[chunk] + chunkIndex);
-        if (currentEntry == entry)
+        const auto utf8 = tldData[chunk] + chunkIndex;
+        if ((symbol.isEmpty() || QLatin1Char(*utf8) == symbol) && entry == QString::fromUtf8(utf8 + symbol.size()))
             return true;
-        chunkIndex += qstrlen(tldData[chunk] + chunkIndex) + 1; // +1 for the ending \0
+        chunkIndex += qstrlen(utf8) + 1; // +1 for the ending \0
     }
     return false;
-}
-
-static inline bool containsTLDEntry(const QString &entry)
-{
-    return containsTLDEntry(QStringRef(&entry));
 }
 
 /*!
@@ -111,19 +118,16 @@ Q_CORE_EXPORT bool qIsEffectiveTLD(const QStringRef &domain)
 {
     // for domain 'foo.bar.com':
     // 1. return if TLD table contains 'foo.bar.com'
-    if (containsTLDEntry(domain))
+    // 2. else if table contains '*.bar.com',
+    // 3. test that table does not contain '!foo.bar.com'
+
+    if (containsTLDEntry(domain, ExactMatch)) // 1
         return true;
 
     const int dot = domain.indexOf(QLatin1Char('.'));
     if (dot >= 0) {
-        int count = domain.size() - dot;
-        QString wildCardDomain = QLatin1Char('*') + domain.right(count);
-        // 2. if table contains '*.bar.com',
-        // test if table contains '!foo.bar.com'
-        if (containsTLDEntry(wildCardDomain)) {
-            QString exceptionDomain = QLatin1Char('!') + domain;
-            return (! containsTLDEntry(exceptionDomain));
-        }
+        if (containsTLDEntry(domain.mid(dot), SuffixMatch))   // 2
+            return !containsTLDEntry(domain, ExceptionMatch); // 3
     }
     return false;
 }
