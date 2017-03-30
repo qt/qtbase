@@ -303,7 +303,7 @@ template <int N> struct QConcatenable<char[N]> : QConcatenable<const char[N]>
 
 template <> struct QConcatenable<const char *> : private QAbstractConcatenable
 {
-    typedef char const *type;
+    typedef const char *type;
     typedef QByteArray ConvertTo;
     enum { ExactSize = false };
     static int size(const char *a) { return qstrlen(a); }
@@ -318,6 +318,11 @@ template <> struct QConcatenable<const char *> : private QAbstractConcatenable
         while (*a)
             *out++ = *a++;
     }
+};
+
+template <> struct QConcatenable<char *> : QConcatenable<const char*>
+{
+    typedef char *type;
 };
 
 template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
