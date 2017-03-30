@@ -69,6 +69,9 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
+class QCoreTextFontEngine;
+class QFontEngineFT;
+
 QCocoaScreen::QCocoaScreen(int screenIndex)
     : QPlatformScreen(), m_screenIndex(screenIndex), m_refreshRate(60.0)
 {
@@ -302,7 +305,7 @@ QCocoaIntegration *QCocoaIntegration::mInstance = 0;
 
 QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     : mOptions(parseOptions(paramList))
-    , mFontDb(new QCoreTextFontDatabase(mOptions.testFlag(UseFreeTypeFontEngine)))
+    , mFontDb(0)
 #ifndef QT_NO_ACCESSIBILITY
     , mAccessibility(new QCocoaAccessibility)
 #endif
@@ -317,6 +320,13 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     if (mInstance != 0)
         qWarning("Creating multiple Cocoa platform integrations is not supported");
     mInstance = this;
+
+#ifndef QT_NO_FREETYPE
+    if (mOptions.testFlag(UseFreeTypeFontEngine))
+        mFontDb.reset(new QCoreTextFontDatabaseEngineFactory<QFontEngineFT>);
+    else
+#endif
+        mFontDb.reset(new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>);
 
     QString icStr = QPlatformInputContextFactory::requested();
     icStr.isNull() ? mInputContext.reset(new QCocoaInputContext)

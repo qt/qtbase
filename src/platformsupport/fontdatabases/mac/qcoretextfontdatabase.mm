@@ -112,12 +112,8 @@ static NSInteger languageMapSort(id obj1, id obj2, void *context)
 }
 #endif
 
-QCoreTextFontDatabase::QCoreTextFontDatabase(bool useFreeType)
-#ifndef QT_NO_FREETYPE
-    : m_useFreeType(useFreeType)
-#endif
+QCoreTextFontDatabase::QCoreTextFontDatabase()
 {
-    Q_UNUSED(useFreeType)
 #ifdef Q_OS_MACX
     QSettings appleSettings(QLatin1String("apple.com"));
     QVariant appleValue = appleSettings.value(QLatin1String("AppleAntiAliasingThreshold"));
@@ -393,21 +389,10 @@ static QByteArray filenameForCFUrl(CFURLRef url)
 
 extern CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
 
-QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, void *usrPtr)
+template <>
+QFontEngine *QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::fontEngine(const QFontDef &fontDef, void *usrPtr)
 {
     CTFontDescriptorRef descriptor = static_cast<CTFontDescriptorRef>(usrPtr);
-
-#ifndef QT_NO_FREETYPE
-    if (m_useFreeType) {
-        QCFType<CFURLRef> url(static_cast<CFURLRef>(CTFontDescriptorCopyAttribute(descriptor, kCTFontURLAttribute)));
-
-        QByteArray filename;
-        if (url)
-            filename = filenameForCFUrl(url);
-
-        return freeTypeFontEngine(f, filename);
-    }
-#endif
 
     // Since we do not pass in the destination DPI to CoreText when making
     // the font, we need to pass in a point size which is scaled to include
@@ -415,19 +400,37 @@ QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, void *usrPtr)
     // is destinationDpi / 72, but since pixelSize = pointSize / 72 * dpi,
     // the pixelSize is actually the scaled point size for the destination
     // DPI, and we can use that directly.
-    qreal scaledPointSize = f.pixelSize;
+    qreal scaledPointSize = fontDef.pixelSize;
 
-    CGAffineTransform matrix = qt_transform_from_fontdef(f);
+    CGAffineTransform matrix = qt_transform_from_fontdef(fontDef);
     CTFontRef font = CTFontCreateWithFontDescriptor(descriptor, scaledPointSize, &matrix);
     if (font) {
-        QFontEngine *engine = new QCoreTextFontEngine(font, f);
-        engine->fontDef = f;
+        QFontEngine *engine = new QCoreTextFontEngine(font, fontDef);
+        engine->fontDef = fontDef;
         CFRelease(font);
         return engine;
     }
 
     return NULL;
 }
+
+#ifndef QT_NO_FREETYPE
+template <>
+QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const QFontDef &fontDef, void *usrPtr)
+{
+    CTFontDescriptorRef descriptor = static_cast<CTFontDescriptorRef>(usrPtr);
+
+    QCFType<CFURLRef> url(static_cast<CFURLRef>(CTFontDescriptorCopyAttribute(descriptor, kCTFontURLAttribute)));
+
+    QByteArray filename;
+    if (url)
+        filename = filenameForCFUrl(url);
+
+    QFontEngine::FaceId faceId;
+    faceId.filename = filename;
+    return QFontEngineFT::create(fontDef, faceId);
+}
+#endif
 
 static void releaseFontData(void* info, const void* data, size_t size)
 {
@@ -436,31 +439,9 @@ static void releaseFontData(void* info, const void* data, size_t size)
     delete (QByteArray*)info;
 }
 
-QFontEngine *QCoreTextFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
+template <>
+QFontEngine *QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
-#ifndef QT_NO_FREETYPE
-    if (m_useFreeType) {
-        QByteArray *fontDataCopy = new QByteArray(fontData);
-        QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(fontDataCopy,
-                fontDataCopy->constData(), fontDataCopy->size(), releaseFontData);
-        QCFType<CGFontRef> cgFont(CGFontCreateWithDataProvider(dataProvider));
-
-        if (!cgFont) {
-            qWarning("QCoreTextFontDatabase::fontEngine: CGFontCreateWithDataProvider failed");
-            return Q_NULLPTR;
-        }
-
-        QFontDef fontDef;
-        fontDef.pixelSize = pixelSize;
-        fontDef.pointSize = pixelSize * 72.0 / qt_defaultDpi();
-        fontDef.hintingPreference = hintingPreference;
-        CGAffineTransform transform = qt_transform_from_fontdef(fontDef);
-        QCFType<CTFontRef> ctFont(CTFontCreateWithGraphicsFont(cgFont, fontDef.pixelSize, &transform, Q_NULLPTR));
-        QCFType<CFURLRef> url(static_cast<CFURLRef>(CTFontCopyAttribute(ctFont, kCTFontURLAttribute)));
-        return freeTypeFontEngine(fontDef, filenameForCFUrl(url), fontData);
-    }
-#endif
-
     Q_UNUSED(hintingPreference);
 
     QByteArray* fontDataCopy = new QByteArray(fontData);
@@ -482,6 +463,34 @@ QFontEngine *QCoreTextFontDatabase::fontEngine(const QByteArray &fontData, qreal
 
     return fontEngine;
 }
+
+#ifndef QT_NO_FREETYPE
+template <>
+QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
+{
+    QByteArray *fontDataCopy = new QByteArray(fontData);
+    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(fontDataCopy,
+            fontDataCopy->constData(), fontDataCopy->size(), releaseFontData);
+    QCFType<CGFontRef> cgFont(CGFontCreateWithDataProvider(dataProvider));
+
+    if (!cgFont) {
+        qWarning("QCoreTextFontDatabase::fontEngine: CGFontCreateWithDataProvider failed");
+        return Q_NULLPTR;
+    }
+
+    QFontDef fontDef;
+    fontDef.pixelSize = pixelSize;
+    fontDef.pointSize = pixelSize * 72.0 / qt_defaultDpi();
+    fontDef.hintingPreference = hintingPreference;
+    CGAffineTransform transform = qt_transform_from_fontdef(fontDef);
+    QCFType<CTFontRef> ctFont(CTFontCreateWithGraphicsFont(cgFont, fontDef.pixelSize, &transform, Q_NULLPTR));
+    QCFType<CFURLRef> url(static_cast<CFURLRef>(CTFontCopyAttribute(ctFont, kCTFontURLAttribute)));
+
+    QFontEngine::FaceId faceId;
+    faceId.filename = filenameForCFUrl(url);
+    return QFontEngineFT::create(fontDef, faceId, fontData);
+}
+#endif
 
 QFont::StyleHint styleHintFromNSString(NSString *style)
 {
@@ -615,17 +624,27 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     return fallbackLists[styleLookupKey.arg(styleHint)];
 }
 
-CFArrayRef QCoreTextFontDatabase::createDescriptorArrayForFont(CTFontRef font, const QString &fileName)
+template <>
+CFArrayRef QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::createDescriptorArrayForFont(CTFontRef font, const QString &fileName)
+{
+    Q_UNUSED(fileName)
+    CFMutableArrayRef array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+    QCFType<CTFontDescriptorRef> descriptor = CTFontCopyFontDescriptor(font);
+    CFArrayAppendValue(array, descriptor);
+    return array;
+}
+
+#ifndef QT_NO_FREETYPE
+template <>
+CFArrayRef QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::createDescriptorArrayForFont(CTFontRef font, const QString &fileName)
 {
     CFMutableArrayRef array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
     QCFType<CTFontDescriptorRef> descriptor = CTFontCopyFontDescriptor(font);
 
-    Q_UNUSED(fileName)
-#ifndef QT_NO_FREETYPE
     // The physical font source URL (usually a local file or Qt resource) is only required for
     // FreeType, when using non-system fonts, and needs some hackery to attach in a format
     // agreeable to OSX.
-    if (m_useFreeType && !fileName.isEmpty()) {
+    if (!fileName.isEmpty()) {
         QCFType<CFURLRef> fontURL;
 
         if (fileName.startsWith(QLatin1String(":/"))) {
@@ -642,11 +661,11 @@ CFArrayRef QCoreTextFontDatabase::createDescriptorArrayForFont(CTFontRef font, c
         CFDictionaryAddValue(attributes, kCTFontURLAttribute, fontURL);
         descriptor = CTFontDescriptorCreateCopyWithAttributes(descriptor, attributes);
     }
-#endif
 
     CFArrayAppendValue(array, descriptor);
     return array;
 }
+#endif
 
 QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
@@ -883,16 +902,6 @@ void QCoreTextFontDatabase::removeApplicationFonts()
 
     m_applicationFonts.clear();
 }
-
-#ifndef QT_NO_FREETYPE
-QFontEngine *QCoreTextFontDatabase::freeTypeFontEngine(const QFontDef &fontDef, const QByteArray &filename,
-                                                       const QByteArray &fontData)
-{
-    QFontEngine::FaceId faceId;
-    faceId.filename = filename;
-    return QFontEngineFT::create(fontDef, faceId, fontData);
-}
-#endif
 
 QT_END_NAMESPACE
 

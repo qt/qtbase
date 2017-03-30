@@ -69,6 +69,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QCoreTextFontEngine;
+
 static const char debugBackingStoreEnvironmentVariable[] = "QT_DEBUG_BACKINGSTORE";
 
 static inline unsigned parseOptions(const QStringList &paramList)
@@ -140,7 +142,7 @@ QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
             m_fontDatabase = new QWindowsFontDatabase;
         }
 #elif defined(Q_OS_DARWIN)
-        m_fontDatabase = new QCoreTextFontDatabase;
+        m_fontDatabase = new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>;
 #else
         m_fontDatabase = QPlatformIntegration::fontDatabase();
 #endif
