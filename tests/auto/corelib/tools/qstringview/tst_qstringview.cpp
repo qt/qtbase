@@ -243,6 +243,11 @@ void tst_QStringView::basics() const
     QVERIFY(sv1.isNull());
     // which implies it's empty();
     QVERIFY(sv1.isEmpty());
+
+    QStringView sv2;
+
+    QVERIFY(sv2 == sv1);
+    QVERIFY(!(sv2 != sv1));
 }
 
 void tst_QStringView::at() const
@@ -393,69 +398,38 @@ void tst_QStringView::conversion_tests(String string) const
 
         QCOMPARE(help::size(sv), help::size(string));
 
-        QVERIFY(std::equal(help::cbegin(string), help::cend(string),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv.cbegin(), sv.size())));
-        QVERIFY(std::equal(help::cbegin(string), help::cend(string),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv.begin(), sv.size())));
-        QVERIFY(std::equal(help::crbegin(string), help::crend(string),
-                           sv.crbegin()));
-        QVERIFY(std::equal(help::crbegin(string), help::crend(string),
-                           sv.rbegin()));
+        // check relational operators:
+
+        QVERIFY(sv == string);
+        QVERIFY(string == sv);
+
+        QVERIFY(!(sv != string));
+        QVERIFY(!(string != sv));
+
+        QVERIFY(!(sv < string));
+        QVERIFY(sv <= string);
+        QVERIFY(!(sv > string));
+        QVERIFY(sv >= string);
+
+        QVERIFY(!(string < sv));
+        QVERIFY(string <= sv);
+        QVERIFY(!(string > sv));
+        QVERIFY(string >= sv);
     }
 
     // copy-construct from rvalue (QStringView never assumes ownership):
     {
         QStringView sv2 = std::move(string);
-
-        QCOMPARE(help::size(sv2), help::size(string));
-
-        QVERIFY(std::equal(help::cbegin(string), help::cend(string),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv2.cbegin(), sv2.size())));
-        QVERIFY(std::equal(help::cbegin(string), help::cend(string),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv2.begin(), sv2.size())));
-        QVERIFY(std::equal(help::crbegin(string), help::crend(string),
-                           sv2.crbegin()));
-        QVERIFY(std::equal(help::crbegin(string), help::crend(string),
-                           sv2.rbegin()));
-
-        QCOMPARE(help::size(sv2), help::size(sv));
-
-        QVERIFY(std::equal(help::cbegin(sv), help::cend(sv),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv2.cbegin(), sv2.size())));
-        QVERIFY(std::equal(help::cbegin(sv), help::cend(sv),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv2.begin(), sv2.size())));
-        QVERIFY(std::equal(help::crbegin(sv), help::crend(sv),
-                           sv2.crbegin()));
-        QVERIFY(std::equal(help::crbegin(sv), help::crend(sv),
-                           sv2.rbegin()));
+        QVERIFY(sv2 == sv);
+        QVERIFY(sv2 == string);
     }
 
     // copy-assign from rvalue (QStringView never assumes ownership):
     {
         QStringView sv2;
         sv2 = std::move(string);
-
-        QCOMPARE(help::size(sv2), help::size(string));
-
-        QVERIFY(std::equal(help::cbegin(string), help::cend(string),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv2.cbegin(), sv2.size())));
-        QVERIFY(std::equal(help::cbegin(string), help::cend(string),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv2.begin(), sv2.size())));
-        QVERIFY(std::equal(help::crbegin(string), help::crend(string),
-                           sv2.crbegin()));
-        QVERIFY(std::equal(help::crbegin(string), help::crend(string),
-                           sv2.rbegin()));
-
-        QCOMPARE(help::size(sv2), help::size(sv));
-
-        QVERIFY(std::equal(help::cbegin(sv), help::cend(sv),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv2.cbegin(), sv2.size())));
-        QVERIFY(std::equal(help::cbegin(sv), help::cend(sv),
-                           QT_MAKE_CHECKED_ARRAY_ITERATOR(sv2.begin(), sv2.size())));
-        QVERIFY(std::equal(help::crbegin(sv), help::crend(sv),
-                           sv2.crbegin()));
-        QVERIFY(std::equal(help::crbegin(sv), help::crend(sv),
-                           sv2.rbegin()));
+        QVERIFY(sv2 == sv);
+        QVERIFY(sv2 == string);
     }
 }
 

@@ -31,6 +31,7 @@
 #undef QT_ASCII_CAST_WARNINGS
 
 #include <QString>
+#include <QStringView>
 #include <QChar>
 #include <QStringRef>
 #include <QLatin1String>
@@ -44,6 +45,7 @@ Q_DECLARE_METATYPE(QStringRef)
 template <typename T>
 QString toQString(const T &t) { return QString(t); }
 QString toQString(const QStringRef &ref) { return ref.toString(); }
+QString toQString(QStringView view) { return view.toString(); }
 
 // FIXME: these are missing at the time of writing, add them, then remove the dummies here:
 #define MAKE_RELOP(op, A1, A2) \
@@ -81,13 +83,15 @@ class tst_QStringApiSymmetry : public QObject
     void compare_impl() const;
 
 private Q_SLOTS:
-    // test all combinations of {QChar, QStringRef, QString, QLatin1String, QByteArray, const char*}
+    // test all combinations of {QChar, QStringRef, QString, QStringView, QLatin1String, QByteArray, const char*}
     void compare_QChar_QChar_data() { compare_data(false); }
     void compare_QChar_QChar() { compare_impl<QChar, QChar>(); }
     void compare_QChar_QStringRef_data() { compare_data(false); }
     void compare_QChar_QStringRef() { compare_impl<QChar, QStringRef>(); }
     void compare_QChar_QString_data() { compare_data(false); }
     void compare_QChar_QString() { compare_impl<QChar, QString>(); }
+    void compare_QChar_QStringView_data() { compare_data(false); }
+    void compare_QChar_QStringView() { compare_impl<QChar, QStringView>(); }
     void compare_QChar_QLatin1String_data() { compare_data(false); }
     void compare_QChar_QLatin1String() { compare_impl<QChar, QLatin1String>(); }
     void compare_QChar_QByteArray_data() { compare_data(false); }
@@ -101,6 +105,8 @@ private Q_SLOTS:
     void compare_QStringRef_QStringRef() { compare_impl<QStringRef, QStringRef>(); }
     void compare_QStringRef_QString_data() { compare_data(); }
     void compare_QStringRef_QString() { compare_impl<QStringRef, QString>(); }
+    void compare_QStringRef_QStringView_data() { compare_data(); }
+    void compare_QStringRef_QStringView() { compare_impl<QStringRef, QStringView>(); }
     void compare_QStringRef_QLatin1String_data() { compare_data(); }
     void compare_QStringRef_QLatin1String() { compare_impl<QStringRef, QLatin1String>(); }
     void compare_QStringRef_QByteArray_data() { compare_data(); }
@@ -114,6 +120,8 @@ private Q_SLOTS:
     void compare_QString_QStringRef() { compare_impl<QString, QStringRef>(); }
     void compare_QString_QString_data() { compare_data(); }
     void compare_QString_QString() { compare_impl<QString, QString>(); }
+    void compare_QString_QStringView_data() { compare_data(); }
+    void compare_QString_QStringView() { compare_impl<QString, QStringView>(); }
     void compare_QString_QLatin1String_data() { compare_data(); }
     void compare_QString_QLatin1String() { compare_impl<QString, QLatin1String>(); }
     void compare_QString_QByteArray_data() { compare_data(); }
@@ -121,12 +129,25 @@ private Q_SLOTS:
     void compare_QString_const_char_star_data() { compare_data(); }
     void compare_QString_const_char_star() { compare_impl<QString, const char *>(); }
 
+    void compare_QStringView_QChar_data() { compare_data(false); }
+    void compare_QStringView_QChar() { compare_impl<QStringView, QChar>(); }
+    void compare_QStringView_QStringRef_data() { compare_data(); }
+    void compare_QStringView_QStringRef() { compare_impl<QStringView, QStringRef>(); }
+    void compare_QStringView_QString_data() { compare_data(); }
+    void compare_QStringView_QString() { compare_impl<QStringView, QString>(); }
+    void compare_QStringView_QStringView_data() { compare_data(); }
+    void compare_QStringView_QStringView() { compare_impl<QStringView, QStringView>(); }
+    void compare_QStringView_QLatin1String_data() { compare_data(); }
+    void compare_QStringView_QLatin1String() { compare_impl<QStringView, QLatin1String>(); }
+
     void compare_QLatin1String_QChar_data() { compare_data(false); }
     void compare_QLatin1String_QChar() { compare_impl<QLatin1String, QChar>(); }
     void compare_QLatin1String_QStringRef_data() { compare_data(); }
     void compare_QLatin1String_QStringRef() { compare_impl<QLatin1String, QStringRef>(); }
     void compare_QLatin1String_QString_data() { compare_data(); }
     void compare_QLatin1String_QString() { compare_impl<QLatin1String, QString>(); }
+    void compare_QLatin1String_QStringView_data() { compare_data(); }
+    void compare_QLatin1String_QStringView() { compare_impl<QLatin1String, QStringView>(); }
     void compare_QLatin1String_QLatin1String_data() { compare_data(); }
     void compare_QLatin1String_QLatin1String() { compare_impl<QLatin1String, QLatin1String>(); }
     void compare_QLatin1String_QByteArray_data() { compare_data(); }
@@ -282,6 +303,7 @@ template <class Str> Str  make(const QStringRef &sf, QLatin1String l1, const QBy
 template <> QChar         make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf.isEmpty() ? QChar() : sf.at(0); }
 template <> QStringRef    make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf; }
 template <> QString       make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf.toString(); }
+template <> QStringView   make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf; }
 template <> QLatin1String make(const QStringRef &,   QLatin1String l1, const QByteArray &)   { return l1; }
 template <> QByteArray    make(const QStringRef &,   QLatin1String,    const QByteArray &u8) { return u8; }
 template <> const char *  make(const QStringRef &,   QLatin1String,    const QByteArray &u8) { return u8.data(); }
