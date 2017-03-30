@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
     \reentrant
     \since 4.6
 
-    \brief The QStringBuilder class is a template class that provides a facility to build up QStrings from smaller chunks.
+    \brief The QStringBuilder class is a template class that provides a facility to build up QStrings and QByteArrays from smaller chunks.
 
     \ingroup tools
     \ingroup shared
@@ -51,22 +51,34 @@ QT_BEGIN_NAMESPACE
 
 
     To build a QString by multiple concatenations, QString::operator+()
-    is typically used. This causes \e{n - 1} reallocations when building
-    a string from \e{n} chunks.
+    is typically used. This causes \e{n - 1} allocations when building
+    a string from \e{n} chunks. The same is true for QByteArray.
 
     QStringBuilder uses expression templates to collect the individual
     chunks, compute the total size, allocate the required amount of
-    memory for the final QString object, and copy the chunks into the
+    memory for the final string object, and copy the chunks into the
     allocated memory.
 
     The QStringBuilder class is not to be used explicitly in user
     code.  Instances of the class are created as return values of the
-    operator%() function, acting on objects of type QString,
-    QLatin1String, QStringRef, QChar, QCharRef,
-    QLatin1Char, and \c char.
+    operator%() function, acting on objects of the following types:
+
+    For building QStrings:
+
+    \li QString, QStringRef,
+    \li QChar, QCharRef, QLatin1Char,
+    \li QLatin1String,
+    \li QByteArray, \c char, \c{const char[]}.
+
+    The types in the last list point are only available when
+    QT_NO_CAST_FROM_ASCII is not defined.
+
+    For building QByteArrays:
+
+    \li QByteArray, \c char, \c{const char[]}.
 
     Concatenating strings with operator%() generally yields better
-    performance then using \c QString::operator+() on the same chunks
+    performance than using \c QString::operator+() on the same chunks
     if there are three or more of them, and performs equally well in other
     cases.
 
