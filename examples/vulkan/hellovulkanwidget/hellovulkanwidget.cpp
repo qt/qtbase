@@ -52,18 +52,19 @@
 #include <QVulkanFunctions>
 #include <QApplication>
 #include <QVBoxLayout>
-#include <QTextEdit>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QLCDNumber>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTabWidget>
 
-MainWindow::MainWindow(VulkanWindow *w)
+MainWindow::MainWindow(VulkanWindow *w, QPlainTextEdit *logWidget)
     : m_window(w)
 {
     QWidget *wrapper = QWidget::createWindowContainer(w);
 
-    m_info = new QTextEdit;
+    m_info = new QPlainTextEdit;
     m_info->setReadOnly(true);
 
     m_number = new QLCDNumber(3);
@@ -80,7 +81,10 @@ MainWindow::MainWindow(VulkanWindow *w)
     connect(quitButton, &QPushButton::clicked, qApp, &QCoreApplication::quit);
 
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(m_info, 2);
+    m_infoTab = new QTabWidget(this);
+    m_infoTab->addTab(m_info, tr("Vulkan Info"));
+    m_infoTab->addTab(logWidget, tr("Debug Log"));
+    layout->addWidget(m_infoTab, 2);
     layout->addWidget(m_number, 1);
     layout->addWidget(wrapper, 5);
     layout->addWidget(grabButton, 1);
@@ -90,7 +94,7 @@ MainWindow::MainWindow(VulkanWindow *w)
 
 void MainWindow::onVulkanInfoReceived(const QString &text)
 {
-    m_info->setText(text);
+    m_info->setPlainText(text);
 }
 
 void MainWindow::onFrameQueued(int colorValue)

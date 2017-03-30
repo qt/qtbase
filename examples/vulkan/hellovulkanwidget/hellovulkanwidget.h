@@ -54,7 +54,8 @@
 class VulkanWindow;
 
 QT_BEGIN_NAMESPACE
-class QTextEdit;
+class QTabWidget;
+class QPlainTextEdit;
 class QLCDNumber;
 QT_END_NAMESPACE
 
@@ -63,7 +64,7 @@ class MainWindow : public QWidget
     Q_OBJECT
 
 public:
-    MainWindow(VulkanWindow *w);
+    explicit MainWindow(VulkanWindow *w, QPlainTextEdit *logWidget);
 
 public slots:
     void onVulkanInfoReceived(const QString &text);
@@ -72,7 +73,8 @@ public slots:
 
 private:
     VulkanWindow *m_window;
-    QTextEdit *m_info;
+    QTabWidget *m_infoTab;
+    QPlainTextEdit *m_info;
     QLCDNumber *m_number;
 };
 
