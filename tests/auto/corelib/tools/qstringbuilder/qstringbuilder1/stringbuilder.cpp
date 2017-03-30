@@ -64,6 +64,11 @@ template <> QString toQString(const QLatin1String &l) { return l; }
 template <> QString toQString(const QLatin1Char &l) { return QChar(l); }
 template <> QString toQString(const QChar &c) { return c; }
 template <> QString toQString(const QChar::SpecialCharacter &c) { return QChar(c); }
+#ifdef Q_COMPILER_UNICODE_STRINGS
+template <> QString toQString(char16_t * const &p) { return QStringView(p).toString(); }
+template <size_t N> QString toQString(const char16_t (&a)[N]) { return QStringView(a).toString(); }
+template <> QString toQString(const char16_t &c) { return QChar(c); }
+#endif
 
 template <typename T> QByteArray toQByteArray(const T &t);
 
@@ -82,6 +87,12 @@ void runScenario()
     QLatin1Char lchar('c');
     QChar qchar(lchar);
     QChar::SpecialCharacter special(QChar::Nbsp);
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    char16_t u16char = UNICODE_LITERAL[0];
+    char16_t u16chararray[] = { u's', 0xF6, u'm', 0xEB, u' ', u'l', 0xEF, u't', 0xEB, u'r', 0xE4, u'l', 0x00 };
+    QCOMPARE(QStringView(u16chararray), QStringView(UNICODE_LITERAL));
+    char16_t *u16charstar = u16chararray;
+#endif
 
 #define CHECK(QorP, a1, a2) \
     do { \
@@ -101,6 +112,9 @@ void runScenario()
     CHECK(P, l1string, qchar);
     CHECK(P, l1string, special);
     CHECK(P, l1string, QStringLiteral(LITERAL));
+    CHECK(Q, l1string, u16char);
+    CHECK(Q, l1string, u16chararray);
+    CHECK(Q, l1string, u16charstar);
 
     CHECK(P, string, string);
     CHECK(P, string, stringref);
@@ -108,26 +122,53 @@ void runScenario()
     CHECK(P, string, qchar);
     CHECK(P, string, special);
     CHECK(P, string, QStringLiteral(LITERAL));
+    CHECK(Q, string, u16char);
+    CHECK(Q, string, u16chararray);
+    CHECK(Q, string, u16charstar);
 
     CHECK(P, stringref, stringref);
     CHECK(P, stringref, lchar);
     CHECK(P, stringref, qchar);
     CHECK(P, stringref, special);
     CHECK(P, stringref, QStringLiteral(LITERAL));
+    CHECK(Q, stringref, u16char);
+    CHECK(Q, stringref, u16chararray);
+    CHECK(Q, stringref, u16charstar);
 
     CHECK(P, lchar, lchar);
     CHECK(P, lchar, qchar);
     CHECK(P, lchar, special);
     CHECK(P, lchar, QStringLiteral(LITERAL));
+    CHECK(Q, lchar, u16char);
+    CHECK(Q, lchar, u16chararray);
+    CHECK(Q, lchar, u16charstar);
 
     CHECK(P, qchar, qchar);
     CHECK(P, qchar, special);
     CHECK(P, qchar, QStringLiteral(LITERAL));
+    CHECK(Q, qchar, u16char);
+    CHECK(Q, qchar, u16chararray);
+    CHECK(Q, qchar, u16charstar);
 
     CHECK(P, special, special);
     CHECK(P, special, QStringLiteral(LITERAL));
+    CHECK(Q, special, u16char);
+    CHECK(Q, special, u16chararray);
+    CHECK(Q, special, u16charstar);
 
     CHECK(P, QStringLiteral(LITERAL), QStringLiteral(LITERAL));
+    CHECK(Q, QStringLiteral(LITERAL), u16char);
+    CHECK(Q, QStringLiteral(LITERAL), u16chararray);
+    CHECK(Q, QStringLiteral(LITERAL), u16charstar);
+
+    // CHECK(Q, u16char, u16char);             // BUILTIN <-> BUILTIN cat't be overloaded
+    // CHECK(Q, u16char, u16chararray);
+    // CHECK(Q, u16char, u16charstar);
+
+    // CHECK(Q, u16chararray, u16chararray);   // BUILTIN <-> BUILTIN cat't be overloaded
+    // CHECK(Q, u16chararray, u16charstar);
+
+    // CHECK(Q, u16charstar, u16charstar);     // BUILTIN <-> BUILTIN cat't be overloaded
 
 #undef DO
 
