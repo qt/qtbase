@@ -412,25 +412,23 @@ void qSetGlobalQHashSeed(int newSeed)
     results.
 
     The qt_hash functions must *never* change their results.
+
+    This function can hash discontiguous memory by invoking it on each chunk,
+    passing the previous's result in the next call's \a chained argument.
 */
-static uint qt_hash(const QChar *p, size_t n) Q_DECL_NOTHROW
+uint qt_hash(QStringView key, uint chained) Q_DECL_NOTHROW
 {
-    uint h = 0;
+    auto n = key.size();
+    auto p = key.utf16();
+
+    uint h = chained;
 
     while (n--) {
-        h = (h << 4) + (*p++).unicode();
+        h = (h << 4) + *p++;
         h ^= (h & 0xf0000000) >> 23;
         h &= 0x0fffffff;
     }
     return h;
-}
-
-/*!
-    \internal
-*/
-uint qt_hash(QStringView key) Q_DECL_NOTHROW
-{
-    return qt_hash(key.data(), key.size());
 }
 
 /*
