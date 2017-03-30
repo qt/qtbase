@@ -468,27 +468,7 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::fontEngine
 template <>
 QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
-    QByteArray *fontDataCopy = new QByteArray(fontData);
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(fontDataCopy,
-            fontDataCopy->constData(), fontDataCopy->size(), releaseFontData);
-    QCFType<CGFontRef> cgFont(CGFontCreateWithDataProvider(dataProvider));
-
-    if (!cgFont) {
-        qWarning("QCoreTextFontDatabase::fontEngine: CGFontCreateWithDataProvider failed");
-        return Q_NULLPTR;
-    }
-
-    QFontDef fontDef;
-    fontDef.pixelSize = pixelSize;
-    fontDef.pointSize = pixelSize * 72.0 / qt_defaultDpi();
-    fontDef.hintingPreference = hintingPreference;
-    CGAffineTransform transform = qt_transform_from_fontdef(fontDef);
-    QCFType<CTFontRef> ctFont(CTFontCreateWithGraphicsFont(cgFont, fontDef.pixelSize, &transform, Q_NULLPTR));
-    QCFType<CFURLRef> url(static_cast<CFURLRef>(CTFontCopyAttribute(ctFont, kCTFontURLAttribute)));
-
-    QFontEngine::FaceId faceId;
-    faceId.filename = filenameForCFUrl(url);
-    return QFontEngineFT::create(fontDef, faceId, fontData);
+    return QFontEngineFT::create(fontData, pixelSize, hintingPreference);
 }
 #endif
 
