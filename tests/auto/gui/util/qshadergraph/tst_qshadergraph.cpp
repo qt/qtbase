@@ -60,6 +60,36 @@ namespace
         edge.targetPortName = targetName;
         return edge;
     }
+
+    QShaderGraph::Statement createStatement(const QShaderNode &node,
+                                            const QVector<int> &inputs = QVector<int>(),
+                                            const QVector<int> &outputs = QVector<int>())
+    {
+        auto statement = QShaderGraph::Statement();
+        statement.node = node;
+        statement.inputs = inputs;
+        statement.outputs = outputs;
+        return statement;
+    }
+
+    void debugStatement(const QString &prefix, const QShaderGraph::Statement &statement)
+    {
+        qDebug() << prefix << statement.inputs << statement.uuid().toString() << statement.outputs;
+    }
+
+    void dumpStatementsIfNeeded(const QVector<QShaderGraph::Statement> &statements, const QVector<QShaderGraph::Statement> &expected)
+    {
+        if (statements != expected) {
+            for (int i = 0; i < qMax(statements.size(), expected.size()); i++) {
+                qDebug() << "----" << i << "----";
+                if (i < statements.size())
+                    debugStatement("A:", statements.at(i));
+                if (i < expected.size())
+                    debugStatement("E:", expected.at(i));
+                qDebug() << "-----------";
+            }
+        }
+    }
 }
 
 class tst_QShaderGraph : public QObject
@@ -69,8 +99,17 @@ private slots:
     void shouldHaveEdgeDefaultState();
     void shouldTestEdgesEquality_data();
     void shouldTestEdgesEquality();
+    void shouldManipulateStatementMembers();
+    void shouldTestStatementsEquality_data();
+    void shouldTestStatementsEquality();
+    void shouldFindIndexFromPortNameInStatements_data();
+    void shouldFindIndexFromPortNameInStatements();
     void shouldManageNodeList();
     void shouldManageEdgeList();
+    void shouldSerializeGraphForCodeGeneration();
+    void shouldHandleUnboundPortsDuringGraphSerialization();
+    void shouldSurviveCyclesDuringGraphSerialization();
+    void shouldDealWithEdgesJumpingOverLayers();
 };
 
 void tst_QShaderGraph::shouldHaveEdgeDefaultState()
@@ -127,6 +166,126 @@ void tst_QShaderGraph::shouldTestEdgesEquality()
     QFETCH(bool, expected);
     QCOMPARE(equal, expected);
     QCOMPARE(notEqual, !expected);
+}
+
+void tst_QShaderGraph::shouldManipulateStatementMembers()
+{
+    // GIVEN
+    auto statement = QShaderGraph::Statement();
+
+    // THEN (default state)
+    QVERIFY(statement.inputs.isEmpty());
+    QVERIFY(statement.outputs.isEmpty());
+    QVERIFY(statement.node.uuid().isNull());
+    QVERIFY(statement.uuid().isNull());
+
+    // WHEN
+    const auto node = createNode({});
+    statement.node = node;
+
+    // THEN
+    QCOMPARE(statement.uuid(), node.uuid());
+
+    // WHEN
+    statement.node = QShaderNode();
+
+    // THEN
+    QVERIFY(statement.uuid().isNull());
+}
+
+void tst_QShaderGraph::shouldTestStatementsEquality_data()
+{
+    QTest::addColumn<QShaderGraph::Statement>("left");
+    QTest::addColumn<QShaderGraph::Statement>("right");
+    QTest::addColumn<bool>("expected");
+
+    const auto node1 = createNode({});
+    const auto node2 = createNode({});
+
+    QTest::newRow("EqualNodes") << createStatement(node1, {1, 2}, {3, 4})
+                                << createStatement(node1, {1, 2}, {3, 4})
+                                << true;
+    QTest::newRow("EqualInvalids") << createStatement(QShaderNode(), {1, 2}, {3, 4})
+                                   << createStatement(QShaderNode(), {1, 2}, {3, 4})
+                                   << true;
+    QTest::newRow("Nodes") << createStatement(node1, {1, 2}, {3, 4})
+                           << createStatement(node2, {1, 2}, {3, 4})
+                           << false;
+    QTest::newRow("Inputs") << createStatement(node1, {1, 2}, {3, 4})
+                            << createStatement(node1, {1, 2, 0}, {3, 4})
+                            << false;
+    QTest::newRow("Outputs") << createStatement(node1, {1, 2}, {3, 4})
+                             << createStatement(node1, {1, 2}, {3, 0, 4})
+                             << false;
+}
+
+void tst_QShaderGraph::shouldTestStatementsEquality()
+{
+    // GIVEN
+    QFETCH(QShaderGraph::Statement, left);
+    QFETCH(QShaderGraph::Statement, right);
+
+    // WHEN
+    const auto equal = (left == right);
+    const auto notEqual = (left != right);
+
+    // THEN
+    QFETCH(bool, expected);
+    QCOMPARE(equal, expected);
+    QCOMPARE(notEqual, !expected);
+}
+
+void tst_QShaderGraph::shouldFindIndexFromPortNameInStatements_data()
+{
+    QTest::addColumn<QShaderGraph::Statement>("statement");
+    QTest::addColumn<QString>("portName");
+    QTest::addColumn<int>("expectedInputIndex");
+    QTest::addColumn<int>("expectedOutputIndex");
+
+    const auto inputNodeStatement = createStatement(createNode({
+        createPort(QShaderNodePort::Output, "input")
+    }));
+    const auto outputNodeStatement = createStatement(createNode({
+        createPort(QShaderNodePort::Input, "output")
+    }));
+    const auto functionNodeStatement = createStatement(createNode({
+        createPort(QShaderNodePort::Input, "input1"),
+        createPort(QShaderNodePort::Output, "output1"),
+        createPort(QShaderNodePort::Input, "input2"),
+        createPort(QShaderNodePort::Output, "output2"),
+        createPort(QShaderNodePort::Output, "output3"),
+        createPort(QShaderNodePort::Input, "input3")
+    }));
+
+    QTest::newRow("Invalid") << QShaderGraph::Statement() << "foo" << -1 << -1;
+    QTest::newRow("InputNodeWrongName") << inputNodeStatement << "foo" << -1 << -1;
+    QTest::newRow("InputNodeExistingName") << inputNodeStatement << "input" << -1 << 0;
+    QTest::newRow("OutputNodeWrongName") << outputNodeStatement << "foo" << -1 << -1;
+    QTest::newRow("OutputNodeExistingName") << outputNodeStatement << "output" << 0 << -1;
+    QTest::newRow("FunctionNodeWrongName") << functionNodeStatement << "foo" << -1 << -1;
+    QTest::newRow("FunctionNodeInput1") << functionNodeStatement << "input1" << 0 << -1;
+    QTest::newRow("FunctionNodeOutput1") << functionNodeStatement << "output1" << -1 << 0;
+    QTest::newRow("FunctionNodeInput2") << functionNodeStatement << "input2" << 1 << -1;
+    QTest::newRow("FunctionNodeOutput2") << functionNodeStatement << "output2" << -1 << 1;
+    QTest::newRow("FunctionNodeInput3") << functionNodeStatement << "input3" << 2 << -1;
+    QTest::newRow("FunctionNodeOutput3") << functionNodeStatement << "output3" << -1 << 2;
+}
+
+void tst_QShaderGraph::shouldFindIndexFromPortNameInStatements()
+{
+    // GIVEN
+    QFETCH(QShaderGraph::Statement, statement);
+    QFETCH(QString, portName);
+    QFETCH(int, expectedInputIndex);
+    QFETCH(int, expectedOutputIndex);
+
+    // WHEN
+    const auto inputIndex = statement.portIndex(QShaderNodePort::Input, portName);
+    const auto outputIndex = statement.portIndex(QShaderNodePort::Output, portName);
+
+    // THEN
+    QCOMPARE(inputIndex, expectedInputIndex);
+    QCOMPARE(outputIndex, expectedOutputIndex);
 }
 
 void tst_QShaderGraph::shouldManageNodeList()
@@ -244,6 +403,255 @@ void tst_QShaderGraph::shouldManageEdgeList()
     QCOMPARE(graph.edges().size(), 2);
     QCOMPARE(graph.edges().at(0), edge1);
     QCOMPARE(graph.edges().at(1), edge2);
+}
+
+void tst_QShaderGraph::shouldSerializeGraphForCodeGeneration()
+{
+    // GIVEN
+    const auto input1 = createNode({
+        createPort(QShaderNodePort::Output, "input1Value")
+    });
+    const auto input2 = createNode({
+        createPort(QShaderNodePort::Output, "input2Value")
+    });
+    const auto output1 = createNode({
+        createPort(QShaderNodePort::Input, "output1Value")
+    });
+    const auto output2 = createNode({
+        createPort(QShaderNodePort::Input, "output2Value")
+    });
+    const auto function1 = createNode({
+        createPort(QShaderNodePort::Input, "function1Input"),
+        createPort(QShaderNodePort::Output, "function1Output")
+    });
+    const auto function2 = createNode({
+        createPort(QShaderNodePort::Input, "function2Input1"),
+        createPort(QShaderNodePort::Input, "function2Input2"),
+        createPort(QShaderNodePort::Output, "function2Output")
+    });
+    const auto function3 = createNode({
+        createPort(QShaderNodePort::Input, "function3Input1"),
+        createPort(QShaderNodePort::Input, "function3Input2"),
+        createPort(QShaderNodePort::Output, "function3Output1"),
+        createPort(QShaderNodePort::Output, "function3Output2")
+    });
+
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+        res.addNode(input1);
+        res.addNode(input2);
+        res.addNode(output1);
+        res.addNode(output2);
+        res.addNode(function1);
+        res.addNode(function2);
+        res.addNode(function3);
+        res.addEdge(createEdge(input1.uuid(), "input1Value", function1.uuid(), "function1Input"));
+        res.addEdge(createEdge(input1.uuid(), "input1Value", function2.uuid(), "function2Input1"));
+        res.addEdge(createEdge(input2.uuid(), "input2Value", function2.uuid(), "function2Input2"));
+        res.addEdge(createEdge(function1.uuid(), "function1Output", function3.uuid(), "function3Input1"));
+        res.addEdge(createEdge(function2.uuid(), "function2Output", function3.uuid(), "function3Input2"));
+        res.addEdge(createEdge(function3.uuid(), "function3Output1", output1.uuid(), "output1Value"));
+        res.addEdge(createEdge(function3.uuid(), "function3Output2", output2.uuid(), "output2Value"));
+        return res;
+    }();
+
+    // WHEN
+    const auto statements = graph.createStatements();
+
+    // THEN
+    const auto expected = QVector<QShaderGraph::Statement>()
+            << createStatement(input2, {}, {1})
+            << createStatement(input1, {}, {0})
+            << createStatement(function2, {0, 1}, {3})
+            << createStatement(function1, {0}, {2})
+            << createStatement(function3, {2, 3}, {4, 5})
+            << createStatement(output2, {5}, {})
+            << createStatement(output1, {4}, {});
+    dumpStatementsIfNeeded(statements, expected);
+    QCOMPARE(statements, expected);
+}
+
+void tst_QShaderGraph::shouldHandleUnboundPortsDuringGraphSerialization()
+{
+    // GIVEN
+    const auto input = createNode({
+        createPort(QShaderNodePort::Output, "input")
+    });
+    const auto unboundInput = createNode({
+        createPort(QShaderNodePort::Output, "unbound")
+    });
+    const auto output = createNode({
+        createPort(QShaderNodePort::Input, "output")
+    });
+    const auto unboundOutput = createNode({
+        createPort(QShaderNodePort::Input, "unbound")
+    });
+    const auto function = createNode({
+        createPort(QShaderNodePort::Input, "functionInput1"),
+        createPort(QShaderNodePort::Input, "functionInput2"),
+        createPort(QShaderNodePort::Input, "functionInput3"),
+        createPort(QShaderNodePort::Output, "functionOutput1"),
+        createPort(QShaderNodePort::Output, "functionOutput2"),
+        createPort(QShaderNodePort::Output, "functionOutput3")
+    });
+
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+        res.addNode(input);
+        res.addNode(unboundInput);
+        res.addNode(output);
+        res.addNode(unboundOutput);
+        res.addNode(function);
+        res.addEdge(createEdge(input.uuid(), "input", function.uuid(), "functionInput2"));
+        res.addEdge(createEdge(function.uuid(), "functionOutput2", output.uuid(), "output"));
+        return res;
+    }();
+
+    // WHEN
+    const auto statements = graph.createStatements();
+
+    // THEN
+    // Note that no edge leads to the unbound input
+    const auto expected = QVector<QShaderGraph::Statement>()
+            << createStatement(input, {}, {0})
+            << createStatement(function, {-1, 0, -1}, {2, 3, 4})
+            << createStatement(unboundOutput, {-1}, {})
+            << createStatement(output, {3}, {});
+    dumpStatementsIfNeeded(statements, expected);
+    QCOMPARE(statements, expected);
+}
+
+void tst_QShaderGraph::shouldSurviveCyclesDuringGraphSerialization()
+{
+    // GIVEN
+    const auto input = createNode({
+        createPort(QShaderNodePort::Output, "input")
+    });
+    const auto output = createNode({
+        createPort(QShaderNodePort::Input, "output")
+    });
+    const auto function1 = createNode({
+        createPort(QShaderNodePort::Input, "function1Input1"),
+        createPort(QShaderNodePort::Input, "function1Input2"),
+        createPort(QShaderNodePort::Output, "function1Output")
+    });
+    const auto function2 = createNode({
+        createPort(QShaderNodePort::Input, "function2Input"),
+        createPort(QShaderNodePort::Output, "function2Output")
+    });
+    const auto function3 = createNode({
+        createPort(QShaderNodePort::Input, "function3Input"),
+        createPort(QShaderNodePort::Output, "function3Output")
+    });
+
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+        res.addNode(input);
+        res.addNode(output);
+        res.addNode(function1);
+        res.addNode(function2);
+        res.addNode(function3);
+        res.addEdge(createEdge(input.uuid(), "input", function1.uuid(), "function1Input1"));
+        res.addEdge(createEdge(function1.uuid(), "function1Output", function2.uuid(), "function2Input"));
+        res.addEdge(createEdge(function2.uuid(), "function2Output", function3.uuid(), "function3Input"));
+        res.addEdge(createEdge(function3.uuid(), "function3Output", function1.uuid(), "function1Input2"));
+        res.addEdge(createEdge(function2.uuid(), "function2Output", output.uuid(), "output"));
+        return res;
+    }();
+
+    // WHEN
+    const auto statements = graph.createStatements();
+
+    // THEN
+    // Obviously will lead to a compile failure later on since it cuts everything beyond the cycle
+    const auto expected = QVector<QShaderGraph::Statement>()
+            << createStatement(output, {2}, {});
+    dumpStatementsIfNeeded(statements, expected);
+    QCOMPARE(statements, expected);
+}
+
+void tst_QShaderGraph::shouldDealWithEdgesJumpingOverLayers()
+{
+    // GIVEN
+    const auto worldPosition = createNode({
+        createPort(QShaderNodePort::Output, "worldPosition")
+    });
+    const auto texture = createNode({
+        createPort(QShaderNodePort::Output, "texture")
+    });
+    const auto texCoord = createNode({
+        createPort(QShaderNodePort::Output, "texCoord")
+    });
+    const auto lightIntensity = createNode({
+        createPort(QShaderNodePort::Output, "lightIntensity")
+    });
+    const auto exposure = createNode({
+        createPort(QShaderNodePort::Output, "exposure")
+    });
+    const auto fragColor = createNode({
+        createPort(QShaderNodePort::Input, "fragColor")
+    });
+    const auto sampleTexture = createNode({
+        createPort(QShaderNodePort::Input, "sampler"),
+        createPort(QShaderNodePort::Input, "coord"),
+        createPort(QShaderNodePort::Output, "color")
+    });
+    const auto lightFunction = createNode({
+        createPort(QShaderNodePort::Input, "baseColor"),
+        createPort(QShaderNodePort::Input, "position"),
+        createPort(QShaderNodePort::Input, "lightIntensity"),
+        createPort(QShaderNodePort::Output, "outputColor")
+    });
+    const auto exposureFunction = createNode({
+        createPort(QShaderNodePort::Input, "inputColor"),
+        createPort(QShaderNodePort::Input, "exposure"),
+        createPort(QShaderNodePort::Output, "outputColor")
+    });
+
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+
+        res.addNode(worldPosition);
+        res.addNode(texture);
+        res.addNode(texCoord);
+        res.addNode(lightIntensity);
+        res.addNode(exposure);
+        res.addNode(fragColor);
+        res.addNode(sampleTexture);
+        res.addNode(lightFunction);
+        res.addNode(exposureFunction);
+
+        res.addEdge(createEdge(texture.uuid(), "texture", sampleTexture.uuid(), "sampler"));
+        res.addEdge(createEdge(texCoord.uuid(), "texCoord", sampleTexture.uuid(), "coord"));
+
+        res.addEdge(createEdge(worldPosition.uuid(), "worldPosition", lightFunction.uuid(), "position"));
+        res.addEdge(createEdge(sampleTexture.uuid(), "color", lightFunction.uuid(), "baseColor"));
+        res.addEdge(createEdge(lightIntensity.uuid(), "lightIntensity", lightFunction.uuid(), "lightIntensity"));
+
+        res.addEdge(createEdge(lightFunction.uuid(), "outputColor", exposureFunction.uuid(), "inputColor"));
+        res.addEdge(createEdge(exposure.uuid(), "exposure", exposureFunction.uuid(), "exposure"));
+
+        res.addEdge(createEdge(exposureFunction.uuid(), "outputColor", fragColor.uuid(), "fragColor"));
+
+        return res;
+    }();
+
+    // WHEN
+    const auto statements = graph.createStatements();
+
+    // THEN
+    const auto expected = QVector<QShaderGraph::Statement>()
+            << createStatement(texCoord, {}, {2})
+            << createStatement(texture, {}, {1})
+            << createStatement(lightIntensity, {}, {3})
+            << createStatement(sampleTexture, {1, 2}, {5})
+            << createStatement(worldPosition, {}, {0})
+            << createStatement(exposure, {}, {4})
+            << createStatement(lightFunction, {5, 0, 3}, {6})
+            << createStatement(exposureFunction, {6, 4}, {7})
+            << createStatement(fragColor, {7}, {});
+    dumpStatementsIfNeeded(statements, expected);
+    QCOMPARE(statements, expected);
 }
 
 QTEST_MAIN(tst_QShaderGraph)

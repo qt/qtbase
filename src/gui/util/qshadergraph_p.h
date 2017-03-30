@@ -69,6 +69,17 @@ public:
         QString targetPortName;
     };
 
+    class Statement
+    {
+    public:
+        Q_GUI_EXPORT QUuid uuid() const Q_DECL_NOTHROW;
+        Q_GUI_EXPORT int portIndex(QShaderNodePort::Direction direction, const QString &portName) const Q_DECL_NOTHROW;
+
+        QShaderNode node;
+        QVector<int> inputs;
+        QVector<int> outputs;
+    };
+
     Q_GUI_EXPORT void addNode(const QShaderNode &node);
     Q_GUI_EXPORT void removeNode(const QShaderNode &node);
     Q_GUI_EXPORT QVector<QShaderNode> nodes() const Q_DECL_NOTHROW;
@@ -76,6 +87,8 @@ public:
     Q_GUI_EXPORT void addEdge(const Edge &edge);
     Q_GUI_EXPORT void removeEdge(const Edge &edge);
     Q_GUI_EXPORT QVector<Edge> edges() const Q_DECL_NOTHROW;
+
+    Q_GUI_EXPORT QVector<Statement> createStatements() const;
 
 private:
     QVector<QShaderNode> m_nodes;
@@ -89,12 +102,21 @@ inline bool operator!=(const QShaderGraph::Edge &lhs, const QShaderGraph::Edge &
     return !(lhs == rhs);
 }
 
+Q_GUI_EXPORT bool operator==(const QShaderGraph::Statement &lhs, const QShaderGraph::Statement &rhs) Q_DECL_NOTHROW;
+
+inline bool operator!=(const QShaderGraph::Statement &lhs, const QShaderGraph::Statement &rhs) Q_DECL_NOTHROW
+{
+    return !(lhs == rhs);
+}
+
 Q_DECLARE_TYPEINFO(QShaderGraph, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QShaderGraph::Edge, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderGraph::Statement, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QShaderGraph)
 Q_DECLARE_METATYPE(QShaderGraph::Edge)
+Q_DECLARE_METATYPE(QShaderGraph::Statement)
 
 #endif // QSHADERGRAPH_P_H
