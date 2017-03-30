@@ -994,6 +994,10 @@
 #  endif /* __cplusplus */
 #endif /* Q_CC_MSVC */
 
+#ifdef Q_COMPILER_UNICODE_STRINGS
+#  define Q_STDLIB_UNICODE_STRINGS
+#endif
+
 #ifdef __cplusplus
 # include <utility>
 # if defined(Q_OS_QNX)
@@ -1016,8 +1020,9 @@
 #    undef Q_COMPILER_INITIALIZER_LISTS
 #    undef Q_COMPILER_RVALUE_REFS
 #    undef Q_COMPILER_REF_QUALIFIERS
-#    undef Q_COMPILER_UNICODE_STRINGS
 #    undef Q_COMPILER_NOEXCEPT
+// Disable C++11 library features:
+#    undef Q_STDLIB_UNICODE_STRINGS
 #   endif // !_HAS_CPP0X
 #   if !defined(_HAS_NULLPTR_T) || !_HAS_NULLPTR_T
 #    undef Q_COMPILER_NULLPTR

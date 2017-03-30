@@ -756,7 +756,7 @@ public:
     static inline QString fromStdWString(const std::wstring &s);
     inline std::wstring toStdWString() const;
 
-#if defined(Q_COMPILER_UNICODE_STRINGS) || defined(Q_QDOC)
+#if defined(Q_STDLIB_UNICODE_STRINGS) || defined(Q_QDOC)
     static inline QString fromStdU16String(const std::u16string &s);
     inline std::u16string toStdU16String() const;
     static inline QString fromStdU32String(const std::u32string &s);
@@ -1339,7 +1339,7 @@ inline std::wstring QString::toStdWString() const
 inline QString QString::fromStdWString(const std::wstring &s)
 { return fromWCharArray(s.data(), int(s.size())); }
 
-#if defined(Q_COMPILER_UNICODE_STRINGS)
+#if defined(Q_STDLIB_UNICODE_STRINGS)
 inline QString QString::fromStdU16String(const std::u16string &s)
 { return fromUtf16(s.data(), int(s.size())); }
 

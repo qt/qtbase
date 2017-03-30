@@ -5850,7 +5850,7 @@ void tst_QString::fromUtf16_char16()
 
 void tst_QString::unicodeStrings()
 {
-#ifdef Q_COMPILER_UNICODE_STRINGS
+#ifdef Q_STDLIB_UNICODE_STRINGS
     QString s1, s2;
     static const std::u16string u16str1(u"Hello Unicode World");
     static const std::u32string u32str1(U"Hello Unicode World");
@@ -5865,7 +5865,7 @@ void tst_QString::unicodeStrings()
     s1 = QString::fromStdU32String(std::u32string(U"\u221212\U000020AC\U00010000"));
     QCOMPARE(s1, QString::fromUtf8("\342\210\222" "12" "\342\202\254" "\360\220\200\200"));
 #else
-    QSKIP("Compiler does not support C++11 unicode strings");
+    QSKIP("Standard Library does not support C++11 unicode strings");
 #endif
 }
 
