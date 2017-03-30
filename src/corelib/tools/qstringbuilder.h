@@ -277,25 +277,6 @@ template <> struct QConcatenable<QStringRef> : private QAbstractConcatenable
     }
 };
 
-template <int N> struct QConcatenable<char[N]> : private QAbstractConcatenable
-{
-    typedef char type[N];
-    typedef QByteArray ConvertTo;
-    enum { ExactSize = false };
-    static int size(const char[N]) { return N - 1; }
-#ifndef QT_NO_CAST_FROM_ASCII
-    static inline void QT_ASCII_CAST_WARN appendTo(const char a[N], QChar *&out)
-    {
-        QAbstractConcatenable::convertFromAscii(a, N - 1, out);
-    }
-#endif
-    static inline void appendTo(const char a[N], char *&out)
-    {
-        while (*a)
-            *out++ = *a++;
-    }
-};
-
 template <int N> struct QConcatenable<const char[N]> : private QAbstractConcatenable
 {
     typedef const char type[N];
@@ -313,6 +294,11 @@ template <int N> struct QConcatenable<const char[N]> : private QAbstractConcaten
         while (*a)
             *out++ = *a++;
     }
+};
+
+template <int N> struct QConcatenable<char[N]> : QConcatenable<const char[N]>
+{
+    typedef char type[N];
 };
 
 template <> struct QConcatenable<const char *> : private QAbstractConcatenable
