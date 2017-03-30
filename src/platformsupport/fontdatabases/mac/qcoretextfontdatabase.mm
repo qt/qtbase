@@ -363,30 +363,6 @@ void QCoreTextFontDatabase::releaseHandle(void *handle)
     CFRelease(CTFontDescriptorRef(handle));
 }
 
-#ifndef QT_NO_FREETYPE
-static QByteArray filenameForCFUrl(CFURLRef url)
-{
-    // The on-stack buffer prevents that a QByteArray allocated for the worst case (MAXPATHLEN)
-    // stays around for the lifetime of the font. Additionally, it helps to move the char
-    // signedness cast to an acceptable place.
-    uchar buffer[MAXPATHLEN];
-    QByteArray filename;
-
-    if (!CFURLGetFileSystemRepresentation(url, true, buffer, sizeof(buffer))) {
-        qWarning("QCoreTextFontDatabase::filenameForCFUrl: could not resolve file for URL %s",
-                 url ? qPrintable(QString::fromCFString(CFURLGetString(url))) : "(null)");
-    } else {
-        QCFType<CFStringRef> scheme = CFURLCopyScheme(url);
-        if (QString::fromCFString(scheme) == QLatin1String("qrc"))
-            filename = ":";
-
-        filename += reinterpret_cast<char *>(buffer);
-    }
-
-    return filename;
-}
-#endif
-
 extern CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
 
 template <>
@@ -420,11 +396,16 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const
 {
     CTFontDescriptorRef descriptor = static_cast<CTFontDescriptorRef>(usrPtr);
 
-    QCFType<CFURLRef> url(static_cast<CFURLRef>(CTFontDescriptorCopyAttribute(descriptor, kCTFontURLAttribute)));
-
     QByteArray filename;
-    if (url)
-        filename = filenameForCFUrl(url);
+    if (NSURL *url = [static_cast<NSURL *>(CTFontDescriptorCopyAttribute(descriptor, kCTFontURLAttribute)) autorelease]) {
+        if ([url.scheme isEqual:@"qrc"])
+            filename = ":";
+        else if (!url.fileURL)
+            qWarning() << "QFontDatabase: Unknown scheme" << url.scheme << "in font descriptor URL";
+
+        filename += QString::fromNSString(url.path).toUtf8();
+    }
+    Q_ASSERT(!filename.isEmpty());
 
     QFontEngine::FaceId faceId;
     faceId.filename = filename;
