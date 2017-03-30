@@ -121,12 +121,20 @@ static inline bool useRTL_Extensions()
     return false;
 }
 
-#if !defined(QT_NO_SESSIONMANAGER)
-static inline QWindowsSessionManager *platformSessionManager() {
+#if QT_CONFIG(sessionmanager)
+static inline QWindowsSessionManager *platformSessionManager()
+{
     QGuiApplicationPrivate *guiPrivate = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
     QSessionManagerPrivate *managerPrivate = static_cast<QSessionManagerPrivate*>(QObjectPrivate::get(guiPrivate->session_manager));
     return static_cast<QWindowsSessionManager *>(managerPrivate->platformSessionManager);
 }
+
+static inline bool sessionManagerInteractionBlocked()
+{
+    return platformSessionManager()->isInteractionBlocked();
+}
+#else // QT_CONFIG(sessionmanager)
+static inline bool sessionManagerInteractionBlocked() { return false; }
 #endif
 
 static inline int windowDpiAwareness(HWND hwnd)
@@ -896,11 +904,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 
     switch (et) {
     case QtWindows::GestureEvent:
-#if !defined(QT_NO_SESSIONMANAGER)
-        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateGestureEvent(platformWindow->window(), hwnd, et, msg, result);
-#else
-        return d->m_mouseHandler.translateGestureEvent(platformWindow->window(), hwnd, et, msg, result);
-#endif
+        return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateGestureEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::InputMethodOpenCandidateWindowEvent:
     case QtWindows::InputMethodCloseCandidateWindowEvent:
         // TODO: Release/regrab mouse if a popup has mouse grab.
@@ -989,11 +993,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::InputMethodKeyEvent:
     case QtWindows::InputMethodKeyDownEvent:
     case QtWindows::AppCommandEvent:
-#if !defined(QT_NO_SESSIONMANAGER)
-        return platformSessionManager()->isInteractionBlocked() ? true : d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
-#else
-        return d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
-#endif
+        return sessionManagerInteractionBlocked() ||  d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
     case QtWindows::MoveEvent:
         platformWindow->handleMoved();
         return true;
@@ -1013,18 +1013,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
     case QtWindows::NonClientMouseEvent:
         if (platformWindow->frameStrutEventsEnabled())
-#if !defined(QT_NO_SESSIONMANAGER)
-            return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
-#else
-            return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
-#endif
+            return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
         break;
     case QtWindows::ScrollEvent:
-#if !defined(QT_NO_SESSIONMANAGER)
-        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);
-#else
-        return d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);
-#endif
+        return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);
     case QtWindows::MouseWheelEvent:
     case QtWindows::MouseEvent:
     case QtWindows::LeaveEvent:
@@ -1034,18 +1026,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                 window = window->parent();
             if (!window)
                 return false;
-#if !defined(QT_NO_SESSIONMANAGER)
-        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(window, hwnd, et, msg, result);
-#else
-        return d->m_mouseHandler.translateMouseEvent(window, hwnd, et, msg, result);
-#endif
+            return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateMouseEvent(window, hwnd, et, msg, result);
         }
     case QtWindows::TouchEvent:
-#if !defined(QT_NO_SESSIONMANAGER)
-        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
-#else
-        return d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
-#endif
+        return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::FocusInEvent: // see QWindowsWindow::requestActivateWindow().
     case QtWindows::FocusOutEvent:
         handleFocusEvent(et, platformWindow);
