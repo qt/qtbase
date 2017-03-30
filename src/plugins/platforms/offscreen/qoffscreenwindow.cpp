@@ -157,10 +157,13 @@ QMargins QOffscreenWindow::frameMargins() const
 
 void QOffscreenWindow::setFrameMarginsEnabled(bool enabled)
 {
-    if (enabled && !(window()->flags() & Qt::FramelessWindowHint))
+    if (enabled
+        && !(window()->flags() & Qt::FramelessWindowHint)
+        && (parent() == nullptr)) {
         m_margins = QMargins(2, 2, 2, 2);
-    else
+    } else {
         m_margins = QMargins(0, 0, 0, 0);
+    }
 }
 
 void QOffscreenWindow::setWindowState(Qt::WindowState state)
