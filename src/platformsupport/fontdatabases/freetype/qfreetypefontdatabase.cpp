@@ -45,7 +45,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDir>
-#include <QtCore/QUuid>
 #include <QtCore/QtEndian>
 
 #undef QT_NO_FREETYPE
@@ -93,56 +92,10 @@ QFontEngine *QFreeTypeFontDatabase::fontEngine(const QFontDef &fontDef, void *us
     return QFontEngineFT::create(fontDef, faceId);
 }
 
-namespace {
-
-    class QFontEngineFTRawData: public QFontEngineFT
-    {
-    public:
-        QFontEngineFTRawData(const QFontDef &fontDef) : QFontEngineFT(fontDef)
-        {
-        }
-
-        void updateFamilyNameAndStyle()
-        {
-            fontDef.family = QString::fromLatin1(freetype->face->family_name);
-
-            if (freetype->face->style_flags & FT_STYLE_FLAG_ITALIC)
-                fontDef.style = QFont::StyleItalic;
-
-            if (freetype->face->style_flags & FT_STYLE_FLAG_BOLD)
-                fontDef.weight = QFont::Bold;
-        }
-
-        bool initFromData(const QByteArray &fontData)
-        {
-            FaceId faceId;
-            faceId.filename = "";
-            faceId.index = 0;
-            faceId.uuid = QUuid::createUuid().toByteArray();
-
-            return init(faceId, true, Format_None, fontData);
-        }
-    };
-
-}
-
 QFontEngine *QFreeTypeFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
                                                 QFont::HintingPreference hintingPreference)
 {
-    QFontDef fontDef;
-    fontDef.pixelSize = pixelSize;
-    fontDef.hintingPreference = hintingPreference;
-
-    QFontEngineFTRawData *fe = new QFontEngineFTRawData(fontDef);
-    if (!fe->initFromData(fontData)) {
-        delete fe;
-        return 0;
-    }
-
-    fe->updateFamilyNameAndStyle();
-    fe->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));
-
-    return fe;
+    return QFontEngineFT::create(fontData, pixelSize, hintingPreference);
 }
 
 QStringList QFreeTypeFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
