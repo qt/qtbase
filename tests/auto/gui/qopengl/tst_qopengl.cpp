@@ -67,6 +67,7 @@ class tst_QOpenGL : public QObject
 Q_OBJECT
 
 private slots:
+    void initTestCase();
     void sharedResourceCleanup_data();
     void sharedResourceCleanup();
     void multiGroupSharedResourceCleanup_data();
@@ -203,6 +204,12 @@ static QSurface *createSurface(int surfaceClass)
         return offscreenSurface;
     }
     return 0;
+}
+
+void tst_QOpenGL::initTestCase()
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
+        QSKIP("OpenGL is not supported on this platform.");
 }
 
 static void common_data()
