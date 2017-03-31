@@ -10,6 +10,7 @@ PRECOMPILED_HEADER = ../../corelib/global/qt_pch.h
 HEADERS += qmacmime_p.h
 SOURCES += qmacmime.mm
 
+LIBS += -framework ImageIO
 macos: LIBS_PRIVATE += -framework AppKit
 
 load(qt_module)
