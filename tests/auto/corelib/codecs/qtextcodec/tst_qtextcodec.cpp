@@ -126,6 +126,7 @@ void tst_QTextCodec::toUnicode()
         }
         QVERIFY(!uniString.isEmpty());
         QCOMPARE( ba, c->fromUnicode( uniString ) );
+        QCOMPARE(ba, c->fromUnicode(QStringView(uniString)) );
 
         char ch = '\0';
         QVERIFY(c->toUnicode(&ch, 1).length() == 1);
@@ -262,7 +263,7 @@ void tst_QTextCodec::fromUnicode()
         If the encoding is a superset of ASCII, test that the byte
         array is correct (no off by one, no trailing '\0').
     */
-    QByteArray result = codec->fromUnicode(QString("abc"));
+    QByteArray result = codec->fromUnicode(QStringViewLiteral("abc"));
     if (result.startsWith('a')) {
         QCOMPARE(result.size(), 3);
         QCOMPARE(result, QByteArray("abc"));
@@ -397,6 +398,7 @@ void tst_QTextCodec::asciiToIscii() const
 
         QVERIFY2(textCodec->canEncode(ascii), qPrintable(QString::fromLatin1("Failed for full string with encoding %1")
                                                          .arg(QString::fromLatin1(textCodec->name().constData()))));
+        QVERIFY(textCodec->canEncode(QStringView(ascii)));
     }
 }
 
@@ -404,12 +406,11 @@ void tst_QTextCodec::nonFlaggedCodepointFFFF() const
 {
     //Check that the code point 0xFFFF (=non-character code 0xEFBFBF) is not flagged
     const QChar ch(0xFFFF);
-    QString input(ch);
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
     QVERIFY(codec);
 
-    const QByteArray asDecoded(codec->fromUnicode(input));
+    const QByteArray asDecoded = codec->fromUnicode(QStringView(&ch, 1));
     QCOMPARE(asDecoded, QByteArray("\357\277\277"));
 
     QByteArray ffff("\357\277\277");

@@ -803,6 +803,7 @@ QTextEncoder* QTextCodec::makeEncoder(QTextCodec::ConversionFlags flags) const
     The \a state of the convertor used is updated.
 */
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Converts \a str from Unicode to the encoding of this codec, and
     returns the result in a QByteArray.
@@ -810,6 +811,19 @@ QTextEncoder* QTextCodec::makeEncoder(QTextCodec::ConversionFlags flags) const
 QByteArray QTextCodec::fromUnicode(const QString& str) const
 {
     return convertFromUnicode(str.constData(), str.length(), 0);
+}
+#endif
+
+/*!
+    \overload
+    \since 5.10
+
+    Converts \a str from Unicode to the encoding of this codec, and
+    returns the result in a QByteArray.
+*/
+QByteArray QTextCodec::fromUnicode(QStringView str) const
+{
+    return convertFromUnicode(str.data(), str.length(), nullptr);
 }
 
 /*!
@@ -844,6 +858,7 @@ bool QTextCodec::canEncode(QChar ch) const
     return (state.invalidChars == 0);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \overload
 
@@ -856,7 +871,22 @@ bool QTextCodec::canEncode(const QString& s) const
     convertFromUnicode(s.constData(), s.length(), &state);
     return (state.invalidChars == 0);
 }
+#endif
 
+/*!
+    \overload
+    \since 5.10
+
+    Returns \c true if the Unicode string \a s can be fully encoded
+    with this codec; otherwise returns \c false.
+*/
+bool QTextCodec::canEncode(QStringView s) const
+{
+    ConverterState state;
+    state.flags = ConvertInvalidToNull;
+    convertFromUnicode(s.data(), s.length(), &state);
+    return !state.invalidChars;
+}
 /*!
     \overload
 
@@ -921,6 +951,7 @@ bool QTextEncoder::hasFailure() const
     return state.invalidChars != 0;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Converts the Unicode string \a str into an encoded QByteArray.
 */
@@ -928,6 +959,17 @@ QByteArray QTextEncoder::fromUnicode(const QString& str)
 {
     QByteArray result = c->fromUnicode(str.constData(), str.length(), &state);
     return result;
+}
+#endif
+
+/*!
+    \overload
+    \since 5.10
+    Converts the Unicode string \a str into an encoded QByteArray.
+*/
+QByteArray QTextEncoder::fromUnicode(QStringView str)
+{
+    return c->fromUnicode(str.data(), str.length(), &state);
 }
 
 /*!
