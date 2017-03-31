@@ -227,7 +227,19 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
             if (uti.isEmpty() || !converter->canConvert(mimeType, uti))
                 continue;
 
-            QByteArray byteArray = converter->convertFromMime(mimeType, mimeData->data(mimeType), uti).first();
+            QVariant mimeDataAsVariant;
+            if (mimeData->hasImage()) {
+                mimeDataAsVariant = mimeData->imageData();
+            } else if (mimeData->hasUrls()) {
+                QVariantList urlList;
+                for (QUrl url : mimeData->urls())
+                    urlList << url;
+                mimeDataAsVariant = QVariant(urlList);
+            } else {
+                mimeDataAsVariant = QVariant(mimeData->data(mimeType));
+            }
+
+            QByteArray byteArray = converter->convertFromMime(mimeType, mimeDataAsVariant, uti).first();
             NSData *nsData = [NSData dataWithBytes:byteArray.constData() length:byteArray.size()];
             [pbItem setValue:nsData forKey:uti.toNSString()];
             break;
