@@ -382,7 +382,6 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::fontEngine
     CTFontRef font = CTFontCreateWithFontDescriptor(descriptor, scaledPointSize, &matrix);
     if (font) {
         QFontEngine *engine = new QCoreTextFontEngine(font, fontDef);
-        engine->fontDef = fontDef;
         CFRelease(font);
         return engine;
     }
