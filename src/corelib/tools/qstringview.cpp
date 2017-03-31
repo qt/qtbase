@@ -260,9 +260,33 @@ QT_BEGIN_NAMESPACE
 
     Passing \c nullptr as \a str is safe and results in a null string view.
 
-    This constructor only participates in overload resolution if \c Char is a compatible
-    character type. The compatible character types are: \c QChar, \c ushort, \c char16_t and
-    (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t.
+    This constructor only participates in overload resolution if \a
+    str is not an array and if \c Char is a compatible character
+    type. The compatible character types are: \c QChar, \c ushort, \c
+    char16_t and (on platforms, such as Windows, where it is a 16-bit
+    type) \c wchar_t.
+*/
+
+/*!
+    \fn QStringView::QStringView(const Char (&string)[N])
+
+    Constructs a string view on the character string literal \a string.
+    The length is set to \c{N-1}, excluding the trailing \{Char(0)}.
+    If you need the full array, use the constructor from pointer and
+    size instead:
+
+    \code
+    auto sv = QStringView(array, std::size(array)); // using C++17 std::size()
+    \endcode
+
+    \a string must remain valid for the lifetime of this string view
+    object.
+
+    This constructor only participates in overload resolution if \a
+    string is an actual array and \c Char is a compatible character
+    type. The compatible character types are: \c QChar, \c ushort, \c
+    char16_t and (on platforms, such as Windows, where it is a 16-bit
+    type) \c wchar_t.
 */
 
 /*!

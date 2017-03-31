@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 # ifndef QT_UNICODE_LITERAL
 #  error "If you change QStringLiteral, please change QStringViewLiteral, too"
 # endif
-# define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str), sizeof(str) - 1)
+# define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str))
 #endif
 
 namespace QtPrivate {
@@ -68,6 +68,24 @@ struct IsCompatibleCharTypeHelper
 template <typename Char>
 struct IsCompatibleCharType
     : IsCompatibleCharTypeHelper<typename std::remove_cv<typename std::remove_reference<Char>::type>::type> {};
+
+template <typename Array>
+struct IsCompatibleArrayHelper : std::false_type {};
+template <typename Char, size_t N>
+struct IsCompatibleArrayHelper<Char[N]>
+    : IsCompatibleCharType<Char> {};
+template <typename Array>
+struct IsCompatibleArray
+    : IsCompatibleArrayHelper<typename std::remove_cv<typename std::remove_reference<Array>::type>::type> {};
+
+template <typename Pointer>
+struct IsCompatiblePointerHelper : std::false_type {};
+template <typename Char>
+struct IsCompatiblePointerHelper<Char*>
+    : IsCompatibleCharType<Char> {};
+template <typename Pointer>
+struct IsCompatiblePointer
+    : IsCompatiblePointerHelper<typename std::remove_cv<typename std::remove_reference<Pointer>::type>::type> {};
 
 template <typename T>
 struct IsCompatibleStdBasicStringHelper : std::false_type {};
@@ -108,21 +126,32 @@ private:
     template <typename Char>
     using if_compatible_char = typename std::enable_if<QtPrivate::IsCompatibleCharType<Char>::value, bool>::type;
 
+    template <typename Array>
+    using if_compatible_array = typename std::enable_if<QtPrivate::IsCompatibleArray<Array>::value, bool>::type;
+
+    template <typename Pointer>
+    using if_compatible_pointer = typename std::enable_if<QtPrivate::IsCompatiblePointer<Pointer>::value, bool>::type;
+
     template <typename T>
     using if_compatible_string = typename std::enable_if<QtPrivate::IsCompatibleStdBasicString<T>::value, bool>::type;
 
     template <typename T>
     using if_compatible_qstring_like = typename std::enable_if<std::is_same<T, QString>::value || std::is_same<T, QStringRef>::value, bool>::type;
 
+    template <typename Char, size_t N>
+    static Q_DECL_CONSTEXPR size_type lengthHelperArray(const Char (&)[N]) Q_DECL_NOTHROW
+    {
+        return size_type(N - 1);
+    }
     template <typename Char>
-    static Q_DECL_RELAXED_CONSTEXPR size_type lengthHelper(const Char *str) Q_DECL_NOTHROW
+    static Q_DECL_RELAXED_CONSTEXPR size_type lengthHelperPointer(const Char *str) Q_DECL_NOTHROW
     {
         size_type result = 0;
         while (*str++)
             ++result;
         return result;
     }
-    static Q_DECL_RELAXED_CONSTEXPR size_type lengthHelper(const QChar *str) Q_DECL_NOTHROW
+    static Q_DECL_RELAXED_CONSTEXPR size_type lengthHelperPointer(const QChar *str) Q_DECL_NOTHROW
     {
         size_type result = 0;
         while (!str++->isNull())
@@ -151,9 +180,21 @@ public:
         : m_size((Q_ASSERT(len >= 0), Q_ASSERT(str || !len), len)),
           m_data(castHelper(str)) {}
 
-    template <typename Char, if_compatible_char<Char> = true>
-    Q_DECL_CONSTEXPR QStringView(const Char *str)
-        : QStringView(str, str ? lengthHelper(str) : 0) {}
+#ifdef Q_QDOC
+    template <typename Char, size_t N>
+    Q_DECL_CONSTEXPR QStringView(const Char (&array)[N]) Q_DECL_NOTHROW;
+
+    template <typename Char>
+    Q_DECL_CONSTEXPR QStringView(const Char *str) Q_DECL_NOTHROW;
+#else
+    template <typename Array, if_compatible_array<Array> = true>
+    Q_DECL_CONSTEXPR QStringView(const Array &str) Q_DECL_NOTHROW
+        : QStringView(str, lengthHelperArray(str)) {}
+
+    template <typename Pointer, if_compatible_pointer<Pointer> = true>
+    Q_DECL_CONSTEXPR QStringView(const Pointer &str) Q_DECL_NOTHROW
+        : QStringView(str, str ? lengthHelperPointer(str) : 0) {}
+#endif
 
 #ifdef Q_QDOC
     QStringView(const QString &str) Q_DECL_NOTHROW;

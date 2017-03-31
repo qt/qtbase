@@ -58,6 +58,8 @@ Q_STATIC_ASSERT(!CanConvert<QByteArray>::value);
 
 Q_STATIC_ASSERT(!CanConvert<QChar>::value);
 
+Q_STATIC_ASSERT(CanConvert<QChar[123]>::value);
+
 Q_STATIC_ASSERT(CanConvert<      QString >::value);
 Q_STATIC_ASSERT(CanConvert<const QString >::value);
 Q_STATIC_ASSERT(CanConvert<      QString&>::value);
@@ -74,6 +76,8 @@ Q_STATIC_ASSERT(CanConvert<const QStringRef&>::value);
 //
 
 Q_STATIC_ASSERT(!CanConvert<ushort>::value);
+
+Q_STATIC_ASSERT(CanConvert<ushort[123]>::value);
 
 Q_STATIC_ASSERT(CanConvert<      ushort*>::value);
 Q_STATIC_ASSERT(CanConvert<const ushort*>::value);
@@ -232,6 +236,43 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv.back()  == QLatin1Char('o'));
         Q_STATIC_ASSERT(sv.last()  == QLatin1Char('o'));
     }
+#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+    {
+        Q_STATIC_ASSERT(QStringView(u"Hello").size() == 5);
+        constexpr QStringView sv = u"Hello";
+        Q_STATIC_ASSERT(sv.size() == 5);
+        Q_STATIC_ASSERT(!sv.empty());
+        Q_STATIC_ASSERT(!sv.isEmpty());
+        Q_STATIC_ASSERT(!sv.isNull());
+        Q_STATIC_ASSERT(*sv.utf16() == 'H');
+        Q_STATIC_ASSERT(sv[0]      == QLatin1Char('H'));
+        Q_STATIC_ASSERT(sv.at(0)   == QLatin1Char('H'));
+        Q_STATIC_ASSERT(sv.front() == QLatin1Char('H'));
+        Q_STATIC_ASSERT(sv.first() == QLatin1Char('H'));
+        Q_STATIC_ASSERT(sv[4]      == QLatin1Char('o'));
+        Q_STATIC_ASSERT(sv.at(4)   == QLatin1Char('o'));
+        Q_STATIC_ASSERT(sv.back()  == QLatin1Char('o'));
+        Q_STATIC_ASSERT(sv.last()  == QLatin1Char('o'));
+    }
+#else // storage_type is wchar_t
+    {
+        Q_STATIC_ASSERT(QStringView(L"Hello").size() == 5);
+        constexpr QStringView sv = L"Hello";
+        Q_STATIC_ASSERT(sv.size() == 5);
+        Q_STATIC_ASSERT(!sv.empty());
+        Q_STATIC_ASSERT(!sv.isEmpty());
+        Q_STATIC_ASSERT(!sv.isNull());
+        Q_STATIC_ASSERT(*sv.utf16() == 'H');
+        Q_STATIC_ASSERT(sv[0]      == QLatin1Char('H'));
+        Q_STATIC_ASSERT(sv.at(0)   == QLatin1Char('H'));
+        Q_STATIC_ASSERT(sv.front() == QLatin1Char('H'));
+        Q_STATIC_ASSERT(sv.first() == QLatin1Char('H'));
+        Q_STATIC_ASSERT(sv[4]      == QLatin1Char('o'));
+        Q_STATIC_ASSERT(sv.at(4)   == QLatin1Char('o'));
+        Q_STATIC_ASSERT(sv.back()  == QLatin1Char('o'));
+        Q_STATIC_ASSERT(sv.last()  == QLatin1Char('o'));
+    }
+#endif
 #endif
 }
 
