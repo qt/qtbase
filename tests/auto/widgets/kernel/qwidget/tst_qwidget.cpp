@@ -2179,6 +2179,8 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QSKIP("QTBUG-26424");
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
+    if (m_platform == QStringLiteral("offscreen"))
+        QSKIP("Platform offscreen does not support showMinimized()");
 
     //here we test that minimizing a widget and restoring it doesn't change the focus inside of it
     {
@@ -3235,6 +3237,9 @@ void tst_QWidget::widgetAt()
 
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
+    if (m_platform == QStringLiteral("offscreen"))
+        QSKIP("Platform offscreen does not support lower()/raise() or WindowMasks");
+
     Q_CHECK_PAINTEVENTS
 
     const QPoint referencePos = m_availableTopLeft + QPoint(100, 100);
@@ -3651,7 +3656,7 @@ void tst_QWidget::optimizedResize_topLevel()
     expectedUpdateRegion -= QRect(QPoint(), topLevel.size() - QSize(10, 10));
 
     QTRY_COMPARE(topLevel.gotPaintEvent, true);
-    if (m_platform == QStringLiteral("xcb"))
+    if (m_platform == QStringLiteral("xcb") || m_platform == QStringLiteral("offscreen"))
         QSKIP("QTBUG-26424");
     QCOMPARE(topLevel.partial, true);
     QCOMPARE(topLevel.paintedRegion, expectedUpdateRegion);
@@ -6796,6 +6801,9 @@ void tst_QWidget::render_task217815()
 // Window Opacity is not supported on Windows CE.
 void tst_QWidget::render_windowOpacity()
 {
+    if (m_platform == QStringLiteral("offscreen"))
+        QSKIP("Platform offscreen does not support setting opacity");
+
     const qreal opacity = 0.5;
 
     { // Check that the painter opacity effects the widget drawing.
@@ -7386,6 +7394,9 @@ void tst_QWidget::updateWhileMinimized()
 {
     if (m_platform == QStringLiteral("wayland"))
         QSKIP("Wayland: This fails. Figure out why.");
+    if (m_platform == QStringLiteral("offscreen"))
+        QSKIP("Platform offscreen does not support showMinimized()");
+
 #if defined(Q_OS_QNX)
     QSKIP("Platform does not support showMinimized()");
 #endif
