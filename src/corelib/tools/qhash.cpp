@@ -203,7 +203,7 @@ static inline uint hash(const uchar *p, size_t len, uint seed) Q_DECL_NOTHROW
 {
     uint h = seed;
 
-    if (hasFastCrc32())
+    if (seed && hasFastCrc32())
         return crc32(p, len, h);
 
     for (size_t i = 0; i < len; ++i)
@@ -221,7 +221,7 @@ static inline uint hash(const QChar *p, size_t len, uint seed) Q_DECL_NOTHROW
 {
     uint h = seed;
 
-    if (hasFastCrc32())
+    if (seed && hasFastCrc32())
         return crc32(p, len, h);
 
     for (size_t i = 0; i < len; ++i)
@@ -288,8 +288,15 @@ static uint qt_create_qhash_seed()
 
 #ifndef QT_BOOTSTRAPPED
     QByteArray envSeed = qgetenv("QT_HASH_SEED");
-    if (!envSeed.isNull())
-        return envSeed.toUInt();
+    if (!envSeed.isNull()) {
+        uint seed = envSeed.toUInt();
+        if (seed) {
+            // can't use qWarning here (reentrancy)
+            fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0, cannot guarantee that the "
+                     "hashing functions will produce a stable value.");
+        }
+        return seed;
+    }
 
 #ifdef Q_OS_UNIX
     int randomfd = qt_safe_open("/dev/urandom", O_RDONLY);
@@ -379,13 +386,16 @@ int qGlobalQHashSeed()
     is needed. We discourage to do it in production code as it can make your
     application susceptible to \l{algorithmic complexity attacks}.
 
+    From Qt 5.10 and onwards, the only allowed values are 0 and -1. Passing the
+    value -1 will reinitialize the global QHash seed to a random value, while
+    the value of 0 is used to request a stable algorithm for C++ primitive
+    types types (like \c int) and string types (QString, QByteArray).
+
     The seed is set in any newly created QHash. See \l{qHash} about how this seed
     is being used by QHash.
 
     If the environment variable \c QT_HASH_SEED is set, calling this function will
     result in a no-op.
-
-    Passing the value -1 will reinitialize the global QHash seed to a random value.
 
     \sa qGlobalQHashSeed
  */
@@ -397,6 +407,11 @@ void qSetGlobalQHashSeed(int newSeed)
         int x(qt_create_qhash_seed() & INT_MAX);
         qt_qhash_seed.store(x);
     } else {
+        if (newSeed) {
+            // can't use qWarning here (reentrancy)
+            fprintf(stderr, "qSetGlobalQHashSeed: forced seed value is not 0, cannot guarantee that the "
+                            "hashing functions will produce a stable value.");
+        }
         qt_qhash_seed.store(newSeed & INT_MAX);
     }
 }
@@ -1254,9 +1269,8 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     should never depend on a particular QHash ordering, there may be situations
     where you temporarily need deterministic behavior, for example for debugging or
     regression testing. To disable the randomization, define the environment
-    variable \c QT_HASH_SEED. The contents of that variable, interpreted as a
-    decimal value, will be used as the seed for qHash(). Alternatively, you can
-    call the qSetGlobalQHashSeed() function.
+    variable \c QT_HASH_SEED to have the value 0. Alternatively, you can call
+    the qSetGlobalQHashSeed() function with the value 0.
 
     \sa QHashIterator, QMutableHashIterator, QMap, QSet
 */

@@ -284,17 +284,17 @@ void tst_QHashFunctions::rangeCommutative()
 void tst_QHashFunctions::setGlobalQHashSeed()
 {
     // Setter works as advertised
-    qSetGlobalQHashSeed(0x10101010);
-    QCOMPARE(qGlobalQHashSeed(), 0x10101010);
+    qSetGlobalQHashSeed(0);
+    QCOMPARE(qGlobalQHashSeed(), 0);
 
     // Creating a new QHash doesn't reset the seed
     QHash<QString, int> someHash;
     someHash.insert("foo", 42);
-    QCOMPARE(qGlobalQHashSeed(), 0x10101010);
+    QCOMPARE(qGlobalQHashSeed(), 0);
 
     // Reset works as advertised
     qSetGlobalQHashSeed(-1);
-    QVERIFY(qGlobalQHashSeed() != -1);
+    QVERIFY(qGlobalQHashSeed() > 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QHashFunctions)
