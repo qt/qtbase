@@ -245,8 +245,8 @@ QGtk3FileDialogHelper::QGtk3FileDialogHelper()
 {
     d.reset(new QGtk3Dialog(gtk_file_chooser_dialog_new("", 0,
                                                         GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                        standardButtonText(QPlatformDialogHelper::Cancel), GTK_RESPONSE_CANCEL,
-                                                        standardButtonText(QPlatformDialogHelper::Ok), GTK_RESPONSE_OK,
+                                                        standardButtonText(QPlatformDialogHelper::Cancel).constData(), GTK_RESPONSE_CANCEL,
+                                                        standardButtonText(QPlatformDialogHelper::Ok).constData(), GTK_RESPONSE_OK,
                                                         NULL)));
 
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
