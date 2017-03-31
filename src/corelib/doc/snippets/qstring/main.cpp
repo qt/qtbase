@@ -262,6 +262,17 @@ void Widget::argFunction()
                     .arg(i).arg(total).arg(fileName);
     //! [11]
 
+    {
+    //! [11]
+    int i;                // current file's number
+    int total;            // number of files to process
+    QStringView fileName; // current file's name
+
+    QString status = QString("Processing file %1 of %2: %3")
+                    .arg(i).arg(total).arg(fileName);
+    //! [11]
+    }
+
     //! [12] //! [13]
     QString str;
     //! [12]

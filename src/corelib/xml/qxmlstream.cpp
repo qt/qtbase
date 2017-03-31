@@ -1558,7 +1558,7 @@ QStringRef QXmlStreamReaderPrivate::namespaceForPrefix(const QStringRef &prefix)
 
 #if 1
      if (namespaceProcessing && !prefix.isEmpty())
-         raiseWellFormedError(QXmlStream::tr("Namespace prefix '%1' not declared").arg(prefix.toString()));
+         raiseWellFormedError(QXmlStream::tr("Namespace prefix '%1' not declared").arg(prefix));
 #endif
 
      return QStringRef();
@@ -1636,7 +1636,7 @@ void QXmlStreamReaderPrivate::resolveTag()
             if (attributes[j].name() == attribute.name()
                 && attributes[j].namespaceUri() == attribute.namespaceUri()
                 && (namespaceProcessing || attributes[j].qualifiedName() == attribute.qualifiedName()))
-                raiseWellFormedError(QXmlStream::tr("Attribute '%1' redefined.").arg(attribute.qualifiedName().toString()));
+                raiseWellFormedError(QXmlStream::tr("Attribute '%1' redefined.").arg(attribute.qualifiedName()));
         }
     }
 
@@ -1804,14 +1804,14 @@ void QXmlStreamReaderPrivate::startDocument()
             if(hasStandalone)
                 err = QXmlStream::tr("The standalone pseudo attribute must appear after the encoding.");
             if(!QXmlUtils::isEncName(name))
-                err = QXmlStream::tr("%1 is an invalid encoding name.").arg(name);
+                err = QXmlStream::tr("%1 is an invalid encoding name.").arg(value);
             else {
 #ifdef QT_NO_TEXTCODEC
                 readBuffer = QString::fromLatin1(rawReadBuffer.data(), nbytesread);
 #else
                 QTextCodec *const newCodec = QTextCodec::codecForName(name.toLatin1());
                 if (!newCodec)
-                    err = QXmlStream::tr("Encoding %1 is unsupported").arg(name);
+                    err = QXmlStream::tr("Encoding %1 is unsupported").arg(value);
                 else if (newCodec != codec && !lockEncoding) {
                     codec = newCodec;
                     delete decoder;

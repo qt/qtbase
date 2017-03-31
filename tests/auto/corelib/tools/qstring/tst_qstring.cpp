@@ -4726,8 +4726,8 @@ void tst_QString::arg()
     QString s14( "%1%2%3" );
 
     QCOMPARE( s4.arg("foo"), QLatin1String("[foo]") );
-    QCOMPARE( s5.arg("foo"), QLatin1String("[foo]") );
-    QCOMPARE( s6.arg("foo"), QLatin1String("[foo]") );
+    QCOMPARE( s5.arg(QLatin1String("foo")), QLatin1String("[foo]") );
+    QCOMPARE( s6.arg(QStringViewLiteral("foo")), QLatin1String("[foo]") );
     QCOMPARE( s7.arg("foo"), QLatin1String("[foo]") );
     QCOMPARE( s8.arg("foo"), QLatin1String("[foo %1]") );
     QCOMPARE( s8.arg("foo").arg("bar"), QLatin1String("[foo bar]") );
@@ -4788,11 +4788,11 @@ void tst_QString::arg()
     QCOMPARE( QString("%%%1%%%2").arg("foo").arg("bar"), QLatin1String("%%foo%%bar") );
 
     QCOMPARE( QString("%1").arg("hello", -10), QLatin1String("hello     ") );
-    QCOMPARE( QString("%1").arg("hello", -5), QLatin1String("hello") );
-    QCOMPARE( QString("%1").arg("hello", -2), QLatin1String("hello") );
+    QCOMPARE( QString("%1").arg(QLatin1String("hello"), -5), QLatin1String("hello") );
+    QCOMPARE( QString("%1").arg(QStringViewLiteral("hello"), -2), QLatin1String("hello") );
     QCOMPARE( QString("%1").arg("hello", 0), QLatin1String("hello") );
-    QCOMPARE( QString("%1").arg("hello", 2), QLatin1String("hello") );
-    QCOMPARE( QString("%1").arg("hello", 5), QLatin1String("hello") );
+    QCOMPARE( QString("%1").arg(QLatin1String("hello"), 2), QLatin1String("hello") );
+    QCOMPARE( QString("%1").arg(QStringViewLiteral("hello"), 5), QLatin1String("hello") );
     QCOMPARE( QString("%1").arg("hello", 10), QLatin1String("     hello") );
     QCOMPARE( QString("%1%1").arg("hello"), QLatin1String("hellohello") );
     QCOMPARE( QString("%2%1").arg("hello"), QLatin1String("%2hello") );

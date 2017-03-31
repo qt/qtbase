@@ -319,7 +319,13 @@ public:
                 QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(QChar a, int fieldWidth = 0,
                 QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+#if QT_STRINGVIEW_LEVEL < 2
     QString arg(const QString &a, int fieldWidth = 0,
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+#endif
+    QString arg(QStringView a, int fieldWidth = 0,
+                QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
+    QString arg(QLatin1String a, int fieldWidth = 0,
                 QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
     QString arg(const QString &a1, const QString &a2) const Q_REQUIRED_RESULT;
     QString arg(const QString &a1, const QString &a2, const QString &a3) const Q_REQUIRED_RESULT;

@@ -7363,10 +7363,10 @@ struct ArgEscapeData
     int escape_len;            // total length of escape sequences which will be replaced
 };
 
-static ArgEscapeData findArgEscapes(const QString &s)
+static ArgEscapeData findArgEscapes(QStringView s)
 {
-    const QChar *uc_begin = s.unicode();
-    const QChar *uc_end = uc_begin + s.length();
+    const QChar *uc_begin = s.begin();
+    const QChar *uc_end = s.end();
 
     ArgEscapeData d;
 
@@ -7425,11 +7425,11 @@ static ArgEscapeData findArgEscapes(const QString &s)
     return d;
 }
 
-static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int field_width,
-                                 const QString &arg, const QString &larg, QChar fillChar = QLatin1Char(' '))
+static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int field_width,
+                                 QStringView arg, QStringView larg, QChar fillChar)
 {
-    const QChar *uc_begin = s.unicode();
-    const QChar *uc_end = uc_begin + s.length();
+    const QChar *uc_begin = s.begin();
+    const QChar *uc_end = s.end();
 
     int abs_field_width = qAbs(field_width);
     int result_len = s.length()
@@ -7493,11 +7493,11 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
             }
 
             if (locale_arg) {
-                memcpy(rc, larg.unicode(), larg.length()*sizeof(QChar));
+                memcpy(rc, larg.data(), larg.length()*sizeof(QChar));
                 rc += larg.length();
             }
             else {
-                memcpy(rc, arg.unicode(), arg.length()*sizeof(QChar));
+                memcpy(rc, arg.data(), arg.length()*sizeof(QChar));
                 rc += arg.length();
             }
 
@@ -7519,6 +7519,7 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
     return result;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
   Returns a copy of this string with the lowest numbered place marker
   replaced by string \a a, i.e., \c %1, \c %2, ..., \c %99.
@@ -7550,14 +7551,83 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
 */
 QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
 {
+    return arg(QStringView(a), fieldWidth, fillChar);
+}
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \overload
+    \since 5.10
+
+    Returns a copy of this string with the lowest-numbered place-marker
+    replaced by string \a a, i.e., \c %1, \c %2, ..., \c %99.
+
+    \a fieldWidth specifies the minimum amount of space that \a a
+    shall occupy. If \a a requires less space than \a fieldWidth, it
+    is padded to \a fieldWidth with character \a fillChar.  A positive
+    \a fieldWidth produces right-aligned text. A negative \a fieldWidth
+    produces left-aligned text.
+
+    This example shows how we might create a \c status string for
+    reporting progress while processing a list of files:
+
+    \snippet qstring/main.cpp 11-qstringview
+
+    First, \c arg(i) replaces \c %1. Then \c arg(total) replaces \c
+    %2. Finally, \c arg(fileName) replaces \c %3.
+
+    One advantage of using arg() over asprintf() is that the order of the
+    numbered place markers can change, if the application's strings are
+    translated into other languages, but each arg() will still replace
+    the lowest-numbered unreplaced place-marker, no matter where it
+    appears. Also, if place-marker \c %i appears more than once in the
+    string, arg() replaces all of them.
+
+    If there is no unreplaced place-marker remaining, a warning message
+    is printed and the result is undefined. Place-marker numbers must be
+    in the range 1 to 99.
+*/
+QString QString::arg(QStringView a, int fieldWidth, QChar fillChar) const
+{
     ArgEscapeData d = findArgEscapes(*this);
 
-    if (d.occurrences == 0) {
-        qWarning("QString::arg: Argument missing: %s, %s", toLocal8Bit().data(),
-                  a.toLocal8Bit().data());
+    if (Q_UNLIKELY(d.occurrences == 0)) {
+        qWarning("QString::arg: Argument missing: %ls, %ls", qUtf16Printable(*this),
+                  qUtf16Printable(a.toString()));
         return *this;
     }
     return replaceArgEscapes(*this, d, fieldWidth, a, a, fillChar);
+}
+
+/*!
+    \overload
+    \since 5.10
+
+    Returns a copy of this string with the lowest-numbered place-marker
+    replaced by string \a a, i.e., \c %1, \c %2, ..., \c %99.
+
+    \a fieldWidth specifies the minimum amount of space that \a a
+    shall occupy. If \a a requires less space than \a fieldWidth, it
+    is padded to \a fieldWidth with character \a fillChar.  A positive
+    \a fieldWidth produces right-aligned text. A negative \a fieldWidth
+    produces left-aligned text.
+
+    One advantage of using arg() over asprintf() is that the order of the
+    numbered place markers can change, if the application's strings are
+    translated into other languages, but each arg() will still replace
+    the lowest-numbered unreplaced place-marker, no matter where it
+    appears. Also, if place-marker \c %i appears more than once in the
+    string, arg() replaces all of them.
+
+    If there is no unreplaced place-marker remaining, a warning message
+    is printed and the result is undefined. Place-marker numbers must be
+    in the range 1 to 99.
+*/
+QString QString::arg(QLatin1String a, int fieldWidth, QChar fillChar) const
+{
+    QVarLengthArray<ushort> utf16(a.size());
+    qt_from_latin1(utf16.data(), a.data(), a.size());
+    return arg(QStringView(utf16.data(), utf16.size()), fieldWidth, fillChar);
 }
 
 /*!
