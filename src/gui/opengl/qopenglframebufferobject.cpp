@@ -1281,7 +1281,7 @@ static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool includ
         funcs->glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, img.bits());
         return img;
     }
-
+#ifdef Q_OS_IOS
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     // Without GL_UNSIGNED_INT_8_8_8_8_REV, GL_BGRA only makes sense on little endian.
     const bool has_bgra_ext = context->isOpenGLES()
@@ -1310,6 +1310,7 @@ static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool includ
         funcs->glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, img.bits());
         return img;
     }
+#endif
 #endif
     QImage rgbaImage(size, include_alpha ? QImage::Format_RGBA8888_Premultiplied : QImage::Format_RGBX8888);
     funcs->glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgbaImage.bits());
