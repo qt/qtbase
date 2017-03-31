@@ -68,13 +68,12 @@ class QXmlCharRange;
 class Q_CORE_EXPORT QXmlUtils
 {
 public:
-    static bool isEncName(const QString &encName);
+    static bool isEncName(QStringView encName);
     static bool isChar(const QChar c);
     static bool isNameChar(const QChar c);
     static bool isLetter(const QChar c);
-    static bool isNCName(const QStringRef &ncName);
-    static inline bool isNCName(const QString &ncName) { return isNCName(QStringRef(&ncName)); }
-    static bool isPublicID(const QString &candidate);
+    static bool isNCName(QStringView ncName);
+    static bool isPublicID(QStringView candidate);
 
 private:
     typedef const QXmlCharRange *RangeIter;

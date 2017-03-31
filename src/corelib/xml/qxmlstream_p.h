@@ -1636,7 +1636,7 @@ bool QXmlStreamReaderPrivate::parse()
         break;
 
         case 175: {
-            if (!QXmlUtils::isPublicID(symString(1).toString())) {
+            if (!QXmlUtils::isPublicID(symString(1))) {
                 raiseWellFormedError(QXmlStream::tr("%1 is an invalid PUBLIC identifier.").arg(symString(1).toString()));
                 resume(175);
                 return false;

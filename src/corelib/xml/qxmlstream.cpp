@@ -1798,18 +1798,17 @@ void QXmlStreamReaderPrivate::startDocument()
         QStringRef value(symString(attrib.value));
 
         if (prefix.isEmpty() && key == QLatin1String("encoding")) {
-            const QString name(value.toString());
             documentEncoding = value;
 
             if(hasStandalone)
                 err = QXmlStream::tr("The standalone pseudo attribute must appear after the encoding.");
-            if(!QXmlUtils::isEncName(name))
+            if (!QXmlUtils::isEncName(value))
                 err = QXmlStream::tr("%1 is an invalid encoding name.").arg(value);
             else {
 #ifdef QT_NO_TEXTCODEC
                 readBuffer = QString::fromLatin1(rawReadBuffer.data(), nbytesread);
 #else
-                QTextCodec *const newCodec = QTextCodec::codecForName(name.toLatin1());
+                QTextCodec *const newCodec = QTextCodec::codecForName(value.toLatin1());
                 if (!newCodec)
                     err = QXmlStream::tr("Encoding %1 is unsupported").arg(value);
                 else if (newCodec != codec && !lockEncoding) {

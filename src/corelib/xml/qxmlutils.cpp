@@ -227,19 +227,22 @@ bool QXmlUtils::isBaseChar(const QChar c)
     \sa {http://www.w3.org/TR/REC-xml/#NT-EncName},
            {Extensible Markup Language (XML) 1.0 (Fourth Edition), [81] EncName}
  */
-bool QXmlUtils::isEncName(const QString &encName)
+bool QXmlUtils::isEncName(QStringView encName)
 {
     // Valid encoding names are given by "[A-Za-z][A-Za-z0-9._\\-]*"
-    const ushort *c = encName.utf16();
-    int l = encName.length();
-    if (l < 1 || !((c[0] >= 'a' && c[0] <= 'z') || (c[0] >= 'A' && c[0] <= 'Z')))
+    if (encName.isEmpty())
         return false;
-    for (int i = 1; i < l; ++i) {
-        if ((c[i] >= 'a' && c[i] <= 'z')
-            || (c[i] >= 'A' && c[i] <= 'Z')
-            || (c[i] >= '0' && c[i] <= '9')
-            || c[i] == '.' || c[i] == '_' || c[i] == '-')
+    const auto first = encName.front().unicode();
+    if (!((first >= 'a' && first <= 'z') || (first >= 'A' && first <= 'Z')))
+        return false;
+    for (QChar ch : encName.mid(1)) {
+        const auto cp = ch.unicode();
+        if ((cp >= 'a' && cp <= 'z')
+            || (cp >= 'A' && cp <= 'Z')
+            || (cp >= '0' && cp <= '9')
+            || cp == '.' || cp == '_' || cp == '-') {
             continue;
+        }
         return false;
     }
     return true;
@@ -310,13 +313,10 @@ bool QXmlUtils::isNameChar(const QChar c)
     \sa {http://www.w3.org/TR/REC-xml/#NT-PubidLiteral},
            {Extensible Markup Language (XML) 1.0 (Fourth Edition), [12] PubidLiteral}
  */
-bool QXmlUtils::isPublicID(const QString &candidate)
+bool QXmlUtils::isPublicID(QStringView candidate)
 {
-    const int len = candidate.length();
-
-    for(int i = 0; i < len; ++i)
-    {
-        const ushort cp = candidate.at(i).unicode();
+    for (QChar ch : candidate) {
+        const ushort cp = ch.unicode();
 
         if ((cp >= 'a' && cp <= 'z')
             || (cp >= 'A' && cp <= 'Z')
@@ -369,7 +369,7 @@ bool QXmlUtils::isPublicID(const QString &candidate)
     \sa {http://www.w3.org/TR/REC-xml-names/#NT-NCName},
            {W3CNamespaces in XML 1.0 (Second Edition), [4] NCName}
  */
-bool QXmlUtils::isNCName(const QStringRef &ncName)
+bool QXmlUtils::isNCName(QStringView ncName)
 {
     if(ncName.isEmpty())
         return false;
@@ -379,10 +379,7 @@ bool QXmlUtils::isNCName(const QStringRef &ncName)
     if(!QXmlUtils::isLetter(first) && first.unicode() != '_' && first.unicode() != ':')
         return false;
 
-    const int len = ncName.size();
-    for(int i = 0; i < len; ++i)
-    {
-        const QChar at = ncName.at(i);
+    for (QChar at : ncName) {
         if(!QXmlUtils::isNameChar(at) || at == QLatin1Char(':'))
             return false;
     }
