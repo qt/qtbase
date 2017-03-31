@@ -54,7 +54,8 @@ public:
 private:
     enum GraphicsEngine {
         Raster = 0,
-        OpenGL = 1
+        OpenGL = 1,
+        CoreOpenGL = 2
     };
 
     void setupTestSuite(const QStringList& blacklist = QStringList());
@@ -80,8 +81,11 @@ private slots:
 #ifndef QT_NO_OPENGL
     void testOpenGL_data();
     void testOpenGL();
+    void testCoreOpenGL_data();
+    void testCoreOpenGL();
 private:
     bool checkSystemGLSupport();
+    bool checkSystemCoreGLSupport();
 #endif
 };
 
@@ -174,6 +178,32 @@ bool tst_Lancelot::checkSystemGLSupport()
     return true;
 }
 
+bool tst_Lancelot::checkSystemCoreGLSupport()
+{
+    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL)
+        return false;
+
+    QSurfaceFormat coreFormat;
+    coreFormat.setVersion(3, 2);
+    coreFormat.setProfile(QSurfaceFormat::CoreProfile);
+    QWindow win;
+    win.setSurfaceType(QSurface::OpenGLSurface);
+    win.setFormat(coreFormat);
+    win.create();
+    QOpenGLFramebufferObjectFormat fmt;
+    fmt.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+    fmt.setSamples(4);
+    QOpenGLContext ctx;
+    ctx.setFormat(coreFormat);
+    if (!ctx.create() || !ctx.makeCurrent(&win))
+        return false;
+    QOpenGLFramebufferObject fbo(800, 800, fmt);
+    if (!fbo.isValid() || !fbo.bind())
+        return false;
+
+    return true;
+}
+
 void tst_Lancelot::testOpenGL_data()
 {
     if (!checkSystemGLSupport())
@@ -186,6 +216,19 @@ void tst_Lancelot::testOpenGL_data()
 void tst_Lancelot::testOpenGL()
 {
     runTestSuite(OpenGL, QImage::Format_RGB32);
+}
+
+void tst_Lancelot::testCoreOpenGL_data()
+{
+    if (!checkSystemCoreGLSupport())
+        QSKIP("System under test does not meet preconditions for Core Profile GL testing. Skipping.");
+    QStringList localBlacklist = QStringList() << QLatin1String("rasterops.qps");
+    setupTestSuite(localBlacklist);
+}
+
+void tst_Lancelot::testCoreOpenGL()
+{
+    runTestSuite(CoreOpenGL, QImage::Format_RGB32);
 }
 #endif
 
@@ -214,14 +257,21 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format)
         paint(&img, engine, script, QFileInfo(filePath).absoluteFilePath());
         rendered = img;
 #ifndef QT_NO_OPENGL
-    } else if (engine == OpenGL) {
+    } else if (engine == OpenGL || engine == CoreOpenGL) {
+        QSurfaceFormat coreFormat;
+        coreFormat.setVersion(3, 2);
+        coreFormat.setProfile(QSurfaceFormat::CoreProfile);
         QWindow win;
         win.setSurfaceType(QSurface::OpenGLSurface);
+        if (engine == CoreOpenGL)
+            win.setFormat(coreFormat);
         win.create();
         QOpenGLFramebufferObjectFormat fmt;
         fmt.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
         fmt.setSamples(4);
         QOpenGLContext ctx;
+        if (engine == CoreOpenGL)
+            ctx.setFormat(coreFormat);
         QVERIFY(ctx.create());
         QVERIFY(ctx.makeCurrent(&win));
         QOpenGLFramebufferObject fbo(800, 800, fmt);
@@ -243,6 +293,9 @@ void tst_Lancelot::paint(QPaintDevice *device, GraphicsEngine engine, const QStr
     switch (engine) {
     case OpenGL:
         pcmd.setType(OpenGLBufferType);
+        break;
+    case CoreOpenGL:
+        pcmd.setType(CoreOpenGLBufferType);
         break;
     case Raster:  // fallthrough
     default:

@@ -65,7 +65,8 @@ enum DeviceType {
         GrabType,
         CustomDeviceType,
         CustomWidgetType,
-        ImageWidgetType
+        ImageWidgetType,
+        CoreOpenGLBufferType
 };
 
 /************************************************************************/

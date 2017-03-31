@@ -96,6 +96,7 @@ static void printHelp()
 #ifndef QT_NO_OPENGL
            "    -opengl         Paints the files to a QGLWidget (Qt4 style) on screen\n"
            "    -glbuffer       Paints the files to a QOpenGLFrameBufferObject (Qt5 style) \n"
+           "    -coreglbuffer   Paints the files to a Core Profile context QOpenGLFrameBufferObject\n"
 #endif
 #ifdef USE_CUSTOM_DEVICE
            "    -customdevice   Paints the files to the custom paint device\n"
@@ -286,6 +287,8 @@ int main(int argc, char **argv)
                 type = OpenGLType;
             else if (option == "glbuffer")
                 type = OpenGLBufferType;
+            else if (option == "coreglbuffer")
+                type = CoreOpenGLBufferType;
 #endif
 #ifdef USE_CUSTOM_DEVICE
             else if (option == "customdevice")
@@ -425,14 +428,22 @@ int main(int argc, char **argv)
             }
 #ifndef QT_NO_OPENGL
             case OpenGLBufferType:
+            case CoreOpenGLBufferType:
             {
+                QSurfaceFormat coreFormat;
+                coreFormat.setVersion(3, 2);
+                coreFormat.setProfile(QSurfaceFormat::CoreProfile);
                 QWindow win;
                 win.setSurfaceType(QSurface::OpenGLSurface);
+                if (type == CoreOpenGLBufferType)
+                    win.setFormat(coreFormat);
                 win.create();
                 QOpenGLFramebufferObjectFormat fmt;
                 fmt.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
                 fmt.setSamples(4);
                 QOpenGLContext ctx;
+                if (type == CoreOpenGLBufferType)
+                    ctx.setFormat(coreFormat);
                 ctx.create();
                 ctx.makeCurrent(&win);
                 QOpenGLFramebufferObject fbo(width, height, fmt);
@@ -469,6 +480,7 @@ int main(int argc, char **argv)
 #else
             case OpenGLType:
             case OpenGLBufferType:
+            case CoreOpenGLBufferType:
             {
                 printf("OpenGL type not supported in this Qt build\n");
                 break;

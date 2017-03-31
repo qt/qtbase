@@ -2369,7 +2369,7 @@ void PaintCommands::command_surface_begin(QRegExp re)
 
     m_surface_painter = m_painter;
 
-    if (m_type == OpenGLType || m_type == OpenGLBufferType) {
+    if (m_type == OpenGLType || m_type == OpenGLBufferType || m_type == CoreOpenGLBufferType) {
 #ifndef QT_NO_OPENGL
         m_default_glcontext = QOpenGLContext::currentContext();
         m_surface_glcontext = new QOpenGLContext();
@@ -2422,7 +2422,7 @@ void PaintCommands::command_surface_end(QRegExp)
     m_painter = m_surface_painter;
     m_surface_painter = 0;
 
-    if (m_type == OpenGLType || m_type == OpenGLBufferType) {
+    if (m_type == OpenGLType || m_type == OpenGLBufferType || m_type == CoreOpenGLBufferType) {
 #ifndef QT_NO_OPENGL
         QImage new_image = m_surface_glbuffer->toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
