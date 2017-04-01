@@ -169,6 +169,7 @@ void consistencyCheck(const QRegularExpressionMatch &match)
                 int length = match.capturedLength(i);
                 QString captured = match.captured(i);
                 QStringRef capturedRef = match.capturedRef(i);
+                QStringView capturedView = match.capturedView(i);
 
                 if (!captured.isNull()) {
                     QVERIFY(startPos >= 0);
@@ -177,11 +178,13 @@ void consistencyCheck(const QRegularExpressionMatch &match)
                     QVERIFY(endPos >= startPos);
                     QVERIFY((endPos - startPos) == length);
                     QVERIFY(captured == capturedRef);
+                    QVERIFY(captured == capturedView);
                 } else {
                     QVERIFY(startPos == -1);
                     QVERIFY(endPos == -1);
                     QVERIFY((endPos - startPos) == length);
                     QVERIFY(capturedRef.isNull());
+                    QVERIFY(capturedView.isNull());
                 }
             }
         }
