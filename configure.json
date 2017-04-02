@@ -880,7 +880,7 @@
             ]
         },
         "aesni": {
-            "label": "aesni",
+            "label": "AES",
             "condition": "features.sse2 && tests.aesni",
             "output": [
                 "privateConfig",
@@ -888,7 +888,7 @@
             ]
         },
         "shani": {
-            "label": "shani",
+            "label": "SHA",
             "condition": "features.sse2 && tests.shani",
             "output": [
                 "privateConfig",
@@ -1152,13 +1152,19 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                         {
                             "message": "AVX",
                             "type": "featureList",
-                            "args": "avx avx2 f16c",
+                            "args": "avx avx2",
                             "condition": "(arch.i386 || arch.x86_64)"
                         },
                         {
                             "message": "AVX512",
                             "type": "featureList",
                             "args": "avx512f avx512er avx512cd avx512pf avx512dq avx512bw avx512vl avx512ifma avx512vbmi",
+                            "condition": "(arch.i386 || arch.x86_64)"
+                        },
+                        {
+                            "message": "Other x86",
+                            "type": "featureList",
+                            "args": "aesni f16c shani",
                             "condition": "(arch.i386 || arch.x86_64)"
                         },
                         {
