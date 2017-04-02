@@ -113,6 +113,8 @@ inline Q_REQUIRED_RESULT bool qIsNull(qfloat16 f) Q_DECL_NOTHROW
 inline int qIntCast(qfloat16 f) Q_DECL_NOTHROW
 { return int(static_cast<float>(f)); }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wc99-extensions")
 inline qfloat16::qfloat16(float f) Q_DECL_NOTHROW
 {
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
@@ -127,6 +129,7 @@ inline qfloat16::qfloat16(float f) Q_DECL_NOTHROW
           + ((u & 0x007fffff) >> shifttable[(u >> 23) & 0x1ff]);
 #endif
 }
+QT_WARNING_POP
 
 inline qfloat16::operator float() const Q_DECL_NOTHROW
 {
