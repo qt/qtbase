@@ -6774,12 +6774,12 @@ void QWidget::clearFocus()
 
 bool QWidget::focusNextPrevChild(bool next)
 {
-    Q_D(QWidget);
     QWidget* p = parentWidget();
     bool isSubWindow = (windowType() == Qt::SubWindow);
     if (!isWindow() && !isSubWindow && p)
         return p->focusNextPrevChild(next);
 #ifndef QT_NO_GRAPHICSVIEW
+    Q_D(QWidget);
     if (d->extra && d->extra->proxyWidget)
         return d->extra->proxyWidget->focusNextPrevChild(next);
 #endif
