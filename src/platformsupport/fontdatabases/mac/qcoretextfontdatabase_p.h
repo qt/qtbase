@@ -91,7 +91,6 @@ public:
 
 private:
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString());
-    virtual CFArrayRef createDescriptorArrayForDescriptor(CTFontDescriptorRef descriptor, const QString &fileName) = 0;
 
     mutable QString defaultFontName;
 
@@ -108,8 +107,6 @@ class QCoreTextFontDatabaseEngineFactory : public QCoreTextFontDatabase
 public:
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
-protected:
-    CFArrayRef createDescriptorArrayForDescriptor(CTFontDescriptorRef descriptor, const QString &fileName) override;
 };
 
 QT_END_NAMESPACE
