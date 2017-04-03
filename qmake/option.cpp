@@ -462,7 +462,9 @@ Option::init(int argc, char **argv)
 
 void Option::prepareProject(const QString &pfile)
 {
-    QString srcpath = QDir::cleanPath(QFileInfo(pfile).absolutePath());
+    // Canonicalize only the directory, otherwise things will go haywire
+    // if the file itself is a symbolic link.
+    const QString srcpath = QFileInfo(QFileInfo(pfile).absolutePath()).canonicalFilePath();
     globals->setDirectories(srcpath, output_dir);
 }
 
