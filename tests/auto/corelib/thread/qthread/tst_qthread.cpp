@@ -47,6 +47,10 @@
 #endif
 #endif
 
+#ifndef QT_NO_EXCEPTIONS
+#include <exception>
+#endif
+
 class tst_QThread : public QObject
 {
     Q_OBJECT
@@ -98,6 +102,8 @@ private slots:
     void stressTest();
 
     void quitLock();
+
+    void create();
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -1323,6 +1329,259 @@ void tst_QThread::quitLock()
     QCOMPARE(job->thread(), &thread);
     loop.exec();
     QVERIFY(exitThreadCalled);
+}
+
+void tst_QThread::create()
+{
+#ifndef QTHREAD_HAS_CREATE
+    QSKIP("This test requires QThread::create");
+#else
+    {
+        const auto &function = [](){};
+        QScopedPointer<QThread> thread(QThread::create(function));
+        QVERIFY(thread);
+        QVERIFY(!thread->isRunning());
+        thread->start();
+        QVERIFY(thread->wait());
+    }
+
+    {
+        // no side effects before starting
+        int i = 0;
+        const auto &function = [&i]() { i = 42; };
+        QScopedPointer<QThread> thread(QThread::create(function));
+        QVERIFY(thread);
+        QVERIFY(!thread->isRunning());
+        QCOMPARE(i, 0);
+        thread->start();
+        QVERIFY(thread->wait());
+        QCOMPARE(i, 42);
+    }
+
+    {
+        // control thread progress
+        QSemaphore semaphore1;
+        QSemaphore semaphore2;
+
+        const auto &function = [&semaphore1, &semaphore2]() -> void
+        {
+            semaphore1.acquire();
+            semaphore2.release();
+        };
+
+        QScopedPointer<QThread> thread(QThread::create(function));
+
+        QVERIFY(thread);
+        thread->start();
+        QTRY_VERIFY(thread->isRunning());
+        semaphore1.release();
+        semaphore2.acquire();
+        QVERIFY(thread->wait());
+        QVERIFY(!thread->isRunning());
+    }
+
+    {
+        // ignore return values
+        const auto &function = []() { return 42; };
+        QScopedPointer<QThread> thread(QThread::create(function));
+        QVERIFY(thread);
+        QVERIFY(!thread->isRunning());
+        thread->start();
+        QVERIFY(thread->wait());
+    }
+
+    {
+        // return value of create
+        QScopedPointer<QThread> thread;
+        QSemaphore s;
+        const auto &function = [&thread, &s]() -> void
+        {
+            s.acquire();
+            QCOMPARE(thread.data(), QThread::currentThread());
+        };
+
+        thread.reset(QThread::create(function));
+        QVERIFY(thread);
+        thread->start();
+        QTRY_VERIFY(thread->isRunning());
+        s.release();
+        QVERIFY(thread->wait());
+    }
+
+    {
+        // move-only parameters
+        struct MoveOnlyValue {
+            explicit MoveOnlyValue(int v) : v(v) {}
+            ~MoveOnlyValue() = default;
+            MoveOnlyValue(const MoveOnlyValue &) = delete;
+            MoveOnlyValue(MoveOnlyValue &&) = default;
+            MoveOnlyValue &operator=(const MoveOnlyValue &) = delete;
+            MoveOnlyValue &operator=(MoveOnlyValue &&) = default;
+            int v;
+        };
+
+        struct MoveOnlyFunctor {
+            explicit MoveOnlyFunctor(int *i) : i(i) {}
+            ~MoveOnlyFunctor() = default;
+            MoveOnlyFunctor(const MoveOnlyFunctor &) = delete;
+            MoveOnlyFunctor(MoveOnlyFunctor &&) = default;
+            MoveOnlyFunctor &operator=(const MoveOnlyFunctor &) = delete;
+            MoveOnlyFunctor &operator=(MoveOnlyFunctor &&) = default;
+            int operator()() { return (*i = 42); }
+            int *i;
+        };
+
+        {
+            int i = 0;
+            MoveOnlyFunctor f(&i);
+            QScopedPointer<QThread> thread(QThread::create(std::move(f)));
+            QVERIFY(thread);
+            QVERIFY(!thread->isRunning());
+            thread->start();
+            QVERIFY(thread->wait());
+            QCOMPARE(i, 42);
+        }
+
+#if defined(__cpp_init_captures) && __cpp_init_captures >= 201304
+        {
+            int i = 0;
+            MoveOnlyValue mo(123);
+            auto moveOnlyFunction = [&i, mo = std::move(mo)]() { i = mo.v; };
+            QScopedPointer<QThread> thread(QThread::create(std::move(moveOnlyFunction)));
+            QVERIFY(thread);
+            QVERIFY(!thread->isRunning());
+            thread->start();
+            QVERIFY(thread->wait());
+            QCOMPARE(i, 123);
+        }
+#endif // __cpp_init_captures
+
+#ifdef QTHREAD_HAS_VARIADIC_CREATE
+        {
+            int i = 0;
+            const auto &function = [&i](MoveOnlyValue &&mo) { i = mo.v; };
+            QScopedPointer<QThread> thread(QThread::create(function, MoveOnlyValue(123)));
+            QVERIFY(thread);
+            QVERIFY(!thread->isRunning());
+            thread->start();
+            QVERIFY(thread->wait());
+            QCOMPARE(i, 123);
+        }
+
+        {
+            int i = 0;
+            const auto &function = [&i](MoveOnlyValue &&mo) { i = mo.v; };
+            MoveOnlyValue mo(-1);
+            QScopedPointer<QThread> thread(QThread::create(function, std::move(mo)));
+            QVERIFY(thread);
+            QVERIFY(!thread->isRunning());
+            thread->start();
+            QVERIFY(thread->wait());
+            QCOMPARE(i, -1);
+        }
+#endif // QTHREAD_HAS_VARIADIC_CREATE
+    }
+
+#ifdef QTHREAD_HAS_VARIADIC_CREATE
+    {
+        // simple parameter passing
+        int i = 0;
+        const auto &function = [&i](int j, int k) { i = j * k; };
+        QScopedPointer<QThread> thread(QThread::create(function, 3, 4));
+        QVERIFY(thread);
+        QVERIFY(!thread->isRunning());
+        QCOMPARE(i, 0);
+        thread->start();
+        QVERIFY(thread->wait());
+        QCOMPARE(i, 12);
+    }
+
+    {
+        // ignore return values (with parameters)
+        const auto &function = [](double d) { return d * 2.0; };
+        QScopedPointer<QThread> thread(QThread::create(function, 3.14));
+        QVERIFY(thread);
+        QVERIFY(!thread->isRunning());
+        thread->start();
+        QVERIFY(thread->wait());
+    }
+
+    {
+        // handling of pointers to member functions, std::ref, etc.
+        struct S {
+            S() : v(0) {}
+            void doSomething() { ++v; }
+            int v;
+        };
+
+        S object;
+
+        QCOMPARE(object.v, 0);
+
+        QScopedPointer<QThread> thread;
+        thread.reset(QThread::create(&S::doSomething, object));
+        QVERIFY(thread);
+        QVERIFY(!thread->isRunning());
+        thread->start();
+        QVERIFY(thread->wait());
+
+        QCOMPARE(object.v, 0); // a copy was passed, this should still be 0
+
+        thread.reset(QThread::create(&S::doSomething, std::ref(object)));
+        QVERIFY(thread);
+        QVERIFY(!thread->isRunning());
+        thread->start();
+        QVERIFY(thread->wait());
+
+        QCOMPARE(object.v, 1);
+
+        thread.reset(QThread::create(&S::doSomething, &object));
+        QVERIFY(thread);
+        QVERIFY(!thread->isRunning());
+        thread->start();
+        QVERIFY(thread->wait());
+
+        QCOMPARE(object.v, 2);
+    }
+
+    {
+        // std::ref into ordinary reference
+        int i = 42;
+        const auto &function = [](int &i) { i *= 2; };
+        QScopedPointer<QThread> thread(QThread::create(function, std::ref(i)));
+        QVERIFY(thread);
+        thread->start();
+        QVERIFY(thread->wait());
+        QCOMPARE(i, 84);
+    }
+
+#ifndef QT_NO_EXCEPTIONS
+    {
+        // exceptions when copying/decaying the arguments are thrown at build side and won't terminate
+        class ThreadException : public std::exception
+        {
+        };
+
+        struct ThrowWhenCopying
+        {
+            ThrowWhenCopying() = default;
+            ThrowWhenCopying(const ThrowWhenCopying &)
+            {
+                throw ThreadException();
+            }
+            ~ThrowWhenCopying() = default;
+            ThrowWhenCopying &operator=(const ThrowWhenCopying &) = default;
+        };
+
+        const auto &function = [](const ThrowWhenCopying &){};
+        QScopedPointer<QThread> thread;
+        ThrowWhenCopying t;
+        QVERIFY_EXCEPTION_THROWN(thread.reset(QThread::create(function, t)), ThreadException);
+        QVERIFY(!thread);
+    }
+#endif // QT_NO_EXCEPTIONS
+#endif // QTHREAD_HAS_VARIADIC_CREATE
+#endif // QTHREAD_HAS_CREATE
 }
 
 class StopableJob : public QObject
