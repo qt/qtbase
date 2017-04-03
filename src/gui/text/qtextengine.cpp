@@ -579,12 +579,14 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                         else
                             eor = current;
                         status.eor = QChar::DirEN;
-                        dir = QChar::DirAN; break;
+                        dir = QChar::DirAN;
+                        break;
                     case QChar::DirES:
                     case QChar::DirCS:
                         if(status.eor == QChar::DirEN || dir == QChar::DirAN) {
                             eor = current; break;
                         }
+                        Q_FALLTHROUGH();
                     case QChar::DirBN:
                     case QChar::DirB:
                     case QChar::DirS:
@@ -614,11 +616,13 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                                 eor = current; status.eor = dirCurrent;
                             }
                         }
+                        break;
                     default:
                         break;
                     }
                 break;
             }
+            Q_FALLTHROUGH();
         case QChar::DirAN:
             hasBidi = true;
             dirCurrent = QChar::DirAN;
@@ -642,6 +646,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                     if(status.eor == QChar::DirAN) {
                         eor = current; break;
                     }
+                    Q_FALLTHROUGH();
                 case QChar::DirES:
                 case QChar::DirET:
                 case QChar::DirBN:

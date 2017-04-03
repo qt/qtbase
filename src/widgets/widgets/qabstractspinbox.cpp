@@ -976,6 +976,7 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
     case Qt::Key_PageDown:
         steps *= 10;
         isPgUpOrDown = true;
+        Q_FALLTHROUGH();
     case Qt::Key_Up:
     case Qt::Key_Down: {
 #ifdef QT_KEYPAD_NAVIGATION
@@ -2111,6 +2112,7 @@ int QAbstractSpinBoxPrivate::variantCompare(const QVariant &arg1, const QVariant
     case QVariant::Invalid:
         if (arg2.type() == QVariant::Invalid)
             return 0;
+        Q_FALLTHROUGH();
     default:
         Q_ASSERT_X(0, "QAbstractSpinBoxPrivate::variantCompare",
                    qPrintable(QString::fromLatin1("Internal error 3 (%1 %2)").

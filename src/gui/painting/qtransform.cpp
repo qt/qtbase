@@ -2094,7 +2094,8 @@ QTransform::TransformationType QTransform::type() const
         if (!qFuzzyIsNull(m_13) || !qFuzzyIsNull(m_23) || !qFuzzyIsNull(m_33 - 1)) {
              m_type = TxProject;
              break;
-         }
+        }
+        Q_FALLTHROUGH();
     case TxShear:
     case TxRotate:
         if (!qFuzzyIsNull(affine._m12) || !qFuzzyIsNull(affine._m21)) {
@@ -2105,16 +2106,19 @@ QTransform::TransformationType QTransform::type() const
                 m_type = TxShear;
             break;
         }
+        Q_FALLTHROUGH();
     case TxScale:
         if (!qFuzzyIsNull(affine._m11 - 1) || !qFuzzyIsNull(affine._m22 - 1)) {
             m_type = TxScale;
             break;
         }
+        Q_FALLTHROUGH();
     case TxTranslate:
         if (!qFuzzyIsNull(affine._dx) || !qFuzzyIsNull(affine._dy)) {
             m_type = TxTranslate;
             break;
         }
+        Q_FALLTHROUGH();
     case TxNone:
         m_type = TxNone;
         break;

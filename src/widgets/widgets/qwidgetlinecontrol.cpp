@@ -1030,6 +1030,7 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
                 break;
             case '\\':
                 escape = true;
+                Q_FALLTHROUGH();
             default:
                 s = true;
                 break;
