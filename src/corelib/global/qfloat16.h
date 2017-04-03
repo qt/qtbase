@@ -117,7 +117,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wc99-extensions")
 inline qfloat16::qfloat16(float f) Q_DECL_NOTHROW
 {
-#if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
+#if defined(QT_COMPILER_SUPPORTS_F16C) && (defined(__F16C__) || defined(__AVX2__))
     __m128 packsingle = _mm_set_ss(f);
     __m128i packhalf = _mm_cvtps_ph(packsingle, 0);
     b16 = _mm_extract_epi16(packhalf, 0);
@@ -135,7 +135,7 @@ QT_WARNING_POP
 
 inline qfloat16::operator float() const Q_DECL_NOTHROW
 {
-#if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
+#if defined(QT_COMPILER_SUPPORTS_F16C) && (defined(__F16C__) || defined(__AVX2__))
     __m128i packhalf = _mm_cvtsi32_si128(b16);
     __m128 packsingle = _mm_cvtph_ps(packhalf);
     return _mm_cvtss_f32(packsingle);
