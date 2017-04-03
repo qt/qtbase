@@ -1975,7 +1975,8 @@ QImage::Format QImage::format() const
 }
 
 /*!
-    \fn QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) const
+    \fn QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) const &
+    \fn QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) &&
 
     Returns a copy of the image in the given \a format.
 
@@ -2987,7 +2988,9 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 }
 
 /*!
-    \fn QImage QImage::mirrored(bool horizontal = false, bool vertical = true) const
+    \fn QImage QImage::mirrored(bool horizontal = false, bool vertical = true) const &
+    \fn QImage QImage::mirrored(bool horizontal = false, bool vertical = true) &&
+
     Returns a mirror of the image, mirrored in the horizontal and/or
     the vertical direction depending on whether \a horizontal and \a
     vertical are set to true or false.
@@ -3192,7 +3195,9 @@ void QImage::mirrored_inplace(bool horizontal, bool vertical)
 }
 
 /*!
-    \fn QImage QImage::rgbSwapped() const
+    \fn QImage QImage::rgbSwapped() const &
+    \fn QImage QImage::rgbSwapped() &&
+
     Returns a QImage in which the values of the red and blue
     components of all pixels have been swapped, effectively converting
     an RGB image to an BGR image.
