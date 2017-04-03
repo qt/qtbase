@@ -284,6 +284,8 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         free_prop = false;
 #if QT_CONFIG(textcodec)
     }
+#else
+    Q_UNUSED(dpy);
 #endif
     return &tp;
 }
