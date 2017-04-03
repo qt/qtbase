@@ -1163,7 +1163,9 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             break;
         case XCB_SELECTION_REQUEST:
         {
+#if QT_CONFIG(draganddrop) || QT_CONFIG(clipboard)
             xcb_selection_request_event_t *sr = reinterpret_cast<xcb_selection_request_event_t *>(event);
+#endif
 #ifndef QT_NO_DRAGANDDROP
             if (sr->selection == atom(QXcbAtom::XdndSelection))
                 m_drag->handleSelectionRequest(sr);
