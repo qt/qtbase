@@ -45,15 +45,15 @@
 QT_BEGIN_NAMESPACE
 
 
-Q_CORE_EXPORT bool qIsInf(double d);
-Q_CORE_EXPORT bool qIsNaN(double d);
-Q_CORE_EXPORT bool qIsFinite(double d);
-Q_CORE_EXPORT bool qIsInf(float f);
-Q_CORE_EXPORT bool qIsNaN(float f);
-Q_CORE_EXPORT bool qIsFinite(float f);
-Q_CORE_EXPORT double qSNaN();
-Q_CORE_EXPORT double qQNaN();
-Q_CORE_EXPORT double qInf();
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsInf(double d);
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsNaN(double d);
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsFinite(double d);
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsInf(float f);
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsNaN(float f);
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsFinite(float f);
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION double qSNaN();
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION double qQNaN();
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION double qInf();
 
 Q_CORE_EXPORT quint32 qFloatDistance(float a, float b);
 Q_CORE_EXPORT quint64 qFloatDistance(double a, double b);

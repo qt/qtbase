@@ -71,7 +71,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT unsigned int qt_int_sqrt(unsigned int n);
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n);
 
 /*!
     Returns \c true if the string \a text is likely to be rich text;

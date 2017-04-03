@@ -73,12 +73,12 @@
 QT_BEGIN_NAMESPACE
 namespace qnumeric_std_wrapper {
 // the 'using namespace std' below is cases where the stdlib already put the math.h functions in the std namespace and undefined the macros.
-static inline bool math_h_isnan(double d) { using namespace std; return isnan(d); }
-static inline bool math_h_isinf(double d) { using namespace std; return isinf(d); }
-static inline bool math_h_isfinite(double d) { using namespace std; return isfinite(d); }
-static inline bool math_h_isnan(float f) { using namespace std; return isnan(f); }
-static inline bool math_h_isinf(float f) { using namespace std; return isinf(f); }
-static inline bool math_h_isfinite(float f) { using namespace std; return isfinite(f); }
+Q_DECL_CONST_FUNCTION static inline bool math_h_isnan(double d) { using namespace std; return isnan(d); }
+Q_DECL_CONST_FUNCTION static inline bool math_h_isinf(double d) { using namespace std; return isinf(d); }
+Q_DECL_CONST_FUNCTION static inline bool math_h_isfinite(double d) { using namespace std; return isfinite(d); }
+Q_DECL_CONST_FUNCTION static inline bool math_h_isnan(float f) { using namespace std; return isnan(f); }
+Q_DECL_CONST_FUNCTION static inline bool math_h_isinf(float f) { using namespace std; return isinf(f); }
+Q_DECL_CONST_FUNCTION static inline bool math_h_isfinite(float f) { using namespace std; return isfinite(f); }
 }
 QT_END_NAMESPACE
 // These macros from math.h conflict with the real functions in the std namespace.
@@ -94,23 +94,23 @@ QT_BEGIN_NAMESPACE
 namespace qnumeric_std_wrapper {
 #if defined(QT_MATH_H_DEFINES_MACROS)
 #  undef QT_MATH_H_DEFINES_MACROS
-static inline bool isnan(double d) { return math_h_isnan(d); }
-static inline bool isinf(double d) { return math_h_isinf(d); }
-static inline bool isfinite(double d) { return math_h_isfinite(d); }
-static inline bool isnan(float f) { return math_h_isnan(f); }
-static inline bool isinf(float f) { return math_h_isinf(f); }
-static inline bool isfinite(float f) { return math_h_isfinite(f); }
+Q_DECL_CONST_FUNCTION static inline bool isnan(double d) { return math_h_isnan(d); }
+Q_DECL_CONST_FUNCTION static inline bool isinf(double d) { return math_h_isinf(d); }
+Q_DECL_CONST_FUNCTION static inline bool isfinite(double d) { return math_h_isfinite(d); }
+Q_DECL_CONST_FUNCTION static inline bool isnan(float f) { return math_h_isnan(f); }
+Q_DECL_CONST_FUNCTION static inline bool isinf(float f) { return math_h_isinf(f); }
+Q_DECL_CONST_FUNCTION static inline bool isfinite(float f) { return math_h_isfinite(f); }
 #else
-static inline bool isnan(double d) { return std::isnan(d); }
-static inline bool isinf(double d) { return std::isinf(d); }
-static inline bool isfinite(double d) { return std::isfinite(d); }
-static inline bool isnan(float f) { return std::isnan(f); }
-static inline bool isinf(float f) { return std::isinf(f); }
-static inline bool isfinite(float f) { return std::isfinite(f); }
+Q_DECL_CONST_FUNCTION static inline bool isnan(double d) { return std::isnan(d); }
+Q_DECL_CONST_FUNCTION static inline bool isinf(double d) { return std::isinf(d); }
+Q_DECL_CONST_FUNCTION static inline bool isfinite(double d) { return std::isfinite(d); }
+Q_DECL_CONST_FUNCTION static inline bool isnan(float f) { return std::isnan(f); }
+Q_DECL_CONST_FUNCTION static inline bool isinf(float f) { return std::isinf(f); }
+Q_DECL_CONST_FUNCTION static inline bool isfinite(float f) { return std::isfinite(f); }
 #endif
 }
 
-Q_DECL_CONSTEXPR static inline double qt_inf() Q_DECL_NOEXCEPT
+Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() Q_DECL_NOEXCEPT
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_infinity,
                       "platform has no definition for infinity for type double");
@@ -118,7 +118,7 @@ Q_DECL_CONSTEXPR static inline double qt_inf() Q_DECL_NOEXCEPT
 }
 
 // Signaling NaN
-Q_DECL_CONSTEXPR static inline double qt_snan() Q_DECL_NOEXCEPT
+Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() Q_DECL_NOEXCEPT
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_signaling_NaN,
                       "platform has no definition for signaling NaN for type double");
@@ -126,39 +126,39 @@ Q_DECL_CONSTEXPR static inline double qt_snan() Q_DECL_NOEXCEPT
 }
 
 // Quiet NaN
-Q_DECL_CONSTEXPR static inline double qt_qnan() Q_DECL_NOEXCEPT
+Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_qnan() Q_DECL_NOEXCEPT
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_quiet_NaN,
                       "platform has no definition for quiet NaN for type double");
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-static inline bool qt_is_inf(double d)
+Q_DECL_CONST_FUNCTION static inline bool qt_is_inf(double d)
 {
     return qnumeric_std_wrapper::isinf(d);
 }
 
-static inline bool qt_is_nan(double d)
+Q_DECL_CONST_FUNCTION static inline bool qt_is_nan(double d)
 {
     return qnumeric_std_wrapper::isnan(d);
 }
 
-static inline bool qt_is_finite(double d)
+Q_DECL_CONST_FUNCTION static inline bool qt_is_finite(double d)
 {
     return qnumeric_std_wrapper::isfinite(d);
 }
 
-static inline bool qt_is_inf(float f)
+Q_DECL_CONST_FUNCTION static inline bool qt_is_inf(float f)
 {
     return qnumeric_std_wrapper::isinf(f);
 }
 
-static inline bool qt_is_nan(float f)
+Q_DECL_CONST_FUNCTION static inline bool qt_is_nan(float f)
 {
     return qnumeric_std_wrapper::isnan(f);
 }
 
-static inline bool qt_is_finite(float f)
+Q_DECL_CONST_FUNCTION static inline bool qt_is_finite(float f)
 {
     return qnumeric_std_wrapper::isfinite(f);
 }
