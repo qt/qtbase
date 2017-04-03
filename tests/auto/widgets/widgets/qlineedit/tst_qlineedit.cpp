@@ -325,6 +325,7 @@ private:
     // keyClicks(..) is moved to QtTestCase
     void psKeyClick(QWidget *target, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
     void psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
+    bool unselectingWithLeftOrRightChangesCursorPosition();
     QLineEdit *ensureTestWidget();
 
     bool validInput;
@@ -1315,9 +1316,10 @@ void tst_QLineEdit::undo_keypressevents_data()
 
         // unselect any current selection
         keys.addKeyClick(Qt::Key_Right);
-#if defined Q_OS_WIN || defined Q_OS_QNX //Windows and QNX do not jump to the beginning of the selection
-        keys.addKeyClick(Qt::Key_Left);
-#endif
+
+        // If previous right changed cursor position, go back left
+        if (unselectingWithLeftOrRightChangesCursorPosition())
+            keys.addKeyClick(Qt::Key_Left);
 
         // selecting '12'
         keys.addKeyClick(Qt::Key_Right, Qt::ShiftModifier);
@@ -3298,14 +3300,11 @@ void tst_QLineEdit::leftKeyOnSelectedText()
     QCOMPARE(testWidget->cursorPosition(), 2);
     QCOMPARE(testWidget->selectedText(), QString("23"));
     QTest::keyClick(testWidget, Qt::Key_Left);
-#if defined Q_OS_WIN || defined Q_OS_QNX
-    QCOMPARE(testWidget->cursorPosition(), 1);
-#else
-    // Selection is cleared ands cursor remains at position 2.
-    // X11 used to behave like window prior to 4.2. Changes caused by QKeySequence
-    // resulted in an inadvertant change in behavior
-    QCOMPARE(testWidget->cursorPosition(), 2);
-#endif
+
+    if (unselectingWithLeftOrRightChangesCursorPosition())
+        QCOMPARE(testWidget->cursorPosition(), 1);
+    else
+        QCOMPARE(testWidget->cursorPosition(), 2);
 }
 
 void tst_QLineEdit::inlineCompletion()
@@ -4637,6 +4636,23 @@ void tst_QLineEdit::QTBUG59957_clearButtonLeftmostAction()
         QVERIFY(clearButton->x() < button->x());
     }
 #endif // QT_BUILD_INTERNAL
+}
+
+bool tst_QLineEdit::unselectingWithLeftOrRightChangesCursorPosition()
+{
+#if defined Q_OS_WIN || defined Q_OS_QNX //Windows and QNX do not jump to the beginning of the selection
+    return true;
+#endif
+    // Platforms minimal/offscreen also need left after unselecting with right
+    if (!QGuiApplication::platformName().compare("minimal", Qt::CaseInsensitive)
+        || !QGuiApplication::platformName().compare("offscreen", Qt::CaseInsensitive)) {
+        return true;
+    }
+
+    // Selection is cleared ands cursor remains at previous position.
+    // X11 used to behave like window prior to 4.2. Changes caused by QKeySequence
+    // resulted in an inadvertant change in behavior
+    return false;
 }
 
 QTEST_MAIN(tst_QLineEdit)
