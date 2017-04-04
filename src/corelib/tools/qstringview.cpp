@@ -131,9 +131,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \typedef QStringView::size_type
 
-    Alias for \c{std::ptrdiff_t}. Provided for compatibility with the STL.
+    Alias for qssize_t. Provided for compatibility with the STL.
 
-    Unlike other Qt classes, QStringView uses \c ptrdiff_t as its \c size_type, to allow
+    Unlike other Qt classes, QStringView uses qssize_t as its \c size_type, to allow
     accepting data from \c{std::basic_string} without truncation. The Qt API functions,
     for example length(), return \c int, while the STL-compatible functions, for example
     size(), return \c size_type.
@@ -233,7 +233,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const Char *str, size_type len)
+    \fn QStringView::QStringView(const Char *str, qssize_t len)
 
     Constructs a string view on \a str with length \a len.
 
@@ -475,7 +475,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::size_type QStringView::size() const
+    \fn qssize_t QStringView::size() const
 
     Returns the size of this string view, in UTF-16 code points (that is,
     surrogate pairs count as two for the purposes of this function, the same
@@ -499,7 +499,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QChar QStringView::operator[](size_type n) const
+    \fn QChar QStringView::operator[](qssize_t n) const
 
     Returns the character at position \a n in this string view.
 
@@ -509,7 +509,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QChar QStringView::at(size_type n) const
+    \fn QChar QStringView::at(qssize_t n) const
 
     Returns the character at position \a n in this string view.
 
@@ -571,7 +571,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::mid(size_type start) const
+    \fn QStringView QStringView::mid(qssize_t start) const
 
     Returns the substring starting at position \a start in this object,
     and extending to the end of the string.
@@ -582,7 +582,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::mid(size_type start, size_type length) const
+    \fn QStringView QStringView::mid(qssize_t start, qssize_t length) const
     \overload
 
     Returns the substring of length \a length starting at position
@@ -595,7 +595,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::left(size_type length) const
+    \fn QStringView QStringView::left(qssize_t length) const
 
     Returns the substring of length \a length starting at position
     0 in this object.
@@ -606,7 +606,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView QStringView::right(size_type length) const
+    \fn QStringView QStringView::right(qssize_t length) const
 
     Returns the substring of length \a length starting at position
     size() - \a length in this object.

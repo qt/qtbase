@@ -62,7 +62,7 @@ class QStringIterator
     QString::const_iterator i, pos, e;
     Q_STATIC_ASSERT((std::is_same<QString::const_iterator, const QChar *>::value));
 public:
-    explicit QStringIterator(QStringView string, QStringView::size_type idx = 0)
+    explicit QStringIterator(QStringView string, qssize_t idx = 0)
         : i(string.begin()),
           pos(i + idx),
           e(string.end())

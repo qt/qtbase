@@ -3374,7 +3374,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
     bool dec = false;
     int decDigitCnt = 0;
 
-    for (QStringView::size_type i = 0; i < str.size(); ++i) {
+    for (qssize_t i = 0; i < str.size(); ++i) {
         char c = digitToCLocale(str.at(i));
 
         if (c >= '0' && c <= '9') {
