@@ -1280,11 +1280,9 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     Q_D(QNetworkAccessManager);
 
     QNetworkRequest req(originalReq);
-    if (req.attribute(QNetworkRequest::RedirectPolicyAttribute).isNull()
+    if (redirectPolicy() != QNetworkRequest::ManualRedirectPolicy
+        && req.attribute(QNetworkRequest::RedirectPolicyAttribute).isNull()
         && req.attribute(QNetworkRequest::FollowRedirectsAttribute).isNull()) {
-        // We only apply the general manager's policy if:
-        // - RedirectPolicyAttribute is not set already on request and
-        // - no FollowRedirectsAttribute is set.
         req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, redirectPolicy());
     }
 
