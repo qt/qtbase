@@ -41,6 +41,8 @@
 #include <private/qfsfileengine_p.h>
 #include <private/qfilesystemengine_p.h>
 
+#include "emulationdetector.h"
+
 #ifdef Q_OS_WIN
 QT_BEGIN_NAMESPACE
 extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
@@ -2393,7 +2395,11 @@ void tst_QFile::virtualFile()
     // open the file
     QFile f(fname);
     QVERIFY2(f.open(QIODevice::ReadOnly), msgOpenFailed(f).constData());
+    if (EmulationDetector::isRunningArmOnX86())
+        QEXPECT_FAIL("","QEMU does not read /proc/self/maps size correctly", Continue);
     QCOMPARE(f.size(), Q_INT64_C(0));
+    if (EmulationDetector::isRunningArmOnX86())
+        QEXPECT_FAIL("","QEMU does not read /proc/self/maps size correctly", Continue);
     QVERIFY(f.atEnd());
 
     // read data
