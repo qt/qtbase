@@ -170,10 +170,6 @@ public:
         : m_size(0), m_data(nullptr) {}
     Q_DECL_CONSTEXPR QStringView(std::nullptr_t) Q_DECL_NOTHROW
         : QStringView() {}
-#if QT_DEPRECATED_SINCE(5, 9)
-    Q_DECL_CONSTEXPR QStringView(QString::Null) Q_DECL_NOTHROW
-        : QStringView() {}
-#endif
 
     template <typename Char, if_compatible_char<Char> = true>
     Q_DECL_CONSTEXPR QStringView(const Char *str, qssize_t len)
