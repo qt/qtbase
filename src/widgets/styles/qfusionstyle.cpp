@@ -908,8 +908,6 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             return;
         }
 
-        BEGIN_STYLE_PIXMAPCACHE(QString::fromLatin1("pushbutton-%1").arg(isDefault))
-                r = rect.adjusted(0, 1, -1, 0);
 
         bool isEnabled = option->state & State_Enabled;
         bool hasFocus = (option->state & State_HasFocus && option->state & State_KeyboardFocusChange);
@@ -922,6 +920,9 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
 
         if (isDefault)
             buttonColor = mergedColors(buttonColor, highlightedOutline.lighter(130), 90);
+
+        BEGIN_STYLE_PIXMAPCACHE(QStringLiteral("pushbutton-") + buttonColor.name(QColor::HexArgb))
+        r = rect.adjusted(0, 1, -1, 0);
 
         p->setRenderHint(QPainter::Antialiasing, true);
         p->translate(0.5, -0.5);
