@@ -429,11 +429,31 @@ QVulkanInstance::~QVulkanInstance()
  */
 
 /*!
-  \fn bool QVulkanLayer::operator==(const QVulkanLayer &other) const
+    \fn bool operator==(const QVulkanLayer &lhs, const QVulkanLayer &rhs)
+    \since 5.10
+    \relates QVulkanLayer
 
-  Returns true if this Vulkan layer and the \a other Vulkan layer have
-  the same name, version, and spec version.
- */
+    Returns \c true if Vulkan layers \a lhs and \a rhs have
+    the same name, version, and spec version.
+*/
+
+/*!
+    \fn bool operator!=(const QVulkanLayer &lhs, const QVulkanLayer &rhs)
+    \since 5.10
+    \relates QVulkanLayer
+
+    Returns \c true if Vulkan layers \a lhs and \a rhs have
+    different name, version, or spec version.
+*/
+
+/*!
+    \fn uint qHash(const QVulkanLayer &key, uint seed)
+    \since 5.10
+    \relates QVulkanLayer
+
+    Returns the hash value for the \a key, using \a seed to seed the
+    calculation.
+*/
 
 /*!
     \class QVulkanExtension
@@ -452,11 +472,31 @@ QVulkanInstance::~QVulkanInstance()
  */
 
 /*!
-  \fn bool QVulkanExtension::operator==(const QVulkanExtension &other) const
+    \fn bool operator==(const QVulkanExtension &lhs, const QVulkanExtension &rhs)
+    \since 5.10
+    \relates QVulkanExtension
 
-  Returns true if the name and version of this Vulkan extension are the same
-  as the name and version of the \a other Vulkan extension.
- */
+    Returns \c true if Vulkan extensions \a lhs and \a rhs are have the
+    same name and version.
+*/
+
+/*!
+    \fn bool operator!=(const QVulkanExtension &lhs, const QVulkanExtension &rhs)
+    \since 5.10
+    \relates QVulkanExtension
+
+    Returns \c true if Vulkan extensions \a lhs and \a rhs are have different
+    name or version.
+*/
+
+/*!
+    \fn uint qHash(const QVulkanExtension &key, uint seed)
+    \since 5.10
+    \relates QVulkanExtension
+
+    Returns the hash value for the \a key, using \a seed to seed the
+    calculation.
+*/
 
 /*!
     \class QVulkanInfoVector

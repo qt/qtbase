@@ -56,6 +56,7 @@ typedef unsigned long VkImage;
 typedef unsigned long VkImageView;
 #endif
 
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qbytearraylist.h>
@@ -70,25 +71,52 @@ class QVulkanFunctions;
 class QVulkanDeviceFunctions;
 class QWindow;
 
-struct Q_GUI_EXPORT QVulkanLayer
+struct QVulkanLayer
 {
     QByteArray name;
     uint32_t version;
     QVersionNumber specVersion;
     QByteArray description;
-    bool operator==(const QVulkanLayer &other) const {
-        return name == other.name && version == other.version && specVersion == other.specVersion;
-    }
 };
+Q_DECLARE_TYPEINFO(QVulkanLayer, Q_MOVABLE_TYPE);
 
-struct Q_GUI_EXPORT QVulkanExtension
+inline bool operator==(const QVulkanLayer &lhs, const QVulkanLayer &rhs) Q_DECL_NOTHROW
+{
+    return lhs.name == rhs.name && lhs.version == rhs.version && lhs.specVersion == rhs.specVersion;
+}
+inline bool operator!=(const QVulkanLayer &lhs, const QVulkanLayer &rhs) Q_DECL_NOTHROW
+{ return !(lhs == rhs); }
+
+inline uint qHash(const QVulkanLayer &key, uint seed = 0) Q_DECL_NOTHROW
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.name);
+    seed = hash(seed, key.version);
+    seed = hash(seed, key.specVersion);
+    return seed;
+}
+
+struct QVulkanExtension
 {
     QByteArray name;
     uint32_t version;
-    bool operator==(const QVulkanExtension &other) const {
-        return name == other.name && version == other.version;
-    }
 };
+Q_DECLARE_TYPEINFO(QVulkanExtension, Q_MOVABLE_TYPE);
+
+inline bool operator==(const QVulkanExtension &lhs, const QVulkanExtension &rhs) Q_DECL_NOTHROW
+{
+    return lhs.name == rhs.name && lhs.version == rhs.version;
+}
+inline bool operator!=(const QVulkanExtension &lhs, const QVulkanExtension &rhs) Q_DECL_NOTHROW
+{ return !(lhs == rhs); }
+
+inline uint qHash(const QVulkanExtension &key, uint seed = 0) Q_DECL_NOTHROW
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, key.name);
+    seed = hash(seed, key.version);
+    return seed;
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QVulkanLayer &);
