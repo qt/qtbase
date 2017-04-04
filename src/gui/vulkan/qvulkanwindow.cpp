@@ -167,7 +167,7 @@ Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
   manage additional resources directly via the Vulkan API.
 
   \li The renderer lives in the gui/main thread, like the window itself. This
-  thread is then throttled to the presentation rate, similarly to how OpenGl
+  thread is then throttled to the presentation rate, similarly to how OpenGL
   with a swap interval of 1 would behave. However, the renderer implementation
   is free to utilize multiple threads in any way it sees fit. The accessors
   like vulkanInstance(), currentCommandBuffer(), etc. can be called from any
@@ -248,7 +248,7 @@ Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
   \note QVulkanWindow does not expose device layers since this functionality
   has been deprecated since version 1.0.13 of the Vulkan API.
 
-  \sa QVulkanInstance, QVulkanFunctions, QWindow
+  \sa QVulkanInstance, QWindow
  */
 
 /*!
@@ -2690,7 +2690,7 @@ QImage QVulkanWindow::grab()
 
 /*!
    Returns a pointer to a QMatrix4x4 that can be used to correct for coordinate
-   system differences between OpenGl and Vulkan.
+   system differences between OpenGL and Vulkan.
 
    By pre-multiplying the projection matrix with this matrix, applications can
    continue to assume OpenGL-style Y coordinates in clip space (i.e. Y pointing

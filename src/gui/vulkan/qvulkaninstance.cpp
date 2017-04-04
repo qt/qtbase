@@ -431,7 +431,7 @@ QVulkanInstance::~QVulkanInstance()
 /*!
   \fn bool QVulkanLayer::operator==(const QVulkanLayer &other) const
 
-  Returns true if this vulkan layer and the \a other vulkan layer have
+  Returns true if this Vulkan layer and the \a other Vulkan layer have
   the same name, version, and spec version.
  */
 
@@ -454,8 +454,8 @@ QVulkanInstance::~QVulkanInstance()
 /*!
   \fn bool QVulkanExtension::operator==(const QVulkanExtension &other) const
 
-  Returns true if the name and version of this vulkan extension are the same
-  as the name and version of the \a other vulkan extension.
+  Returns true if the name and version of this Vulkan extension are the same
+  as the name and version of the \a other Vulkan extension.
  */
 
 /*!
