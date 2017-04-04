@@ -572,7 +572,8 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
 
     QWindowSystemInterface::handleTouchEvent(window,
                                              m_touchDevice,
-                                             touchPoints);
+                                             touchPoints,
+                                             QWindowsKeyMapper::queryKeyboardModifiers());
     return true;
 }
 
