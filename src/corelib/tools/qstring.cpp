@@ -4632,29 +4632,51 @@ bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
                : foldCase(d->data()[d->size - 1]) == foldCase(c.unicode()));
 }
 
+static QByteArray qt_convert_to_latin1(QStringView string);
+
 QByteArray QString::toLatin1_helper(const QString &string)
 {
-    if (Q_UNLIKELY(string.isNull()))
-        return QByteArray();
-
-    return toLatin1_helper(string.constData(), string.length());
+    return qt_convert_to_latin1(string);
 }
 
 QByteArray QString::toLatin1_helper(const QChar *data, int length)
 {
-    QByteArray ba(length, Qt::Uninitialized);
+    return qt_convert_to_latin1(QStringView(data, length));
+}
+
+/*!
+    \since 5.10
+    \relates QStringView
+
+    Returns a Latin-1 representation of \a string as a QByteArray.
+
+    The behavior is undefined if \a string contains non-Latin1 characters.
+
+    \sa QString::toLatin1(), QStringView::toLatin1(), qConvertToUtf8(), qConvertToLocal8Bit(), qConvertToUcs4()
+*/
+QByteArray qConvertToLatin1(QStringView string)
+{
+    return qt_convert_to_latin1(string);
+}
+
+static QByteArray qt_convert_to_latin1(QStringView string)
+{
+    if (Q_UNLIKELY(string.isNull()))
+        return QByteArray();
+
+    QByteArray ba(string.length(), Qt::Uninitialized);
 
     // since we own the only copy, we're going to const_cast the constData;
     // that avoids an unnecessary call to detach() and expansion code that will never get used
     qt_to_latin1(reinterpret_cast<uchar *>(const_cast<char *>(ba.constData())),
-                 reinterpret_cast<const ushort *>(data), length);
+                 reinterpret_cast<const ushort *>(string.data()), string.length());
     return ba;
 }
 
 QByteArray QString::toLatin1_helper_inplace(QString &s)
 {
     if (!s.isDetached())
-        return s.toLatin1();
+        return qt_convert_to_latin1(s);
 
     // We can return our own buffer to the caller.
     // Conversion to Latin-1 always shrinks the buffer by half.
@@ -4690,7 +4712,7 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
     characters. Those characters may be suppressed or replaced with a
     question mark.
 
-    \sa fromLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
+    \sa fromLatin1(), toUtf8(), toLocal8Bit(), QTextCodec, qConvertToLatin1()
 */
 
 /*!
@@ -4705,6 +4727,8 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
     \sa fromAscii(), toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
+
+static QByteArray qt_convert_to_local_8bit(QStringView string);
 
 /*!
     \fn QByteArray QString::toLocal8Bit() const
@@ -4721,21 +4745,47 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
     locale, the returned byte array is undefined. Those characters may be
     suppressed or replaced by another.
 
-    \sa fromLocal8Bit(), toLatin1(), toUtf8(), QTextCodec
+    \sa fromLocal8Bit(), toLatin1(), toUtf8(), QTextCodec, qConvertToLocal8Bit()
 */
 
 QByteArray QString::toLocal8Bit_helper(const QChar *data, int size)
 {
-    if (!data)
+    return qt_convert_to_local_8bit(QStringView(data, size));
+}
+
+static QByteArray qt_convert_to_local_8bit(QStringView string)
+{
+    if (string.isNull())
         return QByteArray();
 #ifndef QT_NO_TEXTCODEC
     QTextCodec *localeCodec = QTextCodec::codecForLocale();
     if (localeCodec)
-        return localeCodec->fromUnicode(data, size);
+        return localeCodec->fromUnicode(string);
 #endif // QT_NO_TEXTCODEC
-    return toLatin1_helper(data, size);
+    return qt_convert_to_latin1(string);
 }
 
+/*!
+    \since 5.10
+    \relates QStringView
+
+    Returns a local 8-bit representation of \a string as a QByteArray.
+
+    QTextCodec::codecForLocale() is used to perform the conversion from
+    Unicode. If the locale's encoding could not be determined, this function
+    does the same as qConvertToLatin1().
+
+    The behavior is undefined if \a string contains characters not
+    supported by the locale's 8-bit encoding.
+
+    \sa QString::toLocal8Bit(), QStringView::toLocal8Bit(), qConvertToLatin1(), qConvertToUtf8(), qConvertToUcs4()
+*/
+QByteArray qConvertToLocal8Bit(QStringView string)
+{
+    return qt_convert_to_local_8bit(string);
+}
+
+static QByteArray qt_convert_to_utf8(QStringView str);
 
 /*!
     \fn QByteArray QString::toUtf8() const
@@ -4745,16 +4795,39 @@ QByteArray QString::toLocal8Bit_helper(const QChar *data, int size)
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString.
 
-    \sa fromUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
+    \sa fromUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, qConvertToUtf8()
 */
 
 QByteArray QString::toUtf8_helper(const QString &str)
 {
+    return qt_convert_to_utf8(str);
+}
+
+static QByteArray qt_convert_to_utf8(QStringView str)
+{
     if (str.isNull())
         return QByteArray();
 
-    return QUtf8::convertFromUnicode(str.constData(), str.length());
+    return QUtf8::convertFromUnicode(str.data(), str.length());
 }
+
+/*!
+    \since 5.10
+    \relates QStringView
+
+    Returns a UTF-8 representation of \a string as a QByteArray.
+
+    UTF-8 is a Unicode codec and can represent all characters in a Unicode
+    string like QStringView.
+
+    \sa QString::toUtf8(), QStringView::toUtf8(), qConvertToLatin1(), qConvertToLocal8Bit(), qConvertToUcs4()
+*/
+QByteArray qConvertToUtf8(QStringView string)
+{
+    return qt_convert_to_utf8(string);
+}
+
+static QVector<uint> qt_convert_to_ucs4(QStringView string);
 
 /*!
     \since 4.2
@@ -4768,15 +4841,42 @@ QByteArray QString::toUtf8_helper(const QString &str)
 
     The returned vector is not NUL terminated.
 
-    \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
+    \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray(), qConvertToUcs4()
 */
 QVector<uint> QString::toUcs4() const
 {
-    QVector<uint> v(length());
-    uint *a = v.data();
-    int len = toUcs4_helper(d->data(), length(), a);
-    v.resize(len);
+    return qt_convert_to_ucs4(*this);
+}
+
+static QVector<uint> qt_convert_to_ucs4(QStringView string)
+{
+    QVector<uint> v(string.length());
+    uint *a = const_cast<uint*>(v.constData());
+    QStringIterator it(string);
+    while (it.hasNext())
+        *a++ = it.next();
+    v.resize(a - v.constData());
     return v;
+}
+
+/*!
+    \since 5.10
+    \relates QStringView
+
+    Returns a UCS-4/UTF-32 representation of \a string as a QVector<uint>.
+
+    UCS-4 is a Unicode codec and therefore it is lossless. All characters from
+    this string will be encoded in UCS-4. Any invalid sequence of code units in
+    this string is replaced by the Unicode's replacement character
+    (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
+
+    The returned vector is not NUL terminated.
+
+    \sa QString::toUcs4(), QStringView::toUcs4(), qConvertToLatin1(), qConvertToLocal8Bit(), qConvertToUtf8()
+*/
+QVector<uint> qConvertToUcs4(QStringView string)
+{
+    return qt_convert_to_ucs4(string);
 }
 
 QString::Data *QString::fromLatin1_helper(const char *str, int size)
@@ -10693,9 +10793,7 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
 */
 QByteArray QStringRef::toLatin1() const
 {
-    if (isNull())
-        return QByteArray();
-    return QString::toLatin1_helper(unicode(), length());
+    return qt_convert_to_latin1(*this);
 }
 
 /*!
@@ -10732,14 +10830,7 @@ QByteArray QStringRef::toLatin1() const
 */
 QByteArray QStringRef::toLocal8Bit() const
 {
-#ifndef QT_NO_TEXTCODEC
-    if (!isNull()) {
-        QTextCodec *localeCodec = QTextCodec::codecForLocale();
-        if (localeCodec)
-            return localeCodec->fromUnicode(unicode(), length());
-    }
-#endif // QT_NO_TEXTCODEC
-    return toLatin1();
+    return qt_convert_to_local_8bit(*this);
 }
 
 /*!
@@ -10754,10 +10845,7 @@ QByteArray QStringRef::toLocal8Bit() const
 */
 QByteArray QStringRef::toUtf8() const
 {
-    if (isNull())
-        return QByteArray();
-
-    return QUtf8::convertFromUnicode(constData(), length());
+    return qt_convert_to_utf8(*this);
 }
 
 /*!
@@ -10776,11 +10864,7 @@ QByteArray QStringRef::toUtf8() const
 */
 QVector<uint> QStringRef::toUcs4() const
 {
-    QVector<uint> v(length());
-    uint *a = v.data();
-    int len = QString::toUcs4_helper(reinterpret_cast<const ushort *>(unicode()), length(), a);
-    v.resize(len);
-    return v;
+    return qt_convert_to_ucs4(*this);
 }
 
 /*!

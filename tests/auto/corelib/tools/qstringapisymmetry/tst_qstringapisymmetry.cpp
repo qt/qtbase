@@ -269,21 +269,29 @@ private Q_SLOTS:
     void toLocal8Bit_QString() { toLocal8Bit_impl<QString>(); }
     void toLocal8Bit_QStringRef_data() { toLocal8Bit_data(); }
     void toLocal8Bit_QStringRef() { toLocal8Bit_impl<QStringRef>(); }
+    void toLocal8Bit_QStringView_data() { toLocal8Bit_data(); }
+    void toLocal8Bit_QStringView() { toLocal8Bit_impl<QStringView>(); }
 
     void toLatin1_QString_data() { toLatin1_data(); }
     void toLatin1_QString() { toLatin1_impl<QString>(); }
     void toLatin1_QStringRef_data() { toLatin1_data(); }
     void toLatin1_QStringRef() { toLatin1_impl<QStringRef>(); }
+    void toLatin1_QStringView_data() { toLatin1_data(); }
+    void toLatin1_QStringView() { toLatin1_impl<QStringView>(); }
 
     void toUtf8_QString_data() { toUtf8_data(); }
     void toUtf8_QString() { toUtf8_impl<QString>(); }
     void toUtf8_QStringRef_data() { toUtf8_data(); }
     void toUtf8_QStringRef() { toUtf8_impl<QStringRef>(); }
+    void toUtf8_QStringView_data() { toUtf8_data(); }
+    void toUtf8_QStringView() { toUtf8_impl<QStringView>(); }
 
     void toUcs4_QString_data() { toUcs4_data(); }
     void toUcs4_QString() { toUcs4_impl<QString>(); }
     void toUcs4_QStringRef_data() { toUcs4_data(); }
     void toUcs4_QStringRef() { toUcs4_impl<QStringRef>(); }
+    void toUcs4_QStringView_data() { toUcs4_data(); }
+    void toUcs4_QStringView() { toUcs4_impl<QStringView>(); }
 };
 
 void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
@@ -638,6 +646,7 @@ void tst_QStringApiSymmetry::truncate_impl()
 template <class Str> Str  make(const QString &s);
 template <> QStringRef    make(const QString &s)   { return QStringRef(&s); }
 template <> QString       make(const QString &s)   { return s; }
+template <> QStringView   make(const QString &s)   { return s; }
 
 #define REPEAT_16X(X) X X X X  X X X X   X X X X  X X X X
 #define LONG_STRING_256 REPEAT_16X("0123456789abcdef")

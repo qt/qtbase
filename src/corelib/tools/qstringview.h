@@ -218,6 +218,10 @@ public:
     // QString API
     //
 
+    QByteArray toLatin1() const Q_REQUIRED_RESULT { return qConvertToLatin1(*this); }
+    QByteArray toUtf8() const Q_REQUIRED_RESULT { return qConvertToUtf8(*this); }
+    QByteArray toLocal8Bit() const Q_REQUIRED_RESULT { return qConvertToLocal8Bit(*this); }
+    inline QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
 
     Q_DECL_CONSTEXPR QChar at(qssize_t n) const { return (*this)[n]; }
 

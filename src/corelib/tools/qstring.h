@@ -96,6 +96,11 @@ Q_CORE_EXPORT int qCompareStrings(QStringView   lhs, QLatin1String rhs, Qt::Case
 Q_CORE_EXPORT int qCompareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 Q_CORE_EXPORT int qCompareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
+Q_CORE_EXPORT QByteArray qConvertToLatin1(QStringView str) Q_REQUIRED_RESULT;
+Q_CORE_EXPORT QByteArray qConvertToUtf8(QStringView str) Q_REQUIRED_RESULT;
+Q_CORE_EXPORT QByteArray qConvertToLocal8Bit(QStringView str) Q_REQUIRED_RESULT;
+Q_CORE_EXPORT QVector<uint> qConvertToUcs4(QStringView str) Q_REQUIRED_RESULT;
+
 class QLatin1String
 {
 public:

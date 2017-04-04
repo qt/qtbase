@@ -616,4 +616,55 @@ QT_BEGIN_NAMESPACE
     \sa mid(), left()
 */
 
+/*!
+    \fn QByteArray QStringView::toLatin1() const
+
+    Returns a Latin-1 representation of the string as a QByteArray.
+
+    The behavior is undefined if the string contains non-Latin1 characters.
+
+    \sa toUtf8(), toLocal8Bit(), QTextCodec, qConvertToLatin1()
+*/
+
+/*!
+    \fn QByteArray QStringView::toLocal8Bit() const
+
+    Returns a local 8-bit representation of the string as a QByteArray.
+
+    QTextCodec::codecForLocale() is used to perform the conversion from
+    Unicode. If the locale's encoding could not be determined, this function
+    does the same as toLatin1().
+
+    The behavior is undefined if the string contains characters not
+    supported by the locale's 8-bit encoding.
+
+    \sa toLatin1(), toUtf8(), QTextCodec, qConvertToLocal8Bit()
+*/
+
+/*!
+    \fn QByteArray QStringView::toUtf8() const
+
+    Returns a UTF-8 representation of the string as a QByteArray.
+
+    UTF-8 is a Unicode codec and can represent all characters in a Unicode
+    string like QString.
+
+    \sa toLatin1(), toLocal8Bit(), QTextCodec, qConvertToUtf8()
+*/
+
+/*!
+    \fn QVector<uint> QStringView::toUcs4() const
+
+    Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
+
+    UCS-4 is a Unicode codec and therefore it is lossless. All characters from
+    this string will be encoded in UCS-4. Any invalid sequence of code units in
+    this string is replaced by the Unicode replacement character
+    (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
+
+    The returned vector is not 0-terminated.
+
+    \sa toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
+*/
+
 QT_END_NAMESPACE
