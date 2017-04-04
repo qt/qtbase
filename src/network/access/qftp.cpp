@@ -574,7 +574,7 @@ static void _q_parseDosDir(const QStringList &tokens, const QString &userName, Q
 
     QString name = tokens.at(3);
     info->setName(name);
-    info->setSymLink(name.toLower().endsWith(QLatin1String(".lnk")));
+    info->setSymLink(name.endsWith(QLatin1String(".lnk"), Qt::CaseInsensitive));
 
     if (tokens.at(2) == QLatin1String("<DIR>")) {
         info->setFile(false);

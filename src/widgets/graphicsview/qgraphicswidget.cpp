@@ -1500,6 +1500,7 @@ void QGraphicsWidget::changeEvent(QEvent *event)
         unsetWindowFrameMargins();
         if (d->layout)
             d->layout->invalidate();
+        Q_FALLTHROUGH();
     case QEvent::FontChange:
         update();
         updateGeometry();

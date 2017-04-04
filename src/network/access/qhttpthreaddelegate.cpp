@@ -173,7 +173,7 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy)
     Q_UNUSED(proxy)
 #endif
 
-    return "http-connection:" + result.toLatin1();
+    return "http-connection:" + std::move(result).toLatin1();
 }
 
 class QNetworkAccessCachedHttpConnection: public QHttpNetworkConnection,

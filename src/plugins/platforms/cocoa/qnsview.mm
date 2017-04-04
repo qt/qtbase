@@ -140,8 +140,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (id) init
 {
-    self = [super initWithFrame : NSMakeRect(0, 0, [[self class] defaultViewSize].width(), [[self class] defaultViewSize].height())];
-    if (self) {
+    if (self = [super initWithFrame:NSZeroRect]) {
         m_backingStore = 0;
         m_maskImage = 0;
         m_shouldInvalidateWindowShadow = false;
@@ -187,11 +186,6 @@ static bool _q_dontOverrideCtrlLMB = false;
     delete currentCustomDragTypes;
 
     [super dealloc];
-}
-
-+ (QSizeF)defaultViewSize
-{
-    return QSizeF(300.0, 300.0);
 }
 
 - (id)initWithCocoaWindow:(QCocoaWindow *)platformWindow

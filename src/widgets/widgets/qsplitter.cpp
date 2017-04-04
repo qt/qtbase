@@ -1798,9 +1798,9 @@ QTextStream& operator>>(QTextStream& ts, QSplitter& splitter)
     QString line = ts.readLine();
     line = line.simplified();
     line.replace(QLatin1Char(' '), QString());
-    line = line.toUpper();
+    line = std::move(line).toUpper();
 
-    splitter.restoreState(line.toLatin1());
+    splitter.restoreState(std::move(line).toLatin1());
     return ts;
 }
 

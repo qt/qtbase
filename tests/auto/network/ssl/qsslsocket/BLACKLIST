@@ -5,3 +5,5 @@ windows
 rhel-7.2
 [protocolServerSide:tls1.0-any]
 rhel-7.2
+[protocolServerSide]
+osx-10.11

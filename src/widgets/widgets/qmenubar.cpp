@@ -1470,6 +1470,17 @@ bool QMenuBar::eventFilter(QObject *object, QEvent *event)
         }
     }
 
+    if (isNativeMenuBar() && event->type() == QEvent::ShowToParent) {
+        // On some desktops like Unity, the D-Bus menu bar is unregistered
+        // when the window is hidden. So when the window is shown, we need
+        // to forcefully re-register it. The only way to force re-registering
+        // with D-Bus menu is the handleReparent method.
+        QWidget *widget = qobject_cast<QWidget *>(object);
+        QWindow *handle = widget ? widget->windowHandle() : nullptr;
+        if (handle != nullptr)
+            d->platformMenuBar->handleReparent(handle);
+    }
+
     if (style()->styleHint(QStyle::SH_MenuBar_AltKeyNavigation, 0, this)) {
         if (d->altPressed) {
             switch (event->type()) {

@@ -91,6 +91,7 @@ typedef ITypedEventHandler<CoreWindow*, PointerEventArgs*> PointerHandler;
 typedef ITypedEventHandler<CoreWindow*, WindowSizeChangedEventArgs*> SizeChangedHandler;
 typedef ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*> VisibilityChangedHandler;
 typedef ITypedEventHandler<DisplayInformation*, IInspectable*> DisplayInformationHandler;
+typedef ITypedEventHandler<ICorePointerRedirector*, PointerEventArgs*> RedirectHandler;
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 typedef ITypedEventHandler<ApplicationView*, IInspectable*> VisibleBoundsChangedHandler;
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
@@ -454,6 +455,8 @@ typedef HRESULT (__stdcall ICoreWindow::*CoreWindowCallbackRemover)(EventRegistr
 uint qHash(CoreWindowCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 typedef HRESULT (__stdcall IDisplayInformation::*DisplayCallbackRemover)(EventRegistrationToken);
 uint qHash(DisplayCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
+typedef HRESULT (__stdcall ICorePointerRedirector::*RedirectorCallbackRemover)(EventRegistrationToken);
+uint qHash(RedirectorCallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
 typedef HRESULT (__stdcall IApplicationView2::*ApplicationView2CallbackRemover)(EventRegistrationToken);
 uint qHash(ApplicationView2CallbackRemover key) { void *ptr = *(void **)(&key); return qHash(ptr); }
@@ -464,6 +467,7 @@ class QWinRTScreenPrivate
 public:
     QTouchDevice *touchDevice;
     ComPtr<ICoreWindow> coreWindow;
+    ComPtr<ICorePointerRedirector> redirect;
     ComPtr<Xaml::IDependencyObject> canvas;
     ComPtr<IApplicationView> view;
     ComPtr<IDisplayInformation> displayInformation;
@@ -482,6 +486,7 @@ public:
     QHash<Qt::Key, KeyInfo> activeKeys;
     QHash<CoreWindowCallbackRemover, EventRegistrationToken> windowTokens;
     QHash<DisplayCallbackRemover, EventRegistrationToken> displayTokens;
+    QHash<RedirectorCallbackRemover, EventRegistrationToken> redirectTokens;
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     QHash<ApplicationView2CallbackRemover, EventRegistrationToken> view2Tokens;
     ComPtr<IApplicationView2> view2;
@@ -513,6 +518,10 @@ QWinRTScreen::QWinRTScreen()
 
     hr = window->get_CoreWindow(&d->coreWindow);
     Q_ASSERT_SUCCEEDED(hr);
+
+    hr = d->coreWindow.As(&d->redirect);
+    Q_ASSERT_SUCCEEDED(hr);
+
     hr = d->coreWindow->Activate();
     Q_ASSERT_SUCCEEDED(hr);
 
@@ -593,6 +602,10 @@ QWinRTScreen::~QWinRTScreen()
         }
         for (QHash<DisplayCallbackRemover, EventRegistrationToken>::const_iterator i = d->displayTokens.begin(); i != d->displayTokens.end(); ++i) {
             hr = (d->displayInformation.Get()->*i.key())(i.value());
+            Q_ASSERT_SUCCEEDED(hr);
+        }
+        for (QHash<RedirectorCallbackRemover, EventRegistrationToken>::const_iterator i = d->redirectTokens.begin(); i != d->redirectTokens.end(); ++i) {
+            hr = (d->redirect.Get()->*i.key())(i.value());
             Q_ASSERT_SUCCEEDED(hr);
         }
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
@@ -754,6 +767,9 @@ void QWinRTScreen::initialize()
     Q_ASSERT_SUCCEEDED(hr);
     onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
     onVisibilityChanged(nullptr, nullptr);
+
+    hr = d->redirect->add_PointerRoutedReleased(Callback<RedirectHandler>(this, &QWinRTScreen::onRedirectReleased).Get(), &d->redirectTokens[&ICorePointerRedirector::remove_PointerRoutedReleased]);
+    Q_ASSERT_SUCCEEDED(hr);
 }
 
 void QWinRTScreen::setCursorRect(const QRectF &cursorRect)
@@ -1376,6 +1392,13 @@ HRESULT QWinRTScreen::onDpiChanged(IDisplayInformation *, IInspectable *)
                           << "Physical DPI:" << d->physicalDpi;
 
     return S_OK;
+}
+
+HRESULT QWinRTScreen::onRedirectReleased(ICorePointerRedirector *, IPointerEventArgs *args)
+{
+    // When dragging ends with a non-mouse input device then onRedirectRelease is invoked.
+    // QTBUG-58781
+    return onPointerUpdated(nullptr, args);
 }
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)

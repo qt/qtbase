@@ -211,7 +211,7 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value)
     default:
         QString string = QSettingsPrivate::variantToString(value);
         if (string.contains(QChar::Null))
-            result = string.toUtf8().toCFData();
+            result = std::move(string).toUtf8().toCFData();
         else
             result = string.toCFString();
     }
@@ -419,14 +419,13 @@ QMacSettingsPrivate::QMacSettingsPrivate(QSettings::Scope scope, const QString &
         curPos = nextDot + 1;
     }
     javaPackageName.prepend(domainName.midRef(curPos));
-    javaPackageName = javaPackageName.toLower();
+    javaPackageName = std::move(javaPackageName).toLower();
     if (curPos == 0)
         javaPackageName.prepend(QLatin1String("com."));
     suiteId = javaPackageName;
 
     if (!application.isEmpty()) {
-        javaPackageName += QLatin1Char('.');
-        javaPackageName += application;
+        javaPackageName += QLatin1Char('.') + application;
         applicationId = javaPackageName;
     }
 

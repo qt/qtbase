@@ -52,6 +52,7 @@ namespace ABI {
             namespace Core {
                 struct IAutomationProviderRequestedEventArgs;
                 struct ICharacterReceivedEventArgs;
+                struct ICorePointerRedirector;
                 struct ICoreWindow;
                 struct ICoreWindowEventArgs;
                 struct IKeyEventArgs;
@@ -149,6 +150,7 @@ private:
 #else
     HRESULT onWindowSizeChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *);
 #endif
+    HRESULT onRedirectReleased(ABI::Windows::UI::Core::ICorePointerRedirector *, ABI::Windows::UI::Core::IPointerEventArgs *);
 
     QScopedPointer<QWinRTScreenPrivate> d_ptr;
     QRectF mCursorRect;

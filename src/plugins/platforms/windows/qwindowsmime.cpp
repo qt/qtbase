@@ -717,7 +717,7 @@ QVariant QWindowsMimeText::convertToMime(const QString &mime, LPDATAOBJECT pData
         if (preferredType == QVariant::String)
             ret = str;
         else
-            ret = str.toUtf8();
+            ret = std::move(str).toUtf8();
     }
     qCDebug(lcQpaMime) << __FUNCTION__ << ret;
     return ret;

@@ -3418,8 +3418,7 @@ QUrl QUrl::adjusted(QUrl::FormattingOptions options) const
 QByteArray QUrl::toEncoded(FormattingOptions options) const
 {
     options &= ~(FullyDecoded | FullyEncoded);
-    QString stringForm = toString(options | FullyEncoded);
-    return stringForm.toLatin1();
+    return toString(options | FullyEncoded).toLatin1();
 }
 
 /*!
@@ -3536,8 +3535,7 @@ QString QUrl::fromAce(const QByteArray &domain)
 */
 QByteArray QUrl::toAce(const QString &domain)
 {
-    QString result = qt_ACE_do(domain, ToAceOnly, ForbidLeadingDot /*FIXME: make configurable*/);
-    return result.toLatin1();
+    return qt_ACE_do(domain, ToAceOnly, ForbidLeadingDot /*FIXME: make configurable*/).toLatin1();
 }
 
 /*!

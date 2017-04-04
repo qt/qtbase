@@ -536,7 +536,8 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     // If there is a 'before' action, it takes preference
 
     // There's a bug in GHS compiler that causes internal error on the following code.
-    // The affected GHS compiler versions are 2016.5.4 and 2017.1
+    // The affected GHS compiler versions are 2016.5.4 and 2017.1. GHS internal reference
+    // to track the progress of this issue is TOOLS-26637.
     // This temporary workaround allows to compile with GHS toolchain and should be
     // removed when GHS provides a patch to fix the compiler issue.
 

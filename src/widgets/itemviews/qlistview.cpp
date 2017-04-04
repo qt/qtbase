@@ -1157,6 +1157,7 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         rect.moveTop(rect.top() - d->viewport->height() + 2 * rect.height());
         if (rect.top() < rect.height())
             rect.moveTop(rect.height());
+        Q_FALLTHROUGH();
     case MovePrevious:
     case MoveUp:
         while (intersectVector.isEmpty()) {
@@ -1185,6 +1186,7 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         rect.moveTop(rect.top() + d->viewport->height() - 2 * rect.height());
         if (rect.bottom() > contents.height() - rect.height())
             rect.moveBottom(contents.height() - rect.height());
+        Q_FALLTHROUGH();
     case MoveNext:
     case MoveDown:
         while (intersectVector.isEmpty()) {

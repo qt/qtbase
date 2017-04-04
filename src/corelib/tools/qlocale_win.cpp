@@ -1037,7 +1037,7 @@ static QString winIso639LangName(LPWSTR id)
     if (!lang_code.isEmpty()) {
         const char *endptr;
         bool ok;
-        QByteArray latin1_lang_code = lang_code.toLatin1();
+        QByteArray latin1_lang_code = std::move(lang_code).toLatin1();
         int i = qstrtoull(latin1_lang_code, &endptr, 16, &ok);
         if (ok && *endptr == '\0') {
             switch (i) {
@@ -1120,15 +1120,12 @@ static QByteArray getWinLocaleName(LPWSTR id)
         id = lcName;
     }
 #endif // Q_OS_WINRT
-    QString resultuage = winIso639LangName(id);
+    QString resultusage = winIso639LangName(id);
     QString country = winIso3116CtryName(id);
-    result = resultuage.toLatin1();
-    if (!country.isEmpty()) {
-        result += '_';
-        result += country.toLatin1();
-    }
+    if (!country.isEmpty())
+        resultusage += QLatin1Char('_') + country;
 
-    return result;
+    return std::move(resultusage).toLatin1();
 }
 
 Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id)

@@ -327,7 +327,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
             acceptLanguage = systemLocale + QLatin1String(",*");
         else
             acceptLanguage = systemLocale + QLatin1String(",en,*");
-        request.setHeaderField("Accept-Language", acceptLanguage.toLatin1());
+        request.setHeaderField("Accept-Language", std::move(acceptLanguage).toLatin1());
     }
 
     // set the User Agent

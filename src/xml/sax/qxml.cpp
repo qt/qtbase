@@ -1407,7 +1407,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
         QString encoding = extractEncodingDecl(d->encodingDeclChars, &needMoreText);
 
         if (!encoding.isEmpty()) {
-            if (QTextCodec *codec = QTextCodec::codecForName(encoding.toLatin1())) {
+            if (QTextCodec *codec = QTextCodec::codecForName(std::move(encoding).toLatin1())) {
                 /* If the encoding is the same, we don't have to do toUnicode() all over again. */
                 if(codec->mibEnum() != mib) {
                     delete d->encMapper;

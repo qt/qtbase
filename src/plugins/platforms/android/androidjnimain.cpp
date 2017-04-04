@@ -533,6 +533,12 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
     return pthread_create(&m_qtAppThread, nullptr, startMainMethod, nullptr) == 0;
 }
 
+static void quitQtCoreApplication(JNIEnv *env, jclass /*clazz*/)
+{
+    Q_UNUSED(env);
+    QCoreApplication::quit();
+}
+
 static void quitQtAndroidPlugin(JNIEnv *env, jclass /*clazz*/)
 {
     Q_UNUSED(env);
@@ -733,6 +739,7 @@ static JNINativeMethod methods[] = {
     {"startQtAndroidPlugin", "()Z", (void *)startQtAndroidPlugin},
     {"startQtApplication", "(Ljava/lang/String;Ljava/lang/String;)V", (void *)startQtApplication},
     {"quitQtAndroidPlugin", "()V", (void *)quitQtAndroidPlugin},
+    {"quitQtCoreApplication", "()V", (void *)quitQtCoreApplication},
     {"terminateQt", "()V", (void *)terminateQt},
     {"setDisplayMetrics", "(IIIIDDDD)V", (void *)setDisplayMetrics},
     {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},

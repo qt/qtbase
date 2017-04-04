@@ -328,6 +328,8 @@ NSUUID *QUuid::toNSUUID() const
 */
 QUrl QUrl::fromCFURL(CFURLRef url)
 {
+    if (!url)
+        return QUrl();
     return QUrl(QString::fromCFString(CFURLGetString(url)));
 }
 
@@ -355,6 +357,8 @@ CFURLRef QUrl::toCFURL() const
 */
 QUrl QUrl::fromNSURL(const NSURL *url)
 {
+    if (!url)
+        return QUrl();
     return QUrl(QString::fromNSString([url absoluteString]));
 }
 

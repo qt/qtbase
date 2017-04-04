@@ -70,6 +70,8 @@ private slots:
     void palette();
     void modalWindow();
     void quitOnLastWindowClosed();
+    void quitOnLastWindowClosedMulti();
+    void dontQuitOnLastWindowClosed();
     void genericPluginsAndWindowSystemEvents();
     void layoutDirection();
     void globalShareContext();
@@ -791,107 +793,111 @@ void tst_QGuiApplication::modalWindow()
 
 void tst_QGuiApplication::quitOnLastWindowClosed()
 {
-    {
-        int argc = 0;
-        QGuiApplication app(argc, 0);
-        const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
+    int argc = 0;
+    QGuiApplication app(argc, 0);
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
-        QTimer timer;
-        timer.setInterval(100);
+    QTimer timer;
+    timer.setInterval(100);
 
-        QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
-        QSignalSpy spy2(&timer, SIGNAL(timeout()));
+    QSignalSpy spyAboutToQuit(&app, &QCoreApplication::aboutToQuit);
+    QSignalSpy spyTimeout(&timer, &QTimer::timeout);
 
-        QWindow mainWindow;
-        mainWindow.setTitle(QStringLiteral("quitOnLastWindowClosedMainWindow"));
-        mainWindow.resize(windowSize, windowSize);
-        mainWindow.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
+    QWindow mainWindow;
+    mainWindow.setTitle(QStringLiteral("quitOnLastWindowClosedMainWindow"));
+    mainWindow.resize(windowSize, windowSize);
+    mainWindow.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
 
-        QWindow dialog;
-        dialog.setTransientParent(&mainWindow);
-        dialog.setTitle(QStringLiteral("quitOnLastWindowClosedDialog"));
-        dialog.resize(windowSize, windowSize);
-        dialog.setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
+    QWindow dialog;
+    dialog.setTransientParent(&mainWindow);
+    dialog.setTitle(QStringLiteral("quitOnLastWindowClosedDialog"));
+    dialog.resize(windowSize, windowSize);
+    dialog.setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
 
-        QVERIFY(app.quitOnLastWindowClosed());
+    QVERIFY(app.quitOnLastWindowClosed());
 
-        mainWindow.show();
-        dialog.show();
-        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    mainWindow.show();
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
 
-        timer.start();
-        QTimer::singleShot(1000, &mainWindow, SLOT(close())); // This should quit the application
-        QTimer::singleShot(2000, &app, SLOT(quit()));        // This makes sure we quit even if it didn't
+    timer.start();
+    QTimer::singleShot(1000, &mainWindow, &QWindow::close); // This should quit the application
+    QTimer::singleShot(2000, &app, QCoreApplication::quit);  // This makes sure we quit even if it didn't
 
-        app.exec();
+    app.exec();
 
-        QCOMPARE(spy.count(), 1);
-        QVERIFY(spy2.count() < 15);      // Should be around 10 if closing caused the quit
-    }
-    {
-        int argc = 0;
-        QGuiApplication app(argc, 0);
-        const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
+    QCOMPARE(spyAboutToQuit.count(), 1);
+    // Should be around 10 if closing caused the quit
+    QVERIFY2(spyTimeout.count() < 15, QByteArray::number(spyTimeout.count()).constData());
+}
 
-        QTimer timer;
-        timer.setInterval(100);
+void tst_QGuiApplication::quitOnLastWindowClosedMulti()
+{
+    int argc = 0;
+    QGuiApplication app(argc, 0);
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
-        QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
-        QSignalSpy spy2(&timer, SIGNAL(timeout()));
+    QTimer timer;
+    timer.setInterval(100);
 
-        QWindow mainWindow;
-        mainWindow.setTitle(QStringLiteral("quitOnLastWindowClosedMainWindow"));
-        mainWindow.resize(windowSize, windowSize);
-        mainWindow.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
+    QSignalSpy spyAboutToQuit(&app, &QCoreApplication::aboutToQuit);
+    QSignalSpy spyTimeout(&timer, &QTimer::timeout);
 
-        QWindow dialog;
-        dialog.setTitle(QStringLiteral("quitOnLastWindowClosedDialog"));
-        dialog.resize(windowSize, windowSize);
-        dialog.setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
+    QWindow mainWindow;
+    mainWindow.setTitle(QStringLiteral("quitOnLastWindowClosedMultiMainWindow"));
+    mainWindow.resize(windowSize, windowSize);
+    mainWindow.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
 
-        QVERIFY(!dialog.transientParent());
-        QVERIFY(app.quitOnLastWindowClosed());
+    QWindow dialog;
+    dialog.setTitle(QStringLiteral("quitOnLastWindowClosedMultiDialog"));
+    dialog.resize(windowSize, windowSize);
+    dialog.setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
 
-        mainWindow.show();
-        dialog.show();
-        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    QVERIFY(!dialog.transientParent());
+    QVERIFY(app.quitOnLastWindowClosed());
 
-        timer.start();
-        QTimer::singleShot(1000, &mainWindow, SLOT(close())); // This should not quit the application
-        QTimer::singleShot(2000, &app, SLOT(quit()));
+    mainWindow.show();
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
 
-        app.exec();
+    timer.start();
+    QTimer::singleShot(1000, &mainWindow, &QWindow::close); // This should not quit the application
+    QTimer::singleShot(2000, &app, &QCoreApplication::quit);
 
-        QCOMPARE(spy.count(), 1);
-        QVERIFY(spy2.count() > 15);      // Should be around 20 if closing did not cause the quit
-    }
-    {
-        int argc = 0;
-        QGuiApplication app(argc, 0);
-        app.setQuitOnLastWindowClosed(false);
+    app.exec();
 
-        QTimer timer;
-        timer.setInterval(2000);
-        timer.setSingleShot(true);
-        QObject::connect(&timer, SIGNAL(timeout()), &app, SLOT(quit()));
+    QCOMPARE(spyAboutToQuit.count(), 1);
+    // Should be around 20 if closing did not cause the quit
+    QVERIFY2(spyTimeout.count() > 15, QByteArray::number(spyTimeout.count()).constData());
+}
 
-        QSignalSpy spy(&app, SIGNAL(lastWindowClosed()));
-        QSignalSpy spy2(&timer, SIGNAL(timeout()));
+void tst_QGuiApplication::dontQuitOnLastWindowClosed()
+{
+    int argc = 0;
+    QGuiApplication app(argc, 0);
+    app.setQuitOnLastWindowClosed(false);
 
-        QPointer<QWindow> mainWindow = new QWindow;
+    QTimer timer;
+    timer.setInterval(2000);
+    timer.setSingleShot(true);
+    QObject::connect(&timer, &QTimer::timeout, &app, &QCoreApplication::quit);
 
-        mainWindow->show();
+    QSignalSpy spyLastWindowClosed(&app, &QGuiApplication::lastWindowClosed);
+    QSignalSpy spyTimeout(&timer, &QTimer::timeout);
 
-        QTimer::singleShot(1000, mainWindow, SLOT(close())); // This should not quit the application
-        timer.start();
+    QScopedPointer<QWindow> mainWindow(new QWindow);
 
-        app.exec();
+    mainWindow->show();
 
-        QCOMPARE(spy2.count(), 1); // quit timer fired
-        QCOMPARE(spy.count(), 1); // lastWindowClosed emitted
+    QTimer::singleShot(1000, mainWindow.data(), &QWindow::close); // This should not quit the application
+    timer.start();
 
-        app.setQuitOnLastWindowClosed(true); // restore underlying static to default value
-   }
+    app.exec();
+
+    app.setQuitOnLastWindowClosed(true); // restore underlying static to default value
+
+    QCOMPARE(spyTimeout.count(), 1); // quit timer fired
+    QCOMPARE(spyLastWindowClosed.count(), 1); // lastWindowClosed emitted
 }
 
 static Qt::ScreenOrientation testOrientationToSend = Qt::PrimaryOrientation;

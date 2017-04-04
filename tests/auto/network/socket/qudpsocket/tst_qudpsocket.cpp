@@ -52,6 +52,13 @@
 #include <QtNetwork/qnetworksession.h>
 #endif
 
+#if defined(Q_OS_LINUX)
+#define SHOULD_CHECK_SYSCALL_SUPPORT
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <errno.h>
+#endif
+
 Q_DECLARE_METATYPE(QHostAddress)
 
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
@@ -115,6 +122,12 @@ protected slots:
     void async_readDatagramSlot();
 
 private:
+    bool shouldSkipIpv6TestsForBrokenSetsockopt();
+#ifdef SHOULD_CHECK_SYSCALL_SUPPORT
+    bool ipv6SetsockoptionMissing(int level, int optname);
+#endif
+
+    bool m_skipUnsupportedIPv6Tests;
     QList<QHostAddress> allAddresses;
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkConfigurationManager *netConfMan;
@@ -124,6 +137,43 @@ private:
     QUdpSocket *m_asyncSender;
     QUdpSocket *m_asyncReceiver;
 };
+
+#ifdef SHOULD_CHECK_SYSCALL_SUPPORT
+bool tst_QUdpSocket::ipv6SetsockoptionMissing(int level, int optname)
+{
+    int testSocket;
+
+    testSocket = socket(PF_INET6, SOCK_DGRAM, 0);
+
+    // If we can't test here, assume it's not missing
+    if (testSocket == -1)
+        return false;
+
+    bool result = false;
+    if (setsockopt(testSocket, level, optname, nullptr, 0) == -1)
+        if (errno == ENOPROTOOPT)
+            result = true;
+
+    close(testSocket);
+    return result;
+}
+#endif //SHOULD_CHECK_SYSCALL_SUPPORT
+
+bool tst_QUdpSocket::shouldSkipIpv6TestsForBrokenSetsockopt()
+{
+#ifdef SHOULD_CHECK_SYSCALL_SUPPORT
+    // Following parameters for setsockopt are not supported by all QEMU versions:
+    if (ipv6SetsockoptionMissing(SOL_IPV6, IPV6_JOIN_GROUP)
+        || ipv6SetsockoptionMissing(SOL_IPV6, IPV6_MULTICAST_HOPS)
+        || ipv6SetsockoptionMissing(SOL_IPV6, IPV6_MULTICAST_IF)
+        || ipv6SetsockoptionMissing(SOL_IPV6, IPV6_MULTICAST_LOOP)
+        || ipv6SetsockoptionMissing(SOL_IPV6, IPV6_RECVHOPLIMIT)) {
+        return true;
+    }
+#endif //SHOULD_CHECK_SYSCALL_SUPPORT
+
+    return false;
+}
 
 static QHostAddress makeNonAny(const QHostAddress &address, QHostAddress::SpecialAddress preferForAny = QHostAddress::LocalHost)
 {
@@ -176,6 +226,7 @@ void tst_QUdpSocket::initTestCase()
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
     allAddresses = QNetworkInterface::allAddresses();
+    m_skipUnsupportedIPv6Tests = shouldSkipIpv6TestsForBrokenSetsockopt();
 }
 
 void tst_QUdpSocket::init()
@@ -1140,6 +1191,13 @@ void tst_QUdpSocket::multicastTtlOption()
         expected = 0;
     }
 
+    // Some syscalls needed for ipv6 udp multicasting are not functional
+    if (m_skipUnsupportedIPv6Tests) {
+        if (bindAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+            QSKIP("Syscalls needed for ipv6 udp multicasting missing functionality");
+        }
+    }
+
     QUdpSocket udpSocket;
 #ifdef FORCE_SESSION
     udpSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
@@ -1184,6 +1242,13 @@ void tst_QUdpSocket::multicastLoopbackOption()
     if (setProxy) {
         // UDP multicast does not work with proxies
         expected = 0;
+    }
+
+    // Some syscalls needed for ipv6 udp multicasting are not functional
+    if (m_skipUnsupportedIPv6Tests) {
+        if (bindAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+            QSKIP("Syscalls needed for ipv6 udp multicasting missing functionality");
+        }
     }
 
     QUdpSocket udpSocket;
@@ -1240,6 +1305,13 @@ void tst_QUdpSocket::multicastLeaveAfterClose()
     if (!QtNetworkSettings::hasIPv6() && groupAddress.protocol() == QAbstractSocket::IPv6Protocol)
         QSKIP("system doesn't support ipv6!");
 
+    // Some syscalls needed for ipv6 udp multicasting are not functional
+    if (m_skipUnsupportedIPv6Tests) {
+        if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+            QSKIP("Syscalls needed for ipv6 udp multicasting missing functionality");
+        }
+    }
+
     QUdpSocket udpSocket;
 #ifdef FORCE_SESSION
     udpSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
@@ -1279,6 +1351,11 @@ void tst_QUdpSocket::setMulticastInterface()
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QNetworkInterface, iface);
     QFETCH(QHostAddress, address);
+
+    // Some syscalls needed for udp multicasting are not functional
+    if (m_skipUnsupportedIPv6Tests) {
+        QSKIP("Syscalls needed for udp multicasting missing functionality");
+    }
 
     QUdpSocket udpSocket;
     // bind initializes the socket
@@ -1337,6 +1414,13 @@ void tst_QUdpSocket::multicast()
     if (setProxy) {
         // UDP multicast does not work with proxies
         return;
+    }
+
+    // Some syscalls needed for ipv6 udp multicasting are not functional
+    if (m_skipUnsupportedIPv6Tests) {
+        if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+            QSKIP("Syscalls needed for ipv6 udp multicasting missing functionality");
+        }
     }
 
     QUdpSocket receiver;

@@ -69,6 +69,7 @@ public:
     explicit QInputControl(Type type, QObject *parent = nullptr);
 
     bool isAcceptableInput(const QKeyEvent *event) const;
+    static bool isCommonTextEditShortcut(const QKeyEvent *ke);
 
 protected:
     explicit QInputControl(Type type, QObjectPrivate &dd, QObject *parent = nullptr);
