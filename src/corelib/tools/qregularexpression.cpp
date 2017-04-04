@@ -2037,9 +2037,10 @@ int QRegularExpressionMatch::lastCapturedIndex() const
 }
 
 /*!
-    Returns the substring captured by the \a nth capturing group. If the \a nth
-    capturing group did not capture a string or doesn't exist, returns a null
-    QString.
+    Returns the substring captured by the \a nth capturing group.
+
+    If the \a nth capturing group did not capture a string, or if there is no
+    such capturing group, returns a null QString.
 
     \sa capturedRef(), capturedView(), lastCapturedIndex(), capturedStart(), capturedEnd(),
     capturedLength(), QString::isNull()
@@ -2059,8 +2060,9 @@ QString QRegularExpressionMatch::captured(int nth) const
 
 /*!
     Returns a reference to the substring captured by the \a nth capturing group.
-    If the \a nth capturing group did not capture a string or doesn't exist,
-    returns a null QStringRef.
+
+    If the \a nth capturing group did not capture a string, or if there is no
+    such capturing group, returns a null QStringRef.
 
     \sa captured(), capturedView(), lastCapturedIndex(), capturedStart(), capturedEnd(),
     capturedLength(), QStringRef::isNull()
@@ -2082,8 +2084,9 @@ QStringRef QRegularExpressionMatch::capturedRef(int nth) const
     \since 5.10
 
     Returns a view of the substring captured by the \a nth capturing group.
-    If the \a nth capturing group did not capture a string or doesn't exist,
-    returns a null QStringView.
+
+    If the \a nth capturing group did not capture a string, or if there is no
+    such capturing group, returns a null QStringView.
 
     \sa captured(), capturedRef(), lastCapturedIndex(), capturedStart(), capturedEnd(),
     capturedLength(), QStringView::isNull()
@@ -2095,9 +2098,10 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
 
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
-    Returns the substring captured by the capturing group named \a name. If the
-    capturing group named \a name did not capture a string or doesn't exist,
-    returns a null QString.
+    Returns the substring captured by the capturing group named \a name.
+
+    If the named capturing group \a name did not capture a string, or if
+    there is no capturing group named \a name, returns a null QString.
 
     \sa capturedRef(), capturedView(), capturedStart(), capturedEnd(), capturedLength(),
     QString::isNull()
@@ -2109,8 +2113,10 @@ QString QRegularExpressionMatch::captured(const QString &name) const
 
 /*!
     Returns a reference to the string captured by the capturing group named \a
-    name. If the capturing group named \a name did not capture a string or
-    doesn't exist, returns a null QStringRef.
+    name.
+
+    If the named capturing group \a name did not capture a string, or if
+    there is no capturing group named \a name, returns a null QStringRef.
 
     \sa captured(), capturedView(), capturedStart(), capturedEnd(), capturedLength(),
     QStringRef::isNull()
@@ -2124,9 +2130,10 @@ QStringRef QRegularExpressionMatch::capturedRef(const QString &name) const
 /*!
     \since 5.10
 
-    Returns the substring captured by the capturing group named \a name. If the
-    capturing group named \a name did not capture a string or doesn't exist,
-    returns a null QString.
+    Returns the substring captured by the capturing group named \a name.
+
+    If the named capturing group \a name did not capture a string, or if
+    there is no capturing group named \a name, returns a null QString.
 
     \sa capturedRef(), capturedView(), capturedStart(), capturedEnd(), capturedLength(),
     QString::isNull()
@@ -2147,8 +2154,10 @@ QString QRegularExpressionMatch::captured(QStringView name) const
     \since 5.10
 
     Returns a reference to the string captured by the capturing group named \a
-    name. If the capturing group named \a name did not capture a string or
-    doesn't exist, returns a null QStringRef.
+    name.
+
+    If the named capturing group \a name did not capture a string, or if
+    there is no capturing group named \a name, returns a null QStringRef.
 
     \sa captured(), capturedView(), capturedStart(), capturedEnd(), capturedLength(),
     QStringRef::isNull()
@@ -2169,8 +2178,10 @@ QStringRef QRegularExpressionMatch::capturedRef(QStringView name) const
     \since 5.10
 
     Returns a view of the string captured by the capturing group named \a
-    name. If the capturing group named \a name did not capture a string or
-    doesn't exist, returns a null QStringView.
+    name.
+
+    If the named capturing group \a name did not capture a string, or if
+    there is no capturing group named \a name, returns a null QStringView.
 
     \sa captured(), capturedRef(), capturedStart(), capturedEnd(), capturedLength(),
     QStringRef::isNull()
