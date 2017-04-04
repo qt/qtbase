@@ -45,20 +45,18 @@ QT_BEGIN_NAMESPACE
     \class QStringView
     \inmodule QtCore
     \since 5.10
-    \brief The QStringView class provides a unified view on UTF-16 strings
+    \brief The QStringView class provides a unified view on UTF-16 strings with a read-only subset of the QString API.
     \reentrant
     \ingroup tools
     \ingroup string-processing
 
-    QStringView provides a read-only subset of the QString API.
-
-    A string view explicitly stores a portion of a UTF-16 string it does
+    A QStringView references a contiguous portion of a UTF-16 string it does
     not own. It acts as an interface type to all kinds of UTF-16 string,
     without the need to construct a QString first.
 
     The UTF-16 string may be represented as an array (or an array-compatible
     data-structure such as QString,
-    std::basic_string, etc.) of \c QChar, \c ushort, \c char16_t (on compilers that
+    std::basic_string, etc.) of QChar, \c ushort, \c char16_t (on compilers that
     support C++11 Unicode strings) or (on platforms, such as Windows,
     where it is a 16-bit type) \c wchar_t.
 
@@ -254,7 +252,7 @@ QT_BEGIN_NAMESPACE
     \fn QStringView::QStringView(const Char *str)
 
     Constructs a string view on \a str. The length is determined
-    by scanning for the first \c{char16_t(0)}.
+    by scanning for the first \c{Char(0)}.
 
     \a str must remain valid for the lifetime of this string view object.
 
