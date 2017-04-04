@@ -244,8 +244,13 @@ void tst_QFontDatabase::addAppFont()
     QVERIFY(!newFamilies.isEmpty());
     QVERIFY(newFamilies.count() >= oldFamilies.count());
 
-    for (int i = 0; i < addedFamilies.count(); ++i)
-        QVERIFY(newFamilies.contains(addedFamilies.at(i)));
+    for (int i = 0; i < addedFamilies.count(); ++i) {
+        QString family = addedFamilies.at(i);
+        QVERIFY(newFamilies.contains(family));
+        QFont qfont(family);
+        QFontInfo fi(qfont);
+        QCOMPARE(fi.family(), family);
+    }
 
     QVERIFY(QFontDatabase::removeApplicationFont(id));
     QCOMPARE(fontDbChangedSpy.count(), 2);

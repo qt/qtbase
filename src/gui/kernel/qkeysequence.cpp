@@ -1189,7 +1189,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
                 QString keyName(tran == 0
                                 ? QCoreApplication::translate("QShortcut", keyname[i].name)
                                 : QString::fromLatin1(keyname[i].name));
-                if (accelRef == keyName.toLower()) {
+                if (accelRef == std::move(keyName).toLower()) {
                     ret |= keyname[i].key;
                     found = true;
                     break;

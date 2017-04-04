@@ -45,3 +45,6 @@ SUBPROGRAMS = \
      verifyexceptionthrown \
      warnings \
      xunit
+
+INCLUDEPATH += ../../../../shared/
+HEADERS += ../../../../shared/emulationdetector.h

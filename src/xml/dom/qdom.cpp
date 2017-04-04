@@ -6442,7 +6442,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
             if (enc.isEmpty())
                 enc = encoding.cap(5);
             if (!enc.isEmpty())
-                codec = QTextCodec::codecForName(enc.toLatin1().data());
+                codec = QTextCodec::codecForName(std::move(enc).toLatin1());
         }
         if (!codec)
             codec = QTextCodec::codecForName("UTF-8");

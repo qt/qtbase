@@ -55,6 +55,7 @@
 #include <qapplication.h>
 #include <qdebug.h>
 
+#include <vector>
 #include <algorithm>
 QT_BEGIN_NAMESPACE
 
@@ -191,9 +192,11 @@ QByteArray QItemEditorFactory::valuePropertyName(int userType) const
 QItemEditorFactory::~QItemEditorFactory()
 {
     //we make sure we delete all the QItemEditorCreatorBase
-    //this has to be done only once, hence the QSet
-    QSet<QItemEditorCreatorBase*> set = creatorMap.values().toSet();
-    qDeleteAll(set);
+    //this has to be done only once, hence the sort-unique idiom
+    std::vector<QItemEditorCreatorBase*> creators(creatorMap.cbegin(), creatorMap.cend());
+    std::sort(creators.begin(), creators.end());
+    const auto it = std::unique(creators.begin(), creators.end());
+    qDeleteAll(creators.begin(), it);
 }
 
 /*!

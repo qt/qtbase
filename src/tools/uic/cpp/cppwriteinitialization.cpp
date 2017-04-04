@@ -48,10 +48,11 @@ namespace {
     // Fixup an enumeration name from class Qt.
     // They are currently stored as "BottomToolBarArea" instead of "Qt::BottomToolBarArea".
     // due to MO issues. This might be fixed in the future.
-    void fixQtEnumerationName(QString& name) {
+    QLatin1String qtEnumerationPrefix(const QString &name) {
         static const QLatin1String prefix("Qt::");
         if (name.indexOf(prefix) != 0)
-            name.prepend(prefix);
+            return prefix;
+        return QLatin1String();
     }
     // figure out the toolbar area of a DOM attrib list.
     // By legacy, it is stored as an integer. As of 4.3.0, it is the enumeration value.
@@ -62,16 +63,12 @@ namespace {
 
         switch (pstyle->kind()) {
         case DomProperty::Number: {
-            QString area = QLatin1String("static_cast<Qt::ToolBarArea>(");
-            area += QString::number(pstyle->elementNumber());
-            area += QLatin1String("), ");
-            return area;
+            return QLatin1String("static_cast<Qt::ToolBarArea>(")
+                   + QString::number(pstyle->elementNumber()) + QLatin1String("), ");
         }
         case DomProperty::Enum: {
-            QString area = pstyle->elementEnum();
-            fixQtEnumerationName(area);
-            area += QLatin1String(", ");
-            return area;
+            const QString area = pstyle->elementEnum();
+            return qtEnumerationPrefix(area) + area + QLatin1String(", ");
         }
         default:
             break;

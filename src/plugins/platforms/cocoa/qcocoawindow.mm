@@ -58,6 +58,8 @@
 
 #include <QDebug>
 
+#include <vector>
+
 enum {
     defaultWindowWidth = 160,
     defaultWindowHeight = 160
@@ -1613,6 +1615,13 @@ void QCocoaWindow::recreateWindowIfNeeded()
         [m_nsWindow closeAndRelease];
         if (isChildNSWindow())
             [m_view.window.parentWindow removeChildWindow:m_view.window];
+        if (isContentView()) {
+            // We explicitly disassociate m_view from the window's contentView,
+            // as AppKit does not automatically do this in response to removing
+            // the view from the NSThemeFrame subview list, so we might end up
+            // with a NSWindow contentView pointing to a deallocated NSView.
+            m_view.window.contentView = nil;
+        }
         m_nsWindow = 0;
     }
 
@@ -1636,13 +1645,6 @@ void QCocoaWindow::recreateWindowIfNeeded()
             [m_nsWindow setContentView:m_view];
             [m_view release];
             [m_view setPostsFrameChangedNotifications:YES];
-            // QTBUG-58963
-            // viewDidChangeFrame() should be called for each window automatically at this point because it is
-            // registered with Q_NOTIFICATION_HANDLER(NSViewFrameDidChangeNotification);
-            // The corner case when it's not called and we need to make a manual geometry update is when window's
-            // size is not specified explicitly but minimumSize is set and matches to the size NSView was created with.
-            if (QSizeF::fromCGSize(m_view.frame.size) == [QNSView defaultViewSize])
-                viewDidChangeFrame();
         }
     }
 
@@ -1862,8 +1864,7 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
         // the new state.
         return;
     }
-    default:
-        Q_FALLTHROUGH();
+    default:;
     }
 
     // Then we apply the new state if needed
@@ -1881,12 +1882,8 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
         [m_nsWindow miniaturize:sender];
         break;
     case Qt::WindowNoState:
-        switch (windowState()) {
-        case Qt::WindowMaximized:
+        if (windowState() == Qt::WindowMaximized)
             toggleMaximized();
-        default:
-            Q_FALLTHROUGH();
-        }
         break;
     default:
         Q_UNREACHABLE();
@@ -2068,10 +2065,10 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     }
 
     // Find consecutive registered border areas, starting from the top.
-    QList<BorderRange> ranges = m_contentBorderAreas.values();
+    std::vector<BorderRange> ranges(m_contentBorderAreas.cbegin(), m_contentBorderAreas.cend());
     std::sort(ranges.begin(), ranges.end());
     int effectiveTopContentBorderThickness = m_topContentBorderThickness;
-    foreach (BorderRange range, ranges) {
+    for (BorderRange range : ranges) {
         // Skip disiabled ranges (typically hidden tool bars)
         if (!m_enabledContentBorderAreas.value(range.identifier, false))
             continue;

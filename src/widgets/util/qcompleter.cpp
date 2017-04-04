@@ -493,7 +493,7 @@ QMatchData QCompletionEngine::filterHistory()
 bool QCompletionEngine::matchHint(QString part, const QModelIndex& parent, QMatchData *hint)
 {
     if (c->cs == Qt::CaseInsensitive)
-        part = part.toLower();
+        part = std::move(part).toLower();
 
     const CacheItem& map = cache[parent];
 
@@ -512,7 +512,7 @@ bool QCompletionEngine::matchHint(QString part, const QModelIndex& parent, QMatc
 bool QCompletionEngine::lookupCache(QString part, const QModelIndex& parent, QMatchData *m)
 {
    if (c->cs == Qt::CaseInsensitive)
-        part = part.toLower();
+        part = std::move(part).toLower();
    const CacheItem& map = cache[parent];
    if (!map.contains(part))
        return false;
@@ -548,7 +548,7 @@ void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, con
     }
 
     if (c->cs == Qt::CaseInsensitive)
-        part = part.toLower();
+        part = std::move(part).toLower();
     cache[parent][part] = m;
 }
 
@@ -558,7 +558,7 @@ QIndexMapper QSortedModelEngine::indexHint(QString part, const QModelIndex& pare
     const QAbstractItemModel *model = c->proxy->sourceModel();
 
     if (c->cs == Qt::CaseInsensitive)
-        part = part.toLower();
+        part = std::move(part).toLower();
 
     const CacheItem& map = cache[parent];
 

@@ -284,8 +284,12 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #endif
                    "";
 
+extern const char msg3[];
+const char msg3[] = "==Qt=magic=Qt== Build-ABI:" ARCH_FULL;
+
 int main()
 {
     puts(msg);
     puts(msg2);
+    puts(msg3);
 }

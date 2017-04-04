@@ -1674,7 +1674,7 @@ QString QRegularExpression::errorString() const
         } while (errorStringLength < 0);
         errorString.resize(errorStringLength);
 
-        return QCoreApplication::translate("QRegularExpression", errorString.toLatin1().constData());
+        return QCoreApplication::translate("QRegularExpression", std::move(errorString).toLatin1().constData());
     }
     return QCoreApplication::translate("QRegularExpression", "no error");
 }

@@ -57,11 +57,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static QByteArray standardButtonText(int button)
-{
-    return QGtk3Theme::defaultStandardButtonText(button).toUtf8();
-}
-
 class QGtk3Dialog : public QWindow
 {
     Q_OBJECT
@@ -236,7 +231,7 @@ void QGtk3ColorDialogHelper::onColorChanged(QGtk3ColorDialogHelper *dialog)
 void QGtk3ColorDialogHelper::applyOptions()
 {
     GtkDialog *gtkDialog = d->gtkDialog();
-    gtk_window_set_title(GTK_WINDOW(gtkDialog), options()->windowTitle().toUtf8());
+    gtk_window_set_title(GTK_WINDOW(gtkDialog), qUtf8Printable(options()->windowTitle()));
 
     gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(gtkDialog), options()->testOption(QColorDialogOptions::ShowAlphaChannel));
 }
@@ -245,8 +240,8 @@ QGtk3FileDialogHelper::QGtk3FileDialogHelper()
 {
     d.reset(new QGtk3Dialog(gtk_file_chooser_dialog_new("", 0,
                                                         GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                        standardButtonText(QPlatformDialogHelper::Cancel), GTK_RESPONSE_CANCEL,
-                                                        standardButtonText(QPlatformDialogHelper::Ok), GTK_RESPONSE_OK,
+                                                        qUtf8Printable(QGtk3Theme::defaultStandardButtonText(QPlatformDialogHelper::Cancel)), GTK_RESPONSE_CANCEL,
+                                                        qUtf8Printable(QGtk3Theme::defaultStandardButtonText(QPlatformDialogHelper::Ok)), GTK_RESPONSE_OK,
                                                         NULL)));
 
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
@@ -294,7 +289,7 @@ bool QGtk3FileDialogHelper::defaultNameFilterDisables() const
 void QGtk3FileDialogHelper::setDirectory(const QUrl &directory)
 {
     GtkDialog *gtkDialog = d->gtkDialog();
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gtkDialog), directory.toLocalFile().toUtf8());
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gtkDialog), qUtf8Printable(directory.toLocalFile()));
 }
 
 QUrl QGtk3FileDialogHelper::directory() const
@@ -316,13 +311,19 @@ QUrl QGtk3FileDialogHelper::directory() const
 
 void QGtk3FileDialogHelper::selectFile(const QUrl &filename)
 {
+    setFileChooserAction();
+    selectFileInternal(filename);
+}
+
+void QGtk3FileDialogHelper::selectFileInternal(const QUrl &filename)
+{
     GtkDialog *gtkDialog = d->gtkDialog();
     if (options()->acceptMode() == QFileDialogOptions::AcceptSave) {
         QFileInfo fi(filename.toLocalFile());
-        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gtkDialog), fi.path().toUtf8());
-        gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(gtkDialog), fi.fileName().toUtf8());
+        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gtkDialog), qUtf8Printable(fi.path()));
+        gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(gtkDialog), qUtf8Printable(fi.fileName()));
     } else {
-        gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(gtkDialog), filename.toLocalFile().toUtf8());
+        gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(gtkDialog), qUtf8Printable(filename.toLocalFile()));
     }
 }
 
@@ -409,16 +410,23 @@ static GtkFileChooserAction gtkFileChooserAction(const QSharedPointer<QFileDialo
     }
 }
 
+void QGtk3FileDialogHelper::setFileChooserAction()
+{
+    GtkDialog *gtkDialog = d->gtkDialog();
+
+    const GtkFileChooserAction action = gtkFileChooserAction(options());
+    gtk_file_chooser_set_action(GTK_FILE_CHOOSER(gtkDialog), action);
+}
+
 void QGtk3FileDialogHelper::applyOptions()
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     const QSharedPointer<QFileDialogOptions> &opts = options();
 
-    gtk_window_set_title(GTK_WINDOW(gtkDialog), opts->windowTitle().toUtf8());
+    gtk_window_set_title(GTK_WINDOW(gtkDialog), qUtf8Printable(opts->windowTitle()));
     gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(gtkDialog), true);
 
-    const GtkFileChooserAction action = gtkFileChooserAction(opts);
-    gtk_file_chooser_set_action(GTK_FILE_CHOOSER(gtkDialog), action);
+    setFileChooserAction();
 
     const bool selectMultiple = opts->fileMode() == QFileDialogOptions::ExistingFiles;
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(gtkDialog), selectMultiple);
@@ -437,7 +445,7 @@ void QGtk3FileDialogHelper::applyOptions()
         setDirectory(opts->initialDirectory());
 
     foreach (const QUrl &filename, opts->initiallySelectedFiles())
-        selectFile(filename);
+        selectFileInternal(filename);
 
     const QString initialNameFilter = opts->initiallySelectedNameFilter();
     if (!initialNameFilter.isEmpty())
@@ -446,19 +454,19 @@ void QGtk3FileDialogHelper::applyOptions()
     GtkWidget *acceptButton = gtk_dialog_get_widget_for_response(gtkDialog, GTK_RESPONSE_OK);
     if (acceptButton) {
         if (opts->isLabelExplicitlySet(QFileDialogOptions::Accept))
-            gtk_button_set_label(GTK_BUTTON(acceptButton), opts->labelText(QFileDialogOptions::Accept).toUtf8());
+            gtk_button_set_label(GTK_BUTTON(acceptButton), qUtf8Printable(opts->labelText(QFileDialogOptions::Accept)));
         else if (opts->acceptMode() == QFileDialogOptions::AcceptOpen)
-            gtk_button_set_label(GTK_BUTTON(acceptButton), standardButtonText(QPlatformDialogHelper::Open));
+            gtk_button_set_label(GTK_BUTTON(acceptButton), qUtf8Printable(QGtk3Theme::defaultStandardButtonText(QPlatformDialogHelper::Open)));
         else
-            gtk_button_set_label(GTK_BUTTON(acceptButton), standardButtonText(QPlatformDialogHelper::Save));
+            gtk_button_set_label(GTK_BUTTON(acceptButton), qUtf8Printable(QGtk3Theme::defaultStandardButtonText(QPlatformDialogHelper::Save)));
     }
 
     GtkWidget *rejectButton = gtk_dialog_get_widget_for_response(gtkDialog, GTK_RESPONSE_CANCEL);
     if (rejectButton) {
         if (opts->isLabelExplicitlySet(QFileDialogOptions::Reject))
-            gtk_button_set_label(GTK_BUTTON(rejectButton), opts->labelText(QFileDialogOptions::Reject).toUtf8());
+            gtk_button_set_label(GTK_BUTTON(rejectButton), qUtf8Printable(opts->labelText(QFileDialogOptions::Reject)));
         else
-            gtk_button_set_label(GTK_BUTTON(rejectButton), standardButtonText(QPlatformDialogHelper::Cancel));
+            gtk_button_set_label(GTK_BUTTON(rejectButton), qUtf8Printable(QGtk3Theme::defaultStandardButtonText(QPlatformDialogHelper::Cancel)));
     }
 }
 
@@ -473,12 +481,12 @@ void QGtk3FileDialogHelper::setNameFilters(const QStringList &filters)
 
     foreach (const QString &filter, filters) {
         GtkFileFilter *gtkFilter = gtk_file_filter_new();
-        const QStringRef name = filter.leftRef(filter.indexOf(QLatin1Char('(')));
+        const QString name = filter.left(filter.indexOf(QLatin1Char('(')));
         const QStringList extensions = cleanFilterList(filter);
 
-        gtk_file_filter_set_name(gtkFilter, name.isEmpty() ? extensions.join(QLatin1String(", ")).toUtf8() : name.toUtf8());
+        gtk_file_filter_set_name(gtkFilter, qUtf8Printable(name.isEmpty() ? extensions.join(QLatin1String(", ")) : name));
         foreach (const QString &ext, extensions)
-            gtk_file_filter_add_pattern(gtkFilter, ext.toUtf8());
+            gtk_file_filter_add_pattern(gtkFilter, qUtf8Printable(ext));
 
         gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(gtkDialog), gtkFilter);
 
@@ -520,7 +528,7 @@ static QString qt_fontToString(const QFont &font)
 {
     PangoFontDescription *desc = pango_font_description_new();
     pango_font_description_set_size(desc, (font.pointSizeF() > 0.0 ? font.pointSizeF() : QFontInfo(font).pointSizeF()) * PANGO_SCALE);
-    pango_font_description_set_family(desc, QFontInfo(font).family().toUtf8());
+    pango_font_description_set_family(desc, qUtf8Printable(QFontInfo(font).family()));
 
     int weight = font.weight();
     if (weight >= QFont::Black)
@@ -560,7 +568,7 @@ static QString qt_fontToString(const QFont &font)
 static QFont qt_fontFromString(const QString &name)
 {
     QFont font;
-    PangoFontDescription *desc = pango_font_description_from_string(name.toUtf8());
+    PangoFontDescription *desc = pango_font_description_from_string(qUtf8Printable(name));
     font.setPointSizeF(static_cast<float>(pango_font_description_get_size(desc)) / PANGO_SCALE);
 
     QString family = QString::fromUtf8(pango_font_description_get_family(desc));
@@ -585,7 +593,7 @@ static QFont qt_fontFromString(const QString &name)
 void QGtk3FontDialogHelper::setCurrentFont(const QFont &font)
 {
     GtkFontChooser *gtkDialog = GTK_FONT_CHOOSER(d->gtkDialog());
-    gtk_font_chooser_set_font(gtkDialog, qt_fontToString(font).toUtf8());
+    gtk_font_chooser_set_font(gtkDialog, qUtf8Printable(qt_fontToString(font)));
 }
 
 QFont QGtk3FontDialogHelper::currentFont() const
@@ -612,7 +620,7 @@ void QGtk3FontDialogHelper::applyOptions()
     GtkDialog *gtkDialog = d->gtkDialog();
     const QSharedPointer<QFontDialogOptions> &opts = options();
 
-    gtk_window_set_title(GTK_WINDOW(gtkDialog), opts->windowTitle().toUtf8());
+    gtk_window_set_title(GTK_WINDOW(gtkDialog), qUtf8Printable(opts->windowTitle()));
 }
 
 QT_END_NAMESPACE

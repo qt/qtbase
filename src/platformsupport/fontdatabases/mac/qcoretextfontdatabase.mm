@@ -615,7 +615,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     return fallbackLists[styleLookupKey.arg(styleHint)];
 }
 
-static CFArrayRef createDescriptorArrayForFont(CTFontRef font, const QString &fileName = QString())
+CFArrayRef QCoreTextFontDatabase::createDescriptorArrayForFont(CTFontRef font, const QString &fileName)
 {
     CFMutableArrayRef array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
     QCFType<CTFontDescriptorRef> descriptor = CTFontCopyFontDescriptor(font);
@@ -625,7 +625,7 @@ static CFArrayRef createDescriptorArrayForFont(CTFontRef font, const QString &fi
     // The physical font source URL (usually a local file or Qt resource) is only required for
     // FreeType, when using non-system fonts, and needs some hackery to attach in a format
     // agreeable to OSX.
-    if (!fileName.isEmpty()) {
+    if (m_useFreeType && !fileName.isEmpty()) {
         QCFType<CFURLRef> fontURL;
 
         if (fileName.startsWith(QLatin1String(":/"))) {
@@ -662,11 +662,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
         if (cgFont) {
             if (CTFontManagerRegisterGraphicsFont(cgFont, &error)) {
                 QCFType<CTFontRef> font = CTFontCreateWithGraphicsFont(cgFont, 0.0, NULL, NULL);
-                fonts = createDescriptorArrayForFont(font
-#ifndef QT_NO_FREETYPE
-                                                     , m_useFreeType ? fileName : QString()
-#endif
-                                                     );
+                fonts = createDescriptorArrayForFont(font, fileName);
                 m_applicationFonts.append(QVariant::fromValue(QCFType<CGFontRef>::constructFromGet(cgFont)));
             }
         }

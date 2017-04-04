@@ -58,6 +58,7 @@
 #include <private/qcore_mac_p.h>
 
 Q_FORWARD_DECLARE_CF_TYPE(CTFontDescriptor);
+Q_FORWARD_DECLARE_CF_TYPE(CTFont);
 
 Q_DECLARE_METATYPE(QCFType<CGFontRef>);
 Q_DECLARE_METATYPE(QCFType<CFURLRef>);
@@ -88,6 +89,7 @@ public:
 
 private:
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString());
+    CFArrayRef createDescriptorArrayForFont(CTFontRef font, const QString &fileName);
 
 #ifndef QT_NO_FREETYPE
     bool m_useFreeType;

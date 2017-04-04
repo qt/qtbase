@@ -815,14 +815,14 @@ QString QWindowsFileIconEngine::cacheKey() const
     // Return "" for .exe, .lnk and .ico extensions.
     // It is faster to just look at the file extensions;
     // avoiding slow QFileInfo::isExecutable() (QTBUG-13182)
-    const QString &suffix = fileInfo().suffix();
+    QString suffix = fileInfo().suffix();
     if (!suffix.compare(QLatin1String("exe"), Qt::CaseInsensitive)
         || !suffix.compare(QLatin1String("lnk"), Qt::CaseInsensitive)
         || !suffix.compare(QLatin1String("ico"), Qt::CaseInsensitive)) {
         return QString();
     }
     return QLatin1String("qt_.")
-        + (suffix.isEmpty() ? fileInfo().fileName() : suffix.toUpper()); // handle "Makefile"                                    ;)
+        + (suffix.isEmpty() ? fileInfo().fileName() : std::move(suffix).toUpper()); // handle "Makefile"                                    ;)
 }
 
 QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::State)

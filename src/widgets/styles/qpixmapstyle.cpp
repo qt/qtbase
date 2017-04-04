@@ -732,6 +732,8 @@ void QPixmapStyle::drawLineEdit(const QStyleOption *option,
 #if QT_CONFIG(combobox)
     if (widget && qobject_cast<const QComboBox*>(widget->parentWidget()))
         return;
+#else
+    Q_UNUSED(widget);
 #endif
     const bool enabled = option->state & State_Enabled;
     const bool focused = option->state & State_HasFocus;

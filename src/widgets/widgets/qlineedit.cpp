@@ -64,6 +64,8 @@
 #include "qdebug.h"
 #include "qtextedit.h"
 #include <private/qtextedit_p.h>
+#include <private/qwidgettextcontrol_p.h>
+
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif

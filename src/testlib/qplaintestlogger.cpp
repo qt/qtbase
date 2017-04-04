@@ -199,8 +199,8 @@ namespace QTest {
     int formatResult(char * buffer, int bufferSize, T number, int significantDigits)
     {
         QString result = formatResult(number, significantDigits);
-        qstrncpy(buffer, result.toLatin1().constData(), bufferSize);
         int size = result.count();
+        qstrncpy(buffer, std::move(result).toLatin1().constData(), bufferSize);
         return size;
     }
 }

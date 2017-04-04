@@ -133,7 +133,7 @@ bool Qt::mightBeRichText(const QString& text)
                     return false; // that's not a tag
             }
 #ifndef QT_NO_TEXTHTMLPARSER
-            return QTextHtmlParser::lookupElement(tag.toLower()) != -1;
+            return QTextHtmlParser::lookupElement(std::move(tag).toLower()) != -1;
 #else
             return false;
 #endif // QT_NO_TEXTHTMLPARSER

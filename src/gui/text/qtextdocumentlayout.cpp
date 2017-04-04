@@ -834,6 +834,8 @@ void QTextDocumentLayoutPrivate::drawBorder(QPainter *painter, const QRectF &rec
 
 #ifndef QT_NO_CSSPARSER
     QCss::BorderStyle cssStyle = static_cast<QCss::BorderStyle>(style + 1);
+#else
+    Q_UNUSED(style);
 #endif //QT_NO_CSSPARSER
 
     bool turn_off_antialiasing = !(painter->renderHints() & QPainter::Antialiasing);

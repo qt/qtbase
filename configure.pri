@@ -258,15 +258,18 @@ defineTest(qtConfTest_architecture) {
 
     arch_magic = ".*==Qt=magic=Qt== Architecture:([^\\0]*).*"
     subarch_magic = ".*==Qt=magic=Qt== Sub-architecture:([^\\0]*).*"
+    buildabi_magic = ".*==Qt=magic=Qt== Build-ABI:([^\\0]*).*"
 
-    !contains(content, $$arch_magic)|!contains(content, $$subarch_magic): \
+    !contains(content, $$arch_magic)|!contains(content, $$subarch_magic)|!contains(content, $$buildabi_magic): \
         error("$$eval($${1}.label) detection binary does not contain expected data.")
 
     $${1}.arch = $$replace(content, $$arch_magic, "\\1")
     $${1}.subarch = $$replace(content, $$subarch_magic, "\\1")
     $${1}.subarch = $$split($${1}.subarch, " ")
+    $${1}.buildabi = $$replace(content, $$buildabi_magic, "\\1")
     export($${1}.arch)
     export($${1}.subarch)
+    export($${1}.buildabi)
     qtLog("Detected architecture: $$eval($${1}.arch) ($$eval($${1}.subarch))")
 
     $${1}.cache += arch subarch
@@ -869,9 +872,11 @@ defineTest(qtConfOutput_shared) {
 
 defineTest(qtConfOutput_architecture) {
     arch = $$qtConfEvaluate("tests.architecture.arch")
+    buildabi = $$qtConfEvaluate("tests.architecture.buildabi")
 
     $$qtConfEvaluate("features.cross_compile") {
         host_arch = $$qtConfEvaluate("tests.host_architecture.arch")
+        host_buildabi = $$qtConfEvaluate("tests.host_architecture.buildabi")
 
         privatePro = \
             "host_build {" \
@@ -883,15 +888,18 @@ defineTest(qtConfOutput_architecture) {
             "host_build {" \
             "    QT_ARCH = $$host_arch" \
             "    QT_TARGET_ARCH = $$arch" \
+            "    QT_TARGET_BUILDABI = $$buildabi" \
             "} else {" \
             "    QT_ARCH = $$arch" \
+            "    QT_BUILDABI = $$host_buildabi" \
             "}"
 
     } else {
         privatePro = \
             "QT_CPU_FEATURES.$$arch = $$qtConfEvaluate('tests.architecture.subarch')"
         publicPro = \
-            "QT_ARCH = $$arch"
+            "QT_ARCH = $$arch" \
+            "QT_BUILDABI = $$buildabi"
     }
 
     $${currentConfig}.output.publicPro += $$publicPro

@@ -106,7 +106,7 @@ static QByteArray msgBeginFailed(const char *function, const DOCINFO &d)
        str << ", document \"" << QString::fromWCharArray(d.lpszDocName) << '"';
     if (d.lpszOutput && d.lpszOutput[0])
         str << ", file \"" << QString::fromWCharArray(d.lpszOutput) << '"';
-    return result.toLocal8Bit();
+    return std::move(result).toLocal8Bit();
 }
 
 bool QWin32PrintEngine::begin(QPaintDevice *pdev)

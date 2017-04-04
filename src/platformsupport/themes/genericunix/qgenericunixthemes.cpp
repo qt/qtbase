@@ -555,6 +555,7 @@ QIcon QKdeTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions
 #if QT_CONFIG(mimetype)
     return xdgFileIcon(fileInfo);
 #else
+    Q_UNUSED(fileInfo);
     return QIcon();
 #endif
 }
@@ -720,6 +721,7 @@ QIcon QGnomeTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptio
 #if QT_CONFIG(mimetype)
     return xdgFileIcon(fileInfo);
 #else
+    Q_UNUSED(fileInfo);
     return QIcon();
 #endif
 }
