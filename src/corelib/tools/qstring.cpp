@@ -1596,7 +1596,7 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 {
     int count = 0;
 
-    QStringIterator i(reinterpret_cast<const QChar *>(uc), reinterpret_cast<const QChar *>(uc + length));
+    QStringIterator i(QStringView(uc, length));
     while (i.hasNext())
         out[count++] = i.next();
 
