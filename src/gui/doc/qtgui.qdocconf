@@ -48,6 +48,7 @@ sourcedirs  += .. \
                src/includes
 
 exampledirs += ../../../examples/gui \
+               ../../../examples/vulkan \
                snippets
 
 imagedirs   += images \

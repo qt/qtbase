@@ -60,3 +60,13 @@
     \externalpage https://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html#directory_layout
     \title Icon Theme Specification - Directory Layout
 */
+
+/*!
+    \externalpage https://www.khronos.org/vulkan/
+    \title Vulkan
+*/
+
+/*!
+    \externalpage https://www.lunarg.com/vulkan-sdk/
+    \title LunarG Vulkan SDK
+*/
