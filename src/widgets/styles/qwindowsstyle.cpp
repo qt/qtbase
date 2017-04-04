@@ -1734,6 +1734,8 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                     step = (animation->animationStep() / 3) % chunkCount;
                 else
                     d->startAnimation(new QProgressStyleAnimation(d->animationFps, opt->styleObject));
+#else
+                Q_UNUSED(d);
 #endif
                 int chunksInRow = 5;
                 int myY = pbBits.rect.y();

@@ -1954,9 +1954,13 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
     Q_D (const QFusionStyle);
 
+#if QT_CONFIG(spinbox) || QT_CONFIG(slider)
     QColor buttonColor = d->buttonColor(option->palette);
+#endif
+#if QT_CONFIG(slider)
     QColor gradientStartColor = buttonColor.lighter(118);
     QColor gradientStopColor = buttonColor;
+#endif
     QColor outline = d->outline(option->palette);
 
     QColor alphaCornerColor;

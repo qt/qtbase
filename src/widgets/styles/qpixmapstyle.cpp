@@ -205,6 +205,9 @@ void QPixmapStyle::polish(QWidget *widget)
     if (qobject_cast<QScrollBar*>(widget))
         widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
 #endif
+#if !QT_CONFIG(progressbar) && !QT_CONFIG(combobox)
+    Q_UNUSED(d);
+#endif
     QCommonStyle::polish(widget);
 }
 
@@ -929,6 +932,10 @@ void QPixmapStyle::drawSlider(const QStyleOptionComplex *option,
             painter->drawPixmap(handle, d->pixmaps.value(pix).pixmap);
         }
     }
+#else
+    Q_UNUSED(option);
+    Q_UNUSED(painter);
+    Q_UNUSED(widget);
 #endif // QT_CONFIG(slider)
 }
 
@@ -968,6 +975,10 @@ void QPixmapStyle::drawScrollBar(const QStyleOptionComplex *option,
                 ? SB_Horizontal : SB_Vertical;
         drawCachedPixmap(control, rect, painter);
     }
+#else
+    Q_UNUSED(option);
+    Q_UNUSED(painter);
+    Q_UNUSED(widget);
 #endif // QT_CONFIG(slider)
 }
 
@@ -1044,6 +1055,9 @@ QSize QPixmapStyle::sliderSizeFromContents(const QStyleOption *option,
     else
         return QSize(desc.size.width(), result.height());
 #else // QT_CONFIG(slider)
+    Q_UNUSED(option);
+    Q_UNUSED(contentsSize);
+    Q_UNUSED(widget);
     return QSize();
 #endif // QT_CONFIG(slider)
 }
@@ -1160,6 +1174,9 @@ QRect QPixmapStyle::scrollBarSubControlRect(const QStyleOptionComplex *option,
             }
         }
     }
+#else
+    Q_UNUSED(option);
+    Q_UNUSED(sc);
 #endif // QT_CONFIG(slider)
     return QRect();
 }

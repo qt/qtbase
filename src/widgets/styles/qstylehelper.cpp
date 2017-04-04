@@ -415,6 +415,8 @@ QColor backgroundColor(const QPalette &pal, const QWidget* widget)
     if (qobject_cast<const QScrollBar *>(widget) && widget->parent() &&
             qobject_cast<const QAbstractScrollArea *>(widget->parent()->parent()))
         return widget->parentWidget()->parentWidget()->palette().color(QPalette::Base);
+#else
+    Q_UNUSED(widget);
 #endif
     return pal.color(QPalette::Base);
 }
