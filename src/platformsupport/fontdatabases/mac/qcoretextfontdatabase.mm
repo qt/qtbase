@@ -419,37 +419,16 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const
 }
 #endif
 
-template <>
-QFontEngine *QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
+template <class T>
+QFontEngine *QCoreTextFontDatabaseEngineFactory<T>::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
-    Q_UNUSED(hintingPreference);
-
-    QByteArray* fontDataCopy = new QByteArray(fontData);
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(fontDataCopy,
-            fontDataCopy->constData(), fontDataCopy->size(), releaseFontData);
-
-    CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
-
-    QFontEngine *fontEngine = NULL;
-    if (cgFont == NULL) {
-        qWarning("QCoreTextFontDatabase::fontEngine: CGFontCreateWithDataProvider failed");
-    } else {
-        QFontDef def;
-        def.pixelSize = pixelSize;
-        def.pointSize = pixelSize * 72.0 / qt_defaultDpi();
-        fontEngine = new QCoreTextFontEngine(cgFont, def);
-        CFRelease(cgFont);
-    }
-
-    return fontEngine;
+    return T::create(fontData, pixelSize, hintingPreference);
 }
 
+// Explicitly instantiate so that we don't need the plugin to involve FreeType
+template class QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>;
 #ifndef QT_NO_FREETYPE
-template <>
-QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
-{
-    return QFontEngineFT::create(fontData, pixelSize, hintingPreference);
-}
+template class QCoreTextFontDatabaseEngineFactory<QFontEngineFT>;
 #endif
 
 QFont::StyleHint styleHintFromNSString(NSString *style)
