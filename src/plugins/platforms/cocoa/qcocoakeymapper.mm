@@ -72,14 +72,6 @@ static const Qt::KeyboardModifiers ModsTbl[] = {
 
 bool qt_mac_eat_unicode_key = false;
 
-Q_GUI_EXPORT void qt_mac_secure_keyboard(bool b)
-{
-    static bool secure = false;
-    if (b != secure){
-        b ? EnableSecureEventInput() : DisableSecureEventInput();
-        secure = b;
-    }
-}
 
 /* key maps */
 struct qt_mac_enum_mapper
