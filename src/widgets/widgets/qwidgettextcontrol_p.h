@@ -105,7 +105,7 @@ public:
     void setDocument(QTextDocument *document);
     QTextDocument *document() const;
 
-    void setTextCursor(const QTextCursor &cursor);
+    void setTextCursor(const QTextCursor &cursor, bool selectionClipboard = false);
     QTextCursor textCursor() const;
 
     void setTextInteractionFlags(Qt::TextInteractionFlags flags);

@@ -270,7 +270,7 @@ void QTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCursor::Mo
             vbar->triggerAction(QAbstractSlider::SliderPageStepAdd);
         }
     }
-    control->setTextCursor(cursor);
+    control->setTextCursor(cursor, moveMode == QTextCursor::KeepAnchor);
 }
 
 #if QT_CONFIG(scrollbar)

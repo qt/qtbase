@@ -1944,10 +1944,15 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
         return;
     }
 
-    if (unknown)
+    if (unknown) {
         event->ignore();
-    else
+    } else {
+#ifndef QT_NO_CLIPBOARD
+        if (QApplication::clipboard()->supportsSelection())
+            copy(QClipboard::Selection);
+#endif
         event->accept();
+    }
 }
 
 bool QWidgetLineControl::isUndoAvailable() const

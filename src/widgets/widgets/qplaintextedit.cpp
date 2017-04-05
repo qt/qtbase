@@ -962,7 +962,7 @@ void QPlainTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCurso
     }
 
     if (moveCursor) {
-        control->setTextCursor(cursor);
+        control->setTextCursor(cursor, moveMode == QTextCursor::KeepAnchor);
         pageUpDownLastCursorYIsValid = true;
     }
 }
