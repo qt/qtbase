@@ -124,7 +124,13 @@ void tst_toolsupport::offsets_data()
     {
         QTestData &data = QTest::newRow("QFilePrivate::fileName")
                 << pmm_to_offsetof(&QFilePrivate::fileName);
+#ifdef Q_PROCESSOR_X86
+        // x86 32-bit has weird alignment rules. Refer to QtPrivate::AlignOf in
+        // qglobal.h for more details.
         data << 168 << 248;
+#else
+        data << 172 << 248;
+#endif
     }
 #endif
 
