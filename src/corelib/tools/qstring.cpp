@@ -4455,7 +4455,7 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
 
     \snippet qstring/main.cpp 31
 
-    \sa right(), mid(), startsWith()
+    \sa right(), mid(), startsWith(), chopped(), chop(), truncate()
 */
 QString QString::left(int n)  const
 {
@@ -4473,7 +4473,7 @@ QString QString::left(int n)  const
 
     \snippet qstring/main.cpp 48
 
-    \sa left(), mid(), endsWith()
+    \sa left(), mid(), endsWith(), chopped(), chop(), truncate()
 */
 QString QString::right(int n) const
 {
@@ -4496,7 +4496,7 @@ QString QString::right(int n) const
 
     \snippet qstring/main.cpp 34
 
-    \sa left(), right()
+    \sa left(), right(), chopped(), chop(), truncate()
 */
 
 QString QString::mid(int position, int n) const
@@ -4518,6 +4518,18 @@ QString QString::mid(int position, int n) const
     Q_UNREACHABLE();
     return QString();
 }
+
+/*!
+    \fn QString::chopped(int len) const
+    \since 5.10
+
+    Returns a substring that contains the size() - \a len leftmost characters
+    of this string.
+
+    \note The behavior is undefined if \a len is negative or greater than size().
+
+    \sa endsWith(), left(), right(), mid(), chop(), truncate().
+*/
 
 /*!
     Returns \c true if the string starts with \a s; otherwise returns
@@ -10178,7 +10190,7 @@ QString &QString::append(const QStringRef &str)
     If \a n is greater than or equal to size(), or less than zero,
     a reference to the entire string is returned.
 
-    \sa right(), mid(), startsWith()
+    \sa right(), mid(), startsWith(), chopped(), chop(), truncate()
 */
 QStringRef QStringRef::left(int n) const
 {
@@ -10215,7 +10227,7 @@ QStringRef QString::leftRef(int n)  const
     If \a n is greater than or equal to size(), or less than zero,
     a reference to the entire string is returned.
 
-    \sa left(), mid(), endsWith()
+    \sa left(), mid(), endsWith(), chopped(), chop(), truncate()
 */
 QStringRef QStringRef::right(int n) const
 {
@@ -10257,7 +10269,7 @@ QStringRef QString::rightRef(int n) const
     function returns all characters from the specified \a position
     onwards.
 
-    \sa left(), right()
+    \sa left(), right(), chopped(), chop(), truncate()
 */
 QStringRef QStringRef::mid(int pos, int n) const
 {
@@ -10275,6 +10287,18 @@ QStringRef QStringRef::mid(int pos, int n) const
     Q_UNREACHABLE();
     return QStringRef();
 }
+
+/*!
+    \fn QStringRef::chopped(int len) const
+    \since 5.10
+
+    Returns a substring reference to the size() - \a len leftmost characters
+    of this string.
+
+    \note The behavior is undefined if \a len is negative or greater than size().
+
+    \sa endsWith(), left(), right(), mid(), chop(), truncate().
+*/
 
 /*!
     \since 4.4

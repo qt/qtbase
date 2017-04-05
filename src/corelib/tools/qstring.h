@@ -421,6 +421,10 @@ public:
     QString left(int n) const Q_REQUIRED_RESULT;
     QString right(int n) const Q_REQUIRED_RESULT;
     QString mid(int position, int n = -1) const Q_REQUIRED_RESULT;
+    QString chopped(int n) const Q_REQUIRED_RESULT
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return left(size() - n); }
+
+
     QStringRef leftRef(int n) const Q_REQUIRED_RESULT;
     QStringRef rightRef(int n) const Q_REQUIRED_RESULT;
     QStringRef midRef(int position, int n = -1) const Q_REQUIRED_RESULT;
@@ -1492,6 +1496,8 @@ public:
     QStringRef left(int n) const Q_REQUIRED_RESULT;
     QStringRef right(int n) const Q_REQUIRED_RESULT;
     QStringRef mid(int pos, int n = -1) const Q_REQUIRED_RESULT;
+    QStringRef chopped(int n) const Q_REQUIRED_RESULT
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return left(size() - n); }
 
     void truncate(int pos) Q_DECL_NOTHROW { m_size = qBound(0, pos, m_size); }
     void chop(int n) Q_DECL_NOTHROW

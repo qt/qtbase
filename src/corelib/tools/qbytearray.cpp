@@ -2972,7 +2972,7 @@ bool QByteArray::endsWith(char ch) const
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 27
 
-    \sa right(), mid(), startsWith(), truncate()
+    \sa startsWith(), right(), mid(), chopped(), chop(), truncate()
 */
 
 QByteArray QByteArray::left(int len)  const
@@ -2994,7 +2994,7 @@ QByteArray QByteArray::left(int len)  const
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 28
 
-    \sa endsWith(), left(), mid()
+    \sa endsWith(), left(), mid(), chopped(), chop(), truncate()
 */
 
 QByteArray QByteArray::right(int len) const
@@ -3017,7 +3017,7 @@ QByteArray QByteArray::right(int len) const
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 29
 
-    \sa left(), right()
+    \sa left(), right(), chopped(), chop(), truncate()
 */
 
 QByteArray QByteArray::mid(int pos, int len) const
@@ -3039,6 +3039,18 @@ QByteArray QByteArray::mid(int pos, int len) const
     Q_UNREACHABLE();
     return QByteArray();
 }
+
+/*!
+    \fn QByteArray::chopped(int len) const
+    \since 5.10
+
+    Returns a byte array that contains the leftmost size() - \a len bytes of
+    this byte array.
+
+    \note The behavior is undefined if \a len is negative or greater than size().
+
+    \sa endsWith(), left(), right(), mid(), chop(), truncate().
+*/
 
 /*!
     \fn QByteArray QByteArray::toLower() const

@@ -609,6 +609,14 @@ void tst_QStringApiSymmetry::chop_impl()
     const auto s = make<String>(unicode, latin1, utf8);
 
     {
+        const auto chopped = s.chopped(n);
+
+        QVERIFY(chopped == result);
+        QCOMPARE(chopped.isNull(), result.isNull());
+        QCOMPARE(chopped.isEmpty(), result.isEmpty());
+    }
+
+    {
         auto chopped = s;
         chopped.chop(n);
 

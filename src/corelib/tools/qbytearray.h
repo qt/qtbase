@@ -234,6 +234,8 @@ public:
     QByteArray left(int len) const Q_REQUIRED_RESULT;
     QByteArray right(int len) const Q_REQUIRED_RESULT;
     QByteArray mid(int index, int len = -1) const Q_REQUIRED_RESULT;
+    QByteArray chopped(int len) const Q_REQUIRED_RESULT
+    { Q_ASSERT(len >= 0); Q_ASSERT(len <= size()); return left(size() - len); }
 
     bool startsWith(const QByteArray &a) const;
     bool startsWith(char c) const;
