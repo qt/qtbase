@@ -191,6 +191,12 @@ private:
     void right_data();
     template <typename String> void right_impl();
 
+    void chop_data();
+    template <typename String> void chop_impl();
+
+    void truncate_data() { left_data(); }
+    template <typename String> void truncate_impl();
+
 private Q_SLOTS:
 
     void mid_QString_data() { mid_data(); }
@@ -225,6 +231,20 @@ private Q_SLOTS:
     void right_QLatin1String() { right_impl<QLatin1String>(); }
     void right_QByteArray_data() { right_data(); }
     void right_QByteArray() { right_impl<QByteArray>(); }
+
+    void chop_QString_data() { chop_data(); }
+    void chop_QString() { chop_impl<QString>(); }
+    void chop_QStringRef_data() { chop_data(); }
+    void chop_QStringRef() { chop_impl<QStringRef>(); }
+    void chop_QByteArray_data() { chop_data(); }
+    void chop_QByteArray() { chop_impl<QByteArray>(); }
+
+    void truncate_QString_data() { truncate_data(); }
+    void truncate_QString() { truncate_impl<QString>(); }
+    void truncate_QStringRef_data() { truncate_data(); }
+    void truncate_QStringRef() { truncate_impl<QStringRef>(); }
+    void truncate_QByteArray_data() { truncate_data(); }
+    void truncate_QByteArray() { truncate_impl<QByteArray>(); }
 
     //
     // UTF-16-only checks:
@@ -537,6 +557,76 @@ void tst_QStringApiSymmetry::right_impl()
     QVERIFY(right == result);
     QCOMPARE(right.isNull(), result.isNull());
     QCOMPARE(right.isEmpty(), result.isEmpty());
+}
+
+void tst_QStringApiSymmetry::chop_data()
+{
+    QTest::addColumn<QStringRef>("unicode");
+    QTest::addColumn<QLatin1String>("latin1");
+    QTest::addColumn<int>("n");
+    QTest::addColumn<QStringRef>("result");
+
+    QTest::addRow("null") << QStringRef() << QLatin1String() << 0 << QStringRef();
+    QTest::addRow("empty") << QStringRef(&empty) << QLatin1String("") << 0 << QStringRef(&empty);
+
+    // Some classes' truncate() implementations have a wide contract, others a narrow one
+    // so only test valid arguents here:
+#define ROW(base, n, res) \
+    QTest::addRow("%s%d", #base, n) << QStringRef(&base) << QLatin1String(#base) << n << QStringRef(&res);
+
+    ROW(a, 0, a);
+    ROW(a, 1, empty);
+
+    ROW(ab, 0, ab);
+    ROW(ab, 1, a);
+    ROW(ab, 2, empty);
+
+    ROW(abc, 0, abc);
+    ROW(abc, 1, ab);
+    ROW(abc, 2, a);
+    ROW(abc, 3, empty);
+#undef ROW
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::chop_impl()
+{
+    QFETCH(const QStringRef, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, n);
+    QFETCH(const QStringRef, result);
+
+    const auto utf8 = unicode.toUtf8();
+
+    const auto s = make<String>(unicode, latin1, utf8);
+
+    {
+        auto chopped = s;
+        chopped.chop(n);
+
+        QVERIFY(chopped == result);
+        QCOMPARE(chopped.isNull(), result.isNull());
+        QCOMPARE(chopped.isEmpty(), result.isEmpty());
+    }
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::truncate_impl()
+{
+    QFETCH(const QStringRef, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, n);
+    QFETCH(const QStringRef, result);
+
+    const auto utf8 = unicode.toUtf8();
+
+    auto trunc = make<String>(unicode, latin1, utf8);
+
+    trunc.truncate(n);
+
+    QVERIFY(trunc == result);
+    QCOMPARE(trunc.isNull(), result.isNull());
+    QCOMPARE(trunc.isEmpty(), result.isEmpty());
 }
 
 //
