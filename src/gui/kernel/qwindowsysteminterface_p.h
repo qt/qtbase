@@ -458,6 +458,14 @@ public:
                     return impl.takeAt(i);
             return 0;
         }
+        bool nonUserInputEventsQueued()
+        {
+            const QMutexLocker locker(&mutex);
+            for (int i = 0; i < impl.size(); ++i)
+                if (!(impl.at(i)->type & QWindowSystemInterfacePrivate::UserInputEvent))
+                    return true;
+            return false;
+        }
         void append(WindowSystemEvent *e)
         { const QMutexLocker locker(&mutex); impl.append(e); }
         int count() const
@@ -488,6 +496,7 @@ public:
     static WindowSystemEventList windowSystemEventQueue;
 
     static int windowSystemEventsQueued();
+    static bool nonUserInputEventsQueued();
     static WindowSystemEvent *getWindowSystemEvent();
     static WindowSystemEvent *getNonUserInputWindowSystemEvent();
     static WindowSystemEvent *peekWindowSystemEvent(EventType t);

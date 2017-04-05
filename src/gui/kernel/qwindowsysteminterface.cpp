@@ -141,6 +141,11 @@ int QWindowSystemInterfacePrivate::windowSystemEventsQueued()
     return windowSystemEventQueue.count();
 }
 
+bool QWindowSystemInterfacePrivate::nonUserInputEventsQueued()
+{
+    return windowSystemEventQueue.nonUserInputEventsQueued();
+}
+
 QWindowSystemInterfacePrivate::WindowSystemEvent * QWindowSystemInterfacePrivate::getWindowSystemEvent()
 {
     return windowSystemEventQueue.takeFirstOrReturnNull();
@@ -953,6 +958,11 @@ void QWindowSystemInterface::setSynchronousWindowSystemEvents(bool enable)
 int QWindowSystemInterface::windowSystemEventsQueued()
 {
     return QWindowSystemInterfacePrivate::windowSystemEventsQueued();
+}
+
+bool QWindowSystemInterface::nonUserInputEventsQueued()
+{
+    return QWindowSystemInterfacePrivate::nonUserInputEventsQueued();
 }
 
 // --------------------- QtTestLib support ---------------------
