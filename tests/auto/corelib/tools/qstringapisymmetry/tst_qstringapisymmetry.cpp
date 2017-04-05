@@ -238,6 +238,8 @@ private Q_SLOTS:
     void chop_QStringRef() { chop_impl<QStringRef>(); }
     void chop_QStringView_data() { chop_data(); }
     void chop_QStringView() { chop_impl<QStringView>(); }
+    void chop_QLatin1String_data() { chop_data(); }
+    void chop_QLatin1String() { chop_impl<QLatin1String>(); }
     void chop_QByteArray_data() { chop_data(); }
     void chop_QByteArray() { chop_impl<QByteArray>(); }
 
@@ -247,6 +249,8 @@ private Q_SLOTS:
     void truncate_QStringRef() { truncate_impl<QStringRef>(); }
     void truncate_QStringView_data() { truncate_data(); }
     void truncate_QStringView() { truncate_impl<QStringView>(); }
+    void truncate_QLatin1String_data() { truncate_data(); }
+    void truncate_QLatin1String() { truncate_impl<QLatin1String>(); }
     void truncate_QByteArray_data() { truncate_data(); }
     void truncate_QByteArray() { truncate_impl<QByteArray>(); }
 

@@ -8961,7 +8961,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \note This function performs no error checking.
     The behavior is undefined when \a start < 0 or \a start > size().
 
-    \sa left(), right()
+    \sa left(), right(), chopped(), chop(), truncate()
 */
 
 /*! \fn QLatin1String QLatin1String::mid(int start, int length) const
@@ -8975,7 +8975,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     The behavior is undefined when \a start < 0, \a length < 0,
     or \a start + \a length > size().
 
-    \sa left(), right()
+    \sa left(), right(), chopped(), chop(), truncate()
 */
 
 /*! \fn QLatin1String QLatin1String::left(int length) const
@@ -8987,7 +8987,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \note This function performs no error checking.
     The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), right()
+    \sa mid(), right(), chopped(), chop(), truncate()
 */
 
 /*! \fn QLatin1String QLatin1String::right(int length) const
@@ -8999,7 +8999,47 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \note This function performs no error checking.
     The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left()
+    \sa mid(), left(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QLatin1String QLatin1String::chopped(int length) const
+    \since 5.10
+
+    Returns the substring of length size() - \a length starting at the
+    beginning of this object.
+
+    Same as \c{left(size() - length)}.
+
+    \note The behavior is undefined when \a length < 0 or \a length > size().
+
+    \sa mid(), left(), right(), chop(), truncate()
+*/
+
+/*!
+    \fn void QLatin1String::truncate(int length)
+    \since 5.10
+
+    Truncates this string to length \a length.
+
+    Same as \c{*this = left(length)}.
+
+    \note The behavior is undefined when \a length < 0 or \a length > size().
+
+    \sa mid(), left(), right(), chopped(), chop()
+*/
+
+/*!
+    \fn void QLatin1String::chop(int length)
+    \since 5.10
+
+    Truncates this string by \a length characters.
+
+    Same as \c{*this = left(size() - length)}.
+
+    \note The behavior is undefined when \a length < 0 or \a length > size().
+
+    \sa mid(), left(), right(), chopped(), truncate()
 */
 
 /*! \fn bool QLatin1String::operator==(const QString &other) const

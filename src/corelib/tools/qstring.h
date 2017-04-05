@@ -152,6 +152,13 @@ public:
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data, n); }
     Q_DECL_CONSTEXPR QLatin1String right(int n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data + m_size - n, n); }
+    Q_DECL_CONSTEXPR QLatin1String chopped(int n) const Q_REQUIRED_RESULT
+    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data, m_size - n); }
+
+    Q_DECL_RELAXED_CONSTEXPR void chop(int n)
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
+    Q_DECL_RELAXED_CONSTEXPR void truncate(int n)
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
 
     inline bool operator==(const QString &s) const Q_DECL_NOTHROW;
     inline bool operator!=(const QString &s) const Q_DECL_NOTHROW;
