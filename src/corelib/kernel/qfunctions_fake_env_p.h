@@ -77,7 +77,9 @@ struct NameEquals {
     { return qstrcmp(other.name, name) == 0; }
 };
 
+#ifndef Q_CLANG_QDOC
 Q_GLOBAL_STATIC(QVector<Variable>, qt_app_environment)
+#endif
 
 errno_t qt_fake_getenv_s(size_t *sizeNeeded, char *buffer, size_t bufferSize, const char *varName)
 {
