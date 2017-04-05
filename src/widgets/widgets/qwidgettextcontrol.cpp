@@ -922,7 +922,7 @@ QTextDocument *QWidgetTextControl::document() const
     return d->doc;
 }
 
-void QWidgetTextControl::setTextCursor(const QTextCursor &cursor)
+void QWidgetTextControl::setTextCursor(const QTextCursor &cursor, bool selectionClipboard)
 {
     Q_D(QWidgetTextControl);
     d->cursorIsFocusIndicator = false;
@@ -936,6 +936,11 @@ void QWidgetTextControl::setTextCursor(const QTextCursor &cursor)
     d->repaintOldAndNewSelection(oldSelection);
     if (posChanged)
         emit cursorPositionChanged();
+
+#ifndef QT_NO_CLIPBOARD
+    if (selectionClipboard)
+        d->setClipboardSelection();
+#endif
 }
 
 QTextCursor QWidgetTextControl::textCursor() const
@@ -1225,6 +1230,9 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
     if (e == QKeySequence::SelectAll) {
             e->accept();
             q->selectAll();
+#ifndef QT_NO_CLIPBOARD
+            setClipboardSelection();
+#endif
             return;
     }
 #ifndef QT_NO_CLIPBOARD
@@ -1375,6 +1383,10 @@ process:
     }
 
  accept:
+
+#ifndef QT_NO_CLIPBOARD
+    setClipboardSelection();
+#endif
 
     e->accept();
     cursorOn = true;
