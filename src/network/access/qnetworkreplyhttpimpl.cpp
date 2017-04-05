@@ -1883,6 +1883,12 @@ void QNetworkReplyHttpImplPrivate::_q_cacheLoadReadyRead()
                                      totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
         }
     }
+
+    // A signal we've emitted might be handled by a slot that aborts,
+    // so we need to check for that and bail out if it's happened:
+    if (!q->isOpen())
+        return;
+
     // If there are still bytes available in the cacheLoadDevice then the user did not read
     // in response to the readyRead() signal. This means we have to load from the cacheLoadDevice
     // and buffer that stuff. This is needed to be able to properly emit finished() later.
