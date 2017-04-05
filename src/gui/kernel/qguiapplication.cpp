@@ -2027,13 +2027,23 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
         window = QGuiApplication::focusWindow();
     }
 
+#if defined(Q_OS_ANDROID)
+    static bool backKeyPressAccepted = false;
+    static bool menuKeyPressAccepted = false;
+#endif
+
 #if !defined(Q_OS_OSX)
     // FIXME: Include OS X in this code path by passing the key event through
     // QPlatformInputContext::filterEvent().
     if (e->keyType == QEvent::KeyPress && window) {
         if (QWindowSystemInterface::handleShortcutEvent(window, e->timestamp, e->key, e->modifiers,
-            e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers, e->unicode, e->repeat, e->repeatCount))
+            e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers, e->unicode, e->repeat, e->repeatCount)) {
+#if defined(Q_OS_ANDROID)
+            backKeyPressAccepted = e->key == Qt::Key_Back;
+            menuKeyPressAccepted = e->key == Qt::Key_Menu;
+#endif
             return;
+        }
     }
 #endif
 
@@ -2050,8 +2060,6 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     else
         ev.setAccepted(false);
 
-    static bool backKeyPressAccepted = false;
-    static bool menuKeyPressAccepted = false;
     if (e->keyType == QEvent::KeyPress) {
         backKeyPressAccepted = e->key == Qt::Key_Back && ev.isAccepted();
         menuKeyPressAccepted = e->key == Qt::Key_Menu && ev.isAccepted();
