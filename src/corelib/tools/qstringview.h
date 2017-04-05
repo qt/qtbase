@@ -233,6 +233,13 @@ public:
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, n); }
     Q_DECL_CONSTEXPR QStringView right(qssize_t n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data + m_size - n, n); }
+    Q_DECL_CONSTEXPR QStringView chopped(qssize_t n) const Q_REQUIRED_RESULT
+    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, m_size - n); }
+
+    Q_DECL_RELAXED_CONSTEXPR void truncate(qssize_t n)
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
+    Q_DECL_RELAXED_CONSTEXPR void chop(qssize_t n)
+    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
 
     //
     // STL compatibility API:

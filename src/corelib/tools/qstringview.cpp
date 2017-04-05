@@ -578,7 +578,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a start < 0 or \a start > size().
 
-    \sa left(), right()
+    \sa left(), right(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -591,7 +591,7 @@ QT_BEGIN_NAMESPACE
     \note The behavior is undefined when \a start < 0, \a length < 0,
     or \a start + \a length > size().
 
-    \sa left(), right()
+    \sa left(), right(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -602,7 +602,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), right()
+    \sa mid(), right(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -613,7 +613,44 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left()
+    \sa mid(), left(), chopped(), chop(), truncate()
+*/
+
+/*!
+    \fn QStringView QStringView::chopped(qssize_t length) const
+
+    Returns the substring of length size() - \a length starting at the
+    beginning of this object.
+
+    Same as \c{left(size() - length)}.
+
+    \note The behavior is undefined when \a length < 0 or \a length > size().
+
+    \sa mid(), left(), right(), chop(), truncate()
+*/
+
+/*!
+    \fn void QStringView::truncate(qssize_t length)
+
+    Truncates this string view to length \a length.
+
+    Same as \c{*this = left(length)}.
+
+    \note The behavior is undefined when \a length < 0 or \a length > size().
+
+    \sa mid(), left(), right(), chopped(), chop()
+*/
+
+/*!
+    \fn void QStringView::chop(qssize_t length)
+
+    Truncates this string view by \a length characters.
+
+    Same as \c{*this = left(size() - length)}.
+
+    \note The behavior is undefined when \a length < 0 or \a length > size().
+
+    \sa mid(), left(), right(), chopped(), truncate()
 */
 
 /*!
