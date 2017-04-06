@@ -1,6 +1,7 @@
 TEMPLATE=subdirs
 SUBDIRS=\
     collections \
+    containerapisymmetry \
     qalgorithms \
     qarraydata \
     qarraydata_strictiterators \
