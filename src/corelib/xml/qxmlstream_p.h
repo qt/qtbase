@@ -1139,6 +1139,7 @@ bool QXmlStreamReaderPrivate::parse()
             case '\n':
                 ++lineNumber;
                 lastLineStart = characterOffset + readBufferPos;
+                Q_FALLTHROUGH();
             case ' ':
             case '\t':
                 token = SPACE;

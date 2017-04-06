@@ -162,6 +162,8 @@
 #include <private/qrasterdefs_p.h>
 #include <private/qgrayraster_p.h>
 
+#include <qcompilerdetection.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -1147,12 +1149,12 @@
 
           switch ( spans->len )
           {
-          case 7: *q++ = (unsigned char)coverage;
-          case 6: *q++ = (unsigned char)coverage;
-          case 5: *q++ = (unsigned char)coverage;
-          case 4: *q++ = (unsigned char)coverage;
-          case 3: *q++ = (unsigned char)coverage;
-          case 2: *q++ = (unsigned char)coverage;
+          case 7: *q++ = (unsigned char)coverage; Q_FALLTHROUGH();
+          case 6: *q++ = (unsigned char)coverage; Q_FALLTHROUGH();
+          case 5: *q++ = (unsigned char)coverage; Q_FALLTHROUGH();
+          case 4: *q++ = (unsigned char)coverage; Q_FALLTHROUGH();
+          case 3: *q++ = (unsigned char)coverage; Q_FALLTHROUGH();
+          case 2: *q++ = (unsigned char)coverage; Q_FALLTHROUGH();
           case 1: *q   = (unsigned char)coverage;
           default:
             ;

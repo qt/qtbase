@@ -137,6 +137,7 @@ unset(target_prefix)
 
 # Populate QMAKE_COMPILER_DEFINES and some compatibility variables.
 # The $$format_number() calls strip leading zeros to avoid misinterpretation as octal.
+QMAKE_COMPILER_DEFINES += __cplusplus=$$QT_COMPILER_STDCXX
 !isEmpty(QMAKE_MSC_VER) {
     QMAKE_COMPILER_DEFINES += _MSC_VER=$$QMAKE_MSC_VER _MSC_FULL_VER=$$QMAKE_MSC_FULL_VER
     QT_MSVC_MAJOR_VERSION = $$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", "\\1")
