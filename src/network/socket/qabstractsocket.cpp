@@ -943,7 +943,9 @@ void QAbstractSocketPrivate::resolveProxy(const QString &hostname, quint16 port)
     // DefaultProxy here will raise an error
     proxyInUse = QNetworkProxy();
 }
+#endif // !QT_NO_NETWORKPROXY
 
+#if !defined(QT_NO_NETWORKPROXY) || defined(Q_OS_WINRT)
 /*!
     \internal
 
@@ -981,7 +983,7 @@ void QAbstractSocketPrivate::startConnectingByName(const QString &host)
     emit q->stateChanged(state);
 }
 
-#endif
+#endif // !QT_NO_NETWORKPROXY || Q_OS_WINRT
 
 /*! \internal
 
@@ -1113,10 +1115,6 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
         // (localhost address on BSD or any UDP connect), emit
         // connected() and return.
         if (
-#if defined(Q_OS_WINRT) && _MSC_VER >= 1900
-            !qEnvironmentVariableIsEmpty("QT_WINRT_USE_THREAD_NETWORK_CONTEXT") ?
-                socketEngine->connectToHostByName(hostName, port) :
-#endif
             socketEngine->connectToHost(host, port)) {
                 //_q_testConnection();
                 fetchConnectionParameters();
@@ -1712,6 +1710,7 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
     QIODevice::open(openMode);
     d->readChannelCount = d->writeChannelCount = 0;
 
+#ifndef Q_OS_WINRT
     d->state = HostLookupState;
     emit stateChanged(d->state);
 
@@ -1748,6 +1747,10 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
            (d->state == ConnectedState) ? "true" : "false",
            (d->state == ConnectingState || d->state == HostLookupState)
            ? " (connection in progress)" : "");
+#endif
+#else // !Q_OS_WINRT
+    // On WinRT we should always connect by name. Lookup and proxy handling are done by the API.
+    d->startConnectingByName(hostName);
 #endif
 }
 
