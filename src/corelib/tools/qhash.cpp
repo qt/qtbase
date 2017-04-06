@@ -361,6 +361,7 @@ static void qt_initialize_qhash_seed()
  */
 int qGlobalQHashSeed()
 {
+    qt_initialize_qhash_seed();
     return qt_qhash_seed.load();
 }
 
