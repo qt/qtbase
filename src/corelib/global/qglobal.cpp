@@ -2652,12 +2652,14 @@ QString QSysInfo::kernelVersion()
     to determine the distribution name and returns that. If determining the
     distribution name failed, it returns "unknown".
 
-    \b{Darwin, \macos, iOS, tvOS, and watchOS note}: this function returns
-    "macos" for \macos systems, "ios" for iOS systems, "tvos" for tvOS systems,
-    "watchos" for watchOS systems, and "darwin" in case the system could not
-    be determined.
+    \b{\macos note}: this function returns "osx" for all \macos systems,
+    regardless of Apple naming convention. The returned string will be updated
+    for Qt 6. Note that this function erroneously returned "macos" for \macos
+    10.12 in Qt versions 5.6.2, 5.7.1, and 5.8.0.
 
-    \b{OS X note}: this function returns "osx" for versions of \macos prior to 10.12.
+    \b{Darwin, iOS, tvOS, and watchOS note}: this function returns "ios" for
+    iOS systems, "tvos" for tvOS systems, "watchos" for watchOS systems, and
+    "darwin" in case the system could not be determined.
 
     \b{FreeBSD note}: this function returns "debian" for Debian/kFreeBSD and
     "unknown" otherwise.
@@ -2692,10 +2694,12 @@ QString QSysInfo::productType()
 #elif defined(Q_OS_WATCHOS)
     return QStringLiteral("watchos");
 #elif defined(Q_OS_MACOS)
-    const QAppleOperatingSystemVersion version = qt_apple_os_version();
-    if (version.major == 10 && version.minor < 12)
-        return QStringLiteral("osx");
+    // ### Qt6: remove fallback
+#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return QStringLiteral("macos");
+#  else
+    return QStringLiteral("osx");
+#  endif
 #elif defined(Q_OS_DARWIN)
     return QStringLiteral("darwin");
 
