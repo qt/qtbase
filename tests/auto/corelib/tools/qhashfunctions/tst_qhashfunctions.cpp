@@ -134,6 +134,14 @@ void tst_QHashFunctions::qhash_of_empty_and_null_qstring()
     QString null, empty("");
     QCOMPARE(null, empty);
     QCOMPARE(qHash(null), qHash(empty));
+
+    QStringRef nullRef, emptyRef(&empty);
+    QCOMPARE(nullRef, emptyRef);
+    QCOMPARE(qHash(nullRef), qHash(emptyRef));
+
+    QStringView nullView, emptyView(empty);
+    QCOMPARE(nullView, emptyView);
+    QCOMPARE(qHash(nullView), qHash(emptyView));
 }
 
 void tst_QHashFunctions::qhash_of_empty_and_null_qbytearray()
