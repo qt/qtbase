@@ -128,7 +128,6 @@
         <file>images/media-volume-16.png</file>
         <file>images/media-volume-muted-16.png</file>
         <file>images/fusion_groupbox.png</file>
-        <file>images/fusion_arrow.png</file>
     </qresource>
     <qresource prefix="/qt-project.org/styles/macstyle">
         <file>images/closedock-16.png</file>
