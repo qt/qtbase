@@ -38,6 +38,7 @@ class tst_QHashFunctions : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void consistent();
     void qhash();
     void qhash_of_empty_and_null_qstring();
     void qhash_of_empty_and_null_qbytearray();
@@ -49,6 +50,17 @@ private Q_SLOTS:
 
     void setGlobalQHashSeed();
 };
+
+void tst_QHashFunctions::consistent()
+{
+    // QString-like
+    {
+        const QString s = QStringLiteral("abcdefghijklmnopqrstuvxyz").repeated(16);
+
+        QCOMPARE(qHash(s), qHash(QStringRef(&s)));
+        QCOMPARE(qHash(s), qHash(QStringView(s)));
+    }
+}
 
 void tst_QHashFunctions::qhash()
 {
