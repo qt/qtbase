@@ -119,6 +119,7 @@ public:
     void retranslateStrings();
 
     void _q_addCustom();
+    void _q_setCustom(int index, QRgb color);
 
     void _q_newHsv(int h, int s, int v);
     void _q_newColorTypedIn(QRgb rgb);
@@ -237,6 +238,7 @@ public:
 signals:
     void selected(int row, int col);
     void currentChanged(int row, int col);
+    void colorChanged(int index, QRgb color);
 
 protected:
     virtual void paintCell(QPainter *, int row, int col, const QRect&);
@@ -581,7 +583,7 @@ namespace {
 class QColorWell : public QWellArray
 {
 public:
-    QColorWell(QWidget *parent, int r, int c, QRgb *vals)
+    QColorWell(QWidget *parent, int r, int c, const QRgb *vals)
         :QWellArray(r, c, parent), values(vals), mousePressed(false), oldCurrent(-1, -1)
     { setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum)); }
 
@@ -598,7 +600,7 @@ protected:
 #endif
 
 private:
-    QRgb *values;
+    const QRgb *values;
     bool mousePressed;
     QPoint pressPos;
     QPoint oldCurrent;
@@ -675,8 +677,7 @@ void QColorWell::dropEvent(QDropEvent *e)
     QColor col = qvariant_cast<QColor>(e->mimeData()->colorData());
     if (col.isValid()) {
         int i = rowAt(e->pos().y()) + columnAt(e->pos().x()) * numRows();
-        values[i] = col.rgb();
-        update();
+        emit colorChanged(i, col.rgb());
         e->accept();
     } else {
         e->ignore();
@@ -1733,6 +1734,13 @@ void QColorDialogPrivate::initWidgets()
 
         q->connect(custom, SIGNAL(selected(int,int)), SLOT(_q_newCustom(int,int)));
         q->connect(custom, SIGNAL(currentChanged(int,int)), SLOT(_q_nextCustom(int,int)));
+
+        q->connect(custom, &QWellArray::colorChanged, [=] (int index, QRgb color) {
+            QColorDialogOptions::setCustomColor(index, color);
+            if (custom)
+                custom->update();
+        });
+
         lblCustomColors = new QLabel(q);
 #ifndef QT_NO_SHORTCUT
         lblCustomColors->setBuddy(custom);

@@ -297,6 +297,7 @@ void QColorDialogStaticData::writeSettings() const
 {
 #ifndef QT_NO_SETTINGS
     if (customSet) {
+        const_cast<QColorDialogStaticData*>(this)->customSet = false;
         QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
         for (int i = 0; i < int(CustomColorCount); ++i)
             settings.setValue(QLatin1String("Qt/customColors/") + QString::number(i), customRgb[i]);
