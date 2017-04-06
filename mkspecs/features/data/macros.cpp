@@ -1,4 +1,5 @@
 // Keep this file small. The pre-processed contents are eval'd by qmake.
+QT_COMPILER_STDCXX = __cplusplus
 #ifdef _MSC_VER
 QMAKE_MSC_VER = _MSC_VER
 QMAKE_MSC_FULL_VER = _MSC_FULL_VER

@@ -1329,15 +1329,14 @@
         Q_ASSUME_IMPL(valueOfExpression);\
     } while (0)
 
+#if defined(__cplusplus)
 #if QT_HAS_CPP_ATTRIBUTE(fallthrough)
 #  define Q_FALLTHROUGH() [[fallthrough]]
-#elif defined(__cplusplus)
-/* Clang can not parse namespaced attributes in C mode, but defines __has_cpp_attribute */
-#  if QT_HAS_CPP_ATTRIBUTE(clang::fallthrough)
+#elif QT_HAS_CPP_ATTRIBUTE(clang::fallthrough)
 #    define Q_FALLTHROUGH() [[clang::fallthrough]]
-#  elif QT_HAS_CPP_ATTRIBUTE(gnu::fallthrough)
+#elif QT_HAS_CPP_ATTRIBUTE(gnu::fallthrough)
 #    define Q_FALLTHROUGH() [[gnu::fallthrough]]
-#  endif
+#endif
 #endif
 #ifndef Q_FALLTHROUGH
 #  if defined(Q_CC_GNU) && Q_CC_GNU >= 700

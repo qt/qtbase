@@ -742,6 +742,7 @@ QFontEngineFT *QFontEngineFT::create(const QByteArray &fontData, qreal pixelSize
 {
     QFontDef fontDef;
     fontDef.pixelSize = pixelSize;
+    fontDef.stretch = QFont::Unstretched;
     fontDef.hintingPreference = hintingPreference;
 
     QFontEngineFTRawData *fe = new QFontEngineFTRawData(fontDef);
