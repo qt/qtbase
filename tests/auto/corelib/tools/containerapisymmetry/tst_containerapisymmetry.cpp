@@ -28,8 +28,10 @@
 
 #include <QtTest/QtTest>
 
+#include "qbytearray.h"
 #include "qlinkedlist.h"
 #include "qlist.h"
+#include "qstring.h"
 #include "qvarlengtharray.h"
 #include "qvector.h"
 
@@ -49,6 +51,11 @@ private Q_SLOTS:
     void front_back_QList() { front_back_impl<QList<qintptr>>(); }
     void front_back_QLinkedList() { front_back_impl<QLinkedList<int>>(); }
     void front_back_QVarLengthArray() { front_back_impl<QVarLengthArray<int>>(); }
+    void front_back_QString() { front_back_impl<QString>(); }
+    void front_back_QStringRef() { front_back_impl<QStringRef>(); }
+    void front_back_QStringView() { front_back_impl<QStringView>(); }
+    void front_back_QLatin1String() { front_back_impl<QLatin1String>(); }
+    void front_back_QByteArray() { front_back_impl<QByteArray>(); }
 };
 
 template <typename Container>
@@ -61,7 +68,16 @@ Container make(int size)
     return c;
 }
 
+static QString s_string = QStringLiteral("\1\2\3\4\5\6\7");
+
+template <> QStringRef    make(int size) { return s_string.leftRef(size); }
+template <> QStringView   make(int size) { return QStringView(s_string).left(size); }
+template <> QLatin1String make(int size) { return QLatin1String("\1\2\3\4\5\6\7", size); }
+
 template <typename T> T clean(T &&t) { return std::forward<T>(t); }
+inline QChar clean(QCharRef ch) { return ch; }
+inline char clean(QByteRef ch) { return ch; }
+inline char clean(QLatin1Char ch) { return ch.toLatin1(); }
 
 template <typename Container>
 void tst_ContainerApiSymmetry::front_back_impl() const

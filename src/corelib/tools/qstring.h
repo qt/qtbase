@@ -120,6 +120,9 @@ public:
     { return Q_ASSERT(i >= 0), Q_ASSERT(i < size()), QLatin1Char(m_data[i]); }
     Q_DECL_CONSTEXPR QLatin1Char operator[](int i) const { return at(i); }
 
+    Q_DECL_CONSTEXPR QLatin1Char front() const Q_REQUIRED_RESULT { return at(0); }
+    Q_DECL_CONSTEXPR QLatin1Char back() const Q_REQUIRED_RESULT { return at(size() - 1); }
+
     using value_type = const char;
     using reference = value_type&;
     using const_reference = reference;
@@ -301,6 +304,11 @@ public:
     QCharRef operator[](int i);
     const QChar operator[](uint i) const;
     QCharRef operator[](uint i);
+
+    inline QChar front() const Q_REQUIRED_RESULT { return at(0); }
+    inline QCharRef front() Q_REQUIRED_RESULT;
+    inline QChar back() const Q_REQUIRED_RESULT { return at(size() - 1); }
+    inline QCharRef back() Q_REQUIRED_RESULT;
 
     QString arg(qlonglong a, int fieldwidth=0, int base=10,
                 QChar fillChar = QLatin1Char(' ')) const Q_REQUIRED_RESULT;
@@ -1160,6 +1168,8 @@ inline QCharRef QString::operator[](int i)
 { Q_ASSERT(i >= 0); return QCharRef(*this, i); }
 inline QCharRef QString::operator[](uint i)
 { return QCharRef(*this, i); }
+inline QCharRef QString::front() { return operator[](0); }
+inline QCharRef QString::back() { return operator[](size() - 1); }
 inline QString::iterator QString::begin()
 { detach(); return reinterpret_cast<QChar*>(d->data()); }
 inline QString::const_iterator QString::begin() const
@@ -1544,6 +1554,8 @@ public:
     inline const QChar at(int i) const
         { Q_ASSERT(uint(i) < uint(size())); return m_string->at(i + m_position); }
     QChar operator[](int i) const { return at(i); }
+    QChar front() const Q_REQUIRED_RESULT { return at(0); }
+    QChar back() const Q_REQUIRED_RESULT { return at(size() - 1); }
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     // ASCII compatibility

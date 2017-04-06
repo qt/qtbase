@@ -212,6 +212,10 @@ public:
     char operator[](uint i) const;
     QByteRef operator[](int i);
     QByteRef operator[](uint i);
+    char front() const Q_REQUIRED_RESULT { return at(0); }
+    QByteRef front() Q_REQUIRED_RESULT;
+    char back() const Q_REQUIRED_RESULT { return at(size() - 1); }
+    QByteRef back() Q_REQUIRED_RESULT;
 
     int indexOf(char c, int from = 0) const;
     int indexOf(const char *c, int from = 0) const;
@@ -549,6 +553,8 @@ inline QByteRef QByteArray::operator[](int i)
 { Q_ASSERT(i >= 0); return QByteRef(*this, i); }
 inline QByteRef QByteArray::operator[](uint i)
 { return QByteRef(*this, i); }
+inline QByteRef QByteArray::front() { return operator[](0); }
+inline QByteRef QByteArray::back() { return operator[](size() - 1); }
 inline QByteArray::iterator QByteArray::begin()
 { detach(); return d->data(); }
 inline QByteArray::const_iterator QByteArray::begin() const

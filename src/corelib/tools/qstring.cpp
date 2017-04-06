@@ -5246,6 +5246,66 @@ modifiable reference.
 */
 
 /*!
+    \fn QChar QString::front() const
+    \since 5.10
+
+    Returns the first character in the string.
+    Same as \c{at(0)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa back(), at(), operator[]()
+*/
+
+/*!
+    \fn QChar QString::back() const
+    \since 5.10
+
+    Returns the last character in the string.
+    Same as \c{at(size() - 1)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa front(), at(), operator[]()
+*/
+
+/*!
+    \fn QCharRef QString::front()
+    \since 5.10
+
+    Returns a reference to the first character in the string.
+    Same as \c{operator[](0)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa back(), at(), operator[]()
+*/
+
+/*!
+    \fn QCharRef QString::back()
+    \since 5.10
+
+    Returns a reference to the last character in the string.
+    Same as \c{operator[](size() - 1)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa front(), at(), operator[]()
+*/
+
+/*!
     \fn void QString::truncate(int position)
 
     Truncates the string at the given \a position index.
@@ -8751,6 +8811,36 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
+    \fn QLatin1Char QLatin1String::front() const
+    \since 5.10
+
+    Returns the first character in the string.
+    Same as \c{at(0)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa back(), at(), operator[]()
+*/
+
+/*!
+    \fn QLatin1Char QLatin1String::back() const
+    \since 5.10
+
+    Returns the last character in the string.
+    Same as \c{at(size() - 1)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa front(), at(), operator[]()
+*/
+
+/*!
     \fn QLatin1String::const_iterator QLatin1String::begin() const
     \since 5.10
 
@@ -9690,6 +9780,36 @@ bool operator<(const QStringRef &s1,const QStringRef &s2) Q_DECL_NOTHROW
     reference (i.e., 0 <= \a position < size()).
 
     \sa at()
+*/
+
+/*!
+    \fn QChar QStringRef::front() const
+    \since 5.10
+
+    Returns the first character in the string.
+    Same as \c{at(0)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa back(), at(), operator[]()
+*/
+
+/*!
+    \fn QChar QStringRef::back() const
+    \since 5.10
+
+    Returns the last character in the string.
+    Same as \c{at(size() - 1)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty string constitutes
+    undefined behavior.
+
+    \sa front(), at(), operator[]()
 */
 
 /*!

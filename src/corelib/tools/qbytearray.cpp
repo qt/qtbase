@@ -1446,6 +1446,66 @@ QByteArray &QByteArray::operator=(const char *str)
     \overload
 */
 
+/*!
+    \fn char QByteArray::front() const
+    \since 5.10
+
+    Returns the first character in the byte array.
+    Same as \c{at(0)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty byte array constitutes
+    undefined behavior.
+
+    \sa back(), at(), operator[]()
+*/
+
+/*!
+    \fn char QByteArray::back() const
+    \since 5.10
+
+    Returns the last character in the byte array.
+    Same as \c{at(size() - 1)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty byte array constitutes
+    undefined behavior.
+
+    \sa front(), at(), operator[]()
+*/
+
+/*!
+    \fn QByteRef QByteArray::front()
+    \since 5.10
+
+    Returns a reference to the first character in the byte array.
+    Same as \c{operator[](0)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty byte array constitutes
+    undefined behavior.
+
+    \sa back(), at(), operator[]()
+*/
+
+/*!
+    \fn QByteRef QByteArray::back()
+    \since 5.10
+
+    Returns a reference to the last character in the byte array.
+    Same as \c{operator[](size() - 1)}.
+
+    This function is provided for STL compatibility.
+
+    \warning Calling this function on an empty byte array constitutes
+    undefined behavior.
+
+    \sa front(), at(), operator[]()
+*/
+
 /*! \fn bool QByteArray::contains(const QByteArray &ba) const
 
     Returns \c true if the byte array contains an occurrence of the byte
