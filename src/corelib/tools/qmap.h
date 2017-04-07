@@ -207,8 +207,10 @@ struct QMapData : public QMapDataBase
 
     Node *root() const { return static_cast<Node *>(header.left); }
 
-    const Node *end() const { return static_cast<const Node *>(&header); }
-    Node *end() { return static_cast<Node *>(&header); }
+    // using reinterpret_cast because QMapDataBase::header is not
+    // actually a QMapNode.
+    const Node *end() const { return reinterpret_cast<const Node *>(&header); }
+    Node *end() { return reinterpret_cast<Node *>(&header); }
     const Node *begin() const { if (root()) return static_cast<const Node*>(mostLeftNode); return end(); }
     Node *begin() { if (root()) return static_cast<Node*>(mostLeftNode); return end(); }
 
