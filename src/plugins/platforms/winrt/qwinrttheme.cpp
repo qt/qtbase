@@ -146,6 +146,8 @@ static void nativeColorSettings(QPalette &p)
     if (uiColorSettings(L"Hotlight", UIElementType_Hotlight, &color))
         p.setColor(QPalette::BrightText, fromColor(color));
 
+    // Starting with SDK 15063 those have been removed.
+#ifndef QT_WINRT_DISABLE_PHONE_COLORS
     //Phone related
     if (uiColorSettings(L"PopupBackground", UIElementType_PopupBackground, &color)) {
         p.setColor(QPalette::ToolTipBase, fromColor(color));
@@ -186,6 +188,7 @@ static void nativeColorSettings(QPalette &p)
 
     if (uiColorSettings(L"TextContrastWithHigh", UIElementType_TextContrastWithHigh, &color))
         p.setColor(QPalette::BrightText, fromColor(color));
+#endif // QT_WINRT_DISABLE_PHONE_COLORS
 }
 
 QWinRTTheme::QWinRTTheme()
