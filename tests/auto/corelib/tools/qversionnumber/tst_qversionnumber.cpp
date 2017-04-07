@@ -513,6 +513,14 @@ void tst_QVersionNumber::fromString()
     QCOMPARE(QVersionNumber::fromString(constructionString), expectedVersion);
     QCOMPARE(QVersionNumber::fromString(constructionString, &index), expectedVersion);
     QCOMPARE(index, suffixIndex);
+
+    QCOMPARE(QVersionNumber::fromString(QStringView(constructionString)), expectedVersion);
+    QCOMPARE(QVersionNumber::fromString(QStringView(constructionString), &index), expectedVersion);
+    QCOMPARE(index, suffixIndex);
+
+    QCOMPARE(QVersionNumber::fromString(QLatin1String(constructionString.toLatin1())), expectedVersion);
+    QCOMPARE(QVersionNumber::fromString(QLatin1String(constructionString.toLatin1()), &index), expectedVersion);
+    QCOMPARE(index, suffixIndex);
 }
 
 void tst_QVersionNumber::toString_data()

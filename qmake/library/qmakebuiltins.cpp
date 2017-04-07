@@ -1569,7 +1569,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             return ReturnFalse;
         }
         const QVersionNumber lvn = QVersionNumber::fromString(values(args.at(0).toKey()).join('.'));
-        const QVersionNumber rvn = QVersionNumber::fromString(args.at(1).toQString());
+        const QVersionNumber rvn = QVersionNumber::fromString(args.at(1).toQStringView());
         if (func_t == T_VERSION_AT_LEAST)
             return returnBool(lvn >= rvn);
         return returnBool(lvn <= rvn);
