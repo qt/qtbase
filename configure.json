@@ -93,6 +93,7 @@
             "nomake": { "type": "addString", "values": [ "examples", "tests", "tools" ] },
             "opensource": { "type": "void", "name": "commercial", "value": "no" },
             "optimize-debug": { "type": "boolean", "name": "optimize_debug" },
+            "optimize-size": { "type": "boolean", "name": "optimize_size" },
             "optimized-qmake": { "type": "boolean", "name": "release_tools" },
             "optimized-tools":  { "type": "boolean", "name": "release_tools" },
             "pch": { "type": "boolean", "name": "precompile_header" },
@@ -483,6 +484,12 @@
         "optimize_debug": {
             "label": "Optimize debug build",
             "condition": "!config.msvc && (features.debug || features.debug_and_release) && tests.optimize_debug",
+            "output": [ "privateConfig" ]
+        },
+        "optimize_size": {
+            "label": "Optimize release build for size",
+            "autoDetect": false,
+            "condition": "!features.debug || features.debug_and_release",
             "output": [ "privateConfig" ]
         },
         "architecture": {
@@ -1089,6 +1096,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                     "type": "feature",
                     "args": "optimize_debug",
                     "condition": "!config.msvc && (features.debug || features.debug_and_release)"
+                },
+                {
+                    "type": "feature",
+                    "args": "optimize_size",
+                    "condition": "!features.debug || features.debug_and_release"
                 },
                 "shared",
                 {

@@ -83,6 +83,7 @@ Build options:
                          debugging turned on [yes] (Apple and Windows only)
   -optimize-debug ...... Enable debug-friendly optimizations in debug builds
                          [auto] (Not supported with MSVC)
+  -optimize-size ....... Optimize release builds for size instead of speed [no]
   -optimized-tools ..... Build optimized host tools even in debug build [no]
   -force-debug-info .... Create symbol files for release builds [no]
   -separate-debug-info . Split off debug information to separate files [no]
