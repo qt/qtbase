@@ -75,7 +75,9 @@ public:
     QCoreTextFontDatabase();
     ~QCoreTextFontDatabase();
     void populateFontDatabase() Q_DECL_OVERRIDE;
+    bool populateFamilyAliases() override;
     void populateFamily(const QString &familyName) Q_DECL_OVERRIDE;
+    void invalidate() override;
 
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const Q_DECL_OVERRIDE;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) Q_DECL_OVERRIDE;
@@ -96,6 +98,7 @@ private:
 
     mutable QSet<CTFontDescriptorRef> m_systemFontDescriptors;
     mutable QHash<QPlatformTheme::Font, QFont *> m_themeFonts;
+    bool m_hasPopulatedAliases;
 };
 
 // Split out into separate template class so that the compiler doesn't have

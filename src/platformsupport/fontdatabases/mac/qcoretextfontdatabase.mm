@@ -113,6 +113,7 @@ static NSInteger languageMapSort(id obj1, id obj2, void *context)
 #endif
 
 QCoreTextFontDatabase::QCoreTextFontDatabase()
+    : m_hasPopulatedAliases(false)
 {
 #ifdef Q_OS_MACX
     QSettings appleSettings(QLatin1String("apple.com"));
@@ -200,18 +201,8 @@ static CFArrayRef availableFamilyNames()
 void QCoreTextFontDatabase::populateFontDatabase()
 {
     QCFType<CFArrayRef> familyNames = availableFamilyNames();
-    const int numberOfFamilies = CFArrayGetCount(familyNames);
-    for (int i = 0; i < numberOfFamilies; ++i) {
-        CFStringRef familyNameRef = (CFStringRef) CFArrayGetValueAtIndex(familyNames, i);
-        QString familyName = QString::fromCFString(familyNameRef);
-        QPlatformFontDatabase::registerFontFamily(familyName);
-
-#if defined(Q_OS_OSX)
-        QString localizedFamilyName = QString::fromNSString([[NSFontManager sharedFontManager] localizedNameForFamily:(NSString*)familyNameRef face:nil]);
-        if (familyName != localizedFamilyName)
-            QPlatformFontDatabase::registerAliasToFontFamily(familyName, localizedFamilyName);
-#endif
-    }
+    for (NSString *familyName in familyNames.as<const NSArray *>())
+        QPlatformFontDatabase::registerFontFamily(QString::fromNSString(familyName));
 
     // Force creating the theme fonts to get the descriptors in m_systemFontDescriptors
     if (m_themeFonts.isEmpty())
@@ -219,6 +210,31 @@ void QCoreTextFontDatabase::populateFontDatabase()
 
     Q_FOREACH (CTFontDescriptorRef fontDesc, m_systemFontDescriptors)
         populateFromDescriptor(fontDesc);
+
+    Q_ASSERT(!m_hasPopulatedAliases);
+}
+
+bool QCoreTextFontDatabase::populateFamilyAliases()
+{
+#if defined(Q_OS_MACOS)
+    if (m_hasPopulatedAliases)
+        return false;
+
+    QCFType<CFArrayRef> familyNames = availableFamilyNames();
+    for (NSString *familyName in familyNames.as<const NSArray *>()) {
+        NSFontManager *fontManager = [NSFontManager sharedFontManager];
+        NSString *localizedFamilyName = [fontManager localizedNameForFamily:familyName face:nil];
+        if (![localizedFamilyName isEqual:familyName]) {
+            QPlatformFontDatabase::registerAliasToFontFamily(
+                QString::fromNSString(familyName),
+                QString::fromNSString(localizedFamilyName));
+        }
+    }
+    m_hasPopulatedAliases = true;
+    return true;
+#else
+    return false;
+#endif
 }
 
 void QCoreTextFontDatabase::populateFamily(const QString &familyName)
@@ -237,6 +253,11 @@ void QCoreTextFontDatabase::populateFamily(const QString &familyName)
     const int numFonts = CFArrayGetCount(matchingFonts);
     for (int i = 0; i < numFonts; ++i)
         populateFromDescriptor(CTFontDescriptorRef(CFArrayGetValueAtIndex(matchingFonts, i)), familyName);
+}
+
+void QCoreTextFontDatabase::invalidate()
+{
+    m_hasPopulatedAliases = false;
 }
 
 struct FontDescription {
