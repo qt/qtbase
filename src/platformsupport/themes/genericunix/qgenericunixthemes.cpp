@@ -87,14 +87,6 @@ void ResourceHelper::clear()
     std::fill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(0));
 }
 
-/*!
-    \class QGenericX11ThemeQKdeTheme
-    \brief QGenericX11Theme is a generic theme implementation for X11.
-    \since 5.0
-    \internal
-    \ingroup qpa
-*/
-
 const char *QGenericUnixTheme::name = "generic";
 
 // Default system font, corresponding to the value returned by 4.8 for
