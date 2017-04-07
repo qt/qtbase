@@ -263,12 +263,13 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
     QRect frame = w->frameGeometry();
     if (!w->isWindow())
         frame.moveTopLeft(w->mapToGlobal(QPoint(0, 0)));
-    const QRect nativeFrame = QHighDpi::toNativePixels(frame, winHandle);
 
     QScreen *widgetScreen = Q_NULLPTR;
     int largestArea = 0;
     foreach (QScreen *screen, screens) {
-        const QRect intersected = screen->handle()->geometry().intersected(nativeFrame);
+        const QRect deviceIndependentScreenGeometry =
+            QHighDpi::fromNativePixels(screen->handle()->geometry(), screen);
+        const QRect intersected = deviceIndependentScreenGeometry.intersected(frame);
         int area = intersected.width() * intersected.height();
         if (largestArea < area) {
             widgetScreen = screen;
