@@ -139,6 +139,7 @@ public:
     static uint hash(const QChar *p, int n);
 
     ALWAYS_INLINE QStringRef toQStringRef() const { return QStringRef(&m_string, m_offset, m_length); }
+    ALWAYS_INLINE QStringView toQStringView() const { return QStringView(m_string).mid(m_offset, m_length); }
 
     ALWAYS_INLINE ProKey &toKey() { return *(ProKey *)this; }
     ALWAYS_INLINE const ProKey &toKey() const { return *(const ProKey *)this; }
