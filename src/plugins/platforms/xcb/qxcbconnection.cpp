@@ -1092,7 +1092,9 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             break;
         case XCB_SELECTION_REQUEST:
         {
+#if QT_CONFIG(draganddrop) || QT_CONFIG(clipboard)
             xcb_selection_request_event_t *sr = reinterpret_cast<xcb_selection_request_event_t *>(event);
+#endif
 #ifndef QT_NO_DRAGANDDROP
             if (sr->selection == atom(QXcbAtom::XdndSelection))
                 m_drag->handleSelectionRequest(sr);
@@ -1285,9 +1287,9 @@ void QXcbEventReader::unlock()
     m_mutex.unlock();
 }
 
-void QXcbConnection::setFocusWindow(QXcbWindow *w)
+void QXcbConnection::setFocusWindow(QWindow *w)
 {
-    m_focusWindow = w;
+    m_focusWindow = w ? static_cast<QXcbWindow *>(w->handle()) : nullptr;
 }
 void QXcbConnection::setMouseGrabber(QXcbWindow *w)
 {

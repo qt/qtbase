@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the configuration of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,8 +37,4 @@
 **
 ****************************************************************************/
 
-#if __cplusplus < 201103L
-#error "compiler does not use c++11 or higher by default"
-#endif
-
-int main(int, char **) {}
+#include "../linux-g++/qplatformdefs.h"

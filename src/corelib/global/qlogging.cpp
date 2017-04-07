@@ -217,7 +217,7 @@ static bool willLogToConsole()
 #  elif defined(Q_OS_UNIX)
     // if /dev/tty exists, we can only open it if we have a controlling TTY
     int devtty = qt_safe_open("/dev/tty", O_RDONLY);
-    if (devtty == -1 && (errno == ENOENT || errno == EPERM)) {
+    if (devtty == -1 && (errno == ENOENT || errno == EPERM || errno == ENXIO)) {
         // no /dev/tty, fall back to isatty on stderr
         return isatty(STDERR_FILENO);
     } else if (devtty != -1) {

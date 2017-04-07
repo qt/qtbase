@@ -6,6 +6,8 @@ else: DEFINES += QT_NO_NETWORK
 
 TARGET = ../tst_qfile
 SOURCES = ../tst_qfile.cpp
+INCLUDEPATH += ../../../../../shared/
+HEADERS += ../../../../../shared/emulationdetector.h
 
 RESOURCES += ../qfile.qrc ../rename-fallback.qrc ../copy-fallback.qrc
 

@@ -44,6 +44,10 @@
 #include "qfontengine_ft_p.h"
 #include "private/qimage_p.h"
 #include <private/qstringiterator_p.h>
+#include <qguiapplication.h>
+#include <qscreen.h>
+#include <qpa/qplatformscreen.h>
+#include <QtCore/QUuid>
 
 #ifndef QT_NO_FREETYPE
 
@@ -664,6 +668,93 @@ static void convoluteBitmap(const uchar *src, uchar *dst, int width, int height,
         src += pitch;
         dst += pitch;
     }
+}
+
+static QFontEngine::SubpixelAntialiasingType subpixelAntialiasingTypeHint()
+{
+    static int type = -1;
+    if (type == -1) {
+        if (QScreen *screen = QGuiApplication::primaryScreen())
+            type = screen->handle()->subpixelAntialiasingTypeHint();
+    }
+    return static_cast<QFontEngine::SubpixelAntialiasingType>(type);
+}
+
+QFontEngineFT *QFontEngineFT::create(const QFontDef &fontDef, FaceId faceId, const QByteArray &fontData)
+{
+    QScopedPointer<QFontEngineFT> engine(new QFontEngineFT(fontDef));
+
+    QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_Mono;
+    const bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
+
+    if (antialias) {
+        QFontEngine::SubpixelAntialiasingType subpixelType = subpixelAntialiasingTypeHint();
+        if (subpixelType == QFontEngine::Subpixel_None || (fontDef.styleStrategy & QFont::NoSubpixelAntialias)) {
+            format = QFontEngineFT::Format_A8;
+            engine->subpixelType = QFontEngine::Subpixel_None;
+        } else {
+            format = QFontEngineFT::Format_A32;
+            engine->subpixelType = subpixelType;
+        }
+    }
+
+    if (!engine->init(faceId, antialias, format, fontData) || engine->invalid()) {
+        qWarning("QFontEngineFT: Failed to create FreeType font engine");
+        return nullptr;
+    }
+
+    engine->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));
+    return engine.take();
+}
+
+namespace {
+    class QFontEngineFTRawData: public QFontEngineFT
+    {
+    public:
+        QFontEngineFTRawData(const QFontDef &fontDef) : QFontEngineFT(fontDef)
+        {
+        }
+
+        void updateFamilyNameAndStyle()
+        {
+            fontDef.family = QString::fromLatin1(freetype->face->family_name);
+
+            if (freetype->face->style_flags & FT_STYLE_FLAG_ITALIC)
+                fontDef.style = QFont::StyleItalic;
+
+            if (freetype->face->style_flags & FT_STYLE_FLAG_BOLD)
+                fontDef.weight = QFont::Bold;
+        }
+
+        bool initFromData(const QByteArray &fontData)
+        {
+            FaceId faceId;
+            faceId.filename = "";
+            faceId.index = 0;
+            faceId.uuid = QUuid::createUuid().toByteArray();
+
+            return init(faceId, true, Format_None, fontData);
+        }
+    };
+}
+
+QFontEngineFT *QFontEngineFT::create(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
+{
+    QFontDef fontDef;
+    fontDef.pixelSize = pixelSize;
+    fontDef.stretch = QFont::Unstretched;
+    fontDef.hintingPreference = hintingPreference;
+
+    QFontEngineFTRawData *fe = new QFontEngineFTRawData(fontDef);
+    if (!fe->initFromData(fontData)) {
+        delete fe;
+        return 0;
+    }
+
+    fe->updateFamilyNameAndStyle();
+    fe->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));
+
+    return fe;
 }
 
 QFontEngineFT::QFontEngineFT(const QFontDef &fd)

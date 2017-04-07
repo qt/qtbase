@@ -129,6 +129,10 @@
 # include "qtcpserver.h"
 #endif
 
+#if !defined(QT_NO_SCTP)
+# include "qsctpserver.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //#define QNATIVESOCKETENGINE_DEBUG

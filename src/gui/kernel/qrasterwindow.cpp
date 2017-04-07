@@ -105,6 +105,14 @@ QRasterWindow::QRasterWindow(QWindow *parent)
     d_func()->backingstore.reset(new QBackingStore(this));
 }
 
+QRasterWindow::~QRasterWindow()
+{
+  Q_D(QRasterWindow);
+  // Delete backingstore while window is still alive, as it
+  // might need to reference the window in the process
+  d->backingstore.reset(nullptr);
+}
+
 /*!
   \internal
 */

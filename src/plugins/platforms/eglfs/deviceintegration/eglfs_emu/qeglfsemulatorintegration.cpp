@@ -97,7 +97,9 @@ void QEglFSEmulatorIntegration::screenInit()
                 }
             }
         } else {
-            qWarning() << "eglfs_emu: Failed to parse display info JSON with error: " << error.errorString();
+            qWarning() << "eglfs_emu: Failed to parse display info JSON with error: " << error.errorString()
+                       << " at offset " << error.offset << " : " << displaysInfo;
+
         }
     } else {
         qFatal("EGL library doesn't support Emulator extensions");

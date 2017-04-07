@@ -29,8 +29,11 @@
 #include <QtTest/QtTest>
 #include <QtGlobal>
 #include <QtAlgorithms>
+#include <QtGui/QAbstractTextDocumentLayout>
 #include <QtGui/QPageLayout>
 #include <QtGui/QPdfWriter>
+#include <QtGui/QTextCursor>
+#include <QtGui/QTextDocument>
 
 class tst_QPdfWriter : public QObject
 {
@@ -40,6 +43,7 @@ private slots:
     void basics();
     void testPageMetrics_data();
     void testPageMetrics();
+    void qtbug59443();
 };
 
 void tst_QPdfWriter::basics()
@@ -243,6 +247,28 @@ void tst_QPdfWriter::testPageMetrics()
 
     // QPdfWriter::paintRect() always returns set orientation
     QCOMPARE(writer.pageLayout().paintRect(QPageLayout::Millimeter), QRectF(leftMMf, topMMf, heightMMf - leftMMf - rightMMf, widthMMf - topMMf - bottomMMf));
+}
+
+void tst_QPdfWriter::qtbug59443()
+{
+    // Do not crash or assert
+    QTemporaryFile file;
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
+    QPdfWriter writer(file.fileName());
+    writer.setPageSize(QPdfWriter::A4);
+    QTextDocument doc;
+    doc.documentLayout()->setPaintDevice(&writer);
+
+    doc.setUndoRedoEnabled(false);
+    QTextCursor cursor(&doc);
+    QFont font = doc.defaultFont();
+    font.setFamily("Calibri");
+    font.setPointSize(8);
+    doc.setDefaultFont(font);
+
+    cursor.insertText(QString::fromStdWString(L"기초하며, 베어링제조업체와 타\n"));
+    doc.print(&writer);
+
 }
 
 QTEST_MAIN(tst_QPdfWriter)

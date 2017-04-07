@@ -49,7 +49,7 @@
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #endif
 #elif defined(Q_OS_WIN)
-#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
 #ifndef Q_OS_WINRT
 #include <QtCore/private/qeventdispatcher_win_p.h>
 #else
@@ -103,7 +103,7 @@ QOffscreenIntegration::QOffscreenIntegration()
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
 #endif
 #elif defined(Q_OS_WIN)
-    m_fontDatabase.reset(new QBasicFontDatabase());
+    m_fontDatabase.reset(new QFreeTypeFontDatabase());
 #endif
 
 #ifndef QT_NO_DRAGANDDROP

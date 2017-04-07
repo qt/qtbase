@@ -908,8 +908,6 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             return;
         }
 
-        BEGIN_STYLE_PIXMAPCACHE(QString::fromLatin1("pushbutton-%1").arg(isDefault))
-                r = rect.adjusted(0, 1, -1, 0);
 
         bool isEnabled = option->state & State_Enabled;
         bool hasFocus = (option->state & State_HasFocus && option->state & State_KeyboardFocusChange);
@@ -922,6 +920,9 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
 
         if (isDefault)
             buttonColor = mergedColors(buttonColor, highlightedOutline.lighter(130), 90);
+
+        BEGIN_STYLE_PIXMAPCACHE(QStringLiteral("pushbutton-") + buttonColor.name(QColor::HexArgb))
+        r = rect.adjusted(0, 1, -1, 0);
 
         p->setRenderHint(QPainter::Antialiasing, true);
         p->translate(0.5, -0.5);
@@ -1953,9 +1954,13 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
     Q_D (const QFusionStyle);
 
+#if QT_CONFIG(spinbox) || QT_CONFIG(slider)
     QColor buttonColor = d->buttonColor(option->palette);
+#endif
+#if QT_CONFIG(slider)
     QColor gradientStartColor = buttonColor.lighter(118);
     QColor gradientStopColor = buttonColor;
+#endif
     QColor outline = d->outline(option->palette);
 
     QColor alphaCornerColor;
@@ -3575,11 +3580,13 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             case SC_TitleBarContextHelpButton:
                 if (tb->titleBarFlags & Qt::WindowContextHelpButtonHint)
                     offset += delta;
+                Q_FALLTHROUGH();
             case SC_TitleBarMinButton:
                 if (!isMinimized && (tb->titleBarFlags & Qt::WindowMinimizeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarMinButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarNormalButton:
                 if (isMinimized && (tb->titleBarFlags & Qt::WindowMinimizeButtonHint))
                     offset += delta;
@@ -3587,21 +3594,25 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                     offset += delta;
                 else if (sc == SC_TitleBarNormalButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarMaxButton:
                 if (!isMaximized && (tb->titleBarFlags & Qt::WindowMaximizeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarMaxButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarShadeButton:
                 if (!isMinimized && (tb->titleBarFlags & Qt::WindowShadeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarShadeButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarUnshadeButton:
                 if (isMinimized && (tb->titleBarFlags & Qt::WindowShadeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarUnshadeButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarCloseButton:
                 if (tb->titleBarFlags & Qt::WindowSystemMenuHint)
                     offset += delta;

@@ -121,8 +121,10 @@ static inline void qt_socket_getPortAndAddress(const qt_sockaddr *s, quint16 *po
             QHostAddress tmpAddress;
             tmpAddress.setAddress(tmp);
             *addr = tmpAddress;
+#if QT_CONFIG(networkinterface)
             if (s->a6.sin6_scope_id)
                 addr->setScopeId(QNetworkInterface::interfaceNameFromIndex(s->a6.sin6_scope_id));
+#endif
         }
         if (port)
             *port = ntohs(s->a6.sin6_port);
@@ -984,7 +986,8 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
             if (cmsgptr->cmsg_len == CMSG_LEN(sizeof(int))
                     && ((cmsgptr->cmsg_level == IPPROTO_IPV6 && cmsgptr->cmsg_type == IPV6_HOPLIMIT)
                         || (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_TTL))) {
-                header->hopLimit = *reinterpret_cast<int *>(CMSG_DATA(cmsgptr));
+                Q_STATIC_ASSERT(sizeof(header->hopLimit) == sizeof(int));
+                memcpy(&header->hopLimit, CMSG_DATA(cmsgptr), sizeof(header->hopLimit));
             }
 
 #ifndef QT_NO_SCTP

@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtFontDatabaseSupport/private/qbasicfontdatabase_p.h>
+#include <QtFontDatabaseSupport/private/qfreetypefontdatabase_p.h>
 #include <QtCore/QLoggingCategory>
 
 struct IDWriteFontFile;
@@ -67,7 +67,7 @@ struct FontDescription
     QByteArray uuid;
 };
 
-class QWinRTFontDatabase : public QBasicFontDatabase
+class QWinRTFontDatabase : public QFreeTypeFontDatabase
 {
 public:
     ~QWinRTFontDatabase();

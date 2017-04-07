@@ -56,6 +56,8 @@
 #include <private/qgraphicsview_p.h>
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 #include "tst_qgraphicsview.h"
 
@@ -664,6 +666,9 @@ void tst_QGraphicsView::viewport()
 #ifndef QT_NO_OPENGL
 void tst_QGraphicsView::openGLViewport()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
+        QSKIP("QOpenGL is not supported on this platform.");
+
     QGraphicsScene scene;
     scene.setBackgroundBrush(Qt::white);
     scene.addText("GraphicsView");

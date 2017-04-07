@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "qbasicfontdatabase_p.h"
+#include "qfreetypefontdatabase_p.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformscreen.h>
@@ -45,7 +45,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDir>
-#include <QtCore/QUuid>
 #include <QtCore/QtEndian>
 
 #undef QT_NO_FREETYPE
@@ -57,7 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void QBasicFontDatabase::populateFontDatabase()
+void QFreeTypeFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
     QDir dir(fontpath);
@@ -79,99 +78,32 @@ void QBasicFontDatabase::populateFontDatabase()
     const auto fis = dir.entryInfoList(nameFilters, QDir::Files);
     for (const QFileInfo &fi : fis) {
         const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
-        QBasicFontDatabase::addTTFile(QByteArray(), file);
+        QFreeTypeFontDatabase::addTTFile(QByteArray(), file);
     }
 }
 
-QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, void *usrPtr)
+QFontEngine *QFreeTypeFontDatabase::fontEngine(const QFontDef &fontDef, void *usrPtr)
 {
-    FontFile *fontfile = static_cast<FontFile *> (usrPtr);
-    QFontEngine::FaceId fid;
-    fid.filename = QFile::encodeName(fontfile->fileName);
-    fid.index = fontfile->indexValue;
+    FontFile *fontfile = static_cast<FontFile *>(usrPtr);
+    QFontEngine::FaceId faceId;
+    faceId.filename = QFile::encodeName(fontfile->fileName);
+    faceId.index = fontfile->indexValue;
 
-    bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    QFontEngineFT *engine = new QFontEngineFT(fontDef);
-    QFontEngineFT::GlyphFormat format = QFontEngineFT::Format_Mono;
-    if (antialias) {
-        QFontEngine::SubpixelAntialiasingType subpixelType = subpixelAntialiasingTypeHint();
-        if (subpixelType == QFontEngine::Subpixel_None || (fontDef.styleStrategy & QFont::NoSubpixelAntialias)) {
-            format = QFontEngineFT::Format_A8;
-            engine->subpixelType = QFontEngine::Subpixel_None;
-        } else {
-            format = QFontEngineFT::Format_A32;
-            engine->subpixelType = subpixelType;
-        }
-    }
-
-    if (!engine->init(fid, antialias, format) || engine->invalid()) {
-        delete engine;
-        engine = 0;
-    } else {
-        engine->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));
-    }
-
-    return engine;
+    return QFontEngineFT::create(fontDef, faceId);
 }
 
-namespace {
-
-    class QFontEngineFTRawData: public QFontEngineFT
-    {
-    public:
-        QFontEngineFTRawData(const QFontDef &fontDef) : QFontEngineFT(fontDef)
-        {
-        }
-
-        void updateFamilyNameAndStyle()
-        {
-            fontDef.family = QString::fromLatin1(freetype->face->family_name);
-
-            if (freetype->face->style_flags & FT_STYLE_FLAG_ITALIC)
-                fontDef.style = QFont::StyleItalic;
-
-            if (freetype->face->style_flags & FT_STYLE_FLAG_BOLD)
-                fontDef.weight = QFont::Bold;
-        }
-
-        bool initFromData(const QByteArray &fontData)
-        {
-            FaceId faceId;
-            faceId.filename = "";
-            faceId.index = 0;
-            faceId.uuid = QUuid::createUuid().toByteArray();
-
-            return init(faceId, true, Format_None, fontData);
-        }
-    };
-
-}
-
-QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
+QFontEngine *QFreeTypeFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
                                                 QFont::HintingPreference hintingPreference)
 {
-    QFontDef fontDef;
-    fontDef.pixelSize = pixelSize;
-    fontDef.hintingPreference = hintingPreference;
-
-    QFontEngineFTRawData *fe = new QFontEngineFTRawData(fontDef);
-    if (!fe->initFromData(fontData)) {
-        delete fe;
-        return 0;
-    }
-
-    fe->updateFamilyNameAndStyle();
-    fe->setQtDefaultHintStyle(static_cast<QFont::HintingPreference>(fontDef.hintingPreference));
-
-    return fe;
+    return QFontEngineFT::create(fontData, pixelSize, hintingPreference);
 }
 
-QStringList QBasicFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QFreeTypeFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
-    return QBasicFontDatabase::addTTFile(fontData, fileName.toLocal8Bit());
+    return QFreeTypeFontDatabase::addTTFile(fontData, fileName.toLocal8Bit());
 }
 
-void QBasicFontDatabase::releaseHandle(void *handle)
+void QFreeTypeFontDatabase::releaseHandle(void *handle)
 {
     FontFile *file = static_cast<FontFile *>(handle);
     delete file;
@@ -179,7 +111,7 @@ void QBasicFontDatabase::releaseHandle(void *handle)
 
 extern FT_Library qt_getFreetype();
 
-QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
+QStringList QFreeTypeFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
 {
     FT_Library library = qt_getFreetype();
 

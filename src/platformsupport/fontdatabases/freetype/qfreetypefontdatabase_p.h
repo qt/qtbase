@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QBASICFONTDATABASE_H
-#define QBASICFONTDATABASE_H
+#ifndef QFREETYPEFONTDATABASE_H
+#define QFREETYPEFONTDATABASE_H
 
 //
 //  W A R N I N G
@@ -63,7 +63,7 @@ struct FontFile
     int indexValue;
 };
 
-class QBasicFontDatabase : public QPlatformFontDatabase
+class QFreeTypeFontDatabase : public QPlatformFontDatabase
 {
 public:
     void populateFontDatabase() Q_DECL_OVERRIDE;
@@ -77,4 +77,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QBASICFONTDATABASE_H
+#endif // QFREETYPEFONTDATABASE_H

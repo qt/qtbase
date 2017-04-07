@@ -115,6 +115,7 @@ int QLockFilePrivate::checkFcntlWorksAfterFlock(const QString &fn)
         return 0;
     return 1;
 #else
+    Q_UNUSED(fn);
     return 0;
 #endif
 }

@@ -121,7 +121,7 @@ private:
     State state;
     BMP_FILEHDR fileHeader;
     BMP_INFOHDR infoHeader;
-    int startpos;
+    qint64 startpos;
 };
 
 QT_END_NAMESPACE

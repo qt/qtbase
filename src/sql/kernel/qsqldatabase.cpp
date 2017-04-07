@@ -695,6 +695,9 @@ void QSqlDatabasePrivate::init(const QString &type)
 /*!
     Destroys the object and frees any allocated resources.
 
+    \note When the last connection is destroyed, the destructor
+    implicitly calls close() to release the database connection.
+
     \sa close()
 */
 

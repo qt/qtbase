@@ -82,6 +82,8 @@ QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
 
         delete ic;
     }
+#else
+    Q_UNUSED(key);
 #endif
     return 0;
 }

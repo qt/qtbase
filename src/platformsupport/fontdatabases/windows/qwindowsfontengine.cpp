@@ -1281,6 +1281,7 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
                     fedw->fontDef.style = fontEngine->fontDef.style;
                 fedw->fontDef.family = fam;
                 fedw->fontDef.hintingPreference = fontEngine->fontDef.hintingPreference;
+                fedw->fontDef.stretch = fontEngine->fontDef.stretch;
                 return fedw;
             } else {
                 qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
@@ -1298,6 +1299,7 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
         fe->fontDef.style = fontEngine->fontDef.style;
     fe->fontDef.family = fam;
     fe->fontDef.hintingPreference = fontEngine->fontDef.hintingPreference;
+    fe->fontDef.stretch = fontEngine->fontDef.stretch;
     return fe;
 }
 

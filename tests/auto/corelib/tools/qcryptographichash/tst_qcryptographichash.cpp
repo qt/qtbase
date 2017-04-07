@@ -30,6 +30,8 @@
 #include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
+Q_DECLARE_METATYPE(QCryptographicHash::Algorithm)
+
 class tst_QCryptographicHash : public QObject
 {
     Q_OBJECT
@@ -39,6 +41,7 @@ private slots:
     void intermediary_result_data();
     void intermediary_result();
     void sha1();
+    void sha3_data();
     void sha3();
     void files_data();
     void files();
@@ -107,22 +110,47 @@ void tst_QCryptographicHash::intermediary_result_data()
                             << QByteArray::fromHex("DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F")
                             << QByteArray::fromHex("F3C41E7B63EE869596FC28BAD64120612C520F65928AB4D126C72C6998B551B8FF1CEDDFED4373E6717554DC89D1EEE6F0AB22FD3675E561ABA9AE26A3EEC53B");
 
-    QTest::newRow("sha3_224") << int(QCryptographicHash::Sha3_224)
-                         << QByteArray("abc") << QByteArray("abc")
-                         << QByteArray::fromHex("C30411768506EBE1C2871B1EE2E87D38DF342317300A9B97A95EC6A8")
-                         << QByteArray::fromHex("048330E7C7C8B4A41AB713B3A6F958D77B8CF3EE969930F1584DD550");
-    QTest::newRow("sha3_256") << int(QCryptographicHash::Sha3_256)
-                         << QByteArray("abc") << QByteArray("abc")
-                         << QByteArray::fromHex("4E03657AEA45A94FC7D47BA826C8D667C0D1E6E33A64A036EC44F58FA12D6C45")
-                         << QByteArray::fromHex("9F0ADAD0A59B05D2E04A1373342B10B9EB16C57C164C8A3BFCBF46DCCEE39A21");
-    QTest::newRow("sha3_384") << int(QCryptographicHash::Sha3_384)
-                         << QByteArray("abc") << QByteArray("abc")
-                         << QByteArray::fromHex("F7DF1165F033337BE098E7D288AD6A2F74409D7A60B49C36642218DE161B1F99F8C681E4AFAF31A34DB29FB763E3C28E")
-                         << QByteArray::fromHex("D733B87D392D270889D3DA23AE113F349E25574B445F319CDE4CD3F877C753E9E3C65980421339B3A131457FF393939F");
-    QTest::newRow("sha3_512") << int(QCryptographicHash::Sha3_512)
-                         << QByteArray("abc") << QByteArray("abc")
-                         << QByteArray::fromHex("18587DC2EA106B9A1563E32B3312421CA164C7F1F07BC922A9C83D77CEA3A1E5D0C69910739025372DC14AC9642629379540C17E2A65B19D77AA511A9D00BB96")
-                         << QByteArray::fromHex("A7C392D2A42155761CA76BDDDE1C47D55486B007EDF465397BFB9DFA74D11C8F0D7C86CD29415283F1B5E7F655CEC25B869C9E9C33A8986F0B38542FB12BFB93");
+    QTest::newRow("sha3_224_empty_abc")
+            << int(QCryptographicHash::Sha3_224)
+            << QByteArray("") << QByteArray("abc")
+            << QByteArray::fromHex("6B4E03423667DBB73B6E15454F0EB1ABD4597F9A1B078E3F5B5A6BC7")
+            << QByteArray::fromHex("E642824C3F8CF24AD09234EE7D3C766FC9A3A5168D0C94AD73B46FDF");
+    QTest::newRow("sha3_256_empty_abc")
+            << int(QCryptographicHash::Sha3_256)
+            << QByteArray("") << QByteArray("abc")
+            << QByteArray::fromHex("A7FFC6F8BF1ED76651C14756A061D662F580FF4DE43B49FA82D80A4B80F8434A")
+            << QByteArray::fromHex("3A985DA74FE225B2045C172D6BD390BD855F086E3E9D525B46BFE24511431532");
+    QTest::newRow("sha3_384_empty_abc")
+            << int(QCryptographicHash::Sha3_384)
+            << QByteArray("") << QByteArray("abc")
+            << QByteArray::fromHex("0C63A75B845E4F7D01107D852E4C2485C51A50AAAA94FC61995E71BBEE983A2AC3713831264ADB47FB6BD1E058D5F004")
+            << QByteArray::fromHex("EC01498288516FC926459F58E2C6AD8DF9B473CB0FC08C2596DA7CF0E49BE4B298D88CEA927AC7F539F1EDF228376D25");
+    QTest::newRow("sha3_512_empty_abc")
+            << int(QCryptographicHash::Sha3_512)
+            << QByteArray("") << QByteArray("abc")
+            << QByteArray::fromHex("A69F73CCA23A9AC5C8B567DC185A756E97C982164FE25859E0D1DCC1475C80A615B2123AF1F5F94C11E3E9402C3AC558F500199D95B6D3E301758586281DCD26")
+            << QByteArray::fromHex("B751850B1A57168A5693CD924B6B096E08F621827444F70D884F5D0240D2712E10E116E9192AF3C91A7EC57647E3934057340B4CF408D5A56592F8274EEC53F0");
+
+    QTest::newRow("sha3_224_abc_abc")
+            << int(QCryptographicHash::Sha3_224)
+            << QByteArray("abc") << QByteArray("abc")
+            << QByteArray::fromHex("E642824C3F8CF24AD09234EE7D3C766FC9A3A5168D0C94AD73B46FDF")
+            << QByteArray::fromHex("58F426458091E16FBC61DDCB8F2D2A6F30F729CAFA3C289A4EB2BCF8");
+    QTest::newRow("sha3_256_abc_abc")
+            << int(QCryptographicHash::Sha3_256)
+            << QByteArray("abc") << QByteArray("abc")
+            << QByteArray::fromHex("3A985DA74FE225B2045C172D6BD390BD855F086E3E9D525B46BFE24511431532")
+            << QByteArray::fromHex("6C0872716337DE1EE664C1E37F64ADE109448F02681C63A912BC230FDEFC0058");
+    QTest::newRow("sha3_384_abc_abc")
+            << int(QCryptographicHash::Sha3_384)
+            << QByteArray("abc") << QByteArray("abc")
+            << QByteArray::fromHex("EC01498288516FC926459F58E2C6AD8DF9B473CB0FC08C2596DA7CF0E49BE4B298D88CEA927AC7F539F1EDF228376D25")
+            << QByteArray::fromHex("34FA93E11E467D610524EC91CEDC848EE1395BCF8F4F987455478E63DB0BCE47194D33D1251A3CC32BBB18D8726040D0");
+    QTest::newRow("sha3_512_abc_abc")
+            << int(QCryptographicHash::Sha3_512)
+            << QByteArray("abc") << QByteArray("abc")
+            << QByteArray::fromHex("B751850B1A57168A5693CD924B6B096E08F621827444F70D884F5D0240D2712E10E116E9192AF3C91A7EC57647E3934057340B4CF408D5A56592F8274EEC53F0")
+            << QByteArray::fromHex("BB582DA40D15399ACF62AFCBBD6CFC9EE1DD5129B1EF9935DD3B21668F1A73D7841018BE3B13F281C3A8E9DA7EDB60F57B9F9F1C04033DF4CE3654B7B2ADB310");
 }
 
 void tst_QCryptographicHash::intermediary_result()
@@ -172,57 +200,67 @@ void tst_QCryptographicHash::sha1()
              QByteArray("34AA973CD4C4DAA4F61EEB2BDBAD27316534016F"));
 }
 
-void tst_QCryptographicHash::sha3()
+void tst_QCryptographicHash::sha3_data()
 {
-    // SHA3-224("The quick brown fox jumps over the lazy dog")
-    // 10aee6b30c47350576ac2873fa89fd190cdc488442f3ef654cf23fe
-    QCOMPARE(QCryptographicHash::hash("The quick brown fox jumps over the lazy dog",
-                                      QCryptographicHash::Sha3_224).toHex(),
-             QByteArray("310aee6b30c47350576ac2873fa89fd190cdc488442f3ef654cf23fe"));
-    // SHA3-224("The quick brown fox jumps over the lazy dog.")
-    // c59d4eaeac728671c635ff645014e2afa935bebffdb5fbd207ffdeab
-    QCOMPARE(QCryptographicHash::hash("The quick brown fox jumps over the lazy dog.",
-                                      QCryptographicHash::Sha3_224).toHex(),
-             QByteArray("c59d4eaeac728671c635ff645014e2afa935bebffdb5fbd207ffdeab"));
+    QTest::addColumn<QCryptographicHash::Algorithm>("algorithm");
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QByteArray>("expectedResult");
 
-    // SHA3-256("The quick brown fox jumps over the lazy dog")
-    // 4d741b6f1eb29cb2a9b9911c82f56fa8d73b04959d3d9d222895df6c0b28aa15
-    QCOMPARE(QCryptographicHash::hash("The quick brown fox jumps over the lazy dog",
-                                      QCryptographicHash::Sha3_256).toHex(),
-             QByteArray("4d741b6f1eb29cb2a9b9911c82f56fa8d73b04959d3d9d222895df6c0b28aa15"));
+#define ROW(Tag, Algorithm, Input, Result) \
+    QTest::newRow(Tag) << Algorithm << QByteArrayLiteral(Input) << QByteArray::fromHex(Result)
 
-    // SHA3-256("The quick brown fox jumps over the lazy dog.")
-    // 578951e24efd62a3d63a86f7cd19aaa53c898fe287d2552133220370240b572d
-    QCOMPARE(QCryptographicHash::hash("The quick brown fox jumps over the lazy dog.",
-                                      QCryptographicHash::Sha3_256).toHex(),
-             QByteArray("578951e24efd62a3d63a86f7cd19aaa53c898fe287d2552133220370240b572d"));
+    ROW("sha3_224_pangram",
+        QCryptographicHash::Sha3_224,
+        "The quick brown fox jumps over the lazy dog",
+        "d15dadceaa4d5d7bb3b48f446421d542e08ad8887305e28d58335795");
 
-    // SHA3-384("The quick brown fox jumps over the lazy dog")
-    // 283990fa9d5fb731d786c5bbee94ea4db4910f18c62c03d173fc0a5e494422e8a0b3da7574dae7fa0baf005e504063b3
-    QCOMPARE(QCryptographicHash::hash("The quick brown fox jumps over the lazy dog",
-                                      QCryptographicHash::Sha3_384).toHex(),
-             QByteArray("283990fa9d5fb731d786c5bbee94ea4db4910f18c62c03d173fc0a5e494422e8a0b3da7574dae7fa0baf005e504063b3"));
+    ROW("sha3_224_pangram_dot",
+        QCryptographicHash::Sha3_224,
+        "The quick brown fox jumps over the lazy dog.",
+        "2d0708903833afabdd232a20201176e8b58c5be8a6fe74265ac54db0");
 
-    // SHA3-384("The quick brown fox jumps over the lazy dog.")
-    // 9ad8e17325408eddb6edee6147f13856ad819bb7532668b605a24a2d958f88bd5c169e56dc4b2f89ffd325f6006d820b
-    QCOMPARE(QCryptographicHash::hash("The quick brown fox jumps over the lazy dog.",
-                                      QCryptographicHash::Sha3_384).toHex(),
-             QByteArray("9ad8e17325408eddb6edee6147f13856ad819bb7532668b605a24a2d958f88bd5c169e56dc4b2f89ffd325f6006d820b"));
+    ROW("sha3_256_pangram",
+        QCryptographicHash::Sha3_256,
+        "The quick brown fox jumps over the lazy dog",
+        "69070dda01975c8c120c3aada1b282394e7f032fa9cf32f4cb2259a0897dfc04");
 
-    // SHA3-512("The quick brown fox jumps over the lazy dog")
-    // d135bb84d0439dbac432247ee573a23ea7d3c9deb2a968eb31d47c4fb45f1ef4422d6c531b5b9bd6f449ebcc449ea94d0a8f05f62130fda612da53c79659f609
-    QCOMPARE(QCryptographicHash::hash("The quick brown fox jumps over the lazy dog",
-                                      QCryptographicHash::Sha3_512).toHex(),
-             QByteArray("d135bb84d0439dbac432247ee573a23ea7d3c9deb2a968eb31d47c4fb45f1ef4422d6c531b5b9bd6f449ebcc449ea94d0a8f05f62130fda612da53c79659f609"));
+    ROW("sha3_256_pangram_dot",
+        QCryptographicHash::Sha3_256,
+        "The quick brown fox jumps over the lazy dog.",
+        "a80f839cd4f83f6c3dafc87feae470045e4eb0d366397d5c6ce34ba1739f734d");
 
-    // SHA3-512("The quick brown fox jumps over the lazy dog.")
-    // ab7192d2b11f51c7dd744e7b3441febf397ca07bf812cceae122ca4ded6387889064f8db9230f173f6d1ab6e24b6e50f065b039f799f5592360a6558eb52d760
-    QCOMPARE(QCryptographicHash::hash("The quick brown fox jumps over the lazy dog.",
-                                      QCryptographicHash::Sha3_512).toHex(),
-             QByteArray("ab7192d2b11f51c7dd744e7b3441febf397ca07bf812cceae122ca4ded6387889064f8db9230f173f6d1ab6e24b6e50f065b039f799f5592360a6558eb52d760"));
+    ROW("sha3_384_pangram",
+        QCryptographicHash::Sha3_384,
+        "The quick brown fox jumps over the lazy dog",
+        "7063465e08a93bce31cd89d2e3ca8f602498696e253592ed26f07bf7e703cf328581e1471a7ba7ab119b1a9ebdf8be41");
+
+    ROW("sha3_384_pangram_dot",
+        QCryptographicHash::Sha3_384,
+        "The quick brown fox jumps over the lazy dog.",
+        "1a34d81695b622df178bc74df7124fe12fac0f64ba5250b78b99c1273d4b080168e10652894ecad5f1f4d5b965437fb9");
+
+    ROW("sha3_512_pangram",
+        QCryptographicHash::Sha3_512,
+        "The quick brown fox jumps over the lazy dog",
+        "01dedd5de4ef14642445ba5f5b97c15e47b9ad931326e4b0727cd94cefc44fff23f07bf543139939b49128caf436dc1bdee54fcb24023a08d9403f9b4bf0d450");
+
+    ROW("sha3_512_pangram_dot",
+        QCryptographicHash::Sha3_512,
+        "The quick brown fox jumps over the lazy dog.",
+        "18f4f4bd419603f95538837003d9d254c26c23765565162247483f65c50303597bc9ce4d289f21d1c2f1f458828e33dc442100331b35e7eb031b5d38ba6460f8");
+
+#undef ROW
 }
 
-Q_DECLARE_METATYPE(QCryptographicHash::Algorithm);
+void tst_QCryptographicHash::sha3()
+{
+    QFETCH(QCryptographicHash::Algorithm, algorithm);
+    QFETCH(QByteArray, data);
+    QFETCH(QByteArray, expectedResult);
+
+    const auto result = QCryptographicHash::hash(data, algorithm);
+    QCOMPARE(result, expectedResult);
+}
 
 void tst_QCryptographicHash::files_data() {
     QTest::addColumn<QString>("filename");

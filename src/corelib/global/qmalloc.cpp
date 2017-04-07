@@ -40,6 +40,7 @@
 #include "qplatformdefs.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 /*
     Define the container allocation functions in a separate file, so that our
@@ -79,8 +80,6 @@ void *qMallocAligned(size_t size, size_t alignment)
 void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t alignment)
 {
     // fake an aligned allocation
-    Q_UNUSED(oldsize);
-
     void *actualptr = oldptr ? static_cast<void **>(oldptr)[-1] : 0;
     if (alignment <= sizeof(void*)) {
         // special, fast case
@@ -110,8 +109,14 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
 
     quintptr faked = reinterpret_cast<quintptr>(real) + alignment;
     faked &= ~(alignment - 1);
-
     void **faked_ptr = reinterpret_cast<void **>(faked);
+
+    if (oldptr) {
+        qptrdiff oldoffset = static_cast<char *>(oldptr) - static_cast<char *>(actualptr);
+        qptrdiff newoffset = reinterpret_cast<char *>(faked_ptr) - static_cast<char *>(real);
+        if (oldoffset != newoffset)
+            memmove(faked_ptr, static_cast<char *>(real) + oldoffset, qMin(oldsize, newsize));
+    }
 
     // now save the value of the real pointer at faked-sizeof(void*)
     // by construction, alignment > sizeof(void*) and is a power of 2, so

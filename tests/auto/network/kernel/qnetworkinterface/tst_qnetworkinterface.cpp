@@ -38,6 +38,7 @@
 #include <QNetworkSession>
 #endif
 #include "../../../network-settings.h"
+#include "emulationdetector.h"
 
 class tst_QNetworkInterface : public QObject
 {
@@ -220,6 +221,8 @@ void tst_QNetworkInterface::interfaceFromXXX()
     QVERIFY(QNetworkInterface::interfaceFromName(iface.name()).isValid());
     if (int idx = iface.index()) {
         QVERIFY(QNetworkInterface::interfaceFromIndex(idx).isValid());
+        if (EmulationDetector::isRunningArmOnX86())
+            QEXPECT_FAIL("", "SIOCGIFNAME fails on QEMU", Continue);
         QCOMPARE(QNetworkInterface::interfaceNameFromIndex(idx), iface.name());
         QCOMPARE(QNetworkInterface::interfaceIndexFromName(iface.name()), idx);
     }

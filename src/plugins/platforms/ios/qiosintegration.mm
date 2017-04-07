@@ -69,13 +69,15 @@
 
 QT_BEGIN_NAMESPACE
 
+class QCoreTextFontEngine;
+
 QIOSIntegration *QIOSIntegration::instance()
 {
     return static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
 }
 
 QIOSIntegration::QIOSIntegration()
-    : m_fontDatabase(new QCoreTextFontDatabase)
+    : m_fontDatabase(new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>)
 #if !defined(Q_OS_TVOS) && !defined(QT_NO_CLIPBOARD)
     , m_clipboard(new QIOSClipboard)
 #endif

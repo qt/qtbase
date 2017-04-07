@@ -2331,6 +2331,7 @@ void QStateMachinePrivate::unregisterAllTransitions()
                 unregisterSignalTransition(t);
         }
     }
+#if QT_CONFIG(qeventtransition)
     {
         QList<QEventTransition*> transitions = rootState()->findChildren<QEventTransition*>();
         for (int i = 0; i < transitions.size(); ++i) {
@@ -2339,6 +2340,7 @@ void QStateMachinePrivate::unregisterAllTransitions()
                 unregisterEventTransition(t);
         }
     }
+#endif
 }
 
 #if QT_CONFIG(qeventtransition)

@@ -66,7 +66,7 @@ void QAndroidPlatformFontDatabase::populateFontDatabase()
     const auto entries = dir.entryInfoList(nameFilters, QDir::Files);
     for (const QFileInfo &fi : entries) {
         const QByteArray file = QFile::encodeName(fi.absoluteFilePath());
-        QBasicFontDatabase::addTTFile(QByteArray(), file);
+        QFreeTypeFontDatabase::addTTFile(QByteArray(), file);
     }
 }
 
@@ -82,7 +82,7 @@ QStringList QAndroidPlatformFontDatabase::fallbacksForFamily(const QString &fami
         result.append(QString(qgetenv("QT_ANDROID_FONTS_SERIF")).split(QLatin1Char(';')));
     else
         result.append(QString(qgetenv("QT_ANDROID_FONTS")).split(QLatin1Char(';')));
-    result.append(QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script));
+    result.append(QFreeTypeFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
     return result;
 }

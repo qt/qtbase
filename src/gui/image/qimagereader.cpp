@@ -471,7 +471,8 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 
             --numFormats;
             ++currentFormat;
-            currentFormat %= _qt_NumFormats;
+            if (currentFormat >= _qt_NumFormats)
+                currentFormat = 0;
         }
     }
 

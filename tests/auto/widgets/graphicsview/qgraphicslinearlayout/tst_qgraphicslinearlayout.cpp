@@ -165,7 +165,8 @@ public:
         return QGraphicsWidget::sizeHint(which, constraint);
     }
 
-    QSizeF m_sizeHints[Qt::NSizeHints];
+    // Initializer {} is a workaround for gcc bug 68949
+    QSizeF m_sizeHints[Qt::NSizeHints] {};
     QBrush m_brush;
 };
 

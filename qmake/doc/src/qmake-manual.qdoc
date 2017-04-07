@@ -2883,6 +2883,11 @@
     MY_VAR2 will contain '-Lone -Ltwo -Lthree -Lfour -Lfive', and MY_VAR3 will
     contain 'three two three'.
 
+    \section2 files(pattern[, recursive=false])
+
+    Expands the specified wildcard pattern and returns a list of filenames.
+    If \c recursive is true, this function descends into subdirectories.
+
     \target fn_first
     \section2 first(variablename)
 
@@ -3375,11 +3380,6 @@
 
     Exports the current value of \c variablename from the local context of a
     function to the global context.
-
-    \section2 files(pattern[, recursive=false])
-
-    Expands the specified wildcard pattern and returns a list of filenames.
-    If \c recursive is true, this function descends into subdirectories.
 
     \target forfunction
     \section2 for(iterate, list)

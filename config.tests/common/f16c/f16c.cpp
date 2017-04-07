@@ -41,14 +41,11 @@
 
 int main(int, char**)
 {
-    float f = 1.f;
-    unsigned short s = _cvtss_sh(f, 0);
-    float g = _cvtsh_ss(s);
-    bool result = f == g;
-    (void)result;
     __m128i a = _mm_setzero_si128();
-    __m256 b = _mm256_cvtph_ps(a);
-    __m128i c = _mm256_cvtps_ph(b, 0);
+    __m128 b = _mm_cvtph_ps(a);
+    __m256 b256 = _mm256_cvtph_ps(a);
+    __m128i c = _mm_cvtps_ph(b, 0);
+    c = _mm256_cvtps_ph(b256, 0);
     (void)c;
     return 0;
 }
