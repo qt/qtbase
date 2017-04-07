@@ -270,19 +270,18 @@ private:
                 inFlightStatus |= className == "FlightDetailHeaderStatus";
                 inFlightMap |= className == "flightMap";
                 if (xml.name() == "td" && !className.isEmpty()) {
-                    QString cn = className.toString();
-                    if (cn.contains("fieldTitle")) {
+                    if (className.contains("fieldTitle")) {
                         inFieldName = true;
                         fieldNames += QString();
                         fieldValues += QString();
                     }
-                    if (cn.contains("fieldValue"))
+                    if (className.contains("fieldValue"))
                         inFieldValue = true;
                 }
                 if (xml.name() == "img" && inFlightMap) {
-                    QString src = xml.attributes().value("src").toString();
-                    src.prepend("http://mobile.flightview.com/");
-                    QUrl url = QUrl::fromPercentEncoding(src.toLatin1());
+                    const QByteArray encoded
+                        = ("http://mobile.flightview.com/" % xml.attributes().value("src")).toLatin1();
+                    QUrl url = QUrl::fromPercentEncoding(encoded);
                     mapReplies.append(m_manager.get(QNetworkRequest(url)));
                 }
             }

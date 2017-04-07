@@ -231,9 +231,9 @@ void RSSListing::parseXml()
 
         } else if (xml.isCharacters() && !xml.isWhitespace()) {
             if (currentTag == "title")
-                titleString += xml.text().toString();
+                titleString += xml.text();
             else if (currentTag == "link")
-                linkString += xml.text().toString();
+                linkString += xml.text();
         }
     }
     if (xml.error() && xml.error() != QXmlStreamReader::PrematureEndOfDocumentError) {
