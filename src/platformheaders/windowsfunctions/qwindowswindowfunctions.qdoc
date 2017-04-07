@@ -168,10 +168,10 @@
     \fn bool QWindowsWindowFunctions::isTabletMode()
 
     This is a convenience function that can be used directly instead of resolving
-    the function pointer. The function can be used to query whether Windows 10
-    operates in \e{Tablet Mode}. In this mode, Windows forces all application
-    main windows to open in maximized state. Applications should then avoid
-    resizing windows or restoring geometries to non-maximized states.
+    the function pointer. Returns true if Windows 10 operates in \e{Tablet Mode}.
+    In this mode, Windows forces all application main windows to open in maximized
+    state. Applications should then avoid resizing windows or restoring geometries
+    to non-maximized states.
 
     \sa QWidget::showMaximized(), QWidget::saveGeometry(), QWidget::restoreGeometry()
     \since 5.9
