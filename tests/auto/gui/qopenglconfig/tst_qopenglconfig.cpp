@@ -100,6 +100,7 @@ class tst_QOpenGlConfig : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void testConfiguration();
     void testGlConfiguration();
     void testBugList();
@@ -160,6 +161,12 @@ static void dumpConfiguration(QTextStream &str)
                 str << "\nGPU:\n" << description << "\n\n";
         }
     }
+}
+
+void tst_QOpenGlConfig::initTestCase()
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
+        QSKIP("OpenGL is not supported on this platform.");
 }
 
 void tst_QOpenGlConfig::testConfiguration()
