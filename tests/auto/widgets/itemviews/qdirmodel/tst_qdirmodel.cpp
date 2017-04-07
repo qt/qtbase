@@ -32,6 +32,7 @@
 #include <qtreeview.h>
 #include <qdir.h>
 #include <qdebug.h>
+#include "emulationdetector.h"
 
 class tst_QDirModel : public QObject
 {
@@ -615,6 +616,9 @@ void tst_QDirModel::task196768_sorting()
 
 #if defined(Q_OS_ANDROID)
     QEXPECT_FAIL("", "QTBUG-43818", Continue);
+#else
+    if (EmulationDetector::isRunningArmOnX86())
+        QEXPECT_FAIL("", "QTBUG-43818", Continue);
 #endif
 
     QCOMPARE(index.data(), index2.data());

@@ -3,8 +3,8 @@ OBJECTIVE_SOURCES += $$PWD/qfontengine_coretext.mm $$PWD/qcoretextfontdatabase.m
 
 qtConfig(freetype) {
     QMAKE_USE_PRIVATE += freetype
-    HEADERS += basic/qfontengine_ft_p.h
-    SOURCES += basic/qfontengine_ft.cpp
+    HEADERS += freetype/qfontengine_ft_p.h
+    SOURCES += freetype/qfontengine_ft.cpp
 }
 
 uikit: \

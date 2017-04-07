@@ -480,7 +480,7 @@ public:
     Qt::MouseButton translateMouseButton(xcb_button_t s);
 
     QXcbWindow *focusWindow() const { return m_focusWindow; }
-    void setFocusWindow(QXcbWindow *);
+    void setFocusWindow(QWindow *);
     QXcbWindow *mouseGrabber() const { return m_mouseGrabber; }
     void setMouseGrabber(QXcbWindow *);
     QXcbWindow *mousePressWindow() const { return m_mousePressWindow; }

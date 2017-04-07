@@ -150,7 +150,8 @@ public:
         m_fnConstraint = fnConstraint;
     }
 
-    QSizeF m_sizeHints[Qt::NSizeHints];
+    // Initializer {} is a workaround for gcc bug 68949
+    QSizeF m_sizeHints[Qt::NSizeHints] {};
     QSizeF (*m_fnConstraint)(Qt::SizeHint, const QSizeF &);
 
 };
@@ -280,8 +281,10 @@ struct ItemDesc
     int m_rowSpan;
     int m_colSpan;
     QSizePolicy m_sizePolicy;
-    QSizeF m_sizeHints[Qt::NSizeHints];
-    QSizeF m_sizes[Qt::NSizeHints];
+
+    // Initializer {} is a workaround for gcc bug 68949
+    QSizeF m_sizeHints[Qt::NSizeHints] {};
+    QSizeF m_sizes[Qt::NSizeHints] {};
     Qt::Alignment m_align;
 
     Qt::Orientation m_constraintOrientation;

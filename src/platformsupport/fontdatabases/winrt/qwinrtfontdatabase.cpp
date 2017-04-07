@@ -144,7 +144,7 @@ QWinRTFontDatabase::~QWinRTFontDatabase()
 QString QWinRTFontDatabase::fontDir() const
 {
     qCDebug(lcQpaFonts) << __FUNCTION__;
-    QString fontDirectory = QBasicFontDatabase::fontDir();
+    QString fontDirectory = QFreeTypeFontDatabase::fontDir();
     if (!QFile::exists(fontDirectory)) {
         // Fall back to app directory + fonts, and just app directory after that
         const QString applicationDirPath = QCoreApplication::applicationDirPath();
@@ -176,7 +176,7 @@ void QWinRTFontDatabase::populateFontDatabase()
     HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory1), &factory);
     if (FAILED(hr)) {
         qWarning("Failed to create DirectWrite factory: %s", qPrintable(qt_error_string(hr)));
-        QBasicFontDatabase::populateFontDatabase();
+        QFreeTypeFontDatabase::populateFontDatabase();
         return;
     }
 
@@ -184,7 +184,7 @@ void QWinRTFontDatabase::populateFontDatabase()
     hr = factory->GetSystemFontCollection(&fontCollection);
     if (FAILED(hr)) {
         qWarning("Failed to open system font collection: %s", qPrintable(qt_error_string(hr)));
-        QBasicFontDatabase::populateFontDatabase();
+        QFreeTypeFontDatabase::populateFontDatabase();
         return;
     }
 
@@ -222,7 +222,7 @@ void QWinRTFontDatabase::populateFontDatabase()
         registerFontFamily(familyName);
     }
 
-    QBasicFontDatabase::populateFontDatabase();
+    QFreeTypeFontDatabase::populateFontDatabase();
 }
 
 void QWinRTFontDatabase::populateFamily(const QString &familyName)
@@ -399,7 +399,7 @@ QFontEngine *QWinRTFontDatabase::fontEngine(const QFontDef &fontDef, void *handl
 
     IDWriteFontFile *fontFile = reinterpret_cast<IDWriteFontFile *>(handle);
     if (!m_fonts.contains(fontFile))
-        return QBasicFontDatabase::fontEngine(fontDef, handle);
+        return QFreeTypeFontDatabase::fontEngine(fontDef, handle);
 
     const void *referenceKey;
     quint32 referenceKeySize;
@@ -444,15 +444,8 @@ QFontEngine *QWinRTFontDatabase::fontEngine(const QFontDef &fontDef, void *handl
     const FontDescription description = m_fonts.value(fontFile);
     faceId.uuid = description.uuid;
     faceId.index = description.index;
-    const bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    QFontEngineFT::GlyphFormat format = antialias ? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
-    QFontEngineFT *engine = new QFontEngineFT(fontDef);
-    if (!engine->init(faceId, antialias, format, fontData) || engine->invalid()) {
-        delete engine;
-        return 0;
-    }
 
-    return engine;
+    return QFontEngineFT::create(fontDef, faceId, fontData);
 }
 
 QStringList QWinRTFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style,
@@ -468,7 +461,7 @@ QStringList QWinRTFontDatabase::fallbacksForFamily(const QString &family, QFont:
     QStringList result;
     if (family == QLatin1String("Helvetica"))
         result.append(QStringLiteral("Arial"));
-    result.append(QBasicFontDatabase::fallbacksForFamily(family, style, styleHint, script));
+    result.append(QFreeTypeFontDatabase::fallbacksForFamily(family, style, styleHint, script));
     return result;
 }
 
@@ -486,7 +479,7 @@ void QWinRTFontDatabase::releaseHandle(void *handle)
         return;
     }
 
-    QBasicFontDatabase::releaseHandle(handle);
+    QFreeTypeFontDatabase::releaseHandle(handle);
 }
 
 QT_END_NAMESPACE

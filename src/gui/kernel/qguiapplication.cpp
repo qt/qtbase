@@ -2008,6 +2008,8 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
                     buttons, e->modifiers, e->phase, e->source, e->inverted);
      ev.setTimestamp(e->timestamp);
      QGuiApplication::sendSpontaneousEvent(window, &ev);
+#else
+     Q_UNUSED(e);
 #endif /* ifndef QT_NO_WHEELEVENT */
 }
 

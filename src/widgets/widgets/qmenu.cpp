@@ -3457,7 +3457,9 @@ void QMenu::actionEvent(QActionEvent *e)
             QObject::connect(menuItem, SIGNAL(activated()), e->action(), SLOT(trigger()));
             QObject::connect(menuItem, SIGNAL(hovered()), e->action(), SIGNAL(hovered()));
             copyActionToPlatformItem(e->action(), menuItem, d->platformMenu);
-            QPlatformMenuItem* beforeItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->before()));
+            QPlatformMenuItem *beforeItem = e->before()
+                ? d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->before()))
+                : nullptr;
             d->platformMenu->insertMenuItem(menuItem, beforeItem);
         } else if (e->type() == QEvent::ActionRemoved) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));

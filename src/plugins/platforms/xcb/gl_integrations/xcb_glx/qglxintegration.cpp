@@ -693,7 +693,7 @@ void QGLXContext::queryDummyContext()
     if (const char *renderer = (const char *) glGetString(GL_RENDERER)) {
         for (int i = 0; qglx_threadedgl_blacklist_renderer[i]; ++i) {
             if (strstr(renderer, qglx_threadedgl_blacklist_renderer[i]) != 0) {
-                qCInfo(lcQpaGl).nospace() << "Multithreaded OpenGL disabled: "
+                qCDebug(lcQpaGl).nospace() << "Multithreaded OpenGL disabled: "
                                              "blacklisted renderer \""
                                           << qglx_threadedgl_blacklist_renderer[i]
                                           << "\"";
@@ -706,7 +706,7 @@ void QGLXContext::queryDummyContext()
     if (glxvendor) {
         for (int i = 0; qglx_threadedgl_blacklist_vendor[i]; ++i) {
             if (strstr(glxvendor, qglx_threadedgl_blacklist_vendor[i]) != 0) {
-                qCInfo(lcQpaGl).nospace() << "Multithreaded OpenGL disabled: "
+                qCDebug(lcQpaGl).nospace() << "Multithreaded OpenGL disabled: "
                                              "blacklisted vendor \""
                                           << qglx_threadedgl_blacklist_vendor[i]
                                           << "\"";
@@ -722,7 +722,7 @@ void QGLXContext::queryDummyContext()
         oldContext->makeCurrent(oldSurface);
 
     if (!m_supportsThreading) {
-        qCInfo(lcQpaGl) << "Force-enable multithreaded OpenGL by setting "
+        qCDebug(lcQpaGl) << "Force-enable multithreaded OpenGL by setting "
                            "environment variable QT_OPENGL_NO_SANITY_CHECK";
     }
 }

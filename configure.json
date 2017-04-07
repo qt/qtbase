@@ -247,11 +247,6 @@
             "type": "compile",
             "test": "common/c++1z"
         },
-        "cxx11default": {
-            "label": "compiler defaulting to C++11 or higher",
-            "type": "compile",
-            "test": "common/c++98default"
-        },
         "precompile_header": {
             "label": "precompiled header support",
             "type": "compile",
@@ -478,11 +473,6 @@
             "label": "Cross compiling",
             "condition": "call.crossCompile",
             "output": [ "publicConfig", "privateConfig", "publicFeature", "crossCompile" ]
-        },
-        "cxx11default": {
-            "label": "Compiler defaults to C++11 or higher",
-            "condition": "!tests.cxx11default",
-            "output": [ { "type": "publicConfig", "name": "c++11" } ]
         },
         "compiler-flags": {
             "output": [ "compilerFlags" ]

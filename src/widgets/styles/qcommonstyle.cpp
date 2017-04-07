@@ -416,6 +416,8 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         proxy()->drawItemPixmap(p, opt->rect, Qt::AlignCenter, pixmap);
         break;
     }
+#else
+    Q_UNUSED(d);
 #endif // QT_NO_TABBAR
     case PE_FrameTabWidget:
     case PE_FrameWindow:
@@ -2315,6 +2317,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
     default:
         break;
     }
+#if !QT_CONFIG(tabbar) && !QT_CONFIG(itemviews)
+    Q_UNUSED(d);
+#endif
 }
 
 /*!
@@ -3014,6 +3019,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             r = subElementRect(SE_CheckBoxIndicator, opt, widget);
             break;
         }
+        Q_FALLTHROUGH();
     case SE_ItemViewItemDecoration:
     case SE_ItemViewItemText:
     case SE_ItemViewItemFocusRect:
@@ -3058,6 +3064,9 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     }
     return r;
+#if !QT_CONFIG(tabwidget) && !QT_CONFIG(itemviews)
+    Q_UNUSED(d);
+#endif
 }
 
 #ifndef QT_NO_DIAL
@@ -4186,11 +4195,13 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             case SC_TitleBarContextHelpButton:
                 if (tb->titleBarFlags & Qt::WindowContextHelpButtonHint)
                     offset += delta;
+                Q_FALLTHROUGH();
             case SC_TitleBarMinButton:
                 if (!isMinimized && (tb->titleBarFlags & Qt::WindowMinimizeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarMinButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarNormalButton:
                 if (isMinimized && (tb->titleBarFlags & Qt::WindowMinimizeButtonHint))
                     offset += delta;
@@ -4198,21 +4209,25 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                     offset += delta;
                 else if (sc == SC_TitleBarNormalButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarMaxButton:
                 if (!isMaximized && (tb->titleBarFlags & Qt::WindowMaximizeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarMaxButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarShadeButton:
                 if (!isMinimized && (tb->titleBarFlags & Qt::WindowShadeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarShadeButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarUnshadeButton:
                 if (isMinimized && (tb->titleBarFlags & Qt::WindowShadeButtonHint))
                     offset += delta;
                 else if (sc == SC_TitleBarUnshadeButton)
                     break;
+                Q_FALLTHROUGH();
             case SC_TitleBarCloseButton:
                 if (tb->titleBarFlags & Qt::WindowSystemMenuHint)
                     offset += delta;
@@ -4357,6 +4372,9 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
      default:
         qWarning("QCommonStyle::subControlRect: Case %d not handled", cc);
     }
+#if !QT_CONFIG(slider) && !QT_CONFIG(spinbox) && !QT_CONFIG(toolbutton) && !QT_CONFIG(groupbox)
+    Q_UNUSED(widget);
+#endif
     return ret;
 }
 
@@ -5278,6 +5296,7 @@ static inline QString clearText16IconPath()
 }
 #endif // !QT_NO_IMAGEFORMAT_PNG
 
+#if defined(Q_OS_WIN) || QT_CONFIG(imageformat_png)
 static QIcon clearTextIcon(bool rtl)
 {
     const QString directionalThemeName = rtl
@@ -5301,6 +5320,7 @@ static QIcon clearTextIcon(bool rtl)
 #endif // !QT_NO_IMAGEFORMAT_PNG
     return icon;
 }
+#endif
 
 /*! \reimp */
 QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
@@ -5645,6 +5665,9 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     }
 #endif //QT_NO_IMAGEFORMAT_XPM
 
+#if !QT_CONFIG(imageformat_png) && !QT_CONFIG(imageformat_xpm) && !QT_CONFIG(imageformat_png)
+    Q_UNUSED(rtl);
+#endif
 
     return QPixmap();
 }

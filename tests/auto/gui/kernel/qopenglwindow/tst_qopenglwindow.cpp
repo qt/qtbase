@@ -31,12 +31,15 @@
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QPainter>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 class tst_QOpenGLWindow : public QObject
 {
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void create();
     void basic();
     void painter();
@@ -44,6 +47,12 @@ private slots:
     void partial();
     void underOver();
 };
+
+void tst_QOpenGLWindow::initTestCase()
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
+        QSKIP("OpenGL is not supported on this platform.");
+}
 
 void tst_QOpenGLWindow::create()
 {

@@ -103,7 +103,7 @@ template <typename T, typename Class>
 class StoredMemberFunctionCall0 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionCall0(T (Class::*_fn)() , const Class &_object)
+    StoredMemberFunctionCall0(T (Class::*_fn)(), const Class &_object)
     : fn(_fn), object(_object){ }
 
     void runFunctor() override
@@ -119,7 +119,7 @@ template <typename T, typename Class>
 class VoidStoredMemberFunctionCall0 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionCall0(T (Class::*_fn)() , const Class &_object)
+    VoidStoredMemberFunctionCall0(T (Class::*_fn)(), const Class &_object)
     : fn(_fn), object(_object){ }
 
     void runFunctor() override
@@ -150,7 +150,7 @@ public:
         this->result = (object.*fn)();
     }
 private:
-    T (Class::*fn)()const;
+    T (Class::*fn)() const;
     const Class object;
 
 };
@@ -166,7 +166,7 @@ public:
         (object.*fn)();
     }
 private:
-    T (Class::*fn)()const;
+    T (Class::*fn)() const;
     const Class object;
 
 };
@@ -181,7 +181,7 @@ template <typename T, typename Class>
 class StoredMemberFunctionPointerCall0 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionPointerCall0(T (Class::*_fn)() , Class *_object)
+    StoredMemberFunctionPointerCall0(T (Class::*_fn)(), Class *_object)
     : fn(_fn), object(_object){ }
 
     void runFunctor() override
@@ -197,7 +197,7 @@ template <typename T, typename Class>
 class VoidStoredMemberFunctionPointerCall0 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionPointerCall0(T (Class::*_fn)() , Class *_object)
+    VoidStoredMemberFunctionPointerCall0(T (Class::*_fn)(), Class *_object)
     : fn(_fn), object(_object){ }
 
     void runFunctor() override
@@ -228,7 +228,7 @@ public:
         this->result = (object->*fn)();
     }
 private:
-    T (Class::*fn)()const;
+    T (Class::*fn)() const;
     Class const *object;
 
 };
@@ -244,7 +244,7 @@ public:
         (object->*fn)();
     }
 private:
-    T (Class::*fn)()const;
+    T (Class::*fn)() const;
     Class const *object;
 
 };
@@ -306,7 +306,7 @@ template <typename T, typename Class, typename Param1, typename Arg1>
 class StoredMemberFunctionCall1 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionCall1(T (Class::*_fn)(Param1) , const Class &_object, const Arg1 &_arg1)
+    StoredMemberFunctionCall1(T (Class::*_fn)(Param1), const Class &_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
     void runFunctor() override
@@ -322,7 +322,7 @@ template <typename T, typename Class, typename Param1, typename Arg1>
 class VoidStoredMemberFunctionCall1 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionCall1(T (Class::*_fn)(Param1) , const Class &_object, const Arg1 &_arg1)
+    VoidStoredMemberFunctionCall1(T (Class::*_fn)(Param1), const Class &_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
     void runFunctor() override
@@ -353,7 +353,7 @@ public:
         this->result = (object.*fn)(arg1);
     }
 private:
-    T (Class::*fn)(Param1)const;
+    T (Class::*fn)(Param1) const;
     const Class object;
     Arg1 arg1;
 };
@@ -369,7 +369,7 @@ public:
         (object.*fn)(arg1);
     }
 private:
-    T (Class::*fn)(Param1)const;
+    T (Class::*fn)(Param1) const;
     const Class object;
     Arg1 arg1;
 };
@@ -384,7 +384,7 @@ template <typename T, typename Class, typename Param1, typename Arg1>
 class StoredMemberFunctionPointerCall1 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionPointerCall1(T (Class::*_fn)(Param1) , Class *_object, const Arg1 &_arg1)
+    StoredMemberFunctionPointerCall1(T (Class::*_fn)(Param1), Class *_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
     void runFunctor() override
@@ -400,7 +400,7 @@ template <typename T, typename Class, typename Param1, typename Arg1>
 class VoidStoredMemberFunctionPointerCall1 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionPointerCall1(T (Class::*_fn)(Param1) , Class *_object, const Arg1 &_arg1)
+    VoidStoredMemberFunctionPointerCall1(T (Class::*_fn)(Param1), Class *_object, const Arg1 &_arg1)
     : fn(_fn), object(_object), arg1(_arg1){ }
 
     void runFunctor() override
@@ -431,7 +431,7 @@ public:
         this->result = (object->*fn)(arg1);
     }
 private:
-    T (Class::*fn)(Param1)const;
+    T (Class::*fn)(Param1) const;
     Class const *object;
     Arg1 arg1;
 };
@@ -447,7 +447,7 @@ public:
         (object->*fn)(arg1);
     }
 private:
-    T (Class::*fn)(Param1)const;
+    T (Class::*fn)(Param1) const;
     Class const *object;
     Arg1 arg1;
 };
@@ -492,7 +492,7 @@ template <typename T, typename FunctionPointer, typename Arg1, typename Arg2>
 struct VoidStoredFunctorPointerCall2: public RunFunctionTask<T>
 {
     inline VoidStoredFunctorPointerCall2(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2)
-    : function(_function), arg1(_arg1), arg2(_arg2) {}
+      : function(_function), arg1(_arg1), arg2(_arg2) {}
     void runFunctor() override { (*function)(arg1, arg2); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2;
@@ -509,7 +509,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class StoredMemberFunctionCall2 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    StoredMemberFunctionCall2(T (Class::*_fn)(Param1, Param2), const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
     void runFunctor() override
@@ -525,7 +525,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class VoidStoredMemberFunctionCall2 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    VoidStoredMemberFunctionCall2(T (Class::*_fn)(Param1, Param2), const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
     void runFunctor() override
@@ -556,7 +556,7 @@ public:
         this->result = (object.*fn)(arg1, arg2);
     }
 private:
-    T (Class::*fn)(Param1, Param2)const;
+    T (Class::*fn)(Param1, Param2) const;
     const Class object;
     Arg1 arg1; Arg2 arg2;
 };
@@ -572,7 +572,7 @@ public:
         (object.*fn)(arg1, arg2);
     }
 private:
-    T (Class::*fn)(Param1, Param2)const;
+    T (Class::*fn)(Param1, Param2) const;
     const Class object;
     Arg1 arg1; Arg2 arg2;
 };
@@ -587,7 +587,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class StoredMemberFunctionPointerCall2 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    StoredMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2), Class *_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
     void runFunctor() override
@@ -603,7 +603,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class VoidStoredMemberFunctionPointerCall2 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    VoidStoredMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2), Class *_object, const Arg1 &_arg1, const Arg2 &_arg2)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
 
     void runFunctor() override
@@ -634,7 +634,7 @@ public:
         this->result = (object->*fn)(arg1, arg2);
     }
 private:
-    T (Class::*fn)(Param1, Param2)const;
+    T (Class::*fn)(Param1, Param2) const;
     Class const *object;
     Arg1 arg1; Arg2 arg2;
 };
@@ -650,7 +650,7 @@ public:
         (object->*fn)(arg1, arg2);
     }
 private:
-    T (Class::*fn)(Param1, Param2)const;
+    T (Class::*fn)(Param1, Param2) const;
     Class const *object;
     Arg1 arg1; Arg2 arg2;
 };
@@ -712,7 +712,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class StoredMemberFunctionCall3 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    StoredMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3), const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
     void runFunctor() override
@@ -728,7 +728,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class VoidStoredMemberFunctionCall3 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    VoidStoredMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3), const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
     void runFunctor() override
@@ -759,7 +759,7 @@ public:
         this->result = (object.*fn)(arg1, arg2, arg3);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3)const;
+    T (Class::*fn)(Param1, Param2, Param3) const;
     const Class object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3;
 };
@@ -775,7 +775,7 @@ public:
         (object.*fn)(arg1, arg2, arg3);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3)const;
+    T (Class::*fn)(Param1, Param2, Param3) const;
     const Class object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3;
 };
@@ -790,7 +790,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class StoredMemberFunctionPointerCall3 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    StoredMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3), Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
     void runFunctor() override
@@ -806,7 +806,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class VoidStoredMemberFunctionPointerCall3 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    VoidStoredMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3), Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
 
     void runFunctor() override
@@ -837,7 +837,7 @@ public:
         this->result = (object->*fn)(arg1, arg2, arg3);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3)const;
+    T (Class::*fn)(Param1, Param2, Param3) const;
     Class const *object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3;
 };
@@ -853,7 +853,7 @@ public:
         (object->*fn)(arg1, arg2, arg3);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3)const;
+    T (Class::*fn)(Param1, Param2, Param3) const;
     Class const *object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3;
 };
@@ -915,7 +915,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class StoredMemberFunctionCall4 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    StoredMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4), const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
     void runFunctor() override
@@ -931,7 +931,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class VoidStoredMemberFunctionCall4 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    VoidStoredMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4), const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
     void runFunctor() override
@@ -962,7 +962,7 @@ public:
         this->result = (object.*fn)(arg1, arg2, arg3, arg4);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3, Param4)const;
+    T (Class::*fn)(Param1, Param2, Param3, Param4) const;
     const Class object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
 };
@@ -978,7 +978,7 @@ public:
         (object.*fn)(arg1, arg2, arg3, arg4);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3, Param4)const;
+    T (Class::*fn)(Param1, Param2, Param3, Param4) const;
     const Class object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
 };
@@ -993,7 +993,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class StoredMemberFunctionPointerCall4 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    StoredMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4), Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
     void runFunctor() override
@@ -1009,7 +1009,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class VoidStoredMemberFunctionPointerCall4 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    VoidStoredMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4), Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
 
     void runFunctor() override
@@ -1040,7 +1040,7 @@ public:
         this->result = (object->*fn)(arg1, arg2, arg3, arg4);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3, Param4)const;
+    T (Class::*fn)(Param1, Param2, Param3, Param4) const;
     Class const *object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
 };
@@ -1056,7 +1056,7 @@ public:
         (object->*fn)(arg1, arg2, arg3, arg4);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3, Param4)const;
+    T (Class::*fn)(Param1, Param2, Param3, Param4) const;
     Class const *object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
 };
@@ -1102,7 +1102,7 @@ struct VoidStoredFunctorPointerCall5: public RunFunctionTask<T>
 {
     inline VoidStoredFunctorPointerCall5(FunctionPointer * _function, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
       : function(_function), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5) {}
-    void runFunctor() override {(*function)(arg1, arg2, arg3, arg4, arg5); }
+    void runFunctor() override { (*function)(arg1, arg2, arg3, arg4, arg5); }
     FunctionPointer * function;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
 };
@@ -1118,7 +1118,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class StoredMemberFunctionCall5 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    StoredMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5), const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
     void runFunctor() override
@@ -1134,7 +1134,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class VoidStoredMemberFunctionCall5 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) , const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    VoidStoredMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5), const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
     void runFunctor() override
@@ -1165,7 +1165,7 @@ public:
         this->result = (object.*fn)(arg1, arg2, arg3, arg4, arg5);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5)const;
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) const;
     const Class object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
 };
@@ -1181,7 +1181,7 @@ public:
         (object.*fn)(arg1, arg2, arg3, arg4, arg5);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5)const;
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) const;
     const Class object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
 };
@@ -1196,7 +1196,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class StoredMemberFunctionPointerCall5 : public RunFunctionTask<T>
 {
 public:
-    StoredMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    StoredMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5), Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
     void runFunctor() override
@@ -1212,7 +1212,7 @@ template <typename T, typename Class, typename Param1, typename Arg1, typename P
 class VoidStoredMemberFunctionPointerCall5 : public RunFunctionTask<T>
 {
 public:
-    VoidStoredMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) , Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    VoidStoredMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5), Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
     : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
 
     void runFunctor() override
@@ -1243,7 +1243,7 @@ public:
         this->result = (object->*fn)(arg1, arg2, arg3, arg4, arg5);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5)const;
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) const;
     Class const *object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
 };
@@ -1259,7 +1259,7 @@ public:
         (object->*fn)(arg1, arg2, arg3, arg4, arg5);
     }
 private:
-    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5)const;
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) const;
     Class const *object;
     Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
 };

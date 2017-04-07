@@ -508,23 +508,42 @@ void tst_LargeFile::mapFile()
 }
 
 //Mac: memory-mapping beyond EOF may succeed but it could generate bus error on access
+//FreeBSD: same
+//Linux: memory-mapping beyond EOF usually succeeds, but depends on the filesystem
+//  32-bit: limited to 44-bit offsets
+//Windows: memory-mapping beyond EOF is not allowed
 void tst_LargeFile::mapOffsetOverflow()
 {
-#ifndef Q_OS_MAC
-    // Out-of-range mappings should fail, and not silently clip the offset
-    for (int i = 50; i < 63; ++i) {
+    enum {
+#ifdef Q_OS_WIN
+        Succeeds = false,
+        MaxOffset = 63
+#else
+        Succeeds = true,
+#  if (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && Q_PROCESSOR_WORDSIZE == 4
+        MaxOffset = 43
+#  else
+        MaxOffset = 63
+#  endif
+#endif
+    };
+
+    QByteArray zeroPage(blockSize, '\0');
+    for (int i = maxSizeBits + 1; i < 63; ++i) {
+        bool succeeds = Succeeds && (i <= MaxOffset);
         uchar *address = 0;
+        qint64 offset = Q_INT64_C(1) << i;
 
-        address = largeFile.map(((qint64)1 << i), blockSize);
-#if defined(__x86_64__)
-        QEXPECT_FAIL("", "fails on 64-bit Linux (QTBUG-21175)", Abort);
-#endif
-        QVERIFY( !address );
+        if (succeeds)
+            QTest::ignoreMessage(QtWarningMsg, "QFSFileEngine::map: Mapping a file beyond its size is not portable");
+        address = largeFile.map(offset, blockSize);
+        QCOMPARE(!!address, succeeds);
 
-        address = largeFile.map(((qint64)1 << i) + blockSize, blockSize);
-        QVERIFY( !address );
+        if (succeeds)
+            QTest::ignoreMessage(QtWarningMsg, "QFSFileEngine::map: Mapping a file beyond its size is not portable");
+        address = largeFile.map(offset + blockSize, blockSize);
+        QCOMPARE(!!address, succeeds);
     }
-#endif
 }
 
 QTEST_APPLESS_MAIN(tst_LargeFile)

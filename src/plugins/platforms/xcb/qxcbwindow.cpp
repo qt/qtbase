@@ -284,6 +284,8 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         free_prop = false;
 #if QT_CONFIG(textcodec)
     }
+#else
+    Q_UNUSED(dpy);
 #endif
     return &tp;
 }
@@ -916,7 +918,7 @@ void QXcbWindow::doFocusIn()
     if (relayFocusToModalWindow())
         return;
     QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver();
-    connection()->setFocusWindow(static_cast<QXcbWindow *>(w->handle()));
+    connection()->setFocusWindow(w);
     QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
 }
 
@@ -924,7 +926,7 @@ static bool focusInPeeker(QXcbConnection *connection, xcb_generic_event_t *event
 {
     if (!event) {
         // FocusIn event is not in the queue, proceed with FocusOut normally.
-        QWindowSystemInterface::handleWindowActivated(0, Qt::ActiveWindowFocusReason);
+        QWindowSystemInterface::handleWindowActivated(nullptr, Qt::ActiveWindowFocusReason);
         return true;
     }
     uint response_type = event->response_type & ~0x80;
@@ -949,12 +951,10 @@ static bool focusInPeeker(QXcbConnection *connection, xcb_generic_event_t *event
 
 void QXcbWindow::doFocusOut()
 {
-    if (relayFocusToModalWindow())
-        return;
-    connection()->setFocusWindow(0);
-    // Do not set the active window to 0 if there is a FocusIn coming.
-    // There is however no equivalent for XPutBackEvent so register a
-    // callback for QXcbConnection instead.
+    connection()->setFocusWindow(nullptr);
+    relayFocusToModalWindow();
+    // Do not set the active window to nullptr if there is a FocusIn coming.
+    // The FocusIn handler will update QXcbConnection::setFocusWindow() accordingly.
     connection()->addPeekFunc(focusInPeeker);
 }
 
@@ -2746,14 +2746,14 @@ void QXcbWindow::handleXEmbedMessage(const xcb_client_message_event_t *event)
             reason = Qt::OtherFocusReason;
             break;
         }
-        connection()->setFocusWindow(static_cast<QXcbWindow*>(window()->handle()));
+        connection()->setFocusWindow(window());
         QWindowSystemInterface::handleWindowActivated(window(), reason);
         break;
     case XEMBED_FOCUS_OUT:
         if (window() == QGuiApplication::focusWindow()
             && !activeWindowChangeQueued(window())) {
-            connection()->setFocusWindow(0);
-            QWindowSystemInterface::handleWindowActivated(0);
+            connection()->setFocusWindow(nullptr);
+            QWindowSystemInterface::handleWindowActivated(nullptr);
         }
         break;
     }

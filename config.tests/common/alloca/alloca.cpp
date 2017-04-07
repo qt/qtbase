@@ -39,6 +39,9 @@
 
 #include <alloca.h>
 
+// extra include needed in QNX7 to define NULL for the alloca() macro
+#include <stdlib.h>
+
 int main(int, char **)
 {
     alloca(1);

@@ -3,6 +3,9 @@ TARGET = tst_qdirmodel
 QT += widgets testlib
 SOURCES         += tst_qdirmodel.cpp
 
+INCLUDEPATH += ../../../../shared/
+HEADERS += ../../../../shared/emulationdetector.h
+
 wince* {
 	addit.files = dirtest\\test1\\*
 	addit.path = dirtest\\test1

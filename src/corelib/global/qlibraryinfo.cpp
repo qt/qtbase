@@ -663,6 +663,8 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
                 + QLatin1String("Arguments");
         return settings->value(key).toStringList();
     }
+#else
+    Q_UNUSED(platformName);
 #endif // !QT_BUILD_QMAKE && !QT_NO_SETTINGS
     return QStringList();
 }

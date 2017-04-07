@@ -677,6 +677,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
     fid.filename = QFile::encodeName(fontfile->fileName);
     fid.index = fontfile->indexValue;
 
+    // FIXME: Unify with logic in QFontEngineFT::create()
     QFontEngineFT *engine = new QFontEngineFT(f);
     engine->face_id = fid;
 
@@ -692,7 +693,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
 
 QFontEngine *QFontconfigDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
-    QFontEngineFT *engine = static_cast<QFontEngineFT*>(QBasicFontDatabase::fontEngine(fontData, pixelSize, hintingPreference));
+    QFontEngineFT *engine = static_cast<QFontEngineFT*>(QFreeTypeFontDatabase::fontEngine(fontData, pixelSize, hintingPreference));
     if (engine == 0)
         return 0;
 
@@ -844,7 +845,7 @@ QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, 
 
 QString QFontconfigDatabase::resolveFontFamilyAlias(const QString &family) const
 {
-    QString resolved = QBasicFontDatabase::resolveFontFamilyAlias(family);
+    QString resolved = QFreeTypeFontDatabase::resolveFontFamilyAlias(family);
     if (!resolved.isEmpty() && resolved != family)
         return resolved;
     FcPattern *pattern = FcPatternCreate();

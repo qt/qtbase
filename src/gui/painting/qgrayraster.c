@@ -183,6 +183,8 @@ typedef ptrdiff_t  QT_FT_PtrDist;
 #include <private/qrasterdefs_p.h>
 #include <private/qgrayraster_p.h>
 
+#include <qcompilerdetection.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -1201,13 +1203,13 @@ QT_FT_END_STMNT
          */
         switch ( spans->len )
         {
-        case 7: *q++ = coverage;
-        case 6: *q++ = coverage;
-        case 5: *q++ = coverage;
-        case 4: *q++ = coverage;
-        case 3: *q++ = coverage;
-        case 2: *q++ = coverage;
-        case 1: *q   = coverage;
+        case 7: *q++ = coverage; Q_FALLTHROUGH();
+        case 6: *q++ = coverage; Q_FALLTHROUGH();
+        case 5: *q++ = coverage; Q_FALLTHROUGH();
+        case 4: *q++ = coverage; Q_FALLTHROUGH();
+        case 3: *q++ = coverage; Q_FALLTHROUGH();
+        case 2: *q++ = coverage; Q_FALLTHROUGH();
+        case 1: *q   = coverage; Q_FALLTHROUGH();
         case 0: break;
         default:
           QT_FT_MEM_SET( q, coverage, spans->len );

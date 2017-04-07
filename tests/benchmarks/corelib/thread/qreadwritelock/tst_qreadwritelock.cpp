@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
-** Contact: http://www.qt.io/licensing/
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **

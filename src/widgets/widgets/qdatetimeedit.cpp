@@ -1113,6 +1113,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
                        && !(event->modifiers() & ~(Qt::ShiftModifier|Qt::KeypadModifier));
             break;
         }
+        Q_FALLTHROUGH();
     case Qt::Key_Left:
     case Qt::Key_Right:
         if (event->key() == Qt::Key_Left || event->key() == Qt::Key_Right) {
