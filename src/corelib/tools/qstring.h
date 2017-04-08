@@ -805,6 +805,7 @@ public:
     inline void push_back(const QString &s) { append(s); }
     inline void push_front(QChar c) { prepend(c); }
     inline void push_front(const QString &s) { prepend(s); }
+    void shrink_to_fit() { squeeze(); }
 
     static inline QString fromStdString(const std::string &s);
     inline std::string toStdString() const;

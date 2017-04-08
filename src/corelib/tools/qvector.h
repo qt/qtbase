@@ -268,6 +268,7 @@ public:
     inline const_reference front() const { return first(); }
     inline reference back() { return last(); }
     inline const_reference back() const { return last(); }
+    void shrink_to_fit() { squeeze(); }
 
     // comfort
     QVector<T> &operator+=(const QVector<T> &l);

@@ -423,6 +423,7 @@ public:
     inline void push_front(char c);
     inline void push_front(const char *c);
     inline void push_front(const QByteArray &a);
+    void shrink_to_fit() { squeeze(); }
 
     static inline QByteArray fromStdString(const std::string &s);
     inline std::string toStdString() const;

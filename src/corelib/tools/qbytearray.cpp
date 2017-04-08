@@ -1134,6 +1134,13 @@ static inline char qToLower(char c)
     Same as prepend(\a ch).
 */
 
+/*! \fn void QByteArray::shrink_to_fit()
+    \since 5.10
+
+    This function is provided for STL compatibility. It is equivalent to
+    squeeze().
+*/
+
 /*! \fn QByteArray::QByteArray(const QByteArray &other)
 
     Constructs a copy of \a other.

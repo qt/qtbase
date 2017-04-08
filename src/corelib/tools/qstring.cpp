@@ -8469,6 +8469,15 @@ bool QString::isRightToLeft() const
     Appends the given \a ch character onto the end of this string.
 */
 
+/*! \fn void QString::shrink_to_fit()
+    \since 5.10
+
+    This function is provided for STL compatibility. It is
+    equivalent to squeeze().
+
+    \sa squeeze()
+*/
+
 /*!
     \fn std::string QString::toStdString() const
 

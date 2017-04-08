@@ -190,6 +190,12 @@
     \overload
 */
 
+/*! \fn void QVarLengthArray::shrink_to_fit()
+    \since 5.10
+
+    Same as squeeze(). Provided for STL-compatibility.
+*/
+
 /*! \fn bool QVarLengthArray::isEmpty() const
 
     Returns \c true if the array has size 0; otherwise returns \c false.

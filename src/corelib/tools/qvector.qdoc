@@ -1124,6 +1124,13 @@
     \overload
 */
 
+/*! \fn void QVector::shrink_to_fit()
+    \since 5.10
+
+    This function is provided for STL compatibility. It is equivalent
+    to squeeze().
+*/
+
 /*! \fn bool QVector::empty() const
 
     This function is provided for STL compatibility. It is equivalent

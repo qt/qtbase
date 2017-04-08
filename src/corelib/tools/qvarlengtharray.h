@@ -231,6 +231,7 @@ public:
     inline const T &front() const { return first(); }
     inline T &back() { return last(); }
     inline const T &back() const { return last(); }
+    void shrink_to_fit() { squeeze(); }
 
 private:
     void realloc(int size, int alloc);
