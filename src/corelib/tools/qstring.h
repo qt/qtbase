@@ -91,10 +91,10 @@ class QStringView;
 class QLatin1String;
 template <typename T> class QVector;
 
-Q_CORE_EXPORT int qCompareStrings(QStringView   lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-Q_CORE_EXPORT int qCompareStrings(QStringView   lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-Q_CORE_EXPORT int qCompareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-Q_CORE_EXPORT int qCompareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
 Q_CORE_EXPORT QByteArray qConvertToLatin1(QStringView str) Q_REQUIRED_RESULT;
 Q_CORE_EXPORT QByteArray qConvertToUtf8(QStringView str) Q_REQUIRED_RESULT;
