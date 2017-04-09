@@ -392,9 +392,16 @@ void tst_QUuid::qvariant_conversion()
     QUuid uuid = QUuid::createUuid();
     QVariant v = QVariant::fromValue(uuid);
 
+    // QUuid -> QString
     QVERIFY(v.canConvert<QString>());
     QCOMPARE(v.toString(), uuid.toString());
     QCOMPARE(v.value<QString>(), uuid.toString());
+
+    // QUuid -> QByteArray
+    QVERIFY(v.canConvert<QByteArray>());
+    QCOMPARE(v.toByteArray(), uuid.toByteArray());
+    QCOMPARE(v.value<QByteArray>(), uuid.toByteArray());
+
     QVERIFY(!v.canConvert<int>());
     QVERIFY(!v.canConvert<QStringList>());
 
@@ -403,6 +410,14 @@ void tst_QUuid::qvariant_conversion()
     QCOMPARE(sv.type(), QVariant::String);
     QVERIFY(sv.canConvert<QUuid>());
     QCOMPARE(sv.value<QUuid>(), uuid);
+
+    // QString -> QUuid
+    {
+        QVariant sv = QVariant::fromValue(uuid.toByteArray());
+        QCOMPARE(sv.type(), QVariant::ByteArray);
+        QVERIFY(sv.canConvert<QUuid>());
+        QCOMPARE(sv.value<QUuid>(), uuid);
+    }
 }
 
 void tst_QUuid::darwinTypes()
