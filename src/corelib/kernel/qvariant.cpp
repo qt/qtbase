@@ -2525,8 +2525,9 @@ QRegularExpression QVariant::toRegularExpression() const
 /*!
     \since 5.0
 
-    Returns the variant as a QUuid if the variant has userType() \l
-    QUuid; otherwise returns a default constructed QUuid.
+    Returns the variant as a QUuid if the variant has type()
+    \l QMetaType::QUuid or \l QMetaType::QString;
+    otherwise returns a default-constructed QUuid.
 
     \sa canConvert(), convert()
 */
@@ -2994,7 +2995,7 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
         \l QMetaType::QDate, \l QMetaType::QDateTime, \l QMetaType::Double,
         \l QMetaType::QFont, \l QMetaType::Int, \l QMetaType::QKeySequence,
         \l QMetaType::LongLong, \l QMetaType::QStringList, \l QMetaType::QTime,
-        \l QMetaType::UInt, \l QMetaType::ULongLong
+        \l QMetaType::UInt, \l QMetaType::ULongLong, \l QMetaType::QUuid
     \row \li \l QMetaType::QStringList \li \l QMetaType::QVariantList,
         \l QMetaType::QString (if the list contains exactly one item)
     \row \li \l QMetaType::QTime \li \l QMetaType::QString
@@ -3004,6 +3005,7 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
     \row \li \l QMetaType::ULongLong \li \l QMetaType::Bool,
         \l QMetaType::QChar, \l QMetaType::Double, \l QMetaType::Int,
         \l QMetaType::LongLong, \l QMetaType::QString, \l QMetaType::UInt
+    \row \li \l QMetaType::QUuid \li \l QMetaType::QString
     \endtable
 
     A QVariant containing a pointer to a type derived from QObject will also return true for this
