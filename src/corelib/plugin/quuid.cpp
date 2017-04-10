@@ -67,8 +67,8 @@ void _q_toHex(char *&dst, Integral value)
     }
 }
 
-template <class Char, class Integral>
-bool _q_fromHex(const Char *&src, Integral &value)
+template <class Integral>
+bool _q_fromHex(const char *&src, Integral &value)
 {
     value = 0;
 
@@ -102,30 +102,46 @@ static char *_q_uuidToHex(const QUuid &uuid, char *dst)
     return dst;
 }
 
-template <class Char>
-bool _q_uuidFromHex(const Char *&src, uint &d1, ushort &d2, ushort &d3, uchar (&d4)[8])
+/*!
+    \internal
+
+    Parses the string representation of a UUID (with optional surrounding "{}")
+    by reading at most MaxStringUuidLength (38) characters from \a src, which
+    may be \c nullptr. Stops at the first invalid character (which includes a
+    premature NUL).
+
+    Returns the successfully parsed QUuid, or a null QUuid in case of failure.
+*/
+Q_NEVER_INLINE
+static QUuid _q_uuidFromHex(const char *src)
 {
-    if (*src == Char('{'))
-        src++;
-    if (!_q_fromHex(src, d1)
-            || *src++ != Char('-')
-            || !_q_fromHex(src, d2)
-            || *src++ != Char('-')
-            || !_q_fromHex(src, d3)
-            || *src++ != Char('-')
-            || !_q_fromHex(src, d4[0])
-            || !_q_fromHex(src, d4[1])
-            || *src++ != Char('-')
-            || !_q_fromHex(src, d4[2])
-            || !_q_fromHex(src, d4[3])
-            || !_q_fromHex(src, d4[4])
-            || !_q_fromHex(src, d4[5])
-            || !_q_fromHex(src, d4[6])
-            || !_q_fromHex(src, d4[7])) {
-        return false;
+    uint d1;
+    ushort d2, d3;
+    uchar d4[8];
+
+    if (src) {
+        if (*src == '{')
+            src++;
+        if (Q_LIKELY(   _q_fromHex(src, d1)
+                     && *src++ == '-'
+                     && _q_fromHex(src, d2)
+                     && *src++ == '-'
+                     && _q_fromHex(src, d3)
+                     && *src++ == '-'
+                     && _q_fromHex(src, d4[0])
+                     && _q_fromHex(src, d4[1])
+                     && *src++ == '-'
+                     && _q_fromHex(src, d4[2])
+                     && _q_fromHex(src, d4[3])
+                     && _q_fromHex(src, d4[4])
+                     && _q_fromHex(src, d4[5])
+                     && _q_fromHex(src, d4[6])
+                     && _q_fromHex(src, d4[7]))) {
+            return QUuid(d1, d2, d3, d4[0], d4[1], d4[2], d4[3], d4[4], d4[5], d4[6], d4[7]);
+        }
     }
 
-    return true;
+    return QUuid();
 }
 
 #ifndef QT_BOOTSTRAPPED
@@ -336,7 +352,7 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 /*!
   Creates a QUuid object from the string \a text, which must be
   formatted as five hex fields separated by '-', e.g.,
-  "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where 'x' is a hex
+  "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
   digit. The curly braces shown here are optional, but it is normal to
   include them. If the conversion fails, a null UUID is created.  See
   toString() for an explanation of how the five hex fields map to the
@@ -345,45 +361,76 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
     \sa toString(), QUuid()
 */
 QUuid::QUuid(const QString &text)
+    : QUuid(fromString(text))
 {
-    if (text.length() < 36) {
-        *this = QUuid();
-        return;
-    }
+}
 
-    const ushort *data = reinterpret_cast<const ushort *>(text.unicode());
+/*!
+    \since 5.10
 
-    if (*data == '{' && text.length() < 37) {
-        *this = QUuid();
-        return;
-    }
+    Creates a QUuid object from the string \a text, which must be
+    formatted as five hex fields separated by '-', e.g.,
+    "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
+    digit. The curly braces shown here are optional, but it is normal to
+    include them. If the conversion fails, a null UUID is returned.  See
+    toString() for an explanation of how the five hex fields map to the
+    public data members in QUuid.
 
-    if (!_q_uuidFromHex(data, data1, data2, data3, data4)) {
-        *this = QUuid();
-        return;
+    \sa toString(), QUuid()
+*/
+QUuid QUuid::fromString(QStringView text) Q_DECL_NOTHROW
+{
+    if (text.size() > MaxStringUuidLength)
+        text = text.left(MaxStringUuidLength); // text.truncate(MaxStringUuidLength);
+
+    char latin1[MaxStringUuidLength + 1];
+    char *dst = latin1;
+
+    for (QChar ch : text)
+        *dst++ = ch.toLatin1();
+
+    *dst++ = '\0'; // don't read garbage as potentially valid data
+
+    return _q_uuidFromHex(latin1);
+}
+
+/*!
+    \since 5.10
+    \overload
+
+    Creates a QUuid object from the string \a text, which must be
+    formatted as five hex fields separated by '-', e.g.,
+    "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
+    digit. The curly braces shown here are optional, but it is normal to
+    include them. If the conversion fails, a null UUID is returned.  See
+    toString() for an explanation of how the five hex fields map to the
+    public data members in QUuid.
+
+    \sa toString(), QUuid()
+*/
+QUuid QUuid::fromString(QLatin1String text) Q_DECL_NOTHROW
+{
+    if (Q_UNLIKELY(text.size() < MaxStringUuidLength - 2
+                   || (text.front() == QLatin1Char('{') && text.size() < MaxStringUuidLength - 1))) {
+        // Too short. Don't call _q_uuidFromHex(); QL1Ss need not be NUL-terminated,
+        // and we don't want to read trailing garbage as potentially valid data.
+        text = QLatin1String();
     }
+    return _q_uuidFromHex(text.data());
 }
 
 /*!
     \internal
 */
 QUuid::QUuid(const char *text)
+    : QUuid(_q_uuidFromHex(text))
 {
-    if (!text) {
-        *this = QUuid();
-        return;
-    }
-
-    if (!_q_uuidFromHex(text, data1, data2, data3, data4)) {
-        *this = QUuid();
-        return;
-    }
 }
 
 /*!
   Creates a QUuid object from the QByteArray \a text, which must be
   formatted as five hex fields separated by '-', e.g.,
-  "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where 'x' is a hex
+  "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
   digit. The curly braces shown here are optional, but it is normal to
   include them. If the conversion fails, a null UUID is created.  See
   toByteArray() for an explanation of how the five hex fields map to the
@@ -394,23 +441,8 @@ QUuid::QUuid(const char *text)
     \sa toByteArray(), QUuid()
 */
 QUuid::QUuid(const QByteArray &text)
+    : QUuid(fromString(QLatin1String(text.data(), text.size())))
 {
-    if (text.length() < 36) {
-        *this = QUuid();
-        return;
-    }
-
-    const char *data = text.constData();
-
-    if (*data == '{' && text.length() < 37) {
-        *this = QUuid();
-        return;
-    }
-
-    if (!_q_uuidFromHex(data, data1, data2, data3, data4)) {
-        *this = QUuid();
-        return;
-    }
 }
 
 /*!

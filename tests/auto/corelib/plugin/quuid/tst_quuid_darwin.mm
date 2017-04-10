@@ -36,7 +36,7 @@ void tst_QUuid_darwinTypes()
 {
     // QUuid <-> CFUUID
     {
-        QUuid qtUuid(QByteArrayLiteral("0f7169cc-5711-4af9-99d9-fecb2329fdef"));
+        const auto qtUuid = QUuid::fromString(QLatin1String("0f7169cc-5711-4af9-99d9-fecb2329fdef"));
         const CFUUIDRef cfuuid = qtUuid.toCFUUID();
         QCOMPARE(QUuid::fromCFUUID(cfuuid), qtUuid);
         CFStringRef cfstring = CFUUIDCreateString(0, cfuuid);
@@ -45,10 +45,10 @@ void tst_QUuid_darwinTypes()
         CFRelease(cfuuid);
     }
     {
-        QUuid qtUuid(QByteArrayLiteral("0f7169cc-5711-4af9-99d9-fecb2329fdef"));
+        auto qtUuid = QUuid::fromString(QLatin1String("0f7169cc-5711-4af9-99d9-fecb2329fdef"));
         const CFUUIDRef cfuuid = qtUuid.toCFUUID();
         QUuid qtUuidCopy(qtUuid);
-        qtUuid = QUuid(QByteArrayLiteral("93eec131-13c5-4d13-aaea-e456b4c57efa")); // modify
+        qtUuid = QUuid::fromString(QLatin1String("93eec131-13c5-4d13-aaea-e456b4c57efa")); // modify
         QCOMPARE(QUuid::fromCFUUID(cfuuid), qtUuidCopy);
         CFStringRef cfstring = CFUUIDCreateString(0, cfuuid);
         QCOMPARE(QString::fromCFString(cfstring), qtUuidCopy.toString().mid(1, 36).toUpper());
@@ -59,7 +59,7 @@ void tst_QUuid_darwinTypes()
     {
         QMacAutoReleasePool pool;
 
-        QUuid qtUuid(QByteArrayLiteral("0f7169cc-5711-4af9-99d9-fecb2329fdef"));
+        const auto qtUuid = QUuid::fromString(QLatin1String("0f7169cc-5711-4af9-99d9-fecb2329fdef"));
         const NSUUID *nsuuid = qtUuid.toNSUUID();
         QCOMPARE(QUuid::fromNSUUID(nsuuid), qtUuid);
         QCOMPARE(QString::fromNSString([nsuuid UUIDString]), qtUuid.toString().mid(1, 36).toUpper());
@@ -67,10 +67,10 @@ void tst_QUuid_darwinTypes()
     {
         QMacAutoReleasePool pool;
 
-        QUuid qtUuid(QByteArrayLiteral("0f7169cc-5711-4af9-99d9-fecb2329fdef"));
+        auto qtUuid = QUuid::fromString(QLatin1String("0f7169cc-5711-4af9-99d9-fecb2329fdef"));
         const NSUUID *nsuuid = qtUuid.toNSUUID();
         QUuid qtUuidCopy(qtUuid);
-        qtUuid = QUuid(QByteArrayLiteral("93eec131-13c5-4d13-aaea-e456b4c57efa")); // modify
+        qtUuid = QUuid::fromString(QLatin1String("93eec131-13c5-4d13-aaea-e456b4c57efa")); // modify
         QCOMPARE(QUuid::fromNSUUID(nsuuid), qtUuidCopy);
         QCOMPARE(QString::fromNSString([nsuuid UUIDString]), qtUuidCopy.toString().mid(1, 36).toUpper());
     }

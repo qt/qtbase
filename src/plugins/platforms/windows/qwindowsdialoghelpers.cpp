@@ -909,7 +909,7 @@ IShellItem *QWindowsNativeFileDialogBase::shellItem(const QUrl &url)
         // (see https://msdn.microsoft.com/en-us/library/windows/desktop/dd378457(v=vs.85).aspx)
         // specified as "clsid:<GUID>" (without '{', '}').
         IShellItem *result = Q_NULLPTR;
-        const QUuid uuid(url.path());
+        const auto uuid = QUuid::fromString(url.path());
         if (uuid.isNull()) {
             qWarning() << __FUNCTION__ << ": Invalid CLSID: " << url.path();
             return Q_NULLPTR;

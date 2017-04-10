@@ -223,7 +223,7 @@ QUuid VcprojGenerator::getProjectUUID(const QString &filename)
     bool validUUID = true;
 
     // Read GUID from variable-space
-    QUuid uuid = project->first("GUID").toQString();
+    auto uuid = QUuid::fromString(project->first("GUID").toQStringView());
 
     // If none, create one based on the MD5 of absolute project path
     if(uuid.isNull() || !filename.isEmpty()) {

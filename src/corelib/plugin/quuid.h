@@ -116,6 +116,8 @@ public:
 #endif
 
     QUuid(const QString &);
+    static QUuid fromString(QStringView string) Q_DECL_NOTHROW;
+    static QUuid fromString(QLatin1String string) Q_DECL_NOTHROW;
     QUuid(const char *);
     QString toString() const;
     QUuid(const QByteArray &);
