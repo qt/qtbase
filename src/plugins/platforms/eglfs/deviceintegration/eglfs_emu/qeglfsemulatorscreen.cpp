@@ -110,6 +110,11 @@ uint QEglFSEmulatorScreen::id() const
     return m_id;
 }
 
+QString QEglFSEmulatorScreen::name() const
+{
+    return m_description;
+}
+
 void QEglFSEmulatorScreen::initFromJsonObject(const QJsonObject &description)
 {
     QJsonValue value;

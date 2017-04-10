@@ -62,6 +62,7 @@ public:
     qreal refreshRate() const override;
     Qt::ScreenOrientation nativeOrientation() const override;
     Qt::ScreenOrientation orientation() const override;
+    QString name() const override;
 
     uint id() const;
 
