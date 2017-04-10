@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -49,16 +50,20 @@
 #endif
 QT_BEGIN_NAMESPACE
 
-template <class Char, class Integral>
-void _q_toHex(Char *&dst, Integral value)
+// 16 bytes (a uint, two shorts and a uchar[8]), each represented by two hex
+// digits; plus four dashes and a pair of enclosing brace: 16*2 + 4 + 2 = 38.
+enum { MaxStringUuidLength = 38 };
+
+template <class Integral>
+void _q_toHex(char *&dst, Integral value)
 {
     value = qToBigEndian(value);
 
     const char* p = reinterpret_cast<const char*>(&value);
 
     for (uint i = 0; i < sizeof(Integral); ++i, dst += 2) {
-        dst[0] = Char(QtMiscUtils::toHexLower((p[i] >> 4) & 0xf));
-        dst[1] = Char(QtMiscUtils::toHexLower(p[i] & 0xf));
+        dst[0] = QtMiscUtils::toHexLower((p[i] >> 4) & 0xf);
+        dst[1] = QtMiscUtils::toHexLower(p[i] & 0xf);
     }
 }
 
@@ -79,22 +84,22 @@ bool _q_fromHex(const Char *&src, Integral &value)
     return true;
 }
 
-template <class Char>
-void _q_uuidToHex(Char *&dst, const uint &d1, const ushort &d2, const ushort &d3, const uchar (&d4)[8])
+static char *_q_uuidToHex(const QUuid &uuid, char *dst)
 {
-    *dst++ = Char('{');
-    _q_toHex(dst, d1);
-    *dst++ = Char('-');
-    _q_toHex(dst, d2);
-    *dst++ = Char('-');
-    _q_toHex(dst, d3);
-    *dst++ = Char('-');
+    *dst++ = '{';
+    _q_toHex(dst, uuid.data1);
+    *dst++ = '-';
+    _q_toHex(dst, uuid.data2);
+    *dst++ = '-';
+    _q_toHex(dst, uuid.data3);
+    *dst++ = '-';
     for (int i = 0; i < 2; i++)
-        _q_toHex(dst, d4[i]);
-    *dst++ = Char('-');
+        _q_toHex(dst, uuid.data4[i]);
+    *dst++ = '-';
     for (int i = 2; i < 8; i++)
-        _q_toHex(dst, d4[i]);
-    *dst = Char('}');
+        _q_toHex(dst, uuid.data4[i]);
+    *dst++ = '}';
+    return dst;
 }
 
 template <class Char>
@@ -548,12 +553,11 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 */
 QString QUuid::toString() const
 {
-    QString result(38, Qt::Uninitialized);
-    ushort *data = (ushort *)result.data();
-
-    _q_uuidToHex(data, data1, data2, data3, data4);
-
-    return result;
+    char latin1[MaxStringUuidLength];
+    const auto end = _q_uuidToHex(*this, latin1);
+    Q_ASSERT(end - latin1 == MaxStringUuidLength);
+    Q_UNUSED(end);
+    return QString::fromLatin1(latin1, MaxStringUuidLength);
 }
 
 /*!
@@ -594,11 +598,10 @@ QString QUuid::toString() const
 */
 QByteArray QUuid::toByteArray() const
 {
-    QByteArray result(38, Qt::Uninitialized);
-    char *data = result.data();
-
-    _q_uuidToHex(data, data1, data2, data3, data4);
-
+    QByteArray result(MaxStringUuidLength, Qt::Uninitialized);
+    const auto end = _q_uuidToHex(*this, const_cast<char*>(result.constData()));
+    Q_ASSERT(end - result.constData() == MaxStringUuidLength);
+    Q_UNUSED(end);
     return result;
 }
 
