@@ -45,7 +45,7 @@
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QFunctionPointer>
 
-typedef const char *(EGLAPIENTRYP PFNQGSGETDISPLAYSPROC) ();
+typedef QByteArray (EGLAPIENTRYP PFNQGSGETDISPLAYSPROC) ();
 typedef void (EGLAPIENTRYP PFNQGSSETDISPLAYPROC) (uint screen);
 
 QT_BEGIN_NAMESPACE
