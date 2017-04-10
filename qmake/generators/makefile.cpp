@@ -3297,19 +3297,19 @@ MakefileGenerator::writePkgConfigFile()
     }
     t << shellQuote(pkgConfiglibName) << " \n";
 
-    ProStringList libs;
-    if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS")) {
-        libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
-    } else {
-        libs << "QMAKE_LIBS"; //obvious one
+    if (project->isActiveConfig("staticlib")) {
+        ProStringList libs;
+        if (!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
+            libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
+        else
+            libs << "QMAKE_LIBS"; //obvious one
+        libs << "QMAKE_LIBS_PRIVATE";
+        libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
+        t << "Libs.private:";
+        for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
+            t << ' ' << fixLibFlags((*it).toKey()).join(' ');
+        t << endl;
     }
-    libs << "QMAKE_LIBS_PRIVATE";
-    libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
-    t << "Libs.private: ";
-    for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it) {
-        t << fixLibFlags((*it).toKey()).join(' ') << ' ';
-    }
-    t << endl;
 
     // flags
     // ### too many
