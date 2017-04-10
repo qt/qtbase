@@ -825,9 +825,13 @@ bool QTextHtmlImporter::closeTag()
                 break;
 
             case Html_div:
-                if (closedNode->children.isEmpty())
-                    break;
-                Q_FALLTHROUGH();
+                if (cursor.position() > 0) {
+                    const QChar curChar = cursor.document()->characterAt(cursor.position() - 1);
+                    if (!closedNode->children.isEmpty() && curChar != QChar::LineSeparator) {
+                        blockTagClosed = true;
+                    }
+                }
+                break;
             default:
                 if (closedNode->isBlock())
                     blockTagClosed = true;

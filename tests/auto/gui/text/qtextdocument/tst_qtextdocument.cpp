@@ -134,6 +134,7 @@ private slots:
     void clearResources();
 
     void setPlainText();
+    void toPlainText_data();
     void toPlainText();
     void toRawText();
 
@@ -2391,10 +2392,27 @@ void tst_QTextDocument::setPlainText()
     QCOMPARE(doc->toPlainText(), s);
 }
 
+void tst_QTextDocument::toPlainText_data()
+{
+    QTest::addColumn<QString>("html");
+    QTest::addColumn<QString>("expectedPlainText");
+
+    QTest::newRow("nbsp") << "Hello&nbsp;World" << "Hello World";
+    QTest::newRow("empty_div") << "<div></div>hello" << "hello";
+    QTest::newRow("br_and_p") << "<p>first<br></p><p>second<br></p>" << "first\n\nsecond\n";
+    QTest::newRow("div") << "first<div>second<br>third</div>fourth" << "first\nsecond\nthird\nfourth";                             // <div> and </div> become newlines...
+    QTest::newRow("br_text_end_of_div") << "<div><div>first<br>moretext</div>second<br></div>" << "first\nmoretext\nsecond\n";     // ... when there is text before <div>
+    QTest::newRow("br_end_of_div_like_gmail") << "<div><div><div>first<br></div>second<br></div>third<br></div>" << "first\nsecond\nthird\n"; // ... and when there is text before </div>
+    QTest::newRow("p_and_div") << "<div><div>first<p>second</p></div>third</div>" << "first\nsecond\nthird";
+}
+
 void tst_QTextDocument::toPlainText()
 {
-    doc->setHtml("Hello&nbsp;World");
-    QCOMPARE(doc->toPlainText(), QLatin1String("Hello World"));
+    QFETCH(QString, html);
+    QFETCH(QString, expectedPlainText);
+
+    doc->setHtml(html);
+    QCOMPARE(doc->toPlainText(), expectedPlainText);
 }
 
 void tst_QTextDocument::toRawText()
