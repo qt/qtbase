@@ -96,16 +96,14 @@ EphemeralSecKeychain::EphemeralSecKeychain()
         return;
     }
 
-    QString uuidAsString(uuid.toString());
-    Q_ASSERT(uuidAsString.size() > 2);
-    Q_ASSERT(uuidAsString.startsWith(QLatin1Char('{'))
-             && uuidAsString.endsWith(QLatin1Char('}')));
-    uuidAsString = uuidAsString.mid(1, uuidAsString.size() - 2);
+    const QByteArray uuidAsByteArray = uuid.toByteArray();
+    Q_ASSERT(uuidAsByteArray.size() > 2);
+    Q_ASSERT(uuidAsByteArray.startsWith('{'));
+    Q_ASSERT(uuidAsByteArray.endsWith('}'));
+    const auto uuidAsString = QLatin1String(uuidAsByteArray.data(), uuidAsByteArray.size()).mid(1, uuidAsByteArray.size() - 2);
 
-    QString keychainName(QDir::tempPath());
-    keychainName.append(QDir::separator());
-    keychainName += uuidAsString;
-    keychainName += QLatin1String(".keychain");
+    const QString keychainName
+            = QDir::tempPath() + QDir::separator() + uuidAsString + QLatin1String(".keychain");
     // SecKeychainCreate, pathName parameter:
     //
     // "A constant character string representing the POSIX path indicating where
