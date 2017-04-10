@@ -2287,10 +2287,11 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
     tm local;
     bool valid = false;
 
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // localtime() is required to work as if tzset() was called before it.
     // localtime_r() does not have this requirement, so make an explicit call.
+    // The explicit call should also request the timezone info be re-parsed.
     qt_tzset();
+#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // Use the reentrant version of localtime() where available
     // as is thread-safe and doesn't use a shared static data area
     tm *res = 0;
