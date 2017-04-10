@@ -1438,7 +1438,7 @@ void QDockWidget::paintEvent(QPaintEvent *event)
         }
 
         // Title must be painted after the frame, since the areas overlap, and
-        // the title may wish to extend out to all sides (eg. XP style)
+        // the title may wish to extend out to all sides (eg. Vista style)
         QStyleOptionDockWidget titleOpt;
         initStyleOption(&titleOpt);
         p.drawControl(QStyle::CE_DockWidgetTitle, titleOpt);

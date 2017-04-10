@@ -36,10 +36,6 @@
 
   \table
   \row
-  \li \image windowsxp-tabwidget.png Windows XP Style Widget Gallery
-  \caption \l{Windows XP Style Widget Gallery}
-
-  The Windows XP style is provided by QWindowsXPStyle.
   \li \image windows-tabwidget.png Windows Style Widget Gallery
   \caption \l{Windows Style Widget Gallery}
 

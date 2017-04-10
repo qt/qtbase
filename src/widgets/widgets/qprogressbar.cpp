@@ -220,7 +220,7 @@ bool QProgressBarPrivate::repaintRequired() const
 
     Note that whether or not the text is drawn is dependent on the style.
     Currently CleanLooks and Plastique draw the text. Mac, Windows
-    and WindowsXP style do not.
+    and WindowsVista style do not.
 
     \sa textDirection
 */

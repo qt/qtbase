@@ -2291,8 +2291,8 @@ int QStyle::sliderValueFromPosition(int min, int max, int pos, int span, bool up
      Returns the style's standard palette.
 
     Note that on systems that support system colors, the style's
-    standard palette is not used. In particular, the Windows XP,
-    Vista, and Mac styles do not use the standard palette, but make
+    standard palette is not used. In particular, the Windows
+    Vista and Mac styles do not use the standard palette, but make
     use of native theme engines. With these styles, you should not set
     the palette with QApplication::setPalette().
 

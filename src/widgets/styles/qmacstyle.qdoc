@@ -82,7 +82,7 @@
     documentation.
 
     \image qmacstyle.png
-    \sa QWindowsXPStyle, QWindowsStyle, QFusionStyle
+    \sa QWindowsVistaStyle, QWindowsStyle, QFusionStyle
 */
 
 

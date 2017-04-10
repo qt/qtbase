@@ -86,9 +86,6 @@ private slots:
     void testFusionStyle();
 #endif
     void testWindowsStyle();
-#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
-    void testWindowsXPStyle();
-#endif
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     void testWindowsVistaStyle();
 #endif
@@ -147,12 +144,7 @@ void tst_QStyle::testStyleFactory()
     QVERIFY(keys.contains("Windows"));
 #endif
 #ifdef Q_OS_WIN
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP &&
-        (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
-        QVERIFY(keys.contains("WindowsXP"));
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA &&
-        (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
-        QVERIFY(keys.contains("WindowsVista"));
+    QVERIFY(keys.contains("WindowsVista"));
 #endif
 
     foreach (QString styleName , keys) {
@@ -340,17 +332,6 @@ void tst_QStyle::testWindowsStyle()
     delete wstyle;
 }
 
-#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
-// WindowsXP style
-void tst_QStyle::testWindowsXPStyle()
-{
-    QStyle *xpstyle = QStyleFactory::create("WindowsXP");
-    QVERIFY(testAllFunctions(xpstyle));
-    lineUpLayoutTest(xpstyle);
-    delete xpstyle;
-}
-#endif
-
 void writeImage(const QString &fileName, QImage image)
 {
     QImageWriter imageWriter(fileName);
@@ -373,8 +354,6 @@ void tst_QStyle::testWindowsVistaStyle()
 
     if (QSysInfo::WindowsVersion == QSysInfo::WV_VISTA)
         testPainting(vistastyle, "vista");
-    else if (QSysInfo::WindowsVersion == QSysInfo::WV_XP)
-        testPainting(vistastyle, "xp");
     delete vistastyle;
 }
 #endif

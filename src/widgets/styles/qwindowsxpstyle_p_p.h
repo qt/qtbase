@@ -94,7 +94,7 @@ QT_BEGIN_NAMESPACE
 // Uncomment define below to build debug assisting code, and output
 // #define DEBUG_XP_STYLE
 
-#if QT_CONFIG(style_windowsxp)
+#if QT_CONFIG(style_windowsvista)
 
 // Declarations -----------------------------------------------------------------------------------
 class XPThemeData

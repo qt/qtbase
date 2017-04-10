@@ -48,9 +48,7 @@ qtConfig(style-mac) {
 qtConfig(style-windowsvista) {
     HEADERS += styles/qwindowsvistastyle_p.h styles/qwindowsvistastyle_p_p.h
     SOURCES += styles/qwindowsvistastyle.cpp
-}
 
-qtConfig(style-windowsxp) {
     HEADERS += styles/qwindowsxpstyle_p.h styles/qwindowsxpstyle_p_p.h
     SOURCES += styles/qwindowsxpstyle.cpp
 }

@@ -110,7 +110,6 @@ Cpp.ignoretokens        += \
                           Q_GUI_EXPORT_STYLE_POCKETPC \
                           Q_GUI_EXPORT_STYLE_SGI \
                           Q_GUI_EXPORT_STYLE_WINDOWS \
-                          Q_GUI_EXPORT_STYLE_WINDOWSXP \
                           Q_INLINE_TEMPLATE \
                           Q_INTERNAL_WIN_NO_THROW \
                           Q_INVOKABLE \

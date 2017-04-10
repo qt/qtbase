@@ -50,9 +50,6 @@
 #include "qandroidstyle_p.h"
 #endif
 #endif
-#if QT_CONFIG(style_windowsxp)
-#include "qwindowsxpstyle_p.h"
-#endif
 #if QT_CONFIG(style_windowsvista)
 #include "qwindowsvistastyle_p.h"
 #endif
@@ -81,7 +78,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 
     The valid keys can be retrieved using the keys()
     function. Typically they include "windows" and "fusion".
-    Depending on the platform, "windowsxp", "windowsvista"
+    Depending on the platform, "windowsvista"
     and "macintosh" may be available.
     Note that keys are case insensitive.
 
@@ -106,11 +103,6 @@ QStyle *QStyleFactory::create(const QString& key)
 #if QT_CONFIG(style_windows)
     if (style == QLatin1String("windows"))
         ret = new QWindowsStyle;
-    else
-#endif
-#if QT_CONFIG(style_windowsxp)
-    if (style == QLatin1String("windowsxp"))
-        ret = new QWindowsXPStyle;
     else
 #endif
 #if QT_CONFIG(style_windowsvista)
@@ -163,11 +155,6 @@ QStringList QStyleFactory::keys()
 #if QT_CONFIG(style_windows)
     if (!list.contains(QLatin1String("Windows")))
         list << QLatin1String("Windows");
-#endif
-#if QT_CONFIG(style_windowsxp)
-    if (!list.contains(QLatin1String("WindowsXP")) &&
-        (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
-        list << QLatin1String("WindowsXP");
 #endif
 #if QT_CONFIG(style_windowsvista)
     if (!list.contains(QLatin1String("WindowsVista")) &&

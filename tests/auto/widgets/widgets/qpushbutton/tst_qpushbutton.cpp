@@ -520,9 +520,6 @@ void tst_QPushButton::sizeHint_data()
 #if !defined(QT_NO_STYLE_FUSION)
     QTest::newRow("fusion") << QString::fromLatin1("fusion");
 #endif
-#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
-    QTest::newRow("windowsxp") << QString::fromLatin1("windowsxp");
-#endif
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     QTest::newRow("windowsvista") << QString::fromLatin1("windowsvista");
 #endif

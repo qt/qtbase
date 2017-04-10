@@ -80,7 +80,7 @@
     the QPalette::Button role to red for a QPushButton to obtain a
     red push button. However, this wasn't guaranteed to work for all
     styles, because style authors are restricted by the different
-    platforms' guidelines and (on Windows XP and \macos) by the
+    platforms' guidelines and (on Windows and \macos) by the
     native theme engine.
 
     Style sheets let you perform all kinds of customizations that are
@@ -111,10 +111,8 @@
     will.
 
     \table
-    \row \li \inlineimage stylesheet-coffee-xp.png
-         \li \inlineimage stylesheet-pagefold.png
-    \row \li Coffee theme running on Windows XP
-         \li Pagefold theme running on Windows XP
+    \row \li \inlineimage stylesheet-pagefold.png
+    \row \li Pagefold theme running on Windows
     \endtable
 
     \table
@@ -128,7 +126,7 @@
     is a wrapper "style sheet" style, \e not the platform-specific style. The
     wrapper style ensures that any active style sheet is respected and
     otherwise forwards the drawing operations to the underlying,
-    platform-specific style (e.g., QWindowsXPStyle on Windows XP).
+    platform-specific style (e.g., QWindowsVistaStyle on Windows).
 
     Since Qt 4.5, Qt style sheets fully supports \macos.
 
@@ -3532,7 +3530,7 @@
 
     \list
     \li We have made a request that cannot be satisfied using the
-       native styles alone (e.g., the Windows XP theme engine doesn't
+       native styles alone (e.g., the Windows Vista theme engine doesn't
        let us specify the background color of a button).
     \li Therefore, the button is rendered using style sheets.
     \li We haven't specified any values for

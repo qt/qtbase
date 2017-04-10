@@ -1227,7 +1227,7 @@ void QApplication::setStyle(QStyle *style)
     Requests a QStyle object for \a style from the QStyleFactory.
 
     The string must be one of the QStyleFactory::keys(), typically one of
-    "windows", "fusion", "windowsxp", or "macintosh". Style
+    "windows", "windowsvista", "fusion", or "macintosh". Style
     names are case insensitive.
 
     Returns 0 if an unknown \a style is passed, otherwise the QStyle object
@@ -1470,8 +1470,8 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
     "selection-background-color" and "alternate-background-color".
 
     \note Some styles do not use the palette for all drawing, for instance, if
-    they make use of native theme engines. This is the case for the Windows XP,
-    Windows Vista, and \macos styles.
+    they make use of native theme engines. This is the case for the
+    Windows Vista and \macos styles.
 
     \sa QWidget::setPalette(), palette(), QStyle::polish()
 */

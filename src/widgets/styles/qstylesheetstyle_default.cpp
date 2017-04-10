@@ -78,7 +78,7 @@ using namespace QCss;
     bSelector.pseudos << pseudo
 
 // This is attributes. The third parameter is AttributeSelector::*
-// Ex. QComboBox[style="QWindowsXPStyle"]
+// Ex. QComboBox[style="QWindowsVistaStyle"]
 //                 ^           ^
 
 #define ADD_ATTRIBUTE_SELECTOR(x, y, z) \
@@ -155,7 +155,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
 
     // pixmap based style doesn't support any features
     bool styleIsPixmapBased = baseStyle()->inherits("QMacStyle")
-                           || baseStyle()->inherits("QWindowsXPStyle");
+                           || baseStyle()->inherits("QWindowsVistaStyle");
 
 
     /*QLineEdit {

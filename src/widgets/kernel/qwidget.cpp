@@ -4510,7 +4510,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     The default depends on the system environment. QApplication maintains a
     system/theme palette which serves as a default for all widgets.  There may
     also be special palette defaults for certain types of widgets (e.g., on
-    Windows XP and Vista, all classes that derive from QMenuBar have a special
+    Windows Vista, all classes that derive from QMenuBar have a special
     default palette). You can also define default palettes for widgets
     yourself by passing a custom palette and the name of a widget to
     QApplication::setPalette(). Finally, the style always has the option of
@@ -4528,8 +4528,8 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     The current style, which is used to render the content of all standard Qt
     widgets, is free to choose colors and brushes from the widget palette, or
     in some cases, to ignore the palette (partially, or completely). In
-    particular, certain styles like GTK style, Mac style, Windows XP, and
-    Vista style, depend on third party APIs to render the content of widgets,
+    particular, certain styles like GTK style, Mac style, and Windows Vista
+    style, depend on third party APIs to render the content of widgets,
     and these styles typically do not follow the palette. Because of this,
     assigning roles to a widget's palette is not guaranteed to change the
     appearance of the widget. Instead, you may choose to apply a \l
@@ -4691,7 +4691,7 @@ void QWidgetPrivate::updateSystemBackground()
     The current style, which is used to render the content of all standard Qt
     widgets, is free to choose to use the widget font, or in some cases, to
     ignore it (partially, or completely). In particular, certain styles like
-    GTK style, Mac style, Windows XP, and Vista style, apply special
+    GTK style, Mac style, and Windows Vista style, apply special
     modifications to the widget font to match the platform's native look and
     feel. Because of this, assigning properties to a widget's font is not
     guaranteed to change the appearance of the widget. Instead, you may choose

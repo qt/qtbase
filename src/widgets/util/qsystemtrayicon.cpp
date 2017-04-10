@@ -350,7 +350,7 @@ bool QSystemTrayIcon::event(QEvent *e)
 
     Currently this signal is not sent on \macos.
 
-    \note We follow Microsoft Windows XP/Vista behavior, so the
+    \note We follow Microsoft Windows behavior, so the
     signal is also emitted when the user clicks on a tray icon with
     a balloon message displayed.
 

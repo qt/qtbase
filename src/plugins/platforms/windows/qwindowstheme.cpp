@@ -415,13 +415,7 @@ static inline QStringList iconThemeSearchPaths()
 
 static inline QStringList styleNames()
 {
-    QStringList result;
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA)
-        result.append(QStringLiteral("WindowsVista"));
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP)
-        result.append(QStringLiteral("WindowsXP"));
-    result.append(QStringLiteral("Windows"));
-    return result;
+    return { QStringLiteral("WindowsVista"), QStringLiteral("Windows") };
 }
 
 static inline int uiEffects()
