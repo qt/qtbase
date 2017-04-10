@@ -913,6 +913,19 @@ public:
         CurrencyDisplayName
     };
 
+    enum DataSizeFormat {
+        // Single-bit values, for internal use.
+        DataSizeBase1000 = 1, // use factors of 1000 instead of IEC's 1024;
+        DataSizeSIQuantifiers = 2, // use SI quantifiers instead of IEC ones.
+
+        // Flags values for use in API:
+        DataSizeIecFormat = 0, // base 1024, KiB, MiB, GiB, ...
+        DataSizeTraditionalFormat = DataSizeSIQuantifiers, // base 1024, kB, MB, GB, ...
+        DataSizeSIFormat = DataSizeBase1000 | DataSizeSIQuantifiers // base 1000, kB, MB, GB, ...
+    };
+    Q_DECLARE_FLAGS(DataSizeFormats, DataSizeFormat)
+    Q_FLAG(DataSizeFormats)
+
     QLocale();
     QLocale(const QString &name);
     QLocale(Language language, Country country = AnyCountry);
@@ -1044,6 +1057,8 @@ public:
     inline QString toCurrencyString(float i, const QString &symbol, int precision) const
     { return toCurrencyString(double(i), symbol, precision); }
 #endif
+
+    QString formattedDataSize(qint64 bytes, int precision = 2, DataSizeFormats format = DataSizeIecFormat);
 
     QStringList uiLanguages() const;
 

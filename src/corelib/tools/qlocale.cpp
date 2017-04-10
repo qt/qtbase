@@ -61,6 +61,7 @@
 #include "qvariant.h"
 #include "qstringbuilder.h"
 #include "private/qnumeric_p.h"
+#include <cmath>
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
 #   include <time.h>
@@ -3778,6 +3779,76 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
         sym = currencySymbol(QLocale::CurrencyIsoCode);
     QString format = getLocaleData(currency_format_data + idx, size);
     return format.arg(str, sym);
+}
+
+/*!
+    \since 5.10
+
+    \enum QLocale::DataSizeFormat
+
+    Specifies the format for representation of data quantities.
+
+    \omitvalue DataSizeBase1000
+    \omitvalue DataSizeSIQuantifiers
+    \value DataSizeIecFormat            format using base 1024 and IEC prefixes: KiB, MiB, GiB, ...
+    \value DataSizeTraditionalFormat    format using base 1024 and SI prefixes: kB, MB, GB, ...
+    \value DataSizeSIFormat             format using base 1000 and SI prefixes: kB, MB, GB, ...
+
+    \sa formattedDataSize()
+*/
+
+/*!
+    \since 5.10
+
+    Converts a size in bytes to a human-readable localized string, expressed in
+    a unit for which the numeric portion is at least 1 but as low as
+    possible. For example if \a bytes is 16384, \a precision is 2, and \a format
+    is \c DataSizeIecFormat (the default), this function returns "16.00 KiB";
+    for 1330409069609 bytes it returns "1.21 GiB"; and so on. If \a format is \c
+    DataSizeIecFormat or \c DataSizeTraditionalFormat, the given number of bytes
+    is divided by a power of 1024, with result less than 1024; for \c
+    DataSizeSIFormat, it is divided by a power of 1000, with result less than
+    1000.  DataSizeIecFormat uses the new IEC standard quantifiers Ki, Mi and so
+    on, whereas DataSizeSIFormat uses and DataSizeTraditionalFormat abuses the
+    older SI quantifiers k, M, etc.
+
+    \sa refresh(), caching()
+*/
+QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format)
+{
+    int power, base = 1000;
+    if (!bytes) {
+        power = 0;
+    } else if (format & DataSizeBase1000) {
+        power = int(std::log10(qAbs(bytes)) / 3);
+    } else { // Compute log2(bytes) / 10:
+        power = int((63 - qCountLeadingZeroBits(quint64(qAbs(bytes)))) / 10);
+        base = 1024;
+    }
+    // Only go to doubles if we'll be using a quantifier:
+    const QString number = power
+        ? toString(bytes / std::pow(double(base), power), 'f', qMin(precision, 3 * power))
+        : toString(bytes);
+
+    // We don't support sizes in units larger than exbibytes because
+    // the number of bytes would not fit into qint64.
+    Q_ASSERT(power <= 6 && power >= 0);
+    QString unit;
+    if (power > 0) {
+        quint16 index, size;
+        if (format & DataSizeSIQuantifiers) {
+            index = d->m_data->m_byte_si_quantified_idx;
+            size = d->m_data->m_byte_si_quantified_size;
+        } else {
+            index = d->m_data->m_byte_iec_quantified_idx;
+            size = d->m_data->m_byte_iec_quantified_size;
+        }
+        unit = getLocaleListData(byte_unit_data + index, size, power - 1);
+    } else {
+        unit = getLocaleData(byte_unit_data + d->m_data->m_byte_idx, d->m_data->m_byte_size);
+    }
+
+    return number + QLatin1Char(' ') + unit;
 }
 
 /*!

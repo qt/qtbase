@@ -52,24 +52,9 @@
 #include "storagemodel.h"
 
 #include <QDir>
+#include <QLocale>
 #include <qmath.h>
 #include <cmath>
-
-static QString sizeToString(qint64 size)
-{
-    static const char *const strings[] = { "b", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-
-    if (size <= 0)
-        return StorageModel::tr("0 b");
-
-    double power = std::log((double)size)/std::log(1024.0);
-    int intPower = (int)power;
-    intPower = intPower >= 8 ? 8 - 1 : intPower;
-
-    double normSize = size / std::pow(1024.0, intPower);
-    //: this should expand to "1.23 GB"
-    return StorageModel::tr("%1 %2").arg(normSize, 0, 'f', intPower > 0 ? 2 : 0).arg(strings[intPower]);
-}
 
 StorageModel::StorageModel(QObject *parent) :
     QAbstractTableModel(parent),
@@ -106,11 +91,11 @@ QVariant StorageModel::data(const QModelIndex &index, int role) const
         case ColumnFileSystemName:
             return volume.fileSystemType();
         case ColumnTotal:
-            return sizeToString(volume.bytesTotal());
+            return QLocale().formattedDataSize(volume.bytesTotal());
         case ColumnFree:
-            return sizeToString(volume.bytesFree());
+            return QLocale().formattedDataSize(volume.bytesFree());
         case ColumnAvailable:
-            return sizeToString(volume.bytesAvailable());
+            return QLocale().formattedDataSize(volume.bytesAvailable());
         case ColumnIsReady:
             return volume.isReady();
         case ColumnIsReadOnly:
@@ -121,6 +106,7 @@ QVariant StorageModel::data(const QModelIndex &index, int role) const
             break;
         }
     } else if (role == Qt::ToolTipRole) {
+        QLocale locale;
         const QStorageInfo &volume = m_volumes.at(index.row());
         return tr("Root path : %1\n"
                   "Name: %2\n"
@@ -140,9 +126,9 @@ QVariant StorageModel::data(const QModelIndex &index, int role) const
                 arg(volume.displayName()).
                 arg(QString::fromUtf8(volume.device())).
                 arg(QString::fromUtf8(volume.fileSystemType())).
-                arg(sizeToString(volume.bytesTotal())).
-                arg(sizeToString(volume.bytesFree())).
-                arg(sizeToString(volume.bytesAvailable())).
+                arg(locale.formattedDataSize(volume.bytesTotal())).
+                arg(locale.formattedDataSize(volume.bytesFree())).
+                arg(locale.formattedDataSize(volume.bytesAvailable())).
                 arg(volume.isReady() ? tr("true") : tr("false")).
                 arg(volume.isReadOnly() ? tr("true") : tr("false")).
                 arg(volume.isValid() ? tr("true") : tr("false")).

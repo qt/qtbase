@@ -137,6 +137,9 @@ private slots:
     void textDirection_data();
     void textDirection();
 
+    void formattedDataSize_data();
+    void formattedDataSize();
+
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
@@ -2471,6 +2474,81 @@ void tst_QLocale::textDirection()
 
     QLocale locale(QLocale::Language(language), QLocale::Script(script), QLocale::AnyCountry);
     QCOMPARE(locale.textDirection() == Qt::RightToLeft, rightToLeft);
+}
+
+void tst_QLocale::formattedDataSize_data()
+{
+    QTest::addColumn<QLocale::Language>("language");
+    QTest::addColumn<int>("decimalPlaces");
+    QTest::addColumn<QLocale::DataSizeFormats>("units");
+    QTest::addColumn<int>("bytes");
+    QTest::addColumn<QString>("output");
+
+    struct {
+        const char *name;
+        QLocale::Language lang;
+        const char *bytes;
+        const char abbrev;
+        const char sep; // decimal separator
+    } data[] = {
+        { "English", QLocale::English, "bytes", 'B', '.' },
+        { "French", QLocale::French, "octets", 'o', ',' },
+        { "C", QLocale::C, "bytes", 'B', '.' }
+    };
+
+    for (const auto row : data) {
+#define ROWB(id, deci, num, text)                 \
+        QTest::addRow("%s-%s", row.name, id)      \
+            << row.lang << deci << format         \
+            << num << (QString(text) + QChar(' ') + QString(row.bytes))
+#define ROWQ(id, deci, num, head, tail)           \
+        QTest::addRow("%s-%s", row.name, id)      \
+            << row.lang << deci << format         \
+            << num << (QString(head) + QChar(row.sep) + QString(tail) + QChar(row.abbrev))
+
+        // Metatype system fails to handle raw enum members as format; needs variable
+        {
+            const QLocale::DataSizeFormats format = QLocale::DataSizeIecFormat;
+            ROWB("IEC-0", 2, 0, "0");
+            ROWB("IEC-10", 2, 10, "10");
+            ROWQ("IEC-12Ki", 2, 12345, "12", "06 Ki");
+            ROWQ("IEC-16Ki", 2, 16384, "16", "00 Ki");
+            ROWQ("IEC-1235k", 2, 1234567, "1", "18 Mi");
+            ROWQ("IEC-1374k", 2, 1374744, "1", "31 Mi");
+            ROWQ("IEC-1234M", 2, 1234567890, "1", "15 Gi");
+        }
+        {
+            const QLocale::DataSizeFormats format = QLocale::DataSizeTraditionalFormat;
+            ROWB("Trad-0", 2, 0, "0");
+            ROWB("Trad-10", 2, 10, "10");
+            ROWQ("Trad-12Ki", 2, 12345, "12", "06 k");
+            ROWQ("Trad-16Ki", 2, 16384, "16", "00 k");
+            ROWQ("Trad-1235k", 2, 1234567, "1", "18 M");
+            ROWQ("Trad-1374k", 2, 1374744, "1", "31 M");
+            ROWQ("Trad-1234M", 2, 1234567890, "1", "15 G");
+        }
+        {
+            const QLocale::DataSizeFormats format = QLocale::DataSizeSIFormat;
+            ROWB("Decimal-0", 2, 0, "0");
+            ROWB("Decimal-10", 2, 10, "10");
+            ROWQ("Decimal-16Ki", 2, 16384, "16", "38 k");
+            ROWQ("Decimal-1234k", 2, 1234567, "1", "23 M");
+            ROWQ("Decimal-1374k", 2, 1374744, "1", "37 M");
+            ROWQ("Decimal-1234M", 2, 1234567890, "1", "23 G");
+        }
+#undef ROWQ
+#undef ROWB
+    }
+}
+
+void tst_QLocale::formattedDataSize()
+{
+    QFETCH(QLocale::Language, language);
+    QFETCH(int, decimalPlaces);
+    QFETCH(QLocale::DataSizeFormats, units);
+    QFETCH(int, bytes);
+    QFETCH(QString, output);
+    QCOMPARE(QLocale(language).formattedDataSize(bytes, decimalPlaces, units), output);
 }
 
 QTEST_MAIN(tst_QLocale)
