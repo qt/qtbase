@@ -2110,7 +2110,12 @@ QMacStyle::QMacStyle()
       name:NSPreferredScrollerStyleDidChangeNotification
       object:nil];
 
-    d->nsscroller = [[NSScroller alloc] init];
+    // Create scroller objects. Scroller internal direction setup happens
+    // on initWithFrame and cannot be changed later on. Create two scrollers
+    // initialized with fake geometry. Correct geometry is set at draw time.
+    d->horizontalScroller = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
+    d->verticalScroller = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
+
     d->indicatorBranchButtonCell = nil;
 }
 
@@ -2119,7 +2124,8 @@ QMacStyle::~QMacStyle()
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    [reinterpret_cast<NSScroller*>(d->nsscroller) release];
+    [d->horizontalScroller release];
+    [d->verticalScroller release];
 
     NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
     [[NSNotificationCenter defaultCenter] removeObserver:receiver];
@@ -5451,8 +5457,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 [NSGraphicsContext setCurrentContext:[NSGraphicsContext
                      graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
-                NSScroller *scroller = reinterpret_cast<NSScroller*>(d->nsscroller);
-                [scroller initWithFrame:NSMakeRect(0, 0, slider->rect.width(), slider->rect.height())];
+                NSScroller *scroller = isHorizontal ? d->horizontalScroller : d-> verticalScroller;
                 // mac os behaviour: as soon as one color channel is >= 128,
                 // the bg is considered bright, scroller is dark
                 const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);

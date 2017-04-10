@@ -115,6 +115,9 @@
 // We mean it.
 //
 
+Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSScroller);
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -246,7 +249,8 @@ public:
     CFAbsoluteTime defaultButtonStart;
     bool mouseDown;
     void* receiver;
-    void *nsscroller;
+    NSScroller *horizontalScroller;
+    NSScroller *verticalScroller;
     void *indicatorBranchButtonCell;
     NSView *backingStoreNSView;
     QHash<QCocoaWidget, NSView *> cocoaControls;
