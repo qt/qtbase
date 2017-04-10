@@ -53,6 +53,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qurl.h>
+#include <QtCore/quuid.h>
 
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
@@ -162,6 +163,11 @@ template<> inline char *toString(const QUrl &uri)
     if (!uri.isValid())
         return qstrdup(qPrintable(QLatin1String("Invalid URL: ") + uri.errorString()));
     return qstrdup(uri.toEncoded().constData());
+}
+
+template <> inline char *toString(const QUuid &uuid)
+{
+    return qstrdup(uuid.toByteArray().constData());
 }
 
 template<> inline char *toString(const QVariant &v)
