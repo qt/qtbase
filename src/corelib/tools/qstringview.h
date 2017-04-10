@@ -103,12 +103,12 @@ struct IsCompatibleStdBasicString
 
 class QStringView
 {
+public:
 #if defined(Q_OS_WIN) && !defined(Q_COMPILER_UNICODE_STRINGS)
     typedef wchar_t storage_type;
 #else
     typedef char16_t storage_type;
 #endif
-public:
     typedef const QChar value_type;
     typedef std::ptrdiff_t difference_type;
     typedef qssize_t size_type;
