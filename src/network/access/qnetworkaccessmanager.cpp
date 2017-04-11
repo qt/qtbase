@@ -1045,7 +1045,7 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
 {
     Q_D(const QNetworkAccessManager);
 
-    if (d->networkConfiguration.state().testFlag(QNetworkConfiguration::Undefined))
+    if (d->customNetworkConfiguration && d->networkConfiguration.state().testFlag(QNetworkConfiguration::Undefined))
         return UnknownAccessibility;
 
     if (d->networkSessionRequired) {
@@ -1841,6 +1841,7 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
     } else if (state == QNetworkSession::Connected || state == QNetworkSession::Roaming) {
         reallyOnline = true;
     }
+    online = reallyOnline;
 
     if (!reallyOnline) {
         if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
@@ -1856,7 +1857,6 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
                 emit q->networkAccessibleChanged(networkAccessible);
             }
     }
-    online = reallyOnline;
     if (online && (state != QNetworkSession::Connected && state != QNetworkSession::Roaming)) {
         _q_networkSessionClosed();
         createSession(q->configuration());
