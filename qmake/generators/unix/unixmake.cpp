@@ -180,6 +180,13 @@ UnixMakefileGenerator::init()
                 // icc style
                 pchFlags.replace(QLatin1String("${QMAKE_PCH_OUTPUT}"),
                                  escapeFilePath(pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT")));
+                const ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
+                for (const ProString &arch : pchArchs) {
+                    QString suffix = project->first("QMAKE_PCH_OUTPUT_EXT").toQString();
+                    suffix.replace(QLatin1String("${QMAKE_PCH_ARCH}"), arch.toQString());
+                    pchFlags.replace(QLatin1String("${QMAKE_PCH_OUTPUT_") + arch + QLatin1Char('}'),
+                                     escapeFilePath(pchBaseName + suffix));
+                }
             } else {
                 // gcc style (including clang_pch_style)
                 QString headerSuffix;
@@ -334,10 +341,19 @@ QStringList
             header_prefix += project->first("QMAKE_PCH_OUTPUT_EXT").toQString();
         if (project->isActiveConfig("icc_pch_style")) {
             // icc style
-            for(QStringList::Iterator it = Option::cpp_ext.begin(); it != Option::cpp_ext.end(); ++it) {
-                if(file.endsWith(*it)) {
-                    ret += header_prefix;
-                    break;
+            ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
+            if (pchArchs.isEmpty())
+                pchArchs << ProString(); // normal single-arch PCH
+            for (const ProString &arch : qAsConst(pchArchs)) {
+                auto pfx = header_prefix;
+                if (!arch.isEmpty())
+                    pfx.replace(QLatin1String("${QMAKE_PCH_ARCH}"), arch.toQString());
+                for (QStringList::Iterator it = Option::cpp_ext.begin();
+                    it != Option::cpp_ext.end(); ++it) {
+                    if (file.endsWith(*it)) {
+                        ret += pfx;
+                        break;
+                    }
                 }
             }
         } else {

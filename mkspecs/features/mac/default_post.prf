@@ -157,13 +157,23 @@ macx-xcode {
     # Enable precompiled headers for multiple architectures
     QMAKE_CFLAGS_USE_PRECOMPILE =
     for (arch, VALID_ARCHS) {
+        icc_pch_style: \
+            use_flag = "-pch-use "
+        else: \
+            use_flag = -include
+
         QMAKE_CFLAGS_USE_PRECOMPILE += \
             -Xarch_$${arch} \
-            -include${QMAKE_PCH_OUTPUT_$${arch}}
+            $${use_flag}${QMAKE_PCH_OUTPUT_$${arch}}
     }
-    QMAKE_CXXFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
-    QMAKE_OBJCFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
-    QMAKE_OBJCXXFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
+    icc_pch_style {
+        QMAKE_CXXFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE -include ${QMAKE_PCH_INPUT}
+        QMAKE_CFLAGS_USE_PRECOMPILE =
+    } else {
+        QMAKE_CXXFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
+        QMAKE_OBJCFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
+        QMAKE_OBJCXXFLAGS_USE_PRECOMPILE = $$QMAKE_CFLAGS_USE_PRECOMPILE
+    }
 
     QMAKE_PCH_OUTPUT_EXT = _${QMAKE_PCH_ARCH}$${QMAKE_PCH_OUTPUT_EXT}
 }
