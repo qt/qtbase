@@ -40,10 +40,10 @@ qt {
 !bitcode: QMAKE_LFLAGS += $$QMAKE_LFLAGS_HEADERPAD
 
 app_extension_api_only {
-    QMAKE_CFLAGS              += -fapplication-extension
-    QMAKE_CXXFLAGS            += -fapplication-extension
-    QMAKE_CXXFLAGS_PRECOMPILE += -fapplication-extension
-    QMAKE_LFLAGS              += -fapplication-extension
+    QMAKE_CFLAGS              += $$QMAKE_CFLAGS_APPLICATION_EXTENSION
+    QMAKE_CXXFLAGS            += $$QMAKE_CFLAGS_APPLICATION_EXTENSION
+    QMAKE_CXXFLAGS_PRECOMPILE += $$QMAKE_CFLAGS_APPLICATION_EXTENSION
+    QMAKE_LFLAGS              += $$QMAKE_CFLAGS_APPLICATION_EXTENSION
 }
 
 macx-xcode {
