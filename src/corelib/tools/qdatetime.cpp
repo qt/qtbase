@@ -70,6 +70,13 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_STRINGVIEW_LEVEL < 2
+static inline QStringView quick_stringview_cast(const QString &format)
+{
+    return QStringView(format.data(), format.size()); // avoids isNull() check as we don't care
+}
+#endif
+
 /*****************************************************************************
   Date/Time Constants
  *****************************************************************************/
@@ -879,6 +886,9 @@ QString QDate::toString(Qt::DateFormat format) const
 }
 
 /*!
+    \fn QString QDate::toString(const QString &format) const
+    \fn QString QDate::toString(QStringView format) const
+
     Returns the date as a string. The \a format parameter determines
     the format of the result string.
 
@@ -927,10 +937,18 @@ QString QDate::toString(Qt::DateFormat format) const
     \sa fromString(), QDateTime::toString(), QTime::toString(), QLocale::toString()
 
 */
-QString QDate::toString(const QString& format) const
+QString QDate::toString(QStringView format) const
 {
     return QLocale::system().toString(*this, format); // QLocale::c() ### Qt6
 }
+
+#if QT_STRINGVIEW_LEVEL < 2
+QString QDate::toString(const QString &format) const
+{
+    return toString(quick_stringview_cast(format));
+}
+#endif
+
 #endif //QT_NO_DATESTRING
 
 /*!
@@ -1625,6 +1643,9 @@ QString QTime::toString(Qt::DateFormat format) const
 }
 
 /*!
+    \fn QString QTime::toString(const QString &format) const
+    \fn QString QTime::toString(QStringView format) const
+
     Returns the time as a string. The \a format parameter determines
     the format of the result string.
 
@@ -1675,11 +1696,20 @@ QString QTime::toString(Qt::DateFormat format) const
 
     \sa fromString(), QDate::toString(), QDateTime::toString(), QLocale::toString()
 */
-QString QTime::toString(const QString& format) const
+QString QTime::toString(QStringView format) const
 {
     return QLocale::system().toString(*this, format); // QLocale::c() ### Qt6
 }
+
+#if QT_STRINGVIEW_VERSION < 2
+QString QTime::toString(const QString &format) const
+{
+    return toString(quick_stringview_cast(format));
+}
+#endif
+
 #endif //QT_NO_DATESTRING
+
 /*!
     Sets the time to hour \a h, minute \a m, seconds \a s and
     milliseconds \a ms.
@@ -3853,6 +3883,9 @@ QString QDateTime::toString(Qt::DateFormat format) const
 }
 
 /*!
+    \fn QString QDateTime::toString(const QString &format) const
+    \fn QString QDateTime::toString(QStringView format) const
+
     Returns the datetime as a string. The \a format parameter
     determines the format of the result string.
 
@@ -3925,10 +3958,18 @@ QString QDateTime::toString(Qt::DateFormat format) const
 
     \sa fromString(), QDate::toString(), QTime::toString(), QLocale::toString()
 */
-QString QDateTime::toString(const QString& format) const
+QString QDateTime::toString(QStringView format) const
 {
     return QLocale::system().toString(*this, format); // QLocale::c() ### Qt6
 }
+
+#if QT_STRINGVIEW_LEVEL < 2
+QString QDateTime::toString(const QString &format) const
+{
+    return toString(quick_stringview_cast(format));
+}
+#endif
+
 #endif //QT_NO_DATESTRING
 
 static inline void massageAdjustedDateTime(const QDateTimeData &d, QDate *date, QTime *time)
@@ -5264,7 +5305,7 @@ QDebug operator<<(QDebug dbg, const QDate &date)
 QDebug operator<<(QDebug dbg, const QTime &time)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QTime(" << time.toString(QStringLiteral("HH:mm:ss.zzz")) << ')';
+    dbg.nospace() << "QTime(" << time.toString(QStringViewLiteral("HH:mm:ss.zzz")) << ')';
     return dbg;
 }
 
@@ -5273,7 +5314,7 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
     QDebugStateSaver saver(dbg);
     const Qt::TimeSpec ts = date.timeSpec();
     dbg.nospace() << "QDateTime(";
-    dbg.noquote() << date.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
+    dbg.noquote() << date.toString(QStringViewLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
                   << ' ' << ts;
     switch (ts) {
     case Qt::UTC:

@@ -89,7 +89,10 @@ public:
 #endif // QT_NO_TEXTDATE
 #ifndef QT_NO_DATESTRING
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
+#if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format) const;
+#endif
+    QString toString(QStringView format) const;
 #endif
 #if QT_DEPRECATED_SINCE(5,0)
 QT_DEPRECATED inline bool setYMD(int y, int m, int d)
@@ -162,7 +165,10 @@ public:
     int msec() const;
 #ifndef QT_NO_DATESTRING
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
+#if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format) const;
+#endif
+    QString toString(QStringView format) const;
 #endif
     bool setHMS(int h, int m, int s, int ms = 0);
 
@@ -295,7 +301,10 @@ public:
 
 #ifndef QT_NO_DATESTRING
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
+#if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format) const;
+#endif
+    QString toString(QStringView format) const;
 #endif
     QDateTime addDays(qint64 days) const Q_REQUIRED_RESULT;
     QDateTime addMonths(int months) const Q_REQUIRED_RESULT;

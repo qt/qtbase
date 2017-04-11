@@ -83,21 +83,21 @@ template<> inline char *toString(const QByteArray &ba)
 template<> inline char *toString(const QTime &time)
 {
     return time.isValid()
-        ? qstrdup(qPrintable(time.toString(QLatin1String("hh:mm:ss.zzz"))))
+        ? qstrdup(qPrintable(time.toString(QStringViewLiteral("hh:mm:ss.zzz"))))
         : qstrdup("Invalid QTime");
 }
 
 template<> inline char *toString(const QDate &date)
 {
     return date.isValid()
-        ? qstrdup(qPrintable(date.toString(QLatin1String("yyyy/MM/dd"))))
+        ? qstrdup(qPrintable(date.toString(QStringViewLiteral("yyyy/MM/dd"))))
         : qstrdup("Invalid QDate");
 }
 
 template<> inline char *toString(const QDateTime &dateTime)
 {
     return dateTime.isValid()
-        ? qstrdup(qPrintable(dateTime.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz[t]"))))
+        ? qstrdup(qPrintable(dateTime.toString(QStringViewLiteral("yyyy/MM/dd hh:mm:ss.zzz[t]"))))
         : qstrdup("Invalid QDateTime");
 }
 #endif // QT_NO_DATESTRING
