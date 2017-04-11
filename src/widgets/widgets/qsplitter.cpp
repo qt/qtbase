@@ -1145,6 +1145,10 @@ void QSplitter::insertWidget(int index, QWidget *widget)
     \note The splitter takes ownership of \a widget and sets the parent of the
     replaced widget to null.
 
+    \note Because \a widget gets \l{QWidget::setParent()}{reparented} into the splitter,
+    its \l{QWidget::}{geometry} may not be set right away, but only after \a widget will
+    receive the appropriate events.
+
     \sa insertWidget(), indexOf()
 */
 QWidget *QSplitter::replaceWidget(int index, QWidget *widget)
