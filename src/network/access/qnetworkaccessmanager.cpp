@@ -739,7 +739,7 @@ bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
 
     \note While processing HTTP responses, QNetworkAccessManager can also update
     the HSTS cache, removing or updating exitsting policies or introducing new
-    known hosts. The current implementation thus is server-driven, client code
+    \a knownHosts. The current implementation thus is server-driven, client code
     can provide QNetworkAccessManager with previously known or discovered
     policies, but this information can be overridden by "Strict-Transport-Security"
     response headers.
