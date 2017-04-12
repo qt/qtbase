@@ -88,6 +88,11 @@
 
 #include "qwindowsopengltester.h"
 
+static inline void initOpenGlBlacklistResources()
+{
+    Q_INIT_RESOURCE(openglblacklists);
+}
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -210,7 +215,7 @@ static inline unsigned parseOptions(const QStringList &paramList,
 
 QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramList)
 {
-    Q_INIT_RESOURCE(openglblacklists);
+    initOpenGlBlacklistResources();
 
     static bool dpiAwarenessSet = false;
     int tabletAbsoluteRange = -1;
