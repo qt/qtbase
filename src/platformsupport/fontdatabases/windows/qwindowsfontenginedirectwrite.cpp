@@ -358,7 +358,7 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
 
     QByteArray table = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
     const int advanceWidthMaxLocation = 10;
-    if (table.size() >= advanceWidthMaxLocation + sizeof(quint16)) {
+    if (table.size() >= advanceWidthMaxLocation + int(sizeof(quint16))) {
         quint16 advanceWidthMax = qFromBigEndian<quint16>(table.constData() + advanceWidthMaxLocation);
         m_maxAdvanceWidth = DESIGN_TO_LOGICAL(advanceWidthMax);
     }
