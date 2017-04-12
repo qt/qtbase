@@ -704,4 +704,19 @@ QT_BEGIN_NAMESPACE
     \sa toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
 */
 
+/*!
+    \fn qToStringViewIgnoringNull(const QStringLike &s);
+    \since 5.10
+    \internal
+
+    Convert \a s to a QStringView ignoring \c{s.isNull()}.
+
+    Returns a string-view that references \a{s}' data, but is never null.
+
+    This is a faster way to convert a QString or QStringRef to a QStringView,
+    if null QStrings can legitimately be treated as empty ones.
+
+    \sa QString::isNull(), QStringRef::isNull(), QStringView
+*/
+
 QT_END_NAMESPACE

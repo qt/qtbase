@@ -272,6 +272,12 @@ private:
 };
 Q_DECLARE_TYPEINFO(QStringView, Q_MOVABLE_TYPE);
 
+template <typename QStringLike, typename std::enable_if<
+    std::is_same<QStringLike, QString>::value || std::is_same<QStringLike, QStringRef>::value,
+    bool>::type = true>
+inline QStringView qToStringViewIgnoringNull(const QStringLike &s) Q_DECL_NOTHROW
+{ return QStringView(s.data(), s.size()); }
+
 QT_END_NAMESPACE
 
 #endif /* QSTRINGVIEW_H */
