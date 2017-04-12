@@ -42,7 +42,7 @@
 #ifndef QT_NO_THREAD
 #include "qmutex.h"
 #include "qwaitcondition.h"
-#include "qelapsedtimer.h"
+#include "qdeadlinetimer.h"
 #include "qdatetime.h"
 
 QT_BEGIN_NAMESPACE
@@ -214,20 +214,19 @@ bool QSemaphore::tryAcquire(int n)
 bool QSemaphore::tryAcquire(int n, int timeout)
 {
     Q_ASSERT_X(n >= 0, "QSemaphore::tryAcquire", "parameter 'n' must be non-negative");
+    if (timeout < 0)
+        return tryAcquire(n);
+
+    QDeadlineTimer timer(timeout);
     QMutexLocker locker(&d->mutex);
-    if (timeout < 0) {
-        while (n > d->avail)
-            d->cond.wait(locker.mutex());
-    } else {
-        QElapsedTimer timer;
-        timer.start();
-        while (n > d->avail) {
-            const qint64 elapsed = timer.elapsed();
-            if (timeout - elapsed <= 0
-                || !d->cond.wait(locker.mutex(), timeout - elapsed))
-                return false;
-        }
+    qint64 remainingTime = timer.remainingTime();
+    while (n > d->avail && remainingTime > 0) {
+        if (!d->cond.wait(locker.mutex(), remainingTime))
+            return false;
+        remainingTime = timer.remainingTime();
     }
+    if (n > d->avail)
+        return false;
     d->avail -= n;
     return true;
 
