@@ -2096,7 +2096,12 @@ QPainterPath intersectPath(const QPainterPath &path, const QRectF &rect)
                 result.addPath(subPath);
         }
     }
-    return result;
+    // The algorithm above might return one side of \a rect if there was no intersection,
+    // so only return intersections that are not empty rectangles.
+    if (result.boundingRect().isEmpty())
+        return QPainterPath();
+    else
+        return result;
 }
 
 }
