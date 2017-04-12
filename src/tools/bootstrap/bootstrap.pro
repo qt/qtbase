@@ -120,7 +120,6 @@ mac {
 
 macx {
     OBJECTIVE_SOURCES += \
-        ../../corelib/kernel/qcore_foundation.mm \
         ../../corelib/io/qstandardpaths_mac.mm
 } else:unix {
     SOURCES += \
