@@ -64,9 +64,7 @@ static QString qt_convertJString(jstring string)
 static inline bool exceptionCheckAndClear(JNIEnv *env)
 {
     if (Q_UNLIKELY(env->ExceptionCheck())) {
-#ifdef QT_DEBUG
         env->ExceptionDescribe();
-#endif // QT_DEBUG
         env->ExceptionClear();
         return true;
     }

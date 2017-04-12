@@ -169,7 +169,7 @@
     || (defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && (__GNUC__-0) * 100 + (__GNUC_MINOR__-0) >= 409)) \
     && !defined(QT_BOOTSTRAPPED)
 #  define QT_COMPILER_SUPPORTS_SIMD_ALWAYS
-#  define QT_COMPILER_SUPPORTS_HERE(x)    QT_COMPILER_SUPPORTS(x)
+#  define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __) || QT_COMPILER_SUPPORTS(x)
 #  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
      /* GCC requires attributes for a function */
 #    define QT_FUNCTION_TARGET(x)  __attribute__((__target__(QT_FUNCTION_TARGET_STRING_ ## x)))

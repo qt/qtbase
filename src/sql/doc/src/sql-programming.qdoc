@@ -227,7 +227,7 @@
     Databases, please refer to \l{Data Types for Qt-supported Database
     Systems} {this table}.
 
-    You can iterate back and forth using QSqlQuery::next(),
+    You can navigate within the dataset using QSqlQuery::next(),
     QSqlQuery::previous(), QSqlQuery::first(), QSqlQuery::last(), and
     QSqlQuery::seek(). The current row index is returned by
     QSqlQuery::at(), and the total number of rows in the result set
@@ -242,11 +242,10 @@
 
     \snippet sqldatabase/sqldatabase.cpp 33
 
-    If you iterate through a result set only using next() and seek()
-    with positive values, you can call
-    QSqlQuery::setForwardOnly(true) before calling exec(). This is an
-    easy optimization that will speed up the query significantly when
-    operating on large result sets.
+    If you navigate within a result set, and use next() and seek()
+    only for browsing forward, you can call QSqlQuery::setForwardOnly(true)
+    before calling exec(). This is an easy optimization that will speed up
+    the query significantly when operating on large result sets.
 
     \section2 Inserting, Updating, and Deleting Records
 
@@ -592,7 +591,7 @@
 
     QDataWidgetMapper operates on a specific database table, mapping items
     in the table on a row-by-row or column-by-column basis. As a result,
-    using QDataWidgetMapper with a SQL model is as simple as using it with
+    using QDataWidgetMapper with an SQL model is as simple as using it with
     any other table model.
 
     \image qdatawidgetmapper-simple.png
