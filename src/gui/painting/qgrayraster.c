@@ -167,11 +167,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-  /* This macro is used to indicate that a function parameter is unused. */
-  /* Its purpose is simply to reduce compiler warnings.  Note also that  */
-  /* simply defining it as `(void)x' doesn't avoid warnings with certain */
-  /* ANSI compilers (e.g. LCC).                                          */
-#define QT_FT_UNUSED( x )  (x) = (x)
+#define QT_FT_UNUSED( x )  (void) x
 
   /* Disable the tracing mechanism for simplicity -- developers can      */
   /* activate it easily by redefining these two macros.                  */
