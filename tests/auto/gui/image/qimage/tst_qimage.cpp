@@ -211,6 +211,8 @@ private slots:
 
     void reinterpretAsFormat2();
 
+    void complexTransform8bit();
+
 #ifdef Q_OS_DARWIN
     void toCGImage_data();
     void toCGImage();
@@ -3364,6 +3366,18 @@ void tst_QImage::reinterpretAsFormat2()
 
         QVERIFY(!image.reinterpretAsFormat(QImage::Format_RGB16));
     }
+}
+
+void tst_QImage::complexTransform8bit()
+{
+    QImage img1(100, 100, QImage::Format_RGB32);
+    img1.fill(Qt::green);
+    img1 = img1.convertToFormat(QImage::Format_Indexed8);
+    QImage img2 = img1.transformed(QTransform().rotate(45), Qt::SmoothTransformation);
+    // Currently the format is always QImage::Format_ARGB32_Premultiplied, but it
+    // doesn't have to be, and if it becomes indexed this test is no longer be valid.
+    QVERIFY(img2.format() > QImage::Format_Indexed8);
+    QCOMPARE(img2.colorCount(), 0);
 }
 
 #ifdef Q_OS_DARWIN

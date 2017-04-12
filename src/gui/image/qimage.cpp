@@ -4671,7 +4671,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     }
 
     // initizialize the data
-    if (d->format == QImage::Format_Indexed8) {
+    if (target_format == QImage::Format_Indexed8) {
         if (dImage.d->colortable.size() < 256) {
             // colors are left in the color table, so pick that one as transparent
             dImage.d->colortable.append(0x0);
