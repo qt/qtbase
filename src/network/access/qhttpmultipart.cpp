@@ -41,7 +41,7 @@
 #include "qhttpmultipart_p.h"
 #include "QtCore/qdatetime.h" // for initializing the random number generator with QTime
 #include "QtCore/qmutex.h"
-#include "QtCore/qthreadstorage.h"
+#include "QtCore/qrandom.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -431,23 +431,16 @@ void QHttpPartPrivate::checkHeaderCreated() const
     }
 }
 
-Q_GLOBAL_STATIC(QThreadStorage<bool *>, seedCreatedStorage);
-
 QHttpMultiPartPrivate::QHttpMultiPartPrivate() : contentType(QHttpMultiPart::MixedType), device(new QHttpMultiPartIODevice(this))
 {
-    if (!seedCreatedStorage()->hasLocalData()) {
-        qsrand(QTime(0,0,0).msecsTo(QTime::currentTime()) ^ reinterpret_cast<quintptr>(this));
-        seedCreatedStorage()->setLocalData(new bool(true));
-    }
-
-    boundary = QByteArray("boundary_.oOo._")
-               + QByteArray::number(qrand()).toBase64()
-               + QByteArray::number(qrand()).toBase64()
-               + QByteArray::number(qrand()).toBase64();
+    // 24 random bytes, becomes 32 characters when encoded to Base64
+    quint32 random[6];
+    QRandomGenerator::fillRange(random);
+    boundary = "boundary_.oOo._"
+               + QByteArray::fromRawData(reinterpret_cast<char *>(random), sizeof(random)).toBase64();
 
     // boundary must not be longer than 70 characters, see RFC 2046, section 5.1.1
-    if (boundary.count() > 70)
-        boundary = boundary.left(70);
+    Q_ASSERT(boundary.count() <= 70);
 }
 
 qint64 QHttpMultiPartIODevice::size() const

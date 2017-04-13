@@ -40,14 +40,13 @@
 
 #include "quuid.h"
 
+#include "qcryptographichash.h"
 #include "qdatastream.h"
-#include "qendian.h"
 #include "qdebug.h"
+#include "qendian.h"
+#include "qrandom.h"
 #include "private/qtools_p.h"
 
-#ifndef QT_BOOTSTRAPPED
-#include "qcryptographichash.h"
-#endif
 QT_BEGIN_NAMESPACE
 
 // 16 bytes (a uint, two shorts and a uchar[8]), each represented by two hex
@@ -918,17 +917,10 @@ bool QUuid::operator>(const QUuid &other) const Q_DECL_NOTHROW
 /*!
     \fn QUuid QUuid::createUuid()
 
-    On any platform other than Windows, this function returns a new
-    UUID with variant QUuid::DCE and version QUuid::Random.  If
-    the /dev/urandom device exists, then the numbers used to construct
-    the UUID will be of cryptographic quality, which will make the UUID
-    unique.  Otherwise, the numbers of the UUID will be obtained from
-    the local pseudo-random number generator (qrand(), which is seeded
-    by qsrand()) which is usually not of cryptograhic quality, which
-    means that the UUID can't be guaranteed to be unique.
-
-    On a Windows platform, a GUID is generated, which almost certainly
-    \e{will} be unique, on this or any other system, networked or not.
+    On any platform other than Windows, this function returns a new UUID with
+    variant QUuid::DCE and version QUuid::Random. On Windows, a GUID is
+    generated using the Windows API and will be of the type that the API
+    decides to create.
 
     \sa variant(), version()
 */
@@ -948,82 +940,12 @@ QUuid QUuid::createUuid()
 
 #else // Q_OS_WIN
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include "qdatetime.h"
-#include "qfile.h"
-#include "qthreadstorage.h"
-#include <stdlib.h> // for RAND_MAX
-QT_END_INCLUDE_NAMESPACE
-
-#if !defined(QT_BOOTSTRAPPED) && defined(Q_OS_UNIX)
-Q_GLOBAL_STATIC(QThreadStorage<QFile *>, devUrandomStorage);
-#endif
-
 QUuid QUuid::createUuid()
 {
-    QUuid result;
+    QUuid result(Qt::Uninitialized);
     uint *data = &(result.data1);
-
-#if defined(Q_OS_UNIX)
-    QFile *devUrandom;
-#  if !defined(QT_BOOTSTRAPPED)
-    devUrandom = devUrandomStorage()->localData();
-    if (!devUrandom) {
-        devUrandom = new QFile(QLatin1String("/dev/urandom"));
-        devUrandom->open(QIODevice::ReadOnly | QIODevice::Unbuffered);
-        devUrandomStorage()->setLocalData(devUrandom);
-    }
-# else
-    QFile file(QLatin1String("/dev/urandom"));
-    devUrandom = &file;
-    devUrandom->open(QIODevice::ReadOnly | QIODevice::Unbuffered);
-# endif
-    enum { AmountToRead = 4 * sizeof(uint) };
-    if (devUrandom->isOpen()
-        && devUrandom->read((char *) data, AmountToRead) == AmountToRead) {
-        // we got what we wanted, nothing more to do
-        ;
-    } else
-#endif
-    {
-        static const int intbits = sizeof(int)*8;
-        static int randbits = 0;
-        if (!randbits) {
-            int r = 0;
-            int max = RAND_MAX;
-            do { ++r; } while ((max=max>>1));
-            randbits = r;
-        }
-
-        // Seed the PRNG once per thread with a combination of current time, a
-        // stack address and a serial counter (since thread stack addresses are
-        // re-used).
-#ifndef QT_BOOTSTRAPPED
-        static QThreadStorage<int *> uuidseed;
-        if (!uuidseed.hasLocalData())
-        {
-            int *pseed = new int;
-            static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
-            qsrand(*pseed = QDateTime::currentSecsSinceEpoch()
-                   + quintptr(&pseed)
-                   + 2 + serial.fetchAndAddRelaxed(1));
-            uuidseed.setLocalData(pseed);
-        }
-#else
-        static bool seeded = false;
-        if (!seeded)
-            qsrand(QDateTime::currentSecsSinceEpoch()
-                   + quintptr(&seeded));
-#endif
-
-        int chunks = 16 / sizeof(uint);
-        while (chunks--) {
-            uint randNumber = 0;
-            for (int filled = 0; filled < intbits; filled += randbits)
-                randNumber |= qrand()<<filled;
-            *(data+chunks) = randNumber;
-        }
-    }
+    enum { AmountToRead = 4 };
+    QRandomGenerator::fillRange(data, AmountToRead);
 
     result.data4[0] = (result.data4[0] & 0x3F) | 0x80;        // UV_DCE
     result.data3 = (result.data3 & 0x0FFF) | 0x4000;        // UV_Random

@@ -63,12 +63,8 @@
 
 #ifndef QT_BOOTSTRAPPED
 #include <qcoreapplication.h>
+#include <qrandom.h>
 #endif // QT_BOOTSTRAPPED
-
-#ifdef Q_OS_UNIX
-#include <stdio.h>
-#include "private/qcore_unix_p.h"
-#endif // Q_OS_UNIX
 
 #include <limits.h>
 
@@ -298,39 +294,7 @@ static uint qt_create_qhash_seed()
         return seed;
     }
 
-#ifdef Q_OS_UNIX
-    int randomfd = qt_safe_open("/dev/urandom", O_RDONLY);
-    if (randomfd == -1)
-        randomfd = qt_safe_open("/dev/random", O_RDONLY | O_NONBLOCK);
-    if (randomfd != -1) {
-        if (qt_safe_read(randomfd, reinterpret_cast<char *>(&seed), sizeof(seed)) == sizeof(seed)) {
-            qt_safe_close(randomfd);
-            return seed;
-        }
-        qt_safe_close(randomfd);
-    }
-#endif // Q_OS_UNIX
-
-#if defined(Q_OS_WIN32) && !defined(Q_CC_GNU)
-    errno_t err;
-    err = rand_s(&seed);
-    if (err == 0)
-        return seed;
-#endif // Q_OS_WIN32
-
-    // general fallback: initialize from the current timestamp, pid,
-    // and address of a stack-local variable
-    quint64 timestamp = QDateTime::currentMSecsSinceEpoch();
-    seed ^= timestamp;
-    seed ^= (timestamp >> 32);
-
-    quint64 pid = QCoreApplication::applicationPid();
-    seed ^= pid;
-    seed ^= (pid >> 32);
-
-    quintptr seedPtr = reinterpret_cast<quintptr>(&seed);
-    seed ^= seedPtr;
-    seed ^= (qulonglong(seedPtr) >> 32); // no-op on 32-bit platforms
+    seed = QRandomGenerator::get32();
 #endif // QT_BOOTSTRAPPED
 
     return seed;
