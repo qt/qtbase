@@ -2108,7 +2108,7 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
 */
 QString QRegularExpressionMatch::captured(const QString &name) const
 {
-    return captured(QStringView(name));
+    return captured(qToStringViewIgnoringNull(name));
 }
 
 /*!
@@ -2123,7 +2123,7 @@ QString QRegularExpressionMatch::captured(const QString &name) const
 */
 QStringRef QRegularExpressionMatch::capturedRef(const QString &name) const
 {
-    return capturedRef(QStringView(name));
+    return capturedRef(qToStringViewIgnoringNull(name));
 }
 #endif // QT_STRINGVIEW_LEVEL < 2
 
@@ -2267,7 +2267,7 @@ int QRegularExpressionMatch::capturedEnd(int nth) const
 */
 int QRegularExpressionMatch::capturedStart(const QString &name) const
 {
-    return capturedStart(QStringView(name));
+    return capturedStart(qToStringViewIgnoringNull(name));
 }
 
 /*!
@@ -2281,7 +2281,7 @@ int QRegularExpressionMatch::capturedStart(const QString &name) const
 */
 int QRegularExpressionMatch::capturedLength(const QString &name) const
 {
-    return capturedLength(QStringView(name));
+    return capturedLength(qToStringViewIgnoringNull(name));
 }
 
 /*!
@@ -2294,7 +2294,7 @@ int QRegularExpressionMatch::capturedLength(const QString &name) const
 */
 int QRegularExpressionMatch::capturedEnd(const QString &name) const
 {
-    return capturedEnd(QStringView(name));
+    return capturedEnd(qToStringViewIgnoringNull(name));
 }
 #endif // QT_STRINGVIEW_LEVEL < 2
 

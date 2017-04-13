@@ -884,7 +884,7 @@ QString QColor::name(NameFormat format) const
 
 void QColor::setNamedColor(const QString &name)
 {
-    setColorFromString(QStringView(name));
+    setColorFromString(qToStringViewIgnoringNull(name));
 }
 #endif
 
@@ -922,7 +922,7 @@ void QColor::setNamedColor(QLatin1String name)
 */
 bool QColor::isValidColor(const QString &name)
 {
-    return isValidColor(QStringView(name));
+    return isValidColor(qToStringViewIgnoringNull(name));
 }
 #endif
 

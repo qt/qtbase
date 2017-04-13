@@ -7723,7 +7723,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
 */
 QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
 {
-    return arg(QStringView(a), fieldWidth, fillChar);
+    return arg(qToStringViewIgnoringNull(a), fieldWidth, fillChar);
 }
 #endif // QT_STRINGVIEW_LEVEL < 2
 
