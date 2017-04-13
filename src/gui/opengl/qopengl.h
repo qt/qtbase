@@ -49,7 +49,7 @@
 # include <QtCore/qt_windows.h>
 #endif
 
-// Note: Mac OSX is a "controlled platform" for OpenGL ABI so we
+// Note: Apple is a "controlled platform" for OpenGL ABI so we
 // use the system provided headers there. Controlled means that the
 // headers always match the actual driver implementation so there
 // is no possibility of drivers exposing additional functionality
@@ -64,7 +64,7 @@
 // which the system headers do not.
 
 #if defined(QT_OPENGL_ES_2)
-# if defined(Q_OS_MAC) // iOS
+# if defined(Q_OS_IOS) || defined(Q_OS_TVOS)
 #  if defined(QT_OPENGL_ES_3)
 #   include <OpenGLES/ES3/gl.h>
 #   include <OpenGLES/ES3/glext.h>
@@ -81,7 +81,7 @@
 */
 typedef void* GLeglImageOES;
 
-# else // "uncontrolled" ES2 platforms
+# elif !defined(Q_OS_DARWIN) // "uncontrolled" ES2 platforms
 
 // In "es2" builds (QT_OPENGL_ES_2) additional defines indicate GLES 3.0 or
 // higher is available *at build time*. In this case include the corresponding
