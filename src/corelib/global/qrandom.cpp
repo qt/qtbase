@@ -44,6 +44,7 @@
 #include "qrandom_p.h"
 #include <qobjectdefs.h>
 #include <qthreadstorage.h>
+#include <private/qsimd_p.h>
 
 #if QT_HAS_INCLUDE(<random>)
 #  include <random>
@@ -69,6 +70,37 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
+static qssize_t qt_random_cpu(void *buffer, qssize_t count);
+
+#  ifdef Q_PROCESSOR_X86_64
+#    define _rdrandXX_step _rdrand64_step
+#  else
+#    define _rdrandXX_step _rdrand32_step
+#  endif
+
+static QT_FUNCTION_TARGET(RDRND) qssize_t qt_random_cpu(void *buffer, qssize_t count)
+{
+    unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
+    unsigned *end = ptr + count;
+
+    while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
+        if (_rdrandXX_step(reinterpret_cast<qregisteruint *>(ptr)) == 0)
+            goto out;
+        ptr += sizeof(qregisteruint)/sizeof(*ptr);
+    }
+
+    if (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
+        if (_rdrand32_step(ptr))
+            goto out;
+        ++ptr;
+    }
+
+out:
+    return ptr - reinterpret_cast<unsigned *>(buffer);
+}
+#endif
 
 namespace {
 #ifdef Q_OS_UNIX
@@ -196,6 +228,18 @@ static Q_NORETURN void fallback_fill(quint32 *, qssize_t)
 }
 #endif
 
+static qssize_t fill_cpu(quint32 *buffer, qssize_t count)
+{
+#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
+    if (qCpuHasFeature(RDRND) && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
+        return qt_random_cpu(buffer, count);
+#else
+    Q_UNUSED(buffer);
+    Q_UNUSED(count);
+#endif
+    return 0;
+}
+
 static void fill_internal(quint32 *buffer, qssize_t count)
 {
     if (Q_UNLIKELY(uint(qt_randomdevice_control) & SetRandomData)) {
@@ -204,8 +248,8 @@ static void fill_internal(quint32 *buffer, qssize_t count)
         return;
     }
 
-    qssize_t filled = 0;
-    if (uint(qt_randomdevice_control) & SkipSystemRNG) == 0) {
+    qssize_t filled = fill_cpu(buffer, count);
+    if (filled != count && (uint(qt_randomdevice_control) & SkipSystemRNG) == 0) {
         qssize_t bytesFilled =
                 SystemRandom::fillBuffer(buffer + filled, (count - filled) * qssize_t(sizeof(*buffer)));
         filled += bytesFilled / qssize_t(sizeof(*buffer));
