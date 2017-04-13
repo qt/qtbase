@@ -61,6 +61,9 @@
 #include "qdesktopwidget.h"
 #include "qbitmap.h"
 
+#include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformscreen.h>
+
 QT_BEGIN_NAMESPACE
 
 static QIcon messageIcon2qIcon(QSystemTrayIcon::MessageIcon icon)
@@ -196,8 +199,23 @@ QSystemTrayIcon::~QSystemTrayIcon()
 void QSystemTrayIcon::setContextMenu(QMenu *menu)
 {
     Q_D(QSystemTrayIcon);
+    QMenu *oldMenu = d->menu.data();
     d->menu = menu;
     d->updateMenu_sys();
+    if (oldMenu != menu && d->qpa_sys) {
+        // Show the QMenu-based menu for QPA plugins that do not provide native menus
+        if (oldMenu && !oldMenu->platformMenu())
+            QObject::disconnect(d->qpa_sys, &QPlatformSystemTrayIcon::contextMenuRequested, menu, nullptr);
+        if (menu && !menu->platformMenu()) {
+            QObject::connect(d->qpa_sys, &QPlatformSystemTrayIcon::contextMenuRequested,
+                             menu,
+                             [menu](QPoint globalNativePos, const QPlatformScreen *platformScreen)
+            {
+                QScreen *screen = platformScreen ? platformScreen->screen() : nullptr;
+                menu->popup(QHighDpi::fromNativePixels(globalNativePos, screen), nullptr);
+            });
+        }
+    }
 }
 
 /*!

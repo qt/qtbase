@@ -140,10 +140,19 @@ QPlatformSystemTrayIcon::~QPlatformSystemTrayIcon()
 */
 
 /*!
+    \fn void QPlatformSystemTrayIcon::contextMenuRequested(QPoint globalPos, const QPlatformScreen *screen)
+    This signal is emitted when the context menu is requested.
+    In particular, on platforms where createMenu() returns nullptr,
+    its emission will cause QSystemTrayIcon to show a QMenu-based menu.
+    \sa activated()
+    \since 5.10
+*/
+
+/*!
     \fn void QPlatformSystemTrayIcon::activated(QPlatformSystemTrayIcon::ActivationReason reason)
     This signal is emitted when the user activates the system tray icon.
     \a reason specifies the reason for activation.
-    \sa QSystemTrayIcon::ActivationReason
+    \sa QSystemTrayIcon::ActivationReason, contextMenuRequested()
 */
 
 /*!

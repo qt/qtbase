@@ -334,6 +334,7 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
 
 QSystemTrayIconPrivate::QSystemTrayIconPrivate()
     : sys(0),
+      qpa_sys(nullptr),
       visible(false)
 {
 }

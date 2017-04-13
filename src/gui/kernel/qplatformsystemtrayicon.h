@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPlatformMenu;
+class QPlatformScreen;
 class QIcon;
 class QString;
 class QRect;
@@ -88,6 +89,7 @@ public:
 
 Q_SIGNALS:
     void activated(QPlatformSystemTrayIcon::ActivationReason reason);
+    void contextMenuRequested(QPoint globalPos, const QPlatformScreen *screen);
     void messageClicked();
 };
 
