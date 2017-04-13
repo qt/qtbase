@@ -287,7 +287,7 @@
 #define QT_FUNCTION_TARGET_STRING_PCLMUL        "pclmul,sse4.2"
 #define QT_FUNCTION_TARGET_STRING_POPCNT        "popcnt"
 #define QT_FUNCTION_TARGET_STRING_F16C          "f16c,avx"
-#define QT_FUNCTION_TARGET_STRING_RDRAND        "rdrnd"
+#define QT_FUNCTION_TARGET_STRING_RDRND         "rdrnd"
 #define QT_FUNCTION_TARGET_STRING_BMI           "bmi"
 #define QT_FUNCTION_TARGET_STRING_BMI2          "bmi2"
 #define QT_FUNCTION_TARGET_STRING_RDSEED        "rdseed"
@@ -330,8 +330,6 @@
 #  include <arm_acle.h>
 #endif
 
-#undef QT_COMPILER_SUPPORTS_SIMD_ALWAYS
-
 QT_BEGIN_NAMESPACE
 
 
@@ -357,7 +355,7 @@ enum CPUFeatures {
     CpuFeatureAES           = (0 + 25),
     CpuFeatureAVX           = (0 + 28),
     CpuFeatureF16C          = (0 + 29),
-    CpuFeatureRDRAND        = (0 + 30),
+    CpuFeatureRDRND         = (0 + 30),
     // 31 is always zero and we've used it for the QSimdInitialized
 
     // in level 7, leaf 0, EBX
@@ -396,7 +394,7 @@ static const quint64 qCompilerCpuFeatures = 0
         | (Q_UINT64_C(1) << CpuFeatureRTM)
 #endif
 #ifdef __RDRND__
-        | (Q_UINT64_C(1) << CpuFeatureRDRAND)
+        | (Q_UINT64_C(1) << CpuFeatureRDRND)
 #endif
 #ifdef __RDSEED__
         | (Q_UINT64_C(1) << CpuFeatureRDSEED)

@@ -321,6 +321,11 @@
             "type": "compile",
             "test": "common/f16c"
         },
+        "rdrnd": {
+            "label": "RDRAND instruction",
+            "type": "compile",
+            "test": "common/rdrnd"
+        },
         "shani": {
             "label": "SHA new instructions",
             "type": "compile",
@@ -896,6 +901,14 @@
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AES", "value": 1 }
             ]
         },
+        "rdrnd": {
+            "label": "RDRAND",
+            "condition": "tests.rdrnd",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_RDRND", "value": 1 }
+            ]
+        },
         "shani": {
             "label": "SHA",
             "condition": "features.sse2 && tests.shani",
@@ -1188,7 +1201,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                         {
                             "message": "Other x86",
                             "type": "featureList",
-                            "args": "aesni f16c shani",
+                            "args": "aesni f16c rdrnd shani",
                             "condition": "(arch.i386 || arch.x86_64)"
                         },
                         {
