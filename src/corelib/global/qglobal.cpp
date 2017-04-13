@@ -3502,7 +3502,7 @@ Q_GLOBAL_STATIC(AndroidRandomStorage, randomTLS)
     if two threads call qsrand(1) and subsequently call qrand(), the threads will get
     the same random number sequence.
 
-    \sa qrand()
+    \sa qrand(), QRandomGenerator
 */
 void qsrand(uint seed)
 {
@@ -3553,10 +3553,12 @@ void qsrand(uint seed)
     \c <stdlib.h>), the next number in the current sequence of pseudo-random
     integers.
 
-    Use \c qsrand() to initialize the pseudo-random number generator with
-    a seed value.
+    Use \c qsrand() to initialize the pseudo-random number generator with a
+    seed value. Seeding must be performed at least once on each thread. If that
+    step is skipped, then the sequence will be pre-seeded with a constant
+    value.
 
-    \sa qsrand()
+    \sa qsrand(), QRandomGenerator
 */
 int qrand()
 {

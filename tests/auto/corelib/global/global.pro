@@ -7,6 +7,7 @@ SUBDIRS=\
     qnumeric \
     qfloat16 \
     qrand \
+    qrandomgenerator \
     qlogging \
     qtendian \
     qglobalstatic \

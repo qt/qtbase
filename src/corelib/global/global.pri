@@ -21,6 +21,8 @@ HEADERS +=  \
         global/qisenum.h \
         global/qtypetraits.h \
         global/qflags.h \
+        global/qrandom.h \
+        global/qrandom_p.h \
         global/qhooks_p.h \
         global/qversiontagging.h
 
@@ -34,6 +36,7 @@ SOURCES += \
         global/qfloat16.cpp \
         global/qoperatingsystemversion.cpp \
         global/qlogging.cpp \
+        global/qrandom.cpp \
         global/qhooks.cpp
 
 VERSIONTAGGING_SOURCES = global/qversiontagging.cpp
