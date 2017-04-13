@@ -205,20 +205,18 @@ public:
     bool tagsDone;
 
     inline QStringRef addToStringStorage(const QStringRef &s) {
-        int pos = tagStackStringStorageSize;
-        int sz = s.size();
-        if (pos != tagStackStringStorage.size())
-            tagStackStringStorage.resize(pos);
-        tagStackStringStorage.insert(pos, s.unicode(), sz);
-        tagStackStringStorageSize += sz;
-        return QStringRef(&tagStackStringStorage, pos, sz);
+        return addToStringStorage(qToStringViewIgnoringNull(s));
     }
     inline QStringRef addToStringStorage(const QString &s) {
+        return addToStringStorage(qToStringViewIgnoringNull(s));
+    }
+    QStringRef addToStringStorage(QStringView s)
+    {
         int pos = tagStackStringStorageSize;
         int sz = s.size();
         if (pos != tagStackStringStorage.size())
             tagStackStringStorage.resize(pos);
-        tagStackStringStorage.insert(pos, s.unicode(), sz);
+        tagStackStringStorage.append(s.data(), sz);
         tagStackStringStorageSize += sz;
         return QStringRef(&tagStackStringStorage, pos, sz);
     }

@@ -775,8 +775,8 @@ QXmlStreamPrivateTagStack::QXmlStreamPrivateTagStack()
     tagStackStringStorage.reserve(32);
     tagStackStringStorageSize = 0;
     NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
-    namespaceDeclaration.prefix = addToStringStorage(QLatin1String("xml"));
-    namespaceDeclaration.namespaceUri = addToStringStorage(QLatin1String("http://www.w3.org/XML/1998/namespace"));
+    namespaceDeclaration.prefix = addToStringStorage(QStringViewLiteral("xml"));
+    namespaceDeclaration.namespaceUri = addToStringStorage(QStringViewLiteral("http://www.w3.org/XML/1998/namespace"));
     initialTagStackStringStorageSize = tagStackStringStorageSize;
 }
 
