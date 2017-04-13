@@ -1886,32 +1886,25 @@ void QXmlStreamReaderPrivate::parseError()
             }
         }
 
-    error_message.clear ();
     if (nexpected && nexpected < nmax) {
-        bool first = true;
-
-        for (int s = 0; s < nexpected; ++s) {
-            if (first)
-                error_message += QXmlStream::tr ("Expected ");
-            else if (s == nexpected - 1)
-                error_message += QLatin1String (nexpected > 2 ? ", or " : " or ");
-            else
-                error_message += QLatin1String (", ");
-
-            first = false;
-            error_message += QLatin1String("\'");
-            error_message += QLatin1String (spell [expected[s]]);
-            error_message += QLatin1String("\'");
+        //: '<first option>'
+        QString exp_str = QXmlStream::tr("'%1'", "expected").arg(QLatin1String(spell[expected[0]]));
+        if (nexpected == 2) {
+            //: <first option>, '<second option>'
+            exp_str = QXmlStream::tr("%1 or '%2'", "expected").arg(exp_str, QLatin1String(spell[expected[1]]));
+        } else if (nexpected > 2) {
+            int s = 1;
+            for (; s < nexpected - 1; ++s) {
+                //: <options so far>, '<next option>'
+                exp_str = QXmlStream::tr("%1, '%2'", "expected").arg(exp_str, QLatin1String(spell[expected[s]]));
+            }
+            //: <options so far>, or '<final option>'
+            exp_str = QXmlStream::tr("%1, or '%2'", "expected").arg(exp_str, QLatin1String(spell[expected[s]]));
         }
-        error_message += QXmlStream::tr(", but got \'");
-        error_message += QLatin1String(spell [token]);
-        error_message += QLatin1String("\'");
+        error_message = QXmlStream::tr("Expected %1, but got '%2'.").arg(exp_str, QLatin1String(spell[token]));
     } else {
-        error_message += QXmlStream::tr("Unexpected \'");
-        error_message += QLatin1String(spell [token]);
-        error_message += QLatin1String("\'");
+        error_message = QXmlStream::tr("Unexpected '%1'.").arg(QLatin1String(spell[token]));
     }
-    error_message += QLatin1Char('.');
 
     raiseWellFormedError(error_message);
 }
