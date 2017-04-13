@@ -115,6 +115,7 @@ inline int qIntCast(qfloat16 f) Q_DECL_NOTHROW
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wc99-extensions")
+QT_WARNING_DISABLE_GCC("-Wold-style-cast")
 inline qfloat16::qfloat16(float f) Q_DECL_NOTHROW
 {
 #if defined(QT_COMPILER_SUPPORTS_F16C) && (defined(__F16C__) || defined(__AVX2__))
