@@ -89,7 +89,7 @@ public slots:
     void setSize(const QSize &size);
 
 protected:
-    bool event(QEvent *event);
+    bool event(QEvent *event) override;
 
     typedef QList<QAndroidPlatformWindow *> WindowStackType;
     WindowStackType m_windowStack;
