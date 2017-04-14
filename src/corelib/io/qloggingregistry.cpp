@@ -255,6 +255,7 @@ void QLoggingSettingsParser::parseNextLine(QStringRef line)
 QLoggingRegistry::QLoggingRegistry()
     : categoryFilter(defaultCategoryFilter)
 {
+    init();
 }
 
 static bool qtLoggingDebug()

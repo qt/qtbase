@@ -197,9 +197,23 @@ private slots:
         // Check whether QT_LOGGING_CONF is picked up from environment
         //
 
-        qputenv("QT_LOGGING_CONF", QFINDTESTDATA("qtlogging.ini").toLocal8Bit());
+        Q_ASSERT(!qApp);
+
+        qputenv("QT_LOGGING_RULES", "qt.foo.bar=true");
 
         QLoggingRegistry registry;
+        QCOMPARE(registry.apiRules.size(), 0);
+        QCOMPARE(registry.configRules.size(), 0);
+        QCOMPARE(registry.envRules.size(), 1);
+        QCOMPARE(registry.rules.size(), 1);
+
+        QLoggingCategory qtEnabledByLoggingRule("qt.foo.bar");
+        QCOMPARE(qtEnabledByLoggingRule.isDebugEnabled(), true);
+        QLoggingCategory qtDisabledByDefault("qt.foo.baz");
+        QCOMPARE(qtDisabledByDefault.isDebugEnabled(), false);
+
+        qunsetenv("QT_LOGGING_RULES");
+        qputenv("QT_LOGGING_CONF", QFINDTESTDATA("qtlogging.ini").toLocal8Bit());
         registry.init();
 
         QCOMPARE(registry.apiRules.size(), 0);
@@ -304,6 +318,6 @@ private slots:
     }
 };
 
-QTEST_MAIN(tst_QLoggingRegistry)
+QTEST_APPLESS_MAIN(tst_QLoggingRegistry)
 
 #include "tst_qloggingregistry.moc"
