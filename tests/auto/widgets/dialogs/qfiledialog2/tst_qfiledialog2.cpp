@@ -48,6 +48,7 @@
 #include <qlineedit.h>
 #include <qlayout.h>
 #include <qmenu.h>
+#include <qrandom.h>
 #include "../../../../../src/widgets/dialogs/qsidebar_p.h"
 #include "../../../../../src/widgets/dialogs/qfilesystemmodel_p.h"
 #include "../../../../../src/widgets/dialogs/qfiledialog_p.h"
@@ -1196,7 +1197,7 @@ void tst_QFileDialog2::QTBUG6558_showDirsOnly()
 {
     const QString tempPath = tempDir.path();
     QDir dirTemp(tempPath);
-    const QString tempName = QLatin1String("showDirsOnly.") + QString::number(qrand());
+    const QString tempName = QLatin1String("showDirsOnly.") + QString::number(QRandomGenerator::global()->generate());
     dirTemp.mkdir(tempName);
     dirTemp.cd(tempName);
     QTRY_VERIFY(dirTemp.exists());

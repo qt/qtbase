@@ -292,7 +292,7 @@ QPoint SortingBox::initialItemPosition(const QPainterPath &path)
 //! [24]
 QPoint SortingBox::randomItemPosition()
 {
-    return QPoint(qrand() % (width() - 120), qrand() % (height() - 120));
+    return QPoint(QRandomGenerator::global()->bounded(width() - 120), QRandomGenerator::global()->bounded(height() - 120));
 }
 //! [24]
 
@@ -306,6 +306,6 @@ QColor SortingBox::initialItemColor()
 //! [26]
 QColor SortingBox::randomItemColor()
 {
-    return QColor::fromHsv(qrand() % 256, 255, 190);
+    return QColor::fromHsv(QRandomGenerator::global()->bounded(256), 255, 190);
 }
 //! [26]

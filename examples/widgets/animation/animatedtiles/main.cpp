@@ -50,6 +50,7 @@
 
 #include <QtWidgets>
 #include <QtCore/qmath.h>
+#include <QtCore/qrandom.h>
 #include <QtCore/qstate.h>
 
 class Pixmap : public QObject, public QGraphicsPixmapItem
@@ -202,8 +203,8 @@ int main(int argc, char **argv)
 
         // Random
         randomState->assignProperty(item, "pos",
-                                        QPointF(-250 + qrand() % 500,
-                                                -250 + qrand() % 500));
+                                        QPointF(-250 + QRandomGenerator::global()->bounded(500),
+                                                -250 + QRandomGenerator::global()->bounded(500)));
 
         // Tiled
         tiledState->assignProperty(item, "pos",

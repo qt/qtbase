@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -48,6 +48,7 @@
 #include <qdir.h>
 #include <qelapsedtimer.h>
 #include <qfileinfo.h>
+#include <qrandom.h>
 #include <qregexp.h>
 #include <qwineventnotifier.h>
 #include <private/qsystemlibrary_p.h>
@@ -99,10 +100,8 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
     wchar_t pipeName[256];
     unsigned int attempts = 1000;
     forever {
-        // ### The user must make sure to call qsrand() to make the pipe names less predictable.
-        // ### Replace the call to qrand() with a secure version, once we have it in Qt.
         _snwprintf(pipeName, sizeof(pipeName) / sizeof(pipeName[0]),
-                L"\\\\.\\pipe\\qt-%X", qrand());
+                L"\\\\.\\pipe\\qt-%X", QRandomGenerator::global()->generate());
 
         DWORD dwOpenMode = FILE_FLAG_OVERLAPPED;
         DWORD dwOutputBufferSize = 0;

@@ -51,6 +51,8 @@
 #include "fortuneserver.h"
 #include "fortunethread.h"
 
+#include <QRandomGenerator>
+
 #include <stdlib.h>
 
 //! [0]
@@ -70,7 +72,7 @@ FortuneServer::FortuneServer(QObject *parent)
 //! [1]
 void FortuneServer::incomingConnection(qintptr socketDescriptor)
 {
-    QString fortune = fortunes.at(qrand() % fortunes.size());
+    QString fortune = fortunes.at(QRandomGenerator::global()->bounded(fortunes.size()));
     FortuneThread *thread = new FortuneThread(socketDescriptor, fortune, this);
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
     thread->start();

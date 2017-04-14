@@ -43,10 +43,6 @@
 #include <private/qapplication_p.h>
 #include "qclipboard.h"
 
-#ifdef Q_OS_MAC
-#include <cstdlib> // For the random function.
-#endif
-
 #include <qlineedit.h>
 #include <private/qlineedit_p.h>
 #include <private/qwidgetlinecontrol_p.h>
@@ -1949,17 +1945,7 @@ void tst_QLineEdit::noCursorBlinkWhenReadOnly()
 static void figureOutProperKey(Qt::Key &key, Qt::KeyboardModifiers &pressState)
 {
 #ifdef Q_OS_MAC
-    static bool tst_lineedit_randomized = false;
-    // Mac has 3 different ways of accomplishing this (same for moving to the back)
-    // So I guess we should just randomly do this for now. Which may get people mad, but if
-    // we fail at one point, it's just a matter of setting roll to the correct value
-    // instead of random.
-
-    if (!tst_lineedit_randomized) {
-        tst_lineedit_randomized = true;
-        ::srandom(ulong(time(0)));
-    }
-    long roll = ::random() % 3;
+    long roll = QRandomGenerator::global()->bounded(3);
     switch (roll) {
     case 0:
         key = key == Qt::Key_Home ? Qt::Key_Up : Qt::Key_Down;

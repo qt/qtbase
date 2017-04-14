@@ -72,7 +72,7 @@ void Game::newGame()
     mPlayer = Character();
     mPlayer.setName(QStringLiteral("Hero"));
     mPlayer.setClassType(Character::Archer);
-    mPlayer.setLevel(QRandomGenerator::bounded(15, 21));
+    mPlayer.setLevel(QRandomGenerator::global()->bounded(15, 21));
 
     mLevels.clear();
     mLevels.reserve(2);
@@ -81,10 +81,10 @@ void Game::newGame()
     QVector<Character> villageNpcs;
     villageNpcs.reserve(2);
     villageNpcs.append(Character(QStringLiteral("Barry the Blacksmith"),
-                                 QRandomGenerator::bounded(8, 11),
+                                 QRandomGenerator::global()->bounded(8, 11),
                                  Character::Warrior));
     villageNpcs.append(Character(QStringLiteral("Terry the Trader"),
-                                 QRandomGenerator::bounded(6, 8),
+                                 QRandomGenerator::global()->bounded(6, 8),
                                  Character::Warrior));
     village.setNpcs(villageNpcs);
     mLevels.append(village);
@@ -93,13 +93,13 @@ void Game::newGame()
     QVector<Character> dungeonNpcs;
     dungeonNpcs.reserve(3);
     dungeonNpcs.append(Character(QStringLiteral("Eric the Evil"),
-                                 QRandomGenerator::bounded(18, 26),
+                                 QRandomGenerator::global()->bounded(18, 26),
                                  Character::Mage));
     dungeonNpcs.append(Character(QStringLiteral("Eric's Left Minion"),
-                                 QRandomGenerator::bounded(5, 7),
+                                 QRandomGenerator::global()->bounded(5, 7),
                                  Character::Warrior));
     dungeonNpcs.append(Character(QStringLiteral("Eric's Right Minion"),
-                                 QRandomGenerator::bounded(4, 9),
+                                 QRandomGenerator::global()->bounded(4, 9),
                                  Character::Warrior));
     dungeon.setNpcs(dungeonNpcs);
     mLevels.append(dungeon);

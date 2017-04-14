@@ -114,8 +114,6 @@ void MainWindow::setupPuzzle()
         (puzzleImage.height() - size) / 2, size, size).scaled(puzzleWidget->imageSize(),
             puzzleWidget->imageSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
-    qsrand(QCursor::pos().x() ^ QCursor::pos().y());
-
     model->addPieces(puzzleImage);
     puzzleWidget->clear();
 }

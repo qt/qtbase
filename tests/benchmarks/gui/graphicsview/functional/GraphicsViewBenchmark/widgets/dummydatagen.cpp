@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QFile>
+#include <QRandomGenerator>
 #include "theme.h"
 
 #include "dummydatagen.h"
@@ -65,12 +66,11 @@ DummyDataGenerator::~DummyDataGenerator()
 
 void DummyDataGenerator::Reset()
 {
-    qsrand(100);
 }
 
 QString DummyDataGenerator::randomPhoneNumber(QString indexNumber)
 {
-    int index = qrand()%m_countryCodes.count();
+    int index = QRandomGenerator::global()->bounded(m_countryCodes.count());
     QString countryCode = m_countryCodes.at(index);
     QString areaCode = QString::number(index) + QString("0").repeated(2-QString::number(index).length());
     QString beginNumber = QString::number(555-index*2);
@@ -84,13 +84,13 @@ QString DummyDataGenerator::randomFirstName()
 {
     m_isMale = !m_isMale;
     if (m_isMale)
-        return m_firstNamesM.at(qrand()%m_firstNamesM.count());
-    return m_firstNamesF.at(qrand()%m_firstNamesF.count());
+        return m_firstNamesM.at(QRandomGenerator::global()->bounded(m_firstNamesM.count()));
+    return m_firstNamesF.at(QRandomGenerator::global()->bounded(m_firstNamesF.count()));
 }
 
 QString DummyDataGenerator::randomLastName()
 {
-    return m_lastNames.at(qrand()%m_lastNames.count());
+    return m_lastNames.at(QRandomGenerator::global()->bounded(m_lastNames.count()));
 }
 
 QString DummyDataGenerator::randomName()
@@ -101,8 +101,8 @@ QString DummyDataGenerator::randomName()
 QString DummyDataGenerator::randomIconItem()
 {
     QString avatar = Theme::p()->pixmapPath() + "contact_default_icon.svg";
-    if (qrand()%4) {
-      int randVal = 1+qrand()%25;
+    if (QRandomGenerator::global()->bounded(4)) {
+      int randVal = 1+QRandomGenerator::global()->bounded(25);
 
       if (m_isMale && randVal > 15) {
           randVal -= 15;
@@ -118,7 +118,7 @@ QString DummyDataGenerator::randomIconItem()
 
 QString DummyDataGenerator::randomStatusItem()
 {
-    switch (qrand()%3) {
+    switch (QRandomGenerator::global()->bounded(3)) {
         case 0: return Theme::p()->pixmapPath() + "contact_status_online.svg";
         case 1: return Theme::p()->pixmapPath() + "contact_status_offline.svg";
         case 2: return Theme::p()->pixmapPath() + "contact_status_idle.svg";

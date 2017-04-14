@@ -273,13 +273,13 @@ void tst_Hpack::bitstreamCompression()
     std::vector<uchar> buffer;
     BitOStream out(buffer);
     for (unsigned i = 0; i < nValues; ++i) {
-        const bool isString = std::rand() % 1000 > 500;
+        const bool isString = QRandomGenerator::global()->bounded(1000) > 500;
         isA.push_back(isString);
         if (!isString) {
-            integers.push_back(std::rand() % 1000);
+            integers.push_back(QRandomGenerator::global()->bounded(1000u));
             out.write(integers.back());
         } else {
-            const auto start = std::rand() % (bytes.length() / 2);
+            const auto start = QRandomGenerator::global()->bounded(uint(bytes.length()) / 2);
             auto end = start * 2;
             if (!end)
                 end = bytes.length() / 2;
@@ -287,7 +287,7 @@ void tst_Hpack::bitstreamCompression()
             const auto &s = strings.back();
             totalStringBytes += s.size();
             QByteArray data(s.c_str(), int(s.size()));
-            const bool compressed(std::rand() % 1000 > 500);
+            const bool compressed(QRandomGenerator::global()->bounded(1000) > 500);
             out.write(data, compressed);
         }
     }
@@ -442,8 +442,8 @@ void tst_Hpack::lookupTableDynamic()
         // Strings are repeating way too often, I want to
         // have at least some items really evicted and not found,
         // therefore these weird dances with start/len.
-        const quint32 start = std::rand() % (dataSize - 10);
-        quint32 len = std::rand() % (dataSize - start);
+        const quint32 start = QRandomGenerator::global()->bounded(dataSize - 10);
+        quint32 len = QRandomGenerator::global()->bounded(dataSize - start);
         if (!len)
             len = 1;
 

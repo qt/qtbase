@@ -54,7 +54,7 @@
 
 //! [0]
 ColorItem::ColorItem()
-    : color(qrand() % 256, qrand() % 256, qrand() % 256)
+    : color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256))
 {
     setToolTip(QString("QColor(%1, %2, %3)\n%4")
               .arg(color.red()).arg(color.green()).arg(color.blue())
@@ -107,7 +107,7 @@ void ColorItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 //! [6]
     static int n = 0;
-    if (n++ > 2 && (qrand() % 3) == 0) {
+    if (n++ > 2 && QRandomGenerator::global()->bounded(3) == 0) {
         QImage image(":/images/head.png");
         mime->setImageData(image);
 

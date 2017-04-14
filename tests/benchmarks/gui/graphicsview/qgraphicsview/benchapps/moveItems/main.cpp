@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < atoi(argv[1]); ++i) {
         QGraphicsRectItem *child = scene.addRect(-5, -5, 10, 10, QPen(Qt::NoPen), QBrush(Qt::blue));
-        child->setPos(-50 + qrand() % 100, -50 + qrand() % 100);
+        child->setPos(-50 + QRandomGenerator::global()->bounded(100), -50 + QRandomGenerator::global()->bounded(100));
         child->setParentItem(item);
     }
 

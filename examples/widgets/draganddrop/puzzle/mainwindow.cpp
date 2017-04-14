@@ -122,10 +122,8 @@ void MainWindow::setupPuzzle()
         }
     }
 
-    qsrand(QCursor::pos().x() ^ QCursor::pos().y());
-
     for (int i = 0; i < piecesList->count(); ++i) {
-        if (int(2.0*qrand()/(RAND_MAX+1.0)) == 1) {
+        if (QRandomGenerator::global()->bounded(2) == 1) {
             QListWidgetItem *item = piecesList->takeItem(i);
             piecesList->insertItem(0, item);
         }

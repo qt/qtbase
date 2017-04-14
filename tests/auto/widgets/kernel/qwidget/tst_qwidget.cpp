@@ -50,6 +50,7 @@
 #include <qcalendarwidget.h>
 #include <qmainwindow.h>
 #include <qdockwidget.h>
+#include <qrandom.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <QtGui/qpaintengine.h>
@@ -9826,7 +9827,7 @@ void tst_QWidget::grab()
         for (int row = 0; row < image.height(); ++row) {
             QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
             for (int col = 0; col < image.width(); ++col)
-                line[col] = qRgba(rand() & 255, row, col, opaque ? 255 : 127);
+                line[col] = qRgba(QRandomGenerator::global()->bounded(255), row, col, opaque ? 255 : 127);
         }
 
         QPalette pal = widget.palette();

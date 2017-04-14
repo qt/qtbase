@@ -33,6 +33,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QEventLoop>
 #include <QtCore/QFile>
+#include <QtCore/QRandomGenerator>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QTemporaryFile>
@@ -120,12 +121,11 @@ class tst_QNetworkReply: public QObject
     static QString createUniqueExtension()
     {
         if (!seedCreated) {
-            qsrand(QTime(0,0,0).msecsTo(QTime::currentTime()) + QCoreApplication::applicationPid());
             seedCreated = true; // not thread-safe, but who cares
         }
         return QString::number(QTime(0, 0, 0).msecsTo(QTime::currentTime()))
             + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid())
-            + QLatin1Char('-') + QString::number(qrand());
+            + QLatin1Char('-') + QString::number(QRandomGenerator::global()->generate());
     }
 
     static QString tempRedirectReplyStr() {
@@ -4852,7 +4852,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     // server send the data much faster than expected.
     // So better provide random data that cannot be compressed.
     for (int i = 0; i < wantedSize; ++i)
-        sourceFile += (char)qrand();
+        sourceFile += (char)QRandomGenerator::global()->generate();
 
     // emulate a minimal https server
     SslServer server;
@@ -4932,7 +4932,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     // server send the data much faster than expected.
     // So better provide random data that cannot be compressed.
     for (int i = 0; i < wantedSize; ++i)
-        testData += (char)qrand();
+        testData += (char)QRandomGenerator::global()->generate();
 
     QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
     httpResponse += QByteArray::number(testData.size());
@@ -8748,7 +8748,7 @@ public slots:
         m_receivedData += data;
         if (!m_parsedHeaders && m_receivedData.contains("\r\n\r\n")) {
             m_parsedHeaders = true;
-            QTimer::singleShot(qrand()%60, this, SLOT(closeDelayed())); // simulate random network latency
+            QTimer::singleShot(QRandomGenerator::global()->bounded(60), this, SLOT(closeDelayed())); // simulate random network latency
             // This server simulates a web server connection closing, e.g. because of Apaches MaxKeepAliveRequests or KeepAliveTimeout
             // In this case QNAM needs to re-send the upload data but it had a bug which then corrupts the upload
             // This test catches that.
