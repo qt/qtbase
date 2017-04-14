@@ -42,6 +42,7 @@
 
 #include "qrandom.h"
 #include "qrandom_p.h"
+#include <qobjectdefs.h>
 #include <qthreadstorage.h>
 
 #if QT_HAS_INCLUDE(<random>)
@@ -730,13 +731,7 @@ void QRandomGenerator::fillRange_helper(void *buffer, void *bufferEnd)
 }
 
 #if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS - 0 > 0)
-
-#  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
-// older versions of INTEGRITY used a long instead of a uint for the seed.
-typedef long SeedStorageType;
-#  else
-typedef uint SeedStorageType;
-#  endif
+using SeedStorageType = QtPrivate::FunctionPointer<decltype(&srand)>::Arguments::Car;
 
 typedef QThreadStorage<SeedStorageType *> SeedStorage;
 Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
