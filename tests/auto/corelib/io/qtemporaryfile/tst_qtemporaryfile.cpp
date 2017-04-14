@@ -866,8 +866,6 @@ void tst_QTemporaryFile::guaranteeUnique()
 
     // First pass. See which filename QTemporaryFile will try first.
     {
-        // Fix the random seed.
-        qsrand(1135);
         QTemporaryFile tmpFile("testFile1.XXXXXX");
         tmpFile.open();
         takenFileName = tmpFile.fileName();
@@ -881,8 +879,6 @@ void tst_QTemporaryFile::guaranteeUnique()
 
     // Second pass, now we have blocked its first attempt with a directory.
     {
-        // Fix the random seed.
-        qsrand(1135);
         QTemporaryFile tmpFile("testFile1.XXXXXX");
         QVERIFY(tmpFile.open());
         QString uniqueFileName = tmpFile.fileName();

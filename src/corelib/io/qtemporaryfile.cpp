@@ -42,6 +42,7 @@
 #ifndef QT_NO_TEMPORARYFILE
 
 #include "qplatformdefs.h"
+#include "qrandom.h"
 #include "private/qtemporaryfile_p.h"
 #include "private/qfile_p.h"
 #include "private/qsystemerror_p.h"
@@ -131,15 +132,17 @@ static bool createFileFromTemplate(NativeFileHandle &file,
         Char *rIter = placeholderEnd;
 
 #if defined(QT_BUILD_CORE_LIB)
+        // don't consume more than half of the template with the PID
+        Char *pidStart = placeholderEnd - (placeholderEnd - placeholderStart) / 2;
         quint64 pid = quint64(QCoreApplication::applicationPid());
         do {
             *--rIter = Latin1Char((pid % 10) + '0');
             pid /= 10;
-        } while (rIter != placeholderStart && pid != 0);
+        } while (rIter != pidStart && pid != 0);
 #endif
 
         while (rIter != placeholderStart) {
-            char ch = char((qrand() & 0xffff) % (26 + 26));
+            char ch = char(QRandomGenerator::bounded(26 + 26));
             if (ch < 26)
                 *--rIter = Latin1Char(ch + 'A');
             else
