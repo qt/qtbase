@@ -1232,6 +1232,10 @@ void tst_QMatrixNxN::multiply4x4()
     QMatrix4x4 m5;
     m5 = m1 * m2;
     QVERIFY(isSame(m5, (const float *)m3Values));
+
+    QMatrix4x4 m1xm1 = m1 * m1;
+    m1 *= m1;
+    QCOMPARE(m1, m1xm1);
 }
 
 // Test matrix multiplication for 4x3 matrices.
