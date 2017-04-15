@@ -205,13 +205,13 @@ public:
     QStringView(const StdBasicString &str) Q_DECL_NOTHROW
         : QStringView(str.data(), qssize_t(str.size())) {}
 
-    QString toString() const { return Q_ASSERT(size() == length()), QString(data(), length()); }
+    QString toString() const Q_REQUIRED_RESULT { return Q_ASSERT(size() == length()), QString(data(), length()); }
 
-    Q_DECL_CONSTEXPR qssize_t size() const Q_DECL_NOTHROW { return m_size; }
-    const_pointer data() const Q_DECL_NOTHROW { return reinterpret_cast<const_pointer>(m_data); }
-    Q_DECL_CONSTEXPR const storage_type *utf16() const Q_DECL_NOTHROW { return m_data; }
+    Q_DECL_CONSTEXPR qssize_t size() const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return m_size; }
+    const_pointer data() const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return reinterpret_cast<const_pointer>(m_data); }
+    Q_DECL_CONSTEXPR const storage_type *utf16() const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return m_data; }
 
-    Q_DECL_CONSTEXPR QChar operator[](qssize_t n) const
+    Q_DECL_CONSTEXPR QChar operator[](qssize_t n) const Q_REQUIRED_RESULT
     { return Q_ASSERT(n >= 0), Q_ASSERT(n < size()), QChar(m_data[n]); }
 
     //
@@ -223,15 +223,15 @@ public:
     QByteArray toLocal8Bit() const Q_REQUIRED_RESULT { return qConvertToLocal8Bit(*this); }
     inline QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
 
-    Q_DECL_CONSTEXPR QChar at(qssize_t n) const { return (*this)[n]; }
+    Q_DECL_CONSTEXPR QChar at(qssize_t n) const Q_REQUIRED_RESULT { return (*this)[n]; }
 
-    Q_DECL_CONSTEXPR QStringView mid(qssize_t pos) const
+    Q_DECL_CONSTEXPR QStringView mid(qssize_t pos) const Q_REQUIRED_RESULT
     { return Q_ASSERT(pos >= 0), Q_ASSERT(pos <= size()), QStringView(m_data + pos, m_size - pos); }
-    Q_DECL_CONSTEXPR QStringView mid(qssize_t pos, qssize_t n) const
+    Q_DECL_CONSTEXPR QStringView mid(qssize_t pos, qssize_t n) const Q_REQUIRED_RESULT
     { return Q_ASSERT(pos >= 0), Q_ASSERT(n >= 0), Q_ASSERT(pos + n <= size()), QStringView(m_data + pos, n); }
-    Q_DECL_CONSTEXPR QStringView left(qssize_t n) const
+    Q_DECL_CONSTEXPR QStringView left(qssize_t n) const Q_REQUIRED_RESULT
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, n); }
-    Q_DECL_CONSTEXPR QStringView right(qssize_t n) const
+    Q_DECL_CONSTEXPR QStringView right(qssize_t n) const Q_REQUIRED_RESULT
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data + m_size - n, n); }
     Q_DECL_CONSTEXPR QStringView chopped(qssize_t n) const Q_REQUIRED_RESULT
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, m_size - n); }
@@ -244,28 +244,28 @@ public:
     //
     // STL compatibility API:
     //
-    const_iterator begin()   const Q_DECL_NOTHROW { return data(); }
-    const_iterator end()     const Q_DECL_NOTHROW { return data() + size(); }
-    const_iterator cbegin()  const Q_DECL_NOTHROW { return begin(); }
-    const_iterator cend()    const Q_DECL_NOTHROW { return end(); }
-    const_reverse_iterator rbegin()  const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
-    const_reverse_iterator rend()    const Q_DECL_NOTHROW { return const_reverse_iterator(begin()); }
-    const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return rbegin(); }
-    const_reverse_iterator crend()   const Q_DECL_NOTHROW { return rend(); }
+    const_iterator begin()   const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return data(); }
+    const_iterator end()     const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return data() + size(); }
+    const_iterator cbegin()  const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return begin(); }
+    const_iterator cend()    const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return end(); }
+    const_reverse_iterator rbegin()  const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend()    const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return rbegin(); }
+    const_reverse_iterator crend()   const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return rend(); }
 
-    Q_DECL_CONSTEXPR bool empty() const Q_DECL_NOTHROW { return size() == 0; }
-    Q_DECL_CONSTEXPR QChar front() const { return Q_ASSERT(!empty()), QChar(m_data[0]); }
-    Q_DECL_CONSTEXPR QChar back()  const { return Q_ASSERT(!empty()), QChar(m_data[m_size - 1]); }
+    Q_DECL_CONSTEXPR bool empty() const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return size() == 0; }
+    Q_DECL_CONSTEXPR QChar front() const Q_REQUIRED_RESULT { return Q_ASSERT(!empty()), QChar(m_data[0]); }
+    Q_DECL_CONSTEXPR QChar back()  const Q_REQUIRED_RESULT { return Q_ASSERT(!empty()), QChar(m_data[m_size - 1]); }
 
     //
     // Qt compatibility API:
     //
-    Q_DECL_CONSTEXPR bool isNull() const Q_DECL_NOTHROW { return !m_data; }
-    Q_DECL_CONSTEXPR bool isEmpty() const Q_DECL_NOTHROW { return empty(); }
-    Q_DECL_CONSTEXPR int length() const /* not nothrow! */
+    Q_DECL_CONSTEXPR bool isNull() const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return !m_data; }
+    Q_DECL_CONSTEXPR bool isEmpty() const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return empty(); }
+    Q_DECL_CONSTEXPR int length() const /* not nothrow! */ Q_REQUIRED_RESULT
     { return Q_ASSERT(int(size()) == size()), int(size()); }
-    Q_DECL_CONSTEXPR QChar first() const { return front(); }
-    Q_DECL_CONSTEXPR QChar last()  const { return back(); }
+    Q_DECL_CONSTEXPR QChar first() const Q_REQUIRED_RESULT { return front(); }
+    Q_DECL_CONSTEXPR QChar last()  const Q_REQUIRED_RESULT { return back(); }
 private:
     qssize_t m_size;
     const storage_type *m_data;
