@@ -258,20 +258,24 @@ public:
     int readBufferPos;
     QXmlStreamSimpleStack<uint> putStack;
     struct Entity {
-        Entity(const QString& str = QString())
-            :value(str), external(false), unparsed(false), literal(false),
+        Entity() = default;
+        Entity(const QString &name, const QString &value)
+          :  name(name), value(value), external(false), unparsed(false), literal(false),
              hasBeenParsed(false), isCurrentlyReferenced(false){}
-        static inline Entity createLiteral(const QString &entity)
-            { Entity result(entity); result.literal = result.hasBeenParsed = true; return result; }
-        QString value;
+        static inline Entity createLiteral(QLatin1String name, QLatin1String value)
+            { Entity result(name, value); result.literal = result.hasBeenParsed = true; return result; }
+        QString name, value;
         uint external : 1;
         uint unparsed : 1;
         uint literal : 1;
         uint hasBeenParsed : 1;
         uint isCurrentlyReferenced : 1;
     };
-    QHash<QString, Entity> entityHash;
-    QHash<QString, Entity> parameterEntityHash;
+    // these hash tables use a QStringView as a key to avoid creating QStrings
+    // just for lookup. The keys are usually views into Entity::name and thus
+    // are guaranteed to have the same lifetime as the referenced data:
+    QHash<QStringView, Entity> entityHash;
+    QHash<QStringView, Entity> parameterEntityHash;
     QXmlStreamSimpleStack<Entity *>entityReferenceStack;
     inline bool referenceEntity(Entity &entity) {
         if (entity.isCurrentlyReferenced) {
@@ -423,6 +427,11 @@ public:
     inline QStringRef symString(int index) {
         const Value &symbol = sym(index);
         return QStringRef(&textBuffer, symbol.pos + symbol.prefix, symbol.len - symbol.prefix);
+    }
+    QStringView symView(int index) const
+    {
+        const Value &symbol = sym(index);
+        return QStringView(textBuffer.data() + symbol.pos, symbol.len).mid(symbol.prefix);
     }
     inline QStringRef symName(int index) {
         const Value &symbol = sym(index);
@@ -1142,13 +1151,13 @@ entity_decl ::= entity_decl_start entity_value space_opt RANGLE;
             EntityDeclaration &entityDeclaration = entityDeclarations.top();
             if (!entityDeclaration.external)
                 entityDeclaration.value = symString(2);
-            QString entityName = entityDeclaration.name.toString();
-            QHash<QString, Entity> &hash = entityDeclaration.parameter ? parameterEntityHash : entityHash;
-            if (!hash.contains(entityName)) {
-                Entity entity(entityDeclaration.value.toString());
+            auto &hash = entityDeclaration.parameter ? parameterEntityHash : entityHash;
+            if (!hash.contains(qToStringViewIgnoringNull(entityDeclaration.name))) {
+                Entity entity(entityDeclaration.name.toString(),
+                              entityDeclaration.value.toString());
                 entity.unparsed = (!entityDeclaration.notationName.isNull());
                 entity.external = entityDeclaration.external;
-                hash.insert(entityName, entity);
+                hash.insert(qToStringViewIgnoringNull(entity.name), entity);
             }
         } break;
 ./
@@ -1612,7 +1621,7 @@ entity_ref ::= AMPERSAND name SEMICOLON;
 /.
         case $rule_number: {
             sym(1).len += sym(2).len + 1;
-            QString reference = symString(2).toString();
+            QStringView reference = symView(2);
             if (entityHash.contains(reference)) {
                 Entity &entity = entityHash[reference];
                 if (entity.unparsed) {
@@ -1633,7 +1642,7 @@ entity_ref ::= AMPERSAND name SEMICOLON;
             }
 
             if (entityResolver) {
-                QString replacementText = resolveUndeclaredEntity(reference);
+                QString replacementText = resolveUndeclaredEntity(reference.toString());
                 if (!replacementText.isNull()) {
                     putReplacement(replacementText);
                     textBuffer.chop(2 + sym(2).len);
@@ -1654,7 +1663,7 @@ pereference ::= PERCENT name SEMICOLON;
 /.
         case $rule_number: {
             sym(1).len += sym(2).len + 1;
-            QString reference = symString(2).toString();
+            QStringView reference = symView(2);
             if (parameterEntityHash.contains(reference)) {
                 referenceToParameterEntityDetected = true;
                 Entity &entity = parameterEntityHash[reference];
@@ -1685,7 +1694,7 @@ entity_ref_in_attribute_value ::= AMPERSAND name SEMICOLON;
 /.
         case $rule_number: {
             sym(1).len += sym(2).len + 1;
-            QString reference = symString(2).toString();
+            QStringView reference = symView(2);
             if (entityHash.contains(reference)) {
                 Entity &entity = entityHash[reference];
                 if (entity.unparsed || entity.value.isNull()) {
@@ -1706,7 +1715,7 @@ entity_ref_in_attribute_value ::= AMPERSAND name SEMICOLON;
             }
 
             if (entityResolver) {
-                QString replacementText = resolveUndeclaredEntity(reference);
+                QString replacementText = resolveUndeclaredEntity(reference.toString());
                 if (!replacementText.isNull()) {
                     putReplacement(replacementText);
                     textBuffer.chop(2 + sym(2).len);

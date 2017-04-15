@@ -796,11 +796,17 @@ QXmlStreamReaderPrivate::QXmlStreamReaderPrivate(QXmlStreamReader *q)
     reallocateStack();
     entityResolver = 0;
     init();
-    entityHash.insert(QLatin1String("lt"), Entity::createLiteral(QLatin1String("<")));
-    entityHash.insert(QLatin1String("gt"), Entity::createLiteral(QLatin1String(">")));
-    entityHash.insert(QLatin1String("amp"), Entity::createLiteral(QLatin1String("&")));
-    entityHash.insert(QLatin1String("apos"), Entity::createLiteral(QLatin1String("'")));
-    entityHash.insert(QLatin1String("quot"), Entity::createLiteral(QLatin1String("\"")));
+#define ADD_PREDEFINED(n, v) \
+    do { \
+        Entity e = Entity::createLiteral(QLatin1String(n), QLatin1String(v)); \
+        entityHash.insert(qToStringViewIgnoringNull(e.name), std::move(e)); \
+    } while (false)
+    ADD_PREDEFINED("lt", "<");
+    ADD_PREDEFINED("gt", ">");
+    ADD_PREDEFINED("amp", "&");
+    ADD_PREDEFINED("apos", "'");
+    ADD_PREDEFINED("quot", "\"");
+#undef ADD_PREDEFINED
 }
 
 void QXmlStreamReaderPrivate::init()
