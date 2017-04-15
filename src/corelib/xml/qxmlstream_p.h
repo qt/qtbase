@@ -1508,12 +1508,12 @@ bool QXmlStreamReaderPrivate::parse()
             processingInstructionTarget = symString(3);
             if (scanUntil("?>")) {
                 processingInstructionData = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 2);
-                const QString piTarget(processingInstructionTarget.toString());
-                if (!piTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive)) {
+                if (!processingInstructionTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive)) {
                     raiseWellFormedError(QXmlStream::tr("XML declaration not at start of document."));
                 }
-                else if(!QXmlUtils::isNCName(piTarget))
-                    raiseWellFormedError(QXmlStream::tr("%1 is an invalid processing instruction name.").arg(piTarget));
+                else if (!QXmlUtils::isNCName(processingInstructionTarget))
+                    raiseWellFormedError(QXmlStream::tr("%1 is an invalid processing instruction name.")
+                                         .arg(processingInstructionTarget));
             } else if (type != QXmlStreamReader::Invalid){
                 resume(96);
                 return false;
@@ -1523,7 +1523,7 @@ bool QXmlStreamReaderPrivate::parse()
         case 97:
             setType(QXmlStreamReader::ProcessingInstruction);
             processingInstructionTarget = symString(3);
-            if (!processingInstructionTarget.toString().compare(QLatin1String("xml"), Qt::CaseInsensitive))
+            if (!processingInstructionTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive))
                 raiseWellFormedError(QXmlStream::tr("Invalid processing instruction name."));
         break;
 
@@ -1638,7 +1638,7 @@ bool QXmlStreamReaderPrivate::parse()
 
         case 175: {
             if (!QXmlUtils::isPublicID(symString(1))) {
-                raiseWellFormedError(QXmlStream::tr("%1 is an invalid PUBLIC identifier.").arg(symString(1).toString()));
+                raiseWellFormedError(QXmlStream::tr("%1 is an invalid PUBLIC identifier.").arg(symString(1)));
                 resume(175);
                 return false;
             }
@@ -1845,7 +1845,7 @@ bool QXmlStreamReaderPrivate::parse()
                     clearSym();
                 }
             } else if (entitiesMustBeDeclared()) {
-                raiseWellFormedError(QXmlStream::tr("Entity '%1' not declared.").arg(symString(2).toString()));
+                raiseWellFormedError(QXmlStream::tr("Entity '%1' not declared.").arg(symString(2)));
             }
         } break;
 

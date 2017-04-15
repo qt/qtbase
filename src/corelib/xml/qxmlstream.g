@@ -1164,12 +1164,12 @@ processing_instruction ::= LANGLE QUESTIONMARK name space;
             processingInstructionTarget = symString(3);
             if (scanUntil("?>")) {
                 processingInstructionData = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 2);
-                const QString piTarget(processingInstructionTarget.toString());
-                if (!piTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive)) {
+                if (!processingInstructionTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive)) {
                     raiseWellFormedError(QXmlStream::tr("XML declaration not at start of document."));
                 }
-                else if(!QXmlUtils::isNCName(piTarget))
-                    raiseWellFormedError(QXmlStream::tr("%1 is an invalid processing instruction name.").arg(piTarget));
+                else if (!QXmlUtils::isNCName(processingInstructionTarget))
+                    raiseWellFormedError(QXmlStream::tr("%1 is an invalid processing instruction name.")
+                                         .arg(processingInstructionTarget));
             } else if (type != QXmlStreamReader::Invalid){
                 resume($rule_number);
                 return false;
@@ -1182,7 +1182,7 @@ processing_instruction ::= LANGLE QUESTIONMARK name QUESTIONMARK RANGLE;
         case $rule_number:
             setType(QXmlStreamReader::ProcessingInstruction);
             processingInstructionTarget = symString(3);
-            if (!processingInstructionTarget.toString().compare(QLatin1String("xml"), Qt::CaseInsensitive))
+            if (!processingInstructionTarget.compare(QLatin1String("xml"), Qt::CaseInsensitive))
                 raiseWellFormedError(QXmlStream::tr("Invalid processing instruction name."));
         break;
 ./
@@ -1380,7 +1380,7 @@ public_literal ::= literal;
 /.
         case $rule_number: {
             if (!QXmlUtils::isPublicID(symString(1).toString())) {
-                raiseWellFormedError(QXmlStream::tr("%1 is an invalid PUBLIC identifier.").arg(symString(1).toString()));
+                raiseWellFormedError(QXmlStream::tr("%1 is an invalid PUBLIC identifier.").arg(symString(1)));
                 resume($rule_number);
                 return false;
             }
@@ -1669,7 +1669,7 @@ pereference ::= PERCENT name SEMICOLON;
                     clearSym();
                 }
             } else if (entitiesMustBeDeclared()) {
-                raiseWellFormedError(QXmlStream::tr("Entity '%1' not declared.").arg(symString(2).toString()));
+                raiseWellFormedError(QXmlStream::tr("Entity '%1' not declared.").arg(symString(2)));
             }
         } break;
 ./
