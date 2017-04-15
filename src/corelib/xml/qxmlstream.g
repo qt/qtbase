@@ -201,6 +201,7 @@ public:
     QXmlStreamSimpleStack<NamespaceDeclaration> namespaceDeclarations;
     QString tagStackStringStorage;
     int tagStackStringStorageSize;
+    int initialTagStackStringStorageSize;
     bool tagsDone;
 
     inline QStringRef addToStringStorage(const QStringRef &s) {
@@ -455,7 +456,7 @@ public:
 
 
     short token;
-    ushort token_char;
+    uint token_char;
 
     uint filterCarriageReturn();
     inline uint getChar();
@@ -466,7 +467,7 @@ public:
     void putStringLiteral(const QString &s);
     void putReplacement(const QString &s);
     void putReplacementInAttributeValue(const QString &s);
-    ushort getChar_helper();
+    uint getChar_helper();
 
     bool scanUntil(const char *str, short tokenToInject = -1);
     bool scanString(const char *str, short tokenToInject, bool requireSpace = true);
@@ -525,10 +526,8 @@ bool QXmlStreamReaderPrivate::parse()
         prefix.clear();
         qualifiedName.clear();
         namespaceUri.clear();
-        if (publicNamespaceDeclarations.size())
-            publicNamespaceDeclarations.clear();
-        if (attributes.size())
-            attributes.resize(0);
+        publicNamespaceDeclarations.clear();
+        attributes.clear();
         if (isEmptyElement) {
             setType(QXmlStreamReader::EndElement);
             Tag &tag = tagStack_pop();
@@ -553,7 +552,7 @@ bool QXmlStreamReaderPrivate::parse()
         dtdName.clear();
         dtdPublicId.clear();
         dtdSystemId.clear();
-        // fall through
+        Q_FALLTHROUGH();
     case QXmlStreamReader::Comment:
     case QXmlStreamReader::Characters:
         isCDATA = false;
@@ -579,13 +578,13 @@ bool QXmlStreamReaderPrivate::parse()
         documentVersion.clear();
         documentEncoding.clear();
 #ifndef QT_NO_TEXTCODEC
-        if (decoder->hasFailure()) {
+        if (decoder && decoder->hasFailure()) {
             raiseWellFormedError(QXmlStream::tr("Encountered incorrectly encoded content."));
             readBuffer.clear();
             return false;
         }
 #endif
-        // fall through
+        Q_FALLTHROUGH();
     default:
         clearTextBuffer();
         ;
@@ -610,8 +609,8 @@ bool QXmlStreamReaderPrivate::parse()
         if (token == -1 && - TERMINAL_COUNT != action_index[act]) {
             uint cu = getChar();
             token = NOTOKEN;
-            token_char = cu;
-            if (cu & 0xff0000) {
+            token_char = cu == ~0U ? cu : ushort(cu);
+            if ((cu != ~0U) && (cu & 0xff0000)) {
                 token = cu >> 16;
             } else switch (token_char) {
             case 0xfffe:
@@ -629,8 +628,8 @@ bool QXmlStreamReaderPrivate::parse()
                 } else {
                     break;
                 }
-                // fall through
-            case '\0': {
+                Q_FALLTHROUGH();
+            case ~0U: {
                 token = EOF_SYMBOL;
                 if (!tagsDone && !inParseEntity) {
                     int a = t_action(act, token);
@@ -644,6 +643,7 @@ bool QXmlStreamReaderPrivate::parse()
             case '\n':
                 ++lineNumber;
                 lastLineStart = characterOffset + readBufferPos;
+                Q_FALLTHROUGH();
             case ' ':
             case '\t':
                 token = SPACE;
@@ -1127,7 +1127,7 @@ entity_decl ::= entity_decl_external NDATA name space_opt RANGLE;
             if (entityDeclaration.parameter)
                 raiseWellFormedError(QXmlStream::tr("NDATA in parameter entity declaration."));
         }
-        //fall through
+        Q_FALLTHROUGH();
 ./
 
 entity_decl ::= entity_decl_external space_opt RANGLE;
@@ -1281,7 +1281,7 @@ scan_content_char ::= content_char;
 /.
         case $rule_number:
             isWhitespace = false;
-            // fall through
+            Q_FALLTHROUGH();
 ./
 
 scan_content_char ::= SPACE;
@@ -1379,7 +1379,7 @@ literal_content ::= literal_content_start;
 public_literal ::= literal;
 /.
         case $rule_number: {
-            if (!QXmlUtils::isPublicID(symString(1).toString())) {
+            if (!QXmlUtils::isPublicID(symString(1))) {
                 raiseWellFormedError(QXmlStream::tr("%1 is an invalid PUBLIC identifier.").arg(symString(1)));
                 resume($rule_number);
                 return false;
@@ -1567,7 +1567,7 @@ empty_element_tag ::= stag_start attribute_list_opt SLASH RANGLE;
 /.
         case $rule_number:
             isEmptyElement = true;
-        // fall through
+            Q_FALLTHROUGH();
 ./
 
 
