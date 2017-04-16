@@ -439,11 +439,11 @@ QPlatformCursor *QEglFSKmsDevice::globalCursor() const
 
 void QEglFSKmsDevice::handleDrmEvent()
 {
-    drmEventContext drmEvent = {
-        DRM_EVENT_CONTEXT_VERSION,
-        Q_NULLPTR,      // vblank handler
-        pageFlipHandler // page flip handler
-    };
+    drmEventContext drmEvent;
+    memset(&drmEvent, 0, sizeof(drmEvent));
+    drmEvent.version = DRM_EVENT_CONTEXT_VERSION;
+    drmEvent.vblank_handler = nullptr;
+    drmEvent.page_flip_handler = pageFlipHandler;
 
     drmHandleEvent(m_dri_fd, &drmEvent);
 }
