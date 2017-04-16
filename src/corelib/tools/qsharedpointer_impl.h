@@ -260,6 +260,7 @@ namespace QtSharedPointer {
             internalSafetyCheckRemove(self);
             deleter(self);
         }
+        static void noDeleter(ExternalRefCountData *) { }
 
         static inline ExternalRefCountData *create(T **ptr, DestroyerFn destroy)
         {
@@ -433,11 +434,13 @@ public:
 # else
         typename Private::DestroyerFn destroy = &Private::deleter;
 # endif
+        typename Private::DestroyerFn noDestroy = &Private::noDeleter;
         QSharedPointer result(Qt::Uninitialized);
-        result.d = Private::create(&result.value, destroy);
+        result.d = Private::create(&result.value, noDestroy);
 
         // now initialize the data
         new (result.data()) T(std::forward<Args>(arguments)...);
+        result.d->destroyer = destroy;
         result.d->setQObjectShared(result.value, true);
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS
         internalSafetyCheckAdd(result.d, result.value);

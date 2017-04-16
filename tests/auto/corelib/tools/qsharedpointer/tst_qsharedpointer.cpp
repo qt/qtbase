@@ -97,6 +97,8 @@ private slots:
     void qvariantCast();
     void sharedFromThis();
 
+    void constructorThrow();
+
     void threadStressTest_data();
     void threadStressTest();
     void validConstructs();
@@ -2592,6 +2594,54 @@ void tst_QSharedPointer::sharedFromThis()
 
     QCOMPARE(Data::generationCounter, generations + 6);
     QCOMPARE(Data::destructorCounter, destructions + 6);
+}
+
+#ifndef QT_NO_EXCEPTIONS
+class ThrowData: public Data
+{
+public:
+    static int childDestructorCounter;
+    static int childGenerationCounter;
+
+    ThrowData()
+    {
+        childGenerationCounter++;
+        throw QStringLiteral("Dummy exception");
+    }
+
+    ~ThrowData()
+    {
+        childDestructorCounter++;
+    }
+};
+int ThrowData::childDestructorCounter = 0;
+int ThrowData::childGenerationCounter = 0;
+#endif // !QT_NO_EXCEPTIONS
+
+void tst_QSharedPointer::constructorThrow()
+{
+#ifndef QT_NO_EXCEPTIONS
+    int generation = Data::generationCounter;
+    int destructorCounter = Data::destructorCounter;
+
+    int childGeneration = ThrowData::childGenerationCounter;
+    int childDestructorCounter = ThrowData::childDestructorCounter;
+
+    QSharedPointer<ThrowData> ptr;
+    QVERIFY_EXCEPTION_THROWN(ptr = QSharedPointer<ThrowData>::create(), QString);
+    QVERIFY(ptr.isNull());
+    QCOMPARE(ThrowData::childGenerationCounter, childGeneration + 1);
+    // destructor should never be called, if a constructor throws
+    // an exception
+    QCOMPARE(ThrowData::childDestructorCounter, childDestructorCounter);
+
+    QCOMPARE(Data::generationCounter, generation + 1);
+    // but base class constructor doesn't throw, so base class destructor
+    // should be called
+    QCOMPARE(Data::destructorCounter, destructorCounter + 1);
+#else
+    QSKIP("Needs exceptions");
+#endif // !QT_NO_EXCEPTIONS
 }
 
 namespace ReentrancyWhileDestructing {
