@@ -312,11 +312,11 @@ void QLinuxFbDevice::swapBuffers(Output *output)
 
     const int fbIdx = output->backFb;
     while (output->backFb == fbIdx) {
-        drmEventContext drmEvent = {
-            DRM_EVENT_CONTEXT_VERSION,
-            nullptr,
-            pageFlipHandler
-        };
+        drmEventContext drmEvent;
+        memset(&drmEvent, 0, sizeof(drmEvent));
+        drmEvent.version = DRM_EVENT_CONTEXT_VERSION;
+        drmEvent.vblank_handler = nullptr;
+        drmEvent.page_flip_handler = pageFlipHandler;
         // Blocks until there is something to read on the drm fd
         // and calls back pageFlipHandler once the flip completes.
         drmHandleEvent(fd(), &drmEvent);
