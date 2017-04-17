@@ -632,10 +632,7 @@
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
-#      ifndef Q_OS_OSX
-//       C++11 thread_local is broken on OS X (Clang doesn't support it either)
-#        define Q_COMPILER_THREAD_LOCAL
-#      endif
+#      define Q_COMPILER_THREAD_LOCAL
 #      define Q_COMPILER_UDL
 #    endif
 #    ifdef _MSC_VER
