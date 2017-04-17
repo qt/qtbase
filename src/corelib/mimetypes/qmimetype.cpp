@@ -206,10 +206,14 @@ uint qHash(const QMimeType &key, uint seed) Q_DECL_NOTHROW
  */
 
 /*!
-    \fn bool QMimeType::isValid() const;
-    Returns \c true if the QMimeType object contains valid data, otherwise returns \c false.
+    \property QMimeType::valid
+    \brief \c true if the QMimeType object contains valid data, \c false otherwise
+
     A valid MIME type has a non-empty name().
     The invalid MIME type is the default-constructed QMimeType.
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
  */
 bool QMimeType::isValid() const
 {
@@ -217,9 +221,12 @@ bool QMimeType::isValid() const
 }
 
 /*!
-    \fn bool QMimeType::isDefault() const;
-    Returns \c true if this MIME type is the default MIME type which
+    \property QMimeType::isDefault
+    \brief \c true if this MIME type is the default MIME type which
     applies to all files: application/octet-stream.
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
  */
 bool QMimeType::isDefault() const
 {
@@ -227,8 +234,11 @@ bool QMimeType::isDefault() const
 }
 
 /*!
-    \fn QString QMimeType::name() const;
-    Returns the name of the MIME type.
+    \property QMimeType::name
+    \brief the name of the MIME type
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
  */
 QString QMimeType::name() const
 {
@@ -236,9 +246,13 @@ QString QMimeType::name() const
 }
 
 /*!
-    Returns the description of the MIME type to be displayed on user interfaces.
+    \property QMimeType::comment
+    \brief the description of the MIME type to be displayed on user interfaces
 
     The default language (QLocale().name()) is used to select the appropriate translation.
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
  */
 QString QMimeType::comment() const
 {
@@ -267,8 +281,8 @@ QString QMimeType::comment() const
 }
 
 /*!
-    \fn QString QMimeType::genericIconName() const;
-    Returns the file name of a generic icon that represents the MIME type.
+    \property QMimeType::genericIconName
+    \brief the file name of a generic icon that represents the MIME type
 
     This should be used if the icon returned by iconName() cannot be found on
     the system. It is used for categories of similar types (like spreadsheets
@@ -276,6 +290,9 @@ QString QMimeType::comment() const
     The freedesktop.org Icon Naming Specification lists a set of such icon names.
 
     The icon name can be given to QIcon::fromTheme() in order to load the icon.
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
  */
 QString QMimeType::genericIconName() const
 {
@@ -297,10 +314,13 @@ QString QMimeType::genericIconName() const
 }
 
 /*!
-    \fn QString QMimeType::iconName() const;
-    Returns the file name of an icon image that represents the MIME type.
+    \property QMimeType::iconName
+    \brief the file name of an icon image that represents the MIME type
 
     The icon name can be given to QIcon::fromTheme() in order to load the icon.
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
  */
 QString QMimeType::iconName() const
 {
@@ -316,8 +336,11 @@ QString QMimeType::iconName() const
 }
 
 /*!
-    \fn QStringList QMimeType::globPatterns() const;
-    Returns the list of glob matching patterns.
+    \property QMimeType::globPatterns
+    \brief the list of glob matching patterns
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
  */
 QStringList QMimeType::globPatterns() const
 {
@@ -326,6 +349,9 @@ QStringList QMimeType::globPatterns() const
 }
 
 /*!
+    \property QMimeType::parentMimeTypes
+    \brief the names of parent MIME types
+
     A type is a subclass of another type if any instance of the first type is
     also an instance of the second. For example, all image/svg+xml files are also
     text/xml, text/plain and application/octet-stream files. Subclassing is about
@@ -336,6 +362,9 @@ QStringList QMimeType::globPatterns() const
     A mimetype can have multiple parents. For instance application/x-perl
     has two parents: application/x-executable and text/plain. This makes
     it possible to both execute perl scripts, and to open them in text editors.
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
 */
 QStringList QMimeType::parentMimeTypes() const
 {
@@ -357,6 +386,9 @@ static void collectParentMimeTypes(const QString &mime, QStringList &allParents)
 }
 
 /*!
+    \property QMimeType::allAncestors
+    \brief the names of direct and indirect parent MIME types
+
     Return all the parent mimetypes of this mimetype, direct and indirect.
     This includes the parent(s) of its parent(s), etc.
 
@@ -365,6 +397,9 @@ static void collectParentMimeTypes(const QString &mime, QStringList &allParents)
 
     Note that application/octet-stream is the ultimate parent for all types
     of files (but not directories).
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
 */
 QStringList QMimeType::allAncestors() const
 {
@@ -374,7 +409,8 @@ QStringList QMimeType::allAncestors() const
 }
 
 /*!
-    Return the list of aliases of this mimetype.
+    \property QMimeType::aliases
+    \brief the list of aliases of this mimetype
 
     For instance, for text/csv, the returned list would be:
     text/x-csv, text/x-comma-separated-values.
@@ -383,6 +419,9 @@ QStringList QMimeType::allAncestors() const
     never to aliases directly.
 
     The order of the aliases in the list is undefined.
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
 */
 QStringList QMimeType::aliases() const
 {
@@ -390,8 +429,13 @@ QStringList QMimeType::aliases() const
 }
 
 /*!
-    Returns the known suffixes for the MIME type.
+    \property QMimeType::suffixes
+    \brief the known suffixes for the MIME type
+
     No leading dot is included, so for instance this would return "jpg", "jpeg" for image/jpeg.
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
  */
 QStringList QMimeType::suffixes() const
 {
@@ -412,9 +456,14 @@ QStringList QMimeType::suffixes() const
 }
 
 /*!
-    Returns the preferred suffix for the MIME type.
+    \property QMimeType::preferredSuffix
+    \brief the preferred suffix for the MIME type
+
     No leading dot is included, so for instance this would return "pdf" for application/pdf.
     The return value can be empty, for mime types which do not have any suffixes associated.
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
  */
 QString QMimeType::preferredSuffix() const
 {
@@ -423,8 +472,11 @@ QString QMimeType::preferredSuffix() const
 }
 
 /*!
-    \fn QString QMimeType::filterString() const;
-    Returns a filter string usable for a file dialog.
+    \property QMimeType::filterString
+    \brief a filter string usable for a file dialog
+
+    While this property was introduced in 5.10, the
+    corresponding accessor method has always been there.
 */
 QString QMimeType::filterString() const
 {
@@ -449,6 +501,8 @@ QString QMimeType::filterString() const
     Returns \c true if this mimetype is \a mimeTypeName,
     or inherits \a mimeTypeName (see parentMimeTypes()),
     or \a mimeTypeName is an alias for this mimetype.
+
+    This method has been made invokable from QML since 5.10.
  */
 bool QMimeType::inherits(const QString &mimeTypeName) const
 {

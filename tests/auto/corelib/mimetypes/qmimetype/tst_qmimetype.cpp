@@ -46,6 +46,7 @@ private slots:
     void genericIconName();
     void iconName();
     void suffixes();
+    void gadget();
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -197,6 +198,45 @@ void tst_qmimetype::suffixes()
 
     QCOMPARE(instantiatedQMimeType.globPatterns(), qMimeTypeGlobPatterns());
     QCOMPARE(instantiatedQMimeType.suffixes(), QStringList() << QString::fromLatin1("png"));
+}
+
+// ------------------------------------------------------------------------------------------------
+
+void tst_qmimetype::gadget()
+{
+    QMimeType instantiatedQMimeType (
+                  buildQMimeType (
+                      qMimeTypeName(),
+                      qMimeTypeGenericIconName(),
+                      qMimeTypeIconName(),
+                      qMimeTypeGlobPatterns()
+                  )
+              );
+
+    const QMetaObject *metaObject = &instantiatedQMimeType.staticMetaObject;
+
+    QCOMPARE(metaObject->className(), "QMimeType");
+    QVariantMap properties;
+    for (int i = metaObject->propertyOffset(); i < metaObject->propertyCount(); i++) {
+        QMetaProperty property = metaObject->property(i);
+        properties[property.name()] = property.readOnGadget(&instantiatedQMimeType);
+    }
+
+    QCOMPARE(properties["valid"].toBool(), instantiatedQMimeType.isValid());
+    QCOMPARE(properties["isDefault"].toBool(), instantiatedQMimeType.isDefault());
+    QCOMPARE(properties["name"].toString(), instantiatedQMimeType.name());
+    QCOMPARE(properties["comment"].toString(), instantiatedQMimeType.comment());
+    QCOMPARE(properties["genericIconName"].toString(), instantiatedQMimeType.genericIconName());
+    QCOMPARE(properties["iconName"].toString(), instantiatedQMimeType.iconName());
+    QCOMPARE(properties["globPatterns"].toStringList(), instantiatedQMimeType.globPatterns());
+    QCOMPARE(properties["parentMimeTypes"].toStringList(), instantiatedQMimeType.parentMimeTypes());
+    QCOMPARE(properties["allAncestors"].toStringList(), instantiatedQMimeType.allAncestors());
+    QCOMPARE(properties["aliases"].toStringList(), instantiatedQMimeType.aliases());
+    QCOMPARE(properties["suffixes"].toStringList(), instantiatedQMimeType.suffixes());
+    QCOMPARE(properties["preferredSuffix"].toString(), instantiatedQMimeType.preferredSuffix());
+    QCOMPARE(properties["filterString"].toString(), instantiatedQMimeType.filterString());
+
+    QVERIFY(metaObject->indexOfMethod("inherits(QString)") >= 0);
 }
 
 // ------------------------------------------------------------------------------------------------
