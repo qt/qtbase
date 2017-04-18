@@ -78,8 +78,8 @@ public:
     void translate(int dx, int dy);
     void translate(const QPoint &offset);
 
-    QPolygon translated(int dx, int dy) const Q_REQUIRED_RESULT;
-    inline QPolygon translated(const QPoint &offset) const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QPolygon translated(int dx, int dy) const;
+    Q_REQUIRED_RESULT inline QPolygon translated(const QPoint &offset) const;
 
     QRect boundingRect() const;
 
@@ -95,9 +95,9 @@ public:
 
     bool containsPoint(const QPoint &pt, Qt::FillRule fillRule) const;
 
-    QPolygon united(const QPolygon &r) const Q_REQUIRED_RESULT;
-    QPolygon intersected(const QPolygon &r) const Q_REQUIRED_RESULT;
-    QPolygon subtracted(const QPolygon &r) const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QPolygon united(const QPolygon &r) const;
+    Q_REQUIRED_RESULT QPolygon intersected(const QPolygon &r) const;
+    Q_REQUIRED_RESULT QPolygon subtracted(const QPolygon &r) const;
 };
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPolygon)
 
@@ -162,7 +162,7 @@ public:
     void translate(const QPointF &offset);
 
     inline QPolygonF translated(qreal dx, qreal dy) const;
-    QPolygonF translated(const QPointF &offset) const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QPolygonF translated(const QPointF &offset) const;
 
     QPolygon toPolygon() const;
 
@@ -172,9 +172,9 @@ public:
 
     bool containsPoint(const QPointF &pt, Qt::FillRule fillRule) const;
 
-    QPolygonF united(const QPolygonF &r) const Q_REQUIRED_RESULT;
-    QPolygonF intersected(const QPolygonF &r) const Q_REQUIRED_RESULT;
-    QPolygonF subtracted(const QPolygonF &r) const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QPolygonF united(const QPolygonF &r) const;
+    Q_REQUIRED_RESULT QPolygonF intersected(const QPolygonF &r) const;
+    Q_REQUIRED_RESULT QPolygonF subtracted(const QPolygonF &r) const;
 };
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPolygonF)
 

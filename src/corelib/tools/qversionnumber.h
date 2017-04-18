@@ -248,39 +248,39 @@ public:
     inline explicit QVersionNumber(int maj, int min, int mic)
     { m_segments.setSegments(3, maj, min, mic); }
 
-    inline bool isNull() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
+    Q_REQUIRED_RESULT inline bool isNull() const Q_DECL_NOTHROW
     { return segmentCount() == 0; }
 
-    inline bool isNormalized() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
+    Q_REQUIRED_RESULT inline bool isNormalized() const Q_DECL_NOTHROW
     { return isNull() || segmentAt(segmentCount() - 1) != 0; }
 
-    inline int majorVersion() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
+    Q_REQUIRED_RESULT inline int majorVersion() const Q_DECL_NOTHROW
     { return segmentAt(0); }
 
-    inline int minorVersion() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
+    Q_REQUIRED_RESULT inline int minorVersion() const Q_DECL_NOTHROW
     { return segmentAt(1); }
 
-    inline int microVersion() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
+    Q_REQUIRED_RESULT inline int microVersion() const Q_DECL_NOTHROW
     { return segmentAt(2); }
 
-    Q_CORE_EXPORT QVersionNumber normalized() const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT QVersionNumber normalized() const;
 
-    Q_CORE_EXPORT QVector<int> segments() const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT QVector<int> segments() const;
 
-    inline int segmentAt(int index) const Q_DECL_NOTHROW Q_REQUIRED_RESULT
+    Q_REQUIRED_RESULT inline int segmentAt(int index) const Q_DECL_NOTHROW
     { return (m_segments.size() > index) ? m_segments.at(index) : 0; }
 
-    inline int segmentCount() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
+    Q_REQUIRED_RESULT inline int segmentCount() const Q_DECL_NOTHROW
     { return m_segments.size(); }
 
-    Q_CORE_EXPORT bool isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT bool isPrefixOf(const QVersionNumber &other) const Q_DECL_NOTHROW;
 
-    Q_CORE_EXPORT static int compare(const QVersionNumber &v1, const QVersionNumber &v2) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static int compare(const QVersionNumber &v1, const QVersionNumber &v2) Q_DECL_NOTHROW;
 
-    Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2) Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
 
-    Q_CORE_EXPORT QString toString() const Q_REQUIRED_RESULT;
-    Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = Q_NULLPTR) Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT QString toString() const;
+    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = Q_NULLPTR);
 
 private:
 #ifndef QT_NO_DATASTREAM

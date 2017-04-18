@@ -108,7 +108,7 @@ public:
     bool isInvertible() const { return !qFuzzyIsNull(_m11*_m22 - _m12*_m21); }
     qreal determinant() const { return _m11*_m22 - _m12*_m21; }
 
-    QMatrix inverted(bool *invertible = Q_NULLPTR) const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QMatrix inverted(bool *invertible = Q_NULLPTR) const;
 
     bool operator==(const QMatrix &) const;
     bool operator!=(const QMatrix &) const;

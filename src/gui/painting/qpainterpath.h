@@ -154,8 +154,8 @@ public:
     void translate(qreal dx, qreal dy);
     inline void translate(const QPointF &offset);
 
-    QPainterPath translated(qreal dx, qreal dy) const Q_REQUIRED_RESULT;
-    inline QPainterPath translated(const QPointF &offset) const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QPainterPath translated(qreal dx, qreal dy) const;
+    Q_REQUIRED_RESULT inline QPainterPath translated(const QPointF &offset) const;
 
     QRectF boundingRect() const;
     QRectF controlPointRect() const;
@@ -165,7 +165,7 @@ public:
 
     bool isEmpty() const;
 
-    QPainterPath toReversed() const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QPainterPath toReversed() const;
     QList<QPolygonF> toSubpathPolygons(const QMatrix &matrix = QMatrix()) const;
     QList<QPolygonF> toFillPolygons(const QMatrix &matrix = QMatrix()) const;
     QPolygonF toFillPolygon(const QMatrix &matrix = QMatrix()) const;
@@ -185,12 +185,12 @@ public:
 
     bool intersects(const QPainterPath &p) const;
     bool contains(const QPainterPath &p) const;
-    QPainterPath united(const QPainterPath &r) const Q_REQUIRED_RESULT;
-    QPainterPath intersected(const QPainterPath &r) const Q_REQUIRED_RESULT;
-    QPainterPath subtracted(const QPainterPath &r) const Q_REQUIRED_RESULT;
-    QPainterPath subtractedInverted(const QPainterPath &r) const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QPainterPath united(const QPainterPath &r) const;
+    Q_REQUIRED_RESULT QPainterPath intersected(const QPainterPath &r) const;
+    Q_REQUIRED_RESULT QPainterPath subtracted(const QPainterPath &r) const;
+    Q_REQUIRED_RESULT QPainterPath subtractedInverted(const QPainterPath &r) const;
 
-    QPainterPath simplified() const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QPainterPath simplified() const;
 
     bool operator==(const QPainterPath &other) const;
     bool operator!=(const QPainterPath &other) const;
