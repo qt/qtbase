@@ -46,6 +46,8 @@
 #define Q_XDG_PLATFORM
 #endif
 
+#include "emulationdetector.h"
+
 // Update this when adding new enum values; update enumNames too
 static const int MaxStandardLocation = QStandardPaths::AppConfigLocation;
 
@@ -485,14 +487,24 @@ void tst_qstandardpaths::testCustomRuntimeDirectory()
     EnvVarRestorer restorer;
 
     // When $XDG_RUNTIME_DIR points to a directory with wrong ownership, QStandardPaths should warn
-    qputenv("XDG_RUNTIME_DIR", QFile::encodeName("/tmp"));
+    QByteArray rootOwnedFileName = "/tmp";
+    if (EmulationDetector::isRunningArmOnX86()) {
+        // Directory "tmp" under toolchain sysroot is detected by qemu and has same uid as current user.
+        // Try /opt instead, it might not be located in the sysroot.
+        QFileInfo rootOwnedFile = QFileInfo(QString::fromLatin1(rootOwnedFileName));
+        if (rootOwnedFile.ownerId() == ::geteuid()) {
+            rootOwnedFileName = "/opt";
+        }
+    }
+    qputenv("XDG_RUNTIME_DIR", QFile::encodeName(rootOwnedFileName));
+
     // It's very unlikely that /tmp is 0600 or that we can chmod it
     // The call below outputs
     //   "QStandardPaths: wrong ownership on runtime directory /tmp, 0 instead of $UID"
     // but we can't reliably expect that it's owned by uid 0, I think.
     const uid_t uid = geteuid();
     QTest::ignoreMessage(QtWarningMsg,
-            qPrintable(QString::fromLatin1("QStandardPaths: wrong ownership on runtime directory /tmp, 0 instead of %1").arg(uid)));
+            qPrintable(QString::fromLatin1("QStandardPaths: wrong ownership on runtime directory " + rootOwnedFileName + ", 0 instead of %1").arg(uid)));
     const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     QVERIFY2(runtimeDir.isEmpty(), qPrintable(runtimeDir));
 

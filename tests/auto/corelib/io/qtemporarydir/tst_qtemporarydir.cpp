@@ -42,6 +42,7 @@
 # include <sys/types.h>
 # include <unistd.h>
 #endif
+#include "emulationdetector.h"
 
 class tst_QTemporaryDir : public QObject
 {
@@ -316,6 +317,13 @@ void tst_QTemporaryDir::nonWritableCurrentDir()
 
     const QFileInfo nonWritableDirFi = QFileInfo(QLatin1String(nonWritableDir));
     QVERIFY(nonWritableDirFi.isDir());
+
+    if (EmulationDetector::isRunningArmOnX86()) {
+        if (nonWritableDirFi.ownerId() == ::geteuid()) {
+            QSKIP("Sysroot directories are owned by the current user");
+        }
+    }
+
     QVERIFY(!nonWritableDirFi.isWritable());
 
     ChdirOnReturn cor(QDir::currentPath());

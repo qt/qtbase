@@ -1,6 +1,8 @@
 CONFIG += testcase
 testcase.timeout = 600 # this test is slow
 CONFIG -= debug_and_release_target
+INCLUDEPATH += ../../../../../shared/
+HEADERS += ../../../../../shared/emulationdetector.h
 SOURCES  += ../tst_qnetworkreply.cpp
 TARGET = ../tst_qnetworkreply
 
