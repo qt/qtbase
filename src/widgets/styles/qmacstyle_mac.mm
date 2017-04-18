@@ -5564,16 +5564,18 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         sl.intValue = slider->sliderValue;
                         sl.enabled = slider->state & QStyle::State_Enabled;
                         d->drawNSViewInRect(cw, sl, opt->rect, p, widget != 0, ^(NSRect rect, CGContextRef ctx) {
+                                                const bool isSierraOrLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra;
                                                 if (slider->upsideDown) {
                                                     if (isHorizontal) {
                                                         CGContextTranslateCTM(ctx, rect.size.width, 0);
                                                         CGContextScaleCTM(ctx, -1, 1);
                                                     }
-                                                } else if (!isHorizontal) {
+                                                } else if (!isHorizontal && !isSierraOrLater) {
                                                     CGContextTranslateCTM(ctx, 0, rect.size.height);
                                                     CGContextScaleCTM(ctx, 1, -1);
                                                 }
-                                                [sl.cell drawBarInside:NSRectFromCGRect(tdi.bounds) flipped:NO];
+                                                const bool shouldFlip = isHorizontal || (slider->upsideDown && isSierraOrLater);
+                                                [sl.cell drawBarInside:NSRectFromCGRect(tdi.bounds) flipped:shouldFlip];
                                                 // No need to restore the CTM later, the context has been saved
                                                 // and will be restored at the end of drawNSViewInRect()
                                             });
