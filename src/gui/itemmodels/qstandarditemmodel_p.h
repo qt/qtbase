@@ -105,7 +105,6 @@ public:
           q_ptr(0),
           lastIndexOf(2)
         { }
-    virtual ~QStandardItemPrivate();
 
     inline int childIndex(int row, int column) const {
         if ((row < 0) || (column < 0)
