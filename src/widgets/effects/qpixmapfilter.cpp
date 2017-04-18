@@ -1111,6 +1111,7 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
         srcImage = srcImage.convertToFormat(srcImage.hasAlphaChannel() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
         destImage = QImage(rect.size(), srcImage.format());
     }
+    destImage.setDevicePixelRatio(src.devicePixelRatioF());
 
     // do colorizing
     QPainter destPainter(&destImage);
