@@ -95,6 +95,7 @@ public:
         , m_select_other_actions(false)
         , m_first_mouse(true)
         , m_init_guard(false)
+        , m_use_reset_action(true)
         , m_uni_dir_discarded_count(0)
         , m_uni_dir_fail_at_count(0)
         , m_timeout(0)
@@ -182,9 +183,17 @@ public:
         QSetValueOnDestroy<bool> setFirstMouse(m_first_mouse, false);
         QSetValueOnDestroy<QPointF> setPreviousPoint(m_previous_point, mousePos);
 
-        if (resetAction && resetAction->isSeparator())
+        if (resetAction && resetAction->isSeparator()) {
             m_reset_action = Q_NULLPTR;
-        else {
+            m_use_reset_action = true;
+        } else if (m_reset_action != resetAction) {
+            if (m_use_reset_action && resetAction) {
+                const QList<QAction *> actions = m_menu->actions();
+                const int resetIdx  = actions.indexOf(resetAction);
+                const int originIdx = actions.indexOf(m_origin_action);
+                if (resetIdx > -1 && originIdx > -1 && qAbs(resetIdx - originIdx) > 1)
+                    m_use_reset_action = false;
+            }
             m_reset_action = resetAction;
         }
 
@@ -249,6 +258,7 @@ private:
     bool m_init_guard;
     bool m_discard_state_when_entering_parent;
     bool m_dont_start_time_on_leave;
+    bool m_use_reset_action;
     short m_uni_dir_discarded_count;
     short m_uni_dir_fail_at_count;
     short m_timeout;

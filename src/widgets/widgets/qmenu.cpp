@@ -667,6 +667,7 @@ void QMenuSloppyState::reset()
     m_enabled = false;
     m_first_mouse = true;
     m_init_guard = false;
+    m_use_reset_action = true;
     m_uni_dir_discarded_count = 0;
     m_time.stop();
     m_reset_action = Q_NULLPTR;
@@ -719,6 +720,7 @@ void QMenuSloppyState::setSubMenuPopup(const QRect &actionRect, QAction *resetAc
 {
     m_enabled = true;
     m_init_guard = true;
+    m_use_reset_action = true;
     m_time.stop();
     m_action_rect = actionRect;
     m_sub_menu = subMenu;
@@ -779,10 +781,12 @@ void QMenuSloppyState::timeout()
     if (m_sub_menu)
         menu_priv->hideMenu(m_sub_menu);
 
-    if (reallyHasMouse)
-        menu_priv->setCurrentAction(m_reset_action,0);
-    else
+    if (reallyHasMouse) {
+        if (m_use_reset_action)
+            menu_priv->setCurrentAction(m_reset_action, 0);
+    } else {
         menu_priv->setCurrentAction(Q_NULLPTR, 0);
+    }
 }
 
 //return the top causedPopup.widget that is not a QMenu

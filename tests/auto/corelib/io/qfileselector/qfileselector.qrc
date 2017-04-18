@@ -15,6 +15,7 @@
    <file>platforms/test</file>
    <file>platforms/+unix/+android/test</file>
    <file>platforms/+unix/+darwin/+mac/+ios/test</file>
+   <file>platforms/+unix/+darwin/+mac/+osx/+macos/test</file>
    <file>platforms/+unix/+darwin/+mac/+osx/test</file>
    <file>platforms/+unix/+darwin/+mac/test</file>
    <file>platforms/+unix/+darwin/test</file>
@@ -27,6 +28,7 @@
    <file>platforms/+windows/test</file>
    <file>platforms/+android/test</file>
    <file>platforms/+ios/test</file>
+   <file>platforms/+macos/test</file>
    <file>platforms/+osx/test</file>
    <file>platforms/+darwin/test</file>
    <file>platforms/+mac/test</file>
@@ -39,7 +41,7 @@
    <file>platforms/test2</file>
    <file>platforms/+android/test2</file>
    <file>platforms/+ios/test2</file>
-   <file>platforms/+osx/test2</file>
+   <file>platforms/+macos/test2</file>
    <file>platforms/+haiku/test2</file>
    <file>platforms/+linux/test2</file>
    <file>platforms/+wince/test2</file>
@@ -50,5 +52,11 @@
    <file>platforms/test3</file>
    <file>platforms/+windows/test3</file>
    <file>platforms/+unix/test3</file>
+
+   <!-- platforms/test4 and 5: special cases for macOS -->
+   <file>platforms/test4</file>
+   <file>platforms/+osx/test4</file>
+   <file>platforms/test5</file>
+   <file>platforms/+mac/test5</file>
 </qresource>
 </RCC>

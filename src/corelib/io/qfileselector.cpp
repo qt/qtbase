@@ -363,6 +363,7 @@ void QFileSelectorPrivate::updateSelectors()
 QStringList QFileSelectorPrivate::platformSelectors()
 {
     // similar, but not identical to QSysInfo::osType
+    // ### Qt6: remove macOS fallbacks to "mac" and the future compatibility
     QStringList ret;
 #if defined(Q_OS_WIN)
     ret << QStringLiteral("windows");
@@ -380,12 +381,11 @@ QStringList QFileSelectorPrivate::platformSelectors()
 #     endif
 #  endif
     QString productName = QSysInfo::productType();
-#     ifdef Q_OS_MACOS
-    if (productName != QLatin1String("osx"))
-        ret << QStringLiteral("osx"); // compatibility
-#     endif
     if (productName != QLatin1String("unknown"))
-        ret << productName; // "opensuse", "fedora", "macos", "ios", "android"
+        ret << productName; // "opensuse", "fedora", "osx", "ios", "android"
+#  if defined(Q_OS_MACOS)
+    ret << QStringLiteral("macos"); // future compatibility
+#  endif
 #endif
     return ret;
 }

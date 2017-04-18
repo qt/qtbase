@@ -38,12 +38,12 @@
 **
 ****************************************************************************/
 
+#include "qglobal.h"
+
 #if !defined(QWS) && defined(Q_OS_MAC)
 #   include "private/qcore_mac_p.h"
 #   include <CoreFoundation/CoreFoundation.h>
 #endif
-
-#include "qglobal.h"
 
 #include "qplatformdefs.h"
 
