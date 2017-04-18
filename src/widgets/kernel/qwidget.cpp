@@ -341,10 +341,6 @@ QWidgetPrivate::~QWidgetPrivate()
 
     if (extra)
         deleteExtra();
-
-#ifndef QT_NO_GRAPHICSEFFECT
-    delete graphicsEffect;
-#endif //QT_NO_GRAPHICSEFFECT
 }
 
 /*!
@@ -1718,6 +1714,10 @@ QWidget::~QWidget()
     } QT_CATCH(const std::exception&) {
         // if this fails we can't do anything about it but at least we are not allowed to throw.
     }
+
+#if QT_CONFIG(graphicseffect)
+    delete d->graphicsEffect;
+#endif
 }
 
 int QWidgetPrivate::instanceCounter = 0;  // Current number of widget instances
