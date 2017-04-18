@@ -34,6 +34,19 @@ set QTSRC=%~dp0
 set QTSRC=%QTSRC:~0,-1%
 set QTDIR=%CD%
 
+rem Make sure qmake is not confused by these. Recursion via Makefiles would
+rem be still affected, so just unsetting them here is not an option.
+if not "%QMAKESPEC%" == "" goto envfail
+if not "%XQMAKESPEC%" == "" goto envfail
+if not "%QMAKEPATH%" == "" goto envfail
+if not "%QMAKEFEATURES%" == "" goto envfail
+goto envok
+:envfail
+echo >&2 Please make sure to unset the QMAKESPEC, XQMAKESPEC, QMAKEPATH,
+echo >&2 and QMAKEFEATURES environment variables prior to building Qt.
+exit /b 1
+:envok
+
 rem Parse command line
 
 set TOPLEVEL=false

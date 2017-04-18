@@ -73,6 +73,15 @@ if [ -z "$MAKE" ]; then
     export MAKE
 fi
 
+# make sure qmake is not confused by these. recursion via Makefiles would
+# be still affected, so just unsetting them here is not an option.
+if [ -n "$QMAKESPEC" ] || [ -n "$XQMAKESPEC" ] || \
+        [ -n "$QMAKEPATH" ] || [ -n "$QMAKEFEATURES" ]; then
+    echo >&2 "Please make sure to unset the QMAKESPEC, XQMAKESPEC, QMAKEPATH,"
+    echo >&2 "and QMAKEFEATURES environment variables prior to building Qt."
+    exit 1
+fi
+
 # do this early so we don't store it in config.status
 CFG_TOPLEVEL=
 relpathMangled=$relpath
