@@ -719,6 +719,7 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
     }
 
     QImage temp(img.height(), img.width(), img.format());
+    temp.setDevicePixelRatio(img.devicePixelRatioF());
     if (transposed >= 0) {
         if (img.depth() == 8) {
             qt_memrotate270(reinterpret_cast<const quint8*>(img.bits()),
@@ -780,6 +781,7 @@ Q_WIDGETS_EXPORT QImage qt_halfScaled(const QImage &source)
     if (source.format() == QImage::Format_Indexed8 || source.format() == QImage::Format_Grayscale8) {
         // assumes grayscale
         QImage dest(source.width() / 2, source.height() / 2, srcImage.format());
+        dest.setDevicePixelRatio(source.devicePixelRatioF());
 
         const uchar *src = reinterpret_cast<const uchar*>(const_cast<const QImage &>(srcImage).bits());
         int sx = srcImage.bytesPerLine();
@@ -801,6 +803,7 @@ Q_WIDGETS_EXPORT QImage qt_halfScaled(const QImage &source)
         return dest;
     } else if (source.format() == QImage::Format_ARGB8565_Premultiplied) {
         QImage dest(source.width() / 2, source.height() / 2, srcImage.format());
+        dest.setDevicePixelRatio(source.devicePixelRatioF());
 
         const uchar *src = reinterpret_cast<const uchar*>(const_cast<const QImage &>(srcImage).bits());
         int sx = srcImage.bytesPerLine();
@@ -837,6 +840,7 @@ Q_WIDGETS_EXPORT QImage qt_halfScaled(const QImage &source)
     }
 
     QImage dest(source.width() / 2, source.height() / 2, srcImage.format());
+    dest.setDevicePixelRatio(source.devicePixelRatioF());
 
     const quint32 *src = reinterpret_cast<const quint32*>(const_cast<const QImage &>(srcImage).bits());
     int sx = srcImage.bytesPerLine() >> 2;
@@ -881,7 +885,7 @@ Q_WIDGETS_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage, qreal radius,
     if (p) {
         p->scale(scale, scale);
         p->setRenderHint(QPainter::SmoothPixmapTransform);
-        p->drawImage(QRect(0, 0, blurImage.width(), blurImage.height()), blurImage);
+        p->drawImage(QRect(QPoint(0, 0), blurImage.size() / blurImage.devicePixelRatioF()), blurImage);
     }
 }
 

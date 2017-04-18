@@ -390,6 +390,7 @@ QT_END_NAMESPACE
 void tst_QPixmapFilter::blurIndexed8()
 {
     QImage img(16, 32, QImage::Format_Indexed8);
+    img.setDevicePixelRatio(2);
     img.setColorCount(256);
     for (int i = 0; i < 256; ++i)
         img.setColor(i, qRgb(i, i, i));
@@ -399,9 +400,13 @@ void tst_QPixmapFilter::blurIndexed8()
     QImage original = img;
     qt_blurImage(img, 10, true, false);
     QCOMPARE(original.size(), img.size());
+    QVERIFY2(qFuzzyCompare(img.devicePixelRatioF(), qreal(2)),
+             QByteArray::number(img.devicePixelRatioF()).constData());
 
     original = img;
     qt_blurImage(img, 10, true, true);
+    QVERIFY2(qFuzzyCompare(img.devicePixelRatioF(), qreal(2)),
+             QByteArray::number(img.devicePixelRatioF()).constData());
     QCOMPARE(original.size(), QSize(img.height(), img.width()));
 }
 
