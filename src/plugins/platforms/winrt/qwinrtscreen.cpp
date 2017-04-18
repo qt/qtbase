@@ -101,22 +101,26 @@ QT_BEGIN_NAMESPACE
 struct KeyInfo {
     KeyInfo()
         : virtualKey(0)
+        , isAutoRepeat(false)
     {
     }
 
     KeyInfo(const QString &text, quint32 virtualKey)
         : text(text)
         , virtualKey(virtualKey)
+        , isAutoRepeat(false)
     {
     }
 
     KeyInfo(quint32 virtualKey)
         : virtualKey(virtualKey)
+        , isAutoRepeat(false)
     {
     }
 
     QString text;
     quint32 virtualKey;
+    bool isAutoRepeat;
 };
 
 static inline Qt::ScreenOrientations qtOrientationsFromNative(DisplayOrientations native)
@@ -971,6 +975,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
         if (!shouldAutoRepeat(key))
             return S_OK;
 
+        d->activeKeys[key].isAutoRepeat = true;
         // If the key was pressed before trigger a key release before the next key press
         QWindowSystemInterface::handleExtendedKeyEvent(
                     topWindow(),
@@ -981,7 +986,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
                     virtualKey,
                     0,
                     QString(),
-                    status.WasKeyDown,
+                    d->activeKeys.value(key).isAutoRepeat,
                     !status.RepeatCount ? 1 : status.RepeatCount,
                     false);
     } else {
@@ -1001,7 +1006,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
                 virtualKey,
                 0,
                 QString(),
-                status.WasKeyDown,
+                d->activeKeys.value(key).isAutoRepeat,
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
     return S_OK;
@@ -1051,20 +1056,19 @@ HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEvent
     const Qt::KeyboardModifiers modifiers = keyboardModifiers();
     const Qt::Key key = qKeyFromCode(keyCode, modifiers);
     const QString text = QChar(keyCode);
-    const quint32 virtualKey = d->activeKeys.value(key).virtualKey;
+    const KeyInfo info = d->activeKeys.value(key);
     QWindowSystemInterface::handleExtendedKeyEvent(
                 topWindow(),
                 QEvent::KeyPress,
                 key,
                 modifiers,
                 !status.ScanCode ? -1 : status.ScanCode,
-                virtualKey,
+                info.virtualKey,
                 0,
                 text,
-                status.WasKeyDown,
+                info.isAutoRepeat,
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
-    d->activeKeys.insert(key, KeyInfo(text, virtualKey));
     return S_OK;
 }
 
