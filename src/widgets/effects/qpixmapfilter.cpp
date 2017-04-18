@@ -1316,6 +1316,7 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
         return;
 
     QImage tmp(px.size(), QImage::Format_ARGB32_Premultiplied);
+    tmp.setDevicePixelRatio(px.devicePixelRatioF());
     tmp.fill(0);
     QPainter tmpPainter(&tmp);
     tmpPainter.setCompositionMode(QPainter::CompositionMode_Source);
@@ -1324,6 +1325,7 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
 
     // blur the alpha channel
     QImage blurred(tmp.size(), QImage::Format_ARGB32_Premultiplied);
+    blurred.setDevicePixelRatio(px.devicePixelRatioF());
     blurred.fill(0);
     QPainter blurPainter(&blurred);
     qt_blurImage(&blurPainter, tmp, d->radius, false, true);
