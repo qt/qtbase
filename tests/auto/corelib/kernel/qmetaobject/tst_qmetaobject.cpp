@@ -206,6 +206,7 @@ private slots:
     void invokeMetaConstructor();
     void invokeTypedefTypes();
     void invokeException();
+    void invokeQueuedAutoRegister();
     void qtMetaObjectInheritance();
     void normalizedSignature_data();
     void normalizedSignature();
@@ -377,6 +378,7 @@ class QtTestObject: public QObject
 
 public:
     QtTestObject();
+    QtTestObject(const QString &s) : slotResult(s) {}
     Q_INVOKABLE QtTestObject(QObject *parent);
 
 public slots:
@@ -414,6 +416,15 @@ public slots:
         throw ObjectException();
 #endif
         return s2;
+    }
+
+    void slotWithRegistrableArgument(QtTestObject *o1, QPointer<QtTestObject> o2,
+                                     QSharedPointer<QtTestObject> o3, QWeakPointer<QtTestObject> o4,
+                                     QVector<QtTestObject *> o5, QList<QtTestObject *> o6)
+    {
+        slotResult = QLatin1String("slotWithRegistrableArgument:") + o1->slotResult + o2->slotResult
+            + o3->slotResult + o4.data()->slotResult + QString::number(o5.size())
+            + QString::number(o6.size());
     }
 
 signals:
@@ -942,6 +953,24 @@ void tst_QMetaObject::invokeException()
 #else
     QSKIP("Needs exceptions");
 #endif
+}
+
+void tst_QMetaObject::invokeQueuedAutoRegister()
+{
+    QtTestObject obj;
+
+    auto shared = QSharedPointer<QtTestObject>::create(QStringLiteral("myShared-"));
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &obj, "slotWithRegistrableArgument", Qt::QueuedConnection,
+        Q_ARG(QtTestObject *, shared.data()), Q_ARG(QPointer<QtTestObject>, shared.data()),
+        Q_ARG(QSharedPointer<QtTestObject>, shared), Q_ARG(QWeakPointer<QtTestObject>, shared),
+        Q_ARG(QVector<QtTestObject *>, QVector<QtTestObject *>()),
+        Q_ARG(QList<QtTestObject *>, QList<QtTestObject *>())));
+    QVERIFY(obj.slotResult.isEmpty());
+    qApp->processEvents(QEventLoop::AllEvents);
+    QCOMPARE(obj.slotResult,
+             QString("slotWithRegistrableArgument:myShared-myShared-myShared-myShared-00"));
 }
 
 void tst_QMetaObject::normalizedSignature_data()
