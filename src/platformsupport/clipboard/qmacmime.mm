@@ -827,55 +827,40 @@ QVariant QMacPasteboardMimeTiff::convertToMime(const QString &mime, QList<QByteA
 {
     if (data.count() > 1)
         qWarning("QMacPasteboardMimeTiff: Cannot handle multiple member data");
-    QVariant ret;
+
     if (!canConvert(mime, flav))
-        return ret;
-    const QByteArray &a = data.first();
-    QCFType<CGImageRef> image;
-    QCFType<CFDataRef> tiffData = CFDataCreateWithBytesNoCopy(0,
-                                                reinterpret_cast<const UInt8 *>(a.constData()),
-                                                a.size(), kCFAllocatorNull);
+        return QVariant();
+
+    QCFType<CFDataRef> tiffData = data.first().toRawCFData();
     QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithData(tiffData, 0);
-    image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
-    if (image != 0)
-        ret = QVariant(qt_mac_toQImage(image));
-    return ret;
+
+    if (QCFType<CGImageRef> image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0))
+        return QVariant(qt_mac_toQImage(image));
+
+    return QVariant();
 }
 
 QList<QByteArray> QMacPasteboardMimeTiff::convertFromMime(const QString &mime, QVariant variant, QString flav)
 {
-    QList<QByteArray> ret;
     if (!canConvert(mime, flav))
-        return ret;
-
-    QImage img = qvariant_cast<QImage>(variant);
-    QCFType<CGImageRef> cgimage = qt_mac_toCGImage(img);
+        return QList<QByteArray>();
 
     QCFType<CFMutableDataRef> data = CFDataCreateMutable(0, 0);
     QCFType<CGImageDestinationRef> imageDestination = CGImageDestinationCreateWithData(data, kUTTypeTIFF, 1, 0);
-    if (imageDestination != 0) {
-        CFTypeRef keys[2];
-        QCFType<CFTypeRef> values[2];
-        QCFType<CFDictionaryRef> options;
-        keys[0] = kCGImagePropertyPixelWidth;
-        keys[1] = kCGImagePropertyPixelHeight;
-        int width = img.width();
-        int height = img.height();
-        values[0] = CFNumberCreate(0, kCFNumberIntType, &width);
-        values[1] = CFNumberCreate(0, kCFNumberIntType, &height);
-        options = CFDictionaryCreate(0, reinterpret_cast<const void **>(keys),
-                                     reinterpret_cast<const void **>(values), 2,
-                                     &kCFTypeDictionaryKeyCallBacks,
-                                     &kCFTypeDictionaryValueCallBacks);
-        CGImageDestinationAddImage(imageDestination, cgimage, options);
-        CGImageDestinationFinalize(imageDestination);
-    }
-    QByteArray ar(CFDataGetLength(data), 0);
-    CFDataGetBytes(data,
-            CFRangeMake(0, ar.size()),
-            reinterpret_cast<UInt8 *>(ar.data()));
-    ret.append(ar);
-    return ret;
+
+    if (!imageDestination)
+        return QList<QByteArray>();
+
+    QImage img = qvariant_cast<QImage>(variant);
+    NSDictionary *props = @{
+        static_cast<NSString *>(kCGImagePropertyPixelWidth) : [NSNumber numberWithInt:img.width()],
+        static_cast<NSString *>(kCGImagePropertyPixelHeight) : [NSNumber numberWithInt:img.height()]
+    };
+
+    CGImageDestinationAddImage(imageDestination, qt_mac_toCGImage(img), static_cast<CFDictionaryRef>(props));
+    CGImageDestinationFinalize(imageDestination);
+
+    return QList<QByteArray>() << QByteArray::fromCFData(data);
 }
 
 /*!
