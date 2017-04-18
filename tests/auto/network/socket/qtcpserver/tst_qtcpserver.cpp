@@ -63,6 +63,13 @@
 #include <QNetworkConfigurationManager>
 #include "../../../network-settings.h"
 
+#if defined(Q_OS_LINUX)
+#define SHOULD_CHECK_SYSCALL_SUPPORT
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <errno.h>
+#endif
+
 class tst_QTcpServer : public QObject
 {
     Q_OBJECT
@@ -111,6 +118,11 @@ private slots:
     void canAccessPendingConnectionsWhileNotListening();
 
 private:
+    bool shouldSkipIpv6TestsForBrokenGetsockopt();
+#ifdef SHOULD_CHECK_SYSCALL_SUPPORT
+    bool ipv6GetsockoptionMissing(int level, int optname);
+#endif
+
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkSession *networkSession;
 #endif
@@ -179,6 +191,42 @@ void tst_QTcpServer::cleanup()
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
 #endif
 }
+
+#ifdef SHOULD_CHECK_SYSCALL_SUPPORT
+bool tst_QTcpServer::ipv6GetsockoptionMissing(int level, int optname)
+{
+    int testSocket;
+
+    testSocket = socket(PF_INET6, SOCK_STREAM, 0);
+
+    // If we can't test here, assume it's not missing
+    if (testSocket == -1)
+        return false;
+
+    bool result = false;
+    if (getsockopt(testSocket, level, optname, nullptr, 0) == -1) {
+        if (errno == EOPNOTSUPP) {
+            result = true;
+        }
+    }
+
+    close(testSocket);
+    return result;
+}
+#endif //SHOULD_CHECK_SYSCALL_SUPPORT
+
+bool tst_QTcpServer::shouldSkipIpv6TestsForBrokenGetsockopt()
+{
+#ifdef SHOULD_CHECK_SYSCALL_SUPPORT
+    // Following parameters for setsockopt are not supported by all QEMU versions:
+    if (ipv6GetsockoptionMissing(SOL_IPV6, IPV6_V6ONLY)) {
+        return true;
+    }
+#endif //SHOULD_CHECK_SYSCALL_SUPPORT
+
+    return false;
+}
+
 
 //----------------------------------------------------------------------------------
 
@@ -847,6 +895,11 @@ void tst_QTcpServer::serverAddress()
     QFETCH(QHostAddress, listenAddress);
     QFETCH(QHostAddress, serverAddress);
     QTcpServer server;
+
+    if (shouldSkipIpv6TestsForBrokenGetsockopt()
+        && listenAddress == QHostAddress(QHostAddress::Any)) {
+        QSKIP("Syscalls needed for ipv6 sockoptions missing functionality");
+    }
 
     // TODO: why does this QSKIP?
     if (!server.listen(listenAddress))
