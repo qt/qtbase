@@ -45,11 +45,9 @@ for (cp, COPIES) {
     }
     $${pfx}.input = $${pfx}.files
     !$$dir: \
-        $${pfx}.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT_PATH}
-    else: !copy_dir_files: \
-        $${pfx}.commands = $$QMAKE_COPY_DIR ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT_PATH}
+        $${pfx}.commands = $(QINSTALL_FILE) ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
     else: \
-        $${pfx}.commands = $$QMAKE_COPY_DIR ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+        $${pfx}.commands = $(QINSTALL_DIR) ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
     $${pfx}.name = COPY ${QMAKE_FILE_IN}
     $${pfx}.CONFIG = no_link no_clean target_predeps
     QMAKE_EXTRA_COMPILERS += $${pfx}
