@@ -991,9 +991,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
                     virtualKey,
                     0,
                     QString(),
-                    d->activeKeys.value(key).isAutoRepeat,
-                    !status.RepeatCount ? 1 : status.RepeatCount,
-                    false);
+                    d->activeKeys.value(key).isAutoRepeat);
     } else {
         d->activeKeys.insert(key, KeyInfo(virtualKey));
     }
@@ -1021,9 +1019,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
                 virtualKey,
                 0,
                 QString(),
-                d->activeKeys.value(key).isAutoRepeat,
-                !status.RepeatCount ? 1 : status.RepeatCount,
-                false);
+                d->activeKeys.value(key).isAutoRepeat);
     return S_OK;
 }
 
@@ -1048,9 +1044,7 @@ HRESULT QWinRTScreen::onKeyUp(ABI::Windows::UI::Core::ICoreWindow *, ABI::Window
                 virtualKey,
                 0,
                 info.text,
-                false, // The final key release does not have autoRepeat set on Windows
-                !status.RepeatCount ? 1 : status.RepeatCount,
-                false);
+                false); // The final key release does not have autoRepeat set on Windows
     return S_OK;
 }
 
@@ -1081,9 +1075,7 @@ HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEvent
                 info.virtualKey,
                 0,
                 text,
-                info.isAutoRepeat,
-                !status.RepeatCount ? 1 : status.RepeatCount,
-                false);
+                info.isAutoRepeat);
     return S_OK;
 }
 
