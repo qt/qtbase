@@ -771,6 +771,8 @@ void QCoreApplicationPrivate::init()
     if (!coreappdata()->applicationVersionSet)
         coreappdata()->applicationVersion = appVersion();
 
+    QLoggingRegistry::instance()->init();
+
 #if QT_CONFIG(library)
     // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
     // into account. If necessary, recompute right away and replay the manual changes on top of the
