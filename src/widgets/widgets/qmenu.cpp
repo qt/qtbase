@@ -129,7 +129,9 @@ public:
         setAttribute(Qt::WA_X11NetWmWindowTypeMenu, true);
         setWindowTitle(p->windowTitle());
         setEnabled(p->isEnabled());
+#if QT_CONFIG(cssparser)
         setStyleSheet(p->styleSheet());
+#endif
         if (style() != p->style())
             setStyle(p->style());
         int leftMargin, topMargin, rightMargin, bottomMargin;
