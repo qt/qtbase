@@ -100,27 +100,17 @@ QT_BEGIN_NAMESPACE
 
 struct KeyInfo {
     KeyInfo()
-        : virtualKey(0)
-        , isAutoRepeat(false)
-    {
-    }
-
-    KeyInfo(const QString &text, quint32 virtualKey)
-        : text(text)
-        , virtualKey(virtualKey)
-        , isAutoRepeat(false)
     {
     }
 
     KeyInfo(quint32 virtualKey)
         : virtualKey(virtualKey)
-        , isAutoRepeat(false)
     {
     }
 
     QString text;
-    quint32 virtualKey;
-    bool isAutoRepeat;
+    quint32 virtualKey{0};
+    bool isAutoRepeat{false};
 };
 
 static inline Qt::ScreenOrientations qtOrientationsFromNative(DisplayOrientations native)
