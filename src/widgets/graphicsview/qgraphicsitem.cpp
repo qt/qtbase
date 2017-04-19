@@ -2981,6 +2981,7 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect(QGraphicsItem *topMostEffectI
 
     return brect;
 #else //QT_NO_GRAPHICSEFFECT
+    Q_UNUSED(topMostEffectItem);
     return q_ptr->boundingRect();
 #endif //QT_NO_GRAPHICSEFFECT
 
