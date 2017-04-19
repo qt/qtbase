@@ -1065,7 +1065,8 @@ HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEvent
     const Qt::KeyboardModifiers modifiers = keyboardModifiers();
     const Qt::Key key = qKeyFromCode(keyCode, modifiers);
     const QString text = QChar(keyCode);
-    const KeyInfo info = d->activeKeys.value(key);
+    KeyInfo &info = d->activeKeys[key];
+    info.text = text;
     QWindowSystemInterface::handleExtendedKeyEvent(
                 topWindow(),
                 QEvent::KeyPress,
