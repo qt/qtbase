@@ -458,6 +458,16 @@ static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &
     return envlist;
 }
 
+bool QProcessPrivate::callCreateProcess(QProcess::CreateProcessArguments *cpargs)
+{
+    if (modifyCreateProcessArgs)
+        modifyCreateProcessArgs(cpargs);
+    return CreateProcess(cpargs->applicationName, cpargs->arguments, cpargs->processAttributes,
+                         cpargs->threadAttributes, cpargs->inheritHandles, cpargs->flags,
+                         cpargs->environment, cpargs->currentDirectory, cpargs->startupInfo,
+                         cpargs->processInformation);
+}
+
 void QProcessPrivate::startProcess()
 {
     Q_Q(QProcess);
@@ -516,12 +526,7 @@ void QProcessPrivate::startProcess()
         nativeWorkingDirectory.isEmpty() ? Q_NULLPTR : (wchar_t*)nativeWorkingDirectory.utf16(),
         &startupInfo, pid
     };
-    if (modifyCreateProcessArgs)
-        modifyCreateProcessArgs(&cpargs);
-    success = CreateProcess(cpargs.applicationName, cpargs.arguments, cpargs.processAttributes,
-                            cpargs.threadAttributes, cpargs.inheritHandles, cpargs.flags,
-                            cpargs.environment, cpargs.currentDirectory, cpargs.startupInfo,
-                            cpargs.processInformation);
+    success = callCreateProcess(&cpargs);
 
     QString errorString;
     if (!success) {
@@ -886,10 +891,14 @@ bool QProcessPrivate::startDetached(qint64 *pid)
                                  (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                };
-    success = CreateProcess(0, (wchar_t*)args.utf16(),
-                            0, 0, FALSE, dwCreationFlags, envPtr,
-                            workingDirectory.isEmpty() ? 0 : (wchar_t*)workingDirectory.utf16(),
-                            &startupInfo, &pinfo);
+    QProcess::CreateProcessArguments cpargs = {
+        nullptr, reinterpret_cast<wchar_t *>(const_cast<ushort *>(args.utf16())),
+        nullptr, nullptr, false, dwCreationFlags, envPtr,
+        workingDirectory.isEmpty()
+            ? nullptr : reinterpret_cast<const wchar_t *>(workingDirectory.utf16()),
+        &startupInfo, &pinfo
+    };
+    success = callCreateProcess(&cpargs);
 
     if (success) {
         CloseHandle(pinfo.hThread);

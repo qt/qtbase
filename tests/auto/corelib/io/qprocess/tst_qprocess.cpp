@@ -2049,6 +2049,11 @@ void tst_QProcess::detachedProcessParameters()
 
     QProcess process;
     process.setProgram(QDir::currentPath() + QLatin1String("/testDetached/testDetached"));
+#ifdef Q_OS_WIN
+    int modifierCalls = 0;
+    process.setCreateProcessArgumentsModifier(
+        [&modifierCalls] (QProcess::CreateProcessArguments *) { modifierCalls++; });
+#endif
     process.setArguments(QStringList(infoFile.fileName()));
     process.setWorkingDirectory(workingDir);
     process.setProcessEnvironment(environment);
@@ -2076,6 +2081,9 @@ void tst_QProcess::detachedProcessParameters()
     QCOMPARE(actualWorkingDir, workingDir);
     QCOMPARE(actualPid, pid);
     QCOMPARE(actualEnvVarValue, envVarValue);
+#ifdef Q_OS_WIN
+    QCOMPARE(modifierCalls, 1);
+#endif
 }
 
 void tst_QProcess::switchReadChannels()
