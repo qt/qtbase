@@ -52,7 +52,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.ClipboardManager;
+import android.content.ClipboardManager;
+import android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import android.os.Build;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -584,7 +585,14 @@ public class QtNative
                 @Override
                 public void run() {
                     if (m_activity != null)
-                        m_clipboardManager = (android.text.ClipboardManager) m_activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                        m_clipboardManager = (android.content.ClipboardManager) m_activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                    if (m_clipboardManager != null) {
+                        m_clipboardManager.addPrimaryClipChangedListener(new ClipboardManager.OnPrimaryClipChangedListener() {
+                            public void onPrimaryClipChanged() {
+                                onClipboardDataChanged();
+                            }
+                        });
+                    }
                     semaphore.release();
                 }
             });
@@ -843,6 +851,10 @@ public class QtNative
     public static native boolean onContextItemSelected(int itemId, boolean checked);
     public static native void onContextMenuClosed(Menu menu);
     // menu methods
+
+    // clipboard methods
+    public static native void onClipboardDataChanged();
+    // clipboard methods
 
     // activity methods
     public static native void onActivityResult(int requestCode, int resultCode, Intent data);

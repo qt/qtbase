@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "androidjniclipboard.h"
-#include "androidjnimain.h"
 #include <QtCore/private/qjni_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -46,10 +45,23 @@ QT_BEGIN_NAMESPACE
 using namespace QtAndroid;
 namespace QtAndroidClipboard
 {
-    void setClipboardListener(QAndroidPlatformClipboard *listener)
+    QAndroidPlatformClipboard *m_manager = nullptr;
+
+    static char const *const QtNativeClassName = "org/qtproject/qt5/android/QtNative";
+    static JNINativeMethod methods[] = {
+        {"onClipboardDataChanged", "()V", (void *)onClipboardDataChanged}
+    };
+
+    void setClipboardManager(QAndroidPlatformClipboard *manager)
     {
-        Q_UNUSED(listener);
+        m_manager = manager;
         QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "registerClipboardManager");
+        jclass appClass = QtAndroid::applicationClass();
+        QJNIEnvironmentPrivate env;
+        if (env->RegisterNatives(appClass, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
+            __android_log_print(ANDROID_LOG_FATAL,"Qt", "RegisterNatives failed");
+            return;
+        }
     }
 
     void setClipboardText(const QString &text)
@@ -72,6 +84,11 @@ namespace QtAndroidClipboard
                                                                            "getClipboardText",
                                                                            "()Ljava/lang/String;");
         return text.toString();
+    }
+
+    void onClipboardDataChanged(JNIEnv */*env*/, jobject /*thiz*/)
+    {
+        m_manager->emitChanged(QClipboard::Clipboard);
     }
 }
 
