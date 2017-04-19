@@ -3116,6 +3116,7 @@ void QWidgetTextControlPrivate::append(const QString &text, Qt::TextFormat forma
         tmp.insertText(text);
     }
 #else
+    Q_UNUSED(format);
     tmp.insertText(text);
 #endif // QT_NO_TEXTHTMLPARSER
     if (!cursor.hasSelection())
