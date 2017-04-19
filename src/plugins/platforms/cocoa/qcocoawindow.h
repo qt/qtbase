@@ -252,7 +252,7 @@ public:
     void setContentBorderAreaEnabled(quintptr identifier, bool enable);
     void setContentBorderEnabled(bool enable);
     bool testContentBorderAreaPosition(int position) const;
-    void applyContentBorderThickness(NSWindow *window);
+    void applyContentBorderThickness(NSWindow *window = nullptr);
     void updateNSToolbar();
 
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;

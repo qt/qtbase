@@ -288,7 +288,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 #if 0
         //geometry = QRectF::fromCGRect([self frame]).toRect();
         qDebug() << "nsview updateGeometry" << m_platformWindow->window();
-        QRect screenRect = QRectF::fromCGRect([m_platformWindow->m_nsWindow convertRectToScreen:[self frame]]).toRect();
+        QRect screenRect = QRectF::fromCGRect([m_platformWindow->nativeWindow() convertRectToScreen:[self frame]]).toRect();
         qDebug() << "screenRect" << screenRect;
 
         screenRect.moveTop(qt_mac_flipYCoordinate(screenRect.y() + screenRect.height()));
