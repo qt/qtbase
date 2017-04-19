@@ -3395,21 +3395,6 @@ void tst_QVariant::toIntFromDouble() const
     QCOMPARE(result, 2147483630);
 }
 
-void tst_QVariant::setValue()
-{
-    QJsonDocument t; //we just take a value so that we're sure that it will be shared
-    QVariant v1 = QVariant::fromValue(t);
-    QVERIFY( v1.isDetached() );
-    QVariant v2 = v1;
-    QVERIFY( !v1.isDetached() );
-    QVERIFY( !v2.isDetached() );
-
-    v2.setValue(3); //set an integer value
-
-    QVERIFY( v1.isDetached() );
-    QVERIFY( v2.isDetached() );
-}
-
 void tst_QVariant::fpStringRoundtrip_data() const
 {
     QTest::addColumn<QVariant>("number");
@@ -3641,6 +3626,20 @@ Q_DECLARE_METATYPE(MyMovable *)
 Q_DECLARE_METATYPE(MyNotMovable *)
 Q_DECLARE_METATYPE(QSharedDataPointer<MyShared>)
 
+void tst_QVariant::setValue()
+{
+    MyNotMovable t; //we just take a value so that we're sure that it will be shared
+    QVariant v1 = QVariant::fromValue(t);
+    QVERIFY( v1.isDetached() );
+    QVariant v2 = v1;
+    QVERIFY( !v1.isDetached() );
+    QVERIFY( !v2.isDetached() );
+
+    v2.setValue(3); //set an integer value
+
+    QVERIFY( v1.isDetached() );
+    QVERIFY( v2.isDetached() );
+}
 
 void tst_QVariant::moreCustomTypes()
 {
