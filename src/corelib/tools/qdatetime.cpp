@@ -160,8 +160,7 @@ static ParsedDate getDateFromJulianDay(qint64 julianDay)
     if (year <= 0)
         --year ;
 
-    const ParsedDate result = { year, month, day };
-    return result;
+    return { year, month, day };
 }
 
 /*****************************************************************************

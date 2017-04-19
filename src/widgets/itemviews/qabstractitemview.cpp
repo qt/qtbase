@@ -4420,8 +4420,7 @@ QItemViewPaintPairs QAbstractItemViewPrivate::draggablePaintPairs(const QModelIn
     for (const auto &index : indexes) {
         const QRect current = q->visualRect(index);
         if (current.intersects(viewportRect)) {
-            QItemViewPaintPair p = { current, index };
-            ret += p;
+            ret.append({current, index});
             rect |= current;
         }
     }

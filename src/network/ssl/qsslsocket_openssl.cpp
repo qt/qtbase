@@ -311,11 +311,10 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(SSL_CIPHER *ciph
 
 // static
 inline QSslErrorEntry QSslErrorEntry::fromStoreContext(X509_STORE_CTX *ctx) {
-    QSslErrorEntry result = {
+    return {
         q_X509_STORE_CTX_get_error(ctx),
         q_X509_STORE_CTX_get_error_depth(ctx)
     };
-    return result;
 }
 
 // ### This list is shared between all threads, and protected by a

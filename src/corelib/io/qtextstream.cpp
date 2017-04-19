@@ -954,8 +954,7 @@ QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(int len) const
         right = padSize - padSize/2;
         break;
     }
-    const PaddingResult result = { left, right };
-    return result;
+    return { left, right };
 }
 
 /*!

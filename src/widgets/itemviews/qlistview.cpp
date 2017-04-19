@@ -663,8 +663,7 @@ QItemViewPaintPairs QListViewPrivate::draggablePaintPairs(const QModelIndexList 
     for (const auto &index : indexes) {
         if (std::binary_search(visibleIndexes.cbegin(), visibleIndexes.cend(), index)) {
             const QRect current = q->visualRect(index);
-            QItemViewPaintPair p = { current, index };
-            ret += p;
+            ret.append({current, index});
             rect |= current;
         }
     }
