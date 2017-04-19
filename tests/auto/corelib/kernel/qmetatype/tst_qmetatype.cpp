@@ -713,8 +713,8 @@ void tst_QMetaType::flags_data()
 
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
     QTest::newRow(#RealType) << MetaTypeId \
-        << bool(!QTypeInfo<RealType>::isStatic) \
-        << bool(QTypeInfo<RealType>::isComplex) \
+        << bool(QTypeInfoQuery<RealType>::isRelocatable) \
+        << bool(QTypeInfoQuery<RealType>::isComplex) \
         << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<RealType>::Value) \
         << bool(std::is_enum<RealType>::value);
 QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)
