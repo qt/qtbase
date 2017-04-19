@@ -4615,6 +4615,9 @@ void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit()
 
 void tst_QLineEdit::QTBUG59957_clearButtonLeftmostAction()
 {
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("This test requires a developer build");
+#else
     QLineEdit lineEdit;
     lineEdit.setClearButtonEnabled(true);
 
@@ -4633,6 +4636,7 @@ void tst_QLineEdit::QTBUG59957_clearButtonLeftmostAction()
             continue;
         QVERIFY(clearButton->x() < button->x());
     }
+#endif // QT_BUILD_INTERNAL
 }
 
 QTEST_MAIN(tst_QLineEdit)
