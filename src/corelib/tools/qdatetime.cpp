@@ -70,13 +70,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if QT_STRINGVIEW_LEVEL < 2
-static inline QStringView quick_stringview_cast(const QString &format)
-{
-    return QStringView(format.data(), format.size()); // avoids isNull() check as we don't care
-}
-#endif
-
 /*****************************************************************************
   Date/Time Constants
  *****************************************************************************/
@@ -945,7 +938,7 @@ QString QDate::toString(QStringView format) const
 #if QT_STRINGVIEW_LEVEL < 2
 QString QDate::toString(const QString &format) const
 {
-    return toString(quick_stringview_cast(format));
+    return toString(qToStringViewIgnoringNull(format));
 }
 #endif
 
@@ -1704,7 +1697,7 @@ QString QTime::toString(QStringView format) const
 #if QT_STRINGVIEW_VERSION < 2
 QString QTime::toString(const QString &format) const
 {
-    return toString(quick_stringview_cast(format));
+    return toString(qToStringViewIgnoringNull(format));
 }
 #endif
 
@@ -3967,7 +3960,7 @@ QString QDateTime::toString(QStringView format) const
 #if QT_STRINGVIEW_LEVEL < 2
 QString QDateTime::toString(const QString &format) const
 {
-    return toString(quick_stringview_cast(format));
+    return toString(qToStringViewIgnoringNull(format));
 }
 #endif
 
