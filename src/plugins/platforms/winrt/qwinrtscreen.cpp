@@ -685,21 +685,26 @@ Qt::KeyboardModifiers QWinRTScreen::keyboardModifiers() const
 
     Qt::KeyboardModifiers mods;
     CoreVirtualKeyStates mod;
-    d->coreWindow->GetAsyncKeyState(VirtualKey_Shift, &mod);
-    if (mod == CoreVirtualKeyStates_Down)
+    HRESULT hr = d->coreWindow->GetAsyncKeyState(VirtualKey_Shift, &mod);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (mod & CoreVirtualKeyStates_Down)
         mods |= Qt::ShiftModifier;
-    d->coreWindow->GetAsyncKeyState(VirtualKey_Menu, &mod);
-    if (mod == CoreVirtualKeyStates_Down)
+    hr = d->coreWindow->GetAsyncKeyState(VirtualKey_Menu, &mod);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (mod & CoreVirtualKeyStates_Down)
         mods |= Qt::AltModifier;
-    d->coreWindow->GetAsyncKeyState(VirtualKey_Control, &mod);
-    if (mod == CoreVirtualKeyStates_Down)
+    hr = d->coreWindow->GetAsyncKeyState(VirtualKey_Control, &mod);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (mod & CoreVirtualKeyStates_Down)
         mods |= Qt::ControlModifier;
-    d->coreWindow->GetAsyncKeyState(VirtualKey_LeftWindows, &mod);
-    if (mod == CoreVirtualKeyStates_Down) {
+    hr = d->coreWindow->GetAsyncKeyState(VirtualKey_LeftWindows, &mod);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (mod & CoreVirtualKeyStates_Down) {
         mods |= Qt::MetaModifier;
     } else {
-        d->coreWindow->GetAsyncKeyState(VirtualKey_RightWindows, &mod);
-        if (mod == CoreVirtualKeyStates_Down)
+        hr = d->coreWindow->GetAsyncKeyState(VirtualKey_RightWindows, &mod);
+        Q_ASSERT_SUCCEEDED(hr);
+        if (mod & CoreVirtualKeyStates_Down)
             mods |= Qt::MetaModifier;
     }
     return mods;
@@ -997,11 +1002,21 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
     if (key == Qt::Key_unknown || (key >= Qt::Key_Space && key <= Qt::Key_ydiaeresis))
         return S_OK;
 
+    Qt::KeyboardModifiers modifiers = keyboardModifiers();
+    // If the key actually pressed is a modifier key, then we remove its modifier key from the
+    // state, since a modifier-key can't have itself as a modifier (see qwindowskeymapper.cpp)
+    if (key == Qt::Key_Control)
+        modifiers = modifiers ^ Qt::ControlModifier;
+    else if (key == Qt::Key_Shift)
+        modifiers = modifiers ^ Qt::ShiftModifier;
+    else if (key == Qt::Key_Alt)
+        modifiers = modifiers ^ Qt::AltModifier;
+
     QWindowSystemInterface::handleExtendedKeyEvent(
                 topWindow(),
                 QEvent::KeyPress,
                 key,
-                keyboardModifiers(),
+                modifiers,
                 !status.ScanCode ? -1 : status.ScanCode,
                 virtualKey,
                 0,
