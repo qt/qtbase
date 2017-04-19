@@ -75,7 +75,6 @@ typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 
 @interface QT_MANGLE_NAMESPACE(QNSWindowHelper) : NSObject
 {
-    QCocoaNSWindow *_window;
     QPointer<QCocoaWindow> _platformWindow;
 }
 
@@ -94,9 +93,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowHelper);
 // -------------------------------------------------------------------------
 
 @interface QT_MANGLE_NAMESPACE(QNSWindow) : NSWindow<QNSWindowProtocol>
-{
-    QNSWindowHelper *_helper;
-}
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindow);
@@ -104,9 +100,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindow);
 // -------------------------------------------------------------------------
 
 @interface QT_MANGLE_NAMESPACE(QNSPanel) : NSPanel<QNSWindowProtocol>
-{
-    QNSWindowHelper *_helper;
-}
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanel);

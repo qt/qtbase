@@ -89,8 +89,6 @@ static bool isMouseEvent(NSEvent *ev)
 
 @implementation QNSWindowHelper
 
-@synthesize window = _window;
-
 - (QCocoaWindow *)platformWindow
 {
     return _platformWindow.data();
