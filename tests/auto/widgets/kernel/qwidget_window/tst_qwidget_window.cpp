@@ -102,6 +102,8 @@ private slots:
 
     void setWindowState_data();
     void setWindowState();
+
+    void nativeShow();
 };
 
 void tst_QWidget_window::initTestCase()
@@ -913,6 +915,20 @@ void tst_QWidget_window::setWindowState()
     QTest::qWait(100);
     QCOMPARE(w.windowState(), state | Qt::WindowMinimized);
     QCOMPARE(w.windowHandle()->windowStates(), state | Qt::WindowMinimized);
+}
+
+void tst_QWidget_window::nativeShow()
+{
+    // Verify that a native widget can be shown using the QWindow::setVisible() API
+    QWidget w;
+    w.winId();
+    w.windowHandle()->setVisible(true);
+    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(w.isVisible());
+
+    // ... and that we can hide it
+    w.windowHandle()->setVisible(false);
+    QTRY_VERIFY(!w.isVisible());
 }
 
 QTEST_MAIN(tst_QWidget_window)

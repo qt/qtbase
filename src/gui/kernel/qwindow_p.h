@@ -132,6 +132,7 @@ public:
 
     virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
 
+    virtual void setVisible(bool visible);
     void updateVisibility();
     void _q_clearAlert();
 

@@ -63,10 +63,12 @@ QT_BEGIN_NAMESPACE
 
 class QCloseEvent;
 class QMoveEvent;
+class QWidgetWindowPrivate;
 
 class QWidgetWindow : public QWindow
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QWidgetWindow)
 public:
     QWidgetWindow(QWidget *widget);
     ~QWidgetWindow();
@@ -77,6 +79,7 @@ public:
 #endif
 
     QObject *focusObject() const Q_DECL_OVERRIDE;
+    void setNativeWindowVisibility(bool visible);
 protected:
     bool event(QEvent *) Q_DECL_OVERRIDE;
 

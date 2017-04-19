@@ -317,6 +317,83 @@ void QWindow::setVisibility(Visibility v)
     }
 }
 
+/*
+    Subclasses may override this function to run custom setVisible
+    logic. Subclasses that do so must call the base class implementation
+    at some point to make the native window visible, and must not
+    call QWindow::setVisble() since that will recurse back here.
+*/
+void QWindowPrivate::setVisible(bool visible)
+{
+    Q_Q(QWindow);
+
+    if (this->visible != visible) {
+        this->visible = visible;
+        emit q->visibleChanged(visible);
+        updateVisibility();
+    } else if (platformWindow) {
+        // Visibility hasn't changed, and the platform window is in sync
+        return;
+    }
+
+    if (!platformWindow) {
+        // If we have a parent window, but the parent hasn't been created yet, we
+        // can defer creation until the parent is created or we're re-parented.
+        if (parentWindow && !parentWindow->handle())
+            return;
+
+        // We only need to create the window if it's being shown
+        if (visible)
+            q->create();
+    }
+
+    if (visible) {
+        // remove posted quit events when showing a new window
+        QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
+
+        if (q->type() == Qt::Window) {
+            QGuiApplicationPrivate *app_priv = QGuiApplicationPrivate::instance();
+            QString &firstWindowTitle = app_priv->firstWindowTitle;
+            if (!firstWindowTitle.isEmpty()) {
+                q->setTitle(firstWindowTitle);
+                firstWindowTitle = QString();
+            }
+            if (!app_priv->forcedWindowIcon.isNull())
+                q->setIcon(app_priv->forcedWindowIcon);
+
+            // Handling of the -qwindowgeometry, -geometry command line arguments
+            static bool geometryApplied = false;
+            if (!geometryApplied) {
+                geometryApplied = true;
+                QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(q);
+            }
+        }
+
+        QShowEvent showEvent;
+        QGuiApplication::sendEvent(q, &showEvent);
+    }
+
+    if (q->isModal()) {
+        if (visible)
+            QGuiApplicationPrivate::showModalWindow(q);
+        else
+            QGuiApplicationPrivate::hideModalWindow(q);
+    }
+
+#ifndef QT_NO_CURSOR
+    if (visible && (hasCursor || QGuiApplication::overrideCursor()))
+        applyCursor();
+#endif
+
+    if (platformWindow)
+        platformWindow->setVisible(visible);
+
+    if (!visible) {
+        QHideEvent hideEvent;
+        QGuiApplication::sendEvent(q, &hideEvent);
+    }
+}
+
 void QWindowPrivate::updateVisibility()
 {
     Q_Q(QWindow);
@@ -514,71 +591,7 @@ void QWindow::setVisible(bool visible)
 {
     Q_D(QWindow);
 
-    if (d->visible != visible) {
-        d->visible = visible;
-        emit visibleChanged(visible);
-        d->updateVisibility();
-    } else if (d->platformWindow) {
-        // Visibility hasn't changed, and the platform window is in sync
-        return;
-    }
-
-    if (!d->platformWindow) {
-        // If we have a parent window, but the parent hasn't been created yet, we
-        // can defer creation until the parent is created or we're re-parented.
-        if (parent() && !parent()->handle())
-            return;
-
-        // We only need to create the window if it's being shown
-        if (visible)
-            create();
-    }
-
-    if (visible) {
-        // remove posted quit events when showing a new window
-        QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
-
-        if (type() == Qt::Window) {
-            QGuiApplicationPrivate *app_priv = QGuiApplicationPrivate::instance();
-            QString &firstWindowTitle = app_priv->firstWindowTitle;
-            if (!firstWindowTitle.isEmpty()) {
-                setTitle(firstWindowTitle);
-                firstWindowTitle = QString();
-            }
-            if (!app_priv->forcedWindowIcon.isNull())
-                setIcon(app_priv->forcedWindowIcon);
-
-            // Handling of the -qwindowgeometry, -geometry command line arguments
-            static bool geometryApplied = false;
-            if (!geometryApplied) {
-                geometryApplied = true;
-                QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(this);
-            }
-        }
-
-        QShowEvent showEvent;
-        QGuiApplication::sendEvent(this, &showEvent);
-    }
-
-    if (isModal()) {
-        if (visible)
-            QGuiApplicationPrivate::showModalWindow(this);
-        else
-            QGuiApplicationPrivate::hideModalWindow(this);
-    }
-
-#ifndef QT_NO_CURSOR
-    if (visible && (d->hasCursor || QGuiApplication::overrideCursor()))
-        d->applyCursor();
-#endif
-
-    if (d->platformWindow)
-        d->platformWindow->setVisible(visible);
-
-    if (!visible) {
-        QHideEvent hideEvent;
-        QGuiApplication::sendEvent(this, &hideEvent);
-    }
+    d->setVisible(visible);
 }
 
 bool QWindow::isVisible() const

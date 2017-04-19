@@ -7952,7 +7952,7 @@ void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
 
-    QWindow *window = q->windowHandle();
+    QWidgetWindow *window = qobject_cast<QWidgetWindow *>(q->windowHandle());
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
@@ -7999,7 +7999,7 @@ void QWidgetPrivate::show_sys()
         qt_qpa_set_cursor(q, false); // Needed in case cursor was set before show
 #endif
         invalidateBuffer(q->rect());
-        window->setVisible(true);
+        window->setNativeWindowVisibility(true);
         // Was the window moved by the Window system or QPlatformWindow::initialGeometry() ?
         if (window->isTopLevel()) {
             const QPoint crectTopLeft = q->data->crect.topLeft();
@@ -8091,7 +8091,7 @@ void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
 
-    QWindow *window = q->windowHandle();
+    QWidgetWindow *window = qobject_cast<QWidgetWindow *>(q->windowHandle());
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         q->setAttribute(Qt::WA_Mapped, false);
@@ -8121,7 +8121,7 @@ void QWidgetPrivate::hide_sys()
     }
 
     if (window)
-        window->setVisible(false);
+        window->setNativeWindowVisibility(false);
 }
 
 /*!

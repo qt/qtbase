@@ -69,6 +69,15 @@ class QWidgetWindowPrivate : public QWindowPrivate
 {
     Q_DECLARE_PUBLIC(QWidgetWindow)
 public:
+    void setVisible(bool visible) override
+    {
+        Q_Q(QWidgetWindow);
+        if (QWidget *widget = q->widget())
+            widget->setVisible(visible);
+        else
+            QWindowPrivate::setVisible(visible);
+    }
+
     QWindow *eventReceiver() Q_DECL_OVERRIDE {
         Q_Q(QWidgetWindow);
         QWindow *w = q;
@@ -162,6 +171,15 @@ QObject *QWidgetWindow::focusObject() const
         return focusObj;
 
     return widget;
+}
+
+void QWidgetWindow::setNativeWindowVisibility(bool visible)
+{
+    Q_D(QWidgetWindow);
+    // Call base class setVisible() implementation to run the QWindow
+    // visibility logic. Don't call QWidgetWindowPrivate::setVisible()
+    // since that will recurse back into QWidget code.
+    d->QWindowPrivate::setVisible(visible);
 }
 
 static inline bool shouldBePropagatedToWidget(QEvent *event)
