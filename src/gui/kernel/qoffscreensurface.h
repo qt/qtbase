@@ -57,7 +57,8 @@ class Q_GUI_EXPORT QOffscreenSurface : public QObject, public QSurface
     Q_DECLARE_PRIVATE(QOffscreenSurface)
 
 public:
-
+    // ### Qt 6: merge overloads
+    explicit QOffscreenSurface(QScreen *screen, QObject *parent = Q_NULLPTR);
     explicit QOffscreenSurface(QScreen *screen = Q_NULLPTR);
     virtual ~QOffscreenSurface();
 

@@ -121,14 +121,16 @@ public:
 
 
 /*!
-    Creates an offscreen surface for the \a targetScreen.
+    \since 5.10
+
+    Creates an offscreen surface for the \a targetScreen with the given \a parent.
 
     The underlying platform surface is not created until create() is called.
 
     \sa setScreen(), create()
 */
-QOffscreenSurface::QOffscreenSurface(QScreen *targetScreen)
-    : QObject(*new QOffscreenSurfacePrivate(), 0)
+QOffscreenSurface::QOffscreenSurface(QScreen *targetScreen, QObject *parent)
+    : QObject(*new QOffscreenSurfacePrivate(), parent)
     , QSurface(Offscreen)
 {
     Q_D(QOffscreenSurface);
@@ -141,6 +143,18 @@ QOffscreenSurface::QOffscreenSurface(QScreen *targetScreen)
     Q_ASSERT(d->screen);
 
     connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
+}
+
+/*!
+    Creates an offscreen surface for the \a targetScreen.
+
+    The underlying platform surface is not created until create() is called.
+
+    \sa setScreen(), create()
+*/
+QOffscreenSurface::QOffscreenSurface(QScreen *targetScreen)
+    : QOffscreenSurface(targetScreen, nullptr)
+{
 }
 
 
