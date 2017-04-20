@@ -270,7 +270,7 @@ private:
     qssize_t m_size;
     const storage_type *m_data;
 };
-Q_DECLARE_TYPEINFO(QStringView, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QStringView, Q_PRIMITIVE_TYPE);
 
 template <typename QStringLike, typename std::enable_if<
     std::is_same<QStringLike, QString>::value || std::is_same<QStringLike, QStringRef>::value,
