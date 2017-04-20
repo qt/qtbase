@@ -975,7 +975,9 @@ QSplitter::QSplitter(Qt::Orientation orientation, QWidget *parent)
 QSplitter::~QSplitter()
 {
     Q_D(QSplitter);
+#if QT_CONFIG(rubberband)
     delete d->rubberBand;
+#endif
     while (!d->list.isEmpty())
         delete d->list.takeFirst();
 }
@@ -1325,6 +1327,7 @@ void QSplitter::childEvent(QChildEvent *c)
 
 void QSplitter::setRubberBand(int pos)
 {
+#if QT_CONFIG(rubberband)
     Q_D(QSplitter);
     if (pos < 0) {
         if (d->rubberBand)
@@ -1345,6 +1348,9 @@ void QSplitter::setRubberBand(int pos)
                                                       : QRect(QPoint(r.x(), pos + hw / 2 - rBord), QSize(r.width(), 2 * rBord));
     d->rubberBand->setGeometry(newGeom);
     d->rubberBand->show();
+#else
+    Q_UNUSED(pos);
+#endif
 }
 
 /*!

@@ -160,7 +160,6 @@
             "label": "QSplitter",
             "purpose": "Provides user controlled splitter widgets.",
             "section": "Widgets",
-            "condition": "features.rubberband",
             "output": [ "publicFeature", "feature" ]
         },
         "widgettextcontrol": {
