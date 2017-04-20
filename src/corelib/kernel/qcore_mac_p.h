@@ -68,6 +68,7 @@
 #endif
 
 #include "qstring.h"
+#include "qscopedpointer.h"
 
 #if defined( __OBJC__) && defined(QT_NAMESPACE)
 #define QT_NAMESPACE_ALIAS_OBJC_CLASS(__KLASS__) @compatibility_alias __KLASS__ QT_MANGLE_NAMESPACE(__KLASS__)
@@ -95,6 +96,18 @@ public:
 protected:
     T value;
 };
+
+
+#ifdef Q_OS_MACOS
+class QMacRootLevelAutoReleasePool
+{
+public:
+    QMacRootLevelAutoReleasePool();
+    ~QMacRootLevelAutoReleasePool();
+private:
+    QScopedPointer<QMacAutoReleasePool> pool;
+};
+#endif
 
 /*
     Helper class that automates refernce counting for CFtypes.

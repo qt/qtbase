@@ -93,6 +93,45 @@ QMacAutoReleasePool::~QMacAutoReleasePool()
     [static_cast<NSAutoreleasePool*>(pool) drain];
 }
 
+#ifdef Q_OS_MACOS
+/*!
+    Ensure that Objective-C objects auto-released in main(), directly or indirectly,
+    after QCoreApplication construction, are released when the app goes out of scope.
+    The memory will be reclaimed by the system either way when the process exits,
+    but by having a root level pool we ensure that the objects get their dealloc
+    methods called, which is useful for debugging object ownership graphs, etc.
+*/
+
+QT_END_NAMESPACE
+#define ROOT_LEVEL_POOL_MARKER QT_ROOT_LEVEL_POOL__THESE_OBJECTS_WILL_BE_RELEASED_WHEN_QAPP_GOES_OUT_OF_SCOPE
+@interface QT_MANGLE_NAMESPACE(ROOT_LEVEL_POOL_MARKER) : NSObject @end
+@implementation QT_MANGLE_NAMESPACE(ROOT_LEVEL_POOL_MARKER) @end
+QT_NAMESPACE_ALIAS_OBJC_CLASS(ROOT_LEVEL_POOL_MARKER);
+QT_BEGIN_NAMESPACE
+
+const char ROOT_LEVEL_POOL_DISABLE_SWITCH[] = "QT_DISABLE_ROOT_LEVEL_AUTORELEASE_POOL";
+
+QMacRootLevelAutoReleasePool::QMacRootLevelAutoReleasePool()
+{
+    if (qEnvironmentVariableIsSet(ROOT_LEVEL_POOL_DISABLE_SWITCH))
+        return;
+
+    pool.reset(new QMacAutoReleasePool);
+
+    [[[ROOT_LEVEL_POOL_MARKER alloc] init] autorelease];
+
+    if (qstrcmp(qgetenv("OBJC_DEBUG_MISSING_POOLS"), "YES") == 0) {
+        qDebug("QCoreApplication root level NSAutoreleasePool in place. Break on ~%s and use\n" \
+            "'p [NSAutoreleasePool showPools]' to show leaked objects, or set %s",
+            __FUNCTION__, ROOT_LEVEL_POOL_DISABLE_SWITCH);
+    }
+}
+
+QMacRootLevelAutoReleasePool::~QMacRootLevelAutoReleasePool()
+{
+}
+#endif
+
 // -------------------------------------------------------------------------
 
 #ifdef Q_OS_OSX

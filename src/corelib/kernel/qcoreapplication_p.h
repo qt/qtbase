@@ -58,6 +58,10 @@
 #include "private/qobject_p.h"
 #endif
 
+#ifdef Q_OS_MACOS
+#include "private/qcore_mac_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 typedef QList<QTranslator*> QTranslatorList;
@@ -84,6 +88,10 @@ public:
 
     QString appName() const;
     QString appVersion() const;
+
+#ifdef Q_OS_MACOS
+    QMacRootLevelAutoReleasePool autoReleasePool;
+#endif
 
 #ifdef Q_OS_DARWIN
     static QString infoDictionaryStringProperty(const QString &propertyName);
