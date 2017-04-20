@@ -62,7 +62,6 @@ tst_QGraphicsScene::~tst_QGraphicsScene()
 
 static inline void processEvents()
 {
-    QApplication::flush();
     QApplication::processEvents();
     QApplication::processEvents();
 }

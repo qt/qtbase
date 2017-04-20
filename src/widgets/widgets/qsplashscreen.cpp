@@ -164,15 +164,14 @@ void QSplashScreen::mousePressEvent(QMouseEvent *)
 }
 
 /*!
-    This overrides QWidget::repaint(). It differs from the standard
-    repaint function in that it also calls QApplication::flush() to
-    ensure the updates are displayed, even when there is no event loop
-    present.
+    This overrides QWidget::repaint(). It differs from the standard repaint
+    function in that it also calls QApplication::processEvents() to ensure
+    the updates are displayed, even when there is no event loop present.
 */
 void QSplashScreen::repaint()
 {
     QWidget::repaint();
-    QApplication::flush();
+    QApplication::processEvents();
 }
 
 /*!
@@ -190,13 +189,9 @@ void QSplashScreen::repaint()
 /*!
     Draws the \a message text onto the splash screen with color \a
     color and aligns the text according to the flags in \a alignment.
-
-    To make sure the splash screen is repainted immediately, you can
-    call \l{QCoreApplication}'s
-    \l{QCoreApplication::}{processEvents()} after the call to
-    showMessage(). You usually want this to make sure that the message
-    is kept up to date with what your application is doing (e.g.,
-    loading files).
+    This function calls repaint() to make sure the splash screen is
+    repainted immediately. As a result the message is kept up
+    to date with what your application is doing (e.g. loading files).
 
     \sa Qt::Alignment, clearMessage(), message()
 */

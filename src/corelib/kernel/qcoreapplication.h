@@ -165,7 +165,9 @@ public:
 #endif
 
 #ifndef QT_NO_QOBJECT
-    static void flush();
+#  if QT_DEPRECATED_SINCE(5, 9)
+    QT_DEPRECATED static void flush();
+#  endif
 
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
     void removeNativeEventFilter(QAbstractNativeEventFilter *filterObj);

@@ -102,7 +102,9 @@ public:
 
     virtual void wakeUp() = 0;
     virtual void interrupt() = 0;
-    virtual void flush() = 0;
+#if QT_DEPRECATED_SINCE(5, 9)
+    QT_DEPRECATED virtual void flush() = 0;
+#endif
 
     virtual void startingUp();
     virtual void closingDown();

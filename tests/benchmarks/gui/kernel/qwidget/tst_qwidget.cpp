@@ -33,7 +33,6 @@
 
 static void processEvents()
 {
-    QApplication::flush();
     QApplication::processEvents();
     QApplication::processEvents();
 }
@@ -174,7 +173,7 @@ void tst_QWidget::update()
         }
     }
 
-    QApplication::flush();
+    QApplication::processEvents();
 }
 
 void tst_QWidget::updatePartial_data()

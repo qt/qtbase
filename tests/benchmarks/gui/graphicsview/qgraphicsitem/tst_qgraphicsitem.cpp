@@ -69,14 +69,13 @@ tst_QGraphicsItem::~tst_QGraphicsItem()
 
 static inline void processEvents()
 {
-    QApplication::flush();
     QApplication::processEvents();
     QApplication::processEvents();
 }
 
 void tst_QGraphicsItem::initTestCase()
 {
-    QApplication::flush();
+    processEvents();
     QTest::qWait(1500);
     processEvents();
 }
