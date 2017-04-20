@@ -99,6 +99,8 @@ private slots:
     void translate();
 
     void lineWithinBounds();
+
+    void intersectionEquality();
 };
 
 void tst_QPainterPath::cleanupTestCase()
@@ -1313,6 +1315,53 @@ void tst_QPainterPath::lineWithinBounds()
     }
 }
 
+void tst_QPainterPath::intersectionEquality()
+{
+    // Test case from QTBUG-17027
+    QPainterPath p1;
+    p1.moveTo(256.0000000000000000, 135.8384137532701743);
+    p1.lineTo(50.9999999999999715, 107.9999999999999857);
+    p1.lineTo(233.5425474228109123, 205.3560252921671462);
+    p1.lineTo(191.7771366877784373, 318.0257074407572304);
+    p1.lineTo(-48.2616272048215151, 229.0459803737862216);
+    p1.lineTo(0.0000000000000000, 98.8515898136580801);
+    p1.lineTo(0.0000000000000000, 0.0000000000000000);
+    p1.lineTo(256.0000000000000000, 0.0000000000000000);
+    p1.lineTo(256.0000000000000000, 135.8384137532701743);
+
+    QPainterPath p2;
+    p2.moveTo(1516.2703263523442274, 306.9795200262722119);
+    p2.lineTo(-1296.8426224886295585, -75.0331736542986931);
+    p2.lineTo(-1678.8553161692004778, 2738.0797751866753060);
+    p2.lineTo(1134.2576326717733081, 3120.0924688672457705);
+    p2.lineTo(1516.2703263523442274, 306.9795200262722119);
+
+    QPainterPath i1 = p1.intersected(p2);
+    QPainterPath i2 = p2.intersected(p1);
+    QVERIFY(i1 == i2 || i1.toReversed() == i2);
+
+    p1 = QPainterPath();
+    p1.moveTo(256.00000000, 135.83841375);
+    p1.lineTo(50.99999999, 107.99999999);
+    p1.lineTo(233.54254742, 205.35602529);
+    p1.lineTo(191.77713668, 318.02570744);
+    p1.lineTo(-48.26162720, 229.04598037);
+    p1.lineTo(0.00000000, 98.85158981);
+    p1.lineTo(0.00000000, 0.00000000);
+    p1.lineTo(256.00000000, 0.00000000);
+    p1.lineTo(256.00000000, 135.83841375);
+
+    p2 = QPainterPath();
+    p2.moveTo(1516.27032635, 306.97952002);
+    p2.lineTo(-1296.84262248, -75.03317365);
+    p2.lineTo(-1678.85531616, 2738.07977518);
+    p2.lineTo(1134.25763267, 3120.09246886);
+    p2.lineTo(1516.27032635, 306.97952002);
+
+    i1 = p1.intersected(p2);
+    i2 = p2.intersected(p1);
+    QVERIFY(i1 == i2 || i1.toReversed() == i2);
+}
 
 QTEST_APPLESS_MAIN(tst_QPainterPath)
 
