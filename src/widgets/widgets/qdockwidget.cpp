@@ -49,7 +49,6 @@
 #include <qwindow.h>
 #include <qscreen.h>
 #include <qmainwindow.h>
-#include <qrubberband.h>
 #include <qstylepainter.h>
 #include <qtoolbutton.h>
 #include <qdebug.h>

@@ -304,7 +304,7 @@
             "label": "QDockwidget",
             "purpose": "Supports docking widgets inside a QMainWindow or floated as a top-level window on the desktop.",
             "section": "Widgets",
-            "condition": "features.rubberband && features.mainwindow",
+            "condition": "features.mainwindow",
             "output": [ "publicFeature", "feature" ]
         },
         "mdiarea": {
