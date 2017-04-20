@@ -576,11 +576,11 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
   When you retrieve a pixmap using pixmap(QSize, Mode, State), and no
   pixmap for this given size, mode and state has been added with
   addFile() or addPixmap(), then QIcon will generate one on the
-  fly. This pixmap generation happens in a QIconEngineV2. The default
+  fly. This pixmap generation happens in a QIconEngine. The default
   engine scales pixmaps down if required, but never up, and it uses
   the current style to calculate a disabled appearance. By using
   custom icon engines, you can customize every aspect of generated
-  icons. With QIconEnginePluginV2 it is possible to register different
+  icons. With QIconEnginePlugin it is possible to register different
   icon engines for different file suffixes, making it possible for
   third parties to provide additional icon engines to those included
   with Qt.
@@ -1114,7 +1114,7 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
 
     Depending on the way the icon was created, it may have an associated
     name. This is the case for icons created with fromTheme() or icons
-    using a QIconEngine which supports the QIconEngineV2::IconNameHook.
+    using a QIconEngine which supports the QIconEngine::IconNameHook.
 
     \sa fromTheme(), QIconEngine
 */
