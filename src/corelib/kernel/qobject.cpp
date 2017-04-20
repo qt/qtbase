@@ -4292,7 +4292,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     This macro registers an enum type with the meta-object system.
     It must be placed after the enum declaration in a class that has the Q_OBJECT or the
-    Q_GADGET macro. For namespaces use \l Q_ENUM_NS instead.
+    Q_GADGET macro. For namespaces use \l Q_ENUM_NS() instead.
 
     For example:
 
@@ -4319,7 +4319,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     This macro registers a single \l{QFlags}{flags type} with the
     meta-object system. It is typically used in a class definition to declare
     that values of a given enum can be used as flags and combined using the
-    bitwise OR operator. For namespaces use \l Q_FLAG_NS instead.
+    bitwise OR operator. For namespaces use \l Q_FLAG_NS() instead.
 
     The macro must be placed after the enum declaration.
 
@@ -4340,6 +4340,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
 /*!
     \macro Q_ENUM_NS(...)
+    \relates QObject
     \since 5.8
 
     This macro registers an enum type with the meta-object system.
@@ -4363,6 +4364,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
 /*!
     \macro Q_FLAG_NS(...)
+    \relates QObject
     \since 5.8
 
     This macro registers a single \l{QFlags}{flags type} with the
