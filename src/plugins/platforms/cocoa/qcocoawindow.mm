@@ -187,8 +187,8 @@ static void qt_closePopups()
     if (!windowStillAlive)
         return;
 
-    if (!self.window.delegate)
-        return; // Already detached, pending NSAppKitDefined event
+    if (!self.platformWindow)
+        return; // Platform window went away while processing event
 
     if (pw && pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
         NSPoint loc = [theEvent locationInWindow];
