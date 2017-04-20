@@ -3005,13 +3005,17 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
                                             int base, int width,
                                             unsigned flags)
 {
+    const QChar resultZero = base == 10 ? zero : QChar(QLatin1Char('0'));
+    QString num_str = l ? qulltoa(l, base, zero) : QString(resultZero);
+
     bool precision_not_specified = false;
     if (precision == -1) {
+        if (flags == NoFlags)
+            return num_str; // fast-path: nothing below applies, so we're done.
+
         precision_not_specified = true;
         precision = 1;
     }
-
-    QString num_str = qulltoa(l, base, zero);
 
     uint cnt_thousand_sep = 0;
     if (flags & ThousandsGroup && base == 10) {
@@ -3021,7 +3025,6 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
         }
     }
 
-    const QChar resultZero = base == 10 ? zero : QChar(QLatin1Char('0'));
     const int zeroPadding = precision - num_str.length()/* + cnt_thousand_sep*/;
     if (zeroPadding > 0)
         num_str.prepend(QString(zeroPadding, resultZero));
