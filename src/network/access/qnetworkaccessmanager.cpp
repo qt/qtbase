@@ -732,7 +732,7 @@ bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
 /*!
     \since 5.9
 
-    Adds HTTP Strict Transport Security policies into HSTS cache.
+    Adds HTTP Strict Transport Security policies contained in \a knownHosts into HSTS cache.
 
     \note An expired policy will remove a known host from the cache, if previously
     present.

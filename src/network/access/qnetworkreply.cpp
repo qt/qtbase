@@ -311,9 +311,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     When client code handling the redirected() signal has verified the new URL,
     it emits this signal to allow the redirect to go ahead.  This protocol applies
     to network requests whose redirects policy is set to
-    QNetworkRequest::UserVerifiedRedirectsPolicy.
+    QNetworkRequest::UserVerifiedRedirectPolicy
 
-    \sa QNetworkRequest::UserVerifiedRedirectsPolicy
+    \sa QNetworkRequest::UserVerifiedRedirectPolicy
     QNetworkAccessManager::setRedirectsPolicy(),
     QNetworkRequest::RedirectsPolicyAttribute
 */

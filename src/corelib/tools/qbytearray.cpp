@@ -3049,7 +3049,7 @@ QByteArray QByteArray::mid(int pos, int len) const
 
     \note The behavior is undefined if \a len is negative or greater than size().
 
-    \sa endsWith(), left(), right(), mid(), chop(), truncate().
+    \sa endsWith(), left(), right(), mid(), chop(), truncate()
 */
 
 /*!

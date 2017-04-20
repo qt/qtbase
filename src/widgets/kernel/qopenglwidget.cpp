@@ -1074,7 +1074,7 @@ QSurfaceFormat QOpenGLWidget::format() const
 }
 
 /*!
-    Sets a custom internal texture format.
+    Sets a custom internal texture format of \a texFormat.
 
     When working with sRGB framebuffers, it will be necessary to specify a
     format like \c{GL_SRGB8_ALPHA8}. This can be achieved by calling this

@@ -96,13 +96,13 @@ void QObject::parse()
     // suffixIndex is 5
     //! [3]
 
-    //! [3-latin-1]
+    //! [3-latin1-1]
     QLatin1String string("5.4.0-alpha");
     int suffixIndex;
     auto version = QVersionNumber::fromString(string, &suffixIndex);
     // version is 5.4.0
     // suffixIndex is 5
-    //! [3-latin-1]
+    //! [3-latin1-1]
 }
 
 void Object::equivalent()

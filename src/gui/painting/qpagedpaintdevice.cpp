@@ -249,9 +249,9 @@ QPagedPaintDevicePrivate *QPagedPaintDevice::dd()
     The PdfVersion enum describes the version of the PDF file that
     is produced by QPrinter or QPdfWriter.
 
-    \value PdfFormat_1_4 A PDF 1.4 compatible document is produced.
+    \value PdfVersion_1_4 A PDF 1.4 compatible document is produced.
 
-    \value PdfFormat_A1b A PDF/A-1b compatible document is produced.
+    \value PdfVersion_A1b A PDF/A-1b compatible document is produced.
 
     \since 5.10
 */

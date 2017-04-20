@@ -4528,7 +4528,7 @@ QString QString::mid(int position, int n) const
 
     \note The behavior is undefined if \a len is negative or greater than size().
 
-    \sa endsWith(), left(), right(), mid(), chop(), truncate().
+    \sa endsWith(), left(), right(), mid(), chop(), truncate()
 */
 
 /*!
@@ -10337,7 +10337,7 @@ QStringRef QStringRef::mid(int pos, int n) const
 
     \note The behavior is undefined if \a len is negative or greater than size().
 
-    \sa endsWith(), left(), right(), mid(), chop(), truncate().
+    \sa endsWith(), left(), right(), mid(), chop(), truncate()
 */
 
 /*!
