@@ -284,7 +284,7 @@ int QRasterPlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmPhysicalDpiX:
         return qt_defaultDpiX();
     case QPaintDevice::PdmDpiY:
-        return qt_defaultDpiX();
+        return qt_defaultDpiY();
     case QPaintDevice::PdmPhysicalDpiY:
         return qt_defaultDpiY();
     case QPaintDevice::PdmDevicePixelRatio:
