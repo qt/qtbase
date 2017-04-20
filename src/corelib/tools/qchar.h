@@ -86,7 +86,7 @@ public:
     Q_DECL_CONSTEXPR QChar(int rc) Q_DECL_NOTHROW : ucs(ushort(rc & 0xffff)) {}
     Q_DECL_CONSTEXPR QChar(SpecialCharacter s) Q_DECL_NOTHROW : ucs(ushort(s)) {} // implicit
     Q_DECL_CONSTEXPR QChar(QLatin1Char ch) Q_DECL_NOTHROW : ucs(ch.unicode()) {} // implicit
-#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+#if defined(Q_COMPILER_UNICODE_STRINGS)
     Q_DECL_CONSTEXPR QChar(char16_t ch) Q_DECL_NOTHROW : ucs(ushort(ch)) {} // implicit
 #endif
 #if defined(Q_OS_WIN)

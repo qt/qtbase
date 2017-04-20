@@ -61,7 +61,7 @@ struct IsCompatibleCharTypeHelper
     : std::integral_constant<bool,
                              std::is_same<Char, QChar>::value ||
                              std::is_same<Char, ushort>::value ||
-#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+#if defined(Q_COMPILER_UNICODE_STRINGS)
                              std::is_same<Char, char16_t>::value ||
 #endif
                              (std::is_same<Char, wchar_t>::value && sizeof(wchar_t) == sizeof(QChar))> {};

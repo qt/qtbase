@@ -79,7 +79,7 @@ QT_WARNING_DISABLE_DEPRECATED
 
 void tst_QChar::fromChar16_t()
 {
-#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+#if defined(Q_COMPILER_UNICODE_STRINGS)
     QChar aUmlaut = u'\u00E4'; // German small letter a-umlaut
     QCOMPARE(aUmlaut, QChar(0xE4));
     QChar replacementCharacter = u'\uFFFD';

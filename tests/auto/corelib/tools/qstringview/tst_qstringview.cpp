@@ -87,7 +87,7 @@ Q_STATIC_ASSERT(CanConvert<const ushort*>::value);
 // char16_t
 //
 
-#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+#if defined(Q_COMPILER_UNICODE_STRINGS)
 
 Q_STATIC_ASSERT(!CanConvert<char16_t>::value);
 
@@ -96,7 +96,7 @@ Q_STATIC_ASSERT(CanConvert<const char16_t*>::value);
 
 #endif
 
-#ifdef Q_COMPILER_UNICODE_STRINGS
+#if defined(Q_STDLIB_UNICODE_STRINGS)
 
 Q_STATIC_ASSERT(CanConvert<      std::u16string >::value);
 Q_STATIC_ASSERT(CanConvert<const std::u16string >::value);
@@ -155,7 +155,7 @@ private Q_SLOTS:
 
     void fromChar16TStar() const
     {
-#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+#if defined(Q_COMPILER_UNICODE_STRINGS)
         fromLiteral(u"Hello, World!");
 #else
         QSKIP("This test requires C++11 char16_t support enabled in the compiler");
@@ -182,7 +182,7 @@ private Q_SLOTS:
     }
     void fromStdStringChar16T() const
     {
-#ifdef Q_COMPILER_UNICODE_STRINGS
+#ifdef Q_STDLIB_UNICODE_STRINGS
         fromStdString<char16_t>();
 #else
         QSKIP("This test requires C++11 char16_t support enabled in compiler & stdlib");
