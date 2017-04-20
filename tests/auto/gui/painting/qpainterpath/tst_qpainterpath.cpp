@@ -101,6 +101,7 @@ private slots:
     void lineWithinBounds();
 
     void intersectionEquality();
+    void intersectionPointOnEdge();
 };
 
 void tst_QPainterPath::cleanupTestCase()
@@ -1361,6 +1362,17 @@ void tst_QPainterPath::intersectionEquality()
     i1 = p1.intersected(p2);
     i2 = p2.intersected(p1);
     QVERIFY(i1 == i2 || i1.toReversed() == i2);
+}
+
+void tst_QPainterPath::intersectionPointOnEdge()
+{
+    // From QTBUG-31551
+    QPainterPath p; p.addRoundedRect(-10, 10, 40, 40, 10, 10);
+    QRectF r(0, 0, 100, 100);
+    QPainterPath rp; rp.addRect(r);
+    QVERIFY(!p.intersected(rp).isEmpty());
+    QVERIFY(p.intersects(rp));
+    QVERIFY(p.intersects(r));
 }
 
 QTEST_APPLESS_MAIN(tst_QPainterPath)

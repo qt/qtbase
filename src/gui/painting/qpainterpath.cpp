@@ -1981,6 +1981,17 @@ static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qr
      return false;
 }
 
+static bool pointOnEdge(const QRectF &rect, const QPointF &point)
+{
+    if ((point.x() == rect.left() || point.x() == rect.right()) &&
+        (point.y() >= rect.top() && point.y() <= rect.bottom()))
+        return true;
+    if ((point.y() == rect.top() || point.y() == rect.bottom()) &&
+        (point.x() >= rect.left() && point.x() <= rect.right()))
+        return true;
+    return false;
+}
+
 /*
     Returns \c true if any lines or curves cross the four edges in of rect
 */
@@ -1988,6 +1999,7 @@ static bool qt_painterpath_check_crossing(const QPainterPath *path, const QRectF
 {
     QPointF last_pt;
     QPointF last_start;
+    enum { OnRect, InsideRect, OutsideRect} edgeStatus = OnRect;
     for (int i=0; i<path->elementCount(); ++i) {
         const QPainterPath::Element &e = path->elementAt(i);
 
@@ -2025,6 +2037,27 @@ static bool qt_painterpath_check_crossing(const QPainterPath *path, const QRectF
 
         default:
             break;
+        }
+        // Handle crossing the edges of the rect at the end-points of individual sub-paths.
+        // A point on on the edge itself is considered neither inside nor outside for this purpose.
+        if (!pointOnEdge(rect, last_pt)) {
+            bool contained = rect.contains(last_pt);
+            switch (edgeStatus) {
+            case OutsideRect:
+                if (contained)
+                    return true;
+                break;
+            case InsideRect:
+                if (!contained)
+                    return true;
+                break;
+            case OnRect:
+                edgeStatus = contained ? InsideRect : OutsideRect;
+                break;
+            }
+        } else {
+            if (last_pt == last_start)
+                edgeStatus = OnRect;
         }
     }
 
