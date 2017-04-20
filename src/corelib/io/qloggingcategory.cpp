@@ -411,8 +411,8 @@ QLoggingCategory *QLoggingCategory::defaultCategory()
     filter is free to change the respective category configuration with
     \l setEnabled().
 
-    The filter might be called concurrently from different threads, and
-    therefore has to be reentrant.
+    The filter might be called from different threads, but never concurrently.
+    The filter shall not call any static functions of QLoggingCategory.
 
     Example:
     \snippet qloggingcategory/main.cpp 21
