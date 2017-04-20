@@ -313,9 +313,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     to network requests whose redirects policy is set to
     QNetworkRequest::UserVerifiedRedirectsPolicy.
 
-    \sa QNetworkRequest::UserVerifiedRedirectsPolicy
-    QNetworkAccessManager::setRedirectsPolicy(),
-    QNetworkRequest::RedirectsPolicyAttribute
+    \sa QNetworkRequest::UserVerifiedRedirectPolicy, QNetworkAccessManager::setRedirectPolicy(), QNetworkRequest::RedirectPolicyAttribute
 */
 
 /*!
