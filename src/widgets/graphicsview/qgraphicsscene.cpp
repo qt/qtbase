@@ -1225,15 +1225,15 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
 */
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
+#if QT_CONFIG(gestures)
     if (QGraphicsObject *object = item->toGraphicsObject()) {
-#ifndef QT_NO_GESTURES
         QGestureManager *gestureManager = QApplicationPrivate::instance()->gestureManager;
         if (gestureManager) {
             if (gestureManager->filterEvent(object, event))
                 return true;
         }
-#endif // QT_NO_GESTURES
     }
+#endif // QT_CONFIG(gestures)
 
     if (filterEvent(item, event))
         return false;

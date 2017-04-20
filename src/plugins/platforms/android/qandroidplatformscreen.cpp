@@ -321,10 +321,13 @@ void QAndroidPlatformScreen::doRedraw()
         }
     }
     if (!hasVisibleRasterWindows) {
+        lockSurface();
         if (m_id != -1) {
             QtAndroid::destroySurface(m_id);
+            releaseSurface();
             m_id = -1;
         }
+        unlockSurface();
         return;
     }
     QMutexLocker lock(&m_surfaceMutex);

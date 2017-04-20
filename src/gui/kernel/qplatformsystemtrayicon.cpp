@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtGui
     \brief The QPlatformSystemTrayIcon class abstracts the system tray icon and interaction.
 
+    \internal
     \sa QSystemTrayIcon
 */
 
@@ -82,16 +83,10 @@ QT_BEGIN_NAMESPACE
      \sa activated()
 */
 
-/*!
-    \internal
- */
 QPlatformSystemTrayIcon::QPlatformSystemTrayIcon()
 {
 }
 
-/*!
-    \internal
- */
 QPlatformSystemTrayIcon::~QPlatformSystemTrayIcon()
 {
 }

@@ -90,14 +90,14 @@ public:
     float length() const;
     float lengthSquared() const;
 
-    QQuaternion normalized() const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QQuaternion normalized() const;
     void normalize();
 
     inline QQuaternion inverted() const;
 
-    QQuaternion conjugated() const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QQuaternion conjugated() const;
 #if QT_DEPRECATED_SINCE(5, 5)
-    QT_DEPRECATED QQuaternion conjugate() const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QT_DEPRECATED QQuaternion conjugate() const;
 #endif
 
     QVector3D rotatedVector(const QVector3D& vector) const;

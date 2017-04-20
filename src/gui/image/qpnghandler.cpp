@@ -830,7 +830,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int quality_in, c
 
 
     int color_type = 0;
-    if (image.colorCount()) {
+    if (image.format() <= QImage::Format_Indexed8) {
         if (image.isGrayscale())
             color_type = PNG_COLOR_TYPE_GRAY;
         else

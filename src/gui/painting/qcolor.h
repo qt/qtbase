@@ -197,7 +197,7 @@ public:
     QColor toCmyk() const Q_DECL_NOTHROW;
     QColor toHsl() const Q_DECL_NOTHROW;
 
-    QColor convertTo(Spec colorSpec) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QColor convertTo(Spec colorSpec) const Q_DECL_NOTHROW;
 
     static QColor fromRgb(QRgb rgb) Q_DECL_NOTHROW;
     static QColor fromRgba(QRgb rgba) Q_DECL_NOTHROW;
@@ -217,10 +217,10 @@ public:
     static QColor fromHsl(int h, int s, int l, int a = 255);
     static QColor fromHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
 
-    QColor light(int f = 150) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    QColor lighter(int f = 150) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    QColor dark(int f = 200) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    QColor darker(int f = 200) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QColor light(int f = 150) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT QColor lighter(int f = 150) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT QColor dark(int f = 200) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT QColor darker(int f = 200) const Q_DECL_NOTHROW;
 
     bool operator==(const QColor &c) const Q_DECL_NOTHROW;
     bool operator!=(const QColor &c) const Q_DECL_NOTHROW;

@@ -88,7 +88,7 @@ public:
     QT_DEPRECATED_X("use tryTake(), but note the different deletion rules")
     void cancel(QRunnable *runnable);
 #endif
-    bool tryTake(QRunnable *runnable) Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT bool tryTake(QRunnable *runnable);
 };
 
 QT_END_NAMESPACE

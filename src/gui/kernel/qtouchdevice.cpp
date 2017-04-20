@@ -215,7 +215,10 @@ static void cleanupDevicesList()
 /*!
   Returns a list of all registered devices.
 
-  \note The returned list cannot be used to add new devices. Use QWindowSystemInterface::registerTouchDevice() instead.
+  \note The returned list cannot be used to add new devices. To add a simulated
+  touch screen for an autotest, QTest::createTouchDevice() can be used.
+  To add real touch screens to QPA plugins, the private
+  \c QWindowSystemInterface::registerTouchDevice() function can be used.
   */
 QList<const QTouchDevice *> QTouchDevice::devices()
 {

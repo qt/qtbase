@@ -70,7 +70,7 @@ public:
     Q_DECL_CONSTEXPR inline int top() const Q_DECL_NOTHROW;
     Q_DECL_CONSTEXPR inline int right() const Q_DECL_NOTHROW;
     Q_DECL_CONSTEXPR inline int bottom() const Q_DECL_NOTHROW;
-    QRect normalized() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QRect normalized() const Q_DECL_NOTHROW;
 
     Q_DECL_CONSTEXPR inline int x() const Q_DECL_NOTHROW;
     Q_DECL_CONSTEXPR inline int y() const Q_DECL_NOTHROW;
@@ -104,9 +104,9 @@ public:
 
     Q_DECL_RELAXED_CONSTEXPR inline void translate(int dx, int dy) Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline void translate(const QPoint &p) Q_DECL_NOTHROW;
-    Q_DECL_CONSTEXPR inline QRect translated(int dx, int dy) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    Q_DECL_CONSTEXPR inline QRect translated(const QPoint &p) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    Q_DECL_CONSTEXPR inline QRect transposed() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QRect translated(int dx, int dy) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QRect translated(const QPoint &p) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QRect transposed() const Q_DECL_NOTHROW;
 
     Q_DECL_RELAXED_CONSTEXPR inline void moveTo(int x, int t) Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline void moveTo(const QPoint &p) Q_DECL_NOTHROW;
@@ -118,7 +118,7 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline void getCoords(int *x1, int *y1, int *x2, int *y2) const;
 
     Q_DECL_RELAXED_CONSTEXPR inline void adjust(int x1, int y1, int x2, int y2) Q_DECL_NOTHROW;
-    Q_DECL_CONSTEXPR inline QRect adjusted(int x1, int y1, int x2, int y2) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QRect adjusted(int x1, int y1, int x2, int y2) const Q_DECL_NOTHROW;
 
     Q_DECL_CONSTEXPR inline QSize size() const Q_DECL_NOTHROW;
     Q_DECL_CONSTEXPR inline int width() const Q_DECL_NOTHROW;
@@ -136,8 +136,8 @@ public:
     bool contains(const QPoint &p, bool proper=false) const Q_DECL_NOTHROW;
     inline bool contains(int x, int y) const Q_DECL_NOTHROW;
     inline bool contains(int x, int y, bool proper) const Q_DECL_NOTHROW;
-    inline QRect united(const QRect &other) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    inline QRect intersected(const QRect &other) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT inline QRect united(const QRect &other) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT inline QRect intersected(const QRect &other) const Q_DECL_NOTHROW;
     bool intersects(const QRect &r) const Q_DECL_NOTHROW;
 
     Q_DECL_CONSTEXPR inline QRect marginsAdded(const QMargins &margins) const Q_DECL_NOTHROW;
@@ -146,15 +146,15 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline QRect &operator-=(const QMargins &margins) Q_DECL_NOTHROW;
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED QRect unite(const QRect &r) const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return united(r); }
-    QT_DEPRECATED QRect intersect(const QRect &r) const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return intersected(r); }
+    Q_REQUIRED_RESULT QT_DEPRECATED QRect unite(const QRect &r) const Q_DECL_NOTHROW { return united(r); }
+    Q_REQUIRED_RESULT QT_DEPRECATED QRect intersect(const QRect &r) const Q_DECL_NOTHROW { return intersected(r); }
 #endif
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QRect &, const QRect &) Q_DECL_NOTHROW;
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QRect &, const QRect &) Q_DECL_NOTHROW;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-    CGRect toCGRect() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT CGRect toCGRect() const Q_DECL_NOTHROW;
 #endif
 
 private:
@@ -520,7 +520,7 @@ public:
     Q_DECL_CONSTEXPR inline bool isNull() const Q_DECL_NOTHROW;
     Q_DECL_CONSTEXPR inline bool isEmpty() const Q_DECL_NOTHROW;
     Q_DECL_CONSTEXPR inline bool isValid() const Q_DECL_NOTHROW;
-    QRectF normalized() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT QRectF normalized() const Q_DECL_NOTHROW;
 
     Q_DECL_CONSTEXPR inline qreal left() const Q_DECL_NOTHROW { return xp; }
     Q_DECL_CONSTEXPR inline qreal top() const Q_DECL_NOTHROW { return yp; }
@@ -560,10 +560,10 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline void translate(qreal dx, qreal dy) Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline void translate(const QPointF &p) Q_DECL_NOTHROW;
 
-    Q_DECL_CONSTEXPR inline QRectF translated(qreal dx, qreal dy) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    Q_DECL_CONSTEXPR inline QRectF translated(const QPointF &p) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QRectF translated(qreal dx, qreal dy) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QRectF translated(const QPointF &p) const Q_DECL_NOTHROW;
 
-    Q_DECL_CONSTEXPR inline QRectF transposed() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QRectF transposed() const Q_DECL_NOTHROW;
 
     Q_DECL_RELAXED_CONSTEXPR inline void moveTo(qreal x, qreal y) Q_DECL_NOTHROW;
     Q_DECL_RELAXED_CONSTEXPR inline void moveTo(const QPointF &p) Q_DECL_NOTHROW;
@@ -575,7 +575,7 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline void getCoords(qreal *x1, qreal *y1, qreal *x2, qreal *y2) const;
 
     Q_DECL_RELAXED_CONSTEXPR inline void adjust(qreal x1, qreal y1, qreal x2, qreal y2) Q_DECL_NOTHROW;
-    Q_DECL_CONSTEXPR inline QRectF adjusted(qreal x1, qreal y1, qreal x2, qreal y2) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QRectF adjusted(qreal x1, qreal y1, qreal x2, qreal y2) const Q_DECL_NOTHROW;
 
     Q_DECL_CONSTEXPR inline QSizeF size() const Q_DECL_NOTHROW;
     Q_DECL_CONSTEXPR inline qreal width() const Q_DECL_NOTHROW;
@@ -592,8 +592,8 @@ public:
     bool contains(const QRectF &r) const Q_DECL_NOTHROW;
     bool contains(const QPointF &p) const Q_DECL_NOTHROW;
     inline bool contains(qreal x, qreal y) const Q_DECL_NOTHROW;
-    inline QRectF united(const QRectF &other) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    inline QRectF intersected(const QRectF &other) const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT inline QRectF united(const QRectF &other) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT inline QRectF intersected(const QRectF &other) const Q_DECL_NOTHROW;
     bool intersects(const QRectF &r) const Q_DECL_NOTHROW;
 
     Q_DECL_CONSTEXPR inline QRectF marginsAdded(const QMarginsF &margins) const Q_DECL_NOTHROW;
@@ -602,19 +602,19 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline QRectF &operator-=(const QMarginsF &margins) Q_DECL_NOTHROW;
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED QRectF unite(const QRectF &r) const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return united(r); }
-    QT_DEPRECATED QRectF intersect(const QRectF &r) const Q_DECL_NOTHROW Q_REQUIRED_RESULT { return intersected(r); }
+    Q_REQUIRED_RESULT QT_DEPRECATED QRectF unite(const QRectF &r) const Q_DECL_NOTHROW { return united(r); }
+    Q_REQUIRED_RESULT QT_DEPRECATED QRectF intersect(const QRectF &r) const Q_DECL_NOTHROW { return intersected(r); }
 #endif
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QRectF &, const QRectF &) Q_DECL_NOTHROW;
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QRectF &, const QRectF &) Q_DECL_NOTHROW;
 
-    Q_DECL_CONSTEXPR inline QRect toRect() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    QRect toAlignedRect() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QRect toRect() const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT QRect toAlignedRect() const Q_DECL_NOTHROW;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-    static QRectF fromCGRect(CGRect rect) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    CGRect toCGRect() const Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT static QRectF fromCGRect(CGRect rect) Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT CGRect toCGRect() const Q_DECL_NOTHROW;
 #endif
 
 private:

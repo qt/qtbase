@@ -81,18 +81,18 @@ private:
 
 Q_DECLARE_TYPEINFO(qfloat16, Q_PRIMITIVE_TYPE);
 
-Q_CORE_EXPORT Q_REQUIRED_RESULT bool qIsInf(qfloat16 f) Q_DECL_NOTHROW;    // complements qnumeric.h
-Q_CORE_EXPORT Q_REQUIRED_RESULT bool qIsNaN(qfloat16 f) Q_DECL_NOTHROW;    // complements qnumeric.h
-Q_CORE_EXPORT Q_REQUIRED_RESULT bool qIsFinite(qfloat16 f) Q_DECL_NOTHROW; // complements qnumeric.h
+Q_REQUIRED_RESULT Q_CORE_EXPORT bool qIsInf(qfloat16 f) Q_DECL_NOTHROW;    // complements qnumeric.h
+Q_REQUIRED_RESULT Q_CORE_EXPORT bool qIsNaN(qfloat16 f) Q_DECL_NOTHROW;    // complements qnumeric.h
+Q_REQUIRED_RESULT Q_CORE_EXPORT bool qIsFinite(qfloat16 f) Q_DECL_NOTHROW; // complements qnumeric.h
 
 // The remainder of these utility functions complement qglobal.h
-inline Q_REQUIRED_RESULT int qRound(qfloat16 d) Q_DECL_NOTHROW
+Q_REQUIRED_RESULT inline int qRound(qfloat16 d) Q_DECL_NOTHROW
 { return qRound(static_cast<float>(d)); }
 
-inline Q_REQUIRED_RESULT qint64 qRound64(qfloat16 d) Q_DECL_NOTHROW
+Q_REQUIRED_RESULT inline qint64 qRound64(qfloat16 d) Q_DECL_NOTHROW
 { return qRound64(static_cast<float>(d)); }
 
-inline Q_REQUIRED_RESULT bool qFuzzyCompare(qfloat16 p1, qfloat16 p2) Q_DECL_NOTHROW
+Q_REQUIRED_RESULT inline bool qFuzzyCompare(qfloat16 p1, qfloat16 p2) Q_DECL_NOTHROW
 {
     float f1 = static_cast<float>(p1);
     float f2 = static_cast<float>(p2);
@@ -105,7 +105,7 @@ inline Q_REQUIRED_RESULT bool qFuzzyCompare(qfloat16 p1, qfloat16 p2) Q_DECL_NOT
     return (qAbs(f1 - f2) * 102.5f <= qMin(qAbs(f1), qAbs(f2)));
 }
 
-inline Q_REQUIRED_RESULT bool qIsNull(qfloat16 f) Q_DECL_NOTHROW
+Q_REQUIRED_RESULT inline bool qIsNull(qfloat16 f) Q_DECL_NOTHROW
 {
     return (f.b16 & static_cast<quint16>(0x7fff)) == 0;
 }
@@ -115,6 +115,7 @@ inline int qIntCast(qfloat16 f) Q_DECL_NOTHROW
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wc99-extensions")
+QT_WARNING_DISABLE_GCC("-Wold-style-cast")
 inline qfloat16::qfloat16(float f) Q_DECL_NOTHROW
 {
 #if defined(QT_COMPILER_SUPPORTS_F16C) && (defined(__F16C__) || defined(__AVX2__))
@@ -246,7 +247,7 @@ QT_WARNING_POP
 /*!
   \internal
 */
-inline Q_REQUIRED_RESULT bool qFuzzyIsNull(qfloat16 f) Q_DECL_NOTHROW
+Q_REQUIRED_RESULT inline bool qFuzzyIsNull(qfloat16 f) Q_DECL_NOTHROW
 {
     return qAbs(static_cast<float>(f)) <= 0.001f;
 }

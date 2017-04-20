@@ -3302,6 +3302,9 @@ void QOpenGLTexture::setData(int mipLevel, int layer, CubeMapFace cubeFace,
 /*!
     \since 5.9
     \overload
+
+    Parameter \a layerCount is the number of layers in a texture array
+    that are being uploaded/populated by this call.
 */
 void QOpenGLTexture::setData(int mipLevel, int layer, int layerCount, QOpenGLTexture::CubeMapFace cubeFace, QOpenGLTexture::PixelFormat sourceFormat, QOpenGLTexture::PixelType sourceType, const void *data, const QOpenGLPixelTransferOptions * const options)
 {
@@ -3476,6 +3479,9 @@ void QOpenGLTexture::setCompressedData(int mipLevel, int layer, CubeMapFace cube
 /*!
     \since 5.9
     \overload
+
+    Parameter \a layerCount is the number of layers in a texture array
+    that are being uploaded/populated by this call.
 */
 void QOpenGLTexture::setCompressedData(int mipLevel, int layer, int layerCount, QOpenGLTexture::CubeMapFace cubeFace, int dataSize, const void *data, const QOpenGLPixelTransferOptions * const options)
 {

@@ -1292,9 +1292,9 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     if (fi.isDir())
                        cmd = "-$(INSTALL_DIR)";
                     else if (is_target || fi.isExecutable())
-                       cmd = "-$(INSTALL_PROGRAM)";
+                       cmd = "-$(QINSTALL_PROGRAM)";
                     else
-                       cmd = "-$(INSTALL_FILE)";
+                       cmd = "-$(QINSTALL_FILE)";
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
                     inst << cmd;
                     if (!project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
@@ -1318,9 +1318,9 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                             dst_file += filestr;
                         }
                     } else if (installConfigValues.contains("executable")) {
-                        cmd = QLatin1String("-$(INSTALL_PROGRAM)");
+                        cmd = QLatin1String("-$(QINSTALL_PROGRAM)");
                     } else {
-                        cmd = QLatin1String("-$(INSTALL_FILE)");
+                        cmd = QLatin1String("-$(QINSTALL_FILE)");
                     }
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
                     inst << cmd;
@@ -1336,7 +1336,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                             dst_file += Option::dir_sep;
                         dst_file += fi.fileName();
                     }
-                    QString cmd = QString(fi.isDir() ? "-$(INSTALL_DIR)" : "-$(INSTALL_FILE)") + " " +
+                    QString cmd = QString(fi.isDir() ? "-$(INSTALL_DIR)" : "-$(QINSTALL_FILE)") + " " +
                                   escapeFilePath(dirstr + file) + " " + escapeFilePath(dst_file);
                     inst << cmd;
                     if (!project->isActiveConfig("debug_info") && !project->isActiveConfig("nostrip") &&
@@ -2248,6 +2248,8 @@ MakefileGenerator::writeDefaultVariables(QTextStream &t)
     t << "INSTALL_FILE  = " << var("QMAKE_INSTALL_FILE") << endl;
     t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << endl;
     t << "INSTALL_DIR   = " << var("QMAKE_INSTALL_DIR") << endl;
+    t << "QINSTALL_FILE = " << var("QMAKE_QMAKE") << " -install qinstall file" << endl;
+    t << "QINSTALL_PROGRAM = " << var("QMAKE_QMAKE") << " -install qinstall program" << endl;
     t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
     t << "SYMLINK       = " << var("QMAKE_SYMBOLIC_LINK") << endl;
     t << "DEL_DIR       = " << var("QMAKE_DEL_DIR") << endl;
@@ -3310,19 +3312,19 @@ MakefileGenerator::writePkgConfigFile()
     }
     t << shellQuote(pkgConfiglibName) << " \n";
 
-    ProStringList libs;
-    if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS")) {
-        libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
-    } else {
-        libs << "QMAKE_LIBS"; //obvious one
+    if (project->isActiveConfig("staticlib")) {
+        ProStringList libs;
+        if (!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
+            libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
+        else
+            libs << "QMAKE_LIBS"; //obvious one
+        libs << "QMAKE_LIBS_PRIVATE";
+        libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
+        t << "Libs.private:";
+        for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
+            t << ' ' << fixLibFlags((*it).toKey()).join(' ');
+        t << endl;
     }
-    libs << "QMAKE_LIBS_PRIVATE";
-    libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
-    t << "Libs.private: ";
-    for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it) {
-        t << fixLibFlags((*it).toKey()).join(' ') << ' ';
-    }
-    t << endl;
 
     // flags
     // ### too many

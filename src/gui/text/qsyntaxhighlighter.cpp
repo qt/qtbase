@@ -292,7 +292,7 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
 /*!
     Constructs a QSyntaxHighlighter with the given \a parent.
 
-    If the parent is a QTextEdit, it installs the syntaxhighlighter on the
+    If the parent is a QTextEdit, it installs the syntax highlighter on the
     parents document. The specified QTextEdit also becomes the owner of
     the QSyntaxHighlighter.
 */

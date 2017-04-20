@@ -1071,7 +1071,7 @@ QImage::operator QVariant() const
 
     Nothing is done if there is just a single reference.
 
-    \sa copy(), isDetached(), {Implicit Data Sharing}
+    \sa copy(), {QImage::isDetached()}{isDetached()}, {Implicit Data Sharing}
 */
 void QImage::detach()
 {
@@ -2127,7 +2127,7 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
 /*!
     \since 5.9
 
-    Changes the format of the image without changing the data. Only
+    Changes the \a format of the image without changing the data. Only
     works between formats of the same depth.
 
     Returns \c true if successful.
@@ -4671,7 +4671,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     }
 
     // initizialize the data
-    if (d->format == QImage::Format_Indexed8) {
+    if (target_format == QImage::Format_Indexed8) {
         if (dImage.d->colortable.size() < 256) {
             // colors are left in the color table, so pick that one as transparent
             dImage.d->colortable.append(0x0);

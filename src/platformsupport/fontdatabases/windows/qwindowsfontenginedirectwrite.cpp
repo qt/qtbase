@@ -355,6 +355,13 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
         m_faceId.filename = QFile::encodeName(filenameFromFontFile(fontFile));
         fontFile->Release();
     }
+
+    QByteArray table = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
+    const int advanceWidthMaxLocation = 10;
+    if (table.size() >= advanceWidthMaxLocation + int(sizeof(quint16))) {
+        quint16 advanceWidthMax = qFromBigEndian<quint16>(table.constData() + advanceWidthMaxLocation);
+        m_maxAdvanceWidth = DESIGN_TO_LOGICAL(advanceWidthMax);
+    }
 }
 
 QFixed QWindowsFontEngineDirectWrite::underlinePosition() const
@@ -607,8 +614,9 @@ QFixed QWindowsFontEngineDirectWrite::xHeight() const
 
 qreal QWindowsFontEngineDirectWrite::maxCharWidth() const
 {
-    // ###
-    return 0;
+    return fontDef.styleStrategy & QFont::ForceIntegerMetrics
+           ? m_maxAdvanceWidth.round().toReal()
+           : m_maxAdvanceWidth.toReal();
 }
 
 QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)

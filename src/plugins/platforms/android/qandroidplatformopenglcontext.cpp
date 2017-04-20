@@ -69,10 +69,7 @@ void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
 
 bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    bool ret = QEGLPlatformContext::makeCurrent(surface);
-    QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(context());
-
-    return ret;
+    return QEGLPlatformContext::makeCurrent(surface);
 }
 
 EGLSurface QAndroidPlatformOpenGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)

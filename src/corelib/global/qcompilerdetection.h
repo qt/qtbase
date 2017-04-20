@@ -172,7 +172,11 @@
 /* Clang also masquerades as GCC */
 #    if defined(__apple_build_version__)
 #      /* http://en.wikipedia.org/wiki/Xcode#Toolchain_Versions */
-#      if __apple_build_version__ >= 7000053
+#      if __apple_build_version__ >= 8020041
+#        define Q_CC_CLANG 309
+#      elif __apple_build_version__ >= 8000038
+#        define Q_CC_CLANG 308
+#      elif __apple_build_version__ >= 7000053
 #        define Q_CC_CLANG 306
 #      elif __apple_build_version__ >= 6000051
 #        define Q_CC_CLANG 305
@@ -628,10 +632,7 @@
 #      define Q_COMPILER_ALIGNAS
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
-#      ifndef Q_OS_OSX
-//       C++11 thread_local is broken on OS X (Clang doesn't support it either)
-#        define Q_COMPILER_THREAD_LOCAL
-#      endif
+#      define Q_COMPILER_THREAD_LOCAL
 #      define Q_COMPILER_UDL
 #    endif
 #    ifdef _MSC_VER
@@ -993,6 +994,10 @@
 #  endif /* __cplusplus */
 #endif /* Q_CC_MSVC */
 
+#ifdef Q_COMPILER_UNICODE_STRINGS
+#  define Q_STDLIB_UNICODE_STRINGS
+#endif
+
 #ifdef __cplusplus
 # include <utility>
 # if defined(Q_OS_QNX)
@@ -1015,8 +1020,9 @@
 #    undef Q_COMPILER_INITIALIZER_LISTS
 #    undef Q_COMPILER_RVALUE_REFS
 #    undef Q_COMPILER_REF_QUALIFIERS
-#    undef Q_COMPILER_UNICODE_STRINGS
 #    undef Q_COMPILER_NOEXCEPT
+// Disable C++11 library features:
+#    undef Q_STDLIB_UNICODE_STRINGS
 #   endif // !_HAS_CPP0X
 #   if !defined(_HAS_NULLPTR_T) || !_HAS_NULLPTR_T
 #    undef Q_COMPILER_NULLPTR

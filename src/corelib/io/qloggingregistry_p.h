@@ -93,7 +93,7 @@ Q_DECLARE_TYPEINFO(QLoggingRule, Q_MOVABLE_TYPE);
 class Q_AUTOTEST_EXPORT QLoggingSettingsParser
 {
 public:
-    void setSection(const QString &section) { _section = section; }
+    void setImplicitRulesSection(bool inRulesSection) { m_inRulesSection = inRulesSection; }
 
     void setContent(const QString &content);
     void setContent(QTextStream &stream);
@@ -101,7 +101,10 @@ public:
     QVector<QLoggingRule> rules() const { return _rules; }
 
 private:
-    QString _section;
+    void parseNextLine(QStringRef line);
+
+private:
+    bool m_inRulesSection = false;
     QVector<QLoggingRule> _rules;
 };
 

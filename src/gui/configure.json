@@ -243,7 +243,7 @@
             ]
         },
         "xcb_syslibs": {
-            "label": "XCB (secondary)",
+            "label": "XCB (extensions)",
             "test": "qpa/xcb-syslibs",
             "sources": [
                 { "type": "pkgConfig",
@@ -737,11 +737,11 @@
             "output": [ "privateFeature" ]
         },
         "system-xcb": {
-            "label": "Using system provided XCB libraries",
-            "enable": "input.xcb == 'system' || input.xcb == 'yes'",
-            "disable": "input.xcb == 'qt' || input.xcb == 'no'",
+            "label": "Using system-provided XCB libraries",
+            "enable": "input.xcb == 'system'",
+            "disable": "input.xcb == 'qt'",
             "autoDetect": "!config.darwin",
-            "condition": "libs.xcb && libs.xcb_syslibs",
+            "condition": "features.xcb && libs.xcb_syslibs",
             "output": [ "privateFeature" ]
         },
         "x11-prefix": {
@@ -757,8 +757,14 @@
         },
         "xcb-render": {
             "label": "XCB render",
-            "emitIf": "features.system-xcb",
-            "condition": "libs.xcb_render",
+            "emitIf": "features.xcb",
+            "condition": "!features.system-xcb || libs.xcb_render",
+            "output": [ "privateFeature" ]
+        },
+        "xkb": {
+            "label": "XCB XKB",
+            "emitIf": "features.xcb",
+            "condition": "!features.system-xcb || libs.xcb_xkb",
             "output": [ "privateFeature" ]
         },
         "xcb-xlib": {
@@ -775,6 +781,7 @@
         },
         "xinput2": {
             "label": "Xinput2",
+            "emitIf": "features.xcb",
             "condition": "libs.xinput2",
             "output": [ "privateFeature" ]
         },
@@ -789,11 +796,6 @@
             "enable": "input.xkbcommon == 'system'",
             "disable": "input.xkbcommon == 'qt' || input.xkbcommon == 'no'",
             "condition": "libs.xkbcommon_x11",
-            "output": [ "privateFeature" ]
-        },
-        "xkb": {
-            "label": "XCB XKB",
-            "condition": "features.system-xcb && libs.xcb_xkb",
             "output": [ "privateFeature" ]
         },
         "xkb-config-root": {

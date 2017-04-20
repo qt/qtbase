@@ -533,6 +533,17 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
         return nullptr;
 #endif
     }
+
+    // QTBUG-59957: clear button should be the leftmost action.
+    if (!before && !(flags & SideWidgetClearButton) && position == QLineEdit::TrailingPosition) {
+        for (const SideWidgetEntry &e : trailingSideWidgets) {
+            if (e.flags & SideWidgetClearButton) {
+                before = e.action;
+                break;
+            }
+        }
+    }
+
     // If there is a 'before' action, it takes preference
 
     // There's a bug in GHS compiler that causes internal error on the following code.

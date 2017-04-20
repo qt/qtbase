@@ -1006,14 +1006,22 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         if (project->isActiveConfig("icc_pch_style")) {
             // icc style
             ProString pchBaseName = project->first("QMAKE_ORIG_TARGET");
-            ProString pchOutput;
-            if(!project->isEmpty("PRECOMPILED_DIR"))
-                pchOutput = project->first("PRECOMPILED_DIR");
-            pchOutput += pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT");
-            ProString sourceFile = pchOutput + Option::cpp_ext.first();
-            ProString objectFile = createObjectList(ProStringList(sourceFile)).first();
+            ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");
+            if (pchArchs.isEmpty())
+                pchArchs << ProString(); // normal single-arch PCH
+            for (const ProString &arch : qAsConst(pchArchs)) {
+                ProString pchOutput;
+                if (!project->isEmpty("PRECOMPILED_DIR"))
+                    pchOutput = project->first("PRECOMPILED_DIR");
+                pchOutput += pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT");
+                if (!arch.isEmpty())
+                    pchOutput = ProString(pchOutput.toQString().replace(
+                        QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString()));
 
-            precomp_files << precomph_out_dir << sourceFile << objectFile;
+                ProString sourceFile = pchOutput + Option::cpp_ext.first();
+                ProString objectFile = createObjectList(ProStringList(sourceFile)).first();
+                precomp_files << precomph_out_dir << sourceFile << objectFile;
+            }
         } else {
             // gcc style (including clang_pch_style)
             precomph_out_dir += Option::dir_sep;
@@ -1115,19 +1123,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             if (!project->isActiveConfig("clang_pch_style"))
                 pchOutput += project->first("QMAKE_PCH_OUTPUT_EXT");
 
-            if (project->isActiveConfig("icc_pch_style")) {
-                // icc style
-                QString sourceFile = pchOutput + Option::cpp_ext.first();
-                QString sourceFile_f = escapeFilePath(sourceFile);
-                QString objectFile = createObjectList(ProStringList(sourceFile)).first().toQString();
-                t << escapeDependencyPath(pchOutput) << ": " << escapeDependencyPath(pchInput) << ' '
-                  << escapeDependencyPaths(findDependencies(pchInput)).join(" \\\n\t\t")
-                  << "\n\techo \"// Automatically generated, do not modify\" > " << sourceFile_f
-                  << "\n\trm -f " << escapeFilePath(pchOutput);
-
-                pchFlags.replace(QLatin1String("${QMAKE_PCH_TEMP_SOURCE}"), sourceFile_f)
-                        .replace(QLatin1String("${QMAKE_PCH_TEMP_OBJECT}"), escapeFilePath(objectFile));
-            } else {
+            if (!project->isActiveConfig("icc_pch_style")) {
                 // gcc style (including clang_pch_style)
                 ProString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
                 ProString header_suffix = project->isActiveConfig("clang_pch_style")
@@ -1148,18 +1144,28 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (!arch.isEmpty())
                     pchArchOutput.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
 
-                if (!project->isActiveConfig("icc_pch_style")) {
-                    const auto pchFilePath_d = escapeDependencyPath(pchArchOutput);
-                    if (!arch.isEmpty()) {
-                        t << pchFilePath_d << ": " << "EXPORT_ARCH_ARGS = -arch " << arch << "\n\n";
-                        t << pchFilePath_d << ": "
-                          << "EXPORT_QMAKE_XARCH_CFLAGS = $(EXPORT_QMAKE_XARCH_CFLAGS_" << arch << ")" << "\n\n";
-                        t << pchFilePath_d << ": "
-                          << "EXPORT_QMAKE_XARCH_LFLAGS = $(EXPORT_QMAKE_XARCH_LFLAGS_" << arch << ")" << "\n\n";
-                    }
-                    t << pchFilePath_d << ": " << escapeDependencyPath(pchInput) << ' '
-                      << escapeDependencyPaths(findDependencies(pchInput)).join(" \\\n\t\t")
-                      << "\n\t" << mkdir_p_asstring(pchOutputDir);
+                const auto pchFilePath_d = escapeDependencyPath(pchArchOutput);
+                if (!arch.isEmpty()) {
+                    t << pchFilePath_d << ": " << "EXPORT_ARCH_ARGS = -arch " << arch << "\n\n";
+                    t << pchFilePath_d << ": "
+                      << "EXPORT_QMAKE_XARCH_CFLAGS = $(EXPORT_QMAKE_XARCH_CFLAGS_" << arch << ")" << "\n\n";
+                    t << pchFilePath_d << ": "
+                      << "EXPORT_QMAKE_XARCH_LFLAGS = $(EXPORT_QMAKE_XARCH_LFLAGS_" << arch << ")" << "\n\n";
+                }
+                t << pchFilePath_d << ": " << escapeDependencyPath(pchInput) << ' '
+                  << escapeDependencyPaths(findDependencies(pchInput)).join(" \\\n\t\t");
+                if (project->isActiveConfig("icc_pch_style")) {
+                    QString sourceFile = pchArchOutput + Option::cpp_ext.first();
+                    QString sourceFile_f = escapeFilePath(sourceFile);
+                    QString objectFile = createObjectList(ProStringList(sourceFile)).first().toQString();
+
+                    pchFlags.replace(QLatin1String("${QMAKE_PCH_TEMP_SOURCE}"), sourceFile_f)
+                            .replace(QLatin1String("${QMAKE_PCH_TEMP_OBJECT}"), escapeFilePath(objectFile));
+
+                    t << "\n\techo \"// Automatically generated, do not modify\" > " << sourceFile_f
+                      << "\n\trm -f " << escapeFilePath(pchArchOutput);
+                } else {
+                    t << "\n\t" << mkdir_p_asstring(pchOutputDir);
                 }
 
                 auto pchArchFlags = pchFlags;

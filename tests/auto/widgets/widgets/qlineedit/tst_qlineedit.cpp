@@ -310,6 +310,7 @@ private slots:
 
     void shortcutOverrideOnReadonlyLineEdit_data();
     void shortcutOverrideOnReadonlyLineEdit();
+    void QTBUG59957_clearButtonLeftmostAction();
 
 protected slots:
     void editingFinished();
@@ -4610,6 +4611,32 @@ void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit()
 
     const int activationCount = shouldBeHandledByQLineEdit ? 0 : 1;
     QCOMPARE(spy.count(), activationCount);
+}
+
+void tst_QLineEdit::QTBUG59957_clearButtonLeftmostAction()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("This test requires a developer build");
+#else
+    QLineEdit lineEdit;
+    lineEdit.setClearButtonEnabled(true);
+
+    auto clearButton = lineEdit.findChild<QLineEditIconButton *>();
+    QVERIFY(clearButton);
+
+    QPixmap pixmap(16, 16);
+    lineEdit.addAction(QIcon(pixmap), QLineEdit::TrailingPosition);
+    lineEdit.addAction(QIcon(pixmap), QLineEdit::TrailingPosition);
+
+    lineEdit.show();
+
+    const auto buttons = lineEdit.findChildren<QLineEditIconButton *>();
+    for (const auto button : buttons) {
+        if (button == clearButton)
+            continue;
+        QVERIFY(clearButton->x() < button->x());
+    }
+#endif // QT_BUILD_INTERNAL
 }
 
 QTEST_MAIN(tst_QLineEdit)

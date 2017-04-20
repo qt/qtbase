@@ -1317,6 +1317,10 @@ void QWindow::setTransientParent(QWindow *parent)
         qWarning() << parent << "must be a top level window.";
         return;
     }
+    if (parent == this) {
+        qWarning() << "transient parent" << parent << "can not be same as window";
+        return;
+    }
 
     d->transientParent = parent;
 

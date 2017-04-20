@@ -4090,6 +4090,20 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         }
         dbg << ')';
         break;
+    case QEvent::ScrollPrepare: {
+        const QScrollPrepareEvent *se = static_cast<const QScrollPrepareEvent *>(e);
+        dbg << "QScrollPrepareEvent(viewportSize=" << se->viewportSize()
+            << ", contentPosRange=" << se->contentPosRange()
+            << ", contentPos=" << se->contentPos() << ')';
+    }
+        break;
+    case QEvent::Scroll: {
+        const QScrollEvent *se = static_cast<const QScrollEvent *>(e);
+        dbg << "QScrollEvent(contentPos=" << se->contentPos()
+            << ", overshootDistance=" << se->overshootDistance()
+            << ", scrollState=" << se->scrollState() << ')';
+    }
+        break;
     default:
         dbg << eventClassName(type) << '(';
         QtDebugUtils::formatQEnum(dbg, type);

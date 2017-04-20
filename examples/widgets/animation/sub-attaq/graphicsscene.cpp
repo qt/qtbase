@@ -111,14 +111,15 @@ GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
              if (reader.name() == "submarine") {
                  SubmarineDescription desc;
                  desc.name = reader.attributes().value("name").toString();
-                 desc.points = reader.attributes().value("points").toString().toInt();
-                 desc.type = reader.attributes().value("type").toString().toInt();
+                 desc.points = reader.attributes().value("points").toInt();
+                 desc.type = reader.attributes().value("type").toInt();
                  submarinesData.append(desc);
              } else if (reader.name() == "level") {
-                 currentLevel.id = reader.attributes().value("id").toString().toInt();
+                 currentLevel.id = reader.attributes().value("id").toInt();
                  currentLevel.name = reader.attributes().value("name").toString();
              } else if (reader.name() == "subinstance") {
-                 currentLevel.submarines.append(qMakePair(reader.attributes().value("type").toString().toInt(), reader.attributes().value("nb").toString().toInt()));
+                 currentLevel.submarines.append(qMakePair(reader.attributes().value("type").toInt(),
+                                                          reader.attributes().value("nb").toInt()));
              }
          } else if (reader.tokenType() == QXmlStreamReader::EndElement) {
             if (reader.name() == "level") {

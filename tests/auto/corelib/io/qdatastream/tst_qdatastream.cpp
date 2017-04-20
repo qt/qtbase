@@ -77,6 +77,9 @@ private slots:
     void stream_QDateTime_data();
     void stream_QDateTime();
 
+    void stream_nullptr_t_data();
+    void stream_nullptr_t();
+
     void stream_QFont_data();
     void stream_QFont();
 
@@ -187,6 +190,7 @@ private:
     void writeQBrush(QDataStream *s);
     void writeQColor(QDataStream *s);
     void writeQByteArray(QDataStream *s);
+    void writenullptr_t(QDataStream *s);
 #ifndef QT_NO_CURSOR
     void writeQCursor(QDataStream *s);
 #endif
@@ -216,6 +220,7 @@ private:
     void readQBrush(QDataStream *s);
     void readQColor(QDataStream *s);
     void readQByteArray(QDataStream *s);
+    void readnullptr_t(QDataStream *s);
 #ifndef QT_NO_CURSOR
     void readQCursor(QDataStream *s);
 #endif
@@ -1008,12 +1013,24 @@ void tst_QDataStream::writeQByteArray(QDataStream *s)
     *s << d4;
 }
 
+void tst_QDataStream::writenullptr_t(QDataStream *s)
+{
+    *s << nullptr;
+}
+
 void tst_QDataStream::readQByteArray(QDataStream *s)
 {
     QByteArray test(qByteArrayData(dataIndex(QTest::currentDataTag())));
     QByteArray d4;
     *s >> d4;
     QCOMPARE(d4, test);
+}
+
+void tst_QDataStream::readnullptr_t(QDataStream *s)
+{
+    std::nullptr_t ptr;
+    *s >> ptr;
+    QCOMPARE(ptr, nullptr);
 }
 
 // ************************************
@@ -1261,6 +1278,17 @@ void tst_QDataStream::stream_QDateTime_data()
 void tst_QDataStream::stream_QDateTime()
 {
     STREAM_IMPL(QDateTime);
+}
+
+void tst_QDataStream::stream_nullptr_t_data()
+{
+    stream_data(1); // there's only one value possible
+}
+
+void tst_QDataStream::stream_nullptr_t()
+{
+    using namespace std;
+    STREAM_IMPL(nullptr_t);
 }
 
 void tst_QDataStream::writeQDateTime(QDataStream *s)

@@ -1350,6 +1350,7 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QJsonDocument:
         return false;
     case QMetaType::Nullptr:
+        stream << *static_cast<const std::nullptr_t *>(data);
         return true;
     case QMetaType::Long:
         stream << qlonglong(*static_cast<const long *>(data));
@@ -1573,6 +1574,7 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QJsonDocument:
         return false;
     case QMetaType::Nullptr:
+        stream >> *static_cast<std::nullptr_t *>(data);
         return true;
     case QMetaType::Long: {
         qlonglong l;

@@ -177,6 +177,43 @@ CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
     return transform;
 }
 
+// Keeps font data alive until engine is disposed
+class QCoreTextRawFontEngine : public QCoreTextFontEngine
+{
+public:
+    QCoreTextRawFontEngine(CGFontRef font, const QFontDef &def, const QByteArray &fontData)
+        : QCoreTextFontEngine(font, def)
+        , m_fontData(fontData)
+    {}
+    QByteArray m_fontData;
+};
+
+QCoreTextFontEngine *QCoreTextFontEngine::create(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
+{
+    Q_UNUSED(hintingPreference);
+
+    QCFType<CFDataRef> fontDataReference = fontData.toRawCFData();
+    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithCFData(fontDataReference);
+
+    // Note: CTFontCreateWithGraphicsFont (which we call from the  QCoreTextFontEngine
+    // constructor) has a bug causing it to retain the CGFontRef but never release it.
+    // The result is that we are leaking the CGFont, CGDataProvider, and CGData, but
+    // as the CGData is created from the raw QByteArray data, which we deref in the
+    // subclass above during destruction, we're at least not leaking the font data,
+    // (unless CoreText copies it internally). http://stackoverflow.com/questions/40805382/
+    QCFType<CGFontRef> cgFont = CGFontCreateWithDataProvider(dataProvider);
+
+    if (!cgFont) {
+        qWarning("QCoreTextFontEngine::create: CGFontCreateWithDataProvider failed");
+        return nullptr;
+    }
+
+    QFontDef def;
+    def.pixelSize = pixelSize;
+    def.pointSize = pixelSize * 72.0 / qt_defaultDpi();
+    return new QCoreTextRawFontEngine(cgFont, def, fontData);
+}
+
 QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
     : QFontEngine(Mac)
 {

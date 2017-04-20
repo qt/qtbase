@@ -143,6 +143,7 @@ private:
     QFixed m_descent;
     QFixed m_xHeight;
     QFixed m_lineGap;
+    QFixed m_maxAdvanceWidth;
     FaceId m_faceId;
     QString m_uniqueFamilyName;
 };

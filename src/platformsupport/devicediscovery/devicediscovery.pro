@@ -6,7 +6,6 @@ QT_FOR_CONFIG += gui-private
 CONFIG += static internal_module
 
 DEFINES += QT_NO_CAST_FROM_ASCII
-PRECOMPILED_HEADER = ../../corelib/global/qt_pch.h
 
 HEADERS += qdevicediscovery_p.h
 

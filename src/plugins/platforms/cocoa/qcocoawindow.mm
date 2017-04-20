@@ -491,7 +491,9 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw, WId nativeHandle)
                                                      "QT_MAC_WANTS_LAYER");
         [m_view setWantsLayer:enable];
     }
-    setGeometry(tlw->geometry());
+
+    setGeometry(initialGeometry(window(), windowGeometry(), defaultWindowWidth, defaultWindowHeight));
+
     recreateWindowIfNeeded();
     tlw->setGeometry(geometry());
     if (tlw->isTopLevel())
@@ -1721,7 +1723,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool sh
 {
     QMacAutoReleasePool pool;
 
-    QRect rect = initialGeometry(window(), windowGeometry(), defaultWindowWidth, defaultWindowHeight);
+    QRect rect = geometry();
 
     QScreen *targetScreen = nullptr;
     for (QScreen *screen : QGuiApplication::screens()) {

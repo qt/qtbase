@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2017 Intel Corporation.
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -101,6 +102,7 @@ private slots:
 
     void mkdirRmdir_data();
     void mkdirRmdir();
+    void mkdirOnSymlink();
 
     void makedirReturnCode();
 
@@ -385,6 +387,56 @@ void tst_QDir::mkdirRmdir()
     //make sure it really doesn't exist (ie that rmdir returns the right value)
     fi.refresh();
     QVERIFY(!fi.exists());
+}
+
+void tst_QDir::mkdirOnSymlink()
+{
+#ifndef Q_OS_UNIX
+    QSKIP("Test only valid on an OS that supports symlinks");
+#else
+    // Create the structure:
+    //    .
+    //    ├── symlink -> two/three
+    //    └── two
+    //        └── three
+    // so when we mkdir("symlink/../four/five"), we end up with:
+    //    .
+    //    ├── symlink -> two/three
+    //    └── two
+    //        ├── four
+    //        │   └── five
+    //        └── three
+
+    QDir dir;
+    struct Clean {
+        QDir &dir;
+        Clean(QDir &dir) : dir(dir) {}
+        ~Clean() { doClean(); }
+        void doClean() {
+            dir.rmpath("two/three");
+            dir.rmpath("two/four/five");
+            // in case the test fails, don't leave junk behind
+            dir.rmpath("four/five");
+            QFile::remove("symlink");
+        }
+    };
+    Clean clean(dir);
+    clean.doClean();
+
+    // create our structure:
+    dir.mkpath("two/three");
+    ::symlink("two/three", "symlink");
+
+    // try it:
+    QString path = "symlink/../four/five";
+    QVERIFY(dir.mkpath(path));
+    QFileInfo fi(path);
+    QVERIFY2(fi.exists() && fi.isDir(), msgDoesNotExist(path).constData());
+
+    path = "two/four/five";
+    fi.setFile(path);
+    QVERIFY2(fi.exists() && fi.isDir(), msgDoesNotExist(path).constData());
+#endif
 }
 
 void tst_QDir::makedirReturnCode()

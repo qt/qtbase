@@ -188,11 +188,7 @@ typedef ptrdiff_t  QT_FT_PtrDist;
 #include <stdlib.h>
 #include <stdio.h>
 
-  /* This macro is used to indicate that a function parameter is unused. */
-  /* Its purpose is simply to reduce compiler warnings.  Note also that  */
-  /* simply defining it as `(void)x' doesn't avoid warnings with certain */
-  /* ANSI compilers (e.g. LCC).                                          */
-#define QT_FT_UNUSED( x )  (x) = (x)
+#define QT_FT_UNUSED( x )  (void) x
 
 #define QT_FT_TRACE5( x )  do { } while ( 0 )     /* nothing */
 #define QT_FT_TRACE7( x )  do { } while ( 0 )     /* nothing */

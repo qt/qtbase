@@ -641,21 +641,11 @@ void QLayout::childEvent(QChildEvent *e)
     if (!d->enabled)
         return;
 
-    if (e->type() == QEvent::ChildRemoved) {
-        QChildEvent *c = (QChildEvent*)e;
-        int i = 0;
+    if (e->type() != QEvent::ChildRemoved)
+        return;
 
-        QLayoutItem *item;
-        while ((item = itemAt(i))) {
-            if (item == static_cast<QLayout*>(c->child())) {
-                takeAt(i);
-                invalidate();
-                break;
-            } else {
-                ++i;
-            }
-        }
-    }
+    if (QLayout *childLayout = qobject_cast<QLayout *>(e->child()))
+        removeItem(childLayout);
 }
 
 /*!
@@ -766,13 +756,10 @@ QSize QLayout::totalMaximumSize() const
 QLayout::~QLayout()
 {
     Q_D(QLayout);
-    /*
-      This function may be called during the QObject destructor,
-      when the parent no longer is a QWidget.
-    */
-    if (d->topLevel && parent() && parent()->isWidgetType() &&
-         ((QWidget*)parent())->layout() == this)
-        ((QWidget*)parent())->d_func()->layout = 0;
+    if (d->topLevel && parent() && parent()->isWidgetType() && parentWidget()->layout() == this)
+        parentWidget()->d_func()->layout = 0;
+    else if (QLayout *parentLayout = qobject_cast<QLayout *>(parent()))
+        parentLayout->removeItem(this);
 }
 
 

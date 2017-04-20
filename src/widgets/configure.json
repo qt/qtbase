@@ -19,9 +19,9 @@
 
     "libraries": {
         "gtk3": {
-            "label": "GTK+",
+            "label": "GTK+ >= 3.6",
             "sources": [
-                { "type": "pkgConfig", "args": "gtk+-3.0" }
+                { "type": "pkgConfig", "args": "gtk+-3.0 >= 3.6" }
             ]
         }
     },

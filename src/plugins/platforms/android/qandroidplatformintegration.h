@@ -68,6 +68,9 @@ public:
     void *nativeResourceForIntegration(const QByteArray &resource) override;
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
     std::shared_ptr<AndroidStyle> m_androidStyle;
+
+protected:
+    void customEvent(QEvent *event) override;
 };
 
 class QAndroidPlatformIntegration : public QPlatformIntegration
@@ -125,7 +128,6 @@ public:
 
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
-    static void setDefaultApplicationState(Qt::ApplicationState applicationState) { m_defaultApplicationState = applicationState; }
 
 #if QT_CONFIG(vulkan)
     QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const override;
@@ -148,9 +150,6 @@ private:
 
     static Qt::ScreenOrientation m_orientation;
     static Qt::ScreenOrientation m_nativeOrientation;
-
-    static Qt::ApplicationState m_defaultApplicationState;
-
     static bool m_showPasswordEnabled;
 
     QPlatformFontDatabase *m_androidFDB;

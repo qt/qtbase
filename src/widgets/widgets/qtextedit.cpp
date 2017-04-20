@@ -2578,6 +2578,8 @@ void QTextEdit::setText(const QString &text)
     if (format == Qt::RichText)
         setHtml(text);
     else
+#else
+    Q_UNUSED(format);
 #endif
         setPlainText(text);
 }

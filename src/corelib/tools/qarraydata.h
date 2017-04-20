@@ -112,12 +112,10 @@ struct Q_CORE_EXPORT QArrayData
         return result;
     }
 
-    static QArrayData *allocate(size_t objectSize, size_t alignment,
-            size_t capacity, AllocationOptions options = Default)
-        Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-    static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
-            size_t newCapacity, AllocationOptions newOptions = Default)
-        Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT static QArrayData *allocate(size_t objectSize, size_t alignment,
+            size_t capacity, AllocationOptions options = Default) Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
+            size_t newCapacity, AllocationOptions newOptions = Default) Q_DECL_NOTHROW;
     static void deallocate(QArrayData *data, size_t objectSize,
             size_t alignment) Q_DECL_NOTHROW;
 
@@ -217,8 +215,8 @@ struct QTypedArrayData
 
     class AlignmentDummy { QArrayData header; T data; };
 
-    static QTypedArrayData *allocate(size_t capacity,
-            AllocationOptions options = Default) Q_REQUIRED_RESULT
+    Q_REQUIRED_RESULT static QTypedArrayData *allocate(size_t capacity,
+            AllocationOptions options = Default)
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(QArrayData::allocate(sizeof(T),

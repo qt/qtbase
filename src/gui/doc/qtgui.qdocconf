@@ -39,7 +39,8 @@ depends += \
     qtquick \
     qtwidgets \
     qtdoc \
-    qmake
+    qmake \
+    qttestlib
 
 headerdirs  += ..
 

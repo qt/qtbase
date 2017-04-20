@@ -286,6 +286,7 @@ void tst_qmake::install_files()
     QVERIFY( test_compiler.make( workDir, "install" ));
     QVERIFY( test_compiler.exists( workDir + "/dist", "foo", Exe, "1.0.0" ));
     QVERIFY( test_compiler.exists( workDir + "/dist", "test.txt", Plain, "1.0.0" ));
+    QCOMPARE(QFileInfo(workDir + "/test.txt").lastModified(), QFileInfo(workDir + "/dist/test.txt").lastModified());
     QVERIFY( test_compiler.make( workDir, "uninstall" ));
     QVERIFY( test_compiler.makeDistClean( workDir ));
 

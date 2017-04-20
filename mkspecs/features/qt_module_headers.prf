@@ -158,12 +158,18 @@ MODULE_MASTER_DEPS_HEADER = $$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME/$${MOD
 }
 SYNCQT.HEADER_FILES += $$MODULE_MASTER_DEPS_HEADER
 
-# Automatically enable precompiled headers for Qt modules,
-# except for Gcc/Windows: Larger precompiled headers crash cc1plus.exe
-# (e.g. with i686-4.8.2-release-posix-dwarf-rt_v3-rev3)
-!if(gcc:equals(QMAKE_HOST.os, Windows)):!equals(TEMPLATE, aux) {
-    isEmpty(PRECOMPILED_HEADER): PRECOMPILED_HEADER = $$MODULE_MASTER_DEPS_HEADER
+# Automatically enable precompiled headers for Qt modules with more than 2 sources
+combined_SOURCES = $$SOURCES $$OBJECTIVE_SOURCES
+count(combined_SOURCES, 2, >) {
+    # except for Gcc/Windows: Larger precompiled headers crash cc1plus.exe
+    # (e.g. with i686-4.8.2-release-posix-dwarf-rt_v3-rev3)
+    !if(gcc:equals(QMAKE_HOST.os, Windows)):!equals(TEMPLATE, aux) {
+        !defined(PRECOMPILED_HEADER, "var"): PRECOMPILED_HEADER = $$MODULE_MASTER_DEPS_HEADER
+    }
+} else {
+    CONFIG -= precompile_header
 }
+unset(combined_SOURCES)
 
 headersclean:!internal_module {
     # Make sure that the header compiles with our strict options

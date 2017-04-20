@@ -101,22 +101,26 @@ QT_BEGIN_NAMESPACE
 struct KeyInfo {
     KeyInfo()
         : virtualKey(0)
+        , isAutoRepeat(false)
     {
     }
 
     KeyInfo(const QString &text, quint32 virtualKey)
         : text(text)
         , virtualKey(virtualKey)
+        , isAutoRepeat(false)
     {
     }
 
     KeyInfo(quint32 virtualKey)
         : virtualKey(virtualKey)
+        , isAutoRepeat(false)
     {
     }
 
     QString text;
     quint32 virtualKey;
+    bool isAutoRepeat;
 };
 
 static inline Qt::ScreenOrientations qtOrientationsFromNative(DisplayOrientations native)
@@ -681,21 +685,26 @@ Qt::KeyboardModifiers QWinRTScreen::keyboardModifiers() const
 
     Qt::KeyboardModifiers mods;
     CoreVirtualKeyStates mod;
-    d->coreWindow->GetAsyncKeyState(VirtualKey_Shift, &mod);
-    if (mod == CoreVirtualKeyStates_Down)
+    HRESULT hr = d->coreWindow->GetAsyncKeyState(VirtualKey_Shift, &mod);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (mod & CoreVirtualKeyStates_Down)
         mods |= Qt::ShiftModifier;
-    d->coreWindow->GetAsyncKeyState(VirtualKey_Menu, &mod);
-    if (mod == CoreVirtualKeyStates_Down)
+    hr = d->coreWindow->GetAsyncKeyState(VirtualKey_Menu, &mod);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (mod & CoreVirtualKeyStates_Down)
         mods |= Qt::AltModifier;
-    d->coreWindow->GetAsyncKeyState(VirtualKey_Control, &mod);
-    if (mod == CoreVirtualKeyStates_Down)
+    hr = d->coreWindow->GetAsyncKeyState(VirtualKey_Control, &mod);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (mod & CoreVirtualKeyStates_Down)
         mods |= Qt::ControlModifier;
-    d->coreWindow->GetAsyncKeyState(VirtualKey_LeftWindows, &mod);
-    if (mod == CoreVirtualKeyStates_Down) {
+    hr = d->coreWindow->GetAsyncKeyState(VirtualKey_LeftWindows, &mod);
+    Q_ASSERT_SUCCEEDED(hr);
+    if (mod & CoreVirtualKeyStates_Down) {
         mods |= Qt::MetaModifier;
     } else {
-        d->coreWindow->GetAsyncKeyState(VirtualKey_RightWindows, &mod);
-        if (mod == CoreVirtualKeyStates_Down)
+        hr = d->coreWindow->GetAsyncKeyState(VirtualKey_RightWindows, &mod);
+        Q_ASSERT_SUCCEEDED(hr);
+        if (mod & CoreVirtualKeyStates_Down)
             mods |= Qt::MetaModifier;
     }
     return mods;
@@ -971,6 +980,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
         if (!shouldAutoRepeat(key))
             return S_OK;
 
+        d->activeKeys[key].isAutoRepeat = true;
         // If the key was pressed before trigger a key release before the next key press
         QWindowSystemInterface::handleExtendedKeyEvent(
                     topWindow(),
@@ -981,7 +991,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
                     virtualKey,
                     0,
                     QString(),
-                    status.WasKeyDown,
+                    d->activeKeys.value(key).isAutoRepeat,
                     !status.RepeatCount ? 1 : status.RepeatCount,
                     false);
     } else {
@@ -992,16 +1002,26 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
     if (key == Qt::Key_unknown || (key >= Qt::Key_Space && key <= Qt::Key_ydiaeresis))
         return S_OK;
 
+    Qt::KeyboardModifiers modifiers = keyboardModifiers();
+    // If the key actually pressed is a modifier key, then we remove its modifier key from the
+    // state, since a modifier-key can't have itself as a modifier (see qwindowskeymapper.cpp)
+    if (key == Qt::Key_Control)
+        modifiers = modifiers ^ Qt::ControlModifier;
+    else if (key == Qt::Key_Shift)
+        modifiers = modifiers ^ Qt::ShiftModifier;
+    else if (key == Qt::Key_Alt)
+        modifiers = modifiers ^ Qt::AltModifier;
+
     QWindowSystemInterface::handleExtendedKeyEvent(
                 topWindow(),
                 QEvent::KeyPress,
                 key,
-                keyboardModifiers(),
+                modifiers,
                 !status.ScanCode ? -1 : status.ScanCode,
                 virtualKey,
                 0,
                 QString(),
-                status.WasKeyDown,
+                d->activeKeys.value(key).isAutoRepeat,
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
     return S_OK;
@@ -1051,20 +1071,19 @@ HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEvent
     const Qt::KeyboardModifiers modifiers = keyboardModifiers();
     const Qt::Key key = qKeyFromCode(keyCode, modifiers);
     const QString text = QChar(keyCode);
-    const quint32 virtualKey = d->activeKeys.value(key).virtualKey;
+    const KeyInfo info = d->activeKeys.value(key);
     QWindowSystemInterface::handleExtendedKeyEvent(
                 topWindow(),
                 QEvent::KeyPress,
                 key,
                 modifiers,
                 !status.ScanCode ? -1 : status.ScanCode,
-                virtualKey,
+                info.virtualKey,
                 0,
                 text,
-                status.WasKeyDown,
+                info.isAutoRepeat,
                 !status.RepeatCount ? 1 : status.RepeatCount,
                 false);
-    d->activeKeys.insert(key, KeyInfo(text, virtualKey));
     return S_OK;
 }
 

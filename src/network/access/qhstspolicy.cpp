@@ -103,11 +103,11 @@ QHstsPolicy::QHstsPolicy() : d(new QHstsPolicyPrivate)
 }
 
 /*!
-    Constructs QHstsPolicy with \a expiry (in UTC); \a includeSubDomains parameter
-    defines if this policy must also include subdomains, \a host data is interpreted
-    according to \a mode.
+    Constructs QHstsPolicy with \a expiry (in UTC):
+    - \a host data is interpreted according to \a mode;
+    - \a flags selects options to apply to this policy.
 
-    \sa QUrl::setHost(), QUrl::ParsingMode
+    \sa QUrl::setHost(), QUrl::ParsingMode, QHstsPolicy::PolicyFlag
 */
 QHstsPolicy::QHstsPolicy(const QDateTime &expiry, PolicyFlags flags,
                          const QString &host, QUrl::ParsingMode mode)

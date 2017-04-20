@@ -772,6 +772,17 @@ int QDataStream::readBlock(char *data, int len)
 }
 
 /*!
+    \fn QDataStream &QDataStream::operator>>(std::nullptr &ptr)
+    \since 5.9
+    \overload
+
+    Simulates reading a \c{std::nullptr_t} from the stream into \a ptr and
+    returns a reference to the stream. This function does not actually read
+    anything from the stream, as \c{std::nullptr_t} values are stored as 0
+    bytes.
+*/
+
+/*!
     \fn QDataStream &QDataStream::operator>>(quint8 &i)
     \overload
 
@@ -1085,6 +1096,15 @@ int QDataStream::readRawData(char *s, int len)
   QDataStream write functions
  *****************************************************************************/
 
+/*!
+    \fn QDataStream &QDataStream::operator<<(std::nullptr ptr)
+    \since 5.9
+    \overload
+
+    Simulates writing a \c{std::nullptr_t}, \a ptr, to the stream and returns a
+    reference to the stream. This function does not actually write anything to
+    the stream, as \c{std::nullptr_t} values are stored as 0 bytes.
+*/
 
 /*!
     \fn QDataStream &QDataStream::operator<<(quint8 i)

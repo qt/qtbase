@@ -153,6 +153,7 @@ public:
     QDataStream &operator>>(quint32 &i);
     QDataStream &operator>>(qint64 &i);
     QDataStream &operator>>(quint64 &i);
+    QDataStream &operator>>(std::nullptr_t &ptr) { ptr = nullptr; return *this; }
 
     QDataStream &operator>>(bool &i);
     QDataStream &operator>>(qfloat16 &f);
@@ -168,6 +169,7 @@ public:
     QDataStream &operator<<(quint32 i);
     QDataStream &operator<<(qint64 i);
     QDataStream &operator<<(quint64 i);
+    QDataStream &operator<<(std::nullptr_t) { return *this; }
     QDataStream &operator<<(bool i);
     QDataStream &operator<<(qfloat16 f);
     QDataStream &operator<<(float f);

@@ -64,8 +64,8 @@ public:
     Q_NETWORK_EXPORT static QSslEllipticCurve fromShortName(const QString &name);
     Q_NETWORK_EXPORT static QSslEllipticCurve fromLongName(const QString &name);
 
-    Q_NETWORK_EXPORT QString shortName() const Q_REQUIRED_RESULT;
-    Q_NETWORK_EXPORT QString longName() const Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT Q_NETWORK_EXPORT QString shortName() const;
+    Q_REQUIRED_RESULT Q_NETWORK_EXPORT QString longName() const;
 
     Q_DECL_CONSTEXPR bool isValid() const Q_DECL_NOTHROW
     {

@@ -739,7 +739,7 @@ bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
 
     \note While processing HTTP responses, QNetworkAccessManager can also update
     the HSTS cache, removing or updating exitsting policies or introducing new
-    known hosts. The current implementation thus is server-driven, client code
+    \a knownHosts. The current implementation thus is server-driven, client code
     can provide QNetworkAccessManager with previously known or discovered
     policies, but this information can be overridden by "Strict-Transport-Security"
     response headers.
@@ -1045,7 +1045,7 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
 {
     Q_D(const QNetworkAccessManager);
 
-    if (d->networkConfiguration.state().testFlag(QNetworkConfiguration::Undefined))
+    if (d->customNetworkConfiguration && d->networkConfiguration.state().testFlag(QNetworkConfiguration::Undefined))
         return UnknownAccessibility;
 
     if (d->networkSessionRequired) {
@@ -1841,6 +1841,7 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
     } else if (state == QNetworkSession::Connected || state == QNetworkSession::Roaming) {
         reallyOnline = true;
     }
+    online = reallyOnline;
 
     if (!reallyOnline) {
         if (state != QNetworkSession::Connected && state != QNetworkSession::Roaming) {
@@ -1856,7 +1857,6 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
                 emit q->networkAccessibleChanged(networkAccessible);
             }
     }
-    online = reallyOnline;
     if (online && (state != QNetworkSession::Connected && state != QNetworkSession::Roaming)) {
         _q_networkSessionClosed();
         createSession(q->configuration());

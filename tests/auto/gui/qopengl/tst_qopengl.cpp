@@ -389,6 +389,7 @@ static bool fuzzyComparePixels(const QRgb testPixel, const QRgb refPixel, const 
 
 static void fuzzyCompareImages(const QImage &testImage, const QImage &referenceImage, const char* file, int line)
 {
+    QCOMPARE(testImage.devicePixelRatio(), referenceImage.devicePixelRatio());
     QCOMPARE(testImage.width(), referenceImage.width());
     QCOMPARE(testImage.height(), referenceImage.height());
 

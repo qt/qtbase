@@ -649,6 +649,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QVariant::Bool:
             *ba = QByteArray(d->data.b ? "true" : "false");
             break;
+        case QVariant::Uuid:
+            *ba = v_cast<QUuid>(d)->toByteArray();
+            break;
         default:
 #ifndef QT_NO_QOBJECT
             {
@@ -915,6 +918,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         switch (d->type) {
         case QVariant::String:
             *static_cast<QUuid *>(result) = QUuid(*v_cast<QString>(d));
+            break;
+        case QVariant::ByteArray:
+            *static_cast<QUuid *>(result) = QUuid(*v_cast<QByteArray>(d));
             break;
         default:
             return false;
@@ -2526,8 +2532,9 @@ QRegularExpression QVariant::toRegularExpression() const
 /*!
     \since 5.0
 
-    Returns the variant as a QUuid if the variant has userType() \l
-    QUuid; otherwise returns a default constructed QUuid.
+    Returns the variant as a QUuid if the variant has type()
+    \l QMetaType::QUuid, \l QMetaType::QByteArray or \l QMetaType::QString;
+    otherwise returns a default-constructed QUuid.
 
     \sa canConvert(), convert()
 */
@@ -2874,7 +2881,8 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 /*QStringList*/   1 << QVariant::List       | 1 << QVariant::String,
 
 /*QByteArray*/    1 << QVariant::String     | 1 << QVariant::Int        | 1 << QVariant::UInt | 1 << QVariant::Bool
-                | 1 << QVariant::Double     | 1 << QVariant::LongLong   | 1 << QVariant::ULongLong,
+                | 1 << QVariant::Double     | 1 << QVariant::LongLong   | 1 << QVariant::ULongLong
+                | 1 << QVariant::Uuid,
 
 /*QBitArray*/     0,
 
@@ -2910,7 +2918,7 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 
 /*QEasingCurve*/  0,
 
-/*QUuid*/         1 << QVariant::String
+/*QUuid*/         1 << QVariant::String     | 1 << QVariant::ByteArray,
 };
 static const size_t qCanConvertMatrixMaximumTargetType = 8 * sizeof(*qCanConvertMatrix);
 
@@ -2965,7 +2973,7 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
         \l QMetaType::UInt, \l QMetaType::ULongLong
     \row \li \l QMetaType::QByteArray \li \l QMetaType::Double,
         \l QMetaType::Int, \l QMetaType::LongLong, \l QMetaType::QString,
-        \l QMetaType::UInt, \l QMetaType::ULongLong
+        \l QMetaType::UInt, \l QMetaType::ULongLong, \l QMetaType::QUuid
     \row \li \l QMetaType::QChar \li \l QMetaType::Bool, \l QMetaType::Int,
         \l QMetaType::UInt, \l QMetaType::LongLong, \l QMetaType::ULongLong
     \row \li \l QMetaType::QColor \li \l QMetaType::QString
@@ -2995,7 +3003,7 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
         \l QMetaType::QDate, \l QMetaType::QDateTime, \l QMetaType::Double,
         \l QMetaType::QFont, \l QMetaType::Int, \l QMetaType::QKeySequence,
         \l QMetaType::LongLong, \l QMetaType::QStringList, \l QMetaType::QTime,
-        \l QMetaType::UInt, \l QMetaType::ULongLong
+        \l QMetaType::UInt, \l QMetaType::ULongLong, \l QMetaType::QUuid
     \row \li \l QMetaType::QStringList \li \l QMetaType::QVariantList,
         \l QMetaType::QString (if the list contains exactly one item)
     \row \li \l QMetaType::QTime \li \l QMetaType::QString
@@ -3005,6 +3013,7 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
     \row \li \l QMetaType::ULongLong \li \l QMetaType::Bool,
         \l QMetaType::QChar, \l QMetaType::Double, \l QMetaType::Int,
         \l QMetaType::LongLong, \l QMetaType::QString, \l QMetaType::UInt
+    \row \li \l QMetaType::QUuid \li \l QMetaType::QByteArray, \l QMetaType::QString
     \endtable
 
     A QVariant containing a pointer to a type derived from QObject will also return true for this

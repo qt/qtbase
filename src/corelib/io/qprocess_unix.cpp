@@ -122,6 +122,10 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(Q_OS_DARWIN)
 
+QT_BEGIN_INCLUDE_NAMESPACE
+extern char **environ;
+QT_END_INCLUDE_NAMESPACE
+
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
     QProcessEnvironment env;

@@ -86,8 +86,6 @@ int QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight = 71;
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_orientation = Qt::PrimaryOrientation;
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::PrimaryOrientation;
 
-Qt::ApplicationState QAndroidPlatformIntegration::m_defaultApplicationState = Qt::ApplicationActive;
-
 bool QAndroidPlatformIntegration::m_showPasswordEnabled = false;
 
 void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
@@ -143,6 +141,12 @@ void *QAndroidPlatformNativeInterface::nativeResourceForWindow(const QByteArray 
     return nullptr;
 }
 
+void QAndroidPlatformNativeInterface::customEvent(QEvent *event)
+{
+    if (event->type() == QEvent::User)
+        QtAndroid::setAndroidPlatformIntegration(static_cast<QAndroidPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration()));
+}
+
 QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &paramList)
     : m_touchDevice(nullptr)
 #ifndef QT_NO_ACCESSIBILITY
@@ -170,7 +174,6 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     m_primaryScreen->setAvailableGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
 
     m_mainThread = QThread::currentThread();
-    QtAndroid::setAndroidPlatformIntegration(this);
 
     m_androidFDB = new QAndroidPlatformFontDatabase();
     m_androidPlatformServices = new QAndroidPlatformServices();
@@ -233,7 +236,9 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
         }
     }
 
-    QGuiApplicationPrivate::instance()->setApplicationState(m_defaultApplicationState);
+    // We can't safely notify the jni bridge that we're up and running just yet, so let's postpone
+    // it for now.
+    QCoreApplication::postEvent(m_androidPlatformNativeInterface, new QEvent(QEvent::User));
 }
 
 static bool needsBasicRenderloopWorkaround()

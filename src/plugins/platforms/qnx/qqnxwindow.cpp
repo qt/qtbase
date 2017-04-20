@@ -694,7 +694,7 @@ void QQnxWindow::initWindow()
 void QQnxWindow::createWindowGroup()
 {
     // Generate a random window group name
-    m_windowGroupName = QUuid::createUuid().toString().toLatin1();
+    m_windowGroupName = QUuid::createUuid().toByteArray();
 
     // Create window group so child windows can be parented by container window
     Q_SCREEN_CHECKERROR(screen_create_window_group(m_window, m_windowGroupName.constData()),

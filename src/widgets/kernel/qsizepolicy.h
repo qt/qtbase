@@ -159,10 +159,11 @@ public:
     Q_DECL_RELAXED_CONSTEXPR void setRetainSizeWhenHidden(bool retainSize) Q_DECL_NOTHROW { bits.retainSizeWhenHidden = retainSize; }
 
     Q_DECL_RELAXED_CONSTEXPR void transpose() Q_DECL_NOTHROW { *this = transposed(); }
+    Q_REQUIRED_RESULT
 #ifndef Q_QDOC
     QT_SIZEPOLICY_CONSTEXPR_AND_UNIFORM_INIT
 #endif
-    QSizePolicy transposed() const Q_DECL_NOTHROW Q_REQUIRED_RESULT
+    QSizePolicy transposed() const Q_DECL_NOTHROW
     {
         return QSizePolicy(bits.transposed());
     }
