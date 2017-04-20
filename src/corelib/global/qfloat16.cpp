@@ -59,24 +59,6 @@ QT_BEGIN_NAMESPACE
     \since 5.9
 */
 
-Q_STATIC_ASSERT_X(sizeof(float) == sizeof(quint32),
-                  "qfloat16 assumes that floats are 32 bits wide");
-
-// There are a few corner cases regarding denormals where GHS compiler is relying
-// hardware behavior that is not IEC 559 compliant. Therefore the compiler
-// reports std::numeric_limits<float>::is_iec559 as false. This is all right
-// according to our needs.
-
-#if !defined(Q_CC_GHS)
-Q_STATIC_ASSERT_X(std::numeric_limits<float>::is_iec559,
-                  "Only works with IEEE 754 floating point");
-#endif
-
-Q_STATIC_ASSERT_X(std::numeric_limits<float>::has_infinity &&
-                  std::numeric_limits<float>::has_quiet_NaN &&
-                  std::numeric_limits<float>::has_signaling_NaN,
-                  "Only works with IEEE 754 floating point");
-
 /*!
     Returns true if the \c qfloat16 \a {f} is equivalent to infinity.
     \relates <QFloat16>

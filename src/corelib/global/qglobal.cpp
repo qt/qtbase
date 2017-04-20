@@ -112,6 +112,33 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 Q_STATIC_ASSERT_X(sizeof(int) == 4, "Qt assumes that int is 32 bits");
 Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
 Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined incorrectly");
+Q_STATIC_ASSERT_X(sizeof(float) == 4, "Qt assumes that float is 32 bits");
+
+// While we'd like to check for __STDC_IEC_559__, as per ISO/IEC 9899:2011
+// Annex F (C11, normative for C++11), there are a few corner cases regarding
+// denormals where GHS compiler is relying hardware behavior that is not IEC
+// 559 compliant. So split the check in several subchecks.
+
+// On GHC the compiler reports std::numeric_limits<float>::is_iec559 as false.
+// This is all right according to our needs.
+#if !defined(Q_CC_GHS)
+Q_STATIC_ASSERT_X(std::numeric_limits<float>::is_iec559,
+                  "Qt assumes IEEE 754 floating point");
+#endif
+
+// Technically, presence of NaN and infinities are implied from the above check,
+// but double checking our environment doesn't hurt...
+Q_STATIC_ASSERT_X(std::numeric_limits<float>::has_infinity &&
+                  std::numeric_limits<float>::has_quiet_NaN &&
+                  std::numeric_limits<float>::has_signaling_NaN,
+                  "Qt assumes IEEE 754 floating point");
+
+// is_iec559 checks for ISO/IEC/IEEE 60559:2011 (aka IEEE 754-2008) compliance,
+// but that allows for a non-binary radix. We need to recheck that.
+// Note how __STDC_IEC_559__ would instead check for IEC 60559:1989, aka
+// ANSI/IEEE 754−1985, which specifically implies binary floating point numbers.
+Q_STATIC_ASSERT_X(std::numeric_limits<float>::radix == 2,
+                  "Qt assumes binary IEEE 754 floating point");
 
 /*!
     \class QFlag
