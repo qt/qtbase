@@ -1556,6 +1556,8 @@ void QCocoaWindow::foreachChildNSWindow(void (^block)(QCocoaWindow *))
 */
 void QCocoaWindow::recreateWindowIfNeeded()
 {
+    QMacAutoReleasePool pool;
+
     QPlatformWindow *parentWindow = QPlatformWindow::parent();
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::recreateWindowIfNeeded" << window()
                               << "parent" << (parentWindow ? parentWindow->window() : 0);
