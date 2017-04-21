@@ -1271,6 +1271,16 @@ char *toPrettyCString(const char *p, int length)
     return buffer.take();
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+// this used to be the signature up to and including Qt 5.9
+// keep it for BC reasons:
+Q_TESTLIB_EXPORT
+char *toPrettyUnicode(const ushort *p, int length)
+{
+    return toPrettyUnicode(QStringView(p, length));
+}
+#endif
+
 /*!
     \internal
     Returns the same QString but with only the ASCII characters still shown;
@@ -1278,8 +1288,10 @@ char *toPrettyCString(const char *p, int length)
 
     Similar to QDebug::putString().
 */
-char *toPrettyUnicode(const ushort *p, int length)
+char *toPrettyUnicode(QStringView string)
 {
+    auto p = reinterpret_cast<const ushort *>(string.utf16());
+    auto length = string.size();
     // keep it simple for the vast majority of cases
     bool trimmed = false;
     QScopedArrayPointer<char> buffer(new char[256]);

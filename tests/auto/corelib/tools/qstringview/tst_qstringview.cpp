@@ -429,6 +429,8 @@ void tst_QStringView::conversion_tests(String string) const
                            sv.crbegin()));
         QVERIFY(std::equal(help::crbegin(string), help::crend(string),
                            sv.rbegin()));
+
+        QCOMPARE(sv, string);
     }
 
     QStringView sv;
@@ -441,8 +443,8 @@ void tst_QStringView::conversion_tests(String string) const
 
         // check relational operators:
 
-        QVERIFY(sv == string);
-        QVERIFY(string == sv);
+        QCOMPARE(sv, string);
+        QCOMPARE(string, sv);
 
         QVERIFY(!(sv != string));
         QVERIFY(!(string != sv));
@@ -461,16 +463,16 @@ void tst_QStringView::conversion_tests(String string) const
     // copy-construct from rvalue (QStringView never assumes ownership):
     {
         QStringView sv2 = std::move(string);
-        QVERIFY(sv2 == sv);
-        QVERIFY(sv2 == string);
+        QCOMPARE(sv2, sv);
+        QCOMPARE(sv2, string);
     }
 
     // copy-assign from rvalue (QStringView never assumes ownership):
     {
         QStringView sv2;
         sv2 = std::move(string);
-        QVERIFY(sv2 == sv);
-        QVERIFY(sv2 == string);
+        QCOMPARE(sv2, sv);
+        QCOMPARE(sv2, string);
     }
 }
 

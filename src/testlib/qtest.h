@@ -65,9 +65,14 @@ QT_BEGIN_NAMESPACE
 namespace QTest
 {
 
+template <> inline char *toString(const QStringView &str)
+{
+    return QTest::toPrettyUnicode(str);
+}
+
 template<> inline char *toString(const QString &str)
 {
-    return QTest::toPrettyUnicode(reinterpret_cast<const ushort *>(str.constData()), str.length());
+    return toString(QStringView(str));
 }
 
 template<> inline char *toString(const QLatin1String &str)
