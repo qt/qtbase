@@ -272,17 +272,12 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteAr
 
 static QByteArray colonSeparatedHex(const QByteArray &value)
 {
-    QByteArray hexString;
-    hexString.reserve(value.size() * 3);
-    for (int a = 0; a < value.size(); ++a) {
-        const quint8 b = value.at(a);
-        if (b || !hexString.isEmpty()) { // skip leading zeros
-            hexString += QByteArray::number(b, 16).rightJustified(2, '0');
-            hexString += ':';
-        }
-    }
-    hexString.chop(1);
-    return hexString;
+    const int size = value.size();
+    int i = 0;
+    while (i < size && !value.at(i)) // skip leading zeros
+       ++i;
+
+    return value.mid(i).toHex(':');
 }
 
 bool QSslCertificatePrivate::parse(const QByteArray &data)
