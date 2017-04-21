@@ -300,6 +300,9 @@ public:
     bool isFlag() const;
     void setIsFlag(bool value);
 
+    bool isScoped() const;
+    void setIsScoped(bool value);
+
     int keyCount() const;
     QByteArray key(int index) const;
     int value(int index) const;

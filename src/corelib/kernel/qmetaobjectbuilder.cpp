@@ -190,12 +190,13 @@ class QMetaEnumBuilderPrivate
 {
 public:
     QMetaEnumBuilderPrivate(const QByteArray& _name)
-        : name(_name), isFlag(false)
+        : name(_name), isFlag(false), isScoped(false)
     {
     }
 
     QByteArray name;
     bool isFlag;
+    bool isScoped;
     QList<QByteArray> keys;
     QVector<int> values;
 };
@@ -637,6 +638,7 @@ QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QMetaEnum& prototype)
 {
     QMetaEnumBuilder en = addEnumerator(prototype.name());
     en.setIsFlag(prototype.isFlag());
+    en.setIsScoped(prototype.isScoped());
     int count = prototype.keyCount();
     for (int index = 0; index < count; ++index)
         en.addKey(prototype.key(index), prototype.value(index));
@@ -1408,12 +1410,13 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_ASSERT(!buf || dataIndex == pmeta->enumeratorData);
     for (const auto &enumerator : d->enumerators) {
         int name = strings.enter(enumerator.name);
-        int isFlag = (int)(enumerator.isFlag);
+        int isFlag = enumerator.isFlag ? EnumIsFlag : 0;
+        int isScoped = enumerator.isScoped ? EnumIsScoped : 0;
         int count = enumerator.keys.size();
         int enumOffset = enumIndex;
         if (buf) {
             data[dataIndex]     = name;
-            data[dataIndex + 1] = isFlag;
+            data[dataIndex + 1] = isFlag | isScoped;
             data[dataIndex + 2] = count;
             data[dataIndex + 3] = enumOffset;
         }
@@ -1641,6 +1644,7 @@ void QMetaObjectBuilder::serialize(QDataStream& stream) const
     for (const auto &enumerator : d->enumerators) {
         stream << enumerator.name;
         stream << enumerator.isFlag;
+        stream << enumerator.isScoped;
         stream << enumerator.keys;
         stream << enumerator.values;
     }
@@ -1807,6 +1811,7 @@ void QMetaObjectBuilder::deserialize
         addEnumerator(name);
         QMetaEnumBuilderPrivate &enumerator = d->enumerators[index];
         stream >> enumerator.isFlag;
+        stream >> enumerator.isScoped;
         stream >> enumerator.keys;
         stream >> enumerator.values;
         if (enumerator.keys.size() != enumerator.values.size()) {
@@ -2630,6 +2635,31 @@ void QMetaEnumBuilder::setIsFlag(bool value)
     QMetaEnumBuilderPrivate *d = d_func();
     if (d)
         d->isFlag = value;
+}
+
+/*!
+    Return \c true if this enumerator should be considered scoped (C++11 enum class).
+
+    \sa setIsScoped()
+*/
+bool QMetaEnumBuilder::isScoped() const
+{
+    QMetaEnumBuilderPrivate *d = d_func();
+    if (d)
+        return d->isScoped;
+    return false;
+}
+
+/*!
+    Sets this enumerator to be a scoped enum if \value is true
+
+    \sa isScoped()
+*/
+void QMetaEnumBuilder::setIsScoped(bool value)
+{
+    QMetaEnumBuilderPrivate *d = d_func();
+    if (d)
+        d->isScoped = value;
 }
 
 /*!
