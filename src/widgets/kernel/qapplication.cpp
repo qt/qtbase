@@ -564,6 +564,10 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
 */
 void QApplicationPrivate::init()
 {
+#if defined(Q_OS_MACOS)
+    QMacAutoReleasePool pool;
+#endif
+
     QGuiApplicationPrivate::init();
 
     initResources();

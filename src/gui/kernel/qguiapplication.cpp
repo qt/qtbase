@@ -1319,6 +1319,10 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 
 void QGuiApplicationPrivate::init()
 {
+#if defined(Q_OS_MACOS)
+    QMacAutoReleasePool pool;
+#endif
+
     QCoreApplicationPrivate::init();
 
     QCoreApplicationPrivate::is_app_running = false; // Starting up.
