@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2017 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
@@ -40,6 +40,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.Rect;
@@ -628,58 +629,26 @@ public class QtActivityDelegate
     {
         // start application
         try {
-            // FIXME turn on debuggable check
-            // if the applications is debuggable and it has a native debug request
+
             Bundle extras = m_activity.getIntent().getExtras();
             if (extras != null) {
-
-                if ( /*(ai.flags&ApplicationInfo.FLAG_DEBUGGABLE) != 0
-                        &&*/ extras.containsKey("native_debug")
-                        && extras.getString("native_debug").equals("true")) {
-                    try {
-                        String packagePath =
-                            m_activity.getPackageManager().getApplicationInfo(m_activity.getPackageName(),
-                                                                              PackageManager.GET_CONFIGURATIONS).dataDir + "/";
-                        String gdbserverPath =
-                            extras.containsKey("gdbserver_path")
-                            ? extras.getString("gdbserver_path")
-                            : packagePath+"lib/gdbserver ";
-
-                        String socket =
-                            extras.containsKey("gdbserver_socket")
-                            ? extras.getString("gdbserver_socket")
-                            : "+debug-socket";
-
-                        if (!(new File(gdbserverPath)).exists())
-                            gdbserverPath += ".so";
-
-                        // start debugger
-                        m_debuggerProcess = Runtime.getRuntime().exec(gdbserverPath
-                                                                        + socket
-                                                                        + " --attach "
-                                                                        + android.os.Process.myPid(),
-                                                                      null,
-                                                                      new File(packagePath));
-                    } catch (IOException ioe) {
-                        Log.e(QtNative.QtTAG,"Can't start debugger" + ioe.getMessage());
-                    } catch (SecurityException se) {
-                        Log.e(QtNative.QtTAG,"Can't start debugger" + se.getMessage());
-                    } catch (NameNotFoundException e) {
-                        Log.e(QtNative.QtTAG,"Can't start debugger" + e.getMessage());
-                    }
-                }
-
-
                 if ( /*(ai.flags&ApplicationInfo.FLAG_DEBUGGABLE) != 0
                         &&*/ extras.containsKey("debug_ping")
                         && extras.getString("debug_ping").equals("true")) {
                     try {
+                        final String dc = "--Added-by-androiddeployqt--/debugger.command";
+                        String debuggerCommand =
+                            new BufferedReader(new InputStreamReader(m_activity.getAssets().open(dc))).readLine();
+                        String packagePath =
+                            m_activity.getPackageManager().getApplicationInfo(m_activity.getPackageName(),
+                                                                              PackageManager.GET_CONFIGURATIONS).dataDir + "/";
+
                         debugLog("extra parameters: " + extras);
                         String packageName = m_activity.getPackageName();
                         String pingFile = extras.getString("ping_file");
                         String pongFile = extras.getString("pong_file");
                         String gdbserverSocket = extras.getString("gdbserver_socket");
-                        String gdbserverCommand = extras.getString("gdbserver_command");
+                        String gdbserverCommand = packagePath + debuggerCommand + gdbserverSocket;
                         String pingSocket = extras.getString("ping_socket");
                         boolean usePing = pingFile != null;
                         boolean usePong = pongFile != null;
@@ -808,9 +777,9 @@ public class QtActivityDelegate
                         }
 
                     } catch (IOException ioe) {
-                        Log.e(QtNative.QtTAG,"Can't start debugger" + ioe.getMessage());
+                        ioe.printStackTrace();
                     } catch (SecurityException se) {
-                        Log.e(QtNative.QtTAG,"Can't start debugger" + se.getMessage());
+                        se.printStackTrace();
                     }
                 }
 
