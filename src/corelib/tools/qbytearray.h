@@ -692,8 +692,4 @@ Q_DECLARE_SHARED(QByteArray)
 
 QT_END_NAMESPACE
 
-#ifdef QT_USE_QSTRINGBUILDER
-#include <QtCore/qstring.h>
-#endif
-
 #endif // QBYTEARRAY_H

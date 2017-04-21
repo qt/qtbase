@@ -49,6 +49,9 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qstringliteral.h>
+#include <QtCore/qstringalgorithms.h>
+#include <QtCore/qstringview.h>
 
 #include <string>
 #include <iterator>
@@ -73,10 +76,6 @@ Q_FORWARD_DECLARE_CF_TYPE(CFString);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 #endif
 
-#ifndef QT_STRINGVIEW_LEVEL
-#  define QT_STRINGVIEW_LEVEL 1
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QCharRef;
@@ -87,19 +86,7 @@ class QString;
 class QStringList;
 class QTextCodec;
 class QStringRef;
-class QStringView;
-class QLatin1String;
 template <typename T> class QVector;
-
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-
-Q_CORE_EXPORT QByteArray qConvertToLatin1(QStringView str) Q_REQUIRED_RESULT;
-Q_CORE_EXPORT QByteArray qConvertToUtf8(QStringView str) Q_REQUIRED_RESULT;
-Q_CORE_EXPORT QByteArray qConvertToLocal8Bit(QStringView str) Q_REQUIRED_RESULT;
-Q_CORE_EXPORT QVector<uint> qConvertToUcs4(QStringView str) Q_REQUIRED_RESULT;
 
 class QLatin1String
 {
@@ -191,74 +178,6 @@ Q_DECLARE_TYPEINFO(QLatin1String, Q_MOVABLE_TYPE);
 
 // Qt 4.x compatibility
 typedef QLatin1String QLatin1Literal;
-
-
-typedef QTypedArrayData<ushort> QStringData;
-
-#if defined(Q_OS_WIN) && !defined(Q_COMPILER_UNICODE_STRINGS)
-// fall back to wchar_t if the a Windows compiler does not
-// support Unicode string literals, assuming wchar_t is 2 bytes
-// on that platform (sanity-checked by static_assert further below)
-
-#if defined(Q_CC_MSVC)
-#    define QT_UNICODE_LITERAL_II(str) L##str
-#else
-#    define QT_UNICODE_LITERAL_II(str) L"" str
-#endif
-typedef wchar_t qunicodechar;
-
-#else
-// all our supported compilers support Unicode string literals,
-// even if their Q_COMPILER_UNICODE_STRING has been revoked due
-// to lacking stdlib support. But QStringLiteral only needs the
-// core language feature, so just use u"" here unconditionally:
-
-#define QT_UNICODE_LITERAL_II(str) u"" str
-typedef char16_t qunicodechar;
-
-#endif
-
-Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
-        "qunicodechar must typedef an integral type of size 2");
-
-#define QT_UNICODE_LITERAL(str) QT_UNICODE_LITERAL_II(str)
-#define QStringLiteral(str) \
-    ([]() Q_DECL_NOEXCEPT -> QString { \
-        enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
-        static const QStaticStringData<Size> qstring_literal = { \
-            Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
-            QT_UNICODE_LITERAL(str) }; \
-        QStringDataPtr holder = { qstring_literal.data_ptr() }; \
-        const QString qstring_literal_temp(holder); \
-        return qstring_literal_temp; \
-    }()) \
-    /**/
-
-#define Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
-    { Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, offset } \
-    /**/
-
-#define Q_STATIC_STRING_DATA_HEADER_INITIALIZER(size) \
-    Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, sizeof(QStringData)) \
-    /**/
-
-template <int N>
-struct QStaticStringData
-{
-    QArrayData str;
-    qunicodechar data[N + 1];
-
-    QStringData *data_ptr() const
-    {
-        Q_ASSERT(str.ref.isStatic());
-        return const_cast<QStringData *>(static_cast<const QStringData*>(&str));
-    }
-};
-
-struct QStringDataPtr
-{
-    QStringData *ptr;
-};
 
 class Q_CORE_EXPORT QString
 {
@@ -945,6 +864,15 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
+//
+// QStringView inline members that require QString:
+//
+QString QStringView::toString() const
+{ return Q_ASSERT(size() == length()), QString(data(), length()); }
+
+//
+// QString inline members
+//
 inline QString::QString(QLatin1String aLatin1) : d(fromLatin1_helper(aLatin1.latin1(), aLatin1.size()))
 { }
 inline int QString::length() const
@@ -1622,10 +1550,6 @@ inline QStringRef::QStringRef(const QString *aString, int aPosition, int aSize)
 
 inline QStringRef::QStringRef(const QString *aString)
     :m_string(aString), m_position(0), m_size(aString?aString->size() : 0){}
-
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <QtCore/qstringview.h>
-QT_END_INCLUDE_NAMESPACE
 
 // QStringRef <> QStringRef
 Q_CORE_EXPORT bool operator==(const QStringRef &s1, const QStringRef &s2) Q_DECL_NOTHROW;

@@ -36,24 +36,24 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#ifndef QSTRING_H
-# include <QtCore/qstring.h>
-#endif
-
 #ifndef QSTRINGVIEW_H
 #define QSTRINGVIEW_H
+
+#ifndef QT_STRINGVIEW_LEVEL
+#  define QT_STRINGVIEW_LEVEL 1
+#endif
+
+#include <QtCore/qchar.h>
+#include <QtCore/qbytearray.h>
+#include <QtCore/qstringliteral.h>
+#include <QtCore/qstringalgorithms.h>
 
 #include <string>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_UNICODE_LITERAL
-# ifndef QT_UNICODE_LITERAL
-#  error "If you change QStringLiteral, please change QStringViewLiteral, too"
-# endif
-# define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str))
-#endif
+class QString;
+class QStringRef;
 
 namespace QtPrivate {
 template <typename Char>
@@ -205,7 +205,7 @@ public:
     QStringView(const StdBasicString &str) Q_DECL_NOTHROW
         : QStringView(str.data(), qssize_t(str.size())) {}
 
-    Q_REQUIRED_RESULT QString toString() const { return Q_ASSERT(size() == length()), QString(data(), length()); }
+    Q_REQUIRED_RESULT inline QString toString() const; // defined in qstring.h
 
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR qssize_t size() const Q_DECL_NOTHROW { return m_size; }
     Q_REQUIRED_RESULT const_pointer data() const Q_DECL_NOTHROW { return reinterpret_cast<const_pointer>(m_data); }
@@ -221,7 +221,7 @@ public:
     Q_REQUIRED_RESULT QByteArray toLatin1() const { return qConvertToLatin1(*this); }
     Q_REQUIRED_RESULT QByteArray toUtf8() const { return qConvertToUtf8(*this); }
     Q_REQUIRED_RESULT QByteArray toLocal8Bit() const { return qConvertToLocal8Bit(*this); }
-    Q_REQUIRED_RESULT inline QVector<uint> toUcs4() const;
+    Q_REQUIRED_RESULT inline QVector<uint> toUcs4() const; // defined in qvector.h
 
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar at(qssize_t n) const { return (*this)[n]; }
 

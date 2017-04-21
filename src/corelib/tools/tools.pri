@@ -57,10 +57,12 @@ HEADERS +=  \
         tools/qsize.h \
         tools/qstack.h \
         tools/qstring.h \
+        tools/qstringalgorithms.h \
         tools/qstringalgorithms_p.h \
         tools/qstringbuilder.h \
         tools/qstringiterator_p.h \
         tools/qstringlist.h \
+        tools/qstringliteral.h \
         tools/qstringmatcher.h \
         tools/qstringview.h \
         tools/qtextboundaryfinder.h \
