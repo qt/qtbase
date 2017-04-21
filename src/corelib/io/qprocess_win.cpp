@@ -520,10 +520,11 @@ void QProcessPrivate::startProcess()
 
     const QString nativeWorkingDirectory = QDir::toNativeSeparators(workingDirectory);
     QProcess::CreateProcessArguments cpargs = {
-        0, (wchar_t*)args.utf16(),
-        0, 0, TRUE, dwCreationFlags,
-        environment.isEmpty() ? 0 : envlist.data(),
-        nativeWorkingDirectory.isEmpty() ? Q_NULLPTR : (wchar_t*)nativeWorkingDirectory.utf16(),
+        nullptr, reinterpret_cast<wchar_t *>(const_cast<ushort *>(args.utf16())),
+        nullptr, nullptr, true, dwCreationFlags,
+        environment.isEmpty() ? nullptr : envlist.data(),
+        nativeWorkingDirectory.isEmpty()
+            ? nullptr : reinterpret_cast<const wchar_t *>(nativeWorkingDirectory.utf16()),
         &startupInfo, pid
     };
     success = callCreateProcess(&cpargs);
