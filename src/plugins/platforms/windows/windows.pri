@@ -70,6 +70,11 @@ qtConfig(dynamicgl) {
     HEADERS += $$PWD/qwindowseglcontext.h
 }
 
+qtConfig(systemtrayicon) {
+    SOURCES += $$PWD/qwindowssystemtrayicon.cpp
+    HEADERS += $$PWD/qwindowssystemtrayicon.h
+}
+
 qtConfig(vulkan) {
     SOURCES += $$PWD/qwindowsvulkaninstance.cpp
     HEADERS += $$PWD/qwindowsvulkaninstance.h

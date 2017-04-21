@@ -48,6 +48,9 @@
 #include "qwindowsdialoghelpers.h"
 #include "qwindowscontext.h"
 #include "qwindowsintegration.h"
+#if QT_CONFIG(systemtrayicon)
+#  include "qwindowssystemtrayicon.h"
+#endif
 #include "qt_windows.h"
 #include <commctrl.h>
 #include <objbase.h>
@@ -548,6 +551,13 @@ QPlatformDialogHelper *QWindowsTheme::createPlatformDialogHelper(DialogType type
 {
     return QWindowsDialogs::createHelper(type);
 }
+
+#if QT_CONFIG(systemtrayicon)
+QPlatformSystemTrayIcon *QWindowsTheme::createPlatformSystemTrayIcon() const
+{
+    return new QWindowsSystemTrayIcon;
+}
+#endif
 
 void QWindowsTheme::windowsThemeChanged(QWindow * window)
 {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,69 +37,67 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSTHEME_H
-#define QWINDOWSTHEME_H
+#ifndef QWINDOWSSYSTEMTRAYICON_H
+#define QWINDOWSSYSTEMTRAYICON_H
 
-#include <qpa/qplatformtheme.h>
+#include <QtGui/qicon.h>
+#include <QtGui/qpa/qplatformsystemtrayicon.h>
 
-#include <QtCore/QSharedPointer>
-#include <QtCore/QVariant>
+#include <QtCore/qpointer.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindow;
+class QDebug;
 
-class QWindowsTheme : public QPlatformTheme
+class QWindowsPopupMenu;
+
+class QWindowsSystemTrayIcon : public QPlatformSystemTrayIcon
 {
 public:
-    QWindowsTheme();
-    ~QWindowsTheme();
+    QWindowsSystemTrayIcon();
+    ~QWindowsSystemTrayIcon();
 
-    static QWindowsTheme *instance() { return m_instance; }
+    void init() override;
+    void cleanup() override;
+    void updateIcon(const QIcon &icon) override;
+    void updateToolTip(const QString &tooltip) override;
+    void updateMenu(QPlatformMenu *) override {}
+    QRect geometry() const override;
+    void showMessage(const QString &title, const QString &msg,
+                     const QIcon &icon, MessageIcon iconType, int msecs) override;
 
-    bool usePlatformNativeDialog(DialogType type) const override;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
-#if QT_CONFIG(systemtrayicon)
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
+    bool isSystemTrayAvailable() const override { return true; }
+    bool supportsMessages() const override;
+
+    QPlatformMenu *createMenu() const override;
+
+    bool winEvent(const MSG &message, long *result);
+
+#ifndef QT_NO_DEBUG_STREAM
+    void formatDebug(QDebug &d) const;
 #endif
-    QVariant themeHint(ThemeHint) const override;
-    const QPalette *palette(Palette type = SystemPalette) const override
-        { return m_palettes[type]; }
-    const QFont *font(Font type = SystemFont) const override
-        { return m_fonts[type]; }
-
-    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
-
-    QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions = 0) const override;
-
-    void windowsThemeChanged(QWindow *window);
-    void displayChanged() { refreshIconPixmapSizes(); }
-
-    QList<QSize> availableFileIconSizes() const { return m_fileIconSizes; }
-
-    QPlatformMenuItem *createPlatformMenuItem() const override;
-    QPlatformMenu *createPlatformMenu() const override;
-    QPlatformMenuBar *createPlatformMenuBar() const override;
-    void showPlatformMenuBar() override;
-
-    static bool useNativeMenus();
-
-    static const char *name;
 
 private:
-    void refresh() { refreshPalettes(); refreshFonts(); }
-    void clearPalettes();
-    void refreshPalettes();
-    void clearFonts();
-    void refreshFonts();
-    void refreshIconPixmapSizes();
+    bool isInstalled() const { return m_hwnd != nullptr; }
+    bool ensureInstalled();
+    void ensureCleanup();
+    bool sendTrayMessage(DWORD msg);
+    HICON createIcon(const QIcon &icon);
 
-    static QWindowsTheme *m_instance;
-    QPalette *m_palettes[NPalettes];
-    QFont *m_fonts[NFonts];
-    QList<QSize> m_fileIconSizes;
+    QIcon m_icon;
+    QString m_toolTip;
+    HWND m_hwnd = nullptr;
+    HICON m_hIcon = nullptr;
+    mutable QPointer<QWindowsPopupMenu> m_menu;
+    bool m_ignoreNextMouseRelease = false;
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, const QWindowsSystemTrayIcon *);
+#endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSTHEME_H
+#endif // QWINDOWSSYSTEMTRAYICON_H
