@@ -69,7 +69,7 @@ private:
 };
 
 QEglFSKmsScreen::QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output)
-    : QEglFSScreen(eglGetDisplay((EGLNativeDisplayType) device->nativeDisplay()))
+    : QEglFSScreen(static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration())->display())
     , m_device(device)
     , m_output(output)
     , m_powerState(PowerStateOn)

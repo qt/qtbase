@@ -67,6 +67,36 @@ QEglFSKmsGbmIntegration::QEglFSKmsGbmIntegration()
     qCDebug(qLcEglfsKmsDebug, "New DRM/KMS via GBM integration created");
 }
 
+#ifndef EGL_EXT_platform_base
+typedef EGLDisplay (EGLAPIENTRYP PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform, void *native_display, const EGLint *attrib_list);
+#endif
+
+#ifndef EGL_PLATFORM_GBM_KHR
+#define EGL_PLATFORM_GBM_KHR 0x31D7
+#endif
+
+EGLDisplay QEglFSKmsGbmIntegration::createDisplay(EGLNativeDisplayType nativeDisplay)
+{
+    qCDebug(qLcEglfsKmsDebug, "Querying EGLDisplay");
+    EGLDisplay display;
+
+    PFNEGLGETPLATFORMDISPLAYEXTPROC getPlatformDisplay = nullptr;
+    const char *extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+    if (extensions && (strstr(extensions, "EGL_KHR_platform_gbm") || strstr(extensions, "EGL_MESA_platform_gbm"))) {
+        getPlatformDisplay = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(
+            eglGetProcAddress("eglGetPlatformDisplayEXT"));
+    }
+
+    if (getPlatformDisplay) {
+        display = getPlatformDisplay(EGL_PLATFORM_GBM_KHR, nativeDisplay, nullptr);
+    } else {
+        qCDebug(qLcEglfsKmsDebug, "No eglGetPlatformDisplay for GBM, falling back to eglGetDisplay");
+        display = eglGetDisplay(nativeDisplay);
+    }
+
+    return display;
+}
+
 EGLNativeWindowType QEglFSKmsGbmIntegration::createNativeWindow(QPlatformWindow *platformWindow,
                                                      const QSize &size,
                                                      const QSurfaceFormat &format)

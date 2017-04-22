@@ -55,6 +55,7 @@ class QEglFSKmsGbmIntegration : public QEglFSKmsIntegration
 public:
     QEglFSKmsGbmIntegration();
 
+    EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) override;
     EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
                                            const QSize &size,
                                            const QSurfaceFormat &format) override;
