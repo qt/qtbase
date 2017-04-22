@@ -125,7 +125,7 @@ public:
                                           !std::is_same<const char *, Func>::value, int>::type
         lookupHost(const QString &name, Func slot)
     {
-        return lookupHost(name, nullptr, slot);
+        return lookupHost(name, nullptr, std::move(slot));
     }
 
     // lookupHost to a functor or function pointer (with context)
@@ -141,7 +141,7 @@ public:
 
         auto slotObj = new QtPrivate::QFunctorSlotObject<Func1, 1,
                                                          typename QtPrivate::List<QHostInfo>,
-                                                         void>(slot);
+                                                         void>(std::move(slot));
         return lookupHostImpl(name, context, slotObj);
     }
 #endif // Q_QDOC

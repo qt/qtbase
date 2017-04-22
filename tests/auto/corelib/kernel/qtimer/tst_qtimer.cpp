@@ -834,7 +834,6 @@ void tst_QTimer::singleShotToFunctors()
     QTest::qWait(800);
     QCOMPARE(count, 2);
 
-#if defined(Q_COMPILER_LAMBDA)
     QTimer::singleShot(0, [&count] { ++count; });
     QCoreApplication::processEvents();
     QCOMPARE(count, 3);
@@ -853,7 +852,15 @@ void tst_QTimer::singleShotToFunctors()
 
     thread.quit();
     thread.wait();
-#endif
+
+    struct MoveOnly : CountedStruct {
+        Q_DISABLE_COPY(MoveOnly);
+        MoveOnly(MoveOnly &&o) : CountedStruct(std::move(o)) {};
+        MoveOnly(int *c) : CountedStruct(c) {}
+    };
+    QTimer::singleShot(0, MoveOnly(&count));
+    QCoreApplication::processEvents();
+    QCOMPARE(count, 5);
 
     _e.reset();
     _t = Q_NULLPTR;
