@@ -304,7 +304,7 @@ public:
     static inline typename std::enable_if<QtPrivate::FunctionPointer<Func2>::ArgumentCount == -1, QMetaObject::Connection>::type
             connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
     {
-        return connect(sender, signal, sender, slot, Qt::DirectConnection);
+        return connect(sender, signal, sender, std::move(slot), Qt::DirectConnection);
     }
 
     //connect to a functor, with a "context" object defining in which event loop is going to be executed
@@ -334,7 +334,7 @@ public:
         return connectImpl(sender, reinterpret_cast<void **>(&signal), context, Q_NULLPTR,
                            new QtPrivate::QFunctorSlotObject<Func2, SlotArgumentCount,
                                 typename QtPrivate::List_Left<typename SignalType::Arguments, SlotArgumentCount>::Value,
-                                typename SignalType::ReturnType>(slot),
+                                typename SignalType::ReturnType>(std::move(slot)),
                            type, types, &SignalType::Object::staticMetaObject);
     }
 #endif //Q_QDOC

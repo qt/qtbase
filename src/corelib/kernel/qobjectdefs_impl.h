@@ -430,7 +430,7 @@ namespace QtPrivate {
             }
         }
     public:
-        explicit QFunctorSlotObject(const Func &f) : QSlotObjectBase(&impl), function(f) {}
+        explicit QFunctorSlotObject(Func f) : QSlotObjectBase(&impl), function(std::move(f)) {}
     };
 
     // typedefs for readability for when there are no parameters
