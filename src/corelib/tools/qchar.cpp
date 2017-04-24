@@ -1550,6 +1550,11 @@ static inline ushort foldCase(ushort ch) Q_DECL_NOTHROW
     return convertCase_helper<QUnicodeTables::CasefoldTraits>(ch);
 }
 
+static inline QChar foldCase(QChar ch) Q_DECL_NOTHROW
+{
+    return QChar(foldCase(ch.unicode()));
+}
+
 /*!
     \fn QChar QChar::toCaseFolded() const
 
