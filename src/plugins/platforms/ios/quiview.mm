@@ -53,6 +53,8 @@
 #include <QtGui/private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 
+Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
+
 @implementation QUIView
 
 + (Class)layerClass
@@ -311,11 +313,42 @@
     return [super pointInside:point withEvent:event];
 }
 
-- (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
+- (void)handleTouches:(NSSet *)touches withEvent:(UIEvent *)event withState:(Qt::TouchPointState)state withTimestamp:(ulong)timeStamp
 {
+    QIOSIntegration *iosIntegration = QIOSIntegration::instance();
     bool supportsPressure = QIOSIntegration::instance()->touchDevice()->capabilities() & QTouchDevice::Pressure;
 
-    foreach (UITouch *uiTouch, m_activeTouches.keys()) {
+    if (m_activePencilTouch && [touches containsObject:m_activePencilTouch]) {
+        NSArray<UITouch *> *cTouches = [event coalescedTouchesForTouch:m_activePencilTouch];
+        int i = 0;
+        for (UITouch *cTouch in cTouches) {
+            QPointF localViewPosition = QPointF::fromCGPoint([cTouch preciseLocationInView:self]);
+            QPoint localViewPositionI = localViewPosition.toPoint();
+            QPointF globalScreenPosition = m_qioswindow->mapToGlobal(localViewPositionI) +
+                    (localViewPosition - localViewPositionI);
+            qreal pressure = cTouch.force / cTouch.maximumPossibleForce;
+            // azimuth unit vector: +x to the right, +y going downwards
+            CGVector azimuth = [cTouch azimuthUnitVectorInView: self];
+            // azimuthAngle given in radians, zero when the stylus points towards +x axis; converted to degrees with 0 pointing straight up
+            qreal azimuthAngle = [cTouch azimuthAngleInView: self] * 180 / M_PI + 90;
+            // altitudeAngle given in radians, pi / 2 is with the stylus perpendicular to the iPad, smaller values mean more tilted, but never negative.
+            // Convert to degrees with zero being perpendicular.
+            qreal altitudeAngle = 90 - cTouch.altitudeAngle * 180 / M_PI;
+            qCDebug(lcQpaTablet) << i << ":" << timeStamp << localViewPosition << pressure << state << "azimuth" << azimuth.dx << azimuth.dy
+                     << "angle" << azimuthAngle << "altitude" << cTouch.altitudeAngle
+                     << "xTilt" << qBound(-60.0, altitudeAngle * azimuth.dx, 60.0) << "yTilt" << qBound(-60.0, altitudeAngle * azimuth.dy, 60.0);
+            QWindowSystemInterface::handleTabletEvent(m_qioswindow->window(), timeStamp, localViewPosition, globalScreenPosition,
+                    // device, pointerType, buttons
+                    QTabletEvent::RotationStylus, QTabletEvent::Pen, state == Qt::TouchPointReleased ? Qt::NoButton : Qt::LeftButton,
+                    // pressure, xTilt, yTilt
+                    pressure, qBound(-60.0, altitudeAngle * azimuth.dx, 60.0), qBound(-60.0, altitudeAngle * azimuth.dy, 60.0),
+                    // tangentialPressure, rotation, z, uid, modifiers
+                    0, azimuthAngle, 0, 0, Qt::NoModifier);
+            ++i;
+        }
+    }
+
+    for (UITouch *uiTouch : m_activeTouches.keys()) {
         QWindowSystemInterface::TouchPoint &touchPoint = m_activeTouches[uiTouch];
         if (![touches containsObject:uiTouch]) {
             touchPoint.state = Qt::TouchPointStationary;
@@ -344,17 +377,13 @@
                 touchPoint.pressure = uiTouch.force / uiTouch.maximumPossibleForce;
             } else {
                 // We don't claim that our touch device supports QTouchDevice::Pressure,
-                // but fill in a meaningfull value in case clients use it anyways.
+                // but fill in a meaningful value in case clients use it anyway.
                 touchPoint.pressure = (state == Qt::TouchPointReleased) ? 0.0 : 1.0;
             }
         }
     }
-}
-
-- (void)sendTouchEventWithTimestamp:(ulong)timeStamp
-{
-    QIOSIntegration *iosIntegration = QIOSIntegration::instance();
-    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
+    if (!m_activeTouches.isEmpty())
+        QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -364,8 +393,16 @@
     // points to QWindowSystemInterface::TouchPoints, and assigns each TouchPoint
     // an id for use by Qt.
     for (UITouch *touch in touches) {
-        Q_ASSERT(!m_activeTouches.contains(touch));
-        m_activeTouches[touch].id = m_nextTouchId++;
+        if (touch.type == UITouchTypeStylus) {
+            if (Q_UNLIKELY(m_activePencilTouch)) {
+                qWarning("ignoring additional Pencil while first is still active");
+                continue;
+            }
+            m_activePencilTouch = touch;
+        } else {
+            Q_ASSERT(!m_activeTouches.contains(touch));
+            m_activeTouches[touch].id = m_nextTouchId++;
+        }
     }
 
     if (m_qioswindow->shouldAutoActivateWindow() && m_activeTouches.size() == 1) {
@@ -376,31 +413,33 @@
             topLevel->requestActivateWindow();
     }
 
-    [self updateTouchList:touches withState:Qt::TouchPointPressed];
-    [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
+    [self handleTouches:touches withEvent:event withState:Qt::TouchPointPressed withTimestamp:ulong(event.timestamp * 1000)];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self updateTouchList:touches withState:Qt::TouchPointMoved];
-    [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
+    [self handleTouches:touches withEvent:event withState:Qt::TouchPointMoved withTimestamp:ulong(event.timestamp * 1000)];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self updateTouchList:touches withState:Qt::TouchPointReleased];
-    [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
+    [self handleTouches:touches withEvent:event withState:Qt::TouchPointReleased withTimestamp:ulong(event.timestamp * 1000)];
 
     // Remove ended touch points from the active set:
-    for (UITouch *touch in touches)
-        m_activeTouches.remove(touch);
-    if (m_activeTouches.isEmpty())
+    for (UITouch *touch in touches) {
+        if (touch.type == UITouchTypeStylus) {
+            m_activePencilTouch = nil;
+        } else {
+            m_activeTouches.remove(touch);
+        }
+    }
+    if (m_activeTouches.isEmpty() && !m_activePencilTouch)
         m_nextTouchId = 0;
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    if (m_activeTouches.isEmpty())
+    if (m_activeTouches.isEmpty() && !m_activePencilTouch)
         return;
 
     // When four-finger swiping, we get a touchesCancelled callback
@@ -424,11 +463,12 @@
     // sub-set of the active touch events are intentionally cancelled.
 
     NSInteger count = static_cast<NSInteger>([touches count]);
-    if (count != 0 && count != m_activeTouches.count())
+    if (count != 0 && count != m_activeTouches.count() && !m_activePencilTouch)
         qWarning("Subset of active touches cancelled by UIKit");
 
     m_activeTouches.clear();
     m_nextTouchId = 0;
+    m_activePencilTouch = nil;
 
     NSTimeInterval timestamp = event ? event.timestamp : [[NSProcessInfo processInfo] systemUptime];
 

@@ -123,6 +123,7 @@ QIOSIntegration::QIOSIntegration()
     }
     m_touchDevice->setCapabilities(touchCapabilities);
     QWindowSystemInterface::registerTouchDevice(m_touchDevice);
+    QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
     QMacInternalPasteboardMime::initializeMimeTypes();
 
     for (int i = 0; i < m_optionalPlugins->metaData().size(); ++i)
