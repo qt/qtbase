@@ -10907,6 +10907,46 @@ static inline bool qt_starts_with(QStringView haystack, QChar needle, Qt::CaseSe
                                        : foldCase(haystack.front()) == foldCase(needle));
 }
 
+/*!
+    \fn bool qStartsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs)
+    \since 5.10
+    \fn bool qStartsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+    \since 5.10
+    \fn bool qStartsWith(QLatin1String haystack, QStringview needle, Qt::CaseSensitivity cs)
+    \since 5.10
+    \fn bool qStartsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+    \since 5.10
+    \relates QStringView
+
+    Returns \c true if \a haystack starts with \a needle,
+    otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
+    otherwise the search is case-insensitive.
+
+    \sa qEndsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1String::endsWith()
+*/
+
+bool qStartsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_starts_with_impl(haystack, needle, cs);
+}
+
+bool qStartsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_starts_with_impl(haystack, needle, cs);
+}
+
+bool qStartsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_starts_with_impl(haystack, needle, cs);
+}
+
+bool qStartsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_starts_with_impl(haystack, needle, cs);
+}
+
 template <typename Haystack, typename Needle>
 bool qt_ends_with_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
@@ -10937,6 +10977,46 @@ static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSens
     return haystack.size()
            && (cs == Qt::CaseSensitive ? haystack.back() == needle
                                        : foldCase(haystack.back()) == foldCase(needle));
+}
+
+/*!
+    \fn bool qEndsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs)
+    \since 5.10
+    \fn bool qEndsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+    \since 5.10
+    \fn bool qEndsWith(QLatin1String haystack, QStringview needle, Qt::CaseSensitivity cs)
+    \since 5.10
+    \fn bool qEndsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+    \since 5.10
+    \relates QStringView
+
+    Returns \c true if \a haystack ends with \a needle,
+    otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
+    otherwise the search is case-insensitive.
+
+    \sa qEndsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1String::endsWith()
+*/
+
+bool qEndsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_ends_with_impl(haystack, needle, cs);
+}
+
+bool qEndsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_ends_with_impl(haystack, needle, cs);
+}
+
+bool qEndsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_ends_with_impl(haystack, needle, cs);
+}
+
+bool qEndsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return qt_ends_with_impl(haystack, needle, cs);
 }
 
 /*!

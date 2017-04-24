@@ -58,6 +58,18 @@ Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QLatin
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
 
+
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qStartsWith(QStringView   haystack, QStringView   needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qStartsWith(QStringView   haystack, QLatin1String needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qStartsWith(QLatin1String haystack, QStringView   needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qStartsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qEndsWith(QStringView   haystack, QStringView   needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qEndsWith(QStringView   haystack, QLatin1String needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qEndsWith(QLatin1String haystack, QStringView   needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qEndsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+
+
 Q_CORE_EXPORT QByteArray qConvertToLatin1(QStringView str) Q_REQUIRED_RESULT;
 Q_CORE_EXPORT QByteArray qConvertToUtf8(QStringView str) Q_REQUIRED_RESULT;
 Q_CORE_EXPORT QByteArray qConvertToLocal8Bit(QStringView str) Q_REQUIRED_RESULT;
