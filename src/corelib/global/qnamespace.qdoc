@@ -250,7 +250,14 @@
            (In the future, the compression feature may be implemented across platforms.)
            You can test the attribute to see whether compression is enabled.
            If your application needs to handle all events with no compression,
-           you can unset this attribute. This value has been added in Qt 5.7.
+           you can unset this attribute. Notice that input events from tablet devices
+           will not be compressed. See AA_CompressTabletEvents if you want these to be
+           compressed as well. This value has been added in Qt 5.7.
+
+    \value AA_CompressTabletEvents Enables compression of input events from tablet devices.
+           Notice that AA_CompressHighFrequencyEvents must be true for events compression
+           to be enabled, and that this flag extends the former to tablet events. Its default
+           value is false. This value has been added in Qt 5.10.
 
     \value AA_DontCheckOpenGLContextThreadAffinity When making a context
            current using QOpenGLContext, do not check that the

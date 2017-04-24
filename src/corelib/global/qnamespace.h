@@ -509,6 +509,7 @@ public:
         AA_DontCheckOpenGLContextThreadAffinity = 26,
         AA_DisableShaderDiskCache = 27,
         AA_DontShowShortcutsInContextMenus = 28,
+        AA_CompressTabletEvents = 29,
 
         // Add new attributes before this line
         AA_AttributeCount
