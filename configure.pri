@@ -155,7 +155,13 @@ defineReplace(qtConfFunc_licenseCheck) {
                                     $$[QMAKE_SPEC] $$[QMAKE_XSPEC]", \
                                 LicheckOutput): \
                 return(false)
-            eval($$LicheckOutput)
+            logn()
+            for (o, LicheckOutput) {
+                contains(o, "\\w+=.*"): \
+                    eval($$o)
+                else: \
+                    logn($$o)
+            }
             config.input.qt_edition = $$Edition
             config.input.qt_licheck = $$Licheck
             config.input.qt_release_date = $$ReleaseDate
