@@ -2113,31 +2113,52 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
     }
 }
 
-Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len)
+static const QChar *qt_find_nonstd3(const QChar *uc, int len, Qt::CaseSensitivity cs)
 {
     if (len > 63)
-        return false;
+        return uc;
 
     for (int i = 0; i < len; ++i) {
         ushort c = uc[i].unicode();
         if (c == '-' && (i == 0 || i == len - 1))
-            return false;
+            return uc + i;
 
         // verifying the absence of non-LDH is the same as verifying that
         // only LDH is present
+        if (cs == Qt::CaseInsensitive && (c >= 'A' && c <= 'Z'))
+            continue;
         if (c == '-' || (c >= '0' && c <= '9')
-            || (c >= 'A' && c <= 'Z')
             || (c >= 'a' && c <= 'z')
             //underscore is not supposed to be allowed, but other browser accept it (QTBUG-7434)
             || c == '_')
             continue;
 
-        return false;
+        return uc + i;
     }
 
-    return true;
+    return Q_NULLPTR;
 }
 
+Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len)
+{
+    return qt_find_nonstd3(uc, len, Qt::CaseInsensitive) == Q_NULLPTR;
+}
+
+static bool qt_check_nameprepped_std3(const QChar *in, int len)
+{
+    // fast path: check for lowercase ASCII
+    const QChar *firstNonAscii = qt_find_nonstd3(in, len, Qt::CaseSensitive);
+    if (firstNonAscii == Q_NULLPTR) {
+        // everything was lowercase ASCII, digits or hyphen
+        return true;
+    }
+
+    const QChar *e = in + len;
+    QString origin = QString::fromRawData(firstNonAscii, e - firstNonAscii);
+    QString copy = origin;
+    qt_nameprep(&copy, 0);
+    return origin == copy;
+}
 
 static inline uint encodeDigit(uint digit)
 {
@@ -2539,13 +2560,19 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
             qt_punycodeEncoder(result.constData() + prevLen, result.size() - prevLen, &aceForm);
 
             // We use resize()+memcpy() here because we're overwriting the data we've copied
+            bool appended = false;
             if (isIdnEnabled) {
                 QString tmp = qt_punycodeDecoder(aceForm);
                 if (tmp.isEmpty())
                     return QString(); // shouldn't happen, since we've just punycode-encoded it
-                result.resize(prevLen + tmp.size());
-                memcpy(result.data() + prevLen, tmp.constData(), tmp.size() * sizeof(QChar));
-            } else {
+                if (qt_check_nameprepped_std3(tmp.constData(), tmp.size())) {
+                    result.resize(prevLen + tmp.size());
+                    memcpy(result.data() + prevLen, tmp.constData(), tmp.size() * sizeof(QChar));
+                    appended = true;
+                }
+            }
+
+            if (!appended) {
                 result.resize(prevLen + aceForm.size());
                 memcpy(result.data() + prevLen, aceForm.constData(), aceForm.size() * sizeof(QChar));
             }
