@@ -1223,7 +1223,8 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
         CFArrayAppendValue(certArray, certRef);
     }
     SecTrustSetAnchorCertificates(trust, certArray);
-    SecTrustSetAnchorCertificatesOnly(trust, false);
+    // Secure Transport should use anchors only from our QSslConfiguration:
+    SecTrustSetAnchorCertificatesOnly(trust, true);
 
     SecTrustResultType trustResult = kSecTrustResultInvalid;
     SecTrustEvaluate(trust, &trustResult);
