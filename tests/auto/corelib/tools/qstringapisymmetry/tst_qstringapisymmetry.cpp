@@ -182,6 +182,51 @@ private Q_SLOTS:
     //void compare_const_char_star_const_char_star() { compare_impl<const char *, const char *>(); }
 
 private:
+    void startsWith_data(bool rhsIsQChar = false);
+    template <typename Haystack, typename Needle> void startsWith_impl() const;
+
+    void endsWith_data(bool rhsIsQChar = false);
+    template <typename Haystack, typename Needle> void endsWith_impl() const;
+
+private Q_SLOTS:
+    // test all combinations of {QString, QStringRef} x {QString, QStringRef, QLatin1String, QChar}:
+    void startsWith_QString_QString_data() { startsWith_data(); }
+    void startsWith_QString_QString() { startsWith_impl<QString, QString>(); }
+    void startsWith_QString_QStringRef_data() { startsWith_data(); }
+    void startsWith_QString_QStringRef() { startsWith_impl<QString, QStringRef>(); }
+    void startsWith_QString_QLatin1String_data() { startsWith_data(); }
+    void startsWith_QString_QLatin1String() { startsWith_impl<QString, QLatin1String>(); }
+    void startsWith_QString_QChar_data() { startsWith_data(false); }
+    void startsWith_QString_QChar() { startsWith_impl<QString, QChar>(); }
+
+    void startsWith_QStringRef_QString_data() { startsWith_data(); }
+    void startsWith_QStringRef_QString() { startsWith_impl<QStringRef, QString>(); }
+    void startsWith_QStringRef_QStringRef_data() { startsWith_data(); }
+    void startsWith_QStringRef_QStringRef() { startsWith_impl<QStringRef, QStringRef>(); }
+    void startsWith_QStringRef_QLatin1String_data() { startsWith_data(); }
+    void startsWith_QStringRef_QLatin1String() { startsWith_impl<QStringRef, QLatin1String>(); }
+    void startsWith_QStringRef_QChar_data() { startsWith_data(false); }
+    void startsWith_QStringRef_QChar() { startsWith_impl<QStringRef, QChar>(); }
+
+    void endsWith_QString_QString_data() { endsWith_data(); }
+    void endsWith_QString_QString() { endsWith_impl<QString, QString>(); }
+    void endsWith_QString_QStringRef_data() { endsWith_data(); }
+    void endsWith_QString_QStringRef() { endsWith_impl<QString, QStringRef>(); }
+    void endsWith_QString_QLatin1String_data() { endsWith_data(); }
+    void endsWith_QString_QLatin1String() { endsWith_impl<QString, QLatin1String>(); }
+    void endsWith_QString_QChar_data() { endsWith_data(false); }
+    void endsWith_QString_QChar() { endsWith_impl<QString, QChar>(); }
+
+    void endsWith_QStringRef_QString_data() { endsWith_data(); }
+    void endsWith_QStringRef_QString() { endsWith_impl<QStringRef, QString>(); }
+    void endsWith_QStringRef_QStringRef_data() { endsWith_data(); }
+    void endsWith_QStringRef_QStringRef() { endsWith_impl<QStringRef, QStringRef>(); }
+    void endsWith_QStringRef_QLatin1String_data() { endsWith_data(); }
+    void endsWith_QStringRef_QLatin1String() { endsWith_impl<QStringRef, QLatin1String>(); }
+    void endsWith_QStringRef_QChar_data() { endsWith_data(false); }
+    void endsWith_QStringRef_QChar() { endsWith_impl<QStringRef, QChar>(); }
+
+private:
     void mid_data();
     template <typename String> void mid_impl();
 
@@ -446,11 +491,201 @@ void tst_QStringApiSymmetry::compare_impl() const
 static QString empty = QLatin1String("");
 // the tests below rely on the fact that these objects' names match their contents:
 static QString a = QStringLiteral("a");
+static QString A = QStringLiteral("A");
 static QString b = QStringLiteral("b");
+static QString B = QStringLiteral("B");
 static QString c = QStringLiteral("c");
+static QString C = QStringLiteral("C");
 static QString ab = QStringLiteral("ab");
+static QString aB = QStringLiteral("aB");
+static QString Ab = QStringLiteral("Ab");
+static QString AB = QStringLiteral("AB");
 static QString bc = QStringLiteral("bc");
+static QString bC = QStringLiteral("bC");
+static QString Bc = QStringLiteral("Bc");
+static QString BC = QStringLiteral("BC");
 static QString abc = QStringLiteral("abc");
+static QString abC = QStringLiteral("abC");
+static QString aBc = QStringLiteral("aBc");
+static QString aBC = QStringLiteral("aBC");
+static QString Abc = QStringLiteral("Abc");
+static QString AbC = QStringLiteral("AbC");
+static QString ABc = QStringLiteral("ABc");
+static QString ABC = QStringLiteral("ABC");
+
+void tst_QStringApiSymmetry::startsWith_data(bool rhsHasVariableLength)
+{
+    QTest::addColumn<QStringRef>("haystackU16");
+    QTest::addColumn<QLatin1String>("haystackL1");
+    QTest::addColumn<QStringRef>("needleU16");
+    QTest::addColumn<QLatin1String>("needleL1");
+    QTest::addColumn<bool>("resultCS");
+    QTest::addColumn<bool>("resultCIS");
+
+    if (rhsHasVariableLength) {
+        QTest::addRow("null ~= ^null")   << QStringRef() << QLatin1String()
+                                         << QStringRef() << QLatin1String() << true << true;
+        QTest::addRow("empty ~= ^null")  << QStringRef(&empty) << QLatin1String("")
+                                         << QStringRef() << QLatin1String() << true << true;
+        QTest::addRow("a ~= ^null")      << QStringRef(&a) << QLatin1String("a")
+                                         << QStringRef() << QLatin1String() << true << true;
+        QTest::addRow("null ~= ^empty")  << QStringRef() << QLatin1String()
+                                         << QStringRef(&empty) << QLatin1String("") << false << false;
+        QTest::addRow("a ~= ^empty")     << QStringRef(&a) << QLatin1String("a")
+                                         << QStringRef(&empty) << QLatin1String("") << true << true;
+        QTest::addRow("empty ~= ^empty") << QStringRef(&empty) << QLatin1String("")
+                                         << QStringRef(&empty) << QLatin1String("") << true << true;
+    }
+    QTest::addRow("null ~= ^a")      << QStringRef() << QLatin1String()
+                                     << QStringRef(&a) << QLatin1String("a") << false << false;
+    QTest::addRow("empty ~= ^a")     << QStringRef(&empty) << QLatin1String("")
+                                     << QStringRef(&a) << QLatin1String("a") << false << false;
+
+#define ROW(h, n, cs, cis) \
+    QTest::addRow("%s ~= ^%s", #h, #n) << QStringRef(&h) << QLatin1String(#h) \
+                                       << QStringRef(&n) << QLatin1String(#n) \
+                                       << bool(cs) << bool(cis)
+    ROW(a,  a, 1, 1);
+    ROW(a,  A, 0, 1);
+    ROW(a,  b, 0, 0);
+
+    if (rhsHasVariableLength)
+        ROW(a,  aB, 0, 0);
+
+    ROW(ab, a,  1, 1);
+    if (rhsHasVariableLength) {
+        ROW(ab, ab, 1, 1);
+        ROW(ab, aB, 0, 1);
+        ROW(ab, Ab, 0, 1);
+    }
+    ROW(ab, c,  0, 0);
+
+    if (rhsHasVariableLength)
+        ROW(ab, abc, 0, 0);
+
+    ROW(Abc, c, 0, 0);
+    if (rhsHasVariableLength) {
+        ROW(Abc, ab, 0, 1);
+        ROW(Abc, aB, 0, 1);
+        ROW(Abc, Ab, 1, 1);
+        ROW(Abc, AB, 0, 1);
+        ROW(aBC, ab, 0, 1);
+        ROW(aBC, aB, 1, 1);
+        ROW(aBC, Ab, 0, 1);
+        ROW(aBC, AB, 0, 1);
+    }
+    ROW(ABC, b, 0, 0);
+    ROW(ABC, a, 0, 1);
+#undef ROW
+}
+
+template <typename Haystack, typename Needle>
+void tst_QStringApiSymmetry::startsWith_impl() const
+{
+    QFETCH(const QStringRef, haystackU16);
+    QFETCH(const QLatin1String, haystackL1);
+    QFETCH(const QStringRef, needleU16);
+    QFETCH(const QLatin1String, needleL1);
+    QFETCH(const bool, resultCS);
+    QFETCH(const bool, resultCIS);
+
+    const auto haystackU8 = haystackU16.toUtf8();
+    const auto needleU8 = needleU16.toUtf8();
+
+    const auto haystack = make<Haystack>(haystackU16, haystackL1, haystackU8);
+    const auto needle = make<Needle>(needleU16, needleL1, needleU8);
+
+    QCOMPARE(haystack.startsWith(needle), resultCS);
+    QCOMPARE(haystack.startsWith(needle, Qt::CaseSensitive), resultCS);
+    QCOMPARE(haystack.startsWith(needle, Qt::CaseInsensitive), resultCIS);
+}
+
+void tst_QStringApiSymmetry::endsWith_data(bool rhsHasVariableLength)
+{
+    QTest::addColumn<QStringRef>("haystackU16");
+    QTest::addColumn<QLatin1String>("haystackL1");
+    QTest::addColumn<QStringRef>("needleU16");
+    QTest::addColumn<QLatin1String>("needleL1");
+    QTest::addColumn<bool>("resultCS");
+    QTest::addColumn<bool>("resultCIS");
+
+    if (rhsHasVariableLength) {
+        QTest::addRow("null ~= null$")   << QStringRef() << QLatin1String()
+                                         << QStringRef() << QLatin1String() << true << true;
+        QTest::addRow("empty ~= null$")  << QStringRef(&empty) << QLatin1String("")
+                                         << QStringRef() << QLatin1String() << true << true;
+        QTest::addRow("a ~= null$")      << QStringRef(&a) << QLatin1String("a")
+                                         << QStringRef() << QLatin1String() << true << true;
+        QTest::addRow("null ~= empty$")  << QStringRef() << QLatin1String()
+                                         << QStringRef(&empty) << QLatin1String("") << false << false;
+        QTest::addRow("a ~= empty$")     << QStringRef(&a) << QLatin1String("a")
+                                         << QStringRef(&empty) << QLatin1String("") << true << true;
+        QTest::addRow("empty ~= empty$") << QStringRef(&empty) << QLatin1String("")
+                                         << QStringRef(&empty) << QLatin1String("") << true << true;
+    }
+    QTest::addRow("null ~= a$")      << QStringRef() << QLatin1String()
+                                     << QStringRef(&a) << QLatin1String("a") << false << false;
+    QTest::addRow("empty ~= a$")     << QStringRef(&empty) << QLatin1String("")
+                                     << QStringRef(&a) << QLatin1String("a") << false << false;
+
+#define ROW(h, n, cs, cis) \
+    QTest::addRow("%s ~= %s$", #h, #n) << QStringRef(&h) << QLatin1String(#h) \
+                                       << QStringRef(&n) << QLatin1String(#n) \
+                                       << bool(cs) << bool(cis)
+    ROW(a,  a, 1, 1);
+    ROW(a,  A, 0, 1);
+    ROW(a,  b, 0, 0);
+
+    if (rhsHasVariableLength)
+        ROW(b, ab, 0, 0);
+
+    ROW(ab, b,  1, 1);
+    if (rhsHasVariableLength) {
+        ROW(ab, ab, 1, 1);
+        ROW(ab, aB, 0, 1);
+        ROW(ab, Ab, 0, 1);
+    }
+    ROW(ab, c,  0, 0);
+
+    if (rhsHasVariableLength)
+        ROW(bc, abc, 0, 0);
+
+    ROW(Abc, c, 1, 1);
+    if (rhsHasVariableLength) {
+        ROW(Abc, bc, 1, 1);
+        ROW(Abc, bC, 0, 1);
+        ROW(Abc, Bc, 0, 1);
+        ROW(Abc, BC, 0, 1);
+        ROW(aBC, bc, 0, 1);
+        ROW(aBC, bC, 0, 1);
+        ROW(aBC, Bc, 0, 1);
+        ROW(aBC, BC, 1, 1);
+    }
+    ROW(ABC, b, 0, 0);
+    ROW(ABC, a, 0, 0);
+#undef ROW
+}
+
+template <typename Haystack, typename Needle>
+void tst_QStringApiSymmetry::endsWith_impl() const
+{
+    QFETCH(const QStringRef, haystackU16);
+    QFETCH(const QLatin1String, haystackL1);
+    QFETCH(const QStringRef, needleU16);
+    QFETCH(const QLatin1String, needleL1);
+    QFETCH(const bool, resultCS);
+    QFETCH(const bool, resultCIS);
+
+    const auto haystackU8 = haystackU16.toUtf8();
+    const auto needleU8 = needleU16.toUtf8();
+
+    const auto haystack = make<Haystack>(haystackU16, haystackL1, haystackU8);
+    const auto needle = make<Needle>(needleU16, needleL1, needleU8);
+
+    QCOMPARE(haystack.endsWith(needle), resultCS);
+    QCOMPARE(haystack.endsWith(needle, Qt::CaseSensitive), resultCS);
+    QCOMPARE(haystack.endsWith(needle, Qt::CaseInsensitive), resultCIS);
+}
 
 void tst_QStringApiSymmetry::mid_data()
 {
