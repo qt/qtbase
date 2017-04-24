@@ -693,6 +693,11 @@ static int qt_compare_strings(QStringView lhs, QLatin1String rhs, Qt::CaseSensit
         return ucstricmp(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
+static int qt_compare_strings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+{
+    return -qt_compare_strings(rhs, lhs, cs);
+}
+
 static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     if (lhs.isEmpty())
@@ -761,7 +766,7 @@ int qCompareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) 
 */
 int qCompareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
-    return -qt_compare_strings(rhs, lhs, cs);
+    return qt_compare_strings(lhs, rhs, cs);
 }
 
 /*!
