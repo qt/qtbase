@@ -670,6 +670,14 @@ void tst_QUrlInternal::ace_testsuite()
         QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
     QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
 
+    QUrl u;
+    u.setHost(domain);
+    QVERIFY(u.isValid());
+    QCOMPARE(u.host(), unicode + suffix);
+    QCOMPARE(u.host(QUrl::EncodeUnicode), toace + suffix);
+    QCOMPARE(u.toEncoded(), "//" + toace.toLatin1() + suffix);
+    QCOMPARE(u.toDisplayString(), "//" + unicode + suffix);
+
     domain = in + (suffix ? ".troll.No" : "");
     QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
     if (fromace != ".")
