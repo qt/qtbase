@@ -461,7 +461,7 @@ typedef qptrdiff qintptr;
 #endif
 
 #ifdef QT_ASCII_CAST_WARNINGS
-#  define QT_ASCII_CAST_WARN Q_DECL_DEPRECATED
+#  define QT_ASCII_CAST_WARN Q_DECL_DEPRECATED_X("Use fromUtf8, QStringLiteral, or QLatin1String")
 #else
 #  define QT_ASCII_CAST_WARN
 #endif
