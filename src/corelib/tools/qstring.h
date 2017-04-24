@@ -110,6 +110,24 @@ public:
     Q_DECL_CONSTEXPR QLatin1Char front() const Q_REQUIRED_RESULT { return at(0); }
     Q_DECL_CONSTEXPR QLatin1Char back() const Q_REQUIRED_RESULT { return at(size() - 1); }
 
+    Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
+    { return qStartsWith(*this, s, cs); }
+    Q_REQUIRED_RESULT bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
+    { return qStartsWith(*this, s, cs); }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR bool startsWith(QChar c) const Q_DECL_NOTHROW
+    { return !isEmpty() && front() == c; }
+    Q_REQUIRED_RESULT inline bool startsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
+    { return qStartsWith(*this, QStringView(&c, 1), cs); }
+
+    Q_REQUIRED_RESULT bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
+    { return qEndsWith(*this, s, cs); }
+    Q_REQUIRED_RESULT bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
+    { return qEndsWith(*this, s, cs); }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR bool endsWith(QChar c) const Q_DECL_NOTHROW
+    { return !isEmpty() && back() == c; }
+    Q_REQUIRED_RESULT inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
+    { return qEndsWith(*this, QStringView(&c, 1), cs); }
+
     using value_type = const char;
     using reference = value_type&;
     using const_reference = reference;

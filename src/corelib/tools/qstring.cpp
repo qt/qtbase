@@ -8889,6 +8889,46 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
+    \fn bool QLatin1String::startsWith(QStringView str, Qt::CaseSensitivity cs) const
+    \since 5.10
+    \fn bool QLatin1String::startsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \since 5.10
+    \fn bool QLatin1String::startsWith(QChar ch) const
+    \since 5.10
+    \fn bool QLatin1String::startsWith(QChar ch, Qt::CaseSensitivity cs) const
+    \since 5.10
+
+    Returns \c true if this Latin-1 string starts with string-view \a str,
+    Latin-1 string \a l1, or character \a ch, respectively;
+    otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
+    otherwise the search is case-insensitive.
+
+    \sa endsWith(), qStartsWith()
+*/
+
+/*!
+    \fn bool QLatin1String::endsWith(QStringView str, Qt::CaseSensitivity cs) const
+    \since 5.10
+    \fn bool QLatin1String::endsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \since 5.10
+    \fn bool QLatin1String::endsWith(QChar ch) const
+    \since 5.10
+    \fn bool QLatin1String::endsWith(QChar ch, Qt::CaseSensitivity cs) const
+    \since 5.10
+
+    Returns \c true if this Latin-1 string ends with string-view \a str,
+    Latin-1 string \a l1, or character \a ch, respectively;
+    otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
+    otherwise the search is case-insensitive.
+
+    \sa startsWith(), qEndsWith()
+*/
+
+/*!
     \fn QLatin1String::const_iterator QLatin1String::begin() const
     \since 5.10
 
