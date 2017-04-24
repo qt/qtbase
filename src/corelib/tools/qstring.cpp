@@ -4536,6 +4536,7 @@ QString QString::mid(int position, int n) const
     \sa endsWith(), left(), right(), mid(), chop(), truncate()
 */
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns \c true if the string starts with \a s; otherwise returns
     \c false.
@@ -4551,6 +4552,7 @@ bool QString::startsWith(const QString& s, Qt::CaseSensitivity cs) const
 {
     return qt_starts_with(*this, s, cs);
 }
+#endif
 
 /*!
   \overload startsWith()
@@ -4571,6 +4573,7 @@ bool QString::startsWith(QChar c, Qt::CaseSensitivity cs) const
     return qt_starts_with(*this, c, cs);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 4.8
     \overload
@@ -4586,7 +4589,23 @@ bool QString::startsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 {
     return qt_starts_with(*this, s, cs);
 }
+#endif
 
+/*!
+    \fn bool QString::startsWith(QStringView str, Qt::CaseSensitivity cs) const
+    \since 5.10
+    \overload
+
+    Returns \c true if the string starts with the string-view \a str;
+    otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case-sensitive;
+    otherwise the search is case insensitive.
+
+    \sa endsWith()
+*/
+
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns \c true if the string ends with \a s; otherwise returns
     \c false.
@@ -4618,7 +4637,20 @@ bool QString::endsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 {
     return qt_ends_with(*this, s, cs);
 }
+#endif // QT_STRINGVIEW_LEVEL < 2
 
+/*!
+    \fn bool QString::endsWith(QStringView str, Qt::CaseSensitivity cs) const
+    \since 5.10
+    \overload endsWith()
+    Returns \c true if the string ends with the string view \a str;
+    otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (default), the search is case
+    sensitive; otherwise the search is case insensitive.
+
+    \sa startsWith()
+*/
 
 /*!
     \overload endsWith()
@@ -10665,6 +10697,13 @@ bool QStringRef::startsWith(QLatin1String str, Qt::CaseSensitivity cs) const
 }
 
 /*!
+    \fn bool QStringRef::startsWith(QStringView str, Qt::CaseSensitivity cs) const
+    \since 5.10
+    \overload startsWith()
+    \sa QString::startsWith(), endsWith()
+*/
+
+/*!
     \since 4.8
     \overload startsWith()
     \sa QString::startsWith(), endsWith()
@@ -10732,6 +10771,13 @@ bool QStringRef::endsWith(QLatin1String str, Qt::CaseSensitivity cs) const
 {
     return qt_ends_with(*this, str, cs);
 }
+
+/*!
+    \fn bool QStringRef::endsWith(QStringView str, Qt::CaseSensitivity cs) const
+    \since 5.10
+    \overload endsWith()
+    \sa QString::endsWith(), startsWith()
+*/
 
 /*!
     \since 4.8
