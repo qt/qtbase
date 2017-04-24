@@ -695,6 +695,8 @@ static int qt_compare_strings(QStringView lhs, QLatin1String rhs, Qt::CaseSensit
 
 static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
+    if (lhs.isEmpty())
+        return lencmp(0, rhs.size());
     const auto l = std::min(lhs.size(), rhs.size());
     int r;
     if (cs == Qt::CaseSensitive)
