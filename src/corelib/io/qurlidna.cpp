@@ -2415,8 +2415,8 @@ static bool qt_is_idn_enabled(const QString &domain)
         return false;
 
     int len = domain.size() - idx - 1;
-    QString tldString(domain.constData() + idx + 1, len);
-    qt_nameprep(&tldString, 0);
+    QString tldString = qt_ACE_do(QString::fromRawData(domain.constData() + idx + 1, len), ToAceOnly, ForbidLeadingDot);
+    len = tldString.size();
 
     const QChar *tld = tldString.constData();
 
