@@ -654,6 +654,38 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn bool QStringView::startsWith(QStringView str, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::startsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::startsWith(QChar ch) const
+    \fn bool QStringView::startsWith(QChar ch, Qt::CaseSensitivity cs) const
+
+    Returns \c true if this string-view starts with string-view \a str,
+    Latin-1 string \a l1, or character \a ch, respectively;
+    otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
+    otherwise the search is case-insensitive.
+
+    \sa endsWith(), qStartsWith()
+*/
+
+/*!
+    \fn bool QStringView::endsWith(QStringView str, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::endsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::endsWith(QChar ch) const
+    \fn bool QStringView::endsWith(QChar ch, Qt::CaseSensitivity cs) const
+
+    Returns \c true if this string-view ends with string-view \a str,
+    Latin-1 string \a l1, or character \a ch, respectively;
+    otherwise returns \c false.
+
+    If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
+    otherwise the search is case-insensitive.
+
+    \sa startsWith(), qEndsWith()
+*/
+
+/*!
     \fn QByteArray QStringView::toLatin1() const
 
     Returns a Latin-1 representation of the string as a QByteArray.

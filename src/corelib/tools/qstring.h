@@ -179,6 +179,14 @@ Q_DECLARE_TYPEINFO(QLatin1String, Q_MOVABLE_TYPE);
 // Qt 4.x compatibility
 typedef QLatin1String QLatin1Literal;
 
+//
+// QStringView members that require QLatin1String:
+//
+bool QStringView::startsWith(QLatin1String s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
+{ return qStartsWith(*this, s, cs); }
+bool QStringView::endsWith(QLatin1String s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
+{ return qEndsWith(*this, s, cs); }
+
 class Q_CORE_EXPORT QString
 {
 public:

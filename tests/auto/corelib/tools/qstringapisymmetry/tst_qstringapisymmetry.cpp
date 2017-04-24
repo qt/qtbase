@@ -189,7 +189,7 @@ private:
     template <typename Haystack, typename Needle> void endsWith_impl() const;
 
 private Q_SLOTS:
-    // test all combinations of {QString, QStringRef} x {QString, QStringRef, QStringView, QLatin1String, QChar}:
+    // test all combinations of {QString, QStringRef, QStringView} x {QString, QStringRef, QStringView, QLatin1String, QChar}:
     void startsWith_QString_QString_data() { startsWith_data(); }
     void startsWith_QString_QString() { startsWith_impl<QString, QString>(); }
     void startsWith_QString_QStringRef_data() { startsWith_data(); }
@@ -212,6 +212,17 @@ private Q_SLOTS:
     void startsWith_QStringRef_QChar_data() { startsWith_data(false); }
     void startsWith_QStringRef_QChar() { startsWith_impl<QStringRef, QChar>(); }
 
+    void startsWith_QStringView_QString_data() { startsWith_data(); }
+    void startsWith_QStringView_QString() { startsWith_impl<QStringView, QString>(); }
+    void startsWith_QStringView_QStringRef_data() { startsWith_data(); }
+    void startsWith_QStringView_QStringRef() { startsWith_impl<QStringView, QStringRef>(); }
+    void startsWith_QStringView_QStringView_data() { startsWith_data(); }
+    void startsWith_QStringView_QStringView() { startsWith_impl<QStringView, QStringView>(); }
+    void startsWith_QStringView_QLatin1String_data() { startsWith_data(); }
+    void startsWith_QStringView_QLatin1String() { startsWith_impl<QStringView, QLatin1String>(); }
+    void startsWith_QStringView_QChar_data() { startsWith_data(false); }
+    void startsWith_QStringView_QChar() { startsWith_impl<QStringView, QChar>(); }
+
     void endsWith_QString_QString_data() { endsWith_data(); }
     void endsWith_QString_QString() { endsWith_impl<QString, QString>(); }
     void endsWith_QString_QStringRef_data() { endsWith_data(); }
@@ -233,6 +244,17 @@ private Q_SLOTS:
     void endsWith_QStringRef_QLatin1String() { endsWith_impl<QStringRef, QLatin1String>(); }
     void endsWith_QStringRef_QChar_data() { endsWith_data(false); }
     void endsWith_QStringRef_QChar() { endsWith_impl<QStringRef, QChar>(); }
+
+    void endsWith_QStringView_QString_data() { endsWith_data(); }
+    void endsWith_QStringView_QString() { endsWith_impl<QStringView, QString>(); }
+    void endsWith_QStringView_QStringRef_data() { endsWith_data(); }
+    void endsWith_QStringView_QStringRef() { endsWith_impl<QStringView, QStringRef>(); }
+    void endsWith_QStringView_QStringView_data() { endsWith_data(); }
+    void endsWith_QStringView_QStringView() { endsWith_impl<QStringView, QStringView>(); }
+    void endsWith_QStringView_QLatin1String_data() { endsWith_data(); }
+    void endsWith_QStringView_QLatin1String() { endsWith_impl<QStringView, QLatin1String>(); }
+    void endsWith_QStringView_QChar_data() { endsWith_data(false); }
+    void endsWith_QStringView_QChar() { endsWith_impl<QStringView, QChar>(); }
 
 private:
     void mid_data();

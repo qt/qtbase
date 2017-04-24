@@ -241,6 +241,22 @@ public:
     Q_DECL_RELAXED_CONSTEXPR void chop(qssize_t n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
 
+    Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
+    { return qStartsWith(*this, s, cs); }
+    Q_REQUIRED_RESULT inline bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT bool startsWith(QChar c) const Q_DECL_NOTHROW
+    { return !empty() && front() == c; }
+    Q_REQUIRED_RESULT bool startsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
+    { return qStartsWith(*this, QStringView(&c, 1), cs); }
+
+    Q_REQUIRED_RESULT bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
+    { return qEndsWith(*this, s, cs); }
+    Q_REQUIRED_RESULT inline bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
+    Q_REQUIRED_RESULT bool endsWith(QChar c) const Q_DECL_NOTHROW
+    { return !empty() && back() == c; }
+    Q_REQUIRED_RESULT bool endsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
+    { return qEndsWith(*this, QStringView(&c, 1), cs); }
+
     //
     // STL compatibility API:
     //
