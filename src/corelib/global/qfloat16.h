@@ -44,7 +44,16 @@
 #include <QtCore/qmetatype.h>
 #include <string.h>
 
-#if defined __F16C__
+#if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__AVX2__) && !defined(__F16C__)
+// All processors that support AVX2 do support F16C too. That doesn't mean
+// we're allowed to use the intrinsics directly, so we'll do it only for
+// the Intel and Microsoft's compilers.
+#  if defined(Q_CC_INTEL) || defined(Q_CC_MSVC)
+#    define __F16C__        1
+# endif
+#endif
+
+#if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
 #include <immintrin.h>
 #endif
 
@@ -116,7 +125,7 @@ QT_WARNING_DISABLE_CLANG("-Wc99-extensions")
 QT_WARNING_DISABLE_GCC("-Wold-style-cast")
 inline qfloat16::qfloat16(float f) Q_DECL_NOTHROW
 {
-#if defined(QT_COMPILER_SUPPORTS_F16C) && (defined(__F16C__) || defined(__AVX2__))
+#if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
     __m128 packsingle = _mm_set_ss(f);
     __m128i packhalf = _mm_cvtps_ph(packsingle, 0);
     b16 = _mm_extract_epi16(packhalf, 0);
@@ -134,7 +143,7 @@ QT_WARNING_POP
 
 inline qfloat16::operator float() const Q_DECL_NOTHROW
 {
-#if defined(QT_COMPILER_SUPPORTS_F16C) && (defined(__F16C__) || defined(__AVX2__))
+#if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__F16C__)
     __m128i packhalf = _mm_cvtsi32_si128(b16);
     __m128 packsingle = _mm_cvtph_ps(packhalf);
     return _mm_cvtss_f32(packsingle);
