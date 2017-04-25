@@ -40,6 +40,10 @@
 #include <intrin.h>
 #endif
 
+#include <iterator>
+#include <utility>
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
@@ -69,6 +73,31 @@ QT_DEPRECATED_X("Use std::upper_bound") Q_OUTOFLINE_TEMPLATE RandomAccessIterato
 template <typename RandomAccessIterator, typename T, typename LessThan>
 QT_DEPRECATED_X("Use std::binary_search") Q_OUTOFLINE_TEMPLATE RandomAccessIterator qBinaryFindHelper(RandomAccessIterator begin, RandomAccessIterator end, const T &value, LessThan lessThan);
 #endif // QT_DEPRECATED_SINCE(5, 2)
+
+template <typename ForwardIterator1, typename ForwardIterator2>
+bool qIsPermutation(ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterator2 first2)
+{
+    // find and exclude a common prefix
+    const std::pair<ForwardIterator1, ForwardIterator2> commonPrefix = std::mismatch(first1, last1, first2);
+
+    // unpack commonPrefix
+    first1 = commonPrefix.first;
+    first2 = commonPrefix.second;
+
+    // is there anything else to check? if so, for each element left to check in the
+    // first range, count how many times it appears in both ranges; the counts must match
+    if (first1 != last1) {
+        ForwardIterator2 last2 = first2;
+        std::advance(last2, std::distance(first1, last1));
+
+        for (ForwardIterator1 it = first1; it != last1; ++it) {
+            if (std::count(first1, last1, *it) != std::count(first2, last2, *it))
+                return false;
+        }
+    }
+
+    return true;
+}
 
 }
 

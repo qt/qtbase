@@ -54,7 +54,7 @@ private slots:
     void constFind(); // copied from tst_QMap
     void contains(); // copied from tst_QMap
     void take(); // copied from tst_QMap
-    void operator_eq(); // copied from tst_QMap
+    void operator_eq(); // slightly modified from tst_QMap
     void rehash_isnt_quadratic();
     void dont_need_default_constructor();
     void qmultihash_specific();
@@ -710,7 +710,7 @@ void tst_QHash::take()
     QVERIFY(!map.contains(3));
 }
 
-//copied from tst_QMap
+// slightly modified from tst_QMap
 void tst_QHash::operator_eq()
 {
     {
@@ -786,6 +786,71 @@ void tst_QHash::operator_eq()
         b.insert("willy", 1);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
+    }
+
+    // unlike multi-maps, multi-hashes should be equal iff their contents are equal,
+    // regardless of insertion or iteration order
+
+    {
+        QHash<int, int> a;
+        QHash<int, int> b;
+
+        a.insertMulti(0, 0);
+        a.insertMulti(0, 1);
+
+        b.insertMulti(0, 1);
+        b.insertMulti(0, 0);
+
+        QVERIFY(a == b);
+        QVERIFY(!(a != b));
+    }
+
+    {
+        QHash<int, int> a;
+        QHash<int, int> b;
+
+        enum { Count = 100 };
+
+        for (int key = 0; key < Count; ++key) {
+            for (int value = 0; value < Count; ++value)
+                a.insertMulti(key, value);
+        }
+
+        for (int key = Count - 1; key >= 0; --key) {
+            for (int value = 0; value < Count; ++value)
+                b.insertMulti(key, value);
+        }
+
+        QVERIFY(a == b);
+        QVERIFY(!(a != b));
+    }
+
+    {
+        QHash<int, int> a;
+        QHash<int, int> b;
+
+        enum {
+            Count = 100,
+            KeyStep = 17,   // coprime with Count
+            ValueStep = 23, // coprime with Count
+        };
+
+        for (int key = 0; key < Count; ++key) {
+            for (int value = 0; value < Count; ++value)
+                a.insertMulti(key, value);
+        }
+
+        // Generates two permutations of [0, Count) for the keys and values,
+        // so that b will be identical to a, just built in a very different order.
+
+        for (int k = 0; k < Count; ++k) {
+           const int key = (k * KeyStep) % Count;
+           for (int v = 0; v < Count; ++v)
+               b.insertMulti(key, (v * ValueStep) % Count);
+        }
+
+        QVERIFY(a == b);
+        QVERIFY(!(a != b));
     }
 }
 
