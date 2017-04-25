@@ -169,9 +169,9 @@ public:
     template <typename Function, typename... Args>
     explicit QThreadCreateThread(Function &&f, Args &&... args)
         : m_future(std::async(std::launch::deferred,
-                   [f = static_cast<typename std::decay<Function>::type>(std::forward<Function>(f))](auto &&... args) mutable -> void
+                   [f = static_cast<typename std::decay<Function>::type>(std::forward<Function>(f))](auto &&... largs) mutable -> void
                    {
-                       (void)std::invoke(std::move(f), std::forward<decltype(args)>(args)...);
+                       (void)std::invoke(std::move(f), std::forward<decltype(largs)>(largs)...);
                    }, std::forward<Args>(args)...))
     {
     }
