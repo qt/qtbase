@@ -575,11 +575,14 @@ defineTest(qtConfLibrary_pkgConfig) {
     }
 
     qtRunLoggedCommand("$$pkg_config --modversion $$args", version)|return(false)
-    qtRunLoggedCommand("$$pkg_config --libs-only-L --libs-only-l $$args", $${1}.libs)|return(false)
+    qtRunLoggedCommand("$$pkg_config --libs-only-L $$args", libpaths)|return(false)
+    qtRunLoggedCommand("$$pkg_config --libs-only-l $$args", libs)|return(false)
     qtRunLoggedCommand("$$pkg_config --cflags $$args", $${1}.cflags)|return(false)
     version ~= s/[^0-9.].*$//
     $${1}.version = $$first(version)
     export($${1}.version)
+    $${1}.libs = $$libpaths $$libs
+    export($${1}.libs)
     return(true)
 }
 
