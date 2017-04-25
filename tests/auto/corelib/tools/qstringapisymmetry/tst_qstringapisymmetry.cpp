@@ -255,16 +255,16 @@ private Q_SLOTS:
     void mid_QByteArray_data() { mid_data(); }
     void mid_QByteArray() { mid_impl<QByteArray>(); }
 
-    void left_QString_data() { left_data(); }
-    void left_QString() { left_impl<QString>(); }
-    void left_QStringRef_data() { left_data(); }
-    void left_QStringRef() { left_impl<QStringRef>(); }
-    void left_QStringView_data() { left_data(); }
-    void left_QStringView() { left_impl<QStringView>(); }
-    void left_QLatin1String_data() { left_data(); }
-    void left_QLatin1String() { left_impl<QLatin1String>(); }
-    void left_QByteArray_data() { left_data(); }
-    void left_QByteArray() { left_impl<QByteArray>(); }
+    void left_truncate_QString_data() { left_data(); }
+    void left_truncate_QString() { left_impl<QString>(); }
+    void left_truncate_QStringRef_data() { left_data(); }
+    void left_truncate_QStringRef() { left_impl<QStringRef>(); }
+    void left_truncate_QStringView_data() { left_data(); }
+    void left_truncate_QStringView() { left_impl<QStringView>(); }
+    void left_truncate_QLatin1String_data() { left_data(); }
+    void left_truncate_QLatin1String() { left_impl<QLatin1String>(); }
+    void left_truncate_QByteArray_data() { left_data(); }
+    void left_truncate_QByteArray() { left_impl<QByteArray>(); }
 
     void right_QString_data() { right_data(); }
     void right_QString() { right_impl<QString>(); }
@@ -287,17 +287,6 @@ private Q_SLOTS:
     void chop_QLatin1String() { chop_impl<QLatin1String>(); }
     void chop_QByteArray_data() { chop_data(); }
     void chop_QByteArray() { chop_impl<QByteArray>(); }
-
-    void truncate_QString_data() { truncate_data(); }
-    void truncate_QString() { truncate_impl<QString>(); }
-    void truncate_QStringRef_data() { truncate_data(); }
-    void truncate_QStringRef() { truncate_impl<QStringRef>(); }
-    void truncate_QStringView_data() { truncate_data(); }
-    void truncate_QStringView() { truncate_impl<QStringView>(); }
-    void truncate_QLatin1String_data() { truncate_data(); }
-    void truncate_QLatin1String() { truncate_impl<QLatin1String>(); }
-    void truncate_QByteArray_data() { truncate_data(); }
-    void truncate_QByteArray() { truncate_impl<QByteArray>(); }
 
     //
     // UTF-16-only checks:
@@ -795,11 +784,21 @@ void tst_QStringApiSymmetry::left_impl()
 
     const auto s = make<String>(unicode, latin1, utf8);
 
-    const auto left = s.left(n);
+    {
+        const auto left = s.left(n);
 
-    QVERIFY(left == result);
-    QCOMPARE(left.isNull(), result.isNull());
-    QCOMPARE(left.isEmpty(), result.isEmpty());
+        QCOMPARE(left, result);
+        QCOMPARE(left.isNull(), result.isNull());
+        QCOMPARE(left.isEmpty(), result.isEmpty());
+    }
+    {
+        auto left = s;
+        left.truncate(n);
+
+        QCOMPARE(left, result);
+        QCOMPARE(left.isNull(), result.isNull());
+        QCOMPARE(left.isEmpty(), result.isEmpty());
+    }
 }
 
 void tst_QStringApiSymmetry::right_data()
@@ -907,25 +906,6 @@ void tst_QStringApiSymmetry::chop_impl()
         QCOMPARE(chopped.isNull(), result.isNull());
         QCOMPARE(chopped.isEmpty(), result.isEmpty());
     }
-}
-
-template <typename String>
-void tst_QStringApiSymmetry::truncate_impl()
-{
-    QFETCH(const QStringRef, unicode);
-    QFETCH(const QLatin1String, latin1);
-    QFETCH(const int, n);
-    QFETCH(const QStringRef, result);
-
-    const auto utf8 = unicode.toUtf8();
-
-    auto trunc = make<String>(unicode, latin1, utf8);
-
-    trunc.truncate(n);
-
-    QVERIFY(trunc == result);
-    QCOMPARE(trunc.isNull(), result.isNull());
-    QCOMPARE(trunc.isEmpty(), result.isEmpty());
 }
 
 //
