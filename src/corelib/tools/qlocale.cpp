@@ -3564,7 +3564,7 @@ qulonglong QLocaleData::stringToUnsLongLong(QStringView str, int base, bool *ok,
     return bytearrayToUnsLongLong(buff.constData(), base, ok);
 }
 
-double QLocaleData::bytearrayToDouble(const char *num, bool *ok, bool *overflow)
+double QLocaleData::bytearrayToDouble(const char *num, bool *ok)
 {
     bool nonNullOk = false;
     int len = static_cast<int>(strlen(num));
@@ -3573,12 +3573,10 @@ double QLocaleData::bytearrayToDouble(const char *num, bool *ok, bool *overflow)
     double d = asciiToDouble(num, len, nonNullOk, processed);
     if (ok)
         *ok = nonNullOk;
-    if (overflow)
-        *overflow = processed < len;
     return d;
 }
 
-qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok, bool *overflow)
+qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok)
 {
     bool _ok;
     const char *endptr;
@@ -3586,8 +3584,6 @@ qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok, 
     if (*num == '\0') {
         if (ok != 0)
             *ok = false;
-        if (overflow != 0)
-            *overflow = false;
         return 0;
     }
 
@@ -3596,11 +3592,6 @@ qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok, 
     if (!_ok) {
         if (ok != 0)
             *ok = false;
-        if (overflow != 0) {
-            // the only way qstrtoll can fail with *endptr != '\0' on a non-empty
-            // input string is overflow
-            *overflow = *endptr != '\0';
-        }
         return 0;
     }
 
@@ -3608,15 +3599,11 @@ qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok, 
         // we stopped at a non-digit character after converting some digits
         if (ok != 0)
             *ok = false;
-        if (overflow != 0)
-            *overflow = false;
         return 0;
     }
 
     if (ok != 0)
         *ok = true;
-    if (overflow != 0)
-        *overflow = false;
     return l;
 }
 
