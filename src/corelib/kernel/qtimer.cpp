@@ -148,6 +148,7 @@ static const int INV_TIMER = -1;                // invalid timer id
 QTimer::QTimer(QObject *parent)
     : QObject(parent), id(INV_TIMER), inter(0), del(0), single(0), nulltimer(0), type(Qt::CoarseTimer)
 {
+    Q_UNUSED(del);  // ### Qt 6: remove field
 }
 
 
