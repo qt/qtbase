@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -56,6 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPlatformScreen;
 
 class Q_GUI_EXPORT QPlatformSurface
 {
@@ -64,6 +65,7 @@ public:
     virtual QSurfaceFormat format() const = 0;
 
     QSurface *surface() const;
+    virtual QPlatformScreen *screen() const = 0;
 
 private:
     explicit QPlatformSurface(QSurface *surface);

@@ -139,6 +139,7 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
     platformWindow()->adjustBufferSize();
 
     if (window()->requestedFormat().alphaBufferSize() > 0) {
+        auto platformScreen = static_cast<QQnxScreen *>(platformWindow()->screen());
         for (const QRect &r : region) {
             // Clear transparent regions
             const int bg[] = {
@@ -149,11 +150,11 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
                                SCREEN_BLIT_DESTINATION_HEIGHT, r.height(),
                                SCREEN_BLIT_END
                               };
-            Q_SCREEN_CHECKERROR(screen_fill(platformWindow()->screen()->nativeContext(),
+            Q_SCREEN_CHECKERROR(screen_fill(platformScreen->nativeContext(),
                                             platformWindow()->renderBuffer().nativeBuffer(), bg),
                                 "failed to clear transparent regions");
         }
-        Q_SCREEN_CHECKERROR(screen_flush_blits(platformWindow()->screen()->nativeContext(),
+        Q_SCREEN_CHECKERROR(screen_flush_blits(platformScreen->nativeContext(),
                     SCREEN_WAIT_IDLE), "failed to flush blits");
     }
 }

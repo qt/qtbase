@@ -141,6 +141,7 @@ QQnxBuffer &QQnxRasterWindow::renderBuffer()
 
     // Check if render buffer is invalid
     if (m_currentBufferIndex == -1) {
+        auto platformScreen = static_cast<QQnxScreen *>(screen());
         // Get all buffers available for rendering
         screen_buffer_t buffers[MAX_BUFFER_COUNT];
         const int result = screen_get_window_property_pv(nativeHandle(), SCREEN_PROPERTY_RENDER_BUFFERS,
@@ -153,11 +154,11 @@ QQnxBuffer &QQnxRasterWindow::renderBuffer()
 
             // Clear Buffer
             int bg[] = { SCREEN_BLIT_COLOR, 0x00000000, SCREEN_BLIT_END };
-            Q_SCREEN_CHECKERROR(screen_fill(screen()->nativeContext(), buffers[i], bg),
+            Q_SCREEN_CHECKERROR(screen_fill(platformScreen->nativeContext(), buffers[i], bg),
                                 "Failed to clear window buffer");
         }
 
-        Q_SCREEN_CHECKERROR(screen_flush_blits(screen()->nativeContext(), 0),
+        Q_SCREEN_CHECKERROR(screen_flush_blits(platformScreen->nativeContext(), 0),
                             "Failed to flush blits");
 
         // Use the first available render buffer
@@ -185,7 +186,7 @@ void QQnxRasterWindow::adjustBufferSize()
 
 int QQnxRasterWindow::pixelFormat() const
 {
-    return screen()->nativeFormat();
+    return static_cast<QQnxScreen *>(screen())->nativeFormat();
 }
 
 void QQnxRasterWindow::resetBuffers()
