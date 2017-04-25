@@ -148,6 +148,8 @@ QString qt_accHotKey(const QString &text)
     int ampIndex = qt_accAmpIndex(text);
     if (ampIndex != -1)
         return QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + text.at(ampIndex + 1);
+#else
+    Q_UNUSED(text)
 #endif
 
     return QString();

@@ -3812,8 +3812,8 @@ void QFileDialogPrivate::_q_nativeEnterDirectory(const QUrl &directory)
 */
 bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
 
-    Q_Q(QFileDialog);
 #if QT_CONFIG(shortcut)
+    Q_Q(QFileDialog);
     if (event->matches(QKeySequence::Cancel)) {
         q->reject();
         return true;
@@ -4018,7 +4018,9 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
     }
 #endif // QT_KEYPAD_NAVIGATION
 
+#if QT_CONFIG(shortcut)
     int key = e->key();
+#endif
     QLineEdit::keyPressEvent(e);
 #if QT_CONFIG(shortcut)
     if (!e->matches(QKeySequence::Cancel) && key != Qt::Key_Back)
