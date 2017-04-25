@@ -72,6 +72,7 @@
 #include <private/qpushbutton_p.h>
 #include <private/qaction_p.h>
 #include <private/qguiapplication_p.h>
+#include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -127,7 +128,7 @@ public:
         setParent(parentWidget, Qt::Window | Qt::Tool);
         setAttribute(Qt::WA_DeleteOnClose, true);
         setAttribute(Qt::WA_X11NetWmWindowTypeMenu, true);
-        setWindowTitle(p->windowTitle());
+        updateWindowTitle();
         setEnabled(p->isEnabled());
 #if QT_CONFIG(cssparser)
         setStyleSheet(p->styleSheet());
@@ -165,6 +166,15 @@ public:
         }
     }
 
+    void updateWindowTitle()
+    {
+        Q_D(QTornOffMenu);
+        if (!d->causedMenu)
+            return;
+        const QString &cleanTitle = QPlatformTheme::removeMnemonics(d->causedMenu->title()).trimmed();
+        setWindowTitle(cleanTitle);
+    }
+
 public slots:
     void onTrigger(QAction *action) { d_func()->activateAction(action, QAction::Trigger, false); }
     void onHovered(QAction *action) { d_func()->activateAction(action, QAction::Hover, false); }
@@ -183,6 +193,10 @@ void QMenuPrivate::init()
     q->setAttribute(Qt::WA_X11NetWmWindowTypePopupMenu);
     defaultMenuAction = menuAction = new QAction(q);
     menuAction->d_func()->menu = q;
+    QObject::connect(menuAction, &QAction::changed, [=] {
+        if (!tornPopup.isNull())
+            tornPopup->updateWindowTitle();
+    });
     q->setMouseTracking(q->style()->styleHint(QStyle::SH_Menu_MouseTracking, 0, q));
     if (q->style()->styleHint(QStyle::SH_Menu_Scrollable, 0, q)) {
         scroll = new QMenuPrivate::QMenuScroller;
