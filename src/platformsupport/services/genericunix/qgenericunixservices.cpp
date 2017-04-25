@@ -168,12 +168,14 @@ QByteArray QGenericUnixServices::desktopEnvironment() const
 
 bool QGenericUnixServices::openUrl(const QUrl &url)
 {
+    Q_UNUSED(url)
     qWarning("openUrl() not supported on this platform");
     return false;
 }
 
 bool QGenericUnixServices::openDocument(const QUrl &url)
 {
+    Q_UNUSED(url)
     qWarning("openDocument() not supported on this platform");
     return false;
 }
