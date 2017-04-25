@@ -159,8 +159,6 @@ private:
     QTemporaryFile *m_tempAttentionIcon;
     QString m_attentionIconName;
     QTimer m_attentionTimer;
-    bool m_isRequestingAttention;
-    bool m_hasMenu;
     bool m_registered;
 };
 

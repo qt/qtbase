@@ -126,9 +126,9 @@ private:
     bool m_isSeparator : 1;
     bool m_isCheckable : 1;
     bool m_isChecked : 1;
-    int m_dbusID : 16;
     bool m_hasExclusiveGroup : 1;
-    int m_reserved : 6;
+    short /*unused*/ : 6;
+    short m_dbusID : 16;
     QKeySequence m_shortcut;
 };
 
@@ -189,7 +189,6 @@ private:
     QIcon m_icon;
     bool m_isEnabled;
     bool m_isVisible;
-    bool m_isSeparator;
     uint m_revision;
     QHash<quintptr, QDBusPlatformMenuItem *> m_itemsByTag;
     QList<QDBusPlatformMenuItem *> m_items;

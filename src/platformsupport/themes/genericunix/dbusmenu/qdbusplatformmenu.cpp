@@ -59,8 +59,8 @@ QDBusPlatformMenuItem::QDBusPlatformMenuItem(quintptr tag)
     , m_isSeparator(false)
     , m_isCheckable(false)
     , m_isChecked(false)
-    , m_dbusID(nextDBusID++)
     , m_hasExclusiveGroup(false)
+    , m_dbusID(nextDBusID++)
 {
     menuItemsByID.insert(m_dbusID, this);
 }
@@ -171,7 +171,6 @@ QDBusPlatformMenu::QDBusPlatformMenu(quintptr tag)
     : m_tag(tag ? tag : reinterpret_cast<quintptr>(this))
     , m_isEnabled(true)
     , m_isVisible(true)
-    , m_isSeparator(false)
     , m_revision(1)
     , m_containingMenuItem(Q_NULLPTR)
 {
