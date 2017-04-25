@@ -521,3 +521,5 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qabstracteventdispatcher.cpp"

@@ -1143,4 +1143,6 @@ bool QTranslator::isEmpty() const
 
 QT_END_NAMESPACE
 
+#include "moc_qtranslator.cpp"
+
 #endif // QT_NO_TRANSLATION

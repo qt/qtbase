@@ -678,3 +678,5 @@ void QMimeData::removeFormat(const QString &mimeType)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qmimedata.cpp"

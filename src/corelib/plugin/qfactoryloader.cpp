@@ -346,4 +346,6 @@ int QFactoryLoader::indexOf(const QString &needle) const
 
 QT_END_NAMESPACE
 
+#include "moc_qfactoryloader_p.cpp"
+
 #endif // QT_NO_QOBJECT

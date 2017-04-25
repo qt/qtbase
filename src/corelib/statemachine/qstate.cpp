@@ -599,3 +599,5 @@ bool QState::event(QEvent *e)
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qstate.cpp"

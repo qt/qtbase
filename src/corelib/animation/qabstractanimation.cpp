@@ -1484,5 +1484,6 @@ void QAbstractAnimation::updateDirection(QAbstractAnimation::Direction direction
 QT_END_NAMESPACE
 
 #include "moc_qabstractanimation.cpp"
+#include "moc_qabstractanimation_p.cpp"
 
 #endif //QT_NO_ANIMATION

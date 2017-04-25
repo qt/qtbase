@@ -328,4 +328,6 @@ Qt::DropActions QStringListModel::supportedDropActions() const
 
 QT_END_NAMESPACE
 
+#include "moc_qstringlistmodel.cpp"
+
 #endif // QT_NO_STRINGLISTMODEL

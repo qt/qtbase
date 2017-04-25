@@ -578,3 +578,4 @@ QIODevice* QNonContiguousByteDeviceFactory::wrap(QNonContiguousByteDevice* byteD
 
 QT_END_NAMESPACE
 
+#include "moc_qnoncontiguousbytedevice_p.cpp"

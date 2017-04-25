@@ -784,3 +784,5 @@ void QTimeLine::timerEvent(QTimerEvent *event)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qtimeline.cpp"

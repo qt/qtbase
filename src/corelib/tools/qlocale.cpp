@@ -3665,3 +3665,7 @@ QDebug operator<<(QDebug dbg, const QLocale &l)
 }
 #endif
 QT_END_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+#include "moc_qlocale.cpp"
+#endif

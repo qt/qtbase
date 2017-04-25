@@ -2914,3 +2914,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 */
 
 QT_END_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+#include "moc_qcoreapplication.cpp"
+#endif

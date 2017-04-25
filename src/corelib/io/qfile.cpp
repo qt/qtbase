@@ -1106,3 +1106,7 @@ qint64 QFile::size() const
 }
 
 QT_END_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+#include "moc_qfile.cpp"
+#endif

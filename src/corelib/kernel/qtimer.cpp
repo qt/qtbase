@@ -670,3 +670,4 @@ int QTimer::remainingTime() const
 QT_END_NAMESPACE
 
 #include "qtimer.moc"
+#include "moc_qtimer.cpp"

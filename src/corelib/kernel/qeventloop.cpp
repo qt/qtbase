@@ -441,3 +441,5 @@ QEventLoopLocker::~QEventLoopLocker()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qeventloop.cpp"

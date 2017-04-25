@@ -739,3 +739,7 @@ bool QFileDevice::unmap(uchar *address)
 }
 
 QT_END_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+#include "moc_qfiledevice.cpp"
+#endif

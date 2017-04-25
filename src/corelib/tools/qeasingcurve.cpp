@@ -1501,3 +1501,5 @@ QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)
 #endif // QT_NO_DATASTREAM
 
 QT_END_NAMESPACE
+
+#include "moc_qeasingcurve.cpp"

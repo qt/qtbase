@@ -3513,4 +3513,8 @@ QSettings::Format QSettings::registerFormat(const QString &extension, ReadFunc r
 
 QT_END_NAMESPACE
 
+#ifndef QT_BOOTSTRAPPED
+#include "moc_qsettings.cpp"
+#endif
+
 #endif // QT_NO_SETTINGS
