@@ -942,13 +942,14 @@ static QItemSelection mergeRowLengths(const QVector<QPair<QPersistentModelIndex,
             const uint nextLength = rowLengths.at(i).second;
             if ((nextLength == length)
                 && (next.row() == br.row() + 1)
+                && (next.column() == br.column())
                 && (next.parent() == br.parent())) {
                 br = next;
             } else {
                 break;
             }
         }
-        result.append(QItemSelectionRange(tl, br.sibling(br.row(),  length - 1)));
+        result.append(QItemSelectionRange(tl, br.sibling(br.row(), br.column() + length - 1)));
     }
     return result;
 }
