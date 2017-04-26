@@ -1486,6 +1486,13 @@
             "condition": "features.png && libs.libpng",
             "output": [ "privateFeature" ]
         },
+        "imageio-text-loading": {
+            "label": "Image Text section loading",
+            "output": [
+                "privateFeature",
+                { "type": "define", "negative": true, "name": "QT_NO_IMAGEIO_TEXT_LOADING" }
+            ]
+        },
         "qpa_default_platform": {
             "label": "QPA default platform",
             "condition": "features.gui",

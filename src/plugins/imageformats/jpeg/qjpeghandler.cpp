@@ -956,6 +956,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
             for (jpeg_saved_marker_ptr marker = info.marker_list; marker != nullptr; marker = marker->next) {
                 if (marker->marker == JPEG_COM) {
+#ifndef QT_NO_IMAGEIO_TEXT_LOADING
                     QString key, value;
                     QString s = QString::fromUtf8((const char *)marker->data, marker->data_length);
                     int index = s.indexOf(QLatin1String(": "));
@@ -971,6 +972,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
                     description += key + QLatin1String(": ") + value.simplified();
                     readTexts.append(key);
                     readTexts.append(value);
+#endif
                 } else if (marker->marker == JPEG_APP0 + 1) {
                     exifData.append((const char*)marker->data, marker->data_length);
                 } else if (marker->marker == JPEG_APP0 + 2) {
