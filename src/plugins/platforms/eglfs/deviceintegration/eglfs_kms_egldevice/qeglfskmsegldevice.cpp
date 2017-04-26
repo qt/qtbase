@@ -77,9 +77,9 @@ void QEglFSKmsEglDevice::close()
     setFd(-1);
 }
 
-EGLNativeDisplayType QEglFSKmsEglDevice::nativeDisplay() const
+void *QEglFSKmsEglDevice::nativeDisplay() const
 {
-    return reinterpret_cast<EGLNativeDisplayType>(m_devInt->eglDevice());
+    return m_devInt->eglDevice();
 }
 
 QPlatformScreen *QEglFSKmsEglDevice::createScreen(const QKmsOutput &output)
