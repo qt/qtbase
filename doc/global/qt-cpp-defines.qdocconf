@@ -226,7 +226,6 @@ falsehoods              += \
 
 
 excludefiles += \
-                "*_p.cpp" \
                 "*_posix.cpp" \
                 "*_android.cpp" \
                 "*_win.cpp" \
