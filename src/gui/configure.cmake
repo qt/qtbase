@@ -812,6 +812,10 @@ qt_feature("system-png" PRIVATE
     ENABLE INPUT_libpng STREQUAL 'system'
     DISABLE INPUT_libpng STREQUAL 'qt'
 )
+qt_feature("imageio-text-loading" PRIVATE
+    LABEL "Image Text section loading"
+)
+qt_feature_definition("imageio-text-loading" "QT_NO_IMAGEIO_TEXT_LOADING" NEGATE)
 qt_feature("sessionmanager" PUBLIC
     SECTION "Kernel"
     LABEL "Session Management"
