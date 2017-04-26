@@ -10,6 +10,7 @@ HEADERS += \
         util/qshaderformat_p.h \
         util/qshadergenerator_p.h \
         util/qshadergraph_p.h \
+        util/qshadergraphloader_p.h \
         util/qshadernode_p.h \
         util/qshadernodeport_p.h
 
@@ -22,5 +23,6 @@ SOURCES += \
         util/qshaderformat.cpp \
         util/qshadergenerator.cpp \
         util/qshadergraph.cpp \
+        util/qshadergraphloader.cpp \
         util/qshadernode.cpp \
         util/qshadernodeport.cpp

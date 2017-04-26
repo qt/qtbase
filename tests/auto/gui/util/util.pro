@@ -7,5 +7,6 @@ SUBDIRS= \
     qregularexpressionvalidator \
     qshadergenerator \
     qshadergraph \
+    qshadergraphloader \
     qshadernodes \
 
