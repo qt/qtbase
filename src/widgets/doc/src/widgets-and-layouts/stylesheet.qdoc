@@ -3904,6 +3904,12 @@
 
     \snippet code/doc_src_stylesheet.qdoc 150
 
+    The QTableView's checkbox indicator can also be customized. In the
+    following snippet the indicator \c background-color in unchecked state is
+    customized:
+
+    \snippet code/doc_src_stylesheet.qdoc 161
+
     \section2 Customizing QToolBar
 
     The background and the handle of a QToolBar is customized as below:
