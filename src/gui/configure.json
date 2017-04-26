@@ -85,7 +85,8 @@
             "test": "qpa/kms",
             "sources": [
                 { "type": "pkgConfig", "args": "libdrm" },
-                "-ldrm"
+                { "libs": "-ldrm", "condition": "!config.integrity" },
+                { "libs": "-ldrm-nvdc -lposix -livfs -lnvll -lnvdc -lnvrm -lnvrm_graphics -lnvos", "condition": "config.integrity" }
             ]
         },
         "egl": {
