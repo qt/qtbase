@@ -130,7 +130,7 @@ public:
         setAttribute(Qt::WA_X11NetWmWindowTypeMenu, true);
         updateWindowTitle();
         setEnabled(p->isEnabled());
-#if QT_CONFIG(cssparser)
+#if QT_CONFIG(style_stylesheet)
         setStyleSheet(p->styleSheet());
 #endif
         if (style() != p->style())
