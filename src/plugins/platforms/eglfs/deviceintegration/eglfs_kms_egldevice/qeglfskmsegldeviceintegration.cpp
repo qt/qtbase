@@ -56,6 +56,13 @@ QEglFSKmsEglDeviceIntegration::QEglFSKmsEglDeviceIntegration()
     qCDebug(qLcEglfsKmsDebug, "New DRM/KMS on EGLDevice integration created");
 }
 
+QSurfaceFormat QEglFSKmsEglDeviceIntegration::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
+{
+    QSurfaceFormat format = QEglFSKmsIntegration::surfaceFormatFor(inputFormat);
+    format.setAlphaBufferSize(8);
+    return format;
+}
+
 EGLint QEglFSKmsEglDeviceIntegration::surfaceType() const
 {
     return EGL_STREAM_BIT_KHR;

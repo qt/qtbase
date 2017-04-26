@@ -55,6 +55,7 @@ class QEglFSKmsEglDeviceIntegration : public QEglFSKmsIntegration
 public:
     QEglFSKmsEglDeviceIntegration();
 
+    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const override;
     EGLint surfaceType() const override;
     EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) override;
     bool supportsSurfacelessContexts() const override;
