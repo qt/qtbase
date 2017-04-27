@@ -11047,8 +11047,6 @@ QStringRef QStringRef::trimmed() const
     QStringAlgorithms<const QStringRef>::trimmed_helper_positions(begin, end);
     if (begin == cbegin() && end == cend())
         return *this;
-    if (begin == end)
-        return QStringRef();
     int position = m_position + (begin - cbegin());
     return QStringRef(m_string, position, end - begin);
 }

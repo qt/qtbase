@@ -1862,7 +1862,9 @@ void tst_QStringRef::double_conversion()
 
 void tst_QStringRef::trimmed()
 {
-    QString a;
+    QVERIFY(QStringRef().trimmed().isNull());
+    QString a = "";
+    QVERIFY(!QStringRef(&a).trimmed().isNull());
     QStringRef b;
     a = "Text";
     b = a.leftRef(-1);
