@@ -236,17 +236,11 @@ static int doLink(int argc, char **argv)
 
 #endif
 
-static int installFile(const QString &source, const QString &targetFileOrDirectory, bool exe = false)
+static int installFile(const QString &source, const QString &target, bool exe = false)
 {
     QFile sourceFile(source);
 
-    QString target(targetFileOrDirectory);
-    if (QFileInfo(target).isDir())
-        target += QDir::separator() + QFileInfo(sourceFile.fileName()).fileName();
-
-    if (QFile::exists(target))
-        QFile::remove(target);
-
+    QFile::remove(target);
     QDir::root().mkpath(QFileInfo(target).absolutePath());
 
     if (!sourceFile.copy(target)) {

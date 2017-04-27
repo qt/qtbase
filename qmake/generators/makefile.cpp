@@ -1283,7 +1283,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                 if(is_target || exists(wild)) { //real file or target
                     QFileInfo fi(fileInfo(wild));
                     QString dst_file = filePrefixRoot(root, dst_dir);
-                    if(fi.isDir() && project->isActiveConfig("copy_dir_files")) {
+                    if (!fi.isDir() || project->isActiveConfig("copy_dir_files")) {
                         if(!dst_file.endsWith(Option::dir_sep))
                             dst_file += Option::dir_sep;
                         dst_file += fi.fileName();
@@ -1317,10 +1317,15 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                                 dst_file += Option::dir_sep;
                             dst_file += filestr;
                         }
-                    } else if (installConfigValues.contains("executable")) {
-                        cmd = QLatin1String("-$(QINSTALL_PROGRAM)");
                     } else {
-                        cmd = QLatin1String("-$(QINSTALL_FILE)");
+                        if (installConfigValues.contains("executable")) {
+                            cmd = QLatin1String("-$(QINSTALL_PROGRAM)");
+                        } else {
+                            cmd = QLatin1String("-$(QINSTALL_FILE)");
+                        }
+                        if (!dst_file.endsWith(Option::dir_sep))
+                            dst_file += Option::dir_sep;
+                        dst_file += filestr;
                     }
                     cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file);
                     inst << cmd;
@@ -1331,7 +1336,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
                     uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst_dir + file, FileFixifyAbsolute, false))));
                     QFileInfo fi(fileInfo(dirstr + file));
                     QString dst_file = filePrefixRoot(root, fileFixify(dst_dir, FileFixifyAbsolute, false));
-                    if(fi.isDir() && project->isActiveConfig("copy_dir_files")) {
+                    if (!fi.isDir() || project->isActiveConfig("copy_dir_files")) {
                         if(!dst_file.endsWith(Option::dir_sep))
                             dst_file += Option::dir_sep;
                         dst_file += fi.fileName();
