@@ -63,7 +63,10 @@ public:
     explicit QHostInfo(int lookupId = -1);
     QHostInfo(const QHostInfo &d);
     QHostInfo &operator=(const QHostInfo &d);
+    QHostInfo &operator=(QHostInfo &&other) Q_DECL_NOTHROW { swap(other); return *this; }
     ~QHostInfo();
+
+    void swap(QHostInfo &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     QString hostName() const;
     void setHostName(const QString &name);
@@ -153,6 +156,8 @@ private:
                               const QObject *receiver,
                               QtPrivate::QSlotObjectBase *slotObj);
 };
+
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QHostInfo)
 
 QT_END_NAMESPACE
 

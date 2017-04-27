@@ -279,6 +279,27 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
 }
 
 /*!
+    \fn QHostInfo &QHostInfo::operator=(QHostInfo &&other)
+
+    Move-assigns \a other to this QHostInfo instance.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+
+    \since 5.10
+*/
+
+/*!
+    \fn void QHostInfo::swap(QHostInfo &other)
+
+    Swaps host-info \other with this host-info. This operation is
+    very fast and never fails.
+
+    \since 5.10
+*/
+
+/*!
     \fn int QHostInfo::lookupHost(const QString &name, const QObject *receiver, PointerToMemberFunction function)
 
     \since 5.9

@@ -86,6 +86,8 @@ class tst_QHostInfo : public QObject
 private slots:
     void init();
     void initTestCase();
+    void swapFunction();
+    void moveOperator();
     void getSetCheck();
     void staticInformation();
     void lookupIPv4_data();
@@ -128,6 +130,29 @@ private:
     QScopedPointer<QNetworkSession> networkSession;
 #endif
 };
+
+void tst_QHostInfo::swapFunction()
+{
+    QHostInfo obj1, obj2;
+    obj1.setError(QHostInfo::HostInfoError(0));
+    obj2.setError(QHostInfo::HostInfoError(1));
+    obj1.swap(obj2);
+    QCOMPARE(QHostInfo::HostInfoError(0), obj2.error());
+    QCOMPARE(QHostInfo::HostInfoError(1), obj1.error());
+}
+
+void tst_QHostInfo::moveOperator()
+{
+    QHostInfo obj1, obj2, obj3(1);
+    obj1.setError(QHostInfo::HostInfoError(0));
+    obj2.setError(QHostInfo::HostInfoError(1));
+    obj1 = std::move(obj2);
+    obj2 = obj3;
+    QCOMPARE(QHostInfo::HostInfoError(1), obj1.error());
+    QCOMPARE(obj3.lookupId(), obj2.lookupId());
+}
+
+
 
 // Testing get/set functions
 void tst_QHostInfo::getSetCheck()
