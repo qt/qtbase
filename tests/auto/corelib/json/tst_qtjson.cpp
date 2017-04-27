@@ -145,6 +145,8 @@ private Q_SLOTS:
     void parseErrorOffset_data();
     void parseErrorOffset();
 
+    void implicitValueType();
+
 private:
     QString testDataDir;
 };
@@ -2906,6 +2908,34 @@ void tst_QtJson::parseErrorOffset()
 
     QVERIFY(error.error != QJsonParseError::NoError);
     QCOMPARE(error.offset, errorOffset);
+}
+
+void tst_QtJson::implicitValueType()
+{
+    QJsonObject rootObject{
+        {"object", QJsonObject{{"value", 42}}},
+        {"array", QJsonArray{665, 666, 667}}
+    };
+
+    QJsonValue objectValue = rootObject["object"];
+    QCOMPARE(objectValue["value"].toInt(), 42);
+    QCOMPARE(objectValue["missingValue"], QJsonValue(QJsonValue::Undefined));
+    QCOMPARE(objectValue[123], QJsonValue(QJsonValue::Undefined));
+    QCOMPARE(objectValue["missingValue"].toInt(123), 123);
+
+    QJsonValue arrayValue = rootObject["array"];
+    QCOMPARE(arrayValue[1].toInt(), 666);
+    QCOMPARE(arrayValue[-1], QJsonValue(QJsonValue::Undefined));
+    QCOMPARE(arrayValue["asObject"], QJsonValue(QJsonValue::Undefined));
+    QCOMPARE(arrayValue[-1].toInt(123), 123);
+
+    const QJsonObject constObject = rootObject;
+    QCOMPARE(constObject["object"]["value"].toInt(), 42);
+    QCOMPARE(constObject["array"][1].toInt(), 666);
+
+    QJsonValue objectAsValue(rootObject);
+    QCOMPARE(objectAsValue["object"]["value"].toInt(), 42);
+    QCOMPARE(objectAsValue["array"][1].toInt(), 666);
 }
 
 QTEST_MAIN(tst_QtJson)

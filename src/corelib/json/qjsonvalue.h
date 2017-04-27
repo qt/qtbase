@@ -137,6 +137,10 @@ public:
     QJsonObject toObject() const;
     QJsonObject toObject(const QJsonObject &defaultValue) const;
 
+    const QJsonValue operator[](const QString &key) const;
+    const QJsonValue operator[](QLatin1String key) const;
+    const QJsonValue operator[](int i) const;
+
     bool operator==(const QJsonValue &other) const;
     bool operator!=(const QJsonValue &other) const;
 

@@ -643,6 +643,58 @@ QJsonObject QJsonValue::toObject() const
 }
 
 /*!
+    Returns a QJsonValue representing the value for the key \a key.
+
+    Equivalent to calling toObject().value(key).
+
+    The returned QJsonValue is QJsonValue::Undefined if the key does not exist,
+    or if isObject() is false.
+
+    \since 5.10
+
+    \sa QJsonValue, QJsonValue::isUndefined(), QJsonObject
+ */
+const QJsonValue QJsonValue::operator[](const QString &key) const
+{
+    if (!isObject())
+        return QJsonValue(QJsonValue::Undefined);
+
+    return toObject().value(key);
+}
+
+/*!
+    \overload
+    \since 5.10
+*/
+const QJsonValue QJsonValue::operator[](QLatin1String key) const
+{
+    if (!isObject())
+        return QJsonValue(QJsonValue::Undefined);
+
+    return toObject().value(key);
+}
+
+/*!
+    Returns a QJsonValue representing the value for index \a i.
+
+    Equivalent to calling toArray().at(i).
+
+    The returned QJsonValue is QJsonValue::Undefined, if \a i is out of bounds,
+    or if isArray() is false.
+
+    \since 5.10
+
+    \sa QJsonValue, QJsonValue::isUndefined(), QJsonArray
+ */
+const QJsonValue QJsonValue::operator[](int i) const
+{
+    if (!isArray())
+        return QJsonValue(QJsonValue::Undefined);
+
+    return toArray().at(i);
+}
+
+/*!
     Returns \c true if the value is equal to \a other.
  */
 bool QJsonValue::operator==(const QJsonValue &other) const
