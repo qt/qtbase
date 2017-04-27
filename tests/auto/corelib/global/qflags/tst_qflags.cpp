@@ -111,19 +111,19 @@ void tst_QFlags::constExpr()
         default: QVERIFY(false);
     }
 
-    QVERIFY(verifyConstExpr<(Qt::LeftButton | Qt::RightButton) & Qt::LeftButton>(Qt::LeftButton));
-    QVERIFY(verifyConstExpr<(Qt::LeftButton | Qt::RightButton) & Qt::MiddleButton>(0));
-    QVERIFY(verifyConstExpr<(Qt::LeftButton | Qt::RightButton) | Qt::MiddleButton>(Qt::LeftButton | Qt::RightButton | Qt::MiddleButton));
-    QVERIFY(verifyConstExpr<~(Qt::LeftButton | Qt::RightButton)>(~(Qt::LeftButton | Qt::RightButton)));
-    QVERIFY(verifyConstExpr<Qt::MouseButtons(Qt::LeftButton) ^ Qt::RightButton>(Qt::LeftButton ^ Qt::RightButton));
-    QVERIFY(verifyConstExpr<Qt::MouseButtons(0)>(0));
-    QVERIFY(verifyConstExpr<Qt::MouseButtons(Qt::RightButton) & 0xff>(Qt::RightButton));
-    QVERIFY(verifyConstExpr<Qt::MouseButtons(Qt::RightButton) | 0xff>(0xff));
+    QVERIFY(verifyConstExpr<uint((Qt::LeftButton | Qt::RightButton) & Qt::LeftButton)>(Qt::LeftButton));
+    QVERIFY(verifyConstExpr<uint((Qt::LeftButton | Qt::RightButton) & Qt::MiddleButton)>(0));
+    QVERIFY(verifyConstExpr<uint((Qt::LeftButton | Qt::RightButton) | Qt::MiddleButton)>(Qt::LeftButton | Qt::RightButton | Qt::MiddleButton));
+    QVERIFY(verifyConstExpr<uint(~(Qt::LeftButton | Qt::RightButton))>(~(Qt::LeftButton | Qt::RightButton)));
+    QVERIFY(verifyConstExpr<uint(Qt::MouseButtons(Qt::LeftButton) ^ Qt::RightButton)>(Qt::LeftButton ^ Qt::RightButton));
+    QVERIFY(verifyConstExpr<uint(Qt::MouseButtons(0))>(0));
+    QVERIFY(verifyConstExpr<uint(Qt::MouseButtons(Qt::RightButton) & 0xff)>(Qt::RightButton));
+    QVERIFY(verifyConstExpr<uint(Qt::MouseButtons(Qt::RightButton) | 0xff)>(0xff));
 
     QVERIFY(!verifyConstExpr<Qt::RightButton>(!Qt::MouseButtons(Qt::LeftButton)));
 
 #if defined(__cpp_constexpr) &&  __cpp_constexpr-0 >= 201304
-    QVERIFY(verifyConstExpr<testRelaxedConstExpr()>(Qt::MiddleButton));
+    QVERIFY(verifyConstExpr<uint(testRelaxedConstExpr())>(Qt::MiddleButton));
 #endif
 #endif
 }
