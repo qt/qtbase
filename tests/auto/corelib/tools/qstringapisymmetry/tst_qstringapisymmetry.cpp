@@ -430,6 +430,15 @@ void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
 #undef ROW
 }
 
+template <typename String> String detached(String s)
+{
+    if (!s.isNull()) { // detaching loses nullness, but we need to preserve it
+        auto d = s.data();
+        Q_UNUSED(d);
+    }
+    return s;
+}
+
 template <class Str> Str  make(const QStringRef &sf, QLatin1String l1, const QByteArray &u8);
 template <> QChar         make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf.isEmpty() ? QChar() : sf.at(0); }
 template <> QStringRef    make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf; }
@@ -783,16 +792,30 @@ void tst_QStringApiSymmetry::mid_impl()
 
     const auto s = make<String>(unicode, latin1, utf8);
 
-    const auto mid = s.mid(pos);
-    const auto mid2 = s.mid(pos, n);
+    {
+        const auto mid = s.mid(pos);
+        const auto mid2 = s.mid(pos, n);
 
-    QVERIFY(mid == result);
-    QCOMPARE(mid.isNull(), result.isNull());
-    QCOMPARE(mid.isEmpty(), result.isEmpty());
+        QCOMPARE(mid, result);
+        QCOMPARE(mid.isNull(), result.isNull());
+        QCOMPARE(mid.isEmpty(), result.isEmpty());
 
-    QVERIFY(mid2 == result2);
-    QCOMPARE(mid2.isNull(), result2.isNull());
-    QCOMPARE(mid2.isEmpty(), result2.isEmpty());
+        QCOMPARE(mid2, result2);
+        QCOMPARE(mid2.isNull(), result2.isNull());
+        QCOMPARE(mid2.isEmpty(), result2.isEmpty());
+    }
+    {
+        const auto mid = detached(s).mid(pos);
+        const auto mid2 = detached(s).mid(pos, n);
+
+        QCOMPARE(mid, result);
+        QCOMPARE(mid.isNull(), result.isNull());
+        QCOMPARE(mid.isEmpty(), result.isEmpty());
+
+        QCOMPARE(mid2, result2);
+        QCOMPARE(mid2.isNull(), result2.isNull());
+        QCOMPARE(mid2.isEmpty(), result2.isEmpty());
+    }
 }
 
 void tst_QStringApiSymmetry::left_data()
@@ -838,6 +861,13 @@ void tst_QStringApiSymmetry::left_impl()
 
     {
         const auto left = s.left(n);
+
+        QCOMPARE(left, result);
+        QCOMPARE(left.isNull(), result.isNull());
+        QCOMPARE(left.isEmpty(), result.isEmpty());
+    }
+    {
+        const auto left = detached(s).left(n);
 
         QCOMPARE(left, result);
         QCOMPARE(left.isNull(), result.isNull());
@@ -894,11 +924,20 @@ void tst_QStringApiSymmetry::right_impl()
 
     const auto s = make<String>(unicode, latin1, utf8);
 
-    const auto right = s.right(n);
+    {
+        const auto right = s.right(n);
 
-    QVERIFY(right == result);
-    QCOMPARE(right.isNull(), result.isNull());
-    QCOMPARE(right.isEmpty(), result.isEmpty());
+        QCOMPARE(right, result);
+        QCOMPARE(right.isNull(), result.isNull());
+        QCOMPARE(right.isEmpty(), result.isEmpty());
+    }
+    {
+        const auto right = detached(s).right(n);
+
+        QCOMPARE(right, result);
+        QCOMPARE(right.isNull(), result.isNull());
+        QCOMPARE(right.isEmpty(), result.isEmpty());
+    }
 }
 
 void tst_QStringApiSymmetry::chop_data()
@@ -945,16 +984,22 @@ void tst_QStringApiSymmetry::chop_impl()
     {
         const auto chopped = s.chopped(n);
 
-        QVERIFY(chopped == result);
+        QCOMPARE(chopped, result);
         QCOMPARE(chopped.isNull(), result.isNull());
         QCOMPARE(chopped.isEmpty(), result.isEmpty());
     }
+    {
+        const auto chopped = detached(s).chopped(n);
 
+        QCOMPARE(chopped, result);
+        QCOMPARE(chopped.isNull(), result.isNull());
+        QCOMPARE(chopped.isEmpty(), result.isEmpty());
+    }
     {
         auto chopped = s;
         chopped.chop(n);
 
-        QVERIFY(chopped == result);
+        QCOMPARE(chopped, result);
         QCOMPARE(chopped.isNull(), result.isNull());
         QCOMPARE(chopped.isEmpty(), result.isEmpty());
     }
