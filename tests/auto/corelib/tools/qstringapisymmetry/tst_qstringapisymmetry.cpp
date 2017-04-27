@@ -340,6 +340,18 @@ private Q_SLOTS:
     void chop_QByteArray_data() { chop_data(); }
     void chop_QByteArray() { chop_impl<QByteArray>(); }
 
+private:
+    void trimmed_data();
+    template <typename String> void trimmed_impl();
+
+private Q_SLOTS:
+    void trim_trimmed_QString_data() { trimmed_data(); }
+    void trim_trimmed_QString() { trimmed_impl<QString>(); }
+    void trim_trimmed_QStringRef_data() { trimmed_data(); }
+    void trim_trimmed_QStringRef() { trimmed_impl<QStringRef>(); }
+    void trim_trimmed_QByteArray_data() { trimmed_data(); }
+    void trim_trimmed_QByteArray() { trimmed_impl<QByteArray>(); }
+
     //
     // UTF-16-only checks:
     //
@@ -1002,6 +1014,62 @@ void tst_QStringApiSymmetry::chop_impl()
         QCOMPARE(chopped, result);
         QCOMPARE(chopped.isNull(), result.isNull());
         QCOMPARE(chopped.isEmpty(), result.isEmpty());
+    }
+}
+
+void tst_QStringApiSymmetry::trimmed_data()
+{
+    QTest::addColumn<QString>("unicode");
+    QTest::addColumn<QStringRef>("result");
+
+    const auto latin1Whitespace = QLatin1String(" \r\n\t\f\v");
+
+    QTest::addRow("null") << QString() << QStringRef();
+
+    auto add = [latin1Whitespace](const QString &str) {
+        // run through all substrings of latin1Whitespace
+        for (int len = 0; len < latin1Whitespace.size(); ++len) {
+            for (int pos = 0; pos < latin1Whitespace.size() - len; ++pos) {
+                const QString unicode = latin1Whitespace.mid(pos, len) + str + latin1Whitespace.mid(pos, len);
+                const QScopedPointer<const char> escaped(QTest::toString(unicode));
+                QTest::addRow("%s", escaped.data()) << unicode << QStringRef(&str);
+            }
+        }
+    };
+
+    add(empty);
+    add(a);
+    add(ab);
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::trimmed_impl()
+{
+    QFETCH(const QString, unicode);
+    QFETCH(const QStringRef, result);
+
+    const auto utf8 = unicode.toUtf8();
+    const auto l1s  = unicode.toLatin1();
+    const auto l1   = QLatin1String(l1s);
+
+    const auto ref = unicode.isNull() ? QStringRef() : QStringRef(&unicode);
+    const auto s = make<String>(ref, l1, utf8);
+
+    QCOMPARE(s.isNull(), unicode.isNull());
+
+    {
+        const auto trimmed = s.trimmed();
+
+        QCOMPARE(trimmed, result);
+        QCOMPARE(trimmed.isNull(), result.isNull());
+        QCOMPARE(trimmed.isEmpty(), result.isEmpty());
+    }
+    {
+        const auto trimmed = detached(s).trimmed();
+
+        QCOMPARE(trimmed, result);
+        QCOMPARE(trimmed.isNull(), result.isNull());
+        QCOMPARE(trimmed.isEmpty(), result.isEmpty());
     }
 }
 
