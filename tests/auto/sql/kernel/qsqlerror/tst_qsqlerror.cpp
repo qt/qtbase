@@ -44,6 +44,7 @@ public:
 private slots:
     void getSetCheck();
     void construction();
+    void moveOperator();
     void operators();
 };
 
@@ -143,6 +144,26 @@ void tst_QSqlError::construction()
    QCOMPARE(obj7.number(), -1);
    QCOMPARE(obj7.nativeErrorCode(), QString());
 
+   // Move constructor
+   QSqlError obj8(std::move(obj3));
+   QCOMPARE(obj8.driverText(), obj2.driverText());
+   QCOMPARE(obj8.databaseText(), obj2.databaseText());
+   QCOMPARE(obj8.type(), obj2.type());
+   QCOMPARE(obj8.number(), obj2.number());
+   QCOMPARE(obj8.nativeErrorCode(), obj2.nativeErrorCode());
+   QVERIFY(obj8.isValid());
+}
+
+void tst_QSqlError::moveOperator()
+{
+   QSqlError obj1("drivertext", "databasetext", QSqlError::UnknownError, 123), obj2;
+   obj2 = std::move(obj1);
+   QCOMPARE(obj2.driverText(), QString("drivertext"));
+   QCOMPARE(obj2.databaseText(), QString("databasetext"));
+   QCOMPARE(obj2.type(), QSqlError::UnknownError);
+   QCOMPARE(obj2.number(), 123);
+   QCOMPARE(obj2.nativeErrorCode(), QStringLiteral("123"));
+   QVERIFY(obj2.isValid());
 }
 
 void tst_QSqlError::operators()

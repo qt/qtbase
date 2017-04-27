@@ -66,10 +66,15 @@ public:
               ErrorType type = NoError,
               const QString &errorCode = QString());
     QSqlError(const QSqlError& other);
+    QSqlError(QSqlError &&other) Q_DECL_NOTHROW : d(other.d) { other.d = nullptr; }
     QSqlError& operator=(const QSqlError& other);
+    QSqlError &operator=(QSqlError &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+
     bool operator==(const QSqlError& other) const;
     bool operator!=(const QSqlError& other) const;
     ~QSqlError();
+
+    void swap(QSqlError &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
     QString driverText() const;
     QString databaseText() const;
@@ -101,6 +106,8 @@ private:
         Unused unused5;
     };
 };
+
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QSqlError)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_SQL_EXPORT QDebug operator<<(QDebug, const QSqlError &);
