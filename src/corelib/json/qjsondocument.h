@@ -148,6 +148,10 @@ public:
     void setObject(const QJsonObject &object);
     void setArray(const QJsonArray &array);
 
+    const QJsonValue operator[](const QString &key) const;
+    const QJsonValue operator[](QLatin1String key) const;
+    const QJsonValue operator[](int i) const;
+
     bool operator==(const QJsonDocument &other) const;
     bool operator!=(const QJsonDocument &other) const { return !(*this == other); }
 

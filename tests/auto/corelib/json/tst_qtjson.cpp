@@ -146,6 +146,7 @@ private Q_SLOTS:
     void parseErrorOffset();
 
     void implicitValueType();
+    void implicitDocumentType();
 
 private:
     QString testDataDir;
@@ -2936,6 +2937,25 @@ void tst_QtJson::implicitValueType()
     QJsonValue objectAsValue(rootObject);
     QCOMPARE(objectAsValue["object"]["value"].toInt(), 42);
     QCOMPARE(objectAsValue["array"][1].toInt(), 666);
+}
+
+void tst_QtJson::implicitDocumentType()
+{
+    QJsonDocument emptyDocument;
+    QCOMPARE(emptyDocument["asObject"], QJsonValue(QJsonValue::Undefined));
+    QCOMPARE(emptyDocument[123], QJsonValue(QJsonValue::Undefined));
+
+    QJsonDocument objectDocument(QJsonObject{{"value", 42}});
+    QCOMPARE(objectDocument["value"].toInt(), 42);
+    QCOMPARE(objectDocument["missingValue"], QJsonValue(QJsonValue::Undefined));
+    QCOMPARE(objectDocument[123], QJsonValue(QJsonValue::Undefined));
+    QCOMPARE(objectDocument["missingValue"].toInt(123), 123);
+
+    QJsonDocument arrayDocument(QJsonArray{665, 666, 667});
+    QCOMPARE(arrayDocument[1].toInt(), 666);
+    QCOMPARE(arrayDocument[-1], QJsonValue(QJsonValue::Undefined));
+    QCOMPARE(arrayDocument["asObject"], QJsonValue(QJsonValue::Undefined));
+    QCOMPARE(arrayDocument[-1].toInt(123), 123);
 }
 
 QTEST_MAIN(tst_QtJson)

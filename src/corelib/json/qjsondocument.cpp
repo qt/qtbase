@@ -551,6 +551,58 @@ void QJsonDocument::setArray(const QJsonArray &array)
 }
 
 /*!
+    Returns a QJsonValue representing the value for the key \a key.
+
+    Equivalent to calling object().value(key).
+
+    The returned QJsonValue is QJsonValue::Undefined if the key does not exist,
+    or if isObject() is false.
+
+    \since 5.10
+
+    \sa QJsonValue, QJsonValue::isUndefined(), QJsonObject
+ */
+const QJsonValue QJsonDocument::operator[](const QString &key) const
+{
+    if (!isObject())
+        return QJsonValue(QJsonValue::Undefined);
+
+    return object().value(key);
+}
+
+/*!
+    \overload
+    \since 5.10
+*/
+const QJsonValue QJsonDocument::operator[](QLatin1String key) const
+{
+    if (!isObject())
+        return QJsonValue(QJsonValue::Undefined);
+
+    return object().value(key);
+}
+
+/*!
+    Returns a QJsonValue representing the value for index \a i.
+
+    Equivalent to calling array().at(i).
+
+    The returned QJsonValue is QJsonValue::Undefined, if \a i is out of bounds,
+    or if isArray() is false.
+
+    \since 5.10
+
+    \sa QJsonValue, QJsonValue::isUndefined(), QJsonArray
+ */
+const QJsonValue QJsonDocument::operator[](int i) const
+{
+    if (!isArray())
+        return QJsonValue(QJsonValue::Undefined);
+
+    return array().at(i);
+}
+
+/*!
     Returns \c true if the \a other document is equal to this document.
  */
 bool QJsonDocument::operator==(const QJsonDocument &other) const
