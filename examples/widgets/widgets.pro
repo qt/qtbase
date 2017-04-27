@@ -22,7 +22,7 @@ SUBDIRS       = \
                 tutorials \
                 widgets
 
-qtConfig(opengl): \
+qtHaveModule(gui):qtConfig(opengl): \
     SUBDIRS += windowcontainer
 
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
