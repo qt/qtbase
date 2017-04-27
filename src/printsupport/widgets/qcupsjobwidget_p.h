@@ -56,7 +56,8 @@
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 #include <private/qcups_p.h>
 
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_CUPS) && !defined(QT_NO_DATETIMEEDIT)
+QT_REQUIRE_CONFIG(cupsjobwidget);
+
 #include <ui_qcupsjobwidget.h>
 
 QT_BEGIN_NAMESPACE
@@ -108,7 +109,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTER / QT_NO_CUPS
 
 #endif  // QCUPSJOBWIDGET_P_H
