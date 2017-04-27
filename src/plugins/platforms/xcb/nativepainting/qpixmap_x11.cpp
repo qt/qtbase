@@ -1549,6 +1549,7 @@ QPixmap QX11PlatformPixmap::transformed(const QTransform &transform, Qt::Transfo
     if (!qt_xForm_helper(mat, xi->xoffset, type, bpp, dptr, xbpl, p_inc, h, sptr, sbpl, ws, hs)){
         qWarning("QPixmap::transform: display not supported (bpp=%d)",bpp);
         QPixmap pm;
+        free(dptr);
         return pm;
     }
 
