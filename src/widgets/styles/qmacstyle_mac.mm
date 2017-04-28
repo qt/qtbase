@@ -2505,7 +2505,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 0;
         break;
     case PM_TabBarBaseHeight:
-        ret = 21;
+        ret = 0;
         break;
     case PM_TabBarTabOverlap:
         ret = 1;
