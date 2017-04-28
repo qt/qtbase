@@ -2470,11 +2470,13 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     case PM_ButtonDefaultIndicator:
         ret = 0;
         break;
-    case PM_TitleBarHeight:
-        // Always use NSTitledWindowMask since we never need any other type of window here
+    case PM_TitleBarHeight: {
+        NSUInteger style = NSTitledWindowMask;
+        if (widget && ((widget->windowFlags() & Qt::Tool) == Qt::Tool))
+            style |= NSUtilityWindowMask;
         ret = int([NSWindow frameRectForContentRect:NSZeroRect
-                                          styleMask:NSTitledWindowMask].size.height);
-        break;
+                                          styleMask:style].size.height);
+        break; }
     case QStyle::PM_TabBarTabHSpace:
         switch (d->aquaSizeConstrain(opt, widget)) {
         case QAquaSizeLarge:
