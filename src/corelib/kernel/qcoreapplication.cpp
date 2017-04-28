@@ -714,11 +714,13 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
 
     \sa sendPostedEvents(), processEvents(), QAbstractEventDispatcher::flush()
 */
+#if QT_DEPRECATED_SINCE(5, 9)
 void QCoreApplication::flush()
 {
     if (self && self->d_func()->eventDispatcher)
         self->d_func()->eventDispatcher->flush();
 }
+#endif
 #endif
 
 /*!
