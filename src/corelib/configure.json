@@ -241,7 +241,7 @@
             "label": "iconv",
             "purpose": "Provides internationalization on Unix.",
             "section": "Internationalization",
-            "condition": "!features.icu && (features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv)",
+            "condition": "!features.icu && features.textcodec && (features.posix-libiconv || features.sun-libiconv || features.gnu-libiconv)",
             "output": [ "privateFeature", "feature" ]
         },
         "posix-libiconv": {
