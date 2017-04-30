@@ -88,7 +88,7 @@ class MySubClass : public MyClass
 void tst_QScopedPointer::useSubClassInConstructor()
 {
     /* Use a syntax which users typically would do. */
-    QScopedPointer<MyClass> p(new MyClass());
+    QScopedPointer<MyClass> p(new MySubClass());
 }
 
 void tst_QScopedPointer::dataOnValue()
