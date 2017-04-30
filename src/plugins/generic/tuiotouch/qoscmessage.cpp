@@ -113,7 +113,7 @@ QOscMessage::QOscMessage(const QByteArray &data)
             parsedBytes += sizeof(quint32);
             arguments.append(value.f);
         } else {
-            qWarning() << "Reading argument of unknown type " << typeTag;
+            qCWarning(lcTuioMessage) << "Reading argument of unknown type " << typeTag;
             return;
         }
     }

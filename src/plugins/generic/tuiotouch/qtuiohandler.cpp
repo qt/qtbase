@@ -57,6 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcTuioHandler, "qt.qpa.tuio.handler")
 Q_LOGGING_CATEGORY(lcTuioSource, "qt.qpa.tuio.source")
 Q_LOGGING_CATEGORY(lcTuioSet, "qt.qpa.tuio.set")
 
@@ -82,7 +83,7 @@ QTuioHandler::QTuioHandler(const QString &specification)
         } else if (args.at(i).startsWith("tcp=")) {
             QString portString = args.at(i).section('=', 1, 1);
             portNumber = portString.toInt();
-            qWarning() << "TCP is not yet supported. Falling back to UDP on " << portNumber;
+            qCWarning(lcTuioHandler) << "TCP is not yet supported. Falling back to UDP on " << portNumber;
         } else if (args.at(i) == "invertx") {
             invertx = true;
         } else if (args.at(i) == "inverty") {
@@ -119,7 +120,7 @@ QTuioHandler::QTuioHandler(const QString &specification)
     QWindowSystemInterface::registerTouchDevice(m_device);
 
     if (!m_socket.bind(QHostAddress::Any, portNumber)) {
-        qWarning() << "Failed to bind TUIO socket: " << m_socket.errorString();
+        qCWarning(lcTuioHandler) << "Failed to bind TUIO socket: " << m_socket.errorString();
         return;
     }
 
@@ -172,7 +173,7 @@ void QTuioHandler::processPackets()
             if (message.addressPattern() == "/tuio/2Dcur") {
                 QList<QVariant> arguments = message.arguments();
                 if (arguments.count() == 0) {
-                    qWarning("Ignoring TUIO message with no arguments");
+                    qCWarning(lcTuioHandler, "Ignoring TUIO message with no arguments");
                     continue;
                 }
 
@@ -186,13 +187,13 @@ void QTuioHandler::processPackets()
                 } else if (messageType == "fseq") {
                     process2DCurFseq(message);
                 } else {
-                    qWarning() << "Ignoring unknown TUIO message type: " << messageType;
+                    qCWarning(lcTuioHandler) << "Ignoring unknown TUIO message type: " << messageType;
                     continue;
                 }
             } else if (message.addressPattern() == "/tuio/2Dobj") {
                 QList<QVariant> arguments = message.arguments();
                 if (arguments.count() == 0) {
-                    qWarning("Ignoring TUIO message with no arguments");
+                    qCWarning(lcTuioHandler, "Ignoring TUIO message with no arguments");
                     continue;
                 }
 
@@ -206,11 +207,11 @@ void QTuioHandler::processPackets()
                 } else if (messageType == "fseq") {
                     process2DObjFseq(message);
                 } else {
-                    qWarning() << "Ignoring unknown TUIO message type: " << messageType;
+                    qCWarning(lcTuioHandler) << "Ignoring unknown TUIO message type: " << messageType;
                     continue;
                 }
             } else {
-                qWarning() << "Ignoring unknown address pattern " << message.addressPattern();
+                qCWarning(lcTuioHandler) << "Ignoring unknown address pattern " << message.addressPattern();
                 continue;
             }
         }
@@ -221,12 +222,12 @@ void QTuioHandler::process2DCurSource(const QOscMessage &message)
 {
     QList<QVariant> arguments = message.arguments();
     if (arguments.count() != 2) {
-        qWarning() << "Ignoring malformed TUIO source message: " << arguments.count();
+        qCWarning(lcTuioSource) << "Ignoring malformed TUIO source message: " << arguments.count();
         return;
     }
 
     if (QMetaType::Type(arguments.at(1).type()) != QMetaType::QByteArray) {
-        qWarning("Ignoring malformed TUIO source message (bad argument type)");
+        qCWarning(lcTuioSource, "Ignoring malformed TUIO source message (bad argument type)");
         return;
     }
 
@@ -248,7 +249,7 @@ void QTuioHandler::process2DCurAlive(const QOscMessage &message)
 
     for (int i = 1; i < arguments.count(); ++i) {
         if (QMetaType::Type(arguments.at(i).type()) != QMetaType::Int) {
-            qWarning() << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
+            qCWarning(lcTuioHandler) << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
             return;
         }
 
@@ -288,7 +289,7 @@ void QTuioHandler::process2DCurSet(const QOscMessage &message)
 {
     QList<QVariant> arguments = message.arguments();
     if (arguments.count() < 7) {
-        qWarning() << "Ignoring malformed TUIO set message with too few arguments: " << arguments.count();
+        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with too few arguments: " << arguments.count();
         return;
     }
 
@@ -299,7 +300,7 @@ void QTuioHandler::process2DCurSet(const QOscMessage &message)
         QMetaType::Type(arguments.at(5).type()) != QMetaType::Float ||
         QMetaType::Type(arguments.at(6).type()) != QMetaType::Float
        ) {
-        qWarning() << "Ignoring malformed TUIO set message with bad types: " << arguments;
+        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with bad types: " << arguments;
         return;
     }
 
@@ -312,7 +313,7 @@ void QTuioHandler::process2DCurSet(const QOscMessage &message)
 
     QMap<int, QTuioCursor>::Iterator it = m_activeCursors.find(cursorId);
     if (it == m_activeCursors.end()) {
-        qWarning() << "Ignoring malformed TUIO set for nonexistent cursor " << cursorId;
+        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set for nonexistent cursor " << cursorId;
         return;
     }
 
@@ -386,12 +387,12 @@ void QTuioHandler::process2DObjSource(const QOscMessage &message)
 {
     QList<QVariant> arguments = message.arguments();
     if (arguments.count() != 2) {
-        qWarning() << "Ignoring malformed TUIO source message: " << arguments.count();
+        qCWarning(lcTuioSource, ) << "Ignoring malformed TUIO source message: " << arguments.count();
         return;
     }
 
     if (QMetaType::Type(arguments.at(1).type()) != QMetaType::QByteArray) {
-        qWarning("Ignoring malformed TUIO source message (bad argument type)");
+        qCWarning(lcTuioSource, "Ignoring malformed TUIO source message (bad argument type)");
         return;
     }
 
@@ -413,7 +414,7 @@ void QTuioHandler::process2DObjAlive(const QOscMessage &message)
 
     for (int i = 1; i < arguments.count(); ++i) {
         if (QMetaType::Type(arguments.at(i).type()) != QMetaType::Int) {
-            qWarning() << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
+            qCWarning(lcTuioHandler) << "Ignoring malformed TUIO alive message (bad argument on position" << i << arguments << ')';
             return;
         }
 
@@ -453,7 +454,7 @@ void QTuioHandler::process2DObjSet(const QOscMessage &message)
 {
     QList<QVariant> arguments = message.arguments();
     if (arguments.count() < 7) {
-        qWarning() << "Ignoring malformed TUIO set message with too few arguments: " << arguments.count();
+        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with too few arguments: " << arguments.count();
         return;
     }
 
@@ -467,7 +468,7 @@ void QTuioHandler::process2DObjSet(const QOscMessage &message)
             QMetaType::Type(arguments.at(8).type()) != QMetaType::Float ||
             QMetaType::Type(arguments.at(9).type()) != QMetaType::Float ||
             QMetaType::Type(arguments.at(10).type()) != QMetaType::Float) {
-        qWarning() << "Ignoring malformed TUIO set message with bad types: " << arguments;
+        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set message with bad types: " << arguments;
         return;
     }
 
@@ -484,7 +485,7 @@ void QTuioHandler::process2DObjSet(const QOscMessage &message)
 
     QMap<int, QTuioToken>::Iterator it = m_activeTokens.find(id);
     if (it == m_activeTokens.end()) {
-        qWarning() << "Ignoring malformed TUIO set for nonexistent token " << classId;
+        qCWarning(lcTuioSet) << "Ignoring malformed TUIO set for nonexistent token " << classId;
         return;
     }
 
