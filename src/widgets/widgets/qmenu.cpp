@@ -2323,7 +2323,17 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     ensurePolished(); // Get the right font
     emit aboutToShow();
     const bool actionListChanged = d->itemsDirty;
-    d->updateActionRects();
+
+    QRect screen;
+#ifndef QT_NO_GRAPHICSVIEW
+    bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
+    if (isEmbedded)
+        screen = d->popupGeometry(this);
+    else
+#endif
+    screen = d->popupGeometry(QApplication::desktop()->screenNumber(p));
+    d->updateActionRects(screen);
+
     QPoint pos;
     QPushButton *causedButton = qobject_cast<QPushButton*>(d->causedPopup.widget);
     if (actionListChanged && causedButton)
@@ -2333,14 +2343,6 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
     const QSize menuSizeHint(sizeHint());
     QSize size = menuSizeHint;
-    QRect screen;
-#ifndef QT_NO_GRAPHICSVIEW
-    bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
-    if (isEmbedded)
-        screen = d->popupGeometry(this);
-    else
-#endif
-    screen = d->popupGeometry(QApplication::desktop()->screenNumber(p));
     const int desktopFrame = style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, this);
     bool adjustToDesktop = !window()->testAttribute(Qt::WA_DontShowOnScreen);
 
