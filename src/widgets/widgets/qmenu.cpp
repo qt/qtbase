@@ -327,8 +327,8 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
     const int deskFw = style->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, &opt, q);
     const int tearoffHeight = tearoff ? style->pixelMetric(QStyle::PM_MenuTearoffHeight, &opt, q) : 0;
     const int base_y = vmargin + fw + topmargin + (scroll ? scroll->scrollOffset : 0) + tearoffHeight;
+    const int column_max_y = screen.height() - 2 * deskFw - (vmargin + bottommargin + fw);
     int max_column_width = 0;
-    int dh = screen.height();
     int y = base_y;
 
     //for compatibility now - will have to refactor this away
@@ -406,8 +406,7 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
         if (!sz.isEmpty()) {
             max_column_width = qMax(max_column_width, sz.width());
             //wrapping
-            if (!scroll &&
-               y + sz.height() + vmargin + bottommargin + fw > dh - (deskFw * 2)) {
+            if (!scroll && y + sz.height() > column_max_y) {
                 ncols++;
                 y = base_y;
             } else {
@@ -433,8 +432,7 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
         QRect &rect = actionRects[i];
         if (rect.isNull())
             continue;
-        if (!scroll &&
-           y + rect.height() + vmargin + bottommargin + fw > dh - deskFw * 2) {
+        if (!scroll && y + rect.height() > column_max_y) {
             x += max_column_width + hmargin;
             y = base_y;
         }
