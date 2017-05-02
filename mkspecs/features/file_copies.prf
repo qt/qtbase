@@ -44,10 +44,7 @@ for (cp, COPIES) {
         $${pfx}.output = $$path/${QMAKE_FUNC_FILE_IN_qtStripSrcDir_$$cp}
     }
     $${pfx}.input = $${pfx}.files
-    !$$dir: \
-        $${pfx}.commands = $(QINSTALL_FILE) ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
-    else: \
-        $${pfx}.commands = $(QINSTALL_DIR) ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+    $${pfx}.commands = $(QINSTALL) ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
     $${pfx}.name = COPY ${QMAKE_FILE_IN}
     $${pfx}.CONFIG = no_link no_clean target_predeps
     QMAKE_EXTRA_COMPILERS += $${pfx}
