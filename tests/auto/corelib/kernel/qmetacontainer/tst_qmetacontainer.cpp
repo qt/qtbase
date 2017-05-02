@@ -143,7 +143,7 @@ static_assert(!QContainerInfo::can_set_value_at_iterator_v<std::set<int>>);
 static_assert(QContainerInfo::can_set_value_at_iterator_v<std::forward_list<int>>);
 
 static_assert(QContainerInfo::can_insert_value_at_iterator_v<QVector<int>>);
-static_assert(!QContainerInfo::can_insert_value_at_iterator_v<QSet<int>>);
+static_assert(QContainerInfo::can_insert_value_at_iterator_v<QSet<int>>);
 static_assert(!QContainerInfo::can_insert_value_at_iterator_v<NotAContainer>);
 static_assert(QContainerInfo::can_insert_value_at_iterator_v<std::vector<int>>);
 static_assert(!QContainerInfo::can_insert_value_at_iterator_v<std::forward_list<int>>);
@@ -267,7 +267,7 @@ void tst_QMetaContainer::testSequence_data()
             << static_cast<void *>(&qset)
             << QMetaSequence::fromContainer<QSet<QByteArray>>()
             << QMetaType::fromType<QByteArray>()
-            << true << false << false << false << false << false << true << false;
+            << true << false << false << false << false << true << true << false;
     QTest::addRow("std::set")
             << static_cast<void *>(&stdset)
             << QMetaSequence::fromContainer<std::set<int>>()

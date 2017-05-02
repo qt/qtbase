@@ -508,6 +508,22 @@
 */
 
 /*!
+    \fn QSet::insert(const_iterator it, const T &value)
+    \overload
+    \since 6.1
+
+    Inserts item \a value into the set, if \a value isn't already
+    in the set, and returns an iterator pointing at the inserted
+    item.
+
+    The iterator \a it is ignored.
+
+    This function is provided for compatibility with the STL.
+
+    \sa operator<<(), remove(), contains()
+*/
+
+/*!
     \fn template <class T> bool QSet<T>::count() const
 
     Same as size().

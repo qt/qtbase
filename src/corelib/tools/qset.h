@@ -198,6 +198,9 @@ public:
     typedef qsizetype size_type;
 
     inline bool empty() const { return isEmpty(); }
+
+    iterator insert(const_iterator, const T &value) { return insert(value); }
+
     // comfort
     inline QSet<T> &operator<<(const T &value) { insert(value); return *this; }
     inline QSet<T> &operator|=(const QSet<T> &other) { unite(other); return *this; }
