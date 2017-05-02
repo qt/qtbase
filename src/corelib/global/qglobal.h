@@ -923,13 +923,9 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
-namespace QtPrivate {
-template <typename T> struct QAddConst { typedef const T Type; };
-}
-
 // this adds const to non-const objects (like std::as_const)
 template <typename T>
-Q_DECL_CONSTEXPR typename QtPrivate::QAddConst<T>::Type &qAsConst(T &t) Q_DECL_NOTHROW { return t; }
+Q_DECL_CONSTEXPR typename std::add_const<T>::type &qAsConst(T &t) Q_DECL_NOTHROW { return t; }
 // prevent rvalue arguments:
 template <typename T>
 void qAsConst(const T &&) Q_DECL_EQ_DELETE;
