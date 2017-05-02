@@ -1330,8 +1330,7 @@ void QOpenGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &p
 
         QVectorPath dashStroke(dasher.points(),
                                dasher.elementCount(),
-                               dasher.elementTypes(),
-                               s->renderHints);
+                               dasher.elementTypes());
         stroker.process(dashStroke, pen, clip, s->renderHints);
     }
 
