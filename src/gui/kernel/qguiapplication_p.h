@@ -201,7 +201,6 @@ public:
     virtual bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const;
     virtual bool popupActive() { return false; }
 
-    static Qt::MouseButtons buttons;
     static ulong mousePressTime;
     static Qt::MouseButton mousePressButton;
     static int mousePressX;

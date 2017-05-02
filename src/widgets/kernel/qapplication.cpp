@@ -2955,6 +2955,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         // required in order to support Qt Test synthesized events. Real mouse
         // and keyboard state updates from the platform plugin are managed by
         // QGuiApplicationPrivate::process(Mouse|Wheel|Key|Touch|Tablet)Event();
+        // ### FIXME: Qt Test should not call qapp->notify(), but rather route
+        // the events through the proper QPA interface. This is required to
+        // properly generate all other events such as enter/leave etc.
         switch (e->type()) {
         case QEvent::MouseButtonPress:
             {
