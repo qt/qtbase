@@ -34,6 +34,7 @@ add_subdirectory(qringbuffer)
 add_subdirectory(qscopedpointer)
 add_subdirectory(qscopedvaluerollback)
 add_subdirectory(qscopeguard)
+add_subdirectory(qtaggedpointer)
 add_subdirectory(qset)
 # add_subdirectory(qsharedpointer) # special case not ported
 add_subdirectory(qsize)

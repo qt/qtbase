@@ -44,6 +44,7 @@ HEADERS +=  \
         tools/qsize.h \
         tools/qstack.h \
         tools/qtools_p.h \
+        tools/qtaggedpointer.h \
         tools/qvarlengtharray.h \
         tools/qvector.h \
         tools/qversionnumber.h

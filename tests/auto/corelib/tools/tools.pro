@@ -30,6 +30,7 @@ SUBDIRS=\
     qscopedpointer \
     qscopedvaluerollback \
     qscopeguard \
+    qtaggedpointer \
     qset \
     qsharedpointer \
     qsize \

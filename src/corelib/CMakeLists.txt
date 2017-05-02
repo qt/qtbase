@@ -230,6 +230,7 @@ qt_add_module(Core
         tools/qsimd.cpp tools/qsimd_p.h
         tools/qsize.cpp tools/qsize.h
         tools/qstack.h
+        tools/qtaggedpointer.h
         tools/qtools_p.h
         tools/qvarlengtharray.h
         tools/qvector.h

@@ -356,6 +356,16 @@ inline QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr)
     return debug;
 }
 
+template <typename T, typename Tag> class QTaggedPointer;
+
+template <typename T, typename Tag>
+inline QDebug operator<<(QDebug debug, const QTaggedPointer<T, Tag> &ptr)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "QTaggedPointer(" << ptr.pointer() << ", " << ptr.tag() << ")";
+    return debug;
+}
+
 Q_CORE_EXPORT void qt_QMetaEnum_flagDebugOperator(QDebug &debug, size_t sizeofT, int value);
 
 template <typename Int>
