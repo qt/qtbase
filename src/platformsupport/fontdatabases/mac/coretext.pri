@@ -7,12 +7,16 @@ qtConfig(freetype) {
     SOURCES += freetype/qfontengine_ft.cpp
 }
 
-uikit: \
-    # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
-    LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
-else: \
-    # On macOS they are re-exported by the AppKit framework
+LIBS_PRIVATE += \
+    -framework CoreFoundation \
+    -framework CoreGraphics \
+    -framework CoreText \
+    -framework Foundation
+
+macos: \
     LIBS_PRIVATE += -framework AppKit
+else: \
+    LIBS_PRIVATE += -framework UIKit
 
 # CoreText is documented to be available on watchOS, but the headers aren't present
 # in the watchOS Simulator SDK like they are supposed to be. Work around the problem
