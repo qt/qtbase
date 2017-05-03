@@ -124,8 +124,12 @@ c++11|c++14|c++1z {
         cxxstd = CXX11
     }
 
-    # Check if we should disable the GNU extensions or not
-    !strict_c++:!isEmpty(QMAKE_CXXFLAGS_GNU$$cxxstd): cxxstd = GNU$$cxxstd
+    # Check if we should disable compiler extensions or not
+    isEmpty(QMAKE_CXXFLAGS_GNU$$cxxstd) {
+        strict_c++: QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_STRICTCXX
+    } else {
+        !strict_c++: cxxstd = GNU$$cxxstd
+    }
 
     QMAKE_CXXFLAGS += $$eval(QMAKE_CXXFLAGS_$$cxxstd)
     QMAKE_LFLAGS += $$eval(QMAKE_LFLAGS_$$cxxstd)
