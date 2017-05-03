@@ -2406,8 +2406,9 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
   The \a tangentialPressure parameter contins the tangential pressure of an air
   brush. If the device does not support tangential pressure, pass 0 here.
 
-  \a rotation contains the device's rotation in degrees. 4D mice and the Wacom
-  Art Pen support rotation. If the device does not support rotation, pass 0 here.
+  \a rotation contains the device's rotation in degrees.
+  4D mice, the Wacom Art Pen, and the Apple Pencil support rotation.
+  If the device does not support rotation, pass 0 here.
 
   The \a button that caused the event is given as a value from the
   \l Qt::MouseButton enum. If the event \a type is not \l TabletPress or
@@ -2548,10 +2549,12 @@ Qt::MouseButtons QTabletEvent::buttons() const
 /*!
     \fn qreal QTabletEvent::rotation() const
 
-    Returns the rotation of the current device in degress. This is usually
-    given by a 4D Mouse. If the device does not support rotation this value is
-    always 0.0.
-
+    Returns the rotation of the current tool in degrees, where zero means the
+    tip of the stylus is pointing towards the top of the tablet, a positive
+    value means it's turned to the right, and a negative value means it's
+    turned to the left. This can be given by a 4D Mouse or a rotation-capable
+    stylus (such as the Wacom Art Pen or the Apple Pencil). If the device does
+    not support rotation, this value is always 0.0.
 */
 
 /*!
