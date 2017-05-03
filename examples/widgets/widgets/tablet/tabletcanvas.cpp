@@ -174,13 +174,13 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
                 painter.setBrush(m_brush);
                 QPolygonF poly;
                 qreal halfWidth = pressureToWidth(lastPoint.pressure);
-                QPointF brushAdjust(qSin(qDegreesToRadians(lastPoint.rotation)) * halfWidth,
-                                    qCos(qDegreesToRadians(lastPoint.rotation)) * halfWidth);
+                QPointF brushAdjust(qSin(qDegreesToRadians(-lastPoint.rotation)) * halfWidth,
+                                    qCos(qDegreesToRadians(-lastPoint.rotation)) * halfWidth);
                 poly << lastPoint.pos + brushAdjust;
                 poly << lastPoint.pos - brushAdjust;
                 halfWidth = m_pen.widthF();
-                brushAdjust = QPointF(qSin(qDegreesToRadians(event->rotation())) * halfWidth,
-                                      qCos(qDegreesToRadians(event->rotation())) * halfWidth);
+                brushAdjust = QPointF(qSin(qDegreesToRadians(-event->rotation())) * halfWidth,
+                                      qCos(qDegreesToRadians(-event->rotation())) * halfWidth);
                 poly << event->posF() - brushAdjust;
                 poly << event->posF() + brushAdjust;
                 painter.drawConvexPolygon(poly);
@@ -313,7 +313,7 @@ void TabletCanvas::updateCursor(const QTabletEvent *event)
                 QPainter painter(&img);
                 QTransform transform = painter.transform();
                 transform.translate(16, 16);
-                transform.rotate(-event->rotation());
+                transform.rotate(event->rotation());
                 painter.setTransform(transform);
                 painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
                 painter.drawImage(-24, -24, origImg);
