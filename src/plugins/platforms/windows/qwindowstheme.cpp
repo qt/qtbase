@@ -864,12 +864,18 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
     }
 
     SHFILEINFO info;
-    const unsigned int flags =
-        SHGFI_ICON|iconSize|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS|SHGFI_OVERLAYINDEX;
-
-    const bool val = cacheableDirIcon && useDefaultFolderIcon
-        ? shGetFileInfoBackground(QString::fromWCharArray(L"dummy"), FILE_ATTRIBUTE_DIRECTORY, &info, flags | SHGFI_USEFILEATTRIBUTES)
-        : shGetFileInfoBackground(filePath, 0, &info, flags);
+    unsigned int flags = SHGFI_ICON | iconSize | SHGFI_SYSICONINDEX | SHGFI_ADDOVERLAYS | SHGFI_OVERLAYINDEX;
+    DWORD attributes = 0;
+    QString path = filePath;
+    if (cacheableDirIcon && useDefaultFolderIcon) {
+        flags |= SHGFI_USEFILEATTRIBUTES;
+        attributes |= FILE_ATTRIBUTE_DIRECTORY;
+        path = QStringLiteral("dummy");
+    } else if (!fileInfo().exists()) {
+        flags |= SHGFI_USEFILEATTRIBUTES;
+        attributes |= FILE_ATTRIBUTE_NORMAL;
+    }
+    const bool val = shGetFileInfoBackground(path, attributes, &info, flags);
 
     // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases
     if (val && info.hIcon) {
