@@ -89,14 +89,12 @@ template <typename StringType> struct QStringAlgorithms
 
     static inline void trimmed_helper_positions(const Char *&begin, const Char *&end)
     {
+        // skip white space from end
+        while (begin < end && isSpace(end[-1]))
+            --end;
         // skip white space from start
         while (begin < end && isSpace(*begin))
             begin++;
-        // skip white space from end
-        if (begin < end) {
-            while (begin < end && isSpace(end[-1]))
-                end--;
-        }
     }
 
     static inline StringType trimmed_helper(StringType &str)
