@@ -3988,8 +3988,10 @@ bool QInternal::registerCallback(Callback cb, qInternalCallback callback)
 bool QInternal::unregisterCallback(Callback cb, qInternalCallback callback)
 {
     if (cb >= 0 && cb < QInternal::LastCallback) {
-        QInternal_CallBackTable *cbt = global_callback_table();
-        return (bool) cbt->callbacks[cb].removeAll(callback);
+        if (global_callback_table.exists()) {
+            QInternal_CallBackTable *cbt = global_callback_table();
+            return (bool) cbt->callbacks[cb].removeAll(callback);
+        }
     }
     return false;
 }
