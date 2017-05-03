@@ -103,8 +103,10 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
             }
             break;
         case QEvent::TabletMove:
+#ifndef Q_OS_IOS
             if (event->device() == QTabletEvent::RotationStylus)
                 updateCursor(event);
+#endif
             if (m_deviceDown) {
                 updateBrush(event);
                 QPainter painter(&m_pixmap);
