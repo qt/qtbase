@@ -176,6 +176,10 @@ public:
         : m_size((Q_ASSERT(len >= 0), Q_ASSERT(str || !len), len)),
           m_data(castHelper(str)) {}
 
+    template <typename Char, if_compatible_char<Char> = true>
+    Q_DECL_CONSTEXPR QStringView(const Char *f, const Char *l)
+        : QStringView(f, l - f) {}
+
 #ifdef Q_QDOC
     template <typename Char, size_t N>
     Q_DECL_CONSTEXPR QStringView(const Char (&array)[N]) Q_DECL_NOTHROW;

@@ -171,6 +171,38 @@ private Q_SLOTS:
 #endif
     }
 
+    void fromQCharRange() const
+    {
+        const QChar str[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
+        fromRange(std::begin(str), std::end(str));
+    }
+
+    void fromUShortRange() const
+    {
+        const ushort str[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
+        fromRange(std::begin(str), std::end(str));
+    }
+
+    void fromChar16TRange() const
+    {
+#if defined(Q_COMPILER_UNICODE_STRINGS)
+        const char16_t str[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
+        fromRange(std::begin(str), std::end(str));
+#else
+        QSKIP("This test requires C++11 char16_t support enabled in the compiler");
+#endif
+    }
+
+    void fromWCharTRange() const
+    {
+#ifdef Q_OS_WIN
+        const wchar_t str[] = { 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!' };
+        fromRange(std::begin(str), std::end(str));
+#else
+        QSKIP("This is a Windows-only test");
+#endif
+    }
+
     // std::basic_string
     void fromStdStringWCharT() const
     {
@@ -194,6 +226,8 @@ private:
     void conversion_tests(String arg) const;
     template <typename Char>
     void fromLiteral(const Char *arg) const;
+    template <typename Char>
+    void fromRange(const Char *first, const Char *last) const;
     template <typename Char, typename Container>
     void fromContainer() const;
     template <typename Char>
@@ -211,6 +245,10 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv.empty());
         Q_STATIC_ASSERT(sv.isEmpty());
         Q_STATIC_ASSERT(sv.utf16() == nullptr);
+
+        constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
+        Q_STATIC_ASSERT(sv2.isNull());
+        Q_STATIC_ASSERT(sv2.empty());
     }
     {
         constexpr QStringView sv = QStringViewLiteral("");
@@ -219,6 +257,10 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv.empty());
         Q_STATIC_ASSERT(sv.isEmpty());
         Q_STATIC_ASSERT(sv.utf16() != nullptr);
+
+        constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
+        Q_STATIC_ASSERT(!sv2.isNull());
+        Q_STATIC_ASSERT(sv2.empty());
     }
     {
         constexpr QStringView sv = QStringViewLiteral("Hello");
@@ -235,6 +277,11 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv.at(4)   == QLatin1Char('o'));
         Q_STATIC_ASSERT(sv.back()  == QLatin1Char('o'));
         Q_STATIC_ASSERT(sv.last()  == QLatin1Char('o'));
+
+        constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
+        Q_STATIC_ASSERT(!sv2.isNull());
+        Q_STATIC_ASSERT(!sv2.empty());
+        Q_STATIC_ASSERT(sv2.size() == 5);
     }
 #if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
     {
@@ -253,6 +300,11 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv.at(4)   == QLatin1Char('o'));
         Q_STATIC_ASSERT(sv.back()  == QLatin1Char('o'));
         Q_STATIC_ASSERT(sv.last()  == QLatin1Char('o'));
+
+        constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
+        Q_STATIC_ASSERT(!sv2.isNull());
+        Q_STATIC_ASSERT(!sv2.empty());
+        Q_STATIC_ASSERT(sv2.size() == 5);
     }
 #else // storage_type is wchar_t
     {
@@ -271,6 +323,11 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv.at(4)   == QLatin1Char('o'));
         Q_STATIC_ASSERT(sv.back()  == QLatin1Char('o'));
         Q_STATIC_ASSERT(sv.last()  == QLatin1Char('o'));
+
+        constexpr QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
+        Q_STATIC_ASSERT(!sv2.isNull());
+        Q_STATIC_ASSERT(!sv2.empty());
+        Q_STATIC_ASSERT(sv2.size() == 5);
     }
 #endif
 #endif
@@ -347,6 +404,24 @@ void tst_QStringView::fromLiteral(const Char *arg) const
     QVERIFY(!QStringView(empty).isNull());
 
     conversion_tests(arg);
+}
+
+template <typename Char>
+void tst_QStringView::fromRange(const Char *first, const Char *last) const
+{
+    const Char *null = nullptr;
+    QCOMPARE(QStringView(null, null).size(), 0);
+    QCOMPARE(QStringView(null, null).data(), nullptr);
+    QCOMPARE(QStringView(first, first).size(), 0);
+    QCOMPARE(static_cast<const void*>(QStringView(first, first).data()),
+             static_cast<const void*>(first));
+
+    const auto sv = QStringView(first, last);
+    QCOMPARE(sv.size(), last - first);
+    QCOMPARE(static_cast<const void*>(sv.data()),
+             static_cast<const void*>(first));
+
+    // can't call conversion_tests() here, as it requires a single object
 }
 
 template <typename Char, typename Container>

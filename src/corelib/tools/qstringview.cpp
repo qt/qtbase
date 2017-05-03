@@ -240,6 +240,26 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QStringView::QStringView(const Char *first, const Char *last)
+
+    Constructs a string view on \a first with length (\a last - \a first).
+
+    The range \c{[first,last)} must remain valid for the lifetime of
+    this string view object.
+
+    Passing \c nullptr as \a first is safe if \a last is nullptr, too,
+    and results in a null string view.
+
+    The behavior is undefined if \a last precedes \a first, or \a first
+    is \c nullptr and \a last is not.
+
+    This constructor only participates in overload resolution if \c Char
+    is a compatible character type. The compatible character types
+    are: \c QChar, \c ushort, \c char16_t and (on platforms, such as
+    Windows, where it is a 16-bit type) \c wchar_t.
+*/
+
+/*!
     \fn QStringView::QStringView(const Char *str)
 
     Constructs a string view on \a str. The length is determined
