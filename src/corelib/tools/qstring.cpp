@@ -8792,6 +8792,24 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \sa latin1()
 */
 
+/*!
+    \fn QLatin1String::QLatin1String(const char *first, const char *last)
+    \since 5.10
+
+    Constructs a QLatin1String object that stores \a first with length
+    (\a last - \a first).
+
+    The range \c{[first,last)} must remain valid for the lifetime of
+    this Latin-1 string object.
+
+    Passing \c nullptr as \a first is safe if \a last is \c nullptr,
+    too, and results in a null Latin-1 string.
+
+    The behavior is undefined if \a last precedes \a first, \a first
+    is \c nullptr and \a last is not, or if \c{last - first >
+    INT_MAX}.
+*/
+
 /*! \fn QLatin1String::QLatin1String(const QByteArray &str)
 
     Constructs a QLatin1String object that stores \a str.
