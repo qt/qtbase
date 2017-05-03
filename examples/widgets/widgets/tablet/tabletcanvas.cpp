@@ -111,6 +111,7 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
             if (!m_deviceDown) {
                 m_deviceDown = true;
                 lastPoint.pos = event->posF();
+                lastPoint.pressure = event->pressure();
                 lastPoint.rotation = event->rotation();
             }
             break;
@@ -122,6 +123,7 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
                 QPainter painter(&m_pixmap);
                 paintPixmap(painter, event);
                 lastPoint.pos = event->posF();
+                lastPoint.pressure = event->pressure();
                 lastPoint.rotation = event->rotation();
             }
             break;
@@ -171,11 +173,12 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
                 painter.setPen(Qt::NoPen);
                 painter.setBrush(m_brush);
                 QPolygonF poly;
-                qreal halfWidth = m_pen.widthF();
+                qreal halfWidth = pressureToWidth(lastPoint.pressure);
                 QPointF brushAdjust(qSin(qDegreesToRadians(lastPoint.rotation)) * halfWidth,
                                     qCos(qDegreesToRadians(lastPoint.rotation)) * halfWidth);
                 poly << lastPoint.pos + brushAdjust;
                 poly << lastPoint.pos - brushAdjust;
+                halfWidth = m_pen.widthF();
                 brushAdjust = QPointF(qSin(qDegreesToRadians(event->rotation())) * halfWidth,
                                       qCos(qDegreesToRadians(event->rotation())) * halfWidth);
                 poly << event->posF() - brushAdjust;
@@ -214,6 +217,11 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
     }
 }
 //! [5]
+
+qreal TabletCanvas::pressureToWidth(qreal pressure)
+{
+    return pressure * 10 + 1;
+}
 
 //! [7]
 void TabletCanvas::updateBrush(const QTabletEvent *event)
@@ -260,7 +268,7 @@ void TabletCanvas::updateBrush(const QTabletEvent *event)
 //! [9] //! [10]
     switch (m_lineWidthValuator) {
         case PressureValuator:
-            m_pen.setWidthF(event->pressure() * 10 + 1);
+            m_pen.setWidthF(pressureToWidth(event->pressure()));
             break;
         case TiltValuator:
             m_pen.setWidthF(maximum(abs(vValue - 127), abs(hValue - 127)) / 12);

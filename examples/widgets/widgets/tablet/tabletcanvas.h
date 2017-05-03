@@ -103,6 +103,7 @@ private:
     void initPixmap();
     void paintPixmap(QPainter &painter, QTabletEvent *event);
     Qt::BrushStyle brushPattern(qreal value);
+    qreal pressureToWidth(qreal pressure);
     void updateBrush(const QTabletEvent *event);
     void updateCursor(const QTabletEvent *event);
 
@@ -117,6 +118,7 @@ private:
 
     struct Point {
         QPointF pos;
+        qreal pressure;
         qreal rotation;
     } lastPoint;
 };
