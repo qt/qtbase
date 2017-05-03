@@ -65,20 +65,8 @@ TabletCanvas::TabletCanvas()
   , m_deviceDown(false)
 {
     resize(500, 500);
-    initPixmap();
     setAutoFillBackground(true);
     setAttribute(Qt::WA_TabletTracking);
-}
-
-void TabletCanvas::initPixmap()
-{
-    QPixmap newPixmap = QPixmap(width(), height());
-    newPixmap.fill(Qt::white);
-    QPainter painter(&newPixmap);
-    if (!m_pixmap.isNull())
-        painter.drawPixmap(0, 0, m_pixmap);
-    painter.end();
-    m_pixmap = newPixmap;
 }
 //! [0]
 
@@ -105,7 +93,6 @@ bool TabletCanvas::loadImage(const QString &file)
 //! [3]
 void TabletCanvas::tabletEvent(QTabletEvent *event)
 {
-
     switch (event->type()) {
         case QEvent::TabletPress:
             if (!m_deviceDown) {
@@ -140,8 +127,23 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
 //! [3]
 
 //! [4]
+void TabletCanvas::initPixmap()
+{
+    qreal dpr = devicePixelRatioF();
+    QPixmap newPixmap = QPixmap(width() * dpr, height() * dpr);
+    newPixmap.setDevicePixelRatio(dpr);
+    newPixmap.fill(Qt::white);
+    QPainter painter(&newPixmap);
+    if (!m_pixmap.isNull())
+        painter.drawPixmap(0, 0, m_pixmap);
+    painter.end();
+    m_pixmap = newPixmap;
+}
+
 void TabletCanvas::paintEvent(QPaintEvent *)
 {
+    if (m_pixmap.isNull())
+        initPixmap();
     QPainter painter(this);
     painter.drawPixmap(0, 0, m_pixmap);
 }

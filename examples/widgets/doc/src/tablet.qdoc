@@ -206,8 +206,7 @@
 
     \snippet widgets/tablet/tabletcanvas.cpp 0
 
-    In the constructor we initialize our class variables. We need
-    to draw the background of our pixmap, as the default is gray.
+    In the constructor we initialize most of our class variables.
 
     Here is the implementation of \c saveImage():
 
@@ -247,7 +246,15 @@
 
     \snippet widgets/tablet/tabletcanvas.cpp 4
 
-    We simply draw the pixmap to the top left of the widget.
+    The first time Qt calls paintEvent(), m_pixmap is default-constructed, so
+    QPixmap::isNull() returns \c true. Now that we know which screen we will be
+    rendering to, we can create a pixmap with the appropriate resolution.
+    The size of the pixmap with which we fill the window depends on the screen
+    resolution, as the example does not support zoom; and it may be that one
+    screen is \l {High DPI Displays}{high DPI} while another is not. We need to
+    draw the background too, as the default is gray.
+
+    After that, we simply draw the pixmap to the top left of the widget.
 
     Here is the implementation of \c paintPixmap():
 
