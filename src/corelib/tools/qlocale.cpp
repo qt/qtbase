@@ -64,6 +64,9 @@
 #include "qstringbuilder.h"
 #include "private/qnumeric_p.h"
 #include <cmath>
+#ifndef QT_NO_SYSTEMLOCALE
+#   include "qmutex.h"
+#endif
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
 #   include <time.h>
@@ -593,8 +596,6 @@ static QLocalePrivate *c_private()
 }
 
 #ifndef QT_NO_SYSTEMLOCALE
-
-
 /******************************************************************************
 ** Default system locale behavior
 */
@@ -683,14 +684,24 @@ void QLocalePrivate::updateSystemPrivate()
     if (!res.isNull())
         system_data->m_plus = res.toString().at(0).unicode();
 }
-#endif
+#endif // !QT_NO_SYSTEMLOCALE
 
 static const QLocaleData *systemData()
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    // copy over the information from the fallback locale and modify
-    if (!system_data || system_data->m_language_id == 0)
-        QLocalePrivate::updateSystemPrivate();
+    /*
+      Copy over the information from the fallback locale and modify.
+
+      This modifies (cross-thread) global state, so take care to only call it in
+      one thread.
+    */
+    {
+        static QBasicMutex systemDataMutex;
+        systemDataMutex.lock();
+        if (!system_data || system_data->m_language_id == 0)
+            QLocalePrivate::updateSystemPrivate();
+        systemDataMutex.unlock();
+    }
 
     return system_data;
 #else
