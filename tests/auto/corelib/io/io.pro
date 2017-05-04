@@ -34,12 +34,6 @@ SUBDIRS=\
     qurl \
     qurlinternal \
     qurlquery \
-    qwinoverlappedionotifier \
-
-!win32 {
-    SUBDIRS -=\
-        qwinoverlappedionotifier
-}
 
 !qtHaveModule(gui): SUBDIRS -= \
     qdatastream \
@@ -73,5 +67,4 @@ win32:!qtConfig(private_tests): SUBDIRS -= \
     qprocess-noapplication
 
 winrt: SUBDIRS -= \
-    qstorageinfo \
-    qwinoverlappedionotifier
+    qstorageinfo
