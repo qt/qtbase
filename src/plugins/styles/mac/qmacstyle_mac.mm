@@ -4385,53 +4385,65 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         d->drawFocusRing(p, opt->rect, hMargin, vMargin);
         break; }
     case CE_MenuItem:
+    case CE_MenuHMargin:
+    case CE_MenuVMargin:
     case CE_MenuEmptyArea:
+    case CE_MenuTearoff:
+    case CE_MenuScroller:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
-            p->fillRect(mi->rect, opt->palette.background());
-            QAquaWidgetSize widgetSize = d->aquaSizeConstrain(opt, w);
-            int tabwidth = mi->tabWidth;
-            int maxpmw = mi->maxIconWidth;
-            bool active = mi->state & State_Selected;
-            bool enabled = mi->state & State_Enabled;
-            HIRect menuRect = qt_hirectForQRect(mi->menuRect);
-            HIRect itemRect = qt_hirectForQRect(mi->rect);
-            HIThemeMenuItemDrawInfo mdi;
-            mdi.version = qt_mac_hitheme_version;
-            mdi.itemType = kThemeMenuItemPlain;
-            if (!mi->icon.isNull())
-                mdi.itemType |= kThemeMenuItemHasIcon;
-            if (mi->menuItemType == QStyleOptionMenuItem::SubMenu)
-                mdi.itemType |= kThemeMenuItemHierarchical | kThemeMenuItemHierBackground;
-            else
-                mdi.itemType |= kThemeMenuItemPopUpBackground;
-            if (enabled)
-                mdi.state = kThemeMenuActive;
-            else
-                mdi.state = kThemeMenuDisabled;
-            if (active)
-                mdi.state |= kThemeMenuSelected;
-            QRect contentRect;
-            if (mi->menuItemType == QStyleOptionMenuItem::Separator) {
-                // First arg should be &menurect, but wacky stuff happens then.
-                HIThemeDrawMenuSeparator(&itemRect, &itemRect, &mdi,
-                                         cg, kHIThemeOrientationNormal);
-                break;
-            } else {
-                HIRect cr;
-                bool needAlpha = mi->palette.color(QPalette::Button) == Qt::transparent;
-                if (needAlpha) {
-                    CGContextSaveGState(cg);
-                    CGContextSetAlpha(cg, 0.0);
+            const bool active = mi->state & State_Selected;
+            const QBrush bg = active ? mi->palette.highlight() : mi->palette.background();
+            p->fillRect(mi->rect, bg);
+
+            const QAquaWidgetSize widgetSize = d->aquaSizeConstrain(opt, w);
+
+            if (ce == CE_MenuTearoff) {
+                p->setPen(QPen(mi->palette.dark().color(), 1, Qt::DashLine));
+                p->drawLine(mi->rect.x() + 2, mi->rect.y() + mi->rect.height() / 2 - 1,
+                            mi->rect.x() + mi->rect.width() - 4,
+                            mi->rect.y() + mi->rect.height() / 2 - 1);
+                p->setPen(QPen(mi->palette.light().color(), 1, Qt::DashLine));
+                p->drawLine(mi->rect.x() + 2, mi->rect.y() + mi->rect.height() / 2,
+                            mi->rect.x() + mi->rect.width() - 4,
+                            mi->rect.y() + mi->rect.height() / 2);
+            } else if (ce == CE_MenuScroller) {
+                const QSize scrollerSize = QSize(10, 8);
+                const int scrollerVOffset = 5;
+                const int left = mi->rect.x() + (mi->rect.width() - scrollerSize.width()) / 2;
+                const int right = left + scrollerSize.width();
+                int top;
+                int bottom;
+                if (opt->state & State_DownArrow) {
+                    bottom = mi->rect.y() + scrollerVOffset;
+                    top = bottom + scrollerSize.height();
+                } else {
+                    bottom = mi->rect.bottom() - scrollerVOffset;
+                    top = bottom - scrollerSize.height();
                 }
-                HIThemeDrawMenuItem(&menuRect, &itemRect, &mdi,
-                                    cg, kHIThemeOrientationNormal, &cr);
-                if (needAlpha)
-                    CGContextRestoreGState(cg);
-                if (ce == CE_MenuEmptyArea)
-                    break;
-                contentRect = qt_qrectForHIRect(cr);
+                p->save();
+                p->setRenderHint(QPainter::Antialiasing);
+                QPainterPath path;
+                path.moveTo(left, bottom);
+                path.lineTo(right, bottom);
+                path.lineTo((left + right) / 2, top);
+                p->fillPath(path, opt->palette.buttonText());
+                p->restore();
+            } else if (ce != CE_MenuItem) {
+                break;
             }
-            int xpos = contentRect.x() + 18;
+
+            if (mi->menuItemType == QStyleOptionMenuItem::Separator) {
+                CGColorRef separatorColor = [NSColor quaternaryLabelColor].CGColor;
+                const QRect separatorRect = QRect(mi->rect.left(), mi->rect.center().y(), mi->rect.width(), 2);
+                p->fillRect(separatorRect, qt_mac_toQColor(separatorColor));
+                break;
+            }
+
+            const int tabwidth = mi->tabWidth;
+            const int maxpmw = mi->maxIconWidth;
+            const bool enabled = mi->state & State_Enabled;
+
+            int xpos = mi->rect.x() + 18;
             int checkcol = maxpmw;
             if (!enabled)
                 p->setPen(mi->palette.text().color());
@@ -4445,9 +4457,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 checkmarkOpt.initFrom(w);
 
                 const int mw = checkcol + macItemFrame;
-                const int mh = contentRect.height() + macItemFrame;
-                const int xp = contentRect.x() + macItemFrame;
-                checkmarkOpt.rect = QRect(xp, contentRect.y() - checkmarkOpt.fontMetrics.descent(), mw, mh);
+                const int mh = mi->rect.height() + macItemFrame;
+                const int xp = mi->rect.x() + macItemFrame;
+                checkmarkOpt.rect = QRect(xp, mi->rect.y() - checkmarkOpt.fontMetrics.descent(), mw, mh);
 
                 checkmarkOpt.state |= State_On; // Always on. Never rendered when off.
                 checkmarkOpt.state.setFlag(State_Selected, active);
@@ -4477,7 +4489,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QPixmap pixmap = mi->icon.pixmap(window, iconSize, mode);
                 int pixw = pixmap.width() / pixmap.devicePixelRatio();
                 int pixh = pixmap.height() / pixmap.devicePixelRatio();
-                QRect cr(xpos, contentRect.y(), checkcol, contentRect.height());
+                QRect cr(xpos, mi->rect.y(), checkcol, mi->rect.height());
                 QRect pmr(0, 0, pixw, pixh);
                 pmr.moveCenter(cr.center());
                 p->drawPixmap(pmr.topLeft(), pixmap);
@@ -4489,16 +4501,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 int t = s.indexOf(QLatin1Char('\t'));
                 int text_flags = Qt::AlignRight | Qt::AlignVCenter | Qt::TextHideMnemonic
                                  | Qt::TextSingleLine | Qt::AlignAbsolute;
-                int yPos = contentRect.y();
+                int yPos = mi->rect.y();
                 if (widgetSize == QAquaSizeMini)
                     yPos += 1;
                 p->save();
                 if (t >= 0) {
                     p->setFont(qt_app_fonts_hash()->value("QMenuItem", p->font()));
-                    int xp = contentRect.right() - tabwidth - macRightBorder
-                             - macItemHMargin - macItemFrame + 1;
-                    p->drawText(xp, yPos, tabwidth, contentRect.height(), text_flags,
-                                s.mid(t + 1));
+                    int xp = mi->rect.right() - tabwidth - macRightBorder - macItemHMargin - macItemFrame + 1;
+                    p->drawText(xp, yPos, tabwidth, mi->rect.height(), text_flags, s.mid(t + 1));
                     s = s.left(t);
                 }
 
@@ -4511,73 +4521,21 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // is very, very weak. This makes it stonger.
                 myFont.setPointSizeF(QFontInfo(mi->font).pointSizeF());
                 p->setFont(myFont);
-                p->drawText(xpos, yPos, contentRect.width() - xm - tabwidth + 1,
-                            contentRect.height(), text_flags ^ Qt::AlignRight, s);
+                p->drawText(xpos, yPos, mi->rect.width() - xm - tabwidth + 1,
+                            mi->rect.height(), text_flags ^ Qt::AlignRight, s);
                 p->restore();
             }
         }
         break;
-    case CE_MenuHMargin:
-    case CE_MenuVMargin:
-    case CE_MenuTearoff:
-    case CE_MenuScroller:
-        if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
-            p->fillRect(mi->rect, opt->palette.background());
-
-            HIRect menuRect = qt_hirectForQRect(mi->menuRect);
-            HIRect itemRect = qt_hirectForQRect(mi->rect);
-            HIThemeMenuItemDrawInfo mdi;
-            mdi.version = qt_mac_hitheme_version;
-            if (!(opt->state & State_Enabled))
-                mdi.state = kThemeMenuDisabled;
-            else if (opt->state & State_Selected)
-                mdi.state = kThemeMenuSelected;
-            else
-                mdi.state = kThemeMenuActive;
-            if (ce == CE_MenuScroller) {
-                if (opt->state & State_DownArrow)
-                    mdi.itemType = kThemeMenuItemScrollDownArrow;
-                else
-                    mdi.itemType = kThemeMenuItemScrollUpArrow;
-            } else {
-                mdi.itemType = kThemeMenuItemPlain;
-            }
-            HIThemeDrawMenuItem(&menuRect, &itemRect, &mdi,
-                                cg,
-                                kHIThemeOrientationNormal, 0);
-            if (ce == CE_MenuTearoff) {
-                p->setPen(QPen(mi->palette.dark().color(), 1, Qt::DashLine));
-                p->drawLine(mi->rect.x() + 2, mi->rect.y() + mi->rect.height() / 2 - 1,
-                            mi->rect.x() + mi->rect.width() - 4,
-                            mi->rect.y() + mi->rect.height() / 2 - 1);
-                p->setPen(QPen(mi->palette.light().color(), 1, Qt::DashLine));
-                p->drawLine(mi->rect.x() + 2, mi->rect.y() + mi->rect.height() / 2,
-                            mi->rect.x() + mi->rect.width() - 4,
-                            mi->rect.y() + mi->rect.height() / 2);
-            }
-        }
-        break;
     case CE_MenuBarItem:
+    case CE_MenuBarEmptyArea:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
-            HIRect menuRect = qt_hirectForQRect(mi->menuRect);
-            HIRect itemRect = qt_hirectForQRect(mi->rect);
-
             const bool selected = (opt->state & State_Selected) && (opt->state & State_Enabled) && (opt->state & State_Sunken);
-            if (selected) {
-                // Draw a selected menu item background:
-                HIThemeMenuItemDrawInfo mdi;
-                mdi.version = qt_mac_hitheme_version;
-                mdi.state = kThemeMenuSelected;
-                mdi.itemType = kThemeMenuItemPlain;
-                HIThemeDrawMenuItem(&menuRect, &itemRect, &mdi, cg, kHIThemeOrientationNormal, 0);
-            } else {
-                // Draw the toolbar background:
-                HIThemeMenuBarDrawInfo bdi;
-                bdi.version = qt_mac_hitheme_version;
-                bdi.state = kThemeMenuBarNormal;
-                bdi.attributes = 0;
-                HIThemeDrawMenuBarBackground(&menuRect, &bdi, cg, kHIThemeOrientationNormal);
-            }
+            const QBrush bg = selected ? mi->palette.highlight() : mi->palette.background();
+            p->fillRect(mi->rect, bg);
+
+            if (ce != CE_MenuBarItem)
+                break;
 
             if (!mi->icon.isNull()) {
                 int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
@@ -4595,17 +4553,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             }
         }
         break;
-    case CE_MenuBarEmptyArea:
-        if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
-            HIThemeMenuBarDrawInfo bdi;
-            bdi.version = qt_mac_hitheme_version;
-            bdi.state = kThemeMenuBarNormal;
-            bdi.attributes = 0;
-            HIRect hirect = qt_hirectForQRect(mi->rect);
-            HIThemeDrawMenuBarBackground(&hirect, &bdi, cg,
-                                         kHIThemeOrientationNormal);
-            break;
-        }
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             HIThemeTrackDrawInfo tdi;
