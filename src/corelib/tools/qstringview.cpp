@@ -224,15 +224,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(QString::Null)
-    \internal
-
-    Constructs a null string view.
-
-    \sa isNull()
-*/
-
-/*!
     \fn QStringView::QStringView(const Char *str, qssize_t len)
 
     Constructs a string view on \a str with length \a len.
