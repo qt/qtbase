@@ -349,6 +349,10 @@ private Q_SLOTS:
     void trim_trimmed_QString() { trimmed_impl<QString>(); }
     void trim_trimmed_QStringRef_data() { trimmed_data(); }
     void trim_trimmed_QStringRef() { trimmed_impl<QStringRef>(); }
+    void trim_trimmed_QStringView_data() { trimmed_data(); }
+    void trim_trimmed_QStringView() { trimmed_impl<QStringView>(); }
+    void trim_trimmed_QLatin1String_data() { trimmed_data(); }
+    void trim_trimmed_QLatin1String() { trimmed_impl<QLatin1String>(); }
     void trim_trimmed_QByteArray_data() { trimmed_data(); }
     void trim_trimmed_QByteArray() { trimmed_impl<QByteArray>(); }
 
@@ -1050,7 +1054,7 @@ void tst_QStringApiSymmetry::trimmed_impl()
 
     const auto utf8 = unicode.toUtf8();
     const auto l1s  = unicode.toLatin1();
-    const auto l1   = QLatin1String(l1s);
+    const auto l1   = l1s.isNull() ? QLatin1String() : QLatin1String(l1s);
 
     const auto ref = unicode.isNull() ? QStringRef() : QStringRef(&unicode);
     const auto s = make<String>(ref, l1, utf8);

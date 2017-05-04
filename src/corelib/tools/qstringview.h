@@ -245,6 +245,8 @@ public:
     Q_DECL_RELAXED_CONSTEXPR void chop(qssize_t n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
 
+    Q_REQUIRED_RESULT QStringView trimmed() const Q_DECL_NOTHROW { return qTrimmed(*this); }
+
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
     { return qStartsWith(*this, s, cs); }
     Q_REQUIRED_RESULT inline bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;

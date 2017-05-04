@@ -665,6 +665,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QStringView QStringView::trimmed() const
+
+    Strips leading and trailing whitespace and returns the result.
+
+    Whitespace means any character for which QChar::isSpace() returns
+    \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
+    '\\f', '\\r', and ' '.
+
+    \sa qTrimmed()
+*/
+
+/*!
     \fn bool QStringView::startsWith(QStringView str, Qt::CaseSensitivity cs) const
     \fn bool QStringView::startsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
     \fn bool QStringView::startsWith(QChar ch) const

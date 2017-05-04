@@ -5208,6 +5208,41 @@ QString QString::simplified_helper(QString &str)
     return QStringAlgorithms<QString>::simplified_helper(str);
 }
 
+namespace {
+    template <typename StringView>
+    StringView qt_trimmed(StringView s) Q_DECL_NOTHROW
+    {
+        auto begin = s.begin();
+        auto end = s.end();
+        QStringAlgorithms<const StringView>::trimmed_helper_positions(begin, end);
+        return StringView{begin, end};
+    }
+}
+
+/*!
+    \fn QStringView qTrimmed(QStringView s)
+    \fn QLatin1String qTrimmed(QLatin1String s)
+    \relates QStringView
+    \since 5.10
+
+    Returns \a s with whitespace removed from the start and the end.
+
+    Whitespace means any character for which QChar::isSpace() returns
+    \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
+    '\\f', '\\r', and ' '.
+
+    \sa QString::trimmed(), QStringView::trimmed(), QLatin1String::trimmed()
+*/
+QStringView qTrimmed(QStringView s) Q_DECL_NOTHROW
+{
+    return qt_trimmed(s);
+}
+
+QLatin1String qTrimmed(QLatin1String s) Q_DECL_NOTHROW
+{
+    return qt_trimmed(s);
+}
+
 /*!
     \fn QString QString::trimmed() const
 
@@ -9125,6 +9160,19 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
     \sa mid(), left(), right(), chopped(), truncate()
+*/
+
+/*!
+    \fn QLatin1String QLatin1String::trimmed() const
+    \since 5.10
+
+    Strips leading and trailing whitespace and returns the result.
+
+    Whitespace means any character for which QChar::isSpace() returns
+    \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
+    '\\f', '\\r', and ' '.
+
+    \sa qTrimmed()
 */
 
 /*! \fn bool QLatin1String::operator==(const QString &other) const

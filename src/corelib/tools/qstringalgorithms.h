@@ -69,6 +69,8 @@ Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qEndsWith(QStringView 
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qEndsWith(QLatin1String haystack, QStringView   needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qEndsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
 
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION QStringView   qTrimmed(QStringView   s) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION QLatin1String qTrimmed(QLatin1String s) Q_DECL_NOTHROW;
 
 Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray qConvertToLatin1(QStringView str);
 Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray qConvertToUtf8(QStringView str);

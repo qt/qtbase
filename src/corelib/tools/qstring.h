@@ -167,6 +167,8 @@ public:
     Q_DECL_RELAXED_CONSTEXPR void truncate(int n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
 
+    Q_REQUIRED_RESULT QLatin1String trimmed() const Q_DECL_NOTHROW { return qTrimmed(*this); }
+
     inline bool operator==(const QString &s) const Q_DECL_NOTHROW;
     inline bool operator!=(const QString &s) const Q_DECL_NOTHROW;
     inline bool operator>(const QString &s) const Q_DECL_NOTHROW;
