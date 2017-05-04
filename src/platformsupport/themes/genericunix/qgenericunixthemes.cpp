@@ -824,11 +824,13 @@ QStringList QGenericUnixTheme::themeNames()
                 result.push_back(QStringLiteral("gtk3"));
                 // fallback to the generic Gnome theme if loading the GTK3 theme fails
                 result.push_back(QLatin1String(QGnomeTheme::name));
+            } else {
+                // unknown, but lowercase the name (our standard practice) and
+                // remove any "x-" prefix
+                QString s = QString::fromLatin1(desktopName.toLower());
+                result.push_back(s.startsWith(QLatin1String("x-")) ? s.mid(2) : s);
             }
         }
-        const QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));
-        if (!session.isEmpty() && session != QLatin1String("default") && !result.contains(session))
-            result.push_back(session);
     } // desktopSettingsAware
     result.append(QLatin1String(QGenericUnixTheme::name));
     return result;

@@ -547,6 +547,8 @@ bool QAbstractItemDelegatePrivate::tryFixup(QWidget *editor)
             return e->hasAcceptableInput();
         }
     }
+#else
+    Q_UNUSED(editor)
 #endif // QT_NO_LINEEDIT
 
     return true;

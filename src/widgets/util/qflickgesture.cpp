@@ -292,6 +292,8 @@ protected:
                 qFGDebug() << "QFG: ungrabbing" << grabber;
                 grabber->ungrabMouse();
             }
+#else
+            Q_UNUSED(flags);
 #endif // QT_NO_GRAPHICSVIEW
 
             if (me) {

@@ -68,6 +68,13 @@
 
 #define QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 #define QT_NO_DATASTREAM
+#define QT_FEATURE_alloca 1
+#define QT_FEATURE_alloca_h -1
+#ifdef _WIN32
+# define QT_FEATURE_alloca_malloc_h 1
+#else
+# define QT_FEATURE_alloca_malloc_h -1
+#endif
 #define QT_FEATURE_iconv -1
 #define QT_FEATURE_icu -1
 #define QT_FEATURE_journald -1

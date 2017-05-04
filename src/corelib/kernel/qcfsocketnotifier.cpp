@@ -292,10 +292,19 @@ void QCFSocketNotifier::enableSocketNotifiers(CFRunLoopObserverRef ref, CFRunLoo
                 continue;
             }
 
-            if (!socketInfo->readNotifier)
+            // Apple docs say: "If a callback is automatically re-enabled,
+            // it is called every time the condition becomes true ... If a
+            // callback is not automatically re-enabled, then it gets called
+            // exactly once, and is not called again until you manually
+            // re-enable that callback by calling CFSocketEnableCallBacks()".
+            // So, we don't need to enable callbacks on registering.
+            socketInfo->readEnabled = (socketInfo->readNotifier != nullptr);
+            if (!socketInfo->readEnabled)
                 CFSocketDisableCallBacks(socketInfo->socket, kCFSocketReadCallBack);
-            if (!socketInfo->writeNotifier)
+            socketInfo->writeEnabled = (socketInfo->writeNotifier != nullptr);
+            if (!socketInfo->writeEnabled)
                 CFSocketDisableCallBacks(socketInfo->socket, kCFSocketWriteCallBack);
+            continue;
         }
 
         if (socketInfo->readNotifier && !socketInfo->readEnabled) {

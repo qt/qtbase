@@ -575,11 +575,14 @@ defineTest(qtConfLibrary_pkgConfig) {
     }
 
     qtRunLoggedCommand("$$pkg_config --modversion $$args", version)|return(false)
-    qtRunLoggedCommand("$$pkg_config --libs-only-L --libs-only-l $$args", $${1}.libs)|return(false)
+    qtRunLoggedCommand("$$pkg_config --libs-only-L $$args", libpaths)|return(false)
+    qtRunLoggedCommand("$$pkg_config --libs-only-l $$args", libs)|return(false)
     qtRunLoggedCommand("$$pkg_config --cflags $$args", $${1}.cflags)|return(false)
     version ~= s/[^0-9.].*$//
     $${1}.version = $$first(version)
     export($${1}.version)
+    $${1}.libs = $$libpaths $$libs
+    export($${1}.libs)
     return(true)
 }
 
@@ -1958,6 +1961,15 @@ qtConfCheckErrors()
     error()
 }
 
+QMAKE_CONFIG_VERBOSE = $$eval(config.input.verbose)
+isEmpty(QMAKE_CONFIG_VERBOSE): \
+    QMAKE_CONFIG_VERBOSE = false
+QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
+write_file($$QMAKE_CONFIG_LOG, "")
+qtLog("Command line: $$qtSystemQuote($$QMAKE_SAVED_ARGS)")
+$$QMAKE_REDO_CONFIG: \
+    qtLog("config.opt: $$qtSystemQuote($$QMAKE_EXTRA_REDO_ARGS)")
+
 for (currentConfig, allConfigs) {
     qtConfSetModuleName()
     qtConfSetupModuleOutputs()
@@ -1986,18 +1998,6 @@ equals(QMAKE_CONFIG_CACHE_USE, none) {
         "cache.xplatform = $$[QMAKE_XSPEC]"
     write_file($$QMAKE_CONFIG_CACHE, cont)
 }
-
-QMAKE_CONFIG_VERBOSE = $$eval(config.input.verbose)
-isEmpty(QMAKE_CONFIG_VERBOSE): \
-    QMAKE_CONFIG_VERBOSE = false
-QMAKE_CONFIG_LOG = $$OUT_PWD/config.log
-!equals(QMAKE_CONFIG_CACHE_USE, all): \
-    write_file($$QMAKE_CONFIG_LOG, "")
-else: \
-    write_file($$QMAKE_CONFIG_LOG, $$list($$escape_expand(\\n)), append)
-qtLog("Command line: $$qtSystemQuote($$QMAKE_SAVED_ARGS)")
-$$QMAKE_REDO_CONFIG: \
-    qtLog("config.opt: $$qtSystemQuote($$QMAKE_EXTRA_REDO_ARGS)")
 
 CONFIG += qt_conf_tests_allowed
 logn()

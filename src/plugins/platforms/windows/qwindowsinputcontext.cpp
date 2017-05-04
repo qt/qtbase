@@ -229,7 +229,7 @@ void QWindowsInputContext::updateEnabled()
         const bool accepted = inputMethodAccepted();
         if (QWindowsContext::verbose > 1)
             qCDebug(lcQpaInputMethods) << __FUNCTION__ << platformWindow->window() << "accepted=" << accepted;
-            QWindowsInputContext::setWindowsImeEnabled(platformWindow, accepted);
+        QWindowsInputContext::setWindowsImeEnabled(platformWindow, accepted);
     }
 }
 

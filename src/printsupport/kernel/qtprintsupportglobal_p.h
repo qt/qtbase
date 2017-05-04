@@ -53,5 +53,6 @@
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtPrintSupport/private/qtprintsupport-config_p.h>
 
 #endif // QTPRINTSUPPORTGLOBAL_P_H

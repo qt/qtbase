@@ -215,13 +215,13 @@ void QWindowsPipeReader::notified(DWORD errorCode, DWORD numberOfBytesRead)
 void QWindowsPipeReader::startAsyncRead()
 {
     const DWORD minReadBufferSize = 4096;
-    DWORD bytesToRead = qMax(checkPipeState(), minReadBufferSize);
+    qint64 bytesToRead = qMax(checkPipeState(), minReadBufferSize);
     if (pipeBroken)
         return;
 
     if (readBufferMaxSize && bytesToRead > (readBufferMaxSize - readBuffer.size())) {
         bytesToRead = readBufferMaxSize - readBuffer.size();
-        if (bytesToRead == 0) {
+        if (bytesToRead <= 0) {
             // Buffer is full. User must read data from the buffer
             // before we can read more from the pipe.
             return;

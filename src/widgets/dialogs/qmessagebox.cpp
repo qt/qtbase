@@ -1404,8 +1404,8 @@ void QMessageBox::changeEvent(QEvent *ev)
 */
 void QMessageBox::keyPressEvent(QKeyEvent *e)
 {
-    Q_D(QMessageBox);
 #if QT_CONFIG(shortcut)
+        Q_D(QMessageBox);
         if (e->matches(QKeySequence::Cancel)) {
             if (d->detectedEscapeButton) {
 #ifdef Q_OS_MAC

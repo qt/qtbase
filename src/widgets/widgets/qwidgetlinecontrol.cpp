@@ -1704,7 +1704,9 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
     }
 
     bool unknown = false;
+#if QT_CONFIG(shortcut)
     bool visual = cursorMoveStyle() == Qt::VisualMoveStyle;
+#endif
 
     if (false) {
     }

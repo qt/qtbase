@@ -2527,7 +2527,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
 /*! \fn QMultiHash::QMultiHash(std::initializer_list<std::pair<Key,T> > list)
     \since 5.1
 
-    Constructs a multi hash with a copy of each of the elements in the
+    Constructs a multi-hash with a copy of each of the elements in the
     initializer list \a list.
 
     This function is only available if the program is being

@@ -855,6 +855,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         GetCursorPos(&msg.pt);
     }
 
+    QWindowsWindow *platformWindow = findPlatformWindow(hwnd);
+    *platformWindowPtr = platformWindow;
+
     // Run the native event filters.
     long filterResult = 0;
     QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
@@ -863,8 +866,6 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
     }
 
-    QWindowsWindow *platformWindow = findPlatformWindow(hwnd);
-    *platformWindowPtr = platformWindow;
     if (platformWindow) {
         filterResult = 0;
         if (QWindowSystemInterface::handleNativeEvent(platformWindow->window(), d->m_eventType, &msg, &filterResult)) {

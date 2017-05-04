@@ -177,15 +177,24 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
             QSNDict *dict = sn_vec[type];
 
             QSockNot *sn = dict ? dict->value(wp) : 0;
-            if (sn) {
-                d->doWsaAsyncSelect(sn->fd, 0);
-                d->active_fd[sn->fd].selected = false;
+            if (sn == nullptr) {
                 d->postActivateSocketNotifiers();
-                if (type < 3) {
-                    QEvent event(QEvent::SockAct);
-                    QCoreApplication::sendEvent(sn->obj, &event);
-                } else {
-                    QEvent event(QEvent::SockClose);
+            } else {
+                Q_ASSERT(d->active_fd.contains(sn->fd));
+                QSockFd &sd = d->active_fd[sn->fd];
+                if (sd.selected) {
+                    Q_ASSERT(sd.mask == 0);
+                    d->doWsaAsyncSelect(sn->fd, 0);
+                    sd.selected = false;
+                }
+                d->postActivateSocketNotifiers();
+
+                // Ignore the message if a notification with the same type was
+                // received previously. Suppressed message is definitely spurious.
+                const long eventCode = WSAGETSELECTEVENT(lp);
+                if ((sd.mask & eventCode) != eventCode) {
+                    sd.mask |= eventCode;
+                    QEvent event(type < 3 ? QEvent::SockAct : QEvent::SockClose);
                     QCoreApplication::sendEvent(sn->obj, &event);
                 }
             }
@@ -194,13 +203,22 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     } else if (message == WM_QT_ACTIVATENOTIFIERS) {
         Q_ASSERT(d != 0);
 
-        // register all socket notifiers
-        for (QSFDict::iterator it = d->active_fd.begin(), end = d->active_fd.end();
-             it != end; ++it) {
-            QSockFd &sd = it.value();
-            if (!sd.selected) {
-                d->doWsaAsyncSelect(it.key(), sd.event);
-                sd.selected = true;
+        // Postpone activation if we have unhandled socket notifier messages
+        // in the queue. WM_QT_ACTIVATENOTIFIERS will be posted again as a result of
+        // event processing.
+        MSG msg;
+        if (!PeekMessage(&msg, 0, WM_QT_SOCKETNOTIFIER, WM_QT_SOCKETNOTIFIER, PM_NOREMOVE)
+            && d->queuedSocketEvents.isEmpty()) {
+            // register all socket notifiers
+            for (QSFDict::iterator it = d->active_fd.begin(), end = d->active_fd.end();
+                 it != end; ++it) {
+                QSockFd &sd = it.value();
+                if (!sd.selected) {
+                    d->doWsaAsyncSelect(it.key(), sd.event);
+                    // allow any event to be accepted
+                    sd.mask = 0;
+                    sd.selected = true;
+                }
             }
         }
         d->activateNotifiersPosted = false;
@@ -706,7 +724,9 @@ void QEventDispatcherWin32::registerSocketNotifier(QSocketNotifier *notifier)
         }
         sd.event |= event;
     } else {
-        d->active_fd.insert(sockfd, QSockFd(event));
+        // Disable the events which could be implicitly re-enabled. Next activation
+        // of socket notifiers will reset the mask.
+        d->active_fd.insert(sockfd, QSockFd(event, FD_READ | FD_ACCEPT | FD_WRITE | FD_OOB));
     }
 
     d->postActivateSocketNotifiers();

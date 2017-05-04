@@ -102,9 +102,7 @@ public:
 
     virtual void wakeUp() = 0;
     virtual void interrupt() = 0;
-#if QT_DEPRECATED_SINCE(5, 9)
-    QT_DEPRECATED virtual void flush() = 0;
-#endif
+    virtual void flush() = 0; // ### Qt6: remove, mark final or make protected
 
     virtual void startingUp();
     virtual void closingDown();

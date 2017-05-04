@@ -714,11 +714,13 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
 
     \sa sendPostedEvents(), processEvents(), QAbstractEventDispatcher::flush()
 */
+#if QT_DEPRECATED_SINCE(5, 9)
 void QCoreApplication::flush()
 {
     if (self && self->d_func()->eventDispatcher)
         self->d_func()->eventDispatcher->flush();
 }
+#endif
 #endif
 
 /*!
@@ -756,6 +758,10 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
 
 void QCoreApplicationPrivate::init()
 {
+#if defined(Q_OS_MACOS)
+    QMacAutoReleasePool pool;
+#endif
+
     Q_Q(QCoreApplication);
 
     initLocale();

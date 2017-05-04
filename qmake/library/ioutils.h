@@ -65,6 +65,9 @@ public:
 #if defined(PROEVALUATOR_FULL)
     static bool touchFile(const QString &targetFileName, const QString &referenceFileName, QString *errorString);
 #endif
+#ifdef Q_OS_UNIX
+    static bool readLinkTarget(const QString &symlinkPath, QString *target);
+#endif
 };
 
 } // namespace ProFileEvaluatorInternal

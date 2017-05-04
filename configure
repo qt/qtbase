@@ -561,22 +561,11 @@ if [ -z "$PLATFORM" ]; then
         ;;
      AIX:*)
         #PLATFORM=aix-g++
-        #PLATFORM=aix-g++-64
-        PLATFORM=aix-xlc
-        #PLATFORM=aix-xlc-64
-        PLATFORM_NOTES="AIX: aix-g++ aix-g++-64 aix-xlc-64"
+        PLATFORM=aix-g++-64
+        PLATFORM_NOTES="AIX: aix-g++ aix-g++-64"
         ;;
      GNU:*)
         PLATFORM=hurd-g++
-        ;;
-     dgux:*)
-        PLATFORM=dgux-g++
-        ;;
-#     DYNIX/ptx:4*)
-#       PLATFORM=dynix-g++
-#       ;;
-     ULTRIX:*)
-        PLATFORM=ultrix-g++
         ;;
      FreeBSD:*)
         if [ "$(uname -r | cut -d. -f1)" -ge 10 ]; then
@@ -593,75 +582,28 @@ if [ -z "$PLATFORM" ]; then
      NetBSD:*)
         PLATFORM=netbsd-g++
         ;;
-     BSD/OS:*|BSD/386:*)
-        PLATFORM=bsdi-g++
-        ;;
-     IRIX*:*)
-        #PLATFORM=irix-g++
-        PLATFORM=irix-cc
-        #PLATFORM=irix-cc-64
-        PLATFORM_NOTES="IRIX: irix-g++ irix-cc-64"
-        ;;
      HP-UX:*)
         case "$UNAME_MACHINE" in
             ia64)
-                #PLATFORM=hpuxi-acc-32
-                PLATFORM=hpuxi-acc-64
-                PLATFORM_NOTES="HP-UXi: hpuxi-acc-32"
-            ;;
-            *)
-                #PLATFORM=hpux-g++
-                PLATFORM=hpux-acc
-                #PLATFORM=hpux-acc-64
-                #PLATFORM=hpux-cc
-                #PLATFORM=hpux-acc-o64
-                PLATFORM_NOTES="HP-UX: hpux-g++ hpux-acc-64 hpux-acc-o64"
+                PLATFORM=hpuxi-g++-64
             ;;
         esac
         ;;
-     OSF1:*)
-        #PLATFORM=tru64-g++
-        PLATFORM=tru64-cxx
-        PLATFORM_NOTES="Tru64: tru64-g++"
-        ;;
      Linux:*)
         PLATFORM=linux-g++
-        PLATFORM_NOTES="Linux: linux-clang linux-kcc linux-icc linux-cxx"
+        PLATFORM_NOTES="Linux: linux-clang linux-icc"
         ;;
      SunOS:5*)
-        #PLATFORM=solaris-g++
+        #PLATFORM=solaris-g++-64
         PLATFORM=solaris-cc
         #PLATFORM=solaris-cc64
-        PLATFORM_NOTES="Solaris: solaris-g++ solaris-cc-64"
-        ;;
-     ReliantUNIX-*:*|SINIX-*:*)
-        PLATFORM=reliant-cds
-        #PLATFORM=reliant-cds-64
-        PLATFORM_NOTES="Reliant UNIX: reliant-cds-64"
+        PLATFORM_NOTES="Solaris: solaris-g++-64 solaris-cc-64"
         ;;
      CYGWIN*:*)
         PLATFORM=cygwin-g++
         ;;
      LynxOS*:*)
         PLATFORM=lynxos-g++
-        ;;
-     OpenUNIX:*)
-        #PLATFORM=unixware-g++
-        PLATFORM=unixware-cc
-        PLATFORM_NOTES="OpenUNIX: unixware-g++"
-        ;;
-     UnixWare:*)
-        #PLATFORM=unixware-g++
-        PLATFORM=unixware-cc
-        PLATFORM_NOTES="UnixWare: unixware-g++"
-        ;;
-     SCO_SV:*)
-        #PLATFORM=sco-g++
-        PLATFORM=sco-cc
-        PLATFORM_NOTES="SCO OpenServer: sco-g++"
-        ;;
-     UNIX_SV:*)
-        PLATFORM=unixware-g++
         ;;
      QNX:*)
         PLATFORM=unsupported/qnx-g++

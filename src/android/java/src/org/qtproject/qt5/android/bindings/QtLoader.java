@@ -608,9 +608,11 @@ public abstract class QtLoader {
                 if (!(new File(stylePath)).exists() && !extractOption.equals("none")) {
                     loaderParams.putString(EXTRACT_STYLE_KEY, stylePath);
                     loaderParams.putBoolean(EXTRACT_STYLE_MINIMAL_KEY, extractOption.equals("minimal"));
-                    if (extractOption.equals("full"))
-                        ENVIRONMENT_VARIABLES += "\tQT_USE_ANDROID_NATIVE_STYLE=1";
                 }
+
+                if (extractOption.equals("full"))
+                    ENVIRONMENT_VARIABLES += "\tQT_USE_ANDROID_NATIVE_STYLE=1";
+
                 ENVIRONMENT_VARIABLES += "\tMINISTRO_ANDROID_STYLE_PATH=" + stylePath
                         + "\tQT_ANDROID_THEMES_ROOT_PATH=" + themePath;
 

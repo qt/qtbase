@@ -82,8 +82,10 @@ public:
     bool isChecked() const;
     void setChecked(bool checked) override;
 
+#if QT_CONFIG(shortcut)
     QKeySequence shortcut() const;
     void setShortcut(const QKeySequence &shortcut) override;
+#endif
 
     bool isEnabled() const;
     void setEnabled(bool enabled) override;
@@ -114,7 +116,9 @@ private:
     QGtk3Menu *m_menu;
     GtkWidget *m_item;
     QString m_text;
+#if QT_CONFIG(shortcut)
     QKeySequence m_shortcut;
+#endif
 };
 
 class QGtk3Menu : public QPlatformMenu
