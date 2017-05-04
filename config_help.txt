@@ -256,6 +256,7 @@ Gui, printing, widget options:
   -opengles3 ........... Enable OpenGL ES 3.x support instead of ES 2.x [auto]
   -angle ............... Use bundled ANGLE to support OpenGL ES 2.0 [auto]
                          (Windows only)
+  -combined-angle-lib .. Merge LibEGL and LibGLESv2 into LibANGLE (Windows only)
 
   -qpa <name> .......... Select default QPA backend (e.g., xcb, cocoa, windows)
   -xcb-xlib............. Enable Xcb-Xlib support [auto]

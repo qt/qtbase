@@ -9,6 +9,7 @@
         "options": {
             "accessibility": "boolean",
             "angle": "boolean",
+            "combined-angle-lib": "boolean",
             "direct2d": "boolean",
             "directfb": "boolean",
             "directwrite": "boolean",
@@ -425,6 +426,12 @@
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" }
             ]
+        },
+        "combined-angle-lib": {
+            "label": "Combined ANGLE Library",
+            "autoDetect": false,
+            "condition": "features.angle",
+            "output": [ "publicFeature" ]
         },
         "directfb": {
             "label": "DirectFB",
@@ -1076,6 +1083,11 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                             "type": "feature",
                             "args": "angle",
                             "condition": "config.win32"
+                        },
+                        {
+                            "type": "feature",
+                            "args": "combined-angle-lib",
+                            "condition": "features.angle"
                         },
                         "opengl-desktop",
                         {
