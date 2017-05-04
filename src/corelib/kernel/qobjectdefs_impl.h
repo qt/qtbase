@@ -300,7 +300,7 @@ namespace QtPrivate {
         static const typename RemoveRef<A1>::Type &dummy();
         enum { value = sizeof(test(dummy())) == sizeof(int) };
 #ifdef QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
-        struct AreArgumentsNarrowed : AreArgumentsNarrowedBase<typename RemoveRef<A1>::Type, typename RemoveRef<A2>::Type> {};
+        using AreArgumentsNarrowed = AreArgumentsNarrowedBase<typename RemoveRef<A1>::Type, typename RemoveRef<A2>::Type>;
         Q_STATIC_ASSERT_X(!AreArgumentsNarrowed::value, "Signal and slot arguments are not compatible (narrowing)");
 #endif
     };
