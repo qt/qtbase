@@ -436,6 +436,9 @@ namespace QtPrivate {
 
       sizeof(void *) == sizeof(quintptr)
       && sizeof(void *) == sizeof(qptrdiff)
+
+  size_t and qssize_t are not guaranteed to be the same size as a pointer, but
+  they usually are.
 */
 template <int> struct QIntegerForSize;
 template <>    struct QIntegerForSize<1> { typedef quint8  Unsigned; typedef qint8  Signed; };

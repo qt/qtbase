@@ -140,6 +140,11 @@ Q_STATIC_ASSERT_X(std::numeric_limits<float>::has_infinity &&
 Q_STATIC_ASSERT_X(std::numeric_limits<float>::radix == 2,
                   "Qt assumes binary IEEE 754 floating point");
 
+// not required by the definition of size_t, but we depend on this
+Q_STATIC_ASSERT_X(sizeof(size_t) == sizeof(void *), "size_t and a pointer don't have the same size");
+Q_STATIC_ASSERT(sizeof(size_t) == sizeof(qssize_t)); // implied by the definition
+Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
+
 /*!
     \class QFlag
     \inmodule QtCore
