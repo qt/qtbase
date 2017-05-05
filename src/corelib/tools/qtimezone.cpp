@@ -961,7 +961,13 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
         int country;
         QString comment;
         ds >> ianaId >> utcOffset >> name >> abbreviation >> country >> comment;
-        tz = QTimeZone(ianaId.toUtf8(), utcOffset, name, abbreviation, (QLocale::Country) country, comment);
+        // Try creating as a system timezone, which succeeds (producing a valid
+        // zone) iff ianaId is valid; we can then ignore the other data.
+        tz = QTimeZone(ianaId.toUtf8());
+        // If not, then construct a custom timezone using all the saved values:
+        if (!tz.isValid())
+            tz = QTimeZone(ianaId.toUtf8(), utcOffset, name, abbreviation,
+                           QLocale::Country(country), comment);
     } else {
         tz = QTimeZone(ianaId.toUtf8());
     }
