@@ -143,7 +143,7 @@ QSslCertificate::QSslCertificate(QIODevice *device, QSsl::EncodingFormat format)
     : d(new QSslCertificatePrivate)
 {
     QSslSocketPrivate::ensureInitialized();
-    if (device)
+    if (device && QSslSocket::supportsSsl())
         d->init(device->readAll(), format);
 }
 
@@ -157,7 +157,8 @@ QSslCertificate::QSslCertificate(const QByteArray &data, QSsl::EncodingFormat fo
     : d(new QSslCertificatePrivate)
 {
     QSslSocketPrivate::ensureInitialized();
-    d->init(data, format);
+    if (QSslSocket::supportsSsl())
+        d->init(data, format);
 }
 
 /*!
