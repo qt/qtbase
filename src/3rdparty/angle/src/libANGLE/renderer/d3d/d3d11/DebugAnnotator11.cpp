@@ -105,14 +105,15 @@ void DebugAnnotator11::initializeDevice()
         ASSERT(SUCCEEDED(hr));
 
 #if defined(ANGLE_ENABLE_D3D11_1)
-        mUserDefinedAnnotation = d3d11::DynamicCastComObject<ID3DUserDefinedAnnotation>(context);
-        ASSERT(mUserDefinedAnnotation != nullptr);
+        if (SUCCEEDED(hr)) {
+            mUserDefinedAnnotation = d3d11::DynamicCastComObject<ID3DUserDefinedAnnotation>(context);
+            ASSERT(mUserDefinedAnnotation != nullptr);
+            mInitialized = true;
+        }
 #endif
 
         SafeRelease(device);
         SafeRelease(context);
-
-        mInitialized = true;
     }
 }
 

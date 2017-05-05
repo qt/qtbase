@@ -233,7 +233,7 @@ HRESULT GetOptionalSizePropertyValue(const ComPtr<ABI::Windows::Foundation::Coll
 {
     if (!propertyMap || !propertyName || !value || !valueExists)
     {
-        return false;
+        return E_INVALIDARG;
     }
 
     // Assume that the value does not exist
@@ -292,16 +292,18 @@ HRESULT GetOptionalSizePropertyValue(const ComPtr<ABI::Windows::Foundation::Coll
 static float GetLogicalDpi()
 {
     ComPtr<ABI::Windows::Graphics::Display::IDisplayPropertiesStatics> displayProperties;
-    float dpi = 96.0f;
 
     if (SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayProperties).Get(), displayProperties.GetAddressOf())))
     {
+        float dpi = 96.0f;
         if (SUCCEEDED(displayProperties->get_LogicalDpi(&dpi)))
         {
             return dpi;
         }
     }
-    return dpi;
+
+    // Return 96 dpi as a default if display properties cannot be obtained.
+    return 96.0f;
 }
 
 long ConvertDipsToPixels(float dips)

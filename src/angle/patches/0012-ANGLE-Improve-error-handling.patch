@@ -1,0 +1,363 @@
+From f414290e880e459ab587753fee6c20d8c35e7579 Mon Sep 17 00:00:00 2001
+From: Oliver Wolff <oliver.wolff@qt.io>
+Date: Fri, 5 May 2017 10:01:19 +0200
+Subject: [PATCH] ANGLE: Improve error handling
+
+This patch backports ab4fd98fac0cbc30cfc578a06c068519ee2df2e1 from
+ANGLE proper. It greatly improves error handling in important places and
+thus avoids crashes.
+
+Task-number: QTBUG-48970
+Change-Id: Idcdc54396731323ebf4587b73b3360d5f3d17506
+---
+ .../src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp   | 11 +++-
+ .../renderer/d3d/d3d11/DebugAnnotator11.cpp        |  9 +--
+ .../src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp | 73 +++++++++++++++-------
+ .../libANGLE/renderer/d3d/d3d11/SwapChain11.cpp    | 15 +++--
+ .../libANGLE/renderer/d3d/d3d11/renderer11_utils.h | 53 +++++++++-------
+ .../d3d/d3d11/winrt/InspectableNativeWindow.cpp    |  8 ++-
+ 6 files changed, 114 insertions(+), 55 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp
+index d56b0ea..ad2ba57 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Buffer11.cpp
+@@ -724,8 +724,12 @@ bool Buffer11::NativeStorage::copyFromStorage(BufferStorage *source, size_t sour
+ 
+         D3D11_MAPPED_SUBRESOURCE mappedResource;
+         HRESULT hr = context->Map(mNativeStorage, 0, D3D11_MAP_WRITE, 0, &mappedResource);
+-        UNUSED_ASSERTION_VARIABLE(hr);
+         ASSERT(SUCCEEDED(hr));
++        if (FAILED(hr))
++        {
++            source->unmap();
++            return false;
++        }
+ 
+         uint8_t *destPointer = static_cast<uint8_t *>(mappedResource.pData) + destOffset;
+ 
+@@ -863,8 +867,11 @@ uint8_t *Buffer11::NativeStorage::map(size_t offset, size_t length, GLbitfield a
+     UINT d3dMapFlag = ((access & GL_MAP_UNSYNCHRONIZED_BIT) != 0 ? D3D11_MAP_FLAG_DO_NOT_WAIT : 0);
+ 
+     HRESULT result = context->Map(mNativeStorage, 0, d3dMapType, d3dMapFlag, &mappedResource);
+-    UNUSED_ASSERTION_VARIABLE(result);
+     ASSERT(SUCCEEDED(result));
++    if (FAILED(result))
++    {
++        return nullptr;
++    }
+ 
+     return static_cast<uint8_t*>(mappedResource.pData) + offset;
+ }
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
+index f1fe2bb..276f3c8 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp
+@@ -105,14 +105,15 @@ void DebugAnnotator11::initializeDevice()
+         ASSERT(SUCCEEDED(hr));
+ 
+ #if defined(ANGLE_ENABLE_D3D11_1)
+-        mUserDefinedAnnotation = d3d11::DynamicCastComObject<ID3DUserDefinedAnnotation>(context);
+-        ASSERT(mUserDefinedAnnotation != nullptr);
++        if (SUCCEEDED(hr)) {
++            mUserDefinedAnnotation = d3d11::DynamicCastComObject<ID3DUserDefinedAnnotation>(context);
++            ASSERT(mUserDefinedAnnotation != nullptr);
++            mInitialized = true;
++        }
+ #endif
+ 
+         SafeRelease(device);
+         SafeRelease(context);
+-
+-        mInitialized = true;
+     }
+ }
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+index dd554f4..cf094fa 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.cpp
+@@ -265,6 +265,8 @@ Renderer11::Renderer11(egl::Display *display)
+ 
+     mAppliedNumXFBBindings = static_cast<size_t>(-1);
+ 
++    ZeroMemory(&mAdapterDescription, sizeof(mAdapterDescription));
++
+     const auto &attributes = mDisplay->getAttributeMap();
+ 
+     EGLint requestedMajorVersion = attributes.get(EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, EGL_DONT_CARE);
+@@ -504,25 +506,33 @@ egl::Error Renderer11::initialize()
+     if (mFeatureLevel <= D3D_FEATURE_LEVEL_9_3 && dxgiAdapter2 != NULL)
+     {
+         DXGI_ADAPTER_DESC2 adapterDesc2 = {0};
+-        dxgiAdapter2->GetDesc2(&adapterDesc2);
+-
+-        // Copy the contents of the DXGI_ADAPTER_DESC2 into mAdapterDescription (a DXGI_ADAPTER_DESC).
+-        memcpy(mAdapterDescription.Description, adapterDesc2.Description, sizeof(mAdapterDescription.Description));
+-        mAdapterDescription.VendorId = adapterDesc2.VendorId;
+-        mAdapterDescription.DeviceId = adapterDesc2.DeviceId;
+-        mAdapterDescription.SubSysId = adapterDesc2.SubSysId;
+-        mAdapterDescription.Revision = adapterDesc2.Revision;
+-        mAdapterDescription.DedicatedVideoMemory = adapterDesc2.DedicatedVideoMemory;
+-        mAdapterDescription.DedicatedSystemMemory = adapterDesc2.DedicatedSystemMemory;
+-        mAdapterDescription.SharedSystemMemory = adapterDesc2.SharedSystemMemory;
+-        mAdapterDescription.AdapterLuid = adapterDesc2.AdapterLuid;
++        result = dxgiAdapter2->GetDesc2(&adapterDesc2);
++        if (SUCCEEDED(result)) {
++            // Copy the contents of the DXGI_ADAPTER_DESC2 into mAdapterDescription (a DXGI_ADAPTER_DESC).
++            memcpy(mAdapterDescription.Description, adapterDesc2.Description, sizeof(mAdapterDescription.Description));
++            mAdapterDescription.VendorId = adapterDesc2.VendorId;
++            mAdapterDescription.DeviceId = adapterDesc2.DeviceId;
++            mAdapterDescription.SubSysId = adapterDesc2.SubSysId;
++            mAdapterDescription.Revision = adapterDesc2.Revision;
++            mAdapterDescription.DedicatedVideoMemory = adapterDesc2.DedicatedVideoMemory;
++            mAdapterDescription.DedicatedSystemMemory = adapterDesc2.DedicatedSystemMemory;
++            mAdapterDescription.SharedSystemMemory = adapterDesc2.SharedSystemMemory;
++            mAdapterDescription.AdapterLuid = adapterDesc2.AdapterLuid;
++        }
+     }
+     else
+     {
+-        mDxgiAdapter->GetDesc(&mAdapterDescription);
++        result = mDxgiAdapter->GetDesc(&mAdapterDescription);
+     }
+ 
+     SafeRelease(dxgiAdapter2);
++
++    if (FAILED(result))
++    {
++        return egl::Error(EGL_NOT_INITIALIZED,
++                          D3D11_INIT_OTHER_ERROR,
++                          "Could not read DXGI adaptor description.");
++    }
+ #endif
+ 
+     memset(mDescription, 0, sizeof(mDescription));
+@@ -2056,9 +2066,14 @@ gl::Error Renderer11::applyUniforms(const ProgramImpl &program, const std::vecto
+         constantBufferDescription.StructureByteStride = 0;
+ 
+         HRESULT result = mDevice->CreateBuffer(&constantBufferDescription, NULL, &mDriverConstantBufferVS);
+-        UNUSED_ASSERTION_VARIABLE(result);
+         ASSERT(SUCCEEDED(result));
+ 
++        if (FAILED(result))
++        {
++            return gl::Error(GL_OUT_OF_MEMORY, "Failed to create vertex shader constant buffer, result: 0x%X.", result);
++        }
++
++
+         mDeviceContext->VSSetConstantBuffers(1, 1, &mDriverConstantBufferVS);
+     }
+ 
+@@ -2073,22 +2088,34 @@ gl::Error Renderer11::applyUniforms(const ProgramImpl &program, const std::vecto
+         constantBufferDescription.StructureByteStride = 0;
+ 
+         HRESULT result = mDevice->CreateBuffer(&constantBufferDescription, NULL, &mDriverConstantBufferPS);
+-        UNUSED_ASSERTION_VARIABLE(result);
+         ASSERT(SUCCEEDED(result));
+ 
++        if (FAILED(result))
++        {
++            return gl::Error(GL_OUT_OF_MEMORY, "Failed to create pixel shader constant buffer, result: 0x%X.", result);
++        }
++
+         mDeviceContext->PSSetConstantBuffers(1, 1, &mDriverConstantBufferPS);
+     }
+ 
+     if (memcmp(&mVertexConstants, &mAppliedVertexConstants, sizeof(dx_VertexConstants)) != 0)
+     {
+-        mDeviceContext->UpdateSubresource(mDriverConstantBufferVS, 0, NULL, &mVertexConstants, 16, 0);
+-        memcpy(&mAppliedVertexConstants, &mVertexConstants, sizeof(dx_VertexConstants));
++        ASSERT(mDriverConstantBufferVS != nullptr);
++        if (mDriverConstantBufferVS)
++        {
++            mDeviceContext->UpdateSubresource(mDriverConstantBufferVS, 0, NULL, &mVertexConstants, 16, 0);
++            memcpy(&mAppliedVertexConstants, &mVertexConstants, sizeof(dx_VertexConstants));
++        }
+     }
+ 
+     if (memcmp(&mPixelConstants, &mAppliedPixelConstants, sizeof(dx_PixelConstants)) != 0)
+     {
+-        mDeviceContext->UpdateSubresource(mDriverConstantBufferPS, 0, NULL, &mPixelConstants, 16, 0);
+-        memcpy(&mAppliedPixelConstants, &mPixelConstants, sizeof(dx_PixelConstants));
++        ASSERT(mDriverConstantBufferPS != nullptr);
++        if (mDriverConstantBufferPS)
++        {
++            mDeviceContext->UpdateSubresource(mDriverConstantBufferPS, 0, NULL, &mPixelConstants, 16, 0);
++            memcpy(&mAppliedPixelConstants, &mPixelConstants, sizeof(dx_PixelConstants));
++        }
+     }
+ 
+     // GSSetConstantBuffers triggers device removal on 9_3, so we should only call it if necessary
+@@ -2097,8 +2124,12 @@ gl::Error Renderer11::applyUniforms(const ProgramImpl &program, const std::vecto
+         // needed for the point sprite geometry shader
+         if (mCurrentGeometryConstantBuffer != mDriverConstantBufferPS)
+         {
+-            mDeviceContext->GSSetConstantBuffers(0, 1, &mDriverConstantBufferPS);
+-            mCurrentGeometryConstantBuffer = mDriverConstantBufferPS;
++            ASSERT(mDriverConstantBufferPS != nullptr);
++            if (mDriverConstantBufferPS)
++            {
++                mDeviceContext->GSSetConstantBuffers(0, 1, &mDriverConstantBufferPS);
++                mCurrentGeometryConstantBuffer = mDriverConstantBufferPS;
++            }
+         }
+     }
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+index 0af2cf1..2667109 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/SwapChain11.cpp
+@@ -345,9 +345,16 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+ 
+     // Resize swap chain
+     DXGI_SWAP_CHAIN_DESC desc;
+-    mSwapChain->GetDesc(&desc);
++    HRESULT result = mSwapChain->GetDesc(&desc);
++    if (FAILED(result))
++    {
++        ERR("Error reading swap chain description: 0x%08X", result);
++        release();
++        return EGL_BAD_ALLOC;
++    }
++
+     const d3d11::TextureFormat &backbufferFormatInfo = d3d11::GetTextureFormatInfo(mBackBufferFormat, mRenderer->getFeatureLevel());
+-    HRESULT result = mSwapChain->ResizeBuffers(desc.BufferCount, backbufferWidth, backbufferHeight, backbufferFormatInfo.texFormat, 0);
++    result = mSwapChain->ResizeBuffers(desc.BufferCount, backbufferWidth, backbufferHeight, backbufferFormatInfo.texFormat, 0);
+ 
+     if (FAILED(result))
+     {
+@@ -369,10 +376,10 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+     if (SUCCEEDED(result))
+     {
+         d3d11::SetDebugName(mBackBufferTexture, "Back buffer texture");
++        result = device->CreateRenderTargetView(mBackBufferTexture, NULL, &mBackBufferRTView);
++        ASSERT(SUCCEEDED(result));
+     }
+ 
+-    result = device->CreateRenderTargetView(mBackBufferTexture, NULL, &mBackBufferRTView);
+-    ASSERT(SUCCEEDED(result));
+     if (SUCCEEDED(result))
+     {
+         d3d11::SetDebugName(mBackBufferRTView, "Back buffer render target");
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.h
+index 207e6b5..34d998c 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.h
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/renderer11_utils.h
+@@ -136,34 +136,43 @@ inline bool isDeviceLostError(HRESULT errorCode)
+ template <unsigned int N>
+ inline ID3D11VertexShader *CompileVS(ID3D11Device *device, const BYTE (&byteCode)[N], const char *name)
+ {
+-    ID3D11VertexShader *vs = NULL;
+-    HRESULT result = device->CreateVertexShader(byteCode, N, NULL, &vs);
+-    UNUSED_ASSERTION_VARIABLE(result);
++    ID3D11VertexShader *vs = nullptr;
++    HRESULT result = device->CreateVertexShader(byteCode, N, nullptr, &vs);
+     ASSERT(SUCCEEDED(result));
+-    SetDebugName(vs, name);
+-    return vs;
++    if (SUCCEEDED(result))
++    {
++        SetDebugName(vs, name);
++        return vs;
++    }
++    return nullptr;
+ }
+ 
+ template <unsigned int N>
+ inline ID3D11GeometryShader *CompileGS(ID3D11Device *device, const BYTE (&byteCode)[N], const char *name)
+ {
+-    ID3D11GeometryShader *gs = NULL;
+-    HRESULT result = device->CreateGeometryShader(byteCode, N, NULL, &gs);
+-    UNUSED_ASSERTION_VARIABLE(result);
++    ID3D11GeometryShader *gs = nullptr;
++    HRESULT result = device->CreateGeometryShader(byteCode, N, nullptr, &gs);
+     ASSERT(SUCCEEDED(result));
+-    SetDebugName(gs, name);
+-    return gs;
++    if (SUCCEEDED(result))
++    {
++        SetDebugName(gs, name);
++        return gs;
++    }
++    return nullptr;
+ }
+ 
+ template <unsigned int N>
+ inline ID3D11PixelShader *CompilePS(ID3D11Device *device, const BYTE (&byteCode)[N], const char *name)
+ {
+-    ID3D11PixelShader *ps = NULL;
+-    HRESULT result = device->CreatePixelShader(byteCode, N, NULL, &ps);
+-    UNUSED_ASSERTION_VARIABLE(result);
++    ID3D11PixelShader *ps = nullptr;
++    HRESULT result = device->CreatePixelShader(byteCode, N, nullptr, &ps);
+     ASSERT(SUCCEEDED(result));
+-    SetDebugName(ps, name);
+-    return ps;
++    if (SUCCEEDED(result))
++    {
++        SetDebugName(ps, name);
++        return ps;
++    }
++    return nullptr;
+ }
+ 
+ // Copy data to small D3D11 buffers, such as for small constant buffers, which use one struct to
+@@ -171,12 +180,14 @@ inline ID3D11PixelShader *CompilePS(ID3D11Device *device, const BYTE (&byteCode)
+ template <class T>
+ inline void SetBufferData(ID3D11DeviceContext *context, ID3D11Buffer *constantBuffer, const T &value)
+ {
+-    D3D11_MAPPED_SUBRESOURCE mappedResource;
+-    context->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+-
+-    memcpy(mappedResource.pData, &value, sizeof(T));
+-
+-    context->Unmap(constantBuffer, 0);
++    D3D11_MAPPED_SUBRESOURCE mappedResource = {};
++    HRESULT result = context->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
++    ASSERT(SUCCEEDED(result));
++    if (SUCCEEDED(result))
++    {
++        memcpy(mappedResource.pData, &value, sizeof(T));
++        context->Unmap(constantBuffer, 0);
++    }
+ }
+ 
+ gl::Error GetAttachmentRenderTarget(const gl::FramebufferAttachment *attachment, RenderTarget11 **outRT);
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp
+index e83f479..2455e55 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/winrt/InspectableNativeWindow.cpp
+@@ -233,7 +233,7 @@ HRESULT GetOptionalSizePropertyValue(const ComPtr<ABI::Windows::Foundation::Coll
+ {
+     if (!propertyMap || !propertyName || !value || !valueExists)
+     {
+-        return false;
++        return E_INVALIDARG;
+     }
+ 
+     // Assume that the value does not exist
+@@ -292,16 +292,18 @@ HRESULT GetOptionalSizePropertyValue(const ComPtr<ABI::Windows::Foundation::Coll
+ static float GetLogicalDpi()
+ {
+     ComPtr<ABI::Windows::Graphics::Display::IDisplayPropertiesStatics> displayProperties;
+-    float dpi = 96.0f;
+ 
+     if (SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayProperties).Get(), displayProperties.GetAddressOf())))
+     {
++        float dpi = 96.0f;
+         if (SUCCEEDED(displayProperties->get_LogicalDpi(&dpi)))
+         {
+             return dpi;
+         }
+     }
+-    return dpi;
++
++    // Return 96 dpi as a default if display properties cannot be obtained.
++    return 96.0f;
+ }
+ 
+ long ConvertDipsToPixels(float dips)
+-- 
+2.10.2.windows.1
+
