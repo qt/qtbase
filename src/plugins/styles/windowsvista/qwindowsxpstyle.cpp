@@ -665,6 +665,13 @@ static inline TransformType transformType(const QTransform &transform, qreal dev
         ? HighDpiScalingTransform : ComplexTransform;
 }
 
+// QTBUG-60571: Exclude known fully opaque theme parts which produce values
+// invalid in ARGB32_Premultiplied (for example, 0x00ffffff).
+static inline bool isFullyOpaque(const XPThemeData &themeData)
+{
+    return themeData.theme == QWindowsXPStylePrivate::TaskDialogTheme && themeData.partId == TDLG_PRIMARYPANEL;
+}
+
 /*! \internal
     Main theme drawing function.
     Determines the correct lowlevel drawing method depending on several
@@ -703,6 +710,7 @@ bool QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 
     bool canDrawDirectly = false;
     if (themeData.widget && painter->opacity() == 1.0 && !themeData.rotate
+        && !isFullyOpaque(themeData)
         && tt != ComplexTransform && !themeData.mirrorVertically
         && !translucentToplevel) {
         // Draw on backing store DC only for real widgets or backing store images.
