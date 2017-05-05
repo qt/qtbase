@@ -593,11 +593,96 @@ inline bool qt_mac_is_metal(const QWidget *w)
     return false;
 }
 
-static int qt_mac_aqua_get_metric(ThemeMetric met)
+enum QAquaMetric {
+    // Prepend kThemeMetric to get the HIToolBox constant.
+    // Represents the values already used in QMacStyle.
+    CheckBoxHeight = 0,
+    CheckBoxWidth,
+    EditTextFrameOutset,
+    FocusRectOutset,
+    HSliderHeight,
+    HSliderTickHeight,
+    LargeProgressBarThickness,
+    ListHeaderHeight,
+    MenuSeparatorHeight, // GetThemeMenuSeparatorHeight
+    MiniCheckBoxHeight,
+    MiniCheckBoxWidth,
+    MiniHSliderHeight,
+    MiniHSliderTickHeight,
+    MiniPopupButtonHeight,
+    MiniPushButtonHeight,
+    MiniRadioButtonHeight,
+    MiniRadioButtonWidth,
+    MiniVSliderTickWidth,
+    MiniVSliderWidth,
+    NormalProgressBarThickness,
+    PopupButtonHeight,
+    ProgressBarShadowOutset,
+    PushButtonHeight,
+    RadioButtonHeight,
+    RadioButtonWidth,
+    SeparatorSize,
+    SmallCheckBoxHeight,
+    SmallCheckBoxWidth,
+    SmallHSliderHeight,
+    SmallHSliderTickHeight,
+    SmallPopupButtonHeight,
+    SmallProgressBarShadowOutset,
+    SmallPushButtonHeight,
+    SmallRadioButtonHeight,
+    SmallRadioButtonWidth,
+    SmallVSliderTickWidth,
+    SmallVSliderWidth,
+    VSliderTickWidth,
+    VSliderWidth
+};
+
+static const int qt_mac_aqua_metrics[] = {
+    // Values as of macOS 10.12.4 and Xcode 8.3.1
+    18 /* CheckBoxHeight */,
+    18 /* CheckBoxWidth */,
+    1  /* EditTextFrameOutset */,
+    4  /* FocusRectOutset */,
+    22 /* HSliderHeight */,
+    5  /* HSliderTickHeight */,
+    16 /* LargeProgressBarThickness */,
+    17 /* ListHeaderHeight */,
+    12 /* MenuSeparatorHeight, aka GetThemeMenuSeparatorHeight */,
+    11 /* MiniCheckBoxHeight */,
+    10 /* MiniCheckBoxWidth */,
+    12 /* MiniHSliderHeight */,
+    4  /* MiniHSliderTickHeight */,
+    15 /* MiniPopupButtonHeight */,
+    16 /* MiniPushButtonHeight */,
+    11 /* MiniRadioButtonHeight */,
+    10 /* MiniRadioButtonWidth */,
+    4  /* MiniVSliderTickWidth */,
+    12 /* MiniVSliderWidth */,
+    12 /* NormalProgressBarThickness */,
+    20 /* PopupButtonHeight */,
+    4  /* ProgressBarShadowOutset */,
+    20 /* PushButtonHeight */,
+    18 /* RadioButtonHeight */,
+    18 /* RadioButtonWidth */,
+    1  /* SeparatorSize */,
+    16 /* SmallCheckBoxHeight */,
+    14 /* SmallCheckBoxWidth */,
+    15 /* SmallHSliderHeight */,
+    4  /* SmallHSliderTickHeight */,
+    17 /* SmallPopupButtonHeight */,
+    2  /* SmallProgressBarShadowOutset */,
+    17 /* SmallPushButtonHeight */,
+    15 /* SmallRadioButtonHeight */,
+    14 /* SmallRadioButtonWidth */,
+    4  /* SmallVSliderTickWidth */,
+    15 /* SmallVSliderWidth */,
+    5  /* VSliderTickWidth */,
+    22 /* VSliderWidth */
+};
+
+static inline int qt_mac_aqua_get_metric(QAquaMetric m)
 {
-    SInt32 ret;
-    GetThemeMetric(met, &ret);
-    return ret;
+    return qt_mac_aqua_metrics[m];
 }
 
 static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg, QSize szHint,
@@ -671,11 +756,11 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             if (buttonText.contains(QLatin1Char('\n')))
                 ret = QSize(-1, -1);
             else if (sz == QAquaSizeLarge)
-                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricPushButtonHeight));
+                ret = QSize(-1, qt_mac_aqua_get_metric(PushButtonHeight));
             else if (sz == QAquaSizeSmall)
-                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricSmallPushButtonHeight));
+                ret = QSize(-1, qt_mac_aqua_get_metric(SmallPushButtonHeight));
             else if (sz == QAquaSizeMini)
-                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricMiniPushButtonHeight));
+                ret = QSize(-1, qt_mac_aqua_get_metric(MiniPushButtonHeight));
 
             if (!psh->icon().isNull()){
                 // If the button got an icon, and the icon is larger than the
@@ -694,14 +779,14 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         } else {
             // The only sensible thing to do is to return whatever the style suggests...
             if (sz == QAquaSizeLarge)
-                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricPushButtonHeight));
+                ret = QSize(-1, qt_mac_aqua_get_metric(PushButtonHeight));
             else if (sz == QAquaSizeSmall)
-                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricSmallPushButtonHeight));
+                ret = QSize(-1, qt_mac_aqua_get_metric(SmallPushButtonHeight));
             else if (sz == QAquaSizeMini)
-                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricMiniPushButtonHeight));
+                ret = QSize(-1, qt_mac_aqua_get_metric(MiniPushButtonHeight));
             else
                 // Since there's no default size we return the large size...
-                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricPushButtonHeight));
+                ret = QSize(-1, qt_mac_aqua_get_metric(PushButtonHeight));
          }
 #endif
 #if 0 //Not sure we are applying the rules correctly for RadioButtons/CheckBoxes --Sam
@@ -711,18 +796,18 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         if (rdo->text().find('\n') != -1)
             return ret;
         if (sz == QAquaSizeLarge)
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricRadioButtonHeight));
+            ret = QSize(-1, qt_mac_aqua_get_metric(RadioButtonHeight));
         else if (sz == QAquaSizeSmall)
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricSmallRadioButtonHeight));
+            ret = QSize(-1, qt_mac_aqua_get_metric(SmallRadioButtonHeight));
         else if (sz == QAquaSizeMini)
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricMiniRadioButtonHeight));
+            ret = QSize(-1, qt_mac_aqua_get_metric(MiniRadioButtonHeight));
     } else if (ct == QStyle::CT_CheckBox) {
         if (sz == QAquaSizeLarge)
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricCheckBoxHeight));
+            ret = QSize(-1, qt_mac_aqua_get_metric(CheckBoxHeight));
         else if (sz == QAquaSizeSmall)
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricSmallCheckBoxHeight));
+            ret = QSize(-1, qt_mac_aqua_get_metric(SmallCheckBoxHeight));
         else if (sz == QAquaSizeMini)
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricMiniCheckBoxHeight));
+            ret = QSize(-1, qt_mac_aqua_get_metric(MiniCheckBoxHeight));
 #endif
         break;
     }
@@ -750,13 +835,13 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
     case QStyle::CT_ComboBox:
         switch (sz) {
         case QAquaSizeLarge:
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricPopupButtonHeight));
+            ret = QSize(-1, qt_mac_aqua_get_metric(PopupButtonHeight));
             break;
         case QAquaSizeSmall:
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricSmallPopupButtonHeight));
+            ret = QSize(-1, qt_mac_aqua_get_metric(SmallPopupButtonHeight));
             break;
         case QAquaSizeMini:
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricMiniPopupButtonHeight));
+            ret = QSize(-1, qt_mac_aqua_get_metric(MiniPopupButtonHeight));
             break;
         default:
             break;
@@ -810,33 +895,33 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         if(sld) {
             if (sz == QAquaSizeLarge) {
                 if (sld->orientation() == Qt::Horizontal) {
-                    w = qt_mac_aqua_get_metric(kThemeMetricHSliderHeight);
+                    w = qt_mac_aqua_get_metric(HSliderHeight);
                     if (sld->tickPosition() != QSlider::NoTicks)
-                        w += qt_mac_aqua_get_metric(kThemeMetricHSliderTickHeight);
+                        w += qt_mac_aqua_get_metric(HSliderTickHeight);
                 } else {
-                    w = qt_mac_aqua_get_metric(kThemeMetricVSliderWidth);
+                    w = qt_mac_aqua_get_metric(VSliderWidth);
                     if (sld->tickPosition() != QSlider::NoTicks)
-                        w += qt_mac_aqua_get_metric(kThemeMetricVSliderTickWidth);
+                        w += qt_mac_aqua_get_metric(VSliderTickWidth);
                 }
             } else if (sz == QAquaSizeSmall) {
                 if (sld->orientation() == Qt::Horizontal) {
-                    w = qt_mac_aqua_get_metric(kThemeMetricSmallHSliderHeight);
+                    w = qt_mac_aqua_get_metric(SmallHSliderHeight);
                     if (sld->tickPosition() != QSlider::NoTicks)
-                        w += qt_mac_aqua_get_metric(kThemeMetricSmallHSliderTickHeight);
+                        w += qt_mac_aqua_get_metric(SmallHSliderTickHeight);
                 } else {
-                    w = qt_mac_aqua_get_metric(kThemeMetricSmallVSliderWidth);
+                    w = qt_mac_aqua_get_metric(SmallVSliderWidth);
                     if (sld->tickPosition() != QSlider::NoTicks)
-                        w += qt_mac_aqua_get_metric(kThemeMetricSmallVSliderTickWidth);
+                        w += qt_mac_aqua_get_metric(SmallVSliderTickWidth);
                 }
             } else if (sz == QAquaSizeMini) {
                 if (sld->orientation() == Qt::Horizontal) {
-                    w = qt_mac_aqua_get_metric(kThemeMetricMiniHSliderHeight);
+                    w = qt_mac_aqua_get_metric(MiniHSliderHeight);
                     if (sld->tickPosition() != QSlider::NoTicks)
-                        w += qt_mac_aqua_get_metric(kThemeMetricMiniHSliderTickHeight);
+                        w += qt_mac_aqua_get_metric(MiniHSliderTickHeight);
                 } else {
-                    w = qt_mac_aqua_get_metric(kThemeMetricMiniVSliderWidth);
+                    w = qt_mac_aqua_get_metric(MiniVSliderWidth);
                     if (sld->tickPosition() != QSlider::NoTicks)
-                        w += qt_mac_aqua_get_metric(kThemeMetricMiniVSliderTickWidth);
+                        w += qt_mac_aqua_get_metric(MiniVSliderTickWidth);
                 }
             }
         } else {
@@ -844,8 +929,8 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             // a slider. We don't know if this is vertical or horizontal or if we need to
             // have tick marks or not.
             // For this case we will return an horizontal slider without tick marks.
-            w = qt_mac_aqua_get_metric(kThemeMetricHSliderHeight);
-            w += qt_mac_aqua_get_metric(kThemeMetricHSliderTickHeight);
+            w = qt_mac_aqua_get_metric(HSliderHeight);
+            w += qt_mac_aqua_get_metric(HSliderTickHeight);
         }
         if (sld->orientation() == Qt::Horizontal)
             ret.setHeight(w);
@@ -861,11 +946,11 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             orient = pb->orientation();
 
         if (sz == QAquaSizeLarge)
-            finalValue = qt_mac_aqua_get_metric(kThemeMetricLargeProgressBarThickness)
-                            + qt_mac_aqua_get_metric(kThemeMetricProgressBarShadowOutset);
+            finalValue = qt_mac_aqua_get_metric(LargeProgressBarThickness)
+                            + qt_mac_aqua_get_metric(ProgressBarShadowOutset);
         else
-            finalValue = qt_mac_aqua_get_metric(kThemeMetricNormalProgressBarThickness)
-                            + qt_mac_aqua_get_metric(kThemeMetricSmallProgressBarShadowOutset);
+            finalValue = qt_mac_aqua_get_metric(NormalProgressBarThickness)
+                            + qt_mac_aqua_get_metric(SmallProgressBarShadowOutset);
         if (orient == Qt::Horizontal)
             ret.setHeight(finalValue);
         else
@@ -887,7 +972,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
     case QStyle::CT_HeaderSection:
 #ifndef QT_NO_TREEVIEW
         if (isTreeView(widg))
-           ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricListHeaderHeight));
+           ret = QSize(-1, qt_mac_aqua_get_metric(ListHeaderHeight));
 #endif
         break;
     case QStyle::CT_MenuBar:
@@ -1548,9 +1633,7 @@ void QMacStylePrivate::drawCombobox(const HIRect &outerBounds, const HIThemeButt
 void QMacStylePrivate::drawTableHeader(const HIRect &outerBounds,
     bool drawTopBorder, bool drawLeftBorder, const HIThemeButtonDrawInfo &bdi, QPainter *p)
 {
-    static SInt32 headerHeight = 0;
-    static OSStatus err = GetThemeMetric(kThemeMetricListHeaderHeight, &headerHeight);
-    Q_UNUSED(err);
+    static SInt32 headerHeight = qt_mac_aqua_get_metric(ListHeaderHeight);
 
     QPixmap buffer;
     QString key = QString(QLatin1String("$qt_tableh%1-%2-%3")).arg(int(bdi.state)).arg(int(bdi.adornment)).arg(int(bdi.value));
@@ -2335,7 +2418,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break;
     case PM_FocusFrameVMargin:
     case PM_FocusFrameHMargin:
-        GetThemeMetric(kThemeMetricFocusRectOutset, &ret);
+        ret = qt_mac_aqua_get_metric(FocusRectOutset);
         break;
     case PM_DialogButtonsSeparator:
         ret = -5;
@@ -2378,13 +2461,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 2;
         break;
     case PM_MenuScrollerHeight:
-#if 0
-        SInt16 ash, asw;
-        GetThemeMenuItemExtra(kThemeMenuItemScrollUpArrow, &ash, &asw);
-        ret = ash;
-#else
         ret = 15; // I hate having magic numbers in here...
-#endif
         break;
     case PM_DefaultFrameWidth:
 #ifndef QT_NO_MAINWINDOW
@@ -2408,7 +2485,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 24;
         break;
     case PM_SpinBoxFrameWidth:
-        GetThemeMetric(kThemeMetricEditTextFrameOutset, &ret);
+        ret = qt_mac_aqua_get_metric(EditTextFrameOutset);
         switch (d->aquaSizeConstrain(opt, widget)) {
         default:
             ret += 2;
@@ -2533,13 +2610,13 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         switch (d->aquaSizeConstrain(opt, widget)) {
         case QAquaSizeUnknown:
         case QAquaSizeLarge:
-            GetThemeMetric(kThemeMetricCheckBoxHeight, &ret);
+            ret = qt_mac_aqua_get_metric(CheckBoxHeight);
             break;
         case QAquaSizeMini:
-            GetThemeMetric(kThemeMetricMiniCheckBoxHeight, &ret);
+            ret = qt_mac_aqua_get_metric(MiniCheckBoxHeight);
             break;
         case QAquaSizeSmall:
-            GetThemeMetric(kThemeMetricSmallCheckBoxHeight, &ret);
+            ret = qt_mac_aqua_get_metric(SmallCheckBoxHeight);
             break;
         }
         break; }
@@ -2547,13 +2624,13 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         switch (d->aquaSizeConstrain(opt, widget)) {
         case QAquaSizeUnknown:
         case QAquaSizeLarge:
-            GetThemeMetric(kThemeMetricCheckBoxWidth, &ret);
+            ret = qt_mac_aqua_get_metric(CheckBoxWidth);
             break;
         case QAquaSizeMini:
-            GetThemeMetric(kThemeMetricMiniCheckBoxWidth, &ret);
+            ret = qt_mac_aqua_get_metric(MiniCheckBoxWidth);
             break;
         case QAquaSizeSmall:
-            GetThemeMetric(kThemeMetricSmallCheckBoxWidth, &ret);
+            ret = qt_mac_aqua_get_metric(SmallCheckBoxWidth);
             break;
         }
         ++ret;
@@ -2562,13 +2639,13 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         switch (d->aquaSizeConstrain(opt, widget)) {
         case QAquaSizeUnknown:
         case QAquaSizeLarge:
-            GetThemeMetric(kThemeMetricRadioButtonHeight, &ret);
+            ret = qt_mac_aqua_get_metric(RadioButtonHeight);
             break;
         case QAquaSizeMini:
-            GetThemeMetric(kThemeMetricMiniRadioButtonHeight, &ret);
+            ret = qt_mac_aqua_get_metric(MiniRadioButtonHeight);
             break;
         case QAquaSizeSmall:
-            GetThemeMetric(kThemeMetricSmallRadioButtonHeight, &ret);
+            ret = qt_mac_aqua_get_metric(SmallRadioButtonHeight);
             break;
         }
         break; }
@@ -2576,13 +2653,13 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         switch (d->aquaSizeConstrain(opt, widget)) {
         case QAquaSizeUnknown:
         case QAquaSizeLarge:
-            GetThemeMetric(kThemeMetricRadioButtonWidth, &ret);
+            ret = qt_mac_aqua_get_metric(RadioButtonWidth);
             break;
         case QAquaSizeMini:
-            GetThemeMetric(kThemeMetricMiniRadioButtonWidth, &ret);
+            ret = qt_mac_aqua_get_metric(MiniRadioButtonWidth);
             break;
         case QAquaSizeSmall:
-            GetThemeMetric(kThemeMetricSmallRadioButtonWidth, &ret);
+            ret = qt_mac_aqua_get_metric(SmallRadioButtonWidth);
             break;
         }
         ++ret;
@@ -3439,7 +3516,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 SInt32 frame_size;
                 fdi.kind = frame->features & QStyleOptionFrame::Rounded ? kHIThemeFrameTextFieldRound :
                                                                           kHIThemeFrameTextFieldSquare;
-                GetThemeMetric(kThemeMetricEditTextFrameOutset, &frame_size);
+                frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
                 if ((frame->state & State_ReadOnly) || !(frame->state & State_Enabled))
                     fdi.state = kThemeStateInactive;
                 else if (fdi.state == kThemeStatePressed)
@@ -4716,7 +4793,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     bool isEndOfUnifiedArea = !isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowToolbarEnd.y() + 1);
                     if (isEndOfUnifiedArea) {
                         SInt32 margin;
-                        GetThemeMetric(kThemeMetricSeparatorSize, &margin);
+                        margin = qt_mac_aqua_get_metric(SeparatorSize);
                         CGRect separatorRect = CGRectMake(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
                         HIThemeSeparatorDrawInfo separatorDrawInfo;
                         separatorDrawInfo.version = 0;
@@ -5649,7 +5726,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             QStyleOptionSpinBox newSB = *sb;
             if (sb->frame && (sb->subControls & SC_SpinBoxFrame)) {
                 SInt32 frame_size;
-                GetThemeMetric(kThemeMetricEditTextFrameOutset, &frame_size);
+                frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
 
                 QRect lineeditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget);
                 lineeditRect.adjust(-frame_size, -frame_size, +frame_size, +frame_size);
@@ -6666,9 +6743,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 h = sz.height();
             if (mi->menuItemType == QStyleOptionMenuItem::Separator) {
                 w = 10;
-                SInt16 ash;
-                GetThemeMenuSeparatorHeight(&ash);
-                h = ash;
+                h = qt_mac_aqua_get_metric(MenuSeparatorHeight);
             } else {
                 h = mi->fontMetrics.height() + 2;
                 if (!mi->icon.isNull()) {
