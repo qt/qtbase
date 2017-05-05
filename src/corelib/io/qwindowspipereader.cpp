@@ -129,17 +129,8 @@ qint64 QWindowsPipeReader::read(char *data, qint64 maxlen)
         actualReadBufferSize--;
         readSoFar = 1;
     } else {
-        qint64 bytesToRead = qMin(actualReadBufferSize, maxlen);
-        readSoFar = 0;
-        while (readSoFar < bytesToRead) {
-            const char *ptr = readBuffer.readPointer();
-            qint64 bytesToReadFromThisBlock = qMin(bytesToRead - readSoFar,
-                                                   readBuffer.nextDataBlockSize());
-            memcpy(data + readSoFar, ptr, bytesToReadFromThisBlock);
-            readSoFar += bytesToReadFromThisBlock;
-            readBuffer.free(bytesToReadFromThisBlock);
-            actualReadBufferSize -= bytesToReadFromThisBlock;
-        }
+        readSoFar = readBuffer.read(data, qMin(actualReadBufferSize, maxlen));
+        actualReadBufferSize -= readSoFar;
     }
 
     if (!pipeBroken) {
