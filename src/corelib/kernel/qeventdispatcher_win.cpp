@@ -1083,7 +1083,7 @@ bool QEventDispatcherWin32::unregisterTimers(QObject *object)
     Q_D(QEventDispatcherWin32);
     if (d->timerVec.isEmpty())
         return false;
-    register WinTimerInfo *t;
+    WinTimerInfo *t;
     for (int i=0; i<d->timerVec.size(); i++) {
         t = d->timerVec.at(i);
         if (t && t->obj == object) {                // object found
@@ -1184,7 +1184,7 @@ int QEventDispatcherWin32::remainingTime(int timerId)
 
     quint64 currentTime = qt_msectime();
 
-    register WinTimerInfo *t;
+    WinTimerInfo *t;
     for (int i=0; i<d->timerVec.size(); i++) {
         t = d->timerVec.at(i);
         if (t && t->timerId == timerId) {                // timer found

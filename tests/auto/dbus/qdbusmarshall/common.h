@@ -442,7 +442,7 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
     case QVariant::DateTime:
         return compare<QDateTime>(arg, v2);
     default:
-        register int id = v2.userType();
+        int id = v2.userType();
         if (id == qMetaTypeId<QDBusObjectPath>())
             return compare<QDBusObjectPath>(arg, v2);
         else if (id == qMetaTypeId<QDBusSignature>())
