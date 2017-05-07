@@ -494,3 +494,7 @@ QByteArray QCryptographicHash::hash(const QByteArray &data, Algorithm method)
 }
 
 QT_END_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+#include "moc_qcryptographichash.cpp"
+#endif

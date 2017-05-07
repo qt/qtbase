@@ -790,7 +790,7 @@
         "xcb-xlib": {
             "label": "XCB Xlib",
             "emitIf": "features.xcb",
-            "condition": "libs.xcb_xlib",
+            "condition": "features.xlib && libs.xcb_xlib",
             "output": [ "privateFeature" ]
         },
         "xcb-sm": {

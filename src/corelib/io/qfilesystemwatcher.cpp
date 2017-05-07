@@ -497,6 +497,7 @@ QStringList QFileSystemWatcher::files() const
 QT_END_NAMESPACE
 
 #include "moc_qfilesystemwatcher.cpp"
+#include "moc_qfilesystemwatcher_p.cpp"
 
 #endif // QT_NO_FILESYSTEMWATCHER
 

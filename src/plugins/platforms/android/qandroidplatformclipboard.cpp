@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 QAndroidPlatformClipboard::QAndroidPlatformClipboard()
 {
-    QtAndroidClipboard::setClipboardListener(this);
+    QtAndroidClipboard::setClipboardManager(this);
 }
 
 QMimeData *QAndroidPlatformClipboard::mimeData(QClipboard::Mode mode)

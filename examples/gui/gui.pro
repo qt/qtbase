@@ -6,5 +6,5 @@ CONFIG += no_docs_target
 
 SUBDIRS += analogclock
 SUBDIRS += rasterwindow
-qtConfig(opengl): \
+qtHaveModule(gui):qtConfig(opengl): \
     SUBDIRS += openglwindow

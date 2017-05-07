@@ -1345,7 +1345,7 @@
 #endif
 #endif
 #ifndef Q_FALLTHROUGH
-#  if defined(Q_CC_GNU) && Q_CC_GNU >= 700
+#  if (defined(Q_CC_GNU) && Q_CC_GNU >= 700) && !defined(Q_CC_INTEL)
 #    define Q_FALLTHROUGH() __attribute__((fallthrough))
 #  else
 #    define Q_FALLTHROUGH() (void)0

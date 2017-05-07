@@ -246,6 +246,7 @@ public:
     static bool flushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
     static void deferredFlushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
     static int windowSystemEventsQueued();
+    static bool nonUserInputEventsQueued();
 };
 
 #ifndef QT_NO_DEBUG_STREAM

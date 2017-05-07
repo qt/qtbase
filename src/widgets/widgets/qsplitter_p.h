@@ -81,11 +81,17 @@ class QSplitterPrivate : public QFramePrivate
 {
     Q_DECLARE_PUBLIC(QSplitter)
 public:
-    QSplitterPrivate() : rubberBand(0), opaque(true), firstShow(true),
+    QSplitterPrivate() :
+#if QT_CONFIG(rubberband)
+                         rubberBand(0),
+#endif
+                         opaque(true), firstShow(true),
                          childrenCollapsible(true), compatMode(false), handleWidth(-1), blockChildAdd(false), opaqueResizeSet(false) {}
     ~QSplitterPrivate();
 
+#if QT_CONFIG(rubberband)
     QPointer<QRubberBand> rubberBand;
+#endif
     mutable QList<QSplitterLayoutStruct *> list;
     Qt::Orientation orient;
     bool opaque : 8;

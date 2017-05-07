@@ -91,23 +91,6 @@ public:
 /*!
   \internal
 */
-QStandardItemPrivate::~QStandardItemPrivate()
-{
-    QVector<QStandardItem*>::const_iterator it;
-    for (it = children.constBegin(); it != children.constEnd(); ++it) {
-        QStandardItem *child = *it;
-        if (child)
-            child->d_func()->setModel(0);
-        delete child;
-    }
-    children.clear();
-    if (parent && model)
-        parent->d_func()->childDeleted(q_func());
-}
-
-/*!
-  \internal
-*/
 QPair<int, int> QStandardItemPrivate::position() const
 {
     if (QStandardItem *par = parent) {
@@ -340,9 +323,6 @@ QStandardItemModelPrivate::QStandardItemModelPrivate()
 */
 QStandardItemModelPrivate::~QStandardItemModelPrivate()
 {
-    delete itemPrototype;
-    qDeleteAll(columnHeaderItems);
-    qDeleteAll(rowHeaderItems);
 }
 
 /*!
@@ -780,6 +760,15 @@ QStandardItem &QStandardItem::operator=(const QStandardItem &other)
 */
 QStandardItem::~QStandardItem()
 {
+    Q_D(QStandardItem);
+    for (QStandardItem *child : qAsConst(d->children)) {
+        if (child)
+            child->d_func()->setModel(0);
+        delete child;
+    }
+    d->children.clear();
+    if (d->parent && d->model)
+        d->parent->d_func()->childDeleted(this);
 }
 
 /*!
@@ -2116,6 +2105,11 @@ QStandardItemModel::QStandardItemModel(QStandardItemModelPrivate &dd, QObject *p
 */
 QStandardItemModel::~QStandardItemModel()
 {
+    Q_D(QStandardItemModel);
+    delete d->itemPrototype;
+    qDeleteAll(d->columnHeaderItems);
+    qDeleteAll(d->rowHeaderItems);
+    d->root.reset();
 }
 
 /*!

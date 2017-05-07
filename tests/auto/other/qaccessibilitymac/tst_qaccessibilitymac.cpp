@@ -94,9 +94,6 @@ void tst_QAccessibilityMac::cleanup()
 
 void tst_QAccessibilityMac::singleWidgetTest()
 {
-    if (!macNativeAccessibilityEnabled())
-        return;
-
     delete m_window;
     m_window = 0;
 
@@ -105,9 +102,6 @@ void tst_QAccessibilityMac::singleWidgetTest()
 
 void tst_QAccessibilityMac::lineEditTest()
 {
-    if (!macNativeAccessibilityEnabled())
-        return;
-
     QLineEdit *lineEdit = new QLineEdit(m_window);
     lineEdit->setText("a11y test QLineEdit");
     m_window->addWidget(lineEdit);
@@ -119,9 +113,6 @@ void tst_QAccessibilityMac::lineEditTest()
 
 void tst_QAccessibilityMac::hierarchyTest()
 {
-    if (!macNativeAccessibilityEnabled())
-        return;
-
     QWidget *w = new QWidget(m_window);
     m_window->addWidget(w);
 
@@ -141,17 +132,11 @@ void tst_QAccessibilityMac::hierarchyTest()
 
 void tst_QAccessibilityMac::notificationsTest()
 {
-    if (!macNativeAccessibilityEnabled())
-        return;
-
     QVERIFY(notifications(m_window));
 }
 
 void tst_QAccessibilityMac::checkBoxTest()
 {
-    if (!macNativeAccessibilityEnabled())
-        return;
-
     QCheckBox *cb = new QCheckBox(m_window);
     cb->setText("Great option");
     m_window->addWidget(cb);

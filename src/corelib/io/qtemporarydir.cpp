@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -198,10 +198,10 @@ void QTemporaryDirPrivate::create(const QString &templateName)
     \ingroup io
 
 
-    QTemporaryDir is used to create unique temporary dirs safely.
-    The dir itself is created by the constructor. The name of the
+    QTemporaryDir is used to create unique temporary directories safely.
+    The directory itself is created by the constructor. The name of the
     temporary directory is guaranteed to be unique (i.e., you are
-    guaranteed to not overwrite an existing dir), and the directory will
+    guaranteed to not overwrite an existing directory), and the directory will
     subsequently be removed upon destruction of the QTemporaryDir
     object. The directory name is either auto-generated, or created based
     on a template, which is passed to QTemporaryDir's constructor.
@@ -214,7 +214,7 @@ void QTemporaryDirPrivate::create(const QString &templateName)
     created, using isValid(). Do not use \l {QDir::exists()}{exists()}, since a default-constructed
     QDir represents the current directory, which exists.
 
-    The path to the temporary dir can be found by calling path().
+    The path to the temporary directory can be found by calling path().
 
     A temporary directory will have some static part of the name and some
     part that is calculated to be unique. The default path will be

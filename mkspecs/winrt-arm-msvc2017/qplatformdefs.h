@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the qmake spec of the Qt Toolkit.
@@ -37,53 +37,4 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMDEFS_H
-#define QPLATFORMDEFS_H
-
-// Get Qt defines/settings
-
-#include "qglobal.h"
-
-// Set any POSIX/XOPEN defines at the top of this file to turn on specific APIs
-
-#include <unistd.h>
-
-
-// We are hot - unistd.h should have turned on the specific APIs we requested
-
-
-#include <pthread.h>
-#include <dirent.h>
-#include <fcntl.h>
-#include <grp.h>
-#include <pwd.h>
-#include <signal.h>
-#include <dlfcn.h>
-
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/filio.h>
-#include <sys/ipc.h>
-#include <sys/time.h>
-#include <sys/shm.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <netinet/in.h>
-#ifndef QT_NO_IPV6IFNAME
-#include <net/if.h>
-#endif
-
-#define QT_NO_USE_FSEEKO
-#include "../common/posix/qplatformdefs.h"
-
-#undef QT_OFF_T
-#undef QT_SOCKLEN_T
-
-#define QT_OFF_T                off_t
-#define QT_SOCKLEN_T            size_t
-
-#define QT_SNPRINTF             ::snprintf
-#define QT_VSNPRINTF            ::vsnprintf
-
-#endif // QPLATFORMDEFS_H
+#include "../common/winrt_winphone/qplatformdefs.h"

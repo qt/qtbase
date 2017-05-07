@@ -649,6 +649,9 @@ QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QThemeIconInfo &in
 QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
                                    QIcon::State state)
 {
+    Q_UNUSED(mode);
+    Q_UNUSED(state);
+
     ensureLoaded();
 
     QIconLoaderEngineEntry *entry = entryForSize(m_info, size);
@@ -661,7 +664,7 @@ QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
             return QSize(result, result);
         }
     }
-    return QIconEngine::actualSize(size, mode, state);
+    return QSize(0, 0);
 }
 
 QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)

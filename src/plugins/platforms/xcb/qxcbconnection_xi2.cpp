@@ -750,7 +750,8 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
     if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
         qCDebug(lcQpaXInputEvents) << "   touchpoint "  << touchPoint.id << " state " << touchPoint.state << " pos norm " << touchPoint.normalPosition <<
             " area " << touchPoint.area << " pressure " << touchPoint.pressure;
-    QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xiDeviceEvent->time, dev->qtTouchDevice, dev->touchPoints.values());
+    Qt::KeyboardModifiers modifiers = keyboard()->translateModifiers(xiDeviceEvent->mods.effective_mods);
+    QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xiDeviceEvent->time, dev->qtTouchDevice, dev->touchPoints.values(), modifiers);
     if (touchPoint.state == Qt::TouchPointReleased)
         // If a touchpoint was released, we can forget it, because the ID won't be reused.
         dev->touchPoints.remove(touchPoint.id);
@@ -1221,9 +1222,8 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
         return;
     QWindow *window = xcbWindow->window();
     const Qt::KeyboardModifiers modifiers = keyboard()->translateModifiers(ev->mods.effective_mods);
-    const double scale = 65536.0;
-    QPointF local(ev->event_x / scale, ev->event_y / scale);
-    QPointF global(ev->root_x / scale, ev->root_y / scale);
+    QPointF local(fixed1616ToReal(ev->event_x), fixed1616ToReal(ev->event_y));
+    QPointF global(fixed1616ToReal(ev->root_x), fixed1616ToReal(ev->root_y));
     double pressure = 0, rotation = 0, tangentialPressure = 0;
     int xTilt = 0, yTilt = 0;
 
@@ -1265,8 +1265,7 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
             "pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf modifiers 0x%x",
             tabletData->deviceId, toolName(tabletData->tool), pointerTypeName(tabletData->pointerType),
             ev->sequenceNumber, ev->detail, ev->time,
-            fixed1616ToReal(ev->event_x), fixed1616ToReal(ev->event_y),
-            fixed1616ToReal(ev->root_x), fixed1616ToReal(ev->root_y),
+            local.x(), local.y(), global.x(), global.y(),
             (int)tabletData->buttons, pressure, xTilt, yTilt, rotation, (int)modifiers);
 
     QWindowSystemInterface::handleTabletEvent(window, ev->time, local, global,

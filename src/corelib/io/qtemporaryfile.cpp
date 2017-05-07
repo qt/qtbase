@@ -796,4 +796,6 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_TEMPORARYFILE
 
-
+#ifndef QT_NO_QOBJECT
+#include "moc_qtemporaryfile.cpp"
+#endif

@@ -598,3 +598,5 @@ QString QSharedMemory::errorString() const
 #endif // QT_NO_SHAREDMEMORY
 
 QT_END_NAMESPACE
+
+#include "moc_qsharedmemory.cpp"

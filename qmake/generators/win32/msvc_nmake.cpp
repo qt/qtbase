@@ -94,8 +94,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                         compiler += QStringLiteral("x64");
                         compilerArch = QStringLiteral("amd64");
                     } else {
+                        arch = QStringLiteral("x86");
                         compiler += QStringLiteral("x86");
-                        compilerArch = QStringLiteral("amd64");
                     }
                 } else {
                     if (arch == QLatin1String("arm")) {

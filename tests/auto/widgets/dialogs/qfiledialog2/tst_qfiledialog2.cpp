@@ -676,7 +676,7 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
             }
             if (!invalid) {
                 foreach (const QString &check, entryList) {
-                    if (check.startsWith(entry.left(5)) && check != entry) {
+                    if (check.startsWith(entry.left(5), Qt::CaseInsensitive) && check != entry) {
                         invalid = true;
                         break;
                     }

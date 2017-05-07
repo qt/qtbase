@@ -412,4 +412,8 @@ bool QSaveFile::directWriteFallback() const
 
 QT_END_NAMESPACE
 
+#ifndef QT_NO_QOBJECT
+#include "moc_qsavefile.cpp"
+#endif
+
 #endif // QT_NO_TEMPORARYFILE

@@ -2409,9 +2409,11 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             qreal expandOffset = -1.0;
             QObject *styleObject = option->styleObject;
             if (styleObject && proxy()->styleHint(SH_ScrollBar_Transient, option, widget)) {
+#if QT_CONFIG(animation)
                 qreal opacity = 0.0;
                 bool shouldExpand = false;
                 const qreal maxExpandScale = 13.0 / 9.0;
+#endif
 
                 int oldPos = styleObject->property("_q_stylepos").toInt();
                 int oldMin = styleObject->property("_q_stylemin").toInt();
@@ -2432,10 +2434,6 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         oldState != scrollBar->state ||
                         oldActiveControls != scrollBar->activeSubControls) {
 
-                    // if the scrollbar is transient or its attributes, geometry or
-                    // state has changed, the opacity is reset back to 100% opaque
-                    opacity = 1.0;
-
                     styleObject->setProperty("_q_stylepos", scrollBar->sliderPosition);
                     styleObject->setProperty("_q_stylemin", scrollBar->minimum);
                     styleObject->setProperty("_q_stylemax", scrollBar->maximum);
@@ -2444,6 +2442,10 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     styleObject->setProperty("_q_stylecontrols", static_cast<uint>(scrollBar->activeSubControls));
 
 #ifndef QT_NO_ANIMATION
+                    // if the scrollbar is transient or its attributes, geometry or
+                    // state has changed, the opacity is reset back to 100% opaque
+                    opacity = 1.0;
+
                     QScrollbarStyleAnimation *anim  = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
                     if (transient) {
                         if (!anim) {

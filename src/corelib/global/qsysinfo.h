@@ -211,11 +211,7 @@ public:
     };
 
 QT_WARNING_PUSH
-QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
-QT_WARNING_DISABLE_INTEL(1478)
-QT_WARNING_DISABLE_INTEL(1786)
-QT_WARNING_DISABLE_MSVC(4996)
+QT_WARNING_DISABLE_DEPRECATED
 #if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
     QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static const WinVersion WindowsVersion;
     QT_SYSINFO_DEPRECATED_X("Use QOperatingSystemVersion::current()") static WinVersion windowsVersion();

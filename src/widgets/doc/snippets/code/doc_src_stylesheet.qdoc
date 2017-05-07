@@ -1883,3 +1883,9 @@ QTabBar::close-button:hover {
 * { lineedit-password-mask-delay: 1000 }
 //! [160]
 
+//! [161]
+QTableView::indicator:unchecked {
+    background-color: #d7d6d5
+}
+//! [161]
+

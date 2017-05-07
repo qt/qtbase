@@ -63,7 +63,6 @@ QT_BEGIN_NAMESPACE
 
 class QGridLayout;
 class QWidgetResizeHandler;
-class QRubberBand;
 class QDockWidgetTitleButton;
 class QSpacerItem;
 class QDockWidgetItem;

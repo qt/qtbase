@@ -44,7 +44,6 @@
 static inline void processEvents()
 {
     QPixmapCache::clear();
-    QApplication::flush();
     QApplication::processEvents();
     QApplication::processEvents();
 }

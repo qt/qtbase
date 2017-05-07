@@ -1852,6 +1852,14 @@ void tst_QWindow::modalDialog()
 
     QGuiApplication::sync();
     QGuiApplication::processEvents();
+
+    if (!QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)
+        || !QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)) {
+        QWARN("Focus stays in normalWindow on offscreen/minimal platforms");
+        QTRY_COMPARE(QGuiApplication::focusWindow(), &normalWindow);
+        return;
+    }
+
     QTRY_COMPARE(QGuiApplication::focusWindow(), &dialog);
 }
 
@@ -1890,6 +1898,14 @@ void tst_QWindow::modalDialogClosingOneOfTwoModal()
 
     QGuiApplication::sync();
     QGuiApplication::processEvents();
+
+    if (!QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)
+        || !QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)) {
+        QWARN("Focus is lost when closing modal dialog on offscreen/minimal platforms");
+        QTRY_COMPARE(QGuiApplication::focusWindow(), nullptr);
+        return;
+    }
+
     QTRY_COMPARE(QGuiApplication::focusWindow(), &first_dialog);
 }
 

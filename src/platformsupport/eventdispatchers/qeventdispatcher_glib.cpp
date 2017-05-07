@@ -46,8 +46,6 @@
 #include <glib.h>
 #include "private/qguiapplication_p.h"
 
-#include <qdebug.h>
-
 QT_BEGIN_NAMESPACE
 
 struct GUserEventSource
@@ -56,12 +54,15 @@ struct GUserEventSource
     QPAEventDispatcherGlib *q;
 };
 
-static gboolean userEventSourcePrepare(GSource *s, gint *timeout)
+static gboolean userEventSourcePrepare(GSource *source, gint *timeout)
 {
-    Q_UNUSED(s)
     Q_UNUSED(timeout)
-
-    return QWindowSystemInterface::windowSystemEventsQueued() > 0;
+    GUserEventSource *userEventSource = reinterpret_cast<GUserEventSource *>(source);
+    QPAEventDispatcherGlib *dispatcher = userEventSource->q;
+    if (dispatcher->m_flags & QEventLoop::ExcludeUserInputEvents)
+        return QWindowSystemInterface::nonUserInputEventsQueued();
+    else
+        return QWindowSystemInterface::windowSystemEventsQueued() > 0;
 }
 
 static gboolean userEventSourceCheck(GSource *source)

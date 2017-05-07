@@ -452,9 +452,8 @@ void QEglFSIntegration::createInputHandlers()
     }
 #endif
 
-    bool useTslib = false;
 #if QT_CONFIG(tslib)
-    useTslib = qEnvironmentVariableIntValue("QT_QPA_EGLFS_TSLIB");
+    bool useTslib = qEnvironmentVariableIntValue("QT_QPA_EGLFS_TSLIB");
     if (useTslib)
         new QTsLibMouseHandler(QLatin1String("TsLib"), QString() /* spec */);
 #endif
@@ -462,7 +461,9 @@ void QEglFSIntegration::createInputHandlers()
 #if QT_CONFIG(evdev)
     m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
+#if QT_CONFIG(tslib)
     if (!useTslib)
+#endif
         new QEvdevTouchManager(QLatin1String("EvdevTouch"), QString() /* spec */, this);
 #endif
 }

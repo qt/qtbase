@@ -573,11 +573,6 @@ public:
         requestedFormat = QSurfaceFormat::defaultFormat();
     }
 
-    ~QOpenGLWidgetPrivate()
-    {
-        reset();
-    }
-
     void reset();
     void recreateFbo();
 
@@ -1000,7 +995,8 @@ QOpenGLWidget::QOpenGLWidget(QWidget *parent, Qt::WindowFlags f)
 */
 QOpenGLWidget::~QOpenGLWidget()
 {
-    makeCurrent();
+    Q_D(QOpenGLWidget);
+    d->reset();
 }
 
 /*!

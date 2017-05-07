@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformTheme;
 
-class QPlatformThemeFactory
+class Q_GUI_EXPORT QPlatformThemeFactory
 {
 public:
     static QStringList keys(const QString &platformPluginPath = QString());

@@ -2059,3 +2059,7 @@ QDebug operator<<(QDebug debug, QIODevice::OpenMode modes)
 #endif
 
 QT_END_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+#include "moc_qiodevice.cpp"
+#endif

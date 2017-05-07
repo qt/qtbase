@@ -155,7 +155,13 @@ defineReplace(qtConfFunc_licenseCheck) {
                                     $$[QMAKE_SPEC] $$[QMAKE_XSPEC]", \
                                 LicheckOutput): \
                 return(false)
-            eval($$LicheckOutput)
+            logn()
+            for (o, LicheckOutput) {
+                contains(o, "\\w+=.*"): \
+                    eval($$o)
+                else: \
+                    logn($$o)
+            }
             config.input.qt_edition = $$Edition
             config.input.qt_licheck = $$Licheck
             config.input.qt_release_date = $$ReleaseDate
@@ -272,7 +278,7 @@ defineTest(qtConfTest_architecture) {
     export($${1}.buildabi)
     qtLog("Detected architecture: $$eval($${1}.arch) ($$eval($${1}.subarch))")
 
-    $${1}.cache += arch subarch
+    $${1}.cache += arch subarch buildabi
     export($${1}.cache)
     return(true)
 }
@@ -887,11 +893,12 @@ defineTest(qtConfOutput_architecture) {
         publicPro = \
             "host_build {" \
             "    QT_ARCH = $$host_arch" \
+            "    QT_BUILDABI = $$host_buildabi" \
             "    QT_TARGET_ARCH = $$arch" \
             "    QT_TARGET_BUILDABI = $$buildabi" \
             "} else {" \
             "    QT_ARCH = $$arch" \
-            "    QT_BUILDABI = $$host_buildabi" \
+            "    QT_BUILDABI = $$buildabi" \
             "}"
 
     } else {

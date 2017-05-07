@@ -360,11 +360,16 @@ void tst_QSocketNotifier::asyncMultipleDatagram()
     QSignalSpy spy(m_asyncReceiver, &QIODevice::readyRead);
     connect(m_asyncReceiver, &QIODevice::readyRead, this,
             &tst_QSocketNotifier::async_readDatagramSlot);
+
+    // activate socket notifiers
+    QTestEventLoop::instance().enterLoopMSecs(100);
+
     m_asyncSender->writeDatagram("1", makeNonAny(m_asyncReceiver->localAddress()), port);
     m_asyncSender->writeDatagram("2", makeNonAny(m_asyncReceiver->localAddress()), port);
     // wait a little to ensure that the datagrams we've just sent
     // will be delivered on receiver side.
     QTest::qSleep(100);
+    QVERIFY(m_asyncReceiver->hasPendingDatagrams());
 
     QTimer::singleShot(500, this, &tst_QSocketNotifier::async_writeDatagramSlot);
 

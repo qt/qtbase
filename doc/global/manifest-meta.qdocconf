@@ -41,6 +41,7 @@ manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
                                         "QtQuickExtras/Qt Quick Extras - Flat" \
                                         "QtQuickExtras/Qt Quick Extras - Gallery" \
                                         "QtQuickControls2/Qt Quick Controls 2 - Gallery" \
+                                        "QtQuickControls2/Qt Quick Controls 2 - Wearable Demo" \
                                         "QtQuickDialogs/Qt Quick System Dialog Examples" \
                                         "QtWinExtras/Quick Player" \
                                         "QtMultimedia/QML Video Shader Effects Example" \

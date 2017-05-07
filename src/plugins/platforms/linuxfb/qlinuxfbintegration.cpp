@@ -156,9 +156,8 @@ void QLinuxFbIntegration::createInputHandlers()
     }
 #endif
 
-    bool useTslib = false;
 #if QT_CONFIG(tslib)
-    useTslib = qEnvironmentVariableIntValue("QT_QPA_FB_TSLIB");
+    bool useTslib = qEnvironmentVariableIntValue("QT_QPA_FB_TSLIB");
     if (useTslib)
         new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
 #endif
@@ -166,7 +165,9 @@ void QLinuxFbIntegration::createInputHandlers()
 #if QT_CONFIG(evdev) && !defined(Q_OS_ANDROID)
     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
+#if QT_CONFIG(tslib)
     if (!useTslib)
+#endif
         new QEvdevTouchManager(QLatin1String("EvdevTouch"), QString() /* spec */, this);
 #endif
 }

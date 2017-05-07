@@ -815,3 +815,7 @@ bool QFileDevice::setFileTime(const QDateTime &newDate, QFileDevice::FileTime fi
 }
 
 QT_END_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+#include "moc_qfiledevice.cpp"
+#endif

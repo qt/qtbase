@@ -975,7 +975,9 @@ QSplitter::QSplitter(Qt::Orientation orientation, QWidget *parent)
 QSplitter::~QSplitter()
 {
     Q_D(QSplitter);
+#if QT_CONFIG(rubberband)
     delete d->rubberBand;
+#endif
     while (!d->list.isEmpty())
         delete d->list.takeFirst();
 }
@@ -1296,18 +1298,19 @@ void QSplitter::childEvent(QChildEvent *c)
             qWarning("Adding a QLayout to a QSplitter is not supported.");
         return;
     }
-    QWidget *w = static_cast<QWidget*>(c->child());
-    if (w->isWindow())
-        return;
-    if (c->added() && !d->blockChildAdd && !d->findWidget(w)) {
-        d->insertWidget_helper(d->list.count(), w, false);
-    } else if (c->polished() && !d->blockChildAdd) {
-        if (d->shouldShowWidget(w))
+    if (c->added()) {
+        QWidget *w = static_cast<QWidget*>(c->child());
+        if (!d->blockChildAdd && !w->isWindow() && !d->findWidget(w))
+            d->insertWidget_helper(d->list.count(), w, false);
+    } else if (c->polished()) {
+        QWidget *w = static_cast<QWidget*>(c->child());
+        if (!d->blockChildAdd && !w->isWindow() && d->shouldShowWidget(w))
             w->show();
-    } else if (c->type() == QEvent::ChildRemoved) {
+    } else if (c->removed()) {
+        QObject *child = c->child();
         for (int i = 0; i < d->list.size(); ++i) {
             QSplitterLayoutStruct *s = d->list.at(i);
-            if (s->widget == w) {
+            if (s->widget == child) {
                 d->list.removeAt(i);
                 delete s;
                 d->recalc(isVisible());
@@ -1325,6 +1328,7 @@ void QSplitter::childEvent(QChildEvent *c)
 
 void QSplitter::setRubberBand(int pos)
 {
+#if QT_CONFIG(rubberband)
     Q_D(QSplitter);
     if (pos < 0) {
         if (d->rubberBand)
@@ -1345,6 +1349,9 @@ void QSplitter::setRubberBand(int pos)
                                                       : QRect(QPoint(r.x(), pos + hw / 2 - rBord), QSize(r.width(), 2 * rBord));
     d->rubberBand->setGeometry(newGeom);
     d->rubberBand->show();
+#else
+    Q_UNUSED(pos);
+#endif
 }
 
 /*!

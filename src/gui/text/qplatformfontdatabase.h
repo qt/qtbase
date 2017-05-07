@@ -104,6 +104,7 @@ class Q_GUI_EXPORT QPlatformFontDatabase
 public:
     virtual ~QPlatformFontDatabase();
     virtual void populateFontDatabase();
+    virtual bool populateFamilyAliases() { return false; }
     virtual void populateFamily(const QString &familyName);
     virtual void invalidate();
 

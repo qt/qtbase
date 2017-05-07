@@ -2109,7 +2109,12 @@ QMacStyle::QMacStyle()
       name:NSPreferredScrollerStyleDidChangeNotification
       object:nil];
 
-    d->nsscroller = [[NSScroller alloc] init];
+    // Create scroller objects. Scroller internal direction setup happens
+    // on initWithFrame and cannot be changed later on. Create two scrollers
+    // initialized with fake geometry. Correct geometry is set at draw time.
+    d->horizontalScroller = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
+    d->verticalScroller = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
+
     d->indicatorBranchButtonCell = nil;
 }
 
@@ -2118,7 +2123,8 @@ QMacStyle::~QMacStyle()
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    [reinterpret_cast<NSScroller*>(d->nsscroller) release];
+    [d->horizontalScroller release];
+    [d->verticalScroller release];
 
     NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
     [[NSNotificationCenter defaultCenter] removeObserver:receiver];
@@ -2463,11 +2469,13 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     case PM_ButtonDefaultIndicator:
         ret = 0;
         break;
-    case PM_TitleBarHeight:
-        // Always use NSTitledWindowMask since we never need any other type of window here
+    case PM_TitleBarHeight: {
+        NSUInteger style = NSTitledWindowMask;
+        if (widget && ((widget->windowFlags() & Qt::Tool) == Qt::Tool))
+            style |= NSUtilityWindowMask;
         ret = int([NSWindow frameRectForContentRect:NSZeroRect
-                                          styleMask:NSTitledWindowMask].size.height);
-        break;
+                                          styleMask:style].size.height);
+        break; }
     case QStyle::PM_TabBarTabHSpace:
         switch (d->aquaSizeConstrain(opt, widget)) {
         case QAquaSizeLarge:
@@ -2496,7 +2504,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 0;
         break;
     case PM_TabBarBaseHeight:
-        ret = 21;
+        ret = 0;
         break;
     case PM_TabBarTabOverlap:
         ret = 1;
@@ -5425,8 +5433,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 [NSGraphicsContext setCurrentContext:[NSGraphicsContext
                      graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
-                NSScroller *scroller = reinterpret_cast<NSScroller*>(d->nsscroller);
-                [scroller initWithFrame:NSMakeRect(0, 0, slider->rect.width(), slider->rect.height())];
+                NSScroller *scroller = isHorizontal ? d->horizontalScroller : d-> verticalScroller;
                 // mac os behaviour: as soon as one color channel is >= 128,
                 // the bg is considered bright, scroller is dark
                 const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);
@@ -5538,16 +5545,18 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         sl.intValue = slider->sliderValue;
                         sl.enabled = slider->state & QStyle::State_Enabled;
                         d->drawNSViewInRect(cw, sl, opt->rect, p, widget != 0, ^(NSRect rect, CGContextRef ctx) {
+                                                const bool isSierraOrLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra;
                                                 if (slider->upsideDown) {
                                                     if (isHorizontal) {
                                                         CGContextTranslateCTM(ctx, rect.size.width, 0);
                                                         CGContextScaleCTM(ctx, -1, 1);
                                                     }
-                                                } else if (!isHorizontal) {
+                                                } else if (!isHorizontal && !isSierraOrLater) {
                                                     CGContextTranslateCTM(ctx, 0, rect.size.height);
                                                     CGContextScaleCTM(ctx, 1, -1);
                                                 }
-                                                [sl.cell drawBarInside:NSRectFromCGRect(tdi.bounds) flipped:NO];
+                                                const bool shouldFlip = isHorizontal || (slider->upsideDown && isSierraOrLater);
+                                                [sl.cell drawBarInside:NSRectFromCGRect(tdi.bounds) flipped:shouldFlip];
                                                 // No need to restore the CTM later, the context has been saved
                                                 // and will be restored at the end of drawNSViewInRect()
                                             });

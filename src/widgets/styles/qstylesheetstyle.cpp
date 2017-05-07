@@ -3915,7 +3915,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 }
 
                 QRect r = rect;
+#if QT_CONFIG(animation)
                 Q_D(const QWindowsStyle);
+#endif
                 if (pb->minimum == 0 && pb->maximum == 0) {
                     int chunkCount = fillWidth/chunkWidth;
                     int offset = 0;

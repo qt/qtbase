@@ -60,7 +60,10 @@ void QRasterBackingStore::resize(const QSize &size, const QRegion &staticContent
 {
     Q_UNUSED(staticContents);
 
-    qreal nativeWindowDevicePixelRatio = window()->handle()->devicePixelRatio();
+    // We can't guarantee that we have a platform-window at this point, so we have
+    // to pull out the DPR using QWindow and its QScreen fallback, and then remove
+    // the Qt scaling factor.
+    qreal nativeWindowDevicePixelRatio = window()->devicePixelRatio() / QHighDpiScaling::factor(window());
     QSize effectiveBufferSize = size * nativeWindowDevicePixelRatio;
 
     if (m_image.size() == effectiveBufferSize)

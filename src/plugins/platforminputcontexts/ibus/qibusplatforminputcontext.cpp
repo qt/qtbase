@@ -267,6 +267,9 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 
 void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint cursorPos, bool visible)
 {
+    if (!qApp)
+        return;
+
     QObject *input = qApp->focusObject();
     if (!input)
         return;

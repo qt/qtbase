@@ -479,3 +479,4 @@ QJsonObject QStaticPlugin::metaData() const
 
 QT_END_NAMESPACE
 
+#include "moc_qpluginloader.cpp"

@@ -169,7 +169,6 @@ void tst_qstylesheetstyle::grid()
     if(show) {
         w->show();
         QTest::qWaitForWindowExposed(w);
-        QApplication::flush();
         QApplication::processEvents();
         QTest::qWait(30);
         QApplication::processEvents();

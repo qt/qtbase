@@ -679,4 +679,6 @@ void QThreadPool::cancel(QRunnable *runnable)
 
 QT_END_NAMESPACE
 
+#include "moc_qthreadpool.cpp"
+
 #endif

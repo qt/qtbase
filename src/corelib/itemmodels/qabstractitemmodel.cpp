@@ -3804,3 +3804,5 @@ void QAbstractItemModelPrivate::Persistent::insertMultiAtEnd(const QModelIndex& 
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qabstractitemmodel.cpp"

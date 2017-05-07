@@ -100,27 +100,17 @@ QT_BEGIN_NAMESPACE
 
 struct KeyInfo {
     KeyInfo()
-        : virtualKey(0)
-        , isAutoRepeat(false)
-    {
-    }
-
-    KeyInfo(const QString &text, quint32 virtualKey)
-        : text(text)
-        , virtualKey(virtualKey)
-        , isAutoRepeat(false)
     {
     }
 
     KeyInfo(quint32 virtualKey)
         : virtualKey(virtualKey)
-        , isAutoRepeat(false)
     {
     }
 
     QString text;
-    quint32 virtualKey;
-    bool isAutoRepeat;
+    quint32 virtualKey{0};
+    bool isAutoRepeat{false};
 };
 
 static inline Qt::ScreenOrientations qtOrientationsFromNative(DisplayOrientations native)
@@ -991,9 +981,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
                     virtualKey,
                     0,
                     QString(),
-                    d->activeKeys.value(key).isAutoRepeat,
-                    !status.RepeatCount ? 1 : status.RepeatCount,
-                    false);
+                    d->activeKeys.value(key).isAutoRepeat);
     } else {
         d->activeKeys.insert(key, KeyInfo(virtualKey));
     }
@@ -1021,9 +1009,7 @@ HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Wind
                 virtualKey,
                 0,
                 QString(),
-                d->activeKeys.value(key).isAutoRepeat,
-                !status.RepeatCount ? 1 : status.RepeatCount,
-                false);
+                d->activeKeys.value(key).isAutoRepeat);
     return S_OK;
 }
 
@@ -1048,9 +1034,7 @@ HRESULT QWinRTScreen::onKeyUp(ABI::Windows::UI::Core::ICoreWindow *, ABI::Window
                 virtualKey,
                 0,
                 info.text,
-                false, // The final key release does not have autoRepeat set on Windows
-                !status.RepeatCount ? 1 : status.RepeatCount,
-                false);
+                false); // The final key release does not have autoRepeat set on Windows
     return S_OK;
 }
 
@@ -1071,7 +1055,8 @@ HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEvent
     const Qt::KeyboardModifiers modifiers = keyboardModifiers();
     const Qt::Key key = qKeyFromCode(keyCode, modifiers);
     const QString text = QChar(keyCode);
-    const KeyInfo info = d->activeKeys.value(key);
+    KeyInfo &info = d->activeKeys[key];
+    info.text = text;
     QWindowSystemInterface::handleExtendedKeyEvent(
                 topWindow(),
                 QEvent::KeyPress,
@@ -1081,9 +1066,7 @@ HRESULT QWinRTScreen::onCharacterReceived(ICoreWindow *, ICharacterReceivedEvent
                 info.virtualKey,
                 0,
                 text,
-                info.isAutoRepeat,
-                !status.RepeatCount ? 1 : status.RepeatCount,
-                false);
+                info.isAutoRepeat);
     return S_OK;
 }
 

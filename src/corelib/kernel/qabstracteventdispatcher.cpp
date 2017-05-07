@@ -320,9 +320,10 @@ int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerTyp
 */
 
 /*! \fn void QAbstractEventDispatcher::flush()
+    \deprecated
 
-    Flushes the event queue. This normally returns almost
-    immediately. Does nothing on platforms other than X11.
+    Depending from the event dispatcher implementation does nothing or
+    calls QApplication::sendPostedEvents().
 */
 
 // ### DOC: Are these called when the _application_ starts/stops or just
@@ -520,3 +521,5 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qabstracteventdispatcher.cpp"

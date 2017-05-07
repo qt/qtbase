@@ -37,10 +37,17 @@
 **
 ****************************************************************************/
 
-#include <alloca.h>
-
+#if defined(USE_ALLOCA_H)
+# include <alloca.h>
+# ifdef __QNXNTO__
 // extra include needed in QNX7 to define NULL for the alloca() macro
-#include <stdlib.h>
+#  include <stddef.h>
+# endif
+#elif defined(USE_MALLOC_H)
+# include <malloc.h>
+#else
+# include <stdlib.h>
+#endif
 
 int main(int, char **)
 {

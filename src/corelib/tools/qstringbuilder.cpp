@@ -72,17 +72,21 @@ QT_BEGIN_NAMESPACE
 
     For building QStrings:
 
+    \list
     \li QString, QStringRef,
     \li QChar, QCharRef, QLatin1Char,
     \li QLatin1String,
     \li QByteArray, \c char, \c{const char[]}.
+    \endlist
 
     The types in the last list point are only available when
     QT_NO_CAST_FROM_ASCII is not defined.
 
     For building QByteArrays:
 
+    \list
     \li QByteArray, \c char, \c{const char[]}.
+    \endlist
 
     Concatenating strings with operator%() generally yields better
     performance than using \c QString::operator+() on the same chunks

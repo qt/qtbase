@@ -53,12 +53,9 @@
 //! [1]
 RasterWindow::RasterWindow(QWindow *parent)
     : QWindow(parent)
+    , m_backingStore(new QBackingStore(this))
 {
-    create();
-    m_backingStore = new QBackingStore(this);
-
     setGeometry(100, 100, 300, 200);
-
 }
 //! [1]
 

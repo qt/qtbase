@@ -417,4 +417,6 @@ QString QInotifyFileSystemWatcherEngine::getPathFromID(int id) const
 
 QT_END_NAMESPACE
 
+#include "moc_qfilesystemwatcher_inotify_p.cpp"
+
 #endif // QT_NO_FILESYSTEMWATCHER

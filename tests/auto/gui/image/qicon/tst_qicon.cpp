@@ -584,6 +584,7 @@ void tst_QIcon::fromTheme()
     QIcon noIcon = QIcon::fromTheme("broken-icon");
     QVERIFY(noIcon.isNull());
     QVERIFY(!QIcon::hasThemeIcon("broken-icon"));
+    QCOMPARE(noIcon.actualSize(QSize(32, 32), QIcon::Normal, QIcon::On), QSize(0, 0));
 
     // Test non existing icon with fallback
     noIcon = QIcon::fromTheme("broken-icon", abIcon);

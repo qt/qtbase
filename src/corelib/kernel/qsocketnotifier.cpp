@@ -270,3 +270,5 @@ bool QSocketNotifier::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsocketnotifier.cpp"

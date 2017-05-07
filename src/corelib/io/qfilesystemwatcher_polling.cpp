@@ -151,4 +151,7 @@ void QPollingFileSystemWatcherEngine::timeout()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfilesystemwatcher_polling_p.cpp"
+
 #endif // !QT_NO_FILESYSTEMWATCHER

@@ -46,6 +46,8 @@
 #include <QTimer>
 #include <qdebug.h>
 
+#include <qpa/qplatformtheme.h>
+
 Q_DECLARE_METATYPE(Qt::Key);
 Q_DECLARE_METATYPE(Qt::KeyboardModifiers);
 
@@ -624,6 +626,7 @@ void tst_QMenu::tearOff()
     QScopedPointer<QMenu> menu(new QMenu(&widget));
     QVERIFY(!menu->isTearOffEnabled()); //default value
     menu->setTearOffEnabled(true);
+    menu->setTitle(QLatin1String("Same &Menu"));
     menu->addAction("aaa");
     menu->addAction("bbb");
     QVERIFY(menu->isTearOffEnabled());
@@ -645,6 +648,19 @@ void tst_QMenu::tearOff()
     QPointer<QMenu> torn = getTornOffMenu();
     QVERIFY(torn);
     QVERIFY(torn->isVisible());
+
+    // Check menu title
+    const QString cleanTitle = QPlatformTheme::removeMnemonics(menu->title()).trimmed();
+    QCOMPARE(torn->windowTitle(), cleanTitle);
+
+    // Change menu title and check again
+    menu->setTitle(QLatin1String("Sample &Menu"));
+    const QString newCleanTitle = QPlatformTheme::removeMnemonics(menu->title()).trimmed();
+    QCOMPARE(torn->windowTitle(), newCleanTitle);
+
+    // Clear menu title and check again
+    menu->setTitle(QString());
+    QCOMPARE(torn->windowTitle(), QString());
 
     menu->hideTearOffMenu();
     QVERIFY(!menu->isTearOffMenuVisible());

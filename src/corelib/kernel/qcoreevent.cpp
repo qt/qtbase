@@ -652,3 +652,5 @@ QDeferredDeleteEvent::~QDeferredDeleteEvent()
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qcoreevent.cpp"

@@ -41,6 +41,8 @@
 #define ANDROIDJNICLIPBOARD_H
 
 #include <QString>
+#include "qandroidplatformclipboard.h"
+#include "androidjnimain.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -48,10 +50,11 @@ class QAndroidPlatformClipboard;
 namespace QtAndroidClipboard
 {
     // Clipboard support
-    void setClipboardListener(QAndroidPlatformClipboard *listener);
+    void setClipboardManager(QAndroidPlatformClipboard *manager);
     void setClipboardText(const QString &text);
     bool hasClipboardText();
     QString clipboardText();
+    void onClipboardDataChanged(JNIEnv */*env*/, jobject /*thiz*/);
     // Clipboard support
 }
 

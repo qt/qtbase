@@ -634,9 +634,9 @@ void QCoreApplicationPrivate::initLocale()
 
     Several static convenience functions are also provided. The
     QCoreApplication object is available from instance(). Events can
-    be sent or posted using sendEvent(), postEvent(), and
-    sendPostedEvents(). Pending events can be removed with
-    removePostedEvents() or flushed with flush().
+    be sent with sendEvent() or posted to an event queue with postEvent().
+    Pending events can be removed with removePostedEvents() or dispatched
+    with sendPostedEvents().
 
     The class provides a quit() slot and an aboutToQuit() signal.
 
@@ -705,21 +705,22 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
 
 #ifndef QT_NO_QOBJECT
 /*!
-    Flushes the platform-specific event queues.
+    \deprecated
+    This function is equivalent to calling \c {QCoreApplication::eventDispatcher()->flush()},
+    which also is deprecated, see QAbstractEventDispatcher::flush(). Use sendPostedEvents()
+    and processEvents() for more fine-grained control of the event loop instead.
 
-    If you are doing graphical changes inside a loop that does not
-    return to the event loop on asynchronous window systems like X11
-    or double buffered window systems like Quartz (\macos and iOS), and you want to
-    visualize these changes immediately (e.g. Splash Screens), call
-    this function.
+    Historically this functions was used to flush the platform-specific native event queues.
 
-    \sa sendPostedEvents()
+    \sa sendPostedEvents(), processEvents(), QAbstractEventDispatcher::flush()
 */
+#if QT_DEPRECATED_SINCE(5, 9)
 void QCoreApplication::flush()
 {
     if (self && self->d_func()->eventDispatcher)
         self->d_func()->eventDispatcher->flush();
 }
+#endif
 #endif
 
 /*!
@@ -757,6 +758,10 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
 
 void QCoreApplicationPrivate::init()
 {
+#if defined(Q_OS_MACOS)
+    QMacAutoReleasePool pool;
+#endif
+
     Q_Q(QCoreApplication);
 
     initLocale();
@@ -2909,3 +2914,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 */
 
 QT_END_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+#include "moc_qcoreapplication.cpp"
+#endif

@@ -39,6 +39,10 @@
 
 #include <jni.h>
 #include "qjnihelpers_p.h"
+#include <android/log.h>
+
+static const char logTag[] = "QtCore";
+
 
 Q_CORE_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -54,16 +58,24 @@ Q_CORE_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
         void *venv;
     } _JNIEnv;
 
+    __android_log_print(ANDROID_LOG_INFO, logTag, "Start");
+
     _JNIEnv uenv;
     uenv.venv = Q_NULLPTR;
 
     if (vm->GetEnv(&uenv.venv, JNI_VERSION_1_6) != JNI_OK)
+    {
+        __android_log_print(ANDROID_LOG_FATAL, logTag, "GetEnv failed");
         return JNI_ERR;
+    }
 
     JNIEnv *env = uenv.nenv;
     const jint ret = QT_PREPEND_NAMESPACE(QtAndroidPrivate::initJNI(vm, env));
     if (ret != 0)
+    {
+        __android_log_print(ANDROID_LOG_FATAL, logTag, "initJNI failed");
         return ret;
+    }
 
     return JNI_VERSION_1_6;
 }

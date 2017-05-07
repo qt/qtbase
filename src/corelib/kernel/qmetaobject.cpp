@@ -2324,12 +2324,10 @@ bool QMetaMethod::invoke(QObject *object,
 
         for (int i = 1; i < paramCount; ++i) {
             types[i] = QMetaType::type(typeNames[i]);
-            if (types[i] != QMetaType::UnknownType) {
-                args[i] = QMetaType::create(types[i], param[i]);
-                ++nargs;
-            } else if (param[i]) {
+            if (types[i] == QMetaType::UnknownType && param[i]) {
                 // Try to register the type and try again before reporting an error.
-                void *argv[] = { &types[i], &i };
+                int index = nargs - 1;
+                void *argv[] = { &types[i], &index };
                 QMetaObject::metacall(object, QMetaObject::RegisterMethodArgumentMetaType,
                                       idx_relative + idx_offset, argv);
                 if (types[i] == -1) {
@@ -2343,6 +2341,10 @@ bool QMetaMethod::invoke(QObject *object,
                     free(args);
                     return false;
                 }
+            }
+            if (types[i] != QMetaType::UnknownType) {
+                args[i] = QMetaType::create(types[i], param[i]);
+                ++nargs;
             }
         }
 

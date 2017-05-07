@@ -36,12 +36,18 @@
 #include <qdebug.h>
 #include <qregexp.h>
 #include <qdir.h>
+#include <qdiriterator.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#if defined(Q_OS_UNIX)
+#include <errno.h>
+#include <unistd.h>
+#endif
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -236,17 +242,11 @@ static int doLink(int argc, char **argv)
 
 #endif
 
-static int installFile(const QString &source, const QString &targetFileOrDirectory, bool exe = false)
+static int installFile(const QString &source, const QString &target, bool exe = false)
 {
     QFile sourceFile(source);
 
-    QString target(targetFileOrDirectory);
-    if (QFileInfo(target).isDir())
-        target += QDir::separator() + QFileInfo(sourceFile.fileName()).fileName();
-
-    if (QFile::exists(target))
-        QFile::remove(target);
-
+    QFile::remove(target);
     QDir::root().mkpath(QFileInfo(target).absolutePath());
 
     if (!sourceFile.copy(target)) {
@@ -273,23 +273,64 @@ static int installFile(const QString &source, const QString &targetFileOrDirecto
     return 0;
 }
 
+static int installFileOrDirectory(const QString &source, const QString &target)
+{
+    QFileInfo fi(source);
+    if (false) {
+#if defined(Q_OS_UNIX)
+    } else if (fi.isSymLink()) {
+        QString linkTarget;
+        if (!IoUtils::readLinkTarget(fi.absoluteFilePath(), &linkTarget)) {
+            fprintf(stderr, "Could not read link %s: %s\n", qPrintable(fi.absoluteFilePath()), strerror(errno));
+            return 3;
+        }
+        QFile::remove(target);
+        if (::symlink(linkTarget.toLocal8Bit().constData(), target.toLocal8Bit().constData()) < 0) {
+            fprintf(stderr, "Could not create link: %s\n", strerror(errno));
+            return 3;
+        }
+#endif
+    } else if (fi.isDir()) {
+        QDir::current().mkpath(target);
+
+        QDirIterator it(source, QDir::AllEntries | QDir::NoDotAndDotDot);
+        while (it.hasNext()) {
+            it.next();
+            const QFileInfo &entry = it.fileInfo();
+            const QString &entryTarget = target + QDir::separator() + entry.fileName();
+
+            const int recursionResult = installFileOrDirectory(entry.filePath(), entryTarget);
+            if (recursionResult != 0)
+                return recursionResult;
+        }
+    } else {
+        const int fileCopyResult = installFile(source, target);
+        if (fileCopyResult != 0)
+            return fileCopyResult;
+    }
+    return 0;
+}
+
 static int doQInstall(int argc, char **argv)
 {
-    if (argc != 3) {
-        fprintf(stderr, "Error: this qinstall command requires exactly three arguments (type, source, destination)\n");
+    bool installExecutable = false;
+    if (argc == 3 && !strcmp(argv[0], "-exe")) {
+        installExecutable = true;
+        --argc;
+        ++argv;
+    }
+
+    if (argc != 2 && !installExecutable) {
+        fprintf(stderr, "Error: usage: [-exe] source target\n");
         return 3;
     }
 
-    const QString source = QString::fromLocal8Bit(argv[1]);
-    const QString target = QString::fromLocal8Bit(argv[2]);
+    const QString source = QString::fromLocal8Bit(argv[0]);
+    const QString target = QString::fromLocal8Bit(argv[1]);
 
-    if (!strcmp(argv[0], "file"))
-        return installFile(source, target);
-    if (!strcmp(argv[0], "program"))
+    if (installExecutable)
         return installFile(source, target, /*exe=*/true);
-
-    fprintf(stderr, "Error: Unsupported qinstall command type %s\n", argv[0]);
-    return 3;
+    return installFileOrDirectory(source, target);
 }
 
 

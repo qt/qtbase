@@ -611,3 +611,5 @@ QEventDispatcherGlib::QEventDispatcherGlib(QEventDispatcherGlibPrivate &dd, QObj
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qeventdispatcher_glib_p.cpp"

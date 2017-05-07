@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_CONFIG(shortcut)
 static guint qt_gdkKey(const QKeySequence &shortcut)
 {
     if (shortcut.isEmpty())
@@ -75,6 +76,7 @@ static GdkModifierType qt_gdkModifiers(const QKeySequence &shortcut)
 
     return static_cast<GdkModifierType>(mods);
 }
+#endif
 
 QGtk3MenuItem::QGtk3MenuItem()
     : m_visible(true),
@@ -125,10 +127,12 @@ GtkWidget *QGtk3MenuItem::create()
             if (m_menu)
                 gtk_menu_item_set_submenu(GTK_MENU_ITEM(m_item), m_menu->handle());
             g_signal_connect(m_item, "select", G_CALLBACK(onSelect), this);
+#if QT_CONFIG(shortcut)
             if (!m_shortcut.isEmpty()) {
                 GtkWidget *label = gtk_bin_get_child(GTK_BIN(m_item));
                 gtk_accel_label_set_accel(GTK_ACCEL_LABEL(label), qt_gdkKey(m_shortcut), qt_gdkModifiers(m_shortcut));
             }
+#endif
         }
         gtk_widget_set_sensitive(m_item, m_enabled);
         gtk_widget_set_visible(m_item, m_visible);
@@ -256,6 +260,7 @@ void QGtk3MenuItem::setChecked(bool checked)
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(m_item), checked);
 }
 
+#if QT_CONFIG(shortcut)
 QKeySequence QGtk3MenuItem::shortcut() const
 {
     return m_shortcut;
@@ -272,6 +277,7 @@ void QGtk3MenuItem::setShortcut(const QKeySequence& shortcut)
         gtk_accel_label_set_accel(GTK_ACCEL_LABEL(label), qt_gdkKey(m_shortcut), qt_gdkModifiers(m_shortcut));
     }
 }
+#endif
 
 bool QGtk3MenuItem::isEnabled() const
 {

@@ -3187,3 +3187,6 @@ QLocale QTextStream::locale() const
 
 QT_END_NAMESPACE
 
+#ifndef QT_NO_QOBJECT
+#include "moc_qtextstream_p.cpp"
+#endif

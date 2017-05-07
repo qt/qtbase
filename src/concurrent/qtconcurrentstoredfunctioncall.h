@@ -255,6 +255,165 @@ struct SelectStoredConstMemberFunctionPointerCall0
         Type<StoredConstMemberFunctionPointerCall0    <T, Class>,
              VoidStoredConstMemberFunctionPointerCall0<T, Class> >::type type;
 };
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+template <typename T, typename Class>
+class StoredNoExceptMemberFunctionCall0 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionCall0(T (Class::*_fn)() noexcept, const Class &_object)
+    : fn(_fn), object(_object){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)();
+    }
+private:
+    T (Class::*fn)() noexcept;
+    Class object;
+
+};
+template <typename T, typename Class>
+class VoidStoredNoExceptMemberFunctionCall0 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionCall0(T (Class::*_fn)() noexcept, const Class &_object)
+    : fn(_fn), object(_object){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)();
+    }
+private:
+    T (Class::*fn)() noexcept;
+    Class object;
+
+};
+template <typename T, typename Class>
+struct SelectStoredNoExceptMemberFunctionCall0
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionCall0    <T, Class>,
+             VoidStoredNoExceptMemberFunctionCall0<T, Class> >::type type;
+};
+template <typename T, typename Class>
+class StoredConstNoExceptMemberFunctionCall0 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionCall0(T (Class::*_fn)() const noexcept, const Class &_object)
+    : fn(_fn), object(_object){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)();
+    }
+private:
+    T (Class::*fn)() const noexcept;
+    const Class object;
+
+};
+template <typename T, typename Class>
+class VoidStoredConstNoExceptMemberFunctionCall0 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionCall0(T (Class::*_fn)() const noexcept, const Class &_object)
+    : fn(_fn), object(_object){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)();
+    }
+private:
+    T (Class::*fn)() const noexcept;
+    const Class object;
+
+};
+template <typename T, typename Class>
+struct SelectStoredConstNoExceptMemberFunctionCall0
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionCall0    <T, Class>,
+             VoidStoredConstNoExceptMemberFunctionCall0<T, Class> >::type type;
+};
+template <typename T, typename Class>
+class StoredNoExceptMemberFunctionPointerCall0 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionPointerCall0(T (Class::*_fn)() noexcept, Class *_object)
+    : fn(_fn), object(_object){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)();
+    }
+private:
+    T (Class::*fn)() noexcept;
+    Class *object;
+
+};
+template <typename T, typename Class>
+class VoidStoredNoExceptMemberFunctionPointerCall0 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionPointerCall0(T (Class::*_fn)() noexcept, Class *_object)
+    : fn(_fn), object(_object){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)();
+    }
+private:
+    T (Class::*fn)() noexcept;
+    Class *object;
+
+};
+template <typename T, typename Class>
+struct SelectStoredNoExceptMemberFunctionPointerCall0
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionPointerCall0    <T, Class>,
+             VoidStoredNoExceptMemberFunctionPointerCall0<T, Class> >::type type;
+};
+template <typename T, typename Class>
+class StoredConstNoExceptMemberFunctionPointerCall0 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionPointerCall0(T (Class::*_fn)() const noexcept, Class const *_object)
+    : fn(_fn), object(_object){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)();
+    }
+private:
+    T (Class::*fn)() const noexcept;
+    Class const *object;
+
+};
+template <typename T, typename Class>
+class VoidStoredConstNoExceptMemberFunctionPointerCall0 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionPointerCall0(T (Class::*_fn)() const noexcept, Class const *_object)
+    : fn(_fn), object(_object){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)();
+    }
+private:
+    T (Class::*fn)() const noexcept;
+    Class const *object;
+
+};
+template <typename T, typename Class>
+struct SelectStoredConstNoExceptMemberFunctionPointerCall0
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionPointerCall0    <T, Class>,
+             VoidStoredConstNoExceptMemberFunctionPointerCall0<T, Class> >::type type;
+};
+#endif
+
 template <typename T, typename FunctionPointer, typename Arg1>
 struct StoredFunctorCall1: public RunFunctionTask<T>
 {
@@ -458,6 +617,165 @@ struct SelectStoredConstMemberFunctionPointerCall1
         Type<StoredConstMemberFunctionPointerCall1    <T, Class, Param1, Arg1>,
              VoidStoredConstMemberFunctionPointerCall1<T, Class, Param1, Arg1> >::type type;
 };
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+template <typename T, typename Class, typename Param1, typename Arg1>
+class StoredNoExceptMemberFunctionCall1 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionCall1(T (Class::*_fn)(Param1) noexcept, const Class &_object, const Arg1 &_arg1)
+    : fn(_fn), object(_object), arg1(_arg1){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1);
+    }
+private:
+    T (Class::*fn)(Param1) noexcept;
+    Class object;
+    Arg1 arg1;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+class VoidStoredNoExceptMemberFunctionCall1 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionCall1(T (Class::*_fn)(Param1) noexcept, const Class &_object, const Arg1 &_arg1)
+    : fn(_fn), object(_object), arg1(_arg1){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1);
+    }
+private:
+    T (Class::*fn)(Param1) noexcept;
+    Class object;
+    Arg1 arg1;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+struct SelectStoredNoExceptMemberFunctionCall1
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionCall1    <T, Class, Param1, Arg1>,
+             VoidStoredNoExceptMemberFunctionCall1<T, Class, Param1, Arg1> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+class StoredConstNoExceptMemberFunctionCall1 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionCall1(T (Class::*_fn)(Param1) const noexcept, const Class &_object, const Arg1 &_arg1)
+    : fn(_fn), object(_object), arg1(_arg1){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1);
+    }
+private:
+    T (Class::*fn)(Param1) const noexcept;
+    const Class object;
+    Arg1 arg1;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+class VoidStoredConstNoExceptMemberFunctionCall1 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionCall1(T (Class::*_fn)(Param1) const noexcept, const Class &_object, const Arg1 &_arg1)
+    : fn(_fn), object(_object), arg1(_arg1){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1);
+    }
+private:
+    T (Class::*fn)(Param1) const noexcept;
+    const Class object;
+    Arg1 arg1;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+struct SelectStoredConstNoExceptMemberFunctionCall1
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionCall1    <T, Class, Param1, Arg1>,
+             VoidStoredConstNoExceptMemberFunctionCall1<T, Class, Param1, Arg1> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+class StoredNoExceptMemberFunctionPointerCall1 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionPointerCall1(T (Class::*_fn)(Param1) noexcept, Class *_object, const Arg1 &_arg1)
+    : fn(_fn), object(_object), arg1(_arg1){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1);
+    }
+private:
+    T (Class::*fn)(Param1) noexcept;
+    Class *object;
+    Arg1 arg1;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+class VoidStoredNoExceptMemberFunctionPointerCall1 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionPointerCall1(T (Class::*_fn)(Param1) noexcept, Class *_object, const Arg1 &_arg1)
+    : fn(_fn), object(_object), arg1(_arg1){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1);
+    }
+private:
+    T (Class::*fn)(Param1) noexcept;
+    Class *object;
+    Arg1 arg1;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+struct SelectStoredNoExceptMemberFunctionPointerCall1
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionPointerCall1    <T, Class, Param1, Arg1>,
+             VoidStoredNoExceptMemberFunctionPointerCall1<T, Class, Param1, Arg1> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+class StoredConstNoExceptMemberFunctionPointerCall1 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionPointerCall1(T (Class::*_fn)(Param1) const noexcept, Class const *_object, const Arg1 &_arg1)
+    : fn(_fn), object(_object), arg1(_arg1){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1);
+    }
+private:
+    T (Class::*fn)(Param1) const noexcept;
+    Class const *object;
+    Arg1 arg1;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+class VoidStoredConstNoExceptMemberFunctionPointerCall1 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionPointerCall1(T (Class::*_fn)(Param1) const noexcept, Class const *_object, const Arg1 &_arg1)
+    : fn(_fn), object(_object), arg1(_arg1){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1);
+    }
+private:
+    T (Class::*fn)(Param1) const noexcept;
+    Class const *object;
+    Arg1 arg1;
+};
+template <typename T, typename Class, typename Param1, typename Arg1>
+struct SelectStoredConstNoExceptMemberFunctionPointerCall1
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionPointerCall1    <T, Class, Param1, Arg1>,
+             VoidStoredConstNoExceptMemberFunctionPointerCall1<T, Class, Param1, Arg1> >::type type;
+};
+#endif
+
 template <typename T, typename FunctionPointer, typename Arg1, typename Arg2>
 struct StoredFunctorCall2: public RunFunctionTask<T>
 {
@@ -661,6 +979,165 @@ struct SelectStoredConstMemberFunctionPointerCall2
         Type<StoredConstMemberFunctionPointerCall2    <T, Class, Param1, Arg1, Param2, Arg2>,
              VoidStoredConstMemberFunctionPointerCall2<T, Class, Param1, Arg1, Param2, Arg2> >::type type;
 };
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+class StoredNoExceptMemberFunctionCall2 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1, arg2);
+    }
+private:
+    T (Class::*fn)(Param1, Param2) noexcept;
+    Class object;
+    Arg1 arg1; Arg2 arg2;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+class VoidStoredNoExceptMemberFunctionCall2 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1, arg2);
+    }
+private:
+    T (Class::*fn)(Param1, Param2) noexcept;
+    Class object;
+    Arg1 arg1; Arg2 arg2;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+struct SelectStoredNoExceptMemberFunctionCall2
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionCall2    <T, Class, Param1, Arg1, Param2, Arg2>,
+             VoidStoredNoExceptMemberFunctionCall2<T, Class, Param1, Arg1, Param2, Arg2> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+class StoredConstNoExceptMemberFunctionCall2 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) const noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1, arg2);
+    }
+private:
+    T (Class::*fn)(Param1, Param2) const noexcept;
+    const Class object;
+    Arg1 arg1; Arg2 arg2;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+class VoidStoredConstNoExceptMemberFunctionCall2 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionCall2(T (Class::*_fn)(Param1, Param2) const noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1, arg2);
+    }
+private:
+    T (Class::*fn)(Param1, Param2) const noexcept;
+    const Class object;
+    Arg1 arg1; Arg2 arg2;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+struct SelectStoredConstNoExceptMemberFunctionCall2
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionCall2    <T, Class, Param1, Arg1, Param2, Arg2>,
+             VoidStoredConstNoExceptMemberFunctionCall2<T, Class, Param1, Arg1, Param2, Arg2> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+class StoredNoExceptMemberFunctionPointerCall2 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) noexcept, Class *_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1, arg2);
+    }
+private:
+    T (Class::*fn)(Param1, Param2) noexcept;
+    Class *object;
+    Arg1 arg1; Arg2 arg2;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+class VoidStoredNoExceptMemberFunctionPointerCall2 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) noexcept, Class *_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1, arg2);
+    }
+private:
+    T (Class::*fn)(Param1, Param2) noexcept;
+    Class *object;
+    Arg1 arg1; Arg2 arg2;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+struct SelectStoredNoExceptMemberFunctionPointerCall2
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionPointerCall2    <T, Class, Param1, Arg1, Param2, Arg2>,
+             VoidStoredNoExceptMemberFunctionPointerCall2<T, Class, Param1, Arg1, Param2, Arg2> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+class StoredConstNoExceptMemberFunctionPointerCall2 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) const noexcept, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1, arg2);
+    }
+private:
+    T (Class::*fn)(Param1, Param2) const noexcept;
+    Class const *object;
+    Arg1 arg1; Arg2 arg2;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+class VoidStoredConstNoExceptMemberFunctionPointerCall2 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionPointerCall2(T (Class::*_fn)(Param1, Param2) const noexcept, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1, arg2);
+    }
+private:
+    T (Class::*fn)(Param1, Param2) const noexcept;
+    Class const *object;
+    Arg1 arg1; Arg2 arg2;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+struct SelectStoredConstNoExceptMemberFunctionPointerCall2
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionPointerCall2    <T, Class, Param1, Arg1, Param2, Arg2>,
+             VoidStoredConstNoExceptMemberFunctionPointerCall2<T, Class, Param1, Arg1, Param2, Arg2> >::type type;
+};
+#endif
+
 template <typename T, typename FunctionPointer, typename Arg1, typename Arg2, typename Arg3>
 struct StoredFunctorCall3: public RunFunctionTask<T>
 {
@@ -864,6 +1341,165 @@ struct SelectStoredConstMemberFunctionPointerCall3
         Type<StoredConstMemberFunctionPointerCall3    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3>,
              VoidStoredConstMemberFunctionPointerCall3<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3> >::type type;
 };
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+class StoredNoExceptMemberFunctionCall3 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1, arg2, arg3);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3) noexcept;
+    Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+class VoidStoredNoExceptMemberFunctionCall3 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1, arg2, arg3);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3) noexcept;
+    Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+struct SelectStoredNoExceptMemberFunctionCall3
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionCall3    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3>,
+             VoidStoredNoExceptMemberFunctionCall3<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+class StoredConstNoExceptMemberFunctionCall3 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) const noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1, arg2, arg3);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3) const noexcept;
+    const Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+class VoidStoredConstNoExceptMemberFunctionCall3 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionCall3(T (Class::*_fn)(Param1, Param2, Param3) const noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1, arg2, arg3);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3) const noexcept;
+    const Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+struct SelectStoredConstNoExceptMemberFunctionCall3
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionCall3    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3>,
+             VoidStoredConstNoExceptMemberFunctionCall3<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+class StoredNoExceptMemberFunctionPointerCall3 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) noexcept, Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1, arg2, arg3);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3) noexcept;
+    Class *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+class VoidStoredNoExceptMemberFunctionPointerCall3 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) noexcept, Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1, arg2, arg3);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3) noexcept;
+    Class *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+struct SelectStoredNoExceptMemberFunctionPointerCall3
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionPointerCall3    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3>,
+             VoidStoredNoExceptMemberFunctionPointerCall3<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+class StoredConstNoExceptMemberFunctionPointerCall3 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) const noexcept, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1, arg2, arg3);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3) const noexcept;
+    Class const *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+class VoidStoredConstNoExceptMemberFunctionPointerCall3 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionPointerCall3(T (Class::*_fn)(Param1, Param2, Param3) const noexcept, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1, arg2, arg3);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3) const noexcept;
+    Class const *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+struct SelectStoredConstNoExceptMemberFunctionPointerCall3
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionPointerCall3    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3>,
+             VoidStoredConstNoExceptMemberFunctionPointerCall3<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3> >::type type;
+};
+#endif
+
 template <typename T, typename FunctionPointer, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
 struct StoredFunctorCall4: public RunFunctionTask<T>
 {
@@ -1067,6 +1703,165 @@ struct SelectStoredConstMemberFunctionPointerCall4
         Type<StoredConstMemberFunctionPointerCall4    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4>,
              VoidStoredConstMemberFunctionPointerCall4<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4> >::type type;
 };
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+class StoredNoExceptMemberFunctionCall4 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1, arg2, arg3, arg4);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4) noexcept;
+    Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+class VoidStoredNoExceptMemberFunctionCall4 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1, arg2, arg3, arg4);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4) noexcept;
+    Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+struct SelectStoredNoExceptMemberFunctionCall4
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionCall4    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4>,
+             VoidStoredNoExceptMemberFunctionCall4<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+class StoredConstNoExceptMemberFunctionCall4 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) const noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1, arg2, arg3, arg4);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4) const noexcept;
+    const Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+class VoidStoredConstNoExceptMemberFunctionCall4 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) const noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1, arg2, arg3, arg4);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4) const noexcept;
+    const Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+struct SelectStoredConstNoExceptMemberFunctionCall4
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionCall4    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4>,
+             VoidStoredConstNoExceptMemberFunctionCall4<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+class StoredNoExceptMemberFunctionPointerCall4 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) noexcept, Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1, arg2, arg3, arg4);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4) noexcept;
+    Class *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+class VoidStoredNoExceptMemberFunctionPointerCall4 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) noexcept, Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1, arg2, arg3, arg4);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4) noexcept;
+    Class *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+struct SelectStoredNoExceptMemberFunctionPointerCall4
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionPointerCall4    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4>,
+             VoidStoredNoExceptMemberFunctionPointerCall4<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+class StoredConstNoExceptMemberFunctionPointerCall4 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) const noexcept, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1, arg2, arg3, arg4);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4) const noexcept;
+    Class const *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+class VoidStoredConstNoExceptMemberFunctionPointerCall4 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionPointerCall4(T (Class::*_fn)(Param1, Param2, Param3, Param4) const noexcept, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1, arg2, arg3, arg4);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4) const noexcept;
+    Class const *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+struct SelectStoredConstNoExceptMemberFunctionPointerCall4
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionPointerCall4    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4>,
+             VoidStoredConstNoExceptMemberFunctionPointerCall4<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4> >::type type;
+};
+#endif
+
 template <typename T, typename FunctionPointer, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
 struct StoredFunctorCall5: public RunFunctionTask<T>
 {
@@ -1270,6 +2065,164 @@ struct SelectStoredConstMemberFunctionPointerCall5
         Type<StoredConstMemberFunctionPointerCall5    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5>,
              VoidStoredConstMemberFunctionPointerCall5<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5> >::type type;
 };
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+class StoredNoExceptMemberFunctionCall5 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1, arg2, arg3, arg4, arg5);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) noexcept;
+    Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+class VoidStoredNoExceptMemberFunctionCall5 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1, arg2, arg3, arg4, arg5);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) noexcept;
+    Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+struct SelectStoredNoExceptMemberFunctionCall5
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionCall5    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5>,
+             VoidStoredNoExceptMemberFunctionCall5<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+class StoredConstNoExceptMemberFunctionCall5 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) const noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
+
+    void runFunctor() override
+    {
+        this->result = (object.*fn)(arg1, arg2, arg3, arg4, arg5);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) const noexcept;
+    const Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+class VoidStoredConstNoExceptMemberFunctionCall5 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) const noexcept, const Class &_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
+
+    void runFunctor() override
+    {
+        (object.*fn)(arg1, arg2, arg3, arg4, arg5);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) const noexcept;
+    const Class object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+struct SelectStoredConstNoExceptMemberFunctionCall5
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionCall5    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5>,
+             VoidStoredConstNoExceptMemberFunctionCall5<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+class StoredNoExceptMemberFunctionPointerCall5 : public RunFunctionTask<T>
+{
+public:
+    StoredNoExceptMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) noexcept, Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1, arg2, arg3, arg4, arg5);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) noexcept;
+    Class *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+class VoidStoredNoExceptMemberFunctionPointerCall5 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredNoExceptMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) noexcept, Class *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1, arg2, arg3, arg4, arg5);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) noexcept;
+    Class *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+struct SelectStoredNoExceptMemberFunctionPointerCall5
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredNoExceptMemberFunctionPointerCall5    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5>,
+             VoidStoredNoExceptMemberFunctionPointerCall5<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5> >::type type;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+class StoredConstNoExceptMemberFunctionPointerCall5 : public RunFunctionTask<T>
+{
+public:
+    StoredConstNoExceptMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) const noexcept, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
+
+    void runFunctor() override
+    {
+        this->result = (object->*fn)(arg1, arg2, arg3, arg4, arg5);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) const noexcept;
+    Class const *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+class VoidStoredConstNoExceptMemberFunctionPointerCall5 : public RunFunctionTask<T>
+{
+public:
+    VoidStoredConstNoExceptMemberFunctionPointerCall5(T (Class::*_fn)(Param1, Param2, Param3, Param4, Param5) const noexcept, Class const *_object, const Arg1 &_arg1, const Arg2 &_arg2, const Arg3 &_arg3, const Arg4 &_arg4, const Arg5 &_arg5)
+    : fn(_fn), object(_object), arg1(_arg1), arg2(_arg2), arg3(_arg3), arg4(_arg4), arg5(_arg5){ }
+
+    void runFunctor() override
+    {
+        (object->*fn)(arg1, arg2, arg3, arg4, arg5);
+    }
+private:
+    T (Class::*fn)(Param1, Param2, Param3, Param4, Param5) const noexcept;
+    Class const *object;
+    Arg1 arg1; Arg2 arg2; Arg3 arg3; Arg4 arg4; Arg5 arg5;
+};
+template <typename T, typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+struct SelectStoredConstNoExceptMemberFunctionPointerCall5
+{
+    typedef typename SelectSpecialization<T>::template
+        Type<StoredConstNoExceptMemberFunctionPointerCall5    <T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5>,
+             VoidStoredConstNoExceptMemberFunctionPointerCall5<T, Class, Param1, Arg1, Param2, Arg2, Param3, Arg3, Param4, Arg4, Param5, Arg5> >::type type;
+};
+#endif
 
 template <typename T, typename Functor>
 class StoredFunctorCall : public RunFunctionTask<T>

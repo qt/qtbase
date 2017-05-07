@@ -525,6 +525,7 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
     int count = path.elementCount();
 
     bool cosmetic = qt_pen_is_cosmetic(pen, hints);
+    bool implicitClose = path.hasImplicitClose();
 
     m_points.reset();
     m_types.reset();
@@ -558,8 +559,14 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
     if (count < 2)
         return;
 
-    const qreal *endPts = pts + (count<<1);
+    bool needsClose = false;
+    if (implicitClose) {
+        if (pts[0] != pts[count * 2 - 2] || pts[1] != pts[count * 2 - 1])
+            needsClose = true;
+    }
 
+    const qreal *firstPts = pts;
+    const qreal *endPts = pts + (count<<1);
     m_dash_stroker.begin(this);
 
     if (!types) {
@@ -605,6 +612,8 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
             }
         }
     }
+    if (needsClose)
+        m_dash_stroker.lineTo(firstPts[0], firstPts[1]);
 
     m_dash_stroker.end();
 }

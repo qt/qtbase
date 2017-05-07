@@ -96,6 +96,8 @@ Q_DECLARE_METATYPE(QAuthenticator*)
 Q_DECLARE_METATYPE(QNetworkProxyQuery)
 #endif
 
+#include "emulationdetector.h"
+
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 
 class MyCookieJar;
@@ -135,6 +137,7 @@ class tst_QNetworkReply: public QObject
     }
 
     static const QByteArray httpEmpty200Response;
+    static const QString filePermissionFileName;
 
     QEventLoop *loop;
     enum RunSimpleRequestReturn { Timeout = 0, Success, Failure };
@@ -499,6 +502,8 @@ private:
 
 const QByteArray tst_QNetworkReply::httpEmpty200Response =
                             "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
+const QString tst_QNetworkReply::filePermissionFileName = "/etc/shadow";
+
 bool tst_QNetworkReply::seedCreated = false;
 
 #define RUN_REQUEST(call)                       \
@@ -1915,8 +1920,10 @@ void tst_QNetworkReply::getErrors_data()
     QTest::newRow("file-is-wronly") << QUrl::fromLocalFile(wronlyFileName).toString()
                                     << int(QNetworkReply::ContentAccessDenied) << 0 << true;
 #endif
-    if (QFile::exists("/etc/shadow"))
-        QTest::newRow("file-permissions") << "file:/etc/shadow"
+
+
+    if (QFile::exists(filePermissionFileName))
+        QTest::newRow("file-permissions") << "file:" + filePermissionFileName
                                           << int(QNetworkReply::ContentAccessDenied) << 0 << true;
 
     // ftp: errors
@@ -1952,6 +1959,15 @@ void tst_QNetworkReply::getErrors()
         (qstrcmp(QTest::currentDataTag(), "file-permissions") == 0)) {
         if (::getuid() == 0)
             QSKIP("Running this test as root doesn't make sense");
+
+    }
+
+    if (EmulationDetector::isRunningArmOnX86()
+        && qstrcmp(QTest::currentDataTag(), "file-permissions") == 0) {
+        QFileInfo filePermissionFile = QFileInfo(filePermissionFileName.toLatin1());
+        if (filePermissionFile.ownerId() == ::geteuid()) {
+            QSKIP("Sysroot directories are owned by the current user");
+        }
     }
 #endif
 

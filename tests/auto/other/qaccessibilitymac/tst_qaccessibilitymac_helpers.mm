@@ -42,19 +42,6 @@
 
 QT_USE_NAMESPACE
 
-bool macNativeAccessibilityEnabled()
-{
-    bool enabled = AXAPIEnabled();
-    if (!enabled)
-        qWarning() << "Accessibility is disabled (check System Preferences) skipping test.";
-    return enabled;
-}
-
-bool trusted()
-{
-    return AXIsProcessTrusted();
-}
-
 struct AXErrorTag {
     AXError err;
     explicit AXErrorTag(AXError theErr) : err(theErr) {}
@@ -413,12 +400,6 @@ bool singleWidget()
 
 bool testLineEdit()
 {
-// not sure if this is needed. on my machine the calls succeed.
-//    NSString *path = @"/Users/frederik/qt5/qtbase/tests/auto/other/qaccessibilitymac/tst_qaccessibilitymac.app/Contents/MacOS/tst_qaccessibilitymac";
-//    NSString *path = @"/Users/frederik/qt5/qtbase/tests/auto/other/qaccessibilitymac/tst_qaccessibilitymac.app";
-//    AXError e = AXMakeProcessTrusted((CFStringRef) path);
-//    NSLog(@"error: %i", e);
-
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
     EXPECT(appObject);
 

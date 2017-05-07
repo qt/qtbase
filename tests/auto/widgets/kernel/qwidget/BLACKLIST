@@ -5,6 +5,7 @@ ubuntu-16.04
 [saveRestoreGeometry]
 ubuntu-14.04
 ubuntu-16.04
+b2qt
 [restoreVersion1Geometry]
 ubuntu-14.04
 osx

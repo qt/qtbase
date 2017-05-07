@@ -724,12 +724,12 @@ static bool _q_dontOverrideCtrlLMB = false;
     QWindowSystemInterface::handleFrameStrutMouseEvent(m_platformWindow->window(), timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
 }
 
-- (bool)handleMouseDownEvent:(NSEvent *)theEvent
+- (bool)handleMouseDownEvent:(NSEvent *)theEvent withButton:(int)buttonNumber
 {
     if ([self isTransparentForUserInput])
         return false;
 
-    Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+    Qt::MouseButton button = cocoaButton2QtButton(buttonNumber);
 
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
@@ -753,12 +753,12 @@ static bool _q_dontOverrideCtrlLMB = false;
     return true;
 }
 
-- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent
+- (bool)handleMouseDraggedEvent:(NSEvent *)theEvent withButton:(int)buttonNumber
 {
     if ([self isTransparentForUserInput])
         return false;
 
-    Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+    Qt::MouseButton button = cocoaButton2QtButton(buttonNumber);
 
     // Forward the event to the next responder if Qt did not accept the
     // corresponding mouse down for this button
@@ -769,12 +769,12 @@ static bool _q_dontOverrideCtrlLMB = false;
     return true;
 }
 
-- (bool)handleMouseUpEvent:(NSEvent *)theEvent
+- (bool)handleMouseUpEvent:(NSEvent *)theEvent withButton:(int)buttonNumber
 {
     if ([self isTransparentForUserInput])
         return false;
 
-    Qt::MouseButton button = cocoaButton2QtButton([theEvent buttonNumber]);
+    Qt::MouseButton button = cocoaButton2QtButton(buttonNumber);
 
     // Forward the event to the next responder if Qt did not accept the
     // corresponding mouse down for this button
@@ -864,56 +864,59 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseDraggedEvent:theEvent];
+    const bool accepted = [self handleMouseDraggedEvent:theEvent withButton:[theEvent buttonNumber]];
     if (!accepted)
         [super mouseDragged:theEvent];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseUpEvent:theEvent];
+    const bool accepted = [self handleMouseUpEvent:theEvent withButton:[theEvent buttonNumber]];
     if (!accepted)
         [super mouseUp:theEvent];
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseDownEvent:theEvent];
+    // Wacom tablet might not return the correct button number for NSEvent buttonNumber
+    // on right clicks. Decide here that the button is the "right" button and forward
+    // the button number to the mouse (and tablet) handler.
+    const bool accepted = [self handleMouseDownEvent:theEvent withButton:1];
     if (!accepted)
         [super rightMouseDown:theEvent];
 }
 
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseDraggedEvent:theEvent];
+    const bool accepted = [self handleMouseDraggedEvent:theEvent withButton:1];
     if (!accepted)
         [super rightMouseDragged:theEvent];
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseUpEvent:theEvent];
+    const bool accepted = [self handleMouseUpEvent:theEvent withButton:1];
     if (!accepted)
         [super rightMouseUp:theEvent];
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseDownEvent:theEvent];
+    const bool accepted = [self handleMouseDownEvent:theEvent withButton:[theEvent buttonNumber]];
     if (!accepted)
         [super otherMouseDown:theEvent];
 }
 
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseDraggedEvent:theEvent];
+    const bool accepted = [self handleMouseDraggedEvent:theEvent withButton:[theEvent buttonNumber]];
     if (!accepted)
         [super otherMouseDragged:theEvent];
 }
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-    const bool accepted = [self handleMouseUpEvent:theEvent];
+    const bool accepted = [self handleMouseUpEvent:theEvent withButton:[theEvent buttonNumber]];
     if (!accepted)
         [super otherMouseUp:theEvent];
 }
@@ -1071,7 +1074,6 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     NSPoint tilt = [theEvent tilt];
     int xTilt = qRound(tilt.x * 60.0);
     int yTilt = qRound(tilt.y * -60.0);
-    Qt::MouseButtons buttons = static_cast<Qt::MouseButtons>(static_cast<uint>([theEvent buttonMask]));
     qreal tangentialPressure = 0;
     qreal rotation = 0;
     int z = 0;
@@ -1090,10 +1092,10 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     qCDebug(lcQpaTablet, "event on tablet %d with tool %d type %d unique ID %lld pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
         deviceId, deviceData.device, deviceData.pointerType, deviceData.uid,
         windowPoint.x(), windowPoint.y(), screenPoint.x(), screenPoint.y(),
-        static_cast<uint>(buttons), pressure, xTilt, yTilt, rotation);
+        static_cast<uint>(m_buttons), pressure, xTilt, yTilt, rotation);
 
     QWindowSystemInterface::handleTabletEvent(m_platformWindow->window(), timestamp, windowPoint, screenPoint,
-                                              deviceData.device, deviceData.pointerType, buttons, pressure, xTilt, yTilt,
+                                              deviceData.device, deviceData.pointerType, m_buttons, pressure, xTilt, yTilt,
                                               tangentialPressure, rotation, z, deviceData.uid,
                                               keyboardModifiers);
     return true;

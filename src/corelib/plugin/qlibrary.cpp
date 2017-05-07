@@ -1129,3 +1129,5 @@ bool qt_debug_component()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qlibrary.cpp"

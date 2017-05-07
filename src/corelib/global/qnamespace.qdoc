@@ -208,7 +208,7 @@
     \value AA_SetPalette Indicates whether a palette was explicitly set on the
            QApplication/QGuiApplication. This value has been added in Qt 5.5.
 
-    \value AA_EnableHighDpiScaling. Enables high-DPI scaling in Qt on supported
+    \value AA_EnableHighDpiScaling Enables high-DPI scaling in Qt on supported
            platforms (see also \l{High DPI Displays}). Supported platforms are
            X11, Windows and Android. Enabling makes Qt scale the main (device
            independent) coordinate system according to display scale factors

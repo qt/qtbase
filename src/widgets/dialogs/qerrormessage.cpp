@@ -161,32 +161,35 @@ static void deleteStaticcQErrorMessage() // post-routine
 
 static bool metFatal = false;
 
+static QString msgType2i18nString(QtMsgType t)
+{
+    Q_STATIC_ASSERT(QtDebugMsg == 0);
+    Q_STATIC_ASSERT(QtWarningMsg == 1);
+    Q_STATIC_ASSERT(QtCriticalMsg == 2);
+    Q_STATIC_ASSERT(QtFatalMsg == 3);
+    Q_STATIC_ASSERT(QtInfoMsg == 4);
+
+    // adjust the array below if any of the above fire...
+
+    const char * const messages[] = {
+        QT_TRANSLATE_NOOP("QErrorMessage", "Debug Message:"),
+        QT_TRANSLATE_NOOP("QErrorMessage", "Warning:"),
+        QT_TRANSLATE_NOOP("QErrorMessage", "Critical Error:"),
+        QT_TRANSLATE_NOOP("QErrorMessage", "Fatal Error:"),
+        QT_TRANSLATE_NOOP("QErrorMessage", "Information:"),
+    };
+    Q_ASSERT(size_t(t) < sizeof messages / sizeof *messages);
+
+    return QCoreApplication::translate("QErrorMessage", messages[t]);
+}
+
 static void jump(QtMsgType t, const QMessageLogContext & /*context*/, const QString &m)
 {
     if (!qtMessageHandler)
         return;
 
-    QString rich;
-
-    switch (t) {
-    case QtDebugMsg:
-        rich = QErrorMessage::tr("Debug Message:");
-        break;
-    case QtWarningMsg:
-        rich = QErrorMessage::tr("Warning:");
-        break;
-    case QtCriticalMsg:
-        rich = QErrorMessage::tr("Critical Error:");
-        break;
-    case QtFatalMsg:
-        rich = QErrorMessage::tr("Fatal Error:");
-        break;
-    case QtInfoMsg:
-        rich = QErrorMessage::tr("Information:");
-        break;
-    }
-    rich = QString::fromLatin1("<p><b>%1</b></p>").arg(rich);
-    rich += Qt::convertFromPlainText(m, Qt::WhiteSpaceNormal);
+    QString rich = QLatin1String("<p><b>") + msgType2i18nString(t) + QLatin1String("</b></p>")
+                   + Qt::convertFromPlainText(m, Qt::WhiteSpaceNormal);
 
     // ### work around text engine quirk
     if (rich.endsWith(QLatin1String("</p>")))

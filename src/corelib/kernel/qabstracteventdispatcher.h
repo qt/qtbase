@@ -102,7 +102,7 @@ public:
 
     virtual void wakeUp() = 0;
     virtual void interrupt() = 0;
-    virtual void flush() = 0;
+    virtual void flush() = 0; // ### Qt6: remove, mark final or make protected
 
     virtual void startingUp();
     virtual void closingDown();

@@ -553,3 +553,5 @@ void QEventDispatcherUNIX::flush()
 { }
 
 QT_END_NAMESPACE
+
+#include "moc_qeventdispatcher_unix_p.cpp"

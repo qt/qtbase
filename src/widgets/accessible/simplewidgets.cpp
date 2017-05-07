@@ -327,9 +327,8 @@ int QAccessibleToolButton::childCount() const
 
 QAccessible::Role QAccessibleToolButton::role() const
 {
-    QAbstractButton *ab = button();
-
 #ifndef QT_NO_MENU
+    QAbstractButton *ab = button();
     QToolButton *tb = qobject_cast<QToolButton*>(ab);
     if (!tb->menu())
         return tb->isCheckable() ? QAccessible::CheckBox : QAccessible::PushButton;
@@ -347,6 +346,8 @@ QAccessibleInterface *QAccessibleToolButton::child(int index) const
     {
         return QAccessible::queryAccessibleInterface(toolButton()->menu());
     }
+#else
+    Q_UNUSED(index)
 #endif
     return 0;
 }

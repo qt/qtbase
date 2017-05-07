@@ -47,6 +47,7 @@
 #include <QtWidgets/qitemdelegate.h>
 #include <QtWidgets/qlistview.h>
 #include <QtWidgets/qcombobox.h>
+#include <QtSql/qsqldriver.h>
 #include <QtSql/qsqlrelationaltablemodel.h>
 
 QT_BEGIN_NAMESPACE
@@ -54,6 +55,16 @@ QT_BEGIN_NAMESPACE
 
 class QSqlRelationalDelegate: public QItemDelegate
 {
+    static int fieldIndex(const QSqlTableModel *const model,
+                          const QSqlDriver *const driver,
+                          const QString &fieldName)
+    {
+        const QString stripped = driver->isIdentifierEscaped(fieldName, QSqlDriver::FieldName)
+                ? driver->stripDelimiters(fieldName, QSqlDriver::FieldName)
+                : fieldName;
+        return model->fieldIndex(stripped);
+    }
+
 public:
 
 explicit QSqlRelationalDelegate(QObject *aParent = nullptr)
@@ -71,10 +82,12 @@ QWidget *createEditor(QWidget *aParent,
     QSqlTableModel *childModel = sqlModel ? sqlModel->relationModel(index.column()) : nullptr;
     if (!childModel)
         return QItemDelegate::createEditor(aParent, option, index);
+    const QSqlDriver *const driver = childModel->database().driver();
 
     QComboBox *combo = new QComboBox(aParent);
     combo->setModel(childModel);
-    combo->setModelColumn(childModel->fieldIndex(sqlModel->relation(index.column()).displayColumn()));
+    combo->setModelColumn(fieldIndex(childModel, driver,
+                                     sqlModel->relation(index.column()).displayColumn()));
     combo->installEventFilter(const_cast<QSqlRelationalDelegate *>(this));
 
     return combo;
@@ -92,10 +105,13 @@ void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex 
         QItemDelegate::setModelData(editor, model, index);
         return;
     }
+    const QSqlDriver *const driver = childModel->database().driver();
 
     int currentItem = combo->currentIndex();
-    int childColIndex = childModel->fieldIndex(sqlModel->relation(index.column()).displayColumn());
-    int childEditIndex = childModel->fieldIndex(sqlModel->relation(index.column()).indexColumn());
+    int childColIndex = fieldIndex(childModel, driver,
+                                   sqlModel->relation(index.column()).displayColumn());
+    int childEditIndex = fieldIndex(childModel, driver,
+                                    sqlModel->relation(index.column()).indexColumn());
     sqlModel->setData(index,
             childModel->data(childModel->index(currentItem, childColIndex), Qt::DisplayRole),
             Qt::DisplayRole);

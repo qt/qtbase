@@ -58,8 +58,8 @@ QDBusPlatformMenuItem::QDBusPlatformMenuItem()
     , m_isSeparator(false)
     , m_isCheckable(false)
     , m_isChecked(false)
-    , m_dbusID(nextDBusID++)
     , m_hasExclusiveGroup(false)
+    , m_dbusID(nextDBusID++)
 {
     menuItemsByID.insert(m_dbusID, this);
 }
@@ -164,7 +164,6 @@ QList<const QDBusPlatformMenuItem *> QDBusPlatformMenuItem::byIds(const QList<in
 QDBusPlatformMenu::QDBusPlatformMenu()
     : m_isEnabled(true)
     , m_isVisible(true)
-    , m_isSeparator(false)
     , m_revision(1)
     , m_containingMenuItem(Q_NULLPTR)
 {

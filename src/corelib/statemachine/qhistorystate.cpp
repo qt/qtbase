@@ -310,3 +310,6 @@ bool QHistoryState::event(QEvent *e)
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qhistorystate.cpp"
+#include "moc_qhistorystate_p.cpp"
