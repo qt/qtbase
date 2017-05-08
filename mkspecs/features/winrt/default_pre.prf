@@ -9,6 +9,6 @@ CONFIG(debug, debug|release): \
 else: \
     QMAKE_LIBS = ucrt.lib vcruntime.lib $$QMAKE_LIBS
 
-equals(TEMPLATE, "vcapp"): CONFIG += windeployqt
+equals(TEMPLATE, "vcapp"):!static: CONFIG += windeployqt
 
 load(default_pre)
