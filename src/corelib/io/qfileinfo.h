@@ -158,6 +158,10 @@ Q_DECLARE_SHARED(QFileInfo)
 
 typedef QList<QFileInfo> QFileInfoList;
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_CORE_EXPORT QDebug operator<<(QDebug, const QFileInfo &);
+#endif
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QFileInfo)

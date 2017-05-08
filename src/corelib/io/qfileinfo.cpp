@@ -42,6 +42,7 @@
 #include "qglobal.h"
 #include "qdir.h"
 #include "qfileinfo_p.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1444,5 +1445,16 @@ void QFileInfo::setCaching(bool enable)
 
     Synonym for QList<QFileInfo>.
 */
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QFileInfo &fi)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+    dbg.noquote();
+    dbg << "QFileInfo(" << QDir::toNativeSeparators(fi.filePath()) << ')';
+    return dbg;
+}
+#endif
 
 QT_END_NAMESPACE
