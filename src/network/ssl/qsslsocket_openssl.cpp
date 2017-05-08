@@ -704,10 +704,9 @@ void QSslSocketBackendPrivate::transmit()
                 // Write encrypted data from the buffer into the read BIO.
                 int writtenToBio = q_BIO_write(readBio, data.constData(), encryptedBytesRead);
 
-                // do the actual read() here and throw away the results.
+                // Throw away the results.
                 if (writtenToBio > 0) {
-                    // ### TODO: make this cheaper by not making it memcpy. E.g. make it work with data=0x0 or make it work with seek
-                    plainSocket->read(data.data(), writtenToBio);
+                    plainSocket->skip(writtenToBio);
                 } else {
                     // ### Better error handling.
                     setErrorAndEmit(QAbstractSocket::SslInternalError,
