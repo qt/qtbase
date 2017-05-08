@@ -2530,8 +2530,20 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
             if (handle != -1 && (sectionResizeMode(handle) == Interactive)) {
                 if (!hasCursor)
                     setCursor(d->orientation == Qt::Horizontal ? Qt::SplitHCursor : Qt::SplitVCursor);
-            } else if (hasCursor) {
-                unsetCursor();
+            } else {
+                if (hasCursor)
+                    unsetCursor();
+#ifndef QT_NO_STATUSTIP
+                int logical = logicalIndexAt(pos);
+                QString statusTip;
+                if (logical != -1)
+                    statusTip = d->model->headerData(logical, d->orientation, Qt::StatusTipRole).toString();
+                if (d->shouldClearStatusTip || !statusTip.isEmpty()) {
+                    QStatusTipEvent tip(statusTip);
+                    QCoreApplication::sendEvent(d->parent, &tip);
+                    d->shouldClearStatusTip = !statusTip.isEmpty();
+                }
+#endif // !QT_NO_STATUSTIP
             }
 #endif
             return;

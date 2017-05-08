@@ -169,6 +169,9 @@ private slots:
     void styleOptionViewItem();
     void keyboardNavigationWithDisabled();
 
+    void statusTip_data();
+    void statusTip();
+
     // task-specific tests:
     void task174627_moveLeftToRoot();
     void task171902_expandWith1stColHidden();
@@ -213,6 +216,7 @@ public:
 
     void init() {
         decorationsEnabled = false;
+        statusTipsEnabled = false;
     }
 
     inline qint32 level(const QModelIndex &index) const {
@@ -294,6 +298,19 @@ public:
             pm.fill(QColor::fromHsv((idx.column() % 16)*8 + 64, 254, (idx.row() % 16)*8 + 32));
             return pm;
         }
+        if (statusTipsEnabled && role == Qt::StatusTipRole)
+            return QString("[%1,%2,%3] -- Status").arg(idx.row()).arg(idx.column()).arg(level(idx));
+        return QVariant();
+    }
+
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override
+    {
+        Q_UNUSED(orientation);
+        if (section < 0 || section >= columnCount())
+            return QVariant();
+        if (statusTipsEnabled && role == Qt::StatusTipRole)
+            return QString("Header %1 -- Status").arg(section);
         return QVariant();
     }
 
@@ -339,6 +356,7 @@ public:
 
     mutable bool fetched;
     bool decorationsEnabled;
+    bool statusTipsEnabled;
     int rows, cols;
     int levels;
     mutable bool wrongIndex;
@@ -4405,5 +4423,52 @@ void tst_QTreeView::taskQTBUG_7232_AllowUserToControlSingleStep()
     QCOMPARE(hStep1, t.horizontalScrollBar()->singleStep());
 }
 
+void tst_QTreeView::statusTip_data()
+{
+    QTest::addColumn<bool>("intermediateParent");
+    QTest::newRow("noIntermediate") << false;
+    QTest::newRow("intermediate") << true;
+}
+
+void tst_QTreeView::statusTip()
+{
+    QFETCH(bool, intermediateParent);
+    QMainWindow mw;
+    QtTestModel model;
+    model.statusTipsEnabled = true;
+    model.rows = model.cols = 5;
+    QTreeView *view = new QTreeView;
+    view->setModel(&model);
+    view->viewport()->setMouseTracking(true);
+    view->header()->viewport()->setMouseTracking(true);
+    if (intermediateParent) {
+        QWidget *inter = new QWidget;
+        QVBoxLayout *vbox = new QVBoxLayout;
+        inter->setLayout(vbox);
+        vbox->addWidget(view);
+        mw.setCentralWidget(inter);
+    } else {
+        mw.setCentralWidget(view);
+    }
+    mw.statusBar();
+    mw.setGeometry(QRect(QPoint(QApplication::desktop()->geometry().center() - QPoint(250, 250)),
+                                QSize(500, 500)));
+    mw.show();
+    qApp->setActiveWindow(&mw);
+    QTest::qWaitForWindowActive(&mw);
+    // Ensure it is moved away first and then moved to the relevant section
+    QTest::mouseMove(mw.windowHandle(), view->mapTo(&mw, view->rect().bottomLeft() + QPoint(20, 20)));
+    QPoint centerPoint = view->viewport()->mapTo(&mw, view->visualRect(model.index(0, 0)).center());
+    QTest::mouseMove(mw.windowHandle(), centerPoint);
+    QTRY_COMPARE(mw.statusBar()->currentMessage(), QLatin1String("[0,0,0] -- Status"));
+    centerPoint = view->viewport()->mapTo(&mw, view->visualRect(model.index(0, 1)).center());
+    QTest::mouseMove(mw.windowHandle(), centerPoint);
+    QTRY_COMPARE(mw.statusBar()->currentMessage(), QLatin1String("[0,1,0] -- Status"));
+    centerPoint = view->header()->viewport()->mapTo(&mw,
+                    QPoint(view->header()->sectionViewportPosition(0) + view->header()->sectionSize(0) / 2,
+                           view->header()->height() / 2));
+    QTest::mouseMove(mw.windowHandle(), centerPoint);
+    QTRY_COMPARE(mw.statusBar()->currentMessage(), QLatin1String("Header 0 -- Status"));
+}
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"
