@@ -1152,7 +1152,6 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                 "linuxfb", "vnc", "mirclient",
                 {
                     "type": "feature",
-                    "message": "INTEGRITY framebuffer",
                     "condition": "config.integrity",
                     "args": "integrityfb"
                 },
