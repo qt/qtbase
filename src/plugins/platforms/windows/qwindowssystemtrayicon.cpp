@@ -288,21 +288,8 @@ void QWindowsSystemTrayIcon::showMessage(const QString &title, const QString &me
 
 bool QWindowsSystemTrayIcon::supportsMessages() const
 {
-    bool result = true; // The key does typically not exist on Windows 10, default to true.
-    static const wchar_t regKey[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced";
-    HKEY handle;
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, regKey, 0, KEY_READ, &handle) == ERROR_SUCCESS) {
-        DWORD type;
-        static const wchar_t subKey[] = L"EnableBalloonTips";
-        if (RegQueryValueEx(handle, subKey, 0, &type, 0, 0) == ERROR_SUCCESS && type == REG_DWORD) {
-            DWORD value;
-            DWORD size = sizeof(value);
-            if (RegQueryValueEx(handle, subKey, 0, 0, reinterpret_cast<unsigned char *>(&value), &size) == ERROR_SUCCESS)
-                result = value != 0;
-        }
-        RegCloseKey(handle);
-    }
-    return result;
+    // The key does typically not exist on Windows 10, default to true.
+    return QWindowsContext::readAdvancedExplorerSettings(L"EnableBalloonTips", 1) != 0;
 }
 
 QPlatformMenu *QWindowsSystemTrayIcon::createMenu() const

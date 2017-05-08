@@ -1261,6 +1261,29 @@ QTouchDevice *QWindowsContext::touchDevice() const
     return d->m_mouseHandler.touchDevice();
 }
 
+static DWORD readDwordRegistrySetting(const wchar_t *regKey, const wchar_t *subKey, DWORD defaultValue)
+{
+    DWORD result = defaultValue;
+    HKEY handle;
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, regKey, 0, KEY_READ, &handle) == ERROR_SUCCESS) {
+        DWORD type;
+        if (RegQueryValueEx(handle, subKey, 0, &type, 0, 0) == ERROR_SUCCESS && type == REG_DWORD) {
+            DWORD value;
+            DWORD size = sizeof(result);
+            if (RegQueryValueEx(handle, subKey, 0, 0, reinterpret_cast<unsigned char *>(&value), &size) == ERROR_SUCCESS)
+                result = value;
+        }
+        RegCloseKey(handle);
+    }
+    return result;
+}
+
+DWORD QWindowsContext::readAdvancedExplorerSettings(const wchar_t *subKey, DWORD defaultValue)
+{
+    return readDwordRegistrySetting(L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+                                    subKey, defaultValue);
+}
+
 static inline bool isEmptyRect(const RECT &rect)
 {
     return rect.right - rect.left == 0 && rect.bottom - rect.top == 0;

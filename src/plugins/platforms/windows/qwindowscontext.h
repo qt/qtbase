@@ -220,6 +220,8 @@ public:
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 
+    static DWORD readAdvancedExplorerSettings(const wchar_t *subKey, DWORD defaultValue);
+
     QTouchDevice *touchDevice() const;
 
 private:

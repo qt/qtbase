@@ -973,7 +973,9 @@ void QWindowsNativeFileDialogBase::setMode(QFileDialogOptions::FileMode mode,
                                            QFileDialogOptions::AcceptMode acceptMode,
                                            QFileDialogOptions::FileDialogOptions options)
 {
-    DWORD flags = FOS_PATHMUSTEXIST | FOS_FORCESHOWHIDDEN;
+    DWORD flags = FOS_PATHMUSTEXIST;
+    if (QWindowsContext::readAdvancedExplorerSettings(L"Hidden", 1) == 1) // 1:show, 2:hidden
+        flags |= FOS_FORCESHOWHIDDEN;
     if (options & QFileDialogOptions::DontResolveSymlinks)
         flags |= FOS_NODEREFERENCELINKS;
     switch (mode) {
