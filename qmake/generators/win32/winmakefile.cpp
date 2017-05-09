@@ -263,8 +263,10 @@ void Win32MakefileGenerator::processRcFileVar()
         QTextStream ts(&rcString, QFile::WriteOnly);
 
         QStringList vers = project->first("VERSION").toQString().split(".", QString::SkipEmptyParts);
+		//it's "0" here for Maya2017, "1" for Update2, "2" for update3. "3" for update4. 
+		//"5.6.1.2"->"5.6.1.3"
         for (int i = vers.size(); i < 4; i++)
-            vers += "2"; //it's "0" here for Maya2017, "1" for Update2, "2" for update3. "5.6.1.1"->"5.6.1.2"
+            vers += "3";
         QString versionString = vers.join('.');
 
         QStringList rcIcons;
