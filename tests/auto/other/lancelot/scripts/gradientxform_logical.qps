@@ -1,0 +1,67 @@
+# Version: 1
+# CheckVsReference: 5%
+
+gradient_clearStops
+gradient_appendStop 0      black
+gradient_appendStop 0.4   yellow
+gradient_appendStop 1      gray
+
+gradient_setSpread PadSpread
+
+gradient_setCoordinateMode LogicalMode
+
+# first run is dummy, make it offscreen
+save
+translate -500 -500
+
+begin_block row
+save
+
+setPen nopen
+drawRect 50 0 100 100
+
+setPen brush 30
+setBrush lightblue
+drawRect 175 15 70 70
+
+setFont "times" 110 99
+drawText 270 100 "X"
+
+restore
+end_block row
+
+restore
+
+drawText 160 20 "PLAIN"
+drawText 560 20 "BRUSH XFORM"
+translate 0 20
+
+begin_block block
+save
+
+drawText 75 20 "Brush Fill"
+drawText 176 20 "Pen Stroke"
+drawText 277 20 "Text Stroke"
+translate 0 30
+drawText 0 50 "Linear"
+drawText 0 160 "Radial"
+drawText 0 270 "Conical"
+
+gradient_setLinear 0 0 400 0
+repeat_block row
+
+translate 0 110
+gradient_setRadial 200 50 140 70 20
+repeat_block row
+
+translate 0 110
+gradient_setConical 220 60 45
+repeat_block row
+restore
+end_block block
+
+translate 400 0
+brushRotate 30.0
+brushScale 1.5 .5
+brushTranslate 0 -80
+repeat_block block
