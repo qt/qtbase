@@ -9,4 +9,5 @@ SUBDIRS= \
     qshadergraph \
     qshadergraphloader \
     qshadernodes \
+    qshadernodesloader \
 
