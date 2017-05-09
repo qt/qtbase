@@ -1721,10 +1721,10 @@ void tst_QMetaType::metaObject()
 }
 
 #define METATYPE_ID_FUNCTION(Type, MetaTypeId, Name) \
-  case ::qMetaTypeId< Name >(): metaType = MetaTypeIdStruct<MetaTypeId>::Value;
+  case ::qMetaTypeId< Name >(): metaType = MetaTypeIdStruct<MetaTypeId>::Value; break;
 
 #define REGISTER_METATYPE_FUNCTION(Type, MetaTypeId, Name) \
-  case qRegisterMetaType< Name >(): metaType = RegisterMetaTypeStruct<MetaTypeId>::Value;
+  case qRegisterMetaType< Name >(): metaType = RegisterMetaTypeStruct<MetaTypeId>::Value; break;
 
 template<int>
 struct MetaTypeIdStruct
