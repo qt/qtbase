@@ -60,3 +60,12 @@ while (it.hasNext()) {
     // ...
 }
 //! [0]
+
+//! [1]
+QDirIterator it("/sys", QStringList() << "scaling_cur_freq", QDir::NoFilter, QDirIterator::Subdirectories);
+while (it.hasNext()) {
+    QFile f(it.next());
+    f.open(QIODevice::ReadOnly);
+    qDebug() << f.fileName() << f.readAll().trimmed().toDouble() / 1000 << "MHz";
+}
+//! [1]
