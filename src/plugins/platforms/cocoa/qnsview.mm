@@ -2122,7 +2122,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 - (void)draggingExited:(id <NSDraggingInfo>)sender
 {
     if (m_platformWindow.isNull())
-        return false;
+        return;
 
     QWindow *target = findEventTargetWindow(m_window);
     if (!target)
