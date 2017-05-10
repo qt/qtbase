@@ -1695,6 +1695,16 @@ static inline bool dwmIsCompositionEnabled()
     return SUCCEEDED(DwmIsCompositionEnabled(&dWmCompositionEnabled)) && dWmCompositionEnabled == TRUE;
 }
 
+static inline bool isSoftwareGl()
+{
+#if QT_CONFIG(dynamicgl)
+    return QOpenGLStaticContext::opengl32.moduleIsNotOpengl32()
+        && QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL;
+#else
+    return false;
+#endif // dynamicgl
+}
+
 bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
                                          WPARAM, LPARAM)
 {
@@ -1706,15 +1716,10 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
         return false;
     PAINTSTRUCT ps;
 
-#if QT_CONFIG(dynamicgl)
-    // QTBUG-58178: GL software rendering needs InvalidateRect() to suppress
-    // artifacts while resizing.
-    if (testFlag(OpenGLSurface)
-        && QOpenGLStaticContext::opengl32.moduleIsNotOpengl32()
-        && QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+    // GL software rendering (QTBUG-58178) and Windows 7/Aero off with some AMD cards
+    // (QTBUG-60527) need InvalidateRect() to suppress artifacts while resizing.
+    if (testFlag(OpenGLSurface) && (isSoftwareGl() || !dwmIsCompositionEnabled()))
         InvalidateRect(hwnd, 0, false);
-    }
-#endif // dynamicgl
 
     BeginPaint(hwnd, &ps);
 

@@ -1919,8 +1919,10 @@ qtConfCheckErrors()
         for (k, $${currentConfig}.features._KEYS_) {
             pp = $$eval($${currentConfig}.features.$${k}.purpose)
             !isEmpty(pp) {
+                pfx = $$eval($${currentConfig}.features.$${k}.section)
+                !isEmpty(pfx): pfx = "$$pfx: "
                 all_ft += $$qtConfPadCols($$k, ".......................", \
-                                          $$section(pp, $$escape_expand(\\n), 0, 0))
+                                          $$pfx$$section(pp, $$escape_expand(\\n), 0, 0))
             }
         }
     }

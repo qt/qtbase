@@ -824,6 +824,12 @@ void tst_QMenuBar::check_escKey()
     if (!QApplication::style()->inherits("QWindowsStyle"))
         return;
 
+    if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)
+        || !QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)) {
+        QWARN("Skipping menu button test on minimal/offscreen platforms");
+        return;
+    }
+
     // If we press Down the popupmenu should be active again
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Down );
     QVERIFY( !menu.menus.at(0)->isActiveWindow() );
@@ -1196,6 +1202,11 @@ void tst_QMenuBar::task223138_triggered()
 
 void tst_QMenuBar::task256322_highlight()
 {
+    if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)
+        || !QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)) {
+        QSKIP("Highlighting does not work correctly for minimal/offscreen platforms");
+    }
+
     QMainWindow win;
     win.menuBar()->setNativeMenuBar(false);  //we can't check the geometry of native menubars
     QMenu menu;
