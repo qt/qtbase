@@ -10,11 +10,11 @@
     "subconfigs": [
         "src/corelib",
         "src/network",
-        "src/sql",
         "src/gui",
         "src/xml",
         "src/widgets",
-        "src/printsupport"
+        "src/printsupport",
+        "src/plugins/sqldrivers"
     ],
 
     "commandline": {
