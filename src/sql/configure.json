@@ -141,11 +141,6 @@
             "condition": "libs.mysql",
             "output": [ "publicFeature" ]
         },
-        "use_libmysqlclient_r": {
-            "label": "MySql (threadsafe)",
-            "condition": "features.sql-mysql && (libs.mysql.source == 0 || libs.mysql.source == 2)",
-            "output": [ "privateConfig" ]
-        },
         "sql-oci": {
             "label": "OCI (Oracle)",
             "condition": "libs.oci",
