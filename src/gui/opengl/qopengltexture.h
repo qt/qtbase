@@ -50,6 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
 class QOpenGLTexturePrivate;
 class QOpenGLPixelTransferOptions;
 
@@ -613,6 +614,10 @@ public:
     void setLevelofDetailBias(float bias);
     float levelofDetailBias() const;
 
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QOpenGLTexture *t);
+#endif
+
 private:
     Q_DISABLE_COPY(QOpenGLTexture)
     Q_DECLARE_PRIVATE(QOpenGLTexture)
@@ -620,6 +625,10 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLTexture::Features)
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLTexture *t);
+#endif
 
 QT_END_NAMESPACE
 

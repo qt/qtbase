@@ -43,6 +43,7 @@
 #include "qopenglfunctions.h"
 #include <QtGui/qcolor.h>
 #include <QtGui/qopenglcontext.h>
+#include <QtCore/qdebug.h>
 #include <private/qobject_p.h>
 #include <private/qopenglcontext_p.h>
 
@@ -4669,5 +4670,41 @@ float QOpenGLTexture::levelofDetailBias() const
     Q_D(const QOpenGLTexture);
     return d->levelOfDetailBias;
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QOpenGLTexture *t)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QOpenGLTexture(";
+    if (t) {
+        const QOpenGLTexturePrivate *d = t->d_ptr.data();
+        debug << d->target << ", bindingTarget=" << d->bindingTarget
+            << ", size=[" << d->dimensions[0]
+            << ", " << d->dimensions[1];
+        if (d->target == QOpenGLTexture::Target3D)
+            debug << ", " << d->dimensions[2];
+        debug << "], format=" << d->format << ", formatClass=" << d->formatClass;
+        if (t->isCreated())
+            debug << ", textureId=" << d->textureId;
+        if (t->isBound())
+            debug << ", [bound]";
+        if (t->isTextureView())
+            debug << ", [view]";
+        if (d->fixedSamplePositions)
+            debug << ", [fixedSamplePositions]";
+        debug << ", mipLevels=" << d->requestedMipLevels << ", layers=" << d->layers
+            << ", faces=" << d->faces << ", samples=" << d->samples
+            << ", depthStencilMode=" << d->depthStencilMode << ", comparisonFunction="
+            << d->comparisonFunction << ", comparisonMode=" << d->comparisonMode
+            << ", features=" << d->features << ", minificationFilter=" << d->minFilter
+            << ", magnificationFilter=" << d->magFilter << ", wrapMode=" << d->wrapModes[0];
+    } else {
+        debug << '0';
+    }
+    debug << ')';
+    return debug;
+}
+#endif // QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
