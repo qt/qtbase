@@ -164,6 +164,9 @@
                 { "type": "pkgConfig", "args": "freetype2" },
                 { "type": "freetype", "libs": "-lfreetype", "condition": "!config.wasm" },
                 { "type": "freetype", "libs": "-s USE_FREETYPE=1", "condition": "config.wasm" }
+            ],
+            "use": [
+                { "lib": "zlib", "condition": "features.system-zlib" }
             ]
         },
         "fontconfig": {
