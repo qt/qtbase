@@ -557,22 +557,6 @@ static inline int qt_mac_hitheme_tab_version()
     return 1;
 }
 
-inline bool qt_mac_is_metal(const QWidget *w)
-{
-    for (; w; w = w->parentWidget()) {
-        if (w->testAttribute(Qt::WA_MacBrushedMetal))
-            return true;
-        if (w->isWindow() && w->testAttribute(Qt::WA_WState_Created)) {  // If not created will fall through to the opaque check and be fine anyway.
-            return qt_macWindowIsTextured(w);
-        }
-#ifndef QT_NO_ACCESSIBILITY
-        if (w->d_func()->isOpaque)
-            break;
-#endif
-    }
-    return false;
-}
-
 enum QAquaMetric {
     // Prepend kThemeMetric to get the HIToolBox constant.
     // Represents the values already used in QMacStyle.
@@ -2271,16 +2255,6 @@ void QMacStyle::unpolish(QApplication *)
 
 void QMacStyle::polish(QWidget* w)
 {
-    if (qt_mac_is_metal(w) && !w->testAttribute(Qt::WA_SetPalette)) {
-        // Set a clear brush so that the metal shines through.
-        QPalette pal = w->palette();
-        QBrush background(Qt::transparent);
-        pal.setBrush(QPalette::All, QPalette::Window, background);
-        pal.setBrush(QPalette::All, QPalette::Button, background);
-        w->setPalette(pal);
-        w->setAttribute(Qt::WA_SetPalette, false);
-    }
-
 #ifndef QT_NO_MENU
     if (qobject_cast<QMenu*>(w)
 #ifndef QT_NO_COMBOBOX
@@ -2337,12 +2311,11 @@ void QMacStyle::polish(QWidget* w)
 
 void QMacStyle::unpolish(QWidget* w)
 {
-    if ((
+    if (
 #ifndef QT_NO_MENU
-            qobject_cast<QMenu*>(w) ||
+        qobject_cast<QMenu*>(w) &&
 #endif
-            qt_mac_is_metal(w)
-        ) && !w->testAttribute(Qt::WA_SetPalette)) {
+        !w->testAttribute(Qt::WA_SetPalette)) {
         QPalette pal = qApp->palette(w);
         w->setPalette(pal);
         w->setAttribute(Qt::WA_SetPalette, false);
@@ -2693,24 +2666,13 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
             }
 
             if (isWindow) {
-                bool isMetal = widget && widget->testAttribute(Qt::WA_MacBrushedMetal);
-                if (isMetal) {
-                    if (metric == PM_LayoutTopMargin) {
-                        return_SIZE(9 /* AHIG */, 6 /* guess */, 6 /* guess */);
-                    } else if (metric == PM_LayoutBottomMargin) {
-                        return_SIZE(18 /* AHIG */, 15 /* guess */, 13 /* guess */);
-                    } else {
-                        return_SIZE(14 /* AHIG */, 11 /* guess */, 9 /* guess */);
-                    }
-                } else {
-                    /*
-                        AHIG would have (20, 8, 10) here but that makes
-                        no sense. It would also have 14 for the top margin
-                        but this contradicts both Builder and most
-                        applications.
-                    */
-                    return_SIZE(20, 10, 10);    // AHIG
-                }
+                /*
+                    AHIG would have (20, 8, 10) here but that makes
+                    no sense. It would also have 14 for the top margin
+                    but this contradicts both Builder and most
+                    applications.
+                */
+                return_SIZE(20, 10, 10);    // AHIG
             } else {
                 // hack to detect QTabWidget
                 if (widget && widget->parentWidget()
@@ -4607,17 +4569,15 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         } else {
             // It isn't possible to draw a transparent size grip with the
             // native API, so we do it ourselves here.
-            const bool metal = qt_mac_is_metal(w);
-            QPen lineColor = metal ? QColor(236, 236, 236) : QColor(82, 82, 82, 192);
-            QPen metalHighlight = QColor(5, 5, 5, 192);
+            QPen lineColor = QColor(82, 82, 82, 192);
             lineColor.setWidth(1);
             p->save();
             p->setRenderHint(QPainter::Antialiasing);
             p->setPen(lineColor);
             const Qt::LayoutDirection layoutDirection = w ? w->layoutDirection() : qApp->layoutDirection();
-            const int NumLines = metal ? 4 : 3;
+            const int NumLines = 3;
             for (int l = 0; l < NumLines; ++l) {
-                const int offset = (l * 4 + (metal ? 2 : 3));
+                const int offset = (l * 4 + 3);
                 QPoint start, end;
                 if (layoutDirection == Qt::LeftToRight) {
                     start = QPoint(opt->rect.width() - offset, opt->rect.height() - 1);
@@ -4627,13 +4587,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     end = QPoint(1, opt->rect.height() - offset);
                 }
                 p->drawLine(start, end);
-                if (metal) {
-                    p->setPen(metalHighlight);
-                    p->setRenderHint(QPainter::Antialiasing, false);
-                    p->drawLine(start + QPoint(0, -1), end + QPoint(0, -1));
-                    p->setRenderHint(QPainter::Antialiasing, true);
-                    p->setPen(lineColor);
-                }
             }
             p->restore();
         }
@@ -5585,10 +5538,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                             tdi.bounds.origin.x -= 2;
                     }
 
-                    if (qt_mac_is_metal(widget)) {
-                        if (tdi.enableState == kThemeTrackInactive)
-                            tdi.enableState = kThemeTrackActive;  // Looks more Cocoa-like
-                    }
                     int interval = slider->tickInterval;
                     if (interval == 0) {
                         interval = slider->pageStep;
@@ -6929,7 +6878,6 @@ int QMacStyle::layoutSpacing(QSizePolicy::ControlType control1,
                              const QWidget *widget) const
 {
     const int ButtonMask = QSizePolicy::ButtonBox | QSizePolicy::PushButton;
-    bool isMetal = (widget && widget->testAttribute(Qt::WA_MacBrushedMetal));
     const int controlSize = getControlSize(option, widget);
 
     if (control2 == QSizePolicy::ButtonBox) {
@@ -6938,11 +6886,10 @@ int QMacStyle::layoutSpacing(QSizePolicy::ControlType control1,
             boxes and the row of buttons. The 20 pixel comes from
             Builder.
         */
-        if (isMetal                                         // (AHIG, guess, guess)
-                || (control1 & (QSizePolicy::Frame          // guess
-                                | QSizePolicy::GroupBox     // (AHIG, guess, guess)
-                                | QSizePolicy::TabWidget    // guess
-                                | ButtonMask)))    {        // AHIG
+        if (control1 & (QSizePolicy::Frame         // guess
+                        | QSizePolicy::GroupBox    // (AHIG, guess, guess)
+                        | QSizePolicy::TabWidget   // guess
+                        | ButtonMask))    {        // AHIG
             return_SIZE(14, 8, 8);
         } else if (control1 == QSizePolicy::LineEdit) {
             return_SIZE(8, 8, 8); // Interface Builder
