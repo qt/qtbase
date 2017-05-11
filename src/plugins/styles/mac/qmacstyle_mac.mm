@@ -43,6 +43,7 @@
 */
 
 #include <AppKit/AppKit.h>
+#include <ApplicationServices/ApplicationServices.h>
 
 #include "qmacstyle_mac_p.h"
 #include "qmacstyle_mac_p_p.h"
@@ -213,10 +214,6 @@ static const QColor tabBarCloseButtonCrossSelected(115, 115, 115);
 
 static const int closeButtonSize = 14;
 static const qreal closeButtonCornerRadius = 2.0;
-
-// Resolve these at run-time, since the functions was moved in Leopard.
-typedef HIRect * (*PtrHIShapeGetBounds)(HIShapeRef, HIRect *);
-static PtrHIShapeGetBounds ptrHIShapeGetBounds = 0;
 
 #ifndef QT_NO_TABBAR
 static bool isVerticalTabs(const QTabBar::Shape shape) {
@@ -1817,13 +1814,6 @@ QMacStylePrivate::QMacStylePrivate()
 {
     defaultButtonStart = CFAbsoluteTimeGetCurrent();
     memset(&buttonState, 0, sizeof(ButtonState));
-
-    if (ptrHIShapeGetBounds == 0) {
-        QLibrary library(QLatin1String("/System/Library/Frameworks/Carbon.framework/Carbon"));
-        library.setLoadHints(QLibrary::ExportExternalSymbolsHint);
-        ptrHIShapeGetBounds = reinterpret_cast<PtrHIShapeGetBounds>(library.resolve("HIShapeGetBounds"));
-    }
-
 }
 
 QMacStylePrivate::~QMacStylePrivate()
@@ -4332,7 +4322,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     QCFType<HIShapeRef> titleRegion;
                     QRect newr = opt->rect.adjusted(0, 0, 2, 0);
                     HIThemeGetWindowShape(&tmpRect, &wdi, kWindowTitleBarRgn, &titleRegion);
-                    ptrHIShapeGetBounds(titleRegion, &tmpRect);
+                    HIShapeGetBounds(titleRegion, &tmpRect);
                     newr.translate(newr.x() - int(tmpRect.origin.x), newr.y() - int(tmpRect.origin.y));
                     titleBarRect = qt_hirectForQRect(newr);
                 }
@@ -4921,7 +4911,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         QCFType<HIShapeRef> shape;
         HIRect outRect;
         HIThemeGetButtonShape(&inRect, &bdi, &shape);
-        ptrHIShapeGetBounds(shape, &outRect);
+        HIShapeGetBounds(shape, &outRect);
         rect = QRect(int(outRect.origin.x + DisclosureOffset), int(outRect.origin.y),
                   int(contentRect.origin.x - outRect.origin.x + DisclosureOffset),
                   int(outRect.size.height));
@@ -5395,7 +5385,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 // Small optimization, the same as q->subControlRect
                 QCFType<HIShapeRef> shape;
                 HIThemeGetTrackThumbShape(&tdi, &shape);
-                ptrHIShapeGetBounds(shape, &macRect);
+                HIShapeGetBounds(shape, &macRect);
                 tdi.value = slider->sliderValue;
             }
 
@@ -5840,7 +5830,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 QCFType<HIShapeRef> titleRegion;
                 QRect newr = titlebar->rect.adjusted(0, 0, 2, 0);
                 HIThemeGetWindowShape(&tmpRect, &wdi, kWindowTitleBarRgn, &titleRegion);
-                ptrHIShapeGetBounds(titleRegion, &tmpRect);
+                HIShapeGetBounds(titleRegion, &tmpRect);
                 newr.translate(newr.x() - int(tmpRect.origin.x), newr.y() - int(tmpRect.origin.y));
                 titleBarRect = qt_hirectForQRect(newr);
             }
@@ -5892,7 +5882,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     QCFType<HIShapeRef> titleRegion2;
                     HIThemeGetWindowShape(&titleBarRect, &wdi, kWindowTitleProxyIconRgn,
                                           &titleRegion2);
-                    ptrHIShapeGetBounds(titleRegion2, &tmpRect);
+                    HIShapeGetBounds(titleRegion2, &tmpRect);
                     if (tmpRect.size.width != 1) {
                         int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
                         iw = titlebar->icon.actualSize(QSize(iconExtent, iconExtent)).width();
@@ -5902,7 +5892,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     p->save();
                     QCFType<HIShapeRef> titleRegion3;
                     HIThemeGetWindowShape(&titleBarRect, &wdi, kWindowTitleTextRgn, &titleRegion3);
-                    ptrHIShapeGetBounds(titleRegion3, &tmpRect);
+                    HIShapeGetBounds(titleRegion3, &tmpRect);
                     p->setClipRect(qt_qrectForHIRect(tmpRect));
                     QRect br = p->clipRegion().boundingRect();
                     int x = br.x(),
@@ -6246,7 +6236,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             if ((scrollBar && sc == SC_ScrollBarSlider)
                 || (!scrollBar && sc == SC_SliderHandle)) {
                 HIThemeGetTrackThumbShape(&tdi, &shape);
-                ptrHIShapeGetBounds(shape, &macRect);
+                HIShapeGetBounds(shape, &macRect);
             } else if (!scrollBar && sc == SC_SliderGroove) {
                 HIThemeGetTrackBounds(&tdi, &macRect);
             } else if (sc == SC_ScrollBarGroove) { // Only scroll bar parts available...
@@ -6320,13 +6310,13 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 QRect tmpRect = titlebar->rect;
                 HIRect titleRect = qt_hirectForQRect(tmpRect);
                 HIThemeGetWindowShape(&titleRect, &wdi, kWindowTitleBarRgn, &region);
-                ptrHIShapeGetBounds(region, &titleRect);
+                HIShapeGetBounds(region, &titleRect);
                 CFRelease(region);
                 tmpRect.translate(tmpRect.x() - int(titleRect.origin.x),
                                tmpRect.y() - int(titleRect.origin.y));
                 titleRect = qt_hirectForQRect(tmpRect);
                 HIThemeGetWindowShape(&titleRect, &wdi, wrc, &region);
-                ptrHIShapeGetBounds(region, &titleRect);
+                HIShapeGetBounds(region, &titleRect);
                 ret = qt_qrectForHIRect(titleRect);
             }
         }
