@@ -148,6 +148,7 @@ QPluginLoader::QPluginLoader(const QString &fileName, QObject *parent)
     : QObject(parent), d(0), did_load(false)
 {
     setFileName(fileName);
+    setLoadHints(QLibrary::PreventUnloadHint);
 }
 
 /*!
@@ -342,7 +343,7 @@ static QString locatePlugin(const QString& fileName)
 void QPluginLoader::setFileName(const QString &fileName)
 {
 #if defined(QT_SHARED)
-    QLibrary::LoadHints lh;
+    QLibrary::LoadHints lh = QLibrary::PreventUnloadHint;
     if (d) {
         lh = d->loadHints();
         d->release();
@@ -391,7 +392,7 @@ Q_GLOBAL_STATIC(StaticPluginList, staticPluginList)
     \brief Give the load() function some hints on how it should behave.
 
     You can give hints on how the symbols in the plugin are
-    resolved. By default, none of the hints are set.
+    resolved. By default since Qt 5.7, QLibrary::PreventUnloadHint is set.
 
     See the documentation of QLibrary::loadHints for a complete
     description of how this property works.

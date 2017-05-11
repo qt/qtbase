@@ -208,10 +208,12 @@ void QFactoryLoader::update()
                     ++keyUsageCount;
                 }
             }
-            if (keyUsageCount || keys.isEmpty())
+            if (keyUsageCount || keys.isEmpty()) {
+                library->setLoadHints(QLibrary::PreventUnloadHint); // once loaded, don't unload
                 d->libraryList += library;
-            else
+            } else {
                 library->release();
+            }
         }
     }
 #else
