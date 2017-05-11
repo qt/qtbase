@@ -1829,6 +1829,12 @@ void tst_QWindow::initialSize()
     }
 }
 
+static bool isPlatformOffscreenOrMinimal()
+{
+    return ((QGuiApplication::platformName() == QLatin1String("offscreen"))
+             || (QGuiApplication::platformName() == QLatin1String("minimal")));
+}
+
 void tst_QWindow::modalDialog()
 {
     if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
@@ -1853,8 +1859,7 @@ void tst_QWindow::modalDialog()
     QGuiApplication::sync();
     QGuiApplication::processEvents();
 
-    if (!QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)
-        || !QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)) {
+    if (isPlatformOffscreenOrMinimal()) {
         QWARN("Focus stays in normalWindow on offscreen/minimal platforms");
         QTRY_COMPARE(QGuiApplication::focusWindow(), &normalWindow);
         return;
@@ -1899,8 +1904,7 @@ void tst_QWindow::modalDialogClosingOneOfTwoModal()
     QGuiApplication::sync();
     QGuiApplication::processEvents();
 
-    if (!QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)
-        || !QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)) {
+    if (isPlatformOffscreenOrMinimal()) {
         QWARN("Focus is lost when closing modal dialog on offscreen/minimal platforms");
         QTRY_COMPARE(QGuiApplication::focusWindow(), nullptr);
         return;
@@ -1993,6 +1997,9 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
 {
     if (QGuiApplication::platformName() == QLatin1String("cocoa"))
         QSKIP("This test fails on OS X on CI");
+
+    if (isPlatformOffscreenOrMinimal())
+        QSKIP("Can't test window focusing on offscreen/minimal");
 
     const QPoint center = QGuiApplication::primaryScreen()->availableGeometry().center();
 

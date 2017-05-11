@@ -237,7 +237,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)viewDidMoveToSuperview
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     if (!(m_platformWindow->m_viewIsToBeEmbedded))
@@ -260,7 +260,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (QWindow *)topLevelWindow
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return nullptr;
 
     QWindow *focusWindow = m_platformWindow->window();
@@ -278,7 +278,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)updateGeometry
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     QRect geometry;
@@ -437,8 +437,11 @@ static bool _q_dontOverrideCtrlLMB = false;
     }
 }
 
-- (void) drawRect:(NSRect)dirtyRect
+- (void)drawRect:(NSRect)dirtyRect
 {
+    if (!m_platformWindow)
+        return;
+
     qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_platformWindow->window() << QRectF::fromCGRect(NSRectToCGRect(dirtyRect));
 
 #ifndef QT_NO_OPENGL
@@ -627,7 +630,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     // Tablet events may come in via the mouse event handlers,
@@ -644,7 +647,7 @@ static bool _q_dontOverrideCtrlLMB = false;
         else
             m_platformWindow->m_forwardWindow.clear();
     }
-    if (targetView->m_platformWindow.isNull())
+    if (!targetView.platformWindow)
         return;
 
     // Popups implicitly grap mouse events; forward to the active popup if there is one
@@ -670,7 +673,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     // get m_buttons in sync
@@ -955,7 +958,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 
 - (void)mouseMovedImpl:(NSEvent *)theEvent
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     if ([self isTransparentForUserInput])
@@ -989,7 +992,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 - (void)mouseEnteredImpl:(NSEvent *)theEvent
 {
     Q_UNUSED(theEvent)
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     m_platformWindow->m_windowUnderMouse = true;
@@ -1011,7 +1014,7 @@ static bool _q_dontOverrideCtrlLMB = false;
 - (void)mouseExitedImpl:(NSEvent *)theEvent
 {
     Q_UNUSED(theEvent);
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     m_platformWindow->m_windowUnderMouse = false;
@@ -1040,7 +1043,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
 - (bool)handleTabletEvent: (NSEvent *)theEvent
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return false;
 
     NSEventType eventType = [theEvent type];
@@ -1200,7 +1203,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (bool)shouldSendSingleTouch
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return true;
 
     // QtWidgets expects single-point touch events, QtDeclarative does not.
@@ -1210,7 +1213,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)touchesBeganWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     const NSTimeInterval timestamp = [event timestamp];
@@ -1221,7 +1224,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)touchesMovedWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     const NSTimeInterval timestamp = [event timestamp];
@@ -1232,7 +1235,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)touchesEndedWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     const NSTimeInterval timestamp = [event timestamp];
@@ -1243,7 +1246,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     const NSTimeInterval timestamp = [event timestamp];
@@ -1273,7 +1276,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 }
 - (void)magnifyWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     if ([self handleGestureAsBeginEnd:event])
@@ -1290,7 +1293,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)smartMagnifyWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     static bool zoomIn = true;
@@ -1306,7 +1309,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)rotateWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     if ([self handleGestureAsBeginEnd:event])
@@ -1322,7 +1325,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)swipeWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     qCDebug(lcQpaGestures) << "swipeWithEvent" << [event deltaX] << [event deltaY];
@@ -1347,7 +1350,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)beginGestureWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     const NSTimeInterval timestamp = [event timestamp];
@@ -1361,7 +1364,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)endGestureWithEvent:(NSEvent *)event
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     qCDebug(lcQpaGestures) << "endGestureWithEvent";
@@ -1377,7 +1380,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 #ifndef QT_NO_WHEELEVENT
 - (void)scrollWheel:(NSEvent *)theEvent
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     if ([self isTransparentForUserInput])
@@ -1879,6 +1882,9 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (NSArray*)validAttributesForMarkedText
 {
+    if (!m_platformWindow)
+        return nil;
+
     if (m_platformWindow->window() != QGuiApplication::focusWindow())
         return nil;
 
@@ -2050,7 +2056,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 // Sends drag update to Qt, return the action
 - (NSDragOperation)handleDrag:(id <NSDraggingInfo>)sender
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return NSDragOperationNone;
 
     NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
@@ -2080,7 +2086,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
 - (void)draggingExited:(id <NSDraggingInfo>)sender
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     QWindow *target = findEventTargetWindow(m_platformWindow->window());
@@ -2097,7 +2103,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 // called on drop, send the drop to Qt and return if it was accepted.
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return false;
 
     QWindow *target = findEventTargetWindow(m_platformWindow->window());
@@ -2131,7 +2137,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     Q_UNUSED(session);
     Q_UNUSED(operation);
 
-    if (m_platformWindow.isNull())
+    if (!m_platformWindow)
         return;
 
     QWindow *target = findEventTargetWindow(m_platformWindow->window());

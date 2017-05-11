@@ -528,7 +528,7 @@ void QHttp2ProtocolHandler::handleDATA()
         auto &stream = activeStreams[streamID];
 
         if (qint32(inboundFrame.payloadSize()) > stream.recvWindow) {
-            finishStreamWithError(stream, QNetworkReply::ProtocolInvalidOperationError,
+            finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
                                   QLatin1String("flow control error"));
             sendRST_STREAM(streamID, FLOW_CONTROL_ERROR);
             markAsReset(streamID);
@@ -834,7 +834,7 @@ void QHttp2ProtocolHandler::handleWINDOW_UPDATE()
         }
         auto &stream = activeStreams[streamID];
         if (!valid || sum_will_overflow(stream.sendWindow, delta)) {
-            finishStreamWithError(stream, QNetworkReply::ProtocolInvalidOperationError,
+            finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
                                   QLatin1String("invalid WINDOW_UPDATE delta"));
             sendRST_STREAM(streamID, PROTOCOL_ERROR);
             markAsReset(streamID);
@@ -888,7 +888,7 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
                 // We can receive HEADERS on streams initiated by our requests
                 // (these streams are in halfClosedLocal state) or remote-reserved
                 // streams from a server's PUSH_PROMISE.
-                finishStreamWithError(stream, QNetworkReply::ProtocolInvalidOperationError,
+                finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
                                       QLatin1String("HEADERS on invalid stream"));
                 sendRST_STREAM(streamID, CANCEL);
                 markAsReset(streamID);
@@ -977,7 +977,7 @@ bool QHttp2ProtocolHandler::acceptSetting(Http2::Settings identifier, quint32 ne
 
         for (auto id : brokenStreams) {
             auto &stream = activeStreams[id];
-            finishStreamWithError(stream, QNetworkReply::ProtocolInvalidOperationError,
+            finishStreamWithError(stream, QNetworkReply::ProtocolFailure,
                                   QLatin1String("SETTINGS window overflow"));
             sendRST_STREAM(id, PROTOCOL_ERROR);
             markAsReset(id);

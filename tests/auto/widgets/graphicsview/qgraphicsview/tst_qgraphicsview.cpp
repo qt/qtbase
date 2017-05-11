@@ -4804,8 +4804,12 @@ public:
 
 void tst_QGraphicsView::hoverLeave()
 {
-    if (platformName == QStringLiteral("cocoa"))
+    if (platformName == QStringLiteral("cocoa")) {
         QSKIP("Insignificant on OSX");
+    } else if (platformName == QStringLiteral("minimal")
+        || (platformName == QStringLiteral("offscreen"))) {
+        QSKIP("Fails in minimal/offscreen platforms if forwardMouseDoubleClick has been run");
+    }
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     QGraphicsScene scene;
     QGraphicsView view(&scene);

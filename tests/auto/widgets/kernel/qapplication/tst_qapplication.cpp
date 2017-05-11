@@ -1987,7 +1987,7 @@ void tst_QApplication::touchEventPropagation()
         window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
         const QPoint deviceGlobalPos =
-            QHighDpi::toNativePixels(window.mapToGlobal(QPoint(50, 50)), window.windowHandle()->screen());
+            QHighDpi::toNativePixels(window.mapToGlobal(QPoint(50, 150)), window.windowHandle()->screen());
         pressedTouchPoints[0].setScreenPos(deviceGlobalPos);
         releasedTouchPoints[0].setScreenPos(deviceGlobalPos);
 

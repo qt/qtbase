@@ -204,6 +204,8 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
         QFileSystemIterator *it = new QFileSystemIterator(fileInfo.d_ptr->fileEntry,
             filters, nameFilters, iteratorFlags);
         nativeIterators << it;
+#else
+        qWarning("Qt was built with -no-feature-filesystemiterator: no files/plugins will be found!");
 #endif
     }
 }

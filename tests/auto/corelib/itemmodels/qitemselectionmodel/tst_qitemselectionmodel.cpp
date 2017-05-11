@@ -92,6 +92,9 @@ private slots:
     void QTBUG48402_data();
     void QTBUG48402();
 
+    void QTBUG58851_data();
+    void QTBUG58851();
+
 private:
     QAbstractItemModel *model;
     QItemSelectionModel *selection;
@@ -2846,6 +2849,77 @@ void tst_QItemSelectionModel::QTBUG48402()
     model.removeRows(removeTop, removeBottom - removeTop + 1);
 
     QCOMPARE(QItemSelectionRange(helper.tl, helper.br), QItemSelectionRange(dtl, dbr));
+}
+
+void tst_QItemSelectionModel::QTBUG58851_data()
+{
+    using IntPair = std::pair<int, int>;
+    using IntPairList = QList<IntPair>;
+    using IntPairPair = std::pair<IntPair, IntPair>;
+    using IntPairPairList = QList<IntPairPair>;
+
+    QTest::addColumn<IntPairPairList>("rangesToSelect");
+    QTest::addColumn<IntPairList>("expectedSelectedIndexesPairs");
+    QTest::newRow("Single index in > 0 column")
+            << (IntPairPairList() << IntPairPair(IntPair(0, 1), IntPair(0, 1)))
+            << (IntPairList() << IntPair(0, 1));
+    QTest::newRow("Rectangle in > 0 column")
+            << (IntPairPairList() << IntPairPair(IntPair(0, 1), IntPair(1, 2)))
+            << (IntPairList() << IntPair(0, 1) << IntPair(0, 2) << IntPair(1, 1) << IntPair(1, 2));
+    QTest::newRow("Diagonal in > 0 column")
+            << (IntPairPairList()
+                << IntPairPair(IntPair(0, 1), IntPair(0, 1))
+                << IntPairPair(IntPair(1, 2), IntPair(1, 2))
+                << IntPairPair(IntPair(2, 3), IntPair(2, 3)))
+            << (IntPairList()
+                << IntPair(0, 1)
+                << IntPair(1, 2)
+                << IntPair(2, 3));
+}
+
+void tst_QItemSelectionModel::QTBUG58851()
+{
+    using IntPair = std::pair<int, int>;
+    using IntPairList = QList<IntPair>;
+    using IntPairPair = std::pair<IntPair, IntPair>;
+    using IntPairPairList = QList<IntPairPair>;
+
+    QFETCH(IntPairPairList, rangesToSelect);
+    QFETCH(IntPairList, expectedSelectedIndexesPairs);
+
+    QStandardItemModel model(4, 4);
+    for (int row = 0; row < model.rowCount(); ++row) {
+        for (int column = 0; column < model.columnCount(); ++column) {
+            QStandardItem *item = new QStandardItem(QString("%0%1").arg(row).arg(column));
+            model.setItem(row, column, item);
+        }
+    }
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    proxy.setSortRole(Qt::DisplayRole);
+
+    std::vector<QPersistentModelIndex> expectedSelectedIndexes;
+    for (const IntPair &index : expectedSelectedIndexesPairs)
+        expectedSelectedIndexes.emplace_back(proxy.index(index.first, index.second));
+
+    QItemSelectionModel selections(&proxy);
+    for (const IntPairPair &range : rangesToSelect) {
+        const IntPair &tl = range.first;
+        const IntPair &br = range.second;
+        selections.select(QItemSelection(proxy.index(tl.first, tl.second),
+                                         proxy.index(br.first, br.second)),
+                          QItemSelectionModel::Select);
+    }
+
+    for (const QPersistentModelIndex &i : expectedSelectedIndexes) {
+        QVERIFY(selections.isSelected(i));
+    }
+    proxy.sort(1, Qt::DescendingOrder);
+    QCOMPARE(selections.selectedIndexes().count(), (int)expectedSelectedIndexes.size());
+    for (const QPersistentModelIndex &i : expectedSelectedIndexes) {
+        QVERIFY(selections.isSelected(i));
+    }
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)
