@@ -1367,9 +1367,9 @@ void QXcbEventReader::unlock(bool calledFromPeeker)
     m_mutex.unlock();
 }
 
-void QXcbConnection::setFocusWindow(QXcbWindow *w)
+void QXcbConnection::setFocusWindow(QWindow *w)
 {
-    m_focusWindow = w;
+    m_focusWindow = w ? static_cast<QXcbWindow *>(w->handle()) : nullptr;
 }
 void QXcbConnection::setMouseGrabber(QXcbWindow *w)
 {
