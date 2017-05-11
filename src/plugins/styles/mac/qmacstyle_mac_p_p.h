@@ -197,23 +197,23 @@ public:
     inline int animateSpeed(Animates) const { return 33; }
 
     // Utility functions
-    void drawColorlessButton(const HIRect &macRect, HIThemeButtonDrawInfo *bdi,
+    void drawColorlessButton(const CGRect &macRect, HIThemeButtonDrawInfo *bdi,
                              QPainter *p, const QStyleOption *opt) const;
 
     QSize pushButtonSizeFromContents(const QStyleOptionButton *btn) const;
 
-    HIRect pushButtonContentBounds(const QStyleOptionButton *btn,
+    CGRect pushButtonContentBounds(const QStyleOptionButton *btn,
                                    const HIThemeButtonDrawInfo *bdi) const;
 
     void initComboboxBdi(const QStyleOptionComboBox *combo, HIThemeButtonDrawInfo *bdi,
                         const QWidget *widget, const ThemeDrawState &tds) const;
 
-    static HIRect comboboxInnerBounds(const HIRect &outerBounds, int buttonKind);
+    static CGRect comboboxInnerBounds(const CGRect &outerBounds, int buttonKind);
 
     static QRect comboboxEditBounds(const QRect &outerBounds, const HIThemeButtonDrawInfo &bdi);
 
-    static void drawCombobox(const HIRect &outerBounds, const HIThemeButtonDrawInfo &bdi, QPainter *p);
-    static void drawTableHeader(const HIRect &outerBounds, bool drawTopBorder, bool drawLeftBorder,
+    static void drawCombobox(const CGRect &outerBounds, const HIThemeButtonDrawInfo &bdi, QPainter *p);
+    static void drawTableHeader(const CGRect &outerBounds, bool drawTopBorder, bool drawLeftBorder,
                                      const HIThemeButtonDrawInfo &bdi, QPainter *p);
     bool contentFitsInPushButton(const QStyleOptionButton *btn, HIThemeButtonDrawInfo *bdi,
                                  ThemeButtonKind buttonKindToCheck) const;
