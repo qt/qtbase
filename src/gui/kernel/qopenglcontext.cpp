@@ -1676,6 +1676,61 @@ void QOpenGLMultiGroupSharedResource::cleanup(QOpenGLContextGroup *group, QOpenG
     m_groups.removeOne(group);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QOpenGLVersionProfile &vp)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QOpenGLVersionProfile(";
+    if (vp.isValid()) {
+        debug << vp.version().first << '.' << vp.version().second
+            << ", profile=" << vp.profile();
+    } else {
+        debug << "invalid";
+    }
+    debug << ')';
+    return debug;
+}
+
+QDebug operator<<(QDebug debug, const QOpenGLContext *ctx)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug.noquote();
+    debug << "QOpenGLContext(";
+    if (ctx)  {
+        debug << static_cast<const void *>(ctx);
+        if (ctx->isValid()) {
+            debug << ", nativeHandle=" << ctx->nativeHandle()
+                << ", format=" << ctx->format();
+            if (const QSurface *sf = ctx->surface())
+                debug << ", surface=" << sf;
+            if (const QScreen *s = ctx->screen())
+                debug << ", screen=\"" << s->name() << '"';
+        } else {
+            debug << ", invalid";
+        }
+    } else {
+        debug << '0';
+    }
+    debug << ')';
+    return debug;
+}
+
+QDebug operator<<(QDebug debug, const QOpenGLContextGroup *cg)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QOpenGLContextGroup(";
+    if (cg)
+        debug << cg->shares();
+    else
+        debug << '0';
+    debug << ')';
+    return debug;
+}
+#endif // QT_NO_DEBUG_STREAM
+
 #include "moc_qopenglcontext.cpp"
 
 QT_END_NAMESPACE

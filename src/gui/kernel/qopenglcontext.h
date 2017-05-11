@@ -69,6 +69,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
 class QOpenGLContextPrivate;
 class QOpenGLContextGroupPrivate;
 class QOpenGLFunctions;
@@ -248,6 +249,12 @@ private:
 
     Q_PRIVATE_SLOT(d_func(), void _q_screenDestroyed(QObject *object))
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLVersionProfile &vp);
+Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLContext *ctx);
+Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLContextGroup *cg);
+#endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
 
