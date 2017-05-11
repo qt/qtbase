@@ -499,6 +499,7 @@ public:
         AA_EnableHighDpiScaling = 20,
         AA_DisableHighDpiScaling = 21,
         AA_CompressHighFrequencyEvents = 22,
+		AA_CompressTabletEvents = 23,
 
         // Add new attributes before this line
         AA_AttributeCount

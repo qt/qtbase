@@ -215,18 +215,23 @@
            environment variable to 0. This value has been added in Qt 5.6. This
            attribute must be set before Q(Gui)Application is constructed.
 
-    \value AA_CompressHighFrequencyEvents Enables compression of certain events
-           on certain platforms. On the X11 windowing system,
-           QEvent::MouseMove, QEvent::TouchUpdate, QEvent::TabletMove and
-           changes in window size and position will be combined whenever they
-           occur more frequently than the application handles them, so that
-           they don't accumulate and overwhelm the application later.
-           In Qt 5.6, compression does not occur on every platform. In the future,
-           the compression feature may be implemented differently, across platforms.
+    \value AA_CompressHighFrequencyEvents Enables compression of certain frequent events.
+           On the X11 windowing system, the default value is true, which means that
+           QEvent::MouseMove, QEvent::TouchUpdate, and changes in window size and
+           position will be combined whenever they occur more frequently than the
+           application handles them, so that they don't accumulate and overwhelm the
+           application later. On other platforms, the default is false.
+           (In the future, the compression feature may be implemented across platforms.)
            You can test the attribute to see whether compression is enabled.
            If your application needs to handle all events with no compression,
-           you can unset this attribute. This is commonly necessary in
-           drawing-tablet applications, for example.
+           you can unset this attribute. Notice that input events from tablet devices
+           will not be compressed. See AA_CompressTabletEvents if you want these to be
+           compressed as well. This value has been added in Qt 5.7.
+
+    \value AA_CompressTabletEvents Enables compression of input events from tablet devices.
+           Notice that AA_CompressHighFrequencyEvents must be true for events compression
+           to be enabled, and that this flag extends the former to tablet events. Its default
+           value is false. This value has been added in Qt 5.10.
 
     The following values are obsolete:
 

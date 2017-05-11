@@ -1657,9 +1657,12 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
         // compress XI_Motion, but not from tablet devices
         if (isXIType(event, m_xiOpCode, XI_Motion)) {
 #ifndef QT_NO_TABLETEVENT
-            xXIDeviceEvent *xdev = reinterpret_cast<xXIDeviceEvent *>(event);
-            if (const_cast<QXcbConnection *>(this)->tabletDataForDevice(xdev->sourceid))
-                return false;
+            if (!qEnvironmentVariableIsSet("QT_COMPRESS_TABLET_EVENTS")) {
+                xXIDeviceEvent *xdev = reinterpret_cast<xXIDeviceEvent *>(event);
+                if (!QCoreApplication::testAttribute(Qt::AA_CompressTabletEvents) &&
+                        const_cast<QXcbConnection *>(this)->tabletDataForDevice(xdev->sourceid))
+                    return false;
+            }
 #endif // QT_NO_TABLETEVENT
             for (int j = nextIndex; j < eventqueue->size(); ++j) {
                 xcb_generic_event_t *next = eventqueue->at(j);
