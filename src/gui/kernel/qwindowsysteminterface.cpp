@@ -368,8 +368,9 @@ void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong t
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
             new QWindowSystemInterfacePrivate::MouseEvent(window, timestamp,
-                                                          QWindowSystemInterfacePrivate::FrameStrutMouse,
-                                                          QHighDpi::fromNativeLocalPosition(local, window), QHighDpi::fromNativePixels(global, window), b, mods, source);
+                                                          QHighDpi::fromNativeLocalPosition(local, window),
+                                                          QHighDpi::fromNativePixels(global, window),
+                                                          b, mods, source, true);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 

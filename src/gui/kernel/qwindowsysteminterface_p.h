@@ -75,7 +75,7 @@ public:
         ActivatedWindow = 0x05,
         WindowStateChanged = 0x06,
         Mouse = UserInputEvent | 0x07,
-        FrameStrutMouse = UserInputEvent | 0x08,
+        FrameStrutMouse = UserInputEvent | 0x08,  // ### Qt6 remove
         Wheel = UserInputEvent | 0x09,
         Key = UserInputEvent | 0x0a,
         Touch = UserInputEvent | 0x0b,
@@ -227,16 +227,14 @@ public:
     public:
         MouseEvent(QWindow * w, ulong time, const QPointF &local, const QPointF &global,
                    Qt::MouseButtons b, Qt::KeyboardModifiers mods,
-                   Qt::MouseEventSource src = Qt::MouseEventNotSynthesized)
-            : InputEvent(w, time, Mouse, mods), localPos(local), globalPos(global), buttons(b), source(src) { }
-        MouseEvent(QWindow * w, ulong time, EventType t, const QPointF &local, const QPointF &global,
-                   Qt::MouseButtons b, Qt::KeyboardModifiers mods,
-                   Qt::MouseEventSource src = Qt::MouseEventNotSynthesized)
-            : InputEvent(w, time, t, mods), localPos(local), globalPos(global), buttons(b), source(src) { }
+                   Qt::MouseEventSource src = Qt::MouseEventNotSynthesized, bool frame = false)
+            : InputEvent(w, time, Mouse, mods), localPos(local), globalPos(global), buttons(b),
+              source(src), nonClientArea(frame) { }
         QPointF localPos;
         QPointF globalPos;
         Qt::MouseButtons buttons;
         Qt::MouseEventSource source;
+        bool nonClientArea;
     };
 
     class WheelEvent : public InputEvent {
