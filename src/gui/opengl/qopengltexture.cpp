@@ -190,9 +190,18 @@ void QOpenGLTexturePrivate::destroy()
         return;
     }
     QOpenGLContext *currentContext = QOpenGLContext::currentContext();
-    if (!currentContext || !QOpenGLContext::areSharing(currentContext, context)) {
-        qWarning("Texture is not valid in the current context.\n"
+    if (!currentContext) {
+        qWarning("QOpenGLTexturePrivate::destroy() called without a current context.\n"
                  "Texture has not been destroyed");
+        return;
+    }
+    if (!QOpenGLContext::areSharing(currentContext, context)) {
+
+        qWarning("QOpenGLTexturePrivate::destroy() called but texture context %p"
+                 " is not shared with current context %p.\n"
+                 "Texture has not been destroyed",
+                 static_cast<const void *>(context),
+                 static_cast<const void *>(currentContext));
         return;
     }
 
