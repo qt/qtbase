@@ -1035,28 +1035,28 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             m_keyboard->updateXKBStateFromCore(ev->state);
             // the event explicitly contains the state of the three first buttons,
             // the rest we need to manage ourselves
-            m_buttons = (m_buttons & ~0x7) | translateMouseButtons(ev->state);
-            m_buttons |= translateMouseButton(ev->detail);
+            m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
+            m_buttonState |= translateMouseButton(ev->detail);
             if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
-                qCDebug(lcQpaXInputEvents, "legacy mouse press, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttons));
+                qCDebug(lcQpaXInputEvents, "legacy mouse press, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttonState));
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
         }
         case XCB_BUTTON_RELEASE: {
             xcb_button_release_event_t *ev = (xcb_button_release_event_t *)event;
             m_keyboard->updateXKBStateFromCore(ev->state);
-            m_buttons = (m_buttons & ~0x7) | translateMouseButtons(ev->state);
-            m_buttons &= ~translateMouseButton(ev->detail);
+            m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
+            m_buttonState &= ~translateMouseButton(ev->detail);
             if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
-                qCDebug(lcQpaXInputEvents, "legacy mouse release, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttons));
+                qCDebug(lcQpaXInputEvents, "legacy mouse release, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttonState));
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
         }
         case XCB_MOTION_NOTIFY: {
             xcb_motion_notify_event_t *ev = (xcb_motion_notify_event_t *)event;
             m_keyboard->updateXKBStateFromCore(ev->state);
-            m_buttons = (m_buttons & ~0x7) | translateMouseButtons(ev->state);
+            m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
             if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
                 qCDebug(lcQpaXInputEvents, "legacy mouse move %d,%d button %d state %X", ev->event_x, ev->event_y,
-                        ev->detail, static_cast<unsigned int>(m_buttons));
+                        ev->detail, static_cast<unsigned int>(m_buttonState));
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
         }
 
